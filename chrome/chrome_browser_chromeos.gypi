@@ -350,6 +350,8 @@
         'browser/chromeos/extensions/file_manager/select_file_dialog_util.h',
         'browser/chromeos/extensions/file_manager/url_util.cc',
         'browser/chromeos/extensions/file_manager/url_util.h',
+        'browser/chromeos/extensions/file_manager/file_manager_installer.cc',
+        'browser/chromeos/extensions/file_manager/file_manager_installer.h',
         'browser/chromeos/extensions/file_manager/zip_file_creator.cc',
         'browser/chromeos/extensions/file_manager/zip_file_creator.h',
         'browser/chromeos/extensions/info_private_api.cc',

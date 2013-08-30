@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/logging.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_manager_installer.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -202,6 +203,55 @@ bool FileBrowserPrivateZoomFunction::RunImpl() {
   }
   view_host->Zoom(zoom_type);
   return true;
+}
+
+FileBrowserPrivateInstallWebstoreItemFunction::
+    FileBrowserPrivateInstallWebstoreItemFunction() {
+}
+
+FileBrowserPrivateInstallWebstoreItemFunction::
+    ~FileBrowserPrivateInstallWebstoreItemFunction() {
+}
+
+bool FileBrowserPrivateInstallWebstoreItemFunction::RunImpl() {
+  if (args_->GetSize() < 1)
+    return false;
+
+  if (!args_->GetString(0, &webstore_item_id_) || webstore_item_id_.empty())
+    return false;
+
+  extensions::WebstoreStandaloneInstaller::Callback callback =
+      base::Bind(
+          &FileBrowserPrivateInstallWebstoreItemFunction::OnInstallComplete,
+          this);
+
+  scoped_refptr<file_manager::FileManagerInstaller> installer(
+      new file_manager::FileManagerInstaller(
+          GetAssociatedWebContents(),  // web_contents(),
+          webstore_item_id_,
+          profile(),
+          callback));
+  // installer will be AddRef()'d in BeginInstall().
+  installer->BeginInstall();
+  return true;
+}
+
+void FileBrowserPrivateInstallWebstoreItemFunction::OnInstallComplete(
+    bool success,
+    const std::string& error) {
+  if (success) {
+    drive::util::Log(logging::LOG_INFO,
+                     "App install succeeded. (item id: %s)",
+                     webstore_item_id_.c_str());
+  } else {
+    drive::util::Log(logging::LOG_ERROR,
+                     "App install failed. (item id: %s, reason: %s)",
+                     webstore_item_id_.c_str(),
+                     error.c_str());
+    error_ = error;
+  }
+
+  SendResponse(success);
 }
 
 }  // namespace extensions

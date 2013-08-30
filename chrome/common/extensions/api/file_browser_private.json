@@ -1132,6 +1132,23 @@
             ]
           }
         ]
+      },
+      {
+        "name": "installWebstoreItem",
+        "type": "function",
+        "description": "Requests to install a webstore item.",
+        "parameters": [
+          {
+            "name": "item_id",
+            "type": "string",
+            "description": "The id of the item to install."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
+          }
+        ]
       }
     ],
     "events": [

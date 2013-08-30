@@ -98,6 +98,24 @@ class FileBrowserPrivateZoomFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+// Implements the chrome.fileBrowserPrivate.installWebstoreItem method.
+class FileBrowserPrivateInstallWebstoreItemFunction
+    : public LoggedAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.installWebstoreItem",
+                             FILEBROWSERPRIVATE_INSTALLWEBSTOREITEM);
+
+  FileBrowserPrivateInstallWebstoreItemFunction();
+
+ protected:
+  virtual ~FileBrowserPrivateInstallWebstoreItemFunction();
+  virtual bool RunImpl() OVERRIDE;
+  void OnInstallComplete(bool success, const std::string& error);
+
+ private:
+  std::string webstore_item_id_;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_

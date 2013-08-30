@@ -97,8 +97,11 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<
     extensions::FileBrowserPrivateSetPreferencesFunction>();
   registry->RegisterFunction<
+    extensions::FileBrowserPrivateInstallWebstoreItemFunction>();
+  registry->RegisterFunction<
     extensions::FileBrowserPrivateZipSelectionFunction>();
   registry->RegisterFunction<extensions::FileBrowserPrivateZoomFunction>();
+
   event_router_->ObserveFileSystemEvents();
 }
 
