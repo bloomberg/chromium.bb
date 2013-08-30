@@ -103,4 +103,28 @@ bool IsForceCompositingModeEnabled() {
          trial->group_name() == kGpuCompositingFieldTrialThreadEnabledName);
 }
 
+bool IsDelegatedRendererEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  bool enabled = false;
+
+#if defined(USE_AURA)
+  // Default to true on Aura, but allow override via flags.
+  enabled = true;
+#endif
+
+  // Flags override.
+  enabled |= command_line.HasSwitch(switches::kEnableDelegatedRenderer);
+  enabled &= !command_line.HasSwitch(switches::kDisableDelegatedRenderer);
+
+  // Needs compositing, and thread.
+  if (enabled &&
+      (!IsForceCompositingModeEnabled() || !IsThreadedCompositingEnabled())) {
+    enabled = false;
+    LOG(ERROR) << "Disabling delegated-rendering because it needs "
+               << "force-compositing-mode and threaded-compositing.";
+  }
+
+  return enabled;
+}
+
 }  // namespace content

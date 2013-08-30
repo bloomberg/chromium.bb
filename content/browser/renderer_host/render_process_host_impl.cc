@@ -821,6 +821,9 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
   if (content::IsThreadedCompositingEnabled())
     command_line->AppendSwitch(switches::kEnableThreadedCompositing);
 
+  if (content::IsDelegatedRendererEnabled())
+    command_line->AppendSwitch(switches::kEnableDelegatedRenderer);
+
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       command_line, GetID());
 

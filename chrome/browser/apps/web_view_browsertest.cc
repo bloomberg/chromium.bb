@@ -232,6 +232,9 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
           fake_speech_recognition_manager_.get());
     }
 
+    // We need real contexts, otherwise the embedder doesn't composite, but the
+    // guest does, and that isn't an expected configuration.
+    UseRealGLContexts();
     extensions::PlatformAppBrowserTest::SetUp();
   }
 

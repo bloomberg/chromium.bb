@@ -15,6 +15,9 @@ CONTENT_EXPORT bool IsThreadedCompositingEnabled();
 // Returns true if force-compositing-mode is on (via flags or field trial).
 CONTENT_EXPORT bool IsForceCompositingModeEnabled();
 
+// Returns true if delegated-renderer is on (via flags, or platform default).
+CONTENT_EXPORT bool IsDelegatedRendererEnabled();
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_GPU_COMPOSITOR_UTIL_H_

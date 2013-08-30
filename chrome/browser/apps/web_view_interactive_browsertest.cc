@@ -33,6 +33,13 @@ class WebViewInteractiveTest
         mouse_click_result_(false),
         first_click_(true) {}
 
+  virtual void SetUp() OVERRIDE {
+    // We need real contexts, otherwise the embedder doesn't composite, but the
+    // guest does, and that isn't an expected configuration.
+    UseRealGLContexts();
+    extensions::PlatformAppBrowserTest::SetUp();
+  }
+
   void MoveMouseInsideWindowWithListener(gfx::Point point,
                                          const std::string& message) {
     ExtensionTestMessageListener move_listener(message, false);
@@ -195,7 +202,7 @@ class WebViewInteractiveTest
 
     const testing::TestInfo* const test_info =
             testing::UnitTest::GetInstance()->current_test_info();
-    const std::string& prefix = "DragDropWithinWebView";
+    const std::string& prefix = "FLAKY_DragDropWithinWebView";
     if (!strncmp(test_info->name(), prefix.c_str(), prefix.size())) {
       // In the drag drop test we add 20px padding to the page body because on
       // windows if we get too close to the edge of the window the resize cursor
@@ -615,7 +622,8 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_PopupPositioningMoved) {
 // but the tests don't work on anything except chromeos for now. This is because
 // of simulating mouse drag code's dependency on platforms.
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DragDropWithinWebView) {
+// http://crbug.com/281001
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, FLAKY_DragDropWithinWebView) {
   SetupTest(
       "web_view/dnd_within_webview",
       "/extensions/platform_apps/web_view/dnd_within_webview/guest.html");
@@ -625,10 +633,11 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DragDropWithinWebView) {
   content::RunAllPendingInMessageLoop();
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
-  base::MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&WebViewInteractiveTest::DragTestStep1,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      base::TimeDelta::FromMilliseconds(1000));
   run_loop.Run();
 }
 #endif  // (defined(OS_CHROMEOS))

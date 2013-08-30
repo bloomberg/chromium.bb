@@ -253,6 +253,9 @@ class BrowserPluginHostTest : public ContentBrowserTest {
 #if defined(OS_WIN) && !defined(USE_AURA)
     UseRealGLBindings();
 #endif
+    // We need real contexts, otherwise the embedder doesn't composite, but the
+    // guest does, and that isn't an expected configuration.
+    UseRealGLContexts();
 
     ContentBrowserTest::SetUp();
   }

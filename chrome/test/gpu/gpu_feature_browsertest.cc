@@ -169,9 +169,11 @@ class GpuFeatureTest : public InProcessBrowserTest {
   std::string trace_events_json_;
 };
 
-#if defined(OS_WIN) || defined(ADDRESS_SANITIZER)
+#if defined(OS_WIN) || defined(ADDRESS_SANITIZER) || defined(USE_AURA)
 // This test is flaky on Windows. http://crbug.com/177113
 // Also fails under AddressSanitizer. http://crbug.com/185178
+// It fundamentally doesn't test the right thing on Aura.
+// http://crbug.com/280675
 #define MAYBE_AcceleratedCompositingAllowed DISABLED_AcceleratedCompositingAllowed
 #else
 #define MAYBE_AcceleratedCompositingAllowed AcceleratedCompositingAllowed
