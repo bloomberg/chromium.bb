@@ -6,9 +6,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS new TextDecoder('utf-8').decode(new Uint8Array(utf8)) is "z¢水𝄞􏿽"
 PASS new TextDecoder('utf-16le').decode(new Uint8Array(utf16le)) is "z¢水𝄞􏿽"
 PASS new TextDecoder('utf-16be').decode(new Uint8Array(utf16be)) is "z¢水𝄞􏿽"
-FAIL new TextDecoder('utf-8').decode(new Uint8Array(utf8_bom.concat(utf8))) should be z¢水𝄞􏿽. Was ﻿z¢水𝄞􏿽.
-FAIL new TextDecoder('utf-16le').decode(new Uint8Array(utf16le_bom.concat(utf16le))) should be z¢水𝄞􏿽. Was ﻿z¢水𝄞􏿽.
-FAIL new TextDecoder('utf-16be').decode(new Uint8Array(utf16be_bom.concat(utf16be))) should be z¢水𝄞􏿽. Was ﻿z¢水𝄞􏿽.
+PASS new TextDecoder('utf-8').decode(new Uint8Array(utf8_bom.concat(utf8))) is "z¢水𝄞􏿽"
+PASS new TextDecoder('utf-16le').decode(new Uint8Array(utf16le_bom.concat(utf16le))) is "z¢水𝄞􏿽"
+PASS new TextDecoder('utf-16be').decode(new Uint8Array(utf16be_bom.concat(utf16be))) is "z¢水𝄞􏿽"
 PASS new TextDecoder('utf-8').decode(new Uint8Array(utf16le_bom.concat(utf8))) is not "z¢水𝄞􏿽"
 PASS new TextDecoder('utf-8').decode(new Uint8Array(utf16be_bom.concat(utf8))) is not "z¢水𝄞􏿽"
 PASS new TextDecoder('utf-16le').decode(new Uint8Array(utf8_bom.concat(utf16le))) is not "z¢水𝄞􏿽"

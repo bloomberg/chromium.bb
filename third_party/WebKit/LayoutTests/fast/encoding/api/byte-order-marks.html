@@ -33,5 +33,7 @@ shouldNotBe("new TextDecoder('utf-16le').decode(new Uint8Array(utf16be_bom.conca
 shouldNotBe("new TextDecoder('utf-16be').decode(new Uint8Array(utf8_bom.concat(utf16be)))", JSON.stringify(string));
 shouldNotBe("new TextDecoder('utf-16be').decode(new Uint8Array(utf16le_bom.concat(utf16be)))", JSON.stringify(string));
 
+// FIXME: Add tests where the BOM is split across buffers.
+
 </script>
 <script src="../../js/resources/js-test-post.js"></script>

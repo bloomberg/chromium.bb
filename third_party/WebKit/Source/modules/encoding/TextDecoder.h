@@ -61,6 +61,7 @@ private:
     WTF::TextEncoding m_encoding;
     OwnPtr<WTF::TextCodec> m_codec;
     bool m_fatal;
+    bool m_bomSeen;
 };
 
 } // namespace WebCore

@@ -59,6 +59,7 @@ TextDecoder::TextDecoder(const String& encoding, bool fatal)
     : m_encoding(encoding)
     , m_codec(newTextCodec(m_encoding))
     , m_fatal(fatal)
+    , m_bomSeen(false)
 {
 }
 
@@ -96,6 +97,16 @@ String TextDecoder::decode(ArrayBufferView* input, const Dictionary& options, Ex
         es.throwDOMException(EncodingError, "The encoded data was not valid.");
         return String();
     }
+
+    if (!m_bomSeen && !s.isEmpty()) {
+        m_bomSeen = true;
+        String name(m_encoding.name());
+        if ((name == "UTF-8" || name == "UTF-16LE" || name == "UTF-16BE") && s[0] == 0xFEFF)
+            s.remove(0);
+    }
+
+    if (flush)
+        m_bomSeen = false;
 
     return s;
 }
