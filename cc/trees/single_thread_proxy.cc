@@ -101,7 +101,7 @@ void SingleThreadProxy::SetVisible(bool visible) {
   layer_tree_host_impl_->SetVisible(visible);
 
   // Changing visibility could change ShouldComposite().
-  layer_tree_host_impl_->UpdateBackgroundAnimateTicking(!ShouldComposite());
+  UpdateBackgroundAnimateTicking();
 }
 
 void SingleThreadProxy::CreateAndInitializeOutputSurface() {
@@ -271,7 +271,7 @@ void SingleThreadProxy::Stop() {
 
 void SingleThreadProxy::OnCanDrawStateChanged(bool can_draw) {
   DCHECK(Proxy::IsImplThread());
-  layer_tree_host_impl_->UpdateBackgroundAnimateTicking(!ShouldComposite());
+  UpdateBackgroundAnimateTicking();
 }
 
 void SingleThreadProxy::NotifyReadyToActivate() {
@@ -433,6 +433,12 @@ bool SingleThreadProxy::ShouldComposite() const {
          layer_tree_host_impl_->CanDraw();
 }
 
+void SingleThreadProxy::UpdateBackgroundAnimateTicking() {
+  DCHECK(Proxy::IsImplThread());
+  layer_tree_host_impl_->UpdateBackgroundAnimateTicking(
+      !ShouldComposite() && layer_tree_host_impl_->active_tree()->root_layer());
+}
+
 bool SingleThreadProxy::DoComposite(
     scoped_refptr<cc::ContextProvider> offscreen_context_provider,
     base::TimeTicks frame_begin_time,
@@ -456,14 +462,14 @@ bool SingleThreadProxy::DoComposite(
     // DrawLayers() depends on the result of PrepareToDraw(), it is guarded on
     // CanDraw() as well.
     if (!ShouldComposite() || (for_readback && !can_do_readback)) {
-      layer_tree_host_impl_->UpdateBackgroundAnimateTicking(true);
+      UpdateBackgroundAnimateTicking();
       return false;
     }
 
     layer_tree_host_impl_->Animate(
         layer_tree_host_impl_->CurrentFrameTimeTicks(),
         layer_tree_host_impl_->CurrentFrameTime());
-    layer_tree_host_impl_->UpdateBackgroundAnimateTicking(false);
+    UpdateBackgroundAnimateTicking();
 
     layer_tree_host_impl_->PrepareToDraw(frame, device_viewport_damage_rect);
     layer_tree_host_impl_->DrawLayers(frame, frame_begin_time);

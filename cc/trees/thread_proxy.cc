@@ -240,9 +240,14 @@ void ThreadProxy::SetVisibleOnImplThread(CompletionEvent* completion,
   TRACE_EVENT0("cc", "ThreadProxy::SetVisibleOnImplThread");
   layer_tree_host_impl_->SetVisible(visible);
   scheduler_on_impl_thread_->SetVisible(visible);
-  layer_tree_host_impl_->UpdateBackgroundAnimateTicking(
-      !scheduler_on_impl_thread_->WillDrawIfNeeded());
+  UpdateBackgroundAnimateTicking();
   completion->Signal();
+}
+
+void ThreadProxy::UpdateBackgroundAnimateTicking() {
+  layer_tree_host_impl_->UpdateBackgroundAnimateTicking(
+      !scheduler_on_impl_thread_->WillDrawIfNeeded() &&
+      layer_tree_host_impl_->active_tree()->root_layer());
 }
 
 void ThreadProxy::DoCreateAndInitializeOutputSurface() {
@@ -408,8 +413,7 @@ void ThreadProxy::OnCanDrawStateChanged(bool can_draw) {
   TRACE_EVENT1(
       "cc", "ThreadProxy::OnCanDrawStateChanged", "can_draw", can_draw);
   scheduler_on_impl_thread_->SetCanDraw(can_draw);
-  layer_tree_host_impl_->UpdateBackgroundAnimateTicking(
-      !scheduler_on_impl_thread_->WillDrawIfNeeded());
+  UpdateBackgroundAnimateTicking();
 }
 
 void ThreadProxy::NotifyReadyToActivate() {
@@ -936,8 +940,7 @@ void ThreadProxy::ScheduledActionCommit() {
 
   SetInputThrottledUntilCommitOnImplThread(false);
 
-  layer_tree_host_impl_->UpdateBackgroundAnimateTicking(
-      !scheduler_on_impl_thread_->WillDrawIfNeeded());
+  UpdateBackgroundAnimateTicking();
 
   next_frame_is_newly_committed_frame_on_impl_thread_ = true;
 
@@ -1010,7 +1013,7 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
   if (layer_tree_host_impl_->pending_tree())
     layer_tree_host_impl_->pending_tree()->UpdateDrawProperties();
   layer_tree_host_impl_->Animate(monotonic_time, wall_clock_time);
-  layer_tree_host_impl_->UpdateBackgroundAnimateTicking(false);
+  UpdateBackgroundAnimateTicking();
 
   base::TimeTicks start_time = base::TimeTicks::HighResNow();
   base::TimeDelta draw_duration_estimate = DrawDurationEstimate();
@@ -1057,7 +1060,6 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
     result.did_draw = true;
   }
   layer_tree_host_impl_->DidDrawAllLayers(frame);
-
   layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
 
   // Check for a pending CompositeAndReadback.
@@ -1507,6 +1509,8 @@ void ThreadProxy::DidActivatePendingTree() {
     completion_event_for_commit_held_on_tree_activation_->Signal();
     completion_event_for_commit_held_on_tree_activation_ = NULL;
   }
+
+  UpdateBackgroundAnimateTicking();
 
   commit_to_activate_duration_history_.InsertSample(
       base::TimeTicks::HighResNow() - commit_complete_time_);

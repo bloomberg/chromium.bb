@@ -68,6 +68,7 @@ class TestHooks : public AnimationDelegate {
   virtual void DidDeferCommit() {}
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
                                        bool visible) {}
+  virtual base::TimeDelta LowFrequencyAnimationInterval() const;
 
   // Implementation of AnimationDelegate:
   virtual void NotifyAnimationStarted(double time) OVERRIDE {}

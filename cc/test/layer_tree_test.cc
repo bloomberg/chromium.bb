@@ -37,6 +37,10 @@ bool TestHooks::PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
   return true;
 }
 
+base::TimeDelta TestHooks::LowFrequencyAnimationInterval() const {
+  return base::TimeDelta::FromMilliseconds(16);
+}
+
 // Adapts LayerTreeHostImpl for test. Runs real code, then invokes test hooks.
 class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
  public:
@@ -169,7 +173,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   }
 
   virtual base::TimeDelta LowFrequencyAnimationInterval() const OVERRIDE {
-    return base::TimeDelta::FromMilliseconds(16);
+    return test_hooks_->LowFrequencyAnimationInterval();
   }
 
  private:

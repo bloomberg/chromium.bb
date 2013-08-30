@@ -128,6 +128,8 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
       time_source_->SetActive(active);
   }
 
+  bool Active() const { return time_source_->Active(); }
+
  private:
   LayerTreeHostImplTimeSourceAdapter(
       LayerTreeHostImpl* layer_tree_host_impl,
@@ -256,6 +258,8 @@ void LayerTreeHostImpl::CommitComplete() {
       ManageTiles();
   } else {
     active_tree_->set_needs_update_draw_properties();
+    if (time_source_client_adapter_ && time_source_client_adapter_->Active())
+      DCHECK(active_tree_->root_layer());
   }
 
   client_->SendManagedMemoryStats();
@@ -825,6 +829,8 @@ void LayerTreeHostImpl::MainThreadHasStoppedFlinging() {
 void LayerTreeHostImpl::UpdateBackgroundAnimateTicking(
     bool should_background_tick) {
   DCHECK(proxy_->IsImplThread());
+  if (should_background_tick)
+    DCHECK(active_tree_->root_layer());
 
   bool enabled = should_background_tick &&
                  !animation_registrar_->active_animation_controllers().empty();
@@ -1503,6 +1509,9 @@ void LayerTreeHostImpl::ActivatePendingTree() {
   client_->DidActivatePendingTree();
   if (!tree_activation_callback_.is_null())
     tree_activation_callback_.Run();
+
+  if (time_source_client_adapter_ && time_source_client_adapter_->Active())
+    DCHECK(active_tree_->root_layer());
 }
 
 void LayerTreeHostImpl::SetVisible(bool visible) {

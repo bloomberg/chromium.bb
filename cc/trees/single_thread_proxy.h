@@ -93,6 +93,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   void DidSwapFrame();
 
   bool ShouldComposite() const;
+  void UpdateBackgroundAnimateTicking();
 
   // Accessed on main thread only.
   LayerTreeHost* layer_tree_host_;

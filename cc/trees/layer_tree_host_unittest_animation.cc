@@ -104,9 +104,8 @@ class LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback
   int num_animates_;
 };
 
-// Temporarily suppressed per crbug.com/280706.
-//MULTI_THREAD_TEST_F(
-//    LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback);
+MULTI_THREAD_TEST_F(
+    LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback);
 
 // Add a layer animation and confirm that
 // LayerTreeHostImpl::updateAnimationState does get called and continues to
@@ -293,6 +292,136 @@ class LayerTreeHostAnimationTestTickAnimationWhileBackgrounded
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestTickAnimationWhileBackgrounded);
+
+// Ensures that animations do not tick when we are backgrounded and
+// and we have an empty active tree.
+class LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree
+    : public LayerTreeHostAnimationTest {
+ protected:
+  LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree()
+      : active_tree_was_animated_(false) {}
+
+  virtual base::TimeDelta LowFrequencyAnimationInterval() const OVERRIDE {
+    return base::TimeDelta::FromMilliseconds(4);
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostAddAnimationToMainThread(layer_tree_host()->root_layer());
+  }
+
+  virtual void NotifyAnimationFinished(double time) OVERRIDE {
+    // Replace animated commits with an empty tree.
+    layer_tree_host()->SetRootLayer(make_scoped_refptr<Layer>(NULL));
+  }
+
+  virtual void DidCommit() OVERRIDE {
+    // This alternates setting an empty tree and a non-empty tree with an
+    // animation.
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        // Wait for NotifyAnimationFinished to commit an empty tree.
+        break;
+      case 2:
+        SetupTree();
+        AddOpacityTransitionToLayer(
+            layer_tree_host()->root_layer(), 0.000001, 0, 0.5, true);
+        break;
+      case 3:
+        // Wait for NotifyAnimationFinished to commit an empty tree.
+        break;
+      case 4:
+        EndTest();
+        break;
+    }
+  }
+
+  virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    // At the start of every commit, block activations and make sure
+    // we are backgrounded.
+    host_impl->BlockNotifyReadyToActivateForTesting(true);
+    PostSetVisibleToMainThread(false);
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    if (!host_impl->settings().impl_side_painting) {
+      // There are no activations to block if we're not impl-side-painting,
+      // so just advance the test immediately.
+      if (host_impl->active_tree()->source_frame_number() < 3)
+        UnblockActivations(host_impl);
+      return;
+    }
+
+    // We block activation for several ticks to make sure that, even though
+    // there is a pending tree with animations, we still do not background
+    // tick if the active tree is empty.
+    if (host_impl->pending_tree()->source_frame_number() < 3) {
+      base::MessageLoopProxy::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(
+              &LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree::
+                   UnblockActivations,
+              base::Unretained(this),
+              host_impl),
+          4 * LowFrequencyAnimationInterval());
+    }
+  }
+
+  virtual void UnblockActivations(LayerTreeHostImpl* host_impl) {
+    host_impl->BlockNotifyReadyToActivateForTesting(false);
+  }
+
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    active_tree_was_animated_ = false;
+
+    // Verify that commits are actually alternating with empty / non-empty
+    // trees.
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case 0:
+      case 2:
+        EXPECT_TRUE(host_impl->active_tree()->root_layer());
+        break;
+      case 1:
+      case 3:
+        EXPECT_FALSE(host_impl->active_tree()->root_layer());
+        break;
+    }
+
+    if (host_impl->active_tree()->source_frame_number() < 3) {
+      // Initiate the next commit after a delay to give us a chance to
+      // background tick if the active tree isn't empty.
+      base::MessageLoopProxy::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(
+              &LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree::
+                   InitiateNextCommit,
+              base::Unretained(this),
+              host_impl),
+          4 * LowFrequencyAnimationInterval());
+    }
+  }
+
+  virtual void WillAnimateLayers(LayerTreeHostImpl* host_impl,
+                                 base::TimeTicks monotonic_time) OVERRIDE {
+    EXPECT_TRUE(host_impl->active_tree()->root_layer());
+    active_tree_was_animated_ = true;
+  }
+
+  void InitiateNextCommit(LayerTreeHostImpl* host_impl) {
+    // Verify that we actually animated when we should have.
+    bool has_active_tree = host_impl->active_tree()->root_layer();
+    EXPECT_EQ(has_active_tree, active_tree_was_animated_);
+
+    // The next commit is blocked until we become visible again.
+    PostSetVisibleToMainThread(true);
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  bool active_tree_was_animated_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree);
 
 // Ensure that an animation's timing function is respected.
 class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
