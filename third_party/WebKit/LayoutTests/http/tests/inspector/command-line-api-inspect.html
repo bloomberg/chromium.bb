@@ -26,7 +26,14 @@ function test()
     function evalAndDump(expression, next)
     {
         InspectorTest.addResult("\n");
-        InspectorTest.evaluateInConsoleAndDump(expression, next);
+        InspectorTest.evaluateInConsole(expression, dumpCallback);
+        function dumpCallback(text)
+        {
+            text = text.replace(/Test of session.*/, "Test of session storage...");
+            InspectorTest.addResult(expression + " = " + text);
+            if (next)
+                next();
+        }
     }
 
     InspectorTest.runTestSuite([

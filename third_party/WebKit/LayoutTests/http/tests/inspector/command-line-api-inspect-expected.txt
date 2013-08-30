@@ -35,5 +35,5 @@ Running: testRevealSessionStorage
 
 WebInspector.inspect called with: Storage
 WebInspector.inspect's hints are: ["domStorageId"]
-inspect(sessionStorage) = Storage {inspector: "Test of session storage reveal in inspector"}
+inspect(sessionStorage) = Storage {inspector: "Test of session storage...
 
