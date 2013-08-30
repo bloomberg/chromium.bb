@@ -27,7 +27,7 @@
 #ifndef ResourceResponse_h
 #define ResourceResponse_h
 
-#include "core/fileapi/File.h"
+#include "core/platform/network/BlobData.h"
 #include "core/platform/network/HTTPHeaderMap.h"
 #include "core/platform/network/ResourceLoadInfo.h"
 #include "core/platform/network/ResourceLoadTiming.h"
@@ -168,8 +168,8 @@ public:
     unsigned short remotePort() const { return m_remotePort; }
     void setRemotePort(unsigned short value) { m_remotePort = value; }
 
-    const File* downloadedFile() const { return m_downloadedFile.get(); }
-    void setDownloadedFile(PassRefPtr<File> downloadedFile) { m_downloadedFile = downloadedFile; }
+    const String& downloadedFilePath() const { return m_downloadedFilePath; }
+    void setDownloadedFilePath(const String&);
 
     // Extra data associated with this response.
     ExtraData* extraData() const { return m_extraData.get(); }
@@ -263,8 +263,12 @@ private:
     // Remote port number of the socket which fetched this resource.
     unsigned short m_remotePort;
 
-    // The downloaded file if the load streamed to a file.
-    RefPtr<File> m_downloadedFile;
+    // The downloaded file path if the load streamed to a file.
+    String m_downloadedFilePath;
+
+    // The handle to the downloaded file to ensure the underlying file will not
+    // be deleted.
+    RefPtr<BlobDataHandle> m_downloadedFileHandle;
 
     // ExtraData associated with the response.
     RefPtr<ExtraData> m_extraData;
@@ -299,7 +303,8 @@ public:
     double m_responseTime;
     String m_remoteIPAddress;
     unsigned short m_remotePort;
-    String m_downloadFilePath;
+    String m_downloadedFilePath;
+    RefPtr<BlobDataHandle> m_downloadedFileHandle;
 };
 
 } // namespace WebCore

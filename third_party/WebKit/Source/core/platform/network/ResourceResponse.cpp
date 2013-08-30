@@ -134,9 +134,11 @@ PassOwnPtr<ResourceResponse> ResourceResponse::adopt(PassOwnPtr<CrossThreadResou
     response->m_responseTime = data->m_responseTime;
     response->m_remoteIPAddress = data->m_remoteIPAddress;
     response->m_remotePort = data->m_remotePort;
+    response->m_downloadedFilePath = data->m_downloadedFilePath;
+    response->m_downloadedFileHandle = data->m_downloadedFileHandle;
 
-    // Bug https://bugs.webkit.org/show_bug.cgi?id=60397 this doesn't support m_downloadedFile,
-    // or whatever values may be present in the opaque m_extraData structure.
+    // Bug https://bugs.webkit.org/show_bug.cgi?id=60397 this doesn't support
+    // whatever values may be present in the opaque m_extraData structure.
 
     return response.release();
 }
@@ -167,9 +169,11 @@ PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
     data->m_responseTime = m_responseTime;
     data->m_remoteIPAddress = m_remoteIPAddress.string().isolatedCopy();
     data->m_remotePort = m_remotePort;
+    data->m_downloadedFilePath = m_downloadedFilePath.isolatedCopy();
+    data->m_downloadedFileHandle = m_downloadedFileHandle;
 
-    // Bug https://bugs.webkit.org/show_bug.cgi?id=60397 this doesn't support m_downloadedFile,
-    // or whatever values may be present in the opaque m_extraData structure.
+    // Bug https://bugs.webkit.org/show_bug.cgi?id=60397 this doesn't support
+    // whatever values may be present in the opaque m_extraData structure.
 
     return data.release();
 }
@@ -535,6 +539,19 @@ PassRefPtr<ResourceLoadInfo> ResourceResponse::resourceLoadInfo() const
 void ResourceResponse::setResourceLoadInfo(PassRefPtr<ResourceLoadInfo> loadInfo)
 {
     m_resourceLoadInfo = loadInfo;
+}
+
+void ResourceResponse::setDownloadedFilePath(const String& downloadedFilePath)
+{
+    m_downloadedFilePath = downloadedFilePath;
+    if (m_downloadedFilePath.isEmpty()) {
+        m_downloadedFileHandle.clear();
+        return;
+    }
+    OwnPtr<BlobData> blobData = BlobData::create();
+    blobData->appendFile(m_downloadedFilePath);
+    blobData->detachFromCurrentThread();
+    m_downloadedFileHandle = BlobDataHandle::create(blobData.release(), -1);
 }
 
 bool ResourceResponse::compare(const ResourceResponse& a, const ResourceResponse& b)
