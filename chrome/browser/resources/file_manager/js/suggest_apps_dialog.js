@@ -77,7 +77,7 @@ function SuggestAppsDialog(parentNode) {
   this.frame_.id = 'suggest-app-dialog';
 
   this.webviewContainer_ = this.document_.createElement('div');
-  this.webviewContainer_.id = 'app-list';
+  this.webviewContainer_.id = 'webview-container';
   this.frame_.insertBefore(this.webviewContainer_, this.text_.nextSibling);
 
   this.buttons_ = this.document_.createElement('div');
@@ -215,17 +215,20 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
 
     this.webviewContainer_.innerHTML =
         '<webview id="cws-widget" partition="persist:cwswidgets"></webview>';
-    var webView = this.container_.querySelector('#cws-widget');
-    webView.style.width = WEBVIEW_WIDTH + 'px';
-    webView.style.height = WEBVIEW_HEIGHT + 'px';
-    webView.request.onBeforeSendHeaders.addListener(
+    this.webviewContainer_.style.width = WEBVIEW_WIDTH + 'px';
+    this.webviewContainer_.style.height = WEBVIEW_HEIGHT + 'px';
+
+    var webview = this.container_.querySelector('#cws-widget');
+    webview.style.width = WEBVIEW_WIDTH + 'px';
+    webview.style.height = WEBVIEW_HEIGHT + 'px';
+    webview.request.onBeforeSendHeaders.addListener(
         this.authorizeRequest_.bind(this),
         {urls: [this.widgetOrigin_ + '/*']},
         ['blocking', 'requestHeaders']);
-    webView.focus();
+    webview.focus();
 
     this.webviewClient_ = new CWSContainerClient(
-        webView,
+        webview,
         extension, mime,
         WEBVIEW_WIDTH, WEBVIEW_HEIGHT,
         this.widgetUrl_, this.widgetOrigin_);
