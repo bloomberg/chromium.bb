@@ -43,7 +43,6 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   bool never_timeout;
   base::Time timestamp;
   string16 expanded_message;
-  string16 context_message;
   gfx::Image image;
   std::vector<NotificationItem> items;
   int progress;
@@ -101,13 +100,6 @@ class MESSAGE_CENTER_EXPORT Notification {
   }
   void set_expanded_message(const string16& expanded_message) {
     optional_fields_.expanded_message = expanded_message;
-  }
-
-  const string16& context_message() const {
-    return optional_fields_.context_message;
-  }
-  void set_context_message(const string16& context_message) {
-    optional_fields_.context_message = context_message;
   }
 
   const std::vector<NotificationItem>& items() const {

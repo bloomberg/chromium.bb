@@ -53,9 +53,6 @@ namespace notifications {
     // Main notification content.
     DOMString? message;
 
-    // Alternate notification content with a lower-weight font.
-    DOMString? contextMessage;
-
     // Priority ranges from -2 to 2. -2 is lowest priority. 2 is highest. Zero
     // is default.
     long? priority;

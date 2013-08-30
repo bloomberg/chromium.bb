@@ -284,9 +284,6 @@ bool NotificationsApiFunction::CreateNotification(
           UTF8ToUTF16(*options->expanded_message);
     }
 
-    if (options->context_message)
-      optional_fields.context_message = UTF8ToUTF16(*options->context_message);
-
     bool has_image = NotificationBitmapToGfxImage(options->image_bitmap.get(),
                                                   &optional_fields.image);
     // We should have an image if and only if the type is an image type.
@@ -386,9 +383,6 @@ bool NotificationsApiFunction::UpdateNotification(
         optional_fields.buttons.push_back(info);
       }
     }
-
-    if (options->context_message)
-      notification->set_context_message(UTF8ToUTF16(*options->context_message));
 
     if (options->expanded_message) {
       notification->set_expanded_message(

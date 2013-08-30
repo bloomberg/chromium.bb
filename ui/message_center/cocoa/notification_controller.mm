@@ -203,9 +203,6 @@
 // Initializes message_ in the given frame.
 - (void)configureBodyInFrame:(NSRect)rootFrame;
 
-// Initializes contextMessage_ in the given frame.
-- (void)configureContextMessageInFrame:(NSRect)rootFrame;
-
 // Creates a NSTextField that the caller owns configured as a label in a
 // notification.
 - (NSTextField*)newLabelWithFrame:(NSRect)frame;
@@ -263,10 +260,6 @@
   [self configureBodyInFrame:rootFrame];
   [rootView addSubview:message_];
 
-  // Create the context message body.
-  [self configureContextMessageInFrame:rootFrame];
-  [rootView addSubview:contextMessage_];
-
   // Populate the data.
   [self updateNotification:notification_];
 }
@@ -292,14 +285,8 @@
 
   CGFloat messageTopGap =
       roundf([[message_ font] ascender] - [[message_ font] capHeight]);
-  CGFloat messageBottomGap = roundf(fabs([[message_ font] descender]));
   CGFloat messagePadding =
       message_center::kTextTopPadding - titleBottomGap - messageTopGap;
-
-  CGFloat contextMessageTopGap = roundf(
-      [[contextMessage_ font] ascender] - [[contextMessage_ font] capHeight]);
-  CGFloat contextMessagePadding =
-      message_center::kTextTopPadding - messageBottomGap - contextMessageTopGap;
 
   // Set the title and recalculate the frame.
   [title_ setStringValue:base::SysUTF16ToNSString(
@@ -313,50 +300,26 @@
   // Set the message and recalculate the frame.
   [message_ setStringValue:base::SysUTF16ToNSString(
       [self wrapText:notification_->message()
-            forField:message_
+            forField:title_
        maxNumberOfLines:message_center::kMessageExpandedLineLimit])];
+  [message_ setHidden:NO];
   [message_ sizeToFit];
   NSRect messageFrame = [message_ frame];
-
-  // If there are list items, then the message_ view should not be displayed.
-  const std::vector<message_center::NotificationItem>& items =
-      notification->items();
-  if (items.size() > 0) {
-    [message_ setHidden:YES];
-    messageFrame.origin.y = titleFrame.origin.y;
-    messageFrame.size.height = 0;
-  } else {
-    [message_ setHidden:NO];
-    messageFrame.origin.y =
-        NSMinY(titleFrame) - messagePadding - NSHeight(messageFrame);
-    messageFrame.size.height = NSHeight([message_ frame]);
-  }
-
-  // Set the context message and recalculate the frame.
-  [contextMessage_ setStringValue:base::SysUTF16ToNSString(
-      [self wrapText:notification_->context_message()
-            forField:contextMessage_
-       maxNumberOfLines:message_center::kContextMessageLineLimit])];
-  [contextMessage_ sizeToFit];
-  NSRect contextMessageFrame = [contextMessage_ frame];
-
-  if (notification_->context_message().empty()) {
-    [contextMessage_ setHidden:YES];
-    contextMessageFrame.origin.y = messageFrame.origin.y;
-    contextMessageFrame.size.height = 0;
-  } else {
-    [contextMessage_ setHidden:NO];
-    contextMessageFrame.origin.y =
-        NSMinY(messageFrame) -
-        contextMessagePadding -
-        NSHeight(contextMessageFrame);
-    contextMessageFrame.size.height = NSHeight([contextMessage_ frame]);
-  }
+  messageFrame.origin.y =
+      NSMinY(titleFrame) - messagePadding - NSHeight(messageFrame);
+  messageFrame.size.height = NSHeight([message_ frame]);
 
   // Create the list item views (up to a maximum).
   [listItemView_ removeFromSuperview];
+  const std::vector<message_center::NotificationItem>& items =
+      notification->items();
   NSRect listFrame = NSZeroRect;
   if (items.size() > 0) {
+    // If there are list items, then the message_ view should not be displayed.
+    [message_ setHidden:YES];
+    messageFrame.origin.y = titleFrame.origin.y;
+    messageFrame.size.height = 0;
+
     listFrame = [self currentContentRect];
     listFrame.origin.y = 0;
     listFrame.size.height = 0;
@@ -385,10 +348,10 @@
     }
     // TODO(thakis): The spacing is not completely right.
     CGFloat listTopPadding =
-        message_center::kTextTopPadding - contextMessageTopGap;
+        message_center::kTextTopPadding - messageTopGap;
     listFrame.size.height = y;
     listFrame.origin.y =
-        NSMinY(contextMessageFrame) - listTopPadding - NSHeight(listFrame);
+        NSMinY(titleFrame) - listTopPadding - NSHeight(listFrame);
     [listItemView_ setFrame:listFrame];
     [[self view] addSubview:listItemView_];
   }
@@ -398,7 +361,7 @@
   NSRect progressBarFrame = NSZeroRect;
   if (notification->type() == message_center::NOTIFICATION_TYPE_PROGRESS) {
     progressBarFrame = [self currentContentRect];
-    progressBarFrame.origin.y = NSMinY(contextMessageFrame) -
+    progressBarFrame.origin.y = NSMinY(messageFrame) -
         message_center::kProgressBarTopPadding -
         message_center::kProgressBarThickness;
     progressBarFrame.size.height = message_center::kProgressBarThickness;
@@ -413,7 +376,7 @@
 
   // If the bottom-most element so far is out of the rootView's bounds, resize
   // the view.
-  CGFloat minY = NSMinY(contextMessageFrame);
+  CGFloat minY = NSMinY(messageFrame);
   if (listItemView_ && NSMinY(listFrame) < minY)
     minY = NSMinY(listFrame);
   if (progressBarView_ && NSMinY(progressBarFrame) < minY)
@@ -423,7 +386,6 @@
     rootFrame.size.height += delta;
     titleFrame.origin.y += delta;
     messageFrame.origin.y += delta;
-    contextMessageFrame.origin.y += delta;
     listFrame.origin.y += delta;
     progressBarFrame.origin.y += delta;
   }
@@ -494,7 +456,6 @@
   rootFrame.size.height += NSHeight(frame);
   titleFrame.origin.y += NSHeight(frame);
   messageFrame.origin.y += NSHeight(frame);
-  contextMessageFrame.origin.y += NSHeight(frame);
   listFrame.origin.y += NSHeight(frame);
   progressBarFrame.origin.y += NSHeight(frame);
 
@@ -506,7 +467,6 @@
     rootFrame.size.height += bottomAdjust;
     titleFrame.origin.y += bottomAdjust;
     messageFrame.origin.y += bottomAdjust;
-    contextMessageFrame.origin.y += bottomAdjust;
     listFrame.origin.y += bottomAdjust;
     progressBarFrame.origin.y += bottomAdjust;
   }
@@ -514,7 +474,6 @@
   [[self view] setFrame:rootFrame];
   [title_ setFrame:titleFrame];
   [message_ setFrame:messageFrame];
-  [contextMessage_ setFrame:contextMessageFrame];
   [listItemView_ setFrame:listFrame];
   [progressBarView_ setFrame:progressBarFrame];
 
@@ -652,19 +611,8 @@
   message_.reset([self newLabelWithFrame:frame]);
   [message_ setAutoresizingMask:NSViewMinYMargin];
   [message_ setTextColor:gfx::SkColorToCalibratedNSColor(
-      message_center::kRegularTextColor)];
-  [message_ setFont:
-      [NSFont messageFontOfSize:message_center::kMessageFontSize]];
-}
-
-- (void)configureContextMessageInFrame:(NSRect)rootFrame {
-  NSRect frame = [self currentContentRect];
-  frame.size.height = 0;
-  contextMessage_.reset([self newLabelWithFrame:frame]);
-  [contextMessage_ setAutoresizingMask:NSViewMinYMargin];
-  [contextMessage_ setTextColor:gfx::SkColorToCalibratedNSColor(
       message_center::kDimTextColor)];
-  [contextMessage_ setFont:
+  [message_ setFont:
       [NSFont messageFontOfSize:message_center::kMessageFontSize]];
 }
 

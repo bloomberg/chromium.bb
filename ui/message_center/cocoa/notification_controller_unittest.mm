@@ -84,10 +84,6 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   return message_.get();
 }
 
-- (NSTextField*)contextMessageView {
-  return contextMessage_.get();
-}
-
 - (NSView*)listItemView {
   return listItemView_.get();
 }
@@ -276,7 +272,6 @@ TEST_F(NotificationControllerTest, List) {
       UTF8ToUTF16("Second title"),
       UTF8ToUTF16("second slightly longer message"));
   optional.items.push_back(item2);
-  optional.context_message = UTF8ToUTF16("Context Message");
 
   scoped_ptr<message_center::Notification> notification(
       new message_center::Notification(
@@ -298,7 +293,6 @@ TEST_F(NotificationControllerTest, List) {
 
   EXPECT_FALSE([[controller titleView] isHidden]);
   EXPECT_TRUE([[controller messageView] isHidden]);
-  EXPECT_FALSE([[controller contextMessageView] isHidden]);
 
   EXPECT_EQ(2u, [[[controller listItemView] subviews] count]);
   EXPECT_LT(NSMaxY([[controller listItemView] frame]),
