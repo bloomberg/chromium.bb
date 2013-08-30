@@ -21,4 +21,7 @@ class SmallProfileCreator(profile_creator.ProfileCreator):
   def MeasurePage(self, _, tab, results):
     # Multiple tabs would help make this faster, but that can't be done until
     # crbug.com/258113 is fixed.
-    tab.WaitForDocumentReadyStateToBeComplete()
+    
+    # Can't use WaitForDocumentReadyStateToBeComplete() here due to
+    # crbug.com/280750 .
+    tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
