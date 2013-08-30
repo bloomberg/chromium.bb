@@ -868,7 +868,6 @@
             ],
           },
           'sources': [
-            'app/app_host_exe.ver',
             'app/chrome_exe.ver',
             'app/chrome_dll.ver',
             'app/nacl64_exe.ver',

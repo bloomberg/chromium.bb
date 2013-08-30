@@ -96,7 +96,6 @@ void CreateIconAndSetRelaunchDetails(
       shortcut_info.extension_id,
       shortcut_info.profile_path);
 
-  // TODO(benwells): Change this to use app_host.exe.
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
      NOTREACHED();

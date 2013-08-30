@@ -1966,7 +1966,6 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
-            'app_host',
             'browser_tests_exe_pdb_workaround',
             'chrome_version_resources',
             'security_tests',  # run time dependency
