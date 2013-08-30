@@ -12,8 +12,8 @@
 #include "cc/input/scrollbar.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/layers/painted_scrollbar_layer.h"
-#include "cc/layers/painted_scrollbar_layer_impl.h"
+#include "cc/layers/scrollbar_layer_impl_base.h"
+#include "cc/layers/scrollbar_layer_interface.h"
 
 namespace cc {
 
@@ -155,19 +155,19 @@ void UpdateScrollbarLayerPointersRecursiveInternal(
     return;
 
   RawPtrLayerImplMap::const_iterator iter =
-      new_layers->find(scrollbar_layer->id());
-  PaintedScrollbarLayerImpl* scrollbar_layer_impl =
+      new_layers->find(layer->id());
+  ScrollbarLayerImplBase* scrollbar_layer_impl =
       iter != new_layers->end()
-          ? static_cast<PaintedScrollbarLayerImpl*>(iter->second)
+          ? static_cast<ScrollbarLayerImplBase*>(iter->second)
           : NULL;
-  iter = new_layers->find(scrollbar_layer->scroll_layer_id());
+  iter = new_layers->find(scrollbar_layer->ScrollLayerId());
   LayerImpl* scroll_layer_impl =
       iter != new_layers->end() ? iter->second : NULL;
 
   DCHECK(scrollbar_layer_impl);
   DCHECK(scroll_layer_impl);
 
-  if (scrollbar_layer->Orientation() == HORIZONTAL)
+  if (scrollbar_layer->orientation() == HORIZONTAL)
     scroll_layer_impl->SetHorizontalScrollbarLayer(scrollbar_layer_impl);
   else
     scroll_layer_impl->SetVerticalScrollbarLayer(scrollbar_layer_impl);
@@ -175,7 +175,7 @@ void UpdateScrollbarLayerPointersRecursiveInternal(
 
 void UpdateScrollbarLayerPointersRecursive(const RawPtrLayerImplMap* new_layers,
                                            Layer* layer) {
-  UpdateScrollbarLayerPointersRecursiveInternal<Layer, PaintedScrollbarLayer>(
+  UpdateScrollbarLayerPointersRecursiveInternal<Layer, ScrollbarLayerInterface>(
       new_layers, layer);
 }
 
@@ -183,7 +183,7 @@ void UpdateScrollbarLayerPointersRecursive(const RawPtrLayerImplMap* new_layers,
                                            LayerImpl* layer) {
   UpdateScrollbarLayerPointersRecursiveInternal<
       LayerImpl,
-      PaintedScrollbarLayerImpl>(new_layers, layer);
+      ScrollbarLayerImplBase>(new_layers, layer);
 }
 
 // static

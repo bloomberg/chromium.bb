@@ -6,11 +6,11 @@
 #define WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_SCROLLBAR_LAYER_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "third_party/WebKit/public/platform/WebScrollbar.h"
 #include "third_party/WebKit/public/platform/WebScrollbarLayer.h"
 #include "webkit/renderer/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace WebKit {
-class WebScrollbar;
 class WebScrollbarThemeGeometry;
 class WebScrollbarThemePainter;
 }
@@ -25,6 +25,9 @@ class WebScrollbarLayerImpl : public WebKit::WebScrollbarLayer {
       WebKit::WebScrollbar* scrollbar,
       WebKit::WebScrollbarThemePainter painter,
       WebKit::WebScrollbarThemeGeometry* geometry);
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebScrollbarLayerImpl(
+      WebKit::WebScrollbar::Orientation orientation,
+      int thumb_thickness);
   virtual ~WebScrollbarLayerImpl();
 
   // WebKit::WebScrollbarLayer implementation.

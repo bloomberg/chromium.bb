@@ -37,12 +37,18 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(
     scoped_ptr<Scrollbar> scrollbar,
     int scroll_layer_id)
     : scrollbar_(scrollbar.Pass()),
-      scroll_layer_id_(scroll_layer_id) {
+      scroll_layer_id_(scroll_layer_id),
+      thumb_thickness_(scrollbar_->ThumbThickness()),
+      thumb_length_(scrollbar_->ThumbLength()) {
   if (!scrollbar_->IsOverlay())
     SetShouldScrollOnMainThread(true);
 }
 
 PaintedScrollbarLayer::~PaintedScrollbarLayer() {}
+
+int PaintedScrollbarLayer::ScrollLayerId() const {
+  return scroll_layer_id_;
+}
 
 void PaintedScrollbarLayer::SetScrollLayerId(int id) {
   if (id == scroll_layer_id_)
@@ -56,7 +62,7 @@ bool PaintedScrollbarLayer::OpacityCanAnimateOnImplThread() const {
   return scrollbar_->IsOverlay();
 }
 
-ScrollbarOrientation PaintedScrollbarLayer::Orientation() const {
+ScrollbarOrientation PaintedScrollbarLayer::orientation() const {
   return scrollbar_->Orientation();
 }
 
@@ -66,9 +72,6 @@ int PaintedScrollbarLayer::MaxTextureSize() {
 }
 
 float PaintedScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
-  if (layer_tree_host()->settings().solid_color_scrollbars)
-    return scale;
-
   // If the scaled content_bounds() is bigger than the max texture size of the
   // device, we need to clamp it by rescaling, since content_bounds() is used
   // below to set the texture size.
@@ -107,23 +110,9 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   PaintedScrollbarLayerImpl* scrollbar_layer =
       static_cast<PaintedScrollbarLayerImpl*>(layer);
 
-  if (layer_tree_host() &&
-      layer_tree_host()->settings().solid_color_scrollbars) {
-    int thickness_override =
-        layer_tree_host()->settings().solid_color_scrollbar_thickness_dip;
-    if (thickness_override != -1) {
-      scrollbar_layer->SetThumbThickness(thickness_override);
-    } else {
-      if (Orientation() == HORIZONTAL)
-        scrollbar_layer->SetThumbThickness(bounds().height());
-      else
-        scrollbar_layer->SetThumbThickness(bounds().width());
-    }
-  } else {
-    scrollbar_layer->SetThumbThickness(thumb_thickness_);
-  }
+  scrollbar_layer->SetThumbThickness(thumb_thickness_);
   scrollbar_layer->SetThumbLength(thumb_length_);
-  if (Orientation() == HORIZONTAL) {
+  if (orientation() == HORIZONTAL) {
     scrollbar_layer->SetTrackStart(
         track_rect_.x() - location_.x());
     scrollbar_layer->SetTrackLength(track_rect_.width());
@@ -144,7 +133,7 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   needs_push_properties_ = true;
 }
 
-PaintedScrollbarLayer* PaintedScrollbarLayer::ToScrollbarLayer() {
+ScrollbarLayerInterface* PaintedScrollbarLayer::ToScrollbarLayer() {
   return this;
 }
 
@@ -174,7 +163,7 @@ gfx::Rect PaintedScrollbarLayer::ScrollbarLayerRectToContentRect(
 
 gfx::Rect PaintedScrollbarLayer::OriginThumbRect() const {
   gfx::Size thumb_size;
-  if (Orientation() == HORIZONTAL) {
+  if (orientation() == HORIZONTAL) {
     thumb_size =
         gfx::Size(scrollbar_->ThumbLength(), scrollbar_->ThumbThickness());
   } else {
@@ -200,8 +189,7 @@ bool PaintedScrollbarLayer::Update(ResourceUpdateQueue* queue,
   gfx::Rect scaled_track_rect = ScrollbarLayerRectToContentRect(
       gfx::Rect(location_, bounds()));
 
-  if (layer_tree_host()->settings().solid_color_scrollbars ||
-      track_rect_.IsEmpty() || scaled_track_rect.IsEmpty())
+  if (track_rect_.IsEmpty() || scaled_track_rect.IsEmpty())
     return false;
 
   {
@@ -225,7 +213,6 @@ bool PaintedScrollbarLayer::Update(ResourceUpdateQueue* queue,
 scoped_refptr<UIResourceBitmap> PaintedScrollbarLayer::RasterizeScrollbarPart(
     gfx::Rect rect,
     ScrollbarPart part) {
-  DCHECK(!layer_tree_host()->settings().solid_color_scrollbars);
   DCHECK(!rect.size().IsEmpty());
 
   scoped_refptr<UIResourceBitmap> bitmap =

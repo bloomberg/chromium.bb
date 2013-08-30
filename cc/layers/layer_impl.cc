@@ -750,7 +750,7 @@ scoped_ptr<LayerImpl> LayerImpl::TakeReplicaLayer() {
   return replica_layer_.Pass();
 }
 
-PaintedScrollbarLayerImpl* LayerImpl::ToScrollbarLayer() {
+ScrollbarLayerImplBase* LayerImpl::ToScrollbarLayer() {
   return NULL;
 }
 
@@ -1132,14 +1132,14 @@ void LayerImpl::DidBecomeActive() {
   }
 }
 void LayerImpl::SetHorizontalScrollbarLayer(
-    PaintedScrollbarLayerImpl* scrollbar_layer) {
+    ScrollbarLayerImplBase* scrollbar_layer) {
   horizontal_scrollbar_layer_ = scrollbar_layer;
   if (horizontal_scrollbar_layer_)
     horizontal_scrollbar_layer_->set_scroll_layer_id(id());
 }
 
 void LayerImpl::SetVerticalScrollbarLayer(
-    PaintedScrollbarLayerImpl* scrollbar_layer) {
+    ScrollbarLayerImplBase* scrollbar_layer) {
   vertical_scrollbar_layer_ = scrollbar_layer;
   if (vertical_scrollbar_layer_)
     vertical_scrollbar_layer_->set_scroll_layer_id(id());

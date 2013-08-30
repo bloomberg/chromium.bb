@@ -346,6 +346,7 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
 
   settings->setPinchOverlayScrollbarThickness(
       prefs.pinch_overlay_scrollbar_thickness);
+  settings->setUseSolidColorScrollbars(prefs.use_solid_color_scrollbars);
 }
 
 }  // namespace content

@@ -9,8 +9,8 @@
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/debug/traced_value.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
-#include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
+#include "cc/layers/scrollbar_layer_impl_base.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "ui/gfx/size_conversions.h"
@@ -257,6 +257,9 @@ void LayerTreeImpl::ApplyScrollDeltasSinceBeginFrame() {
       root_layer(), base::Bind(&ApplyScrollDeltasSinceBeginFrameTo));
 }
 
+// TODO(wjmaclean) This needs to go away, and be replaced with a single core
+// of login that works for both scrollbar layer types. This is already planned
+// as part of the larger pinch-zoom re-factoring viewport.
 void LayerTreeImpl::UpdateSolidColorScrollbars() {
   DCHECK(settings().solid_color_scrollbars);
 
@@ -271,13 +274,13 @@ void LayerTreeImpl::UpdateSolidColorScrollbars() {
   if (RootContainerLayer())
     vertical_adjust = layer_tree_host_impl_->VisibleViewportSize().height() -
                       RootContainerLayer()->bounds().height();
-  if (PaintedScrollbarLayerImpl* horiz =
+  if (ScrollbarLayerImplBase* horiz =
           root_scroll->horizontal_scrollbar_layer()) {
     horiz->SetVerticalAdjust(vertical_adjust);
     horiz->SetVisibleToTotalLengthRatio(
         scrollable_viewport.width() / ScrollableSize().width());
   }
-  if (PaintedScrollbarLayerImpl* vertical =
+  if (ScrollbarLayerImplBase* vertical =
           root_scroll->vertical_scrollbar_layer()) {
     vertical->SetVerticalAdjust(vertical_adjust);
     vertical->SetVisibleToTotalLengthRatio(

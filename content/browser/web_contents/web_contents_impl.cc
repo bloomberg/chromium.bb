@@ -554,6 +554,7 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   }
 
 #if defined(OS_ANDROID)
+  prefs.use_solid_color_scrollbars = true;
   prefs.user_gesture_required_for_media_playback = !command_line.HasSwitch(
       switches::kDisableGestureRequirementForMediaPlayback);
 #endif

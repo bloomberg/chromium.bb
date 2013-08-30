@@ -78,7 +78,20 @@ WebScrollbarLayer* WebCompositorSupportImpl::createScrollbarLayer(
     WebScrollbar* scrollbar,
     WebScrollbarThemePainter painter,
     WebScrollbarThemeGeometry* geometry) {
+// TODO(wjmaclean) Remove the Android-specific if-clause here once the
+// Blink-side changes are made to call createSolidColorScrollbarLayer()
+// directly.
+#if defined(OS_ANDROID)
+  const int kThumbThickness = 3;
+  return new WebScrollbarLayerImpl(scrollbar->orientation(), kThumbThickness);
+#else
   return new WebScrollbarLayerImpl(scrollbar, painter, geometry);
+#endif
+}
+
+WebScrollbarLayer* WebCompositorSupportImpl::createSolidColorScrollbarLayer(
+      WebKit::WebScrollbar::Orientation orientation, int thumb_thickness) {
+  return new WebScrollbarLayerImpl(orientation, thumb_thickness);
 }
 
 WebAnimation* WebCompositorSupportImpl::createAnimation(

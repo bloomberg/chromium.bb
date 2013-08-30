@@ -34,6 +34,8 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
       WebKit::WebScrollbar* scrollbar,
       WebKit::WebScrollbarThemePainter painter,
       WebKit::WebScrollbarThemeGeometry*);
+  virtual WebKit::WebScrollbarLayer* createSolidColorScrollbarLayer(
+      WebKit::WebScrollbar::Orientation orientation, int thumb_thickness);
   virtual WebKit::WebAnimation* createAnimation(
       const WebKit::WebAnimationCurve& curve,
       WebKit::WebAnimation::TargetProperty target,

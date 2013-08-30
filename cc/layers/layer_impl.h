@@ -42,10 +42,10 @@ namespace cc {
 
 class LayerTreeHostImpl;
 class LayerTreeImpl;
-class PaintedScrollbarLayerImpl;
 class QuadSink;
 class Renderer;
 class ScrollbarAnimationController;
+class ScrollbarLayerImplBase;
 class Layer;
 
 struct AppendQuadsData;
@@ -161,7 +161,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   virtual void UpdateTilePriorities() {}
 
-  virtual PaintedScrollbarLayerImpl* ToScrollbarLayer();
+  virtual ScrollbarLayerImplBase* ToScrollbarLayer();
 
   // Returns true if this layer has content to draw.
   void SetDrawsContent(bool draws_content);
@@ -454,13 +454,13 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   void SetScrollbarOpacity(float opacity);
 
-  void SetHorizontalScrollbarLayer(PaintedScrollbarLayerImpl* scrollbar_layer);
-  PaintedScrollbarLayerImpl* horizontal_scrollbar_layer() {
+  void SetHorizontalScrollbarLayer(ScrollbarLayerImplBase* scrollbar_layer);
+  ScrollbarLayerImplBase* horizontal_scrollbar_layer() {
     return horizontal_scrollbar_layer_;
   }
 
-  void SetVerticalScrollbarLayer(PaintedScrollbarLayerImpl* scrollbar_layer);
-  PaintedScrollbarLayerImpl* vertical_scrollbar_layer() {
+  void SetVerticalScrollbarLayer(ScrollbarLayerImplBase* scrollbar_layer);
+  ScrollbarLayerImplBase* vertical_scrollbar_layer() {
     return vertical_scrollbar_layer_;
   }
 
@@ -618,8 +618,8 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   // Weak pointers to this layer's scrollbars, if it has them. Updated during
   // tree synchronization.
-  PaintedScrollbarLayerImpl* horizontal_scrollbar_layer_;
-  PaintedScrollbarLayerImpl* vertical_scrollbar_layer_;
+  ScrollbarLayerImplBase* horizontal_scrollbar_layer_;
+  ScrollbarLayerImplBase* vertical_scrollbar_layer_;
 
   ScopedPtrVector<CopyOutputRequest> copy_requests_;
 

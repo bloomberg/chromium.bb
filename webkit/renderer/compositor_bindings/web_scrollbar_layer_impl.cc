@@ -5,11 +5,23 @@
 #include "webkit/renderer/compositor_bindings/web_scrollbar_layer_impl.h"
 
 #include "cc/layers/painted_scrollbar_layer.h"
-#include "third_party/WebKit/public/platform/WebScrollbar.h"
+#include "cc/layers/scrollbar_layer_interface.h"
+#include "cc/layers/solid_color_scrollbar_layer.h"
 #include "webkit/renderer/compositor_bindings/scrollbar_impl.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 using cc::PaintedScrollbarLayer;
+using cc::SolidColorScrollbarLayer;
+
+namespace {
+
+cc::ScrollbarOrientation ConvertOrientation(
+    WebKit::WebScrollbar::Orientation orientation) {
+  return orientation == WebKit::WebScrollbar::Horizontal ? cc::HORIZONTAL
+    : cc::VERTICAL;
+}
+
+}  // namespace
 
 namespace webkit {
 
@@ -22,6 +34,14 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
               make_scoped_ptr(scrollbar),
               painter,
               make_scoped_ptr(geometry))).Pass(), 0))) {}
+
+WebScrollbarLayerImpl::WebScrollbarLayerImpl(
+    WebKit::WebScrollbar::Orientation orientation,
+    int thumb_thickness)
+    : layer_(new WebLayerImpl(
+          SolidColorScrollbarLayer::Create(ConvertOrientation(orientation),
+                                           thumb_thickness,
+                                           0))) {}
 
 WebScrollbarLayerImpl::~WebScrollbarLayerImpl() {}
 
