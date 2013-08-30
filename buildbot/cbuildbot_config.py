@@ -1210,6 +1210,12 @@ internal_paladin.add_config('alex-paladin',
   upload_hw_test_artifacts=True,
 )
 
+internal_paladin.add_config('bayleybay-paladin',
+  boards=['bayleybay'],
+  paladin_builder_name='bayleybay paladin',
+  important=False,
+)
+
 # x86 full compile
 internal_paladin.add_config('butterfly-paladin',
   full_paladin,
@@ -1468,6 +1474,12 @@ release_pgo.add_group('daisy-release-pgo',
 
 ### Release configs.
 
+_release.add_config('bayleybay-release',
+  boards=['bayleybay'],
+  hw_tests=[],
+  vm_tests=None,
+)
+
 _release.add_config('butterfly-release',
   boards=['butterfly'],
 )
@@ -1617,6 +1629,7 @@ _depthcharge_full_internal = full.derive(
 )
 
 _x86_firmware_boards = (
+  'bayleybay',
   'butterfly',
   'falco',
   'link',
@@ -1632,6 +1645,7 @@ _x86_firmware_boards = (
 )
 
 _x86_depthcharge_firmware_boards = (
+  'bayleybay',
   'link',
 )
 
