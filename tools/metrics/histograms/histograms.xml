@@ -5175,6 +5175,32 @@ other types of suffix sets.
   <summary>The version of glibc used. (Linux only)</summary>
 </histogram>
 
+<histogram name="Login.FailureReason" enum="LoginFailureReason">
+  <summary>Chrome OS login failure reason.</summary>
+</histogram>
+
+<histogram name="Login.PolicyFilesStatePerBoot" enum="LoginPolicyFilesState">
+  <summary>The state of Chrome OS owner key and device policy files.</summary>
+</histogram>
+
+<histogram name="Login.PromptToCompleteLoginTime" units="milliseconds">
+  <summary>
+    Time from first display of the login prompt until the user completes signing
+    in.
+  </summary>
+</histogram>
+
+<histogram name="Login.SuccessReason" enum="LoginSuccessReason">
+  <summary>Chrome OS login success reason.</summary>
+</histogram>
+
+<histogram name="Login.UserType" enum="LoginUserType">
+  <summary>
+    Chrome OS histogram that keeps track of the way a user logs in and whether
+    Chrome OS is running normal or developer mode.
+  </summary>
+</histogram>
+
 <histogram name="Media.AcceleratedCompositingActive" enum="BooleanSuccess">
   <summary>
     Whether accelerated compositing was used for HTML5 media rendering.
@@ -20679,6 +20705,93 @@ other types of suffix sets.
     Allow stale data (avoid doing a re-post)
   </int>
   <int value="9" label="PRERENDER_LOAD">Speculative prerendering of a page</int>
+</enum>
+
+<enum name="LoginFailureReason" type="int">
+  <int value="0" label="NONE">None</int>
+  <int value="1" label="COULD_NOT_MOUNT_CRYPTOHOME">
+    Could not mount cryptohome
+  </int>
+  <int value="2" label="COULD_NOT_MOUNT_TMPFS">Could not mount tmpfs</int>
+  <int value="3" label="COULD_NOT_UNMOUNT_CRYPTOHOME">
+    Could not unmount cryptohome
+  </int>
+  <int value="4" label="DATA_REMOVAL_FAILED">Data removal failed</int>
+  <int value="5" label="LOGIN_TIMED_OUT">Login timed out</int>
+  <int value="6" label="UNLOCK_FAILED">Unlock failed</int>
+  <int value="7" label="NETWORK_AUTH_FAILED">Network auth failed</int>
+</enum>
+
+<enum name="LoginPolicyFilesState" type="int">
+  <summary>Policy/owner key file state.</summary>
+  <int value="0" label="HEALTHY_R11">Healthy, pre-R11</int>
+  <int value="1" label="UNUSED">Unused</int>
+  <int value="2" label="HEALTHY">Healthy</int>
+  <int value="3" label="RESERVED">Reserved</int>
+  <int value="4" label="BAD_POLICY_R11">Key OK, policy bad, pre-R11</int>
+  <int value="5" label="UNUSED">Unused</int>
+  <int value="6" label="BAD_POLICY">Key OK, policy bad</int>
+  <int value="7" label="RESERVED">Reserved</int>
+  <int value="8" label="KEY_OK_NO_POLICY_R11">
+    Key OK, no policy, pre-R11 user (http://crosbug.com/24916)
+  </int>
+  <int value="9" label="UNUSED">Unused</int>
+  <int value="10" label="KEY_OK_NO_POLICY">Key OK, no policy</int>
+  <int value="11" label="RESERVED">Reserved</int>
+  <int value="12" label="RESERVED">Reserved</int>
+  <int value="13" label="RESERVED">Reserved</int>
+  <int value="14" label="RESERVED">Reserved</int>
+  <int value="15" label="RESERVED">Reserved</int>
+  <int value="16" label="BAD_KEY_R11">Key bad, policy OK, pre-R11</int>
+  <int value="17" label="UNUSED">Unused</int>
+  <int value="18" label="BAD_KEY">Key bad, policy OK</int>
+  <int value="19" label="RESERVED">Reserved</int>
+  <int value="20" label="BAD_KEY_BAD_POLICY_R11">
+    Key bad, policy bad, pre-R11
+  </int>
+  <int value="21" label="UNUSED">Unused</int>
+  <int value="22" label="BAD_KEY_BAD_POLICY">Key bad, policy bad</int>
+  <int value="23" label="RESERVED">Reserved</int>
+  <int value="24" label="BAD_KEY_NO_POLICY_R11">
+    Key bad, policy bad, pre-R11
+  </int>
+  <int value="25" label="UNUSED">Unused</int>
+  <int value="26" label="BAD_KEY_BAD_POLICY">Key bad, policy bad</int>
+  <int value="27" label="RESERVED">Reserved</int>
+  <int value="28" label="RESERVED">Reserved</int>
+  <int value="29" label="RESERVED">Reserved</int>
+  <int value="30" label="RESERVED">Reserved</int>
+  <int value="31" label="RESERVED">Reserved</int>
+  <int value="32" label="NO_KEY_R11">No key, policy OK, pre-R11</int>
+  <int value="33" label="UNUSED">Unused</int>
+  <int value="34" label="NO_KEY">No key, policy OK</int>
+  <int value="35" label="RESERVED">RESERVED</int>
+  <int value="36" label="NO_KEY_BAD_POLICY_R11">
+    No key, policy bad, pre-R11
+  </int>
+  <int value="37" label="UNUSED">Unused</int>
+  <int value="38" label="NO_KEY_BAD_POLICY">No key, bad policy</int>
+  <int value="39" label="RESERVED">Reserved</int>
+  <int value="40" label="NO_KEY_NO_POLICY_R11">Un-owned, pre-R11</int>
+  <int value="41" label="UNUSED">Unused</int>
+  <int value="42" label="NO_KEY_NO_POLICY">Un-owned</int>
+  <int value="43" label="RESERVED">Reserved</int>
+</enum>
+
+<enum name="LoginSuccessReason" type="int">
+  <int value="0" label="OFFLINE_AND_ONLINE">
+    Login success offline and online
+  </int>
+  <int value="1" label="OFFLINE_ONLY">Login success offline only</int>
+</enum>
+
+<enum name="LoginUserType" type="int">
+  <int value="0" label="INCOGNITO_NORMAL">Incognito Normal</int>
+  <int value="1" label="OWNER_NORMAL">Owner Normal</int>
+  <int value="2" label="OTHER_NORMAL">Other Normal</int>
+  <int value="3" label="INCOGNITO_DEVELOPER">Incognito Dev</int>
+  <int value="4" label="OWNER_DEVELOPER">Owner Dev</int>
+  <int value="5" label="OTHER_DEVELOPER">Other Dev</int>
 </enum>
 
 <enum name="MappedCSSProperties" type="int">
