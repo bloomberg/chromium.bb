@@ -681,9 +681,10 @@ void MetadataDatabase::UpdateByChangeList(
   WriteToDatabase(batch.Pass(), callback);
 }
 
-void MetadataDatabase::PopulateFolder(const std::string& folder_id,
-                                      const FileIDList& child_file_ids,
-                                      const SyncStatusCallback& callback) {
+void MetadataDatabase::PopulateFolderByChildList(
+    const std::string& folder_id,
+    const FileIDList& child_file_ids,
+    const SyncStatusCallback& callback) {
   TrackerSet trackers;
   if (!FindTrackersByFileID(folder_id, &trackers) ||
       !trackers.has_active()) {
@@ -711,11 +712,68 @@ void MetadataDatabase::PopulateFolder(const std::string& folder_id,
        itr != child_file_ids.end(); ++itr)
     CreateTrackerForParentAndFileID(*folder_tracker, *itr, batch.get());
   folder_tracker->set_needs_folder_listing(false);
-  if (!ShouldKeepDirty(*folder_tracker)) {
+  if (folder_tracker->dirty() && !ShouldKeepDirty(*folder_tracker)) {
     folder_tracker->set_dirty(false);
     dirty_trackers_.erase(folder_tracker);
   }
   PutTrackerToBatch(*folder_tracker, batch.get());
+
+  WriteToDatabase(batch.Pass(), callback);
+}
+
+void MetadataDatabase::UpdateTracker(int64 tracker_id,
+                                     const FileDetails& updated_details,
+                                     const SyncStatusCallback& callback) {
+  TrackerByID::iterator found = tracker_by_id_.find(tracker_id);
+  if (found == tracker_by_id_.end()) {
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
+    return;
+  }
+
+  FileTracker* tracker = found->second;
+  DCHECK(tracker);
+
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+
+  if (updated_details.deleted()) {
+    // The update deletes the local file.
+    FileByID::iterator found = file_by_id_.find(tracker->file_id());
+    if (found == file_by_id_.end() || found->second->details().deleted()) {
+      // Both the tracker and metadata have the deleted flag, now it's safe to
+      // delete the |tracker|.
+      RemoveTracker(tracker->tracker_id(), batch.get());
+    } else {
+      // The local file is deleted, but corresponding remote file isn't.
+      // Put the tracker back to the initial state.
+      tracker->clear_synced_details();
+      tracker->set_dirty(true);
+      tracker->set_active(false);
+      PutTrackerToBatch(*tracker, batch.get());
+    }
+
+    WriteToDatabase(batch.Pass(), callback);
+    return;
+  }
+
+  // Check if the tracker was retitled.  If it was, update the title and its
+  // index in advance.
+  if (!tracker->has_synced_details() ||
+      tracker->synced_details().title() != updated_details.title()) {
+    UpdateTrackerTitle(tracker, updated_details.title(), batch.get());
+  }
+
+  *tracker->mutable_synced_details() = updated_details;
+
+  // Activate the tracker if:
+  //   - There is no active tracker that tracks |tracker->file_id()|.
+  //   - There is no active tracker that has the same |parent| and |title|.
+  if (!tracker->active() && CanActivateTracker(*tracker))
+    MakeTrackerActive(tracker->tracker_id(), batch.get());
+  if (tracker->dirty() && !ShouldKeepDirty(*tracker)) {
+    tracker->set_dirty(false);
+    dirty_trackers_.erase(tracker);
+  }
+  PutTrackerToBatch(*tracker, batch.get());
 
   WriteToDatabase(batch.Pass(), callback);
 }
@@ -961,9 +1019,21 @@ void MetadataDatabase::CreateTrackerForParentAndFileID(
   tracker_by_id_[tracker_id] = tracker.release();
 }
 
+void MetadataDatabase::RemoveTracker(int64 tracker_id,
+                                     leveldb::WriteBatch* batch) {
+  RemoveTrackerInternal(tracker_id, batch, false);
+}
+
 void MetadataDatabase::RemoveTrackerIgnoringSiblings(
     int64 tracker_id,
     leveldb::WriteBatch* batch) {
+  RemoveTrackerInternal(tracker_id, batch, true);
+}
+
+void MetadataDatabase::RemoveTrackerInternal(
+    int64 tracker_id,
+    leveldb::WriteBatch* batch,
+    bool ignoring_siblings) {
   scoped_ptr<FileTracker> tracker(
       FindAndEraseItem(&tracker_by_id_, tracker_id));
   if (!tracker)
@@ -975,8 +1045,11 @@ void MetadataDatabase::RemoveTrackerIgnoringSiblings(
   EraseTrackerFromPathIndex(tracker.get());
 
   MarkTrackersDirtyByFileID(tracker->file_id(), batch);
-  // Do not mark the same path trackers as dirty, since the caller is deleting
-  // all its siblings.
+  if (!ignoring_siblings) {
+    MarkTrackersDirtyByPath(tracker->parent_tracker_id(),
+                            GetTrackerTitle(*tracker),
+                            batch);
+  }
   PutTrackerDeletionToBatch(tracker_id, batch);
 }
 
@@ -1139,7 +1212,27 @@ void MetadataDatabase::RecursiveMarkTrackerAsDirty(int64 root_tracker_id,
   }
 }
 
+bool MetadataDatabase::CanActivateTracker(const FileTracker& tracker) {
+  DCHECK(!tracker.active());
+  DCHECK_NE(service_metadata_->sync_root_tracker_id(), tracker.tracker_id());
+
+  if (HasActiveTrackerForFileID(tracker.file_id()))
+    return false;
+
+  if (tracker.app_id().empty())
+    return false;
+  if (!tracker.has_synced_details())
+    return false;
+  DCHECK(tracker.parent_tracker_id());
+
+  return !HasActiveTrackerForPath(tracker.parent_tracker_id(),
+                                  tracker.synced_details().title());
+}
+
 bool MetadataDatabase::ShouldKeepDirty(const FileTracker& tracker) const {
+  if (HasDisabledAppRoot(tracker))
+    return false;
+
   DCHECK(tracker.dirty());
   if (!tracker.has_synced_details())
     return true;
@@ -1147,17 +1240,18 @@ bool MetadataDatabase::ShouldKeepDirty(const FileTracker& tracker) const {
   FileByID::const_iterator found = file_by_id_.find(tracker.file_id());
   if (found == file_by_id_.end())
     return true;
-  const FileMetadata& file = *found->second;
+  const FileMetadata* file = found->second;
+  DCHECK(file);
 
   if (tracker.active()) {
     if (tracker.needs_folder_listing())
       return true;
-    if (tracker.synced_details().md5() != file.details().md5())
+    if (tracker.synced_details().md5() != file->details().md5())
       return true;
   }
 
   const FileDetails& local_details = tracker.synced_details();
-  const FileDetails& remote_details = file.details();
+  const FileDetails& remote_details = file->details();
 
   if (local_details.title() != remote_details.title())
     return true;
@@ -1165,6 +1259,76 @@ bool MetadataDatabase::ShouldKeepDirty(const FileTracker& tracker) const {
     return true;
 
   return false;
+}
+
+bool MetadataDatabase::HasDisabledAppRoot(const FileTracker& tracker) const {
+  TrackerByAppID::const_iterator found =
+      app_root_by_app_id_.find(tracker.app_id());
+  if (found == app_root_by_app_id_.end())
+    return false;
+
+  const FileTracker* app_root_tracker = found->second;
+  DCHECK(app_root_tracker);
+  return app_root_tracker->tracker_kind() == TRACKER_KIND_DISABLED_APP_ROOT;
+}
+
+bool MetadataDatabase::HasActiveTrackerForFileID(
+    const std::string& file_id) const {
+  TrackersByFileID::const_iterator found = trackers_by_file_id_.find(file_id);
+  return found != trackers_by_file_id_.end() && found->second.has_active();
+}
+
+bool MetadataDatabase::HasActiveTrackerForPath(int64 parent_tracker_id,
+                                               const std::string& title) const {
+  TrackersByParentAndTitle::const_iterator found_by_parent =
+      trackers_by_parent_and_title_.find(parent_tracker_id);
+  if (found_by_parent == trackers_by_parent_and_title_.end())
+    return false;
+
+  const TrackersByTitle& trackers_by_title = found_by_parent->second;
+  TrackersByTitle::const_iterator found = trackers_by_title.find(title);
+  return found != trackers_by_title.end() && found->second.has_active();
+}
+
+void MetadataDatabase::UpdateTrackerTitle(FileTracker* tracker,
+                                          const std::string& new_title,
+                                          leveldb::WriteBatch* batch) {
+  int64 parent_id = tracker->parent_tracker_id();
+  std::string old_title = GetTrackerTitle(*tracker);
+  DCHECK_NE(old_title, new_title);
+  DCHECK(!new_title.empty());
+
+  TrackersByTitle* trackers_by_title =
+      &trackers_by_parent_and_title_[parent_id];
+  TrackerSet* old_siblings = &(*trackers_by_title)[old_title];
+  TrackerSet* new_siblings = &(*trackers_by_title)[new_title];
+
+  old_siblings->Erase(tracker);
+  if (old_siblings->empty())
+    trackers_by_title->erase(old_title);
+  else
+    MarkTrackerSetDirty(old_siblings, batch);
+
+  if (tracker->active() && new_siblings->has_active()) {
+    // Inactivate existing active tracker.
+    FileTracker* obstacle = new_siblings->active_tracker();
+    new_siblings->Inactivate(obstacle);
+    DCHECK_EQ(TRACKER_KIND_REGULAR, obstacle->tracker_kind());
+
+    TrackerSet* same_file_id_trackers_to_obstacle =
+        &trackers_by_file_id_[obstacle->file_id()];
+    same_file_id_trackers_to_obstacle->Inactivate(obstacle);
+    MarkTrackerSetDirty(same_file_id_trackers_to_obstacle, batch);
+
+    obstacle->set_active(false);
+    PutTrackerToBatch(*obstacle, batch);
+
+    RemoveAllDescendantTrackers(obstacle->tracker_id(), batch);
+  }
+
+  tracker->mutable_synced_details()->set_title(new_title);
+  new_siblings->Insert(tracker);
+  PutTrackerToBatch(*tracker, batch);
 }
 
 void MetadataDatabase::WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,

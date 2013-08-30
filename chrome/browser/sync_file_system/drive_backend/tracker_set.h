@@ -33,6 +33,7 @@ class TrackerSet {
   void Inactivate(FileTracker* tracker);
 
   const FileTracker* active_tracker() const { return active_tracker_; }
+  FileTracker* active_tracker() { return active_tracker_; }
   const RawTrackerSet& tracker_set() const { return tracker_set_; }
 
   iterator begin() { return tracker_set_.begin(); }

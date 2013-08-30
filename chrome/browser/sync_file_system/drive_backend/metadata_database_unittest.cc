@@ -28,7 +28,11 @@ const int64 kInitialChangeID = 1234;
 const int64 kSyncRootTrackerID = 100;
 const char kSyncRootFolderID[] = "sync_root_folder_id";
 
+// This struct is used to setup initial state of the database in the test and
+// also used to match to the modified content of the database as the
+// expectation.
 struct TrackedFile {
+  // Holds the latest remote metadata which may be not-yet-synced to |tracker|.
   FileMetadata metadata;
   FileTracker tracker;
 
@@ -585,8 +589,17 @@ class MetadataDatabaseTest : public testing::Test {
   SyncStatusCode PopulateFolder(const std::string& folder_id,
                                 const FileIDList& listed_children) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    metadata_database_->PopulateFolder(
+    metadata_database_->PopulateFolderByChildList(
         folder_id, listed_children,
+        base::Bind(&SyncStatusResultCallback, &status));
+    message_loop_.RunUntilIdle();
+    return status;
+  }
+
+  SyncStatusCode UpdateTracker(const FileTracker& tracker) {
+    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
+    metadata_database_->UpdateTracker(
+        tracker.tracker_id(), tracker.synced_details(),
         base::Bind(&SyncStatusResultCallback, &status));
     message_loop_.RunUntilIdle();
     return status;
@@ -904,6 +917,57 @@ TEST_F(MetadataDatabaseTest, PopulateFolderTest_DisabledAppRoot) {
 
   disabled_app_root.tracker.set_dirty(false);
   disabled_app_root.tracker.set_needs_folder_listing(false);
+  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyReloadConsistency();
+}
+
+TEST_F(MetadataDatabaseTest, UpdateTrackerTest) {
+  TrackedFile sync_root(CreateTrackedSyncRoot());
+  TrackedFile app_root(CreateTrackedAppRoot(sync_root, "app_root"));
+  TrackedFile file(CreateTrackedFile(app_root, "file"));
+  file.tracker.set_dirty(true);
+  file.metadata.mutable_details()->set_title("renamed file");;
+
+  TrackedFile inactive_file(CreateTrackedFile(app_root, "inactive_file"));
+  inactive_file.tracker.set_active(false);
+  inactive_file.tracker.set_dirty(true);
+  inactive_file.metadata.mutable_details()->set_title("renamed inactive file");
+  inactive_file.metadata.mutable_details()->set_md5("modified_md5");
+
+  TrackedFile new_conflict(CreateTrackedFile(app_root, "new conflict file"));
+  new_conflict.tracker.set_dirty(true);
+  new_conflict.metadata.mutable_details()->set_title("renamed file");
+
+  const TrackedFile* tracked_files[] = {
+    &sync_root, &app_root, &file, &inactive_file, &new_conflict
+  };
+
+  SetUpDatabaseByTrackedFiles(tracked_files, arraysize(tracked_files));
+  EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
+  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyReloadConsistency();
+
+  *file.tracker.mutable_synced_details() = file.metadata.details();
+  file.tracker.set_dirty(false);
+  EXPECT_EQ(SYNC_STATUS_OK, UpdateTracker(file.tracker));
+  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyReloadConsistency();
+
+  *inactive_file.tracker.mutable_synced_details() =
+       inactive_file.metadata.details();
+  inactive_file.tracker.set_dirty(false);
+  inactive_file.tracker.set_active(true);
+  EXPECT_EQ(SYNC_STATUS_OK, UpdateTracker(inactive_file.tracker));
+  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyReloadConsistency();
+
+  *new_conflict.tracker.mutable_synced_details() =
+       new_conflict.metadata.details();
+  new_conflict.tracker.set_dirty(false);
+  new_conflict.tracker.set_active(true);
+  file.tracker.set_dirty(true);
+  file.tracker.set_active(false);
+  EXPECT_EQ(SYNC_STATUS_OK, UpdateTracker(new_conflict.tracker));
   VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
   VerifyReloadConsistency();
 }

@@ -191,9 +191,14 @@ class MetadataDatabase {
   // Adds |child_file_ids| to |folder_id| as its children.
   // This method affects the active tracker only.
   // If the tracker has no further change to sync, unmarks its dirty flag.
-  void PopulateFolder(const std::string& folder_id,
-                      const FileIDList& child_file_ids,
-                      const SyncStatusCallback& callback);
+  void PopulateFolderByChildList(const std::string& folder_id,
+                                 const FileIDList& child_file_ids,
+                                 const SyncStatusCallback& callback);
+
+  // Updates |synced_details| of the tracker with |updated_details|.
+  void UpdateTracker(int64 tracker_id,
+                     const FileDetails& updated_details,
+                     const SyncStatusCallback& callback);
 
  private:
   struct DirtyTrackerComparator {
@@ -233,8 +238,13 @@ class MetadataDatabase {
   void CreateTrackerForParentAndFileID(const FileTracker& parent_tracker,
                                        const std::string& file_id,
                                        leveldb::WriteBatch* batch);
+
+  void RemoveTracker(int64 tracker_id, leveldb::WriteBatch* batch);
   void RemoveTrackerIgnoringSiblings(int64 tracker_id,
                                      leveldb::WriteBatch* batch);
+  void RemoveTrackerInternal(int64 tracker_id,
+                             leveldb::WriteBatch* batch,
+                             bool ignoring_siblings);
   void MaybeAddTrackersForNewFile(const FileMetadata& file,
                                   leveldb::WriteBatch* batch);
 
@@ -256,7 +266,17 @@ class MetadataDatabase {
 
   void RecursiveMarkTrackerAsDirty(int64 root_tracker_id,
                                    leveldb::WriteBatch* batch);
+  bool CanActivateTracker(const FileTracker& tracker);
   bool ShouldKeepDirty(const FileTracker& tracker) const;
+
+  bool HasDisabledAppRoot(const FileTracker& tracker) const;
+  bool HasActiveTrackerForFileID(const std::string& file_id) const;
+  bool HasActiveTrackerForPath(int64 parent_tracker,
+                               const std::string& title) const;
+
+  void UpdateTrackerTitle(FileTracker* tracker,
+                          const std::string& new_title,
+                          leveldb::WriteBatch* batch);
 
   void WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
                        const SyncStatusCallback& callback);
