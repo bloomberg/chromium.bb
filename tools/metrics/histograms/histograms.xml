@@ -11998,11 +11998,37 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Prerender.LocalPredictorLoggedInLookupTime"
+    units="milliseconds">
+  <summary>
+    Time to perform the LoggedIn Lookup for the local predictor. This operation
+    checks whether a user his likely logged into a page that we would like to
+    prerender.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.LocalPredictorServiceLookupTime"
+    units="milliseconds">
+  <summary>
+    Time to perform the Service Lookup for the local predictor. This operation
+    queries a Google service to obtain pages to prerender, as well as whether
+    prerender candidate pages are likely safe for prerendering.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.LocalPredictorTimeUntilUsed" units="milliseconds">
   <summary>
     Time from when a prerendered page is started to when it is first used due to
     user navigation. If the page is never used, it is not included in this
     histogram.  This only refers to prerenders based on the local predictor.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.LocalPredictorURLLookupTime" units="milliseconds">
+  <summary>
+    Time to perform the URL Lookup for the local predictor. This operation
+    retrieves from the user's local browsing history the URLs corresponding to
+    URLIDs.
   </summary>
 </histogram>
 
@@ -22371,6 +22397,19 @@ other types of suffix sets.
   <int value="53" label="Issuing prerender, new prerender"/>
   <int value="54" label="Issuing prerender, cancelled old prerender"/>
   <int value="55" label="Continue prerender check fallthrough prerendering"/>
+  <int value="56" label="URL lookup success"/>
+  <int value="57" label="Prerender Service disabled"/>
+  <int value="58" label="Prerender Service issued lookup"/>
+  <int value="59" label="Prerender Service lookup timed out"/>
+  <int value="60" label="Prerender Service received result"/>
+  <int value="61" label="Prerender Service no record for result"/>
+  <int value="62" label="Prerender Service parsed correctly"/>
+  <int value="63" label="Prerender Service parse error"/>
+  <int value="64" label="Prerender Service parse error incorrect JSON"/>
+  <int value="65" label="Prerender Service hinting timed out"/>
+  <int value="66" label="Prerender Service hinting url lookup timed out"/>
+  <int value="67" label="Prerender Service candidate url lookup timed out"/>
+  <int value="68" label="Continue prerender check service whitelist"/>
 </enum>
 
 <enum name="PrerenderLocalVisitCoreTransition" type="int">
