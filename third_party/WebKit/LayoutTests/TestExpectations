@@ -1290,3 +1290,5 @@ crbug.com/282496 [ Linux SnowLeopard Lion Debug ] css3/filters/custom/composited
 
 # Pre-landing "binary" file (actually UTF-16) - enable with http://crrev.com/23532016
 Bug(jsbell) fast/encoding/utf-16-odd-byte.html [ Skip ]
+
+crbug.com/282620 [ XP Win7 ] fast/mediastream/RTCPeerConnection-stats.html [ Failure Pass ]
