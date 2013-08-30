@@ -21,6 +21,7 @@
 #ifndef SVGTextElement_h
 #define SVGTextElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGTextPositioningElement.h"
 
 namespace WebCore {
@@ -39,6 +40,12 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
 };
+
+inline SVGTextElement* toSVGTextElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::textTag));
+    return static_cast<SVGTextElement*>(node);
+}
 
 } // namespace WebCore
 
