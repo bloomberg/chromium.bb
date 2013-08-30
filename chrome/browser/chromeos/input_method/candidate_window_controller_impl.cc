@@ -7,6 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
+#include "ash/wm/window_animations.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -15,11 +18,6 @@
 #include "chrome/browser/chromeos/input_method/infolist_window_view.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_ASH)
-#include "ash/shell.h"
-#include "ash/shell_window_ids.h"
-#include "ash/wm/window_animations.h"
-#endif  // USE_ASH
 
 namespace chromeos {
 namespace input_method {
@@ -54,19 +52,14 @@ void CandidateWindowControllerImpl::CreateView() {
   // they should use WIDGET_OWNS_NATIVE_WIDGET ownership.
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   // Show the candidate window always on top
-#if defined(USE_ASH)
   params.parent = ash::Shell::GetContainer(
       ash::Shell::GetActiveRootWindow(),
       ash::internal::kShellWindowId_InputMethodContainer);
-#else
-  params.keep_on_top = true;
-#endif
   frame_->Init(params);
-#if defined(USE_ASH)
+
   views::corewm::SetWindowVisibilityAnimationType(
       frame_->GetNativeView(),
       views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-#endif  // USE_ASH
 
   // Create the candidate window.
   candidate_window_ = new CandidateWindowView(frame_.get());
@@ -79,11 +72,10 @@ void CandidateWindowControllerImpl::CreateView() {
   // Create the infolist window.
   infolist_window_.reset(new DelayableWidget);
   infolist_window_->Init(params);
-#if defined(USE_ASH)
+
   views::corewm::SetWindowVisibilityAnimationType(
       infolist_window_->GetNativeView(),
       views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-#endif  // USE_ASH
 
   InfolistWindowView* infolist_view = new InfolistWindowView;
   infolist_view->Init();
