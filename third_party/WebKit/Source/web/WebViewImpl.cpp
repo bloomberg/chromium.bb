@@ -1125,26 +1125,26 @@ WebRect WebViewImpl::widenRectWithinPageBounds(const WebRect& source, int target
     return WebRect(newX, source.y, newWidth, source.height);
 }
 
-void WebViewImpl::computeScaleAndScrollForBlockRect(const WebRect& blockRect, float padding, float& scale, WebPoint& scroll, bool& doubleTapShouldZoomOut)
+float WebViewImpl::legibleScale() const
+{
+    // Pages should be as legible as on desktop when at dpi scale, so no
+    // need to zoom in further when automatically determining zoom level
+    // (after double tap, find in page, etc), though the user should still
+    // be allowed to manually pinch zoom in further if they desire.
+    float legibleScale = 1;
+    if (page() && page()->settings().textAutosizingEnabled())
+        legibleScale *= page()->settings().textAutosizingFontScaleFactor();
+    return legibleScale;
+}
+
+void WebViewImpl::computeScaleAndScrollForBlockRect(const WebRect& blockRect, float padding, float defaultScaleWhenAlreadyLegible, float& scale, WebPoint& scroll)
 {
     scale = pageScaleFactor();
     scroll.x = scroll.y = 0;
 
     WebRect rect = blockRect;
 
-    bool scaleUnchanged = true;
     if (!rect.isEmpty()) {
-        // Pages should be as legible as on desktop when at dpi scale, so no
-        // need to zoom in further when automatically determining zoom level
-        // (after double tap, find in page, etc), though the user should still
-        // be allowed to manually pinch zoom in further if they desire.
-        const float defaultScaleWhenAlreadyLegible = minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
-        float legibleScale = 1;
-        if (page())
-            legibleScale *= page()->settings().textAutosizingFontScaleFactor();
-        if (legibleScale < defaultScaleWhenAlreadyLegible)
-            legibleScale = (scale == minimumPageScaleFactor()) ? defaultScaleWhenAlreadyLegible : minimumPageScaleFactor();
-
         float defaultMargin = doubleTapZoomContentDefaultMargin;
         float minimumMargin = doubleTapZoomContentMinimumMargin;
         // We want the margins to have the same physical size, which means we
@@ -1158,17 +1158,11 @@ void WebViewImpl::computeScaleAndScrollForBlockRect(const WebRect& blockRect, fl
                 static_cast<int>(minimumMargin * rect.width / m_size.width));
         // Fit block to screen, respecting limits.
         scale = static_cast<float>(m_size.width) / rect.width;
-        scale = min(scale, legibleScale);
+        scale = min(scale, legibleScale());
+        if (pageScaleFactor() < defaultScaleWhenAlreadyLegible)
+            scale = max(scale, defaultScaleWhenAlreadyLegible);
         scale = clampPageScaleFactorToLimits(scale);
-
-        scaleUnchanged = fabs(pageScaleFactor() - scale) < minScaleDifference;
     }
-
-    bool stillAtPreviousDoubleTapScale = (pageScaleFactor() == m_doubleTapZoomPageScaleFactor
-        && m_doubleTapZoomPageScaleFactor != minimumPageScaleFactor())
-        || m_doubleTapZoomPending;
-
-    doubleTapShouldZoomOut = rect.isEmpty() || scaleUnchanged || stillAtPreviousDoubleTapScale;
 
     // FIXME: If this is being called for auto zoom during find in page,
     // then if the user manually zooms in it'd be nice to preserve the
@@ -1269,13 +1263,19 @@ void WebViewImpl::animateDoubleTapZoom(const IntPoint& point)
 
     float scale;
     WebPoint scroll;
-    bool doubleTapShouldZoomOut;
 
-    computeScaleAndScrollForBlockRect(blockBounds, touchPointPadding, scale, scroll, doubleTapShouldZoomOut);
+    computeScaleAndScrollForBlockRect(blockBounds, touchPointPadding, minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio, scale, scroll);
+
+    bool stillAtPreviousDoubleTapScale = (pageScaleFactor() == m_doubleTapZoomPageScaleFactor
+        && m_doubleTapZoomPageScaleFactor != minimumPageScaleFactor())
+        || m_doubleTapZoomPending;
+
+    bool scaleUnchanged = fabs(pageScaleFactor() - scale) < minScaleDifference;
+    bool shouldZoomOut = blockBounds.isEmpty() || scaleUnchanged || stillAtPreviousDoubleTapScale;
 
     bool isAnimating;
 
-    if (doubleTapShouldZoomOut) {
+    if (shouldZoomOut) {
         scale = minimumPageScaleFactor();
         isAnimating = startPageScaleAnimation(mainFrameImpl()->frameView()->windowToContents(point), true, scale, doubleTapZoomAnimationDurationInSeconds);
     } else {
@@ -1303,9 +1303,8 @@ void WebViewImpl::zoomToFindInPageRect(const WebRect& rect)
 
     float scale;
     WebPoint scroll;
-    bool doubleTapShouldZoomOut;
 
-    computeScaleAndScrollForBlockRect(blockBounds, nonUserInitiatedPointPadding, scale, scroll, doubleTapShouldZoomOut);
+    computeScaleAndScrollForBlockRect(blockBounds, nonUserInitiatedPointPadding, minimumPageScaleFactor(), scale, scroll);
 
     startPageScaleAnimation(scroll, false, scale, findInPageAnimationDurationInSeconds);
 }
@@ -1317,9 +1316,8 @@ bool WebViewImpl::zoomToMultipleTargetsRect(const WebRect& rect)
 
     float scale;
     WebPoint scroll;
-    bool doubleTapShouldZoomOut;
 
-    computeScaleAndScrollForBlockRect(rect, nonUserInitiatedPointPadding, scale, scroll, doubleTapShouldZoomOut);
+    computeScaleAndScrollForBlockRect(rect, nonUserInitiatedPointPadding, minimumPageScaleFactor(), scale, scroll);
 
     if (scale <= pageScaleFactor())
         return false;
