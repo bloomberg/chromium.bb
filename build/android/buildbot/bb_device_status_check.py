@@ -41,7 +41,6 @@ def DeviceInfo(serial, options):
   device_build_type = device_adb.GetBuildType()
   device_product_name = device_adb.GetProductName()
 
-  setup_wizard_disabled = device_adb.GetSetupWizardStatus() == 'DISABLED'
   battery = device_adb.GetBatteryInfo()
   install_output = GetCmdOutput(
     ['%s/build/android/adb_install_apk.py' % constants.DIR_SOURCE_ROOT, '--apk',
@@ -76,9 +75,10 @@ def DeviceInfo(serial, options):
   errors = []
   if battery_level < 15:
     errors += ['Device critically low in battery. Turning off device.']
-  if (not setup_wizard_disabled and device_build_type != 'user' and
-      not options.no_provisioning_check):
-    errors += ['Setup wizard not disabled. Was it provisioned correctly?']
+  if not options.no_provisioning_check:
+    setup_wizard_disabled = device_adb.GetSetupWizardStatus() == 'DISABLED'
+    if not setup_wizard_disabled and device_build_type != 'user':
+      errors += ['Setup wizard not disabled. Was it provisioned correctly?']
   if device_product_name == 'mantaray' and ac_power != 'true':
     errors += ['Mantaray device not connected to AC power.']
   # TODO(navabi): Insert warning once we have a better handle of what install

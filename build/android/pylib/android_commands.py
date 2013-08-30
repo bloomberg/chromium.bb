@@ -1109,7 +1109,8 @@ class AndroidCommands(object):
   def GetSetupWizardStatus(self):
     """Returns the status of the device setup wizard (e.g. DISABLED)."""
     status = self.RunShellCommand('getprop ro.setupwizard.mode')[0]
-    assert status
+    # On some devices, the status is empty if not otherwise set. In such cases
+    # the caller should expect an empty string to be returned.
     return status
 
   def StartMonitoringLogcat(self, clear=True, logfile=None, filters=None):
