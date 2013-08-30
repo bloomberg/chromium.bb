@@ -138,7 +138,7 @@ void SVGCursorElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) cons
 {
     SVGElement::addSubresourceAttributeURLs(urls);
 
-    addSubresourceURL(urls, document()->completeURL(hrefCurrentValue()));
+    addSubresourceURL(urls, document().completeURL(hrefCurrentValue()));
 }
 
 }

@@ -222,7 +222,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     for (Vector<CSSAnimationUpdate::NewAnimation>::const_iterator iter = update->newAnimations().begin(); iter != update->newAnimations().end(); ++iter) {
         OwnPtr<CSSAnimations::EventDelegate> eventDelegate = adoptPtr(new EventDelegate(element, iter->name));
         RefPtr<Animation> animation = Animation::create(element, iter->animation->effect(), iter->animation->specified(), eventDelegate.release());
-        RefPtr<Player> player = element->document()->timeline()->play(animation.get());
+        RefPtr<Player> player = element->document().timeline()->play(animation.get());
         m_animations.set(iter->name, player.get());
     }
 }
@@ -238,8 +238,8 @@ void CSSAnimations::cancel()
 
 void CSSAnimations::EventDelegate::maybeDispatch(Document::ListenerType listenerType, AtomicString& eventName, double elapsedTime)
 {
-    if (m_target->document()->hasListenerType(listenerType))
-        m_target->document()->timeline()->addEventToDispatch(m_target, WebKitAnimationEvent::create(eventName, m_name, elapsedTime));
+    if (m_target->document().hasListenerType(listenerType))
+        m_target->document().timeline()->addEventToDispatch(m_target, WebKitAnimationEvent::create(eventName, m_name, elapsedTime));
 }
 
 void CSSAnimations::EventDelegate::onEventCondition(const TimedItem* timedItem, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration)

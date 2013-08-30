@@ -58,11 +58,11 @@ void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot* root)
     getSupportedKeySizes(keys);
 
     // Create a select element with one option element for each key size.
-    RefPtr<HTMLSelectElement> select = HTMLSelectElement::create(document());
+    RefPtr<HTMLSelectElement> select = HTMLSelectElement::create(&document());
     select->setPart(keygenSelectPseudoId);
     for (size_t i = 0; i < keys.size(); ++i) {
-        RefPtr<HTMLOptionElement> option = HTMLOptionElement::create(document());
-        option->appendChild(Text::create(document(), keys[i]));
+        RefPtr<HTMLOptionElement> option = HTMLOptionElement::create(&document());
+        option->appendChild(Text::create(&document(), keys[i]));
         select->appendChild(option);
     }
 
@@ -84,7 +84,7 @@ bool HTMLKeygenElement::appendFormData(FormDataList& encoding, bool)
     const AtomicString& keyType = fastGetAttribute(keytypeAttr);
     if (!keyType.isNull() && !equalIgnoringCase(keyType, "rsa"))
         return false;
-    String value = signedPublicKeyAndChallengeString(shadowSelect()->selectedIndex(), fastGetAttribute(challengeAttr), document()->baseURL());
+    String value = signedPublicKeyAndChallengeString(shadowSelect()->selectedIndex(), fastGetAttribute(challengeAttr), document().baseURL());
     if (value.isNull())
         return false;
     encoding.appendData(name(), value.utf8());

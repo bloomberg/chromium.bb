@@ -1285,10 +1285,10 @@ void CSSParser::parseSelector(const String& string, CSSSelectorList& selectorLis
 
 PassRefPtr<ImmutableStylePropertySet> CSSParser::parseInlineStyleDeclaration(const String& string, Element* element)
 {
-    Document* document = element->document();
-    CSSParserContext context = document->elementSheet()->contents()->parserContext();
-    context.mode = strictToCSSParserMode(element->isHTMLElement() && !document->inQuirksMode());
-    return CSSParser(context, UseCounter::getFrom(document)).parseDeclaration(string, document->elementSheet()->contents());
+    Document& document = element->document();
+    CSSParserContext context = document.elementSheet()->contents()->parserContext();
+    context.mode = strictToCSSParserMode(element->isHTMLElement() && !document.inQuirksMode());
+    return CSSParser(context, UseCounter::getFrom(&document)).parseDeclaration(string, document.elementSheet()->contents());
 }
 
 PassRefPtr<ImmutableStylePropertySet> CSSParser::parseDeclaration(const String& string, StyleSheetContents* contextStyleSheet)

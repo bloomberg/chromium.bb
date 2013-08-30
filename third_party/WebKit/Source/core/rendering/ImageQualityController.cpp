@@ -109,7 +109,7 @@ void ImageQualityController::highQualityRepaintTimerFired(Timer<ImageQualityCont
     m_animatedResizeIsActive = false;
 
     for (ObjectLayerSizeMap::iterator it = m_objectLayerSizeMap.begin(); it != m_objectLayerSizeMap.end(); ++it) {
-        if (Frame* frame = it->key->document()->frame()) {
+        if (Frame* frame = it->key->document().frame()) {
             // If this renderer's containing FrameView is in live resize, punt the timer and hold back for now.
             if (frame->view() && frame->view()->inLiveResize()) {
                 restartTimer();
@@ -159,7 +159,7 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, R
     LayoutSize scaledLayoutSize = currentTransform.mapSize(roundedIntSize(layoutSize));
 
     // If the containing FrameView is being resized, paint at low quality until resizing is finished.
-    if (Frame* frame = object->document()->frame()) {
+    if (Frame* frame = object->document().frame()) {
         bool frameViewIsCurrentlyInLiveResize = frame->view() && frame->view()->inLiveResize();
         if (frameViewIsCurrentlyInLiveResize) {
             set(object, innerMap, layer, scaledLayoutSize);

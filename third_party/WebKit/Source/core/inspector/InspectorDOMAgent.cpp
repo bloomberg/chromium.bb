@@ -503,7 +503,7 @@ int InspectorDOMAgent::pushNodeToFrontend(ErrorString* errorString, int document
     Document* document = assertDocument(errorString, documentNodeId);
     if (!document)
         return 0;
-    if (nodeToPush->document() != document) {
+    if (&nodeToPush->document() != document) {
         *errorString = "Node is not part of the document with given id";
         return 0;
     }
@@ -676,12 +676,12 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
         return;
 
     String markup = "<span " + text + "></span>";
-    RefPtr<DocumentFragment> fragment = element->document()->createDocumentFragment();
+    RefPtr<DocumentFragment> fragment = element->document().createDocumentFragment();
 
-    bool shouldIgnoreCase = element->document()->isHTMLDocument() && element->isHTMLElement();
+    bool shouldIgnoreCase = element->document().isHTMLDocument() && element->isHTMLElement();
     // Not all elements can represent the context (i.e. IFRAME), hence using document.body.
-    if (shouldIgnoreCase && element->document()->body())
-        fragment->parseHTML(markup, element->document()->body(), DisallowScriptingContent);
+    if (shouldIgnoreCase && element->document().body())
+        fragment->parseHTML(markup, element->document().body(), DisallowScriptingContent);
     else
         fragment->parseXML(markup, 0, DisallowScriptingContent);
 
@@ -748,7 +748,7 @@ void InspectorDOMAgent::setNodeName(ErrorString* errorString, int nodeId, const 
         return;
 
     TrackExceptionState es;
-    RefPtr<Element> newElem = oldNode->document()->createElement(tagName, es);
+    RefPtr<Element> newElem = oldNode->document().createElement(tagName, es);
     if (es.hadException())
         return;
 
@@ -1337,7 +1337,7 @@ void InspectorDOMAgent::getBoxModel(ErrorString* errorString, int nodeId, RefPtr
     }
 
     RenderObject* renderer = node->renderer();
-    Frame* frame = node->document()->frame();
+    Frame* frame = node->document().frame();
     FrameView* view = frame->view();
 
     IntRect boundingBox = pixelSnappedIntRect(view->contentsToRootView(renderer->absoluteBoundingBoxRect()));
@@ -1533,17 +1533,17 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > InspectorDOMAgent::build
 PassRefPtr<TypeBuilder::DOM::EventListener> InspectorDOMAgent::buildObjectForEventListener(const RegisteredEventListener& registeredEventListener, const AtomicString& eventType, Node* node, const String* objectGroupId)
 {
     RefPtr<EventListener> eventListener = registeredEventListener.listener;
-    Document* document = node->document();
+    Document& document = node->document();
     RefPtr<TypeBuilder::DOM::EventListener> value = TypeBuilder::DOM::EventListener::create()
         .setType(eventType)
         .setUseCapture(registeredEventListener.useCapture)
         .setIsAttribute(eventListener->isAttribute())
         .setNodeId(pushNodePathToFrontend(node))
-        .setHandlerBody(eventListenerHandlerBody(document, eventListener.get()));
+        .setHandlerBody(eventListenerHandlerBody(&document, eventListener.get()));
     if (objectGroupId) {
-        ScriptValue functionValue = eventListenerHandler(document, eventListener.get());
+        ScriptValue functionValue = eventListenerHandler(&document, eventListener.get());
         if (!functionValue.hasNoValue()) {
-            Frame* frame = document->frame();
+            Frame* frame = document.frame();
             if (frame) {
                 ScriptState* scriptState = eventListenerHandlerScriptState(frame, eventListener.get());
                 if (scriptState) {
@@ -1559,7 +1559,7 @@ PassRefPtr<TypeBuilder::DOM::EventListener> InspectorDOMAgent::buildObjectForEve
     String sourceName;
     String scriptId;
     int lineNumber;
-    if (eventListenerHandlerLocation(node->document(), eventListener.get(), sourceName, scriptId, lineNumber)) {
+    if (eventListenerHandlerLocation(&node->document(), eventListener.get(), sourceName, scriptId, lineNumber)) {
         RefPtr<TypeBuilder::Debugger::Location> location = TypeBuilder::Debugger::Location::create()
             .setScriptId(scriptId)
             .setLineNumber(lineNumber);
@@ -1883,7 +1883,7 @@ void InspectorDOMAgent::pushNodeByBackendIdToFrontend(ErrorString* errorString, 
 
 PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)
 {
-    Document* document = node->isDocumentNode() ? node->document() : node->ownerDocument();
+    Document* document = node->isDocumentNode() ? &node->document() : node->ownerDocument();
     Frame* frame = document ? document->frame() : 0;
     if (!frame)
         return 0;

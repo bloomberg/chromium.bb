@@ -214,7 +214,7 @@ bool RenderBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight() const
     // For percentage heights: The percentage is calculated with respect to the height of the generated box's
     // containing block. If the height of the containing block is not specified explicitly (i.e., it depends
     // on content height), and this element is not absolutely positioned, the value computes to 'auto'.
-    if (!logicalHeightLength.isPercent() || isOutOfFlowPositioned() || document()->inQuirksMode())
+    if (!logicalHeightLength.isPercent() || isOutOfFlowPositioned() || document().inQuirksMode())
         return false;
 
     // Anonymous block boxes are ignored when resolving percentage values that would refer to it:
@@ -540,10 +540,10 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
     bool shouldPaintBackgroundImage = bgImage && bgImage->canRender(this, style()->effectiveZoom());
 
     bool forceBackgroundToWhite = false;
-    if (document()->printing()) {
+    if (document().printing()) {
         if (style()->printColorAdjust() == PrintColorAdjustEconomy)
             forceBackgroundToWhite = true;
-        if (document()->settings() && document()->settings()->shouldPrintBackgrounds())
+        if (document().settings() && document().settings()->shouldPrintBackgrounds())
             forceBackgroundToWhite = false;
     }
 
@@ -674,20 +674,20 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
     if (isRoot) {
         isOpaqueRoot = true;
         if (!bgLayer->next() && !(bgColor.alpha() == 255) && view()->frameView()) {
-            Element* ownerElement = document()->ownerElement();
+            Element* ownerElement = document().ownerElement();
             if (ownerElement) {
                 if (!ownerElement->hasTagName(frameTag)) {
                     // Locate the <body> element using the DOM.  This is easier than trying
                     // to crawl around a render tree with potential :before/:after content and
                     // anonymous blocks created by inline <body> tags etc.  We can locate the <body>
                     // render object very easily via the DOM.
-                    HTMLElement* body = document()->body();
+                    HTMLElement* body = document().body();
                     if (body) {
                         // Can't scroll a frameset document anyway.
                         isOpaqueRoot = body->hasLocalName(framesetTag);
                     } else {
                         // SVG documents and XML documents with SVG root nodes are transparent.
-                        isOpaqueRoot = !document()->hasSVGRootNode();
+                        isOpaqueRoot = !document().hasSVGRootNode();
                     }
                 }
             } else

@@ -148,8 +148,7 @@ SVGSMILElement::~SVGSMILElement()
 
 void SVGSMILElement::clearResourceReferences()
 {
-    ASSERT(document());
-    document()->accessSVGExtensions()->removeAllTargetReferencesForElement(this);
+    document().accessSVGExtensions()->removeAllTargetReferencesForElement(this);
 }
 
 void SVGSMILElement::buildPendingResource()
@@ -168,7 +167,7 @@ void SVGSMILElement::buildPendingResource()
     if (href.isEmpty())
         target = parentNode() && parentNode()->isElementNode() ? toElement(parentNode()) : 0;
     else
-        target = SVGURIReference::targetElementFromIRIString(href, document(), &id);
+        target = SVGURIReference::targetElementFromIRIString(href, &document(), &id);
     SVGElement* svgTarget = target && target->isSVGElement() ? toSVGElement(target) : 0;
 
     if (svgTarget && !svgTarget->inDocument())
@@ -179,17 +178,17 @@ void SVGSMILElement::buildPendingResource()
 
     if (!svgTarget) {
         // Do not register as pending if we are already pending this resource.
-        if (document()->accessSVGExtensions()->isElementPendingResource(this, id))
+        if (document().accessSVGExtensions()->isElementPendingResource(this, id))
             return;
 
         if (!id.isEmpty()) {
-            document()->accessSVGExtensions()->addPendingResource(id, this);
+            document().accessSVGExtensions()->addPendingResource(id, this);
             ASSERT(hasPendingResources());
         }
     } else {
         // Register us with the target in the dependencies map. Any change of hrefElement
         // that leads to relayout/repainting now informs us, so we can react to it.
-        document()->accessSVGExtensions()->addElementReferencingTarget(this, svgTarget);
+        document().accessSVGExtensions()->addElementReferencingTarget(this, svgTarget);
     }
 }
 

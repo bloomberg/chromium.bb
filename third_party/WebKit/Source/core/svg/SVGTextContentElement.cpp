@@ -103,19 +103,19 @@ PassRefPtr<SVGAnimatedLength> SVGTextContentElement::textLength()
 
 unsigned SVGTextContentElement::getNumberOfChars()
 {
-    document()->updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheets();
     return SVGTextQuery(renderer()).numberOfCharacters();
 }
 
 float SVGTextContentElement::getComputedTextLength()
 {
-    document()->updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheets();
     return SVGTextQuery(renderer()).textLength();
 }
 
 float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchars, ExceptionState& es)
 {
-    document()->updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheets();
 
     unsigned numberOfChars = getNumberOfChars();
     if (charnum >= numberOfChars) {
@@ -131,7 +131,7 @@ float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchar
 
 SVGPoint SVGTextContentElement::getStartPositionOfChar(unsigned charnum, ExceptionState& es)
 {
-    document()->updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
         es.throwDOMException(IndexSizeError);
@@ -143,7 +143,7 @@ SVGPoint SVGTextContentElement::getStartPositionOfChar(unsigned charnum, Excepti
 
 SVGPoint SVGTextContentElement::getEndPositionOfChar(unsigned charnum, ExceptionState& es)
 {
-    document()->updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
         es.throwDOMException(IndexSizeError);
@@ -155,7 +155,7 @@ SVGPoint SVGTextContentElement::getEndPositionOfChar(unsigned charnum, Exception
 
 SVGRect SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionState& es)
 {
-    document()->updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
         es.throwDOMException(IndexSizeError);
@@ -167,7 +167,7 @@ SVGRect SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionState&
 
 float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionState& es)
 {
-    document()->updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
         es.throwDOMException(IndexSizeError);
@@ -179,7 +179,7 @@ float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionState&
 
 int SVGTextContentElement::getCharNumAtPosition(const SVGPoint& point)
 {
-    document()->updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheets();
     return SVGTextQuery(renderer()).characterNumberAtPosition(point);
 }
 
@@ -194,10 +194,9 @@ void SVGTextContentElement::selectSubString(unsigned charnum, unsigned nchars, E
     if (nchars > numberOfChars - charnum)
         nchars = numberOfChars - charnum;
 
-    ASSERT(document());
-    ASSERT(document()->frame());
+    ASSERT(document().frame());
 
-    FrameSelection* selection = document()->frame()->selection();
+    FrameSelection* selection = document().frame()->selection();
     if (!selection)
         return;
 

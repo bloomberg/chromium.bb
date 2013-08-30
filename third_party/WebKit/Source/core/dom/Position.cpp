@@ -431,7 +431,7 @@ Node* Position::parentEditingBoundary() const
     if (!m_anchorNode)
         return 0;
 
-    Node* documentElement = m_anchorNode->document()->documentElement();
+    Node* documentElement = m_anchorNode->document().documentElement();
     if (!documentElement)
         return 0;
 

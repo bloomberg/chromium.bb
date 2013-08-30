@@ -201,7 +201,7 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames, Vector<S
     // resource's URL to be given by a param named "src", "movie", "code" or "url"
     // if we know that resource points to a plug-in.
     if (url.isEmpty() && !urlParameter.isEmpty()) {
-        KURL completedURL = document()->completeURL(urlParameter);
+        KURL completedURL = document().completeURL(urlParameter);
         bool useFallback;
         if (shouldUsePlugin(completedURL, serviceType, false, useFallback))
             url = urlParameter;
@@ -230,13 +230,13 @@ bool HTMLObjectElement::shouldAllowQuickTimeClassIdQuirk()
     // 'generator' meta tag is present. Only apply this quirk if there is no
     // fallback content, which ensures the quirk will disable itself if Wiki
     // Server is updated to generate an alternate embed tag as fallback content.
-    if (!document()->page()
-        || !document()->page()->settings().needsSiteSpecificQuirks()
+    if (!document().page()
+        || !document().page()->settings().needsSiteSpecificQuirks()
         || hasFallbackContent()
         || !equalIgnoringCase(classId(), "clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B"))
         return false;
 
-    RefPtr<NodeList> metaElements = document()->getElementsByTagName(HTMLNames::metaTag.localName());
+    RefPtr<NodeList> metaElements = document().getElementsByTagName(HTMLNames::metaTag.localName());
     unsigned length = metaElements->length();
     for (unsigned i = 0; i < length; ++i) {
         ASSERT(metaElements->item(i)->isHTMLElement());
@@ -315,7 +315,7 @@ void HTMLObjectElement::updateWidget(PluginCreationOption pluginCreationOption)
 bool HTMLObjectElement::rendererIsNeeded(const NodeRenderingContext& context)
 {
     // FIXME: This check should not be needed, detached documents never render!
-    Frame* frame = document()->frame();
+    Frame* frame = document().frame();
     if (!frame)
         return false;
 
@@ -360,7 +360,7 @@ void HTMLObjectElement::reattachFallbackContent()
 {
     // This can happen inside of attach() in the middle of a recalcStyle so we need to
     // reattach synchronously here.
-    if (document()->inStyleRecalc())
+    if (document().inStyleRecalc())
         reattach();
     else
         lazyReattach();
@@ -437,8 +437,8 @@ void HTMLObjectElement::updateDocNamedItem()
             isNamedItem = false;
         child = child->nextSibling();
     }
-    if (isNamedItem != wasNamedItem && document()->isHTMLDocument()) {
-        HTMLDocument* document = toHTMLDocument(this->document());
+    if (isNamedItem != wasNamedItem && document().isHTMLDocument()) {
+        HTMLDocument* document = toHTMLDocument(&this->document());
         if (isNamedItem) {
             document->addNamedItem(getNameAttribute());
             document->addExtraNamedItem(getIdAttribute());
@@ -473,13 +473,13 @@ void HTMLObjectElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) con
 {
     HTMLPlugInImageElement::addSubresourceAttributeURLs(urls);
 
-    addSubresourceURL(urls, document()->completeURL(getAttribute(dataAttr)));
+    addSubresourceURL(urls, document().completeURL(getAttribute(dataAttr)));
 
     // FIXME: Passing a string that starts with "#" to the completeURL function does
     // not seem like it would work. The image element has similar but not identical code.
     const AtomicString& useMap = getAttribute(usemapAttr);
     if (useMap.startsWith('#'))
-        addSubresourceURL(urls, document()->completeURL(useMap));
+        addSubresourceURL(urls, document().completeURL(useMap));
 }
 
 void HTMLObjectElement::didMoveToNewDocument(Document* oldDocument)

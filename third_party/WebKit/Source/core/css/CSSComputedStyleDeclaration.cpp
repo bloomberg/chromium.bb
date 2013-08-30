@@ -1279,7 +1279,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getFontSizeCSSValuePreferringK
     if (!m_node)
         return 0;
 
-    m_node->document()->updateLayoutIgnorePendingStylesheets();
+    m_node->document().updateLayoutIgnorePendingStylesheets();
 
     RefPtr<RenderStyle> style = m_node->computedStyle(m_pseudoElementSpecifier);
     if (!style)
@@ -1612,9 +1612,9 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
     RefPtr<RenderStyle> style;
 
     if (updateLayout) {
-        Document* document = styledNode->document();
+        Document& document = styledNode->document();
 
-        document->updateStyleForNodeIfNeeded(styledNode);
+        document.updateStyleForNodeIfNeeded(styledNode);
 
         // The style recalc could have caused the styled node to be discarded or replaced
         // if it was a PseudoElement so we need to update it.
@@ -1625,11 +1625,11 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
 
         bool forceFullLayout = isLayoutDependent(propertyID, style, renderer)
             || styledNode->isInShadowTree()
-            || (document->styleResolverIfExists() && document->styleResolverIfExists()->hasViewportDependentMediaQueries() && document->ownerElement())
-            || document->seamlessParentIFrame();
+            || (document.styleResolverIfExists() && document.styleResolverIfExists()->hasViewportDependentMediaQueries() && document.ownerElement())
+            || document.seamlessParentIFrame();
 
         if (forceFullLayout) {
-            document->updateLayoutIgnorePendingStylesheets();
+            document.updateLayoutIgnorePendingStylesheets();
             styledNode = this->styledNode();
             style = computeRenderStyle(propertyID);
             renderer = styledNode->renderer();
@@ -1819,7 +1819,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyBorderLeftWidth:
             return zoomAdjustedPixelValue(style->borderLeftWidth(), style.get());
         case CSSPropertyBottom:
-            return valueForPositionOffset(style.get(), CSSPropertyBottom, renderer, m_node->document()->renderView());
+            return valueForPositionOffset(style.get(), CSSPropertyBottom, renderer, m_node->document().renderView());
         case CSSPropertyWebkitBoxAlign:
             return cssValuePool().createValue(style->boxAlign());
         case CSSPropertyWebkitBoxDecorationBreak:
@@ -1953,7 +1953,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             computedFont->variant = valueForFontVariant(style.get());
             computedFont->weight = valueForFontWeight(style.get());
             computedFont->size = valueForFontSize(style.get());
-            computedFont->lineHeight = valueForLineHeight(style.get(), m_node->document()->renderView());
+            computedFont->lineHeight = valueForLineHeight(style.get(), m_node->document().renderView());
             computedFont->family = valueForFontFamily(style.get());
             return computedFont.release();
         }
@@ -1986,15 +1986,15 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return list.release();
         }
         case CSSPropertyGridAutoColumns:
-            return valueForGridTrackSize(style->gridAutoColumns(), style.get(), m_node->document()->renderView());
+            return valueForGridTrackSize(style->gridAutoColumns(), style.get(), m_node->document().renderView());
         case CSSPropertyGridAutoFlow:
             return cssValuePool().createValue(style->gridAutoFlow());
         case CSSPropertyGridAutoRows:
-            return valueForGridTrackSize(style->gridAutoRows(), style.get(), m_node->document()->renderView());
+            return valueForGridTrackSize(style->gridAutoRows(), style.get(), m_node->document().renderView());
         case CSSPropertyGridDefinitionColumns:
-            return valueForGridTrackList(style->gridDefinitionColumns(), style->orderedNamedGridColumnLines(), style.get(), m_node->document()->renderView());
+            return valueForGridTrackList(style->gridDefinitionColumns(), style->orderedNamedGridColumnLines(), style.get(), m_node->document().renderView());
         case CSSPropertyGridDefinitionRows:
-            return valueForGridTrackList(style->gridDefinitionRows(), style->orderedNamedGridRowLines(), style.get(), m_node->document()->renderView());
+            return valueForGridTrackList(style->gridDefinitionRows(), style->orderedNamedGridRowLines(), style.get(), m_node->document().renderView());
 
         case CSSPropertyGridColumnStart:
             return valueForGridPosition(style->gridColumnStart());
@@ -2043,7 +2043,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyImageRendering:
             return CSSPrimitiveValue::create(style->imageRendering());
         case CSSPropertyLeft:
-            return valueForPositionOffset(style.get(), CSSPropertyLeft, renderer, m_node->document()->renderView());
+            return valueForPositionOffset(style.get(), CSSPropertyLeft, renderer, m_node->document().renderView());
         case CSSPropertyLetterSpacing:
             if (!style->letterSpacing())
                 return cssValuePool().createIdentifierValue(CSSValueNormal);
@@ -2053,7 +2053,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 return cssValuePool().createIdentifierValue(CSSValueNone);
             return cssValuePool().createValue(style->lineClamp().value(), style->lineClamp().isPercentage() ? CSSPrimitiveValue::CSS_PERCENTAGE : CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyLineHeight:
-            return valueForLineHeight(style.get(), m_node->document()->renderView());
+            return valueForLineHeight(style.get(), m_node->document().renderView());
         case CSSPropertyListStyleImage:
             if (style->listStyleImage())
                 return style->listStyleImage()->cssValue();
@@ -2077,13 +2077,14 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             if (marginRight.isFixed() || !renderer || !renderer->isBox())
                 return zoomAdjustedPixelValueForLength(marginRight, style.get());
             float value;
-            if (marginRight.isPercent() || marginRight.isViewportPercentage())
+            if (marginRight.isPercent() || marginRight.isViewportPercentage()) {
                 // RenderBox gives a marginRight() that is the distance between the right-edge of the child box
                 // and the right-edge of the containing box, when display == BLOCK. Let's calculate the absolute
                 // value of the specified margin-right % instead of relying on RenderBox's marginRight() value.
-                value = minimumValueForLength(marginRight, toRenderBox(renderer)->containingBlockLogicalWidthForContent(), m_node->document()->renderView());
-            else
+                value = minimumValueForLength(marginRight, toRenderBox(renderer)->containingBlockLogicalWidthForContent(), m_node->document().renderView());
+            } else {
                 value = toRenderBox(renderer)->marginRight();
+            }
             return zoomAdjustedPixelValue(value, style.get());
         }
         case CSSPropertyMarginBottom: {
@@ -2194,7 +2195,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyPosition:
             return cssValuePool().createValue(style->position());
         case CSSPropertyRight:
-            return valueForPositionOffset(style.get(), CSSPropertyRight, renderer, m_node->document()->renderView());
+            return valueForPositionOffset(style.get(), CSSPropertyRight, renderer, m_node->document().renderView());
         case CSSPropertyWebkitRubyPosition:
             return cssValuePool().createValue(style->rubyPosition());
         case CSSPropertyTableLayout:
@@ -2270,7 +2271,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyTextTransform:
             return cssValuePool().createValue(style->textTransform());
         case CSSPropertyTop:
-            return valueForPositionOffset(style.get(), CSSPropertyTop, renderer, m_node->document()->renderView());
+            return valueForPositionOffset(style.get(), CSSPropertyTop, renderer, m_node->document().renderView());
         case CSSPropertyTouchAction:
             return cssValuePool().createValue(style->touchAction());
         case CSSPropertyUnicodeBidi:
@@ -2542,7 +2543,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 if (renderer->isBox())
                     box = toRenderBox(renderer)->borderBoxRect();
 
-                RenderView* renderView = m_node->document()->renderView();
+                RenderView* renderView = m_node->document().renderView();
                 list->append(zoomAdjustedPixelValue(minimumValueForLength(style->perspectiveOriginX(), box.width(), renderView), style.get()));
                 list->append(zoomAdjustedPixelValue(minimumValueForLength(style->perspectiveOriginY(), box.height(), renderView), style.get()));
             }
@@ -2562,13 +2563,13 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitUserSelect:
             return cssValuePool().createValue(style->userSelect());
         case CSSPropertyBorderBottomLeftRadius:
-            return valueForBorderRadiusCorner(style->borderBottomLeftRadius(), style.get(), m_node->document()->renderView());
+            return valueForBorderRadiusCorner(style->borderBottomLeftRadius(), style.get(), m_node->document().renderView());
         case CSSPropertyBorderBottomRightRadius:
-            return valueForBorderRadiusCorner(style->borderBottomRightRadius(), style.get(), m_node->document()->renderView());
+            return valueForBorderRadiusCorner(style->borderBottomRightRadius(), style.get(), m_node->document().renderView());
         case CSSPropertyBorderTopLeftRadius:
-            return valueForBorderRadiusCorner(style->borderTopLeftRadius(), style.get(), m_node->document()->renderView());
+            return valueForBorderRadiusCorner(style->borderTopLeftRadius(), style.get(), m_node->document().renderView());
         case CSSPropertyBorderTopRightRadius:
-            return valueForBorderRadiusCorner(style->borderTopRightRadius(), style.get(), m_node->document()->renderView());
+            return valueForBorderRadiusCorner(style->borderTopRightRadius(), style.get(), m_node->document().renderView());
         case CSSPropertyClip: {
             if (!style->hasClip())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
@@ -2590,7 +2591,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 if (renderer->isBox())
                     box = toRenderBox(renderer)->borderBoxRect();
 
-                RenderView* renderView = m_node->document()->renderView();
+                RenderView* renderView = m_node->document().renderView();
                 list->append(zoomAdjustedPixelValue(minimumValueForLength(style->transformOriginX(), box.width(), renderView), style.get()));
                 list->append(zoomAdjustedPixelValue(minimumValueForLength(style->transformOriginY(), box.height(), renderView), style.get()));
                 if (style->transformOriginZ() != 0)
@@ -2753,7 +2754,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyBorderImage:
             return valueForNinePieceImage(style->borderImage(), style.get());
         case CSSPropertyBorderRadius:
-            return valueForBorderRadiusShorthand(style.get(), m_node->document()->renderView());
+            return valueForBorderRadiusShorthand(style.get(), m_node->document().renderView());
         case CSSPropertyBorderRight:
             return valuesForShorthandProperty(borderRightShorthand());
         case CSSPropertyBorderStyle:
@@ -2950,7 +2951,7 @@ String CSSComputedStyleDeclaration::item(unsigned i) const
 bool CSSComputedStyleDeclaration::cssPropertyMatches(CSSPropertyID propertyID, const CSSValue* propertyValue) const
 {
     if (propertyID == CSSPropertyFontSize && propertyValue->isPrimitiveValue() && m_node) {
-        m_node->document()->updateLayoutIgnorePendingStylesheets();
+        m_node->document().updateLayoutIgnorePendingStylesheets();
         RenderStyle* style = m_node->computedStyle(m_pseudoElementSpecifier);
         if (style && style->fontDescription().keywordSize()) {
             CSSValueID sizeValue = cssIdentifierForFontSizeKeyword(style->fontDescription().keywordSize());

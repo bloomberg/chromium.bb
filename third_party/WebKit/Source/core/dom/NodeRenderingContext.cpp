@@ -79,7 +79,7 @@ RenderObject* NodeRenderingContext::nextRenderer() const
         if (!element->isInTopLayer())
             return 0;
 
-        const Vector<RefPtr<Element> >& topLayerElements = element->document()->topLayerElements();
+        const Vector<RefPtr<Element> >& topLayerElements = element->document().topLayerElements();
         size_t position = topLayerElements.find(element);
         ASSERT(position != notFound);
         for (size_t i = position + 1; i < topLayerElements.size(); ++i) {
@@ -144,7 +144,7 @@ RenderObject* NodeRenderingContext::parentRenderer() const
         // will prevent it.
         if (!m_renderingParent || !m_renderingParent->renderer())
             return 0;
-        return m_node->document()->renderView();
+        return m_node->document().renderView();
     }
 
     if (m_parentFlowRenderer)
@@ -199,8 +199,8 @@ void NodeRenderingContext::moveToFlowThreadIfNeeded()
     if (!element->shouldMoveToFlowThread(m_style.get()))
         return;
 
-    ASSERT(m_node->document()->renderView());
-    FlowThreadController* flowThreadController = m_node->document()->renderView()->flowThreadController();
+    ASSERT(m_node->document().renderView());
+    FlowThreadController* flowThreadController = m_node->document().renderView()->flowThreadController();
     m_parentFlowRenderer = flowThreadController->ensureRenderFlowThreadWithName(m_style->flowThread());
     flowThreadController->registerNamedFlowContentNode(m_node, m_parentFlowRenderer);
 }
@@ -247,7 +247,7 @@ void NodeRenderingContext::createRendererForElementIfNeeded()
     newRenderer->setAnimatableStyle(m_style.release()); // setAnimatableStyle() can depend on renderer() already being set.
 
     if (FullscreenElementStack::isActiveFullScreenElement(element)) {
-        newRenderer = RenderFullScreen::wrapRenderer(newRenderer, parentRenderer, element->document());
+        newRenderer = RenderFullScreen::wrapRenderer(newRenderer, parentRenderer, &element->document());
         if (!newRenderer)
             return;
     }
@@ -268,7 +268,7 @@ void NodeRenderingContext::createRendererForTextIfNeeded()
     RenderObject* parentRenderer = this->parentRenderer();
 
     if (m_parentDetails.resetStyleInheritance())
-        m_style = textNode->document()->styleResolver()->defaultStyleForElement();
+        m_style = textNode->document().styleResolver()->defaultStyleForElement();
     else
         m_style = parentRenderer->style();
 

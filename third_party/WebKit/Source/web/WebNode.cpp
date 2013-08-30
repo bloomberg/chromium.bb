@@ -107,7 +107,7 @@ bool WebNode::setNodeValue(const WebString& value)
 
 WebDocument WebNode::document() const
 {
-    return WebDocument(m_private->document());
+    return WebDocument(&m_private->document());
 }
 
 WebNode WebNode::firstChild() const
@@ -159,7 +159,7 @@ bool WebNode::isFocusable() const
 {
     if (!m_private->isElementNode())
         return false;
-    m_private->document()->updateLayoutIgnorePendingStylesheets();
+    m_private->document().updateLayoutIgnorePendingStylesheets();
     return toElement(m_private.get())->isFocusable();
 }
 
@@ -229,7 +229,7 @@ bool WebNode::remove()
 
 bool WebNode::hasNonEmptyBoundingBox() const
 {
-    m_private->document()->updateLayoutIgnorePendingStylesheets();
+    m_private->document().updateLayoutIgnorePendingStylesheets();
     return m_private->hasNonEmptyBoundingBox();
 }
 

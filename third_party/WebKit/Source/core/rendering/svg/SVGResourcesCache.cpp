@@ -84,10 +84,9 @@ void SVGResourcesCache::removeResourcesFromRenderObject(RenderObject* object)
 
 static inline SVGResourcesCache* resourcesCacheFromRenderObject(const RenderObject* renderer)
 {
-    Document* document = renderer->document();
-    ASSERT(document);
+    Document& document = renderer->document();
 
-    SVGDocumentExtensions* extensions = document->accessSVGExtensions();
+    SVGDocumentExtensions* extensions = document.accessSVGExtensions();
     ASSERT(extensions);
 
     SVGResourcesCache* cache = extensions->resourcesCache();
@@ -199,7 +198,7 @@ void SVGResourcesCache::resourceDestroyed(RenderSVGResourceContainer* resource)
         // Mark users of destroyed resources as pending resolution based on the id of the old resource.
         Element* resourceElement = toElement(resource->node());
         Element* clientElement = toElement(it->key->node());
-        SVGDocumentExtensions* extensions = clientElement->document()->accessSVGExtensions();
+        SVGDocumentExtensions* extensions = clientElement->document().accessSVGExtensions();
 
         extensions->addPendingResource(resourceElement->fastGetAttribute(HTMLNames::idAttr), clientElement);
     }

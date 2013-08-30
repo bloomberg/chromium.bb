@@ -86,9 +86,9 @@ bool TextFieldInputType::isTextField() const
 
 static inline bool shouldIgnoreRequiredAttribute(const HTMLInputElement& input)
 {
-    if (!input.document()->settings() || !input.document()->settings()->needsSiteSpecificQuirks())
+    if (!input.document().settings() || !input.document().settings()->needsSiteSpecificQuirks())
         return false;
-    if (!equalIgnoringCase(input.document()->url().host(), "egov.uscis.gov"))
+    if (!equalIgnoringCase(input.document().url().host(), "egov.uscis.gov"))
         return false;
     return input.fastGetAttribute(requiredAttr) == "no";
 }
@@ -154,7 +154,7 @@ void TextFieldInputType::handleKeydownEvent(KeyboardEvent* event)
 {
     if (!element()->focused())
         return;
-    Frame* frame = element()->document()->frame();
+    Frame* frame = element()->document().frame();
     if (!frame || !frame->editor().doTextFieldCommandFromEvent(element(), event))
         return;
     event->setDefaultHandled();
@@ -243,7 +243,7 @@ void TextFieldInputType::createShadowSubtree()
     ASSERT(!m_innerText);
     ASSERT(!m_innerBlock);
 
-    Document* document = element()->document();
+    Document* document = &element()->document();
     bool shouldHaveSpinButton = this->shouldHaveSpinButton();
     bool createsContainer = shouldHaveSpinButton || needsContainer();
 
@@ -373,7 +373,7 @@ void TextFieldInputType::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent* 
     // If the text field has no focus, we don't need to take account of the
     // selection length. The selection is the source of text drag-and-drop in
     // that case, and nothing in the text field will be removed.
-    unsigned selectionLength = element()->focused() ? plainText(element()->document()->frame()->selection()->selection().toNormalizedRange().get()).length() : 0;
+    unsigned selectionLength = element()->focused() ? plainText(element()->document().frame()->selection()->selection().toNormalizedRange().get()).length() : 0;
     ASSERT(oldLength >= selectionLength);
 
     // Selected characters will be removed by the next text event.
@@ -412,7 +412,7 @@ void TextFieldInputType::updatePlaceholderText()
         return;
     }
     if (!m_placeholder) {
-        m_placeholder = HTMLDivElement::create(element()->document());
+        m_placeholder = HTMLDivElement::create(&element()->document());
         m_placeholder->setPart(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
         element()->userAgentShadowRoot()->insertBefore(m_placeholder, m_container ? m_container->nextSibling() : innerTextElement()->nextSibling());
     }
@@ -456,7 +456,7 @@ void TextFieldInputType::didSetValueByUserEdit(ValueChangeState state)
 {
     if (!element()->focused())
         return;
-    if (Frame* frame = element()->document()->frame())
+    if (Frame* frame = element()->document().frame())
         frame->editor().textDidChangeInTextField(element());
 }
 

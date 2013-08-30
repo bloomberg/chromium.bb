@@ -172,8 +172,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyDirection(StyleResolverState& s
 {
     state.style()->setDirection(*toCSSPrimitiveValue(value));
     Element* element = state.element();
-    if (element && element == element->document()->documentElement())
-        element->document()->setDirectionSetOnDocumentElement(true);
+    if (element && element == element->document().documentElement())
+        element->document().setDirectionSetOnDocumentElement(true);
 }
 
 static inline bool isValidDisplayValue(StyleResolverState& state, EDisplay displayPropertyValue)

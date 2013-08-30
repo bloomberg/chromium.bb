@@ -159,7 +159,7 @@ bool isEditablePosition(const Position& p, EditableType editableType, EUpdateSty
     if (!node)
         return false;
     if (updateStyle == UpdateStyle)
-        node->document()->updateLayoutIgnorePendingStylesheets();
+        node->document().updateLayoutIgnorePendingStylesheets();
     else
         ASSERT(updateStyle == DoNotUpdateStyle);
 
@@ -1058,15 +1058,15 @@ int indexForVisiblePosition(const VisiblePosition& visiblePosition, RefPtr<Conta
         return 0;
 
     Position p(visiblePosition.deepEquivalent());
-    Document* document = p.anchorNode()->document();
+    Document& document = p.anchorNode()->document();
     ShadowRoot* shadowRoot = p.anchorNode()->containingShadowRoot();
 
     if (shadowRoot)
         scope = shadowRoot;
     else
-        scope = document->documentElement();
+        scope = document.documentElement();
 
-    RefPtr<Range> range = Range::create(document, firstPositionInNode(scope.get()), p.parentAnchoredEquivalent());
+    RefPtr<Range> range = Range::create(&document, firstPositionInNode(scope.get()), p.parentAnchoredEquivalent());
 
     return TextIterator::rangeLength(range.get(), true);
 }

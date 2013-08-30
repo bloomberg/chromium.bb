@@ -73,7 +73,7 @@ PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& es)
         return 0;
 
     if (parentNode())
-        document()->textNodeSplit(this);
+        document().textNodeSplit(this);
 
     if (renderer())
         toRenderText(renderer())->setTextWithOffset(dataImpl(), 0, oldStr.length());
@@ -271,7 +271,7 @@ bool Text::recalcTextStyle(StyleChange change)
 {
     if (RenderText* renderer = toRenderText(this->renderer())) {
         if (change != NoChange || needsStyleRecalc())
-            renderer->setStyle(document()->styleResolver()->styleForText(this));
+            renderer->setStyle(document().styleResolver()->styleForText(this));
         if (needsStyleRecalc())
             renderer->setText(dataImpl());
         clearNeedsStyleRecalc();
@@ -314,7 +314,7 @@ bool Text::childTypeAllowed(NodeType) const
 
 PassRefPtr<Text> Text::cloneWithData(const String& data)
 {
-    return create(document(), data);
+    return create(&document(), data);
 }
 
 PassRefPtr<Text> Text::createWithLengthLimit(Document* document, const String& data, unsigned start, unsigned lengthLimit)

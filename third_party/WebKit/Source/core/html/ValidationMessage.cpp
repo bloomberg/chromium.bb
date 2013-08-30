@@ -57,7 +57,7 @@ PassOwnPtr<ValidationMessage> ValidationMessage::create(HTMLFormControlElement* 
 
 ValidationMessageClient* ValidationMessage::validationMessageClient() const
 {
-    Page* page = m_element->document()->page();
+    Page* page = m_element->document().page();
     if (!page)
         return 0;
     // The form valdiation feature requires ValidationMessageClient.

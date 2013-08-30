@@ -79,12 +79,12 @@ NodeIterator::NodeIterator(PassRefPtr<Node> rootNode, unsigned whatToShow, PassR
     , m_detached(false)
 {
     ScriptWrappable::init(this);
-    root()->document()->attachNodeIterator(this);
+    root()->document().attachNodeIterator(this);
 }
 
 NodeIterator::~NodeIterator()
 {
-    root()->document()->detachNodeIterator(this);
+    root()->document().detachNodeIterator(this);
 }
 
 PassRefPtr<Node> NodeIterator::nextNode(ScriptState* state, ExceptionState& es)
@@ -147,7 +147,7 @@ PassRefPtr<Node> NodeIterator::previousNode(ScriptState* state, ExceptionState& 
 
 void NodeIterator::detach()
 {
-    root()->document()->detachNodeIterator(this);
+    root()->document().detachNodeIterator(this);
     m_detached = true;
     m_referenceNode.node.clear();
 }
@@ -162,8 +162,7 @@ void NodeIterator::updateForNodeRemoval(Node* removedNode, NodePointer& referenc
 {
     ASSERT(!m_detached);
     ASSERT(removedNode);
-    ASSERT(root()->document());
-    ASSERT(root()->document() == removedNode->document());
+    ASSERT(&root()->document() == &removedNode->document());
 
     // Iterator is not affected if the removed node is the reference node and is the root.
     // or if removed node is not the reference node, or the ancestor of the reference node.

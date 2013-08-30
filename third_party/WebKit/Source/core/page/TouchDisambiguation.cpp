@@ -51,7 +51,7 @@ namespace WebCore {
 
 static IntRect boundingBoxForEventNodes(Node* eventNode)
 {
-    if (!eventNode->document()->view())
+    if (!eventNode->document().view())
         return IntRect();
 
     IntRect result;
@@ -65,7 +65,7 @@ static IntRect boundingBoxForEventNodes(Node* eventNode)
         result.unite(node->pixelSnappedBoundingBox());
         node = NodeTraversal::next(node, eventNode);
     }
-    return eventNode->document()->view()->contentsToWindow(result);
+    return eventNode->document().view()->contentsToWindow(result);
 }
 
 static float scoreTouchTarget(IntPoint touchPoint, int padding, IntRect boundingBox)

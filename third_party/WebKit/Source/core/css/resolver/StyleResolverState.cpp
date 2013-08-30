@@ -38,7 +38,7 @@ StyleResolverState::StyleResolverState(Document* document, Element* element, Ren
 {
     if (element) {
         m_elementContext = ElementResolveContext(element);
-        m_document = m_elementContext.document();
+        m_document = &m_elementContext.document();
     } else {
         m_elementContext = ElementResolveContext();
         m_document = document;

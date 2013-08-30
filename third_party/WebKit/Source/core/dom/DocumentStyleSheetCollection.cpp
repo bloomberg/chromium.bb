@@ -48,7 +48,7 @@ using namespace HTMLNames;
 DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope* treeScope)
     : StyleSheetCollection(treeScope)
 {
-    ASSERT(treeScope->rootNode() == treeScope->rootNode()->document());
+    ASSERT(treeScope->rootNode() == &treeScope->rootNode()->document());
 }
 
 void DocumentStyleSheetCollection::collectStyleSheets(StyleSheetCollections* collections, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
@@ -143,7 +143,7 @@ static void collectActiveCSSStyleSheetsFromSeamlessParents(Vector<RefPtr<CSSStyl
     HTMLIFrameElement* seamlessParentIFrame = document->seamlessParentIFrame();
     if (!seamlessParentIFrame)
         return;
-    sheets.append(seamlessParentIFrame->document()->styleSheetCollections()->activeAuthorStyleSheets());
+    sheets.append(seamlessParentIFrame->document().styleSheetCollections()->activeAuthorStyleSheets());
 }
 
 bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleSheetCollections* collections, StyleResolverUpdateMode updateMode)

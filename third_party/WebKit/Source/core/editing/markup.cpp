@@ -225,7 +225,7 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text* text)
         // FIXME: Should this be included in forceInline?
         wrappingStyle->style()->setProperty(CSSPropertyFloat, CSSValueNone);
 
-        appendStyleNodeOpenTag(out, wrappingStyle->style(), text->document());
+        appendStyleNodeOpenTag(out, wrappingStyle->style(), &text->document());
     }
 
     if (!shouldAnnotate() || parentIsTextarea)
@@ -258,7 +258,7 @@ String StyledMarkupAccumulator::renderedText(const Node* node, const Range* rang
 
     Position start = createLegacyEditingPosition(const_cast<Node*>(node), startOffset);
     Position end = createLegacyEditingPosition(const_cast<Node*>(node), endOffset);
-    return plainText(Range::create(node->document(), start, end).get());
+    return plainText(Range::create(&node->document(), start, end).get());
 }
 
 String StyledMarkupAccumulator::stringValueForRange(const Node* node, const Range* range)
@@ -276,7 +276,7 @@ String StyledMarkupAccumulator::stringValueForRange(const Node* node, const Rang
 
 void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element* element, bool addDisplayInline, RangeFullySelectsNode rangeFullySelectsNode)
 {
-    const bool documentIsHTML = element->document()->isHTMLDocument();
+    const bool documentIsHTML = element->document().isHTMLDocument();
     appendOpenTag(out, element, 0);
 
     const unsigned length = element->hasAttributes() ? element->attributeCount() : 0;
@@ -749,10 +749,10 @@ String createMarkup(const Node* node, EChildrenOnly childrenOnly, Vector<Node*>*
 
 static void fillContainerFromString(ContainerNode* paragraph, const String& string)
 {
-    Document* document = paragraph->document();
+    Document& document = paragraph->document();
 
     if (string.isEmpty()) {
-        paragraph->appendChild(createBlockPlaceholderElement(document));
+        paragraph->appendChild(createBlockPlaceholderElement(&document));
         return;
     }
 
@@ -769,10 +769,10 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
         // append the non-tab textual part
         if (!s.isEmpty()) {
             if (!tabText.isEmpty()) {
-                paragraph->appendChild(createTabSpanElement(document, tabText));
+                paragraph->appendChild(createTabSpanElement(&document, tabText));
                 tabText = emptyString();
             }
-            RefPtr<Node> textNode = document->createTextNode(stringWithRebalancedWhitespace(s, first, i + 1 == numEntries));
+            RefPtr<Node> textNode = document.createTextNode(stringWithRebalancedWhitespace(s, first, i + 1 == numEntries));
             paragraph->appendChild(textNode.release());
         }
 
@@ -781,7 +781,7 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
         if (i + 1 != numEntries)
             tabText.append('\t');
         else if (!tabText.isEmpty())
-            paragraph->appendChild(createTabSpanElement(document, tabText));
+            paragraph->appendChild(createTabSpanElement(&document, tabText));
 
         first = false;
     }
@@ -902,7 +902,7 @@ String createFullMarkup(const Node* node)
     if (!node)
         return String();
 
-    Frame* frame = node->document()->frame();
+    Frame* frame = node->document().frame();
     if (!frame)
         return String();
 
@@ -924,7 +924,7 @@ String createFullMarkup(const Range* range)
     if (!node)
         return String();
 
-    Frame* frame = node->document()->frame();
+    Frame* frame = node->document().frame();
     if (!frame)
         return String();
 
@@ -945,7 +945,7 @@ String urlToMarkup(const KURL& url, const String& title)
 
 PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& markup, Element* contextElement, ParserContentPolicy parserContentPolicy, ExceptionState& es)
 {
-    Document* document = contextElement->hasTagName(templateTag) ? contextElement->document()->ensureTemplateDocument() : contextElement->document();
+    Document* document = contextElement->hasTagName(templateTag) ? contextElement->document().ensureTemplateDocument() : &contextElement->document();
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
 
     if (document->isHTMLDocument()) {
@@ -1067,7 +1067,7 @@ void replaceChildrenWithText(ContainerNode* container, const String& text, Excep
         return;
     }
 
-    RefPtr<Text> textNode = Text::create(containerNode->document(), text);
+    RefPtr<Text> textNode = Text::create(&containerNode->document(), text);
 
     if (containerNode->hasOneChild()) {
         containerNode->replaceChild(textNode.release(), containerNode->firstChild(), es);

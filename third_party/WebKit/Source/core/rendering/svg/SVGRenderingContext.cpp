@@ -208,8 +208,7 @@ void SVGRenderingContext::calculateTransformationToOutermostCoordinateSystem(con
     absoluteTransform = currentContentTransformation();
 
     float deviceScaleFactor = 1;
-    ASSERT(renderer->document());
-    if (Page* page = renderer->document()->page())
+    if (Page* page = renderer->document().page())
         deviceScaleFactor = page->deviceScaleFactor();
 
     // Walk up the render tree, accumulating SVG transforms.

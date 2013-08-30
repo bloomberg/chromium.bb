@@ -39,7 +39,7 @@ EventPathWalker::EventPathWalker(const Node* node)
     , m_isVisitingInsertionPointInReprojection(false)
 {
     ASSERT(node);
-    node->document()->updateDistributionForNodeIfNeeded(const_cast<Node*>(node));
+    node->document().updateDistributionForNodeIfNeeded(const_cast<Node*>(node));
 }
 
 Node* EventPathWalker::parent(const Node* node)

@@ -81,7 +81,7 @@ Element* FocusNavigationScope::owner() const
         ShadowRoot* shadowRoot = toShadowRoot(root);
         return shadowRoot->isYoungest() ? shadowRoot->host() : shadowRoot->insertionPoint();
     }
-    if (Frame* frame = root->document()->frame())
+    if (Frame* frame = root->document().frame())
         return frame->ownerElement();
     return 0;
 }
@@ -368,15 +368,14 @@ bool FocusController::advanceFocusInDocumentOrder(FocusDirection direction, bool
     // FIXME: It would be nice to just be able to call setFocusedElement(node)
     // here, but we can't do that because some elements (e.g. HTMLInputElement
     // and HTMLTextAreaElement) do extra work in their focus() methods.
-    Document* newDocument = element->document();
+    Document& newDocument = element->document();
 
-    if (newDocument != document) {
+    if (&newDocument != document) {
         // Focus is going away from this document, so clear the focused node.
         document->setFocusedElement(0);
     }
 
-    if (newDocument)
-        setFocusedFrame(newDocument->frame());
+    setFocusedFrame(newDocument.frame());
 
     if (caretBrowsing) {
         Position position = firstPositionInOrBeforeNode(element);
@@ -562,7 +561,7 @@ static bool relinquishesEditingFocus(Node *node)
     ASSERT(node->rendererIsEditable());
 
     Node* root = node->rootEditableElement();
-    Frame* frame = node->document()->frame();
+    Frame* frame = node->document().frame();
     if (!frame || !root)
         return false;
 
@@ -629,7 +628,7 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtr<Frame> newF
         return true;
     }
 
-    RefPtr<Document> newDocument = element->document();
+    RefPtr<Document> newDocument = &element->document();
 
     if (newDocument && newDocument->focusedElement() == element)
         return true;
@@ -738,7 +737,7 @@ static void updateFocusCandidateIfNeeded(FocusDirection direction, const FocusCa
         // If 2 nodes are intersecting, do hit test to find which node in on top.
         LayoutUnit x = intersectionRect.x() + intersectionRect.width() / 2;
         LayoutUnit y = intersectionRect.y() + intersectionRect.height() / 2;
-        HitTestResult result = candidate.visibleNode->document()->page()->mainFrame()->eventHandler()->hitTestResultAtPoint(IntPoint(x, y), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping | HitTestRequest::DisallowShadowContent);
+        HitTestResult result = candidate.visibleNode->document().page()->mainFrame()->eventHandler()->hitTestResultAtPoint(IntPoint(x, y), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping | HitTestRequest::DisallowShadowContent);
         if (candidate.visibleNode->contains(result.innerNode())) {
             closest = candidate;
             return;
@@ -814,7 +813,7 @@ bool FocusController::advanceFocusDirectionallyInContainer(Node* container, cons
         ASSERT(frameElement->contentFrame());
 
         if (focusCandidate.isOffscreenAfterScrolling) {
-            scrollInDirection(focusCandidate.visibleNode->document(), direction);
+            scrollInDirection(&focusCandidate.visibleNode->document(), direction);
             return true;
         }
         // Navigate into a new frame.

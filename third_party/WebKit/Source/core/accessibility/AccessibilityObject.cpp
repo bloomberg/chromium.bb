@@ -505,7 +505,7 @@ AccessibilityObject* AccessibilityObject::firstAccessibleObjectFromNode(const No
     if (!node)
         return 0;
 
-    AXObjectCache* cache = node->document()->axObjectCache();
+    AXObjectCache* cache = node->document().axObjectCache();
     AccessibilityObject* accessibleObject = cache->getOrCreate(node->renderer());
     while (accessibleObject && accessibleObject->accessibilityIsIgnored()) {
         node = NodeTraversal::next(node);
@@ -883,7 +883,7 @@ static bool replacedNodeNeedsCharacter(Node* replacedNode)
         return false;
 
     // create an AX object, but skip it if it is not supposed to be seen
-    AccessibilityObject* object = replacedNode->renderer()->document()->axObjectCache()->getOrCreate(replacedNode);
+    AccessibilityObject* object = replacedNode->renderer()->document().axObjectCache()->getOrCreate(replacedNode);
     if (object->accessibilityIsIgnored())
         return false;
 

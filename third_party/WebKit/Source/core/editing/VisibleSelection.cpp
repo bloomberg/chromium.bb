@@ -133,7 +133,7 @@ PassRefPtr<Range> VisibleSelection::firstRange() const
         return 0;
     Position start = m_start.parentAnchoredEquivalent();
     Position end = m_end.parentAnchoredEquivalent();
-    return Range::create(start.anchorNode()->document(), start, end);
+    return Range::create(&start.anchorNode()->document(), start, end);
 }
 
 PassRefPtr<Range> VisibleSelection::toNormalizedRange() const
@@ -145,7 +145,7 @@ PassRefPtr<Range> VisibleSelection::toNormalizedRange() const
     // in the course of running edit commands which modify the DOM.
     // Failing to call this can result in equivalentXXXPosition calls returning
     // incorrect results.
-    m_start.anchorNode()->document()->updateLayout();
+    m_start.anchorNode()->document().updateLayout();
 
     // Check again, because updating layout can clear the selection.
     if (isNone())
@@ -189,7 +189,7 @@ PassRefPtr<Range> VisibleSelection::toNormalizedRange() const
 
     // VisibleSelections are supposed to always be valid.  This constructor will ASSERT
     // if a valid range could not be created, which is fine for this callsite.
-    return Range::create(s.anchorNode()->document(), s, e);
+    return Range::create(&s.anchorNode()->document(), s, e);
 }
 
 bool VisibleSelection::expandUsingGranularity(TextGranularity granularity)
@@ -206,15 +206,15 @@ static PassRefPtr<Range> makeSearchRange(const Position& pos)
     Node* n = pos.deprecatedNode();
     if (!n)
         return 0;
-    Document* d = n->document();
-    Node* de = d->documentElement();
+    Document& d = n->document();
+    Node* de = d.documentElement();
     if (!de)
         return 0;
     Node* boundary = n->enclosingBlockFlowElement();
     if (!boundary)
         return 0;
 
-    RefPtr<Range> searchRange(Range::create(d));
+    RefPtr<Range> searchRange(Range::create(&d));
     TrackExceptionState es;
 
     Position start(pos.parentAnchoredEquivalent());

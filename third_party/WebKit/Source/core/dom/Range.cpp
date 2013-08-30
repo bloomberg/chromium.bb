@@ -222,8 +222,8 @@ void Range::setStart(PassRefPtr<Node> refNode, int offset, ExceptionState& es)
     }
 
     bool didMoveDocument = false;
-    if (refNode->document() != m_ownerDocument) {
-        setDocument(refNode->document());
+    if (&refNode->document() != m_ownerDocument) {
+        setDocument(&refNode->document());
         didMoveDocument = true;
     }
 
@@ -250,8 +250,8 @@ void Range::setEnd(PassRefPtr<Node> refNode, int offset, ExceptionState& es)
     }
 
     bool didMoveDocument = false;
-    if (refNode->document() != m_ownerDocument) {
-        setDocument(refNode->document());
+    if (&refNode->document() != m_ownerDocument) {
+        setDocument(&refNode->document());
         didMoveDocument = true;
     }
 
@@ -302,7 +302,7 @@ bool Range::isPointInRange(Node* refNode, int offset, ExceptionState& es)
         return false;
     }
 
-    if (!refNode->attached() || refNode->document() != m_ownerDocument) {
+    if (!refNode->attached() || &refNode->document() != m_ownerDocument) {
         return false;
     }
 
@@ -330,7 +330,7 @@ short Range::comparePoint(Node* refNode, int offset, ExceptionState& es) const
         return 0;
     }
 
-    if (!refNode->attached() || refNode->document() != m_ownerDocument) {
+    if (!refNode->attached() || &refNode->document() != m_ownerDocument) {
         es.throwDOMException(WrongDocumentError);
         return 0;
     }
@@ -375,7 +375,7 @@ Range::CompareResults Range::compareNode(Node* refNode, ExceptionState& es) cons
         return NODE_BEFORE;
     }
 
-    if (refNode->document() != m_ownerDocument) {
+    if (&refNode->document() != m_ownerDocument) {
         // Firefox doesn't throw an exception for this case; it returns 0.
         return NODE_BEFORE;
     }
@@ -420,7 +420,7 @@ short Range::compareBoundaryPoints(CompareHow how, const Range* sourceRange, Exc
     if (es.hadException())
         return 0;
 
-    if (thisCont->document() != sourceCont->document()) {
+    if (&thisCont->document() != &sourceCont->document()) {
         es.throwDOMException(WrongDocumentError);
         return 0;
     }
@@ -579,7 +579,7 @@ bool Range::intersectsNode(Node* refNode, ExceptionState& es)
         return false;
     }
 
-    if (!refNode->attached() || refNode->document() != m_ownerDocument) {
+    if (!refNode->attached() || &refNode->document() != m_ownerDocument) {
         // Firefox doesn't throw an exception for these cases; it returns false.
         return false;
     }
@@ -1085,7 +1085,7 @@ String Range::text() const
 
     // We need to update layout, since plainText uses line boxes in the render tree.
     // FIXME: As with innerText, we'd like this to work even if there are no render objects.
-    m_start.container()->document()->updateLayout();
+    m_start.container()->document().updateLayout();
 
     return plainText(this);
 }
@@ -1317,8 +1317,8 @@ void Range::selectNode(Node* refNode, ExceptionState& es)
             return;
     }
 
-    if (m_ownerDocument != refNode->document())
-        setDocument(refNode->document());
+    if (m_ownerDocument != &refNode->document())
+        setDocument(&refNode->document());
 
     setStartBefore(refNode);
     setEndAfter(refNode);
@@ -1358,8 +1358,8 @@ void Range::selectNodeContents(Node* refNode, ExceptionState& es)
         }
     }
 
-    if (m_ownerDocument != refNode->document())
-        setDocument(refNode->document());
+    if (m_ownerDocument != &refNode->document())
+        setDocument(&refNode->document());
 
     m_start.setToStartOfNode(refNode);
     m_end.setToEndOfNode(refNode);
@@ -1620,7 +1620,7 @@ bool areRangesEqual(const Range* a, const Range* b)
 PassRefPtr<Range> rangeOfContents(Node* node)
 {
     ASSERT(node);
-    RefPtr<Range> range = Range::create(node->document());
+    RefPtr<Range> range = Range::create(&node->document());
     range->selectNodeContents(node, IGNORE_EXCEPTION);
     return range.release();
 }
@@ -1655,7 +1655,7 @@ static inline void boundaryNodeChildrenChanged(RangeBoundaryPoint& boundary, Con
 void Range::nodeChildrenChanged(ContainerNode* container)
 {
     ASSERT(container);
-    ASSERT(container->document() == m_ownerDocument);
+    ASSERT(&container->document() == m_ownerDocument);
     boundaryNodeChildrenChanged(m_start, container);
     boundaryNodeChildrenChanged(m_end, container);
 }
@@ -1680,7 +1680,7 @@ static inline void boundaryNodeChildrenWillBeRemoved(RangeBoundaryPoint& boundar
 void Range::nodeChildrenWillBeRemoved(ContainerNode* container)
 {
     ASSERT(container);
-    ASSERT(container->document() == m_ownerDocument);
+    ASSERT(&container->document() == m_ownerDocument);
     boundaryNodeChildrenWillBeRemoved(m_start, container);
     boundaryNodeChildrenWillBeRemoved(m_end, container);
 }
@@ -1703,7 +1703,7 @@ static inline void boundaryNodeWillBeRemoved(RangeBoundaryPoint& boundary, Node*
 void Range::nodeWillBeRemoved(Node* node)
 {
     ASSERT(node);
-    ASSERT(node->document() == m_ownerDocument);
+    ASSERT(&node->document() == m_ownerDocument);
     ASSERT(node != m_ownerDocument);
     ASSERT(node->parentNode());
     boundaryNodeWillBeRemoved(m_start, node);
@@ -1723,7 +1723,7 @@ static inline void boundaryTextInserted(RangeBoundaryPoint& boundary, Node* text
 void Range::textInserted(Node* text, unsigned offset, unsigned length)
 {
     ASSERT(text);
-    ASSERT(text->document() == m_ownerDocument);
+    ASSERT(&text->document() == m_ownerDocument);
     boundaryTextInserted(m_start, text, offset, length);
     boundaryTextInserted(m_end, text, offset, length);
 }
@@ -1744,7 +1744,7 @@ static inline void boundaryTextRemoved(RangeBoundaryPoint& boundary, Node* text,
 void Range::textRemoved(Node* text, unsigned offset, unsigned length)
 {
     ASSERT(text);
-    ASSERT(text->document() == m_ownerDocument);
+    ASSERT(&text->document() == m_ownerDocument);
     boundaryTextRemoved(m_start, text, offset, length);
     boundaryTextRemoved(m_end, text, offset, length);
 }
@@ -1760,7 +1760,7 @@ static inline void boundaryTextNodesMerged(RangeBoundaryPoint& boundary, NodeWit
 void Range::textNodesMerged(NodeWithIndex& oldNode, unsigned offset)
 {
     ASSERT(oldNode.node());
-    ASSERT(oldNode.node()->document() == m_ownerDocument);
+    ASSERT(&oldNode.node()->document() == m_ownerDocument);
     ASSERT(oldNode.node()->parentNode());
     ASSERT(oldNode.node()->isTextNode());
     ASSERT(oldNode.node()->previousSibling());
@@ -1782,7 +1782,7 @@ static inline void boundaryTextNodesSplit(RangeBoundaryPoint& boundary, Text* ol
 void Range::textNodeSplit(Text* oldNode)
 {
     ASSERT(oldNode);
-    ASSERT(oldNode->document() == m_ownerDocument);
+    ASSERT(&oldNode->document() == m_ownerDocument);
     ASSERT(oldNode->parentNode());
     ASSERT(oldNode->isTextNode());
     ASSERT(oldNode->nextSibling());

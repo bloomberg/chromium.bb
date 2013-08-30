@@ -373,7 +373,7 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
         if (!m_fileInputElementUnderMouse)
             m_page->dragCaretController().setCaretPosition(m_documentUnderMouse->frame()->visiblePositionForPoint(point));
 
-        Frame* innerFrame = element->document()->frame();
+        Frame* innerFrame = element->document().frame();
         dragSession.operation = dragIsMove(innerFrame->selection(), dragData) ? DragOperationMove : DragOperationCopy;
         dragSession.mouseIsOverFileInput = m_fileInputElementUnderMouse;
         dragSession.numberOfItemsToBeAccepted = 0;
@@ -521,7 +521,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
     }
 
     if (rootEditableElement) {
-        if (Frame* frame = rootEditableElement->document()->frame())
+        if (Frame* frame = rootEditableElement->document().frame())
             frame->eventHandler()->updateDragStateAfterEditDragIfNeeded(rootEditableElement.get());
     }
 

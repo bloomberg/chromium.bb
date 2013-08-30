@@ -151,7 +151,7 @@ void MediaControlsChromium::setMediaController(MediaControllerInterface* control
 
 void MediaControlsChromium::reset()
 {
-    Page* page = document()->page();
+    Page* page = document().page();
     if (!page)
         return;
 
@@ -175,7 +175,7 @@ void MediaControlsChromium::updateCurrentTimeDisplay()
     double now = m_mediaController->currentTime();
     double duration = m_mediaController->duration();
 
-    Page* page = document()->page();
+    Page* page = document().page();
     if (!page)
         return;
 
@@ -205,7 +205,7 @@ void MediaControlsChromium::createTextTrackDisplay()
     if (m_textDisplayContainer)
         return;
 
-    RefPtr<MediaControlTextTrackContainerElement> textDisplayContainer = MediaControlTextTrackContainerElement::create(document());
+    RefPtr<MediaControlTextTrackContainerElement> textDisplayContainer = MediaControlTextTrackContainerElement::create(&document());
     m_textDisplayContainer = textDisplayContainer.get();
 
     if (m_mediaController)

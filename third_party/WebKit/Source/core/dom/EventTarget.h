@@ -161,8 +161,8 @@ namespace WebCore {
         void type::setOn##attribute(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld) { setAttributeEventListener(eventNames().attribute##Event, listener, isolatedWorld); } \
 
     #define DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(attribute) \
-        EventListener* on##attribute(DOMWrapperWorld* isolatedWorld) { return document()->getWindowAttributeEventListener(eventNames().attribute##Event, isolatedWorld); } \
-        void setOn##attribute(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld) { document()->setWindowAttributeEventListener(eventNames().attribute##Event, listener, isolatedWorld); } \
+        EventListener* on##attribute(DOMWrapperWorld* isolatedWorld) { return document().getWindowAttributeEventListener(eventNames().attribute##Event, isolatedWorld); } \
+        void setOn##attribute(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld) { document().setWindowAttributeEventListener(eventNames().attribute##Event, listener, isolatedWorld); } \
 
     #define DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(attribute, eventName) \
         EventListener* on##attribute(DOMWrapperWorld* isolatedWorld) { return getAttributeEventListener(eventNames().eventName##Event, isolatedWorld); } \

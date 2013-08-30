@@ -69,7 +69,7 @@ void CSSCanvasValue::canvasDestroyed(HTMLCanvasElement* element)
 
 IntSize CSSCanvasValue::fixedSize(const RenderObject* renderer)
 {
-    if (HTMLCanvasElement* elt = element(renderer->document()))
+    if (HTMLCanvasElement* elt = element(&renderer->document()))
         return IntSize(elt->width(), elt->height());
     return IntSize();
 }
@@ -88,7 +88,7 @@ HTMLCanvasElement* CSSCanvasValue::element(Document* document)
 PassRefPtr<Image> CSSCanvasValue::image(RenderObject* renderer, const IntSize& /*size*/)
 {
     ASSERT(clients().contains(renderer));
-    HTMLCanvasElement* elt = element(renderer->document());
+    HTMLCanvasElement* elt = element(&renderer->document());
     if (!elt || !elt->buffer())
         return 0;
     return elt->copiedImage();

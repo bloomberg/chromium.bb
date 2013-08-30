@@ -70,7 +70,7 @@ void DragCaretController::setCaretPosition(const VisiblePosition& position)
     Document* document = 0;
     if (Node* node = m_position.deepEquivalent().deprecatedNode()) {
         invalidateCaretRect(node);
-        document = node->document();
+        document = &node->document();
     }
     if (m_position.isNull() || m_position.isOrphan())
         clearCaretRect();
@@ -95,7 +95,7 @@ static bool removingNodeRemovesPosition(Node* node, const Position& position)
 
 static void clearRenderViewSelection(const Position& position)
 {
-    RefPtr<Document> document = position.anchorNode()->document();
+    RefPtr<Document> document = &position.anchorNode()->document();
     document->updateStyleIfNeeded();
     if (RenderView* view = document->renderView())
         view->clearSelection();
@@ -232,7 +232,7 @@ void CaretBase::invalidateCaretRect(Node* node, bool caretRectChanged)
     if (caretRectChanged)
         return;
 
-    if (RenderView* view = node->document()->renderView()) {
+    if (RenderView* view = node->document().renderView()) {
         if (shouldRepaintCaret(view, node->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable)))
             repaintCaretForLocalRect(node, localCaretRectWithoutUpdate());
     }
@@ -268,7 +268,7 @@ void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoi
 
 void DragCaretController::paintDragCaret(Frame* frame, GraphicsContext* p, const LayoutPoint& paintOffset, const LayoutRect& clipRect) const
 {
-    if (m_position.deepEquivalent().deprecatedNode()->document()->frame() == frame)
+    if (m_position.deepEquivalent().deprecatedNode()->document().frame() == frame)
         paintCaret(m_position.deepEquivalent().deprecatedNode(), p, paintOffset, clipRect);
 }
 

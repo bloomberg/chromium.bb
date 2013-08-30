@@ -61,10 +61,10 @@ void FullscreenController::willEnterFullScreen()
         return;
 
     // Ensure that this element's document is still attached.
-    Document* doc = m_provisionalFullScreenElement->document();
-    if (doc->frame()) {
-        FullscreenElementStack::from(doc)->webkitWillEnterFullScreenForElement(m_provisionalFullScreenElement.get());
-        m_fullScreenFrame = doc->frame();
+    Document& doc = m_provisionalFullScreenElement->document();
+    if (doc.frame()) {
+        FullscreenElementStack::from(&doc)->webkitWillEnterFullScreenForElement(m_provisionalFullScreenElement.get());
+        m_fullScreenFrame = doc.frame();
     }
     m_provisionalFullScreenElement.clear();
 }

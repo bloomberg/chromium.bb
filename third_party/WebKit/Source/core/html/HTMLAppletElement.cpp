@@ -104,7 +104,7 @@ void HTMLAppletElement::updateWidget(PluginCreationOption)
 
     RenderEmbeddedObject* renderer = renderEmbeddedObject();
 
-    Frame* frame = document()->frame();
+    Frame* frame = document().frame();
     ASSERT(frame);
 
     LayoutUnit contentWidth = renderer->style()->width().isFixed() ? LayoutUnit(renderer->style()->width().value()) :
@@ -120,20 +120,20 @@ void HTMLAppletElement::updateWidget(PluginCreationOption)
 
     const AtomicString& codeBase = getAttribute(codebaseAttr);
     if (!codeBase.isNull()) {
-        KURL codeBaseURL = document()->completeURL(codeBase);
-        if (!document()->securityOrigin()->canDisplay(codeBaseURL)) {
+        KURL codeBaseURL = document().completeURL(codeBase);
+        if (!document().securityOrigin()->canDisplay(codeBaseURL)) {
             FrameLoader::reportLocalLoadFailed(frame, codeBaseURL.string());
             return;
         }
         const char javaAppletMimeType[] = "application/x-java-applet";
-        if (!document()->contentSecurityPolicy()->allowObjectFromSource(codeBaseURL)
-            || !document()->contentSecurityPolicy()->allowPluginType(javaAppletMimeType, javaAppletMimeType, codeBaseURL))
+        if (!document().contentSecurityPolicy()->allowObjectFromSource(codeBaseURL)
+            || !document().contentSecurityPolicy()->allowPluginType(javaAppletMimeType, javaAppletMimeType, codeBaseURL))
             return;
         paramNames.append("codeBase");
         paramValues.append(codeBase.string());
     }
 
-    const AtomicString& name = document()->isHTMLDocument() ? getNameAttribute() : getIdAttribute();
+    const AtomicString& name = document().isHTMLDocument() ? getNameAttribute() : getIdAttribute();
     if (!name.isNull()) {
         paramNames.append("name");
         paramValues.append(name.string());
@@ -146,7 +146,7 @@ void HTMLAppletElement::updateWidget(PluginCreationOption)
     }
 
     paramNames.append("baseURL");
-    KURL baseURL = document()->baseURL();
+    KURL baseURL = document().baseURL();
     paramValues.append(baseURL.string());
 
     const AtomicString& mayScript = getAttribute(mayscriptAttr);
@@ -182,10 +182,10 @@ void HTMLAppletElement::updateWidget(PluginCreationOption)
 
 bool HTMLAppletElement::canEmbedJava() const
 {
-    if (document()->isSandboxed(SandboxPlugins))
+    if (document().isSandboxed(SandboxPlugins))
         return false;
 
-    Settings* settings = document()->settings();
+    Settings* settings = document().settings();
     if (!settings)
         return false;
 
