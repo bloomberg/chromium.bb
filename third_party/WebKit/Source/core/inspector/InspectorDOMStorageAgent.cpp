@@ -108,22 +108,6 @@ void InspectorDOMStorageAgent::disable(ErrorString*)
     m_state->setBoolean(DOMStorageAgentState::domStorageAgentEnabled, false);
 }
 
-void InspectorDOMStorageAgent::getValue(ErrorString* errorString, const RefPtr<JSONObject>& storageId, const String& key, TypeBuilder::OptOutput<WTF::String>* value)
-{
-    Frame* frame;
-    OwnPtr<StorageArea> storageArea = findStorageArea(errorString, storageId, frame);
-    if (!storageArea)
-        return;
-
-    TrackExceptionState es;
-    bool keyPresent = storageArea->contains(key, es, frame);
-    if (hadException(es, errorString) || !keyPresent)
-        return;
-
-    *value = storageArea->getItem(key, es, frame);
-    hadException(es, errorString);
-}
-
 void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, const RefPtr<JSONObject>& storageId, RefPtr<TypeBuilder::Array<TypeBuilder::Array<String> > >& items)
 {
     Frame* frame;
