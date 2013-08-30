@@ -520,12 +520,8 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
   }
   base::FundamentalValue ui_identifier(id_);
   base::FundamentalValue ui_preview_request_id(preview_request_id);
-  if (AutoCancelForTesting()) {
-    OnClosePrintPreviewDialog();
-  } else {
-    web_ui()->CallJavascriptFunction("updatePrintPreview", ui_identifier,
-                                     ui_preview_request_id);
-  }
+  web_ui()->CallJavascriptFunction("updatePrintPreview", ui_identifier,
+                                   ui_preview_request_id);
 }
 
 void PrintPreviewUI::OnPrintPreviewDialogDestroyed() {
@@ -585,14 +581,4 @@ void PrintPreviewUI::OnReloadPrintersList() {
 
 void PrintPreviewUI::OnPrintPreviewScalingDisabled() {
   web_ui()->CallJavascriptFunction("printScalingDisabledForSourcePDF");
-}
-
-static bool g_auto_cancel_for_testing_ = false;
-
-void PrintPreviewUI::SetAutoCancelForTesting(bool auto_cancel) {
-  g_auto_cancel_for_testing_ = auto_cancel;
-}
-
-bool PrintPreviewUI::AutoCancelForTesting() {
-  return g_auto_cancel_for_testing_;
 }
