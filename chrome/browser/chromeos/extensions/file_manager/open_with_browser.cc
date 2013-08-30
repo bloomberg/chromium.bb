@@ -77,6 +77,8 @@ bool IsViewableInBrowser(const base::FilePath& file_path) {
 
 bool IsPepperPluginEnabled(Profile* profile,
                            const base::FilePath& plugin_path) {
+  DCHECK(profile);
+
   content::PepperPluginInfo* pepper_info =
       PluginService::GetInstance()->GetRegisteredPpapiPluginInfo(plugin_path);
   if (!pepper_info)
@@ -90,12 +92,16 @@ bool IsPepperPluginEnabled(Profile* profile,
 }
 
 bool IsPdfPluginEnabled(Profile* profile) {
+  DCHECK(profile);
+
   base::FilePath plugin_path;
   PathService::Get(chrome::FILE_PDF_PLUGIN, &plugin_path);
   return IsPepperPluginEnabled(profile, plugin_path);
 }
 
 bool IsFlashPluginEnabled(Profile* profile) {
+  DCHECK(profile);
+
   base::FilePath plugin_path(
       CommandLine::ForCurrentProcess()->GetSwitchValueNative(
           switches::kPpapiFlashPath));
@@ -105,26 +111,29 @@ bool IsFlashPluginEnabled(Profile* profile) {
 }
 
 void OpenNewTab(Profile* profile, const GURL& url) {
+  DCHECK(profile);
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Browser* browser = chrome::FindOrCreateTabbedBrowser(
-      profile ? profile : ProfileManager::GetDefaultProfileOrOffTheRecord(),
-      chrome::HOST_DESKTOP_TYPE_ASH);
+      profile, chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::AddSelectedTabWithURL(browser, url, content::PAGE_TRANSITION_LINK);
   // If the current browser is not tabbed then the new tab will be created
   // in a different browser. Make sure it is visible.
   browser->window()->Show();
 }
 
-void InstallCRX(Browser* browser, const base::FilePath& file_path) {
+void InstallCRX(Profile* profile, const base::FilePath& file_path) {
+  DCHECK(profile);
+
   ExtensionService* service =
-      extensions::ExtensionSystem::Get(browser->profile())->extension_service();
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   CHECK(service);
 
   scoped_refptr<extensions::CrxInstaller> installer(
       extensions::CrxInstaller::Create(
           service,
           scoped_ptr<ExtensionInstallPrompt>(new ExtensionInstallPrompt(
-              browser->profile(), NULL, NULL))));
+              profile, NULL, NULL))));
   installer->set_error_on_unsupported_requirements(true);
   installer->set_is_gallery_install(false);
   installer->set_allow_silent_install(false);
@@ -132,13 +141,15 @@ void InstallCRX(Browser* browser, const base::FilePath& file_path) {
 }
 
 // Called when a crx file on Drive was downloaded.
-void OnCRXDownloadCallback(Browser* browser,
+void OnCRXDownloadCallback(Profile* profile,
                            drive::FileError error,
                            const base::FilePath& file,
                            scoped_ptr<drive::ResourceEntry> entry) {
+  DCHECK(profile);
+
   if (error != drive::FILE_ERROR_OK)
     return;
-  InstallCRX(browser, file);
+  InstallCRX(profile, file);
 }
 
 // Reads the alternate URL from a GDoc file. When it fails, returns a file URL
@@ -153,10 +164,10 @@ GURL ReadUrlFromGDocOnBlockingPool(const base::FilePath& file_path) {
 
 }  // namespace
 
-bool OpenFileWithBrowser(Browser* browser, const base::FilePath& file_path) {
+bool OpenFileWithBrowser(Profile* profile, const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(profile);
 
-  Profile* profile = browser->profile();
   // For things supported natively by the browser, we should open it
   // in a tab.
   if (IsViewableInBrowser(file_path) ||
@@ -197,9 +208,9 @@ bool OpenFileWithBrowser(Browser* browser, const base::FilePath& file_path) {
         return false;
       integration_service->file_system()->GetFileByPath(
           drive::util::ExtractDrivePath(file_path),
-          base::Bind(&OnCRXDownloadCallback, browser));
+          base::Bind(&OnCRXDownloadCallback, profile));
     } else {
-      InstallCRX(browser, file_path);
+      InstallCRX(profile, file_path);
     }
     return true;
   }
@@ -213,6 +224,8 @@ bool OpenFileWithBrowser(Browser* browser, const base::FilePath& file_path) {
 bool ShouldBeOpenedWithPlugin(
     Profile* profile,
     const base::FilePath::StringType& file_extension) {
+  DCHECK(profile);
+
   const base::FilePath file_path =
       base::FilePath::FromUTF8Unsafe("dummy").AddExtension(file_extension);
   if (file_path.MatchesExtension(kPdfExtension))

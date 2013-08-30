@@ -15,9 +15,10 @@ class Profile;
 namespace file_manager {
 namespace util {
 
-// Opens the file specified by |file_path| with the browser. This function takes
-// care of the following intricacies:
+// Opens the file specified by |file_path| with the browser for
+// |profile|. This function takes care of the following intricacies:
 //
+// - If there is no active browser window, open it.
 // - If the file is a Drive hosted document, the hosted document will be
 //   opened in the browser by extracting the right URL for the file.
 // - If the file is a CRX file, the CRX file will be installed.
@@ -25,7 +26,7 @@ namespace util {
 //   needed.
 //
 // Returns false if failed to open. This happens if the file type is unknown.
-bool OpenFileWithBrowser(Browser* browser, const base::FilePath& file_path);
+bool OpenFileWithBrowser(Profile* profile, const base::FilePath& file_path);
 
 // Checks whether a pepper plugin for |file_extension| is enabled.
 bool ShouldBeOpenedWithPlugin(

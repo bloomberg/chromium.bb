@@ -479,23 +479,16 @@ bool ShouldBeOpenedWithBrowser(const std::string& extension_id,
            action_id == "open-hosted-gslides"));
 }
 
-// Opens the files specified by |file_urls| with the browser. |profile| is
-// used for finding an active browser. Returns true on success. It's a
-// failure if no files are opened.
+// Opens the files specified by |file_urls| with the browser for |profile|.
+// Returns true on success. It's a failure if no files are opened.
 bool OpenFilesWithBrowser(Profile* profile,
                           const std::vector<FileSystemURL>& file_urls) {
-  Browser* browser = chrome::FindLastActiveWithProfile(
-      profile,
-      chrome::HOST_DESKTOP_TYPE_ASH);
-  if (!browser)
-    return false;
-
   int num_opened = 0;
   for (size_t i = 0; i < file_urls.size(); ++i) {
     const FileSystemURL& file_url = file_urls[i];
     if (chromeos::FileSystemBackend::CanHandleURL(file_url)) {
       const base::FilePath& file_path = file_url.path();
-      num_opened += util::OpenFileWithBrowser(browser, file_path);
+      num_opened += util::OpenFileWithBrowser(profile, file_path);
     }
   }
   return num_opened > 0;
