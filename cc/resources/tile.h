@@ -71,7 +71,7 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
 
   scoped_ptr<base::Value> AsValue() const;
 
-  bool IsReadyToDraw() const {
+  inline bool IsReadyToDraw() const {
     for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
       if (managed_state_.tile_versions[mode].IsReadyToDraw())
         return true;
