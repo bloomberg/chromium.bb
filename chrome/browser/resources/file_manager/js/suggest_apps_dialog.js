@@ -225,6 +225,12 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
         this.authorizeRequest_.bind(this),
         {urls: [this.widgetOrigin_ + '/*']},
         ['blocking', 'requestHeaders']);
+    webview.addEventListener('newwindow', function(event) {
+      // Discard the window object and reopen in an external window.
+      event.window.discard();
+      util.visitURL(e.targetUrl);
+      event.preventDefault();
+    });
     webview.focus();
 
     this.webviewClient_ = new CWSContainerClient(
