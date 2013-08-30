@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/sys_byteorder.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/net_address.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
@@ -21,7 +22,7 @@ bool SocketAddressToPpNetAddressWithPort(
     case AF_INET: {
       in_addr ipv4_addr = address.ipaddr().ipv4_address();
       PP_NetAddress_IPv4 ip_addr;
-      ip_addr.port = port;
+      ip_addr.port = base::HostToNet16(port);
       memcpy(&ip_addr.addr, &ipv4_addr, sizeof(ip_addr.addr));
       *pp_address = pp::NetAddress(instance, ip_addr);
       return true;
@@ -29,7 +30,7 @@ bool SocketAddressToPpNetAddressWithPort(
     case AF_INET6: {
       in6_addr ipv6_addr = address.ipaddr().ipv6_address();
       PP_NetAddress_IPv6 ip_addr;
-      ip_addr.port = port;
+      ip_addr.port = base::HostToNet16(port);
       memcpy(&ip_addr.addr, &ipv6_addr, sizeof(ip_addr.addr));
       *pp_address = pp::NetAddress(instance, ip_addr);
       return true;
@@ -58,7 +59,7 @@ void PpNetAddressToSocketAddress(const pp::NetAddress& pp_net_address,
       CHECK(pp_net_address.DescribeAsIPv4Address(&ipv4_addr));
       address->SetIP(talk_base::IPAddress(
           *reinterpret_cast<in_addr*>(&ipv4_addr.addr)));
-      address->SetPort(ipv4_addr.port);
+      address->SetPort(base::NetToHost16(ipv4_addr.port));
       return;
     }
     case PP_NETADDRESS_FAMILY_IPV6: {
@@ -66,7 +67,7 @@ void PpNetAddressToSocketAddress(const pp::NetAddress& pp_net_address,
       CHECK(pp_net_address.DescribeAsIPv6Address(&ipv6_addr));
       address->SetIP(talk_base::IPAddress(
           *reinterpret_cast<in6_addr*>(&ipv6_addr.addr)));
-      address->SetPort(ipv6_addr.port);
+      address->SetPort(base::NetToHost16(ipv6_addr.port));
       return;
     }
     case PP_NETADDRESS_FAMILY_UNSPECIFIED: {
