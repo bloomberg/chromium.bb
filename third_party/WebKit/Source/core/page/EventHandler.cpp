@@ -3642,8 +3642,6 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
                 m_originatingTouchPointDocument = doc;
                 freshTouchEvents = false;
             }
-            if (!doc)
-                continue;
             if (!doc->hasTouchEventHandlers())
                 continue;
             m_originatingTouchPointTargets.set(touchPointTargetKey, node);
@@ -3667,8 +3665,6 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
         if (!touchTarget.get())
             continue;
         Document* doc = touchTarget->toNode()->document();
-        if (!doc)
-            continue;
         if (!doc->hasTouchEventHandlers())
             continue;
         Frame* targetFrame = doc->frame();

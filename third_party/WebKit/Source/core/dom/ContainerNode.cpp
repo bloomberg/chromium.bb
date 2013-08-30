@@ -147,7 +147,7 @@ static inline bool isChildTypeAllowed(ContainerNode* newParent, Node* child)
 static inline bool isInTemplateContent(const Node* node)
 {
     Document* document = node->document();
-    return document && document == document->templateDocument();
+    return document == document->templateDocument();
 }
 
 static inline bool containsConsideringHostElements(const Node* newChild, const Node* newParent)

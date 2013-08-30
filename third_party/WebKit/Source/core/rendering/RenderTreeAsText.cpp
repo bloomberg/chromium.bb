@@ -804,7 +804,7 @@ String externalRepresentation(Element* element, RenderAsTextBehavior behavior)
 {
     // Doesn't support printing mode.
     ASSERT(!(behavior & RenderAsTextPrintingMode));
-    if (!(behavior & RenderAsTextDontUpdateLayout) && element->document())
+    if (!(behavior & RenderAsTextDontUpdateLayout))
         element->document()->updateLayout();
 
     RenderObject* renderer = element->renderer();

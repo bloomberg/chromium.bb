@@ -242,7 +242,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     // if document->frame() == m_frame we can get into an infinite loop
     if (s.base().anchorNode()) {
         Document* document = s.base().anchorNode()->document();
-        if (document && document->frame() && document->frame() != m_frame && document != m_frame->document()) {
+        if (document->frame() && document->frame() != m_frame && document != m_frame->document()) {
             RefPtr<Frame> guard = document->frame();
             document->frame()->selection()->setSelection(s, options, align, granularity);
             // It's possible that during the above set selection, this FrameSelection has been modified by

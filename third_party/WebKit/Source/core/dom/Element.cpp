@@ -195,7 +195,7 @@ PassRefPtr<Element> Element::create(const QualifiedName& tagName, Document* docu
 Element::~Element()
 {
 #ifndef NDEBUG
-    if (document() && document()->renderer()) {
+    if (document()->renderer()) {
         // When the document is not destroyed, an element that was part of a named flow
         // content nodes should have been removed from the content nodes collection
         // and the inNamedFlow flag reset.
@@ -1126,7 +1126,7 @@ void Element::parserSetAttributes(const Vector<Attribute>& attributeVector)
     if (attributeVector.isEmpty())
         return;
 
-    if (document() && document()->sharedObjectPool())
+    if (document()->sharedObjectPool())
         m_elementData = document()->sharedObjectPool()->cachedShareableElementDataWithAttributes(attributeVector);
     else
         m_elementData = ShareableElementData::createWithAttributes(attributeVector);
@@ -3237,7 +3237,7 @@ void Element::styleAttributeChanged(const AtomicString& newStyleString, Attribut
 {
     ASSERT(isStyledElement());
     WTF::OrdinalNumber startLineNumber = WTF::OrdinalNumber::beforeFirst();
-    if (document() && document()->scriptableDocumentParser() && !document()->isInDocumentWrite())
+    if (document()->scriptableDocumentParser() && !document()->isInDocumentWrite())
         startLineNumber = document()->scriptableDocumentParser()->lineNumber();
 
     if (newStyleString.isNull()) {

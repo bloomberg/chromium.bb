@@ -688,10 +688,8 @@ bool Node::isEditableToAccessibility(EditableLevel editableLevel) const
     ASSERT(AXObjectCache::accessibilityEnabled());
     ASSERT(document()->existingAXObjectCache());
 
-    if (document()) {
-        if (AXObjectCache* cache = document()->existingAXObjectCache())
-            return cache->rootAXEditableElement(this);
-    }
+    if (AXObjectCache* cache = document()->existingAXObjectCache())
+        return cache->rootAXEditableElement(this);
 
     return false;
 }
@@ -1410,9 +1408,9 @@ PassRefPtr<NodeList> Node::querySelectorAll(const AtomicString& selectors, Excep
     return selectorQuery->queryAll(this);
 }
 
-Document *Node::ownerDocument() const
+Document* Node::ownerDocument() const
 {
-    Document *doc = document();
+    Document* doc = document();
     return doc == this ? 0 : doc;
 }
 
@@ -2062,7 +2060,7 @@ void Node::formatForDebugger(char* buffer, unsigned length) const
 static ContainerNode* parentOrShadowHostOrFrameOwner(const Node* node)
 {
     ContainerNode* parent = node->parentOrShadowHostNode();
-    if (!parent && node->document() && node->document()->frame())
+    if (!parent && node->document()->frame())
         parent = node->document()->frame()->ownerElement();
     return parent;
 }
@@ -2193,13 +2191,12 @@ static inline bool tryAddEventListener(Node* targetNode, const AtomicString& eve
     if (!targetNode->EventTarget::addEventListener(eventType, listener, useCapture))
         return false;
 
-    if (Document* document = targetNode->document()) {
-        document->addListenerTypeIfNeeded(eventType);
-        if (eventType == eventNames().wheelEvent || eventType == eventNames().mousewheelEvent)
-            document->didAddWheelEventHandler();
-        else if (eventNames().isTouchEventType(eventType))
-            document->didAddTouchEventHandler(targetNode);
-    }
+    Document* document = targetNode->document();
+    document->addListenerTypeIfNeeded(eventType);
+    if (eventType == eventNames().wheelEvent || eventType == eventNames().mousewheelEvent)
+        document->didAddWheelEventHandler();
+    else if (eventNames().isTouchEventType(eventType))
+        document->didAddTouchEventHandler(targetNode);
 
     return true;
 }
@@ -2216,12 +2213,11 @@ static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& 
 
     // FIXME: Notify Document that the listener has vanished. We need to keep track of a number of
     // listeners for each type, not just a bool - see https://bugs.webkit.org/show_bug.cgi?id=33861
-    if (Document* document = targetNode->document()) {
-        if (eventType == eventNames().wheelEvent || eventType == eventNames().mousewheelEvent)
-            document->didRemoveWheelEventHandler();
-        else if (eventNames().isTouchEventType(eventType))
-            document->didRemoveTouchEventHandler(targetNode);
-    }
+    Document* document = targetNode->document();
+    if (eventType == eventNames().wheelEvent || eventType == eventNames().mousewheelEvent)
+        document->didRemoveWheelEventHandler();
+    else if (eventNames().isTouchEventType(eventType))
+        document->didRemoveTouchEventHandler(targetNode);
 
     return true;
 }
@@ -2693,20 +2689,17 @@ size_t Node::numberOfScopedHTMLStyleChildren() const
 
 void Node::setFocus(bool flag)
 {
-    if (Document* document = this->document())
-        document->userActionElements().setFocused(this, flag);
+    document()->userActionElements().setFocused(this, flag);
 }
 
 void Node::setActive(bool flag, bool)
 {
-    if (Document* document = this->document())
-        document->userActionElements().setActive(this, flag);
+    document()->userActionElements().setActive(this, flag);
 }
 
 void Node::setHovered(bool flag)
 {
-    if (Document* document = this->document())
-        document->userActionElements().setHovered(this, flag);
+    document()->userActionElements().setHovered(this, flag);
 }
 
 bool Node::isUserActionElementActive() const

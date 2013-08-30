@@ -1329,7 +1329,7 @@ bool isEndOfBlock(const VisiblePosition &pos)
 
 VisiblePosition startOfDocument(const Node* node)
 {
-    if (!node || !node->document() || !node->document()->documentElement())
+    if (!node || !node->document()->documentElement())
         return VisiblePosition();
 
     return VisiblePosition(firstPositionInNode(node->document()->documentElement()), DOWNSTREAM);
@@ -1342,7 +1342,7 @@ VisiblePosition startOfDocument(const VisiblePosition &c)
 
 VisiblePosition endOfDocument(const Node* node)
 {
-    if (!node || !node->document() || !node->document()->documentElement())
+    if (!node || !node->document()->documentElement())
         return VisiblePosition();
 
     Element* doc = node->document()->documentElement();

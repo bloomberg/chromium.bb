@@ -39,11 +39,7 @@ EventPathWalker::EventPathWalker(const Node* node)
     , m_isVisitingInsertionPointInReprojection(false)
 {
     ASSERT(node);
-    // FIXME: It's not clear if we need this document check, but I think we do
-    // since DocType nodes from document.implementation.createDocumentType
-    // don't have a document().
-    if (Document* document = node->document())
-        document->updateDistributionForNodeIfNeeded(const_cast<Node*>(node));
+    node->document()->updateDistributionForNodeIfNeeded(const_cast<Node*>(node));
 }
 
 Node* EventPathWalker::parent(const Node* node)

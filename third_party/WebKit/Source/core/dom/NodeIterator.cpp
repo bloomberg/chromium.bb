@@ -78,17 +78,13 @@ NodeIterator::NodeIterator(PassRefPtr<Node> rootNode, unsigned whatToShow, PassR
     , m_referenceNode(root(), true)
     , m_detached(false)
 {
-    // Document type nodes may have a null document. But since they can't have children, there is no need to listen for modifications to these.
-    ASSERT(root()->document() || root()->nodeType() == Node::DOCUMENT_TYPE_NODE);
     ScriptWrappable::init(this);
-    if (Document* ownerDocument = root()->document())
-        ownerDocument->attachNodeIterator(this);
+    root()->document()->attachNodeIterator(this);
 }
 
 NodeIterator::~NodeIterator()
 {
-    if (Document* ownerDocument = root()->document())
-        ownerDocument->detachNodeIterator(this);
+    root()->document()->detachNodeIterator(this);
 }
 
 PassRefPtr<Node> NodeIterator::nextNode(ScriptState* state, ExceptionState& es)
@@ -151,8 +147,7 @@ PassRefPtr<Node> NodeIterator::previousNode(ScriptState* state, ExceptionState& 
 
 void NodeIterator::detach()
 {
-    if (Document* ownerDocument = root()->document())
-        ownerDocument->detachNodeIterator(this);
+    root()->document()->detachNodeIterator(this);
     m_detached = true;
     m_referenceNode.node.clear();
 }

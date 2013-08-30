@@ -47,6 +47,7 @@ public:
 
     explicit ElementResolveContext(Element*);
 
+    // FIXME: This should return a reference.
     Document* document() const { return m_element->document(); }
     bool isDocumentElement() const { return m_element && m_element == m_element->document()->documentElement(); }
 

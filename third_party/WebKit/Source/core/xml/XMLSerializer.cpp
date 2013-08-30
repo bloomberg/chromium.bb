@@ -33,16 +33,6 @@ String XMLSerializer::serializeToString(Node* node, ExceptionState& es)
     if (!node)
         return String();
 
-    if (!node->document()) {
-        // Due to the fact that DocumentType nodes are created by the DOMImplementation
-        // and not the Document, it is possible for it to not have a Document associated
-        // with it.  It should be the only type of node where this is possible.
-        ASSERT(node->nodeType() == Node::DOCUMENT_TYPE_NODE);
-
-        es.throwDOMException(InvalidAccessError);
-        return String();
-    }
-
     return createMarkup(node);
 }
 

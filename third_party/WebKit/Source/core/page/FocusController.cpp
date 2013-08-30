@@ -788,7 +788,7 @@ void FocusController::findFocusCandidateInContainer(Node* container, const Layou
 
 bool FocusController::advanceFocusDirectionallyInContainer(Node* container, const LayoutRect& startingRect, FocusDirection direction)
 {
-    if (!container || !container->document())
+    if (!container)
         return false;
 
     LayoutRect newStartingRect = startingRect;

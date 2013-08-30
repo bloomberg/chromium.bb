@@ -599,6 +599,7 @@ public:
     // pseudo elements for which their parent node is returned.
     Node* generatingNode() const { return isPseudoElement() ? node()->parentOrShadowHostNode() : node(); }
 
+    // FIXME: This should return a reference.
     Document* document() const { return m_node->document(); }
     Frame* frame() const { return document()->frame(); }
 

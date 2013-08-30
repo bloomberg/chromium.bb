@@ -505,12 +505,7 @@ AccessibilityObject* AccessibilityObject::firstAccessibleObjectFromNode(const No
     if (!node)
         return 0;
 
-    Document* document = node->document();
-    if (!document)
-        return 0;
-
-    AXObjectCache* cache = document->axObjectCache();
-
+    AXObjectCache* cache = node->document()->axObjectCache();
     AccessibilityObject* accessibleObject = cache->getOrCreate(node->renderer());
     while (accessibleObject && accessibleObject->accessibilityIsIgnored()) {
         node = NodeTraversal::next(node);

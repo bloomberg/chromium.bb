@@ -153,10 +153,8 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
                 return SelectorFailsLocally;
 
             PseudoId pseudoId = CSSSelector::pseudoId(context.selector->pseudoType());
-            if (pseudoId == FIRST_LETTER) {
-                if (Document* document = context.element->document())
-                    document->styleSheetCollections()->setUsesFirstLetterRules(true);
-            }
+            if (pseudoId == FIRST_LETTER)
+                context.element->document()->styleSheetCollections()->setUsesFirstLetterRules(true);
             if (pseudoId != NOPSEUDO && m_mode != SharingRules)
                 dynamicPseudo = pseudoId;
         }
@@ -675,7 +673,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 return !element->isDisabledFormControl();
             break;
         case CSSSelector::PseudoFullPageMedia:
-            return element && element->document() && element->document()->isMediaDocument();
+            return element && element->document()->isMediaDocument();
             break;
         case CSSSelector::PseudoDefault:
             return element && element->isDefaultButtonForForm();

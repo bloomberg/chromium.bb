@@ -902,11 +902,7 @@ String createFullMarkup(const Node* node)
     if (!node)
         return String();
 
-    Document* document = node->document();
-    if (!document)
-        return String();
-
-    Frame* frame = document->frame();
+    Frame* frame = node->document()->frame();
     if (!frame)
         return String();
 
@@ -928,11 +924,7 @@ String createFullMarkup(const Range* range)
     if (!node)
         return String();
 
-    Document* document = node->document();
-    if (!document)
-        return String();
-
-    Frame* frame = document->frame();
+    Frame* frame = node->document()->frame();
     if (!frame)
         return String();
 
