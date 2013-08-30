@@ -607,17 +607,8 @@ int32_t NaClSysOpen(struct NaClAppThread  *natp,
             "NaClHostDescOpen(0x%08"NACL_PRIxPTR", %s, 0%o, 0%o) returned %d\n",
             (uintptr_t) hd, path, flags, mode, retval);
     if (0 == retval) {
-      struct NaClDesc *desc = (struct NaClDesc *) NaClDescIoDescMake(hd);
-      if ((flags & NACL_ABI_O_ACCMODE) == NACL_ABI_O_RDONLY) {
-        /*
-         * Let any read-only open be used for PROT_EXEC mmap
-         * calls.  Under -a, the user informally warrants that
-         * files' code segments won't be changed after open.
-         */
-        NaClDescSetFlags(desc,
-                         NaClDescGetFlags(desc) | NACL_DESC_FLAGS_MMAP_EXEC_OK);
-      }
-      retval = NaClSetAvail(nap, desc);
+      retval = NaClSetAvail(nap,
+                            ((struct NaClDesc *) NaClDescIoDescMake(hd)));
       NaClLog(1, "Entered into open file table at %d\n", retval);
     }
   }
