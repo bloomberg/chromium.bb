@@ -511,7 +511,7 @@ bool RenderProcessHostImpl::Init() {
         new RendererSandboxedProcessLauncherDelegate,
 #elif defined(OS_POSIX)
         renderer_prefix.empty(),
-        base::EnvironmentVector(),
+        base::EnvironmentMap(),
         channel_->TakeClientFileDescriptor(),
 #endif
         cmd_line,

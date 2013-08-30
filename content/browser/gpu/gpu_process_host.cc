@@ -1163,7 +1163,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
       new GpuSandboxedProcessLauncherDelegate(cmd_line),
 #elif defined(OS_POSIX)
       false,
-      base::EnvironmentVector(),
+      base::EnvironmentMap(),
 #endif
       cmd_line);
   process_launched_ = true;

@@ -46,7 +46,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
       SandboxedProcessLauncherDelegate* delegate,
 #elif defined(OS_POSIX)
       bool use_zygote,
-      const base::EnvironmentVector& environ,
+      const base::EnvironmentMap& environ,
 #endif
       CommandLine* cmd_line) OVERRIDE;
   virtual const ChildProcessData& GetData() const OVERRIDE;

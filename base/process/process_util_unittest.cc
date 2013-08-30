@@ -595,7 +595,7 @@ TEST_F(ProcessUtilTest, MAYBE_FDRemapping) {
 
 namespace {
 
-std::string TestLaunchProcess(const base::EnvironmentVector& env_changes,
+std::string TestLaunchProcess(const base::EnvironmentMap& env_changes,
                               const int clone_flags) {
   std::vector<std::string> args;
   base::FileHandleMappingVector fds_to_remap;
@@ -610,7 +610,7 @@ std::string TestLaunchProcess(const base::EnvironmentVector& env_changes,
   fds_to_remap.push_back(std::make_pair(fds[1], 1));
   base::LaunchOptions options;
   options.wait = true;
-  options.environ = &env_changes;
+  options.environ = env_changes;
   options.fds_to_remap = &fds_to_remap;
 #if defined(OS_LINUX)
   options.clone_flags = clone_flags;
@@ -641,31 +641,30 @@ const char kLargeString[] =
 }  // namespace
 
 TEST_F(ProcessUtilTest, LaunchProcess) {
-  base::EnvironmentVector env_changes;
+  base::EnvironmentMap env_changes;
   const int no_clone_flags = 0;
 
-  env_changes.push_back(std::make_pair(std::string("BASE_TEST"),
-                                       std::string("bar")));
+  const char kBaseTest[] = "BASE_TEST";
+
+  env_changes[kBaseTest] = "bar";
   EXPECT_EQ("bar\n", TestLaunchProcess(env_changes, no_clone_flags));
   env_changes.clear();
 
-  EXPECT_EQ(0, setenv("BASE_TEST", "testing", 1 /* override */));
+  EXPECT_EQ(0, setenv(kBaseTest, "testing", 1 /* override */));
   EXPECT_EQ("testing\n", TestLaunchProcess(env_changes, no_clone_flags));
 
-  env_changes.push_back(
-      std::make_pair(std::string("BASE_TEST"), std::string()));
+  env_changes[kBaseTest] = std::string();
   EXPECT_EQ("\n", TestLaunchProcess(env_changes, no_clone_flags));
 
-  env_changes[0].second = "foo";
+  env_changes[kBaseTest] = "foo";
   EXPECT_EQ("foo\n", TestLaunchProcess(env_changes, no_clone_flags));
 
   env_changes.clear();
-  EXPECT_EQ(0, setenv("BASE_TEST", kLargeString, 1 /* override */));
+  EXPECT_EQ(0, setenv(kBaseTest, kLargeString, 1 /* override */));
   EXPECT_EQ(std::string(kLargeString) + "\n",
             TestLaunchProcess(env_changes, no_clone_flags));
 
-  env_changes.push_back(std::make_pair(std::string("BASE_TEST"),
-                                       std::string("wibble")));
+  env_changes[kBaseTest] = "wibble";
   EXPECT_EQ("wibble\n", TestLaunchProcess(env_changes, no_clone_flags));
 
 #if defined(OS_LINUX)
@@ -675,48 +674,6 @@ TEST_F(ProcessUtilTest, LaunchProcess) {
     EXPECT_EQ("wibble\n", TestLaunchProcess(env_changes, CLONE_FS | SIGCHLD));
   }
 #endif
-}
-
-TEST_F(ProcessUtilTest, AlterEnvironment) {
-  const char* const empty[] = { NULL };
-  const char* const a2[] = { "A=2", NULL };
-  base::EnvironmentVector changes;
-  char** e;
-
-  e = base::AlterEnvironment(changes, empty);
-  EXPECT_TRUE(e[0] == NULL);
-  delete[] e;
-
-  changes.push_back(std::make_pair(std::string("A"), std::string("1")));
-  e = base::AlterEnvironment(changes, empty);
-  EXPECT_EQ(std::string("A=1"), e[0]);
-  EXPECT_TRUE(e[1] == NULL);
-  delete[] e;
-
-  changes.clear();
-  changes.push_back(std::make_pair(std::string("A"), std::string()));
-  e = base::AlterEnvironment(changes, empty);
-  EXPECT_TRUE(e[0] == NULL);
-  delete[] e;
-
-  changes.clear();
-  e = base::AlterEnvironment(changes, a2);
-  EXPECT_EQ(std::string("A=2"), e[0]);
-  EXPECT_TRUE(e[1] == NULL);
-  delete[] e;
-
-  changes.clear();
-  changes.push_back(std::make_pair(std::string("A"), std::string("1")));
-  e = base::AlterEnvironment(changes, a2);
-  EXPECT_EQ(std::string("A=1"), e[0]);
-  EXPECT_TRUE(e[1] == NULL);
-  delete[] e;
-
-  changes.clear();
-  changes.push_back(std::make_pair(std::string("A"), std::string()));
-  e = base::AlterEnvironment(changes, a2);
-  EXPECT_TRUE(e[0] == NULL);
-  delete[] e;
 }
 
 TEST_F(ProcessUtilTest, GetAppOutput) {

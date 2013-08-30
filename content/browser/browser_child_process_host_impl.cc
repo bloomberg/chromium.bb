@@ -133,7 +133,7 @@ void BrowserChildProcessHostImpl::Launch(
     SandboxedProcessLauncherDelegate* delegate,
 #elif defined(OS_POSIX)
     bool use_zygote,
-    const base::EnvironmentVector& environ,
+    const base::EnvironmentMap& environ,
 #endif
     CommandLine* cmd_line) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

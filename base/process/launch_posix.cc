@@ -270,128 +270,6 @@ void CloseSuperfluousFds(const base::InjectiveMultimap& saved_mapping) {
   }
 }
 
-char** AlterEnvironment(const EnvironmentVector& changes,
-                        const char* const* const env) {
-  unsigned count = 0;
-  unsigned size = 0;
-
-  // First assume that all of the current environment will be included.
-  for (unsigned i = 0; env[i]; i++) {
-    const char *const pair = env[i];
-    count++;
-    size += strlen(pair) + 1 /* terminating NUL */;
-  }
-
-  for (EnvironmentVector::const_iterator j = changes.begin();
-       j != changes.end();
-       ++j) {
-    bool found = false;
-    const char *pair;
-
-    for (unsigned i = 0; env[i]; i++) {
-      pair = env[i];
-      const char *const equals = strchr(pair, '=');
-      if (!equals)
-        continue;
-      const unsigned keylen = equals - pair;
-      if (keylen == j->first.size() &&
-          memcmp(pair, j->first.data(), keylen) == 0) {
-        found = true;
-        break;
-      }
-    }
-
-    // if found, we'll either be deleting or replacing this element.
-    if (found) {
-      count--;
-      size -= strlen(pair) + 1;
-      if (j->second.size())
-        found = false;
-    }
-
-    // if !found, then we have a new element to add.
-    if (!found && !j->second.empty()) {
-      count++;
-      size += j->first.size() + 1 /* '=' */ + j->second.size() + 1 /* NUL */;
-    }
-  }
-
-  count++;  // for the final NULL
-  uint8_t *buffer = new uint8_t[sizeof(char*) * count + size];
-  char **const ret = reinterpret_cast<char**>(buffer);
-  unsigned k = 0;
-  char *scratch = reinterpret_cast<char*>(buffer + sizeof(char*) * count);
-
-  for (unsigned i = 0; env[i]; i++) {
-    const char *const pair = env[i];
-    const char *const equals = strchr(pair, '=');
-    if (!equals) {
-      const unsigned len = strlen(pair);
-      ret[k++] = scratch;
-      memcpy(scratch, pair, len + 1);
-      scratch += len + 1;
-      continue;
-    }
-    const unsigned keylen = equals - pair;
-    bool handled = false;
-    for (EnvironmentVector::const_iterator
-         j = changes.begin(); j != changes.end(); j++) {
-      if (j->first.size() == keylen &&
-          memcmp(j->first.data(), pair, keylen) == 0) {
-        if (!j->second.empty()) {
-          ret[k++] = scratch;
-          memcpy(scratch, pair, keylen + 1);
-          scratch += keylen + 1;
-          memcpy(scratch, j->second.c_str(), j->second.size() + 1);
-          scratch += j->second.size() + 1;
-        }
-        handled = true;
-        break;
-      }
-    }
-
-    if (!handled) {
-      const unsigned len = strlen(pair);
-      ret[k++] = scratch;
-      memcpy(scratch, pair, len + 1);
-      scratch += len + 1;
-    }
-  }
-
-  // Now handle new elements
-  for (EnvironmentVector::const_iterator
-       j = changes.begin(); j != changes.end(); j++) {
-    if (j->second.empty())
-      continue;
-
-    bool found = false;
-    for (unsigned i = 0; env[i]; i++) {
-      const char *const pair = env[i];
-      const char *const equals = strchr(pair, '=');
-      if (!equals)
-        continue;
-      const unsigned keylen = equals - pair;
-      if (keylen == j->first.size() &&
-          memcmp(pair, j->first.data(), keylen) == 0) {
-        found = true;
-        break;
-      }
-    }
-
-    if (!found) {
-      ret[k++] = scratch;
-      memcpy(scratch, j->first.data(), j->first.size());
-      scratch += j->first.size();
-      *scratch++ = '=';
-      memcpy(scratch, j->second.c_str(), j->second.size() + 1);
-      scratch += j->second.size() + 1;
-     }
-  }
-
-  ret[k] = NULL;
-  return ret;
-}
-
 bool LaunchProcess(const std::vector<std::string>& argv,
                    const LaunchOptions& options,
                    ProcessHandle* process_handle) {
@@ -407,8 +285,8 @@ bool LaunchProcess(const std::vector<std::string>& argv,
 
   scoped_ptr<char*[]> argv_cstr(new char*[argv.size() + 1]);
   scoped_ptr<char*[]> new_environ;
-  if (options.environ)
-    new_environ.reset(AlterEnvironment(*options.environ, GetEnvironment()));
+  if (!options.environ.empty())
+    new_environ = AlterEnvironment(GetEnvironment(), options.environ);
 
   sigset_t full_sigset;
   sigfillset(&full_sigset);
@@ -536,7 +414,7 @@ bool LaunchProcess(const std::vector<std::string>& argv,
       }
     }
 
-    if (options.environ)
+    if (!options.environ.empty())
       SetEnvironment(new_environ.get());
 
     // fd_shuffle1 is mutated by this call because it cannot malloc.

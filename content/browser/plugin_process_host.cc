@@ -220,7 +220,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
 
 #if defined(OS_POSIX)
-  base::EnvironmentVector env;
+  base::EnvironmentMap env;
 #if defined(OS_MACOSX) && !defined(__LP64__)
   if (!browser_command_line.HasSwitch(switches::kDisableCarbonInterposing)) {
     std::string interpose_list = GetContentClient()->GetCarbonInterposePath();
@@ -233,8 +233,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
         interpose_list.insert(0, existing_list);
       }
     }
-    env.push_back(std::pair<std::string, std::string>(
-        kDYLDInsertLibrariesKey, interpose_list));
+    env[kDYLDInsertLibrariesKey] = interpose_list;
   }
 #endif
 #endif

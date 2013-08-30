@@ -41,7 +41,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
       SandboxedProcessLauncherDelegate* delegate,
 #elif defined(OS_POSIX)
       bool use_zygote,
-      const base::EnvironmentVector& environ,
+      const base::EnvironmentMap& environ,
       int ipcfd,
 #endif
       CommandLine* cmd_line,

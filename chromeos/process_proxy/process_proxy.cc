@@ -225,10 +225,7 @@ bool ProcessProxy::LaunchProcess(const std::string& command, int slave_fd,
   base::LaunchOptions options;
   options.fds_to_remap = &fds_mapping;
   options.ctrl_terminal_fd = slave_fd;
-
-  base::EnvironmentVector environ;
-  environ.push_back(std::make_pair("TERM", "xterm"));
-  options.environ = &environ;
+  options.environ["TERM"] = "xterm";
 
   // Launch the process.
   return base::LaunchProcess(CommandLine(base::FilePath(command)), options,

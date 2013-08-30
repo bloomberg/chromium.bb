@@ -14,6 +14,7 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
+#include "base/environment.h"
 #include "base/process/process_handle.h"
 
 #if defined(OS_POSIX)
@@ -26,37 +27,13 @@ class CommandLine;
 
 namespace base {
 
-typedef std::vector<std::pair<std::string, std::string> > EnvironmentVector;
 typedef std::vector<std::pair<int, int> > FileHandleMappingVector;
 
 // Options for launching a subprocess that are passed to LaunchProcess().
 // The default constructor constructs the object with default options.
-struct LaunchOptions {
-  LaunchOptions()
-      : wait(false),
-#if defined(OS_WIN)
-        start_hidden(false),
-        inherit_handles(false),
-        as_user(NULL),
-        empty_desktop_name(false),
-        job_handle(NULL),
-        stdin_handle(NULL),
-        stdout_handle(NULL),
-        stderr_handle(NULL),
-        force_breakaway_from_job_(false)
-#else
-        environ(NULL),
-        fds_to_remap(NULL),
-        maximize_rlimits(NULL),
-        new_process_group(false)
-#if defined(OS_LINUX)
-        , clone_flags(0)
-#endif  // OS_LINUX
-#if defined(OS_CHROMEOS)
-        , ctrl_terminal_fd(-1)
-#endif  // OS_CHROMEOS
-#endif  // !defined(OS_WIN)
-        {}
+struct BASE_EXPORT LaunchOptions {
+  LaunchOptions();
+  ~LaunchOptions();
 
   // If true, wait for the process to complete.
   bool wait;
@@ -100,11 +77,9 @@ struct LaunchOptions {
   // job if any.
   bool force_breakaway_from_job_;
 #else
-  // If non-NULL, set/unset environment variables.
-  // See documentation of AlterEnvironment().
-  // This pointer is owned by the caller and must live through the
-  // call to LaunchProcess().
-  const EnvironmentVector* environ;
+  // Set/unset environment variables. Empty (the default) means to inherit
+  // the same environment. See AlterEnvironment().
+  EnvironmentMap environ;
 
   // If non-NULL, remap file descriptors according to the mapping of
   // src fd->dest fd to propagate FDs into the child process.
@@ -181,16 +156,6 @@ BASE_EXPORT bool LaunchProcess(const string16& cmdline,
 BASE_EXPORT bool LaunchProcess(const std::vector<std::string>& argv,
                                const LaunchOptions& options,
                                ProcessHandle* process_handle);
-
-// AlterEnvironment returns a modified environment vector, constructed from the
-// given environment and the list of changes given in |changes|. Each key in
-// the environment is matched against the first element of the pairs. In the
-// event of a match, the value is replaced by the second of the pair, unless
-// the second is empty, in which case the key-value is removed.
-//
-// The returned array is allocated using new[] and must be freed by the caller.
-BASE_EXPORT char** AlterEnvironment(const EnvironmentVector& changes,
-                                    const char* const* const env);
 
 // Close all file descriptors, except those which are a destination in the
 // given multimap. Only call this function in a child process where you know

@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/process/launch.h"
 #include "base/process/process_iterator.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -546,7 +547,7 @@ bool NaClProcessHost::LaunchSelLdr() {
   }
 #elif defined(OS_POSIX)
   process_->Launch(nacl_loader_prefix.empty(),  // use_zygote
-                   base::EnvironmentVector(),
+                   base::EnvironmentMap(),
                    cmd_line.release());
 #endif
 

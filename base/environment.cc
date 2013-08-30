@@ -4,18 +4,19 @@
 
 #include "base/environment.h"
 
+#include <vector>
+
+#include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+
 #if defined(OS_POSIX)
 #include <stdlib.h>
 #elif defined(OS_WIN)
 #include <windows.h>
 #endif
 
-#include "base/strings/string_util.h"
-
-#if defined(OS_WIN)
-#include "base/memory/scoped_ptr.h"
-#include "base/strings/utf_string_conversions.h"
-#endif
+namespace base {
 
 namespace {
 
@@ -99,9 +100,24 @@ class EnvironmentImpl : public base::Environment {
   }
 };
 
-}  // namespace
+// Parses a null-terminated input string of an environment block. The key is
+// placed into the given string, and the total length of the line, including
+// the terminating null, is returned.
+size_t ParseEnvLine(const NativeEnvironmentString::value_type* input,
+                    NativeEnvironmentString* key) {
+  // Skip to the equals or end of the string, this is the key.
+  size_t cur = 0;
+  while (input[cur] && input[cur] != '=')
+    cur++;
+  *key = NativeEnvironmentString(&input[0], cur);
 
-namespace base {
+  // Now just skip to the end of the string.
+  while (input[cur])
+    cur++;
+  return cur + 1;
+}
+
+}  // namespace
 
 namespace env_vars {
 
@@ -123,5 +139,99 @@ Environment* Environment::Create() {
 bool Environment::HasVar(const char* variable_name) {
   return GetVar(variable_name, NULL);
 }
+
+#if defined(OS_WIN)
+
+string16 AlterEnvironment(const wchar_t* env,
+                          const EnvironmentMap& changes) {
+  string16 result;
+
+  // First copy all unmodified values to the output.
+  size_t cur_env = 0;
+  string16 key;
+  while (env[cur_env]) {
+    const wchar_t* line = &env[cur_env];
+    size_t line_length = ParseEnvLine(line, &key);
+
+    // Keep only values not specified in the change vector.
+    EnvironmentMap::const_iterator found_change = changes.find(key);
+    if (found_change == changes.end())
+      result.append(line, line_length);
+
+    cur_env += line_length;
+  }
+
+  // Now append all modified and new values.
+  for (EnvironmentMap::const_iterator i = changes.begin();
+       i != changes.end(); ++i) {
+    if (!i->second.empty()) {
+      result.append(i->first);
+      result.push_back('=');
+      result.append(i->second);
+      result.push_back(0);
+    }
+  }
+
+  // An additional null marks the end of the list. We always need a double-null
+  // in case nothing was added above.
+  if (result.empty())
+    result.push_back(0);
+  result.push_back(0);
+  return result;
+}
+
+#elif defined(OS_POSIX)
+
+scoped_ptr<char*[]> AlterEnvironment(const char* const* const env,
+                                     const EnvironmentMap& changes) {
+  std::string value_storage;  // Holds concatenated null-terminated strings.
+  std::vector<size_t> result_indices;  // Line indices into value_storage.
+
+  // First build up all of the unchanged environment strings. These are
+  // null-terminated of the form "key=value".
+  std::string key;
+  for (size_t i = 0; env[i]; i++) {
+    size_t line_length = ParseEnvLine(env[i], &key);
+
+    // Keep only values not specified in the change vector.
+    EnvironmentMap::const_iterator found_change = changes.find(key);
+    if (found_change == changes.end()) {
+      result_indices.push_back(value_storage.size());
+      value_storage.append(env[i], line_length);
+    }
+  }
+
+  // Now append all modified and new values.
+  for (EnvironmentMap::const_iterator i = changes.begin();
+       i != changes.end(); ++i) {
+    if (!i->second.empty()) {
+      result_indices.push_back(value_storage.size());
+      value_storage.append(i->first);
+      value_storage.push_back('=');
+      value_storage.append(i->second);
+      value_storage.push_back(0);
+    }
+  }
+
+  size_t pointer_count_required =
+      result_indices.size() + 1 +  // Null-terminated array of pointers.
+      (value_storage.size() + sizeof(char*) - 1) / sizeof(char*);  // Buffer.
+  scoped_ptr<char*[]> result(new char*[pointer_count_required]);
+
+  // The string storage goes after the array of pointers.
+  char* storage_data = reinterpret_cast<char*>(
+      &result.get()[result_indices.size() + 1]);
+  if (!value_storage.empty())
+    memcpy(storage_data, value_storage.data(), value_storage.size());
+
+  // Fill array of pointers at the beginning of the result.
+  for (size_t i = 0; i < result_indices.size(); i++)
+    result[i] = &storage_data[result_indices[i]];
+  result[result_indices.size()] = 0;  // Null terminator.
+
+  return result.Pass();
+}
+
+#endif  // OS_POSIX
 
 }  // namespace base

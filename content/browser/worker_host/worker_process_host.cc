@@ -215,7 +215,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
       new WorkerSandboxedProcessLauncherDelegate,
 #elif defined(OS_POSIX)
       use_zygote,
-      base::EnvironmentVector(),
+      base::EnvironmentMap(),
 #endif
       cmd_line);
 

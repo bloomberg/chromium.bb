@@ -74,7 +74,7 @@ class ChildProcessLauncher::Context
       int ipcfd,
 #elif defined(OS_POSIX)
       bool use_zygote,
-      const base::EnvironmentVector& environ,
+      const base::EnvironmentMap& environ,
       int ipcfd,
 #endif
       CommandLine* cmd_line,
@@ -186,7 +186,7 @@ class ChildProcessLauncher::Context
       int ipcfd,
 #elif defined(OS_POSIX)
       bool use_zygote,
-      const base::EnvironmentVector& env,
+      const base::EnvironmentMap& env,
       int ipcfd,
 #endif
       CommandLine* cmd_line) {
@@ -262,7 +262,7 @@ class ChildProcessLauncher::Context
 
       // Actually launch the app.
       base::LaunchOptions options;
-      options.environ = &env;
+      options.environ = env;
       options.fds_to_remap = &fds_to_map;
 
 #if defined(OS_MACOSX)
@@ -414,7 +414,7 @@ ChildProcessLauncher::ChildProcessLauncher(
     SandboxedProcessLauncherDelegate* delegate,
 #elif defined(OS_POSIX)
     bool use_zygote,
-    const base::EnvironmentVector& environ,
+    const base::EnvironmentMap& environ,
     int ipcfd,
 #endif
     CommandLine* cmd_line,

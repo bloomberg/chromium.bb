@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -42,7 +43,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   virtual void EnableZygote() OVERRIDE;
   virtual const ChildProcessData& GetData() OVERRIDE;
 #if defined(OS_POSIX)
-  virtual void SetEnv(const base::EnvironmentVector& env) OVERRIDE;
+  virtual void SetEnv(const base::EnvironmentMap& env) OVERRIDE;
 #endif
 
   void set_child_flags(int flags) { child_flags_ = flags; }
@@ -77,7 +78,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   // Launch the utility process from the zygote. Defaults to false.
   bool use_linux_zygote_;
 
-  base::EnvironmentVector env_;
+  base::EnvironmentMap env_;
 
   bool started_;
 

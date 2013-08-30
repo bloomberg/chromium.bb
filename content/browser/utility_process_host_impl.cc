@@ -130,7 +130,7 @@ const ChildProcessData& UtilityProcessHostImpl::GetData() {
 
 #if defined(OS_POSIX)
 
-void UtilityProcessHostImpl::SetEnv(const base::EnvironmentVector& env) {
+void UtilityProcessHostImpl::SetEnv(const base::EnvironmentMap& env) {
   env_ = env;
 }
 

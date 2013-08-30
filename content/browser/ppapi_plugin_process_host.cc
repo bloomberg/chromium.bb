@@ -328,7 +328,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
       new PpapiPluginSandboxedProcessLauncherDelegate(is_broker_),
 #elif defined(OS_POSIX)
       use_zygote,
-      base::EnvironmentVector(),
+      base::EnvironmentMap(),
 #endif
       cmd_line);
   return true;

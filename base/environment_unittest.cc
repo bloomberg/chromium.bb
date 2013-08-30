@@ -9,16 +9,18 @@
 
 typedef PlatformTest EnvironmentTest;
 
+namespace base {
+
 TEST_F(EnvironmentTest, GetVar) {
   // Every setup should have non-empty PATH...
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  scoped_ptr<Environment> env(Environment::Create());
   std::string env_value;
   EXPECT_TRUE(env->GetVar("PATH", &env_value));
   EXPECT_NE(env_value, "");
 }
 
 TEST_F(EnvironmentTest, GetVarReverse) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  scoped_ptr<Environment> env(Environment::Create());
   const char* kFooUpper = "FOO";
   const char* kFooLower = "foo";
 
@@ -47,12 +49,12 @@ TEST_F(EnvironmentTest, GetVarReverse) {
 
 TEST_F(EnvironmentTest, HasVar) {
   // Every setup should have PATH...
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  scoped_ptr<Environment> env(Environment::Create());
   EXPECT_TRUE(env->HasVar("PATH"));
 }
 
 TEST_F(EnvironmentTest, SetVar) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  scoped_ptr<Environment> env(Environment::Create());
 
   const char* kFooUpper = "FOO";
   const char* kFooLower = "foo";
@@ -67,7 +69,7 @@ TEST_F(EnvironmentTest, SetVar) {
 }
 
 TEST_F(EnvironmentTest, UnSetVar) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  scoped_ptr<Environment> env(Environment::Create());
 
   const char* kFooUpper = "FOO";
   const char* kFooLower = "foo";
@@ -83,3 +85,80 @@ TEST_F(EnvironmentTest, UnSetVar) {
   // And check that the variable has been unset.
   EXPECT_FALSE(env->HasVar(kFooUpper));
 }
+
+#if defined(OS_WIN)
+
+TEST_F(EnvironmentTest, AlterEnvironment) {
+  const wchar_t empty[] = L"\0";
+  const wchar_t a2[] = L"A=2\0";
+  EnvironmentMap changes;
+  string16 e;
+
+  e = AlterEnvironment(empty, changes);
+  EXPECT_TRUE(e[0] == 0);
+
+  changes[L"A"] = L"1";
+  e = AlterEnvironment(empty, changes);
+  EXPECT_EQ(string16(L"A=1\0\0", 5), e);
+
+  changes.clear();
+  changes[L"A"] = string16();
+  e = AlterEnvironment(empty, changes);
+  EXPECT_EQ(string16(L"\0\0", 2), e);
+
+  changes.clear();
+  e = AlterEnvironment(a2, changes);
+  EXPECT_EQ(string16(L"A=2\0\0", 5), e);
+
+  changes.clear();
+  changes[L"A"] = L"1";
+  e = AlterEnvironment(a2, changes);
+  EXPECT_EQ(string16(L"A=1\0\0", 5), e);
+
+  changes.clear();
+  changes[L"A"] = string16();
+  e = AlterEnvironment(a2, changes);
+  EXPECT_EQ(string16(L"\0\0", 2), e);
+}
+
+#else
+
+TEST_F(EnvironmentTest, AlterEnvironment) {
+  const char* const empty[] = { NULL };
+  const char* const a2[] = { "A=2", NULL };
+  EnvironmentMap changes;
+  scoped_ptr<char*[]> e;
+
+  e = AlterEnvironment(empty, changes).Pass();
+  EXPECT_TRUE(e[0] == NULL);
+
+  changes["A"] = "1";
+  e = AlterEnvironment(empty, changes);
+  EXPECT_EQ(std::string("A=1"), e[0]);
+  EXPECT_TRUE(e[1] == NULL);
+
+  changes.clear();
+  changes["A"] = std::string();
+  e = AlterEnvironment(empty, changes);
+  EXPECT_TRUE(e[0] == NULL);
+
+  changes.clear();
+  e = AlterEnvironment(a2, changes);
+  EXPECT_EQ(std::string("A=2"), e[0]);
+  EXPECT_TRUE(e[1] == NULL);
+
+  changes.clear();
+  changes["A"] = "1";
+  e = AlterEnvironment(a2, changes);
+  EXPECT_EQ(std::string("A=1"), e[0]);
+  EXPECT_TRUE(e[1] == NULL);
+
+  changes.clear();
+  changes["A"] = std::string();
+  e = AlterEnvironment(a2, changes);
+  EXPECT_TRUE(e[0] == NULL);
+}
+
+#endif
+
+}  // namespace base

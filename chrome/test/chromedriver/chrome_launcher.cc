@@ -227,13 +227,8 @@ Status LaunchDesktopChrome(
   base::LaunchOptions options;
 
 #if !defined(OS_WIN)
-  base::EnvironmentVector environ;
-  if (!capabilities.log_path.empty()) {
-    environ.push_back(
-        base::EnvironmentVector::value_type("CHROME_LOG_FILE",
-                                            capabilities.log_path));
-    options.environ = &environ;
-  }
+  if (!capabilities.log_path.empty())
+    options.environ["CHROME_LOG_FILE"] = capabilities.log_path;
   if (capabilities.detach)
     options.new_process_group = true;
 #endif

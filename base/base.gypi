@@ -402,6 +402,7 @@
           'process/kill_mac.cc',
           'process/kill_posix.cc',
           'process/kill_win.cc',
+          'process/launch.cc',
           'process/launch.h',
           'process/launch_ios.cc',
           'process/launch_mac.cc',
