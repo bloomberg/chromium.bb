@@ -47,12 +47,8 @@ scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
        it != unused_resources_.end(); ++it) {
     Resource* resource = *it;
 
-    // TODO(epenner): It would be nice to DCHECK that this
-    // doesn't happen two frames in a row for any resource
-    // in this pool.
     if (!resource_provider_->CanLockForWrite(resource->id()))
       continue;
-
     if (resource->size() != size)
       continue;
     if (resource->format() != format)
