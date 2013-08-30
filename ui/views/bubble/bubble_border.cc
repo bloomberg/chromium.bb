@@ -73,25 +73,53 @@ namespace {
 // The border and arrow stroke size used in image assets, in pixels.
 const int kStroke = 1;
 
-// Macros to define arrays of IDR constants used with CreateImageGridPainter.
-#define IMAGE_BORDER(x) { x ## _TOP_LEFT,    x ## _TOP,    x ## _TOP_RIGHT, \
-                          x ## _LEFT,        0,            x ## _RIGHT, \
-                          x ## _BOTTOM_LEFT, x ## _BOTTOM, x ## _BOTTOM_RIGHT, }
-#define IMAGE_BORDER_ACRONYM(x) { x ## _TL, x ## _T, x ## _TR, \
-                                  x ## _L,  0,       x ## _R, \
-                                  x ## _BL, x ## _B, x ## _BR, }
-#define ARROWS(x) { x ## _LEFT, x ## _TOP, x ## _RIGHT, x ## _BOTTOM, }
-
-// Bubble border and arrow image resource ids.
-const int kShadowImages[] = IMAGE_BORDER_ACRONYM(IDR_BUBBLE_SHADOW);
+// Bubble border and arrow image resource ids. They don't use the IMAGE_GRID
+// macro because there is no center image.
+const int kShadowImages[] =  {
+    IDR_BUBBLE_SHADOW_TL, IDR_BUBBLE_SHADOW_T, IDR_BUBBLE_SHADOW_TR,
+    IDR_BUBBLE_SHADOW_L,  0,                   IDR_BUBBLE_SHADOW_R,
+    IDR_BUBBLE_SHADOW_BL, IDR_BUBBLE_SHADOW_B, IDR_BUBBLE_SHADOW_BR };
 const int kShadowArrows[] = { 0, 0, 0, 0 };
-const int kNoShadowImages[] = IMAGE_BORDER_ACRONYM(IDR_BUBBLE);
-const int kNoShadowArrows[] = { IDR_BUBBLE_L_ARROW, IDR_BUBBLE_T_ARROW,
-                                IDR_BUBBLE_R_ARROW, IDR_BUBBLE_B_ARROW, };
-const int kBigShadowImages[] = IMAGE_BORDER(IDR_WINDOW_BUBBLE_SHADOW_BIG);
-const int kBigShadowArrows[] = ARROWS(IDR_WINDOW_BUBBLE_SHADOW_SPIKE_BIG);
-const int kSmallShadowImages[] = IMAGE_BORDER(IDR_WINDOW_BUBBLE_SHADOW_SMALL);
-const int kSmallShadowArrows[] = ARROWS(IDR_WINDOW_BUBBLE_SHADOW_SPIKE_SMALL);
+
+const int kNoShadowImages[] = {
+    IDR_BUBBLE_TL, IDR_BUBBLE_T, IDR_BUBBLE_TR,
+    IDR_BUBBLE_L,  0,            IDR_BUBBLE_R,
+    IDR_BUBBLE_BL, IDR_BUBBLE_B, IDR_BUBBLE_BR };
+const int kNoShadowArrows[] = {
+    IDR_BUBBLE_L_ARROW, IDR_BUBBLE_T_ARROW,
+    IDR_BUBBLE_R_ARROW, IDR_BUBBLE_B_ARROW, };
+
+const int kBigShadowImages[] = {
+    IDR_WINDOW_BUBBLE_SHADOW_BIG_TOP_LEFT,
+    IDR_WINDOW_BUBBLE_SHADOW_BIG_TOP,
+    IDR_WINDOW_BUBBLE_SHADOW_BIG_TOP_RIGHT,
+    IDR_WINDOW_BUBBLE_SHADOW_BIG_LEFT,
+    0,
+    IDR_WINDOW_BUBBLE_SHADOW_BIG_RIGHT,
+    IDR_WINDOW_BUBBLE_SHADOW_BIG_BOTTOM_LEFT,
+    IDR_WINDOW_BUBBLE_SHADOW_BIG_BOTTOM,
+    IDR_WINDOW_BUBBLE_SHADOW_BIG_BOTTOM_RIGHT };
+const int kBigShadowArrows[] = {
+    IDR_WINDOW_BUBBLE_SHADOW_SPIKE_BIG_LEFT,
+    IDR_WINDOW_BUBBLE_SHADOW_SPIKE_BIG_TOP,
+    IDR_WINDOW_BUBBLE_SHADOW_SPIKE_BIG_RIGHT,
+    IDR_WINDOW_BUBBLE_SHADOW_SPIKE_BIG_BOTTOM };
+
+const int kSmallShadowImages[] = {
+    IDR_WINDOW_BUBBLE_SHADOW_SMALL_TOP_LEFT,
+    IDR_WINDOW_BUBBLE_SHADOW_SMALL_TOP,
+    IDR_WINDOW_BUBBLE_SHADOW_SMALL_TOP_RIGHT,
+    IDR_WINDOW_BUBBLE_SHADOW_SMALL_LEFT,
+    0,
+    IDR_WINDOW_BUBBLE_SHADOW_SMALL_RIGHT,
+    IDR_WINDOW_BUBBLE_SHADOW_SMALL_BOTTOM_LEFT,
+    IDR_WINDOW_BUBBLE_SHADOW_SMALL_BOTTOM,
+    IDR_WINDOW_BUBBLE_SHADOW_SMALL_BOTTOM_RIGHT };
+const int kSmallShadowArrows[] = {
+    IDR_WINDOW_BUBBLE_SHADOW_SPIKE_SMALL_LEFT,
+    IDR_WINDOW_BUBBLE_SHADOW_SPIKE_SMALL_TOP,
+    IDR_WINDOW_BUBBLE_SHADOW_SPIKE_SMALL_RIGHT,
+    IDR_WINDOW_BUBBLE_SHADOW_SPIKE_SMALL_BOTTOM };
 
 using internal::BorderImages;
 
