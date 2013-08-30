@@ -2304,7 +2304,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var entry = selection.entries[0];
     if (entry.isDirectory) {
-      this.onDirectoryAction(entry);
+      this.onDirectoryAction_(entry);
     } else {
       this.dispatchSelectionAction_();
     }
@@ -2417,8 +2417,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    *
    * @param {DirectoryEntry} entry Directory entry to which directory should be
    *                               changed.
+   * @private
    */
-  FileManager.prototype.onDirectoryAction = function(entry) {
+  FileManager.prototype.onDirectoryAction_ = function(entry) {
     return this.directoryModel_.changeDirectory(entry.fullPath);
   };
 
@@ -3095,7 +3096,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             this.dialogType != DialogType.SELECT_FOLDER &&
             this.dialogType != DialogType.SELECT_UPLOAD_FOLDER) {
           event.preventDefault();
-          this.onDirectoryAction(selection.entries[0]);
+          this.onDirectoryAction_(selection.entries[0]);
         } else if (this.dispatchSelectionAction_()) {
           event.preventDefault();
         }
@@ -3776,7 +3777,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var entry = selectedItem.entry;
     // If the entry is a directory, just change the directory.
     if (entry.isDirectory) {
-      this.onDirectoryAction(entry);
+      this.onDirectoryAction_(entry);
       return;
     }
 
