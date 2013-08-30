@@ -86,12 +86,15 @@ AURA_EXPORT void HandleSelectFolder(const base::string16& title,
 // frontend process, which forwards input events to this class.
 class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
  public:
+  // Returns the only RemoteRootWindowHostWin, if this is the first time
+  // this function is called, it will call Create() wiht empty bounds.
   static RemoteRootWindowHostWin* Instance();
   static RemoteRootWindowHostWin* Create(const gfx::Rect& bounds);
 
   // Called when the remote process has established its IPC connection.
-  // The |host| can be used when we need to send a message to it.
-  void Connected(IPC::Sender* host);
+  // The |host| can be used when we need to send a message to it and
+  // |remote_window| is the actual window owned by the viewer process.
+  void Connected(IPC::Sender* host, HWND remote_window);
   // Called when the remote process has closed its IPC connection.
   void Disconnected();
 
@@ -200,6 +203,7 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
                                uint32 flags,
                                bool is_character);
 
+  HWND remote_window_;
   RootWindowHostDelegate* delegate_;
   IPC::Sender* host_;
   scoped_ptr<ui::ViewProp> prop_;

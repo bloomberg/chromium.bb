@@ -108,33 +108,39 @@ void HandleSelectFolder(const base::string16& title,
 RemoteRootWindowHostWin* g_instance = NULL;
 
 RemoteRootWindowHostWin* RemoteRootWindowHostWin::Instance() {
-  return g_instance;
+  if (g_instance)
+    return g_instance;
+  return Create(gfx::Rect());
 }
 
 RemoteRootWindowHostWin* RemoteRootWindowHostWin::Create(
     const gfx::Rect& bounds) {
-  g_instance = new RemoteRootWindowHostWin(bounds);
+  g_instance = g_instance ? g_instance : new RemoteRootWindowHostWin(bounds);
   return g_instance;
 }
 
 RemoteRootWindowHostWin::RemoteRootWindowHostWin(const gfx::Rect& bounds)
-    : delegate_(NULL),
+    : remote_window_(NULL),
+      delegate_(NULL),
       host_(NULL),
       ignore_mouse_moves_until_set_cursor_ack_(false) {
   prop_.reset(new ui::ViewProp(NULL, kRootWindowHostWinKey, this));
 }
 
 RemoteRootWindowHostWin::~RemoteRootWindowHostWin() {
+  g_instance = NULL;
 }
 
-void RemoteRootWindowHostWin::Connected(IPC::Sender* host) {
+void RemoteRootWindowHostWin::Connected(IPC::Sender* host, HWND remote_window) {
   CHECK(host_ == NULL);
   host_ = host;
+  remote_window_ = remote_window;
 }
 
 void RemoteRootWindowHostWin::Disconnected() {
   CHECK(host_ != NULL);
   host_ = NULL;
+  remote_window_ = NULL;
 }
 
 bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
@@ -271,10 +277,9 @@ RootWindow* RemoteRootWindowHostWin::GetRootWindow() {
 }
 
 gfx::AcceleratedWidget RemoteRootWindowHostWin::GetAcceleratedWidget() {
-  // TODO(cpu): This is bad. Chrome's compositor needs a valid window
-  // initially and then later on we swap it. Since the compositor never
-  // uses this initial window we tell ourselves this hack is ok to get
-  // thing off the ground.
+  if (remote_window_)
+    return remote_window_;
+  // Getting here should only happen for ash_unittests.exe and related code.
   return ::GetDesktopWindow();
 }
 

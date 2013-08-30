@@ -30,13 +30,9 @@ void TestMetroViewerProcessHost::OnSetTargetSurface(
     gfx::NativeViewId target_surface) {
   DLOG(INFO) << __FUNCTION__ << ", target_surface = " << target_surface;
   HWND hwnd = reinterpret_cast<HWND>(target_surface);
+  aura::RemoteRootWindowHostWin::Instance()->Connected(this, hwnd);
 
   backing_surface_.reset(new AcceleratedSurface(hwnd));
-
-  scoped_refptr<AcceleratedPresenter> any_window =
-      AcceleratedPresenter::GetForWindow(NULL);
-  any_window->SetNewTargetWindow(hwnd);
-  aura::RemoteRootWindowHostWin::Instance()->Connected(this);
 }
 
 void TestMetroViewerProcessHost::OnOpenURL(const string16& url) {

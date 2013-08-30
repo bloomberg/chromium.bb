@@ -89,12 +89,6 @@ class SURFACE_EXPORT AcceleratedPresenter
   // the given present thread.
   void ResetPresentThread(PresentThread* present_thread);
 
-#if defined(USE_AURA)
-  // TODO(scottmg): This is a temporary hack until we have a two-worlds ash/aura
-  // separation.
-  void SetNewTargetWindow(gfx::PluginWindowHandle window);
-#endif
-
  private:
   friend class base::RefCountedThreadSafe<AcceleratedPresenter>;
 

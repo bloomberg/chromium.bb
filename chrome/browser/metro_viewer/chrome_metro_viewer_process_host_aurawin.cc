@@ -97,13 +97,11 @@ void  ChromeMetroViewerProcessHost::OnChannelConnected(int32 /*peer_pid*/) {
 
 void ChromeMetroViewerProcessHost::OnSetTargetSurface(
     gfx::NativeViewId target_surface) {
-  DLOG(INFO) << __FUNCTION__ << ", target_surface = " << target_surface;
   HWND hwnd = reinterpret_cast<HWND>(target_surface);
+  // Tell our root window host that the viewer has connected.
+  aura::RemoteRootWindowHostWin::Instance()->Connected(this, hwnd);
+  // Now start the Ash shell environment.
   chrome::OpenAsh();
-  scoped_refptr<AcceleratedPresenter> any_window =
-      AcceleratedPresenter::GetForWindow(NULL);
-  any_window->SetNewTargetWindow(hwnd);
-  aura::RemoteRootWindowHostWin::Instance()->Connected(this);
   ash::Shell::GetInstance()->CreateLauncher();
   ash::Shell::GetInstance()->ShowLauncher();
   // Tell the rest of Chrome that Ash is running.
