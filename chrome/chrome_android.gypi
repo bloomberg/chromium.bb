@@ -20,6 +20,8 @@
         'chromium_testshell_jni_headers',
         'chrome.gyp:browser_ui',
         '../content/content.gyp:content_app_browser',
+        # TODO(miguelg): This should be indirect, see http://crbug.com/280695 .
+        '../skia/skia.gyp:skia',
       ],
       'sources': [
         # This file must always be included in the shared_library step to ensure
