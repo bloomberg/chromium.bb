@@ -403,6 +403,12 @@ import java.util.Map;
     // The AccessibilityInjector that handles loading Accessibility scripts into the web page.
     private AccessibilityInjector mAccessibilityInjector;
 
+    // Whether native accessibility, i.e. without any script injection, is allowed.
+    private boolean mNativeAccessibilityAllowed;
+
+    // Whether native accessibility, i.e. without any script injection, has been enabled.
+    private boolean mNativeAccessibilityEnabled;
+
     // Handles native accessibility, i.e. without any script injection.
     private BrowserAccessibilityManager mBrowserAccessibilityManager;
 
@@ -2769,14 +2775,23 @@ import java.util.Map;
      * If native accessibility (not script injection) is enabled, and if this is
      * running on JellyBean or later, returns an AccessibilityNodeProvider that
      * implements native accessibility for this view. Returns null otherwise.
+     * Lazily initializes native accessibility here if it's allowed.
      * @return The AccessibilityNodeProvider, if available, or null otherwise.
      */
     public AccessibilityNodeProvider getAccessibilityNodeProvider() {
         if (mBrowserAccessibilityManager != null) {
             return mBrowserAccessibilityManager.getAccessibilityNodeProvider();
-        } else {
-            return null;
         }
+
+        if (mNativeAccessibilityAllowed &&
+                !mNativeAccessibilityEnabled &&
+                mNativeContentViewCore != 0 &&
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            mNativeAccessibilityEnabled = true;
+            nativeSetAccessibilityEnabled(mNativeContentViewCore, true);
+        }
+
+        return null;
     }
 
     /**
@@ -2863,30 +2878,20 @@ import java.util.Map;
      * Turns browser accessibility on or off.
      * If |state| is |false|, this turns off both native and injected accessibility.
      * Otherwise, if accessibility script injection is enabled, this will enable the injected
-     * accessibility scripts, and if it is disabled this will enable the native accessibility.
+     * accessibility scripts. Native accessibility is enabled on demand.
      */
     public void setAccessibilityState(boolean state) {
-        boolean injectedAccessibility = false;
-        boolean nativeAccessibility = false;
-        if (state) {
-            if (isDeviceAccessibilityScriptInjectionEnabled()) {
-                injectedAccessibility = true;
-            } else {
-                nativeAccessibility = true;
-            }
+        if (!state) {
+            setInjectedAccessibility(false);
+            return;
         }
-        setInjectedAccessibility(injectedAccessibility);
-        setNativeAccessibilityState(nativeAccessibility);
-    }
 
-    /**
-     * Enable or disable native accessibility features.
-     */
-    public void setNativeAccessibilityState(boolean enabled) {
-        if (mNativeContentViewCore == 0) return;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            nativeSetAccessibilityEnabled(mNativeContentViewCore, enabled);
+        if (isDeviceAccessibilityScriptInjectionEnabled()) {
+            setInjectedAccessibility(true);
+            return;
         }
+
+        mNativeAccessibilityAllowed = true;
     }
 
     /**
