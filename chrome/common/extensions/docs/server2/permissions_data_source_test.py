@@ -63,6 +63,9 @@ file_system = TestFileSystem({
   '_api_features.json': json.dumps({
     'cookies': {
       'dependencies': ['permission:cookies']
+    },
+    'alarms': {
+      'dependencies': ['permission:alarms']
     }
   })
 })

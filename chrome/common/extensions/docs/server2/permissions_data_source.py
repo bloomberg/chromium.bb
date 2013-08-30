@@ -25,7 +25,7 @@ def _AddDependencyDescriptions(permissions, api_features):
   '''
   for name, permission in permissions.iteritems():
     # Don't overwrite the description created by expanding a partial template.
-    if 'description' in permission or not permission['platforms']:
+    if 'partial' in permission or not permission['platforms']:
       continue
 
     has_deps = False

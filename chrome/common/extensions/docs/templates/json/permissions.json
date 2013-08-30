@@ -44,8 +44,8 @@
   "syncFileSystem": {
     "partial": "permissions/sync_file_system.html"
   },
-  "tabCapture": {
-    "partial": "permissions/tab_capture.html"
+  "tabs": {
+    "partial": "permissions/tabs.html"
   },
   "unlimitedStorage": {
     "partial": "permissions/unlimited_storage.html"
