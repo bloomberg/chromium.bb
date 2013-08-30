@@ -325,7 +325,7 @@ void RenderFlexibleBox::repaintChildrenDuringLayoutIfMoved(const ChildFrameRects
 void RenderFlexibleBox::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     for (RenderBox* child = m_orderIterator.first(); child; child = m_orderIterator.next())
-        paintChild(child, paintInfo, paintOffset);
+        paintChildAsInlineBlock(child, paintInfo, paintOffset);
 }
 
 void RenderFlexibleBox::repositionLogicalHeightDependentFlexItems(Vector<LineContext>& lineContexts)

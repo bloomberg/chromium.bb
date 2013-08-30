@@ -3109,6 +3109,38 @@ void RenderBlock::paintChild(RenderBox* child, PaintInfo& paintInfo, const Layou
         child->paint(paintInfo, childPoint);
 }
 
+void RenderBlock::paintChildAsInlineBlock(RenderBox* child, PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    LayoutPoint childPoint = flipForWritingModeForChild(child, paintOffset);
+    if (!child->hasSelfPaintingLayer() && !child->isFloating())
+        paintAsInlineBlock(child, paintInfo, childPoint);
+}
+
+void RenderBlock::paintAsInlineBlock(RenderObject* renderer, PaintInfo& paintInfo, const LayoutPoint& childPoint)
+{
+    if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection)
+        return;
+
+    // Paint all phases atomically, as though the element established its own
+    // stacking context.  (See Appendix E.2, section 7.2.1.4 on
+    // inline block/table/replaced elements in the CSS2.1 specification.)
+    // This is also used by other elements (e.g. flex items and grid items).
+    bool preservePhase = paintInfo.phase == PaintPhaseSelection || paintInfo.phase == PaintPhaseTextClip;
+    PaintInfo info(paintInfo);
+    info.phase = preservePhase ? paintInfo.phase : PaintPhaseBlockBackground;
+    renderer->paint(info, childPoint);
+    if (!preservePhase) {
+        info.phase = PaintPhaseChildBlockBackgrounds;
+        renderer->paint(info, childPoint);
+        info.phase = PaintPhaseFloat;
+        renderer->paint(info, childPoint);
+        info.phase = PaintPhaseForeground;
+        renderer->paint(info, childPoint);
+        info.phase = PaintPhaseOutline;
+        renderer->paint(info, childPoint);
+    }
+}
+
 bool RenderBlock::hasCaret(CaretType type) const
 {
     // Paint the caret if the FrameSelection says so or if caret browsing is enabled
