@@ -610,7 +610,8 @@ STDMETHODIMP TSFTextStore::RetrieveRequestedAttrs(
   attribute_buffer[0].idAttr = GUID_PROP_INPUTSCOPE;
   attribute_buffer[0].varValue.vt = VT_UNKNOWN;
   attribute_buffer[0].varValue.punkVal = tsf_inputscope::CreateInputScope(
-      text_input_client_->GetTextInputType(), TEXT_INPUT_MODE_DEFAULT);
+      text_input_client_->GetTextInputType(),
+      text_input_client_->GetTextInputMode());
   attribute_buffer[0].varValue.punkVal->AddRef();
   *attribute_buffer_copied = 1;
   return S_OK;

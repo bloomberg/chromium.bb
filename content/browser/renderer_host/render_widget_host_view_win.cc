@@ -1051,7 +1051,7 @@ ui::TextInputMode RenderWidgetHostViewWin::GetTextInputMode() const {
     NOTREACHED();
     return ui::TEXT_INPUT_MODE_DEFAULT;
   }
-  return ui::TEXT_INPUT_MODE_DEFAULT;
+  return text_input_mode_;
 }
 
 bool RenderWidgetHostViewWin::CanComposeInline() const {
