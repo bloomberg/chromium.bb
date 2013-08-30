@@ -41,6 +41,7 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/content_watcher.h"
 #include "chrome/renderer/extensions/context_menus_custom_bindings.h"
+#include "chrome/renderer/extensions/css_native_handler.h"
 #include "chrome/renderer/extensions/document_custom_bindings.h"
 #include "chrome/renderer/extensions/dom_activity_logger.h"
 #include "chrome/renderer/extensions/event_bindings.h"
@@ -855,6 +856,8 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler("context_menus",
       scoped_ptr<NativeHandler>(
           new ContextMenusCustomBindings(this, context)));
+  module_system->RegisterNativeHandler(
+      "css_natives", scoped_ptr<NativeHandler>(new CssNativeHandler(context)));
   module_system->RegisterNativeHandler("document_natives",
       scoped_ptr<NativeHandler>(
           new DocumentCustomBindings(this, context)));

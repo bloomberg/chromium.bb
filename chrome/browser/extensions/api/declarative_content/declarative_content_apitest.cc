@@ -109,5 +109,63 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
   EXPECT_FALSE(page_action->GetIsVisible(tab_id));
 }
 
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+                       CanonicalizesPageStateMatcherCss) {
+  ext_dir_.WriteManifest(kDeclarativeContentManifest);
+  ext_dir_.WriteFile(
+      FILE_PATH_LITERAL("background.js"),
+      "var declarative = chrome.declarative;\n"
+      "\n"
+      "var PageStateMatcher = chrome.declarativeContent.PageStateMatcher;\n"
+      "function NewPageStateMatcher(obj) {\n"
+      "  return new PageStateMatcher(obj);\n"
+      "}\n"
+      "\n"
+      "chrome.test.runTests([\n"
+      "  function canonicalizesCss() {\n"
+      "    var psm = new PageStateMatcher(\n"
+      "        {css: [\"input[type='password']\"]});\n"
+      "    chrome.test.assertEq(['input[type=\"password\"]'], psm.css);\n"
+      "    chrome.test.succeed();\n"
+      "  },\n"
+      "\n"
+      "  function throwsOnNonArrayCss() {\n"
+      "    chrome.test.assertThrows(NewPageStateMatcher,\n"
+      "                             undefined,\n"
+      "                             [{css: 'Not-an-array'}],\n"
+      "                             /css.*Expected 'array'/);\n"
+      "    chrome.test.succeed();\n"
+      "  },\n"
+      "\n"
+      "  function throwsOnNonStringCss() {\n"
+      "    chrome.test.assertThrows(NewPageStateMatcher,\n"
+      "                             undefined,\n"
+      "                             [{css: [null]}],\n"
+      "                             /css\\.0.*Expected 'string'/);\n"
+      "    chrome.test.succeed();\n"
+      "  },\n"
+      "\n"
+      "  function throwsOnBadCss() {\n"
+      "    chrome.test.assertThrows(NewPageStateMatcher,\n"
+      "                             undefined,\n"
+      "                             [{css: [\"input''\"]}],\n"
+      "                             /valid.*: input''$/);\n"
+      "    chrome.test.succeed();\n"
+      "  },\n"
+      "\n"
+      "  function throwsOnComplexSelector() {\n"
+      "    chrome.test.assertThrows(NewPageStateMatcher,\n"
+      "                             undefined,\n"
+      "                             [{css: [\"div input\"]}],\n"
+      "                             /compound selector.*: div input$/);\n"
+      "    chrome.test.succeed();\n"
+      "  },\n"
+      "]);\n"
+      "\n");
+  ResultCatcher catcher;
+  ASSERT_TRUE(LoadExtension(ext_dir_.unpacked_path()));
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
 }  // namespace
 }  // namespace extensions

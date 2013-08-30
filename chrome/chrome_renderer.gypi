@@ -77,6 +77,8 @@
         'renderer/extensions/content_watcher.h',
         'renderer/extensions/context_menus_custom_bindings.cc',
         'renderer/extensions/context_menus_custom_bindings.h',
+        'renderer/extensions/css_native_handler.cc',
+        'renderer/extensions/css_native_handler.h',
         'renderer/extensions/dispatcher.cc',
         'renderer/extensions/dispatcher.h',
         'renderer/extensions/document_custom_bindings.cc',

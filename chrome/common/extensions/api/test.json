@@ -230,7 +230,7 @@
             "optional": true
           },
           {"type": "array", "items": {"type": "any"}, "name": "args"},
-          {"type": "string", "name": "message", "optional": true}
+          {"choices": [ {"type": "string"}, {"type": "object", "isInstanceOf": "RegExp"} ], "name": "message", "optional": true}
         ]
       },
       {

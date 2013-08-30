@@ -173,6 +173,7 @@ class Type(object):
           for i, choice in enumerate(json['choices'])]
     elif json_type == 'object':
       if not (
+          'isInstanceOf' in json or
           'properties' in json or
           'additionalProperties' in json or
           'functions' in json or

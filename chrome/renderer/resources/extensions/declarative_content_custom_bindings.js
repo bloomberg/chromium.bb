@@ -8,6 +8,8 @@ var binding = require('binding').Binding.create('declarativeContent');
 
 var utils = require('utils');
 var validate = require('schemaUtils').validate;
+var canonicalizeCompoundSelector =
+    requireNative('css_natives').CanonicalizeCompoundSelector;
 
 binding.registerCustomHook( function(api) {
   var declarativeContent = api.compiledApi;
@@ -35,9 +37,25 @@ binding.registerCustomHook( function(api) {
     validate([instance], [schema]);
   }
 
+  function canonicalizeCssSelectors(selectors) {
+    for (var i = 0; i < selectors.length; i++) {
+      var canonicalizedSelector = canonicalizeCompoundSelector(selectors[i]);
+      if (canonicalizedSelector == '') {
+        throw new Error(
+            'Element of \'css\' array must be a ' +
+            'list of valid compound selectors: ' +
+            selectors[i]);
+      }
+      selectors[i] = canonicalizedSelector;
+    }
+  }
+
   // Setup all data types for the declarative content API.
   declarativeContent.PageStateMatcher = function(parameters) {
     setupInstance(this, parameters, 'PageStateMatcher');
+    if ($Object.hasOwnProperty(this, 'css')) {
+      canonicalizeCssSelectors(this.css);
+    }
   };
   declarativeContent.ShowPageAction = function(parameters) {
     setupInstance(this, parameters, 'ShowPageAction');

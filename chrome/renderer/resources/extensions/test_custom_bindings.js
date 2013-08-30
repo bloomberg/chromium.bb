@@ -235,8 +235,14 @@ binding.registerCustomHook(function(api) {
       fn.apply(self, args);
       chromeTest.fail('Did not throw error: ' + fn);
     } catch (e) {
-      if (message !== undefined)
-        chromeTest.assertEq(message, e.message);
+      if (e != failureException && message !== undefined) {
+        if (message instanceof RegExp) {
+          chromeTest.assertTrue(message.test(e.message),
+                                e.message + ' should match ' + message)
+        } else {
+          chromeTest.assertEq(message, e.message);
+        }
+      }
     }
   });
 
