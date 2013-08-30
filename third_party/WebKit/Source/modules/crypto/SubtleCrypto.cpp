@@ -50,12 +50,6 @@ namespace {
 
 ScriptObject startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, ArrayBufferView* signature, ArrayBufferView* dataBuffer, ExceptionState& es)
 {
-    WebKit::WebCrypto* platformCrypto = WebKit::Platform::current()->crypto();
-    if (!platformCrypto) {
-        es.throwDOMException(NotSupportedError);
-        return ScriptObject();
-    }
-
     bool requiresKey = operationType != Digest;
 
     // Seems like the generated bindings should take care of these however it
@@ -87,19 +81,19 @@ ScriptObject startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, Algo
 
     switch (operationType) {
     case Encrypt:
-        platformCrypto->encrypt(algorithm, key->key(), data, dataSize, result->result());
+        WebKit::Platform::current()->crypto()->encrypt(algorithm, key->key(), data, dataSize, result->result());
         break;
     case Decrypt:
-        platformCrypto->decrypt(algorithm, key->key(), data, dataSize, result->result());
+        WebKit::Platform::current()->crypto()->decrypt(algorithm, key->key(), data, dataSize, result->result());
         break;
     case Sign:
-        platformCrypto->sign(algorithm, key->key(), data, dataSize, result->result());
+        WebKit::Platform::current()->crypto()->sign(algorithm, key->key(), data, dataSize, result->result());
         break;
     case Verify:
-        platformCrypto->verifySignature(algorithm, key->key(), reinterpret_cast<const unsigned char*>(signature->baseAddress()), signature->byteLength(), data, dataSize, result->result());
+        WebKit::Platform::current()->crypto()->verifySignature(algorithm, key->key(), reinterpret_cast<const unsigned char*>(signature->baseAddress()), signature->byteLength(), data, dataSize, result->result());
         break;
     case Digest:
-        platformCrypto->digest(algorithm, data, dataSize, result->result());
+        WebKit::Platform::current()->crypto()->digest(algorithm, data, dataSize, result->result());
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -143,12 +137,6 @@ ScriptObject SubtleCrypto::digest(const Dictionary& rawAlgorithm, ArrayBufferVie
 
 ScriptObject SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& es)
 {
-    WebKit::WebCrypto* platformCrypto = WebKit::Platform::current()->crypto();
-    if (!platformCrypto) {
-        es.throwDOMException(NotSupportedError);
-        return ScriptObject();
-    }
-
     WebKit::WebCryptoKeyUsageMask keyUsages;
     if (!Key::parseUsageMask(rawKeyUsages, keyUsages, es))
         return ScriptObject();
@@ -158,18 +146,12 @@ ScriptObject SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool extr
         return ScriptObject();
 
     RefPtr<CryptoResult> result = CryptoResult::create();
-    platformCrypto->generateKey(algorithm, extractable, keyUsages, result->result());
+    WebKit::Platform::current()->crypto()->generateKey(algorithm, extractable, keyUsages, result->result());
     return result->promise();
 }
 
 ScriptObject SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* keyData, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& es)
 {
-    WebKit::WebCrypto* platformCrypto = WebKit::Platform::current()->crypto();
-    if (!platformCrypto) {
-        es.throwDOMException(NotSupportedError);
-        return ScriptObject();
-    }
-
     WebKit::WebCryptoKeyFormat format;
     if (!Key::parseFormat(rawFormat, format, es))
         return ScriptObject();
@@ -190,7 +172,7 @@ ScriptObject SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* k
     const unsigned char* keyDataBytes = static_cast<unsigned char*>(keyData->baseAddress());
 
     RefPtr<CryptoResult> result = CryptoResult::create();
-    platformCrypto->importKey(format, keyDataBytes, keyData->byteLength(), algorithm, extractable, keyUsages, result->result());
+    WebKit::Platform::current()->crypto()->importKey(format, keyDataBytes, keyData->byteLength(), algorithm, extractable, keyUsages, result->result());
     return result->promise();
 }
 

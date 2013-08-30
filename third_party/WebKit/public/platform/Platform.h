@@ -547,7 +547,6 @@ public:
 
     // WebCrypto ----------------------------------------------------------
 
-    // May return 0.
     virtual WebCrypto* crypto() { return 0; }
 
 
