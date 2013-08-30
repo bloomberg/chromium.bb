@@ -41,7 +41,7 @@ from utils import tools
 from utils import short_expression_finder
 
 
-__version__ = '0.1'
+__version__ = '0.1.1'
 
 
 PATH_VARIABLES = ('DEPTH', 'PRODUCT_DIR')
@@ -1618,7 +1618,7 @@ class CompleteState(object):
   """Contains all the state to run the task at hand."""
   def __init__(self, isolated_filepath, saved_state):
     super(CompleteState, self).__init__()
-    assert os.path.isabs(isolated_filepath)
+    assert isolated_filepath is None or os.path.isabs(isolated_filepath)
     self.isolated_filepath = isolated_filepath
     # Contains the data to ease developer's use-case but that is not strictly
     # necessary.
@@ -1921,12 +1921,16 @@ def merge(complete_state, trace_blacklist):
         exceptions[0][2]
 
 
+### Commands.
+
+
 def CMDcheck(parser, args):
   """Checks that all the inputs are present and generates .isolated."""
   parser.add_option('--subdir', help='Filters to a subdirectory')
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
+
   complete_state = load_complete_state(
       options, os.getcwd(), options.subdir, False)
 
@@ -2016,6 +2020,7 @@ def CMDmerge(parser, args):
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
+
   complete_state = load_complete_state(options, os.getcwd(), None, False)
   blacklist = trace_inputs.gen_blacklist(options.trace_blacklist)
   merge(complete_state, blacklist)
@@ -2033,14 +2038,22 @@ def CMDread(parser, args):
       '--skip-refresh', action='store_true',
       help='Skip reading .isolate file and do not refresh the sha1 of '
            'dependencies')
+  parser.add_option(
+      '-m', '--merge', action='store_true',
+      help='merge the results back in the .isolate file instead of printing')
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
+
   complete_state = load_complete_state(
       options, os.getcwd(), None, options.skip_refresh)
   blacklist = trace_inputs.gen_blacklist(options.trace_blacklist)
   value, exceptions = read_trace_as_isolate_dict(complete_state, blacklist)
-  pretty_print(value, sys.stdout)
+  if options.merge:
+    merge(complete_state, blacklist)
+  else:
+    pretty_print(value, sys.stdout)
+
   if exceptions:
     # It got an exception, raise the first one.
     raise \
@@ -2067,7 +2080,7 @@ def CMDremap(parser, args):
         'isolate', complete_state.root_dir)
   else:
     if is_url(options.outdir):
-      raise ExecutionError('Can\'t use url for --outdir with mode remap')
+      parser.error('Can\'t use url for --outdir with mode remap.')
     if not os.path.isdir(options.outdir):
       os.makedirs(options.outdir)
   print('Remapping into %s' % options.outdir)
@@ -2101,7 +2114,8 @@ def CMDrewrite(parser, args):
   else:
     isolate = options.isolate
   if not isolate:
-    raise ExecutionError('A .isolate file is required.')
+    parser.error('--isolate is required.')
+
   with open(isolate, 'r') as f:
     content = f.read()
   config = load_isolate_as_config(
@@ -2115,6 +2129,7 @@ def CMDrewrite(parser, args):
   return 0
 
 
+@subcommand.usage('-- [extra arguments]')
 def CMDrun(parser, args):
   """Runs the test executable in an isolated (temporary) directory.
 
@@ -2122,24 +2137,24 @@ def CMDrun(parser, args):
   directory is cleaned up after the target exits. Warning: if --outdir is
   specified, it is deleted upon exit.
 
-  Argument processing stops at the first non-recognized argument and these
-  arguments are appended to the command line of the target to run. For example,
-  use: isolate.py --isolated foo.isolated -- --gtest_filter=Foo.Bar
+  Argument processing stops at -- and these arguments are appended to the
+  command line of the target to run. For example, use:
+    isolate.py run --isolated foo.isolated -- --gtest_filter=Foo.Bar
   """
   parser.require_isolated = False
   parser.add_option(
       '--skip-refresh', action='store_true',
       help='Skip reading .isolate file and do not refresh the sha1 of '
            'dependencies')
-  parser.enable_interspersed_args()
   options, args = parser.parse_args(args)
+  if options.outdir and is_url(options.outdir):
+    parser.error('Can\'t use url for --outdir with mode run.')
+
   complete_state = load_complete_state(
       options, os.getcwd(), None, options.skip_refresh)
   cmd = complete_state.saved_state.command + args
   if not cmd:
-    raise ExecutionError('No command to run')
-  if options.outdir and is_url(options.outdir):
-    raise ExecutionError('Can\'t use url for --outdir with mode run')
+    raise ExecutionError('No command to run.')
 
   cmd = tools.fix_python_path(cmd)
   try:
@@ -2177,6 +2192,7 @@ def CMDrun(parser, args):
   return result
 
 
+@subcommand.usage('-- [extra arguments]')
 def CMDtrace(parser, args):
   """Traces the target using trace_inputs.py.
 
@@ -2185,12 +2201,11 @@ def CMDtrace(parser, args):
   an updated .isolate file out of it or the 'read' command to print it out to
   stdout.
 
-  Argument processing stops at the first non-recognized argument and these
-  arguments are appended to the command line of the target to run. For example,
-  use: isolate.py --isolated foo.isolated -- --gtest_filter=Foo.Bar
+  Argument processing stops at -- and these arguments are appended to the
+  command line of the target to run. For example, use:
+    isolate.py trace --isolated foo.isolated -- --gtest_filter=Foo.Bar
   """
   add_trace_option(parser)
-  parser.enable_interspersed_args()
   parser.add_option(
       '-m', '--merge', action='store_true',
       help='After tracing, merge the results back in the .isolate file')
@@ -2199,11 +2214,12 @@ def CMDtrace(parser, args):
       help='Skip reading .isolate file and do not refresh the sha1 of '
            'dependencies')
   options, args = parser.parse_args(args)
+
   complete_state = load_complete_state(
       options, os.getcwd(), None, options.skip_refresh)
   cmd = complete_state.saved_state.command + args
   if not cmd:
-    raise ExecutionError('No command to run')
+    raise ExecutionError('No command to run.')
   cmd = tools.fix_python_path(cmd)
   cwd = os.path.normpath(os.path.join(
       unicode(complete_state.root_dir),

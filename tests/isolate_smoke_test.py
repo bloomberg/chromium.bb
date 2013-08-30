@@ -830,7 +830,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
       err = e.stderr
     self._expect_no_tree()
     self._expect_no_result()
-    expected = '\nError: No command to run\n'
+    expected = '\nError: No command to run.\n'
     self.assertEqual('', out)
     self.assertEqual(expected, err)
 

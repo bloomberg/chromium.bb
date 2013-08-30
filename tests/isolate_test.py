@@ -12,6 +12,8 @@ import sys
 import tempfile
 import unittest
 
+import auto_stub
+
 ROOT_DIR = unicode(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT_DIR)
 
@@ -29,7 +31,7 @@ def _sha1(*args):
     return hashlib.sha1(f.read()).hexdigest()
 
 
-class IsolateBase(unittest.TestCase):
+class IsolateBase(auto_stub.TestCase):
   def setUp(self):
     super(IsolateBase, self).setUp()
     self.old_cwd = os.getcwd()
@@ -38,9 +40,11 @@ class IsolateBase(unittest.TestCase):
     os.chdir(self.cwd)
 
   def tearDown(self):
-    os.chdir(self.old_cwd)
-    isolate.run_isolated.rmtree(self.cwd)
-    super(IsolateBase, self).tearDown()
+    try:
+      os.chdir(self.old_cwd)
+      isolate.run_isolated.rmtree(self.cwd)
+    finally:
+      super(IsolateBase, self).tearDown()
 
 
 class IsolateTest(IsolateBase):
@@ -907,14 +911,14 @@ class IsolateTest(IsolateBase):
         isolate.convert_old_to_new_format(isolate_with_default_variables))
 
   def test_variable_arg(self):
-    parser = isolate.optparse.OptionParser()
-    isolate.add_variable_option(parser)
-    expected = [
-      ('OS', isolate.get_flavor()),
-      ('EXECUTABLE_SUFFIX', '.exe' if isolate.get_flavor() == 'win' else ''),
-      ('Foo', 'bar'),
-      ('Baz', 'sub=string'),
-    ]
+    parser = isolate.OptionParserIsolate()
+    parser.require_isolated = False
+    expected = {
+      'Baz': 'sub=string',
+      'EXECUTABLE_SUFFIX': '.exe' if isolate.get_flavor() == 'win' else '',
+      'Foo': 'bar',
+      'OS': isolate.get_flavor(),
+    }
 
     options, args = parser.parse_args(
         ['-V', 'Foo', 'bar', '-V', 'Baz=sub=string'])
@@ -922,8 +926,8 @@ class IsolateTest(IsolateBase):
     self.assertEqual([], args)
 
   def test_variable_arg_fail(self):
-    parser = isolate.optparse.OptionParser()
-    isolate.add_variable_option(parser)
+    parser = isolate.OptionParserIsolate()
+    self.mock(sys, 'stderr', cStringIO.StringIO())
     self.assertRaises(SystemExit, parser.parse_args, ['-V', 'Foo'])
 
   def test_blacklist(self):
@@ -1062,8 +1066,10 @@ class IsolateLoad(IsolateBase):
     self.directory = tempfile.mkdtemp(prefix='isolate_')
 
   def tearDown(self):
-    isolate.run_isolated.rmtree(self.directory)
-    super(IsolateLoad, self).tearDown()
+    try:
+      isolate.run_isolated.rmtree(self.directory)
+    finally:
+      super(IsolateLoad, self).tearDown()
 
   def _get_option(self, isolate_file):
     OS = isolate.get_flavor()
@@ -1562,6 +1568,15 @@ class IsolateLoad(IsolateBase):
 
 
 class IsolateCommand(IsolateBase):
+  def load_complete_state(self, *_):
+    """Creates a minimalist CompleteState instance without an .isolated
+    reference.
+    """
+    out = isolate.CompleteState(None, isolate.SavedState(self.cwd))
+    out.saved_state.isolate_file = u'blah.isolate'
+    out.saved_state.relative_cwd = u''
+    return out
+
   def test_CMDrewrite(self):
     isolate_file = os.path.join(self.cwd, 'x.isolate')
     data = (
@@ -1572,6 +1587,7 @@ class IsolateCommand(IsolateBase):
     with open(isolate_file, 'wb') as f:
       f.write('\n'.join(data))
 
+    self.mock(sys, 'stdout', cStringIO.StringIO())
     cmd = ['-i', isolate_file]
     self.assertEqual(0, isolate.CMDrewrite(isolate.OptionParserIsolate(), cmd))
     with open(isolate_file, 'rb') as f:
@@ -1618,6 +1634,17 @@ class IsolateCommand(IsolateBase):
         u'relative_cwd': u'.',
       }
       self.assertEqual(expected, actual)
+
+  def test_CMDrun_extra_args(self):
+    cmd = [
+      'run',
+      '--isolate', 'blah.isolate',
+      '--outdir', os.path.join(self.cwd, 'jumbo'),
+      '--', 'extra_args',
+    ]
+    self.mock(isolate, 'load_complete_state', self.load_complete_state)
+    self.mock(isolate.subprocess, 'call', lambda *_, **_kwargs: 0)
+    self.assertEqual(0, isolate.CMDrun(isolate.OptionParserIsolate(), cmd))
 
 
 if __name__ == '__main__':
