@@ -1619,7 +1619,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_HOME));
   content::WaitForLoadStop(contents);
-  EXPECT_TRUE(chrome::IsNTPURL(contents->GetURL(),browser()->profile()));
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), contents->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {

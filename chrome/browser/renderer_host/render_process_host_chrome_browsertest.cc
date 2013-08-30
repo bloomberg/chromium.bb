@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -97,7 +96,7 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
     tab1 = browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
     rph1 = tab1->GetRenderProcessHost();
-    EXPECT_TRUE(chrome::IsNTPURL(tab1->GetURL(), browser()->profile()));
+    EXPECT_EQ(tab1->GetURL(), newtab);
     EXPECT_EQ(host_count, RenderProcessHostCount());
 
     // Create a new TYPE_TABBED tab.  It should be in its own process.

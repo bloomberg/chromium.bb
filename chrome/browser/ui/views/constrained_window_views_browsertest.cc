@@ -5,7 +5,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -410,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest,
   // Wait for the navigation to commit, since the URL will not be visible
   // until then.
   back_observer.Wait();
-  EXPECT_TRUE(chrome::IsNTPURL(web_contents->GetURL(), browser()->profile()));
+  EXPECT_EQ(new_tab_url.spec(), web_contents->GetURL().spec());
 }
 
 // Fails flakily (once per 10-20 runs) on Win Aura only. http://crbug.com/177482
