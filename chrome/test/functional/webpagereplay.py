@@ -35,6 +35,7 @@ def GetChromeFlags(replay_host, http_port, https_port):
       '--ignore-certificate-errors',
       ]
 
+
 # Signal masks on Linux are inherited from parent processes.  If anything
 # invoking us accidentally masks SIGINT (e.g. by putting a process in the
 # background from a shell script), sending a SIGINT to the child will fail
@@ -43,9 +44,11 @@ def GetChromeFlags(replay_host, http_port, https_port):
 def ResetInterruptHandler():
   signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+
 class ReplayError(Exception):
   """Catch-all exception for the module."""
   pass
+
 
 class ReplayNotFoundError(ReplayError):
   def __init__(self, label, path):
@@ -54,6 +57,7 @@ class ReplayNotFoundError(ReplayError):
   def __str__(self):
     label, path = self.args
     return 'Path does not exist for %s: %s' % (label, path)
+
 
 class ReplayNotStartedError(ReplayError):
   pass
@@ -78,6 +82,7 @@ class ReplayServer(object):
     WPR_RECORD: if set, puts Web Page Replay in record mode instead of replay.
     WPR_REPLAY_DIR: path to alternate Web Page Replay source.
   """
+
   def __init__(self, archive_path, replay_host, http_port, https_port,
                replay_options=None, replay_dir=None,
                log_path=None):
@@ -88,7 +93,7 @@ class ReplayServer(object):
       replay_options: an iterable of options strings to forward to replay.py.
       replay_dir: directory that has replay.py and related modules.
       log_path: a path to a log file.
-   """
+    """
     self.archive_path = os.environ.get('WPR_ARCHIVE_PATH', archive_path)
     self.replay_options = list(replay_options or ())
     self.replay_dir = os.environ.get('WPR_REPLAY_DIR', replay_dir or REPLAY_DIR)
@@ -155,14 +160,14 @@ class ReplayServer(object):
     """Start Web Page Replay and verify that it started.
 
     Raises:
-      ReplayNotStartedError if Replay start-up fails.
+      ReplayNotStartedError: if Replay start-up fails.
     """
     cmd_line = [sys.executable, self.replay_py]
     cmd_line.extend(self.replay_options)
     cmd_line.append(self.archive_path)
     self.log_fh = self._OpenLogFile()
     logging.debug('Starting Web-Page-Replay: %s', cmd_line)
-    kwargs = { 'stdout': self.log_fh, 'stderr': subprocess.STDOUT }
+    kwargs = {'stdout': self.log_fh, 'stderr': subprocess.STDOUT}
     if sys.platform.startswith('linux') or sys.platform == 'darwin':
       kwargs['preexec_fn'] = ResetInterruptHandler
     self.replay_process = subprocess.Popen(cmd_line, **kwargs)
@@ -174,14 +179,32 @@ class ReplayServer(object):
   def StopServer(self):
     """Stop Web Page Replay."""
     if self.replay_process:
-      logging.debug('Stopping Web-Page-Replay')
-      # Use a SIGINT so that it can do graceful cleanup. On Windows, we are left
-      # with no other option than terminate().
+      logging.debug('Trying to stop Web-Page-Replay gracefully')
       try:
-        self.replay_process.send_signal(signal.SIGINT)
-      except:
-        self.replay_process.terminate()
-      self.replay_process.wait()
+        url = 'http://localhost:%s/web-page-replay-command-exit'
+        urllib.urlopen(url % self._http_port, None, {})
+      except IOError:
+        # IOError is possible because the server might exit without response.
+        pass
+
+      start_time = time.time()
+      while time.time() - start_time < 10:  # Timeout after 10 seconds.
+        if self.replay_process.poll() is not None:
+          break
+        time.sleep(1)
+      else:
+        try:
+          # Use a SIGINT so that it can do graceful cleanup.
+          self.replay_process.send_signal(signal.SIGINT)
+        except:  # pylint: disable=W0702
+          # On Windows, we are left with no other option than terminate().
+          if 'no-dns_forwarding' not in self.replay_options:
+            logging.warning('DNS configuration might not be restored!')
+          try:
+            self.replay_process.terminate()
+          except:  # pylint: disable=W0702
+            pass
+        self.replay_process.wait()
     if self.log_fh:
       self.log_fh.close()
 
