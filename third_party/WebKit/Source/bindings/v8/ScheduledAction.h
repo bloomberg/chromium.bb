@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptSourceCode.h"
+#include "bindings/v8/UnsafePersistent.h"
 #include <v8.h>
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
