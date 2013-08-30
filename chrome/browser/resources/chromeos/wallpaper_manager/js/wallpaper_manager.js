@@ -615,7 +615,7 @@ function WallpaperManager(dialogDom) {
    * @private
    */
   WallpaperManager.prototype.setWallpaperAttribution_ = function(selectedItem) {
-    if (selectedItem) {
+    if (selectedItem && selectedItem.source != 'ADDNEW') {
       $('author-name').textContent = selectedItem.author;
       $('author-website').textContent = $('author-website').href =
           selectedItem.authorWebsite;
