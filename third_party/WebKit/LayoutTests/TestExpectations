@@ -1272,3 +1272,8 @@ crbug.com/248938 [ SnowLeopard  Debug ] virtual/threaded/animations/animation-it
 crbug.com/281911 [ Debug ] virtual/web-animations-css/animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/281911 [ XP Release ] virtual/web-animations-css/animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/281915 [ Mac Release ] svg/custom/repaint-shadow.svg [ Failure Pass ]
+crbug.com/282079 [ Debug ] webmidi/requestmidiaccess-basic.html [ Crash Pass ]
+crbug.com/282080 fast/events/menu-keydown-on-hidden-element.html [ Pass Timeout ]
+crbug.com/282081 [ Debug ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Crash Pass ]
+crbug.com/282081 [ Win Release ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Pass Timeout ]
+crbug.com/282082 inspector/debugger/live-edit.html [ Failure Timeout ]
