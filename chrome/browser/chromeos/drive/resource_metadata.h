@@ -24,13 +24,6 @@ namespace drive {
 
 typedef std::vector<ResourceEntry> ResourceEntryVector;
 
-
-// Callback similar to FileOperationCallback but with a given |file_path|.
-// Used for operations that change a file path like moving files.
-typedef base::Callback<void(FileError error,
-                            const base::FilePath& file_path)>
-    FileMoveCallback;
-
 // Used to get a resource entry from the file system.
 // If |error| is not FILE_ERROR_OK, |entry_info| is set to NULL.
 typedef base::Callback<void(FileError error,
@@ -42,30 +35,6 @@ typedef base::Callback<void(FileError error,
     ReadDirectoryCallback;
 
 typedef base::Callback<void(int64)> GetChangestampCallback;
-
-// This is a part of EntryInfoPairResult.
-struct EntryInfoResult {
-  EntryInfoResult();
-  ~EntryInfoResult();
-
-  base::FilePath path;
-  FileError error;
-  scoped_ptr<ResourceEntry> entry;
-};
-
-// The result of GetResourceEntryPairCallback(). Used to get a pair of entries
-// in one function call.
-struct EntryInfoPairResult {
-  EntryInfoPairResult();
-  ~EntryInfoPairResult();
-
-  EntryInfoResult first;
-  EntryInfoResult second;  // Only filled if the first entry is found.
-};
-
-// Used to receive the result from GetResourceEntryPairCallback().
-typedef base::Callback<void(scoped_ptr<EntryInfoPairResult> pair_result)>
-    GetResourceEntryPairCallback;
 
 typedef base::Callback<void(const ResourceEntry& entry)> IterateCallback;
 
@@ -147,16 +116,6 @@ class ResourceMetadata {
   FileError ReadDirectoryByPath(const base::FilePath& file_path,
                                 ResourceEntryVector* out_entries);
 
-  // Similar to GetResourceEntryByPath() but this function finds a pair of
-  // entries by |first_path| and |second_path|. If the entry for
-  // |first_path| is not found, this function does not try to get the
-  // entry of |second_path|. |callback| must not be null.
-  // Must be called on the UI thread.
-  void GetResourceEntryPairByPathsOnUIThread(
-      const base::FilePath& first_path,
-      const base::FilePath& second_path,
-      const GetResourceEntryPairCallback& callback);
-
   // Replaces an existing entry whose ID is |id| with |entry|.
   FileError RefreshEntry(const std::string& id, const ResourceEntry& entry);
 
@@ -192,25 +151,6 @@ class ResourceMetadata {
 
   // Used to implement Destroy().
   void DestroyOnBlockingPool();
-
-  // Continues with GetResourceEntryPairByPathsOnUIThread after the first
-  // entry has been asynchronously fetched. This fetches the second entry
-  // only if the first was found.
-  void GetResourceEntryPairByPathsOnUIThreadAfterGetFirst(
-      const base::FilePath& first_path,
-      const base::FilePath& second_path,
-      const GetResourceEntryPairCallback& callback,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
-
-  // Continues with GetResourceEntryPairByPathsOnUIThread after the second
-  // entry has been asynchronously fetched.
-  void GetResourceEntryPairByPathsOnUIThreadAfterGetSecond(
-      const base::FilePath& second_path,
-      const GetResourceEntryPairCallback& callback,
-      scoped_ptr<EntryInfoPairResult> result,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
 
   // Puts an entry under its parent directory. Removes the child from the old
   // parent if there is. This method will also do name de-duplication to ensure

@@ -57,47 +57,7 @@ void RunReadDirectoryCallback(const ReadDirectoryCallback& callback,
   callback.Run(error, entries.Pass());
 }
 
-// Runs |callback| with arguments.
-void RunFileMoveCallback(const FileMoveCallback& callback,
-                         base::FilePath* path,
-                         FileError error) {
-  DCHECK(!callback.is_null());
-  DCHECK(path);
-
-  callback.Run(error, *path);
-}
-
-// Helper function to run tasks with FileMoveCallback.
-void PostFileMoveTask(
-    base::TaskRunner* task_runner,
-    const base::Callback<FileError(base::FilePath* out_file_path)>& task,
-    const FileMoveCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!task.is_null());
-  DCHECK(!callback.is_null());
-
-  base::FilePath* file_path = new base::FilePath;
-
-  base::PostTaskAndReplyWithResult(
-      task_runner,
-      FROM_HERE,
-      base::Bind(task, file_path),
-      base::Bind(&RunFileMoveCallback, callback, base::Owned(file_path)));
-}
-
 }  // namespace
-
-EntryInfoResult::EntryInfoResult() : error(FILE_ERROR_FAILED) {
-}
-
-EntryInfoResult::~EntryInfoResult() {
-}
-
-EntryInfoPairResult::EntryInfoPairResult() {
-}
-
-EntryInfoPairResult::~EntryInfoPairResult() {
-}
 
 namespace internal {
 
@@ -497,73 +457,6 @@ FileError ResourceMetadata::GetIdByResourceId(const std::string& resource_id,
   if (error == FILE_ERROR_OK)
     *out_local_id = resource_id;
   return error;
-}
-
-void ResourceMetadata::GetResourceEntryPairByPathsOnUIThread(
-    const base::FilePath& first_path,
-    const base::FilePath& second_path,
-    const GetResourceEntryPairCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // Get the first entry.
-  GetResourceEntryByPathOnUIThread(
-      first_path,
-      base::Bind(
-          &ResourceMetadata::GetResourceEntryPairByPathsOnUIThreadAfterGetFirst,
-          weak_ptr_factory_.GetWeakPtr(),
-          first_path,
-          second_path,
-          callback));
-}
-
-void ResourceMetadata::GetResourceEntryPairByPathsOnUIThreadAfterGetFirst(
-    const base::FilePath& first_path,
-    const base::FilePath& second_path,
-    const GetResourceEntryPairCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  scoped_ptr<EntryInfoPairResult> result(new EntryInfoPairResult);
-  result->first.path = first_path;
-  result->first.error = error;
-  result->first.entry = entry.Pass();
-
-  // If the first one is not found, don't continue.
-  if (error != FILE_ERROR_OK) {
-    callback.Run(result.Pass());
-    return;
-  }
-
-  // Get the second entry.
-  GetResourceEntryByPathOnUIThread(
-      second_path,
-      base::Bind(
-          &ResourceMetadata::
-          GetResourceEntryPairByPathsOnUIThreadAfterGetSecond,
-          weak_ptr_factory_.GetWeakPtr(),
-          second_path,
-          callback,
-          base::Passed(&result)));
-}
-
-void ResourceMetadata::GetResourceEntryPairByPathsOnUIThreadAfterGetSecond(
-    const base::FilePath& second_path,
-    const GetResourceEntryPairCallback& callback,
-    scoped_ptr<EntryInfoPairResult> result,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  DCHECK(result.get());
-
-  result->second.path = second_path;
-  result->second.error = error;
-  result->second.entry = entry.Pass();
-
-  callback.Run(result.Pass());
 }
 
 bool ResourceMetadata::PutEntryUnderDirectory(const std::string& id,

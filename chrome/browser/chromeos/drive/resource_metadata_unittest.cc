@@ -342,64 +342,6 @@ TEST_F(ResourceMetadataTestOnUIThread, ReadDirectoryByPath) {
   EXPECT_FALSE(entries.get());
 }
 
-TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryPairByPaths) {
-  // Confirm that existing two files are found.
-  scoped_ptr<EntryInfoPairResult> pair_result;
-  resource_metadata_->GetResourceEntryPairByPathsOnUIThread(
-      base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
-      base::FilePath::FromUTF8Unsafe("drive/root/dir1/file5"),
-      google_apis::test_util::CreateCopyResultCallback(&pair_result));
-  test_util::RunBlockingPoolTask();
-  // The first entry should be found.
-  EXPECT_EQ(FILE_ERROR_OK, pair_result->first.error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
-            pair_result->first.path);
-  ASSERT_TRUE(pair_result->first.entry.get());
-  EXPECT_EQ("file4", pair_result->first.entry->base_name());
-  // The second entry should be found.
-  EXPECT_EQ(FILE_ERROR_OK, pair_result->second.error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/file5"),
-            pair_result->second.path);
-  ASSERT_TRUE(pair_result->second.entry.get());
-  EXPECT_EQ("file5", pair_result->second.entry->base_name());
-
-  // Confirm that the first non existent file is not found.
-  pair_result.reset();
-  resource_metadata_->GetResourceEntryPairByPathsOnUIThread(
-      base::FilePath::FromUTF8Unsafe("drive/root/dir1/non_existent"),
-      base::FilePath::FromUTF8Unsafe("drive/root/dir1/file5"),
-      google_apis::test_util::CreateCopyResultCallback(&pair_result));
-  test_util::RunBlockingPoolTask();
-  // The first entry should not be found.
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, pair_result->first.error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/non_existent"),
-            pair_result->first.path);
-  ASSERT_FALSE(pair_result->first.entry.get());
-  // The second entry should not be found, because the first one failed.
-  EXPECT_EQ(FILE_ERROR_FAILED, pair_result->second.error);
-  EXPECT_EQ(base::FilePath(), pair_result->second.path);
-  ASSERT_FALSE(pair_result->second.entry.get());
-
-  // Confirm that the second non existent file is not found.
-  pair_result.reset();
-  resource_metadata_->GetResourceEntryPairByPathsOnUIThread(
-      base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
-      base::FilePath::FromUTF8Unsafe("drive/root/dir1/non_existent"),
-      google_apis::test_util::CreateCopyResultCallback(&pair_result));
-  test_util::RunBlockingPoolTask();
-  // The first entry should be found.
-  EXPECT_EQ(FILE_ERROR_OK, pair_result->first.error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
-            pair_result->first.path);
-  ASSERT_TRUE(pair_result->first.entry.get());
-  EXPECT_EQ("file4", pair_result->first.entry->base_name());
-  // The second entry should not be found.
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, pair_result->second.error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/non_existent"),
-            pair_result->second.path);
-  ASSERT_FALSE(pair_result->second.entry.get());
-}
-
 TEST_F(ResourceMetadataTestOnUIThread, Reset) {
   // The grand root has "root" which is not empty.
   scoped_ptr<ResourceEntryVector> entries;
