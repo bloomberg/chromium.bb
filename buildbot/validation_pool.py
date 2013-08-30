@@ -318,7 +318,8 @@ class PatchSeries(object):
     helper = self._LookupHelper(query)
     query = query_text = cros_patch.FormatPatchDep(query, force_external=True)
     if constants.USE_GOB:
-      change = helper.QuerySingleRecord(query_text, must_match=False)
+      change = helper.QuerySingleRecord(
+          query_text, must_match=not git.IsSHA1(query))
       if not change:
         return
     else:

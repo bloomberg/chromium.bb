@@ -547,9 +547,10 @@ class GerritOnBorgHelper(GerritHelper):
         logging.info('Would have run gob_util.GetChangeDetail(%s, %s, %s)',
                      self.host, change, o_params)
         return []
-      patch_dict = cros_patch.GerritPatch.ConvertQueryResults(
-          gob_util.GetChangeDetail(self.host, change, o_params=o_params),
-          self.host)
+      change = gob_util.GetChangeDetail(self.host, change, o_params=o_params)
+      if change is None:
+        return []
+      patch_dict = cros_patch.GerritPatch.ConvertQueryResults(change, self.host)
       if raw:
         return [patch_dict]
       return [cros_patch.GerritPatch(patch_dict, self.remote, url_prefix)]
