@@ -315,7 +315,9 @@ ProfileImplIOData::LazyParams::~LazyParams() {}
 
 ProfileImplIOData::ProfileImplIOData()
     : ProfileIOData(false),
-      http_server_properties_manager_(NULL) {}
+      http_server_properties_manager_(NULL),
+      app_cache_max_size_(0),
+      app_media_cache_max_size_(0) {}
 ProfileImplIOData::~ProfileImplIOData() {
   DestroyResourceContext();
 
