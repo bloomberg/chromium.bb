@@ -62,12 +62,12 @@ using google_apis::drive::FilesGetRequest;
 using google_apis::drive::FilesInsertRequest;
 using google_apis::drive::FilesPatchRequest;
 using google_apis::drive::FilesListRequest;
+using google_apis::drive::FilesTrashRequest;
 using google_apis::drive::GetUploadStatusRequest;
 using google_apis::drive::InitiateUploadExistingFileRequest;
 using google_apis::drive::InitiateUploadNewFileRequest;
 using google_apis::drive::InsertResourceRequest;
 using google_apis::drive::ResumeUploadRequest;
-using google_apis::drive::TrashResourceRequest;
 
 namespace drive {
 
@@ -592,11 +592,11 @@ CancelCallback DriveAPIService::DeleteResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(new TrashResourceRequest(
-      sender_.get(),
-      url_generator_,
-      resource_id,
-      callback));
+  FilesTrashRequest* request = new FilesTrashRequest(
+      sender_.get(), url_generator_,
+      base::Bind(&EntryActionCallbackAdapter, callback));
+  request->set_file_id(resource_id);
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::AddNewDirectory(

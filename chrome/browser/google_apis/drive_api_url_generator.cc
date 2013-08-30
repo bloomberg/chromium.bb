@@ -115,6 +115,11 @@ GURL DriveApiUrlGenerator::GetFilesListUrl(int max_results,
   return url;
 }
 
+GURL DriveApiUrlGenerator::GetFilesTrashUrl(const std::string& file_id) const {
+  return base_url_.Resolve(base::StringPrintf(
+      kDriveV2FileTrashUrlFormat, net::EscapePath(file_id).c_str()));
+}
+
 GURL DriveApiUrlGenerator::GetFileTouchUrl(
     const std::string& resource_id) const {
   GURL url = base_url_.Resolve(
@@ -128,12 +133,6 @@ GURL DriveApiUrlGenerator::GetFileTouchUrl(
   url = net::AppendOrReplaceQueryParameter(url, "updateViewedDate", "false");
 
   return url;
-}
-
-GURL DriveApiUrlGenerator::GetFileTrashUrl(const std::string& file_id) const {
-  return base_url_.Resolve(
-      base::StringPrintf(kDriveV2FileTrashUrlFormat,
-                         net::EscapePath(file_id).c_str()));
 }
 
 GURL DriveApiUrlGenerator::GetChangesListUrl(bool include_deleted,

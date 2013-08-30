@@ -326,6 +326,28 @@ GURL FilesListRequest::GetURL() const {
   return url_generator_.GetFilesListUrl(max_results_, page_token_, q_);
 }
 
+//============================ FilesTrashRequest =============================
+
+FilesTrashRequest::FilesTrashRequest(
+    RequestSender* sender,
+    const DriveApiUrlGenerator& url_generator,
+    const FileResourceCallback& callback)
+    : GetDataRequest(sender,
+                     base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+      url_generator_(url_generator) {
+  DCHECK(!callback.is_null());
+}
+
+FilesTrashRequest::~FilesTrashRequest() {}
+
+net::URLFetcher::RequestType FilesTrashRequest::GetRequestType() const {
+  return net::URLFetcher::POST;
+}
+
+GURL FilesTrashRequest::GetURL() const {
+  return url_generator_.GetFilesTrashUrl(file_id_);
+}
+
 //============================== AboutGetRequest =============================
 
 AboutGetRequest::AboutGetRequest(
@@ -516,29 +538,6 @@ bool MoveResourceRequest::GetContentData(std::string* upload_content_type,
   DVLOG(1) << "MoveResource data: " << *upload_content_type << ", ["
            << *upload_content << "]";
   return true;
-}
-
-//=========================== TrashResourceRequest ===========================
-
-TrashResourceRequest::TrashResourceRequest(
-    RequestSender* sender,
-    const DriveApiUrlGenerator& url_generator,
-    const std::string& resource_id,
-    const EntryActionCallback& callback)
-    : EntryActionRequest(sender, callback),
-      url_generator_(url_generator),
-      resource_id_(resource_id) {
-  DCHECK(!callback.is_null());
-}
-
-TrashResourceRequest::~TrashResourceRequest() {}
-
-GURL TrashResourceRequest::GetURL() const {
-  return url_generator_.GetFileTrashUrl(resource_id_);
-}
-
-net::URLFetcher::RequestType TrashResourceRequest::GetRequestType() const {
-  return net::URLFetcher::POST;
 }
 
 //========================== InsertResourceRequest ===========================

@@ -681,6 +681,36 @@ TEST_F(DriveApiRequestsTest, ContinueGetFileListRequest) {
   EXPECT_TRUE(result);
 }
 
+TEST_F(DriveApiRequestsTest, FilesTrashRequest) {
+  // Set data for the expected result. Directory entry should be returned
+  // if the trashing entry is a directory, so using it here should be fine.
+  expected_data_file_path_ =
+      test_util::GetTestFilePath("drive/directory_entry.json");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<FileResource> file_resource;
+
+  // Trash a resource with the given resource id.
+  {
+    base::RunLoop run_loop;
+    drive::FilesTrashRequest* request = new drive::FilesTrashRequest(
+        request_sender_.get(),
+        *url_generator_,
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&error, &file_resource)));
+    request->set_file_id("resource_id");
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ("/drive/v2/files/resource_id/trash", http_request_.relative_url);
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_TRUE(http_request_.content.empty());
+}
+
 TEST_F(DriveApiRequestsTest, TouchResourceRequest) {
   // Set an expected data file containing the directory's entry data.
   // It'd be returned if we rename a directory.
@@ -795,36 +825,6 @@ TEST_F(DriveApiRequestsTest, MoveResourceRequest_EmptyParentResourceId) {
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ("{\"title\":\"new title\"}", http_request_.content);
   EXPECT_TRUE(file_resource);
-}
-
-TEST_F(DriveApiRequestsTest, TrashResourceRequest) {
-  // Set data for the expected result. Directory entry should be returned
-  // if the trashing entry is a directory, so using it here should be fine.
-  expected_data_file_path_ =
-      test_util::GetTestFilePath("drive/directory_entry.json");
-
-  GDataErrorCode error = GDATA_OTHER_ERROR;
-
-  // Trash a resource with the given resource id.
-  {
-    base::RunLoop run_loop;
-    drive::TrashResourceRequest* request =
-        new drive::TrashResourceRequest(
-            request_sender_.get(),
-            *url_generator_,
-            "resource_id",
-            test_util::CreateQuitCallback(
-                &run_loop,
-                test_util::CreateCopyResultCallback(&error)));
-    request_sender_->StartRequestWithRetry(request);
-    run_loop.Run();
-  }
-
-  EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
-  EXPECT_EQ("/drive/v2/files/resource_id/trash", http_request_.relative_url);
-  EXPECT_TRUE(http_request_.has_content);
-  EXPECT_TRUE(http_request_.content.empty());
 }
 
 TEST_F(DriveApiRequestsTest, InsertResourceRequest) {

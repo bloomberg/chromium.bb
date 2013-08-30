@@ -258,6 +258,35 @@ class FilesListRequest : public GetDataRequest {
   DISALLOW_COPY_AND_ASSIGN(FilesListRequest);
 };
 
+//=========================== TrashResourceRequest ===========================
+
+// This class performs the request for trashing a resource.
+// This request is mapped to
+// https://developers.google.com/drive/v2/reference/files/trash
+class FilesTrashRequest : public GetDataRequest {
+ public:
+  FilesTrashRequest(RequestSender* sender,
+                    const DriveApiUrlGenerator& url_generator,
+                    const FileResourceCallback& callback);
+  virtual ~FilesTrashRequest();
+
+  // Required parameter.
+  const std::string& file_id() const { return file_id_; }
+  void set_file_id(const std::string& file_id) { file_id_ = file_id; }
+
+ protected:
+  // UrlFetchRequestBase overrides.
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  std::string file_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(FilesTrashRequest);
+};
+
+
 //============================== AboutGetRequest =============================
 
 // This class performs the request for fetching About data.
@@ -439,40 +468,6 @@ class MoveResourceRequest : public GetDataRequest {
   const std::string new_title_;
 
   DISALLOW_COPY_AND_ASSIGN(MoveResourceRequest);
-};
-
-//=========================== TrashResourceRequest ===========================
-
-// This class performs the request for trashing a resource.
-//
-// According to the document:
-// https://developers.google.com/drive/v2/reference/files/trash
-// the file resource will be returned from the server, which is not in the
-// response from WAPI server. For the transition, we simply ignore the result,
-// because now we do not handle resources in trash.
-// Note for the naming: the name "trash" comes from the server's request
-// name. In order to be consistent with the server, we chose "trash" here,
-// although we are preferring the term "remove" in drive/google_api code.
-// TODO(hidehiko): Replace the base class to GetDataRequest.
-class TrashResourceRequest : public EntryActionRequest {
- public:
-  // |callback| must not be null.
-  TrashResourceRequest(RequestSender* sender,
-                       const DriveApiUrlGenerator& url_generator,
-                       const std::string& resource_id,
-                       const EntryActionCallback& callback);
-  virtual ~TrashResourceRequest();
-
- protected:
-  // UrlFetchRequestBase overrides.
-  virtual GURL GetURL() const OVERRIDE;
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-
- private:
-  const DriveApiUrlGenerator url_generator_;
-  const std::string resource_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrashResourceRequest);
 };
 
 //========================== InsertResourceRequest ===========================
