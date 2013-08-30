@@ -164,6 +164,9 @@ class CHROMEOS_EXPORT InputMethodManager {
   // Sets the list of extension IME ids which should be enabled.
   virtual void SetEnabledExtensionImes(std::vector<std::string>* ids) = 0;
 
+  // Sets current input method to default (first owners, then hardware).
+  virtual void SetInputMethodDefault() = 0;
+
   // Gets the descriptor of the input method which is currently selected.
   virtual InputMethodDescriptor GetCurrentInputMethod() const = 0;
 

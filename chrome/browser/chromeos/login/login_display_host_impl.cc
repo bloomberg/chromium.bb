@@ -861,18 +861,9 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   // Set up keyboards. For example, when |locale| is "en-US", enable US qwerty
   // and US dvorak keyboard layouts.
   if (g_browser_process && g_browser_process->local_state()) {
-    const std::string locale = g_browser_process->GetApplicationLocale();
-    // If the preferred keyboard for the login screen has been saved, use it.
-    PrefService* prefs = g_browser_process->local_state();
-    std::string initial_input_method_id =
-        prefs->GetString(chromeos::language_prefs::kPreferredKeyboardLayout);
-    if (initial_input_method_id.empty()) {
-      // If kPreferredKeyboardLayout is not specified, use the hardware layout.
-      initial_input_method_id =
-          manager->GetInputMethodUtil()->GetHardwareInputMethodId();
-    }
-    manager->EnableLayouts(locale, initial_input_method_id);
+    manager->SetInputMethodDefault();
 
+    PrefService* prefs = g_browser_process->local_state();
     // Apply owner preferences for tap-to-click and mouse buttons swap for
     // login screen.
     system::mouse_settings::SetPrimaryButtonRight(

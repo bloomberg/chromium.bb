@@ -58,6 +58,7 @@ class MockInputMethodManager : public InputMethodManager {
   virtual void GetInputMethodExtensions(
       InputMethodDescriptors* result) OVERRIDE;
   virtual void SetEnabledExtensionImes(std::vector<std::string>* ids) OVERRIDE;
+  virtual void SetInputMethodDefault() OVERRIDE;
   virtual bool SwitchToNextInputMethod() OVERRIDE;
   virtual bool SwitchToPreviousInputMethod(
       const ui::Accelerator& accelerator) OVERRIDE;

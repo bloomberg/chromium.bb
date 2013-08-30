@@ -387,9 +387,6 @@ class SigninScreenHandler
   // Update current input method (namely keyboard layout) to LRU by this user.
   void SetUserInputMethod(const std::string& username);
 
-  // Update current input method to HW default.
-  void SetUserInputMethodHWDefault();
-
   // Current UI state of the signin screen.
   UIState ui_state_;
 
