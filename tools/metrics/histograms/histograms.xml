@@ -4518,6 +4518,14 @@ other types of suffix sets.
   <summary>Events in Google Now component extension.</summary>
 </histogram>
 
+<histogram name="History.DeleteFTSIndexDatabases">
+  <summary>
+    Count of &quot;History Index *&quot; databases deleted.  These databases
+    stored the full-text-search data for history, which was removed at r213442,
+    this histogram tracks cleanup.
+  </summary>
+</histogram>
+
 <histogram name="History.TopSitesVisitsByRank" units="rank">
   <summary>
     Page visits to each of a user's top 50 sites. Visits to all other sites go
@@ -26195,7 +26203,7 @@ other types of suffix sets.
   <group name="Predictor" label="Predictor"/>
   <group name="Quota" label="Quota"/>
   <group name="SyncDirectory" label="SyncDirectory"/>
-  <group name="Text" label="Text"/>
+  <group name="Text" label="Text (obsolete 7/24/13)"/>
   <group name="Thumbnail" label="Thumbnail"/>
   <group name="TopSites" label="TopSites"/>
   <group name="Web" label="Web"/>
