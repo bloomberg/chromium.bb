@@ -162,7 +162,7 @@ InjectedScript.prototype = {
             for (var i = 0; i < columns.length; ++i)
                 columnNames.push(String(columns[i]));
         }
-        return this._wrapObject(table, "console", false, true, columnNames);
+        return this._wrapObject(table, "console", false, true, columnNames, true);
     },
 
     /**
@@ -208,13 +208,14 @@ InjectedScript.prototype = {
      * @param {boolean=} forceValueType
      * @param {boolean=} generatePreview
      * @param {?Array.<string>=} columnNames
+     * @param {boolean=} isTable
      * @return {!RuntimeAgent.RemoteObject}
      * @suppress {checkTypes}
      */
-    _wrapObject: function(object, objectGroupName, forceValueType, generatePreview, columnNames)
+    _wrapObject: function(object, objectGroupName, forceValueType, generatePreview, columnNames, isTable)
     {
         try {
-            return new InjectedScript.RemoteObject(object, objectGroupName, forceValueType, generatePreview, columnNames);
+            return new InjectedScript.RemoteObject(object, objectGroupName, forceValueType, generatePreview, columnNames, isTable);
         } catch (e) {
             try {
                 var description = injectedScript._describe(e);
@@ -902,8 +903,9 @@ var injectedScript = new InjectedScript();
  * @param {boolean=} forceValueType
  * @param {boolean=} generatePreview
  * @param {?Array.<string>=} columnNames
+ * @param {boolean=} isTable
  */
-InjectedScript.RemoteObject = function(object, objectGroupName, forceValueType, generatePreview, columnNames)
+InjectedScript.RemoteObject = function(object, objectGroupName, forceValueType, generatePreview, columnNames, isTable)
 {
     this.type = typeof object;
     if (injectedScript.isPrimitiveValue(object) || object === null || forceValueType) {
@@ -931,7 +933,7 @@ InjectedScript.RemoteObject = function(object, objectGroupName, forceValueType, 
     this.description = injectedScript._describe(object);
 
     if (generatePreview && (this.type === "object" || injectedScript._isHTMLAllCollection(object)))
-        this.preview = this._generatePreview(object, undefined, columnNames);
+        this.preview = this._generatePreview(object, undefined, columnNames, isTable, false);
 }
 
 InjectedScript.RemoteObject.prototype = {
@@ -939,24 +941,25 @@ InjectedScript.RemoteObject.prototype = {
      * @param {Object} object
      * @param {Array.<string>=} firstLevelKeys
      * @param {?Array.<string>=} secondLevelKeys
+     * @param {boolean=} isTable
+     * @param {boolean=} isTableRow
      * @return {!RuntimeAgent.ObjectPreview} preview
      */
-    _generatePreview: function(object, firstLevelKeys, secondLevelKeys)
+    _generatePreview: function(object, firstLevelKeys, secondLevelKeys, isTable, isTableRow)
     {
         var preview = {};
         preview.lossless = true;
         preview.overflow = false;
         preview.properties = [];
 
-        var isTableRowsRequest = secondLevelKeys === null || secondLevelKeys;
         var firstLevelKeysCount = firstLevelKeys ? firstLevelKeys.length : 0;
 
         var propertiesThreshold = {
-            properties: isTableRowsRequest ? 1000 : Math.max(5, firstLevelKeysCount),
-            indexes: isTableRowsRequest ? 1000 : Math.max(100, firstLevelKeysCount)
+            properties: (isTable || isTableRow) ? 1000 : Math.max(5, firstLevelKeysCount),
+            indexes: (isTable || isTableRow) ? 1000 : Math.max(100, firstLevelKeysCount)
         };
         for (var o = object; injectedScript._isDefined(o); o = o.__proto__)
-            this._generateProtoPreview(/** @type {!Object} */ (o), preview, propertiesThreshold, firstLevelKeys, secondLevelKeys);
+            this._generateProtoPreview(/** @type {!Object} */ (o), preview, propertiesThreshold, firstLevelKeys, secondLevelKeys, isTable);
         return preview;
     },
 
@@ -966,8 +969,9 @@ InjectedScript.RemoteObject.prototype = {
      * @param {!Object} propertiesThreshold
      * @param {Array.<string>=} firstLevelKeys
      * @param {Array.<string>=} secondLevelKeys
+     * @param {boolean=} isTable
      */
-    _generateProtoPreview: function(object, preview, propertiesThreshold, firstLevelKeys, secondLevelKeys)
+    _generateProtoPreview: function(object, preview, propertiesThreshold, firstLevelKeys, secondLevelKeys, isTable)
     {
         var propertyNames = firstLevelKeys ? firstLevelKeys : Object.keys(object);
         try {
@@ -1009,7 +1013,7 @@ InjectedScript.RemoteObject.prototype = {
                 }
 
                 if (secondLevelKeys === null || secondLevelKeys) {
-                    var subPreview = this._generatePreview(value, secondLevelKeys || undefined);
+                    var subPreview = this._generatePreview(value, secondLevelKeys || undefined, undefined, false, isTable);
                     var property = { name: name, type: type, valuePreview: subPreview };
                     this._appendPropertyPreview(preview, property, propertiesThreshold);
                     if (!subPreview.lossless)
