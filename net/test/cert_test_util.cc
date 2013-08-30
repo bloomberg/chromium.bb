@@ -19,7 +19,7 @@ CertificateList CreateCertificateListFromFile(
     int format) {
   base::FilePath cert_path = certs_dir.AppendASCII(cert_file);
   std::string cert_data;
-  if (!file_util::ReadFileToString(cert_path, &cert_data))
+  if (!base::ReadFileToString(cert_path, &cert_data))
     return CertificateList();
   return X509Certificate::CreateCertificateListFromBytes(cert_data.data(),
                                                          cert_data.size(),
@@ -31,7 +31,7 @@ scoped_refptr<X509Certificate> ImportCertFromFile(
     const std::string& cert_file) {
   base::FilePath cert_path = certs_dir.AppendASCII(cert_file);
   std::string cert_data;
-  if (!file_util::ReadFileToString(cert_path, &cert_data))
+  if (!base::ReadFileToString(cert_path, &cert_data))
     return NULL;
 
   CertificateList certs_in_file =

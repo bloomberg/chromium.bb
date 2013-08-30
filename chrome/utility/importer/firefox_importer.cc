@@ -356,7 +356,7 @@ void FirefoxImporter::ImportPasswords() {
       file = source_path.AppendASCII("signons2.txt");
 
     std::string content;
-    file_util::ReadFileToString(file, &content);
+    base::ReadFileToString(file, &content);
     decryptor.ParseSignons(content, &forms);
   }
 
@@ -430,7 +430,7 @@ void FirefoxImporter::GetSearchEnginesXMLData(
         file = base::FilePath::FromUTF8Unsafe(engine);
       }
       std::string file_data;
-      file_util::ReadFileToString(file, &file_data);
+      base::ReadFileToString(file, &file_data);
       search_engine_data->push_back(file_data);
     } while (s.Step() && !cancelled());
   }
@@ -455,7 +455,7 @@ void FirefoxImporter::GetSearchEnginesXMLData(
   for (base::FilePath engine_path = engines.Next();
        !engine_path.value().empty(); engine_path = engines.Next()) {
     std::string file_data;
-    file_util::ReadFileToString(file, &file_data);
+    base::ReadFileToString(file, &file_data);
     search_engine_data->push_back(file_data);
   }
 }

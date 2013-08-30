@@ -39,7 +39,7 @@ bool ShouldSkipFile(const base::FilePath& path,
 
 void ReadFileToVector(const base::FilePath& path, std::vector<char>* contents) {
   std::string raw_image_data;
-  file_util::ReadFileToString(path, &raw_image_data);
+  base::ReadFileToString(path, &raw_image_data);
   contents->resize(raw_image_data.size());
   memcpy(&contents->at(0), raw_image_data.data(), raw_image_data.size());
 }
@@ -90,7 +90,7 @@ void VerifyImage(const WebKit::WebImageDecoder& decoder,
 
   // Read the MD5 sum off disk.
   std::string file_bytes;
-  file_util::ReadFileToString(md5_sum_path, &file_bytes);
+  base::ReadFileToString(md5_sum_path, &file_bytes);
   base::MD5Digest expected_digest;
   ASSERT_EQ(sizeof expected_digest, file_bytes.size()) << path.value();
   memcpy(&expected_digest, file_bytes.data(), sizeof expected_digest);

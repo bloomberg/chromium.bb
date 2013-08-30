@@ -144,7 +144,7 @@ void URLRequestMockHTTPJob::GetResponseInfoConst(
   base::FilePath header_file =
       base::FilePath(file_path_.value() + kMockHeaderFileSuffix);
   std::string raw_headers;
-  if (!file_util::ReadFileToString(header_file, &raw_headers))
+  if (!base::ReadFileToString(header_file, &raw_headers))
     return;
 
   // ParseRawHeaders expects \0 to end each header line.

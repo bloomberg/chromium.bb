@@ -73,7 +73,7 @@ void UserPolicyDiskCache::LoadOnFileThread() {
 
   // Read the protobuf from the file.
   std::string data;
-  if (!file_util::ReadFileToString(backing_file_path_, &data)) {
+  if (!base::ReadFileToString(backing_file_path_, &data)) {
     LOG(WARNING) << "Failed to read policy data from "
                  << backing_file_path_.value();
     LoadDone(LOAD_RESULT_READ_ERROR, cached_response);

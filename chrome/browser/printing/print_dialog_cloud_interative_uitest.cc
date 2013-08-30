@@ -54,7 +54,7 @@ class TestData {
       PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory);
       base::FilePath test_file =
           test_data_directory.AppendASCII("printing/cloud_print_uitest.html");
-      file_util::ReadFileToString(test_file, &test_data_);
+      base::ReadFileToString(test_file, &test_data_);
     }
     return test_data_.c_str();
   }

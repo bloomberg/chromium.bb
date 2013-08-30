@@ -90,8 +90,7 @@ class PageCyclerBrowserTest : public content::NotificationObserver,
   // Read the errors file, and generate a vector of error strings.
   std::vector<std::string> GetErrorsFromFile() {
     std::string error_file_contents;
-    CHECK(file_util::ReadFileToString(errors_file_,
-                                      &error_file_contents));
+    CHECK(base::ReadFileToString(errors_file_, &error_file_contents));
     if (error_file_contents[error_file_contents.size() - 1] == '\n')
       error_file_contents.resize(error_file_contents.size() - 1);
 

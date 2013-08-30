@@ -3499,7 +3499,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
       .AppendASCII(good0)
       .AppendASCII("1.0.0.0");
   std::string manifest;
-  ASSERT_TRUE(file_util::ReadFileToString(
+  ASSERT_TRUE(base::ReadFileToString(
       path.Append(extensions::kManifestFilename), &manifest));
   service_->component_loader()->Add(manifest, path);
   service_->Init();
@@ -5050,7 +5050,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensions) {
       .AppendASCII("1.0.0.0");
 
   std::string manifest;
-  ASSERT_TRUE(file_util::ReadFileToString(
+  ASSERT_TRUE(base::ReadFileToString(
       path.Append(extensions::kManifestFilename), &manifest));
 
   service_->component_loader()->Add(manifest, path);
@@ -5104,7 +5104,7 @@ TEST_F(ExtensionServiceTest, DeferredSyncStartupPreInstalledComponent) {
       .AppendASCII(good0)
       .AppendASCII("1.0.0.0");
   std::string manifest;
-  ASSERT_TRUE(file_util::ReadFileToString(
+  ASSERT_TRUE(base::ReadFileToString(
       path.Append(extensions::kManifestFilename), &manifest));
   service_->component_loader()->Add(manifest, path);
   ASSERT_FALSE(service_->is_ready());

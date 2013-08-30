@@ -48,7 +48,7 @@ std::string CollectDriverVersionATI() {
   if (!base::PathExists(ati_file_path))
     return std::string();
   std::string contents;
-  if (!file_util::ReadFileToString(ati_file_path, &contents))
+  if (!base::ReadFileToString(ati_file_path, &contents))
     return std::string();
   base::StringTokenizer t(contents, "\r\n");
   while (t.GetNext()) {

@@ -54,7 +54,7 @@ bool ReadProcFile(const FilePath& file, std::string* buffer) {
   // Synchronously reading files in /proc is safe.
   ThreadRestrictions::ScopedAllowIO allow_io;
 
-  if (!file_util::ReadFileToString(file, buffer)) {
+  if (!ReadFileToString(file, buffer)) {
     DLOG(WARNING) << "Failed to read " << file.MaybeAsASCII();
     return false;
   }

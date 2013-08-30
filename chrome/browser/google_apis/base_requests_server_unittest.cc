@@ -90,7 +90,7 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
   }
 
   std::string contents;
-  file_util::ReadFileToString(temp_file, &contents);
+  base::ReadFileToString(temp_file, &contents);
   base::DeleteFile(temp_file, false);
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -100,7 +100,7 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
   const base::FilePath expected_path =
       test_util::GetTestFilePath("gdata/testfile.txt");
   std::string expected_contents;
-  file_util::ReadFileToString(expected_path, &expected_contents);
+  base::ReadFileToString(expected_path, &expected_contents);
   EXPECT_EQ(expected_contents, contents);
 }
 

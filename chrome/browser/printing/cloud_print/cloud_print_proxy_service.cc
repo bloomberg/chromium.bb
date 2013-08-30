@@ -125,7 +125,7 @@ void CloudPrintProxyService::GetPrintersAvalibleForRegistration(
           switches::kCloudPrintSetupProxy));
   if (!list_path.empty()) {
     std::string printers_json;
-    file_util::ReadFileToString(list_path, &printers_json);
+    base::ReadFileToString(list_path, &printers_json);
     scoped_ptr<Value> value(base::JSONReader::Read(printers_json));
     base::ListValue* list = NULL;
     if (value && value->GetAsList(&list) && list) {

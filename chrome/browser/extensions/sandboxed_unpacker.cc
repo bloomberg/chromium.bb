@@ -182,7 +182,7 @@ bool ReadImagesFromFile(const base::FilePath& extension_path,
   base::FilePath path =
       extension_path.AppendASCII(kDecodedImagesFilename);
   std::string file_str;
-  if (!file_util::ReadFileToString(path, &file_str))
+  if (!base::ReadFileToString(path, &file_str))
     return false;
 
   IPC::Message pickle(file_str.data(), file_str.size());
@@ -198,7 +198,7 @@ bool ReadMessageCatalogsFromFile(const base::FilePath& extension_path,
   base::FilePath path = extension_path.AppendASCII(
       kDecodedMessageCatalogsFilename);
   std::string file_str;
-  if (!file_util::ReadFileToString(path, &file_str))
+  if (!base::ReadFileToString(path, &file_str))
     return false;
 
   IPC::Message pickle(file_str.data(), file_str.size());

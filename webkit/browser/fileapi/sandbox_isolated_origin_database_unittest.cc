@@ -76,7 +76,7 @@ TEST(SandboxIsolatedOriginDatabaseTest, MigrationTest) {
   base::FilePath directory_db_path = dir.path().Append(path);
   EXPECT_TRUE(base::DirectoryExists(directory_db_path));
   EXPECT_TRUE(base::PathExists(directory_db_path.AppendASCII("dummy")));
-  EXPECT_TRUE(file_util::ReadFileToString(
+  EXPECT_TRUE(base::ReadFileToString(
       directory_db_path.AppendASCII("dummy"), &origin_db_data));
   EXPECT_EQ(kFakeDirectoryData, origin_db_data);
 

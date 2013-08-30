@@ -67,7 +67,7 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
     path = path.AppendASCII("extensions").AppendASCII("icon1.png");
 
     std::string file_contents;
-    file_util::ReadFileToString(path, &file_contents);
+    base::ReadFileToString(path, &file_contents);
     const unsigned char* data =
         reinterpret_cast<const unsigned char*>(file_contents.data());
 

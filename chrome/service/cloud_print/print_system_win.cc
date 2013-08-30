@@ -640,7 +640,7 @@ class PrintSystemWin : public PrintSystem {
           return false;
 
         std::string document_data;
-        file_util::ReadFileToString(print_data_file_path, &document_data);
+        base::ReadFileToString(print_data_file_path, &document_data);
         ULONG doc_bytes_written = 0;
         if (FAILED(doc_stream->Write(document_data.c_str(),
                                      document_data.length(),

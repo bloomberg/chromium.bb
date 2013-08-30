@@ -147,7 +147,7 @@ void ReadBitmap(const base::FilePath& image_path,
   *out_image = NULL;
 
   std::string image_data;
-  if (!file_util::ReadFileToString(image_path, &image_data)) {
+  if (!base::ReadFileToString(image_path, &image_data)) {
     LOG(ERROR) << "Failed to read PNG file from disk.";
     return;
   }

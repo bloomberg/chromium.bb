@@ -102,7 +102,7 @@ MasterPreferences::MasterPreferences(const base::FilePath& prefs_path)
   // and the remainder of this MasterPreferences object should still be
   // initialized as best as possible.
   if (base::PathExists(prefs_path) &&
-      !file_util::ReadFileToString(prefs_path, &json_data)) {
+      !base::ReadFileToString(prefs_path, &json_data)) {
     LOG(ERROR) << "Failed to read preferences from " << prefs_path.value();
   }
   if (InitializeFromString(json_data))

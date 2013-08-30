@@ -132,7 +132,7 @@ TEST(ExtensionAPITest, IsPrivilegedFeatures) {
       .AppendASCII("privileged_api_features.json");
 
   std::string api_features_str;
-  ASSERT_TRUE(file_util::ReadFileToString(
+  ASSERT_TRUE(base::ReadFileToString(
       api_features_path, &api_features_str)) << "privileged_api_features.json";
 
   scoped_ptr<base::DictionaryValue> value(static_cast<base::DictionaryValue*>(
@@ -228,7 +228,7 @@ TEST(ExtensionAPITest, APIFeatures) {
       .AppendASCII("api_features.json");
 
   std::string api_features_str;
-  ASSERT_TRUE(file_util::ReadFileToString(
+  ASSERT_TRUE(base::ReadFileToString(
       api_features_path, &api_features_str)) << "api_features.json";
 
   scoped_ptr<base::DictionaryValue> value(static_cast<base::DictionaryValue*>(
@@ -300,7 +300,7 @@ TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
       .AppendASCII("api_features.json");
 
   std::string api_features_str;
-  ASSERT_TRUE(file_util::ReadFileToString(
+  ASSERT_TRUE(base::ReadFileToString(
       api_features_path, &api_features_str)) << "api_features.json";
 
   scoped_ptr<base::DictionaryValue> value(static_cast<base::DictionaryValue*>(
@@ -774,7 +774,7 @@ TEST(ExtensionAPITest, TypesHaveNamespace) {
       .AppendASCII("types_have_namespace.json");
 
   std::string manifest_str;
-  ASSERT_TRUE(file_util::ReadFileToString(manifest_path, &manifest_str))
+  ASSERT_TRUE(base::ReadFileToString(manifest_path, &manifest_str))
       << "Failed to load: " << manifest_path.value();
 
   ExtensionAPI api;

@@ -459,7 +459,7 @@ Status ProcessExtension(const std::string& extension,
   // Parse the manifest and set the 'key' if not already present.
   base::FilePath manifest_path(extension_dir.AppendASCII("manifest.json"));
   std::string manifest_data;
-  if (!file_util::ReadFileToString(manifest_path, &manifest_data))
+  if (!base::ReadFileToString(manifest_path, &manifest_data))
     return Status(kUnknownError, "cannot read manifest");
   scoped_ptr<base::Value> manifest_value(base::JSONReader::Read(manifest_data));
   base::DictionaryValue* manifest;

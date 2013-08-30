@@ -225,7 +225,7 @@ void TracingMessageHandler::OnBeginRequestBufferPercentFull(
 // TaskProxy callback when reading is complete.
 void ReadTraceFileCallback(TaskProxy* proxy, const base::FilePath& path) {
   std::string file_contents;
-  if (!file_util::ReadFileToString(path, &file_contents))
+  if (!base::ReadFileToString(path, &file_contents))
     return;
 
   // We need to escape the file contents, because it will go into a javascript

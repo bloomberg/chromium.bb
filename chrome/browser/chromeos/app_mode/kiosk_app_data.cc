@@ -112,7 +112,7 @@ class KioskAppData::IconLoader : public ImageDecoder::Delegate {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
     std::string data;
-    if (!file_util::ReadFileToString(base::FilePath(icon_path_), &data)) {
+    if (!base::ReadFileToString(base::FilePath(icon_path_), &data)) {
       ReportResultOnBlockingPool(FAILED_TO_LOAD);
       return;
     }

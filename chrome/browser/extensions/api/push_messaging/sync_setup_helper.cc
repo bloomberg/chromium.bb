@@ -50,7 +50,7 @@ bool SyncSetupHelper::InitializeSync(Profile* profile) {
 bool SyncSetupHelper::ReadPasswordFile(const base::FilePath& password_file) {
   // TODO(dcheng): Convert format of config file to JSON.
   std::string file_contents;
-  bool success = file_util::ReadFileToString(password_file, &file_contents);
+  bool success = base::ReadFileToString(password_file, &file_contents);
   EXPECT_TRUE(success)
       << "Password file \""
       << password_file.value() << "\" does not exist.";

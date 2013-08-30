@@ -93,7 +93,7 @@ bool ProcessGTestOutput(const base::FilePath& output_file,
   DCHECK(results);
 
   std::string xml_contents;
-  if (!file_util::ReadFileToString(output_file, &xml_contents))
+  if (!ReadFileToString(output_file, &xml_contents))
     return false;
 
   // Silence XML errors - otherwise they go to stderr.

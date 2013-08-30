@@ -69,7 +69,7 @@ bool SimpleNinjaParse(const std::string& data,
 bool FixupBuildNinja(const BuildSettings* build_settings,
                      const base::FilePath& buildfile) {
   std::string contents;
-  if (!file_util::ReadFileToString(buildfile, &contents)) {
+  if (!base::ReadFileToString(buildfile, &contents)) {
     Err(Location(), "Could not load " + FilePathToUTF8(buildfile))
         .PrintToStdout();
     return false;

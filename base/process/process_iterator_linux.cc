@@ -44,7 +44,7 @@ bool GetProcCmdline(pid_t pid, std::vector<std::string>* proc_cmd_line_args) {
 
   FilePath cmd_line_file = internal::GetProcPidDir(pid).Append("cmdline");
   std::string cmd_line;
-  if (!file_util::ReadFileToString(cmd_line_file, &cmd_line))
+  if (!ReadFileToString(cmd_line_file, &cmd_line))
     return false;
   std::string delimiters;
   delimiters.push_back('\0');

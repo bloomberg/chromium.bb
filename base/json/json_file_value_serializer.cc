@@ -46,7 +46,7 @@ bool JSONFileValueSerializer::SerializeInternal(const base::Value& root,
 
 int JSONFileValueSerializer::ReadFileToString(std::string* json_string) {
   DCHECK(json_string);
-  if (!file_util::ReadFileToString(json_file_path_, json_string)) {
+  if (!base::ReadFileToString(json_file_path_, json_string)) {
 #if defined(OS_WIN)
     int error = ::GetLastError();
     if (error == ERROR_SHARING_VIOLATION || error == ERROR_LOCK_VIOLATION) {

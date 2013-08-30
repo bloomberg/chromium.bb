@@ -106,7 +106,7 @@ void SetupProgressiveScanFieldTrial() {
 bool Is2GBParrot() {
   base::FilePath path("/etc/lsb-release");
   std::string contents;
-  if (!file_util::ReadFileToString(path, &contents))
+  if (!base::ReadFileToString(path, &contents))
     return false;
   if (contents.find("CHROMEOS_RELEASE_BOARD=parrot") == std::string::npos)
     return false;

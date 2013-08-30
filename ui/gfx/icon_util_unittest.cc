@@ -92,7 +92,7 @@ void IconUtilTest::CheckAllIconSizes(const base::FilePath& icon_filename,
 
   // Read the file completely into memory.
   std::string icon_data;
-  ASSERT_TRUE(file_util::ReadFileToString(icon_filename, &icon_data));
+  ASSERT_TRUE(base::ReadFileToString(icon_filename, &icon_data));
   ASSERT_GE(icon_data.length(), sizeof(IconUtil::ICONDIR));
 
   // Ensure that it has exactly the expected number and sizes of icons, in the

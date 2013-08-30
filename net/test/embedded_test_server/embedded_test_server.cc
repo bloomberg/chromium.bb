@@ -59,7 +59,7 @@ scoped_ptr<HttpResponse> HandleFileRequest(
 
   base::FilePath file_path(server_root.AppendASCII(request_path));
   std::string file_contents;
-  if (!file_util::ReadFileToString(file_path, &file_contents))
+  if (!base::ReadFileToString(file_path, &file_contents))
     return scoped_ptr<HttpResponse>();
 
   base::FilePath headers_path(
@@ -67,7 +67,7 @@ scoped_ptr<HttpResponse> HandleFileRequest(
 
   if (base::PathExists(headers_path)) {
     std::string headers_contents;
-    if (!file_util::ReadFileToString(headers_path, &headers_contents))
+    if (!base::ReadFileToString(headers_path, &headers_contents))
       return scoped_ptr<HttpResponse>();
 
     scoped_ptr<CustomHttpResponse> http_response(

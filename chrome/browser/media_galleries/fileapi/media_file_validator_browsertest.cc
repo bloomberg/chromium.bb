@@ -154,7 +154,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
                                  const base::FilePath& source,
                                  bool expected_result) {
     std::string content;
-    ASSERT_TRUE(file_util::ReadFileToString(source, &content));
+    ASSERT_TRUE(base::ReadFileToString(source, &content));
     SetupOnFileThread(filename, content, expected_result);
   }
 

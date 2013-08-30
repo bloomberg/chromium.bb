@@ -555,7 +555,7 @@ void URLFetcherPostFileTest::CreateFetcher(const GURL& url) {
 
 void URLFetcherPostFileTest::OnURLFetchComplete(const URLFetcher* source) {
   std::string expected;
-  ASSERT_TRUE(file_util::ReadFileToString(path_, &expected));
+  ASSERT_TRUE(base::ReadFileToString(path_, &expected));
   ASSERT_LE(range_offset_, expected.size());
   uint64 expected_size =
       std::min(range_length_, expected.size() - range_offset_);

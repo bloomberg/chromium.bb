@@ -65,7 +65,7 @@ class LocalFileStreamWriterTest : public testing::Test {
 
   std::string GetFileContent(const base::FilePath& path) {
     std::string content;
-    file_util::ReadFileToString(path, &content);
+    base::ReadFileToString(path, &content);
     return content;
   }
 

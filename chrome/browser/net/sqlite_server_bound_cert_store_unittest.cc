@@ -53,8 +53,8 @@ class SQLiteServerBoundCertStoreTest : public testing::Test {
         "unittest.originbound.key.der");
     base::FilePath cert_path = net::GetTestCertsDirectory().AppendASCII(
         "unittest.originbound.der");
-    ASSERT_TRUE(file_util::ReadFileToString(key_path, key));
-    ASSERT_TRUE(file_util::ReadFileToString(cert_path, cert));
+    ASSERT_TRUE(base::ReadFileToString(key_path, key));
+    ASSERT_TRUE(base::ReadFileToString(cert_path, cert));
   }
 
   static base::Time GetTestCertExpirationTime() {

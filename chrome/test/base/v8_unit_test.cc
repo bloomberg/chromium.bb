@@ -71,7 +71,7 @@ bool V8UnitTest::ExecuteJavascriptLibraries() {
           test_data_directory.Append(*user_libraries_iterator);
     }
     library_file = base::MakeAbsoluteFilePath(library_file);
-    if (!file_util::ReadFileToString(library_file, &library_content)) {
+    if (!base::ReadFileToString(library_file, &library_content)) {
       ADD_FAILURE() << library_file.value();
       return false;
     }

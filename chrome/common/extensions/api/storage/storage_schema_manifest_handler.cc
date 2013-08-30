@@ -52,7 +52,7 @@ scoped_ptr<policy::PolicySchema> StorageSchemaManifestHandler::GetSchema(
     return scoped_ptr<policy::PolicySchema>();
   }
   std::string content;
-  if (!file_util::ReadFileToString(file, &content)) {
+  if (!base::ReadFileToString(file, &content)) {
     *error = base::StringPrintf("Can't read %s", file.value().c_str());
     return scoped_ptr<policy::PolicySchema>();
   }

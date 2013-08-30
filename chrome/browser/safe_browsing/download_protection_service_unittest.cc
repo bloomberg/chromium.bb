@@ -118,7 +118,7 @@ ACTION_P(TrustSignature, certificate_file) {
   // Add a certificate chain.  Note that we add the certificate twice so that
   // it appears as its own issuer.
   std::string cert_data;
-  ASSERT_TRUE(file_util::ReadFileToString(certificate_file, &cert_data));
+  ASSERT_TRUE(base::ReadFileToString(certificate_file, &cert_data));
   ClientDownloadRequest_CertificateChain* chain =
       arg1->add_certificate_chain();
   chain->add_element()->set_certificate(cert_data);
@@ -239,8 +239,8 @@ class DownloadProtectionServiceTest : public testing::Test {
   scoped_refptr<net::X509Certificate> ReadTestCertificate(
       const std::string& filename) {
     std::string cert_data;
-    if (!file_util::ReadFileToString(testdata_path_.AppendASCII(filename),
-                                     &cert_data)) {
+    if (!base::ReadFileToString(testdata_path_.AppendASCII(filename),
+                                &cert_data)) {
       return NULL;
     }
     net::CertificateList certs =

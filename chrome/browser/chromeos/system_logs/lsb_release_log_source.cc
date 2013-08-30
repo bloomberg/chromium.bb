@@ -44,7 +44,7 @@ void LsbReleaseLogSource::ReadLSBRelease(SystemLogsResponse* response) {
 
   const base::FilePath lsb_release_file("/etc/lsb-release");
   std::string lsb_data;
-  bool read_success = file_util::ReadFileToString(lsb_release_file, &lsb_data);
+  bool read_success = base::ReadFileToString(lsb_release_file, &lsb_data);
   // if we were using an internal temp file, the user does not need the
   // logs to stay past the ReadFile call - delete the file
   if (!read_success) {

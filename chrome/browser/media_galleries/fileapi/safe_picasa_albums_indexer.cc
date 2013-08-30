@@ -67,10 +67,10 @@ void SafePicasaAlbumsIndexer::ProcessFoldersBatch() {
     folders_inis_.push_back(FolderINIContents());
 
     bool ini_read =
-        file_util::ReadFileToString(
+        base::ReadFileToString(
             folder_path.AppendASCII(kPicasaINIFilename),
             &folders_inis_.back().ini_contents) ||
-        file_util::ReadFileToString(
+        base::ReadFileToString(
             folder_path.AppendASCII(kPicasaINIFilenameLegacy),
             &folders_inis_.back().ini_contents);
 

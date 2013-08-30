@@ -130,21 +130,10 @@ bool TextContentsEqual(const FilePath& filename1, const FilePath& filename2) {
   return true;
 }
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
-using base::FileEnumerator;
-using base::FilePath;
-using base::kExtensionSeparator;
-using base::kMaxUniqueFiles;
-
 bool ReadFileToString(const FilePath& path, std::string* contents) {
   if (path.ReferencesParent())
     return false;
-  FILE* file = OpenFile(path, "rb");
+  FILE* file = file_util::OpenFile(path, "rb");
   if (!file) {
     return false;
   }
@@ -155,10 +144,21 @@ bool ReadFileToString(const FilePath& path, std::string* contents) {
     if (contents)
       contents->append(buf, len);
   }
-  CloseFile(file);
+  file_util::CloseFile(file);
 
   return true;
 }
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+using base::FileEnumerator;
+using base::FilePath;
+using base::kExtensionSeparator;
+using base::kMaxUniqueFiles;
 
 bool IsDirectoryEmpty(const FilePath& dir_path) {
   FileEnumerator files(dir_path, false,

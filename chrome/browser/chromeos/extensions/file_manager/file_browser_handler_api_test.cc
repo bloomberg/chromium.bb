@@ -59,7 +59,7 @@ struct TestCase {
 void ExpectFileContentEquals(const base::FilePath& selected_path,
                              const std::string& expected_contents) {
   std::string test_file_contents;
-  ASSERT_TRUE(file_util::ReadFileToString(selected_path, &test_file_contents));
+  ASSERT_TRUE(base::ReadFileToString(selected_path, &test_file_contents));
   EXPECT_EQ(expected_contents, test_file_contents);
 }
 

@@ -85,10 +85,10 @@ TEST(CapabilitiesParser, Extensions) {
   ASSERT_FALSE(parser.Parse());
   ASSERT_EQ(2u, caps.extensions.size());
   std::string contents;
-  ASSERT_TRUE(file_util::ReadFileToString(caps.extensions[0], &contents));
+  ASSERT_TRUE(base::ReadFileToString(caps.extensions[0], &contents));
   EXPECT_STREQ("Man", contents.c_str());
   contents.clear();
-  ASSERT_TRUE(file_util::ReadFileToString(caps.extensions[1], &contents));
+  ASSERT_TRUE(base::ReadFileToString(caps.extensions[1], &contents));
   EXPECT_STREQ("ManMan", contents.c_str());
 }
 
@@ -106,7 +106,7 @@ TEST(CapabilitiesParser, Profile) {
   base::FilePath zip = temp_dir.path().AppendASCII("data.zip");
   ASSERT_TRUE(zip::Zip(folder, zip, false /* include_hidden_files */));
   std::string contents;
-  ASSERT_TRUE(file_util::ReadFileToString(zip, &contents));
+  ASSERT_TRUE(base::ReadFileToString(zip, &contents));
   std::string base64;
   ASSERT_TRUE(base::Base64Encode(contents, &base64));
   options->SetString("profile", base64);
@@ -115,7 +115,7 @@ TEST(CapabilitiesParser, Profile) {
   CapabilitiesParser parser(&dict, temp_dir.path(), Logger(), &caps);
   ASSERT_FALSE(parser.Parse());
   std::string new_contents;
-  ASSERT_TRUE(file_util::ReadFileToString(
+  ASSERT_TRUE(base::ReadFileToString(
       caps.profile.AppendASCII("data"), &new_contents));
   EXPECT_STREQ("data", new_contents.c_str());
 }

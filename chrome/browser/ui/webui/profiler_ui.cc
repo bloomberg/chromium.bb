@@ -84,7 +84,7 @@ class ProfilerWebUIDataSource : public content::URLDataSource {
     // Read the file synchronously and send it as the response.
     base::ThreadRestrictions::ScopedAllowIO allow;
     std::string file_contents;
-    if (!file_util::ReadFileToString(file_path, &file_contents))
+    if (!base::ReadFileToString(file_path, &file_contents))
       LOG(ERROR) << "Couldn't read file: " << file_path.value();
     scoped_refptr<base::RefCountedString> response =
         new base::RefCountedString();

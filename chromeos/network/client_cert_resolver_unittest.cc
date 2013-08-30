@@ -104,7 +104,7 @@ class ClientCertResolverTest : public testing::Test {
     // Import a client cert signed by that CA.
     scoped_refptr<net::CryptoModule> crypt_module = cert_db->GetPrivateModule();
     std::string pkcs12_data;
-    ASSERT_TRUE(file_util::ReadFileToString(
+    ASSERT_TRUE(base::ReadFileToString(
         net::GetTestCertsDirectory().Append("websocket_client_cert.p12"),
         &pkcs12_data));
 

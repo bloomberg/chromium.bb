@@ -47,11 +47,11 @@ void AuthenticatorTestBase::SetUp() {
   base::FilePath certs_dir(net::GetTestCertsDirectory());
 
   base::FilePath cert_path = certs_dir.AppendASCII("unittest.selfsigned.der");
-  ASSERT_TRUE(file_util::ReadFileToString(cert_path, &host_cert_));
+  ASSERT_TRUE(base::ReadFileToString(cert_path, &host_cert_));
 
   base::FilePath key_path = certs_dir.AppendASCII("unittest.key.bin");
   std::string key_string;
-  ASSERT_TRUE(file_util::ReadFileToString(key_path, &key_string));
+  ASSERT_TRUE(base::ReadFileToString(key_path, &key_string));
   std::string key_base64;
   ASSERT_TRUE(base::Base64Encode(key_string, &key_base64));
   key_pair_ = RsaKeyPair::FromString(key_base64);

@@ -227,7 +227,7 @@ void WebRtcLogUploader::AddUploadedLogInfoToUploadListFile(
   std::string contents;
 
   if (base::PathExists(upload_list_path_)) {
-    bool read_ok = file_util::ReadFileToString(upload_list_path_, &contents);
+    bool read_ok = base::ReadFileToString(upload_list_path_, &contents);
     DPCHECK(read_ok);
 
     // Limit the number of log entries to |kLogListLimitLines| - 1, to make room

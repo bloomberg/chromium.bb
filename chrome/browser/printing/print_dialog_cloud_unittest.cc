@@ -61,7 +61,7 @@ char* GetTestData() {
   static std::string sTestFileData;
   if (sTestFileData.empty()) {
     base::FilePath test_file = GetTestDataFileName();
-    file_util::ReadFileToString(test_file, &sTestFileData);
+    base::ReadFileToString(test_file, &sTestFileData);
   }
   return &sTestFileData[0];
 }

@@ -93,7 +93,7 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
 scoped_ptr<net::test_server::BasicHttpResponse> CreateHttpResponseFromFile(
     const base::FilePath& file_path) {
   std::string content;
-  if (!file_util::ReadFileToString(file_path, &content))
+  if (!base::ReadFileToString(file_path, &content))
     return scoped_ptr<net::test_server::BasicHttpResponse>();
 
   std::string content_type = "text/plain";
@@ -130,8 +130,7 @@ bool VerifyJsonData(const base::FilePath& expected_json_file_path,
   }
 
   std::string expected_content;
-  if (!file_util::ReadFileToString(
-          expected_json_file_path, &expected_content)) {
+  if (!base::ReadFileToString(expected_json_file_path, &expected_content)) {
     LOG(ERROR) << "Failed to read file: " << expected_json_file_path.value();
     return false;
   }

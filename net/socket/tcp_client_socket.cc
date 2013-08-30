@@ -20,7 +20,7 @@ bool SystemSupportsTCPFastOpen() {
   static const base::FilePath::CharType kTCPFastOpenProcFilePath[] =
       "/proc/sys/net/ipv4/tcp_fastopen";
   std::string system_enabled_tcp_fastopen;
-  if (!file_util::ReadFileToString(
+  if (!base::ReadFileToString(
           base::FilePath(kTCPFastOpenProcFilePath),
           &system_enabled_tcp_fastopen)) {
     return false;

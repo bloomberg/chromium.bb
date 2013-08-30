@@ -257,7 +257,7 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
         !base::PathExists(manifest_path))
       continue;
 
-    if (!file_util::ReadFileToString(manifest_path, &component_ime.manifest))
+    if (!base::ReadFileToString(manifest_path, &component_ime.manifest))
       continue;
 
     scoped_ptr<DictionaryValue> manifest = GetManifest(component_ime.path);

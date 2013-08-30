@@ -415,7 +415,7 @@ bool ZipString(const std::string& logs, std::string* compressed_logs) {
   if (!zip::Zip(temp_path, zip_file, false))
     return false;
 
-  if (!file_util::ReadFileToString(zip_file, compressed_logs))
+  if (!base::ReadFileToString(zip_file, compressed_logs))
     return false;
 
   return true;

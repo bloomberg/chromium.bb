@@ -98,7 +98,7 @@ void TemplateURLParserTest::ParseFile(
   ASSERT_TRUE(base::PathExists(full_path));
 
   std::string contents;
-  ASSERT_TRUE(file_util::ReadFileToString(full_path, &contents));
+  ASSERT_TRUE(base::ReadFileToString(full_path, &contents));
   template_url_.reset(TemplateURLParser::Parse(NULL, false, contents.data(),
                                                contents.length(), filter));
 }

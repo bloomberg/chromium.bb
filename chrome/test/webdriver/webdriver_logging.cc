@@ -166,7 +166,7 @@ void FileLog::Log(LogLevel level, const base::Time& time,
 bool FileLog::GetLogContents(std::string* contents) const {
   if (!file_.get())
     return false;
-  return file_util::ReadFileToString(path_, contents);
+  return base::ReadFileToString(path_, contents);
 }
 
 bool FileLog::IsOpen() const {

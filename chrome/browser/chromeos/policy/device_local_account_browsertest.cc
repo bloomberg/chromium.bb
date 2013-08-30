@@ -561,7 +561,7 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceTest, TermsOfServiceScreen) {
   base::FilePath test_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
   std::string terms_of_service;
-  ASSERT_TRUE(file_util::ReadFileToString(
+  ASSERT_TRUE(base::ReadFileToString(
       test_dir.Append(kExistentTermsOfServicePath), &terms_of_service));
   EXPECT_EQ(terms_of_service, content);
   EXPECT_FALSE(error);

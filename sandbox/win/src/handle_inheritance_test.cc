@@ -40,8 +40,7 @@ TEST(HandleInheritanceTests, TestStdoutInheritance) {
   EXPECT_TRUE(::CloseHandle(file_handle));
 
   std::string data;
-  EXPECT_TRUE(file_util::ReadFileToString(base::FilePath(temp_file_name),
-                                          &data));
+  EXPECT_TRUE(base::ReadFileToString(base::FilePath(temp_file_name), &data));
   // Redirection uses a feature that was added in Windows Vista.
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     EXPECT_EQ("Example output to stdout\r\n", data);

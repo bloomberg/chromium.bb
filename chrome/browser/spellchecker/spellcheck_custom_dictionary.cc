@@ -60,7 +60,7 @@ ChecksumStatus LoadFile(const base::FilePath& file_path, WordList& words) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   words.clear();
   std::string contents;
-  file_util::ReadFileToString(file_path, &contents);
+  base::ReadFileToString(file_path, &contents);
   size_t pos = contents.rfind(CHECKSUM_PREFIX);
   if (pos != std::string::npos) {
     std::string checksum = contents.substr(pos + strlen(CHECKSUM_PREFIX));

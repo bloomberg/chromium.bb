@@ -82,8 +82,7 @@ class GLHelperTest : public testing::Test {
   void LoadPngFileToSkBitmap(const base::FilePath& filename,
                              SkBitmap* bitmap) {
     std::string compressed;
-    file_util::ReadFileToString(base::MakeAbsoluteFilePath(filename),
-                                &compressed);
+    base::ReadFileToString(base::MakeAbsoluteFilePath(filename), &compressed);
     ASSERT_TRUE(compressed.size());
     ASSERT_TRUE(gfx::PNGCodec::Decode(
         reinterpret_cast<const unsigned char*>(compressed.data()),

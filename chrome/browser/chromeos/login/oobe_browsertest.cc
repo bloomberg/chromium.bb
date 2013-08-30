@@ -145,8 +145,8 @@ class OobeTest : public InProcessBrowserTest {
         content_browser_client_.get());
     base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-    CHECK(file_util::ReadFileToString(test_data_dir.Append(kServiceLogin),
-                                      &service_login_response_));
+    CHECK(base::ReadFileToString(test_data_dir.Append(kServiceLogin),
+                                 &service_login_response_));
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

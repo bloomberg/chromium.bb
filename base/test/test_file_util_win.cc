@@ -241,7 +241,7 @@ bool VolumeSupportsADS(const base::FilePath& path) {
 bool HasInternetZoneIdentifier(const base::FilePath& full_path) {
   base::FilePath zone_path(full_path.value() + L":Zone.Identifier");
   std::string zone_path_contents;
-  if (!file_util::ReadFileToString(zone_path, &zone_path_contents))
+  if (!base::ReadFileToString(zone_path, &zone_path_contents))
     return false;
 
   std::vector<std::string> lines;

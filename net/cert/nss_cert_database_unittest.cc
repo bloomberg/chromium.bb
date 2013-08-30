@@ -68,7 +68,7 @@ class CertDatabaseNSSTest : public testing::Test {
   static std::string ReadTestFile(const std::string& name) {
     std::string result;
     base::FilePath cert_path = GetTestCertsDirectory().AppendASCII(name);
-    EXPECT_TRUE(file_util::ReadFileToString(cert_path, &result));
+    EXPECT_TRUE(base::ReadFileToString(cert_path, &result));
     return result;
   }
 

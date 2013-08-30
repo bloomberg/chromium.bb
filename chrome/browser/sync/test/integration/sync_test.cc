@@ -407,7 +407,7 @@ void SyncTest::ReadPasswordFile() {
     LOG(FATAL) << "Can't run live server test without specifying --"
                << switches::kPasswordFileForTest << "=<filename>";
   std::string file_contents;
-  file_util::ReadFileToString(password_file_, &file_contents);
+  base::ReadFileToString(password_file_, &file_contents);
   ASSERT_NE(file_contents, "") << "Password file \""
       << password_file_.value() << "\" does not exist.";
   std::vector<std::string> tokens;

@@ -58,7 +58,7 @@ gfx::Image LoadInstallPromptIcon() {
              .AppendASCII("icon.png");
 
   std::string file_contents;
-  file_util::ReadFileToString(path, &file_contents);
+  base::ReadFileToString(path, &file_contents);
 
   return gfx::Image::CreateFrom1xPNGBytes(
       reinterpret_cast<const unsigned char*>(file_contents.c_str()),

@@ -67,7 +67,7 @@ class HtmlUtilUnittest : public testing::Test {
     }
 
     std::string raw_data;
-    file_util::ReadFileToString(path, &raw_data);
+    base::ReadFileToString(path, &raw_data);
 
     // Convert to wide using the "best effort" assurance described in
     // string_util.h

@@ -94,7 +94,7 @@ TEST_F(FakeFileSystemTest, GetFileContentByPath) {
   // Make sure the cached file's content.
   std::string cache_file_content;
   ASSERT_TRUE(
-      file_util::ReadFileToString(cache_file_path, &cache_file_content));
+      base::ReadFileToString(cache_file_path, &cache_file_content));
   EXPECT_EQ(content, cache_file_content);
 }
 

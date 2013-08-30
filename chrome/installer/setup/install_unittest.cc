@@ -235,7 +235,7 @@ TEST_F(CreateVisualElementsManifestTest, VisualElementsManifestCreated) {
   ASSERT_TRUE(base::PathExists(manifest_path_));
 
   std::string read_manifest;
-  ASSERT_TRUE(file_util::ReadFileToString(manifest_path_, &read_manifest));
+  ASSERT_TRUE(base::ReadFileToString(manifest_path_, &read_manifest));
 
   static const char kExpectedManifest[] =
       "<Application>\r\n"

@@ -456,7 +456,7 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
   // This will still exist, but the text should have changed.
   ASSERT_TRUE(base::PathExists(sync_file2));
   std::string file2text;
-  ASSERT_TRUE(file_util::ReadFileToString(sync_file2, &file2text));
+  ASSERT_TRUE(base::ReadFileToString(sync_file2, &file2text));
   ASSERT_NE(file2text.compare(nonsense2), 0);
 }
 

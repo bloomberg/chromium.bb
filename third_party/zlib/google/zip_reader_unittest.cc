@@ -217,8 +217,8 @@ TEST_F(ZipReaderTest, ExtractCurrentEntryToFilePath_RegularFile) {
       test_dir_.AppendASCII("quux.txt")));
   // Read the output file ans compute the MD5.
   std::string output;
-  ASSERT_TRUE(file_util::ReadFileToString(test_dir_.AppendASCII("quux.txt"),
-                                          &output));
+  ASSERT_TRUE(base::ReadFileToString(test_dir_.AppendASCII("quux.txt"),
+                                     &output));
   const std::string md5 = base::MD5String(output);
   const std::string kExpectedMD5 = "d1ae4ac8a17a0e09317113ab284b57a6";
   EXPECT_EQ(kExpectedMD5, md5);
@@ -238,8 +238,8 @@ TEST_F(ZipReaderTest, PlatformFileExtractCurrentEntryToFilePath_RegularFile) {
       test_dir_.AppendASCII("quux.txt")));
   // Read the output file and compute the MD5.
   std::string output;
-  ASSERT_TRUE(file_util::ReadFileToString(test_dir_.AppendASCII("quux.txt"),
-                                          &output));
+  ASSERT_TRUE(base::ReadFileToString(test_dir_.AppendASCII("quux.txt"),
+                                     &output));
   const std::string md5 = base::MD5String(output);
   const std::string kExpectedMD5 = "d1ae4ac8a17a0e09317113ab284b57a6";
   EXPECT_EQ(kExpectedMD5, md5);
@@ -261,8 +261,8 @@ TEST_F(ZipReaderTest, PlatformFileExtractCurrentEntryToFd_RegularFile) {
   ASSERT_TRUE(reader.ExtractCurrentEntryToFd(out_fd_w.platform_file()));
   // Read the output file and compute the MD5.
   std::string output;
-  ASSERT_TRUE(file_util::ReadFileToString(test_dir_.AppendASCII("quux.txt"),
-                                          &output));
+  ASSERT_TRUE(base::ReadFileToString(test_dir_.AppendASCII("quux.txt"),
+                                     &output));
   const std::string md5 = base::MD5String(output);
   const std::string kExpectedMD5 = "d1ae4ac8a17a0e09317113ab284b57a6";
   EXPECT_EQ(kExpectedMD5, md5);
@@ -293,7 +293,7 @@ TEST_F(ZipReaderTest, ExtractCurrentEntryIntoDirectory_RegularFile) {
   ASSERT_TRUE(base::DirectoryExists(test_dir_.AppendASCII("foo/bar")));
   // And the file should be created.
   std::string output;
-  ASSERT_TRUE(file_util::ReadFileToString(
+  ASSERT_TRUE(base::ReadFileToString(
       test_dir_.AppendASCII("foo/bar/quux.txt"), &output));
   const std::string md5 = base::MD5String(output);
   const std::string kExpectedMD5 = "d1ae4ac8a17a0e09317113ab284b57a6";
@@ -423,7 +423,7 @@ TEST_F(ZipReaderTest, OpenFromString) {
       test_dir_.AppendASCII("test.txt")));
 
   std::string actual;
-  ASSERT_TRUE(file_util::ReadFileToString(
+  ASSERT_TRUE(base::ReadFileToString(
       test_dir_.AppendASCII("test.txt"), &actual));
   EXPECT_EQ(std::string("This is a test.\n"), actual);
 }

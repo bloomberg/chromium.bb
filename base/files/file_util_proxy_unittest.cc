@@ -215,7 +215,7 @@ TEST_F(FileUtilProxyTest, CreateTemporary) {
 
   // Make sure the written data can be read from the returned path.
   std::string data;
-  EXPECT_TRUE(file_util::ReadFileToString(path_, &data));
+  EXPECT_TRUE(ReadFileToString(path_, &data));
   EXPECT_EQ("test", data);
 
   // Make sure we can & do delete the created file to prevent leaks on the bots.

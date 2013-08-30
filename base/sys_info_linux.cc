@@ -42,7 +42,7 @@ size_t SysInfo::MaxSharedMemorySize() {
   static bool limit_valid = false;
   if (!limit_valid) {
     std::string contents;
-    file_util::ReadFileToString(FilePath("/proc/sys/kernel/shmmax"), &contents);
+    ReadFileToString(FilePath("/proc/sys/kernel/shmmax"), &contents);
     DCHECK(!contents.empty());
     if (!contents.empty() && contents[contents.length() - 1] == '\n') {
       contents.erase(contents.length() - 1);
@@ -67,7 +67,7 @@ std::string SysInfo::CPUModelName() {
   const char kCpuModelPrefix[] = "model name";
 #endif
   std::string contents;
-  file_util::ReadFileToString(FilePath("/proc/cpuinfo"), &contents);
+  ReadFileToString(FilePath("/proc/cpuinfo"), &contents);
   DCHECK(!contents.empty());
   if (!contents.empty()) {
     std::istringstream iss(contents);

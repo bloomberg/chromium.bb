@@ -35,7 +35,7 @@ TEST_F(TraceSubscriberStdioTest, CanWriteArray) {
   }
   BrowserThread::GetBlockingPool()->FlushForTesting();
   std::string result;
-  EXPECT_TRUE(file_util::ReadFileToString(trace_file, &result));
+  EXPECT_TRUE(base::ReadFileToString(trace_file, &result));
   EXPECT_EQ("[foo,bar]", result);
 }
 
@@ -61,7 +61,7 @@ TEST_F(TraceSubscriberStdioTest, CanWritePropertyList) {
   }
   BrowserThread::GetBlockingPool()->FlushForTesting();
   std::string result;
-  EXPECT_TRUE(file_util::ReadFileToString(trace_file, &result));
+  EXPECT_TRUE(base::ReadFileToString(trace_file, &result));
   EXPECT_EQ("{\"traceEvents\":[foo,bar]}", result);
 }
 
@@ -90,7 +90,7 @@ TEST_F(TraceSubscriberStdioTest, CanWriteSystemDataFirst) {
   }
   BrowserThread::GetBlockingPool()->FlushForTesting();
   std::string result;
-  EXPECT_TRUE(file_util::ReadFileToString(trace_file, &result));
+  EXPECT_TRUE(base::ReadFileToString(trace_file, &result));
   EXPECT_EQ(
     "{\"traceEvents\":[foo,bar],\""
     "systemTraceEvents\":\"event1\\nev\\\"ent\\\"2\\n\"}",
@@ -122,7 +122,7 @@ TEST_F(TraceSubscriberStdioTest, CanWriteSystemDataLast) {
   }
   BrowserThread::GetBlockingPool()->FlushForTesting();
   std::string result;
-  EXPECT_TRUE(file_util::ReadFileToString(trace_file, &result));
+  EXPECT_TRUE(base::ReadFileToString(trace_file, &result));
   EXPECT_EQ(
     "{\"traceEvents\":[foo,bar],\""
     "systemTraceEvents\":\"event1\\nev\\\"ent\\\"2\\n\"}",

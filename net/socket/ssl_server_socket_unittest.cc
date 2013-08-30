@@ -314,14 +314,14 @@ class SSLServerSocketTest : public PlatformTest {
 
     base::FilePath cert_path = certs_dir.AppendASCII("unittest.selfsigned.der");
     std::string cert_der;
-    ASSERT_TRUE(file_util::ReadFileToString(cert_path, &cert_der));
+    ASSERT_TRUE(base::ReadFileToString(cert_path, &cert_der));
 
     scoped_refptr<net::X509Certificate> cert =
         X509Certificate::CreateFromBytes(cert_der.data(), cert_der.size());
 
     base::FilePath key_path = certs_dir.AppendASCII("unittest.key.bin");
     std::string key_string;
-    ASSERT_TRUE(file_util::ReadFileToString(key_path, &key_string));
+    ASSERT_TRUE(base::ReadFileToString(key_path, &key_string));
     std::vector<uint8> key_vector(
         reinterpret_cast<const uint8*>(key_string.data()),
         reinterpret_cast<const uint8*>(key_string.data() +

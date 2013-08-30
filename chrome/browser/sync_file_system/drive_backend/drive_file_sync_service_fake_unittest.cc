@@ -813,8 +813,7 @@ void DriveFileSyncServiceFakeTest::TestGetRemoteVersions() {
   ASSERT_EQ(SYNC_STATUS_OK, status);
 
   std::string downloaded_content;
-  EXPECT_TRUE(file_util::ReadFileToString(downloaded.path(),
-                                          &downloaded_content));
+  EXPECT_TRUE(base::ReadFileToString(downloaded.path(), &downloaded_content));
   EXPECT_EQ(content, downloaded_content);
 }
 

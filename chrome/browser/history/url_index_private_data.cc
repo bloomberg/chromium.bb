@@ -401,7 +401,7 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RestoreFromFile(
   std::string data;
   // If there is no cache file then simply give up. This will cause us to
   // attempt to rebuild from the history database.
-  if (!file_util::ReadFileToString(file_path, &data))
+  if (!base::ReadFileToString(file_path, &data))
     return NULL;
 
   scoped_refptr<URLIndexPrivateData> restored_data(new URLIndexPrivateData);

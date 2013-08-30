@@ -31,7 +31,7 @@ bool WritePNGFile(const SkBitmap& bitmap, const base::FilePath& file_path,
 bool ReadPNGFile(const base::FilePath& file_path, SkBitmap* bitmap) {
   DCHECK(bitmap);
   std::string png_data;
-  return file_util::ReadFileToString(file_path, &png_data) &&
+  return base::ReadFileToString(file_path, &png_data) &&
          gfx::PNGCodec::Decode(reinterpret_cast<unsigned char*>(&png_data[0]),
                                png_data.length(),
                                bitmap);

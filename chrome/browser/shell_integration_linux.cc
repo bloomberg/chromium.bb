@@ -623,7 +623,7 @@ bool GetExistingShortcutContents(base::Environment* env,
     VLOG(1) << "Looking for desktop file in " << path.value();
     if (base::PathExists(path)) {
       VLOG(1) << "Found desktop file at " << path.value();
-      return file_util::ReadFileToString(path, output);
+      return base::ReadFileToString(path, output);
     }
   }
 

@@ -348,7 +348,7 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
   if (!frontend_dir.empty()) {
     base::FilePath path = frontend_dir.AppendASCII(filename);
     std::string data;
-    file_util::ReadFileToString(path, &data);
+    base::ReadFileToString(path, &data);
     server_->Send200(connection_id, data, mime_type);
     return;
   }

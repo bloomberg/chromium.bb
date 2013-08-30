@@ -172,7 +172,7 @@ void ModuleSystemTest::RegisterTestFile(const std::string& module_name,
   test_js_file_path = test_js_file_path.AppendASCII("extensions")
                                        .AppendASCII(file_name);
   std::string test_js;
-  ASSERT_TRUE(file_util::ReadFileToString(test_js_file_path, &test_js));
+  ASSERT_TRUE(base::ReadFileToString(test_js_file_path, &test_js));
   source_map_->RegisterModule(module_name, test_js);
 }
 

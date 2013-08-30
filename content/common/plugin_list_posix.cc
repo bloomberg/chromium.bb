@@ -115,7 +115,7 @@ bool IsBlacklistedBySha1sumAndQuirks(const base::FilePath& path) {
       continue;
 
     std::string file_content;
-    if (!file_util::ReadFileToString(path, &file_content))
+    if (!base::ReadFileToString(path, &file_content))
       continue;
     std::string sha1 = base::SHA1HashString(file_content);
     std::string sha1_readable;

@@ -28,7 +28,7 @@ const base::FilePath::CharType kRLZBrandFilePath[] =
 std::string ReadBrandFromFile() {
   std::string brand;
   base::FilePath brand_file_path(kRLZBrandFilePath);
-  if (!file_util::ReadFileToString(brand_file_path, &brand))
+  if (!base::ReadFileToString(brand_file_path, &brand))
     LOG(WARNING) << "Brand code file missing: " << brand_file_path.value();
   TrimWhitespace(brand, TRIM_ALL, &brand);
   return brand;

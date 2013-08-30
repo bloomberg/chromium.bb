@@ -86,7 +86,7 @@ bool CheckEnvVar(const char* name, bool default_value) {
 }
 
 void ReadCache(const base::FilePath& filename, std::string* data) {
-  if (!file_util::ReadFileToString(filename, data)) {
+  if (!base::ReadFileToString(filename, data)) {
     // Zero-size data used as an in-band error code.
     data->clear();
   }

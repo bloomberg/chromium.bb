@@ -41,7 +41,7 @@ TEST(ZipFileTest, ZipEntryToZipArchive) {
   ASSERT_TRUE(UnzipSoleFile(temp_dir.path(), data, &file, &error_msg))
       << error_msg;
   std::string contents;
-  ASSERT_TRUE(file_util::ReadFileToString(file, &contents));
+  ASSERT_TRUE(base::ReadFileToString(file, &contents));
   ASSERT_STREQ("COW\n", contents.c_str());
 }
 

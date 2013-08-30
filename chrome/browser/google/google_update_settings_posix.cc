@@ -27,7 +27,7 @@ bool GoogleUpdateSettings::GetCollectStatsConsent() {
   PathService::Get(chrome::DIR_USER_DATA, &consent_file);
   consent_file = consent_file.Append(kConsentToSendStats);
   std::string tmp_guid;
-  bool consented = file_util::ReadFileToString(consent_file, &tmp_guid);
+  bool consented = base::ReadFileToString(consent_file, &tmp_guid);
   if (consented)
     google_update::posix_guid().assign(tmp_guid);
   return consented;

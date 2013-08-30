@@ -203,7 +203,7 @@ static bool LoadScriptContent(UserScript::File* script_file,
       return false;
     }
   } else {
-    if (!file_util::ReadFileToString(path, &content)) {
+    if (!base::ReadFileToString(path, &content)) {
       LOG(WARNING) << "Failed to load user script file: " << path.value();
       return false;
     }

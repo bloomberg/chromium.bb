@@ -163,7 +163,7 @@ class PacPerfSuiteRunner {
 
     // Try to read the file from disk.
     std::string file_contents;
-    bool ok = file_util::ReadFileToString(path, &file_contents);
+    bool ok = base::ReadFileToString(path, &file_contents);
 
     // If we can't load the file from disk, something is misconfigured.
     LOG_IF(ERROR, !ok) << "Failed to read file: " << path.value();

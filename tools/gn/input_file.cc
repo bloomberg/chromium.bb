@@ -21,7 +21,7 @@ void InputFile::SetContents(const std::string& c) {
 }
 
 bool InputFile::Load(const base::FilePath& system_path) {
-  if (file_util::ReadFileToString(system_path, &contents_)) {
+  if (base::ReadFileToString(system_path, &contents_)) {
     contents_loaded_ = true;
     physical_name_ = system_path;
     return true;

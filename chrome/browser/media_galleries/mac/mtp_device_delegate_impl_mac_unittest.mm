@@ -568,7 +568,7 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestDownload) {
              DownloadFile(base::FilePath("/ic:id/filename"),
                           temp_dir_.path().Append("target")));
   std::string contents;
-  EXPECT_TRUE(file_util::ReadFileToString(temp_dir_.path().Append("target"),
-                                          &contents));
+  EXPECT_TRUE(base::ReadFileToString(temp_dir_.path().Append("target"),
+                                     &contents));
   EXPECT_EQ(kTestFileContents, contents);
 }

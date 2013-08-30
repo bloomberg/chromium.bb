@@ -59,7 +59,7 @@ bool ReadPNGFile(const base::FilePath& file_path, SkBitmap* bitmap) {
     return false;
 
   std::string png_data;
-  return file_util::ReadFileToString(abs_path, &png_data) &&
+  return base::ReadFileToString(abs_path, &png_data) &&
          gfx::PNGCodec::Decode(reinterpret_cast<unsigned char*>(&png_data[0]),
                                png_data.length(),
                                bitmap);

@@ -34,7 +34,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     const base::FilePath& user_script_path, const GURL& original_url,
     const base::FilePath& extensions_dir, string16* error) {
   std::string content;
-  if (!file_util::ReadFileToString(user_script_path, &content)) {
+  if (!base::ReadFileToString(user_script_path, &content)) {
     *error = ASCIIToUTF16("Could not read source file.");
     return NULL;
   }

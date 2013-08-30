@@ -21,7 +21,7 @@ namespace {
 
 std::string GetFileContent(const FilePath& path) {
   std::string content;
-  if (!file_util::ReadFileToString(path, &content)) {
+  if (!ReadFileToString(path, &content)) {
     NOTREACHED();
   }
   return content;

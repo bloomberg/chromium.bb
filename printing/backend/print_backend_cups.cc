@@ -251,7 +251,7 @@ bool PrintBackendCUPS::GetPrinterCapsAndDefaults(
   }
 
   std::string content;
-  bool res = file_util::ReadFileToString(ppd_path, &content);
+  bool res = base::ReadFileToString(ppd_path, &content);
 
   base::DeleteFile(ppd_path, false);
 

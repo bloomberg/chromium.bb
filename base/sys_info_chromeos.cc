@@ -54,7 +54,7 @@ void SysInfo::OperatingSystemVersionNumbers(int32* major_version,
 
     FilePath path(kLinuxStandardBaseReleaseFile);
     std::string contents;
-    if (file_util::ReadFileToString(path, &contents)) {
+    if (ReadFileToString(path, &contents)) {
       g_chrome_os_version_numbers.Get().parsed = true;
       ParseLsbRelease(contents,
           &(g_chrome_os_version_numbers.Get().major_version),

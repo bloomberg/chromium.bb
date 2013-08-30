@@ -118,7 +118,7 @@ void CellularConfigDocument::SetErrorMap(
 
 bool CellularConfigDocument::LoadFromFile(const base::FilePath& config_path) {
   std::string config;
-  if (!file_util::ReadFileToString(config_path, &config))
+  if (!base::ReadFileToString(config_path, &config))
     return false;
 
   scoped_ptr<Value> root(

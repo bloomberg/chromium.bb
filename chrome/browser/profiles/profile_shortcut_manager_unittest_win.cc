@@ -806,7 +806,7 @@ TEST_F(ProfileShortcutManagerTest, UnbadgeProfileIconOnDeletion) {
 
   // Default profile has unbadged icon to start.
   std::string unbadged_icon_1;
-  EXPECT_TRUE(file_util::ReadFileToString(icon_path_1, &unbadged_icon_1));
+  EXPECT_TRUE(base::ReadFileToString(icon_path_1, &unbadged_icon_1));
 
   // Creating a new profile adds a badge to both the new profile icon and the
   // default profile icon. Since they use the same icon index, the icon files
@@ -814,9 +814,9 @@ TEST_F(ProfileShortcutManagerTest, UnbadgeProfileIconOnDeletion) {
   CreateProfileWithShortcut(FROM_HERE, profile_2_name_, profile_2_path_);
 
   std::string badged_icon_1;
-  EXPECT_TRUE(file_util::ReadFileToString(icon_path_1, &badged_icon_1));
+  EXPECT_TRUE(base::ReadFileToString(icon_path_1, &badged_icon_1));
   std::string badged_icon_2;
-  EXPECT_TRUE(file_util::ReadFileToString(icon_path_2, &badged_icon_2));
+  EXPECT_TRUE(base::ReadFileToString(icon_path_2, &badged_icon_2));
 
   EXPECT_NE(badged_icon_1, unbadged_icon_1);
   EXPECT_EQ(badged_icon_1, badged_icon_2);
@@ -827,7 +827,7 @@ TEST_F(ProfileShortcutManagerTest, UnbadgeProfileIconOnDeletion) {
   RunPendingTasks();
 
   std::string unbadged_icon_2;
-  EXPECT_TRUE(file_util::ReadFileToString(icon_path_2, &unbadged_icon_2));
+  EXPECT_TRUE(base::ReadFileToString(icon_path_2, &unbadged_icon_2));
   EXPECT_EQ(unbadged_icon_1, unbadged_icon_2);
 }
 
@@ -841,9 +841,9 @@ TEST_F(ProfileShortcutManagerTest, ProfileIconOnAvatarChange) {
       profile_info_cache_->GetIndexOfProfileWithPath(profile_1_path_);
 
   std::string badged_icon_1;
-  EXPECT_TRUE(file_util::ReadFileToString(icon_path_1, &badged_icon_1));
+  EXPECT_TRUE(base::ReadFileToString(icon_path_1, &badged_icon_1));
   std::string badged_icon_2;
-  EXPECT_TRUE(file_util::ReadFileToString(icon_path_2, &badged_icon_2));
+  EXPECT_TRUE(base::ReadFileToString(icon_path_2, &badged_icon_2));
 
   // Profile 1 and 2 are created with the same icon.
   EXPECT_EQ(badged_icon_1, badged_icon_2);
@@ -853,7 +853,7 @@ TEST_F(ProfileShortcutManagerTest, ProfileIconOnAvatarChange) {
   RunPendingTasks();
 
   std::string new_badged_icon_1;
-  EXPECT_TRUE(file_util::ReadFileToString(icon_path_1, &new_badged_icon_1));
+  EXPECT_TRUE(base::ReadFileToString(icon_path_1, &new_badged_icon_1));
   EXPECT_NE(new_badged_icon_1, badged_icon_1);
 
   // Ensure the new icon is not the unbadged icon.
@@ -861,7 +861,7 @@ TEST_F(ProfileShortcutManagerTest, ProfileIconOnAvatarChange) {
   RunPendingTasks();
 
   std::string unbadged_icon_1;
-  EXPECT_TRUE(file_util::ReadFileToString(icon_path_1, &unbadged_icon_1));
+  EXPECT_TRUE(base::ReadFileToString(icon_path_1, &unbadged_icon_1));
   EXPECT_NE(unbadged_icon_1, new_badged_icon_1);
 
   // Ensure the icon doesn't change on avatar change without 2 profiles.
@@ -869,6 +869,6 @@ TEST_F(ProfileShortcutManagerTest, ProfileIconOnAvatarChange) {
   RunPendingTasks();
 
   std::string unbadged_icon_1_a;
-  EXPECT_TRUE(file_util::ReadFileToString(icon_path_1, &unbadged_icon_1_a));
+  EXPECT_TRUE(base::ReadFileToString(icon_path_1, &unbadged_icon_1_a));
   EXPECT_EQ(unbadged_icon_1, unbadged_icon_1_a);
 }

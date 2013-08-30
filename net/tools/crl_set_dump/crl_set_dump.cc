@@ -38,10 +38,10 @@ int main(int argc, char** argv) {
     output_filename = base::FilePath::FromUTF8Unsafe(argv[3]);
 
   std::string crl_set_bytes, delta_bytes;
-  if (!file_util::ReadFileToString(crl_set_filename, &crl_set_bytes))
+  if (!base::ReadFileToString(crl_set_filename, &crl_set_bytes))
     return 1;
   if (!delta_filename.empty() &&
-      !file_util::ReadFileToString(delta_filename, &delta_bytes)) {
+      !base::ReadFileToString(delta_filename, &delta_bytes)) {
     return 1;
   }
 

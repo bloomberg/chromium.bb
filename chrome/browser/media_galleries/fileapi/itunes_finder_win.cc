@@ -29,7 +29,7 @@ std::string GetPrefFileData() {
     base::FilePath pref_file = appdata_dir.AppendASCII("Apple Computer")
                                           .AppendASCII("iTunes")
                                           .AppendASCII("iTunesPrefs.xml");
-    file_util::ReadFileToString(pref_file, &xml_pref_data);
+    base::ReadFileToString(pref_file, &xml_pref_data);
   }
   return xml_pref_data;
 }

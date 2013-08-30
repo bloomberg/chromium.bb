@@ -4250,7 +4250,7 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect) {
     path = path.Append(FILE_PATH_LITERAL("with-headers.html"));
 
     std::string contents;
-    EXPECT_TRUE(file_util::ReadFileToString(path, &contents));
+    EXPECT_TRUE(base::ReadFileToString(path, &contents));
     EXPECT_EQ(contents, d.data_received());
   }
 }
@@ -4292,7 +4292,7 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_GetFullRequestHeaders) {
     path = path.Append(FILE_PATH_LITERAL("with-headers.html"));
 
     std::string contents;
-    EXPECT_TRUE(file_util::ReadFileToString(path, &contents));
+    EXPECT_TRUE(base::ReadFileToString(path, &contents));
     EXPECT_EQ(contents, d.data_received());
   }
 }

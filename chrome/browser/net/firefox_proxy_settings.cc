@@ -69,7 +69,7 @@ bool ParsePrefFile(const base::FilePath& pref_file, DictionaryValue* prefs) {
   // The string that is before a pref key.
   const std::string kUserPrefString = "user_pref(\"";
   std::string contents;
-  if (!file_util::ReadFileToString(pref_file, &contents))
+  if (!base::ReadFileToString(pref_file, &contents))
     return false;
 
   std::vector<std::string> lines;

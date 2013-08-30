@@ -20,7 +20,7 @@
 using base::JSONReader;
 using base::JSONWriter;
 using base::Value;
-using file_util::ReadFileToString;
+using base::ReadFileToString;
 using std::string;
 using std::vector;
 

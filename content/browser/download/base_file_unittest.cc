@@ -71,7 +71,7 @@ class BaseFileTest : public testing::Test {
     if (!expected_data_.empty() && !expected_error_) {
       // Make sure the data has been properly written to disk.
       std::string disk_data;
-      EXPECT_TRUE(file_util::ReadFileToString(full_path, &disk_data));
+      EXPECT_TRUE(base::ReadFileToString(full_path, &disk_data));
       EXPECT_EQ(expected_data_, disk_data);
     }
 

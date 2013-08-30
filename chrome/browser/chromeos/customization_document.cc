@@ -80,7 +80,7 @@ CustomizationDocument::~CustomizationDocument() {}
 bool CustomizationDocument::LoadManifestFromFile(
     const base::FilePath& manifest_path) {
   std::string manifest;
-  if (!file_util::ReadFileToString(manifest_path, &manifest))
+  if (!base::ReadFileToString(manifest_path, &manifest))
     return false;
   return LoadManifestFromString(manifest);
 }
@@ -280,7 +280,7 @@ void ServicesCustomizationDocument::ReadFileInBackground(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::string manifest;
-  if (file_util::ReadFileToString(file, &manifest)) {
+  if (base::ReadFileToString(file, &manifest)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(
            base::IgnoreResult(

@@ -2197,8 +2197,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                           "    \"current\": \"complete\"}}]",
                           result_id)));
   std::string disk_data;
-  EXPECT_TRUE(file_util::ReadFileToString(item->GetTargetFilePath(),
-                                          &disk_data));
+  EXPECT_TRUE(base::ReadFileToString(item->GetTargetFilePath(), &disk_data));
   EXPECT_STREQ(kPayloadData, disk_data.c_str());
 }
 

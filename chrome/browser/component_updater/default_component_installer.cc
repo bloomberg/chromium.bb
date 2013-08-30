@@ -121,8 +121,8 @@ void DefaultComponentInstaller::StartRegistration(
 
   if (found) {
     current_version_ = latest_version;
-    file_util::ReadFileToString(latest_dir.AppendASCII("manifest.fingerprint"),
-                                &current_fingerprint_);
+    base::ReadFileToString(latest_dir.AppendASCII("manifest.fingerprint"),
+                           &current_fingerprint_);
   }
 
   // Remove older versions of the component. None should be in use during

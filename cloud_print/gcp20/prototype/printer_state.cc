@@ -75,7 +75,7 @@ bool SaveToFile(const base::FilePath& path, const PrinterState& state) {
 
 bool LoadFromFile(const base::FilePath& path, PrinterState* state) {
   std::string json_str;
-  if (!file_util::ReadFileToString(path, &json_str)) {
+  if (!base::ReadFileToString(path, &json_str)) {
     LOG(ERROR) << "Cannot open file.";
     return false;
   }

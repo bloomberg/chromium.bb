@@ -78,7 +78,7 @@ class NssHttpTest : public ::testing::Test {
 
   virtual void SetUp() {
     std::string file_contents;
-    ASSERT_TRUE(file_util::ReadFileToString(
+    ASSERT_TRUE(base::ReadFileToString(
         GetTestCertsDirectory().AppendASCII("aia-intermediate.der"),
         &file_contents));
     ASSERT_FALSE(file_contents.empty());

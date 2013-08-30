@@ -627,7 +627,7 @@ bool AutomatedUITest::ForceCrash() {
 bool AutomatedUITest::InitXMLReader() {
   base::FilePath input_path = GetInputFilePath();
 
-  if (!file_util::ReadFileToString(input_path, &xml_init_file_))
+  if (!base::ReadFileToString(input_path, &xml_init_file_))
     return false;
   return init_reader_.Load(xml_init_file_);
 }

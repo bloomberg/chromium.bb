@@ -116,7 +116,7 @@ typedef std::vector<ReplayLogEntry> ReplayLog;
 // The file should be sorted by timestamp in ascending time.
 bool LoadReplayLog(const base::FilePath& file_path, ReplayLog* replay_log) {
   std::string original_replay_log_contents;
-  if (!file_util::ReadFileToString(file_path, &original_replay_log_contents)) {
+  if (!base::ReadFileToString(file_path, &original_replay_log_contents)) {
     fprintf(stderr, "Unable to open replay file %s\n",
             file_path.MaybeAsASCII().c_str());
     return false;

@@ -127,7 +127,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
          it != test_files.end(); ++it) {
       base::FilePath path = test_file_dir.AppendASCII(*it);
       std::string contents;
-      CHECK(file_util::ReadFileToString(path, &contents));
+      CHECK(base::ReadFileToString(path, &contents));
       g_file_contents.Get()["/" + test_path_ + *it] = contents;
       net::URLRequestFilter::GetInstance()->AddUrlHandler(
           GURL(fake_server_address_ + test_path_ + *it),

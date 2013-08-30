@@ -261,8 +261,8 @@ BootTimesLoader::Stats BootTimesLoader::GetCurrentStats() {
   const base::FilePath kDiskStat(FPL("/sys/block/sda/stat"));
   Stats stats;
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  file_util::ReadFileToString(kProcUptime, &stats.uptime);
-  file_util::ReadFileToString(kDiskStat, &stats.disk);
+  base::ReadFileToString(kProcUptime, &stats.uptime);
+  base::ReadFileToString(kDiskStat, &stats.disk);
   return stats;
 }
 

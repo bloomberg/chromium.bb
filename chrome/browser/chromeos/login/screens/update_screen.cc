@@ -460,7 +460,7 @@ bool UpdateScreen::HasCriticalUpdate() {
   // Temporarily allow it until we fix http://crosbug.com/11106
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::FilePath update_deadline_file_path(kUpdateDeadlineFile);
-  if (!file_util::ReadFileToString(update_deadline_file_path, &deadline) ||
+  if (!base::ReadFileToString(update_deadline_file_path, &deadline) ||
       deadline.empty()) {
     return false;
   }

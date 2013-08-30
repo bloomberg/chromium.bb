@@ -15,7 +15,7 @@ namespace {
 // Reads |file| into |content|, and converts Windows line-endings to Unix ones.
 // Returns true on success.
 bool ReadFile(const base::FilePath& file, std::string* content) {
-  if (!file_util::ReadFileToString(file, content))
+  if (!base::ReadFileToString(file, content))
     return false;
 
   ReplaceSubstringsAfterOffset(content, 0, "\r\n", "\n");

@@ -1017,7 +1017,7 @@ TEST_F(FileStreamTest, Truncate) {
 
   // Read in the contents and make sure we get back what we expected.
   std::string read_contents;
-  EXPECT_TRUE(file_util::ReadFileToString(temp_file_path(), &read_contents));
+  EXPECT_TRUE(base::ReadFileToString(temp_file_path(), &read_contents));
 
   EXPECT_EQ("01230123", read_contents);
 }

@@ -31,7 +31,7 @@ void ParseArgsFromCommandLineFile(
     const char* path, std::vector<std::string>* args) {
   base::FilePath command_line(path);
   std::string command_line_string;
-  if (file_util::ReadFileToString(command_line, &command_line_string)) {
+  if (base::ReadFileToString(command_line, &command_line_string)) {
     ParseArgsFromString(command_line_string, args);
   }
 }

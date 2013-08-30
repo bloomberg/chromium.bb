@@ -160,7 +160,7 @@ void DebugDaemonLogSource::ReadUserLogFiles(
       std::string value;
       std::string filename = it->second;
       base::FilePath profile_dir = last_used_profiles[i]->GetPath();
-      bool read_success = file_util::ReadFileToString(
+      bool read_success = base::ReadFileToString(
           profile_dir.Append(filename), &value);
 
       if (read_success && !value.empty())

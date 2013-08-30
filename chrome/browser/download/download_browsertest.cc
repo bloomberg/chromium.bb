@@ -679,8 +679,7 @@ class DownloadTest : public InProcessBrowserTest {
     int64 origin_file_size = 0;
     EXPECT_TRUE(file_util::GetFileSize(origin_file, &origin_file_size));
     std::string original_file_contents;
-    EXPECT_TRUE(
-        file_util::ReadFileToString(origin_file, &original_file_contents));
+    EXPECT_TRUE(base::ReadFileToString(origin_file, &original_file_contents));
     EXPECT_TRUE(
         VerifyFile(downloaded_file, original_file_contents, origin_file_size));
 
@@ -831,7 +830,7 @@ class DownloadTest : public InProcessBrowserTest {
                   const int64 file_size) {
     std::string file_contents;
 
-    bool read = file_util::ReadFileToString(path, &file_contents);
+    bool read = base::ReadFileToString(path, &file_contents);
     EXPECT_TRUE(read) << "Failed reading file: " << path.value() << std::endl;
     if (!read)
       return false;  // Couldn't read the file.
@@ -1475,7 +1474,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_IncognitoRegular) {
   int64 origin_file_size = 0;
   EXPECT_TRUE(file_util::GetFileSize(origin, &origin_file_size));
   std::string original_contents;
-  EXPECT_TRUE(file_util::ReadFileToString(origin, &original_contents));
+  EXPECT_TRUE(base::ReadFileToString(origin, &original_contents));
 
   std::vector<DownloadItem*> download_items;
   GetDownloads(browser(), &download_items);
@@ -2846,7 +2845,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
       "downloads/a_zip_file.zip"))));
   ASSERT_TRUE(base::PathExists(origin_file));
   std::string origin_contents;
-  ASSERT_TRUE(file_util::ReadFileToString(origin_file, &origin_contents));
+  ASSERT_TRUE(base::ReadFileToString(origin_file, &origin_contents));
 
   // Download the same url several times and expect that all downloaded files
   // after the zero-th contain a deduplication counter.

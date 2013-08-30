@@ -74,7 +74,7 @@ void CRLSetFetcher::LoadFromDisk(base::FilePath path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::string crl_set_bytes;
-  if (!file_util::ReadFileToString(path, &crl_set_bytes))
+  if (!base::ReadFileToString(path, &crl_set_bytes))
     return;
 
   if (!net::CRLSet::Parse(crl_set_bytes, out_crl_set)) {
@@ -153,7 +153,7 @@ bool CRLSetFetcher::Install(const base::DictionaryValue& manifest,
     return true;
 
   std::string crl_set_bytes;
-  if (!file_util::ReadFileToString(crl_set_file_path, &crl_set_bytes)) {
+  if (!base::ReadFileToString(crl_set_file_path, &crl_set_bytes)) {
     LOG(WARNING) << "Failed to find crl-set file inside CRX";
     return false;
   }

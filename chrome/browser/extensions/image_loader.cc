@@ -83,7 +83,7 @@ void LoadImageOnBlockingPool(const ImageLoader::ImageRepresentation& image_info,
   // Read the file from disk.
   std::string file_contents;
   base::FilePath path = image_info.resource.GetFilePath();
-  if (path.empty() || !file_util::ReadFileToString(path, &file_contents)) {
+  if (path.empty() || !base::ReadFileToString(path, &file_contents)) {
     return;
   }
 

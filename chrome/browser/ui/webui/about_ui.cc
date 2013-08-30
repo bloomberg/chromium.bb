@@ -280,7 +280,7 @@ class ChromeOSTermsHandler
       base::FilePath oem_eula_file_path;
       if (net::FileURLToFilePath(GURL(customization->GetEULAPage(locale_)),
                                  &oem_eula_file_path)) {
-        if (!file_util::ReadFileToString(oem_eula_file_path, &contents_)) {
+        if (!base::ReadFileToString(oem_eula_file_path, &contents_)) {
           contents_.clear();
         }
       }
@@ -293,11 +293,10 @@ class ChromeOSTermsHandler
   void LoadEulaFileOnFileThread() {
     std::string file_path =
         base::StringPrintf(chrome::kEULAPathFormat, locale_.c_str());
-    if (!file_util::ReadFileToString(base::FilePath(file_path), &contents_)) {
+    if (!base::ReadFileToString(base::FilePath(file_path), &contents_)) {
       // No EULA for given language - try en-US as default.
       file_path = base::StringPrintf(chrome::kEULAPathFormat, "en-US");
-      if (!file_util::ReadFileToString(base::FilePath(file_path),
-                                       &contents_)) {
+      if (!base::ReadFileToString(base::FilePath(file_path), &contents_)) {
         // File with EULA not found, ResponseOnUIThread will load EULA from
         // resources if contents_ is empty.
         contents_.clear();

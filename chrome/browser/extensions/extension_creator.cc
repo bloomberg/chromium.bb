@@ -127,8 +127,7 @@ crypto::RSAPrivateKey* ExtensionCreator::ReadInputKey(const base::FilePath&
   }
 
   std::string private_key_contents;
-  if (!file_util::ReadFileToString(private_key_path,
-      &private_key_contents)) {
+  if (!base::ReadFileToString(private_key_path, &private_key_contents)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_READ);
     return NULL;

@@ -21,7 +21,7 @@ Image::Image(const base::FilePath& path)
     : row_length_(0),
       ignore_alpha_(true) {
   std::string data;
-  file_util::ReadFileToString(path, &data);
+  base::ReadFileToString(path, &data);
   bool success = false;
   if (path.MatchesExtension(FILE_PATH_LITERAL(".png"))) {
     success = LoadPng(data);

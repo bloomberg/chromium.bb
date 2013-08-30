@@ -122,7 +122,7 @@ void UserStyleSheetLoader::LoadStyleSheet(
     file_util::WriteFile(style_sheet_file, "", 0);
 
   std::string css;
-  bool rv = file_util::ReadFileToString(style_sheet_file, &css);
+  bool rv = base::ReadFileToString(style_sheet_file, &css);
   GURL style_sheet_url;
   if (rv && !css.empty()) {
     std::string css_base64;

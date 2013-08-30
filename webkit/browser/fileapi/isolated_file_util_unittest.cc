@@ -184,8 +184,8 @@ class IsolatedFileUtilTest : public testing::Test {
     EXPECT_NE(platform_path1, platform_path2);
 
     std::string content1, content2;
-    EXPECT_TRUE(file_util::ReadFileToString(platform_path1, &content1));
-    EXPECT_TRUE(file_util::ReadFileToString(platform_path2, &content2));
+    EXPECT_TRUE(base::ReadFileToString(platform_path1, &content1));
+    EXPECT_TRUE(base::ReadFileToString(platform_path2, &content2));
     EXPECT_EQ(content1, content2);
   }
 

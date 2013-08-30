@@ -195,7 +195,7 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
   std::string output;
   base::TimeTicks start_time = base::TimeTicks::Now();
   while (base::TimeTicks::Now() - start_time < TestTimeouts::action_timeout()) {
-    ASSERT_TRUE(file_util::ReadFileToString(temp_output_file, &output));
+    ASSERT_TRUE(base::ReadFileToString(temp_output_file, &output));
     if (!output.empty())
       break;
     base::PlatformThread::YieldCurrentThread();

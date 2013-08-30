@@ -142,8 +142,7 @@ LogDictionaryType* GetSystemLogs(base::FilePath* zip_file_name,
   }
   // Read logs from the temp file
   std::string data;
-  bool read_success = file_util::ReadFileToString(temp_filename,
-                                                  &data);
+  bool read_success = base::ReadFileToString(temp_filename, &data);
   // if we were using an internal temp file, the user does not need the
   // logs to stay past the ReadFile call - delete the file
   base::DeleteFile(temp_filename, false);
@@ -348,7 +347,7 @@ void SyslogsProviderImpl::ReadSyslogs(
 void SyslogsProviderImpl::LoadCompressedLogs(const base::FilePath& zip_file,
                                             std::string* zip_content) {
   DCHECK(zip_content);
-  if (!file_util::ReadFileToString(zip_file, zip_content)) {
+  if (!base::ReadFileToString(zip_file, zip_content)) {
     LOG(ERROR) << "Cannot read compressed logs file from " <<
         zip_file.value().c_str();
   }

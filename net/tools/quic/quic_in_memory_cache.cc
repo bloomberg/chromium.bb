@@ -140,7 +140,7 @@ void QuicInMemoryCache::Initialize() {
     BalsaHeaders request_headers, response_headers;
 
     string file_contents;
-    file_util::ReadFileToString(file, &file_contents);
+    base::ReadFileToString(file, &file_contents);
 
     // Frame HTTP.
     CachingBalsaVisitor caching_visitor;

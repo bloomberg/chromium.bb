@@ -216,7 +216,7 @@ class PageStateSerializationTest : public testing::Test {
         base::StringPrintf("serialized_v%d%s.dat", version, suffix));
 
     std::string file_contents;
-    if (!file_util::ReadFileToString(path, &file_contents)) {
+    if (!base::ReadFileToString(path, &file_contents)) {
       ADD_FAILURE() << "File not found: " << path.value();
       return;
     }

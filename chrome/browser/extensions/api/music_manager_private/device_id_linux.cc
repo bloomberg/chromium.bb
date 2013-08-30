@@ -17,7 +17,7 @@ void GetDBusMachineId(const extensions::api::DeviceId::IdCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   std::string result;
-  if (!file_util::ReadFileToString(base::FilePath(kDBusFilename), &result)) {
+  if (!base::ReadFileToString(base::FilePath(kDBusFilename), &result)) {
     DLOG(WARNING) << "Error reading dbus machine id file.";
     result = "";
   }

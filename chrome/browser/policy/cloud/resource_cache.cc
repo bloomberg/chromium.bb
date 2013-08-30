@@ -94,7 +94,7 @@ bool ResourceCache::Load(const std::string& key,
     return false;
   }
   data->clear();
-  return file_util::ReadFileToString(subkey_path, data);
+  return base::ReadFileToString(subkey_path, data);
 }
 
 void ResourceCache::LoadAllSubkeys(
@@ -116,7 +116,7 @@ void ResourceCache::LoadAllSubkeys(
     // a base64-encoded string.
     if (!file_util::IsLink(path) &&
         Base64Decode(encoded_subkey, &subkey) &&
-        file_util::ReadFileToString(path, &data)) {
+        base::ReadFileToString(path, &data)) {
       (*contents)[subkey].swap(data);
     }
   }

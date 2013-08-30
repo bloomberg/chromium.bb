@@ -749,7 +749,7 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   // Verify that the file contents match the expected contents.
   const std::string kExpectedContent = "This is some test content.";
   std::string cache_file_data;
-  EXPECT_TRUE(file_util::ReadFileToString(opened_file_path, &cache_file_data));
+  EXPECT_TRUE(base::ReadFileToString(opened_file_path, &cache_file_data));
   EXPECT_EQ(kExpectedContent, cache_file_data);
 
   FileCacheEntry cache_entry;

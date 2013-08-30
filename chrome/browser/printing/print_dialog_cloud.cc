@@ -671,7 +671,7 @@ void CreateDialogForFileImpl(content::BrowserContext* browser_context,
     } else {
       DLOG(WARNING) << " print data file too large to reserve space";
     }
-    if (file_util::ReadFileToString(path_to_file, &file_data)) {
+    if (base::ReadFileToString(path_to_file, &file_data)) {
       data = base::RefCountedString::TakeString(&file_data);
     }
   }

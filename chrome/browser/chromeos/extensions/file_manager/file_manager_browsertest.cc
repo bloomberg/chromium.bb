@@ -250,7 +250,7 @@ class DriveTestVolume {
       base::FilePath source_file_path =
           google_apis::test_util::GetTestFilePath("chromeos/file_manager").
               AppendASCII(source_file_name);
-      ASSERT_TRUE(file_util::ReadFileToString(source_file_path, &content_data));
+      ASSERT_TRUE(base::ReadFileToString(source_file_path, &content_data));
     }
 
     scoped_ptr<google_apis::ResourceEntry> resource_entry;

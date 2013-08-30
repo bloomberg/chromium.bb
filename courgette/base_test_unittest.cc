@@ -22,7 +22,7 @@ std::string BaseTest::FileContents(const char* file_name) const {
   file_path = file_path.AppendASCII(file_name);
   std::string file_bytes;
 
-  EXPECT_TRUE(file_util::ReadFileToString(file_path, &file_bytes));
+  EXPECT_TRUE(base::ReadFileToString(file_path, &file_bytes));
 
   return file_bytes;
 }

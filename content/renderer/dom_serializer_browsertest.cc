@@ -820,7 +820,7 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeXMLDocWithBuiltInEntities) {
   base::FilePath xml_file_path = GetTestFilePath("dom_serializer", "note.xml");
   // Read original contents for later comparison.
   std::string original_contents;
-  ASSERT_TRUE(file_util::ReadFileToString(xml_file_path, &original_contents));
+  ASSERT_TRUE(base::ReadFileToString(xml_file_path, &original_contents));
   // Get file URL.
   GURL file_url = net::FilePathToFileURL(page_file_path);
   GURL xml_file_url = net::FilePathToFileURL(xml_file_path);
@@ -840,7 +840,7 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithAddingMOTW) {
       GetTestFilePath("dom_serializer", "youtube_2.htm");
   // Read original contents for later comparison .
   std::string original_contents;
-  ASSERT_TRUE(file_util::ReadFileToString(page_file_path, &original_contents));
+  ASSERT_TRUE(base::ReadFileToString(page_file_path, &original_contents));
   // Get file URL.
   GURL file_url = net::FilePathToFileURL(page_file_path);
   ASSERT_TRUE(file_url.SchemeIsFile());

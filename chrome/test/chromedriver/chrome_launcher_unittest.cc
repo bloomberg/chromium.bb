@@ -36,7 +36,7 @@ bool AddExtensionForInstall(const std::string& relative_path,
   base::FilePath crx_file_path = source_root.AppendASCII(
       "chrome/test/data/chromedriver/" + relative_path);
   std::string crx_contents;
-  if (!file_util::ReadFileToString(crx_file_path, &crx_contents))
+  if (!base::ReadFileToString(crx_file_path, &crx_contents))
     return false;
 
   std::string crx_encoded;
@@ -62,7 +62,7 @@ TEST(ProcessExtensions, SingleExtensionWithBgPage) {
   base::FilePath temp_ext_path(switches.GetSwitchValueNative("load-extension"));
   ASSERT_TRUE(base::PathExists(temp_ext_path));
   std::string manifest_txt;
-  ASSERT_TRUE(file_util::ReadFileToString(
+  ASSERT_TRUE(base::ReadFileToString(
       temp_ext_path.AppendASCII("manifest.json"), &manifest_txt));
   scoped_ptr<base::Value> manifest(base::JSONReader::Read(manifest_txt));
   ASSERT_TRUE(manifest);
@@ -153,7 +153,7 @@ TEST(PrepareUserDataDir, CustomPrefs) {
   base::FilePath prefs_file =
       temp_dir.path().AppendASCII("Default").AppendASCII("Preferences");
   std::string prefs_str;
-  ASSERT_TRUE(file_util::ReadFileToString(prefs_file, &prefs_str));
+  ASSERT_TRUE(base::ReadFileToString(prefs_file, &prefs_str));
   scoped_ptr<base::Value> prefs_value(base::JSONReader::Read(prefs_str));
   const base::DictionaryValue* prefs_dict = NULL;
   ASSERT_TRUE(prefs_value->GetAsDictionary(&prefs_dict));
@@ -162,7 +162,7 @@ TEST(PrepareUserDataDir, CustomPrefs) {
 
   base::FilePath local_state_file = temp_dir.path().AppendASCII("Local State");
   std::string local_state_str;
-  ASSERT_TRUE(file_util::ReadFileToString(local_state_file, &local_state_str));
+  ASSERT_TRUE(base::ReadFileToString(local_state_file, &local_state_str));
   scoped_ptr<base::Value> local_state_value(
       base::JSONReader::Read(local_state_str));
   const base::DictionaryValue* local_state_dict = NULL;

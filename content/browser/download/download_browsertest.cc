@@ -600,7 +600,7 @@ class DownloadContentTest : public ContentBrowserTest {
                   const int64 file_size) {
     std::string file_contents;
 
-    bool read = file_util::ReadFileToString(path, &file_contents);
+    bool read = base::ReadFileToString(path, &file_contents);
     EXPECT_TRUE(read) << "Failed reading file: " << path.value() << std::endl;
     if (!read)
       return false;  // Couldn't read the file.
@@ -674,7 +674,7 @@ class DownloadContentTest : public ContentBrowserTest {
 
     if (file_exists) {
       std::string file_contents;
-      EXPECT_TRUE(file_util::ReadFileToString(
+      EXPECT_TRUE(base::ReadFileToString(
           download->GetFullPath(), &file_contents));
 
       ASSERT_EQ(static_cast<size_t>(received_bytes), file_contents.size());

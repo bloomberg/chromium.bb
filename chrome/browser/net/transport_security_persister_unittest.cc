@@ -142,7 +142,7 @@ TEST_F(TransportSecurityPersisterTest, SerializeData3) {
 
   // Read the data back.
   std::string persisted;
-  EXPECT_TRUE(file_util::ReadFileToString(path, &persisted));
+  EXPECT_TRUE(base::ReadFileToString(path, &persisted));
   EXPECT_EQ(persisted, serialized);
   bool dirty;
   EXPECT_TRUE(persister_->LoadEntries(persisted, &dirty));

@@ -158,7 +158,7 @@ bool ParseHostsFile(const base::FilePath& path, DnsHosts* dns_hosts) {
     return false;
 
   std::string contents;
-  if (!file_util::ReadFileToString(path, &contents))
+  if (!base::ReadFileToString(path, &contents))
     return false;
 
   ParseHosts(contents, dns_hosts);

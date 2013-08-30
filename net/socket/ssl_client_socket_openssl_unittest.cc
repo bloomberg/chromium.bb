@@ -67,7 +67,7 @@ bool LoadPrivateKeyOpenSSL(
     const base::FilePath& filepath,
     OpenSSLClientKeyStore::ScopedEVP_PKEY* pkey) {
   std::string data;
-  if (!file_util::ReadFileToString(filepath, &data)) {
+  if (!base::ReadFileToString(filepath, &data)) {
     LOG(ERROR) << "Could not read private key file: "
                << filepath.value() << ": " << strerror(errno);
     return false;

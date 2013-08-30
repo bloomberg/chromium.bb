@@ -95,7 +95,7 @@ TEST_F(EmfPrintingTest, Enumerate) {
   // Load any EMF with an image.
   Emf emf;
   std::string emf_data;
-  file_util::ReadFileToString(emf_file, &emf_data);
+  base::ReadFileToString(emf_file, &emf_data);
   ASSERT_TRUE(emf_data.size());
   EXPECT_TRUE(emf.InitFromData(&emf_data[0], emf_data.size()));
 

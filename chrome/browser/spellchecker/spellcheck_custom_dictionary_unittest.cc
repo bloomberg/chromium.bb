@@ -305,7 +305,7 @@ TEST_F(SpellcheckCustomDictionaryTest, CorruptedWriteShouldBeRecovered) {
   change.AddWord("baz");
   UpdateDictionaryFile(change, path);
   content.clear();
-  file_util::ReadFileToString(path, &content);
+  base::ReadFileToString(path, &content);
   content.append("corruption");
   file_util::WriteFile(path, content.c_str(), content.length());
   loaded_custom_words = LoadDictionaryFile(path);

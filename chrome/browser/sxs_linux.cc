@@ -58,7 +58,7 @@ bool DoAddChannelMarkToUserDataDir(const base::FilePath& user_data_dir) {
   // and legitimate that it doesn't exist, e.g. for new profile or for profile
   // existing before channel marks have been introduced.
   std::string channels_contents;
-  if (file_util::ReadFileToString(channels_path, &channels_contents))
+  if (base::ReadFileToString(channels_path, &channels_contents))
     base::SplitString(channels_contents, '\n', &user_data_dir_channels);
 
   if (std::find(user_data_dir_channels.begin(),

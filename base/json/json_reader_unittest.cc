@@ -547,7 +547,7 @@ TEST(JSONReaderTest, ReadFromFile) {
   ASSERT_TRUE(base::PathExists(path));
 
   std::string input;
-  ASSERT_TRUE(file_util::ReadFileToString(
+  ASSERT_TRUE(ReadFileToString(
       path.Append(FILE_PATH_LITERAL("bom_feff.json")), &input));
 
   JSONReader reader;

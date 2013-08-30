@@ -187,8 +187,8 @@ class DriveApiRequestsTest : public testing::Test {
     response->set_code(net::HTTP_PRECONDITION_FAILED);
 
     std::string content;
-    if (file_util::ReadFileToString(expected_precondition_failed_file_path_,
-                                    &content)) {
+    if (base::ReadFileToString(expected_precondition_failed_file_path_,
+                               &content)) {
       response->set_content(content);
       response->set_content_type("application/json");
     }
@@ -1588,7 +1588,7 @@ TEST_F(DriveApiRequestsTest, DownloadFileRequest) {
   }
 
   std::string contents;
-  file_util::ReadFileToString(temp_file, &contents);
+  base::ReadFileToString(temp_file, &contents);
   base::DeleteFile(temp_file, false);
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);

@@ -360,11 +360,11 @@ void MobileConfig::ReadConfigInBackground(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::string global_config;
   std::string local_config;
-  if (!file_util::ReadFileToString(global_config_file, &global_config)) {
+  if (!base::ReadFileToString(global_config_file, &global_config)) {
     VLOG(1) << "Failed to load global mobile config from: "
             << global_config_file.value();
   }
-  if (!file_util::ReadFileToString(local_config_file, &local_config)) {
+  if (!base::ReadFileToString(local_config_file, &local_config)) {
     VLOG(1) << "Failed to load local mobile config from: "
             << local_config_file.value();
   }

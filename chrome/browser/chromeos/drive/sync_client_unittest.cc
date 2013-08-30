@@ -286,13 +286,13 @@ TEST_F(SyncClientTest, ExistingPinnedFiles) {
   std::string content;
   EXPECT_EQ(FILE_ERROR_OK, cache_->GetFile(resource_ids_["fetched"],
                                            &cache_file));
-  EXPECT_TRUE(file_util::ReadFileToString(cache_file, &content));
+  EXPECT_TRUE(base::ReadFileToString(cache_file, &content));
   EXPECT_EQ(kRemoteContent, content);
   content.clear();
 
   EXPECT_EQ(FILE_ERROR_OK, cache_->GetFile(resource_ids_["dirty"],
                                            &cache_file));
-  EXPECT_TRUE(file_util::ReadFileToString(cache_file, &content));
+  EXPECT_TRUE(base::ReadFileToString(cache_file, &content));
   EXPECT_EQ(kLocalContent, content);
 }
 

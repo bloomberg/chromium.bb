@@ -38,7 +38,7 @@ TEST(SessionCommandTest, FileUpload) {
   ASSERT_TRUE(value->GetAsString(&path));
   ASSERT_TRUE(base::PathExists(base::FilePath(path)));
   std::string data;
-  ASSERT_TRUE(file_util::ReadFileToString(base::FilePath(path), &data));
+  ASSERT_TRUE(base::ReadFileToString(base::FilePath(path), &data));
   ASSERT_STREQ("COW\n", data.c_str());
 }
 

@@ -115,7 +115,7 @@ std::string ReadAndUpdateServiceState(const base::FilePath& directory,
                                       const std::string& proxy_id) {
   std::string json;
   base::FilePath file_path = directory.Append(chrome::kServiceStateFileName);
-  if (!file_util::ReadFileToString(file_path, &json)) {
+  if (!base::ReadFileToString(file_path, &json)) {
     return std::string();
   }
 

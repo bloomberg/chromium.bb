@@ -70,7 +70,7 @@ bool AutoStart::GetAutostartFileContents(
   base::FilePath autostart_directory = GetAutostartDirectory(environment.get());
   base::FilePath autostart_file =
       autostart_directory.Append(autostart_filename);
-  return file_util::ReadFileToString(autostart_file, contents);
+  return base::ReadFileToString(autostart_file, contents);
 }
 
 bool AutoStart::GetAutostartFileValue(const std::string& autostart_filename,

@@ -115,7 +115,7 @@ class DesktopBackgroundController::WallpaperLoader
   static scoped_ptr<SkBitmap> LoadSkBitmapFromJPEGFile(
       const base::FilePath& path) {
     std::string data;
-    if (!file_util::ReadFileToString(path, &data)) {
+    if (!base::ReadFileToString(path, &data)) {
       LOG(ERROR) << "Unable to read data from " << path.value();
       return scoped_ptr<SkBitmap>();
     }

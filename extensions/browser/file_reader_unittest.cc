@@ -61,7 +61,7 @@ void RunBasicTest(const char* filename) {
   path = path.AppendASCII(filename);
 
   std::string file_contents;
-  ASSERT_TRUE(file_util::ReadFileToString(path, &file_contents));
+  ASSERT_TRUE(base::ReadFileToString(path, &file_contents));
 
   Receiver receiver;
 

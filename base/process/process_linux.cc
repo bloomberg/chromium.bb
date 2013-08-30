@@ -70,9 +70,9 @@ bool Process::IsProcessBackgrounded() const {
 #if defined(OS_CHROMEOS)
   if (cgroups.Get().enabled) {
     std::string proc;
-    if (file_util::ReadFileToString(
-        base::FilePath(StringPrintf(kProcPath, process_)),
-        &proc)) {
+    if (base::ReadFileToString(
+            base::FilePath(StringPrintf(kProcPath, process_)),
+            &proc)) {
       std::vector<std::string> proc_parts;
       base::SplitString(proc, ':', &proc_parts);
       DCHECK(proc_parts.size() == 3);

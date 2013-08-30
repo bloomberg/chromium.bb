@@ -44,8 +44,8 @@ class DeviceStatsMonitor {
     std::string out;
     while (record_) {
       out.clear();
-      CHECK(file_util::ReadFileToString(io_stats_path, &out));
-      CHECK(file_util::ReadFileToString(cpu_stats_path, &out));
+      CHECK(base::ReadFileToString(io_stats_path, &out));
+      CHECK(base::ReadFileToString(cpu_stats_path, &out));
       samples_.push_back(out);
       usleep(sample_interval);
     }

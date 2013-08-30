@@ -60,7 +60,7 @@ Value RunReadFile(Scope* scope,
 
   // Read contents.
   std::string file_contents;
-  if (!file_util::ReadFileToString(file_path, &file_contents)) {
+  if (!base::ReadFileToString(file_path, &file_contents)) {
     *err = Err(args[0], "Could not read file.",
                "I resolved this to \"" + FilePathToUTF8(file_path) + "\".");
     return Value();

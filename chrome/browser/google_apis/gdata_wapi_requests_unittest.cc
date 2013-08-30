@@ -1580,7 +1580,7 @@ TEST_F(GDataWapiRequestsTest, DownloadFileRequest) {
   }
 
   std::string contents;
-  file_util::ReadFileToString(temp_file, &contents);
+  base::ReadFileToString(temp_file, &contents);
   base::DeleteFile(temp_file, false);
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);

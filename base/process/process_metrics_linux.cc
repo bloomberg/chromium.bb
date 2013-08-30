@@ -34,7 +34,7 @@ enum ParsingState {
 // Read a file with a single number string and return the number as a uint64.
 static uint64 ReadFileToUint64(const base::FilePath file) {
   std::string file_as_string;
-  if (!file_util::ReadFileToString(file, &file_as_string))
+  if (!ReadFileToString(file, &file_as_string))
     return 0;
   TrimWhitespaceASCII(file_as_string, TRIM_ALL, &file_as_string);
   uint64 file_as_uint64 = 0;
@@ -52,7 +52,7 @@ size_t ReadProcStatusAndGetFieldAsSizeT(pid_t pid, const std::string& field) {
   {
     // Synchronously reading files in /proc is safe.
     ThreadRestrictions::ScopedAllowIO allow_io;
-    if (!file_util::ReadFileToString(stat_file, &status))
+    if (!ReadFileToString(stat_file, &status))
       return 0;
   }
 
@@ -117,7 +117,7 @@ int GetProcessCPU(pid_t pid) {
     std::string stat;
     FilePath stat_path =
         task_path.Append(ent->d_name).Append(internal::kStatFile);
-    if (file_util::ReadFileToString(stat_path, &stat)) {
+    if (ReadFileToString(stat_path, &stat)) {
       int cpu = ParseProcStatCPU(stat);
       if (cpu > 0)
         total_cpu += cpu;
@@ -223,7 +223,7 @@ bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
 
   std::string proc_io_contents;
   FilePath io_file = internal::GetProcPidDir(process_).Append("io");
-  if (!file_util::ReadFileToString(io_file, &proc_io_contents))
+  if (!ReadFileToString(io_file, &proc_io_contents))
     return false;
 
   (*io_counters).OtherOperationCount = 0;
@@ -295,7 +295,7 @@ bool ProcessMetrics::GetWorkingSetKBytesTotmaps(WorkingSetKBytes *ws_usage)
   {
     FilePath totmaps_file = internal::GetProcPidDir(process_).Append("totmaps");
     ThreadRestrictions::ScopedAllowIO allow_io;
-    bool ret = file_util::ReadFileToString(totmaps_file, &totmaps_data);
+    bool ret = ReadFileToString(totmaps_file, &totmaps_data);
     if (!ret || totmaps_data.length() == 0)
       return false;
   }
@@ -347,7 +347,7 @@ bool ProcessMetrics::GetWorkingSetKBytesStatm(WorkingSetKBytes* ws_usage)
     FilePath statm_file = internal::GetProcPidDir(process_).Append("statm");
     // Synchronously reading files in /proc is safe.
     ThreadRestrictions::ScopedAllowIO allow_io;
-    bool ret = file_util::ReadFileToString(statm_file, &statm);
+    bool ret = ReadFileToString(statm_file, &statm);
     if (!ret || statm.length() == 0)
       return false;
   }
@@ -444,7 +444,7 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   // Used memory is: total - free - buffers - caches
   FilePath meminfo_file("/proc/meminfo");
   std::string meminfo_data;
-  if (!file_util::ReadFileToString(meminfo_file, &meminfo_data)) {
+  if (!ReadFileToString(meminfo_file, &meminfo_data)) {
     DLOG(WARNING) << "Failed to open " << meminfo_file.value();
     return false;
   }
@@ -499,7 +499,7 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   std::string geminfo_data;
   meminfo->gem_objects = -1;
   meminfo->gem_size = -1;
-  if (file_util::ReadFileToString(geminfo_file, &geminfo_data)) {
+  if (ReadFileToString(geminfo_file, &geminfo_data)) {
     int gem_objects = -1;
     long long gem_size = -1;
     int num_res = sscanf(geminfo_data.c_str(),
@@ -515,7 +515,7 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   // Incorporate Mali graphics memory if present.
   FilePath mali_memory_file("/sys/devices/platform/mali.0/memory");
   std::string mali_memory_data;
-  if (file_util::ReadFileToString(mali_memory_file, &mali_memory_data)) {
+  if (ReadFileToString(mali_memory_file, &mali_memory_data)) {
     long long mali_size = -1;
     int num_res = sscanf(mali_memory_data.c_str(), "%lld bytes", &mali_size);
     if (num_res == 1)

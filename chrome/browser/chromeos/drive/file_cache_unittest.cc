@@ -918,11 +918,11 @@ TEST_F(FileCacheTest, RenameCacheFilesToNewFormat) {
   // Rename and verify the result.
   RenameCacheFilesToNewFormat(cache_.get());
   std::string contents;
-  EXPECT_TRUE(file_util::ReadFileToString(file_directory.AppendASCII("id_koo"),
+  EXPECT_TRUE(base::ReadFileToString(file_directory.AppendASCII("id_koo"),
                                           &contents));
   EXPECT_EQ("koo", contents);
   contents.clear();
-  EXPECT_TRUE(file_util::ReadFileToString(file_directory.AppendASCII("id_kyu"),
+  EXPECT_TRUE(base::ReadFileToString(file_directory.AppendASCII("id_kyu"),
                                           &contents));
   EXPECT_EQ("kyu", contents);
 
@@ -931,11 +931,11 @@ TEST_F(FileCacheTest, RenameCacheFilesToNewFormat) {
 
   // Files with new style names are not affected.
   contents.clear();
-  EXPECT_TRUE(file_util::ReadFileToString(file_directory.AppendASCII("id_koo"),
+  EXPECT_TRUE(base::ReadFileToString(file_directory.AppendASCII("id_koo"),
                                           &contents));
   EXPECT_EQ("koo", contents);
   contents.clear();
-  EXPECT_TRUE(file_util::ReadFileToString(file_directory.AppendASCII("id_kyu"),
+  EXPECT_TRUE(base::ReadFileToString(file_directory.AppendASCII("id_kyu"),
                                           &contents));
   EXPECT_EQ("kyu", contents);
 }

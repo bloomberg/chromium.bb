@@ -181,8 +181,8 @@ class KioskTest : public InProcessBrowserTest,
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-    CHECK(file_util::ReadFileToString(test_data_dir.Append(kServiceLogin),
-                                      &service_login_response_));
+    CHECK(base::ReadFileToString(test_data_dir.Append(kServiceLogin),
+                                 &service_login_response_));
 
     host_resolver()->AddRule(kWebstoreDomain, "127.0.0.1");
   }

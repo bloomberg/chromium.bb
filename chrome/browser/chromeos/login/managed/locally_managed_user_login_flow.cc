@@ -30,7 +30,7 @@ std::string LoadSyncToken() {
   std::string token;
   base::FilePath token_file =
       file_util::GetHomeDir().Append(kManagedUserTokenFilename);
-  if (!file_util::ReadFileToString(token_file, &token)) {
+  if (!base::ReadFileToString(token_file, &token)) {
     return std::string();
   }
   return token;

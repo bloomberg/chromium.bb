@@ -391,7 +391,7 @@ TEST_F(ExpireHistoryTest, DeleteFaviconsIfPossible) {
 bool ExpireHistoryTest::IsStringInFile(const base::FilePath& filename,
                                        const char* str) {
   std::string contents;
-  EXPECT_TRUE(file_util::ReadFileToString(filename, &contents));
+  EXPECT_TRUE(base::ReadFileToString(filename, &contents));
   return contents.find(str) != std::string::npos;
 }
 

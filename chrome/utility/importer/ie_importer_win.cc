@@ -322,7 +322,7 @@ GURL ReadFaviconURLFromInternetShortcut(IUniformResourceLocator* url_locator) {
 // IE7 and above store the data.
 bool ReadFaviconDataFromInternetShortcut(const string16& file,
                                          std::string* data) {
-  return file_util::ReadFileToString(
+  return base::ReadFileToString(
       base::FilePath(file + kFaviconStreamName), data);
 }
 
@@ -343,8 +343,7 @@ bool ReadFaviconDataFromCache(const GURL& favicon_url, std::string* data) {
                               NULL, NULL, 0)) {
     return false;
   }
-  return file_util::ReadFileToString(base::FilePath(cache->lpszLocalFileName),
-                                     data);
+  return base::ReadFileToString(base::FilePath(cache->lpszLocalFileName), data);
 }
 
 // Reads the binary image data of favicon of an internet shortcut file |file|.

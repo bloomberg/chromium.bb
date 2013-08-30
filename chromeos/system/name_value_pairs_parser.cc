@@ -123,7 +123,7 @@ bool NameValuePairsParser::GetNameValuePairsFromFile(
     const std::string& eq,
     const std::string& delim) {
   std::string contents;
-  if (file_util::ReadFileToString(file_path, &contents)) {
+  if (base::ReadFileToString(file_path, &contents)) {
     return ParseNameValuePairs(contents, eq, delim);
   } else {
     LOG(WARNING) << "Unable to read statistics file: " << file_path.value();

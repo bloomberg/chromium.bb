@@ -92,7 +92,7 @@ void PageCycler::ReadURLsOnBackgroundThread() {
   std::vector<std::string> url_strings;
 
   CHECK(base::PathExists(urls_file_)) << urls_file_.value();
-  file_util::ReadFileToString(urls_file_, &file_contents);
+  base::ReadFileToString(urls_file_, &file_contents);
   base::SplitStringAlongWhitespace(file_contents, &url_strings);
 
   if (!url_strings.size()) {

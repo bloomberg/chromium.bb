@@ -169,8 +169,7 @@ bool RemoteTestServer::Init(const base::FilePath& document_root) {
 
   // Parse file to extract the ports information.
   std::string port_info;
-  if (!file_util::ReadFileToString(GetTestServerPortInfoFile(),
-                                   &port_info) ||
+  if (!base::ReadFileToString(GetTestServerPortInfoFile(), &port_info) ||
       port_info.empty()) {
     return false;
   }

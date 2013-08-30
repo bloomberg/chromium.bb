@@ -235,7 +235,7 @@ class DataProxyScriptBrowserTest : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     std::string contents;
     // Read in kPACScript contents.
-    ASSERT_TRUE(file_util::ReadFileToString(ui_test_utils::GetTestFilePath(
+    ASSERT_TRUE(base::ReadFileToString(ui_test_utils::GetTestFilePath(
         base::FilePath(base::FilePath::kCurrentDirectory),
         base::FilePath(kPACScript)),
         &contents));

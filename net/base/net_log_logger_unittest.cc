@@ -35,7 +35,7 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONForNoEvents) {
   }
 
   std::string input;
-  ASSERT_TRUE(file_util::ReadFileToString(log_path_, &input));
+  ASSERT_TRUE(base::ReadFileToString(log_path_, &input));
 
   base::JSONReader reader;
   scoped_ptr<base::Value> root(reader.ReadToValue(input));
@@ -67,7 +67,7 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithOneEvent) {
   }
 
   std::string input;
-  ASSERT_TRUE(file_util::ReadFileToString(log_path_, &input));
+  ASSERT_TRUE(base::ReadFileToString(log_path_, &input));
 
   base::JSONReader reader;
   scoped_ptr<base::Value> root(reader.ReadToValue(input));
@@ -102,7 +102,7 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithMultipleEvents) {
   }
 
   std::string input;
-  ASSERT_TRUE(file_util::ReadFileToString(log_path_, &input));
+  ASSERT_TRUE(base::ReadFileToString(log_path_, &input));
 
   base::JSONReader reader;
   scoped_ptr<base::Value> root(reader.ReadToValue(input));

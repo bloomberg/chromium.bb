@@ -172,7 +172,7 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
     EXPECT_TRUE(r);
     file_path = file_path.AppendASCII("focus");
     file_path = file_path.AppendASCII(kTypicalPageName);
-    r = file_util::ReadFileToString(file_path, &html_contents_);
+    r = base::ReadFileToString(file_path, &html_contents_);
     EXPECT_TRUE(r);
     interstitial_page_ = InterstitialPage::Create(
         tab, new_navigation, url , this);

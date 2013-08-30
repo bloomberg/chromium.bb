@@ -180,7 +180,7 @@ void ConfigFileWatcherImpl::ReloadConfig() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   std::string config;
-  if (!file_util::ReadFileToString(config_path_, &config)) {
+  if (!base::ReadFileToString(config_path_, &config)) {
 #if defined(OS_WIN)
     // EACCESS may indicate a locking or sharing violation. Retry a few times
     // before reporting an error.

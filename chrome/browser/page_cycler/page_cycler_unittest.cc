@@ -257,10 +257,8 @@ TEST_F(PageCyclerTest, FailProvisionalLoads) {
 
   std::string errors_output;
   std::string errors_expected;
-  ASSERT_TRUE(file_util::ReadFileToString(errors_file(),
-                                          &errors_output));
-  ASSERT_TRUE(file_util::ReadFileToString(errors_expected_file,
-                                          &errors_expected));
+  ASSERT_TRUE(base::ReadFileToString(errors_file(), &errors_output));
+  ASSERT_TRUE(base::ReadFileToString(errors_expected_file, &errors_expected));
   ASSERT_EQ(errors_output, errors_expected);
 }
 
@@ -320,10 +318,8 @@ TEST_F(PageCyclerTest, KillBrowserAndAbort) {
 
   std::string errors_output;
   std::string errors_expected;
-  ASSERT_TRUE(file_util::ReadFileToString(errors_file(),
-                                          &errors_output));
-  ASSERT_TRUE(file_util::ReadFileToString(errors_expected_file,
-                                          &errors_expected));
+  ASSERT_TRUE(base::ReadFileToString(errors_file(), &errors_output));
+  ASSERT_TRUE(base::ReadFileToString(errors_expected_file, &errors_expected));
   ASSERT_EQ(errors_output, errors_expected);
 }
 

@@ -77,8 +77,8 @@ class BASE_EXPORT JSONFileValueSerializer : public base::ValueSerializer {
   base::FilePath json_file_path_;
   bool allow_trailing_comma_;
 
-  // A wrapper for file_util::ReadFileToString which returns a non-zero
-  // JsonFileError if there were file errors.
+  // A wrapper for ReadFileToString which returns a non-zero JsonFileError if
+  // there were file errors.
   int ReadFileToString(std::string* json_string);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(JSONFileValueSerializer);

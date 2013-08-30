@@ -69,7 +69,7 @@ class GtalkExtensionTest : public ExtensionBrowserTest {
 
   std::string ReadCurrentVersion() {
     std::string response;
-    EXPECT_TRUE(file_util::ReadFileToString(
+    EXPECT_TRUE(base::ReadFileToString(
       test_data_dir_.AppendASCII("gtalk").AppendASCII("current_version"),
       &response));
     return response;

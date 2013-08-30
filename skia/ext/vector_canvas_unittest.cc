@@ -86,7 +86,7 @@ class Image {
   // Creates the image from the given filename on disk.
   explicit Image(const base::FilePath& filename) : ignore_alpha_(true) {
     std::string compressed;
-    file_util::ReadFileToString(filename, &compressed);
+    base::ReadFileToString(filename, &compressed);
     EXPECT_TRUE(compressed.size());
 
     SkBitmap bitmap;
@@ -335,8 +335,7 @@ void LoadPngFileToSkBitmap(const base::FilePath& filename,
                            SkBitmap* bitmap,
                            bool is_opaque) {
   std::string compressed;
-  file_util::ReadFileToString(base::MakeAbsoluteFilePath(filename),
-                              &compressed);
+  base::ReadFileToString(base::MakeAbsoluteFilePath(filename), &compressed);
   ASSERT_TRUE(compressed.size());
 
   ASSERT_TRUE(gfx::PNGCodec::Decode(

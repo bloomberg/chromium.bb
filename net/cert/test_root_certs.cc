@@ -22,7 +22,7 @@ base::LazyInstance<TestRootCerts>::Leaky
 
 CertificateList LoadCertificates(const base::FilePath& filename) {
   std::string raw_cert;
-  if (!file_util::ReadFileToString(filename, &raw_cert)) {
+  if (!base::ReadFileToString(filename, &raw_cert)) {
     LOG(ERROR) << "Can't load certificate " << filename.value();
     return CertificateList();
   }

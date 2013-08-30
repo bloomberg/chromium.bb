@@ -23,7 +23,7 @@ class WebRtcLogUploaderTest : public testing::Test {
 
   bool VerifyNumberOfLinesAndContentsOfLastLine(int expected_lines) {
     std::string contents;
-    int read = file_util::ReadFileToString(test_list_path_, &contents);
+    int read = base::ReadFileToString(test_list_path_, &contents);
     EXPECT_GT(read, 0);
     if (read <= 0)
       return false;

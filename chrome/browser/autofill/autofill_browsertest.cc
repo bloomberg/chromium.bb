@@ -199,7 +199,7 @@ class AutofillTest : public InProcessBrowserTest {
     base::FilePath data_file =
         ui_test_utils::GetTestFilePath(base::FilePath().AppendASCII("autofill"),
                                        base::FilePath().AppendASCII(filename));
-    CHECK(file_util::ReadFileToString(data_file, &data));
+    CHECK(base::ReadFileToString(data_file, &data));
     std::vector<std::string> lines;
     base::SplitString(data, '\n', &lines);
     int parsed_profiles = 0;

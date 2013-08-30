@@ -53,7 +53,7 @@ bool ReadTestCase(const char* filename,
   base::FilePath filepath = base::FilePath::FromUTF8Unsafe(filename);
 
   std::string json;
-  if (!file_util::ReadFileToString(filepath, &json)) {
+  if (!base::ReadFileToString(filepath, &json)) {
     LOG(ERROR) << filename << ": couldn't read file.";
     return false;
   }

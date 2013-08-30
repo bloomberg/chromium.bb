@@ -33,7 +33,7 @@ std::string ReadTestData(const std::string& filename) {
     return "";
   }
   std::string result;
-  file_util::ReadFileToString(path, &result);
+  base::ReadFileToString(path, &result);
   return result;
 }
 

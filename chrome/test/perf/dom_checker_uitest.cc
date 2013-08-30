@@ -113,7 +113,7 @@ class DomCheckerTest : public UITest {
                            std::string* results) {
     base::FilePath results_path = GetDomCheckerDir();
     results_path = results_path.AppendASCII(failures_file);
-    return file_util::ReadFileToString(results_path, results);
+    return base::ReadFileToString(results_path, results);
   }
 
   void ParseExpectedFailures(const std::string& input, ResultsSet* output) {

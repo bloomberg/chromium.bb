@@ -1207,7 +1207,7 @@ CancelCallback FakeDriveService::ResumeUpload(
   }
 
   std::string content_data;
-  if (!file_util::ReadFileToString(local_file_path, &content_data)) {
+  if (!base::ReadFileToString(local_file_path, &content_data)) {
     session->uploaded_size = end_position;
     completion_callback.Run(GDATA_FILE_ERROR, scoped_ptr<ResourceEntry>());
     return CancelCallback();

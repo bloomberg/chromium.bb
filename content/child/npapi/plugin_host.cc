@@ -474,7 +474,7 @@ static NPError PostURLNotify(NPP id,
         post_file_info.is_directory)
       return NPERR_FILE_NOT_FOUND;
 
-    if (!file_util::ReadFileToString(file_path, &post_file_contents))
+    if (!base::ReadFileToString(file_path, &post_file_contents))
       return NPERR_FILE_NOT_FOUND;
 
     buf = post_file_contents.c_str();

@@ -114,7 +114,7 @@ TEST_F(TruncateOperationTest, Extend) {
 
   // The local file should be truncated.
   std::string content;
-  ASSERT_TRUE(file_util::ReadFileToString(local_path, &content));
+  ASSERT_TRUE(base::ReadFileToString(local_path, &content));
 
   EXPECT_EQ(file_size + 10, static_cast<int64>(content.size()));
   // All trailing 10 bytes should be '\0'.

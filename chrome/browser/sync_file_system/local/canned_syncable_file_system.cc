@@ -107,7 +107,7 @@ void OnCreateSnapshotFileAndVerifyData(
   }
   EXPECT_EQ(expected_data.size(), static_cast<size_t>(file_info.size));
   std::string data;
-  const bool read_status = file_util::ReadFileToString(platform_path, &data);
+  const bool read_status = base::ReadFileToString(platform_path, &data);
   EXPECT_TRUE(read_status);
   EXPECT_EQ(expected_data, data);
   callback.Run(result);

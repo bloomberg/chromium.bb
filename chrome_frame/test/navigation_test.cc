@@ -871,7 +871,7 @@ TEST_F(FullTabDownloadTest, CF_DownloadFileFromPost) {
   LaunchIENavigateAndLoop(src_url, kChromeFrameVeryLongNavigationTimeout);
 
   std::string data;
-  EXPECT_TRUE(file_util::ReadFileToString(temp_file_path, &data));
+  EXPECT_TRUE(base::ReadFileToString(temp_file_path, &data));
   EXPECT_EQ("hello", data);
   file_util::DieFileDie(temp_file_path, false);
 }

@@ -71,7 +71,7 @@ void UserImageLoader::LoadImage(
   DCHECK(task_runner->RunsTasksOnCurrentThread());
 
   std::string image_data;
-  file_util::ReadFileToString(base::FilePath(filepath), &image_data);
+  base::ReadFileToString(base::FilePath(filepath), &image_data);
 
   scoped_refptr<ImageDecoder> image_decoder =
       new ImageDecoder(this, image_data, image_codec_);

@@ -1844,7 +1844,7 @@ Error* Session::GetScreenShot(std::string* png) {
       &error));
   if (error)
     return error;
-  if (!file_util::ReadFileToString(path, png))
+  if (!base::ReadFileToString(path, png))
     return new Error(kUnknownError, "Could not read screenshot file");
   return NULL;
 }

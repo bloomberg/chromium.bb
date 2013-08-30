@@ -220,8 +220,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionAsComponentWithManifest(
       profile())->extension_service();
 
   std::string manifest;
-  if (!file_util::ReadFileToString(path.Append(manifest_relative_path),
-                                   &manifest)) {
+  if (!base::ReadFileToString(path.Append(manifest_relative_path), &manifest)) {
     return NULL;
   }
 

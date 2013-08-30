@@ -2367,7 +2367,7 @@ TEST_F(ObfuscatedFileUtilTest, MigrationBackFromIsolated) {
   // Check we see the same contents in the new origin directory.
   std::string origin_db_data;
   EXPECT_TRUE(base::PathExists(origin_directory.AppendASCII("dummy")));
-  EXPECT_TRUE(file_util::ReadFileToString(
+  EXPECT_TRUE(base::ReadFileToString(
       origin_directory.AppendASCII("dummy"), &origin_db_data));
   EXPECT_EQ(kFakeDirectoryData, origin_db_data);
 }

@@ -99,7 +99,7 @@ bool GetData(const base::FilePath& path, std::string* data) {
     return false;
 
   return !base::PathExists(path) ||
-         file_util::ReadFileToString(path, data);
+         base::ReadFileToString(path, data);
 }
 
 class WindowStateManager;
@@ -386,7 +386,7 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::
     path = fallback_path;
 
   if (base::PathExists(path) &&
-      file_util::ReadFileToString(path, &data)) {
+      base::ReadFileToString(path, &data)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&WallpaperPrivateSetWallpaperIfExistsFunction::StartDecode,
                    this, data));

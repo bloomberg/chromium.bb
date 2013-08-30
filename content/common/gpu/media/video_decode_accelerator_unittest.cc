@@ -191,7 +191,7 @@ void ParseAndReadTestVideoData(base::FilePath::StringType data,
 
     // Read in the video data.
     base::FilePath filepath(video_file->file_name);
-    CHECK(file_util::ReadFileToString(filepath, &video_file->data_str))
+    CHECK(base::ReadFileToString(filepath, &video_file->data_str))
         << "test_video_file: " << filepath.MaybeAsASCII();
 
     test_video_files->push_back(video_file);
@@ -204,7 +204,7 @@ void ReadGoldenThumbnailMD5s(const TestVideoFile* video_file,
   base::FilePath filepath(video_file->file_name);
   filepath = filepath.AddExtension(FILE_PATH_LITERAL(".md5"));
   std::string all_md5s;
-  file_util::ReadFileToString(filepath, &all_md5s);
+  base::ReadFileToString(filepath, &all_md5s);
   base::SplitString(all_md5s, '\n', md5_strings);
   // Check these are legitimate MD5s.
   for (std::vector<std::string>::iterator md5_string = md5_strings->begin();

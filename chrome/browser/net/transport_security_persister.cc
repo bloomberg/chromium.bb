@@ -94,7 +94,7 @@ class TransportSecurityPersister::Loader {
 
   void Load() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    state_valid_ = file_util::ReadFileToString(path_, &state_);
+    state_valid_ = base::ReadFileToString(path_, &state_);
   }
 
   void CompleteLoad() {

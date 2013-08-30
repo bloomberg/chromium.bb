@@ -272,7 +272,7 @@ CancelableTaskTracker::TaskId FileAccessProvider::StartWrite(
 void FileAccessProvider::DoRead(const base::FilePath& path,
                                 int* saved_errno,
                                 std::string* data) {
-  bool success = file_util::ReadFileToString(path, data);
+  bool success = base::ReadFileToString(path, data);
   *saved_errno = success ? 0 : errno;
 }
 

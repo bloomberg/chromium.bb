@@ -737,7 +737,7 @@ gfx::Image Create1xFaviconFromPNGFile(const std::string& path) {
 
   full_path = full_path.AppendASCII("sync").AppendASCII(path);
   std::string contents;
-  file_util::ReadFileToString(full_path, &contents);
+  base::ReadFileToString(full_path, &contents);
   return gfx::Image::CreateFrom1xPNGBytes(
       reinterpret_cast<const unsigned char*>(contents.data()), contents.size());
 }

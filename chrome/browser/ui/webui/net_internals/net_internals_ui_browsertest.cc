@@ -359,7 +359,7 @@ void NetInternalsTest::MessageHandler::GetNetLogLoggerLog(
   net_log_logger.reset();
 
   std::string log_contents;
-  ASSERT_TRUE(file_util::ReadFileToString(temp_file, &log_contents));
+  ASSERT_TRUE(base::ReadFileToString(temp_file, &log_contents));
   ASSERT_GT(log_contents.length(), 0u);
 
   scoped_ptr<Value> log_contents_value(new base::StringValue(log_contents));

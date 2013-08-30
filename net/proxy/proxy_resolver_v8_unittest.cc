@@ -117,7 +117,7 @@ class ProxyResolverV8WithMockBindings : public ProxyResolverV8 {
 
     // Try to read the file from disk.
     std::string file_contents;
-    bool ok = file_util::ReadFileToString(path, &file_contents);
+    bool ok = base::ReadFileToString(path, &file_contents);
 
     // If we can't load the file from disk, something is misconfigured.
     if (!ok) {

@@ -197,7 +197,7 @@ class PolicyTestCases {
         base::FilePath(FILE_PATH_LITERAL("policy")),
         base::FilePath(FILE_PATH_LITERAL("policy_test_cases.json")));
     std::string json;
-    if (!file_util::ReadFileToString(path, &json)) {
+    if (!base::ReadFileToString(path, &json)) {
       ADD_FAILURE();
       return;
     }

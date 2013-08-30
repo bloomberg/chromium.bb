@@ -26,7 +26,7 @@ TEST(UnzipSoleFile, Entry) {
   Status status = UnzipSoleFile(temp_dir.path(), data, &file);
   ASSERT_EQ(kOk, status.code()) << status.message();
   std::string contents;
-  ASSERT_TRUE(file_util::ReadFileToString(file, &contents));
+  ASSERT_TRUE(base::ReadFileToString(file, &contents));
   ASSERT_STREQ("COW\n", contents.c_str());
 }
 
@@ -45,6 +45,6 @@ TEST(UnzipSoleFile, Archive) {
   Status status = UnzipSoleFile(temp_dir.path(), data, &file);
   ASSERT_EQ(kOk, status.code()) << status.message();
   std::string contents;
-  ASSERT_TRUE(file_util::ReadFileToString(file, &contents));
+  ASSERT_TRUE(base::ReadFileToString(file, &contents));
   ASSERT_STREQ("COW\n", contents.c_str());
 }

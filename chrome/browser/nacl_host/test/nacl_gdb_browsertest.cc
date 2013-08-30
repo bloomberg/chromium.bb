@@ -55,12 +55,12 @@ class NaClGdbTest : public PPAPINaClNewlibTest {
     RunTestViaHTTP(test_name);
     env->UnSetVar("MOCK_NACL_GDB");
 
-    EXPECT_TRUE(file_util::ReadFileToString(mock_nacl_gdb_file, &content));
+    EXPECT_TRUE(base::ReadFileToString(mock_nacl_gdb_file, &content));
     EXPECT_STREQ("PASS", content.c_str());
     EXPECT_TRUE(base::DeleteFile(mock_nacl_gdb_file, false));
 
     content.clear();
-    EXPECT_TRUE(file_util::ReadFileToString(script_, &content));
+    EXPECT_TRUE(base::ReadFileToString(script_, &content));
     EXPECT_STREQ("PASS", content.c_str());
     EXPECT_TRUE(base::DeleteFile(script_, false));
   }

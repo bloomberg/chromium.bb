@@ -35,7 +35,7 @@ void ParseLpOptions(const base::FilePath& filepath,
                     const std::string& printer_name,
                     int* num_options, cups_option_t** options) {
   std::string content;
-  if (!file_util::ReadFileToString(filepath, &content))
+  if (!base::ReadFileToString(filepath, &content))
     return;
 
   const char kDest[] = "dest";

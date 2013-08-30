@@ -211,7 +211,7 @@ std::vector<base::FilePath> FindPrivateKeyFiles(
       continue;
 
     std::string key_contents;
-    if (!file_util::ReadFileToString(current, &key_contents)) {
+    if (!base::ReadFileToString(current, &key_contents)) {
       // If we can't read the file, assume it's not a private key.
       continue;
     }

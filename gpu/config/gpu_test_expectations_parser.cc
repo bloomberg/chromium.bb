@@ -191,7 +191,7 @@ bool GPUTestExpectationsParser::LoadTestExpectations(
   error_messages_.clear();
 
   std::string data;
-  if (!file_util::ReadFileToString(path, &data)) {
+  if (!base::ReadFileToString(path, &data)) {
     error_messages_.push_back(kErrorMessage[kErrorFileIO]);
     return false;
   }

@@ -24,7 +24,7 @@ namespace debug {
 
 bool ReadProcMaps(std::string* proc_maps) {
   FilePath proc_maps_path("/proc/self/maps");
-  return file_util::ReadFileToString(proc_maps_path, proc_maps);
+  return ReadFileToString(proc_maps_path, proc_maps);
 }
 
 bool ParseProcMaps(const std::string& input,

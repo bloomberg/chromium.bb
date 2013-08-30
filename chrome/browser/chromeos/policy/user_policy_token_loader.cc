@@ -61,7 +61,7 @@ void UserPolicyTokenLoader::LoadOnFileThread() {
   if (base::PathExists(cache_file_)) {
     std::string data;
     em::DeviceCredentials device_credentials;
-    if (file_util::ReadFileToString(cache_file_, &data) &&
+    if (base::ReadFileToString(cache_file_, &data) &&
         device_credentials.ParseFromArray(data.c_str(), data.size())) {
       device_token = device_credentials.device_token();
       device_id = device_credentials.device_id();

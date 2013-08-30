@@ -58,7 +58,7 @@ std::string CreateHttpHeaders(CFInvocation invocation,
 
 std::string GetMockHttpHeaders(const base::FilePath& mock_http_headers_path) {
   std::string headers;
-  file_util::ReadFileToString(mock_http_headers_path, &headers);
+  base::ReadFileToString(mock_http_headers_path, &headers);
   return headers;
 }
 
@@ -417,7 +417,7 @@ void MockWebServer::SendResponseHelper(
 
     EXPECT_FALSE(headers.empty());
 
-    EXPECT_TRUE(file_util::ReadFileToString(file_path, &body))
+    EXPECT_TRUE(base::ReadFileToString(file_path, &body))
         << "Could not read file (" << WideToUTF8(file_path.value()) << ")";
     if (invocation.type() == CFInvocation::META_TAG &&
         StartsWithASCII(content_type, "text/html", false)) {

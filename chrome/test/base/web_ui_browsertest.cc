@@ -457,15 +457,15 @@ void WebUIBrowserTest::BuildJavascriptLibraries(string16* content) {
        ++user_libraries_iterator) {
     std::string library_content;
     if (user_libraries_iterator->IsAbsolute()) {
-      ASSERT_TRUE(file_util::ReadFileToString(*user_libraries_iterator,
+      ASSERT_TRUE(base::ReadFileToString(*user_libraries_iterator,
                                               &library_content))
           << user_libraries_iterator->value();
     } else {
-      bool ok = file_util::ReadFileToString(
+      bool ok = base::ReadFileToString(
           gen_test_data_directory_.Append(*user_libraries_iterator),
           &library_content);
       if (!ok) {
-        ok = file_util::ReadFileToString(
+        ok = base::ReadFileToString(
             test_data_directory_.Append(*user_libraries_iterator),
             &library_content);
       }

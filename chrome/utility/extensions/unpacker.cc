@@ -46,7 +46,7 @@ SkBitmap DecodeImage(const base::FilePath& path) {
   // Read the file from disk.
   std::string file_contents;
   if (!base::PathExists(path) ||
-      !file_util::ReadFileToString(path, &file_contents)) {
+      !base::ReadFileToString(path, &file_contents)) {
     return SkBitmap();
   }
 

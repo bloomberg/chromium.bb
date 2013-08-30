@@ -203,7 +203,7 @@ class JSONTest : public DiagnosticsTest {
     }
     // Being small enough, we can process it in-memory.
     std::string json_data;
-    if (!file_util::ReadFileToString(path_, &json_data)) {
+    if (!base::ReadFileToString(path_, &json_data)) {
       RecordFailure(DIAG_RECON_UNABLE_TO_OPEN_FILE,
                     "Could not open file. Possibly locked by another process");
       return true;

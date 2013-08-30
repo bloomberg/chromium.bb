@@ -84,7 +84,7 @@ TEST(LibjingleLogTest, DefaultConfiguration) {
   // Read file to string.
   base::FilePath file_path(log_file_name);
   std::string contents_of_file;
-  file_util::ReadFileToString(file_path, &contents_of_file);
+  base::ReadFileToString(file_path, &contents_of_file);
 
   // Make sure string contains the expected values.
   EXPECT_FALSE(ContainsString(contents_of_file, AsString(talk_base::LS_ERROR)));
@@ -111,7 +111,7 @@ TEST(LibjingleLogTest, InfoConfiguration) {
   // Read file to string.
   base::FilePath file_path(log_file_name);
   std::string contents_of_file;
-  file_util::ReadFileToString(file_path, &contents_of_file);
+  base::ReadFileToString(file_path, &contents_of_file);
 
   // Make sure string contains the expected values.
   EXPECT_TRUE(ContainsString(contents_of_file, AsString(talk_base::LS_ERROR)));
@@ -145,7 +145,7 @@ TEST(LibjingleLogTest, LogEverythingConfiguration) {
   // Read file to string.
   base::FilePath file_path(log_file_name);
   std::string contents_of_file;
-  file_util::ReadFileToString(file_path, &contents_of_file);
+  base::ReadFileToString(file_path, &contents_of_file);
 
   // Make sure string contains the expected values.
   EXPECT_TRUE(ContainsString(contents_of_file, AsString(talk_base::LS_ERROR)));

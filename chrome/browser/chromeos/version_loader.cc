@@ -135,7 +135,7 @@ void VersionLoader::Backend::GetVersion(VersionFormat format,
 
   std::string contents;
   const base::FilePath file_path(kPathVersion);
-  if (file_util::ReadFileToString(file_path, &contents)) {
+  if (base::ReadFileToString(file_path, &contents)) {
     *version = ParseVersion(
         contents,
         (format == VERSION_FULL) ? kFullVersionPrefix : kVersionPrefix);
@@ -159,7 +159,7 @@ void VersionLoader::Backend::GetFirmware(std::string* firmware) {
 
   std::string contents;
   const base::FilePath file_path(kPathFirmware);
-  if (file_util::ReadFileToString(file_path, &contents)) {
+  if (base::ReadFileToString(file_path, &contents)) {
     *firmware = ParseFirmware(contents);
   }
 }

@@ -59,7 +59,7 @@ bool IsDefaultProfile(const DictionaryValue& root,
 base::FilePath GetFirefoxProfilePath() {
   base::FilePath ini_file = GetProfilesINI();
   std::string content;
-  file_util::ReadFileToString(ini_file, &content);
+  base::ReadFileToString(ini_file, &content);
   base::DictionaryValueINIParser ini_parser;
   ini_parser.Parse(content);
   return GetFirefoxProfilePathFromDictionary(ini_parser.root());
@@ -100,7 +100,7 @@ bool GetFirefoxVersionAndPathFromProfile(const base::FilePath& profile_path,
   base::FilePath compatibility_file =
       profile_path.AppendASCII("compatibility.ini");
   std::string content;
-  file_util::ReadFileToString(compatibility_file, &content);
+  base::ReadFileToString(compatibility_file, &content);
   ReplaceSubstringsAfterOffset(&content, 0, "\r\n", "\n");
   std::vector<std::string> lines;
   base::SplitString(content, '\n', &lines);
@@ -132,7 +132,7 @@ bool ReadPrefFile(const base::FilePath& path, std::string* content) {
   if (content == NULL)
     return false;
 
-  file_util::ReadFileToString(path, content);
+  base::ReadFileToString(path, content);
 
   if (content->empty()) {
     LOG(WARNING) << "Firefox preference file " << path.value() << " is empty.";
@@ -259,7 +259,7 @@ string16 GetFirefoxImporterName(const base::FilePath& app_path) {
   std::string branding_name;
   if (base::PathExists(app_ini_file)) {
     std::string content;
-    file_util::ReadFileToString(app_ini_file, &content);
+    base::ReadFileToString(app_ini_file, &content);
     std::vector<std::string> lines;
     base::SplitString(content, '\n', &lines);
     const std::string name_attr("Name=");

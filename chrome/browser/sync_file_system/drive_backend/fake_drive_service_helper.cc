@@ -257,7 +257,7 @@ GDataErrorCode FakeDriveServiceHelper::ReadFile(
   if (error != google_apis::HTTP_SUCCESS)
     return error;
 
-  return file_util::ReadFileToString(temp_file, file_content)
+  return base::ReadFileToString(temp_file, file_content)
       ? google_apis::HTTP_SUCCESS : google_apis::GDATA_FILE_ERROR;
 }
 

@@ -168,7 +168,7 @@ void DeviceIDFetcher::ComputeOnBlockingPool(const base::FilePath& profile_path,
   // should just return that.
   base::FilePath id_path = GetLegacyDeviceIDPath(profile_path);
   if (base::PathExists(id_path)) {
-    if (file_util::ReadFileToString(id_path, &id) && !id.empty()) {
+    if (base::ReadFileToString(id_path, &id) && !id.empty()) {
       RunCallbackOnIOThread(id);
       return;
     }

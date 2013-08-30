@@ -478,8 +478,7 @@ void AutomaticRebootManagerBasicTest::CreateAutomaticRebootManager(
 bool AutomaticRebootManagerBasicTest::ReadUpdateRebootNeededUptimeFromFile(
     base::TimeDelta* uptime) {
   std::string contents;
-  if (!file_util::ReadFileToString(update_reboot_needed_uptime_file_,
-                                   &contents)) {
+  if (!base::ReadFileToString(update_reboot_needed_uptime_file_, &contents)) {
     return false;
   }
   double seconds;

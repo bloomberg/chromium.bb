@@ -51,7 +51,7 @@ WebApplicationInfo::IconInfo GetIconInfo(const GURL& url, int size) {
   result.height = size;
 
   std::string icon_data;
-  if (!file_util::ReadFileToString(icon_file, &icon_data)) {
+  if (!base::ReadFileToString(icon_file, &icon_data)) {
     ADD_FAILURE() << "Could not read test icon.";
     return result;
   }

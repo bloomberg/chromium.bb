@@ -61,7 +61,7 @@ bool ShellMessageFilter::OnMessageReceived(const IPC::Message& message,
 void ShellMessageFilter::OnReadFileToString(const base::FilePath& local_file,
                                             std::string* contents) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  file_util::ReadFileToString(local_file, contents);
+  base::ReadFileToString(local_file, contents);
 }
 
 void ShellMessageFilter::OnRegisterIsolatedFileSystem(

@@ -93,7 +93,7 @@ void ImportBookmarksFile(
       std::vector<ImportedBookmarkEntry>* bookmarks,
       std::vector<ImportedFaviconUsage>* favicons) {
   std::string content;
-  file_util::ReadFileToString(file_path, &content);
+  base::ReadFileToString(file_path, &content);
   std::vector<std::string> lines;
   base::SplitString(content, '\n', &lines);
 

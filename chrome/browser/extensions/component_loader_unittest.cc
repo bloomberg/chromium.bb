@@ -88,7 +88,7 @@ class ComponentLoaderTest : public testing::Test {
                      .AppendASCII("1.0.0.0");
 
     // Read in the extension manifest.
-    ASSERT_TRUE(file_util::ReadFileToString(
+    ASSERT_TRUE(base::ReadFileToString(
         extension_path_.Append(kManifestFilename),
         &manifest_contents_));
 

@@ -809,7 +809,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageBrowserTest_NonMHTML) {
   base::FilePath filename = download_dir.AppendASCII("dataurl.txt");
   ASSERT_TRUE(base::PathExists(filename));
   std::string contents;
-  EXPECT_TRUE(file_util::ReadFileToString(filename, &contents));
+  EXPECT_TRUE(base::ReadFileToString(filename, &contents));
   EXPECT_EQ("foo", contents);
 }
 

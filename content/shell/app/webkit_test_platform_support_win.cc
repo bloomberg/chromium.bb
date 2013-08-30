@@ -35,7 +35,7 @@ bool SetupFonts() {
       base_path.Append(FILE_PATH_LITERAL("/AHEM____.TTF"));
 
   std::string font_buffer;
-  if (!file_util::ReadFileToString(font_path, &font_buffer)) {
+  if (!base::ReadFileToString(font_path, &font_buffer)) {
     std::cerr << "Failed to load font " << WideToUTF8(font_path.value())
               << "\n";
     return false;

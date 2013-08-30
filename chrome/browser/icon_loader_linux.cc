@@ -50,7 +50,7 @@ void IconLoader::ReadIcon() {
   if (filename.Extension() != ".svg" &&
       filename.Extension() != ".xpm") {
     string icon_data;
-    file_util::ReadFileToString(filename, &icon_data);
+    base::ReadFileToString(filename, &icon_data);
 
     SkBitmap bitmap;
     bool success = gfx::PNGCodec::Decode(

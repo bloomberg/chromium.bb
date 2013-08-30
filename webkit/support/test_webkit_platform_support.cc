@@ -314,7 +314,7 @@ WebKit::WebData TestWebKitPlatformSupport::readFromFile(
   base::FilePath file_path = base::FilePath::FromUTF16Unsafe(path);
 
   std::string buffer;
-  file_util::ReadFileToString(file_path, &buffer);
+  base::ReadFileToString(file_path, &buffer);
 
   return WebKit::WebData(buffer.data(), buffer.size());
 }

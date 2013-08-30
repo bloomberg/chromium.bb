@@ -137,7 +137,7 @@ TEST(ExtensionTest, MimeTypeSniffing) {
   path = path.AppendASCII("extensions").AppendASCII("good.crx");
 
   std::string data;
-  ASSERT_TRUE(file_util::ReadFileToString(path, &data));
+  ASSERT_TRUE(base::ReadFileToString(path, &data));
 
   std::string result;
   EXPECT_TRUE(net::SniffMimeType(data.c_str(),
@@ -150,7 +150,7 @@ TEST(ExtensionTest, MimeTypeSniffing) {
   data.clear();
   result.clear();
   path = path.DirName().AppendASCII("bad_magic.crx");
-  ASSERT_TRUE(file_util::ReadFileToString(path, &data));
+  ASSERT_TRUE(base::ReadFileToString(path, &data));
   EXPECT_TRUE(net::SniffMimeType(data.c_str(),
                                  data.size(),
                                  GURL("http://www.example.com/foo.crx"),

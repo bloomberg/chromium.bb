@@ -132,19 +132,18 @@ BASE_EXPORT bool ContentsEqual(const FilePath& filename1,
 BASE_EXPORT bool TextContentsEqual(const FilePath& filename1,
                                    const FilePath& filename2);
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
 // Read the file at |path| into |contents|, returning true on success.
 // This function fails if the |path| contains path traversal components ('..').
 // |contents| may be NULL, in which case this function is useful for its
 // side effect of priming the disk cache.
 // Useful for unit tests.
-BASE_EXPORT bool ReadFileToString(const base::FilePath& path,
-                                  std::string* contents);
+BASE_EXPORT bool ReadFileToString(const FilePath& path, std::string* contents);
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
 
 #if defined(OS_POSIX)
 // Read exactly |bytes| bytes from file descriptor |fd|, storing the result

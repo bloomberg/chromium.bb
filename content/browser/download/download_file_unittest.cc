@@ -164,8 +164,7 @@ class DownloadFileTest : public testing::Test {
 
     // Make sure the data has been properly written to disk.
     std::string disk_data;
-    EXPECT_TRUE(file_util::ReadFileToString(download_file_->FullPath(),
-                                            &disk_data));
+    EXPECT_TRUE(base::ReadFileToString(download_file_->FullPath(), &disk_data));
     EXPECT_EQ(expected_data_, disk_data);
 
     // Make sure the Browser and File threads outlive the DownloadFile
@@ -417,7 +416,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   ASSERT_EQ(static_cast<int>(sizeof(file_data) - 1),
             file_util::WriteFile(path_5, file_data, sizeof(file_data) - 1));
   ASSERT_TRUE(base::PathExists(path_5));
-  EXPECT_TRUE(file_util::ReadFileToString(path_5, &file_contents));
+  EXPECT_TRUE(base::ReadFileToString(path_5, &file_contents));
   EXPECT_EQ(std::string(file_data), file_contents);
 
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
@@ -425,7 +424,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   EXPECT_EQ(path_5, output_path);
 
   file_contents = "";
-  EXPECT_TRUE(file_util::ReadFileToString(path_5, &file_contents));
+  EXPECT_TRUE(base::ReadFileToString(path_5, &file_contents));
   EXPECT_NE(std::string(file_data), file_contents);
 
   DestroyDownloadFile(0);

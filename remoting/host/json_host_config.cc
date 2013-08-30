@@ -26,7 +26,7 @@ bool JsonHostConfig::Read() {
 
   // TODO(sergeyu): Implement better error handling here.
   std::string file_content;
-  if (!file_util::ReadFileToString(filename_, &file_content)) {
+  if (!base::ReadFileToString(filename_, &file_content)) {
     LOG(WARNING) << "Failed to read " << filename_.value();
     return false;
   }
