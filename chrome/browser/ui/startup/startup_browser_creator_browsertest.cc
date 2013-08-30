@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
@@ -438,8 +439,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, AddCustomFirstRunTab) {
 
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-            tab_strip->GetWebContentsAt(1)->GetURL());
+  EXPECT_TRUE(chrome::IsNTPURL(tab_strip->GetWebContentsAt(1)->GetURL(),
+                               browser()->profile()));
   EXPECT_EQ("title2.html",
             tab_strip->GetWebContentsAt(2)->GetURL().ExtractFileName());
   EXPECT_EQ(internals::GetWelcomePageURL(),
@@ -465,8 +466,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoNoWelcomePage) {
     EXPECT_EQ(signin::GetPromoURL(signin::SOURCE_START_PAGE, false),
               tab_strip->GetWebContentsAt(0)->GetURL());
   } else {
-    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-              tab_strip->GetWebContentsAt(0)->GetURL());
+    EXPECT_TRUE(chrome::IsNTPURL(tab_strip->GetWebContentsAt(0)->GetURL(),
+                                 browser()->profile()));
   }
 }
 
@@ -491,8 +492,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithWelcomePage) {
     EXPECT_EQ(signin::GetPromoURL(signin::SOURCE_START_PAGE, false),
               tab_strip->GetWebContentsAt(0)->GetURL());
   } else {
-    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-              tab_strip->GetWebContentsAt(0)->GetURL());
+    EXPECT_TRUE(chrome::IsNTPURL(tab_strip->GetWebContentsAt(0)->GetURL(),
+                                 browser()->profile()));
   }
   EXPECT_EQ(internals::GetWelcomePageURL(),
             tab_strip->GetWebContentsAt(1)->GetURL());
@@ -824,8 +825,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-            tab_strip->GetWebContentsAt(0)->GetURL());
+  EXPECT_TRUE(chrome::IsNTPURL(tab_strip->GetWebContentsAt(0)->GetURL(),
+                               browser()->profile()));
 
   // profile_urls opened the urls.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls, original_desktop_type));
@@ -926,7 +927,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
   content::WebContents* web_contents = tab_strip->GetWebContentsAt(0);
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
+  EXPECT_TRUE(chrome::IsNTPURL(web_contents->GetURL(), profile_home));
   EXPECT_EQ(1U,
             InfoBarService::FromWebContents(web_contents)->infobar_count());
 
@@ -938,7 +939,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
   web_contents = tab_strip->GetWebContentsAt(0);
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
+  EXPECT_TRUE(chrome::IsNTPURL(web_contents->GetURL(), profile_last));
   EXPECT_EQ(1U,
             InfoBarService::FromWebContents(web_contents)->infobar_count());
 
@@ -950,7 +951,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
   web_contents = tab_strip->GetWebContentsAt(0);
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
+  EXPECT_TRUE(chrome::IsNTPURL(web_contents->GetURL(), profile_urls));
   EXPECT_EQ(1U,
             InfoBarService::FromWebContents(web_contents)->infobar_count());
 }
@@ -1063,8 +1064,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, SyncPromoForbidden) {
   // Verify that the NTP and the welcome page are shown.
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(2, tab_strip->count());
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-            tab_strip->GetWebContentsAt(0)->GetURL());
+  EXPECT_TRUE(chrome::IsNTPURL(tab_strip->GetWebContentsAt(0)->GetURL(),
+                               browser()->profile()));
   EXPECT_EQ(internals::GetWelcomePageURL(),
             tab_strip->GetWebContentsAt(1)->GetURL());
 }
@@ -1251,8 +1252,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // not been replaced by the sync promo and no sync promo has been added.
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(2, tab_strip->count());
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-            tab_strip->GetWebContentsAt(0)->GetURL());
+  EXPECT_TRUE(chrome::IsNTPURL(tab_strip->GetWebContentsAt(0)->GetURL(),
+                               browser()->profile()));
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
 }

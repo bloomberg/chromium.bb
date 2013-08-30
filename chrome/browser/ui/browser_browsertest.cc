@@ -26,6 +26,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
@@ -1293,8 +1294,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   EXPECT_TRUE(new_model->IsTabPinned(1));
   EXPECT_FALSE(new_model->IsTabPinned(2));
 
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-            new_model->GetWebContentsAt(2)->GetURL());
+  EXPECT_TRUE(chrome::IsNTPURL(new_model->GetWebContentsAt(2)->GetURL(),
+                               browser()->profile()));
 
   EXPECT_TRUE(
       extensions::TabHelper::FromWebContents(
