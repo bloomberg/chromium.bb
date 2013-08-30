@@ -188,7 +188,8 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
         const content::MediaStreamDevice* device = NULL;
         // For open device request pick the desired device or fall back to the
         // first available of the given type.
-        if (request_.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE) {
+        if (audio_allowed &&
+            request_.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE) {
           device = MediaCaptureDevicesDispatcher::GetInstance()->
               GetRequestedAudioDevice(request_.requested_audio_device_id);
           // TODO(wjia): Confirm this is the intended behavior.
@@ -196,7 +197,8 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
             device = MediaCaptureDevicesDispatcher::GetInstance()->
                 GetFirstAvailableAudioDevice();
           }
-        } else if (request_.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE) {
+        } else if (video_allowed &&
+            request_.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE) {
           // Pepper API opens only one device at a time.
           device = MediaCaptureDevicesDispatcher::GetInstance()->
               GetRequestedVideoDevice(request_.requested_video_device_id);
@@ -209,41 +211,43 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
         if (device)
           devices.push_back(*device);
         break;
-      } case content::MEDIA_GENERATE_STREAM: {
-        bool needs_audio_device = audio_allowed;
-        bool needs_video_device = video_allowed;
+      }
+      case content::MEDIA_GENERATE_STREAM: {
+        bool get_default_audio_device = audio_allowed;
+        bool get_default_video_device = video_allowed;
 
         // Get the exact audio or video device if an id is specified.
-        if (!request_.requested_audio_device_id.empty()) {
+        if (audio_allowed && !request_.requested_audio_device_id.empty()) {
           const content::MediaStreamDevice* audio_device =
               MediaCaptureDevicesDispatcher::GetInstance()->
                   GetRequestedAudioDevice(request_.requested_audio_device_id);
           if (audio_device) {
             devices.push_back(*audio_device);
-            needs_audio_device = false;
+            get_default_audio_device = false;
           }
         }
-        if (!request_.requested_video_device_id.empty()) {
+        if (video_allowed && !request_.requested_video_device_id.empty()) {
           const content::MediaStreamDevice* video_device =
               MediaCaptureDevicesDispatcher::GetInstance()->
                   GetRequestedVideoDevice(request_.requested_video_device_id);
           if (video_device) {
             devices.push_back(*video_device);
-            needs_video_device = false;
+            get_default_video_device = false;
           }
         }
 
         // If either or both audio and video devices were requested but not
         // specified by id, get the default devices.
-        if (needs_audio_device || needs_video_device) {
+        if (get_default_audio_device || get_default_video_device) {
           MediaCaptureDevicesDispatcher::GetInstance()->
               GetDefaultDevicesForProfile(profile_,
-                                          needs_audio_device,
-                                          needs_video_device,
+                                          get_default_audio_device,
+                                          get_default_video_device,
                                           &devices);
         }
         break;
-      } case content::MEDIA_DEVICE_ACCESS:
+      }
+      case content::MEDIA_DEVICE_ACCESS: {
         // Get the default devices for the request.
         MediaCaptureDevicesDispatcher::GetInstance()->
             GetDefaultDevicesForProfile(profile_,
@@ -251,11 +255,13 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
                                         video_allowed,
                                         &devices);
         break;
-      case content::MEDIA_ENUMERATE_DEVICES:
+      }
+      case content::MEDIA_ENUMERATE_DEVICES: {
         // Do nothing.
         NOTREACHED();
         break;
-    }
+      }
+    }  // switch
 
     // TODO(raymes): We currently set the content permission for non-https
     // websites for Pepper requests as well. This is temporary and should be
