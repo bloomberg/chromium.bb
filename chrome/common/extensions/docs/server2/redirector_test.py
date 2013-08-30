@@ -104,6 +104,7 @@ class RedirectorTest(unittest.TestCase):
           Parse(file_system.ReadSingle(path)),
           # Access the cache's object store to see what files were hit during
           # the cron run. Returns strings parsed as JSON.
+          # TODO(jshumway): Make a non hack version of this check.
           self._redirector._cache._file_object_store.Get(
               path).Get()._cache_data)
 

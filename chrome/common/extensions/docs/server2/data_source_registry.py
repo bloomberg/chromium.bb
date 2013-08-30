@@ -3,17 +3,25 @@
 # found in the LICENSE file.
 
 from manifest_data_source import ManifestDataSource
+from sidenav_data_source import SidenavDataSource
 from strings_data_source import StringsDataSource
 
 _all_data_sources = {
   'manifest_source': ManifestDataSource,
+  'sidenavs': SidenavDataSource,
   'strings': StringsDataSource
 }
 
-def CreateDataSources(server_instance):
-  '''Yields tuples of a name and an instantiated DataSource. The name is the
-  string that templates use to access the DataSource. Each DataSource is
-  initialized with |server_instance|.
+def CreateDataSources(server_instance, request=None):
+  '''Create a dictionary of initialized DataSources. DataSources are
+  initialized with |server_instance| and |request|. If the DataSources are
+  going to be used for Cron, |request| should be omitted.
+
+  The key of each DataSource is the name the template system will use to access
+  the DataSource.
   '''
-  return dict(
-    (name, cls(server_instance)) for name, cls in _all_data_sources.iteritems())
+  data_sources = {}
+  for name, cls in _all_data_sources.iteritems():
+    data_sources[name] = cls(server_instance, request)
+
+  return data_sources

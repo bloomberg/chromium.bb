@@ -587,7 +587,8 @@ class APIDataSource(object):
 
     def SetTemplateDataSource(self, template_data_source_factory):
       # This TemplateDataSource is only being used for fetching template data.
-      self._template_data_source = template_data_source_factory.Create(None, '')
+      self._template_data_source = template_data_source_factory.Create(
+          None, {})
 
     def Create(self, request, disable_refs=False):
       '''Create an APIDataSource. |disable_refs| specifies whether $ref's in

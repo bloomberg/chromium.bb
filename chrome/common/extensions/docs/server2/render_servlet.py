@@ -7,6 +7,7 @@ import logging
 import mimetypes
 from urlparse import urlsplit
 
+from data_source_registry import CreateDataSources
 from file_system import FileNotFoundError
 from servlet import Servlet, Response
 import svn_constants
@@ -49,7 +50,8 @@ class RenderServlet(Servlet):
                                permanent=canonical_result.permanent)
 
     templates = server_instance.template_data_source_factory.Create(
-        self._request, path)
+        self._request,
+        CreateDataSources(server_instance, self._request))
 
     content = None
     content_type = None

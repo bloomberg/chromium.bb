@@ -8,15 +8,36 @@ import logging
 import os
 import sys
 
+
+def CaptureLogging(f):
+  '''Call the function |f|, capturing any logging output generated. |f| must
+  take no arguments. Returns a list of LogRecords that were emitted.
+  '''
+  output = []
+  class Capture(object):
+    def filter(self, record):
+      output.append(record)
+
+  cf = Capture()
+  logging.getLogger('').addFilter(cf)
+  f()
+  logging.getLogger('').removeFilter(cf)
+
+  return output
+
+
 def EnableLogging(name):
   '''Returns the output of the log with |name| to stdout.
   '''
+
   return _ReplaceLogging(name, lambda message, *args: print(message % args))
+
 
 def DisableLogging(name):
   '''Disables the log with |name| for the duration of the decorated function.
   '''
   return _ReplaceLogging(name, lambda _, *args: None)
+
 
 def _ReplaceLogging(name, replacement):
   def decorator(fn):
@@ -29,6 +50,7 @@ def _ReplaceLogging(name, replacement):
         setattr(logging, name, saved)
     return impl
   return decorator
+
 
 # TODO(kalman): Use this everywhere. A lot of tests are doing this.
 def ReadFile(name):

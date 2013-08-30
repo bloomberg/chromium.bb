@@ -12,7 +12,7 @@ import url_constants
 _EXTENSIONS_URL = '/chrome/extensions'
 
 class TemplateDataSource(object):
-  """Renders Handlebar templates, providing them with the context in which to
+  '''Renders Handlebar templates, providing them with the context in which to
   render.
 
   Also acts as a data source itself, providing partial Handlebar templates to
@@ -21,30 +21,27 @@ class TemplateDataSource(object):
   Each instance of TemplateDataSource is bound to a Request so that it can
   render templates with request-specific data (such as Accept-Language); use
   a Factory to cheaply construct these.
-  """
+  '''
 
   class Factory(object):
-    """A factory to create lightweight TemplateDataSource instances bound to
+    '''A factory to create lightweight TemplateDataSource instances bound to
     individual Requests.
-    """
+    '''
     def __init__(self,
                  api_data_source_factory,
                  api_list_data_source_factory,
                  intro_data_source_factory,
                  samples_data_source_factory,
-                 sidenav_data_source_factory,
                  compiled_fs_factory,
                  ref_resolver_factory,
                  permissions_data_source,
                  public_template_path,
                  private_template_path,
-                 base_path,
-                 data_sources):
+                 base_path):
       self._api_data_source_factory = api_data_source_factory
       self._api_list_data_source_factory = api_list_data_source_factory
       self._intro_data_source_factory = intro_data_source_factory
       self._samples_data_source_factory = samples_data_source_factory
-      self._sidenav_data_source_factory = sidenav_data_source_factory
       self._cache = compiled_fs_factory.Create(self._CreateTemplate,
                                                TemplateDataSource)
       self._ref_resolver = ref_resolver_factory.Create()
@@ -52,33 +49,34 @@ class TemplateDataSource(object):
       self._public_template_path = public_template_path
       self._private_template_path = private_template_path
       self._base_path = base_path
-      self._data_sources = data_sources
 
     def _CreateTemplate(self, template_name, text):
       return Handlebar(self._ref_resolver.ResolveAllLinks(text))
 
-    def Create(self, request, path):
-      """Returns a new TemplateDataSource bound to |request|.
-      """
+    def Create(self, request, data_sources):
+      '''Bind a new TemplateDataSource to a servlet.Request |request| and a
+      dictionary of instantiated DataSources*. Keys in |data_sources| are the
+      names that templates will use to access the corresponding DataSource.
+
+      * this is temporary until the data source registry transition is complete.
+      '''
       return TemplateDataSource(
           self._api_data_source_factory.Create(request),
           self._api_list_data_source_factory.Create(),
           self._intro_data_source_factory.Create(),
           self._samples_data_source_factory.Create(request),
-          self._sidenav_data_source_factory.Create(path),
           self._cache,
           self._permissions_data_source,
           self._public_template_path,
           self._private_template_path,
           self._base_path,
-          self._data_sources)
+          data_sources)
 
   def __init__(self,
                api_data_source,
                api_list_data_source,
                intro_data_source,
                samples_data_source,
-               sidenav_data_source,
                cache,
                permissions_data_source,
                public_template_path,
@@ -89,7 +87,6 @@ class TemplateDataSource(object):
     self._intro_data_source = intro_data_source
     self._samples_data_source = samples_data_source
     self._api_data_source = api_data_source
-    self._sidenav_data_source = sidenav_data_source
     self._cache = cache
     self._public_template_path = public_template_path
     self._private_template_path = private_template_path
@@ -98,10 +95,10 @@ class TemplateDataSource(object):
     self._data_sources = data_sources
 
   def Render(self, template_name):
-    """This method will render a template named |template_name|, fetching all
+    '''This method will render a template named |template_name|, fetching all
     the partial templates needed from |self._cache|. Partials are retrieved
     from the TemplateDataSource with the |get| method.
-    """
+    '''
     template = self.GetTemplate(self._public_template_path, template_name)
     if template is None:
       return None
@@ -110,7 +107,6 @@ class TemplateDataSource(object):
       'api_list': self._api_list_data_source,
       'apis': self._api_data_source,
       'intros': self._intro_data_source,
-      'sidenavs': self._sidenav_data_source,
       'partials': self,
       'permissions': self._permissions_data_source,
       'samples': self._samples_data_source,

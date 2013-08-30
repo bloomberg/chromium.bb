@@ -58,7 +58,8 @@ class PermissionsDataSource(object):
     '''Initialize a template data source to be used to render partial templates
     into descriptions for permissions. Must be called before .get
     '''
-    self._template_data_source = template_data_source_factory.Create(None, '')
+    self._template_data_source = template_data_source_factory.Create(
+        None, {})
 
   def _CreatePermissionsDataSource(self, _, content):
     '''Combine the contents of |_permissions_json_path| and

@@ -99,7 +99,7 @@ def _AddLevelAnnotations(features):
 class ManifestDataSource(DataSource):
   '''Provides access to the properties in manifest features.
   '''
-  def __init__(self, server_instance):
+  def __init__(self, server_instance, _):
     self._manifest_path = server_instance.manifest_json_path
     self._features_path = server_instance.manifest_features_path
     self._file_system = server_instance.host_file_system

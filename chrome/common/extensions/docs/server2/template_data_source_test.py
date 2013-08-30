@@ -42,7 +42,6 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._fake_api_list_data_source_factory = _FakeFactory()
     self._fake_intro_data_source_factory = _FakeFactory()
     self._fake_samples_data_source_factory = _FakeFactory()
-    self._fake_sidenav_data_source_factory = _FakeFactory()
     self._permissions_data_source = PermissionsDataSource(
       _FakeFactory(), LocalFileSystem.Create(), '', '', '')
 
@@ -73,20 +72,18 @@ class TemplateDataSourceTest(unittest.TestCase):
     @DisableLogging('error')  # "was never set" error
     def create_from_factory(factory):
       path = 'extensions/foo'
-      return factory.Create(Request.ForTest(path), path)
+      return factory.Create(Request.ForTest(path), {})
     return create_from_factory(TemplateDataSource.Factory(
         api_data_factory,
         self._fake_api_list_data_source_factory,
         self._fake_intro_data_source_factory,
         self._fake_samples_data_source_factory,
-        self._fake_sidenav_data_source_factory,
         compiled_fs_factory,
         reference_resolver_factory,
         self._permissions_data_source,
         '.',
         '.',
-        '',
-        {}))
+        ''))
 
   def testSimple(self):
     self._base_path = os.path.join(self._base_path, 'simple')

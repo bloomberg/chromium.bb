@@ -103,7 +103,9 @@ class CronServletTest(unittest.TestCase):
           },
           'json': {
             'manifest.json': '{}',
-            'strings.json': '{}'
+            'strings.json': '{}',
+            'apps_sidenav.json': '{}',
+            'extensions_sidenav.json': '{}',
           },
         }
       }

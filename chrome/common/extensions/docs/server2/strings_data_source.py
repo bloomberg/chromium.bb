@@ -9,7 +9,7 @@ class StringsDataSource(DataSource):
   '''Provides templates with access to a key to string mapping defined in a
   JSON configuration file.
   '''
-  def __init__(self, server_instance):
+  def __init__(self, server_instance, _):
     self._cache = server_instance.compiled_host_fs_factory.Create(
         lambda _, strings_json: Parse(strings_json), StringsDataSource)
     self._strings_json_path = server_instance.strings_json_path

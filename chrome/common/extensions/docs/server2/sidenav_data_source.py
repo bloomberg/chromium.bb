@@ -3,71 +3,80 @@
 # found in the LICENSE file.
 
 import copy
-import json
 import logging
 
-class SidenavDataSource(object):
-  """This class reads in and caches a JSON file representing the side navigation
-  menu.
-  """
-  class Factory(object):
-    def __init__(self, compiled_fs_factory, json_path):
-      self._cache = compiled_fs_factory.Create(self._CreateSidenavDict,
-                                               SidenavDataSource)
-      self._json_path = json_path
+from data_source import DataSource
+from third_party.json_schema_compiler.json_parse import Parse
 
-    def Create(self, path):
-      """Create a SidenavDataSource, binding it to |path|. |path| is the url
-      of the page that is being rendered. It is used to determine which item
-      in the sidenav should be highlighted.
-      """
-      return SidenavDataSource(self._cache, self._json_path, path)
 
-    def _AddLevels(self, items, level):
-      """Levels represent how deeply this item is nested in the sidenav. We
-      start at 2 because the top <ul> is the only level 1 element.
-      """
-      for item in items:
-        item['level'] = level
-        if 'items' in item:
-          self._AddLevels(item['items'], level + 1)
+def _AddLevels(items, level):
+  '''Add a 'level' key to each item in |items|. 'level' corresponds to how deep
+  in |items| an item is. |level| sets the starting depth.
+  '''
+  for item in items:
+    item['level'] = level
+    if 'items' in item:
+      _AddLevels(item['items'], level + 1)
 
-    def _CreateSidenavDict(self, json_path, json_str):
-      items = json.loads(json_str)
-      self._AddLevels(items, 2);
-      return items
 
-  def __init__(self, cache, json_path, path):
-    self._cache = cache
-    self._json_path = json_path
-    self._href = '/' + path
-
-  def _AddSelected(self, items):
-    for item in items:
-      if item.get('href', '') == self._href:
-        item['selected'] = True
+def _AddSelected(items, path):
+  '''Add 'selected' and 'child_selected' properties to |items| so that the
+  sidenav can be expanded to show which menu item has been selected. Returns
+  True if an item was marked 'selected'.
+  '''
+  for item in items:
+    if item.get('href', '') == '/' + path:
+      item['selected'] = True
+      return True
+    if 'items' in item:
+      if _AddSelected(item['items'], path):
+        item['child_selected'] = True
         return True
-      if 'items' in item:
-        if self._AddSelected(item['items']):
-          item['child_selected'] = True
-          return True
-    return False
 
-  def _QualifyHrefs(self, items):
-    for item in items:
-      if 'items' in item:
-        self._QualifyHrefs(item['items'])
+  return False
 
-      href = item.get('href')
-      if href is not None and not href.startswith(('http://', 'https://')):
-        if not href.startswith('/'):
-          logging.warn('Paths in sidenav must be qualified. %s is not.' % href)
-          href = '/' + href
-        item['href'] = href
+
+def _QualifyHrefs(items):
+  '''Force hrefs in |items| to either be absolute (http://...) or qualified
+  (begins with a slash (/)). Other hrefs emit a warning and should be updated.
+  '''
+  for item in items:
+    if 'items' in item:
+      _QualifyHrefs(item['items'])
+
+    href = item.get('href')
+    if href is not None and not href.startswith(('http://', 'https://')):
+      if not href.startswith('/'):
+        logging.warn('Paths in sidenav must be qualified. %s is not.' % href)
+        href = '/' + href
+      item['href'] = href
+
+
+def _CreateSidenavDict(_, content):
+  items = Parse(content)
+  # Start at level 2, the top <ul> element is level 1.
+  _AddLevels(items, level=2)
+  _QualifyHrefs(items)
+  return items
+
+
+class SidenavDataSource(DataSource):
+  '''Provides templates with access to JSON files used to create the side
+  navigation bar.
+  '''
+  def __init__(self, server_instance, request):
+    self._cache = server_instance.compiled_host_fs_factory.Create(
+        _CreateSidenavDict, SidenavDataSource)
+    self._json_path = server_instance.sidenav_json_base_path
+    self._request = request
+
+  def Cron(self):
+    for platform in ['apps', 'extensions']:
+      self._cache.GetFromFile(
+          '%s/%s_sidenav.json' % (self._json_path, platform))
 
   def get(self, key):
     sidenav = copy.deepcopy(self._cache.GetFromFile(
         '%s/%s_sidenav.json' % (self._json_path, key)))
-    self._AddSelected(sidenav)
-    self._QualifyHrefs(sidenav)
+    _AddSelected(sidenav, self._request.path)
     return sidenav

@@ -8,16 +8,20 @@ class DataSource(object):
   Defines an abstraction for all DataSources.
 
   DataSources must have two public methods, get and Cron. A DataSource is
-  initialized with a ServerInstance. Anything in the ServerInstance can be used
-  by the DataSource.
+  initialized with a ServerInstance and a Request (defined in servlet.py).
+  Anything in the ServerInstance can be used by the DataSource. Request is None
+  when DataSources are created for Cron.
 
   DataSources are used to provide templates with access to data. DataSources may
   not access other DataSources and any logic or data that is useful to other
   DataSources must be moved to a different class.
   '''
+  def __init__(self, server_instance, request):
+    pass
+
   def Cron(self):
     '''Must cache all files needed by |get| to persist them. Called on a live
-    file system and can access files not in cache.
+    file system and can access files not in cache. |request| will be None.
     '''
     raise NotImplementedError(self.__class__)
 

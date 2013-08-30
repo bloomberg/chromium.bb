@@ -12,6 +12,7 @@ import manifest_data_source
 from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
 
+
 convert_and_annotate_docs = {
   'name': {
     'example': "My {{title}}",
@@ -54,6 +55,7 @@ convert_and_annotate_docs = {
     'name': 'doc6'
   }
 }
+
 
 class ManifestDataSourceTest(unittest.TestCase):
   def testListifyAndSortDocs(self):
@@ -255,8 +257,7 @@ class ManifestDataSourceTest(unittest.TestCase):
         self.manifest_json_path = 'manifest.json'
         self.manifest_features_path = '_manifest_features.json'
 
-    mds = manifest_data_source.ManifestDataSource(FakeServerInstance())
-    self.maxDiff = None
+    mds = manifest_data_source.ManifestDataSource(FakeServerInstance(), None)
     self.assertEqual(expected_app, mds.get('apps'))
 
 if __name__ == '__main__':
