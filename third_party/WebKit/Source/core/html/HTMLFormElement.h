@@ -116,9 +116,6 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(autocomplete);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(autocompleteerror);
 
-    Node* elementForAlias(const AtomicString&);
-    void addElementAlias(Node*, const AtomicString& alias);
-
     CheckedRadioButtons& checkedRadioButtons() { return m_checkedRadioButtons; }
 
     const Vector<FormAssociatedElement*>& associatedElements() const { return m_associatedElements; }
@@ -159,10 +156,13 @@ private:
     // are any invalid controls in this form.
     bool checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<FormAssociatedElement> >*, HTMLFormControlElement::CheckValidityDispatchEvents = HTMLFormControlElement::CheckValidityDispatchEventsAllowed);
 
-    typedef HashMap<AtomicString, RefPtr<Node> > AliasMap;
+    Node* elementFromPastNamesMap(const AtomicString&) const;
+    void addToPastNamesMap(Node*, const AtomicString& pastName);
+
+    typedef HashMap<AtomicString, RefPtr<Node> > PastNamesMap;
 
     FormSubmission::Attributes m_attributes;
-    OwnPtr<AliasMap> m_elementAliases;
+    OwnPtr<PastNamesMap> m_pastNamesMap;
 
     CheckedRadioButtons m_checkedRadioButtons;
 

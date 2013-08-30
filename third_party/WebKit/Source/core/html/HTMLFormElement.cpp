@@ -683,36 +683,32 @@ bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<Form
     return hasInvalidControls;
 }
 
-Node* HTMLFormElement::elementForAlias(const AtomicString& alias)
+Node* HTMLFormElement::elementFromPastNamesMap(const AtomicString& pastName) const
 {
-    if (alias.isEmpty() || !m_elementAliases)
+    if (pastName.isEmpty() || !m_pastNamesMap)
         return 0;
-    return m_elementAliases->get(alias.impl());
+    return m_pastNamesMap->get(pastName.impl());
 }
 
-void HTMLFormElement::addElementAlias(Node* element, const AtomicString& alias)
+void HTMLFormElement::addToPastNamesMap(Node* element, const AtomicString& pastName)
 {
-    if (alias.isEmpty())
+    if (pastName.isEmpty())
         return;
-    if (!m_elementAliases)
-        m_elementAliases = adoptPtr(new AliasMap);
-    m_elementAliases->set(alias.impl(), element);
+    if (!m_pastNamesMap)
+        m_pastNamesMap = adoptPtr(new PastNamesMap);
+    m_pastNamesMap->set(pastName.impl(), element);
 }
 
 void HTMLFormElement::getNamedElements(const AtomicString& name, Vector<RefPtr<Node> >& namedItems)
 {
+    // http://www.whatwg.org/specs/web-apps/current-work/multipage/forms.html#dom-form-nameditem
     elements()->namedItems(name, namedItems);
 
-    Node* aliasElement = elementForAlias(name);
-    if (aliasElement) {
-        if (namedItems.find(aliasElement) == notFound) {
-            // We have seen it before but it is gone now. Still, we need to return it.
-            // FIXME: The above comment is not clear enough; it does not say why we need to do this.
-            namedItems.append(aliasElement);
-        }
-    }
-    if (namedItems.size() && namedItems.first() != aliasElement)
-        addElementAlias(namedItems.first().get(), name);
+    Node* elementFromPast = elementFromPastNamesMap(name);
+    if (namedItems.size() && namedItems.first() != elementFromPast)
+        addToPastNamesMap(namedItems.first().get(), name);
+    else if (elementFromPast && namedItems.find(elementFromPast) == notFound)
+        namedItems.append(elementFromPast);
 }
 
 bool HTMLFormElement::shouldAutocomplete() const
