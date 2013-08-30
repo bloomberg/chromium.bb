@@ -58,6 +58,7 @@ public class AdapterInputConnection extends BaseInputConnection {
 
         if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeText) {
             // Normal text field
+            outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT;
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_GO;
         } else if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeTextArea ||
                 imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeContentEditable) {
