@@ -12,6 +12,7 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
 
@@ -261,6 +262,32 @@ struct BASE_EXPORT SystemMemoryInfoKB {
 // Fills in the provided |meminfo| structure. Returns true on success.
 // Exposed for memory debugging widget.
 BASE_EXPORT bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo);
+
+// Data from /proc/diskstats about system-wide disk I/O.
+struct BASE_EXPORT SystemDiskInfo {
+  SystemDiskInfo();
+
+  uint64 reads;
+  uint64 reads_merged;
+  uint64 sectors_read;
+  uint64 read_time;
+  uint64 writes;
+  uint64 writes_merged;
+  uint64 sectors_written;
+  uint64 write_time;
+  uint64 io;
+  uint64 io_time;
+  uint64 weighted_io_time;
+};
+
+// Checks whether the candidate string is a valid disk name, [sh]d[a-z]+
+// for a generic disk or mmcblk[0-9]+ for the MMC case.
+// Names of disk partitions (e.g. sda1) are not valid.
+BASE_EXPORT bool IsValidDiskName(const std::string& candidate);
+
+// Retrieves data from /proc/diskstats about system-wide disk I/O.
+// Fills in the provided |diskinfo| structure. Returns true on success.
+BASE_EXPORT bool GetSystemDiskInfo(SystemDiskInfo* diskinfo);
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -296,6 +323,8 @@ class SystemMetrics {
   static SystemMetrics Sample();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SystemMetricsTest, SystemMetrics);
+
   size_t committed_memory_;
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   SystemMemoryInfoKB memory_info_;

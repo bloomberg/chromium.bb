@@ -565,6 +565,7 @@
         'process/memory_unittest.cc',
         'process/memory_unittest_mac.h',
         'process/memory_unittest_mac.mm',
+        'process/process_metrics_unittests.cc',
         'process/process_util_unittest.cc',
         'process/process_util_unittest_ios.cc',
         'profiler/tracked_time_unittest.cc',

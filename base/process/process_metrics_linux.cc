@@ -421,6 +421,57 @@ const size_t kMemInactiveAnonIndex = 25;
 const size_t kMemActiveFileIndex = 28;
 const size_t kMemInactiveFileIndex = 31;
 
+// The format of /proc/diskstats is:
+//  Device major number
+//  Device minor number
+//  Device name
+//  Field  1 -- # of reads completed
+//      This is the total number of reads completed successfully.
+//  Field  2 -- # of reads merged, field 6 -- # of writes merged
+//      Reads and writes which are adjacent to each other may be merged for
+//      efficiency.  Thus two 4K reads may become one 8K read before it is
+//      ultimately handed to the disk, and so it will be counted (and queued)
+//      as only one I/O.  This field lets you know how often this was done.
+//  Field  3 -- # of sectors read
+//      This is the total number of sectors read successfully.
+//  Field  4 -- # of milliseconds spent reading
+//      This is the total number of milliseconds spent by all reads (as
+//      measured from __make_request() to end_that_request_last()).
+//  Field  5 -- # of writes completed
+//      This is the total number of writes completed successfully.
+//  Field  6 -- # of writes merged
+//      See the description of field 2.
+//  Field  7 -- # of sectors written
+//      This is the total number of sectors written successfully.
+//  Field  8 -- # of milliseconds spent writing
+//      This is the total number of milliseconds spent by all writes (as
+//      measured from __make_request() to end_that_request_last()).
+//  Field  9 -- # of I/Os currently in progress
+//      The only field that should go to zero. Incremented as requests are
+//      given to appropriate struct request_queue and decremented as they
+//      finish.
+//  Field 10 -- # of milliseconds spent doing I/Os
+//      This field increases so long as field 9 is nonzero.
+//  Field 11 -- weighted # of milliseconds spent doing I/Os
+//      This field is incremented at each I/O start, I/O completion, I/O
+//      merge, or read of these stats by the number of I/Os in progress
+//      (field 9) times the number of milliseconds spent doing I/O since the
+//      last update of this field.  This can provide an easy measure of both
+//      I/O completion time and the backlog that may be accumulating.
+
+const size_t kDiskDriveName = 2;
+const size_t kDiskReads = 3;
+const size_t kDiskReadsMerged = 4;
+const size_t kDiskSectorsRead = 5;
+const size_t kDiskReadTime = 6;
+const size_t kDiskWrites = 7;
+const size_t kDiskWritesMerged = 8;
+const size_t kDiskSectorsWritten = 9;
+const size_t kDiskWriteTime = 10;
+const size_t kDiskIO = 11;
+const size_t kDiskIOTime = 12;
+const size_t kDiskWeightedIOTime = 13;
+
 }  // namespace
 
 SystemMemoryInfoKB::SystemMemoryInfoKB()
@@ -523,6 +574,124 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   }
 #endif  // defined(ARCH_CPU_ARM_FAMILY)
 #endif  // defined(OS_CHROMEOS)
+
+  return true;
+}
+
+SystemDiskInfo::SystemDiskInfo() {
+  reads = 0;
+  reads_merged = 0;
+  sectors_read = 0;
+  read_time = 0;
+  writes = 0;
+  writes_merged = 0;
+  sectors_written = 0;
+  write_time = 0;
+  io = 0;
+  io_time = 0;
+  weighted_io_time = 0;
+}
+
+bool IsValidDiskName(const std::string& candidate) {
+  if (candidate.length() < 3)
+    return false;
+  if (candidate.substr(0,2) == "sd" || candidate.substr(0,2) == "hd") {
+    // [sh]d[a-z]+ case
+    for (size_t i = 2; i < candidate.length(); i++) {
+      if (!islower(candidate[i]))
+        return false;
+    }
+  } else {
+    if (candidate.length() < 7) {
+      return false;
+    }
+    if (candidate.substr(0,6) == "mmcblk") {
+      // mmcblk[0-9]+ case
+      for (size_t i = 6; i < candidate.length(); i++) {
+        if (!isdigit(candidate[i]))
+          return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool GetSystemDiskInfo(SystemDiskInfo* diskinfo) {
+  // Synchronously reading files in /proc is safe.
+  ThreadRestrictions::ScopedAllowIO allow_io;
+
+  FilePath diskinfo_file("/proc/diskstats");
+  std::string diskinfo_data;
+  if (!ReadFileToString(diskinfo_file, &diskinfo_data)) {
+    DLOG(WARNING) << "Failed to open " << diskinfo_file.value();
+    return false;
+  }
+
+  std::vector<std::string> diskinfo_lines;
+  size_t line_count = Tokenize(diskinfo_data, "\n", &diskinfo_lines);
+  if (line_count == 0) {
+    DLOG(WARNING) << "No lines found";
+    return false;
+  }
+
+  diskinfo->reads = 0;
+  diskinfo->reads_merged = 0;
+  diskinfo->sectors_read = 0;
+  diskinfo->read_time = 0;
+  diskinfo->writes = 0;
+  diskinfo->writes_merged = 0;
+  diskinfo->sectors_written = 0;
+  diskinfo->write_time = 0;
+  diskinfo->io = 0;
+  diskinfo->io_time = 0;
+  diskinfo->weighted_io_time = 0;
+
+  uint64 reads = 0;
+  uint64 reads_merged = 0;
+  uint64 sectors_read = 0;
+  uint64 read_time = 0;
+  uint64 writes = 0;
+  uint64 writes_merged = 0;
+  uint64 sectors_written = 0;
+  uint64 write_time = 0;
+  uint64 io = 0;
+  uint64 io_time = 0;
+  uint64 weighted_io_time = 0;
+
+  for (size_t i = 0; i < line_count; i++) {
+    std::vector<std::string> disk_fields;
+    SplitStringAlongWhitespace(diskinfo_lines[i], &disk_fields);
+
+    // Fields may have overflowed and reset to zero.
+    if (IsValidDiskName(disk_fields[kDiskDriveName])) {
+      StringToUint64(disk_fields[kDiskReads], &reads);
+      StringToUint64(disk_fields[kDiskReadsMerged], &reads_merged);
+      StringToUint64(disk_fields[kDiskSectorsRead], &sectors_read);
+      StringToUint64(disk_fields[kDiskReadTime], &read_time);
+      StringToUint64(disk_fields[kDiskWrites], &writes);
+      StringToUint64(disk_fields[kDiskWritesMerged], &writes_merged);
+      StringToUint64(disk_fields[kDiskSectorsWritten], &sectors_written);
+      StringToUint64(disk_fields[kDiskWriteTime], &write_time);
+      StringToUint64(disk_fields[kDiskIO], &io);
+      StringToUint64(disk_fields[kDiskIOTime], &io_time);
+      StringToUint64(disk_fields[kDiskWeightedIOTime], &weighted_io_time);
+
+      diskinfo->reads += reads;
+      diskinfo->reads_merged += reads_merged;
+      diskinfo->sectors_read += sectors_read;
+      diskinfo->read_time += read_time;
+      diskinfo->writes += writes;
+      diskinfo->writes_merged += writes_merged;
+      diskinfo->sectors_written += sectors_written;
+      diskinfo->write_time += write_time;
+      diskinfo->io += io;
+      diskinfo->io_time += io_time;
+      diskinfo->weighted_io_time += weighted_io_time;
+    }
+  }
 
   return true;
 }
