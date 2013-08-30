@@ -626,6 +626,9 @@ void TileManager::AssignGpuMemoryToTiles(
 }
 
 void TileManager::CleanUpUnusedImageDecodeTasks() {
+  if (image_decode_tasks_.empty())
+    return;
+
   // Calculate a set of layers that are used by at least one tile.
   base::hash_set<int> used_layers;
   for (TileMap::iterator it = tiles_.begin(); it != tiles_.end(); ++it)
