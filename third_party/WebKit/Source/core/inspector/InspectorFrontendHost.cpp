@@ -42,6 +42,7 @@
 #include "core/page/Page.h"
 #include "core/platform/ContextMenu.h"
 #include "core/platform/ContextMenuItem.h"
+#include "core/platform/JSONValues.h"
 #include "core/platform/Pasteboard.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
@@ -151,6 +152,9 @@ void InspectorFrontendHost::requestSetDockSide(const String& side)
 void InspectorFrontendHost::closeWindow()
 {
     if (m_client) {
+        RefPtr<JSONObject> message = JSONObject::create();
+        message->setString("method", "closeWindow");
+        sendMessageToEmbedder(message->toJSONString());
         m_client->closeWindow();
         disconnectClient(); // Disconnect from client.
     }
@@ -231,6 +235,12 @@ void InspectorFrontendHost::sendMessageToBackend(const String& message)
 {
     if (m_client)
         m_client->sendMessageToBackend(message);
+}
+
+void InspectorFrontendHost::sendMessageToEmbedder(const String& message)
+{
+    if (m_client)
+        m_client->sendMessageToEmbedder(message);
 }
 
 void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMenuItem>& items)

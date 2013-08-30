@@ -69,6 +69,7 @@ public:
     virtual void inspectedURLChanged(const String&) OVERRIDE { }
 
     virtual void sendMessageToBackend(const String& message);
+    virtual void sendMessageToEmbedder(const String&) OVERRIDE { }
 
     virtual void requestFileSystems() { }
     virtual void addFileSystem() { }

@@ -74,6 +74,39 @@ void InspectorFrontendClientImpl::windowObjectCleared()
     v8::Handle<v8::Object> global = frameContext->Global();
 
     global->Set(v8::String::New("InspectorFrontendHost"), frontendHostObj);
+
+    ScriptController* scriptController = m_frontendPage->mainFrame() ? m_frontendPage->mainFrame()->script() : 0;
+    if (scriptController) {
+        String installLegacyOverrides =
+            "(function(host, legacyMethodNames) {"
+            "    function dispatch(methodName, oldImpl) {"
+            "        var argsArray = Array.prototype.slice.call(arguments, 2);"
+            "        var message = {'method': methodName};"
+            "        if (argsArray.length)"
+            "            message.params = argsArray;"
+            "        this.sendMessageToEmbedder(JSON.stringify(message));"
+            "        if (oldImpl)"
+            "            oldImpl.apply(this, argsArray);"
+            "    };"
+            "    legacyMethodNames.forEach(function(methodName) {"
+            "        host[methodName] = dispatch.bind(host, methodName, host[methodName]);"
+            "    });"
+            "})(InspectorFrontendHost,"
+            "    ['moveWindowBy',"
+            "     'bringToFront',"
+            "     'requestSetDockSide',"
+            "     'openInNewTab',"
+            "     'save',"
+            "     'append',"
+            "     'requestFileSystems',"
+            "     'indexPath',"
+            "     'stopIndexing',"
+            "     'searchInPath',"
+            "     'addFileSystem',"
+            "     'removeFileSystem']);";
+
+        scriptController->executeScriptInMainWorld(ScriptSourceCode(installLegacyOverrides));
+    }
 }
 
 void InspectorFrontendClientImpl::moveWindowBy(float x, float y)
@@ -130,6 +163,11 @@ void InspectorFrontendClientImpl::inspectedURLChanged(const String& url)
 void InspectorFrontendClientImpl::sendMessageToBackend(const String& message)
 {
     m_client->sendMessageToBackend(message);
+}
+
+void InspectorFrontendClientImpl::sendMessageToEmbedder(const String& message)
+{
+    m_client->sendMessageToEmbedder(message);
 }
 
 void InspectorFrontendClientImpl::requestFileSystems()

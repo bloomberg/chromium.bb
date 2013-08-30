@@ -69,6 +69,7 @@ public:
     virtual void inspectedURLChanged(const WTF::String&);
 
     virtual void sendMessageToBackend(const WTF::String&);
+    virtual void sendMessageToEmbedder(const WTF::String&);
 
     virtual void requestFileSystems();
     virtual void addFileSystem();

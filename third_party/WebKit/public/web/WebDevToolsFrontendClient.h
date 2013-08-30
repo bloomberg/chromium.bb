@@ -42,6 +42,7 @@ public:
     WebDevToolsFrontendClient() { }
 
     virtual void sendMessageToBackend(const WebString&) { }
+    virtual void sendMessageToEmbedder(const WebString&) { }
 
     virtual void activateWindow() { }
     virtual void changeAttachedWindowHeight(unsigned height) { }

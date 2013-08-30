@@ -63,6 +63,7 @@ public:
     virtual void inspectedURLChanged(const String&) = 0;
 
     virtual void sendMessageToBackend(const String&) = 0;
+    virtual void sendMessageToEmbedder(const String&) = 0;
 
     virtual void requestFileSystems() = 0;
     virtual void addFileSystem() = 0;

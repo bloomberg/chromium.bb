@@ -73,6 +73,7 @@ public:
     // Called from [Custom] implementations.
     void showContextMenu(Event*, const Vector<ContextMenuItem>& items);
     void sendMessageToBackend(const String& message);
+    void sendMessageToEmbedder(const String& message);
 
     String loadResourceSynchronously(const String& url);
     String getSelectionBackgroundColor();
