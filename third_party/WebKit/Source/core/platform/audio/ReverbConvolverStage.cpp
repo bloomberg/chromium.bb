@@ -58,8 +58,11 @@ ReverbConvolverStage::ReverbConvolverStage(const float* impulseResponse, size_t,
         m_fftKernel->doPaddedFFT(impulseResponse + stageOffset, stageLength);
         m_fftConvolver = adoptPtr(new FFTConvolver(fftSize));
     } else {
+        ASSERT(!stageOffset);
+        ASSERT(stageLength <= fftSize / 2);
+
         m_directKernel = adoptPtr(new AudioFloatArray(fftSize / 2));
-        m_directKernel->copyToRange(impulseResponse + stageOffset, 0, fftSize / 2);
+        m_directKernel->copyToRange(impulseResponse, 0, stageLength);
         m_directConvolver = adoptPtr(new DirectConvolver(renderSliceSize));
     }
     m_temporaryBuffer.allocate(renderSliceSize);
