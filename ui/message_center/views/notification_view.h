@@ -71,6 +71,7 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
   views::View* top_view_;
   BoundedLabel* title_view_;
   BoundedLabel* message_view_;
+  BoundedLabel* context_message_view_;
   std::vector<views::View*> item_views_;
   views::View* icon_view_;
   views::View* bottom_view_;

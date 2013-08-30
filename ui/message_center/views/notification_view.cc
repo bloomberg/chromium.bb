@@ -53,12 +53,16 @@ const size_t kTitleCharacterLimit =
 const size_t kMessageCharacterLimit =
     message_center::kNotificationWidth *
         message_center::kMessageExpandedLineLimit / 3;
+const size_t kContextMessageCharacterLimit =
+    message_center::kNotificationWidth *
+    message_center::kContextMessageLineLimit / 3;
 
 // Notification colors. The text background colors below are used only to keep
 // view::Label from modifying the text color and will not actually be drawn.
 // See view::Label's RecalculateColors() for details.
 const SkColor kRegularTextBackgroundColor = SK_ColorWHITE;
 const SkColor kDimTextBackgroundColor = SK_ColorWHITE;
+const SkColor kContextTextBackgroundColor = SK_ColorWHITE;
 
 // static
 views::Background* MakeBackground(
@@ -486,11 +490,30 @@ NotificationView::NotificationView(const Notification& notification,
         ui::TruncateString(notification.message(), kMessageCharacterLimit));
     message_view_->SetLineHeight(kMessageLineHeight);
     message_view_->SetVisible(!is_expanded() || !notification.items().size());
-    message_view_->SetColors(message_center::kDimTextColor,
+    message_view_->SetColors(message_center::kRegularTextColor,
                              kDimTextBackgroundColor);
     message_view_->set_border(MakeTextBorder(padding, 4, 0));
     top_view_->AddChildView(message_view_);
     accessible_lines.push_back(notification.message());
+  }
+
+  // Create the context message view if appropriate.
+  context_message_view_ = NULL;
+  if (!notification.context_message().empty()) {
+    gfx::Font font = views::Label().font();
+    int padding = kMessageLineHeight - font.GetHeight();
+    context_message_view_ =
+        new BoundedLabel(ui::TruncateString(notification.context_message(),
+                                            kContextMessageCharacterLimit),
+                         font);
+    context_message_view_->SetLineLimit(
+        message_center::kContextMessageLineLimit);
+    context_message_view_->SetLineHeight(kMessageLineHeight);
+    context_message_view_->SetColors(message_center::kDimTextColor,
+                                     kContextTextBackgroundColor);
+    context_message_view_->set_border(MakeTextBorder(padding, 4, 0));
+    top_view_->AddChildView(context_message_view_);
+    accessible_lines.push_back(notification.context_message());
   }
 
   // Create the progress bar view.

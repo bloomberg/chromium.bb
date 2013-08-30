@@ -43,10 +43,10 @@ extern const int kIconBottomPadding;  // Minimum non-zero V space between icon
                                       // and frame.
 
 // Text sizes.
-extern const int kTitleFontSize;      // For title only.
-extern const int kTitleLineHeight;    // In DIPs.
-extern const int kMessageFontSize;    // For everything but title.
-extern const int kMessageLineHeight;  // In DIPs.
+extern const int kTitleFontSize;             // For title only.
+extern const int kTitleLineHeight;           // In DIPs.
+extern const int kMessageFontSize;           // For everything but title.
+extern const int kMessageLineHeight;         // In DIPs.
 
 // Colors.
 extern const SkColor kNotificationBackgroundColor; // Background of the card.
@@ -54,7 +54,7 @@ extern const SkColor kLegacyIconBackgroundColor;   // Used behind icons smaller.
                                                    // than the icon view.
 extern const SkColor kRegularTextColor;            // Title, message, ...
 extern const SkColor kDimTextColor;
-extern const SkColor kFocusBorderColor;            // The focus border.
+extern const SkColor kFocusBorderColor;  // The focus border.
 
 // Limits.
 
@@ -91,6 +91,7 @@ const SkColor kProgressBarSliceColor = SkColorSetRGB(120, 120, 120);
 const int kTitleLineLimit = 3;
 const int kMessageCollapsedLineLimit = 3;
 const int kMessageExpandedLineLimit = 7;
+const int kContextMessageLineLimit = 1;
 
 // Around notifications ////////////////////////////////////////////////////////
 
