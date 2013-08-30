@@ -16,7 +16,7 @@ class SurfaceFactoryOzoneStub : public SurfaceFactoryOzone {
   SurfaceFactoryOzoneStub() {}
   virtual ~SurfaceFactoryOzoneStub() {}
 
-  virtual void InitializeHardware() OVERRIDE {}
+  virtual HardwareState InitializeHardware() OVERRIDE { return INITIALIZED; }
   virtual void ShutdownHardware() OVERRIDE {}
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE { return 0; }
   virtual gfx::AcceleratedWidget RealizeAcceleratedWidget(
@@ -59,6 +59,14 @@ const char* SurfaceFactoryOzone::DefaultDisplaySpec() {
 
 gfx::Screen* SurfaceFactoryOzone::CreateDesktopScreen() {
   return NULL;
+}
+
+intptr_t SurfaceFactoryOzone::GetNativeDisplay() {
+  return 0;
+}
+
+bool SurfaceFactoryOzone::SchedulePageFlip(gfx::AcceleratedWidget) {
+  return true;
 }
 
 // static

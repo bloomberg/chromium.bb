@@ -4,6 +4,7 @@
 
 #include "ui/base/ozone/event_factory_ozone.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <linux/input.h>
 #include <poll.h>
@@ -45,8 +46,10 @@ void EventFactoryOzone::CreateStartupEventConverters() {
   for (int id = 0; true; id++) {
     std::string path = base::StringPrintf("/dev/input/event%d", id);
     int fd = open(path.c_str(), O_RDONLY | O_NONBLOCK);
-    if (fd < 0)
+    if (fd < 0) {
+      DLOG(ERROR) << "Cannot open '" << path << "': " << strerror(errno);
       break;
+    }
     size_t evtype = 0;
     COMPILE_ASSERT(sizeof(evtype) * 8 >= EV_MAX, evtype_wide_enough);
     if (ioctl(fd, EVIOCGBIT(0, sizeof(evtype)), &evtype) == -1) {

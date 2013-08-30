@@ -100,10 +100,6 @@ bool GLSurfaceEGL::InitializeOneOff() {
   if (initialized)
     return true;
 
-#if defined (USE_OZONE)
-  ui::SurfaceFactoryOzone::GetInstance()->InitializeHardware();
-#endif
-
 #if defined(USE_X11)
   g_native_display = base::MessagePumpForUI::GetDefaultXDisplay();
 #elif defined(OS_WIN)
@@ -111,6 +107,16 @@ bool GLSurfaceEGL::InitializeOneOff() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableD3D11)) {
     g_native_display = EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE;
   }
+#elif defined(USE_OZONE)
+  ui::SurfaceFactoryOzone* surface_factory =
+      ui::SurfaceFactoryOzone::GetInstance();
+  if (surface_factory->InitializeHardware() !=
+      ui::SurfaceFactoryOzone::INITIALIZED) {
+    LOG(ERROR) << "OZONE failed to initialize hardware";
+    return false;
+  }
+  g_native_display = reinterpret_cast<EGLNativeDisplayType>(
+      surface_factory->GetNativeDisplay());
 #else
   g_native_display = EGL_DEFAULT_DISPLAY;
 #endif

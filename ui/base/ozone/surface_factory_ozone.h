@@ -18,6 +18,12 @@ namespace ui {
 
 class UI_EXPORT SurfaceFactoryOzone {
  public:
+  // Describes the state of the hardware after initialization.
+  enum HardwareState {
+    INITIALIZED,
+    FAILED,
+  };
+
   SurfaceFactoryOzone();
   virtual ~SurfaceFactoryOzone();
 
@@ -35,14 +41,17 @@ class UI_EXPORT SurfaceFactoryOzone {
   // This method implements gfx::Screen, particularly useful in Desktop Aura.
   virtual gfx::Screen* CreateDesktopScreen();
 
-  // TODO(rjkroege): Add a status code if necessary.
   // Configures the display hardware. Must be called from within the GPU
   // process before the sandbox has been activated.
-  virtual void InitializeHardware() = 0;
+  virtual HardwareState InitializeHardware() = 0;
 
   // Cleans up display hardware state. Call this from within the GPU process.
   // This method must be safe to run inside of the sandbox.
   virtual void ShutdownHardware() = 0;
+
+  // Returns the native EGL display. This is generally needed in creating
+  // EGL windows.
+  virtual intptr_t GetNativeDisplay();
 
   // Obtains an AcceleratedWidget backed by a native Linux framebuffer.
   // The  returned AcceleratedWidget is an opaque token that must realized
@@ -65,6 +74,10 @@ class UI_EXPORT SurfaceFactoryOzone {
       gfx::AcceleratedWidget w,
       const gfx::Rect& bounds) = 0;
 
+  // Called after the appropriate GL swap buffers command. Used if extra work
+  // is needed to perform the actual buffer swap.
+  virtual bool SchedulePageFlip(gfx::AcceleratedWidget w);
+
   // Returns a gfx::VsyncProvider for the provided AcceleratedWidget. Note
   // that this may be called after we have entered the sandbox so if there are
   // operations (e.g. opening a file descriptor providing vsync events) that
@@ -80,6 +93,5 @@ class UI_EXPORT SurfaceFactoryOzone {
 };
 
 }  // namespace ui
-
 
 #endif  // UI_BASE_OZONE_SURFACE_LNUX_FACTORY_OZONE_H_
