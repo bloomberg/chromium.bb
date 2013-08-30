@@ -342,8 +342,8 @@ class ProxyResolverV8::Context {
   ~Context() {
     v8::Locker locked(isolate_);
 
-    v8_this_.Dispose(isolate_);
-    v8_context_.Dispose(isolate_);
+    v8_this_.Dispose();
+    v8_context_.Dispose();
   }
 
   JSBindings* js_bindings() {
