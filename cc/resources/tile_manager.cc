@@ -149,7 +149,6 @@ TileManager::TileManager(
       prioritized_tiles_dirty_(false),
       all_tiles_that_need_to_be_rasterized_have_memory_(true),
       all_tiles_required_for_activation_have_memory_(true),
-      all_tiles_required_for_activation_have_been_initialized_(true),
       bytes_releasable_(0),
       resources_releasable_(0),
       ever_exceeded_memory_budget_(false),
@@ -497,7 +496,6 @@ void TileManager::AssignGpuMemoryToTiles(
   // the needs-to-be-rasterized queue.
   all_tiles_that_need_to_be_rasterized_have_memory_ = true;
   all_tiles_required_for_activation_have_memory_ = true;
-  all_tiles_required_for_activation_have_been_initialized_ = true;
 
   // Cast to prevent overflow.
   int64 bytes_available =
@@ -586,9 +584,6 @@ void TileManager::AssignGpuMemoryToTiles(
     }
 
     DCHECK(!tile_version.resource_);
-
-    if (tile->required_for_activation())
-      all_tiles_required_for_activation_have_been_initialized_ = false;
 
     // Tile shouldn't be rasterized if |tiles_that_need_to_be_rasterized|
     // has reached it's limit or we've failed to assign gpu memory to this

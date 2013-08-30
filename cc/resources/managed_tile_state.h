@@ -32,14 +32,6 @@ enum ManagedTileBin {
 scoped_ptr<base::Value> ManagedTileBinAsValue(
     ManagedTileBin bin);
 
-enum ManagedTileBinPriority {
-  HIGH_PRIORITY_BIN = 0,
-  LOW_PRIORITY_BIN = 1,
-  NUM_BIN_PRIORITIES = 2
-};
-scoped_ptr<base::Value> ManagedTileBinPriorityAsValue(
-    ManagedTileBinPriority bin);
-
 // This is state that is specific to a tile that is
 // managed by the TileManager.
 class CC_EXPORT ManagedTileState {

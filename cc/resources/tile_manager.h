@@ -76,10 +76,6 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
     return memory_stats_from_last_assign_;
   }
 
-  bool AreTilesRequiredForActivationReady() const {
-    return all_tiles_required_for_activation_have_been_initialized_;
-  }
-
   void InitializeTilesWithResourcesForTesting(
       const std::vector<Tile*>& tiles,
       ResourceProvider* resource_provider) {
@@ -165,7 +161,6 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
 
   bool all_tiles_that_need_to_be_rasterized_have_memory_;
   bool all_tiles_required_for_activation_have_memory_;
-  bool all_tiles_required_for_activation_have_been_initialized_;
 
   size_t bytes_releasable_;
   size_t resources_releasable_;

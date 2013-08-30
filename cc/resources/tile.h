@@ -137,7 +137,7 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   float contents_scale_;
   gfx::Rect opaque_rect_;
 
-  TilePriority priority_[NUM_BIN_PRIORITIES];
+  TilePriority priority_[NUM_TREES];
   ManagedTileState managed_state_;
   int layer_id_;
   int source_frame_number_;
