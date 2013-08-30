@@ -4530,6 +4530,15 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_MESSAGE_EXTENSION" desc="Text of the message of the apps/extension delete confirmation dialog in case the user is deleting an extension.">
         Do you really want to delete this extension?
       </message>
+      <message name="IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_CLOSE_BUTTON" desc="Title of the button to close the dialog for managed profile.">
+        Close
+      </message>
+      <message name="IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_TITLE" desc="Title of the dialog for managed profile.">
+        This user is supervised.
+      </message>
+      <message name="IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_DESCRIPTION" desc="Content of the dialog for managed profile. It's informing a supervised user that extensions cannot be changed.">
+        Applications and extensions cannot be modified by supervised users. Apps Developer Tools will be closed.
+      </message>
       <message name="IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY" desc="Text on next line after IDS_EXTENSIONS_NONE_INSTALLED that suggests the user look in the gallery for extensions to install.">
         Want to <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>browse the gallery<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> instead?
       </message>
@@ -4659,7 +4668,7 @@ Make sure you do not expose any sensitive information.
         (This extension is managed and cannot be removed or disabled.)
       </message>
       <message name="IDS_EXTENSIONS_LOCKED_MANAGED_USER" desc="The error message (either shown in the extensions UI or logged) informing a supervised user that extensions cannot be changed.">
-        Extensions cannot be modified by supervised users.
+        Applications and extensions cannot be modified by supervised users.
       </message>
       <message name="IDS_EXTENSIONS_USE_APPS_DEV_TOOLS" desc="The message in the banner to invite people to use Apps Developer Tools.">
         The new Apps Developer Tools makes it easier than ever to manage and debug your apps and extensions. It's now available in the Chrome App Launcher.

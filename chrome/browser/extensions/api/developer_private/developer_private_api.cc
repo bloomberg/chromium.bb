@@ -1248,11 +1248,28 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
   SET_STRING("deleteConfirmationMessageExtension",
       IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_MESSAGE_EXTENSION);
 
+// Dialog when profile is managed.
+  SET_STRING("managedProfileDialogCloseButton",
+      IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_CLOSE_BUTTON);
+  SET_STRING("managedProfileDialogTitle",
+      IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_TITLE);
+  SET_STRING("managedProfileDialogDescription",
+      IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_DESCRIPTION);
+
   #undef   SET_STRING
   return true;
 }
 
 DeveloperPrivateGetStringsFunction::~DeveloperPrivateGetStringsFunction() {}
+
+bool DeveloperPrivateIsProfileManagedFunction::RunImpl() {
+  SetResult(new base::FundamentalValue(profile_->IsManaged()));
+  return true;
+}
+
+DeveloperPrivateIsProfileManagedFunction::
+    ~DeveloperPrivateIsProfileManagedFunction() {
+}
 
 } // namespace api
 

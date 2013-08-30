@@ -204,6 +204,9 @@ namespace developerPrivate {
     // strings as a dictionary mapping from string identifier to the
     // translated string to use in the apps_debugger app UI.
     static void getStrings(GetStringsCallback callback);
+
+    // Returns true if the profile is managed.
+    static void isProfileManaged(BooleanCallback callback);
   };
 
   interface Events {

@@ -96,6 +96,23 @@ cr.define('apps_dev_tool', function() {
     chrome.developerPrivate.getStrings(function(strings) {
       loadTimeData.data = strings;
       i18nTemplate.process(document, loadTimeData);
+
+      // Check managed profiles.
+      chrome.developerPrivate.isProfileManaged(function(isManaged) {
+        if (!isManaged)
+          return;
+        alertOverlay.setValues(
+            loadTimeData.getString('managedProfileDialogTitle'),
+            loadTimeData.getString('managedProfileDialogDescription'),
+            loadTimeData.getString('managedProfileDialogCloseButton'),
+            null,
+            function() {
+              AppsDevTool.showOverlay(null);
+              window.close();
+            },
+            null);
+        AppsDevTool.showOverlay($('alertOverlay'));
+      });
     });
   };
 

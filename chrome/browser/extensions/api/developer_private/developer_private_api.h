@@ -349,6 +349,18 @@ class DeveloperPrivateGetStringsFunction : public SyncExtensionFunction {
    virtual bool RunImpl() OVERRIDE;
 };
 
+class DeveloperPrivateIsProfileManagedFunction : public SyncExtensionFunction {
+  public:
+   DECLARE_EXTENSION_FUNCTION("developerPrivate.isProfileManaged",
+                              DEVELOPERPRIVATE_ISPROFILEMANAGED);
+
+  protected:
+   virtual ~DeveloperPrivateIsProfileManagedFunction();
+
+   // ExtensionFunction
+   virtual bool RunImpl() OVERRIDE;
+};
+
 class DeveloperPrivateExportSyncfsFolderToLocalfsFunction
     : public AsyncExtensionFunction {
   public:
