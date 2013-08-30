@@ -192,7 +192,8 @@ TEST_F(AutocompleteEditTest, AdjustTextForCopy) {
   OmniboxEditModel model(&view, &controller, &profile);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input); ++i) {
-    model.UpdatePermanentText(ASCIIToUTF16(input[i].perm_text));
+    toolbar_model()->set_text(ASCIIToUTF16(input[i].perm_text));
+    model.UpdatePermanentText();
 
     toolbar_model()->set_replace_search_url_with_search_terms(
         input[i].extracted_search_terms);

@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/test_toolbar_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -1672,16 +1673,20 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SelectAllOnClick) {
 #endif  // defined(TOOLKIT_VIEWS)
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CopyURLToClipboard) {
-  OmniboxView* omnibox_view = NULL;
-  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-  const char* target_url = "http://www.google.com/calendar";
-  omnibox_view->SetUserText(ASCIIToUTF16(target_url));
-
   // Set permanent text thus making sure that omnibox treats 'google.com'
   // as URL (not as ordinary user input).
+  TestToolbarModel* test_toolbar_model = new TestToolbarModel;
+  scoped_ptr<ToolbarModel> toolbar_model(test_toolbar_model);
+  test_toolbar_model->set_text(ASCIIToUTF16("http://www.google.com/"));
+  browser()->swap_toolbar_models(&toolbar_model);
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxEditModel* edit_model = omnibox_view->model();
   ASSERT_NE(static_cast<OmniboxEditModel*>(NULL), edit_model);
-  edit_model->UpdatePermanentText(ASCIIToUTF16("http://www.google.com/"));
+  edit_model->UpdatePermanentText();
+
+  const char* target_url = "http://www.google.com/calendar";
+  omnibox_view->SetUserText(ASCIIToUTF16(target_url));
 
   // Location bar must have focus.
   chrome::FocusLocationBar(browser());
@@ -1715,16 +1720,20 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CopyURLToClipboard) {
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CutURLToClipboard) {
-  OmniboxView* omnibox_view = NULL;
-  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-  const char* target_url = "http://www.google.com/calendar";
-  omnibox_view->SetUserText(ASCIIToUTF16(target_url));
-
   // Set permanent text thus making sure that omnibox treats 'google.com'
   // as URL (not as ordinary user input).
+  TestToolbarModel* test_toolbar_model = new TestToolbarModel;
+  scoped_ptr<ToolbarModel> toolbar_model(test_toolbar_model);
+  test_toolbar_model->set_text(ASCIIToUTF16("http://www.google.com/"));
+  browser()->swap_toolbar_models(&toolbar_model);
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxEditModel* edit_model = omnibox_view->model();
   ASSERT_NE(static_cast<OmniboxEditModel*>(NULL), edit_model);
-  edit_model->UpdatePermanentText(ASCIIToUTF16("http://www.google.com/"));
+  edit_model->UpdatePermanentText();
+
+  const char* target_url = "http://www.google.com/calendar";
+  omnibox_view->SetUserText(ASCIIToUTF16(target_url));
 
   // Location bar must have focus.
   chrome::FocusLocationBar(browser());

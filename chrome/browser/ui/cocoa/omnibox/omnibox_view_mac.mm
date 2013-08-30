@@ -202,8 +202,7 @@ void OmniboxViewMac::OnTabChanged(const WebContents* web_contents) {
 }
 
 void OmniboxViewMac::Update() {
-  if (model()->UpdatePermanentText(
-      controller()->GetToolbarModel()->GetText(true))) {
+  if (model()->UpdatePermanentText()) {
     // Restore everything to the baseline look.
     RevertAll();
 

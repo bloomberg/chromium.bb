@@ -380,8 +380,7 @@ void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
 void OmniboxViewViews::Update() {
   const ToolbarModel::SecurityLevel old_security_level = security_level_;
   security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
-  if (model()->UpdatePermanentText(
-      controller()->GetToolbarModel()->GetText(true))) {
+  if (model()->UpdatePermanentText()) {
     // Tweak: if the user had all the text selected, select all the new text.
     // This makes one particular case better: the user clicks in the box to
     // change it right before the permanent URL is changed.  Since the new URL

@@ -261,6 +261,8 @@
         'browser/ui/search/instant_test_utils.cc',
         'browser/ui/search/local_ntp_browsertest.cc',
         'browser/ui/startup/startup_browser_creator_interactive_uitest.cc',
+        'browser/ui/toolbar/test_toolbar_model.cc',
+        'browser/ui/toolbar/test_toolbar_model.h',
         'browser/ui/views/ash/tab_scrubber_browsertest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
         'browser/ui/views/button_dropdown_test.cc',

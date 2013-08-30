@@ -469,8 +469,7 @@ void OmniboxViewGtk::OnTabChanged(const WebContents* web_contents) {
 void OmniboxViewGtk::Update() {
   const ToolbarModel::SecurityLevel old_security_level = security_level_;
   security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
-  if (model()->UpdatePermanentText(
-      controller()->GetToolbarModel()->GetText(true)))
+  if (model()->UpdatePermanentText())
     RevertAll();
   else if (old_security_level != security_level_)
     EmphasizeURLComponents();

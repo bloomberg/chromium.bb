@@ -138,10 +138,10 @@ class OmniboxEditModel {
   // that state has changed.
   void SetInputInProgress(bool in_progress);
 
-  // Updates permanent_text_ to |new_permanent_text|.  Returns true if this
-  // change should be immediately user-visible, because either the user is not
-  // editing or the edit does not have focus.
-  bool UpdatePermanentText(const string16& new_permanent_text);
+  // Updates permanent_text_ to the current permanent text from the toolbar
+  // model.  Returns true if this change should be immediately user-visible,
+  // because either the user is not editing or the edit does not have focus.
+  bool UpdatePermanentText();
 
   // Returns the URL corresponding to the permanent text.
   GURL PermanentURL();

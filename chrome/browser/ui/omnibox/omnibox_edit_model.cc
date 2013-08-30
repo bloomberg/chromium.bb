@@ -251,7 +251,7 @@ AutocompleteMatch OmniboxEditModel::CurrentMatch(
   return match;
 }
 
-bool OmniboxEditModel::UpdatePermanentText(const string16& new_permanent_text) {
+bool OmniboxEditModel::UpdatePermanentText() {
   // When there's a new URL, and the user is not editing anything or the edit
   // doesn't have focus, we want to revert the edit to show the new URL.  (The
   // common case where the edit doesn't have focus is when the user has started
@@ -263,6 +263,7 @@ bool OmniboxEditModel::UpdatePermanentText(const string16& new_permanent_text) {
   // process -- before and after the auto-commit, the omnibox should show the
   // same user text and the same instant suggestion, even if the auto-commit
   // happens while the edit doesn't have focus.
+  string16 new_permanent_text = controller_->GetToolbarModel()->GetText(true);
   string16 gray_text = view_->GetGrayTextAutocompletion();
   const bool visibly_changed_permanent_text =
       (permanent_text_ != new_permanent_text) &&
@@ -724,7 +725,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
 
   if (disposition != NEW_BACKGROUND_TAB) {
     base::AutoReset<bool> tmp(&in_revert_, true);
-    view_->RevertAll();  // Revert the box to its unedited state
+    view_->RevertAll();  // Revert the box to its unedited state.
   }
 
   if (match.type == AutocompleteMatchType::EXTENSION_APP) {
