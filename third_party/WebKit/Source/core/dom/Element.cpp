@@ -1194,7 +1194,7 @@ KURL Element::baseURI() const
     return KURL(parentBase, baseAttribute);
 }
 
-const AtomicString& Element::imageSourceURL() const
+const AtomicString Element::imageSourceURL() const
 {
     return getAttribute(srcAttr);
 }

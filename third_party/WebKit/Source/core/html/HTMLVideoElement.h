@@ -83,7 +83,7 @@ private:
     virtual bool hasVideo() const { return player() && player()->hasVideo(); }
     virtual bool supportsFullscreen() const;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
-    virtual const AtomicString& imageSourceURL() const OVERRIDE;
+    virtual const AtomicString imageSourceURL() const OVERRIDE;
 
     virtual bool hasAvailableVideoFrame() const;
     virtual void updateDisplayState();

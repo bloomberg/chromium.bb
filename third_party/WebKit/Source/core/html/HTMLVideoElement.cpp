@@ -163,7 +163,7 @@ bool HTMLVideoElement::isURLAttribute(const Attribute& attribute) const
     return attribute.name() == posterAttr || HTMLMediaElement::isURLAttribute(attribute);
 }
 
-const AtomicString& HTMLVideoElement::imageSourceURL() const
+const AtomicString HTMLVideoElement::imageSourceURL() const
 {
     const AtomicString& url = getAttribute(posterAttr);
     if (!stripLeadingAndTrailingHTMLSpaces(url).isEmpty())

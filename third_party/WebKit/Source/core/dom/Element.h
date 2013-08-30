@@ -500,7 +500,7 @@ public:
     KURL getURLAttribute(const QualifiedName&) const;
     KURL getNonEmptyURLAttribute(const QualifiedName&) const;
 
-    virtual const AtomicString& imageSourceURL() const;
+    virtual const AtomicString imageSourceURL() const;
     virtual String target() const { return String(); }
     virtual Image* imageContents() { return 0; }
 
