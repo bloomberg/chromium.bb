@@ -26,7 +26,7 @@
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
-#include "core/loader/TextResourceDecoder.h"
+#include "core/fetch/TextResourceDecoder.h"
 
 namespace WebCore {
 

@@ -30,7 +30,7 @@
 #include "config.h"
 #include "core/fetch/ShaderResource.h"
 
-#include "core/loader/TextResourceDecoder.h"
+#include "core/fetch/TextResourceDecoder.h"
 #include "core/platform/SharedBuffer.h"
 #include "wtf/text/StringBuilder.h"
 

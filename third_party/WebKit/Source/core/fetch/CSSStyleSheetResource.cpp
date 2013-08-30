@@ -30,7 +30,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/StyleSheetResourceClient.h"
-#include "core/loader/TextResourceDecoder.h"
+#include "core/fetch/TextResourceDecoder.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/HTTPParsers.h"
 #include "wtf/CurrentTime.h"

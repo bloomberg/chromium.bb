@@ -31,7 +31,7 @@
 #ifndef TextResourceDecoderBuilder_h
 #define TextResourceDecoderBuilder_h
 
-#include "core/loader/TextResourceDecoder.h"
+#include "core/fetch/TextResourceDecoder.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 

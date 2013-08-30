@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/fetch/ScriptResource.h"
 
-#include "core/loader/TextResourceDecoder.h"
+#include "core/fetch/TextResourceDecoder.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/HTTPParsers.h"

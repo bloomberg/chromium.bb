@@ -29,7 +29,7 @@
 
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceClientWalker.h"
-#include "core/loader/TextResourceDecoder.h"
+#include "core/fetch/TextResourceDecoder.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontCustomPlatformData.h"
 #include "core/platform/graphics/FontPlatformData.h"

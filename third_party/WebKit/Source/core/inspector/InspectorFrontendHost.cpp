@@ -32,10 +32,10 @@
 
 #include "bindings/v8/ScriptFunctionCall.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/fetch/TextResourceDecoder.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorFrontendClient.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/TextResourceDecoder.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/Frame.h"

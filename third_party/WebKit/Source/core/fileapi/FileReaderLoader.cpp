@@ -33,12 +33,12 @@
 #include "core/fileapi/FileReaderLoader.h"
 
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/fetch/TextResourceDecoder.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/BlobRegistry.h"
 #include "core/fileapi/BlobURL.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/fileapi/Stream.h"
-#include "core/loader/TextResourceDecoder.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"

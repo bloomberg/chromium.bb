@@ -27,7 +27,7 @@
 #include "core/dom/DecodedDataDocumentParser.h"
 
 #include "core/dom/Document.h"
-#include "core/loader/TextResourceDecoder.h"
+#include "core/fetch/TextResourceDecoder.h"
 
 namespace WebCore {
 
