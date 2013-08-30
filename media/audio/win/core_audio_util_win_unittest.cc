@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
 #include "media/audio/win/core_audio_util_win.h"
@@ -475,6 +477,38 @@ TEST_F(CoreAudioUtilWinTest, FillRenderEndpointBufferWithSilence) {
   EXPECT_EQ(num_queued_frames, endpoint_buffer_size);
 }
 
-//
+// This test can only succeed on a machine that has audio hardware
+// that has both input and output devices.  Currently this is the case
+// with our test bots and the CanRunAudioTest() method should make sure
+// that the test won't run in unsupported environments, but be warned.
+TEST_F(CoreAudioUtilWinTest, GetMatchingOutputDeviceID) {
+  if (!CanRunAudioTest())
+    return;
+
+  bool found_a_pair = false;
+
+  ScopedComPtr<IMMDeviceEnumerator> enumerator(
+      CoreAudioUtil::CreateDeviceEnumerator());
+  ASSERT_TRUE(enumerator);
+
+  // Enumerate all active input and output devices and fetch the ID of
+  // the associated device.
+  ScopedComPtr<IMMDeviceCollection> collection;
+  ASSERT_TRUE(SUCCEEDED(enumerator->EnumAudioEndpoints(eCapture,
+      DEVICE_STATE_ACTIVE, collection.Receive())));
+  UINT count = 0;
+  collection->GetCount(&count);
+  for (UINT i = 0; i < count && !found_a_pair; ++i) {
+    ScopedComPtr<IMMDevice> device;
+    collection->Item(i, device.Receive());
+    base::win::ScopedCoMem<WCHAR> wide_id;
+    device->GetId(&wide_id);
+    std::string id;
+    WideToUTF8(wide_id, wcslen(wide_id), &id);
+    found_a_pair = !CoreAudioUtil::GetMatchingOutputDeviceID(id).empty();
+  }
+
+  EXPECT_TRUE(found_a_pair);
+}
 
 }  // namespace media

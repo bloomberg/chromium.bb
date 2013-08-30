@@ -80,6 +80,12 @@ class MEDIA_EXPORT CoreAudioUtil {
   static std::string GetAudioControllerID(IMMDevice* device,
       IMMDeviceEnumerator* enumerator);
 
+  // Accepts an id of an input device and finds a matching output device id.
+  // If the associated hardware does not have an audio output device (e.g.
+  // a webcam with a mic), an empty string is returned.
+  static std::string GetMatchingOutputDeviceID(
+      const std::string& input_device_id);
+
   // Gets the user-friendly name of the endpoint device which is represented
   // by a unique id in |device_id|.
   static std::string GetFriendlyName(const std::string& device_id);

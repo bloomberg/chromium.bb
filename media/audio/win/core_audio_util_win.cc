@@ -365,6 +365,48 @@ std::string CoreAudioUtil::GetAudioControllerID(IMMDevice* device,
   return controller_id;
 }
 
+std::string CoreAudioUtil::GetMatchingOutputDeviceID(
+    const std::string& input_device_id) {
+  ScopedComPtr<IMMDevice> input_device(CreateDevice(input_device_id));
+  if (!input_device)
+    return std::string();
+
+  // See if we can get id of the associated controller.
+  ScopedComPtr<IMMDeviceEnumerator> enumerator(CreateDeviceEnumerator());
+  std::string controller_id(GetAudioControllerID(input_device, enumerator));
+  if (controller_id.empty())
+    return std::string();
+
+  // Now enumerate the available (and active) output devices and see if any of
+  // them is associated with the same controller.
+  ScopedComPtr<IMMDeviceCollection> collection;
+  enumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE,
+      collection.Receive());
+  if (!collection)
+    return std::string();
+
+  UINT count = 0;
+  collection->GetCount(&count);
+  ScopedComPtr<IMMDevice> output_device;
+  for (UINT i = 0; i < count; ++i) {
+    collection->Item(i, output_device.Receive());
+    std::string output_controller_id(CoreAudioUtil::GetAudioControllerID(
+        output_device, enumerator));
+    if (output_controller_id == controller_id)
+      break;
+    output_device = NULL;
+  }
+
+  std::string id;
+  if (output_device) {
+    ScopedCoMem<WCHAR> wide_id;
+    output_device->GetId(&wide_id);
+    WideToUTF8(wide_id, wcslen(wide_id), &id);
+  }
+
+  return id;
+}
+
 std::string CoreAudioUtil::GetFriendlyName(const std::string& device_id) {
   DCHECK(IsSupported());
   ScopedComPtr<IMMDevice> audio_device = CreateDevice(device_id);
