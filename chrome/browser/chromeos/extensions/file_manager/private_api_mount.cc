@@ -22,7 +22,7 @@
 using chromeos::disks::DiskMountManager;
 using content::BrowserThread;
 
-namespace file_manager {
+namespace extensions {
 namespace {
 
 // Creates a dictionary describing the mount point of |mount_point_info|.
@@ -41,7 +41,7 @@ base::DictionaryValue* CreateValueFromMountPoint(
   base::FilePath relative_mount_path;
   // Convert mount point path to relative path with the external file system
   // exposed within File API.
-  if (util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+  if (file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
           profile,
           extension_id,
           base::FilePath(mount_point_info.mount_path),
@@ -113,7 +113,7 @@ bool AddMountFunction::RunImpl() {
     case chromeos::MOUNT_TYPE_GOOGLE_DRIVE: {
       // Dispatch fake 'mounted' event because JS code depends on it.
       // TODO(hashimoto): Remove this redanduncy.
-      FileBrowserPrivateAPI::Get(profile_)->event_router()->
+      file_manager::FileBrowserPrivateAPI::Get(profile_)->event_router()->
           OnFileSystemMounted();
 
       // Pass back the drive mount point path as source path.
@@ -124,7 +124,7 @@ bool AddMountFunction::RunImpl() {
       break;
     }
     default: {
-      const base::FilePath path = util::GetLocalPathFromURL(
+      const base::FilePath path = file_manager::util::GetLocalPathFromURL(
           render_view_host(), profile(), GURL(file_url));
 
       if (path.empty()) {
@@ -206,11 +206,11 @@ bool RemoveMountFunction::RunImpl() {
 
   std::vector<GURL> file_paths;
   file_paths.push_back(GURL(mount_path));
-  util::GetSelectedFileInfo(
+  file_manager::util::GetSelectedFileInfo(
       render_view_host(),
       profile(),
       file_paths,
-      util::NEED_LOCAL_PATH_FOR_OPENING,
+      file_manager::util::NEED_LOCAL_PATH_FOR_OPENING,
       base::Bind(&RemoveMountFunction::GetSelectedFileInfoResponse, this));
   return true;
 }
@@ -283,4 +283,4 @@ bool GetMountPointsFunction::RunImpl() {
   return true;
 }
 
-}  // namespace file_manager
+}  // namespace extensions

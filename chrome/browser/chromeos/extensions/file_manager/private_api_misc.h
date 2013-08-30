@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/chromeos/extensions/file_manager/zip_file_creator.h"
 
-namespace file_manager {
+namespace extensions {
 
 // Implements the chrome.fileBrowserPrivate.logoutUser method.
 class LogoutUserFunction : public SyncExtensionFunction {
@@ -61,7 +61,7 @@ class SetPreferencesFunction : public SyncExtensionFunction {
 // Implements the chrome.fileBrowserPrivate.zipSelection method.
 // Creates a zip file for the selected files.
 class ZipSelectionFunction : public LoggedAsyncExtensionFunction,
-                             public ZipFileCreator::Observer {
+                             public file_manager::ZipFileCreator::Observer {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.zipSelection",
                              FILEBROWSERPRIVATE_ZIPSELECTION)
@@ -78,7 +78,7 @@ class ZipSelectionFunction : public LoggedAsyncExtensionFunction,
   virtual void OnZipDone(bool success) OVERRIDE;
 
  private:
-  scoped_refptr<ZipFileCreator> zip_file_creator_;
+  scoped_refptr<file_manager::ZipFileCreator> zip_file_creator_;
 };
 
 // Implements the chrome.fileBrowserPrivate.zoom method.
@@ -97,6 +97,6 @@ class ZoomFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-}  // namespace file_manager
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_

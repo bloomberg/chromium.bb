@@ -15,7 +15,7 @@ namespace ui {
 struct SelectedFileInfo;
 }
 
-namespace file_manager {
+namespace extensions {
 
 // Cancel file selection Dialog.  Closes the dialog window.
 class CancelFileDialogFunction : public LoggedAsyncExtensionFunction {
@@ -71,6 +71,6 @@ class SelectFilesFunction : public LoggedAsyncExtensionFunction {
       const std::vector<ui::SelectedFileInfo>& files);
 };
 
-}  // namespace file_manager
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_DIALOG_H_

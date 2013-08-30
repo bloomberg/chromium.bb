@@ -7,7 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/drive/logging.h"
 
-namespace file_manager {
+namespace extensions {
 namespace {
 
 const int kSlowOperationThresholdMs = 500;  // In ms.
@@ -43,4 +43,4 @@ void LoggedAsyncExtensionFunction::SendResponse(bool success) {
   AsyncExtensionFunction::SendResponse(success);
 }
 
-}  // namespace file_manager
+}  // namespace extensions

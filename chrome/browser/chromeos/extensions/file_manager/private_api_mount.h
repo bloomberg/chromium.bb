@@ -18,7 +18,7 @@ namespace ui {
 struct SelectedFileInfo;
 }
 
-namespace file_manager {
+namespace extensions {
 
 // Implements chrome.fileBrowserPrivate.addMount method.
 // Mounts a device or a file.
@@ -79,6 +79,6 @@ class GetMountPointsFunction : public LoggedAsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-}  // namespace file_manager
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MOUNT_H_

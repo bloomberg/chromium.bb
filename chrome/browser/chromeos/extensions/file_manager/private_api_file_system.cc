@@ -44,7 +44,7 @@ using content::ChildProcessSecurityPolicy;
 using content::WebContents;
 using fileapi::FileSystemURL;
 
-namespace file_manager {
+namespace extensions {
 namespace {
 
 // Error messages.
@@ -73,7 +73,7 @@ base::DictionaryValue* CreateValueFromDisk(
   std::string mount_path;
   if (!volume->mount_path().empty()) {
     base::FilePath relative_mount_path;
-    util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+    file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
         profile, extension_id, base::FilePath(volume->mount_path()),
         &relative_mount_path);
     mount_path = relative_mount_path.value();
@@ -118,7 +118,7 @@ void SetDriveMountPointPermissions(
   }
 
   fileapi::ExternalFileSystemBackend* backend =
-      util::GetFileSystemContextForRenderViewHost(
+      file_manager::util::GetFileSystemContextForRenderViewHost(
           profile, render_view_host)->external_backend();
   if (!backend)
     return;
@@ -280,7 +280,7 @@ bool RequestFileSystemFunction::RunImpl() {
   set_log_on_completion(true);
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      util::GetFileSystemContextForRenderViewHost(
+      file_manager::util::GetFileSystemContextForRenderViewHost(
           profile(), render_view_host());
 
   const GURL origin_url = source_url_.GetOrigin();
@@ -319,7 +319,7 @@ bool FileWatchFunctionBase::RunImpl() {
     return false;
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      util::GetFileSystemContextForRenderViewHost(
+      file_manager::util::GetFileSystemContextForRenderViewHost(
           profile(), render_view_host());
 
   FileSystemURL file_watch_url = file_system_context->CrackURL(GURL(url));
@@ -346,8 +346,8 @@ void AddFileWatchFunction::PerformFileWatchOperation(
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  EventRouter* event_router =
-      FileBrowserPrivateAPI::Get(profile_)->event_router();
+  file_manager::EventRouter* event_router =
+      file_manager::FileBrowserPrivateAPI::Get(profile_)->event_router();
   event_router->AddFileWatch(
       local_path,
       virtual_path,
@@ -367,8 +367,8 @@ void RemoveFileWatchFunction::PerformFileWatchOperation(
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  EventRouter* event_router =
-      FileBrowserPrivateAPI::Get(profile_)->event_router();
+  file_manager::EventRouter* event_router =
+      file_manager::FileBrowserPrivateAPI::Get(profile_)->event_router();
   event_router->RemoveFileWatch(local_path, extension_id);
   Respond(true);
 }
@@ -394,7 +394,7 @@ bool SetLastModifiedFunction::RunImpl() {
   if (!args_->GetString(1, &timestamp))
     return false;
 
-  base::FilePath local_path = util::GetLocalPathFromURL(
+  base::FilePath local_path = file_manager::util::GetLocalPathFromURL(
       render_view_host(), profile(), GURL(file_url));
 
   base::PostTaskAndReplyWithResult(
@@ -423,7 +423,7 @@ bool GetSizeStatsFunction::RunImpl() {
   if (!args_->GetString(0, &mount_url))
     return false;
 
-  base::FilePath file_path = util::GetLocalPathFromURL(
+  base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
       render_view_host(), profile(), GURL(mount_url));
   if (file_path.empty())
     return false;
@@ -508,7 +508,7 @@ bool GetVolumeMetadataFunction::RunImpl() {
     return false;
   }
 
-  base::FilePath file_path = util::GetLocalPathFromURL(
+  base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
       render_view_host(), profile(), GURL(volume_mount_url));
   if (file_path.empty()) {
     error_ = "Invalid mount path.";
@@ -549,7 +549,7 @@ bool ValidatePathNameLengthFunction::RunImpl() {
     return false;
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      util::GetFileSystemContextForRenderViewHost(
+      file_manager::util::GetFileSystemContextForRenderViewHost(
           profile(), render_view_host());
 
   fileapi::FileSystemURL filesystem_url(
@@ -598,7 +598,7 @@ bool FormatDeviceFunction::RunImpl() {
     return false;
   }
 
-  base::FilePath file_path = util::GetLocalPathFromURL(
+  base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
       render_view_host(), profile(), GURL(volume_file_url));
   if (file_path.empty())
     return false;
@@ -608,4 +608,4 @@ bool FormatDeviceFunction::RunImpl() {
   return true;
 }
 
-}  // namespace file_manager
+}  // namespace extensions

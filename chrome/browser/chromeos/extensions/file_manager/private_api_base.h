@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/extensions/extension_function.h"
 
-namespace file_manager {
+namespace extensions {
 
 // This class adds a logging feature to AsyncExtensionFunction. Logging is
 // done when sending the response to JavaScript, using drive::util::Log().
@@ -40,6 +40,6 @@ class LoggedAsyncExtensionFunction : public AsyncExtensionFunction {
   bool log_on_completion_;
 };
 
-}  // namespace file_manager
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_BASE_H_

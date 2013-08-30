@@ -18,7 +18,7 @@ using extensions::app_file_handler_util::PathAndMimeTypeSet;
 using extensions::Extension;
 using fileapi::FileSystemURL;
 
-namespace file_manager {
+namespace extensions {
 namespace {
 
 // Error messages.
@@ -79,8 +79,8 @@ bool ExecuteTaskFunction::RunImpl() {
   if (!args_->GetList(1, &files_list))
     return false;
 
-  file_tasks::TaskDescriptor task;
-  if (!file_tasks::ParseTaskID(task_id, &task)) {
+  file_manager::file_tasks::TaskDescriptor task;
+  if (!file_manager::file_tasks::ParseTaskID(task_id, &task)) {
     LOG(WARNING) << "Invalid task " << task_id;
     return false;
   }
@@ -89,7 +89,7 @@ bool ExecuteTaskFunction::RunImpl() {
     return true;
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      util::GetFileSystemContextForRenderViewHost(
+      file_manager::util::GetFileSystemContextForRenderViewHost(
           profile(), render_view_host());
 
   std::vector<FileSystemURL> file_urls;
@@ -107,8 +107,8 @@ bool ExecuteTaskFunction::RunImpl() {
     file_urls.push_back(url);
   }
 
-  int32 tab_id = util::GetTabId(dispatcher());
-  return file_tasks::ExecuteFileTask(
+  int32 tab_id = file_manager::util::GetTabId(dispatcher());
+  return file_manager::file_tasks::ExecuteFileTask(
       profile(),
       source_url(),
       extension_->id(),
@@ -149,7 +149,7 @@ bool GetFileTasksFunction::RunImpl() {
     return false;
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      util::GetFileSystemContextForRenderViewHost(
+      file_manager::util::GetFileSystemContextForRenderViewHost(
           profile(), render_view_host());
 
   // Collect all the URLs, convert them to GURLs, and crack all the urls into
@@ -179,7 +179,7 @@ bool GetFileTasksFunction::RunImpl() {
 
     // If MIME type is not provided, guess it from the file path.
     if (mime_type.empty())
-      mime_type = util::GetMimeTypeForPath(file_path);
+      mime_type = file_manager::util::GetMimeTypeForPath(file_path);
 
     path_mime_set.insert(std::make_pair(file_path, mime_type));
   }
@@ -187,11 +187,11 @@ bool GetFileTasksFunction::RunImpl() {
   ListValue* result_list = new ListValue();
   SetResult(result_list);
 
-  file_tasks::FindAllTypesOfTasks(profile_,
-                                  path_mime_set,
-                                  file_urls,
-                                  file_paths,
-                                  result_list);
+  file_manager::file_tasks::FindAllTypesOfTasks(profile_,
+                                                path_mime_set,
+                                                file_urls,
+                                                file_paths,
+                                                result_list);
   SendResponse(true);
   return true;
 }
@@ -213,7 +213,7 @@ bool SetDefaultTaskFunction::RunImpl() {
     return false;
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      util::GetFileSystemContextForRenderViewHost(
+      file_manager::util::GetFileSystemContextForRenderViewHost(
           profile(), render_view_host());
 
   std::set<std::string> suffixes =
@@ -239,12 +239,11 @@ bool SetDefaultTaskFunction::RunImpl() {
     return true;
   }
 
-  file_tasks::UpdateDefaultTask(profile_->GetPrefs(),
-                                task_id,
-                                suffixes,
-                                mime_types);
-
+  file_manager::file_tasks::UpdateDefaultTask(profile_->GetPrefs(),
+                                              task_id,
+                                              suffixes,
+                                              mime_types);
   return true;
 }
 
-}  // namespace file_manager
+}  // namespace extensions

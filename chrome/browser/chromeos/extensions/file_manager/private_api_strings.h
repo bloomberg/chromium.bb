@@ -9,7 +9,7 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
-namespace file_manager {
+namespace extensions {
 
 // Implements the chrome.fileBrowserPrivate.getStrings method.
 // Used to get strings for the file manager from JavaScript.
@@ -27,6 +27,6 @@ class GetStringsFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-}  // namespace file_manager
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_STRINGS_H_

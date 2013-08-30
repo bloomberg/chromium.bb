@@ -18,7 +18,7 @@ struct DriveAppInfo;
 struct SearchResultInfo;
 }
 
-namespace file_manager {
+namespace extensions {
 
 // Retrieves property information for an entry and returns it as a dictionary.
 // On error, returns a dictionary with the key "error" set to the error number
@@ -224,6 +224,6 @@ class GetShareUrlFunction : public LoggedAsyncExtensionFunction {
   void OnGetShareUrl(drive::FileError error, const GURL& share_url);
 };
 
-}  // namespace file_manager
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_DRIVE_H_

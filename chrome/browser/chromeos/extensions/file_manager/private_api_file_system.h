@@ -23,7 +23,7 @@ namespace fileapi {
 class FileSystemContext;
 }
 
-namespace file_manager {
+namespace extensions {
 
 // Implements the chrome.fileBrowserPrivate.requestFileSystem method.
 class RequestFileSystemFunction : public LoggedAsyncExtensionFunction {
@@ -213,6 +213,6 @@ class FormatDeviceFunction : public LoggedAsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-}  // namespace file_manager
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_FILE_SYSTEM_H_
