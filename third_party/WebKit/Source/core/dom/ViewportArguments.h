@@ -54,6 +54,7 @@ struct ViewportArguments {
         HandheldFriendlyMeta,
         MobileOptimizedMeta,
         ViewportMeta,
+        ViewportMetaLayoutSizeQuirk,
         CSSDeviceAdaptation
     } type;
 

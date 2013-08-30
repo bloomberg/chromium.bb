@@ -56,6 +56,7 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings)
     , m_deferredImageDecodingEnabled(false)
     , m_doubleTapToZoomEnabled(false)
     , m_supportDeprecatedTargetDensityDPI(false)
+    , m_viewportMetaLayoutSizeQuirk(false)
     , m_pinchOverlayScrollbarThickness(0)
 {
     ASSERT(settings);
@@ -179,6 +180,11 @@ void WebSettingsImpl::setJavaScriptCanOpenWindowsAutomatically(bool canOpenWindo
 void WebSettingsImpl::setSupportDeprecatedTargetDensityDPI(bool supportDeprecatedTargetDensityDPI)
 {
     m_supportDeprecatedTargetDensityDPI = supportDeprecatedTargetDensityDPI;
+}
+
+void WebSettingsImpl::setViewportMetaLayoutSizeQuirk(bool viewportMetaLayoutSizeQuirk)
+{
+    m_viewportMetaLayoutSizeQuirk = viewportMetaLayoutSizeQuirk;
 }
 
 void WebSettingsImpl::setSupportsMultipleWindows(bool supportsMultipleWindows)
