@@ -50,14 +50,10 @@ struct MockDiskEntry::CallbackInfo {
   int result;
 };
 
-MockDiskEntry::MockDiskEntry()
-    : test_mode_(0), doomed_(false), sparse_(false),
-      fail_requests_(false), busy_(false), delayed_(false) {
-}
-
 MockDiskEntry::MockDiskEntry(const std::string& key)
     : key_(key), doomed_(false), sparse_(false),
-      fail_requests_(false), busy_(false), delayed_(false) {
+      fail_requests_(false), fail_sparse_requests_(false), busy_(false),
+      delayed_(false) {
   test_mode_ = GetTestModeForEntry(key);
 }
 
@@ -139,6 +135,8 @@ int MockDiskEntry::WriteData(
 int MockDiskEntry::ReadSparseData(int64 offset, net::IOBuffer* buf, int buf_len,
                                   const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
+  if (fail_sparse_requests_)
+    return net::ERR_NOT_IMPLEMENTED;
   if (!sparse_ || busy_)
     return net::ERR_CACHE_OPERATION_NOT_SUPPORTED;
   if (offset < 0)
@@ -169,6 +167,8 @@ int MockDiskEntry::WriteSparseData(int64 offset, net::IOBuffer* buf,
                                    int buf_len,
                                    const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
+  if (fail_sparse_requests_)
+    return net::ERR_NOT_IMPLEMENTED;
   if (busy_)
     return net::ERR_CACHE_OPERATION_NOT_SUPPORTED;
   if (!sparse_) {
@@ -237,6 +237,8 @@ int MockDiskEntry::GetAvailableRange(int64 offset, int len, int64* start,
 }
 
 bool MockDiskEntry::CouldBeSparse() const {
+  if (fail_sparse_requests_)
+    return false;
   return sparse_;
 }
 
@@ -245,6 +247,8 @@ void MockDiskEntry::CancelSparseIO() {
 }
 
 int MockDiskEntry::ReadyForSparseIO(const net::CompletionCallback& callback) {
+  if (fail_sparse_requests_)
+    return net::ERR_NOT_IMPLEMENTED;
   if (!cancel_)
     return net::OK;
 
@@ -333,7 +337,8 @@ bool MockDiskEntry::ignore_callbacks_ = false;
 
 MockDiskCache::MockDiskCache()
     : open_count_(0), create_count_(0), fail_requests_(false),
-      soft_failures_(false), double_create_check_(true) {
+      soft_failures_(false), double_create_check_(true),
+      fail_sparse_requests_(false) {
 }
 
 MockDiskCache::~MockDiskCache() {
@@ -410,6 +415,9 @@ int MockDiskCache::CreateEntry(const std::string& key,
 
   if (soft_failures_)
     new_entry->set_fail_requests();
+
+  if (fail_sparse_requests_)
+    new_entry->set_fail_sparse_requests();
 
   if (GetTestModeForEntry(key) & TEST_MODE_SYNC_CACHE_START)
     return net::OK;

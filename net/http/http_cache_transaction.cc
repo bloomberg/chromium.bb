@@ -1530,6 +1530,20 @@ int HttpCache::Transaction::DoCacheQueryData() {
 }
 
 int HttpCache::Transaction::DoCacheQueryDataComplete(int result) {
+#if defined(OS_ANDROID)
+  if (result == ERR_NOT_IMPLEMENTED) {
+    // Restart the request overwriting the cache entry.
+    //
+    // Note: this would have fixed range requests for debug builds on all OSes,
+    // not just Android, but karen@ prefers to limit the effect based on OS for
+    // cherry-picked fixes.
+    // TODO(pasko): remove the OS_ANDROID limitation as soon as the fix proves
+    // useful after the cherry-pick.
+    // TODO(pasko): remove this workaround as soon as the SimpleBackendImpl
+    // supports Sparse IO.
+    return DoRestartPartialRequest();
+  }
+#endif
   DCHECK_EQ(OK, result);
   if (!cache_.get())
     return ERR_UNEXPECTED;

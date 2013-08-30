@@ -496,7 +496,7 @@ int SimpleEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // TODO(gavinp): Determine if the simple backend should support sparse data.
   NOTIMPLEMENTED();
-  return net::ERR_FAILED;
+  return net::ERR_NOT_IMPLEMENTED;
 }
 
 SimpleEntryImpl::~SimpleEntryImpl() {
