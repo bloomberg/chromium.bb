@@ -65,13 +65,15 @@ void FillDriveEntryPropertiesValue(
 
 }  // namespace
 
-GetDriveEntryPropertiesFunction::GetDriveEntryPropertiesFunction() {
+FileBrowserPrivateGetDriveEntryPropertiesFunction::
+    FileBrowserPrivateGetDriveEntryPropertiesFunction() {
 }
 
-GetDriveEntryPropertiesFunction::~GetDriveEntryPropertiesFunction() {
+FileBrowserPrivateGetDriveEntryPropertiesFunction::
+    ~FileBrowserPrivateGetDriveEntryPropertiesFunction() {
 }
 
-bool GetDriveEntryPropertiesFunction::RunImpl() {
+bool FileBrowserPrivateGetDriveEntryPropertiesFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::string file_url_str;
@@ -97,11 +99,12 @@ bool GetDriveEntryPropertiesFunction::RunImpl() {
 
   integration_service->file_system()->GetResourceEntryByPath(
       file_path_,
-      base::Bind(&GetDriveEntryPropertiesFunction::OnGetFileInfo, this));
+      base::Bind(&FileBrowserPrivateGetDriveEntryPropertiesFunction::
+                     OnGetFileInfo, this));
   return true;
 }
 
-void GetDriveEntryPropertiesFunction::OnGetFileInfo(
+void FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetFileInfo(
     drive::FileError error,
     scoped_ptr<drive::ResourceEntry> entry) {
   DCHECK(properties_);
@@ -160,10 +163,11 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
 
   integration_service->file_system()->GetCacheEntryByPath(
       file_path_,
-      base::Bind(&GetDriveEntryPropertiesFunction::CacheStateReceived, this));
+      base::Bind(&FileBrowserPrivateGetDriveEntryPropertiesFunction::
+                     CacheStateReceived, this));
 }
 
-void GetDriveEntryPropertiesFunction::CacheStateReceived(
+void FileBrowserPrivateGetDriveEntryPropertiesFunction::CacheStateReceived(
     bool /* success */,
     const drive::FileCacheEntry& cache_entry) {
   // In case of an error (i.e. success is false), cache_entry.is_*() all
@@ -175,21 +179,23 @@ void GetDriveEntryPropertiesFunction::CacheStateReceived(
   CompleteGetFileProperties(drive::FILE_ERROR_OK);
 }
 
-void GetDriveEntryPropertiesFunction::CompleteGetFileProperties(
-    drive::FileError error) {
+void FileBrowserPrivateGetDriveEntryPropertiesFunction::
+    CompleteGetFileProperties(drive::FileError error) {
   if (error != drive::FILE_ERROR_OK)
     properties_->SetInteger("errorCode", error);
   SetResult(properties_.release());
   SendResponse(true);
 }
 
-PinDriveFileFunction::PinDriveFileFunction() {
+FileBrowserPrivatePinDriveFileFunction::
+    FileBrowserPrivatePinDriveFileFunction() {
 }
 
-PinDriveFileFunction::~PinDriveFileFunction() {
+FileBrowserPrivatePinDriveFileFunction::
+    ~FileBrowserPrivatePinDriveFileFunction() {
 }
 
-bool PinDriveFileFunction::RunImpl() {
+bool FileBrowserPrivatePinDriveFileFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string url;
   bool set_pin = false;
@@ -210,15 +216,18 @@ bool PinDriveFileFunction::RunImpl() {
           render_view_host(), profile(), GURL(url)));
   if (set_pin) {
     file_system->Pin(drive_path,
-                     base::Bind(&PinDriveFileFunction::OnPinStateSet, this));
+                     base::Bind(&FileBrowserPrivatePinDriveFileFunction::
+                                    OnPinStateSet, this));
   } else {
     file_system->Unpin(drive_path,
-                       base::Bind(&PinDriveFileFunction::OnPinStateSet, this));
+                       base::Bind(&FileBrowserPrivatePinDriveFileFunction::
+                                      OnPinStateSet, this));
   }
   return true;
 }
 
-void PinDriveFileFunction::OnPinStateSet(drive::FileError error) {
+void FileBrowserPrivatePinDriveFileFunction::
+    OnPinStateSet(drive::FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error == drive::FILE_ERROR_OK) {
@@ -229,14 +238,15 @@ void PinDriveFileFunction::OnPinStateSet(drive::FileError error) {
   }
 }
 
-GetDriveFilesFunction::GetDriveFilesFunction()
-    : local_paths_(NULL) {
+FileBrowserPrivateGetDriveFilesFunction::
+    FileBrowserPrivateGetDriveFilesFunction() : local_paths_(NULL) {
 }
 
-GetDriveFilesFunction::~GetDriveFilesFunction() {
+FileBrowserPrivateGetDriveFilesFunction::
+    ~FileBrowserPrivateGetDriveFilesFunction() {
 }
 
-bool GetDriveFilesFunction::RunImpl() {
+bool FileBrowserPrivateGetDriveFilesFunction::RunImpl() {
   ListValue* file_urls_as_strings = NULL;
   if (!args_->GetList(0, &file_urls_as_strings))
     return false;
@@ -258,7 +268,7 @@ bool GetDriveFilesFunction::RunImpl() {
   return true;
 }
 
-void GetDriveFilesFunction::GetFileOrSendResponse() {
+void FileBrowserPrivateGetDriveFilesFunction::GetFileOrSendResponse() {
   // Send the response if all files are obtained.
   if (remaining_drive_paths_.empty()) {
     SetResult(local_paths_);
@@ -280,11 +290,11 @@ void GetDriveFilesFunction::GetFileOrSendResponse() {
 
   integration_service->file_system()->GetFileByPath(
       drive_path,
-      base::Bind(&GetDriveFilesFunction::OnFileReady, this));
+      base::Bind(&FileBrowserPrivateGetDriveFilesFunction::OnFileReady, this));
 }
 
 
-void GetDriveFilesFunction::OnFileReady(
+void FileBrowserPrivateGetDriveFilesFunction::OnFileReady(
     drive::FileError error,
     const base::FilePath& local_path,
     scoped_ptr<drive::ResourceEntry> entry) {
@@ -311,13 +321,15 @@ void GetDriveFilesFunction::OnFileReady(
   GetFileOrSendResponse();
 }
 
-CancelFileTransfersFunction::CancelFileTransfersFunction() {
+FileBrowserPrivateCancelFileTransfersFunction::
+    FileBrowserPrivateCancelFileTransfersFunction() {
 }
 
-CancelFileTransfersFunction::~CancelFileTransfersFunction() {
+FileBrowserPrivateCancelFileTransfersFunction::
+    ~FileBrowserPrivateCancelFileTransfersFunction() {
 }
 
-bool CancelFileTransfersFunction::RunImpl() {
+bool FileBrowserPrivateCancelFileTransfersFunction::RunImpl() {
   ListValue* url_list = NULL;
   if (!args_->GetList(0, &url_list))
     return false;
@@ -372,13 +384,15 @@ bool CancelFileTransfersFunction::RunImpl() {
   return true;
 }
 
-SearchDriveFunction::SearchDriveFunction() {
+FileBrowserPrivateSearchDriveFunction::
+    FileBrowserPrivateSearchDriveFunction() {
 }
 
-SearchDriveFunction::~SearchDriveFunction() {
+FileBrowserPrivateSearchDriveFunction::
+    ~FileBrowserPrivateSearchDriveFunction() {
 }
 
-bool SearchDriveFunction::RunImpl() {
+bool FileBrowserPrivateSearchDriveFunction::RunImpl() {
   DictionaryValue* search_params;
   if (!args_->GetDictionary(0, &search_params))
     return false;
@@ -399,11 +413,11 @@ bool SearchDriveFunction::RunImpl() {
 
   integration_service->file_system()->Search(
       query, next_feed,
-      base::Bind(&SearchDriveFunction::OnSearch, this));
+      base::Bind(&FileBrowserPrivateSearchDriveFunction::OnSearch, this));
   return true;
 }
 
-void SearchDriveFunction::OnSearch(
+void FileBrowserPrivateSearchDriveFunction::OnSearch(
     drive::FileError error,
     const std::string& next_feed,
     scoped_ptr<std::vector<drive::SearchResultInfo> > results) {
@@ -441,13 +455,15 @@ void SearchDriveFunction::OnSearch(
   SendResponse(true);
 }
 
-SearchDriveMetadataFunction::SearchDriveMetadataFunction() {
+FileBrowserPrivateSearchDriveMetadataFunction::
+    FileBrowserPrivateSearchDriveMetadataFunction() {
 }
 
-SearchDriveMetadataFunction::~SearchDriveMetadataFunction() {
+FileBrowserPrivateSearchDriveMetadataFunction::
+    ~FileBrowserPrivateSearchDriveMetadataFunction() {
 }
 
-bool SearchDriveMetadataFunction::RunImpl() {
+bool FileBrowserPrivateSearchDriveMetadataFunction::RunImpl() {
   DictionaryValue* search_params;
   if (!args_->GetDictionary(0, &search_params))
     return false;
@@ -493,11 +509,12 @@ bool SearchDriveMetadataFunction::RunImpl() {
       query,
       options,
       max_results,
-      base::Bind(&SearchDriveMetadataFunction::OnSearchMetadata, this));
+      base::Bind(&FileBrowserPrivateSearchDriveMetadataFunction::
+                     OnSearchMetadata, this));
   return true;
 }
 
-void SearchDriveMetadataFunction::OnSearchMetadata(
+void FileBrowserPrivateSearchDriveMetadataFunction::OnSearchMetadata(
     drive::FileError error,
     scoped_ptr<drive::MetadataSearchResultVector> results) {
   if (error != drive::FILE_ERROR_OK) {
@@ -540,13 +557,15 @@ void SearchDriveMetadataFunction::OnSearchMetadata(
   SendResponse(true);
 }
 
-ClearDriveCacheFunction::ClearDriveCacheFunction() {
+FileBrowserPrivateClearDriveCacheFunction::
+    FileBrowserPrivateClearDriveCacheFunction() {
 }
 
-ClearDriveCacheFunction::~ClearDriveCacheFunction() {
+FileBrowserPrivateClearDriveCacheFunction::
+    ~FileBrowserPrivateClearDriveCacheFunction() {
 }
 
-bool ClearDriveCacheFunction::RunImpl() {
+bool FileBrowserPrivateClearDriveCacheFunction::RunImpl() {
   drive::DriveIntegrationService* integration_service =
       drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
   // |integration_service| is NULL if Drive is disabled.
@@ -562,13 +581,15 @@ bool ClearDriveCacheFunction::RunImpl() {
   return true;
 }
 
-GetDriveConnectionStateFunction::GetDriveConnectionStateFunction() {
+FileBrowserPrivateGetDriveConnectionStateFunction::
+    FileBrowserPrivateGetDriveConnectionStateFunction() {
 }
 
-GetDriveConnectionStateFunction::~GetDriveConnectionStateFunction() {
+FileBrowserPrivateGetDriveConnectionStateFunction::
+    ~FileBrowserPrivateGetDriveConnectionStateFunction() {
 }
 
-bool GetDriveConnectionStateFunction::RunImpl() {
+bool FileBrowserPrivateGetDriveConnectionStateFunction::RunImpl() {
   scoped_ptr<DictionaryValue> value(new DictionaryValue());
   scoped_ptr<ListValue> reasons(new ListValue());
 
@@ -606,13 +627,15 @@ bool GetDriveConnectionStateFunction::RunImpl() {
   return true;
 }
 
-RequestAccessTokenFunction::RequestAccessTokenFunction() {
+FileBrowserPrivateRequestAccessTokenFunction::
+    FileBrowserPrivateRequestAccessTokenFunction() {
 }
 
-RequestAccessTokenFunction::~RequestAccessTokenFunction() {
+FileBrowserPrivateRequestAccessTokenFunction::
+    ~FileBrowserPrivateRequestAccessTokenFunction() {
 }
 
-bool RequestAccessTokenFunction::RunImpl() {
+bool FileBrowserPrivateRequestAccessTokenFunction::RunImpl() {
   drive::DriveIntegrationService* integration_service =
       drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
   bool refresh;
@@ -631,23 +654,26 @@ bool RequestAccessTokenFunction::RunImpl() {
   // Retrieve the cached auth token (if available), otherwise the AuthService
   // instance will try to refetch it.
   integration_service->drive_service()->RequestAccessToken(
-      base::Bind(&RequestAccessTokenFunction::OnAccessTokenFetched, this));
+      base::Bind(&FileBrowserPrivateRequestAccessTokenFunction::
+                      OnAccessTokenFetched, this));
   return true;
 }
 
-void RequestAccessTokenFunction::OnAccessTokenFetched(
-    google_apis::GDataErrorCode code, const std::string& access_token) {
+void FileBrowserPrivateRequestAccessTokenFunction::OnAccessTokenFetched(
+    google_apis::GDataErrorCode code,
+    const std::string& access_token) {
   SetResult(new base::StringValue(access_token));
   SendResponse(true);
 }
 
-GetShareUrlFunction::GetShareUrlFunction() {
+FileBrowserPrivateGetShareUrlFunction::FileBrowserPrivateGetShareUrlFunction() {
 }
 
-GetShareUrlFunction::~GetShareUrlFunction() {
+FileBrowserPrivateGetShareUrlFunction::
+    ~FileBrowserPrivateGetShareUrlFunction() {
 }
 
-bool GetShareUrlFunction::RunImpl() {
+bool FileBrowserPrivateGetShareUrlFunction::RunImpl() {
   std::string file_url;
   if (!args_->GetString(0, &file_url))
     return false;
@@ -667,13 +693,14 @@ bool GetShareUrlFunction::RunImpl() {
   integration_service->file_system()->GetShareUrl(
       drive_path,
       file_manager::util::GetFileManagerBaseUrl(),  // embed origin
-      base::Bind(&GetShareUrlFunction::OnGetShareUrl, this));
+      base::Bind(&FileBrowserPrivateGetShareUrlFunction::OnGetShareUrl, this));
   return true;
 }
 
 
-void GetShareUrlFunction::OnGetShareUrl(drive::FileError error,
-                                        const GURL& share_url) {
+void FileBrowserPrivateGetShareUrlFunction::OnGetShareUrl(
+    drive::FileError error,
+    const GURL& share_url) {
   if (error != drive::FILE_ERROR_OK) {
     error_ = "Share Url for this item is not available.";
     SendResponse(false);

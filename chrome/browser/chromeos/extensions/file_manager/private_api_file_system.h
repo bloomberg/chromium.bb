@@ -26,15 +26,16 @@ class FileSystemContext;
 namespace extensions {
 
 // Implements the chrome.fileBrowserPrivate.requestFileSystem method.
-class RequestFileSystemFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateRequestFileSystemFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.requestFileSystem",
                              FILEBROWSERPRIVATE_REQUESTFILESYSTEM)
 
-  RequestFileSystemFunction();
+  FileBrowserPrivateRequestFileSystemFunction();
 
  protected:
-  virtual ~RequestFileSystemFunction();
+  virtual ~FileBrowserPrivateRequestFileSystemFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -63,9 +64,10 @@ class RequestFileSystemFunction : public LoggedAsyncExtensionFunction {
       scoped_refptr<const extensions::Extension> extension);
 };
 
-// Base class for AddFileWatchFunction and RemoveFileWatchFunction. Although
-// it's called "FileWatch", the class and its sub classes are used only for
-// watching changes in directories.
+// Base class for FileBrowserPrivateAddFileWatchFunction and
+// FileBrowserPrivateRemoveFileWatchFunction. Although it's called "FileWatch",
+// the class and its sub classes are used only for watching changes in
+// directories.
 class FileWatchFunctionBase : public LoggedAsyncExtensionFunction {
  public:
   FileWatchFunctionBase();
@@ -88,15 +90,15 @@ class FileWatchFunctionBase : public LoggedAsyncExtensionFunction {
 
 // Implements the chrome.fileBrowserPrivate.addFileWatch method.
 // Starts watching changes in directories.
-class AddFileWatchFunction : public FileWatchFunctionBase {
+class FileBrowserPrivateAddFileWatchFunction : public FileWatchFunctionBase {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.addFileWatch",
                              FILEBROWSERPRIVATE_ADDFILEWATCH)
 
-  AddFileWatchFunction();
+  FileBrowserPrivateAddFileWatchFunction();
 
  protected:
-  virtual ~AddFileWatchFunction();
+  virtual ~FileBrowserPrivateAddFileWatchFunction();
 
   // FileWatchFunctionBase override.
   virtual void PerformFileWatchOperation(
@@ -108,15 +110,15 @@ class AddFileWatchFunction : public FileWatchFunctionBase {
 
 // Implements the chrome.fileBrowserPrivate.removeFileWatch method.
 // Stops watching changes in directories.
-class RemoveFileWatchFunction : public FileWatchFunctionBase {
+class FileBrowserPrivateRemoveFileWatchFunction : public FileWatchFunctionBase {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.removeFileWatch",
                              FILEBROWSERPRIVATE_REMOVEFILEWATCH)
 
-  RemoveFileWatchFunction();
+  FileBrowserPrivateRemoveFileWatchFunction();
 
  protected:
-  virtual ~RemoveFileWatchFunction();
+  virtual ~FileBrowserPrivateRemoveFileWatchFunction();
 
   // FileWatchFunctionBase override.
   virtual void PerformFileWatchOperation(
@@ -127,30 +129,32 @@ class RemoveFileWatchFunction : public FileWatchFunctionBase {
 
 // Implements the chrome.fileBrowserPrivate.setLastModified method.
 // Sets last modified date in seconds of local file
-class SetLastModifiedFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateSetLastModifiedFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.setLastModified",
                              FILEBROWSERPRIVATE_SETLASTMODIFIED)
 
-  SetLastModifiedFunction();
+  FileBrowserPrivateSetLastModifiedFunction();
 
  protected:
-  virtual ~SetLastModifiedFunction();
+  virtual ~FileBrowserPrivateSetLastModifiedFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 };
 
 // Implements the chrome.fileBrowserPrivate.getSizeStats method.
-class GetSizeStatsFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateGetSizeStatsFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getSizeStats",
                              FILEBROWSERPRIVATE_GETSIZESTATS)
 
-  GetSizeStatsFunction();
+  FileBrowserPrivateGetSizeStatsFunction();
 
  protected:
-  virtual ~GetSizeStatsFunction();
+  virtual ~FileBrowserPrivateGetSizeStatsFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -166,30 +170,32 @@ class GetSizeStatsFunction : public LoggedAsyncExtensionFunction {
 
 // Implements the chrome.fileBrowserPrivate.getVolumeMetadata method.
 // Retrieves devices meta-data. Expects volume's device path as an argument.
-class GetVolumeMetadataFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateGetVolumeMetadataFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getVolumeMetadata",
                              FILEBROWSERPRIVATE_GETVOLUMEMETADATA)
 
-  GetVolumeMetadataFunction();
+  FileBrowserPrivateGetVolumeMetadataFunction();
 
  protected:
-  virtual ~GetVolumeMetadataFunction();
+  virtual ~FileBrowserPrivateGetVolumeMetadataFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 };
 
 // Implements the chrome.fileBrowserPrivate.validatePathNameLength method.
-class ValidatePathNameLengthFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateValidatePathNameLengthFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.validatePathNameLength",
                              FILEBROWSERPRIVATE_VALIDATEPATHNAMELENGTH)
 
-  ValidatePathNameLengthFunction();
+  FileBrowserPrivateValidatePathNameLengthFunction();
 
  protected:
-  virtual ~ValidatePathNameLengthFunction();
+  virtual ~FileBrowserPrivateValidatePathNameLengthFunction();
 
   void OnFilePathLimitRetrieved(size_t current_length, size_t max_length);
 
@@ -199,15 +205,16 @@ class ValidatePathNameLengthFunction : public LoggedAsyncExtensionFunction {
 
 // Implements the chrome.fileBrowserPrivate.formatDevice method.
 // Formats Device given its mount path.
-class FormatDeviceFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateFormatDeviceFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.formatDevice",
                              FILEBROWSERPRIVATE_FORMATDEVICE)
 
-  FormatDeviceFunction();
+  FileBrowserPrivateFormatDeviceFunction();
 
  protected:
-  virtual ~FormatDeviceFunction();
+  virtual ~FileBrowserPrivateFormatDeviceFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;

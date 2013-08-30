@@ -20,24 +20,26 @@
 
 namespace extensions {
 
-LogoutUserFunction::LogoutUserFunction() {
+FileBrowserPrivateLogoutUserFunction::FileBrowserPrivateLogoutUserFunction() {
 }
 
-LogoutUserFunction::~LogoutUserFunction() {
+FileBrowserPrivateLogoutUserFunction::~FileBrowserPrivateLogoutUserFunction() {
 }
 
-bool LogoutUserFunction::RunImpl() {
+bool FileBrowserPrivateLogoutUserFunction::RunImpl() {
   chrome::AttemptUserExit();
   return true;
 }
 
-GetPreferencesFunction::GetPreferencesFunction() {
+FileBrowserPrivateGetPreferencesFunction::
+    FileBrowserPrivateGetPreferencesFunction() {
 }
 
-GetPreferencesFunction::~GetPreferencesFunction() {
+FileBrowserPrivateGetPreferencesFunction::
+    ~FileBrowserPrivateGetPreferencesFunction() {
 }
 
-bool GetPreferencesFunction::RunImpl() {
+bool FileBrowserPrivateGetPreferencesFunction::RunImpl() {
   scoped_ptr<DictionaryValue> value(new DictionaryValue());
 
   const PrefService* service = profile_->GetPrefs();
@@ -69,13 +71,15 @@ bool GetPreferencesFunction::RunImpl() {
   return true;
 }
 
-SetPreferencesFunction::SetPreferencesFunction() {
+FileBrowserPrivateSetPreferencesFunction::
+    FileBrowserPrivateSetPreferencesFunction() {
 }
 
-SetPreferencesFunction::~SetPreferencesFunction() {
+FileBrowserPrivateSetPreferencesFunction::
+    ~FileBrowserPrivateSetPreferencesFunction() {
 }
 
-bool SetPreferencesFunction::RunImpl() {
+bool FileBrowserPrivateSetPreferencesFunction::RunImpl() {
   base::DictionaryValue* value = NULL;
 
   if (!args_->GetDictionary(0, &value) || !value)
@@ -95,13 +99,15 @@ bool SetPreferencesFunction::RunImpl() {
   return true;
 }
 
-ZipSelectionFunction::ZipSelectionFunction() {
+FileBrowserPrivateZipSelectionFunction::
+    FileBrowserPrivateZipSelectionFunction() {
 }
 
-ZipSelectionFunction::~ZipSelectionFunction() {
+FileBrowserPrivateZipSelectionFunction::
+    ~FileBrowserPrivateZipSelectionFunction() {
 }
 
-bool ZipSelectionFunction::RunImpl() {
+bool FileBrowserPrivateZipSelectionFunction::RunImpl() {
   if (args_->GetSize() < 3) {
     return false;
   }
@@ -167,19 +173,19 @@ bool ZipSelectionFunction::RunImpl() {
   return true;
 }
 
-void ZipSelectionFunction::OnZipDone(bool success) {
+void FileBrowserPrivateZipSelectionFunction::OnZipDone(bool success) {
   SetResult(new base::FundamentalValue(success));
   SendResponse(true);
   Release();
 }
 
-ZoomFunction::ZoomFunction() {
+FileBrowserPrivateZoomFunction::FileBrowserPrivateZoomFunction() {
 }
 
-ZoomFunction::~ZoomFunction() {
+FileBrowserPrivateZoomFunction::~FileBrowserPrivateZoomFunction() {
 }
 
-bool ZoomFunction::RunImpl() {
+bool FileBrowserPrivateZoomFunction::RunImpl() {
   content::RenderViewHost* const view_host = render_view_host();
   std::string operation;
   args_->GetString(0, &operation);

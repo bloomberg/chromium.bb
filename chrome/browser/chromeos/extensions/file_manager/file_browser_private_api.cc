@@ -23,51 +23,82 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
   // Tasks related functions.
-  registry->RegisterFunction<extensions::ExecuteTaskFunction>();
-  registry->RegisterFunction<extensions::GetFileTasksFunction>();
-  registry->RegisterFunction<extensions::SetDefaultTaskFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateExecuteTaskFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateGetFileTasksFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateSetDefaultTaskFunction>();
 
   // Drive related functions.
-  registry->RegisterFunction<extensions::GetDriveEntryPropertiesFunction>();
-  registry->RegisterFunction<extensions::PinDriveFileFunction>();
-  registry->RegisterFunction<extensions::GetDriveFilesFunction>();
-  registry->RegisterFunction<extensions::CancelFileTransfersFunction>();
-  registry->RegisterFunction<extensions::SearchDriveFunction>();
-  registry->RegisterFunction<extensions::SearchDriveMetadataFunction>();
-  registry->RegisterFunction<extensions::ClearDriveCacheFunction>();
-  registry->RegisterFunction<extensions::GetDriveConnectionStateFunction>();
-  registry->RegisterFunction<extensions::RequestAccessTokenFunction>();
-  registry->RegisterFunction<extensions::GetShareUrlFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateGetDriveEntryPropertiesFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivatePinDriveFileFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateGetDriveFilesFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateCancelFileTransfersFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateSearchDriveFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateSearchDriveMetadataFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateClearDriveCacheFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateGetDriveConnectionStateFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateRequestAccessTokenFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateGetShareUrlFunction>();
 
   // Select file dialog related functions.
-  registry->RegisterFunction<extensions::CancelFileDialogFunction>();
-  registry->RegisterFunction<extensions::SelectFileFunction>();
-  registry->RegisterFunction<extensions::SelectFilesFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateCancelDialogFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateSelectFileFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateSelectFilesFunction>();
 
   // Mount points related functions.
-  registry->RegisterFunction<extensions::AddMountFunction>();
-  registry->RegisterFunction<extensions::RemoveMountFunction>();
-  registry->RegisterFunction<extensions::GetMountPointsFunction>();
+  registry->RegisterFunction<extensions::FileBrowserPrivateAddMountFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateRemoveMountFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateGetMountPointsFunction>();
 
   // Hundreds of strings for the file manager.
-  registry->RegisterFunction<extensions::GetStringsFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateGetStringsFunction>();
 
   // File system related functions.
-  registry->RegisterFunction<extensions::RequestFileSystemFunction>();
-  registry->RegisterFunction<extensions::AddFileWatchFunction>();
-  registry->RegisterFunction<extensions::RemoveFileWatchFunction>();
-  registry->RegisterFunction<extensions::SetLastModifiedFunction>();
-  registry->RegisterFunction<extensions::GetSizeStatsFunction>();
-  registry->RegisterFunction<extensions::GetVolumeMetadataFunction>();
-  registry->RegisterFunction<extensions::ValidatePathNameLengthFunction>();
-  registry->RegisterFunction<extensions::FormatDeviceFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateRequestFileSystemFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateAddFileWatchFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateRemoveFileWatchFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateSetLastModifiedFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateGetSizeStatsFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateGetVolumeMetadataFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateValidatePathNameLengthFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateFormatDeviceFunction>();
 
   // Miscellaneous functions.
-  registry->RegisterFunction<extensions::LogoutUserFunction>();
-  registry->RegisterFunction<extensions::GetPreferencesFunction>();
-  registry->RegisterFunction<extensions::SetPreferencesFunction>();
-  registry->RegisterFunction<extensions::ZipSelectionFunction>();
-  registry->RegisterFunction<extensions::ZoomFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateLogoutUserFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateGetPreferencesFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateSetPreferencesFunction>();
+  registry->RegisterFunction<
+    extensions::FileBrowserPrivateZipSelectionFunction>();
+  registry->RegisterFunction<extensions::FileBrowserPrivateZoomFunction>();
   event_router_->ObserveFileSystemEvents();
 }
 

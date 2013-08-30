@@ -23,15 +23,16 @@ namespace extensions {
 // Retrieves property information for an entry and returns it as a dictionary.
 // On error, returns a dictionary with the key "error" set to the error number
 // (drive::FileError).
-class GetDriveEntryPropertiesFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateGetDriveEntryPropertiesFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getDriveEntryProperties",
                              FILEBROWSERPRIVATE_GETDRIVEFILEPROPERTIES)
 
-  GetDriveEntryPropertiesFunction();
+  FileBrowserPrivateGetDriveEntryPropertiesFunction();
 
  protected:
-  virtual ~GetDriveEntryPropertiesFunction();
+  virtual ~FileBrowserPrivateGetDriveEntryPropertiesFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -50,15 +51,16 @@ class GetDriveEntryPropertiesFunction : public LoggedAsyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.pinDriveFile method.
-class PinDriveFileFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivatePinDriveFileFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.pinDriveFile",
                              FILEBROWSERPRIVATE_PINDRIVEFILE)
 
-  PinDriveFileFunction();
+  FileBrowserPrivatePinDriveFileFunction();
 
  protected:
-  virtual ~PinDriveFileFunction();
+  virtual ~FileBrowserPrivatePinDriveFileFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -76,15 +78,16 @@ class PinDriveFileFunction : public LoggedAsyncExtensionFunction {
 // file manager should check if the local paths returned from getDriveFiles()
 // contain empty paths.
 // TODO(satorux): Should we propagate error types to the JavaScript layer?
-class GetDriveFilesFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateGetDriveFilesFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getDriveFiles",
                              FILEBROWSERPRIVATE_GETDRIVEFILES)
 
-  GetDriveFilesFunction();
+  FileBrowserPrivateGetDriveFilesFunction();
 
  protected:
-  virtual ~GetDriveFilesFunction();
+  virtual ~FileBrowserPrivateGetDriveFilesFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -105,29 +108,31 @@ class GetDriveFilesFunction : public LoggedAsyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.cancelFileTransfers method.
-class CancelFileTransfersFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateCancelFileTransfersFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.cancelFileTransfers",
                              FILEBROWSERPRIVATE_CANCELFILETRANSFERS)
 
-  CancelFileTransfersFunction();
+  FileBrowserPrivateCancelFileTransfersFunction();
 
  protected:
-  virtual ~CancelFileTransfersFunction();
+  virtual ~FileBrowserPrivateCancelFileTransfersFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SearchDriveFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateSearchDriveFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.searchDrive",
                              FILEBROWSERPRIVATE_SEARCHDRIVE)
 
-  SearchDriveFunction();
+  FileBrowserPrivateSearchDriveFunction();
 
  protected:
-  virtual ~SearchDriveFunction();
+  virtual ~FileBrowserPrivateSearchDriveFunction();
 
   virtual bool RunImpl() OVERRIDE;
 
@@ -138,17 +143,18 @@ class SearchDriveFunction : public LoggedAsyncExtensionFunction {
                 scoped_ptr<std::vector<drive::SearchResultInfo> > result_paths);
 };
 
-// Similar to SearchDriveFunction but this one is used for searching drive
-// metadata which is stored locally.
-class SearchDriveMetadataFunction : public LoggedAsyncExtensionFunction {
+// Similar to FileBrowserPrivateSearchDriveFunction but this one is used for
+// searching drive metadata which is stored locally.
+class FileBrowserPrivateSearchDriveMetadataFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.searchDriveMetadata",
                              FILEBROWSERPRIVATE_SEARCHDRIVEMETADATA)
 
-  SearchDriveMetadataFunction();
+  FileBrowserPrivateSearchDriveMetadataFunction();
 
  protected:
-  virtual ~SearchDriveMetadataFunction();
+  virtual ~FileBrowserPrivateSearchDriveMetadataFunction();
 
   virtual bool RunImpl() OVERRIDE;
 
@@ -158,44 +164,47 @@ class SearchDriveMetadataFunction : public LoggedAsyncExtensionFunction {
                         scoped_ptr<drive::MetadataSearchResultVector> results);
 };
 
-class ClearDriveCacheFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateClearDriveCacheFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.clearDriveCache",
                              FILEBROWSERPRIVATE_CLEARDRIVECACHE)
 
-  ClearDriveCacheFunction();
+  FileBrowserPrivateClearDriveCacheFunction();
 
  protected:
-  virtual ~ClearDriveCacheFunction();
+  virtual ~FileBrowserPrivateClearDriveCacheFunction();
 
   virtual bool RunImpl() OVERRIDE;
 };
 
 // Implements the chrome.fileBrowserPrivate.getDriveConnectionState method.
-class GetDriveConnectionStateFunction : public SyncExtensionFunction {
+class FileBrowserPrivateGetDriveConnectionStateFunction
+    : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "fileBrowserPrivate.getDriveConnectionState",
       FILEBROWSERPRIVATE_GETDRIVECONNECTIONSTATE);
 
-  GetDriveConnectionStateFunction();
+  FileBrowserPrivateGetDriveConnectionStateFunction();
 
  protected:
-  virtual ~GetDriveConnectionStateFunction();
+  virtual ~FileBrowserPrivateGetDriveConnectionStateFunction();
 
   virtual bool RunImpl() OVERRIDE;
 };
 
 // Implements the chrome.fileBrowserPrivate.requestAccessToken method.
-class RequestAccessTokenFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateRequestAccessTokenFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.requestAccessToken",
                              FILEBROWSERPRIVATE_REQUESTACCESSTOKEN)
 
-  RequestAccessTokenFunction();
+  FileBrowserPrivateRequestAccessTokenFunction();
 
  protected:
-  virtual ~RequestAccessTokenFunction();
+  virtual ~FileBrowserPrivateRequestAccessTokenFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -206,15 +215,16 @@ class RequestAccessTokenFunction : public LoggedAsyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.getShareUrl method.
-class GetShareUrlFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateGetShareUrlFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getShareUrl",
                              FILEBROWSERPRIVATE_GETSHAREURL)
 
-  GetShareUrlFunction();
+  FileBrowserPrivateGetShareUrlFunction();
 
  protected:
-  virtual ~GetShareUrlFunction();
+  virtual ~FileBrowserPrivateGetShareUrlFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;

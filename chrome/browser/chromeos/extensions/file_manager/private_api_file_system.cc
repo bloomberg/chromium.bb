@@ -178,13 +178,15 @@ bool SetLastModifiedOnBlockingPool(const base::FilePath& local_path,
 
 }  // namespace
 
-RequestFileSystemFunction::RequestFileSystemFunction() {
+FileBrowserPrivateRequestFileSystemFunction::
+    FileBrowserPrivateRequestFileSystemFunction() {
 }
 
-RequestFileSystemFunction::~RequestFileSystemFunction() {
+FileBrowserPrivateRequestFileSystemFunction::
+    ~FileBrowserPrivateRequestFileSystemFunction() {
 }
 
-void RequestFileSystemFunction::DidOpenFileSystem(
+void FileBrowserPrivateRequestFileSystemFunction::DidOpenFileSystem(
     scoped_refptr<fileapi::FileSystemContext> file_system_context,
     base::PlatformFileError result,
     const std::string& name,
@@ -228,7 +230,7 @@ void RequestFileSystemFunction::DidOpenFileSystem(
   SendResponse(true);
 }
 
-void RequestFileSystemFunction::DidFail(
+void FileBrowserPrivateRequestFileSystemFunction::DidFail(
     base::PlatformFileError error_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -236,10 +238,11 @@ void RequestFileSystemFunction::DidFail(
   SendResponse(false);
 }
 
-bool RequestFileSystemFunction::SetupFileSystemAccessPermissions(
-    scoped_refptr<fileapi::FileSystemContext> file_system_context,
-    int child_id,
-    scoped_refptr<const extensions::Extension> extension) {
+bool FileBrowserPrivateRequestFileSystemFunction::
+    SetupFileSystemAccessPermissions(
+        scoped_refptr<fileapi::FileSystemContext> file_system_context,
+        int child_id,
+        scoped_refptr<const extensions::Extension> extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!extension.get())
@@ -271,7 +274,7 @@ bool RequestFileSystemFunction::SetupFileSystemAccessPermissions(
   return true;
 }
 
-bool RequestFileSystemFunction::RunImpl() {
+bool FileBrowserPrivateRequestFileSystemFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!dispatcher() || !render_view_host() || !render_view_host()->GetProcess())
@@ -288,7 +291,8 @@ bool RequestFileSystemFunction::RunImpl() {
       origin_url,
       fileapi::kFileSystemTypeExternal,
       fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
-      base::Bind(&RequestFileSystemFunction::DidOpenFileSystem,
+      base::Bind(&FileBrowserPrivateRequestFileSystemFunction::
+                     DidOpenFileSystem,
                  this,
                  file_system_context));
   return true;
@@ -334,13 +338,15 @@ bool FileWatchFunctionBase::RunImpl() {
   return true;
 }
 
-AddFileWatchFunction::AddFileWatchFunction() {
+FileBrowserPrivateAddFileWatchFunction::
+    FileBrowserPrivateAddFileWatchFunction() {
 }
 
-AddFileWatchFunction::~AddFileWatchFunction() {
+FileBrowserPrivateAddFileWatchFunction::
+    ~FileBrowserPrivateAddFileWatchFunction() {
 }
 
-void AddFileWatchFunction::PerformFileWatchOperation(
+void FileBrowserPrivateAddFileWatchFunction::PerformFileWatchOperation(
     const base::FilePath& local_path,
     const base::FilePath& virtual_path,
     const std::string& extension_id) {
@@ -352,16 +358,18 @@ void AddFileWatchFunction::PerformFileWatchOperation(
       local_path,
       virtual_path,
       extension_id,
-      base::Bind(&AddFileWatchFunction::Respond, this));
+      base::Bind(&FileBrowserPrivateAddFileWatchFunction::Respond, this));
 }
 
-RemoveFileWatchFunction::RemoveFileWatchFunction() {
+FileBrowserPrivateRemoveFileWatchFunction::
+    FileBrowserPrivateRemoveFileWatchFunction() {
 }
 
-RemoveFileWatchFunction::~RemoveFileWatchFunction() {
+FileBrowserPrivateRemoveFileWatchFunction::
+    ~FileBrowserPrivateRemoveFileWatchFunction() {
 }
 
-void RemoveFileWatchFunction::PerformFileWatchOperation(
+void FileBrowserPrivateRemoveFileWatchFunction::PerformFileWatchOperation(
     const base::FilePath& local_path,
     const base::FilePath& unused,
     const std::string& extension_id) {
@@ -373,13 +381,15 @@ void RemoveFileWatchFunction::PerformFileWatchOperation(
   Respond(true);
 }
 
-SetLastModifiedFunction::SetLastModifiedFunction() {
+FileBrowserPrivateSetLastModifiedFunction::
+    FileBrowserPrivateSetLastModifiedFunction() {
 }
 
-SetLastModifiedFunction::~SetLastModifiedFunction() {
+FileBrowserPrivateSetLastModifiedFunction::
+    ~FileBrowserPrivateSetLastModifiedFunction() {
 }
 
-bool SetLastModifiedFunction::RunImpl() {
+bool FileBrowserPrivateSetLastModifiedFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (args_->GetSize() != 2) {
@@ -403,18 +413,20 @@ bool SetLastModifiedFunction::RunImpl() {
       base::Bind(&SetLastModifiedOnBlockingPool,
                  local_path,
                  strtoul(timestamp.c_str(), NULL, 0)),
-      base::Bind(&SetLastModifiedFunction::SendResponse,
+      base::Bind(&FileBrowserPrivateSetLastModifiedFunction::SendResponse,
                  this));
   return true;
 }
 
-GetSizeStatsFunction::GetSizeStatsFunction() {
+FileBrowserPrivateGetSizeStatsFunction::
+    FileBrowserPrivateGetSizeStatsFunction() {
 }
 
-GetSizeStatsFunction::~GetSizeStatsFunction() {
+FileBrowserPrivateGetSizeStatsFunction::
+    ~FileBrowserPrivateGetSizeStatsFunction() {
 }
 
-bool GetSizeStatsFunction::RunImpl() {
+bool FileBrowserPrivateGetSizeStatsFunction::RunImpl() {
   if (args_->GetSize() != 1) {
     return false;
   }
@@ -443,7 +455,8 @@ bool GetSizeStatsFunction::RunImpl() {
         integration_service->file_system();
 
     file_system->GetAvailableSpace(
-        base::Bind(&GetSizeStatsFunction::GetDriveAvailableSpaceCallback,
+        base::Bind(&FileBrowserPrivateGetSizeStatsFunction::
+                       GetDriveAvailableSpaceCallback,
                    this));
 
   } else {
@@ -455,7 +468,8 @@ bool GetSizeStatsFunction::RunImpl() {
                    file_path.value(),
                    total_size,
                    remaining_size),
-        base::Bind(&GetSizeStatsFunction::GetSizeStatsCallback,
+        base::Bind(&FileBrowserPrivateGetSizeStatsFunction::
+                       GetSizeStatsCallback,
                    this,
                    base::Owned(total_size),
                    base::Owned(remaining_size)));
@@ -463,7 +477,7 @@ bool GetSizeStatsFunction::RunImpl() {
   return true;
 }
 
-void GetSizeStatsFunction::GetDriveAvailableSpaceCallback(
+void FileBrowserPrivateGetSizeStatsFunction::GetDriveAvailableSpaceCallback(
     drive::FileError error,
     int64 bytes_total,
     int64 bytes_used) {
@@ -478,7 +492,7 @@ void GetSizeStatsFunction::GetDriveAvailableSpaceCallback(
   }
 }
 
-void GetSizeStatsFunction::GetSizeStatsCallback(
+void FileBrowserPrivateGetSizeStatsFunction::GetSizeStatsCallback(
     const uint64* total_size,
     const uint64* remaining_size) {
   base::DictionaryValue* sizes = new base::DictionaryValue();
@@ -490,13 +504,15 @@ void GetSizeStatsFunction::GetSizeStatsCallback(
   SendResponse(true);
 }
 
-GetVolumeMetadataFunction::GetVolumeMetadataFunction() {
+FileBrowserPrivateGetVolumeMetadataFunction::
+    FileBrowserPrivateGetVolumeMetadataFunction() {
 }
 
-GetVolumeMetadataFunction::~GetVolumeMetadataFunction() {
+FileBrowserPrivateGetVolumeMetadataFunction::
+    ~FileBrowserPrivateGetVolumeMetadataFunction() {
 }
 
-bool GetVolumeMetadataFunction::RunImpl() {
+bool FileBrowserPrivateGetVolumeMetadataFunction::RunImpl() {
   if (args_->GetSize() != 1) {
     error_ = "Invalid argument count";
     return false;
@@ -533,13 +549,15 @@ bool GetVolumeMetadataFunction::RunImpl() {
   return true;
 }
 
-ValidatePathNameLengthFunction::ValidatePathNameLengthFunction() {
+FileBrowserPrivateValidatePathNameLengthFunction::
+    FileBrowserPrivateValidatePathNameLengthFunction() {
 }
 
-ValidatePathNameLengthFunction::~ValidatePathNameLengthFunction() {
+FileBrowserPrivateValidatePathNameLengthFunction::
+    ~FileBrowserPrivateValidatePathNameLengthFunction() {
 }
 
-bool ValidatePathNameLengthFunction::RunImpl() {
+bool FileBrowserPrivateValidatePathNameLengthFunction::RunImpl() {
   std::string parent_url;
   if (!args_->GetString(0, &parent_url))
     return false;
@@ -569,25 +587,28 @@ bool ValidatePathNameLengthFunction::RunImpl() {
       FROM_HERE,
       base::Bind(&GetFileNameMaxLengthOnBlockingPool,
                  filesystem_url.path().AsUTF8Unsafe()),
-      base::Bind(&ValidatePathNameLengthFunction::OnFilePathLimitRetrieved,
+      base::Bind(&FileBrowserPrivateValidatePathNameLengthFunction::
+                     OnFilePathLimitRetrieved,
                  this, name.size()));
   return true;
 }
 
-void ValidatePathNameLengthFunction::OnFilePathLimitRetrieved(
+void FileBrowserPrivateValidatePathNameLengthFunction::OnFilePathLimitRetrieved(
     size_t current_length,
     size_t max_length) {
   SetResult(new base::FundamentalValue(current_length <= max_length));
   SendResponse(true);
 }
 
-FormatDeviceFunction::FormatDeviceFunction() {
+FileBrowserPrivateFormatDeviceFunction::
+    FileBrowserPrivateFormatDeviceFunction() {
 }
 
-FormatDeviceFunction::~FormatDeviceFunction() {
+FileBrowserPrivateFormatDeviceFunction::
+    ~FileBrowserPrivateFormatDeviceFunction() {
 }
 
-bool FormatDeviceFunction::RunImpl() {
+bool FileBrowserPrivateFormatDeviceFunction::RunImpl() {
   if (args_->GetSize() != 1) {
     return false;
   }

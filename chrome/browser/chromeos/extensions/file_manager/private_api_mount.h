@@ -22,15 +22,15 @@ namespace extensions {
 
 // Implements chrome.fileBrowserPrivate.addMount method.
 // Mounts a device or a file.
-class AddMountFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateAddMountFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.addMount",
                              FILEBROWSERPRIVATE_ADDMOUNT)
 
-  AddMountFunction();
+  FileBrowserPrivateAddMountFunction();
 
  protected:
-  virtual ~AddMountFunction();
+  virtual ~FileBrowserPrivateAddMountFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -45,15 +45,16 @@ class AddMountFunction : public LoggedAsyncExtensionFunction {
 
 // Implements chrome.fileBrowserPrivate.removeMount method.
 // Unmounts selected device. Expects mount point path as an argument.
-class RemoveMountFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateRemoveMountFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.removeMount",
                              FILEBROWSERPRIVATE_REMOVEMOUNT)
 
-  RemoveMountFunction();
+  FileBrowserPrivateRemoveMountFunction();
 
  protected:
-  virtual ~RemoveMountFunction();
+  virtual ~FileBrowserPrivateRemoveMountFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -65,15 +66,16 @@ class RemoveMountFunction : public LoggedAsyncExtensionFunction {
 };
 
 // Implements chrome.fileBrowserPrivate.getMountPoints method.
-class GetMountPointsFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateGetMountPointsFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getMountPoints",
                              FILEBROWSERPRIVATE_GETMOUNTPOINTS)
 
-  GetMountPointsFunction();
+  FileBrowserPrivateGetMountPointsFunction();
 
  protected:
-  virtual ~GetMountPointsFunction();
+  virtual ~FileBrowserPrivateGetMountPointsFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;

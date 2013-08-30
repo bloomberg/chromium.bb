@@ -58,13 +58,14 @@ std::set<std::string> GetUniqueMimeTypes(base::ListValue* mime_type_list) {
 
 }  // namespace
 
-ExecuteTaskFunction::ExecuteTaskFunction() {
+FileBrowserPrivateExecuteTaskFunction::FileBrowserPrivateExecuteTaskFunction() {
 }
 
-ExecuteTaskFunction::~ExecuteTaskFunction() {
+FileBrowserPrivateExecuteTaskFunction::
+    ~FileBrowserPrivateExecuteTaskFunction() {
 }
 
-bool ExecuteTaskFunction::RunImpl() {
+bool FileBrowserPrivateExecuteTaskFunction::RunImpl() {
   // First param is task id that was to the extension with getFileTasks call.
   std::string task_id;
   if (!args_->GetString(0, &task_id) || !task_id.size())
@@ -115,21 +116,23 @@ bool ExecuteTaskFunction::RunImpl() {
       tab_id,
       task,
       file_urls,
-      base::Bind(&ExecuteTaskFunction::OnTaskExecuted, this));
+      base::Bind(&FileBrowserPrivateExecuteTaskFunction::OnTaskExecuted, this));
 }
 
-void ExecuteTaskFunction::OnTaskExecuted(bool success) {
+void FileBrowserPrivateExecuteTaskFunction::OnTaskExecuted(bool success) {
   SetResult(new base::FundamentalValue(success));
   SendResponse(true);
 }
 
-GetFileTasksFunction::GetFileTasksFunction() {
+FileBrowserPrivateGetFileTasksFunction::
+    FileBrowserPrivateGetFileTasksFunction() {
 }
 
-GetFileTasksFunction::~GetFileTasksFunction() {
+FileBrowserPrivateGetFileTasksFunction::
+    ~FileBrowserPrivateGetFileTasksFunction() {
 }
 
-bool GetFileTasksFunction::RunImpl() {
+bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {
   // First argument is the list of files to get tasks for.
   ListValue* files_list = NULL;
   if (!args_->GetList(0, &files_list))
@@ -200,13 +203,15 @@ bool GetFileTasksFunction::RunImpl() {
   return true;
 }
 
-SetDefaultTaskFunction::SetDefaultTaskFunction() {
+FileBrowserPrivateSetDefaultTaskFunction::
+    FileBrowserPrivateSetDefaultTaskFunction() {
 }
 
-SetDefaultTaskFunction::~SetDefaultTaskFunction() {
+FileBrowserPrivateSetDefaultTaskFunction::
+    ~FileBrowserPrivateSetDefaultTaskFunction() {
 }
 
-bool SetDefaultTaskFunction::RunImpl() {
+bool FileBrowserPrivateSetDefaultTaskFunction::RunImpl() {
   // First param is task id that was to the extension with setDefaultTask call.
   std::string task_id;
   if (!args_->GetString(0, &task_id) || !task_id.size())

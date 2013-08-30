@@ -68,13 +68,13 @@ base::DictionaryValue* CreateDownloadsMountPointInfo() {
 
 }  // namespace
 
-AddMountFunction::AddMountFunction() {
+FileBrowserPrivateAddMountFunction::FileBrowserPrivateAddMountFunction() {
 }
 
-AddMountFunction::~AddMountFunction() {
+FileBrowserPrivateAddMountFunction::~FileBrowserPrivateAddMountFunction() {
 }
 
-bool AddMountFunction::RunImpl() {
+bool FileBrowserPrivateAddMountFunction::RunImpl() {
   // The third argument is simply ignored.
   if (args_->GetSize() != 2 && args_->GetSize() != 3) {
     error_ = "Invalid argument count";
@@ -146,7 +146,7 @@ bool AddMountFunction::RunImpl() {
         }
         file_system->MarkCacheFileAsMounted(
             drive::util::ExtractDrivePath(path),
-            base::Bind(&AddMountFunction::OnMountedStateSet,
+            base::Bind(&FileBrowserPrivateAddMountFunction::OnMountedStateSet,
                        this, mount_type_str, display_name));
       } else {
         OnMountedStateSet(mount_type_str, display_name,
@@ -159,7 +159,7 @@ bool AddMountFunction::RunImpl() {
   return true;
 }
 
-void AddMountFunction::OnMountedStateSet(
+void FileBrowserPrivateAddMountFunction::OnMountedStateSet(
     const std::string& mount_type,
     const base::FilePath::StringType& file_name,
     drive::FileError error,
@@ -181,13 +181,14 @@ void AddMountFunction::OnMountedStateSet(
       file_name, DiskMountManager::MountTypeFromString(mount_type));
 }
 
-RemoveMountFunction::RemoveMountFunction() {
+FileBrowserPrivateRemoveMountFunction::FileBrowserPrivateRemoveMountFunction() {
 }
 
-RemoveMountFunction::~RemoveMountFunction() {
+FileBrowserPrivateRemoveMountFunction::
+    ~FileBrowserPrivateRemoveMountFunction() {
 }
 
-bool RemoveMountFunction::RunImpl() {
+bool FileBrowserPrivateRemoveMountFunction::RunImpl() {
   if (args_->GetSize() != 1) {
     return false;
   }
@@ -211,11 +212,12 @@ bool RemoveMountFunction::RunImpl() {
       profile(),
       file_paths,
       file_manager::util::NEED_LOCAL_PATH_FOR_OPENING,
-      base::Bind(&RemoveMountFunction::GetSelectedFileInfoResponse, this));
+      base::Bind(&FileBrowserPrivateRemoveMountFunction::
+                     GetSelectedFileInfoResponse, this));
   return true;
 }
 
-void RemoveMountFunction::GetSelectedFileInfoResponse(
+void FileBrowserPrivateRemoveMountFunction::GetSelectedFileInfoResponse(
     const std::vector<ui::SelectedFileInfo>& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -234,13 +236,15 @@ void RemoveMountFunction::GetSelectedFileInfoResponse(
   SendResponse(true);
 }
 
-GetMountPointsFunction::GetMountPointsFunction() {
+FileBrowserPrivateGetMountPointsFunction::
+    FileBrowserPrivateGetMountPointsFunction() {
 }
 
-GetMountPointsFunction::~GetMountPointsFunction() {
+FileBrowserPrivateGetMountPointsFunction::
+    ~FileBrowserPrivateGetMountPointsFunction() {
 }
 
-bool GetMountPointsFunction::RunImpl() {
+bool FileBrowserPrivateGetMountPointsFunction::RunImpl() {
   if (args_->GetSize())
     return false;
 

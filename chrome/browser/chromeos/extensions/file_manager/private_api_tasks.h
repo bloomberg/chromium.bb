@@ -23,15 +23,16 @@ class DriveAppRegistry;
 namespace extensions {
 
 // Implements the chrome.fileBrowserPrivate.executeTask method.
-class ExecuteTaskFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateExecuteTaskFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.executeTask",
                              FILEBROWSERPRIVATE_EXECUTETASK)
 
-  ExecuteTaskFunction();
+  FileBrowserPrivateExecuteTaskFunction();
 
  protected:
-  virtual ~ExecuteTaskFunction();
+  virtual ~FileBrowserPrivateExecuteTaskFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -40,30 +41,31 @@ class ExecuteTaskFunction : public LoggedAsyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.getFileTasks method.
-class GetFileTasksFunction : public LoggedAsyncExtensionFunction {
+class FileBrowserPrivateGetFileTasksFunction
+    : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getFileTasks",
                              FILEBROWSERPRIVATE_GETFILETASKS)
 
-  GetFileTasksFunction();
+  FileBrowserPrivateGetFileTasksFunction();
 
  protected:
-  virtual ~GetFileTasksFunction();
+  virtual ~FileBrowserPrivateGetFileTasksFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 };
 
 // Implements the chrome.fileBrowserPrivate.setDefaultTask method.
-class SetDefaultTaskFunction : public SyncExtensionFunction {
+class FileBrowserPrivateSetDefaultTaskFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.setDefaultTask",
                              FILEBROWSERPRIVATE_SETDEFAULTTASK)
 
-  SetDefaultTaskFunction();
+  FileBrowserPrivateSetDefaultTaskFunction();
 
  protected:
-  virtual ~SetDefaultTaskFunction();
+  virtual ~FileBrowserPrivateSetDefaultTaskFunction();
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;

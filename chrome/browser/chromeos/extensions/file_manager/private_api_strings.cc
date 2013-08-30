@@ -13,13 +13,13 @@
 
 namespace extensions {
 
-GetStringsFunction::GetStringsFunction() {
+FileBrowserPrivateGetStringsFunction::FileBrowserPrivateGetStringsFunction() {
 }
 
-GetStringsFunction::~GetStringsFunction() {
+FileBrowserPrivateGetStringsFunction::~FileBrowserPrivateGetStringsFunction() {
 }
 
-bool GetStringsFunction::RunImpl() {
+bool FileBrowserPrivateGetStringsFunction::RunImpl() {
   DictionaryValue* dict = new DictionaryValue();
   SetResult(dict);
 

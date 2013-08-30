@@ -13,26 +13,28 @@ using content::BrowserThread;
 
 namespace extensions {
 
-CancelFileDialogFunction::CancelFileDialogFunction() {
+FileBrowserPrivateCancelDialogFunction::
+    FileBrowserPrivateCancelDialogFunction() {
 }
 
-CancelFileDialogFunction::~CancelFileDialogFunction() {
+FileBrowserPrivateCancelDialogFunction::
+    ~FileBrowserPrivateCancelDialogFunction() {
 }
 
-bool CancelFileDialogFunction::RunImpl() {
+bool FileBrowserPrivateCancelDialogFunction::RunImpl() {
   int32 tab_id = file_manager::util::GetTabId(dispatcher());
   SelectFileDialogExtension::OnFileSelectionCanceled(tab_id);
   SendResponse(true);
   return true;
 }
 
-SelectFileFunction::SelectFileFunction() {
+FileBrowserPrivateSelectFileFunction::FileBrowserPrivateSelectFileFunction() {
 }
 
-SelectFileFunction::~SelectFileFunction() {
+FileBrowserPrivateSelectFileFunction::~FileBrowserPrivateSelectFileFunction() {
 }
 
-bool SelectFileFunction::RunImpl() {
+bool FileBrowserPrivateSelectFileFunction::RunImpl() {
   if (args_->GetSize() != 4) {
     return false;
   }
@@ -58,11 +60,12 @@ bool SelectFileFunction::RunImpl() {
       profile(),
       file_paths,
       option,
-      base::Bind(&SelectFileFunction::GetSelectedFileInfoResponse, this));
+      base::Bind(&FileBrowserPrivateSelectFileFunction::
+                     GetSelectedFileInfoResponse, this));
   return true;
 }
 
-void SelectFileFunction::GetSelectedFileInfoResponse(
+void FileBrowserPrivateSelectFileFunction::GetSelectedFileInfoResponse(
     const std::vector<ui::SelectedFileInfo>& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (files.size() != 1) {
@@ -76,13 +79,14 @@ void SelectFileFunction::GetSelectedFileInfoResponse(
   SendResponse(true);
 }
 
-SelectFilesFunction::SelectFilesFunction() {
+FileBrowserPrivateSelectFilesFunction::FileBrowserPrivateSelectFilesFunction() {
 }
 
-SelectFilesFunction::~SelectFilesFunction() {
+FileBrowserPrivateSelectFilesFunction::
+    ~FileBrowserPrivateSelectFilesFunction() {
 }
 
-bool SelectFilesFunction::RunImpl() {
+bool FileBrowserPrivateSelectFilesFunction::RunImpl() {
   if (args_->GetSize() != 2) {
     return false;
   }
@@ -110,11 +114,12 @@ bool SelectFilesFunction::RunImpl() {
       need_local_path ?
           file_manager::util::NEED_LOCAL_PATH_FOR_OPENING :
           file_manager::util::NO_LOCAL_PATH_RESOLUTION,
-      base::Bind(&SelectFilesFunction::GetSelectedFileInfoResponse, this));
+      base::Bind(&FileBrowserPrivateSelectFilesFunction::
+                     GetSelectedFileInfoResponse, this));
   return true;
 }
 
-void SelectFilesFunction::GetSelectedFileInfoResponse(
+void FileBrowserPrivateSelectFilesFunction::GetSelectedFileInfoResponse(
     const std::vector<ui::SelectedFileInfo>& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   int32 tab_id = file_manager::util::GetTabId(dispatcher());
