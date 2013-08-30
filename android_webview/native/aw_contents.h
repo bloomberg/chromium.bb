@@ -178,6 +178,7 @@ class AwContents : public FindHelper::Listener,
 
  private:
   void InitAutofillIfNecessary(bool enabled);
+  void SetAndroidWebViewRendererPrefs();
 
   JavaObjectWeakGlobalRef java_ref_;
   scoped_ptr<content::WebContents> web_contents_;

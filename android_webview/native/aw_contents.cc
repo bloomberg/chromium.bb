@@ -147,8 +147,7 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
   if (autofill_manager_delegate)
     InitAutofillIfNecessary(autofill_manager_delegate->GetSaveFormData());
 
-  web_contents_->GetMutableRendererPrefs()->tap_multiple_targets_strategy =
-      content::TAP_MULTIPLE_TARGETS_STRATEGY_NONE;
+  SetAndroidWebViewRendererPrefs();
 }
 
 void AwContents::SetJavaPeers(JNIEnv* env,
@@ -212,6 +211,18 @@ void AwContents::InitAutofillIfNecessary(bool enabled) {
       AwAutofillManagerDelegate::FromWebContents(web_contents),
       l10n_util::GetDefaultLocale(),
       AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+}
+
+void AwContents::SetAndroidWebViewRendererPrefs() {
+  content::RendererPreferences* prefs =
+      web_contents_->GetMutableRendererPrefs();
+  prefs->hinting = content::RENDERER_PREFERENCES_HINTING_SLIGHT;
+  prefs->tap_multiple_targets_strategy =
+      content::TAP_MULTIPLE_TARGETS_STRATEGY_NONE;
+  prefs->use_subpixel_positioning = true;
+  content::RenderViewHost* host = web_contents_->GetRenderViewHost();
+  if (host)
+    host->SyncRendererPrefs();
 }
 
 void AwContents::SetAwAutofillManagerDelegate(jobject delegate) {
