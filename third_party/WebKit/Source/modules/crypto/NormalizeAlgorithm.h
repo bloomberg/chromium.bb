@@ -31,6 +31,7 @@
 #ifndef NormalizeAlgorithm_h
 #define NormalizeAlgorithm_h
 
+#include "public/platform/WebCryptoAlgorithm.h"
 #include "wtf/Assertions.h"
 
 namespace WebKit { class WebCryptoAlgorithm; }
@@ -58,6 +59,10 @@ enum AlgorithmOperation {
 // Normalizes an algorithm identifier (dictionary) into a WebCryptoAlgorithm. If
 // normalization fails then returns false and sets the ExceptionState.
 bool normalizeAlgorithm(const Dictionary&, AlgorithmOperation, WebKit::WebCryptoAlgorithm&, ExceptionState&) WARN_UNUSED_RETURN;
+
+// Returns a null-terminated C-string literal. Caller can assume the pointer
+// will be valid for the program's entire runtime.
+const char* algorithmIdToName(WebKit::WebCryptoAlgorithmId);
 
 } // namespace WebCore
 

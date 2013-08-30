@@ -35,6 +35,7 @@
 #include "modules/crypto/AesKeyGenParams.h"
 #include "modules/crypto/HmacKeyParams.h"
 #include "modules/crypto/HmacParams.h"
+#include "modules/crypto/NormalizeAlgorithm.h"
 #include "modules/crypto/RsaKeyGenParams.h"
 #include "modules/crypto/RsaSsaParams.h"
 #include "wtf/text/WTFString.h"
@@ -71,7 +72,7 @@ Algorithm::Algorithm(const WebKit::WebCryptoAlgorithm& algorithm)
 
 String Algorithm::name()
 {
-    return m_algorithm.name();
+    return algorithmIdToName(m_algorithm.id());
 }
 
 } // namespace WebCore

@@ -39,36 +39,34 @@ namespace WebKit {
 
 class WebCryptoAlgorithmPrivate : public ThreadSafeRefCounted<WebCryptoAlgorithmPrivate> {
 public:
-    WebCryptoAlgorithmPrivate(WebCryptoAlgorithmId id, const char* name, PassOwnPtr<WebCryptoAlgorithmParams> params)
+    WebCryptoAlgorithmPrivate(WebCryptoAlgorithmId id, PassOwnPtr<WebCryptoAlgorithmParams> params)
         : id(id)
-        , name(name)
         , params(params)
     {
     }
 
     WebCryptoAlgorithmId id;
-    const char* const name;
     OwnPtr<WebCryptoAlgorithmParams> params;
 };
 
-WebCryptoAlgorithm::WebCryptoAlgorithm(WebCryptoAlgorithmId id, const char* name, PassOwnPtr<WebCryptoAlgorithmParams> params)
-    : m_private(adoptRef(new WebCryptoAlgorithmPrivate(id, name, params)))
+WebCryptoAlgorithm::WebCryptoAlgorithm(WebCryptoAlgorithmId id, PassOwnPtr<WebCryptoAlgorithmParams> params)
+    : m_private(adoptRef(new WebCryptoAlgorithmPrivate(id, params)))
 {
 }
 
-WebCryptoAlgorithm WebCryptoAlgorithm::adoptParamsAndCreate(WebCryptoAlgorithmId id, const char* name, WebCryptoAlgorithmParams* params)
+WebCryptoAlgorithm WebCryptoAlgorithm::adoptParamsAndCreate(WebCryptoAlgorithmId id, const char*, WebCryptoAlgorithmParams* params)
 {
-    return WebCryptoAlgorithm(id, name, adoptPtr(params));
+    return WebCryptoAlgorithm(id, adoptPtr(params));
+}
+
+WebCryptoAlgorithm WebCryptoAlgorithm::adoptParamsAndCreate(WebCryptoAlgorithmId id, WebCryptoAlgorithmParams* params)
+{
+    return WebCryptoAlgorithm(id, adoptPtr(params));
 }
 
 WebCryptoAlgorithmId WebCryptoAlgorithm::id() const
 {
     return m_private->id;
-}
-
-const char* WebCryptoAlgorithm::name() const
-{
-    return m_private->name;
 }
 
 WebCryptoAlgorithmParamsType WebCryptoAlgorithm::paramsType() const
