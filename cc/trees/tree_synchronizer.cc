@@ -5,6 +5,7 @@
 #include "cc/trees/tree_synchronizer.h"
 
 #include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "cc/animation/scrollbar_animation_controller.h"
@@ -16,7 +17,7 @@
 
 namespace cc {
 
-typedef ScopedPtrHashMap<int, LayerImpl> ScopedPtrLayerImplMap;
+typedef base::ScopedPtrHashMap<int, LayerImpl> ScopedPtrLayerImplMap;
 typedef base::hash_map<int, LayerImpl*> RawPtrLayerImplMap;
 
 void CollectExistingLayerImplRecursive(ScopedPtrLayerImplMap* old_layers,

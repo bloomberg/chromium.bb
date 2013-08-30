@@ -10,12 +10,12 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/scoped_ptr_hash_map.h"
 
 namespace cc {
 namespace internal {
@@ -113,7 +113,7 @@ class CC_EXPORT WorkerPool {
   // dependencies pointing in the direction of the dependents. Each task
   // need to be assigned a unique priority and a run count that matches
   // the number of dependencies.
-  typedef ScopedPtrHashMap<internal::WorkerPoolTask*, internal::GraphNode>
+  typedef base::ScopedPtrHashMap<internal::WorkerPoolTask*, internal::GraphNode>
       GraphNodeMap;
   typedef GraphNodeMap TaskGraph;
 

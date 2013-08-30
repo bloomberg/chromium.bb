@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include "cc/base/math_util.h"
@@ -152,7 +153,8 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order[i]->id, render_passes_in_draw_order[i]));
 
   std::vector<RenderPass::Id> passes_to_delete;
-  ScopedPtrHashMap<RenderPass::Id, CachedResource>::const_iterator pass_iter;
+  base::ScopedPtrHashMap<RenderPass::Id, CachedResource>::const_iterator
+      pass_iter;
   for (pass_iter = render_pass_textures_.begin();
        pass_iter != render_pass_textures_.end();
        ++pass_iter) {
@@ -170,7 +172,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
     DCHECK(texture);
 
     bool size_appropriate = texture->size().width() >= required_size.width() &&
-                           texture->size().height() >= required_size.height();
+                            texture->size().height() >= required_size.height();
     if (texture->id() &&
         (!size_appropriate || texture->format() != required_format))
       texture->Free();

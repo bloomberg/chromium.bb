@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/input/top_controls_manager.h"
@@ -4884,7 +4885,7 @@ TEST_F(LayerTreeHostImplTest, ReleaseContentsTextureShouldTriggerCommit) {
 }
 
 struct RenderPassRemovalTestData : public LayerTreeHostImpl::FrameData {
-  ScopedPtrHashMap<RenderPass::Id, TestRenderPass> render_pass_cache;
+  base::ScopedPtrHashMap<RenderPass::Id, TestRenderPass> render_pass_cache;
   scoped_ptr<SharedQuadState> shared_quad_state;
 };
 

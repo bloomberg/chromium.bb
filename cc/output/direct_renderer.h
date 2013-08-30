@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/renderer.h"
 #include "cc/resources/resource_provider.h"
@@ -123,7 +124,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
       DrawingFrame* frame,
       scoped_ptr<CopyOutputRequest> request) = 0;
 
-  ScopedPtrHashMap<RenderPass::Id, CachedResource> render_pass_textures_;
+  base::ScopedPtrHashMap<RenderPass::Id, CachedResource> render_pass_textures_;
   OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;
 

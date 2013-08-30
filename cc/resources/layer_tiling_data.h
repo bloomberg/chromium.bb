@@ -9,10 +9,10 @@
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
-#include "cc/base/scoped_ptr_hash_map.h"
 #include "cc/base/tiling_data.h"
 #include "ui/gfx/rect.h"
 
@@ -72,7 +72,7 @@ class CC_EXPORT LayerTilingData {
     DISALLOW_COPY_AND_ASSIGN(Tile);
   };
   typedef std::pair<int, int> TileMapKey;
-  typedef ScopedPtrHashMap<TileMapKey, Tile> TileMap;
+  typedef base::ScopedPtrHashMap<TileMapKey, Tile> TileMap;
 
   void AddTile(scoped_ptr<Tile> tile, int i, int j);
   scoped_ptr<Tile> TakeTile(int i, int j);

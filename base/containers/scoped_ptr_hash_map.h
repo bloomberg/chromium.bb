@@ -1,9 +1,9 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_BASE_SCOPED_PTR_HASH_MAP_H_
-#define CC_BASE_SCOPED_PTR_HASH_MAP_H_
+#ifndef BASE_CONTAINERS_SCOPED_PTR_HASH_MAP_H_
+#define BASE_CONTAINERS_SCOPED_PTR_HASH_MAP_H_
 
 #include <algorithm>
 #include <utility>
@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 
-namespace cc {
+namespace base {
 
 // This type acts like a hash_map<K, scoped_ptr<V> >, based on top of
 // base::hash_map. The ScopedPtrHashMap has ownership of all values in the data
@@ -152,6 +152,6 @@ class ScopedPtrHashMap {
   DISALLOW_COPY_AND_ASSIGN(ScopedPtrHashMap);
 };
 
-}  // namespace cc
+}  // namespace base
 
-#endif  // CC_BASE_SCOPED_PTR_HASH_MAP_H_
+#endif  // BASE_CONTAINERS_SCOPED_PTR_HASH_MAP_H_

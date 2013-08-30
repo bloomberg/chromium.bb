@@ -466,7 +466,7 @@ void TestWebGraphicsContext3D::bindBuffer(WebKit::WGC3Denum target,
   DCHECK(buffer_id && buffer_id < namespace_->next_buffer_id);
   DCHECK_EQ(context_id, context_id_);
 
-  ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
+  base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
   if (buffers.count(bound_buffer_) == 0)
     buffers.set(bound_buffer_, make_scoped_ptr(new Buffer).Pass());
 
@@ -478,7 +478,7 @@ void TestWebGraphicsContext3D::bufferData(WebKit::WGC3Denum target,
                                           const void* data,
                                           WebKit::WGC3Denum usage) {
   base::AutoLock lock(namespace_->lock);
-  ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
+  base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
   DCHECK_GT(buffers.count(bound_buffer_), 0u);
   DCHECK_EQ(target, buffers.get(bound_buffer_)->target);
   if (context_lost_) {
@@ -493,7 +493,7 @@ void TestWebGraphicsContext3D::bufferData(WebKit::WGC3Denum target,
 void* TestWebGraphicsContext3D::mapBufferCHROMIUM(WebKit::WGC3Denum target,
                                                   WebKit::WGC3Denum access) {
   base::AutoLock lock(namespace_->lock);
-  ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
+  base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
   DCHECK_GT(buffers.count(bound_buffer_), 0u);
   DCHECK_EQ(target, buffers.get(bound_buffer_)->target);
   if (times_map_buffer_chromium_succeeds_ >= 0) {
@@ -508,7 +508,7 @@ void* TestWebGraphicsContext3D::mapBufferCHROMIUM(WebKit::WGC3Denum target,
 WebKit::WGC3Dboolean TestWebGraphicsContext3D::unmapBufferCHROMIUM(
     WebKit::WGC3Denum target) {
   base::AutoLock lock(namespace_->lock);
-  ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
+  base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
   DCHECK_GT(buffers.count(bound_buffer_), 0u);
   DCHECK_EQ(target, buffers.get(bound_buffer_)->target);
   buffers.get(bound_buffer_)->pixels.reset();
@@ -521,7 +521,7 @@ WebKit::WGC3Duint TestWebGraphicsContext3D::createImageCHROMIUM(
   DCHECK_EQ(GL_RGBA8_OES, static_cast<int>(internalformat));
   WebKit::WGC3Duint image_id = NextImageId();
   base::AutoLock lock(namespace_->lock);
-  ScopedPtrHashMap<unsigned, Image>& images = namespace_->images;
+  base::ScopedPtrHashMap<unsigned, Image>& images = namespace_->images;
   images.set(image_id, make_scoped_ptr(new Image).Pass());
   images.get(image_id)->pixels.reset(new uint8[width * height * 4]);
   return image_id;
@@ -549,7 +549,7 @@ void TestWebGraphicsContext3D::getImageParameterivCHROMIUM(
 void* TestWebGraphicsContext3D::mapImageCHROMIUM(WebKit::WGC3Duint image_id,
                                                  WebKit::WGC3Denum access) {
   base::AutoLock lock(namespace_->lock);
-  ScopedPtrHashMap<unsigned, Image>& images = namespace_->images;
+  base::ScopedPtrHashMap<unsigned, Image>& images = namespace_->images;
   DCHECK_GT(images.count(image_id), 0u);
   if (times_map_image_chromium_succeeds_ >= 0) {
     if (!times_map_image_chromium_succeeds_) {

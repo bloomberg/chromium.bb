@@ -9,13 +9,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/scoped_ptr_hash_map.h"
 #include "cc/debug/fake_web_graphics_context_3d.h"
 #include "cc/output/context_provider.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -236,8 +236,8 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
     unsigned next_image_id;
     unsigned next_texture_id;
     std::vector<WebKit::WebGLId> textures;
-    ScopedPtrHashMap<unsigned, Buffer> buffers;
-    ScopedPtrHashMap<unsigned, Image> images;
+    base::ScopedPtrHashMap<unsigned, Buffer> buffers;
+    base::ScopedPtrHashMap<unsigned, Image> images;
 
    private:
     friend class base::RefCountedThreadSafe<Namespace>;

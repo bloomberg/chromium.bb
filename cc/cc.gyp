@@ -59,7 +59,6 @@
         'base/region.h',
         'base/scoped_ptr_algorithm.h',
         'base/scoped_ptr_deque.h',
-        'base/scoped_ptr_hash_map.h',
         'base/scoped_ptr_vector.h',
         'base/switches.cc',
         'base/switches.h',
