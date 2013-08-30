@@ -124,6 +124,12 @@ class MediaDrmBridge {
         return createMediaCrypto();
     }
 
+    @CalledByNative
+    private static boolean isCryptoSchemeSupported(byte[] schemeUUID, String containerMimeType) {
+        UUID cryptoScheme = getUUIDFromBytes(schemeUUID);
+        return MediaDrm.isCryptoSchemeSupported(cryptoScheme);
+    }
+
     /**
      * Create a new MediaDrmBridge from the crypto scheme UUID.
      *
@@ -194,7 +200,7 @@ class MediaDrmBridge {
             // NotProvisionedException happened during openSession().
             if (mSessionId == null) {
                 if (mPendingInitData != null) {
-                    Log.e(TAG, "generateKeyRequest is called when another call is pending.");
+                    Log.e(TAG, "generateKeyRequest called when another call is pending.");
                     onKeyError();
                     return;
                 }
@@ -302,7 +308,7 @@ class MediaDrmBridge {
      * @param response Response data from the provision server.
      */
     private void onProvisionResponse(byte[] response) {
-        Log.d(TAG, "provide key response.");
+        Log.d(TAG, "onProvisionResponse()");
 
         if (response == null || response.length == 0) {
             Log.e(TAG, "Invalid provision response.");

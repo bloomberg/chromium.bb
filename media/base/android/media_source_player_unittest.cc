@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/android/media_codec_bridge.h"
+#include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/media_source_player.h"
 #include "media/base/decoder_buffer.h"
@@ -176,6 +177,14 @@ class MediaSourcePlayerTest : public testing::Test {
 
   base::TimeTicks StartTimeTicks() {
     return player_->start_time_ticks_;
+  }
+
+  bool IsTypeSupported(const std::vector<uint8>& scheme_uuid,
+                       const std::string& security_level,
+                       const std::string& container,
+                       const std::vector<std::string>& codecs) {
+    return MediaSourcePlayer::IsTypeSupported(
+        scheme_uuid, security_level, container, codecs);
   }
 
  protected:
@@ -464,5 +473,47 @@ TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterInputEOS) {
   // No more request for data should be made.
   EXPECT_EQ(2, manager_->num_requests());
 }
+
+TEST_F(MediaSourcePlayerTest, CanPlayType_Widevine) {
+  if (!MediaCodecBridge::IsAvailable() || !MediaDrmBridge::IsAvailable())
+    return;
+
+  uint8 kWidevineUUID[] = { 0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,
+                            0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED };
+
+  std::vector<uint8> widevine_uuid(kWidevineUUID,
+                                   kWidevineUUID + arraysize(kWidevineUUID));
+
+  std::vector<std::string> codec_avc(1, "avc1");
+  EXPECT_TRUE(IsTypeSupported(widevine_uuid, "L3", "video/mp4", codec_avc));
+  EXPECT_TRUE(IsTypeSupported(widevine_uuid, "L1", "video/mp4", codec_avc));
+
+  std::vector<std::string> codec_vp8(1, "vp8");
+  EXPECT_TRUE(IsTypeSupported(widevine_uuid, "L3", "video/webm", codec_vp8));
+  EXPECT_FALSE(IsTypeSupported(widevine_uuid, "L1", "video/webm", codec_vp8));
+
+  std::vector<std::string> codec_vorbis(1, "vorbis");
+  EXPECT_TRUE(IsTypeSupported(widevine_uuid, "L3", "video/webm", codec_vorbis));
+  EXPECT_FALSE(
+      IsTypeSupported(widevine_uuid, "L1", "video/webm", codec_vorbis));
+}
+
+TEST_F(MediaSourcePlayerTest, CanPlayType_InvalidUUID) {
+  if (!MediaCodecBridge::IsAvailable() || !MediaDrmBridge::IsAvailable())
+    return;
+
+  uint8 kInvalidUUID[] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+                           0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
+
+  std::vector<uint8> invalid_uuid(kInvalidUUID,
+                                  kInvalidUUID + arraysize(kInvalidUUID));
+
+  std::vector<std::string> codec_avc(1, "avc1");
+  EXPECT_FALSE(IsTypeSupported(invalid_uuid, "L3", "video/mp4", codec_avc));
+  EXPECT_FALSE(IsTypeSupported(invalid_uuid, "L1", "video/mp4", codec_avc));
+}
+
+// TODO(xhwang): Are these IsTypeSupported tests device specific?
+// TODO(xhwang): Add more IsTypeSupported tests.
 
 }  // namespace media

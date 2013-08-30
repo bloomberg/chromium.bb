@@ -141,6 +141,16 @@ static bool GetPsshData(const uint8* data, int data_size,
   return false;
 }
 
+static MediaDrmBridge::SecurityLevel GetSecurityLevelFromString(
+    const std::string& security_level_str) {
+  if (0 == security_level_str.compare("L1"))
+    return MediaDrmBridge::SECURITY_LEVEL_1;
+  if (0 == security_level_str.compare("L3"))
+    return MediaDrmBridge::SECURITY_LEVEL_3;
+  DCHECK(security_level_str.empty());
+  return MediaDrmBridge::SECURITY_LEVEL_NONE;
+}
+
 // static
 MediaDrmBridge* MediaDrmBridge::Create(int media_keys_id,
                                        const std::vector<uint8>& scheme_uuid,
@@ -152,8 +162,28 @@ MediaDrmBridge* MediaDrmBridge::Create(int media_keys_id,
   return new MediaDrmBridge(media_keys_id, scheme_uuid, manager);
 }
 
+// static
 bool MediaDrmBridge::IsAvailable() {
   return base::android::BuildInfo::GetInstance()->sdk_int() >= 18;
+}
+
+// static
+bool MediaDrmBridge::IsSecureDecoderRequired(
+    const std::string& security_level_str) {
+  return IsSecureDecoderRequired(
+      GetSecurityLevelFromString(security_level_str));
+}
+
+bool MediaDrmBridge::IsCryptoSchemeSupported(
+    const std::vector<uint8>& scheme_uuid,
+    const std::string& container_mime_type) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jbyteArray> j_scheme_uuid =
+      base::android::ToJavaByteArray(env, &scheme_uuid[0], scheme_uuid.size());
+  ScopedJavaLocalRef<jstring> j_container_mime_type =
+      ConvertUTF8ToJavaString(env, container_mime_type);
+  return Java_MediaDrmBridge_isCryptoSchemeSupported(
+      env, j_scheme_uuid.obj(), j_container_mime_type.obj());
 }
 
 bool MediaDrmBridge::RegisterMediaDrmBridge(JNIEnv* env) {
@@ -267,22 +297,22 @@ ScopedJavaLocalRef<jobject> MediaDrmBridge::GetMediaCrypto() {
   return Java_MediaDrmBridge_getMediaCrypto(env, j_media_drm_.obj());
 }
 
+// static
+bool MediaDrmBridge::IsSecureDecoderRequired(SecurityLevel security_level) {
+  return MediaDrmBridge::SECURITY_LEVEL_1 == security_level;
+}
+
 MediaDrmBridge::SecurityLevel MediaDrmBridge::GetSecurityLevel() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_security_level =
       Java_MediaDrmBridge_getSecurityLevel(env, j_media_drm_.obj());
-  std::string security_level =
+  std::string security_level_str =
       ConvertJavaStringToUTF8(env, j_security_level.obj());
-  if (0 == security_level.compare("L1"))
-    return SECURITY_LEVEL_1;
-  if (0 == security_level.compare("L3"))
-    return SECURITY_LEVEL_3;
-  DCHECK(security_level.empty());
-  return SECURITY_LEVEL_NONE;
+  return GetSecurityLevelFromString(security_level_str);
 }
 
 bool MediaDrmBridge::IsProtectedSurfaceRequired() {
-  return MediaDrmBridge::SECURITY_LEVEL_1 == GetSecurityLevel();
+  return IsSecureDecoderRequired(GetSecurityLevel());
 }
 
 }  // namespace media

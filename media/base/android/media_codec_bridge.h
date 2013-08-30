@@ -39,6 +39,10 @@ class MEDIA_EXPORT MediaCodecBridge {
   // Returns true if MediaCodec is available on the device.
   static bool IsAvailable();
 
+  // Returns whether MediaCodecBridge has a decoder that |is_secure| and can
+  // decode |codec| type.
+  static bool CanDecode(const std::string& codec, bool is_secure);
+
   virtual ~MediaCodecBridge();
 
   // Resets both input and output, all indices previously returned in calls to
@@ -100,7 +104,7 @@ class MEDIA_EXPORT MediaCodecBridge {
   static bool RegisterMediaCodecBridge(JNIEnv* env);
 
  protected:
-  explicit MediaCodecBridge(const char* mime);
+  explicit MediaCodecBridge(const std::string& mime);
 
   // Calls start() against the media codec instance. Used in StartXXX() after
   // configuring media codec.
@@ -137,7 +141,7 @@ class AudioCodecBridge : public MediaCodecBridge {
   void SetVolume(double volume);
 
  private:
-  explicit AudioCodecBridge(const char* mime);
+  explicit AudioCodecBridge(const std::string& mime);
 
   // Configure the java MediaFormat object with the extra codec data passed in.
   bool ConfigureMediaFormat(jobject j_format, const AudioCodec codec,
@@ -156,7 +160,7 @@ class MEDIA_EXPORT VideoCodecBridge : public MediaCodecBridge {
              jobject media_crypto);
 
  private:
-  explicit VideoCodecBridge(const char* mime);
+  explicit VideoCodecBridge(const std::string& mime);
 };
 
 }  // namespace media

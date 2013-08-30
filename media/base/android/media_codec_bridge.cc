@@ -5,6 +5,7 @@
 #include "media/base/android/media_codec_bridge.h"
 
 #include <jni.h>
+#include <string>
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
@@ -27,7 +28,7 @@ namespace media {
 
 enum { kBufferFlagEndOfStream = 4 };
 
-static const char* AudioCodecToMimeType(const AudioCodec codec) {
+static const std::string AudioCodecToMimeType(const AudioCodec codec) {
   switch (codec) {
     case kCodecMP3:
       return "audio/mpeg";
@@ -36,19 +37,32 @@ static const char* AudioCodecToMimeType(const AudioCodec codec) {
     case kCodecAAC:
       return "audio/mp4a-latm";
     default:
-      return NULL;
+      return std::string();
   }
 }
 
-static const char* VideoCodecToMimeType(const VideoCodec codec) {
+static const std::string VideoCodecToMimeType(const VideoCodec codec) {
   switch (codec) {
     case kCodecH264:
       return "video/avc";
     case kCodecVP8:
       return "video/x-vnd.on2.vp8";
     default:
-      return NULL;
+      return std::string();
   }
+}
+
+static const std::string CodecTypeToMimeType(const std::string& codec) {
+  // TODO(xhwang): Shall we handle more detailed strings like "mp4a.40.2"?
+  if (codec == "avc1")
+    return "video/avc";
+  if (codec == "mp4a")
+    return "audio/mp4a-latm";
+  if (codec == "vp8" || codec == "vp8.0")
+    return "video/x-vnd.on2.vp8";
+  if (codec == "vorbis")
+    return "audio/vorbis";
+  return std::string();
 }
 
 static ScopedJavaLocalRef<jintArray> ToJavaIntArray(
@@ -72,14 +86,24 @@ bool MediaCodecBridge::IsAvailable() {
   return base::android::BuildInfo::GetInstance()->sdk_int() >= 16;
 }
 
-MediaCodecBridge::MediaCodecBridge(const char* mime) {
+// static
+bool MediaCodecBridge::CanDecode(const std::string& codec, bool is_secure) {
+  JNIEnv* env = AttachCurrentThread();
+  std::string mime = CodecTypeToMimeType(codec);
+  if (mime.empty())
+    return false;
+  ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
+  return !Java_MediaCodecBridge_create(env, j_mime.obj(), is_secure).is_null();
+}
+
+// TODO(xhwang): Support creating secure MediaCodecBridge.
+MediaCodecBridge::MediaCodecBridge(const std::string& mime) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
-  DCHECK(mime);
 
-  ScopedJavaLocalRef<jstring> j_type = ConvertUTF8ToJavaString(env, mime);
-  j_media_codec_.Reset(Java_MediaCodecBridge_create(
-      env, j_type.obj()));
+  DCHECK(!mime.empty());
+  ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
+  j_media_codec_.Reset(Java_MediaCodecBridge_create(env, j_mime.obj(), false));
 }
 
 MediaCodecBridge::~MediaCodecBridge() {
@@ -227,7 +251,7 @@ size_t MediaCodecBridge::FillInputBuffer(
   return size_to_copy;
 }
 
-AudioCodecBridge::AudioCodecBridge(const char* mime)
+AudioCodecBridge::AudioCodecBridge(const std::string& mime)
     : MediaCodecBridge(mime) {
 }
 
@@ -236,13 +260,16 @@ bool AudioCodecBridge::Start(
     const uint8* extra_data, size_t extra_data_size, bool play_audio,
     jobject media_crypto) {
   JNIEnv* env = AttachCurrentThread();
-  DCHECK(AudioCodecToMimeType(codec));
 
   if (!media_codec())
     return false;
 
+  std::string codec_string = AudioCodecToMimeType(codec);
+  if (codec_string.empty())
+    return false;
+
   ScopedJavaLocalRef<jstring> j_mime =
-      ConvertUTF8ToJavaString(env, AudioCodecToMimeType(codec));
+      ConvertUTF8ToJavaString(env, codec_string);
   ScopedJavaLocalRef<jobject> j_format(
       Java_MediaCodecBridge_createAudioFormat(
           env, j_mime.obj(), sample_rate, channel_count));
@@ -255,6 +282,7 @@ bool AudioCodecBridge::Start(
       env, media_codec(), j_format.obj(), media_crypto, 0, play_audio)) {
     return false;
   }
+
   StartInternal();
   return true;
 }
@@ -382,7 +410,7 @@ void AudioCodecBridge::SetVolume(double volume) {
   Java_MediaCodecBridge_setVolume(env, media_codec(), volume);
 }
 
-VideoCodecBridge::VideoCodecBridge(const char* mime)
+VideoCodecBridge::VideoCodecBridge(const std::string& mime)
     : MediaCodecBridge(mime) {
 }
 
@@ -390,13 +418,16 @@ bool VideoCodecBridge::Start(
     const VideoCodec codec, const gfx::Size& size, jobject surface,
     jobject media_crypto) {
   JNIEnv* env = AttachCurrentThread();
-  DCHECK(VideoCodecToMimeType(codec));
 
   if (!media_codec())
     return false;
 
+  std::string codec_string = VideoCodecToMimeType(codec);
+  if (codec_string.empty())
+    return false;
+
   ScopedJavaLocalRef<jstring> j_mime =
-      ConvertUTF8ToJavaString(env, VideoCodecToMimeType(codec));
+      ConvertUTF8ToJavaString(env, codec_string);
   ScopedJavaLocalRef<jobject> j_format(
       Java_MediaCodecBridge_createVideoFormat(
           env, j_mime.obj(), size.width(), size.height()));
@@ -410,13 +441,13 @@ bool VideoCodecBridge::Start(
 }
 
 AudioCodecBridge* AudioCodecBridge::Create(const AudioCodec codec) {
-  const char* mime = AudioCodecToMimeType(codec);
-  return mime ? new AudioCodecBridge(mime) : NULL;
+  const std::string mime = AudioCodecToMimeType(codec);
+  return mime.empty() ? NULL : new AudioCodecBridge(mime);
 }
 
 VideoCodecBridge* VideoCodecBridge::Create(const VideoCodec codec) {
-  const char* mime = VideoCodecToMimeType(codec);
-  return mime ? new VideoCodecBridge(mime) : NULL;
+  const std::string mime = VideoCodecToMimeType(codec);
+  return mime.empty() ? NULL : new VideoCodecBridge(mime);
 }
 
 bool MediaCodecBridge::RegisterMediaCodecBridge(JNIEnv* env) {

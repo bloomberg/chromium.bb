@@ -41,6 +41,11 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   MediaSourcePlayer(int player_id, MediaPlayerManager* manager);
   virtual ~MediaSourcePlayer();
 
+  static bool IsTypeSupported(const std::vector<uint8>& scheme_uuid,
+                              const std::string& security_level,
+                              const std::string& container,
+                              const std::vector<std::string>& codecs);
+
   // MediaPlayerAndroid implementation.
   virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) OVERRIDE;
   virtual void Start() OVERRIDE;

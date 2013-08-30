@@ -8,6 +8,8 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.MediaCodec;
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.view.Surface;
@@ -80,22 +82,50 @@ class MediaCodecBridge {
         private int numBytes() { return mNumBytes; }
     }
 
-    private MediaCodecBridge(String mime) throws IOException {
-        mMediaCodec = MediaCodec.createDecoderByType(mime);
+    private static String getSecureDecoderNameForMime(String mime) {
+        int count = MediaCodecList.getCodecCount();
+        for (int i = 0; i < count; ++i) {
+            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
+            if (info.isEncoder()) {
+                continue;
+            }
+
+            String[] supportedTypes = info.getSupportedTypes();
+            for (int j = 0; j < supportedTypes.length; ++j) {
+                if (supportedTypes[j].equalsIgnoreCase(mime)) {
+                    return info.getName() + ".secure";
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private MediaCodecBridge(MediaCodec mediaCodec) {
+        assert(mediaCodec != null);
+        mMediaCodec = mediaCodec;
         mLastPresentationTimeUs = 0;
         mFlushed = true;
     }
 
     @CalledByNative
-    private static MediaCodecBridge create(String mime) {
-        MediaCodecBridge mediaCodecBridge = null;
+    private static MediaCodecBridge create(String mime, boolean isSecure) {
+        MediaCodec mediaCodec = null;
         try {
-            mediaCodecBridge = new MediaCodecBridge(mime);
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to create MediaCodecBridge " + e.toString());
+            if (isSecure) {
+                mediaCodec = MediaCodec.createByCodecName(getSecureDecoderNameForMime(mime));
+            } else {
+                mediaCodec = MediaCodec.createDecoderByType(mime);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to create MediaCodec " + e.toString());
         }
 
-        return mediaCodecBridge;
+        if (mediaCodec == null) {
+            return null;
+        }
+
+        return new MediaCodecBridge(mediaCodec);
     }
 
     @CalledByNative

@@ -25,6 +25,24 @@ const int kBytesPerAudioOutputSample = 2;
 
 namespace media {
 
+// static
+bool MediaSourcePlayer::IsTypeSupported(
+    const std::vector<uint8>& scheme_uuid,
+    const std::string& security_level,
+    const std::string& container,
+    const std::vector<std::string>& codecs) {
+  if (!MediaDrmBridge::IsCryptoSchemeSupported(scheme_uuid, container))
+    return false;
+
+  bool is_secure = MediaDrmBridge::IsSecureDecoderRequired(security_level);
+  for (size_t i = 0; i < codecs.size(); ++i) {
+    if (!MediaCodecBridge::CanDecode(codecs[i], is_secure))
+      return false;
+  }
+
+  return true;
+}
+
 MediaSourcePlayer::MediaSourcePlayer(
     int player_id,
     MediaPlayerManager* manager)

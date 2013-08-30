@@ -39,6 +39,11 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   // Checks whether MediaDRM is available.
   static bool IsAvailable();
 
+  static bool IsCryptoSchemeSupported(const std::vector<uint8>& scheme_uuid,
+                                      const std::string& container_mime_type);
+
+  static bool IsSecureDecoderRequired(const std::string& security_level_str);
+
   static bool RegisterMediaDrmBridge(JNIEnv* env);
 
   // MediaKeys implementations.
@@ -78,6 +83,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   int media_keys_id() const { return media_keys_id_; }
 
  private:
+  static bool IsSecureDecoderRequired(SecurityLevel security_level);
+
   MediaDrmBridge(int media_keys_id,
                  const std::vector<uint8>& scheme_uuid,
                  MediaPlayerManager* manager);
