@@ -150,11 +150,6 @@ void TestFileSystemBackend::OpenFileSystem(
                base::PLATFORM_FILE_OK);
 }
 
-FileSystemFileUtil* TestFileSystemBackend::GetFileUtil(FileSystemType type) {
-  DCHECK(local_file_util_.get());
-  return local_file_util_->sync_file_util();
-}
-
 AsyncFileUtil* TestFileSystemBackend::GetAsyncFileUtil(FileSystemType type) {
   return local_file_util_.get();
 }

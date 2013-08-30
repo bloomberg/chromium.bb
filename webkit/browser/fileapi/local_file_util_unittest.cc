@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/async_file_test_helper.h"
+#include "webkit/browser/fileapi/async_file_util_adapter.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
@@ -57,8 +58,9 @@ class LocalFileUtilTest : public testing::Test {
   }
 
   LocalFileUtil* file_util() {
-    return static_cast<LocalFileUtil*>(
-        file_system_context_->GetFileUtil(kFileSystemType));
+    AsyncFileUtilAdapter* adapter = static_cast<AsyncFileUtilAdapter*>(
+        file_system_context_->GetAsyncFileUtil(kFileSystemType));
+    return static_cast<LocalFileUtil*>(adapter->sync_file_util());
   }
 
   FileSystemURL CreateURL(const std::string& file_name) {

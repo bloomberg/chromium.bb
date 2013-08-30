@@ -72,21 +72,6 @@ void IsolatedFileSystemBackend::OpenFileSystem(
                  base::PLATFORM_FILE_ERROR_SECURITY));
 }
 
-FileSystemFileUtil* IsolatedFileSystemBackend::GetFileUtil(
-    FileSystemType type) {
-  switch (type) {
-    case kFileSystemTypeNativeLocal:
-      return isolated_file_util_->sync_file_util();
-    case kFileSystemTypeDragged:
-      return dragged_file_util_->sync_file_util();
-    case kFileSystemTypeForTransientFile:
-      return transient_file_util_->sync_file_util();
-    default:
-      NOTREACHED();
-  }
-  return NULL;
-}
-
 AsyncFileUtil* IsolatedFileSystemBackend::GetAsyncFileUtil(
     FileSystemType type) {
   switch (type) {

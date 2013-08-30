@@ -20,7 +20,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_writer_delegate.h"
 #include "webkit/browser/fileapi/remove_operation_delegate.h"
-#include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
+#include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_types.h"
@@ -310,10 +310,10 @@ base::PlatformFileError FileSystemOperationImpl::SyncGetPlatformPath(
     const FileSystemURL& url,
     base::FilePath* platform_path) {
   DCHECK(SetPendingOperationType(kOperationGetLocalPath));
-  FileSystemFileUtil* file_util = file_system_context()->GetFileUtil(
-      url.type());
-  if (!file_util)
+  if (!file_system_context()->IsSandboxFileSystem(url.type()))
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+  FileSystemFileUtil* file_util =
+      file_system_context()->sandbox_delegate()->sync_file_util();
   file_util->GetLocalFilePath(operation_context_.get(), url, platform_path);
   return base::PLATFORM_FILE_OK;
 }

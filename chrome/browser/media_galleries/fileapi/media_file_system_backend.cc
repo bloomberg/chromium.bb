@@ -115,12 +115,6 @@ void MediaFileSystemBackend::OpenFileSystem(
                  base::PLATFORM_FILE_ERROR_SECURITY));
 }
 
-fileapi::FileSystemFileUtil* MediaFileSystemBackend::GetFileUtil(
-    fileapi::FileSystemType type) {
-  NOTREACHED();
-  return NULL;
-}
-
 fileapi::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
     fileapi::FileSystemType type) {
   switch (type) {

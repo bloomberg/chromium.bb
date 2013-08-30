@@ -61,12 +61,6 @@ void SyncFileSystemBackend::OpenFileSystem(
                             GetSyncableFileSystemRootURI(origin_url));
 }
 
-fileapi::FileSystemFileUtil* SyncFileSystemBackend::GetFileUtil(
-    fileapi::FileSystemType type) {
-  DCHECK(delegate_);
-  return delegate_->sync_file_util();
-}
-
 fileapi::AsyncFileUtil* SyncFileSystemBackend::GetAsyncFileUtil(
     fileapi::FileSystemType type) {
   DCHECK(delegate_);

@@ -40,7 +40,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
       FileSystemType type,
       OpenFileSystemMode mode,
       const OpenFileSystemCallback& callback) OVERRIDE;
-  virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
       FileSystemType type,

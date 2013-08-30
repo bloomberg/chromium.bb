@@ -119,11 +119,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   // Returns the appropriate AsyncFileUtil instance for the given |type|.
   AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) const;
 
-  // Returns the appropriate FileUtil instance for the given |type|.
-  // This may return NULL if it is given an invalid type or the filesystem
-  // does not support synchronous file operations.
-  FileSystemFileUtil* GetFileUtil(FileSystemType type) const;
-
   // Returns the appropriate CopyOrMoveFileValidatorFactory for the given
   // |type|.  If |error_code| is PLATFORM_FILE_OK and the result is NULL,
   // then no validator is required.

@@ -28,8 +28,6 @@ class SyncFileSystemBackend
       fileapi::FileSystemType type,
       fileapi::OpenFileSystemMode mode,
       const OpenFileSystemCallback& callback) OVERRIDE;
-  virtual fileapi::FileSystemFileUtil* GetFileUtil(
-      fileapi::FileSystemType type) OVERRIDE;
   virtual fileapi::AsyncFileUtil* GetAsyncFileUtil(
       fileapi::FileSystemType type) OVERRIDE;
   virtual fileapi::CopyOrMoveFileValidatorFactory*

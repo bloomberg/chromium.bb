@@ -200,14 +200,6 @@ AsyncFileUtil* FileSystemContext::GetAsyncFileUtil(
   return backend->GetAsyncFileUtil(type);
 }
 
-FileSystemFileUtil* FileSystemContext::GetFileUtil(
-    FileSystemType type) const {
-  FileSystemBackend* backend = GetFileSystemBackend(type);
-  if (!backend)
-    return NULL;
-  return backend->GetFileUtil(type);
-}
-
 CopyOrMoveFileValidatorFactory*
 FileSystemContext::GetCopyOrMoveFileValidatorFactory(
     FileSystemType type, base::PlatformFileError* error_code) const {

@@ -69,11 +69,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
       OpenFileSystemMode mode,
       const OpenFileSystemCallback& callback) = 0;
 
-  // Returns the specialized FileSystemFileUtil for this backend.
-  // It is ok to return NULL if the filesystem doesn't support synchronous
-  // version of FileUtil.
-  virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) = 0;
-
   // Returns the specialized AsyncFileUtil for this backend.
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) = 0;
 

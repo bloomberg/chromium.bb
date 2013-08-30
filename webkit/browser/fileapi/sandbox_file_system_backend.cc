@@ -86,11 +86,6 @@ void SandboxFileSystemBackend::OpenFileSystem(
       GetFileSystemRootURI(origin_url, type));
 }
 
-FileSystemFileUtil* SandboxFileSystemBackend::GetFileUtil(
-    FileSystemType type) {
-  return delegate_->sync_file_util();
-}
-
 AsyncFileUtil* SandboxFileSystemBackend::GetAsyncFileUtil(
     FileSystemType type) {
   DCHECK(delegate_);

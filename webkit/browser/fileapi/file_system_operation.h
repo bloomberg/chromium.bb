@@ -327,7 +327,8 @@ class FileSystemOperation {
                              const StatusCallback& callback) = 0;
 
   // Synchronously gets the platform path for the given |url|.
-  // This may fail if |file_system_context| returns NULL on GetFileUtil().
+  // This may fail if the given |url|'s filesystem type is neither
+  // temporary nor persistent.
   // In such a case, base::PLATFORM_FILE_ERROR_INVALID_OPERATION will be
   // returned.
   virtual base::PlatformFileError SyncGetPlatformPath(

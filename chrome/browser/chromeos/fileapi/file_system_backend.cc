@@ -214,13 +214,6 @@ std::vector<base::FilePath> FileSystemBackend::GetRootDirectories() const {
   return root_dirs;
 }
 
-fileapi::FileSystemFileUtil* FileSystemBackend::GetFileUtil(
-    fileapi::FileSystemType type) {
-  DCHECK(type == fileapi::kFileSystemTypeNativeLocal ||
-         type == fileapi::kFileSystemTypeRestrictedNativeLocal);
-  return local_file_util_->sync_file_util();
-}
-
 fileapi::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
     fileapi::FileSystemType type) {
   if (type == fileapi::kFileSystemTypeDrive)
