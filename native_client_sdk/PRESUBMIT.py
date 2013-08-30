@@ -21,6 +21,7 @@ def CommonChecks(input_api, output_api):
   black_list = [
     r'src[\\\/]build_tools[\\\/]tests[\\\/].*',
     r'src[\\\/]build_tools[\\\/]sdk_tools[\\\/]third_party[\\\/].*',
+    r'src[\\\/]doc[\\\/]*',
   ]
   canned = input_api.canned_checks
   output.extend(canned.RunPylint(input_api, output_api, black_list=black_list,

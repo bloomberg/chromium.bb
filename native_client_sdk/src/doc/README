@@ -1,0 +1,64 @@
+nacl-docs-rst
+=============
+
+Directory structure
+-------------------
+
+This is a tree of .rst files that represent the source of the NaCl
+documentation. Some of the files and directories here are special:
+
+* conf.py: Sphinx configuration file
+* images/: Images are stored here. Note that this isn't necessary - Sphinx
+  doesn't mind about interspersing images in .rst directories.
+* _sphinxext/: Code of the Sphinx extension we use to generate HTML from .rst
+* _static/: Static files, like CSS, for the documentation. This should be seen
+  as part of the infrastructure - the real CSS comes from the real doc
+  publishing server.
+* _build/: Build artifacts (not checked into source control).
+* Makefile & README
+
+How to build
+------------
+
+To build the docs you will needs sphinx installed (and sphinx-build in your
+path), and simply run:
+
+    make devsite
+
+To rebuild all the pages always, add 'SPHINXOPTS=-a', e.g.:
+
+    make SPHINXOPTS=-a devsite
+
+To emit local-testing mode, instead of production mode, add:
+ SPHINXOPTS='-D devsite_production_mode=0'
+e.g.:
+
+    make SPHINXOPTS='-D devsite_production_mode=0' devsite
+
+Production mode contains devsite-specific templating and non-HTML constructs.
+
+The builder prints out the value of this setting - make sure it's what you
+expect it to be. For example:
+
+  $ make devsite
+  sphinx-build -b devsite -d _build/doctrees   . _build/devsite
+  Running Sphinx v1.2b1
+  loading pickled environment... done
+  ----> Devsite builder with production mode = 1
+
+Local HTTP server to view the docs
+----------------------------------
+
+To view the HTML locally, build the docs with production mode turned off, and 
+run:
+
+    make serve
+
+This will start a webserver on the local machine, and allows the pages
+to be viewed by in a browser by navigating to:
+
+    http://localhost:8009/
+
+Serving through a server and not just file:/// because this way the <link>
+relative paths to CSS actually work.
+
