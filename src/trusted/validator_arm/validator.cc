@@ -359,7 +359,32 @@ nacl_arm_dec::ViolationSet SfiValidator::validate_branches(
             target_va);
       }
     } else if ((target_va & code_address_mask()) == 0) {
-      // Allow bundle-aligned, in-range direct jump.
+      // Ensure that relative direct branches which don't go to known
+      // segments are to bundle-aligned targets, and that the branch
+      // doesn't escape from the sandbox. ARM relative direct branches
+      // have a +/-32MiB range, code at the edges of the sandbox could
+      // therefore potentially escape if left unchecked. This implies
+      // that validation is position-dependent, which matters for
+      // validation caching: code segments need to be mapped at the same
+      // addresses as the ones at which they were validated.
+      //
+      // We could make it a sandbox invariant that user code cannot be
+      // mapped within 32MiB of the sandbox's edges (and then only check
+      // bundle alignment with is_bundle_head(target_va)), but this may
+      // break some assumptions in user code.
+      //
+      // We could also track the furthest negative and positive relative
+      // direct branches seen per segment and record that
+      // information. This information would then allow validation
+      // caching to be mostly position independent, as long as code
+      // segments are mapped far enough from the sandbox's edges.
+      //
+      // Branches leaving the segment could be useful for dynamic code
+      // generation as well as to directly branch to the runtime's
+      // trampolines. The IRT curently doesn't do the latter because the
+      // compiler doesn't know that the trampolines will be in range of
+      // relative direct branch immediates. Indirect branches are
+      // instead used and the loader doesn't reoptimize the code.
     } else {
       found_violations =
           nacl_arm_dec::ViolationUnion(
