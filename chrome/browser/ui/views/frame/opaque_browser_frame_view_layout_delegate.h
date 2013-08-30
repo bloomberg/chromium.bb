@@ -1,0 +1,63 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_LAYOUT_DELEGATE_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_LAYOUT_DELEGATE_H_
+
+namespace gfx {
+class Size;
+}
+
+// Delegate interface to control layout decisions without having to depend on
+// Browser{,Frame,View}.
+class OpaqueBrowserFrameViewLayoutDelegate {
+ public:
+  // Controls the visual placement of the window icon/title in non-tabstrip
+  // mode.
+  virtual bool ShouldShowWindowIcon() const = 0;
+  virtual bool ShouldShowWindowTitle() const = 0;
+  virtual string16 GetWindowTitle() const = 0;
+
+  // Returns the size of the window icon. This can be platform dependent
+  // because of differences in fonts, so its part of the interface.
+  virtual int GetIconSize() const = 0;
+
+  // Returns true if we should leave any offset at the frame caption. Typically
+  // when the frame is maximized/full screen we want to leave no offset at the
+  // top.
+  virtual bool ShouldLeaveOffsetNearTopBorder() const = 0;
+
+  // Returns the browser's minimum view size. Used because we need to calculate
+  // the minimum size for the entire non-client area.
+  virtual gfx::Size GetBrowserViewMinimumSize() const = 0;
+
+  // Controls the visualization of the avatar
+  virtual bool ShouldShowAvatar() const = 0;
+
+  // We don't have a ThemeProvider in the layout manager, so plumb in the icon
+  // source here.
+  virtual gfx::ImageSkia GetOTRAvatarIcon() const = 0;
+
+  // Controls window state.
+  virtual bool IsMaximized() const = 0;
+  virtual bool IsMinimized() const = 0;
+  virtual bool IsFullscreen() const = 0;
+
+  virtual bool IsTabStripVisible() const = 0;
+  virtual int GetTabStripHeight() const = 0;
+
+  // Various platforms need to be able to add more space to the
+  // tabstrip. Windows 8 metro mode uses this to account for the window
+  // switcher button.
+  virtual int GetAdditionalReservedSpaceInTabStrip() const = 0;
+
+  // Returns the tabstrips preferred size so the frame layout can work around
+  // it.
+  virtual gfx::Size GetTabstripPreferredSize() const = 0;
+
+ protected:
+  virtual ~OpaqueBrowserFrameViewLayoutDelegate() {}
+};
+
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_LAYOUT_DELEGATE_H_

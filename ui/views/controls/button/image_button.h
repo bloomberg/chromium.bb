@@ -20,6 +20,8 @@ namespace views {
 
 class VIEWS_EXPORT ImageButton : public CustomButton {
  public:
+  static const char kViewClassName[];
+
   enum HorizontalAlignment {
     ALIGN_LEFT = 0,
     ALIGN_CENTER,
@@ -56,6 +58,7 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
 
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Sets preferred size, so it could be correctly positioned in layout even if

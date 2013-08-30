@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/avatar_label.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -54,11 +55,13 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
       Profile* profile = browser_view_->browser()->profile();
       if (profile->IsManaged() && !avatar_label_) {
         avatar_label_ = new AvatarLabel(browser_view_);
+        avatar_label_->set_id(VIEW_ID_AVATAR_LABEL);
         AddChildView(avatar_label_);
       }
       avatar_button_ = new AvatarMenuButton(
           browser_view_->browser(),
           browser_view_->IsOffTheRecord() && !browser_view_->IsGuestSession());
+      avatar_button_->set_id(VIEW_ID_AVATAR_BUTTON);
       AddChildView(avatar_button_);
       frame_->GetRootView()->Layout();
     }

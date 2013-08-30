@@ -14,6 +14,17 @@ enum ViewID {
   // BROWSER WINDOW VIEWS
   // ------------------------------------------------------
 
+  // Views which make up the skyline. These are used only
+  // on views.
+  VIEW_ID_MINIMIZE_BUTTON,
+  VIEW_ID_MAXIMIZE_BUTTON,
+  VIEW_ID_RESTORE_BUTTON,
+  VIEW_ID_CLOSE_BUTTON,
+  VIEW_ID_WINDOW_ICON,
+  VIEW_ID_WINDOW_TITLE,
+  VIEW_ID_AVATAR_LABEL,
+  VIEW_ID_AVATAR_BUTTON,
+
   // Tabs within a window/tab strip, counting from the left.
   VIEW_ID_TAB_0,
   VIEW_ID_TAB_1,

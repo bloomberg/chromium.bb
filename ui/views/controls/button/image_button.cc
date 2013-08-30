@@ -16,6 +16,8 @@ namespace views {
 static const int kDefaultWidth = 16;   // Default button width if no theme.
 static const int kDefaultHeight = 14;  // Default button height if no theme.
 
+const char ImageButton::kViewClassName[] = "ImageButton";
+
 ////////////////////////////////////////////////////////////////////////////////
 // ImageButton, public:
 
@@ -82,6 +84,10 @@ gfx::Size ImageButton::GetPreferredSize() {
   gfx::Insets insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());
   return size;
+}
+
+const char* ImageButton::GetClassName() const {
+  return kViewClassName;
 }
 
 void ImageButton::OnPaint(gfx::Canvas* canvas) {
