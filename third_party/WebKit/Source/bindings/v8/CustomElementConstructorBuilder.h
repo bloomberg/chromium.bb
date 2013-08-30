@@ -80,7 +80,7 @@ public:
 
 private:
     static WrapperTypeInfo* findWrapperType(v8::Handle<v8::Value> chain);
-    bool hasValidPrototypeChainFor(V8PerContextData*, WrapperTypeInfo*) const;
+    bool hasValidPrototypeChainFor(WrapperTypeInfo*) const;
     bool prototypeIsValid(const AtomicString& type, ExceptionState&) const;
     v8::Handle<v8::Function> retrieveCallback(v8::Isolate*, const char* name);
 

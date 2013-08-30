@@ -94,6 +94,8 @@ public:
         return constructorForTypeSlowCase(type);
     }
 
+    v8::Local<v8::Object> prototypeForType(WrapperTypeInfo*);
+
     V8NPObjectMap* v8NPObjectMap()
     {
         return &m_v8NPObjectMap;

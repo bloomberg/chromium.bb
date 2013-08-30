@@ -1,0 +1,3 @@
+
+PASS a default prototype object should be provided if one is not specified 
+

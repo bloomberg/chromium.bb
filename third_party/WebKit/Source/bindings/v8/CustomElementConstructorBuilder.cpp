@@ -74,41 +74,31 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
     ASSERT(m_prototype.IsEmpty());
 
     ScriptValue prototypeScriptValue;
-    if (!m_options->get("prototype", prototypeScriptValue)) {
-        // FIXME: Implement the default value handling.
-        // Currently default value of the "prototype" parameter, which
-        // is HTMLSpanElement.prototype, has an ambiguity about its
-        // behavior. The spec should be fixed before WebKit implements
-        // it. https://www.w3.org/Bugs/Public/show_bug.cgi?id=20801
-        CustomElementException::throwException(CustomElementException::NotYetImplemented, type, es);
-        return false;
+    if (m_options->get("prototype", prototypeScriptValue)) {
+        m_prototype = prototypeScriptValue.v8Value().As<v8::Object>();
+        if (m_prototype.IsEmpty()) {
+            CustomElementException::throwException(CustomElementException::PrototypeNotAnObject, type, es);
+            return false;
+        }
+    } else {
+        m_prototype = v8::Object::New();
+        m_prototype->SetPrototype(V8PerContextData::from(m_context)->prototypeForType(&V8HTMLElement::info));
     }
 
-    v8::Handle<v8::Value> prototypeValue = prototypeScriptValue.v8Value();
-    if (prototypeValue.IsEmpty() || !prototypeValue->IsObject()) {
-        CustomElementException::throwException(CustomElementException::PrototypeNotAnObject, type, es);
-        return false;
-    }
-    m_prototype = prototypeValue.As<v8::Object>();
-
-    V8PerContextData* perContextData;
-    if (!(perContextData = V8PerContextData::from(m_context))) {
+    if (!V8PerContextData::from(m_context)) {
         // FIXME: This should generate an InvalidContext exception at a later point.
         CustomElementException::throwException(CustomElementException::ContextDestroyedCheckingPrototype, type, es);
         return false;
     }
-
-    if (hasValidPrototypeChainFor(perContextData, &V8HTMLElement::info)) {
+    if (hasValidPrototypeChainFor(&V8HTMLElement::info)) {
         m_namespaceURI = HTMLNames::xhtmlNamespaceURI;
         return true;
     }
-
-    if (hasValidPrototypeChainFor(perContextData, &V8SVGElement::info)) {
+    if (hasValidPrototypeChainFor(&V8SVGElement::info)) {
         m_namespaceURI = SVGNames::svgNamespaceURI;
         return true;
     }
-
-    if (hasValidPrototypeChainFor(perContextData, &V8Element::info)) {
+    if (hasValidPrototypeChainFor(&V8Element::info)) {
         m_namespaceURI = nullAtom;
         // This generates a different DOM exception, so we feign success for now.
         return true;
@@ -271,10 +261,9 @@ WrapperTypeInfo* CustomElementConstructorBuilder::findWrapperType(v8::Handle<v8:
     return 0;
 }
 
-bool CustomElementConstructorBuilder::hasValidPrototypeChainFor(V8PerContextData* perContextData, WrapperTypeInfo* typeInfo) const
+bool CustomElementConstructorBuilder::hasValidPrototypeChainFor(WrapperTypeInfo* type) const
 {
-    v8::Handle<v8::Object> elementConstructor = perContextData->constructorForType(typeInfo);
-    v8::Handle<v8::Object> elementPrototype = elementConstructor->Get(v8String("prototype", m_context->GetIsolate())).As<v8::Object>();
+    v8::Handle<v8::Object> elementPrototype = V8PerContextData::from(m_context)->prototypeForType(type);
     if (elementPrototype.IsEmpty())
         return false;
 
