@@ -630,6 +630,7 @@
     { "name": "lolicore.ch", "include_subdomains": true, "mode": "force-https" },
     { "name": "cloudns.com.au", "include_subdomains": true, "mode": "force-https" },
     { "name": "oplop.appspot.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "bcrook.com", "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
