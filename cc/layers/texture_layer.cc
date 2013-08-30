@@ -125,6 +125,9 @@ void TextureLayer::SetTextureId(unsigned id) {
     layer_tree_host()->AcquireLayerTextures();
   texture_id_ = id;
   SetNeedsCommit();
+  // The texture id needs to be removed from the active tree before the
+  // commit is called complete.
+  SetNextCommitWaitsForActivation();
 }
 
 void TextureLayer::SetTextureMailbox(const TextureMailbox& mailbox) {
@@ -138,6 +141,9 @@ void TextureLayer::SetTextureMailbox(const TextureMailbox& mailbox) {
     holder_ref_.reset();
   needs_set_mailbox_ = true;
   SetNeedsCommit();
+  // The active frame needs to be replaced and the mailbox returned before the
+  // commit is called complete.
+  SetNextCommitWaitsForActivation();
 }
 
 void TextureLayer::WillModifyTexture() {
@@ -161,16 +167,24 @@ void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
   }
 
   if (layer_tree_host()) {
-    if (texture_id_)
+    if (texture_id_) {
       layer_tree_host()->AcquireLayerTextures();
+      // The texture id needs to be removed from the active tree before the
+      // commit is called complete.
+      SetNextCommitWaitsForActivation();
+    }
     if (rate_limit_context_ && client_)
       layer_tree_host()->StopRateLimiter(client_->Context3d());
   }
   // If we're removed from the tree, the TextureLayerImpl will be destroyed, and
   // we will need to set the mailbox again on a new TextureLayerImpl the next
   // time we push.
-  if (!host && uses_mailbox_ && holder_ref_)
+  if (!host && uses_mailbox_ && holder_ref_) {
     needs_set_mailbox_ = true;
+    // The active frame needs to be replaced and the mailbox returned before the
+    // commit is called complete.
+    SetNextCommitWaitsForActivation();
+  }
   Layer::SetLayerTreeHost(host);
 }
 
@@ -196,6 +210,9 @@ bool TextureLayer::Update(ResourceUpdateQueue* queue,
           client_->Context3d()->getGraphicsResetStatusARB() != GL_NO_ERROR)
         texture_id_ = 0;
       updated = true;
+      // The texture id needs to be removed from the active tree before the
+      // commit is called complete.
+      SetNextCommitWaitsForActivation();
     }
   }
 
@@ -239,13 +256,6 @@ Region TextureLayer::VisibleContentOpaqueRegion() const {
     return visible_content_rect();
 
   return Region();
-}
-
-bool TextureLayer::BlocksPendingCommit() const {
-  // Double-buffered texture layers need to be blocked until they can be made
-  // triple-buffered.  Single-buffered layers already prevent draws, so
-  // can block too for simplicity.
-  return DrawsContent();
 }
 
 bool TextureLayer::CanClipSelf() const {

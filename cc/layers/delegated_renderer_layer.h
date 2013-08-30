@@ -21,6 +21,7 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
+  virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* impl) OVERRIDE;
   virtual bool DrawsContent() const OVERRIDE;
 
@@ -35,8 +36,6 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
   // Passes ownership of any unused resources that had been given by the child
   // compositor to the given array, so they can be given back to the child.
   void TakeUnusedResourcesForChildCompositor(ReturnedResourceArray* array);
-
-  virtual bool BlocksPendingCommit() const OVERRIDE;
 
  protected:
   explicit DelegatedRendererLayer(DelegatedRendererLayerClient* client);

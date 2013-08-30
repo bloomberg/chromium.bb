@@ -52,6 +52,7 @@ class ThreadProxy : public Proxy,
   virtual void SetNeedsUpdateLayers() OVERRIDE;
   virtual void SetNeedsCommit() OVERRIDE;
   virtual void SetNeedsRedraw(gfx::Rect damage_rect) OVERRIDE;
+  virtual void SetNextCommitWaitsForActivation() OVERRIDE;
   virtual void NotifyInputThrottledUntilCommit() OVERRIDE;
   virtual void SetDeferCommits(bool defer_commits) OVERRIDE;
   virtual bool CommitRequested() const OVERRIDE;
@@ -203,6 +204,10 @@ class ThreadProxy : public Proxy,
   // Holds the first output surface passed from Start. Should not be used for
   // anything else.
   scoped_ptr<OutputSurface> first_output_surface_;
+
+  // Accessed on the main thread, or when main thread is blocked.
+  bool commit_waits_for_activation_;
+  bool inside_commit_;
 
   base::WeakPtrFactory<ThreadProxy> weak_factory_on_impl_thread_;
 

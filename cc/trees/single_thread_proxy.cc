@@ -244,6 +244,10 @@ void SingleThreadProxy::SetNeedsRedraw(gfx::Rect damage_rect) {
   SetNeedsRedrawRectOnImplThread(damage_rect);
 }
 
+void SingleThreadProxy::SetNextCommitWaitsForActivation() {
+  // There is no activation here other than commit. So do nothing.
+}
+
 void SingleThreadProxy::SetDeferCommits(bool defer_commits) {
   // Thread-only feature.
   NOTREACHED();
