@@ -6074,12 +6074,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_DESCRIPTION" desc="Description for the flag to enable native style frames for apps.">
         Use native-style window decorations for packaged app windows.
       </message>
-      <message name="IDS_FLAGS_ENABLE_RESET_PROFILE_SETTINGS_NAME" desc="Title for the flag to enable a feature to reset profile settings that are often modified by malware.">
-        Enable reset profile settings
-      </message>
-      <message name="IDS_FLAGS_ENABLE_RESET_PROFILE_SETTINGS_DESCRIPTION" desc="Description for the flag to enable a feature to reset profile settings that are often modified by malware.">
-        Enables the option in chrome://settings to reset settings in your profile that are often modified by malware.
-      </message>
       <message name="IDS_FLAGS_ENABLE_OMNIBOX_AUTO_COMPLETION_FOR_IME_NAME" desc="Title for the flag to enable omnibox auto-completion for IMEs.">
         Enable omnibox auto-completion when IME is active
       </message>

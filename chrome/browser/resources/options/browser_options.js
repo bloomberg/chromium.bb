@@ -463,8 +463,6 @@ cr.define('options', function() {
       }
 
       // Reset profile settings section.
-      $('reset-profile-settings-section').hidden =
-          !loadTimeData.getValue('enableResetProfileSettingsSection');
       $('reset-profile-settings').onclick = function(event) {
         OptionsPage.navigateToPage('resetProfileSettings');
       };

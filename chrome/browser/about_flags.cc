@@ -1468,13 +1468,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kSyncfsEnableDirectoryOperation),
   },
   {
-    "enable-reset-profile-settings",
-    IDS_FLAGS_ENABLE_RESET_PROFILE_SETTINGS_NAME,
-    IDS_FLAGS_ENABLE_RESET_PROFILE_SETTINGS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableResetProfileSettings)
-  },
-  {
     "enable-device-discovery",
     IDS_FLAGS_ENABLE_DEVICE_DISCOVERY_NAME,
     IDS_FLAGS_ENABLE_DEVICE_DISCOVERY_DESCRIPTION,

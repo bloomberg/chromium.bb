@@ -681,10 +681,6 @@ const char kEnableQuicHttps[]               = "enable-quic-https";
 // Enables the Quickoffoce/Chrome document viewer rather than the editor.
 const char kEnableQuickofficeViewing[]      = "enable-quickoffice-viewing";
 
-// Enables support in chrome://settings to reset settings in your profile
-// that are often touched by malware.
-const char kEnableResetProfileSettings[]    = "enable-reset-profile-settings";
-
 // Enables content settings based on host *and* plug-in in the user
 // preferences.
 const char kEnableResourceContentSettings[] =
