@@ -37,10 +37,7 @@
 
 namespace WebCore {
 
-class DOMWindow;
-class Document;
 class Page;
-class ScriptExecutionContext;
 
 class PageConsole {
 public:
@@ -56,9 +53,7 @@ public:
     static void unmute();
 
 private:
-    PageConsole(Page*);
-
-    Page* page() { return m_page; };
+    explicit PageConsole(Page*);
 
     Page* m_page;
 };
