@@ -476,11 +476,8 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PointerLock) {
 
 // Fails on Windows. crbug.com/236040
 // Also flaky on ChromiumOS. crbug.com/281815
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// Appears to be flaky on Mac and Linux too.
 #define MAYBE_Focus DISABLED_Focus
-#else
-#define MAYBE_Focus Focus
-#endif
 // Tests that setting focus on the <webview> sets focus on the guest.
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_Focus) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
