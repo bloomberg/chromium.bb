@@ -54,6 +54,9 @@
     this.element.addEventListener('willSeek', function (e) {
         metric.onWillSeek(e);
       }, false);
+    this.element.addEventListener('willLoop', function (e) {
+        metric.onWillLoop(e);
+      }, false);
   }
 
   HTMLMediaMetric.prototype = new MediaMetricBase();
@@ -83,6 +86,20 @@
       };
     this.seekTimer = new Timer();
     this.element.addEventListener('seeked', onSeeked);
+  };
+
+  HTMLMediaMetric.prototype.onWillLoop = function(e) {
+    var loopTimer = new Timer();
+    var metric = this;
+    var loopCount = e.loopCount;
+    var onEndLoop = function(e) {
+        var actualDuration = loopTimer.stop();
+        var idealDuration = metric.element.duration * loopCount;
+        var avg_loop_time = (actualDuration - idealDuration) / loopCount;
+        metric.metrics['avg_loop_time'] = avg_loop_time.toFixed(3);
+        e.target.removeEventListener('endLoop', onEndLoop);
+      };
+    this.element.addEventListener('endLoop', onEndLoop);
   };
 
   HTMLMediaMetric.prototype.appendMetric = function(metric, value) {

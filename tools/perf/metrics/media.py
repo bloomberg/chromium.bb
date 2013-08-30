@@ -58,6 +58,7 @@ class MediaMetric(Metric):
     if not trace:
       logging.error('Metrics ID is missing in results.')
       return
+    AddOneResult('avg_loop_time', 'sec')
     AddOneResult('decoded_audio_bytes', 'bytes')
     AddOneResult('decoded_video_bytes', 'bytes')
     AddOneResult('decoded_frame_count', 'frames')
