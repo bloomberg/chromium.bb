@@ -35,8 +35,8 @@ SkColor BackgroundTheme::GetColor(int id) const {
   return SkColor();
 }
 
-bool BackgroundTheme::GetDisplayProperty(int id, int* result) const {
-  return false;
+int BackgroundTheme::GetDisplayProperty(int id) const {
+  return -1;
 }
 
 bool BackgroundTheme::ShouldUseNativeFrame() const {

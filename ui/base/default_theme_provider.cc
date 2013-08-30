@@ -26,8 +26,8 @@ SkColor DefaultThemeProvider::GetColor(int id) const {
   return 0xff0000ff;
 }
 
-bool DefaultThemeProvider::GetDisplayProperty(int id, int* result) const {
-  return false;
+int DefaultThemeProvider::GetDisplayProperty(int id) const {
+  return -1;
 }
 
 bool DefaultThemeProvider::ShouldUseNativeFrame() const {

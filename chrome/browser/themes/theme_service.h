@@ -78,7 +78,7 @@ class ThemeService : public base::NonThreadSafe,
   // Overridden from ui::ThemeProvider:
   virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const OVERRIDE;
   virtual SkColor GetColor(int id) const OVERRIDE;
-  virtual bool GetDisplayProperty(int id, int* result) const OVERRIDE;
+  virtual int GetDisplayProperty(int id) const OVERRIDE;
   virtual bool ShouldUseNativeFrame() const OVERRIDE;
   virtual bool HasCustomImage(int id) const OVERRIDE;
   virtual base::RefCountedMemory* GetRawData(

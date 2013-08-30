@@ -127,10 +127,6 @@ SkColor GetThemeColor(ui::ThemeProvider* tp, int id) {
 // states when the bar is attached or detached.
 std::string GetNewTabBackgroundCSS(const ui::ThemeProvider* theme_provider,
                                    bool bar_attached) {
-  int alignment;
-  theme_provider->GetDisplayProperty(
-      ThemeProperties::NTP_BACKGROUND_ALIGNMENT, &alignment);
-
   // TODO(glen): This is a quick workaround to hide the notused.png image when
   // no image is provided - we don't have time right now to figure out why
   // this is painting as white.
@@ -138,6 +134,9 @@ std::string GetNewTabBackgroundCSS(const ui::ThemeProvider* theme_provider,
   if (!theme_provider->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
     return "-64px";
   }
+
+  int alignment = theme_provider->GetDisplayProperty(
+      ThemeProperties::NTP_BACKGROUND_ALIGNMENT);
 
   if (bar_attached)
     return ThemeProperties::AlignmentToString(alignment);
@@ -161,9 +160,8 @@ std::string GetNewTabBackgroundCSS(const ui::ThemeProvider* theme_provider,
 // masks in theme_service.h).
 std::string GetNewTabBackgroundTilingCSS(
     const ui::ThemeProvider* theme_provider) {
-  int repeat_mode;
-  theme_provider->GetDisplayProperty(
-      ThemeProperties::NTP_BACKGROUND_TILING, &repeat_mode);
+  int repeat_mode = theme_provider->GetDisplayProperty(
+      ThemeProperties::NTP_BACKGROUND_TILING);
   return ThemeProperties::TilingToString(repeat_mode);
 }
 
@@ -506,10 +504,9 @@ void NTPResourceCache::CreateNewTabHTML() {
   // Control fade and resize animations.
   load_time_data.SetBoolean("anim", ui::Animation::ShouldRenderRichAnimation());
 
-  int alignment;
   ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
-  tp->GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_ALIGNMENT,
-                         &alignment);
+  int alignment = tp->GetDisplayProperty(
+      ThemeProperties::NTP_BACKGROUND_ALIGNMENT);
   load_time_data.SetString("themegravity",
       (alignment & ThemeProperties::ALIGN_RIGHT) ? "right" : "");
 

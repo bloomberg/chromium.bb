@@ -210,8 +210,8 @@ class FakeTheme : public ui::ThemeProvider {
     return NULL;
   }
   virtual SkColor GetColor(int id) const OVERRIDE { return SkColor(); }
-  virtual bool GetDisplayProperty(int id, int* result) const OVERRIDE {
-    return false;
+  virtual int GetDisplayProperty(int id) const OVERRIDE {
+    return -1;
   }
   virtual bool ShouldUseNativeFrame() const OVERRIDE { return false; }
   virtual bool HasCustomImage(int id) const OVERRIDE { return false; }

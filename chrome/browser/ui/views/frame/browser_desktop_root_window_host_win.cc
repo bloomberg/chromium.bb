@@ -45,8 +45,8 @@ class DesktopThemeProvider : public ui::ThemeProvider {
   virtual SkColor GetColor(int id) const OVERRIDE {
     return delegate_->GetColor(id);
   }
-  virtual bool GetDisplayProperty(int id, int* result) const OVERRIDE {
-    return delegate_->GetDisplayProperty(id, result);
+  virtual int GetDisplayProperty(int id) const OVERRIDE {
+    return delegate_->GetDisplayProperty(id);
   }
   virtual bool ShouldUseNativeFrame() const OVERRIDE {
     return delegate_->ShouldUseNativeFrame();

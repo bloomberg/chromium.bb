@@ -59,7 +59,7 @@ class UI_EXPORT ThemeProvider {
 
   // Get the property (e.g. an alignment expressed in an enum, or a width or
   // height) specified by |id|.
-  virtual bool GetDisplayProperty(int id, int* result) const = 0;
+  virtual int GetDisplayProperty(int id) const = 0;
 
   // Whether we should use the native system frame (typically Aero glass) or
   // a custom frame.

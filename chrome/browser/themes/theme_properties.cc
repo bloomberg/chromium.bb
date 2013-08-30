@@ -71,10 +71,11 @@ const color_utils::HSL kDefaultTintBackgroundTab = { -1, 0.5, 0.75 };
 
 // Default display properties.
 const int kDefaultDisplayPropertyNTPAlignment =
-    ThemeProperties::ALIGN_BOTTOM;
+    ThemeProperties::ALIGN_CENTER;
 const int kDefaultDisplayPropertyNTPTiling =
     ThemeProperties::NO_REPEAT;
-const int kDefaultDisplayPropertyNTPInverseLogo = 0;
+// By default, we do not use the ntp alternate logo.
+const int kDefaultDisplayPropertyNTPAlternateLogo = 0;
 
 // ----------------------------------------------------------------------------
 // Defaults for properties which are not stored in the browser theme pack.
@@ -302,18 +303,15 @@ SkColor ThemeProperties::GetDefaultColor(int id) {
 }
 
 // static
-bool ThemeProperties::GetDefaultDisplayProperty(int id, int* result) {
+int ThemeProperties::GetDefaultDisplayProperty(int id) {
   switch (id) {
     case NTP_BACKGROUND_ALIGNMENT:
-      *result = kDefaultDisplayPropertyNTPAlignment;
-      return true;
+      return kDefaultDisplayPropertyNTPAlignment;
     case NTP_BACKGROUND_TILING:
-      *result = kDefaultDisplayPropertyNTPTiling;
-      return true;
+      return kDefaultDisplayPropertyNTPTiling;
     case NTP_LOGO_ALTERNATE:
-      *result = kDefaultDisplayPropertyNTPInverseLogo;
-      return true;
+      return kDefaultDisplayPropertyNTPAlternateLogo;
   }
 
-  return false;
+  return -1;
 }

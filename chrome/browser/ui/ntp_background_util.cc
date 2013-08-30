@@ -74,16 +74,13 @@ void NtpBackgroundUtil::PaintBackgroundDetachedMode(ui::ThemeProvider* tp,
   canvas->FillRect(area, tp->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND));
 
   if (tp->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
-    int tiling = ThemeProperties::NO_REPEAT;
-    tp->GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_TILING, &tiling);
-    int alignment;
-    if (tp->GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_ALIGNMENT,
-                               &alignment)) {
-      gfx::ImageSkia* ntp_background =
-          tp->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
+    int tiling = tp->GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_TILING);
+    int alignment = tp->GetDisplayProperty(
+        ThemeProperties::NTP_BACKGROUND_ALIGNMENT);
+    gfx::ImageSkia* ntp_background =
+        tp->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
 
-      PaintThemeBackground(
-          canvas, ntp_background, tiling, alignment, area, tab_contents_height);
-    }
+    PaintThemeBackground(
+        canvas, ntp_background, tiling, alignment, area, tab_contents_height);
   }
 }

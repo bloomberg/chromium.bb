@@ -169,11 +169,22 @@ SkColor ThemeService::GetColor(int id) const {
   return Properties::GetDefaultColor(id);
 }
 
-bool ThemeService::GetDisplayProperty(int id, int* result) const {
-  if (theme_supplier_.get())
-    return theme_supplier_->GetDisplayProperty(id, result);
+int ThemeService::GetDisplayProperty(int id) const {
+  int result = 0;
+  if (theme_supplier_.get() &&
+      theme_supplier_->GetDisplayProperty(id, &result)) {
+    return result;
+  }
 
-  return Properties::GetDefaultDisplayProperty(id, result);
+  if (id == Properties::NTP_LOGO_ALTERNATE &&
+      !UsingDefaultTheme() &&
+      !UsingNativeTheme()) {
+    // Use the alternate logo for themes from the web store except for
+    // |kDefaultThemeGalleryID|.
+    return 1;
+  }
+
+  return Properties::GetDefaultDisplayProperty(id);
 }
 
 bool ThemeService::ShouldUseNativeFrame() const {
@@ -200,8 +211,7 @@ base::RefCountedMemory* ThemeService::GetRawData(
     int id,
     ui::ScaleFactor scale_factor) const {
   // Check to see whether we should substitute some images.
-  int ntp_alternate;
-  GetDisplayProperty(Properties::NTP_LOGO_ALTERNATE, &ntp_alternate);
+  int ntp_alternate = GetDisplayProperty(Properties::NTP_LOGO_ALTERNATE);
   if (id == IDR_PRODUCT_LOGO && ntp_alternate != 0)
     id = IDR_PRODUCT_LOGO_WHITE;
 
@@ -364,7 +374,7 @@ void ThemeService::SetNativeTheme() {
 bool ThemeService::UsingDefaultTheme() const {
   std::string id = GetThemeID();
   return id == ThemeService::kDefaultThemeID ||
-      (id == kDefaultThemeGalleryID && !IsManagedUser());
+      id == kDefaultThemeGalleryID;
 }
 
 bool ThemeService::UsingNativeTheme() const {
