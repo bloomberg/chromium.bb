@@ -34,6 +34,10 @@ namespace WebCore {
 
 class ConditionEventListener;
 class SMILTimeContainer;
+class SVGSMILElement;
+
+template<typename T> class EventSender;
+typedef EventSender<SVGSMILElement> SMILEventSender;
 
 // This class implements SMIL interval timing model as needed for SVG animation.
 class SVGSMILElement : public SVGElement {
@@ -109,6 +113,11 @@ public:
     virtual void clearAnimatedType(SVGElement* targetElement) = 0;
     virtual void applyResultsToTarget() = 0;
 
+    void connectConditions();
+    bool hasConditionsConnected() const { return m_conditionsConnected; }
+
+    void dispatchPendingEvent(SMILEventSender*);
+
 protected:
     void addBeginTime(SMILTime eventTime, SMILTime endTime, SMILTimeWithOrigin::Origin = SMILTimeWithOrigin::ParserOrigin);
     void addEndTime(SMILTime eventTime, SMILTime endTime, SMILTimeWithOrigin::Origin = SMILTimeWithOrigin::ParserOrigin);
@@ -167,7 +176,6 @@ private:
     void parseBeginOrEnd(const String&, BeginOrEnd beginOrEnd);
     Element* eventBaseFor(const Condition&);
 
-    void connectConditions();
     void disconnectConditions();
 
     // Event base timing
