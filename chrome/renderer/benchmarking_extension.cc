@@ -29,6 +29,10 @@ class BenchmarkingWrapper : public v8::Extension {
         "  native function GetCounter();"
         "  return GetCounter(name);"
         "};"
+        "chrome.benchmarking.counterForRenderer = function(name) {"
+        "  native function GetCounterForRenderer();"
+        "  return GetCounterForRenderer(name);"
+        "};"
         "chrome.benchmarking.isSingleProcess = function() {"
         "  native function IsSingleProcess();"
         "  return IsSingleProcess();"
@@ -59,6 +63,8 @@ class BenchmarkingWrapper : public v8::Extension {
       v8::Handle<v8::String> name) OVERRIDE {
     if (name->Equals(v8::String::New("GetCounter"))) {
       return v8::FunctionTemplate::New(GetCounter);
+    } else if (name->Equals(v8::String::New("GetCounterForRenderer"))) {
+      return v8::FunctionTemplate::New(GetCounterForRenderer);
     } else if (name->Equals(v8::String::New("IsSingleProcess"))) {
       return v8::FunctionTemplate::New(IsSingleProcess);
     } else if (name->Equals(v8::String::New("HiResTime"))) {
@@ -68,17 +74,38 @@ class BenchmarkingWrapper : public v8::Extension {
     return v8::Handle<v8::FunctionTemplate>();
   }
 
+  /*
+   * Extract the counter name from arguments.
+   */
+  static void ExtractCounterName(
+      const v8::FunctionCallbackInfo<v8::Value>& args,
+      char* name,
+      size_t capacity) {
+    name[0] = 'c';
+    name[1] = ':';
+    args[0]->ToString()->WriteUtf8(&name[2], capacity - 3);
+  }
+
   static void GetCounter(const v8::FunctionCallbackInfo<v8::Value>& args) {
     if (!args.Length() || !args[0]->IsString() || !base::StatsTable::current())
       return;
 
-    // Extract the name argument
     char name[256];
-    name[0] = 'c';
-    name[1] = ':';
-    args[0]->ToString()->WriteUtf8(&name[2], sizeof(name) - 3);
-
+    ExtractCounterName(args, name, sizeof(name));
     int counter = base::StatsTable::current()->GetCounterValue(name);
+    args.GetReturnValue().Set(static_cast<int32_t>(counter));
+  }
+
+  static void GetCounterForRenderer(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    if (!args.Length() || !args[0]->IsString() || !base::StatsTable::current())
+      return;
+
+    char name[256];
+    ExtractCounterName(args, name, sizeof(name));
+    int counter = base::StatsTable::current()->GetCounterValue(
+        name,
+        base::GetCurrentProcId());
     args.GetReturnValue().Set(static_cast<int32_t>(counter));
   }
 

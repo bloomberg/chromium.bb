@@ -21,6 +21,7 @@ import sys
 
 from metrics import io
 from metrics import memory
+from metrics import v8_object_stats
 from telemetry.core import util
 from telemetry.page import page_measurement
 
@@ -32,7 +33,10 @@ class PageCycler(page_measurement.PageMeasurement):
                            'page_cycler.js'), 'r') as f:
       self._page_cycler_js = f.read()
 
+    self._record_v8_object_stats = False
+
     self._memory_metric = None
+    self._v8_object_stats_metric = None
     self._number_warm_runs = None
     self._cold_runs_requested = False
     self._has_loaded_page = collections.defaultdict(int)
@@ -46,12 +50,19 @@ class PageCycler(page_measurement.PageMeasurement):
     parser.remove_option('--pageset-repeat')
     parser.add_option(pageset_repeat_option)
 
+    parser.add_option('--v8-object-stats',
+        action='store_true',
+        help='Enable detailed V8 object statistics.')
+
     parser.add_option('--cold-load-percent', type='int', default=0,
                       help='%d of page visits for which a cold load is forced')
+
 
   def DidStartBrowser(self, browser):
     """Initialize metrics once right after the browser has been launched."""
     self._memory_metric = memory.MemoryMetric(browser)
+    if self._record_v8_object_stats:
+      self._v8_object_stats_metric = v8_object_stats.V8ObjectStatsMetric()
 
   def DidStartHTTPServer(self, tab):
     # Avoid paying for a cross-renderer navigation on the first page on legacy
@@ -65,11 +76,17 @@ class PageCycler(page_measurement.PageMeasurement):
 
   def DidNavigateToPage(self, page, tab):
     self._memory_metric.Start(page, tab)
+    if self._record_v8_object_stats:
+      self._v8_object_stats_metric.Start(page, tab)
 
   def CustomizeBrowserOptions(self, options):
     memory.MemoryMetric.CustomizeBrowserOptions(options)
     io.IOMetric.CustomizeBrowserOptions(options)
     options.AppendExtraBrowserArg('--js-flags=--expose_gc')
+
+    if options.v8_object_stats:
+      self._record_v8_object_stats = True
+      v8_object_stats.V8ObjectStatsMetric.CustomizeBrowserOptions(options)
 
     # A disk cache bug causes some page cyclers to hang on mac.
     # TODO(tonyg): Re-enable these tests when crbug.com/268646 is fixed.
@@ -121,6 +138,9 @@ class PageCycler(page_measurement.PageMeasurement):
 
     self._memory_metric.Stop(page, tab)
     self._memory_metric.AddResults(tab, results)
+    if self._record_v8_object_stats:
+      self._v8_object_stats_metric.Stop(page, tab)
+      self._v8_object_stats_metric.AddResults(tab, results)
 
   def DidRunTest(self, tab, results):
     self._memory_metric.AddSummaryResults(results)
