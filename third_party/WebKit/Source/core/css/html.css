@@ -428,8 +428,8 @@ input[type="search"] {
 }
 
 input::-webkit-textfield-decoration-container {
-    display: -webkit-flex;
-    -webkit-align-items: center;
+    display: flex;
+    align-items: center;
     -webkit-user-modify: read-only !important;
     content: none !important;
 }
@@ -441,7 +441,7 @@ input[type="search"]::-webkit-textfield-decoration-container {
 input::-webkit-clear-button {
     -webkit-appearance: searchfield-cancel-button;
     display: inline-block;
-    -webkit-flex: none;
+    flex: none;
     -webkit-user-modify: read-only !important;
     -webkit-margin-start: 2px;
 }
@@ -449,7 +449,7 @@ input::-webkit-clear-button {
 input[type="search"]::-webkit-search-cancel-button {
     -webkit-appearance: searchfield-cancel-button;
     display: block;
-    -webkit-flex: none;
+    flex: none;
     -webkit-user-modify: read-only !important;
     -webkit-margin-start: 1px;
 }
@@ -457,7 +457,7 @@ input[type="search"]::-webkit-search-cancel-button {
 input[type="search"]::-webkit-search-decoration {
     -webkit-appearance: searchfield-decoration;
     display: block;
-    -webkit-flex: none;
+    flex: none;
     -webkit-user-modify: read-only !important;
     -webkit-align-self: flex-start;
     margin: auto 0;
@@ -466,7 +466,7 @@ input[type="search"]::-webkit-search-decoration {
 input[type="search"]::-webkit-search-results-decoration {
     -webkit-appearance: searchfield-results-decoration;
     display: block;
-    -webkit-flex: none;
+    flex: none;
     -webkit-user-modify: read-only !important;
     -webkit-align-self: flex-start;
     margin: auto 0;
@@ -478,7 +478,7 @@ input[type="datetime-local"],
 input[type="month"],
 input[type="time"],
 input[type="week"] {
-    -webkit-align-items: center;
+    align-items: center;
     display: -webkit-inline-flex;
     font-family: monospace;
     overflow: hidden;
@@ -487,7 +487,7 @@ input[type="week"] {
 }
 
 input::-webkit-datetime-edit {
-    -webkit-flex: 1;
+    flex: 1;
     -webkit-user-modify: read-only !important;
     display: inline-block;
     overflow: hidden;
@@ -570,7 +570,7 @@ input[type="datetime-local"],
 input[type="month"],
 input[type="time"],
 input[type="week"] {
-    -webkit-align-items: center;
+    align-items: center;
     -webkit-appearance: menulist-button;
     display: -webkit-inline-flex;
     overflow: hidden;
@@ -593,7 +593,7 @@ input::-webkit-inner-spin-button {
      * button in layout(). */
     height: 1.5em;
     vertical-align: top;
-    -webkit-flex: none;
+    flex: none;
     -webkit-user-select: none;
     -webkit-user-modify: read-only !important;
 }
@@ -603,7 +603,7 @@ input::-webkit-input-speech-button {
     -webkit-appearance: -webkit-input-speech-button;
     display: block;
     vertical-align: top;
-    -webkit-flex: none;
+    flex: none;
     -webkit-user-modify: read-only !important;
     -webkit-align-self: flex-start;
     margin: auto 0;
@@ -624,7 +624,7 @@ textarea {
     border: 1px solid;
     -webkit-rtl-ordering: logical;
     -webkit-user-select: text;
-    -webkit-flex-direction: column;
+    flex-direction: column;
     resize: auto;
     cursor: auto;
     padding: 2px;
@@ -658,7 +658,7 @@ input[type="hidden"], input[type="image"], input[type="file"] {
 }
 
 input[type="file"] {
-    -webkit-align-items: baseline;
+    align-items: baseline;
     color: inherit;
     text-align: start !important;
 }
@@ -690,7 +690,7 @@ input[type="file"]::-webkit-file-upload-button {
 }
 
 input[type="button"], input[type="submit"], input[type="reset"], input[type="file"]::-webkit-file-upload-button, button {
-    -webkit-align-items: flex-start;
+    align-items: flex-start;
     text-align: center;
     cursor: default;
     color: ButtonText;
@@ -709,15 +709,15 @@ input[type="range"] {
 }
 
 input[type="range"]::-webkit-slider-container, input[type="range"]::-webkit-media-slider-container {
-    -webkit-flex: 1;
+    flex: 1;
     box-sizing: border-box;
     -webkit-user-modify: read-only !important;
-    display: -webkit-flex;
+    display: flex;
     -webkit-align-contents: center;
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
-    -webkit-flex: 1;
+    flex: 1;
     -webkit-align-self: center;
 
     box-sizing: border-box;
@@ -768,7 +768,7 @@ input[type="color"] {
 }
 
 input[type="color"]::-webkit-color-swatch-wrapper {
-    display:-webkit-flex;
+    display:flex;
     padding: 4px 2px;
     box-sizing: border-box;
     -webkit-user-modify: read-only !important;
@@ -779,7 +779,7 @@ input[type="color"]::-webkit-color-swatch-wrapper {
 input[type="color"]::-webkit-color-swatch {
     background-color: #000000;
     border: 1px solid #777777;
-    -webkit-flex: 1;
+    flex: 1;
     -webkit-user-modify: read-only !important;
 }
 
@@ -821,7 +821,7 @@ input[readonly]::-webkit-calendar-picker-indicator {
 select {
     -webkit-appearance: menulist;
     box-sizing: border-box;
-    -webkit-align-items: center;
+    align-items: center;
     border: 1px solid;
     white-space: pre;
     -webkit-rtl-ordering: logical;
@@ -834,7 +834,7 @@ select[size],
 select[multiple],
 select[size][multiple] {
     -webkit-appearance: listbox;
-    -webkit-align-items: flex-start;
+    align-items: flex-start;
     border: 1px inset gray;
     border-radius: initial;
     white-space: initial;
@@ -843,7 +843,7 @@ select[size][multiple] {
 select[size="0"],
 select[size="1"] {
     -webkit-appearance: menulist;
-    -webkit-align-items: center;
+    align-items: center;
     border: 1px solid;
     border-radius: 5px;
     white-space: pre;

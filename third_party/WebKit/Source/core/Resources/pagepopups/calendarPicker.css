@@ -149,13 +149,13 @@ body {
 
 .calendar-header-view {
     margin-bottom: 10px;
-    display: -webkit-flex;
-    -webkit-flex-flow: row;
+    display: flex;
+    flex-flow: row;
 }
 
 .calendar-title {
     -webkit-align-self: center;
-    -webkit-flex: 1;
+    flex: 1;
     text-align: left;
 }
 
@@ -239,11 +239,11 @@ body {
 }
 
 .month-buttons-row {
-    display: -webkit-flex;
+    display: flex;
 }
 
 .month-button {
-    -webkit-flex: 1;
+    flex: 1;
     height: 32px;
     padding: 0 !important;
     margin: 0 !important;

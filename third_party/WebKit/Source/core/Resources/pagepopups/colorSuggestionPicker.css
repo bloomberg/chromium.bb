@@ -58,9 +58,9 @@ body {
     width: 100%;
     max-height: 104px;
     overflow: auto;
-    display: -webkit-flex;
-    -webkit-flex-flow: row wrap;
-    -webkit-align-items: center;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
 }
 
 .other-color {

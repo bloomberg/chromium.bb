@@ -37,12 +37,12 @@ audio::-webkit-media-controls-overlay-enclosure {
 }
 
 video::-webkit-media-controls-overlay-enclosure {
-    display: -webkit-flex;
+    display: flex;
     position: relative;
-    -webkit-flex-direction: column;
-    -webkit-justify-content: flex-end;
-    -webkit-align-items: center;
-    -webkit-flex: 1 1;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    flex: 1 1;
     width: 100%;
     max-width: 800px;
     text-indent: 0;
@@ -61,7 +61,7 @@ audio::-webkit-media-controls-mute-button, video::-webkit-media-controls-mute-bu
 
 video::-webkit-media-controls-overlay-play-button {
     -webkit-appearance: media-overlay-play-button;
-    display: -webkit-flex;
+    display: flex;
     position: absolute;
     top: 50%;
     left: 50%;
