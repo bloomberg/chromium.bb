@@ -240,10 +240,20 @@ PKG_CHECK_MODULES(WEBP, [libwebp], [have_webp=yes], [have_webp=no])
 AS_IF([test "x$have_webp" = "xyes"],
       [AC_DEFINE([HAVE_WEBP], [1], [Have webp])])
 
-PKG_CHECK_MODULES(LIBVA, [libva >= 0.34.0 libva-drm >= 0.34.0], [have_libva=yes], [have_libva=no])
-AS_IF([test "x$have_libva" = "xyes"],
-      [AC_DEFINE([HAVE_LIBVA], [1], [Have libva])])
-AM_CONDITIONAL(ENABLE_LIBVA, test "x$have_libva" = "xyes")
+AC_ARG_ENABLE(vaapi-recorder, [  --enable-vaapi-recorder],,
+	      enable_vaapi_recorder=auto)
+if test x$enable_vaapi_recorder != xno; then
+  PKG_CHECK_MODULES(LIBVA, [libva >= 0.34.0 libva-drm >= 0.34.0],
+                    [have_libva=yes], [have_libva=no])
+  if test "x$have_libva" = "xno" -a "x$enable_vaapi_recorder" = "xyes"; then
+    AC_MSG_ERROR([vaapi-recorder explicitly enabled, but libva couldn't be found])
+  else
+    AC_DEFINE([BUILD_VAAPI_RECORDER], [1], [Build the vaapi recorder])
+  fi
+fi
+AM_CONDITIONAL(ENABLE_VAAPI_RECORDER,
+	       test "x$enable_libva_recorder" != xno -a "x$have_libva" = xyes)
+
 
 AC_CHECK_LIB([jpeg], [jpeg_CreateDecompress], have_jpeglib=yes)
 if test x$have_jpeglib = xyes; then

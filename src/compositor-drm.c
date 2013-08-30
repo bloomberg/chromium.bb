@@ -2446,7 +2446,7 @@ planes_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data
 	}
 }
 
-#ifdef HAVE_LIBVA
+#ifdef BUILD_VAAPI_RECORDER
 static void
 recorder_frame_notify(struct wl_listener *listener, void *data)
 {
