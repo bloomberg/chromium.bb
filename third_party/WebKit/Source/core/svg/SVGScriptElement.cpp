@@ -158,7 +158,7 @@ void SVGScriptElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) cons
 {
     SVGElement::addSubresourceAttributeURLs(urls);
 
-    addSubresourceURL(urls, document()->completeURL(hrefCurrentValue()));
+    addSubresourceURL(urls, document().completeURL(hrefCurrentValue()));
 }
 
 String SVGScriptElement::sourceAttributeValue() const
@@ -208,7 +208,7 @@ bool SVGScriptElement::hasSourceAttribute() const
 
 PassRefPtr<Element> SVGScriptElement::cloneElementWithoutAttributesAndChildren()
 {
-    return adoptRef(new SVGScriptElement(tagQName(), document(), false, m_loader->alreadyStarted()));
+    return adoptRef(new SVGScriptElement(tagQName(), &document(), false, m_loader->alreadyStarted()));
 }
 
 void SVGScriptElement::setHaveFiredLoadEvent(bool haveFiredLoadEvent)

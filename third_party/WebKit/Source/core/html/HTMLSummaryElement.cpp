@@ -55,8 +55,8 @@ RenderObject* HTMLSummaryElement::createRenderer(RenderStyle*)
 
 void HTMLSummaryElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 {
-    root->appendChild(DetailsMarkerControl::create(document()));
-    root->appendChild(HTMLContentElement::create(document()));
+    root->appendChild(DetailsMarkerControl::create(&document()));
+    root->appendChild(HTMLContentElement::create(&document()));
 }
 
 HTMLDetailsElement* HTMLSummaryElement::detailsElement() const

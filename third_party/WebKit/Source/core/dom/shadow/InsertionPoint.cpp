@@ -143,7 +143,7 @@ bool InsertionPoint::isActive() const
 
 PassRefPtr<NodeList> InsertionPoint::getDistributedNodes()
 {
-    document()->updateDistributionForNodeIfNeeded(this);
+    document().updateDistributionForNodeIfNeeded(this);
 
     Vector<RefPtr<Node> > nodes;
     for (size_t i = 0; i < m_distribution.size(); ++i)

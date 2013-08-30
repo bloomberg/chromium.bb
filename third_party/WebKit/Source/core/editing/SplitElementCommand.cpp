@@ -35,7 +35,7 @@
 namespace WebCore {
 
 SplitElementCommand::SplitElementCommand(PassRefPtr<Element> element, PassRefPtr<Node> atChild)
-    : SimpleEditCommand(element->document())
+    : SimpleEditCommand(&element->document())
     , m_element2(element)
     , m_atChild(atChild)
 {

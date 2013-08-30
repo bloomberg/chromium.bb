@@ -60,12 +60,12 @@ PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node* node, const Q
     TextPosition position(OrdinalNumber::fromZeroBasedInt(1), OrdinalNumber::first());
     String sourceURL;
 
-    if (Frame* frame = node->document()->frame()) {
+    if (Frame* frame = node->document().frame()) {
         ScriptController* scriptController = frame->script();
         if (!scriptController->canExecuteScripts(AboutToExecuteScript))
             return 0;
         position = scriptController->eventHandlerPosition();
-        sourceURL = node->document()->url().string();
+        sourceURL = node->document().url().string();
     }
 
     return V8LazyEventListener::create(name.localName().string(), eventParameterName(node->isSVGElement()), value, sourceURL, position, node);

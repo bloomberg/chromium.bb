@@ -142,7 +142,7 @@ Path HTMLAreaElement::getRegion(const LayoutSize& size) const
     }
 
     Path path;
-    RenderView* renderView = document()->renderView();
+    RenderView* renderView = document().renderView();
     switch (shape) {
         case Poly:
             if (m_coords.size() >= 6) {

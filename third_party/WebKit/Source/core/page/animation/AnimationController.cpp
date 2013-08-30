@@ -313,7 +313,7 @@ void AnimationControllerPrivate::suspendAnimationsForDocument(Document* document
     RenderObjectAnimationMap::const_iterator animationsEnd = m_compositeAnimations.end();
     for (RenderObjectAnimationMap::const_iterator it = m_compositeAnimations.begin(); it != animationsEnd; ++it) {
         RenderObject* renderer = it->key;
-        if (renderer->document() == document) {
+        if (&renderer->document() == document) {
             CompositeAnimation* compAnim = it->value.get();
             compAnim->suspendAnimations();
         }
@@ -329,7 +329,7 @@ void AnimationControllerPrivate::resumeAnimationsForDocument(Document* document)
     RenderObjectAnimationMap::const_iterator animationsEnd = m_compositeAnimations.end();
     for (RenderObjectAnimationMap::const_iterator it = m_compositeAnimations.begin(); it != animationsEnd; ++it) {
         RenderObject* renderer = it->key;
-        if (renderer->document() == document) {
+        if (&renderer->document() == document) {
             CompositeAnimation* compAnim = it->value.get();
             compAnim->resumeAnimations();
         }
@@ -391,7 +391,7 @@ unsigned AnimationControllerPrivate::numberOfActiveAnimations(Document* document
     for (RenderObjectAnimationMap::const_iterator it = m_compositeAnimations.begin(); it != animationsEnd; ++it) {
         RenderObject* renderer = it->key;
         CompositeAnimation* compAnim = it->value.get();
-        if (renderer->document() == document)
+        if (&renderer->document() == document)
             count += compAnim->numberOfActiveAnimations();
     }
 
@@ -498,9 +498,6 @@ void AnimationController::cancelAnimations(RenderObject* renderer)
 
 PassRefPtr<RenderStyle> AnimationController::updateAnimations(RenderObject* renderer, RenderStyle* newStyle)
 {
-    if (!renderer->document())
-        return newStyle;
-
     RenderStyle* oldStyle = renderer->style();
 
     if ((!oldStyle || (!oldStyle->animations() && !oldStyle->transitions())) && (!newStyle->animations() && !newStyle->transitions()))

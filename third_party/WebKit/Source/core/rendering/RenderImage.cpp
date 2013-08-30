@@ -172,7 +172,7 @@ void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
 
     // Set image dimensions, taking into account the size of the alt text.
     if (m_imageResource->errorOccurred() || !newImage) {
-        if (!m_altText.isEmpty() && document()->hasPendingStyleRecalc()) {
+        if (!m_altText.isEmpty() && document().hasPendingStyleRecalc()) {
             ASSERT(node());
             if (node()) {
                 m_needsToSetSizeForAltText = true;
@@ -353,7 +353,7 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
             }
 
             if (!m_altText.isEmpty()) {
-                String text = document()->displayStringModifiedByEncoding(m_altText);
+                String text = document().displayStringModifiedByEncoding(m_altText);
                 const Font& font = style()->font();
                 const FontMetrics& fontMetrics = font.fontMetrics();
                 LayoutUnit ascent = fontMetrics.ascent();
@@ -420,15 +420,15 @@ void RenderImage::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 
 void RenderImage::paintAreaElementFocusRing(PaintInfo& paintInfo)
 {
-    Document* document = this->document();
+    Document& document = this->document();
 
-    if (document->printing() || !document->frame()->selection()->isFocusedAndActive())
+    if (document.printing() || !document.frame()->selection()->isFocusedAndActive())
         return;
 
     if (paintInfo.context->paintingDisabled() && !paintInfo.context->updatingControlTints())
         return;
 
-    Element* focusedElement = document->focusedElement();
+    Element* focusedElement = document.focusedElement();
     if (!focusedElement || !isHTMLAreaElement(focusedElement))
         return;
 

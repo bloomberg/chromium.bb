@@ -209,7 +209,7 @@ HTMLMapElement* TreeScope::getImageMap(const String& url) const
         return 0;
     size_t hashPos = url.find('#');
     String name = (hashPos == notFound ? url : url.substring(hashPos + 1)).impl();
-    if (rootNode()->document()->isHTMLDocument())
+    if (rootNode()->document().isHTMLDocument())
         return toHTMLMapElement(m_imageMapsByName->getElementByLowercasedMapName(AtomicString(name.lower()).impl(), this));
     return toHTMLMapElement(m_imageMapsByName->getElementByMapName(AtomicString(name).impl(), this));
 }
@@ -242,7 +242,7 @@ Node* nodeFromPoint(Document* document, int x, int y, LayoutPoint* localPoint)
 
 Element* TreeScope::elementFromPoint(int x, int y) const
 {
-    Node* node = nodeFromPoint(rootNode()->document(), x, y);
+    Node* node = nodeFromPoint(&rootNode()->document(), x, y);
     if (node && node->isTextNode())
         node = node->parentNode();
     ASSERT(!node || node->isElementNode() || node->isShadowRoot());
@@ -287,7 +287,7 @@ HTMLLabelElement* TreeScope::labelElementForId(const AtomicString& forAttributeV
 
 DOMSelection* TreeScope::getSelection() const
 {
-    if (!rootNode()->document()->frame())
+    if (!rootNode()->document().frame())
         return 0;
 
     if (m_selection)
@@ -309,7 +309,7 @@ Element* TreeScope::findAnchor(const String& name)
     for (Element* element = ElementTraversal::firstWithin(rootNode()); element; element = ElementTraversal::next(element)) {
         if (isHTMLAnchorElement(element)) {
             HTMLAnchorElement* anchor = toHTMLAnchorElement(element);
-            if (rootNode()->document()->inQuirksMode()) {
+            if (rootNode()->document().inQuirksMode()) {
                 // Quirks mode, case insensitive comparison of names.
                 if (equalIgnoringCase(anchor->name(), name))
                     return anchor;
@@ -350,10 +350,10 @@ static Element* focusedFrameOwnerElement(Frame* focusedFrame, Frame* currentFram
 
 Element* TreeScope::adjustedFocusedElement()
 {
-    Document* document = rootNode()->document();
-    Element* element = document->focusedElement();
-    if (!element && document->page())
-        element = focusedFrameOwnerElement(document->page()->focusController().focusedFrame(), document->frame());
+    Document& document = rootNode()->document();
+    Element* element = document.focusedElement();
+    if (!element && document.page())
+        element = focusedFrameOwnerElement(document.page()->focusController().focusedFrame(), document.frame());
     if (!element)
         return 0;
     Vector<Node*> targetStack;

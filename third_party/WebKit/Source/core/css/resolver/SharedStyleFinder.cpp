@@ -142,7 +142,7 @@ bool SharedStyleFinder::canShareStyleWithControl(const ElementResolveContext& co
     if (element->isDefaultButtonForForm() != context.element()->isDefaultButtonForForm())
         return false;
 
-    if (context.document()->containsValidityStyleRules()) {
+    if (context.document().containsValidityStyleRules()) {
         bool willValidate = element->willValidate();
 
         if (willValidate != context.element()->willValidate())
@@ -238,7 +238,7 @@ bool SharedStyleFinder::canShareStyleWithElement(const ElementResolveContext& co
         return false;
     if (element->shadowPseudoId() != context.element()->shadowPseudoId())
         return false;
-    if (element == element->document()->cssTarget())
+    if (element == element->document().cssTarget())
         return false;
     if (!sharingCandidateHasIdenticalStyleAffectingAttributes(context, element))
         return false;
@@ -290,7 +290,7 @@ bool SharedStyleFinder::canShareStyleWithElement(const ElementResolveContext& co
     if (element->isWebVTTElement() && context.element()->isWebVTTElement() && toWebVTTElement(element)->isPastNode() != toWebVTTElement(context.element())->isPastNode())
         return false;
 
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(context.document())) {
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(&context.document())) {
         if (element == fullscreen->webkitCurrentFullScreenElement() || context.element() == fullscreen->webkitCurrentFullScreenElement())
             return false;
     }
@@ -314,7 +314,7 @@ inline Element* SharedStyleFinder::findSiblingForStyleSharing(const ElementResol
 #ifdef STYLE_STATS
 Element* SharedStyleFinder::searchDocumentForSharedStyle(const ElementResolveContext& context) const
 {
-    for (Element* element = context.element()->document()->documentElement(); element; element = ElementTraversal::next(element)) {
+    for (Element* element = context.element()->document().documentElement(); element; element = ElementTraversal::next(element)) {
         if (canShareStyleWithElement(context, element))
             return element;
     }
@@ -349,7 +349,7 @@ RenderStyle* SharedStyleFinder::locateSharedStyle(const ElementResolveContext& c
         return 0;
     if (context.element()->hasScopedHTMLStyleChild())
         return 0;
-    if (context.element() == context.document()->cssTarget())
+    if (context.element() == context.document().cssTarget())
         return 0;
     if (elementHasDirectionAuto(context.element()))
         return 0;

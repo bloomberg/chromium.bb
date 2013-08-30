@@ -65,9 +65,9 @@ void GetFormEncoding(const HTMLFormElement* form, WTF::TextEncoding* encoding)
         if (encoding->isValid())
             return;
     }
-    if (!form->document()->loader())
+    if (!form->document().loader())
          return;
-    *encoding = WTF::TextEncoding(form->document()->encoding());
+    *encoding = WTF::TextEncoding(form->document().encoding());
 }
 
 // Returns true if the submit request results in an HTTP URL.
@@ -76,7 +76,7 @@ bool IsHTTPFormSubmit(const HTMLFormElement* form)
     // FIXME: This function is insane. This is an overly complicated way to get this information.
     String action(form->action());
     // The isNull() check is trying to avoid completeURL returning KURL() when passed a null string.
-    return form->document()->completeURL(action.isNull() ? "" : action).protocolIs("http");
+    return form->document().completeURL(action.isNull() ? "" : action).protocolIs("http");
 }
 
 // If the form does not have an activated submit button, the first submit
@@ -290,7 +290,7 @@ WebSearchableFormData::WebSearchableFormData(const WebFormElement& form, const W
         return;
 
     String action(formElement->action());
-    KURL url(formElement->document()->completeURL(action.isNull() ? "" : action));
+    KURL url(formElement->document().completeURL(action.isNull() ? "" : action));
     RefPtr<FormData> formData = FormData::create(encodedString);
     url.setQuery(formData->flattenToString());
     m_url = url;

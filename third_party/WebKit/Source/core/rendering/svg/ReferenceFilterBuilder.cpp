@@ -89,8 +89,7 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
     if (!renderer)
         return 0;
 
-    Document* document = renderer->document();
-    ASSERT(document);
+    Document* document = &renderer->document();
 
     DocumentResourceReference* documentResourceReference = filterOperation->documentResourceReference();
     DocumentResource* cachedSVGDocument = documentResourceReference ? documentResourceReference->document() : 0;

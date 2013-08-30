@@ -303,7 +303,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
 
             unsigned start = std::min(baseOffset + selectionStart, extentOffset);
             unsigned end = std::min(std::max(start, baseOffset + selectionEnd), extentOffset);
-            RefPtr<Range> selectedRange = Range::create(baseNode->document(), baseNode, start, baseNode, end);
+            RefPtr<Range> selectedRange = Range::create(&baseNode->document(), baseNode, start, baseNode, end);
             m_frame->selection()->setSelectedRange(selectedRange.get(), DOWNSTREAM, false);
         }
     }
@@ -352,7 +352,7 @@ PassRefPtr<Range> InputMethodController::compositionRange() const
     unsigned end = std::min(std::max(start, m_compositionEnd), length);
     if (start >= end)
         return 0;
-    return Range::create(m_compositionNode->document(), m_compositionNode.get(), start, m_compositionNode.get(), end);
+    return Range::create(&m_compositionNode->document(), m_compositionNode.get(), start, m_compositionNode.get(), end);
 }
 
 PlainTextOffsets InputMethodController::getSelectionOffsets() const

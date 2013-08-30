@@ -111,7 +111,7 @@ IntSize CSSCrossfadeValue::fixedSize(const RenderObject* renderer)
     float percentage = m_percentageValue->getFloatValue();
     float inversePercentage = 1 - percentage;
 
-    ResourceFetcher* fetcher = renderer->document()->fetcher();
+    ResourceFetcher* fetcher = renderer->document().fetcher();
     ImageResource* cachedFromImage = cachedImageForCSSValue(m_fromValue.get(), fetcher);
     ImageResource* cachedToImage = cachedImageForCSSValue(m_toValue.get(), fetcher);
 
@@ -170,7 +170,7 @@ PassRefPtr<Image> CSSCrossfadeValue::image(RenderObject* renderer, const IntSize
     if (size.isEmpty())
         return 0;
 
-    ResourceFetcher* fetcher = renderer->document()->fetcher();
+    ResourceFetcher* fetcher = renderer->document().fetcher();
     ImageResource* cachedFromImage = cachedImageForCSSValue(m_fromValue.get(), fetcher);
     ImageResource* cachedToImage = cachedImageForCSSValue(m_toValue.get(), fetcher);
 

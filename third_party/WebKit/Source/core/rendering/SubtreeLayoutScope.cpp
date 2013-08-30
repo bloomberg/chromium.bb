@@ -39,7 +39,7 @@ namespace WebCore {
 SubtreeLayoutScope::SubtreeLayoutScope(RenderObject* root)
     : m_root(root)
 {
-    RELEASE_ASSERT(m_root->document()->view()->isInLayout());
+    RELEASE_ASSERT(m_root->document().view()->isInLayout());
 }
 
 SubtreeLayoutScope::~SubtreeLayoutScope()

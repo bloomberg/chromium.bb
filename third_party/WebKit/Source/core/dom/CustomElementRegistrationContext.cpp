@@ -146,7 +146,7 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
 
     element->setCustomElementState(mode == CreatedByParser ? Element::WaitingForParser : Element::WaitingForUpgrade);
 
-    if (CustomElementRegistrationContext* context = element->document()->registrationContext())
+    if (CustomElementRegistrationContext* context = element->document().registrationContext())
         context->didGiveTypeExtension(element, type);
 }
 

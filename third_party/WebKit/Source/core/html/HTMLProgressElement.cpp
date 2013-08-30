@@ -150,13 +150,13 @@ void HTMLProgressElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 {
     ASSERT(!m_value);
 
-    RefPtr<ProgressInnerElement> inner = ProgressInnerElement::create(document());
+    RefPtr<ProgressInnerElement> inner = ProgressInnerElement::create(&document());
     inner->setPart(AtomicString("-webkit-progress-inner-element", AtomicString::ConstructFromLiteral));
     root->appendChild(inner);
 
-    RefPtr<ProgressBarElement> bar = ProgressBarElement::create(document());
+    RefPtr<ProgressBarElement> bar = ProgressBarElement::create(&document());
     bar->setPart(AtomicString("-webkit-progress-bar", AtomicString::ConstructFromLiteral));
-    RefPtr<ProgressValueElement> value = ProgressValueElement::create(document());
+    RefPtr<ProgressValueElement> value = ProgressValueElement::create(&document());
     m_value = value.get();
     m_value->setPart(AtomicString("-webkit-progress-value", AtomicString::ConstructFromLiteral));
     m_value->setWidthPercentage(HTMLProgressElement::IndeterminatePosition * 100);

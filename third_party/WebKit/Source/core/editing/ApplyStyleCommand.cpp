@@ -145,7 +145,7 @@ ApplyStyleCommand::ApplyStyleCommand(Document* document, const EditingStyle* sty
 }
 
 ApplyStyleCommand::ApplyStyleCommand(PassRefPtr<Element> element, bool removeOnly, EditAction editingAction)
-    : CompositeEditCommand(element->document())
+    : CompositeEditCommand(&element->document())
     , m_style(EditingStyle::create())
     , m_editingAction(editingAction)
     , m_propertyLevel(PropertyDefault)
@@ -690,7 +690,7 @@ void ApplyStyleCommand::fixRangeAndApplyInlineStyle(EditingStyle* style, const P
     // Start from the highest fully selected ancestor so that we can modify the fully selected node.
     // e.g. When applying font-size: large on <font color="blue">hello</font>, we need to include the font element in our run
     // to generate <font color="blue" size="4">hello</font> instead of <font color="blue"><font size="4">hello</font></font>
-    RefPtr<Range> range = Range::create(startNode->document(), start, end);
+    RefPtr<Range> range = Range::create(&startNode->document(), start, end);
     Element* editableRoot = startNode->rootEditableElement();
     if (startNode != editableRoot) {
         while (editableRoot && startNode->parentNode() != editableRoot && isNodeVisiblyContainedWithin(startNode->parentNode(), range.get()))
@@ -985,7 +985,7 @@ void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node, EditingStyle* sty
 {
     ASSERT(node);
 
-    node->document()->updateStyleIfNeeded();
+    node->document().updateStyleIfNeeded();
 
     if (!style || style->isEmpty() || !node->renderer())
         return;
@@ -1154,7 +1154,7 @@ bool ApplyStyleCommand::nodeFullySelected(Node *node, const Position &start, con
     ASSERT(node->isElementNode());
 
     // The tree may have changed and Position::upstream() relies on an up-to-date layout.
-    node->document()->updateLayoutIgnorePendingStylesheets();
+    node->document().updateLayoutIgnorePendingStylesheets();
 
     return comparePositions(firstPositionInOrBeforeNode(node), start) >= 0
         && comparePositions(lastPositionInOrAfterNode(node).upstream(), end) <= 0;

@@ -74,7 +74,7 @@ public:
     void restartWithNewText(unsigned lastTypedCharacterOffset)
     {
         m_lastTypedCharacterOffset = lastTypedCharacterOffset;
-        if (Settings* settings = m_renderText->document()->settings())
+        if (Settings* settings = m_renderText->document().settings())
             startOneShot(settings->passwordEchoDurationInSeconds());
     }
     void invalidate() { m_lastTypedCharacterOffset = -1; }
@@ -186,7 +186,7 @@ bool RenderText::isWordBreak() const
 
 void RenderText::updateNeedsTranscoding()
 {
-    const WTF::TextEncoding* encoding = document()->decoder() ? &document()->decoder()->encoding() : 0;
+    const WTF::TextEncoding* encoding = document().decoder() ? &document().decoder()->encoding() : 0;
     m_needsTranscoding = fontTranscoder().needsTranscoding(style()->font().fontDescription(), encoding);
 }
 
@@ -1329,7 +1329,7 @@ void RenderText::setTextInternal(PassRefPtr<StringImpl> text)
     ASSERT(text);
     m_text = text;
     if (m_needsTranscoding) {
-        const WTF::TextEncoding* encoding = document()->decoder() ? &document()->decoder()->encoding() : 0;
+        const WTF::TextEncoding* encoding = document().decoder() ? &document().decoder()->encoding() : 0;
         fontTranscoder().convert(m_text, style()->font().fontDescription(), encoding);
     }
     ASSERT(m_text);
@@ -1393,7 +1393,7 @@ void RenderText::setText(PassRefPtr<StringImpl> text, bool force)
     setNeedsLayoutAndPrefWidthsRecalc();
     m_knownToHaveNoOverflowAndNoFallbackFonts = false;
 
-    if (AXObjectCache* cache = document()->existingAXObjectCache())
+    if (AXObjectCache* cache = document().existingAXObjectCache())
         cache->textChanged(this);
 }
 

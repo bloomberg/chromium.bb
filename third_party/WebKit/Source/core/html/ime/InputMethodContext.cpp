@@ -73,7 +73,7 @@ HTMLElement* InputMethodContext::target() const
 
 void InputMethodContext::confirmComposition()
 {
-    Frame* frame = m_element->document()->frame();
+    Frame* frame = m_element->document().frame();
     if (!frame)
         return;
 

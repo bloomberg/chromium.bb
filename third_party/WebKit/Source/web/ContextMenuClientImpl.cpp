@@ -262,7 +262,7 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
                     data.mediaFlags |= WebContextMenuData::MediaCanPrint;
 
                 HTMLPlugInImageElement* pluginElement = toHTMLPlugInImageElement(r.innerNonSharedNode());
-                data.srcURL = pluginElement->document()->completeURL(pluginElement->url());
+                data.srcURL = pluginElement->document().completeURL(pluginElement->url());
                 data.mediaFlags |= WebContextMenuData::MediaCanSave;
 
                 // Add context menu commands that are supported by the plugin.

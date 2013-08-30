@@ -266,7 +266,7 @@ void RenderQuote::updateText()
     while (RenderObject* child = lastChild())
         child->destroy();
 
-    RenderTextFragment* fragment = new RenderTextFragment(document(), m_text.impl());
+    RenderTextFragment* fragment = new RenderTextFragment(&document(), m_text.impl());
     fragment->setStyle(style());
     addChild(fragment);
 }

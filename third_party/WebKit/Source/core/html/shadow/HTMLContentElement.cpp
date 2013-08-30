@@ -67,7 +67,7 @@ void HTMLContentElement::parseSelect()
 {
     ASSERT(m_shouldParseSelect);
 
-    CSSParser parser(document());
+    CSSParser parser(&document());
     parser.parseSelector(m_select, m_selectorList);
     m_shouldParseSelect = false;
     m_isValidSelector = validateSelect();
@@ -109,7 +109,7 @@ bool HTMLContentElement::validateSelect() const
 static inline bool checkOneSelector(const CSSSelector* selector, const Vector<Node*>& siblings, int nth)
 {
     Element* element = toElement(siblings[nth]);
-    SelectorChecker selectorChecker(element->document(), SelectorChecker::CollectingRules);
+    SelectorChecker selectorChecker(&element->document(), SelectorChecker::CollectingRules);
     SelectorChecker::SelectorCheckingContext context(selector, element, SelectorChecker::VisitedMatchEnabled);
     ShadowDOMSiblingTraversalStrategy strategy(siblings, nth);
     PseudoId ignoreDynamicPseudo = NOPSEUDO;

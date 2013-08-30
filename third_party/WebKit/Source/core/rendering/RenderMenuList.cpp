@@ -135,7 +135,7 @@ void RenderMenuList::addChild(RenderObject* newChild, RenderObject* beforeChild)
     m_innerBlock->addChild(newChild, beforeChild);
     ASSERT(m_innerBlock == firstChild());
 
-    if (AXObjectCache* cache = document()->existingAXObjectCache())
+    if (AXObjectCache* cache = document().existingAXObjectCache())
         cache->childrenChanged(this);
 }
 
@@ -236,7 +236,7 @@ void RenderMenuList::setText(const String& s)
         if (!m_buttonText || !m_buttonText->isBR()) {
             if (m_buttonText)
                 m_buttonText->destroy();
-            m_buttonText = new RenderBR(document());
+            m_buttonText = new RenderBR(&document());
             m_buttonText->setStyle(style());
             addChild(m_buttonText);
         }
@@ -246,7 +246,7 @@ void RenderMenuList::setText(const String& s)
         else {
             if (m_buttonText)
                 m_buttonText->destroy();
-            m_buttonText = new RenderText(document(), s.impl());
+            m_buttonText = new RenderText(&document(), s.impl());
             m_buttonText->setStyle(style());
             // We need to set the text explicitly though it was specified in the
             // constructor because RenderText doesn't refer to the text
@@ -320,7 +320,7 @@ void RenderMenuList::showPopup()
     if (m_popupIsVisible)
         return;
 
-    if (document()->page()->chrome().hasOpenedPopup())
+    if (document().page()->chrome().hasOpenedPopup())
         return;
 
     // Create m_innerBlock here so it ends up as the first child.
@@ -328,7 +328,7 @@ void RenderMenuList::showPopup()
     // inside the showPopup call and it would fail.
     createInnerBlock();
     if (!m_popup)
-        m_popup = document()->page()->chrome().createPopupMenu(*document()->frame(), this);
+        m_popup = document().page()->chrome().createPopupMenu(*document().frame(), this);
     m_popupIsVisible = true;
 
     FloatQuad quad(localToAbsoluteQuad(FloatQuad(borderBoundingBox())));
@@ -347,8 +347,8 @@ void RenderMenuList::valueChanged(unsigned listIndex, bool fireOnChange)
 {
     // Check to ensure a page navigation has not occurred while
     // the popup was up.
-    Document* doc = toElement(node())->document();
-    if (doc != doc->frame()->document())
+    Document& doc = toElement(node())->document();
+    if (&doc != doc.frame()->document())
         return;
 
     HTMLSelectElement* select = selectElement();
@@ -372,7 +372,7 @@ void RenderMenuList::didSetSelectedIndex(int listIndex)
 
 void RenderMenuList::didUpdateActiveOption(int optionIndex)
 {
-    if (!AXObjectCache::accessibilityEnabled() || !document()->existingAXObjectCache())
+    if (!AXObjectCache::accessibilityEnabled() || !document().existingAXObjectCache())
         return;
 
     if (m_lastActiveIndex == optionIndex)
@@ -387,7 +387,7 @@ void RenderMenuList::didUpdateActiveOption(int optionIndex)
     HTMLElement* listItem = select->listItems()[listIndex];
     ASSERT(listItem);
     if (listItem->attached()) {
-        if (AccessibilityMenuList* menuList = static_cast<AccessibilityMenuList*>(document()->axObjectCache()->get(this)))
+        if (AccessibilityMenuList* menuList = static_cast<AccessibilityMenuList*>(document().axObjectCache()->get(this)))
             menuList->didUpdateActiveOption(optionIndex);
     }
 }
@@ -527,7 +527,7 @@ PopupMenuStyle RenderMenuList::menuStyle() const
 
 HostWindow* RenderMenuList::hostWindow() const
 {
-    return document()->view()->hostWindow();
+    return document().view()->hostWindow();
 }
 
 PassRefPtr<Scrollbar> RenderMenuList::createScrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize controlSize)
@@ -616,7 +616,7 @@ void RenderMenuList::setTextFromItem(unsigned listIndex)
 
 FontSelector* RenderMenuList::fontSelector() const
 {
-    return document()->styleResolver()->fontSelector();
+    return document().styleResolver()->fontSelector();
 }
 
 }

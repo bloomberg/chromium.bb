@@ -334,7 +334,7 @@ HTMLMediaElement::~HTMLMediaElement()
     setMediaKeys(0);
 #endif
 
-    removeElementFromDocumentMap(this, document());
+    removeElementFromDocumentMap(this, &document());
 
     // Destroying the player may cause a resource load to be canceled,
     // which could result in userCancelledLoad() being called back.
@@ -352,13 +352,13 @@ void HTMLMediaElement::didMoveToNewDocument(Document* oldDocument)
     if (m_shouldDelayLoadEvent) {
         if (oldDocument)
             oldDocument->decrementLoadEventDelayCount();
-        document()->incrementLoadEventDelayCount();
+        document().incrementLoadEventDelayCount();
     }
 
     if (oldDocument)
         removeElementFromDocumentMap(this, oldDocument);
 
-    addElementToDocumentMap(this, document());
+    addElementToDocumentMap(this, &document());
 
     // FIXME: This is a temporary fix to prevent this object from causing the
     // MediaPlayer to dereference Frame and FrameLoader pointers from the
@@ -846,7 +846,7 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
 
     LOG(Media, "HTMLMediaElement::loadResource(%s, %s, %s)", urlForLoggingMedia(initialURL).utf8().data(), contentType.raw().utf8().data(), keySystem.utf8().data());
 
-    Frame* frame = document()->frame();
+    Frame* frame = document().frame();
     if (!frame) {
         mediaLoadingFailed(MediaPlayer::FormatError);
         return;
@@ -1324,15 +1324,15 @@ bool HTMLMediaElement::isSafeToLoadURL(const KURL& url, InvalidURLAction actionI
         return false;
     }
 
-    Frame* frame = document()->frame();
-    if (!frame || !document()->securityOrigin()->canDisplay(url)) {
+    Frame* frame = document().frame();
+    if (!frame || !document().securityOrigin()->canDisplay(url)) {
         if (actionIfInvalid == Complain)
             FrameLoader::reportLocalLoadFailed(frame, url.elidedString());
         LOG(Media, "HTMLMediaElement::isSafeToLoadURL(%s) -> FALSE rejected by SecurityOrigin", urlForLoggingMedia(url).utf8().data());
         return false;
     }
 
-    if (!document()->contentSecurityPolicy()->allowMediaFromSource(url)) {
+    if (!document().contentSecurityPolicy()->allowMediaFromSource(url)) {
         LOG(Media, "HTMLMediaElement::isSafeToLoadURL(%s) -> rejected by Content Security Policy", urlForLoggingMedia(url).utf8().data());
         return false;
     }
@@ -1637,7 +1637,7 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
         if (isPotentiallyPlaying && oldState <= HAVE_CURRENT_DATA)
             scheduleEvent(eventNames().playingEvent);
 
-        if (m_autoplaying && m_paused && autoplay() && !document()->isSandboxed(SandboxAutomaticFeatures) && !userGestureRequiredForRateChange()) {
+        if (m_autoplaying && m_paused && autoplay() && !document().isSandboxed(SandboxAutomaticFeatures) && !userGestureRequiredForRateChange()) {
             m_paused = false;
             invalidateCachedTime();
             scheduleEvent(eventNames().playEvent);
@@ -2153,12 +2153,12 @@ void HTMLMediaElement::play()
     if (ScriptController::processingUserGesture())
         removeBehaviorsRestrictionsAfterFirstUserGesture();
 
-    Settings* settings = document()->settings();
+    Settings* settings = document().settings();
     if (settings && settings->needsSiteSpecificQuirks() && m_dispatchingCanPlayEvent && !m_loadInitiatedByUserGesture) {
         // It should be impossible to be processing the canplay event while handling a user gesture
         // since it is dispatched asynchronously.
         ASSERT(!ScriptController::processingUserGesture());
-        String host = document()->baseURL().host();
+        String host = document().baseURL().host();
         if (host.endsWith(".npr.org", false) || equalIgnoringCase(host, "npr.org"))
             return;
     }
@@ -2330,7 +2330,7 @@ void HTMLMediaElement::setLoop(bool b)
 
 bool HTMLMediaElement::controls() const
 {
-    Frame* frame = document()->frame();
+    Frame* frame = document().frame();
 
     // always show controls when scripting is disabled
     if (frame && !frame->script()->canExecuteScripts(NotAboutToExecuteScript))
@@ -2748,7 +2748,7 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
 
     LOG(Media, "HTMLMediaElement::configureTextTrackGroup(%d)", group.kind);
 
-    Page* page = document()->page();
+    Page* page = document().page();
     Settings* settings = page ? &page->settings() : 0;
 
     // First, find the track in the group that should be enabled (if any).
@@ -2944,7 +2944,7 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
             goto check_again;
 
         if (source->fastHasAttribute(mediaAttr)) {
-            MediaQueryEvaluator screenEval("screen", document()->frame(), renderer() ? renderer()->style() : 0);
+            MediaQueryEvaluator screenEval("screen", document().frame(), renderer() ? renderer()->style() : 0);
             RefPtr<MediaQuerySet> media = MediaQuerySet::create(source->media());
 #if !LOG_DISABLED
             if (shouldLog)
@@ -3539,16 +3539,16 @@ void HTMLMediaElement::enterFullscreen()
 {
     LOG(Media, "HTMLMediaElement::enterFullscreen");
 
-    if (document()->settings() && document()->settings()->fullScreenEnabled())
-        FullscreenElementStack::from(document())->requestFullScreenForElement(this, 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
+    if (document().settings() && document().settings()->fullScreenEnabled())
+        FullscreenElementStack::from(&document())->requestFullScreenForElement(this, 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
 }
 
 void HTMLMediaElement::exitFullscreen()
 {
     LOG(Media, "HTMLMediaElement::exitFullscreen");
 
-    if (document()->settings() && document()->settings()->fullScreenEnabled() && isFullscreen())
-        FullscreenElementStack::from(document())->webkitCancelFullScreen();
+    if (document().settings() && document().settings()->fullScreenEnabled() && isFullscreen())
+        FullscreenElementStack::from(&document())->webkitCancelFullScreen();
 }
 
 void HTMLMediaElement::didBecomeFullscreenElement()
@@ -3660,9 +3660,9 @@ void HTMLMediaElement::setShouldDelayLoadEvent(bool shouldDelay)
 
     m_shouldDelayLoadEvent = shouldDelay;
     if (shouldDelay)
-        document()->incrementLoadEventDelayCount();
+        document().incrementLoadEventDelayCount();
     else
-        document()->decrementLoadEventDelayCount();
+        document().decrementLoadEventDelayCount();
 }
 
 
@@ -3687,7 +3687,7 @@ bool HTMLMediaElement::createMediaControls()
     if (hasMediaControls())
         return true;
 
-    RefPtr<MediaControls> mediaControls = MediaControls::create(document());
+    RefPtr<MediaControls> mediaControls = MediaControls::create(&document());
     if (!mediaControls)
         return false;
 
@@ -3843,7 +3843,7 @@ void HTMLMediaElement::setMediaGroup(const String& group)
 
     // 4. If there is another media element whose Document is the same as m's Document (even if one or both
     // of these elements are not actually in the Document),
-    HashSet<HTMLMediaElement*> elements = documentToElementSetMap().get(document());
+    HashSet<HTMLMediaElement*> elements = documentToElementSetMap().get(&document());
     for (HashSet<HTMLMediaElement*>::iterator i = elements.begin(); i != elements.end(); ++i) {
         if (*i == this)
             continue;

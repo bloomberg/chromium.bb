@@ -69,7 +69,7 @@ void HTMLDialogElement::close(const String& returnValue, ExceptionState& es)
 void HTMLDialogElement::closeDialog(const String& returnValue)
 {
     setBooleanAttribute(openAttr, false);
-    document()->removeFromTopLayer(this);
+    document().removeFromTopLayer(this);
     m_topIsValid = false;
 
     if (!returnValue.isNull())
@@ -93,7 +93,7 @@ PassRefPtr<RenderStyle> HTMLDialogElement::customStyleForRenderer()
 void HTMLDialogElement::reposition()
 {
     // Layout because we need to know our ancestors' positions and our own height.
-    document()->updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheets();
 
     RenderBox* box = renderBox();
     if (!box || !needsCenteredPositioning(box->style()))
@@ -101,7 +101,7 @@ void HTMLDialogElement::reposition()
 
     // Set up dialog's position to be safe-centered in the viewport.
     // FIXME: Figure out what to do in vertical writing mode.
-    FrameView* frameView = document()->view();
+    FrameView* frameView = document().view();
     int scrollTop = frameView->scrollOffset().height();
     int visibleHeight = frameView->visibleContentRect(ScrollableArea::IncludeScrollbars).height();
     m_top = scrollTop;
@@ -126,7 +126,7 @@ void HTMLDialogElement::showModal(ExceptionState& es)
         es.throwDOMException(InvalidStateError);
         return;
     }
-    document()->addToTopLayer(this);
+    document().addToTopLayer(this);
     setBooleanAttribute(openAttr, true);
     reposition();
 }

@@ -68,8 +68,8 @@ ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadySt
     , m_willExecuteInOrder(false)
 {
     ASSERT(m_element);
-    if (parserInserted && element->document()->scriptableDocumentParser() && !element->document()->isInDocumentWrite())
-        m_startLineNumber = element->document()->scriptableDocumentParser()->lineNumber();
+    if (parserInserted && element->document().scriptableDocumentParser() && !element->document().isInDocumentWrite())
+        m_startLineNumber = element->document().scriptableDocumentParser()->lineNumber();
 }
 
 ScriptLoader::~ScriptLoader()
@@ -168,10 +168,10 @@ bool ScriptLoader::isScriptTypeSupported(LegacyTypeSupport supportLegacyTypes) c
 
 Document* ScriptLoader::executingDocument() const
 {
-    Document* document = m_element->document();
-    if (!document->import())
-        return document;
-    return document->import()->master();
+    Document& document = m_element->document();
+    if (!document.import())
+        return &document;
+    return document.import()->master();
 }
 
 // http://dev.w3.org/html5/spec/Overview.html#prepare-a-script
@@ -212,7 +212,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
 
     // FIXME: If script is parser inserted, verify it's still in the original document.
     Document* executingDocument = this->executingDocument();
-    Document* elementDocument = m_element->document();
+    Document& elementDocument = m_element->document();
 
     // FIXME: Eventually we'd like to evaluate scripts which are inserted into a
     // viewless document but this'll do for now.
@@ -229,7 +229,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
     if (!client->charsetAttributeValue().isEmpty())
         m_characterEncoding = client->charsetAttributeValue();
     else
-        m_characterEncoding = elementDocument->charset();
+        m_characterEncoding = elementDocument.charset();
 
     if (client->hasSourceAttribute()) {
         if (!fetchScript(client->sourceAttributeValue()))
@@ -241,7 +241,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         m_willBeParserExecuted = true;
     } else if (client->hasSourceAttribute() && m_parserInserted && !client->asyncAttributeValue()) {
         m_willBeParserExecuted = true;
-    } else if (!client->hasSourceAttribute() && m_parserInserted && !elementDocument->haveStylesheetsAndImportsLoaded()) {
+    } else if (!client->hasSourceAttribute() && m_parserInserted && !elementDocument.haveStylesheetsAndImportsLoaded()) {
         m_willBeParserExecuted = true;
         m_readyToBeParserExecuted = true;
     } else if (client->hasSourceAttribute() && !client->asyncAttributeValue() && !m_forceAsync) {
@@ -253,8 +253,8 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         m_resource->addClient(this);
     } else {
         // Reset line numbering for nested writes.
-        TextPosition position = elementDocument->isInDocumentWrite() ? TextPosition() : scriptStartPosition;
-        KURL scriptURL = (!elementDocument->isInDocumentWrite() && m_parserInserted) ? elementDocument->url() : KURL();
+        TextPosition position = elementDocument.isInDocumentWrite() ? TextPosition() : scriptStartPosition;
+        KURL scriptURL = (!elementDocument.isInDocumentWrite() && m_parserInserted) ? elementDocument.url() : KURL();
         executeScript(ScriptSourceCode(scriptContent(), scriptURL, position));
     }
 
@@ -265,10 +265,10 @@ bool ScriptLoader::fetchScript(const String& sourceUrl)
 {
     ASSERT(m_element);
 
-    RefPtr<Document> elementDocument = m_element->document();
+    RefPtr<Document> elementDocument = &m_element->document();
     if (!m_element->dispatchBeforeLoadEvent(sourceUrl))
         return false;
-    if (!m_element->inDocument() || m_element->document() != elementDocument)
+    if (!m_element->inDocument() || &m_element->document() != elementDocument)
         return false;
 
     ASSERT(!m_resource);
@@ -316,7 +316,7 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
         return;
 
     RefPtr<Document> executingDocument = this->executingDocument();
-    RefPtr<Document> elementDocument = m_element->document();
+    RefPtr<Document> elementDocument = &m_element->document();
     Frame* frame = executingDocument->frame();
 
     bool shouldBypassMainWorldContentSecurityPolicy = (frame && frame->script()->shouldBypassMainWorldContentSecurityPolicy()) || elementDocument->contentSecurityPolicy()->allowScriptNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
@@ -336,7 +336,7 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
             executingDocument->pushCurrentScript(toHTMLScriptElement(m_element));
 
         AccessControlStatus corsCheck = NotSharableCrossOrigin;
-        if (sourceCode.resource() && sourceCode.resource()->passesAccessControlCheck(m_element->document()->securityOrigin()))
+        if (sourceCode.resource() && sourceCode.resource()->passesAccessControlCheck(m_element->document().securityOrigin()))
             corsCheck = SharableCrossOrigin;
 
         // Create a script from the script element node, using the script
@@ -378,7 +378,7 @@ void ScriptLoader::notifyFinished(Resource* resource)
     ASSERT(!m_willBeParserExecuted);
 
     RefPtr<Document> executingDocument = this->executingDocument();
-    RefPtr<Document> elementDocument = m_element->document();
+    RefPtr<Document> elementDocument = &m_element->document();
 
     // Resource possibly invokes this notifyFinished() more than
     // once because ScriptLoader doesn't unsubscribe itself from

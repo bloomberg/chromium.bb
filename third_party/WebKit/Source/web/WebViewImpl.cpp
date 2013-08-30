@@ -579,7 +579,7 @@ void WebViewImpl::mouseContextMenu(const WebMouseEvent& event)
     HitTestResult result = hitTestResultForWindowPos(pme.position());
     Frame* targetFrame;
     if (result.innerNonSharedNode())
-        targetFrame = result.innerNonSharedNode()->document()->frame();
+        targetFrame = result.innerNonSharedNode()->document().frame();
     else
         targetFrame = m_page->focusController().focusedOrMainFrame();
 
@@ -1086,7 +1086,7 @@ WebRect WebViewImpl::computeBlockBounds(const WebRect& rect, bool ignoreClipping
     // Return the bounding box in the window coordinate system.
     if (node) {
         IntRect rect = node->Node::pixelSnappedBoundingBox();
-        Frame* frame = node->document()->frame();
+        Frame* frame = node->document().frame();
         return frame->view()->contentsToWindow(rect);
     }
     return WebRect();
@@ -2288,14 +2288,14 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
         if (!selectedRange)
             return false;
 
-        RefPtr<Range> range(Range::create(selectedRange->startContainer()->document(),
+        RefPtr<Range> range(Range::create(&selectedRange->startContainer()->document(),
             selectedRange->startContainer(),
             selectedRange->startOffset(),
             selectedRange->startContainer(),
             selectedRange->startOffset()));
         anchor = frame->editor().firstRectForRange(range.get());
 
-        range = Range::create(selectedRange->endContainer()->document(),
+        range = Range::create(&selectedRange->endContainer()->document(),
             selectedRange->endContainer(),
             selectedRange->endOffset(),
             selectedRange->endContainer(),
@@ -2671,10 +2671,10 @@ void WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rect)
 
 void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& newScale, IntPoint& newScroll, bool& needAnimation)
 {
-    focusedNode->document()->updateLayoutIgnorePendingStylesheets();
+    focusedNode->document().updateLayoutIgnorePendingStylesheets();
 
     // 'caret' is rect encompassing the blinking cursor.
-    IntRect textboxRect = focusedNode->document()->view()->contentsToWindow(pixelSnappedIntRect(focusedNode->Node::boundingBox()));
+    IntRect textboxRect = focusedNode->document().view()->contentsToWindow(pixelSnappedIntRect(focusedNode->Node::boundingBox()));
     WebRect caret, unusedEnd;
     selectionBounds(caret, unusedEnd);
     IntRect unscaledCaret = caret;

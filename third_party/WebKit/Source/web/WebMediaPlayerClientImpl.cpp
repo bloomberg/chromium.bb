@@ -176,7 +176,7 @@ WebPlugin* WebMediaPlayerClientImpl::createHelperPlugin(const WebString& pluginT
 // FIXME: Remove this override and cast when Chromium is updated to use closeHelperPluginSoon().
 void WebMediaPlayerClientImpl::closeHelperPlugin()
 {
-    Frame* frame = static_cast<HTMLMediaElement*>(m_client)->document()->frame();
+    Frame* frame = static_cast<HTMLMediaElement*>(m_client)->document().frame();
     WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
     closeHelperPluginSoon(webFrame);
 }
@@ -266,7 +266,7 @@ void WebMediaPlayerClientImpl::loadInternal()
 #endif
 
     // FIXME: Remove this cast
-    Frame* frame = static_cast<HTMLMediaElement*>(m_client)->document()->frame();
+    Frame* frame = static_cast<HTMLMediaElement*>(m_client)->document().frame();
 
     // This does not actually check whether the hardware can support accelerated
     // compositing, but only if the flag is set. However, this is checked lazily

@@ -152,7 +152,7 @@ void WebElement::requestFullScreen()
 
 WebDocument WebElement::document() const
 {
-    return WebDocument(constUnwrap<Element>()->document());
+    return WebDocument(&constUnwrap<Element>()->document());
 }
 
 WebRect WebElement::boundsInViewportSpace()

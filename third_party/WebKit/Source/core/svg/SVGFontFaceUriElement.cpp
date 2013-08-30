@@ -95,8 +95,8 @@ void SVGFontFaceUriElement::loadFont()
 
     const AtomicString& href = getAttribute(XLinkNames::hrefAttr);
     if (!href.isNull()) {
-        ResourceFetcher* fetcher = document()->fetcher();
-        FetchRequest request(ResourceRequest(document()->completeURL(href)), localName());
+        ResourceFetcher* fetcher = document().fetcher();
+        FetchRequest request(ResourceRequest(document().completeURL(href)), localName());
         m_resource = fetcher->fetchFont(request);
         if (m_resource) {
             m_resource->addClient(this);

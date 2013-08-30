@@ -473,7 +473,7 @@ void RenderLayer::dirtyAncestorChainHasOutOfFlowPositionedDescendantStatus()
 
 bool RenderLayer::acceleratedCompositingForOverflowScrollEnabled() const
 {
-    const Settings* settings = renderer()->document()->settings();
+    const Settings* settings = renderer()->document().settings();
     return settings && settings->acceleratedCompositingForOverflowScrollEnabled();
 }
 
@@ -484,7 +484,7 @@ bool RenderLayer::compositorDrivenAcceleratedScrollingEnabled() const
     if (!acceleratedCompositingForOverflowScrollEnabled())
         return false;
 
-    const Settings* settings = renderer()->document()->settings();
+    const Settings* settings = renderer()->document().settings();
     return settings && settings->isCompositorDrivenAcceleratedScrollingEnabled();
 }
 
@@ -938,7 +938,7 @@ static bool checkContainingBlockChainForPagination(RenderLayerModelObject* rende
 
 bool RenderLayer::useRegionBasedColumns() const
 {
-    const Settings* settings = renderer()->document()->settings();
+    const Settings* settings = renderer()->document().settings();
     return settings && settings->regionBasedColumnsEnabled();
 }
 
@@ -2281,7 +2281,7 @@ void RenderLayer::setScrollOffset(const IntPoint& newScrollOffset)
 
     // Schedule the scroll DOM event.
     if (renderer()->node())
-        renderer()->node()->document()->eventQueue()->enqueueOrDispatchScrollEvent(renderer()->node(), DocumentEventQueue::ScrollEventElementTarget);
+        renderer()->node()->document().eventQueue()->enqueueOrDispatchScrollEvent(renderer()->node(), DocumentEventQueue::ScrollEventElementTarget);
 
     InspectorInstrumentation::didScrollLayer(renderer());
 }
@@ -2311,7 +2311,7 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
 
     // We may end up propagating a scroll event. It is important that we suspend events until
     // the end of the function since they could delete the layer or the layer's renderer().
-    FrameView* frameView = renderer()->document()->view();
+    FrameView* frameView = renderer()->document().view();
     if (frameView)
         frameView->pauseScheduledEvents();
 
@@ -2340,9 +2340,7 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
         }
     } else if (!parentLayer && renderer()->isBox() && renderBox()->canBeProgramaticallyScrolled()) {
         if (frameView) {
-            Element* ownerElement = 0;
-            if (renderer()->document())
-                ownerElement = renderer()->document()->ownerElement();
+            Element* ownerElement = renderer()->document().ownerElement();
 
             if (ownerElement && ownerElement->renderer()) {
                 HTMLFrameElementBase* frameElementBase = 0;
@@ -2506,14 +2504,14 @@ void RenderLayer::resize(const PlatformEvent& evt, const LayoutSize& oldOffset)
     Element* element = toElement(renderer()->node());
     RenderBox* renderer = toRenderBox(element->renderer());
 
-    Document* document = element->document();
+    Document& document = element->document();
 
     IntPoint pos;
     const PlatformGestureEvent* gevt = 0;
 
     switch (evt.type()) {
     case PlatformEvent::MouseMoved:
-        if (!document->frame()->eventHandler()->mousePressed())
+        if (!document.frame()->eventHandler()->mousePressed())
             return;
         pos = static_cast<const PlatformMouseEvent*>(&evt)->position();
         break;
@@ -2530,7 +2528,7 @@ void RenderLayer::resize(const PlatformEvent& evt, const LayoutSize& oldOffset)
 
     float zoomFactor = renderer->style()->effectiveZoom();
 
-    LayoutSize newOffset = offsetFromResizeCorner(document->view()->windowToContents(pos));
+    LayoutSize newOffset = offsetFromResizeCorner(document.view()->windowToContents(pos));
     newOffset.setWidth(newOffset.width() / zoomFactor);
     newOffset.setHeight(newOffset.height() / zoomFactor);
 
@@ -2571,7 +2569,7 @@ void RenderLayer::resize(const PlatformEvent& evt, const LayoutSize& oldOffset)
         element->setInlineStyleProperty(CSSPropertyHeight, roundToInt(baseHeight + difference.height()), CSSPrimitiveValue::CSS_PX);
     }
 
-    document->updateLayout();
+    document.updateLayout();
 
     // FIXME (Radar 4118564): We should also autoscroll the window as necessary to keep the point under the cursor in view.
 }
@@ -2897,7 +2895,7 @@ PassRefPtr<Scrollbar> RenderLayer::createScrollbar(ScrollbarOrientation orientat
         else
             scrollableArea()->didAddVerticalScrollbar(widget.get());
     }
-    renderer()->document()->view()->addChild(widget.get());
+    renderer()->document().view()->addChild(widget.get());
     return widget.release();
 }
 
@@ -2936,8 +2934,8 @@ void RenderLayer::setHasHorizontalScrollbar(bool hasScrollbar)
         m_vBar->styleChanged();
 
     // Force an update since we know the scrollbars have changed things.
-    if (renderer()->document()->hasAnnotatedRegions())
-        renderer()->document()->setAnnotatedRegionsDirty(true);
+    if (renderer()->document().hasAnnotatedRegions())
+        renderer()->document().setAnnotatedRegionsDirty(true);
 }
 
 void RenderLayer::setHasVerticalScrollbar(bool hasScrollbar)
@@ -2957,8 +2955,8 @@ void RenderLayer::setHasVerticalScrollbar(bool hasScrollbar)
         m_vBar->styleChanged();
 
     // Force an update since we know the scrollbars have changed things.
-    if (renderer()->document()->hasAnnotatedRegions())
-        renderer()->document()->setAnnotatedRegionsDirty(true);
+    if (renderer()->document().hasAnnotatedRegions())
+        renderer()->document().setAnnotatedRegionsDirty(true);
 }
 
 ScrollableArea* RenderLayer::enclosingScrollableArea() const
@@ -3121,8 +3119,8 @@ void RenderLayer::updateScrollbarsAfterLayout()
         updateSelfPaintingLayer();
 
         // Force an update since we know the scrollbars have changed things.
-        if (renderer()->document()->hasAnnotatedRegions())
-            renderer()->document()->setAnnotatedRegionsDirty(true);
+        if (renderer()->document().hasAnnotatedRegions())
+            renderer()->document().setAnnotatedRegionsDirty(true);
 
         renderer()->repaint();
 
@@ -3524,7 +3522,7 @@ static inline bool shouldSuppressPaintingLayer(RenderLayer* layer)
     // Avoid painting descendants of the root layer when stylesheets haven't loaded. This eliminates FOUC.
     // It's ok not to draw, because later on, when all the stylesheets do load, updateStyleSelector on the Document
     // will do a full repaint().
-    if (layer->renderer()->document()->didLayoutWithPendingStylesheets() && !layer->isRootLayer() && !layer->renderer()->isRoot())
+    if (layer->renderer()->document().didLayoutWithPendingStylesheets() && !layer->isRootLayer() && !layer->renderer()->isRoot())
         return true;
 
     return false;
@@ -3690,9 +3688,9 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
             context->clipPath(clipPath->path(rootRelativeBounds), clipPath->windRule());
         } else if (style->clipPath()->getOperationType() == ClipPathOperation::REFERENCE) {
             ReferenceClipPathOperation* referenceClipPathOperation = static_cast<ReferenceClipPathOperation*>(style->clipPath());
-            Document* document = renderer()->document();
+            Document& document = renderer()->document();
             // FIXME: It doesn't work with forward or external SVG references (https://bugs.webkit.org/show_bug.cgi?id=90405)
-            Element* element = document ? document->getElementById(referenceClipPathOperation->fragment()) : 0;
+            Element* element = document.getElementById(referenceClipPathOperation->fragment());
             if (element && element->hasTagName(SVGNames::clipPathTag) && element->renderer()) {
                 if (!rootRelativeBoundsComputed) {
                     rootRelativeBounds = calculateLayerBounds(paintingInfo.rootLayer, &offsetFromRoot, 0);
@@ -4255,7 +4253,7 @@ void RenderLayer::paintChildLayerIntoColumns(RenderLayer* childLayer, GraphicsCo
 
 static inline LayoutRect frameVisibleRect(RenderObject* renderer)
 {
-    FrameView* frameView = renderer->document()->view();
+    FrameView* frameView = renderer->document().view();
     if (!frameView)
         return LayoutRect();
 
@@ -4273,7 +4271,7 @@ bool RenderLayer::hitTest(const HitTestRequest& request, const HitTestLocation& 
 
     // RenderView should make sure to update layout before entering hit testing
     ASSERT(!renderer()->frame()->view()->layoutPending());
-    ASSERT(!renderer()->document()->renderer()->needsLayout());
+    ASSERT(!renderer()->document().renderer()->needsLayout());
 
     LayoutRect hitTestArea = isOutOfFlowRenderFlowThread() ? toRenderFlowThread(renderer())->borderBoxRect() : renderer()->view()->documentRect();
     if (!request.ignoreClipping())
@@ -6124,7 +6122,7 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
     else if (hasReflection()) {
         if (!m_reflection)
             createReflection();
-        UseCounter::count(renderer()->document(), UseCounter::Reflection);
+        UseCounter::count(&renderer()->document(), UseCounter::Reflection);
         updateReflectionStyle();
     }
 
@@ -6201,7 +6199,7 @@ void RenderLayer::updateScrollCornerStyle()
     RefPtr<RenderStyle> corner = renderer()->hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), actualRenderer->style()) : PassRefPtr<RenderStyle>(0);
     if (corner) {
         if (!m_scrollCorner) {
-            m_scrollCorner = RenderScrollbarPart::createAnonymous(renderer()->document());
+            m_scrollCorner = RenderScrollbarPart::createAnonymous(&renderer()->document());
             m_scrollCorner->setParent(renderer());
         }
         m_scrollCorner->setStyle(corner.release());
@@ -6217,7 +6215,7 @@ void RenderLayer::updateResizerStyle()
     RefPtr<RenderStyle> resizer = renderer()->hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(RESIZER), actualRenderer->style()) : PassRefPtr<RenderStyle>(0);
     if (resizer) {
         if (!m_resizer) {
-            m_resizer = RenderScrollbarPart::createAnonymous(renderer()->document());
+            m_resizer = RenderScrollbarPart::createAnonymous(&renderer()->document());
             m_resizer->setParent(renderer());
         }
         m_resizer->setStyle(resizer.release());
@@ -6235,7 +6233,7 @@ RenderLayer* RenderLayer::reflectionLayer() const
 void RenderLayer::createReflection()
 {
     ASSERT(!m_reflection);
-    m_reflection = RenderReplica::createAnonymous(renderer()->document());
+    m_reflection = RenderReplica::createAnonymous(&renderer()->document());
     m_reflection->setParent(renderer()); // We create a 1-way connection.
 }
 
@@ -6289,7 +6287,7 @@ void RenderLayer::updateReflectionStyle()
 bool RenderLayer::isCSSCustomFilterEnabled() const
 {
     // We only want to enable shaders if WebGL is also enabled on this platform.
-    const Settings* settings = renderer()->document()->settings();
+    const Settings* settings = renderer()->document().settings();
     return settings && settings->isCSSCustomFilterEnabled() && settings->webGLEnabled();
 }
 
@@ -6388,7 +6386,7 @@ void RenderLayer::updateOrRemoveFilterEffectRenderer()
         filterInfo->setRenderer(filterRenderer.release());
 
         // We can optimize away code paths in other places if we know that there are no software filters.
-        renderer()->document()->view()->setHasSoftwareFilters(true);
+        renderer()->document().view()->setHasSoftwareFilters(true);
     }
 
     // If the filter fails to build, remove it from the layer. It will still attempt to
