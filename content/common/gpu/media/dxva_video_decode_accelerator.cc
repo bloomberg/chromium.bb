@@ -23,6 +23,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/win/windows_version.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -395,6 +396,22 @@ void DXVAVideoDecodeAccelerator::PreSandboxInitialization() {
 
   RETURN_ON_FAILURE(CreateD3DDevManager(),
                     "Failed to initialize D3D device and manager",);
+
+  if (base::win::GetVersion() == base::win::VERSION_WIN8) {
+    // On Windows 8+ mf.dll forwards to mfcore.dll. It does not exist in
+    // Windows 7. Loading mfcore.dll fails on Windows 8.1 in the
+    // sandbox.
+    if (!LoadLibrary(L"mfcore.dll")) {
+      DLOG(ERROR) << "Failed to load mfcore.dll, Error: " << ::GetLastError();
+      return;
+    }
+    // MFStartup needs to be called once outside the sandbox. It fails on
+    // Windows 8.1 with E_NOTIMPL if it is called the first time in the
+    // sandbox.
+    RETURN_ON_HR_FAILURE(MFStartup(MF_VERSION, MFSTARTUP_FULL),
+                         "MFStartup failed.",);
+  }
+
   pre_sandbox_init_done_ = true;
 }
 
