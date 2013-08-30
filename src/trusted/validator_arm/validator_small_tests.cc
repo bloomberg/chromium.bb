@@ -1327,9 +1327,9 @@ TEST_F(ValidatorTests, LiteralPoolHeadPosition) {
   // Literal pools should only work when the head instruction is indeed at
   // the head.
   vector<arm_inst> literal_pool(_validator->InstructionsPerBundle());
-  for (size_t pos = 0; pos <= literal_pool.size(); ++pos) {
+  for (size_t pos = 0; pos < literal_pool.size(); ++pos) {
     std::fill(literal_pool.begin(), literal_pool.end(), kSvc0);
-    if (pos != literal_pool.size()) {
+    if (pos != literal_pool.size() - 1) {
       // We do one iteration without a literal pool head at all.
       literal_pool[pos] = kLiteralPoolHead;
     }
@@ -1353,7 +1353,7 @@ TEST_F(ValidatorTests, LiteralPoolBig) {
   // Literal pools should be a single bundle wide, each must be preceded by
   // a pool head.
   vector<arm_inst> literal_pools(2 * _validator->InstructionsPerBundle());
-  for (size_t pos = 0; pos <= literal_pools.size(); ++pos) {
+  for (size_t pos = 0; pos < literal_pools.size(); ++pos) {
     std::fill(literal_pools.begin(), literal_pools.end(), kSvc0);
     literal_pools[pos] = kLiteralPoolHead;
     validation_should_fail(&literal_pools.front(),
