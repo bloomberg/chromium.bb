@@ -9,6 +9,7 @@ __version__ = '0.1'
 
 import binascii
 import cStringIO
+import functools
 import hashlib
 import itertools
 import logging
@@ -173,6 +174,23 @@ def upload_hash_content_to_blobstore(
       'Unable to connect to server %s' % generate_upload_url)
 
 
+def upload_file(base_url, namespace, content, hash_key, token):
+  # TODO(maruel): Detect failures.
+  hash_key = str(hash_key)
+  content_url = base_url.rstrip('/') + '/content/'
+  if len(content) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
+    url = '%sgenerate_blobstore_url/%s/%s' % (
+        content_url, namespace, hash_key)
+    # token is guaranteed to be already quoted but it is unnecessary here, and
+    # only here.
+    data = [('token', urllib.unquote(token))]
+    return upload_hash_content_to_blobstore(url, data, hash_key, content)
+  else:
+    url = '%sstore/%s/%s?token=%s' % (
+        content_url, namespace, hash_key, token)
+    return url_read(url, data=content, content_type='application/octet-stream')
+
+
 class UploadRemote(run_isolated.Remote):
   def __init__(self, namespace, base_url, token):
     self.namespace = str(namespace)
@@ -181,22 +199,8 @@ class UploadRemote(run_isolated.Remote):
 
   def get_file_handler(self, base_url):
     base_url = str(base_url)
-    def upload_file(content, hash_key):
-      # TODO(maruel): Detect failures.
-      hash_key = str(hash_key)
-      content_url = base_url.rstrip('/') + '/content/'
-      if len(content) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
-        url = '%sgenerate_blobstore_url/%s/%s' % (
-            content_url, self.namespace, hash_key)
-        # self._token is stored already quoted but it is unnecessary here, and
-        # only here.
-        data = [('token', urllib.unquote(self._token))]
-        upload_hash_content_to_blobstore(url, data, hash_key, content)
-      else:
-        url = '%sstore/%s/%s?token=%s' % (
-            content_url, self.namespace, hash_key, self._token)
-        url_read(url, data=content, content_type='application/octet-stream')
-    return upload_file
+    return functools.partial(
+        upload_file, base_url, self.namespace, token=self._token)
 
 
 def check_files_exist_on_server(query_url, queries):
