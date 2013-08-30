@@ -693,6 +693,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // Wallet validation errors. section->type->(error_msg, input_value).
   WalletValidationErrors wallet_errors_;
 
+  // The notification that describes the current wallet error, if any.
+  scoped_ptr<DialogNotification> wallet_error_notification_;
+
   // The current state of the Autocheckout flow.
   AutocheckoutState autocheckout_state_;
 

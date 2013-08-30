@@ -92,6 +92,11 @@ const char kAddNewItemKey[] = "add-new-item";
 const char kManageItemsKey[] = "manage-items";
 const char kSameAsBillingKey[] = "same-as-billing";
 
+// URLs for Wallet error messages.
+const char kBuyerLegalAddressStatusUrl[] =
+    "https://wallet.google.com/manage/settings";
+const char kKnowYourCustomerStatusUrl[] = "https://wallet.google.com/kyc";
+
 // Keys for the kAutofillDialogAutofillDefault pref dictionary (do not change
 // these values).
 const char kGuidPrefKey[] = "guid";
@@ -353,61 +358,103 @@ DialogSection SectionFromLocation(wallet::FormFieldError::Location location) {
   return SECTION_MAX;
 }
 
-base::string16 WalletErrorMessage(wallet::WalletClient::ErrorType error_type) {
+scoped_ptr<DialogNotification> GetWalletError(
+    wallet::WalletClient::ErrorType error_type) {
+  base::string16 text;
+  GURL url;
+
   switch (error_type) {
-    case wallet::WalletClient::BUYER_ACCOUNT_ERROR:
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_WALLET_BUYER_ACCOUNT_ERROR);
+    case wallet::WalletClient::UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS:
+      text = l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WALLET_UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS);
+      url = GURL(kKnowYourCustomerStatusUrl);
+      break;
 
     case wallet::WalletClient::BUYER_LEGAL_ADDRESS_NOT_SUPPORTED:
-      return l10n_util::GetStringUTF16(
+      text = l10n_util::GetStringUTF16(
           IDS_AUTOFILL_WALLET_BUYER_COUNTRY_NOT_SUPPORTED);
+      url = GURL(kBuyerLegalAddressStatusUrl);
+      break;
 
-    case wallet::WalletClient::UNSUPPORTED_MERCHANT:
-      return l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_WALLET_UNSUPPORTED_MERCHANT);
-
-    case wallet::WalletClient::BAD_REQUEST:
-      return l10n_util::GetStringFUTF16(
-          IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR,
-          ASCIIToUTF16("71"));
-
-    case wallet::WalletClient::INVALID_PARAMS:
-      return l10n_util::GetStringFUTF16(
-          IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR,
-          ASCIIToUTF16("42"));
-
-    case wallet::WalletClient::UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS:
-      return l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_WALLET_UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS);
-
-    case wallet::WalletClient::UNSUPPORTED_API_VERSION:
-      return l10n_util::GetStringFUTF16(
-          IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR,
-          ASCIIToUTF16("43"));
-
-    case wallet::WalletClient::SERVICE_UNAVAILABLE:
-      return l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_WALLET_SERVICE_UNAVAILABLE_ERROR);
-
-    case wallet::WalletClient::INTERNAL_ERROR:
-      return l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
-                                        ASCIIToUTF16("62"));
-
-    case wallet::WalletClient::MALFORMED_RESPONSE:
-      return l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
-                                        ASCIIToUTF16("72"));
-
-    case wallet::WalletClient::NETWORK_ERROR:
-      return l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
-                                        ASCIIToUTF16("73"));
-
-    case wallet::WalletClient::UNKNOWN_ERROR:
-      return l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
-                                        ASCIIToUTF16("74"));
+    default:
+      // The notification will not have a link; it's handled in the next
+      // switch statement.
+      break;
   }
 
-  NOTREACHED();
-  return base::string16();
+  if (!text.empty()) {
+    scoped_ptr<DialogNotification> notification(new DialogNotification(
+        DialogNotification::WALLET_ERROR,
+        text));
+    notification->set_link_url(url);
+    return notification.Pass();
+  }
+
+  switch (error_type) {
+    case wallet::WalletClient::UNSUPPORTED_MERCHANT:
+      text = l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WALLET_UNSUPPORTED_MERCHANT);
+      break;
+
+    case wallet::WalletClient::BAD_REQUEST:
+      text = l10n_util::GetStringFUTF16(
+          IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR,
+          ASCIIToUTF16("71"));
+      break;
+
+    case wallet::WalletClient::INVALID_PARAMS:
+      text = l10n_util::GetStringFUTF16(
+          IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR,
+          ASCIIToUTF16("42"));
+      break;
+
+    case wallet::WalletClient::BUYER_ACCOUNT_ERROR:
+      text = l10n_util::GetStringUTF16(IDS_AUTOFILL_WALLET_BUYER_ACCOUNT_ERROR);
+      break;
+
+    case wallet::WalletClient::UNSUPPORTED_API_VERSION:
+      text = l10n_util::GetStringFUTF16(
+          IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR,
+          ASCIIToUTF16("43"));
+      break;
+
+    case wallet::WalletClient::SERVICE_UNAVAILABLE:
+      text = l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WALLET_SERVICE_UNAVAILABLE_ERROR);
+      break;
+
+    case wallet::WalletClient::INTERNAL_ERROR:
+      text = l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
+                                        ASCIIToUTF16("62"));
+      break;
+
+    case wallet::WalletClient::MALFORMED_RESPONSE:
+      text = l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
+                                        ASCIIToUTF16("72"));
+      break;
+
+    case wallet::WalletClient::NETWORK_ERROR:
+      text = l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
+                                        ASCIIToUTF16("73"));
+      break;
+
+    case wallet::WalletClient::UNKNOWN_ERROR:
+      text = l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
+                                        ASCIIToUTF16("74"));
+      break;
+
+    default:
+      break;
+  }
+
+  DCHECK(!text.empty());
+
+  // The other error types are strings of the form "XXX. You can pay without
+  // wallet."
+  return make_scoped_ptr(new DialogNotification(
+      DialogNotification::WALLET_ERROR,
+      l10n_util::GetStringFUTF16(IDS_AUTOFILL_DIALOG_COMPLETE_WITHOUT_WALLET,
+                                 text)));
 }
 
 gfx::Image GetGeneratedCardImage(const string16& card_number) {
@@ -717,7 +764,7 @@ string16 AutofillDialogControllerImpl::LegalDocumentsText() {
 }
 
 DialogSignedInState AutofillDialogControllerImpl::SignedInState() const {
-  if (account_chooser_model_.HadWalletError())
+  if (wallet_error_notification_)
     return SIGN_IN_DISABLED;
 
   if (signin_helper_ || !wallet_items_)
@@ -1197,7 +1244,7 @@ ui::MenuModel* AutofillDialogControllerImpl::MenuModelForSection(
 ui::MenuModel* AutofillDialogControllerImpl::MenuModelForAccountChooser() {
   // If there were unrecoverable Wallet errors, or if there are choices other
   // than "Pay without the wallet", show the full menu.
-  if (account_chooser_model_.HadWalletError() ||
+  if (wallet_error_notification_ ||
       account_chooser_model_.HasAccountsToChoose()) {
     return &account_chooser_model_;
   }
@@ -1832,14 +1879,9 @@ std::vector<DialogNotification> AutofillDialogControllerImpl::
                                    UTF8ToUTF16(source_url_.host()))));
   }
 
-  if (account_chooser_model_.HadWalletError()) {
-    // TODO(dbeam): figure out a way to dismiss this error after a while.
-    notifications.push_back(DialogNotification(
-        DialogNotification::WALLET_ERROR,
-        l10n_util::GetStringFUTF16(
-            IDS_AUTOFILL_DIALOG_COMPLETE_WITHOUT_WALLET,
-            account_chooser_model_.wallet_error_message())));
-  }
+  // TODO(dbeam): figure out a way to dismiss this error after a while.
+  if (wallet_error_notification_)
+    notifications.push_back(*wallet_error_notification_);
 
   if (IsSubmitPausedOn(wallet::VERIFY_CVV)) {
     notifications.push_back(DialogNotification(
@@ -2483,7 +2525,8 @@ void AutofillDialogControllerImpl::DisableWallet(
     }
   }
   SetIsSubmitting(false);
-  account_chooser_model_.SetHadWalletError(WalletErrorMessage(error_type));
+  wallet_error_notification_ = GetWalletError(error_type);
+  account_chooser_model_.SetHadWalletError();
 }
 
 void AutofillDialogControllerImpl::SuggestionsUpdated() {
@@ -3238,7 +3281,7 @@ void AutofillDialogControllerImpl::FinishSubmit() {
   // stop trying to pay with Wallet on future runs of the dialog. On the other
   // hand, if there was an error that prevented the user from having the choice
   // of using Wallet, leave the pref alone.
-  if (!account_chooser_model_.HadWalletError() &&
+  if (!wallet_error_notification_ &&
       account_chooser_model_.HasAccountsToChoose()) {
     profile_->GetPrefs()->SetBoolean(
         ::prefs::kAutofillDialogPayWithoutWallet,

@@ -100,7 +100,7 @@ TEST_F(AccountChooserModelTest, HandlesError) {
   ASSERT_TRUE(model()->IsCommandIdEnabled(
       TestAccountChooserModel::kActiveWalletItemId));
 
-  model()->SetHadWalletError(ASCIIToUTF16("Error"));
+  model()->SetHadWalletError();
   EXPECT_FALSE(model()->WalletIsSelected());
   EXPECT_FALSE(model()->IsCommandIdEnabled(
       TestAccountChooserModel::kActiveWalletItemId));

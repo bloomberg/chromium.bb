@@ -5,15 +5,19 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 
 #include "base/logging.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace autofill {
 
-int const kSplashDisplayDurationMs = 1200;
-int const kSplashFadeOutDurationMs = 200;
-int const kSplashFadeInDialogDurationMs = 150;
+const int kSplashDisplayDurationMs = 1200;
+const int kSplashFadeOutDurationMs = 200;
+const int kSplashFadeInDialogDurationMs = 150;
+
+static const base::char16 kRangeSeparator = '|';
 
 DialogNotification::DialogNotification() : type_(NONE) {}
 
@@ -21,7 +25,17 @@ DialogNotification::DialogNotification(Type type, const string16& display_text)
     : type_(type),
       display_text_(display_text),
       checked_(false),
-      interactive_(true) {}
+      interactive_(true) {
+  // If there's a range separated by bars, mark that as the anchor text.
+  std::vector<base::string16> pieces;
+  base::SplitStringDontTrim(display_text, kRangeSeparator, &pieces);
+  if (pieces.size() > 1) {
+    link_range_ = ui::Range(pieces[0].size(), pieces[1].size());
+    display_text_ = JoinString(pieces, string16());
+  }
+}
+
+DialogNotification::~DialogNotification() {}
 
 SkColor DialogNotification::GetBackgroundColor() const {
   switch (type_) {

@@ -13,9 +13,11 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/range/range.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/text_constants.h"
+#include "url/gurl.h"
 
 namespace autofill {
 
@@ -23,12 +25,12 @@ class AutofillField;
 
 // The time (in milliseconds) to show the splash page when the dialog is first
 // started.
-extern int const kSplashDisplayDurationMs;
+extern const int kSplashDisplayDurationMs;
 // The time (in milliseconds) spend fading out the splash image.
-extern int const kSplashFadeOutDurationMs;
+extern const int kSplashFadeOutDurationMs;
 // The time (in milliseconds) spend fading in the dialog (after the splash image
 // has been faded out).
-extern int const kSplashFadeInDialogDurationMs;
+extern const int kSplashFadeInDialogDurationMs;
 
 // This struct describes a single input control for the imperative autocomplete
 // dialog.
@@ -95,6 +97,7 @@ class DialogNotification {
 
   DialogNotification();
   DialogNotification(Type type, const string16& display_text);
+  ~DialogNotification();
 
   // Returns the appropriate background, border, or text color for the view's
   // notification area based on |type_|.
@@ -111,6 +114,11 @@ class DialogNotification {
   Type type() const { return type_; }
   const string16& display_text() const { return display_text_; }
 
+  void set_link_url(const GURL& link_url) { link_url_ = link_url; }
+  const GURL& link_url() const { return link_url_; }
+
+  const ui::Range& link_range() const { return link_range_; }
+
   void set_tooltip_text(const string16& tooltip_text) {
     tooltip_text_ = tooltip_text;
   }
@@ -125,6 +133,11 @@ class DialogNotification {
  private:
   Type type_;
   string16 display_text_;
+
+  // If the notification includes a link, these describe the destination and
+  // which part of |display_text_| is the anchor text.
+  GURL link_url_;
+  ui::Range link_range_;
 
   // When non-empty, indicates that a tooltip should be shown on the end of
   // the notification.

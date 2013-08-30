@@ -78,11 +78,8 @@ class AccountChooserModel : public ui::SimpleMenuModel,
   }
 
   // Disables all Wallet accounts and switches to the local Autofill data.
-  // Should be called when the Wallet server returns an error with the message
-  // to be displayed. If |message| is empty the error state will be cleared.
-  void SetHadWalletError(const base::string16& message);
-
-  bool HadWalletError() const;
+  // Should be called when the Wallet server returns an error.
+  void SetHadWalletError();
 
   // Switches the dialog to the local Autofill data.
   // Should be called when the Online Wallet sign-in attempt has failed.
@@ -97,8 +94,6 @@ class AccountChooserModel : public ui::SimpleMenuModel,
 
   // Returns the command id of the current selection.
   int checked_item() const { return checked_item_; }
-
-  base::string16 wallet_error_message() const { return wallet_error_message_; }
 
  protected:
   // Command IDs of the items in this menu; protected for the tests.
@@ -118,9 +113,8 @@ class AccountChooserModel : public ui::SimpleMenuModel,
   // The command id of the currently selected item.
   int checked_item_;
 
-  // The message to be displayed if there is a Wallet error. This message is
-  // only non-empty if a Wallet error has occurred.
-  base::string16 wallet_error_message_;
+  // Whether there has been a Wallet error.
+  bool had_wallet_error_;
 
   // For logging UMA metrics.
   const AutofillMetrics& metric_logger_;
