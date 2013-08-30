@@ -137,7 +137,7 @@ scoped_refptr<WebRtcLocalAudioTrack>
 CreateAndStartLocalAudioTrack(WebRtcAudioCapturer* capturer,
                               WebRtcAudioCapturerSink* sink) {
   scoped_refptr<WebRtcLocalAudioTrack> local_audio_track(
-      WebRtcLocalAudioTrack::Create(std::string(), capturer, NULL));
+      WebRtcLocalAudioTrack::Create(std::string(), capturer, NULL, NULL));
   local_audio_track->AddSink(sink);
   local_audio_track->Start();
   return local_audio_track;

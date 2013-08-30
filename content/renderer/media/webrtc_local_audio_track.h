@@ -11,6 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
+#include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreamtrack.h"
 #include "third_party/libjingle/source/talk/media/base/audiorenderer.h"
@@ -37,7 +38,8 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   static scoped_refptr<WebRtcLocalAudioTrack> Create(
       const std::string& id,
       const scoped_refptr<WebRtcAudioCapturer>& capturer,
-      webrtc::AudioSourceInterface* stream_source);
+      webrtc::AudioSourceInterface* stream_source,
+      const webrtc::MediaConstraintsInterface* constraints);
 
   // Add a sink to the track. This function will trigger a SetCaptureFormat()
   // call on the |sink|.
@@ -72,7 +74,8 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
  protected:
   WebRtcLocalAudioTrack(const std::string& label,
                         const scoped_refptr<WebRtcAudioCapturer>& capturer,
-                        webrtc::AudioSourceInterface* track_source);
+                        webrtc::AudioSourceInterface* track_source,
+                        const webrtc::MediaConstraintsInterface* constraints);
   virtual ~WebRtcLocalAudioTrack();
 
  private:

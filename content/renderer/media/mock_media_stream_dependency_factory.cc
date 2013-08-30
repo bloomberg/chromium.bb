@@ -408,7 +408,8 @@ MockMediaStreamDependencyFactory::CreateLocalVideoSource(
 
 scoped_refptr<WebRtcAudioCapturer>
 MockMediaStreamDependencyFactory::CreateWebAudioSource(
-    WebKit::WebMediaStreamSource* source) {
+    WebKit::WebMediaStreamSource* source,
+    RTCMediaConstraints* constraints) {
   return NULL;
 }
 
@@ -447,11 +448,12 @@ scoped_refptr<webrtc::AudioTrackInterface>
 MockMediaStreamDependencyFactory::CreateLocalAudioTrack(
     const std::string& id,
     const scoped_refptr<WebRtcAudioCapturer>& capturer,
-    webrtc::AudioSourceInterface* source) {
+    webrtc::AudioSourceInterface* source,
+    const webrtc::MediaConstraintsInterface* constraints) {
   DCHECK(mock_pc_factory_created_);
   DCHECK(!capturer.get());
   return WebRtcLocalAudioTrack::Create(
-      id, WebRtcAudioCapturer::CreateCapturer(), source);
+      id, WebRtcAudioCapturer::CreateCapturer(), source, constraints);
 }
 
 SessionDescriptionInterface*

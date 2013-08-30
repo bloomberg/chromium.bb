@@ -127,7 +127,8 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
           bool is_screencast,
           const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
   virtual scoped_refptr<WebRtcAudioCapturer> CreateWebAudioSource(
-      WebKit::WebMediaStreamSource* source) OVERRIDE;
+      WebKit::WebMediaStreamSource* source,
+      RTCMediaConstraints* constraints) OVERRIDE;
   virtual scoped_refptr<webrtc::MediaStreamInterface>
       CreateLocalMediaStream(const std::string& label) OVERRIDE;
   virtual scoped_refptr<webrtc::VideoTrackInterface>
@@ -136,10 +137,11 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   virtual scoped_refptr<webrtc::VideoTrackInterface>
       CreateLocalVideoTrack(const std::string& id,
                             cricket::VideoCapturer* capturer) OVERRIDE;
-  virtual scoped_refptr<webrtc::AudioTrackInterface>
-      CreateLocalAudioTrack(const std::string& id,
-                            const scoped_refptr<WebRtcAudioCapturer>& capturer,
-                            webrtc::AudioSourceInterface* source) OVERRIDE;
+  virtual scoped_refptr<webrtc::AudioTrackInterface> CreateLocalAudioTrack(
+      const std::string& id,
+      const scoped_refptr<WebRtcAudioCapturer>& capturer,
+      webrtc::AudioSourceInterface* source,
+      const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
   virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
       const std::string& type,
       const std::string& sdp,

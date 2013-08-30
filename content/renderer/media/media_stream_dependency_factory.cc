@@ -70,23 +70,12 @@ struct {
      webrtc::MediaConstraintsInterface::kValueTrue},
 };
 
-class WebAudioConstraints : public RTCMediaConstraints {
- public:
-  WebAudioConstraints()
-      : RTCMediaConstraints(WebKit::WebMediaConstraints()) {
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kWebAudioConstraints); ++i) {
-      webrtc::MediaConstraintsInterface::Constraint constraint;
-      constraint.key = kWebAudioConstraints[i].key;
-      constraint.value = kWebAudioConstraints[i].value;
-
-      DVLOG(1) << "WebAudioConstraints: " << constraint.key
-               << " : " <<  constraint.value;
-      mandatory_.push_back(constraint);
-    }
+void ApplyFixedWebAudioConstraints(RTCMediaConstraints* constraints) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kWebAudioConstraints); ++i) {
+    constraints->AddMandatory(kWebAudioConstraints[i].key,
+        kWebAudioConstraints[i].value, false);
   }
-
-  virtual ~WebAudioConstraints() {}
-};
+}
 
 class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
  public:
@@ -325,6 +314,10 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
       DLOG(WARNING) << "Failed to create the capturer for device "
                     << device_info.device.id;
       sources_created.Run(web_stream, false);
+      // TODO(xians): Don't we need to check if source_observer is observing
+      // something? If not, then it looks like we have a leak here.
+      // OTOH, if it _is_ observing something, then the callback might
+      // be called multiple times which is likely also a bug.
       return;
     }
 
@@ -390,12 +383,16 @@ bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
   MediaStreamSourceExtraData* source_data =
       static_cast<MediaStreamSourceExtraData*>(source.extraData());
 
+  // In the future the constraints will belong to the track itself, but
+  // right now they're on the source, so we fetch them from there.
+  RTCMediaConstraints track_constraints(source.constraints());
+
   scoped_refptr<WebRtcAudioCapturer> capturer;
   if (!source_data) {
     if (source.requiresAudioConsumer()) {
       // We're adding a WebAudio MediaStream.
       // Create a specific capturer for each WebAudio consumer.
-      capturer = CreateWebAudioSource(&source);
+      capturer = CreateWebAudioSource(&source, &track_constraints);
       source_data =
           static_cast<MediaStreamSourceExtraData*>(source.extraData());
     } else {
@@ -418,7 +415,8 @@ bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
     scoped_refptr<webrtc::AudioTrackInterface> audio_track(
         CreateLocalAudioTrack(track_id,
                               capturer,
-                              source_data->local_audio_source()));
+                              source_data->local_audio_source(),
+                              &track_constraints));
     audio_track->set_enabled(track.isEnabled());
     return native_stream->AddTrack(audio_track.get());
   } else {
@@ -598,7 +596,8 @@ MediaStreamDependencyFactory::CreateLocalVideoSource(
 
 scoped_refptr<WebRtcAudioCapturer>
 MediaStreamDependencyFactory::CreateWebAudioSource(
-    WebKit::WebMediaStreamSource* source) {
+    WebKit::WebMediaStreamSource* source,
+    RTCMediaConstraints* constraints) {
   DVLOG(1) << "MediaStreamDependencyFactory::CreateWebAudioSource()";
   DCHECK(GetWebRtcAudioDevice());
 
@@ -621,9 +620,8 @@ MediaStreamDependencyFactory::CreateWebAudioSource(
   // echo cancellation, automatic gain control, noise suppression and
   // high-pass filter. SetLocalAudioSource() affects core audio parts in
   // third_party/Libjingle.
-  WebAudioConstraints webaudio_audio_constraints_all_true;
-  source_data->SetLocalAudioSource(
-      CreateLocalAudioSource(&webaudio_audio_constraints_all_true).get());
+  ApplyFixedWebAudioConstraints(constraints);
+  source_data->SetLocalAudioSource(CreateLocalAudioSource(constraints).get());
   source->setExtraData(source_data);
 
   // Replace the default source with WebAudio as source instead.
@@ -659,12 +657,13 @@ scoped_refptr<webrtc::AudioTrackInterface>
 MediaStreamDependencyFactory::CreateLocalAudioTrack(
     const std::string& id,
     const scoped_refptr<WebRtcAudioCapturer>& capturer,
-    webrtc::AudioSourceInterface* source) {
+    webrtc::AudioSourceInterface* source,
+    const webrtc::MediaConstraintsInterface* constraints) {
   // TODO(xians): Merge |source| to the capturer(). We can't do this today
   // because only one capturer() is supported while one |source| is created
   // for each audio track.
   scoped_refptr<WebRtcLocalAudioTrack> audio_track(
-      WebRtcLocalAudioTrack::Create(id, capturer, source));
+      WebRtcLocalAudioTrack::Create(id, capturer, source, constraints));
   // Add the WebRtcAudioDevice as the sink to the local audio track.
   audio_track->AddSink(GetWebRtcAudioDevice());
   // Start the audio track. This will hook the |audio_track| to the capturer

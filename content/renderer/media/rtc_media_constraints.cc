@@ -42,6 +42,8 @@ void GetNativeMediaConstraints(
 
 }  // namespace
 
+RTCMediaConstraints::RTCMediaConstraints() {}
+
 RTCMediaConstraints::RTCMediaConstraints(
       const WebKit::WebMediaConstraints& constraints) {
   if (constraints.isNull())
@@ -69,6 +71,23 @@ RTCMediaConstraints::GetOptional() const {
 void RTCMediaConstraints::AddOptional(const std::string& key,
                                       const std::string& value) {
   optional_.push_back(Constraint(key, value));
+}
+
+bool RTCMediaConstraints::AddMandatory(const std::string& key,
+                                       const std::string& value,
+                                       bool override_if_exists) {
+  for (Constraints::iterator iter = mandatory_.begin();
+       iter != mandatory_.end();
+       ++iter) {
+    if (iter->key == key) {
+      if (override_if_exists)
+        iter->value = value;
+      return override_if_exists;
+    }
+  }
+  // The key wasn't found, add it.
+  mandatory_.push_back(Constraint(key, value));
+  return true;
 }
 
 }  // namespace content

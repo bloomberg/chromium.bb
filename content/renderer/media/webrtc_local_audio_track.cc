@@ -12,34 +12,65 @@ namespace content {
 
 static const char kAudioTrackKind[] = "audio";
 
+namespace {
+
+using webrtc::MediaConstraintsInterface;
+
+// This helper function checks if any audio constraints are set that require
+// audio processing to be applied.  Right now this is a big, single switch for
+// all of the properties, but in the future they'll be handled one by one.
+bool NeedsAudioProcessing(
+    const webrtc::MediaConstraintsInterface* constraints) {
+  if (!constraints)
+    return false;
+
+  static const char* kAudioProcessingProperties[] = {
+    MediaConstraintsInterface::kEchoCancellation,
+    MediaConstraintsInterface::kExperimentalEchoCancellation,
+    MediaConstraintsInterface::kAutoGainControl,
+    MediaConstraintsInterface::kExperimentalAutoGainControl,
+    MediaConstraintsInterface::kNoiseSuppression,
+    MediaConstraintsInterface::kHighpassFilter,
+  };
+
+  for (size_t i = 0; i < arraysize(kAudioProcessingProperties); ++i) {
+    bool value = false;
+    if (webrtc::FindConstraint(constraints, kAudioProcessingProperties[i],
+                               &value, NULL) &&
+        value) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+}  // namespace.
+
 scoped_refptr<WebRtcLocalAudioTrack> WebRtcLocalAudioTrack::Create(
     const std::string& id,
     const scoped_refptr<WebRtcAudioCapturer>& capturer,
-    webrtc::AudioSourceInterface* track_source) {
+    webrtc::AudioSourceInterface* track_source,
+    const webrtc::MediaConstraintsInterface* constraints) {
   talk_base::RefCountedObject<WebRtcLocalAudioTrack>* track =
       new talk_base::RefCountedObject<WebRtcLocalAudioTrack>(
-          id, capturer, track_source);
+          id, capturer, track_source, constraints);
   return track;
 }
 
 WebRtcLocalAudioTrack::WebRtcLocalAudioTrack(
     const std::string& label,
     const scoped_refptr<WebRtcAudioCapturer>& capturer,
-    webrtc::AudioSourceInterface* track_source)
+    webrtc::AudioSourceInterface* track_source,
+    const webrtc::MediaConstraintsInterface* constraints)
     : webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>(label),
       capturer_(capturer),
       track_source_(track_source),
-      need_audio_processing_(!capturer->device_id().empty()) {
+      need_audio_processing_(NeedsAudioProcessing(constraints)) {
   // The capturer with a valid device id is using microphone as source,
   // and APM (AudioProcessingModule) is turned on only for microphone data.
   DCHECK(capturer.get());
   DVLOG(1) << "WebRtcLocalAudioTrack::WebRtcLocalAudioTrack()";
-
-  // TODO(tommi): Remove this, feed audio constraints to WebRtcLocalAudioTrack
-  // and check the constraints.  This is here to fix a recent regression whereby
-  // audio processing is not enabled for WebAudio regardless of the hard coded
-  // audio constraints.  For more info: http://crbug.com/277134
-  need_audio_processing_ = true;
 }
 
 WebRtcLocalAudioTrack::~WebRtcLocalAudioTrack() {
