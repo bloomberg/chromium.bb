@@ -167,11 +167,8 @@ void SVGImage::drawForContainer(GraphicsContext* context, const FloatSize contai
     if (!m_page)
         return;
 
-    ImageObserver* observer = imageObserver();
-    ASSERT(observer);
-
-    // Temporarily reset image observer, we don't want to receive any changeInRect() calls due to this relayout.
-    setImageObserver(0);
+    // Temporarily disable the image observer to prevent changeInRect() calls due re-laying out the image.
+    ImageObserverDisabler imageObserverDisabler(this);
 
     IntSize roundedContainerSize = roundedIntSize(containerSize);
     setContainerSize(roundedContainerSize);
@@ -185,8 +182,6 @@ void SVGImage::drawForContainer(GraphicsContext* context, const FloatSize contai
     scaledSrc.setSize(adjustedSrcSize);
 
     draw(context, dstRect, scaledSrc, compositeOp, blendMode);
-
-    setImageObserver(observer);
 }
 
 PassRefPtr<NativeImageSkia> SVGImage::nativeImageForCurrentFrame()
@@ -240,8 +235,6 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
     if (!m_page)
         return;
 
-    FrameView* view = frameView();
-
     GraphicsContextStateSaver stateSaver(*context);
     context->setCompositeOperation(compositeOp, blendMode);
     context->clip(enclosingIntRect(dstRect));
@@ -258,6 +251,7 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
     context->translate(destOffset.x(), destOffset.y());
     context->scale(scale);
 
+    FrameView* view = frameView();
     view->resize(containerSize());
 
     if (view->needsLayout())

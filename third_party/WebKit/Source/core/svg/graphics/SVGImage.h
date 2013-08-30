@@ -49,7 +49,6 @@ public:
     static bool isInSVGImage(const Element*);
 
     RenderBox* embeddedContentBox() const;
-    FrameView* frameView() const;
 
     virtual bool isSVGImage() const OVERRIDE { return true; }
     virtual IntSize size() const OVERRIDE { return m_intrinsicSize; }
@@ -66,10 +65,14 @@ public:
     virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() OVERRIDE;
 
 private:
+    friend class AccessibilityRenderObject;
     friend class SVGImageChromeClient;
     friend class SVGImageForContainer;
 
     virtual ~SVGImage();
+
+    // Returns the SVG image document's frame.
+    FrameView* frameView() const;
 
     virtual String filenameExtension() const OVERRIDE;
 
@@ -98,6 +101,27 @@ private:
     OwnPtr<Page> m_page;
     IntSize m_intrinsicSize;
 };
+
+class ImageObserverDisabler {
+    WTF_MAKE_NONCOPYABLE(ImageObserverDisabler);
+public:
+    ImageObserverDisabler(Image* image)
+        : m_image(image)
+    {
+        ASSERT(m_image->imageObserver());
+        m_observer = m_image->imageObserver();
+        m_image->setImageObserver(0);
+    }
+
+    ~ImageObserverDisabler()
+    {
+        m_image->setImageObserver(m_observer);
+    }
+private:
+    Image* m_image;
+    ImageObserver* m_observer;
+};
+
 }
 
 #endif // SVGImage_h
