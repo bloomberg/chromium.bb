@@ -43,9 +43,6 @@ static const size_t kMaxMessageLength = 4096;
 // over unix sockets just fine, so a receiver that would (incorrectly) look at
 // O_CLOEXEC instead of FD_CLOEXEC may be tricked in thinking that the file
 // descriptor will or won't be closed on execve().
-// Since we have to account for buggy userland (see crbug.com/237283), we will
-// open(2) the file with O_CLOEXEC in the broker process if necessary, in
-// addition to calling recvmsg(2) with MSG_CMSG_CLOEXEC.
 static const int kCurrentProcessOpenFlagsMask = O_CLOEXEC;
 
 // Check whether |requested_filename| is in |allowed_file_names|.
@@ -81,7 +78,7 @@ bool GetFileNameInWhitelist(const std::vector<std::string>& allowed_file_names,
 // we're ok to allow in the broker.
 // I.e. here is where we wouldn't add O_RESET_FILE_SYSTEM.
 bool IsAllowedOpenFlags(int flags) {
-  // First, check the access mode
+  // First, check the access mode.
   const int access_mode = flags & O_ACCMODE;
   if (access_mode != O_RDONLY && access_mode != O_WRONLY &&
       access_mode != O_RDWR) {
@@ -95,13 +92,8 @@ bool IsAllowedOpenFlags(int flags) {
 
   // Some flags affect the behavior of the current process. We don't support
   // them and don't allow them for now.
-  if (flags & kCurrentProcessOpenFlagsMask) {
-    // We make an exception for O_CLOEXEC. Buggy userland could check for
-    // O_CLOEXEC and the only way to set it is to originally open with this
-    // flag. See the comment around kCurrentProcessOpenFlagsMask.
-    if (!(flags & O_CLOEXEC))
-      return false;
-  }
+  if (flags & kCurrentProcessOpenFlagsMask)
+    return false;
 
   // Now check that all the flags are known to us.
   const int creation_and_status_flags = flags & ~O_ACCMODE;
@@ -217,6 +209,7 @@ int BrokerProcess::PathAndFlagsSyscall(enum IPCCommands syscall_type,
     // this code if other flags are added.
     RAW_CHECK(kCurrentProcessOpenFlagsMask == O_CLOEXEC);
     recvmsg_flags |= MSG_CMSG_CLOEXEC;
+    flags &= ~O_CLOEXEC;
   }
 
   // There is no point in forwarding a request that we know will be denied.
