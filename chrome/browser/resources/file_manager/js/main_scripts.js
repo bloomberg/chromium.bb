@@ -99,6 +99,7 @@
 //<include src="share_client.js"/>
 //<include src="share_dialog.js"/>
 //<include src="suggest_apps_dialog.js"/>
+//<include src="text_measure.js"/>
 //<include src="tree.css.js"/>
 //<include src="volume_manager.js"/>
 //<include src="media/media_util.js"/>
