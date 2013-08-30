@@ -5,24 +5,24 @@
 </head>
 <body style="overflow-y: scroll">
 
-<div id="flexbox" style="-webkit-flex-pack: center; -webkit-flex-align: center">
-    <div style="-webkit-flex: 1">1</div>
-    <div style="-webkit-flex: 2">2<br>2</div>
-    <div style="-webkit-flex: 3">3<br>3<br>3</div>
-    <div style="-webkit-flex: 4">4<br>4<br>4<br>4</div>
-    <div style="-webkit-flex: 5">5<br>5<br>5<br>5<br>5</div>
-    <div style="-webkit-flex: 6">6<br>6<br>6<br>6<br>6<br>6</div>
-    <div style="-webkit-flex: 7">7<br>7<br>7<br>7<br>7<br>7<br>7</div>
-    <div style="-webkit-flex: 8">8<br>8<br>8<br>8<br>8<br>8<br>8<br>8</div>
-    <div style="-webkit-flex: 9">9<br>9<br>9<br>9<br>9<br>9<br>9<br>9<br>9</div>
-    <div style="-webkit-flex: 10">10<br>10<br>10<br>10<br>10<br>10<br>10<br>10<br>10</div>
+<div id="flexbox" style="justify-content: center; align-items: center">
+    <div style="flex: 1">1</div>
+    <div style="flex: 2">2<br>2</div>
+    <div style="flex: 3">3<br>3<br>3</div>
+    <div style="flex: 4">4<br>4<br>4<br>4</div>
+    <div style="flex: 5">5<br>5<br>5<br>5<br>5</div>
+    <div style="flex: 6">6<br>6<br>6<br>6<br>6<br>6</div>
+    <div style="flex: 7">7<br>7<br>7<br>7<br>7<br>7<br>7</div>
+    <div style="flex: 8">8<br>8<br>8<br>8<br>8<br>8<br>8<br>8</div>
+    <div style="flex: 9">9<br>9<br>9<br>9<br>9<br>9<br>9<br>9<br>9</div>
+    <div style="flex: 10">10<br>10<br>10<br>10<br>10<br>10<br>10<br>10<br>10</div>
 </div>
 
 </body>
 <script>
 function runTest()
 {
-    document.getElementById("flexbox").style.display = '-webkit-flexbox';
+    document.getElementById("flexbox").style.display = 'flex';
     document.body.clientHeight;
     document.getElementById("flexbox").style.display = '';
     document.body.clientHeight;

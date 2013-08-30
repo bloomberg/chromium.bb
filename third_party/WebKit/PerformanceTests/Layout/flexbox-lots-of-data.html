@@ -7,8 +7,8 @@ html, body {
     height: 100%;
 }
 body {
-    display: -webkit-flex;
-    -webkit-flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 #control {
     padding: 1ex;
@@ -16,7 +16,7 @@ body {
 #log {
     min-height: 0;
     border-top: solid 1px gray;
-    -webkit-flex: 1;
+    flex: 1;
     font-family: monospace;
     overflow-y: auto;
 }
@@ -24,7 +24,7 @@ body {
     background: #eee;
 }
 .row {
-    display: -webkit-flex;
+    display: flex;
     padding: 0.5ex 1ex;
 }
 .cell {
@@ -37,7 +37,7 @@ body {
     width: 30ex;
 }
 .col-text {
-    -webkit-flex: 1;
+    flex: 1;
     word-wrap: break-word;
     white-space: pre-wrap;
 }
