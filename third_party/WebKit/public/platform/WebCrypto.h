@@ -44,7 +44,6 @@ namespace WTF { template <typename T> class PassRefPtr; }
 namespace WebKit {
 
 class WebArrayBuffer;
-class WebCryptoOperation;
 
 class WebCryptoResult {
 public:
@@ -84,9 +83,6 @@ private:
 
 class WebCrypto {
 public:
-    // FIXME: Deprecated, delete once chromium side is updated.
-    virtual WebCryptoOperation* digest(const WebCryptoAlgorithm&) { WEBKIT_ASSERT_NOT_REACHED(); return 0; }
-
     // Starts a one-shot cryptographic operation which can complete either
     // synchronously, or asynchronously.
     //
