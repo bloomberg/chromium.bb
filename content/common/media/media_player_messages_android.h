@@ -29,7 +29,7 @@ IPC_ENUM_TRAITS(media::DemuxerStream::Type)
 IPC_ENUM_TRAITS(media::MediaKeys::KeyError)
 IPC_ENUM_TRAITS(media::VideoCodec)
 
-IPC_STRUCT_TRAITS_BEGIN(media::MediaPlayerHostMsg_DemuxerReady_Params)
+IPC_STRUCT_TRAITS_BEGIN(media::DemuxerConfigs)
   IPC_STRUCT_TRAITS_MEMBER(audio_codec)
   IPC_STRUCT_TRAITS_MEMBER(audio_channels)
   IPC_STRUCT_TRAITS_MEMBER(audio_sampling_rate)
@@ -45,7 +45,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::MediaPlayerHostMsg_DemuxerReady_Params)
   IPC_STRUCT_TRAITS_MEMBER(key_system)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params)
+IPC_STRUCT_TRAITS_BEGIN(media::DemuxerData)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(access_units)
 IPC_STRUCT_TRAITS_END()
@@ -192,12 +192,12 @@ IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_MediaSeekRequestAck,
 // Inform the media source player that the demuxer is ready.
 IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_DemuxerReady,
                     int /* player_id */,
-                    media::MediaPlayerHostMsg_DemuxerReady_Params)
+                    media::DemuxerConfigs)
 
 // Sent when the data was read from the ChunkDemuxer.
 IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_ReadFromDemuxerAck,
                     int /* player_id */,
-                    media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params)
+                    media::DemuxerData)
 
 // Inform the media source player of changed media duration from demuxer.
 IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_DurationChanged,

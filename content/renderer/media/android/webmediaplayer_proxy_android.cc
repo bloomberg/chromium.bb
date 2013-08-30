@@ -178,9 +178,9 @@ void WebMediaPlayerProxyAndroid::ExitFullscreen(int player_id) {
 
 void WebMediaPlayerProxyAndroid::ReadFromDemuxerAck(
     int player_id,
-    const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) {
+    const media::DemuxerData& data) {
   Send(new MediaPlayerHostMsg_ReadFromDemuxerAck(
-      routing_id(), player_id, params));
+      routing_id(), player_id, data));
 }
 
 void WebMediaPlayerProxyAndroid::SeekRequestAck(int player_id,
@@ -219,8 +219,8 @@ void WebMediaPlayerProxyAndroid::OnReadFromDemuxer(
 
 void WebMediaPlayerProxyAndroid::DemuxerReady(
     int player_id,
-    const media::MediaPlayerHostMsg_DemuxerReady_Params& params) {
-  Send(new MediaPlayerHostMsg_DemuxerReady(routing_id(), player_id, params));
+    const media::DemuxerConfigs& configs) {
+  Send(new MediaPlayerHostMsg_DemuxerReady(routing_id(), player_id, configs));
 }
 
 void WebMediaPlayerProxyAndroid::DurationChanged(

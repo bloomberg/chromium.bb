@@ -58,10 +58,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   virtual bool CanSeekBackward() OVERRIDE;
   virtual bool IsPlayerReady() OVERRIDE;
   virtual void OnSeekRequestAck(unsigned seek_request_id) OVERRIDE;
-  virtual void DemuxerReady(
-      const MediaPlayerHostMsg_DemuxerReady_Params& params) OVERRIDE;
-  virtual void ReadFromDemuxerAck(
-      const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) OVERRIDE;
+  virtual void DemuxerReady(const DemuxerConfigs& configs) OVERRIDE;
+  virtual void ReadFromDemuxerAck(const DemuxerData& data) OVERRIDE;
   virtual void DurationChanged(const base::TimeDelta& duration) OVERRIDE;
   virtual void SetDrmBridge(MediaDrmBridge* drm_bridge) OVERRIDE;
 

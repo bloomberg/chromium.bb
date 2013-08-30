@@ -207,17 +207,16 @@ void MediaSourcePlayer::StartInternal() {
   ProcessPendingEvents();
 }
 
-void MediaSourcePlayer::DemuxerReady(
-    const MediaPlayerHostMsg_DemuxerReady_Params& params) {
+void MediaSourcePlayer::DemuxerReady(const DemuxerConfigs& configs) {
   DVLOG(1) << __FUNCTION__;
-  duration_ = base::TimeDelta::FromMilliseconds(params.duration_ms);
+  duration_ = base::TimeDelta::FromMilliseconds(configs.duration_ms);
   clock_.SetDuration(duration_);
 
-  audio_codec_ = params.audio_codec;
-  num_channels_ = params.audio_channels;
-  sampling_rate_ = params.audio_sampling_rate;
-  is_audio_encrypted_ = params.is_audio_encrypted;
-  audio_extra_data_ = params.audio_extra_data;
+  audio_codec_ = configs.audio_codec;
+  num_channels_ = configs.audio_channels;
+  sampling_rate_ = configs.audio_sampling_rate;
+  is_audio_encrypted_ = configs.is_audio_encrypted;
+  audio_extra_data_ = configs.audio_extra_data;
   if (HasAudio()) {
     DCHECK_GT(num_channels_, 0);
     audio_timestamp_helper_.reset(new AudioTimestampHelper(sampling_rate_));
@@ -226,10 +225,10 @@ void MediaSourcePlayer::DemuxerReady(
     audio_timestamp_helper_.reset();
   }
 
-  video_codec_ = params.video_codec;
-  width_ = params.video_size.width();
-  height_ = params.video_size.height();
-  is_video_encrypted_ = params.is_video_encrypted;
+  video_codec_ = configs.video_codec;
+  width_ = configs.video_size.width();
+  height_ = configs.video_size.height();
+  is_video_encrypted_ = configs.is_video_encrypted;
 
   OnMediaMetadataChanged(duration_, width_, height_, true);
 
@@ -253,14 +252,13 @@ void MediaSourcePlayer::DemuxerReady(
   }
 }
 
-void MediaSourcePlayer::ReadFromDemuxerAck(
-    const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) {
-  DVLOG(1) << __FUNCTION__ << "(" << params.type << ")";
-  DCHECK_LT(0u, params.access_units.size());
-  if (params.type == DemuxerStream::AUDIO)
-    audio_decoder_job_->OnDataReceived(params);
+void MediaSourcePlayer::ReadFromDemuxerAck(const DemuxerData& data) {
+  DVLOG(1) << __FUNCTION__ << "(" << data.type << ")";
+  DCHECK_LT(0u, data.access_units.size());
+  if (data.type == DemuxerStream::AUDIO)
+    audio_decoder_job_->OnDataReceived(data);
   else
-    video_decoder_job_->OnDataReceived(params);
+    video_decoder_job_->OnDataReceived(data);
 }
 
 void MediaSourcePlayer::DurationChanged(const base::TimeDelta& duration) {

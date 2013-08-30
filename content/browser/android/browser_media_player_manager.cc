@@ -67,8 +67,7 @@ bool BrowserMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyMediaPlayer, OnDestroyPlayer)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyAllMediaPlayers,
                         DestroyAllMediaPlayers)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DemuxerReady,
-                        OnDemuxerReady)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DemuxerReady, OnDemuxerReady)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_ReadFromDemuxerAck,
                         OnReadFromDemuxerAck)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DurationChanged,
@@ -436,18 +435,18 @@ void BrowserMediaPlayerManager::OnDestroyPlayer(int player_id) {
 
 void BrowserMediaPlayerManager::OnDemuxerReady(
     int player_id,
-    const media::MediaPlayerHostMsg_DemuxerReady_Params& params) {
+    const media::DemuxerConfigs& configs) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
-    player->DemuxerReady(params);
+    player->DemuxerReady(configs);
 }
 
 void BrowserMediaPlayerManager::OnReadFromDemuxerAck(
     int player_id,
-    const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) {
+    const media::DemuxerData& data) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
-    player->ReadFromDemuxerAck(params);
+    player->ReadFromDemuxerAck(data);
 }
 
 void BrowserMediaPlayerManager::OnMediaSeekRequestAck(

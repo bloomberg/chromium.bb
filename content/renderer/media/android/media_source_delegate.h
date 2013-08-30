@@ -25,8 +25,8 @@ class DecoderBuffer;
 class DecryptingDemuxerStream;
 class DemuxerStream;
 class MediaLog;
-struct MediaPlayerHostMsg_DemuxerReady_Params;
-struct MediaPlayerHostMsg_ReadFromDemuxerAck_Params;
+struct DemuxerConfigs;
+struct DemuxerData;
 }
 
 namespace content {
@@ -93,12 +93,10 @@ class MediaSourceDelegate : public media::DemuxerHost {
   void Destroy();
 
  private:
-  typedef base::Callback<void(
-      scoped_ptr<media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params> params)>
-          ReadFromDemuxerAckCB;
-  typedef base::Callback<void(
-      scoped_ptr<media::MediaPlayerHostMsg_DemuxerReady_Params> params)>
-          DemuxerReadyCB;
+  typedef base::Callback<void(scoped_ptr<media::DemuxerData> data)>
+      ReadFromDemuxerAckCB;
+  typedef base::Callback<void(scoped_ptr<media::DemuxerConfigs> configs)>
+      DemuxerReadyCB;
 
   // This is private to enforce use of the Destroyer.
   virtual ~MediaSourceDelegate();
@@ -148,8 +146,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
                                               const std::string& language);
   void NotifyDemuxerReady();
   bool CanNotifyDemuxerReady();
-  void SendDemuxerReady(
-      scoped_ptr<media::MediaPlayerHostMsg_DemuxerReady_Params> params);
+  void SendDemuxerReady(scoped_ptr<media::DemuxerConfigs> configs);
 
   void StopDemuxer();
   void InitializeDemuxer();
@@ -157,19 +154,16 @@ class MediaSourceDelegate : public media::DemuxerHost {
   void OnReadFromDemuxerInternal(media::DemuxerStream::Type type);
   // Reads an access unit from the demuxer stream |stream| and stores it in
   // the |index|th access unit in |params|.
-  void ReadFromDemuxerStream(
-      media::DemuxerStream::Type type,
-      scoped_ptr<media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params> params,
-      size_t index);
-  void OnBufferReady(
-      media::DemuxerStream::Type type,
-      scoped_ptr<media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params> params,
-      size_t index,
-      media::DemuxerStream::Status status,
-      const scoped_refptr<media::DecoderBuffer>& buffer);
+  void ReadFromDemuxerStream(media::DemuxerStream::Type type,
+                             scoped_ptr<media::DemuxerData> data,
+                             size_t index);
+  void OnBufferReady(media::DemuxerStream::Type type,
+                     scoped_ptr<media::DemuxerData> data,
+                     size_t index,
+                     media::DemuxerStream::Status status,
+                     const scoped_refptr<media::DecoderBuffer>& buffer);
 
-  void SendReadFromDemuxerAck(
-      scoped_ptr<media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params> params);
+  void SendReadFromDemuxerAck(scoped_ptr<media::DemuxerData> data);
 
   // Helper function for calculating duration.
   int GetDurationMs();

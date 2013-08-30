@@ -45,8 +45,7 @@ class MediaDecoderJob {
   virtual ~MediaDecoderJob();
 
   // Called by MediaSourcePlayer when more data for this object has arrived.
-  void OnDataReceived(
-      const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params);
+  void OnDataReceived(const DemuxerData& data);
 
   // Returns true if this object has data to decode.
   bool HasData() const;
@@ -162,7 +161,7 @@ class MediaDecoderJob {
   size_t access_unit_index_;
 
   // Data received over IPC from last RequestData() operation.
-  MediaPlayerHostMsg_ReadFromDemuxerAck_Params received_data_;
+  DemuxerData received_data_;
 
   bool stop_decode_pending_;
 

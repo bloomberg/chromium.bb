@@ -119,12 +119,10 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnSetVolume(int player_id, double volume);
   virtual void OnReleaseResources(int player_id);
   virtual void OnDestroyPlayer(int player_id);
-  virtual void OnDemuxerReady(
-      int player_id,
-      const media::MediaPlayerHostMsg_DemuxerReady_Params& params);
-  virtual void OnReadFromDemuxerAck(
-      int player_id,
-      const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params);
+  virtual void OnDemuxerReady(int player_id,
+                              const media::DemuxerConfigs& configs);
+  virtual void OnReadFromDemuxerAck(int player_id,
+                                    const media::DemuxerData& data);
   void OnMediaSeekRequestAck(int player_id, unsigned seek_request_id);
   void OnInitializeCDM(int media_keys_id, const std::vector<uint8>& uuid);
   void OnGenerateKeyRequest(int media_keys_id,

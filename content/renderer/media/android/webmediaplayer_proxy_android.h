@@ -74,11 +74,8 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
 #endif
 
   // Media source related methods.
-  void DemuxerReady(int player_id,
-                    const media::MediaPlayerHostMsg_DemuxerReady_Params&);
-  void ReadFromDemuxerAck(
-      int player_id,
-      const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params);
+  void DemuxerReady(int player_id, const media::DemuxerConfigs& configs);
+  void ReadFromDemuxerAck(int player_id, const media::DemuxerData& data);
   void SeekRequestAck(int player_id, unsigned seek_request_id);
   void DurationChanged(int player_id, const base::TimeDelta& duration);
 

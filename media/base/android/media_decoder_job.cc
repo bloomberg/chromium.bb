@@ -35,8 +35,7 @@ MediaDecoderJob::MediaDecoderJob(
 
 MediaDecoderJob::~MediaDecoderJob() {}
 
-void MediaDecoderJob::OnDataReceived(
-    const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) {
+void MediaDecoderJob::OnDataReceived(const DemuxerData& data) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(!on_data_received_cb_.is_null());
 
@@ -48,7 +47,7 @@ void MediaDecoderJob::OnDataReceived(
   }
 
   access_unit_index_ = 0;
-  received_data_ = params;
+  received_data_ = data;
   done_cb.Run();
 }
 
@@ -92,7 +91,7 @@ bool MediaDecoderJob::Decode(
       received_data_.access_units[access_unit_index_].status) {
     // Clear received data because we need to handle a config change.
     decode_cb_.Reset();
-    received_data_ = MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
+    received_data_ = DemuxerData();
     access_unit_index_ = 0;
     return false;
   }
@@ -113,7 +112,7 @@ void MediaDecoderJob::Flush() {
   // Do nothing, flush when the next Decode() happens.
   needs_flush_ = true;
 
-  received_data_ = MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
+  received_data_ = DemuxerData();
   access_unit_index_ = 0;
   on_data_received_cb_.Reset();
 }
@@ -172,7 +171,7 @@ void MediaDecoderJob::RequestData(const base::Closure& done_cb) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(on_data_received_cb_.is_null());
 
-  received_data_ = MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
+  received_data_ = DemuxerData();
   access_unit_index_ = 0;
   on_data_received_cb_ = done_cb;
 

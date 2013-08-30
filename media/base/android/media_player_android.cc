@@ -63,13 +63,11 @@ void MediaPlayerAndroid::ReleaseMediaResourcesFromManager() {
     manager_->ReleaseMediaResources(player_id_);
 }
 
-void MediaPlayerAndroid::DemuxerReady(
-    const MediaPlayerHostMsg_DemuxerReady_Params& params) {
+void MediaPlayerAndroid::DemuxerReady(const DemuxerConfigs& configs) {
   NOTREACHED() << "Unexpected ipc received";
 }
 
-void MediaPlayerAndroid::ReadFromDemuxerAck(
-    const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) {
+void MediaPlayerAndroid::ReadFromDemuxerAck(const DemuxerData& data) {
   NOTREACHED() << "Unexpected ipc received";
 }
 

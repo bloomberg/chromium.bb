@@ -6,8 +6,7 @@
 
 namespace media {
 
-MediaPlayerHostMsg_DemuxerReady_Params::
-    MediaPlayerHostMsg_DemuxerReady_Params()
+DemuxerConfigs::DemuxerConfigs()
     : audio_codec(kUnknownAudioCodec),
       audio_channels(0),
       audio_sampling_rate(0),
@@ -16,18 +15,14 @@ MediaPlayerHostMsg_DemuxerReady_Params::
       is_video_encrypted(false),
       duration_ms(0) {}
 
-MediaPlayerHostMsg_DemuxerReady_Params::
-    ~MediaPlayerHostMsg_DemuxerReady_Params() {}
+DemuxerConfigs::~DemuxerConfigs() {}
 
 AccessUnit::AccessUnit() : end_of_stream(false) {}
 
 AccessUnit::~AccessUnit() {}
 
-MediaPlayerHostMsg_ReadFromDemuxerAck_Params::
-    MediaPlayerHostMsg_ReadFromDemuxerAck_Params()
-    : type(DemuxerStream::UNKNOWN) {}
+DemuxerData::DemuxerData() : type(DemuxerStream::UNKNOWN) {}
 
-MediaPlayerHostMsg_ReadFromDemuxerAck_Params::
-    ~MediaPlayerHostMsg_ReadFromDemuxerAck_Params() {}
+DemuxerData::~DemuxerData() {}
 
 }  // namespace media

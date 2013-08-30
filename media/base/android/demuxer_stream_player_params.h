@@ -17,9 +17,9 @@
 
 namespace media {
 
-struct MEDIA_EXPORT MediaPlayerHostMsg_DemuxerReady_Params {
-  MediaPlayerHostMsg_DemuxerReady_Params();
-  ~MediaPlayerHostMsg_DemuxerReady_Params();
+struct MEDIA_EXPORT DemuxerConfigs {
+  DemuxerConfigs();
+  ~DemuxerConfigs();
 
   AudioCodec audio_codec;
   int audio_channels;
@@ -50,9 +50,9 @@ struct MEDIA_EXPORT AccessUnit {
   std::vector<media::SubsampleEntry> subsamples;
 };
 
-struct MEDIA_EXPORT MediaPlayerHostMsg_ReadFromDemuxerAck_Params {
-  MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
-  ~MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
+struct MEDIA_EXPORT DemuxerData {
+  DemuxerData();
+  ~DemuxerData();
 
   DemuxerStream::Type type;
   std::vector<AccessUnit> access_units;

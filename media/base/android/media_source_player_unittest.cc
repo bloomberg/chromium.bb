@@ -108,72 +108,70 @@ class MediaSourcePlayerTest : public testing::Test {
 
   // Starts an audio decoder job.
   void StartAudioDecoderJob() {
-    MediaPlayerHostMsg_DemuxerReady_Params params;
-    params.audio_codec = kCodecVorbis;
-    params.audio_channels = 2;
-    params.audio_sampling_rate = 44100;
-    params.is_audio_encrypted = false;
-    params.duration_ms = kDefaultDurationInMs;
+    DemuxerConfigs configs;
+    configs.audio_codec = kCodecVorbis;
+    configs.audio_channels = 2;
+    configs.audio_sampling_rate = 44100;
+    configs.is_audio_encrypted = false;
+    configs.duration_ms = kDefaultDurationInMs;
     scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("vorbis-extradata");
-    params.audio_extra_data = std::vector<uint8>(
+    configs.audio_extra_data = std::vector<uint8>(
         buffer->data(),
         buffer->data() + buffer->data_size());
-    Start(params);
+    Start(configs);
   }
 
   void StartVideoDecoderJob() {
-    MediaPlayerHostMsg_DemuxerReady_Params params;
-    params.video_codec = kCodecVP8;
-    params.video_size = gfx::Size(320, 240);
-    params.is_video_encrypted = false;
-    params.duration_ms = kDefaultDurationInMs;
-    Start(params);
+    DemuxerConfigs configs;
+    configs.video_codec = kCodecVP8;
+    configs.video_size = gfx::Size(320, 240);
+    configs.is_video_encrypted = false;
+    configs.duration_ms = kDefaultDurationInMs;
+    Start(configs);
   }
 
   // Starts decoding the data.
-  void Start(const MediaPlayerHostMsg_DemuxerReady_Params& params) {
-    player_->DemuxerReady(params);
+  void Start(const DemuxerConfigs& configs) {
+    player_->DemuxerReady(configs);
     player_->Start();
   }
 
-  MediaPlayerHostMsg_ReadFromDemuxerAck_Params
-      CreateReadFromDemuxerAckForAudio(int packet_id) {
-    MediaPlayerHostMsg_ReadFromDemuxerAck_Params ack_params;
-    ack_params.type = DemuxerStream::AUDIO;
-    ack_params.access_units.resize(1);
-    ack_params.access_units[0].status = DemuxerStream::kOk;
+  DemuxerData CreateReadFromDemuxerAckForAudio(int packet_id) {
+    DemuxerData data;
+    data.type = DemuxerStream::AUDIO;
+    data.access_units.resize(1);
+    data.access_units[0].status = DemuxerStream::kOk;
     scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile(
         base::StringPrintf("vorbis-packet-%d", packet_id));
-    ack_params.access_units[0].data = std::vector<uint8>(
+    data.access_units[0].data = std::vector<uint8>(
         buffer->data(), buffer->data() + buffer->data_size());
     // Vorbis needs 4 extra bytes padding on Android to decode properly. Check
     // NuMediaExtractor.cpp in Android source code.
     uint8 padding[4] = { 0xff , 0xff , 0xff , 0xff };
-    ack_params.access_units[0].data.insert(
-        ack_params.access_units[0].data.end(), padding, padding + 4);
-    return ack_params;
+    data.access_units[0].data.insert(
+        data.access_units[0].data.end(), padding, padding + 4);
+    return data;
   }
 
-  MediaPlayerHostMsg_ReadFromDemuxerAck_Params
-        CreateReadFromDemuxerAckForVideo() {
-    MediaPlayerHostMsg_ReadFromDemuxerAck_Params ack_params;
-    ack_params.type = DemuxerStream::VIDEO;
-    ack_params.access_units.resize(1);
-    ack_params.access_units[0].status = DemuxerStream::kOk;
+  DemuxerData CreateReadFromDemuxerAckForVideo() {
+    DemuxerData data;
+    data.type = DemuxerStream::VIDEO;
+    data.access_units.resize(1);
+    data.access_units[0].status = DemuxerStream::kOk;
     scoped_refptr<DecoderBuffer> buffer =
         ReadTestDataFile("vp8-I-frame-320x240");
-    ack_params.access_units[0].data = std::vector<uint8>(
+    data.access_units[0].data = std::vector<uint8>(
         buffer->data(), buffer->data() + buffer->data_size());
-    return ack_params;
+    return data;
   }
 
-  MediaPlayerHostMsg_ReadFromDemuxerAck_Params CreateEOSAck(bool is_audio) {
-      MediaPlayerHostMsg_ReadFromDemuxerAck_Params ack_params;
-      ack_params.type = is_audio ? DemuxerStream::AUDIO : DemuxerStream::VIDEO;
-      ack_params.access_units.resize(1);
-      ack_params.access_units[0].status = DemuxerStream::kOk;
-      ack_params.access_units[0].end_of_stream = true;
-      return ack_params;
+  DemuxerData CreateEOSAck(bool is_audio) {
+      DemuxerData data;
+      data.type = is_audio ? DemuxerStream::AUDIO : DemuxerStream::VIDEO;
+      data.access_units.resize(1);
+      data.access_units[0].status = DemuxerStream::kOk;
+      data.access_units[0].end_of_stream = true;
+      return data;
     }
 
   base::TimeTicks StartTimeTicks() {
@@ -202,16 +200,16 @@ TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithInvalidConfig) {
     return;
 
   // Test audio decoder job will not be created when failed to start the codec.
-  MediaPlayerHostMsg_DemuxerReady_Params params;
-  params.audio_codec = kCodecVorbis;
-  params.audio_channels = 2;
-  params.audio_sampling_rate = 44100;
-  params.is_audio_encrypted = false;
-  params.duration_ms = kDefaultDurationInMs;
+  DemuxerConfigs configs;
+  configs.audio_codec = kCodecVorbis;
+  configs.audio_channels = 2;
+  configs.audio_sampling_rate = 44100;
+  configs.is_audio_encrypted = false;
+  configs.duration_ms = kDefaultDurationInMs;
   uint8 invalid_codec_data[] = { 0x00, 0xff, 0xff, 0xff, 0xff };
-  params.audio_extra_data.insert(params.audio_extra_data.begin(),
+  configs.audio_extra_data.insert(configs.audio_extra_data.begin(),
                                  invalid_codec_data, invalid_codec_data + 4);
-  Start(params);
+  Start(configs);
   EXPECT_EQ(NULL, GetMediaDecoderJob(true));
   EXPECT_EQ(0, manager_->num_requests());
 }
@@ -307,13 +305,13 @@ TEST_F(MediaSourcePlayerTest, StartAfterSeekFinish) {
     return;
 
   // Test decoder job will not start until all pending seek event is handled.
-  MediaPlayerHostMsg_DemuxerReady_Params params;
-  params.audio_codec = kCodecVorbis;
-  params.audio_channels = 2;
-  params.audio_sampling_rate = 44100;
-  params.is_audio_encrypted = false;
-  params.duration_ms = kDefaultDurationInMs;
-  player_->DemuxerReady(params);
+  DemuxerConfigs configs;
+  configs.audio_codec = kCodecVorbis;
+  configs.audio_channels = 2;
+  configs.audio_sampling_rate = 44100;
+  configs.is_audio_encrypted = false;
+  configs.duration_ms = kDefaultDurationInMs;
+  player_->DemuxerReady(configs);
   EXPECT_EQ(NULL, GetMediaDecoderJob(true));
   EXPECT_EQ(0, manager_->num_requests());
 
@@ -371,20 +369,20 @@ TEST_F(MediaSourcePlayerTest, DecoderJobsCannotStartWithoutAudio) {
 
   // Test that when Start() is called, video decoder jobs will wait for audio
   // decoder job before start decoding the data.
-  MediaPlayerHostMsg_DemuxerReady_Params params;
-  params.audio_codec = kCodecVorbis;
-  params.audio_channels = 2;
-  params.audio_sampling_rate = 44100;
-  params.is_audio_encrypted = false;
+  DemuxerConfigs configs;
+  configs.audio_codec = kCodecVorbis;
+  configs.audio_channels = 2;
+  configs.audio_sampling_rate = 44100;
+  configs.is_audio_encrypted = false;
   scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("vorbis-extradata");
-  params.audio_extra_data = std::vector<uint8>(
+  configs.audio_extra_data = std::vector<uint8>(
       buffer->data(),
       buffer->data() + buffer->data_size());
-  params.video_codec = kCodecVP8;
-  params.video_size = gfx::Size(320, 240);
-  params.is_video_encrypted = false;
-  params.duration_ms = kDefaultDurationInMs;
-  Start(params);
+  configs.video_codec = kCodecVP8;
+  configs.video_size = gfx::Size(320, 240);
+  configs.is_video_encrypted = false;
+  configs.duration_ms = kDefaultDurationInMs;
+  Start(configs);
   EXPECT_EQ(0, manager_->num_requests());
 
   scoped_refptr<gfx::SurfaceTexture> surface_texture(

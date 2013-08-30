@@ -88,11 +88,10 @@ class MEDIA_EXPORT MediaPlayerAndroid {
 
   // Methods for DemuxerStreamPlayer.
   // Informs DemuxerStreamPlayer that the demuxer is ready.
-  virtual void DemuxerReady(
-      const MediaPlayerHostMsg_DemuxerReady_Params& params);
+  virtual void DemuxerReady(const DemuxerConfigs& configs);
+
   // Called when the requested data is received from the demuxer.
-  virtual void ReadFromDemuxerAck(
-      const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params);
+  virtual void ReadFromDemuxerAck(const DemuxerData& data);
 
   // Called when a seek request is acked by the render process.
   virtual void OnSeekRequestAck(unsigned seek_request_id);
