@@ -43,8 +43,8 @@ class DevToolsClient {
   // Handles events until the given function reports the condition is met
   // and there are no more received events to handle. If the given
   // function ever returns an error, returns immediately with the error.
-  // If the condition is not met within |timeout|ms, kTimeout status
-  // is returned eventually.
+  // If the condition is not met within |timeout|, kTimeout status
+  // is returned eventually. If |timeout| is 0, this function will not block.
   virtual Status HandleEventsUntil(const ConditionalFunc& conditional_func,
                                    const base::TimeDelta& timeout) = 0;
 

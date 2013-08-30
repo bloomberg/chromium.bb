@@ -222,8 +222,7 @@ Status ExecuteSetTimeout(
     session->script_timeout = timeout;
   } else if (type == "page load") {
     session->page_load_timeout =
-        ((timeout < base::TimeDelta()) ? base::TimeDelta::FromMilliseconds(
-                                             Session::kDefaultPageLoadTimeoutMs)
+        ((timeout < base::TimeDelta()) ? Session::kDefaultPageLoadTimeout
                                        : timeout);
   } else {
     return Status(kUnknownError, "unknown type of timeout:" + type);

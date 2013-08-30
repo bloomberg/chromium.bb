@@ -20,7 +20,8 @@ FrameInfo::FrameInfo(const std::string& parent_frame_id,
       frame_id(frame_id),
       chromedriver_frame_id(chromedriver_frame_id) {}
 
-const int Session::kDefaultPageLoadTimeoutMs = 5 * 60 * 1000;
+const base::TimeDelta Session::kDefaultPageLoadTimeout =
+    base::TimeDelta::FromMinutes(5);
 
 Session::Session(const std::string& id)
     : id(id),
@@ -29,8 +30,7 @@ Session::Session(const std::string& id)
       force_devtools_screenshot(false),
       sticky_modifiers(0),
       mouse_position(0, 0),
-      page_load_timeout(
-          base::TimeDelta::FromMilliseconds(kDefaultPageLoadTimeoutMs)) {}
+      page_load_timeout(kDefaultPageLoadTimeout) {}
 
 Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
     : id(id),
@@ -40,8 +40,7 @@ Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
       chrome(chrome.Pass()),
       sticky_modifiers(0),
       mouse_position(0, 0),
-      page_load_timeout(
-          base::TimeDelta::FromMilliseconds(kDefaultPageLoadTimeoutMs)),
+      page_load_timeout(kDefaultPageLoadTimeout),
       capabilities(CreateCapabilities()) {}
 
 Session::~Session() {}

@@ -66,6 +66,8 @@ class MockSyncWebSocket : public SyncWebSocket {
   virtual SyncWebSocket::StatusCode ReceiveNextMessage(
       std::string* message,
       const base::TimeDelta& timeout) OVERRIDE {
+    if (timeout <= base::TimeDelta())
+      return SyncWebSocket::kTimeout;
     base::DictionaryValue response;
     response.SetInteger("id", id_);
     base::DictionaryValue result;

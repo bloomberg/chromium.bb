@@ -47,6 +47,11 @@ class ScopedIncrementer {
   int* count_;
 };
 
+Status ConditionIsMet(bool* is_condition_met) {
+  *is_condition_met = true;
+  return Status(kOk);
+}
+
 }  // namespace
 
 namespace internal {
@@ -158,17 +163,7 @@ void DevToolsClientImpl::AddListener(DevToolsEventListener* listener) {
 }
 
 Status DevToolsClientImpl::HandleReceivedEvents() {
-  if (!socket_->IsConnected())
-    return Status(kDisconnected, "not connected to DevTools");
-
-  while (true) {
-    if (!socket_->HasNextMessage())
-      return Status(kOk);
-
-    Status status = ProcessNextMessage(-1);
-    if (status.IsError())
-      return status;
-  }
+  return HandleEventsUntil(base::Bind(&ConditionIsMet), base::TimeDelta());
 }
 
 Status DevToolsClientImpl::HandleEventsUntil(
@@ -177,14 +172,10 @@ Status DevToolsClientImpl::HandleEventsUntil(
     return Status(kDisconnected, "not connected to DevTools");
 
   base::TimeTicks deadline = base::TimeTicks::Now() + timeout;
-
+  base::TimeDelta next_message_timeout = timeout;
   while (true) {
-    if (base::TimeTicks::Now() >= deadline)
-      return Status(kTimeout, base::StringPrintf(
-          "exceeded %dms", static_cast<int>(timeout.InMilliseconds())));
-
     if (!socket_->HasNextMessage()) {
-      bool is_condition_met;
+      bool is_condition_met = false;
       Status status = conditional_func.Run(&is_condition_met);
       if (status.IsError())
         return status;
@@ -192,12 +183,10 @@ Status DevToolsClientImpl::HandleEventsUntil(
         return Status(kOk);
     }
 
-    // To keep this simple, we don't pass the delta time to
-    // ProcessNextMessage. As a result, we may not immediately
-    // return after |timeout|ms.
-    Status status = ProcessNextMessage(-1);
-    if (status.IsError() && status.code() != kTimeout)
+    Status status = ProcessNextMessage(-1, next_message_timeout);
+    if (status.IsError())
       return status;
+    next_message_timeout = deadline - base::TimeTicks::Now();
   }
 }
 
@@ -228,7 +217,8 @@ Status DevToolsClientImpl::SendCommandInternal(
       make_linked_ptr(new ResponseInfo(method));
   response_info_map_[command_id] = response_info;
   while (response_info->state == kWaiting) {
-    Status status = ProcessNextMessage(command_id);
+    Status status = ProcessNextMessage(
+        command_id, base::TimeDelta::FromMinutes(10));
     if (status.IsError()) {
       if (response_info->state == kReceived)
         response_info_map_.erase(command_id);
@@ -247,7 +237,9 @@ Status DevToolsClientImpl::SendCommandInternal(
   return Status(kOk);
 }
 
-Status DevToolsClientImpl::ProcessNextMessage(int expected_id) {
+Status DevToolsClientImpl::ProcessNextMessage(
+    int expected_id,
+    const base::TimeDelta& timeout) {
   ScopedIncrementer increment_stack_count(&stack_count_);
 
   Status status = EnsureListenersNotifiedOfConnect();
@@ -266,8 +258,7 @@ Status DevToolsClientImpl::ProcessNextMessage(int expected_id) {
     return Status(kOk);
 
   std::string message;
-  switch (socket_->ReceiveNextMessage(&message,
-                                      base::TimeDelta::FromMinutes(1))) {
+  switch (socket_->ReceiveNextMessage(&message, timeout)) {
     case SyncWebSocket::kOk:
       log_->AddEntry(Log::kDebug, "received Inspector response " + message);
       break;

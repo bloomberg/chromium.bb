@@ -72,17 +72,17 @@ bool SyncWebSocketImpl::Core::Send(const std::string& message) {
   return success;
 }
 
-SyncWebSocket::StatusCode
-SyncWebSocketImpl::Core::ReceiveNextMessage(
+SyncWebSocket::StatusCode SyncWebSocketImpl::Core::ReceiveNextMessage(
     std::string* message,
     const base::TimeDelta& timeout) {
   base::AutoLock lock(lock_);
   base::TimeTicks deadline = base::TimeTicks::Now() + timeout;
+  base::TimeDelta next_wait = timeout;
   while (received_queue_.empty() && is_connected_) {
-    base::TimeDelta delta = deadline - base::TimeTicks::Now();
-    if (delta <= base::TimeDelta())
+    if (next_wait <= base::TimeDelta())
       return SyncWebSocket::kTimeout;
-    on_update_event_.TimedWait(delta);
+    on_update_event_.TimedWait(next_wait);
+    next_wait = deadline - base::TimeTicks::Now();
   }
   if (!is_connected_)
     return SyncWebSocket::kDisconnected;

@@ -118,7 +118,7 @@ class DevToolsClientImpl : public DevToolsClient {
       const std::string& method,
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result);
-  Status ProcessNextMessage(int expected_id);
+  Status ProcessNextMessage(int expected_id, const base::TimeDelta& timeout);
   Status ProcessEvent(const internal::InspectorEvent& event);
   Status ProcessCommandResponse(
       const internal::InspectorCommandResponse& response);
