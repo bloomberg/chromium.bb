@@ -885,3 +885,19 @@
    fun:net::QuicHttpStream::Close
    fun:net::test::QuicStreamFactoryTest_MaxOpenStream_Test::TestBody
 }
+{
+   bug_282646
+   Heapcheck:Leak
+   ...
+   fun:SyncFileSystemBackend
+   fun:chrome::ChromeContentBrowserClient::GetAdditionalFileSystemBackends
+   fun:content::CreateFileSystemContext
+   fun:content::StoragePartitionImpl::Create
+   fun:content::StoragePartitionImplMap::Get
+   fun:GetStoragePartitionFromConfig
+   fun:content::BrowserContext::GetStoragePartitionForSite
+   fun:ExtensionService::NotifyExtensionUnloaded
+   fun:ExtensionService::UnloadExtension
+   fun:ExtensionService::AddExtension
+   fun:extensions::TestExtensionEnvironment::MakeExtension
+}
