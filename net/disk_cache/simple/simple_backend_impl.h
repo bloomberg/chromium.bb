@@ -64,6 +64,9 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // operations to construct a new object.
   void OnDeactivated(const SimpleEntryImpl* entry);
 
+  // Flush our SequencedWorkerPool.
+  static void FlushWorkerPoolForTesting();
+
   // Backend:
   virtual net::CacheType GetCacheType() const OVERRIDE;
   virtual int32 GetEntryCount() const OVERRIDE;

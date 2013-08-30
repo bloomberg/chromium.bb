@@ -568,4 +568,9 @@ void SimpleBackendImpl::CheckIterationReturnValue(
   CallCompletionCallback(callback, error_code);
 }
 
+void SimpleBackendImpl::FlushWorkerPoolForTesting() {
+  if (g_sequenced_worker_pool)
+    g_sequenced_worker_pool->FlushForTesting();
+}
+
 }  // namespace disk_cache

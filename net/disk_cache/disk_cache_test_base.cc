@@ -241,6 +241,8 @@ void DiskCacheTestWithCache::AddDelay() {
 
 void DiskCacheTestWithCache::TearDown() {
   base::RunLoop().RunUntilIdle();
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  base::RunLoop().RunUntilIdle();
   cache_.reset();
   if (cache_thread_.IsRunning())
     cache_thread_.Stop();
