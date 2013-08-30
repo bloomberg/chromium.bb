@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LAUNCHER_SCOPED_OBSERVER_WITH_DUPLICATED_SOURCES_H_
-#define ASH_LAUNCHER_SCOPED_OBSERVER_WITH_DUPLICATED_SOURCES_H_
+#ifndef ASH_SHELF_SCOPED_OBSERVER_WITH_DUPLICATED_SOURCES_H_
+#define ASH_SHELF_SCOPED_OBSERVER_WITH_DUPLICATED_SOURCES_H_
 
 #include <map>
 
@@ -67,4 +67,4 @@ class ScopedObserverWithDuplicatedSources {
   DISALLOW_COPY_AND_ASSIGN(ScopedObserverWithDuplicatedSources);
 };
 
-#endif  // ASH_LAUNCHER_SCOPED_OBSERVER_WITH_DUPLICATED_SOURCES_H_
+#endif  // ASH_SHELF_SCOPED_OBSERVER_WITH_DUPLICATED_SOURCES_H_

@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "ash/launcher/scoped_observer_with_duplicated_sources.h"
+#include "ash/shelf/scoped_observer_with_duplicated_sources.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/scoped_observer.h"
