@@ -196,9 +196,7 @@ def _SudoCommand():
 
   # Pass in the path to the depot_tools so that users can access them from
   # within the chroot.
-  gclient = osutils.Which('gclient')
-  if gclient is not None:
-    cmd += ['DEPOT_TOOLS=%s' % os.path.realpath(os.path.dirname(gclient))]
+  cmd += ['DEPOT_TOOLS=%s' % cros_build_lib.FindDepotTools()]
 
   return cmd
 

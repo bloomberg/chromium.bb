@@ -25,6 +25,10 @@ except (IOError, netrc.NetrcParseError):
 LOGGER = logging.getLogger()
 TRY_LIMIT = 5
 
+# Controls the transport protocol used to communicate with gerrit.
+# This is parameterized primarily to enable cros_test_lib.GerritTestCase.
+GERRIT_PROTOCOL = 'https'
+
 
 class GOBError(Exception):
   """Exception class for errors commuicating with the gerrit-on-borg service."""
@@ -47,16 +51,18 @@ def _QueryString(param_dict, first_param=None):
 def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   """Opens an https connection to a gerrit service, and sends a request."""
   headers = headers or {}
-  bare_host = host.partition(';')[0]
+  bare_host = host.partition(':')[0]
   auth = NETRC.authenticators(bare_host)
   if auth:
     headers.setdefault('Authorization', 'Basic %s' % (
         base64.b64encode('%s:%s' % (auth[0], auth[2]))))
+  else:
+    LOGGER.debug('No authorization found')
   if body:
     body = json.JSONEncoder().encode(body)
     headers.setdefault('Content-Type', 'application/json')
   if LOGGER.isEnabledFor(logging.DEBUG):
-    LOGGER.debug('%s https://%s/a/%s' % (reqtype, host, path))
+    LOGGER.debug('%s %s://%s/a/%s' % (reqtype, GERRIT_PROTOCOL, host, path))
     for key, val in headers.iteritems():
       if key == 'Authorization':
         val = 'HIDDEN'
@@ -186,17 +192,17 @@ def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
 
 def GetGerritFetchUrl(host):
   """Given a gerrit host name returns URL of a gerrit instance to fetch from."""
-  return 'https://%s/a/' % host
+  return '%s://%s/a/' % (GERRIT_PROTOCOL, host)
 
 
 def GetChangePageUrl(host, change_number):
   """Given a gerrit host name and change number, return change page url."""
-  return 'https://%s/#/c/%d/' % (host, change_number)
+  return '%s://%s/#/c/%d/' % (GERRIT_PROTOCOL, host, change_number)
 
 
 def GetChangeUrl(host, change):
   """Given a gerrit host name and change id, return an url for the change."""
-  return 'https://%s/a/changes/%s' % (host, change)
+  return '%s://%s/a/changes/%s' % (GERRIT_PROTOCOL, host, change)
 
 
 def GetChange(host, change):

@@ -9,18 +9,28 @@
 from __future__ import print_function
 import collections
 import cStringIO
+import errno
 import exceptions
 import functools
+import httplib
+import json
 import logging
 import mox
+import netrc
 import os
 import re
+import signal
+import socket
+import stat
 import sys
 import unittest
 
+from chromite.buildbot import constants
+import cros_build_lib
+import git
+import gob_util
 import osutils
 import terminal
-import cros_build_lib
 
 if 'chromite' not in sys.modules:
   # TODO(build): Finish test wrapper (http://crosbug.com/37517).
@@ -798,6 +808,283 @@ class TempDirTestCase(TestCase):
       self._tempdir_obj = None
 
 
+class GerritTestCase(TempDirTestCase):
+  """Test class for tests that interact with a gerrit server.
+
+  The class setup creates and launches a stand-alone gerrit instance running on
+  localhost, for test methods to interact with.  Class teardown stops and
+  deletes the gerrit instance.
+
+  Note that there is a single gerrit instance for ALL test methods in a
+  GerritTestCase sub-class.
+  """
+
+  GerritInstance = collections.namedtuple('GerritInstance', [
+      'credential_file',
+      'gerrit_dir',
+      'gerrit_exe',
+      'gerrit_host',
+      'gerrit_pid',
+      'gerrit_url',
+      'git_dir',
+      'git_host',
+      'git_url',
+      'http_port',
+      'netrc_file',
+      'ssh_port',
+  ])
+
+  @classmethod
+  def _create_gerrit_instance(cls, gerrit_dir):
+    gerrit_init_script = os.path.join(
+        cros_build_lib.FindDepotTools(), 'testing_support', 'gerrit-init.sh')
+    http_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    http_sock.bind(('', 0))
+    http_port = str(http_sock.getsockname()[1])
+    ssh_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    ssh_sock.bind(('', 0))
+    ssh_port = str(ssh_sock.getsockname()[1])
+
+    # NOTE: this is not completely safe.  These port numbers could be
+    # re-assigned by the OS between the calls to socket.close() and gerrit
+    # starting up.  The only safe way to do this would be to pass file
+    # descriptors down to the gerrit process, which is not even remotely
+    # supported.  Alas.
+    http_sock.close()
+    ssh_sock.close()
+    cros_build_lib.RunCommandQuietly(
+        ['bash', gerrit_init_script, '--http-port', http_port,
+         '--ssh-port', ssh_port, gerrit_dir])
+
+    gerrit_exe = os.path.join(gerrit_dir, 'bin', 'gerrit.sh')
+    cros_build_lib.RunCommandQuietly(['bash', gerrit_exe, 'start'])
+    gerrit_pid = int(osutils.ReadFile(
+        os.path.join(gerrit_dir, 'logs', 'gerrit.pid')).rstrip())
+    with open(os.path.join(gerrit_dir, 'logs', 'gerrit.pid')) as fh:
+      gerrit_pid = int(fh.read().rstrip())
+    return cls.GerritInstance(
+        credential_file=os.path.join(gerrit_dir, 'tmp', '.git-credentials'),
+        gerrit_dir=gerrit_dir,
+        gerrit_exe=gerrit_exe,
+        gerrit_host='localhost:%s' % http_port,
+        gerrit_pid=gerrit_pid,
+        gerrit_url='http://localhost:%s' % http_port,
+        git_dir=os.path.join(gerrit_dir, 'git'),
+        git_host='%s/git' % gerrit_dir,
+        git_url='file://%s/git' % gerrit_dir,
+        http_port=http_port,
+        netrc_file=os.path.join(gerrit_dir, 'tmp', '.netrc'),
+        ssh_port=ssh_port,)
+
+  @classmethod
+  def setUpClass(cls):
+    """Sets up the gerrit instances in a class-specific temp dir."""
+    # Create gerrit instance.
+    cls.gerritdir_obj = osutils.TempDir(set_global=False)
+    gi = cls.gerrit_instance = cls._create_gerrit_instance(
+        cls.gerritdir_obj.tempdir)
+
+    # Set netrc file for http authentication.
+    cls.netrc_patcher = mock.patch('chromite.lib.gob_util.NETRC',
+                                   netrc.netrc(gi.netrc_file))
+    cls.netrc_patcher.start()
+
+    # gob_util only knows about https connections, and that's a good thing.
+    # But for testing, it's much simpler to use http connections.
+    cls.httplib_patcher = mock.patch(
+        'httplib.HTTPSConnection', httplib.HTTPConnection)
+    cls.httplib_patcher.start()
+    cls.protocol_patcher = mock.patch(
+        'chromite.lib.gob_util.GERRIT_PROTOCOL', 'http')
+    cls.protocol_patcher.start()
+
+    # Make all chromite code point to the test server.
+    cls.constants_patcher = mock.patch.dict(constants.__dict__, {
+        'PUBLIC_GOB_HOST': gi.git_host,
+        'PUBLIC_GERRIT_HOST': gi.gerrit_host,
+        'PUBLIC_GOB_URL': gi.git_url,
+        'PUBLIC_GERRIT_URL': gi.gerrit_url,
+        'INTERNAL_GOB_HOST': gi.git_host,
+        'INTERNAL_GERRIT_HOST': gi.gerrit_host,
+        'INTERNAL_GOB_URL': gi.git_url,
+        'INTERNAL_GERRIT_URL': gi.gerrit_url,
+        'GERRIT_HOST': gi.gerrit_host,
+        'GERRIT_INT_HOST': gi.gerrit_host,
+        'GIT_HOST': gi.git_host,
+        'GERRIT_SSH_URL': gi.gerrit_url,
+        'GERRIT_INT_SSH_URL': gi.gerrit_url,
+        'GIT_HTTP_URL': gi.git_url,
+        'MANIFEST_URL': '%s/%s' % (gi.git_url, constants.MANIFEST_PROJECT),
+        'MANIFEST_INT_URL': '%s/%s' % (
+            gi.git_url, constants.MANIFEST_INT_PROJECT),
+        'GIT_REMOTES': {
+            constants.EXTERNAL_REMOTE: gi.gerrit_url,
+            constants.INTERNAL_REMOTE: gi.gerrit_url,
+            constants.CHROMIUM_REMOTE: gi.gerrit_url,
+            constants.CHROME_REMOTE: gi.gerrit_url,
+        }
+    })
+    cls.constants_patcher.start()
+
+  def createProject(self, name, description='Test project', owners=None,
+                    submit_type='CHERRY_PICK'):
+    """Create a project on the test gerrit server."""
+    if owners is None:
+      owners = ['Administrators']
+    body = {
+        'description': description,
+        'submit_type': submit_type,
+        'owners': owners,
+    }
+    path = 'projects/%s' % name
+    conn = gob_util.CreateHttpConn(
+        self.gerrit_instance.gerrit_host, path, reqtype='PUT', body=body)
+    response = conn.getresponse()
+    self.assertEqual(response.status, 201, response.reason)
+    s = cStringIO.StringIO(response.read())
+    self.assertEqual(s.readline().rstrip(), ")]}'")
+    jmsg = json.load(s)
+    self.assertEqual(jmsg['name'], name)
+
+  def cloneProject(self, name, path=None):
+    """Clone a project from the test gerrit server."""
+    if path is None:
+      path = os.path.basename(name)
+      if path.endswith('.git'):
+        path = path[:-4]
+    path = os.path.join(self.tempdir, path)
+    osutils.SafeMakedirs(os.path.dirname(path))
+    url = 'http://%s/%s' % (self.gerrit_instance.gerrit_host, name)
+    git.RunGit(os.getcwd(), ['clone', url, path])
+    # Install commit-msg hook.
+    hook_path = os.path.join(path, '.git', 'hooks', 'commit-msg')
+    cros_build_lib.RunCommandQuietly(
+        ['curl', '-o', hook_path,
+         'http://%s/tools/hooks/commit-msg' % self.gerrit_instance.gerrit_host])
+    os.chmod(hook_path, stat.S_IRWXU)
+    # Configure non-interactive credentials for git operations.
+    config_path = os.path.join(path, '.git', 'config')
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'config', '--file', config_path, 'credential.helper',
+         'store --file=%s' % self.gerrit_instance.credential_file])
+    return path
+
+  def createCommit(self, clone_path, fn='test-file.txt'):
+    """Create a commit in the given git checkout."""
+    clone_path = os.path.join(self.tempdir, clone_path)
+    fpath = os.path.join(clone_path, fn)
+    osutils.WriteFile(fpath, 'Another day, another dollar.\n', mode='a')
+    cros_build_lib.RunCommandQuietly(['git', 'add', fn], cwd=clone_path)
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'commit', '-m', 'Test commit'], cwd=clone_path)
+    return self.getHeadCommit(clone_path)
+
+  def getHeadCommit(self, clone_path):
+    """Get the sha1 and change-id for the head commit in a git checkout."""
+    clone_path = os.path.join(self.tempdir, clone_path)
+    log_proc = cros_build_lib.RunCommandCaptureOutput(
+        ['git', 'log', '-n', '1'], cwd=clone_path, print_cmd=False)
+    sha1 = None
+    change_id = None
+    for line in log_proc.output.splitlines():
+      match = re.match(r'^commit ([0-9a-fA-F]{40})$', line)
+      if match:
+        sha1 = match.group(1)
+        continue
+      match = re.match('^\s+Change-Id:\s*(\S+)$', line)
+      if match:
+        change_id = match.group(1)
+        continue
+    self.assertTrue(sha1)
+    self.assertTrue(change_id)
+    return (sha1, change_id)
+
+  def uploadChange(self, clone_path, branch='master'):
+    """Create a gerrit CL from the HEAD of a git checkout."""
+    clone_path = os.path.join(self.tempdir, clone_path)
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'push', 'origin', 'HEAD:refs/for/%s' % branch], cwd=clone_path)
+
+  def pushBranch(self, clone_path, branch='master'):
+    clone_path = os.path.join(self.tempdir, clone_path)
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'push', 'origin', 'HEAD:refs/heads/%s' % branch], cwd=clone_path)
+
+  @staticmethod
+  def _stop_gerrit(gerrit_obj):
+    """Stops the running gerrit instance and deletes it."""
+    try:
+      # This should terminate the gerrit process.
+      cros_build_lib.RunCommandQuietly(['bash', gerrit_obj.gerrit_exe, 'stop'])
+    finally:
+      try:
+        # cls.gerrit_pid should have already terminated.  If it did, then
+        # os.waitpid will raise OSError.
+        os.waitpid(gerrit_obj.gerrit_pid, os.WNOHANG)
+      except OSError as e:
+        if e.errno == errno.ECHILD:
+          # If gerrit shut down cleanly, os.waitpid will land here.
+          return
+
+      # If we get here, the gerrit process is still alive.  Send the process
+      # SIGKILL for good measure.
+      try:
+        os.kill(gerrit_obj.gerrit_pid, signal.SIGKILL)
+      except OSError:
+        if e.errno == errno.ESRCH:
+          # os.kill raised an error because the process doesn't exist.  Maybe
+          # gerrit shut down cleanly after all.
+          return
+
+      # Expose the fact that gerrit didn't shut down cleanly.
+      cros_build_lib.Warning(
+          'Test gerrit server (pid=%d) did not shut down cleanly.' % (
+              gerrit_obj.gerrit_pid))
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.netrc_patcher.stop()
+    cls.httplib_patcher.stop()
+    cls.protocol_patcher.stop()
+    cls.constants_patcher.stop()
+
+    cls._stop_gerrit(cls.gerrit_instance)
+    cls.gerritdir_obj.Cleanup()
+
+
+class GerritInternalTestCase(GerritTestCase):
+  """Test class which runs separate internal and external gerrit instances."""
+
+  @classmethod
+  def setUpClass(cls):
+    cls.int_gerritdir_obj = osutils.TempDir(set_global=False)
+    pgi = cls.gerrit_instance
+    igi = cls.int_gerrit_instance = cls._create_gerrit_instance(
+        cls.int_gerritdir_obj.tempdir)
+    cls.int_constants_patcher = mock.patch.dict(constants.__dict__, {
+        'INTERNAL_GOB_HOST': igi.git_host,
+        'INTERNAL_GERRIT_HOST': igi.gerrit_host,
+        'INTERNAL_GOB_URL': igi.git_url,
+        'INTERNAL_GERRIT_URL': igi.gerrit_url,
+        'GERRIT_INT_SSH_URL': igi.gerrit_url,
+        'MANIFEST_INT_URL': '%s/%s' % (
+            igi.git_url, constants.MANIFEST_INT_PROJECT),
+        'GIT_REMOTES': {
+            constants.EXTERNAL_REMOTE: pgi.gerrit_url,
+            constants.INTERNAL_REMOTE: igi.gerrit_url,
+            constants.CHROMIUM_REMOTE: pgi.gerrit_url,
+            constants.CHROME_REMOTE: igi.gerrit_url,
+        }
+    })
+    cls.int_constants_patcher.start()
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.int_constants_patcher.stop()
+    cls._stop_gerrit(cls.int_gerrit_instance)
+    cls.int_gerritdir_obj.Cleanup()
+
+
 class _RunCommandMock(mox.MockObject):
   """Custom mock class used to suppress arguments we don't care about"""
 
@@ -954,10 +1241,15 @@ def main(**kwds):
   # to trigger sys.exit on its own.  Unfortunately, the exit keyword is only
   # available in 2.7- as such, handle it ourselves.
   allow_exit = kwds.pop('exit', True)
-  cros_build_lib.SetupBasicLogging(kwds.pop('level', logging.DEBUG))
   if '--network' in sys.argv:
     sys.argv.remove('--network')
     GlobalTestConfig.NETWORK_TESTS_DISABLED = False
+  level = kwds.pop('level', logging.CRITICAL)
+  for flag in ('-d', '--debug'):
+    if flag in sys.argv:
+      sys.argv.remove(flag)
+      level = logging.DEBUG
+  cros_build_lib.SetupBasicLogging(level)
   try:
     unittest.main(**kwds)
     raise SystemExit(0)

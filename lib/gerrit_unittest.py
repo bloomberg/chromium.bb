@@ -6,6 +6,8 @@
 
 """Unittests for GerritHelper.  Needs to have mox installed."""
 
+import logging
+import json
 import mox
 import os
 import sys
@@ -20,151 +22,101 @@ from chromite.lib import gerrit
 
 
 # pylint: disable=W0212,R0904
-@unittest.skipIf(constants.USE_GOB, "GerritHelperTests not yet ported to GoB.")
-class GerritHelperTest(cros_test_lib.MoxTestCase):
+class GerritHelperTest(cros_test_lib.GerritTestCase):
 
-  def setUp(self):
-    self.footer_template = (
-      '{"type":"stats","rowCount":%(count)i,"runTimeMilliseconds":205}')
-    self.results = (
-        '{"project":"chromiumos/platform/init","branch":"master",'
-        '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025e",'
-        '"number":"1111",'
-        '"subject":"init commit",'
-        '"owner":{"name":"Init master","email":"init@chromium.org"},'
-        '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
-            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef"},'
-        '"url":"http://gerrit.chromium.org/gerrit/1111",'
-        '"lastUpdated":1311024429,'
-        '"sortKey":"00166e8700001051",'
-        '"open":true,"'
-        'status":"NEW"}'
-        '\n'
-        '{"project":"chromiumos/manifests","branch":"master",'
-        '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025d",'
-        '"number":"1111",'
-        '"subject":"Test for filtered repos",'
-        '"owner":{"name":"Init master","email":"init@chromium.org"},'
-        '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
-            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef"},'
-        '"url":"http://gerrit.chromium.org/gerrit/1110",'
-        '"lastUpdated":1311024429,'
-        '"sortKey":"00166e8700001051",'
-        '"open":true,"'
-        'status":"NEW"}'
-        '\n'
-        '{"project":"tacos/chromite","branch":"master",'
-        '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025f",'
-        '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
-            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef"},'
-        '"number":"1112",'
-        '"subject":"chromite commit",'
-        '"owner":{"name":"Chromite Master","email":"chromite@chromium.org"},'
-        '"url":"http://gerrit.chromium.org/gerrit/1112",'
-        '"lastUpdated":1311024529,'
-        '"sortKey":"00166e8700001052",'
-        '"open":true,"'
-        'status":"NEW"}\n'
-        ) + self.footer_template % {'count':1}
-    self.merged_record = (
-        '{"project":"tacos/chromite","branch":"master",'
-        '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda8000250",'
-        '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
-            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785ea"},'
-        '"number":"1112",'
-        '"subject":"chromite commit",'
-        '"owner":{"name":"Chromite Master","email":"chromite@chromium.org"},'
-        '"url":"http://gerrit.chromium.org/gerrit/1112",'
-        '"lastUpdated":1311024529,'
-        '"sortKey":"00166e8700001052",'
-        '"open":true,"'
-        'status":"MERGED"}\n'
-    )
-    self.merged_change = self.merged_record + self.footer_template % {'count':1}
-    self.no_results = self.footer_template % {'count':0}
+#  def setUp(self):
+#    self.footer_template = (
+#      '{"type":"stats","rowCount":%(count)i,"runTimeMilliseconds":205}')
+#    self.results = (
+#        '{"project":"chromiumos/platform/init","branch":"master",'
+#        '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025e",'
+#        '"number":"1111",'
+#        '"subject":"init commit",'
+#        '"owner":{"name":"Init master","email":"init@chromium.org"},'
+#        '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
+#            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef"},'
+#        '"url":"http://gerrit.chromium.org/gerrit/1111",'
+#        '"lastUpdated":1311024429,'
+#        '"sortKey":"00166e8700001051",'
+#        '"open":true,"'
+#        'status":"NEW"}'
+#        '\n'
+#        '{"project":"chromiumos/manifests","branch":"master",'
+#        '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025d",'
+#        '"number":"1111",'
+#        '"subject":"Test for filtered repos",'
+#        '"owner":{"name":"Init master","email":"init@chromium.org"},'
+#        '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
+#            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef"},'
+#        '"url":"http://gerrit.chromium.org/gerrit/1110",'
+#        '"lastUpdated":1311024429,'
+#        '"sortKey":"00166e8700001051",'
+#        '"open":true,"'
+#        'status":"NEW"}'
+#        '\n'
+#        '{"project":"tacos/chromite","branch":"master",'
+#        '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025f",'
+#        '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
+#            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef"},'
+#        '"number":"1112",'
+#        '"subject":"chromite commit",'
+#        '"owner":{"name":"Chromite Master","email":"chromite@chromium.org"},'
+#        '"url":"http://gerrit.chromium.org/gerrit/1112",'
+#        '"lastUpdated":1311024529,'
+#        '"sortKey":"00166e8700001052",'
+#        '"open":true,"'
+#        'status":"NEW"}\n'
+#        ) + self.footer_template % {'count':1}
+#    self.merged_record = (
+#        '{"project":"tacos/chromite","branch":"master",'
+#        '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda8000250",'
+#        '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
+#            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785ea"},'
+#        '"number":"1112",'
+#        '"subject":"chromite commit",'
+#        '"owner":{"name":"Chromite Master","email":"chromite@chromium.org"},'
+#        '"url":"http://gerrit.chromium.org/gerrit/1112",'
+#        '"lastUpdated":1311024529,'
+#        '"sortKey":"00166e8700001052",'
+#        '"open":true,"'
+#        'status":"MERGED"}\n'
+#    )
+#    self.merged_change = self.merged_record + self.footer_template % {'count':1}
+#    self.no_results = self.footer_template % {'count':0}
 
   def _GetHelper(self, remote=constants.EXTERNAL_REMOTE):
-    return gerrit.GerritHelper.FromRemote(remote)
+    return gerrit.GetGerritHelper(remote)
 
-  def testGerritQueryTruncation(self):
+  def test001SimpleQuery(self):
+    """Create one independent and three dependent changes, then query them."""
+    self.createProject('test001')
+    clone_path = self.cloneProject('test001')
+    (head_sha1, head_change_id) = self.createCommit(clone_path)
+    for idx in xrange(3):
+      cros_build_lib.RunCommandQuietly(
+          ['git', 'checkout', head_sha1], cwd=clone_path)
+      self.createCommit(clone_path, fn='test-file-%d.txt' % idx)
+      self.uploadChange(clone_path)
+    helper = self._GetHelper()
+    changes = helper.Query(owner='self')
+    self.assertEqual(len(changes), 4)
+
+  def test002GerritQueryTruncation(self):
     """Verify that we detect gerrit truncating our query, and handle it."""
-    query1 = self.mox.CreateMock(cros_build_lib.CommandResult)
-    query1.output = "%s%s" % (self.merged_record * 500,
-                              self.footer_template % {'count':500})
-    query2 = self.mox.CreateMock(cros_build_lib.CommandResult)
-    query2.output = '%s%s' % (self.merged_record * 313,
-                              self.footer_template % {'count':313})
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    cros_build_lib.RunCommand(mox.In('gerrit.chromium.org'),
-                              redirect_stdout=True).AndReturn(query1)
-    cros_build_lib.RunCommand(mox.In('resume_sortkey:00166e8700001052'),
-                              redirect_stdout=True).AndReturn(query2)
-    self.mox.ReplayAll()
+    self.createProject('test002')
+    clone_path = self.cloneProject('test002')
+    # Using a shell loop is markedly faster than running a python loop.
+    cmd = ('for ((i=0; i<550; i=i+1)); do '
+           'echo "Another day, another dollar." > test-file-$i.txt; '
+           'git add test-file-$i.txt; '
+           'git commit -m "Test commit $i."; done')
+    cros_build_lib.RunCommandQuietly(cmd, shell=True, cwd=clone_path)
+    self.uploadChange(clone_path)
     helper = self._GetHelper()
-    changes = helper.Query('monkeys')
-    self.assertEqual(len(changes), 813)
+    changes = helper.Query(project='test002')
+    self.assertEqual(len(changes), 550)
 
-  def testParseFakeResults(self):
-    """Parses our own fake gerrit query results to verify we parse correctly."""
-    fake_result = self.mox.CreateMock(cros_build_lib.CommandResult)
-    fake_result.output = self.results
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    cros_build_lib.RunCommand(mox.In('gerrit.chromium.org'),
-                              redirect_stdout=True).AndReturn(fake_result)
-    self.mox.ReplayAll()
-    helper = self._GetHelper()
-    changes = helper.Query("monkey")
-    self.assertEqual(set(x.change_id for x in changes),
-                     set(['Iee5c89d929f1850d7d4e1a4ff5f21adda800025f',
-                          'Iee5c89d929f1850d7d4e1a4ff5f21adda800025d',
-                          'Iee5c89d929f1850d7d4e1a4ff5f21adda800025e']))
-    self.mox.VerifyAll()
-
-  def testParseFakeResultsWithInternalURL(self):
-    """Parses our own fake gerrit query results but sets internal bit."""
-    fake_result = self.mox.CreateMock(cros_build_lib.CommandResult)
-    fake_result.output = self.results
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    cros_build_lib.RunCommand(mox.In('gerrit-int.chromium.org'),
-                              redirect_stdout=True).AndReturn(fake_result)
-    self.mox.ReplayAll()
-    helper = self._GetHelper(constants.INTERNAL_REMOTE)
-    changes = helper.Query("monkeys")
-    self.assertEqual(set(x.change_id for x in changes),
-                     set(['Iee5c89d929f1850d7d4e1a4ff5f21adda800025f',
-                          'Iee5c89d929f1850d7d4e1a4ff5f21adda800025d',
-                          'Iee5c89d929f1850d7d4e1a4ff5f21adda800025e']))
-    self.mox.VerifyAll()
-
-  def _PrintChanges(self, changes):
-    """Deep print of an array of changes."""
-    for change in changes:
-      print change
-
-  def testRealCommandWorks(self):
-    """This is just a sanity test that the command is valid.
-
-    Runs the command and prints out the changes.  Should not throw an exception.
-    """
-    helper = self._GetHelper()
-    change = helper.QuerySingleRecord('2')
-    self.assertEqual(change.gerrit_number, '2')
-    self.assertEqual(change.change_id,
-                     'Ie787aca962560d8df2fcbfc3ec0a0c5b963235b1')
-    self.assertEqual(change.project, 'playground/bar')
-
-  def testInternalCommandWorks(self):
-    """This is just a sanity test that the internal command is valid.
-
-    Runs the command and prints out the changes.  Should not throw an exception.
-    """
-    helper = self._GetHelper(constants.INTERNAL_REMOTE)
-    change = helper.QuerySingleRecord('1')
-    self.assertEqual(change.gerrit_number, '1')
-    self.assertEqual(change.change_id,
-                     'Idd5056fbd4d6d10525104edc0aa67ee02aaf3a91')
-    self.assertEqual(change.project, 'playground/foo')
-
+  @unittest.skip('Not yet ported to gerrit-on-borg.')
   def testIsChangeCommitted(self):
     """Tests that we can parse a json to check if a change is committed."""
     changeid = 'Ia6e663415c004bdaa77101a7e3258657598b0468'
@@ -187,12 +139,14 @@ class GerritHelperTest(cros_test_lib.MoxTestCase):
     self.assertFalse(helper.IsChangeCommitted(changeid_bad, must_match=False))
     self.mox.VerifyAll()
 
+  @unittest.skip('Not yet ported to gerrit-on-borg.')
   def testCanRunIsChangeCommand(self):
     """Sanity test for IsChangeCommitted to make sure it works."""
     changeid = 'Ia6e663415c004bdaa77101a7e3258657598b0468'
     helper = self._GetHelper()
     self.assertTrue(helper.IsChangeCommitted(changeid))
 
+  @unittest.skip('Not yet ported to gerrit-on-borg.')
   def testGetLatestSHA1ForBranch(self):
     """Verifies we can return the correct sha1 from mock data."""
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommandWithRetries')
@@ -212,6 +166,7 @@ class GerritHelperTest(cros_test_lib.MoxTestCase):
                                                    my_branch), my_hash)
     self.mox.VerifyAll()
 
+  @unittest.skip('Not yet ported to gerrit-on-borg.')
   def testGetLatestSHA1ForProject4Realz(self):
     """Verify we can check the latest hash from chromite."""
     helper = self._GetHelper()
@@ -219,6 +174,7 @@ class GerritHelperTest(cros_test_lib.MoxTestCase):
                         helper.GetLatestSHA1ForBranch('chromiumos/chromite',
                                                       'master'))
 
+  @unittest.skip('Not yet ported to gerrit-on-borg.')
   def testSetReviewers(self):
     helper = self._GetHelper()
     # Ensure it requires at additions/removals.

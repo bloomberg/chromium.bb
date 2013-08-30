@@ -743,6 +743,18 @@ def RunCommandCaptureOutput(cmd, **kwds):
                     redirect_stderr=kwds.pop('redirect_stderr', True), **kwds)
 
 
+def RunCommandQuietly(*args, **kwargs):
+  """Wrapper for RunCommand that runs silently.
+
+  The wrapper does not echo the command, and it sends stdout and stderr to
+  /dev/null.
+  """
+  kwargs.setdefault('print_cmd', False)
+  kwargs.setdefault('log_stdout_to_file', os.devnull)
+  kwargs.setdefault('combine_stdout_stderr', True)
+  return RunCommand(*args, **kwargs)
+
+
 def TimedCommand(functor, *args, **kwargs):
   """Wrapper for simple log timing of other python functions.
 
@@ -1568,3 +1580,14 @@ def GetDefaultBoard():
     return None
 
   return default_board
+
+
+# TODO(szager): Merge this with similar functionality in osutils.Which().
+def FindDepotTools():
+  """Discovers the location of a depot_tools checkout in PATH."""
+  for p in os.environ['PATH'].split(os.pathsep):
+    if p.split(os.sep)[-1] == 'depot_tools':
+      f1 = os.path.join(p, 'gclient.py')
+      f2 = os.path.join(p, 'git_cl.py')
+      if os.access(f1, os.R_OK) and os.access(f2, os.R_OK):
+        return p
