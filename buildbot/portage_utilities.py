@@ -519,7 +519,8 @@ class EBuild(object):
     Raises:
       Exception if the manifest is pinned.
     """
-    helper = gerrit.GerritHelper.FromManifestProject(manifest, project)
+    helper = gerrit.GetGerritHelper(
+        manifest.GetAttributeForProject(project, 'remote'))
     manifest_branch = manifest.GetAttributeForProject(project, 'revision')
     branch = git.StripRefsHeads(manifest_branch)
     return helper.GetLatestSHA1ForBranch(project, branch)
