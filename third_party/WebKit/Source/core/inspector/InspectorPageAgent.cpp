@@ -1264,7 +1264,7 @@ void InspectorPageAgent::setForceCompositingMode(ErrorString* errorString, bool 
     mainFrame->view()->updateCompositingLayersAfterStyleChange();
 }
 
-void InspectorPageAgent::captureScreenshot(ErrorString*, const String*, const int*, const double*, String*)
+void InspectorPageAgent::captureScreenshot(ErrorString*, const String*, const int*, const double*, String*, double*, double*, RefPtr<TypeBuilder::DOM::Rect>&)
 {
     // Handled on the browser level.
 }
