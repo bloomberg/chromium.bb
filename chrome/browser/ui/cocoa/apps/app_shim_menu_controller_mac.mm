@@ -9,11 +9,49 @@
 #include "apps/shell_window_registry.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/apps/native_app_window_cocoa.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+namespace {
+
+// Gets an item from the main menu given the tag of the top level item
+// |menu_tag| and the tag of the item |item_tag|.
+NSMenuItem* GetItemByTag(NSInteger menu_tag, NSInteger item_tag) {
+  return [[[[NSApp mainMenu] itemWithTag:menu_tag] submenu]
+      itemWithTag:item_tag];
+}
+
+// Finds a top level menu item using |menu_tag| and creates a new NSMenuItem
+// with the same title.
+NSMenuItem* NewTopLevelItemFrom(NSInteger menu_tag) {
+  NSMenuItem* original = [[NSApp mainMenu] itemWithTag:menu_tag];
+  base::scoped_nsobject<NSMenuItem> item([[NSMenuItem alloc]
+      initWithTitle:[original title]
+             action:nil
+      keyEquivalent:@""]);
+  DCHECK([original hasSubmenu]);
+  base::scoped_nsobject<NSMenu> sub_menu([[NSMenu alloc]
+      initWithTitle:[[original submenu] title]]);
+  [item setSubmenu:sub_menu];
+  return item.autorelease();
+}
+
+// Finds an item using |menu_tag| and |item_tag| and adds a duplicate of it to
+// the submenu of |top_level_item|.
+void AddDuplicateItem(NSMenuItem* top_level_item,
+                      NSInteger menu_tag,
+                      NSInteger item_tag) {
+  base::scoped_nsobject<NSMenuItem> item(
+      [GetItemByTag(menu_tag, item_tag) copy]);
+  DCHECK(item);
+  [[top_level_item submenu] addItem:item];
+}
+
+}  // namespace
 
 @interface AppShimMenuController ()
 // Construct the NSMenuItems for apps.
@@ -48,15 +86,10 @@
 
 - (void)buildAppMenuItems {
   // Find the "Quit Chrome" menu item.
-  NSMenu* chromeMenu = [[[NSApp mainMenu] itemAtIndex:0] submenu];
-  for (NSMenuItem* item in [chromeMenu itemArray]) {
-    if ([item action] == @selector(terminate:)) {
-      chromeMenuQuitItem_.reset([item retain]);
-      break;
-    }
-  }
+  chromeMenuQuitItem_.reset([GetItemByTag(IDC_CHROME_MENU, IDC_EXIT) retain]);
   DCHECK(chromeMenuQuitItem_);
 
+  // The app's menu.
   appMenuItem_.reset([[NSMenuItem alloc] initWithTitle:@""
                                                 action:nil
                                          keyEquivalent:@""]);
@@ -70,6 +103,28 @@
       [chromeMenuQuitItem_ keyEquivalentModifierMask]];
   [appMenuQuitItem setTarget:self];
   [appMenuItem_ setSubmenu:appMenu];
+
+  // File menu.
+  fileMenuItem_.reset([NewTopLevelItemFrom(IDC_FILE_MENU) retain]);
+  AddDuplicateItem(fileMenuItem_, IDC_FILE_MENU, IDC_CLOSE_WINDOW);
+
+  // Edit menu.
+  editMenuItem_.reset([NewTopLevelItemFrom(IDC_EDIT_MENU) retain]);
+  AddDuplicateItem(editMenuItem_, IDC_EDIT_MENU, IDC_CONTENT_CONTEXT_UNDO);
+  AddDuplicateItem(editMenuItem_, IDC_EDIT_MENU, IDC_CONTENT_CONTEXT_REDO);
+  [[editMenuItem_ submenu] addItem:[NSMenuItem separatorItem]];
+  AddDuplicateItem(editMenuItem_, IDC_EDIT_MENU, IDC_CONTENT_CONTEXT_CUT);
+  AddDuplicateItem(editMenuItem_, IDC_EDIT_MENU, IDC_CONTENT_CONTEXT_COPY);
+  AddDuplicateItem(editMenuItem_, IDC_EDIT_MENU, IDC_CONTENT_CONTEXT_PASTE);
+  AddDuplicateItem(editMenuItem_, IDC_EDIT_MENU, IDC_CONTENT_CONTEXT_DELETE);
+  AddDuplicateItem(editMenuItem_, IDC_EDIT_MENU, IDC_CONTENT_CONTEXT_SELECTALL);
+
+  // Window menu.
+  windowMenuItem_.reset([NewTopLevelItemFrom(IDC_WINDOW_MENU) retain]);
+  AddDuplicateItem(windowMenuItem_, IDC_WINDOW_MENU, IDC_MINIMIZE_WINDOW);
+  AddDuplicateItem(windowMenuItem_, IDC_WINDOW_MENU, IDC_MAXIMIZE_WINDOW);
+  [[windowMenuItem_ submenu] addItem:[NSMenuItem separatorItem]];
+  AddDuplicateItem(windowMenuItem_, IDC_WINDOW_MENU, IDC_ALL_WINDOWS_FRONT);
 }
 
 - (void)registerEventHandlers {
@@ -144,7 +199,11 @@
 
   [appMenuItem_ setTitle:appId];
   [[appMenuItem_ submenu] setTitle:title];
+
   [mainMenu addItem:appMenuItem_];
+  [mainMenu addItem:fileMenuItem_];
+  [mainMenu addItem:editMenuItem_];
+  [mainMenu addItem:windowMenuItem_];
 }
 
 - (void)removeMenuItems:(NSString*)appId {
@@ -155,6 +214,9 @@
 
   NSMenu* mainMenu = [NSApp mainMenu];
   [mainMenu removeItem:appMenuItem_];
+  [mainMenu removeItem:fileMenuItem_];
+  [mainMenu removeItem:editMenuItem_];
+  [mainMenu removeItem:windowMenuItem_];
 
   // Restore the Chrome main menu bar.
   for (NSMenuItem* item in [mainMenu itemArray])

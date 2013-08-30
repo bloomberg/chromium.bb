@@ -45,19 +45,27 @@ class AppShimMenuControllerBrowserTest
     initial_menu_item_count_ = [[[NSApp mainMenu] itemArray] count];
   }
 
-  void CheckHasAppMenu(const extensions::Extension* app) const {
+  void CheckHasAppMenus(const extensions::Extension* app) const {
+    const int kExtraTopLevelItems = 4;
     NSArray* item_array = [[NSApp mainMenu] itemArray];
-    EXPECT_EQ(initial_menu_item_count_ + 1, [item_array count]);
+    EXPECT_EQ(initial_menu_item_count_ + kExtraTopLevelItems,
+              [item_array count]);
     for (NSUInteger i = 0; i < initial_menu_item_count_; ++i)
       EXPECT_TRUE([[item_array objectAtIndex:i] isHidden]);
-    NSMenuItem* last_item = [item_array lastObject];
-    EXPECT_EQ(app->id(), base::SysNSStringToUTF8([last_item title]));
+    NSMenuItem* app_menu = [item_array objectAtIndex:initial_menu_item_count_];
+    EXPECT_EQ(app->id(), base::SysNSStringToUTF8([app_menu title]));
     EXPECT_EQ(app->name(),
-              base::SysNSStringToUTF8([[last_item submenu] title]));
-    EXPECT_FALSE([last_item isHidden]);
+              base::SysNSStringToUTF8([[app_menu submenu] title]));
+    for (NSUInteger i = initial_menu_item_count_;
+         i < initial_menu_item_count_ + kExtraTopLevelItems;
+         ++i) {
+      NSMenuItem* menu = [item_array objectAtIndex:i];
+      EXPECT_GT([[menu submenu] numberOfItems], 0);
+      EXPECT_FALSE([menu isHidden]);
+    }
   }
 
-  void CheckNoAppMenu() const {
+  void CheckNoAppMenus() const {
     NSArray* item_array = [[NSApp mainMenu] itemArray];
     EXPECT_EQ(initial_menu_item_count_, [item_array count]);
     for (NSUInteger i = 0; i < initial_menu_item_count_; ++i)
@@ -84,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
                     object:app_1_shell_window->GetNativeWindow()];
-  CheckHasAppMenu(app_1_);
+  CheckHasAppMenus(app_1_);
 
   // When another app is focused, the menu item for the app should change.
   apps::ShellWindow* app_2_shell_window =
@@ -93,24 +101,24 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
                     object:app_2_shell_window->GetNativeWindow()];
-  CheckHasAppMenu(app_2_);
+  CheckHasAppMenus(app_2_);
 
   // When the app window loses focus, the menu items for the app should be
   // removed.
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidResignMainNotification
                     object:app_2_shell_window->GetNativeWindow()];
-  CheckNoAppMenu();
+  CheckNoAppMenus();
 
   // When an app window is closed, the menu items for the app should be removed.
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
                     object:app_2_shell_window->GetNativeWindow()];
-  CheckHasAppMenu(app_2_);
+  CheckHasAppMenus(app_2_);
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowWillCloseNotification
                     object:app_2_shell_window->GetNativeWindow()];
-  CheckNoAppMenu();
+  CheckNoAppMenus();
 }
 
 IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
@@ -124,9 +132,9 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
       postNotificationName:NSWindowDidBecomeMainNotification
                     object:app_1_shell_window->GetNativeWindow()];
 
-  CheckHasAppMenu(app_1_);
+  CheckHasAppMenus(app_1_);
   ExtensionService::UninstallExtensionHelper(extension_service(), app_1_->id());
-  CheckNoAppMenu();
+  CheckNoAppMenus();
 }
 
 }  // namespace

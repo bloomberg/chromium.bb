@@ -21,8 +21,11 @@
   base::scoped_nsobject<NSString> appId_;
   // A reference to the "Quit Chrome" menu item.
   base::scoped_nsobject<NSMenuItem> chromeMenuQuitItem_;
-  // A menu item for the currently focused packaged app.
+  // Menu items for the currently focused packaged app.
   base::scoped_nsobject<NSMenuItem> appMenuItem_;
+  base::scoped_nsobject<NSMenuItem> fileMenuItem_;
+  base::scoped_nsobject<NSMenuItem> editMenuItem_;
+  base::scoped_nsobject<NSMenuItem> windowMenuItem_;
 }
 
 @end

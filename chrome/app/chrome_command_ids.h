@@ -69,6 +69,10 @@
 #define IDC_WIN8_DESKTOP_RESTART        34042
 #define IDC_WIN8_METRO_RESTART          34043
 #define IDC_TOGGLE_ASH_DESKTOP          34044
+#define IDC_WINDOW_MENU                 34045
+#define IDC_MINIMIZE_WINDOW             34046
+#define IDC_MAXIMIZE_WINDOW             34047
+#define IDC_ALL_WINDOWS_FRONT           34048
 
 // Page-related commands
 #define IDC_BOOKMARK_PAGE               35000
@@ -236,6 +240,8 @@
 // Identifiers for platform-specific items.
 // Placed in a common file to help insure they never collide.
 #define IDC_VIEW_MENU                   44000     // OSX only
+#define IDC_FILE_MENU                   44001     // OSX only
+#define IDC_CHROME_MENU                 44002     // OSX only
 #define IDC_HISTORY_MENU                46000     // OSX only
 #define IDC_PROFILE_MAIN_MENU           46100     // OSX only
 #define IDC_INPUT_METHODS_MENU          46300     // Linux only
