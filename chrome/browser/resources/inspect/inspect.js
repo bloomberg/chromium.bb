@@ -278,12 +278,10 @@ function populateDeviceLists(devices) {
       pageList.textContent = '';
       for (var p = 0; p < browser.pages.length; p++) {
         var page = browser.pages[p];
-        // Attached targets have no unique id until Chrome 26.
-        // For such targets it is impossible:
-        //  - to issue 'close' command,
-        //  - to activate existing DevTools window.
-        page.hasUniqueId = !page.attached ||
-            majorChromeVersion >= MIN_VERSION_TARGET_ID;
+        // Attached targets have no unique id until Chrome 26. For such targets
+        // it is impossible to activate existing DevTools window.
+        page.hasNoUniqueId = page.attached &&
+            majorChromeVersion < MIN_VERSION_TARGET_ID;
         var row = addTargetToList(
             page, pageList, ['faviconUrl', 'name', 'url', 'description']);
         if (isChrome) {
@@ -295,9 +293,7 @@ function populateDeviceLists(devices) {
               'reload', reload.bind(null, page), page.attached));
           if (majorChromeVersion >= MIN_VERSION_TAB_CLOSE) {
             row.appendChild(createActionLink(
-                'close',
-                terminate.bind(null, page),
-                page.attached || !page.hasUniqueId));
+                'close', terminate.bind(null, page), page.attached));
           }
         }
       }
@@ -402,7 +398,7 @@ function addTargetToList(data, list, properties) {
     addWebViewDescription(description, row);
 
   row.appendChild(createActionLink(
-      'inspect', inspect.bind(null, data), !data.hasUniqueId));
+      'inspect', inspect.bind(null, data), data.hasNoUniqueId));
 
   list.appendChild(row);
   return row;
