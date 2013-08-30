@@ -147,6 +147,10 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // default.
   void OnPrintPreviewScalingDisabled();
 
+  // Manages the global auto-cancel mode used only for testing.
+  static void SetAutoCancelForTesting(bool auto_cancel);
+  static bool AutoCancelForTesting();
+
  private:
   friend class PrintPreviewHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, StickyMarginsCustom);

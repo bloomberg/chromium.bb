@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/app_runtime.h"
 #include "chrome/common/pref_names.h"
@@ -1034,6 +1035,35 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
       browser()->profile())->shell_windows();
   EXPECT_TRUE((*shell_windows.begin())->web_contents()->
       GetRenderWidgetHostView()->HasFocus());
+}
+
+class PlatformAppPrintBrowserTest : public extensions::PlatformAppBrowserTest {
+ public:
+  PlatformAppPrintBrowserTest() {}
+
+  // Ensures print tests use the print preview panel even for non-Chrome
+  // branded Chromium builds.
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kEnablePrintPreview);
+    PlatformAppBrowserTest::SetUpCommandLine(command_line);
+  }
+};
+
+// Currently this test only works if the PDF preview plug-in is available. This
+// plug-in will only be available in Chrome release builds or if it has been
+// manually copied from a Chrome release build. To run this test when the
+// plug-in has been manually copied, manually comment out the next three lines
+// and the corresponding #endif.
+#if !defined(GOOGLE_CHROME_BUILD)
+#define MAYBE_WindowDotPrintWorks DISABLED_WindowDotPrintWorks
+#else
+#define MAYBE_WindowDotPrintWorks WindowDotPrintWorks
+#endif
+
+IN_PROC_BROWSER_TEST_F(PlatformAppPrintBrowserTest, MAYBE_WindowDotPrintWorks) {
+  PrintPreviewUI::SetAutoCancelForTesting(true);
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/print_api")) << message_;
+  PrintPreviewUI::SetAutoCancelForTesting(false);
 }
 
 
