@@ -428,20 +428,22 @@ WebMouseWheelEventBuilder::Build(HWND hwnd, UINT message,
   // reading articles.
   static const float kScrollbarPixelsPerLine = 100.0f / 3.0f;
   wheel_delta /= WHEEL_DELTA;
-  float scroll_delta = wheel_delta * kScrollbarPixelsPerLine;
+  float scroll_delta = wheel_delta;
   if (horizontal_scroll) {
     unsigned long scroll_chars = kDefaultScrollCharsPerWheelDelta;
     SystemParametersInfo(SPI_GETWHEELSCROLLCHARS, 0, &scroll_chars, 0);
     // TODO(pkasting): Should probably have a different multiplier
     // scrollbarPixelsPerChar here.
-    scroll_delta *= static_cast<float>(scroll_chars);
+    scroll_delta *= static_cast<float>(scroll_chars) * kScrollbarPixelsPerLine;
   } else {
     unsigned long scroll_lines = kDefaultScrollLinesPerWheelDelta;
     SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &scroll_lines, 0);
     if (scroll_lines == WHEEL_PAGESCROLL)
       result.scrollByPage = true;
-    if (!result.scrollByPage)
-      scroll_delta *= static_cast<float>(scroll_lines);
+    if (!result.scrollByPage) {
+      scroll_delta *=
+          static_cast<float>(scroll_lines) * kScrollbarPixelsPerLine;
+    }
   }
 
   // Set scroll amount based on above calculations.  WebKit expects positive
