@@ -2422,7 +2422,9 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
   additional_backends->push_back(backend);
 #endif
 
-  additional_backends->push_back(new sync_file_system::SyncFileSystemBackend());
+  additional_backends->push_back(
+      new sync_file_system::SyncFileSystemBackend(
+          Profile::FromBrowserContext(browser_context)));
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

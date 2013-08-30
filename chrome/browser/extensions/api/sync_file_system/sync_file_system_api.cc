@@ -109,13 +109,21 @@ void SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem(
 }
 
 bool SyncFileSystemRequestFileSystemFunction::RunImpl() {
+  // SyncFileSystem initialization is done in OpenFileSystem below, but we call
+  // GetSyncFileSystemService here too to initialize sync event observer for
+  // extensions API.
+  GetSyncFileSystemService(profile());
+
   // Initializes sync context for this extension and continue to open
   // a new file system.
-  GetSyncFileSystemService(profile())->
-      InitializeForApp(
-          GetFileSystemContext(),
-          source_url().GetOrigin(),
-          base::Bind(&self::DidInitializeFileSystemContext, this));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      Bind(&fileapi::FileSystemContext::OpenFileSystem,
+           GetFileSystemContext(),
+           source_url().GetOrigin(),
+           fileapi::kFileSystemTypeSyncable,
+           fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+           base::Bind(&self::DidOpenFileSystem, this)));
   return true;
 }
 
@@ -125,29 +133,6 @@ SyncFileSystemRequestFileSystemFunction::GetFileSystemContext() {
   return BrowserContext::GetStoragePartition(
       profile(),
       render_view_host()->GetSiteInstance())->GetFileSystemContext();
-}
-
-void SyncFileSystemRequestFileSystemFunction::DidInitializeFileSystemContext(
-    SyncStatusCode status) {
-  if (status != sync_file_system::SYNC_STATUS_OK) {
-    error_ = sync_file_system::SyncStatusCodeToString(status);
-    SendResponse(false);
-    return;
-  }
-
-  if (!render_view_host()) {
-    // The app seems to have been closed.
-    return;
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      Bind(&fileapi::FileSystemContext::OpenFileSystem,
-           GetFileSystemContext(),
-           source_url().GetOrigin(),
-           fileapi::kFileSystemTypeSyncable,
-           fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-           base::Bind(&self::DidOpenFileSystem, this)));
 }
 
 void SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem(

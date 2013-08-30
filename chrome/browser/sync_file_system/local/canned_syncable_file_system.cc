@@ -234,7 +234,7 @@ void CannedSyncableFileSystem::SetUp() {
       additional_allowed_schemes);
 
   ScopedVector<fileapi::FileSystemBackend> additional_backends;
-  additional_backends.push_back(new SyncFileSystemBackend());
+  additional_backends.push_back(SyncFileSystemBackend::CreateForTesting());
 
   file_system_context_ = new FileSystemContext(
       io_task_runner_.get(),

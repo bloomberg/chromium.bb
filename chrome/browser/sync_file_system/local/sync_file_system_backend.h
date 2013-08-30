@@ -5,6 +5,11 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_SYNC_FILE_SYSTEM_BACKEND_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_SYNC_FILE_SYSTEM_BACKEND_H_
 
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync_file_system/sync_callbacks.h"
+#include "chrome/browser/sync_file_system/sync_status_code.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
@@ -17,8 +22,10 @@ class LocalFileSyncContext;
 class SyncFileSystemBackend
     : public fileapi::FileSystemBackend {
  public:
-  SyncFileSystemBackend();
+  explicit SyncFileSystemBackend(Profile* profile);
   virtual ~SyncFileSystemBackend();
+
+  static SyncFileSystemBackend* CreateForTesting();
 
   // FileSystemBackend overrides.
   virtual bool CanHandleType(fileapi::FileSystemType type) const OVERRIDE;
@@ -52,23 +59,54 @@ class SyncFileSystemBackend
   static SyncFileSystemBackend* GetBackend(
       const fileapi::FileSystemContext* context);
 
-  sync_file_system::LocalFileChangeTracker* change_tracker() {
-    return change_tracker_.get();
-  }
-  void SetLocalFileChangeTracker(
-      scoped_ptr<sync_file_system::LocalFileChangeTracker> tracker);
+  LocalFileChangeTracker* change_tracker() { return change_tracker_.get(); }
+  void SetLocalFileChangeTracker(scoped_ptr<LocalFileChangeTracker> tracker);
 
-  sync_file_system::LocalFileSyncContext* sync_context() {
-    return sync_context_.get();
-  }
-  void set_sync_context(sync_file_system::LocalFileSyncContext* sync_context);
+  LocalFileSyncContext* sync_context() { return sync_context_.get(); }
+  void set_sync_context(LocalFileSyncContext* sync_context);
 
  private:
-  // Owned by FileSystemContext.
-  fileapi::SandboxFileSystemBackendDelegate* delegate_;
+  class ProfileHolder : public content::NotificationObserver {
+   public:
+    explicit ProfileHolder(Profile* profile);
 
-  scoped_ptr<sync_file_system::LocalFileChangeTracker> change_tracker_;
-  scoped_refptr<sync_file_system::LocalFileSyncContext> sync_context_;
+    // NotificationObserver override.
+    virtual void Observe(int type,
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details) OVERRIDE;
+
+    Profile* GetProfile();
+
+   private:
+    content::NotificationRegistrar registrar_;
+    Profile* profile_;
+  };
+
+  // Not owned.
+  fileapi::FileSystemContext* context_;
+
+  scoped_ptr<LocalFileChangeTracker> change_tracker_;
+  scoped_refptr<LocalFileSyncContext> sync_context_;
+
+  // Should be accessed on the UI thread.
+  scoped_ptr<ProfileHolder> profile_holder_;
+
+  // A flag to skip the initialization sequence of SyncFileSystemService for
+  // testing.
+  bool skip_initialize_syncfs_service_for_testing_;
+
+  fileapi::SandboxFileSystemBackendDelegate* GetDelegate() const;
+
+  void InitializeSyncFileSystemService(
+      const GURL& origin_url,
+      const SyncStatusCallback& callback);
+  void DidInitializeSyncFileSystemService(
+      fileapi::FileSystemContext* context,
+      const GURL& origin_url,
+      fileapi::FileSystemType type,
+      fileapi::OpenFileSystemMode mode,
+      const OpenFileSystemCallback& callback,
+      SyncStatusCode status);
 
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemBackend);
 };

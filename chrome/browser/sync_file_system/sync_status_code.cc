@@ -148,4 +148,46 @@ SyncStatusCode PlatformFileErrorToSyncStatusCode(
   }
 }
 
+base::PlatformFileError SyncStatusCodeToPlatformFileError(
+    SyncStatusCode status) {
+  switch (status) {
+    case SYNC_STATUS_OK:
+      return base::PLATFORM_FILE_OK;
+    case SYNC_FILE_ERROR_FAILED:
+      return base::PLATFORM_FILE_ERROR_FAILED;
+    case SYNC_FILE_ERROR_IN_USE:
+      return base::PLATFORM_FILE_ERROR_IN_USE;
+    case SYNC_FILE_ERROR_EXISTS:
+      return base::PLATFORM_FILE_ERROR_EXISTS;
+    case SYNC_FILE_ERROR_NOT_FOUND:
+      return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    case SYNC_FILE_ERROR_ACCESS_DENIED:
+      return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+    case SYNC_FILE_ERROR_TOO_MANY_OPENED:
+      return base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED;
+    case SYNC_FILE_ERROR_NO_MEMORY:
+      return base::PLATFORM_FILE_ERROR_NO_MEMORY;
+    case SYNC_FILE_ERROR_NO_SPACE:
+      return base::PLATFORM_FILE_ERROR_NO_SPACE;
+    case SYNC_FILE_ERROR_NOT_A_DIRECTORY:
+      return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    case SYNC_FILE_ERROR_INVALID_OPERATION:
+      return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+    case SYNC_FILE_ERROR_SECURITY:
+      return base::PLATFORM_FILE_ERROR_SECURITY;
+    case SYNC_FILE_ERROR_ABORT:
+      return base::PLATFORM_FILE_ERROR_ABORT;
+    case SYNC_FILE_ERROR_NOT_A_FILE:
+      return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+    case SYNC_FILE_ERROR_NOT_EMPTY:
+      return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
+    case SYNC_FILE_ERROR_INVALID_URL:
+      return base::PLATFORM_FILE_ERROR_INVALID_URL;
+    case SYNC_FILE_ERROR_IO:
+      return base::PLATFORM_FILE_ERROR_IO;
+    default:
+      return base::PLATFORM_FILE_ERROR_FAILED;
+  }
+}
+
 }  // namespace sync_file_system

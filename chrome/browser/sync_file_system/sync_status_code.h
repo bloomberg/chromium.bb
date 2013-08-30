@@ -69,6 +69,9 @@ SyncStatusCode LevelDBStatusToSyncStatusCode(const leveldb::Status& status);
 SyncStatusCode PlatformFileErrorToSyncStatusCode(
     base::PlatformFileError file_error);
 
+base::PlatformFileError SyncStatusCodeToPlatformFileError(
+    SyncStatusCode status);
+
 }  // namespace sync_file_system
 
 #endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_STATUS_CODE_H_
