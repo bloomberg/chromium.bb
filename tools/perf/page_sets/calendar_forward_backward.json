@@ -16,20 +16,28 @@
       ],
       "endure": [
         { "action": "click_element", "selector": "div[class~=\"navForward\"]" },
+        { "action": "wait", "seconds": 2 },
         { "action": "wait", "condition": "element", "selector": "div[class~=\"navForward\"]" },
         { "action": "click_element", "selector": "div[class~=\"navForward\"]" },
+        { "action": "wait", "seconds": 2 },
         { "action": "wait", "condition": "element", "selector": "div[class~=\"navForward\"]" },
         { "action": "click_element", "selector": "div[class~=\"navForward\"]" },
+        { "action": "wait", "seconds": 2 },
         { "action": "wait", "condition": "element", "selector": "div[class~=\"navForward\"]" },
         { "action": "click_element", "selector": "div[class~=\"navForward\"]" },
+        { "action": "wait", "seconds": 2 },
         { "action": "wait", "condition": "element", "selector": "div[class~=\"navBack\"]" },
         { "action": "click_element", "selector": "div[class~=\"navBack\"]" },
+        { "action": "wait", "seconds": 2 },
         { "action": "wait", "condition": "element", "selector": "div[class~=\"navBack\"]" },
         { "action": "click_element", "selector": "div[class~=\"navBack\"]" },
+        { "action": "wait", "seconds": 2 },
         { "action": "wait", "condition": "element", "selector": "div[class~=\"navBack\"]" },
         { "action": "click_element", "selector": "div[class~=\"navBack\"]" },
+        { "action": "wait", "seconds": 2 },
         { "action": "wait", "condition": "element", "selector": "div[class~=\"navBack\"]" },
         { "action": "click_element", "selector": "div[class~=\"navBack\"]" },
+        { "action": "wait", "seconds": 2 },
         { "action": "wait", "condition": "element", "selector": "div[class~=\"navForward\"]" }
       ]
     }

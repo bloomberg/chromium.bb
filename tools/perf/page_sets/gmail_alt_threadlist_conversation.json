@@ -1,0 +1,31 @@
+{
+  "description": "Chrome Endure test for GMail.",
+  "archive_data_file": "../data/gmail_alt_threadlist_conversation.json",
+  "credentials_path": "../data/credentials.json",
+  "user_agent_type": "desktop",
+  "pages": [
+    {
+      "url": "https://mail.google.com/mail/",
+      "why": "Alternate between Inbox and the first email conversation",
+      "credentials": "google",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "javascript": "window.gmonkey !== undefined && document.getElementById('gb') !== null" }
+      ],
+      "endure": [
+        {
+          "action": "click_element",
+          "xpath": "//span[@email]"
+        },
+        { "action": "wait", "condition": "href_change" },
+        { "action": "wait", "seconds": 1 },
+        {
+          "action": "click_element",
+          "selector": "a[href=\"https://mail.google.com/mail/u/0/?shva=1#inbox\"]"
+        },
+        { "action": "wait", "condition": "href_change" },
+        { "action": "wait", "seconds": 1 }
+      ]
+    }
+  ]
+}
