@@ -556,7 +556,9 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
     // is writable or not.
     var readonly = fm.isOnReadonlyDirectory();
     var currentDir = fm.directoryModel_.getCurrentDirEntry();
-    var downloadsDir = fm.directoryModel_.getRootsList().item(0);
+    var downloadsVolume =
+        fm.volumeManager_.getVolumeInfo(RootDirectory.DOWNLOADS);
+    var downloadsDir = downloadsVolume && downloadsVolume.root;
     var readonlyDirName = null;
     if (readonly) {
       readonlyDirName = fm.isOnDrive() ?
