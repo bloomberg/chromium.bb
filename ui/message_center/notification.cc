@@ -36,6 +36,7 @@ RichNotificationData::RichNotificationData(const RichNotificationData& other)
       never_timeout(other.never_timeout),
       timestamp(other.timestamp),
       expanded_message(other.expanded_message),
+      context_message(other.context_message),
       image(other.image),
       items(other.items),
       progress(other.progress),

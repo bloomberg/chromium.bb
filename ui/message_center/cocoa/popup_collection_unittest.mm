@@ -76,7 +76,8 @@ class PopupCollectionTest : public ui::CocoaTest {
                      "that has a much longer body "
                      "than the other notifications. It "
                      "may not fit on the screen if we "
-                     "set the screen size too small."),
+                     "set the screen size too small or "
+                     "if the notification is way too big"),
         gfx::Image(),
         string16(),
         message_center::NotifierId(),

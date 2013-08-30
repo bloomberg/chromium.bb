@@ -46,6 +46,9 @@ MESSAGE_CENTER_EXPORT
   // Body text of the message. Hidden for list notifications.
   base::scoped_nsobject<NSTextField> message_;
 
+  // Context-giving text of the message.  Alternate font used to distinguish it.
+  base::scoped_nsobject<NSTextField> contextMessage_;
+
   // Container for optional list item views.
   base::scoped_nsobject<NSView> listItemView_;
 
