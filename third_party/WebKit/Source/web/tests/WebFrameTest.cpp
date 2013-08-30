@@ -963,22 +963,27 @@ protected:
         // Origin scrollOffsets preserved under resize.
         {
             webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height));
-            m_webView->setPageScaleFactor(initialPageScaleFactor, WebPoint());
+            webViewImpl()->setPageScaleFactor(initialPageScaleFactor, WebPoint());
+            ASSERT_EQ(viewportSize, webViewImpl()->size());
+            ASSERT_EQ(initialPageScaleFactor, webViewImpl()->pageScaleFactor());
             webViewImpl()->resize(WebSize(viewportSize.height, viewportSize.width));
             float expectedPageScaleFactor = initialPageScaleFactor * (shouldScaleRelativeToViewportWidth ? 1 / aspectRatio : 1);
             EXPECT_NEAR(expectedPageScaleFactor, webViewImpl()->pageScaleFactor(), 0.05f);
             EXPECT_EQ(WebSize(), webViewImpl()->mainFrame()->scrollOffset());
         }
 
-        // Resizing just the height should not affect pageScaleFactor.
+        // Resizing just the height should not affect pageScaleFactor or scrollOffset.
         {
             webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height));
-            m_webView->setPageScaleFactor(initialPageScaleFactor, WebPoint());
-            webViewImpl()->mainFrame()->setScrollOffset(WebSize(0, 10));
-            webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height * 1.25f));
+            webViewImpl()->setPageScaleFactor(initialPageScaleFactor, WebPoint(scrollOffset.width, scrollOffset.height));
+            webViewImpl()->layout();
+            const WebSize expectedScrollOffset = webViewImpl()->mainFrame()->scrollOffset();
+            webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height * 0.8f));
             EXPECT_EQ(initialPageScaleFactor, webViewImpl()->pageScaleFactor());
-            webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height * .8f));
+            EXPECT_EQ(expectedScrollOffset, webViewImpl()->mainFrame()->scrollOffset());
+            webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height * 0.8f));
             EXPECT_EQ(initialPageScaleFactor, webViewImpl()->pageScaleFactor());
+            EXPECT_EQ(expectedScrollOffset, webViewImpl()->mainFrame()->scrollOffset());
         }
 
         // Generic resize preserves scrollOffset relative to anchor node located
@@ -1015,7 +1020,7 @@ TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForWidthEqualsDevice
     // long as the content adjusts according to the device-width.
     const char* url = "resize_scroll_mobile.html";
     const float initialPageScaleFactor = 1;
-    const WebSize scrollOffset(0, 200);
+    const WebSize scrollOffset(0, 50);
     const WebSize viewportSize(120, 160);
     const bool shouldScaleRelativeToViewportWidth = true;
 
