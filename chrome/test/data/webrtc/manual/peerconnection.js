@@ -117,10 +117,10 @@ function insertDtmfFromHere() {
   insertDtmfOnSender(tones, duration, gap);
 }
 
-function forceOpusChanged() {
-  var forceOpus = $('force-opus').checked;
-  if (forceOpus) {
-    forceOpus_();
+function forceIsacChanged() {
+  var forceIsac = $('force-isac').checked;
+  if (forceIsac) {
+    forceIsac_();
   } else {
     dontTouchSdp_();
   }
@@ -332,12 +332,13 @@ function preferOpus_() {
 }
 
 /** @private */
-function forceOpus_() {
+function forceIsac_() {
   setOutgoingSdpTransform(function(sdp) {
     // Remove all other codecs (not the video codecs though).
     sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g,
-                      'm=audio $1 RTP/SAVPF 111\r\n');
-    sdp = sdp.replace(/a=rtpmap:(?!111)\d{1,3} (?!VP8|red|ulpfec).*\r\n/g, '');
+                      'm=audio $1 RTP/SAVPF 104\r\n');
+    sdp = sdp.replace('a=fmtp:111 minptime=10', 'a=fmtp:104 minptime=10');
+    sdp = sdp.replace(/a=rtpmap:(?!104)\d{1,3} (?!VP8|red|ulpfec).*\r\n/g, '');
     return sdp;
   });
 }
