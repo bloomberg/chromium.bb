@@ -68,6 +68,7 @@ bool WebBlobData::itemAt(size_t index, Item& result) const
     result.data.reset();
     result.filePath.reset();
     result.blobURL = KURL();
+    result.blobUUID.reset();
     result.offset = item.offset;
     result.length = item.length;
     result.expectedModificationTime = item.expectedModificationTime;
@@ -84,11 +85,12 @@ bool WebBlobData::itemAt(size_t index, Item& result) const
     case BlobDataItem::Blob:
         result.type = Item::TypeBlob;
         result.blobURL = item.url; // FIXME: deprecate this.
-        result.url = item.url;
+        result.url = item.url; // DEPRECATED, should be able to remove after https://codereview.chromium.org/23223003/ lands
         return true;
     case BlobDataItem::URL:
-        result.type = Item::TypeURL;
-        result.url = item.url;
+        result.type = Item::TypeFileSystemURL;
+        result.url = item.url; // DEPRECATED
+        result.fileSystemURL = item.url;
         return true;
     }
     ASSERT_NOT_REACHED();

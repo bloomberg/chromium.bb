@@ -81,6 +81,7 @@ bool WebHTTPBody::elementAt(size_t index, Element& result) const
     result.modificationTime = invalidFileTime();
     result.url = KURL();
     result.blobURL = KURL();
+    result.blobUUID.reset();
 
     switch (element.m_type) {
     case FormDataElement::data:
@@ -96,12 +97,13 @@ bool WebHTTPBody::elementAt(size_t index, Element& result) const
         break;
     case FormDataElement::encodedBlob:
         result.type = Element::TypeBlob;
-        result.url = element.m_url;
+        result.url = element.m_url; // DEPRECATED, should be able to remove after https://codereview.chromium.org/23223003/ lands
         result.blobURL = element.m_url; // FIXME: deprecate this.
         break;
     case FormDataElement::encodedURL:
-        result.type = Element::TypeURL;
-        result.url = element.m_url;
+        result.type = Element::TypeFileSystemURL;
+        result.url = element.m_url; // DEPRECATED
+        result.fileSystemURL = element.m_url;
         result.fileStart = element.m_fileStart;
         result.fileLength = element.m_fileLength;
         result.modificationTime = element.m_expectedFileModificationTime;
@@ -134,12 +136,17 @@ void WebHTTPBody::appendFileRange(const WebString& filePath, long long fileStart
     m_private->appendFileRange(filePath, fileStart, fileLength, modificationTime);
 }
 
-void WebHTTPBody::appendURLRange(const WebURL& url, long long start, long long length, double modificationTime)
+void WebHTTPBody::appendFileSystemURLRange(const WebURL& url, long long start, long long length, double modificationTime)
 {
     // Currently we only support filesystem URL.
     ASSERT(KURL(url).protocolIs("filesystem"));
     ensureMutable();
     m_private->appendURLRange(url, start, length, modificationTime);
+}
+
+void WebHTTPBody::appendURLRange(const WebURL& url, long long start, long long length, double modificationTime)
+{
+    appendFileSystemURLRange(url, start, length, modificationTime);
 }
 
 void WebHTTPBody::appendBlob(const WebURL& blobURL)

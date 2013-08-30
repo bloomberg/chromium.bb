@@ -42,19 +42,18 @@ class WebURL;
 
 class WebBlobRegistry {
 public:
-    WEBKIT_EXPORT static WebBlobRegistry* create();
-
     virtual ~WebBlobRegistry() { }
 
-    // Registers a blob URL referring to the specified blob data.
-    virtual void registerBlobURL(const WebURL&, WebBlobData&) = 0;
+    virtual void registerBlobData(const WebKit::WebString& uuid, const WebKit::WebBlobData&) { }
+    virtual void addBlobDataRef(const WebKit::WebString& uuid) { }
+    virtual void removeBlobDataRef(const WebKit::WebString& uuid) { }
+    virtual void registerPublicBlobURL(const WebKit::WebURL&, const WebKit::WebString& uuid) { }
+    virtual void revokePublicBlobURL(const WebKit::WebURL&) { }
 
-    // Registers a blob URL referring to the blob data identified by the
-    // specified srcURL.
-    virtual void registerBlobURL(const WebURL&, const WebURL& srcURL) = 0;
-
-    // Unregisters a blob referred by the URL.
-    virtual void unregisterBlobURL(const WebURL&) = 0;
+    // DEPRECATED - old style blob handling is being replaced
+    virtual void registerBlobURL(const WebURL&, WebBlobData&) { }
+    virtual void registerBlobURL(const WebURL&, const WebURL& srcURL) { }
+    virtual void unregisterBlobURL(const WebURL&) { }
 
     // Registers a stream URL referring to a stream with the specified media
     // type.

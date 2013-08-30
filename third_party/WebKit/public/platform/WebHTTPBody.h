@@ -48,16 +48,21 @@ class WebHTTPBodyPrivate;
 class WebHTTPBody {
 public:
     struct Element {
-        enum Type { TypeData, TypeFile, TypeBlob, TypeURL } type;
+        // TypeURL is DEPRECATED
+        enum Type { TypeData, TypeFile, TypeBlob, TypeFileSystemURL, TypeURL = TypeFileSystemURL } type;
         WebData data;
         WebString filePath;
         long long fileStart;
         long long fileLength; // -1 means to the end of the file.
         double modificationTime;
-        WebURL url; // For TypeBlob or TypeURL.
+        WebURL fileSystemURL;
 
-        // FIXME: deprecate this.
+        // DEPRECATED, use fileSystemURL
+        WebURL url;
+
+        // FIXME: deprecate url and use uuid
         WebURL blobURL;
+        WebString blobUUID;
     };
 
     ~WebHTTPBody() { reset(); }
@@ -88,10 +93,11 @@ public:
     WEBKIT_EXPORT void appendFile(const WebString&);
     // Passing -1 to fileLength means to the end of the file.
     WEBKIT_EXPORT void appendFileRange(const WebString&, long long fileStart, long long fileLength, double modificationTime);
-    WEBKIT_EXPORT void appendBlob(const WebURL&);
+    WEBKIT_EXPORT void appendBlob(const WebURL&); // FIXME: deprecate this
 
-    // Append a resource which is identified by URL. Currently we only support FileSystem URL.
-    WEBKIT_EXPORT void appendURLRange(const WebURL&, long long start, long long length, double modificationTime);
+    // Append a resource which is identified by the FileSystem URL.
+    WEBKIT_EXPORT void appendFileSystemURLRange(const WebURL&, long long start, long long length, double modificationTime);
+    WEBKIT_EXPORT void appendURLRange(const WebURL&, long long start, long long length, double modificationTime); // DEPRECATED
 
     // Identifies a particular form submission instance. A value of 0 is
     // used to indicate an unspecified identifier.

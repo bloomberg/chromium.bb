@@ -47,16 +47,21 @@ class WebBlobDataPrivate;
 class WebBlobData {
 public:
     struct Item {
-        enum { TypeData, TypeFile, TypeBlob, TypeURL } type;
+        // TypeURL is DEPRECATED
+        enum { TypeData, TypeFile, TypeBlob, TypeFileSystemURL, TypeURL = TypeFileSystemURL } type;
         WebThreadSafeData data;
         WebString filePath;
-        WebURL url; // For TypeBlob or TypeURL.
+        WebURL fileSystemURL;
         long long offset;
         long long length; // -1 means go to the end of the file/blob.
         double expectedModificationTime; // 0.0 means that the time is not set.
 
-        // FIXME: deprecate this.
+        // DEPRECATED, use fileSystemURL
+        WebURL url;
+
+        // FIXME: deprecate url and use uuid
         WebURL blobURL;
+        WebString blobUUID;
     };
 
     ~WebBlobData() { reset(); }
