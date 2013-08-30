@@ -89,10 +89,7 @@ static void updatePathFromPolygonElement(SVGElement* element, Path& path)
 
 static void updatePathFromPolylineElement(SVGElement* element, Path& path)
 {
-    ASSERT(element->hasTagName(SVGNames::polylineTag));
-    SVGPolylineElement* polyline = static_cast<SVGPolylineElement*>(element);
-
-    SVGPointList& points = polyline->pointList();
+    SVGPointList& points = toSVGPolylineElement(element)->pointList();
     if (points.isEmpty())
         return;
 
