@@ -188,7 +188,7 @@ TEST_F(WebRtcLocalAudioTrackTest, ConnectAndDisconnectOneSink) {
                   0,
                   0,
                   // TODO(tommi): Change to |false| when issue 277134 is fixed.
-                  true,
+                  _,
                   false)).Times(AtLeast(1))
       .WillRepeatedly(SignalEvent(&event));
   track->AddSink(sink.get());
@@ -276,7 +276,7 @@ TEST_F(WebRtcLocalAudioTrackTest, MultipleAudioTracks) {
                   0,
                   0,
                   // TODO(tommi): Change to |false| when issue 277134 is fixed.
-                  true,
+                  _,
                   false)).Times(AtLeast(1))
       .WillRepeatedly(SignalEvent(&event_1));
   track_1->AddSink(sink_1.get());
@@ -304,7 +304,7 @@ TEST_F(WebRtcLocalAudioTrackTest, MultipleAudioTracks) {
                   0,
                   0,
                   // TODO(tommi): Change to |false| when issue 277134 is fixed.
-                  true,
+                  _,
                   false)).Times(AtLeast(1))
       .WillRepeatedly(SignalEvent(&event_1));
   EXPECT_CALL(*sink_2,
@@ -315,7 +315,7 @@ TEST_F(WebRtcLocalAudioTrackTest, MultipleAudioTracks) {
                   0,
                   0,
                   // TODO(tommi): Change to |false| when issue 277134 is fixed.
-                  true,
+                  _,
                   false)).Times(AtLeast(1))
       .WillRepeatedly(SignalEvent(&event_2));
   track_2->AddSink(sink_2.get());
@@ -367,7 +367,7 @@ TEST_F(WebRtcLocalAudioTrackTest, StartAndStopAudioTracks) {
   event.Reset();
   EXPECT_CALL(*sink, CaptureData(_, _, _, _, 0, 0,
       // TODO(tommi): Change to |false| when issue 277134 is fixed.
-      true,
+      _,
       false))
       .Times(AnyNumber()).WillRepeatedly(Return());
   EXPECT_CALL(*sink, SetCaptureFormat(_)).Times(1);
@@ -450,7 +450,7 @@ TEST_F(WebRtcLocalAudioTrackTest, ConnectTracksToDifferentCapturers) {
       CaptureData(
           kNumberOfNetworkChannelsForTrack1, 48000, 2, _, 0, 0,
           // TODO(tommi): Change to |false| when issue 277134 is fixed.
-          true,
+          _,
           false))
       .Times(AnyNumber()).WillRepeatedly(Return());
   EXPECT_CALL(*sink_1.get(), SetCaptureFormat(_)).Times(1);
