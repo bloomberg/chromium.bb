@@ -208,7 +208,7 @@ void Frame::sendOrientationChangeEvent(int orientation)
 {
     m_orientation = orientation;
     if (Document* doc = document())
-        doc->dispatchWindowEvent(Event::create(eventNames().orientationchangeEvent, false, false));
+        doc->dispatchWindowEvent(Event::create(eventNames().orientationchangeEvent));
 }
 #endif // ENABLE(ORIENTATION_EVENTS)
 
