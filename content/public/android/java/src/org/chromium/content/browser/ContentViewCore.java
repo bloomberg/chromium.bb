@@ -525,9 +525,9 @@ import java.util.Map;
                 // The anchor view should not go outside the bounds of the ContainerView.
                 int leftMargin = Math.round(x * scale);
                 int topMargin = Math.round(mRenderCoordinates.getContentOffsetYPix() + y * scale);
+                int scaledWidth = Math.round(width * scale);
                 // ContentViewCore currently only supports these two container view types.
                 if (mContainerView instanceof FrameLayout) {
-                    int scaledWidth = Math.round(width * scale);
                     if (scaledWidth + leftMargin > mContainerView.getWidth()) {
                         scaledWidth = mContainerView.getWidth() - leftMargin;
                     }
@@ -544,9 +544,10 @@ import java.util.Map;
                     // these models.
                     leftMargin += mRenderCoordinates.getScrollXPixInt();
                     topMargin += mRenderCoordinates.getScrollYPixInt();
+
                     android.widget.AbsoluteLayout.LayoutParams lp =
-                            new android.widget.AbsoluteLayout.LayoutParams((int)width,
-                                    (int)(height * scale), leftMargin, topMargin);
+                            new android.widget.AbsoluteLayout.LayoutParams(
+                                scaledWidth, (int)(height * scale), leftMargin, topMargin);
                     view.setLayoutParams(lp);
                 } else {
                     Log.e(TAG, "Unknown layout " + mContainerView.getClass().getName());
