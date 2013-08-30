@@ -340,7 +340,15 @@ struct MainFunction {
 }  // namespace
 
 ChromeMainDelegate::ChromeMainDelegate() {
+#if defined(OS_ANDROID)
+// On Android the main entry point time is the time when the Java code starts.
+// This happens before the shared library containing this code is even loaded.
+// The Java startup code has recorded that time, but the C++ code can't fetch it
+// from the Java side until it has initialized the JNI. See
+// ChromeMainDelegateAndroid.
+#else
   startup_metric_utils::RecordMainEntryPointTime();
+#endif
 }
 
 ChromeMainDelegate::~ChromeMainDelegate() {

@@ -21,6 +21,7 @@
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/signin/signin_manager_android.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/android/uma_utils.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
 #include "chrome/browser/lifetime/application_lifetime_android.h"
@@ -93,6 +94,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "SigninManager", SigninManagerAndroid::Register },
   { "SqliteCursor", SQLiteCursor::RegisterSqliteCursor },
   { "SSLClientCertificateRequest", RegisterSSLClientCertificateRequestAndroid },
+  { "StartupMetricUtils", RegisterStartupMetricUtils },
   { "TabAndroid", TabAndroid::RegisterTabAndroid },
   { "TemplateUrlServiceAndroid", TemplateUrlServiceAndroid::Register },
   { "TtsPlatformImpl", TtsPlatformImplAndroid::Register },

@@ -686,7 +686,15 @@ void ChromeBrowserMainParts::RecordBrowserStartupTime() {
   if (startup_metric_utils::WasNonBrowserUIDisplayed())
     return;
 
+#if defined(OS_ANDROID)
+  // On Android the first run is handled in Java code, and the C++ side of
+  // Chrome doesn't know if this is the first run. This will cause some
+  // inaccuracy in the UMA statistics, but this should be minor (first runs are
+  // rare).
+  bool is_first_run = false;
+#else
   bool is_first_run = first_run::IsChromeFirstRun();
+#endif
 
 // CurrentProcessInfo::CreationTime() is currently only implemented on some
 // platforms.
@@ -1595,7 +1603,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     delete parameters().ui_task;
     run_message_loop_ = false;
   }
-
+#if defined(OS_ANDROID)
+  // We never run the C++ main loop on Android, since the UI thread message
+  // loop is controlled by the OS, so this is as close as we can get to
+  // the start of the main loop
+  if (result_code_ <= 0) {
+    RecordBrowserStartupTime();
+  }
+#endif
   return result_code_;
 }
 

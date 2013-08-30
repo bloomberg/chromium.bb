@@ -31,6 +31,13 @@ void SetNonBrowserUIDisplayed();
 // timestamp.
 void RecordMainEntryPointTime();
 
+#if defined(OS_ANDROID)
+// On Android the entry point time is the time at which the Java code starts.
+// This is recorded on the Java side, and then passed to the C++ side once the
+// C++ library is loaded and running.
+void RecordSavedMainEntryPointTime(const base::Time& entry_point_time);
+#endif // OS_ANDROID
+
 // Called just before the message loop is about to start. Entry point to record
 // startup stats.
 // |is_first_run| - is the current launch part of a first run.

@@ -8,6 +8,7 @@ import android.app.Application;
 import android.content.Intent;
 
 import org.chromium.base.PathUtils;
+import org.chromium.chrome.browser.UmaUtils;
 import org.chromium.content.browser.ResourceExtractor;
 import org.chromium.content.common.CommandLine;
 
@@ -31,6 +32,8 @@ public class ChromiumTestShellApplication extends Application {
 
     @Override
     public void onCreate() {
+        // We want to do this at the earliest possible point in startup.
+        UmaUtils.recordMainEntryPointTime();
         super.onCreate();
 
         ResourceExtractor.setMandatoryPaksToExtract(CHROME_MANDATORY_PAKS);

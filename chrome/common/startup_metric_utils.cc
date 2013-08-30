@@ -19,7 +19,7 @@ namespace {
 // Note that at the time of this writing, access is only on the UI thread.
 volatile bool g_non_browser_ui_displayed = false;
 
-const base::Time* MainEntryPointTimeInternal() {
+base::Time* MainEntryPointTimeInternal() {
   static base::Time main_start_time = base::Time::Now();
   return &main_start_time;
 }
@@ -58,6 +58,14 @@ void RecordMainEntryPointTime() {
   g_main_entry_time_was_recorded = true;
   MainEntryPointTimeInternal();
 }
+
+#if defined(OS_ANDROID)
+void RecordSavedMainEntryPointTime(const base::Time& entry_point_time) {
+  DCHECK(!g_main_entry_time_was_recorded);
+  g_main_entry_time_was_recorded = true;
+  *MainEntryPointTimeInternal() = entry_point_time;
+}
+#endif // OS_ANDROID
 
 // Return the time recorded by RecordMainEntryPointTime().
 const base::Time MainEntryStartTime() {
