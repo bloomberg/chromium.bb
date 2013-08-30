@@ -601,7 +601,7 @@ Press any key to continue exploring.
     Creating supervised user
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_TIMEOUT_MESSAGE" desc="Text shown at the place of progess indicator if creation takes too long and should be cancelled.">
-    Profile takes too long to create. You may want to cancel process and retry later.
+    This is taking much longer than it should.
   </message>
   <message name="IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE" desc="Text for notifications showing that this user is locally managed">
     This user is supervised by <ph name="MANAGER_EMAIL">$1<ex>user@example.com</ex></ph>. Usage and history from this user can be reviewed by the manager on chrome.com.

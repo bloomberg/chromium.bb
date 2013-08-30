@@ -256,6 +256,7 @@ input.managed-user-creation-manager-password,
 #managed-user-creation-status .id-text {
   display: -webkit-inline-box;
   margin-top: 1px;
+  max-width: 480px;
   vertical-align: baseline;
 }
 
