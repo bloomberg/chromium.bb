@@ -451,6 +451,3 @@ skia.dll!SkScalerContext::getImage
 skia.dll!SkGlyphCache::findImage
 skia.dll!D1G_NoBounder_RectClip
 skia.dll!SkDraw::drawText
-skia.dll!SkDevice::drawText
-skia.dll!SkCanvas::drawText
-media.dll!media::FakeVideoCaptureDevice::OnCaptureTask
