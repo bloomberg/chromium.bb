@@ -68,13 +68,13 @@ void ColorChooserDialog::ExecuteOpen(const ExecuteOpenParams& params) {
 void ColorChooserDialog::DidCloseDialog(bool chose_color,
                                         SkColor color,
                                         RunState run_state) {
-  if (!listener_)
-    return;
   EndRun(run_state);
   CopyCustomColors(custom_colors_, g_custom_colors);
-  if (chose_color)
-    listener_->OnColorChosen(color);
-  listener_->OnColorChooserDialogClosed();
+  if (listener_) {
+    if (chose_color)
+      listener_->OnColorChosen(color);
+    listener_->OnColorChooserDialogClosed();
+  }
 }
 
 void ColorChooserDialog::CopyCustomColors(COLORREF* src, COLORREF* dst) {
