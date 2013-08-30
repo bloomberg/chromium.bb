@@ -56,6 +56,13 @@ def main():
   group.add_option(
       '--slave-index', type='int', default=0, help='Converted to --shards')
   parser.add_option_group(group)
+  group = optparse.OptionGroup(
+      parser, 'Options of run_test_cases.py passed through')
+  group.add_option(
+      '--retries', type='int', help='Kept as --retries')
+  group.add_option(
+      '--verbose', action='count', default=0, help='Kept as --verbose')
+  parser.add_option_group(group)
 
   parser.disable_interspersed_args()
   options, args = parser.parse_args()
@@ -72,6 +79,10 @@ def main():
   ]
   if options.timeout is not None:
     cmd.extend(['--timeout', str(options.timeout)])
+  if options.retries is not None:
+    cmd.extend(['--retries', str(options.retries)])
+  if options.verbose is not None:
+    cmd.extend(['--verbose'] * options.verbose)
 
   run_test_cases_extra_args, rest = pop_known_arguments(args)
 
