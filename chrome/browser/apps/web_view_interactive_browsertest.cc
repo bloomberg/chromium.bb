@@ -468,7 +468,8 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PointerLock) {
 #endif  // (defined(OS_WIN) || defined(OS_LINUX))
 
 // Fails on Windows. crbug.com/236040
-#if defined(OS_WIN)
+// Also flaky on ChromiumOS. crbug.com/281815
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_Focus DISABLED_Focus
 #else
 #define MAYBE_Focus Focus
