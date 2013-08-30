@@ -425,6 +425,10 @@ void RendererOverridesHandler::ScreenshotCaptured(
                         metadata.device_scale_factor);
     response->SetDouble(devtools::Page::kParamPageScaleFactor,
                         metadata.page_scale_factor);
+    response->SetDouble(devtools::Page::kParamOffsetTop,
+                        metadata.location_bar_content_translation.y());
+    response->SetDouble(devtools::Page::kParamOffsetBottom,
+                        metadata.overdraw_bottom_height);
 
     base::DictionaryValue* viewport = new base::DictionaryValue();
     viewport->SetDouble(devtools::kParamX, metadata.root_scroll_offset.x());

@@ -61,6 +61,8 @@ namespace Page {
 const char kData[] = "data";
 const char kParamDeviceScaleFactor[] = "deviceScaleFactor";
 const char kParamPageScaleFactor[] = "pageScaleFactor";
+const char kParamOffsetBottom[] = "offsetBottom";
+const char kParamOffsetTop[] = "offsetTop";
 const char kParamViewport[] = "viewport";
 
 namespace disable {

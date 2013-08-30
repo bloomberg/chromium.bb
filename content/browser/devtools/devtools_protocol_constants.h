@@ -70,6 +70,8 @@ namespace Page {
   extern const char kData[];
   extern const char kParamDeviceScaleFactor[];
   extern const char kParamPageScaleFactor[];
+  extern const char kParamOffsetBottom[];
+  extern const char kParamOffsetTop[];
   extern const char kParamViewport[];
 
   namespace disable {
