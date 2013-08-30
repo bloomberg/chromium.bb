@@ -32,12 +32,11 @@ class DriveApiUrlGenerator {
   // Returns a URL to invoke "Apps: list" method.
   GURL GetAppsListUrl() const;
 
-  // Returns a URL to edit (especially add) a resource, such as inserting
-  // a file metadata or creating a new directory.
-  GURL GetFilesUrl() const;
-
   // Returns a URL to fetch a file metadata.
   GURL GetFilesGetUrl(const std::string& file_id) const;
+
+  // Returns a URL to create a resource.
+  GURL GetFilesInsertUrl() const;
 
   // Returns a URL to patch file metadata.
   GURL GetFilesPatchUrl(const std::string& file_id,

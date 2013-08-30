@@ -41,13 +41,6 @@ TEST_F(DriveApiUrlGeneratorTest, GetAppsListUrl) {
             test_url_generator_.GetAppsListUrl().spec());
 }
 
-TEST_F(DriveApiUrlGeneratorTest, GetFilesUrl) {
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/files",
-            url_generator_.GetFilesUrl().spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files",
-            test_url_generator_.GetFilesUrl().spec());
-}
-
 TEST_F(DriveApiUrlGeneratorTest, GetFilesGetUrl) {
   // |file_id| should be embedded into the url.
   EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0ADK06pfg",
@@ -63,6 +56,13 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesGetUrl) {
             test_url_generator_.GetFilesGetUrl("0Bz0bd074").spec());
   EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/file%3Afile_id",
             test_url_generator_.GetFilesGetUrl("file:file_id").spec());
+}
+
+TEST_F(DriveApiUrlGeneratorTest, GetFilesInsertUrl) {
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/files",
+            url_generator_.GetFilesInsertUrl().spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files",
+            test_url_generator_.GetFilesInsertUrl().spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetFilePatchUrl) {

@@ -55,11 +55,11 @@ using google_apis::drive::AboutGetRequest;
 using google_apis::drive::AppsListRequest;
 using google_apis::drive::ChangesListRequest;
 using google_apis::drive::ContinueGetFileListRequest;
-using google_apis::drive::CreateDirectoryRequest;
 using google_apis::drive::DeleteResourceRequest;
 using google_apis::drive::DownloadFileRequest;
 using google_apis::drive::FilesCopyRequest;
 using google_apis::drive::FilesGetRequest;
+using google_apis::drive::FilesInsertRequest;
 using google_apis::drive::FilesPatchRequest;
 using google_apis::drive::FilesListRequest;
 using google_apis::drive::GetUploadStatusRequest;
@@ -77,6 +77,9 @@ namespace {
 const char kDriveScope[] = "https://www.googleapis.com/auth/drive";
 const char kDriveAppsReadonlyScope[] =
     "https://www.googleapis.com/auth/drive.apps.readonly";
+
+// Mime type to create a directory.
+const char kFolderMimeType[] = "application/vnd.google-apps.folder";
 
 // Expected max number of files resources in a http request.
 // Be careful not to use something too small because it might overload the
@@ -603,13 +606,13 @@ CancelCallback DriveAPIService::AddNewDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(
-      new CreateDirectoryRequest(
-          sender_.get(),
-          url_generator_,
-          parent_resource_id,
-          directory_title,
-          base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback)));
+  FilesInsertRequest* request = new FilesInsertRequest(
+      sender_.get(), url_generator_,
+      base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback));
+  request->set_mime_type(kFolderMimeType);
+  request->add_parent(parent_resource_id);
+  request->set_title(directory_title);
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::CopyResource(

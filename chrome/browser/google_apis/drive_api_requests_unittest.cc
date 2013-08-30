@@ -345,6 +345,50 @@ class DriveApiRequestsTest : public testing::Test {
   int64 content_length_;
 };
 
+TEST_F(DriveApiRequestsTest, FilesInsertRequest) {
+  // Set an expected data file containing the directory's entry data.
+  expected_data_file_path_ =
+      test_util::GetTestFilePath("drive/directory_entry.json");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<FileResource> file_resource;
+
+  // Create "new directory" in the root directory.
+  {
+    base::RunLoop run_loop;
+    drive::FilesInsertRequest* request = new drive::FilesInsertRequest(
+        request_sender_.get(),
+        *url_generator_,
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&error, &file_resource)));
+    request->set_mime_type("application/vnd.google-apps.folder");
+    request->add_parent("root");
+    request->set_title("new directory");
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ("/drive/v2/files", http_request_.relative_url);
+  EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
+
+  EXPECT_TRUE(http_request_.has_content);
+
+  scoped_ptr<FileResource> expected(
+      FileResource::CreateFrom(
+          *test_util::LoadJSONFile("drive/directory_entry.json")));
+
+  // Sanity check.
+  ASSERT_TRUE(file_resource.get());
+
+  EXPECT_EQ(expected->file_id(), file_resource->file_id());
+  EXPECT_EQ(expected->title(), file_resource->title());
+  EXPECT_EQ(expected->mime_type(), file_resource->mime_type());
+  EXPECT_EQ(expected->parents().size(), file_resource->parents().size());
+}
+
 TEST_F(DriveApiRequestsTest, FilesPatchRequest) {
   const base::Time::Exploded kModifiedDate = {2012, 7, 0, 19, 15, 59, 13, 123};
   const base::Time::Exploded kLastViewedByMeDate =
@@ -635,50 +679,6 @@ TEST_F(DriveApiRequestsTest, ContinueGetFileListRequest) {
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/continue/get/file/list", http_request_.relative_url);
   EXPECT_TRUE(result);
-}
-
-TEST_F(DriveApiRequestsTest, CreateDirectoryRequest) {
-  // Set an expected data file containing the directory's entry data.
-  expected_data_file_path_ =
-      test_util::GetTestFilePath("drive/directory_entry.json");
-
-  GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<FileResource> file_resource;
-
-  // Create "new directory" in the root directory.
-  {
-    base::RunLoop run_loop;
-    drive::CreateDirectoryRequest* request =
-        new drive::CreateDirectoryRequest(
-            request_sender_.get(),
-            *url_generator_,
-            "root",
-            "new directory",
-            test_util::CreateQuitCallback(
-                &run_loop,
-                test_util::CreateCopyResultCallback(&error, &file_resource)));
-    request_sender_->StartRequestWithRetry(request);
-    run_loop.Run();
-  }
-
-  EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
-  EXPECT_EQ("/drive/v2/files", http_request_.relative_url);
-  EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
-
-  EXPECT_TRUE(http_request_.has_content);
-
-  scoped_ptr<FileResource> expected(
-      FileResource::CreateFrom(
-          *test_util::LoadJSONFile("drive/directory_entry.json")));
-
-  // Sanity check.
-  ASSERT_TRUE(file_resource.get());
-
-  EXPECT_EQ(expected->file_id(), file_resource->file_id());
-  EXPECT_EQ(expected->title(), file_resource->title());
-  EXPECT_EQ(expected->mime_type(), file_resource->mime_type());
-  EXPECT_EQ(expected->parents().size(), file_resource->parents().size());
 }
 
 TEST_F(DriveApiRequestsTest, TouchResourceRequest) {

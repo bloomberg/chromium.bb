@@ -63,6 +63,49 @@ class FilesGetRequest : public GetDataRequest {
   DISALLOW_COPY_AND_ASSIGN(FilesGetRequest);
 };
 
+//============================ FilesInsertRequest =============================
+
+// This class performs the request for creating a resource.
+// This request is mapped to
+// https://developers.google.com/drive/v2/reference/files/insert
+// See also https://developers.google.com/drive/manage-uploads and
+// https://developers.google.com/drive/folder
+class FilesInsertRequest : public GetDataRequest {
+ public:
+  FilesInsertRequest(RequestSender* sender,
+                     const DriveApiUrlGenerator& url_generator,
+                     const FileResourceCallback& callback);
+  virtual ~FilesInsertRequest();
+
+  // Optional request body.
+  const std::string& mime_type() const { return mime_type_; }
+  void set_mime_type(const std::string& mime_type) {
+    mime_type_ = mime_type;
+  }
+
+  const std::vector<std::string>& parents() const { return parents_; }
+  void add_parent(const std::string& parent) { parents_.push_back(parent); }
+
+  const std::string& title() const { return title_; }
+  void set_title(const std::string& title) { title_ = title; }
+
+ protected:
+  // Overridden from GetDataRequest.
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual GURL GetURL() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+
+  std::string mime_type_;
+  std::vector<std::string> parents_;
+  std::string title_;
+
+  DISALLOW_COPY_AND_ASSIGN(FilesInsertRequest);
+};
+
 //============================== FilesPatchRequest ============================
 
 // This class performs the request for patching file metadata.
@@ -324,33 +367,6 @@ class ContinueGetFileListRequest : public GetDataRequest {
   const GURL url_;
 
   DISALLOW_COPY_AND_ASSIGN(ContinueGetFileListRequest);
-};
-
-//========================== CreateDirectoryRequest ==========================
-
-// This class performs the request for creating a directory.
-class CreateDirectoryRequest : public GetDataRequest {
- public:
-  CreateDirectoryRequest(RequestSender* sender,
-                         const DriveApiUrlGenerator& url_generator,
-                         const std::string& parent_resource_id,
-                         const std::string& directory_title,
-                         const FileResourceCallback& callback);
-  virtual ~CreateDirectoryRequest();
-
- protected:
-  // Overridden from GetDataRequest.
-  virtual GURL GetURL() const OVERRIDE;
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-  virtual bool GetContentData(std::string* upload_content_type,
-                              std::string* upload_content) OVERRIDE;
-
- private:
-  const DriveApiUrlGenerator url_generator_;
-  const std::string parent_resource_id_;
-  const std::string directory_title_;
-
-  DISALLOW_COPY_AND_ASSIGN(CreateDirectoryRequest);
 };
 
 //=========================== TouchResourceRequest ===========================

@@ -134,6 +134,56 @@ GURL FilesGetRequest::GetURL() const {
   return url_generator_.GetFilesGetUrl(file_id_);
 }
 
+//============================ FilesInsertRequest ============================
+
+FilesInsertRequest::FilesInsertRequest(
+    RequestSender* sender,
+    const DriveApiUrlGenerator& url_generator,
+    const FileResourceCallback& callback)
+    : GetDataRequest(sender,
+                     base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+      url_generator_(url_generator) {
+  DCHECK(!callback.is_null());
+}
+
+FilesInsertRequest::~FilesInsertRequest() {}
+
+net::URLFetcher::RequestType FilesInsertRequest::GetRequestType() const {
+  return net::URLFetcher::POST;
+}
+
+GURL FilesInsertRequest::GetURL() const {
+  return url_generator_.GetFilesInsertUrl();
+}
+
+bool FilesInsertRequest::GetContentData(std::string* upload_content_type,
+                                        std::string* upload_content) {
+  *upload_content_type = kContentTypeApplicationJson;
+
+  base::DictionaryValue root;
+
+  if (!mime_type_.empty())
+    root.SetString("mimeType", mime_type_);
+
+  if (!parents_.empty()) {
+    base::ListValue* parents_value = new base::ListValue;
+    for (size_t i = 0; i < parents_.size(); ++i) {
+      base::DictionaryValue* parent = new base::DictionaryValue;
+      parent->SetString("id", parents_[i]);
+      parents_value->Append(parent);
+    }
+    root.Set("parents", parents_value);
+  }
+
+  if (!title_.empty())
+    root.SetString("title", title_);
+
+  base::JSONWriter::Write(&root, upload_content);
+  DVLOG(1) << "FilesInsert data: " << *upload_content_type << ", ["
+           << *upload_content << "]";
+  return true;
+}
+
 //============================== FilesPatchRequest ============================
 
 FilesPatchRequest::FilesPatchRequest(
@@ -352,56 +402,6 @@ ContinueGetFileListRequest::~ContinueGetFileListRequest() {}
 
 GURL ContinueGetFileListRequest::GetURL() const {
   return url_;
-}
-
-//========================== CreateDirectoryRequest ==========================
-
-CreateDirectoryRequest::CreateDirectoryRequest(
-    RequestSender* sender,
-    const DriveApiUrlGenerator& url_generator,
-    const std::string& parent_resource_id,
-    const std::string& directory_title,
-    const FileResourceCallback& callback)
-    : GetDataRequest(sender,
-                     base::Bind(&ParseJsonAndRun<FileResource>, callback)),
-      url_generator_(url_generator),
-      parent_resource_id_(parent_resource_id),
-      directory_title_(directory_title) {
-  DCHECK(!callback.is_null());
-  DCHECK(!parent_resource_id_.empty());
-  DCHECK(!directory_title_.empty());
-}
-
-CreateDirectoryRequest::~CreateDirectoryRequest() {}
-
-GURL CreateDirectoryRequest::GetURL() const {
-  return url_generator_.GetFilesUrl();
-}
-
-net::URLFetcher::RequestType CreateDirectoryRequest::GetRequestType() const {
-  return net::URLFetcher::POST;
-}
-
-bool CreateDirectoryRequest::GetContentData(std::string* upload_content_type,
-                                            std::string* upload_content) {
-  *upload_content_type = kContentTypeApplicationJson;
-
-  base::DictionaryValue root;
-  root.SetString("title", directory_title_);
-  {
-    base::DictionaryValue* parent_value = new base::DictionaryValue;
-    parent_value->SetString("id", parent_resource_id_);
-    base::ListValue* parent_list_value = new base::ListValue;
-    parent_list_value->Append(parent_value);
-    root.Set("parents", parent_list_value);
-  }
-  root.SetString("mimeType", kDirectoryMimeType);
-
-  base::JSONWriter::Write(&root, upload_content);
-
-  DVLOG(1) << "CreateDirectory data: " << *upload_content_type << ", ["
-           << *upload_content << "]";
-  return true;
 }
 
 //=========================== TouchResourceRequest ===========================

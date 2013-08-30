@@ -65,12 +65,12 @@ GURL DriveApiUrlGenerator::GetAppsListUrl() const {
   return base_url_.Resolve(kDriveV2AppsUrl);
 }
 
-GURL DriveApiUrlGenerator::GetFilesUrl() const {
-  return base_url_.Resolve(kDriveV2FilesUrl);
-}
-
 GURL DriveApiUrlGenerator::GetFilesGetUrl(const std::string& file_id) const {
   return base_url_.Resolve(kDriveV2FileUrlPrefix + net::EscapePath(file_id));
+}
+
+GURL DriveApiUrlGenerator::GetFilesInsertUrl() const {
+  return base_url_.Resolve(kDriveV2FilesUrl);
 }
 
 GURL DriveApiUrlGenerator::GetFilesPatchUrl(const std::string& file_id,
