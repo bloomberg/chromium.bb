@@ -119,7 +119,8 @@ bool ChromeBreakpadClient::ShouldShowRestartDialog(base::string16* title,
                                                    bool* is_rtl_locale) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   if (!env->HasVar(env_vars::kShowRestart) ||
-      !env->HasVar(env_vars::kRestartInfo)) {
+      !env->HasVar(env_vars::kRestartInfo) ||
+      env->HasVar(env_vars::kMetroConnected)) {
     return false;
   }
 

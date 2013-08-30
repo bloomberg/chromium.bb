@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/env_vars.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/page_navigator.h"
@@ -67,6 +68,11 @@ void  ChromeMetroViewerProcessHost::OnChannelError() {
   // TODO(cpu): At some point we only close the browser. Right now this
   // is very convenient for developing.
   DLOG(INFO) << "viewer channel error : Quitting browser";
+
+  // Unset environment variable to let breakpad know that metro process wasn't
+  // connected.
+  ::SetEnvironmentVariableA(env_vars::kMetroConnected, NULL);
+
   aura::RemoteRootWindowHostWin::Instance()->Disconnected();
   g_browser_process->ReleaseModule();
   CloseOpenAshBrowsers();
@@ -80,6 +86,13 @@ void  ChromeMetroViewerProcessHost::OnChannelError() {
   // This will delete the MetroViewerProcessHost object. Don't access member
   // variables/functions after this call.
   g_browser_process->platform_part()->OnMetroViewerProcessTerminated();
+}
+
+void  ChromeMetroViewerProcessHost::OnChannelConnected(int32 /*peer_pid*/) {
+  DLOG(INFO) << "ChromeMetroViewerProcessHost::OnChannelConnected: ";
+  // Set environment variable to let breakpad know that metro process was
+  // connected.
+  ::SetEnvironmentVariableA(env_vars::kMetroConnected, "1");
 }
 
 void ChromeMetroViewerProcessHost::OnSetTargetSurface(
