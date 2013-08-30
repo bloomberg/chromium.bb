@@ -44,8 +44,9 @@ Algorithm* HmacKeyParams::hash()
 
 unsigned HmacKeyParams::length(bool& isNull)
 {
-    isNull = !m_algorithm.hmacKeyParams()->hasLength();
-    return isNull ? 0 : m_algorithm.hmacKeyParams()->length();
+    unsigned length;
+    isNull = !m_algorithm.hmacKeyParams()->getLength(length);
+    return length;
 }
 
 HmacKeyParams::HmacKeyParams(const WebKit::WebCryptoAlgorithm& algorithm)

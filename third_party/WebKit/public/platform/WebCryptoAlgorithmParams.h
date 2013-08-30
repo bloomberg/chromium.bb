@@ -115,16 +115,18 @@ public:
 
     bool hasLength() const { return m_hasLength; }
 
-    unsigned length() const
+    bool getLength(unsigned& length) const
     {
-        WEBKIT_ASSERT(m_length);
-        return m_length;
+        if (!m_hasLength)
+            return false;
+        length = m_length;
+        return true;
     }
 
 private:
     WebCryptoAlgorithm m_hash;
     bool m_hasLength;
-    int m_length;
+    unsigned m_length;
 };
 
 class WebCryptoRsaSsaParams : public WebCryptoAlgorithmParams {
