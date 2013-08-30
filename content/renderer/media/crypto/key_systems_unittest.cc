@@ -11,28 +11,22 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
-// Death tests are not always available. When they are, they use NDEBUG for
-// the DCHECK variant, which is not sufficient when defined(DCHECK_ALWAYS_ON).
-// EXPECT_DCHECK_DEATH handles all these cases. The test will execute correctly
-// except in the case that death tests are not available but DCHECKs are on.
+// Death tests are not always available, including on Android.
+// EXPECT_DEBUG_DEATH_PORTABLE executes tests correctly except in the case that
+// death tests are not available and NDEBUG is not defined.
 #if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
-#if defined(DCHECK_ALWAYS_ON)
-#define EXPECT_DCHECK_DEATH(statement, regex) \
-  EXPECT_DEATH(statement, regex)
-#else
-#define EXPECT_DCHECK_DEATH(statement, regex) \
+#define EXPECT_DEBUG_DEATH_PORTABLE(statement, regex) \
   EXPECT_DEBUG_DEATH(statement, regex)
-#endif  // defined(DCHECK_ALWAYS_ON)
-#else  // defined(GTEST_HAS_DEATH_TEST)
-#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
-#define EXPECT_DCHECK_DEATH(statement, regex) \
+#else
+#if defined(NDEBUG)
+#define EXPECT_DEBUG_DEATH_PORTABLE(statement, regex) \
   do { statement; } while (false)
 #else
 #include "base/logging.h"
-#define EXPECT_DCHECK_DEATH(statement, regex) \
+#define EXPECT_DEBUG_DEATH_PORTABLE(statement, regex) \
   LOG(WARNING) << "Death tests are not supported on this platform.\n" \
                << "Statement '" #statement "' cannot be verified.";
-#endif  // defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
+#endif  // defined(NDEBUG)
 #endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && \
@@ -208,7 +202,10 @@ TEST_F(KeySystemsTest, ClearKey_Basic) {
 
   EXPECT_TRUE(CanUseAesDecryptor(kClearKey));
 #if defined(ENABLE_PEPPER_CDMS)
-  EXPECT_TRUE(GetPepperType(kClearKey).empty());  // Does not use Pepper.
+  std::string type;
+  EXPECT_DEBUG_DEATH(type = GetPepperType(kClearKey),
+                     "webkit-org.w3.clearkey is not Pepper-based");
+  EXPECT_TRUE(type.empty());
 #endif
 }
 
@@ -224,11 +221,14 @@ TEST_F(KeySystemsTest, ClearKey_Parent) {
   // The parent is not supported for most things.
   EXPECT_STREQ("Unknown",
       KeySystemNameForUMA(WebString::fromUTF8(kClearKeyParent)).c_str());
-  EXPECT_FALSE(CanUseAesDecryptor(kClearKeyParent));
+  bool result = false;
+  EXPECT_DEBUG_DEATH_PORTABLE(result = CanUseAesDecryptor(kClearKeyParent),
+                              "webkit-org.w3 is not a known concrete system");
+  EXPECT_FALSE(result);
 #if defined(ENABLE_PEPPER_CDMS)
   std::string type;
-  EXPECT_DCHECK_DEATH(type = GetPepperType(kClearKeyParent),
-                      "webkit-org.w3 is not a concrete system");
+  EXPECT_DEBUG_DEATH(type = GetPepperType(kClearKeyParent),
+                     "webkit-org.w3 is not a known concrete system");
   EXPECT_TRUE(type.empty());
 #endif
 }
@@ -393,10 +393,16 @@ TEST_F(KeySystemsTest, ExternalClearKey_Basic) {
       "Unknown",
       KeySystemNameForUMA(WebString::fromUTF8(kExternalClearKey)).c_str());
 
-  EXPECT_FALSE(CanUseAesDecryptor(kExternalClearKey));
 #if defined(ENABLE_PEPPER_CDMS)
+  EXPECT_FALSE(CanUseAesDecryptor(kExternalClearKey));
   EXPECT_STREQ("application/x-ppapi-clearkey-cdm",
                GetPepperType(kExternalClearKey).c_str());
+#else
+  bool result = false;
+  EXPECT_DEBUG_DEATH_PORTABLE(
+      result = CanUseAesDecryptor(kExternalClearKey),
+      "org.chromium.externalclearkey is not a known concrete system");
+  EXPECT_FALSE(result);
 #endif
 }
 
@@ -413,11 +419,15 @@ TEST_F(KeySystemsTest, ExternalClearKey_Parent) {
   EXPECT_STREQ("Unknown",
                KeySystemNameForUMA(
                    WebString::fromUTF8(kExternalClearKeyParent)).c_str());
-  EXPECT_FALSE(CanUseAesDecryptor(kExternalClearKeyParent));
+  bool result = false;
+  EXPECT_DEBUG_DEATH_PORTABLE(
+      result = CanUseAesDecryptor(kExternalClearKeyParent),
+      "org.chromium is not a known concrete system");
+  EXPECT_FALSE(result);
 #if defined(ENABLE_PEPPER_CDMS)
   std::string type;
-  EXPECT_DCHECK_DEATH(type = GetPepperType(kExternalClearKeyParent),
-                      "org.chromium is not a concrete system");
+  EXPECT_DEBUG_DEATH(type = GetPepperType(kExternalClearKeyParent),
+                     "org.chromium is not a known concrete system");
   EXPECT_TRUE(type.empty());
 #endif
 }
@@ -594,15 +604,24 @@ TEST_F(KeySystemsTest, Widevine_Basic) {
       kWidevineUmaName,
       KeySystemNameForUMA(WebString::fromUTF8(kWidevineAlpha)).c_str());
 
+#if defined(WIDEVINE_CDM_AVAILABLE)
   EXPECT_FALSE(CanUseAesDecryptor(kWidevineAlpha));
+#else
+  bool result = false;
+  EXPECT_DEBUG_DEATH_PORTABLE(
+      result = CanUseAesDecryptor(kWidevineAlpha),
+      "com.widevine.alpha is not a known concrete system");
+  EXPECT_FALSE(result);
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+
 #if defined(ENABLE_PEPPER_CDMS)
 #if defined(WIDEVINE_CDM_AVAILABLE)
   EXPECT_STREQ("application/x-ppapi-widevine-cdm",
                GetPepperType(kWidevineAlpha).c_str());
 #else
   std::string type;
-  EXPECT_DCHECK_DEATH(type = GetPepperType(kWidevineAlpha),
-                      "com.widevine.alpha is not a concrete system");
+  EXPECT_DEBUG_DEATH(type = GetPepperType(kWidevineAlpha),
+                     "com.widevine.alpha is not a known concrete system");
   EXPECT_TRUE(type.empty());
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 #endif  // defined(ENABLE_PEPPER_CDMS)
@@ -618,11 +637,14 @@ TEST_F(KeySystemsTest, Widevine_Parent) {
   // The parent is not supported for most things.
   EXPECT_STREQ("Unknown",
       KeySystemNameForUMA(WebString::fromUTF8(kWidevine)).c_str());
-  EXPECT_FALSE(CanUseAesDecryptor(kWidevine));
+  bool result = false;
+  EXPECT_DEBUG_DEATH_PORTABLE(result = CanUseAesDecryptor(kWidevine),
+                              "com.widevine is not a known concrete system");
+  EXPECT_FALSE(result);
 #if defined(ENABLE_PEPPER_CDMS)
   std::string type;
-  EXPECT_DCHECK_DEATH(type = GetPepperType(kWidevine),
-                      "com.widevine is not a concrete system");
+  EXPECT_DEBUG_DEATH(type = GetPepperType(kWidevine),
+                     "com.widevine is not a known concrete system");
   EXPECT_TRUE(type.empty());
 #endif
 }
@@ -802,21 +824,22 @@ TEST_F(KeySystemsTest, GetUUID_Widevine) {
   EXPECT_EQ(0xED, uuid[15]);
 #else
   std::vector<uint8> uuid;
-  EXPECT_DCHECK_DEATH(uuid = GetUUID(kWidevineAlpha),
-                      "com.widevine.alpha is not a concrete system");
+  EXPECT_DEBUG_DEATH_PORTABLE(
+      uuid = GetUUID(kWidevineAlpha),
+      "com.widevine.alpha is not a known concrete system");
   EXPECT_TRUE(uuid.empty());
 #endif
 }
 
 TEST_F(KeySystemsTest, GetUUID_Unrecognized) {
   std::vector<uint8> uuid;
-  EXPECT_DCHECK_DEATH(uuid = GetUUID(kWidevine),
-                      "com.widevine is not a concrete system");
+  EXPECT_DEBUG_DEATH_PORTABLE(uuid = GetUUID(kWidevine),
+                              "com.widevine is not a known concrete system");
   EXPECT_TRUE(uuid.empty());
 
   EXPECT_TRUE(GetUUID(kClearKey).empty());
 
-  EXPECT_DCHECK_DEATH(uuid = GetUUID(""), " is not a concrete system");
+  EXPECT_DEBUG_DEATH_PORTABLE(uuid = GetUUID(""), " is not a concrete system");
   EXPECT_TRUE(uuid.empty());
 }
 #endif  // defined(OS_ANDROID)

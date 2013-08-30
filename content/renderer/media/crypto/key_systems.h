@@ -32,6 +32,32 @@ class WebString;
 
 namespace content {
 
+// Adds a concrete key system along with platform-specific information about how
+// to instantiate it. Must be called before AddSupportedType().
+// May only be called once per |concrete_key_system|.
+// When not empty, |parent_key_system| will add a mapping to the
+// |concrete_key_system| that can be used to check supported types.
+// Only one parent key system is currently supported per concrete key system.
+CONTENT_EXPORT void AddConcreteSupportedKeySystem(
+    const std::string& concrete_key_system,
+    bool use_aes_decryptor,
+#if defined(ENABLE_PEPPER_CDMS)
+    const std::string& pepper_type,
+#elif defined(OS_ANDROID)
+    const uint8 uuid[16],
+#endif
+    const std::string& parent_key_system);
+
+// Specifies the container and codec combinations supported by
+// |concrete_key_system|.
+// Multiple codecs can be listed. In all cases, the container
+// without a codec is also supported.
+// |concrete_key_system| must be a concrete supported key system previously
+// added using AddConcreteSupportedKeySystem().
+CONTENT_EXPORT void AddSupportedType(const std::string& concrete_key_system,
+                                     const std::string& mime_type,
+                                     const std::string& codecs_list);
+
 // Returns whether |key_system| is a real supported key system that can be
 // instantiated.
 // Abstract parent |key_system| strings will return false.
@@ -51,17 +77,15 @@ CONTENT_EXPORT bool IsSupportedKeySystemWithMediaMimeType(
 CONTENT_EXPORT std::string KeySystemNameForUMA(
     const WebKit::WebString& key_system);
 
-// Returns whether AesDecryptor can be used for the given |key_system|.
-CONTENT_EXPORT bool CanUseAesDecryptor(const std::string& key_system);
+// Returns whether AesDecryptor can be used for the given |concrete_key_system|.
+CONTENT_EXPORT bool CanUseAesDecryptor(const std::string& concrete_key_system);
 
 #if defined(ENABLE_PEPPER_CDMS)
 // Returns the Pepper MIME type for |concrete_key_system|.
 // Returns empty string if |concrete_key_system| is unknown or not Pepper-based.
 CONTENT_EXPORT std::string GetPepperType(
     const std::string& concrete_key_system);
-#endif
-
-#if defined(OS_ANDROID)
+#elif defined(OS_ANDROID)
 // Convert |concrete_key_system| to 16-byte Android UUID.
 CONTENT_EXPORT std::vector<uint8> GetUUID(
     const std::string& concrete_key_system);
