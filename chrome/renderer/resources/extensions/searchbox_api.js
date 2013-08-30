@@ -13,6 +13,7 @@ if (!chrome.embeddedSearch) {
       // =======================================================================
       //                            Private functions
       // =======================================================================
+      native function Focus();
       native function GetDisplayInstantResults();
       native function GetFont();
       native function GetFontSize();
@@ -40,6 +41,10 @@ if (!chrome.embeddedSearch) {
       this.__defineGetter__('startMargin', GetStartMargin);
       this.__defineGetter__('suggestion', GetSuggestionToPrefetch);
       this.__defineGetter__('value', GetQuery);
+
+      this.focus = function() {
+        Focus();
+      };
 
       // This method is restricted to chrome-search://most-visited pages by
       // checking the invoking context's origin in searchbox_extension.cc.

@@ -223,6 +223,12 @@ const ThemeBackgroundInfo& SearchBox::GetThemeBackgroundInfo() {
   return theme_info_;
 }
 
+void SearchBox::Focus() {
+  render_view()->Send(new ChromeViewHostMsg_FocusOmnibox(
+      render_view()->GetRoutingID(), render_view()->GetPageId(),
+      OMNIBOX_FOCUS_VISIBLE));
+}
+
 void SearchBox::NavigateToURL(const GURL& url,
                               content::PageTransition transition,
                               WindowOpenDisposition disposition,

@@ -321,6 +321,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static void DeleteMostVisitedItem(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // Focuses the omnibox.
+  static void Focus(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // Gets whether or not the app launcher is enabled.
   static void GetAppLauncherEnabled(
       const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -485,6 +488,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     v8::Handle<v8::String> name) {
   if (name->Equals(v8::String::New("DeleteMostVisitedItem")))
     return v8::FunctionTemplate::New(DeleteMostVisitedItem);
+  if (name->Equals(v8::String::New("Focus")))
+    return v8::FunctionTemplate::New(Focus);
   if (name->Equals(v8::String::New("GetAppLauncherEnabled")))
     return v8::FunctionTemplate::New(GetAppLauncherEnabled);
   if (name->Equals(v8::String::New("GetFont")))
@@ -551,6 +556,16 @@ void SearchBoxExtensionWrapper::DeleteMostVisitedItem(
 
   DVLOG(1) << render_view << " DeleteMostVisitedItem";
   SearchBox::Get(render_view)->DeleteMostVisitedItem(args[0]->IntegerValue());
+}
+
+// static
+void SearchBoxExtensionWrapper::Focus(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return;
+
+  DVLOG(1) << render_view << " Focus";
+  SearchBox::Get(render_view)->Focus();
 }
 
 // static
