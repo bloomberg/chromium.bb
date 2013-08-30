@@ -200,27 +200,27 @@ void Notification::finalize()
 void Notification::dispatchShowEvent()
 {
 #if ENABLE(LEGACY_NOTIFICATIONS)
-    dispatchEvent(Event::create(eventNames().displayEvent, false, false));
+    dispatchEvent(Event::create(eventNames().displayEvent));
 #endif
-    dispatchEvent(Event::create(eventNames().showEvent, false, false));
+    dispatchEvent(Event::create(eventNames().showEvent));
 }
 
 void Notification::dispatchClickEvent()
 {
     UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
     WindowFocusAllowedIndicator windowFocusAllowed;
-    dispatchEvent(Event::create(eventNames().clickEvent, false, false));
+    dispatchEvent(Event::create(eventNames().clickEvent));
 }
 
 void Notification::dispatchCloseEvent()
 {
-    dispatchEvent(Event::create(eventNames().closeEvent, false, false));
+    dispatchEvent(Event::create(eventNames().closeEvent));
     finalize();
 }
 
 void Notification::dispatchErrorEvent()
 {
-    dispatchEvent(Event::create(eventNames().errorEvent, false, false));
+    dispatchEvent(Event::create(eventNames().errorEvent));
 }
 
 #if ENABLE(NOTIFICATIONS)

@@ -359,7 +359,7 @@ void SourceBuffer::scheduleEvent(const AtomicString& eventName)
 {
     ASSERT(m_asyncEventQueue);
 
-    RefPtr<Event> event = Event::create(eventName, false, false);
+    RefPtr<Event> event = Event::create(eventName);
     event->setTarget(this);
 
     m_asyncEventQueue->enqueueEvent(event.release());

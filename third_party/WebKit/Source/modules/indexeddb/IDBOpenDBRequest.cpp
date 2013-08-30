@@ -132,7 +132,7 @@ void IDBOpenDBRequest::onSuccess(PassRefPtr<IDBDatabaseBackendInterface> prpBack
         m_result = IDBAny::create(idbDatabase.get());
     }
     idbDatabase->setMetadata(metadata);
-    enqueueEvent(Event::create(eventNames().successEvent, false, false));
+    enqueueEvent(Event::create(eventNames().successEvent));
 }
 
 bool IDBOpenDBRequest::shouldEnqueueEvent() const

@@ -137,7 +137,7 @@ static inline void dispatchEventsOnWindowAndFocusedNode(Document* document, bool
 
     if (!focused && document->focusedElement())
         document->focusedElement()->dispatchBlurEvent(0);
-    document->dispatchWindowEvent(Event::create(focused ? eventNames().focusEvent : eventNames().blurEvent, false, false));
+    document->dispatchWindowEvent(Event::create(focused ? eventNames().focusEvent : eventNames().blurEvent));
     if (focused && document->focusedElement())
         document->focusedElement()->dispatchFocusEvent(0, FocusDirectionPage);
 }
@@ -222,12 +222,12 @@ void FocusController::setFocusedFrame(PassRefPtr<Frame> frame)
     // Now that the frame is updated, fire events and update the selection focused states of both frames.
     if (oldFrame && oldFrame->view()) {
         oldFrame->selection()->setFocused(false);
-        oldFrame->document()->dispatchWindowEvent(Event::create(eventNames().blurEvent, false, false));
+        oldFrame->document()->dispatchWindowEvent(Event::create(eventNames().blurEvent));
     }
 
     if (newFrame && newFrame->view() && isFocused()) {
         newFrame->selection()->setFocused(true);
-        newFrame->document()->dispatchWindowEvent(Event::create(eventNames().focusEvent, false, false));
+        newFrame->document()->dispatchWindowEvent(Event::create(eventNames().focusEvent));
     }
 
     m_isChangingFocusedFrame = false;

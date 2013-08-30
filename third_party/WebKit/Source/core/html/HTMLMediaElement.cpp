@@ -1119,18 +1119,18 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
         // correctly identifies the type of the event, if the startTime is
         // less than the endTime in the cue.
         if (eventTasks[i].second->startTime() >= eventTasks[i].second->endTime()) {
-            event = Event::create(eventNames().enterEvent, false, false);
+            event = Event::create(eventNames().enterEvent);
             event->setTarget(eventTasks[i].second);
             m_asyncEventQueue->enqueueEvent(event.release());
 
-            event = Event::create(eventNames().exitEvent, false, false);
+            event = Event::create(eventNames().exitEvent);
             event->setTarget(eventTasks[i].second);
             m_asyncEventQueue->enqueueEvent(event.release());
         } else {
             if (eventTasks[i].first == eventTasks[i].second->startTime())
-                event = Event::create(eventNames().enterEvent, false, false);
+                event = Event::create(eventNames().enterEvent);
             else
-                event = Event::create(eventNames().exitEvent, false, false);
+                event = Event::create(eventNames().exitEvent);
 
             event->setTarget(eventTasks[i].second);
             m_asyncEventQueue->enqueueEvent(event.release());
@@ -1144,7 +1144,7 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
     // 15 - For each text track in affected tracks, in the list order, queue a
     // task to fire a simple event named cuechange at the TextTrack object, and, ...
     for (size_t i = 0; i < affectedTracks.size(); ++i) {
-        RefPtr<Event> event = Event::create(eventNames().cuechangeEvent, false, false);
+        RefPtr<Event> event = Event::create(eventNames().cuechangeEvent);
         event->setTarget(affectedTracks[i]);
 
         m_asyncEventQueue->enqueueEvent(event.release());
@@ -1152,7 +1152,7 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
         // ... if the text track has a corresponding track element, to then fire a
         // simple event named cuechange at the track element as well.
         if (affectedTracks[i]->trackType() == TextTrack::TrackElement) {
-            RefPtr<Event> event = Event::create(eventNames().cuechangeEvent, false, false);
+            RefPtr<Event> event = Event::create(eventNames().cuechangeEvent);
             HTMLTrackElement* trackElement = static_cast<LoadableTextTrack*>(affectedTracks[i])->trackElement();
             ASSERT(trackElement);
             event->setTarget(trackElement);

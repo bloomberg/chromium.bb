@@ -79,32 +79,32 @@ void SpeechRecognition::abort()
 
 void SpeechRecognition::didStartAudio()
 {
-    dispatchEvent(Event::create(eventNames().audiostartEvent, /*canBubble=*/false, /*cancelable=*/false));
+    dispatchEvent(Event::create(eventNames().audiostartEvent));
 }
 
 void SpeechRecognition::didStartSound()
 {
-    dispatchEvent(Event::create(eventNames().soundstartEvent, /*canBubble=*/false, /*cancelable=*/false));
+    dispatchEvent(Event::create(eventNames().soundstartEvent));
 }
 
 void SpeechRecognition::didStartSpeech()
 {
-    dispatchEvent(Event::create(eventNames().speechstartEvent, /*canBubble=*/false, /*cancelable=*/false));
+    dispatchEvent(Event::create(eventNames().speechstartEvent));
 }
 
 void SpeechRecognition::didEndSpeech()
 {
-    dispatchEvent(Event::create(eventNames().speechendEvent, /*canBubble=*/false, /*cancelable=*/false));
+    dispatchEvent(Event::create(eventNames().speechendEvent));
 }
 
 void SpeechRecognition::didEndSound()
 {
-    dispatchEvent(Event::create(eventNames().soundendEvent, /*canBubble=*/false, /*cancelable=*/false));
+    dispatchEvent(Event::create(eventNames().soundendEvent));
 }
 
 void SpeechRecognition::didEndAudio()
 {
-    dispatchEvent(Event::create(eventNames().audioendEvent, /*canBubble=*/false, /*cancelable=*/false));
+    dispatchEvent(Event::create(eventNames().audioendEvent));
 }
 
 void SpeechRecognition::didReceiveResults(const Vector<RefPtr<SpeechRecognitionResult> >& newFinalResults, const Vector<RefPtr<SpeechRecognitionResult> >& currentInterimResults)
@@ -134,7 +134,7 @@ void SpeechRecognition::didReceiveError(PassRefPtr<SpeechRecognitionError> error
 
 void SpeechRecognition::didStart()
 {
-    dispatchEvent(Event::create(eventNames().startEvent, /*canBubble=*/false, /*cancelable=*/false));
+    dispatchEvent(Event::create(eventNames().startEvent));
 }
 
 void SpeechRecognition::didEnd()
@@ -142,7 +142,7 @@ void SpeechRecognition::didEnd()
     m_started = false;
     m_stopping = false;
     if (!m_stoppedByActiveDOMObject)
-        dispatchEvent(Event::create(eventNames().endEvent, /*canBubble=*/false, /*cancelable=*/false));
+        dispatchEvent(Event::create(eventNames().endEvent));
     unsetPendingActivity(this);
 }
 

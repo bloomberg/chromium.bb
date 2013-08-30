@@ -307,7 +307,7 @@ void IDBDatabase::forceClose()
     for (TransactionMap::const_iterator::Values it = m_transactions.begin().values(), end = m_transactions.end().values(); it != end; ++it)
         (*it)->abort(IGNORE_EXCEPTION);
     this->close();
-    enqueueEvent(Event::create(eventNames().closeEvent, false, false));
+    enqueueEvent(Event::create(eventNames().closeEvent));
 }
 
 void IDBDatabase::close()

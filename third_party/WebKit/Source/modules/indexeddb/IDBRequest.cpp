@@ -244,12 +244,12 @@ void IDBRequest::onError(PassRefPtr<DOMError> error)
 
     m_error = error;
     m_pendingCursor.clear();
-    enqueueEvent(Event::create(eventNames().errorEvent, true, true));
+    enqueueEvent(Event::createCancelableBubble(eventNames().errorEvent));
 }
 
 static PassRefPtr<Event> createSuccessEvent()
 {
-    return Event::create(eventNames().successEvent, false, false);
+    return Event::create(eventNames().successEvent);
 }
 
 void IDBRequest::onSuccess(const Vector<String>& stringList)

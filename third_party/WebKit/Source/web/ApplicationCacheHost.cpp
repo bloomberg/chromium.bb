@@ -220,7 +220,7 @@ void ApplicationCacheHost::dispatchDOMEvent(EventID id, int total, int done)
         if (id == PROGRESS_EVENT)
             event = ProgressEvent::create(eventType, true, done, total);
         else
-            event = Event::create(eventType, false, false);
+            event = Event::create(eventType);
         m_domApplicationCache->dispatchEvent(event, ASSERT_NO_EXCEPTION);
     }
 }

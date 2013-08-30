@@ -275,7 +275,7 @@ bool HTMLFormElement::prepareForSubmission(Event* event)
     RefPtr<FormState> formState = FormState::create(this, controlNamesAndValues, document(), NotSubmittedByJavaScript);
     frame->loader()->client()->dispatchWillSendSubmitEvent(formState.release());
 
-    if (dispatchEvent(Event::create(eventNames().submitEvent, true, true)))
+    if (dispatchEvent(Event::createCancelableBubble(eventNames().submitEvent)))
         m_shouldSubmit = true;
 
     m_isSubmittingOrPreparingForSubmission = false;
@@ -391,7 +391,7 @@ void HTMLFormElement::reset()
 
     m_isInResetFunction = true;
 
-    if (!dispatchEvent(Event::create(eventNames().resetEvent, true, true))) {
+    if (!dispatchEvent(Event::createCancelableBubble(eventNames().resetEvent))) {
         m_isInResetFunction = false;
         return;
     }
@@ -425,7 +425,7 @@ void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)
 {
     RefPtr<Event> event;
     if (result == AutocompleteResultSuccess)
-        event = Event::create(eventNames().autocompleteEvent, false, false);
+        event = Event::create(eventNames().autocompleteEvent);
     else if (result == AutocompleteResultErrorDisabled)
         event = AutocompleteErrorEvent::create("disabled");
     else if (result == AutocompleteResultErrorCancel)

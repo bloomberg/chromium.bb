@@ -190,7 +190,7 @@ void AudioScheduledSourceNode::notifyEndedDispatch(void* userData)
 
 void AudioScheduledSourceNode::notifyEnded()
 {
-    RefPtr<Event> event = Event::create(eventNames().endedEvent, FALSE, FALSE);
+    RefPtr<Event> event = Event::create(eventNames().endedEvent);
     event->setTarget(this);
     dispatchEvent(event.get());
 }

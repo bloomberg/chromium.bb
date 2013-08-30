@@ -78,7 +78,7 @@ static void networkStateChanged()
 
     AtomicString eventName = networkStateNotifier().onLine() ? eventNames().onlineEvent : eventNames().offlineEvent;
     for (unsigned i = 0; i < frames.size(); i++)
-        frames[i]->document()->dispatchWindowEvent(Event::create(eventName, false, false));
+        frames[i]->document()->dispatchWindowEvent(Event::create(eventName));
 }
 
 float deviceScaleFactor(Frame* frame)

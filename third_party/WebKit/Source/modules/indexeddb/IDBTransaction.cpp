@@ -319,7 +319,7 @@ void IDBTransaction::onComplete()
     closeOpenCursors();
 
     // Enqueue events before notifying database, as database may close which enqueues more events and order matters.
-    enqueueEvent(Event::create(eventNames().completeEvent, false, false));
+    enqueueEvent(Event::create(eventNames().completeEvent));
     m_database->transactionFinished(this);
 }
 
