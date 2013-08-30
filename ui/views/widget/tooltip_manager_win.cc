@@ -19,7 +19,7 @@
 #include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/scoped_set_map_mode.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/monitor_win.h"
@@ -52,11 +52,11 @@ static gfx::Font DetermineDefaultFont() {
 }
 
 // static
-gfx::Font TooltipManager::GetDefaultFont() {
-  static gfx::Font* font = NULL;
-  if (!font)
-    font = new gfx::Font(DetermineDefaultFont());
-  return *font;
+const gfx::FontList& TooltipManager::GetDefaultFontList() {
+  static gfx::FontList* font_list = NULL;
+  if (!font_list)
+    font_list = new gfx::FontList(DetermineDefaultFont());
+  return *font_list;
 }
 
 // static

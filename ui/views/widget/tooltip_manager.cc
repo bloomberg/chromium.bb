@@ -9,17 +9,13 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/text/text_elider.h"
-#include "ui/gfx/font.h"
-
-namespace {
+#include "ui/gfx/text_utils.h"
 
 // Maximum number of characters we allow in a tooltip.
 const size_t kMaxTooltipLength = 1024;
 
 // Maximum number of lines we allow in the tooltip.
 const size_t kMaxLines = 6;
-
-}  // namespace
 
 namespace views {
 
@@ -49,13 +45,14 @@ void TooltipManager::TrimTooltipToFit(string16* text,
   *line_count = static_cast<int>(lines.size());
 
   // Format each line to fit.
-  gfx::Font font = GetDefaultFont();
+  const gfx::FontList& font_list = GetDefaultFontList();
   string16 result;
   for (std::vector<string16>::iterator i = lines.begin(); i != lines.end();
        ++i) {
     string16 elided_text =
-        ui::ElideText(*i, font, available_width, ui::ELIDE_AT_END);
-    *max_width = std::max(*max_width, font.GetStringWidth(elided_text));
+        ui::ElideText(*i, font_list, available_width, ui::ELIDE_AT_END);
+    *max_width = std::max(*max_width,
+                          gfx::GetStringWidth(elided_text, font_list));
     if (!result.empty())
       result.push_back('\n');
     result.append(elided_text);

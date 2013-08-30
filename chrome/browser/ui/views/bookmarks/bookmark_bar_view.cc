@@ -609,14 +609,14 @@ string16 BookmarkBarView::CreateToolTipForURLAndTitle(
   int max_width = views::TooltipManager::GetMaxWidth(screen_loc.x(),
                                                      screen_loc.y(),
                                                      context);
-  gfx::Font tt_font = views::TooltipManager::GetDefaultFont();
+  const gfx::FontList& tt_fonts = views::TooltipManager::GetDefaultFontList();
   string16 result;
 
   // First the title.
   if (!title.empty()) {
     string16 localized_title = title;
     base::i18n::AdjustStringForLocaleDirection(&localized_title);
-    result.append(ui::ElideText(localized_title, tt_font, max_width,
+    result.append(ui::ElideText(localized_title, tt_fonts, max_width,
                                 ui::ELIDE_AT_END));
   }
 
@@ -633,7 +633,7 @@ string16 BookmarkBarView::CreateToolTipForURLAndTitle(
     // default.
     std::string languages = profile->GetPrefs()->GetString(
         prefs::kAcceptLanguages);
-    string16 elided_url(ui::ElideUrl(url, tt_font, max_width, languages));
+    string16 elided_url(ui::ElideUrl(url, tt_fonts, max_width, languages));
     elided_url = base::i18n::GetDisplayStringInLTRDirectionality(elided_url);
     result.append(elided_url);
   }

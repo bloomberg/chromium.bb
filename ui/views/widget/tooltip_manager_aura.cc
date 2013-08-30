@@ -8,7 +8,6 @@
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -23,8 +22,8 @@ int TooltipManager::GetTooltipHeight() {
 }
 
 // static
-gfx::Font TooltipManager::GetDefaultFont() {
-  return ui::ResourceBundle::GetSharedInstance().GetFont(
+const gfx::FontList& TooltipManager::GetDefaultFontList() {
+  return ui::ResourceBundle::GetSharedInstance().GetFontList(
       ui::ResourceBundle::BaseFont);
 }
 

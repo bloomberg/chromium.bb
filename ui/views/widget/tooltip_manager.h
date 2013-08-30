@@ -13,7 +13,7 @@
 #include "ui/views/views_export.h"
 
 namespace gfx {
-class Font;
+class FontList;
 }  // namespace gfx
 
 namespace views {
@@ -30,7 +30,7 @@ class VIEWS_EXPORT TooltipManager {
   static int GetTooltipHeight();
 
   // Returns the default font used by tooltips.
-  static gfx::Font GetDefaultFont();
+  static const gfx::FontList& GetDefaultFontList();
 
   // Returns the maximum width of the tooltip. |x| and |y| give the location
   // the tooltip is to be displayed on in screen coordinates. |context| is
