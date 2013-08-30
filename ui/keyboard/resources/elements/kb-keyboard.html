@@ -50,6 +50,20 @@
     var DBL_INTERVAL_MSEC = 300;
 
     /**
+     * The index of the name of the keyset when searching for all keysets.
+     * @const
+     * @type {number}
+     */
+    var REGEX_KEYSET_INDEX = 1;
+
+    /**
+     * The integer number of matches when searching for keysets.
+     * @const
+     * @type {number}
+     */
+    var REGEX_MATCH_COUNT = 2;
+
+    /**
      * The boolean to decide if keyboard should transit to upper case keyset
      * when spacebar is pressed. If a closing punctuation is followed by a
      * spacebar, keyboard should automatically transit to upper case.
@@ -186,9 +200,10 @@
         var keysetId = '#' + this.layout + '-' + this.keyset;
         var keyset = this.querySelector(keysetId);
 
-        // Unlocks the keyboard if the current keyset is not lockable.
-        if (!keyset.getAttribute('lockable'))
-          this.classList.remove('locked');
+        // If capslock is enabled and capsLockTo is not null,
+        // redirect to keyset specified by capsLockTo.
+        if (this.classList.contains('caps-locked') && keyset.capsLocksTo)
+          this.keyset = keyset.capsLocksTo;
         
       },
 
@@ -348,9 +363,7 @@
             keyset.nextKeyset = this.dblTimer_.nextKeyset;
             clearTimeout(this.dblTimer_);
             
-            // Checks if shift is capitalized.
-            if (keyset.getAttribute('lockable'))
-              this.classList.add('locked');
+            this.classList.add('caps-locked');
 
             this.dblDetail_ = null;
           }
@@ -385,17 +398,17 @@
           repeatKey.cancel();
           return;
         }
-        var toKeyset = detail.toKeyset;
+        var toKeysetId = detail.toKeyset;
         // Keyset transition key.
-        if (toKeyset) {
-          this.keyset = toKeyset;
+        if (toKeysetId) {
+          this.keyset = toKeysetId;
           this.querySelector('#' + this.layout + '-' + this.keyset).nextKeyset =
               detail.nextKeyset;
         }
-        var toLayout = detail.toLayout;
+        var toLayoutId = detail.toLayout;
         // Layout transition key.
-        if (toLayout)
-          this.layout = toLayout;
+        if (toLayoutId)
+          this.layout = toLayoutId;
         var char = detail.char;
         if (enterUpperOnSpace) {
           enterUpperOnSpace = false;
@@ -404,8 +417,13 @@
         }
         switch(char) {
           case 'Invalid':
+            swipeStatus.swipeFlags = 0;
+            return;
           case 'Shift':
             swipeStatus.swipeFlags = 0;
+            // We have reverted to lower case.
+            if(this.classList.contains('caps-locked'))
+              this.classList.remove('caps-locked');
             return;
           case 'Microphone':
             this.voiceInput_.onDown();
@@ -438,7 +456,7 @@
               detail.nextKeyset;
 
           // Locks the keyset before removing active to prevent flicker.
-          this.classList.add('locked');
+          this.classList.add('caps-locked');
           // Makes last pressed key inactive if transit to a new keyset on long
           // press.
           this.lastPressedKey.classList.remove('active');
@@ -474,10 +492,10 @@
         var keysetsLoaded = false;
         for (var i = 0; i < keysets.length; i++) {
           var matches = keysets[i].id.match(regex);
-          if (matches && matches.length == 2) {
+          if (matches && matches.length == REGEX_MATCH_COUNT) {
              keysetsLoaded = true;
              if (keysets[i].isDefault) {
-               this.keyset = matches[1];
+               this.keyset = matches[REGEX_KEYSET_INDEX];
                return true;
              }
           }

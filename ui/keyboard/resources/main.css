@@ -72,7 +72,7 @@ kb-key::x-superscript[inverted] {
 * Controls whether the shift key should be highlighted or not.
 * Only highlights if we are in a lockable keyboard which is not locked.
 */
-kb-keyboard:not(.locked) kb-keyset[lockable] kb-shift-key {
+kb-keyboard:not(.caps-locked) kb-keyset[capsLockable] kb-shift-key {
   color: lightblue;
 }
 
@@ -95,7 +95,7 @@ kb-altkey::x-key {
   text-align: center;
 }
 
-.locked kb-shift-key,
+.caps-locked kb-shift-key,
 .active {
   background-color: #848490 !important;
   border-top: 2px solid #A9A9AF !important;

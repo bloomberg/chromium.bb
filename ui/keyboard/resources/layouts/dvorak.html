@@ -9,7 +9,7 @@
 <link id="spacebar-row" rel="import" href="spacebar-row.html">
 
 <template>
-  <kb-keyset id="dvorak-upper" lockable="true">
+  <kb-keyset id="dvorak-upper" capsLockable=true>
     <kb-row>
       <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
       <kb-key-sequence keys="&quot;,.PYFGCRL" superscripts="1234567890"></kb-key-sequence>
@@ -35,7 +35,7 @@
     </kb-altkey-container>
   </kb-keyset>
 
-  <kb-keyset id="dvorak-lower" isDefault=true>
+  <kb-keyset id="dvorak-lower" capsLocksTo="upper" isDefault=true>
     <kb-row>
       <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
       <kb-key-sequence keys="&quot;,.pyfgcrl" superscripts="1234567890"></kb-key-sequence>

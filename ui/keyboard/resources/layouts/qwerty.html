@@ -9,7 +9,7 @@
 <link id="spacebar-row" rel="import" href="spacebar-row.html">
 
 <template>
-  <kb-keyset id="qwerty-upper" lockable="true">
+  <kb-keyset id="qwerty-upper" capsLockable=true>
     <kb-row>
       <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
       <kb-key-sequence keys="QWERTYUIOP" superscripts="1234567890"></kb-key-sequence>
@@ -37,7 +37,7 @@
     </kb-altkey-container>
   </kb-keyset>
 
-  <kb-keyset id="qwerty-lower" isDefault=true>
+  <kb-keyset id="qwerty-lower" capsLocksTo="upper" isDefault=true>
     <kb-row>
       <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
       <kb-key-sequence keys="qwertyuiop" superscripts="1234567890"></kb-key-sequence>

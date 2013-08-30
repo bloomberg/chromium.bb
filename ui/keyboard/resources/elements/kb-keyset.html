@@ -4,8 +4,9 @@
   -- found in the LICENSE file.
   -->
 
-<polymer-element name="kb-keyset" attributes="nextKeyset isDefault"
-    on-key-up="keyUp" on-key-longpress="keyLongpress">
+<polymer-element name="kb-keyset" attributes="nextKeyset isDefault
+    capsLocksTo capsLockable" on-key-up="keyUp"
+    on-key-longpress="keyLongpress">
   <template>
     <style>
       @host {
