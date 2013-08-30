@@ -383,14 +383,13 @@ void SimpleIndex::MergeInitializingSet(
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(load_result->did_load);
 
-  SimpleIndex::EntrySet* index_file_entries = &load_result->entries;
-  // First, remove the entries that are in the |removed_entries_| from both
-  // sets.
-  for (base::hash_set<uint64>::const_iterator it =
-           removed_entries_.begin(); it != removed_entries_.end(); ++it) {
-    entries_set_.erase(*it);
+  EntrySet* index_file_entries = &load_result->entries;
+
+  for (base::hash_set<uint64>::const_iterator it = removed_entries_.begin();
+       it != removed_entries_.end(); ++it) {
     index_file_entries->erase(*it);
   }
+  removed_entries_.clear();
 
   for (EntrySet::const_iterator it = entries_set_.begin();
        it != entries_set_.end(); ++it) {
@@ -411,7 +410,6 @@ void SimpleIndex::MergeInitializingSet(
   entries_set_.swap(*index_file_entries);
   cache_size_ = merged_cache_size;
   initialized_ = true;
-  removed_entries_.clear();
 
   // The actual IO is asynchronous, so calling WriteToDisk() shouldn't slow the
   // merge down much.
