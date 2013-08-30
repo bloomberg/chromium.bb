@@ -20,7 +20,7 @@
   },
   "app": {
     "channel": "stable",
-    "extension_types": ["hosted_app", "extension", "packaged_app"],
+    "extension_types": ["hosted_app", "extension", "legacy_packaged_app"],
     "contexts": [
       "blessed_extension", "unblessed_extension", "content_script", "web_page"
     ],
@@ -219,7 +219,7 @@
   },
   "extension": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "contexts": ["blessed_extension"]
   },
   "extension.getURL": {
@@ -275,7 +275,7 @@
   },
   "i18n": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
   "identity": {
@@ -310,7 +310,7 @@
   },
   "logPrivate": {
     "dependencies": ["permission:logPrivate"],
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "contexts": ["blessed_extension"]
   },
   "management": {
@@ -320,12 +320,12 @@
   "management.getPermissionWarningsByManifest": {
     "dependencies": [],
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "management.uninstallSelf": {
     "dependencies": [],
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   // This is not a real API, only here for documentation purposes.
   // See http://crbug.com/275944 for background.
@@ -382,7 +382,7 @@
   },
   "permissions": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "contexts": "all",
     "matches": ["<all_urls>"]
   },
@@ -421,7 +421,7 @@
   },
   "runtime": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "contexts": ["blessed_extension"]
   },
   "runtime.connect": {
@@ -524,7 +524,7 @@
   },
   "tabs": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "contexts": ["blessed_extension"]
   },
   "terminalPrivate": {
@@ -551,7 +551,7 @@
   },
   "types": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "contexts": ["blessed_extension"]
   },
   "types.private": {

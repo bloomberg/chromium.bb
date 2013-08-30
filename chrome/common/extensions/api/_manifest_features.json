@@ -8,7 +8,7 @@
 {
   "app": {
     "channel": "stable",
-    "extension_types": ["packaged_app", "hosted_app", "platform_app"]
+    "extension_types": ["legacy_packaged_app", "hosted_app", "platform_app"]
   },
   // The default platform app CSP can only be overridden by whitelisted apps.
   // This is a separate key from the top-level content_security_policy one since
@@ -36,11 +36,11 @@
     "channel": "stable",
     // Platform apps always have isolated storage, thus they cannot specify it
     // via the manifest.
-    "extension_types": ["packaged_app", "hosted_app"]
+    "extension_types": ["legacy_packaged_app", "hosted_app"]
   },
   "app.launch": {
     "channel": "stable",
-    "extension_types": ["packaged_app", "hosted_app"]
+    "extension_types": ["legacy_packaged_app", "hosted_app"]
   },
   "author": {
     "channel": "stable",
@@ -50,20 +50,20 @@
     "channel": "stable",
     "extension_types": [
       // Platform apps specify their background page via app.background.
-      "extension", "packaged_app", "hosted_app"
+      "extension", "legacy_packaged_app", "hosted_app"
     ]
   },
   "background.persistent": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app"
+      "extension", "legacy_packaged_app"
     ],
     "min_manifest_version": 2
   },
   "background_page": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app"
+      "extension", "legacy_packaged_app", "hosted_app"
     ],
     "max_manifest_version": 1
   },
@@ -73,7 +73,7 @@
   },
   "chrome_url_overrides": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "commands": {
     "channel": "stable",
@@ -89,16 +89,16 @@
     // Platform apps have a restricted content security policy that cannot be
     // overriden (except for a whitelist of exceptions, see the
     // app.content_security_policy whitelist).
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "content_scripts": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "converted_from_user_script": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app"
+      "extension", "legacy_packaged_app", "hosted_app"
     ],
     "no_doc": true
   },
@@ -116,17 +116,17 @@
   },
   "devtools_page": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "display_in_launcher": [
     {
       "channel": "stable",
-      "extension_types": ["packaged_app", "platform_app"],
+      "extension_types": ["legacy_packaged_app", "platform_app"],
       "location": "component"
     },
     {
       "channel": "stable",
-      "extension_types": ["packaged_app", "platform_app"],
+      "extension_types": ["legacy_packaged_app", "platform_app"],
       "whitelist": [
         "nmmhkkegccagdldgiimedpiccmgmieda"
       ]
@@ -135,12 +135,12 @@
   "display_in_new_tab_page": [
     {
       "channel": "stable",
-      "extension_types": ["packaged_app", "platform_app"],
+      "extension_types": ["legacy_packaged_app", "platform_app"],
       "location": "component"
     },
     {
       "channel": "stable",
-      "extension_types": ["packaged_app", "platform_app"],
+      "extension_types": ["legacy_packaged_app", "platform_app"],
       "whitelist": [
         "nmmhkkegccagdldgiimedpiccmgmieda"
       ]
@@ -163,12 +163,12 @@
   "externally_connectable": {
     "channel": "stable",
     "extension_types": [
-      "extension", "hosted_app", "packaged_app", "platform_app"
+      "extension", "hosted_app", "legacy_packaged_app", "platform_app"
     ]
   },
   "file_browser_handlers": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "file_handlers": {
     "channel": "stable",
@@ -176,7 +176,7 @@
   },
   "homepage_url": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "icons": {
     "channel": "stable",
@@ -188,11 +188,11 @@
   },
   "incognito": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "input_components": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "key": {
     "channel": "stable",
@@ -214,7 +214,7 @@
   },
   "mime_types": {
     "channel": "stable",
-    "extension_types": [ "extension", "packaged_app", "platform_app" ],
+    "extension_types": [ "extension", "legacy_packaged_app", "platform_app" ],
     "whitelist": [
       "oickdpebdnfbgkcaoklfcdhjniefkcji",  // browser_tests
       "gbkeegbaiigmenfmjfclcdgdpimamgkj",  // QuickOffice
@@ -226,13 +226,13 @@
   "minimum_chrome_version": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
   "nacl_modules": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
   "name": {
@@ -242,7 +242,7 @@
   "oauth2": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "platform_app"
+      "extension", "legacy_packaged_app", "platform_app"
     ]
   },
   "oauth2.auto_approve": {
@@ -262,23 +262,23 @@
   "offline_enabled": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
   "omnibox": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "optional_permissions": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
   "options_page": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app"
+      "extension", "legacy_packaged_app", "hosted_app"
     ]
   },
   "page_action": {
@@ -293,7 +293,7 @@
   "permissions": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
   "platforms": {
@@ -302,18 +302,18 @@
   },
   "plugins": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "hosted_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "hosted_app"]
   },
   "requirements": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
   "sandbox": {
     "channel": "stable",
     "extension_types": [
-      "extension", "platform_app", "packaged_app"
+      "extension", "platform_app", "legacy_packaged_app"
     ],
     "min_manifest_version": 2
   },
@@ -335,17 +335,17 @@
   },
   "storage": {
     "channel": "dev",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "min_manifest_version": 2
   },
   "storage.managed_schema": {
     "channel": "dev",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "min_manifest_version": 2
   },
   "system_indicator": {
     "channel": "dev",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "theme": {
     "channel": "stable",
@@ -353,7 +353,7 @@
   },
   "tts_engine": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "update_url": {
     "channel": "stable",
@@ -366,7 +366,7 @@
   "web_accessible_resources": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app"
+      "extension", "legacy_packaged_app", "hosted_app"
     ]
   }
 }

@@ -376,7 +376,7 @@ TEST_F(ExtensionSimpleFeatureTest, ParsePackageTypes) {
   base::ListValue* extension_types = new base::ListValue();
   extension_types->Append(new base::StringValue("extension"));
   extension_types->Append(new base::StringValue("theme"));
-  extension_types->Append(new base::StringValue("packaged_app"));
+  extension_types->Append(new base::StringValue("legacy_packaged_app"));
   extension_types->Append(new base::StringValue("hosted_app"));
   extension_types->Append(new base::StringValue("platform_app"));
   extension_types->Append(new base::StringValue("shared_module"));

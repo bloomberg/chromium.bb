@@ -146,15 +146,15 @@ TEST(BaseFeatureProviderTest, Validation) {
 TEST(BaseFeatureProviderTest, ComplexFeatures) {
   scoped_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
-      .Set("feature1",
-           ListBuilder().Append(DictionaryBuilder()
-                                .Set("channel", "beta")
-                                .Set("extension_types",
-                                     ListBuilder().Append("extension")))
-                        .Append(DictionaryBuilder()
-                                .Set("channel", "beta")
-                                .Set("extension_types",
-                                     ListBuilder().Append("packaged_app"))))
+      .Set("feature1", ListBuilder()
+          .Append(DictionaryBuilder()
+              .Set("channel", "beta")
+              .Set("extension_types", ListBuilder()
+                  .Append("extension")))
+                  .Append(DictionaryBuilder()
+                      .Set("channel", "beta")
+                      .Set("extension_types", ListBuilder()
+                          .Append("legacy_packaged_app"))))
       .Build());
 
   scoped_ptr<BaseFeatureProvider> provider(

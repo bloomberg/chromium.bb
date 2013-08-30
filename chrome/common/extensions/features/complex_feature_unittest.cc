@@ -41,15 +41,17 @@ TEST_F(ExtensionComplexFeatureTest, MultipleRulesWhitelist) {
   scoped_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
       .Set("whitelist", ListBuilder().Append(kIdFoo))
-      .Set("extension_types", ListBuilder().Append("extension")).Build());
+      .Set("extension_types", ListBuilder()
+          .Append("extension")).Build());
   simple_feature->Parse(rule.get());
   features->push_back(simple_feature.release());
 
-  // Rule: "packaged_app", whitelist "bar".
+  // Rule: "legacy_packaged_app", whitelist "bar".
   simple_feature.reset(new SimpleFeature());
   rule = DictionaryBuilder()
       .Set("whitelist", ListBuilder().Append(kIdBar))
-      .Set("extension_types", ListBuilder().Append("packaged_app")).Build();
+      .Set("extension_types", ListBuilder()
+          .Append("legacy_packaged_app")).Build();
   simple_feature->Parse(rule.get());
   features->push_back(simple_feature.release());
 
@@ -98,11 +100,12 @@ TEST_F(ExtensionComplexFeatureTest, MultipleRulesChannels) {
   simple_feature->Parse(rule.get());
   features->push_back(simple_feature.release());
 
-  // Rule: "packaged_app", channel stable.
+  // Rule: "legacy_packaged_app", channel stable.
   simple_feature.reset(new SimpleFeature());
   rule = DictionaryBuilder()
       .Set("channel", "stable")
-      .Set("extension_types", ListBuilder().Append("packaged_app")).Build();
+      .Set("extension_types", ListBuilder()
+          .Append("legacy_packaged_app")).Build();
   simple_feature->Parse(rule.get());
   features->push_back(simple_feature.release());
 

@@ -26,7 +26,7 @@ struct Mappings {
   Mappings() {
     extension_types["extension"] = Manifest::TYPE_EXTENSION;
     extension_types["theme"] = Manifest::TYPE_THEME;
-    extension_types["packaged_app"] = Manifest::TYPE_LEGACY_PACKAGED_APP;
+    extension_types["legacy_packaged_app"] = Manifest::TYPE_LEGACY_PACKAGED_APP;
     extension_types["hosted_app"] = Manifest::TYPE_HOSTED_APP;
     extension_types["platform_app"] = Manifest::TYPE_PLATFORM_APP;
     extension_types["shared_module"] = Manifest::TYPE_SHARED_MODULE;

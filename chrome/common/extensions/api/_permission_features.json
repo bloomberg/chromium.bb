@@ -8,7 +8,7 @@
 {
   "activeTab": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "min_manifest_version": 2
   },
   "activityLogPrivate": {
@@ -25,7 +25,7 @@
   },
   "alarms": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "min_manifest_version": 2
   },
   "app.runtime": {
@@ -52,7 +52,7 @@
   ],
   "autotestPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "location": "component"
   },
   "audioCapture": {
@@ -62,7 +62,7 @@
   "background": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app"
+      "extension", "legacy_packaged_app", "hosted_app"
     ]
   },
   "bluetooth": {
@@ -75,20 +75,20 @@
   },
   "bookmarkManagerPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "location": "component"
   },
   "bookmarks": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "browsingData": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "chromePrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "whitelist": [
       "haiffjcadagjlijoggckpgfnoeiflnem",  // Citrix Receiver
       "gnedhmakppccajfpfiihfcdlnpgomkcf",  // Citrix Receiver Beta
@@ -97,7 +97,7 @@
   },
   "chromeosInfoPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "whitelist": [
       "8C3741E3AF0B93B6E8E0DDD499BB0B74839EA578",  // http://crbug.com/234235
       "E703483CEF33DEC18B4B6DD84B5C776FB9182BDB"   // http://crbug.com/234235
@@ -106,37 +106,37 @@
   "clipboardRead": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
   "clipboardWrite": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
   "cloudPrintPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     // CloudPrint
     "whitelist": ["mfehgcgbbipciphmccgaenjidiccnmng"]
   },
   "commandLinePrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "location": "component"
   },
   "contentSettings": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "contextMenus": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "cookies": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "diagnostics": [
     {
@@ -155,7 +155,7 @@
   ],
   "debugger": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "developerPrivate": {
     "channel": "dev",
@@ -169,7 +169,7 @@
   },
   "devtools": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "declarativeContent": {
     "channel": "trunk",
@@ -178,11 +178,11 @@
   "declarativeWebRequest": [
     {
       "channel": "beta",
-      "extension_types": ["extension", "packaged_app"]
+      "extension_types": ["extension", "legacy_packaged_app"]
     },
     {
       "channel": "stable",
-      "extension_types": ["extension", "packaged_app"],
+      "extension_types": ["extension", "legacy_packaged_app"],
       // Legacy Browser Support (remove once this API hits stable).
       "whitelist": ["heildphpnddilhkemkielfhnkaagiabh"]
     }
@@ -223,7 +223,7 @@
   },
   "enterprise.platformKeysPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "whitelist": [
       "inmdanhiiibfpdlljnjjbchhjgelojnn",  // Dogfood
       "cbpmgnfekbgbgpkmokfppmldaccjcbnb"   // Test
@@ -232,7 +232,7 @@
   "experimental": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
   "feedbackPrivate": {
@@ -246,11 +246,11 @@
   },
   "fileBrowserHandler": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "fileBrowserPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "location": "component"
   },
   "fileSystem": [{
@@ -279,7 +279,7 @@
   }],
   "fontSettings": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "fullscreen": {
     "channel": "stable",
@@ -288,12 +288,12 @@
   "geolocation": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
   "history": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "identity": {
     "channel": "stable",
@@ -302,26 +302,26 @@
   "identityPrivate": {
     "channel": "stable",
     "extension_types": [
-      "packaged_app"
+      "legacy_packaged_app"
     ],
     "location": "component"
   },
   "idle": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "infobars": {
     "channel": "dev",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "input": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "inplies_full_url_access": true
   },
   "inputMethodPrivate": [{
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "whitelist": [
       "haiffjcadagjlijoggckpgfnoeiflnem",  // Citrix Receiver
       "gnedhmakppccajfpfiihfcdlnpgomkcf",  // Citrix Receiver Beta
@@ -331,33 +331,33 @@
     ]
   },{
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "location": "component"
   }],
   "location": [
     {
       "channel": "dev",
       "extension_types": [
-        "extension", "packaged_app", "platform_app"
+        "extension", "legacy_packaged_app", "platform_app"
       ]
     },
     {
       "channel": "stable",
       "extension_types": [
-        "extension", "packaged_app", "hosted_app", "platform_app"
+        "extension", "legacy_packaged_app", "hosted_app", "platform_app"
       ],
       "location": "component"
     }
   ],
   "logPrivate": {
     "channel": "dev",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "location": "component"
   },
   "management": [
     {
       "channel": "stable",
-      "extension_types": ["extension", "packaged_app"]
+      "extension_types": ["extension", "legacy_packaged_app"]
     },
     {
       "channel": "stable",
@@ -399,12 +399,12 @@
   },
   "mediaPlayerPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "location": "component"
   },
   "metricsPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "whitelist": [
       // The file manager and Google Now are component extensions, and they can
       // currently use whitelisted interfaces without being on the corresponding
@@ -435,12 +435,12 @@
   "nativeMessaging": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "platform_app"
+      "extension", "legacy_packaged_app", "platform_app"
     ]
   },
   "networkingPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "whitelist": [
       "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // Trusted Tester
       "fmfcbgogabcbclcofgocippekhfcmgfj",  // Staging
@@ -461,17 +461,17 @@
     // notifications permission with WebKit/Blink notifications.
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
   "echoPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "location": "component"
   },
   "pageCapture": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "pointerLock": {
     "channel": "stable",
@@ -479,12 +479,12 @@
   },
   "plugin": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "power": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "platform_app"
+      "extension", "legacy_packaged_app", "platform_app"
     ]
   },
   "preferencesPrivate":  {
@@ -496,7 +496,7 @@
   },
   "privacy": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "processes": {
     "channel": "dev",
@@ -504,7 +504,7 @@
   },
   "proxy": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "pushMessaging": {
     "channel": "stable",
@@ -519,7 +519,7 @@
   },
   "rtcPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "whitelist": [
       "nckgahadagoaajjgafhacjanaoiihapd",  // Google Talk prod
       "eggnbpckecmjlblplehfpjjdhhidfdoj",  // Google Talk beta
@@ -531,11 +531,11 @@
   // values to verify restrictions.
   "runtime": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "screensaver": {
     "channel": "stable",
-    "extension_types": ["packaged_app", "hosted_app", "platform_app"]
+    "extension_types": ["legacy_packaged_app", "hosted_app", "platform_app"]
   },
   "serial": {
     "channel": "stable",
@@ -543,11 +543,11 @@
   },
   "sessions": {
     "channel": "dev",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "streamsPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "whitelist": [
       "oickdpebdnfbgkcaoklfcdhjniefkcji",  // browser_tests
       "gbkeegbaiigmenfmjfclcdgdpimamgkj",  // QuickOffice
@@ -579,44 +579,44 @@
   },
   "systemIndicator": {
     "channel": "dev",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "storage": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "min_manifest_version": 2
   },
   "system.cpu": {
     "channel": "dev",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "system.memory": {
     "channel": "dev",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "system.storage": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "system.display": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "systemPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "location": "component"
   },
   "tabs": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "tabCapture": [{
     "channel": "dev",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   }, {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "whitelist": [
       "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // Trusted Tester
       "fmfcbgogabcbclcofgocippekhfcmgfj",  // Staging
@@ -627,7 +627,7 @@
   }],
   "terminalPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "whitelist": [
       "pnhechapfaindjhompbnflcldabbghjo",  // HTerm
       "okddffdblfhhnmhodogpojmfkjmhinfp"   // HTerm dev
@@ -635,20 +635,20 @@
   },
   "topSites": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "tts": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
   "ttsEngine": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "unlimitedStorage": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
   "usb": {
@@ -670,11 +670,11 @@
   },
   "webNavigation": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "webstorePrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app"],
     "whitelist": [
       "ahfgeienlihckogmohjhadlkjgocpleb",  // Web Store
       "afchcafgojfnemjkcbhfekplkmjaldaa"   // Enterprise Web Store
@@ -682,11 +682,11 @@
   },
   "webRequest": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "webRequestBlocking": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "webview": {
     "channel": "stable",
