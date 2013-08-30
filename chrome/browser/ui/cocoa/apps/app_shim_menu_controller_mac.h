@@ -19,6 +19,8 @@
  @private
   // The extension id of the currently focused packaged app.
   base::scoped_nsobject<NSString> appId_;
+  // A reference to the "Quit Chrome" menu item.
+  base::scoped_nsobject<NSMenuItem> chromeMenuQuitItem_;
   // A menu item for the currently focused packaged app.
   base::scoped_nsobject<NSMenuItem> appMenuItem_;
 }

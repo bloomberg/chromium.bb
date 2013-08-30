@@ -8,8 +8,10 @@
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/apps/native_app_window_cocoa.h"
 #include "chrome/common/extensions/extension.h"
+#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -25,6 +27,8 @@
 // If the window belongs to the currently focused app, remove the menu items and
 // unhide Chrome menu items.
 - (void)removeMenuItems:(NSString*)appId;
+// If the currently focused window belongs to a platform app, quit the app.
+- (void)quitCurrentPlatformApp;
 @end
 
 @implementation AppShimMenuController
@@ -43,10 +47,28 @@
 }
 
 - (void)buildAppMenuItems {
+  // Find the "Quit Chrome" menu item.
+  NSMenu* chromeMenu = [[[NSApp mainMenu] itemAtIndex:0] submenu];
+  for (NSMenuItem* item in [chromeMenu itemArray]) {
+    if ([item action] == @selector(terminate:)) {
+      chromeMenuQuitItem_.reset([item retain]);
+      break;
+    }
+  }
+  DCHECK(chromeMenuQuitItem_);
+
   appMenuItem_.reset([[NSMenuItem alloc] initWithTitle:@""
                                                 action:nil
                                          keyEquivalent:@""]);
   base::scoped_nsobject<NSMenu> appMenu([[NSMenu alloc] initWithTitle:@""]);
+  [appMenu setAutoenablesItems:NO];
+  NSMenuItem* appMenuQuitItem =
+      [appMenu addItemWithTitle:@""
+                         action:@selector(quitCurrentPlatformApp)
+                  keyEquivalent:@"q"];
+  [appMenuQuitItem setKeyEquivalentModifierMask:
+      [chromeMenuQuitItem_ keyEquivalentModifierMask]];
+  [appMenuQuitItem setTarget:self];
   [appMenuItem_ setSubmenu:appMenu];
 }
 
@@ -103,9 +125,22 @@
   [self removeMenuItems:appId_];
   appId_.reset([appId copy]);
 
+  // Hide Chrome menu items.
   NSMenu* mainMenu = [NSApp mainMenu];
   for (NSMenuItem* item in [mainMenu itemArray])
     [item setHidden:YES];
+
+  NSString* localizedQuitApp =
+      l10n_util::GetNSStringF(IDS_EXIT_MAC, base::UTF8ToUTF16(app->name()));
+  NSMenuItem* appMenuQuitItem = [[[appMenuItem_ submenu] itemArray] lastObject];
+  [appMenuQuitItem setTitle:localizedQuitApp];
+
+  // It seems that two menu items that have the same key equivalent must also
+  // have the same action for the keyboard shortcut to work. (This refers to the
+  // original keyboard shortcut, regardless of any overrides set in OSX).
+  // In order to let the appMenuQuitItem have a different action, we remove the
+  // key equivalent from the chromeMenuQuitItem and restore it later.
+  [chromeMenuQuitItem_ setKeyEquivalent:@""];
 
   [appMenuItem_ setTitle:appId];
   [[appMenuItem_ submenu] setTitle:title];
@@ -124,6 +159,19 @@
   // Restore the Chrome main menu bar.
   for (NSMenuItem* item in [mainMenu itemArray])
     [item setHidden:NO];
+
+  // Restore the keyboard shortcut to Chrome. This just needs to be set back to
+  // the original keyboard shortcut, regardless of any overrides in OSX. The
+  // overrides still work as they are based on the title of the menu item.
+  [chromeMenuQuitItem_ setKeyEquivalent:@"q"];
+}
+
+- (void)quitCurrentPlatformApp {
+  apps::ShellWindow* shellWindow =
+      apps::ShellWindowRegistry::GetShellWindowForNativeWindowAnyProfile(
+          [NSApp keyWindow]);
+  if (shellWindow)
+    apps::ExtensionAppShimHandler::QuitAppForWindow(shellWindow);
 }
 
 @end
