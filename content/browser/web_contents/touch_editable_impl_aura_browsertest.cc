@@ -28,6 +28,7 @@
 
 namespace content {
 
+// TODO(mohsen): Remove logs if the test showed no flakiness anymore.
 class TestTouchEditableImplAura : public TouchEditableImplAura {
  public:
   TestTouchEditableImplAura()
@@ -37,6 +38,7 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
         waiting_for_gesture_ack_callback_(false) {}
 
   void Reset() {
+    LOG(INFO) << "TestTouchEditableImplAura::Reset()";
     selection_changed_callback_arrived_ = false;
     waiting_for_selection_changed_callback_ = false;
     gesture_ack_callback_arrived_ = false;
@@ -45,6 +47,8 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
 
   virtual void OnSelectionOrCursorChanged(const gfx::Rect& anchor,
                                           const gfx::Rect& focus) OVERRIDE {
+    LOG(INFO) << "TestTouchEditableImplAura::OnSelectionOrCursorChanged("
+              << anchor.ToString() << ", " << focus.ToString() << ")";
     selection_changed_callback_arrived_ = true;
     TouchEditableImplAura::OnSelectionOrCursorChanged(anchor, focus);
     if (waiting_for_selection_changed_callback_)
@@ -52,6 +56,8 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
   }
 
   virtual void GestureEventAck(int gesture_event_type) OVERRIDE {
+    LOG(INFO) << "TestTouchEditableImplAura::GestureEventAck("
+              << gesture_event_type << ")";
     gesture_ack_callback_arrived_ = true;
     TouchEditableImplAura::GestureEventAck(gesture_event_type);
     if (waiting_for_gesture_ack_callback_)
@@ -59,6 +65,7 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
   }
 
   void WaitForSelectionChangeCallback() {
+    LOG(INFO) << "TestTouchEditableImplAura::WaitForSelectionChangeCallback()";
     if (selection_changed_callback_arrived_)
       return;
     waiting_for_selection_changed_callback_ = true;
@@ -67,6 +74,7 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
   }
 
   void WaitForGestureAck() {
+    LOG(INFO) << "TestTouchEditableImplAura::WaitForGestureAck()";
     if (gesture_ack_callback_arrived_)
       return;
     waiting_for_gesture_ack_callback_ = true;
@@ -115,6 +123,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     content->GetRootWindow()->SetHostSize(gfx::Size(800, 600));
   }
 
+  // TODO(mohsen): Remove logs if the test showed no flakiness anymore.
   void TestTouchSelectionOriginatingFromWebpage() {
     ASSERT_NO_FATAL_FAILURE(
         StartTestWithPage("files/touch_selection.html"));
@@ -132,23 +141,28 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     aura::test::EventGenerator generator(content->GetRootWindow(), content);
     gfx::Rect bounds = content->GetBoundsInRootWindow();
 
+    LOG(INFO) << "Select text and wait for selection change.";
     touch_editable->Reset();
     ExecuteSyncJSFunction(view_host, "select_all_text()");
     touch_editable->WaitForSelectionChangeCallback();
 
+    LOG(INFO) << "Tap on selection to bring up handles.";
     // Tap inside selection to bring up selection handles.
     generator.GestureTapAt(gfx::Point(bounds.x() + 10, bounds.y() + 10));
     EXPECT_EQ(touch_editable->rwhva_, rwhva);
 
+    LOG(INFO) << "Get selection.";
     scoped_ptr<base::Value> value =
         content::ExecuteScriptAndGetValue(view_host, "get_selection()");
     std::string selection;
     value->GetAsString(&selection);
 
+    LOG(INFO) << "Test handles and selection.";
     // Check if selection handles are showing.
     EXPECT_TRUE(touch_editable->touch_selection_controller_.get());
     EXPECT_STREQ("Some text we can select", selection.c_str());
 
+    LOG(INFO) << "Drag handles to modify the selection.";
     // Lets move the handles a bit to modify the selection
     touch_editable->Reset();
     generator.GestureScrollSequence(
@@ -156,6 +170,11 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
         gfx::Point(30, 47),
         base::TimeDelta::FromMilliseconds(20),
         1);
+    LOG(INFO) << "Handle moved. Now, waiting for selection to change.";
+    touch_editable->WaitForSelectionChangeCallback();
+    LOG(INFO) << "Selection changed.";
+
+    LOG(INFO) << "Test selection.";
     EXPECT_TRUE(touch_editable->touch_selection_controller_.get());
     value = content::ExecuteScriptAndGetValue(view_host, "get_selection()");
     value->GetAsString(&selection);
@@ -333,15 +352,8 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(TouchEditableImplAuraTest);
 };
 
-#if defined(OS_CHROMEOS)
-#define MAYBE_TouchSelectionOriginatingFromWebpageTest \
-    DISABLED_TouchSelectionOriginatingFromWebpageTest
-#else
-#define MAYBE_TouchSelectionOriginatingFromWebpageTest \
-    TouchSelectionOriginatingFromWebpageTest
-#endif
 IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
-                       MAYBE_TouchSelectionOriginatingFromWebpageTest) {
+                       TouchSelectionOriginatingFromWebpageTest) {
   TestTouchSelectionOriginatingFromWebpage();
 }
 

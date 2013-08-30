@@ -193,7 +193,7 @@ class TouchSelectionControllerImpl::EditingHandleView
       case ui::ET_GESTURE_SCROLL_BEGIN:
         widget_->SetCapture(this);
         controller_->SetDraggingHandle(this);
-        drag_offset_ = event->y() - cursor_height() -
+        drag_offset_ = event->y() - cursor_height() +
             kSelectionHandleVerticalDragOffset;
         break;
       case ui::ET_GESTURE_SCROLL_UPDATE: {
@@ -259,6 +259,10 @@ class TouchSelectionControllerImpl::EditingHandleView
   scoped_ptr<Widget> widget_;
   TouchSelectionControllerImpl* controller_;
   gfx::Rect selection_rect_;
+
+  // Vertical offset between the scroll event position and the drag position
+  // reported to the client view (see the ASCII figure at the top of the file
+  // and its description for more details).
   int drag_offset_;
 
   // If set to true, the handle will not draw anything, hence providing an empty
