@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -118,13 +119,13 @@ Status AdbImpl::SetCommandLineFile(const std::string& device_serial,
                                    const std::string& exec_name,
                                    const std::string& args) {
   std::string response;
-  if (args.find("'") != std::string::npos)
-    return Status(kUnknownError,
-        "Chrome command line arguments must not contain single quotes");
+  std::string quoted_command =
+      base::GetDoubleQuotedJson(exec_name + " " + args);
   Status status = ExecuteHostShellCommand(
       device_serial,
-      "echo '" + exec_name +
-      " " + args + "'> " + command_line_file + "; echo $?",
+      base::StringPrintf("echo %s > %s; echo $?",
+                         quoted_command.c_str(),
+                         command_line_file.c_str()),
       &response);
   if (!status.IsOk())
     return status;

@@ -45,7 +45,7 @@
 namespace {
 
 const char* kCommonSwitches[] = {
-  "ignore-certificate-errors", "metrics-recording-only"};
+    "ignore-certificate-errors", "metrics-recording-only"};
 
 Status UnpackAutomationExtension(const base::FilePath& temp_dir,
                                  base::FilePath* automation_extension) {
@@ -68,66 +68,58 @@ Status UnpackAutomationExtension(const base::FilePath& temp_dir,
   return Status(kOk);
 }
 
-void AddSwitches(CommandLine* command,
-                 const char* switches[],
-                 size_t switch_count,
-                 const std::set<std::string>& exclude_switches) {
-  for (size_t i = 0; i < switch_count; ++i) {
-    if (exclude_switches.find(switches[i]) == exclude_switches.end())
-      command->AppendSwitch(switches[i]);
-  }
-}
-
 Status PrepareCommandLine(int port,
                           const Capabilities& capabilities,
                           CommandLine* prepared_command,
                           base::ScopedTempDir* user_data_dir,
                           base::ScopedTempDir* extension_dir,
                           std::vector<std::string>* extension_bg_pages) {
-  CommandLine command = capabilities.command;
-  base::FilePath program = command.GetProgram();
+  base::FilePath program = capabilities.binary;
   if (program.empty()) {
     if (!FindChrome(&program))
       return Status(kUnknownError, "cannot find Chrome binary");
-    command.SetProgram(program);
   } else if (!base::PathExists(program)) {
     return Status(kUnknownError,
                   base::StringPrintf("no chrome binary at %" PRFilePath,
                                      program.value().c_str()));
   }
+  CommandLine command(program);
+  Switches switches;
 
-  const char* excludable_switches[] = {
-      "disable-hang-monitor",
-      "disable-prompt-on-repost",
-      "full-memory-crash-report",
-      "no-first-run",
-      "disable-background-networking",
-      // TODO(chrisgao): Add "disable-sync" when chrome 30- is not supported.
-      // For chrome 30-, it leads to crash when opening chrome://settings.
-      "disable-web-resources",
-      "safebrowsing-disable-auto-update",
-      "safebrowsing-disable-download-protection",
-      "disable-client-side-phishing-detection",
-      "disable-component-update",
-      "disable-default-apps",
-  };
+  // TODO(chrisgao): Add "disable-sync" when chrome 30- is not supported.
+  // For chrome 30-, it leads to crash when opening chrome://settings.
+  for (size_t i = 0; i < arraysize(kCommonSwitches); ++i)
+    switches.SetSwitch(kCommonSwitches[i]);
+  switches.SetSwitch("disable-hang-monitor");
+  switches.SetSwitch("disable-prompt-on-repost");
+  switches.SetSwitch("full-memory-crash-report");
+  switches.SetSwitch("no-first-run");
+  switches.SetSwitch("disable-background-networking");
+  switches.SetSwitch("disable-web-resources");
+  switches.SetSwitch("safebrowsing-disable-auto-update");
+  switches.SetSwitch("safebrowsing-disable-download-protection");
+  switches.SetSwitch("disable-client-side-phishing-detection");
+  switches.SetSwitch("disable-component-update");
+  switches.SetSwitch("disable-default-apps");
+  switches.SetSwitch("enable-logging");
+  switches.SetSwitch("logging-level", "1");
+  switches.SetSwitch("password-store", "basic");
+  switches.SetSwitch("use-mock-keychain");
+  switches.SetSwitch("remote-debugging-port", base::IntToString(port));
 
-  AddSwitches(&command, excludable_switches, arraysize(excludable_switches),
-              capabilities.exclude_switches);
-  AddSwitches(&command, kCommonSwitches, arraysize(kCommonSwitches),
-              capabilities.exclude_switches);
+  for (std::set<std::string>::const_iterator iter =
+           capabilities.exclude_switches.begin();
+       iter != capabilities.exclude_switches.end();
+       ++iter) {
+    switches.RemoveSwitch(*iter);
+  }
+  switches.SetFromSwitches(capabilities.switches);
 
-  command.AppendSwitch("enable-logging");
-  command.AppendSwitchASCII("logging-level", "1");
-  command.AppendSwitchASCII("password-store", "basic");
-  command.AppendSwitch("use-mock-keychain");
-  command.AppendSwitchASCII("remote-debugging-port", base::IntToString(port));
-
-  if (!command.HasSwitch("user-data-dir")) {
+  if (!switches.HasSwitch("user-data-dir")) {
     command.AppendArg("about:blank");
     if (!user_data_dir->CreateUniqueTempDir())
       return Status(kUnknownError, "cannot create temp dir for user data dir");
-    command.AppendSwitchPath("user-data-dir", user_data_dir->path());
+    switches.SetSwitch("user-data-dir", user_data_dir->path().value());
     Status status = internal::PrepareUserDataDir(
         user_data_dir->path(), capabilities.prefs.get(),
         capabilities.local_state.get());
@@ -142,11 +134,11 @@ Status PrepareCommandLine(int port,
   Status status = internal::ProcessExtensions(capabilities.extensions,
                                               extension_dir->path(),
                                               true,
-                                              &command,
+                                              &switches,
                                               extension_bg_pages);
   if (status.IsError())
     return status;
-
+  switches.AppendToCommandLine(&command);
   *prepared_command = command;
   return Status(kOk);
 }
@@ -190,11 +182,11 @@ Status LaunchExistingChromeSession(
   Status status(kOk);
   scoped_ptr<DevToolsHttpClient> devtools_client;
   status = WaitForDevToolsAndCheckVersion(
-      capabilities.use_existing_browser, context_getter, socket_factory, log,
+      capabilities.debugger_address, context_getter, socket_factory, log,
       &devtools_client);
   if (status.IsError()) {
     return Status(kUnknownError, "cannot connect to chrome at " +
-                      capabilities.use_existing_browser.ToString(),
+                      capabilities.debugger_address.ToString(),
                   status);
   }
   chrome->reset(new ChromeExistingImpl(devtools_client.Pass(),
@@ -323,15 +315,15 @@ Status LaunchAndroidChrome(
   if (!status.IsOk())
     return status;
 
-  std::string args(capabilities.android_args);
-  for (size_t i = 0; i < arraysize(kCommonSwitches); i++)
-    args += "--" + std::string(kCommonSwitches[i]) + " ";
-  args += "--disable-fre --enable-remote-debugging";
-
+  Switches switches(capabilities.switches);
+  for (size_t i = 0; i < arraysize(kCommonSwitches); ++i)
+    switches.SetSwitch(kCommonSwitches[i]);
+  switches.SetSwitch("disable-fre");
+  switches.SetSwitch("enable-remote-debugging");
   status = device->StartApp(capabilities.android_package,
                             capabilities.android_activity,
                             capabilities.android_process,
-                            args, port);
+                            switches.ToString(), port);
   if (!status.IsOk()) {
     device->StopApp();
     return status;
@@ -495,10 +487,20 @@ Status ProcessExtension(const std::string& extension,
   return Status(kOk);
 }
 
+void UpdateExtensionSwitch(Switches* switches,
+                           const char name[],
+                           const base::FilePath::StringType& extension) {
+  base::FilePath::StringType value = switches->GetSwitchValueNative(name);
+  if (value.length())
+    value += FILE_PATH_LITERAL(",");
+  value += extension;
+  switches->SetSwitch(name, value);
+}
+
 Status ProcessExtensions(const std::vector<std::string>& extensions,
                          const base::FilePath& temp_dir,
                          bool include_automation_extension,
-                         CommandLine* command,
+                         Switches* switches,
                          std::vector<std::string>* bg_pages) {
   std::vector<std::string> bg_pages_tmp;
   std::vector<base::FilePath::StringType> extension_paths;
@@ -522,9 +524,9 @@ Status ProcessExtensions(const std::vector<std::string>& extensions,
     Status status = UnpackAutomationExtension(temp_dir, &automation_extension);
     if (status.IsError())
       return status;
-    if (command->HasSwitch("disable-extensions")) {
-      command->AppendSwitchNative("load-component-extension",
-                                  automation_extension.value());
+    if (switches->HasSwitch("disable-extensions")) {
+      UpdateExtensionSwitch(switches, "load-component-extension",
+                            automation_extension.value());
     } else {
       extension_paths.push_back(automation_extension.value());
     }
@@ -533,7 +535,7 @@ Status ProcessExtensions(const std::vector<std::string>& extensions,
   if (extension_paths.size()) {
     base::FilePath::StringType extension_paths_value = JoinString(
         extension_paths, FILE_PATH_LITERAL(','));
-    command->AppendSwitchNative("load-extension", extension_paths_value);
+    UpdateExtensionSwitch(switches, "load-extension", extension_paths_value);
   }
   bg_pages->swap(bg_pages_tmp);
   return Status(kOk);

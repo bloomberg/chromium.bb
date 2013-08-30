@@ -707,8 +707,7 @@ class ExistingBrowserTest(ChromeDriverBaseTest):
     if process is None:
       raise RuntimeError('Chrome could not be started with debugging port')
     try:
-      hostAndPort = '127.0.0.1:%d' % port
-      driver = self.CreateDriver(chrome_existing_browser=hostAndPort)
+      driver = self.CreateDriver(debugger_address='127.0.0.1:%d' % port)
       driver.ExecuteScript('console.info("%s")' % 'connecting at %d!' % port)
       driver.Quit()
     finally:

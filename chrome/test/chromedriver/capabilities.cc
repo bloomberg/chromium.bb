@@ -8,11 +8,13 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/json/string_escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -27,7 +29,7 @@ Status ParseBoolean(
     const base::Value& option,
     Capabilities* capabilities) {
   if (!option.GetAsBoolean(to_set))
-    return Status(kUnknownError, "value must be a boolean");
+    return Status(kUnknownError, "must be a boolean");
   return Status(kOk);
 }
 
@@ -36,10 +38,32 @@ Status ParseString(std::string* to_set,
                    Capabilities* capabilities) {
   std::string str;
   if (!option.GetAsString(&str))
-    return Status(kUnknownError, "value must be a string");
+    return Status(kUnknownError, "must be a string");
   if (str.empty())
-    return Status(kUnknownError, "value cannot be empty");
+    return Status(kUnknownError, "cannot be empty");
   *to_set = str;
+  return Status(kOk);
+}
+
+Status ParseFilePath(base::FilePath* to_set,
+                     const base::Value& option,
+                     Capabilities* capabilities) {
+  base::FilePath::StringType str;
+  if (!option.GetAsString(&str))
+    return Status(kUnknownError, "must be a string");
+  if (str.empty())
+    return Status(kUnknownError, "cannot be empty");
+  *to_set = base::FilePath(str);
+  return Status(kOk);
+}
+
+Status ParseDict(scoped_ptr<base::DictionaryValue>* to_set,
+                 const base::Value& option,
+                 Capabilities* capabilities) {
+  const base::DictionaryValue* dict = NULL;
+  if (!option.GetAsDictionary(&dict))
+    return Status(kUnknownError, "must be a dictionary");
+  to_set->reset(dict->DeepCopy());
   return Status(kOk);
 }
 
@@ -58,72 +82,30 @@ Status IgnoreCapability(const base::Value& option, Capabilities* capabilities) {
   return Status(kOk);
 }
 
-Status ParseChromeBinary(
-    const base::Value& option,
-    Capabilities* capabilities) {
-  base::FilePath::StringType path_str;
-  if (!option.GetAsString(&path_str))
-    return Status(kUnknownError, "'binary' must be a string");
-  base::FilePath chrome_exe(path_str);
-  capabilities->command.SetProgram(chrome_exe);
-  return Status(kOk);
-}
-
 Status ParseLogPath(const base::Value& option, Capabilities* capabilities) {
   if (!option.GetAsString(&capabilities->log_path))
-    return Status(kUnknownError, "'logPath' must be a string");
+    return Status(kUnknownError, "must be a string");
   return Status(kOk);
 }
 
-Status ParseArgs(bool is_android,
-                 const base::Value& option,
-                 Capabilities* capabilities) {
-  const base::ListValue* args_list = NULL;
-  if (!option.GetAsList(&args_list))
-    return Status(kUnknownError, "'args' must be a list");
-  for (size_t i = 0; i < args_list->GetSize(); ++i) {
+Status ParseSwitches(const base::Value& option,
+                     Capabilities* capabilities) {
+  const base::ListValue* switches_list = NULL;
+  if (!option.GetAsList(&switches_list))
+    return Status(kUnknownError, "must be a list");
+  for (size_t i = 0; i < switches_list->GetSize(); ++i) {
     std::string arg_string;
-    if (!args_list->GetString(i, &arg_string))
+    if (!switches_list->GetString(i, &arg_string))
       return Status(kUnknownError, "each argument must be a string");
-    if (is_android) {
-      capabilities->android_args += "--" + arg_string + " ";
-    } else {
-      size_t separator_index = arg_string.find("=");
-      if (separator_index != std::string::npos) {
-        CommandLine::StringType arg_string_native;
-        if (!args_list->GetString(i, &arg_string_native))
-          return Status(kUnknownError, "each argument must be a string");
-        capabilities->command.AppendSwitchNative(
-            arg_string.substr(0, separator_index),
-            arg_string_native.substr(separator_index + 1));
-      } else {
-        capabilities->command.AppendSwitch(arg_string);
-      }
-    }
+    capabilities->switches.SetUnparsedSwitch(arg_string);
   }
-  return Status(kOk);
-}
-
-Status ParsePrefs(const base::Value& option, Capabilities* capabilities) {
-  const base::DictionaryValue* prefs = NULL;
-  if (!option.GetAsDictionary(&prefs))
-    return Status(kUnknownError, "'prefs' must be a dictionary");
-  capabilities->prefs.reset(prefs->DeepCopy());
-  return Status(kOk);
-}
-
-Status ParseLocalState(const base::Value& option, Capabilities* capabilities) {
-  const base::DictionaryValue* local_state = NULL;
-  if (!option.GetAsDictionary(&local_state))
-    return Status(kUnknownError, "'localState' must be a dictionary");
-  capabilities->local_state.reset(local_state->DeepCopy());
   return Status(kOk);
 }
 
 Status ParseExtensions(const base::Value& option, Capabilities* capabilities) {
   const base::ListValue* extensions = NULL;
   if (!option.GetAsList(&extensions))
-    return Status(kUnknownError, "'extensions' must be a list");
+    return Status(kUnknownError, "must be a list");
   for (size_t i = 0; i < extensions->GetSize(); ++i) {
     std::string extension;
     if (!extensions->GetString(i, &extension)) {
@@ -138,22 +120,22 @@ Status ParseExtensions(const base::Value& option, Capabilities* capabilities) {
 Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
   const base::DictionaryValue* proxy_dict;
   if (!option.GetAsDictionary(&proxy_dict))
-    return Status(kUnknownError, "'proxy' must be a dictionary");
+    return Status(kUnknownError, "must be a dictionary");
   std::string proxy_type;
   if (!proxy_dict->GetString("proxyType", &proxy_type))
     return Status(kUnknownError, "'proxyType' must be a string");
   proxy_type = StringToLowerASCII(proxy_type);
   if (proxy_type == "direct") {
-    capabilities->command.AppendSwitch("no-proxy-server");
+    capabilities->switches.SetSwitch("no-proxy-server");
   } else if (proxy_type == "system") {
     // Chrome default.
   } else if (proxy_type == "pac") {
     CommandLine::StringType proxy_pac_url;
     if (!proxy_dict->GetString("proxyAutoconfigUrl", &proxy_pac_url))
       return Status(kUnknownError, "'proxyAutoconfigUrl' must be a string");
-    capabilities->command.AppendSwitchNative("proxy-pac-url", proxy_pac_url);
+    capabilities->switches.SetSwitch("proxy-pac-url", proxy_pac_url);
   } else if (proxy_type == "autodetect") {
-    capabilities->command.AppendSwitch("proxy-auto-detect");
+    capabilities->switches.SetSwitch("proxy-auto-detect");
   } else if (proxy_type == "manual") {
     const char* proxy_servers_options[][2] = {
         {"ftpProxy", "ftp"}, {"httpProxy", "http"}, {"sslProxy", "https"}};
@@ -192,10 +174,10 @@ Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
                     "proxy capabilities were found");
     }
     if (!proxy_servers.empty())
-      capabilities->command.AppendSwitchASCII("proxy-server", proxy_servers);
+      capabilities->switches.SetSwitch("proxy-server", proxy_servers);
     if (!proxy_bypass_list.empty()) {
-      capabilities->command.AppendSwitchASCII("proxy-bypass-list",
-                                              proxy_bypass_list);
+      capabilities->switches.SetSwitch("proxy-bypass-list",
+                                       proxy_bypass_list);
     }
   } else {
     return Status(kUnknownError, "unrecognized proxy type:" + proxy_type);
@@ -207,7 +189,7 @@ Status ParseExcludeSwitches(const base::Value& option,
                             Capabilities* capabilities) {
   const base::ListValue* switches = NULL;
   if (!option.GetAsList(&switches))
-    return Status(kUnknownError, "'excludeSwitches' must be a list");
+    return Status(kUnknownError, "must be a list");
   for (size_t i = 0; i < switches->GetSize(); ++i) {
     std::string switch_name;
     if (!switches->GetString(i, &switch_name)) {
@@ -233,9 +215,9 @@ Status ParseUseExistingBrowser(const base::Value& option,
   int port = 0;
   base::StringToInt(values[1], &port);
   if (port <= 0)
-    return Status(kUnknownError, "port must be >= 0");
+    return Status(kUnknownError, "port must be > 0");
 
-  capabilities->use_existing_browser = NetAddress(values[0], port);
+  capabilities->debugger_address = NetAddress(values[0], port);
   return Status(kOk);
 }
 
@@ -243,7 +225,7 @@ Status ParseLoggingPrefs(const base::Value& option,
                          Capabilities* capabilities) {
   const base::DictionaryValue* logging_prefs_dict = NULL;
   if (!option.GetAsDictionary(&logging_prefs_dict))
-    return Status(kUnknownError, "'loggingPrefs' must be a dictionary");
+    return Status(kUnknownError, "must be a dictionary");
 
   // TODO(klm): verify log types.
   // TODO(klm): verify log levels.
@@ -257,14 +239,15 @@ Status ParseChromeOptions(
     Capabilities* capabilities) {
   const base::DictionaryValue* chrome_options = NULL;
   if (!capability.GetAsDictionary(&chrome_options))
-    return Status(kUnknownError, "'chromeOptions' must be a dictionary");
+    return Status(kUnknownError, "must be a dictionary");
 
   bool is_android = chrome_options->HasKey("androidPackage");
-  bool is_existing = chrome_options->HasKey("useExistingBrowser");
+  bool is_existing = chrome_options->HasKey("debuggerAddress");
 
   std::map<std::string, Parser> parser_map;
-  // Ignore 'binary' and 'extensions' capability, since the Java client
-  // always passes them.
+  // Ignore 'args', 'binary' and 'extensions' capabilities by default, since the
+  // Java client always passes them.
+  parser_map["args"] = base::Bind(&IgnoreCapability);
   parser_map["binary"] = base::Bind(&IgnoreCapability);
   parser_map["extensions"] = base::Bind(&IgnoreCapability);
   if (is_android) {
@@ -276,23 +259,23 @@ Status ParseChromeOptions(
         base::Bind(&ParseString, &capabilities->android_package);
     parser_map["androidProcess"] =
         base::Bind(&ParseString, &capabilities->android_process);
-    parser_map["args"] = base::Bind(&ParseArgs, true);
+    parser_map["args"] = base::Bind(&ParseSwitches);
   } else if (is_existing) {
-    parser_map["args"] = base::Bind(&IgnoreCapability);
-    parser_map["useExistingBrowser"] = base::Bind(&ParseUseExistingBrowser);
+    parser_map["debuggerAddress"] = base::Bind(&ParseUseExistingBrowser);
   } else {
-    parser_map["forceDevToolsScreenshot"] = base::Bind(
-        &ParseBoolean, &capabilities->force_devtools_screenshot);
-    parser_map["args"] = base::Bind(&ParseArgs, false);
-    parser_map["binary"] = base::Bind(&ParseChromeBinary);
+    parser_map["args"] = base::Bind(&ParseSwitches);
+    parser_map["binary"] = base::Bind(&ParseFilePath, &capabilities->binary);
     parser_map["detach"] = base::Bind(&ParseBoolean, &capabilities->detach);
     parser_map["excludeSwitches"] = base::Bind(&ParseExcludeSwitches);
     parser_map["extensions"] = base::Bind(&ParseExtensions);
+    parser_map["forceDevToolsScreenshot"] = base::Bind(
+        &ParseBoolean, &capabilities->force_devtools_screenshot);
     parser_map["loadAsync"] =
         base::Bind(&IgnoreDeprecatedOption, log, "loadAsync");
-    parser_map["localState"] = base::Bind(&ParseLocalState);
+    parser_map["localState"] =
+        base::Bind(&ParseDict, &capabilities->local_state);
     parser_map["logPath"] = base::Bind(&ParseLogPath);
-    parser_map["prefs"] = base::Bind(&ParsePrefs);
+    parser_map["prefs"] = base::Bind(&ParseDict, &capabilities->prefs);
   }
 
   for (base::DictionaryValue::Iterator it(*chrome_options); !it.IsAtEnd();
@@ -310,10 +293,116 @@ Status ParseChromeOptions(
 
 }  // namespace
 
+Switches::Switches() {}
+
+Switches::~Switches() {}
+
+void Switches::SetSwitch(const std::string& name) {
+  SetSwitch(name, NativeString());
+}
+
+void Switches::SetSwitch(const std::string& name, const std::string& value) {
+#if defined(OS_WIN)
+  SetSwitch(name, UTF8ToUTF16(value));
+#else
+  switch_map_[name] = value;
+#endif
+}
+
+void Switches::SetSwitch(const std::string& name, const string16& value) {
+#if defined(OS_WIN)
+  switch_map_[name] = value;
+#else
+  SetSwitch(name, UTF16ToUTF8(value));
+#endif
+}
+
+void Switches::SetSwitch(const std::string& name, const base::FilePath& value) {
+  SetSwitch(name, value.value());
+}
+
+void Switches::SetFromSwitches(const Switches& switches) {
+  for (SwitchMap::const_iterator iter = switches.switch_map_.begin();
+       iter != switches.switch_map_.end();
+       ++iter) {
+    switch_map_[iter->first] = iter->second;
+  }
+}
+
+void Switches::SetUnparsedSwitch(const std::string& unparsed_switch) {
+  std::string value;
+  size_t equals_index = unparsed_switch.find('=');
+  if (equals_index != std::string::npos)
+    value = unparsed_switch.substr(equals_index + 1);
+
+  std::string name;
+  size_t start_index = 0;
+  if (unparsed_switch.substr(0, 2) == "--")
+    start_index = 2;
+  name = unparsed_switch.substr(start_index, equals_index - start_index);
+
+  SetSwitch(name, value);
+}
+
+void Switches::RemoveSwitch(const std::string& name) {
+  switch_map_.erase(name);
+}
+
+bool Switches::HasSwitch(const std::string& name) const {
+  return switch_map_.count(name) > 0;
+}
+
+std::string Switches::GetSwitchValue(const std::string& name) const {
+  NativeString value = GetSwitchValueNative(name);
+#if defined(OS_WIN)
+  return UTF16ToUTF8(value);
+#else
+  return value;
+#endif
+}
+
+Switches::NativeString Switches::GetSwitchValueNative(
+    const std::string& name) const {
+  SwitchMap::const_iterator iter = switch_map_.find(name);
+  if (iter == switch_map_.end())
+    return NativeString();
+  return iter->second;
+}
+
+size_t Switches::GetSize() const {
+  return switch_map_.size();
+}
+
+void Switches::AppendToCommandLine(CommandLine* command) const {
+  for (SwitchMap::const_iterator iter = switch_map_.begin();
+       iter != switch_map_.end();
+       ++iter) {
+    command->AppendSwitchNative(iter->first, iter->second);
+  }
+}
+
+std::string Switches::ToString() const {
+  std::string str;
+  SwitchMap::const_iterator iter = switch_map_.begin();
+  while (iter != switch_map_.end()) {
+    str += "--" + iter->first;
+    std::string value = GetSwitchValue(iter->first);
+    if (value.length()) {
+      if (value.find(' ') != std::string::npos)
+        value = base::GetDoubleQuotedJson(value);
+      str += "=" + value;
+    }
+    ++iter;
+    if (iter == switch_map_.end())
+      break;
+    str += " ";
+  }
+  return str;
+}
+
 Capabilities::Capabilities()
-    : force_devtools_screenshot(false),
-      detach(false),
-      command(CommandLine::NO_PROGRAM) {}
+    : detach(false),
+      force_devtools_screenshot(false) {}
 
 Capabilities::~Capabilities() {}
 
@@ -322,7 +411,7 @@ bool Capabilities::IsAndroid() const {
 }
 
 bool Capabilities::IsExistingBrowser() const {
-  return use_existing_browser.IsValid();
+  return debugger_address.IsValid();
 }
 
 Status Capabilities::Parse(

@@ -105,8 +105,11 @@ def _Run(java_tests_src_dir, test_filter,
 
   jvm_args = []
   if debug:
-    jvm_args += ['-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,'
-                 'address=33081']
+    transport = 'dt_socket'
+    if util.IsWindows():
+      transport = 'dt_shmem'
+    jvm_args += ['-agentlib:jdwp=transport=%s,server=y,suspend=y,'
+                 'address=33081' % transport]
     # Unpack the sources into the test directory and add to the class path
     # for ease of debugging, particularly with jdb.
     util.Unzip(os.path.join(java_tests_src_dir, 'test-nodeps-srcs.jar'),

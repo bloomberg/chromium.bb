@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CAPABILITIES_H_
 #define CHROME_TEST_CHROMEDRIVER_CAPABILITIES_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -12,14 +13,49 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 #include "chrome/test/chromedriver/net/net_util.h"
 
 namespace base {
 class DictionaryValue;
 }
 
+class CommandLine;
 class Log;
 class Status;
+
+class Switches {
+ public:
+  typedef base::FilePath::StringType NativeString;
+  Switches();
+  ~Switches();
+
+  void SetSwitch(const std::string& name);
+  void SetSwitch(const std::string& name, const std::string& value);
+  void SetSwitch(const std::string& name, const string16& value);
+  void SetSwitch(const std::string& name, const base::FilePath& value);
+
+  // In case of same key, |switches| will override.
+  void SetFromSwitches(const Switches& switches);
+
+  // Sets a switch from the capabilities, of the form [--]name[=value].
+  void SetUnparsedSwitch(const std::string& unparsed_switch);
+
+  void RemoveSwitch(const std::string& name);
+
+  bool HasSwitch(const std::string& name) const;
+  std::string GetSwitchValue(const std::string& name) const;
+  NativeString GetSwitchValueNative(const std::string& name) const;
+
+  size_t GetSize() const;
+
+  void AppendToCommandLine(CommandLine* command) const;
+  std::string ToString() const;
+
+ private:
+  typedef std::map<std::string, NativeString> SwitchMap;
+  SwitchMap switch_map_;
+};
 
 struct Capabilities {
   Capabilities();
@@ -33,34 +69,43 @@ struct Capabilities {
 
   Status Parse(const base::DictionaryValue& desired_caps, Log* log);
 
-  // True if should always use DevTools for taking screenshots.
-  // This is experimental and may be removed at a later point.
-  bool force_devtools_screenshot;
+  std::string android_activity;
+
+  std::string android_device_serial;
+
+  std::string android_package;
+
+  std::string android_process;
+
+  base::FilePath binary;
+
+  // If provided, the remote debugging address to connect to.
+  NetAddress debugger_address;
 
   // Whether the lifetime of the started Chrome browser process should be
   // bound to ChromeDriver's process. If true, Chrome will not quit if
   // ChromeDriver dies.
   bool detach;
 
-  std::string android_package;
-  std::string android_activity;
-  std::string android_process;
-  std::string android_device_serial;
-  std::string android_args;
-
-  std::string log_path;
-  CommandLine command;
-  scoped_ptr<base::DictionaryValue> prefs;
-  scoped_ptr<base::DictionaryValue> local_state;
-  std::vector<std::string> extensions;
-  scoped_ptr<base::DictionaryValue> logging_prefs;
-
   // Set of switches which should be removed from default list when launching
   // Chrome.
   std::set<std::string> exclude_switches;
 
-  // If provided, the remote debugging address to connect to.
-  NetAddress use_existing_browser;
+  std::vector<std::string> extensions;
+
+  // True if should always use DevTools for taking screenshots.
+  // This is experimental and may be removed at a later point.
+  bool force_devtools_screenshot;
+
+  scoped_ptr<base::DictionaryValue> local_state;
+
+  std::string log_path;
+
+  scoped_ptr<base::DictionaryValue> logging_prefs;
+
+  scoped_ptr<base::DictionaryValue> prefs;
+
+  Switches switches;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CAPABILITIES_H_
