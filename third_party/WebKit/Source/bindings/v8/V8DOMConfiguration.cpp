@@ -54,7 +54,9 @@ void V8DOMConfiguration::installCallbacks(v8::Handle<v8::ObjectTemplate> prototy
         v8::FunctionCallback callback = callbacks[i].callback;
         if (currentWorldType == MainWorld && callbacks[i].callbackForMainWorld)
             callback = callbacks[i].callbackForMainWorld;
-        prototype->Set(v8::String::NewSymbol(callbacks[i].name), v8::FunctionTemplate::New(callback, v8Undefined(), signature, callbacks[i].length), attributes);
+        v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(callback, v8Undefined(), signature, callbacks[i].length);
+        functionTemplate->RemovePrototype();
+        prototype->Set(v8::String::NewSymbol(callbacks[i].name), functionTemplate, attributes);
     }
 }
 

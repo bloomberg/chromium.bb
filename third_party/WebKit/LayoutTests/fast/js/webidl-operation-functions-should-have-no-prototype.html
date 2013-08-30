@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<script src="resources/js-test-pre.js"></script>
+<script>
+
+description("WebIDL operation functions should not have a prototype property.");
+
+shouldBeFalse('"prototype" in document.appendChild');
+
+</script>
+<script src="resources/js-test-post.js"></script>
