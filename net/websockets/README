@@ -30,6 +30,9 @@ performs framing and implements protocol semantics in the browser process, and
 presents a high-level interface to the renderer process similar to a
 multiplexing proxy. This is not yet used in any stable Chromium version.
 
+websocket_basic_stream.cc
+websocket_basic_stream.h
+websocket_basic_stream_test.cc
 websocket_channel.cc
 websocket_channel.h
 websocket_channel_test.cc
