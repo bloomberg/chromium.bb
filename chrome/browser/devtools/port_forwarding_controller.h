@@ -23,7 +23,7 @@ class PortForwardingController {
 
  private:
   class Connection;
-  typedef std::map<std::string, Connection*> Registry;
+  typedef std::map<std::string, Connection* > Registry;
 
   scoped_refptr<DevToolsAdbBridge> bridge_;
   PrefService* pref_service_;

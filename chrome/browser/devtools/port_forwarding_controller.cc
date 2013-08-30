@@ -262,28 +262,31 @@ static std::string FindBestSocketForTethering(
 
 }  // namespace
 
-class TetheringAdbFilter : public base::RefCountedThreadSafe<
-    TetheringAdbFilter,
-    content::BrowserThread::DeleteOnUIThread> {
+class PortForwardingController::Connection
+    : public AdbWebSocket::Delegate,
+      public base::RefCountedThreadSafe<
+          Connection,
+          content::BrowserThread::DeleteOnUIThread> {
  public:
   typedef DevToolsAdbBridge::RemoteDevice::PortStatus PortStatus;
   typedef DevToolsAdbBridge::RemoteDevice::PortStatusMap PortStatusMap;
 
-  TetheringAdbFilter(scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
-                     base::MessageLoop* adb_message_loop,
-                     PrefService* pref_service,
-                     scoped_refptr<AdbWebSocket> web_socket);
+  Connection(Registry* registry,
+             scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
+             const std::string& socket,
+             scoped_refptr<DevToolsAdbBridge> bridge,
+             PrefService* pref_service);
 
   const PortStatusMap& GetPortStatusMap();
 
-  bool ProcessIncomingMessage(const std::string& message);
+  void Shutdown();
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class base::DeleteHelper<TetheringAdbFilter>;
+  friend class base::DeleteHelper<Connection>;
 
-  virtual ~TetheringAdbFilter();
+  virtual ~Connection();
 
   typedef std::map<int, std::string> ForwardingMap;
 
@@ -307,8 +310,15 @@ class TetheringAdbFilter : public base::RefCountedThreadSafe<
   void UpdatePortStatusMap();
   void UpdatePortStatusMapOnUIThread(const PortStatusMap& status_map);
 
+  // AdbWebSocket::Delegate implementation:
+  virtual void OnSocketOpened() OVERRIDE;
+  virtual void OnFrameRead(const std::string& message) OVERRIDE;
+  virtual void OnSocketClosed(bool closed_by_device) OVERRIDE;
+  virtual bool ProcessIncomingMessage(const std::string& message) OVERRIDE;
+
+  PortForwardingController::Registry* registry_;
   scoped_refptr<DevToolsAdbBridge::AndroidDevice> device_;
-  base::MessageLoop* adb_message_loop_;
+  scoped_refptr<DevToolsAdbBridge> bridge_;
   PrefChangeRegistrar pref_change_registrar_;
   scoped_refptr<AdbWebSocket> web_socket_;
   int command_id_;
@@ -317,35 +327,42 @@ class TetheringAdbFilter : public base::RefCountedThreadSafe<
   PortStatusMap port_status_;
   PortStatusMap port_status_on_ui_thread_;
 
-  DISALLOW_COPY_AND_ASSIGN(TetheringAdbFilter);
+  DISALLOW_COPY_AND_ASSIGN(Connection);
 };
 
-TetheringAdbFilter::TetheringAdbFilter(
+PortForwardingController::Connection::Connection(
+    Registry* registry,
     scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
-    base::MessageLoop* adb_message_loop,
-    PrefService* pref_service,
-    scoped_refptr<AdbWebSocket> web_socket)
-    : device_(device),
-      adb_message_loop_(adb_message_loop),
-      web_socket_(web_socket),
+    const std::string& socket,
+    scoped_refptr<DevToolsAdbBridge> bridge,
+    PrefService* pref_service)
+    : registry_(registry),
+      device_(device),
+      bridge_(bridge),
       command_id_(0) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   pref_change_registrar_.Init(pref_service);
-
-  OnPrefsChange();
-
-  base::Closure pref_callback = base::Bind(
-      &TetheringAdbFilter::OnPrefsChange, base::Unretained(this));
-  pref_change_registrar_.Add(
-      prefs::kDevToolsPortForwardingEnabled, pref_callback);
-  pref_change_registrar_.Add(
-      prefs::kDevToolsPortForwardingConfig, pref_callback);
+  (*registry_)[device_->serial()] = this;
+  web_socket_ = new AdbWebSocket(
+      device, socket, kDevToolsRemoteBrowserTarget,
+      bridge_->GetAdbMessageLoop(), this);
+  AddRef();  // Balanced in OnSocketClosed();
 }
 
-TetheringAdbFilter::~TetheringAdbFilter() {
+void PortForwardingController::Connection::Shutdown() {
+  registry_ = NULL;
+  // This will have no effect if the socket is not connected yet.
+  web_socket_->Disconnect();
 }
 
-void TetheringAdbFilter::OnPrefsChange() {
+PortForwardingController::Connection::~Connection() {
+  if (registry_) {
+    DCHECK(registry_->find(device_->serial()) != registry_->end());
+    registry_->erase(device_->serial());
+  }
+}
+
+void PortForwardingController::Connection::OnPrefsChange() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   ForwardingMap new_forwarding_map;
@@ -365,23 +382,25 @@ void TetheringAdbFilter::OnPrefsChange() {
     }
   }
 
-  adb_message_loop_->PostTask(
+  bridge_->GetAdbMessageLoop()->PostTask(
       FROM_HERE,
-      base::Bind(&TetheringAdbFilter::ChangeForwardingMap,
+      base::Bind(&Connection::ChangeForwardingMap,
                  this, new_forwarding_map));
 }
 
-void TetheringAdbFilter::ChangeForwardingMap(ForwardingMap new_forwarding_map) {
-  DCHECK_EQ(base::MessageLoop::current(), adb_message_loop_);
+void PortForwardingController::Connection::ChangeForwardingMap(
+    ForwardingMap new_forwarding_map) {
+  DCHECK_EQ(base::MessageLoop::current(), bridge_->GetAdbMessageLoop());
 
   SerializeChanges(kTetheringUnbind, new_forwarding_map, forwarding_map_);
   SerializeChanges(kTetheringBind, forwarding_map_, new_forwarding_map);
   forwarding_map_ = new_forwarding_map;
 }
 
-void TetheringAdbFilter::SerializeChanges(const std::string& method,
-                                          const ForwardingMap& old_map,
-                                          const ForwardingMap& new_map) {
+void PortForwardingController::Connection::SerializeChanges(
+    const std::string& method,
+    const ForwardingMap& old_map,
+    const ForwardingMap& new_map) {
   for (ForwardingMap::const_iterator new_it(new_map.begin());
       new_it != new_map.end(); ++new_it) {
     int port = new_it->first;
@@ -394,14 +413,15 @@ void TetheringAdbFilter::SerializeChanges(const std::string& method,
   }
 }
 
-void TetheringAdbFilter::SendCommand(const std::string& method, int port) {
+void PortForwardingController::Connection::SendCommand(
+    const std::string& method, int port) {
   base::DictionaryValue params;
   params.SetInteger(kPortAttribute, port);
   DevToolsProtocol::Command command(++command_id_, method, &params);
 
   if (method == kTetheringBind) {
     pending_responses_[command.id()] =
-        base::Bind(&TetheringAdbFilter::ProcessBindResponse,
+        base::Bind(&Connection::ProcessBindResponse,
                    base::Unretained(this), port);
 #if defined(DEBUG_DEVTOOLS)
     port_status_[port] = kStatusConnecting;
@@ -419,7 +439,7 @@ void TetheringAdbFilter::SendCommand(const std::string& method, int port) {
     }
 
     pending_responses_[command.id()] =
-        base::Bind(&TetheringAdbFilter::ProcessUnbindResponse,
+        base::Bind(&Connection::ProcessUnbindResponse,
                    base::Unretained(this), port);
 #if defined(DEBUG_DEVTOOLS)
     port_status_[port] = kStatusDisconnecting;
@@ -430,7 +450,8 @@ void TetheringAdbFilter::SendCommand(const std::string& method, int port) {
   web_socket_->SendFrameOnHandlerThread(command.Serialize());
 }
 
-bool TetheringAdbFilter::ProcessResponse(const std::string& message) {
+bool PortForwardingController::Connection::ProcessResponse(
+    const std::string& message) {
   scoped_ptr<DevToolsProtocol::Response> response(
       DevToolsProtocol::ParseResponse(message));
   if (!response)
@@ -445,12 +466,14 @@ bool TetheringAdbFilter::ProcessResponse(const std::string& message) {
   return true;
 }
 
-void TetheringAdbFilter::ProcessBindResponse(int port, PortStatus status) {
+void PortForwardingController::Connection::ProcessBindResponse(
+    int port, PortStatus status) {
   port_status_[port] = status;
   UpdatePortStatusMap();
 }
 
-void TetheringAdbFilter::ProcessUnbindResponse(int port, PortStatus status) {
+void PortForwardingController::Connection::ProcessUnbindResponse(
+    int port, PortStatus status) {
   PortStatusMap::iterator it = port_status_.find(port);
   if (it == port_status_.end())
     return;
@@ -461,7 +484,8 @@ void TetheringAdbFilter::ProcessUnbindResponse(int port, PortStatus status) {
   UpdatePortStatusMap();
 }
 
-void TetheringAdbFilter::UpdateSocketCount(int port, int increment) {
+void PortForwardingController::Connection::UpdateSocketCount(
+    int port, int increment) {
 #if defined(DEBUG_DEVTOOLS)
   PortStatusMap::iterator it = port_status_.find(port);
   if (it == port_status_.end())
@@ -473,26 +497,52 @@ void TetheringAdbFilter::UpdateSocketCount(int port, int increment) {
 #endif  // defined(DEBUG_DEVTOOLS)
 }
 
-void TetheringAdbFilter::UpdatePortStatusMap() {
+void PortForwardingController::Connection::UpdatePortStatusMap() {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-     base::Bind(&TetheringAdbFilter::UpdatePortStatusMapOnUIThread,
+     base::Bind(&Connection::UpdatePortStatusMapOnUIThread,
         this, port_status_));
 }
 
-void TetheringAdbFilter::UpdatePortStatusMapOnUIThread(
+void PortForwardingController::Connection::UpdatePortStatusMapOnUIThread(
     const PortStatusMap& status_map) {
   port_status_on_ui_thread_ = status_map;
 }
 
-const TetheringAdbFilter::PortStatusMap&
-TetheringAdbFilter::GetPortStatusMap() {
+const PortForwardingController::Connection::PortStatusMap&
+PortForwardingController::Connection::GetPortStatusMap() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return port_status_on_ui_thread_;
 }
 
-bool TetheringAdbFilter::ProcessIncomingMessage(const std::string& message) {
-  DCHECK_EQ(base::MessageLoop::current(), adb_message_loop_);
+void PortForwardingController::Connection::OnSocketOpened() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!registry_) {
+    // Socket was created after Shutdown was called. Disconnect immediately.
+    web_socket_->Disconnect();
+    return;
+  }
+  OnPrefsChange();
+  base::Closure pref_callback = base::Bind(
+      &Connection::OnPrefsChange, base::Unretained(this));
+  pref_change_registrar_.Add(
+      prefs::kDevToolsPortForwardingEnabled, pref_callback);
+  pref_change_registrar_.Add(
+      prefs::kDevToolsPortForwardingConfig, pref_callback);
+}
 
+void PortForwardingController::Connection::OnFrameRead(
+    const std::string& message) {
+}
+
+void PortForwardingController::Connection::OnSocketClosed(
+    bool closed_by_device) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  Release();  // Balanced in the constructor.
+}
+
+bool PortForwardingController::Connection::ProcessIncomingMessage(
+    const std::string& message) {
+  DCHECK_EQ(base::MessageLoop::current(), bridge_->GetAdbMessageLoop());
   if (ProcessResponse(message))
     return true;
 
@@ -521,106 +571,12 @@ bool TetheringAdbFilter::ProcessIncomingMessage(const std::string& message) {
   std::string location = it->second;
 
   SocketTunnel* tunnel = new SocketTunnel(location,
-      base::Bind(&TetheringAdbFilter::UpdateSocketCount, this, port));
+      base::Bind(&Connection::UpdateSocketCount, this, port));
 
   device_->OpenSocket(connection_id.c_str(),
       base::Bind(&SocketTunnel::Start, base::Unretained(tunnel)));
   return true;
 }
-
-class PortForwardingController::Connection : public AdbWebSocket::Delegate {
- public:
-  Connection(
-      Registry* registry,
-      scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
-      const std::string& socket,
-      scoped_refptr<DevToolsAdbBridge> bridge,
-      PrefService* pref_service);
-
-  void Shutdown();
-
-  TetheringAdbFilter::PortStatusMap port_status();
-
- private:
-  virtual ~Connection();
-
-  virtual void OnSocketOpened() OVERRIDE;
-  virtual void OnFrameRead(const std::string& message) OVERRIDE;
-  virtual void OnSocketClosed(bool closed_by_device) OVERRIDE;
-  virtual bool ProcessIncomingMessage(const std::string& message) OVERRIDE;
-
-  Registry* registry_;
-  scoped_refptr<DevToolsAdbBridge::AndroidDevice> device_;
-  scoped_refptr<DevToolsAdbBridge> bridge_;
-  PrefService* pref_service_;
-
-  scoped_refptr<TetheringAdbFilter> tethering_adb_filter_;
-  scoped_refptr<AdbWebSocket> web_socket_;
-};
-
-PortForwardingController::Connection::Connection(
-    Registry* registry,
-    scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
-    const std::string& socket,
-    scoped_refptr<DevToolsAdbBridge> bridge,
-    PrefService* pref_service)
-    : registry_(registry),
-      device_(device),
-      bridge_(bridge),
-      pref_service_(pref_service) {
-   (*registry_)[device_->serial()] = this;
-   web_socket_ = new AdbWebSocket(
-        device, socket, kDevToolsRemoteBrowserTarget,
-        bridge->GetAdbMessageLoop(), this);
-}
-
-void PortForwardingController::Connection::Shutdown() {
-  registry_ = NULL;
-  // This will have no effect if the socket is not connected yet.
-  web_socket_->Disconnect();
-}
-
-TetheringAdbFilter::PortStatusMap
-PortForwardingController::Connection::port_status() {
-  if (tethering_adb_filter_)
-    return tethering_adb_filter_->GetPortStatusMap();
-  else
-    return TetheringAdbFilter::PortStatusMap();
-}
-
-PortForwardingController::Connection::~Connection() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (registry_) {
-    DCHECK(registry_->find(device_->serial()) != registry_->end());
-    registry_->erase(device_->serial());
-  }
-}
-
-void PortForwardingController::Connection::OnSocketOpened() {
-  if (!registry_) {
-    // Socket was created after Shutdown was called. Disconnect immediately.
-    web_socket_->Disconnect();
-    return;
-  }
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  tethering_adb_filter_ = new TetheringAdbFilter(
-      device_, bridge_->GetAdbMessageLoop(), pref_service_, web_socket_);
-}
-
-void PortForwardingController::Connection::OnFrameRead(
-    const std::string& message) {
-}
-
-void PortForwardingController::Connection::OnSocketClosed(
-    bool closed_by_device) {
-  delete this;
-}
-
-bool PortForwardingController::Connection::ProcessIncomingMessage(
-    const std::string& message) {
-  return tethering_adb_filter_->ProcessIncomingMessage(message);
-}
-
 
 PortForwardingController::PortForwardingController(
     scoped_refptr<DevToolsAdbBridge> bridge,
@@ -647,7 +603,7 @@ void PortForwardingController::UpdateDeviceList(
           &registry_, (*it)->device(), socket, bridge_, pref_service_);
       }
     } else {
-      (*it)->set_port_status((*rit).second->port_status());
+      (*it)->set_port_status((*rit).second->GetPortStatusMap());
     }
   }
 }
