@@ -151,6 +151,7 @@ class DeveloperPrivateGetItemsInfoFunction : public AsyncExtensionFunction {
 
   // Helper that lists the current inspectable html pages for the extension.
   void GetInspectablePagesForExtensionProcess(
+      const Extension* extension,
       const std::set<content::RenderViewHost*>& views,
       ItemInspectViewList* result);
 

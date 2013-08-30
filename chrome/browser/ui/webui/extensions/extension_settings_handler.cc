@@ -1005,6 +1005,7 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
   ExtensionProcessManager* process_manager =
       ExtensionSystem::Get(extension_service_->profile())->process_manager();
   GetInspectablePagesForExtensionProcess(
+      extension,
       process_manager->GetRenderViewHostsForExtension(extension->id()),
       &result);
 
@@ -1032,6 +1033,7 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
         ExtensionSystem::Get(extension_service_->profile()->
             GetOffTheRecordProfile())->process_manager();
     GetInspectablePagesForExtensionProcess(
+        extension,
         process_manager->GetRenderViewHostsForExtension(extension->id()),
         &result);
 
@@ -1051,8 +1053,11 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
 }
 
 void ExtensionSettingsHandler::GetInspectablePagesForExtensionProcess(
+    const Extension* extension,
     const std::set<RenderViewHost*>& views,
     std::vector<ExtensionPage>* result) {
+  bool has_generated_background_page =
+      BackgroundInfo::HasGeneratedBackgroundPage(extension);
   for (std::set<RenderViewHost*>::const_iterator iter = views.begin();
        iter != views.end(); ++iter) {
     RenderViewHost* host = *iter;
@@ -1065,9 +1070,14 @@ void ExtensionSettingsHandler::GetInspectablePagesForExtensionProcess(
 
     GURL url = web_contents->GetURL();
     content::RenderProcessHost* process = host->GetProcess();
+    bool is_background_page =
+        (url == BackgroundInfo::GetBackgroundURL(extension));
     result->push_back(
-        ExtensionPage(url, process->GetID(), host->GetRoutingID(),
-                      process->GetBrowserContext()->IsOffTheRecord(), false));
+        ExtensionPage(url,
+                      process->GetID(),
+                      host->GetRoutingID(),
+                      process->GetBrowserContext()->IsOffTheRecord(),
+                      is_background_page && has_generated_background_page));
   }
 }
 
@@ -1081,16 +1091,22 @@ void ExtensionSettingsHandler::GetShellWindowPagesForExtensionProfile(
   const apps::ShellWindowRegistry::ShellWindowList windows =
       registry->GetShellWindowsForApp(extension->id());
 
+  bool has_generated_background_page =
+      BackgroundInfo::HasGeneratedBackgroundPage(extension);
   for (apps::ShellWindowRegistry::const_iterator it = windows.begin();
        it != windows.end(); ++it) {
     WebContents* web_contents = (*it)->web_contents();
     RenderViewHost* host = web_contents->GetRenderViewHost();
     content::RenderProcessHost* process = host->GetProcess();
 
+    bool is_background_page =
+        (web_contents->GetURL() == BackgroundInfo::GetBackgroundURL(extension));
     result->push_back(
-        ExtensionPage(web_contents->GetURL(), process->GetID(),
+        ExtensionPage(web_contents->GetURL(),
+                      process->GetID(),
                       host->GetRoutingID(),
-                      process->GetBrowserContext()->IsOffTheRecord(), false));
+                      process->GetBrowserContext()->IsOffTheRecord(),
+                      is_background_page && has_generated_background_page));
   }
 }
 

@@ -342,8 +342,11 @@ scoped_ptr<developer::ItemInfo>
 
 void DeveloperPrivateGetItemsInfoFunction::
     GetInspectablePagesForExtensionProcess(
+        const Extension* extension,
         const std::set<content::RenderViewHost*>& views,
         ItemInspectViewList* result) {
+  bool has_generated_background_page =
+      BackgroundInfo::HasGeneratedBackgroundPage(extension);
   for (std::set<content::RenderViewHost*>::const_iterator iter = views.begin();
        iter != views.end(); ++iter) {
     content::RenderViewHost* host = *iter;
@@ -355,12 +358,14 @@ void DeveloperPrivateGetItemsInfoFunction::
       continue;
 
     content::RenderProcessHost* process = host->GetProcess();
-    result->push_back(
-        constructInspectView(web_contents->GetURL(),
-                             process->GetID(),
-                             host->GetRoutingID(),
-                             process->GetBrowserContext()->IsOffTheRecord(),
-                             false));
+    bool is_background_page =
+        (web_contents->GetURL() == BackgroundInfo::GetBackgroundURL(extension));
+    result->push_back(constructInspectView(
+        web_contents->GetURL(),
+        process->GetID(),
+        host->GetRoutingID(),
+        process->GetBrowserContext()->IsOffTheRecord(),
+        is_background_page && has_generated_background_page));
   }
 }
 
@@ -374,17 +379,21 @@ void DeveloperPrivateGetItemsInfoFunction::
   const ShellWindowRegistry::ShellWindowList windows =
       registry->GetShellWindowsForApp(extension->id());
 
+  bool has_generated_background_page =
+      BackgroundInfo::HasGeneratedBackgroundPage(extension);
   for (ShellWindowRegistry::const_iterator it = windows.begin();
        it != windows.end(); ++it) {
     content::WebContents* web_contents = (*it)->web_contents();
     RenderViewHost* host = web_contents->GetRenderViewHost();
     content::RenderProcessHost* process = host->GetProcess();
-    result->push_back(
-        constructInspectView(web_contents->GetURL(),
-                             process->GetID(),
-                             host->GetRoutingID(),
-                             process->GetBrowserContext()->IsOffTheRecord(),
-                             false));
+    bool is_background_page =
+        (web_contents->GetURL() == BackgroundInfo::GetBackgroundURL(extension));
+    result->push_back(constructInspectView(
+        web_contents->GetURL(),
+        process->GetID(),
+        host->GetRoutingID(),
+        process->GetBrowserContext()->IsOffTheRecord(),
+        is_background_page && has_generated_background_page));
   }
 }
 
@@ -422,6 +431,7 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
   ExtensionProcessManager* process_manager =
       ExtensionSystem::Get(profile())->process_manager();
   GetInspectablePagesForExtensionProcess(
+      extension,
       process_manager->GetRenderViewHostsForExtension(extension->id()),
       &result);
 
@@ -448,6 +458,7 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
     process_manager = ExtensionSystem::Get(
         service->profile()->GetOffTheRecordProfile())->process_manager();
     GetInspectablePagesForExtensionProcess(
+        extension,
         process_manager->GetRenderViewHostsForExtension(extension->id()),
         &result);
 

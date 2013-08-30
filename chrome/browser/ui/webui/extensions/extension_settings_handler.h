@@ -193,6 +193,7 @@ class ExtensionSettingsHandler
   std::vector<ExtensionPage> GetInspectablePagesForExtension(
       const Extension* extension, bool extension_is_enabled);
   void GetInspectablePagesForExtensionProcess(
+      const Extension* extension,
       const std::set<content::RenderViewHost*>& views,
       std::vector<ExtensionPage>* result);
   void GetShellWindowPagesForExtensionProfile(
