@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/devtools/tethering_adb_filter.h"
+#include "chrome/browser/devtools/port_forwarding_controller.h"
 
 #include <algorithm>
 #include <map>
@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -260,6 +261,64 @@ static std::string FindBestSocketForTethering(
 }
 
 }  // namespace
+
+class TetheringAdbFilter : public base::RefCountedThreadSafe<
+    TetheringAdbFilter,
+    content::BrowserThread::DeleteOnUIThread> {
+ public:
+  typedef DevToolsAdbBridge::RemoteDevice::PortStatus PortStatus;
+  typedef DevToolsAdbBridge::RemoteDevice::PortStatusMap PortStatusMap;
+
+  TetheringAdbFilter(scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
+                     base::MessageLoop* adb_message_loop,
+                     PrefService* pref_service,
+                     scoped_refptr<AdbWebSocket> web_socket);
+
+  const PortStatusMap& GetPortStatusMap();
+
+  bool ProcessIncomingMessage(const std::string& message);
+
+ private:
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<TetheringAdbFilter>;
+
+  virtual ~TetheringAdbFilter();
+
+  typedef std::map<int, std::string> ForwardingMap;
+
+  typedef base::Callback<void(PortStatus)> CommandCallback;
+  typedef std::map<int, CommandCallback> CommandCallbackMap;
+
+  void OnPrefsChange();
+
+  void ChangeForwardingMap(ForwardingMap map);
+
+  void SerializeChanges(const std::string& method,
+                        const ForwardingMap& old_map,
+                        const ForwardingMap& new_map);
+
+  void SendCommand(const std::string& method, int port);
+  bool ProcessResponse(const std::string& json);
+
+  void ProcessBindResponse(int port, PortStatus status);
+  void ProcessUnbindResponse(int port, PortStatus status);
+  void UpdateSocketCount(int port, int increment);
+  void UpdatePortStatusMap();
+  void UpdatePortStatusMapOnUIThread(const PortStatusMap& status_map);
+
+  scoped_refptr<DevToolsAdbBridge::AndroidDevice> device_;
+  base::MessageLoop* adb_message_loop_;
+  PrefChangeRegistrar pref_change_registrar_;
+  scoped_refptr<AdbWebSocket> web_socket_;
+  int command_id_;
+  ForwardingMap forwarding_map_;
+  CommandCallbackMap pending_responses_;
+  PortStatusMap port_status_;
+  PortStatusMap port_status_on_ui_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(TetheringAdbFilter);
+};
 
 TetheringAdbFilter::TetheringAdbFilter(
     scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
