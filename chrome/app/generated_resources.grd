@@ -271,6 +271,12 @@ are declared in build/common.gypi.
       <message name="IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE" desc="The contents of the balloon that is displayed when an extension crashes">
         <ph name="APP_NAME">$1<ex>Extension</ex></ph> has crashed. Click this balloon to reload the extension.
       </message>
+      <message name="IDS_BACKGROUND_MISBEHAVING_APP_BALLOON_MESSAGE" desc="The contents of the balloon that is displayed when a background force-installed app crashes multiple times">
+        Managed app <ph name="APP_NAME">$1<ex>Background App</ex></ph> installed by enterprise policy is misbehaving. Please contact your administrator.
+      </message>
+      <message name="IDS_BACKGROUND_MISBEHAVING_EXTENSION_BALLOON_MESSAGE" desc="The contents of the balloon that is displayed when an extension installed by enterprise policy crashes repeatedly">
+        Managed extension <ph name="APP_NAME">$1<ex>Extension</ex></ph> installed by enterprise policy is misbehaving. Please contact your administrator.
+      </message>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_BACKGROUND_APP_NOT_INSTALLED" desc="In Title Case: Label displayed in the status icon context menu when a profile does not have any background apps running.">
           No Background Apps Running

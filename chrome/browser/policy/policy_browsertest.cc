@@ -27,12 +27,15 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
+#include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -86,6 +89,8 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -98,6 +103,7 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_test_utils.h"
@@ -448,6 +454,64 @@ class TestAudioObserver : public chromeos::CrasAudioHandler::AudioObserver {
   DISALLOW_COPY_AND_ASSIGN(TestAudioObserver);
 };
 #endif
+
+// This is a customized version of content::WindowedNotificationObserver that
+// waits until either of the two provided notification types is observed.
+// See content::WindowedNotificationObserver for further documentation.
+class OneOfTwoNotificationsObserver : public content::NotificationObserver {
+ public:
+  // Set up to wait for one of two notifications.
+  OneOfTwoNotificationsObserver(int notification_type1, int notification_type2);
+  virtual ~OneOfTwoNotificationsObserver();
+
+  // Wait until one of the specified notifications is observed. If either
+  // notification has already been received, Wait() returns immediately.
+  void Wait();
+
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+ private:
+  bool seen_;
+  bool running_;
+  content::NotificationRegistrar registrar_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(OneOfTwoNotificationsObserver);
+};
+
+OneOfTwoNotificationsObserver::OneOfTwoNotificationsObserver(
+    int notification_type1, int notification_type2)
+    : seen_(false), running_(false) {
+  registrar_.Add(this, notification_type1,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, notification_type2,
+                 content::NotificationService::AllSources());
+}
+
+OneOfTwoNotificationsObserver::~OneOfTwoNotificationsObserver() {}
+
+void OneOfTwoNotificationsObserver::Wait() {
+  if (seen_)
+    return;
+  running_ = true;
+  message_loop_runner_ = new content::MessageLoopRunner;
+  message_loop_runner_->Run();
+  EXPECT_TRUE(seen_);
+}
+
+// NotificationObserver:
+void OneOfTwoNotificationsObserver::Observe(int type,
+                     const content::NotificationSource& source,
+                     const content::NotificationDetails& details) {
+  seen_ = true;
+  if (!running_)
+    return;
+  message_loop_runner_->Quit();
+  running_ = false;
+}
 
 }  // namespace
 
@@ -1402,6 +1466,46 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   EXPECT_EQ(1, new_version->CompareTo(old_version));
 
   EXPECT_EQ(0u, interceptor.GetPendingSize());
+
+  // Wait until any background pages belonging to force-installed extensions
+  // have been loaded.
+  ExtensionProcessManager* manager =
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
+  ExtensionProcessManager::ViewSet all_views = manager->GetAllViews();
+  for (ExtensionProcessManager::ViewSet::const_iterator iter =
+           all_views.begin();
+       iter != all_views.end();) {
+    if (!(*iter)->IsLoading()) {
+      ++iter;
+    } else {
+      OneOfTwoNotificationsObserver(
+          content::NOTIFICATION_LOAD_STOP,
+          content::NOTIFICATION_WEB_CONTENTS_DESTROYED).Wait();
+
+      // Test activity may have modified the set of extension processes during
+      // message processing, so re-start the iteration to catch added/removed
+      // processes.
+      all_views = manager->GetAllViews();
+      iter = all_views.begin();
+    }
+  }
+
+  // Test policy-installed extensions are reloaded when killed.
+  BackgroundContentsService::
+      SetCrashDelaysForForceInstalledAppsAndExtensionsForTesting(0, 0);
+  content::WindowedNotificationObserver extension_crashed_observer(
+      chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+      content::NotificationService::AllSources());
+  content::WindowedNotificationObserver extension_loaded_observer(
+      chrome::NOTIFICATION_EXTENSION_LOADED,
+      content::NotificationService::AllSources());
+  extensions::ExtensionHost* extension_host =
+      extensions::ExtensionSystem::Get(browser()->profile())->
+          process_manager()->GetBackgroundHostForExtension(kGoodCrxId);
+  base::KillProcess(extension_host->render_process_host()->GetHandle(),
+                    content::RESULT_CODE_KILLED, false);
+  extension_crashed_observer.Wait();
+  extension_loaded_observer.Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {
