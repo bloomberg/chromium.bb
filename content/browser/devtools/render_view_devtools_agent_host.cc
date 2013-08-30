@@ -307,9 +307,9 @@ void RenderViewDevToolsAgentHost::RenderViewCrashed() {
 }
 
 bool RenderViewDevToolsAgentHost::OnRvhMessageReceived(
-    const IPC::Message& message) {
+    const IPC::Message& msg) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RenderViewDevToolsAgentHost, message)
+  IPC_BEGIN_MESSAGE_MAP(RenderViewDevToolsAgentHost, msg)
     IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
                         OnDispatchOnInspectorFrontend)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAgentRuntimeState,
@@ -318,18 +318,15 @@ bool RenderViewDevToolsAgentHost::OnRvhMessageReceived(
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_ClearBrowserCookies,
                         OnClearBrowserCookies)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
-                                handled = false; OnSwapCompositorFrame())
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_CompositorSurfaceBuffersSwapped,
-                                handled = false; OnSwapCompositorFrame())
-#endif
+                                handled = false; OnSwapCompositorFrame(msg))
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void RenderViewDevToolsAgentHost::OnSwapCompositorFrame() {
-  overrides_handler_->OnSwapCompositorFrame();
+void RenderViewDevToolsAgentHost::OnSwapCompositorFrame(
+    const IPC::Message& message) {
+  overrides_handler_->OnSwapCompositorFrame(message);
 }
 
 void RenderViewDevToolsAgentHost::OnSaveAgentRuntimeState(

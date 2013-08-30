@@ -7,6 +7,11 @@
 namespace content {
 namespace devtools {
 
+const char kParamX[] = "x";
+const char kParamY[] = "y";
+const char kParamWidth[] = "width";
+const char kParamHeight[] = "height";
+
 namespace DOM {
 
 namespace setFileInputFiles {
@@ -22,8 +27,6 @@ const char kParamType[] = "type";
 const char kParamModifiers[] = "modifiers";
 const char kParamTimestamp[] = "timestamp";
 const char kParamDeviceSpace[] = "deviceSpace";
-const char kParamX[] = "x";
-const char kParamY[] = "y";
 
 namespace dispatchMouseEvent {
   const char kName[] = "Input.dispatchMouseEvent";
@@ -55,6 +58,11 @@ namespace targetCrashed {
 
 namespace Page {
 
+const char kData[] = "data";
+const char kParamDeviceScaleFactor[] = "deviceScaleFactor";
+const char kParamPageScaleFactor[] = "pageScaleFactor";
+const char kParamViewport[] = "viewport";
+
 namespace disable {
   const char kName[] = "Page.disable";
 }  // disable
@@ -75,7 +83,6 @@ namespace captureScreenshot {
   const char kParamFormat[] = "format";
   const char kParamQuality[] = "quality";
   const char kParamScale[] = "scale";
-  const char kResponseData[] = "data";
 }  // captureScreenshot
 
 namespace startScreencast {
@@ -91,7 +98,6 @@ namespace stopScreencast {
 
 namespace screencastFrame {
   const char kName[] = "Page.screencastFrame";
-  const char kResponseData[] = "data";
 }  // screencastFrame
 
 }  // Page

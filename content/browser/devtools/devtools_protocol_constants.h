@@ -14,6 +14,11 @@
 namespace content {
 namespace devtools {
 
+extern const char kParamX[];
+extern const char kParamY[];
+extern const char kParamWidth[];
+extern const char kParamHeight[];
+
 namespace DOM {
 
   namespace setFileInputFiles {
@@ -29,8 +34,6 @@ namespace Input {
   extern const char kParamModifiers[];
   extern const char kParamTimestamp[];
   extern const char kParamDeviceSpace[];
-  extern const char kParamX[];
-  extern const char kParamY[];
 
   namespace dispatchMouseEvent {
     extern const char kName[];
@@ -64,6 +67,11 @@ namespace Inspector {
 
 namespace Page {
 
+  extern const char kData[];
+  extern const char kParamDeviceScaleFactor[];
+  extern const char kParamPageScaleFactor[];
+  extern const char kParamViewport[];
+
   namespace disable {
     extern const char kName[];
   }  // disable
@@ -84,7 +92,6 @@ namespace Page {
     extern const char kParamFormat[];
     extern const char kParamQuality[];
     extern const char kParamScale[];
-    extern const char kResponseData[];
   }  // captureScreenshot
 
   namespace startScreencast {
@@ -100,7 +107,6 @@ namespace Page {
 
   namespace screencastFrame {
     extern const char kName[];
-    extern const char kResponseData[];
   }  // screencastFrame
 
 }  // Page

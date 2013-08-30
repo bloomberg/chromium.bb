@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -30,6 +31,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
+#include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -148,10 +150,18 @@ void RendererOverridesHandler::OnClientDetached() {
   screencast_command_ = NULL;
 }
 
-void RendererOverridesHandler::OnSwapCompositorFrame() {
-  if (!screencast_command_)
+void RendererOverridesHandler::OnSwapCompositorFrame(
+    const IPC::Message& message) {
+  ViewHostMsg_SwapCompositorFrame::Param param;
+  if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return;
+  last_compositor_frame_metadata_ = param.b.metadata;
 
+  if (screencast_command_)
+    InnerSwapCompositorFrame();
+}
+
+void RendererOverridesHandler::InnerSwapCompositorFrame() {
   std::string format;
   int quality = kDefaultScreenshotQuality;
   double scale = 1;
@@ -170,7 +180,7 @@ void RendererOverridesHandler::OnSwapCompositorFrame() {
       base::Bind(&RendererOverridesHandler::ScreenshotCaptured,
                  weak_factory_.GetWeakPtr(),
                  scoped_refptr<DevToolsProtocol::Command>(), format, quality,
-                 scale));
+                 last_compositor_frame_metadata_));
 }
 
 
@@ -289,7 +299,7 @@ RendererOverridesHandler::PageCaptureScreenshot(
     if (success) {
       base::DictionaryValue* result = new base::DictionaryValue();
       result->SetString(
-          devtools::Page::captureScreenshot::kResponseData, base64_data);
+          devtools::Page::kData, base64_data);
       return command->SuccessResponse(result);
     }
     return command->InternalErrorResponse("Unable to base64encode screenshot");
@@ -304,7 +314,8 @@ RendererOverridesHandler::PageCaptureScreenshot(
   view_port->CopyFromCompositingSurface(
       view_bounds, snapshot_size,
       base::Bind(&RendererOverridesHandler::ScreenshotCaptured,
-                 weak_factory_.GetWeakPtr(), command, format, quality, scale));
+                 weak_factory_.GetWeakPtr(), command, format, quality,
+                 last_compositor_frame_metadata_));
   return command->AsyncResponsePromise();
 }
 
@@ -312,7 +323,7 @@ scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageStartScreencast(
     scoped_refptr<DevToolsProtocol::Command> command) {
   screencast_command_ = command;
-  OnSwapCompositorFrame();
+  InnerSwapCompositorFrame();
   return command->SuccessResponse(NULL);
 }
 
@@ -327,7 +338,7 @@ void RendererOverridesHandler::ScreenshotCaptured(
     scoped_refptr<DevToolsProtocol::Command> command,
     const std::string& format,
     int quality,
-    double scale,
+    const cc::CompositorFrameMetadata& metadata,
     bool success,
     const SkBitmap& bitmap) {
   if (!success) {
@@ -381,13 +392,27 @@ void RendererOverridesHandler::ScreenshotCaptured(
   }
 
   base::DictionaryValue* response = new base::DictionaryValue();
+  response->SetString(devtools::Page::kData, base_64_data);
+
+  // Consider metadata empty in case it has no device scale factor.
+  if (metadata.device_scale_factor != 0) {
+    response->SetDouble(devtools::Page::kParamDeviceScaleFactor,
+                        metadata.device_scale_factor);
+    response->SetDouble(devtools::Page::kParamPageScaleFactor,
+                        metadata.page_scale_factor);
+
+    base::DictionaryValue* viewport = new base::DictionaryValue();
+    viewport->SetDouble(devtools::kParamX, metadata.root_scroll_offset.x());
+    viewport->SetDouble(devtools::kParamY, metadata.root_scroll_offset.y());
+    viewport->SetDouble(devtools::kParamWidth, metadata.viewport_size.width());
+    viewport->SetDouble(devtools::kParamHeight,
+                        metadata.viewport_size.height());
+    response->Set(devtools::Page::kParamViewport, viewport);
+  }
+
   if (command) {
-    response->SetString(
-        devtools::Page::captureScreenshot::kResponseData, base_64_data);
     SendAsyncResponse(command->SuccessResponse(response));
   } else {
-    response->SetString(
-        devtools::Page::screencastFrame::kResponseData, base_64_data);
     SendNotification(devtools::Page::screencastFrame::kName, response);
   }
 }
@@ -430,8 +455,8 @@ RendererOverridesHandler::InputDispatchMouseEvent(
 
   int x;
   int y;
-  if (!params->GetInteger(devtools::Input::kParamX, &x) ||
-      !params->GetInteger(devtools::Input::kParamY, &y)) {
+  if (!params->GetInteger(devtools::kParamX, &x) ||
+      !params->GetInteger(devtools::kParamY, &y)) {
     return NULL;
   }
 
@@ -514,8 +539,8 @@ RendererOverridesHandler::InputDispatchGestureEvent(
 
   int x;
   int y;
-  if (!params->GetInteger(devtools::Input::kParamX, &x) ||
-      !params->GetInteger(devtools::Input::kParamY, &y)) {
+  if (!params->GetInteger(devtools::kParamX, &x) ||
+      !params->GetInteger(devtools::kParamY, &y)) {
     return NULL;
   }
   event.x = floor(x / device_scale_factor);

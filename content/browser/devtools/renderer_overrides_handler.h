@@ -9,9 +9,14 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/output/compositor_frame_metadata.h"
 #include "content/browser/devtools/devtools_protocol.h"
 
 class SkBitmap;
+
+namespace IPC {
+class Message;
+}
 
 namespace content {
 
@@ -27,9 +32,10 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
   virtual ~RendererOverridesHandler();
 
   void OnClientDetached();
-  void OnSwapCompositorFrame();
+  void OnSwapCompositorFrame(const IPC::Message& message);
 
  private:
+  void InnerSwapCompositorFrame();
 
   // DOM domain.
   scoped_refptr<DevToolsProtocol::Response>
@@ -54,7 +60,7 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
       scoped_refptr<DevToolsProtocol::Command> command,
       const std::string& format,
       int quality,
-      double scale,
+      const cc::CompositorFrameMetadata& metadata,
       bool success,
       const SkBitmap& bitmap);
 
@@ -67,6 +73,7 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
   DevToolsAgentHost* agent_;
   base::WeakPtrFactory<RendererOverridesHandler> weak_factory_;
   scoped_refptr<DevToolsProtocol::Command> screencast_command_;
+  cc::CompositorFrameMetadata last_compositor_frame_metadata_;
   DISALLOW_COPY_AND_ASSIGN(RendererOverridesHandler);
 };
 
