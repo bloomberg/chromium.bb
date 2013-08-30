@@ -297,19 +297,11 @@ DragSession DragController::dragEnteredOrUpdated(DragData* dragData)
 static HTMLInputElement* asFileInput(Node* node)
 {
     ASSERT(node);
-
-    if (!node->hasTagName(HTMLNames::inputTag))
-        return 0;
-    HTMLInputElement* inputElement = toHTMLInputElement(node);
-    // If this is a button inside of the a file input, move up to the file input.
-    if (inputElement->isTextButton() && inputElement->treeScope()->rootNode()->isShadowRoot()) {
-        Element* host = toShadowRoot(inputElement->treeScope()->rootNode())->host();
-        if (!host->hasTagName(HTMLNames::inputTag))
-            return 0;
-        inputElement = toHTMLInputElement(host);
+    for (; node; node = node->shadowHost()) {
+        if (node->hasTagName(HTMLNames::inputTag) && toHTMLInputElement(node)->isFileUpload())
+            return toHTMLInputElement(node);
     }
-
-    return inputElement->isFileUpload() ? inputElement : 0;
+    return 0;
 }
 
 // This can return null if an empty document is loaded.
@@ -325,7 +317,7 @@ static Element* elementUnderMouse(Document* documentUnderMouse, const IntPoint& 
 
     Node* n = result.innerNode();
     while (n && !n->isElementNode())
-        n = n->parentNode();
+        n = n->parentOrShadowHostNode();
     if (n)
         n = n->deprecatedShadowAncestorNode();
 

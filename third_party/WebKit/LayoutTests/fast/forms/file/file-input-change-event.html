@@ -33,6 +33,11 @@ if (window.testRunner) {
     shouldBeEqualToString("singleFileInput.value", "C:\\fakepath\\foo.txt");
     shouldBe("changeDispatched", "true");
 
+    dragFilesOntoButtonInsideFileInput(singleFileInput, ["baz.png"]);
+    shouldBeEqualToString("singleFileInput.value", "C:\\fakepath\\baz.png");
+    shouldBe("changeDispatched", "true");
+
+    debug("");
     debug("Test that the 'change' event is triggered on a multiple file form when a selected file is changed:");
     dragFilesOntoInput(multipleFilesInput, ["foo.txt"]);
     shouldBeEqualToString("multipleFilesInput.value", "C:\\fakepath\\foo.txt");
@@ -98,6 +103,13 @@ function dragFilesOntoInput(input, files) {
     changeDispatched = false;
     eventSender.beginDragWithFiles(files);
     moveMouseToCenterOfElement(input);
+    eventSender.mouseUp();
+}
+
+function dragFilesOntoButtonInsideFileInput(input, files) {
+    changeDispatched = false;
+    eventSender.beginDragWithFiles(files);
+    eventSender.mouseMoveTo(input.offsetLeft + 10, input.offsetTop + input.offsetHeight / 2);
     eventSender.mouseUp();
 }
 </script>

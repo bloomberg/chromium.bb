@@ -13,6 +13,9 @@ PASS singleFileInput.value is "C:\\fakepath\\bar.txt"
 PASS changeDispatched is false
 PASS singleFileInput.value is "C:\\fakepath\\foo.txt"
 PASS changeDispatched is true
+PASS singleFileInput.value is "C:\\fakepath\\baz.png"
+PASS changeDispatched is true
+
 Test that the 'change' event is triggered on a multiple file form when a selected file is changed:
 PASS multipleFilesInput.value is "C:\\fakepath\\foo.txt"
 PASS changeDispatched is true
