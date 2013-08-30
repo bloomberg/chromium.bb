@@ -20,6 +20,7 @@ const char kPrivetErrorInvalidXPrivetToken[] = "invalid_x_privet_token";
 const char kPrivetActionStart[] = "start";
 const char kPrivetActionGetClaimToken[] = "getClaimToken";
 const char kPrivetActionComplete[] = "complete";
+const char kPrivetActionCancel[] = "cancel";
 
 const char kPrivetActionNameInfo[] = "info";
 

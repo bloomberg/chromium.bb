@@ -22,6 +22,8 @@ const char kPrivetInfoURLFormat[] = "http://%s:%d/privet/info";
 // (string) is the user name.
 const char kPrivetRegisterURLFormat[] =
     "http://%s:%d/privet/register?action=%s&user=%s";
+
+const int kPrivetCancelationTimeoutSeconds = 3;
 }  // namespace
 
 PrivetInfoOperationImpl::PrivetInfoOperationImpl(
@@ -92,7 +94,19 @@ void PrivetRegisterOperationImpl::Start() {
 
 void PrivetRegisterOperationImpl::Cancel() {
   url_fetcher_.reset();
-  // TODO(noamsml): Proper cancelation.
+
+  if (ongoing_) {
+    // Owned by the message loop.
+    Cancelation* cancelation = new Cancelation(privet_client_, user_);
+
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&PrivetRegisterOperationImpl::Cancelation::Cleanup,
+                   base::Owned(cancelation)),
+        base::TimeDelta::FromSeconds(kPrivetCancelationTimeoutSeconds));
+
+    ongoing_ = false;
+  }
 }
 
 void PrivetRegisterOperationImpl::CompleteRegistration() {
@@ -176,16 +190,11 @@ void PrivetRegisterOperationImpl::OnParsedJson(
 }
 
 void PrivetRegisterOperationImpl::SendRequest(const std::string& action) {
-  std::string url = base::StringPrintf(
-      kPrivetRegisterURLFormat,
-      privet_client_->host_port().host().c_str(),
-      privet_client_->host_port().port(),
-      action.c_str(),
-      user_.c_str());
+  GURL url = GetURLForActionAndUser(privet_client_, action, user_);
 
   current_action_ = action;
   url_fetcher_ = privet_client_->fetcher_factory().CreateURLFetcher(
-      GURL(url), net::URLFetcher::POST, this);
+      url, net::URLFetcher::POST, this);
   url_fetcher_->Start();
 }
 
@@ -274,6 +283,49 @@ bool PrivetRegisterOperationImpl::PrivetErrorTransient(
     const std::string& error) {
   return (error == kPrivetErrorDeviceBusy) ||
          (error == kPrivetErrorPendingUserAction);
+}
+
+// static
+GURL PrivetRegisterOperationImpl::GetURLForActionAndUser(
+    PrivetHTTPClientImpl* privet_client,
+    const std::string& action,
+    const std::string& user) {
+  return GURL(base::StringPrintf(kPrivetRegisterURLFormat,
+                                 privet_client->host_port().host().c_str(),
+                                 privet_client->host_port().port(),
+                                 action.c_str(),
+                                 user.c_str()));
+}
+
+PrivetRegisterOperationImpl::Cancelation::Cancelation(
+    PrivetHTTPClientImpl* privet_client,
+    const std::string& user) {
+  GURL url = GetURLForActionAndUser(privet_client,
+                                    kPrivetActionCancel,
+                                    user);
+  url_fetcher_ = privet_client->fetcher_factory().CreateURLFetcher(
+      url, net::URLFetcher::POST, this);
+  url_fetcher_->Start();
+}
+
+PrivetRegisterOperationImpl::Cancelation::~Cancelation() {
+}
+
+void PrivetRegisterOperationImpl::Cancelation::OnError(
+    PrivetURLFetcher* fetcher,
+    PrivetURLFetcher::ErrorType error) {
+}
+
+void PrivetRegisterOperationImpl::Cancelation::OnParsedJson(
+    PrivetURLFetcher* fetcher,
+    const base::DictionaryValue* value,
+    bool has_error) {
+}
+
+void PrivetRegisterOperationImpl::Cancelation::Cleanup() {
+  // Nothing needs to be done, as base::Owned will delete this object,
+  // this callback is just here to pass ownership of the Cancelation to
+  // the message loop.
 }
 
 PrivetHTTPClientImpl::PrivetHTTPClientImpl(

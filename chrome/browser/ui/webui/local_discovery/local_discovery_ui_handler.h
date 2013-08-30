@@ -86,6 +86,9 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // For when a user choice is made.
   void HandleChooseUser(const base::ListValue* args);
 
+  // For when a cancelation is made.
+  void HandleCancelRegistration(const base::ListValue* args);
+
   // For when the IP address of the printer has been resolved for registration.
   void StartRegisterHTTP(
       const std::string& user,
@@ -125,6 +128,9 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
       int user_index,
       const std::string& xsrf_token,
       const GURL& automatic_claim_url);
+
+  // Reset and cancel the current registration.
+  void ResetCurrentRegistration();
 
   // The current HTTP client (used for the current operation).
   scoped_ptr<PrivetHTTPClient> current_http_client_;

@@ -147,6 +147,7 @@ cr.define('local_discovery', function() {
     $('register-overlay').classList.remove('showing');
     $('overlay').hidden = true;
     uber.invokeMethodOnParent('stopInterceptingEvents');
+    chrome.send('cancelRegistration');
   }
 
   /**

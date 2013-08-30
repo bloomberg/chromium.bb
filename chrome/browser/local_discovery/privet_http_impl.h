@@ -66,6 +66,25 @@ class PrivetRegisterOperationImpl
 
   virtual PrivetHTTPClient* GetHTTPClient() OVERRIDE;
  private:
+  class Cancelation : public PrivetURLFetcher::Delegate {
+   public:
+    Cancelation(PrivetHTTPClientImpl* privet_client,
+                const std::string& user);
+    virtual ~Cancelation();
+
+    virtual void OnError(PrivetURLFetcher* fetcher,
+                         PrivetURLFetcher::ErrorType error) OVERRIDE;
+
+    virtual void OnParsedJson(PrivetURLFetcher* fetcher,
+                              const base::DictionaryValue* value,
+                              bool has_error) OVERRIDE;
+
+    void Cleanup();
+
+   private:
+    scoped_ptr<PrivetURLFetcher> url_fetcher_;
+  };
+
   // Arguments is JSON value from request.
   typedef base::Callback<void(const base::DictionaryValue&)>
       ResponseHandler;
@@ -79,6 +98,11 @@ class PrivetRegisterOperationImpl
   void SendRequest(const std::string& action);
 
   bool PrivetErrorTransient(const std::string& error);
+
+  static GURL GetURLForActionAndUser(
+      PrivetHTTPClientImpl* privet_client,
+      const std::string& action,
+      const std::string& user);
 
   std::string user_;
   std::string current_action_;

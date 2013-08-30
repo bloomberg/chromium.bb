@@ -41,6 +41,7 @@ LocalDiscoveryUIHandler::LocalDiscoveryUIHandler(
 }
 
 LocalDiscoveryUIHandler::~LocalDiscoveryUIHandler() {
+  ResetCurrentRegistration();
   SetIsVisible(false);
   if (service_discovery_client_.get()) {
     service_discovery_client_ = NULL;
@@ -76,6 +77,9 @@ void LocalDiscoveryUIHandler::RegisterMessages() {
       base::Unretained(this)));
   web_ui()->RegisterMessageCallback("chooseUser", base::Bind(
       &LocalDiscoveryUIHandler::HandleChooseUser,
+      base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("cancelRegistration", base::Bind(
+      &LocalDiscoveryUIHandler::HandleCancelRegistration,
       base::Unretained(this)));
 }
 
@@ -135,6 +139,11 @@ void LocalDiscoveryUIHandler::HandleChooseUser(const base::ListValue* args) {
       base::Bind(&LocalDiscoveryUIHandler::StartRegisterHTTP,
                  base::Unretained(this), user));
   privet_resolution_->Start();
+}
+
+void LocalDiscoveryUIHandler::HandleCancelRegistration(
+    const base::ListValue* args) {
+  ResetCurrentRegistration();
 }
 
 void LocalDiscoveryUIHandler::StartRegisterHTTP(
@@ -351,6 +360,22 @@ void LocalDiscoveryUIHandler::StartCookieConfirmFlow(
                  base::Unretained(this))));
 
   confirm_api_call_flow_->Start();
+}
+
+// TODO(noamsml): Create master object for registration flow.
+void LocalDiscoveryUIHandler::ResetCurrentRegistration() {
+  current_register_device_.clear();
+  if (current_register_operation_.get()) {
+    current_register_operation_->Cancel();
+    current_register_operation_.reset();
+  }
+
+  confirm_api_call_flow_.reset();
+  privet_resolution_.reset();
+  cloud_print_account_manager_.reset();
+  xsrf_token_for_primary_user_.clear();
+  current_register_user_index_ = 0;
+  current_http_client_.reset();
 }
 
 }  // namespace local_discovery

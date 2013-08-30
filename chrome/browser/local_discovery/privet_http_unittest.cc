@@ -75,6 +75,11 @@ const char kSampleRegisterErrorPermanent[] =
 
 const char kSampleInfoResponseBadJson[] = "{";
 
+const char kSampleRegisterCancelResponse[] = "{"
+    "\"user\": \"example@google.com\","
+    "\"action\": \"cancel\""
+    "}";
+
 class MockTestURLFetcherFactoryDelegate
     : public net::TestURLFetcher::DelegateForTests {
  public:
@@ -455,6 +460,34 @@ TEST_F(PrivetRegisterTest, InfoFailure) {
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/info"),
       kSampleInfoResponseBadJson));
+}
+
+
+TEST_F(PrivetRegisterTest, RegisterCancel) {
+  // Start with info request first to populate XSRF token.
+  info_operation_->Start();
+
+  EXPECT_TRUE(SuccessfulResponseToURL(
+      GURL("http://10.0.0.8:6006/privet/info"),
+      kSampleInfoResponse));
+
+  register_operation_->Start();
+
+  EXPECT_TRUE(SuccessfulResponseToURL(
+      GURL("http://10.0.0.8:6006/privet/register?"
+           "action=start&user=example@google.com"),
+      kSampleRegisterStartResponse));
+
+  register_operation_->Cancel();
+
+  EXPECT_TRUE(SuccessfulResponseToURL(
+      GURL("http://10.0.0.8:6006/privet/register?"
+           "action=cancel&user=example@google.com"),
+      kSampleRegisterCancelResponse));
+
+  // Must keep mocks alive for 3 seconds so the cancelation object can be
+  // deleted.
+  RunFor(base::TimeDelta::FromSeconds(3));
 }
 
 }  // namespace
