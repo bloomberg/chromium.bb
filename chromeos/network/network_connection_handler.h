@@ -48,21 +48,40 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
       public base::SupportsWeakPtr<NetworkConnectionHandler> {
  public:
   // Constants for |error_name| from |error_callback| for Connect.
+
+  //  No network matching |service_path| is found (hidden networks must be
+  //  configured before connecting).
   static const char kErrorNotFound[];
+
+  // Already connected to the network.
   static const char kErrorConnected[];
+
+  // Already connecting to the network.
   static const char kErrorConnecting[];
+
+  // The passphrase is missing or invalid.
   static const char kErrorPassphraseRequired[];
+
   static const char kErrorActivationRequired[];
+
+  // The network requires a cert and none exists.
   static const char kErrorCertificateRequired[];
+
+  // The network had an authentication error, indicating that additional or
+  // different authentication information is required.
   static const char kErrorAuthenticationRequired[];
+
+  // Additional configuration is required.
   static const char kErrorConfigurationRequired[];
-  static const char kErrorShillError[];
-  static const char kErrorConnectFailed[];
+
+  // Configuration failed during the configure stage of the connect flow.
   static const char kErrorConfigureFailed[];
-  static const char kErrorActivateFailed[];
-  static const char kErrorMissingProvider[];
+
+  // For Disconnect or Activate, an unexpected DBus or Shill error occurred.
+  static const char kErrorShillError[];
+
+  // A new network connect request canceled this one.
   static const char kErrorConnectCanceled[];
-  static const char kErrorUnknown[];
 
   // Constants for |error_name| from |error_callback| for Disconnect.
   static const char kErrorNotConnected[];
@@ -71,16 +90,10 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
 
   // ConnectToNetwork() will start an asynchronous connection attempt.
   // On success, |success_callback| will be called.
-  // On failure, |error_callback| will be called with |error_name| one of:
-  //  kErrorNotFound if no network matching |service_path| is found
-  //    (hidden networks must be configured before connecting).
-  //  kErrorConnected if already connected to the network.
-  //  kErrorConnecting if already connecting to the network.
-  //  kErrorCertificateRequired if the network requires a cert and none exists.
-  //  kErrorPassphraseRequired if passphrase only is missing or incorrect.
-  //  kErrorAuthenticationRequired if other authentication is required.
-  //  kErrorConfigurationRequired if additional configuration is required.
-  //  kErrorShillError if a DBus or Shill error occurred.
+  // On failure, |error_callback| will be called with |error_name| one of the
+  //   constants defined above, or flimflam::kErrorConnectFailed or
+  //   flimflam::kErrorBadPassphrase if the Shill Error property (from a
+  //   previous connect attempt) was set to one of those.
   // |error_message| will contain an additional error string for debugging.
   // If |check_error_state| is true, the current state of the network is
   //  checked for errors, otherwise current state is ignored (e.g. for recently

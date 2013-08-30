@@ -75,7 +75,8 @@ void OnConnectFailed(const std::string& service_path,
   if (error_name == NetworkConnectionHandler::kErrorConnectCanceled)
     return;
 
-  if (error_name == NetworkConnectionHandler::kErrorPassphraseRequired ||
+  if (error_name == flimflam::kErrorBadPassphrase ||
+      error_name == NetworkConnectionHandler::kErrorPassphraseRequired ||
       error_name == NetworkConnectionHandler::kErrorConfigurationRequired ||
       error_name == NetworkConnectionHandler::kErrorAuthenticationRequired) {
     ash::Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
@@ -104,7 +105,7 @@ void OnConnectFailed(const std::string& service_path,
   ShowErrorNotification(error_name, service_path);
 
   // Show a configure dialog for ConnectFailed errors.
-  if (error_name != NetworkConnectionHandler::kErrorConnectFailed)
+  if (error_name != flimflam::kErrorConnectFailed)
     return;
 
   // If Shill reports an InProgress error, don't try to configure the network.
@@ -147,11 +148,10 @@ void CallConnectToNetwork(const std::string& service_path,
 }
 
 void OnActivateFailed(const std::string& service_path,
-                     const std::string& error_name,
+                      const std::string& error_name,
                       scoped_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Unable to activate network", service_path);
-  ShowErrorNotification(
-      NetworkConnectionHandler::kErrorActivateFailed, service_path);
+  ShowErrorNotification(network_connect::kErrorActivateFailed, service_path);
 }
 
 void OnActivateSucceeded(const std::string& service_path) {
@@ -260,6 +260,8 @@ const char kNetworkConnectNotificationId[] =
     "chrome://settings/internet/connect";
 const char kNetworkActivateNotificationId[] =
     "chrome://settings/internet/activate";
+
+const char kErrorActivateFailed[] = "activate-failed";
 
 void ConnectToNetwork(const std::string& service_path,
                       gfx::NativeWindow owning_window) {

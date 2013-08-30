@@ -43,7 +43,7 @@ string16 GetConnectErrorString(const std::string& error_name) {
   if (error_name == NetworkConnectionHandler::kErrorConfigureFailed)
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_CONFIGURE_FAILED);
-  if (error_name == NetworkConnectionHandler::kErrorActivateFailed)
+  if (error_name == ash::network_connect::kErrorActivateFailed)
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_ACTIVATION_FAILED);
   return string16();
