@@ -44,12 +44,6 @@ class CalledProcessError(subprocess.CalledProcessError):
         'cwd=%s\n%s') % (self.cwd, self.output)
 
 
-class FakeProgress(object):
-  @staticmethod
-  def print_update():
-    pass
-
-
 class TraceInputsBase(unittest.TestCase):
   def setUp(self):
     self.tempdir = None
