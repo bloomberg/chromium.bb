@@ -162,12 +162,16 @@ void DriveAppRegistry::UpdateAfterGetAppList(
   }
 
   DCHECK(app_list);
+  UpdateFromAppList(*app_list);
+}
 
+void DriveAppRegistry::UpdateFromAppList(
+    const google_apis::AppList& app_list) {
   url_to_name_map_.clear();
   STLDeleteValues(&app_extension_map_);
   STLDeleteValues(&app_mimetypes_map_);
-  for (size_t i = 0; i < app_list->items().size(); ++i) {
-    const google_apis::AppResource& app = *app_list->items()[i];
+  for (size_t i = 0; i < app_list.items().size(); ++i) {
+    const google_apis::AppResource& app = *app_list.items()[i];
     if (app.product_url().is_empty())
       continue;
 

@@ -73,6 +73,9 @@ class DriveAppRegistry {
   // Updates this registry by fetching the data from the server.
   void Update();
 
+  // Updates this registry from the |app_list|.
+  void UpdateFromAppList(const google_apis::AppList& app_list);
+
  private:
   // Defines application details that are associated with a given
   // file extension or content mimetype.

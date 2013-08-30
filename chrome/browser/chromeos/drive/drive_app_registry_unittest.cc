@@ -10,7 +10,9 @@
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -90,6 +92,21 @@ TEST_F(DriveAppRegistryTest, LoadAndFindDriveApps) {
   ASSERT_EQ(1U, secondary_app.size());
   VerifyApp(secondary_app, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
             "Drive app 1", "", false);
+}
+
+TEST_F(DriveAppRegistryTest, UpdateFromAppList) {
+  scoped_ptr<base::Value> app_info_value =
+      google_apis::test_util::LoadJSONFile("drive/applist.json");
+  scoped_ptr<google_apis::AppList> app_list(
+      google_apis::AppList::CreateFrom(*app_info_value));
+
+  web_apps_registry_->UpdateFromAppList(*app_list);
+
+  // Confirm that something was loaded from applist.json.
+  ScopedVector<DriveAppInfo> ext_results;
+  base::FilePath ext_file(FILE_PATH_LITERAL("drive/file.exe"));
+  web_apps_registry_->GetAppsForFile(ext_file, std::string(), &ext_results);
+  ASSERT_EQ(1U, ext_results.size());
 }
 
 TEST_F(DriveAppRegistryTest, MultipleUpdate) {
