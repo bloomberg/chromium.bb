@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import psutil
-
+import chrome_helper
 import path_resolver
 
 
@@ -21,12 +20,8 @@ def VerifyProcesses(processes):
                 running.
   """
   # Create a list of paths of all running processes.
-  running_process_paths = []
-  for process in psutil.process_iter():
-    try:
-      running_process_paths.append(process.exe)
-    except psutil.AccessDenied:
-      pass
+  running_process_paths = [path for (_, path) in
+                           chrome_helper.GetProcessIDAndPathPairs()]
 
   for process_path, expectation in processes.iteritems():
     process_resolved_path = path_resolver.ResolvePath(process_path)
