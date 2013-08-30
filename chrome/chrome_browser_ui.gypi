@@ -437,6 +437,8 @@
         'browser/ui/cocoa/applescript/tab_applescript.mm',
         'browser/ui/cocoa/applescript/window_applescript.h',
         'browser/ui/cocoa/applescript/window_applescript.mm',
+        'browser/ui/cocoa/apps/app_shim_menu_controller_mac.h',
+        'browser/ui/cocoa/apps/app_shim_menu_controller_mac.mm',
         'browser/ui/cocoa/apps/chrome_shell_window_delegate_cocoa.mm',
         'browser/ui/cocoa/apps/native_app_window_cocoa.h',
         'browser/ui/cocoa/apps/native_app_window_cocoa.mm',

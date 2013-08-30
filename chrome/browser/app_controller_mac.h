@@ -17,6 +17,7 @@
 #include "ui/base/work_area_watcher_observer.h"
 
 class AppControllerProfileObserver;
+@class AppShimMenuController;
 class BookmarkMenuBridge;
 class CommandUpdater;
 class GURL;
@@ -48,6 +49,9 @@ class WorkAreaWatcherObserver;
   // (and Browser*s).
   scoped_ptr<BookmarkMenuBridge> bookmarkMenuBridge_;
   scoped_ptr<HistoryMenuBridge> historyMenuBridge_;
+
+  // Controller that manages main menu items for packaged apps.
+  base::scoped_nsobject<AppShimMenuController> appShimMenuController_;
 
   // The profile menu, which appears right before the Help menu. It is only
   // available when multiple profiles is enabled.

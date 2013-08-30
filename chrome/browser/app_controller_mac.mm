@@ -53,6 +53,7 @@
 #include "chrome/browser/ui/browser_mac.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#import "chrome/browser/ui/cocoa/apps/app_shim_menu_controller_mac.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -435,6 +436,8 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   localPrefRegistrar_.RemoveAll();
 
   [self unregisterEventHandlers];
+
+  appShimMenuController_.reset();
 }
 
 - (void)didEndMainMessageLoop {
@@ -652,6 +655,11 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   chrome::StartKeepAlive();
 
   [self setUpdateCheckInterval];
+
+  // Start managing the menu for app windows. This needs to be done here because
+  // main menu item titles are not yet initialized in awakeFromNib.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppShims))
+    appShimMenuController_.reset([[AppShimMenuController alloc] init]);
 
   // Build up the encoding menu, the order of the items differs based on the
   // current locale (see http://crbug.com/7647 for details).
