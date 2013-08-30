@@ -102,7 +102,6 @@
                 # On Windows, link the dependencies (libraries) that make
                 # up actual Chromium functionality into this .dll.
                 'chrome_dll_pdb_workaround',
-                'chrome_resources.gyp:chrome_resources',
                 'chrome_version_resources',
                 '../chrome/chrome_resources.gyp:chrome_unscaled_resources',
                 '../crypto/crypto.gyp:crypto',
@@ -134,21 +133,6 @@
                 '../ui/resources/cursors/vertical_text.cur',
                 '../ui/resources/cursors/zoom_in.cur',
                 '../ui/resources/cursors/zoom_out.cur',
-
-                # TODO:  It would be nice to have these pulled in
-                # automatically from direct_dependent_settings in
-                # their various targets (net.gyp:net_resources, etc.),
-                # but that causes errors in other targets when
-                # resulting .res files get referenced multiple times.
-                '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
-                '<(SHARED_INTERMEDIATE_DIR)/chrome/chrome_unscaled_resources.rc',
-                '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
-                '<(SHARED_INTERMEDIATE_DIR)/chrome/extensions_api_resources.rc',
-                '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.rc',
-                '<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.rc',
-                '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
-                '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.rc',
               ],
               'include_dirs': [
                 '<(DEPTH)/third_party/wtl/include',
