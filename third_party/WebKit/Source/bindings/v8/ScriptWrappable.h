@@ -69,7 +69,7 @@ public:
             return;
         }
         v8::Persistent<v8::Object> persistent(isolate, wrapper);
-        configuration.configureWrapper(&persistent, isolate);
+        configuration.configureWrapper(&persistent);
         persistent.MakeWeak(this, &makeWeakCallback);
         m_wrapperOrTypeInfo = reinterpret_cast<uintptr_t>(persistent.ClearAndLeak()) | 1;
         ASSERT(containsWrapper());

@@ -118,7 +118,7 @@ bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
 void InjectedScriptManager::makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Object>* object, InjectedScriptHost* host)
 {
     host->deref();
-    object->Dispose(isolate);
+    object->Dispose();
 }
 
 } // namespace WebCore

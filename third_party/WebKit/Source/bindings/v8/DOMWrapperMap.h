@@ -80,7 +80,7 @@ public:
     {
         ASSERT(static_cast<KeyType*>(toNative(wrapper)) == key);
         v8::Persistent<v8::Object> persistent(m_isolate, wrapper);
-        configuration.configureWrapper(&persistent, m_isolate);
+        configuration.configureWrapper(&persistent);
         persistent.MakeWeak(this, &makeWeakCallback);
         typename MapType::AddResult result = m_map.add(key, UnsafePersistent<v8::Object>());
         ASSERT(result.isNewEntry);

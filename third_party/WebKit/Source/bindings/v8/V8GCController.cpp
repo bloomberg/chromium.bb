@@ -209,7 +209,7 @@ private:
             // v8::Persistent.
             UnsafePersistent<v8::Object> unsafeWrapper = (*nodeIterator)->unsafePersistent();
             v8::Persistent<v8::Object>* wrapper = unsafeWrapper.persistent();
-            wrapper->MarkPartiallyDependent(isolate);
+            wrapper->MarkPartiallyDependent();
             // FIXME: update this to use the upcasting function which v8 will provide
             v8::Persistent<v8::Value>* value = reinterpret_cast<v8::Persistent<v8::Value>*>(wrapper);
             isolate->SetObjectGroupId(*value, id);
@@ -242,7 +242,7 @@ public:
 
         ASSERT(V8DOMWrapper::maybeDOMWrapper(*wrapper));
 
-        if (value->IsIndependent(m_isolate))
+        if (value->IsIndependent())
             return;
 
         WrapperTypeInfo* type = toWrapperTypeInfo(*wrapper);
@@ -272,7 +272,7 @@ public:
         if (classId == v8DOMNodeClassId) {
             UNUSED_PARAM(m_isolate);
             ASSERT(V8Node::HasInstanceInAnyWorld(*wrapper, m_isolate));
-            ASSERT(!value->IsIndependent(m_isolate));
+            ASSERT(!value->IsIndependent());
 
             Node* node = static_cast<Node*>(object);
 
@@ -283,7 +283,7 @@ public:
             if (m_constructRetainedObjectInfos)
                 m_groupsWhichNeedRetainerInfo.append(root);
         } else if (classId == v8DOMObjectClassId) {
-            ASSERT(!value->IsIndependent(m_isolate));
+            ASSERT(!value->IsIndependent());
             void* root = type->opaqueRootForGC(object, m_isolate);
             m_isolate->SetObjectGroupId(*value, v8::UniqueId(reinterpret_cast<intptr_t>(root)));
         } else {
