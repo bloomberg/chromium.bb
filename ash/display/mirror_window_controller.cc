@@ -16,8 +16,8 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/root_window_transformers.h"
 #include "ash/host/root_window_host_factory.h"
+#include "ash/root_window_settings.h"
 #include "ash/shell.h"
-#include "ash/wm/window_properties.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
@@ -174,7 +174,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
         Shell::GetInstance()->display_controller());
     root_window_->AddRootWindowObserver(this);
     // TODO(oshima): TouchHUD is using idkey.
-    root_window_->SetProperty(internal::kDisplayIdKey, display_info.id());
+    InitRootWindowSettings(root_window_.get())->display_id = display_info.id();
     root_window_->Init();
 #if defined(USE_X11)
     DisableInput(root_window_->GetAcceleratedWidget());
@@ -199,7 +199,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
     root_window_->AddChild(cursor_window_);
     cursor_window_->Show();
   } else {
-    root_window_->SetProperty(internal::kDisplayIdKey, display_info.id());
+    GetRootWindowSettings(root_window_.get())->display_id = display_info.id();
     root_window_->SetHostBounds(display_info.bounds_in_pixel());
   }
 

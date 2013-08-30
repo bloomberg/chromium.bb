@@ -8,6 +8,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/root_window_controller.h"
+#include "ash/root_window_settings.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/property_util.h"
@@ -755,7 +756,7 @@ bool FramePainter::UseSoloWindowHeader() const {
     return false;
   // Don't recompute every time, as it would require many window property
   // lookups.
-  return root->GetProperty(internal::kSoloWindowHeaderKey);
+  return internal::GetRootWindowSettings(root)->solo_window_header;
 }
 
 // static
@@ -794,11 +795,14 @@ void FramePainter::UpdateSoloWindowInRoot(RootWindow* root,
 #endif
   if (!root)
     return;
-  bool old_solo_header = root->GetProperty(internal::kSoloWindowHeaderKey);
+  internal::RootWindowSettings* root_window_settings =
+      internal::GetRootWindowSettings(root);
+  bool old_solo_header = root_window_settings->solo_window_header;
   bool new_solo_header = UseSoloWindowHeaderInRoot(root, ignore_window);
   if (old_solo_header == new_solo_header)
     return;
-  root->SetProperty(internal::kSoloWindowHeaderKey, new_solo_header);
+  root_window_settings->solo_window_header = new_solo_header;
+
   // Invalidate all the window frames in the desktop. There should only be
   // a few.
   std::vector<Window*> windows = GetWindowsForSoloHeaderUpdate(root);

@@ -9,9 +9,6 @@
 #include "ui/aura/window_property.h"
 #include "ui/gfx/rect.h"
 
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ASH_EXPORT, ash::FramePainter*);
-DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::RootWindowController*);
-
 namespace ash {
 namespace internal {
 DEFINE_WINDOW_PROPERTY_KEY(bool, kAnimateToFullscreenKey, true);
@@ -20,9 +17,6 @@ DEFINE_WINDOW_PROPERTY_KEY(bool, kFullscreenUsesMinimalChromeKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kIgnoreSoloWindowFramePainterPolicy, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kIgnoredByShelfKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kPanelAttachedKey, true);
-DEFINE_WINDOW_PROPERTY_KEY(RootWindowController*,
-                           kRootWindowControllerKey, NULL);
-DEFINE_WINDOW_PROPERTY_KEY(bool, kSoloWindowHeaderKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kStayInSameRootWindowKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kUserChangedWindowPositionOrSizeKey, false);

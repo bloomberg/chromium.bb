@@ -13,6 +13,7 @@
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/display/display_manager.h"
 #include "ash/focus_cycler.h"
+#include "ash/root_window_settings.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
@@ -54,6 +55,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -280,7 +282,8 @@ void RootWindowController::Shutdown() {
   workspace_controller_.reset();
   // Forget with the display ID so that display lookup
   // ends up with invalid display.
-  root_window_->ClearProperty(kDisplayIdKey);
+  internal::GetRootWindowSettings(root_window_.get())->display_id =
+      gfx::Display::kInvalidDisplayID;
   // And this root window should no longer process events.
   root_window_->PrepareForShutdown();
 

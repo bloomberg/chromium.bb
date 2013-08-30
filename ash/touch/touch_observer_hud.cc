@@ -5,10 +5,10 @@
 #include "ash/touch/touch_observer_hud.h"
 
 #include "ash/root_window_controller.h"
+#include "ash/root_window_settings.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/window_properties.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
@@ -20,7 +20,7 @@ namespace ash {
 namespace internal {
 
 TouchObserverHUD::TouchObserverHUD(aura::RootWindow* initial_root)
-    : display_id_(initial_root->GetProperty(kDisplayIdKey)),
+    : display_id_(GetRootWindowSettings(initial_root)->display_id),
       root_window_(initial_root),
       widget_(NULL) {
   const gfx::Display& display =

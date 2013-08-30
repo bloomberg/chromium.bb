@@ -169,6 +169,8 @@
         'popup_message.h',
         'root_window_controller.cc',
         'root_window_controller.h',
+        'root_window_settings.cc',
+        'root_window_settings.h',
         'rotator/screen_rotation.cc',
         'rotator/screen_rotation.h',
         'scoped_target_root_window.cc',

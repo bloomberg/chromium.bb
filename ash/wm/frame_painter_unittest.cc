@@ -5,11 +5,11 @@
 #include "ash/wm/frame_painter.h"
 
 #include "ash/ash_constants.h"
+#include "ash/root_window_settings.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/frame_caption_button_container_view.h"
 #include "base/memory/scoped_ptr.h"
@@ -216,18 +216,18 @@ TEST_F(FramePainterTest, CreateAndDeleteSingleWindow) {
 
   // We only have one window, so it should use a solo header.
   EXPECT_TRUE(painter->UseSoloWindowHeader());
-  EXPECT_TRUE(root->GetProperty(internal::kSoloWindowHeaderKey));
+  EXPECT_TRUE(internal::GetRootWindowSettings(root)->solo_window_header);
 
   // Close the window.
   widget.reset();
-  EXPECT_FALSE(root->GetProperty(internal::kSoloWindowHeaderKey));
+  EXPECT_FALSE(internal::GetRootWindowSettings(root)->solo_window_header);
 
   // Recreate another window again.
   widget.reset(CreateTestWidget());
   painter.reset(CreateTestPainter(widget.get()));
   widget->Show();
   EXPECT_TRUE(painter->UseSoloWindowHeader());
-  EXPECT_TRUE(root->GetProperty(internal::kSoloWindowHeaderKey));
+  EXPECT_TRUE(internal::GetRootWindowSettings(root)->solo_window_header);
 }
 
 TEST_F(FramePainterTest, UseSoloWindowHeader) {

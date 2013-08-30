@@ -15,9 +15,7 @@ class Rect;
 }
 
 namespace ash {
-class FramePainter;
 namespace internal {
-class RootWindowController;
 
 // Shell-specific window property keys.
 
@@ -30,9 +28,6 @@ extern const aura::WindowProperty<bool>* const kAnimateToFullscreenKey;
 // A property key to indicate that an in progress drag should be continued
 // after the window is reparented to another container.
 extern const aura::WindowProperty<bool>* const kContinueDragAfterReparent;
-
-// A property key to store display_id an aura::RootWindow is mapped to.
-extern const aura::WindowProperty<int64>* const kDisplayIdKey;
 
 // A property key to indicate whether there is any chrome at all that cannot be
 // hidden when the window is fullscreen. This is unrelated to whether the full
@@ -52,14 +47,6 @@ extern const aura::WindowProperty<bool>* const
 
 // True if this window is an attached panel.
 ASH_EXPORT extern const aura::WindowProperty<bool>* const kPanelAttachedKey;
-
-extern const aura::WindowProperty<RootWindowController*>* const
-    kRootWindowControllerKey;
-
-// RootWindow property to indicate if the window in the active workspace should
-// use the transparent "solo-window" header style.
-ASH_EXPORT extern const aura::WindowProperty<bool>* const
-    kSoloWindowHeaderKey;
 
 // If this is set to true, the window stays in the same root window
 // even if the bounds outside of its root window is set.

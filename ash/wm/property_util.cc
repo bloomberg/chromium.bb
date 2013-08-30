@@ -5,6 +5,7 @@
 #include "ash/wm/property_util.h"
 
 #include "ash/ash_export.h"
+#include "ash/root_window_settings.h"
 #include "ash/screen_ash.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
@@ -67,12 +68,12 @@ bool GetWindowAlwaysRestoresToRestoreBounds(const aura::Window* window) {
 internal::RootWindowController* GetRootWindowController(
     const aura::RootWindow* root_window) {
   return root_window ?
-      root_window->GetProperty(internal::kRootWindowControllerKey) : NULL;
+      internal::GetRootWindowSettings(root_window)->controller : NULL;
 }
 
 void SetRootWindowController(aura::RootWindow* root_window,
                              internal::RootWindowController* controller) {
-  root_window->SetProperty(internal::kRootWindowControllerKey, controller);
+  internal::GetRootWindowSettings(root_window)->controller = controller;
 }
 
 }  // namespace ash
