@@ -61,9 +61,19 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   virtual void OnInputMethodDestroyed(
       const ui::InputMethod* input_method) OVERRIDE;
 
+  // Hides virtual keyboard and notifies observer bounds change.
+  // This functions should be called with a delay to avoid layout flicker
+  // when the focus of input field quickly change.
+  void HideKeyboard();
+
+  // Returns true if keyboard is scheduled to hide.
+  bool WillHideKeyboard() const;
+
   scoped_ptr<KeyboardControllerProxy> proxy_;
   aura::Window* container_;
   ui::InputMethod* input_method_;
+  bool keyboard_visible_;
+  base::WeakPtrFactory<KeyboardController> weak_factory_;
 
   ObserverList<KeyboardControllerObserver> observer_list_;
 
