@@ -59,15 +59,6 @@ bool ProgressShadowElement::rendererIsNeeded(const NodeRenderingContext& context
 ProgressInnerElement::ProgressInnerElement(Document* document)
     : ProgressShadowElement(document)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, pseudoId, ("-webkit-progress-inner-element", AtomicString::ConstructFromLiteral));
-    setPart(pseudoId);
-}
-
-PassRefPtr<ProgressInnerElement> ProgressInnerElement::create(Document* document)
-{
-    RefPtr<ProgressInnerElement> element = adoptRef(new ProgressInnerElement(document));
-    element->setPart(AtomicString("-webkit-progress-inner-element", AtomicString::ConstructFromLiteral));
-    return element.release();
 }
 
 RenderObject* ProgressInnerElement::createRenderer(RenderStyle*)
@@ -82,6 +73,16 @@ bool ProgressInnerElement::rendererIsNeeded(const NodeRenderingContext& context)
 
     RenderObject* progressRenderer = progressElement()->renderer();
     return progressRenderer && !progressRenderer->style()->hasAppearance() && HTMLDivElement::rendererIsNeeded(context);
+}
+
+ProgressBarElement::ProgressBarElement(Document* document)
+    : ProgressShadowElement(document)
+{
+}
+
+ProgressValueElement::ProgressValueElement(Document* document)
+    : ProgressShadowElement(document)
+{
 }
 
 void ProgressValueElement::setWidthPercentage(double width)
