@@ -191,8 +191,6 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   void SetNeedsRedrawRect(gfx::Rect damage_rect);
   bool CommitRequested() const;
 
-  void SetNextCommitWaitsForActivation();
-
   void SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,
                           base::Time wall_clock_time);
 
@@ -267,6 +265,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   AnimationRegistrar* animation_registrar() const {
     return animation_registrar_.get();
   }
+
+  bool BlocksPendingCommit() const;
 
   // Obtains a thorough dump of the LayerTreeHost as a value.
   scoped_ptr<base::Value> AsValue() const;

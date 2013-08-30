@@ -120,7 +120,6 @@ class CC_EXPORT TextureLayer : public Layer {
   void SetRateLimitContext(bool rate_limit);
 
   // Code path for plugins which supply their own texture ID.
-  // DEPRECATED. DO NOT USE.
   void SetTextureId(unsigned texture_id);
 
   // Code path for plugins which supply their own mailbox.
@@ -137,6 +136,7 @@ class CC_EXPORT TextureLayer : public Layer {
                       const OcclusionTracker* occlusion) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
   virtual Region VisibleContentOpaqueRegion() const OVERRIDE;
+  virtual bool BlocksPendingCommit() const OVERRIDE;
 
   virtual bool CanClipSelf() const OVERRIDE;
 

@@ -518,10 +518,6 @@ bool LayerTreeHost::CommitRequested() const {
   return proxy_->CommitRequested();
 }
 
-void LayerTreeHost::SetNextCommitWaitsForActivation() {
-  proxy_->SetNextCommitWaitsForActivation();
-}
-
 void LayerTreeHost::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,
                                        base::Time wall_clock_time) {
   DCHECK(proxy_->IsMainThread());
@@ -1091,6 +1087,12 @@ void LayerTreeHost::UpdateTopControlsState(TopControlsState constraints,
                  constraints,
                  current,
                  animate));
+}
+
+bool LayerTreeHost::BlocksPendingCommit() const {
+  if (!root_layer_.get())
+    return false;
+  return root_layer_->BlocksPendingCommitRecursive();
 }
 
 scoped_ptr<base::Value> LayerTreeHost::AsValue() const {

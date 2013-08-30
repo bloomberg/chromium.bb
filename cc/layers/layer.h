@@ -397,6 +397,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   gfx::Rect LayerRectToContentRect(const gfx::RectF& layer_rect) const;
 
+  // In impl-side painting, this returns true if this layer type is not
+  // compatible with the main thread running freely, such as a double-buffered
+  // canvas that doesn't want to be triple-buffered across all three trees.
+  virtual bool BlocksPendingCommit() const;
+  // Returns true if anything in this tree blocksPendingCommit.
+  bool BlocksPendingCommitRecursive() const;
+
   virtual skia::RefPtr<SkPicture> GetPicture() const;
 
   virtual bool CanClipSelf() const;
@@ -448,11 +455,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // Called when there's been a change in layer structure.  Implies both
   // SetNeedsUpdate and SetNeedsCommit, but not SetNeedsPushProperties.
   void SetNeedsFullTreeSync();
-
-  // Called when the next commit should wait until the pending tree is activated
-  // before finishing the commit and unblocking the main thread. Used to ensure
-  // unused resources on the impl thread are returned before commit completes.
-  void SetNextCommitWaitsForActivation();
+  bool IsPropertyChangeAllowed() const;
 
   void SetNeedsPushProperties();
   void AddDependentNeedsPushProperties();
@@ -460,8 +463,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool parent_should_know_need_push_properties() const {
     return needs_push_properties() || descendant_needs_push_properties();
   }
-
-  bool IsPropertyChangeAllowed() const;
 
   // If this layer has a scroll parent, it removes |this| from its list of
   // scroll children.

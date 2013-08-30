@@ -32,7 +32,6 @@ class FakeProxy : public Proxy {
   virtual void SetNeedsUpdateLayers() OVERRIDE {}
   virtual void SetNeedsCommit() OVERRIDE {}
   virtual void SetNeedsRedraw(gfx::Rect damage_rect) OVERRIDE {}
-  virtual void SetNextCommitWaitsForActivation() OVERRIDE {}
   virtual void NotifyInputThrottledUntilCommit() OVERRIDE {}
   virtual void SetDeferCommits(bool defer_commits) OVERRIDE {}
   virtual void MainThreadHasStoppedFlinging() OVERRIDE {}

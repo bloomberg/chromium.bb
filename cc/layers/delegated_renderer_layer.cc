@@ -29,23 +29,6 @@ scoped_ptr<LayerImpl> DelegatedRendererLayer::CreateLayerImpl(
       tree_impl, layer_id_).PassAs<LayerImpl>();
 }
 
-void DelegatedRendererLayer::SetLayerTreeHost(LayerTreeHost* host) {
-  if (layer_tree_host() == host) {
-    Layer::SetLayerTreeHost(host);
-    return;
-  }
-
-  if (!host) {
-    // The active frame needs to be removed from the active tree and resources
-    // returned before the commit is called complete.
-    // TODO(danakj): Don't need to do this if the last frame commited was empty
-    // or we never commited a frame with resources.
-    SetNextCommitWaitsForActivation();
-  }
-
-  Layer::SetLayerTreeHost(host);
-}
-
 bool DelegatedRendererLayer::DrawsContent() const {
   return Layer::DrawsContent() && !frame_size_.IsEmpty();
 }
@@ -100,9 +83,6 @@ void DelegatedRendererLayer::SetFrameData(
     frame_size_ = gfx::Size();
   }
   SetNeedsCommit();
-  // The active frame needs to be replaced and resources returned before the
-  // commit is called complete.
-  SetNextCommitWaitsForActivation();
 }
 
 void DelegatedRendererLayer::TakeUnusedResourcesForChildCompositor(
@@ -111,6 +91,14 @@ void DelegatedRendererLayer::TakeUnusedResourcesForChildCompositor(
   array->clear();
 
   array->swap(unused_resources_for_child_compositor_);
+}
+
+bool DelegatedRendererLayer::BlocksPendingCommit() const {
+  // The active frame needs to be replaced and resources returned before the
+  // commit is called complete. This is true even whenever there may be
+  // resources to return, regardless of if the layer will draw in its new
+  // state.
+  return true;
 }
 
 }  // namespace cc

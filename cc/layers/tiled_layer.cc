@@ -235,6 +235,8 @@ void TiledLayer::PushPropertiesTo(LayerImpl* layer) {
   needs_push_properties_ = true;
 }
 
+bool TiledLayer::BlocksPendingCommit() const { return true; }
+
 PrioritizedResourceManager* TiledLayer::ResourceManager() {
   if (!layer_tree_host())
     return NULL;
@@ -728,10 +730,6 @@ void TiledLayer::UpdateScrollPrediction() {
 bool TiledLayer::Update(ResourceUpdateQueue* queue,
                         const OcclusionTracker* occlusion) {
   DCHECK(!skips_draw_ && !failed_update_);  // Did ResetUpdateState get skipped?
-
-  // Tiled layer always causes commits to wait for activation, as it does
-  // not support pending trees.
-  SetNextCommitWaitsForActivation();
 
   bool updated = false;
 

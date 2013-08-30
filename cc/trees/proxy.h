@@ -69,7 +69,6 @@ class CC_EXPORT Proxy {
   virtual void SetNeedsUpdateLayers() = 0;
   virtual void SetNeedsCommit() = 0;
   virtual void SetNeedsRedraw(gfx::Rect damage_rect) = 0;
-  virtual void SetNextCommitWaitsForActivation() = 0;
 
   virtual void NotifyInputThrottledUntilCommit() = 0;
 
