@@ -40,7 +40,7 @@ class TestExpandResponseFile(driver_test_utils.DriverTesterCommon):
     We make sure that the quotes are stripped so that we do not
     attempt to open a file with quotes in its name.
     """
-    t = self.getTemp()
+    t = self.getTemp(close=False)
     t.write('-E "%s" -I.. -o out.o\n' % file_to_quote)
     # Close to flush and ensure file is reopenable on windows.
     t.close()
@@ -66,7 +66,6 @@ class TestExpandResponseFile(driver_test_utils.DriverTesterCommon):
 
   def test_EmptyFile(self):
     t = self.getTemp()
-    t.close()
     pre_argv = ['early_arg.c', '@' + t.name, '-S']
     argv = driver_tools.DoExpandCommandFile(pre_argv, 1)
     self.assertEqual(argv,
@@ -75,7 +74,7 @@ class TestExpandResponseFile(driver_test_utils.DriverTesterCommon):
   def test_MultiLineNoContinuationChar(self):
     # Response files can span multiple lines and do not
     # require a line continuation char like '\' or '^'.
-    t = self.getTemp()
+    t = self.getTemp(close=False)
     t.write('f.c\n')
     t.write(' -I.. \n')
     t.write(' -c\n')

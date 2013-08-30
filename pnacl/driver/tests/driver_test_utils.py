@@ -101,6 +101,21 @@ def GetPlatformToTest():
       return arg.split('=')[1]
   raise Exception('Unknown platform')
 
+# We would like to be able to use a temp file whether it is open or closed.
+# However File's __enter__ method requires it to be open. So we override it
+# to just return the fd regardless.
+class TempWrapper(object):
+  def __init__(self, fd, close=True):
+    self.fd_ = fd
+    if close:
+      fd.close()
+  def __enter__(self):
+    return self.fd_
+  def __exit__(self, exc_type, exc_value, traceback):
+    return self.fd_.__exit__(exc_type, exc_value, traceback)
+  def __getattr__(self, name):
+    return getattr(self.fd_, name)
+
 class DriverTesterCommon(unittest.TestCase):
   def setUp(self):
     super(DriverTesterCommon, self).setUp()
@@ -114,7 +129,7 @@ class DriverTesterCommon(unittest.TestCase):
     driver_log.TempFiles.wipe()
     super(DriverTesterCommon, self).tearDown()
 
-  def getTemp(self, **kwargs):
+  def getTemp(self, close=True, **kwargs):
     """ Get a temporary named file object.
     """
     # Set delete=False, so that we can close the files and
@@ -122,4 +137,4 @@ class DriverTesterCommon(unittest.TestCase):
     # re-open an already opened temp file.
     t = tempfile.NamedTemporaryFile(delete=False, **kwargs)
     self._tempfiles.append(t)
-    return t
+    return TempWrapper(t, close=close)

@@ -20,7 +20,7 @@ class TestNativeDriverOptions(driver_test_utils.DriverTesterCommon):
       self.skipTest("Cannot run host binaries")
 
   def getFakeSourceFile(self):
-    with self.getTemp(suffix='.c') as s:
+    with self.getTemp(suffix='.c', close=False) as s:
       s.write('int main(int argc, char* argv[]) { return 0; }')
       s.close()
       return s
@@ -47,20 +47,17 @@ class TestNativeDriverOptions(driver_test_utils.DriverTesterCommon):
       self.assertTrue(filetype.IsLLVMBitcode(obj.name))
       self.assertEqual(self.getBitcodeArch(obj.name), 'le32')
 
-    with self.getTemp(suffix='.o') as obj:
       # Test that the --target flag produces biased bitcode objects
       driver_tools.RunDriver('clang',
           [s.name, '--target=x86_64-unknown-nacl', '-c', '-o', obj.name])
       self.assertTrue(filetype.IsLLVMBitcode(obj.name))
       self.assertEqual(self.getBitcodeArch(obj.name), 'X8664')
 
-    with self.getTemp(suffix='.o') as obj:
       driver_tools.RunDriver('clang',
           [s.name, '--target=i686-unknown-nacl', '-c', '-o', obj.name])
       self.assertTrue(filetype.IsLLVMBitcode(obj.name))
       self.assertEqual(self.getBitcodeArch(obj.name), 'X8632')
 
-    with self.getTemp(suffix='.o') as obj:
       driver_tools.RunDriver('clang',
           [s.name, '--target=armv7a-unknown-nacl-gnueabi', '-mfloat-abi=hard',
            '-c', '-o', obj.name])
@@ -79,21 +76,18 @@ class TestNativeDriverOptions(driver_test_utils.DriverTesterCommon):
       self.assertTrue(filetype.IsNativeObject(obj.name))
       self.assertEqual(elftools.GetELFHeader(obj.name).arch, 'X8664')
 
-    with self.getTemp(suffix='.o') as obj:
       driver_tools.RunDriver('clang',
           [s.name, '-c', '-o', obj.name, '--target=i686-unknown-nacl',
            '-arch', 'x86-32', '--pnacl-allow-translate'])
       self.assertTrue(filetype.IsNativeObject(obj.name))
       self.assertEqual(elftools.GetELFHeader(obj.name).arch, 'X8632')
 
-    with self.getTemp(suffix='.o') as obj:
       driver_tools.RunDriver('clang',
           [s.name, '-c', '-o', obj.name, '--target=armv7-unknown-nacl-gnueabi',
            '-arch', 'arm', '--pnacl-allow-translate'])
       self.assertTrue(filetype.IsNativeObject(obj.name))
       self.assertEqual(elftools.GetELFHeader(obj.name).arch, 'ARM')
 
-    with self.getTemp(suffix='.o') as obj:
       # TODO(dschuff): This should be an error.
       driver_tools.RunDriver('clang',
           [s.name, '-c', '-o', obj.name, '--target=x86_64-unknown-nacl',

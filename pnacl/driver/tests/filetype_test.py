@@ -17,15 +17,14 @@ class TestFiletypeCache(driver_test_utils.DriverTesterCommon):
     driver_test_utils.ApplyTestEnvOverrides(env)
 
   def getFakeLLAndBitcodeFile(self):
-    with self.getTemp(suffix='.ll') as t:
-      with self.getTemp(suffix='.bc') as b:
-        t.write('''
+    with self.getTemp(suffix='.ll', close=False) as t:
+      t.write('''
 define i32 @main() {
   ret i32 0
 }
 ''')
-        t.close()
-        b.close()
+      t.close()
+      with self.getTemp(suffix='.bc') as b:
         driver_tools.RunDriver('as', [t.name, '-o', b.name])
         return t, b
 

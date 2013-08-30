@@ -25,7 +25,7 @@ class TestStrip(driver_test_utils.DriverTesterCommon):
     driver_test_utils.ApplyTestEnvOverrides(env)
 
   def getSource(self, num):
-    with self.getTemp(suffix='.c') as t:
+    with self.getTemp(suffix='.c', close=False) as t:
       t.write('''
 extern void puts(const char *);
 
@@ -33,6 +33,7 @@ void foo%d(void) {
   puts("Hello\\n");
 }
 ''' % num)
+      t.close()
       return t
 
   def generateObjWithDebug(self, src, is_native):
@@ -40,7 +41,6 @@ void foo%d(void) {
     if is_native:
       s = '.o'
     obj = self.getTemp(suffix=s)
-    obj.close()
     args = ['-c', '-g', src.name, '-o', obj.name]
     if is_native:
       args += ['-arch', 'x86-32', '--pnacl-allow-translate']
@@ -49,7 +49,6 @@ void foo%d(void) {
 
   def generateArchive(self, objs):
     a = self.getTemp(suffix='.a')
-    a.close()
     # Archive file must be a valid archive (non-empty), or non-existent,
     # so remove it before running.
     os.remove(a.name)
@@ -64,7 +63,6 @@ void foo%d(void) {
 
   def stripFileAndCheck(self, f):
     f_stripped = self.getTemp()
-    f_stripped.close()
     driver_tools.RunDriver('strip',
         ['--strip-all', f.name, '-o', f_stripped.name])
     self.assertTrue(self.getFileSize(f_stripped.name) <

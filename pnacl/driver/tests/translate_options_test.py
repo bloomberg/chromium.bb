@@ -29,7 +29,7 @@ class TestLLCOptions(driver_test_utils.DriverTesterCommon):
   def getFakePexe(self):
     # Even --dry-run requires a file to exist, so make a fake pexe.
     # It even cares that the file is really bitcode.
-    with self.getTemp(suffix='.ll') as t:
+    with self.getTemp(suffix='.ll', close=False) as t:
       with self.getTemp(suffix='.pexe') as p:
         t.write('''
 define i32 @main() {
@@ -37,7 +37,6 @@ define i32 @main() {
 }
 ''')
         t.close()
-        p.close()
         driver_tools.RunDriver('as', [t.name, '-o', p.name])
         driver_tools.RunDriver('finalize', [p.name])
         return p
@@ -50,7 +49,6 @@ define i32 @main() {
     |expected_flags|.  This ensures that the pnacl-translate script
     does not drop certain flags accidentally. '''
     temp_output = self.getTemp()
-    temp_output.close()
     # Major hack to prevent DriverExit() from aborting the test.
     # The test will surely DriverLog.Fatal() because dry-run currently
     # does not handle anything that involves invoking a subprocess and
