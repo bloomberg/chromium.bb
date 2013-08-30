@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Regions with min-content or max-content height</title>
+	<style type="text/css">
+		.content {
+			font-family: Ahem;
+			font-size: 20px;
+			line-height: 1em;
+			color: green;
+			background-color: green;
+		}
+
+		#minContent {
+			-webkit-flow-into: minFlow;
+		}
+
+		#maxContent {
+			-webkit-flow-into: maxFlow;
+		}
+
+		.region {
+			overflow: hidden;
+			position: absolute;
+		}
+
+		#minRegion {
+			-webkit-flow-from: minFlow;
+			height: -webkit-min-content;
+		}
+
+		#maxRegion {
+			-webkit-flow-from: maxFlow;
+			height: -webkit-max-content;
+			left: 100px;
+		}
+
+		.red {
+			height: 20px;
+			width: 80px;
+			position: absolute;
+			background-color: red;
+		}
+
+		#maxRed {
+			left: 100px;
+		}
+	</style>
+</head>
+<body>
+	<ul>
+		<li>Test passes if you see two green stripes on the same horizontal line.</li>
+		<li>You shouldn't see any red.</li>
+	</ul>
+	<span id="minContent" class="content">XXXX</span>
+	<span id="maxContent" class="content">XXXX</span>
+
+	<div class="red"></div>
+	<div id="maxRed" class="red"></div>
+	<div id="minRegion" class="region"></div>
+	<div id="maxRegion" class="region"></div>
+</body>
+</html>

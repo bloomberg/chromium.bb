@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Regions with min-content or max-content height</title>
+	<style type="text/css">
+		.green {
+			height: 20px;
+			width: 80px;
+			position: absolute;
+			background-color: green;
+		}
+		
+		#right {
+			left: 100px;
+		}
+	</style>
+</head>
+<body>
+	<ul>
+		<li>Test passes if you see two green stripes on the same horizontal line.</li>
+		<li>You shouldn't see any red.</li>
+	</ul>
+	<div class="green"></div>
+	<div id="right" class="green"></div>
+</body>
+</html>

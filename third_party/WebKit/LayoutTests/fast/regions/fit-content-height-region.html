@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Region with fit-content height</title>
+	<style type="text/css">
+		.content {
+			font-family: Ahem;
+			font-size: 20px;
+			line-height: 1em;
+			color: green;
+			background-color: green;
+			-webkit-flow-into: flow;
+		}
+
+		#region {
+			height: -webkit-fit-content;
+			width: -webkit-fit-content;
+			-webkit-flow-from: flow;
+			overflow: hidden;
+			position: absolute;
+		}
+
+		#red {
+			height: 20px;
+			width: 80px;
+			position: absolute;
+			background-color: red;
+		}
+	</style>
+</head>
+<body>
+	<ul>
+		<li>Test passes if you see a green horizontal stripe.</li>
+		<li>You shouldn't see any red.</li>
+	</ul>
+	<span class="content">XXXX</span>
+	<div id="red"></div>
+	<div id="region"></div>
+</body>
+</html>
