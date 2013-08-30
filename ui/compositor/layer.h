@@ -16,6 +16,7 @@
 #include "cc/animation/layer_animation_event_observer.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/layers/content_layer_client.h"
+#include "cc/layers/layer_client.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/resources/texture_mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -62,6 +63,7 @@ class COMPOSITOR_EXPORT Layer
     : public LayerAnimationDelegate,
       NON_EXPORTED_BASE(public cc::ContentLayerClient),
       NON_EXPORTED_BASE(public cc::TextureLayerClient),
+      NON_EXPORTED_BASE(public cc::LayerClient),
       NON_EXPORTED_BASE(public cc::LayerAnimationEventObserver) {
  public:
   Layer();
@@ -329,6 +331,9 @@ class COMPOSITOR_EXPORT Layer
   // impact, and is only used for benchmarking/testing purpose.
   void SetForceRenderSurface(bool force);
   bool force_render_surface() const { return force_render_surface_; }
+
+  // LayerClient
+  virtual std::string DebugName() OVERRIDE;
 
   // LayerAnimationEventObserver
   virtual void OnAnimationStarted(const cc::AnimationEvent& event) OVERRIDE;

@@ -444,6 +444,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
     DCHECK(parent_->cc_layer_);
     parent_->cc_layer_->ReplaceChild(cc_layer_, new_layer);
   }
+  cc_layer_->SetLayerClient(NULL);
   cc_layer_->RemoveLayerAnimationEventObserver(this);
   new_layer->SetOpacity(cc_layer_->opacity());
   new_layer->SetTransform(cc_layer_->transform());
@@ -460,6 +461,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
     DCHECK(children_[i]->cc_layer_);
     cc_layer_->AddChild(children_[i]->cc_layer_);
   }
+  cc_layer_->SetLayerClient(this);
   cc_layer_->SetAnchorPoint(gfx::PointF());
   cc_layer_->SetContentsOpaque(fills_bounds_opaquely_);
   cc_layer_->SetForceRenderSurface(force_render_surface_);
@@ -673,6 +675,10 @@ void Layer::SetForceRenderSurface(bool force) {
 
   force_render_surface_ = force;
   cc_layer_->SetForceRenderSurface(force_render_surface_);
+}
+
+std::string Layer::DebugName() {
+  return name_;
 }
 
 void Layer::OnAnimationStarted(const cc::AnimationEvent& event) {
@@ -917,6 +923,7 @@ void Layer::CreateWebLayer() {
   cc_layer_->SetContentsOpaque(true);
   cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
   cc_layer_->AddLayerAnimationEventObserver(this);
+  cc_layer_->SetLayerClient(this);
   RecomputePosition();
 }
 

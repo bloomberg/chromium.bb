@@ -542,7 +542,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   gfx::PointF position_;
   gfx::PointF anchor_point_;
   SkColor background_color_;
-  std::string debug_name_;
   CompositingReasons compositing_reasons_;
   float opacity_;
   skia::RefPtr<SkImageFilter> filter_;
