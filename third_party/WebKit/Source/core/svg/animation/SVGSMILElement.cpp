@@ -51,6 +51,12 @@ static SMILEventSender& smilEndEventSender()
     return sender;
 }
 
+static SMILEventSender& smilBeginEventSender()
+{
+    DEFINE_STATIC_LOCAL(SMILEventSender, sender, ("beginEvent"));
+    return sender;
+}
+
 // This is used for duration type time values that can't be negative.
 static const double invalidCachedTime = -1.;
 
@@ -141,6 +147,7 @@ SVGSMILElement::~SVGSMILElement()
 {
     clearResourceReferences();
     smilEndEventSender().cancelEvent(this);
+    smilBeginEventSender().cancelEvent(this);
     disconnectConditions();
     if (m_timeContainer && m_targetElement && hasValidAttributeName())
         m_timeContainer->unschedule(this, m_targetElement, m_attributeName);
@@ -1105,8 +1112,10 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
         resetAnimatedType();
 
     if (animationIsContributing) {
-        if (oldActiveState == Inactive)
+        if (oldActiveState == Inactive) {
+            smilBeginEventSender().dispatchEventSoon(this);
             startedActiveInterval();
+        }
 
         updateAnimation(percent, repeat, resultElement);
         m_lastPercent = percent;
@@ -1122,6 +1131,8 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
 
     // Triggering all the pending events if the animation timeline is changed.
     if (seekToTime) {
+        if (m_activeState == Inactive)
+            smilBeginEventSender().dispatchEventSoon(this);
         if (m_activeState == Inactive || m_activeState == Frozen)
             smilEndEventSender().dispatchEventSoon(this);
     }
@@ -1204,7 +1215,7 @@ void SVGSMILElement::endedActiveInterval()
 
 void SVGSMILElement::dispatchPendingEvent(SMILEventSender* eventSender)
 {
-    ASSERT(eventSender == &smilEndEventSender());
+    ASSERT(eventSender == &smilEndEventSender() || eventSender == &smilBeginEventSender());
     const AtomicString& eventType = eventSender->eventType();
     dispatchEvent(Event::create(eventType));
 }
