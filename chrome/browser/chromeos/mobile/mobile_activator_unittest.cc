@@ -4,17 +4,21 @@
 
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
 
-#include "chrome/browser/chromeos/cros/mock_network_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
+#include "base/message_loop/message_loop.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using std::string;
 
 using content::BrowserThread;
 using testing::_;
 using testing::Eq;
+using testing::Invoke;
 using testing::Return;
 
 namespace {
@@ -34,39 +38,39 @@ namespace chromeos {
 
 class TestMobileActivator : public MobileActivator {
  public:
-  TestMobileActivator(MockNetworkLibrary* mock_network_library,
-                      CellularNetwork* cellular_network)
-      : mock_network_library_(mock_network_library),
+  explicit TestMobileActivator(NetworkState* cellular_network) :
         cellular_network_(cellular_network) {
     // Provide reasonable defaults for basic things we're usually not testing.
     ON_CALL(*this, DCheckOnThread(_))
         .WillByDefault(Return());
-    ON_CALL(*this, FindMatchingCellularNetwork(_))
-        .WillByDefault(Return(cellular_network));
-    ON_CALL(*this, GetNetworkLibrary())
-        .WillByDefault(Return(mock_network_library_));
+    ON_CALL(*this, GetNetworkState(_))
+        .WillByDefault(Return(cellular_network_));
   }
   virtual ~TestMobileActivator() {}
 
-  MOCK_METHOD3(ChangeState, void(CellularNetwork*,
+  MOCK_METHOD3(RequestCellularActivation,
+               void(const NetworkState*,
+                    const base::Closure&,
+                    const network_handler::ErrorCallback&));
+  MOCK_METHOD3(ChangeState, void(const NetworkState*,
                                  MobileActivator::PlanActivationState,
                                  const std::string&));
-  MOCK_METHOD1(EvaluateCellularNetwork, void(CellularNetwork*));
-  MOCK_METHOD1(FindMatchingCellularNetwork, CellularNetwork*(bool));
+  MOCK_METHOD1(GetNetworkState, const NetworkState*(const std::string&));
+  MOCK_METHOD1(EvaluateCellularNetwork, void(const NetworkState*));
+  MOCK_METHOD0(SignalCellularPlanPayment, void(void));
   MOCK_METHOD0(StartOTASPTimer, void(void));
+  MOCK_CONST_METHOD0(HasRecentCellularPlanPayment, bool(void));
 
-  void InvokeChangeState(CellularNetwork* network,
+  void InvokeChangeState(const NetworkState* network,
                          MobileActivator::PlanActivationState new_state,
                          const std::string& error_description) {
     MobileActivator::ChangeState(network, new_state, error_description);
   }
 
  private:
-  MOCK_CONST_METHOD0(GetNetworkLibrary, NetworkLibrary*(void));
   MOCK_CONST_METHOD1(DCheckOnThread, void(const BrowserThread::ID id));
 
-  MockNetworkLibrary* mock_network_library_;
-  CellularNetwork* cellular_network_;
+  NetworkState* cellular_network_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMobileActivator);
 };
@@ -74,27 +78,33 @@ class TestMobileActivator : public MobileActivator {
 class MobileActivatorTest : public testing::Test {
  public:
   MobileActivatorTest()
-      : network_library_(),
-        cellular_network_(string(kTestServicePath)),
-        mobile_activator_(&network_library_, &cellular_network_) {}
+      : cellular_network_(string(kTestServicePath)),
+        mobile_activator_(&cellular_network_) {
+  }
   virtual ~MobileActivatorTest() {}
 
  protected:
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+  virtual void SetUp() {
+    DBusThreadManager::InitializeWithStub();
+    NetworkHandler::Initialize();
+  }
+  virtual void TearDown() {
+    NetworkHandler::Shutdown();
+    DBusThreadManager::Shutdown();
+  }
 
   void set_activator_state(const MobileActivator::PlanActivationState state) {
     mobile_activator_.state_ = state;
   }
-  void set_network_activation_state(ActivationState state) {
-    cellular_network_.activation_state_ = state;
+  void set_network_activation_state(const std::string& activation_state) {
+    cellular_network_.activation_state_ = activation_state;
   }
-  void set_connection_state(ConnectionState state) {
-    cellular_network_.state_ = state;
+  void set_connection_state(const std::string& state) {
+    cellular_network_.connection_state_ = state;
   }
 
-  MockNetworkLibrary network_library_;
-  MockCellularNetwork cellular_network_;
+  base::MessageLoop message_loop_;
+  NetworkState cellular_network_;
   TestMobileActivator mobile_activator_;
  private:
   DISALLOW_COPY_AND_ASSIGN(MobileActivatorTest);
@@ -106,24 +116,24 @@ TEST_F(MobileActivatorTest, BasicFlowForNewDevices) {
   // activated.
   std::string error_description;
   set_activator_state(MobileActivator::PLAN_ACTIVATION_START);
-  set_connection_state(STATE_IDLE);
-  set_network_activation_state(ACTIVATION_STATE_NOT_ACTIVATED);
+  set_connection_state(flimflam::kStateIdle);
+  set_network_activation_state(flimflam::kActivationStateNotActivated);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_INITIATING_ACTIVATION,
             mobile_activator_.PickNextState(&cellular_network_,
                                             &error_description));
   // Now behave as if ChangeState() has initiated an activation.
   set_activator_state(MobileActivator::PLAN_ACTIVATION_INITIATING_ACTIVATION);
-  set_network_activation_state(ACTIVATION_STATE_ACTIVATING);
+  set_network_activation_state(flimflam::kActivationStateActivating);
   // We'll sit in this state while we wait for the OTASP to finish.
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_INITIATING_ACTIVATION,
             mobile_activator_.PickNextState(&cellular_network_,
                                             &error_description));
-  set_network_activation_state(ACTIVATION_STATE_PARTIALLY_ACTIVATED);
+  set_network_activation_state(flimflam::kActivationStatePartiallyActivated);
   // We'll sit in this state until we go online as well.
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_INITIATING_ACTIVATION,
             mobile_activator_.PickNextState(&cellular_network_,
                                             &error_description));
-  set_connection_state(STATE_PORTAL);
+  set_connection_state(flimflam::kStatePortal);
   // After we go online, we go back to START, which acts as a jumping off
   // point for the two types of initial OTASP.
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_START,
@@ -135,12 +145,12 @@ TEST_F(MobileActivatorTest, BasicFlowForNewDevices) {
                                             &error_description));
   // Very similar things happen while we're trying OTASP.
   set_activator_state(MobileActivator::PLAN_ACTIVATION_TRYING_OTASP);
-  set_network_activation_state(ACTIVATION_STATE_ACTIVATING);
+  set_network_activation_state(flimflam::kActivationStateActivating);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_TRYING_OTASP,
             mobile_activator_.PickNextState(&cellular_network_,
                                             &error_description));
-  set_network_activation_state(ACTIVATION_STATE_PARTIALLY_ACTIVATED);
-  set_connection_state(STATE_PORTAL);
+  set_network_activation_state(flimflam::kActivationStatePartiallyActivated);
+  set_connection_state(flimflam::kStatePortal);
   // And when we come back online again and aren't activating, load the portal.
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING,
             mobile_activator_.PickNextState(&cellular_network_,
@@ -149,7 +159,7 @@ TEST_F(MobileActivatorTest, BasicFlowForNewDevices) {
   set_activator_state(MobileActivator::PLAN_ACTIVATION_SHOWING_PAYMENT);
   // The JS also calls us to signal that the portal is done.  This triggers us
   // to start our final OTASP via the aptly named StartOTASP().
-  EXPECT_CALL(network_library_, SignalCellularPlanPayment());
+  EXPECT_CALL(mobile_activator_, SignalCellularPlanPayment());
   EXPECT_CALL(mobile_activator_,
               ChangeState(Eq(&cellular_network_),
                           Eq(MobileActivator::PLAN_ACTIVATION_START_OTASP),
@@ -166,34 +176,52 @@ TEST_F(MobileActivatorTest, BasicFlowForNewDevices) {
                                             &error_description));
   // Similarly to TRYING_OTASP and INITIATING_OTASP above...
   set_activator_state(MobileActivator::PLAN_ACTIVATION_OTASP);
-  set_network_activation_state(ACTIVATION_STATE_ACTIVATING);
+  set_network_activation_state(flimflam::kActivationStateActivating);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_OTASP,
             mobile_activator_.PickNextState(&cellular_network_,
                                             &error_description));
-  set_network_activation_state(ACTIVATION_STATE_ACTIVATED);
+  set_network_activation_state(flimflam::kActivationStateActivated);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_DONE,
             mobile_activator_.PickNextState(&cellular_network_,
                                             &error_description));
+}
+
+// A fake for MobileActivator::RequestCellularActivation that always succeeds.
+void FakeRequestCellularActivationSuccess(
+    const NetworkState* network,
+    const base::Closure& success_callback,
+    const network_handler::ErrorCallback& error_callback) {
+  success_callback.Run();
+}
+
+// A fake for MobileActivator::RequestCellularActivation that always fails.
+void FakeRequestCellularActivationFailure(
+    const NetworkState* network,
+    const base::Closure& success_callback,
+    const network_handler::ErrorCallback& error_callback) {
+  scoped_ptr<base::DictionaryValue> value;
+  error_callback.Run("", value.Pass());
 }
 
 TEST_F(MobileActivatorTest, OTASPScheduling) {
   const std::string error;
   for (size_t i = 0; i < kNumOTASPStates; ++i) {
     // When activation works, we start a timer to watch for success.
-    EXPECT_CALL(cellular_network_, StartActivation())
+    EXPECT_CALL(mobile_activator_, RequestCellularActivation(_, _, _))
         .Times(1)
-        .WillOnce(Return(true));
+        .WillOnce(Invoke(FakeRequestCellularActivationSuccess));
     EXPECT_CALL(mobile_activator_, StartOTASPTimer())
-        .Times(1);
+         .Times(1);
     set_activator_state(MobileActivator::PLAN_ACTIVATION_START);
     mobile_activator_.InvokeChangeState(&cellular_network_,
                                         kOTASPStates[i],
                                         error);
+
     // When activation fails, it's an error, unless we're trying for the final
     // OTASP, in which case we try again via DELAY_OTASP.
-    EXPECT_CALL(cellular_network_, StartActivation())
+    EXPECT_CALL(mobile_activator_, RequestCellularActivation(_, _, _))
         .Times(1)
-        .WillOnce(Return(false));
+        .WillOnce(Invoke(FakeRequestCellularActivationFailure));
     if (kOTASPStates[i] == MobileActivator::PLAN_ACTIVATION_OTASP) {
       EXPECT_CALL(mobile_activator_, ChangeState(
           Eq(&cellular_network_),
@@ -221,8 +249,8 @@ TEST_F(MobileActivatorTest, ReconnectOnDisconnectFromPaymentPortal) {
   // like when we're displaying the portal care quite a bit about going
   // offline.  Lets test for those cases.
   std::string error_description;
-  set_connection_state(STATE_FAILURE);
-  set_network_activation_state(ACTIVATION_STATE_PARTIALLY_ACTIVATED);
+  set_connection_state(flimflam::kStateFailure);
+  set_network_activation_state(flimflam::kActivationStatePartiallyActivated);
   set_activator_state(MobileActivator::PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_RECONNECTING,
             mobile_activator_.PickNextState(&cellular_network_,
@@ -234,10 +262,8 @@ TEST_F(MobileActivatorTest, ReconnectOnDisconnectFromPaymentPortal) {
 }
 
 TEST_F(MobileActivatorTest, StartAtStart) {
-  EXPECT_CALL(network_library_,
-              AddNetworkManagerObserver(Eq(&mobile_activator_)));
-  EXPECT_CALL(network_library_, HasRecentCellularPlanPayment()).
-      WillOnce(Return(false));
+  EXPECT_CALL(mobile_activator_, HasRecentCellularPlanPayment())
+      .WillOnce(Return(false));
   EXPECT_CALL(mobile_activator_,
               EvaluateCellularNetwork(Eq(&cellular_network_)));
   mobile_activator_.StartActivation();

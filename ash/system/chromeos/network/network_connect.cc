@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/network_activation_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
@@ -358,7 +359,7 @@ void ActivateCellular(const std::string& service_path) {
     return;
   }
 
-  NetworkHandler::Get()->network_connection_handler()->ActivateNetwork(
+  NetworkHandler::Get()->network_activation_handler()->Activate(
       service_path,
       "",  // carrier
       base::Bind(&OnActivateSucceeded, service_path),

@@ -314,21 +314,6 @@ void NetworkConnectionHandler::DisconnectNetwork(
   CallShillDisconnect(service_path, success_callback, error_callback);
 }
 
-void NetworkConnectionHandler::ActivateNetwork(
-    const std::string& service_path,
-    const std::string& carrier,
-    const base::Closure& success_callback,
-    const network_handler::ErrorCallback& error_callback) {
-  NET_LOG_USER("DisconnectNetwork", service_path);
-  const NetworkState* network =
-      network_state_handler_->GetNetworkState(service_path);
-  if (!network) {
-    InvokeErrorCallback(service_path, error_callback, kErrorNotFound);
-    return;
-  }
-  CallShillActivate(service_path, carrier, success_callback, error_callback);
-}
-
 bool NetworkConnectionHandler::HasConnectingNetwork(
     const std::string& service_path) {
   return pending_requests_.count(service_path) != 0;
@@ -692,31 +677,6 @@ void NetworkConnectionHandler::HandleShillDisconnectSuccess(
     const std::string& service_path,
     const base::Closure& success_callback) {
   NET_LOG_EVENT("Disconnect Request Sent", service_path);
-  if (!success_callback.is_null())
-    success_callback.Run();
-}
-
-// Activate
-
-void NetworkConnectionHandler::CallShillActivate(
-    const std::string& service_path,
-    const std::string& carrier,
-    const base::Closure& success_callback,
-    const network_handler::ErrorCallback& error_callback) {
-  NET_LOG_USER("Activate Request", service_path + ": '" + carrier + "'");
-  DBusThreadManager::Get()->GetShillServiceClient()->ActivateCellularModem(
-      dbus::ObjectPath(service_path),
-      carrier,
-      base::Bind(&NetworkConnectionHandler::HandleShillActivateSuccess,
-                 AsWeakPtr(), service_path, success_callback),
-      base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 kErrorShillError, service_path, error_callback));
-}
-
-void NetworkConnectionHandler::HandleShillActivateSuccess(
-    const std::string& service_path,
-    const base::Closure& success_callback) {
-  NET_LOG_EVENT("Activate Request Sent", service_path);
   if (!success_callback.is_null())
     success_callback.Run();
 }

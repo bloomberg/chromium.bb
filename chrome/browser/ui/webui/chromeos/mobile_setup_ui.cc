@@ -19,13 +19,16 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/network/device_state.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_state_handler_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/url_data_source.h"
@@ -36,15 +39,16 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
 #include "ui/webui/web_ui_util.h"
 #include "url/gurl.h"
 
-using chromeos::CellularNetwork;
 using chromeos::MobileActivator;
-using chromeos::NetworkLibrary;
+using chromeos::NetworkHandler;
+using chromeos::NetworkState;
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::WebContents;
@@ -145,7 +149,7 @@ class MobileSetupUIHTMLSource : public content::URLDataSource {
 class MobileSetupHandler
   : public WebUIMessageHandler,
     public MobileActivator::Observer,
-    public NetworkLibrary::NetworkManagerObserver,
+    public chromeos::NetworkStateHandlerObserver,
     public base::SupportsWeakPtr<MobileSetupHandler> {
  public:
   MobileSetupHandler();
@@ -167,9 +171,9 @@ class MobileSetupHandler
     TYPE_PORTAL_LTE
   };
 
-  // Changes internal state.
+  // MobileActivator::Observer.
   virtual void OnActivationStateChanged(
-      CellularNetwork* network,
+      const NetworkState* network,
       MobileActivator::PlanActivationState new_state,
       const std::string& error_description) OVERRIDE;
 
@@ -179,21 +183,22 @@ class MobileSetupHandler
   void HandlePaymentPortalLoad(const ListValue* args);
   void HandleGetDeviceInfo(const ListValue* args);
 
-  // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(NetworkLibrary* network_lib) OVERRIDE;
+  // NetworkStateHandlerObserver implementation.
+  virtual void NetworkManagerChanged() OVERRIDE;
+  virtual void DefaultNetworkChanged(
+      const NetworkState* default_network) OVERRIDE;
 
   // Updates |lte_portal_reachable_| for lte network |network| and notifies
   // webui of the new state if the reachability changed or |force_notification|
   // is set.
-  void UpdatePortalReachability(NetworkLibrary* network_lib,
-                                CellularNetwork* network,
+  void UpdatePortalReachability(const NetworkState* network,
                                 bool force_notification);
 
   // Sends message to host registration page with system/user info data.
   void SendDeviceInfo();
 
   // Converts the currently active CellularNetwork device into a JS object.
-  static void GetDeviceInfo(CellularNetwork* network,
+  static void GetDeviceInfo(const NetworkState* network,
                             DictionaryValue* value);
 
   // Type of the mobilesetup webui deduced from received messages.
@@ -224,12 +229,15 @@ void MobileSetupUIHTMLSource::StartDataRequest(
     int render_process_id,
     int render_view_id,
     const content::URLDataSource::GotDataCallback& callback) {
-  CellularNetwork* network = NULL;
+  const NetworkState* network = NULL;
   if (!path.empty()) {
-    network = NetworkLibrary::Get()-> FindCellularNetworkByPath(path);
+    network = NetworkHandler::Get()->network_state_handler()->GetNetworkState(
+        path);
   }
 
-  if (!network || (!network->SupportsActivation() && !network->activated())) {
+  if (!network ||
+      (network->payment_url().empty() && network->usage_url().empty() &&
+       network->activation_state() != flimflam::kActivationStateActivated)) {
     LOG(WARNING) << "Can't find device to activate for service path " << path;
     scoped_refptr<base::RefCountedBytes> html_bytes(new base::RefCountedBytes);
     callback.Run(html_bytes.get());
@@ -269,7 +277,7 @@ void MobileSetupUIHTMLSource::StartDataRequest(
   // network is activated, the webui goes straight to portal. Otherwise the
   // webui is used for activation flow.
   std::string full_html;
-  if (network->activated()) {
+  if (network->activation_state() == flimflam::kActivationStateActivated) {
     static const base::StringPiece html_for_activated(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_MOBILE_SETUP_PORTAL_PAGE_HTML));
@@ -299,12 +307,13 @@ MobileSetupHandler::~MobileSetupHandler() {
     MobileActivator::GetInstance()->RemoveObserver(this);
     MobileActivator::GetInstance()->TerminateActivation();
   } else if (type_ == TYPE_PORTAL_LTE) {
-    NetworkLibrary::Get()->RemoveNetworkManagerObserver(this);
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
+                                                                   FROM_HERE);
   }
 }
 
 void MobileSetupHandler::OnActivationStateChanged(
-    CellularNetwork* network,
+    const NetworkState* network,
     MobileActivator::PlanActivationState state,
     const std::string& error_description) {
   DCHECK_EQ(TYPE_ACTIVATION, type_);
@@ -396,9 +405,11 @@ void MobileSetupHandler::HandleGetDeviceInfo(const ListValue* args) {
   if (path.empty())
     return;
 
-  NetworkLibrary* network_lib = NetworkLibrary::Get();
-  CellularNetwork* network =
-      network_lib->FindCellularNetworkByPath(path.substr(1));
+  chromeos::NetworkStateHandler* nsh =
+      NetworkHandler::Get()->network_state_handler();
+  // TODO: Figure out why the path has an extra '/' in the front. (e.g. It is
+  // '//service/5' instead of '/service/5'.
+  const NetworkState* network = nsh->GetNetworkState(path.substr(1));
   if (!network) {
     web_ui()->GetWebContents()->Close();
     return;
@@ -408,16 +419,15 @@ void MobileSetupHandler::HandleGetDeviceInfo(const ListValue* args) {
   // network changes, but only for LTE networks. The other networks should
   // ignore network status.
   if (type_ == TYPE_UNDETERMINED) {
-    if (network->network_technology() == chromeos::NETWORK_TECHNOLOGY_LTE ||
+    if (network->network_technology() == flimflam::kNetworkTechnologyLte ||
         network->network_technology() ==
-            chromeos::NETWORK_TECHNOLOGY_LTE_ADVANCED) {
+            flimflam::kNetworkTechnologyLteAdvanced) {
       type_ = TYPE_PORTAL_LTE;
-      network_lib->AddNetworkManagerObserver(this);
+      nsh->AddObserver(this, FROM_HERE);
       // Update the network status and notify the webui. This is the initial
       // network state so the webui should be notified no matter what.
-      UpdatePortalReachability(network_lib,
-                               network,
-                               true /*force notification*/);
+      UpdatePortalReachability(network,
+                               true /* force notification */);
     } else {
       type_ = TYPE_PORTAL;
       // For non-LTE networks network state is ignored, so report the portal is
@@ -432,7 +442,7 @@ void MobileSetupHandler::HandleGetDeviceInfo(const ListValue* args) {
   web_ui()->CallJavascriptFunction(kJsGetDeviceInfoCallback, device_info);
 }
 
-void MobileSetupHandler::OnNetworkManagerChanged(NetworkLibrary* network_lib) {
+void MobileSetupHandler::NetworkManagerChanged() {
   if (!web_ui())
     return;
 
@@ -440,27 +450,37 @@ void MobileSetupHandler::OnNetworkManagerChanged(NetworkLibrary* network_lib) {
   if (path.empty())
     return;
 
-  CellularNetwork* network =
-      network_lib->FindCellularNetworkByPath(path.substr(1));
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkState(
+          path.substr(1));
   if (!network) {
     LOG(ERROR) << "Service path lost";
     web_ui()->GetWebContents()->Close();
     return;
   }
 
-  UpdatePortalReachability(network_lib, network, false /*force notification*/);
+  UpdatePortalReachability(network,
+                           false /* do not force notification */);
 }
 
-void MobileSetupHandler::UpdatePortalReachability(NetworkLibrary* network_lib,
-                                                  CellularNetwork* network,
-                                                  bool force_notification) {
+void MobileSetupHandler::DefaultNetworkChanged(
+    const NetworkState* default_network) {
+  NetworkManagerChanged();
+}
+
+void MobileSetupHandler::UpdatePortalReachability(
+    const NetworkState* network,
+    bool force_notification) {
   DCHECK(web_ui());
 
   DCHECK_EQ(type_, TYPE_PORTAL_LTE);
 
-  bool portal_reachable = network->connected() ||
-                          (network_lib->connected_network() &&
-                           network_lib->connected_network()->online());
+  chromeos::NetworkStateHandler* nsh =
+      NetworkHandler::Get()->network_state_handler();
+  bool portal_reachable =
+      (network->IsConnectedState() ||
+       (nsh->DefaultNetwork() &&
+        nsh->DefaultNetwork()->connection_state() == flimflam::kStateOnline));
 
   if (force_notification || portal_reachable != lte_portal_reachable_) {
     web_ui()->CallJavascriptFunction(kJsConnectivityChangedCallback,
@@ -470,22 +490,20 @@ void MobileSetupHandler::UpdatePortalReachability(NetworkLibrary* network_lib,
   lte_portal_reachable_ = portal_reachable;
 }
 
-void MobileSetupHandler::GetDeviceInfo(CellularNetwork* network,
+void MobileSetupHandler::GetDeviceInfo(const NetworkState* network,
                                        DictionaryValue* value) {
   DCHECK(network);
-  chromeos::NetworkLibrary* cros =
-      chromeos::NetworkLibrary::Get();
-  if (!cros)
-    return;
   value->SetBoolean("activate_over_non_cellular_network",
-                    network->activate_over_non_cellular_network());
+                    network->activate_over_non_cellular_networks());
   value->SetString("carrier", network->name());
   value->SetString("payment_url", network->payment_url());
-  if (network->using_post() && network->post_data().length())
+  if (LowerCaseEqualsASCII(network->post_method(), "post") &&
+      !network->post_data().empty())
     value->SetString("post_data", network->post_data());
 
-  const chromeos::NetworkDevice* device =
-      cros->FindNetworkDeviceByPath(network->device_path());
+  const chromeos::DeviceState* device =
+      NetworkHandler::Get()->network_state_handler()->GetDeviceState(
+          network->device_path());
   if (device) {
     value->SetString("MEID", device->meid());
     value->SetString("IMEI", device->imei());

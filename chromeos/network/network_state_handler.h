@@ -150,6 +150,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // only on the UI thread).
   void GetNetworkList(NetworkStateList* list) const;
 
+  // Like GetNetworkList() but only returns networks with matching |type|.
+  void GetNetworkListByType(const std::string& type,
+                            NetworkStateList* list) const;
+
   // Sets |list| to contain the list of devices.  The returned list contains
   // a copy of DeviceState pointers which should not be stored or used beyond
   // the scope of the calling function (i.e. they may later become invalid, but

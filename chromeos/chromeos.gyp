@@ -233,6 +233,8 @@
         'network/managed_network_configuration_handler_impl.h',
         'network/managed_state.cc',
         'network/managed_state.h',
+	'network/network_activation_handler.cc',
+	'network/network_activation_handler.h',
         'network/network_cert_migrator.cc',
         'network/network_cert_migrator.h',
         'network/network_change_notifier_chromeos.cc',

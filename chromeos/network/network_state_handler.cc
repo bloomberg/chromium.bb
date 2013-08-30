@@ -278,6 +278,11 @@ std::string NetworkStateHandler::FormattedHardwareAddressForType(
 }
 
 void NetworkStateHandler::GetNetworkList(NetworkStateList* list) const {
+  GetNetworkListByType(kMatchTypeDefault, list);
+}
+
+void NetworkStateHandler::GetNetworkListByType(const std::string& type,
+                                               NetworkStateList* list) const {
   DCHECK(list);
   list->clear();
   for (ManagedStateList::const_iterator iter = network_list_.begin();
@@ -286,7 +291,8 @@ void NetworkStateHandler::GetNetworkList(NetworkStateList* list) const {
       continue;
     const NetworkState* network = (*iter)->AsNetworkState();
     DCHECK(network);
-    list->push_back(network);
+    if (ManagedStateMatchesType(network, type))
+      list->push_back(network);
   }
 }
 

@@ -116,6 +116,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
       const base::DictionaryValue& properties);
 
  private:
+  friend class MobileActivatorTest;
   friend class NetworkStateHandler;
   friend class NetworkChangeNotifierChromeosUpdateTest;
 

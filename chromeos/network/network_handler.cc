@@ -9,6 +9,7 @@
 #include "chromeos/network/client_cert_resolver.h"
 #include "chromeos/network/geolocation_handler.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
+#include "chromeos/network/network_activation_handler.h"
 #include "chromeos/network/network_cert_migrator.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
@@ -40,6 +41,7 @@ NetworkHandler::NetworkHandler()
     network_cert_migrator_.reset(new NetworkCertMigrator());
     client_cert_resolver_.reset(new ClientCertResolver());
   }
+  network_activation_handler_.reset(new NetworkActivationHandler());
   network_connection_handler_.reset(new NetworkConnectionHandler());
   network_sms_handler_.reset(new NetworkSmsHandler());
   geolocation_handler_.reset(new GeolocationHandler());
@@ -114,6 +116,10 @@ NetworkConfigurationHandler* NetworkHandler::network_configuration_handler() {
 ManagedNetworkConfigurationHandler*
 NetworkHandler::managed_network_configuration_handler() {
   return managed_network_configuration_handler_.get();
+}
+
+NetworkActivationHandler* NetworkHandler::network_activation_handler() {
+  return network_activation_handler_.get();
 }
 
 NetworkConnectionHandler* NetworkHandler::network_connection_handler() {
