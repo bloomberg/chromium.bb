@@ -470,65 +470,78 @@ class MoveResourceRequest : public GetDataRequest {
   DISALLOW_COPY_AND_ASSIGN(MoveResourceRequest);
 };
 
-//========================== InsertResourceRequest ===========================
+//========================== ChildrenInsertRequest ============================
 
 // This class performs the request for inserting a resource to a directory.
-// Note that this is the request of "Children: insert" of the Drive API v2.
-// https://developers.google.com/drive/v2/reference/children/insert.
-class InsertResourceRequest : public EntryActionRequest {
+// This request is mapped to
+// https://developers.google.com/drive/v2/reference/children/insert
+class ChildrenInsertRequest : public EntryActionRequest {
  public:
-  // |callback| must not be null.
-  InsertResourceRequest(RequestSender* sender,
+  ChildrenInsertRequest(RequestSender* sender,
                         const DriveApiUrlGenerator& url_generator,
-                        const std::string& parent_resource_id,
-                        const std::string& resource_id,
                         const EntryActionCallback& callback);
-  virtual ~InsertResourceRequest();
+  virtual ~ChildrenInsertRequest();
+
+  // Required parameter.
+  const std::string& folder_id() const { return folder_id_; }
+  void set_folder_id(const std::string& folder_id) {
+    folder_id_ = folder_id;
+  }
+
+  // Required body.
+  const std::string& id() const { return id_; }
+  void set_id(const std::string& id) { id_ = id; }
 
  protected:
   // UrlFetchRequestBase overrides.
-  virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual GURL GetURL() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
 
  private:
   const DriveApiUrlGenerator url_generator_;
-  const std::string parent_resource_id_;
-  const std::string resource_id_;
+  std::string folder_id_;
+  std::string id_;
 
-  DISALLOW_COPY_AND_ASSIGN(InsertResourceRequest);
+  DISALLOW_COPY_AND_ASSIGN(ChildrenInsertRequest);
 };
 
-//========================== DeleteResourceRequest ===========================
+//========================== ChildrenDeleteRequest ============================
 
 // This class performs the request for removing a resource from a directory.
-// Note that we use "delete" for the name of this class, which comes from the
-// request name of the Drive API v2, although we prefer "remove" for that
-// sense in "drive/google_api"
-// Also note that this is the request of "Children: delete" of the Drive API
-// v2. https://developers.google.com/drive/v2/reference/children/delete
-class DeleteResourceRequest : public EntryActionRequest {
+// This request is mapped to
+// https://developers.google.com/drive/v2/reference/children/delete
+class ChildrenDeleteRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  DeleteResourceRequest(RequestSender* sender,
+  ChildrenDeleteRequest(RequestSender* sender,
                         const DriveApiUrlGenerator& url_generator,
-                        const std::string& parent_resource_id,
-                        const std::string& resource_id,
                         const EntryActionCallback& callback);
-  virtual ~DeleteResourceRequest();
+  virtual ~ChildrenDeleteRequest();
+
+  // Required parameter.
+  const std::string& child_id() const { return child_id_; }
+  void set_child_id(const std::string& child_id) {
+    child_id_ = child_id;
+  }
+
+  const std::string& folder_id() const { return folder_id_; }
+  void set_folder_id(const std::string& folder_id) {
+    folder_id_ = folder_id;
+  }
 
  protected:
   // UrlFetchRequestBase overrides.
-  virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual GURL GetURL() const OVERRIDE;
 
  private:
   const DriveApiUrlGenerator url_generator_;
-  const std::string parent_resource_id_;
-  const std::string resource_id_;
+  std::string child_id_;
+  std::string folder_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeleteResourceRequest);
+  DISALLOW_COPY_AND_ASSIGN(ChildrenDeleteRequest);
 };
 
 //======================= InitiateUploadNewFileRequest =======================

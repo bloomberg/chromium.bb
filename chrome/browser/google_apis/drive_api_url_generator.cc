@@ -163,15 +163,14 @@ GURL DriveApiUrlGenerator::GetChangesListUrl(bool include_deleted,
   return url;
 }
 
-GURL DriveApiUrlGenerator::GetChildrenUrl(
-    const std::string& resource_id) const {
-  return base_url_.Resolve(
-      base::StringPrintf(kDriveV2ChildrenUrlFormat,
-                         net::EscapePath(resource_id).c_str()));
+GURL DriveApiUrlGenerator::GetChildrenInsertUrl(
+    const std::string& file_id) const {
+  return base_url_.Resolve(base::StringPrintf(
+      kDriveV2ChildrenUrlFormat, net::EscapePath(file_id).c_str()));
 }
 
-GURL DriveApiUrlGenerator::GetChildrenUrlForRemoval(
-    const std::string& folder_id, const std::string& child_id) const {
+GURL DriveApiUrlGenerator::GetChildrenDeleteUrl(
+    const std::string& child_id, const std::string& folder_id) const {
   return base_url_.Resolve(
       base::StringPrintf(kDriveV2ChildrenUrlForRemovalFormat,
                          net::EscapePath(folder_id).c_str(),

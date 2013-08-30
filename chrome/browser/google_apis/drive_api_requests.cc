@@ -540,68 +540,59 @@ bool MoveResourceRequest::GetContentData(std::string* upload_content_type,
   return true;
 }
 
-//========================== InsertResourceRequest ===========================
+//========================== ChildrenInsertRequest ============================
 
-InsertResourceRequest::InsertResourceRequest(
+ChildrenInsertRequest::ChildrenInsertRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
-    const std::string& parent_resource_id,
-    const std::string& resource_id,
     const EntryActionCallback& callback)
     : EntryActionRequest(sender, callback),
-      url_generator_(url_generator),
-      parent_resource_id_(parent_resource_id),
-      resource_id_(resource_id) {
+      url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
 
-InsertResourceRequest::~InsertResourceRequest() {}
+ChildrenInsertRequest::~ChildrenInsertRequest() {}
 
-GURL InsertResourceRequest::GetURL() const {
-  return url_generator_.GetChildrenUrl(parent_resource_id_);
-}
-
-net::URLFetcher::RequestType InsertResourceRequest::GetRequestType() const {
+net::URLFetcher::RequestType ChildrenInsertRequest::GetRequestType() const {
   return net::URLFetcher::POST;
 }
 
-bool InsertResourceRequest::GetContentData(std::string* upload_content_type,
+GURL ChildrenInsertRequest::GetURL() const {
+  return url_generator_.GetChildrenInsertUrl(folder_id_);
+}
+
+bool ChildrenInsertRequest::GetContentData(std::string* upload_content_type,
                                            std::string* upload_content) {
   *upload_content_type = kContentTypeApplicationJson;
 
   base::DictionaryValue root;
-  root.SetString("id", resource_id_);
-  base::JSONWriter::Write(&root, upload_content);
+  root.SetString("id", id_);
 
+  base::JSONWriter::Write(&root, upload_content);
   DVLOG(1) << "InsertResource data: " << *upload_content_type << ", ["
            << *upload_content << "]";
   return true;
 }
 
-//========================== DeleteResourceRequest ===========================
+//========================== ChildrenDeleteRequest ============================
 
-DeleteResourceRequest::DeleteResourceRequest(
+ChildrenDeleteRequest::ChildrenDeleteRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
-    const std::string& parent_resource_id,
-    const std::string& resource_id,
     const EntryActionCallback& callback)
     : EntryActionRequest(sender, callback),
-      url_generator_(url_generator),
-      parent_resource_id_(parent_resource_id),
-      resource_id_(resource_id) {
+      url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
 
-DeleteResourceRequest::~DeleteResourceRequest() {}
+ChildrenDeleteRequest::~ChildrenDeleteRequest() {}
 
-GURL DeleteResourceRequest::GetURL() const {
-  return url_generator_.GetChildrenUrlForRemoval(
-      parent_resource_id_, resource_id_);
+net::URLFetcher::RequestType ChildrenDeleteRequest::GetRequestType() const {
+  return net::URLFetcher::DELETE_REQUEST;
 }
 
-net::URLFetcher::RequestType DeleteResourceRequest::GetRequestType() const {
-  return net::URLFetcher::DELETE_REQUEST;
+GURL ChildrenDeleteRequest::GetURL() const {
+  return url_generator_.GetChildrenDeleteUrl(child_id_, folder_id_);
 }
 
 //======================= InitiateUploadNewFileRequest =======================

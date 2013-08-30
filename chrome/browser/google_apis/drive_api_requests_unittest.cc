@@ -827,7 +827,7 @@ TEST_F(DriveApiRequestsTest, MoveResourceRequest_EmptyParentResourceId) {
   EXPECT_TRUE(file_resource);
 }
 
-TEST_F(DriveApiRequestsTest, InsertResourceRequest) {
+TEST_F(DriveApiRequestsTest, ChildrenInsertRequest) {
   // Set an expected data file containing the children entry.
   expected_content_type_ = "application/json";
   expected_content_ = kTestChildrenResponse;
@@ -838,15 +838,14 @@ TEST_F(DriveApiRequestsTest, InsertResourceRequest) {
   // "parent_resource_id".
   {
     base::RunLoop run_loop;
-    drive::InsertResourceRequest* request =
-        new drive::InsertResourceRequest(
-            request_sender_.get(),
-            *url_generator_,
-            "parent_resource_id",
-            "resource_id",
-            test_util::CreateQuitCallback(
-                &run_loop,
-                test_util::CreateCopyResultCallback(&error)));
+    drive::ChildrenInsertRequest* request = new drive::ChildrenInsertRequest(
+        request_sender_.get(),
+        *url_generator_,
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&error)));
+    request->set_folder_id("parent_resource_id");
+    request->set_id("resource_id");
     request_sender_->StartRequestWithRetry(request);
     run_loop.Run();
   }
@@ -861,22 +860,21 @@ TEST_F(DriveApiRequestsTest, InsertResourceRequest) {
   EXPECT_EQ("{\"id\":\"resource_id\"}", http_request_.content);
 }
 
-TEST_F(DriveApiRequestsTest, DeleteResourceRequest) {
+TEST_F(DriveApiRequestsTest, ChildrenDeleteRequest) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
 
   // Remove a resource with "resource_id" from a directory with
   // "parent_resource_id".
   {
     base::RunLoop run_loop;
-    drive::DeleteResourceRequest* request =
-        new drive::DeleteResourceRequest(
-            request_sender_.get(),
-            *url_generator_,
-            "parent_resource_id",
-            "resource_id",
-            test_util::CreateQuitCallback(
-                &run_loop,
-                test_util::CreateCopyResultCallback(&error)));
+    drive::ChildrenDeleteRequest* request = new drive::ChildrenDeleteRequest(
+        request_sender_.get(),
+        *url_generator_,
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&error)));
+    request->set_child_id("resource_id");
+    request->set_folder_id("parent_resource_id");
     request_sender_->StartRequestWithRetry(request);
     run_loop.Run();
   }

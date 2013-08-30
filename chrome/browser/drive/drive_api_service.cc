@@ -54,8 +54,9 @@ using google_apis::UploadRangeResponse;
 using google_apis::drive::AboutGetRequest;
 using google_apis::drive::AppsListRequest;
 using google_apis::drive::ChangesListRequest;
+using google_apis::drive::ChildrenDeleteRequest;
+using google_apis::drive::ChildrenInsertRequest;
 using google_apis::drive::ContinueGetFileListRequest;
-using google_apis::drive::DeleteResourceRequest;
 using google_apis::drive::DownloadFileRequest;
 using google_apis::drive::FilesCopyRequest;
 using google_apis::drive::FilesGetRequest;
@@ -66,7 +67,6 @@ using google_apis::drive::FilesTrashRequest;
 using google_apis::drive::GetUploadStatusRequest;
 using google_apis::drive::InitiateUploadExistingFileRequest;
 using google_apis::drive::InitiateUploadNewFileRequest;
-using google_apis::drive::InsertResourceRequest;
 using google_apis::drive::ResumeUploadRequest;
 
 namespace drive {
@@ -712,13 +712,11 @@ CancelCallback DriveAPIService::AddResourceToDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(
-      new InsertResourceRequest(
-          sender_.get(),
-          url_generator_,
-          parent_resource_id,
-          resource_id,
-          callback));
+  ChildrenInsertRequest* request =
+      new ChildrenInsertRequest(sender_.get(), url_generator_, callback);
+  request->set_folder_id(parent_resource_id);
+  request->set_id(resource_id);
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::RemoveResourceFromDirectory(
@@ -728,13 +726,11 @@ CancelCallback DriveAPIService::RemoveResourceFromDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(
-      new DeleteResourceRequest(
-          sender_.get(),
-          url_generator_,
-          parent_resource_id,
-          resource_id,
-          callback));
+  ChildrenDeleteRequest* request =
+      new ChildrenDeleteRequest(sender_.get(), url_generator_, callback);
+  request->set_child_id(resource_id);
+  request->set_folder_id(parent_resource_id);
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::InitiateUploadNewFile(
