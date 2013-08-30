@@ -45,17 +45,10 @@ std::string GenerateGetUserMediaCall(const char* function_name,
 
 namespace content {
 
-#if defined(OS_LINUX)
-// All tests are flaky on Linux: crbug.com/281492.
-#define MAYBE_WebrtcBrowserTest DISABLED_WebrtcBrowserTest
-#else
-#define MAYBE_WebrtcBrowserTest WebrtcBrowserTest
-#endif
-
-class MAYBE_WebrtcBrowserTest: public ContentBrowserTest {
+class WebrtcBrowserTest: public ContentBrowserTest {
  public:
-  MAYBE_WebrtcBrowserTest() {}
-  virtual ~MAYBE_WebrtcBrowserTest() {}
+  WebrtcBrowserTest() {}
+  virtual ~WebrtcBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -89,7 +82,7 @@ class MAYBE_WebrtcBrowserTest: public ContentBrowserTest {
 // These tests will all make a getUserMedia call with different constraints and
 // see that the success callback is called. If the error callback is called or
 // none of the callbacks are called the tests will simply time out and fail.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, GetVideoStreamAndStop) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetVideoStreamAndStop) {
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
@@ -98,8 +91,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, GetVideoStreamAndStop) {
   ExpectTitle("OK");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
-                       GetAudioAndVideoStreamAndStop) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetAudioAndVideoStreamAndStop) {
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
@@ -108,8 +100,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
   ExpectTitle("OK");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
-                       GetAudioAndVideoStreamAndClone) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetAudioAndVideoStreamAndClone) {
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
@@ -128,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
 
 // These tests will make a complete PeerConnection-based call and verify that
 // video is playing for the call.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, MAYBE_CanSetupVideoCall) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanSetupVideoCall) {
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -143,8 +134,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, MAYBE_CanSetupVideoCall) {
 #define MAYBE_CanSetupAudioAndVideoCall CanSetupAudioAndVideoCall
 #endif
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
-                       MAYBE_CanSetupAudioAndVideoCall) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanSetupAudioAndVideoCall) {
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -152,8 +142,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
   ExpectTitle("OK");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
-                       MANUAL_CanSetupCallAndSendDtmf) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CanSetupCallAndSendDtmf) {
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -161,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
       ExecuteJavascript("callAndSendDtmf('123,abc');"));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        CanMakeEmptyCallThenAddStreamsAndRenegotiate) {
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
@@ -188,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
 #define MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle\
         CanSetupAudioAndVideoCallWithoutMsidAndBundle
 #endif
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle) {
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
@@ -199,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
 
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, CallWithDataOnly) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataOnly) {
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -216,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, CallWithDataOnly) {
 
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel and audio and video tracks.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, MAYBE_CallWithDataAndMedia) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithDataAndMedia) {
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -233,8 +222,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, MAYBE_CallWithDataAndMedia) {
 
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel and later add an audio and video track.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
-                       MAYBE_CallWithDataAndLaterAddMedia) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithDataAndLaterAddMedia) {
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -252,8 +240,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
 // This test will make a PeerConnection-based call and send a new Video
 // MediaStream that has been created based on a MediaStream created with
 // getUserMedia.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
-                       MAYBE_CallWithNewVideoMediaStream) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithNewVideoMediaStream) {
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -267,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
 // AudioTrack is added instead.
 // TODO(phoglund): This test is manual since not all buildbots has an audio
 // input.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, MANUAL_CallAndModifyStream) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CallAndModifyStream) {
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -277,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, MANUAL_CallAndModifyStream) {
 }
 
 // This test calls getUserMedia in sequence with different constraints.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, TestGetUserMediaConstraints) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestGetUserMediaConstraints) {
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
   std::vector<std::string> list_of_get_user_media_calls;
@@ -308,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, TestGetUserMediaConstraints) {
 }
 
 // This test calls getUserMedia and checks for aspect ratio behavior.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, TestGetUserMediaAspectRatio) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestGetUserMediaAspectRatio) {
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
   std::string constraints_4_3 = GenerateGetUserMediaCall(
@@ -327,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, TestGetUserMediaAspectRatio) {
   ExpectTitle("16:9 letterbox");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, AddTwoMediaStreamsToOnePC) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, AddTwoMediaStreamsToOnePC) {
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
