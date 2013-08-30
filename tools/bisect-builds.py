@@ -91,13 +91,13 @@ class PathContext(object):
 
     if is_official:
       if self.platform == 'linux':
-        self._listing_platform_dir = 'lucid32bit/'
-        self.archive_name = 'chrome-lucid32bit.zip'
-        self._archive_extract_dir = 'chrome-lucid32bit'
+        self._listing_platform_dir = 'precise32bit/'
+        self.archive_name = 'chrome-precise32bit.zip'
+        self._archive_extract_dir = 'chrome-precise32bit'
       elif self.platform == 'linux64':
-        self._listing_platform_dir = 'lucid64bit/'
-        self.archive_name = 'chrome-lucid64bit.zip'
-        self._archive_extract_dir = 'chrome-lucid64bit'
+        self._listing_platform_dir = 'precise64bit/'
+        self.archive_name = 'chrome-precise64bit.zip'
+        self._archive_extract_dir = 'chrome-precise64bit'
       elif self.platform == 'mac':
         self._listing_platform_dir = 'mac/'
         self._binary_name = 'Google Chrome.app/Contents/MacOS/Google Chrome'
@@ -200,7 +200,7 @@ class PathContext(object):
         except ValueError:
           pass
       return (revisions, next_marker)
-      
+
     # Fetch the first list of revisions.
     (revisions, next_marker) = _FetchAndParse(self.GetListingURL())
 
