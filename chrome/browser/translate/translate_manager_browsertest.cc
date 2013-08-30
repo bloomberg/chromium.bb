@@ -1028,12 +1028,12 @@ TEST_F(TranslateManagerBrowserTest, NeverTranslateLanguagePref) {
   PrefService* prefs = profile->GetPrefs();
   PrefChangeRegistrar registrar;
   registrar.Init(prefs);
-  registrar.Add(TranslatePrefs::kPrefTranslateLanguageBlacklist,
+  registrar.Add(TranslatePrefs::kPrefTranslateBlockedLanguages,
                 pref_callback_);
   TranslatePrefs translate_prefs(prefs);
   EXPECT_FALSE(translate_prefs.IsBlockedLanguage("fr"));
   EXPECT_TRUE(translate_prefs.CanTranslateLanguage(profile, "fr"));
-  SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateLanguageBlacklist);
+  SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateBlockedLanguages);
   translate_prefs.BlockLanguage("fr");
   EXPECT_TRUE(translate_prefs.IsBlockedLanguage("fr"));
   EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(url.host()));
@@ -1048,7 +1048,7 @@ TEST_F(TranslateManagerBrowserTest, NeverTranslateLanguagePref) {
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
   // Remove the language from the blacklist.
-  SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateLanguageBlacklist);
+  SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateBlockedLanguages);
   translate_prefs.UnblockLanguage("fr");
   EXPECT_FALSE(translate_prefs.IsBlockedLanguage("fr"));
   EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(url.host()));

@@ -5,7 +5,6 @@
 #include "chrome/browser/translate/translate_accept_languages.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
@@ -14,7 +13,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_manager.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/translate/translate_util.h"
 #include "content/public/browser/notification_source.h"
@@ -88,13 +86,6 @@ void TranslateAcceptLanguages::InitAcceptLanguages(PrefService* prefs) {
   LanguageSet accept_langs_set;
   base::SplitString(accept_langs_str, ',', &accept_langs_list);
   std::vector<std::string>::const_iterator iter;
-  std::string app_locale = g_browser_process->GetApplicationLocale();
-  std::string ui_lang = TranslateManager::GetLanguageCode(app_locale);
-  bool is_ui_english = StartsWithASCII(ui_lang, "en-", false);
-
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  bool enable_translate_settings =
-      command_line->HasSwitch(switches::kEnableTranslateSettings);
 
   for (iter = accept_langs_list.begin();
        iter != accept_langs_list.end(); ++iter) {
@@ -104,18 +95,6 @@ void TranslateAcceptLanguages::InitAcceptLanguages(PrefService* prefs) {
     size_t index = iter->find("-");
     if (index != std::string::npos && *iter != "zh-CN" && *iter != "zh-TW")
       accept_lang = iter->substr(0, index);
-
-    // Special-case English until we resolve bug 36182 properly.
-    // Add English only if the UI language is not English. This will annoy
-    // users of non-English Chrome who can comprehend English until English is
-    // black-listed.
-    // TODO(jungshik): Once we determine that it's safe to remove English from
-    // the default Accept-Language values for most locales, remove this
-    // special-casing.
-    // TODO(hajimehoshi): We can remove this special-casing if the Translate
-    // settings UI is enabled by default.
-    if (!enable_translate_settings && accept_lang == "en" && !is_ui_english)
-      continue;
 
     accept_langs_set.insert(accept_lang);
   }

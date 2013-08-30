@@ -61,11 +61,6 @@ content::WebUIDataSource* CreateTranslateInternalsHTMLSource() {
     source->AddString(key, value);
   }
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  bool enable_translate_settings =
-      command_line.HasSwitch(switches::kEnableTranslateSettings);
-  source->AddBoolean("enable-translate-settings", enable_translate_settings);
-
   std::string cld_version = LanguageDetectionUtil::GetCLDVersion();
   source->AddString("cld-version", cld_version);
 

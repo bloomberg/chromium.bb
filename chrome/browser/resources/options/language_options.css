@@ -122,16 +122,6 @@
   z-index: 10;
 }
 
-<if expr="is_macosx">
-.language-options[enabled='false'] #language-options-details {
-  display: none;
-}
-
-.language-options[enabled='false'] #language-options-languages {
-  background-color: transparent !important;
-}
-</if>
-
 /* TODO(kochi): This is temporary copy from new_tab.css */
 /* Notification */
 

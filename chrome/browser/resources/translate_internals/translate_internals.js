@@ -26,12 +26,6 @@
       var button = $('detection-logs-dump');
       button.addEventListener('click', onDetectionLogsDump);
 
-      var enableTranslateSettings = templateData['enable-translate-settings'];
-      if (!enableTranslateSettings) {
-        $('prefs-blocked-languages').hidden = true;
-        $('prefs-language-blacklist').querySelector('h2 span').hidden = true;
-      }
-
       var tabpanelNodeList = document.getElementsByTagName('tabpanel');
       var tabpanels = Array.prototype.slice.call(tabpanelNodeList, 0);
       var tabpanelIds = tabpanels.map(function(tab) {

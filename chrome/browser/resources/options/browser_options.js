@@ -367,9 +367,6 @@ cr.define('options', function() {
       $('language-button').onclick = showLanguageOptions;
       $('manage-languages').onclick = showLanguageOptions;
 
-      if (!loadTimeData.getBoolean('enableTranslateSettings'))
-        $('manage-languages').hidden = true;
-
       // Downloads section.
       Preferences.getInstance().addEventListener('download.default_directory',
           this.onDefaultDownloadDirectoryChanged_.bind(this));

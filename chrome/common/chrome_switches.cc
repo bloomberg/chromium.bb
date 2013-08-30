@@ -741,9 +741,6 @@ const char kEnableThumbnailRetargeting[]   = "enable-thumbnail-retargeting";
 // Enables Translate experimental new UX which replaces the infobar.
 const char kEnableTranslateNewUX[]         = "enable-translate-new-ux";
 
-// Enables Translate settings in chrome://settings/languages.
-const char kEnableTranslateSettings[]      = "enable-translate-settings";
-
 // Enables unrestricted SSL 3.0 fallback.
 // With this switch, SSL 3.0 fallback will be enabled for all sites.
 // Without this switch, SSL 3.0 fallback will be disabled for a site

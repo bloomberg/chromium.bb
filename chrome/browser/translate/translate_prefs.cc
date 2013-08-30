@@ -4,7 +4,6 @@
 
 #include "chrome/browser/translate/translate_prefs.h"
 
-#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -13,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_accept_languages.h"
 #include "chrome/browser/translate/translate_manager.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/translate/translate_util.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -80,37 +78,20 @@ TranslatePrefs::TranslatePrefs(PrefService* user_prefs)
 
 bool TranslatePrefs::IsBlockedLanguage(
     const std::string& original_language) const {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableTranslateSettings)) {
-    return IsValueBlacklisted(kPrefTranslateBlockedLanguages,
-                              original_language);
-  } else {
-    return IsValueBlacklisted(kPrefTranslateLanguageBlacklist,
-                              original_language);
-  }
+  return IsValueBlacklisted(kPrefTranslateBlockedLanguages,
+                            original_language);
 }
 
 void TranslatePrefs::BlockLanguage(
     const std::string& original_language) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableTranslateSettings)) {
-    BlacklistValue(kPrefTranslateBlockedLanguages, original_language);
-    AppendLanguageToAcceptLanguages(prefs_, original_language);
-  } else {
-    BlacklistValue(kPrefTranslateLanguageBlacklist, original_language);
-  }
+  BlacklistValue(kPrefTranslateBlockedLanguages, original_language);
+  AppendLanguageToAcceptLanguages(prefs_, original_language);
 }
 
 void TranslatePrefs::UnblockLanguage(
     const std::string& original_language) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableTranslateSettings)) {
-    RemoveValueFromBlacklist(kPrefTranslateBlockedLanguages,
-                             original_language);
-  } else {
-    RemoveValueFromBlacklist(kPrefTranslateLanguageBlacklist,
-                             original_language);
-  }
+  RemoveValueFromBlacklist(kPrefTranslateBlockedLanguages,
+                           original_language);
 }
 
 void TranslatePrefs::RemoveLanguageFromLegacyBlacklist(
@@ -169,19 +150,11 @@ void TranslatePrefs::RemoveLanguagePairFromWhitelist(
 }
 
 bool TranslatePrefs::HasBlacklistedLanguages() const {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableTranslateSettings))
-    return !IsListEmpty(kPrefTranslateBlockedLanguages);
-  else
-    return !IsListEmpty(kPrefTranslateLanguageBlacklist);
+  return !IsListEmpty(kPrefTranslateBlockedLanguages);
 }
 
 void TranslatePrefs::ClearBlacklistedLanguages() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableTranslateSettings))
-    prefs_->ClearPref(kPrefTranslateBlockedLanguages);
-  else
-    prefs_->ClearPref(kPrefTranslateLanguageBlacklist);
+  prefs_->ClearPref(kPrefTranslateBlockedLanguages);
 }
 
 bool TranslatePrefs::HasBlacklistedSites() const {
@@ -253,27 +226,20 @@ bool TranslatePrefs::CanTranslateLanguage(Profile* profile,
   TranslatePrefs translate_prefs(profile->GetPrefs());
   bool blocked = translate_prefs.IsBlockedLanguage(language);
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableTranslateSettings)) {
-    bool is_accept_language =
-        TranslateManager::IsAcceptLanguage(profile, language);
-    bool can_be_accept_language =
-        TranslateAcceptLanguages::CanBeAcceptLanguage(language);
+  bool is_accept_language =
+      TranslateManager::IsAcceptLanguage(profile, language);
+  bool can_be_accept_language =
+      TranslateAcceptLanguages::CanBeAcceptLanguage(language);
 
-    // Don't translate any user black-listed languages. Checking
-    // |is_accept_language| is necessary because if the user eliminates the
-    // language from the preference, it is natural to forget whether or not
-    // the language should be translated. Checking |cannot_be_accept_language|
-    // is also necessary because some minor languages can't be selected in the
-    // language preference even though the language is available in Translate
-    // server.
-    if (blocked && (is_accept_language || !can_be_accept_language))
-      return false;
-  } else {
-    // Don't translate any user user selected language.
-    if (blocked)
-      return false;
-  }
+  // Don't translate any user black-listed languages. Checking
+  // |is_accept_language| is necessary because if the user eliminates the
+  // language from the preference, it is natural to forget whether or not
+  // the language should be translated. Checking |cannot_be_accept_language|
+  // is also necessary because some minor languages can't be selected in the
+  // language preference even though the language is available in Translate
+  // server.
+  if (blocked && (is_accept_language || !can_be_accept_language))
+    return false;
 
   return true;
 }
@@ -354,11 +320,7 @@ void TranslatePrefs::MigrateUserPrefs(PrefService* user_prefs) {
   // enable settings for users.
   bool merged = user_prefs->HasPrefPath(kPrefTranslateBlockedLanguages);
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  bool enabled_translate_settings =
-      command_line.HasSwitch(switches::kEnableTranslateSettings);
-
-  if (!merged && enabled_translate_settings) {
+  if (!merged) {
     std::vector<std::string> blacklisted_languages;
     GetBlacklistedLanguages(user_prefs, &blacklisted_languages);
 

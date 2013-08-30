@@ -680,11 +680,6 @@ cr.define('options', function() {
     updateOfferToTranslateCheckbox_: function(languageCode) {
       var div = $('language-options-offer-to-translate');
 
-      if (!loadTimeData.getBoolean('enableTranslateSettings')) {
-        div.hidden = true;
-        return;
-      }
-
       // Translation server supports Chinese (Transitional) and Chinese
       // (Simplified) but not 'general' Chinese. To avoid ambiguity, we don't
       // show this preference when general Chinese is selected.

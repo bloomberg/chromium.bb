@@ -352,23 +352,10 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
   std::string target_lang = GetTargetLanguage(prefs);
   std::string language_code = GetLanguageCode(page_lang);
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-
   // Don't translate similar languages (ex: en-US to en).
   if (language_code == target_lang) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_SIMILAR_LANGUAGES);
-    return;
-  }
-
-  // Don't translate any language the user configured as accepted languages.
-  // When the flag --enable-translate-settings is on, the condition is
-  // different. In this case, even though a language is an Accept language,
-  // it could be translated due to the blacklist.
-  if (!command_line->HasSwitch(switches::kEnableTranslateSettings) &&
-      accept_languages_->IsAcceptLanguage(original_profile, language_code)) {
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_ACCEPT_LANGUAGES);
     return;
   }
 

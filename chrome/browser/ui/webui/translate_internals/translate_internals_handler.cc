@@ -9,14 +9,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_error_details.h"
 #include "chrome/browser/translate/translate_event_details.h"
 #include "chrome/browser/translate/translate_prefs.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/translate/language_detection_details.h"
 #include "content/public/browser/web_contents.h"
@@ -146,12 +144,7 @@ void TranslateInternalsHandler::SendPrefsToJs() {
   std::vector<std::string> keys;
   keys.push_back(prefs::kEnableTranslate);
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  bool enable_translate_settings =
-      command_line.HasSwitch(switches::kEnableTranslateSettings);
-  if (enable_translate_settings)
-    keys.push_back(TranslatePrefs::kPrefTranslateBlockedLanguages);
-
+  keys.push_back(TranslatePrefs::kPrefTranslateBlockedLanguages);
   keys.push_back(TranslatePrefs::kPrefTranslateLanguageBlacklist);
   keys.push_back(TranslatePrefs::kPrefTranslateSiteBlacklist);
   keys.push_back(TranslatePrefs::kPrefTranslateWhitelists);
