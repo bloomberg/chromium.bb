@@ -54,9 +54,9 @@ namespace WTF {
         // The starting table size. Can be overridden when we know beforehand that
         // a hash table will have at least N entries.
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-        static const int minimumTableSize = 1;
+        static const unsigned minimumTableSize = 1;
 #else
-        static const int minimumTableSize = 8;
+        static const unsigned minimumTableSize = 8;
 #endif
     };
 
