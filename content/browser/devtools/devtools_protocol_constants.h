@@ -91,14 +91,12 @@ namespace Page {
     extern const char kName[];
     extern const char kParamFormat[];
     extern const char kParamQuality[];
-    extern const char kParamScale[];
+    extern const char kParamMaxWidth[];
+    extern const char kParamMaxHeight[];
   }  // captureScreenshot
 
   namespace startScreencast {
     extern const char kName[];
-    extern const char kParamFormat[];
-    extern const char kParamQuality[];
-    extern const char kParamScale[];
   }  // startScreencast
 
   namespace stopScreencast {

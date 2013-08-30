@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "content/browser/devtools/devtools_protocol.h"
 
@@ -36,6 +37,9 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
 
  private:
   void InnerSwapCompositorFrame();
+  void ParseCaptureParameters(DevToolsProtocol::Command* command,
+                              std::string* format, int* quality,
+                              double* scale);
 
   // DOM domain.
   scoped_refptr<DevToolsProtocol::Response>
@@ -74,6 +78,7 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
   base::WeakPtrFactory<RendererOverridesHandler> weak_factory_;
   scoped_refptr<DevToolsProtocol::Command> screencast_command_;
   cc::CompositorFrameMetadata last_compositor_frame_metadata_;
+  base::TimeTicks last_frame_time_;
   DISALLOW_COPY_AND_ASSIGN(RendererOverridesHandler);
 };
 

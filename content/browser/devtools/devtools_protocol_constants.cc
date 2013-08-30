@@ -82,14 +82,12 @@ namespace captureScreenshot {
   const char kName[] = "Page.captureScreenshot";
   const char kParamFormat[] = "format";
   const char kParamQuality[] = "quality";
-  const char kParamScale[] = "scale";
+  const char kParamMaxWidth[] = "maxWidth";
+  const char kParamMaxHeight[] = "maxHeight";
 }  // captureScreenshot
 
 namespace startScreencast {
   const char kName[] = "Page.startScreencast";
-  const char kParamFormat[] = "format";
-  const char kParamQuality[] = "quality";
-  const char kParamScale[] = "scale";
 }  // startScreencast
 
 namespace stopScreencast {

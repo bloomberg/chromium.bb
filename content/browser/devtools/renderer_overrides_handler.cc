@@ -50,29 +50,7 @@ namespace {
 static const char kPng[] = "png";
 static const char kJpeg[] = "jpeg";
 static int kDefaultScreenshotQuality = 80;
-
-void ParseCaptureParameters(DevToolsProtocol::Command* command,
-                            std::string* format,
-                            int* quality,
-                            double* scale) {
-  *quality = kDefaultScreenshotQuality;
-  *scale = 1;
-  base::DictionaryValue* params = command->params();
-  if (params) {
-    params->GetString(devtools::Page::captureScreenshot::kParamFormat,
-                      format);
-    params->GetInteger(devtools::Page::captureScreenshot::kParamQuality,
-                       quality);
-    params->GetDouble(devtools::Page::captureScreenshot::kParamScale,
-                      scale);
-  }
-  if (format->empty())
-    *format = kPng;
-  if (*quality < 0 || *quality > 100)
-    *quality = kDefaultScreenshotQuality;
-  if (*scale <= 0 || *scale > 1)
-    *scale = 1;
-}
+static int kFrameRateThresholdMs = 100;
 
 void ParseGenericInputParams(base::DictionaryValue* params,
                              WebInputEvent* event) {
@@ -162,6 +140,12 @@ void RendererOverridesHandler::OnSwapCompositorFrame(
 }
 
 void RendererOverridesHandler::InnerSwapCompositorFrame() {
+  if ((base::TimeTicks::Now() - last_frame_time_).InMilliseconds() <
+          kFrameRateThresholdMs) {
+    return;
+  }
+
+  last_frame_time_ = base::TimeTicks::Now();
   std::string format;
   int quality = kDefaultScreenshotQuality;
   double scale = 1;
@@ -183,6 +167,46 @@ void RendererOverridesHandler::InnerSwapCompositorFrame() {
                  last_compositor_frame_metadata_));
 }
 
+void RendererOverridesHandler::ParseCaptureParameters(
+    DevToolsProtocol::Command* command,
+    std::string* format,
+    int* quality,
+    double* scale) {
+  RenderViewHost* host = agent_->GetRenderViewHost();
+  gfx::Rect view_bounds = host->GetView()->GetViewBounds();
+
+  *quality = kDefaultScreenshotQuality;
+  *scale = 1;
+  double max_width = -1;
+  double max_height = -1;
+  base::DictionaryValue* params = command->params();
+  if (params) {
+    params->GetString(devtools::Page::captureScreenshot::kParamFormat,
+                      format);
+    params->GetInteger(devtools::Page::captureScreenshot::kParamQuality,
+                       quality);
+    params->GetDouble(devtools::Page::captureScreenshot::kParamMaxWidth,
+                      &max_width);
+    params->GetDouble(devtools::Page::captureScreenshot::kParamMaxHeight,
+                      &max_height);
+  }
+
+  float device_sf = last_compositor_frame_metadata_.device_scale_factor;
+
+  if (max_width > 0)
+    *scale = std::min(*scale, max_width / view_bounds.width() / device_sf);
+  if (max_height > 0)
+    *scale = std::min(*scale, max_height / view_bounds.height() / device_sf);
+
+  if (format->empty())
+    *format = kPng;
+  if (*quality < 0 || *quality > 100)
+    *quality = kDefaultScreenshotQuality;
+  if (*scale <= 0)
+    *scale = 0.1;
+  if (*scale > 5)
+    *scale = 5;
+}
 
 // DOM agent handlers  --------------------------------------------------------
 
@@ -330,6 +354,7 @@ RendererOverridesHandler::PageStartScreencast(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageStopScreencast(
     scoped_refptr<DevToolsProtocol::Command> command) {
+  last_frame_time_ = base::TimeTicks();
   screencast_command_ = NULL;
   return command->SuccessResponse(NULL);
 }
@@ -453,17 +478,11 @@ RendererOverridesHandler::InputDispatchMouseEvent(
     return NULL;
   }
 
-  int x;
-  int y;
-  if (!params->GetInteger(devtools::kParamX, &x) ||
-      !params->GetInteger(devtools::kParamY, &y)) {
+  if (!params->GetInteger(devtools::kParamX, &mouse_event.x) ||
+      !params->GetInteger(devtools::kParamY, &mouse_event.y)) {
     return NULL;
   }
 
-  float device_scale_factor = ui::GetScaleFactorScale(
-      GetScaleFactorForView(host->GetView()));
-  mouse_event.x = floor(x / device_scale_factor);
-  mouse_event.y = floor(y / device_scale_factor);
   mouse_event.windowX = mouse_event.x;
   mouse_event.windowY = mouse_event.y;
   mouse_event.globalX = mouse_event.x;
@@ -534,17 +553,10 @@ RendererOverridesHandler::InputDispatchGestureEvent(
     return NULL;
   }
 
-  float device_scale_factor = ui::GetScaleFactorScale(
-      GetScaleFactorForView(host->GetView()));
-
-  int x;
-  int y;
-  if (!params->GetInteger(devtools::kParamX, &x) ||
-      !params->GetInteger(devtools::kParamY, &y)) {
+  if (!params->GetInteger(devtools::kParamX, &event.x) ||
+      !params->GetInteger(devtools::kParamY, &event.y)) {
     return NULL;
   }
-  event.x = floor(x / device_scale_factor);
-  event.y = floor(y / device_scale_factor);
   event.globalX = event.x;
   event.globalY = event.y;
 
@@ -557,8 +569,8 @@ RendererOverridesHandler::InputDispatchGestureEvent(
             devtools::Input::dispatchGestureEvent::kParamDeltaY, &dy)) {
       return NULL;
     }
-    event.data.scrollUpdate.deltaX = floor(dx / device_scale_factor);
-    event.data.scrollUpdate.deltaY = floor(dy / device_scale_factor);
+    event.data.scrollUpdate.deltaX = dx;
+    event.data.scrollUpdate.deltaY = dy;
   }
 
   if (type == "pinchUpdate") {
