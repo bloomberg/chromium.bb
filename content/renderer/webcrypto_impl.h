@@ -7,14 +7,29 @@
 
 #include "base/compiler_specific.h"
 
+#include "base/gtest_prod_util.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 
 namespace content {
 
-class WebCryptoImpl : public WebKit::WebCrypto {
+class CONTENT_EXPORT WebCryptoImpl
+    : NON_EXPORTED_BASE(public WebKit::WebCrypto) {
  public:
-  virtual WebKit::WebCryptoOperation* digest(
-      const WebKit::WebCryptoAlgorithm& algorithm) OVERRIDE;
+  virtual void digest(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      const unsigned char* data,
+      size_t data_size,
+      WebKit::WebCryptoResult result);
+
+ protected:
+  FRIEND_TEST_ALL_PREFIXES(WebCryptoImplTest, DigestSampleSets);
+
+  bool digestInternal(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      const unsigned char* data,
+      size_t data_size,
+      WebKit::WebArrayBuffer* buffer);
 };
 
 }  // namespace content

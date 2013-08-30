@@ -452,6 +452,7 @@
         'renderer/render_view_impl_unittest.cc',
         'renderer/skia_benchmarking_extension_unittest.cc',
         'renderer/v8_value_converter_impl_unittest.cc',
+        'renderer/webcrypto_impl_unittest.cc',
         'test/image_decoder_test.cc',
         'test/image_decoder_test.h',
         'test/run_all_unittests.cc',
@@ -729,6 +730,13 @@
         ['enable_webrtc==1 and google_tv==1', {
           'sources': [
             'renderer/media/rtc_video_decoder_factory_tv_unittest.cc',
+          ],
+        }],
+        # TODO(bryaneyler): Also enable these for OpenSSL once that
+        # implementation is ready.  Issue 267888.
+        ['use_nss!=1', {
+          'sources!': [
+            'renderer/webcrypto_impl_unittest.cc',
           ],
         }],
       ],

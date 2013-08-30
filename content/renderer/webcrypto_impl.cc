@@ -4,23 +4,20 @@
 
 #include "content/renderer/webcrypto_impl.h"
 
-#include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
+#include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 
 namespace content {
 
-WebKit::WebCryptoOperation* WebCryptoImpl::digest(
-    const WebKit::WebCryptoAlgorithm& algorithm) {
-  switch (algorithm.id()) {
-    case WebKit::WebCryptoAlgorithmIdSha1:
-    case WebKit::WebCryptoAlgorithmIdSha224:
-    case WebKit::WebCryptoAlgorithmIdSha256:
-    case WebKit::WebCryptoAlgorithmIdSha384:
-    case WebKit::WebCryptoAlgorithmIdSha512:
-      // TODO(eroman): Implement.
-      return NULL;
-    default:
-      // Not a digest algorithm.
-      return NULL;
+void WebCryptoImpl::digest(
+    const WebKit::WebCryptoAlgorithm& algorithm,
+    const unsigned char* data,
+    size_t data_size,
+    WebKit::WebCryptoResult result) {
+  WebKit::WebArrayBuffer buffer;
+  if (!digestInternal(algorithm, data, data_size, &buffer)) {
+    result.completeWithError();
+  } else {
+    result.completeWithBuffer(buffer);
   }
 }
 

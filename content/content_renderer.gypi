@@ -500,6 +500,8 @@
     'renderer/web_ui_extension_data.h',
     'renderer/webcrypto_impl.cc',
     'renderer/webcrypto_impl.h',
+    'renderer/webcrypto_impl_nss.cc',
+    'renderer/webcrypto_impl_openssl.cc',
     'renderer/websharedworker_proxy.cc',
     'renderer/websharedworker_proxy.h',
     'renderer/websharedworkerrepository_impl.cc',
@@ -695,6 +697,30 @@
         'renderer/pepper/ppb_graphics_3d_impl.cc',
         'renderer/pepper/ppb_graphics_3d_impl.h',
         'renderer/pepper/ppb_open_gl_es_impl.cc',
+      ],
+    }],
+    ['use_openssl==1', {
+      'sources!': [
+        'renderer/webcrypto_impl_nss.cc',
+      ],
+      'dependencies': [
+        '../third_party/openssl/openssl.gyp:openssl',
+      ],
+    }, {
+      'sources!': [
+        'renderer/webcrypto_impl_openssl.cc',
+      ],
+      'conditions': [
+        ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
+          'dependencies': [
+            '../build/linux/system.gyp:ssl',
+          ],
+        }, {
+          'dependencies': [
+            '../third_party/nss/nss.gyp:nspr',
+            '../third_party/nss/nss.gyp:nss',
+          ],
+        }],
       ],
     }],
   ],
