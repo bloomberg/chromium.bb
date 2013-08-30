@@ -838,6 +838,9 @@ typedef struct SSL3HandshakeStateStr {
      * SSL 3.0 - TLS 1.1 use both |md5| and |sha|. |md5| is used for MD5 and
      * |sha| for SHA-1.
      * TLS 1.2 and later use only |sha|, for SHA-256. */
+    /* NOTE: On Windows, TLS 1.2 and later use |md5| as a backup handshake hash
+     * for generating client auth signatures. Confusingly, the backup hash
+     * function is SHA-1. */
     PK11Context *         md5;
     PK11Context *         sha;
 

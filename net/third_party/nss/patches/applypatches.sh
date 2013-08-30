@@ -51,3 +51,5 @@ patch -p5 < $patches_dir/sslsock_903565.patch
 patch -p4 < $patches_dir/aesgcm.patch
 
 patch -p4 < $patches_dir/aesgcmchromium.patch
+
+patch -p4 < $patches_dir/tls12backuphash.patch

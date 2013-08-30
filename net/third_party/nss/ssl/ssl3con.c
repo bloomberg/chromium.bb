@@ -3933,6 +3933,22 @@ ssl3_InitHandshakeHashes(sslSocket *ss)
 		ssl_MapLowLevelError(SSL_ERROR_DIGEST_FAILURE);
 		return SECFailure;
 	    }
+
+#ifdef _WIN32
+	    /* A backup SHA-1 hash for a potential client auth signature. */
+	    if (!ss->sec.isServer) {
+		ss->ssl3.hs.md5 = PK11_CreateDigestContext(SEC_OID_SHA1);
+		if (ss->ssl3.hs.md5 == NULL) {
+		    ssl_MapLowLevelError(SSL_ERROR_SHA_DIGEST_FAILURE);
+		    return SECFailure;
+		}
+
+		if (PK11_DigestBegin(ss->ssl3.hs.md5) != SECSuccess) {
+		    ssl_MapLowLevelError(SSL_ERROR_SHA_DIGEST_FAILURE);
+		    return SECFailure;
+		}
+	    }
+#endif
 	} else {
 	    /* Both ss->ssl3.hs.md5 and ss->ssl3.hs.sha should be NULL or
 	     * created successfully. */
@@ -4042,6 +4058,13 @@ ssl3_UpdateHandshakeHashes(sslSocket *ss, const unsigned char *b,
 	if (rv != SECSuccess) {
 	    ssl_MapLowLevelError(SSL_ERROR_DIGEST_FAILURE);
 	    return rv;
+	}
+	if (ss->ssl3.hs.md5) {
+	    rv = PK11_DigestOp(ss->ssl3.hs.md5, b, l);
+	    if (rv != SECSuccess) {
+		ssl_MapLowLevelError(SSL_ERROR_SHA_DIGEST_FAILURE);
+		return rv;
+	    }
 	}
     } else {
 	rv = PK11_DigestOp(ss->ssl3.hs.md5, b, l);
@@ -4788,6 +4811,30 @@ tls12_loser:
 	    }
 	}
     }
+    return rv;
+}
+
+static SECStatus
+ssl3_ComputeBackupHandshakeHashes(sslSocket * ss,
+				  SSL3Hashes * hashes) /* output goes here. */
+{
+    SECStatus rv = SECSuccess;
+
+    PORT_Assert( ss->opt.noLocks || ssl_HaveSSL3HandshakeLock(ss) );
+    PORT_Assert( ss->ssl3.hs.hashType == handshake_hash_single );
+
+    rv = PK11_DigestFinal(ss->ssl3.hs.md5, hashes->u.raw, &hashes->len,
+			  sizeof(hashes->u.raw));
+    if (rv != SECSuccess) {
+	ssl_MapLowLevelError(SSL_ERROR_SHA_DIGEST_FAILURE);
+	rv = SECFailure;
+	goto loser;
+    }
+    hashes->hashAlg = SEC_OID_SHA1;
+
+loser:
+    PK11_DestroyContext(ss->ssl3.hs.md5, PR_TRUE);
+    ss->ssl3.hs.md5 = NULL;
     return rv;
 }
 
@@ -6044,7 +6091,17 @@ ssl3_SendCertificateVerify(sslSocket *ss)
 		SSL_GETPID(), ss->fd));
 
     ssl_GetSpecReadLock(ss);
-    rv = ssl3_ComputeHandshakeHashes(ss, ss->ssl3.pwSpec, &hashes, 0);
+    /* In TLS 1.2, ssl3_ComputeHandshakeHashes always uses the handshake hash
+     * function (SHA-256). If the server or the client does not support SHA-256
+     * as a signature hash, we can either maintain a backup SHA-1 handshake
+     * hash or buffer all handshake messages.
+     */
+    if (ss->ssl3.hs.hashType == handshake_hash_single && ss->ssl3.hs.md5) {
+	rv = ssl3_ComputeBackupHandshakeHashes(ss, &hashes);
+	PORT_Assert(ss->ssl3.hs.md5 == NULL);
+    } else {
+	rv = ssl3_ComputeHandshakeHashes(ss, ss->ssl3.pwSpec, &hashes, 0);
+    }
     ssl_ReleaseSpecReadLock(ss);
     if (rv != SECSuccess) {
 	goto done;	/* err code was set by ssl3_ComputeHandshakeHashes */
@@ -6098,11 +6155,6 @@ ssl3_SendCertificateVerify(sslSocket *ss)
 	if (rv != SECSuccess) {
 	    goto done;
 	}
-	/* We always sign using the handshake hash function. It's possible that
-	 * a server could support SHA-256 as the handshake hash but not as a
-	 * signature hash. In that case we wouldn't be able to do client
-	 * certificates with it. The alternative is to buffer all handshake
-	 * messages. */
 	sigAndHash.hashAlg = hashes.hashAlg;
 
 	rv = ssl3_AppendSignatureAndHashAlgorithm(ss, &sigAndHash);
@@ -6994,6 +7046,31 @@ ssl3_HandleCertificateRequest(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
 		}
 		goto send_no_certificate;
 	    }
+
+	    if (isTLS12 && ss->ssl3.hs.md5) {
+		PRBool need_backup_hash = PR_FALSE;
+#ifdef _WIN32
+		/* If the key is in CAPI, assume conservatively that the CAPI
+		 * service provider may be unable to sign SHA-256 hashes.
+		 * Use SHA-1 if the server supports it. */
+		if (ss->ssl3.platformClientKey->dwKeySpec !=
+		    CERT_NCRYPT_KEY_SPEC) {
+		    for (i = 0; i < algorithms.len; i += 2) {
+			/* CAPI only supports RSA and DSA signatures. */
+			if (algorithms.data[i] == tls_hash_sha1 &&
+			    (algorithms.data[i+1] == tls_sig_rsa ||
+			     algorithms.data[i+1] == tls_sig_dsa)) {
+			    need_backup_hash = PR_TRUE;
+			    break;
+			}
+		    }
+		}
+#endif  /* _WIN32 */
+		if (!need_backup_hash) {
+		    PK11_DestroyContext(ss->ssl3.hs.md5, PR_TRUE);
+		    ss->ssl3.hs.md5 = NULL;
+		}
+	    }
 	    break;  /* not an error */
 	}
 #endif   /* NSS_PLATFORM_CLIENT_AUTH */
@@ -7226,6 +7303,13 @@ ssl3_SendClientSecondRound(sslSocket *ss)
 		     ss->ssl3.clientCertChain  != NULL &&
 		     (ss->ssl3.platformClientKey ||
 		     ss->ssl3.clientPrivateKey != NULL);
+
+    if (!sendClientCert &&
+	ss->ssl3.hs.hashType == handshake_hash_single && ss->ssl3.hs.md5) {
+	/* Don't need the backup handshake hash. */
+	PK11_DestroyContext(ss->ssl3.hs.md5, PR_TRUE);
+	ss->ssl3.hs.md5 = NULL;
+    }
 
     /* We must wait for the server's certificate to be authenticated before
      * sending the client certificate in order to disclosing the client
