@@ -9,7 +9,8 @@
 
 namespace base {
 
-DeferredSequencedTaskRunner::DeferredTask::DeferredTask() {
+DeferredSequencedTaskRunner::DeferredTask::DeferredTask()
+    : is_non_nestable(false) {
 }
 
 DeferredSequencedTaskRunner::DeferredTask::~DeferredTask() {
