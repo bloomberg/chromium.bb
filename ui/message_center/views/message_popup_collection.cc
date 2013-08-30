@@ -100,6 +100,8 @@ MessagePopupCollection::~MessagePopupCollection() {
 }
 
 void MessagePopupCollection::RemoveToast(ToastContentsView* toast) {
+  OnMouseExited(toast);
+
   for (Toasts::iterator iter = toasts_.begin(); iter != toasts_.end(); ++iter) {
     if ((*iter) == toast) {
       toasts_.erase(iter);

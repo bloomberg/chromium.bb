@@ -36,7 +36,6 @@ FORWARD_DECLARE_TEST(WebNotificationTrayTest, ManyPopupNotifications);
 namespace message_center {
 namespace test {
 class MessagePopupCollectionTest;
-class MessagePopupCollectionWidgetsTest;
 }
 
 class MessageCenter;
@@ -109,7 +108,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   FRIEND_TEST_ALL_PREFIXES(ash::WebNotificationTrayTest,
                            ManyPopupNotifications);
   friend class test::MessagePopupCollectionTest;
-  friend class test::MessagePopupCollectionWidgetsTest;
   friend class ash::WebNotificationTrayTest;
   typedef std::list<ToastContentsView*> Toasts;
 

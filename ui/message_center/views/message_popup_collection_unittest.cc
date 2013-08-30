@@ -10,12 +10,15 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/events/event.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
 #include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/views/toast_contents_view.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace message_center {
 namespace test {
@@ -49,6 +52,10 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
 
   size_t GetToastCounts() {
     return collection_->toasts_.size();
+  }
+
+  bool MouseInCollection() {
+    return collection_->latest_toast_entered_ != NULL;
   }
 
   bool IsToastShown(const std::string& id) {
@@ -333,6 +340,39 @@ TEST_F(MessagePopupCollectionTest, LeftPositioningWithLeftTaskbar) {
   // Restore simulated taskbar position to bottom.
   collection()->SetDisplayInfo(gfx::Rect(0, 0, 600, 390),   // Work-area.
                                gfx::Rect(0, 0, 600, 400));  // Display-bounds.
+}
+
+TEST_F(MessagePopupCollectionTest, DetectMouseHover) {
+  std::string id0 = AddNotification();
+  std::string id1 = AddNotification();
+  WaitForTransitionsDone();
+
+  views::WidgetDelegateView* toast0 = GetToast(id0);
+  EXPECT_TRUE(toast0 != NULL);
+  views::WidgetDelegateView* toast1 = GetToast(id1);
+  EXPECT_TRUE(toast1 != NULL);
+
+  ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), 0);
+
+  // Test that mouse detection logic works in presence of out-of-order events.
+  toast0->OnMouseEntered(event);
+  EXPECT_TRUE(MouseInCollection());
+  toast1->OnMouseEntered(event);
+  EXPECT_TRUE(MouseInCollection());
+  toast0->OnMouseExited(event);
+  EXPECT_TRUE(MouseInCollection());
+  toast1->OnMouseExited(event);
+  EXPECT_FALSE(MouseInCollection());
+
+  // Test that mouse detection logic works in presence of WindowClosing events.
+  toast0->OnMouseEntered(event);
+  EXPECT_TRUE(MouseInCollection());
+  toast1->OnMouseEntered(event);
+  EXPECT_TRUE(MouseInCollection());
+  toast0->WindowClosing();
+  EXPECT_TRUE(MouseInCollection());
+  toast1->WindowClosing();
+  EXPECT_FALSE(MouseInCollection());
 }
 
 // TODO(dimich): Test repositioning - both normal one and when user is closing
