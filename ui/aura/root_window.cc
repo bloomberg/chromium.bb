@@ -226,16 +226,11 @@ void RootWindow::RepostEvent(const ui::LocatedEvent& event) {
             static_cast<aura::Window*>(event.target()),
             static_cast<aura::Window*>(this)));
   } else {
-    const ui::GestureEvent* gesture_event =
-        static_cast<const ui::GestureEvent*>(&event);
-    held_repostable_event_.reset(new ui::GestureEvent(
-        gesture_event->type(),
-        gesture_event->root_location().x(),
-        gesture_event->root_location().y(),
-        gesture_event->flags(),
-        gesture_event->time_stamp(),
-        gesture_event->details(),
-        gesture_event->touch_ids_bitfield()));
+    held_repostable_event_.reset(
+        new ui::GestureEvent(
+            static_cast<const ui::GestureEvent&>(event),
+            static_cast<aura::Window*>(event.target()),
+            static_cast<aura::Window*>(this)));
   }
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -1039,6 +1034,15 @@ bool RootWindow::DispatchGestureEventRepost(ui::GestureEvent* event) {
 
   Window* new_consumer = GetEventHandlerForPoint(event->root_location());
   if (new_consumer) {
+    ui::GestureEvent begin_gesture(
+        ui::ET_GESTURE_BEGIN,
+        event->x(),
+        event->y(),
+        event->flags(),
+        event->time_stamp(),
+        ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0),
+        event->touch_ids_bitfield());
+    ProcessEvent(new_consumer, &begin_gesture);
     ProcessEvent(new_consumer, event);
     return event->handled();
   }

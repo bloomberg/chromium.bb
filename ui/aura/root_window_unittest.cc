@@ -908,4 +908,102 @@ TEST_F(RootWindowTest, RepostTapdownGestureTest) {
   filter->events().clear();
 }
 
+// This class inherits from the EventFilterRecorder class which provides a
+// facility to record events. This class additionally provides a facility to
+// repost the ET_GESTURE_TAP_DOWN gesture to the target window and records
+// events after that.
+class RepostGestureEventRecorder : public EventFilterRecorder {
+ public:
+  RepostGestureEventRecorder(aura::Window* repost_source,
+                             aura::Window* repost_target)
+      : repost_source_(repost_source),
+        repost_target_(repost_target),
+        reposted_(false) {}
+
+  virtual ~RepostGestureEventRecorder() {}
+
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    EXPECT_EQ(reposted_ ? repost_target_ : repost_source_, event->target());
+    if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+      if (!reposted_) {
+        EXPECT_NE(repost_target_, event->target());
+        reposted_ = true;
+        events().clear();
+        repost_target_->GetRootWindow()->RepostEvent(*event);
+        // Ensure that the reposted gesture event above goes to the
+        // repost_target_;
+        repost_source_->GetRootWindow()->RemoveChild(repost_source_);
+        return;
+      }
+    }
+    EventFilterRecorder::OnGestureEvent(event);
+  }
+
+  // Ignore mouse events as they don't fire at all times. This causes
+  // the GestureRepostEventOrder test to fail randomly.
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {}
+
+ private:
+  aura::Window* repost_source_;
+  aura::Window* repost_target_;
+  // set to true if we reposted the ET_GESTURE_TAP_DOWN event.
+  bool reposted_;
+  DISALLOW_COPY_AND_ASSIGN(RepostGestureEventRecorder);
+};
+
+// Tests whether events which are generated after the reposted gesture event
+// are received after that. In this case the scroll sequence events should
+// be received after the reposted gesture event.
+TEST_F(RootWindowTest, GestureRepostEventOrder) {
+  // Expected events at the end for the repost_target window defined below.
+  const char kExpectedTargetEvents[] = "GESTURE_BEGIN GESTURE_TAP_DOWN "
+    "TOUCH_RELEASED TOUCH_PRESSED GESTURE_BEGIN GESTURE_TAP_DOWN TOUCH_MOVED "
+    " GESTURE_SCROLL_BEGIN GESTURE_SCROLL_UPDATE TOUCH_MOVED "
+    "GESTURE_SCROLL_UPDATE TOUCH_MOVED GESTURE_SCROLL_UPDATE TOUCH_RELEASED "
+    "GESTURE_SCROLL_END GESTURE_END";
+  // We create two windows.
+  // The first window (repost_source) is the one to which the initial tap
+  // gesture is sent. It reposts this event to the second window
+  // (repost_target).
+  // We then generate the scroll sequence for repost_target and look for two
+  // ET_GESTURE_TAP_DOWN events in the event list at the end.
+  test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> repost_target(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(0, 0, 100, 100), root_window()));
+
+  scoped_ptr<aura::Window> repost_source(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(0, 0, 50, 50), root_window()));
+
+  RepostGestureEventRecorder* repost_event_recorder =
+      new RepostGestureEventRecorder(repost_source.get(), repost_target.get());
+  root_window()->SetEventFilter(repost_event_recorder);  // passes ownership
+
+  // Generate a tap down gesture for the repost_source. This will be reposted
+  // to repost_target.
+  test::EventGenerator repost_generator(root_window(), repost_source.get());
+  repost_generator.GestureTapAt(gfx::Point(40, 40));
+  RunAllPendingInMessageLoop();
+
+  test::EventGenerator scroll_generator(root_window(), repost_target.get());
+  scroll_generator.GestureScrollSequence(
+      gfx::Point(80, 80),
+      gfx::Point(100, 100),
+      base::TimeDelta::FromMilliseconds(100),
+      3);
+  RunAllPendingInMessageLoop();
+
+  int tap_down_count = 0;
+  for (size_t i = 0; i < repost_event_recorder->events().size(); ++i) {
+    if (repost_event_recorder->events()[i] == ui::ET_GESTURE_TAP_DOWN)
+      ++tap_down_count;
+  }
+
+  // We expect two tap down events. One from the repost and the other one from
+  // the scroll sequence posted above.
+  EXPECT_EQ(tap_down_count, 2);
+
+  EXPECT_EQ(kExpectedTargetEvents,
+            EventTypesToString(repost_event_recorder->events()));
+}
+
 }  // namespace aura

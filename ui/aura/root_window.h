@@ -381,6 +381,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   bool DispatchMouseEventRepost(ui::MouseEvent* event);
   bool DispatchMouseEventToTarget(ui::MouseEvent* event, Window* target);
   bool DispatchTouchEventImpl(ui::TouchEvent* event);
+  // Reposts the gesture event to the Window which is a target for the event
+  // passed in.
+  bool DispatchGestureEventRepost(ui::GestureEvent* event);
   void DispatchHeldEvents();
 
   // Parses the switch describing the initial size for the host window and
@@ -396,10 +399,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void SynthesizeMouseMoveEvent();
 
   gfx::Transform GetInverseRootTransform() const;
-
-  // Reposts the gesture event to the Window which is a target for the event
-  // passed in.
-  bool DispatchGestureEventRepost(ui::GestureEvent* event);
 
   scoped_ptr<ui::Compositor> compositor_;
 
