@@ -124,6 +124,9 @@ function NavigationListModel(filesystem, volumesList, shortcutList) {
   this.volumesListModel_ = volumesList;
   this.shortcutListModel_ = shortcutList;
 
+  // On default, shortcut list is disabled. It may be enabled on initializetion.
+  this.showShortcuts_ = false;
+
   var entryToModelItem = function(entry) {
     return NavigationModelItem.createWithEntry(entry);
   };
@@ -153,12 +156,15 @@ function NavigationListModel(filesystem, volumesList, shortcutList) {
     var newLength;
     if (listType == ListType.VOLUME_LIST) {
       // Creates new permutation array.
-      newLength = event.newLength + this.shortcutList_.length;
+      newLength = event.newLength;
       for (var i = 0; i < event.permutation.length; i++) {
         newPermutation[i] = event.permutation[i];
       }
-      for (var i = 0; i < this.shortcutList_.length; i++) {
-        newPermutation[i + event.permutation.length] = i + event.newLength;
+      if (this.showShortcuts_) {
+        newLength += this.shortcutList_.length;
+        for (var i = 0; i < this.shortcutList_.length; i++) {
+          newPermutation[i + event.permutation.length] = i + event.newLength;
+        }
       }
 
       // Updates the list.
@@ -174,14 +180,17 @@ function NavigationListModel(filesystem, volumesList, shortcutList) {
     } else {
       // Creates new permutation array.
       var volumesLen = this.volumesList_.length;
-      newLength = event.newLength + volumesLen;
+      newLength = volumesLen;
       for (var i = 0; i < volumesLen; i++) {
         newPermutation[i] = i;
       }
-      for (var i = 0; i < event.permutation.length; i++) {
-        newPermutation[i + volumesLen] = (event.permutation[i] !== -1) ?
-                                         (event.permutation[i] + volumesLen) :
-                                         -1;
+      if (this.showShortcuts_) {
+        newLength += event.newLength;
+        for (var i = 0; i < event.permutation.length; i++) {
+          newPermutation[i + volumesLen] = (event.permutation[i] !== -1) ?
+                                           (event.permutation[i] + volumesLen) :
+                                           -1;
+        }
       }
 
       // Updates the list.
@@ -215,6 +224,9 @@ function NavigationListModel(filesystem, volumesList, shortcutList) {
     else
       this.shortcutList_[i] = pathToModelItem(this.shortcutListModel_.item(i));
 
+    if (this.showShortcuts_ && listType == ListType.SHORTCUT_LIST)
+      return;
+
     var changeEvent = new Event('change');
     changeEvent.index =
         (listType == ListType.VOLUME_LIST) ? i : (i + this.volumesList_.length);
@@ -247,8 +259,45 @@ NavigationListModel.prototype.item = function(index) {
   var offset = this.volumesList_.length;
   if (index < offset)
     return this.volumesList_[index];
-  else
+  if (this.showShortcuts_)
     return this.shortcutList_[index - offset];
+  return null;
+};
+
+/**
+ * Show/hide the shortcut list.
+ * @param {boolean} show True to show, false otherwise.
+ */
+NavigationListModel.prototype.showShortcuts = function(show) {
+  if (this.showShortcuts_ == show)
+    return;
+
+  this.showShortcuts_ = show;
+
+  if (show) {
+    var permutedEvent = new Event('permuted');
+    var permutation = [];
+    for (var i = 0; i < this.volumesList_.length; i++) {
+      permutation[i] = i;
+    }
+    permutedEvent.newLength =
+        this.volumesList_.length + this.shortcutList_.length;
+    permutedEvent.permutation = permutation;
+    this.dispatchEvent(permutedEvent);
+  } else {
+    var permutedEvent = new Event('permuted');
+    var permutation = [];
+    for (var i = 0; i < this.volumesList_.length; i++) {
+      permutation[i] = i;
+    }
+    var offset = this.volumesList_.length;
+    for (var i = 0; i < this.shortcutList_.length; i++) {
+      permutation[i + offset] = -1;
+    }
+    permutedEvent.newLength = this.volumesList_.length;
+    permutedEvent.permutation = permutation;
+    this.dispatchEvent(permutedEvent);
+  }
 };
 
 /**
@@ -257,7 +306,10 @@ NavigationListModel.prototype.item = function(index) {
  * @private
  */
 NavigationListModel.prototype.length_ = function() {
-  return this.volumesList_.length + this.shortcutList_.length;
+  var length = this.volumesList_.length;
+  if (this.showShortcuts_)
+    length += this.shortcutList_.length;
+  return length;
 };
 
 /**

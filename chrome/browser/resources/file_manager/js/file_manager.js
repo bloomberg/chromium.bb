@@ -1980,7 +1980,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       self.initDateTimeFormatters_();
       self.refreshCurrentDirectoryMetadata_();
 
-      self.volumeManager_.setDriveEnabled(self.isDriveEnabled());
+      var isDriveEnabled = self.isDriveEnabled();
+      self.volumeManager_.setDriveEnabled(isDriveEnabled);
+      self.navigationList_.dataModel.showShortcuts(isDriveEnabled);
 
       if (prefs.cellularDisabled)
         self.syncButton.setAttribute('checked', '');
