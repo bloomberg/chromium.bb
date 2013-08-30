@@ -39,6 +39,13 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
     : public RenderViewHostObserver,
       public media::MediaPlayerManager {
  public:
+  // Permits embedders to provide an extended version of the class.
+  typedef BrowserMediaPlayerManager* (*Factory)(RenderViewHost*);
+  static void RegisterFactory(Factory factory);
+
+  // Returns a new instance using the registered factory if available.
+  static BrowserMediaPlayerManager* Create(RenderViewHost* rvh);
+
   virtual ~BrowserMediaPlayerManager();
 
   // RenderViewHostObserver overrides.
@@ -98,11 +105,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 #endif
 
  protected:
-  friend MediaPlayerManager* MediaPlayerManager::Create(
-      content::RenderViewHost*);
-
-  // The instance of this class is supposed to be created by either Create()
-  // method of MediaPlayerManager or the derived classes constructors.
+  // Clients must use Create() or subclass constructor.
   explicit BrowserMediaPlayerManager(RenderViewHost* render_view_host);
 
   // Message handlers.

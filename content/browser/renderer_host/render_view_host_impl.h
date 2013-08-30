@@ -53,14 +53,9 @@ class Range;
 struct SelectedFileInfo;
 }
 
-#if defined(OS_ANDROID)
-namespace media {
-class MediaPlayerManager;
-}
-#endif
-
 namespace content {
 
+class BrowserMediaPlayerManager;
 class ChildProcessSecurityPolicyImpl;
 class PageState;
 class RenderFrameHostImpl;
@@ -391,7 +386,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 #endif
 
 #if defined(OS_ANDROID)
-  media::MediaPlayerManager* media_player_manager() {
+  BrowserMediaPlayerManager* media_player_manager() {
     return media_player_manager_;
   }
 
@@ -709,7 +704,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 #if defined(OS_ANDROID)
   // Manages all the android mediaplayer objects and handling IPCs for video.
   // This class inherits from RenderViewHostObserver.
-  media::MediaPlayerManager* media_player_manager_;
+  BrowserMediaPlayerManager* media_player_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImpl);
