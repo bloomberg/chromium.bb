@@ -760,33 +760,31 @@ void EventSender::doLeapForward(int milliseconds)
 // WebKit/WebView/WebView.mm)
 void EventSender::textZoomIn(const CppArgumentList&, CppVariant* result)
 {
-    webview()->setZoomLevel(true, webview()->zoomLevel() + 1);
+    webview()->setTextZoomFactor(webview()->textZoomFactor() * 1.2f);
     result->setNull();
 }
 
 void EventSender::textZoomOut(const CppArgumentList&, CppVariant* result)
 {
-    webview()->setZoomLevel(true, webview()->zoomLevel() - 1);
+    webview()->setTextZoomFactor(webview()->textZoomFactor() / 1.2f);
     result->setNull();
 }
 
 void EventSender::zoomPageIn(const CppArgumentList&, CppVariant* result)
 {
     const vector<WebTestProxyBase*>& windowList = m_testInterfaces->windowList();
-    bool textOnly = false;
 
     for (size_t i = 0; i < windowList.size(); ++i)
-        windowList.at(i)->webView()->setZoomLevel(textOnly, windowList.at(i)->webView()->zoomLevel() + 1);
+        windowList.at(i)->webView()->setZoomLevel(windowList.at(i)->webView()->zoomLevel() + 1);
     result->setNull();
 }
 
 void EventSender::zoomPageOut(const CppArgumentList&, CppVariant* result)
 {
     const vector<WebTestProxyBase*>& windowList = m_testInterfaces->windowList();
-    bool textOnly = false;
 
     for (size_t i = 0; i < windowList.size(); ++i)
-        windowList.at(i)->webView()->setZoomLevel(textOnly, windowList.at(i)->webView()->zoomLevel() - 1);
+        windowList.at(i)->webView()->setZoomLevel(windowList.at(i)->webView()->zoomLevel() - 1);
     result->setNull();
 }
 

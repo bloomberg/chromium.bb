@@ -210,7 +210,7 @@ public:
         m_emulatedFrameSize = WebSize(width, height);
         m_fitWindow = fitWindow;
         m_originalZoomFactor = 0;
-        m_webView->setEmulatedTextZoomFactor(textZoomFactor);
+        m_webView->setTextZoomFactor(textZoomFactor);
         applySizeOverrideInternal(view, FitWindowAllowed);
         autoZoomPageToFitWidth(view->frame());
 
@@ -231,12 +231,12 @@ public:
         if (!frame)
             return;
 
-        frame->setTextZoomFactor(m_webView->emulatedTextZoomFactor());
+        frame->setTextZoomFactor(m_webView->textZoomFactor());
         ensureOriginalZoomFactor(frame->view());
         Document* document = frame->document();
         float numerator = document->renderView() ? document->renderView()->viewWidth() : frame->view()->contentsWidth();
         float factor = m_originalZoomFactor * (numerator / m_emulatedFrameSize.width);
-        frame->setPageAndTextZoomFactors(factor, m_webView->emulatedTextZoomFactor());
+        frame->setPageAndTextZoomFactors(factor, m_webView->textZoomFactor());
         document->styleResolverChanged(RecalcStyleImmediately);
         document->updateLayout();
     }
@@ -268,7 +268,7 @@ private:
             return;
 
         m_webView->setPageScaleFactor(1, WebPoint());
-        m_webView->setZoomLevel(false, 0);
+        m_webView->setZoomLevel(0);
         WebSize scaledEmulatedSize = scaledEmulatedFrameSize(frameView);
         double denominator = frameView->contentsWidth();
         if (!denominator)
@@ -282,8 +282,8 @@ private:
         if (!view)
             return;
 
-        m_webView->setZoomLevel(false, 0);
-        m_webView->setEmulatedTextZoomFactor(1);
+        m_webView->setZoomLevel(0);
+        m_webView->setTextZoomFactor(1);
         view->setHorizontalScrollbarLock(false);
         view->setVerticalScrollbarLock(false);
         view->setScrollbarModes(ScrollbarAuto, ScrollbarAuto, false, false);

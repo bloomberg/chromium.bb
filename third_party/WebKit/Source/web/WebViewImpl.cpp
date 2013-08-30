@@ -419,7 +419,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_speechRecognitionClient(SpeechRecognitionClientProxy::create(client ? client->speechRecognizer() : 0))
     , m_deviceOrientationClientProxy(adoptPtr(new DeviceOrientationClientProxy(client ? client->deviceOrientationClient() : 0)))
     , m_geolocationClientProxy(adoptPtr(new GeolocationClientProxy(client ? client->geolocationClient() : 0)))
-    , m_emulatedTextZoomFactor(1)
     , m_userMediaClientImpl(this)
     , m_midiClientProxy(adoptPtr(new MIDIClientProxy(client ? client->webMIDIClient() : 0)))
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
@@ -2746,7 +2745,7 @@ double WebViewImpl::zoomLevel()
     return m_zoomLevel;
 }
 
-double WebViewImpl::setZoomLevel(bool textOnly, double zoomLevel)
+double WebViewImpl::setZoomLevel(double zoomLevel)
 {
     if (zoomLevel < m_minimumZoomLevel)
         m_zoomLevel = m_minimumZoomLevel;
@@ -2758,15 +2757,23 @@ double WebViewImpl::setZoomLevel(bool textOnly, double zoomLevel)
     Frame* frame = mainFrameImpl()->frame();
     WebPluginContainerImpl* pluginContainer = WebFrameImpl::pluginContainerFromFrame(frame);
     if (pluginContainer)
-        pluginContainer->plugin()->setZoomLevel(m_zoomLevel, textOnly);
+        pluginContainer->plugin()->setZoomLevel(m_zoomLevel, false);
     else {
         float zoomFactor = static_cast<float>(zoomLevelToZoomFactor(m_zoomLevel));
-        if (textOnly)
-            frame->setPageAndTextZoomFactors(1, zoomFactor * m_emulatedTextZoomFactor);
-        else
-            frame->setPageAndTextZoomFactors(zoomFactor, m_emulatedTextZoomFactor);
+        frame->setPageZoomFactor(zoomFactor);
     }
+
     return m_zoomLevel;
+}
+
+double WebViewImpl::setZoomLevel(bool textOnly, double zoomLevel)
+{
+    if (textOnly) {
+        setZoomLevel(0.0f);
+        return setTextZoomFactor(static_cast<float>(zoomLevelToZoomFactor(zoomLevel)));
+    }
+    setTextZoomFactor(1.0f);
+    return setZoomLevel(zoomLevel);
 }
 
 void WebViewImpl::zoomLimitsChanged(double minimumZoomLevel,
@@ -2775,6 +2782,22 @@ void WebViewImpl::zoomLimitsChanged(double minimumZoomLevel,
     m_minimumZoomLevel = minimumZoomLevel;
     m_maximumZoomLevel = maximumZoomLevel;
     m_client->zoomLimitsChanged(m_minimumZoomLevel, m_maximumZoomLevel);
+}
+
+float WebViewImpl::textZoomFactor()
+{
+    return mainFrameImpl()->frame()->textZoomFactor();
+}
+
+float WebViewImpl::setTextZoomFactor(float textZoomFactor)
+{
+    Frame* frame = mainFrameImpl()->frame();
+    if (WebFrameImpl::pluginContainerFromFrame(frame))
+        return 1;
+
+    frame->setTextZoomFactor(textZoomFactor);
+
+    return textZoomFactor;
 }
 
 void WebViewImpl::fullFramePluginZoomLevelChanged(double zoomLevel)
@@ -3673,14 +3696,6 @@ void WebViewImpl::deviceOrPageScaleFactorChanged()
 bool WebViewImpl::useExternalPopupMenus()
 {
     return shouldUseExternalPopupMenus;
-}
-
-void WebViewImpl::setEmulatedTextZoomFactor(float textZoomFactor)
-{
-    m_emulatedTextZoomFactor = textZoomFactor;
-    Frame* frame = mainFrameImpl()->frame();
-    if (frame)
-        frame->setPageAndTextZoomFactors(frame->pageZoomFactor(), m_emulatedTextZoomFactor);
 }
 
 void WebViewImpl::startDragging(Frame* frame,

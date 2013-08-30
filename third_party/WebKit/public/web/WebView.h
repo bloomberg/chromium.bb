@@ -228,11 +228,9 @@ public:
     // Changes the zoom level to the specified level, clamping at the limits
     // noted above, and returns the current zoom level after applying the
     // change.
-    //
-    // If |textOnly| is set, only the text will be zoomed; otherwise the entire
-    // page will be zoomed. You can only have either text zoom or full page zoom
-    // at one time.  Changing the mode while the page is zoomed will have odd
-    // effects.
+    virtual double setZoomLevel(double) = 0;
+
+    // FIXME: Deprecated, delete once Chromium side is updated.
     virtual double setZoomLevel(bool textOnly, double zoomLevel) = 0;
 
     // Updates the zoom limits for this view.
@@ -243,6 +241,14 @@ public:
     // factor is zoom percent / 100, so 300% = 3.0.
     WEBKIT_EXPORT static double zoomLevelToZoomFactor(double zoomLevel);
     WEBKIT_EXPORT static double zoomFactorToZoomLevel(double factor);
+
+    // Returns the current text zoom factor, where 1.0 is the normal size, > 1.0
+    // is scaled up and < 1.0 is scaled down.
+    virtual float textZoomFactor() = 0;
+
+    // Scales the text in the page by a factor of textZoomFactor.
+    // Note: this has no effect on plugins.
+    virtual float setTextZoomFactor(float) = 0;
 
     // Sets the initial page scale to the given factor. This scale setting overrides
     // page scale set in the page's viewport meta tag.

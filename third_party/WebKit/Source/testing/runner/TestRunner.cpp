@@ -360,7 +360,8 @@ void TestRunner::setWebView(WebView* webView, WebTestProxyBase* proxy)
 void TestRunner::reset()
 {
     if (m_webView) {
-        m_webView->setZoomLevel(false, 0);
+        m_webView->setZoomLevel(0);
+        m_webView->setTextZoomFactor(1);
         m_webView->setTabKeyCyclesThroughElements(true);
 #if !defined(__APPLE__) && !defined(WIN32) // Actually, TOOLKIT_GTK
         // (Constants copied because we can't depend on the header that defined
