@@ -398,6 +398,48 @@ class ITunesDataProviderUniqueNameTest : public ITunesDataProviderTest {
   DISALLOW_COPY_AND_ASSIGN(ITunesDataProviderUniqueNameTest);
 };
 
+class ITunesDataProviderEscapeTest : public ITunesDataProviderTest {
+ // Albums and tracks that aren't the same, but become the same after
+ // replacing bad characters are not handled properly, but that case should
+ // never happen in practice.
+ public:
+  ITunesDataProviderEscapeTest() {}
+  virtual ~ITunesDataProviderEscapeTest() {}
+
+  virtual std::vector<LibraryEntry> SetUpLibrary() OVERRIDE {
+    base::FilePath track = library_dir().AppendASCII("Track:1.mp3");
+    std::vector<LibraryEntry> entries;
+    entries.push_back(LibraryEntry("Artist:/name", "Album:name/", track));
+    entries.push_back(LibraryEntry("Artist/name", "Album:name", track));
+    entries.push_back(LibraryEntry("Artist/name", "Album:name", track));
+    return entries;
+  }
+
+  virtual void StartTest(bool parse_success) OVERRIDE {
+    EXPECT_TRUE(parse_success);
+
+    base::FilePath track =
+        library_dir().AppendASCII("Track:1.mp3").NormalizePathSeparators();
+    EXPECT_EQ(track.value(),
+              data_provider()->GetTrackLocation(
+                  "Artist__name", "Album_name_",
+                  "Track_1.mp3").NormalizePathSeparators().value());
+    EXPECT_EQ(track.value(),
+              data_provider()->GetTrackLocation(
+                  "Artist_name", "Album_name",
+                  "Track_1 (2).mp3").NormalizePathSeparators().value());
+    EXPECT_EQ(track.value(),
+              data_provider()->GetTrackLocation(
+                  "Artist_name", "Album_name",
+                  "Track_1 (3).mp3").NormalizePathSeparators().value());
+
+    TestDone();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ITunesDataProviderEscapeTest);
+};
+
 IN_PROC_BROWSER_TEST_F(ITunesDataProviderBasicTest, BasicTest) {
   RunTest();
 }
@@ -411,6 +453,10 @@ IN_PROC_BROWSER_TEST_F(ITunesDataProviderInvalidTest, InvalidTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(ITunesDataProviderUniqueNameTest, UniqueNameTest) {
+  RunTest();
+}
+
+IN_PROC_BROWSER_TEST_F(ITunesDataProviderEscapeTest, EscapeTest) {
   RunTest();
 }
 

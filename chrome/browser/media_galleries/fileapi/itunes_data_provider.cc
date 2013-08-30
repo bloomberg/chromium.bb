@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
@@ -31,6 +32,13 @@ namespace {
 typedef base::Callback<void(scoped_ptr<base::FilePathWatcher> watcher)>
     FileWatchStartedCallback;
 
+// Colon and slash are not allowed in filenames, replace them with underscore.
+std::string EscapeBadCharacters(const std::string& input) {
+  std::string result;
+  ReplaceChars(input, ":/", "_", &result);
+  return result;
+}
+
 ITunesDataProvider::Album MakeUniqueTrackNames(const parser::Album& album) {
   // TODO(vandebo): It would be nice to ensure that names returned from here
   // are stable, but aside from persisting every name returned, it's not
@@ -44,7 +52,8 @@ ITunesDataProvider::Album MakeUniqueTrackNames(const parser::Album& album) {
   parser::Album::const_iterator album_it;
   for (album_it = album.begin(); album_it != album.end(); ++album_it) {
     const parser::Track& track = *album_it;
-    std::string name = track.location.BaseName().AsUTF8Unsafe();
+    std::string name =
+        EscapeBadCharacters(track.location.BaseName().AsUTF8Unsafe());
     duped_tracks[name].insert(&track);
   }
 
@@ -58,11 +67,14 @@ ITunesDataProvider::Album MakeUniqueTrackNames(const parser::Album& album) {
       for (TrackRefs::const_iterator track_it = track_refs.begin();
            track_it != track_refs.end();
            ++track_it) {
+        base::FilePath track_file_name = (*track_it)->location.BaseName();
         std::string id =
             base::StringPrintf(" (%" PRId64 ")", (*track_it)->id);
-        base::FilePath unique_name =
-            (*track_it)->location.BaseName().InsertBeforeExtensionASCII(id);
-        result[unique_name.AsUTF8Unsafe()] = (*track_it)->location;
+        std::string uniquified_track_name =
+            track_file_name.InsertBeforeExtensionASCII(id).AsUTF8Unsafe();
+        std::string escaped_track_name =
+            EscapeBadCharacters(uniquified_track_name);
+        result[escaped_track_name] = (*track_it)->location;
       }
     }
   }
@@ -350,10 +362,12 @@ void ITunesDataProvider::OnLibraryParsed(const ReadyCallback& ready_callback,
     for (parser::Library::const_iterator artist_it = library.begin();
          artist_it != library.end();
          ++artist_it) {
+      std::string artist_name = EscapeBadCharacters(artist_it->first);
       for (parser::Albums::const_iterator album_it = artist_it->second.begin();
            album_it != artist_it->second.end();
            ++album_it) {
-        library_[artist_it->first][album_it->first] =
+        std::string album_name = EscapeBadCharacters(album_it->first);
+        library_[artist_name][album_name] =
             MakeUniqueTrackNames(album_it->second);
       }
     }
