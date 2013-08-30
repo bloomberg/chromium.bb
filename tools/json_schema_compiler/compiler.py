@@ -130,7 +130,7 @@ if __name__ == '__main__':
       usage='usage: %prog [option]... schema')
   parser.add_option('-r', '--root', default='.',
       help='logical include root directory. Path to schema files from specified'
-      'dir will be the include path.')
+      ' dir will be the include path.')
   parser.add_option('-d', '--destdir',
       help='root directory to output generated files.')
   parser.add_option('-n', '--namespace', default='generated_api_schemas',
