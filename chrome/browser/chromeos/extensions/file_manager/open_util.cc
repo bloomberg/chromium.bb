@@ -244,12 +244,14 @@ bool OpenFileWithHandler(Profile* profile, const base::FilePath& file_path) {
         profile, file_path, url, mime_type, default_task_id);
   }
 
-  std::string handler_task_id = file_tasks::MakeTaskID(
-        handler->extension_id(),
-        file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
-        handler->id());
+  const file_tasks::TaskDescriptor task_descriptor(
+      handler->extension_id(),
+      file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
+      handler->id());
+  const std::string handler_task_id =
+      file_tasks::TaskDescriptorToId(task_descriptor);
   if (handler_task_id != default_task_id &&
-      !file_browser_handlers::IsFallbackFileBrowserHandler(handler) &&
+      !file_browser_handlers::IsFallbackFileBrowserHandler(task_descriptor) &&
       OpenFileWithFileHandler(
           profile, file_path, url, mime_type, default_task_id)) {
     return true;

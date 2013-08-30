@@ -519,12 +519,12 @@ bool ExecuteFileBrowserHandler(
   return true;
 }
 
-bool IsFallbackFileBrowserHandler(const FileBrowserHandler* handler) {
-  const std::string& extension_id = handler->extension_id();
-  return (extension_id == kFileManagerAppId ||
-          extension_id == extension_misc::kQuickOfficeComponentExtensionId ||
-          extension_id == extension_misc::kQuickOfficeDevExtensionId ||
-          extension_id == extension_misc::kQuickOfficeExtensionId);
+bool IsFallbackFileBrowserHandler(const file_tasks::TaskDescriptor& task) {
+  return (task.task_type == file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER &&
+          (task.app_id == kFileManagerAppId ||
+           task.app_id == extension_misc::kQuickOfficeComponentExtensionId ||
+           task.app_id == extension_misc::kQuickOfficeDevExtensionId ||
+           task.app_id == extension_misc::kQuickOfficeExtensionId));
 }
 
 FileBrowserHandlerList FindDefaultFileBrowserHandlers(
@@ -547,10 +547,12 @@ FileBrowserHandlerList FindDefaultFileBrowserHandlers(
   // from common_handlers.
   for (size_t i = 0; i < common_handlers.size(); ++i) {
     const FileBrowserHandler* handler = common_handlers[i];
-    std::string task_id = file_tasks::MakeTaskID(
+    const file_tasks::TaskDescriptor task_descriptor(
         handler->extension_id(),
         file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
         handler->id());
+    const std::string task_id =
+        file_tasks::TaskDescriptorToId(task_descriptor);
     std::set<std::string>::iterator default_iter = default_ids.find(task_id);
     if (default_iter != default_ids.end()) {
       default_handlers.push_back(handler);
@@ -558,7 +560,7 @@ FileBrowserHandlerList FindDefaultFileBrowserHandlers(
     }
 
     // Remember the first fallback handler.
-    if (!fallback_handler && IsFallbackFileBrowserHandler(handler))
+    if (!fallback_handler && IsFallbackFileBrowserHandler(task_descriptor))
       fallback_handler = handler;
   }
 

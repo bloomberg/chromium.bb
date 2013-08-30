@@ -38,10 +38,10 @@ namespace file_browser_handlers {
 // Tasks are stored as a vector in order of priorities.
 typedef std::vector<const FileBrowserHandler*> FileBrowserHandlerList;
 
-// Returns true if the given file browser handler should be used as a
-// fallback. Such handlers are Files.app's internal handlers as well as quick
-// office extensions.
-bool IsFallbackFileBrowserHandler(const FileBrowserHandler* handler);
+// Returns true if the given task is a fallback file browser handler. Such
+// handlers are Files.app's internal handlers as well as quick office
+// extensions.
+bool IsFallbackFileBrowserHandler(const file_tasks::TaskDescriptor& task);
 
 // Finds file browser handlers set as default from |common_tasks| for
 // |file_list|. If no handlers are set as default, choose the the firstly
