@@ -22,7 +22,7 @@
     GenerateIsReachable=ownerNode,
     DependentLifetime
 ] interface HTMLFormControlsCollection : HTMLCollection {
-    [ImplementedAs=item] getter Node([Default=Undefined] optional unsigned long index);
+    [ImplementedAs=item] getter Node(unsigned long index);
     [Custom] Node namedItem([Default=Undefined] optional DOMString name);
     [ImplementedAs=namedGetter, NotEnumerable] getter (RadioNodeList or Node)(DOMString name);
 };
