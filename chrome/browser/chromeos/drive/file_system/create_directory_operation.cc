@@ -25,13 +25,25 @@ namespace {
 // the path to the result file.
 FileError UpdateLocalStateForCreateDirectoryRecursively(
     internal::ResourceMetadata* metadata,
-    const ResourceEntry& entry,
+    scoped_ptr<google_apis::ResourceEntry> resource_entry,
     base::FilePath* file_path) {
   DCHECK(metadata);
   DCHECK(file_path);
 
+  ResourceEntry entry;
+  std::string parent_resource_id;
+  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id))
+    return FILE_ERROR_NOT_A_FILE;
+
+  std::string parent_local_id;
+  FileError result = metadata->GetIdByResourceId(parent_resource_id,
+                                                 &parent_local_id);
+  if (result != FILE_ERROR_OK)
+    return result;
+  entry.set_parent_local_id(parent_local_id);
+
   std::string local_id;
-  FileError result = metadata->AddEntry(entry, &local_id);
+  result = metadata->AddEntry(entry, &local_id);
   // Depending on timing, a metadata may be updated by change list already.
   // So, FILE_ERROR_EXISTS is not an error.
   if (result == FILE_ERROR_EXISTS)
@@ -102,22 +114,21 @@ base::FilePath CreateDirectoryOperation::GetExistingDeepestDirectory(
   if (components.empty() || components[0] != util::kDriveGrandRootDirName)
     return base::FilePath();
 
-  std::string resource_id = util::kDriveGrandRootSpecialResourceId;
+  std::string local_id = util::kDriveGrandRootSpecialResourceId;
   for (size_t i = 1; i < components.size(); ++i) {
-    std::string child_resource_id =
-        metadata->GetChildResourceId(resource_id, components[i]);
-    if (child_resource_id.empty())
+    std::string child_local_id = metadata->GetChildId(local_id, components[i]);
+    if (child_local_id.empty())
       break;
-    resource_id = child_resource_id;
+    local_id = child_local_id;
   }
 
-  FileError error = metadata->GetResourceEntryById(resource_id, entry);
+  FileError error = metadata->GetResourceEntryById(local_id, entry);
   DCHECK_EQ(FILE_ERROR_OK, error);
 
   if (!entry->file_info().is_directory())
     return base::FilePath();
 
-  return metadata->GetFilePath(resource_id);
+  return metadata->GetFilePath(local_id);
 }
 
 void CreateDirectoryOperation::CreateDirectoryAfterGetExistingDeepestDirectory(
@@ -194,16 +205,7 @@ void CreateDirectoryOperation::CreateDirectoryRecursivelyAfterAddNewDirectory(
     return;
   }
   DCHECK(resource_entry);
-
-  ResourceEntry entry;
-  std::string parent_resource_id;
-  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id)) {
-    callback.Run(FILE_ERROR_NOT_A_FILE);
-    return;
-  }
-
-  // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
-  entry.set_parent_local_id(parent_resource_id);
+  const std::string& resource_id = resource_entry->resource_id();
 
   // Note that the created directory may be renamed inside
   // ResourceMetadata::AddEntry due to name confliction.
@@ -215,12 +217,12 @@ void CreateDirectoryOperation::CreateDirectoryRecursivelyAfterAddNewDirectory(
       FROM_HERE,
       base::Bind(&UpdateLocalStateForCreateDirectoryRecursively,
                  metadata_,
-                 entry,
+                 base::Passed(&resource_entry),
                  file_path),
       base::Bind(&CreateDirectoryOperation::
                      CreateDirectoryRecursivelyAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
-                 resource_entry->resource_id(),
+                 resource_id,
                  remaining_path,
                  callback,
                  base::Owned(file_path)));

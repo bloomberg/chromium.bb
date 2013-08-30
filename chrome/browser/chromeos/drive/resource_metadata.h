@@ -164,11 +164,11 @@ class ResourceMetadata {
   void GetSubDirectoriesRecursively(const std::string& id,
                                     std::set<base::FilePath>* sub_directories);
 
-  // Returns the resource id of the resource named |base_name| directly under
+  // Returns the id of the resource named |base_name| directly under
   // the directory with |parent_local_id|.
   // If not found, empty string will be returned.
-  std::string GetChildResourceId(const std::string& parent_local_id,
-                                 const std::string& base_name);
+  std::string GetChildId(const std::string& parent_local_id,
+                         const std::string& base_name);
 
   // Returns an object to iterate over entries.
   scoped_ptr<Iterator> GetIterator();

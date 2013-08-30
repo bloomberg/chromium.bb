@@ -439,9 +439,8 @@ void ResourceMetadata::GetSubDirectoriesRecursively(
   }
 }
 
-std::string ResourceMetadata::GetChildResourceId(
-    const std::string& parent_local_id,
-    const std::string& base_name) {
+std::string ResourceMetadata::GetChildId(const std::string& parent_local_id,
+                                         const std::string& base_name) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   return storage_->GetChild(parent_local_id, base_name);
 }
