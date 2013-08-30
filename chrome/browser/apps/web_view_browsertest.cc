@@ -610,7 +610,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeRemoveAttributes) {
              "web_view/shim");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeWithPartialAttributes) {
+// This test is flaky. crbug.com/282116
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       DISABLED_Shim_TestAutosizeWithPartialAttributes) {
   TestHelper("testAutosizeWithPartialAttributes",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
