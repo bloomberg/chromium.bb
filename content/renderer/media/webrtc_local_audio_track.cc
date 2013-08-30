@@ -34,6 +34,12 @@ WebRtcLocalAudioTrack::WebRtcLocalAudioTrack(
   // and APM (AudioProcessingModule) is turned on only for microphone data.
   DCHECK(capturer.get());
   DVLOG(1) << "WebRtcLocalAudioTrack::WebRtcLocalAudioTrack()";
+
+  // TODO(tommi): Remove this, feed audio constraints to WebRtcLocalAudioTrack
+  // and check the constraints.  This is here to fix a recent regression whereby
+  // audio processing is not enabled for WebAudio regardless of the hard coded
+  // audio constraints.  For more info: http://crbug.com/277134
+  need_audio_processing_ = true;
 }
 
 WebRtcLocalAudioTrack::~WebRtcLocalAudioTrack() {
