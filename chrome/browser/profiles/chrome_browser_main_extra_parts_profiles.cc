@@ -8,7 +8,6 @@
 #include "apps/app_restore_service_factory.h"
 #include "apps/shell_window_geometry_cache.h"
 #include "chrome/browser/apps/shortcut_manager_factory.h"
-#include "chrome/browser/autofill/autocheckout_whitelist_manager_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -200,7 +199,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   apps::AppLoadServiceFactory::GetInstance();
   apps::AppRestoreServiceFactory::GetInstance();
   apps::ShellWindowGeometryCache::Factory::GetInstance();
-  autofill::autocheckout::WhitelistManagerFactory::GetInstance();
   extensions::ActivityLogFactory::GetInstance();
   extensions::ActivityLogAPI::GetFactoryInstance();
   extensions::AlarmManager::GetFactoryInstance();

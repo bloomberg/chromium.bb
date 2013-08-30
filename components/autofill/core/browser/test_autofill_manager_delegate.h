@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
-#include "components/autofill/core/browser/autocheckout_bubble_state.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
 
 namespace autofill {
@@ -22,21 +21,12 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
   // AutofillManagerDelegate implementation.
   virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
-  virtual autocheckout::WhitelistManager*
-        GetAutocheckoutWhitelistManager() const OVERRIDE;
   virtual void HideRequestAutocompleteDialog() OVERRIDE;
-  virtual void OnAutocheckoutError() OVERRIDE;
-  virtual void OnAutocheckoutSuccess() OVERRIDE;
   virtual void ShowAutofillSettings() OVERRIDE;
   virtual void ConfirmSaveCreditCard(
       const AutofillMetrics& metric_logger,
       const CreditCard& credit_card,
       const base::Closure& save_card_callback) OVERRIDE;
-  virtual bool ShowAutocheckoutBubble(
-      const gfx::RectF& bounding_box,
-      bool is_google_user,
-      const base::Callback<void(AutocheckoutBubbleState)>& callback) OVERRIDE;
-  virtual void HideAutocheckoutBubble() OVERRIDE;
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
@@ -56,11 +46,6 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
       const std::vector<base::string16>& labels) OVERRIDE;
   virtual void HideAutofillPopup() OVERRIDE;
   virtual bool IsAutocompleteEnabled() OVERRIDE;
-
-  virtual void AddAutocheckoutStep(AutocheckoutStepType step_type) OVERRIDE;
-  virtual void UpdateAutocheckoutStep(
-      AutocheckoutStepType step_type,
-      AutocheckoutStepStatus step_status) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManagerDelegate);

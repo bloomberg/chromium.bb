@@ -40,7 +40,6 @@ namespace autofill {
 
 class AutofillMetrics;
 
-struct AutocheckoutPageMetaData;
 struct FormData;
 struct FormDataPredictions;
 
@@ -48,8 +47,7 @@ struct FormDataPredictions;
 // in the fields along with additional information needed by Autofill.
 class FormStructure {
  public:
-  FormStructure(const FormData& form,
-                const std::string& autocheckout_url_prefix);
+  FormStructure(const FormData& form);
   virtual ~FormStructure();
 
   // Runs several heuristics against the form fields to determine their possible
@@ -82,7 +80,6 @@ class FormStructure {
   static void ParseQueryResponse(
       const std::string& response_xml,
       const std::vector<FormStructure*>& forms,
-      autofill::AutocheckoutPageMetaData* page_meta_data,
       const AutofillMetrics& metric_logger);
 
   // Fills |forms| with the details from the given |form_structures| and their
@@ -164,11 +161,6 @@ class FormStructure {
   // |user_submitted| is currently always false.
   FormData ToFormData() const;
 
-  bool filled_by_autocheckout() const { return filled_by_autocheckout_; }
-  void set_filled_by_autocheckout(bool filled_by_autocheckout) {
-    filled_by_autocheckout_ = filled_by_autocheckout;
-  }
-
   bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;
 
@@ -199,13 +191,9 @@ class FormStructure {
   // distinguishing credit card sections from non-credit card ones -- is made.
   void IdentifySections(bool has_author_specified_sections);
 
-  bool IsAutocheckoutEnabled() const;
-
   // Returns true if field should be skipped when talking to Autofill server.
   bool ShouldSkipField(const FormFieldData& field) const;
 
-  // Returns the minimal number of fillable fields required to start autofill.
-  size_t RequiredFillableFields() const;
   size_t active_field_count() const;
 
   // The name of the form.
@@ -246,13 +234,6 @@ class FormStructure {
   // Whether the form includes any field types explicitly specified by the site
   // author, via the |autocompletetype| attribute.
   bool has_author_specified_types_;
-
-  // The URL prefix matched in autocheckout whitelist. An empty string implies
-  // autocheckout is not enabled for this form.
-  std::string autocheckout_url_prefix_;
-
-  // Whether or not this form was filled by Autocheckout.
-  bool filled_by_autocheckout_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

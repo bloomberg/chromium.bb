@@ -327,42 +327,6 @@ void AutofillDialogControllerAndroid::Hide() {
 
 void AutofillDialogControllerAndroid::TabActivated() {}
 
-void AutofillDialogControllerAndroid::AddAutocheckoutStep(
-    AutocheckoutStepType step_type) {
-  // TODO(aruslan): http://crbug.com/177373 Autocheckout.
-  NOTIMPLEMENTED() << " step_type = " << step_type;
-}
-
-void AutofillDialogControllerAndroid::UpdateAutocheckoutStep(
-    AutocheckoutStepType step_type,
-    AutocheckoutStepStatus step_status) {
-  // TODO(aruslan): http://crbug.com/177373 Autocheckout.
-  NOTIMPLEMENTED() << " step_type=" << step_type
-                   << " step_status=" << step_status;
-}
-
-void AutofillDialogControllerAndroid::OnAutocheckoutError() {
-  // TODO(aruslan): http://crbug.com/177373 Autocheckout.
-  NOTIMPLEMENTED();
-  DCHECK_EQ(AUTOCHECKOUT_IN_PROGRESS, autocheckout_state_);
-  GetMetricLogger().LogAutocheckoutDuration(
-      base::Time::Now() - autocheckout_started_timestamp_,
-      AutofillMetrics::AUTOCHECKOUT_FAILED);
-  SetAutocheckoutState(AUTOCHECKOUT_ERROR);
-  autocheckout_started_timestamp_ = base::Time();
-}
-
-void AutofillDialogControllerAndroid::OnAutocheckoutSuccess() {
-  // TODO(aruslan): http://crbug.com/177373 Autocheckout.
-  NOTIMPLEMENTED();
-  DCHECK_EQ(AUTOCHECKOUT_IN_PROGRESS, autocheckout_state_);
-  GetMetricLogger().LogAutocheckoutDuration(
-      base::Time::Now() - autocheckout_started_timestamp_,
-      AutofillMetrics::AUTOCHECKOUT_SUCCEEDED);
-  SetAutocheckoutState(AUTOCHECKOUT_SUCCESS);
-  autocheckout_started_timestamp_ = base::Time();
-}
-
 DialogType AutofillDialogControllerAndroid::GetDialogType() const {
   return dialog_type_;
 }
@@ -375,15 +339,7 @@ bool AutofillDialogControllerAndroid::
 
 void AutofillDialogControllerAndroid::DialogCancel(JNIEnv* env,
                                                    jobject obj) {
-  if (autocheckout_state_ == AUTOCHECKOUT_NOT_STARTED)
-    LogOnCancelMetrics();
-
-  if (autocheckout_state_ == AUTOCHECKOUT_IN_PROGRESS) {
-    GetMetricLogger().LogAutocheckoutDuration(
-        base::Time::Now() - autocheckout_started_timestamp_,
-        AutofillMetrics::AUTOCHECKOUT_CANCELLED);
-  }
-
+  LogOnCancelMetrics();
   callback_.Run(NULL, std::string());
 }
 
@@ -438,11 +394,6 @@ void AutofillDialogControllerAndroid::DialogContinue(
     }
   }
 
-  if (GetDialogType() == DIALOG_TYPE_AUTOCHECKOUT) {
-    autocheckout_started_timestamp_ = base::Time::Now();
-    SetAutocheckoutState(AUTOCHECKOUT_IN_PROGRESS);
-  }
-
   LogOnFinishSubmitMetrics();
 
   // Callback should be called as late as possible.
@@ -464,13 +415,12 @@ AutofillDialogControllerAndroid::AutofillDialogControllerAndroid(
       contents_(contents),
       initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),
       dialog_type_(dialog_type),
-      form_structure_(form_structure, std::string()),
+      form_structure_(form_structure),
       invoked_from_same_origin_(true),
       source_url_(source_url),
       callback_(callback),
       cares_about_shipping_(true),
       weak_ptr_factory_(this),
-      autocheckout_state_(AUTOCHECKOUT_NOT_STARTED),
       was_ui_latency_logged_(false) {
   DCHECK(!callback_.is_null());
 }
@@ -489,14 +439,6 @@ bool AutofillDialogControllerAndroid::RequestingCreditCardInfo() const {
 
 bool AutofillDialogControllerAndroid::TransmissionWillBeSecure() const {
   return source_url_.SchemeIs(content::kHttpsScheme);
-}
-
-void AutofillDialogControllerAndroid::SetAutocheckoutState(
-    AutocheckoutState autocheckout_state) {
-  if (autocheckout_state_ == autocheckout_state)
-    return;
-
-  autocheckout_state_ = autocheckout_state;
 }
 
 void AutofillDialogControllerAndroid::LogOnFinishSubmitMetrics() {

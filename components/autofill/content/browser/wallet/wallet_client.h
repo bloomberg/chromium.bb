@@ -14,12 +14,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/autofill/content/browser/autocheckout_statistic.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/common/autocheckout_status.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "url/gurl.h"
@@ -56,8 +54,6 @@ class WalletClientDelegate;
 //   a) GetFullWallet may return a Risk challenge for the user. In that case,
 //      the user will need to verify who they are by authenticating their
 //      chosen backing instrument through AuthenticateInstrument
-// 4) If the user initiated Autocheckout, SendAutocheckoutStatus to notify
-//    Online Wallet of the status flow to record various metrics.
 //
 // WalletClient is designed so only one request to Online Wallet can be outgoing
 // at any one time. If |HasRequestInProgress()| is true while calling e.g.
@@ -178,17 +174,6 @@ class WalletClient : public net::URLFetcherDelegate {
                             scoped_ptr<Address> address,
                             const GURL& source_url);
 
-  // SendAutocheckoutStatus is used for tracking the success of Autocheckout
-  // flows. |status| is the result of the flow, |source_url| is the domain
-  // where the purchase occured, and |google_transaction_id| is the same as the
-  // one provided by GetWalletItems. |latency_statistics| contain statistics
-  // required to measure Autocheckout process.
-  virtual void SendAutocheckoutStatus(
-      autofill::AutocheckoutStatus status,
-      const GURL& source_url,
-      const std::vector<AutocheckoutStatistic>& latency_statistics,
-      const std::string& google_transaction_id);
-
   bool HasRequestInProgress() const;
 
   // Cancels and clears the current |request_| and |pending_requests_| (if any).
@@ -205,7 +190,6 @@ class WalletClient : public net::URLFetcherDelegate {
     GET_FULL_WALLET,
     GET_WALLET_ITEMS,
     SAVE_TO_WALLET,
-    SEND_STATUS,
   };
 
   // Like AcceptLegalDocuments, but takes a vector of document ids.

@@ -15,7 +15,6 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_builder.h"
-#include "components/autofill/content/browser/autocheckout/whitelist_manager.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/user_prefs/user_prefs.h"
@@ -68,11 +67,6 @@ PrefService* AwAutofillManagerDelegate::GetPrefs() {
 
 autofill::PersonalDataManager*
 AwAutofillManagerDelegate::GetPersonalDataManager() {
-  return NULL;
-}
-
-autofill::autocheckout::WhitelistManager*
-AwAutofillManagerDelegate::GetAutocheckoutWhitelistManager() const {
   return NULL;
 }
 
@@ -168,14 +162,6 @@ void AwAutofillManagerDelegate::HideRequestAutocompleteDialog() {
   NOTIMPLEMENTED();
 }
 
-void AwAutofillManagerDelegate::OnAutocheckoutError() {
-  NOTIMPLEMENTED();
-}
-
-void AwAutofillManagerDelegate::OnAutocheckoutSuccess() {
-  NOTIMPLEMENTED();
-}
-
 void AwAutofillManagerDelegate::ShowAutofillSettings() {
   NOTIMPLEMENTED();
 }
@@ -187,35 +173,12 @@ void AwAutofillManagerDelegate::ConfirmSaveCreditCard(
   NOTIMPLEMENTED();
 }
 
-bool AwAutofillManagerDelegate::ShowAutocheckoutBubble(
-    const gfx::RectF& bounding_box,
-    bool is_google_user,
-    const base::Callback<void(autofill::AutocheckoutBubbleState)>& callback) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void AwAutofillManagerDelegate::HideAutocheckoutBubble() {
-  NOTIMPLEMENTED();
-}
-
 void AwAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     const autofill::FormData& form,
     const GURL& source_url,
     autofill::DialogType dialog_type,
     const base::Callback<void(const autofill::FormStructure*,
                               const std::string&)>& callback) {
-  NOTIMPLEMENTED();
-}
-
-void AwAutofillManagerDelegate::AddAutocheckoutStep(
-    autofill::AutocheckoutStepType step_type) {
-  NOTIMPLEMENTED();
-}
-
-void AwAutofillManagerDelegate::UpdateAutocheckoutStep(
-    autofill::AutocheckoutStepType step_type,
-    autofill::AutocheckoutStepStatus step_status) {
   NOTIMPLEMENTED();
 }
 

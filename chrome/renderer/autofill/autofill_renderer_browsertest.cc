@@ -131,61 +131,6 @@ TEST_F(ChromeRenderViewTest, SendForms) {
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, form2.fields[2]);
 }
 
-TEST_F(ChromeRenderViewTest, SendDynamicForms) {
-  // Don't want any delay for form state sync changes. This will still post a
-  // message so updates will get coalesced, but as soon as we spin the message
-  // loop, it will generate an update.
-  SendContentStateImmediately();
-
-  LoadHTML("<form method=\"POST\" id=\"testform\">"
-           "  <input type=\"text\" id=\"firstname\"/>"
-           "  <input type=\"text\" id=\"middlename\"/>"
-           "  <input type=\"text\" id=\"lastname\" autoComplete=\"off\"/>"
-           "  <input type=\"hidden\" id=\"email\"/>"
-           "  <select id=\"state\"/>"
-           "    <option>?</option>"
-           "    <option>California</option>"
-           "    <option>Texas</option>"
-           "  </select>"
-           "</form>");
-
-  // Verify that "FormsSeen" sends the expected number of fields.
-  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
-      AutofillHostMsg_FormsSeen::ID);
-  ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  AutofillHostMsg_FormsSeen::Param params;
-  AutofillHostMsg_FormsSeen::Read(message, &params);
-  const std::vector<FormData>& forms = params.a;
-  ASSERT_EQ(1UL, forms.size());
-  ASSERT_EQ(4UL, forms[0].fields.size());
-
-  autofill_agent_->OnAutocheckoutSupported();
-  render_thread_->sink().ClearMessages();
-  ExecuteJavaScript("var newInput=document.createElement(\"input\");"
-                    "newInput.setAttribute(\"type\",\"text\");"
-                    "newInput.setAttribute(\"id\", \"telephone\");"
-                    "document.getElementById(\"testform\")"
-                    ".appendChild(newInput);");
-  msg_loop_.RunUntilIdle();
-
-  // Verify that FormsSeen is present with the new field.
-  const IPC::Message* message2 = render_thread_->sink().GetFirstMessageMatching(
-      AutofillHostMsg_FormsSeen::ID);
-  ASSERT_NE(static_cast<IPC::Message*>(NULL), message2);
-  AutofillHostMsg_FormsSeen::Read(message2, &params);
-  const std::vector<FormData>& new_forms = params.a;
-  ASSERT_EQ(1UL, new_forms.size());
-  ASSERT_EQ(5UL, new_forms[0].fields.size());
-
-  FormFieldData expected;
-
-  expected.name = ASCIIToUTF16("telephone");
-  expected.value = string16();
-  expected.form_control_type = "text";
-  expected.max_length = WebInputElement::defaultMaxLength();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[4]);
-}
-
 TEST_F(ChromeRenderViewTest, EnsureNoFormSeenIfTooFewFields) {
   // Don't want any delay for form state sync changes. This will still post a
   // message so updates will get coalesced, but as soon as we spin the message

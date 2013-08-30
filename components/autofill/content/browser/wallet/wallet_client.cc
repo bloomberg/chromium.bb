@@ -52,29 +52,6 @@ const size_t kMaxBits = 56;
 // accept.
 const size_t kMinBits = 40;
 
-std::string AutocheckoutStatusToString(AutocheckoutStatus status) {
-  switch (status) {
-    case MISSING_FIELDMAPPING:
-      return "MISSING_FIELDMAPPING";
-    case MISSING_ADVANCE:
-      return "MISSING_ADVANCE";
-    case MISSING_CLICK_ELEMENT_BEFORE_FORM_FILLING:
-      return "MISSING_CLICK_ELEMENT_BEFORE_FORM_FILLING";
-    case MISSING_CLICK_ELEMENT_AFTER_FORM_FILLING:
-      return "MISSING_CLICK_ELEMENT_AFTER_FORM_FILLING";
-    case CANNOT_PROCEED:
-      return "CANNOT_PROCEED";
-    case SUCCESS:
-      // SUCCESS cannot be sent to the server as it will result in a failure.
-      NOTREACHED();
-      return "ERROR";
-    case AUTOCHECKOUT_STATUS_NUM_STATUS:
-      NOTREACHED();
-  }
-  NOTREACHED();
-  return "NOT_POSSIBLE";
-}
-
 std::string DialogTypeToFeatureString(autofill::DialogType dialog_type) {
   switch (dialog_type) {
     case DIALOG_TYPE_REQUEST_AUTOCOMPLETE:
@@ -269,7 +246,6 @@ const char kSessionMaterialKey[] = "session_material";
 const char kShippingAddressIdKey[] = "shipping_address_id";
 const char kShippingAddressKey[] = "shipping_address";
 const char kShippingAddressRequired[] = "shipping_address_required";
-const char kAutocheckoutStepsKey[] = "steps";
 const char kSuccessKey[] = "success";
 const char kUpgradedBillingAddressKey[] = "upgraded_billing_address";
 const char kUpgradedInstrumentIdKey[] = "upgraded_instrument_id";
@@ -532,52 +508,6 @@ void WalletClient::GetWalletItems(const GURL& source_url) {
   MakeWalletRequest(GetGetWalletItemsUrl(), post_body, kJsonMimeType);
 }
 
-void WalletClient::SendAutocheckoutStatus(
-    AutocheckoutStatus status,
-    const GURL& source_url,
-    const std::vector<AutocheckoutStatistic>& latency_statistics,
-    const std::string& google_transaction_id) {
-  DVLOG(1) << "Sending Autocheckout Status: " << status
-           << " for: " << source_url;
-  if (HasRequestInProgress()) {
-    pending_requests_.push(base::Bind(&WalletClient::SendAutocheckoutStatus,
-                                      base::Unretained(this),
-                                      status,
-                                      source_url,
-                                      latency_statistics,
-                                      google_transaction_id));
-    return;
-  }
-
-  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
-  request_type_ = SEND_STATUS;
-
-  base::DictionaryValue request_dict;
-  request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
-  bool success = status == SUCCESS;
-  request_dict.SetBoolean(kSuccessKey, success);
-  request_dict.SetString(kMerchantDomainKey,
-                         source_url.GetWithEmptyPath().spec());
-  if (!success)
-    request_dict.SetString(kReasonKey, AutocheckoutStatusToString(status));
-  if (!latency_statistics.empty()) {
-    scoped_ptr<base::ListValue> latency_statistics_json(
-        new base::ListValue());
-    for (size_t i = 0; i < latency_statistics.size(); ++i) {
-      latency_statistics_json->Append(
-          latency_statistics[i].ToDictionary().release());
-    }
-    request_dict.Set(kAutocheckoutStepsKey,
-                     latency_statistics_json.release());
-  }
-  request_dict.SetString(kGoogleTransactionIdKey, google_transaction_id);
-
-  std::string post_body;
-  base::JSONWriter::Write(&request_dict, &post_body);
-
-  MakeWalletRequest(GetSendStatusUrl(), post_body, kJsonMimeType);
-}
-
 bool WalletClient::HasRequestInProgress() const {
   return request_;
 }
@@ -734,8 +664,7 @@ void WalletClient::OnURLFetchComplete(
   RequestType type = request_type_;
   request_type_ = NO_PENDING_REQUEST;
 
-  if (!(type == ACCEPT_LEGAL_DOCUMENTS || type == SEND_STATUS) &&
-      !response_dict) {
+  if (type != ACCEPT_LEGAL_DOCUMENTS && !response_dict) {
     HandleMalformedResponse(scoped_request.get());
     return;
   }
@@ -759,9 +688,6 @@ void WalletClient::OnURLFetchComplete(
       }
       break;
     }
-
-    case SEND_STATUS:
-      break;
 
     case GET_FULL_WALLET: {
       scoped_ptr<FullWallet> full_wallet(
@@ -902,8 +828,6 @@ AutofillMetrics::WalletApiCallMetric WalletClient::RequestTypeToUmaMetric(
       return AutofillMetrics::GET_WALLET_ITEMS;
     case SAVE_TO_WALLET:
       return AutofillMetrics::SAVE_TO_WALLET;
-    case SEND_STATUS:
-      return AutofillMetrics::SEND_STATUS;
     case NO_PENDING_REQUEST:
       NOTREACHED();
       return AutofillMetrics::UNKNOWN_API_CALL;

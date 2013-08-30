@@ -44,11 +44,6 @@ void AutofillDriverImpl::CreateForWebContentsAndDelegate(
                                                delegate,
                                                app_locale,
                                                enable_download_manager));
-  // Trigger the lazy creation of AutocheckoutWhitelistManagerService, and
-  // schedule a fetch of the Autocheckout whitelist file if it's not already
-  // loaded. This helps ensure that the whitelist will be available by the time
-  // the user navigates to a form on which Autocheckout should be enabled.
-  delegate->GetAutocheckoutWhitelistManager();
 }
 
 // static
@@ -188,12 +183,6 @@ bool AutofillDriverImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_FORWARD(AutofillHostMsg_RequestAutocomplete,
                         autofill_manager_.get(),
                         AutofillManager::OnRequestAutocomplete)
-    IPC_MESSAGE_FORWARD(AutofillHostMsg_AutocheckoutPageCompleted,
-                        autofill_manager_.get(),
-                        AutofillManager::OnAutocheckoutPageCompleted)
-    IPC_MESSAGE_FORWARD(AutofillHostMsg_MaybeShowAutocheckoutBubble,
-                        autofill_manager_.get(),
-                        AutofillManager::OnMaybeShowAutocheckoutBubble)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

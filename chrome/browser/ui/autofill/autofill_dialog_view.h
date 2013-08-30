@@ -49,15 +49,10 @@ class AutofillDialogView {
   // a new account, etc.).
   virtual void UpdateAccountChooser() = 0;
 
-  // Updates the container displaying detailed steps for Autocheckout. Called
-  // as progress is made through the buyflow.
-  virtual void UpdateAutocheckoutStepsArea() = 0;
-
   // Updates the button strip based on the current controller state.
   virtual void UpdateButtonStrip() = 0;
 
-  // Updates the container for the detail inputs. Used to hide this container
-  // while Autocheckout is running.
+  // Updates the container for the detail inputs.
   virtual void UpdateDetailArea() = 0;
 
   // Updates the validity status of the detail inputs.
@@ -92,10 +87,6 @@ class AutofillDialogView {
 
   // Closes out any sign-in UI and returns to normal operation.
   virtual void HideSignIn() = 0;
-
-  // Updates the progress bar based on the Autocheckout progress. |value| should
-  // be in [0.0, 1.0].
-  virtual void UpdateProgressBar(double value) = 0;
 
   // Called when the active suggestions data model changed.
   virtual void ModelChanged() = 0;

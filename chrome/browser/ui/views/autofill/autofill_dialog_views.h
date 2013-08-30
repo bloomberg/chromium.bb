@@ -81,7 +81,6 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void UpdatesStarted() OVERRIDE;
   virtual void UpdatesFinished() OVERRIDE;
   virtual void UpdateAccountChooser() OVERRIDE;
-  virtual void UpdateAutocheckoutStepsArea() OVERRIDE;
   virtual void UpdateButtonStrip() OVERRIDE;
   virtual void UpdateDetailArea() OVERRIDE;
   virtual void UpdateForErrors() OVERRIDE;
@@ -97,7 +96,6 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual bool SaveDetailsLocally() OVERRIDE;
   virtual const content::NavigationController* ShowSignIn() OVERRIDE;
   virtual void HideSignIn() OVERRIDE;
-  virtual void UpdateProgressBar(double value) OVERRIDE;
   virtual void ModelChanged() OVERRIDE;
   virtual TestableAutofillDialogView* GetTestableView() OVERRIDE;
   virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE;
@@ -479,31 +477,6 @@ class AutofillDialogViews : public AutofillDialogView,
     SuggestedButton* suggested_button;
   };
 
-  // Area for displaying that status of various steps in an Autocheckout flow.
-  class AutocheckoutStepsArea : public views::View {
-   public:
-    AutocheckoutStepsArea();
-    virtual ~AutocheckoutStepsArea() {}
-
-    // Display the given steps.
-    void SetSteps(const std::vector<DialogAutocheckoutStep>& steps);
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(AutocheckoutStepsArea);
-  };
-
-  class AutocheckoutProgressBar : public views::ProgressBar {
-   public:
-    AutocheckoutProgressBar();
-    virtual ~AutocheckoutProgressBar();
-
-   private:
-    // Overriden from View
-    virtual gfx::Size GetPreferredSize() OVERRIDE;
-
-    DISALLOW_COPY_AND_ASSIGN(AutocheckoutProgressBar);
-  };
-
   typedef std::map<DialogSection, DetailsGroup> DetailGroupMap;
 
   gfx::Size CalculatePreferredSize();
@@ -662,15 +635,6 @@ class AutofillDialogViews : public AutofillDialogView,
   // View that aren't in the hierarchy but are owned by |this|. Currently
   // just holds the (hidden) country comboboxes.
   ScopedVector<views::View> other_owned_views_;
-
-  // View to host Autocheckout steps.
-  AutocheckoutStepsArea* autocheckout_steps_area_;
-
-  // View to host |autocheckout_progress_bar_| and its label.
-  views::View* autocheckout_progress_bar_view_;
-
-  // Progress bar for displaying Autocheckout progress.
-  AutocheckoutProgressBar* autocheckout_progress_bar_;
 
   // The view that is appended to the bottom of the dialog, below the button
   // strip. Used to display legal document links.

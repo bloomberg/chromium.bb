@@ -49,19 +49,8 @@ class MockAutofillMetrics : public AutofillMetrics {
   MockAutofillMetrics()
       : dialog_type_(static_cast<DialogType>(-1)),
         dialog_dismissal_action_(
-            static_cast<AutofillMetrics::DialogDismissalAction>(-1)),
-        autocheckout_status_(
-            static_cast<AutofillMetrics::AutocheckoutCompletionStatus>(-1)) {}
+            static_cast<AutofillMetrics::DialogDismissalAction>(-1)) {}
   virtual ~MockAutofillMetrics() {}
-
-  // AutofillMetrics:
-  virtual void LogAutocheckoutDuration(
-      const base::TimeDelta& duration,
-      AutocheckoutCompletionStatus status) const OVERRIDE {
-    // Ignore constness for testing.
-    MockAutofillMetrics* mutable_this = const_cast<MockAutofillMetrics*>(this);
-    mutable_this->autocheckout_status_ = status;
-  }
 
   virtual void LogDialogUiDuration(
       const base::TimeDelta& duration,
@@ -78,17 +67,12 @@ class MockAutofillMetrics : public AutofillMetrics {
     return dialog_dismissal_action_;
   }
 
-  AutofillMetrics::AutocheckoutCompletionStatus autocheckout_status() const {
-    return autocheckout_status_;
-  }
-
   MOCK_CONST_METHOD2(LogDialogDismissalState,
                      void(DialogType dialog_type, DialogDismissalState state));
 
  private:
   DialogType dialog_type_;
   AutofillMetrics::DialogDismissalAction dialog_dismissal_action_;
-  AutofillMetrics::AutocheckoutCompletionStatus autocheckout_status_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
 };
@@ -413,70 +397,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, CloseDuringSignin) {
   EXPECT_EQ(DIALOG_TYPE_REQUEST_AUTOCOMPLETE, metric_logger().dialog_type());
 }
 
-// Test Autocheckout success metrics.
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutSuccess) {
-  InitializeControllerOfType(DIALOG_TYPE_AUTOCHECKOUT);
-  controller()->GetTestableView()->SubmitForTesting();
-
-  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
-            metric_logger().dialog_dismissal_action());
-  EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
-
-  controller()->OnAutocheckoutSuccess();
-  controller()->GetTestableView()->CancelForTesting();
-  RunMessageLoop();
-
-  EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_SUCCEEDED,
-            metric_logger().autocheckout_status());
-
-  // Ensure closing the dialog doesn't fire any new metrics.
-  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
-            metric_logger().dialog_dismissal_action());
-  EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
-}
-
-// Test Autocheckout failure metric.
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutError) {
-  InitializeControllerOfType(DIALOG_TYPE_AUTOCHECKOUT);
-  controller()->GetTestableView()->SubmitForTesting();
-
-  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
-            metric_logger().dialog_dismissal_action());
-  EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
-
-  controller()->OnAutocheckoutError();
-  controller()->GetTestableView()->CancelForTesting();
-  RunMessageLoop();
-
-  EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_FAILED,
-            metric_logger().autocheckout_status());
-
-  // Ensure closing the dialog doesn't fire any new metrics.
-  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
-            metric_logger().dialog_dismissal_action());
-  EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
-}
-
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutCancelled) {
-  InitializeControllerOfType(DIALOG_TYPE_AUTOCHECKOUT);
-  controller()->GetTestableView()->SubmitForTesting();
-
-  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
-            metric_logger().dialog_dismissal_action());
-  EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
-
-  controller()->GetTestableView()->CancelForTesting();
-  RunMessageLoop();
-
-  EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_CANCELLED,
-            metric_logger().autocheckout_status());
-
-  // Ensure closing the dialog doesn't fire any new metrics.
-  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
-            metric_logger().dialog_dismissal_action());
-  EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
-}
-
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
 
@@ -524,41 +444,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   for (size_t i = 0; i < inputs.size(); ++i) {
     EXPECT_EQ(expectations[i], view->GetTextContentsOfInput(inputs[i]));
   }
-}
-
-// Test that Autocheckout steps are shown after submitting the
-// dialog for controller with type DIALOG_TYPE_AUTOCHECKOUT.
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutShowsSteps) {
-  InitializeControllerOfType(DIALOG_TYPE_AUTOCHECKOUT);
-  controller()->AddAutocheckoutStep(AUTOCHECKOUT_STEP_PROXY_CARD);
-
-  EXPECT_TRUE(controller()->ShouldShowDetailArea());
-  EXPECT_TRUE(controller()->CurrentAutocheckoutSteps().empty());
-  EXPECT_FALSE(controller()->ShouldShowProgressBar());
-
-  controller()->GetTestableView()->SubmitForTesting();
-  EXPECT_FALSE(controller()->ShouldShowDetailArea());
-  EXPECT_FALSE(controller()->CurrentAutocheckoutSteps().empty());
-  EXPECT_TRUE(controller()->ShouldShowProgressBar());
-  controller()->GetTestableView()->CancelForTesting();
-  RunMessageLoop();
-}
-
-// Test that Autocheckout steps are not showing after submitting the
-// dialog for controller with type DIALOG_TYPE_REQUEST_AUTOCOMPLETE.
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       RequestAutocompleteDoesntShowSteps) {
-  InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
-  controller()->AddAutocheckoutStep(AUTOCHECKOUT_STEP_PROXY_CARD);
-
-  EXPECT_TRUE(controller()->ShouldShowDetailArea());
-  EXPECT_TRUE(controller()->CurrentAutocheckoutSteps().empty());
-  EXPECT_FALSE(controller()->ShouldShowProgressBar());
-
-  controller()->GetTestableView()->SubmitForTesting();
-  EXPECT_TRUE(controller()->ShouldShowDetailArea());
-  EXPECT_TRUE(controller()->CurrentAutocheckoutSteps().empty());
-  EXPECT_FALSE(controller()->ShouldShowProgressBar());
 }
 
 // Tests that changing the value of a CC expiration date combobox works as

@@ -12,10 +12,6 @@ include_rules = [
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  "!components/autofill/content/browser/autocheckout/whitelist_manager.h",
-  "!components/autofill/content/browser/autocheckout_manager.h",
-  "!components/autofill/content/browser/autocheckout_page_meta_data.h",
-  "!components/autofill/content/browser/autocheckout_steps.h",
   "!content/public/browser/android/content_view_core.h",
   "!content/public/browser/browser_context.h",
   "!content/public/browser/browser_thread.h",

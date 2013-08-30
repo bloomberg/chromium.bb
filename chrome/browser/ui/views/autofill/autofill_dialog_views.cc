@@ -81,12 +81,6 @@ const int kNotificationPadding = 17;
 // Vertical padding above and below each detail section (in pixels).
 const int kDetailSectionVerticalPadding = 10;
 
-const int kAutocheckoutStepsAreaPadding = 28;
-const int kAutocheckoutStepInset = 20;
-
-const int kAutocheckoutProgressBarWidth = 375;
-const int kAutocheckoutProgressBarHeight = 15;
-
 const int kArrowHeight = 7;
 const int kArrowWidth = 2 * kArrowHeight;
 
@@ -278,54 +272,6 @@ class LayoutPropagationView : public views::View {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutPropagationView);
-};
-
-// A class which displays the status of an individual step in an
-// Autocheckout flow.
-class AutocheckoutStepProgressView : public views::View {
- public:
-  AutocheckoutStepProgressView(const base::string16& description,
-                               const gfx::Font& font,
-                               const SkColor color,
-                               const bool is_icon_visible) {
-    views::GridLayout* layout = new views::GridLayout(this);
-    SetLayoutManager(layout);
-    const int kColumnSetId = 0;
-    views::ColumnSet* columns = layout->AddColumnSet(kColumnSetId);
-    columns->AddColumn(views::GridLayout::LEADING,
-                       views::GridLayout::CENTER,
-                       0,
-                       views::GridLayout::USE_PREF,
-                       0,
-                       0);
-    columns->AddPaddingColumn(0, 8);
-    columns->AddColumn(views::GridLayout::LEADING,
-                       views::GridLayout::CENTER,
-                       0,
-                       views::GridLayout::USE_PREF,
-                       0,
-                       0);
-    layout->StartRow(0, kColumnSetId);
-    views::Label* label = new views::Label();
-    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    label->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 0));
-    label->SetText(description);
-    label->SetFont(font);
-    label->SetEnabledColor(color);
-
-    views::ImageView* icon = new views::ImageView();
-    icon->SetVisible(is_icon_visible);
-    icon->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_WALLET_STEP_CHECK).ToImageSkia());
-
-    layout->AddView(icon);
-    layout->AddView(label);
-  }
-
-  virtual ~AutocheckoutStepProgressView() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutocheckoutStepProgressView);
 };
 
 // A tooltip icon (just an ImageView with a tooltip). Looks like (?).
@@ -1179,42 +1125,6 @@ void AutofillDialogViews::SuggestionView::SetTextfield(
   decorated_->SetVisible(!placeholder_text.empty());
 }
 
-// AutofillDialogViews::AutocheckoutStepsArea ---------------------------------
-
-AutofillDialogViews::AutocheckoutStepsArea::AutocheckoutStepsArea() {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-                                        kAutocheckoutStepsAreaPadding,
-                                        0,
-                                        kAutocheckoutStepInset));
-}
-
-void AutofillDialogViews::AutocheckoutStepsArea::SetSteps(
-    const std::vector<DialogAutocheckoutStep>& steps) {
-  RemoveAllChildViews(true);
-  for (size_t i = 0; i < steps.size(); ++i) {
-    const DialogAutocheckoutStep& step = steps[i];
-    AutocheckoutStepProgressView* progressView =
-        new AutocheckoutStepProgressView(step.GetDisplayText(),
-                                         step.GetTextFont(),
-                                         step.GetTextColor(),
-                                         step.IsIconVisible());
-
-    AddChildView(progressView);
-  }
-
-  PreferredSizeChanged();
-}
-
-// AutofillDialogViews::AutocheckoutProgressBar
-
-AutofillDialogViews::AutocheckoutProgressBar::AutocheckoutProgressBar() {}
-AutofillDialogViews::AutocheckoutProgressBar::~AutocheckoutProgressBar() {}
-
-gfx::Size AutofillDialogViews::AutocheckoutProgressBar::GetPreferredSize() {
-  return gfx::Size(kAutocheckoutProgressBarWidth,
-                   kAutocheckoutProgressBarHeight);
-}
-
 // AutofillDialogView ----------------------------------------------------------
 
 // static
@@ -1242,9 +1152,6 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogViewDelegate* delegate)
       save_in_chrome_checkbox_(NULL),
       save_in_chrome_checkbox_container_(NULL),
       button_strip_image_(NULL),
-      autocheckout_steps_area_(NULL),
-      autocheckout_progress_bar_view_(NULL),
-      autocheckout_progress_bar_(NULL),
       footnote_view_(NULL),
       legal_document_view_(NULL),
       focus_manager_(NULL),
@@ -1354,11 +1261,6 @@ void AutofillDialogViews::UpdateAccountChooser() {
   }
 }
 
-void AutofillDialogViews::UpdateAutocheckoutStepsArea() {
-  autocheckout_steps_area_->SetSteps(delegate_->CurrentAutocheckoutSteps());
-  ContentsPreferredSizeChanged();
-}
-
 void AutofillDialogViews::UpdateButtonStrip() {
   button_strip_extra_view_->SetVisible(
       GetDialogButtons() != ui::DIALOG_BUTTON_NONE);
@@ -1371,7 +1273,7 @@ void AutofillDialogViews::UpdateButtonStrip() {
 }
 
 void AutofillDialogViews::UpdateDetailArea() {
-  scrollable_area_->SetVisible(delegate_->ShouldShowDetailArea());
+  scrollable_area_->SetVisible(true);
   ContentsPreferredSizeChanged();
 }
 
@@ -1472,10 +1374,6 @@ void AutofillDialogViews::HideSignIn() {
   sign_in_webview_->SetVisible(false);
   UpdateButtonStrip();
   ContentsPreferredSizeChanged();
-}
-
-void AutofillDialogViews::UpdateProgressBar(double value) {
-  autocheckout_progress_bar_->SetValue(value);
 }
 
 void AutofillDialogViews::ModelChanged() {
@@ -1579,11 +1477,6 @@ void AutofillDialogViews::Layout() {
   int notification_height = notification_area_->GetHeightForWidth(width);
   notification_area_->SetBounds(x, y, width, notification_height);
 
-  // Layout Autocheckout steps at bottom of dialog.
-  int steps_height = autocheckout_steps_area_->GetHeightForWidth(width);
-  autocheckout_steps_area_->SetBounds(x, content_bounds.bottom() - steps_height,
-                                      width, steps_height);
-
   // The rest (the |scrollable_area_|) takes up whatever's left.
   if (scrollable_area_->visible()) {
     int scroll_y = y;
@@ -1591,9 +1484,6 @@ void AutofillDialogViews::Layout() {
       scroll_y += notification_height + views::kRelatedControlVerticalSpacing;
 
     int scroll_bottom = content_bounds.bottom();
-    if (steps_height > 0)
-      scroll_bottom -= steps_height + views::kRelatedControlVerticalSpacing;
-
     scrollable_area_->contents()->SizeToPreferredSize();
     scrollable_area_->SetBounds(x, scroll_y, width, scroll_bottom - scroll_y);
   }
@@ -1831,10 +1721,6 @@ gfx::Size AutofillDialogViews::CalculatePreferredSize() {
   if (notification_height > 0)
     height += notification_height + views::kRelatedControlVerticalSpacing;
 
-  int steps_height = autocheckout_steps_area_->GetHeightForWidth(width);
-  if (steps_height > 0)
-    height += steps_height + views::kRelatedControlVerticalSpacing;
-
   if (scrollable_area_->visible()) {
     // Show as much of the scroll view as is possible without going past the
     // bottom of the browser window.
@@ -1877,24 +1763,6 @@ void AutofillDialogViews::InitChildViews() {
   button_strip_image_ = new views::ImageView();
   button_strip_extra_view_->AddChildView(button_strip_image_);
 
-  autocheckout_progress_bar_view_ = new views::View();
-  views::GridLayout* progress_bar_layout =
-      new views::GridLayout(autocheckout_progress_bar_view_);
-  autocheckout_progress_bar_view_->SetLayoutManager(progress_bar_layout);
-  const int kColumnSetId = 0;
-  views::ColumnSet* columns = progress_bar_layout->AddColumnSet(kColumnSetId);
-  columns->AddColumn(views::GridLayout::LEADING,
-                     views::GridLayout::CENTER,
-                     0,
-                     views::GridLayout::USE_PREF,
-                     0,
-                     0);
-  progress_bar_layout->StartRow(1.0, kColumnSetId);
-
-  autocheckout_progress_bar_ = new AutocheckoutProgressBar();
-  progress_bar_layout->AddView(autocheckout_progress_bar_);
-  button_strip_extra_view_->AddChildView(autocheckout_progress_bar_view_);
-
   account_chooser_ = new AccountChooser(delegate_);
   notification_area_ = new NotificationArea(delegate_);
   notification_area_->set_arrow_centering_anchor(account_chooser_->AsWeakPtr());
@@ -1904,9 +1772,6 @@ void AutofillDialogViews::InitChildViews() {
   scrollable_area_->set_hide_horizontal_scrollbar(true);
   scrollable_area_->SetContents(CreateDetailsContainer());
   AddChildView(scrollable_area_);
-
-  autocheckout_steps_area_ = new AutocheckoutStepsArea();
-  AddChildView(autocheckout_steps_area_);
 
   loading_shield_ = new views::Label();
   loading_shield_->SetVisible(false);
@@ -2339,9 +2204,6 @@ void AutofillDialogViews::UpdateButtonStripExtraView() {
   gfx::Image image = delegate_->ButtonStripImage();
   button_strip_image_->SetVisible(!image.IsEmpty());
   button_strip_image_->SetImage(image.AsImageSkia());
-
-  autocheckout_progress_bar_view_->SetVisible(
-      delegate_->ShouldShowProgressBar());
 }
 
 void AutofillDialogViews::ContentsPreferredSizeChanged() {

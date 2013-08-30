@@ -19,13 +19,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "components/autofill/content/browser/autocheckout_manager.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_download.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/common/autocheckout_status.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/forms_seen_state.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
@@ -167,22 +165,8 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   void OnRequestAutocomplete(const FormData& form,
                              const GURL& frame_url);
 
-  // Called to signal a page is completed in renderer in the Autocheckout flow.
-  void OnAutocheckoutPageCompleted(autofill::AutocheckoutStatus status);
-
-  // Shows the Autocheckout bubble if conditions are right. See comments for
-  // AutocheckoutManager::MaybeShowAutocheckoutBubble. Input element requesting
-  // bubble belongs to |form|. |bounding_box| is the bounding box of the input
-  // field in focus.
-  virtual void OnMaybeShowAutocheckoutBubble(const FormData& form,
-                                             const gfx::RectF& bounding_box);
-
   // Resets cache.
   virtual void Reset();
-
-  autofill::AutocheckoutManager* autocheckout_manager() {
-    return &autocheckout_manager_;
-  }
 
  protected:
   // Test code should prefer to use this constructor.
@@ -241,9 +225,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // Passes return data for an OnRequestAutocomplete call back to the page.
   void ReturnAutocompleteData(const FormStructure* result,
                               const std::string& unused_transaction_id);
-
-  // Returns the matched whitelist URL prefix for the current tab's url.
-  virtual std::string GetAutocheckoutURLPrefix() const;
 
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.
@@ -332,9 +313,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
 
   // Handles single-field autocomplete form data.
   scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
-
-  // Handles autocheckout flows.
-  autofill::AutocheckoutManager autocheckout_manager_;
 
   // For logging UMA metrics. Overridden by metrics tests.
   scoped_ptr<const AutofillMetrics> metric_logger_;

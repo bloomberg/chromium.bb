@@ -7,7 +7,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/content/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -92,11 +91,7 @@ TEST(FormStructureTest, FieldCount) {
 
   // The render process sends all fields to browser including fields with
   // autocomplete=off
-  form_structure.reset(new FormStructure(form, std::string()));
-  EXPECT_EQ(4U, form_structure->field_count());
-
-  // We expect the same count when autocheckout is enabled.
-  form_structure.reset(new FormStructure(form, "http://fake_url"));
+  form_structure.reset(new FormStructure(form));
   EXPECT_EQ(4U, form_structure->field_count());
 }
 
@@ -127,7 +122,7 @@ TEST(FormStructureTest, AutofillCount) {
   form.fields.push_back(field);
 
   // Only text and select fields that are heuristically matched are counted.
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_EQ(1U, form_structure->autofill_count());
 
@@ -138,17 +133,12 @@ TEST(FormStructureTest, AutofillCount) {
   field.should_autocomplete = false;
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   // DetermineHeuristicTypes also assign field type for fields with
   // autocomplete=off thus autofill_count includes them. This is a bug,
   // and they should not be counted. See http://crbug.com/176432 for details.
   // TODO(benquan): change it to EXPECT_EQ(1U, ... when the bug is fixed.
-  EXPECT_EQ(2U, form_structure->autofill_count());
-
-  // All fields should be counted when Autocheckout is enabled.
-  form_structure.reset(new FormStructure(form, "http://fake_url"));
-  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_EQ(2U, form_structure->autofill_count());
 }
 
@@ -156,7 +146,7 @@ TEST(FormStructureTest, SourceURL) {
   FormData form;
   form.origin = GURL("http://www.foo.com/");
   form.method = ASCIIToUTF16("post");
-  FormStructure form_structure(form, std::string());
+  FormStructure form_structure(form);
 
   EXPECT_EQ(form.origin, form_structure.source_url());
 }
@@ -169,11 +159,6 @@ TEST(FormStructureTest, IsAutofillable) {
   form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
-  // When autocheckout is enabled, we enable autofill even the form has
-  // no fields
-  form_structure.reset(new FormStructure(form, "http://fake_url"));
-  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
 
   field.label = ASCIIToUTF16("username");
   field.name = ASCIIToUTF16("username");
@@ -190,14 +175,9 @@ TEST(FormStructureTest, IsAutofillable) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_FALSE(form_structure->IsAutofillable(true));
-
-  // We do not limit to three text fields when autocheckout is enabled.
-  form_structure.reset(new FormStructure(form, "http://fake_url"));
-  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
 
   // We now have three text fields, but only two auto-fillable fields.
   field.label = ASCIIToUTF16("First Name");
@@ -210,7 +190,7 @@ TEST(FormStructureTest, IsAutofillable) {
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_FALSE(form_structure->IsAutofillable(true));
 
@@ -220,14 +200,14 @@ TEST(FormStructureTest, IsAutofillable) {
   field.form_control_type = "email";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 
   // The method must be 'post', though we can intentionally ignore this
   // criterion for the sake of providing a helpful warning message to the user.
   form.method = ASCIIToUTF16("get");
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_FALSE(form_structure->IsAutofillable(true));
   EXPECT_TRUE(form_structure->IsAutofillable(false));
@@ -235,13 +215,13 @@ TEST(FormStructureTest, IsAutofillable) {
   // The target cannot include http(s)://*/search...
   form.method = ASCIIToUTF16("post");
   form.action = GURL("http://google.com/search?q=hello");
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_FALSE(form_structure->IsAutofillable(true));
 
   // But search can be in the URL.
   form.action = GURL("http://search.com/?q=hello");
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 }
@@ -270,13 +250,8 @@ TEST(FormStructureTest, ShouldBeParsed) {
   form.fields.push_back(checkable_field);
 
   // We have only one text field, should not be parsed.
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   EXPECT_FALSE(form_structure->ShouldBeParsed(true));
-
-  // The form should be parsed for autocheckout even it has less than three
-  // text fields.
-  form_structure.reset(new FormStructure(form, "http://fake_url"));
-  EXPECT_TRUE(form_structure->ShouldBeParsed(true));
 
   // We now have three text fields, though only two are auto-fillable.
   field.label = ASCIIToUTF16("First Name");
@@ -289,25 +264,25 @@ TEST(FormStructureTest, ShouldBeParsed) {
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   EXPECT_TRUE(form_structure->ShouldBeParsed(true));
 
   // The method must be 'post', though we can intentionally ignore this
   // criterion for the sake of providing a helpful warning message to the user.
   form.method = ASCIIToUTF16("get");
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   EXPECT_FALSE(form_structure->IsAutofillable(true));
   EXPECT_TRUE(form_structure->ShouldBeParsed(false));
 
   // The target cannot include http(s)://*/search...
   form.method = ASCIIToUTF16("post");
   form.action = GURL("http://google.com/search?q=hello");
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   EXPECT_FALSE(form_structure->ShouldBeParsed(true));
 
   // But search can be in the URL.
   form.action = GURL("http://search.com/?q=hello");
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   EXPECT_TRUE(form_structure->ShouldBeParsed(true));
 
   // The form need only have three fields, but at least one must be a text
@@ -329,17 +304,13 @@ TEST(FormStructureTest, ShouldBeParsed) {
   field.form_control_type = "select-one";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   EXPECT_TRUE(form_structure->ShouldBeParsed(true));
 
   form.fields[0].form_control_type = "select-one";
   // Now, no text fields.
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   EXPECT_FALSE(form_structure->ShouldBeParsed(true));
-
-  // It should be parsed when autocheckout is enabled.
-  form_structure.reset(new FormStructure(form, "http://fake_url"));
-  EXPECT_TRUE(form_structure->ShouldBeParsed(true));
 }
 
 TEST(FormStructureTest, HeuristicsContactInfo) {
@@ -383,7 +354,7 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 
@@ -434,7 +405,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttribute) {
   field.autocomplete_attribute = "email";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 
@@ -475,7 +446,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributePhoneTypes) {
   field.autocomplete_attribute = "tel-local-suffix";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 
@@ -516,7 +487,7 @@ TEST(FormStructureTest, AutocompleteAttributeOverridesOtherHeuristics) {
   field.name = ASCIIToUTF16("email");
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   EXPECT_TRUE(form_structure->ShouldBeCrowdsourced());
@@ -530,24 +501,10 @@ TEST(FormStructureTest, AutocompleteAttributeOverridesOtherHeuristics) {
 
   // Now update the first form field to include an 'autocomplete' attribute.
   form.fields.front().autocomplete_attribute = "x-other";
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_FALSE(form_structure->IsAutofillable(true));
   EXPECT_FALSE(form_structure->ShouldBeCrowdsourced());
-
-  ASSERT_EQ(3U, form_structure->field_count());
-  ASSERT_EQ(0U, form_structure->autofill_count());
-
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(0)->heuristic_type());
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(1)->heuristic_type());
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
-
-  // When Autocheckout is enabled, we should ignore 'autocomplete' attribute
-  // when deciding to crowdsource.
-  form_structure.reset(new FormStructure(form, "http://fake.url"));
-  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
-  EXPECT_TRUE(form_structure->ShouldBeCrowdsourced());
 
   ASSERT_EQ(3U, form_structure->field_count());
   ASSERT_EQ(0U, form_structure->autofill_count());
@@ -604,7 +561,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSections) {
   field.autocomplete_attribute = "section-foo cc-number";
   form.fields.push_back(field);
 
-  FormStructure form_structure(form, std::string());
+  FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure.IsAutofillable(true));
 
@@ -649,7 +606,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSectionsDegenerate) {
   field.autocomplete_attribute = "garbage billing email";
   form.fields.push_back(field);
 
-  FormStructure form_structure(form, std::string());
+  FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
 
   // Expect the correct number of fields.
@@ -679,7 +636,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSectionsRepeated) {
   field.autocomplete_attribute = "section-foo address-line1";
   form.fields.push_back(field);
 
-  FormStructure form_structure(form, std::string());
+  FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
 
   // Expect the correct number of fields.
@@ -717,7 +674,7 @@ TEST(FormStructureTest, HeuristicsDontOverrideAutocompleteAttributeSections) {
   field.autocomplete_attribute = "address-line1";
   form.fields.push_back(field);
 
-  FormStructure form_structure(form, std::string());
+  FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
 
   // Expect the correct number of fields.
@@ -782,7 +739,7 @@ TEST(FormStructureTest, HeuristicsSample8) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(10U, form_structure->field_count());
@@ -850,7 +807,7 @@ TEST(FormStructureTest, HeuristicsSample6) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(7U, form_structure->field_count());
@@ -916,7 +873,7 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(8U, form_structure->field_count());
@@ -974,7 +931,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfo) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(6U, form_structure->field_count());
@@ -1035,7 +992,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(7U, form_structure->field_count());
@@ -1083,7 +1040,7 @@ TEST(FormStructureTest, ThreeAddressLines) {
   field.name = ASCIIToUTF16("city");
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(4U, form_structure->field_count());
@@ -1125,7 +1082,7 @@ TEST(FormStructureTest, BillingAndShippingAddresses) {
   field.name = ASCIIToUTF16("billing.address.addressLine2");
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(4U, form_structure->field_count());
@@ -1166,7 +1123,7 @@ TEST(FormStructureTest, SurplusAddressLinesIgnored) {
   field.name = ASCIIToUTF16("billing.address.addressLine4");
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   ASSERT_EQ(4U, form_structure->field_count());
   ASSERT_EQ(2U, form_structure->autofill_count());
@@ -1210,7 +1167,7 @@ TEST(FormStructureTest, ThreeAddressLinesExpedia) {
   field.name = ASCIIToUTF16("FOPIH_RgWebCC_0_IHAddress_adct");
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(4U, form_structure->field_count());
@@ -1249,7 +1206,7 @@ TEST(FormStructureTest, TwoAddressLinesEbay) {
   field.name = ASCIIToUTF16("city");
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(3U, form_structure->field_count());
@@ -1283,7 +1240,7 @@ TEST(FormStructureTest, HeuristicsStateWithProvince) {
   field.name = ASCIIToUTF16("State");
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(3U, form_structure->field_count());
@@ -1350,7 +1307,7 @@ TEST(FormStructureTest, HeuristicsWithBilling) {
   field.name = ASCIIToUTF16("email$emailBox");
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(11U, form_structure->field_count());
@@ -1401,7 +1358,7 @@ TEST(FormStructureTest, ThreePartPhoneNumber) {
   field.max_length = 0;
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(4U, form_structure->field_count());
@@ -1447,7 +1404,7 @@ TEST(FormStructureTest, HeuristicsInfernoCC) {
   field.name = ASCIIToUTF16("expiration_year");
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 
@@ -1500,7 +1457,7 @@ TEST(FormStructureTest, CVCCodeClash) {
   field.name = ASCIIToUTF16("csc");
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 
@@ -1559,7 +1516,7 @@ TEST(FormStructureTest, EncodeQueryRequest) {
   form.fields.push_back(checkable_field);
 
   ScopedVector<FormStructure> forms;
-  forms.push_back(new FormStructure(form, std::string()));
+  forms.push_back(new FormStructure(form));
   std::vector<std::string> encoded_signatures;
   std::string encoded_xml;
   const char * const kSignature1 = "11337937696949187602";
@@ -1579,7 +1536,7 @@ TEST(FormStructureTest, EncodeQueryRequest) {
 
   // Add the same form, only one will be encoded, so EncodeQueryRequest() should
   // return the same data.
-  forms.push_back(new FormStructure(form, std::string()));
+  forms.push_back(new FormStructure(form));
   ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
                                                 &encoded_signatures,
                                                 &encoded_xml));
@@ -1593,7 +1550,7 @@ TEST(FormStructureTest, EncodeQueryRequest) {
     form.fields.push_back(field);
   }
 
-  forms.push_back(new FormStructure(form, std::string()));
+  forms.push_back(new FormStructure(form));
   ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
                                                 &encoded_signatures,
                                                 &encoded_xml));
@@ -1624,7 +1581,7 @@ TEST(FormStructureTest, EncodeQueryRequest) {
     malformed_form.fields.push_back(field);
   }
 
-  forms.push_back(new FormStructure(malformed_form, std::string()));
+  forms.push_back(new FormStructure(malformed_form));
   ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
                                                 &encoded_signatures,
                                                 &encoded_xml));
@@ -1635,37 +1592,12 @@ TEST(FormStructureTest, EncodeQueryRequest) {
 
   // Check that we fail if there are only bad form(s).
   ScopedVector<FormStructure> bad_forms;
-  bad_forms.push_back(new FormStructure(malformed_form, std::string()));
+  bad_forms.push_back(new FormStructure(malformed_form));
   EXPECT_FALSE(FormStructure::EncodeQueryRequest(bad_forms.get(),
                                                  &encoded_signatures,
                                                  &encoded_xml));
   EXPECT_EQ(0U, encoded_signatures.size());
   EXPECT_EQ("", encoded_xml);
-
-  // Check the behaviour with autocheckout enabled.
-  ScopedVector<FormStructure> checkable_forms;
-  checkable_forms.push_back(
-      new FormStructure(form, "https://www.sample1.com/query/path"));
-
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(checkable_forms.get(),
-                                                &encoded_signatures,
-                                                &encoded_xml));
-  const char * const kSignature3 = "7747357776717901584";
-  const char * const kResponse3 =
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?><autofillquery "
-      "clientversion=\"6.1.1715.1442/en (GGLL)\" accepts=\"a,e\" "
-      "urlprefixsignature=\"7648393911063090788\">"
-      "<form signature=\"7747357776717901584\">"
-      "<field signature=\"412125936\"/>"
-      "<field signature=\"1917667676\"/><field signature=\"2226358947\"/><field"
-      " signature=\"747221617\"/><field signature=\"4108155786\"/><field "
-      "signature=\"3410250678\"/><field signature=\"509334676\"/><field "
-      "signature=\"509334676\"/><field signature=\"509334676\"/><field "
-      "signature=\"509334676\"/><field signature=\"509334676\"/></form>"
-      "</autofillquery>";
-  ASSERT_EQ(1U, encoded_signatures.size());
-  EXPECT_EQ(kSignature3, encoded_signatures[0]);
-  EXPECT_EQ(kResponse3, encoded_xml);
 }
 
 TEST(FormStructureTest, EncodeUploadRequest) {
@@ -1673,7 +1605,7 @@ TEST(FormStructureTest, EncodeUploadRequest) {
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
   form.method = ASCIIToUTF16("post");
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
 
   FormFieldData field;
@@ -1721,7 +1653,7 @@ TEST(FormStructureTest, EncodeUploadRequest) {
   possible_field_types.push_back(ServerFieldTypeSet());
   possible_field_types.back().insert(ADDRESS_HOME_COUNTRY);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i)
@@ -1779,7 +1711,7 @@ TEST(FormStructureTest, EncodeUploadRequest) {
     possible_field_types.back().insert(ADDRESS_BILLING_LINE2);
   }
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i)
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
@@ -1818,7 +1750,7 @@ TEST(FormStructureTest, EncodeUploadRequest) {
     possible_field_types.back().insert(ADDRESS_BILLING_LINE1);
     possible_field_types.back().insert(ADDRESS_BILLING_LINE2);
   }
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i)
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
@@ -1831,7 +1763,7 @@ TEST(FormStructureTest, EncodeFieldAssignments) {
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
   form.method = ASCIIToUTF16("post");
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
 
   FormFieldData field;
@@ -1879,7 +1811,7 @@ TEST(FormStructureTest, EncodeFieldAssignments) {
   possible_field_types.push_back(ServerFieldTypeSet());
   possible_field_types.back().insert(ADDRESS_HOME_COUNTRY);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i)
@@ -1924,7 +1856,7 @@ TEST(FormStructureTest, EncodeFieldAssignments) {
     possible_field_types.back().insert(ADDRESS_BILLING_LINE2);
   }
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i)
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
@@ -1973,7 +1905,7 @@ TEST(FormStructureTest, CheckDataPresence) {
   field.name = ASCIIToUTF16("email");
   form.fields.push_back(field);
 
-  FormStructure form_structure(form, std::string());
+  FormStructure form_structure(form);
 
   ServerFieldTypeSet unknown_type;
   unknown_type.insert(UNKNOWN_TYPE);
@@ -2239,7 +2171,7 @@ TEST(FormStructureTest, CheckMultipleTypes) {
   possible_field_types.push_back(ServerFieldTypeSet());
   possible_field_types.back().insert(ADDRESS_HOME_LINE1);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
 
   for (size_t i = 0; i < form_structure->field_count(); ++i)
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
@@ -2335,26 +2267,26 @@ TEST(FormStructureTest, CheckFormSignature) {
   field.form_control_type = "password";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
 
   EXPECT_EQ(FormStructureTest::Hash64Bit(
       std::string("://&&email&first")),
       form_structure->FormSignature());
 
   form.origin = GURL(std::string("http://www.facebook.com"));
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   EXPECT_EQ(FormStructureTest::Hash64Bit(
       std::string("http://www.facebook.com&&email&first")),
       form_structure->FormSignature());
 
   form.action = GURL(std::string("https://login.facebook.com/path"));
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   EXPECT_EQ(FormStructureTest::Hash64Bit(
       std::string("https://login.facebook.com&&email&first")),
       form_structure->FormSignature());
 
   form.name = ASCIIToUTF16("login_form");
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   EXPECT_EQ(FormStructureTest::Hash64Bit(
       std::string("https://login.facebook.com&login_form&email&first")),
       form_structure->FormSignature());
@@ -2372,7 +2304,7 @@ TEST(FormStructureTest, CheckFormSignature) {
   field.label = ASCIIToUTF16("Random Field label3");
   field.name = ASCIIToUTF16("12345random");
   form.fields.push_back(field);
-  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure.reset(new FormStructure(form));
   EXPECT_EQ(FormStructureTest::Hash64Bit(
       std::string("https://login.facebook.com&login_form&email&first&"
                   "random1234&random&1random&random")),
@@ -2403,12 +2335,12 @@ TEST(FormStructureTest, ToFormData) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  EXPECT_EQ(form, FormStructure(form, std::string()).ToFormData());
+  EXPECT_EQ(form, FormStructure(form).ToFormData());
 
   // Currently |FormStructure(form_data)ToFormData().user_submitted| is always
   // false. This forces a future author that changes this to update this test.
   form.user_submitted = true;
-  EXPECT_NE(form, FormStructure(form, std::string()).ToFormData());
+  EXPECT_NE(form, FormStructure(form).ToFormData());
 }
 
 TEST(FormStructureTest, SkipFieldTest) {
@@ -2435,7 +2367,7 @@ TEST(FormStructureTest, SkipFieldTest) {
   form.fields.push_back(field);
 
   ScopedVector<FormStructure> forms;
-  forms.push_back(new FormStructure(form, std::string()));
+  forms.push_back(new FormStructure(form));
   std::vector<std::string> encoded_signatures;
   std::string encoded_xml;
 
@@ -2451,16 +2383,6 @@ TEST(FormStructureTest, SkipFieldTest) {
   ASSERT_EQ(1U, encoded_signatures.size());
   EXPECT_EQ(kSignature, encoded_signatures[0]);
   EXPECT_EQ(kResponse, encoded_xml);
-
-  AutocheckoutPageMetaData page_meta_data;
-  const char * const kServerResponse =
-      "<autofillqueryresponse><field autofilltype=\"3\" />"
-      "<field autofilltype=\"9\" /></autofillqueryresponse>";
-  FormStructure::ParseQueryResponse(kServerResponse, forms.get(),
-                                    &page_meta_data, TestAutofillMetrics());
-  ASSERT_EQ(NAME_FIRST, forms[0]->field(0)->server_type());
-  ASSERT_EQ(NO_SERVER_DATA, forms[0]->field(1)->server_type());
-  ASSERT_EQ(EMAIL_ADDRESS, forms[0]->field(2)->server_type());
 }
 
 }  // namespace autofill

@@ -9,9 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_types.h"
-#include "components/autofill/content/browser/autocheckout_steps.h"
-#include "components/autofill/core/browser/autocheckout_bubble_state.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -24,7 +21,6 @@ class WebContents;
 
 namespace autofill {
 
-class AutocheckoutBubble;
 class AutofillDialogController;
 class AutofillPopupControllerImpl;
 struct FormData;
@@ -43,21 +39,12 @@ class TabAutofillManagerDelegate
   // AutofillManagerDelegate implementation.
   virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
-  virtual autocheckout::WhitelistManager*
-      GetAutocheckoutWhitelistManager() const OVERRIDE;
   virtual void HideRequestAutocompleteDialog() OVERRIDE;
-  virtual void OnAutocheckoutError() OVERRIDE;
-  virtual void OnAutocheckoutSuccess() OVERRIDE;
   virtual void ShowAutofillSettings() OVERRIDE;
   virtual void ConfirmSaveCreditCard(
       const AutofillMetrics& metric_logger,
       const CreditCard& credit_card,
       const base::Closure& save_card_callback) OVERRIDE;
-  virtual bool ShowAutocheckoutBubble(
-      const gfx::RectF& bounds,
-      bool is_google_user,
-      const base::Callback<void(AutocheckoutBubbleState)>& callback) OVERRIDE;
-  virtual void HideAutocheckoutBubble() OVERRIDE;
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
@@ -78,11 +65,6 @@ class TabAutofillManagerDelegate
   virtual void HideAutofillPopup() OVERRIDE;
   virtual bool IsAutocompleteEnabled() OVERRIDE;
 
-  virtual void AddAutocheckoutStep(AutocheckoutStepType step_type) OVERRIDE;
-  virtual void UpdateAutocheckoutStep(
-      AutocheckoutStepType step_type,
-      AutocheckoutStepStatus step_status) OVERRIDE;
-
   // content::WebContentsObserver implementation.
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
@@ -102,7 +84,6 @@ class TabAutofillManagerDelegate
 
   content::WebContents* const web_contents_;
   base::WeakPtr<AutofillDialogController> dialog_controller_;
-  base::WeakPtr<AutocheckoutBubble> autocheckout_bubble_;
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TabAutofillManagerDelegate);

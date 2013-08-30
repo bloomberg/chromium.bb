@@ -1020,32 +1020,6 @@ TEST_F(FormAutofillTest, FillFormIncludingNonFocusableElements) {
                         &WebInputElement::value);
 }
 
-TEST_F(FormAutofillTest, FillFormForAllElements) {
-  static const AutofillFieldCase field_cases[] = {
-      // fields: name, initial_value, autocomplete_attribute,
-      //         should_be_autofilled, autofill_value, expected_value
-
-      // All fields except hidden fields (type="hidden") should be Autofilled.
-      {"firstname", "", "", true, "filled firstname", "filled firstname"},
-      {"lastname", "", "", true, "filled lastname", "filled lastname"},
-      // hidden fields should not be extracted to form_data.
-      {"notempty", "Hi", "", true, "filled notempty", "filled notempty"},
-      {"noautocomplete", "", "off", true, "filled noautocomplete",
-          "filled noautocomplete"},
-      {"notenabled", "", "", true, "filled notenabled", "filled notenabled"},
-      {"readonly", "", "", true, "filled readonly", "filled readonly"},
-      {"invisible", "", "", true, "filled invisible", "filled invisible"},
-      {"displaynone", "", "", true, "filled displaynone", "filled displaynone"},
-  };
-  // Enable Autocheckout because |FillFormForAllElements| is only used by
-  // Autocheckout.
-  base::FieldTrialList field_trial_list(
-      new metrics::SHA1EntropyProvider("foo"));
-  base::FieldTrialList::CreateFieldTrial("Autocheckout", "Yes");
-  TestFormFillFunctions(kFormHtml, field_cases, arraysize(field_cases),
-                        &FillFormForAllFieldsWrapper, &WebInputElement::value);
-}
-
 TEST_F(FormAutofillTest, PreviewForm) {
   static const char* html =
       "<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"

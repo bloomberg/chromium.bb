@@ -176,7 +176,7 @@ TEST_F(AutofillDriverImplTest, FormDataSentToRenderer) {
 TEST_F(AutofillDriverImplTest, TypePredictionsNotSentToRendererWhenDisabled) {
   FormData form;
   test::CreateTestAddressFormData(&form);
-  FormStructure form_structure(form, std::string());
+  FormStructure form_structure(form);
   std::vector<FormStructure*> forms(1, &form_structure);
   driver_->SendAutofillTypePredictionsToRenderer(forms);
   EXPECT_FALSE(GetFieldTypePredictionsAvailable(NULL));
@@ -188,7 +188,7 @@ TEST_F(AutofillDriverImplTest, TypePredictionsSentToRendererWhenEnabled) {
 
   FormData form;
   test::CreateTestAddressFormData(&form);
-  FormStructure form_structure(form, std::string());
+  FormStructure form_structure(form);
   std::vector<FormStructure*> forms(1, &form_structure);
   std::vector<FormDataPredictions> expected_type_predictions;
   FormStructure::GetFieldTypePredictions(forms, &expected_type_predictions);

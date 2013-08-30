@@ -13,20 +13,11 @@ PersonalDataManager* TestAutofillManagerDelegate::GetPersonalDataManager() {
   return NULL;
 }
 
-autocheckout::WhitelistManager*
-TestAutofillManagerDelegate::GetAutocheckoutWhitelistManager() const {
-  return NULL;
-}
-
 PrefService* TestAutofillManagerDelegate::GetPrefs() {
   return NULL;
 }
 
 void TestAutofillManagerDelegate::HideRequestAutocompleteDialog() {}
-
-void TestAutofillManagerDelegate::OnAutocheckoutError() {}
-
-void TestAutofillManagerDelegate::OnAutocheckoutSuccess() {}
 
 void TestAutofillManagerDelegate::ShowAutofillSettings() {}
 
@@ -34,15 +25,6 @@ void TestAutofillManagerDelegate::ConfirmSaveCreditCard(
     const AutofillMetrics& metric_logger,
     const CreditCard& credit_card,
     const base::Closure& save_card_callback) {}
-
-bool TestAutofillManagerDelegate::ShowAutocheckoutBubble(
-    const gfx::RectF& bounding_box,
-    bool is_google_user,
-    const base::Callback<void(AutocheckoutBubbleState)>& callback) {
-  return true;
-}
-
-void TestAutofillManagerDelegate::HideAutocheckoutBubble() {}
 
 void TestAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     const FormData& form,
@@ -65,13 +47,6 @@ void TestAutofillManagerDelegate::UpdateAutofillPopupDataListValues(
     const std::vector<base::string16>& labels) {}
 
 void TestAutofillManagerDelegate::HideAutofillPopup() {}
-
-void TestAutofillManagerDelegate::AddAutocheckoutStep(
-    AutocheckoutStepType step_type) {}
-
-void TestAutofillManagerDelegate::UpdateAutocheckoutStep(
-    AutocheckoutStepType step_type,
-    AutocheckoutStepStatus step_status) {}
 
 bool TestAutofillManagerDelegate::IsAutocompleteEnabled() {
   return true;

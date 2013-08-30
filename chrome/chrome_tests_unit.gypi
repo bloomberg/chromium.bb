@@ -1364,7 +1364,6 @@
         'browser/ui/ash/screenshot_taker_unittest.cc',
         'browser/ui/ash/window_positioner_unittest.cc',
         'browser/ui/autofill/account_chooser_model_unittest.cc',
-        'browser/ui/autofill/autocheckout_bubble_controller_unittest.cc',
         'browser/ui/autofill/autofill_dialog_controller_unittest.cc',
         'browser/ui/autofill/autofill_dialog_models_unittest.cc',
         'browser/ui/autofill/autofill_dialog_types_unittest.cc',
@@ -1852,9 +1851,6 @@
 
         # TODO(joi): Move to //components/components_tests.gypi once
         # remaining dependencies back to //chrome are eliminated.
-        '../components/autofill/content/browser/autocheckout/whitelist_manager_unittest.cc',
-        '../components/autofill/content/browser/autocheckout_manager_unittest.cc',
-        '../components/autofill/content/browser/autocheckout_page_meta_data_unittest.cc',
         '../components/autofill/content/browser/autofill_driver_impl_unittest.cc',
         '../components/autofill/content/browser/wallet/full_wallet_unittest.cc',
         '../components/autofill/content/browser/wallet/instrument_unittest.cc',
@@ -2178,7 +2174,6 @@
         ['enable_autofill_dialog!=1 or OS=="android"', {
           'sources!': [
             'browser/ui/autofill/account_chooser_model_unittest.cc',
-            'browser/ui/autofill/autocheckout_bubble_controller_unittest.cc',
             'browser/ui/autofill/autofill_credit_card_bubble_controller_unittest.cc',
             'browser/ui/autofill/autofill_dialog_controller_unittest.cc',
             'browser/ui/autofill/mock_autofill_dialog_view_delegate.cc',

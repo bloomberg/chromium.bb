@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/country_combobox_model.h"
-#include "components/autofill/content/browser/autocheckout_steps.h"
 #include "components/autofill/content/browser/wallet/wallet_client.h"
 #include "components/autofill/content/browser/wallet/wallet_client_delegate.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
@@ -95,12 +94,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void TabActivated() OVERRIDE;
-  virtual void AddAutocheckoutStep(AutocheckoutStepType step_type) OVERRIDE;
-  virtual void UpdateAutocheckoutStep(
-      AutocheckoutStepType step_type,
-      AutocheckoutStepStatus step_status) OVERRIDE;
-  virtual void OnAutocheckoutError() OVERRIDE;
-  virtual void OnAutocheckoutSuccess() OVERRIDE;
 
   // Returns |view_| as a testable version of itself (if |view_| exists and
   // actually implements |AutofillDialogView::GetTestableView()|).
@@ -121,8 +114,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual bool ShouldOfferToSaveInChrome() const OVERRIDE;
   virtual ui::MenuModel* MenuModelForAccountChooser() OVERRIDE;
   virtual gfx::Image AccountChooserImage() OVERRIDE;
-  virtual bool ShouldShowDetailArea() const OVERRIDE;
-  virtual bool ShouldShowProgressBar() const OVERRIDE;
   virtual gfx::Image ButtonStripImage() const OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
@@ -159,8 +150,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual gfx::Image SplashPageImage() const OVERRIDE;
   virtual void ViewClosed() OVERRIDE;
   virtual std::vector<DialogNotification> CurrentNotifications() OVERRIDE;
-  virtual std::vector<DialogAutocheckoutStep> CurrentAutocheckoutSteps()
-      const OVERRIDE;
   virtual void SignInLinkClicked() OVERRIDE;
   virtual void NotificationCheckboxStateChanged(DialogNotification::Type type,
                                                 bool checked) OVERRIDE;
@@ -286,8 +275,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // Whether the information input in this dialog will be securely transmitted
   // to the requesting site.
   virtual bool TransmissionWillBeSecure() const;
-
-  AutocheckoutState autocheckout_state() const { return autocheckout_state_; }
 
   // Shows a new credit card saved bubble and passes ownership of |new_card| and
   // |billing_profile| to the bubble. Exposed for testing.
@@ -536,12 +523,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // interact with it.
   void LogDialogLatencyToShow();
 
-  // Sets the state of the autocheckout flow.
-  void SetAutocheckoutState(AutocheckoutState autocheckout_state);
-
-  // Obscures the web contents.
-  void DeemphasizeRenderView();
-
   // Returns the metric corresponding to the user's initial state when
   // interacting with this dialog.
   AutofillMetrics::DialogInitialUserStateMetric GetInitialUserState() const;
@@ -557,10 +538,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   const AutofillMetrics metric_logger_;
   base::Time dialog_shown_timestamp_;
   AutofillMetrics::DialogInitialUserStateMetric initial_user_state_;
-
-  // The time that Autocheckout started running. Reset on error. While this is
-  // a valid time, |AutocheckoutIsRunning()| will return true.
-  base::Time autocheckout_started_timestamp_;
 
   // Whether this is an Autocheckout or a requestAutocomplete dialog.
   const DialogType dialog_type_;
@@ -696,18 +673,8 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // The notification that describes the current wallet error, if any.
   scoped_ptr<DialogNotification> wallet_error_notification_;
 
-  // The current state of the Autocheckout flow.
-  AutocheckoutState autocheckout_state_;
-
   // Whether the latency to display to the UI was logged to UMA yet.
   bool was_ui_latency_logged_;
-
-  // Whether or not the render view has been deemphasized.
-  bool deemphasized_render_view_;
-
-  // State of steps in the current Autocheckout flow, or empty if not an
-  // Autocheckout use case.
-  std::vector<DialogAutocheckoutStep> steps_;
 
   // The Google Wallet cookie value, set as an authorization header on requests
   // to Wallet.

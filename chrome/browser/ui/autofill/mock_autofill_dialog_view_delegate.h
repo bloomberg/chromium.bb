@@ -32,7 +32,6 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_CONST_METHOD0(ShouldShowProgressBar, bool());
   MOCK_CONST_METHOD0(ButtonStripImage, gfx::Image());
   MOCK_CONST_METHOD0(GetDialogButtons, int());
-  MOCK_CONST_METHOD0(ShouldShowDetailArea, bool());
   MOCK_CONST_METHOD1(IsDialogButtonEnabled, bool(ui::DialogButton button));
   MOCK_CONST_METHOD0(GetDialogOverlay, DialogOverlayState());
   MOCK_METHOD0(LegalDocumentLinks, const std::vector<ui::Range>&());
@@ -65,8 +64,6 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_CONST_METHOD0(SplashPageImage, gfx::Image());
   MOCK_METHOD0(ViewClosed, void());
   MOCK_METHOD0(CurrentNotifications,std::vector<DialogNotification>());
-  MOCK_CONST_METHOD0(CurrentAutocheckoutSteps,
-                     std::vector<DialogAutocheckoutStep>());
   MOCK_METHOD0(SignInLinkClicked, void());
   MOCK_METHOD2(NotificationCheckboxStateChanged,
                void(DialogNotification::Type, bool));

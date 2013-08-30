@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service_builder.h"
-#include "components/autofill/core/browser/autocheckout_bubble_state.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -25,9 +24,6 @@ class FormStructure;
 class PasswordGenerator;
 class PersonalDataManager;
 struct FormData;
-namespace autocheckout {
-class WhitelistManager;
-}
 }
 
 namespace content {
@@ -63,22 +59,12 @@ class AwAutofillManagerDelegate
   // AutofillManagerDelegate implementation.
   virtual autofill::PersonalDataManager* GetPersonalDataManager() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
-  virtual autofill::autocheckout::WhitelistManager*
-      GetAutocheckoutWhitelistManager() const OVERRIDE;
   virtual void HideRequestAutocompleteDialog() OVERRIDE;
-  virtual void OnAutocheckoutError() OVERRIDE;
-  virtual void OnAutocheckoutSuccess() OVERRIDE;
   virtual void ShowAutofillSettings() OVERRIDE;
   virtual void ConfirmSaveCreditCard(
       const autofill::AutofillMetrics& metric_logger,
       const autofill::CreditCard& credit_card,
       const base::Closure& save_card_callback) OVERRIDE;
-  virtual bool ShowAutocheckoutBubble(
-      const gfx::RectF& bounds,
-      bool is_google_user,
-      const base::Callback<void(
-          autofill::AutocheckoutBubbleState)>& callback) OVERRIDE;
-  virtual void HideAutocheckoutBubble() OVERRIDE;
   virtual void ShowRequestAutocompleteDialog(
       const autofill::FormData& form,
       const GURL& source_url,
@@ -98,11 +84,6 @@ class AwAutofillManagerDelegate
       const std::vector<base::string16>& labels) OVERRIDE;
   virtual void HideAutofillPopup() OVERRIDE;
   virtual bool IsAutocompleteEnabled() OVERRIDE;
-  virtual void AddAutocheckoutStep(autofill::AutocheckoutStepType step_type)
-      OVERRIDE;
-  virtual void UpdateAutocheckoutStep(
-      autofill::AutocheckoutStepType step_type,
-      autofill::AutocheckoutStepStatus step_status) OVERRIDE;
 
   void SuggestionSelected(JNIEnv* env,
                           jobject obj,

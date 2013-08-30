@@ -47,7 +47,6 @@ class AutofillDialogCocoa : public AutofillDialogView,
   virtual void UpdateDetailArea() OVERRIDE;
   virtual void UpdateForErrors() OVERRIDE;
   virtual void UpdateNotificationArea() OVERRIDE;
-  virtual void UpdateAutocheckoutStepsArea() OVERRIDE;
   virtual void UpdateSection(DialogSection section) OVERRIDE;
   virtual void FillSection(DialogSection section,
                            const DetailInput& originating_input) OVERRIDE;
@@ -59,7 +58,6 @@ class AutofillDialogCocoa : public AutofillDialogView,
   virtual bool SaveDetailsLocally() OVERRIDE;
   virtual const content::NavigationController* ShowSignIn() OVERRIDE;
   virtual void HideSignIn() OVERRIDE;
-  virtual void UpdateProgressBar(double value) OVERRIDE;
   virtual void ModelChanged() OVERRIDE;
   virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE;
   virtual TestableAutofillDialogView* GetTestableView() OVERRIDE;

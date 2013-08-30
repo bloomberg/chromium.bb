@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/time/time.h"
-#include "components/autofill/core/common/autocheckout_status.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -26,8 +25,6 @@
 
 #define IPC_MESSAGE_START AutofillMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(autofill::AutocheckoutStatus,
-                          autofill::AUTOCHECKOUT_STATUS_NUM_STATUS - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(autofill::FormsSeenState,
                           autofill::FORMS_SEEN_STATE_NUM_STATES - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(base::i18n::TextDirection,
@@ -106,9 +103,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(
 
 // Autofill messages sent from the browser to the renderer.
 
-// Request to parse all the forms without field count limit.
-IPC_MESSAGE_ROUTED0(AutofillMsg_GetAllForms)
-
 // Reply to the AutofillHostMsg_FillAutofillFormData message with the
 // Autofill form data.
 IPC_MESSAGE_ROUTED2(AutofillMsg_FormDataFilled,
@@ -171,21 +165,6 @@ IPC_MESSAGE_ROUTED2(AutofillMsg_RequestAutocompleteResult,
                     WebKit::WebFormElement::AutocompleteResult /* result */,
                     autofill::FormData /* form_data */)
 
-// Sent when a page should be filled using Autocheckout. This happens when the
-// Autofill server hints that a page is Autocheckout enabled.
-IPC_MESSAGE_ROUTED4(AutofillMsg_FillFormsAndClick,
-                    std::vector<autofill::FormData> /* form_data */,
-                    std::vector<autofill::WebElementDescriptor> /*
-                        click_elements_before_form_fill */,
-                    std::vector<autofill::WebElementDescriptor> /*
-                        click_elements_after_form_fill */,
-                    autofill::WebElementDescriptor /* element_descriptor */)
-
-// Sent when Autocheckout is supported for the current page. The page has to
-// be whitelisted and the Autofill server must have returned Autocheckout page
-// metadata.
-IPC_MESSAGE_ROUTED0(AutofillMsg_AutocheckoutSupported)
-
 // Sent when the current page is actually displayed in the browser, possibly
 // after being preloaded.
 IPC_MESSAGE_ROUTED0(AutofillMsg_PageShown)
@@ -227,11 +206,6 @@ IPC_MESSAGE_ROUTED3(AutofillHostMsg_TextFieldDidChange,
                     autofill::FormFieldData /* the form field */,
                     base::TimeTicks /* timestamp */)
 
-// Shows the Autocheckout bubble if the conditions are right.
-IPC_MESSAGE_ROUTED2(AutofillHostMsg_MaybeShowAutocheckoutBubble,
-                    autofill::FormData /* form */,
-                    gfx::RectF /* bounding_box */)
-
 // Queries the browser for Autofill suggestions for a form input field.
 IPC_MESSAGE_ROUTED5(AutofillHostMsg_QueryFormFieldAutofill,
                     int /* id of this message */,
@@ -268,11 +242,6 @@ IPC_MESSAGE_ROUTED0(AutofillHostMsg_DidEndTextFieldEditing)
 
 // Instructs the browser to hide the Autofill UI.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_HideAutofillUI)
-
-// Sent when the renderer filled an Autocheckout page and clicked the proceed
-// button or if there was an error.
-IPC_MESSAGE_ROUTED1(AutofillHostMsg_AutocheckoutPageCompleted,
-                    autofill::AutocheckoutStatus /* status */)
 
 // Instructs the browser to show the password generation bubble at the
 // specified location. This location should be specified in the renderers

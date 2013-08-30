@@ -63,8 +63,6 @@ const size_t kMaximumTextSizeForAutofill = 1000;
 // via IPC (to prevent long IPC messages).
 const size_t kMaximumDataListSizeForAutofill = 30;
 
-const int kAutocheckoutClickTimeout = 3;
-
 
 // Gets all the data list values (with corresponding label) for the given
 // element.
@@ -130,14 +128,11 @@ AutofillAgent::AutofillAgent(content::RenderView* render_view,
       password_autofill_agent_(password_autofill_agent),
       autofill_query_id_(0),
       autofill_action_(AUTOFILL_NONE),
-      topmost_frame_(NULL),
       web_view_(render_view->GetWebView()),
       display_warning_if_disabled_(false),
       was_query_node_autofilled_(false),
       has_shown_autofill_popup_for_current_edit_(false),
       did_set_node_text_(false),
-      autocheckout_click_in_progress_(false),
-      is_autocheckout_supported_(false),
       has_new_forms_for_browser_(false),
       ignore_text_changes_(false),
       weak_ptr_factory_(this) {
@@ -153,7 +148,6 @@ AutofillAgent::~AutofillAgent() {}
 bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutofillAgent, message)
-    IPC_MESSAGE_HANDLER(AutofillMsg_GetAllForms, OnGetAllForms)
     IPC_MESSAGE_HANDLER(AutofillMsg_FormDataFilled, OnFormDataFilled)
     IPC_MESSAGE_HANDLER(AutofillMsg_FieldTypePredictionsAvailable,
                         OnFieldTypePredictionsAvailable)
@@ -173,10 +167,6 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnAcceptPasswordAutofillSuggestion)
     IPC_MESSAGE_HANDLER(AutofillMsg_RequestAutocompleteResult,
                         OnRequestAutocompleteResult)
-    IPC_MESSAGE_HANDLER(AutofillMsg_FillFormsAndClick,
-                        OnFillFormsAndClick)
-    IPC_MESSAGE_HANDLER(AutofillMsg_AutocheckoutSupported,
-                        OnAutocheckoutSupported)
     IPC_MESSAGE_HANDLER(AutofillMsg_PageShown,
                         OnPageShown)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -194,7 +184,6 @@ void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
   std::vector<FormData> forms;
   bool has_more_forms = false;
   if (!frame->parent()) {
-    topmost_frame_ = frame;
     form_elements_.clear();
     has_more_forms = form_cache_.ExtractFormsAndFormElements(
         *frame, kRequiredAutofillFields, &forms, &form_elements_);
@@ -213,41 +202,13 @@ void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
   }
 }
 
-void AutofillAgent::DidStartProvisionalLoad(WebFrame* frame) {
-  if (!frame->parent()) {
-    is_autocheckout_supported_ = false;
-    topmost_frame_ = NULL;
-    if (click_timer_.IsRunning()) {
-      click_timer_.Stop();
-      autocheckout_click_in_progress_ = true;
-    }
-  }
-}
-
-void AutofillAgent::DidFailProvisionalLoad(WebFrame* frame,
-                                           const WebKit::WebURLError& error) {
-  if (!frame->parent() && autocheckout_click_in_progress_) {
-    autocheckout_click_in_progress_ = false;
-    ClickFailed();
-  }
-}
-
 void AutofillAgent::DidCommitProvisionalLoad(WebFrame* frame,
                                              bool is_new_navigation) {
   in_flight_request_form_.reset();
-  if (!frame->parent() && autocheckout_click_in_progress_) {
-    autocheckout_click_in_progress_ = false;
-    CompleteAutocheckoutPage(SUCCESS);
-  }
 }
 
 void AutofillAgent::FrameDetached(WebFrame* frame) {
   form_cache_.ResetFrame(*frame);
-  if (!frame->parent()) {
-    // |frame| is about to be destroyed so we need to clear |top_most_frame_|.
-    topmost_frame_ = NULL;
-    click_timer_.Stop();
-  }
 }
 
 void AutofillAgent::WillSubmitForm(WebFrame* frame,
@@ -288,28 +249,10 @@ void AutofillAgent::FocusedNodeChanged(const WebKit::WebNode& node) {
     return;
 
   element_ = *element;
-
-  MaybeShowAutocheckoutBubble();
 }
 
 void AutofillAgent::OrientationChangeEvent(int orientation) {
   HideAutofillUI();
-}
-
-void AutofillAgent::MaybeShowAutocheckoutBubble() {
-  if (element_.isNull() || !element_.focused())
-    return;
-
-  FormData form;
-  FormFieldData field;
-  // This must be called to short circuit this method if it fails.
-  if (!FindFormAndFieldForInputElement(element_, &form, &field, REQUIRE_NONE))
-    return;
-
-  Send(new AutofillHostMsg_MaybeShowAutocheckoutBubble(
-      routing_id(),
-      form,
-      GetScaledBoundingBox(web_view_->pageScaleFactor(), &element_)));
 }
 
 void AutofillAgent::DidChangeScrollOffset(WebKit::WebFrame*) {
@@ -528,24 +471,6 @@ void AutofillAgent::OnAcceptPasswordAutofillSuggestion(
   DCHECK(handled);
 }
 
-void AutofillAgent::OnGetAllForms() {
-  form_elements_.clear();
-
-  // Force fetch all non empty forms.
-  std::vector<FormData> forms;
-  form_cache_.ExtractFormsAndFormElements(
-      *topmost_frame_, 0, &forms, &form_elements_);
-
-  // OnGetAllForms should only be called if AutofillAgent reported to
-  // AutofillManager that there are more forms
-  DCHECK(!forms.empty());
-
-  // Report to AutofillManager that all forms are being sent.
-  Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
-                                     forms_seen_timestamp_,
-                                     NO_SPECIAL_FORMS_SEEN));
-}
-
 void AutofillAgent::OnRequestAutocompleteResult(
     WebFormElement::AutocompleteResult result, const FormData& form_data) {
   if (in_flight_request_form_.isNull())
@@ -561,77 +486,7 @@ void AutofillAgent::OnRequestAutocompleteResult(
   in_flight_request_form_.reset();
 }
 
-void AutofillAgent::OnFillFormsAndClick(
-    const std::vector<FormData>& forms,
-    const std::vector<WebElementDescriptor>& click_elements_before_form_fill,
-    const std::vector<WebElementDescriptor>& click_elements_after_form_fill,
-    const WebElementDescriptor& click_element_descriptor) {
-  DCHECK_EQ(forms.size(), form_elements_.size());
-
-  // Click elements in click_elements_before_form_fill.
-  for (size_t i = 0; i < click_elements_before_form_fill.size(); ++i) {
-    if (!ClickElement(topmost_frame_->document(),
-                      click_elements_before_form_fill[i])) {
-      CompleteAutocheckoutPage(MISSING_CLICK_ELEMENT_BEFORE_FORM_FILLING);
-      return;
-    }
-  }
-
-  // Fill the form.
-  for (size_t i = 0; i < forms.size(); ++i)
-    FillFormForAllElements(forms[i], form_elements_[i]);
-
-  // Click elements in click_elements_after_form_fill.
-  for (size_t i = 0; i < click_elements_after_form_fill.size(); ++i) {
-    if (!ClickElement(topmost_frame_->document(),
-                      click_elements_after_form_fill[i])) {
-      CompleteAutocheckoutPage(MISSING_CLICK_ELEMENT_AFTER_FORM_FILLING);
-      return;
-    }
-  }
-
-  // Exit early if there is nothing to click.
-  if (click_element_descriptor.retrieval_method == WebElementDescriptor::NONE) {
-    CompleteAutocheckoutPage(SUCCESS);
-    return;
-  }
-
-  // It's possible that clicking the element to proceed in an Autocheckout
-  // flow will not actually proceed to the next step in the flow, e.g. there
-  // is a new required field that Autocheckout does not know how to fill.  In
-  // order to capture this case and present the user with an error a timer is
-  // set that informs the browser of the error. |click_timer_| has to be started
-  // before clicking so it can start before DidStartProvisionalLoad started.
-  click_timer_.Start(FROM_HERE,
-                     base::TimeDelta::FromSeconds(kAutocheckoutClickTimeout),
-                     this,
-                     &AutofillAgent::ClickFailed);
-  if (!ClickElement(topmost_frame_->document(),
-                    click_element_descriptor)) {
-    CompleteAutocheckoutPage(MISSING_ADVANCE);
-  }
-}
-
-void AutofillAgent::OnAutocheckoutSupported() {
-  is_autocheckout_supported_ = true;
-  if (has_new_forms_for_browser_)
-    MaybeSendDynamicFormsSeen();
-  MaybeShowAutocheckoutBubble();
-}
-
 void AutofillAgent::OnPageShown() {
-  if (is_autocheckout_supported_)
-    MaybeShowAutocheckoutBubble();
-}
-
-void AutofillAgent::CompleteAutocheckoutPage(
-    autofill::AutocheckoutStatus status) {
-  click_timer_.Stop();
-  Send(new AutofillHostMsg_AutocheckoutPageCompleted(routing_id(), status));
-}
-
-void AutofillAgent::ClickFailed() {
-  CompleteAutocheckoutPage(CANNOT_PROCEED);
 }
 
 void AutofillAgent::ShowSuggestions(const WebInputElement& element,
@@ -752,38 +607,9 @@ void AutofillAgent::HideAutofillUI() {
   Send(new AutofillHostMsg_HideAutofillUI(routing_id()));
 }
 
+// TODO(isherman): Decide if we want to support autofill with AJAX.
 void AutofillAgent::didAssociateFormControls(
     const WebKit::WebVector<WebKit::WebNode>& nodes) {
-  for (size_t i = 0; i < nodes.size(); ++i) {
-    WebKit::WebNode node = nodes[i];
-    if (node.document().frame() == topmost_frame_) {
-      forms_seen_timestamp_ = base::TimeTicks::Now();
-      has_new_forms_for_browser_ = true;
-      break;
-    }
-  }
-
-  if (has_new_forms_for_browser_ && is_autocheckout_supported_)
-    MaybeSendDynamicFormsSeen();
-}
-
-void AutofillAgent::MaybeSendDynamicFormsSeen() {
-  has_new_forms_for_browser_ = false;
-  form_elements_.clear();
-  std::vector<FormData> forms;
-  // This will only be called for Autocheckout flows, so send all forms to
-  // save an IPC.
-  form_cache_.ExtractFormsAndFormElements(
-      *topmost_frame_, 0, &forms, &form_elements_);
-  autofill::FormsSeenState state = autofill::DYNAMIC_FORMS_SEEN;
-
-  if (!forms.empty()) {
-    if (click_timer_.IsRunning())
-      click_timer_.Stop();
-    Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
-                                       forms_seen_timestamp_,
-                                       state));
-  }
 }
 
 }  // namespace autofill

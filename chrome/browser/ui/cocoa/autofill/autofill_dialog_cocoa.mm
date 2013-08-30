@@ -107,9 +107,6 @@ void AutofillDialogCocoa::UpdateNotificationArea() {
   [sheet_delegate_ updateNotificationArea];
 }
 
-void AutofillDialogCocoa::UpdateAutocheckoutStepsArea() {
-}
-
 void AutofillDialogCocoa::UpdateSection(DialogSection section) {
   [sheet_delegate_ updateSection:section];
 }
@@ -145,8 +142,6 @@ const content::NavigationController* AutofillDialogCocoa::ShowSignIn() {
 void AutofillDialogCocoa::HideSignIn() {
   [sheet_delegate_ hideSignIn];
 }
-
-void AutofillDialogCocoa::UpdateProgressBar(double value) {}
 
 void AutofillDialogCocoa::ModelChanged() {
   [sheet_delegate_ modelChanged];

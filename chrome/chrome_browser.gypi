@@ -186,8 +186,6 @@
         'browser/autocomplete/zero_suggest_provider.h',
         'browser/autofill/android/personal_data_manager_android.cc',
         'browser/autofill/android/personal_data_manager_android.h',
-        'browser/autofill/autocheckout_whitelist_manager_factory.cc',
-        'browser/autofill/autocheckout_whitelist_manager_factory.h',
         'browser/autofill/autofill_cc_infobar_delegate.cc',
         'browser/autofill/autofill_cc_infobar_delegate.h',
         'browser/autofill/personal_data_manager_factory.cc',

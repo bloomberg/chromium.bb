@@ -153,10 +153,6 @@ class TestAutofillDialogView : public AutofillDialogView {
     EXPECT_GE(updates_started_, 1);
   }
 
-  virtual void UpdateAutocheckoutStepsArea() OVERRIDE {
-    EXPECT_GE(updates_started_, 1);
-  }
-
   virtual void UpdateSection(DialogSection section) OVERRIDE {
     EXPECT_GE(updates_started_, 1);
   }
@@ -181,7 +177,6 @@ class TestAutofillDialogView : public AutofillDialogView {
     return NULL;
   }
   virtual void HideSignIn() OVERRIDE {}
-  virtual void UpdateProgressBar(double value) OVERRIDE {}
 
   MOCK_METHOD0(ModelChanged, void());
   MOCK_METHOD0(UpdateForErrors, void());
@@ -274,10 +269,6 @@ class TestAutofillDialogController
 
   void SimulateSigninError() {
     OnWalletSigninError();
-  }
-
-  bool AutocheckoutIsRunning() const {
-    return AUTOCHECKOUT_IN_PROGRESS == autocheckout_state();
   }
 
   MOCK_METHOD0(LoadRiskFingerprintData, void());
@@ -510,8 +501,6 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   void FinishedCallback(const FormStructure* form_structure,
                         const std::string& google_transaction_id) {
     form_structure_ = form_structure;
-    if (controller()->GetDialogType() == DIALOG_TYPE_AUTOCHECKOUT)
-      EXPECT_TRUE(controller()->AutocheckoutIsRunning());
   }
 
 #if defined(OS_WIN)
@@ -1886,74 +1875,6 @@ TEST_F(AutofillDialogControllerTest, WalletBanners) {
       DialogNotification::WALLET_USAGE_CONFIRMATION).size());
 }
 
-TEST_F(AutofillDialogControllerTest, OnAutocheckoutError) {
-  SwitchToAutofill();
-  controller()->set_dialog_type(DIALOG_TYPE_AUTOCHECKOUT);
-
-  // We also have to simulate CC inputs to keep the controller happy.
-  FillCreditCardInputs();
-
-  controller()->OnAccept();
-  EXPECT_TRUE(ReadSetVisuallyDeemphasizedIpc());
-  controller()->OnAutocheckoutError();
-
-  EXPECT_FALSE(controller()->GetDialogButtons() & ui::DIALOG_BUTTON_CANCEL);
-  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
-  EXPECT_EQ(0U, NotificationsOfType(
-      DialogNotification::AUTOCHECKOUT_SUCCESS).size());
-  EXPECT_EQ(1U, NotificationsOfType(
-      DialogNotification::AUTOCHECKOUT_ERROR).size());
-
-  controller()->ViewClosed();
-  EXPECT_FALSE(ReadSetVisuallyDeemphasizedIpc());
-}
-
-TEST_F(AutofillDialogControllerTest, OnAutocheckoutSuccess) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kWalletServiceUseProd);
-  controller()->set_dialog_type(DIALOG_TYPE_AUTOCHECKOUT);
-
-  // Simulate first run.
-  profile()->GetPrefs()->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet,
-                                    false);
-  SetUpControllerWithFormData(DefaultFormData());
-  controller()->set_dialog_type(DIALOG_TYPE_AUTOCHECKOUT);
-
-  // Sign in a user with a completed account.
-  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
-
-  // Full account; should show "Details from Wallet" message.
-  EXPECT_EQ(1U, NotificationsOfType(
-      DialogNotification::EXPLANATORY_MESSAGE).size());
-  EXPECT_EQ(0U, NotificationsOfType(
-      DialogNotification::WALLET_USAGE_CONFIRMATION).size());
-
-  AcceptAndLoadFakeFingerprint();
-  EXPECT_TRUE(ReadSetVisuallyDeemphasizedIpc());
-  controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
-  EXPECT_TRUE(controller()->GetDialogOverlay().image.IsEmpty());
-
-  EXPECT_EQ(0U, NotificationsOfType(
-      DialogNotification::EXPLANATORY_MESSAGE).size());
-
-  controller()->OnAutocheckoutSuccess();
-  EXPECT_TRUE(controller()->GetDialogOverlay().image.IsEmpty());
-
-  EXPECT_FALSE(controller()->GetDialogButtons() & ui::DIALOG_BUTTON_CANCEL);
-  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
-  EXPECT_EQ(1U, NotificationsOfType(
-      DialogNotification::AUTOCHECKOUT_SUCCESS).size());
-  EXPECT_EQ(0U, NotificationsOfType(
-      DialogNotification::AUTOCHECKOUT_ERROR).size());
-  EXPECT_EQ(0U, NotificationsOfType(
-      DialogNotification::EXPLANATORY_MESSAGE).size());
-  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
-      ::prefs::kAutofillDialogHasPaidWithWallet));
-
-  controller()->ViewClosed();
-  EXPECT_FALSE(ReadSetVisuallyDeemphasizedIpc());
-}
-
 TEST_F(AutofillDialogControllerTest, ViewCancelDoesntSetPref) {
   ASSERT_FALSE(profile()->GetPrefs()->HasPrefPath(
       ::prefs::kAutofillDialogPayWithoutWallet));
@@ -2343,102 +2264,6 @@ TEST_F(AutofillDialogControllerTest, ChooseAnotherInstrumentOrAddress) {
       DialogNotification::REQUIRED_ACTION).size());
 }
 
-// Make sure detailed steps for Autocheckout are added
-// and updated correctly.
-TEST_F(AutofillDialogControllerTest, DetailedSteps) {
-  EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              GetFullWallet(_)).Times(1);
-
-  controller()->set_dialog_type(DIALOG_TYPE_AUTOCHECKOUT);
-
-  // Add steps as would normally be done by the AutocheckoutManager.
-  controller()->AddAutocheckoutStep(AUTOCHECKOUT_STEP_SHIPPING);
-  controller()->AddAutocheckoutStep(AUTOCHECKOUT_STEP_DELIVERY);
-  controller()->AddAutocheckoutStep(AUTOCHECKOUT_STEP_BILLING);
-
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
-  // Initiate flow - should add proxy card step since the user is using wallet
-  // data.
-  controller()->OnAccept();
-  EXPECT_TRUE(ReadSetVisuallyDeemphasizedIpc());
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
-
-  SuggestionState suggestion_state =
-      controller()->SuggestionStateForSection(SECTION_CC_BILLING);
-  EXPECT_TRUE(suggestion_state.extra_text.empty());
-
-  // There should be four steps total, with the first being the card generation
-  // step added by the dialog controller.
-  EXPECT_EQ(4U, controller()->CurrentAutocheckoutSteps().size());
-  EXPECT_EQ(AUTOCHECKOUT_STEP_PROXY_CARD,
-            controller()->CurrentAutocheckoutSteps()[0].type());
-  EXPECT_EQ(AUTOCHECKOUT_STEP_STARTED,
-            controller()->CurrentAutocheckoutSteps()[0].status());
-
-  // Simulate a wallet error. This should remove the card generation step from
-  // the flow, as we will have to proceed with local data.
-  controller()->OnWalletError(wallet::WalletClient::UNKNOWN_ERROR);
-
-  AutofillProfile shipping_profile(test::GetVerifiedProfile());
-  AutofillProfile billing_profile(test::GetVerifiedProfile2());
-  CreditCard credit_card(test::GetVerifiedCreditCard());
-  controller()->GetTestingManager()->AddTestingProfile(&shipping_profile);
-  controller()->GetTestingManager()->AddTestingProfile(&billing_profile);
-  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
-  ui::MenuModel* billing_model =
-      controller()->MenuModelForSection(SECTION_BILLING);
-  billing_model->ActivatedAt(1);
-
-  // Re-initiate flow.
-  controller()->OnAccept();
-  EXPECT_TRUE(ReadSetVisuallyDeemphasizedIpc());
-
-  // All steps should be initially unstarted.
-  EXPECT_EQ(3U, controller()->CurrentAutocheckoutSteps().size());
-  EXPECT_EQ(AUTOCHECKOUT_STEP_SHIPPING,
-            controller()->CurrentAutocheckoutSteps()[0].type());
-  EXPECT_EQ(AUTOCHECKOUT_STEP_UNSTARTED,
-            controller()->CurrentAutocheckoutSteps()[0].status());
-  EXPECT_EQ(AUTOCHECKOUT_STEP_DELIVERY,
-            controller()->CurrentAutocheckoutSteps()[1].type());
-  EXPECT_EQ(AUTOCHECKOUT_STEP_UNSTARTED,
-            controller()->CurrentAutocheckoutSteps()[1].status());
-  EXPECT_EQ(AUTOCHECKOUT_STEP_BILLING,
-            controller()->CurrentAutocheckoutSteps()[2].type());
-  EXPECT_EQ(AUTOCHECKOUT_STEP_UNSTARTED,
-            controller()->CurrentAutocheckoutSteps()[2].status());
-
-  // Update steps in the same manner that we would expect to see from the
-  // AutocheckoutManager while progressing through a flow.
-  controller()->UpdateAutocheckoutStep(AUTOCHECKOUT_STEP_SHIPPING,
-                                       AUTOCHECKOUT_STEP_STARTED);
-  controller()->UpdateAutocheckoutStep(AUTOCHECKOUT_STEP_SHIPPING,
-                                       AUTOCHECKOUT_STEP_COMPLETED);
-  controller()->UpdateAutocheckoutStep(AUTOCHECKOUT_STEP_DELIVERY,
-                                       AUTOCHECKOUT_STEP_STARTED);
-
-  // Verify that the steps were appropriately updated.
-  EXPECT_EQ(3U, controller()->CurrentAutocheckoutSteps().size());
-  EXPECT_EQ(AUTOCHECKOUT_STEP_SHIPPING,
-            controller()->CurrentAutocheckoutSteps()[0].type());
-  EXPECT_EQ(AUTOCHECKOUT_STEP_COMPLETED,
-            controller()->CurrentAutocheckoutSteps()[0].status());
-  EXPECT_EQ(AUTOCHECKOUT_STEP_DELIVERY,
-            controller()->CurrentAutocheckoutSteps()[1].type());
-  EXPECT_EQ(AUTOCHECKOUT_STEP_STARTED,
-            controller()->CurrentAutocheckoutSteps()[1].status());
-  EXPECT_EQ(AUTOCHECKOUT_STEP_BILLING,
-            controller()->CurrentAutocheckoutSteps()[2].type());
-  EXPECT_EQ(AUTOCHECKOUT_STEP_UNSTARTED,
-            controller()->CurrentAutocheckoutSteps()[2].status());
-
-  controller()->ViewClosed();
-  EXPECT_FALSE(ReadSetVisuallyDeemphasizedIpc());
-}
-
 TEST_F(AutofillDialogControllerTest, NewCardBubbleShown) {
   EXPECT_CALL(*test_generated_bubble_controller(), SetupAndShow(_, _)).Times(0);
 
@@ -2530,18 +2355,6 @@ TEST_F(AutofillDialogControllerTest, ReloadWithEmptyWalletItems) {
   EXPECT_FALSE(controller()->MenuModelForSection(SECTION_CC_BILLING));
   EXPECT_EQ(
       3, controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
-}
-
-TEST_F(AutofillDialogControllerTest, GeneratedCardBubbleNotShown) {
-  EXPECT_CALL(*test_generated_bubble_controller(), SetupAndShow(_, _)).Times(0);
-
-  SubmitWithWalletItems(CompleteAndValidWalletItems());
-  controller()->set_dialog_type(DIALOG_TYPE_AUTOCHECKOUT);
-  controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
-  controller()->OnAutocheckoutError();
-  controller()->ViewClosed();
-
-  EXPECT_EQ(0, mock_new_card_bubble_controller()->bubbles_shown());
 }
 
 }  // namespace autofill

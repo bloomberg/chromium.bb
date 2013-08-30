@@ -747,6 +747,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Autocheckout.Bubble" enum="AutocheckoutBubble">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures the frequency of user interactions with the Autocheckout bubble,
     which prompts users to invoke Autocheckout on supported websites.
@@ -754,6 +757,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Autocheckout.BuyFlow" enum="AutocheckoutBuyFlow">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures the frequency of final states reached in Autocheckout buy flow.
   </summary>
@@ -761,10 +767,16 @@ other types of suffix sets.
 
 <histogram name="Autocheckout.DismissalState"
     enum="AutofillDialogDismissalState">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>The state of the Autocheckout dialog when it was dismissed.</summary>
 </histogram>
 
 <histogram name="Autocheckout.FlowDuration" units="ms">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures the time elapsed between when the user submitted the Autocheckout
     dialog and when the Autocheckout flow, or filling process, concluded.
@@ -772,6 +784,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Autocheckout.FlowDuration.Failed" units="ms">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures the time elapsed between when the user submitted the Autocheckout
     dialog and when the Autocheckout flow concluded, in cases where the flow
@@ -780,6 +795,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Autocheckout.FlowDuration.Succeeded" units="ms">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures the time elapsed between when the user submitted the Autocheckout
     dialog and when the Autocheckout flow concluded, in cases where the flow
@@ -789,6 +807,9 @@ other types of suffix sets.
 
 <histogram name="Autocheckout.InitialUserState"
     enum="AutofillDialogInitialUserState">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     The initial state of a user that's interacting with a freshly shown
     Autocheckout dialog.
@@ -796,6 +817,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Autocheckout.PopupInDialog" enum="AutofillDialogPopupEvent">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     User interactions with the Autofill popup shown while filling an
     Autocheckout dialog.
@@ -803,6 +827,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Autocheckout.Security" enum="AutofillDialogSecurity">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures the frequency of security warnings and errors in the Autocheckout
     dialog.
@@ -810,12 +837,18 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Autocheckout.UiDuration" units="ms">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures the duration for which an Autocheckout dialog was shown.
   </summary>
 </histogram>
 
 <histogram name="Autocheckout.UiDuration.Cancel" units="ms">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures the duration for which an Autocheckout dialog was shown, in cases
     where the user ended up canceling out of the dialog.
@@ -823,6 +856,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Autocheckout.UiDuration.Submit" units="ms">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures the duration for which an Autocheckout dialog was shown, in cases
     where the user ended up accepting the dialog.
@@ -830,12 +866,18 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Autocheckout.UiEvents" enum="AutofillDialogUiEvents">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures how users are interacting with the Autocheckout dialog UI.
   </summary>
 </histogram>
 
 <histogram name="Autocheckout.UiLatencyToShow" units="ms">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures the duration of time it takes for the Autocheckout UI to be
     actionable by the user after it is shown.
@@ -843,6 +885,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Autocheckout.WalletErrors" enum="WalletErrors">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures the frequency of errors in communicating with the Google Online
     Wallet server.
@@ -851,6 +896,9 @@ other types of suffix sets.
 
 <histogram name="Autocheckout.WalletRequiredActions"
     enum="WalletRequiredActions">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures the frequency of required user actions returned by the Google
     Online Wallet server.
@@ -858,12 +906,18 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Autocheckout.WhitelistDownloadDuration" units="ms">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures time taken to download the Autocheckout whitelist file.
   </summary>
 </histogram>
 
 <histogram name="Autocheckout.WhitelistDownloadDuration.Failed" units="ms">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures time taken to download the Autocheckout whitelist file in case the
     download was failed.
@@ -871,6 +925,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Autocheckout.WhitelistDownloadDuration.Succeeded" units="ms">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <summary>
     Measures time taken to download the Autocheckout whitelist file in case the
     download was succeeded.
@@ -16984,6 +17041,9 @@ other types of suffix sets.
 </enum>
 
 <enum name="AutocheckoutBubble" type="int">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <int value="0" label="Created"/>
   <int value="1" label="Accepted"/>
   <int value="2" label="Dismissed"/>
@@ -16992,6 +17052,9 @@ other types of suffix sets.
 </enum>
 
 <enum name="AutocheckoutBuyFlow" type="int">
+  <obsolete>
+    Deprecated as of 8/2013.
+  </obsolete>
   <int value="0" label="Started"/>
   <int value="1" label="Success"/>
   <int value="2" label="Missing field mappings"/>

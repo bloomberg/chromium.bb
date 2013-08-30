@@ -185,8 +185,6 @@ std::string WalletApiMetricToString(
       return "GetWalletItems";
     case AutofillMetrics::SAVE_TO_WALLET:
       return "SaveToWallet";
-    case AutofillMetrics::SEND_STATUS:
-      return "SendStatus";
     case AutofillMetrics::UNKNOWN_API_CALL:
       NOTREACHED();
       return "UnknownApiCall";
@@ -277,7 +275,7 @@ void LogServerExperimentId(const std::string& histogram_name,
   ServerExperiment metric = UNKNOWN_EXPERIMENT;
 
   const std::string default_experiment_name =
-      FormStructure(FormData(), std::string()).server_experiment_id();
+      FormStructure(FormData()).server_experiment_id();
   if (experiment_id.empty())
     metric = NO_EXPERIMENT;
   else if (experiment_id == "ar06")
@@ -323,20 +321,6 @@ AutofillMetrics::AutofillMetrics() {
 }
 
 AutofillMetrics::~AutofillMetrics() {
-}
-
-void AutofillMetrics::LogAutocheckoutBubbleMetric(BubbleMetric metric) const {
-  DCHECK_LT(metric, NUM_BUBBLE_METRICS);
-
-  UMA_HISTOGRAM_ENUMERATION("Autocheckout.Bubble", metric, NUM_BUBBLE_METRICS);
-}
-
-void AutofillMetrics::LogAutocheckoutBuyFlowMetric(
-    AutocheckoutBuyFlowMetric metric) const {
-  DCHECK_LT(metric, NUM_AUTOCHECKOUT_BUY_FLOW_METRICS);
-
-  UMA_HISTOGRAM_ENUMERATION("Autocheckout.BuyFlow", metric,
-                            NUM_AUTOCHECKOUT_BUY_FLOW_METRICS);
 }
 
 void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) const {
@@ -429,47 +413,6 @@ void AutofillMetrics::LogWalletRequiredActionMetric(
       GetPrefixForDialogType(dialog_type) + ".WalletRequiredActions";
   LogUMAHistogramEnumeration(
       name, required_action, NUM_WALLET_REQUIRED_ACTIONS);
-}
-
-void AutofillMetrics::LogAutocheckoutDuration(
-    const base::TimeDelta& duration,
-    AutocheckoutCompletionStatus status) const {
-  std::string suffix;
-  switch (status) {
-    case AUTOCHECKOUT_CANCELLED:
-      suffix = "Cancelled";
-      break;
-
-    case AUTOCHECKOUT_FAILED:
-      suffix = "Failed";
-      break;
-
-    case AUTOCHECKOUT_SUCCEEDED:
-      suffix = "Succeeded";
-      break;
-  }
-
-  LogUMAHistogramLongTimes("Autocheckout.FlowDuration", duration);
-  LogUMAHistogramLongTimes("Autocheckout.FlowDuration." + suffix, duration);
-}
-
-void AutofillMetrics::LogAutocheckoutWhitelistDownloadDuration(
-    const base::TimeDelta& duration,
-    AutocheckoutWhitelistDownloadStatus status) const {
-  std::string suffix;
-  switch (status) {
-    case AUTOCHECKOUT_WHITELIST_DOWNLOAD_FAILED:
-      suffix = "Failed";
-      break;
-
-    case AUTOCHECKOUT_WHITELIST_DOWNLOAD_SUCCEEDED:
-      suffix = "Succeeded";
-      break;
-  }
-
-  LogUMAHistogramTimes("Autocheckout.WhitelistDownloadDuration", duration);
-  LogUMAHistogramTimes(
-      "Autocheckout.WhitelistDownloadDuration." + suffix, duration);
 }
 
 void AutofillMetrics::LogDeveloperEngagementMetric(

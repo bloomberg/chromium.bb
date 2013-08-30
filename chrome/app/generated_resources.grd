@@ -9908,12 +9908,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_AUTOFILL_DIALOG_SITE_WARNING" desc="Text that explains that user data will be sent to the site.">
         The following details will be shared with <ph name="SITE">$1<ex>www.shopping.com</ex></ph>
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_AUTOCHECKOUT_ERROR" desc="Text explaining there has been an Autocheckout error and the user must finish checking out themselves.">
-        Oops! We couldn't complete your entire checkout form. We finished as much as we could, but you'll have to take over from here.
-      </message>
-      <message name="IDS_AUTOFILL_DIALOG_AUTOCHECKOUT_SUCCESS" desc="Text explaining Autocheckout succeeded but the user must confirm the transaction.">
-        We're done! Click continue to check your details on the confirmation page. Don't forget to submit your purchase!
-      </message>
       <message name="IDS_AUTOFILL_DIALOG_VERIFY_CVV" desc="Text explaining a user must enter their CVV to continuing submitting for security purposes (while using Google Wallet).">
         For your security, please verify your card details.
       </message>
@@ -9961,56 +9955,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Google Wallet has encountered an unknown error [<ph name="ERROR_CODE">$1<ex>54</ex></ph>].
       </message>
 
-      <!-- Autofill dialog: step progress -->
-      <message name="IDS_AUTOFILL_STEP_SHIPPING_DETAILS_UNSTARTED" desc="Text describing the task of filling out shipping details in an Autocheckout flow.">
-        Shipping details
-      </message>
-      <message name="IDS_AUTOFILL_STEP_SHIPPING_DETAILS_STARTED" desc="Text describing that the task of filling out shipping details in an Autocheckout flow is in progress.">
-        Submitting shipping details
-      </message>
-      <message name="IDS_AUTOFILL_STEP_SHIPPING_DETAILS_COMPLETE" desc="Text describing that the task of filling out shipping details in an Autocheckout flow is complete.">
-        Shipping details submitted
-      </message>
-      <message name="IDS_AUTOFILL_STEP_SHIPPING_DETAILS_FAILED" desc="Text describing that the task of filling out shipping details in an Autocheckout flow has failed.">
-        Error filling shipping details
-      </message>
-      <message name="IDS_AUTOFILL_STEP_DELIVERY_DETAILS_UNSTARTED" desc="Text describing the task of filling out delivery details in an Autocheckout flow.">
-        Delivery details
-      </message>
-      <message name="IDS_AUTOFILL_STEP_DELIVERY_DETAILS_STARTED" desc="Text describing that the task of filling out delivery details in an Autocheckout flow is in progress.">
-        Submitting delivery details
-      </message>
-      <message name="IDS_AUTOFILL_STEP_DELIVERY_DETAILS_COMPLETE" desc="Text describing that the task of filling out delivery details in an Autocheckout flow is complete.">
-        Delivery details submitted
-      </message>
-      <message name="IDS_AUTOFILL_STEP_DELIVERY_DETAILS_FAILED" desc="Text describing that the task of filling out delivery details in an Autocheckout flow has failed.">
-        Error filling delivery details
-      </message>
-      <message name="IDS_AUTOFILL_STEP_BILLING_DETAILS_UNSTARTED" desc="Text describing the task of filling out billing details in an Autocheckout flow.">
-        Billing details
-      </message>
-      <message name="IDS_AUTOFILL_STEP_BILLING_DETAILS_STARTED" desc="Text describing that the task of filling out billing details in an Autocheckout flow is in progress.">
-        Submitting billing details
-      </message>
-      <message name="IDS_AUTOFILL_STEP_BILLING_DETAILS_COMPLETE" desc="Text describing that the task of filling out billing details in an Autocheckout flow is complete.">
-        Billing details submitted
-      </message>
-      <message name="IDS_AUTOFILL_STEP_BILLING_DETAILS_FAILED" desc="Text describing that the task of filling out billing details in an Autocheckout flow has failed.">
-        Error filling billing details
-      </message>
-      <message name="IDS_AUTOFILL_STEP_PROXY_CARD_UNSTARTED" desc="Text describing the task of generating a proxy card in an Autocheckout flow.">
-        Google Wallet Virtual Online Card
-      </message>
-      <message name="IDS_AUTOFILL_STEP_PROXY_CARD_STARTED" desc="Text describing that the task of generating a proxy card in an Autocheckout flow is in progress.">
-        Generating Google Wallet Virtual Online Card
-      </message>
-      <message name="IDS_AUTOFILL_STEP_PROXY_CARD_COMPLETE" desc="Text describing that the task of generating a proxy card in an Autocheckout flow is complete.">
-        Google Wallet Virtual Online Card generated
-      </message>
-      <message name="IDS_AUTOFILL_STEP_PROXY_CARD_FAILED" desc="Text describing that the task of generating a proxy card in an Autocheckout flow has failed.">
-        Error generating Google Wallet Virtual Online Card
-      </message>
-
       <!-- Autofill dialog: detail section -->
       <message name="IDS_AUTOFILL_DIALOG_EDIT" desc="Text of link in autofill dialog which allows user to edit address + payment info.">
         Edit
@@ -10030,17 +9974,11 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_AUTOFILL_DIALOG_USING_BILLING_FOR_SHIPPING" desc="Text that is shown when the billing info will also be used for shipping.">
         Same as billing address
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_CONTINUE_BUTTON" desc="Button text for confirmation of successful completion of an Autocheckout flow.">
-        Continue
-      </message>
       <message name="IDS_AUTOFILL_DIALOG_SUBMIT_BUTTON" desc="Button text for confirmation of user details.">
         Continue
       </message>
       <message name="IDS_AUTOFILL_DIALOG_VERIFY_BUTTON" desc="Button text for verifying user details.">
         Verify
-      </message>
-      <message name="IDS_AUTOFILL_DIALOG_AUTOCHECKOUT_PROGRESS_BAR" desc="Label for Autocheckout progres bar.">
-        Auto-Checkout...
       </message>
 
       <!-- Autofill dialog: combobox menu items -->
@@ -10122,20 +10060,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <message name="IDS_AUTOFILL_DIALOG_VALIDATION_MISSING_VALUE" desc="Message displayed to user when one of the required fields is left empty.">
         Field is required
-      </message>
-
-      <!-- Autocheckout bubble -->
-      <message name="IDS_AUTOCHECKOUT_BUBBLE_PROMPT_SIGNED_IN" desc="Text for prompting a Google user to start an Autocheckout flow.">
-        Fast forward through this checkout form with your Google account?
-      </message>
-      <message name="IDS_AUTOCHECKOUT_BUBBLE_PROMPT_NOT_SIGNED_IN" desc="Text for prompting a non-Google user to start an Autocheckout flow.">
-        Fast forward through this checkout form?
-      </message>
-      <message name="IDS_AUTOCHECKOUT_BUBBLE_ACCEPT" desc="Label for the button a user clicks to start an Autocheckout flow.">
-        Yes
-      </message>
-      <message name="IDS_AUTOCHECKOUT_BUBBLE_CANCEL" desc="Label for the button a user clicks to cancel an Autocheckout flow.">
-        No, Thanks
       </message>
 
       <!-- Autofill dialog post-submit bubbles -->

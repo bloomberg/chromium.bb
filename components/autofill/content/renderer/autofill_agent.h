@@ -15,7 +15,6 @@
 #include "base/timer/timer.h"
 #include "components/autofill/content/renderer/form_cache.h"
 #include "components/autofill/content/renderer/page_click_listener.h"
-#include "components/autofill/core/common/autocheckout_status.h"
 #include "components/autofill/core/common/forms_seen_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
@@ -61,10 +60,6 @@ class AutofillAgent : public content::RenderViewObserver,
   // RenderView::Observer:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void DidStartProvisionalLoad(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void DidFailProvisionalLoad(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURLError& error) OVERRIDE;
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
                                         bool is_new_navigation) OVERRIDE;
   virtual void FrameDetached(WebKit::WebFrame* frame) OVERRIDE;
@@ -109,7 +104,6 @@ class AutofillAgent : public content::RenderViewObserver,
   void OnSetNodeText(const base::string16& value);
   void OnAcceptDataListSuggestion(const base::string16& value);
   void OnAcceptPasswordAutofillSuggestion(const base::string16& value);
-  void OnGetAllForms();
 
   // Called when interactive autocomplete finishes.
   void OnRequestAutocompleteResult(
@@ -120,28 +114,9 @@ class AutofillAgent : public content::RenderViewObserver,
   void FinishAutocompleteRequest(
       WebKit::WebFormElement::AutocompleteResult result);
 
-  // Called when the Autofill server hints that this page should be filled using
-  // Autocheckout. All the relevant form fields in |form_data| will be filled
-  // and then element specified by |element_descriptor| will be clicked to
-  // proceed to the next step of the form.
-  void OnFillFormsAndClick(
-      const std::vector<FormData>& form_data,
-      const std::vector<WebElementDescriptor>& click_elements_before_form_fill,
-      const std::vector<WebElementDescriptor>& click_elements_after_form_fill,
-      const WebElementDescriptor& element_descriptor);
-
-  // Called when |topmost_frame_| is supported for Autocheckout.
-  void OnAutocheckoutSupported();
-
   // Called when the page is actually shown in the browser, as opposed to simply
   // being preloaded.
   void OnPageShown();
-
-  // Called when an Autocheckout page is completed by the renderer.
-  void CompleteAutocheckoutPage(autofill::AutocheckoutStatus status);
-
-  // Called when clicking an Autocheckout proceed element fails to do anything.
-  void ClickFailed();
 
   // Called in a posted task by textFieldDidChange() to work-around a WebKit bug
   // http://bugs.webkit.org/show_bug.cgi?id=16976
@@ -192,11 +167,6 @@ class AutofillAgent : public content::RenderViewObserver,
   // Hides any currently showing Autofill UI.
   void HideAutofillUI();
 
-  void MaybeSendDynamicFormsSeen();
-
-  // Send |AutofillHostMsg_MaybeShowAutocheckoutBubble| to browser if needed.
-  void MaybeShowAutocheckoutBubble();
-
   FormCache form_cache_;
 
   PasswordAutofillAgent* password_autofill_agent_;  // WEAK reference.
@@ -217,10 +187,6 @@ class AutofillAgent : public content::RenderViewObserver,
   // The action to take when receiving Autofill data from the AutofillManager.
   AutofillAction autofill_action_;
 
-  // Pointer to the current topmost frame.  Used in autocheckout flows so
-  // elements can be clicked.
-  WebKit::WebFrame* topmost_frame_;
-
   // Pointer to the WebView. Used to access page scale factor.
   WebKit::WebView* web_view_;
 
@@ -236,16 +202,6 @@ class AutofillAgent : public content::RenderViewObserver,
 
   // If true we just set the node text so we shouldn't show the popup.
   bool did_set_node_text_;
-
-  // Watchdog timer for clicking in Autocheckout flows.
-  base::OneShotTimer<AutofillAgent> click_timer_;
-
-  // Used to signal that we need to watch for loading failures in an
-  // Autocheckout flow.
-  bool autocheckout_click_in_progress_;
-
-  // Whether or not |topmost_frame_| is whitelisted for Autocheckout.
-  bool is_autocheckout_supported_;
 
   // Whether or not new forms/fields have been dynamically added
   // since the last loaded forms were sent to the browser process.

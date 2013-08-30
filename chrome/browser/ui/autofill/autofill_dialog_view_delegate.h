@@ -69,12 +69,6 @@ class AutofillDialogViewDelegate {
   // Returns the icon that should be shown in the account chooser.
   virtual gfx::Image AccountChooserImage() = 0;
 
-  // Whether or not the details container should be showing currently.
-  virtual bool ShouldShowDetailArea() const = 0;
-
-  // Whether or not the progress bar in the button strip should be showing.
-  virtual bool ShouldShowProgressBar() const = 0;
-
   // Returns the image that should be shown on the left of the button strip
   // or an empty image if none should be shown.
   virtual gfx::Image ButtonStripImage() const = 0;
@@ -171,11 +165,6 @@ class AutofillDialogViewDelegate {
   // Returns dialog notifications that the view should currently be showing in
   // order from top to bottom.
   virtual std::vector<DialogNotification> CurrentNotifications() = 0;
-
-  // Returns Autocheckout steps that the view should currently be showing in
-  // order from first to last.
-  virtual std::vector<DialogAutocheckoutStep> CurrentAutocheckoutSteps()
-      const = 0;
 
   // Begins or aborts the flow to sign into Wallet.
   virtual void SignInLinkClicked() = 0;

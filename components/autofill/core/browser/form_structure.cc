@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/autofill/content/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/autofill_xml_parser.h"
@@ -48,7 +47,6 @@ const char kAttributeName[] = "name";
 const char kAttributeSignature[] = "signature";
 const char kAttributeUrlprefixSignature[] = "urlprefixsignature";
 const char kAcceptedFeaturesExperiment[] = "e"; // e=experiments
-const char kAcceptedFeaturesAutocheckoutExperiment[] = "a,e"; // a=autocheckout
 const char kClientVersion[] = "6.1.1715.1442/en (GGLL)";
 const char kXMLDeclaration[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 const char kXMLElementAutofillQuery[] = "autofillquery";
@@ -324,8 +322,7 @@ std::string StripDigitsIfRequired(const base::string16& input) {
 
 }  // namespace
 
-FormStructure::FormStructure(const FormData& form,
-                             const std::string& autocheckout_url_prefix)
+FormStructure::FormStructure(const FormData& form)
     : form_name_(form.name),
       source_url_(form.origin),
       target_url_(form.action),
@@ -333,9 +330,7 @@ FormStructure::FormStructure(const FormData& form,
       active_field_count_(0),
       upload_required_(USE_UPLOAD_RATES),
       server_experiment_id_("no server response"),
-      has_author_specified_types_(false),
-      autocheckout_url_prefix_(autocheckout_url_prefix),
-      filled_by_autocheckout_(false) {
+      has_author_specified_types_(false) {
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
   for (std::vector<FormFieldData>::const_iterator field =
@@ -495,16 +490,6 @@ bool FormStructure::EncodeQueryRequest(
   autofill_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
                                kClientVersion);
 
-  // autocheckout_url_prefix tells the Autofill server where the forms in the
-  // request came from, and the the Autofill server checks internal status and
-  // decide to enable Autocheckout or not and may return Autocheckout related
-  // data in the response accordingly.
-  // There is no page/frame level object associated with FormStructure that
-  // we could extract URL prefix from. But, all the forms should come from the
-  // same frame, so they should have the same Autocheckout URL prefix. Thus we
-  // use URL prefix from the first form with Autocheckout enabled.
-  std::string autocheckout_url_prefix;
-
   // Some badly formatted web sites repeat forms - detect that and encode only
   // one form as returned data would be the same for all the repeated forms.
   std::set<std::string> processed_forms;
@@ -524,15 +509,6 @@ bool FormStructure::EncodeQueryRequest(
                                   encompassing_xml_element.get()))
       continue;  // Malformed form, skip it.
 
-    if ((*it)->IsAutocheckoutEnabled()) {
-      if (autocheckout_url_prefix.empty()) {
-        autocheckout_url_prefix = (*it)->autocheckout_url_prefix_;
-      } else {
-        // Making sure all the forms in the request has the same url_prefix.
-        DCHECK_EQ(autocheckout_url_prefix, (*it)->autocheckout_url_prefix_);
-      }
-    }
-
     autofill_request_xml.AddElement(encompassing_xml_element.release());
     encoded_signatures->push_back(signature);
   }
@@ -540,15 +516,8 @@ bool FormStructure::EncodeQueryRequest(
   if (!encoded_signatures->size())
     return false;
 
-  if (autocheckout_url_prefix.empty()) {
-    autofill_request_xml.SetAttr(buzz::QName(kAttributeAcceptedFeatures),
-                                 kAcceptedFeaturesExperiment);
-  } else {
-    autofill_request_xml.SetAttr(buzz::QName(kAttributeAcceptedFeatures),
-                                 kAcceptedFeaturesAutocheckoutExperiment);
-    autofill_request_xml.SetAttr(buzz::QName(kAttributeUrlprefixSignature),
-                                 Hash64Bit(autocheckout_url_prefix));
-  }
+  autofill_request_xml.SetAttr(buzz::QName(kAttributeAcceptedFeatures),
+                               kAcceptedFeaturesExperiment);
 
   // Obtain the XML structure as a string.
   *encoded_xml = kXMLDeclaration;
@@ -561,7 +530,6 @@ bool FormStructure::EncodeQueryRequest(
 void FormStructure::ParseQueryResponse(
     const std::string& response_xml,
     const std::vector<FormStructure*>& forms,
-    autofill::AutocheckoutPageMetaData* page_meta_data,
     const AutofillMetrics& metric_logger) {
   metric_logger.LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_RECEIVED);
 
@@ -571,8 +539,7 @@ void FormStructure::ParseQueryResponse(
   std::string experiment_id;
   AutofillQueryXmlParser parse_handler(&field_infos,
                                        &upload_required,
-                                       &experiment_id,
-                                       page_meta_data);
+                                       &experiment_id);
   buzz::XmlParser parser(&parse_handler);
   parser.Parse(response_xml.c_str(), response_xml.length(), true);
   if (!parse_handler.succeeded())
@@ -692,21 +659,12 @@ std::string FormStructure::FormSignature() const {
   return Hash64Bit(form_string);
 }
 
-bool FormStructure::IsAutocheckoutEnabled() const {
-  return !autocheckout_url_prefix_.empty();
-}
-
 bool FormStructure::ShouldSkipField(const FormFieldData& field) const {
-  return (field.is_checkable || field.form_control_type == "password") &&
-      !IsAutocheckoutEnabled();
-}
-
-size_t FormStructure::RequiredFillableFields() const {
-  return IsAutocheckoutEnabled() ? 0 : kRequiredAutofillFields;
+  return (field.is_checkable || field.form_control_type == "password");
 }
 
 bool FormStructure::IsAutofillable(bool require_method_post) const {
-  if (autofill_count() < RequiredFillableFields())
+  if (autofill_count() < kRequiredAutofillFields)
     return false;
 
   return ShouldBeParsed(require_method_post);
@@ -723,7 +681,7 @@ void FormStructure::UpdateAutofillCount() {
 }
 
 bool FormStructure::ShouldBeParsed(bool require_method_post) const {
-  if (active_field_count() < RequiredFillableFields())
+  if (active_field_count() < kRequiredAutofillFields)
     return false;
 
   // Rule out http(s)://*/search?...
@@ -732,25 +690,19 @@ bool FormStructure::ShouldBeParsed(bool require_method_post) const {
   if (target_url_.path() == "/search")
     return false;
 
-  if (!IsAutocheckoutEnabled()) {
-    // Make sure there is at least one text field when Autocheckout is
-    // not enabled.
-    bool has_text_field = false;
-    for (std::vector<AutofillField*>::const_iterator it = begin();
-         it != end() && !has_text_field; ++it) {
-      has_text_field |= (*it)->form_control_type != "select-one";
-    }
-    if (!has_text_field)
-      return false;
+  bool has_text_field = false;
+  for (std::vector<AutofillField*>::const_iterator it = begin();
+       it != end() && !has_text_field; ++it) {
+    has_text_field |= (*it)->form_control_type != "select-one";
   }
+  if (!has_text_field)
+    return false;
 
   return !require_method_post || (method_ == POST);
 }
 
 bool FormStructure::ShouldBeCrowdsourced() const {
-  // Allow all forms in Autocheckout flow to be crowdsourced.
-  return (!has_author_specified_types_ && ShouldBeParsed(true)) ||
-      IsAutocheckoutEnabled();
+  return !has_author_specified_types_ && ShouldBeParsed(true);
 }
 
 void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
@@ -782,7 +734,6 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
 
   UpdateAutofillCount();
 
-  filled_by_autocheckout_ = cached_form.filled_by_autocheckout();
   server_experiment_id_ = cached_form.server_experiment_id();
 
   // The form signature should match between query and upload requests to the
@@ -929,7 +880,7 @@ void FormStructure::LogQualityMetrics(
     }
   }
 
-  if (num_detected_field_types < RequiredFillableFields()) {
+  if (num_detected_field_types < kRequiredAutofillFields) {
     metric_logger.LogUserHappinessMetric(
         AutofillMetrics::SUBMITTED_NON_FILLABLE_FORM);
   } else {
