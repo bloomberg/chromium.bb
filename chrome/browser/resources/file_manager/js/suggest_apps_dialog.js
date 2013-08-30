@@ -23,6 +23,19 @@ var WEBVIEW_WIDTH = 400;
 var WEBVIEW_HEIGHT = 480;
 
 /**
+ * The widget of the spinner box (in pixel).
+ * @type {number}
+ * @const
+ */
+var SPINNER_WIDTH = 300;
+/**
+ * The height of the spinner box (in pixel).
+ * @type {number}
+ * @const
+ */
+var SPINNER_HEIGHT = 300;
+
+/**
  * The URL of the widget.
  * @type {string}
  * @const
@@ -76,8 +89,21 @@ function SuggestAppsDialog(parentNode) {
 
   this.frame_.id = 'suggest-app-dialog';
 
+  this.spinnerWrapper_ = this.document_.createElement('div');
+  this.spinnerWrapper_.className = 'spinner-container';
+  this.spinnerWrapper_.style.width = SPINNER_WIDTH + 'px';
+  this.spinnerWrapper_.style.height = SPINNER_HEIGHT + 'px';
+  this.spinnerWrapper_.hidden = true;
+  this.frame_.appendChild(this.spinnerWrapper_);
+
+  this.spinner_ = this.document_.createElement('div');
+  this.spinner_.className = 'spinner';
+  this.spinnerWrapper_.appendChild(this.spinner_);
+
   this.webviewContainer_ = this.document_.createElement('div');
   this.webviewContainer_.id = 'webview-container';
+  this.webviewContainer_.style.width = SPINNER_WIDTH + 'px';
+  this.webviewContainer_.style.height = SPINNER_HEIGHT + 'px';
   this.frame_.insertBefore(this.webviewContainer_, this.text_.nextSibling);
 
   this.buttons_ = this.document_.createElement('div');
@@ -93,6 +119,7 @@ function SuggestAppsDialog(parentNode) {
 
   this.initialFocusElement_ = this.webviewContainer_;
 
+  this.webview_ = null;
   this.accessToken_ = null;
   this.widgetUrl_ = CWS_WIDGET_URL;
   this.widgetOrigin_ = CWS_WIDGET_ORIGIN;
@@ -131,16 +158,34 @@ SuggestAppsDialog.prototype = {
 };
 
 /**
- * @enum {number}
+ * @enum {string}
  * @const
  */
 SuggestAppsDialog.State = {
-  UNINITIALIZED: 0,
-  INITIALIZED: 1,
-  INSTALLING: 2,
-  INSTALLED: 3,
-  INSTALL_FAILED: 4,
+  UNINITIALIZED: 'SuggestAppsDialog.State.UNINITIALIZED',
+  INITIALIZING: 'SuggestAppsDialog.State.INITIALIZING',
+  INITIALIZE_FAILED_CLOSING:
+      'SuggestAppsDialog.State.INITIALIZE_FAILED_CLOSING',
+  INITIALIZED: 'SuggestAppsDialog.State.INITIALIZED',
+  INSTALLING: 'SuggestAppsDialog.State.INSTALLING',
+  INSTALLED_CLOSING: 'SuggestAppsDialog.State.INSTALLED_CLOSING',
+  CANCELED_CLOSING: 'SuggestAppsDialog.State.CANCELED_CLOSING'
 };
+Object.freeze(SuggestAppsDialog.State);
+
+/**
+ * @enum {string}
+ * @const
+ */
+SuggestAppsDialog.Result = {
+  // Install is done. The install app should be opened.
+  INSTALL_SUCCESSFUL: 'SuggestAppsDialog.Result.INSTALL_SUCCESSFUL',
+  // User cancelled the suggest app dialog. No message should be shown.
+  USER_CANCELL: 'SuggestAppsDialog.Result.USER_CANCELL',
+  // Failed to load the widget. Error message should be shown.
+  FAILED: 'SuggestAppsDialog.Result.FAILED'
+};
+Object.freeze(SuggestAppsDialog.Result);
 
 /**
  * @override
@@ -197,8 +242,15 @@ SuggestAppsDialog.prototype.retrieveAuthorizeToken_ = function(callback) {
  *     false otherwise.
  */
 SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
+  if (this.state_ != SuggestAppsDialog.State.UNINITIALIZED) {
+    console.error('Invalid state.');
+    return;
+  }
+
   this.extension_ = extension;
   this.mimeType_ = mime;
+  this.onDialogClosed_ = onDialogClosed;
+  this.state_ = SuggestAppsDialog.State.INITIALIZING;
 
   // Makes it sure that the initialization is completed.
   this.initializationTask_.run(function() {
@@ -211,38 +263,33 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
     cr.ui.dialogs.BaseDialog.prototype.showWithTitle.apply(
         this, [title, '', function() {}, null, null]);
 
-    this.onDialogClosed_ = onDialogClosed;
-
     this.webviewContainer_.innerHTML =
         '<webview id="cws-widget" partition="persist:cwswidgets"></webview>';
-    this.webviewContainer_.style.width = WEBVIEW_WIDTH + 'px';
-    this.webviewContainer_.style.height = WEBVIEW_HEIGHT + 'px';
+    this.webviewContainer_.classList.remove('loaded');
+    this.webviewContainer_.style.width = SPINNER_WIDTH + 'px';
+    this.webviewContainer_.style.height = SPINNER_HEIGHT + 'px';
 
-    var webview = this.container_.querySelector('#cws-widget');
-    webview.style.width = WEBVIEW_WIDTH + 'px';
-    webview.style.height = WEBVIEW_HEIGHT + 'px';
-    webview.request.onBeforeSendHeaders.addListener(
+    this.webview_ = this.container_.querySelector('#cws-widget');
+    this.webview_.request.onBeforeSendHeaders.addListener(
         this.authorizeRequest_.bind(this),
         {urls: [this.widgetOrigin_ + '/*']},
         ['blocking', 'requestHeaders']);
-    webview.addEventListener('newwindow', function(event) {
-      // Discard the window object and reopen in an external window.
-      event.window.discard();
-      util.visitURL(e.targetUrl);
-      event.preventDefault();
-    });
-    webview.focus();
+
+    this.spinnerWrapper_.hidden = false;
 
     this.webviewClient_ = new CWSContainerClient(
-        webview,
+        this.webview_,
         extension, mime,
         WEBVIEW_WIDTH, WEBVIEW_HEIGHT,
         this.widgetUrl_, this.widgetOrigin_);
-    this.webviewClient_.addEventListener('install-request',
-                                         this.onInstallRequest_.bind(this));
+    this.webviewClient_.addEventListener(CWSContainerClient.Events.LOADED,
+                                         this.onWidgetLoaded_.bind(this));
+    this.webviewClient_.addEventListener(CWSContainerClient.Events.LOAD_FAILED,
+                                         this.onWidgetLoadFailed_.bind(this));
+    this.webviewClient_.addEventListener(
+        CWSContainerClient.Events.REQUEST_INSTALL,
+        this.onInstallRequest_.bind(this));
     this.webviewClient_.load();
-
-    this.state_ = SuggestAppsDialog.State.INITIALIZED;
   }.bind(this));
 };
 
@@ -255,6 +302,36 @@ SuggestAppsDialog.prototype.onWebstoreLinkClicked_ = function(e) {
   var webStoreUrl =
       FileTasks.createWebStoreLink(this.extension_, this.mimeType_);
   chrome.windows.create({url: webStoreUrl});
+  this.hide();
+};
+
+/**
+ * Called when the widget is loaded successfuly.
+ * @param {Event} event Evnet.
+ * @private
+ */
+SuggestAppsDialog.prototype.onWidgetLoaded_ = function(event) {
+  this.spinnerWrapper_.hidden = true;
+  this.webviewContainer_.classList.add('loaded');
+  this.state_ = SuggestAppsDialog.State.INITIALIZED;
+
+  this.webviewContainer_.style.width = WEBVIEW_WIDTH + 'px';
+  this.webviewContainer_.style.height = WEBVIEW_HEIGHT + 'px';
+
+  this.webview_.style.width = WEBVIEW_WIDTH + 'px';
+  this.webview_.style.height = WEBVIEW_HEIGHT + 'px';
+  this.webview_.focus();
+};
+
+/**
+ * Called when the widget is failed to load.
+ * @param {Event} event Evnet.
+ * @private
+ */
+SuggestAppsDialog.prototype.onWidgetLoadFailed_ = function(event) {
+  this.spinnerWrapper_.hidden = true;
+  this.state_ = SuggestAppsDialog.State.INITIALIZE_FAILED_CLOSING;
+
   this.hide();
 };
 
@@ -280,10 +357,10 @@ SuggestAppsDialog.prototype.onInstallRequest_ = function(e) {
  * @private
  */
 SuggestAppsDialog.prototype.onInstallCompleted_ = function(result, error) {
-  this.state_ = (result === AppInstaller.Result.SUCCESS) ?
-                SuggestAppsDialog.State.INSTALLED :
-                SuggestAppsDialog.State.INSTALL_FAILED;
   var success = (result === AppInstaller.Result.SUCCESS);
+  this.state_ = success ?
+                SuggestAppsDialog.State.INSTALLED_CLOSING :
+                SuggestAppsDialog.State.INITIALIZED;  // Back to normal state.
   this.webviewClient_.onInstallCompleted(success, this.installingItemId_);
   this.installingItemId_ = null;
 
@@ -303,13 +380,28 @@ SuggestAppsDialog.prototype.onInstallCompleted_ = function(result, error) {
 /**
  * @override
  */
-SuggestAppsDialog.prototype.hide = function() {
-  // Install is being aborted. Send the failure result.
-  if (this.state_ == SuggestAppsDialog.State.INSTALLING) {
-    if (this.webviewClient_)
-      this.webviewClient_.onInstallCompleted(false, this.installingItemId_);
-    this.state_ = SuggestAppsDialog.State.INSTALL_FAILED;
-    this.installingItemId_ = null;
+SuggestAppsDialog.prototype.hide = function(opt_originalOnHide) {
+  switch (this.state_) {
+    case SuggestAppsDialog.State.INSTALLING:
+      // Install is being aborted. Send the failure result.
+      // Cancels the install.
+      if (this.webviewClient_)
+        this.webviewClient_.onInstallCompleted(false, this.installingItemId_);
+      this.installingItemId_ = null;
+
+      // Assumes closing the dialog as canceling the install.
+      this.state_ = SuggestAppsDialog.State.CANCELED_CLOSING;
+      break;
+    case SuggestAppsDialog.State.INSTALLED_CLOSING:
+    case SuggestAppsDialog.State.INITIALIZE_FAILED_CLOSING:
+      // Do nothing.
+      break;
+    case SuggestAppsDialog.State.INITIALIZED:
+      this.state_ = SuggestAppsDialog.State.CANCELED_CLOSING;
+      break;
+    default:
+      this.state_ = SuggestAppsDialog.State.CANCELED_CLOSING;
+      console.error('Invalid state.');
   }
 
   if (this.webviewClient_) {
@@ -321,11 +413,40 @@ SuggestAppsDialog.prototype.hide = function() {
   this.extension_ = null;
   this.mime_ = null;
 
-  cr.ui.dialogs.BaseDialog.prototype.hide.call(this);
+  cr.ui.dialogs.BaseDialog.prototype.hide.call(
+      this,
+      this.onHide_.bind(this, opt_originalOnHide));
+};
 
+/**
+ * @param {function()=} opt_originalOnHide Original onHide function passed to
+ *     SuggestAppsDialog.hide().
+ * @private
+ */
+SuggestAppsDialog.prototype.onHide_ = function(opt_originalOnHide) {
   // Calls the callback after the dialog hides.
-  setTimeout(function() {
-    var installed = this.state_ == SuggestAppsDialog.State.INSTALLED;
-    this.onDialogClosed_(installed);
-  }.bind(this), 0);
+  if (opt_originalOnHide)
+    opt_originalOnHide();
+
+  this.webviewContainer_.style.width = SPINNER_WIDTH + 'px';
+  this.webviewContainer_.style.height = SPINNER_HEIGHT + 'px';
+
+  var result;
+  switch (this.state_) {
+    case SuggestAppsDialog.State.INSTALLED_CLOSING:
+      result = SuggestAppsDialog.Result.INSTALL_SUCCESSFUL;
+      break;
+    case SuggestAppsDialog.State.INITIALIZE_FAILED_CLOSING:
+      result = SuggestAppsDialog.Result.FAILED;
+      break;
+    case SuggestAppsDialog.State.CANCELED_CLOSING:
+      result = SuggestAppsDialog.Result.USER_CANCELL;
+      break;
+    default:
+      result = SuggestAppsDialog.Result.USER_CANCELL;
+      console.error('Invalid state.');
+  }
+  this.state_ = SuggestAppsDialog.State.UNINITIALIZED;
+
+  this.onDialogClosed_(result);
 };

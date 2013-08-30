@@ -1860,6 +1860,11 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 #suggest-app-dialog #webview-container {
   border-bottom: solid 2px #bbb;
   border-top: solid 2px #bbb;
+  transition: height 200ms ease;
+}
+
+#suggest-app-dialog #webview-container:not(.loaded) webview {
+  visibility: hidden;
 }
 
 #suggest-app-dialog .cr-dialog-buttons,

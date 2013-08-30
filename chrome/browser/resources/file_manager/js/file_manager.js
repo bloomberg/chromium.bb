@@ -2355,9 +2355,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
               tasks.init(urls, mimeTypes);
               tasks.executeDefault();
             }.bind(this),
-            // Failure callback.
-            function() {},
             // Cancelled callback.
+            function() {},
+            // Failure callback.
             showAlert);
         }.bind(this));
       }
@@ -2397,11 +2397,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       var mime = props[0].contentMimeType;
       this.suggestAppsDialog.show(
           extension, mime,
-          function(installed) {
-            if (installed)
-              onSuccess();
-            else
-              onCancelled();
+          function(result) {
+            switch (result) {
+              case SuggestAppsDialog.Result.INSTALL_SUCCESSFUL:
+                onSuccess();
+                break;
+              case SuggestAppsDialog.Result.FAILED:
+                onFailure();
+                break;
+              default:
+                onCancelled();
+            }
           });
     }.bind(this));
   };
