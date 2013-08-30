@@ -129,7 +129,8 @@ class PnaclHost {
   void InitForTest(base::FilePath temp_dir);
   void OnCacheInitialized(int net_error);
 
-  static base::PlatformFile DoCreateTemporaryFile(base::FilePath temp_dir_);
+  static void DoCreateTemporaryFile(base::FilePath temp_dir_,
+                                    TempFileCallback cb);
 
   // GetNexeFd common steps
   void SendCacheQueryAndTempFileRequest(const std::string& key,

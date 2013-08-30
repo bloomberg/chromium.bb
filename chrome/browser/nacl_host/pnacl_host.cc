@@ -113,40 +113,41 @@ void PnaclHost::InitForTest(base::FilePath temp_dir) {
 
 // Create a temporary file on the blocking pool
 // static
-base::PlatformFile PnaclHost::DoCreateTemporaryFile(base::FilePath temp_dir) {
+void PnaclHost::DoCreateTemporaryFile(base::FilePath temp_dir,
+                                      TempFileCallback cb) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   base::FilePath file_path;
+  base::PlatformFile file_handle(base::kInvalidPlatformFileValue);
   bool rv = temp_dir.empty()
                 ? file_util::CreateTemporaryFile(&file_path)
                 : file_util::CreateTemporaryFileInDir(temp_dir, &file_path);
   if (!rv) {
     PLOG(ERROR) << "Temp file creation failed.";
-    return base::kInvalidPlatformFileValue;
-  }
-  base::PlatformFileError error;
-  base::PlatformFile file_handle(base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_READ |
-          base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_TEMPORARY |
-          base::PLATFORM_FILE_DELETE_ON_CLOSE,
-      NULL,
-      &error));
+  } else {
+    base::PlatformFileError error;
+    file_handle = base::CreatePlatformFile(
+        file_path,
+        base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_READ |
+            base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_TEMPORARY |
+            base::PLATFORM_FILE_DELETE_ON_CLOSE,
+        NULL,
+        &error);
 
-  if (error != base::PLATFORM_FILE_OK) {
-    PLOG(ERROR) << "Temp file open failed: " << error;
-    return base::kInvalidPlatformFileValue;
+    if (error != base::PLATFORM_FILE_OK) {
+      PLOG(ERROR) << "Temp file open failed: " << error;
+      file_handle = base::kInvalidPlatformFileValue;
+    }
   }
-
-  return file_handle;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE, base::Bind(cb, file_handle));
 }
 
 void PnaclHost::CreateTemporaryFile(TempFileCallback cb) {
-  if (!base::PostTaskAndReplyWithResult(
-          BrowserThread::GetBlockingPool(),
-          FROM_HERE,
-          base::Bind(&PnaclHost::DoCreateTemporaryFile, temp_dir_),
-          cb)) {
+  if (!BrowserThread::PostBlockingPoolSequencedTask(
+           "PnaclHostCreateTempFile",
+           FROM_HERE,
+           base::Bind(&PnaclHost::DoCreateTemporaryFile, temp_dir_, cb))) {
     DCHECK(thread_checker_.CalledOnValidThread());
     cb.Run(base::kInvalidPlatformFileValue);
   }
@@ -311,13 +312,13 @@ void PnaclHost::CheckCacheQueryReady(
   }
 
   if (!base::PostTaskAndReplyWithResult(
-          BrowserThread::GetBlockingPool(),
-          FROM_HERE,
-          base::Bind(
-              &PnaclHost::CopyBufferToFile, pt->nexe_fd, pt->nexe_read_buffer),
-          base::Bind(&PnaclHost::OnBufferCopiedToTempFile,
-                     weak_factory_.GetWeakPtr(),
-                     entry->first))) {
+           BrowserThread::GetBlockingPool(),
+           FROM_HERE,
+           base::Bind(
+               &PnaclHost::CopyBufferToFile, pt->nexe_fd, pt->nexe_read_buffer),
+           base::Bind(&PnaclHost::OnBufferCopiedToTempFile,
+                      weak_factory_.GetWeakPtr(),
+                      entry->first))) {
     pt->callback.Run(base::kInvalidPlatformFileValue, false);
   }
 }
@@ -386,13 +387,13 @@ void PnaclHost::TranslationFinished(int render_process_id,
       !success || entry->second.is_incognito) {
     store_nexe = false;
   } else if (!base::PostTaskAndReplyWithResult(
-                 BrowserThread::GetBlockingPool(),
-                 FROM_HERE,
-                 base::Bind(&PnaclHost::CopyFileToBuffer,
-                            entry->second.nexe_fd),
-                 base::Bind(&PnaclHost::StoreTranslatedNexe,
-                            weak_factory_.GetWeakPtr(),
-                            id))) {
+                  BrowserThread::GetBlockingPool(),
+                  FROM_HERE,
+                  base::Bind(&PnaclHost::CopyFileToBuffer,
+                             entry->second.nexe_fd),
+                  base::Bind(&PnaclHost::StoreTranslatedNexe,
+                             weak_factory_.GetWeakPtr(),
+                             id))) {
     store_nexe = false;
   }
 

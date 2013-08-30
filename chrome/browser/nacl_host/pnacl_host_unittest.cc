@@ -195,8 +195,7 @@ TEST_F(PnaclHostTest, TranslationErrors) {
   EXPECT_EQ(0U, host_->pending_translations());
 }
 
-// crbug.com/272492; flaky on all platforms.
-TEST_F(PnaclHostTest, DISABLED_OverlappedMissesAfterTempReturn) {
+TEST_F(PnaclHostTest, OverlappedMissesAfterTempReturn) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
   GET_NEXE_FD(0, 0, false, info, false);
   FlushQueues();
@@ -216,8 +215,7 @@ TEST_F(PnaclHostTest, DISABLED_OverlappedMissesAfterTempReturn) {
   EXPECT_EQ(0U, host_->pending_translations());
 }
 
-// crbug.com/272492; flaky on all platforms.
-TEST_F(PnaclHostTest, DISABLED_OverlappedMissesBeforeTempReturn) {
+TEST_F(PnaclHostTest, OverlappedMissesBeforeTempReturn) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
   GET_NEXE_FD(0, 0, false, info, false);
   // Send the 2nd fd request before the first one returns a temp file.
@@ -268,8 +266,7 @@ TEST_F(PnaclHostTest, OverlappedHitsAfterTempReturn) {
   EXPECT_EQ(0U, host_->pending_translations());
 }
 
-// crbug.com/272492; flaky on all platforms.
-TEST_F(PnaclHostTest, DISABLED_OverlappedMissesRendererClosing) {
+TEST_F(PnaclHostTest, OverlappedMissesRendererClosing) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
   GET_NEXE_FD(0, 0, false, info, false);
   // Send the 2nd fd request from a different renderer.
@@ -307,8 +304,7 @@ TEST_F(PnaclHostTest, Incognito) {
   EXPECT_EQ(3, temp_callback_count_);
 }
 
-// crbug.com/272492; flaky on all platforms.
-TEST_F(PnaclHostTest, DISABLED_IncognitoOverlappedMiss) {
+TEST_F(PnaclHostTest, IncognitoOverlappedMiss) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
   GET_NEXE_FD(0, 0, true, info, false);
   GET_NEXE_FD(0, 1, false, info, false);
@@ -332,8 +328,7 @@ TEST_F(PnaclHostTest, DISABLED_IncognitoOverlappedMiss) {
   host_->RendererClosing(0);
 }
 
-// crbug.com/272492; flaky on all platforms.
-TEST_F(PnaclHostTest, DISABLED_IncognitoSecondOverlappedMiss) {
+TEST_F(PnaclHostTest, IncognitoSecondOverlappedMiss) {
   // If the non-incognito request comes first, it should
   // behave exactly like OverlappedMissBeforeTempReturn
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
