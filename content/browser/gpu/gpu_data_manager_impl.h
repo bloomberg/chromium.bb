@@ -177,6 +177,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Called when GPU process initialization failed.
   void OnGpuProcessInitFailure();
 
+  bool IsDriverBugWorkaroundActive(int feature) const;
+
  private:
   friend class GpuDataManagerImplPrivate;
   friend class GpuDataManagerImplPrivateTest;

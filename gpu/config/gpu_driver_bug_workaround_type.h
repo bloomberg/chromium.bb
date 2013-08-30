@@ -64,6 +64,8 @@
          swizzle_rgba_for_async_readpixels)                  \
   GPU_OP(DISABLE_ANGLE_INSTANCED_ARRAYS,                     \
          disable_angle_instanced_arrays)                     \
+  GPU_OP(DISABLE_MULTIMONITOR_MULTISAMPLING,                 \
+         disable_multimonitor_multisampling)                 \
 
 namespace gpu {
 

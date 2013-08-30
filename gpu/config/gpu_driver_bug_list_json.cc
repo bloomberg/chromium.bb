@@ -85,7 +85,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.7",
+  "version": "2.8",
   "entries": [
     {
       "id": 1,
@@ -450,6 +450,17 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "disable_async_readpixels"
+      ]
+    },
+    {
+      "id": 30,
+      "cr_bugs": [237931],
+      "description": "Multisampling is buggy on OSX when multiple monitors are connected",
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "disable_multimonitor_multisampling"
       ]
     }
   ]

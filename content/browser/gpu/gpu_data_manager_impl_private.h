@@ -28,6 +28,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
       const std::string& gpu_blacklist_json,
       const gpu::GPUInfo& gpu_info);
   bool IsFeatureBlacklisted(int feature) const;
+  bool IsDriverBugWorkaroundActive(int feature) const;
   gpu::GPUInfo GetGPUInfo() const;
   void GetGpuProcessHandles(
       const GpuDataManager::GetGpuProcessHandlesCallback& callback) const;

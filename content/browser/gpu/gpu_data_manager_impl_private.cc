@@ -230,7 +230,7 @@ std::string IntSetToString(const std::set<int>& list) {
 void DisplayReconfigCallback(CGDirectDisplayID display,
                              CGDisplayChangeSummaryFlags flags,
                              void* gpu_data_manager) {
-  if(flags == kCGDisplayBeginConfigurationFlag)
+  if (flags == kCGDisplayBeginConfigurationFlag)
     return; // This call contains no information about the display change
 
   GpuDataManagerImpl* manager =
@@ -378,6 +378,10 @@ bool GpuDataManagerImplPrivate::IsFeatureBlacklisted(int feature) const {
   }
 
   return (blacklisted_features_.count(feature) == 1);
+}
+
+bool GpuDataManagerImplPrivate::IsDriverBugWorkaroundActive(int feature) const {
+  return (gpu_driver_bugs_.count(feature) == 1);
 }
 
 size_t GpuDataManagerImplPrivate::GetBlacklistedFeatureCount() const {
@@ -821,8 +825,9 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
     prefs->flash_stage3d_baseline_enabled = false;
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS))
     prefs->accelerated_2d_canvas_enabled = false;
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_MULTISAMPLING)
-      || display_count_ > 1)
+  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_MULTISAMPLING) ||
+      (IsDriverBugWorkaroundActive(gpu::DISABLE_MULTIMONITOR_MULTISAMPLING) &&
+          display_count_ > 1))
     prefs->gl_multisampling_enabled = false;
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_3D_CSS)) {
     prefs->accelerated_compositing_for_3d_transforms_enabled = false;
