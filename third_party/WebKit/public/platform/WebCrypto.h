@@ -97,6 +97,7 @@ public:
     virtual void digest(const WebCryptoAlgorithm&, const unsigned char* data, size_t data_size, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void generateKey(const WebCryptoAlgorithm&, bool extractable, WebCryptoKeyUsageMask, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void importKey(WebCryptoKeyFormat, const unsigned char* keyData, size_t keyDataSize, const WebCryptoAlgorithm&, bool extractable, WebCryptoKeyUsageMask, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void exportKey(WebCryptoKeyFormat, const WebCryptoKey&, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
 
 protected:
     virtual ~WebCrypto() { }

@@ -47,6 +47,7 @@ public:
     virtual void digest(const WebKit::WebCryptoAlgorithm&, const unsigned char*, size_t, WebKit::WebCryptoResult) OVERRIDE;
     virtual void generateKey(const WebKit::WebCryptoAlgorithm&, bool extractable, WebKit::WebCryptoKeyUsageMask, WebKit::WebCryptoResult) OVERRIDE;
     virtual void importKey(WebKit::WebCryptoKeyFormat, const unsigned char* keyData, size_t keyDataSize, const WebKit::WebCryptoAlgorithm&, bool extractable, WebKit::WebCryptoKeyUsageMask, WebKit::WebCryptoResult) OVERRIDE;
+    virtual void exportKey(WebKit::WebCryptoKeyFormat, const WebKit::WebCryptoKey&, WebKit::WebCryptoResult) OVERRIDE;
 };
 
 } // namespace WebTestRunner

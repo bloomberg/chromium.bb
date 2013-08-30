@@ -42,5 +42,6 @@ typedef any PromiseValue;
 
     [RaisesException] PromiseValue generateKey(Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
     [RaisesException] PromiseValue importKey(DOMString format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
+    [RaisesException] PromiseValue exportKey(DOMString format, Key key);
 };
 

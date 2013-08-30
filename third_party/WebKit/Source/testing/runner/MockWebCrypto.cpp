@@ -125,4 +125,17 @@ void MockWebCrypto::importKey(WebKit::WebCryptoKeyFormat, const unsigned char* k
     result.completeWithKey(WebKit::WebCryptoKey::create(0, type, extractable, algorithm, usages));
 }
 
+void MockWebCrypto::exportKey(WebKit::WebCryptoKeyFormat format, const WebKit::WebCryptoKey& key, WebKit::WebCryptoResult result)
+{
+    std::string buffer;
+
+    if (format == WebKit::WebCryptoKeyFormatRaw)
+        buffer = "raw";
+    else if (format == WebKit::WebCryptoKeyFormatPkcs8)
+        buffer = "pkcs8";
+
+    result.completeWithBuffer(buffer.data(), buffer.size());
+}
+
+
 } // namespace WebTestRunner

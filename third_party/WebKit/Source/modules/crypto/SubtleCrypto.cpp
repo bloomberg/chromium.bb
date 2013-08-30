@@ -176,4 +176,25 @@ ScriptObject SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* k
     return result->promise();
 }
 
+ScriptObject SubtleCrypto::exportKey(const String& rawFormat, Key* key, ExceptionState& es)
+{
+    WebKit::WebCryptoKeyFormat format;
+    if (!Key::parseFormat(rawFormat, format, es))
+        return ScriptObject();
+
+    if (!key) {
+        es.throwTypeError("Invalid key argument");
+        return ScriptObject();
+    }
+
+    if (!key->extractable()) {
+        es.throwDOMException(NotSupportedError, "key is not extractable");
+        return ScriptObject();
+    }
+
+    RefPtr<CryptoResult> result = CryptoResult::create();
+    WebKit::Platform::current()->crypto()->exportKey(format, key->key(), result->result());
+    return result->promise();
+}
+
 } // namespace WebCore

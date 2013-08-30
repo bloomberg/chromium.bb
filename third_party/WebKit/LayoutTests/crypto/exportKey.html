@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../fast/js/resources/js-test-pre.js"></script>
+<script src="resources/common.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+description("Tests cypto.subtle.exportKey.");
+
+jsTestIsAsync = true;
+
+importTestKeys().then(function(result) {
+    keys = result;
+
+    // Invalid export formats.
+    shouldThrow("crypto.subtle.exportKey(3, keys.aesCbcJustDecrypt)");
+    shouldThrow("crypto.subtle.exportKey(null, keys.aesCbcJustDecrypt)");
+    shouldThrow("crypto.subtle.exportKey('invalid', keys.aesCbcJustDecrypt)");
+
+    // Invalid keys
+    shouldThrow("crypto.subtle.exportKey('raw', null)");
+    shouldThrow("crypto.subtle.exportKey('raw', 3)");
+
+    shouldBe("keys.aesCbcJustDecrypt.extractable", "false")
+    shouldThrow("crypto.subtle.exportKey('raw', keys.aesCbcJustDecrypt)");
+
+    return crypto.subtle.exportKey('raw', keys.hmacSha1);
+}).then(function(result) {
+    keyData = result;
+    shouldBe("keyData.byteLength", "3");
+
+    return crypto.subtle.exportKey('pkcs8', keys.hmacSha1);
+}).then(function(result) {
+    keyData = result;
+    shouldBe("keyData.byteLength", "5");
+}).then(finishJSTest, failAndFinishJSTest);
+
+</script>
+
+<script src="../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>

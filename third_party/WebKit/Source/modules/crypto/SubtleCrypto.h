@@ -56,6 +56,7 @@ public:
 
     ScriptObject generateKey(const Dictionary&, bool extractable, const Vector<String>& keyUsages, ExceptionState&);
     ScriptObject importKey(const String&, ArrayBufferView*, const Dictionary&, bool extractable, const Vector<String>& keyUsages, ExceptionState&);
+    ScriptObject exportKey(const String&, Key*, ExceptionState&);
 
 private:
     SubtleCrypto();
