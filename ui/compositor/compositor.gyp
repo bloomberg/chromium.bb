@@ -123,7 +123,6 @@
         'test/test_layer_animation_observer.h',
         'test/test_utils.cc',
         'test/test_utils.h',
-        'transform_animation_curve_adapter_unittest.cc',
       ],
       'conditions': [
         # osmesa GL implementation is used on linux.

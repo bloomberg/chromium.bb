@@ -10,21 +10,12 @@
 
 namespace ui {
 
-//TODO(avallee): Make this into a predicate and add some matrix pretty printing.
 void CheckApproximatelyEqual(const gfx::Transform& lhs,
                              const gfx::Transform& rhs) {
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 4; ++j) {
-      EXPECT_FLOAT_EQ(lhs.matrix().get(i, j), rhs.matrix().get(i, j))
-        << "(i, j) = (" << i << ", " << j <<")";
+      EXPECT_FLOAT_EQ(lhs.matrix().get(i, j), rhs.matrix().get(i, j));
     }
-  }
-
-  if (::testing::Test::HasFailure()) {
-    ADD_FAILURE() << "Expected matrix:\n"
-                  << lhs.ToString() << "\n"
-                  << "Actual matrix:\n"
-                  << rhs.ToString();
   }
 }
 
