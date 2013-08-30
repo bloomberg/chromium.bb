@@ -18,6 +18,29 @@ bool FindAndUpdateProperty(const InputMethodProperty& new_prop,
                                                              prop_list);
 }
 
+// A mock class for testing AddObserver() and RemoveObserver() methods
+// in IBusControllerImpl.
+class TestIBusController : public IBusControllerImpl {
+ public:
+  TestIBusController() {
+  }
+
+  virtual ~TestIBusController() {
+  }
+
+  bool HasObservers() const {
+    return observers_.might_have_observers();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestIBusController);
+};
+
+class TestObserver : public IBusController::Observer {
+ public:
+  // IBusController::Observer overrides:
+  virtual void PropertyChanged() OVERRIDE {}
+};
 }  // namespace
 
 TEST(IBusControllerImplTest, TestFindAndUpdateProperty) {
@@ -47,6 +70,39 @@ TEST(IBusControllerImplTest, TestFindAndUpdateProperty) {
       InputMethodProperty("key2", "labelZ", false, false), &properties));
   EXPECT_EQ(InputMethodProperty("key2", "labelZ", false, false),
             properties[1]);
+}
+
+TEST(IBusControllerImplTest, TestAddRemoveObserver) {
+  IBusBridge::Initialize();
+  {
+    TestIBusController controller;
+    TestObserver observer1;
+    TestObserver observer2;
+    TestObserver observer3;
+    EXPECT_FALSE(controller.HasObservers());
+    controller.AddObserver(&observer1);
+    EXPECT_TRUE(controller.HasObservers());
+    controller.AddObserver(&observer2);
+    EXPECT_TRUE(controller.HasObservers());
+    controller.RemoveObserver(&observer3);  // nop
+    EXPECT_TRUE(controller.HasObservers());
+    controller.RemoveObserver(&observer1);
+    EXPECT_TRUE(controller.HasObservers());
+    controller.RemoveObserver(&observer1);  // nop
+    EXPECT_TRUE(controller.HasObservers());
+    controller.RemoveObserver(&observer2);
+    EXPECT_FALSE(controller.HasObservers());
+  }
+  IBusBridge::Shutdown();
+}
+
+TEST(IBusControllerImplTest, TestGetCurrentProperties) {
+  IBusBridge::Initialize();
+  {
+    IBusControllerImpl controller;
+    EXPECT_EQ(0U, controller.GetCurrentProperties().size());
+  }
+  IBusBridge::Shutdown();
 }
 
 }  // namespace input_method

@@ -8,8 +8,10 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/chromeos/input_method/ibus_controller_base.h"
+#include "base/observer_list.h"
+#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chromeos/ime/ibus_bridge.h"
+#include "chromeos/ime/input_method_property.h"
 
 namespace chromeos {
 namespace input_method {
@@ -18,9 +20,7 @@ struct InputMethodProperty;
 typedef std::vector<InputMethodProperty> InputMethodPropertyList;
 
 // The IBusController implementation.
-// TODO(nona): Merge to IBusControllerBase, there is no longer reason to split
-//             this class into Impl and Base.
-class IBusControllerImpl : public IBusControllerBase,
+class IBusControllerImpl : public IBusController,
                            public IBusPanelPropertyHandlerInterface {
  public:
   IBusControllerImpl();
@@ -29,11 +29,25 @@ class IBusControllerImpl : public IBusControllerBase,
   // IBusController overrides:
   virtual bool ActivateInputMethodProperty(const std::string& key) OVERRIDE;
 
+  // IBusController overrides. Derived classes should not override these 4
+  // functions.
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+  virtual const InputMethodPropertyList& GetCurrentProperties() const OVERRIDE;
+  virtual void ClearProperties() OVERRIDE;
+
   // Calls <anonymous_namespace>::FindAndUpdateProperty. This method is just for
   // unit testing.
   static bool FindAndUpdatePropertyForTesting(
       const InputMethodProperty& new_prop,
       InputMethodPropertyList* prop_list);
+
+ protected:
+  ObserverList<Observer> observers_;
+
+  // The value which will be returned by GetCurrentProperties(). Derived classes
+  // should update this variable when needed.
+  InputMethodPropertyList current_property_list_;
 
  private:
   // IBusPanelPropertyHandlerInterface overrides:

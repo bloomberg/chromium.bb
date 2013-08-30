@@ -391,8 +391,6 @@
         'browser/chromeos/input_method/hidable_area.h',
         'browser/chromeos/input_method/ibus_controller.cc',
         'browser/chromeos/input_method/ibus_controller.h',
-        'browser/chromeos/input_method/ibus_controller_base.cc',
-        'browser/chromeos/input_method/ibus_controller_base.h',
         'browser/chromeos/input_method/ibus_controller_impl.cc',
         'browser/chromeos/input_method/ibus_controller_impl.h',
         'browser/chromeos/input_method/infolist_window_view.cc',

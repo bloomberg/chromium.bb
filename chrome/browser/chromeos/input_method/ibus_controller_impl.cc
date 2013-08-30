@@ -212,6 +212,23 @@ bool IBusControllerImpl::ActivateInputMethodProperty(const std::string& key) {
   return true;
 }
 
+void IBusControllerImpl::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void IBusControllerImpl::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+const InputMethodPropertyList&
+IBusControllerImpl::GetCurrentProperties() const {
+  return current_property_list_;
+}
+
+void IBusControllerImpl::ClearProperties() {
+  current_property_list_.clear();
+}
+
 void IBusControllerImpl::RegisterProperties(
     const IBusPropertyList& ibus_prop_list) {
   current_property_list_.clear();
