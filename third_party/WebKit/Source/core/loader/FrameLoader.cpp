@@ -1484,7 +1484,7 @@ void FrameLoader::requestFromDelegate(ResourceRequest& request, unsigned long& i
     ASSERT(!request.isNull());
 
     identifier = 0;
-    if (Page* page = m_frame->page())
+    if (m_frame->page())
         identifier = createUniqueIdentifier();
 
     ResourceRequest newRequest(request);
