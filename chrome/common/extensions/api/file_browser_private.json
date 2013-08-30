@@ -322,6 +322,33 @@
         }
       },
       {
+        "id": "CopyProgressStatus",
+        "type": "object",
+        "description": "Payload data for copy status progress updates.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["begin_entry_copy", "end_entry_copy", "progress", "success", "error"],
+            "description": "The type of the progress event. \"begin_entry_copy\" is fired for each entry (file or directory) before starting the copy operation, \"end_entry_copy\" is fired for each entry (file or directory) after ending the copy operation. \"progress\" is fired periodically to report progress of a file copy (not directory). \"success\" is fired after all entries are copied. \"error\" is fired when an error occurs."
+          },
+          "url": {
+            "type": "string",
+            "optional": true,
+            "description": "URL for the entry currently being copied. This field is particularly useful when a directory copy is initiated with startCopy(). The field tells what file/directory in that directory is now being copied."
+          },
+          "size": {
+            "type": "number",
+            "optional": true,
+            "description": "Number of processed bytes for the file currently being copied. Available only for \"progress\" event. To show the progress bar, a caller needs to pre-compute the size of files being copied for the file (not directory)."
+          },
+          "error": {
+            "type": "integer",
+            "optional": true,
+            "description": "FileError's code of the error. Available only for ERROR event."
+          }
+        }
+      },
+      {
         "id": "FileTransferCancelStatus",
         "type": "object",
         "description": "Payload data for file transfer cancel response.",
@@ -794,6 +821,57 @@
         ]
       },
       {
+        "name": "startCopy",
+        "description": "Starts to copy an entry. If the source is a directory, the copy is done recursively.",
+        "parameters": [
+          {
+            "name": "sourceUrl",
+            "type": "string",
+            "description": "URL of the source entry to be copied."
+          },
+          {
+            "name": "parent",
+            "type": "string",
+            "description": "URL of the destination directory."
+          },
+          {
+            "name": "newName",
+            "type": "string",
+            "description": "Name of the new entry. It shouldn't contain '/'."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Completion callback.",
+            "parameters": [
+              {
+                "name": "copyId",
+                "type": "integer",
+                "description": "ID of the copy task. Can be used to identify the progress, and to cancel the task."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "cancelCopy",
+        "description": "Cancels the running copy task.",
+        "parameters": [
+          {
+            "name": "copyId",
+            "type": "integer",
+            "description": "ID of the copy task to be cancelled."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "description": "Completion callback of the cancel.",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "setLastModified",
         "description": "Updates last modified to specified time in seconds",
         "parameters": [
@@ -1174,6 +1252,50 @@
             "items": {"$ref": "FileTransferStatus"},
             "name": "event",
             "description": "List of ongoing file statuses for ongoing transfer operations."
+          }
+        ]
+      },
+      // Here is an example of onCopyProgress:
+      // Suppose a/b/c.txt (100bytes) and a/b/d.txt (200bytes), and trying to
+      // copy a to x recursively. The events will be:
+      //
+      // begin_entry_copy a
+      // <create empty directory x/a>
+      // end_entry_copy a
+      //
+      // begin_entry_copy a/b
+      // <create empty directory x/a/b>
+      // end_entry_copy a/b
+      //
+      // begin_entry_copy a/b/c.txt
+      // progress a/b/c.txt 0
+      // progress a/b/c.txt 10
+      //     :
+      // progress a/b/c.txt 100
+      // end_entry_copy a/b/c.txt
+      //
+      // begin_entry_copy a/b/d.txt
+      // progress a/b/d.txt 0
+      // progress a/b/d.txt 10
+      //     :
+      // progress a/b/d.txt 200
+      // end_entry_copy a/b/d.txt
+      //
+      // success x/a
+      {
+        "name": "onCopyProgress",
+        "type": "function",
+        "description": "Periodically fired during a copy task to report its progress update.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "copyId",
+            "description": "Id of the copy task of this progress update."
+          },
+          {
+            "$ref": "CopyProgressStatus",
+            "name": "status",
+            "description": "Progress update status."
           }
         ]
       },
