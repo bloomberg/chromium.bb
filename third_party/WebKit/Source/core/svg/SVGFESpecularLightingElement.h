@@ -22,6 +22,7 @@
 #ifndef SVGFESpecularLightingElement_h
 #define SVGFESpecularLightingElement_h
 
+#include "SVGNames.h"
 #include "core/platform/graphics/filters/FESpecularLighting.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGFELightElement.h"
@@ -55,6 +56,12 @@ private:
         DECLARE_ANIMATED_NUMBER(KernelUnitLengthY, kernelUnitLengthY)
     END_DECLARE_ANIMATED_PROPERTIES
 };
+
+inline SVGFESpecularLightingElement* toSVGFESpecularLightingElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::feSpecularLightingTag));
+    return static_cast<SVGFESpecularLightingElement*>(node);
+}
 
 } // namespace WebCore
 

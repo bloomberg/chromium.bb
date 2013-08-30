@@ -194,8 +194,7 @@ void SVGFELightElement::svgAttributeChanged(const QualifiedName& attrName)
             diffuseLighting->lightElementAttributeChanged(this, attrName);
             return;
         } else if (parent->hasTagName(SVGNames::feSpecularLightingTag)) {
-            SVGFESpecularLightingElement* specularLighting = static_cast<SVGFESpecularLightingElement*>(parent);
-            specularLighting->lightElementAttributeChanged(this, attrName);
+            toSVGFESpecularLightingElement(parent)->lightElementAttributeChanged(this, attrName);
             return;
         }
     }
