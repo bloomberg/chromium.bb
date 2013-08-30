@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -494,6 +495,16 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DISABLED_WebWorkerJSHeapMemory) {
   ASSERT_TRUE(model()->GetV8MemoryUsed(resource_index, &result));
   LOG(INFO) << "Got V8 Used Heap Size " << result << " bytes";
   EXPECT_GE(result, minimal_heap_size);
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeInTabDevToolsWindow) {
+  DevToolsWindow* dev_tools = DevToolsWindow::ToggleDevToolsWindow(
+      model()->GetResourceWebContents(1)->GetRenderViewHost(),
+      true,
+      DEVTOOLS_TOGGLE_ACTION_INSPECT);
+  // Dock side bottom should be the default.
+  ASSERT_EQ(DEVTOOLS_DOCK_SIDE_BOTTOM, dev_tools->dock_side());
+  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
 }
 
 #endif

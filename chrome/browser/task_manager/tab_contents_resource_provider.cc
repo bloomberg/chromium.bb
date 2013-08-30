@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -148,6 +149,7 @@ string16 TabContentsResource::GetProfileName() const {
 gfx::ImageSkia TabContentsResource::GetIcon() const {
   if (IsContentsPrerendering(web_contents_))
     return *prerender_icon_;
+  FaviconTabHelper::CreateForWebContents(web_contents_);
   return FaviconTabHelper::FromWebContents(web_contents_)->
       GetFavicon().AsImageSkia();
 }
@@ -291,7 +293,8 @@ void TabContentsResourceProvider::Add(WebContents* web_contents) {
   if (!chrome::FindBrowserWithWebContents(web_contents) &&
       !IsContentsPrerendering(web_contents) &&
       !chrome::IsPreloadedInstantExtendedNTP(web_contents) &&
-      !IsContentsBackgroundPrinted(web_contents)) {
+      !IsContentsBackgroundPrinted(web_contents) &&
+      !DevToolsWindow::IsDevToolsWindow(web_contents->GetRenderViewHost())) {
     return;
   }
 
