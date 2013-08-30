@@ -1176,8 +1176,6 @@ crbug.com/251149 [ Debug ] media/media-constants.html [ Pass Crash ]
 
 crbug.com/252038 editing/selection/fake-doubleclick.html [ Pass Failure ]
 
-crbug.com/252865 [ Debug ] http/tests/media/media-source/mediasource-seek-during-pending-seek.html [ Failure Pass ]
-
 crbug.com/252573 [ Mac Win ] fast/forms/empty-textarea-toggle-disabled.html [ Pass Timeout ]
 
 # Causes the test following it ( fast/loader/subresource-willSendRequest-null.html ) to Timeout.
