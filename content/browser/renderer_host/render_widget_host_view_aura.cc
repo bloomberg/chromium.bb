@@ -4,8 +4,9 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 
+#include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
@@ -1815,7 +1816,7 @@ void RenderWidgetHostViewAura::PrepareTextureCopyOutputResult(
   if (!texture_mailbox->IsTexture())
     return;
 
-  scoped_callback_runner.Release();
+  ignore_result(scoped_callback_runner.Release());
 
   gl_helper->CropScaleReadbackAndCleanMailbox(
       texture_mailbox->name(),
@@ -1848,7 +1849,7 @@ void RenderWidgetHostViewAura::PrepareBitmapCopyOutputResult(
   if (!source)
     return;
 
-  scoped_callback_runner.Release();
+  ignore_result(scoped_callback_runner.Release());
 
   SkBitmap bitmap = skia::ImageOperations::Resize(
       *source,
@@ -1925,7 +1926,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResultForVideo(
           region_in_frame,
           video_frame.get());
     }
-    scoped_callback_runner.Release();
+    ignore_result(scoped_callback_runner.Release());
     callback.Run(true);
     return;
   }
@@ -1975,7 +1976,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResultForVideo(
     yuv_readback_pipeline = rwhva->yuv_readback_pipeline_.get();
   }
 
-  scoped_callback_runner.Release();
+  ignore_result(scoped_callback_runner.Release());
   base::Callback<void(bool result)> finished_callback = base::Bind(
       &CopyFromCompositingSurfaceFinishedForVideo,
       callback,

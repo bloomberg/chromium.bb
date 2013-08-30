@@ -56,8 +56,8 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback_forward.h"
+#include "base/callback_helpers.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -693,7 +693,7 @@ void RenderVideoFrame(const SkBitmap& input,
   }
 
   // The result is now ready.
-  failure_handler.Release();
+  ignore_result(failure_handler.Release());
   done_cb.Run(true);
 }
 

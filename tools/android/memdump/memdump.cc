@@ -19,7 +19,7 @@
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/hash_tables.h"
 #include "base/file_util.h"
 #include "base/logging.h"

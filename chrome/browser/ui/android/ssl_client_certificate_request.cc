@@ -7,6 +7,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
@@ -115,7 +116,7 @@ void StartClientCertificateRequest(
     return;
   }
 
-  guard.Release();
+  ignore_result(guard.Release());
 
   // Ownership was transferred to Java.
   chrome::SelectCertificateCallback* ALLOW_UNUSED dummy =
@@ -187,7 +188,7 @@ static void OnSystemRequestCompletion(
     return;
   }
 
-  guard.Release();
+  ignore_result(guard.Release());
 
   // RecordClientCertificateKey() must be called on the I/O thread,
   // before the callback is called with the selected certificate on

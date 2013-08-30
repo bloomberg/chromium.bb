@@ -14,7 +14,9 @@
 #ifndef BASE_CALLBACK_HELPERS_H_
 #define BASE_CALLBACK_HELPERS_H_
 
+#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 
 namespace base {
 
@@ -24,6 +26,24 @@ base::Callback<Sig> ResetAndReturn(base::Callback<Sig>* cb) {
   cb->Reset();
   return ret;
 }
+
+// ScopedClosureRunner is akin to scoped_ptr for Closures. It ensures that the
+// Closure is executed and deleted no matter how the current scope exits.
+class BASE_EXPORT ScopedClosureRunner {
+ public:
+  ScopedClosureRunner();
+  explicit ScopedClosureRunner(const Closure& closure);
+  ~ScopedClosureRunner();
+
+  void Reset();
+  void Reset(const Closure& closure);
+  Closure Release() WARN_UNUSED_RESULT;
+
+ private:
+  Closure closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedClosureRunner);
+};
 
 }  // namespace base
 

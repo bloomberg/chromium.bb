@@ -6,8 +6,9 @@
 
 #include <android/bitmap.h>
 
+#include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -420,9 +421,9 @@ void RenderWidgetHostViewAndroid::OnTextInputStateChanged(
   // If an acknowledgement is required for this event, regardless of how we exit
   // from this method, we must acknowledge that we processed the input state
   // change.
-  base::ScopedClosureRunner ack_caller(base::Bind(&SendImeEventAck, host_));
-  if (!params.require_ack)
-    ack_caller.Release();
+  base::ScopedClosureRunner ack_caller;
+  if (params.require_ack)
+    ack_caller.Reset(base::Bind(&SendImeEventAck, host_));
 
   if (!IsShowing())
     return;
@@ -1228,7 +1229,7 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
   if (!texture_mailbox->IsTexture())
     return;
 
-  scoped_callback_runner.Release();
+  ignore_result(scoped_callback_runner.Release());
 
   gl_helper->CropScaleReadbackAndCleanMailbox(
       texture_mailbox->name(),
@@ -1264,7 +1265,7 @@ void RenderWidgetHostViewAndroid::PrepareBitmapCopyOutputResult(
   DCHECK_EQ(source->width(), dst_size_in_pixel.width());
   DCHECK_EQ(source->height(), dst_size_in_pixel.height());
 
-  scoped_callback_runner.Release();
+  ignore_result(scoped_callback_runner.Release());
   callback.Run(true, *source);
 }
 

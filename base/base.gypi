@@ -104,6 +104,7 @@
           'build_time.cc',
           'build_time.h',
           'callback.h',
+          'callback_helpers.cc',
           'callback_helpers.h',
           'callback_internal.cc',
           'callback_internal.h',

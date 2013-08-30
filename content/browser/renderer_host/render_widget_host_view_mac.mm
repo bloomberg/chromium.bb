@@ -7,8 +7,9 @@
 #import <objc/runtime.h>
 #include <QuartzCore/QuartzCore.h>
 
+#include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/trace_event.h"
@@ -1161,7 +1162,7 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
   gfx::Size dst_pixel_size = gfx::ToFlooredSize(
       gfx::ScaleSize(dst_size, scale));
 
-  scoped_callback_runner.Release();
+  ignore_result(scoped_callback_runner.Release());
 
   compositing_iosurface_->CopyTo(GetScaledOpenGLPixelRect(src_subrect),
                                  dst_pixel_size,
@@ -1192,7 +1193,7 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurfaceToVideoFrame(
   if (src_subrect.IsEmpty())
     return;
 
-  scoped_callback_runner.Release();
+  ignore_result(scoped_callback_runner.Release());
   compositing_iosurface_->CopyToVideoFrame(
       GetScaledOpenGLPixelRect(src_subrect),
       target,
