@@ -562,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithInvalidEmail) {
 // Test profile is saved if phone number is valid in selected country.
 // The data file contains two profiles with valid phone numbers and two
 // profiles with invalid phone numbers from their respective country.
-// DISABLED: http://crbug.com/150084
+// DISABLED: http://crbug.com/281582
 IN_PROC_BROWSER_TEST_F(AutofillTest,
                        DISABLED_ProfileSavedWithValidCountryPhone) {
   ASSERT_TRUE(test_server()->Start());
@@ -695,7 +695,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileWithEmailInOtherFieldNotSaved) {
 // 'Address Line 1' and 'City' data match. When two profiles are merged, any
 // remaining address fields are expected to be overwritten. Any non-address
 // fields should accumulate multi-valued data.
-// DISABLED: http://crbug.com/150084
+// DISABLED: http://crbug.com/281541
 IN_PROC_BROWSER_TEST_F(AutofillTest,
                        DISABLED_MergeAggregatedProfilesWithSameAddress) {
   AggregateProfilesIntoAutofillPrefs("dataset_same_address.txt");
@@ -707,7 +707,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
 // Mininum address values needed during aggregation are: address line 1, city,
 // state, and zip code.
 // Profiles are merged when data for address line 1 and city match.
-// DISABLED: http://crbug.com/150084
+// DISABLED: http://crbug.com/281541
 IN_PROC_BROWSER_TEST_F(AutofillTest,
                        DISABLED_ProfilesNotMergedWhenNoMinAddressData) {
   AggregateProfilesIntoAutofillPrefs("dataset_no_address.txt");
@@ -717,7 +717,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
 
 // Test Autofill ability to merge duplicate profiles and throw away junk.
 // TODO(isherman): this looks redundant, consider removing.
-// DISABLED: http://crbug.com/150084
+// DISABLED: http://crbug.com/281541
 IN_PROC_BROWSER_TEST_F(AutofillTest,
                        DISABLED_MergeAggregatedDuplicatedProfiles) {
   int num_of_profiles =
