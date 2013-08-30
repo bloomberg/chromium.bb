@@ -103,7 +103,7 @@ static void usage(char *name)
 int main(int argc, char **argv)
 {
 	int i, c, fd, ret;
-	char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "exynos", "omapdrm", "tilcdc" };
+	char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "exynos", "omapdrm", "tilcdc", "msm" };
 	drmVBlank vbl;
 	drmEventContext evctx;
 	struct vbl_info handler_info;

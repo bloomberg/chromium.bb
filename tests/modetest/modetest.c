@@ -1356,7 +1356,7 @@ int main(int argc, char **argv)
 	int encoders = 0, connectors = 0, crtcs = 0, planes = 0, framebuffers = 0;
 	int drop_master = 0;
 	int test_vsync = 0;
-	const char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "omapdrm", "exynos", "tilcdc" };
+	const char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "omapdrm", "exynos", "tilcdc", "msm" };
 	char *module = NULL;
 	unsigned int i;
 	int count = 0, plane_count = 0;
