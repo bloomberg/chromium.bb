@@ -274,6 +274,8 @@ function WallpaperManager(dialogDom) {
     });
     this.document_.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
+    this.document_.defaultView.addEventListener(
+        'keydown', this.onKeyDown_.bind(this));
     $('learn-more').href = LearnMoreURL;
     $('close-error').addEventListener('click', function() {
       $('error-container').hidden = true;
@@ -650,6 +652,25 @@ function WallpaperManager(dialogDom) {
   WallpaperManager.prototype.onResize_ = function() {
     this.wallpaperGrid_.redraw();
     this.categoriesList_.redraw();
+  };
+
+  /**
+   * Close the last opened overlay on pressing the Escape key.
+   * @param {Event} event A keydown event.
+   */
+  WallpaperManager.prototype.onKeyDown_ = function(event) {
+    if (event.keyCode == 27) {
+      // The last opened overlay coincides with the first match of querySelector
+      // because the Error Container is declared in the DOM before the Wallpaper
+      // Selection Container.
+      // TODO(bshe): Make the overlay selection not dependent on the DOM.
+      var closeButtonSelector = '.overlay-container:not([hidden]) .close';
+      var closeButton = this.document_.querySelector(closeButtonSelector);
+      if (closeButton) {
+        closeButton.click();
+        event.preventDefault();
+      }
+    }
   };
 
   /**
