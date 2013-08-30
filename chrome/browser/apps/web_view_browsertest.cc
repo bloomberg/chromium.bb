@@ -1543,6 +1543,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationRequestGone) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ClearData) {
+#if defined(OS_WIN)
+  // Flaky on XP bot http://crbug.com/282674
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
+
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTestWithArg(
       "platform_apps/web_view/common", "cleardata"))
