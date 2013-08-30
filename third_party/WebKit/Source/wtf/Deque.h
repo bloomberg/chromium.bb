@@ -33,9 +33,9 @@
 // FIXME: Could move what Vector and Deque share into a separate file.
 // Deque doesn't actually use Vector.
 
-#include <iterator>
 #include "wtf/PassTraits.h"
 #include "wtf/Vector.h"
+#include <iterator>
 
 namespace WTF {
 
@@ -349,6 +349,7 @@ namespace WTF {
         m_start = 0;
         m_end = 0;
         m_buffer.deallocateBuffer(m_buffer.buffer());
+        m_buffer.clearBufferPointer();
         checkValidity();
     }
 

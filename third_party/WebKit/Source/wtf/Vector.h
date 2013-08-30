@@ -276,30 +276,9 @@ static const size_t kInitialVectorSize = 16;
             m_buffer = static_cast<T*>(fastRealloc(m_buffer, sizeToAllocate));
         }
 
-        void deallocateBuffer(T* bufferToDeallocate)
-        {
-            if (!bufferToDeallocate)
-                return;
-
-            if (m_buffer == bufferToDeallocate) {
-                m_buffer = 0;
-                m_capacity = 0;
-            }
-
-            fastFree(bufferToDeallocate);
-        }
-
         T* buffer() { return m_buffer; }
         const T* buffer() const { return m_buffer; }
         size_t capacity() const { return m_capacity; }
-
-        T* releaseBuffer()
-        {
-            T* buffer = m_buffer;
-            m_buffer = 0;
-            m_capacity = 0;
-            return buffer;
-        }
 
     protected:
         VectorBufferBase()
@@ -316,7 +295,8 @@ static const size_t kInitialVectorSize = 16;
 
         ~VectorBufferBase()
         {
-            // FIXME: It would be nice to find a way to ASSERT that m_buffer hasn't leaked here.
+            m_buffer = 0;
+            m_size = 0;
         }
 
         T* m_buffer;
@@ -344,6 +324,17 @@ static const size_t kInitialVectorSize = 16;
                 allocateBuffer(capacity);
         }
 
+        void deallocateBuffer(T* bufferToDeallocate)
+        {
+            fastFree(bufferToDeallocate);
+        }
+
+        void clearBufferPointer()
+        {
+            m_buffer = 0;
+            m_capacity = 0;
+        }
+
         ~VectorBuffer()
         {
             deallocateBuffer(buffer());
@@ -360,12 +351,9 @@ static const size_t kInitialVectorSize = 16;
         using Base::allocateBuffer;
         using Base::shouldReallocateBuffer;
         using Base::reallocateBuffer;
-        using Base::deallocateBuffer;
 
         using Base::buffer;
         using Base::capacity;
-
-        using Base::releaseBuffer;
 
     protected:
         using Base::m_size;
@@ -393,6 +381,18 @@ static const size_t kInitialVectorSize = 16;
                 Base::allocateBuffer(capacity);
         }
 
+        void deallocateBuffer(T* bufferToDeallocate)
+        {
+            if (UNLIKELY(bufferToDeallocate != inlineBuffer()))
+                fastFree(bufferToDeallocate);
+        }
+
+        void clearBufferPointer()
+        {
+            m_buffer = 0;
+            m_capacity = 0;
+        }
+
         ~VectorBuffer()
         {
             deallocateBuffer(buffer());
@@ -407,13 +407,6 @@ static const size_t kInitialVectorSize = 16;
                 m_buffer = inlineBuffer();
                 m_capacity = inlineCapacity;
             }
-        }
-
-        void deallocateBuffer(T* bufferToDeallocate)
-        {
-            if (bufferToDeallocate == inlineBuffer())
-                return;
-            Base::deallocateBuffer(bufferToDeallocate);
         }
 
         bool shouldReallocateBuffer(size_t newCapacity) const
@@ -460,13 +453,6 @@ static const size_t kInitialVectorSize = 16;
         using Base::buffer;
         using Base::capacity;
 
-        T* releaseBuffer()
-        {
-            if (buffer() == inlineBuffer())
-                return 0;
-            return Base::releaseBuffer();
-        }
-
     protected:
         using Base::m_size;
 
@@ -505,14 +491,12 @@ static const size_t kInitialVectorSize = 16;
             : Base(size)
         {
             m_size = size;
-            if (begin())
-                TypeOperations::initialize(begin(), end());
+            TypeOperations::initialize(begin(), end());
         }
 
         ~Vector()
         {
-            if (m_size)
-                shrink(0);
+            shrink(0);
         }
 
         Vector(const Vector&);
@@ -605,16 +589,13 @@ static const size_t kInitialVectorSize = 16;
             : Base(size)
         {
             m_size = size;
-            if (begin())
-                TypeOperations::uninitializedFill(begin(), end(), val);
+            TypeOperations::uninitializedFill(begin(), end(), val);
         }
 
         void fill(const T&, size_t);
         void fill(const T& val) { fill(val, size()); }
 
         template<typename Iterator> void appendRange(Iterator start, Iterator end);
-
-        T* releaseBuffer();
 
         void swap(Vector<T, inlineCapacity>& other)
         {
@@ -635,11 +616,9 @@ static const size_t kInitialVectorSize = 16;
         using Base::capacity;
         using Base::swap;
         using Base::allocateBuffer;
-        using Base::deallocateBuffer;
         using Base::shouldReallocateBuffer;
         using Base::reallocateBuffer;
         using Base::restoreInlineBufferIfNeeded;
-        using Base::releaseBuffer;
     };
 
     template<typename T, size_t inlineCapacity>
@@ -647,8 +626,7 @@ static const size_t kInitialVectorSize = 16;
         : Base(other.capacity())
     {
         m_size = other.size();
-        if (begin())
-            TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
+        TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
     }
 
     template<typename T, size_t inlineCapacity>
@@ -657,14 +635,13 @@ static const size_t kInitialVectorSize = 16;
         : Base(other.capacity())
     {
         m_size = other.size();
-        if (begin())
-            TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
+        TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
     }
 
     template<typename T, size_t inlineCapacity>
     Vector<T, inlineCapacity>& Vector<T, inlineCapacity>::operator=(const Vector<T, inlineCapacity>& other)
     {
-        if (&other == this)
+        if (UNLIKELY(&other == this))
             return *this;
 
         if (size() > other.size())
@@ -829,8 +806,7 @@ static const size_t kInitialVectorSize = 16;
         else {
             if (size > capacity())
                 expandCapacity(size);
-            if (begin())
-                TypeOperations::initialize(end(), begin() + size);
+            TypeOperations::initialize(end(), begin() + size);
         }
 
         m_size = size;
@@ -850,21 +826,19 @@ static const size_t kInitialVectorSize = 16;
         ASSERT(size >= m_size);
         if (size > capacity())
             expandCapacity(size);
-        if (begin())
-            TypeOperations::initialize(end(), begin() + size);
+        TypeOperations::initialize(end(), begin() + size);
         m_size = size;
     }
 
     template<typename T, size_t inlineCapacity>
     void Vector<T, inlineCapacity>::reserveCapacity(size_t newCapacity)
     {
-        if (newCapacity <= capacity())
+        if (UNLIKELY(newCapacity <= capacity()))
             return;
         T* oldBuffer = begin();
         T* oldEnd = end();
         Base::allocateBuffer(newCapacity);
-        if (begin())
-            TypeOperations::move(oldBuffer, oldEnd, begin());
+        TypeOperations::move(oldBuffer, oldEnd, begin());
         Base::deallocateBuffer(oldBuffer);
     }
 
@@ -897,6 +871,8 @@ static const size_t kInitialVectorSize = 16;
             Base::allocateBuffer(newCapacity);
             if (begin() != oldBuffer)
                 TypeOperations::move(oldBuffer, oldEnd, begin());
+        } else {
+            Base::clearBufferPointer();
         }
 
         Base::deallocateBuffer(oldBuffer);
@@ -1057,22 +1033,6 @@ static const size_t kInitialVectorSize = 16;
     {
         for (size_t i = 0; i < m_size / 2; ++i)
             std::swap(at(i), at(m_size - 1 - i));
-    }
-
-    template<typename T, size_t inlineCapacity>
-    inline T* Vector<T, inlineCapacity>::releaseBuffer()
-    {
-        T* buffer = Base::releaseBuffer();
-        if (inlineCapacity && !buffer && m_size) {
-            // If the vector had some data, but no buffer to release,
-            // that means it was using the inline buffer. In that case,
-            // we create a brand new buffer so the caller always gets one.
-            size_t bytes = m_size * sizeof(T);
-            buffer = static_cast<T*>(fastMalloc(bytes));
-            memcpy(buffer, data(), bytes);
-        }
-        m_size = 0;
-        return buffer;
     }
 
     template<typename T, size_t inlineCapacity>
