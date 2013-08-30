@@ -1292,3 +1292,5 @@ crbug.com/282496 [ Linux SnowLeopard Lion Debug ] css3/filters/custom/composited
 Bug(jsbell) fast/encoding/utf-16-odd-byte.html [ Skip ]
 
 crbug.com/282620 [ XP Win7 ] fast/mediastream/RTCPeerConnection-stats.html [ Failure Pass ]
+
+crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Pass ImageOnlyFailure ]
