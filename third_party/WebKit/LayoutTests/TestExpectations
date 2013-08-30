@@ -1287,3 +1287,6 @@ crbug.com/282094 fast/repaint/video-mute-repaint.html [ Pass Timeout ]
 crbug.com/282095 storage/websql/read-transactions-running-concurrently.html [ Failure Pass ]
 
 crbug.com/282496 [ Linux SnowLeopard Lion Debug ] css3/filters/custom/composited/custom-filter-blend-modes.html [ ImageOnlyFailure Pass ]
+
+# Pre-landing "binary" file (actually UTF-16) - enable with http://crrev.com/23532016
+Bug(jsbell) fast/encoding/utf-16-odd-byte.html [ Skip ]
