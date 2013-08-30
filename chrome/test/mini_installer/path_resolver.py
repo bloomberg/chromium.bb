@@ -9,6 +9,25 @@ import win32com.client
 from win32com.shell import shell, shellcon
 
 
+def _GetProductName(file_path):
+  """Returns the product name of the given file.
+
+  Args:
+    file_path: The absolute or relative path to the file.
+
+  Returns:
+    A string representing the product name of the file, or None if the product
+    name was not found.
+  """
+  language_and_codepage_pairs = win32api.GetFileVersionInfo(
+      file_path, '\\VarFileInfo\\Translation')
+  if not language_and_codepage_pairs:
+    return None
+  product_name_entry = ('\\StringFileInfo\\%04x%04x\\ProductName' %
+                        language_and_codepage_pairs[0])
+  return win32api.GetFileVersionInfo(file_path, product_name_entry)
+
+
 def ResolvePath(path):
   """Resolves variables in a file path, and returns the resolved path.
 
@@ -41,19 +60,21 @@ def ResolvePath(path):
   mini_installer_path = os.path.abspath('mini_installer.exe')
   mini_installer_file_version = win32com.client.Dispatch(
       'Scripting.FileSystemObject').GetFileVersion(mini_installer_path)
-  # TODO(sukolsak): Check whether this is Chrome or Chromium.
-  is_chrome = True
-  if is_chrome:
+  mini_installer_product_name = _GetProductName(mini_installer_path)
+  if mini_installer_product_name == 'Google Chrome':
     chrome_short_name = 'Chrome'
     chrome_long_name = 'Google Chrome'
     chrome_dir = 'Google\\Chrome'
     chrome_update_registry_subkey = ('Software\\Google\\Update\\Clients\\'
                                      '{8A69D345-D564-463c-AFF1-A69D9E530F96}')
-  else:
+  elif mini_installer_product_name == 'Chromium':
     chrome_short_name = 'Chromium'
     chrome_long_name = 'Chromium'
     chrome_dir = 'Chromium'
     chrome_update_registry_subkey = 'Software\\Chromium'
+  else:
+    raise KeyError("Unknown mini_installer product name '%s'" %
+                   mini_installer_product_name)
 
   variable_mapping = {
       'PROGRAM_FILES': program_files_path,
