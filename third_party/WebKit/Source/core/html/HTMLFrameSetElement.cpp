@@ -219,7 +219,7 @@ DOMWindow* HTMLFrameSetElement::anonymousNamedGetter(const AtomicString& name)
     Node* frameNode = children()->namedItem(name);
     if (!frameNode || !frameNode->hasTagName(HTMLNames::frameTag))
         return 0;
-    Document* document = static_cast<HTMLFrameElement*>(frameNode)->contentDocument();
+    Document* document = toHTMLFrameElement(frameNode)->contentDocument();
     if (!document || !document->frame())
         return 0;
     return document->domWindow();

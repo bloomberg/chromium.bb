@@ -52,6 +52,12 @@ private:
     bool m_frameBorderSet;
 };
 
+inline HTMLFrameElement* toHTMLFrameElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::frameTag));
+    return static_cast<HTMLFrameElement*>(node);
+}
+
 } // namespace WebCore
 
 #endif // HTMLFrameElement_h

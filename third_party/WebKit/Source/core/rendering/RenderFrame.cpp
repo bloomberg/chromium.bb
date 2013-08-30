@@ -37,7 +37,7 @@ RenderFrame::RenderFrame(HTMLFrameElement* frame)
 
 FrameEdgeInfo RenderFrame::edgeInfo() const
 {
-    HTMLFrameElement* element = static_cast<HTMLFrameElement*>(node());
+    HTMLFrameElement* element = toHTMLFrameElement(node());
     return FrameEdgeInfo(element->noResize(), element->hasFrameBorder());
 }
 
@@ -49,7 +49,7 @@ void RenderFrame::updateFromElement()
 
 void RenderFrame::viewCleared()
 {
-    HTMLFrameElement* element = static_cast<HTMLFrameElement*>(node());
+    HTMLFrameElement* element = toHTMLFrameElement(node());
     if (!element || !widget() || !widget()->isFrameView())
         return;
 
