@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_LOCAL_PREDICTOR_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_LOCAL_PREDICTOR_H_
 
+#include <map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -13,9 +14,14 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/visit_database.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 class HistoryService;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace content {
 class SessionStorageNamespace;
@@ -35,10 +41,11 @@ class PrerenderManager;
 // predictions.
 // At this point, the class is not actually creating prerenders, but just
 // recording timing stats about the effect prerendering would have.
-class PrerenderLocalPredictor : public history::VisitDatabaseObserver {
+class PrerenderLocalPredictor : public history::VisitDatabaseObserver,
+                                public net::URLFetcherDelegate {
  public:
   struct LocalPredictorURLInfo;
-  struct LocalPredictorURLLookupInfo;
+  struct CandidatePrerenderInfo;
   enum Event {
     EVENT_CONSTRUCTED = 0,
     EVENT_INIT_SCHEDULED = 1,
@@ -96,6 +103,19 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver {
     EVENT_ISSUE_PRERENDER_NEW_PRERENDER = 53,
     EVENT_ISSUE_PRERENDER_CANCELLED_OLD_PRERENDER = 54,
     EVENT_CONTINUE_PRERENDER_CHECK_FALLTHROUGH_PRERENDERING = 55,
+    EVENT_PRERENDER_URL_LOOKUP_SUCCESS = 56,
+    EVENT_PRERENDER_SERVICE_DISABLED = 57,
+    EVENT_PRERENDER_SERVICE_ISSUED_LOOKUP = 58,
+    EVENT_PRERENDER_SERVICE_LOOKUP_TIMED_OUT = 59,
+    EVENT_PRERENDER_SERVICE_RECEIVED_RESULT = 60,
+    EVENT_PRERENDER_SERVICE_NO_RECORD_FOR_RESULT = 61,
+    EVENT_PRERENDER_SERVICE_PARSED_CORRECTLY = 62,
+    EVENT_PRERENDER_SERVICE_PARSE_ERROR = 63,
+    EVENT_PRERENDER_SERVICE_PARSE_ERROR_INCORRECT_JSON = 64,
+    EVENT_PRERENDER_SERVICE_HINTING_TIMED_OUT = 65,
+    EVENT_PRERENDER_SERVICE_HINTING_URL_LOOKUP_TIMED_OUT = 66,
+    EVENT_PRERENDER_SERVICE_CANDIDATE_URL_LOOKUP_TIMED_OUT = 67,
+    EVENT_CONTINUE_PRERENDER_CHECK_ON_SERVICE_WHITELIST = 68,
     EVENT_MAX_VALUE
   };
 
@@ -117,6 +137,9 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver {
 
   void OnTabHelperURLSeen(const GURL& url, content::WebContents* web_contents);
 
+  // net::URLFetcherDelegate implementation:
+  void virtual OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
  private:
   struct PrerenderProperties;
   HistoryService* GetHistoryIfExists() const;
@@ -127,23 +150,36 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver {
                                    base::TimeDelta plt) const;
   void RecordEvent(Event event) const;
 
-  void OnLookupURL(scoped_ptr<LocalPredictorURLLookupInfo> info);
+  void OnLookupURL(scoped_ptr<CandidatePrerenderInfo> info);
+
+  // Lookup the prerender candidate in the Prerender Service (if applicable).
+  void DoPrerenderServiceCheck(scoped_ptr<CandidatePrerenderInfo> info);
+
+  // Lookup the prerender candidate in the LoggedIn Predictor.
+  void DoLoggedInLookup(scoped_ptr<CandidatePrerenderInfo> info);
 
   // Returns an element of issued_prerenders_, which should be replaced
   // by a new prerender of the priority indicated, or NULL, if the priority
   // is too low.
   PrerenderProperties* GetIssuedPrerenderSlotForPriority(double priority);
 
-  void ContinuePrerenderCheck(
-      scoped_refptr<content::SessionStorageNamespace> session_storage_namespace,
-      scoped_ptr<gfx::Size> size,
-      scoped_ptr<LocalPredictorURLLookupInfo> info);
+  void ContinuePrerenderCheck(scoped_ptr<CandidatePrerenderInfo> info);
   void LogCandidateURLStats(const GURL& url) const;
-  void IssuePrerender(scoped_refptr<content::SessionStorageNamespace>
-                      session_storage_namespace,
-                      scoped_ptr<gfx::Size> size,
-                      scoped_ptr<LocalPredictorURLInfo> info,
+  void IssuePrerender(scoped_ptr<CandidatePrerenderInfo> info,
+                      scoped_ptr<LocalPredictorURLInfo> url_info,
                       PrerenderProperties* prerender_properties);
+  void MaybeCancelURLFetcher(net::URLFetcher* fetcher);
+  // Returns true if the parsed response is semantically correct and could
+  // be fully applied.
+  bool ApplyParsedPrerenderServiceResponse(
+      base::DictionaryValue* dict,
+      CandidatePrerenderInfo* info,
+      bool* hinting_timed_out,
+      bool* hinting_url_lookup_timed_out,
+      bool* candidate_url_lookup_timed_out);
+  typedef std::map<net::URLFetcher*, CandidatePrerenderInfo*>
+      OutstandingFetchers;
+  OutstandingFetchers outstanding_prerender_service_requests_;
   PrerenderManager* prerender_manager_;
   base::OneShotTimer<PrerenderLocalPredictor> timer_;
 
