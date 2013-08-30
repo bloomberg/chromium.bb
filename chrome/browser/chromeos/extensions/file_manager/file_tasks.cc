@@ -111,6 +111,30 @@ bool FileBrowserHasAccessPermissionForFiles(
 
 }  // namespace
 
+FullTaskDescriptor::FullTaskDescriptor(
+    const TaskDescriptor& task_descriptor,
+    const std::string& task_title,
+    const GURL& icon_url,
+    bool is_default)
+    : task_descriptor_(task_descriptor),
+      task_title_(task_title),
+      icon_url_(icon_url),
+      is_default_(is_default){
+}
+
+scoped_ptr<base::DictionaryValue>
+FullTaskDescriptor::AsDictionaryValue() const {
+  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
+  dictionary->SetString("taskId", TaskDescriptorToId(task_descriptor_));
+  if (!icon_url_.is_empty())
+    dictionary->SetString("iconUrl", icon_url_.spec());
+  dictionary->SetBoolean("driveApp",
+                         task_descriptor_.task_type == TASK_TYPE_DRIVE_APP);
+  dictionary->SetString("title", task_title_);
+  dictionary->SetBoolean("isDefault", is_default_);
+  return dictionary.Pass();
+}
+
 void UpdateDefaultTask(PrefService* pref_service,
                        const std::string& task_id,
                        const std::set<std::string>& suffixes,
@@ -170,17 +194,23 @@ std::string GetDefaultTaskIdFromPrefs(const PrefService& pref_service,
   return task_id;
 }
 
-std::string MakeTaskID(const std::string& extension_id,
+std::string MakeTaskID(const std::string& app_id,
                        TaskType task_type,
                        const std::string& action_id) {
   return base::StringPrintf("%s|%s|%s",
-                            extension_id.c_str(),
+                            app_id.c_str(),
                             TaskTypeToString(task_type).c_str(),
                             action_id.c_str());
 }
 
 std::string MakeDriveAppTaskId(const std::string& app_id) {
   return MakeTaskID(app_id, TASK_TYPE_DRIVE_APP, "open-with");
+}
+
+std::string TaskDescriptorToId(const TaskDescriptor& task_descriptor) {
+  return MakeTaskID(task_descriptor.app_id,
+                    task_descriptor.task_type,
+                    task_descriptor.action_id);
 }
 
 bool ParseTaskID(const std::string& task_id, TaskDescriptor* task) {
@@ -353,39 +383,35 @@ void FindDefaultDriveTasks(
 void CreateDriveTasks(
     const TaskInfoMap& task_info_map,
     const std::set<std::string>& default_tasks,
-    ListValue* result_list,
+    std::vector<FullTaskDescriptor>* result_list,
     bool* default_already_set) {
   DCHECK(result_list);
   DCHECK(default_already_set);
 
   for (TaskInfoMap::const_iterator iter = task_info_map.begin();
        iter != task_info_map.end(); ++iter) {
-    DictionaryValue* task = new DictionaryValue;
-    task->SetString("taskId", iter->first);
-    task->SetString("title", iter->second.app_name);
-
-    const GURL& icon_url = iter->second.icon_url;
-    if (!icon_url.is_empty())
-      task->SetString("iconUrl", icon_url.spec());
-
-    task->SetBoolean("driveApp", true);
-
+    bool is_default = false;
     // Once we set a default app, we don't want to set any more.
     if (!(*default_already_set) &&
         default_tasks.find(iter->first) != default_tasks.end()) {
-      task->SetBoolean("isDefault", true);
+      is_default = true;
       *default_already_set = true;
-    } else {
-      task->SetBoolean("isDefault", false);
     }
-    result_list->Append(task);
+
+    TaskDescriptor descriptor;
+    DCHECK(ParseTaskID(iter->first, &descriptor));
+    result_list->push_back(
+        FullTaskDescriptor(descriptor,
+                           iter->second.app_name,
+                           iter->second.icon_url,
+                           is_default));
   }
 }
 
 void FindDriveAppTasks(
     Profile* profile,
     const PathAndMimeTypeSet& path_mime_set,
-    ListValue* result_list,
+    std::vector<FullTaskDescriptor>* result_list,
     bool* default_already_set) {
   DCHECK(!path_mime_set.empty());
   DCHECK(result_list);
@@ -415,7 +441,7 @@ void FindDriveAppTasks(
 void FindFileHandlerTasks(
     Profile* profile,
     const PathAndMimeTypeSet& path_mime_set,
-    ListValue* result_list,
+    std::vector<FullTaskDescriptor>* result_list,
     bool* default_already_set) {
   DCHECK(!path_mime_set.empty());
   DCHECK(result_list);
@@ -453,16 +479,13 @@ void FindFileHandlerTasks(
 
     for (FileHandlerList::iterator i = file_handlers.begin();
          i != file_handlers.end(); ++i) {
-      DictionaryValue* task = new DictionaryValue;
       std::string task_id = file_tasks::MakeTaskID(
           extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER, (*i)->id);
-      task->SetString("taskId", task_id);
-      task->SetString("title", (*i)->title);
+
+      bool is_default = false;
       if (!(*default_already_set) && ContainsKey(default_tasks, task_id)) {
-        task->SetBoolean("isDefault", true);
+        is_default = true;
         *default_already_set = true;
-      } else {
-        task->SetBoolean("isDefault", false);
       }
 
       GURL best_icon = extensions::ExtensionIconSource::GetIconURL(
@@ -471,13 +494,14 @@ void FindFileHandlerTasks(
           ExtensionIconSet::MATCH_BIGGER,
           false,  // grayscale
           NULL);  // exists
-      if (!best_icon.is_empty())
-        task->SetString("iconUrl", best_icon.spec());
-      else
-        task->SetString("iconUrl", kDefaultIcon);
 
-      task->SetBoolean("driveApp", false);
-      result_list->Append(task);
+      result_list->push_back(FullTaskDescriptor(
+          TaskDescriptor(extension->id(),
+                         file_tasks::TASK_TYPE_FILE_HANDLER,
+                         (*i)->id),
+          (*i)->title,
+          best_icon,
+          is_default));
     }
   }
 }
@@ -486,7 +510,7 @@ void FindFileBrowserHandlerTasks(
     Profile* profile,
     const std::vector<GURL>& file_urls,
     const std::vector<base::FilePath>& file_paths,
-    ListValue* result_list,
+    std::vector<FullTaskDescriptor>* result_list,
     bool* default_already_set) {
   DCHECK(!file_paths.empty());
   DCHECK(!file_urls.empty());
@@ -510,35 +534,33 @@ void FindFileBrowserHandlerTasks(
     const FileBrowserHandler* handler = *iter;
     const std::string extension_id = handler->extension_id();
     const Extension* extension = service->GetExtensionById(extension_id, false);
-    CHECK(extension);
-    DictionaryValue* task = new DictionaryValue;
-    task->SetString("taskId", file_tasks::MakeTaskID(
-        extension_id,
-        file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
-        handler->id()));
-    task->SetString("title", handler->title());
+    DCHECK(extension);
+
     // TODO(zelidrag): Figure out how to expose icon URL that task defined in
     // manifest instead of the default extension icon.
-    GURL icon = extensions::ExtensionIconSource::GetIconURL(
+    const GURL icon_url = extensions::ExtensionIconSource::GetIconURL(
         extension,
         extension_misc::EXTENSION_ICON_BITTY,
         ExtensionIconSet::MATCH_BIGGER,
         false,  // grayscale
         NULL);  // exists
-    task->SetString("iconUrl", icon.spec());
-    task->SetBoolean("driveApp", false);
 
     // Only set the default if there isn't already a default set.
+    bool is_default = false;
     if (!*default_already_set &&
         std::find(default_tasks.begin(), default_tasks.end(), *iter) !=
         default_tasks.end()) {
-      task->SetBoolean("isDefault", true);
+      is_default = true;
       *default_already_set = true;
-    } else {
-      task->SetBoolean("isDefault", false);
     }
 
-    result_list->Append(task);
+    result_list->push_back(FullTaskDescriptor(
+        TaskDescriptor(extension_id,
+                       file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
+                       handler->id()),
+        handler->title(),
+        icon_url,
+        is_default));
   }
 }
 
@@ -547,7 +569,10 @@ void FindAllTypesOfTasks(
     const PathAndMimeTypeSet& path_mime_set,
     const std::vector<GURL>& file_urls,
     const std::vector<base::FilePath>& file_paths,
-    ListValue* result_list) {
+    std::vector<FullTaskDescriptor>* result_list) {
+  DCHECK(profile);
+  DCHECK(result_list);
+
   // Check if file_paths contain a google document.
   bool has_google_document = false;
   for (size_t i = 0; i < file_paths.size(); ++i) {

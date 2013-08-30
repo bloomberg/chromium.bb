@@ -184,14 +184,18 @@ bool GetFileTasksFunction::RunImpl() {
     path_mime_set.insert(std::make_pair(file_path, mime_type));
   }
 
-  ListValue* result_list = new ListValue();
-  SetResult(result_list);
-
+  std::vector<file_manager::file_tasks::FullTaskDescriptor> tasks;
   file_manager::file_tasks::FindAllTypesOfTasks(profile_,
                                                 path_mime_set,
                                                 file_urls,
                                                 file_paths,
-                                                result_list);
+                                                &tasks);
+  // Convert the tasks into JSON format.
+  ListValue* result_list = new ListValue();
+  for (size_t i = 0; i < tasks.size(); ++i)
+    result_list->Append(tasks[i].AsDictionaryValue().release());
+
+  SetResult(result_list);
   SendResponse(true);
   return true;
 }
