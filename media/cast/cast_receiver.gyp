@@ -19,7 +19,8 @@
       'dependencies': [
 #        'audio_receiver',
 #        'video_receiver',
-#        '<(DEPTH)/cast/pacing/paced_sender.gyp:*',
+        'framer/framer.gyp:cast_framer',
+        'pacing/paced_sender.gyp:paced_sender',
       ],
     },
   ],

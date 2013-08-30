@@ -8,7 +8,7 @@
 #include "media/cast/rtp_common/rtp_defines.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namesapce media {
+namespace media {
 namespace cast {
 
 class MockRtpPayloadFeedback : public RtpPayloadFeedback {
@@ -20,6 +20,6 @@ class MockRtpPayloadFeedback : public RtpPayloadFeedback {
 };
 
 }  // namespace cast
-}  // namesapce media
+}  // namespace media
 
 #endif  // MEDIA_CAST_RTP_COMMON_MOCK_RTP_PAYLOAD_FEEDBACK_H_

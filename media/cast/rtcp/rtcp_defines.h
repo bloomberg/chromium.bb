@@ -8,7 +8,6 @@
 #include <list>
 #include <map>
 #include <set>
-#include <vector>
 
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
@@ -18,6 +17,9 @@ namespace cast {
 
 const uint16 kRtcpCastAllPacketsLost = 0xffff;
 
+typedef std::set<uint16> PacketIdSet;
+typedef std::map<uint8, PacketIdSet> MissingFramesAndPacketsMap;
+
 class RtcpCastMessage {
  public:
   explicit RtcpCastMessage(uint32 media_ssrc);
@@ -25,7 +27,7 @@ class RtcpCastMessage {
 
   uint32 media_ssrc_;
   uint8 ack_frame_id_;
-  std::map<uint8, std::set<uint16> > missing_frames_and_packets_;
+  MissingFramesAndPacketsMap missing_frames_and_packets_;
 };
 
 struct RtcpSenderInfo {

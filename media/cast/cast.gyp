@@ -44,11 +44,11 @@
           'dependencies': [
             'cast_sender',
             'cast_receiver',
-            '../../base/base.gyp:run_all_unittests',
-            '<(DEPTH)/net/net.gyp:*',
+            'rtcp/rtcp.gyp:cast_rtcp_test',
+            '<(DEPTH)/base/base.gyp:run_all_unittests',
+            '<(DEPTH)/net/net.gyp:net',
             '<(DEPTH)/testing/gmock.gyp:gmock',
             '<(DEPTH)/testing/gtest.gyp:gtest',
-            'rtcp/rtcp.gyp:cast_rtcp_test',
           ],
           'include_dirs': [
             '<(DEPTH)/',
@@ -57,6 +57,9 @@
           ],
           'sources': [
             'congestion_control/congestion_control_unittest.cc',
+            'framer/cast_message_builder_unittest.cc',
+            'framer/frame_buffer_unittest.cc',
+            'framer/framer_unittest.cc',
             'rtp_sender/packet_storage/packet_storage_unittest.cc',
             'rtp_sender/rtp_packetizer/rtp_packetizer_unittest.cc',
             'rtp_sender/rtp_packetizer/test/rtp_header_parser.cc',
