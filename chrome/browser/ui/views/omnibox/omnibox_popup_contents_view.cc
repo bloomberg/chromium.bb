@@ -41,10 +41,18 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
     : public views::Widget,
       public base::SupportsWeakPtr<AutocompletePopupWidget> {
  public:
-  AutocompletePopupWidget() {}
-  virtual ~AutocompletePopupWidget() {}
+  AutocompletePopupWidget() : crash_if_destroyed_(false) {}
+  virtual ~AutocompletePopupWidget() {
+    CHECK(!crash_if_destroyed_);
+  }
+
+  void set_crash_if_destroyed(bool value) { crash_if_destroyed_ = value; }
 
  private:
+  // For debugging a crash.
+  // TODO(sky): nuke this when we figure out 275794.
+  bool crash_if_destroyed_;
+
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWidget);
 };
 
@@ -215,7 +223,9 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     params.parent = popup_parent;
     params.bounds = GetPopupBounds();
     params.context = popup_parent;
+    popup_->set_crash_if_destroyed(true);
     popup_->Init(params);
+    popup_->set_crash_if_destroyed(false);
 #if defined(USE_AURA)
     views::corewm::SetWindowVisibilityAnimationType(
         popup_->GetNativeView(),
