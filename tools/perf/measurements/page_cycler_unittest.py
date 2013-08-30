@@ -38,7 +38,7 @@ class PageCyclerUnitTest(unittest.TestCase):
 
   def setupCycler(self, args):
     cycler = page_cycler.PageCycler()
-    options = browser_options.BrowserOptions()
+    options = browser_options.BrowserFinderOptions()
     parser = options.CreateParser()
     cycler.AddCommandLineOptions(parser)
     parser.parse_args(args)

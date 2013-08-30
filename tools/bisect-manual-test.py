@@ -42,7 +42,7 @@ def main():
            'Starts browser with an optional url and asks user whether '
            'revision is good or bad.\n')
 
-  options = browser_options.BrowserOptions()
+  options = browser_options.BrowserFinderOptions()
   parser = options.CreateParser(usage)
   options, args = parser.parse_args()
 

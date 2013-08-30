@@ -82,7 +82,7 @@ def main():
   usage = ('%prog [options]\n'
            'Used to run the bisection script with a manual test.')
 
-  options = browser_options.BrowserOptions('release')
+  options = browser_options.BrowserFinderOptions('release')
   parser = options.CreateParser(usage)
 
   parser.add_option('-b', '--bad_revision',
