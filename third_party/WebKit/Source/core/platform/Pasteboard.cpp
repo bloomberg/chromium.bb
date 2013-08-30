@@ -78,7 +78,7 @@ void Pasteboard::setSelectionMode(bool selectionMode)
 void Pasteboard::writeSelection(Range* selectedRange, bool canSmartCopyOrDelete, const String& text)
 {
     String html = createMarkup(selectedRange, 0, AnnotateForInterchange, false, ResolveNonLocalURLs);
-    KURL url = selectedRange->startContainer()->document().url();
+    KURL url = selectedRange->startContainer()->document()->url();
     String plainText = text;
 #if OS(WINDOWS)
     replaceNewlinesWithWindowsStyleNewlines(plainText);
@@ -141,7 +141,7 @@ void Pasteboard::writeImage(Node* node, const KURL&, const String& title)
         urlString = toElement(node)->getAttribute(XLinkNames::hrefAttr);
     else if (node->hasTagName(HTMLNames::embedTag) || node->hasTagName(HTMLNames::objectTag))
         urlString = toElement(node)->imageSourceURL();
-    KURL url = urlString.isEmpty() ? KURL() : node->document().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
+    KURL url = urlString.isEmpty() ? KURL() : node->document()->completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
     WebKit::WebImage webImage = bitmap->bitmap();
     WebKit::Platform::current()->clipboard()->writeImage(webImage, WebKit::WebURL(url), WebKit::WebString(title));
 }

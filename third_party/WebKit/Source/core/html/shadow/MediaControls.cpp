@@ -79,7 +79,7 @@ void MediaControls::setMediaController(MediaControllerInterface* controller)
 
 void MediaControls::reset()
 {
-    Page* page = document().page();
+    Page* page = document()->page();
     if (!page)
         return;
 
@@ -121,7 +121,7 @@ void MediaControls::reset()
 
 void MediaControls::reportedError()
 {
-    Page* page = document().page();
+    Page* page = document()->page();
     if (!page)
         return;
 
@@ -319,7 +319,7 @@ void MediaControls::startHideFullscreenControlsTimer()
     if (!m_isFullscreen)
         return;
 
-    Page* page = document().page();
+    Page* page = document()->page();
     if (!page)
         return;
 
@@ -352,7 +352,7 @@ void MediaControls::createTextTrackDisplay()
     if (m_textDisplayContainer)
         return;
 
-    RefPtr<MediaControlTextTrackContainerElement> textDisplayContainer = MediaControlTextTrackContainerElement::create(&document());
+    RefPtr<MediaControlTextTrackContainerElement> textDisplayContainer = MediaControlTextTrackContainerElement::create(document());
     m_textDisplayContainer = textDisplayContainer.get();
 
     if (m_mediaController)

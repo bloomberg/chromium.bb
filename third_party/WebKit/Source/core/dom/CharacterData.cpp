@@ -55,7 +55,7 @@ void CharacterData::setData(const String& data)
     unsigned oldLength = length();
 
     setDataAndUpdate(nonNullData, 0, oldLength, nonNullData.length());
-    document().textRemoved(this, 0, oldLength);
+    document()->textRemoved(this, 0, oldLength);
 }
 
 String CharacterData::substringData(unsigned offset, unsigned count, ExceptionState& es)
@@ -100,7 +100,7 @@ unsigned CharacterData::parserAppendData(const String& string, unsigned offset, 
     if (isTextNode())
         toText(this)->updateTextRenderer(oldLength, 0, DeprecatedAttachNow);
 
-    document().incDOMTreeVersion();
+    document()->incDOMTreeVersion();
 
     if (parentNode())
         parentNode()->childrenChanged();
@@ -129,7 +129,7 @@ void CharacterData::insertData(unsigned offset, const String& data, ExceptionSta
 
     setDataAndUpdate(newStr, offset, 0, data.length(), attachBehavior);
 
-    document().textInserted(this, offset, data.length());
+    document()->textInserted(this, offset, data.length());
 }
 
 void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& es, AttachBehavior attachBehavior)
@@ -150,7 +150,7 @@ void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& 
 
     setDataAndUpdate(newStr, offset, count, 0, attachBehavior);
 
-    document().textRemoved(this, offset, realCount);
+    document()->textRemoved(this, offset, realCount);
 }
 
 void CharacterData::replaceData(unsigned offset, unsigned count, const String& data, ExceptionState& es, AttachBehavior attachBehavior)
@@ -173,8 +173,8 @@ void CharacterData::replaceData(unsigned offset, unsigned count, const String& d
     setDataAndUpdate(newStr, offset, count, data.length(), attachBehavior);
 
     // update the markers for spell checking and grammar checking
-    document().textRemoved(this, offset, realCount);
-    document().textInserted(this, offset, data.length());
+    document()->textRemoved(this, offset, realCount);
+    document()->textInserted(this, offset, data.length());
 }
 
 String CharacterData::nodeValue() const
@@ -204,10 +204,10 @@ void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfRep
     if (nodeType() == PROCESSING_INSTRUCTION_NODE)
         toProcessingInstruction(this)->checkStyleSheet();
 
-    if (document().frame())
-        document().frame()->selection()->textWasReplaced(this, offsetOfReplacedData, oldLength, newLength);
+    if (document()->frame())
+        document()->frame()->selection()->textWasReplaced(this, offsetOfReplacedData, oldLength, newLength);
 
-    document().incDOMTreeVersion();
+    document()->incDOMTreeVersion();
     didModifyData(oldData);
 }
 
@@ -220,11 +220,11 @@ void CharacterData::didModifyData(const String& oldData)
         parentNode()->childrenChanged();
 
     if (!isInShadowTree()) {
-        if (document().hasListenerType(Document::DOMCHARACTERDATAMODIFIED_LISTENER))
+        if (document()->hasListenerType(Document::DOMCHARACTERDATAMODIFIED_LISTENER))
             dispatchScopedEvent(MutationEvent::create(eventNames().DOMCharacterDataModifiedEvent, true, 0, oldData, m_data));
         dispatchSubtreeModifiedEvent();
     }
-    InspectorInstrumentation::characterDataModified(&document(), this);
+    InspectorInstrumentation::characterDataModified(document(), this);
 }
 
 int CharacterData::maxCharacterOffset() const

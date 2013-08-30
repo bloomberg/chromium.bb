@@ -111,7 +111,7 @@ void HTMLCanvasElement::parseAttribute(const QualifiedName& name, const AtomicSt
 
 RenderObject* HTMLCanvasElement::createRenderer(RenderStyle* style)
 {
-    Frame* frame = document().frame();
+    Frame* frame = document()->frame();
     if (frame && frame->script()->canExecuteScripts(NotAboutToExecuteScript)) {
         m_rendererIsCanvas = true;
         return new RenderHTMLCanvas(this);
@@ -170,14 +170,14 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
             return 0;
         if (!m_context) {
             HistogramSupport::histogramEnumeration("Canvas.ContextType", Context2d, ContextTypeCount);
-            m_context = CanvasRenderingContext2D::create(this, RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ? static_cast<Canvas2DContextAttributes*>(attrs) : 0, document().inQuirksMode());
+            m_context = CanvasRenderingContext2D::create(this, RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ? static_cast<Canvas2DContextAttributes*>(attrs) : 0, document()->inQuirksMode());
             if (m_context)
                 scheduleLayerUpdate();
         }
         return m_context.get();
     }
 
-    Settings* settings = document().settings();
+    Settings* settings = document()->settings();
     if (settings && settings->webGLEnabled()) {
         // Accept the legacy "webkit-3d" name as well as the provisional "experimental-webgl" name.
         // Now that WebGL is ratified, we will also accept "webgl" as the context name in Chrome.
@@ -318,7 +318,7 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r, boo
         return;
 
     if (m_context) {
-        if (!paintsIntoCanvasBuffer() && !document().printing())
+        if (!paintsIntoCanvasBuffer() && !document()->printing())
             return;
         m_context->paintRenderingResultsToCanvas();
     }
@@ -444,12 +444,12 @@ FloatSize HTMLCanvasElement::convertDeviceToLogical(const FloatSize& deviceSize)
 
 SecurityOrigin* HTMLCanvasElement::securityOrigin() const
 {
-    return document().securityOrigin();
+    return document()->securityOrigin();
 }
 
 StyleResolver* HTMLCanvasElement::styleResolver()
 {
-    return document().styleResolver();
+    return document()->styleResolver();
 }
 
 bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
@@ -460,7 +460,7 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     if (m_accelerationDisabled)
         return false;
 
-    Settings* settings = document().settings();
+    Settings* settings = document()->settings();
     if (!settings || !settings->accelerated2dCanvasEnabled())
         return false;
 
@@ -503,7 +503,7 @@ void HTMLCanvasElement::createImageBuffer()
         return;
     setExternallyAllocatedMemory(4 * width() * height());
     m_imageBuffer->context()->setImageInterpolationQuality(DefaultInterpolationQuality);
-    if (document().settings() && !document().settings()->antialiased2dCanvasEnabled())
+    if (document()->settings() && !document()->settings()->antialiased2dCanvasEnabled())
         m_imageBuffer->context()->setShouldAntialias(false);
     // GraphicsContext's defaults don't always agree with the 2d canvas spec.
     // See CanvasRenderingContext2D::State::State() for more information.

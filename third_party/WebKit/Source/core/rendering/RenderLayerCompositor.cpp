@@ -263,7 +263,7 @@ void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
     bool showRepaintCounter = false;
     bool forceCompositingMode = false;
 
-    if (Settings* settings = m_renderView->document().settings()) {
+    if (Settings* settings = m_renderView->document()->settings()) {
         hasAcceleratedCompositing = settings->acceleratedCompositingEnabled();
 
         // We allow the chrome to override the settings, in case the page is rendered
@@ -1203,7 +1203,7 @@ void RenderLayerCompositor::frameViewDidScroll()
 
     bool scrollingCoordinatorHandlesOffset = false;
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator()) {
-        if (Settings* settings = m_renderView->document().settings()) {
+        if (Settings* settings = m_renderView->document()->settings()) {
             if (isMainFrame() || settings->compositedScrollingForFramesEnabled())
                 scrollingCoordinatorHandlesOffset = scrollingCoordinator->scrollableAreaScrollLayerDidChange(frameView);
         }
@@ -1907,7 +1907,7 @@ bool RenderLayerCompositor::requiresCompositingForTransition(RenderObject* rende
     if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
         return false;
 
-    if (Settings* settings = m_renderView->document().settings()) {
+    if (Settings* settings = m_renderView->document()->settings()) {
         if (!settings->acceleratedCompositingForTransitionEnabled())
             return false;
     }
@@ -2030,7 +2030,7 @@ bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* rendere
         return false;
 
     // FIXME: acceleratedCompositingForFixedPositionEnabled should probably be renamed acceleratedCompositingForViewportConstrainedPositionEnabled().
-    if (Settings* settings = m_renderView->document().settings()) {
+    if (Settings* settings = m_renderView->document()->settings()) {
         if (!settings->acceleratedCompositingForFixedPositionEnabled())
             return false;
     }
@@ -2169,7 +2169,7 @@ void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gr
 
 bool RenderLayerCompositor::supportsFixedRootBackgroundCompositing() const
 {
-    if (Settings* settings = m_renderView->document().settings()) {
+    if (Settings* settings = m_renderView->document()->settings()) {
         if (settings->acceleratedCompositingForFixedRootBackgroundEnabled())
             return true;
     }
@@ -2474,7 +2474,7 @@ void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
         case RootLayerAttachedViaEnclosingFrame: {
             // The layer will get hooked up via RenderLayerBacking::updateGraphicsLayerConfiguration()
             // for the frame's renderer in the parent document.
-            m_renderView->document().ownerElement()->scheduleLayerUpdate();
+            m_renderView->document()->ownerElement()->scheduleLayerUpdate();
             break;
         }
     }
@@ -2496,7 +2496,7 @@ void RenderLayerCompositor::detachRootLayer()
         else
             m_rootContentLayer->removeFromParent();
 
-        if (HTMLFrameOwnerElement* ownerElement = m_renderView->document().ownerElement())
+        if (HTMLFrameOwnerElement* ownerElement = m_renderView->document()->ownerElement())
             ownerElement->scheduleLayerUpdate();
         break;
     }
@@ -2522,7 +2522,7 @@ void RenderLayerCompositor::updateRootLayerAttachment()
 
 bool RenderLayerCompositor::isMainFrame() const
 {
-    return !m_renderView->document().ownerElement();
+    return !m_renderView->document()->ownerElement();
 }
 
 // IFrames are special, because we hook compositing layers together across iframe boundaries
@@ -2541,7 +2541,7 @@ void RenderLayerCompositor::notifyIFramesOfCompositingChange()
 
     // Compositing also affects the answer to RenderIFrame::requiresAcceleratedCompositing(), so
     // we need to schedule a style recalc in our parent document.
-    if (HTMLFrameOwnerElement* ownerElement = m_renderView->document().ownerElement())
+    if (HTMLFrameOwnerElement* ownerElement = m_renderView->document()->ownerElement())
         ownerElement->scheduleLayerUpdate();
 }
 

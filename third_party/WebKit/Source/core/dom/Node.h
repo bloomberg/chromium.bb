@@ -484,12 +484,14 @@ public:
     // of a Document node.
     Document* ownerDocument() const;
 
-    // Returns the document associated with this node. A Document node returns itself.
-    Document& document() const
+    // FIXME: This should return a reference.
+    // Returns the document associated with this node. This method never returns 0.
+    // A Document node returns itself.
+    Document* document() const
     {
         ASSERT(this);
         ASSERT(documentInternal());
-        return *documentInternal();
+        return documentInternal();
     }
 
     TreeScope* treeScope() const { return m_treeScope; }

@@ -1758,7 +1758,7 @@ PassOwnPtr<Vector<unsigned> > InspectorStyleSheetForInlineStyle::lineEndings() c
 
 Document* InspectorStyleSheetForInlineStyle::ownerDocument() const
 {
-    return &m_element->document();
+    return m_element->document();
 }
 
 bool InspectorStyleSheetForInlineStyle::ensureParsedDataReady()
@@ -1815,8 +1815,8 @@ PassRefPtr<CSSRuleSourceData> InspectorStyleSheetForInlineStyle::getStyleAttribu
 
     RefPtr<MutableStylePropertySet> tempDeclaration = MutableStylePropertySet::create();
     RuleSourceDataList ruleSourceDataResult;
-    StyleSheetHandler handler(m_styleText, &m_element->document(), m_element->document().elementSheet()->contents(), &ruleSourceDataResult);
-    createCSSParser(&m_element->document())->parseDeclaration(tempDeclaration.get(), m_styleText, &handler, m_element->document().elementSheet()->contents());
+    StyleSheetHandler handler(m_styleText, m_element->document(), m_element->document()->elementSheet()->contents(), &ruleSourceDataResult);
+    createCSSParser(m_element->document())->parseDeclaration(tempDeclaration.get(), m_styleText, &handler, m_element->document()->elementSheet()->contents());
     return ruleSourceDataResult.first().release();
 }
 

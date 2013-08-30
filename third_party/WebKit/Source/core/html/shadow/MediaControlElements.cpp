@@ -90,7 +90,7 @@ void MediaControlPanelElement::startDrag(const LayoutPoint& eventLocation)
     if (!renderer || !renderer->isBox())
         return;
 
-    Frame* frame = document().frame();
+    Frame* frame = document()->frame();
     if (!frame)
         return;
 
@@ -119,7 +119,7 @@ void MediaControlPanelElement::endDrag()
 
     m_isBeingDragged = false;
 
-    Frame* frame = document().frame();
+    Frame* frame = document()->frame();
     if (!frame)
         return;
 
@@ -580,11 +580,11 @@ void MediaControlFullscreenButtonElement::defaultEventHandler(Event* event)
         // allows apps which embed a WebView to retain the existing full screen
         // video implementation without requiring them to implement their own full
         // screen behavior.
-        if (document().settings() && document().settings()->fullScreenEnabled()) {
+        if (document()->settings() && document()->settings()->fullScreenEnabled()) {
             if (FullscreenElementStack::isActiveFullScreenElement(toParentMediaElement(this)))
-                FullscreenElementStack::from(&document())->webkitCancelFullScreen();
+                FullscreenElementStack::from(document())->webkitCancelFullScreen();
             else
-                FullscreenElementStack::from(&document())->requestFullScreenForElement(toParentMediaElement(this), 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
+                FullscreenElementStack::from(document())->requestFullScreenForElement(toParentMediaElement(this), 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
         } else
             mediaController()->enterFullscreen();
         event->setDefaultHandled();
@@ -781,7 +781,7 @@ void MediaControlTextTrackContainerElement::updateSizes(bool forceUpdate)
     if (!mediaElement)
         return;
 
-    if (!document().page())
+    if (!document()->page())
         return;
 
     IntRect videoBox;

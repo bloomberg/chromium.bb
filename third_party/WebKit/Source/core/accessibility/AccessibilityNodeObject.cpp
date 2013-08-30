@@ -1453,7 +1453,7 @@ Document* AccessibilityNodeObject::document() const
 {
     if (!node())
         return 0;
-    return &node()->document();
+    return node()->document();
 }
 
 void AccessibilityNodeObject::setNode(Node* node)

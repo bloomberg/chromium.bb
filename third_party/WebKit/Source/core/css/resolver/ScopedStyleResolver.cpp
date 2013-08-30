@@ -143,12 +143,12 @@ void ScopedStyleTree::collectScopedResolversForHostedShadowTrees(const Element* 
 
 void ScopedStyleTree::resolveScopedKeyframesRules(const Element* element, Vector<ScopedStyleResolver*, 8>& resolvers)
 {
-    Document& document = element->document();
+    Document* document = element->document();
     TreeScope* treeScope = element->treeScope();
     bool applyAuthorStyles = treeScope->applyAuthorStyles();
 
     for (ScopedStyleResolver* scopedResolver = scopedResolverFor(element); scopedResolver; scopedResolver = scopedResolver->parent()) {
-        if (scopedResolver->treeScope() == treeScope || (applyAuthorStyles && scopedResolver->treeScope() == &document))
+        if (scopedResolver->treeScope() == treeScope || (applyAuthorStyles && scopedResolver->treeScope() == document))
             resolvers.append(scopedResolver);
     }
 }

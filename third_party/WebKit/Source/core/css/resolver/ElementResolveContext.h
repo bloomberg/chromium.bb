@@ -47,8 +47,9 @@ public:
 
     explicit ElementResolveContext(Element*);
 
-    Document& document() const { return m_element->document(); }
-    bool isDocumentElement() const { return m_element && m_element == m_element->document().documentElement(); }
+    // FIXME: This should return a reference.
+    Document* document() const { return m_element->document(); }
+    bool isDocumentElement() const { return m_element && m_element == m_element->document()->documentElement(); }
 
     Element* element() const { return m_element; }
     const ContainerNode* parentNode() const { return m_parentNode; }

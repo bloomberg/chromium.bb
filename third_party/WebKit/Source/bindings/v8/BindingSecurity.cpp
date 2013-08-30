@@ -91,7 +91,7 @@ bool BindingSecurity::shouldAllowAccessToFrame(Frame* target, ExceptionState& es
 
 bool BindingSecurity::shouldAllowAccessToNode(Node* target)
 {
-    return target && canAccessDocument(&target->document());
+    return target && canAccessDocument(target->document());
 }
 
 }

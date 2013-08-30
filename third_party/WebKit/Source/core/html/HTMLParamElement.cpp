@@ -47,7 +47,7 @@ String HTMLParamElement::name() const
 {
     if (hasName())
         return getNameAttribute();
-    return document().isHTMLDocument() ? emptyAtom : getIdAttribute();
+    return document()->isHTMLDocument() ? emptyAtom : getIdAttribute();
 }
 
 String HTMLParamElement::value() const
@@ -74,7 +74,7 @@ void HTMLParamElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) cons
     if (!isURLParameter(name()))
         return;
 
-    addSubresourceURL(urls, document().completeURL(value()));
+    addSubresourceURL(urls, document()->completeURL(value()));
 }
 
 }

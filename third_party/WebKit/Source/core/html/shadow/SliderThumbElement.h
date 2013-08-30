@@ -75,7 +75,7 @@ private:
 
 inline PassRefPtr<Element> SliderThumbElement::cloneElementWithoutAttributesAndChildren()
 {
-    return create(&document());
+    return create(document());
 }
 
 inline SliderThumbElement* toSliderThumbElement(Node* node)

@@ -241,10 +241,10 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     // <http://bugs.webkit.org/show_bug.cgi?id=23464>: Infinite recursion at FrameSelection::setSelection
     // if document->frame() == m_frame we can get into an infinite loop
     if (s.base().anchorNode()) {
-        Document& document = s.base().anchorNode()->document();
-        if (document.frame() && document.frame() != m_frame && &document != m_frame->document()) {
-            RefPtr<Frame> guard = document.frame();
-            document.frame()->selection()->setSelection(s, options, align, granularity);
+        Document* document = s.base().anchorNode()->document();
+        if (document->frame() && document->frame() != m_frame && document != m_frame->document()) {
+            RefPtr<Frame> guard = document->frame();
+            document->frame()->selection()->setSelection(s, options, align, granularity);
             // It's possible that during the above set selection, this FrameSelection has been modified by
             // selectFrameElementInParentIfFullySelected, but that the selection is no longer valid since
             // the frame is about to be destroyed. If this is the case, clear our selection.
@@ -320,7 +320,7 @@ static bool removingNodeRemovesPosition(Node* node, const Position& position)
 
 static void clearRenderViewSelection(const Position& position)
 {
-    RefPtr<Document> document = &position.anchorNode()->document();
+    RefPtr<Document> document = position.anchorNode()->document();
     document->updateStyleIfNeeded();
     if (RenderView* view = document->renderView())
         view->clearSelection();
@@ -1115,7 +1115,7 @@ LayoutUnit FrameSelection::lineDirectionPointForBlockDirectionNavigation(EPositi
         break;
     }
 
-    Frame* frame = pos.anchorNode()->document().frame();
+    Frame* frame = pos.anchorNode()->document()->frame();
     if (!frame)
         return x;
 
@@ -1461,7 +1461,7 @@ bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, bool clo
 {
     if (!range || !range->startContainer() || !range->endContainer())
         return false;
-    ASSERT(&range->startContainer()->document() == &range->endContainer()->document());
+    ASSERT(range->startContainer()->document() == range->endContainer()->document());
 
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
@@ -1664,7 +1664,7 @@ bool FrameSelection::shouldBlinkCaret() const
     if (!root)
         return false;
 
-    Element* focusedElement = root->document().focusedElement();
+    Element* focusedElement = root->document()->focusedElement();
     if (!focusedElement)
         return false;
 

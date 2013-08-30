@@ -54,7 +54,7 @@ PassRefPtr<ClearButtonElement> ClearButtonElement::create(Document* document, Cl
 void ClearButtonElement::detach(const AttachContext& context)
 {
     if (m_capturing) {
-        if (Frame* frame = document().frame())
+        if (Frame* frame = document()->frame())
             frame->eventHandler()->setCapturingMouseEventsNode(0);
     }
     HTMLDivElement::detach(context);
@@ -65,7 +65,7 @@ void ClearButtonElement::releaseCapture()
     if (!m_capturing)
         return;
 
-    if (Frame* frame = document().frame()) {
+    if (Frame* frame = document()->frame()) {
         frame->eventHandler()->setCapturingMouseEventsNode(0);
         m_capturing = false;
     }
@@ -87,7 +87,7 @@ void ClearButtonElement::defaultEventHandler(Event* event)
 
     if (event->type() == eventNames().mousedownEvent && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         if (renderer() && renderer()->visibleToHitTesting()) {
-            if (Frame* frame = document().frame()) {
+            if (Frame* frame = document()->frame()) {
                 frame->eventHandler()->setCapturingMouseEventsNode(this);
                 m_capturing = true;
             }
@@ -97,7 +97,7 @@ void ClearButtonElement::defaultEventHandler(Event* event)
     }
     if (event->type() == eventNames().mouseupEvent && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         if (m_capturing) {
-            if (Frame* frame = document().frame()) {
+            if (Frame* frame = document()->frame()) {
                 frame->eventHandler()->setCapturingMouseEventsNode(0);
                 m_capturing = false;
             }

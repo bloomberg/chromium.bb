@@ -90,7 +90,7 @@ void HTMLScriptElement::setText(const String &value)
     }
 
     removeChildren();
-    appendChild(document().createTextNode(value.impl()), IGNORE_EXCEPTION);
+    appendChild(document()->createTextNode(value.impl()), IGNORE_EXCEPTION);
 }
 
 void HTMLScriptElement::setAsync(bool async)
@@ -106,7 +106,7 @@ bool HTMLScriptElement::async() const
 
 KURL HTMLScriptElement::src() const
 {
-    return document().completeURL(sourceAttributeValue());
+    return document()->completeURL(sourceAttributeValue());
 }
 
 void HTMLScriptElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
@@ -169,7 +169,7 @@ void HTMLScriptElement::dispatchLoadEvent()
 
 PassRefPtr<Element> HTMLScriptElement::cloneElementWithoutAttributesAndChildren()
 {
-    return adoptRef(new HTMLScriptElement(tagQName(), &document(), false, m_loader->alreadyStarted()));
+    return adoptRef(new HTMLScriptElement(tagQName(), document(), false, m_loader->alreadyStarted()));
 }
 
 }

@@ -124,26 +124,26 @@ void StyleElement::createSheet(Element* e, const String& text)
 {
     ASSERT(e);
     ASSERT(e->inDocument());
-    Document& document = e->document();
+    Document* document = e->document();
     if (m_sheet) {
         if (m_sheet->isLoading())
-            document.styleSheetCollections()->removePendingSheet(e);
+            document->styleSheetCollections()->removePendingSheet(e);
         clearSheet();
     }
 
     // If type is empty or CSS, this is a CSS style sheet.
     const AtomicString& type = this->type();
-    if (document.contentSecurityPolicy()->allowInlineStyle(e->document().url(), m_startPosition.m_line) && isCSS(e, type)) {
+    if (document->contentSecurityPolicy()->allowInlineStyle(e->document()->url(), m_startPosition.m_line) && isCSS(e, type)) {
         RefPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(media());
 
         MediaQueryEvaluator screenEval("screen", true);
         MediaQueryEvaluator printEval("print", true);
         if (screenEval.eval(mediaQueries.get()) || printEval.eval(mediaQueries.get())) {
-            document.styleSheetCollections()->addPendingSheet();
+            document->styleSheetCollections()->addPendingSheet();
             m_loading = true;
 
             TextPosition startPosition = m_startPosition == TextPosition::belowRangePosition() ? TextPosition::minimumPosition() : m_startPosition;
-            m_sheet = CSSStyleSheet::createInline(e, KURL(), startPosition, document.inputEncoding());
+            m_sheet = CSSStyleSheet::createInline(e, KURL(), startPosition, document->inputEncoding());
             m_sheet->setMediaQueries(mediaQueries.release());
             m_sheet->setTitle(e->title());
             m_sheet->contents()->parseStringAtPosition(text, startPosition, m_createdByParser);

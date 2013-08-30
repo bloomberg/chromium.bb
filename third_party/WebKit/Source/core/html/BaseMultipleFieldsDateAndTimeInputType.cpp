@@ -150,7 +150,7 @@ PickerIndicatorElement* BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorE
 
 inline bool BaseMultipleFieldsDateAndTimeInputType::containsFocusedShadowElement() const
 {
-    return element()->userAgentShadowRoot()->contains(element()->document().focusedElement());
+    return element()->userAgentShadowRoot()->contains(element()->document()->focusedElement());
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::didBlurFromControl()
@@ -330,13 +330,13 @@ void BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree()
     // FIXME: This code should not depend on such craziness.
     ASSERT(!element()->renderer());
 
-    Document& document = element()->document();
+    Document* document = element()->document();
     ContainerNode* container = element()->userAgentShadowRoot();
 
-    container->appendChild(DateTimeEditElement::create(&document, *this));
+    container->appendChild(DateTimeEditElement::create(document, *this));
     updateInnerTextValue();
-    container->appendChild(ClearButtonElement::create(&document, *this));
-    container->appendChild(SpinButtonElement::create(&document, *this));
+    container->appendChild(ClearButtonElement::create(document, *this));
+    container->appendChild(SpinButtonElement::create(document, *this));
 
     bool shouldAddPickerIndicator = false;
     if (InputType::themeSupportsDataListUI(this))
@@ -346,7 +346,7 @@ void BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree()
         m_pickerIndicatorIsAlwaysVisible = true;
     }
     if (shouldAddPickerIndicator) {
-        container->appendChild(PickerIndicatorElement::create(&document, *this));
+        container->appendChild(PickerIndicatorElement::create(document, *this));
         m_pickerIndicatorIsVisible = true;
         updatePickerIndicatorVisibility();
     }
@@ -381,8 +381,8 @@ void BaseMultipleFieldsDateAndTimeInputType::handleFocusEvent(Element* oldFocuse
     if (!edit || m_isDestroyingShadowSubtree)
         return;
     if (direction == FocusDirectionBackward) {
-        if (element()->document().page())
-            element()->document().page()->focusController().advanceFocus(direction);
+        if (element()->document()->page())
+            element()->document()->page()->focusController().advanceFocus(direction);
     } else if (direction == FocusDirectionNone || direction == FocusDirectionMouse || direction == FocusDirectionPage) {
         edit->focusByOwner(oldFocusedElement);
     } else
@@ -417,6 +417,7 @@ void BaseMultipleFieldsDateAndTimeInputType::requiredAttributeChanged()
 
 void BaseMultipleFieldsDateAndTimeInputType::handleKeydownEvent(KeyboardEvent* event)
 {
+    Document* document = element()->document();
     if (m_pickerIndicatorIsVisible
         && ((event->keyIdentifier() == "Down" && event->getModifierState("Alt")) || (RenderTheme::theme().shouldOpenPickerWithF4Key() && event->keyIdentifier() == "F4"))) {
         if (PickerIndicatorElement* element = pickerIndicatorElement())

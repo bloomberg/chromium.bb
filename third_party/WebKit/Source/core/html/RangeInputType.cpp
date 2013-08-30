@@ -232,7 +232,7 @@ void RangeInputType::handleKeydownEvent(KeyboardEvent* event)
         TextFieldEventBehavior eventBehavior = DispatchChangeEvent;
         setValueAsDecimal(newValue, eventBehavior, IGNORE_EXCEPTION);
 
-        if (AXObjectCache* cache = element()->document().existingAXObjectCache())
+        if (AXObjectCache* cache = element()->document()->existingAXObjectCache())
             cache->postNotification(element(), AXObjectCache::AXValueChanged, true);
         element()->dispatchFormControlChangeEvent();
     }
@@ -244,7 +244,7 @@ void RangeInputType::createShadowSubtree()
 {
     ASSERT(element()->shadow());
 
-    Document* document = &element()->document();
+    Document* document = element()->document();
     RefPtr<HTMLDivElement> track = HTMLDivElement::create(document);
     track->setPart(AtomicString("-webkit-slider-runnable-track", AtomicString::ConstructFromLiteral));
     track->setAttribute(idAttr, ShadowElementNames::sliderTrack());

@@ -720,7 +720,7 @@ static String nodePosition(Node* node)
 {
     StringBuilder result;
 
-    Element* body = node->document().body();
+    Element* body = node->document()->body();
     Node* parent;
     for (Node* n = node; n; n = parent) {
         parent = n->parentOrShadowHostNode();
@@ -805,7 +805,7 @@ String externalRepresentation(Element* element, RenderAsTextBehavior behavior)
     // Doesn't support printing mode.
     ASSERT(!(behavior & RenderAsTextPrintingMode));
     if (!(behavior & RenderAsTextDontUpdateLayout))
-        element->document().updateLayout();
+        element->document()->updateLayout();
 
     RenderObject* renderer = element->renderer();
     if (!renderer || !renderer->isBox())
@@ -831,7 +831,7 @@ String counterValueForElement(Element* element)
 {
     // Make sure the element is not freed during the layout.
     RefPtr<Element> elementRef(element);
-    element->document().updateLayout();
+    element->document()->updateLayout();
     TextStream stream;
     bool isFirstCounter = true;
     // The counter renderers should be children of :before or :after pseudo-elements.
@@ -846,7 +846,7 @@ String markerTextForListItem(Element* element)
 {
     // Make sure the element is not freed during the layout.
     RefPtr<Element> elementRef(element);
-    element->document().updateLayout();
+    element->document()->updateLayout();
 
     RenderObject* renderer = element->renderer();
     if (!renderer || !renderer->isListItem())

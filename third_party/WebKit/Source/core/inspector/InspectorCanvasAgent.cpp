@@ -272,10 +272,10 @@ void InspectorCanvasAgent::findFramesWithUninstrumentedCanvases()
 
         virtual void visitNode(Node* node) OVERRIDE
         {
-            if (!node->hasTagName(HTMLNames::canvasTag) || !node->document().frame())
+            if (!node->hasTagName(HTMLNames::canvasTag) || !node->document() || !node->document()->frame())
                 return;
 
-            Frame* frame = node->document().frame();
+            Frame* frame = node->document()->frame();
             if (frame->page() != m_page)
                 return;
 

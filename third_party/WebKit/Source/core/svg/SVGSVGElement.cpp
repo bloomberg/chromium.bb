@@ -105,7 +105,7 @@ SVGSVGElement::~SVGSVGElement()
         m_viewSpec->resetContextElement();
     // There are cases where removedFromDocument() is not called.
     // see ContainerNode::removeAllChildren, called by its destructor.
-    document().accessSVGExtensions()->removeTimeContainer(this);
+    document()->accessSVGExtensions()->removeTimeContainer(this);
 }
 
 const AtomicString& SVGSVGElement::contentScriptType() const
@@ -173,7 +173,7 @@ float SVGSVGElement::currentScale() const
     if (!inDocument() || !isOutermostSVGSVGElement())
         return 1;
 
-    Frame* frame = document().frame();
+    Frame* frame = document()->frame();
     if (!frame)
         return 1;
 
@@ -191,7 +191,7 @@ void SVGSVGElement::setCurrentScale(float scale)
     if (!inDocument() || !isOutermostSVGSVGElement())
         return;
 
-    Frame* frame = document().frame();
+    Frame* frame = document()->frame();
     if (!frame)
         return;
 
@@ -218,8 +218,8 @@ void SVGSVGElement::updateCurrentTranslate()
     if (RenderObject* object = renderer())
         object->setNeedsLayout();
 
-    if (parentNode() == &document() && document().renderer())
-        document().renderer()->repaint();
+    if (parentNode() == document() && document()->renderer())
+        document()->renderer()->repaint();
 }
 
 void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -231,13 +231,13 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString
 
         // Only handle events if we're the outermost <svg> element
         if (name == HTMLNames::onunloadAttr)
-            document().setWindowAttributeEventListener(eventNames().unloadEvent, createAttributeEventListener(document().frame(), name, value));
+            document()->setWindowAttributeEventListener(eventNames().unloadEvent, createAttributeEventListener(document()->frame(), name, value));
         else if (name == HTMLNames::onresizeAttr)
-            document().setWindowAttributeEventListener(eventNames().resizeEvent, createAttributeEventListener(document().frame(), name, value));
+            document()->setWindowAttributeEventListener(eventNames().resizeEvent, createAttributeEventListener(document()->frame(), name, value));
         else if (name == HTMLNames::onscrollAttr)
-            document().setWindowAttributeEventListener(eventNames().scrollEvent, createAttributeEventListener(document().frame(), name, value));
+            document()->setWindowAttributeEventListener(eventNames().scrollEvent, createAttributeEventListener(document()->frame(), name, value));
         else if (name == SVGNames::onzoomAttr)
-            document().setWindowAttributeEventListener(eventNames().zoomEvent, createAttributeEventListener(document().frame(), name, value));
+            document()->setWindowAttributeEventListener(eventNames().zoomEvent, createAttributeEventListener(document()->frame(), name, value));
         else
             setListener = false;
 
@@ -246,9 +246,9 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString
     }
 
     if (name == HTMLNames::onabortAttr)
-        document().setWindowAttributeEventListener(eventNames().abortEvent, createAttributeEventListener(document().frame(), name, value));
+        document()->setWindowAttributeEventListener(eventNames().abortEvent, createAttributeEventListener(document()->frame(), name, value));
     else if (name == HTMLNames::onerrorAttr)
-        document().setWindowAttributeEventListener(eventNames().errorEvent, createAttributeEventListener(document().frame(), name, value));
+        document()->setWindowAttributeEventListener(eventNames().errorEvent, createAttributeEventListener(document()->frame(), name, value));
     else if (name == SVGNames::xAttr)
         setXBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
     else if (name == SVGNames::yAttr)
@@ -375,7 +375,7 @@ bool SVGSVGElement::checkEnclosure(SVGElement* element, const SVGRect& rect) con
 
 void SVGSVGElement::deselectAll()
 {
-    if (Frame* frame = document().frame())
+    if (Frame* frame = document()->frame())
         frame->selection()->clear();
 }
 
@@ -455,7 +455,7 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGLocatable::CTMSc
             transform.translate(location.x() - viewBoxTransform.e(), location.y() - viewBoxTransform.f());
 
             // Respect scroll offset.
-            if (FrameView* view = document().view()) {
+            if (FrameView* view = document()->view()) {
                 LayoutSize scrollOffset = view->scrollOffset();
                 scrollOffset.scale(zoomFactor);
                 transform.translate(-scrollOffset.width(), -scrollOffset.height());
@@ -472,7 +472,7 @@ bool SVGSVGElement::rendererIsNeeded(const NodeRenderingContext& context)
     // but many things in FrameView and SVGImage depend on the RenderSVGRoot when
     // they should instead depend on the RenderView.
     // https://bugs.webkit.org/show_bug.cgi?id=103493
-    if (document().documentElement() == this)
+    if (document()->documentElement() == this)
         return true;
     return Element::rendererIsNeeded(context);
 }
@@ -488,12 +488,12 @@ RenderObject* SVGSVGElement::createRenderer(RenderStyle*)
 Node::InsertionNotificationRequest SVGSVGElement::insertedInto(ContainerNode* rootParent)
 {
     if (rootParent->inDocument()) {
-        document().accessSVGExtensions()->addTimeContainer(this);
+        document()->accessSVGExtensions()->addTimeContainer(this);
 
         // Animations are started at the end of document parsing and after firing the load event,
         // but if we miss that train (deferred programmatic element insertion for example) we need
         // to initialize the time container here.
-        if (!document().parsing() && !document().processingLoadEvent() && document().loadEventFinished() && !timeContainer()->isStarted())
+        if (!document()->parsing() && !document()->processingLoadEvent() && document()->loadEventFinished() && !timeContainer()->isStarted())
             timeContainer()->begin();
     }
     return SVGGraphicsElement::insertedInto(rootParent);
@@ -502,7 +502,7 @@ Node::InsertionNotificationRequest SVGSVGElement::insertedInto(ContainerNode* ro
 void SVGSVGElement::removedFrom(ContainerNode* rootParent)
 {
     if (rootParent->inDocument())
-        document().accessSVGExtensions()->removeTimeContainer(this);
+        document()->accessSVGExtensions()->removeTimeContainer(this);
     SVGGraphicsElement::removedFrom(rootParent);
 }
 
@@ -604,10 +604,10 @@ bool SVGSVGElement::widthAttributeEstablishesViewport() const
 
     // SVG embedded through object/embed/iframe.
     if (root->isEmbeddedThroughFrameContainingSVGDocument())
-        return !root->hasReplacedLogicalWidth() && !document().frame()->ownerRenderer()->hasReplacedLogicalWidth();
+        return !root->hasReplacedLogicalWidth() && !document()->frame()->ownerRenderer()->hasReplacedLogicalWidth();
 
     // SVG embedded via SVGImage (background-image/border-image/etc) / Inline SVG.
-    if (root->isEmbeddedThroughSVGImage() || document().documentElement() != this)
+    if (root->isEmbeddedThroughSVGImage() || document()->documentElement() != this)
         return !root->hasReplacedLogicalWidth();
 
     return true;
@@ -626,10 +626,10 @@ bool SVGSVGElement::heightAttributeEstablishesViewport() const
 
     // SVG embedded through object/embed/iframe.
     if (root->isEmbeddedThroughFrameContainingSVGDocument())
-        return !root->hasReplacedLogicalHeight() && !document().frame()->ownerRenderer()->hasReplacedLogicalHeight();
+        return !root->hasReplacedLogicalHeight() && !document()->frame()->ownerRenderer()->hasReplacedLogicalHeight();
 
     // SVG embedded via SVGImage (background-image/border-image/etc) / Inline SVG.
-    if (root->isEmbeddedThroughSVGImage() || document().documentElement() != this)
+    if (root->isEmbeddedThroughSVGImage() || document()->documentElement() != this)
         return !root->hasReplacedLogicalHeight();
 
     return true;

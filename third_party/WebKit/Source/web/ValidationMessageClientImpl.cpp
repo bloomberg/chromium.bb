@@ -64,7 +64,7 @@ ValidationMessageClientImpl::~ValidationMessageClientImpl()
 
 FrameView* ValidationMessageClientImpl::currentView()
 {
-    return m_currentAnchor->document().view();
+    return m_currentAnchor->document()->view();
 }
 
 void ValidationMessageClientImpl::showValidationMessage(const Element& anchor, const String& message)
@@ -114,7 +114,7 @@ bool ValidationMessageClientImpl::isValidationMessageVisible(const Element& anch
 
 void ValidationMessageClientImpl::documentDetached(const Document& document)
 {
-    if (m_currentAnchor && &m_currentAnchor->document() == &document)
+    if (m_currentAnchor && m_currentAnchor->document() == &document)
         hideValidationMessage(*m_currentAnchor);
 }
 

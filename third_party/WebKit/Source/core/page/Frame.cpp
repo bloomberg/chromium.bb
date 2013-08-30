@@ -78,7 +78,7 @@ static inline Frame* parentFromOwnerElement(HTMLFrameOwnerElement* ownerElement)
 {
     if (!ownerElement)
         return 0;
-    return ownerElement->document().frame();
+    return ownerElement->document()->frame();
 }
 
 static inline float parentPageZoomFactor(Frame* frame)
@@ -303,10 +303,9 @@ Frame* Frame::frameForWidget(const Widget* widget)
 {
     ASSERT_ARG(widget, widget);
 
-    if (RenderWidget* renderer = RenderWidget::find(widget)) {
+    if (RenderWidget* renderer = RenderWidget::find(widget))
         if (Node* node = renderer->node())
-            return node->document().frame();
-    }
+            return node->document()->frame();
 
     // Assume all widgets are either a FrameView or owned by a RenderWidget.
     // FIXME: That assumption is not right for scroll bars!
@@ -434,7 +433,7 @@ Document* Frame::documentAtPoint(const IntPoint& point)
 
     if (contentRenderer())
         result = eventHandler()->hitTestResultAtPoint(pt, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
-    return result.innerNode() ? &result.innerNode()->document() : 0;
+    return result.innerNode() ? result.innerNode()->document() : 0;
 }
 
 PassRefPtr<Range> Frame::rangeForPoint(const IntPoint& framePoint)

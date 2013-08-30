@@ -316,7 +316,7 @@ void SVGFontFaceElement::rebuildFontFace()
         }
     }
 
-    document().styleResolverChanged(RecalcStyleDeferred);
+    document()->styleResolverChanged(RecalcStyleDeferred);
 }
 
 Node::InsertionNotificationRequest SVGFontFaceElement::insertedInto(ContainerNode* rootParent)
@@ -326,7 +326,7 @@ Node::InsertionNotificationRequest SVGFontFaceElement::insertedInto(ContainerNod
         ASSERT(!m_fontElement);
         return InsertionDone;
     }
-    document().accessSVGExtensions()->registerSVGFontFaceElement(this);
+    document()->accessSVGExtensions()->registerSVGFontFaceElement(this);
 
     rebuildFontFace();
     return InsertionDone;
@@ -338,10 +338,10 @@ void SVGFontFaceElement::removedFrom(ContainerNode* rootParent)
 
     if (rootParent->inDocument()) {
         m_fontElement = 0;
-        document().accessSVGExtensions()->unregisterSVGFontFaceElement(this);
+        document()->accessSVGExtensions()->unregisterSVGFontFaceElement(this);
         m_fontFaceRule->mutableProperties()->clear();
 
-        document().styleResolverChanged(RecalcStyleDeferred);
+        document()->styleResolverChanged(RecalcStyleDeferred);
     } else
         ASSERT(!m_fontElement);
 }

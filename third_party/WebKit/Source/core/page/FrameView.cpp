@@ -1077,7 +1077,7 @@ void FrameView::layout(bool allowSubtree)
 
     m_layoutCount++;
 
-    if (AXObjectCache* cache = rootForThisLayout->document().existingAXObjectCache())
+    if (AXObjectCache* cache = rootForThisLayout->document()->existingAXObjectCache())
         cache->postNotification(rootForThisLayout, AXObjectCache::AXLayoutComplete, true);
     updateAnnotatedRegions();
 
@@ -2425,7 +2425,7 @@ IntRect FrameView::windowClipRect(bool clipToContents) const
 
     // Take our owner element and get its clip rect.
     HTMLFrameOwnerElement* ownerElement = m_frame->ownerElement();
-    FrameView* parentView = ownerElement->document().view();
+    FrameView* parentView = ownerElement->document()->view();
     if (parentView)
         clipRect.intersect(parentView->windowClipRectForFrameOwner(ownerElement, true));
     return clipRect;

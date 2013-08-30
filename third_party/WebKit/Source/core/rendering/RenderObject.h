@@ -369,7 +369,7 @@ public:
 
     virtual bool isRenderScrollbarPart() const { return false; }
 
-    bool isRoot() const { return document().documentElement() == m_node; }
+    bool isRoot() const { return document()->documentElement() == m_node; }
     bool isBody() const;
     bool isHR() const;
     bool isLegend() const;
@@ -583,7 +583,7 @@ public:
 
     virtual void updateDragState(bool dragOn);
 
-    RenderView* view() const { return document().renderView(); };
+    RenderView* view() const { return document()->renderView(); };
 
     // Returns true if this renderer is rooted, and optionally returns the hosting view (the root of the hierarchy).
     bool isRooted(RenderView** = 0) const;
@@ -599,8 +599,9 @@ public:
     // pseudo elements for which their parent node is returned.
     Node* generatingNode() const { return isPseudoElement() ? node()->parentOrShadowHostNode() : node(); }
 
-    Document& document() const { return m_node->document(); }
-    Frame* frame() const { return document().frame(); }
+    // FIXME: This should return a reference.
+    Document* document() const { return m_node->document(); }
+    Frame* frame() const { return document()->frame(); }
 
     bool hasOutlineAnnotation() const;
     bool hasOutline() const { return style()->hasOutline() || hasOutlineAnnotation(); }
@@ -755,7 +756,7 @@ public:
     virtual LayoutUnit maxPreferredLogicalWidth() const { return 0; }
 
     RenderStyle* style() const { return m_style.get(); }
-    RenderStyle* firstLineStyle() const { return document().styleSheetCollections()->usesFirstLineRules() ? cachedFirstLineStyle() : style(); }
+    RenderStyle* firstLineStyle() const { return document()->styleSheetCollections()->usesFirstLineRules() ? cachedFirstLineStyle() : style(); }
     RenderStyle* style(bool firstLine) const { return firstLine ? firstLineStyle() : style(); }
 
     inline Color resolveColor(const RenderStyle* styleToUse, int colorProperty) const
@@ -1210,7 +1211,7 @@ private:
 
 inline bool RenderObject::documentBeingDestroyed() const
 {
-    return !document().renderer();
+    return !document()->renderer();
 }
 
 inline bool RenderObject::isBeforeContent() const

@@ -85,7 +85,7 @@ PassRefPtr<HTMLFormElement> HTMLFormElement::create(const QualifiedName& tagName
 
 HTMLFormElement::~HTMLFormElement()
 {
-    document().formController()->willDeleteForm(this);
+    document()->formController()->willDeleteForm(this);
 
     for (unsigned i = 0; i < m_associatedElements.size(); ++i)
         m_associatedElements[i]->formWillBeDestroyed();
@@ -95,7 +95,7 @@ HTMLFormElement::~HTMLFormElement()
 
 bool HTMLFormElement::formWouldHaveSecureSubmission(const String& url)
 {
-    return document().completeURL(url).protocolIs("https");
+    return document()->completeURL(url).protocolIs("https");
 }
 
 bool HTMLFormElement::rendererIsNeeded(const NodeRenderingContext& context)
@@ -128,7 +128,7 @@ Node::InsertionNotificationRequest HTMLFormElement::insertedInto(ContainerNode* 
 {
     HTMLElement::insertedInto(insertionPoint);
     if (insertionPoint->inDocument())
-        this->document().didAssociateFormControl(this);
+        this->document()->didAssociateFormControl(this);
     return InsertionDone;
 }
 
@@ -205,7 +205,7 @@ static inline HTMLFormControlElement* submitElementFromEvent(const Event* event)
 bool HTMLFormElement::validateInteractively(Event* event)
 {
     ASSERT(event);
-    if (!document().page() || noValidate())
+    if (!document()->page() || noValidate())
         return true;
 
     HTMLFormControlElement* submitElement = submitElementFromEvent(event);
@@ -225,7 +225,7 @@ bool HTMLFormElement::validateInteractively(Event* event)
 
     // Needs to update layout now because we'd like to call isFocusable(), which
     // has !renderer()->needsLayout() assertion.
-    document().updateLayoutIgnorePendingStylesheets();
+    document()->updateLayoutIgnorePendingStylesheets();
 
     RefPtr<HTMLFormElement> protector(this);
     // Focus on the first focusable control and show a validation message.
@@ -241,7 +241,7 @@ bool HTMLFormElement::validateInteractively(Event* event)
         }
     }
     // Warn about all of unfocusable controls.
-    if (document().frame()) {
+    if (document()->frame()) {
         for (unsigned i = 0; i < unhandledInvalidControls.size(); ++i) {
             FormAssociatedElement* unhandledAssociatedElement = unhandledInvalidControls[i].get();
             HTMLElement* unhandled = toHTMLElement(unhandledAssociatedElement);
@@ -249,7 +249,7 @@ bool HTMLFormElement::validateInteractively(Event* event)
                 continue;
             String message("An invalid form control with name='%name' is not focusable.");
             message.replace("%name", unhandledAssociatedElement->name());
-            document().addConsoleMessage(RenderingMessageSource, ErrorMessageLevel, message);
+            document()->addConsoleMessage(RenderingMessageSource, ErrorMessageLevel, message);
         }
     }
     return false;
@@ -257,7 +257,7 @@ bool HTMLFormElement::validateInteractively(Event* event)
 
 bool HTMLFormElement::prepareForSubmission(Event* event)
 {
-    Frame* frame = document().frame();
+    Frame* frame = document()->frame();
     if (m_isSubmittingOrPreparingForSubmission || !frame)
         return m_isSubmittingOrPreparingForSubmission;
 
@@ -272,7 +272,7 @@ bool HTMLFormElement::prepareForSubmission(Event* event)
 
     StringPairVector controlNamesAndValues;
     getTextFieldValues(controlNamesAndValues);
-    RefPtr<FormState> formState = FormState::create(this, controlNamesAndValues, &document(), NotSubmittedByJavaScript);
+    RefPtr<FormState> formState = FormState::create(this, controlNamesAndValues, document(), NotSubmittedByJavaScript);
     frame->loader()->client()->dispatchWillSendSubmitEvent(formState.release());
 
     if (dispatchEvent(Event::createCancelableBubble(eventNames().submitEvent)))
@@ -317,8 +317,8 @@ void HTMLFormElement::getTextFieldValues(StringPairVector& fieldNamesAndValues) 
 
 void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool processingUserGesture, FormSubmissionTrigger formSubmissionTrigger)
 {
-    FrameView* view = document().view();
-    Frame* frame = document().frame();
+    FrameView* view = document()->view();
+    Frame* frame = document()->frame();
     if (!view || !frame || !frame->page())
         return;
 
@@ -365,27 +365,27 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtr<FormSubmission> submissi
     ASSERT(submission->state());
     if (submission->action().isEmpty())
         return;
-    if (document().isSandboxed(SandboxForms)) {
+    if (document()->isSandboxed(SandboxForms)) {
         // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-        document().addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Blocked form submission to '" + submission->action().elidedString() + "' because the form's frame is sandboxed and the 'allow-forms' permission is not set.");
+        document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Blocked form submission to '" + submission->action().elidedString() + "' because the form's frame is sandboxed and the 'allow-forms' permission is not set.");
         return;
     }
 
     if (protocolIsJavaScript(submission->action())) {
-        if (!document().contentSecurityPolicy()->allowFormAction(KURL(submission->action())))
+        if (!document()->contentSecurityPolicy()->allowFormAction(KURL(submission->action())))
             return;
-        document().frame()->script()->executeScriptIfJavaScriptURL(submission->action());
+        document()->frame()->script()->executeScriptIfJavaScriptURL(submission->action());
         return;
     }
-    submission->setReferrer(document().frame()->loader()->outgoingReferrer());
-    submission->setOrigin(document().frame()->loader()->outgoingOrigin());
+    submission->setReferrer(document()->frame()->loader()->outgoingReferrer());
+    submission->setOrigin(document()->frame()->loader()->outgoingOrigin());
 
-    document().frame()->navigationScheduler()->scheduleFormSubmission(submission);
+    document()->frame()->navigationScheduler()->scheduleFormSubmission(submission);
 }
 
 void HTMLFormElement::reset()
 {
-    Frame* frame = document().frame();
+    Frame* frame = document()->frame();
     if (m_isInResetFunction || !frame)
         return;
 
@@ -406,7 +406,7 @@ void HTMLFormElement::reset()
 
 void HTMLFormElement::requestAutocomplete()
 {
-    Frame* frame = document().frame();
+    Frame* frame = document()->frame();
     if (!frame)
         return;
 
@@ -417,7 +417,7 @@ void HTMLFormElement::requestAutocomplete()
 
     StringPairVector controlNamesAndValues;
     getTextFieldValues(controlNamesAndValues);
-    RefPtr<FormState> formState = FormState::create(this, controlNamesAndValues, &document(), SubmittedByJavaScript);
+    RefPtr<FormState> formState = FormState::create(this, controlNamesAndValues, document(), SubmittedByJavaScript);
     frame->loader()->client()->didRequestAutocomplete(formState.release());
 }
 
@@ -719,7 +719,7 @@ bool HTMLFormElement::shouldAutocomplete() const
 void HTMLFormElement::finishParsingChildren()
 {
     HTMLElement::finishParsingChildren();
-    document().formController()->restoreControlStateIn(*this);
+    document()->formController()->restoreControlStateIn(*this);
 }
 
 void HTMLFormElement::copyNonAttributePropertiesFromElement(const Element& source)
@@ -759,7 +759,7 @@ void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& retur
 void HTMLFormElement::setDemoted(bool demoted)
 {
     if (demoted)
-        UseCounter::count(&document(), UseCounter::DemotedFormElement);
+        UseCounter::count(document(), UseCounter::DemotedFormElement);
     m_wasDemoted = demoted;
 }
 

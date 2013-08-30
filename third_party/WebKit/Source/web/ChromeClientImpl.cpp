@@ -759,7 +759,7 @@ void ChromeClientImpl::formStateDidChange(const Node* node)
 
     // The current history item is not updated yet.  That happens lazily when
     // WebFrame::currentHistoryItem is requested.
-    WebFrameImpl* webframe = WebFrameImpl::fromFrame(node->document().frame());
+    WebFrameImpl* webframe = WebFrameImpl::fromFrame(node->document()->frame());
     if (webframe->client())
         webframe->client()->didUpdateCurrentHistoryItem(webframe);
 }

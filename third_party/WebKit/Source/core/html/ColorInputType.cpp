@@ -118,10 +118,10 @@ void ColorInputType::createShadowSubtree()
 {
     ASSERT(element()->shadow());
 
-    Document& document = element()->document();
-    RefPtr<HTMLDivElement> wrapperElement = HTMLDivElement::create(&document);
+    Document* document = element()->document();
+    RefPtr<HTMLDivElement> wrapperElement = HTMLDivElement::create(document);
     wrapperElement->setPart(AtomicString("-webkit-color-swatch-wrapper", AtomicString::ConstructFromLiteral));
-    RefPtr<HTMLDivElement> colorSwatch = HTMLDivElement::create(&document);
+    RefPtr<HTMLDivElement> colorSwatch = HTMLDivElement::create(document);
     colorSwatch->setPart(AtomicString("-webkit-color-swatch", AtomicString::ConstructFromLiteral));
     wrapperElement->appendChild(colorSwatch.release());
     element()->userAgentShadowRoot()->appendChild(wrapperElement.release());
@@ -208,7 +208,7 @@ HTMLElement* ColorInputType::shadowColorSwatch() const
 
 IntRect ColorInputType::elementRectRelativeToRootView() const
 {
-    return element()->document().view()->contentsToRootView(element()->pixelSnappedBoundingBox());
+    return element()->document()->view()->contentsToRootView(element()->pixelSnappedBoundingBox());
 }
 
 Color ColorInputType::currentColor()

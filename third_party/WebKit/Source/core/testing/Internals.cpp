@@ -812,7 +812,7 @@ PassRefPtr<ClientRect> Internals::boundingBox(Element* element, ExceptionState& 
         return ClientRect::create();
     }
 
-    element->document().updateLayoutIgnorePendingStylesheets();
+    element->document()->updateLayoutIgnorePendingStylesheets();
     RenderObject* renderer = element->renderer();
     if (!renderer)
         return ClientRect::create();
@@ -844,7 +844,7 @@ unsigned Internals::markerCountForNode(Node* node, const String& markerType, Exc
         return 0;
     }
 
-    return node->document().markers()->markersFor(node, markerTypes).size();
+    return node->document()->markers()->markersFor(node, markerTypes).size();
 }
 
 unsigned Internals::activeMarkerCountForNode(Node* node, ExceptionState& es)
@@ -856,7 +856,7 @@ unsigned Internals::activeMarkerCountForNode(Node* node, ExceptionState& es)
 
     // Only TextMatch markers can be active.
     DocumentMarker::MarkerType markerType = DocumentMarker::TextMatch;
-    Vector<DocumentMarker*> markers = node->document().markers()->markersFor(node, markerType);
+    Vector<DocumentMarker*> markers = node->document()->markers()->markersFor(node, markerType);
 
     unsigned activeMarkerCount = 0;
     for (Vector<DocumentMarker*>::iterator iter = markers.begin(); iter != markers.end(); ++iter) {
@@ -880,7 +880,7 @@ DocumentMarker* Internals::markerAt(Node* node, const String& markerType, unsign
         return 0;
     }
 
-    Vector<DocumentMarker*> markers = node->document().markers()->markersFor(node, markerTypes);
+    Vector<DocumentMarker*> markers = node->document()->markers()->markersFor(node, markerTypes);
     if (markers.size() <= index)
         return 0;
     return markers[index];
@@ -891,7 +891,7 @@ PassRefPtr<Range> Internals::markerRangeForNode(Node* node, const String& marker
     DocumentMarker* marker = markerAt(node, markerType, index, es);
     if (!marker)
         return 0;
-    return Range::create(&node->document(), node, marker->startOffset(), node, marker->endOffset());
+    return Range::create(node->document(), node, marker->startOffset(), node, marker->endOffset());
 }
 
 String Internals::markerDescriptionForNode(Node* node, const String& markerType, unsigned index, ExceptionState& es)
@@ -915,7 +915,7 @@ void Internals::setMarkersActive(Node* node, unsigned startOffset, unsigned endO
         return;
     }
 
-    node->document().markers()->setMarkersActive(node, startOffset, endOffset, active);
+    node->document()->markers()->setMarkersActive(node, startOffset, endOffset, active);
 }
 
 void Internals::setScrollViewPosition(Document* document, long x, long y, ExceptionState& es)
@@ -1090,11 +1090,11 @@ void Internals::setAutofilled(Element* element, bool enabled, ExceptionState& es
 
 void Internals::scrollElementToRect(Element* element, long x, long y, long w, long h, ExceptionState& es)
 {
-    if (!element || !element->document().view()) {
+    if (!element || !element->document() || !element->document()->view()) {
         es.throwDOMException(InvalidAccessError);
         return;
     }
-    FrameView* frameView = element->document().view();
+    FrameView* frameView = element->document()->view();
     frameView->scrollElementToRect(element, IntRect(x, y, w, h));
 }
 
@@ -1117,7 +1117,7 @@ PassRefPtr<Range> Internals::rangeFromLocationAndLength(Element* scope, int rang
     }
 
     // TextIterator depends on Layout information, make sure layout it up to date.
-    scope->document().updateLayoutIgnorePendingStylesheets();
+    scope->document()->updateLayoutIgnorePendingStylesheets();
 
     return TextIterator::rangeFromLocationAndLength(scope, rangeLocation, rangeLength);
 }
@@ -1130,7 +1130,7 @@ unsigned Internals::locationFromRange(Element* scope, const Range* range, Except
     }
 
     // TextIterator depends on Layout information, make sure layout it up to date.
-    scope->document().updateLayoutIgnorePendingStylesheets();
+    scope->document()->updateLayoutIgnorePendingStylesheets();
 
     size_t location = 0;
     size_t unusedLength = 0;
@@ -1146,7 +1146,7 @@ unsigned Internals::lengthFromRange(Element* scope, const Range* range, Exceptio
     }
 
     // TextIterator depends on Layout information, make sure layout it up to date.
-    scope->document().updateLayoutIgnorePendingStylesheets();
+    scope->document()->updateLayoutIgnorePendingStylesheets();
 
     size_t unusedLocation = 0;
     size_t length = 0;
@@ -1676,7 +1676,7 @@ static PassRefPtr<NodeList> paintOrderList(Element* element, ExceptionState& es,
         return 0;
     }
 
-    element->document().updateLayout();
+    element->document()->updateLayout();
 
     RenderObject* renderer = element->renderer();
     if (!renderer || !renderer->isBox()) {
@@ -1712,7 +1712,7 @@ bool Internals::scrollsWithRespectTo(Element* element1, Element* element2, Excep
         return 0;
     }
 
-    element1->document().updateLayout();
+    element1->document()->updateLayout();
 
     RenderObject* renderer1 = element1->renderer();
     RenderObject* renderer2 = element2->renderer();
@@ -1748,7 +1748,7 @@ String Internals::elementLayerTreeAsText(Element* element, unsigned flags, Excep
         return String();
     }
 
-    element->document().updateLayout();
+    element->document()->updateLayout();
 
     RenderObject* renderer = element->renderer();
     if (!renderer || !renderer->isBox()) {
@@ -1774,7 +1774,7 @@ void Internals::setNeedsCompositedScrolling(Element* element, unsigned needsComp
         return;
     }
 
-    element->document().updateLayout();
+    element->document()->updateLayout();
 
     RenderObject* renderer = element->renderer();
     if (!renderer || !renderer->isBox()) {

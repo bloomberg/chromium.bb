@@ -126,13 +126,13 @@ RenderDeprecatedFlexibleBox::RenderDeprecatedFlexibleBox(Element* element)
     setChildrenInline(false); // All of our children must be block-level
     m_stretchingChildren = false;
     if (!isAnonymous()) {
-        const KURL& url = document().url();
+        const KURL& url = document()->url();
         if (url.protocolIs("chrome"))
-            UseCounter::count(&document(), UseCounter::DeprecatedFlexboxChrome);
+            UseCounter::count(document(), UseCounter::DeprecatedFlexboxChrome);
         else if (url.protocolIs("chrome-extension"))
-            UseCounter::count(&document(), UseCounter::DeprecatedFlexboxChromeExtension);
+            UseCounter::count(document(), UseCounter::DeprecatedFlexboxChromeExtension);
         else
-            UseCounter::count(&document(), UseCounter::DeprecatedFlexboxWebContent);
+            UseCounter::count(document(), UseCounter::DeprecatedFlexboxWebContent);
     }
 }
 
@@ -900,7 +900,7 @@ void RenderDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
 
 void RenderDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool relayoutChildren)
 {
-    UseCounter::count(&document(), UseCounter::LineClamp);
+    UseCounter::count(document(), UseCounter::LineClamp);
 
     int maxLineCount = 0;
     for (RenderBox* child = iterator.first(); child; child = iterator.next()) {

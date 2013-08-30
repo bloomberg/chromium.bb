@@ -978,7 +978,7 @@ sub printWrapperFunctions
             print F <<END
 static v8::Handle<v8::Object> create${JSInterfaceName}Wrapper($parameters{namespace}Element* element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    Settings* settings = element->document().settings();
+    Settings* settings = element->document()->settings();
     if (!RuntimeEnabledFeatures::mediaEnabled() || (settings && !settings->mediaEnabled()))
         return createV8$parameters{namespace}DirectWrapper(element, creationContext, isolate);
     return wrap(static_cast<${JSInterfaceName}*>(element), creationContext, isolate);
@@ -991,7 +991,7 @@ END
             print F <<END
 static v8::Handle<v8::Object> create${JSInterfaceName}Wrapper($parameters{namespace}Element* element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    if (!ContextFeatures::${contextConditional}Enabled(&element->document()))
+    if (!ContextFeatures::${contextConditional}Enabled(element->document()))
         return createV8$parameters{namespace}FallbackWrapper(to$parameters{fallbackInterfaceName}(element), creationContext, isolate);
     return wrap(static_cast<${JSInterfaceName}*>(element), creationContext, isolate);
 }

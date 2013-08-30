@@ -272,7 +272,7 @@ inline void ElementRareData::releasePseudoElement(PseudoElement* element)
     ASSERT(!element->nextSibling());
     ASSERT(!element->previousSibling());
 
-    element->document().removeFromTopLayer(element);
+    element->document()->removeFromTopLayer(element);
     element->setParentOrShadowHostNode(0);
 }
 

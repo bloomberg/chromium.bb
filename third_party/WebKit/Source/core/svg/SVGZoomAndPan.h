@@ -59,6 +59,7 @@ public:
     static bool parseAttribute(SVGElementTarget* target, const QualifiedName& name, const AtomicString& value)
     {
         ASSERT(target);
+        ASSERT(target->document());
         if (name == SVGNames::zoomAndPanAttr) {
             SVGZoomAndPanType zoomAndPan = SVGZoomAndPanUnknown;
             if (!value.isEmpty()) {

@@ -270,7 +270,7 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
             break;
         case FilterOperation::VALIDATED_CUSTOM: {
             ValidatedCustomFilterOperation* customFilterOperation = static_cast<ValidatedCustomFilterOperation*>(filterOperation);
-            Document* document = renderer ? &renderer->document() : 0;
+            Document* document = renderer ? renderer->document() : 0;
             effect = createCustomFilterEffect(this, document, customFilterOperation);
             if (effect)
                 m_hasCustomShaderFilter = true;

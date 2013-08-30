@@ -148,7 +148,7 @@ inline bool SelectorDataList::selectorMatches(const SelectorData& selectorData, 
         return selectorCheckerFastPath.matches();
     }
 
-    SelectorChecker selectorChecker(&element->document(), SelectorChecker::QueryingRules);
+    SelectorChecker selectorChecker(element->document(), SelectorChecker::QueryingRules);
     SelectorChecker::SelectorCheckingContext selectorCheckingContext(selectorData.selector, element, SelectorChecker::VisitedMatchDisabled);
     selectorCheckingContext.behaviorAtBoundary = SelectorChecker::StaysWithinTreeScope;
     selectorCheckingContext.scope = !rootNode->isDocumentNode() && rootNode->isContainerNode() ? toContainerNode(rootNode) : 0;
@@ -223,7 +223,7 @@ Element* SelectorDataList::findElementByTagName(Node* rootNode, const QualifiedN
 
 inline bool SelectorDataList::canUseFastQuery(Node* rootNode) const
 {
-    return m_selectors.size() == 1 && rootNode->inDocument() && !rootNode->document().inQuirksMode();
+    return m_selectors.size() == 1 && rootNode->inDocument() && !rootNode->document()->inQuirksMode();
 }
 
 // If returns true, traversalRoots has the elements that may match the selector query.
@@ -245,7 +245,7 @@ PassOwnPtr<SimpleNodeList> SelectorDataList::findTraverseRoots(Node* rootNode, b
     bool startFromParent = false;
 
     for (const CSSSelector* selector = m_selectors[0].selector; selector; selector = selector->tagHistory()) {
-        if (selector->m_match == CSSSelector::Id && !rootNode->document().containsMultipleElementsWithId(selector->value())) {
+        if (selector->m_match == CSSSelector::Id && !rootNode->document()->containsMultipleElementsWithId(selector->value())) {
             Element* element = rootNode->treeScope()->getElementById(selector->value());
             if (element && (isTreeScopeRoot(rootNode) || element->isDescendantOf(rootNode)))
                 rootNode = element;
@@ -313,7 +313,7 @@ void SelectorDataList::executeQueryAll(Node* rootNode, Vector<RefPtr<Node> >& ma
         switch (firstSelector->m_match) {
         case CSSSelector::Id:
             {
-                if (rootNode->document().containsMultipleElementsWithId(firstSelector->value()))
+                if (rootNode->document()->containsMultipleElementsWithId(firstSelector->value()))
                     break;
 
                 // Just the same as getElementById.
@@ -374,7 +374,7 @@ Node* SelectorDataList::findTraverseRoot(Node* rootNode, bool& matchTraverseRoot
     bool matchSingleNode = true;
     bool startFromParent = false;
     for (const CSSSelector* selector = m_selectors[0].selector; selector; selector = selector->tagHistory()) {
-        if (selector->m_match == CSSSelector::Id && !rootNode->document().containsMultipleElementsWithId(selector->value())) {
+        if (selector->m_match == CSSSelector::Id && !rootNode->document()->containsMultipleElementsWithId(selector->value())) {
             Element* element = rootNode->treeScope()->getElementById(selector->value());
             if (element && (isTreeScopeRoot(rootNode) || element->isDescendantOf(rootNode)))
                 rootNode = element;
@@ -427,7 +427,7 @@ Element* SelectorDataList::executeQueryFirst(Node* rootNode) const
         switch (selector->m_match) {
         case CSSSelector::Id:
             {
-                if (rootNode->document().containsMultipleElementsWithId(selector->value()))
+                if (rootNode->document()->containsMultipleElementsWithId(selector->value()))
                     break;
                 Element* element = rootNode->treeScope()->getElementById(selector->value());
                 return element && (isTreeScopeRoot(rootNode) || element->isDescendantOf(rootNode)) ? element : 0;

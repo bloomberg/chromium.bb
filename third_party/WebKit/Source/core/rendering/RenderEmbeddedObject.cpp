@@ -184,7 +184,7 @@ bool RenderEmbeddedObject::getReplacementTextGeometry(const LayoutPoint& accumul
     FontDescription fontDescription;
     RenderTheme::theme().systemFont(CSSValueWebkitSmallControl, fontDescription);
     fontDescription.setWeight(FontWeightBold);
-    Settings* settings = document().settings();
+    Settings* settings = document()->settings();
     ASSERT(settings);
     if (!settings)
         return false;

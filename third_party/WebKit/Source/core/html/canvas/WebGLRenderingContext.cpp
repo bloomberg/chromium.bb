@@ -494,8 +494,8 @@ private:
 
 PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElement* canvas, WebGLContextAttributes* attrs)
 {
-    Document& document = canvas->document();
-    Frame* frame = document.frame();
+    Document* document = canvas->document();
+    Frame* frame = document->frame();
     if (!frame)
         return nullptr;
     Settings* settings = frame->settings();
@@ -511,7 +511,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
     requestedAttributes.noExtensions = true;
     requestedAttributes.shareResources = true;
     requestedAttributes.preferDiscreteGPU = true;
-    requestedAttributes.topDocumentURL = document.topDocument()->url();
+    requestedAttributes.topDocumentURL = document->topDocument()->url();
 
     GraphicsContext3D::Attributes attributes = adjustAttributes(requestedAttributes, settings);
 
@@ -539,7 +539,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
 
 WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, PassRefPtr<GraphicsContext3D> context, GraphicsContext3D::Attributes attributes, GraphicsContext3D::Attributes requestedAttributes)
     : CanvasRenderingContext(passedCanvas)
-    , ActiveDOMObject(&passedCanvas->document())
+    , ActiveDOMObject(passedCanvas->document())
     , m_context(context)
     , m_drawingBuffer(0)
     , m_dispatchContextLostEventTimer(this, &WebGLRenderingContext::dispatchContextLostEvent)
@@ -685,7 +685,7 @@ void WebGLRenderingContext::initializeNewContext()
 void WebGLRenderingContext::setupFlags()
 {
     ASSERT(m_context);
-    if (Page* p = canvas()->document().page()) {
+    if (Page* p = canvas()->document()->page()) {
         m_synthesizedErrorsToConsole = p->settings().webGLErrorsToConsoleEnabled();
 
         if (!m_multisamplingObserverRegistered && m_requestedAttributes.antialias) {
@@ -701,7 +701,7 @@ void WebGLRenderingContext::setupFlags()
 
 bool WebGLRenderingContext::allowPrivilegedExtensions() const
 {
-    if (Page* p = canvas()->document().page())
+    if (Page* p = canvas()->document()->page())
         return p->settings().privilegedWebGLExtensionsEnabled();
     return false;
 }
@@ -750,7 +750,7 @@ WebGLRenderingContext::~WebGLRenderingContext()
     destroyGraphicsContext3D();
 
     if (m_multisamplingObserverRegistered) {
-        Page* page = canvas()->document().page();
+        Page* page = canvas()->document()->page();
         if (page)
             page->removeMultisamplingChangedObserver(this);
     }
@@ -875,7 +875,7 @@ void WebGLRenderingContext::paintRenderingResultsToCanvas()
         return;
     }
 
-    if (canvas()->document().printing())
+    if (canvas()->document()->printing())
         canvas()->clearPresentationCopy();
 
     // Until the canvas is written to by the application, the clear that
@@ -4110,8 +4110,10 @@ void WebGLRenderingContext::loseContextImpl(WebGLRenderingContext::LostContextMo
     if (mode == RealLostContext) {
         // Inform the embedder that a lost context was received. In response, the embedder might
         // decide to take action such as asking the user for permission to use WebGL again.
-        if (Frame* frame = canvas()->document().frame())
-            frame->loader()->client()->didLoseWebGLContext(m_context->getExtensions()->getGraphicsResetStatusARB());
+        if (Document* document = canvas()->document()) {
+            if (Frame* frame = document->frame())
+                frame->loader()->client()->didLoseWebGLContext(m_context->getExtensions()->getGraphicsResetStatusARB());
+        }
     }
 
     // Make absolutely sure we do not refer to an already-deleted texture or framebuffer.
@@ -4937,7 +4939,10 @@ void WebGLRenderingContext::printWarningToConsole(const String& message)
 {
     if (!canvas())
         return;
-    canvas()->document().addConsoleMessage(RenderingMessageSource, WarningMessageLevel, message);
+    Document* document = canvas()->document();
+    if (!document)
+        return;
+    document->addConsoleMessage(RenderingMessageSource, WarningMessageLevel, message);
 }
 
 bool WebGLRenderingContext::validateFramebufferFuncParameters(const char* functionName, GC3Denum target, GC3Denum attachment)
@@ -5337,7 +5342,10 @@ void WebGLRenderingContext::maybeRestoreContext(Timer<WebGLRenderingContext>*)
     if (!m_restoreAllowed)
         return;
 
-    Frame* frame = canvas()->document().frame();
+    Document* document = canvas()->document();
+    if (!document)
+        return;
+    Frame* frame = document->frame();
     if (!frame)
         return;
 

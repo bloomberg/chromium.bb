@@ -540,7 +540,7 @@ bool EditorClientImpl::handleEditingKeyboardEvent(KeyboardEvent* evt)
     if (!keyEvent || keyEvent->isSystemKey())
         return false;
 
-    Frame* frame = evt->target()->toNode()->document().frame();
+    Frame* frame = evt->target()->toNode()->document()->frame();
     if (!frame)
         return false;
 

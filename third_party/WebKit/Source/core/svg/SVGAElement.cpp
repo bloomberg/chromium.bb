@@ -179,10 +179,10 @@ void SVGAElement::defaultEventHandler(Event* event)
                 target = "_blank";
             event->setDefaultHandled();
 
-            Frame* frame = document().frame();
+            Frame* frame = document()->frame();
             if (!frame)
                 return;
-            FrameLoadRequest frameRequest(document().securityOrigin(), ResourceRequest(document().completeURL(url)), target);
+            FrameLoadRequest frameRequest(document()->securityOrigin(), ResourceRequest(document()->completeURL(url)), target);
             frameRequest.setTriggeringEvent(event);
             frame->loader()->load(frameRequest);
             return;
@@ -222,7 +222,7 @@ bool SVGAElement::isKeyboardFocusable() const
     if (!isFocusable())
         return false;
 
-    if (Page* page = document().page())
+    if (Page* page = document()->page())
         return page->chrome().client().tabsToLinks();
     return false;
 }

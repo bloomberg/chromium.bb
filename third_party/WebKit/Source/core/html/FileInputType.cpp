@@ -153,7 +153,7 @@ void FileInputType::handleDOMActivateEvent(Event* event)
 #if ENABLE(MEDIA_CAPTURE)
         settings.useMediaCapture = input->capture();
 #endif
-        chrome->runOpenPanel(input->document().frame(), newFileChooser(settings));
+        chrome->runOpenPanel(input->document()->frame(), newFileChooser(settings));
     }
     event->setDefaultHandled();
 }
@@ -256,7 +256,7 @@ bool FileInputType::isFileUpload() const
 void FileInputType::createShadowSubtree()
 {
     ASSERT(element()->shadow());
-    RefPtr<HTMLInputElement> button = HTMLInputElement::create(inputTag, &element()->document(), 0, false);
+    RefPtr<HTMLInputElement> button = HTMLInputElement::create(inputTag, element()->document(), 0, false);
     button->setType(InputTypeNames::button());
     button->setAttribute(valueAttr, element()->multiple() ? fileButtonChooseMultipleFilesLabel() : fileButtonChooseFileLabel());
     button->setPart(AtomicString("-webkit-file-upload-button", AtomicString::ConstructFromLiteral));

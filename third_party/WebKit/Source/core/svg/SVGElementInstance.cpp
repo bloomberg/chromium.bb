@@ -195,7 +195,7 @@ void SVGElementInstance::invalidateAllInstancesOfElement(SVGElement* element)
         }
     }
 
-    element->document().updateStyleIfNeeded();
+    element->document()->updateStyleIfNeeded();
 }
 
 const AtomicString& SVGElementInstance::interfaceName() const
@@ -205,7 +205,7 @@ const AtomicString& SVGElementInstance::interfaceName() const
 
 ScriptExecutionContext* SVGElementInstance::scriptExecutionContext() const
 {
-    return &m_element->document();
+    return m_element->document();
 }
 
 bool SVGElementInstance::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)

@@ -52,14 +52,14 @@ LinkRequestBuilder::LinkRequestBuilder(HTMLLinkElement* owner)
     , m_url(m_owner->getNonEmptyURLAttribute(hrefAttr))
 {
     m_charset = m_owner->getAttribute(charsetAttr);
-    if (m_charset.isEmpty() && m_owner->document().frame())
-        m_charset = m_owner->document().charset();
+    if (m_charset.isEmpty() && m_owner->document()->frame())
+        m_charset = m_owner->document()->charset();
 }
 
 FetchRequest LinkRequestBuilder::build(bool blocking) const
 {
     ResourceLoadPriority priority = blocking ? ResourceLoadPriorityUnresolved : ResourceLoadPriorityVeryLow;
-    return FetchRequest(ResourceRequest(m_owner->document().completeURL(m_url)), m_owner->localName(), m_charset, priority);
+    return FetchRequest(ResourceRequest(m_owner->document()->completeURL(m_url)), m_owner->localName(), m_charset, priority);
 }
 
 } // namespace WebCore

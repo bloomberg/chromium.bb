@@ -35,7 +35,7 @@
 namespace WebCore {
 
 SpellingCorrectionCommand::SpellingCorrectionCommand(PassRefPtr<Range> rangeToBeCorrected, const String& correction)
-    : CompositeEditCommand(&rangeToBeCorrected->startContainer()->document())
+    : CompositeEditCommand(rangeToBeCorrected->startContainer()->document())
     , m_rangeToBeCorrected(rangeToBeCorrected)
     , m_selectionToBeCorrected(m_rangeToBeCorrected.get())
     , m_correction(correction)

@@ -78,8 +78,8 @@ void HTMLIFrameElement::collectStyleForPresentationAttribute(const QualifiedName
 void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == nameAttr) {
-        if (inDocument() && document().isHTMLDocument() && !isInShadowTree()) {
-            HTMLDocument* document = toHTMLDocument(&this->document());
+        if (inDocument() && document()->isHTMLDocument() && !isInShadowTree()) {
+            HTMLDocument* document = toHTMLDocument(this->document());
             document->removeExtraNamedItem(m_name);
             document->addExtraNamedItem(value);
         }
@@ -88,7 +88,7 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
         String invalidTokens;
         setSandboxFlags(value.isNull() ? SandboxNone : SecurityContext::parseSandboxPolicy(value, invalidTokens));
         if (!invalidTokens.isNull())
-            document().addConsoleMessage(OtherMessageSource, ErrorMessageLevel, "Error while parsing the 'sandbox' attribute: " + invalidTokens);
+            document()->addConsoleMessage(OtherMessageSource, ErrorMessageLevel, "Error while parsing the 'sandbox' attribute: " + invalidTokens);
     } else if (name == seamlessAttr) {
         // If we're adding or removing the seamless attribute, we need to force the content document to recalculate its StyleResolver.
         if (contentDocument())
@@ -110,16 +110,16 @@ RenderObject* HTMLIFrameElement::createRenderer(RenderStyle*)
 Node::InsertionNotificationRequest HTMLIFrameElement::insertedInto(ContainerNode* insertionPoint)
 {
     InsertionNotificationRequest result = HTMLFrameElementBase::insertedInto(insertionPoint);
-    if (insertionPoint->inDocument() && document().isHTMLDocument() && !insertionPoint->isInShadowTree())
-        toHTMLDocument(&document())->addExtraNamedItem(m_name);
+    if (insertionPoint->inDocument() && document()->isHTMLDocument() && !insertionPoint->isInShadowTree())
+        toHTMLDocument(document())->addExtraNamedItem(m_name);
     return result;
 }
 
 void HTMLIFrameElement::removedFrom(ContainerNode* insertionPoint)
 {
     HTMLFrameElementBase::removedFrom(insertionPoint);
-    if (insertionPoint->inDocument() && document().isHTMLDocument() && !insertionPoint->isInShadowTree())
-        toHTMLDocument(&document())->removeExtraNamedItem(m_name);
+    if (insertionPoint->inDocument() && document()->isHTMLDocument() && !insertionPoint->isInShadowTree())
+        toHTMLDocument(document())->removeExtraNamedItem(m_name);
 }
 
 bool HTMLIFrameElement::shouldDisplaySeamlessly() const

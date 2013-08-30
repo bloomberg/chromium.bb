@@ -158,11 +158,11 @@ void HTMLEmbedElement::updateWidget(PluginCreationOption pluginCreationOption)
     RefPtr<HTMLEmbedElement> protect(this); // Loading the plugin might remove us from the document.
     bool beforeLoadAllowedLoad = dispatchBeforeLoadEvent(m_url);
     if (!beforeLoadAllowedLoad) {
-        if (document().isPluginDocument()) {
+        if (document()->isPluginDocument()) {
             // Plugins inside plugin documents load differently than other plugins. By the time
             // we are here in a plugin document, the load of the plugin (which is the plugin document's
             // main resource) has already started. We need to explicitly cancel the main resource load here.
-            toPluginDocument(&document())->cancelManualPluginLoad();
+            toPluginDocument(document())->cancelManualPluginLoad();
         }
         return;
     }
@@ -178,7 +178,7 @@ bool HTMLEmbedElement::rendererIsNeeded(const NodeRenderingContext& context)
     if (isImageType())
         return HTMLPlugInImageElement::rendererIsNeeded(context);
 
-    Frame* frame = document().frame();
+    Frame* frame = document()->frame();
     if (!frame)
         return false;
 
@@ -209,7 +209,7 @@ void HTMLEmbedElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) cons
 {
     HTMLPlugInImageElement::addSubresourceAttributeURLs(urls);
 
-    addSubresourceURL(urls, document().completeURL(getAttribute(srcAttr)));
+    addSubresourceURL(urls, document()->completeURL(getAttribute(srcAttr)));
 }
 
 }

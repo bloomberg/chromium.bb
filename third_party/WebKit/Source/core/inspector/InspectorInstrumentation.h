@@ -161,7 +161,7 @@ inline InstrumentingAgents* instrumentingAgentsForDocument(Document* document)
 
 inline InstrumentingAgents* instrumentingAgentsForElement(Element* element)
 {
-    return element ? instrumentingAgentsForDocument(&element->document()) : 0;
+    return element ? instrumentingAgentsForDocument(element->document()) : 0;
 }
 
 bool cssErrorFilter(const CSSParserString& content, int propertyId, int errorType);

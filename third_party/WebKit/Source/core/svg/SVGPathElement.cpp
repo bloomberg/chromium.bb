@@ -230,14 +230,14 @@ void SVGPathElement::parseAttribute(const QualifiedName& name, const AtomicStrin
 
     if (name == SVGNames::dAttr) {
         if (!buildSVGPathByteStreamFromString(value, m_pathByteStream.get(), UnalteredParsing))
-            document().accessSVGExtensions()->reportError("Problem parsing d=\"" + value + "\"");
+            document()->accessSVGExtensions()->reportError("Problem parsing d=\"" + value + "\"");
         return;
     }
 
     if (name == SVGNames::pathLengthAttr) {
         setPathLengthBaseValue(value.toFloat());
         if (pathLengthBaseValue() < 0)
-            document().accessSVGExtensions()->reportError("A negative value for path attribute <pathLength> is not allowed");
+            document()->accessSVGExtensions()->reportError("A negative value for path attribute <pathLength> is not allowed");
         return;
     }
 
@@ -279,7 +279,8 @@ void SVGPathElement::invalidateMPathDependencies()
 {
     // <mpath> can only reference <path> but this dependency is not handled in
     // markForLayoutAndParentResourceInvalidation so we update any mpath dependencies manually.
-    if (HashSet<SVGElement*>* dependencies = document().accessSVGExtensions()->setOfElementsReferencingTarget(this)) {
+    ASSERT(document());
+    if (HashSet<SVGElement*>* dependencies = document()->accessSVGExtensions()->setOfElementsReferencingTarget(this)) {
         HashSet<SVGElement*>::iterator end = dependencies->end();
         for (HashSet<SVGElement*>::iterator it = dependencies->begin(); it != end; ++it) {
             if ((*it)->hasTagName(SVGNames::mpathTag))
@@ -388,7 +389,7 @@ void SVGPathElement::pathSegListChanged(SVGPathSegRole role, ListModification li
 FloatRect SVGPathElement::getBBox(StyleUpdateStrategy styleUpdateStrategy)
 {
     if (styleUpdateStrategy == AllowStyleUpdate)
-        this->document().updateLayoutIgnorePendingStylesheets();
+        this->document()->updateLayoutIgnorePendingStylesheets();
 
     RenderSVGPath* renderer = toRenderSVGPath(this->renderer());
 

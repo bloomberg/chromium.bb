@@ -298,7 +298,7 @@ static bool acceptsEditingFocus(Element* element)
     ASSERT(element->rendererIsEditable());
 
     Element* root = element->rootEditableElement();
-    Frame* frame = element->document().frame();
+    Frame* frame = element->document()->frame();
     if (!frame || !root)
         return false;
 
@@ -503,7 +503,7 @@ static bool isAttributeOnAllOwners(const WebCore::QualifiedName& attribute, cons
     do {
         if (!(owner->hasAttribute(attribute) || owner->hasAttribute(prefixedAttribute)))
             return false;
-    } while ((owner = owner->document().ownerElement()));
+    } while ((owner = owner->document()->ownerElement()));
     return true;
 }
 
@@ -790,7 +790,7 @@ bool Document::haveImportsLoaded() const
 
 PassRefPtr<DocumentFragment> Document::createDocumentFragment()
 {
-    return DocumentFragment::create(&document());
+    return DocumentFragment::create(document());
 }
 
 PassRefPtr<Text> Document::createTextNode(const String& data)
@@ -1009,7 +1009,7 @@ PassRefPtr<Element> Document::createElement(const QualifiedName& qName, bool cre
     if (e)
         m_sawElementsInKnownNamespaces = true;
     else
-        e = Element::create(qName, &document());
+        e = Element::create(qName, document());
 
     // <image> uses imgTag so we need a special rule.
     ASSERT((qName.matches(imageTag) && e->tagQName().matches(imgTag) && e->tagQName().prefix() == qName.prefix()) || qName == e->tagQName());
@@ -1543,7 +1543,7 @@ void Document::scheduleStyleRecalc()
     if (shouldDisplaySeamlesslyWithParent()) {
         // When we're seamless, our parent document manages our style recalcs.
         ownerElement()->setNeedsStyleRecalc();
-        ownerElement()->document().scheduleStyleRecalc();
+        ownerElement()->document()->scheduleStyleRecalc();
         return;
     }
 
@@ -1740,7 +1740,7 @@ void Document::updateLayout()
     }
 
     if (Element* oe = ownerElement())
-        oe->document().updateLayout();
+        oe->document()->updateLayout();
 
     updateStyleIfNeeded();
 
@@ -1796,7 +1796,7 @@ void Document::updateLayoutIgnorePendingStylesheets()
 
 PassRefPtr<RenderStyle> Document::styleForElementIgnoringPendingStylesheets(Element* element)
 {
-    ASSERT_ARG(element, &element->document() == this);
+    ASSERT_ARG(element, element->document() == this);
     TemporaryChange<bool> ignoreStyleSheets(m_ignorePendingStylesheets, true);
     return styleResolver()->styleForElement(element, element->parentNode() ? element->parentNode()->computedStyle() : 0);
 }
@@ -3177,7 +3177,7 @@ void Document::notifySeamlessChildDocumentsOfStylesheetUpdate() const
     for (Frame* child = frame()->tree()->firstChild(); child; child = child->tree()->nextSibling()) {
         Document* childDocument = child->document();
         if (childDocument->shouldDisplaySeamlesslyWithParent()) {
-            ASSERT(&childDocument->seamlessParentIFrame()->document() == this);
+            ASSERT(childDocument->seamlessParentIFrame()->document() == this);
             childDocument->seamlessParentUpdatedStylesheets();
         }
     }
@@ -3270,7 +3270,7 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
     RefPtr<Element> newFocusedElement = prpNewFocusedElement;
 
     // Make sure newFocusedNode is actually in this document
-    if (newFocusedElement && (&newFocusedElement->document() != this))
+    if (newFocusedElement && (newFocusedElement->document() != this))
         return true;
 
     if (m_focusedElement == newFocusedElement)
@@ -4132,10 +4132,10 @@ Document* Document::parentDocument() const
 
 Document* Document::topDocument() const
 {
-    Document* doc = const_cast<Document*>(this);
+    Document* doc = const_cast<Document *>(this);
     Element* element;
     while ((element = doc->ownerElement()))
-        doc = &element->document();
+        doc = element->document();
 
     return doc;
 }
@@ -4421,7 +4421,7 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         }
     }
 
-    Document* parentDocument = ownerElement() ? &ownerElement()->document() : 0;
+    Document* parentDocument = ownerElement() ? ownerElement()->document() : 0;
     if (parentDocument && initializer.shouldTreatURLAsSrcdocDocument()) {
         m_isSrcdocDocument = true;
         setBaseURLOverride(parentDocument->baseURL());
@@ -4479,7 +4479,7 @@ bool Document::allowInlineEventHandlers(Node* node, EventListener* listener, con
         return false;
     if (!m_frame->script()->canExecuteScripts(NotAboutToExecuteScript))
         return false;
-    if (node && &node->document() != this && !node->document().allowInlineEventHandlers(node, listener, contextURL, contextLine))
+    if (node && node->document() != this && !node->document()->allowInlineEventHandlers(node, listener, contextURL, contextLine))
         return false;
 
     return true;
@@ -4798,7 +4798,7 @@ void Document::webkitExitPointerLock()
     if (!page())
         return;
     if (Element* target = page()->pointerLockController().element()) {
-        if (&target->document() != this)
+        if (target->document() != this)
             return;
     }
     page()->pointerLockController().requestPointerUnlock();
@@ -4809,7 +4809,7 @@ Element* Document::webkitPointerLockElement() const
     if (!page() || page()->pointerLockController().lockPending())
         return 0;
     if (Element* element = page()->pointerLockController().element()) {
-        if (&element->document() == this)
+        if (element->document() == this)
             return element;
     }
     return 0;
@@ -5090,9 +5090,9 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     ASSERT(!request.readOnly());
 
     Element* innerElementInDocument = innerElement;
-    while (innerElementInDocument && &innerElementInDocument->document() != this) {
-        innerElementInDocument->document().updateHoverActiveState(request, innerElementInDocument, event);
-        innerElementInDocument = innerElementInDocument->document().ownerElement();
+    while (innerElementInDocument && innerElementInDocument->document() != this) {
+        innerElementInDocument->document()->updateHoverActiveState(request, innerElementInDocument, event);
+        innerElementInDocument = innerElementInDocument->document()->ownerElement();
     }
 
     Element* oldActiveElement = activeElement();

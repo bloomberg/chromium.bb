@@ -112,12 +112,12 @@ HitTestResult& HitTestResult::operator=(const HitTestResult& other)
 void HitTestResult::setToNodesInDocumentTreeScope()
 {
     if (Node* node = innerNode()) {
-        node = node->document().ancestorInThisScope(node);
+        node = node->document()->ancestorInThisScope(node);
         setInnerNode(node);
     }
 
     if (Node* node = innerNonSharedNode()) {
-        node = node->document().ancestorInThisScope(node);
+        node = node->document()->ancestorInThisScope(node);
         setInnerNonSharedNode(node);
     }
 }
@@ -166,9 +166,9 @@ void HitTestResult::setScrollbar(Scrollbar* s)
 Frame* HitTestResult::innerNodeFrame() const
 {
     if (m_innerNonSharedNode)
-        return m_innerNonSharedNode->document().frame();
+        return m_innerNonSharedNode->document()->frame();
     if (m_innerNode)
-        return m_innerNode->document().frame();
+        return m_innerNode->document()->frame();
     return 0;
 }
 
@@ -177,7 +177,7 @@ Frame* HitTestResult::targetFrame() const
     if (!m_innerURLElement)
         return 0;
 
-    Frame* frame = m_innerURLElement->document().frame();
+    Frame* frame = m_innerURLElement->document()->frame();
     if (!frame)
         return 0;
 
@@ -189,7 +189,7 @@ bool HitTestResult::isSelected() const
     if (!m_innerNonSharedNode)
         return false;
 
-    Frame* frame = m_innerNonSharedNode->document().frame();
+    Frame* frame = m_innerNonSharedNode->document()->frame();
     if (!frame)
         return false;
 
@@ -204,7 +204,7 @@ String HitTestResult::spellingToolTip(TextDirection& dir) const
     if (!m_innerNonSharedNode)
         return String();
 
-    DocumentMarker* marker = m_innerNonSharedNode->document().markers()->markerContainingPoint(m_hitTestLocation.point(), DocumentMarker::Grammar);
+    DocumentMarker* marker = m_innerNonSharedNode->document()->markers()->markerContainingPoint(m_hitTestLocation.point(), DocumentMarker::Grammar);
     if (!marker)
         return String();
 
@@ -235,7 +235,7 @@ String displayString(const String& string, const Node* node)
 {
     if (!node)
         return string;
-    return node->document().displayStringModifiedByEncoding(string);
+    return node->document()->displayStringModifiedByEncoding(string);
 }
 
 String HitTestResult::altDisplayString() const
@@ -280,7 +280,7 @@ IntRect HitTestResult::imageRect() const
 
 KURL HitTestResult::absoluteImageURL() const
 {
-    if (!m_innerNonSharedNode)
+    if (!(m_innerNonSharedNode && m_innerNonSharedNode->document()))
         return KURL();
 
     if (!(m_innerNonSharedNode->renderer() && m_innerNonSharedNode->renderer()->isImage()))
@@ -298,7 +298,7 @@ KURL HitTestResult::absoluteImageURL() const
     } else
         return KURL();
 
-    return m_innerNonSharedNode->document().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
+    return m_innerNonSharedNode->document()->completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
 }
 
 KURL HitTestResult::absoluteMediaURL() const
@@ -310,7 +310,7 @@ KURL HitTestResult::absoluteMediaURL() const
 
 HTMLMediaElement* HitTestResult::mediaElement() const
 {
-    if (!m_innerNonSharedNode)
+    if (!(m_innerNonSharedNode && m_innerNonSharedNode->document()))
         return 0;
 
     if (!(m_innerNonSharedNode->renderer() && m_innerNonSharedNode->renderer()->isMedia()))
@@ -323,7 +323,7 @@ HTMLMediaElement* HitTestResult::mediaElement() const
 
 KURL HitTestResult::absoluteLinkURL() const
 {
-    if (!m_innerURLElement)
+    if (!(m_innerURLElement && m_innerURLElement->document()))
         return KURL();
 
     AtomicString urlString;
@@ -334,12 +334,12 @@ KURL HitTestResult::absoluteLinkURL() const
     else
         return KURL();
 
-    return m_innerURLElement->document().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
+    return m_innerURLElement->document()->completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
 }
 
 bool HitTestResult::isLiveLink() const
 {
-    if (!m_innerURLElement)
+    if (!(m_innerURLElement && m_innerURLElement->document()))
         return false;
 
     if (isHTMLAnchorElement(m_innerURLElement.get()))
@@ -358,7 +358,7 @@ bool HitTestResult::isMisspelled() const
     VisiblePosition pos(targetNode()->renderer()->positionForPoint(localPoint()));
     if (pos.isNull())
         return false;
-    return m_innerNonSharedNode->document().markers()->markersInRange(
+    return m_innerNonSharedNode->document()->markers()->markersInRange(
         makeRange(pos, pos).get(), DocumentMarker::Spelling | DocumentMarker::Grammar).size() > 0;
 }
 
@@ -407,7 +407,7 @@ bool HitTestResult::addNodeToRectBasedTestResult(Node* node, const HitTestReques
         return true;
 
     if (request.disallowsShadowContent())
-        node = node->document().ancestorInThisScope(node);
+        node = node->document()->ancestorInThisScope(node);
 
     mutableRectBasedTestResult().add(node);
 
@@ -427,7 +427,7 @@ bool HitTestResult::addNodeToRectBasedTestResult(Node* node, const HitTestReques
         return true;
 
     if (request.disallowsShadowContent())
-        node = node->document().ancestorInThisScope(node);
+        node = node->document()->ancestorInThisScope(node);
 
     mutableRectBasedTestResult().add(node);
 

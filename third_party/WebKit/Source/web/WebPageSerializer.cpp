@@ -100,7 +100,7 @@ KURL getSubResourceURLFromElement(Element* element)
     if (value.isEmpty() || value.stripWhiteSpace().startsWith("javascript:", false))
         return KURL();
 
-    return element->document().completeURL(value);
+    return element->document()->completeURL(value);
 }
 
 void retrieveResourcesForElement(Element* element,

@@ -395,7 +395,7 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
 
     // If we're loading content into a subframe, check against the parent's Content Security Policy
     // and kill the load if that check fails.
-    if (m_frame->ownerElement() && !m_frame->ownerElement()->document().contentSecurityPolicy()->allowChildFrameFromSource(request.url()))
+    if (m_frame->ownerElement() && !m_frame->ownerElement()->document()->contentSecurityPolicy()->allowChildFrameFromSource(request.url()))
         return false;
 
     NavigationPolicy policy = NavigationPolicyCurrentTab;

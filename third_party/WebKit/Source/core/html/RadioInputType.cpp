@@ -75,8 +75,8 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event)
     // Tested in WinIE, and even for RTL, left still means previous radio button (and so moves
     // to the right).  Seems strange, but we'll match it.
     // However, when using Spatial Navigation, we need to be able to navigate without changing the selection.
-    Document& document = element()->document();
-    if (isSpatialNavigationEnabled(document.frame()))
+    Document* document = element()->document();
+    if (isSpatialNavigationEnabled(document->frame()))
         return;
     bool forward = (key == "Down" || key == "Right");
 
@@ -95,7 +95,7 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event)
             break;
         if (inputElement->isRadioButton() && inputElement->name() == element()->name() && inputElement->isFocusable()) {
             RefPtr<HTMLInputElement> protector(inputElement);
-            document.setFocusedElement(inputElement);
+            document->setFocusedElement(inputElement);
             inputElement->dispatchSimulatedClick(event, SendNoEvents, DoNotShowPressedLook);
             event->setDefaultHandled();
             return;
@@ -121,12 +121,12 @@ bool RadioInputType::isKeyboardFocusable() const
         return false;
 
     // When using Spatial Navigation, every radio button should be focusable.
-    if (isSpatialNavigationEnabled(element()->document().frame()))
+    if (isSpatialNavigationEnabled(element()->document()->frame()))
         return true;
 
     // Never allow keyboard tabbing to leave you in the same radio group.  Always
     // skip any other elements in the group.
-    Element* currentFocusedElement = element()->document().focusedElement();
+    Element* currentFocusedElement = element()->document()->focusedElement();
     if (currentFocusedElement && currentFocusedElement->hasTagName(inputTag)) {
         HTMLInputElement* focusedInput = toHTMLInputElement(currentFocusedElement);
         if (focusedInput->isRadioButton() && focusedInput->form() == element()->form() && focusedInput->name() == element()->name())

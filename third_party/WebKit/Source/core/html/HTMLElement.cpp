@@ -74,7 +74,7 @@ String HTMLElement::nodeName() const
     // FIXME: Would be nice to have an atomicstring lookup based off uppercase
     // chars that does not have to copy the string on a hit in the hash.
     // FIXME: We should have a way to detect XHTML elements and replace the hasPrefix() check with it.
-    if (document().isHTMLDocument() && !tagQName().hasPrefix())
+    if (document()->isHTMLDocument() && !tagQName().hasPrefix())
         return tagQName().localNameUpper();
     return Element::nodeName();
 }
@@ -295,7 +295,7 @@ void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& 
             if (treeScope()->adjustedFocusedElement() == this) {
                 // We might want to call blur(), but it's dangerous to dispatch
                 // events here.
-                document().setNeedsFocusedElementCheck();
+                document()->setNeedsFocusedElementCheck();
             }
         } else if (parseHTMLInteger(value, tabindex)) {
             // Clamp tabindex to the range of 'short' to match Firefox's behavior.
@@ -368,7 +368,7 @@ void HTMLElement::setOuterHTML(const String& html, ExceptionState& es)
 
 PassRefPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, ExceptionState& es)
 {
-    RefPtr<DocumentFragment> fragment = DocumentFragment::create(&document());
+    RefPtr<DocumentFragment> fragment = DocumentFragment::create(document());
     unsigned int i, length = text.length();
     UChar c = 0;
     for (unsigned int start = 0; start < length; ) {
@@ -380,12 +380,12 @@ PassRefPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, Exc
               break;
         }
 
-        fragment->appendChild(Text::create(&document(), text.substring(start, i - start)), es);
+        fragment->appendChild(Text::create(document(), text.substring(start, i - start)), es);
         if (es.hadException())
             return 0;
 
         if (c == '\r' || c == '\n') {
-            fragment->appendChild(HTMLBRElement::create(&document()), es);
+            fragment->appendChild(HTMLBRElement::create(document()), es);
             if (es.hadException())
                 return 0;
             // Make sure \r\n doesn't result in two line breaks.
@@ -474,7 +474,7 @@ void HTMLElement::setOuterText(const String &text, ExceptionState& es)
     if (text.contains('\r') || text.contains('\n'))
         newChild = textToFragment(text, es);
     else
-        newChild = Text::create(&document(), text);
+        newChild = Text::create(document(), text);
 
     if (!this || !parentNode())
         es.throwDOMException(HierarchyRequestError);
@@ -574,7 +574,7 @@ void HTMLElement::insertAdjacentHTML(const String& where, const String& markup, 
 
 void HTMLElement::insertAdjacentText(const String& where, const String& text, ExceptionState& es)
 {
-    RefPtr<Text> textNode = document().createTextNode(text);
+    RefPtr<Text> textNode = document()->createTextNode(text);
     insertAdjacent(where, textNode.get(), es);
 }
 
@@ -626,7 +626,7 @@ bool HTMLElement::supportsSpatialNavigationFocus() const
     // This is the way to make it possible to navigate to (focus) elements
     // which web designer meant for being active (made them respond to click events).
 
-    if (!document().settings() || !document().settings()->spatialNavigationEnabled())
+    if (!document()->settings() || !document()->settings()->spatialNavigationEnabled())
         return false;
     EventTarget* target = const_cast<HTMLElement*>(this);
     return target->hasEventListeners(eventNames().clickEvent)
@@ -762,11 +762,11 @@ void HTMLElement::setTranslate(bool enable)
 bool HTMLElement::rendererIsNeeded(const NodeRenderingContext& context)
 {
     if (hasLocalName(noscriptTag)) {
-        Frame* frame = document().frame();
+        Frame* frame = document()->frame();
         if (frame && frame->script()->canExecuteScripts(NotAboutToExecuteScript))
             return false;
     } else if (hasLocalName(noembedTag)) {
-        Frame* frame = document().frame();
+        Frame* frame = document()->frame();
         if (frame && frame->loader()->allowPlugins(NotAboutToInstantiatePlugin))
             return false;
     }
@@ -929,7 +929,7 @@ void HTMLElement::calculateAndAdjustDirectionality()
 
 void HTMLElement::adjustDirectionalityIfNeededAfterChildrenChanged(Node* beforeChange, int childCountDelta)
 {
-    if (document().renderer() && childCountDelta < 0) {
+    if (document()->renderer() && childCountDelta < 0) {
         Node* node = beforeChange ? NodeTraversal::nextSkippingChildren(beforeChange) : 0;
         for (int counter = 0; node && counter < childCountDelta; counter++, node = NodeTraversal::nextSkippingChildren(node)) {
             if (elementAffectsDirectionality(node))
@@ -1080,7 +1080,7 @@ void HTMLElement::defaultEventHandler(Event* event)
 
 void HTMLElement::handleKeypressEvent(KeyboardEvent* event)
 {
-    if (!document().settings() || !document().settings()->spatialNavigationEnabled() || !supportsFocus())
+    if (!document()->settings() || !document()->settings()->spatialNavigationEnabled() || !supportsFocus())
         return;
     // if the element is a text form control (like <input type=text> or <textarea>)
     // or has contentEditable attribute on, we should enter a space or newline

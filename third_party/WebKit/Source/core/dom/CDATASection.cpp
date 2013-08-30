@@ -54,7 +54,7 @@ bool CDATASection::childTypeAllowed(NodeType) const
 
 PassRefPtr<Text> CDATASection::cloneWithData(const String& data)
 {
-    return create(&document(), data);
+    return create(document(), data);
 }
 
 } // namespace WebCore

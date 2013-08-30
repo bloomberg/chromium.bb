@@ -131,7 +131,7 @@ AccessibilityObject* AXObjectCache::focusedImageMapUIElement(HTMLAreaElement* ar
     if (!imageElement)
         return 0;
 
-    AccessibilityObject* axRenderImage = areaElement->document().axObjectCache()->getOrCreate(imageElement);
+    AccessibilityObject* axRenderImage = areaElement->document()->axObjectCache()->getOrCreate(imageElement);
     if (!axRenderImage)
         return 0;
 
@@ -163,7 +163,7 @@ AccessibilityObject* AXObjectCache::focusedUIElementForPage(const Page* page)
     if (isHTMLAreaElement(focusedNode))
         return focusedImageMapUIElement(toHTMLAreaElement(focusedNode));
 
-    AccessibilityObject* obj = focusedNode->document().axObjectCache()->getOrCreate(focusedNode);
+    AccessibilityObject* obj = focusedNode->document()->axObjectCache()->getOrCreate(focusedNode);
     if (!obj)
         return 0;
 
@@ -664,7 +664,7 @@ void AXObjectCache::postNotification(RenderObject* renderer, AXNotification noti
     if (!renderer)
         return;
 
-    postNotification(object.get(), &renderer->document(), notification, postToElement, postType);
+    postNotification(object.get(), renderer->document(), notification, postToElement, postType);
 }
 
 void AXObjectCache::postNotification(Node* node, AXNotification notification, bool postToElement, PostType postType)
@@ -685,7 +685,7 @@ void AXObjectCache::postNotification(Node* node, AXNotification notification, bo
     if (!node)
         return;
 
-    postNotification(object.get(), &node->document(), notification, postToElement, postType);
+    postNotification(object.get(), node->document(), notification, postToElement, postType);
 }
 
 void AXObjectCache::postNotification(AccessibilityObject* object, Document* document, AXNotification notification, bool postToElement, PostType postType)
@@ -832,7 +832,7 @@ VisiblePosition AXObjectCache::visiblePositionForTextMarkerData(TextMarkerData& 
     if (!renderer)
         return VisiblePosition();
 
-    AXObjectCache* cache = renderer->document().axObjectCache();
+    AXObjectCache* cache = renderer->document()->axObjectCache();
     if (!cache->isIDinUse(textMarkerData.axID))
         return VisiblePosition();
 
@@ -861,7 +861,7 @@ void AXObjectCache::textMarkerDataForVisiblePosition(TextMarkerData& textMarkerD
         return;
 
     // find or create an accessibility object for this node
-    AXObjectCache* cache = domNode->document().axObjectCache();
+    AXObjectCache* cache = domNode->document()->axObjectCache();
     RefPtr<AccessibilityObject> obj = cache->getOrCreate(domNode);
 
     textMarkerData.axID = obj.get()->axObjectID();
@@ -949,7 +949,7 @@ void AXObjectCache::handleFocusedUIElementChanged(Node*, Node* newFocusedNode)
     if (!newFocusedNode)
         return;
 
-    Page* page = newFocusedNode->document().page();
+    Page* page = newFocusedNode->document()->page();
     if (!page)
         return;
 

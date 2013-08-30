@@ -226,12 +226,12 @@ void AutofillPopupMenuClient::setTextFromItem(unsigned listIndex)
 
 FontSelector* AutofillPopupMenuClient::fontSelector() const
 {
-    return m_textField->document().styleResolver()->fontSelector();
+    return m_textField->document()->styleResolver()->fontSelector();
 }
 
 HostWindow* AutofillPopupMenuClient::hostWindow() const
 {
-    return m_textField->document().view()->hostWindow();
+    return m_textField->document()->view()->hostWindow();
 }
 
 PassRefPtr<Scrollbar> AutofillPopupMenuClient::createScrollbar(
@@ -285,7 +285,7 @@ void AutofillPopupMenuClient::initialize(
     regularFontDescription.setComputedSize(style->fontDescription().computedSize());
 
     Font regularFont(regularFontDescription, 0, 0);
-    regularFont.update(textField->document().styleResolver()->fontSelector());
+    regularFont.update(textField->document()->styleResolver()->fontSelector());
     // The direction of text in popup menu is set the same as the direction of
     // the input element: textField.
     m_regularStyle = adoptPtr(new PopupMenuStyle(Color::black, Color::white, regularFont, true, false,
@@ -331,7 +331,7 @@ void AutofillPopupMenuClient::setSuggestions(const WebVector<WebString>& names,
 
 WebViewImpl* AutofillPopupMenuClient::getWebView() const
 {
-    return WebViewImpl::fromPage(m_textField->document().page());
+    return WebViewImpl::fromPage(m_textField->document()->page());
 }
 
 RenderStyle* AutofillPopupMenuClient::textFieldStyle() const

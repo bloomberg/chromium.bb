@@ -144,8 +144,8 @@ void ImageLoader::updateFromElement()
 {
     // If we're not making renderers for the page, then don't load images.  We don't want to slow
     // down the raw HTML parsing case by loading images we don't intend to display.
-    Document& document = m_element->document();
-    if (!document.renderer())
+    Document* document = m_element->document();
+    if (!document->renderer())
         return;
 
     AtomicString attr = m_element->imageSourceURL();
@@ -157,30 +157,30 @@ void ImageLoader::updateFromElement()
     // an empty string.
     ResourcePtr<ImageResource> newImage = 0;
     if (!attr.isNull() && !stripLeadingAndTrailingHTMLSpaces(attr).isEmpty()) {
-        FetchRequest request(ResourceRequest(document.completeURL(sourceURI(attr))), element()->localName());
+        FetchRequest request(ResourceRequest(document->completeURL(sourceURI(attr))), element()->localName());
 
         String crossOriginMode = m_element->fastGetAttribute(HTMLNames::crossoriginAttr);
         if (!crossOriginMode.isNull()) {
             StoredCredentials allowCredentials = equalIgnoringCase(crossOriginMode, "use-credentials") ? AllowStoredCredentials : DoNotAllowStoredCredentials;
-            updateRequestForAccessControl(request.mutableResourceRequest(), document.securityOrigin(), allowCredentials);
+            updateRequestForAccessControl(request.mutableResourceRequest(), document->securityOrigin(), allowCredentials);
         }
 
         if (m_loadManually) {
-            bool autoLoadOtherImages = document.fetcher()->autoLoadImages();
-            document.fetcher()->setAutoLoadImages(false);
+            bool autoLoadOtherImages = document->fetcher()->autoLoadImages();
+            document->fetcher()->setAutoLoadImages(false);
             newImage = new ImageResource(request.resourceRequest());
             newImage->setLoading(true);
-            document.fetcher()->m_documentResources.set(newImage->url(), newImage.get());
-            document.fetcher()->setAutoLoadImages(autoLoadOtherImages);
+            document->fetcher()->m_documentResources.set(newImage->url(), newImage.get());
+            document->fetcher()->setAutoLoadImages(autoLoadOtherImages);
         } else {
-            newImage = document.fetcher()->fetchImage(request);
+            newImage = document->fetcher()->fetchImage(request);
         }
 
         // If we do not have an image here, it means that a cross-site
         // violation occurred, or that the image was blocked via Content
         // Security Policy, or the page is being dismissed. Trigger an
         // error event if the page is not being dismissed.
-        if (!newImage && !pageIsBeingDismissed(&document)) {
+        if (!newImage && !pageIsBeingDismissed(document)) {
             m_failedLoadURL = attr;
             m_hasPendingErrorEvent = true;
             errorEventSender().dispatchEventSoon(this);
@@ -215,13 +215,13 @@ void ImageLoader::updateFromElement()
         }
 
         m_image = newImage;
-        m_hasPendingBeforeLoadEvent = !m_element->document().isImageDocument() && newImage;
+        m_hasPendingBeforeLoadEvent = !m_element->document()->isImageDocument() && newImage;
         m_hasPendingLoadEvent = newImage;
         m_imageComplete = !newImage;
 
         if (newImage) {
-            if (!m_element->document().isImageDocument()) {
-                if (!m_element->document().hasListenerType(Document::BEFORELOAD_LISTENER))
+            if (!m_element->document()->isImageDocument()) {
+                if (!m_element->document()->hasListenerType(Document::BEFORELOAD_LISTENER))
                     dispatchPendingBeforeLoadEvent();
                 else
                     beforeLoadEventSender().dispatchEventSoon(this);
@@ -267,8 +267,8 @@ void ImageLoader::notifyFinished(Resource* resource)
         return;
 
     if (m_element->fastHasAttribute(HTMLNames::crossoriginAttr)
-        && !m_element->document().securityOrigin()->canRequest(image()->response().url())
-        && !resource->passesAccessControlCheck(m_element->document().securityOrigin())) {
+        && !m_element->document()->securityOrigin()->canRequest(image()->response().url())
+        && !resource->passesAccessControlCheck(m_element->document()->securityOrigin())) {
 
         setImageWithoutConsideringPendingLoadEvent(0);
 
@@ -276,7 +276,7 @@ void ImageLoader::notifyFinished(Resource* resource)
         errorEventSender().dispatchEventSoon(this);
 
         DEFINE_STATIC_LOCAL(String, consoleMessage, ("Cross-origin image load denied by Cross-Origin Resource Sharing policy."));
-        m_element->document().addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, consoleMessage);
+        m_element->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, consoleMessage);
 
         ASSERT(!m_hasPendingLoadEvent);
 
@@ -378,7 +378,7 @@ void ImageLoader::dispatchPendingBeforeLoadEvent()
         return;
     if (!m_image)
         return;
-    if (!m_element->document().attached())
+    if (!m_element->document()->attached())
         return;
     m_hasPendingBeforeLoadEvent = false;
     if (m_element->dispatchBeforeLoadEvent(m_image->url().string())) {
@@ -408,7 +408,7 @@ void ImageLoader::dispatchPendingLoadEvent()
     if (!m_image)
         return;
     m_hasPendingLoadEvent = false;
-    if (element()->document().attached())
+    if (element()->document()->attached())
         dispatchLoadEvent();
 
     // Only consider updating the protection ref-count of the Element immediately before returning
@@ -421,7 +421,7 @@ void ImageLoader::dispatchPendingErrorEvent()
     if (!m_hasPendingErrorEvent)
         return;
     m_hasPendingErrorEvent = false;
-    if (element()->document().attached())
+    if (element()->document()->attached())
         element()->dispatchEvent(Event::create(eventNames().errorEvent));
 
     // Only consider updating the protection ref-count of the Element immediately before returning

@@ -372,7 +372,7 @@ void XMLDocumentParser::enterText()
 {
     ASSERT(m_bufferedText.size() == 0);
     ASSERT(!m_leafTextNode);
-    m_leafTextNode = Text::create(&m_currentNode->document(), "");
+    m_leafTextNode = Text::create(m_currentNode->document(), "");
     m_currentNode->parserAppendChild(m_leafTextNode.get(), DeprecatedAttachNow);
 }
 
@@ -499,7 +499,7 @@ bool XMLDocumentParser::parseDocumentFragment(const String& chunk, DocumentFragm
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-xhtml-syntax.html#xml-fragment-parsing-algorithm
     // For now we have a hack for script/style innerHTML support:
     if (contextElement && (contextElement->hasLocalName(HTMLNames::scriptTag) || contextElement->hasLocalName(HTMLNames::styleTag))) {
-        fragment->parserAppendChild(fragment->document().createTextNode(chunk));
+        fragment->parserAppendChild(fragment->document()->createTextNode(chunk));
         return true;
     }
 
@@ -778,7 +778,7 @@ XMLDocumentParser::XMLDocumentParser(Document* document, FrameView* frameView)
 }
 
 XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parentElement, ParserContentPolicy parserContentPolicy)
-    : ScriptableDocumentParser(&fragment->document(), parserContentPolicy)
+    : ScriptableDocumentParser(fragment->document(), parserContentPolicy)
     , m_view(0)
     , m_context(0)
     , m_currentNode(fragment)
@@ -791,7 +791,7 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parent
     , m_parserPaused(false)
     , m_requestingScript(false)
     , m_finishCalled(false)
-    , m_xmlErrors(&fragment->document())
+    , m_xmlErrors(fragment->document())
     , m_pendingScript(0)
     , m_scriptStartPosition(TextPosition::belowRangePosition())
     , m_parsingFragment(true)
@@ -957,7 +957,7 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
     m_sawFirstElement = true;
 
     QualifiedName qName(prefix, localName, adjustedURI);
-    RefPtr<Element> newElement = m_currentNode->document().createElement(qName, true);
+    RefPtr<Element> newElement = m_currentNode->document()->createElement(qName, true);
     if (!newElement) {
         stopParsing();
         return;
@@ -1133,7 +1133,7 @@ void XMLDocumentParser::processingInstruction(const String& target, const String
 
     // ### handle exceptions
     TrackExceptionState es;
-    RefPtr<ProcessingInstruction> pi = m_currentNode->document().createProcessingInstruction(target, data, es);
+    RefPtr<ProcessingInstruction> pi = m_currentNode->document()->createProcessingInstruction(target, data, es);
     if (es.hadException())
         return;
 
@@ -1162,7 +1162,7 @@ void XMLDocumentParser::cdataBlock(const String& text)
 
     exitText();
 
-    RefPtr<CDATASection> newNode = CDATASection::create(&m_currentNode->document(), text);
+    RefPtr<CDATASection> newNode = CDATASection::create(m_currentNode->document(), text);
     m_currentNode->parserAppendChild(newNode.get(), DeprecatedAttachNow);
 }
 
@@ -1178,7 +1178,7 @@ void XMLDocumentParser::comment(const String& text)
 
     exitText();
 
-    RefPtr<Comment> newNode = Comment::create(&m_currentNode->document(), text);
+    RefPtr<Comment> newNode = Comment::create(m_currentNode->document(), text);
     m_currentNode->parserAppendChild(newNode.get(), DeprecatedAttachNow);
 }
 

@@ -105,7 +105,7 @@ public:
     void sortAndTransferMatchedRulesWithOnlySortBySpecificity();
 
 private:
-    Document& document() { return m_context.document(); }
+    Document* document() { return m_context.document(); }
 
     void collectRuleIfMatches(const RuleData&, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
     void collectMatchingRulesForList(const Vector<RuleData>*, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);

@@ -123,7 +123,7 @@ void HTMLFormControlElement::parseAttribute(const QualifiedName& name, const Ato
 {
     if (name == formAttr) {
         formAttributeChanged();
-        UseCounter::count(&document(), UseCounter::FormAttribute);
+        UseCounter::count(document(), UseCounter::FormAttribute);
     } else if (name == disabledAttr) {
         bool oldDisabled = m_disabled;
         m_disabled = !value.isNull();
@@ -143,10 +143,10 @@ void HTMLFormControlElement::parseAttribute(const QualifiedName& name, const Ato
         m_isRequired = !value.isNull();
         if (wasRequired != m_isRequired)
             requiredAttributeChanged();
-        UseCounter::count(&document(), UseCounter::RequiredAttribute);
+        UseCounter::count(document(), UseCounter::RequiredAttribute);
     } else if (name == autofocusAttr) {
         HTMLElement::parseAttribute(name, value);
-        UseCounter::count(&document(), UseCounter::AutoFocusAttribute);
+        UseCounter::count(document(), UseCounter::AutoFocusAttribute);
     } else
         HTMLElement::parseAttribute(name, value);
 }
@@ -160,7 +160,7 @@ void HTMLFormControlElement::disabledAttributeChanged()
     if (isDisabledFormControl() && treeScope()->adjustedFocusedElement() == this) {
         // We might want to call blur(), but it's dangerous to dispatch events
         // here.
-        document().setNeedsFocusedElementCheck();
+        document()->setNeedsFocusedElementCheck();
     }
 }
 
@@ -178,11 +178,11 @@ static bool shouldAutofocus(HTMLFormControlElement* element)
         return false;
     if (!element->renderer())
         return false;
-    if (element->document().ignoreAutofocus())
+    if (element->document()->ignoreAutofocus())
         return false;
-    if (element->document().isSandboxed(SandboxAutomaticFeatures)) {
+    if (element->document()->isSandboxed(SandboxAutomaticFeatures)) {
         // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-        element->document().addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Blocked autofocusing on a form control because the form's frame is sandboxed and the 'allow-scripts' permission is not set.");
+        element->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Blocked autofocusing on a form control because the form's frame is sandboxed and the 'allow-scripts' permission is not set.");
         return false;
     }
     if (element->hasAutofocused())
@@ -412,7 +412,7 @@ void HTMLFormControlElement::setNeedsWillValidateCheck()
 
 void HTMLFormControlElement::updateVisibleValidationMessage()
 {
-    Page* page = document().page();
+    Page* page = document()->page();
     if (!page)
         return;
     String message;
@@ -437,9 +437,9 @@ bool HTMLFormControlElement::checkValidity(Vector<RefPtr<FormAssociatedElement> 
         return false;
     // An event handler can deref this object.
     RefPtr<HTMLFormControlElement> protector(this);
-    RefPtr<Document> originalDocument(&document());
+    RefPtr<Document> originalDocument(document());
     bool needsDefaultAction = dispatchEvent(Event::createCancelable(eventNames().invalidEvent));
-    if (needsDefaultAction && unhandledInvalidControls && inDocument() && originalDocument == &document())
+    if (needsDefaultAction && unhandledInvalidControls && inDocument() && originalDocument == document())
         unhandledInvalidControls->append(this);
     return false;
 }

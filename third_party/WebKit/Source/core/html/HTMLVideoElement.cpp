@@ -120,7 +120,7 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
 
 bool HTMLVideoElement::supportsFullscreen() const
 {
-    Page* page = &document() ? document().page() : 0;
+    Page* page = document() ? document()->page() : 0;
     if (!page)
         return false;
 
@@ -279,7 +279,7 @@ KURL HTMLVideoElement::posterImageURL() const
     String url = stripLeadingAndTrailingHTMLSpaces(imageSourceURL());
     if (url.isEmpty())
         return KURL();
-    return document().completeURL(url);
+    return document()->completeURL(url);
 }
 
 }

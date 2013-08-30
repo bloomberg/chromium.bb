@@ -736,7 +736,7 @@ void CanvasRenderingContext2D::setStrokeColor(const String& color)
     if (color == state().m_unparsedStrokeColor)
         return;
     realizeSaves();
-    setStrokeStyle(CanvasStyle::createFromString(color, &canvas()->document()));
+    setStrokeStyle(CanvasStyle::createFromString(color, canvas()->document()));
     modifiableState().m_unparsedStrokeColor = color;
 }
 
@@ -778,7 +778,7 @@ void CanvasRenderingContext2D::setFillColor(const String& color)
     if (color == state().m_unparsedFillColor)
         return;
     realizeSaves();
-    setFillStyle(CanvasStyle::createFromString(color, &canvas()->document()));
+    setFillStyle(CanvasStyle::createFromString(color, canvas()->document()));
     modifiableState().m_unparsedFillColor = color;
 }
 
@@ -2306,7 +2306,7 @@ void CanvasRenderingContext2D::inflateStrokeRect(FloatRect& rect) const
 
 const Font& CanvasRenderingContext2D::accessFont()
 {
-    canvas()->document().updateStyleIfNeeded();
+    canvas()->document()->updateStyleIfNeeded();
 
     if (!state().m_realizedFont)
         setFont(state().m_unparsedFont);
@@ -2351,7 +2351,7 @@ void CanvasRenderingContext2D::drawSystemFocusRing(Element* element)
     // Note: we need to check document->focusedElement() rather than just calling
     // element->focused(), because element->focused() isn't updated until after
     // focus events fire.
-    if (element->document().focusedElement() == element)
+    if (element->document() && element->document()->focusedElement() == element)
         drawFocusRing(m_path);
 }
 
@@ -2388,7 +2388,7 @@ void CanvasRenderingContext2D::updateFocusRingAccessibility(const Path& path, El
     // bounding box with the accessible object. Do this even if the element
     // isn't focused because assistive technology might try to explore the object's
     // location before it gets focus.
-    if (AXObjectCache* axObjectCache = element->document().existingAXObjectCache()) {
+    if (AXObjectCache* axObjectCache = element->document()->existingAXObjectCache()) {
         if (AccessibilityObject* obj = axObjectCache->getOrCreate(element)) {
             // Get the bounding rect and apply transformations.
             FloatRect bounds = m_path.boundingRect();

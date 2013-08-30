@@ -90,8 +90,8 @@ void ChildNodeRemovalNotifier::notifyDescendantRemovedFromDocument(ContainerNode
     if (!node->isElementNode())
         return;
 
-    if (node->document().cssTarget() == node)
-        node->document().setCSSTarget(0);
+    if (node->document()->cssTarget() == node)
+        node->document()->setCSSTarget(0);
 
     if (ElementShadow* shadow = toElement(node)->shadow()) {
         ShadowRootVector roots(shadow);

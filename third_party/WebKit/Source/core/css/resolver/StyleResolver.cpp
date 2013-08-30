@@ -598,13 +598,13 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     // Once an element has a renderer, we don't try to destroy it, since otherwise the renderer
     // will vanish if a style recalc happens during loading.
-    if (sharingBehavior == AllowStyleSharing && !element->document().haveStylesheetsLoaded() && !element->renderer()) {
+    if (sharingBehavior == AllowStyleSharing && !element->document()->haveStylesheetsLoaded() && !element->renderer()) {
         if (!s_styleNotYetAvailable) {
             s_styleNotYetAvailable = RenderStyle::create().leakRef();
             s_styleNotYetAvailable->setDisplay(NONE);
             s_styleNotYetAvailable->font().update(m_fontSelector);
         }
-        element->document().setHasNodesWithPlaceholderStyle();
+        element->document()->setHasNodesWithPlaceholderStyle();
         return s_styleNotYetAvailable;
     }
 
@@ -1092,7 +1092,7 @@ PassRefPtr<CSSRuleList> StyleResolver::styleRulesForElement(Element* e, unsigned
 
 PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, PseudoId pseudoId, unsigned rulesToInclude)
 {
-    if (!e || !e->document().haveStylesheetsLoaded())
+    if (!e || !e->document()->haveStylesheetsLoaded())
         return 0;
 
     if (e == document()->documentElement())
@@ -1445,13 +1445,13 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     if (RuntimeEnabledFeatures::webAnimationsEnabled() && !applyInheritedOnly) {
         calculateCSSAnimationUpdate(state);
         // Apply animated properties, then reapply any rules marked important.
-        if (applyAnimatedProperties<HighPriorityProperties>(state, element->document().timeline())) {
+        if (applyAnimatedProperties<HighPriorityProperties>(state, element->document()->timeline())) {
             bool important = true;
             applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
             applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
             applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
         }
-        if (applyAnimatedProperties<LowPriorityProperties>(state, element->document().timeline())) {
+        if (applyAnimatedProperties<LowPriorityProperties>(state, element->document()->timeline())) {
             bool important = true;
             applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
             applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);

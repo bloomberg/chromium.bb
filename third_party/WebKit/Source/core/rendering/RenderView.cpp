@@ -151,7 +151,7 @@ void RenderView::addChild(RenderObject* newChild, RenderObject* beforeChild)
     // Seamless iframes are considered part of an enclosing render flow thread from the parent document. This is necessary for them to look
     // up regions in the parent document during layout.
     if (newChild && !newChild->isRenderFlowThread()) {
-        RenderBox* seamlessBox = enclosingSeamlessRenderer(&document());
+        RenderBox* seamlessBox = enclosingSeamlessRenderer(document());
         if (seamlessBox && seamlessBox->flowThreadContainingBlock())
             newChild->setFlowThreadState(seamlessBox->flowThreadState());
     }
@@ -167,7 +167,7 @@ bool RenderView::initializeLayoutState(LayoutState& state)
 
     // Check the writing mode of the seamless ancestor. It has to match our document's writing mode, or we won't inherit any
     // pagination information.
-    RenderBox* seamlessAncestor = enclosingSeamlessRenderer(&document());
+    RenderBox* seamlessAncestor = enclosingSeamlessRenderer(document());
     LayoutState* seamlessLayoutState = seamlessAncestor ? seamlessAncestor->view()->layoutState() : 0;
     bool shouldInheritPagination = seamlessLayoutState && !m_pageLogicalHeight && seamlessAncestor->style()->writingMode() == style()->writingMode();
 
@@ -242,7 +242,7 @@ void RenderView::layoutContentInAutoLogicalHeightRegions(const LayoutState& stat
 
 void RenderView::layout()
 {
-    if (!document().paginated())
+    if (!document()->paginated())
         setPageLogicalHeight(0);
 
     if (shouldUsePrintingLayout())
@@ -451,7 +451,7 @@ void RenderView::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&)
     // FIXME: This needs to be dynamic.  We should be able to go back to blitting if we ever stop being inside
     // a transform, transparency layer, etc.
     Element* elt;
-    for (elt = document().ownerElement(); view() && elt && elt->renderer(); elt = elt->document().ownerElement()) {
+    for (elt = document()->ownerElement(); view() && elt && elt->renderer(); elt = elt->document()->ownerElement()) {
         RenderLayer* layer = elt->renderer()->enclosingLayer();
         if (layer->cannotBlitToWindow()) {
             frameView()->setCannotBlitToWindow();
@@ -464,7 +464,7 @@ void RenderView::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&)
         }
     }
 
-    if (document().ownerElement() || !view())
+    if (document()->ownerElement() || !view())
         return;
 
     if (paintInfo.skipRootBackground())
@@ -472,7 +472,7 @@ void RenderView::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&)
 
     bool rootFillsViewport = false;
     bool rootObscuresBackground = false;
-    Node* documentElement = document().documentElement();
+    Node* documentElement = document()->documentElement();
     if (RenderObject* rootRenderer = documentElement ? documentElement->renderer() : 0) {
         // The document element's renderer is currently forced to be a block, but may not always be.
         RenderBox* rootBox = rootRenderer->isBox() ? toRenderBox(rootRenderer) : 0;
@@ -480,7 +480,7 @@ void RenderView::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&)
         rootObscuresBackground = rendererObscuresBackground(rootRenderer);
     }
 
-    Page* page = document().page();
+    Page* page = document()->page();
     float pageScaleFactor = page ? page->pageScaleFactor() : 1;
 
     // If painting will entirely fill the view, no need to fill the background.
@@ -527,7 +527,7 @@ void RenderView::repaintViewRectangle(const LayoutRect& ur) const
 
     // We always just invalidate the root view, since we could be an iframe that is clipped out
     // or even invisible.
-    Element* elt = document().ownerElement();
+    Element* elt = document()->ownerElement();
     if (!elt)
         m_frameView->repaintContentRectangle(pixelSnappedIntRect(ur));
     else if (RenderBox* obj = elt->renderBox()) {
@@ -614,7 +614,7 @@ static RenderObject* rendererAfterPosition(RenderObject* object, unsigned offset
 
 IntRect RenderView::selectionBounds(bool clipToVisibleContent) const
 {
-    document().updateStyleIfNeeded();
+    document()->updateStyleIfNeeded();
 
     typedef HashMap<RenderObject*, OwnPtr<RenderSelectionInfo> > SelectionMap;
     SelectionMap selectedObjects;
@@ -656,7 +656,7 @@ IntRect RenderView::selectionBounds(bool clipToVisibleContent) const
 
 void RenderView::repaintSelection() const
 {
-    document().updateStyleIfNeeded();
+    document()->updateStyleIfNeeded();
 
     HashSet<RenderBlock*> processedBlocks;
 
@@ -867,7 +867,7 @@ void RenderView::selectionStartEnd(int& startPos, int& endPos) const
 
 bool RenderView::printing() const
 {
-    return document().printing();
+    return document()->printing();
 }
 
 bool RenderView::shouldUsePrintingLayout() const
@@ -947,7 +947,7 @@ IntRect RenderView::unscaledDocumentRect() const
 
 bool RenderView::rootBackgroundIsEntirelyFixed() const
 {
-    RenderObject* rootObject = document().documentElement() ? document().documentElement()->renderer() : 0;
+    RenderObject* rootObject = document()->documentElement() ? document()->documentElement()->renderer() : 0;
     if (!rootObject)
         return false;
 
@@ -1039,7 +1039,7 @@ void RenderView::updateHitTestResult(HitTestResult& result, const LayoutPoint& p
     if (result.innerNode())
         return;
 
-    Node* node = document().documentElement();
+    Node* node = document()->documentElement();
     if (node) {
         result.setInnerNode(node);
         if (!result.innerNonSharedNode())
@@ -1113,7 +1113,7 @@ IntervalArena* RenderView::intervalArena()
 bool RenderView::backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const
 {
     // FIXME: Remove this main frame check. Same concept applies to subframes too.
-    Page* page = document().page();
+    Page* page = document()->page();
     Frame* mainFrame = page ? page->mainFrame() : 0;
     if (!m_frameView || m_frameView->frame() != mainFrame)
         return false;

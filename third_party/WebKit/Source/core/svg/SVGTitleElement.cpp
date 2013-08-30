@@ -44,7 +44,7 @@ Node::InsertionNotificationRequest SVGTitleElement::insertedInto(ContainerNode* 
     if (!rootParent->inDocument())
         return InsertionDone;
     if (firstChild())
-        document().setTitleElement(textContent(), this);
+        document()->setTitleElement(textContent(), this);
     return InsertionDone;
 }
 
@@ -52,14 +52,14 @@ void SVGTitleElement::removedFrom(ContainerNode* rootParent)
 {
     SVGElement::removedFrom(rootParent);
     if (rootParent->inDocument())
-        document().removeTitle(this);
+        document()->removeTitle(this);
 }
 
 void SVGTitleElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     SVGElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
     if (inDocument())
-        document().setTitleElement(textContent(), this);
+        document()->setTitleElement(textContent(), this);
 }
 
 }

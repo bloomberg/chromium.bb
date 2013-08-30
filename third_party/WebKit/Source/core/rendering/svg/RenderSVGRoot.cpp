@@ -119,7 +119,7 @@ bool RenderSVGRoot::isEmbeddedThroughFrameContainingSVGDocument() const
     if (!node())
         return false;
 
-    Frame* frame = node()->document().frame();
+    Frame* frame = node()->document()->frame();
     if (!frame)
         return false;
 
@@ -152,7 +152,7 @@ LayoutUnit RenderSVGRoot::computeReplacedLogicalWidth(ShouldComputePreferred sho
 
     // SVG embedded through object/embed/iframe.
     if (isEmbeddedThroughFrameContainingSVGDocument())
-        return document().frame()->ownerRenderer()->availableLogicalWidth();
+        return document()->frame()->ownerRenderer()->availableLogicalWidth();
 
     // SVG embedded via SVGImage (background-image/border-image/etc) / Inline SVG.
     return RenderReplaced::computeReplacedLogicalWidth(shouldComputePreferred);
@@ -187,7 +187,7 @@ LayoutUnit RenderSVGRoot::computeReplacedLogicalHeight() const
 
     // SVG embedded through object/embed/iframe.
     if (isEmbeddedThroughFrameContainingSVGDocument())
-        return document().frame()->ownerRenderer()->availableLogicalHeight(IncludeMarginBorderPadding);
+        return document()->frame()->ownerRenderer()->availableLogicalHeight(IncludeMarginBorderPadding);
 
     // SVG embedded via SVGImage (background-image/border-image/etc) / Inline SVG.
     return RenderReplaced::computeReplacedLogicalHeight();

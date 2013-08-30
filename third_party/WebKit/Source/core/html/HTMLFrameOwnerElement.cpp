@@ -125,13 +125,13 @@ SVGDocument* HTMLFrameOwnerElement::getSVGDocument(ExceptionState& es) const
 
 bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const AtomicString& frameName, bool lockBackForwardList)
 {
-    RefPtr<Frame> parentFrame = document().frame();
+    RefPtr<Frame> parentFrame = document()->frame();
     if (contentFrame()) {
-        contentFrame()->navigationScheduler()->scheduleLocationChange(document().securityOrigin(), url.string(), parentFrame->loader()->outgoingReferrer(), lockBackForwardList);
+        contentFrame()->navigationScheduler()->scheduleLocationChange(document()->securityOrigin(), url.string(), parentFrame->loader()->outgoingReferrer(), lockBackForwardList);
         return true;
     }
 
-    if (!document().securityOrigin()->canDisplay(url)) {
+    if (!document()->securityOrigin()->canDisplay(url)) {
         FrameLoader::reportLocalLoadFailed(parentFrame.get(), url.string());
         return false;
     }
@@ -139,7 +139,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
     if (!SubframeLoadingDisabler::canLoadFrame(this))
         return false;
 
-    String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), url, parentFrame->loader()->outgoingReferrer());
+    String referrer = SecurityPolicy::generateReferrerHeader(document()->referrerPolicy(), url, parentFrame->loader()->outgoingReferrer());
     RefPtr<Frame> childFrame = parentFrame->loader()->client()->createFrame(url, frameName, referrer, this);
 
     if (!childFrame)  {

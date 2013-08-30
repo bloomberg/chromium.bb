@@ -128,7 +128,7 @@ void RenderListBox::updateFromElement()
                 FontDescription d = itemFont.fontDescription();
                 d.setWeight(d.bolderWeight());
                 itemFont = Font(d, itemFont.letterSpacing(), itemFont.wordSpacing());
-                itemFont.update(document().styleResolver()->fontSelector());
+                itemFont.update(document()->styleResolver()->fontSelector());
             }
 
             if (!text.isEmpty()) {
@@ -164,7 +164,7 @@ void RenderListBox::selectionChanged()
             scrollToRevealSelection();
     }
 
-    if (AXObjectCache* cache = document().existingAXObjectCache())
+    if (AXObjectCache* cache = document()->existingAXObjectCache())
         cache->selectedChildrenChanged(this);
 }
 
@@ -407,7 +407,7 @@ void RenderListBox::paintItemForeground(PaintInfo& paintInfo, const LayoutPoint&
 
     Color textColor = element->renderStyle() ? resolveColor(element->renderStyle(), CSSPropertyColor) : resolveColor(CSSPropertyColor);
     if (isOptionElement && toHTMLOptionElement(element)->selected()) {
-        if (frame()->selection()->isFocusedAndActive() && document().focusedElement() == node())
+        if (frame()->selection()->isFocusedAndActive() && document()->focusedElement() == node())
             textColor = RenderTheme::theme().activeListBoxSelectionForegroundColor();
         // Honor the foreground color for disabled items
         else if (!element->isDisabledFormControl() && !select->isDisabledFormControl())
@@ -425,7 +425,7 @@ void RenderListBox::paintItemForeground(PaintInfo& paintInfo, const LayoutPoint&
         FontDescription d = itemFont.fontDescription();
         d.setWeight(d.bolderWeight());
         itemFont = Font(d, itemFont.letterSpacing(), itemFont.wordSpacing());
-        itemFont.update(document().styleResolver()->fontSelector());
+        itemFont.update(document()->styleResolver()->fontSelector());
     }
 
     // Draw the item text
@@ -441,7 +441,7 @@ void RenderListBox::paintItemBackground(PaintInfo& paintInfo, const LayoutPoint&
 
     Color backColor;
     if (element->hasTagName(optionTag) && toHTMLOptionElement(element)->selected()) {
-        if (frame()->selection()->isFocusedAndActive() && document().focusedElement() == node())
+        if (frame()->selection()->isFocusedAndActive() && document()->focusedElement() == node())
             backColor = RenderTheme::theme().activeListBoxSelectionBackgroundColor();
         else
             backColor = RenderTheme::theme().inactiveListBoxSelectionBackgroundColor();
@@ -638,7 +638,7 @@ void RenderListBox::scrollTo(int newOffset)
 
     m_indexOffset = newOffset;
     repaint();
-    node()->document().eventQueue()->enqueueOrDispatchScrollEvent(node(), DocumentEventQueue::ScrollEventElementTarget);
+    node()->document()->eventQueue()->enqueueOrDispatchScrollEvent(node(), DocumentEventQueue::ScrollEventElementTarget);
 }
 
 LayoutUnit RenderListBox::itemHeight() const
@@ -879,7 +879,7 @@ PassRefPtr<Scrollbar> RenderListBox::createScrollbar()
         widget = Scrollbar::createNativeScrollbar(this, VerticalScrollbar, RenderTheme::theme().scrollbarControlSizeForPart(ListboxPart));
         didAddVerticalScrollbar(widget.get());
     }
-    document().view()->addChild(widget.get());
+    document()->view()->addChild(widget.get());
     return widget.release();
 }
 
@@ -909,8 +909,8 @@ void RenderListBox::setHasVerticalScrollbar(bool hasScrollbar)
         m_vBar->styleChanged();
 
     // Force an update since we know the scrollbars have changed things.
-    if (document().hasAnnotatedRegions())
-        document().setAnnotatedRegionsDirty(true);
+    if (document()->hasAnnotatedRegions())
+        document()->setAnnotatedRegionsDirty(true);
 }
 
 } // namespace WebCore

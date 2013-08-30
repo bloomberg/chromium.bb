@@ -55,7 +55,7 @@ String PseudoElement::pseudoElementNameForEvents(PseudoId pseudoId)
 }
 
 PseudoElement::PseudoElement(Element* parent, PseudoId pseudoId)
-    : Element(pseudoElementTagName(), &parent->document(), CreatePseudoElement)
+    : Element(pseudoElementTagName(), parent->document(), CreatePseudoElement)
     , m_pseudoId(pseudoId)
 {
     ASSERT(pseudoId != NOPSEUDO);
@@ -89,7 +89,7 @@ void PseudoElement::attach(const AttachContext& context)
     ASSERT(style->contentData());
 
     for (const ContentData* content = style->contentData(); content; content = content->next()) {
-        RenderObject* child = content->createRenderer(&document(), style);
+        RenderObject* child = content->createRenderer(document(), style);
         if (renderer->isChildAllowed(child, style)) {
             renderer->addChild(child);
             if (child->isQuote())

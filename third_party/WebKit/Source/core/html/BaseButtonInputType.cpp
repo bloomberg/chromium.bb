@@ -66,7 +66,7 @@ public:
 void BaseButtonInputType::createShadowSubtree()
 {
     ASSERT(element()->userAgentShadowRoot());
-    RefPtr<Text> text = NonSelectableText::create(&element()->document(), element()->valueWithDefault());
+    RefPtr<Text> text = NonSelectableText::create(element()->document(), element()->valueWithDefault());
     element()->userAgentShadowRoot()->appendChild(text);
 }
 

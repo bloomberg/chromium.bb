@@ -65,7 +65,7 @@ SVGRect SVGLocatable::getBBox(SVGElement* element, StyleUpdateStrategy styleUpda
 {
     ASSERT(element);
     if (styleUpdateStrategy == AllowStyleUpdate)
-        element->document().updateLayoutIgnorePendingStylesheets();
+        element->document()->updateLayoutIgnorePendingStylesheets();
 
     // FIXME: Eventually we should support getBBox for detached elements.
     if (!element->renderer())
@@ -78,7 +78,7 @@ AffineTransform SVGLocatable::computeCTM(SVGElement* element, CTMScope mode, Sty
 {
     ASSERT(element);
     if (styleUpdateStrategy == AllowStyleUpdate)
-        element->document().updateLayoutIgnorePendingStylesheets();
+        element->document()->updateLayoutIgnorePendingStylesheets();
 
     AffineTransform ctm;
 

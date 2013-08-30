@@ -75,7 +75,7 @@ Node* V8GCController::opaqueRootForGC(Node* node, v8::Isolate*)
     // Maybe should image elements be active DOM nodes?
     // See https://code.google.com/p/chromium/issues/detail?id=164882
     if (node->inDocument() || (node->hasTagName(HTMLNames::imgTag) && toHTMLImageElement(node)->hasPendingActivity()))
-        return &node->document();
+        return node->document();
 
     if (node->isAttributeNode()) {
         Node* ownerElement = toAttr(node)->ownerElement();

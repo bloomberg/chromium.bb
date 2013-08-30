@@ -60,8 +60,8 @@ private:
     virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE { return false; }
 
     virtual bool isLoading() const { return StyleElement::isLoading(); }
-    virtual bool sheetLoaded() { return StyleElement::sheetLoaded(&document()); }
-    virtual void startLoadingDynamicSheet() { StyleElement::startLoadingDynamicSheet(&document()); }
+    virtual bool sheetLoaded() { return StyleElement::sheetLoaded(document()); }
+    virtual void startLoadingDynamicSheet() { StyleElement::startLoadingDynamicSheet(document()); }
     virtual Timer<SVGElement>* svgLoadEventTimer() OVERRIDE { return &m_svgLoadEventTimer; }
 
     Timer<SVGElement> m_svgLoadEventTimer;

@@ -89,13 +89,13 @@ void PasswordGeneratorButtonElement::decorate(HTMLInputElement* input)
     getDecorationRootAndDecoratedRoot(input, decorationRoot, existingRoot);
     ASSERT(decorationRoot);
     ASSERT(existingRoot);
-    RefPtr<HTMLDivElement> box = HTMLDivElement::create(&input->document());
+    RefPtr<HTMLDivElement> box = HTMLDivElement::create(input->document());
     decorationRoot->appendChild(box);
     box->setInlineStyleProperty(CSSPropertyDisplay, CSSValueFlex);
     box->setInlineStyleProperty(CSSPropertyAlignItems, CSSValueCenter);
     ASSERT(existingRoot->childNodeCount() == 1);
     toHTMLElement(existingRoot->firstChild())->setInlineStyleProperty(CSSPropertyFlexGrow, 1.0, CSSPrimitiveValue::CSS_NUMBER);
-    box->appendChild(HTMLShadowElement::create(HTMLNames::shadowTag, &input->document()));
+    box->appendChild(HTMLShadowElement::create(HTMLNames::shadowTag, input->document()));
     setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
     box->appendChild(this);
 }
@@ -171,7 +171,7 @@ void PasswordGeneratorButtonElement::defaultEventHandler(Event* event)
 
     RefPtr<PasswordGeneratorButtonElement> protector(this);
     if (event->type() == eventNames().clickEvent) {
-        if (Page* page = document().page())
+        if (Page* page = document()->page())
             page->chrome().client().openPasswordGenerator(input.get());
         event->setDefaultHandled();
     }

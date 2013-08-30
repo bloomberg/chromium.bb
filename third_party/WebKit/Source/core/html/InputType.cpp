@@ -396,7 +396,7 @@ void InputType::destroyShadowSubtree()
     // FIXME: Remove the PasswordGeneratorButtonElement's shadow root and then remove this loop.
     while ((root = root->youngerShadowRoot())) {
         root->removeChildren();
-        root->appendChild(HTMLShadowElement::create(shadowTag, &element()->document()));
+        root->appendChild(HTMLShadowElement::create(shadowTag, element()->document()));
     }
 }
 
@@ -432,7 +432,7 @@ void InputType::dispatchSimulatedClickIfActive(KeyboardEvent* event) const
 
 Chrome* InputType::chrome() const
 {
-    if (Page* page = element()->document().page())
+    if (Page* page = element()->document()->page())
         return &page->chrome();
     return 0;
 }
@@ -827,7 +827,7 @@ void InputType::applyStep(int count, AnyStepHandling anyStepHandling, TextFieldE
 
     setValueAsDecimal(newValue, eventBehavior, es);
 
-    if (AXObjectCache* cache = element()->document().existingAXObjectCache())
+    if (AXObjectCache* cache = element()->document()->existingAXObjectCache())
         cache->postNotification(element(), AXObjectCache::AXValueChanged, true);
 }
 
@@ -960,7 +960,7 @@ void InputType::observeFeatureIfVisible(UseCounter::Feature feature) const
 {
     if (RenderStyle* style = element()->renderStyle()) {
         if (style->visibility() != HIDDEN)
-            UseCounter::count(&element()->document(), feature);
+            UseCounter::count(element()->document(), feature);
     }
 }
 

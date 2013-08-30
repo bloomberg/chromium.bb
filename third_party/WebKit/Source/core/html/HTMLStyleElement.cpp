@@ -59,7 +59,7 @@ HTMLStyleElement::~HTMLStyleElement()
 {
     // During tear-down, willRemove isn't called, so m_scopedStyleRegistrationState may still be RegisteredAsScoped or RegisteredInShadowRoot here.
     // Therefore we can't ASSERT(m_scopedStyleRegistrationState == NotRegistered).
-    StyleElement::clearDocumentData(&document(), this);
+    StyleElement::clearDocumentData(document(), this);
 
     styleLoadEventSender().cancelEvent(this);
 }
@@ -73,12 +73,12 @@ void HTMLStyleElement::parseAttribute(const QualifiedName& name, const AtomicStr
 {
     if (name == titleAttr && m_sheet) {
         m_sheet->setTitle(value);
-    } else if (name == scopedAttr && ContextFeatures::styleScopedEnabled(&document())) {
+    } else if (name == scopedAttr && ContextFeatures::styleScopedEnabled(document())) {
         scopedAttributeChanged(!value.isNull());
-    } else if (name == mediaAttr && inDocument() && document().renderer() && m_sheet) {
+    } else if (name == mediaAttr && inDocument() && document()->renderer() && m_sheet) {
         m_sheet->setMediaQueries(MediaQuerySet::create(value));
         // FIXME: This shold be RecalcStyleDeferred.
-        document().modifiedStyleSheet(m_sheet.get(), RecalcStyleImmediately);
+        document()->modifiedStyleSheet(m_sheet.get(), RecalcStyleImmediately);
     } else {
         HTMLElement::parseAttribute(name, value);
     }
@@ -86,7 +86,7 @@ void HTMLStyleElement::parseAttribute(const QualifiedName& name, const AtomicStr
 
 void HTMLStyleElement::scopedAttributeChanged(bool scoped)
 {
-    ASSERT(ContextFeatures::styleScopedEnabled(&document()));
+    ASSERT(ContextFeatures::styleScopedEnabled(document()));
 
     if (!inDocument())
         return;
@@ -102,11 +102,11 @@ void HTMLStyleElement::scopedAttributeChanged(bool scoped)
             scopingNode = containingShadowRoot();
             unregisterWithScopingNode(scopingNode);
         }
-        document().styleSheetCollections()->removeStyleSheetCandidateNode(this, scopingNode);
+        document()->styleSheetCollections()->removeStyleSheetCandidateNode(this, scopingNode);
         registerWithScopingNode(true);
 
-        document().styleSheetCollections()->addStyleSheetCandidateNode(this, false);
-        document().modifiedStyleSheet(sheet());
+        document()->styleSheetCollections()->addStyleSheetCandidateNode(this, false);
+        document()->modifiedStyleSheet(sheet());
         return;
     }
 
@@ -115,7 +115,7 @@ void HTMLStyleElement::scopedAttributeChanged(bool scoped)
     if (m_scopedStyleRegistrationState != RegisteredAsScoped)
         return;
 
-    document().styleSheetCollections()->removeStyleSheetCandidateNode(this, parentNode());
+    document()->styleSheetCollections()->removeStyleSheetCandidateNode(this, parentNode());
     unregisterWithScopingNode(parentNode());
 
     // As any <style> in a shadow tree is treated as "scoped",
@@ -123,8 +123,8 @@ void HTMLStyleElement::scopedAttributeChanged(bool scoped)
     if (isInShadowTree())
         registerWithScopingNode(false);
 
-    document().styleSheetCollections()->addStyleSheetCandidateNode(this, false);
-    document().modifiedStyleSheet(sheet());
+    document()->styleSheetCollections()->addStyleSheetCandidateNode(this, false);
+    document()->modifiedStyleSheet(sheet());
 }
 
 void HTMLStyleElement::finishParsingChildren()
@@ -157,7 +157,7 @@ void HTMLStyleElement::registerWithScopingNode(bool scoped)
 
 void HTMLStyleElement::unregisterWithScopingNode(ContainerNode* scope)
 {
-    ASSERT(m_scopedStyleRegistrationState != NotRegistered || !ContextFeatures::styleScopedEnabled(&document()));
+    ASSERT(m_scopedStyleRegistrationState != NotRegistered || !ContextFeatures::styleScopedEnabled(document()));
     if (!isRegisteredAsScoped())
         return;
 
@@ -202,12 +202,12 @@ void HTMLStyleElement::removedFrom(ContainerNode* insertionPoint)
     }
 
     if (insertionPoint->inDocument())
-        StyleElement::removedFromDocument(&document(), this, scope);
+        StyleElement::removedFromDocument(document(), this, scope);
 }
 
 void HTMLStyleElement::didNotifySubtreeInsertions(ContainerNode* insertionPoint)
 {
-    StyleElement::processStyleSheet(&document(), this);
+    StyleElement::processStyleSheet(document(), this);
 }
 
 void HTMLStyleElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
@@ -228,7 +228,7 @@ const AtomicString& HTMLStyleElement::type() const
 
 bool HTMLStyleElement::scoped() const
 {
-    return fastHasAttribute(scopedAttr) && ContextFeatures::styleScopedEnabled(&document());
+    return fastHasAttribute(scopedAttr) && ContextFeatures::styleScopedEnabled(document());
 }
 
 void HTMLStyleElement::setScoped(bool scopedValue)
@@ -242,7 +242,7 @@ ContainerNode* HTMLStyleElement::scopingNode()
         return 0;
 
     if (!isRegisteredAsScoped())
-        return &document();
+        return document();
 
     if (isRegisteredInShadowRoot())
         return containingShadowRoot();

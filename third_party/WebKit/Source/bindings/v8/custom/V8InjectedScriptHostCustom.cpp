@@ -273,7 +273,9 @@ void V8InjectedScriptHost::getEventListenersMethodCustom(const v8::FunctionCallb
     if (!node)
         return;
     // This can only happen for orphan DocumentType nodes.
-    Document& document = node->document();
+    Document* document = node->document();
+    if (!node->document())
+        return;
 
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
     Vector<EventListenerInfo> listenersArray;
@@ -281,7 +283,7 @@ void V8InjectedScriptHost::getEventListenersMethodCustom(const v8::FunctionCallb
 
     v8::Local<v8::Object> result = v8::Object::New();
     for (size_t i = 0; i < listenersArray.size(); ++i) {
-        v8::Handle<v8::Array> listeners = getJSListenerFunctions(&document, listenersArray[i]);
+        v8::Handle<v8::Array> listeners = getJSListenerFunctions(document, listenersArray[i]);
         if (!listeners->Length())
             continue;
         AtomicString eventType = listenersArray[i].eventType;

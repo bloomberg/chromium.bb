@@ -60,7 +60,7 @@ EventDispatcher::EventDispatcher(Node* node, PassRefPtr<Event> event)
     ASSERT(node);
     ASSERT(m_event.get());
     ASSERT(!m_event->type().isNull()); // JavaScript code can create an event with an empty name, but not null.
-    m_view = node->document().view();
+    m_view = node->document()->view();
     EventRetargeter::ensureEventPath(m_node.get(), m_event.get());
 }
 
@@ -84,17 +84,17 @@ void EventDispatcher::dispatchSimulatedClick(Node* node, Event* underlyingEvent,
     gNodesDispatchingSimulatedClicks->add(node);
 
     if (mouseEventOptions == SendMouseOverUpDownEvents)
-        EventDispatcher(node, SimulatedMouseEvent::create(eventNames().mouseoverEvent, node->document().defaultView(), underlyingEvent)).dispatch();
+        EventDispatcher(node, SimulatedMouseEvent::create(eventNames().mouseoverEvent, node->document()->defaultView(), underlyingEvent)).dispatch();
 
     if (mouseEventOptions != SendNoEvents)
-        EventDispatcher(node, SimulatedMouseEvent::create(eventNames().mousedownEvent, node->document().defaultView(), underlyingEvent)).dispatch();
+        EventDispatcher(node, SimulatedMouseEvent::create(eventNames().mousedownEvent, node->document()->defaultView(), underlyingEvent)).dispatch();
     node->setActive(true, visualOptions == ShowPressedLook);
     if (mouseEventOptions != SendNoEvents)
-        EventDispatcher(node, SimulatedMouseEvent::create(eventNames().mouseupEvent, node->document().defaultView(), underlyingEvent)).dispatch();
+        EventDispatcher(node, SimulatedMouseEvent::create(eventNames().mouseupEvent, node->document()->defaultView(), underlyingEvent)).dispatch();
     node->setActive(false);
 
     // always send click
-    EventDispatcher(node, SimulatedMouseEvent::create(eventNames().clickEvent, node->document().defaultView(), underlyingEvent)).dispatch();
+    EventDispatcher(node, SimulatedMouseEvent::create(eventNames().clickEvent, node->document()->defaultView(), underlyingEvent)).dispatch();
 
     gNodesDispatchingSimulatedClicks->remove(node);
 }
@@ -111,7 +111,7 @@ bool EventDispatcher::dispatch()
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
     ASSERT(m_event->target());
     WindowEventContext windowEventContext(m_event.get(), m_node.get(), topEventContext());
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchEvent(&m_node->document(), *m_event, windowEventContext.window(), m_node.get(), m_event->eventPath());
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchEvent(m_node->document(), *m_event, windowEventContext.window(), m_node.get(), m_event->eventPath());
 
     void* preDispatchEventHandlerResult;
     if (dispatchEventPreProcess(preDispatchEventHandlerResult) == ContinueDispatching)

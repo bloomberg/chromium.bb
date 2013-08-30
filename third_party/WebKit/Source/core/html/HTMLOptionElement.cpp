@@ -110,11 +110,11 @@ bool HTMLOptionElement::rendererIsFocusable() const
 
 String HTMLOptionElement::text() const
 {
-    Document& document = this->document();
+    Document* document = this->document();
     String text;
 
     // WinIE does not use the label attribute, so as a quirk, we ignore it.
-    if (!document.inQuirksMode())
+    if (!document->inQuirksMode())
         text = fastGetAttribute(labelAttr);
 
     // FIXME: The following treats an element with the label attribute set to
@@ -125,7 +125,7 @@ String HTMLOptionElement::text() const
 
     // FIXME: Is displayStringModifiedByEncoding helpful here?
     // If it's correct here, then isn't it needed in the value and label functions too?
-    return document.displayStringModifiedByEncoding(text).stripWhiteSpace(isHTMLSpace).simplifyWhiteSpace(isHTMLSpace);
+    return document->displayStringModifiedByEncoding(text).stripWhiteSpace(isHTMLSpace).simplifyWhiteSpace(isHTMLSpace);
 }
 
 void HTMLOptionElement::setText(const String &text, ExceptionState& es)
@@ -145,7 +145,7 @@ void HTMLOptionElement::setText(const String &text, ExceptionState& es)
         toText(child)->setData(text);
     else {
         removeChildren();
-        appendChild(Text::create(&document(), text), es);
+        appendChild(Text::create(document(), text), es);
     }
 
     if (selectIsMenuList && select->selectedIndex() != oldSelectedIndex)
