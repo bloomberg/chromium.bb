@@ -64,8 +64,8 @@ public:
 
     static void didFinishParsingChildren(Element*);
     static void attributeDidChange(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
-    static void didEnterDocument(Element*, Document*);
-    static void didLeaveDocument(Element*, Document*);
+    static void didEnterDocument(Element*, const Document&);
+    static void didLeaveDocument(Element*, const Document&);
     static void wasDestroyed(Element*);
 
 private:

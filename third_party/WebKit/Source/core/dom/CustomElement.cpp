@@ -132,18 +132,18 @@ void CustomElement::attributeDidChange(Element* element, const AtomicString& nam
     CustomElementCallbackScheduler::scheduleAttributeChangedCallback(definitionFor(element)->callbacks(), element, name, oldValue, newValue);
 }
 
-void CustomElement::didEnterDocument(Element* element, Document* document)
+void CustomElement::didEnterDocument(Element* element, const Document& document)
 {
     ASSERT(element->customElementState() == Element::Upgraded);
-    if (!document->defaultView())
+    if (!document.defaultView())
         return;
     CustomElementCallbackScheduler::scheduleEnteredDocumentCallback(definitionFor(element)->callbacks(), element);
 }
 
-void CustomElement::didLeaveDocument(Element* element, Document* document)
+void CustomElement::didLeaveDocument(Element* element, const Document& document)
 {
     ASSERT(element->customElementState() == Element::Upgraded);
-    if (!document->defaultView())
+    if (!document.defaultView())
         return;
     CustomElementCallbackScheduler::scheduleLeftDocumentCallback(definitionFor(element)->callbacks(), element);
 }
