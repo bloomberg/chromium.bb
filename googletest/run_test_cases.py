@@ -15,7 +15,6 @@ import json
 import logging
 import optparse
 import os
-import Queue
 import random
 import re
 import subprocess
@@ -311,149 +310,6 @@ def call_with_timeout(cmd, timeout, **kwargs):
     # This code path is much faster.
     out, err = proc.communicate()
   return out, err, proc.returncode, proc.duration()
-
-
-class QueueWithProgress(Queue.PriorityQueue):
-  """Implements progress support in join()."""
-  def __init__(self, maxsize, *args, **kwargs):
-    Queue.PriorityQueue.__init__(self, *args, **kwargs)
-    self.progress = Progress(maxsize)
-
-  def set_progress(self, progress):
-    """Replace the current progress, mainly used when a progress should be
-    shared between queues."""
-    self.progress = progress
-
-  def task_done(self):
-    """Contrary to Queue.task_done(), it wakes self.all_tasks_done at each task
-    done.
-    """
-    self.all_tasks_done.acquire()
-    try:
-      unfinished = self.unfinished_tasks - 1
-      if unfinished < 0:
-        raise ValueError('task_done() called too many times')
-      self.unfinished_tasks = unfinished
-      # This is less efficient, because we want the Progress to be updated.
-      self.all_tasks_done.notify_all()
-    except Exception as e:
-      logging.exception('task_done threw an exception.\n%s', e)
-    finally:
-      self.all_tasks_done.release()
-
-  def wake_up(self):
-    """Wakes up all_tasks_done.
-
-    Unlike task_done(), do not substract one from self.unfinished_tasks.
-    """
-    # TODO(maruel): This is highly inefficient, since the listener is awaken
-    # twice; once per output, once per task. There should be no relationship
-    # between the number of output and the number of input task.
-    self.all_tasks_done.acquire()
-    try:
-      self.all_tasks_done.notify_all()
-    finally:
-      self.all_tasks_done.release()
-
-  def join(self):
-    """Calls print_update() whenever possible."""
-    self.progress.print_update()
-    self.all_tasks_done.acquire()
-    try:
-      while self.unfinished_tasks:
-        self.progress.print_update()
-        self.all_tasks_done.wait(60.)
-      self.progress.print_update()
-    finally:
-      self.all_tasks_done.release()
-
-
-class ThreadPool(threading_utils.ThreadPool):
-  QUEUE_CLASS = QueueWithProgress
-
-  def __init__(self, progress, *args, **kwargs):
-    super(ThreadPool, self).__init__(*args, **kwargs)
-    self.tasks.set_progress(progress)
-
-  def _output_append(self, out):
-    """Also wakes up the listener on new completed test_case."""
-    super(ThreadPool, self)._output_append(out)
-    self.tasks.wake_up()
-
-
-class Progress(object):
-  """Prints progress and accepts updates thread-safely."""
-  def __init__(self, size):
-    # To be used in the primary thread
-    self.last_printed_line = ''
-    self.index = 0
-    self.start = time.time()
-    self.size = size
-    self.use_cr_only = True
-    self.unfinished_commands = set()
-
-    # To be used in all threads.
-    self.queued_lines = Queue.Queue()
-
-  def update_item(self, name, index=True, size=False):
-    """Queue information to print out.
-
-    |index| notes that the index should be incremented.
-    |size| note that the total size should be incremented.
-    """
-    # This code doesn't need lock because it's only using self.queued_lines.
-    self.queued_lines.put((name, index, size))
-
-  def print_update(self):
-    """Prints the current status."""
-    # Flush all the logging output so it doesn't appear within this output.
-    for handler in logging.root.handlers:
-      handler.flush()
-
-    while True:
-      try:
-        name, index, size = self.queued_lines.get_nowait()
-      except Queue.Empty:
-        break
-
-      if size:
-        self.size += 1
-      if index:
-        self.index += 1
-      if not name:
-        continue
-
-      if index:
-        alignment = str(len(str(self.size)))
-        next_line = ('[%' + alignment + 'd/%d] %6.2fs %s') % (
-            self.index,
-            self.size,
-            time.time() - self.start,
-            name)
-        # Fill it with whitespace only if self.use_cr_only is set.
-        prefix = ''
-        if self.use_cr_only:
-          if self.last_printed_line:
-            prefix = '\r'
-        if self.use_cr_only:
-          suffix = ' ' * max(0, len(self.last_printed_line) - len(next_line))
-        else:
-          suffix = '\n'
-        line = '%s%s%s' % (prefix, next_line, suffix)
-        self.last_printed_line = next_line
-      else:
-        line = '\n%s\n' % name.strip('\n')
-        self.last_printed_line = ''
-
-      sys.stdout.write(line)
-
-    # Ensure that all the output is flush to prevent it from getting mixed with
-    # other output streams (like the logging streams).
-    sys.stdout.flush()
-
-    if self.unfinished_commands:
-      logging.debug('Waiting for the following commands to finish:\n%s',
-                    '\n'.join(self.unfinished_commands))
 
 
 def setup_gtest_env():
@@ -1326,8 +1182,9 @@ def run_test_cases(
 
   if gtest_output:
     gtest_output = gen_gtest_output_dir(cwd, gtest_output)
-  progress = Progress(len(test_cases))
-  serial_tasks = QueueWithProgress(0)
+  progress = threading_utils.Progress(len(test_cases))
+  progress.use_cr_only = not no_cr
+  serial_tasks = threading_utils.QueueWithProgress(0)
   serial_tasks.set_progress(progress)
 
   def add_serial_task(priority, func, *args, **kwargs):
@@ -1336,7 +1193,8 @@ def run_test_cases(
     assert callable(func)
     serial_tasks.put((priority, func, args, kwargs))
 
-  with ThreadPool(progress, jobs, jobs, len(test_cases)) as pool:
+  with threading_utils.ThreadPoolWithProgress(
+      progress, jobs, jobs, len(test_cases)) as pool:
     runner = ChromiumGoogleTestRunner(
         cmd,
         cwd,
@@ -1348,7 +1206,6 @@ def run_test_cases(
         pool.add_task,
         add_serial_task)
     function = runner.map
-    progress.use_cr_only = not no_cr
     # Cluster the test cases right away.
     for i in xrange((len(test_cases) + clusters - 1) / clusters):
       cluster = test_cases[i*clusters : (i+1)*clusters]

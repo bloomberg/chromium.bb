@@ -244,6 +244,39 @@ class ThreadPoolTest(unittest.TestCase):
       pool.close()
 
 
+class FakeProgress(object):
+  @staticmethod
+  def print_update():
+    pass
+
+
+class WorkerPoolTest(unittest.TestCase):
+  def test_normal(self):
+    mapper = lambda value: -value
+    progress = FakeProgress()
+    with threading_utils.ThreadPoolWithProgress(progress, 8, 8, 0) as pool:
+      for i in range(32):
+        pool.add_task(0, mapper, i)
+      results = pool.join()
+    self.assertEqual(range(-31, 1), sorted(results))
+
+  def test_exception(self):
+    class FearsomeException(Exception):
+      pass
+    def mapper(value):
+      raise FearsomeException(value)
+    task_added = False
+    try:
+      progress = FakeProgress()
+      with threading_utils.ThreadPoolWithProgress(progress, 8, 8, 0) as pool:
+        pool.add_task(0, mapper, 0)
+        task_added = True
+        pool.join()
+        self.fail()
+    except FearsomeException:
+      self.assertEqual(True, task_added)
+
+
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv
   logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)

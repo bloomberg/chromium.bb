@@ -264,6 +264,140 @@ class ThreadPool(object):
     self.close()
 
 
+class Progress(object):
+  """Prints progress and accepts updates thread-safely."""
+  def __init__(self, size):
+    # To be used in the primary thread
+    self.last_printed_line = ''
+    self.index = 0
+    self.start = time.time()
+    self.size = size
+    self.use_cr_only = True
+    self.unfinished_commands = set()
+
+    # To be used in all threads.
+    self.queued_lines = Queue.Queue()
+
+  def update_item(self, name, index=True, size=False):
+    """Queue information to print out.
+
+    |index| notes that the index should be incremented.
+    |size| note that the total size should be incremented.
+    """
+    self.queued_lines.put((name, index, size))
+
+  def print_update(self):
+    """Prints the current status."""
+    # Flush all the logging output so it doesn't appear within this output.
+    for handler in logging.root.handlers:
+      handler.flush()
+
+    while True:
+      try:
+        name, index, size = self.queued_lines.get_nowait()
+      except Queue.Empty:
+        break
+
+      if size:
+        self.size += 1
+      if index:
+        self.index += 1
+      if not name:
+        continue
+
+      if index:
+        alignment = str(len(str(self.size)))
+        next_line = ('[%' + alignment + 'd/%d] %6.2fs %s') % (
+            self.index,
+            self.size,
+            time.time() - self.start,
+            name)
+        # Fill it with whitespace only if self.use_cr_only is set.
+        prefix = ''
+        if self.use_cr_only:
+          if self.last_printed_line:
+            prefix = '\r'
+        if self.use_cr_only:
+          suffix = ' ' * max(0, len(self.last_printed_line) - len(next_line))
+        else:
+          suffix = '\n'
+        line = '%s%s%s' % (prefix, next_line, suffix)
+        self.last_printed_line = next_line
+      else:
+        line = '\n%s\n' % name.strip('\n')
+        self.last_printed_line = ''
+
+      sys.stdout.write(line)
+
+    # Ensure that all the output is flush to prevent it from getting mixed with
+    # other output streams (like the logging streams).
+    sys.stdout.flush()
+
+    if self.unfinished_commands:
+      logging.debug('Waiting for the following commands to finish:\n%s',
+                    '\n'.join(self.unfinished_commands))
+
+
+class QueueWithProgress(Queue.PriorityQueue):
+  """Implements progress support in join()."""
+  def __init__(self, maxsize, *args, **kwargs):
+    Queue.PriorityQueue.__init__(self, *args, **kwargs)
+    self.progress = Progress(maxsize)
+
+  def set_progress(self, progress):
+    """Replace the current progress, mainly used when a progress should be
+    shared between queues."""
+    self.progress = progress
+
+  def task_done(self):
+    """Contrary to Queue.task_done(), it wakes self.all_tasks_done at each task
+    done.
+    """
+    with self.all_tasks_done:
+      try:
+        unfinished = self.unfinished_tasks - 1
+        if unfinished < 0:
+          raise ValueError('task_done() called too many times')
+        self.unfinished_tasks = unfinished
+        # This is less efficient, because we want the Progress to be updated.
+        self.all_tasks_done.notify_all()
+      except Exception as e:
+        logging.exception('task_done threw an exception.\n%s', e)
+
+  def wake_up(self):
+    """Wakes up all_tasks_done.
+
+    Unlike task_done(), do not substract one from self.unfinished_tasks.
+    """
+    # TODO(maruel): This is highly inefficient, since the listener is awaken
+    # twice; once per output, once per task. There should be no relationship
+    # between the number of output and the number of input task.
+    with self.all_tasks_done:
+      self.all_tasks_done.notify_all()
+
+  def join(self):
+    """Calls print_update() whenever possible."""
+    self.progress.print_update()
+    with self.all_tasks_done:
+      while self.unfinished_tasks:
+        self.progress.print_update()
+        self.all_tasks_done.wait(60.)
+      self.progress.print_update()
+
+
+class ThreadPoolWithProgress(ThreadPool):
+  QUEUE_CLASS = QueueWithProgress
+
+  def __init__(self, progress, *args, **kwargs):
+    super(ThreadPoolWithProgress, self).__init__(*args, **kwargs)
+    self.tasks.set_progress(progress)
+
+  def _output_append(self, out):
+    """Also wakes up the listener on new completed test_case."""
+    super(ThreadPoolWithProgress, self)._output_append(out)
+    self.tasks.wake_up()
+
+
 class DeadlockDetector(object):
   """Context manager that can detect deadlocks.
 

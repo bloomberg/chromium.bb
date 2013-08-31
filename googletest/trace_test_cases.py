@@ -22,6 +22,7 @@ if not ROOT_DIR in sys.path:
 import run_test_cases
 import trace_inputs
 
+from utils import threading_utils
 from utils import tools
 
 
@@ -99,9 +100,9 @@ def trace_test_cases(cmd, cwd_dir, test_cases, jobs, logname):
       jobs = min(options.jobs, jobs)
       break
 
-  progress = run_test_cases.Progress(len(test_cases))
-  with run_test_cases.ThreadPool(progress, jobs, jobs,
-                                 len(test_cases)) as pool:
+  progress = threading_utils.Progress(len(test_cases))
+  with threading_utils.ThreadPoolWithProgress(
+      progress, jobs, jobs, len(test_cases)) as pool:
     with api.get_tracer(logname) as tracer:
       function = Tracer(tracer, cmd, cwd_dir, progress).map
       for test_case in test_cases:

@@ -52,8 +52,13 @@ def gen_histo(data, buckets):
 def graph_histo(data, columns, key_format):
   """Graphs an histogram."""
   # TODO(maruel): Add dots for tens.
+  if not data:
+    # Nothing to print.
+    return
+
   width = columns - 10
   assert width > 1
+
   maxvalue = max(data.itervalues())
   if all(isinstance(i, int) for i in data.itervalues()) and maxvalue < width:
     width = maxvalue
@@ -165,6 +170,8 @@ def main():
     """
     return random.gammavariate(3, 2) * options.mid_size / 4
 
+  progress = threading_utils.Progress(options.items)
+
   def send_and_receive(size):
     """Sends a packet and gets it back. Notes the time it took before
     success.
@@ -192,12 +199,14 @@ def main():
       duration = max(0, time.time()-start)
     except run_isolated.MappingError as e:
       duration = e
+    progress.update_item(to_units(size), True, not options.items)
     return (duration, size)
 
   # The namespace must end in '-gzip' since all files are now compressed
   # before being uploaded.
   namespace = 'temporary%d-gzip' % time.time()
-  with threading_utils.ThreadPool(options.threads, options.threads, 0) as pool:
+  with threading_utils.ThreadPoolWithProgress(
+      progress, options.threads, options.threads, 0) as pool:
     if options.items:
       for i in xrange(options.items):
         pool.add_task(0, send_and_receive, int(gen_size()))
