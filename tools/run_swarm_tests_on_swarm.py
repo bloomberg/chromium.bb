@@ -23,7 +23,7 @@ ROOT_DIR = os.path.dirname(BASE_DIR)
 
 sys.path.insert(0, ROOT_DIR)
 
-import run_test_cases
+from utils import threading_utils
 
 
 # Mapping of the sys.platform value into Swarm OS value.
@@ -143,11 +143,12 @@ class Runner(object):
 def run_swarm_tests_on_swarm(oses, tests, logs, isolate_server, swarm_server):
   runs = len(tests) * len(oses)
   total = 3 * runs
-  progress = run_test_cases.Progress(total)
+  progress = threading_utils.Progress(total)
   progress.use_cr_only = False
   tempdir = tempfile.mkdtemp(prefix='swarm_client_tests')
   try:
-    with run_test_cases.ThreadPool(progress, runs, runs, total) as pool:
+    with threading_utils.ThreadPoolWithProgress(
+        progress, runs, runs, total) as pool:
       start = time.time()
       runner = Runner(
           isolate_server, swarm_server, pool.add_task, progress, tempdir)
