@@ -38,81 +38,6 @@
 
 /* This also defines CPU(BIG_ENDIAN) or CPU(MIDDLE_ENDIAN) or neither, as appropriate. */
 
-/* CPU(ALPHA) - DEC Alpha */
-#if defined(__alpha__)
-#define WTF_CPU_ALPHA 1
-#endif
-
-/* CPU(IA64) - Itanium / IA-64 */
-#if defined(__ia64__)
-#define WTF_CPU_IA64 1
-#endif
-
-/* CPU(MIPS) - MIPS 32-bit */
-/* Note: Only O32 ABI is tested, so we enable it for O32 ABI for now.  */
-#if (defined(mips) || defined(__mips__) || defined(MIPS) || defined(_MIPS_)) \
-    && defined(_ABIO32)
-#define WTF_CPU_MIPS 1
-#if defined(__MIPSEB__)
-#define WTF_CPU_BIG_ENDIAN 1
-#endif
-/* MIPS requires allocators to use aligned memory */
-#define WTF_USE_ARENA_ALLOC_ALIGNMENT_INTEGER 1
-#endif /* MIPS */
-
-/* CPU(PPC) - PowerPC 32-bit */
-#if   defined(__ppc__)     \
-    || defined(__PPC__)     \
-    || defined(__powerpc__) \
-    || defined(__powerpc)   \
-    || defined(__POWERPC__) \
-    || defined(_M_PPC)      \
-    || defined(__PPC)
-#define WTF_CPU_PPC 1
-#define WTF_CPU_BIG_ENDIAN 1
-#endif
-
-/* CPU(PPC64) - PowerPC 64-bit */
-#if   defined(__ppc64__) \
-    || defined(__PPC64__)
-#define WTF_CPU_PPC64 1
-#define WTF_CPU_BIG_ENDIAN 1
-#endif
-
-/* CPU(SH4) - SuperH SH-4 */
-#if defined(__SH4__)
-#define WTF_CPU_SH4 1
-#endif
-
-/* CPU(SPARC32) - SPARC 32-bit */
-#if defined(__sparc) && !defined(__arch64__) || defined(__sparcv8)
-#define WTF_CPU_SPARC32 1
-#define WTF_CPU_BIG_ENDIAN 1
-#endif
-
-/* CPU(SPARC64) - SPARC 64-bit */
-#if defined(__sparc__) && defined(__arch64__) || defined (__sparcv9)
-#define WTF_CPU_SPARC64 1
-#define WTF_CPU_BIG_ENDIAN 1
-#endif
-
-/* CPU(SPARC) - any SPARC, true for CPU(SPARC32) and CPU(SPARC64) */
-#if CPU(SPARC32) || CPU(SPARC64)
-#define WTF_CPU_SPARC 1
-#endif
-
-/* CPU(S390X) - S390 64-bit */
-#if defined(__s390x__)
-#define WTF_CPU_S390X 1
-#define WTF_CPU_BIG_ENDIAN 1
-#endif
-
-/* CPU(S390) - S390 32-bit */
-#if defined(__s390__)
-#define WTF_CPU_S390 1
-#define WTF_CPU_BIG_ENDIAN 1
-#endif
-
 /* CPU(X86) - i386 / x86 32-bit */
 #if   defined(__i386__) \
     || defined(i386)     \
@@ -164,8 +89,6 @@
     || defined(__ARM_ARCH_5TE__) \
     || defined(__ARM_ARCH_5TEJ__)
 #define WTF_ARM_ARCH_VERSION 5
-/*ARMv5TE requires allocators to use aligned memory*/
-#define WTF_USE_ARENA_ALLOC_ALIGNMENT_INTEGER 1
 
 #elif defined(__ARM_ARCH_6__) \
     || defined(__ARM_ARCH_6J__) \

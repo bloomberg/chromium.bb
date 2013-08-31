@@ -36,21 +36,9 @@
 #include "wtf/CPU.h"
 
 #if OS(LINUX)
-#include "sys/utsname.h"
 #include "wtf/StdLibExtras.h"
+#include <sys/utsname.h>
 #endif
-
-#ifndef WEBCORE_NAVIGATOR_PLATFORM
-#if OS(DARWIN) && (CPU(PPC) || CPU(PPC64))
-#define WEBCORE_NAVIGATOR_PLATFORM "MacPPC"
-#elif OS(DARWIN) && (CPU(X86) || CPU(X86_64))
-#define WEBCORE_NAVIGATOR_PLATFORM "MacIntel"
-#elif OS(WINDOWS)
-#define WEBCORE_NAVIGATOR_PLATFORM "Win32"
-#else
-#define WEBCORE_NAVIGATOR_PLATFORM ""
-#endif
-#endif // ifndef WEBCORE_NAVIGATOR_PLATFORM
 
 namespace WebCore {
 
@@ -73,14 +61,16 @@ String NavigatorID::userAgent(const NavigatorBase* navigator)
 
 String NavigatorID::platform(const NavigatorBase*)
 {
+#if defined(WEBCORE_NAVIGATOR_PLATFORM)
+    return WEBCORE_NAVIGATOR_PLATFORM;
+#else
 #if OS(LINUX)
-    if (!String(WEBCORE_NAVIGATOR_PLATFORM).isEmpty())
-        return WEBCORE_NAVIGATOR_PLATFORM;
     struct utsname osname;
     DEFINE_STATIC_LOCAL(String, platformName, (uname(&osname) >= 0 ? String(osname.sysname) + String(" ") + String(osname.machine) : emptyString()));
     return platformName;
 #else
-    return WEBCORE_NAVIGATOR_PLATFORM;
+#error Non-Linux ports must define WEBCORE_NAVIGATOR_PLATFORM.
+#endif
 #endif
 }
 

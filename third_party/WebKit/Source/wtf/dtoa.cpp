@@ -113,7 +113,7 @@ static ALWAYS_INLINE uint32_t* storeInc(uint32_t* p, uint16_t high, uint16_t low
 #define Big0 (Frac_mask1 | Exp_msk1 * (DBL_MAX_EXP + Bias - 1))
 #define Big1 0xffffffff
 
-#if CPU(PPC64) || CPU(X86_64)
+#if CPU(X86_64)
 // FIXME: should we enable this on all 64-bit CPUs?
 // 64-bit emulation provided by the compiler is likely to be slower than dtoa own code on 32-bit hardware.
 #define USE_LONG_LONG
