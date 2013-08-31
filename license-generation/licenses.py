@@ -4,8 +4,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-# FIXME(merlin): remove this after fixing the current code.
-# pylint: disable-msg=W0621
 
 """Script that attempts to generate an HTML file containing license
 information and homepage links for all installed packages.
@@ -67,9 +65,14 @@ import codecs
 import getopt
 import logging
 import os
-import portage
-import subprocess
 import sys
+
+from chromite.lib import commandline
+from chromite.lib import cros_build_lib
+import portage
+
+
+debug = False
 
 EQUERY_BASE = '/usr/local/bin/equery-%s'
 
@@ -360,8 +363,9 @@ class PackageSkipped(Exception):
 class PackageInfo(object):
   """Package info containers, mostly for storing licenses."""
 
-  def __init__(self):
+  def __init__(self, board):
 
+    self.board = board
     self.revision = None
 
     # Array of scanned license texts.
@@ -397,20 +401,22 @@ class PackageInfo(object):
   def fullname(self):
     return '%s/%s' % (self.category, self.name)
 
-  @staticmethod
-  def _RunEbuildPhases(path, *phases, **kwargs):
+  def _RunEbuildPhases(self, path, phases):
     """Run a list of ebuild phases on an ebuild.
 
     Args:
       path: /mnt/host/source/src/
                  third_party/portage-stable/net-misc/rsync/rsync-3.0.8.ebuild
-      *phases: list of phases like ['clean', 'fetch'] or ['unpack'].
-      **kwargs: dict passed to ebuild
+      phases: list of phases like ['clean', 'fetch'] or ['unpack'].
+
+    Returns:
+      ebuild command output
     """
 
-    #logging.debug('ebuild-%s | %s | %s', board, path, str(list(phases)))
-    subprocess.check_call(
-        ['ebuild-%s' % board, path] + list(phases), **kwargs)
+    # logging.debug('ebuild-%s | %s | %s', self.board, path, str(phases))
+    return cros_build_lib.RunCommand(
+        ['ebuild-%s' % self.board, path] + phases, print_cmd=debug,
+        redirect_stdout=True)
 
   def _ExtractLicenses(self):
     """Scrounge for text licenses in the source of package we'll unpack.
@@ -422,24 +428,33 @@ class PackageInfo(object):
     as defined in LICENSE_FILENAMES.
 
     Raises:
-      AssertionError: on runtime errors
       PackageLicenseError: couldn't find copyright attribution file.
     """
 
-    path = self._GetEbuildPath(board, self.fullnamerev)
-    self._RunEbuildPhases(
-        path, 'clean', 'fetch',
-        stdout=open('/dev/null', 'wb'),
-        stderr=subprocess.STDOUT)
-    self._RunEbuildPhases(path, 'unpack')
+    path = self._GetEbuildPath(self.fullnamerev)
+    self._RunEbuildPhases(path, ['clean', 'fetch'])
+    output = self._RunEbuildPhases(path, ['unpack']).output.splitlines()
+    # Output is spammy, it looks like this:
+    #  * gc-7.2d.tar.gz RMD160 SHA1 SHA256 size ;-) ...                  [ ok ]
+    #  * checking gc-7.2d.tar.gz ;-) ...                                 [ ok ]
+    #  * Running stacked hooks for pre_pkg_setup
+    #  *    sysroot_build_bin_dir ...
+    #  [ ok ]
+    #  * Running stacked hooks for pre_src_unpack
+    #  *    python_multilib_setup ...
+    #  [ ok ]
+    # >>> Unpacking source...
+    # >>> Unpacking gc-7.2d.tar.gz to /build/x86-alex/tmp/po/[...]tops-7.2d/work
+    # >>> Source unpacked in /build/x86-alex/tmp/portage/[...]ops-7.2d/work
+    output = [line for line in output if line[0:3] == ">>>" and
+              line != ">>> Unpacking source..."]
+    for line in output:
+      logging.info(line)
 
-    p = subprocess.Popen(['portageq-%s' % board, 'envvar',
-                          'PORTAGE_TMPDIR'], stdout=subprocess.PIPE)
-    tmpdir = p.communicate()[0].strip()
-    ret = p.wait()
-    if ret != 0:
-      raise AssertionError('exit code was not 0: got %s' % ret)
-
+    args = ['portageq-%s' % self.board, 'envvar', 'PORTAGE_TMPDIR']
+    result = cros_build_lib.RunCommand(args, print_cmd=debug,
+                                       redirect_stdout=True)
+    tmpdir = result.output.splitlines()[0]
     # tmpdir gets something like /build/daisy/tmp/
     workdir = os.path.join(tmpdir, 'portage', self.fullnamerev, 'work')
 
@@ -450,13 +465,9 @@ class PackageInfo(object):
     # to find the MIT license:
     # dev-libs/libatomic_ops-7.2d/work/gc-7.2/libatomic_ops/doc/LICENSING.txt
     args = ['find', workdir, '-type', 'f']
-    p = subprocess.Popen(args, stdout=subprocess.PIPE)
-    files = p.communicate()[0].splitlines()
-    ret = p.wait()
-    if ret != 0:
-      raise AssertionError('exit code was not 0: got %s' % ret)
-
-    files = [x[len(workdir):].lstrip('/') for x in files]
+    result = cros_build_lib.RunCommand(args, print_cmd=debug,
+                                       redirect_stdout=True).output.splitlines()
+    files = [x[len(workdir):].lstrip('/') for x in result]
     license_files = []
     for name in files:
       if os.path.basename(name).lower() in LICENSE_FILENAMES:
@@ -491,12 +502,7 @@ class PackageInfo(object):
       # Joy and pink ponies. Some license_files are encoded as latin1 while
       # others are utf-8 and of course you can't know but only guess.
       license_path = os.path.join(workdir, license_file)
-      try:
-        license_txt = codecs.open(license_path, encoding="utf-8").read()
-        logging.info("Adding license %s: (guessed UTF-8)", license_path)
-      except UnicodeDecodeError:
-        license_txt = codecs.open(license_path, encoding="latin1").read()
-        logging.info("Adding license %s: (guessed latin1)", license_path)
+      license_txt = ReadUnknownEncodedFile(license_path, "Adding License")
 
       self.license_text_scanned += [
           "Scanned Source license %s:\n\n%s" % (license_file, license_txt)]
@@ -504,14 +510,12 @@ class PackageInfo(object):
     # We used to clean up here, but there have been many instances where
     # looking at unpacked source to see where the licenses were, was useful
     # so let's disable this for now
-    #self._RunEbuildPhases(path, 'clean')
+    # self._RunEbuildPhases(path, ['clean'])
 
-  @staticmethod
-  def _GetEbuildPath(board, name):
+  def _GetEbuildPath(self, name):
     """Create a pathname where to find the ebuild of a given package for board.
 
     Args:
-      board: eg x86-alex
       name: eg net-misc/wget-1.12
 
     Returns:
@@ -519,19 +523,17 @@ class PackageInfo(object):
                                                                wget-1.12.ebuild
 
     Raises:
-      AssertionError: when equery did not return a valid path.
+      AssertionError: on runtime errors
     """
-    p = subprocess.Popen(
-        ['equery-%s' % board, 'which', name], stdout=subprocess.PIPE)
-    stdout = p.communicate()[0]
-    p.wait()
-    path = stdout.strip()
-    logging.debug("equery-%s which %s", board, name)
-    logging.debug("  -> %s", path)
+
+    args = ['equery-%s' % self.board, 'which', name]
+    path = cros_build_lib.RunCommand(args, print_cmd=debug,
+                                     redirect_stdout=True).output.strip()
+    logging.debug("%s -> %s", " ".join(args), path)
     if not path:
       raise AssertionError('GetEbuildPath for %s failed.\n'
                            'Is your tree clean? Delete /build/%s and rebuild' %
-                           (name, board))
+                           (name, self.board))
     return path
 
   def _GetPackageInfo(self, fullnamewithrev):
@@ -577,27 +579,16 @@ class PackageInfo(object):
       raise PackageSkipped("%s in SKIPPED_PACKAGES, skip package" %
                            self.fullname)
 
-    ebuild = self._GetEbuildPath(board, self.fullnamerev)
+    ebuild = self._GetEbuildPath(self.fullnamerev)
 
     if not os.access(ebuild, os.F_OK):
       logging.error("Can't access %s", ebuild)
       raise PackageLicenseError()
 
-    cmd = [
-        'portageq',
-        'metadata',
-        '/build/%s' % board,
-        'ebuild',
-        self.fullnamerev,
-        'HOMEPAGE', 'LICENSE', 'DESCRIPTION',
-    ]
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-    lines = [s.strip() for s in p.stdout.readlines()]
-    p.wait()
-
-    if p.returncode != 0:
-      raise AssertionError("%s failed" % cmd)
-
+    args = ['portageq-%s' % self.board, 'metadata', '/build/%s' % self.board,
+            'ebuild', self.fullnamerev, 'HOMEPAGE', 'LICENSE', 'DESCRIPTION']
+    lines = cros_build_lib.RunCommand(args, print_cmd=debug,
+                                      redirect_stdout=True).output.splitlines()
     # Runs:
     # portageq metadata /build/x86-alex ebuild net-misc/wget-1.12-r2 \
     #                                               HOMEPAGE LICENSE DESCRIPTION
@@ -745,8 +736,11 @@ class PackageInfo(object):
 class Licensing(object):
   """Do the actual work of extracting licensing info and outputting html."""
 
-  def __init__(self, package_fullnames,
+  def __init__(self, board, package_fullnames,
                entry_template_file=ENTRY_TMPL):
+
+    # eg x86-alex
+    self.board = board
     # List of stock licenses referenced in ebuilds. Used to print a report.
     self.stock_licenses = {}
 
@@ -757,8 +751,8 @@ class Licensing(object):
     self.incomplete_packages = []
 
     self.package_text = {}
-    self.entry_template = codecs.open(entry_template_file, mode='rb',
-                                      encoding="utf-8").read()
+    with codecs.open(entry_template_file, mode='rb', encoding="utf-8") as c:
+      self.entry_template = c.read()
     self.packages = []
     self._package_fullnames = package_fullnames
 
@@ -779,7 +773,7 @@ class Licensing(object):
     Do not call this after adding virtual packages with AddExtraPkg.
     """
     for package in self._package_fullnames:
-      pkg = PackageInfo()
+      pkg = PackageInfo(self.board)
       try:
         pkg.GetLicenses(package)
         self.packages += [pkg]
@@ -797,7 +791,7 @@ class Licensing(object):
     Args:
       pkg_data: array of package data as defined below
     """
-    pkg = PackageInfo()
+    pkg = PackageInfo(self.board)
     pkg.category = pkg_data[0]
     pkg.name = pkg_data[1]
     pkg.version = pkg_data[2]
@@ -817,15 +811,7 @@ class Licensing(object):
         license_path = path
         break
     if license_path:
-      # Joy and pink ponies. Some stock licenses are encoded as latin1 while
-      # others are utf-8 and of course you can't know but only guess.
-      try:
-        license_txt = codecs.open(license_path, encoding="utf-8").read()
-        logging.info("read stock license %s (UTF-8)", license_path)
-      except UnicodeDecodeError:
-        license_txt = codecs.open(license_path, encoding="latin1").read()
-        logging.info("read stock license %s (latin1)", license_path)
-      return license_txt
+      return ReadUnknownEncodedFile(license_path, "read stock license")
     else:
       raise AssertionError("stock license %s could not be found in %s"
                            % (stock_license_name,
@@ -868,7 +854,6 @@ class Licensing(object):
       except KeyError:
         self.stock_licenses[sln] = [package.fullnamerev]
 
-
     # This should get caught earlier, but one extra check.
     if not (license_text + license_pointers):
       raise AssertionError('Ended up with no license_text')
@@ -899,8 +884,8 @@ class Licensing(object):
 
     # Now generate the bottom of the page that will contain all the stock
     # licenses and a list of who is pointing to them.
-    stock_license_template = codecs.open(stock_license_template, mode='rb',
-                                         encoding="utf-8").read()
+    with codecs.open(stock_license_template, mode='rb', encoding="utf-8") as c:
+      stock_license_template = c.read()
     # TODO: stock licenses that are only used once should be migrated to the
     # per package license list. No need to factor out a stock license if
     # it's only used once.
@@ -909,19 +894,18 @@ class Licensing(object):
       env = {
           'license_name': license_name,
           'license': self._ReadStockLicense(license_name),
-          'license_packages': ' '.join(
-              licensing.LicensedPackages(license_name)),
+          'license_packages': ' '.join(self.LicensedPackages(license_name)),
       }
       stock_licenses_txt += [self.EvaluateTemplate(stock_license_template, env)]
 
-    file_template = codecs.open(output_template, mode='rb',
-                                encoding="utf-8").read()
+    with codecs.open(output_template, mode='rb', encoding="utf-8") as c:
+      file_template = c.read()
     env = {
         'entries': '\n'.join(sorted_license_txt),
         'licenses': '\n'.join(stock_licenses_txt),
     }
-    out_file = codecs.open(output_file, mode="w", encoding="utf-8")
-    out_file.write(self.EvaluateTemplate(file_template, env))
+    with codecs.open(output_file, mode='w', encoding="utf-8") as c:
+      c.write(self.EvaluateTemplate(file_template, env))
 
 
 def ListInstalledPackages(board):
@@ -934,8 +918,30 @@ def ListInstalledPackages(board):
   # get_package_list gives a shorter list, and it'll have to be reviewed to make
   # sure it does not mistakenly remove anything it shouldn't have.
   args = [EQUERY_BASE % board, 'list', '*']
-  p = subprocess.Popen(args, stdout=subprocess.PIPE)
-  return [s.strip() for s in p.stdout.readlines()]
+  return cros_build_lib.RunCommand(args, print_cmd=debug,
+                                   redirect_stdout=True).output.splitlines()
+
+
+def ReadUnknownEncodedFile(file_path, logging_text):
+  """Read a file of unknown encoding (UTF-8 or latin) by trying in sequence.
+
+  Args:
+    file_path: what to read.
+    logging_text: what to display for logging depending on file read.
+
+  Returns:
+    file content, possibly converted from latin1 to UTF-8.
+  """
+
+  try:
+    with codecs.open(file_path, encoding="utf-8") as c:
+      file_txt = c.read()
+      logging.info("%s %s (UTF-8)", logging_text, file_path)
+  except UnicodeDecodeError:
+    with codecs.open(file_path, encoding="latin1") as c:
+      file_txt = c.read()
+      logging.info("%s %s (latin1)", logging_text, file_path)
+  return file_txt
 
 
 def usage():
@@ -943,16 +949,16 @@ def usage():
   sys.exit(1)
 
 
-# TODO make this a main function after fixing those:
-# board needs to be passed instead of being global
-# licensing too
-# so does SKIPPED_PACKAGES
-if __name__ == '__main__':
-  debug = False
+def main(argv):
+  global SKIPPED_PACKAGES
+  # TODO(merlin): fix this to not be global. Find out a short way to read
+  # logging level.
+  global debug
+
+  # TODO(merlin): switch to chromelib.argparse
   testpkg = None
   try:
-    opts, args = getopt.getopt(sys.argv[1:], "hdt:",
-                               ["help", "debug", "testpkg="])
+    opts, args = getopt.getopt(argv, "hdt:", ["help", "debug", "testpkg="])
   except getopt.GetoptError:
     usage()
   for opt, arg in opts:
@@ -975,13 +981,9 @@ if __name__ == '__main__':
   # We have a hardcoded list of skipped packages for various reasons, but we
   # also exclude any google platform package from needing a license since they
   # are covered by the top license in the tree.
-  cmd = "cros_workon info --all --host | grep src/platform/ |"\
-      "awk '{print $1}'"
-  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
-  packages = p.communicate()[0].splitlines()
-  ret = p.wait()
-  if ret != 0:
-    raise AssertionError('%s exit code was not 0: got %s' % (cmd, ret))
+  cmd = "cros_workon info --all --host | grep src/platform/ | awk '{print $1}'"
+  packages = cros_build_lib.RunCommand(cmd, shell=True, print_cmd=debug,
+                                       redirect_stdout=True).output.splitlines()
   SKIPPED_PACKAGES += packages
 
   # For temporary single package debugging (make sure to include trailing -ver):
@@ -999,7 +1001,7 @@ if __name__ == '__main__':
   logging.debug('\n'.join(packages))
   logging.debug("Will skip these packages:")
   logging.debug('\n'.join(SKIPPED_PACKAGES))
-  licensing = Licensing(packages)
+  licensing = Licensing(board, packages)
   licensing.ProcessPackages()
   if not testpkg:
     for extra_pkg in [
@@ -1016,3 +1018,6 @@ this run.
 List of packages with errors:
 %s
   """ % '\n'.join(licensing.incomplete_packages))
+
+if __name__ == '__main__':
+  main(sys.argv[1:])
