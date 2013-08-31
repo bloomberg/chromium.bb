@@ -578,6 +578,10 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 	weston_wm_window_get_child_position(window, &x, &y);
 	window->x = configure_notify->x;
 	window->y = configure_notify->y;
+	if (window->override_redirect) {
+		window->width = configure_notify->width;
+		window->height = configure_notify->height;
+	}
 }
 
 static void
