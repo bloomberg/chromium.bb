@@ -4,7 +4,7 @@
 
 #include "chrome/browser/download/drag_download_item.h"
 
-#include "chrome/browser/ui/gtk/custom_drag.h"
+#include "chrome/browser/ui/gtk/download/download_item_drag.h"
 
 void DragDownloadItem(const content::DownloadItem* download,
                       gfx::Image* icon,

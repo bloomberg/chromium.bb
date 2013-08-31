@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 
-#include "chrome/browser/ui/gtk/custom_drag.h"
+#include "chrome/browser/ui/gtk/bookmarks/bookmark_drag.h"
 
 namespace chrome {
 

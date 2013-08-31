@@ -17,7 +17,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/gtk/custom_drag.h"
+#include "chrome/browser/ui/gtk/download/download_item_drag.h"
 #include "chrome/browser/ui/gtk/download/download_shelf_context_menu_gtk.h"
 #include "chrome/browser/ui/gtk/download/download_shelf_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
