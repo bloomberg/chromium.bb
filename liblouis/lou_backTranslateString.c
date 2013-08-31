@@ -590,22 +590,6 @@ back_selectRule ()
 	    break;
 	  length = 1;
 	  ruleOffset = dots->otherRules;
-	  if (itsANumber)
-	    {
-	      while (ruleOffset)
-		{
-		  currentRule =
-		    (TranslationTableRule *) & table->ruleArea[ruleOffset];
-		  if (currentRule->opcode == CTO_LitDigit)
-		    {
-		      currentOpcode = currentRule->opcode;
-		      currentDotslen = currentRule->dotslen;
-		      return;
-		    }
-		  ruleOffset = currentRule->dotsnext;
-		}
-	      ruleOffset = dots->otherRules;
-	    }
 	  break;
 	case 2:		/*No rule found */
 	  currentRule = &pseudoRule;
