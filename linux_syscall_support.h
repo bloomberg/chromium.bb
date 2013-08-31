@@ -2822,8 +2822,11 @@ struct kernel_statfs {
                        int,            f, int,    m)
   LSS_INLINE _syscall3(int,     poll,           struct kernel_pollfd*, u,
                        unsigned int,   n, int,    t)
-  LSS_INLINE _syscall2(int,     prctl,           int,         o,
-                       long,           a)
+  LSS_INLINE _syscall5(int,     prctl,           int,         option,
+                       unsigned long,  arg2,
+                       unsigned long,  arg3,
+                       unsigned long,  arg4,
+                       unsigned long,  arg5)
   LSS_INLINE _syscall4(long,    ptrace,          int,         r,
                        pid_t,          p, void *, a, void *, d)
   #if defined(__NR_quotactl)
