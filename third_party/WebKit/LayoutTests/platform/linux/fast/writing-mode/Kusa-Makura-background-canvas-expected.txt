@@ -4,8 +4,8 @@ layer at (-3948,0) size 4748x585 backgroundClip at (0,0) size 4748x585 clip at (
   RenderBlock {HTML} at (0,0) size 4748.34x585
     RenderBody {BODY} at (58.50,46.80) size 4631.34x491.41
       RenderBlock {H1} at (0,0) size 48x491.41
-        RenderText {#text} at (6,0) size 36x64
-          text run at (6,0) width 64: "\x{8349}\x{6795}"
+        RenderText {#text} at (6,0) size 36x66
+          text run at (6,0) width 66: "\x{8349}\x{6795}"
       RenderBlock {H2} at (69.44,0) size 36x491.41
         RenderText {#text} at (5,0) size 26x96
           text run at (5,0) width 96: "\x{590F}\x{76EE}\x{6F31}\x{77F3}"
