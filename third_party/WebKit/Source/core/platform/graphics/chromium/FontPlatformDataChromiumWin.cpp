@@ -35,14 +35,15 @@
 #include <windows.h>
 #include <mlang.h>
 #include <objidl.h>
-#include "SkPaint.h"
-#include "SkTypeface_win.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/skia/SkiaFontWin.h"
 #include "core/platform/win/HWndDC.h"
 #include "public/platform/Platform.h"
 #include "public/platform/win/WebSandboxSupport.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/ports/SkTypeface_win.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
 
@@ -123,6 +124,7 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     , m_size(-1)
     , m_orientation(Horizontal)
     , m_scriptCache(0)
+    , m_typeface(SkTypeface::RefDefault())
     , m_paintTextFlags(0)
     , m_isHashTableDeletedValue(true)
 {
@@ -133,6 +135,7 @@ FontPlatformData::FontPlatformData()
     , m_size(0)
     , m_orientation(Horizontal)
     , m_scriptCache(0)
+    , m_typeface(SkTypeface::RefDefault())
     , m_paintTextFlags(0)
     , m_isHashTableDeletedValue(false)
 {
@@ -154,7 +157,7 @@ FontPlatformData::FontPlatformData(float size, bool bold, bool oblique)
     , m_size(size)
     , m_orientation(Horizontal)
     , m_scriptCache(0)
-    , m_typeface(0)
+    , m_typeface(SkTypeface::RefDefault())
     , m_paintTextFlags(0)
     , m_isHashTableDeletedValue(false)
 {
