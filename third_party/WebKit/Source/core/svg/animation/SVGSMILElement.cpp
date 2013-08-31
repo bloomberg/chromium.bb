@@ -57,6 +57,12 @@ static SMILEventSender& smilBeginEventSender()
     return sender;
 }
 
+static SMILEventSender& smilRepeatEventSender()
+{
+    DEFINE_STATIC_LOCAL(SMILEventSender, sender, ("repeatEvent"));
+    return sender;
+}
+
 // This is used for duration type time values that can't be negative.
 static const double invalidCachedTime = -1.;
 
@@ -148,6 +154,7 @@ SVGSMILElement::~SVGSMILElement()
     clearResourceReferences();
     smilEndEventSender().cancelEvent(this);
     smilBeginEventSender().cancelEvent(this);
+    smilRepeatEventSender().cancelEvent(this);
     disconnectConditions();
     if (m_timeContainer && m_targetElement && hasValidAttributeName())
         m_timeContainer->unschedule(this, m_targetElement, m_attributeName);
@@ -1117,6 +1124,9 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
             startedActiveInterval();
         }
 
+        if (repeat && repeat != m_lastRepeat)
+            smilRepeatEventSender().dispatchEventSoon(this);
+
         updateAnimation(percent, repeat, resultElement);
         m_lastPercent = percent;
         m_lastRepeat = repeat;
@@ -1133,6 +1143,15 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
     if (seekToTime) {
         if (m_activeState == Inactive)
             smilBeginEventSender().dispatchEventSoon(this);
+
+        if (repeat) {
+            for (unsigned repeatEventCount = 1; repeatEventCount < repeat; repeatEventCount++) {
+                smilRepeatEventSender().dispatchEventSoon(this);
+            }
+            if (m_activeState == Inactive)
+                smilRepeatEventSender().dispatchEventSoon(this);
+        }
+
         if (m_activeState == Inactive || m_activeState == Frozen)
             smilEndEventSender().dispatchEventSoon(this);
     }
@@ -1215,7 +1234,7 @@ void SVGSMILElement::endedActiveInterval()
 
 void SVGSMILElement::dispatchPendingEvent(SMILEventSender* eventSender)
 {
-    ASSERT(eventSender == &smilEndEventSender() || eventSender == &smilBeginEventSender());
+    ASSERT(eventSender == &smilEndEventSender() || eventSender == &smilBeginEventSender() || eventSender == &smilRepeatEventSender());
     const AtomicString& eventType = eventSender->eventType();
     dispatchEvent(Event::create(eventType));
 }
