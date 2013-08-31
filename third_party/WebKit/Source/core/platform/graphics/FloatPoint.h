@@ -30,7 +30,6 @@
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "wtf/MathExtras.h"
-#include <algorithm>
 
 #if OS(DARWIN)
 typedef struct CGPoint CGPoint;

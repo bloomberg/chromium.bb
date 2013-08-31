@@ -30,7 +30,6 @@
 #include "core/platform/graphics/ShadowBlur.h"
 
 #include "wtf/MathExtras.h"
-#include <algorithm>
 
 using namespace std;
 

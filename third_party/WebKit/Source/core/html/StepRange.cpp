@@ -25,7 +25,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/WTFString.h"
-#include <float.h>
 
 using namespace std;
 

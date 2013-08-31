@@ -26,7 +26,7 @@
 #ifndef SMILTime_h
 #define SMILTime_h
 
-#include "wtf/Assertions.h"
+#include <algorithm>
 #include "wtf/MathExtras.h"
 
 namespace WebCore {

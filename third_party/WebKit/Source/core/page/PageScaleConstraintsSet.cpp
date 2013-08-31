@@ -29,9 +29,7 @@
  */
 
 #include "config.h"
-#include "core/page/PageScaleConstraintsSet.h"
-
-#include "wtf/Assertions.h"
+#include "PageScaleConstraintsSet.h"
 
 namespace WebCore {
 
