@@ -454,10 +454,8 @@ class AudioDetailedView : public TrayDetailsView,
     device_map_.clear();
 
     // Add audio output devices.
-    AddScrollListItem(
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_OUTPUT),
-        gfx::Font::BOLD,
-        false);  /* no checkmark */
+    AddScrollListInfoItem(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_OUTPUT));
     for (size_t i = 0; i < output_devices_.size(); ++i) {
       HoverHighlightView* container = AddScrollListItem(
           GetAudioDeviceName(output_devices_[i]),
@@ -469,10 +467,8 @@ class AudioDetailedView : public TrayDetailsView,
     AddScrollSeparator();
 
     // Add audio input devices.
-    AddScrollListItem(
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_INPUT),
-        gfx::Font::BOLD,
-        false);  /* no checkmark */
+    AddScrollListInfoItem(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_INPUT));
     for (size_t i = 0; i < input_devices_.size(); ++i) {
       HoverHighlightView* container = AddScrollListItem(
           GetAudioDeviceName(input_devices_[i]),
@@ -483,6 +479,31 @@ class AudioDetailedView : public TrayDetailsView,
 
     scroll_content()->SizeToPreferredSize();
     scroller()->Layout();
+  }
+
+  void AddScrollListInfoItem(const string16& text) {
+    views::Label* label = new views::Label(text);
+
+    //  Align info item with checkbox items
+    int margin = kTrayPopupPaddingHorizontal +
+        kTrayPopupDetailsLabelExtraLeftMargin;
+    int left_margin = 0;
+    int right_margin = 0;
+    if (base::i18n::IsRTL())
+      right_margin = margin;
+    else
+      left_margin = margin;
+
+    label->set_border(views::Border::CreateEmptyBorder(
+        ash::kTrayPopupPaddingBetweenItems,
+        left_margin,
+        ash::kTrayPopupPaddingBetweenItems,
+        right_margin));
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label->SetEnabledColor(SkColorSetARGB(192, 0, 0, 0));
+    label->SetFont(label->font().DeriveFont(0, gfx::Font::BOLD));
+
+    scroll_content()->AddChildView(label);
   }
 
   HoverHighlightView* AddScrollListItem(const string16& text,
@@ -569,7 +590,7 @@ bool TrayAudio::ShouldHideArrow() const {
 }
 
 bool TrayAudio::ShouldShowLauncher() const {
-  return false;
+  return ash::switches::ShowAudioDeviceMenu() && !pop_up_volume_view_;
 }
 
 void TrayAudio::OnOutputVolumeChanged() {

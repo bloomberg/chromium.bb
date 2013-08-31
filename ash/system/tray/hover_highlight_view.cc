@@ -17,7 +17,6 @@
 
 namespace {
 
-const int kPopupDetailLabelExtraLeftMargin = 8;
 const int kCheckLabelPadding = 4;
 
 }  // namespace
@@ -64,7 +63,8 @@ views::Label* HoverHighlightView::AddLabel(const base::string16& text,
                                            gfx::Font::FontStyle style) {
   SetLayoutManager(new views::FillLayout());
   text_label_ = new views::Label(text);
-  int margin = kTrayPopupPaddingHorizontal + kPopupDetailLabelExtraLeftMargin;
+  int margin = kTrayPopupPaddingHorizontal +
+      kTrayPopupDetailsLabelExtraLeftMargin;
   int left_margin = 0;
   int right_margin = 0;
   if (base::i18n::IsRTL())
@@ -93,8 +93,8 @@ views::Label* HoverHighlightView::AddCheckableLabel(const base::string16& text,
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     const gfx::ImageSkia* check =
         rb.GetImageNamed(IDR_MENU_CHECK).ToImageSkia();
-    int margin = kTrayPopupPaddingHorizontal + kPopupDetailLabelExtraLeftMargin
-        - kCheckLabelPadding;
+    int margin = kTrayPopupPaddingHorizontal +
+        kTrayPopupDetailsLabelExtraLeftMargin - kCheckLabelPadding;
     SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal, 0, 3, kCheckLabelPadding));
     views::ImageView* image_view = new FixedSizedImageView(margin, 0);
