@@ -92,14 +92,16 @@ void RenderNamedFlowThread::clearContentNodes()
 
 void RenderNamedFlowThread::updateWritingMode()
 {
-    if (RenderRegion* firstRegion = m_regionList.first()) {
-        if (style()->writingMode() != firstRegion->style()->writingMode()) {
-            // The first region defines the principal writing mode for the entire flow.
-            RefPtr<RenderStyle> newStyle = RenderStyle::clone(style());
-            newStyle->setWritingMode(firstRegion->style()->writingMode());
-            setStyle(newStyle);
-        }
-    }
+    RenderRegion* firstRegion = m_regionList.first();
+    if (!firstRegion)
+        return;
+    if (style()->writingMode() == firstRegion->style()->writingMode())
+        return;
+
+    // The first region defines the principal writing mode for the entire flow.
+    RefPtr<RenderStyle> newStyle = RenderStyle::clone(style());
+    newStyle->setWritingMode(firstRegion->style()->writingMode());
+    setStyle(newStyle.release());
 }
 
 RenderObject* RenderNamedFlowThread::nextRendererForNode(Node* node) const
