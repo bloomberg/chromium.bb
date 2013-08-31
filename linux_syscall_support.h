@@ -2028,13 +2028,12 @@ struct kernel_statfs {
        * function, as glibc goes out of its way to make it inaccessible.
        */
       long long res;
-      __asm__ __volatile__("call   2f\n"
-                         "0:.align 16\n"
+      __asm__ __volatile__("jmp    2f\n"
+                           ".align 16\n"
                          "1:movq   %1,%%rax\n"
                            LSS_ENTRYPOINT
-                         "2:popq   %0\n"
-                           "addq   $(1b-0b),%0\n"
-                           : "=a" (res)
+                         "2:leaq   1b(%%rip),%0\n"
+                           : "=r" (res)
                            : "i"  (__NR_rt_sigreturn));
       return (void (*)(void))(uintptr_t)res;
     }
