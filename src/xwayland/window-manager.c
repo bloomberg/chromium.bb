@@ -1898,12 +1898,36 @@ static const struct weston_shell_client shell_client = {
 	send_configure
 };
 
+static int
+legacy_fullscreen(struct weston_wm *wm,
+		  struct weston_wm_window *window,
+		  struct weston_output **output_ret)
+{
+	struct weston_compositor *compositor = wm->server->compositor;
+	struct weston_output *output;
+
+	/* Heuristics for detecting legacy fullscreen windows... */
+
+	wl_list_for_each(output, &compositor->output_list, link) {
+		if (output->x == window->x &&
+		    output->y == window->y &&
+		    output->width == window->width &&
+		    output->height == window->height &&
+		    window->override_redirect) {
+			*output_ret = output;
+			return 1;
+		}
+	}
+
+	return 0;
+}
 static void
 xserver_map_shell_surface(struct weston_wm *wm,
 			  struct weston_wm_window *window)
 {
 	struct weston_shell_interface *shell_interface =
 		&wm->server->compositor->shell_interface;
+	struct weston_output *output;
 
 	if (!shell_interface->create_shell_surface)
 		return;
@@ -1923,6 +1947,11 @@ xserver_map_shell_surface(struct weston_wm *wm,
 	} else if (!window->override_redirect) {
 		shell_interface->set_toplevel(window->shsurf);
 		return;
+	} else if (legacy_fullscreen(wm, window, &output)) {
+		window->fullscreen = 1;
+		shell_interface->set_fullscreen(window->shsurf,
+						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
+						0, output);
 	} else {
 		shell_interface->set_xwayland(window->shsurf,
 					      window->x,
