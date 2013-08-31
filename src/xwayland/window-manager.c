@@ -40,6 +40,32 @@
 #include "xserver-server-protocol.h"
 #include "hash.h"
 
+struct wm_size_hints {
+    	uint32_t flags;
+	int32_t x, y;
+	int32_t width, height;	/* should set so old wm's don't mess up */
+	int32_t min_width, min_height;
+	int32_t max_width, max_height;
+    	int32_t width_inc, height_inc;
+	struct {
+		int32_t x;
+		int32_t y;
+	} min_aspect, max_aspect;
+	int32_t base_width, base_height;
+	int32_t win_gravity;
+};
+
+#define USPosition	(1L << 0)
+#define USSize		(1L << 1)
+#define PPosition	(1L << 2)
+#define PSize		(1L << 3)
+#define PMinSize	(1L << 4)
+#define PMaxSize	(1L << 5)
+#define PResizeInc	(1L << 6)
+#define PAspect		(1L << 7)
+#define PBaseSize	(1L << 8)
+#define PWinGravity	(1L << 9)
+
 struct motif_wm_hints {
 	uint32_t flags;
 	uint32_t functions;
@@ -117,6 +143,8 @@ struct weston_wm_window {
 	int override_redirect;
 	int fullscreen;
 	int has_alpha;
+	struct wm_size_hints size_hints;
+	struct motif_wm_hints motif_hints;
 };
 
 static struct weston_wm_window *
@@ -332,6 +360,7 @@ read_and_dump_property(struct weston_wm *wm,
 #define TYPE_WM_PROTOCOLS	XCB_ATOM_CUT_BUFFER0
 #define TYPE_MOTIF_WM_HINTS	XCB_ATOM_CUT_BUFFER1
 #define TYPE_NET_WM_STATE	XCB_ATOM_CUT_BUFFER2
+#define TYPE_WM_NORMAL_HINTS	XCB_ATOM_CUT_BUFFER3
 
 static void
 weston_wm_window_read_properties(struct weston_wm_window *window)
@@ -348,6 +377,7 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 		{ XCB_ATOM_WM_NAME, XCB_ATOM_STRING, F(name) },
 		{ XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, F(transient_for) },
 		{ wm->atom.wm_protocols, TYPE_WM_PROTOCOLS, F(protocols) },
+		{ wm->atom.wm_normal_hints, TYPE_WM_NORMAL_HINTS, F(protocols) },
 		{ wm->atom.net_wm_state, TYPE_NET_WM_STATE },
 		{ wm->atom.net_wm_window_type, XCB_ATOM_ATOM, F(type) },
 		{ wm->atom.net_wm_name, XCB_ATOM_STRING, F(name) },
@@ -363,7 +393,6 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 	uint32_t *xid;
 	xcb_atom_t *atom;
 	uint32_t i;
-	struct motif_wm_hints *hints;
 
 	if (!window->properties_dirty)
 		return;
@@ -377,6 +406,9 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 					     XCB_ATOM_ANY, 0, 2048);
 
 	window->decorate = !window->override_redirect;
+	window->size_hints.flags = 0;
+	window->motif_hints.flags = 0;
+
 	for (i = 0; i < ARRAY_LENGTH(props); i++)  {
 		reply = xcb_get_property_reply(wm->conn, cookie[i], NULL);
 		if (!reply)
@@ -414,6 +446,11 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 			break;
 		case TYPE_WM_PROTOCOLS:
 			break;
+		case TYPE_WM_NORMAL_HINTS:
+			memcpy(&window->size_hints,
+			       xcb_get_property_value(reply),
+			       sizeof window->size_hints);
+			break;
 		case TYPE_NET_WM_STATE:
 			window->fullscreen = 0;
 			atom = xcb_get_property_value(reply);
@@ -422,9 +459,12 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 					window->fullscreen = 1;
 			break;
 		case TYPE_MOTIF_WM_HINTS:
-			hints = xcb_get_property_value(reply);
-			if (hints->flags & MWM_HINTS_DECORATIONS)
-				window->decorate = hints->decorations > 0;
+			memcpy(&window->motif_hints,
+			       xcb_get_property_value(reply),
+			       sizeof window->motif_hints);
+			if (window->motif_hints.flags & MWM_HINTS_DECORATIONS)
+				window->decorate =
+					window->motif_hints.decorations > 0;
 			break;
 		default:
 			break;
@@ -1516,6 +1556,7 @@ weston_wm_get_resources(struct weston_wm *wm)
 
 	static const struct { const char *name; int offset; } atoms[] = {
 		{ "WM_PROTOCOLS",	F(atom.wm_protocols) },
+		{ "WM_NORMAL_HINTS",	F(atom.wm_normal_hints) },
 		{ "WM_TAKE_FOCUS",	F(atom.wm_take_focus) },
 		{ "WM_DELETE_WINDOW",	F(atom.wm_delete_window) },
 		{ "WM_STATE",		F(atom.wm_state) },
@@ -1905,6 +1946,8 @@ legacy_fullscreen(struct weston_wm *wm,
 {
 	struct weston_compositor *compositor = wm->server->compositor;
 	struct weston_output *output;
+	uint32_t minmax = PMinSize | PMaxSize;
+	int matching_size;
 
 	/* Heuristics for detecting legacy fullscreen windows... */
 
@@ -1914,6 +1957,26 @@ legacy_fullscreen(struct weston_wm *wm,
 		    output->width == window->width &&
 		    output->height == window->height &&
 		    window->override_redirect) {
+			*output_ret = output;
+			return 1;
+		}
+
+		matching_size = 0;
+		if ((window->size_hints.flags & (USSize |PSize)) &&
+		    window->size_hints.width == output->width &&
+		    window->size_hints.height == output->height)
+			matching_size = 1;
+		if ((window->size_hints.flags & minmax) == minmax &&
+		    window->size_hints.min_width == output->width &&
+		    window->size_hints.min_height == output->height &&
+		    window->size_hints.max_width == output->width &&
+		    window->size_hints.max_height == output->height)
+			matching_size = 1;
+
+		if (matching_size && !window->decorate &&
+		    (window->size_hints.flags & (USPosition | PPosition)) &&
+		    window->size_hints.x == output->x &&
+		    window->size_hints.y == output->y) {
 			*output_ret = output;
 			return 1;
 		}
@@ -1944,14 +2007,14 @@ xserver_map_shell_surface(struct weston_wm *wm,
 						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
 						0, NULL);
 		return;
-	} else if (!window->override_redirect) {
-		shell_interface->set_toplevel(window->shsurf);
-		return;
 	} else if (legacy_fullscreen(wm, window, &output)) {
 		window->fullscreen = 1;
 		shell_interface->set_fullscreen(window->shsurf,
 						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
 						0, output);
+	} else if (!window->override_redirect) {
+		shell_interface->set_toplevel(window->shsurf);
+		return;
 	} else {
 		shell_interface->set_xwayland(window->shsurf,
 					      window->x,
