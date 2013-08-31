@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -267,6 +268,8 @@ void VideoCaptureController::OnIncomingCapturedFrame(
   DCHECK(frame_info_.color == media::VideoCaptureCapability::kI420 ||
          frame_info_.color == media::VideoCaptureCapability::kYV12 ||
          (rotation == 0 && !flip_vert && !flip_horiz));
+
+  TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedFrame");
 
   scoped_refptr<media::VideoFrame> dst;
   {
