@@ -60,7 +60,11 @@ namespace WTF {
         OwnPtr(const OwnPtr<ValueType>&);
 #endif
 
-        ~OwnPtr() { deleteOwnedPtr(m_ptr); }
+        ~OwnPtr()
+        {
+            deleteOwnedPtr(m_ptr);
+            m_ptr = 0;
+        }
 
         PtrType get() const { return m_ptr; }
 
