@@ -298,10 +298,7 @@ crbug.com/258896 virtual/web-animations-css/animations/opacity-transform-animati
 crbug.com/258896 virtual/web-animations-css/animations/play-state-paused.html [ ImageOnlyFailure ]
 # These can't be rebaselined because they're crashes.
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-background-image.html [ Crash ]
-crbug.com/258896 virtual/web-animations-css/animations/cross-fade-border-image-source.html [ NeedsRebaseline ]
-crbug.com/258896 virtual/web-animations-css/animations/cross-fade-list-style-image.html [ NeedsRebaseline ]
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-webkit-mask-box-image.html [ Crash ]
-crbug.com/258896 virtual/web-animations-css/animations/cross-fade-webkit-mask-image.html [ NeedsRebaseline ]
 crbug.com/258896 virtual/web-animations-css/animations/lineheight-animation.html [ Crash ]
 crbug.com/258896 [ Debug ] virtual/web-animations-css/animations/width-using-ems.html [ Crash ]
 # These can't be rebaselined because the failure involves flaky output.
