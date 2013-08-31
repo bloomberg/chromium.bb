@@ -12,11 +12,11 @@ call one of the instrument commands, or the copy command.
 
 Possible commands are:
 - instrument_jar: Accepts a jar and instruments it using emma.jar.
-- instrument_classes: Accepts a directory contains java classes and instruments
-      it using emma.jar.
-- copy: Triggered instead of an instrumentation command when we don't have EMMA
-      coverage enabled. This allows us to make this a required step without
-      necessarily instrumenting on every build.
+- instrument_classes: Accepts a directory containing java classes and
+      instruments it using emma.jar.
+- copy: Called when EMMA coverage is not enabled. This allows us to make
+      this a required step without necessarily instrumenting on every build.
+      Also removes any stale coverage files.
 """
 
 import collections
@@ -42,15 +42,15 @@ def _AddCommonOptions(option_parser):
                                  'final classes directory, or the directory in '
                                  'which to place the instrumented/copied jar.'))
   option_parser.add_option('--stamp', help='Path to touch when done.')
+  option_parser.add_option('--coverage-file',
+                           help='File to create with coverage metadata.')
+  option_parser.add_option('--sources-file',
+                           help='File to create with the list of sources.')
 
 
 def _AddInstrumentOptions(option_parser):
   """Adds options related to instrumentation to |option_parser|."""
   _AddCommonOptions(option_parser)
-  option_parser.add_option('--coverage-file',
-                           help='File to create with coverage metadata.')
-  option_parser.add_option('--sources-file',
-                           help='File to create with the list of sources.')
   option_parser.add_option('--sources',
                            help='Space separated list of sources.')
   option_parser.add_option('--src-root',
@@ -60,7 +60,9 @@ def _AddInstrumentOptions(option_parser):
 
 
 def _RunCopyCommand(command, options, args, option_parser):
-  """Just copies the jar from input to output locations.
+  """Copies the jar from input to output locations.
+
+  Also removes any old coverage/sources file.
 
   Args:
     command: String indicating the command that was received to trigger
@@ -72,8 +74,18 @@ def _RunCopyCommand(command, options, args, option_parser):
   Returns:
     An exit code.
   """
-  if not (options.input_path and options.output_path):
+  if not (options.input_path and options.output_path and
+          options.coverage_file and options.sources_file):
     option_parser.error('All arguments are required.')
+
+  coverage_file = os.path.join(os.path.dirname(options.output_path),
+                               options.coverage_file)
+  sources_file = os.path.join(os.path.dirname(options.output_path),
+                              options.sources_file)
+  if os.path.exists(coverage_file):
+    os.remove(coverage_file)
+  if os.path.exists(sources_file):
+    os.remove(sources_file)
 
   if os.path.isdir(options.input_path):
     shutil.rmtree(options.output_path, ignore_errors=True)
