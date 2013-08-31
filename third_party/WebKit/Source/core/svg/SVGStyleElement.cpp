@@ -40,7 +40,7 @@ inline SVGStyleElement::SVGStyleElement(const QualifiedName& tagName, Document* 
 
 SVGStyleElement::~SVGStyleElement()
 {
-    StyleElement::clearDocumentData(&document(), this);
+    StyleElement::clearDocumentData(document(), this);
 }
 
 PassRefPtr<SVGStyleElement> SVGStyleElement::create(const QualifiedName& tagName, Document* document, bool createdByParser)
@@ -136,14 +136,14 @@ Node::InsertionNotificationRequest SVGStyleElement::insertedInto(ContainerNode* 
 
 void SVGStyleElement::didNotifySubtreeInsertions(ContainerNode* insertionPoint)
 {
-    StyleElement::processStyleSheet(&document(), this);
+    StyleElement::processStyleSheet(document(), this);
 }
 
 void SVGStyleElement::removedFrom(ContainerNode* rootParent)
 {
     SVGElement::removedFrom(rootParent);
     if (rootParent->inDocument())
-        StyleElement::removedFromDocument(&document(), this);
+        StyleElement::removedFromDocument(document(), this);
 }
 
 void SVGStyleElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)

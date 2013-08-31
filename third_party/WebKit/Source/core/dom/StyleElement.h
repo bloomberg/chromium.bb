@@ -42,12 +42,12 @@ protected:
     CSSStyleSheet* sheet() const { return m_sheet.get(); }
 
     bool isLoading() const;
-    bool sheetLoaded(Document*);
-    void startLoadingDynamicSheet(Document*);
+    bool sheetLoaded(Document&);
+    void startLoadingDynamicSheet(Document&);
 
-    void processStyleSheet(Document*, Element*);
-    void removedFromDocument(Document*, Element*, ContainerNode* scopingNode = 0);
-    void clearDocumentData(Document*, Element*);
+    void processStyleSheet(Document&, Element*);
+    void removedFromDocument(Document&, Element*, ContainerNode* scopingNode = 0);
+    void clearDocumentData(Document&, Element*);
     void childrenChanged(Element*);
     void finishParsingChildren(Element*);
 

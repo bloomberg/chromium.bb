@@ -59,7 +59,7 @@ HTMLStyleElement::~HTMLStyleElement()
 {
     // During tear-down, willRemove isn't called, so m_scopedStyleRegistrationState may still be RegisteredAsScoped or RegisteredInShadowRoot here.
     // Therefore we can't ASSERT(m_scopedStyleRegistrationState == NotRegistered).
-    StyleElement::clearDocumentData(&document(), this);
+    StyleElement::clearDocumentData(document(), this);
 
     styleLoadEventSender().cancelEvent(this);
 }
@@ -202,12 +202,12 @@ void HTMLStyleElement::removedFrom(ContainerNode* insertionPoint)
     }
 
     if (insertionPoint->inDocument())
-        StyleElement::removedFromDocument(&document(), this, scope);
+        StyleElement::removedFromDocument(document(), this, scope);
 }
 
 void HTMLStyleElement::didNotifySubtreeInsertions(ContainerNode* insertionPoint)
 {
-    StyleElement::processStyleSheet(&document(), this);
+    StyleElement::processStyleSheet(document(), this);
 }
 
 void HTMLStyleElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)

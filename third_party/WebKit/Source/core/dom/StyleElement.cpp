@@ -55,22 +55,20 @@ StyleElement::~StyleElement()
         clearSheet();
 }
 
-void StyleElement::processStyleSheet(Document* document, Element* element)
+void StyleElement::processStyleSheet(Document& document, Element* element)
 {
-    ASSERT(document);
     ASSERT(element);
-    document->styleSheetCollections()->addStyleSheetCandidateNode(element, m_createdByParser);
+    document.styleSheetCollections()->addStyleSheetCandidateNode(element, m_createdByParser);
     if (m_createdByParser)
         return;
 
     process(element);
 }
 
-void StyleElement::removedFromDocument(Document* document, Element* element, ContainerNode* scopingNode)
+void StyleElement::removedFromDocument(Document& document, Element* element, ContainerNode* scopingNode)
 {
-    ASSERT(document);
     ASSERT(element);
-    document->styleSheetCollections()->removeStyleSheetCandidateNode(element, scopingNode);
+    document.styleSheetCollections()->removeStyleSheetCandidateNode(element, scopingNode);
 
     RefPtr<StyleSheet> removedSheet = m_sheet;
 
@@ -78,17 +76,17 @@ void StyleElement::removedFromDocument(Document* document, Element* element, Con
         clearSheet();
 
     // If we're in document teardown, then we don't need to do any notification of our sheet's removal.
-    if (document->renderer())
-        document->removedStyleSheet(removedSheet.get());
+    if (document.renderer())
+        document.removedStyleSheet(removedSheet.get());
 }
 
-void StyleElement::clearDocumentData(Document* document, Element* element)
+void StyleElement::clearDocumentData(Document& document, Element* element)
 {
     if (m_sheet)
         m_sheet->clearOwnerNode();
 
     if (element->inDocument())
-        document->styleSheetCollections()->removeStyleSheetCandidateNode(element, isHTMLStyleElement(element) ? toHTMLStyleElement(element)->scopingNode() :  0);
+        document.styleSheetCollections()->removeStyleSheetCandidateNode(element, isHTMLStyleElement(element) ? toHTMLStyleElement(element)->scopingNode() :  0);
 }
 
 void StyleElement::childrenChanged(Element* element)
@@ -163,20 +161,18 @@ bool StyleElement::isLoading() const
     return m_sheet ? m_sheet->isLoading() : false;
 }
 
-bool StyleElement::sheetLoaded(Document* document)
+bool StyleElement::sheetLoaded(Document& document)
 {
-    ASSERT(document);
     if (isLoading())
         return false;
 
-    document->styleSheetCollections()->removePendingSheet(m_sheet->ownerNode());
+    document.styleSheetCollections()->removePendingSheet(m_sheet->ownerNode());
     return true;
 }
 
-void StyleElement::startLoadingDynamicSheet(Document* document)
+void StyleElement::startLoadingDynamicSheet(Document& document)
 {
-    ASSERT(document);
-    document->styleSheetCollections()->addPendingSheet();
+    document.styleSheetCollections()->addPendingSheet();
 }
 
 }
