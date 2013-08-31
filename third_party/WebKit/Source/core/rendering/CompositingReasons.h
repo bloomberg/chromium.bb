@@ -6,6 +6,7 @@
 #define CompositingReasons_h
 
 #include "wtf/MathExtras.h"
+#include <stdint.h>
 
 namespace WebCore {
 

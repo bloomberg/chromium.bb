@@ -166,6 +166,7 @@
 #endif
 
 #if COMPILER(MSVC)
+#define _USE_MATH_DEFINES // Make math.h behave like other platforms.
 #define SKIP_STATIC_CONSTRUCTORS_ON_MSVC 1
 #else
 #define SKIP_STATIC_CONSTRUCTORS_ON_GCC 1

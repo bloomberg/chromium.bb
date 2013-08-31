@@ -31,6 +31,8 @@
 #include "config.h"
 #include "core/platform/graphics/LayoutBoxExtent.h"
 
+#include "wtf/Assertions.h"
+
 namespace WebCore {
 
 LayoutUnit LayoutBoxExtent::logicalTop(WritingMode writingMode) const

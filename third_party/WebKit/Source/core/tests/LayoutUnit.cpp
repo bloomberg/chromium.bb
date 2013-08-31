@@ -29,9 +29,10 @@
  */
 
 #include "config.h"
+#include "core/platform/LayoutUnit.h"
 
 #include <gtest/gtest.h>
-#include "core/platform/LayoutUnit.h"
+#include <limits.h>
 
 using namespace WebCore;
 

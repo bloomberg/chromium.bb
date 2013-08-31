@@ -27,6 +27,7 @@
 #if ENABLE(WEB_AUDIO)
 
 #include "core/platform/audio/AudioUtilities.h"
+#include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {
