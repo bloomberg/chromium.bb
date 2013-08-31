@@ -335,6 +335,8 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
         ASCIIToUTF16(prefs.default_video_poster_url.spec()));
   settings->setSupportDeprecatedTargetDensityDPI(
       prefs.support_deprecated_target_density_dpi);
+  settings->setUseLegacyBackgroundSizeShorthandBehavior(
+      prefs.use_legacy_background_size_shorthand_behavior);
   settings->setUseWideViewport(prefs.use_wide_viewport);
 #endif
 

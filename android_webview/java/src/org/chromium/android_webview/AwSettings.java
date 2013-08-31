@@ -82,7 +82,7 @@ public class AwSettings {
     private String mDefaultVideoPosterURL;
     private float mInitialPageScalePercent = 0;
 
-    private final boolean mSupportDeprecatedTargetDensityDPI;
+    private final boolean mSupportLegacyQuirks;
 
     private final boolean mPasswordEchoEnabled;
 
@@ -197,7 +197,7 @@ public class AwSettings {
             mPasswordEchoEnabled = Settings.System.getInt(context.getContentResolver(),
                     Settings.System.TEXT_SHOW_PASSWORD, 1) == 1;
 
-            mSupportDeprecatedTargetDensityDPI = supportsLegacyQuirks;
+            mSupportLegacyQuirks = supportsLegacyQuirks;
         }
         // Defer initializing the native side until a native WebContents instance is set.
     }
@@ -1036,8 +1036,8 @@ public class AwSettings {
     }
 
     @CalledByNative
-    private boolean getSupportDeprecatedTargetDensityDPILocked() {
-        return mSupportDeprecatedTargetDensityDPI;
+    private boolean getSupportLegacyQuirksLocked() {
+        return mSupportLegacyQuirks;
     }
 
     /**
