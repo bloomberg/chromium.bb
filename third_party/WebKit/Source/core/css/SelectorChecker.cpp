@@ -63,9 +63,9 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-SelectorChecker::SelectorChecker(Document* document, Mode mode)
-    : m_strictParsing(!document->inQuirksMode())
-    , m_documentIsHTML(document->isHTMLDocument())
+SelectorChecker::SelectorChecker(Document& document, Mode mode)
+    : m_strictParsing(!document.inQuirksMode())
+    , m_documentIsHTML(document.isHTMLDocument())
     , m_mode(mode)
 {
 }
