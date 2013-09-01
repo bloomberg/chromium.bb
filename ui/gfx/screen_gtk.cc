@@ -47,15 +47,20 @@ bool GetScreenWorkArea(gfx::Rect* out_rect) {
   return true;
 }
 
-gfx::Rect NativePrimaryMonitorBounds() {
-  GdkScreen* screen = gdk_screen_get_default();
-  gint primary_monitor_index = gdk_screen_get_primary_monitor(screen);
-  GdkRectangle rect;
-  gdk_screen_get_monitor_geometry(screen, primary_monitor_index, &rect);
-  return gfx::Rect(rect);
+gfx::Display GetDisplayForMonitorNum(GdkScreen* screen, gint monitor_num) {
+  GdkRectangle bounds;
+  gdk_screen_get_monitor_geometry(screen, monitor_num, &bounds);
+  // Use |monitor_num| as display id.
+  gfx::Display display(monitor_num, gfx::Rect(bounds));
+  if (gdk_screen_get_primary_monitor(screen) == monitor_num) {
+    gfx::Rect rect;
+    if (GetScreenWorkArea(&rect))
+      display.set_work_area(gfx::IntersectRects(rect, display.bounds()));
+  }
+  return display;
 }
 
-gfx::Rect GetMonitorAreaNearestWindow(gfx::NativeView view) {
+gfx::Display GetMonitorAreaNearestWindow(gfx::NativeView view) {
   GdkScreen* screen = gdk_screen_get_default();
   gint monitor_num = 0;
   if (view && GTK_IS_WINDOW(view)) {
@@ -67,9 +72,7 @@ gfx::Rect GetMonitorAreaNearestWindow(gfx::NativeView view) {
         screen,
         gtk_widget_get_window(top_level));
   }
-  GdkRectangle bounds;
-  gdk_screen_get_monitor_geometry(screen, monitor_num, &bounds);
-  return gfx::Rect(bounds);
+  return GetDisplayForMonitorNum(screen, monitor_num);
 }
 
 class ScreenGtk : public gfx::Screen {
@@ -122,14 +125,17 @@ class ScreenGtk : public gfx::Screen {
   }
 
   virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE {
-    NOTIMPLEMENTED();
-    return std::vector<gfx::Display>(1, GetPrimaryDisplay());
+    GdkScreen* screen = gdk_screen_get_default();
+    gint num_of_displays = gdk_screen_get_n_monitors(screen);
+    std::vector<gfx::Display> all_displays;
+    for (gint i = 0; i < num_of_displays; ++i)
+      all_displays.push_back(GetDisplayForMonitorNum(screen, i));
+    return all_displays;
   }
 
   // Returns the display nearest the specified window.
   virtual gfx::Display GetDisplayNearestWindow(
       gfx::NativeView view) const OVERRIDE {
-    gfx::Rect bounds = GetMonitorAreaNearestWindow(view);
     // Do not use the _NET_WORKAREA here, this is supposed to be an area on a
     // specific monitor, and _NET_WORKAREA is a hint from the WM that
     // generally spans across all monitors.  This would make the work area
@@ -139,8 +145,8 @@ class ScreenGtk : public gfx::Screen {
     // means to compute this rect would be to watch all windows with
     // _NET_WM_STRUT(_PARTIAL) hints, and subtract their space from the
     // physical area of the display to construct a work area.
-    // TODO(oshima): Implement ID and Observer.
-    return gfx::Display(0, bounds);
+    // TODO(oshima): Implement Observer.
+    return GetMonitorAreaNearestWindow(view);
   }
 
   // Returns the the display nearest the specified point.
@@ -149,10 +155,8 @@ class ScreenGtk : public gfx::Screen {
     GdkScreen* screen = gdk_screen_get_default();
     gint monitor = gdk_screen_get_monitor_at_point(
         screen, point.x(), point.y());
-    GdkRectangle bounds;
-    gdk_screen_get_monitor_geometry(screen, monitor, &bounds);
-    // TODO(oshima): Implement ID and Observer.
-    return gfx::Display(0, gfx::Rect(bounds));
+    // TODO(oshima): Implement Observer.
+    return GetDisplayForMonitorNum(screen, monitor);
   }
 
   // Returns the display that most closely intersects the provided bounds.
@@ -164,17 +168,10 @@ class ScreenGtk : public gfx::Screen {
 
   // Returns the primary display.
   virtual gfx::Display GetPrimaryDisplay() const OVERRIDE {
-    gfx::Rect bounds = NativePrimaryMonitorBounds();
-    // TODO(oshima): Implement ID and Observer.
-    gfx::Display display(0, bounds);
-    gfx::Rect rect;
-    if (GetScreenWorkArea(&rect)) {
-      display.set_work_area(gfx::IntersectRects(rect, bounds));
-    } else {
-      // Return the best we've got.
-      display.set_work_area(bounds);
-    }
-    return display;
+    GdkScreen* screen = gdk_screen_get_default();
+    gint primary_monitor_index = gdk_screen_get_primary_monitor(screen);
+    // TODO(oshima): Implement Observer.
+    return GetDisplayForMonitorNum(screen, primary_monitor_index);
   }
 
   virtual void AddObserver(gfx::DisplayObserver* observer) OVERRIDE {
