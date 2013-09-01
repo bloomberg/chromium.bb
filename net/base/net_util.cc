@@ -1969,6 +1969,19 @@ AddressFamily GetAddressFamily(const IPAddressNumber& address) {
   }
 }
 
+int ConvertAddressFamily(AddressFamily address_family) {
+  switch (address_family) {
+    case ADDRESS_FAMILY_UNSPECIFIED:
+      return AF_UNSPEC;
+    case ADDRESS_FAMILY_IPV4:
+      return AF_INET;
+    case ADDRESS_FAMILY_IPV6:
+      return AF_INET6;
+  }
+  NOTREACHED();
+  return AF_UNSPEC;
+}
+
 bool ParseIPLiteralToNumber(const std::string& ip_literal,
                             IPAddressNumber* ip_number) {
   // |ip_literal| could be either a IPv4 or an IPv6 literal. If it contains

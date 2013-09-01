@@ -438,6 +438,9 @@ bool HaveOnlyLoopbackAddresses();
 NET_EXPORT_PRIVATE AddressFamily GetAddressFamily(
     const IPAddressNumber& address);
 
+// Maps the given AddressFamily to either AF_INET, AF_INET6 or AF_UNSPEC.
+int ConvertAddressFamily(AddressFamily address_family);
+
 // Parses an IP address literal (either IPv4 or IPv6) to its numeric value.
 // Returns true on success and fills |ip_number| with the numeric value.
 NET_EXPORT_PRIVATE bool ParseIPLiteralToNumber(const std::string& ip_literal,

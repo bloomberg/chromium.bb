@@ -1,11 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/socket/tcp_server_socket_win.h"
+#include "net/socket/tcp_socket_win.h"
 
 #include <mstcpip.h>
 
+#include "base/logging.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -13,42 +14,34 @@
 #include "net/base/winsock_util.h"
 #include "net/socket/socket_descriptor.h"
 #include "net/socket/socket_net_log_params.h"
-#include "net/socket/tcp_client_socket.h"
 
 namespace net {
 
-TCPServerSocketWin::TCPServerSocketWin(net::NetLog* net_log,
-                                       const net::NetLog::Source& source)
+TCPSocketWin::TCPSocketWin(net::NetLog* net_log,
+                           const net::NetLog::Source& source)
     : socket_(INVALID_SOCKET),
       socket_event_(WSA_INVALID_EVENT),
       accept_socket_(NULL),
+      accept_address_(NULL),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)) {
   net_log_.BeginEvent(NetLog::TYPE_SOCKET_ALIVE,
                       source.ToEventParametersCallback());
   EnsureWinsockInit();
 }
 
-TCPServerSocketWin::~TCPServerSocketWin() {
+TCPSocketWin::~TCPSocketWin() {
   Close();
   net_log_.EndEvent(NetLog::TYPE_SOCKET_ALIVE);
 }
 
-int TCPServerSocketWin::Listen(const IPEndPoint& address, int backlog) {
+int TCPSocketWin::Create(AddressFamily family) {
   DCHECK(CalledOnValidThread());
-  DCHECK_GT(backlog, 0);
   DCHECK_EQ(socket_, INVALID_SOCKET);
-  DCHECK_EQ(socket_event_, WSA_INVALID_EVENT);
 
-  socket_event_ = WSACreateEvent();
-  if (socket_event_ == WSA_INVALID_EVENT) {
-    PLOG(ERROR) << "WSACreateEvent()";
-    return ERR_FAILED;
-  }
-
-  socket_ = CreatePlatformSocket(address.GetSockAddrFamily(), SOCK_STREAM,
+  socket_ = CreatePlatformSocket(ConvertAddressFamily(family), SOCK_STREAM,
                                  IPPROTO_TCP);
   if (socket_ == INVALID_SOCKET) {
-    PLOG(ERROR) << "socket() returned an error";
+    PLOG(ERROR) << "CreatePlatformSocket() returned an error";
     return MapSystemError(WSAGetLastError());
   }
 
@@ -58,30 +51,17 @@ int TCPServerSocketWin::Listen(const IPEndPoint& address, int backlog) {
     return result;
   }
 
-  int result = SetSocketOptions();
-  if (result != OK) {
-    Close();
-    return result;
-  }
+  return OK;
+}
 
-  SockaddrStorage storage;
-  if (!address.ToSockAddr(storage.addr, &storage.addr_len)) {
-    Close();
-    return ERR_ADDRESS_INVALID;
-  }
+int TCPSocketWin::Adopt(SOCKET socket) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(socket_, INVALID_SOCKET);
 
-  result = bind(socket_, storage.addr, storage.addr_len);
-  if (result < 0) {
-    PLOG(ERROR) << "bind() returned an error";
-    result = MapSystemError(WSAGetLastError());
-    Close();
-    return result;
-  }
+  socket_ = socket;
 
-  result = listen(socket_, backlog);
-  if (result < 0) {
-    PLOG(ERROR) << "listen() returned an error";
-    result = MapSystemError(WSAGetLastError());
+  if (SetNonBlocking(socket_)) {
+    int result = MapSystemError(WSAGetLastError());
     Close();
     return result;
   }
@@ -89,7 +69,34 @@ int TCPServerSocketWin::Listen(const IPEndPoint& address, int backlog) {
   return OK;
 }
 
-int TCPServerSocketWin::GetLocalAddress(IPEndPoint* address) const {
+SOCKET TCPSocketWin::Release() {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(socket_event_, WSA_INVALID_EVENT);
+  DCHECK(accept_callback_.is_null());
+
+  SOCKET result = socket_;
+  socket_ = INVALID_SOCKET;
+  return result;
+}
+
+int TCPSocketWin::Bind(const IPEndPoint& address) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_NE(socket_, INVALID_SOCKET);
+
+  SockaddrStorage storage;
+  if (!address.ToSockAddr(storage.addr, &storage.addr_len))
+    return ERR_ADDRESS_INVALID;
+
+  int result = bind(socket_, storage.addr, storage.addr_len);
+  if (result < 0) {
+    PLOG(ERROR) << "bind() returned an error";
+    return MapSystemError(WSAGetLastError());
+  }
+
+  return OK;
+}
+
+int TCPSocketWin::GetLocalAddress(IPEndPoint* address) const {
   DCHECK(CalledOnValidThread());
   DCHECK(address);
 
@@ -102,30 +109,59 @@ int TCPServerSocketWin::GetLocalAddress(IPEndPoint* address) const {
   return OK;
 }
 
-int TCPServerSocketWin::Accept(
-    scoped_ptr<StreamSocket>* socket, const CompletionCallback& callback) {
+int TCPSocketWin::Listen(int backlog) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_GT(backlog, 0);
+  DCHECK_NE(socket_, INVALID_SOCKET);
+  DCHECK_EQ(socket_event_, WSA_INVALID_EVENT);
+
+  socket_event_ = WSACreateEvent();
+  if (socket_event_ == WSA_INVALID_EVENT) {
+    PLOG(ERROR) << "WSACreateEvent()";
+    return ERR_FAILED;
+  }
+
+  int result = listen(socket_, backlog);
+  if (result < 0) {
+    PLOG(ERROR) << "listen() returned an error";
+    result = MapSystemError(WSAGetLastError());
+    return result;
+  }
+
+  return OK;
+}
+
+int TCPSocketWin::Accept(scoped_ptr<TCPSocketWin>* socket,
+                         IPEndPoint* address,
+                         const CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(socket);
+  DCHECK(address);
   DCHECK(!callback.is_null());
   DCHECK(accept_callback_.is_null());
 
   net_log_.BeginEvent(NetLog::TYPE_TCP_ACCEPT);
 
-  int result = AcceptInternal(socket);
+  int result = AcceptInternal(socket, address);
 
   if (result == ERR_IO_PENDING) {
-    // Start watching
+    // Start watching.
     WSAEventSelect(socket_, socket_event_, FD_ACCEPT);
     accept_watcher_.StartWatching(socket_event_, this);
 
     accept_socket_ = socket;
+    accept_address_ = address;
     accept_callback_ = callback;
   }
 
   return result;
 }
 
-int TCPServerSocketWin::SetSocketOptions() {
+int TCPSocketWin::SetDefaultOptionsForServer() {
+  return SetExclusiveAddrUse();
+}
+
+int TCPSocketWin::SetExclusiveAddrUse() {
   // On Windows, a bound end point can be hijacked by another process by
   // setting SO_REUSEADDR. Therefore a Windows-only option SO_EXCLUSIVEADDRUSE
   // was introduced in Windows NT 4.0 SP4. If the socket that is bound to the
@@ -151,41 +187,7 @@ int TCPServerSocketWin::SetSocketOptions() {
   return OK;
 }
 
-int TCPServerSocketWin::AcceptInternal(scoped_ptr<StreamSocket>* socket) {
-  SockaddrStorage storage;
-  int new_socket = accept(socket_, storage.addr, &storage.addr_len);
-  if (new_socket < 0) {
-    int net_error = MapSystemError(WSAGetLastError());
-    if (net_error != ERR_IO_PENDING)
-      net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, net_error);
-    return net_error;
-  }
-
-  IPEndPoint address;
-  if (!address.FromSockAddr(storage.addr, storage.addr_len)) {
-    NOTREACHED();
-    if (closesocket(new_socket) < 0)
-      PLOG(ERROR) << "closesocket";
-    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, ERR_FAILED);
-    return ERR_FAILED;
-  }
-  scoped_ptr<TCPClientSocket> tcp_socket(new TCPClientSocket(
-      AddressList(address),
-      net_log_.net_log(), net_log_.source()));
-  int adopt_result = tcp_socket->AdoptSocket(new_socket);
-  if (adopt_result != OK) {
-    if (closesocket(new_socket) < 0)
-      PLOG(ERROR) << "closesocket";
-    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, adopt_result);
-    return adopt_result;
-  }
-  socket->reset(tcp_socket.release());
-  net_log_.EndEvent(NetLog::TYPE_TCP_ACCEPT,
-                    CreateNetLogIPEndPointCallback(&address));
-  return OK;
-}
-
-void TCPServerSocketWin::Close() {
+void TCPSocketWin::Close() {
   if (socket_ != INVALID_SOCKET) {
     if (closesocket(socket_) < 0)
       PLOG(ERROR) << "closesocket";
@@ -198,7 +200,40 @@ void TCPServerSocketWin::Close() {
   }
 }
 
-void TCPServerSocketWin::OnObjectSignaled(HANDLE object) {
+int TCPSocketWin::AcceptInternal(scoped_ptr<TCPSocketWin>* socket,
+                                 IPEndPoint* address) {
+  SockaddrStorage storage;
+  int new_socket = accept(socket_, storage.addr, &storage.addr_len);
+  if (new_socket < 0) {
+    int net_error = MapSystemError(WSAGetLastError());
+    if (net_error != ERR_IO_PENDING)
+      net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, net_error);
+    return net_error;
+  }
+
+  IPEndPoint ip_end_point;
+  if (!ip_end_point.FromSockAddr(storage.addr, storage.addr_len)) {
+    NOTREACHED();
+    if (closesocket(new_socket) < 0)
+      PLOG(ERROR) << "closesocket";
+    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, ERR_FAILED);
+    return ERR_FAILED;
+  }
+  scoped_ptr<TCPSocketWin> tcp_socket(new TCPSocketWin(
+      net_log_.net_log(), net_log_.source()));
+  int adopt_result = tcp_socket->Adopt(new_socket);
+  if (adopt_result != OK) {
+    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, adopt_result);
+    return adopt_result;
+  }
+  *socket = tcp_socket.Pass();
+  *address = ip_end_point;
+  net_log_.EndEvent(NetLog::TYPE_TCP_ACCEPT,
+                    CreateNetLogIPEndPointCallback(&ip_end_point));
+  return OK;
+}
+
+void TCPSocketWin::OnObjectSignaled(HANDLE object) {
   WSANETWORKEVENTS ev;
   if (WSAEnumNetworkEvents(socket_, socket_event_, &ev) == SOCKET_ERROR) {
     PLOG(ERROR) << "WSAEnumNetworkEvents()";
@@ -206,9 +241,10 @@ void TCPServerSocketWin::OnObjectSignaled(HANDLE object) {
   }
 
   if (ev.lNetworkEvents & FD_ACCEPT) {
-    int result = AcceptInternal(accept_socket_);
+    int result = AcceptInternal(accept_socket_, accept_address_);
     if (result != ERR_IO_PENDING) {
       accept_socket_ = NULL;
+      accept_address_ = NULL;
       CompletionCallback callback = accept_callback_;
       accept_callback_.Reset();
       callback.Run(result);

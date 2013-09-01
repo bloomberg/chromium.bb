@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/socket/tcp_server_socket_libevent.h"
+#include "net/socket/tcp_socket_libevent.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -15,41 +15,40 @@
 #include <netinet/in.h>
 #endif
 
+#include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/socket/socket_descriptor.h"
 #include "net/socket/socket_net_log_params.h"
-#include "net/socket/tcp_client_socket.h"
 
 namespace net {
 
-TCPServerSocketLibevent::TCPServerSocketLibevent(
-    net::NetLog* net_log,
-    const net::NetLog::Source& source)
+TCPSocketLibevent::TCPSocketLibevent(NetLog* net_log,
+                                     const NetLog::Source& source)
     : socket_(kInvalidSocket),
       accept_socket_(NULL),
+      accept_address_(NULL),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)) {
   net_log_.BeginEvent(NetLog::TYPE_SOCKET_ALIVE,
                       source.ToEventParametersCallback());
 }
 
-TCPServerSocketLibevent::~TCPServerSocketLibevent() {
+TCPSocketLibevent::~TCPSocketLibevent() {
   if (socket_ != kInvalidSocket)
     Close();
   net_log_.EndEvent(NetLog::TYPE_SOCKET_ALIVE);
 }
 
-int TCPServerSocketLibevent::Listen(const IPEndPoint& address, int backlog) {
+int TCPSocketLibevent::Create(AddressFamily family) {
   DCHECK(CalledOnValidThread());
-  DCHECK_GT(backlog, 0);
   DCHECK_EQ(socket_, kInvalidSocket);
 
-  socket_ = CreatePlatformSocket(address.GetSockAddrFamily(), SOCK_STREAM,
+  socket_ = CreatePlatformSocket(ConvertAddressFamily(family), SOCK_STREAM,
                                  IPPROTO_TCP);
   if (socket_ < 0) {
-    PLOG(ERROR) << "socket() returned an error";
+    PLOG(ERROR) << "CreatePlatformSocket() returned an error";
     return MapSystemError(errno);
   }
 
@@ -59,30 +58,17 @@ int TCPServerSocketLibevent::Listen(const IPEndPoint& address, int backlog) {
     return result;
   }
 
-  int result = SetSocketOptions();
-  if (result != OK) {
-    Close();
-    return result;
-  }
+  return OK;
+}
 
-  SockaddrStorage storage;
-  if (!address.ToSockAddr(storage.addr, &storage.addr_len)) {
-    Close();
-    return ERR_ADDRESS_INVALID;
-  }
+int TCPSocketLibevent::Adopt(int socket) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(socket_, kInvalidSocket);
 
-  result = bind(socket_, storage.addr, storage.addr_len);
-  if (result < 0) {
-    PLOG(ERROR) << "bind() returned an error";
-    result = MapSystemError(errno);
-    Close();
-    return result;
-  }
+  socket_ = socket;
 
-  result = listen(socket_, backlog);
-  if (result < 0) {
-    PLOG(ERROR) << "listen() returned an error";
-    result = MapSystemError(errno);
+  if (SetNonBlocking(socket_)) {
+    int result = MapSystemError(errno);
     Close();
     return result;
   }
@@ -90,7 +76,33 @@ int TCPServerSocketLibevent::Listen(const IPEndPoint& address, int backlog) {
   return OK;
 }
 
-int TCPServerSocketLibevent::GetLocalAddress(IPEndPoint* address) const {
+int TCPSocketLibevent::Release() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(accept_callback_.is_null());
+
+  int result = socket_;
+  socket_ = kInvalidSocket;
+  return result;
+}
+
+int TCPSocketLibevent::Bind(const IPEndPoint& address) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_NE(socket_, kInvalidSocket);
+
+  SockaddrStorage storage;
+  if (!address.ToSockAddr(storage.addr, &storage.addr_len))
+    return ERR_ADDRESS_INVALID;
+
+  int result = bind(socket_, storage.addr, storage.addr_len);
+  if (result < 0) {
+    PLOG(ERROR) << "bind() returned an error";
+    return MapSystemError(errno);
+  }
+
+  return OK;
+}
+
+int TCPSocketLibevent::GetLocalAddress(IPEndPoint* address) const {
   DCHECK(CalledOnValidThread());
   DCHECK(address);
 
@@ -103,16 +115,32 @@ int TCPServerSocketLibevent::GetLocalAddress(IPEndPoint* address) const {
   return OK;
 }
 
-int TCPServerSocketLibevent::Accept(
-    scoped_ptr<StreamSocket>* socket, const CompletionCallback& callback) {
+int TCPSocketLibevent::Listen(int backlog) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_GT(backlog, 0);
+  DCHECK_NE(socket_, kInvalidSocket);
+
+  int result = listen(socket_, backlog);
+  if (result < 0) {
+    PLOG(ERROR) << "listen() returned an error";
+    return MapSystemError(errno);
+  }
+
+  return OK;
+}
+
+int TCPSocketLibevent::Accept(scoped_ptr<TCPSocketLibevent>* socket,
+                              IPEndPoint* address,
+                              const CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(socket);
+  DCHECK(address);
   DCHECK(!callback.is_null());
   DCHECK(accept_callback_.is_null());
 
   net_log_.BeginEvent(NetLog::TYPE_TCP_ACCEPT);
 
-  int result = AcceptInternal(socket);
+  int result = AcceptInternal(socket, address);
 
   if (result == ERR_IO_PENDING) {
     if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
@@ -123,13 +151,18 @@ int TCPServerSocketLibevent::Accept(
     }
 
     accept_socket_ = socket;
+    accept_address_ = address;
     accept_callback_ = callback;
   }
 
   return result;
 }
 
-int TCPServerSocketLibevent::SetSocketOptions() {
+int TCPSocketLibevent::SetDefaultOptionsForServer() {
+  return SetAddressReuse(true);
+}
+
+int TCPSocketLibevent::SetAddressReuse(bool allow) {
   // SO_REUSEADDR is useful for server sockets to bind to a recently unbound
   // port. When a socket is closed, the end point changes its state to TIME_WAIT
   // and wait for 2 MSL (maximum segment lifetime) to ensure the remote peer
@@ -143,16 +176,26 @@ int TCPServerSocketLibevent::SetSocketOptions() {
   // to 3.9.
   //
   // SO_REUSEPORT is provided in MacOS X and iOS.
-  int true_value = 1;
-  int rv = setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, &true_value,
-                      sizeof(true_value));
+  int boolean_value = allow ? 1 : 0;
+  int rv = setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, &boolean_value,
+                      sizeof(boolean_value));
   if (rv < 0)
     return MapSystemError(errno);
   return OK;
 }
 
-int TCPServerSocketLibevent::AcceptInternal(
-    scoped_ptr<StreamSocket>* socket) {
+void TCPSocketLibevent::Close() {
+  if (socket_ != kInvalidSocket) {
+    bool ok = accept_socket_watcher_.StopWatchingFileDescriptor();
+    DCHECK(ok);
+    if (HANDLE_EINTR(close(socket_)) < 0)
+      PLOG(ERROR) << "close";
+    socket_ = kInvalidSocket;
+  }
+}
+
+int TCPSocketLibevent::AcceptInternal(scoped_ptr<TCPSocketLibevent>* socket,
+                                      IPEndPoint* address) {
   SockaddrStorage storage;
   int new_socket = HANDLE_EINTR(accept(socket_,
                                        storage.addr,
@@ -164,46 +207,35 @@ int TCPServerSocketLibevent::AcceptInternal(
     return net_error;
   }
 
-  IPEndPoint address;
-  if (!address.FromSockAddr(storage.addr, storage.addr_len)) {
+  IPEndPoint ip_end_point;
+  if (!ip_end_point.FromSockAddr(storage.addr, storage.addr_len)) {
     NOTREACHED();
     if (HANDLE_EINTR(close(new_socket)) < 0)
       PLOG(ERROR) << "close";
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, ERR_FAILED);
     return ERR_FAILED;
   }
-  scoped_ptr<TCPClientSocket> tcp_socket(new TCPClientSocket(
-      AddressList(address),
+  scoped_ptr<TCPSocketLibevent> tcp_socket(new TCPSocketLibevent(
       net_log_.net_log(), net_log_.source()));
-  int adopt_result = tcp_socket->AdoptSocket(new_socket);
+  int adopt_result = tcp_socket->Adopt(new_socket);
   if (adopt_result != OK) {
-    if (HANDLE_EINTR(close(new_socket)) < 0)
-      PLOG(ERROR) << "close";
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, adopt_result);
     return adopt_result;
   }
-  socket->reset(tcp_socket.release());
+  *socket = tcp_socket.Pass();
+  *address = ip_end_point;
   net_log_.EndEvent(NetLog::TYPE_TCP_ACCEPT,
-                    CreateNetLogIPEndPointCallback(&address));
+                    CreateNetLogIPEndPointCallback(&ip_end_point));
   return OK;
 }
 
-void TCPServerSocketLibevent::Close() {
-  if (socket_ != kInvalidSocket) {
-    bool ok = accept_socket_watcher_.StopWatchingFileDescriptor();
-    DCHECK(ok);
-    if (HANDLE_EINTR(close(socket_)) < 0)
-      PLOG(ERROR) << "close";
-    socket_ = kInvalidSocket;
-  }
-}
-
-void TCPServerSocketLibevent::OnFileCanReadWithoutBlocking(int fd) {
+void TCPSocketLibevent::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK(CalledOnValidThread());
 
-  int result = AcceptInternal(accept_socket_);
+  int result = AcceptInternal(accept_socket_, accept_address_);
   if (result != ERR_IO_PENDING) {
     accept_socket_ = NULL;
+    accept_address_ = NULL;
     bool ok = accept_socket_watcher_.StopWatchingFileDescriptor();
     DCHECK(ok);
     CompletionCallback callback = accept_callback_;
@@ -212,7 +244,7 @@ void TCPServerSocketLibevent::OnFileCanReadWithoutBlocking(int fd) {
   }
 }
 
-void TCPServerSocketLibevent::OnFileCanWriteWithoutBlocking(int fd) {
+void TCPSocketLibevent::OnFileCanWriteWithoutBlocking(int fd) {
   NOTREACHED();
 }
 
