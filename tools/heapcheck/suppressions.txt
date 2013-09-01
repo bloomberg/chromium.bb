@@ -901,3 +901,20 @@
    fun:ExtensionService::AddExtension
    fun:extensions::TestExtensionEnvironment::MakeExtension
 }
+{
+   bug_283372_a
+   Heapcheck:Leak
+   fun:OpaqueBrowserFrameViewLayoutTest::SetUp
+}
+{
+   bug_283372_b
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::basic_string::_Rep::_S_create
+   fun:std::basic_string::_S_construct
+   fun:std::basic_string::_S_construct_aux
+   fun:std::basic_string::_S_construct
+   fun:basic_string
+   fun:base::ASCIIToUTF16
+   fun:OpaqueBrowserFrameViewLayoutTest_WithWindowTitleAndIcon_Test::TestBody
+}
