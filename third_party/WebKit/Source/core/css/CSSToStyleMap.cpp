@@ -58,7 +58,7 @@ bool CSSToStyleMap::useSVGZoomRules() const
 
 PassRefPtr<StyleImage> CSSToStyleMap::styleImage(CSSPropertyID propertyId, CSSValue* value)
 {
-    return m_elementStyleResources.styleImage(m_state.document()->textLinkColors(), propertyId, value);
+    return m_elementStyleResources.styleImage(m_state.document().textLinkColors(), propertyId, value);
 }
 
 void CSSToStyleMap::mapFillAttachment(CSSPropertyID, FillLayer* layer, CSSValue* value) const

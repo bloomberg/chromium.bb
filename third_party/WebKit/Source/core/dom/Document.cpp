@@ -1653,7 +1653,7 @@ void Document::recalcStyle(StyleChange change)
             // style selector may set this again during recalc
             m_hasNodesWithPlaceholderStyle = false;
 
-            RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(this, m_styleResolver ? m_styleResolver->fontSelector() : 0);
+            RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*this, m_styleResolver ? m_styleResolver->fontSelector() : 0);
             StyleChange ch = Node::diff(documentStyle.get(), renderer()->style(), this);
             if (ch != NoChange)
                 renderer()->setStyle(documentStyle.release());
@@ -1865,7 +1865,7 @@ void Document::createStyleResolver()
     bool matchAuthorAndUserStyles = true;
     if (Settings* docSettings = settings())
         matchAuthorAndUserStyles = docSettings->authorAndUserStylesEnabled();
-    m_styleResolver = adoptPtr(new StyleResolver(this, matchAuthorAndUserStyles));
+    m_styleResolver = adoptPtr(new StyleResolver(*this, matchAuthorAndUserStyles));
     m_styleSheetCollections->combineCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
 }
 

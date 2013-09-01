@@ -600,7 +600,7 @@ void LinkStyle::process()
 
         bool mediaQueryMatches = true;
         if (!m_owner->media().isEmpty()) {
-            RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(&document());
+            RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(document());
             RefPtr<MediaQuerySet> media = MediaQuerySet::create(m_owner->media());
             MediaQueryEvaluator evaluator(document().frame()->view()->mediaType(), document().frame(), documentStyle.get());
             mediaQueryMatches = evaluator.eval(media.get());

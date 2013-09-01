@@ -233,7 +233,7 @@ static PassRefPtr<CustomFilterProgram> createCustomFilterProgram(CSSShaderValue*
     CustomFilterProgramType programType, const CustomFilterProgramMixSettings& mixSettings, CustomFilterMeshType meshType,
     StyleResolverState& state)
 {
-    ResourceFetcher* fetcher = state.document()->fetcher();
+    ResourceFetcher* fetcher = state.document().fetcher();
     KURL vertexShaderURL = vertexShader ? vertexShader->completeURL(fetcher) : KURL();
     KURL fragmentShaderURL = fragmentShader ? fragmentShader->completeURL(fetcher) : KURL();
     RefPtr<StyleCustomFilterProgram> program = StyleCustomFilterProgram::create(vertexShaderURL, vertexShader ? styleShader(vertexShader, state) : 0,
@@ -402,10 +402,10 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const Re
                 continue;
 
             CSSSVGDocumentValue* svgDocumentValue = static_cast<CSSSVGDocumentValue*>(argument);
-            KURL url = state.document()->completeURL(svgDocumentValue->url());
+            KURL url = state.document().completeURL(svgDocumentValue->url());
 
             RefPtr<ReferenceFilterOperation> operation = ReferenceFilterOperation::create(svgDocumentValue->url(), url.fragmentIdentifier(), operationType);
-            if (SVGURIReference::isExternalURIReference(svgDocumentValue->url(), state.document())) {
+            if (SVGURIReference::isExternalURIReference(svgDocumentValue->url(), &state.document())) {
                 if (!svgDocumentValue->loadRequested())
                     state.elementStyleResources().addPendingSVGDocument(operation.get(), svgDocumentValue);
                 else if (svgDocumentValue->cachedSVGDocument())
@@ -489,7 +489,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const Re
             int blur = item->blur ? item->blur->computeLength<int>(style, rootStyle, zoomFactor) : 0;
             StyleColor shadowColor;
             if (item->color)
-                shadowColor = state.document()->textLinkColors().colorFromPrimitiveValue(item->color.get());
+                shadowColor = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get());
 
             operations.operations().append(DropShadowFilterOperation::create(location, blur, shadowColor.isValid() ? shadowColor.color() : Color::transparent, operationType));
             break;

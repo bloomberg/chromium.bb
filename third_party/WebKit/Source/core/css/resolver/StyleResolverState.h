@@ -43,12 +43,12 @@ class RenderRegion;
 class StyleResolverState {
 WTF_MAKE_NONCOPYABLE(StyleResolverState);
 public:
-    StyleResolverState(Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
+    StyleResolverState(Document&, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
     ~StyleResolverState();
 
     // In FontLoader and CanvasRenderingContext2D, we don't have an element to grab the document from.
     // This is why we have to store the document separately.
-    Document* document() const { return m_document; }
+    Document& document() const { return m_document; }
     // These are all just pass-through methods to ElementResolveContext.
     Element* element() const { return m_elementContext.element(); }
     const ContainerNode* parentNode() const { return m_elementContext.parentNode(); }
@@ -101,7 +101,7 @@ public:
     // sites are extremely verbose.
     PassRefPtr<StyleImage> styleImage(CSSPropertyID propertyId, CSSValue* value)
     {
-        return m_elementStyleResources.styleImage(document()->textLinkColors(), propertyId, value);
+        return m_elementStyleResources.styleImage(document().textLinkColors(), propertyId, value);
     }
 
     FontBuilder& fontBuilder() { return m_fontBuilder; }
@@ -131,8 +131,8 @@ private:
 
     void initElement(Element*);
 
-    Document* m_document;
     ElementResolveContext m_elementContext;
+    Document& m_document;
 
     // m_style is the primary output for each element's style resolve.
     RefPtr<RenderStyle> m_style;

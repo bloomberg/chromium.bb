@@ -106,14 +106,14 @@ static StylePropertySet* rightToLeftDeclaration()
     return rightToLeftDecl.get();
 }
 
-StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
+StyleResolver::StyleResolver(Document& document, bool matchAuthorAndUserStyles)
     : m_document(document)
     , m_matchAuthorAndUserStyles(matchAuthorAndUserStyles)
-    , m_fontSelector(CSSFontSelector::create(document))
-    , m_viewportStyleResolver(ViewportStyleResolver::create(document))
-    , m_styleResourceLoader(document->fetcher())
+    , m_fontSelector(CSSFontSelector::create(&document))
+    , m_viewportStyleResolver(ViewportStyleResolver::create(&document))
+    , m_styleResourceLoader(document.fetcher())
 {
-    Element* root = document->documentElement();
+    Element* root = document.documentElement();
 
     CSSDefaultStyleSheets::initDefaultStyle(root);
 
@@ -123,7 +123,7 @@ StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
     // document doesn't have documentElement
     // NOTE: this assumes that element that gets passed to styleForElement -call
     // is always from the document that owns the style selector
-    FrameView* view = document->view();
+    FrameView* view = document.view();
     if (view)
         m_medium = adoptPtr(new MediaQueryEvaluator(view->mediaType()));
     else
@@ -137,12 +137,12 @@ StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
 
     m_styleTree.clear();
 
-    StyleSheetCollections* styleSheetCollection = document->styleSheetCollections();
+    StyleSheetCollections* styleSheetCollection = document.styleSheetCollections();
     m_ruleSets.initUserStyle(styleSheetCollection, *m_medium, *this);
 
 #if ENABLE(SVG_FONTS)
-    if (document->svgExtensions()) {
-        const HashSet<SVGFontFaceElement*>& svgFontFaceElements = document->svgExtensions()->svgFontFaceElements();
+    if (document.svgExtensions()) {
+        const HashSet<SVGFontFaceElement*>& svgFontFaceElements = document.svgExtensions()->svgFontFaceElements();
         HashSet<SVGFontFaceElement*>::const_iterator end = svgFontFaceElements.end();
         for (HashSet<SVGFontFaceElement*>::const_iterator it = svgFontFaceElements.begin(); it != end; ++it)
             fontSelector()->addFontFaceRule((*it)->fontFaceRule());
@@ -175,8 +175,8 @@ void StyleResolver::finishAppendAuthorStyleSheets()
 {
     collectFeatures();
 
-    if (document()->renderer() && document()->renderer()->style())
-        document()->renderer()->style()->font().update(fontSelector());
+    if (document().renderer() && document().renderer()->style())
+        document().renderer()->style()->font().update(fontSelector());
 
     if (RuntimeEnabledFeatures::cssViewportEnabled())
         collectViewportRules();
@@ -235,7 +235,7 @@ static PassOwnPtr<RuleSet> makeRuleSet(const Vector<RuleFeature>& rules)
 void StyleResolver::collectFeatures()
 {
     m_features.clear();
-    m_ruleSets.collectFeaturesTo(m_features, document()->isViewSource());
+    m_ruleSets.collectFeaturesTo(m_features, document().isViewSource());
     m_styleTree.collectFeaturesTo(m_features);
 
     m_siblingRuleSet = makeRuleSet(m_features.siblingRules);
@@ -422,11 +422,11 @@ void StyleResolver::matchUARules(ElementRuleCollector& collector)
     matchUARules(collector, userAgentStyleSheet);
 
     // In quirks mode, we match rules from the quirks user agent sheet.
-    if (document()->inQuirksMode())
+    if (document().inQuirksMode())
         matchUARules(collector, CSSDefaultStyleSheets::defaultQuirksStyle);
 
     // If document uses view source styles (in view source mode or in xml viewer mode), then we match rules from the view source style sheet.
-    if (document()->isViewSource())
+    if (document().isViewSource())
         matchUARules(collector, CSSDefaultStyleSheets::viewSourceStyle());
 
     collector.setMatchingUARules(false);
@@ -500,18 +500,18 @@ bool StyleResolver::styleSharingCandidateMatchesRuleSet(const ElementResolveCont
     return collector.hasAnyMatchingRules(ruleSet);
 }
 
-PassRefPtr<RenderStyle> StyleResolver::styleForDocument(const Document* document, CSSFontSelector* fontSelector)
+PassRefPtr<RenderStyle> StyleResolver::styleForDocument(const Document& document, CSSFontSelector* fontSelector)
 {
-    const Frame* frame = document->frame();
+    const Frame* frame = document.frame();
 
     // HTML5 states that seamless iframes should replace default CSS values
     // with values inherited from the containing iframe element. However,
     // some values (such as the case of designMode = "on") still need to
     // be set by this "document style".
     RefPtr<RenderStyle> documentStyle = RenderStyle::create();
-    bool seamlessWithParent = document->shouldDisplaySeamlesslyWithParent();
+    bool seamlessWithParent = document.shouldDisplaySeamlesslyWithParent();
     if (seamlessWithParent) {
-        RenderStyle* iframeStyle = document->seamlessParentIFrame()->renderStyle();
+        RenderStyle* iframeStyle = document.seamlessParentIFrame()->renderStyle();
         if (iframeStyle)
             documentStyle->inheritFrom(iframeStyle);
     }
@@ -519,25 +519,25 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(const Document* document
     // FIXME: It's not clear which values below we want to override in the seamless case!
     documentStyle->setDisplay(BLOCK);
     if (!seamlessWithParent) {
-        documentStyle->setRTLOrdering(document->visuallyOrdered() ? VisualOrder : LogicalOrder);
-        documentStyle->setZoom(frame && !document->printing() ? frame->pageZoomFactor() : 1);
-        documentStyle->setLocale(document->contentLanguage());
+        documentStyle->setRTLOrdering(document.visuallyOrdered() ? VisualOrder : LogicalOrder);
+        documentStyle->setZoom(frame && !document.printing() ? frame->pageZoomFactor() : 1);
+        documentStyle->setLocale(document.contentLanguage());
     }
     // This overrides any -webkit-user-modify inherited from the parent iframe.
-    documentStyle->setUserModify(document->inDesignMode() ? READ_WRITE : READ_ONLY);
+    documentStyle->setUserModify(document.inDesignMode() ? READ_WRITE : READ_ONLY);
 
-    Element* docElement = document->documentElement();
+    Element* docElement = document.documentElement();
     RenderObject* docElementRenderer = docElement ? docElement->renderer() : 0;
     if (docElementRenderer) {
         // Use the direction and writing-mode of the body to set the
         // viewport's direction and writing-mode unless the property is set on the document element.
         // If there is no body, then use the document element.
-        RenderObject* bodyRenderer = document->body() ? document->body()->renderer() : 0;
-        if (bodyRenderer && !document->writingModeSetOnDocumentElement())
+        RenderObject* bodyRenderer = document.body() ? document.body()->renderer() : 0;
+        if (bodyRenderer && !document.writingModeSetOnDocumentElement())
             documentStyle->setWritingMode(bodyRenderer->style()->writingMode());
         else
             documentStyle->setWritingMode(docElementRenderer->style()->writingMode());
-        if (bodyRenderer && !document->directionSetOnDocumentElement())
+        if (bodyRenderer && !document.directionSetOnDocumentElement())
             documentStyle->setDirection(bodyRenderer->style()->direction());
         else
             documentStyle->setDirection(docElementRenderer->style()->direction());
@@ -549,7 +549,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(const Document* document
             if (pagination.mode != Pagination::Unpaginated) {
                 Pagination::setStylesForPaginationMode(pagination.mode, documentStyle.get());
                 documentStyle->setColumnGap(pagination.gap);
-                if (RenderView* view = document->renderView()) {
+                if (RenderView* view = document.renderView()) {
                     if (view->hasColumns())
                         view->updateColumnInfoFromStyle(documentStyle.get());
                 }
@@ -562,7 +562,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(const Document* document
         return documentStyle.release();
 
     FontBuilder fontBuilder;
-    fontBuilder.initForStyleResolve(document, documentStyle.get(), document->isSVGDocument());
+    fontBuilder.initForStyleResolve(&document, documentStyle.get(), document.isSVGDocument());
     fontBuilder.createFontForDocument(fontSelector, documentStyle.get());
 
     return documentStyle.release();
@@ -578,10 +578,10 @@ static inline bool isAtShadowBoundary(const Element* element)
     return parentNode && parentNode->isShadowRoot();
 }
 
-static inline void resetDirectionAndWritingModeOnDocument(Document* document)
+static inline void resetDirectionAndWritingModeOnDocument(Document& document)
 {
-    document->setDirectionSetOnDocumentElement(false);
-    document->setWritingModeSetOnDocumentElement(false);
+    document.setDirectionSetOnDocumentElement(false);
+    document.setWritingModeSetOnDocumentElement(false);
 }
 
 static void addContentAttrValuesToFeatures(const Vector<AtomicString>& contentAttrValues, RuleFeatureSet& features)
@@ -593,7 +593,7 @@ static void addContentAttrValuesToFeatures(const Vector<AtomicString>& contentAt
 PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderStyle* defaultParent, StyleSharingBehavior sharingBehavior,
     RuleMatchingBehavior matchingBehavior, RenderRegion* regionForStyling)
 {
-    ASSERT(document()->frame());
+    ASSERT(document().frame());
     ASSERT(documentSettings());
 
     // Once an element has a renderer, we don't try to destroy it, since otherwise the renderer
@@ -608,7 +608,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         return s_styleNotYetAvailable;
     }
 
-    if (element == document()->documentElement())
+    if (element == document().documentElement())
         resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState state(document(), element, defaultParent, regionForStyling);
 
@@ -635,7 +635,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         }
     }
 
-    state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
+    state.fontBuilder().initForStyleResolve(&state.document(), state.style(), state.useSVGZoomRules());
 
     if (element->isLink()) {
         state.style()->setIsLink(true);
@@ -669,14 +669,14 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
     }
     {
-        StyleAdjuster adjuster(state.cachedUAStyle(), m_document->inQuirksMode());
+        StyleAdjuster adjuster(state.cachedUAStyle(), m_document.inQuirksMode());
         adjuster.adjustRenderStyle(state.style(), state.parentStyle(), element);
     }
-    document()->didAccessStyleResolver();
+    document().didAccessStyleResolver();
 
     // FIXME: Shouldn't this be on RenderBody::styleDidChange?
     if (element->hasTagName(bodyTag))
-        document()->textLinkColors().setTextColor(state.style()->visitedDependentColor(CSSPropertyColor));
+        document().textLinkColors().setTextColor(state.style()->visitedDependentColor(CSSPropertyColor));
 
     // If any changes to CSS Animations were detected, stash the update away for application after the
     // render object is updated if we're in the appropriate scope.
@@ -689,10 +689,10 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
 PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const RenderStyle* elementStyle, const StyleKeyframe* keyframe)
 {
-    ASSERT(document()->frame());
+    ASSERT(document().frame());
     ASSERT(documentSettings());
 
-    if (e == document()->documentElement())
+    if (e == document().documentElement())
         resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState state(document(), e);
 
@@ -706,7 +706,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const Render
     state.setStyle(RenderStyle::clone(elementStyle));
     state.setLineHeightValue(0);
 
-    state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
+    state.fontBuilder().initForStyleResolve(&state.document(), state.style(), state.useSVGZoomRules());
 
     // We don't need to bother with !important. Since there is only ever one
     // decl, there's nothing to override. So just add the first properties.
@@ -735,7 +735,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const Render
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
 
-    document()->didAccessStyleResolver();
+    document().didAccessStyleResolver();
 
     return state.takeStyle();
 }
@@ -907,13 +907,13 @@ void StyleResolver::resolveKeyframes(const Element* element, const RenderStyle* 
 
 PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const PseudoStyleRequest& pseudoStyleRequest, RenderStyle* parentStyle)
 {
-    ASSERT(document()->frame());
+    ASSERT(document().frame());
     ASSERT(documentSettings());
     ASSERT(parentStyle);
     if (!e)
         return 0;
 
-    if (e == document()->documentElement())
+    if (e == document().documentElement())
         resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState state(document(), e, parentStyle);
 
@@ -925,7 +925,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
         state.setParentStyle(RenderStyle::clone(state.style()));
     }
 
-    state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
+    state.fontBuilder().initForStyleResolve(&state.document(), state.style(), state.useSVGZoomRules());
 
     // Since we don't use pseudo-elements in any of our quirk/print
     // user agent rules, don't waste time walking those rules.
@@ -951,7 +951,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
         addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
     }
     {
-        StyleAdjuster adjuster(state.cachedUAStyle(), m_document->inQuirksMode());
+        StyleAdjuster adjuster(state.cachedUAStyle(), m_document.inQuirksMode());
         // FIXME: Passing 0 as the Element* introduces a lot of complexity
         // in the adjustRenderStyle code.
         adjuster.adjustRenderStyle(state.style(), state.parentStyle(), 0);
@@ -960,7 +960,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
 
-    document()->didAccessStyleResolver();
+    document().didAccessStyleResolver();
 
     // Now return the style.
     return state.takeStyle();
@@ -969,12 +969,12 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
 PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 {
     resetDirectionAndWritingModeOnDocument(document());
-    StyleResolverState state(document(), document()->documentElement()); // m_rootElementStyle will be set to the document style.
+    StyleResolverState state(document(), document().documentElement()); // m_rootElementStyle will be set to the document style.
 
     state.setStyle(RenderStyle::create());
     state.style()->inheritFrom(state.rootElementStyle());
 
-    state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
+    state.fontBuilder().initForStyleResolve(&state.document(), state.style(), state.useSVGZoomRules());
 
     PageRuleCollector collector(state.elementContext(), pageIndex);
 
@@ -1005,7 +1005,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
 
-    document()->didAccessStyleResolver();
+    document().didAccessStyleResolver();
 
     // Now return the style.
     return state.takeStyle();
@@ -1040,7 +1040,7 @@ PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()
 {
     StyleResolverState state(document(), 0);
     state.setStyle(RenderStyle::create());
-    state.fontBuilder().initForStyleResolve(document(), state.style(), state.useSVGZoomRules());
+    state.fontBuilder().initForStyleResolve(&document(), state.style(), state.useSVGZoomRules());
     state.style()->setLineHeight(RenderStyle::initialLineHeight());
     state.setLineHeightValue(0);
     state.fontBuilder().setInitial(state.style()->effectiveZoom());
@@ -1095,7 +1095,7 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
     if (!e || !e->document().haveStylesheetsLoaded())
         return 0;
 
-    if (e == document()->documentElement())
+    if (e == document().documentElement())
         resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState state(document(), e);
 
@@ -1486,7 +1486,7 @@ void StyleResolver::applyPropertiesToStyle(const CSSPropertyValue* properties, s
     StyleResolverState state(document(), 0, style);
     state.setStyle(style);
 
-    state.fontBuilder().initForStyleResolve(document(), style, state.useSVGZoomRules());
+    state.fontBuilder().initForStyleResolve(&document(), style, state.useSVGZoomRules());
 
     for (size_t i = 0; i < count; ++i) {
         if (properties[i].value) {

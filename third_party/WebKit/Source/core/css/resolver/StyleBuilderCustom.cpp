@@ -276,7 +276,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyLineHeight(StyleResolverState& 
         lineHeight = RenderStyle::initialLineHeight();
     } else if (primitiveValue->isLength()) {
         double multiplier = state.style()->effectiveZoom();
-        if (Frame* frame = state.document()->frame())
+        if (Frame* frame = state.document().frame())
             multiplier *= frame->textZoomFactor();
         lineHeight = primitiveValue->computeLength<Length>(state.style(), state.rootElementStyle(), multiplier);
     } else if (primitiveValue->isPercentage()) {
@@ -329,7 +329,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyResize(StyleResolverState& stat
     case 0:
         return;
     case CSSValueAuto:
-        if (Settings* settings = state.document()->settings())
+        if (Settings* settings = state.document().settings())
             r = settings->textAreasAreResizable() ? RESIZE_BOTH : RESIZE_NONE;
         break;
     default:
@@ -645,7 +645,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitClipPath(StyleResolverSta
             state.style()->setClipPath(ShapeClipPathOperation::create(basicShapeForValue(state, primitiveValue->getShapeValue())));
         } else if (primitiveValue->primitiveType() == CSSPrimitiveValue::CSS_URI) {
             String cssURLValue = primitiveValue->getStringValue();
-            KURL url = state.document()->completeURL(cssURLValue);
+            KURL url = state.document().completeURL(cssURLValue);
             // FIXME: It doesn't work with forward or external SVG references (see https://bugs.webkit.org/show_bug.cgi?id=90405)
             state.style()->setClipPath(ReferenceClipPathOperation::create(cssURLValue, url.fragmentIdentifier()));
         }
@@ -1229,7 +1229,7 @@ static void resolveVariables(StyleResolverState& state, CSSPropertyID id, CSSVal
 
     // FIXME: It would be faster not to re-parse from strings, but for now CSS property validation lives inside the parser so we do it there.
     RefPtr<MutableStylePropertySet> resultSet = MutableStylePropertySet::create();
-    if (!CSSParser::parseValue(resultSet.get(), id, expression.second, false, state.document()))
+    if (!CSSParser::parseValue(resultSet.get(), id, expression.second, false, &state.document()))
         return; // expression failed to parse.
 
     for (unsigned i = 0; i < resultSet->propertyCount(); i++) {
@@ -1314,7 +1314,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
                 CSSValue* item = i.value();
                 if (item->isImageGeneratorValue()) {
                     if (item->isGradientValue())
-                        state.style()->setContent(StyleGeneratedImage::create(static_cast<CSSGradientValue*>(item)->gradientWithStylesResolved(state.document()->textLinkColors()).get()), didSet);
+                        state.style()->setContent(StyleGeneratedImage::create(static_cast<CSSGradientValue*>(item)->gradientWithStylesResolved(state.document().textLinkColors()).get()), didSet);
                     else
                         state.style()->setContent(StyleGeneratedImage::create(static_cast<CSSImageGeneratorValue*>(item)), didSet);
                     didSet = true;
@@ -1496,7 +1496,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
             ShadowStyle shadowStyle = item->style && item->style->getValueID() == CSSValueInset ? Inset : Normal;
             StyleColor color;
             if (item->color)
-                color = state.document()->textLinkColors().colorFromPrimitiveValue(item->color.get());
+                color = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get());
             else if (state.style())
                 color = state.style()->color();
 
@@ -1552,7 +1552,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         if (!primitiveValue || !primitiveValue->getValueID())
             return;
         state.style()->setDraggableRegionMode(primitiveValue->getValueID() == CSSValueDrag ? DraggableRegionDrag : DraggableRegionNoDrag);
-        state.document()->setHasAnnotatedRegions(true);
+        state.document().setHasAnnotatedRegions(true);
         return;
     }
     case CSSPropertyWebkitTextStrokeWidth: {
@@ -1614,7 +1614,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         if (!primitiveValue)
             break;
 
-        StyleColor col = state.document()->textLinkColors().colorFromPrimitiveValue(primitiveValue);
+        StyleColor col = state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue);
         state.style()->setTapHighlightColor(col);
         return;
     }
@@ -1682,8 +1682,8 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
             state.setWritingMode(*primitiveValue);
 
         // FIXME: It is not ok to modify document state while applying style.
-        if (state.element() && state.element() == state.document()->documentElement())
-            state.document()->setWritingModeSetOnDocumentElement(true);
+        if (state.element() && state.element() == state.document().documentElement())
+            state.document().setWritingModeSetOnDocumentElement(true);
         return;
     }
 
@@ -2278,21 +2278,21 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(markerStartResource, MarkerStartResource)
         if (primitiveValue)
-            state.style()->accessSVGStyle()->setMarkerStartResource(fragmentIdentifier(primitiveValue, state.document()));
+            state.style()->accessSVGStyle()->setMarkerStartResource(fragmentIdentifier(primitiveValue, &state.document()));
         break;
     }
     case CSSPropertyMarkerMid:
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(markerMidResource, MarkerMidResource)
         if (primitiveValue)
-            state.style()->accessSVGStyle()->setMarkerMidResource(fragmentIdentifier(primitiveValue, state.document()));
+            state.style()->accessSVGStyle()->setMarkerMidResource(fragmentIdentifier(primitiveValue, &state.document()));
         break;
     }
     case CSSPropertyMarkerEnd:
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(markerEndResource, MarkerEndResource)
         if (primitiveValue)
-            state.style()->accessSVGStyle()->setMarkerEndResource(fragmentIdentifier(primitiveValue, state.document()));
+            state.style()->accessSVGStyle()->setMarkerEndResource(fragmentIdentifier(primitiveValue, &state.document()));
         break;
     }
     case CSSPropertyStrokeMiterlimit:
@@ -2307,21 +2307,21 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(filterResource, FilterResource)
         if (primitiveValue)
-            state.style()->accessSVGStyle()->setFilterResource(fragmentIdentifier(primitiveValue, state.document()));
+            state.style()->accessSVGStyle()->setFilterResource(fragmentIdentifier(primitiveValue, &state.document()));
         break;
     }
     case CSSPropertyMask:
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(maskerResource, MaskerResource)
         if (primitiveValue)
-            state.style()->accessSVGStyle()->setMaskerResource(fragmentIdentifier(primitiveValue, state.document()));
+            state.style()->accessSVGStyle()->setMaskerResource(fragmentIdentifier(primitiveValue, &state.document()));
         break;
     }
     case CSSPropertyClipPath:
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(clipperResource, ClipperResource)
         if (primitiveValue)
-            state.style()->accessSVGStyle()->setClipperResource(fragmentIdentifier(primitiveValue, state.document()));
+            state.style()->accessSVGStyle()->setClipperResource(fragmentIdentifier(primitiveValue, &state.document()));
         break;
     }
     case CSSPropertyStopColor:
