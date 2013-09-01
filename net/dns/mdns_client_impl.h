@@ -58,13 +58,13 @@ class NET_EXPORT_PRIVATE MDnsConnection {
                   const IPEndPoint& multicast_addr,
                   SocketFactory* socket_factory);
     ~SocketHandler();
-    int DoLoop(int rv);
+    int Bind();
     int Start();
 
     int Send(IOBuffer* buffer, unsigned size);
 
    private:
-    int BindSocket();
+    int DoLoop(int rv);
     void OnDatagramReceived(int rv);
 
     // Callback for when sending a query has finished.

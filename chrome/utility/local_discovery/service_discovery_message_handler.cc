@@ -6,11 +6,9 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "chrome/common/local_discovery/local_discovery_messages.h"
 #include "chrome/utility/local_discovery/service_discovery_client_impl.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/utility/utility_thread.h"
 #include "net/socket/socket_descriptor.h"
 
@@ -18,31 +16,30 @@ namespace local_discovery {
 
 namespace {
 
-bool NeedsSockets() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoSandbox) &&
-         CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kUtilityProcessEnableMDns);
-}
-
-#if defined(OS_WIN)
+void ClosePlatformSocket(net::SocketDescriptor socket);
 
 class SocketFactory : public net::PlatformSocketFactory {
  public:
   SocketFactory()
-      : socket_v4_(NULL),
-        socket_v6_(NULL) {
-    socket_v4_ = net::CreatePlatformSocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    socket_v6_ = net::CreatePlatformSocket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+      : socket_v4_(net::kInvalidSocket),
+        socket_v6_(net::kInvalidSocket) {
+  }
+
+  void SetSockets(net::SocketDescriptor socket_v4,
+                  net::SocketDescriptor socket_v6) {
+    Reset();
+    socket_v4_ = socket_v4;
+    socket_v6_ = socket_v6;
   }
 
   void Reset() {
-    if (socket_v4_ != INVALID_SOCKET) {
-      closesocket(socket_v4_);
-      socket_v4_ = INVALID_SOCKET;
+    if (socket_v4_ != net::kInvalidSocket) {
+      ClosePlatformSocket(socket_v4_);
+      socket_v4_ = net::kInvalidSocket;
     }
-    if (socket_v6_ != INVALID_SOCKET) {
-      closesocket(socket_v6_);
-      socket_v6_ = INVALID_SOCKET;
+    if (socket_v6_ != net::kInvalidSocket) {
+      ClosePlatformSocket(socket_v6_);
+      socket_v6_ = net::kInvalidSocket;
     }
   }
 
@@ -50,9 +47,11 @@ class SocketFactory : public net::PlatformSocketFactory {
     Reset();
   }
 
-  virtual SOCKET CreateSocket(int family, int type, int protocol) OVERRIDE {
-    SOCKET result = INVALID_SOCKET;
-    if (type != SOCK_DGRAM && protocol != IPPROTO_UDP) {
+ protected:
+  virtual net::SocketDescriptor CreateSocket(int family, int type,
+                                             int protocol) OVERRIDE {
+    net::SocketDescriptor result = net::kInvalidSocket;
+    if (type != SOCK_DGRAM) {
       NOTREACHED();
     } else if (family == AF_INET) {
       std::swap(result, socket_v4_);
@@ -62,10 +61,10 @@ class SocketFactory : public net::PlatformSocketFactory {
     return result;
   }
 
-  SOCKET socket_v4_;
-  SOCKET socket_v6_;
-
  private:
+  net::SocketDescriptor socket_v4_;
+  net::SocketDescriptor socket_v6_;
+
   DISALLOW_COPY_AND_ASSIGN(SocketFactory);
 };
 
@@ -75,41 +74,39 @@ base::LazyInstance<SocketFactory>
 class ScopedSocketFactorySetter {
  public:
   ScopedSocketFactorySetter() {
-    if (NeedsSockets()) {
-      net::PlatformSocketFactory::SetInstance(
-          &g_local_discovery_socket_factory.Get());
-    }
+    net::PlatformSocketFactory::SetInstance(
+        &g_local_discovery_socket_factory.Get());
   }
 
   ~ScopedSocketFactorySetter() {
-    if (NeedsSockets()) {
-      net::PlatformSocketFactory::SetInstance(NULL);
-      g_local_discovery_socket_factory.Get().Reset();
-    }
-  }
-
-  static void Initialize() {
-    if (NeedsSockets()) {
-      g_local_discovery_socket_factory.Get();
-    }
+    net::PlatformSocketFactory::SetInstance(NULL);
+    g_local_discovery_socket_factory.Get().Reset();
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScopedSocketFactorySetter);
 };
 
+#if defined(OS_WIN)
+
+void ClosePlatformSocket(net::SocketDescriptor socket) {
+  ::closesocket(socket);
+}
+
+void StaticInitializeSocketFactory() {
+  g_local_discovery_socket_factory.Get().SetSockets(
+      net::CreatePlatformSocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP),
+      net::CreatePlatformSocket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP));
+}
+
 #else  // OS_WIN
 
-class ScopedSocketFactorySetter {
- public:
-  ScopedSocketFactorySetter() {}
+void ClosePlatformSocket(net::SocketDescriptor socket) {
+  ::close(socket);
+}
 
-  static void Initialize() {
-    // TODO(vitalybuka) : implement socket access from sandbox for other
-    // platforms.
-    DCHECK(!NeedsSockets());
-  }
-};
+void StaticInitializeSocketFactory() {
+}
 
 #endif  // OS_WIN
 
@@ -143,7 +140,7 @@ ServiceDiscoveryMessageHandler::~ServiceDiscoveryMessageHandler() {
 }
 
 void ServiceDiscoveryMessageHandler::PreSandboxStartup() {
-  ScopedSocketFactorySetter::Initialize();
+  StaticInitializeSocketFactory();
 }
 
 void ServiceDiscoveryMessageHandler::InitializeMdns() {
@@ -183,6 +180,9 @@ bool ServiceDiscoveryMessageHandler::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceDiscoveryMessageHandler, message)
+#if defined(OS_POSIX)
+    IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_SetSockets, OnSetSockets)
+#endif  // OS_POSIX
     IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_StartWatcher, OnStartWatcher)
     IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_DiscoverServices, OnDiscoverServices)
     IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_DestroyWatcher, OnDestroyWatcher)
@@ -206,6 +206,14 @@ void ServiceDiscoveryMessageHandler::PostTask(
     return;
   discovery_task_runner_->PostTask(from_here, task);
 }
+
+#if defined(OS_POSIX)
+void ServiceDiscoveryMessageHandler::OnSetSockets(
+    const base::FileDescriptor& socket_v4,
+    const base::FileDescriptor& socket_v6) {
+  g_local_discovery_socket_factory.Get().SetSockets(socket_v4.fd, socket_v6.fd);
+}
+#endif  // OS_POSIX
 
 void ServiceDiscoveryMessageHandler::OnStartWatcher(
     uint64 id,

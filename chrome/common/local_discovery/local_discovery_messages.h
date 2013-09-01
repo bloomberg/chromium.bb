@@ -4,6 +4,7 @@
 
 // Defines local discovery messages between the browser and utility process.
 
+#include "base/file_descriptor_posix.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -24,6 +25,12 @@ IPC_ENUM_TRAITS(net::AddressFamily)
 //------------------------------------------------------------------------------
 // Utility process messages:
 // These are messages from the browser to the utility process.
+
+#if defined(OS_POSIX)
+IPC_MESSAGE_CONTROL2(LocalDiscoveryMsg_SetSockets,
+                     base::FileDescriptor /* socket4 */,
+                     base::FileDescriptor /* socket6 */)
+#endif  // OS_POSIX
 
 // Creates watcher and starts listening in utility process.
 IPC_MESSAGE_CONTROL2(LocalDiscoveryMsg_StartWatcher,

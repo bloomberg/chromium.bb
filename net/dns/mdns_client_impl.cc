@@ -41,11 +41,6 @@ MDnsConnection::SocketHandler::~SocketHandler() {
 }
 
 int MDnsConnection::SocketHandler::Start() {
-  int rv = BindSocket();
-  if (rv != OK) {
-    return rv;
-  }
-
   return DoLoop(0);
 }
 
@@ -87,7 +82,7 @@ void MDnsConnection::SocketHandler::SendDone(int rv) {
   // TODO(noamsml): Retry logic.
 }
 
-int MDnsConnection::SocketHandler::BindSocket() {
+int MDnsConnection::SocketHandler::Bind() {
   IPAddressNumber address_any(multicast_addr_.address().size());
 
   IPEndPoint bind_endpoint(address_any, multicast_addr_.port());
@@ -117,8 +112,13 @@ MDnsConnection::~MDnsConnection() {
 }
 
 int MDnsConnection::Init() {
-  int rv;
-
+  int rv = socket_handler_ipv4_.Bind();
+  if (rv != OK) return rv;
+  rv = socket_handler_ipv6_.Bind();
+  if (rv != OK) return rv;
+  // All unbound sockets need to be bound before processing untrusted input.
+  // This is done for security reasons, so that an attacker can't get an unbound
+  // socket.
   rv = socket_handler_ipv4_.Start();
   if (rv != OK) return rv;
   rv = socket_handler_ipv6_.Start();

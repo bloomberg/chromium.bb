@@ -4,9 +4,14 @@
 
 #include "chrome/browser/local_discovery/service_discovery_host_client.h"
 
+#if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
+#endif  // OS_POSIX
+
 #include "chrome/common/local_discovery/local_discovery_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
+#include "net/socket/socket_descriptor.h"
 
 namespace local_discovery {
 
@@ -228,6 +233,21 @@ void ServiceDiscoveryHostClient::StartOnIOThread() {
     utility_host_->EnableZygote();
     utility_host_->EnableMDns();
     utility_host_->StartBatchMode();
+
+#if defined(OS_POSIX)
+    base::FileDescriptor v4(net::CreatePlatformSocket(AF_INET, SOCK_DGRAM, 0),
+                            true);
+    base::FileDescriptor v6(net::CreatePlatformSocket(AF_INET6, SOCK_DGRAM, 0),
+                            true);
+    LOG_IF(ERROR, v4.fd == net::kInvalidSocket) << "Can't create IPv4 socket.";
+    LOG_IF(ERROR, v6.fd == net::kInvalidSocket) << "Can't create IPv6 socket.";
+    if (v4.fd == net::kInvalidSocket &&
+        v6.fd == net::kInvalidSocket) {
+      ShutdownOnIOThread();
+    } else {
+      utility_host_->Send(new LocalDiscoveryMsg_SetSockets(v4, v6));
+    }
+#endif  // OS_POSIX
   }
 }
 

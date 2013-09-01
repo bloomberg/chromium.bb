@@ -17,6 +17,7 @@ class MDnsClient;
 }
 
 namespace base {
+struct FileDescriptor;
 class TaskRunner;
 class Thread;
 }
@@ -52,6 +53,8 @@ class ServiceDiscoveryMessageHandler : public chrome::UtilityMessageHandler {
                 const base::Closure& task);
 
   // IPC message handlers.
+  void OnSetSockets(const base::FileDescriptor& socket_v4,
+                    const base::FileDescriptor& socket_v6);
   void OnStartWatcher(uint64 id, const std::string& service_type);
   void OnDiscoverServices(uint64 id, bool force_update);
   void OnDestroyWatcher(uint64 id);

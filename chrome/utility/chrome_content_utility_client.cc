@@ -60,6 +60,7 @@
 
 #if defined(ENABLE_MDNS)
 #include "chrome/utility/local_discovery/service_discovery_message_handler.h"
+#include "content/public/common/content_switches.h"
 #endif  // ENABLE_MDNS
 
 namespace chrome {
@@ -82,7 +83,10 @@ ChromeContentUtilityClient::ChromeContentUtilityClient() {
 #endif  // OS_ANDROID
 
 #if defined(ENABLE_MDNS)
-  handlers_.push_back(new local_discovery::ServiceDiscoveryMessageHandler());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUtilityProcessEnableMDns)) {
+    handlers_.push_back(new local_discovery::ServiceDiscoveryMessageHandler());
+  }
 #endif  // ENABLE_MDNS
 }
 
