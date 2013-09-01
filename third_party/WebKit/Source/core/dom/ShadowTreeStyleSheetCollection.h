@@ -41,7 +41,7 @@ class StyleSheetCollections;
 class ShadowTreeStyleSheetCollection FINAL : public StyleSheetCollection {
     WTF_MAKE_NONCOPYABLE(ShadowTreeStyleSheetCollection); WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit ShadowTreeStyleSheetCollection(ShadowRoot*);
+    explicit ShadowTreeStyleSheetCollection(ShadowRoot&);
 
     bool updateActiveStyleSheets(StyleSheetCollections*, StyleResolverUpdateMode);
 

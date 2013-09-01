@@ -51,7 +51,7 @@ class StyleSheetList;
 class StyleSheetCollections {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<StyleSheetCollections> create(Document* document) { return adoptPtr(new StyleSheetCollections(document)); }
+    static PassOwnPtr<StyleSheetCollections> create(Document& document) { return adoptPtr(new StyleSheetCollections(document)); }
 
     ~StyleSheetCollections();
 
@@ -112,9 +112,9 @@ public:
     void getActiveAuthorStyleSheets(Vector<const Vector<RefPtr<CSSStyleSheet> >*>& activeAuthorStyleSheets) const;
 
 private:
-    StyleSheetCollections(Document*);
+    StyleSheetCollections(Document&);
 
-    StyleSheetCollection* ensureStyleSheetCollectionFor(TreeScope*);
+    StyleSheetCollection* ensureStyleSheetCollectionFor(TreeScope&);
     StyleSheetCollection* styleSheetCollectionFor(TreeScope*);
     void activeStyleSheetsUpdatedForInspector();
     bool shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode);
@@ -122,7 +122,7 @@ private:
     typedef ListHashSet<TreeScope*, 16> TreeScopeSet;
     static void insertTreeScopeInDocumentOrder(TreeScopeSet&, TreeScope*);
 
-    Document* m_document;
+    Document& m_document;
 
     // Track the number of currently loading top-level stylesheets needed for rendering.
     // Sheets loaded using the @import directive are not included in this count.

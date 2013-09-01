@@ -45,10 +45,10 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope* treeScope)
+DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
     : StyleSheetCollection(treeScope)
 {
-    ASSERT(treeScope->rootNode() == &treeScope->rootNode()->document());
+    ASSERT(treeScope.rootNode() == &treeScope.rootNode()->document());
 }
 
 void DocumentStyleSheetCollection::collectStyleSheets(StyleSheetCollections* collections, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)

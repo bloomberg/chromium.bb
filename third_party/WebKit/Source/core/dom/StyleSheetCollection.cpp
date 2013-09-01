@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-StyleSheetCollection::StyleSheetCollection(TreeScope* treeScope)
+StyleSheetCollection::StyleSheetCollection(TreeScope& treeScope)
     : m_treeScope(treeScope)
     , m_hadActiveLoadingStylesheet(false)
 {
@@ -160,7 +160,7 @@ void StyleSheetCollection::resetAllRuleSetsInTreeScope(StyleResolver* styleResol
         for (ListHashSet<Node*, 4>::iterator it = removedNodes->begin(); it != removedNodes->end(); ++it)
             styleResolver->resetAuthorStyle(toContainerNode(*it));
     }
-    styleResolver->resetAuthorStyle(toContainerNode(m_treeScope->rootNode()));
+    styleResolver->resetAuthorStyle(toContainerNode(m_treeScope.rootNode()));
 }
 
 static bool styleSheetsUseRemUnits(const Vector<RefPtr<CSSStyleSheet> >& sheets)

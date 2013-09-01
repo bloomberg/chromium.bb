@@ -41,7 +41,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-ShadowTreeStyleSheetCollection::ShadowTreeStyleSheetCollection(ShadowRoot* shadowRoot)
+ShadowTreeStyleSheetCollection::ShadowTreeStyleSheetCollection(ShadowRoot& shadowRoot)
     : StyleSheetCollection(shadowRoot)
 {
 }

@@ -68,9 +68,9 @@ public:
     ListHashSet<Node*, 4>* scopingNodesRemoved() { return m_scopingNodesForStyleScoped.scopingNodesRemoved(); }
 
 protected:
-    explicit StyleSheetCollection(TreeScope*);
+    explicit StyleSheetCollection(TreeScope&);
 
-    Document* document() { return m_treeScope->documentScope(); }
+    Document* document() { return m_treeScope.documentScope(); }
 
     enum StyleResolverUpdateType {
         Reconstruct,
@@ -89,7 +89,7 @@ protected:
     Vector<RefPtr<StyleSheet> > m_styleSheetsForStyleSheetList;
     Vector<RefPtr<CSSStyleSheet> > m_activeAuthorStyleSheets;
 
-    TreeScope* m_treeScope;
+    TreeScope& m_treeScope;
     bool m_hadActiveLoadingStylesheet;
     bool m_usesRemUnits;
 

@@ -492,6 +492,8 @@ public:
         return *documentInternal();
     }
 
+    // Can never return 0.
+    // FIXME: This should return a reference.
     TreeScope* treeScope() const { return m_treeScope; }
 
     // Returns true if this node is associated with a document and is in its associated document's

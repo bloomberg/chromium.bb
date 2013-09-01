@@ -41,7 +41,7 @@ class TreeScope;
 class DocumentStyleSheetCollection FINAL : public StyleSheetCollection {
     WTF_MAKE_NONCOPYABLE(DocumentStyleSheetCollection); WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit DocumentStyleSheetCollection(TreeScope*);
+    explicit DocumentStyleSheetCollection(TreeScope&);
 
     bool updateActiveStyleSheets(StyleSheetCollections*, StyleResolverUpdateMode);
 

@@ -398,7 +398,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_domTreeVersion(++s_globalTreeVersion)
     , m_listenerTypes(0)
     , m_mutationObserverTypes(0)
-    , m_styleSheetCollections(StyleSheetCollections::create(this))
+    , m_styleSheetCollections(StyleSheetCollections::create(*this))
     , m_visitedLinkState(VisitedLinkState::create(this))
     , m_visuallyOrdered(false)
     , m_readyState(Complete)
