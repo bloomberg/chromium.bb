@@ -115,7 +115,11 @@
   };
 
   HTMLMediaMetric.prototype.onEnded = function(event) {
-    this.metrics['playback_time'] = this.playbackTimer.stop();
+    var time_to_end = this.playbackTimer.stop() - this.metrics['time_to_play'];
+    // TODO(shadi): Measure buffering time more accurately using events such as
+    // stalled, waiting, progress, etc. This works only when continuous playback
+    // is used.
+    this.metrics['buffering_time'] = time_to_end - this.element.duration;
   };
 
   HTMLMediaMetric.prototype.getMetrics = function() {
