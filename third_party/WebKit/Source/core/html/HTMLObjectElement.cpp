@@ -438,13 +438,13 @@ void HTMLObjectElement::updateDocNamedItem()
         child = child->nextSibling();
     }
     if (isNamedItem != wasNamedItem && document().isHTMLDocument()) {
-        HTMLDocument* document = toHTMLDocument(&this->document());
+        HTMLDocument& document = toHTMLDocument(this->document());
         if (isNamedItem) {
-            document->addNamedItem(getNameAttribute());
-            document->addExtraNamedItem(getIdAttribute());
+            document.addNamedItem(getNameAttribute());
+            document.addExtraNamedItem(getIdAttribute());
         } else {
-            document->removeNamedItem(getNameAttribute());
-            document->removeExtraNamedItem(getIdAttribute());
+            document.removeNamedItem(getNameAttribute());
+            document.removeExtraNamedItem(getIdAttribute());
         }
     }
     m_docNamedItem = isNamedItem;
