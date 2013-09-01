@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/script_executor.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/guestview/guestview_constants.h"
 #include "chrome/browser/guestview/webview/webview_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -81,6 +82,10 @@ void RemoveWebViewEventListenersOnIOThread(
       guest_instance_id);
 }
 
+void AttachWebViewHelpers(WebContents* contents) {
+  FaviconTabHelper::CreateForWebContents(contents);
+}
+
 }  // namespace
 
 WebViewGuest::WebViewGuest(WebContents* guest_web_contents)
@@ -96,6 +101,8 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents)
   notification_registrar_.Add(
       this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
       content::Source<WebContents>(guest_web_contents));
+
+  AttachWebViewHelpers(guest_web_contents);
 }
 
 // static
