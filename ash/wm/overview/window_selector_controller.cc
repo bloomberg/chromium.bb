@@ -9,8 +9,6 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/window_util.h"
-#include "ui/aura/client/focus_client.h"
-#include "ui/aura/root_window.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_handler.h"
 
@@ -52,8 +50,7 @@ void WindowSelectorEventFilter::OnKeyEvent(ui::KeyEvent* event) {
 
 }  // namespace
 
-WindowSelectorController::WindowSelectorController()
-    : restore_focus_window_(NULL) {
+WindowSelectorController::WindowSelectorController() {
 }
 
 WindowSelectorController::~WindowSelectorController() {
@@ -78,7 +75,6 @@ void WindowSelectorController::ToggleOverview() {
       return;
 
     // Removing focus will hide popup windows like the omnibar or open menus.
-    RemoveFocusAndSetRestoreWindow();
     window_selector_.reset(
         new WindowSelector(windows, WindowSelector::OVERVIEW, this));
   }
@@ -94,7 +90,6 @@ void WindowSelectorController::HandleCycleWindow(
     std::vector<aura::Window*> windows = ash::Shell::GetInstance()->
         mru_window_tracker()->BuildMruWindowList();
     // Removing focus will hide popup windows like the omnibar or open menus.
-    RemoveFocusAndSetRestoreWindow();
     window_selector_.reset(
         new WindowSelector(windows, WindowSelector::CYCLE, this));
     window_selector_->Step(direction);
@@ -114,39 +109,11 @@ bool WindowSelectorController::IsSelecting() {
 
 void WindowSelectorController::OnWindowSelected(aura::Window* window) {
   window_selector_.reset();
-  ResetFocusRestoreWindow(false);
   wm::ActivateWindow(window);
 }
 
 void WindowSelectorController::OnSelectionCanceled() {
   window_selector_.reset();
-  ResetFocusRestoreWindow(true);
-}
-
-void WindowSelectorController::OnWindowDestroyed(aura::Window* window) {
-  DCHECK_EQ(window, restore_focus_window_);
-  restore_focus_window_->RemoveObserver(this);
-  restore_focus_window_ = NULL;
-}
-
-void WindowSelectorController::RemoveFocusAndSetRestoreWindow() {
-  aura::client::FocusClient* focus_client = aura::client::GetFocusClient(
-      Shell::GetActiveRootWindow());
-  DCHECK(!restore_focus_window_);
-  restore_focus_window_ = focus_client->GetFocusedWindow();
-  if (restore_focus_window_) {
-    focus_client->FocusWindow(NULL);
-    restore_focus_window_->AddObserver(this);
-  }
-}
-
-void WindowSelectorController::ResetFocusRestoreWindow(bool focus) {
-  if (!restore_focus_window_)
-    return;
-  if (focus)
-    restore_focus_window_->Focus();
-  restore_focus_window_->RemoveObserver(this);
-  restore_focus_window_ = NULL;
 }
 
 }  // namespace ash

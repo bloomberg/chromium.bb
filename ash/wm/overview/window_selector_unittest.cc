@@ -147,6 +147,37 @@ TEST_F(WindowSelectorTest, BasicCycle) {
   EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
 }
 
+// Tests that a newly created window aborts overview.
+TEST_F(WindowSelectorTest, NewWindowCancelsOveriew) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  ToggleOverview();
+  EXPECT_TRUE(IsSelecting());
+
+  // A window being created should exit overview mode.
+  scoped_ptr<aura::Window> window3(CreateWindow(bounds));
+  EXPECT_FALSE(IsSelecting());
+}
+
+// Tests that a window activation exits overview mode.
+TEST_F(WindowSelectorTest, ActivationCancelsOveriew) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  window2->Focus();
+  ToggleOverview();
+  EXPECT_TRUE(IsSelecting());
+
+  // A window being activated should exit overview mode.
+  window1->Focus();
+  EXPECT_FALSE(IsSelecting());
+
+  // window1 should be focused after exiting even though window2 was focused on
+  // entering overview because we exited due to an activation.
+  EXPECT_EQ(window1.get(), GetFocusedWindow());
+}
+
 // Verifies that overview mode only begins after a delay when cycling.
 TEST_F(WindowSelectorTest, CycleOverviewDelay) {
   gfx::Rect bounds(0, 0, 400, 400);

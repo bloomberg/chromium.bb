@@ -21,12 +21,6 @@ namespace ash {
 
 namespace {
 
-// List of containers whose children we will allow switching to.
-const int kContainerIds[] = {
-  internal::kShellWindowId_DefaultContainer,
-  internal::kShellWindowId_AlwaysOnTopContainer
-};
-
 // Adds the windows that can be cycled through for the specified window id to
 // |windows|.
 void AddTrackedWindows(aura::RootWindow* root,
@@ -52,14 +46,14 @@ MruWindowTracker::WindowList BuildWindowListInternal(
        iter != root_windows.end(); ++iter) {
     if (*iter == active_root)
       continue;
-    for (size_t i = 0; i < arraysize(kContainerIds); ++i)
-      AddTrackedWindows(*iter, kContainerIds[i], &windows);
+    for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i)
+      AddTrackedWindows(*iter, kSwitchableWindowContainerIds[i], &windows);
   }
 
   // Add windows in the active root windows last so that the topmost window
   // in the active root window becomes the front of the list.
-  for (size_t i = 0; i < arraysize(kContainerIds); ++i)
-    AddTrackedWindows(active_root, kContainerIds[i], &windows);
+  for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i)
+    AddTrackedWindows(active_root, kSwitchableWindowContainerIds[i], &windows);
 
   // Removes unfocusable windows.
   MruWindowTracker::WindowList::iterator last =
@@ -94,6 +88,14 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 
 }  // namespace
 
+const int kSwitchableWindowContainerIds[] = {
+  internal::kShellWindowId_DefaultContainer,
+  internal::kShellWindowId_AlwaysOnTopContainer
+};
+
+const size_t kSwitchableWindowContainerIdsLength =
+    arraysize(kSwitchableWindowContainerIds);
+
 //////////////////////////////////////////////////////////////////////////////
 // MruWindowTracker, public:
 
@@ -108,8 +110,9 @@ MruWindowTracker::~MruWindowTracker() {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   for (Shell::RootWindowList::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
-    for (size_t i = 0; i < arraysize(kContainerIds); ++i) {
-      aura::Window* container = Shell::GetContainer(*iter, kContainerIds[i]);
+    for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
+      aura::Window* container = Shell::GetContainer(*iter,
+          kSwitchableWindowContainerIds[i]);
       if (container)
         container->RemoveObserver(this);
     }
@@ -129,9 +132,9 @@ MruWindowTracker::WindowList MruWindowTracker::BuildMruWindowList() {
 }
 
 void MruWindowTracker::OnRootWindowAdded(aura::RootWindow* root_window) {
-  for (size_t i = 0; i < arraysize(kContainerIds); ++i) {
+  for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
     aura::Window* container =
-        Shell::GetContainer(root_window, kContainerIds[i]);
+        Shell::GetContainer(root_window, kSwitchableWindowContainerIds[i]);
     container->AddObserver(this);
   }
 }
@@ -155,8 +158,8 @@ void MruWindowTracker::SetIgnoreActivations(bool ignore) {
 bool MruWindowTracker::IsTrackedContainer(aura::Window* window) {
   if (!window)
     return false;
-  for (size_t i = 0; i < arraysize(kContainerIds); ++i) {
-    if (window->id() == kContainerIds[i])
+  for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
+    if (window->id() == kSwitchableWindowContainerIds[i])
       return true;
   }
   return false;
