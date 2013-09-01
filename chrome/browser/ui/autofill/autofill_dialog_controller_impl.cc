@@ -81,8 +81,7 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_utils.h"
-#include "ui/gfx/skbitmap_operations.h"
+#include "ui/gfx/image/image_skia_operations.h"
 
 namespace autofill {
 
@@ -1427,44 +1426,18 @@ gfx::Image AutofillDialogControllerImpl::IconForField(
   if (type == CREDIT_CARD_VERIFICATION_CODE)
     return rb.GetImageNamed(IDR_CREDIT_CARD_CVC_HINT);
 
-  // For the credit card, we show a few grayscale images, and possibly one
-  // color image if |user_input| is a valid card number.
   if (type == CREDIT_CARD_NUMBER) {
-    const int card_idrs[] = {
-      IDR_AUTOFILL_CC_VISA,
-      IDR_AUTOFILL_CC_MASTERCARD,
-      IDR_AUTOFILL_CC_AMEX,
-      IDR_AUTOFILL_CC_DISCOVER
-    };
-    const int number_of_cards = arraysize(card_idrs);
-    // The number of pixels between card icons.
-    const int kCardPadding = 2;
-
-    gfx::ImageSkia some_card = *rb.GetImageSkiaNamed(card_idrs[0]);
-    const int card_width = some_card.width();
-    gfx::Canvas canvas(
-        gfx::Size((card_width + kCardPadding) * number_of_cards - kCardPadding,
-                  some_card.height()),
-        ui::SCALE_FACTOR_100P,
-        false);
-
     const int input_card_idr = CreditCard::IconResourceId(
         CreditCard::GetCreditCardType(user_input));
-    for (int i = 0; i < number_of_cards; ++i) {
-      int idr = card_idrs[i];
-      gfx::ImageSkia card_image = *rb.GetImageSkiaNamed(idr);
-      if (input_card_idr != idr) {
-        SkBitmap disabled_bitmap =
-            SkBitmapOperations::CreateHSLShiftedBitmap(*card_image.bitmap(),
-                                                       kGrayImageShift);
-        card_image = gfx::ImageSkia::CreateFrom1xBitmap(disabled_bitmap);
-      }
+    if (input_card_idr != IDR_AUTOFILL_CC_GENERIC)
+      return rb.GetImageNamed(input_card_idr);
 
-      canvas.DrawImageInt(card_image, i * (card_width + kCardPadding), 0);
-    }
-
-    gfx::ImageSkia skia(canvas.ExtractImageRep());
-    return gfx::Image(skia);
+    // When the credit card type is unknown, no image should be shown. However,
+    // to simplify the view code on Mac, save space for the credit card image by
+    // returning a transparent image of the appropriate size.
+    gfx::ImageSkia image = *rb.GetImageSkiaNamed(input_card_idr);
+    return
+        gfx::Image(gfx::ImageSkiaOperations::CreateTransparentImage(image, 0));
   }
 
   return gfx::Image();
