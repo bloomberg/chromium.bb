@@ -108,8 +108,6 @@ void AshTestBase::SetUp() {
 #if defined(OS_WIN)
   aura::test::SetUsePopupAsRootWindowForTest(true);
 #endif
-  ui::InitializeInputMethodForTesting();
-
   ash_test_helper_->SetUp(start_session_);
 
   Shell::GetPrimaryRootWindow()->Show();
@@ -154,8 +152,6 @@ void AshTestBase::TearDown() {
 #endif
 
   ash_test_helper_->TearDown();
-
-  ui::ShutdownInputMethodForTesting();
 #if defined(OS_WIN)
   aura::test::SetUsePopupAsRootWindowForTest(false);
   // Kill the viewer process if we spun one up.
