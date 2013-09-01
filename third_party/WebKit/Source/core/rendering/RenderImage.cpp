@@ -251,9 +251,6 @@ void RenderImage::imageDimensionsChanged(bool imageSizeChanged, const IntRect* r
             // (unless the box has already been scheduled for layout). In order to calculate it, we
             // may need values from the containing block, though, so make sure that we're not too
             // early. It may be that layout hasn't even taken place once yet.
-
-            // FIXME: we should not have to trigger another call to setContainerSizeForRenderer()
-            // from here, since it's already being done during layout (crbug.com/275755).
             updateInnerContentRect();
         }
     }
