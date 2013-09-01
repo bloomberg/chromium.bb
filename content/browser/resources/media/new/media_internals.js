@@ -6,7 +6,7 @@ var media = {};
 
 <include src="util.js"/>
 <include src="player_info.js"/>
-<include src="player_manager.js"/>
+<include src="manager.js"/>
 <include src="client_renderer.js"/>
 <include src="main.js"/>
 
