@@ -441,6 +441,10 @@ void ReliableQuicStream::CloseWriteSide() {
   }
 }
 
+bool ReliableQuicStream::HasBufferedData() {
+  return !queued_data_.empty();
+}
+
 void ReliableQuicStream::OnClose() {
   CloseReadSide();
   CloseWriteSide();

@@ -135,6 +135,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   // Close the write side of the socket.  Further writes will fail.
   void CloseWriteSide();
 
+  bool HasBufferedData();
+
   bool fin_buffered() { return fin_buffered_; }
 
   QuicSession* session() { return session_; }

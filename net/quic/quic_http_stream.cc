@@ -396,8 +396,9 @@ int QuicHttpStream::DoSendHeaders() {
   bool has_upload_data = request_body_stream_ != NULL;
 
   next_state_ = STATE_SEND_HEADERS_COMPLETE;
-  QuicConsumedData rv = stream_->WriteData(request_, !has_upload_data);
-  return rv.bytes_consumed;
+  return stream_->WriteStreamData(
+      request_, !has_upload_data,
+      base::Bind(&QuicHttpStream::OnIOComplete, weak_factory_.GetWeakPtr()));
 }
 
 int QuicHttpStream::DoSendHeadersComplete(int rv) {
@@ -442,18 +443,14 @@ int QuicHttpStream::DoSendBody() {
   const bool eof = request_body_stream_->IsEOF();
   int len = request_body_buf_->BytesRemaining();
   if (len > 0 || eof) {
-    base::StringPiece data(request_body_buf_->data(), len);
-    QuicConsumedData rv = stream_->WriteData(data, eof);
-    request_body_buf_->DidConsume(rv.bytes_consumed);
-    if (eof) {
-      next_state_ = STATE_OPEN;
-      return OK;
-    }
     next_state_ = STATE_SEND_BODY_COMPLETE;
-    return rv.bytes_consumed;
+    base::StringPiece data(request_body_buf_->data(), len);
+    return stream_->WriteStreamData(
+        data, eof,
+        base::Bind(&QuicHttpStream::OnIOComplete, weak_factory_.GetWeakPtr()));
   }
 
-  next_state_ = STATE_SEND_BODY_COMPLETE;
+  next_state_ = STATE_OPEN;
   return OK;
 }
 
@@ -461,7 +458,14 @@ int QuicHttpStream::DoSendBodyComplete(int rv) {
   if (rv < 0)
     return rv;
 
-  next_state_ = STATE_READ_REQUEST_BODY;
+  request_body_buf_->DidConsume(request_body_buf_->BytesRemaining());
+
+  if (!request_body_stream_->IsEOF()) {
+    next_state_ = STATE_READ_REQUEST_BODY;
+    return OK;
+  }
+
+  next_state_ = STATE_OPEN;
   return OK;
 }
 

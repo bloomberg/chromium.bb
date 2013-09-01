@@ -5,6 +5,7 @@
 #include "net/quic/quic_reliable_client_stream.h"
 
 #include "net/base/net_errors.h"
+#include "net/base/test_completion_callback.h"
 #include "net/quic/quic_client_session.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -12,6 +13,7 @@
 
 using testing::Return;
 using testing::StrEq;
+using testing::_;
 
 namespace net {
 namespace test {
@@ -75,6 +77,43 @@ TEST_F(QuicReliableClientStreamTest, OnError) {
 
   stream_.OnError(ERR_INTERNET_DISCONNECTED);
   EXPECT_FALSE(stream_.GetDelegate());
+}
+
+TEST_F(QuicReliableClientStreamTest, WriteStreamData) {
+  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+
+  const char kData1[] = "hello world";
+  const size_t kDataLen = arraysize(kData1);
+
+  // All data written.
+  EXPECT_CALL(session_, WriteData(stream_.id(), _, _, _)).WillOnce(
+      Return(QuicConsumedData(kDataLen, true)));
+  TestCompletionCallback callback;
+  EXPECT_EQ(OK, stream_.WriteStreamData(base::StringPiece(kData1, kDataLen),
+                                        true, callback.callback()));
+}
+
+TEST_F(QuicReliableClientStreamTest, WriteStreamDataAsync) {
+  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+
+  const char kData1[] = "hello world";
+  const size_t kDataLen = arraysize(kData1);
+
+  // No data written.
+  EXPECT_CALL(session_, WriteData(stream_.id(), _, _, _)).WillOnce(
+      Return(QuicConsumedData(0, false)));
+  TestCompletionCallback callback;
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream_.WriteStreamData(base::StringPiece(kData1, kDataLen),
+                                    true, callback.callback()));
+  ASSERT_FALSE(callback.have_result());
+
+  // All data written.
+  EXPECT_CALL(session_, WriteData(stream_.id(), _, _, _)).WillOnce(
+      Return(QuicConsumedData(kDataLen, true)));
+  stream_.OnCanWrite();
+  ASSERT_TRUE(callback.have_result());
+  EXPECT_EQ(OK, callback.WaitForResult());
 }
 
 }  // namespace

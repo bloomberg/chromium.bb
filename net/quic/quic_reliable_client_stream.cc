@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_reliable_client_stream.h"
 
+#include "base/callback_helpers.h"
 #include "net/base/net_errors.h"
 #include "net/quic/quic_session.h"
 
@@ -43,6 +44,30 @@ void QuicReliableClientStream::TerminateFromPeer(bool half_close) {
     delegate_ = NULL;
   }
   ReliableQuicStream::TerminateFromPeer(half_close);
+}
+
+void QuicReliableClientStream::OnCanWrite() {
+  ReliableQuicStream::OnCanWrite();
+
+  if (!HasBufferedData() && !callback_.is_null()) {
+    base::ResetAndReturn(&callback_).Run(OK);
+  }
+}
+
+int QuicReliableClientStream::WriteStreamData(
+    base::StringPiece data,
+    bool fin,
+    const CompletionCallback& callback) {
+  // We should not have data buffered.
+  DCHECK(!HasBufferedData());
+  // Writes the data, or buffers it.
+  WriteData(data, fin);
+  if (!HasBufferedData()) {
+    return OK;
+  }
+
+  callback_ = callback;
+  return ERR_IO_PENDING;
 }
 
 void QuicReliableClientStream::SetDelegate(
