@@ -764,7 +764,7 @@ class TempDirTestCase(TestCase):
     self._tempdir_obj = None
 
   def setUp(self):
-    self._tempdir_obj = osutils.TempDir(set_global=True)
+    self._tempdir_obj = osutils.TempDir(prefix='chromite.test', set_global=True)
     self.tempdir = self._tempdir_obj.tempdir
 
   def tearDown(self):
