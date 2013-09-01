@@ -110,6 +110,31 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     self.assertEqual(os.path.getsize(path), 0)
 
 
+class MountTests(cros_test_lib.TestCase):
+
+  def testMountTmpfsDir(self):
+    """Verify mounting a tmpfs works"""
+    cleaned = False
+    with osutils.TempDir(prefix='chromite.test.osutils') as tempdir:
+      st_before = os.stat(tempdir)
+      try:
+        # Mount the dir and verify it worked.
+        osutils.MountTmpfsDir(tempdir)
+        st_after = os.stat(tempdir)
+        self.assertNotEqual(st_before.st_dev, st_after.st_dev)
+
+        # Unmount the dir and verify it worked.
+        osutils.UmountDir(tempdir)
+        cleaned = True
+
+        # Finally make sure it's cleaned up.
+        self.assertFalse(os.path.exists(tempdir))
+      finally:
+        if not cleaned:
+          cros_build_lib.SudoRunCommand(['umount', '-lf', tempdir],
+                                        error_code_ok=True)
+
+
 class IteratePathParentsTest(cros_test_lib.TestCase):
   """Test parent directory iteration functionality."""
 

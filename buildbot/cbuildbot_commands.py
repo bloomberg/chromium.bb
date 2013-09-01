@@ -210,7 +210,7 @@ def CleanUpMountPoints(buildroot):
         mounts.append(path)
 
   for mount_pt in reversed(mounts):
-    cros_build_lib.SudoRunCommand(['umount', '-l', mount_pt])
+    osutils.UmountDir(mount_pt, lazy=True, cleanup=False)
 
 
 def WipeOldOutput(buildroot):

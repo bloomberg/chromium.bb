@@ -384,6 +384,86 @@ def TempFileDecorator(func):
   return TempDirDecorator(f)
 
 
+def MountDir(src_path, dst_path, fs_type=None, sudo=True, makedirs=True,
+             mount_opts=('nodev', 'noexec', 'nosuid'), **kwargs):
+  """Mount |src_path| at |dst_path|
+
+  Args:
+    src_path: Directory to mount the tmpfs.
+    dst_path: Directory to mount the tmpfs.
+    fs_type: Specify the filesystem type to use.  Defaults to autodetect.
+    sudo: Run through sudo.
+    makedirs: Create |dst_path| if it doesn't exist.
+    mount_opts: List of options to pass to `mount`.
+    kwargs: Pass all other args to RunCommand.
+  """
+  if sudo:
+    runcmd = cros_build_lib.SudoRunCommand
+  else:
+    runcmd = cros_build_lib.RunCommand
+
+  if makedirs:
+    SafeMakedirs(dst_path, sudo=sudo)
+
+  cmd = ['mount', src_path, dst_path]
+  if fs_type:
+    cmd += ['-t', fs_type]
+  runcmd(cmd + ['-o', ','.join(mount_opts)], **kwargs)
+
+
+def MountTmpfsDir(path, name='osutils.tmpfs', size='5G',
+                  mount_opts=('nodev', 'noexec', 'nosuid'), **kwargs):
+  """Mount a tmpfs at |path|
+
+  Args:
+    path: Directory to mount the tmpfs.
+    name: Friendly name to include in mount output.
+    size: Size of the temp fs.
+    mount_opts: List of options to pass to `mount`.
+    kwargs: Pass all other args to MountDir.
+  """
+  mount_opts = list(mount_opts) + ['size=%s' % size]
+  MountDir(name, path, fs_type='tmpfs', mount_opts=mount_opts, **kwargs)
+
+
+def UmountDir(path, lazy=True, sudo=True, cleanup=True):
+  """Unmount a previously mounted temp fs mount.
+
+  Args:
+    path: Directory to unmount.
+    lazy: Whether to do a lazy unmount.
+    sudo: Run through sudo.
+    cleanup: Whether to delete the |path| after unmounting.
+             Note: Does not work when |lazy| is set.
+  """
+  if sudo:
+    runcmd = cros_build_lib.SudoRunCommand
+  else:
+    runcmd = cros_build_lib.RunCommand
+
+  cmd = ['umount', '-d', path]
+  if lazy:
+    cmd += ['-l']
+  runcmd(cmd)
+  if cleanup:
+    # We will randomly get EBUSY here even when the umount worked.  Suspect
+    # this is due to the host distro doing stupid crap on us like autoscanning
+    # directories when they get mounted.
+    def _retry(e):
+      # When we're using `rm` (which is required for sudo), we can't cleanly
+      # detect the aforementioned failure.  This is because `rm` will see the
+      # errno, handle itself, and then do exit(1).  Which means all we see is
+      # that rm failed.  Assume it's this issue as -rf will ignore most things.
+      if isinstance(e, cros_build_lib.RunCommandError):
+        return True
+      else:
+        # When we aren't using sudo, we do the unlink ourselves, so the exact
+        # errno is bubbled up to us and we can detect it specifically without
+        # potentially ignoring all other possible failures.
+        return e.errno == errno.EBUSY
+    cros_build_lib.GenericRetry(_retry, 5, RmDir, path, sudo=sudo, sleep=1)
+
+
 def SetEnvironment(env):
   """Restore the environment variables to that of passed in dictionary."""
   os.environ.clear()
