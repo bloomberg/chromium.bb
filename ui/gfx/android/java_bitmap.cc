@@ -100,8 +100,9 @@ SkBitmap CreateSkBitmapFromResource(const char* name, gfx::Size size) {
       ConvertToSkBitmap(CreateJavaBitmapFromResource(name, size));
   if (bitmap.isNull())
     return bitmap;
+  // RESIZE_BOX has sufficient downsampling quality with minimal runtime cost.
   return skia::ImageOperations::Resize(bitmap,
-                                       skia::ImageOperations::RESIZE_GOOD,
+                                       skia::ImageOperations::RESIZE_BOX,
                                        size.width(), size.height());
 }
 

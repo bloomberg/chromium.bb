@@ -45,6 +45,7 @@ UI_EXPORT base::android::ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(
     const SkBitmap* skbitmap);
 
 // If the resource loads successfully, it will be resized to |size|.
+// Note: If the source resource is smaller than |size|, quality may suffer.
 UI_EXPORT SkBitmap CreateSkBitmapFromResource(const char* name, gfx::Size size);
 
 }  // namespace gfx
