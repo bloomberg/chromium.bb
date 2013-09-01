@@ -359,6 +359,9 @@ Press any key to continue exploring.
   <message name="IDS_APP_START_APP_WAIT_MESSAGE" desc="Message displayed while installing and/or launching web application in kiosk mode.">
     Initializing application...
   </message>
+  <message name="IDS_APP_START_CONFIGURE_NETWORK" desc="Text displayed for configure network button while installing and/or launching web application in kiosk mode.">
+    Configure network
+  </message>
   <message name="IDS_APP_START_BAILOUT_SHORTCUT_FORMAT" desc="Message displayed at the bottom of app launch splash screen to show user the shortcut key to bailout the launch.">
   Press Ctrl + Alt + S to switch to <ph name="IDS_SHORT_PRODUCT_OS_NAME">$1<ex>Chrome OS</ex></ph>
   </message>
@@ -3624,6 +3627,9 @@ Battery full
   <message name="IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED" desc="Couldn't sign in because hosted account is used">
     Your account does not work on <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph>. Please contact your domain administrator or use a regular Google Account to sign in.
   </message>
+  <message name="IDS_LOGIN_ERROR_AUTHENTICATING_KIOSK" desc="Couldn't pass kiosk lock screen to configure network.">
+    Sorry, your password could not be verified. Please try again.
+  </message>
   <message name="IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED" desc="Couldn't sign in because offline sign-in has failed and network is not connected">
     Sorry, your email or password could not be verified. Try connecting to a network first.
   </message>
@@ -3689,6 +3695,9 @@ Battery full
   </message>
   <message name="IDS_LOGIN_OFFLINE_MESSAGE" desc="An offline message that shows up in OOBE sign-in screen.">
     Please connect to the Internet to sign in to your Chromebook.
+  </message>
+  <message name="IDS_KIOSK_OFFLINE_MESSAGE" desc="An offline message that shows up when a kiosk app can't launch without network connectivity.">
+    Please connect to the Internet to launch your app in kiosk mode.
   </message>
   <message name="IDS_UPDATE_OFFLINE_MESSAGE" desc="An offline message that shows up in the OOBE update screen.">
     Please connect to the Internet to update your Chromebook.

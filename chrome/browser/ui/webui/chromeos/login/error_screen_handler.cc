@@ -154,6 +154,7 @@ void ErrorScreenHandler::DeclareLocalizedValues(
   builder->Add("proxyErrorTitle", IDS_LOGIN_PROXY_ERROR_TITLE);
   builder->Add("proxyErrorTitle", IDS_LOGIN_PROXY_ERROR_TITLE);
   builder->Add("signinOfflineMessageBody", IDS_LOGIN_OFFLINE_MESSAGE);
+  builder->Add("kioskOfflineMessageBody", IDS_KIOSK_OFFLINE_MESSAGE);
   builder->Add("captivePortalTitle", IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_TITLE);
   builder->Add("captivePortalMessage", IDS_LOGIN_MAYBE_CAPTIVE_PORTAL);
   builder->Add("captivePortalProxyMessage",

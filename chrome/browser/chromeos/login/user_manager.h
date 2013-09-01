@@ -126,6 +126,10 @@ class UserManager {
   // in, the current user will be returned.
   virtual const UserList& GetLRULoggedInUsers() = 0;
 
+  // Returns the email of the owner user. Returns an empty string if there is
+  // no owner for the device.
+  virtual const std::string& GetOwnerEmail() = 0;
+
   // Indicates that a user with the given |email| has just logged in. The
   // persistent list is updated accordingly if the user is not ephemeral.
   // |browser_restart| is true when reloading Chrome after crash to distinguish

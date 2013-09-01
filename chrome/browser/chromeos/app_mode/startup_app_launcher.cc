@@ -135,13 +135,9 @@ void StartupAppLauncher::OnOAuthFileLoaded(KioskOAuthParams* auth_params) {
 void StartupAppLauncher::InitializeNetwork() {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnInitializingNetwork());
 
-  // Set a maximum allowed wait time for network.
-  const int kMaxNetworkWaitSeconds = 5 * 60;
-  network_wait_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(kMaxNetworkWaitSeconds),
-      this, &StartupAppLauncher::OnNetworkWaitTimedout);
-
+  // TODO(tengs): Use NetworkStateInformer instead because it can handle
+  // portal and proxy detection. We will need to do some refactoring to
+  // make NetworkStateInformer more independent from the WebUI handlers.
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   OnNetworkChanged(net::NetworkChangeNotifier::GetConnectionType());
 }
@@ -226,6 +222,8 @@ void StartupAppLauncher::Launch() {
                                                   NEW_WINDOW));
   InitAppSession(profile_, app_id_);
 
+  UserManager::Get()->SessionStarted();
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_KIOSK_APP_LAUNCHED,
       content::NotificationService::AllSources(),
@@ -270,17 +268,6 @@ void StartupAppLauncher::InstallCallback(bool success,
   OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_INSTALL);
 }
 
-void StartupAppLauncher::OnNetworkWaitTimedout() {
-  LOG(WARNING) << "OnNetworkWaitTimedout... connection = "
-               <<  net::NetworkChangeNotifier::GetConnectionType();
-
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnNetworkWaitTimedout());
-
-  // Timeout in waiting for online. Try the install anyway.
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-  BeginInstall();
-}
-
 void StartupAppLauncher::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   DVLOG(1) << "OnNetworkChanged... connection = "
@@ -288,7 +275,6 @@ void StartupAppLauncher::OnNetworkChanged(
   if (!net::NetworkChangeNotifier::IsOffline()) {
     DVLOG(1) << "Network up and running!";
     net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-    network_wait_timer_.Stop();
 
     BeginInstall();
   } else {

@@ -56,6 +56,7 @@ class UserManagerImpl
   virtual UserList GetUsersAdmittedForMultiProfile() const OVERRIDE;
   virtual const UserList& GetLoggedInUsers() const OVERRIDE;
   virtual const UserList& GetLRULoggedInUsers() OVERRIDE;
+  virtual const std::string& GetOwnerEmail() OVERRIDE;
   virtual void UserLoggedIn(const std::string& email,
                             const std::string& username_hash,
                             bool browser_restart) OVERRIDE;

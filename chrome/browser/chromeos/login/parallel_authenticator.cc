@@ -299,6 +299,7 @@ void ParallelAuthenticator::AuthenticateToUnlock(
       new AuthAttemptState(
           gaia::CanonicalizeEmail(user_context.username),
           HashPassword(user_context.password)));
+  remove_user_data_on_failure_ = false;
   check_key_attempted_ = true;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -318,6 +319,7 @@ void ParallelAuthenticator::LoginAsLocallyManagedUser(
                            "",   // login_captcha
                            User::USER_TYPE_LOCALLY_MANAGED,
                            false));
+  remove_user_data_on_failure_ = false;
   Mount(current_state_.get(),
         scoped_refptr<ParallelAuthenticator>(this),
         cryptohome::MOUNT_FLAGS_NONE);
@@ -336,6 +338,7 @@ void ParallelAuthenticator::LoginRetailMode() {
         std::string(),  // login_captcha
         User::USER_TYPE_RETAIL_MODE,
         false));
+  remove_user_data_on_failure_ = false;
   ephemeral_mount_attempted_ = true;
   MountGuest(current_state_.get(),
              scoped_refptr<ParallelAuthenticator>(this));
@@ -352,6 +355,7 @@ void ParallelAuthenticator::LoginOffTheRecord() {
       std::string(),  // login_captcha
       User::USER_TYPE_GUEST,
       false));
+  remove_user_data_on_failure_ = false;
   ephemeral_mount_attempted_ = true;
   MountGuest(current_state_.get(),
              scoped_refptr<ParallelAuthenticator>(this));
@@ -368,6 +372,7 @@ void ParallelAuthenticator::LoginAsPublicAccount(const std::string& username) {
       std::string(),  // login_captcha
       User::USER_TYPE_PUBLIC_ACCOUNT,
       false));
+  remove_user_data_on_failure_ = false;
   ephemeral_mount_attempted_ = true;
   Mount(current_state_.get(),
         scoped_refptr<ParallelAuthenticator>(this),

@@ -28,6 +28,7 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD0(GetUsersAdmittedForMultiProfile, UserList(void));
   MOCK_CONST_METHOD0(GetLoggedInUsers, const UserList&(void));
   MOCK_METHOD0(GetLRULoggedInUsers, const UserList&(void));
+  MOCK_METHOD0(GetOwnerEmail, const std::string&(void));
   MOCK_METHOD3(UserLoggedIn, void(
       const std::string&, const std::string&, bool));
   MOCK_METHOD1(SwitchActiveUser, void(const std::string& email));

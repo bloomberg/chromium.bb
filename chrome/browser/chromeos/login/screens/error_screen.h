@@ -23,7 +23,8 @@ class ErrorScreen : public WizardScreen {
     UI_STATE_UNKNOWN = 0,
     UI_STATE_UPDATE,
     UI_STATE_SIGNIN,
-    UI_STATE_LOCALLY_MANAGED
+    UI_STATE_LOCALLY_MANAGED,
+    UI_STATE_KIOSK_MODE
   };
 
   enum ErrorState {

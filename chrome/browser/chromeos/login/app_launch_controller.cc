@@ -13,11 +13,15 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
+#include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/network_change_notifier.h"
 
 namespace chromeos {
 
@@ -40,6 +44,9 @@ AppLaunchController::AppLaunchController(const std::string& app_id,
       oobe_display_(oobe_display),
       app_launch_splash_screen_actor_(
           oobe_display_->GetAppLaunchSplashScreenActor()),
+      error_screen_actor_(oobe_display_->GetErrorScreenActor()),
+      waiting_for_network_(false),
+      showing_network_dialog_(false),
       launch_splash_start_time_(0) {
 }
 
@@ -54,7 +61,6 @@ void AppLaunchController::StartAppLaunch() {
   app_launch_splash_screen_actor_->SetDelegate(this);
   app_launch_splash_screen_actor_->Show(app_id_);
 
-  // KioskProfileLoader manages its own lifetime.
   kiosk_profile_loader_.reset(
       new KioskProfileLoader(KioskAppManager::Get(), app_id_, this));
   kiosk_profile_loader_->Start();
@@ -66,7 +72,30 @@ void AppLaunchController::SkipSplashWaitForTesting() {
 }
 
 void AppLaunchController::OnConfigureNetwork() {
-  // TODO(tengs): Implement network configuration in app launch.
+  DCHECK(profile_);
+  showing_network_dialog_ = true;
+  const std::string& owner_email = UserManager::Get()->GetOwnerEmail();
+  if (!owner_email.empty()) {
+    signin_screen_.reset(new AppLaunchSigninScreen(
+       static_cast<OobeUI*>(oobe_display_), this));
+    signin_screen_->Show();
+  } else {
+    // If kiosk mode was configured through enterprise policy, we may
+    // not have an owner user.
+    // TODO(tengs): We need to figure out the appropriate security meausres
+    // for this case.
+    NOTREACHED();
+  }
+}
+
+void AppLaunchController::OnOwnerSigninSuccess() {
+  error_screen_actor_->SetErrorState(
+      ErrorScreen::ERROR_STATE_OFFLINE, std::string());
+  error_screen_actor_->SetUIState(ErrorScreen::UI_STATE_KIOSK_MODE);
+
+  error_screen_actor_->Show(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH, NULL);
+
+  signin_screen_.reset();
 }
 
 void AppLaunchController::OnCancelAppLaunch() {
@@ -112,14 +141,38 @@ void AppLaunchController::OnInitializingTokenService() {
 void AppLaunchController::OnInitializingNetwork() {
   app_launch_splash_screen_actor_->UpdateAppLaunchState(
       AppLaunchSplashScreenActor::APP_LAUNCH_STATE_PREPARING_NETWORK);
+
+  // Show the network configration dialog if network is not initialized
+  // after a brief wait time.
+  waiting_for_network_ = true;
+  const int kNetworkConfigWaitSeconds = 10;
+  network_wait_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(kNetworkConfigWaitSeconds),
+      this, &AppLaunchController::OnNetworkWaitTimedout);
 }
 
 void AppLaunchController::OnNetworkWaitTimedout() {
+  DCHECK(waiting_for_network_);
+  LOG(WARNING) << "OnNetworkWaitTimedout... connection = "
+               <<  net::NetworkChangeNotifier::GetConnectionType();
+  app_launch_splash_screen_actor_->ToggleNetworkConfig(true);
 }
 
 void AppLaunchController::OnInstallingApp() {
   app_launch_splash_screen_actor_->UpdateAppLaunchState(
       AppLaunchSplashScreenActor::APP_LAUNCH_STATE_INSTALLING_APPLICATION);
+
+  network_wait_timer_.Stop();
+  app_launch_splash_screen_actor_->ToggleNetworkConfig(false);
+
+  // We have connectivity at this point, so we can skip the network
+  // configuration dialog if it is being shown.
+  if (showing_network_dialog_) {
+    app_launch_splash_screen_actor_->Show(app_id_);
+    showing_network_dialog_ = false;
+    launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
+  }
 }
 
 void AppLaunchController::OnLaunchSucceeded() {

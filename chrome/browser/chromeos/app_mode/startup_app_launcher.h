@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/network_change_notifier.h"
@@ -29,7 +28,7 @@ namespace chromeos {
 // - If the app is installed, launch it and finish the flow;
 // - If not installed, prepare to start install by checking network online
 //   state;
-// - If network gets online in time, start to install the app from web store;
+// - If network gets online, start to install the app from web store;
 // - If all goes good, launches the app and finish the flow;
 class StartupAppLauncher
     : public base::SupportsWeakPtr<StartupAppLauncher>,
@@ -41,7 +40,6 @@ class StartupAppLauncher
     virtual void OnLoadingOAuthFile() = 0;
     virtual void OnInitializingTokenService() = 0;
     virtual void OnInitializingNetwork() = 0;
-    virtual void OnNetworkWaitTimedout() = 0;
     virtual void OnInstallingApp() = 0;
     virtual void OnLaunchSucceeded() = 0;
     virtual void OnLaunchFailed(KioskAppLaunchError::Error error) = 0;
@@ -81,8 +79,6 @@ class StartupAppLauncher
   void InitializeTokenService();
   void InitializeNetwork();
 
-  void OnNetworkWaitTimedout();
-
   void StartLoadingOAuthFile();
   static void LoadOAuthFileOnBlockingPool(KioskOAuthParams* auth_params);
   void OnOAuthFileLoaded(KioskOAuthParams* auth_params);
@@ -100,7 +96,6 @@ class StartupAppLauncher
   ObserverList<Observer> observer_list_;
 
   scoped_refptr<extensions::WebstoreStandaloneInstaller> installer_;
-  base::OneShotTimer<StartupAppLauncher> network_wait_timer_;
   KioskOAuthParams auth_params_;
 
   DISALLOW_COPY_AND_ASSIGN(StartupAppLauncher);

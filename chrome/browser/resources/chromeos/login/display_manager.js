@@ -52,7 +52,8 @@
   UNKNOWN: 'ui-state-unknown',
   UPDATE: 'ui-state-update',
   SIGNIN: 'ui-state-signin',
-  MANAGED_USER_CREATION_FLOW: 'ui-state-locally-managed'
+  MANAGED_USER_CREATION_FLOW: 'ui-state-locally-managed',
+  KIOSK_MODE: 'ui-state-kiosk-mode'
 };
 
 /* Possible types of UI. */
@@ -77,26 +78,6 @@ cr.define('cr.ui.login', function() {
    * @const
    */
   var MAX_SCREEN_TRANSITION_DURATION = 250;
-
-  /**
-   * webkitTransitionEnd does not always fire (e.g. when animation is aborted
-   * or when no paint happens during the animation). This function sets up
-   * a timer and emulate the event if it is not fired when the timer expires.
-   * @param {!HTMLElement} el The element to watch for webkitTransitionEnd.
-   * @param {number} timeOut The maximum wait time in milliseconds for the
-   *     webkitTransitionEnd to happen.
-   */
-  function ensureTransitionEndEvent(el, timeOut) {
-    var fired = false;
-    el.addEventListener('webkitTransitionEnd', function f(e) {
-      el.removeEventListener('webkitTransitionEnd', f);
-      fired = true;
-    });
-    window.setTimeout(function() {
-      if (!fired)
-        cr.dispatchSimpleEvent(el, 'webkitTransitionEnd');
-    }, timeOut);
-  }
 
   /**
    * Groups of screens (screen IDs) that should have the same dimensions.
@@ -169,6 +150,17 @@ cr.define('cr.ui.login', function() {
      */
     set headerHidden(hidden) {
       $('login-header-bar').hidden = hidden;
+    },
+
+    /**
+     * Toggles background of main body between transparency and solid.
+     * @param {boolean} solid Whether to show a solid background.
+     */
+    set solidBackground(solid) {
+      if (solid)
+        document.body.classList.add('solid');
+      else
+        document.body.classList.remove('solid');
     },
 
     /**

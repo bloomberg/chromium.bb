@@ -309,6 +309,10 @@ const UserList& UserManagerImpl::GetLRULoggedInUsers() {
   return lru_logged_in_users_;
 }
 
+const std::string& UserManagerImpl::GetOwnerEmail() {
+  return owner_email_;
+}
+
 void UserManagerImpl::UserLoggedIn(const std::string& email,
                                    const std::string& username_hash,
                                    bool browser_restart) {

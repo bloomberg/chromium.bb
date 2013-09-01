@@ -36,6 +36,7 @@ void AppLaunchSplashScreenHandler::DeclareLocalizedValues(
     LocalizedValuesBuilder* builder) {
 
   builder->Add("appStartMessage", IDS_APP_START_NETWORK_WAIT_MESSAGE);
+  builder->Add("configureNetwork", IDS_APP_START_CONFIGURE_NETWORK);
 
   const string16 product_os_name =
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME);
@@ -90,7 +91,7 @@ void AppLaunchSplashScreenHandler::Hide() {
 }
 
 void AppLaunchSplashScreenHandler::ToggleNetworkConfig(bool visible) {
-  // TODO(tengs): Implement network configuration in app launch.
+  CallJS("toggleNetworkConfig", visible);
 }
 
 void AppLaunchSplashScreenHandler::UpdateAppLaunchState(AppLaunchState state) {

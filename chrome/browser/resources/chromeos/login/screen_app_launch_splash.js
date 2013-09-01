@@ -14,16 +14,42 @@ login.createScreen('AppLaunchSplashScreen', 'app-launch-splash', function() {
       'updateMessage',
     ],
 
+    /** @override */
+    decorate: function() {
+      $('splash-config-network').addEventListener('click', function(e) {
+        chrome.send('configureNetwork');
+      });
+
+      var networkContainer = $('splash-config-network-container');
+      networkContainer.addEventListener(
+          'webkitTransitionEnd',
+          function(e) {
+            if (this.classList.contains('faded'))
+              $('splash-config-network').hidden = true;
+          }.bind(networkContainer)
+      );
+
+      // Ensure the webkitTransitionEnd event gets called after a wait time.
+      // The wait time should be inline with the transition duration time
+      // defined in css file. The current value in css is 1000ms. To avoid
+      // the emulated webkitTransitionEnd firing before real one, a 1050ms
+      // delay is used.
+      ensureTransitionEndEvent(networkContainer, 1050);
+    },
+
     /**
      * Event handler that is invoked just before the frame is shown.
      * @param {string} data Screen init payload.
      */
     onBeforeShow: function(data) {
+      $('splash-config-network').hidden = true;
+      this.toggleNetworkConfig(false);
       this.updateApp(data['appInfo']);
 
       $('splash-shortcut-info').hidden = !data['shortcutEnabled'];
 
       Oobe.getInstance().headerHidden = true;
+      Oobe.getInstance().solidBackground = true;
     },
 
     /**
@@ -37,7 +63,17 @@ login.createScreen('AppLaunchSplashScreen', 'app-launch-splash', function() {
      * @param {boolean} visible Whether to show the option.
      */
     toggleNetworkConfig: function(visible) {
-      // TODO(tengs): Implement network configuration in app launch.
+      var container = $('splash-config-network-container');
+      var currVisible = !container.classList.contains('faded');
+      if (currVisible == visible)
+        return;
+
+      if (visible) {
+        $('splash-config-network').hidden = false;
+        container.classList.remove('faded');
+      } else {
+        container.classList.add('faded');
+      }
     },
 
     /**

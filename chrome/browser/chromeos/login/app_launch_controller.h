@@ -14,7 +14,9 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_profile_loader.h"
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
+#include "chrome/browser/chromeos/login/app_launch_signin_screen.h"
 #include "chrome/browser/chromeos/login/screens/app_launch_splash_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 
 class Profile;
 
@@ -30,7 +32,8 @@ class AppLaunchController
     : public base::SupportsWeakPtr<AppLaunchController>,
       public AppLaunchSplashScreenActor::Delegate,
       public KioskProfileLoader::Delegate,
-      public StartupAppLauncher::Observer {
+      public StartupAppLauncher::Observer,
+      public AppLaunchSigninScreen::Delegate {
  public:
   AppLaunchController(const std::string& app_id,
                       LoginDisplayHost* host,
@@ -44,6 +47,7 @@ class AppLaunchController
 
  private:
   void Cleanup();
+  void OnNetworkWaitTimedout();
 
   // KioskProfileLoader::Delegate overrides:
   virtual void OnProfileLoaded(Profile* profile) OVERRIDE;
@@ -57,19 +61,26 @@ class AppLaunchController
   virtual void OnLoadingOAuthFile() OVERRIDE;
   virtual void OnInitializingTokenService() OVERRIDE;
   virtual void OnInitializingNetwork() OVERRIDE;
-  virtual void OnNetworkWaitTimedout() OVERRIDE;
   virtual void OnInstallingApp() OVERRIDE;
   virtual void OnLaunchSucceeded() OVERRIDE;
   virtual void OnLaunchFailed(KioskAppLaunchError::Error error) OVERRIDE;
+
+  // AppLaunchSigninScreen::Delegate overrides:
+  virtual void OnOwnerSigninSuccess() OVERRIDE;
 
   Profile* profile_;
   const std::string app_id_;
   LoginDisplayHost* host_;
   OobeDisplay* oobe_display_;
   AppLaunchSplashScreenActor* app_launch_splash_screen_actor_;
+  ErrorScreenActor* error_screen_actor_;
   scoped_ptr<KioskProfileLoader> kiosk_profile_loader_;
   scoped_ptr<StartupAppLauncher> startup_app_launcher_;
+  scoped_ptr<AppLaunchSigninScreen> signin_screen_;
 
+  base::OneShotTimer<AppLaunchController> network_wait_timer_;
+  bool waiting_for_network_;
+  bool showing_network_dialog_;
   int64 launch_splash_start_time_;
 
   static bool skip_splash_wait_;

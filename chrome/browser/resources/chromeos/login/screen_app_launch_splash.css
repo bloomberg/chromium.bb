@@ -32,13 +32,35 @@
 #splash-launch-text {
   color: #666;
   font-size: 18px;
-  padding-bottom: 50px;
   padding-top: 50px;
 }
 
 #splash-spinner {
   height: 32px;
   width: 32px;
+}
+
+#splash-config-network-container {
+  -webkit-transition: 1s opacity;
+  height : 30px;
+  opacity: 1;
+  padding-bottom: 20px;
+}
+
+#splash-config-network-container.faded {
+  opacity: 0;
+}
+
+#splash-config-network {
+  font-size: 10px;
+  font-weight: bold;
+  margin: 0;
+  padding: 0;
+  text-decoration: none;
+}
+
+#splash-config-network:hover {
+  color: rgb(202, 67, 100)
 }
 
 #splash-shortcut-info {

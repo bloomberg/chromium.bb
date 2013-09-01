@@ -429,6 +429,8 @@
         'browser/chromeos/locale_change_guard.h',
         'browser/chromeos/login/app_launch_controller.cc',
         'browser/chromeos/login/app_launch_controller.h',
+        'browser/chromeos/login/app_launch_signin_screen.cc',
+        'browser/chromeos/login/app_launch_signin_screen.h',
         'browser/chromeos/login/auth_attempt_state.cc',
         'browser/chromeos/login/auth_attempt_state.h',
         'browser/chromeos/login/auth_attempt_state_resolver.cc',

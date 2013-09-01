@@ -23,6 +23,10 @@ body {
   top: 0;
 }
 
+body.solid {
+  background-color: white;
+}
+
 button {
   font-family: inherit;
   outline: none;

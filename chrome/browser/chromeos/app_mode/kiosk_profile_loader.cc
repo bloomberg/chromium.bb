@@ -219,7 +219,6 @@ void KioskProfileLoader::OnProfilePrepared(Profile* profile) {
   // a profile load, so invalidate the LoginUtils delegate now.
   LoginUtils::Get()->DelegateDeleted(this);
 
-  UserManager::Get()->SessionStarted();
   delegate_->OnProfileLoaded(profile);
   ReportLaunchResult(KioskAppLaunchError::NONE);
 }
