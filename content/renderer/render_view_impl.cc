@@ -2414,12 +2414,22 @@ void RenderViewImpl::didAddMessageToConsole(
       NOTREACHED();
   }
 
+  if (shouldReportDetailedMessageForSource(source_name)) {
+    FOR_EACH_OBSERVER(
+        RenderViewObserver,
+        observers_,
+        DetailedConsoleMessageAdded(message.text,
+                                    source_name,
+                                    stack_trace,
+                                    source_line,
+                                    static_cast<int32>(log_severity)));
+  }
+
   Send(new ViewHostMsg_AddMessageToConsole(routing_id_,
                                            static_cast<int32>(log_severity),
                                            message.text,
                                            static_cast<int32>(source_line),
-                                           source_name,
-                                           stack_trace));
+                                           source_name));
 }
 
 void RenderViewImpl::printPage(WebFrame* frame) {

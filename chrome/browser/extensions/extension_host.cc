@@ -7,6 +7,7 @@
 #include <list>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -15,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -48,7 +50,9 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/browser/extension_error.h"
 #include "extensions/browser/view_type_utils.h"
+#include "extensions/common/extension_urls.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -539,6 +543,8 @@ bool ExtensionHost::OnMessageReceived(const IPC::Message& message) {
                         OnIncrementLazyKeepaliveCount)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_DecrementLazyKeepaliveCount,
                         OnDecrementLazyKeepaliveCount)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DetailedConsoleMessageAdded,
+                        OnDetailedConsoleMessageAdded)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -566,6 +572,25 @@ void ExtensionHost::OnDecrementLazyKeepaliveCount() {
       ExtensionSystem::Get(profile_)->process_manager();
   if (pm)
     pm->DecrementLazyKeepaliveCount(extension());
+}
+
+void ExtensionHost::OnDetailedConsoleMessageAdded(
+    const base::string16& message,
+    const base::string16& source,
+    const StackTrace& stack_trace,
+    int32 severity_level) {
+  if (IsSourceFromAnExtension(source)) {
+    ErrorConsole::Get(profile_)->ReportError(
+        scoped_ptr<ExtensionError>(new RuntimeError(
+            profile_->IsOffTheRecord(),
+            source,
+            message,
+            stack_trace,
+            associated_web_contents_ ?
+                associated_web_contents_->GetLastCommittedURL() :
+                GURL::EmptyGURL(),
+            static_cast<logging::LogSeverity>(severity_level))));
+  }
 }
 
 void ExtensionHost::UnhandledKeyboardEvent(

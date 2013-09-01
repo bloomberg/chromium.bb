@@ -20,28 +20,30 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/id_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using base::string16;
-using base::UTF8ToUTF16;
 
 namespace extensions {
 
 namespace {
 
-const char kExecutionContextURLKey[] = "executionContextURL";
-const char kStackTraceKey[] = "stackTrace";
+const char kDefaultStackTrace[] = "function_name (https://url.com:1:1)";
 
-string16 CreateErrorDetails(const std::string& extension_id) {
-  base::DictionaryValue value;
-  value.SetString(
-      kExecutionContextURLKey,
+StackTrace GetDefaultStackTrace() {
+  StackTrace stack_trace;
+  scoped_ptr<StackFrame> frame =
+      StackFrame::CreateFromText(base::UTF8ToUTF16(kDefaultStackTrace));
+  CHECK(frame.get());
+  stack_trace.push_back(*frame);
+  return stack_trace;
+}
+
+string16 GetSourceForExtensionId(const std::string& extension_id) {
+  return base::UTF8ToUTF16(
       std::string(kExtensionScheme) +
-          content::kStandardSchemeSeparator +
-          extension_id);
-  value.Set(kStackTraceKey, new ListValue);
-  std::string json_utf8;
-  base::JSONWriter::Write(&value, &json_utf8);
-  return UTF8ToUTF16(json_utf8);
+      content::kStandardSchemeSeparator +
+      extension_id);
 }
 
 scoped_ptr<ExtensionError> CreateNewRuntimeError(
@@ -50,10 +52,11 @@ scoped_ptr<ExtensionError> CreateNewRuntimeError(
     const string16& message) {
   return scoped_ptr<ExtensionError>(new RuntimeError(
       from_incognito,
-      UTF8ToUTF16("source"),
+      GetSourceForExtensionId(extension_id),
       message,
-      logging::LOG_INFO,
-      CreateErrorDetails(extension_id)));
+      GetDefaultStackTrace(),
+      GURL::EmptyGURL(),  // no context url
+      logging::LOG_INFO));
 }
 
 }  // namespace

@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "extensions/common/stack_frame.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
@@ -189,6 +190,10 @@ class TabHelper : public content::WebContentsObserver,
       int32 page_id,
       const GURL& on_url);
   void OnWatchedPageChange(const std::vector<std::string>& css_selectors);
+  void OnDetailedConsoleMessageAdded(const base::string16& message,
+                                     const base::string16& source,
+                                     const StackTrace& stack_trace,
+                                     int32 severity_level);
 
   // App extensions related methods:
 

@@ -1528,12 +1528,10 @@ void RenderViewHostImpl::OnAddMessageToConsole(
     int32 level,
     const string16& message,
     int32 line_no,
-    const string16& source_id,
-    const string16& stack_trace) {
-  if (delegate_->AddMessageToConsole(
-          level, message, line_no, source_id, stack_trace)) {
+    const string16& source_id) {
+  if (delegate_->AddMessageToConsole(level, message, line_no, source_id))
     return;
-  }
+
   // Pass through log level only on WebUI pages to limit console spew.
   int32 resolved_level = HasWebUIScheme(delegate_->GetURL()) ? level : 0;
 

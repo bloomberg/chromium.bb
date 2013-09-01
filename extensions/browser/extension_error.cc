@@ -4,7 +4,6 @@
 
 #include "extensions/browser/extension_error.h"
 
-#include "base/json/json_reader.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -97,42 +96,21 @@ bool ManifestError::IsEqualImpl(const ExtensionError* rhs) const {
   return true;
 }
 
-RuntimeError::StackFrame::StackFrame() : line_number(-1), column_number(-1) {
-}
-
-RuntimeError::StackFrame::StackFrame(size_t frame_line,
-                                     size_t frame_column,
-                                     const string16& frame_url,
-                                     const string16& frame_function)
-    : line_number(frame_line),
-      column_number(frame_column),
-      url(frame_url),
-      function(frame_function) {
-}
-
-RuntimeError::StackFrame::~StackFrame() {
-}
-
-bool RuntimeError::StackFrame::operator==(
-    const RuntimeError::StackFrame& rhs) const {
-  return line_number == rhs.line_number &&
-         column_number == rhs.column_number &&
-         url == rhs.url &&
-         function == rhs.function;
-}
 RuntimeError::RuntimeError(bool from_incognito,
                            const string16& source,
                            const string16& message,
-                           logging::LogSeverity level,
-                           const string16& details)
+                           const StackTrace& stack_trace,
+                           const GURL& context_url,
+                           logging::LogSeverity level)
     : ExtensionError(ExtensionError::RUNTIME_ERROR,
-                     std::string(),  // We don't know the id yet.
+                     GURL(source).host(),
                      from_incognito,
                      level,
                      source,
-                     message) {
-  ParseDetails(details);
-  DetermineExtensionID();
+                     message),
+      context_url_(context_url),
+      stack_trace_(stack_trace) {
+  CleanUpInit();
 }
 
 RuntimeError::~RuntimeError() {
@@ -141,14 +119,14 @@ RuntimeError::~RuntimeError() {
 std::string RuntimeError::PrintForTest() const {
   std::string result = ExtensionError::PrintForTest() +
          "\n  Type:    RuntimeError"
-         "\n  Context: " + base::UTF16ToUTF8(execution_context_url_) +
+         "\n  Context: " + context_url_.spec() +
          "\n  Stack Trace: ";
   for (StackTrace::const_iterator iter = stack_trace_.begin();
        iter != stack_trace_.end(); ++iter) {
     result += "\n    {"
               "\n      Line:     " + base::IntToString(iter->line_number) +
               "\n      Column:   " + base::IntToString(iter->column_number) +
-              "\n      URL:      " + base::UTF16ToUTF8(iter->url) +
+              "\n      URL:      " + base::UTF16ToUTF8(iter->source) +
               "\n      Function: " + base::UTF16ToUTF8(iter->function) +
               "\n    }";
   }
@@ -163,49 +141,30 @@ bool RuntimeError::IsEqualImpl(const ExtensionError* rhs) const {
   // of displaying an old and inaccurate stack trace.
   return level_ == level_ &&
          source_ == source_ &&
-         execution_context_url_ == error->execution_context_url_ &&
+         context_url_ == error->context_url_ &&
          stack_trace_.size() == error->stack_trace_.size() &&
          (stack_trace_.empty() || stack_trace_[0] == error->stack_trace_[0]);
 }
 
-void RuntimeError::ParseDetails(const string16& details) {
-  scoped_ptr<base::Value> value(
-      base::JSONReader::Read(base::UTF16ToUTF8(details)));
-  const base::DictionaryValue* details_value;
-  const base::ListValue* trace_value = NULL;
-
-  // The |details| value should contain an execution context url and a stack
-  // trace.
-  if (!value.get() ||
-      !value->GetAsDictionary(&details_value) ||
-      !details_value->GetString(kExecutionContextURLKey,
-                                &execution_context_url_) ||
-      !details_value->GetList(kStackTraceKey, &trace_value)) {
-    NOTREACHED();
-    return;
+void RuntimeError::CleanUpInit() {
+  // If the error came from a generated background page, the "context" is empty
+  // because there's no visible URL. We should set context to be the generated
+  // background page in this case.
+  GURL source_url = GURL(source_);
+  if (context_url_.is_empty() &&
+      source_url.path() ==
+          std::string("/") + kGeneratedBackgroundPageFilename) {
+    context_url_ = source_url;
   }
 
-  int line = 0;
-  int column = 0;
-  string16 url;
-
-  for (size_t i = 0; i < trace_value->GetSize(); ++i) {
-    const base::DictionaryValue* frame_value = NULL;
-    CHECK(trace_value->GetDictionary(i, &frame_value));
-
-    frame_value->GetInteger(kLineNumberKey, &line);
-    frame_value->GetInteger(kColumnNumberKey, &column);
-    frame_value->GetString(kURLKey, &url);
-
-    string16 function;
-    frame_value->GetString(kFunctionNameKey, &function);  // This can be empty.
-    stack_trace_.push_back(StackFrame(line, column, url, function));
-  }
-}
-
-void RuntimeError::DetermineExtensionID() {
-  if (!GetExtensionIDFromGURL(GURL(source_), &extension_id_))
-    GetExtensionIDFromGURL(GURL(execution_context_url_), &extension_id_);
+  // In some instances (due to the fact that we're reusing error reporting from
+  // other systems), the source won't match up with the final entry in the stack
+  // trace. (For instance, in a browser action error, the source is the page -
+  // sometimes the background page - but the error is thrown from the script.)
+  // Make the source match the stack trace, since that is more likely the cause
+  // of the error.
+  if (!stack_trace_.empty() && source_ != stack_trace_[0].source)
+    source_ = stack_trace_[0].source;
 }
 
 }  // namespace extensions

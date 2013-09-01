@@ -552,8 +552,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnAddMessageToConsole(int32 level,
                              const string16& message,
                              int32 line_no,
-                             const string16& source_id,
-                             const string16& stack_trace);
+                             const string16& source_id);
   void OnUpdateInspectorSetting(const std::string& key,
                                 const std::string& value);
   void OnShouldCloseACK(
