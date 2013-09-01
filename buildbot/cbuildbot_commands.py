@@ -169,8 +169,7 @@ def BuildRootGitCleanup(buildroot, debug_run):
         logging.warn('\n%s', result.output)
         logging.warn('Deleting %s because %s failed', cwd, e.result.cmd)
         lock.write_lock()
-        if os.path.isdir(cwd):
-          shutil.rmtree(cwd)
+        osutils.RmDir(cwd, ignore_missing=True)
         # Delete the backing store as well for production jobs, because we
         # want to make sure any corruption is wiped.  Don't do it for
         # tryjobs so the error is visible and can be debugged.
@@ -179,8 +178,7 @@ def BuildRootGitCleanup(buildroot, debug_run):
           projects_dir = os.path.join(buildroot, '.repo', 'projects')
           repo_store = '%s.git' % os.path.join(projects_dir, relpath)
           logging.warn('Deleting %s as well', repo_store)
-          if os.path.isdir(repo_store):
-            shutil.rmtree(repo_store)
+          osutils.RmDir(repo_store, ignore_missing=True)
         cros_build_lib.PrintBuildbotStepWarnings()
         return
 
@@ -220,8 +218,8 @@ def WipeOldOutput(buildroot):
     buildroot: Root directory where build occurs.
     board: Delete image directories for this board name.
   """
-  image_dir = os.path.join('src', 'build', 'images')
-  cros_build_lib.SudoRunCommand(['rm', '-rf', image_dir], cwd=buildroot)
+  image_dir = os.path.join(buildroot, 'src', 'build', 'images')
+  osutils.RmDir(image_dir, ignore_missing=True, sudo=True)
 
 
 def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None):
@@ -463,8 +461,7 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
   """Runs the test harness suite."""
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
-  if os.path.exists(results_dir_in_chroot):
-    shutil.rmtree(results_dir_in_chroot)
+  osutils.RmDir(results_dir_in_chroot, ignore_missing=True)
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
   image_path = os.path.join(image_dir, 'chromiumos_test_image.bin')
@@ -537,7 +534,7 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
       test_tarball, results_path, compression=cros_build_lib.COMP_GZIP,
       chroot=chroot)
 
-  shutil.rmtree(results_path)
+  osutils.RmDir(results_path)
   return test_tarball
 
 
@@ -719,7 +716,7 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
                             % (gzip, test_tarball, gzipped_test_tarball),
                             shell=True, debug_level=logging.DEBUG)
   os.unlink(test_tarball)
-  shutil.rmtree(temp_dir)
+  osutils.RmDir(temp_dir)
 
   return stack_trace_filenames
 
@@ -1565,7 +1562,7 @@ def BuildFactoryZip(buildroot, board, archive_dir, image_root):
                   os.path.join(f, '*')])
 
   cros_build_lib.RunCommandCaptureOutput(cmd, cwd=temp_dir)
-  shutil.rmtree(temp_dir)
+  osutils.RmDir(temp_dir)
   return filename
 
 

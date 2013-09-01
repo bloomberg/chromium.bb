@@ -51,13 +51,6 @@ class HelperMethodsTest(cros_test_lib.TempDirTestCase):
     self.assertTrue(os.path.lexists(destfile),
                     'Unable to create symlink to %s' % destfile)
 
-  def testRemoveDirs(self):
-    """Tests if _RemoveDirs works with a recursive directory structure."""
-    otherdir = os.path.join(self.tempdir, "foo")
-    osutils.SafeMakedirs(os.path.join(otherdir, "bar"))
-    manifest_version._RemoveDirs(otherdir)
-    self.assertFalse(os.path.exists(otherdir), 'Failed to rmdirs.')
-
 
 class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
   """Test methods testing methods in VersionInfo class."""
@@ -204,7 +197,6 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
 
   def testLatestSpecFromDir(self):
     """Tests whether we can get sorted specs correctly from a directory."""
-    self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
     self.mox.StubOutWithMock(repository, 'CloneGitRepo')
     info = manifest_version.VersionInfo(
         '99.1.2', CHROME_BRANCH, incr_type='branch')

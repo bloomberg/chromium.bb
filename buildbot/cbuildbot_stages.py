@@ -344,7 +344,7 @@ class CleanUpStage(bs.BuilderStage):
   def _DeleteArchivedTrybotImages(self):
     """For trybots, clear all previus archive images to save space."""
     archive_root = ArchivingStage.GetArchiveRoot(self._build_root, trybot=True)
-    shutil.rmtree(archive_root, ignore_errors=True)
+    osutils.RmDir(archive_root, ignore_missing=True)
 
   def _DeleteArchivedPerfResults(self):
     """Clear any previously stashed perf results from hw testing."""
@@ -2570,7 +2570,7 @@ class ArchiveStage(ArchivingStage):
     """Create a fresh directory for archiving a build."""
     if self._options.buildbot:
       # Buildbot: Clear out any leftover build artifacts, if present.
-      shutil.rmtree(self.archive_path, ignore_errors=True)
+      osutils.RmDir(self.archive_path, ignore_missing=True)
     else:
       # Clear the list of uploaded file if it exists
       osutils.SafeUnlink(os.path.join(self.archive_path,

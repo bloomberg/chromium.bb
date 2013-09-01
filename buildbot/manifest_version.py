@@ -68,7 +68,7 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
 
   if reinitialize:
     logging.info('Cloning fresh manifest-versions checkout.')
-    _RemoveDirs(manifest_dir)
+    osutils.RmDir(manifest_dir, ignore_missing=True)
     repository.CloneGitRepo(manifest_dir, manifest_repo)
 
 
@@ -100,12 +100,6 @@ def _PushGitChanges(git_repo, message, dry_run=True, push_to=None):
     raise
 
   git.GitPush(git_repo, PUSH_BRANCH, push_to, dryrun=dry_run, force=dry_run)
-
-
-def _RemoveDirs(dir_name):
-  """Remove directories recursively, if they exist"""
-  if os.path.exists(dir_name):
-    shutil.rmtree(dir_name)
 
 
 def CreateSymlink(src_file, dest_file):

@@ -7,10 +7,11 @@
 
 import optparse
 import os
-import shutil
 
 from chromite.lib import cros_build_lib
 from chromite.lib import operation
+from chromite.lib import osutils
+
 
 oper = operation.Operation('refresh_package_status')
 oper.verbose = True # Without verbose Info messages don't show up.
@@ -24,6 +25,7 @@ GENTOO_DIR = 'gentoo-portage'
 PRTG_GIT_URL = 'ssh://gerrit.chromium.org:29418/chromiumos/overlays/portage.git'
 FUNTOO_GIT_URL = 'git://github.com/funtoo/portage.git'
 
+
 def RunGit(cwd, cmd, args=[]):
   # pylint: disable=W0102
   """Run the git |cmd| with |args| in the |cwd| directory."""
@@ -36,8 +38,7 @@ def UpdateOriginGentoo():
   gentoo_root = '%s/%s' % (TMP_ROOT, GENTOO_DIR)
   oper.Info('Performing update of origin/gentoo upstream mirror as requested.')
 
-  if os.path.exists(gentoo_root):
-    shutil.rmtree(gentoo_root)
+  osutils.RmDir(gentoo_root, ignore_missing=True)
 
   RunGit(cwd=TMP_ROOT, cmd='clone', args=[PRTG_GIT_URL, GENTOO_DIR])
   RunGit(cwd=gentoo_root, cmd='remote', args=['add', 'funtoo', FUNTOO_GIT_URL])
@@ -52,9 +53,8 @@ def UpdateOriginGentoo():
 
 def CleanupOriginGentoo(gentoo_root):
   """Remove the local copy of origin/gentoo source."""
-  if os.path.exists(gentoo_root):
-    oper.Info('Removing local copy of origin/gentoo upstream mirror now.')
-    shutil.rmtree(gentoo_root)
+  oper.Info('Removing local copy of origin/gentoo upstream mirror now.')
+  osutils.RmDir(gentoo_root, ignore_missing=True)
 
 
 def PrepareBoards(boards):
@@ -70,8 +70,7 @@ def PrepareBoards(boards):
 def PrepareCSVRoot():
   """Prepare CSV output directory for use."""
   csv_root = '%s/%s' % (TMP_ROOT, 'csv')
-  if os.path.exists(csv_root):
-    shutil.rmtree(csv_root)
+  osutils.RmDir(csv_root, ignore_missing=True)
 
   os.mkdir(csv_root)
 
