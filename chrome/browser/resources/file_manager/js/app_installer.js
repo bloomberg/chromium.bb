@@ -24,14 +24,16 @@ AppInstaller.prototype = {
 /**
  * Type of result.
  *
- * @enum {number}
+ * @enum {string}
  * @const
  */
 AppInstaller.Result = {
-  SUCCESS: 0,
-  CANCELLED: 1,
-  ERROR: 2
+  SUCCESS: 'AppInstaller.success',
+  CANCELLED: 'AppInstaller.cancelled',
+  ERROR: 'AppInstaller.error'
 };
+Object.freeze(AppInstaller.Result);
+
 /**
  * Error message for user cancellation. This must be match with the constant
  * 'kUserCancelledError' in C/B/extensions/webstore_standalone_installer.cc.
@@ -48,24 +50,30 @@ AppInstaller.USER_CANCELLED_ERROR_STR_ = 'User cancelled install';
  */
 AppInstaller.prototype.install = function(callback) {
   this.callback_ = callback;
-  // TODO(yoshiki): Calls the API method to install an app.
-  // Until then, the installation is always failed.
-  setTimeout(this.onInstallCompleted_.bind(this, {result: false}), 1000);
+  chrome.fileBrowserPrivate.installWebstoreItem(
+      this.itemId_,
+      function() {
+        this.onInstallCompleted_(chrome.runtime.lastError);
+      }.bind(this));
 };
 
 /**
  * Called when the installation is completed.
  *
- * @param {boolean} status True if the installation is success, false if failed.
+ * @param {{message: string}?} error Null if the installation is success,
+ *     otherwise an object which contains error message.
  * @private
  */
-AppInstaller.prototype.onInstallCompleted_ = function(status) {
-  var result = AppInstaller.Result.SUCCESS;
-  if (!status.result) {
-    result = (status.error == AppInstaller.USER_CANCELLED_ERROR_STR_) ?
-             AppInstaller.Result.CANCELLED :
-             AppInstaller.Result.ERROR;
+AppInstaller.prototype.onInstallCompleted_ = function(error) {
+  var installerResult = AppInstaller.Result.SUCCESS;
+  var errorMessage = '';
+  if (error) {
+    installerResult =
+        error == AppInstaller.USER_CANCELLED_ERROR_STR_ ?
+        AppInstaller.Result.CANCELLED :
+        AppInstaller.Result.ERROR;
+    errorMessage = error.message;
   }
-  this.callback_(result, status.error);
+  this.callback_(installerResult, errorMessage);
   this.callback_ = null;
 };
