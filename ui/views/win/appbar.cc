@@ -41,6 +41,14 @@ Appbar* Appbar::instance() {
 }
 
 int Appbar::GetAutohideEdges(HMONITOR monitor, const base::Closure& callback) {
+  // Initialize the map with EDGE_BOTTOM. This is important, as if we return an
+  // initial value of 0 (no auto-hide edges) then we'll go fullscreen and
+  // windows will automatically remove WS_EX_TOPMOST from the appbar resulting
+  // in us thinking there is no auto-hide edges. By returning at least one edge
+  // we don't initially go fullscreen until we figure out the real auto-hide
+  // edges.
+  if (edge_map_.find(monitor) == edge_map_.end())
+    edge_map_[monitor] = Appbar::EDGE_BOTTOM;
   if (!in_callback_) {
     int* edge = new int;
     base::WorkerPool::PostTaskAndReply(
