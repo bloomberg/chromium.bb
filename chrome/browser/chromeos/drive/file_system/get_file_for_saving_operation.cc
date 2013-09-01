@@ -17,6 +17,21 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 
+namespace {
+
+// Marks the cache entry as dirty.
+FileError MarkDirty(internal::ResourceMetadata* metadata,
+                    internal::FileCache* cache,
+                    const std::string& resource_id,
+                    std::string* local_id) {
+  FileError error = metadata->GetIdByResourceId(resource_id, local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+  return cache->MarkDirty(*local_id);
+}
+
+}  // namespace
+
 GetFileForSavingOperation::GetFileForSavingOperation(
     base::SequencedTaskRunner* blocking_task_runner,
     OperationObserver* observer,
@@ -38,6 +53,7 @@ GetFileForSavingOperation::GetFileForSavingOperation(
       file_write_watcher_(new internal::FileWriteWatcher),
       blocking_task_runner_(blocking_task_runner),
       observer_(observer),
+      metadata_(metadata),
       cache_(cache),
       weak_ptr_factory_(this) {
 }
@@ -97,18 +113,23 @@ void GetFileForSavingOperation::GetFileForSavingAfterDownload(
   }
 
   const std::string& resource_id = entry->resource_id();
-  cache_->MarkDirtyOnUIThread(
-      resource_id,
+  std::string* local_id = new std::string;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&MarkDirty, metadata_, cache_, resource_id, local_id),
       base::Bind(&GetFileForSavingOperation::GetFileForSavingAfterMarkDirty,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  cache_path,
+                 base::Owned(local_id),
                  base::Passed(&entry)));
 }
 
 void GetFileForSavingOperation::GetFileForSavingAfterMarkDirty(
     const GetFileCallback& callback,
     const base::FilePath& cache_path,
+    const std::string* local_id,
     scoped_ptr<ResourceEntry> entry,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -119,7 +140,6 @@ void GetFileForSavingOperation::GetFileForSavingAfterMarkDirty(
     return;
   }
 
-  const std::string& resource_id = entry->resource_id();
   file_write_watcher_->StartWatch(
       cache_path,
       base::Bind(&GetFileForSavingOperation::GetFileForSavingAfterWatch,
@@ -129,7 +149,7 @@ void GetFileForSavingOperation::GetFileForSavingAfterMarkDirty(
                  base::Passed(&entry)),
       base::Bind(&GetFileForSavingOperation::OnWriteEvent,
                  weak_ptr_factory_.GetWeakPtr(),
-                 resource_id));
+                 *local_id));
 }
 
 void GetFileForSavingOperation::GetFileForSavingAfterWatch(
@@ -149,8 +169,8 @@ void GetFileForSavingOperation::GetFileForSavingAfterWatch(
   callback.Run(FILE_ERROR_OK, cache_path, entry.Pass());
 }
 
-void GetFileForSavingOperation::OnWriteEvent(const std::string& resource_id) {
-  observer_->OnCacheFileUploadNeededByOperation(resource_id);
+void GetFileForSavingOperation::OnWriteEvent(const std::string& local_id) {
+  observer_->OnCacheFileUploadNeededByOperation(local_id);
 
   // Clients may have enlarged the file. By FreeDiskpSpaceIfNeededFor(0),
   // we try to ensure (0 + the-minimum-safe-margin = 512MB as of now) space.
