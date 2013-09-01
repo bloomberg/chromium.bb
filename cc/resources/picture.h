@@ -45,6 +45,7 @@ class CC_EXPORT Picture
 
   static scoped_refptr<Picture> Create(gfx::Rect layer_rect);
   static scoped_refptr<Picture> CreateFromValue(const base::Value* value);
+  static scoped_refptr<Picture> CreateFromSkpValue(const base::Value* value);
 
   gfx::Rect LayerRect() const { return layer_rect_; }
   gfx::Rect OpaqueRect() const { return opaque_rect_; }

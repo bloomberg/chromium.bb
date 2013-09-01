@@ -93,6 +93,27 @@ Picture::Picture(gfx::Rect layer_rect)
   // the picture to be recorded in Picture::Record.
 }
 
+scoped_refptr<Picture> Picture::CreateFromSkpValue(const base::Value* value) {
+  // Decode the picture from base64.
+  std::string encoded;
+  if (!value->GetAsString(&encoded))
+    return NULL;
+
+  std::string decoded;
+  base::Base64Decode(encoded, &decoded);
+  SkMemoryStream stream(decoded.data(), decoded.size());
+
+  // Read the picture. This creates an empty picture on failure.
+  SkPicture* skpicture = SkPicture::CreateFromStream(&stream, &DecodeBitmap);
+  if (skpicture == NULL)
+    return NULL;
+
+  gfx::Rect layer_rect(skpicture->width(), skpicture->height());
+  gfx::Rect opaque_rect(skpicture->width(), skpicture->height());
+
+  return make_scoped_refptr(new Picture(skpicture, layer_rect, opaque_rect));
+}
+
 scoped_refptr<Picture> Picture::CreateFromValue(const base::Value* raw_value) {
   const base::DictionaryValue* value = NULL;
   if (!raw_value->GetAsDictionary(&value))

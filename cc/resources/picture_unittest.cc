@@ -377,5 +377,58 @@ TEST(PictureTest, PixelRefIteratorOnePixelQuery) {
     }
   }
 }
+
+TEST(PictureTest, CreateFromSkpValue) {
+  SkGraphics::Init();
+
+  gfx::Rect layer_rect(100, 200);
+
+  SkTileGridPicture::TileGridInfo tile_grid_info;
+  tile_grid_info.fTileInterval = SkISize::Make(100, 200);
+  tile_grid_info.fMargin.setEmpty();
+  tile_grid_info.fOffset.setZero();
+
+  FakeContentLayerClient content_layer_client;
+  FakeRenderingStatsInstrumentation stats_instrumentation;
+
+  scoped_ptr<base::Value> tmp;
+
+  SkPaint red_paint;
+  red_paint.setColor(SkColorSetARGB(255, 255, 0, 0));
+  SkPaint green_paint;
+  green_paint.setColor(SkColorSetARGB(255, 0, 255, 0));
+
+  // Invalid picture (not a dict).
+  tmp.reset(new base::StringValue("abc!@#$%"));
+  scoped_refptr<Picture> invalid_picture =
+      Picture::CreateFromSkpValue(tmp.get());
+  EXPECT_TRUE(!invalid_picture.get());
+
+  // Single full-size rect picture.
+  content_layer_client.add_draw_rect(layer_rect, red_paint);
+  scoped_refptr<Picture> one_rect_picture = Picture::Create(layer_rect);
+  one_rect_picture->Record(&content_layer_client,
+                           tile_grid_info,
+                           &stats_instrumentation);
+  scoped_ptr<base::Value> serialized_one_rect(
+      one_rect_picture->AsValue());
+
+  const base::DictionaryValue* value = NULL;
+  EXPECT_TRUE(serialized_one_rect->GetAsDictionary(&value));
+
+  // Decode the picture from base64.
+  const base::Value* skp_value;
+  EXPECT_TRUE(value->Get("skp64", &skp_value));
+
+  // Reconstruct the picture.
+  scoped_refptr<Picture> one_rect_picture_check =
+      Picture::CreateFromSkpValue(skp_value);
+  EXPECT_TRUE(!!one_rect_picture_check.get());
+
+  EXPECT_EQ(100, one_rect_picture_check->LayerRect().width());
+  EXPECT_EQ(200, one_rect_picture_check->LayerRect().height());
+  EXPECT_EQ(100, one_rect_picture_check->OpaqueRect().width());
+  EXPECT_EQ(200, one_rect_picture_check->OpaqueRect().height());
+}
 }  // namespace
 }  // namespace cc

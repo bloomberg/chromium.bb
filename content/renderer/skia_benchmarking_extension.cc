@@ -4,6 +4,7 @@
 
 #include "content/renderer/skia_benchmarking_extension.h"
 
+#include "base/base64.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
@@ -16,6 +17,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkGraphics.h"
+#include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/src/utils/debugger/SkDebugCanvas.h"
 #include "third_party/skia/src/utils/debugger/SkDrawCommand.h"
 #include "ui/gfx/rect_conversions.h"
@@ -28,16 +30,24 @@ namespace {
 
 const char kSkiaBenchmarkingExtensionName[] = "v8/SkiaBenchmarking";
 
-static scoped_refptr<cc::Picture> ParsePictureArg(v8::Handle<v8::Value> arg) {
+static scoped_ptr<base::Value> ParsePictureArg(v8::Handle<v8::Value> arg) {
   scoped_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
-
-  v8::String::Value v8_picture(arg);
-  scoped_ptr<base::Value> picture_value(
+  return scoped_ptr<base::Value>(
       converter->FromV8Value(arg, v8::Context::GetCurrent()));
+}
+
+static scoped_refptr<cc::Picture> ParsePictureStr(v8::Handle<v8::Value> arg) {
+  scoped_ptr<base::Value> picture_value = ParsePictureArg(arg);
   if (!picture_value)
     return NULL;
+  return cc::Picture::CreateFromSkpValue(picture_value.get());
+}
 
+static scoped_refptr<cc::Picture> ParsePictureHash(v8::Handle<v8::Value> arg) {
+  scoped_ptr<base::Value> picture_value = ParsePictureArg(arg);
+  if (!picture_value)
+    return NULL;
   return cc::Picture::CreateFromValue(picture_value.get());
 }
 
@@ -94,6 +104,16 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
         "  native function GetOpTimings();"
         "  return GetOpTimings(picture);"
         "};"
+        "chrome.skiaBenchmarking.getInfo = function(picture) {"
+        "  /* "
+        "     Returns meta information for the given picture."
+        "     @param {Object} picture A base64 encoded SKP."
+        "     @returns { 'width': {Number}, 'height': {Number} }"
+        "     @returns undefined if the picture version is not supported."
+        "   */"
+        "  native function GetInfo();"
+        "  return GetInfo(picture);"
+        "};"
         ) {
       content::SkiaBenchmarkingExtension::InitSkGraphics();
   }
@@ -106,6 +126,8 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(GetOps);
     if (name->Equals(v8::String::New("GetOpTimings")))
       return v8::FunctionTemplate::New(GetOpTimings);
+    if (name->Equals(v8::String::New("GetInfo")))
+      return v8::FunctionTemplate::New(GetInfo);
 
     return v8::Handle<v8::FunctionTemplate>();
   }
@@ -114,7 +136,7 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     if (args.Length() < 1)
       return;
 
-    scoped_refptr<cc::Picture> picture = ParsePictureArg(args[0]);
+    scoped_refptr<cc::Picture> picture = ParsePictureHash(args[0]);
     if (!picture.get())
       return;
 
@@ -205,7 +227,7 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     if (args.Length() != 1)
       return;
 
-    scoped_refptr<cc::Picture> picture = ParsePictureArg(args[0]);
+    scoped_refptr<cc::Picture> picture = ParsePictureHash(args[0]);
     if (!picture.get())
       return;
 
@@ -243,7 +265,7 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     if (args.Length() != 1)
       return;
 
-    scoped_refptr<cc::Picture> picture = ParsePictureArg(args[0]);
+    scoped_refptr<cc::Picture> picture = ParsePictureHash(args[0]);
     if (!picture.get())
       return;
 
@@ -273,6 +295,23 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     result->Set(v8::String::New("total_time"),
                 v8::Number::New(total_time.InMillisecondsF()));
     result->Set(v8::String::New("cmd_times"), op_times);
+
+    args.GetReturnValue().Set(result);
+  }
+
+  static void GetInfo(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    if (args.Length() != 1)
+      return;
+
+    scoped_refptr<cc::Picture> picture = ParsePictureStr(args[0]);
+    if (!picture.get())
+      return;
+
+    v8::Handle<v8::Object> result = v8::Object::New();
+    result->Set(v8::String::New("width"),
+                v8::Number::New(picture->LayerRect().width()));
+    result->Set(v8::String::New("height"),
+                v8::Number::New(picture->LayerRect().height()));
 
     args.GetReturnValue().Set(result);
   }
