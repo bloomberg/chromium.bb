@@ -285,6 +285,9 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id,
     AddPrematurelyClosedStream(stream->id());
   }
   closed_streams_.push_back(it->second);
+  if (ContainsKey(zombie_streams_, stream->id())) {
+    zombie_streams_.erase(stream->id());
+  }
   stream_map_.erase(it);
   stream->OnClose();
 }

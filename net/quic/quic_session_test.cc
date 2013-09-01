@@ -324,12 +324,15 @@ TEST_F(QuicSessionTest, ZombieStream) {
   EXPECT_EQ(3u, stream3->id());
   TestStream* stream5 = session.CreateOutgoingReliableStream();
   EXPECT_EQ(5u, stream5->id());
+  EXPECT_EQ(2u, session.GetNumOpenStreams());
 
   // Reset the stream, but since the headers have not been decompressed
   // it will become a zombie and will continue to process data
   // until the headers are decompressed.
   EXPECT_CALL(*connection, SendRstStream(3, QUIC_STREAM_CANCELLED));
   session.SendRstStream(3, QUIC_STREAM_CANCELLED);
+
+  EXPECT_EQ(1u, session.GetNumOpenStreams());
 
   vector<QuicStreamFrame> frames;
   QuicPacketHeader header;
@@ -345,8 +348,34 @@ TEST_F(QuicSessionTest, ZombieStream) {
   frames.push_back(frame1);
   EXPECT_FALSE(stream3->headers_decompressed());
   session.OnPacket(IPEndPoint(), IPEndPoint(), header, frames);
+  EXPECT_EQ(1u, session.GetNumOpenStreams());
 
   EXPECT_TRUE(connection->connected());
+}
+
+TEST_F(QuicSessionTest, ZombieStreamConnectionClose) {
+  StrictMock<MockConnection>* connection =
+      new StrictMock<MockConnection>(guid_, IPEndPoint(), false);
+  TestSession session(connection, /*is_server=*/ false);
+
+  TestStream* stream3 = session.CreateOutgoingReliableStream();
+  EXPECT_EQ(3u, stream3->id());
+  TestStream* stream5 = session.CreateOutgoingReliableStream();
+  EXPECT_EQ(5u, stream5->id());
+  EXPECT_EQ(2u, session.GetNumOpenStreams());
+
+  stream3->CloseWriteSide();
+  // Reset the stream, but since the headers have not been decompressed
+  // it will become a zombie and will continue to process data
+  // until the headers are decompressed.
+  EXPECT_CALL(*connection, SendRstStream(3, QUIC_STREAM_CANCELLED));
+  session.SendRstStream(3, QUIC_STREAM_CANCELLED);
+
+  EXPECT_EQ(1u, session.GetNumOpenStreams());
+
+  connection->CloseConnection(QUIC_CONNECTION_TIMED_OUT, false);
+
+  EXPECT_EQ(0u, session.GetNumOpenStreams());
 }
 
 }  // namespace
