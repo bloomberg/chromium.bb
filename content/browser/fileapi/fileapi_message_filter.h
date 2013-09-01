@@ -45,6 +45,7 @@ class URLRequestContextGetter;
 }  // namespace net
 
 namespace webkit_blob {
+class BlobStorageHost;
 class ShareableFileReference;
 }
 
@@ -111,6 +112,11 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   void OnReadDirectory(int request_id, const GURL& path);
   void OnWrite(int request_id,
                const GURL& path,
+               const std::string& blob_uuid,
+               int64 offset);
+  void OnWriteDeprecated(
+               int request_id,
+               const GURL& path,
                const GURL& blob_url,
                int64 offset);
   void OnTruncate(int request_id, const GURL& path, int64 length);
@@ -131,14 +137,26 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
 
   // Handlers for BlobHostMsg_ family messages.
 
-  void OnStartBuildingBlob(const GURL& url);
-  void OnAppendBlobDataItemToBlob(
-      const GURL& url, const webkit_blob::BlobData::Item& item);
-  void OnAppendSharedMemoryToBlob(
-      const GURL& url, base::SharedMemoryHandle handle, size_t buffer_size);
-  void OnFinishBuildingBlob(const GURL& url, const std::string& content_type);
-  void OnCloneBlob(const GURL& url, const GURL& src_url);
-  void OnRemoveBlob(const GURL& url);
+  void OnStartBuildingBlob(const std::string& uuid);
+  void OnAppendBlobDataItemToBlob(const std::string& uuid,
+                                  const webkit_blob::BlobData::Item& item);
+  void OnAppendSharedMemoryToBlob(const std::string& uuid,
+                                  base::SharedMemoryHandle handle,
+                                  size_t buffer_size);
+  void OnFinishBuildingBlob(const std::string& uuid,
+                             const std::string& content_type);
+  void OnCancelBuildingBlob(const std::string& uuid);
+  void OnIncrementBlobRefCount(const std::string& uuid);
+  void OnDecrementBlobRefCount(const std::string& uuid);
+  void OnRegisterPublicBlobURL(const GURL& public_url, const std::string& uuid);
+  void OnRevokePublicBlobURL(const GURL& public_url);
+
+  // Extra methods to establish a mapping from old-style blobURLs to uuids,
+  // and to clone them. These won't be here for long, just during a
+  // transition period. See crbug/174200
+  void OnDeprecatedRegisterBlobURL(const GURL& url, const std::string& uuid);
+  void OnDeprecatedCloneBlobURL(const GURL& url, const GURL& existing_url);
+  void OnDeprecatedRevokeBlobURL(const GURL& url);
 
   // Handlers for StreamHostMsg_ family messages.
   //
@@ -225,9 +243,9 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
 
   scoped_ptr<fileapi::FileSystemOperationRunner> operation_runner_;
 
-  // Keep track of blob URLs registered in this process. Need to unregister
-  // all of them when the renderer process dies.
-  base::hash_set<std::string> blob_urls_;
+  // Keeps track of blobs used in this process and cleans up
+  // when the renderer process dies.
+  scoped_ptr<webkit_blob::BlobStorageHost> blob_storage_host_;
 
   // Keep track of stream URLs registered in this process. Need to unregister
   // all of them when the renderer process dies.

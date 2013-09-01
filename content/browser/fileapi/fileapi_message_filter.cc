@@ -28,7 +28,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
-#include "webkit/browser/blob/blob_storage_controller.h"
+#include "webkit/browser/blob/blob_storage_context.h"
+#include "webkit/browser/blob/blob_storage_host.h"
 #include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -47,7 +48,8 @@ using fileapi::FileSystemURL;
 using fileapi::FileUpdateObserver;
 using fileapi::UpdateObserverList;
 using webkit_blob::BlobData;
-using webkit_blob::BlobStorageController;
+using webkit_blob::BlobStorageContext;
+using webkit_blob::BlobStorageHost;
 
 namespace content {
 
@@ -106,6 +108,9 @@ void FileAPIMessageFilter::OnChannelConnected(int32 peer_pid) {
     DCHECK(request_context_);
   }
 
+  blob_storage_host_.reset(
+      new BlobStorageHost(blob_storage_context_->context()));
+
   operation_runner_ = context_->CreateFileSystemOperationRunner();
 }
 
@@ -115,10 +120,7 @@ void FileAPIMessageFilter::OnChannelClosing() {
 
   // Unregister all the blob and stream URLs that are previously registered in
   // this process.
-  for (base::hash_set<std::string>::const_iterator iter = blob_urls_.begin();
-       iter != blob_urls_.end(); ++iter) {
-    blob_storage_context_->controller()->RemoveBlob(GURL(*iter));
-  }
+  blob_storage_host_.reset();
   for (base::hash_set<std::string>::const_iterator iter = stream_urls_.begin();
        iter != stream_urls_.end(); ++iter) {
     stream_context_->registry()->UnregisterStream(GURL(*iter));
@@ -168,6 +170,7 @@ bool FileAPIMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Exists, OnExists)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_ReadDirectory, OnReadDirectory)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Write, OnWrite)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_WriteDeprecated, OnWriteDeprecated)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Truncate, OnTruncate)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_TouchFile, OnTouchFile)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_CancelWrite, OnCancel)
@@ -187,8 +190,19 @@ bool FileAPIMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(BlobHostMsg_SyncAppendSharedMemory,
                         OnAppendSharedMemoryToBlob)
     IPC_MESSAGE_HANDLER(BlobHostMsg_FinishBuilding, OnFinishBuildingBlob)
-    IPC_MESSAGE_HANDLER(BlobHostMsg_Clone, OnCloneBlob)
-    IPC_MESSAGE_HANDLER(BlobHostMsg_Remove, OnRemoveBlob)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_IncrementRefCount,
+                        OnIncrementBlobRefCount)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_DecrementRefCount,
+                        OnDecrementBlobRefCount)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_RegisterPublicURL,
+                        OnRegisterPublicBlobURL)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_RevokePublicURL, OnRevokePublicBlobURL)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_DeprecatedRegisterBlobURL,
+                        OnDeprecatedRegisterBlobURL)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_DeprecatedRevokeBlobURL,
+                        OnDeprecatedRevokeBlobURL)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_DeprecatedCloneBlobURL,
+                        OnDeprecatedCloneBlobURL)
     IPC_MESSAGE_HANDLER(StreamHostMsg_StartBuilding, OnStartBuildingStream)
     IPC_MESSAGE_HANDLER(StreamHostMsg_AppendBlobDataItem,
                         OnAppendBlobDataItemToStream)
@@ -361,10 +375,20 @@ void FileAPIMessageFilter::OnReadDirectory(
                       this, request_id));
 }
 
-void FileAPIMessageFilter::OnWrite(
+void FileAPIMessageFilter::OnWriteDeprecated(
     int request_id,
     const GURL& path,
     const GURL& blob_url,
+    int64 offset) {
+  std::string uuid =
+      blob_storage_context_->context()->LookupUuidFromDeprecatedURL(blob_url);
+  OnWrite(request_id, path, uuid, offset);
+}
+
+void FileAPIMessageFilter::OnWrite(
+    int request_id,
+    const GURL& path,
+    const std::string& blob_uuid,
     int64 offset) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!request_context_) {
@@ -380,8 +404,11 @@ void FileAPIMessageFilter::OnWrite(
     return;
   }
 
+  scoped_ptr<webkit_blob::BlobDataHandle> blob =
+      blob_storage_context_->context()->GetBlobDataFromUUID(blob_uuid);
+
   operations_[request_id] = operation_runner()->Write(
-      request_context_, url, blob_url, offset,
+      request_context_, url, blob.Pass(), offset,
       base::Bind(&FileAPIMessageFilter::DidWrite, this, request_id));
 }
 
@@ -537,39 +564,40 @@ void FileAPIMessageFilter::OnDidReceiveSnapshotFile(int request_id) {
   in_transit_snapshot_files_.erase(request_id);
 }
 
-void FileAPIMessageFilter::OnStartBuildingBlob(const GURL& url) {
+void FileAPIMessageFilter::OnStartBuildingBlob(const std::string& uuid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  blob_storage_context_->controller()->StartBuildingBlob(url);
-  blob_urls_.insert(url.spec());
+  ignore_result(blob_storage_host_->StartBuildingBlob(uuid));
 }
 
 void FileAPIMessageFilter::OnAppendBlobDataItemToBlob(
-    const GURL& url, const BlobData::Item& item) {
+    const std::string& uuid, const BlobData::Item& item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (item.type() == BlobData::Item::TYPE_FILE_FILESYSTEM) {
     base::PlatformFileError error;
-    FileSystemURL filesystem_url(context_->CrackURL(item.url()));
+    FileSystemURL filesystem_url(context_->CrackURL(item.filesystem_url()));
     if (!HasPermissionsForFile(filesystem_url,
                                fileapi::kReadFilePermissions, &error)) {
-      OnRemoveBlob(url);
+      ignore_result(blob_storage_host_->CancelBuildingBlob(uuid));
       return;
     }
   }
   if (item.type() == BlobData::Item::TYPE_FILE &&
       !ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
           process_id_, item.path())) {
-    OnRemoveBlob(url);
+    ignore_result(blob_storage_host_->CancelBuildingBlob(uuid));
     return;
   }
   if (item.length() == 0) {
     BadMessageReceived();
     return;
   }
-  blob_storage_context_->controller()->AppendBlobDataItem(url, item);
+  ignore_result(blob_storage_host_->AppendBlobDataItem(uuid, item));
 }
 
 void FileAPIMessageFilter::OnAppendSharedMemoryToBlob(
-    const GURL& url, base::SharedMemoryHandle handle, size_t buffer_size) {
+    const std::string& uuid,
+    base::SharedMemoryHandle handle,
+    size_t buffer_size) {
   DCHECK(base::SharedMemory::IsHandleValid(handle));
   if (!buffer_size) {
     BadMessageReceived();
@@ -581,33 +609,59 @@ void FileAPIMessageFilter::OnAppendSharedMemoryToBlob(
   base::SharedMemory shared_memory(handle, true);
 #endif
   if (!shared_memory.Map(buffer_size)) {
-    OnRemoveBlob(url);
+    ignore_result(blob_storage_host_->CancelBuildingBlob(uuid));
     return;
   }
 
   BlobData::Item item;
   item.SetToSharedBytes(static_cast<char*>(shared_memory.memory()),
                         buffer_size);
-  blob_storage_context_->controller()->AppendBlobDataItem(url, item);
+  ignore_result(blob_storage_host_->AppendBlobDataItem(uuid, item));
 }
 
 void FileAPIMessageFilter::OnFinishBuildingBlob(
-    const GURL& url, const std::string& content_type) {
+    const std::string& uuid, const std::string& content_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  blob_storage_context_->controller()->FinishBuildingBlob(url, content_type);
+  ignore_result(blob_storage_host_->FinishBuildingBlob(uuid, content_type));
+  // TODO(michaeln): check return values once blink has migrated, crbug/174200
 }
 
-void FileAPIMessageFilter::OnCloneBlob(
+void FileAPIMessageFilter::OnIncrementBlobRefCount(const std::string& uuid) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  ignore_result(blob_storage_host_->IncrementBlobRefCount(uuid));
+}
+
+void FileAPIMessageFilter::OnDecrementBlobRefCount(const std::string& uuid) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  ignore_result(blob_storage_host_->DecrementBlobRefCount(uuid));
+}
+
+void FileAPIMessageFilter::OnRegisterPublicBlobURL(
+    const GURL& public_url, const std::string& uuid) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  ignore_result(blob_storage_host_->RegisterPublicBlobURL(public_url, uuid));
+}
+
+void FileAPIMessageFilter::OnRevokePublicBlobURL(const GURL& public_url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  ignore_result(blob_storage_host_->RevokePublicBlobURL(public_url));
+}
+
+void FileAPIMessageFilter::OnDeprecatedRegisterBlobURL(
+    const GURL& url, const std::string& uuid) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  blob_storage_host_->DeprecatedRegisterBlobURL(url, uuid);
+}
+
+void FileAPIMessageFilter::OnDeprecatedCloneBlobURL(
     const GURL& url, const GURL& src_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  blob_storage_context_->controller()->CloneBlob(url, src_url);
-  blob_urls_.insert(url.spec());
+  blob_storage_host_->DeprecatedCloneBlobURL(url, src_url);
 }
 
-void FileAPIMessageFilter::OnRemoveBlob(const GURL& url) {
+void FileAPIMessageFilter::OnDeprecatedRevokeBlobURL(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  blob_storage_context_->controller()->RemoveBlob(url);
-  blob_urls_.erase(url.spec());
+  blob_storage_host_->DeprecatedRevokeBlobURL(url);
 }
 
 void FileAPIMessageFilter::OnStartBuildingStream(

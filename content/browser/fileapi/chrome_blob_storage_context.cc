@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/browser/blob/blob_storage_controller.h"
+#include "webkit/browser/blob/blob_storage_context.h"
 
 using base::UserDataAdapter;
-using webkit_blob::BlobStorageController;
+using webkit_blob::BlobStorageContext;
 
 namespace content {
 
@@ -40,7 +40,7 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
 
 void ChromeBlobStorageContext::InitializeOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  controller_.reset(new BlobStorageController());
+  context_.reset(new BlobStorageContext());
 }
 
 ChromeBlobStorageContext::~ChromeBlobStorageContext() {}

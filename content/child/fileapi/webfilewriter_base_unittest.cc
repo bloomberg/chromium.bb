@@ -52,6 +52,7 @@ class TestableFileWriter : public WebFileWriterBase {
     received_write_path_ = GURL();
     received_write_offset_ = kNoOffset;
     received_write_blob_url_ = GURL();
+    received_write_blob_uuid_ = std::string();
     received_cancel_ = false;
   }
 
@@ -61,6 +62,7 @@ class TestableFileWriter : public WebFileWriterBase {
   bool received_write_;
   GURL received_write_path_;
   GURL received_write_blob_url_;
+  std::string received_write_blob_uuid_;
   int64 received_write_offset_;
   bool received_cancel_;
 
@@ -87,12 +89,48 @@ class TestableFileWriter : public WebFileWriterBase {
     }
   }
 
-  virtual void DoWrite(const GURL& path, const GURL& blob_url,
-                       int64 offset) OVERRIDE {
+  virtual void DoWriteDeprecated(
+        const GURL& path, const GURL& blob_url,
+        int64 offset) OVERRIDE {
     received_write_ = true;
     received_write_path_ = path;
     received_write_offset_ = offset;
     received_write_blob_url_ = blob_url;
+
+    if (offset == kBasicFileWrite_Offset) {
+      DidWrite(1, true);
+    } else if (offset == kErrorFileWrite_Offset) {
+      DidFail(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    } else if (offset == kMultiFileWrite_Offset) {
+      DidWrite(1, false);
+      DidWrite(1, false);
+      DidWrite(1, true);
+    } else if (offset == kCancelFileWriteBeforeCompletion_Offset) {
+      DidWrite(1, false);
+      cancel();
+      DidWrite(1, false);
+      DidWrite(1, false);
+      DidFail(base::PLATFORM_FILE_ERROR_FAILED);  // write completion
+      DidSucceed();  // cancel completion
+    } else if (offset == kCancelFileWriteAfterCompletion_Offset) {
+      DidWrite(1, false);
+      cancel();
+      DidWrite(1, false);
+      DidWrite(1, false);
+      DidWrite(1, true);  // write completion
+      DidFail(base::PLATFORM_FILE_ERROR_FAILED);  // cancel completion
+    } else {
+      FAIL();
+    }
+  }
+
+  virtual void DoWrite(
+        const GURL& path, const std::string& blob_uuid,
+        int64 offset) OVERRIDE {
+    received_write_ = true;
+    received_write_path_ = path;
+    received_write_offset_ = offset;
+    received_write_blob_uuid_ = blob_uuid;
 
     if (offset == kBasicFileWrite_Offset) {
       DidWrite(1, true);
@@ -189,6 +227,9 @@ class FileWriterTest : public testing::Test,
 
   DISALLOW_COPY_AND_ASSIGN(FileWriterTest);
 };
+
+
+// TODO(michaeln): crbug/174200, update the tests once blink is migrated.
 
 TEST_F(FileWriterTest, BasicFileWrite) {
   // Call the webkit facing api.

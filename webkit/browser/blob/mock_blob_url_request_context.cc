@@ -4,71 +4,45 @@
 
 #include "webkit/browser/blob/mock_blob_url_request_context.h"
 
-#include "webkit/browser/blob/blob_storage_controller.h"
+#include "webkit/browser/blob/blob_storage_context.h"
 #include "webkit/browser/blob/blob_url_request_job.h"
+#include "webkit/browser/blob/blob_url_request_job_factory.h"
 #include "webkit/common/blob/blob_data.h"
+
 
 namespace webkit_blob {
 
-namespace {
-
-class MockBlobProtocolHandler
-    : public net::URLRequestJobFactory::ProtocolHandler {
- public:
-  explicit MockBlobProtocolHandler(
-      BlobStorageController* blob_storage_controller,
-      fileapi::FileSystemContext* file_system_context)
-      : blob_storage_controller_(blob_storage_controller),
-        file_system_context_(file_system_context) {}
-
-  virtual ~MockBlobProtocolHandler() {}
-
-  virtual net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return new BlobURLRequestJob(
-        request,
-        network_delegate,
-        blob_storage_controller_->GetBlobDataFromUrl(request->url()),
-        file_system_context_,
-        base::MessageLoopProxy::current().get());
-  }
-
- private:
-  webkit_blob::BlobStorageController* const blob_storage_controller_;
-  fileapi::FileSystemContext* const file_system_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockBlobProtocolHandler);
-};
-
-}  // namespace
-
 MockBlobURLRequestContext::MockBlobURLRequestContext(
     fileapi::FileSystemContext* file_system_context)
-    : blob_storage_controller_(new BlobStorageController) {
+    : blob_storage_context_(new BlobStorageContext) {
   // Job factory owns the protocol handler.
   job_factory_.SetProtocolHandler(
-      "blob", new MockBlobProtocolHandler(blob_storage_controller_.get(),
-                                          file_system_context));
+      "blob", new BlobProtocolHandler(file_system_context,
+                                      base::MessageLoopProxy::current()));
   set_job_factory(&job_factory_);
 }
 
-MockBlobURLRequestContext::~MockBlobURLRequestContext() {}
+MockBlobURLRequestContext::~MockBlobURLRequestContext() {
+}
 
 ScopedTextBlob::ScopedTextBlob(
     const MockBlobURLRequestContext& request_context,
-    const GURL& blob_url,
+    const std::string& blob_id,
     const std::string& data)
-    : blob_url_(blob_url),
-      blob_storage_controller_(request_context.blob_storage_controller()) {
-  DCHECK(blob_storage_controller_);
-  scoped_refptr<BlobData> blob_data(new BlobData());
-  blob_data->AppendData(data);
-  blob_storage_controller_->AddFinishedBlob(blob_url_, blob_data.get());
+    : blob_id_(blob_id),
+      context_(request_context.blob_storage_context()) {
+  DCHECK(context_);
+  scoped_refptr<BlobData> blob_data(new BlobData(blob_id_));
+  if (!data.empty())
+    blob_data->AppendData(data);
+  handle_ = context_->AddFinishedBlob(blob_data);
 }
 
 ScopedTextBlob::~ScopedTextBlob() {
-  blob_storage_controller_->RemoveBlob(blob_url_);
+}
+
+scoped_ptr<BlobDataHandle> ScopedTextBlob::GetBlobDataHandle() {
+  return context_->GetBlobDataFromUUID(blob_id_);
 }
 
 }  // namespace webkit_blob

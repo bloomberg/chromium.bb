@@ -24,12 +24,23 @@ class WebBlobRegistryImpl : public WebKit::WebBlobRegistry {
   explicit WebBlobRegistryImpl(ThreadSafeSender* sender);
   virtual ~WebBlobRegistryImpl();
 
+  virtual void registerBlobData(const WebKit::WebString& uuid,
+                                const WebKit::WebBlobData& data);
+  virtual void addBlobDataRef(const WebKit::WebString& uuid);
+  virtual void removeBlobDataRef(const WebKit::WebString& uuid);
+  virtual void registerPublicBlobURL(const WebKit::WebURL&,
+                                     const WebKit::WebString& uuid);
+  virtual void revokePublicBlobURL(const WebKit::WebURL&);
+
+  // DEPRECATED
+  // TODO(michaeln): crbug/174200
   virtual void registerBlobURL(const WebKit::WebURL& url,
                                WebKit::WebBlobData& data);
   virtual void registerBlobURL(const WebKit::WebURL& url,
                                const WebKit::WebURL& src_url);
   virtual void unregisterBlobURL(const WebKit::WebURL& url);
 
+  // Additional support for Streams.
   virtual void registerStreamURL(const WebKit::WebURL& url,
                                  const WebKit::WebString& content_type);
   virtual void registerStreamURL(const WebKit::WebURL& url,
@@ -41,7 +52,7 @@ class WebBlobRegistryImpl : public WebKit::WebBlobRegistry {
   virtual void unregisterStreamURL(const WebKit::WebURL& url);
 
  private:
-  void SendDataForBlob(const WebKit::WebURL& url,
+  void SendDataForBlob(const std::string& uuid_str,
                        const WebKit::WebThreadSafeData& data);
 
   scoped_refptr<ThreadSafeSender> sender_;

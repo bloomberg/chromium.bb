@@ -87,7 +87,10 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "webkit/browser/appcache/appcache_interceptor.h"
-#include "webkit/browser/blob/blob_storage_controller.h"
+#include "webkit/common/blob/blob_data.h"
+#include "webkit/browser/blob/blob_data_handle.h"
+#include "webkit/browser/blob/blob_storage_context.h"
+#include "webkit/browser/blob/blob_url_request_job_factory.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
@@ -216,11 +219,12 @@ bool ShouldServiceRequest(int process_type,
         return false;
       }
       if (iter->type() == ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM) {
-        fileapi::FileSystemURL url = file_system_context->CrackURL(iter->url());
+        fileapi::FileSystemURL url =
+            file_system_context->CrackURL(iter->filesystem_url());
         if (!policy->HasPermissionsForFileSystemFile(
                 child_id, url, fileapi::kReadFilePermissions)) {
           NOTREACHED() << "Denied unauthorized upload of "
-                       << iter->url().spec();
+                       << iter->filesystem_url().spec();
           return false;
         }
       }
@@ -501,6 +505,14 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
   ResourceRequestInfoImpl* extra_info =
       CreateRequestInfo(child_id, route_id, true, context);
   extra_info->AssociateWithRequest(request.get());  // Request takes ownership.
+
+  if (request->url().SchemeIs(chrome::kBlobScheme)) {
+    ChromeBlobStorageContext* blob_context =
+        GetChromeBlobStorageContextForResourceContext(context);
+    webkit_blob::BlobProtocolHandler::SetRequestedBlobDataHandle(
+        request.get(),
+        blob_context->context()->GetBlobDataFromPublicURL(request->url()));
+  }
 
   // From this point forward, the |DownloadResourceHandler| is responsible for
   // |started_callback|.
@@ -982,7 +994,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   if (request_data.request_body.get()) {
     request->set_upload(UploadDataStreamBuilder::Build(
         request_data.request_body.get(),
-        filter_->blob_storage_context()->controller(),
+        filter_->blob_storage_context()->context(),
         filter_->file_system_context(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
             .get()));
@@ -1017,9 +1029,10 @@ void ResourceDispatcherHostImpl::BeginRequest(
   if (request->url().SchemeIs(chrome::kBlobScheme)) {
     // Hang on to a reference to ensure the blob is not released prior
     // to the job being started.
-    extra_info->set_requested_blob_data(
-        filter_->blob_storage_context()->controller()->
-            GetBlobDataFromUrl(request->url()));
+    webkit_blob::BlobProtocolHandler::SetRequestedBlobDataHandle(
+        request,
+        filter_->blob_storage_context()->context()->
+            GetBlobDataFromPublicURL(request->url()));
   }
 
   // Have the appcache associate its extra info with the request.

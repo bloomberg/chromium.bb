@@ -15,34 +15,40 @@ class FileSystemContext;
 
 namespace webkit_blob {
 
-class BlobStorageController;
+class BlobDataHandle;
+class BlobStorageContext;
 
 class MockBlobURLRequestContext : public net::URLRequestContext {
  public:
   MockBlobURLRequestContext(fileapi::FileSystemContext* file_system_context);
   virtual ~MockBlobURLRequestContext();
 
-  BlobStorageController* blob_storage_controller() const {
-    return blob_storage_controller_.get();
+  BlobStorageContext* blob_storage_context() const {
+    return blob_storage_context_.get();
   }
 
  private:
   net::URLRequestJobFactoryImpl job_factory_;
-  scoped_ptr<BlobStorageController> blob_storage_controller_;
+  scoped_ptr<BlobStorageContext> blob_storage_context_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBlobURLRequestContext);
 };
 
 class ScopedTextBlob {
  public:
+  // Registers a blob with the given |id| that contains |data|.
   ScopedTextBlob(const MockBlobURLRequestContext& request_context,
-                 const GURL& blob_url,
+                 const std::string& blob_id,
                  const std::string& data);
   ~ScopedTextBlob();
 
+  // Returns a BlobDataHandle referring to the scoped blob.
+  scoped_ptr<BlobDataHandle> GetBlobDataHandle();
+
  private:
-  const GURL blob_url_;
-  BlobStorageController* blob_storage_controller_;
+  const std::string blob_id_;
+  BlobStorageContext* context_;
+  scoped_ptr<BlobDataHandle> handle_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedTextBlob);
 };

@@ -18,7 +18,7 @@ class URLRequest;
 namespace webkit_blob {
 
 class BlobData;
-class BlobStorageController;
+class BlobStorageContext;
 
 // A job subclass that implements a protocol to inspect the internal
 // state of blob registry.
@@ -27,7 +27,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT ViewBlobInternalsJob
  public:
   ViewBlobInternalsJob(net::URLRequest* request,
                        net::NetworkDelegate* network_delegate,
-                       BlobStorageController* blob_storage_controller);
+                       BlobStorageContext* blob_storage_context);
 
   virtual void Start() OVERRIDE;
   virtual int GetData(std::string* mime_type,
@@ -41,12 +41,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT ViewBlobInternalsJob
  private:
   virtual ~ViewBlobInternalsJob();
 
-  void DoWorkAsync();
   void GenerateHTML(std::string* out) const;
   static void GenerateHTMLForBlobData(const BlobData& blob_data,
+                                      int refcount,
                                       std::string* out);
 
-  BlobStorageController* blob_storage_controller_;
+  BlobStorageContext* blob_storage_context_;
   base::WeakPtrFactory<ViewBlobInternalsJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewBlobInternalsJob);

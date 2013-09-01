@@ -50,7 +50,21 @@ class WebFileWriterImpl::WriterBridge
         base::Bind(&WriterBridge::DidFinish, this));
   }
 
-  void Write(const GURL& path, const GURL& blob_url, int64 offset,
+  void WriteDeprecated(
+      const GURL& path, const GURL& blob_url, int64 offset,
+      const WriteCallback& write_callback,
+      const StatusCallback& error_callback) {
+    write_callback_ = write_callback;
+    status_callback_ = error_callback;
+    if (!GetFileSystemDispatcher())
+      return;
+    ChildThread::current()->file_system_dispatcher()->WriteDeprecated(
+        path, blob_url, offset, &request_id_,
+        base::Bind(&WriterBridge::DidWrite, this),
+        base::Bind(&WriterBridge::DidFinish, this));
+  }
+
+  void Write(const GURL& path, const std::string& id, int64 offset,
              const WriteCallback& write_callback,
              const StatusCallback& error_callback) {
     write_callback_ = write_callback;
@@ -58,7 +72,7 @@ class WebFileWriterImpl::WriterBridge
     if (!GetFileSystemDispatcher())
       return;
     ChildThread::current()->file_system_dispatcher()->Write(
-        path, blob_url, offset, &request_id_,
+        path, id, offset, &request_id_,
         base::Bind(&WriterBridge::DidWrite, this),
         base::Bind(&WriterBridge::DidFinish, this));
   }
@@ -139,10 +153,18 @@ void WebFileWriterImpl::DoTruncate(const GURL& path, int64 offset) {
       base::Bind(&WebFileWriterImpl::DidFinish, AsWeakPtr())));
 }
 
-void WebFileWriterImpl::DoWrite(
+void WebFileWriterImpl::DoWriteDeprecated(
     const GURL& path, const GURL& blob_url, int64 offset) {
-  RunOnMainThread(base::Bind(&WriterBridge::Write, bridge_,
+  RunOnMainThread(base::Bind(&WriterBridge::WriteDeprecated, bridge_,
       path, blob_url, offset,
+      base::Bind(&WebFileWriterImpl::DidWrite, AsWeakPtr()),
+      base::Bind(&WebFileWriterImpl::DidFinish, AsWeakPtr())));
+}
+
+void WebFileWriterImpl::DoWrite(
+    const GURL& path, const std::string& blob_id, int64 offset) {
+  RunOnMainThread(base::Bind(&WriterBridge::Write, bridge_,
+      path, blob_id, offset,
       base::Bind(&WebFileWriterImpl::DidWrite, AsWeakPtr()),
       base::Bind(&WebFileWriterImpl::DidFinish, AsWeakPtr())));
 }
