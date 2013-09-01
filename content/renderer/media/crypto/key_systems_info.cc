@@ -12,10 +12,8 @@
 
 // The following must be after widevine_cdm_version.h.
 
-#if defined(WIDEVINE_CDM_AVAILABLE) && \
-    defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
 #include <gnu/libc-version.h>
-#include "base/logging.h"
 #include "base/version.h"
 #endif
 
@@ -60,12 +58,12 @@ static const char kWidevineAudioMp4Codecs[] =
 #endif  // defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
 
 static void RegisterWidevine() {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
   Version glibc_version(gnu_get_libc_version());
   DCHECK(glibc_version.IsValid());
   if (glibc_version.IsOlderThan(WIDEVINE_CDM_MIN_GLIBC_VERSION))
     return;
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#endif  // defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
 
   AddConcreteSupportedKeySystem(
       kWidevineKeySystem,
