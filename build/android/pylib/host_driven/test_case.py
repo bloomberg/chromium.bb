@@ -77,12 +77,13 @@ class HostDrivenTestCase(object):
     # Get the test method on the derived class and execute it
     return getattr(self, self.test_name)()
 
-  def __RunJavaTest(self, test, test_pkg):
+  def __RunJavaTest(self, test, test_pkg, additional_flags=None):
     """Runs a single Java test in a Java TestRunner.
 
     Args:
       test: Fully qualified test name (ex. foo.bar.TestClass#testMethod)
       test_pkg: TestPackage object.
+      additional_flags: A list of additional flags to add to the command line.
 
     Returns:
       TestRunResults object with a single test result.
@@ -90,14 +91,15 @@ class HostDrivenTestCase(object):
     java_test_runner = test_runner.TestRunner(self.instrumentation_options,
                                               self.device_id,
                                               self.shard_index, test_pkg,
-                                              self.ports_to_forward)
+                                              self.ports_to_forward,
+                                              additional_flags=additional_flags)
     try:
       java_test_runner.SetUp()
       return java_test_runner.RunTest(test)[0]
     finally:
       java_test_runner.TearDown()
 
-  def _RunJavaTestFilters(self, test_filters):
+  def _RunJavaTestFilters(self, test_filters, additional_flags=None):
     """Calls a list of tests and stops at the first test failure.
 
     This method iterates until either it encounters a non-passing test or it
@@ -109,6 +111,7 @@ class HostDrivenTestCase(object):
 
     Args:
       test_filters: A list of Java test filters.
+      additional_flags: A list of addition flags to add to the command line.
 
     Returns:
       A TestRunResults object containing an overall result for this set of Java
@@ -132,7 +135,7 @@ class HostDrivenTestCase(object):
       for test in tests:
         # We're only running one test at a time, so this TestRunResults object
         # will hold only one result.
-        java_result = self.__RunJavaTest(test, test_pkg)
+        java_result = self.__RunJavaTest(test, test_pkg, additional_flags)
         assert len(java_result.GetAll()) == 1
         if not java_result.DidRunPass():
           result = java_result.GetNotPass().pop()

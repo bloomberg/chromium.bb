@@ -52,7 +52,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
   _DEVICE_HAS_TEST_FILES = {}
 
   def __init__(self, test_options, device, shard_index, test_pkg,
-               ports_to_forward):
+               ports_to_forward, additional_flags=None):
     """Create a new TestRunner.
 
     Args:
@@ -62,6 +62,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       test_pkg: A TestPackage object.
       ports_to_forward: A list of port numbers for which to set up forwarders.
           Can be optionally requested by a test case.
+      additional_flags: A list of additional flags to add to the command line.
     """
     super(TestRunner, self).__init__(device, test_options.tool,
                                      test_options.push_deps,
@@ -80,6 +81,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
       self.flags = flag_changer.FlagChanger(self.adb, cmdline_file[0])
     else:
       self.flags = flag_changer.FlagChanger(self.adb)
+    if additional_flags:
+      self.flags.AddFlags(additional_flags)
 
   #override
   def InstallTestPackage(self):
