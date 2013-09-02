@@ -21,10 +21,14 @@ const int kPeriodInMilliseconds = 100;
 class FakeDataFetcher : public DataFetcherSharedMemoryBase {
  public:
   FakeDataFetcher()
-      : start_(false, false),
-        stop_(false, false),
+      : start_motion_(false, false),
+        start_orientation_(false, false),
+        stop_motion_(false, false),
+        stop_orientation_(false, false),
         updated_motion_(false, false),
-        updated_orientation_(false, false) {
+        updated_orientation_(false, false),
+        motion_buffer_(NULL),
+        orientation_buffer_(NULL) {
   }
   virtual ~FakeDataFetcher() { }
 
@@ -72,25 +76,44 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
     return orientation_buffer_;
   }
 
-  void WaitForStart() {
-    start_.Wait();
+  void WaitForStart(ConsumerType consumer_type) {
+    switch (consumer_type) {
+      case CONSUMER_TYPE_MOTION:
+        start_motion_.Wait();
+        break;
+      case CONSUMER_TYPE_ORIENTATION:
+        start_orientation_.Wait();
+        break;
+    }
   }
 
-  void WaitForStop() {
-    stop_.Wait();
+  void WaitForStop(ConsumerType consumer_type) {
+    switch (consumer_type) {
+      case CONSUMER_TYPE_MOTION:
+        stop_motion_.Wait();
+        break;
+      case CONSUMER_TYPE_ORIENTATION:
+        stop_orientation_.Wait();
+        break;
+    }
   }
 
-  void WaitForUpdateMotion() {
-    updated_motion_.Wait();
-  }
-
-  void WaitForUpdateOrientation() {
-    updated_orientation_.Wait();
+  void WaitForUpdate(ConsumerType consumer_type) {
+    switch (consumer_type) {
+      case CONSUMER_TYPE_MOTION:
+        updated_motion_.Wait();
+        break;
+      case CONSUMER_TYPE_ORIENTATION:
+        updated_orientation_.Wait();
+        break;
+    }
   }
 
  protected:
-  base::WaitableEvent start_;
-  base::WaitableEvent stop_;
+  base::WaitableEvent start_motion_;
+  base::WaitableEvent start_orientation_;
+  base::WaitableEvent stop_motion_;
+  base::WaitableEvent stop_orientation_;
   base::WaitableEvent updated_motion_;
   base::WaitableEvent updated_orientation_;
 
@@ -111,19 +134,29 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
         UpdateMotion();
+        start_motion_.Signal();
         break;
       case CONSUMER_TYPE_ORIENTATION:
         UpdateOrientation();
+        start_orientation_.Signal();
         break;
       default:
         return false;
     }
-    start_.Signal();
     return true;
   }
 
   virtual bool Stop(ConsumerType consumer_type) OVERRIDE {
-    stop_.Signal();
+    switch (consumer_type) {
+      case CONSUMER_TYPE_MOTION:
+        stop_motion_.Signal();
+        break;
+      case CONSUMER_TYPE_ORIENTATION:
+        stop_orientation_.Signal();
+        break;
+      default:
+        return false;
+    }
     return true;
   }
 
@@ -148,26 +181,46 @@ class FakePollingDataFetcher : public FakeDataFetcher {
 
   virtual bool Start(ConsumerType consumer_type) OVERRIDE {
     EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
+
     Init(consumer_type);
-    start_.Signal();
+    switch (consumer_type) {
+      case CONSUMER_TYPE_MOTION:
+        start_motion_.Signal();
+        break;
+      case CONSUMER_TYPE_ORIENTATION:
+        start_orientation_.Signal();
+        break;
+      default:
+        return false;
+    }
     return true;
   }
 
   virtual bool Stop(ConsumerType consumer_type) OVERRIDE {
     EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
-    stop_.Signal();
+
+    switch (consumer_type) {
+      case CONSUMER_TYPE_MOTION:
+        stop_motion_.Signal();
+        break;
+      case CONSUMER_TYPE_ORIENTATION:
+        stop_orientation_.Signal();
+        break;
+      default:
+        return false;
+    }
     return true;
   }
 
   virtual void Fetch(unsigned consumer_bitmask) OVERRIDE {
     EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
+    EXPECT_TRUE(consumer_bitmask & CONSUMER_TYPE_ORIENTATION ||
+                consumer_bitmask & CONSUMER_TYPE_MOTION);
 
     if (consumer_bitmask & CONSUMER_TYPE_ORIENTATION)
       UpdateOrientation();
-    else if (consumer_bitmask & CONSUMER_TYPE_MOTION)
+    if (consumer_bitmask & CONSUMER_TYPE_MOTION)
       UpdateMotion();
-    else
-      FAIL() << "wrong consumer bitmask";
   }
 
   virtual bool IsPolling() const OVERRIDE {
@@ -181,61 +234,85 @@ class FakePollingDataFetcher : public FakeDataFetcher {
 
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesStartMotion) {
-  FakeNonPollingDataFetcher mock_data_fetcher;
-  EXPECT_FALSE(mock_data_fetcher.IsPolling());
+  FakeNonPollingDataFetcher fake_data_fetcher;
+  EXPECT_FALSE(fake_data_fetcher.IsPolling());
 
-  EXPECT_TRUE(mock_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_MOTION));
-  mock_data_fetcher.WaitForStart();
+  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_MOTION));
+  fake_data_fetcher.WaitForStart(CONSUMER_TYPE_MOTION);
 
   EXPECT_EQ(kPeriodInMilliseconds,
-      mock_data_fetcher.GetMotionBuffer()->data.interval);
+      fake_data_fetcher.GetMotionBuffer()->data.interval);
 
-  mock_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
-  mock_data_fetcher.WaitForStop();
+  fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
+  fake_data_fetcher.WaitForStop(CONSUMER_TYPE_MOTION);
 }
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesStartOrientation) {
-  FakeNonPollingDataFetcher mock_data_fetcher;
-  EXPECT_FALSE(mock_data_fetcher.IsPolling());
+  FakeNonPollingDataFetcher fake_data_fetcher;
+  EXPECT_FALSE(fake_data_fetcher.IsPolling());
 
-  EXPECT_TRUE(mock_data_fetcher.StartFetchingDeviceData(
+  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
       CONSUMER_TYPE_ORIENTATION));
-  mock_data_fetcher.WaitForStart();
+  fake_data_fetcher.WaitForStart(CONSUMER_TYPE_ORIENTATION);
 
-  EXPECT_EQ(1, mock_data_fetcher.GetOrientationBuffer()->data.alpha);
+  EXPECT_EQ(1, fake_data_fetcher.GetOrientationBuffer()->data.alpha);
 
-  mock_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
-  mock_data_fetcher.WaitForStop();
+  fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
+  fake_data_fetcher.WaitForStop(CONSUMER_TYPE_ORIENTATION);
 }
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotion) {
-  FakePollingDataFetcher mock_data_fetcher;
-  EXPECT_TRUE(mock_data_fetcher.IsPolling());
+  FakePollingDataFetcher fake_data_fetcher;
+  EXPECT_TRUE(fake_data_fetcher.IsPolling());
 
-  EXPECT_TRUE(mock_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_MOTION));
-  mock_data_fetcher.WaitForStart();
-  mock_data_fetcher.WaitForUpdateMotion();
+  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_MOTION));
+  fake_data_fetcher.WaitForStart(CONSUMER_TYPE_MOTION);
+  fake_data_fetcher.WaitForUpdate(CONSUMER_TYPE_MOTION);
 
   EXPECT_EQ(kPeriodInMilliseconds,
-      mock_data_fetcher.GetMotionBuffer()->data.interval);
+      fake_data_fetcher.GetMotionBuffer()->data.interval);
 
-  mock_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
-  mock_data_fetcher.WaitForStop();
+  fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
+  fake_data_fetcher.WaitForStop(CONSUMER_TYPE_MOTION);
 }
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesPollOrientation) {
-  FakePollingDataFetcher mock_data_fetcher;
-  EXPECT_TRUE(mock_data_fetcher.IsPolling());
+  FakePollingDataFetcher fake_data_fetcher;
+  EXPECT_TRUE(fake_data_fetcher.IsPolling());
 
-  EXPECT_TRUE(mock_data_fetcher.StartFetchingDeviceData(
+  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
       CONSUMER_TYPE_ORIENTATION));
-  mock_data_fetcher.WaitForStart();
-  mock_data_fetcher.WaitForUpdateOrientation();
+  fake_data_fetcher.WaitForStart(CONSUMER_TYPE_ORIENTATION);
+  fake_data_fetcher.WaitForUpdate(CONSUMER_TYPE_ORIENTATION);
 
-  EXPECT_EQ(1, mock_data_fetcher.GetOrientationBuffer()->data.alpha);
+  EXPECT_EQ(1, fake_data_fetcher.GetOrientationBuffer()->data.alpha);
 
-  mock_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
-  mock_data_fetcher.WaitForStop();
+  fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
+  fake_data_fetcher.WaitForStop(CONSUMER_TYPE_ORIENTATION);
+}
+
+TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotionAndOrientation) {
+  FakePollingDataFetcher fake_data_fetcher;
+  EXPECT_TRUE(fake_data_fetcher.IsPolling());
+
+  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
+      CONSUMER_TYPE_ORIENTATION));
+  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
+      CONSUMER_TYPE_MOTION));
+  fake_data_fetcher.WaitForStart(CONSUMER_TYPE_ORIENTATION);
+  fake_data_fetcher.WaitForStart(CONSUMER_TYPE_MOTION);
+
+  fake_data_fetcher.WaitForUpdate(CONSUMER_TYPE_ORIENTATION);
+  fake_data_fetcher.WaitForUpdate(CONSUMER_TYPE_MOTION);
+
+  EXPECT_EQ(1, fake_data_fetcher.GetOrientationBuffer()->data.alpha);
+  EXPECT_EQ(kPeriodInMilliseconds,
+      fake_data_fetcher.GetMotionBuffer()->data.interval);
+
+  fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
+  fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
+  fake_data_fetcher.WaitForStop(CONSUMER_TYPE_ORIENTATION);
+  fake_data_fetcher.WaitForStop(CONSUMER_TYPE_MOTION);
 }
 
 }  // namespace

@@ -9,6 +9,8 @@
 
 namespace {
 
+const double kMeanGravity = 9.80665;
+
 void FetchMotion(SuddenMotionSensor* sensor,
     content::DeviceMotionHardwareBuffer* buffer) {
   DCHECK(buffer);
@@ -18,11 +20,11 @@ void FetchMotion(SuddenMotionSensor* sensor,
     return;
 
   buffer->seqlock.WriteBegin();
-  buffer->data.accelerationIncludingGravityX = axis_value[0];
+  buffer->data.accelerationIncludingGravityX = axis_value[0] * kMeanGravity;
   buffer->data.hasAccelerationIncludingGravityX = true;
-  buffer->data.accelerationIncludingGravityY = axis_value[1];
+  buffer->data.accelerationIncludingGravityY = axis_value[1] * kMeanGravity;
   buffer->data.hasAccelerationIncludingGravityY = true;
-  buffer->data.accelerationIncludingGravityZ = axis_value[2];
+  buffer->data.accelerationIncludingGravityZ = axis_value[2] * kMeanGravity;
   buffer->data.hasAccelerationIncludingGravityZ = true;
   buffer->data.allAvailableSensorsAreActive = true;
   buffer->seqlock.WriteEnd();
@@ -100,13 +102,13 @@ DataFetcherSharedMemory::~DataFetcherSharedMemory() {
 void DataFetcherSharedMemory::Fetch(unsigned consumer_bitmask) {
   DCHECK(base::MessageLoop::current() == GetPollingMessageLoop());
   DCHECK(sudden_motion_sensor_);
+  DCHECK(consumer_bitmask & CONSUMER_TYPE_ORIENTATION ||
+         consumer_bitmask & CONSUMER_TYPE_MOTION);
 
   if (consumer_bitmask & CONSUMER_TYPE_ORIENTATION)
     FetchOrientation(sudden_motion_sensor_.get(), orientation_buffer_);
-  else if (consumer_bitmask & CONSUMER_TYPE_MOTION)
+  if (consumer_bitmask & CONSUMER_TYPE_MOTION)
     FetchMotion(sudden_motion_sensor_.get(), motion_buffer_);
-
-  NOTREACHED();
 }
 
 bool DataFetcherSharedMemory::IsPolling() const {

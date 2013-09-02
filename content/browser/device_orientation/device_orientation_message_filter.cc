@@ -37,7 +37,6 @@ bool DeviceOrientationMessageFilter::OnMessageReceived(
 }
 
 void DeviceOrientationMessageFilter::OnDeviceOrientationStartPolling() {
-  NOTIMPLEMENTED();
   DCHECK(!is_started_);
   if (is_started_)
     return;
@@ -48,7 +47,6 @@ void DeviceOrientationMessageFilter::OnDeviceOrientationStartPolling() {
 }
 
 void DeviceOrientationMessageFilter::OnDeviceOrientationStopPolling() {
-  NOTIMPLEMENTED();
   DCHECK(is_started_);
   if (!is_started_)
     return;

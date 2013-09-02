@@ -55,12 +55,12 @@ void DataFetcherSharedMemoryBase::PollingThread::AddConsumer(
 
   consumers_bitmask_ |= consumer_type;
 
-  if (!timer_)
+  if (!timer_) {
     timer_.reset(new base::RepeatingTimer<PollingThread>());
-
-  timer_->Start(FROM_HERE,
-                base::TimeDelta::FromMilliseconds(kPeriodInMilliseconds),
-                this, &PollingThread::DoPoll);
+    timer_->Start(FROM_HERE,
+                  base::TimeDelta::FromMilliseconds(kPeriodInMilliseconds),
+                  this, &PollingThread::DoPoll);
+  }
 }
 
 void DataFetcherSharedMemoryBase::PollingThread::RemoveConsumer(
