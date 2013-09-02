@@ -42,7 +42,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
     public base::SupportsWeakPtr<SimpleBackendImpl> {
  public:
   SimpleBackendImpl(const base::FilePath& path, int max_bytes,
-                    net::CacheType type,
+                    net::CacheType cache_type,
                     base::SingleThreadTaskRunner* cache_thread,
                     net::NetLog* net_log);
 
@@ -166,6 +166,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                                  int error_code);
 
   const base::FilePath path_;
+  const net::CacheType cache_type_;
   scoped_ptr<SimpleIndex> index_;
   const scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
   scoped_refptr<base::TaskRunner> worker_pool_;

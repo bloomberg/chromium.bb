@@ -14,11 +14,11 @@
 #include "base/file_util.h"
 #include "base/hash.h"
 #include "base/location.h"
-#include "base/metrics/histogram.h"
 #include "base/sha1.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/disk_cache/simple/simple_histogram_macros.h"
 #include "net/disk_cache/simple/simple_util.h"
 #include "third_party/zlib/zlib.h"
 
@@ -87,45 +87,54 @@ enum CloseResult {
   CLOSE_RESULT_WRITE_FAILURE,
 };
 
-void RecordSyncOpenResult(OpenEntryResult result, bool had_index) {
+void RecordSyncOpenResult(net::CacheType cache_type,
+                          OpenEntryResult result,
+                          bool had_index) {
   DCHECK_GT(OPEN_ENTRY_MAX, result);
-  UMA_HISTOGRAM_ENUMERATION(
-      "SimpleCache.SyncOpenResult", result, OPEN_ENTRY_MAX);
+  SIMPLE_CACHE_UMA(ENUMERATION,
+                   "SyncOpenResult", cache_type, result, OPEN_ENTRY_MAX);
   if (had_index) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "SimpleCache.SyncOpenResult_WithIndex", result, OPEN_ENTRY_MAX);
+    SIMPLE_CACHE_UMA(ENUMERATION,
+                     "SyncOpenResult_WithIndex", cache_type,
+                     result, OPEN_ENTRY_MAX);
   } else {
-    UMA_HISTOGRAM_ENUMERATION(
-        "SimpleCache.SyncOpenResult_WithoutIndex", result, OPEN_ENTRY_MAX);
+    SIMPLE_CACHE_UMA(ENUMERATION,
+                     "SyncOpenResult_WithoutIndex", cache_type,
+                     result, OPEN_ENTRY_MAX);
   }
 }
 
-void RecordSyncCreateResult(CreateEntryResult result, bool had_index) {
+void RecordSyncCreateResult(net::CacheType cache_type,
+                            CreateEntryResult result,
+                            bool had_index) {
   DCHECK_GT(CREATE_ENTRY_MAX, result);
-  UMA_HISTOGRAM_ENUMERATION(
-      "SimpleCache.SyncCreateResult", result, CREATE_ENTRY_MAX);
+  SIMPLE_CACHE_UMA(ENUMERATION,
+                   "SyncCreateResult", cache_type, result, CREATE_ENTRY_MAX);
   if (had_index) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "SimpleCache.SyncCreateResult_WithIndex", result, CREATE_ENTRY_MAX);
+    SIMPLE_CACHE_UMA(ENUMERATION,
+                     "SyncCreateResult_WithIndex", cache_type,
+                     result, CREATE_ENTRY_MAX);
   } else {
-    UMA_HISTOGRAM_ENUMERATION(
-        "SimpleCache.SyncCreateResult_WithoutIndex", result, CREATE_ENTRY_MAX);
+    SIMPLE_CACHE_UMA(ENUMERATION,
+                     "SyncCreateResult_WithoutIndex", cache_type,
+                     result, CREATE_ENTRY_MAX);
   }
 }
 
-void RecordWriteResult(WriteResult result) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "SimpleCache.SyncWriteResult", result, WRITE_RESULT_MAX);
+void RecordWriteResult(net::CacheType cache_type, WriteResult result) {
+  SIMPLE_CACHE_UMA(ENUMERATION,
+                   "SyncWriteResult", cache_type, result, WRITE_RESULT_MAX);
 }
 
-void RecordCheckEOFResult(CheckEOFResult result) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "SimpleCache.SyncCheckEOFResult", result, CHECK_EOF_RESULT_MAX);
+void RecordCheckEOFResult(net::CacheType cache_type, CheckEOFResult result) {
+  SIMPLE_CACHE_UMA(ENUMERATION,
+                   "SyncCheckEOFResult", cache_type,
+                   result, CHECK_EOF_RESULT_MAX);
 }
 
-void RecordCloseResult(CloseResult result) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "SimpleCache.SyncCloseResult", result, WRITE_RESULT_MAX);
+void RecordCloseResult(net::CacheType cache_type, CloseResult result) {
+  SIMPLE_CACHE_UMA(ENUMERATION,
+                   "SyncCloseResult", cache_type, result, WRITE_RESULT_MAX);
 }
 
 }  // namespace
@@ -189,12 +198,13 @@ SimpleSynchronousEntry::EntryOperationData::EntryOperationData(int index_p,
 
 // static
 void SimpleSynchronousEntry::OpenEntry(
+    net::CacheType cache_type,
     const FilePath& path,
     const uint64 entry_hash,
     bool had_index,
     SimpleEntryCreationResults *out_results) {
-  SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, "",
-                                                                  entry_hash);
+  SimpleSynchronousEntry* sync_entry =
+      new SimpleSynchronousEntry(cache_type, path, "", entry_hash);
   out_results->result = sync_entry->InitializeForOpen(
       had_index, &out_results->entry_stat);
   if (out_results->result != net::OK) {
@@ -208,14 +218,15 @@ void SimpleSynchronousEntry::OpenEntry(
 
 // static
 void SimpleSynchronousEntry::CreateEntry(
+    net::CacheType cache_type,
     const FilePath& path,
     const std::string& key,
     const uint64 entry_hash,
     bool had_index,
     SimpleEntryCreationResults *out_results) {
   DCHECK_EQ(entry_hash, GetEntryHashKey(key));
-  SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, key,
-                                                                  entry_hash);
+  SimpleSynchronousEntry* sync_entry =
+      new SimpleSynchronousEntry(cache_type, path, key, entry_hash);
   out_results->result = sync_entry->InitializeForCreate(
       had_index, &out_results->entry_stat);
   if (out_results->result != net::OK) {
@@ -308,7 +319,7 @@ void SimpleSynchronousEntry::WriteData(const EntryOperationData& in_entry_op,
     const int64 file_eof_offset = GetFileOffsetFromKeyAndDataOffset(
         key_, out_entry_stat->data_size[index]);
     if (!TruncatePlatformFile(files_[index], file_eof_offset)) {
-      RecordWriteResult(WRITE_RESULT_PRETRUNCATE_FAILURE);
+      RecordWriteResult(cache_type_, WRITE_RESULT_PRETRUNCATE_FAILURE);
       Doom();
       *out_result = net::ERR_CACHE_WRITE_FAILURE;
       return;
@@ -318,7 +329,7 @@ void SimpleSynchronousEntry::WriteData(const EntryOperationData& in_entry_op,
   if (buf_len > 0) {
     if (WritePlatformFile(
             files_[index], file_offset, in_buf->data(), buf_len) != buf_len) {
-      RecordWriteResult(WRITE_RESULT_WRITE_FAILURE);
+      RecordWriteResult(cache_type_, WRITE_RESULT_WRITE_FAILURE);
       Doom();
       *out_result = net::ERR_CACHE_WRITE_FAILURE;
       return;
@@ -329,7 +340,7 @@ void SimpleSynchronousEntry::WriteData(const EntryOperationData& in_entry_op,
         std::max(out_entry_stat->data_size[index], offset + buf_len);
   } else {
     if (!TruncatePlatformFile(files_[index], file_offset + buf_len)) {
-      RecordWriteResult(WRITE_RESULT_TRUNCATE_FAILURE);
+      RecordWriteResult(cache_type_, WRITE_RESULT_TRUNCATE_FAILURE);
       Doom();
       *out_result = net::ERR_CACHE_WRITE_FAILURE;
       return;
@@ -337,7 +348,7 @@ void SimpleSynchronousEntry::WriteData(const EntryOperationData& in_entry_op,
     out_entry_stat->data_size[index] = offset + buf_len;
   }
 
-  RecordWriteResult(WRITE_RESULT_SUCCESS);
+  RecordWriteResult(cache_type_, WRITE_RESULT_SUCCESS);
   out_entry_stat->last_used = out_entry_stat->last_modified = Time::Now();
   *out_result = buf_len;
 }
@@ -354,14 +365,14 @@ void SimpleSynchronousEntry::CheckEOFRecord(int index,
                        file_offset,
                        reinterpret_cast<char*>(&eof_record),
                        sizeof(eof_record)) != sizeof(eof_record)) {
-    RecordCheckEOFResult(CHECK_EOF_RESULT_READ_FAILURE);
+    RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_READ_FAILURE);
     Doom();
     *out_result = net::ERR_CACHE_CHECKSUM_READ_FAILURE;
     return;
   }
 
   if (eof_record.final_magic_number != kSimpleFinalMagicNumber) {
-    RecordCheckEOFResult(CHECK_EOF_RESULT_MAGIC_NUMBER_MISMATCH);
+    RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_MAGIC_NUMBER_MISMATCH);
     DLOG(INFO) << "eof record had bad magic number.";
     Doom();
     *out_result = net::ERR_CACHE_CHECKSUM_READ_FAILURE;
@@ -370,16 +381,16 @@ void SimpleSynchronousEntry::CheckEOFRecord(int index,
 
   const bool has_crc = (eof_record.flags & SimpleFileEOF::FLAG_HAS_CRC32) ==
                        SimpleFileEOF::FLAG_HAS_CRC32;
-  UMA_HISTOGRAM_BOOLEAN("SimpleCache.SyncCheckEOFHasCrc", has_crc);
+  SIMPLE_CACHE_UMA(BOOLEAN, "SyncCheckEOFHasCrc", cache_type_, has_crc);
   if (has_crc && eof_record.data_crc32 != expected_crc32) {
-    RecordCheckEOFResult(CHECK_EOF_RESULT_CRC_MISMATCH);
+    RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_CRC_MISMATCH);
     DLOG(INFO) << "eof record had bad crc.";
     Doom();
     *out_result = net::ERR_CACHE_CHECKSUM_MISMATCH;
     return;
   }
 
-  RecordCheckEOFResult(CHECK_EOF_RESULT_SUCCESS);
+  RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_SUCCESS);
   *out_result = net::OK;
 }
 
@@ -400,32 +411,36 @@ void SimpleSynchronousEntry::Close(
                           file_offset,
                           reinterpret_cast<const char*>(&eof_record),
                           sizeof(eof_record)) != sizeof(eof_record)) {
-      RecordCloseResult(CLOSE_RESULT_WRITE_FAILURE);
+      RecordCloseResult(cache_type_, CLOSE_RESULT_WRITE_FAILURE);
       DLOG(INFO) << "Could not write eof record.";
       Doom();
       break;
     }
     const int64 file_size = file_offset + sizeof(eof_record);
-    UMA_HISTOGRAM_CUSTOM_COUNTS("SimpleCache.LastClusterSize",
-                                file_size % 4096, 0, 4097, 50);
+    SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
+                     "LastClusterSize", cache_type_,
+                     file_size % 4096, 0, 4097, 50);
     const int64 cluster_loss = file_size % 4096 ? 4096 - file_size % 4096 : 0;
-    UMA_HISTOGRAM_PERCENTAGE("SimpleCache.LastClusterLossPercent",
-                             cluster_loss * 100 / (cluster_loss + file_size));
+    SIMPLE_CACHE_UMA(PERCENTAGE,
+                     "LastClusterLossPercent", cache_type_,
+                     cluster_loss * 100 / (cluster_loss + file_size));
   }
 
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     bool did_close_file = ClosePlatformFile(files_[i]);
     CHECK(did_close_file);
   }
-  RecordCloseResult(CLOSE_RESULT_SUCCESS);
+  RecordCloseResult(cache_type_, CLOSE_RESULT_SUCCESS);
   have_open_files_ = false;
   delete this;
 }
 
-SimpleSynchronousEntry::SimpleSynchronousEntry(const FilePath& path,
+SimpleSynchronousEntry::SimpleSynchronousEntry(net::CacheType cache_type,
+                                               const FilePath& path,
                                                const std::string& key,
                                                const uint64 entry_hash)
-    : path_(path),
+    : cache_type_(cache_type),
+      path_(path),
       entry_hash_(entry_hash),
       key_(key),
       have_open_files_(false),
@@ -459,30 +474,36 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(
       // TODO(ttuttle,gavinp): Remove one each of these triplets of histograms.
       // We can calculate the third as the sum or difference of the other two.
       if (create) {
-        RecordSyncCreateResult(CREATE_ENTRY_PLATFORM_FILE_ERROR, had_index);
-        UMA_HISTOGRAM_ENUMERATION("SimpleCache.SyncCreatePlatformFileError",
-                                  -error, -base::PLATFORM_FILE_ERROR_MAX);
+        RecordSyncCreateResult(
+            cache_type_, CREATE_ENTRY_PLATFORM_FILE_ERROR, had_index);
+        SIMPLE_CACHE_UMA(ENUMERATION,
+                         "SyncCreatePlatformFileError", cache_type_,
+                         -error, -base::PLATFORM_FILE_ERROR_MAX);
         if (had_index) {
-          UMA_HISTOGRAM_ENUMERATION(
-              "SimpleCache.SyncCreatePlatformFileError_WithIndex",
-              -error, -base::PLATFORM_FILE_ERROR_MAX);
+          SIMPLE_CACHE_UMA(ENUMERATION,
+                           "SyncCreatePlatformFileError_WithIndex", cache_type_,
+                           -error, -base::PLATFORM_FILE_ERROR_MAX);
         } else {
-          UMA_HISTOGRAM_ENUMERATION(
-              "SimpleCache.SyncCreatePlatformFileError_WithoutIndex",
-              -error, -base::PLATFORM_FILE_ERROR_MAX);
+          SIMPLE_CACHE_UMA(ENUMERATION,
+                           "SyncCreatePlatformFileError_WithoutIndex",
+                           cache_type_,
+                           -error, -base::PLATFORM_FILE_ERROR_MAX);
         }
       } else {
-        RecordSyncOpenResult(OPEN_ENTRY_PLATFORM_FILE_ERROR, had_index);
-        UMA_HISTOGRAM_ENUMERATION("SimpleCache.SyncOpenPlatformFileError",
-                                  -error, -base::PLATFORM_FILE_ERROR_MAX);
+        RecordSyncOpenResult(
+            cache_type_, OPEN_ENTRY_PLATFORM_FILE_ERROR, had_index);
+        SIMPLE_CACHE_UMA(ENUMERATION,
+                         "SyncOpenPlatformFileError", cache_type_,
+                         -error, -base::PLATFORM_FILE_ERROR_MAX);
         if (had_index) {
-          UMA_HISTOGRAM_ENUMERATION(
-              "SimpleCache.SyncOpenPlatformFileError_WithIndex",
-              -error, -base::PLATFORM_FILE_ERROR_MAX);
+          SIMPLE_CACHE_UMA(ENUMERATION,
+                           "SyncOpenPlatformFileError_WithIndex", cache_type_,
+                           -error, -base::PLATFORM_FILE_ERROR_MAX);
         } else {
-          UMA_HISTOGRAM_ENUMERATION(
-              "SimpleCache.SyncOpenPlatformFileError_WithoutIndex",
-              -error, -base::PLATFORM_FILE_ERROR_MAX);
+          SIMPLE_CACHE_UMA(ENUMERATION,
+                           "SyncOpenPlatformFileError_WithoutIndex",
+                           cache_type_,
+                           -error, -base::PLATFORM_FILE_ERROR_MAX);
         }
       }
       while (--i >= 0) {
@@ -512,8 +533,9 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(
 
       base::TimeDelta entry_age =
           base::Time::Now() - out_entry_stat->last_modified;
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "SimpleCache.SyncOpenEntryAge", entry_age.InHours(), 1, 1000, 50);
+      SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
+                       "SyncOpenEntryAge", cache_type_,
+                       entry_age.InHours(), 1, 1000, 50);
 
       // Keep the file size in |data size_| briefly until the key is initialized
       // properly.
@@ -545,7 +567,7 @@ int SimpleSynchronousEntry::InitializeForOpen(bool had_index,
                          sizeof(header));
     if (header_read_result != sizeof(header)) {
       DLOG(WARNING) << "Cannot read header from entry.";
-      RecordSyncOpenResult(OPEN_ENTRY_CANT_READ_HEADER, had_index);
+      RecordSyncOpenResult(cache_type_, OPEN_ENTRY_CANT_READ_HEADER, had_index);
       return net::ERR_FAILED;
     }
 
@@ -554,13 +576,13 @@ int SimpleSynchronousEntry::InitializeForOpen(bool had_index,
       // should give consideration to not saturating the log with these if that
       // becomes a problem.
       DLOG(WARNING) << "Magic number did not match.";
-      RecordSyncOpenResult(OPEN_ENTRY_BAD_MAGIC_NUMBER, had_index);
+      RecordSyncOpenResult(cache_type_, OPEN_ENTRY_BAD_MAGIC_NUMBER, had_index);
       return net::ERR_FAILED;
     }
 
     if (header.version != kSimpleVersion) {
       DLOG(WARNING) << "Unreadable version.";
-      RecordSyncOpenResult(OPEN_ENTRY_BAD_VERSION, had_index);
+      RecordSyncOpenResult(cache_type_, OPEN_ENTRY_BAD_VERSION, had_index);
       return net::ERR_FAILED;
     }
 
@@ -569,7 +591,7 @@ int SimpleSynchronousEntry::InitializeForOpen(bool had_index,
                                            key.get(), header.key_length);
     if (key_read_result != implicit_cast<int>(header.key_length)) {
       DLOG(WARNING) << "Cannot read key from entry.";
-      RecordSyncOpenResult(OPEN_ENTRY_CANT_READ_KEY, had_index);
+      RecordSyncOpenResult(cache_type_, OPEN_ENTRY_CANT_READ_KEY, had_index);
       return net::ERR_FAILED;
     }
 
@@ -584,11 +606,12 @@ int SimpleSynchronousEntry::InitializeForOpen(bool had_index,
 
     if (base::Hash(key.get(), header.key_length) != header.key_hash) {
       DLOG(WARNING) << "Hash mismatch on key.";
-      RecordSyncOpenResult(OPEN_ENTRY_KEY_HASH_MISMATCH, had_index);
+      RecordSyncOpenResult(
+          cache_type_, OPEN_ENTRY_KEY_HASH_MISMATCH, had_index);
       return net::ERR_FAILED;
     }
   }
-  RecordSyncOpenResult(OPEN_ENTRY_SUCCESS, had_index);
+  RecordSyncOpenResult(cache_type_, OPEN_ENTRY_SUCCESS, had_index);
   initialized_ = true;
   return net::OK;
 }
@@ -612,18 +635,20 @@ int SimpleSynchronousEntry::InitializeForCreate(
     if (WritePlatformFile(files_[i], 0, reinterpret_cast<char*>(&header),
                           sizeof(header)) != sizeof(header)) {
       DLOG(WARNING) << "Could not write headers to new cache entry.";
-      RecordSyncCreateResult(CREATE_ENTRY_CANT_WRITE_HEADER, had_index);
+      RecordSyncCreateResult(
+          cache_type_, CREATE_ENTRY_CANT_WRITE_HEADER, had_index);
       return net::ERR_FAILED;
     }
 
     if (WritePlatformFile(files_[i], sizeof(header), key_.data(),
                           key_.size()) != implicit_cast<int>(key_.size())) {
       DLOG(WARNING) << "Could not write keys to new cache entry.";
-      RecordSyncCreateResult(CREATE_ENTRY_CANT_WRITE_KEY, had_index);
+      RecordSyncCreateResult(
+          cache_type_, CREATE_ENTRY_CANT_WRITE_KEY, had_index);
       return net::ERR_FAILED;
     }
   }
-  RecordSyncCreateResult(CREATE_ENTRY_SUCCESS, had_index);
+  RecordSyncCreateResult(cache_type_, CREATE_ENTRY_SUCCESS, had_index);
   initialized_ = true;
   return net::OK;
 }

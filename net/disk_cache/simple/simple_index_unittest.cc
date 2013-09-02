@@ -12,6 +12,7 @@
 #include "base/task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "net/base/cache_type.h"
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_index_file.h"
 #include "net/disk_cache/simple/simple_test_util.h"
@@ -47,7 +48,7 @@ class MockSimpleIndexFile : public SimpleIndexFile,
                             public base::SupportsWeakPtr<MockSimpleIndexFile> {
  public:
   MockSimpleIndexFile()
-      : SimpleIndexFile(NULL, NULL, base::FilePath()),
+      : SimpleIndexFile(NULL, NULL, net::DISK_CACHE, base::FilePath()),
         load_result_(NULL),
         load_index_entries_calls_(0),
         doom_entry_set_calls_(0),
@@ -114,7 +115,7 @@ class SimpleIndexTest  : public testing::Test {
   virtual void SetUp() OVERRIDE {
     scoped_ptr<MockSimpleIndexFile> index_file(new MockSimpleIndexFile());
     index_file_ = index_file->AsWeakPtr();
-    index_.reset(new SimpleIndex(NULL, base::FilePath(),
+    index_.reset(new SimpleIndex(NULL, net::DISK_CACHE, base::FilePath(),
                                  index_file.PassAs<SimpleIndexFile>()));
 
     index_->Initialize(base::Time());

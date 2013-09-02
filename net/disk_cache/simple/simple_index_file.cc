@@ -10,12 +10,12 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/hash.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
+#include "net/disk_cache/simple/simple_histogram_macros.h"
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
 #include "net/disk_cache/simple/simple_util.h"
@@ -43,7 +43,8 @@ void DoomEntrySetReply(const net::CompletionCallback& reply_callback,
   reply_callback.Run(result);
 }
 
-void WriteToDiskInternal(const base::FilePath& index_filename,
+void WriteToDiskInternal(net::CacheType cache_type,
+                         const base::FilePath& index_filename,
                          const base::FilePath& temp_index_filename,
                          scoped_ptr<Pickle> pickle,
                          const base::TimeTicks& start_time,
@@ -64,11 +65,13 @@ void WriteToDiskInternal(const base::FilePath& index_filename,
     DCHECK(result);
   }
   if (app_on_background) {
-    UMA_HISTOGRAM_TIMES("SimpleCache.IndexWriteToDiskTime.Background",
-                        (base::TimeTicks::Now() - start_time));
+    SIMPLE_CACHE_UMA(TIMES,
+                     "IndexWriteToDiskTime.Background", cache_type,
+                     (base::TimeTicks::Now() - start_time));
   } else {
-    UMA_HISTOGRAM_TIMES("SimpleCache.IndexWriteToDiskTime.Foreground",
-                        (base::TimeTicks::Now() - start_time));
+    SIMPLE_CACHE_UMA(TIMES,
+                     "IndexWriteToDiskTime.Foreground", cache_type,
+                     (base::TimeTicks::Now() - start_time));
   }
 }
 
@@ -172,9 +175,11 @@ bool SimpleIndexFile::IndexMetadata::CheckIndexMetadata() {
 SimpleIndexFile::SimpleIndexFile(
     base::SingleThreadTaskRunner* cache_thread,
     base::TaskRunner* worker_pool,
+    net::CacheType cache_type,
     const base::FilePath& cache_directory)
     : cache_thread_(cache_thread),
       worker_pool_(worker_pool),
+      cache_type_(cache_type),
       cache_directory_(cache_directory),
       index_file_(cache_directory_.AppendASCII(kIndexFileName)),
       temp_index_file_(cache_directory_.AppendASCII(kTempIndexFileName)) {
@@ -186,6 +191,7 @@ void SimpleIndexFile::LoadIndexEntries(base::Time cache_last_modified,
                                        const base::Closure& callback,
                                        SimpleIndexLoadResult* out_result) {
   base::Closure task = base::Bind(&SimpleIndexFile::SyncLoadIndexEntries,
+                                  cache_type_,
                                   cache_last_modified, cache_directory_,
                                   index_file_, out_result);
   worker_pool_->PostTaskAndReply(FROM_HERE, task, callback);
@@ -199,6 +205,7 @@ void SimpleIndexFile::WriteToDisk(const SimpleIndex::EntrySet& entry_set,
   scoped_ptr<Pickle> pickle = Serialize(index_metadata, entry_set);
   cache_thread_->PostTask(FROM_HERE, base::Bind(
       &WriteToDiskInternal,
+      cache_type_,
       index_file_,
       temp_index_file_,
       base::Passed(&pickle),
@@ -219,6 +226,7 @@ void SimpleIndexFile::DoomEntrySet(
 
 // static
 void SimpleIndexFile::SyncLoadIndexEntries(
+    net::CacheType cache_type,
     base::Time cache_last_modified,
     const base::FilePath& cache_directory,
     const base::FilePath& index_file_path,
@@ -253,24 +261,27 @@ void SimpleIndexFile::SyncLoadIndexEntries(
 
     const base::TimeTicks start = base::TimeTicks::Now();
     SyncLoadFromDisk(index_file_path, out_result);
-    UMA_HISTOGRAM_TIMES("SimpleCache.IndexLoadTime",
-                        base::TimeTicks::Now() - start);
-    UMA_HISTOGRAM_COUNTS("SimpleCache.IndexEntriesLoaded",
-                         out_result->did_load ? entries.size() : 0);
+    SIMPLE_CACHE_UMA(TIMES,
+                     "IndexLoadTime", cache_type,
+                     base::TimeTicks::Now() - start);
+    SIMPLE_CACHE_UMA(COUNTS,
+                     "IndexEntriesLoaded", cache_type,
+                     out_result->did_load ? entries.size() : 0);
     if (!out_result->did_load)
       index_file_state = INDEX_STATE_CORRUPT;
   }
-  UMA_HISTOGRAM_ENUMERATION("SimpleCache.IndexFileStateOnLoad",
-                            index_file_state,
-                            INDEX_STATE_MAX);
+  SIMPLE_CACHE_UMA(ENUMERATION,
+                   "IndexFileStateOnLoad", cache_type,
+                   index_file_state, INDEX_STATE_MAX);
 
   if (!out_result->did_load) {
     const base::TimeTicks start = base::TimeTicks::Now();
     SyncRestoreFromDisk(cache_directory, index_file_path, out_result);
-    UMA_HISTOGRAM_MEDIUM_TIMES("SimpleCache.IndexRestoreTime",
-                        base::TimeTicks::Now() - start);
-    UMA_HISTOGRAM_COUNTS("SimpleCache.IndexEntriesRestored",
-                         entries.size());
+    SIMPLE_CACHE_UMA(MEDIUM_TIMES,
+                     "IndexRestoreTime", cache_type,
+                     base::TimeTicks::Now() - start);
+    SIMPLE_CACHE_UMA(COUNTS,
+                     "IndexEntriesRestored", cache_type, entries.size());
   }
 
   // Used in histograms. Please only add new values at the end.
@@ -287,13 +298,14 @@ void SimpleIndexFile::SyncLoadIndexEntries(
     else
       initialize_method = INITIALIZE_METHOD_LOADED;
   } else {
-    UMA_HISTOGRAM_COUNTS("SimpleCache.IndexCreatedEntryCount",
-                         entries.size());
+    SIMPLE_CACHE_UMA(COUNTS,
+                     "IndexCreatedEntryCount", cache_type, entries.size());
     initialize_method = INITIALIZE_METHOD_NEWCACHE;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("SimpleCache.IndexInitializeMethod",
-                            initialize_method, INITIALIZE_METHOD_MAX);
+  SIMPLE_CACHE_UMA(ENUMERATION,
+                   "IndexInitializeMethod", cache_type,
+                   initialize_method, INITIALIZE_METHOD_MAX);
 }
 
 // static

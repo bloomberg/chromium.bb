@@ -28,6 +28,7 @@
 #include "net/disk_cache/backend_impl.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_entry_impl.h"
+#include "net/disk_cache/simple/simple_histogram_macros.h"
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_index_file.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
@@ -78,7 +79,7 @@ void MaybeCreateSequencedWorkerPool() {
 
 bool g_fd_limit_histogram_has_been_populated = false;
 
-void MaybeHistogramFdLimit() {
+void MaybeHistogramFdLimit(net::CacheType cache_type) {
   if (g_fd_limit_histogram_has_been_populated)
     return;
 
@@ -104,13 +105,14 @@ void MaybeHistogramFdLimit() {
   }
 #endif
 
-  UMA_HISTOGRAM_ENUMERATION("SimpleCache.FileDescriptorLimitStatus",
-                            fd_limit_status, FD_LIMIT_STATUS_MAX);
+  SIMPLE_CACHE_UMA(ENUMERATION,
+                   "FileDescriptorLimitStatus", cache_type,
+                   fd_limit_status, FD_LIMIT_STATUS_MAX);
   if (fd_limit_status == FD_LIMIT_STATUS_SUCCEEDED) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("SimpleCache.FileDescriptorLimitSoft",
-                                soft_fd_limit);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("SimpleCache.FileDescriptorLimitHard",
-                                hard_fd_limit);
+    SIMPLE_CACHE_UMA(SPARSE_SLOWLY,
+                     "FileDescriptorLimitSoft", cache_type, soft_fd_limit);
+    SIMPLE_CACHE_UMA(SPARSE_SLOWLY,
+                     "FileDescriptorLimitHard", cache_type, hard_fd_limit);
   }
 
   g_fd_limit_histogram_has_been_populated = true;
@@ -196,13 +198,17 @@ void CallCompletionCallback(const net::CompletionCallback& callback,
   callback.Run(error_code);
 }
 
-void RecordIndexLoad(base::TimeTicks constructed_since, int result) {
+void RecordIndexLoad(net::CacheType cache_type,
+                     base::TimeTicks constructed_since,
+                     int result) {
   const base::TimeDelta creation_to_index = base::TimeTicks::Now() -
                                             constructed_since;
-  if (result == net::OK)
-    UMA_HISTOGRAM_TIMES("SimpleCache.CreationToIndex", creation_to_index);
-  else
-    UMA_HISTOGRAM_TIMES("SimpleCache.CreationToIndexFail", creation_to_index);
+  if (result == net::OK) {
+    SIMPLE_CACHE_UMA(TIMES, "CreationToIndex", cache_type, creation_to_index);
+  } else {
+    SIMPLE_CACHE_UMA(TIMES,
+                     "CreationToIndexFail", cache_type, creation_to_index);
+  }
 }
 
 }  // namespace
@@ -211,18 +217,19 @@ namespace disk_cache {
 
 SimpleBackendImpl::SimpleBackendImpl(const FilePath& path,
                                      int max_bytes,
-                                     net::CacheType type,
+                                     net::CacheType cache_type,
                                      base::SingleThreadTaskRunner* cache_thread,
                                      net::NetLog* net_log)
     : path_(path),
+      cache_type_(cache_type),
       cache_thread_(cache_thread),
       orig_max_size_(max_bytes),
       entry_operations_mode_(
-          type == net::DISK_CACHE ?
+          cache_type == net::DISK_CACHE ?
               SimpleEntryImpl::OPTIMISTIC_OPERATIONS :
               SimpleEntryImpl::NON_OPTIMISTIC_OPERATIONS),
       net_log_(net_log) {
-  MaybeHistogramFdLimit();
+  MaybeHistogramFdLimit(cache_type_);
 }
 
 SimpleBackendImpl::~SimpleBackendImpl() {
@@ -235,13 +242,12 @@ int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
   worker_pool_ = g_sequenced_worker_pool->GetTaskRunnerWithShutdownBehavior(
       SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
-  index_.reset(
-      new SimpleIndex(MessageLoopProxy::current().get(),
-                      path_,
-                      make_scoped_ptr(new SimpleIndexFile(
-                          cache_thread_.get(), worker_pool_.get(), path_))));
-  index_->ExecuteWhenReady(base::Bind(&RecordIndexLoad,
-                                      base::TimeTicks::Now()));
+  index_.reset(new SimpleIndex(
+      MessageLoopProxy::current().get(),
+      cache_type_, path_, make_scoped_ptr(new SimpleIndexFile(
+          cache_thread_.get(), worker_pool_.get(), cache_type_, path_))));
+  index_->ExecuteWhenReady(
+      base::Bind(&RecordIndexLoad, cache_type_, base::TimeTicks::Now()));
 
   PostTaskAndReplyWithResult(
       cache_thread_,
@@ -433,7 +439,7 @@ scoped_refptr<SimpleEntryImpl> SimpleBackendImpl::CreateOrFindActiveEntry(
     DCHECK(!it->second.get());
   if (!it->second.get()) {
     SimpleEntryImpl* entry = new SimpleEntryImpl(
-        path_, entry_hash, entry_operations_mode_, this, net_log_);
+        cache_type_, path_, entry_hash, entry_operations_mode_, this, net_log_);
     entry->SetKey(key);
     it->second = entry->AsWeakPtr();
   }
@@ -455,8 +461,8 @@ int SimpleBackendImpl::OpenEntryFromHash(uint64 hash,
   if (has_active != active_entries_.end())
     return OpenEntry(has_active->second->key(), entry, callback);
 
-  scoped_refptr<SimpleEntryImpl> simple_entry =
-      new SimpleEntryImpl(path_, hash, entry_operations_mode_, this, net_log_);
+  scoped_refptr<SimpleEntryImpl> simple_entry = new SimpleEntryImpl(
+      cache_type_, path_, hash, entry_operations_mode_, this, net_log_);
   CompletionCallback backend_callback =
       base::Bind(&SimpleBackendImpl::OnEntryOpenedFromHash,
                  AsWeakPtr(),
@@ -551,7 +557,7 @@ void SimpleBackendImpl::OnEntryOpenedFromKey(
     } else {
       DCHECK_EQ(simple_entry->entry_hash(), simple_util::GetEntryHashKey(key));
     }
-    UMA_HISTOGRAM_BOOLEAN("SimpleCache.KeyMatchedOnOpen", key_matches);
+    SIMPLE_CACHE_UMA(BOOLEAN, "KeyMatchedOnOpen", cache_type_, key_matches);
   }
   CallCompletionCallback(callback, final_code);
 }

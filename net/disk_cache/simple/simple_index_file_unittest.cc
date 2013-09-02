@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "net/base/cache_type.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_index_file.h"
@@ -63,6 +64,7 @@ class WrappedSimpleIndexFile : public SimpleIndexFile {
   explicit WrappedSimpleIndexFile(const base::FilePath& index_file_directory)
       : SimpleIndexFile(base::MessageLoopProxy::current().get(),
                         base::MessageLoopProxy::current().get(),
+                        net::DISK_CACHE,
                         index_file_directory) {}
   virtual ~WrappedSimpleIndexFile() {
   }

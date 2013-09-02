@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/port.h"
+#include "net/base/cache_type.h"
 #include "net/base/net_export.h"
 #include "net/disk_cache/simple/simple_index.h"
 
@@ -75,6 +76,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
 
   SimpleIndexFile(base::SingleThreadTaskRunner* cache_thread,
                   base::TaskRunner* worker_pool,
+                  net::CacheType cache_type,
                   const base::FilePath& cache_directory);
   virtual ~SimpleIndexFile();
 
@@ -105,7 +107,8 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   static const int kExtraSizeForMerge = 512;
 
   // Synchronous (IO performing) implementation of LoadIndexEntries.
-  static void SyncLoadIndexEntries(base::Time cache_last_modified,
+  static void SyncLoadIndexEntries(net::CacheType cache_type,
+                                   base::Time cache_last_modified,
                                    const base::FilePath& cache_directory,
                                    const base::FilePath& index_file_path,
                                    SimpleIndexLoadResult* out_result);
@@ -152,6 +155,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
 
   const scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
   const scoped_refptr<base::TaskRunner> worker_pool_;
+  const net::CacheType cache_type_;
   const base::FilePath cache_directory_;
   const base::FilePath index_file_;
   const base::FilePath temp_index_file_;

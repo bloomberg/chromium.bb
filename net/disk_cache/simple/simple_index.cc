@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
@@ -23,6 +22,7 @@
 #include "base/time/time.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
+#include "net/disk_cache/simple/simple_histogram_macros.h"
 #include "net/disk_cache/simple/simple_index_file.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
 #include "net/disk_cache/simple/simple_util.h"
@@ -133,9 +133,11 @@ bool EntryMetadata::Deserialize(PickleIterator* it) {
 }
 
 SimpleIndex::SimpleIndex(base::SingleThreadTaskRunner* io_thread,
+                         net::CacheType cache_type,
                          const base::FilePath& cache_directory,
                          scoped_ptr<SimpleIndexFile> index_file)
-    : cache_size_(0),
+    : cache_type_(cache_type),
+      cache_size_(0),
       max_size_(0),
       high_watermark_(0),
       low_watermark_(0),
@@ -286,10 +288,12 @@ void SimpleIndex::StartEvictionIfNeeded() {
   // Take all live key hashes from the index and sort them by time.
   eviction_in_progress_ = true;
   eviction_start_time_ = base::TimeTicks::Now();
-  UMA_HISTOGRAM_MEMORY_KB("SimpleCache.Eviction.CacheSizeOnStart2",
-                          cache_size_ / kBytesInKb);
-  UMA_HISTOGRAM_MEMORY_KB("SimpleCache.Eviction.MaxCacheSizeOnStart2",
-                          max_size_ / kBytesInKb);
+  SIMPLE_CACHE_UMA(MEMORY_KB,
+                   "Eviction.CacheSizeOnStart2", cache_type_,
+                   cache_size_ / kBytesInKb);
+  SIMPLE_CACHE_UMA(MEMORY_KB,
+                   "Eviction.MaxCacheSizeOnStart2", cache_type_,
+                   max_size_ / kBytesInKb);
   scoped_ptr<std::vector<uint64> > entry_hashes(new std::vector<uint64>());
   for (EntrySet::const_iterator it = entries_set_.begin(),
        end = entries_set_.end(); it != end; ++it) {
@@ -314,11 +318,14 @@ void SimpleIndex::StartEvictionIfNeeded() {
 
   // Take out the rest of hashes from the eviction list.
   entry_hashes->erase(it, entry_hashes->end());
-  UMA_HISTOGRAM_COUNTS("SimpleCache.Eviction.EntryCount", entry_hashes->size());
-  UMA_HISTOGRAM_TIMES("SimpleCache.Eviction.TimeToSelectEntries",
-                      base::TimeTicks::Now() - eviction_start_time_);
-  UMA_HISTOGRAM_MEMORY_KB("SimpleCache.Eviction.SizeOfEvicted2",
-                          evicted_so_far_size / kBytesInKb);
+  SIMPLE_CACHE_UMA(COUNTS,
+                   "Eviction.EntryCount", cache_type_, entry_hashes->size());
+  SIMPLE_CACHE_UMA(TIMES,
+                   "Eviction.TimeToSelectEntries", cache_type_,
+                   base::TimeTicks::Now() - eviction_start_time_);
+  SIMPLE_CACHE_UMA(MEMORY_KB,
+                   "Eviction.SizeOfEvicted2", cache_type_,
+                   evicted_so_far_size / kBytesInKb);
 
   index_file_->DoomEntrySet(
       entry_hashes.Pass(),
@@ -342,11 +349,13 @@ void SimpleIndex::EvictionDone(int result) {
 
   // Ignore the result of eviction. We did our best.
   eviction_in_progress_ = false;
-  UMA_HISTOGRAM_BOOLEAN("SimpleCache.Eviction.Result", result == net::OK);
-  UMA_HISTOGRAM_TIMES("SimpleCache.Eviction.TimeToDone",
-                      base::TimeTicks::Now() - eviction_start_time_);
-  UMA_HISTOGRAM_MEMORY_KB("SimpleCache.Eviction.SizeWhenDone2",
-                          cache_size_ / kBytesInKb);
+  SIMPLE_CACHE_UMA(BOOLEAN, "Eviction.Result", cache_type_, result == net::OK);
+  SIMPLE_CACHE_UMA(TIMES,
+                   "Eviction.TimeToDone", cache_type_,
+                   base::TimeTicks::Now() - eviction_start_time_);
+  SIMPLE_CACHE_UMA(MEMORY_KB,
+                   "Eviction.SizeWhenDone2", cache_type_,
+                   cache_size_ / kBytesInKb);
 }
 
 // static
@@ -416,8 +425,9 @@ void SimpleIndex::MergeInitializingSet(
   if (load_result->flush_required)
     WriteToDisk();
 
-  UMA_HISTOGRAM_CUSTOM_COUNTS("SimpleCache.IndexInitializationWaiters",
-                              to_run_when_initialized_.size(), 0, 100, 20);
+  SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
+                   "IndexInitializationWaiters", cache_type_,
+                   to_run_when_initialized_.size(), 0, 100, 20);
   // Run all callbacks waiting for the index to come up.
   for (CallbackList::iterator it = to_run_when_initialized_.begin(),
        end = to_run_when_initialized_.end(); it != end; ++it) {
@@ -446,16 +456,19 @@ void SimpleIndex::WriteToDisk() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   if (!initialized_)
     return;
-  UMA_HISTOGRAM_CUSTOM_COUNTS("SimpleCache.IndexNumEntriesOnWrite",
-                              entries_set_.size(), 0, 100000, 50);
+  SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
+                   "IndexNumEntriesOnWrite", cache_type_,
+                   entries_set_.size(), 0, 100000, 50);
   const base::TimeTicks start = base::TimeTicks::Now();
   if (!last_write_to_disk_.is_null()) {
     if (app_on_background_) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("SimpleCache.IndexWriteInterval.Background",
-                                 start - last_write_to_disk_);
+      SIMPLE_CACHE_UMA(MEDIUM_TIMES,
+                       "IndexWriteInterval.Background", cache_type_,
+                       start - last_write_to_disk_);
     } else {
-      UMA_HISTOGRAM_MEDIUM_TIMES("SimpleCache.IndexWriteInterval.Foreground",
-                                 start - last_write_to_disk_);
+      SIMPLE_CACHE_UMA(MEDIUM_TIMES,
+                       "IndexWriteInterval.Foreground", cache_type_,
+                       start - last_write_to_disk_);
     }
   }
   last_write_to_disk_ = start;

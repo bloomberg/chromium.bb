@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "net/base/cache_type.h"
 #include "net/base/net_log.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
@@ -45,7 +46,8 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
     OPTIMISTIC_OPERATIONS,
   };
 
-  SimpleEntryImpl(const base::FilePath& path,
+  SimpleEntryImpl(net::CacheType cache_type,
+                  const base::FilePath& path,
                   uint64 entry_hash,
                   OperationsMode operations_mode,
                   SimpleBackendImpl* backend,
@@ -239,6 +241,7 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
   base::ThreadChecker io_thread_checker_;
 
   base::WeakPtr<SimpleBackendImpl> backend_;
+  const net::CacheType cache_type_;
   const scoped_refptr<base::TaskRunner> worker_pool_;
   const base::FilePath path_;
   const uint64 entry_hash_;

@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/time/time.h"
+#include "net/base/cache_type.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 
 namespace net {
@@ -71,12 +72,14 @@ class SimpleSynchronousEntry {
     bool truncate;
   };
 
-  static void OpenEntry(const base::FilePath& path,
+  static void OpenEntry(net::CacheType cache_type,
+                        const base::FilePath& path,
                         uint64 entry_hash,
                         bool had_index,
                         SimpleEntryCreationResults* out_results);
 
-  static void CreateEntry(const base::FilePath& path,
+  static void CreateEntry(net::CacheType cache_type,
+                          const base::FilePath& path,
                           const std::string& key,
                           uint64 entry_hash,
                           bool had_index,
@@ -122,6 +125,7 @@ class SimpleSynchronousEntry {
 
  private:
   SimpleSynchronousEntry(
+      net::CacheType cache_type,
       const base::FilePath& path,
       const std::string& key,
       uint64 entry_hash);
@@ -151,6 +155,7 @@ class SimpleSynchronousEntry {
   static bool DeleteFilesForEntryHash(const base::FilePath& path,
                                       uint64 entry_hash);
 
+  const net::CacheType cache_type_;
   const base::FilePath path_;
   const uint64 entry_hash_;
   std::string key_;

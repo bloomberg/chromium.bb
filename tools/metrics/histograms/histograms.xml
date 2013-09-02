@@ -14288,7 +14288,449 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.App.CheckCRCResult" enum="CheckCRCResult">
+  <summary>
+    Whether or not the CRC was checked at the moment when the last reference to
+    a read-only entry stream is closed.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.CreationToIndex" units="milliseconds">
+  <summary>
+    The time from the creation of the simple cache backend until the index has
+    been loaded from disk.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.CreationToIndexFail" units="milliseconds">
+  <summary>
+    The time from the creation of the simple cache backend until the index fails
+    to load.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.EntryCreationResult" enum="BooleanSuccess">
+  <summary>
+    For entry creation operations that were sent to the disk, the result of
+    creation.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.EntryCreationTime" units="milliseconds">
+  <summary>The time, in ms, spent creating a new entry on disk.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.EntryOperationsPending">
+  <summary>
+    At the time that operations are run, the number of pending operations on a
+    particular entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.Eviction.CacheSizeOnStart" units="bytes">
+  <summary>The size of the cache at the beginning of an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.Eviction.CacheSizeOnStart2" units="KB">
+  <summary>The size of the cache at the beginning of an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.Eviction.EntryCount">
+  <summary>The number of entries to be erased in an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.Eviction.MaxCacheSizeOnStart" units="bytes">
+  <summary>
+    The maximum allowed size of the cache at the beginning of an eviction.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.Eviction.MaxCacheSizeOnStart2" units="KB">
+  <summary>
+    The maximum allowed size of the cache at the beginning of an eviction.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.Eviction.Result" enum="BooleanSuccess">
+  <summary>The result of an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.Eviction.SizeOfEvicted" units="bytes">
+  <summary>The number of bytes to be erased in an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.Eviction.SizeOfEvicted2" units="KB">
+  <summary>The amount of memory freed in an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.Eviction.SizeWhenDone" units="bytes">
+  <summary>The size of the cache after running an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.Eviction.SizeWhenDone2" units="KB">
+  <summary>The size of the cache after running an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.Eviction.TimeToDone" units="milliseconds">
+  <summary>Time spent completing an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.Eviction.TimeToSelectEntries"
+    units="milliseconds">
+  <summary>Time spent selecting entries for eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.FileDescriptorLimitHard">
+  <summary>
+    The maximum limit of how many file descriptors a process can open.  Emitted
+    each time the browser is launched, if the limit could be retrieved.  (This
+    is the highest value we could raise the current limit to if we liked.)
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.FileDescriptorLimitSoft">
+  <summary>
+    The current limit of how many file descriptors a process can open.  Emitted
+    each time the browser is launched, if the limit could be retrieved.  (We can
+    raise this to the maximum limit if we like, without root access.)
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.FileDescriptorLimitStatus"
+    enum="SimpleCache.FileDescriptorLimitStatus">
+  <summary>
+    The result of trying to get the file descriptor limit.  Emitted each time
+    the browser is launched.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.GlobalOpenEntryCount">
+  <summary>
+    The number of open entries across all caches backed by the Simple Cache. An
+    entry is opened whenever a caller asks to open it to read or write cache
+    data, and remains open until the last caller asks to close it. Logged
+    whenever an entry is opened or closed.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.HeaderSize" units="bytes">
+  <summary>
+    The size of the header stream of a Simple Cache entry, emitted every time
+    the headers are written or rewritten.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.HeaderSizeChange"
+    enum="SimpleCacheHeaderSizeChange">
+  <summary>
+    How the header size has changed in a Simple Cache entry, emitted every time
+    a write operation occurs on the header stream.  (This includes the initial
+    write, rewrites, and other writes that we couldn't classify.)
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.HeaderSizeDecreaseAbsolute" units="bytes">
+  <summary>
+    The absolute size decrease of the header stream of a Simple Cache entry,
+    emitted every time the headers are rewritten with a smaller size.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.HeaderSizeDecreasePercentage" units="percent">
+  <summary>
+    The relative size decrease of the header stream of a Simple Cache entry,
+    emitted every time the headers are rewritten with a smaller size.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.HeaderSizeIncreaseAbsolute" units="bytes">
+  <summary>
+    The absolute size increase of the header stream of a Simple Cache entry,
+    emitted every time the headers are rewritten with a larger size.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.HeaderSizeIncreasePercentage" units="percent">
+  <summary>
+    The relative size increase of the header stream of a Simple Cache entry,
+    emitted every time the headers are rewritten with a larger size.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.IndexCorrupt" enum="BooleanCorrupt">
+  <summary>For each index load, whether the index file was corrupt.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.IndexCreatedEntryCount">
+  <summary>The number of entries in a newly created index file.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.IndexEntriesLoaded">
+  <summary>Number of entries loaded from the index file on start.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.IndexEntriesRestored">
+  <summary>
+    Number of entries restored from disk when there was no index or the index
+    was corrupted.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.IndexFileStateOnLoad" enum="SimpleIndexState">
+  <summary>
+    The state the index file is at when an attempt is made to load from it.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.IndexInitializationWaiters">
+  <summary>
+    At the time of index initialization, the number of enqueued jobs awaiting
+    index initialization.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.IndexInitializeMethod"
+    enum="SimpleCacheIndexInitializeMethod">
+  <summary>The method used to initialize the simple cache index.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.IndexLoadTime" units="milliseconds">
+  <summary>
+    Time (as measured on the worker pool) spent loading the index file.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.IndexNumEntriesOnWrite">
+  <summary>The number of entries written to the index on a flush.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.IndexRestoreTime" units="milliseconds">
+  <summary>
+    Time (as measured on the worker pool) spent restoring the index file by
+    iterating directory entries.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.IndexWriteInterval.Background"
+    units="milliseconds">
+  <summary>
+    The interval between index saves, for apps in the background.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.IndexWriteInterval.Foreground"
+    units="milliseconds">
+  <summary>
+    The interval between index saves, for apps in the foreground.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.IndexWriteToDiskTime.Background"
+    units="milliseconds">
+  <summary>
+    The amount of time spend writing the index file to disk, for apps in the
+    background, measured starting at the beginning of the write on the callback
+    thread, and calculated using the completion time on the worker pool.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.IndexWriteToDiskTime.Foreground"
+    units="milliseconds">
+  <summary>
+    The amount of time spend writing the index file to disk, for apps in the
+    foreground, measured starting at the beginning of the write on the callback
+    thread, and calculated using the completion time on the worker pool.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.KeyMatchedOnOpen" enum="BooleanMatched">
+  <summary>
+    For each call to OpenEntry, whether the key on disk matched the request key.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.LastClusterLossPercent" units="percent">
+  <summary>
+    For each file in the Simple Cache, the percentage of disk space used by the
+    cluster loss, the unused disk space in the last 4096 byte cluster of the
+    file.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.LastClusterSize" units="bytes">
+  <summary>
+    For each file in the Simple Cache, the number of bytes in the last 4096 byte
+    cluster when the entry is saved to disk.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.OpenEntryIndexState"
+    enum="SimpleCacheOpenEntryIndexState">
+  <summary>
+    At the time that an entry is opened, the state of that entry in the index.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.ReadIsParallelizable"
+    enum="SimpleCacheReadParallelizable">
+  <summary>
+    For each Read operation, whether it could have been issued in parallel of a
+    previous Read operation.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.ReadResult" enum="SimpleCacheReadResult">
+  <summary>The outcome of Entry::ReadData in the simple cache.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncCheckEOFHasCrc" enum="BooleanHasCrc">
+  <summary>
+    For each EOFRecord found with a valid magic number, indicates if the record
+    also contains a CRC.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncCheckEOFResult"
+    enum="SimpleCacheSyncCheckEOFResult">
+  <summary>
+    The result, at the synchronous layer, of checking the EOF record of a cache
+    entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncCloseResult"
+    enum="SimpleCacheSyncCloseResult">
+  <summary>
+    The result, at the synchronous layer, of closing a cache entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncCreatePlatformFileError"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncCreatePlatformFileError_WithIndex"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer when the index has already initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncCreatePlatformFileError_WithoutIndex"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer when the index has not yet initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncCreateResult"
+    enum="SimpleCacheSyncCreateResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to create a
+    new cache entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncCreateResult_WithIndex"
+    enum="SimpleCacheSyncCreateResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to create a
+    new cache entry when the index has already initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncCreateResult_WithoutIndex"
+    enum="SimpleCacheSyncCreateResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to create a
+    new cache entry when the index has not yet initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncOpenEntryAge" units="hours">
+  <summary>
+    The age of the entry (time since last modified), when opened at the
+    synchronous layer.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncOpenPlatformFileError"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncOpenPlatformFileError_WithIndex"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer when the index has already initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncOpenPlatformFileError_WithoutIndex"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer when the index has not initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncOpenResult"
+    enum="SimpleCacheSyncOpenResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to open a new
+    cache entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncOpenResult_WithIndex"
+    enum="SimpleCacheSyncOpenResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to open a new
+    cache entry when the index has already initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncOpenResult_WithoutIndex"
+    enum="SimpleCacheSyncOpenResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to open a new
+    cache entry when the index has not yet initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.SyncWriteResult"
+    enum="SimpleCacheSyncWriteResult">
+  <summary>
+    The result, at the synchronous layer, of writing to a cache entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.WriteDependencyType"
+    enum="SimpleCacheWriteDependencyType">
+  <summary>
+    Shows whether a write operation depends on the previous operation in queue
+    particularly in the aspect of its possibility to run in parallel.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.App.WriteResult" enum="SimpleCacheWriteResult">
+  <summary>The outcome of Entry::WriteData in the simple cache.</summary>
+</histogram>
+
 <histogram name="SimpleCache.CheckCRCResult" enum="CheckCRCResult">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     Whether or not the CRC was checked at the moment when the last reference to
     a read-only entry stream is closed.
@@ -14296,6 +14738,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.CreationToIndex" units="milliseconds">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The time from the creation of the simple cache backend until the index has
     been loaded from disk.
@@ -14303,6 +14748,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.CreationToIndexFail" units="milliseconds">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The time from the creation of the simple cache backend until the index fails
     to load.
@@ -14310,6 +14758,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.EntryCreationResult" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     For entry creation operations that were sent to the disk, the result of
     creation.
@@ -14317,10 +14768,16 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.EntryCreationTime" units="milliseconds">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>The time, in ms, spent creating a new entry on disk.</summary>
 </histogram>
 
 <histogram name="SimpleCache.EntryOperationsPending">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     At the time that operations are run, the number of pending operations on a
     particular entry.
@@ -14328,58 +14785,97 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.Eviction.CacheSizeOnStart" units="bytes">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>The size of the cache at the beginning of an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.CacheSizeOnStart2" units="KB">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>The size of the cache at the beginning of an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.EntryCount">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>The number of entries to be erased in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.MaxCacheSizeOnStart" units="bytes">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The maximum allowed size of the cache at the beginning of an eviction.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.MaxCacheSizeOnStart2" units="KB">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The maximum allowed size of the cache at the beginning of an eviction.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.Result" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>The result of an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.SizeOfEvicted" units="bytes">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>The number of bytes to be erased in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.SizeOfEvicted2" units="KB">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>The amount of memory freed in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.SizeWhenDone" units="bytes">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>The size of the cache after running an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.SizeWhenDone2" units="KB">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>The size of the cache after running an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.TimeToDone" units="milliseconds">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>Time spent completing an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.TimeToSelectEntries" units="milliseconds">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>Time spent selecting entries for eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.FileDescriptorLimitHard">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The maximum limit of how many file descriptors a process can open.  Emitted
     each time the browser is launched, if the limit could be retrieved.  (This
@@ -14388,6 +14884,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.FileDescriptorLimitSoft">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The current limit of how many file descriptors a process can open.  Emitted
     each time the browser is launched, if the limit could be retrieved.  (We can
@@ -14397,6 +14896,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.FileDescriptorLimitStatus"
     enum="SimpleCache.FileDescriptorLimitStatus">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The result of trying to get the file descriptor limit.  Emitted each time
     the browser is launched.
@@ -14404,6 +14906,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.GlobalOpenEntryCount">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The number of open entries across all caches backed by the Simple Cache. An
     entry is opened whenever a caller asks to open it to read or write cache
@@ -14413,6 +14918,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.HeaderSize" units="bytes">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The size of the header stream of a Simple Cache entry, emitted every time
     the headers are written or rewritten.
@@ -14421,6 +14929,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.HeaderSizeChange"
     enum="SimpleCacheHeaderSizeChange">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     How the header size has changed in a Simple Cache entry, emitted every time
     a write operation occurs on the header stream.  (This includes the initial
@@ -14429,6 +14940,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.HeaderSizeDecreaseAbsolute" units="bytes">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The absolute size decrease of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a smaller size.
@@ -14436,6 +14950,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.HeaderSizeDecreasePercentage" units="percent">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The relative size decrease of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a smaller size.
@@ -14443,6 +14960,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.HeaderSizeIncreaseAbsolute" units="bytes">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The absolute size increase of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a larger size.
@@ -14450,25 +14970,479 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.HeaderSizeIncreasePercentage" units="percent">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The relative size increase of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a larger size.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.Http.CheckCRCResult" enum="CheckCRCResult">
+  <summary>
+    Whether or not the CRC was checked at the moment when the last reference to
+    a read-only entry stream is closed.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.CreationToIndex" units="milliseconds">
+  <summary>
+    The time from the creation of the simple cache backend until the index has
+    been loaded from disk.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.CreationToIndexFail" units="milliseconds">
+  <summary>
+    The time from the creation of the simple cache backend until the index fails
+    to load.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.EntryCreationResult" enum="BooleanSuccess">
+  <summary>
+    For entry creation operations that were sent to the disk, the result of
+    creation.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.EntryCreationTime" units="milliseconds">
+  <summary>The time, in ms, spent creating a new entry on disk.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.EntryOperationsPending">
+  <summary>
+    At the time that operations are run, the number of pending operations on a
+    particular entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.Eviction.CacheSizeOnStart" units="bytes">
+  <summary>The size of the cache at the beginning of an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.Eviction.CacheSizeOnStart2" units="KB">
+  <summary>The size of the cache at the beginning of an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.Eviction.EntryCount">
+  <summary>The number of entries to be erased in an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.Eviction.MaxCacheSizeOnStart" units="bytes">
+  <summary>
+    The maximum allowed size of the cache at the beginning of an eviction.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.Eviction.MaxCacheSizeOnStart2" units="KB">
+  <summary>
+    The maximum allowed size of the cache at the beginning of an eviction.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.Eviction.Result" enum="BooleanSuccess">
+  <summary>The result of an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.Eviction.SizeOfEvicted" units="bytes">
+  <summary>The number of bytes to be erased in an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.Eviction.SizeOfEvicted2" units="KB">
+  <summary>The amount of memory freed in an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.Eviction.SizeWhenDone" units="bytes">
+  <summary>The size of the cache after running an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.Eviction.SizeWhenDone2" units="KB">
+  <summary>The size of the cache after running an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.Eviction.TimeToDone" units="milliseconds">
+  <summary>Time spent completing an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.Eviction.TimeToSelectEntries"
+    units="milliseconds">
+  <summary>Time spent selecting entries for eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.FileDescriptorLimitHard">
+  <summary>
+    The maximum limit of how many file descriptors a process can open.  Emitted
+    each time the browser is launched, if the limit could be retrieved.  (This
+    is the highest value we could raise the current limit to if we liked.)
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.FileDescriptorLimitSoft">
+  <summary>
+    The current limit of how many file descriptors a process can open.  Emitted
+    each time the browser is launched, if the limit could be retrieved.  (We can
+    raise this to the maximum limit if we like, without root access.)
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.FileDescriptorLimitStatus"
+    enum="SimpleCache.FileDescriptorLimitStatus">
+  <summary>
+    The result of trying to get the file descriptor limit.  Emitted each time
+    the browser is launched.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.GlobalOpenEntryCount">
+  <summary>
+    The number of open entries across all caches backed by the Simple Cache. An
+    entry is opened whenever a caller asks to open it to read or write cache
+    data, and remains open until the last caller asks to close it. Logged
+    whenever an entry is opened or closed.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.HeaderSize" units="bytes">
+  <summary>
+    The size of the header stream of a Simple Cache entry, emitted every time
+    the headers are written or rewritten.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.HeaderSizeChange"
+    enum="SimpleCacheHeaderSizeChange">
+  <summary>
+    How the header size has changed in a Simple Cache entry, emitted every time
+    a write operation occurs on the header stream.  (This includes the initial
+    write, rewrites, and other writes that we couldn't classify.)
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.HeaderSizeDecreaseAbsolute" units="bytes">
+  <summary>
+    The absolute size decrease of the header stream of a Simple Cache entry,
+    emitted every time the headers are rewritten with a smaller size.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.HeaderSizeDecreasePercentage" units="percent">
+  <summary>
+    The relative size decrease of the header stream of a Simple Cache entry,
+    emitted every time the headers are rewritten with a smaller size.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.HeaderSizeIncreaseAbsolute" units="bytes">
+  <summary>
+    The absolute size increase of the header stream of a Simple Cache entry,
+    emitted every time the headers are rewritten with a larger size.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.HeaderSizeIncreasePercentage" units="percent">
+  <summary>
+    The relative size increase of the header stream of a Simple Cache entry,
+    emitted every time the headers are rewritten with a larger size.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.IndexCorrupt" enum="BooleanCorrupt">
+  <summary>For each index load, whether the index file was corrupt.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.IndexCreatedEntryCount">
+  <summary>The number of entries in a newly created index file.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.IndexEntriesLoaded">
+  <summary>Number of entries loaded from the index file on start.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.IndexEntriesRestored">
+  <summary>
+    Number of entries restored from disk when there was no index or the index
+    was corrupted.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.IndexFileStateOnLoad" enum="SimpleIndexState">
+  <summary>
+    The state the index file is at when an attempt is made to load from it.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.IndexInitializationWaiters">
+  <summary>
+    At the time of index initialization, the number of enqueued jobs awaiting
+    index initialization.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.IndexInitializeMethod"
+    enum="SimpleCacheIndexInitializeMethod">
+  <summary>The method used to initialize the simple cache index.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.IndexLoadTime" units="milliseconds">
+  <summary>
+    Time (as measured on the worker pool) spent loading the index file.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.IndexNumEntriesOnWrite">
+  <summary>The number of entries written to the index on a flush.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.IndexRestoreTime" units="milliseconds">
+  <summary>
+    Time (as measured on the worker pool) spent restoring the index file by
+    iterating directory entries.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.IndexWriteInterval.Background"
+    units="milliseconds">
+  <summary>
+    The interval between index saves, for apps in the background.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.IndexWriteInterval.Foreground"
+    units="milliseconds">
+  <summary>
+    The interval between index saves, for apps in the foreground.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.IndexWriteToDiskTime.Background"
+    units="milliseconds">
+  <summary>
+    The amount of time spend writing the index file to disk, for apps in the
+    background, measured starting at the beginning of the write on the callback
+    thread, and calculated using the completion time on the worker pool.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.IndexWriteToDiskTime.Foreground"
+    units="milliseconds">
+  <summary>
+    The amount of time spend writing the index file to disk, for apps in the
+    foreground, measured starting at the beginning of the write on the callback
+    thread, and calculated using the completion time on the worker pool.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.KeyMatchedOnOpen" enum="BooleanMatched">
+  <summary>
+    For each call to OpenEntry, whether the key on disk matched the request key.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.LastClusterLossPercent" units="percent">
+  <summary>
+    For each file in the Simple Cache, the percentage of disk space used by the
+    cluster loss, the unused disk space in the last 4096 byte cluster of the
+    file.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.LastClusterSize" units="bytes">
+  <summary>
+    For each file in the Simple Cache, the number of bytes in the last 4096 byte
+    cluster when the entry is saved to disk.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.OpenEntryIndexState"
+    enum="SimpleCacheOpenEntryIndexState">
+  <summary>
+    At the time that an entry is opened, the state of that entry in the index.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.ReadIsParallelizable"
+    enum="SimpleCacheReadParallelizable">
+  <summary>
+    For each Read operation, whether it could have been issued in parallel of a
+    previous Read operation.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.ReadResult" enum="SimpleCacheReadResult">
+  <summary>The outcome of Entry::ReadData in the simple cache.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncCheckEOFHasCrc" enum="BooleanHasCrc">
+  <summary>
+    For each EOFRecord found with a valid magic number, indicates if the record
+    also contains a CRC.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncCheckEOFResult"
+    enum="SimpleCacheSyncCheckEOFResult">
+  <summary>
+    The result, at the synchronous layer, of checking the EOF record of a cache
+    entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncCloseResult"
+    enum="SimpleCacheSyncCloseResult">
+  <summary>
+    The result, at the synchronous layer, of closing a cache entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncCreatePlatformFileError"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncCreatePlatformFileError_WithIndex"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer when the index has already initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncCreatePlatformFileError_WithoutIndex"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer when the index has not yet initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncCreateResult"
+    enum="SimpleCacheSyncCreateResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to create a
+    new cache entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncCreateResult_WithIndex"
+    enum="SimpleCacheSyncCreateResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to create a
+    new cache entry when the index has already initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncCreateResult_WithoutIndex"
+    enum="SimpleCacheSyncCreateResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to create a
+    new cache entry when the index has not yet initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncOpenEntryAge" units="hours">
+  <summary>
+    The age of the entry (time since last modified), when opened at the
+    synchronous layer.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncOpenPlatformFileError"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncOpenPlatformFileError_WithIndex"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer when the index has already initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncOpenPlatformFileError_WithoutIndex"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer when the index has not initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncOpenResult"
+    enum="SimpleCacheSyncOpenResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to open a new
+    cache entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncOpenResult_WithIndex"
+    enum="SimpleCacheSyncOpenResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to open a new
+    cache entry when the index has already initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncOpenResult_WithoutIndex"
+    enum="SimpleCacheSyncOpenResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to open a new
+    cache entry when the index has not yet initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.SyncWriteResult"
+    enum="SimpleCacheSyncWriteResult">
+  <summary>
+    The result, at the synchronous layer, of writing to a cache entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.WriteDependencyType"
+    enum="SimpleCacheWriteDependencyType">
+  <summary>
+    Shows whether a write operation depends on the previous operation in queue
+    particularly in the aspect of its possibility to run in parallel.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.WriteResult" enum="SimpleCacheWriteResult">
+  <summary>The outcome of Entry::WriteData in the simple cache.</summary>
+</histogram>
+
 <histogram name="SimpleCache.IndexCorrupt" enum="BooleanCorrupt">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>For each index load, whether the index file was corrupt.</summary>
 </histogram>
 
 <histogram name="SimpleCache.IndexCreatedEntryCount">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>The number of entries in a newly created index file.</summary>
 </histogram>
 
 <histogram name="SimpleCache.IndexEntriesLoaded">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>Number of entries loaded from the index file on start.</summary>
 </histogram>
 
 <histogram name="SimpleCache.IndexEntriesRestored">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     Number of entries restored from disk when there was no index or the index
     was corrupted.
@@ -14476,12 +15450,18 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.IndexFileStateOnLoad" enum="SimpleIndexState">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The state the index file is at when an attempt is made to load from it.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.IndexInitializationWaiters">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     At the time of index initialization, the number of enqueued jobs awaiting
     index initialization.
@@ -14490,20 +15470,32 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.IndexInitializeMethod"
     enum="SimpleCacheIndexInitializeMethod">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>The method used to initialize the simple cache index.</summary>
 </histogram>
 
 <histogram name="SimpleCache.IndexLoadTime" units="milliseconds">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     Time (as measured on the worker pool) spent loading the index file.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.IndexNumEntriesOnWrite">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>The number of entries written to the index on a flush.</summary>
 </histogram>
 
 <histogram name="SimpleCache.IndexRestoreTime" units="milliseconds">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     Time (as measured on the worker pool) spent restoring the index file by
     iterating directory entries.
@@ -14519,6 +15511,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.IndexWriteInterval.Background"
     units="milliseconds">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The interval between index saves, for apps in the background.
   </summary>
@@ -14526,6 +15521,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.IndexWriteInterval.Foreground"
     units="milliseconds">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The interval between index saves, for apps in the foreground.
   </summary>
@@ -14546,6 +15544,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.IndexWriteToDiskTime.Background"
     units="milliseconds">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The amount of time spend writing the index file to disk, for apps in the
     background, measured starting at the beginning of the write on the callback
@@ -14555,6 +15556,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.IndexWriteToDiskTime.Foreground"
     units="milliseconds">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The amount of time spend writing the index file to disk, for apps in the
     foreground, measured starting at the beginning of the write on the callback
@@ -14563,12 +15567,18 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.KeyMatchedOnOpen" enum="BooleanMatched">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     For each call to OpenEntry, whether the key on disk matched the request key.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.LastClusterLossPercent" units="percent">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     For each file in the Simple Cache, the percentage of disk space used by the
     cluster loss, the unused disk space in the last 4096 byte cluster of the
@@ -14577,6 +15587,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.LastClusterSize" units="bytes">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     For each file in the Simple Cache, the number of bytes in the last 4096 byte
     cluster when the entry is saved to disk.
@@ -14585,6 +15598,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.OpenEntryIndexState"
     enum="SimpleCacheOpenEntryIndexState">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     At the time that an entry is opened, the state of that entry in the index.
   </summary>
@@ -14592,6 +15608,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.ReadIsParallelizable"
     enum="SimpleCacheReadParallelizable">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     For each Read operation, whether it could have been issued in parallel of a
     previous Read operation.
@@ -14599,10 +15618,16 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.ReadResult" enum="SimpleCacheReadResult">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>The outcome of Entry::ReadData in the simple cache.</summary>
 </histogram>
 
 <histogram name="SimpleCache.SyncCheckEOFHasCrc" enum="BooleanHasCrc">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     For each EOFRecord found with a valid magic number, indicates if the record
     also contains a CRC.
@@ -14611,6 +15636,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.SyncCheckEOFResult"
     enum="SimpleCacheSyncCheckEOFResult">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The result, at the synchronous layer, of checking the EOF record of a cache
     entry.
@@ -14618,6 +15646,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.SyncCloseResult" enum="SimpleCacheSyncCloseResult">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The result, at the synchronous layer, of closing a cache entry.
   </summary>
@@ -14625,6 +15656,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.SyncCreatePlatformFileError"
     enum="PlatformFileError">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer.
@@ -14633,6 +15667,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.SyncCreatePlatformFileError_WithIndex"
     enum="PlatformFileError">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has already initialized.
@@ -14641,6 +15678,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.SyncCreatePlatformFileError_WithoutIndex"
     enum="PlatformFileError">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has not yet initialized.
@@ -14649,6 +15689,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.SyncCreateResult"
     enum="SimpleCacheSyncCreateResult">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry.
@@ -14657,6 +15700,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.SyncCreateResult_WithIndex"
     enum="SimpleCacheSyncCreateResult">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry when the index has already initialized.
@@ -14665,6 +15711,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.SyncCreateResult_WithoutIndex"
     enum="SimpleCacheSyncCreateResult">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry when the index has not yet initialized.
@@ -14672,6 +15721,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.SyncOpenEntryAge" units="hours">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The age of the entry (time since last modified), when opened at the
     synchronous layer.
@@ -14680,6 +15732,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.SyncOpenPlatformFileError"
     enum="PlatformFileError">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer.
@@ -14688,6 +15743,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.SyncOpenPlatformFileError_WithIndex"
     enum="PlatformFileError">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has already initialized.
@@ -14696,6 +15754,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.SyncOpenPlatformFileError_WithoutIndex"
     enum="PlatformFileError">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has not initialized.
@@ -14703,6 +15764,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.SyncOpenResult" enum="SimpleCacheSyncOpenResult">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
     cache entry.
@@ -14711,6 +15775,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.SyncOpenResult_WithIndex"
     enum="SimpleCacheSyncOpenResult">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
     cache entry when the index has already initialized.
@@ -14719,6 +15786,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.SyncOpenResult_WithoutIndex"
     enum="SimpleCacheSyncOpenResult">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
     cache entry when the index has not yet initialized.
@@ -14726,6 +15796,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.SyncWriteResult" enum="SimpleCacheSyncWriteResult">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     The result, at the synchronous layer, of writing to a cache entry.
   </summary>
@@ -14733,6 +15806,9 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.WriteDependencyType"
     enum="SimpleCacheWriteDependencyType">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>
     Shows whether a write operation depends on the previous operation in queue
     particularly in the aspect of its possibility to run in parallel.
@@ -14740,6 +15816,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.WriteResult" enum="SimpleCacheWriteResult">
+  <obsolete>
+    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+  </obsolete>
   <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
 

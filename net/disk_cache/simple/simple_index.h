@@ -20,6 +20,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "net/base/cache_type.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 
@@ -76,6 +77,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   typedef std::vector<uint64> HashList;
 
   SimpleIndex(base::SingleThreadTaskRunner* io_thread,
+              net::CacheType cache_type,
               const base::FilePath& cache_directory,
               scoped_ptr<SimpleIndexFile> simple_index_file);
 
@@ -157,6 +159,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   EntrySet entries_set_;
 
+  const net::CacheType cache_type_;
   uint64 cache_size_;  // Total cache storage size in bytes.
   uint64 max_size_;
   uint64 high_watermark_;
