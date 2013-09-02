@@ -24,7 +24,8 @@ class ErrorScreen : public WizardScreen {
     UI_STATE_UPDATE,
     UI_STATE_SIGNIN,
     UI_STATE_LOCALLY_MANAGED,
-    UI_STATE_KIOSK_MODE
+    UI_STATE_KIOSK_MODE,
+    UI_STATE_LOCAL_STATE_ERROR
   };
 
   enum ErrorState {
@@ -55,6 +56,8 @@ class ErrorScreen : public WizardScreen {
 
   // Sets current UI state.
   void SetUIState(UIState ui_state);
+
+  UIState GetUIState() const;
 
   // Sets current error screen content according to current UI state,
   // |error_state|, and |network|.

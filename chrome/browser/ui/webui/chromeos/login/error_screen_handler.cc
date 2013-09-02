@@ -14,6 +14,9 @@
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
 namespace {
@@ -101,21 +104,28 @@ void ErrorScreenHandler::HideCaptivePortal() {
 
 void ErrorScreenHandler::SetUIState(ErrorScreen::UIState ui_state) {
   ui_state_ = ui_state;
-  CallJS("setUIState", static_cast<int>(ui_state_));
+  if (page_is_ready())
+    CallJS("setUIState", static_cast<int>(ui_state_));
 }
 
 void ErrorScreenHandler::SetErrorState(ErrorScreen::ErrorState error_state,
                                        const std::string& network) {
   error_state_ = error_state;
-  CallJS("setErrorState", static_cast<int>(error_state_), network);
+  network_ = network;
+  if (page_is_ready())
+    CallJS("setErrorState", static_cast<int>(error_state_), network);
 }
 
 void ErrorScreenHandler::AllowGuestSignin(bool allowed) {
-  CallJS("allowGuestSignin", allowed);
+  guest_signin_allowed_ = allowed;
+  if (page_is_ready())
+    CallJS("allowGuestSignin", allowed);
 }
 
 void ErrorScreenHandler::AllowOfflineLogin(bool allowed) {
-  CallJS("allowOfflineLogin", allowed);
+  offline_login_allowed_ = allowed;
+  if (page_is_ready())
+    CallJS("allowOfflineLogin", allowed);
 }
 
 void ErrorScreenHandler::NetworkErrorShown() {
@@ -142,17 +152,23 @@ void ErrorScreenHandler::HandleHideCaptivePortal() {
   HideCaptivePortal();
 }
 
+void ErrorScreenHandler::HandleLocalStateErrorPowerwashButtonClicked() {
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+      StartDeviceWipe();
+}
+
 void ErrorScreenHandler::RegisterMessages() {
   AddCallback("showCaptivePortal",
               &ErrorScreenHandler::HandleShowCaptivePortal);
   AddCallback("hideCaptivePortal",
               &ErrorScreenHandler::HandleHideCaptivePortal);
+  AddCallback("localStateErrorPowerwashButtonClicked",
+              &ErrorScreenHandler::HandleLocalStateErrorPowerwashButtonClicked);
 }
 
 void ErrorScreenHandler::DeclareLocalizedValues(
     LocalizedValuesBuilder* builder) {
-  builder->Add("proxyErrorTitle", IDS_LOGIN_PROXY_ERROR_TITLE);
-  builder->Add("proxyErrorTitle", IDS_LOGIN_PROXY_ERROR_TITLE);
+  builder->Add("loginErrorTitle", IDS_LOGIN_ERROR_TITLE);
   builder->Add("signinOfflineMessageBody", IDS_LOGIN_OFFLINE_MESSAGE);
   builder->Add("kioskOfflineMessageBody", IDS_KIOSK_OFFLINE_MESSAGE);
   builder->Add("captivePortalTitle", IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_TITLE);
@@ -164,13 +180,24 @@ void ErrorScreenHandler::DeclareLocalizedValues(
   builder->Add("signinProxyMessageText", IDS_LOGIN_PROXY_ERROR_MESSAGE);
   builder->Add("updateOfflineMessageBody", IDS_UPDATE_OFFLINE_MESSAGE);
   builder->Add("updateProxyMessageText", IDS_UPDATE_PROXY_ERROR_MESSAGE);
+  builder->AddF("localStateErrorText0", IDS_LOCAL_STATE_ERROR_TEXT_0,
+                IDS_SHORT_PRODUCT_NAME);
+  builder->Add("localStateErrorText1", IDS_LOCAL_STATE_ERROR_TEXT_1);
+  builder->Add("localStateErrorPowerwashButton",
+               IDS_LOCAL_STATE_ERROR_POWERWASH_BUTTON);
 }
 
 void ErrorScreenHandler::Initialize() {
   if (!page_is_ready())
     return;
   if (show_on_init_) {
-    Show(parent_screen_, NULL);
+    base::DictionaryValue params;
+    params.SetInteger("uiState", static_cast<int>(ui_state_));
+    params.SetInteger("errorState", static_cast<int>(error_state_));
+    params.SetString("network", network_);
+    params.SetBoolean("guestSigninAllowed", guest_signin_allowed_);
+    params.SetBoolean("offlineLoginAllowed", offline_login_allowed_);
+    Show(parent_screen_, &params);
     show_on_init_ = false;
   }
 }

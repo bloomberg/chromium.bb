@@ -4,13 +4,14 @@
  */
 
 #error-message {
-  min-width: 650px;
+  max-width: 650px;
 }
 
 .show-with-ui-state-update,
 .show-with-ui-state-signin,
 .show-with-ui-state-locally-managed,
 .show-with-ui-state-kiosk-mode,
+.show-with-ui-state-local-state-error,
 .show-with-error-state-portal,
 .show-with-error-state-offline,
 .show-with-error-state-proxy,
@@ -24,6 +25,7 @@
 .ui-state-signin .show-with-ui-state-signin,
 .ui-state-locally-managed .show-with-ui-state-locally-managed,
 .ui-state-kiosk-mode .show-with-ui-state-kiosk-mode,
+.ui-state-local-state-error .show-with-ui-state-local-state-error,
 .error-state-portal .show-with-error-state-portal,
 .error-state-offline .show-with-error-state-offline,
 .error-state-proxy .show-with-error-state-proxy,
@@ -61,6 +63,12 @@
   padding: 20px 20px 20px;
 }
 
+.error-controls {
+  background-image: -webkit-linear-gradient(rgba(249,249,249,0.95),
+                                            rgba(249,249,249,0.93));
+  padding: 20px 20px 20px;
+}
+
 .error-message-paragraph {
   font-size: 12px;
   line-height: 18px;
@@ -83,4 +91,3 @@
 .offline-network-list-label {
   -webkit-margin-end: 10px;
 }
-

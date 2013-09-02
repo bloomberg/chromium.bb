@@ -9,6 +9,8 @@ namespace chromeos {
 ErrorScreenActor::ErrorScreenActor()
     : ui_state_(ErrorScreen::UI_STATE_UNKNOWN),
       error_state_(ErrorScreen::ERROR_STATE_UNKNOWN),
+      guest_signin_allowed_(false),
+      offline_login_allowed_(false),
       parent_screen_(OobeUI::SCREEN_UNKNOWN) {
 }
 

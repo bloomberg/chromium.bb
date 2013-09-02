@@ -612,6 +612,15 @@ Press any key to continue exploring.
   <message name="IDS_SUPERVISED_USER_EXPIRED_TOKEN_WARNING" desc="Warning text that is shown on login screen trying to sign in as a supervised user that has expired token">
     This supervised user may have been deleted or disabled by the manager. Please contact the manager if you would like to continue signing in as this user.
   </message>
+  <message name="IDS_LOCAL_STATE_ERROR_TEXT_0" desc="Text for notification that Local State file is corrupted and powerwash is required.">
+    Unfortunately, <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> is unable to recover your settings. To fix the error, <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> must reset your device with Powerwash.
+  </message>
+  <message name="IDS_LOCAL_STATE_ERROR_TEXT_1" desc="Text for notification that all local files will be deleted while Google account and any synced data won't be affected.">
+    Resetting your device will not affect your Google accounts or any data synced to these accounts. However, all files saved locally on your device will be deleted.
+  </message>
+  <message name="IDS_LOCAL_STATE_ERROR_POWERWASH_BUTTON" desc="Button label to restart and powerwash the device.">
+    Restart and Powerwash
+  </message>
   <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING" desc="Text shown as a warning when attempting to remove supervised user.">
     All files and local data associated with the supervised user will be permanently
     deleted once this supervised user is removed. Visited websites and settings
@@ -3660,7 +3669,7 @@ Battery full
   <message name="IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT_BUTTON" desc="Label on button that restarts device.">
     Restart
   </message>
-  <message name="IDS_LOGIN_PROXY_ERROR_TITLE" desc="A title of screen containing a message about proxy error.">
+  <message name="IDS_LOGIN_ERROR_TITLE" desc="A title of screen containing a message about login error, like proxy error or corruption of the local state.">
     Oops, something went wrong with signing in
   </message>
   <message name="IDS_LOGIN_PROXY_ERROR_MESSAGE" desc="An offline message shown when a proxy error has appeared.">

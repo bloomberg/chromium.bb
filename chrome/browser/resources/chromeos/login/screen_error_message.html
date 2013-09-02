@@ -6,10 +6,11 @@
           class="error-title
                  show-with-error-state-portal
                  show-with-error-state-offline"></div>
-      <div id="proxy-error-title" i18n-content="proxyErrorTitle"
+      <div id="login-error-title" i18n-content="loginErrorTitle"
           class="error-title
                  show-with-error-state-proxy
-                 show-with-error-state-auth-ext-timeout">
+                 show-with-error-state-auth-ext-timeout
+                 show-with-ui-state-local-state-error">
       </div>
     </div>
     <div class="error-body">
@@ -79,10 +80,22 @@
           </div>
         </div>
       </div>
+      <div id="local-state-error-body"
+          class="show-with-ui-state-local-state-error">
+        <div i18n-content="localStateErrorText0"
+            class="error-message-paragraph">
+        </div>
+        <div i18n-content="localStateErrorText1"
+            class="error-message-paragraph">
+        </div>
+      </div>
       <div id="error-guest-signin" class="error-message-paragraph guest-signin">
       </div>
       <div id="error-offline-login"
           class="error-message-paragraph offline-login"></div>
     </div>
+  </div>
+  <div class="error-controls">
+    <div id="error-message-controls" class="step-controls"></div>
   </div>
 </div>

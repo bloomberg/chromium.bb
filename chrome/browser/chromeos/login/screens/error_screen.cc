@@ -57,6 +57,11 @@ void ErrorScreen::SetUIState(UIState ui_state) {
   actor_->SetUIState(ui_state);
 }
 
+ErrorScreen::UIState ErrorScreen::GetUIState() const {
+  DCHECK(actor_);
+  return actor_->ui_state();
+}
+
 void ErrorScreen::SetErrorState(ErrorState error_state,
                                 const std::string& network) {
   DCHECK(actor_);
