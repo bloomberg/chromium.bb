@@ -4,6 +4,7 @@
 
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -321,6 +322,7 @@ class ManagedNetworkConfigurationHandlerImpl::PolicyApplicator
   PolicyApplicator(
       base::WeakPtr<ManagedNetworkConfigurationHandlerImpl> handler,
       const NetworkProfile& profile,
+      const GuidToPolicyMap& all_policies,
       std::set<std::string>* modified_policies);
 
   void Run();
@@ -356,6 +358,7 @@ class ManagedNetworkConfigurationHandlerImpl::PolicyApplicator
   std::set<std::string> remaining_policies_;
   base::WeakPtr<ManagedNetworkConfigurationHandlerImpl> handler_;
   NetworkProfile profile_;
+  GuidToPolicyMap all_policies_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyApplicator);
 };
@@ -669,9 +672,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
   }
 
   scoped_refptr<PolicyApplicator> applicator = new PolicyApplicator(
-      weak_ptr_factory_.GetWeakPtr(),
-      *profile,
-      &modified_policies);
+      weak_ptr_factory_.GetWeakPtr(), *profile, policies, &modified_policies);
   applicator->Run();
 }
 
@@ -693,9 +694,7 @@ void ManagedNetworkConfigurationHandlerImpl::OnProfileAdded(
   }
 
   scoped_refptr<PolicyApplicator> applicator = new PolicyApplicator(
-      weak_ptr_factory_.GetWeakPtr(),
-      profile,
-      &policy_guids);
+      weak_ptr_factory_.GetWeakPtr(), profile, *policies, &policy_guids);
   applicator->Run();
 }
 
@@ -808,9 +807,14 @@ void ManagedNetworkConfigurationHandlerImpl::OnPolicyApplied(
 ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::PolicyApplicator(
     base::WeakPtr<ManagedNetworkConfigurationHandlerImpl> handler,
     const NetworkProfile& profile,
+    const GuidToPolicyMap& all_policies,
     std::set<std::string>* modified_policies)
     : handler_(handler), profile_(profile) {
   remaining_policies_.swap(*modified_policies);
+  for (GuidToPolicyMap::const_iterator it = all_policies.begin();
+       it != all_policies.end(); ++it) {
+    all_policies_.insert(std::make_pair(it->first, it->second->DeepCopy()));
+  }
 }
 
 void ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::Run() {
@@ -892,21 +896,17 @@ void ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::GetEntryCallback(
                      (ui_data->onc_source() == onc::ONC_SOURCE_DEVICE_POLICY ||
                       ui_data->onc_source() == onc::ONC_SOURCE_USER_POLICY);
 
-  // The relevant policy must have been initialized, otherwise we hadn't Run
-  // this PolicyApplicator.
-  const GuidToPolicyMap& policies = *handler_->GetPoliciesForProfile(profile_);
-
   const base::DictionaryValue* new_policy = NULL;
   if (was_managed) {
     // If we have a GUID that might match a current policy, do a lookup using
     // that GUID at first. In particular this is necessary, as some networks
     // can't be matched to policies by properties (e.g. VPN).
-    new_policy = GetByGUID(policies, old_guid);
+    new_policy = GetByGUID(all_policies_, old_guid);
   }
 
   if (!new_policy) {
     // If we didn't find a policy by GUID, still a new policy might match.
-    new_policy = FindMatchingPolicy(policies, *onc_part);
+    new_policy = FindMatchingPolicy(all_policies_, *onc_part);
   }
 
   if (new_policy) {
@@ -995,22 +995,15 @@ ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::~PolicyApplicator() {
 
   VLOG(2) << "Create new managed network configurations in profile"
           << profile_.ToDebugString() << ".";
-  // All profile entries were compared to policies. |configureGUIDs_| contains
-  // all matched policies. From the remainder of policies, new configurations
-  // have to be created.
-
-  // The relevant policy must have been initialized, otherwise we hadn't Run
-  // this PolicyApplicator.
-  const GuidToPolicyMap& policies = *handler_->GetPoliciesForProfile(profile_);
+  // All profile entries were compared to policies. |remaining_policies_|
+  // contains all modified policies that didn't match any entry. For these
+  // remaining policies, new configurations have to be created.
 
   for (std::set<std::string>::iterator it = remaining_policies_.begin();
        it != remaining_policies_.end();
        ++it) {
-    const base::DictionaryValue* policy = GetByGUID(policies, *it);
-    if (!policy) {
-      LOG(ERROR) << "Policy " << *it << " doesn't exist anymore.";
-      continue;
-    }
+    const base::DictionaryValue* policy = GetByGUID(all_policies_, *it);
+    DCHECK(policy);
 
     VLOG(1) << "Creating new configuration managed by policy " << *it
             << " in profile " << profile_.ToDebugString() << ".";
@@ -1018,6 +1011,8 @@ ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::~PolicyApplicator() {
     CreateAndWriteNewShillConfiguration(
         *it, *policy, NULL /* no user settings */);
   }
+
+  STLDeleteValues(&all_policies_);
 }
 
 }  // namespace chromeos
