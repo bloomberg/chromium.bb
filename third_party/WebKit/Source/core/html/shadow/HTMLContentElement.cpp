@@ -67,7 +67,7 @@ void HTMLContentElement::parseSelect()
 {
     ASSERT(m_shouldParseSelect);
 
-    CSSParser parser(&document());
+    CSSParser parser(document());
     parser.parseSelector(m_select, m_selectorList);
     m_shouldParseSelect = false;
     m_isValidSelector = validateSelect();

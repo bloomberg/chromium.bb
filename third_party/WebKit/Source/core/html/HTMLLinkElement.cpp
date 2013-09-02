@@ -410,7 +410,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
     // Completing the sheet load may cause scripts to execute.
     RefPtr<Node> protector(m_owner);
 
-    CSSParserContext parserContext(&m_owner->document(), baseURL, charset);
+    CSSParserContext parserContext(m_owner->document(), baseURL, charset);
 
     if (RefPtr<StyleSheetContents> restoredSheet = const_cast<CSSStyleSheetResource*>(cachedStyleSheet)->restoreParsedStyleSheet(parserContext)) {
         ASSERT(restoredSheet->isCacheable());

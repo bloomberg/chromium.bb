@@ -203,8 +203,8 @@ WebDocumentType WebDocument::doctype() const
 void WebDocument::insertUserStyleSheet(const WebString& sourceCode, UserStyleLevel styleLevel)
 {
     RefPtr<Document> document = unwrap<Document>();
-
-    RefPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(document.get());
+    ASSERT(document);
+    RefPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(*document.get());
     parsedSheet->setIsUserStyleSheet(styleLevel == UserStyleUserLevel);
     parsedSheet->parseString(sourceCode);
     if (parsedSheet->isUserStyleSheet())

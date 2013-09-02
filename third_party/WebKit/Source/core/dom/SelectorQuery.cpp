@@ -480,7 +480,7 @@ PassRefPtr<Element> SelectorQuery::queryFirst(Node* rootNode) const
     return m_selectors.queryFirst(rootNode);
 }
 
-SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, Document* document, ExceptionState& es)
+SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, const Document& document, ExceptionState& es)
 {
     HashMap<AtomicString, OwnPtr<SelectorQuery> >::iterator it = m_entries.find(selectors);
     if (it != m_entries.end())

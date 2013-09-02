@@ -1229,7 +1229,7 @@ static void resolveVariables(StyleResolverState& state, CSSPropertyID id, CSSVal
 
     // FIXME: It would be faster not to re-parse from strings, but for now CSS property validation lives inside the parser so we do it there.
     RefPtr<MutableStylePropertySet> resultSet = MutableStylePropertySet::create();
-    if (!CSSParser::parseValue(resultSet.get(), id, expression.second, false, &state.document()))
+    if (!CSSParser::parseValue(resultSet.get(), id, expression.second, false, state.document()))
         return; // expression failed to parse.
 
     for (unsigned i = 0; i < resultSet->propertyCount(); i++) {

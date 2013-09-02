@@ -80,7 +80,7 @@ PassRefPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtr<StyleSheetContents> s
 
 PassRefPtr<CSSStyleSheet> CSSStyleSheet::createInline(Node* ownerNode, const KURL& baseURL, const TextPosition& startPosition, const String& encoding)
 {
-    CSSParserContext parserContext(&ownerNode->document(), baseURL, encoding);
+    CSSParserContext parserContext(ownerNode->document(), baseURL, encoding);
     RefPtr<StyleSheetContents> sheet = StyleSheetContents::create(baseURL.string(), parserContext);
     return adoptRef(new CSSStyleSheet(sheet.release(), ownerNode, true, startPosition));
 }

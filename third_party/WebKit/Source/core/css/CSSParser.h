@@ -123,7 +123,7 @@ public:
     bool parseContent(CSSPropertyID, bool important);
     bool parseQuotes(CSSPropertyID, bool important);
 
-    static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, Document*);
+    static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const Document&);
     void storeVariableDeclaration(const CSSParserString&, PassOwnPtr<CSSParserValueList>, bool important);
 
     PassRefPtr<CSSValue> parseAttr(CSSParserValueList* args);

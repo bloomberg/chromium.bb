@@ -88,7 +88,7 @@ private:
 class SelectorQueryCache {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    SelectorQuery* add(const AtomicString&, Document*, ExceptionState&);
+    SelectorQuery* add(const AtomicString&, const Document&, ExceptionState&);
     void invalidate();
 
 private:

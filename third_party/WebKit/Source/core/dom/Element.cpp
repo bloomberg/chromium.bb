@@ -2502,7 +2502,7 @@ bool Element::webkitMatchesSelector(const String& selector, ExceptionState& es)
         return false;
     }
 
-    SelectorQuery* selectorQuery = document().selectorQueryCache()->add(selector, &document(), es);
+    SelectorQuery* selectorQuery = document().selectorQueryCache()->add(selector, document(), es);
     if (!selectorQuery)
         return false;
     return selectorQuery->matches(this);
