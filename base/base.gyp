@@ -580,7 +580,6 @@
         'sha1_unittest.cc',
         'stl_util_unittest.cc',
         'strings/nullable_string16_unittest.cc',
-        'strings/safe_sprintf_unittest.cc',
         'strings/string16_unittest.cc',
         'strings/stringprintf_unittest.cc',
         'strings/string_number_conversions_unittest.cc',
