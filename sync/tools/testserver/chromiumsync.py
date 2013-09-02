@@ -122,9 +122,13 @@ SYNC_TYPE_TO_DESCRIPTOR = {
 # The parent ID used to indicate a top-level node.
 ROOT_ID = '0'
 
-# Unix time epoch in struct_time format. The tuple corresponds to UTC Wednesday
-# Jan 1 1970, 00:00:00, non-dst.
-UNIX_TIME_EPOCH = (1970, 1, 1, 0, 0, 0, 3, 1, 0)
+# Unix time epoch +1 day in struct_time format. The tuple corresponds to
+# UTC Thursday Jan 2 1970, 00:00:00, non-dst.
+# We have to add one day after start of epoch, since in timezones with positive
+# UTC offset time.mktime throws an OverflowError,
+# rather then returning negative number.
+FIRST_DAY_UNIX_TIME_EPOCH = (1970, 1, 2, 0, 0, 0, 4, 2, 0)
+ONE_DAY_SECONDS = 60 * 60 * 24
 
 # The number of characters in the server-generated encryption key.
 KEYSTORE_KEY_LENGTH = 16
@@ -984,7 +988,7 @@ class SyncDataModel(object):
 
     # Store the current time since the Unix epoch in milliseconds.
     entry.mtime = (int((time.mktime(time.gmtime()) -
-        time.mktime(UNIX_TIME_EPOCH))*1000))
+        (time.mktime(FIRST_DAY_UNIX_TIME_EPOCH) - ONE_DAY_SECONDS))*1000))
 
     # Commit the change.  This also updates the version number.
     self._SaveEntry(entry)
