@@ -260,7 +260,7 @@ bool HTMLPlugInImageElement::loadPlugin(const KURL& url, const String& mimeType,
     m_loadedUrl = url;
 
     IntSize contentSize = roundedIntSize(LayoutSize(renderer->contentWidth(), renderer->contentHeight()));
-    bool loadManually = document().isPluginDocument() && !frame->loader()->containsPlugins() && toPluginDocument(&document())->shouldLoadPluginManually();
+    bool loadManually = document().isPluginDocument() && !frame->loader()->containsPlugins() && toPluginDocument(document()).shouldLoadPluginManually();
     RefPtr<Widget> widget = frame->loader()->client()->createPlugin(contentSize, this, url, paramNames, paramValues, mimeType, loadManually);
 
     if (!widget) {

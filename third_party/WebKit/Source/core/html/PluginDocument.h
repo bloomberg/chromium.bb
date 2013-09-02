@@ -73,6 +73,12 @@ inline const PluginDocument* toPluginDocument(const Document* document)
     return static_cast<const PluginDocument*>(document);
 }
 
+inline PluginDocument& toPluginDocument(Document& document)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(document.isPluginDocument());
+    return static_cast<PluginDocument&>(document);
+}
+
 // This will catch anyone doing an unnecessary cast.
 void toPluginDocument(const PluginDocument*);
 
