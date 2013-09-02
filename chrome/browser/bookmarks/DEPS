@@ -8,7 +8,7 @@ include_rules = [
   "+chrome/browser/favicon",
   "+chrome/browser/chrome_notification_types.h",
 
-  # TODO(kaiwang): Bring this list to zero.
+  # TODO(tfarina): Bring this list to zero. crbug.com/144783
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   "!chrome/browser/history/history_service.h",
