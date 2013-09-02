@@ -36,8 +36,17 @@ FileTasks.NO_ACTION_FOR_FILE_URL = 'http://support.google.com/chromeos/bin/' +
     'answer.py?answer=1700055&topic=29026&ctx=topic';
 
 /**
+ * Location of the Chrome Web Store.
+ *
+ * @const
+ * @type {string}
+ */
+FileTasks.CHROME_WEB_STORE_URL = 'https://chrome.google.com/webstore';
+
+/**
  * Base URL of apps list in the Chrome Web Store. This constant is used in
  * FileTasks.createWebStoreLink().
+ *
  * @const
  * @type {string}
  */
@@ -53,6 +62,9 @@ FileTasks.WEB_STORE_HANDLER_BASE_URL =
  * @return {string} URL
  */
 FileTasks.createWebStoreLink = function(extension, mimeType) {
+  if (extension == '' || mimeType == '')
+    return FileTasks.CHROME_WEB_STORE_URL;
+
   var url = FileTasks.WEB_STORE_HANDLER_BASE_URL;
   url += '?_fe=' + extension.toLowerCase().replace(/[^\w]/g, '');
   if (mimeType)
