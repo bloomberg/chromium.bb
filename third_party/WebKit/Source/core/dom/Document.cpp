@@ -1655,7 +1655,7 @@ void Document::recalcStyle(StyleChange change)
             m_hasNodesWithPlaceholderStyle = false;
 
             RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*this, m_styleResolver ? m_styleResolver->fontSelector() : 0);
-            StyleChange ch = Node::diff(documentStyle.get(), renderer()->style(), this);
+            StyleChange ch = Node::diff(documentStyle.get(), renderer()->style(), *this);
             if (ch != NoChange)
                 renderer()->setStyle(documentStyle.release());
         }

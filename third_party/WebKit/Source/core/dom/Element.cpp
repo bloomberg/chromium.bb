@@ -1480,7 +1480,7 @@ Node::StyleChange Element::recalcOwnStyle(StyleChange change)
     CSSAnimationUpdateScope cssAnimationUpdateScope(this);
     RefPtr<RenderStyle> oldStyle = renderStyle();
     RefPtr<RenderStyle> newStyle = styleForRenderer();
-    StyleChange localChange = oldStyle ? Node::diff(oldStyle.get(), newStyle.get(), &document()) : Reattach;
+    StyleChange localChange = oldStyle ? Node::diff(oldStyle.get(), newStyle.get(), document()) : Reattach;
 
     if (localChange == Reattach) {
         AttachContext reattachContext;

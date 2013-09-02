@@ -167,7 +167,7 @@ public:
     static void dumpStatistics();
 
     enum StyleChange { NoChange, NoInherit, Inherit, Force, Reattach };
-    static StyleChange diff(const RenderStyle*, const RenderStyle*, Document*);
+    static StyleChange diff(const RenderStyle*, const RenderStyle*, const Document&);
 
     virtual ~Node();
     void willBeDeletedFrom(Document*);

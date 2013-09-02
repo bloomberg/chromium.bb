@@ -264,7 +264,7 @@ void Node::dumpStatistics()
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, nodeCounter, ("WebCoreNode"));
 
-Node::StyleChange Node::diff(const RenderStyle* s1, const RenderStyle* s2, Document* doc)
+Node::StyleChange Node::diff(const RenderStyle* s1, const RenderStyle* s2, const Document& doc)
 {
     StyleChange ch = NoInherit;
     EDisplay display1 = s1 ? s1->display() : NONE;
@@ -281,7 +281,7 @@ Node::StyleChange Node::diff(const RenderStyle* s1, const RenderStyle* s2, Docum
     bool specifiesColumns2 = s2 && (!s2->hasAutoColumnCount() || !s2->hasAutoColumnWidth());
 
     if (display1 != display2 || fl1 != fl2 || colSpan1 != colSpan2
-        || (specifiesColumns1 != specifiesColumns2 && doc->settings()->regionBasedColumnsEnabled())
+        || (specifiesColumns1 != specifiesColumns2 && doc.settings()->regionBasedColumnsEnabled())
         || (s1 && s2 && !s1->contentDataEquivalent(s2)))
         ch = Reattach;
     else if (!s1 || !s2)
