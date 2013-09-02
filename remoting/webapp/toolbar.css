@@ -48,7 +48,7 @@
 }
 
 .toolbar-border > div {
-  margin: 4px;
+  margin: 5px 4px;
 }
 
 /* Ensure that the 'connected to' string doesn't make the tool-bar overflow */

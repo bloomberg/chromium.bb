@@ -50,6 +50,18 @@ function onLoad() {
     remoting.setMode(remoting.AppMode.HOME);
     document.getElementById('access-code-entry').value = '';
   };
+  /** @param {Event} event */
+  var newWindow = function(event) {
+    var selectElement = /** @type {HTMLSelectElement} */ (event.target);
+    if (selectElement.selectedIndex == 1) {
+      selectElement.selectedIndex = 0;
+      if (remoting.isAppsV2) {
+        chrome.app.window.create('main.html', { 'width': 800, 'height': 600 });
+      } else {
+        window.open('main.html');
+      }
+    }
+  };
   /** @type {Array.<{event: string, id: string, fn: function(Event):void}>} */
   var actions = [
       { event: 'click', id: 'sign-out', fn: remoting.signOut },
@@ -89,7 +101,8 @@ function onLoad() {
       { event: 'click', id: 'open-paired-client-manager-dialog',
         fn: remoting.setMode.bind(null,
                                   remoting.AppMode.HOME_MANAGE_PAIRINGS) },
-      { event: 'click', id: 'close-paired-client-manager-dialog', fn: goHome }
+      { event: 'click', id: 'close-paired-client-manager-dialog', fn: goHome },
+      { event: 'change', id: 'connection-drop-down', fn: newWindow }
   ];
 
   for (var i = 0; i < actions.length; ++i) {

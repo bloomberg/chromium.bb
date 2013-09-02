@@ -677,6 +677,9 @@
       <message desc="Text shown while a background operation is in progress." name="IDR_WORKING">
         Working…
       </message>
+      <message desc="Menu option to open a new connection." name="IDR_NEW_CONNECTION">
+        New connection…
+      </message>
     </messages>
   </release>
 </grit>
