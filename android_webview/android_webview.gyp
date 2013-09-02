@@ -24,10 +24,17 @@
           'dependencies': [
             '../base/allocator/allocator.gyp:allocator', ],
         }],
-      ],
-      'ldflags': [
-        # fix linking to hidden symbols and re-enable this (crbug.com/157326)
-        '-Wl,--no-fatal-warnings'
+        [ 'android_webview_build==1 and use_system_skia==0', {
+          # When not using the system skia there are linker warnings about
+          # overriden hidden symbols which there's no easy way to eliminate;
+          # disable them. http://crbug.com/157326
+          'ldflags': [
+            '-Wl,--no-fatal-warnings',
+          ],
+          'ldflags!': [
+            '-Wl,--fatal-warnings',
+          ],
+        }],
       ],
       'sources': [
         'lib/main/webview_entry_point.cc',

@@ -2816,14 +2816,6 @@
                   '-Wl,--warn-shared-textrel',
                 ],
               }],
-              ['OS=="android" and android_webview_build==1', {
-                'ldflags!': [
-                  # Must not turn on --fatal-warnings or warn-shared-textrel,
-                  # see crbug.com/157326.
-                  '-Wl,--fatal-warnings',
-                  '-Wl,--warn-shared-textrel',
-                ],
-              }],
               ['OS=="android" and android_full_debug==0', {
                 # Some configurations are copied from Release_Base to reduce
                 # the binary size.
@@ -2894,14 +2886,6 @@
                 'ldflags': [
                   '-Wl,--fatal-warnings',
                   # Warn in case of text relocations.
-                  '-Wl,--warn-shared-textrel',
-                ],
-              }],
-              ['OS=="android" and android_webview_build==1', {
-                'ldflags!': [
-                  # Must not turn on --fatal-warnings or
-                  # shared-text-rel, see crbug.com/157326.
-                  '-Wl,--fatal-warnings',
                   '-Wl,--warn-shared-textrel',
                 ],
               }],
@@ -3808,6 +3792,8 @@
               '-Wl,--gc-sections',
               '-Wl,-O1',
               '-Wl,--as-needed',
+              '-Wl,--warn-shared-textrel',
+              '-Wl,--fatal-warnings',
             ],
           }],
           # Settings for building host targets on mac.
