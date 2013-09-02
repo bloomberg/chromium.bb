@@ -69,7 +69,7 @@ AppInstaller.prototype.onInstallCompleted_ = function(error) {
   var errorMessage = '';
   if (error) {
     installerResult =
-        error == AppInstaller.USER_CANCELLED_ERROR_STR_ ?
+        error.message == AppInstaller.USER_CANCELLED_ERROR_STR_ ?
         AppInstaller.Result.CANCELLED :
         AppInstaller.Result.ERROR;
     errorMessage = error.message;
