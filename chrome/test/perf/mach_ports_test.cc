@@ -11,9 +11,9 @@
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
-#include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "testing/perf/perf_test.h"
 
 namespace {
 

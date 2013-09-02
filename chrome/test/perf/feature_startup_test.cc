@@ -16,6 +16,7 @@
 #include "chrome/test/perf/perf_ui_test_suite.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "net/base/net_util.h"
+#include "testing/perf/perf_test.h"
 #include "ui/gfx/rect.h"
 
 using base::TimeDelta;

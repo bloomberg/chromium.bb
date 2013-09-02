@@ -338,6 +338,7 @@
         '../content/content.gyp:content_gpu',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../testing/perf/perf_test.gyp:*',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/libxslt/libxslt.gyp:libxslt',
         '../url/url.gyp:url_lib',

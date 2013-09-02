@@ -24,6 +24,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/perf/perf_test.h"
 #include "url/gurl.h"
 
 namespace {

@@ -720,6 +720,7 @@
         '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
+        '../testing/perf/perf_test.gyp:*',
         '../skia/skia.gyp:skia',
       ],
       'include_dirs': [
@@ -2380,6 +2381,7 @@
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
+        '../testing/perf/perf_test.gyp:*',
       ],
       'sources': [
         # TODO(darin): Move other UIPerfTests here.

@@ -23,12 +23,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_test.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/python_utils.h"
+#include "testing/perf/perf_test.h"
 
 static const base::FilePath::CharType kFrameAnalyzerExecutable[] =
 #if defined(OS_WIN)

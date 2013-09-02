@@ -35,6 +35,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/python_utils.h"
+#include "testing/perf/perf_test.h"
 
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_jsep01_test.html";

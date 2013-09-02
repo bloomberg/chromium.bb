@@ -31,6 +31,7 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/common/features/feature.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/perf/perf_test.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_switches.h"
 

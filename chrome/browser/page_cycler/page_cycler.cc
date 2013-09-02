@@ -24,6 +24,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "testing/perf/perf_test.h"
 
 using content::NavigationController;
 using content::OpenURLParams;

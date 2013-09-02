@@ -35,11 +35,11 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/test/base/chrome_process_util.h"
-#include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/utils.h"
+#include "testing/perf/perf_test.h"
 
 const wchar_t kSilverlightControlKey[] =
     L"CLSID\\{DFEAF541-F3E1-4c24-ACAC-99C30715084A}\\InprocServer32";

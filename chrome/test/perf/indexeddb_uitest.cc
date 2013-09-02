@@ -13,6 +13,7 @@
 #include "chrome/test/ui/javascript_test_util.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "net/base/net_util.h"
+#include "testing/perf/perf_test.h"
 #include "url/gurl.h"
 
 namespace {

@@ -2466,7 +2466,8 @@
         'browser/webdata/web_data_service_win.cc',
         'browser/webdata/web_intents_table.cc',
         'browser/webdata/web_intents_table.h',
-        # These files are needed by page_cycler.cc
+        # These files are needed by page_cycler.cc and performance_monitor.cc.
+        # This dependency should be removed: crbug.com/280157, crbug.com/279660
         'test/base/test_switches.cc',
         'test/base/test_switches.h',
         'test/base/chrome_process_util.cc',
@@ -2498,6 +2499,8 @@
             '../media/media.gyp:media',
             '../net/net.gyp:net_with_v8',
             '../printing/printing.gyp:printing',
+            # TODO(tonyg): Remove this dependency (crbug.com/280157).
+            '../testing/perf/perf_test.gyp:*',
             '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
             '../third_party/expat/expat.gyp:expat',
             '../third_party/hunspell/hunspell.gyp:hunspell',

@@ -20,10 +20,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/perf/perf_test.h"
 
 static const base::FilePath::CharType kPeerConnectionServer[] =
 #if defined(OS_WIN)
