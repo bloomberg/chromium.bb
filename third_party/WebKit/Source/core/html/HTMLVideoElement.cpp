@@ -120,8 +120,7 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
 
 bool HTMLVideoElement::supportsFullscreen() const
 {
-    Page* page = &document() ? document().page() : 0;
-    if (!page)
+    if (!document().page())
         return false;
 
     if (!player() || !player()->supportsFullscreen())
