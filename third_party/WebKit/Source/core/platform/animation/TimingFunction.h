@@ -26,6 +26,8 @@
 #define TimingFunction_h
 
 #include "core/platform/graphics/UnitBezier.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include <algorithm>
@@ -135,7 +137,9 @@ public:
 
     virtual double evaluate(double fraction, double accuracy) const
     {
-        return UnitBezier(m_x1, m_y1, m_x2, m_y2).solve(fraction, accuracy);
+        if (!m_bezier)
+            m_bezier = adoptPtr(new UnitBezier(m_x1, m_y1, m_x2, m_y2));
+        return m_bezier->solve(fraction, accuracy);
     }
 
     virtual bool operator==(const TimingFunction& other) const
@@ -173,6 +177,7 @@ private:
     double m_x2;
     double m_y2;
     TimingFunctionPreset m_timingFunctionPreset;
+    mutable OwnPtr<UnitBezier> m_bezier;
 };
 
 class StepsTimingFunction : public TimingFunction {
