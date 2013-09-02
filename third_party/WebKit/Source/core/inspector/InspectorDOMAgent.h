@@ -149,6 +149,7 @@ public:
     virtual void focus(ErrorString*, int nodeId);
     virtual void setFileInputFiles(ErrorString*, int nodeId, const RefPtr<JSONArray>& files);
     virtual void getBoxModel(ErrorString*, int nodeId, RefPtr<TypeBuilder::DOM::BoxModel>&);
+    virtual void getNodeForLocation(ErrorString*, int x, int y, int* nodeId);
 
     static void getEventListeners(Node*, Vector<EventListenerInfo>& listenersArray, bool includeAncestors);
 

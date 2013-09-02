@@ -1352,6 +1352,16 @@ void InspectorDOMAgent::getBoxModel(ErrorString* errorString, int nodeId, RefPtr
         .setHeight(modelObject ? adjustForAbsoluteZoom(modelObject->pixelSnappedOffsetHeight(), modelObject) : boundingBox.height());
 }
 
+void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int y, int* nodeId)
+{
+    Node* node = hoveredNodeForPoint(m_document->frame(), IntPoint(x, y), false);
+    if (!node) {
+        *errorString = "No node found at given location";
+        return;
+    }
+    *nodeId = pushNodePathToFrontend(node);
+}
+
 void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const String* const objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result)
 {
     String objectGroupName = objectGroup ? *objectGroup : "";
