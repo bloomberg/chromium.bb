@@ -96,10 +96,10 @@ void ViewportStyleResolver::resolve()
     arguments.zoom = getViewportArgumentValue(CSSPropertyZoom);
     arguments.minZoom = getViewportArgumentValue(CSSPropertyMinZoom);
     arguments.maxZoom = getViewportArgumentValue(CSSPropertyMaxZoom);
-    arguments.minWidth = getViewportArgumentValue(CSSPropertyMinWidth);
-    arguments.maxWidth = getViewportArgumentValue(CSSPropertyMaxWidth);
-    arguments.minHeight = getViewportArgumentValue(CSSPropertyMinHeight);
-    arguments.maxHeight = getViewportArgumentValue(CSSPropertyMaxHeight);
+    arguments.minWidth = getViewportLengthValue(CSSPropertyMinWidth);
+    arguments.maxWidth = getViewportLengthValue(CSSPropertyMaxWidth);
+    arguments.minHeight = getViewportLengthValue(CSSPropertyMinHeight);
+    arguments.maxHeight = getViewportLengthValue(CSSPropertyMaxHeight);
     arguments.orientation = getViewportArgumentValue(CSSPropertyOrientation);
 
     m_document->setViewportArguments(arguments);
@@ -133,12 +133,6 @@ float ViewportStyleResolver::getViewportArgumentValue(CSSPropertyID id) const
     if (primitiveValue->isPercentage()) {
         float percentValue = primitiveValue->getFloatValue() / 100.0f;
         switch (id) {
-        case CSSPropertyMaxHeight:
-        case CSSPropertyMinHeight:
-            return percentValue * m_document->initialViewportSize().height();
-        case CSSPropertyMaxWidth:
-        case CSSPropertyMinWidth:
-            return percentValue * m_document->initialViewportSize().width();
         case CSSPropertyMaxZoom:
         case CSSPropertyMinZoom:
         case CSSPropertyZoom:
@@ -164,6 +158,40 @@ float ViewportStyleResolver::getViewportArgumentValue(CSSPropertyID id) const
         return 0;
     default:
         return defaultValue;
+    }
+}
+
+Length ViewportStyleResolver::getViewportLengthValue(CSSPropertyID id) const
+{
+    ASSERT(id == CSSPropertyMaxHeight
+        || id == CSSPropertyMinHeight
+        || id == CSSPropertyMaxWidth
+        || id == CSSPropertyMinWidth);
+
+    RefPtr<CSSValue> value = m_propertySet->getPropertyCSSValue(id);
+    if (!value)
+        return Length(); // auto
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value.get());
+
+    if (primitiveValue->isLength())
+        return primitiveValue->computeLength<Length>(m_document->renderStyle(), m_document->renderStyle());
+
+    if (primitiveValue->isViewportPercentageLength())
+        return primitiveValue->viewportPercentageLength();
+
+    if (primitiveValue->isPercentage())
+        return Length(primitiveValue->getFloatValue(), Percent);
+
+    switch (primitiveValue->getValueID()) {
+    case CSSValueInternalExtendToZoom:
+        return Length(ExtendToZoom);
+    case CSSValueAuto:
+        return Length();
+    default:
+        // Unrecognized keyword.
+        ASSERT_NOT_REACHED();
+        return Length(0, Fixed);
     }
 }
 
