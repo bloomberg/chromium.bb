@@ -871,6 +871,11 @@ void DesktopRootWindowHostX11::InitX11Window(
                      PropModeAppend,
                      reinterpret_cast<unsigned char*>(&atom), 1);
   }
+
+  if (!params.wm_class_name.empty() || !params.wm_class_class.empty()) {
+    ui::SetWindowClassHint(
+        xdisplay_, xwindow_, params.wm_class_name, params.wm_class_class);
+  }
 }
 
 // TODO(erg): This method should basically be everything I need form

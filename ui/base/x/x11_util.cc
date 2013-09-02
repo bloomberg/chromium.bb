@@ -1012,6 +1012,19 @@ Atom GetAtom(const char* name) {
 #endif
 }
 
+void SetWindowClassHint(Display* display,
+                        XID window,
+                        std::string res_name,
+                        std::string res_class) {
+  XClassHint class_hints;
+  // const_cast is safe because XSetClassHint does not modify the strings.
+  // Just to be safe, the res_name and res_class parameters are local copies,
+  // not const references.
+  class_hints.res_name = const_cast<char*>(res_name.c_str());
+  class_hints.res_class = const_cast<char*>(res_class.c_str());
+  XSetClassHint(display, window, &class_hints);
+}
+
 XID GetParentWindow(XID window) {
   XID root = None;
   XID parent = None;

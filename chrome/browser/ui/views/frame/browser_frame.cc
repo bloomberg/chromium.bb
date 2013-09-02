@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 
 #include "ash/shell.h"
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
 #include "chrome/browser/ui/views/frame/system_menu_model_builder.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -30,6 +32,10 @@
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "chrome/browser/shell_integration_linux.h"
 #endif
 
 #if defined(USE_ASH)
@@ -74,6 +80,30 @@ void BrowserFrame::InitBrowserFrame() {
     params.context = ash::Shell::GetPrimaryRootWindow();
   }
 #endif
+
+#if defined(OS_LINUX)
+  // Set up a custom WM_CLASS for some sorts of window types. This allows
+  // task switchers in X11 environments to distinguish between main browser
+  // windows and e.g app windows.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const Browser& browser = *browser_view_->browser();
+  params.wm_class_class = ShellIntegrationLinux::GetProgramClassName();
+  params.wm_class_name = params.wm_class_class;
+  if (browser.is_app() && !browser.is_devtools()) {
+    // This window is a hosted app or v1 packaged app.
+    // NOTE: v2 packaged app windows are created by NativeAppWindowViews.
+    params.wm_class_name = web_app::GetWMClassFromAppName(browser.app_name());
+  } else if (command_line.HasSwitch(switches::kUserDataDir)) {
+    // Set the class name to e.g. "Chrome (/tmp/my-user-data)".  The
+    // class name will show up in the alt-tab list in gnome-shell if
+    // you're running a binary that doesn't have a matching .desktop
+    // file.
+    const std::string user_data_dir =
+        command_line.GetSwitchValueNative(switches::kUserDataDir);
+    params.wm_class_name += " (" + user_data_dir + ")";
+  }
+#endif  // defined(OS_LINUX)
+
   Init(params);
 
   if (!native_browser_frame_->UsesNativeSystemMenu()) {

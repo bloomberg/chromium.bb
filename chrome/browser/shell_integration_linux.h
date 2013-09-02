@@ -31,6 +31,11 @@ bool GetDataWriteLocation(base::Environment* env, base::FilePath* search_path);
 // Called on the FILE thread.
 std::vector<base::FilePath> GetDataSearchLocations(base::Environment* env);
 
+// Gets the name for use as the res_class (and possibly res_name) of the
+// window's WM_CLASS property. This is the program name from argv[0], with the
+// first letter capitalized. Equivalent to GDK's gdk_get_program_class().
+std::string GetProgramClassName();
+
 // Returns filename of the desktop shortcut used to launch the browser.
 std::string GetDesktopName(base::Environment* env);
 

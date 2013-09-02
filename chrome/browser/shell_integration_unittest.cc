@@ -460,11 +460,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Name=GMail\n"
       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
       "Icon=chrome-http__gmail.com\n"
-#if !defined(USE_AURA)
-      // Aura Chrome does not (yet) set WMClass, so we only expect
-      // StartupWMClass on non-Aura builds.
       "StartupWMClass=gmail.com\n"
-#endif
     },
 
     // Make sure that empty icons are replaced by the chrome icon.
@@ -481,11 +477,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Name=GMail\n"
       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
       "Icon=chromium-browser\n"
-#if !defined(USE_AURA)
-      // Aura Chrome does not (yet) set WMClass, so we only expect
-      // StartupWMClass on non-Aura builds.
       "StartupWMClass=gmail.com\n"
-#endif
     },
 
     // Test adding NoDisplay=true.
@@ -503,11 +495,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
       "Icon=chrome-http__gmail.com\n"
       "NoDisplay=true\n"
-#if !defined(USE_AURA)
-      // Aura Chrome does not (yet) set WMClass, so we only expect
-      // StartupWMClass on non-Aura builds.
       "StartupWMClass=gmail.com\n"
-#endif
     },
 
     // Now we're starting to be more evil...
@@ -525,11 +513,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Exec=/opt/google/chrome/google-chrome "
       "--app=http://evil.com/evil%20--join-the-b0tnet\n"
       "Icon=chrome-http__evil.com_evil\n"
-#if !defined(USE_AURA)
-      // Aura Chrome does not (yet) set WMClass, so we only expect
-      // StartupWMClass on non-Aura builds.
       "StartupWMClass=evil.com__evil%20--join-the-b0tnet\n"
-#endif
     },
     { "http://evil.com/evil; rm -rf /; \"; rm -rf $HOME >ownz0red",
       "Innocent Title",
@@ -549,12 +533,8 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       // be; finally, \\ becomes \\\\ when represented in a C++ string!
       "-rf%20\\\\$HOME%20%3Eownz0red\"\n"
       "Icon=chrome-http__evil.com_evil\n"
-#if !defined(USE_AURA)
-      // Aura Chrome does not (yet) set WMClass, so we only expect
-      // StartupWMClass on non-Aura builds.
       "StartupWMClass=evil.com__evil;%20rm%20-rf%20_;%20%22;%20"
       "rm%20-rf%20$HOME%20%3Eownz0red\n"
-#endif
     },
     { "http://evil.com/evil | cat `echo ownz0red` >/dev/null",
       "Innocent Title",
@@ -571,12 +551,8 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "--app=http://evil.com/evil%20%7C%20cat%20%60echo%20ownz0red"
       "%60%20%3E/dev/null\n"
       "Icon=chrome-http__evil.com_evil\n"
-#if !defined(USE_AURA)
-      // Aura Chrome does not (yet) set WMClass, so we only expect
-      // StartupWMClass on non-Aura builds.
       "StartupWMClass=evil.com__evil%20%7C%20cat%20%60echo%20ownz0red"
       "%60%20%3E_dev_null\n"
-#endif
     },
   };
 

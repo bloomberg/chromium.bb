@@ -211,6 +211,12 @@ UI_EXPORT bool SetAtomArrayProperty(XID window,
 // Gets the X atom for default display corresponding to atom_name.
 Atom GetAtom(const char* atom_name);
 
+// Sets the WM_CLASS attribute for a given X11 window.
+UI_EXPORT void SetWindowClassHint(Display* display,
+                                  XID window,
+                                  std::string res_name,
+                                  std::string res_class);
+
 // Get |window|'s parent window, or None if |window| is the root window.
 UI_EXPORT XID GetParentWindow(XID window);
 

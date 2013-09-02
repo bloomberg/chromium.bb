@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/extensions/shell_window_frame_view.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,10 +30,13 @@
 #if defined(OS_WIN)
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
-#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/views/win/hwnd_util.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "chrome/browser/shell_integration_linux.h"
 #endif
 
 #if defined(USE_ASH)
@@ -155,6 +159,9 @@ NativeAppWindowViews::~NativeAppWindowViews() {
 
 void NativeAppWindowViews::InitializeDefaultWindow(
     const ShellWindow::CreateParams& create_params) {
+  std::string app_name =
+      web_app::GenerateApplicationNameFromExtensionId(extension()->id());
+
   views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_WINDOW);
   init_params.delegate = this;
   init_params.remove_standard_frame = ShouldUseChromeStyleFrame();
@@ -167,6 +174,14 @@ void NativeAppWindowViews::InitializeDefaultWindow(
       window_bounds.x() != INT_MIN && window_bounds.y() != INT_MIN;
   if (position_specified && !window_bounds.IsEmpty())
     init_params.bounds = window_bounds;
+
+#if defined(OS_LINUX)
+  // Set up a custom WM_CLASS for app windows. This allows task switchers in
+  // X11 environments to distinguish them from main browser windows.
+  init_params.wm_class_name = web_app::GetWMClassFromAppName(app_name);
+  init_params.wm_class_class = ShellIntegrationLinux::GetProgramClassName();
+#endif
+
   window_->Init(init_params);
 
   gfx::Rect adjusted_bounds = window_bounds;
@@ -190,11 +205,10 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   }
 
 #if defined(OS_WIN)
-  string16 app_name = UTF8ToWide(
-      web_app::GenerateApplicationNameFromExtensionId(extension()->id()));
+  string16 app_name_wide = UTF8ToWide(app_name);
   HWND hwnd = GetNativeAppWindowHWND();
   ui::win::SetAppIdForWindow(ShellIntegration::GetAppModelIdForProfile(
-      app_name, profile()->GetPath()), hwnd);
+      app_name_wide, profile()->GetPath()), hwnd);
 
   web_app::UpdateShortcutInfoAndIconForApp(
       *extension(), profile(),
