@@ -67,7 +67,7 @@ shouldBe("select1.selectedIndex", "-1");
 debug("");
 
 debug("1.10 Remove no args from empty Options");
-shouldBe("select1.options.remove()", "undefined");
+shouldThrow("select1.options.remove()", "'TypeError: Not enough arguments'");
 shouldBe("select1.options.length", "0");
 shouldBe("select1.selectedIndex", "-1");
 debug("");
@@ -194,45 +194,45 @@ shouldBe("select2.options[0].value", "'K'");
 debug("");
 
 debug("2.11 Remove no args from non-empty Options");
-shouldBe("select2.options.remove()", "undefined");
-shouldBe("select2.options.length", "5");
-shouldBe("select2.selectedIndex", "3");
-shouldBe("select2.options[0].value", "'L'");
+shouldThrow("select2.options.remove()", "'TypeError: Not enough arguments'");
+shouldBe("select2.options.length", "6");
+shouldBe("select2.selectedIndex", "4");
+shouldBe("select2.options[0].value", "'K'");
 debug("");
 
 debug("2.12 Remove too many args from non-empty Options");
 shouldThrow("select2.options.remove(0, 'foo')");
+shouldBe("select2.options.length", "6");
+shouldBe("select2.selectedIndex", "4");
+shouldBe("select2.options[0].value", "'K'");
+debug("");
+
+debug("2.13 Remove invalid index -2 from non-empty Options");
+shouldBe("select2.options.remove(-2)", "undefined");
+shouldBe("select2.options.length", "6");
+shouldBe("select2.selectedIndex", "4");
+shouldBe("select2.options[2].value", "'M'");
+debug("");
+
+debug("2.14 Remove invalid index -1 from non-empty Options");
+shouldBe("select2.options.remove(-1)", "undefined");
+shouldBe("select2.options.length", "6");
+shouldBe("select2.selectedIndex", "4");
+shouldBe("select2.options[3].value", "'N'");
+debug("");
+
+debug("2.15 Remove index 0 from non-empty Options");
+shouldBe("select2.options.remove(0)", "undefined");
 shouldBe("select2.options.length", "5");
 shouldBe("select2.selectedIndex", "3");
 shouldBe("select2.options[0].value", "'L'");
 debug("");
 
-debug("2.13 Remove invalid index -2 from non-empty Options");
-shouldBe("select2.options.remove(-2)", "undefined");
-shouldBe("select2.options.length", "5");
-shouldBe("select2.selectedIndex", "3");
-shouldBe("select2.options[2].value", "'N'");
-debug("");
-
-debug("2.14 Remove invalid index -1 from non-empty Options");
-shouldBe("select2.options.remove(-1)", "undefined");
-shouldBe("select2.options.length", "5");
-shouldBe("select2.selectedIndex", "3");
-shouldBe("select2.options[3].value", "'O'");
-debug("");
-
-debug("2.15 Remove index 0 from non-empty Options");
-shouldBe("select2.options.remove(0)", "undefined");
-shouldBe("select2.options.length", "4");
-shouldBe("select2.selectedIndex", "2");
-shouldBe("select2.options[0].value", "'M'");
-debug("");
-
 debug("2.16 Remove index 1 from non-empty Options");
 shouldBe("select2.options.remove(1)", "undefined");
-shouldBe("select2.options.length", "3");
-shouldBe("select2.selectedIndex", "1");
-shouldBe("select2.options[1].value", "'O'");
+shouldBe("select2.options.length", "4");
+shouldBe("select2.selectedIndex", "2");
+shouldBe("select2.options[1].value", "'N'");
 debug("");
 
 debug("2.17 Detach select element");

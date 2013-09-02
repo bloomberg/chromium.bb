@@ -33,7 +33,7 @@
 
     [Custom, RaisesException] void add([Default=Undefined] optional HTMLOptionElement option,
                       optional unsigned long index);
-    void remove([Default=Undefined] optional unsigned long index);
+    void remove(unsigned long index);
     void remove(HTMLOptionElement option); // Non standard.
 };
 

@@ -49,7 +49,7 @@ PASS select1.options.length is 0
 PASS select1.selectedIndex is -1
 
 1.10 Remove no args from empty Options
-PASS select1.options.remove() is undefined
+PASS select1.options.remove() threw exception TypeError: Not enough arguments.
 PASS select1.options.length is 0
 PASS select1.selectedIndex is -1
 
@@ -144,40 +144,40 @@ PASS select2.selectedIndex is 4
 PASS select2.options[0].value is 'K'
 
 2.11 Remove no args from non-empty Options
-PASS select2.options.remove() is undefined
-PASS select2.options.length is 5
-PASS select2.selectedIndex is 3
-PASS select2.options[0].value is 'L'
+PASS select2.options.remove() threw exception TypeError: Not enough arguments.
+PASS select2.options.length is 6
+PASS select2.selectedIndex is 4
+PASS select2.options[0].value is 'K'
 
 2.12 Remove too many args from non-empty Options
 PASS select2.options.remove(0, 'foo') threw exception TypeError: Type error.
+PASS select2.options.length is 6
+PASS select2.selectedIndex is 4
+PASS select2.options[0].value is 'K'
+
+2.13 Remove invalid index -2 from non-empty Options
+PASS select2.options.remove(-2) is undefined
+PASS select2.options.length is 6
+PASS select2.selectedIndex is 4
+PASS select2.options[2].value is 'M'
+
+2.14 Remove invalid index -1 from non-empty Options
+PASS select2.options.remove(-1) is undefined
+PASS select2.options.length is 6
+PASS select2.selectedIndex is 4
+PASS select2.options[3].value is 'N'
+
+2.15 Remove index 0 from non-empty Options
+PASS select2.options.remove(0) is undefined
 PASS select2.options.length is 5
 PASS select2.selectedIndex is 3
 PASS select2.options[0].value is 'L'
 
-2.13 Remove invalid index -2 from non-empty Options
-PASS select2.options.remove(-2) is undefined
-PASS select2.options.length is 5
-PASS select2.selectedIndex is 3
-PASS select2.options[2].value is 'N'
-
-2.14 Remove invalid index -1 from non-empty Options
-PASS select2.options.remove(-1) is undefined
-PASS select2.options.length is 5
-PASS select2.selectedIndex is 3
-PASS select2.options[3].value is 'O'
-
-2.15 Remove index 0 from non-empty Options
-PASS select2.options.remove(0) is undefined
-PASS select2.options.length is 4
-PASS select2.selectedIndex is 2
-PASS select2.options[0].value is 'M'
-
 2.16 Remove index 1 from non-empty Options
 PASS select2.options.remove(1) is undefined
-PASS select2.options.length is 3
-PASS select2.selectedIndex is 1
-PASS select2.options[1].value is 'O'
+PASS select2.options.length is 4
+PASS select2.selectedIndex is 2
+PASS select2.options[1].value is 'N'
 
 2.17 Detach select element
 PASS select2.parentNode is not null
