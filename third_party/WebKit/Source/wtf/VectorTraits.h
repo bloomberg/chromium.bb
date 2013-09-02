@@ -52,7 +52,7 @@ namespace WTF {
     {
         static const bool needsDestruction = false;
         static const bool needsInitialization = false;
-        static const bool canInitializeWithMemset = false;
+        static const bool canInitializeWithMemset = true;
         static const bool canMoveWithMemcpy = true;
         static const bool canCopyWithMemcpy = true;
         static const bool canFillWithMemset = sizeof(T) == sizeof(char);
