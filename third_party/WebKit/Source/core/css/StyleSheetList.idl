@@ -23,7 +23,7 @@
     GenerateIsReachable=document,
 ] interface StyleSheetList {
     readonly attribute unsigned long    length;
-    getter StyleSheet         item([Default=Undefined] optional unsigned long index);
+    getter StyleSheet         item(unsigned long index);
     [ImplementedAs=anonymousNamedGetter, NotEnumerable] getter CSSStyleSheet (DOMString name);
 };
 

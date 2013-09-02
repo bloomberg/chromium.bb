@@ -61,7 +61,7 @@ PASS nonNumericPolicy('getSelection().setBaseAndExtent(document, 0, document, x)
 PASS nonNumericPolicy('getSelection().setPosition(document, x)') is 'any type allowed'
 PASS nonNumericPolicy('getSelection().extend(document, x)') is 'any type allowed'
 PASS nonNumericPolicy('getSelection().getRangeAt(x)') is 'any type allowed'
-PASS nonNumericPolicy('document.styleSheets.item(x)') is 'any type allowed'
+PASS nonNumericPolicy('document.styleSheets.item(x)') is 'any type allowed (but not omitted)'
 PASS nonNumericPolicy('document.createTextNode("a").splitText(x)') is 'any type allowed (but not omitted)'
 PASS nonNumericPolicy('document.createTreeWalker(document, x, null, false)') is 'any type allowed'
 PASS nonNumericPolicy('document.createEvent("UIEvent").initUIEvent("a", false, false, null, x)') is 'any type allowed'

@@ -323,7 +323,7 @@ shouldBe("nonNumericPolicy('getSelection().getRangeAt(x)')", "'any type allowed'
 
 // StyleSheetList
 
-shouldBe("nonNumericPolicy('document.styleSheets.item(x)')", "'any type allowed'");
+shouldBe("nonNumericPolicy('document.styleSheets.item(x)')", "'any type allowed (but not omitted)'");
 
 // Text
 
