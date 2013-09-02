@@ -84,6 +84,13 @@ test(function () {
     // Ignored; terminate steps.
 }, "Add '#?:/' to 'screen, tv'");
 
+test(function () {
+    mediaList.mediaText = "screen, tv";
+    assert_throws({ name: "TypeError" },
+                  function () { document.appendMedium(); },
+                  "Not enough arguments");
+}, "Add without argument");
+
 // - deleteMedium()
 
 test(function () {
@@ -155,4 +162,11 @@ test(function () {
     // Ignored; terminate steps.
     assert_equals(mediaList.mediaText, "screen, tv");
 }, "Remove '#?:/' from 'screen, tv, not all'");
+
+test(function () {
+    mediaList.mediaText = "tv, print, screen";
+    assert_throws({ name: "TypeError" },
+                  function () { document.deleteMedium(); },
+                  "Not enough arguments");
+}, "Remove without argument");
 </script>

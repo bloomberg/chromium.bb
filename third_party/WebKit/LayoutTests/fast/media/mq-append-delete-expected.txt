@@ -9,6 +9,7 @@ PASS Add ',' to 'screen, tv'
 PASS Add '&invalid' to 'screen, tv' 
 PASS Add 'not all' to 'screen, tv' 
 PASS Add '#?:/' to 'screen, tv' 
+PASS Add without argument 
 PASS Remove '&invalid' from 'screen, tv, not all' 
 PASS Remove 'not all' from 'screen, tv' 
 PASS Remove 'cow' from 'screen, tv' 
@@ -18,4 +19,5 @@ PASS Remove 'not all' from 'not all, not all, tv, not all'
 PASS Remove 'tv' from 'not all, not all, tv, not all' 
 PASS Remove 'tv, print' from 'screen, tv, screen' 
 PASS Remove '#?:/' from 'screen, tv, not all' 
+PASS Remove without argument 
 
