@@ -200,7 +200,7 @@ shouldBe("nonNumericPolicy('createCSSMediaRule().deleteRule(x)')", "'any type al
 
 // CSSRuleList
 
-shouldBe("nonNumericPolicy('createCSSRuleList().item(x)')", "'any type allowed'");
+shouldBe("nonNumericPolicy('createCSSRuleList().item(x)')", "'any type allowed (but not omitted)'");
 
 // CSSStyleDeclaration
 
