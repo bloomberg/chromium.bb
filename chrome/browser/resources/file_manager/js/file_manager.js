@@ -1964,10 +1964,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.updateCommands();
     if (this.dialogContainer_)
       this.dialogContainer_.setAttribute('connection', connection.type);
-    if (this.shareDialog_.isShowing()) {
-      this.shareDialog_.hide();
-      this.error.show(str('SHARE_ERROR'));
-    }
+    this.shareDialog_.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
   };
 
   /**
@@ -2143,8 +2140,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       console.warn('Unable to share multiple items at once.');
       return;
     }
-    this.shareDialog_.show(entries[0], function() {
-      this.error.show(str('SHARE_ERROR'));
+    this.shareDialog_.show(entries[0], function(result) {
+      if (result == ShareDialog.Result.NETWORK_ERROR)
+        this.error.show(str('SHARE_ERROR'));
     }.bind(this));
   };
 

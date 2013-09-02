@@ -19,6 +19,7 @@ function ShareDialog(parentNode) {
   this.webViewWrapper_ = null;
   this.webView_ = null;
   this.failureTimeout_ = null;
+  this.callback_ = null;
 
   cr.ui.dialogs.BaseDialog.call(this, parentNode);
 }
@@ -29,6 +30,20 @@ function ShareDialog(parentNode) {
  * @const
  */
 ShareDialog.FAILURE_TIMEOUT = 5000;
+
+/**
+ * The result of opening the dialog.
+ * @enum {string}
+ * @const
+ */
+ShareDialog.Result = Object.freeze({
+  // The dialog is closed normally. This includes user cancel.
+  SUCCESS: 'success',
+  // The dialog is closed by network errora.
+  NETWORK_ERROR: 'networkError',
+  // The dialog is not opened because it is already showing.
+  ALREADY_SHOWING: 'alreadyShowing'
+});
 
 /**
  * Wraps a Web View element and adds authorization headers to it.
@@ -162,112 +177,125 @@ ShareDialog.prototype.onLoaded = function() {
  * @override
  */
 ShareDialog.prototype.onLoadFailed = function() {
-  this.hide();
-  setTimeout(this.onFailure_.bind(this),
-             cr.ui.dialogs.BaseDialog.ANIMATE_STABLE_DURATION);
+  this.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
 };
 
 /**
  * @override
  */
-ShareDialog.prototype.hide = function() {
+ShareDialog.prototype.hide = function(opt_onHide) {
+  this.hideWithResult(ShareDialog.Result.SUCCESS, opt_onHide);
+};
+
+/**
+ * Hide the dialog with the result and the callback.
+ * @param {ShareDialog.Result} result Result passed to the closing callback.
+ * @param {function()=} opt_onHide Callback called at the end of hiding.
+ */
+ShareDialog.prototype.hideWithResult = function(result, opt_onHide) {
+  if (!this.isShowing())
+    return;
   if (this.shareClient_) {
     this.shareClient_.dispose();
     this.shareClient_ = null;
   }
   this.webViewWrapper_.textContent = '';
-  this.onQueueTaskFinished_();
-  this.onQueueTaskFinished_ = null;
   if (this.failureTimeout_) {
     clearTimeout(this.failureTimeout_);
     this.failureTimeout_ = null;
   }
-  cr.ui.dialogs.BaseDialog.prototype.hide.call(this);
+  cr.ui.dialogs.BaseDialog.prototype.hide.call(
+      this,
+      function() {
+        if (opt_onHide)
+          opt_onHide();
+        this.callback_(result);
+        this.callback_ = null;
+      }.bind(this));
 };
 
 /**
  * Shows the dialog.
  * @param {FileEntry} entry Entry to share.
- * @param {function()} onFailure Failure callback.
+ * @param {function(boolean)} callback Callback to be called when the showing
+ *     task is completed. The argument is whether to succeed or not. Note that
+ *     cancel is regarded as success.
  */
-ShareDialog.prototype.show = function(entry, onFailure) {
-  this.queue_.run(function(callback) {
-    this.onQueueTaskFinished_ = callback;
-    this.onFailure_ = onFailure;
-    this.spinnerWrapper_.hidden = false;
-    this.webViewWrapper_.style.width = '';
-    this.webViewWrapper_.style.height = '';
+ShareDialog.prototype.show = function(entry, callback) {
+  // If the dialog is already showing, return the error.
+  if (this.isShowing()) {
+    callback(ShareDialog.Result.ALREADY_SHOWING);
+    return;
+  }
 
-    var onError = function() {
-      // Already closed, therefore ignore.
-      if (!this.onQueueTaskFinished_)
-        return;
-      onFailure();
-      this.hide();
-    }.bind(this);
+  // Initialize the variables.
+  this.callback_ = callback;
+  this.spinnerWrapper_.hidden = false;
+  this.webViewWrapper_.style.width = '';
+  this.webViewWrapper_.style.height = '';
 
-    // If the embedded share dialog is not started within some time, then
-    // give up and show an error message.
-    this.failureTimeout_ = setTimeout(function() {
-      onError();
-    }, ShareDialog.FAILURE_TIMEOUT);
+  // If the embedded share dialog is not started within some time, then
+  // give up and show an error message.
+  this.failureTimeout_ = setTimeout(
+      this.hideWithResult.bind(this, ShareDialog.Result.NETWORK_ERROR),
+      ShareDialog.FAILURE_TIMEOUT);
 
-    // TODO(mtomasz): Move to initDom_() once and reuse <webview> once it gets
-    // fixed. See: crbug.com/260622.
-    this.webView_ = util.createChild(
-        this.webViewWrapper_, 'share-dialog-webview', 'webview');
-    this.webView_.setAttribute('tabIndex', '-1');
-    this.webViewAuthorizer_ = new ShareDialog.WebViewAuthorizer(
-        !window.IN_TEST ? (ShareClient.SHARE_TARGET + '/*') : '<all_urls>',
-        this.webView_);
-    this.webView_.addEventListener('newwindow', function(e) {
-      // Discard the window object and reopen in an external window.
-      e.window.discard();
-      util.visitURL(e.targetUrl);
-      e.preventDefault();
-    });
-    cr.ui.dialogs.BaseDialog.prototype.show.call(this, '', null, null, null);
+  // TODO(mtomasz): Move to initDom_() once and reuse <webview> once it gets
+  // fixed. See: crbug.com/260622.
+  this.webView_ = util.createChild(
+      this.webViewWrapper_, 'share-dialog-webview', 'webview');
+  this.webView_.setAttribute('tabIndex', '-1');
+  this.webViewAuthorizer_ = new ShareDialog.WebViewAuthorizer(
+      !window.IN_TEST ? (ShareClient.SHARE_TARGET + '/*') : '<all_urls>',
+      this.webView_);
+  this.webView_.addEventListener('newwindow', function(e) {
+    // Discard the window object and reopen in an external window.
+    e.window.discard();
+    util.visitURL(e.targetUrl);
+    e.preventDefault();
+  });
+  cr.ui.dialogs.BaseDialog.prototype.show.call(this, '', null, null, null);
 
-    // Initialize and authorize the Web View tag asynchronously.
-    var group = new AsyncUtil.Group();
+  // Initialize and authorize the Web View tag asynchronously.
+  var group = new AsyncUtil.Group();
 
-    // Fetches an url to the sharing dialog.
-    var shareUrl;
-    var getShareUrlClosure = function(callback) {
-      chrome.fileBrowserPrivate.getShareUrl(
-          entry.toURL(),
-          function(inShareUrl) {
-            if (!chrome.runtime.lastError)
-              shareUrl = inShareUrl;
-            callback();
-          });
-    };
+  // Fetches an url to the sharing dialog.
+  var shareUrl;
+  group.add(function(inCallback) {
+    chrome.fileBrowserPrivate.getShareUrl(
+        entry.toURL(),
+        function(inShareUrl) {
+          if (!chrome.runtime.lastError)
+            shareUrl = inShareUrl;
+          inCallback();
+        });
+  });
+  group.add(this.webViewAuthorizer_.initialize.bind(this.webViewAuthorizer_));
+  group.add(this.webViewAuthorizer_.authorize.bind(this.webViewAuthorizer_));
 
-    group.add(getShareUrlClosure);
-    group.add(this.webViewAuthorizer_.initialize.bind(this.webViewAuthorizer_));
-    group.add(this.webViewAuthorizer_.authorize.bind(this.webViewAuthorizer_));
-
-    // Loads the share widget once all the previous async calls are finished.
-    group.run(function() {
-      if (!shareUrl) {
-        onError();
-        return;
-      }
-      // Already closed, therefore ignore.
-      if (!this.onQueueTaskFinished_)
-        return;
-      this.shareClient_ = new ShareClient(this.webView_,
-                                          shareUrl,
-                                          this);
-      this.shareClient_.load();
-    }.bind(this));
+  // Loads the share widget once all the previous async calls are finished.
+  group.run(function() {
+    // If the url is not obtained, return the network error.
+    if (!shareUrl) {
+      this.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
+      return;
+    }
+    // Already inactive, therefore ignore.
+    if (!this.isShowing())
+      return;
+    this.shareClient_ = new ShareClient(this.webView_,
+                                        shareUrl,
+                                        this);
+    this.shareClient_.load();
   }.bind(this));
 };
 
 /**
- * Tells whether the share dialog is being shown or not.
- * @return {boolean} True if shown, false otherwise.
+ * Tells whether the share dialog is showing or not.
+ *
+ * @return {boolean} True since the show method is called and until the closing
+ *     callback is invoked.
  */
 ShareDialog.prototype.isShowing = function() {
-  return this.container_.classList.contains('shown');
+  return !!this.callback_;
 };
