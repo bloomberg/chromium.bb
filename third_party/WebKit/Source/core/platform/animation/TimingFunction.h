@@ -178,10 +178,36 @@ private:
 
 class StepsTimingFunction : public TimingFunction {
 public:
+    enum SubType {
+        Start,
+        End,
+        Custom
+    };
+
     static PassRefPtr<StepsTimingFunction> create(int steps, bool stepAtStart)
     {
-        return adoptRef(new StepsTimingFunction(steps, stepAtStart));
+        return adoptRef(new StepsTimingFunction(Custom, steps, stepAtStart));
     }
+
+    static StepsTimingFunction* preset(SubType subType)
+    {
+        switch (subType) {
+        case Start:
+            {
+                static StepsTimingFunction* start = adoptRef(new StepsTimingFunction(Start, 1, true)).leakRef();
+                return start;
+            }
+        case End:
+            {
+                static StepsTimingFunction* end = adoptRef(new StepsTimingFunction(End, 1, false)).leakRef();
+                return end;
+            }
+        default:
+            ASSERT_NOT_REACHED();
+            return 0;
+        }
+    }
+
 
     ~StepsTimingFunction() { }
 
@@ -194,6 +220,8 @@ public:
     {
         if (other.type() == StepsFunction) {
             const StepsTimingFunction* stf = static_cast<const StepsTimingFunction*>(&other);
+            if (m_subType != Custom)
+                return m_subType == stf->m_subType;
             return m_steps == stf->m_steps && m_stepAtStart == stf->m_stepAtStart;
         }
         return false;
@@ -202,16 +230,20 @@ public:
     int numberOfSteps() const { return m_steps; }
     bool stepAtStart() const { return m_stepAtStart; }
 
+    SubType subType() const { return m_subType; }
+
 private:
-    StepsTimingFunction(int steps, bool stepAtStart)
+    StepsTimingFunction(SubType subType, int steps, bool stepAtStart)
         : TimingFunction(StepsFunction)
         , m_steps(steps)
         , m_stepAtStart(stepAtStart)
+        , m_subType(subType)
     {
     }
 
     int m_steps;
     bool m_stepAtStart;
+    SubType m_subType;
 };
 
 } // namespace WebCore

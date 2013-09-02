@@ -260,15 +260,15 @@ shouldBe("computedStyle.webkitAnimationTimingFunction", "'cubic-bezier(0.2, -2, 
 
 style.animationTimingFunction = "step-start";
 shouldBe("style.animationTimingFunction", "'step-start'");
-shouldBe("computedStyle.animationTimingFunction", "'steps(1, start)'");
+shouldBe("computedStyle.animationTimingFunction", "'step-start'");
 shouldBe("style.webkitAnimationTimingFunction", "'step-start'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'steps(1, start)'");
+shouldBe("computedStyle.webkitAnimationTimingFunction", "'step-start'");
 
 style.animationTimingFunction = "step-end";
 shouldBe("style.animationTimingFunction", "'step-end'");
-shouldBe("computedStyle.animationTimingFunction", "'steps(1, end)'");
+shouldBe("computedStyle.animationTimingFunction", "'step-end'");
 shouldBe("style.webkitAnimationTimingFunction", "'step-end'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'steps(1, end)'");
+shouldBe("computedStyle.webkitAnimationTimingFunction", "'step-end'");
 
 style.animationTimingFunction = "steps(3)";
 shouldBe("style.animationTimingFunction", "'steps(3, end)'");
