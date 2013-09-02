@@ -100,11 +100,6 @@ var ruleText = selector + " { " + styleText + " }";
 var testElementContainer = document.createElement("div");
 document.body.appendChild(testElementContainer);
 
-function createCSSStyleSheet()
-{
-    return document.createElement("style").sheet;
-}
-
 function createFromMarkup(markup)
 {
     var range = document.createRange();
@@ -208,8 +203,8 @@ shouldBe("nonNumericPolicy('createCSSStyleDeclaration().item(x)')", "'any type a
 
 // CSSStyleSheet
 
-shouldBe("nonNumericPolicy('createCSSStyleSheet().insertRule(ruleText, x)')", "'any type allowed'");
-shouldBe("nonNumericPolicy('createCSSStyleSheet().deleteRule(x)')", "'any type allowed'");
+shouldBe("nonNumericPolicy('createCSSStyleSheet().insertRule(ruleText, x)')", "'any type allowed (but not omitted)'");
+shouldBe("nonNumericPolicy('createCSSStyleSheet().deleteRule(x)')", "'any type allowed (but not omitted)'");
 shouldBe("nonNumericPolicy('createCSSStyleSheet().addRule(selector, styleText, x)')", "'any type allowed'");
 shouldBe("nonNumericPolicy('createCSSStyleSheet().removeRule(x)')", "'any type allowed'");
 

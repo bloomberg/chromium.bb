@@ -16,13 +16,13 @@ function createRectangleTest(elementId, stylesheetId, bounds, shapeBounds, units
     rules.push('-webkit-shape-inside: rectangle(' + rectangleBounds.join(',') + ')');
     rules.push('position: relative');
     rules.push('overflow-wrap: break-word');
-    stylesheet.insertRule('#' + elementId + '{' + rules.join(';') + '}');
+    stylesheet.insertRule('#' + elementId + '{' + rules.join(';') + '}', 0);
 
     rules = [];
     rules.push('left: ' + (shapeBounds.x - 1) + units, 'top: ' + (shapeBounds.y - 1) + units, 'width: ' + rectangleBounds[2], 'height: ' + rectangleBounds[3]);
     rules.push('position: absolute', 'display: block', 'content: \' \'');
     rules.push('border: 1px solid blue');
-    stylesheet.insertRule('#' + elementId + ':before{' + rules.join(';') + '}');
+    stylesheet.insertRule('#' + elementId + ':before{' + rules.join(';') + '}', 0);
     if (content)
         elem.innerHTML = content;
 }
@@ -44,13 +44,13 @@ function createRectangleTestResult(elementId, stylesheetId, bounds, shapeBounds,
     rules.push('padding-top: ' + shapeBounds.y + units, 'padding-bottom: ' + (bounds.height - shapeBounds.height - shapeBounds.y) + units);
     rules.push('position: relative');
     rules.push('overflow-wrap: break-word');
-    stylesheet.insertRule('#' + elementId + '{' + rules.join(';') + '}');
+    stylesheet.insertRule('#' + elementId + '{' + rules.join(';') + '}', 0);
 
     rules = [];
     rules.push('left: ' + (shapeBounds.x - 1) + units, 'top: ' + (shapeBounds.y - 1) + units, 'width: ' + shapeBounds.width + units, 'height: ' + shapeBounds.height + units);
     rules.push('position: absolute', 'display: block', 'content: \' \'');
     rules.push('border: 1px solid blue');
-    stylesheet.insertRule('#' + elementId + ':before{' + rules.join(';') + '}');
+    stylesheet.insertRule('#' + elementId + ':before{' + rules.join(';') + '}', 0);
     if (content)
         elem.innerHTML = content;
 }

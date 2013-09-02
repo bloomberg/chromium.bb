@@ -25,9 +25,8 @@
     readonly attribute CSSRule          ownerRule;
     readonly attribute CSSRuleList      cssRules;
 
-    [RaisesException] unsigned long insertRule([Default=Undefined] optional DOMString rule,
-                                            [Default=Undefined] optional unsigned long index);
-    [RaisesException] void               deleteRule([Default=Undefined] optional unsigned long index);
+    [RaisesException] unsigned long insertRule(DOMString rule, unsigned long index);
+    [RaisesException] void deleteRule(unsigned long index);
 
     // IE Extensions
     readonly attribute CSSRuleList      rules;
