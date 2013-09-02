@@ -85,7 +85,6 @@ struct Timing {
     double playbackRate;
     PlaybackDirection direction;
     RefPtr<TimingFunction> timingFunction;
-
 };
 
 } // namespace WebCore

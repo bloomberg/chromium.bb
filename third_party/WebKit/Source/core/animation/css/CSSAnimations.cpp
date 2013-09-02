@@ -80,7 +80,7 @@ void timingFromAnimationData(const CSSAnimationData* animationData, Timing& timi
             timing.iterationCount = animationData->iterationCount();
     }
     if (animationData->isTimingFunctionSet()) {
-        if (!animationData->timingFunction()->isLinearTimingFunction())
+        if (animationData->timingFunction()->type() != TimingFunction::LinearFunction)
             timing.timingFunction = animationData->timingFunction();
     } else {
         // CSS default is ease, default in model is linear.

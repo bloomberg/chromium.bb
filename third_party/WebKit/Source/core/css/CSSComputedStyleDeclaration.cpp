@@ -1132,38 +1132,43 @@ static PassRefPtr<CSSValue> valueForAnimationDuration(const CSSAnimationDataList
 
 static PassRefPtr<CSSValue> createTimingFunctionValue(const TimingFunction* timingFunction)
 {
-    if (timingFunction->isCubicBezierTimingFunction()) {
-        const CubicBezierTimingFunction* bezierTimingFunction = static_cast<const CubicBezierTimingFunction*>(timingFunction);
-        if (bezierTimingFunction->timingFunctionPreset() != CubicBezierTimingFunction::Custom) {
-            CSSValueID valueId = CSSValueInvalid;
-            switch (bezierTimingFunction->timingFunctionPreset()) {
-            case CubicBezierTimingFunction::Ease:
-                valueId = CSSValueEase;
-                break;
-            case CubicBezierTimingFunction::EaseIn:
-                valueId = CSSValueEaseIn;
-                break;
-            case CubicBezierTimingFunction::EaseOut:
-                valueId = CSSValueEaseOut;
-                break;
-            case CubicBezierTimingFunction::EaseInOut:
-                valueId = CSSValueEaseInOut;
-                break;
-            default:
-                ASSERT_NOT_REACHED();
-                return 0;
+    switch (timingFunction->type()) {
+    case TimingFunction::CubicBezierFunction:
+        {
+            const CubicBezierTimingFunction* bezierTimingFunction = static_cast<const CubicBezierTimingFunction*>(timingFunction);
+            if (bezierTimingFunction->timingFunctionPreset() != CubicBezierTimingFunction::Custom) {
+                CSSValueID valueId = CSSValueInvalid;
+                switch (bezierTimingFunction->timingFunctionPreset()) {
+                case CubicBezierTimingFunction::Ease:
+                    valueId = CSSValueEase;
+                    break;
+                case CubicBezierTimingFunction::EaseIn:
+                    valueId = CSSValueEaseIn;
+                    break;
+                case CubicBezierTimingFunction::EaseOut:
+                    valueId = CSSValueEaseOut;
+                    break;
+                case CubicBezierTimingFunction::EaseInOut:
+                    valueId = CSSValueEaseInOut;
+                    break;
+                default:
+                    ASSERT_NOT_REACHED();
+                    return 0;
+                }
+                return cssValuePool().createIdentifierValue(valueId);
             }
-            return cssValuePool().createIdentifierValue(valueId);
+            return CSSCubicBezierTimingFunctionValue::create(bezierTimingFunction->x1(), bezierTimingFunction->y1(), bezierTimingFunction->x2(), bezierTimingFunction->y2());
         }
-        return CSSCubicBezierTimingFunctionValue::create(bezierTimingFunction->x1(), bezierTimingFunction->y1(), bezierTimingFunction->x2(), bezierTimingFunction->y2());
-    }
 
-    if (timingFunction->isStepsTimingFunction()) {
-        const StepsTimingFunction* stepsTimingFunction = static_cast<const StepsTimingFunction*>(timingFunction);
-        return CSSStepsTimingFunctionValue::create(stepsTimingFunction->numberOfSteps(), stepsTimingFunction->stepAtStart());
-    }
+    case TimingFunction::StepsFunction:
+        {
+            const StepsTimingFunction* stepsTimingFunction = static_cast<const StepsTimingFunction*>(timingFunction);
+            return CSSStepsTimingFunctionValue::create(stepsTimingFunction->numberOfSteps(), stepsTimingFunction->stepAtStart());
+        }
 
-    return cssValuePool().createIdentifierValue(CSSValueLinear);
+    default:
+        return cssValuePool().createIdentifierValue(CSSValueLinear);
+    }
 }
 
 static PassRefPtr<CSSValue> valueForAnimationTimingFunction(const CSSAnimationDataList* animList)

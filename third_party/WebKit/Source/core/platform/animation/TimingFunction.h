@@ -45,10 +45,6 @@ public:
 
     TimingFunctionType type() const { return m_type; }
 
-    bool isLinearTimingFunction() const { return m_type == LinearFunction; }
-    bool isCubicBezierTimingFunction() const { return m_type == CubicBezierFunction; }
-    bool isStepsTimingFunction() const { return m_type == StepsFunction; }
-
     // Evaluates the timing function at the given fraction. The accuracy parameter provides a hint as to the required
     // accuracy and is not guaranteed.
     virtual double evaluate(double fraction, double accuracy) const = 0;
@@ -79,7 +75,7 @@ public:
 
     virtual bool operator==(const TimingFunction& other) const
     {
-        return other.isLinearTimingFunction();
+        return other.type() == LinearFunction;
     }
 
 private:
@@ -144,7 +140,7 @@ public:
 
     virtual bool operator==(const TimingFunction& other) const
     {
-        if (other.isCubicBezierTimingFunction()) {
+        if (other.type() == CubicBezierFunction) {
             const CubicBezierTimingFunction* ctf = static_cast<const CubicBezierTimingFunction*>(&other);
             if (m_timingFunctionPreset != Custom)
                 return m_timingFunctionPreset == ctf->m_timingFunctionPreset;
@@ -196,7 +192,7 @@ public:
 
     virtual bool operator==(const TimingFunction& other) const
     {
-        if (other.isStepsTimingFunction()) {
+        if (other.type() == StepsFunction) {
             const StepsTimingFunction* stf = static_cast<const StepsTimingFunction*>(&other);
             return m_steps == stf->m_steps && m_stepAtStart == stf->m_stepAtStart;
         }
