@@ -10,4 +10,6 @@ Description:
 Template engine for code generation in Blink.
 
 Local Modifications:
-This only includes the jinja2 directory from the tarball and the LICENSE and AUTHORS files. Unit tests have been removed.
+This only includes the jinja2 directory from the tarball and the LICENSE and
+AUTHORS files. Unit tests have been removed. Additional chromium-specific files
+are this README.chromium and OWNERS.
