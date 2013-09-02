@@ -12,13 +12,7 @@
 
 class GURL;
 
-namespace WebKit {
-class WebSocketStreamHandle;
-}
-
 namespace webkit_glue {
-
-class WebSocketStreamHandleDelegate;
 
 class WebSocketStreamHandleBridge
     : public base::RefCountedThreadSafe<WebSocketStreamHandleBridge> {
