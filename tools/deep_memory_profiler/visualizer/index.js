@@ -4,14 +4,16 @@
 
 $(function() {
   // Read original data and plot.
-  $.getJSON('data/result.json', function(jsonData) {
+  // TODO(junjianx): Make file path an argument.
+  $.getJSON('sample.json', function(jsonData) {
     // Create model.
     var profiler = new Profiler(jsonData);
     // Create views subscribing model events.
     var graphView = new GraphView(profiler);
+    var dropdownView = new DropdownView(profiler);
     var menuView = new MenuView(profiler);
 
     // initialize categories according to roots information.
-    profiler.initialize();
+    profiler.reparse();
   });
 });

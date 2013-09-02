@@ -4,22 +4,39 @@
 
 /**
  * This is a view class showing tree-menu.
- * @param {Object} model Must have addListener method.
+ * @param {Object} profiler Must have addListener method.
  * @construct
  */
-var MenuView = function(model) {
-  this.model_ = model;
-  // Update graph view and menu view when model changed.
-  model.addListener('changed', this.redraw.bind(this));
+var MenuView = function(profiler) {
+  this.profiler_ = profiler;
+  this.placeholder_ = '#category-menu';
+
+  // Update graph view and menu view when profiler model changed.
+  profiler.addListener('changed', this.redraw_.bind(this));
+  profiler.addListener('changed:selected', this.selectNode_.bind(this));
+};
+
+/**
+ * Highlight the node being selected.
+ * @param {string} id Model id.
+ * @private
+ */
+MenuView.prototype.selectNode_ = function(id) {
+  var $tree = this.$tree_;
+  var node = $tree.tree('getNodeById', id);
+  $tree.tree('selectNode', node);
+  $tree.tree('scrollToNode', node);
 };
 
 /**
  * Update menu view when model updated.
- * @param {Array.<Object>} modelTrees
+ * @param {Array.<Object>} models
+ * @private
  */
-MenuView.prototype.redraw = function(modelTrees) {
+MenuView.prototype.redraw_ = function(models) {
   function convert(origin, target) {
     target.label = origin.name;
+    target.id = origin.id;
 
     if ('children' in origin) {
       target.children = [];
@@ -50,26 +67,38 @@ MenuView.prototype.redraw = function(modelTrees) {
           merge(child, left.children[index]);
       });
     }
- }
+  }
+
+  var self = this;
 
   // Merge trees in all snapshots.
   var union = null;
-  modelTrees.forEach(function(modelTree) {
-    var viewTree = {};
-    convert(modelTree, viewTree);
+  models.forEach(function(model) {
+    var data = {};
+    convert(model, data);
     if (!union)
-      union = viewTree;
+      union = data;
     else
-      merge(union, viewTree);
+      merge(union, data);
   });
 
-  var placeholder = '#category-menu';
   // Draw breakdown menu.
-  $(placeholder).tree({
-    data: [union],
-    autoOpen: true,
-    onCreateLi: function(node, $li) {
-      // TODO(junjianx): Add checkbox to decide the breakdown visibility.
-    }
-  });
+  var data = [union];
+  if (!this.$tree_) {
+    this.$tree_ = $(this.placeholder_).tree({
+      data: data,
+      autoOpen: true,
+      onCreateLi: function(node, $li) {
+        // TODO(junjianx): Add checkbox to decide the breakdown visibility.
+      }
+    });
+
+    // Delegate click event to profiler.
+    this.$tree_.bind('tree.click', function(event) {
+      event.preventDefault();
+      self.profiler_.setSelected(event.node.id);
+    });
+  } else {
+    this.$tree_.tree('loadData', data);
+  }
 };
