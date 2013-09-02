@@ -176,9 +176,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     Ownership ownership;
     bool mirror_origin_in_rtl;
     bool has_dropshadow;
-    // Only used by NativeWidgetWin. Specifies that the system default caption
-    // and icon should not be rendered, and that the client area should be
-    // equivalent to the window area.
+    // Only used by Windows. Specifies that the system default caption and icon
+    // should not be rendered, and that the client area should be equivalent to
+    // the window area.
     bool remove_standard_frame;
     // Only used by ShellWindow on Windows. Specifies that the default icon of
     // packaged app should be the system default icon.

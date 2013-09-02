@@ -237,6 +237,13 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   ownership_ = params.ownership;
 
   NativeWidgetAura::RegisterNativeWidgetForWindow(this, window_);
+  // Animations on TYPE_WINDOW are handled by the OS. Additionally if we animate
+  // these windows the size of the window gets augmented, effecting restore
+  // bounds and maximized windows in bad ways.
+  if (params.type == Widget::InitParams::TYPE_WINDOW &&
+      !params.remove_standard_frame) {
+    window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
+  }
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   window_->SetTransparent(true);
   window_->Init(params.layer_type);
