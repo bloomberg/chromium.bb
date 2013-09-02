@@ -5,6 +5,9 @@
 [
   {
     "namespace":"fileBrowserPrivate",
+    "compiler_options": {
+      "implemented_in": "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_functions.h"
+    },
     "description": "none",
     "platforms": ["chromeos"],
     "types": [
@@ -364,6 +367,22 @@
         }
       },
       {
+        "id": "FileWatchChangedEntry",
+        "type": "object",
+        "description": "Information about changed file or directory",
+        "properties": {
+          "changeType": {
+            "type": "string",
+            "enum": ["added", "deleted", "updated"],
+            "description": "Specifies type of the change."
+          },
+          "fileUrl": {
+            "type": "string",
+            "description": "URL of the changed file."
+          }
+        }
+      },
+      {
         "id": "FileWatchEvent",
         "type": "object",
         "description": "Directory change notification details.",
@@ -380,22 +399,6 @@
           "changedEntries": {
             "type": "array",
             "items": {"$ref": "FileWatchChangedEntry"}
-          }
-        }
-      },
-      {
-        "id": "FileWatchChangedEntry",
-        "type": "object",
-        "description": "Information about changed file or directory",
-        "properties": {
-          "changeType": {
-            "type": "string",
-            "enum": ["added", "deleted", "updated"],
-            "description": "Specifies type of the change."
-          },
-          "fileUrl": {
-            "type": "string",
-            "description": "URL of the changed file."
           }
         }
       }
@@ -817,57 +820,6 @@
                 "description": "The list of FileTransferCancelStatus."
               }
             ]
-          }
-        ]
-      },
-      {
-        "name": "startCopy",
-        "description": "Starts to copy an entry. If the source is a directory, the copy is done recursively.",
-        "parameters": [
-          {
-            "name": "sourceUrl",
-            "type": "string",
-            "description": "URL of the source entry to be copied."
-          },
-          {
-            "name": "parent",
-            "type": "string",
-            "description": "URL of the destination directory."
-          },
-          {
-            "name": "newName",
-            "type": "string",
-            "description": "Name of the new entry. It shouldn't contain '/'."
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "description": "Completion callback.",
-            "parameters": [
-              {
-                "name": "copyId",
-                "type": "integer",
-                "description": "ID of the copy task. Can be used to identify the progress, and to cancel the task."
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "cancelCopy",
-        "description": "Cancels the running copy task.",
-        "parameters": [
-          {
-            "name": "copyId",
-            "type": "integer",
-            "description": "ID of the copy task to be cancelled."
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "optional": true,
-            "description": "Completion callback of the cancel.",
-            "parameters": []
           }
         ]
       },

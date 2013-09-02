@@ -53,6 +53,7 @@
           'experimental_history.json',
           'experimental_identity.idl',
           'experimental_idltest.idl',
+          'file_browser_private.json',
           'location.idl',
           'system_memory.idl',
           'extension.json',
