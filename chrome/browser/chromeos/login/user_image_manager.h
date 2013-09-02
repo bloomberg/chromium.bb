@@ -81,6 +81,7 @@ class UserImageManager {
   virtual UserImageSyncObserver* GetSyncObserver() const = 0;
 
   // Unregisters preference observers before browser process shutdown.
+  // Also cancels any profile image download in progress.
   virtual void Shutdown() = 0;
 };
 

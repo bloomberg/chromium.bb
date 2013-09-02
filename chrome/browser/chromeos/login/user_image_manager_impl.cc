@@ -417,6 +417,7 @@ UserImageSyncObserver* UserImageManagerImpl::GetSyncObserver() const {
 }
 
 void UserImageManagerImpl::Shutdown() {
+  profile_image_downloader_.reset();
   user_image_sync_observer_.reset();
 }
 

@@ -769,7 +769,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   AccessibilityManager::Shutdown();
 
   // Let the UserManager and WallpaperManager unregister itself as an observer
-  // of the CrosSettings singleton before it is destroyed.
+  // of the CrosSettings singleton before it is destroyed. This also ensures
+  // that the UserManager has no URLRequest pending (see
+  // http://crbug.com/276659).
   UserManager::Get()->Shutdown();
   WallpaperManager::Get()->Shutdown();
 
@@ -780,12 +782,13 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Clean up dependency on CrosSettings and stop pending data fetches.
   KioskAppManager::Shutdown();
 
+  // We first call PostMainMessageLoopRun and then destroy UserManager, because
+  // Ash needs to be closed before UserManager is destroyed. Also, on some tests
+  // MergeSessionThrottle::ShouldShowMergeSessionPage gets triggered during
+  // PostMainMessageLoopRun, which also requires UserManager to live (see
+  // http://crbug.com/243364).
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 
-  // Destroy the UserManager after ash has been destroyed and
-  // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun run.  The latter might
-  // trigger MergeSessionThrottle::ShouldShowMergeSessionPage, which requires
-  // the UserManager to exist.
   UserManager::Destroy();
 }
 
