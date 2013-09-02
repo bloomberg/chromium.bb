@@ -51,7 +51,7 @@ public:
     virtual bool isQuote() const { return false; }
     virtual bool isText() const { return false; }
 
-    virtual RenderObject* createRenderer(Document*, RenderStyle*) const = 0;
+    virtual RenderObject* createRenderer(Document&, RenderStyle*) const = 0;
 
     virtual PassOwnPtr<ContentData> clone() const;
 
@@ -74,7 +74,7 @@ public:
     void setImage(PassRefPtr<StyleImage> image) { m_image = image; }
 
     virtual bool isImage() const OVERRIDE { return true; }
-    virtual RenderObject* createRenderer(Document*, RenderStyle*) const OVERRIDE;
+    virtual RenderObject* createRenderer(Document&, RenderStyle*) const OVERRIDE;
 
     virtual bool equals(const ContentData& data) const OVERRIDE
     {
@@ -105,7 +105,7 @@ public:
     void setText(const String& text) { m_text = text; }
 
     virtual bool isText() const OVERRIDE { return true; }
-    virtual RenderObject* createRenderer(Document*, RenderStyle*) const OVERRIDE;
+    virtual RenderObject* createRenderer(Document&, RenderStyle*) const OVERRIDE;
 
     virtual bool equals(const ContentData& data) const OVERRIDE
     {
@@ -132,7 +132,7 @@ public:
     void setCounter(PassOwnPtr<CounterContent> counter) { m_counter = counter; }
 
     virtual bool isCounter() const OVERRIDE { return true; }
-    virtual RenderObject* createRenderer(Document*, RenderStyle*) const OVERRIDE;
+    virtual RenderObject* createRenderer(Document&, RenderStyle*) const OVERRIDE;
 
 private:
     CounterContentData(PassOwnPtr<CounterContent> counter)
@@ -163,7 +163,7 @@ public:
     void setQuote(QuoteType quote) { m_quote = quote; }
 
     virtual bool isQuote() const OVERRIDE { return true; }
-    virtual RenderObject* createRenderer(Document*, RenderStyle*) const OVERRIDE;
+    virtual RenderObject* createRenderer(Document&, RenderStyle*) const OVERRIDE;
 
     virtual bool equals(const ContentData& data) const OVERRIDE
     {
