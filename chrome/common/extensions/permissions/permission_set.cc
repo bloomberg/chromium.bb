@@ -481,6 +481,23 @@ std::set<PermissionMessage> PermissionSet::GetAPIPermissionMessages() const {
       messages.insert(new_messages.begin(), new_messages.end());
     }
   }
+
+  // A special hack: If both kFileSystemDirectory and and kFileSystemWrite
+  // would be displayed, instead show kFileSystemWriteDirectory.
+  // TODO(sammc): Remove this when http://crbug.com/282118 is fixed.
+  std::set<PermissionMessage>::iterator read_directory_message = messages.find(
+      PermissionMessage(PermissionMessage::kFileSystemDirectory, string16()));
+  std::set<PermissionMessage>::iterator write_message = messages.find(
+      PermissionMessage(PermissionMessage::kFileSystemWrite, string16()));
+  if (read_directory_message != messages.end() &&
+      write_message != messages.end()) {
+    messages.erase(read_directory_message);
+    messages.erase(write_message);
+    messages.insert(PermissionMessage(
+        PermissionMessage::kFileSystemWriteDirectory,
+        l10n_util::GetStringUTF16(
+            IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE_DIRECTORY)));
+  }
   return messages;
 }
 
@@ -528,6 +545,18 @@ bool PermissionSet::HasLessAPIPrivilegesThan(
           PermissionMessage::kDeclarativeWebRequest &&
       HasEffectiveAccessToAllHosts()) {
     return false;
+  }
+
+  // A special hack: kFileSystemWriteDirectory implies kFileSystemDirectory and
+  // kFileSystemWrite.
+  // TODO(sammc): Remove this when http://crbug.com/282118 is fixed.
+  if (current_warnings.find(PermissionMessage(
+          PermissionMessage::kFileSystemWriteDirectory, string16())) !=
+      current_warnings.end()) {
+    delta_warnings.erase(
+        PermissionMessage(PermissionMessage::kFileSystemDirectory, string16()));
+    delta_warnings.erase(
+        PermissionMessage(PermissionMessage::kFileSystemWrite, string16()));
   }
 
   // We have less privileges if there are additional warnings present.
