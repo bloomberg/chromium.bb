@@ -314,9 +314,19 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
     }
     this.onPairingComplete_(clientId, sharedSecret);
   } else if (message.method == 'extensionMessage') {
-    // No messages currently supported.
-    console.log('Unexpected message received: ' +
-                message.data['type'] + ': ' + message.data['data']);
+    if (typeof(message.data['type']) != 'string' ||
+        typeof(message.data['data']) != 'string') {
+      console.error('Invalid extension message:', message.data);
+      return;
+    }
+    switch (message.data['type']) {
+      case 'test-echo-reply':
+        console.log('Got echo reply: ' + message.data['data']);
+        break;
+      default:
+        console.log('Unexpected message received: ' +
+                    message.data['type'] + ': ' + message.data['data']);
+    }
   }
 };
 
