@@ -2,11 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Host-driven java_tests which exercise dummy functionality.
-
-This test class is only here to ensure that the test framework for host driven
-tests work.
-"""
+import os
 
 from pylib.host_driven import test_case
 from pylib.host_driven import tests_annotations
