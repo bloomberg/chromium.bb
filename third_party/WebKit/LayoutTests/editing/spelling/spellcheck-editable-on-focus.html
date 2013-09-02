@@ -17,6 +17,8 @@ description("Spell checking should be triggered on focus of an editable. " +
 "To test manually type focus above editable and textarea. Misspellings in them " +
 "should be marked on focus.");
 
+jsTestIsAsync = true;
+
 var testEditable = document.getElementById('test_editable');
 var testTextArea = document.getElementById('test_textarea');
 var testTextField = document.getElementById('test_textfield');
@@ -44,8 +46,7 @@ function test()
             shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '3');
             shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '3');
             shouldBe('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', '3');
-            if (window.testRunner)
-                testRunner.notifyDone();
+            finishJSTest();
         }
     }
 

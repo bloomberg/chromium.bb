@@ -5,7 +5,7 @@
 <script src="resources/util.js"></script>
 <script src="../../fast/js/resources/js-test-pre.js"></script>
 </head>
-<body onload="test();">
+<body>
 <pre id="console"></pre>
 <div id="container">
   <div id="test_editable" contentEditable>zz zz zz. </div>
@@ -21,29 +21,25 @@ var testEditable = document.getElementById('test_editable');
 var testTextArea = document.getElementById('test_textarea');
 var testTextField = document.getElementById('test_textfield');
 
-function test()
+if (!window.internals)
 {
-    if (!window.internals)
-    {
-        log("Automatic testing impossible. Test manually.");
-        return;
-    }
-
-    internals.settings.setUnifiedTextCheckerEnabled(true);
-    internals.settings.setAsynchronousSpellCheckingEnabled(false);
-    internals.setContinuousSpellCheckingEnabled(true);
-
-    shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '0');
-    testEditable.focus();
-    shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '3');
-    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '0');
-    testTextArea.focus();
-    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '3');
-    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', '0');
-    testTextField.focus();
-    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', '3');
-
+    log("Automatic testing impossible. Test manually.");
+    return;
 }
+
+internals.settings.setUnifiedTextCheckerEnabled(true);
+internals.settings.setAsynchronousSpellCheckingEnabled(false);
+internals.setContinuousSpellCheckingEnabled(true);
+
+shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '0');
+testEditable.focus();
+shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '3');
+shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '0');
+testTextArea.focus();
+shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '3');
+shouldBe('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', '0');
+testTextField.focus();
+shouldBe('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', '3');
 
 </script>
 <script src="../../fast/js/resources/js-test-post.js"></script>

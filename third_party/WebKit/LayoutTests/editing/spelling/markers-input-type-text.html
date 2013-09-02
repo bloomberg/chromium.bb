@@ -12,7 +12,7 @@
 <script src="resources/util.js"></script>
 <script src="../../fast/js/resources/js-test-pre.js"></script>
 </head>
-<body onload="test();">
+<body>
 <pre id="console"></pre>
 <textarea id="testTextArea"></textarea><br/>
 <input type="text" id="testInput" /><br/>
@@ -25,37 +25,35 @@ description("Markers in text inputs should only be visible if an input is being 
 "focus the text input and type something with misspellings there too." +
 "Then focus the second text area. Mispelling marks should be removed from the input" +
 "but not for the first textarea. Focus the input again - misspelling marks should be restored.");
-function test()
-{
-    var testTextArea = document.getElementById("testTextArea");
-    var testInput = document.getElementById("testInput");
 
-    if (!window.internals) {
-        log("Test manually. See the description for steps.");
-        return;
-    }
+var testTextArea = document.getElementById("testTextArea");
+var testInput = document.getElementById("testInput");
 
-    internals.settings.setUnifiedTextCheckerEnabled(true);
-
-    if (window.testRunner)
-        testRunner.dumpAsText();
-
-    typeText(testTextArea, 'zz. ');
-    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '1');
-
-    typeText(testInput, 'zz zz zz zz. ');
-    shouldBe('internals.markerCountForNode(findFirstTextNode(testInput), "spelling")', '4');
-
-    document.getElementById("aux").focus();
-
-    shouldBe('internals.markerCountForNode(findFirstTextNode(testInput), "spelling")', '0');
-    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '1');
-
-    testInput.focus();
-
-    shouldBe('internals.markerCountForNode(findFirstTextNode(testInput), "spelling")', '4');
-    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '1');
+if (!window.internals) {
+    log("Test manually. See the description for steps.");
+    return;
 }
+
+internals.settings.setUnifiedTextCheckerEnabled(true);
+
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+typeText(testTextArea, 'zz. ');
+shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '1');
+
+typeText(testInput, 'zz zz zz zz. ');
+shouldBe('internals.markerCountForNode(findFirstTextNode(testInput), "spelling")', '4');
+
+document.getElementById("aux").focus();
+
+shouldBe('internals.markerCountForNode(findFirstTextNode(testInput), "spelling")', '0');
+shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '1');
+
+testInput.focus();
+
+shouldBe('internals.markerCountForNode(findFirstTextNode(testInput), "spelling")', '4');
+shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '1');
 </script>
 <script src="../../fast/js/resources/js-test-post.js"></script>
 </body>
