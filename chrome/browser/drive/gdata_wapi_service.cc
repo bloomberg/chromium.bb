@@ -626,6 +626,18 @@ CancelCallback GDataWapiService::AuthorizeApp(
                               app_id));
 }
 
+CancelCallback GDataWapiService::GetResourceListInDirectoryByWapi(
+    const std::string& directory_resource_id,
+    const google_apis::GetResourceListCallback& callback) {
+  return GetResourceListInDirectory(directory_resource_id, callback);
+}
+
+CancelCallback GDataWapiService::GetRemainingResourceList(
+    const GURL& next_url,
+    const google_apis::GetResourceListCallback& callback) {
+  return ContinueGetResourceList(next_url, callback);
+}
+
 bool GDataWapiService::HasAccessToken() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

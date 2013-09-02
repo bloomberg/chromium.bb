@@ -1268,6 +1268,18 @@ CancelCallback FakeDriveService::AuthorizeApp(
   return CancelCallback();
 }
 
+CancelCallback FakeDriveService::GetResourceListInDirectoryByWapi(
+    const std::string& directory_resource_id,
+    const google_apis::GetResourceListCallback& callback) {
+  return GetResourceListInDirectory(directory_resource_id, callback);
+}
+
+CancelCallback FakeDriveService::GetRemainingResourceList(
+    const GURL& next_url,
+    const google_apis::GetResourceListCallback& callback) {
+  return ContinueGetResourceList(next_url, callback);
+}
+
 void FakeDriveService::AddNewFile(const std::string& content_type,
                                   const std::string& content_data,
                                   const std::string& parent_resource_id,

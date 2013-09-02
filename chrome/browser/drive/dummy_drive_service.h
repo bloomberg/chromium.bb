@@ -140,6 +140,12 @@ class DummyDriveService : public DriveServiceInterface {
       const std::string& resource_id,
       const std::string& app_id,
       const google_apis::AuthorizeAppCallback& callback) OVERRIDE;
+  virtual google_apis::CancelCallback GetResourceListInDirectoryByWapi(
+      const std::string& directory_resource_id,
+      const google_apis::GetResourceListCallback& callback) OVERRIDE;
+  virtual google_apis::CancelCallback GetRemainingResourceList(
+      const GURL& next_url,
+      const google_apis::GetResourceListCallback& callback) OVERRIDE;
 };
 
 }  // namespace drive
