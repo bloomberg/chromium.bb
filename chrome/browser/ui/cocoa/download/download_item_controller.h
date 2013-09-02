@@ -22,7 +22,7 @@ class PageNavigator;
 }
 
 namespace gfx {
-class Font;
+class FontList;
 }
 
 namespace ui {
@@ -62,8 +62,8 @@ class MenuModel;
   // The time at which this view was created.
   base::Time creationTime_;
 
-  // Default font to use for text metrics.
-  scoped_ptr<gfx::Font> font_;
+  // Default font list to use for text metrics.
+  scoped_ptr<gfx::FontList> font_list_;
 
   // The state of this item.
   enum DownoadItemState {

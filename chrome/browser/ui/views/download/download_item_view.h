@@ -30,7 +30,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "ui/base/animation/animation_delegate.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -245,8 +245,8 @@ class DownloadItemView : public views::ButtonListener,
   // Elements of our particular download
   string16 status_text_;
 
-  // The font used to print the file name and status.
-  gfx::Font font_;
+  // The font list used to print the file name and status.
+  gfx::FontList font_list_;
 
   // The tooltip.  Only displayed when not showing a warning dialog.
   string16 tooltip_text_;

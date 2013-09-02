@@ -18,7 +18,7 @@ class DownloadItem;
 }
 
 namespace gfx {
-class Font;
+class FontList;
 }
 
 // This class is an abstraction for common UI tasks and properties associated
@@ -52,16 +52,16 @@ class DownloadItemModel {
   // example:
   //    Report.pdf
   //    Network disconnected
-  // |font| and |max_width| are used to elide the filename and/or interrupt
+  // |font_list| and |max_width| are used to elide the filename and/or interrupt
   // reason as necessary to keep the width of the tooltip text under
   // |max_width|. The tooltip will be at most 2 lines.
-  string16 GetTooltipText(const gfx::Font& font, int max_width) const;
+  string16 GetTooltipText(const gfx::FontList& font_list, int max_width) const;
 
   // Get the warning text to display for a dangerous download. The |base_width|
   // is the maximum width of an embedded filename (if there is one). The metrics
-  // for the filename will be based on |font|. Should only be called if
+  // for the filename will be based on |font_list|. Should only be called if
   // IsDangerous() is true.
-  string16 GetWarningText(const gfx::Font& font, int base_width) const;
+  string16 GetWarningText(const gfx::FontList& font_list, int base_width) const;
 
   // Get the caption text for a button for confirming a dangerous download
   // warning.

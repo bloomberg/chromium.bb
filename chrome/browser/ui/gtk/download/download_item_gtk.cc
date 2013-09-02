@@ -34,9 +34,9 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_utils_gtk.h"
+#include "ui/gfx/text_utils.h"
 
 namespace {
 
@@ -478,29 +478,30 @@ void DownloadItemGtk::LoadIcon() {
 }
 
 void DownloadItemGtk::UpdateTooltip() {
+  const gfx::FontList& font_list =
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::BaseFont);
   string16 tooltip_text =
-      download_model_.GetTooltipText(gfx::Font(), kTooltipMaxWidth);
+      download_model_.GetTooltipText(font_list, kTooltipMaxWidth);
   gtk_widget_set_tooltip_text(body_.get(), UTF16ToUTF8(tooltip_text).c_str());
 }
 
 void DownloadItemGtk::UpdateNameLabel() {
-  // TODO(estade): This is at best an educated guess, since we don't actually
-  // use gfx::Font() to draw the text. This is why we need to add so
-  // much padding when we set the size request. We need to either use gfx::Font
-  // or somehow extend TextElider.
-  gfx::Font font = gfx::Font();
+  const gfx::FontList& font_list =
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::BaseFont);
   string16 filename;
   if (!disabled_while_opening_) {
     filename = ui::ElideFilename(
-        download()->GetFileNameToReportUser(), font, kTextWidth);
+        download()->GetFileNameToReportUser(), font_list, kTextWidth);
   } else {
     // First, Calculate the download status opening string width.
     string16 status_string =
         l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING, string16());
-    int status_string_width = font.GetStringWidth(status_string);
+    int status_string_width = gfx::GetStringWidth(status_string, font_list);
     // Then, elide the file name.
     string16 filename_string =
-        ui::ElideFilename(download()->GetFileNameToReportUser(), font,
+        ui::ElideFilename(download()->GetFileNameToReportUser(), font_list,
                           kTextWidth - status_string_width);
     // Last, concat the whole string.
     filename = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING,
@@ -578,8 +579,11 @@ void DownloadItemGtk::UpdateDangerWarning() {
 
     // We create |dangerous_warning| as a wide string so we can more easily
     // calculate its length in characters.
+    const gfx::FontList& font_list =
+        ui::ResourceBundle::GetSharedInstance().GetFontList(
+            ui::ResourceBundle::BaseFont);
     string16 dangerous_warning =
-        download_model_.GetWarningText(gfx::Font(), kTextWidth);
+        download_model_.GetWarningText(font_list, kTextWidth);
     if (theme_service_->UsingNativeTheme()) {
       gtk_util::SetLabelColor(dangerous_label_, NULL);
     } else {

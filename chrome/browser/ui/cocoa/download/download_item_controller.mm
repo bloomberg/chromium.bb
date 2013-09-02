@@ -108,7 +108,9 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     shelf_ = shelf;
     state_ = kNormal;
     creationTime_ = base::Time::Now();
-    font_.reset(new gfx::Font());
+    font_list_.reset(new gfx::FontList(
+        ui::ResourceBundle::GetSharedInstance().GetFontList(
+            ui::ResourceBundle::BaseFont)));
   }
   return self;
 }
@@ -160,14 +162,14 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   if (downloadModel->IsDangerous()) {
     [self setState:kDangerous];
 
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     NSString* dangerousWarning;
     NSString* confirmButtonTitle;
     NSImage* alertIcon;
 
     dangerousWarning =
         base::SysUTF16ToNSString(downloadModel->GetWarningText(
-            *font_, kTextWidth));
+            *font_list_, kTextWidth));
     confirmButtonTitle =
         base::SysUTF16ToNSString(downloadModel->GetWarningConfirmButtonText());
     if (downloadModel->IsMalicious())
@@ -240,7 +242,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (void)updateToolTip {
   string16 tooltip_text =
-      bridge_->download_model()->GetTooltipText(*font_, kToolTipMaxWidth);
+      bridge_->download_model()->GetTooltipText(*font_list_, kToolTipMaxWidth);
   [progressView_ setToolTip:base::SysUTF16ToNSString(tooltip_text)];
 }
 

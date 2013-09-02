@@ -323,26 +323,27 @@ string16 DownloadItemModel::GetTabProgressStatusText() const {
       IDS_DOWNLOAD_TAB_PROGRESS_STATUS, speed_text, amount, time_remaining);
 }
 
-string16 DownloadItemModel::GetTooltipText(const gfx::Font& font,
+string16 DownloadItemModel::GetTooltipText(const gfx::FontList& font_list,
                                            int max_width) const {
   string16 tooltip = ui::ElideFilename(
-      download_->GetFileNameToReportUser(), font, max_width);
+      download_->GetFileNameToReportUser(), font_list, max_width);
   content::DownloadInterruptReason reason = download_->GetLastReason();
   if (download_->GetState() == DownloadItem::INTERRUPTED &&
       reason != content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
     tooltip += ASCIIToUTF16("\n");
     tooltip += ui::ElideText(InterruptReasonStatusMessage(reason),
-                             font, max_width, ui::ELIDE_AT_END);
+                             font_list, max_width, ui::ELIDE_AT_END);
   }
   return tooltip;
 }
 
-string16 DownloadItemModel::GetWarningText(const gfx::Font& font,
+string16 DownloadItemModel::GetWarningText(const gfx::FontList& font_list,
                                            int base_width) const {
   // Should only be called if IsDangerous().
   DCHECK(IsDangerous());
   string16 elided_filename =
-      ui::ElideFilename(download_->GetFileNameToReportUser(), font, base_width);
+      ui::ElideFilename(download_->GetFileNameToReportUser(), font_list,
+                        base_width);
   switch (download_->GetDangerType()) {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: {
       std::string trial_condition =
