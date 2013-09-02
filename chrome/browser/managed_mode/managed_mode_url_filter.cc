@@ -77,7 +77,6 @@ FilterBuilder::~FilterBuilder() {
 
 bool FilterBuilder::AddPattern(const std::string& pattern, int site_id) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-#if defined(ENABLE_CONFIGURATION_POLICY)
   std::string scheme;
   std::string host;
   uint16 port;
@@ -96,10 +95,6 @@ bool FilterBuilder::AddPattern(const std::string& pattern, int site_id) {
   all_conditions_.push_back(condition_set);
   contents_->matcher_site_map[matcher_id_] = site_id;
   return true;
-#else
-  NOTREACHED();
-  return false;
-#endif
 }
 
 void FilterBuilder::AddHostnameHash(const std::string& hash, int site_id) {

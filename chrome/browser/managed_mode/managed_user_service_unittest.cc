@@ -244,7 +244,6 @@ TEST_F(ManagedUserServiceExtensionTest, NoContentPacks) {
             url_filter->GetFilteringBehaviorForURL(url));
 }
 
-#if !defined(OS_CHROMEOS)
 TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   ManagedUserService* managed_user_service =
       ManagedUserServiceFactory::GetForProfile(profile_.get());
@@ -301,10 +300,8 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   EXPECT_EQ(ASCIIToUTF16("Homestar Runner"), sites[1].name);
   EXPECT_EQ(string16(), sites[2].name);
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   EXPECT_EQ(ManagedModeURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(example_url));
-#endif
   EXPECT_EQ(ManagedModeURLFilter::WARN,
             url_filter->GetFilteringBehaviorForURL(moose_url));
 
@@ -332,12 +329,10 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   EXPECT_TRUE(site_names.count(std::string()) == 1u);
   EXPECT_TRUE(site_names.count("Moose") == 1u);
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   EXPECT_EQ(ManagedModeURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(example_url));
   EXPECT_EQ(ManagedModeURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(moose_url));
-#endif
 
   // Disable the first content pack.
   service_->DisableExtension(extension->id(),
@@ -353,10 +348,6 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
 
   EXPECT_EQ(ManagedModeURLFilter::WARN,
             url_filter->GetFilteringBehaviorForURL(example_url));
-#if defined(ENABLE_CONFIGURATION_POLICY)
   EXPECT_EQ(ManagedModeURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(moose_url));
-#endif
 }
-
-#endif  // OS_CHROMEOS
