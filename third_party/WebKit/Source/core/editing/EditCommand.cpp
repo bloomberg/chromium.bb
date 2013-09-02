@@ -34,8 +34,8 @@
 
 namespace WebCore {
 
-EditCommand::EditCommand(Document* document)
-    : m_document(document)
+EditCommand::EditCommand(Document& document)
+    : m_document(&document)
     , m_parent(0)
 {
     ASSERT(m_document);

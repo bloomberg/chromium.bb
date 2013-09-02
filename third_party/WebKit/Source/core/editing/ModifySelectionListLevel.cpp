@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-ModifySelectionListLevelCommand::ModifySelectionListLevelCommand(Document* document)
+ModifySelectionListLevelCommand::ModifySelectionListLevelCommand(Document& document)
     : CompositeEditCommand(document)
 {
 }
@@ -134,7 +134,7 @@ void ModifySelectionListLevelCommand::appendSiblingNodeRange(Node* startNode, No
     }
 }
 
-IncreaseSelectionListLevelCommand::IncreaseSelectionListLevelCommand(Document* document, Type listType)
+IncreaseSelectionListLevelCommand::IncreaseSelectionListLevelCommand(Document& document, Type listType)
     : ModifySelectionListLevelCommand(document)
     , m_listType(listType)
 {
@@ -190,10 +190,10 @@ void IncreaseSelectionListLevelCommand::doApply()
                     newParent = newParent->cloneElementWithoutChildren();
                 break;
             case OrderedList:
-                newParent = createOrderedListElement(document());
+                newParent = createOrderedListElement(&document());
                 break;
             case UnorderedList:
-                newParent = createUnorderedListElement(document());
+                newParent = createUnorderedListElement(&document());
                 break;
         }
         insertNodeBefore(newParent, startListChild);
@@ -202,38 +202,37 @@ void IncreaseSelectionListLevelCommand::doApply()
     }
 }
 
-bool IncreaseSelectionListLevelCommand::canIncreaseSelectionListLevel(Document* document)
+bool IncreaseSelectionListLevelCommand::canIncreaseSelectionListLevel(Document& document)
 {
     Node* startListChild;
     Node* endListChild;
-    return canIncreaseListLevel(document->frame()->selection()->selection(), startListChild, endListChild);
+    return canIncreaseListLevel(document.frame()->selection()->selection(), startListChild, endListChild);
 }
 
-PassRefPtr<Node> IncreaseSelectionListLevelCommand::increaseSelectionListLevel(Document* document, Type type)
+PassRefPtr<Node> IncreaseSelectionListLevelCommand::increaseSelectionListLevel(Document& document, Type type)
 {
-    ASSERT(document);
-    ASSERT(document->frame());
+    ASSERT(document.frame());
     RefPtr<IncreaseSelectionListLevelCommand> command = create(document, type);
     command->apply();
     return command->m_listElement.release();
 }
 
-PassRefPtr<Node> IncreaseSelectionListLevelCommand::increaseSelectionListLevel(Document* document)
+PassRefPtr<Node> IncreaseSelectionListLevelCommand::increaseSelectionListLevel(Document& document)
 {
     return increaseSelectionListLevel(document, InheritedListType);
 }
 
-PassRefPtr<Node> IncreaseSelectionListLevelCommand::increaseSelectionListLevelOrdered(Document* document)
+PassRefPtr<Node> IncreaseSelectionListLevelCommand::increaseSelectionListLevelOrdered(Document& document)
 {
     return increaseSelectionListLevel(document, OrderedList);
 }
 
-PassRefPtr<Node> IncreaseSelectionListLevelCommand::increaseSelectionListLevelUnordered(Document* document)
+PassRefPtr<Node> IncreaseSelectionListLevelCommand::increaseSelectionListLevelUnordered(Document& document)
 {
     return increaseSelectionListLevel(document, UnorderedList);
 }
 
-DecreaseSelectionListLevelCommand::DecreaseSelectionListLevelCommand(Document* document)
+DecreaseSelectionListLevelCommand::DecreaseSelectionListLevelCommand(Document& document)
     : ModifySelectionListLevelCommand(document)
 {
 }
@@ -278,17 +277,16 @@ void DecreaseSelectionListLevelCommand::doApply()
     }
 }
 
-bool DecreaseSelectionListLevelCommand::canDecreaseSelectionListLevel(Document* document)
+bool DecreaseSelectionListLevelCommand::canDecreaseSelectionListLevel(Document& document)
 {
     Node* startListChild;
     Node* endListChild;
-    return canDecreaseListLevel(document->frame()->selection()->selection(), startListChild, endListChild);
+    return canDecreaseListLevel(document.frame()->selection()->selection(), startListChild, endListChild);
 }
 
-void DecreaseSelectionListLevelCommand::decreaseSelectionListLevel(Document* document)
+void DecreaseSelectionListLevelCommand::decreaseSelectionListLevel(Document& document)
 {
-    ASSERT(document);
-    ASSERT(document->frame());
+    ASSERT(document.frame());
     applyCommand(create(document));
 }
 

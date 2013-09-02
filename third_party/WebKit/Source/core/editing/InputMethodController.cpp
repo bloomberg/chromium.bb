@@ -205,8 +205,10 @@ void InputMethodController::finishComposition(const String& text, FinishComposit
 
     // If text is empty, then delete the old composition here. If text is non-empty, InsertTextCommand::input
     // will delete the old composition with an optimized replace operation.
-    if (text.isEmpty() && mode != CancelComposition)
-        TypingCommand::deleteSelection(m_frame->document(), 0);
+    if (text.isEmpty() && mode != CancelComposition) {
+        ASSERT(m_frame->document());
+        TypingCommand::deleteSelection(*m_frame->document(), 0);
+    }
 
     m_compositionNode = 0;
     m_customCompositionUnderlines.clear();
@@ -271,14 +273,17 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
 
     // If text is empty, then delete the old composition here. If text is non-empty, InsertTextCommand::input
     // will delete the old composition with an optimized replace operation.
-    if (text.isEmpty())
-        TypingCommand::deleteSelection(m_frame->document(), TypingCommand::PreventSpellChecking);
+    if (text.isEmpty()) {
+        ASSERT(m_frame->document());
+        TypingCommand::deleteSelection(*m_frame->document(), TypingCommand::PreventSpellChecking);
+    }
 
     m_compositionNode = 0;
     m_customCompositionUnderlines.clear();
 
     if (!text.isEmpty()) {
-        TypingCommand::insertText(m_frame->document(), text, TypingCommand::SelectInsertedText | TypingCommand::PreventSpellChecking, TypingCommand::TextCompositionUpdate);
+        ASSERT(m_frame->document());
+        TypingCommand::insertText(*m_frame->document(), text, TypingCommand::SelectInsertedText | TypingCommand::PreventSpellChecking, TypingCommand::TextCompositionUpdate);
 
         // Find out what node has the composition now.
         Position base = m_frame->selection()->base().downstream();

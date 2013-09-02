@@ -302,7 +302,8 @@ bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity g
 
     if (m_frame->selection()->isRange()) {
         if (isTypingAction) {
-            TypingCommand::deleteKeyPressed(m_frame->document(), canSmartCopyOrDelete() ? TypingCommand::SmartDelete : 0, granularity);
+            ASSERT(m_frame->document());
+            TypingCommand::deleteKeyPressed(*m_frame->document(), canSmartCopyOrDelete() ? TypingCommand::SmartDelete : 0, granularity);
             revealSelectionAfterEditingOperation();
         } else {
             if (killRing)
@@ -319,11 +320,13 @@ bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity g
         switch (direction) {
         case DirectionForward:
         case DirectionRight:
-            TypingCommand::forwardDeleteKeyPressed(m_frame->document(), options, granularity);
+            ASSERT(m_frame->document());
+            TypingCommand::forwardDeleteKeyPressed(*m_frame->document(), options, granularity);
             break;
         case DirectionBackward:
         case DirectionLeft:
-            TypingCommand::deleteKeyPressed(m_frame->document(), options, granularity);
+            ASSERT(m_frame->document());
+            TypingCommand::deleteKeyPressed(*m_frame->document(), options, granularity);
             break;
         }
         revealSelectionAfterEditingOperation();
@@ -343,7 +346,8 @@ void Editor::deleteSelectionWithSmartDelete(bool smartDelete)
     if (m_frame->selection()->isNone())
         return;
 
-    applyCommand(DeleteSelectionCommand::create(m_frame->document(), smartDelete));
+    ASSERT(m_frame->document());
+    applyCommand(DeleteSelectionCommand::create(*m_frame->document(), smartDelete));
 }
 
 void Editor::pasteAsPlainText(const String& pastingText, bool smartReplace)
@@ -411,7 +415,8 @@ void Editor::replaceSelectionWithFragment(PassRefPtr<DocumentFragment> fragment,
         options |= ReplaceSelectionCommand::SmartReplace;
     if (matchStyle)
         options |= ReplaceSelectionCommand::MatchStyle;
-    applyCommand(ReplaceSelectionCommand::create(m_frame->document(), fragment, options, EditActionPaste));
+    ASSERT(m_frame->document());
+    applyCommand(ReplaceSelectionCommand::create(*m_frame->document(), fragment, options, EditActionPaste));
     revealSelectionAfterEditingOperation();
 
     if (m_frame->selection()->isInPasswordField() || !isContinuousSpellCheckingEnabled())
@@ -526,7 +531,8 @@ PassRefPtr<Node> Editor::insertOrderedList()
     if (!canEditRichly())
         return 0;
 
-    RefPtr<Node> newList = InsertListCommand::insertList(m_frame->document(), InsertListCommand::OrderedList);
+    ASSERT(m_frame->document());
+    RefPtr<Node> newList = InsertListCommand::insertList(*m_frame->document(), InsertListCommand::OrderedList);
     revealSelectionAfterEditingOperation();
     return newList;
 }
@@ -536,19 +542,22 @@ PassRefPtr<Node> Editor::insertUnorderedList()
     if (!canEditRichly())
         return 0;
 
-    RefPtr<Node> newList = InsertListCommand::insertList(m_frame->document(), InsertListCommand::UnorderedList);
+    ASSERT(m_frame->document());
+    RefPtr<Node> newList = InsertListCommand::insertList(*m_frame->document(), InsertListCommand::UnorderedList);
     revealSelectionAfterEditingOperation();
     return newList;
 }
 
 bool Editor::canIncreaseSelectionListLevel()
 {
-    return canEditRichly() && IncreaseSelectionListLevelCommand::canIncreaseSelectionListLevel(m_frame->document());
+    ASSERT(m_frame->document());
+    return canEditRichly() && IncreaseSelectionListLevelCommand::canIncreaseSelectionListLevel(*m_frame->document());
 }
 
 bool Editor::canDecreaseSelectionListLevel()
 {
-    return canEditRichly() && DecreaseSelectionListLevelCommand::canDecreaseSelectionListLevel(m_frame->document());
+    ASSERT(m_frame->document());
+    return canEditRichly() && DecreaseSelectionListLevelCommand::canDecreaseSelectionListLevel(*m_frame->document());
 }
 
 PassRefPtr<Node> Editor::increaseSelectionListLevel()
@@ -556,7 +565,8 @@ PassRefPtr<Node> Editor::increaseSelectionListLevel()
     if (!canEditRichly() || m_frame->selection()->isNone())
         return 0;
 
-    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevel(m_frame->document());
+    ASSERT(m_frame->document());
+    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevel(*m_frame->document());
     revealSelectionAfterEditingOperation();
     return newList;
 }
@@ -566,7 +576,8 @@ PassRefPtr<Node> Editor::increaseSelectionListLevelOrdered()
     if (!canEditRichly() || m_frame->selection()->isNone())
         return 0;
 
-    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevelOrdered(m_frame->document());
+    ASSERT(m_frame->document());
+    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevelOrdered(*m_frame->document());
     revealSelectionAfterEditingOperation();
     return newList.release();
 }
@@ -576,7 +587,8 @@ PassRefPtr<Node> Editor::increaseSelectionListLevelUnordered()
     if (!canEditRichly() || m_frame->selection()->isNone())
         return 0;
 
-    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevelUnordered(m_frame->document());
+    ASSERT(m_frame->document());
+    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevelUnordered(*m_frame->document());
     revealSelectionAfterEditingOperation();
     return newList.release();
 }
@@ -586,13 +598,15 @@ void Editor::decreaseSelectionListLevel()
     if (!canEditRichly() || m_frame->selection()->isNone())
         return;
 
-    DecreaseSelectionListLevelCommand::decreaseSelectionListLevel(m_frame->document());
+    ASSERT(m_frame->document());
+    DecreaseSelectionListLevelCommand::decreaseSelectionListLevel(*m_frame->document());
     revealSelectionAfterEditingOperation();
 }
 
 void Editor::removeFormattingAndStyle()
 {
-    applyCommand(RemoveFormatCommand::create(m_frame->document()));
+    ASSERT(m_frame->document());
+    applyCommand(RemoveFormatCommand::create(*m_frame->document()));
 }
 
 void Editor::clearLastEditCommand()
@@ -648,8 +662,10 @@ void Editor::applyStyle(StylePropertySet* style, EditAction editingAction)
         computeAndSetTypingStyle(style, editingAction);
         break;
     case VisibleSelection::RangeSelection:
-        if (style)
-            applyCommand(ApplyStyleCommand::create(m_frame->document(), EditingStyle::create(style).get(), editingAction));
+        if (style) {
+            ASSERT(m_frame->document());
+            applyCommand(ApplyStyleCommand::create(*m_frame->document(), EditingStyle::create(style).get(), editingAction));
+        }
         break;
     }
 }
@@ -667,8 +683,10 @@ void Editor::applyParagraphStyle(StylePropertySet* style, EditAction editingActi
         break;
     case VisibleSelection::CaretSelection:
     case VisibleSelection::RangeSelection:
-        if (style)
-            applyCommand(ApplyStyleCommand::create(m_frame->document(), EditingStyle::create(style).get(), editingAction, ApplyStyleCommand::ForceBlockProperties));
+        if (style) {
+            ASSERT(m_frame->document());
+            applyCommand(ApplyStyleCommand::create(*m_frame->document(), EditingStyle::create(style).get(), editingAction, ApplyStyleCommand::ForceBlockProperties));
+        }
         break;
     }
 }
@@ -716,12 +734,14 @@ String Editor::selectionStartCSSPropertyValue(CSSPropertyID propertyID)
 
 void Editor::indent()
 {
-    applyCommand(IndentOutdentCommand::create(m_frame->document(), IndentOutdentCommand::Indent));
+    ASSERT(m_frame->document());
+    applyCommand(IndentOutdentCommand::create(*m_frame->document(), IndentOutdentCommand::Indent));
 }
 
 void Editor::outdent()
 {
-    applyCommand(IndentOutdentCommand::create(m_frame->document(), IndentOutdentCommand::Outdent));
+    ASSERT(m_frame->document());
+    applyCommand(IndentOutdentCommand::create(*m_frame->document(), IndentOutdentCommand::Outdent));
 }
 
 static void dispatchEditableContentChangedEvents(PassRefPtr<Element> startRoot, PassRefPtr<Element> endRoot)
@@ -839,12 +859,13 @@ bool Editor::insertTextWithoutSendingTextEvent(const String& text, bool selectIn
     if (selection.isContentEditable()) {
         if (Node* selectionStart = selection.start().deprecatedNode()) {
             RefPtr<Document> document = &selectionStart->document();
+            ASSERT(document);
 
             // Insert the text
             TypingCommand::Options options = 0;
             if (selectInsertedText)
                 options |= TypingCommand::SelectInsertedText;
-            TypingCommand::insertText(document.get(), text, selection, options, triggeringEvent && triggeringEvent->isComposition() ? TypingCommand::TextCompositionConfirm : TypingCommand::TextCompositionNone);
+            TypingCommand::insertText(*document.get(), text, selection, options, triggeringEvent && triggeringEvent->isComposition() ? TypingCommand::TextCompositionConfirm : TypingCommand::TextCompositionNone);
 
             // Reveal the current selection
             if (Frame* editedFrame = document->frame()) {
@@ -867,7 +888,8 @@ bool Editor::insertLineBreak()
 
     VisiblePosition caret = m_frame->selection()->selection().visibleStart();
     bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
-    TypingCommand::insertLineBreak(m_frame->document(), 0);
+    ASSERT(m_frame->document());
+    TypingCommand::insertLineBreak(*m_frame->document(), 0);
     revealSelectionAfterEditingOperation(alignToEdge ? ScrollAlignment::alignToEdgeIfNeeded : ScrollAlignment::alignCenterIfNeeded);
 
     return true;
@@ -886,7 +908,8 @@ bool Editor::insertParagraphSeparator()
 
     VisiblePosition caret = m_frame->selection()->selection().visibleStart();
     bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
-    TypingCommand::insertParagraphSeparator(m_frame->document(), 0);
+    ASSERT(m_frame->document());
+    TypingCommand::insertParagraphSeparator(*m_frame->document(), 0);
     revealSelectionAfterEditingOperation(alignToEdge ? ScrollAlignment::alignToEdgeIfNeeded : ScrollAlignment::alignCenterIfNeeded);
 
     return true;
@@ -991,7 +1014,8 @@ void Editor::simplifyMarkup(Node* startNode, Node* endNode)
             return;
     }
 
-    applyCommand(SimplifyMarkupCommand::create(m_frame->document(), startNode, (endNode) ? NodeTraversal::next(endNode) : 0));
+    ASSERT(m_frame->document());
+    applyCommand(SimplifyMarkupCommand::create(*m_frame->document(), startNode, (endNode) ? NodeTraversal::next(endNode) : 0));
 }
 
 void Editor::copyURL(const KURL& url, const String& title)
@@ -1893,8 +1917,10 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editin
 
     // Handle block styles, substracting these from the typing style.
     RefPtr<EditingStyle> blockStyle = typingStyle->extractAndRemoveBlockProperties();
-    if (!blockStyle->isEmpty())
-        applyCommand(ApplyStyleCommand::create(m_frame->document(), blockStyle.get(), editingAction));
+    if (!blockStyle->isEmpty()) {
+        ASSERT(m_frame->document());
+        applyCommand(ApplyStyleCommand::create(*m_frame->document(), blockStyle.get(), editingAction));
+    }
 
     // Set the remaining style as the typing style.
     m_frame->selection()->setTypingStyle(typingStyle);

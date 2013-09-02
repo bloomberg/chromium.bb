@@ -35,7 +35,7 @@
 namespace WebCore {
 
 InsertIntoTextNodeCommand::InsertIntoTextNodeCommand(PassRefPtr<Text> node, unsigned offset, const String& text)
-    : SimpleEditCommand(&node->document())
+    : SimpleEditCommand(node->document())
     , m_node(node)
     , m_offset(offset)
     , m_text(text)
@@ -47,9 +47,9 @@ InsertIntoTextNodeCommand::InsertIntoTextNodeCommand(PassRefPtr<Text> node, unsi
 
 void InsertIntoTextNodeCommand::doApply()
 {
-    bool passwordEchoEnabled = document()->settings() && document()->settings()->passwordEchoEnabled();
+    bool passwordEchoEnabled = document().settings() && document().settings()->passwordEchoEnabled();
     if (passwordEchoEnabled)
-        document()->updateLayoutIgnorePendingStylesheets();
+        document().updateLayoutIgnorePendingStylesheets();
 
     if (!m_node->rendererIsEditable())
         return;

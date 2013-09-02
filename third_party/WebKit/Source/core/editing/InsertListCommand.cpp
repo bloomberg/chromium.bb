@@ -46,7 +46,7 @@ static Node* enclosingListChild(Node* node, Node* listNode)
     return listChild;
 }
 
-PassRefPtr<HTMLElement> InsertListCommand::insertList(Document* document, Type type)
+PassRefPtr<HTMLElement> InsertListCommand::insertList(Document& document, Type type)
 {
     RefPtr<InsertListCommand> insertCommand = create(document, type);
     insertCommand->apply();
@@ -55,7 +55,7 @@ PassRefPtr<HTMLElement> InsertListCommand::insertList(Document* document, Type t
 
 HTMLElement* InsertListCommand::fixOrphanedListChild(Node* node)
 {
-    RefPtr<HTMLElement> listElement = createUnorderedListElement(document());
+    RefPtr<HTMLElement> listElement = createUnorderedListElement(&document());
     insertNodeBefore(listElement, node);
     removeNode(node);
     appendNode(node, listElement);
@@ -99,7 +99,7 @@ bool InsertListCommand::selectionHasListOfType(const VisibleSelection& selection
     return true;
 }
 
-InsertListCommand::InsertListCommand(Document* document, Type type)
+InsertListCommand::InsertListCommand(Document& document, Type type)
     : CompositeEditCommand(document), m_type(type)
 {
 }
@@ -215,7 +215,7 @@ void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const Qu
             bool rangeStartIsInList = visiblePositionBeforeNode(listNode.get()) == currentSelection->startPosition();
             bool rangeEndIsInList = visiblePositionAfterNode(listNode.get()) == currentSelection->endPosition();
 
-            RefPtr<HTMLElement> newList = createHTMLElement(document(), listTag);
+            RefPtr<HTMLElement> newList = createHTMLElement(&document(), listTag);
             insertNodeBefore(newList, listNode);
 
             Node* firstChildInList = enclosingListChild(VisiblePosition(firstPositionInNode(listNode.get())).deepEquivalent().deprecatedNode(), listNode.get());
@@ -272,12 +272,12 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
     }
     // When removing a list, we must always create a placeholder to act as a point of insertion
     // for the list content being removed.
-    RefPtr<Element> placeholder = createBreakElement(document());
+    RefPtr<Element> placeholder = createBreakElement(&document());
     RefPtr<Element> nodeToInsert = placeholder;
     // If the content of the list item will be moved into another list, put it in a list item
     // so that we don't create an orphaned list child.
     if (enclosingList(listNode)) {
-        nodeToInsert = createListItemElement(document());
+        nodeToInsert = createListItemElement(&document());
         appendNode(placeholder, nodeToInsert);
     }
 
@@ -334,8 +334,8 @@ PassRefPtr<HTMLElement> InsertListCommand::listifyParagraph(const VisiblePositio
         return 0;
 
     // Check for adjoining lists.
-    RefPtr<HTMLElement> listItemElement = createListItemElement(document());
-    RefPtr<HTMLElement> placeholder = createBreakElement(document());
+    RefPtr<HTMLElement> listItemElement = createListItemElement(&document());
+    RefPtr<HTMLElement> placeholder = createBreakElement(&document());
     appendNode(placeholder, listItemElement);
 
     // Place list item into adjoining lists.
@@ -348,7 +348,7 @@ PassRefPtr<HTMLElement> InsertListCommand::listifyParagraph(const VisiblePositio
         insertNodeAt(listItemElement, positionBeforeNode(nextList));
     else {
         // Create the list.
-        listElement = createHTMLElement(document(), listTag);
+        listElement = createHTMLElement(&document(), listTag);
         appendNode(listItemElement, listElement);
 
         if (start == end && isBlock(start.deepEquivalent().deprecatedNode())) {

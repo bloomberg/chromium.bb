@@ -35,7 +35,7 @@ namespace WebCore {
 // It is not used on its own.
 class ModifySelectionListLevelCommand : public CompositeEditCommand {
 protected:
-    explicit ModifySelectionListLevelCommand(Document*);
+    explicit ModifySelectionListLevelCommand(Document&);
 
     void appendSiblingNodeRange(Node* startNode, Node* endNode, Element* newParent);
     void insertSiblingNodeRangeBefore(Node* startNode, Node* endNode, Node* refNode);
@@ -48,21 +48,21 @@ private:
 // IncreaseSelectionListLevelCommand moves the selected list items one level deeper.
 class IncreaseSelectionListLevelCommand : public ModifySelectionListLevelCommand {
 public:
-    static bool canIncreaseSelectionListLevel(Document*);
-    static PassRefPtr<Node> increaseSelectionListLevel(Document*);
-    static PassRefPtr<Node> increaseSelectionListLevelOrdered(Document*);
-    static PassRefPtr<Node> increaseSelectionListLevelUnordered(Document*);
+    static bool canIncreaseSelectionListLevel(Document&);
+    static PassRefPtr<Node> increaseSelectionListLevel(Document&);
+    static PassRefPtr<Node> increaseSelectionListLevelOrdered(Document&);
+    static PassRefPtr<Node> increaseSelectionListLevelUnordered(Document&);
 
 private:
     enum Type { InheritedListType, OrderedList, UnorderedList };
-    static PassRefPtr<Node> increaseSelectionListLevel(Document*, Type);
+    static PassRefPtr<Node> increaseSelectionListLevel(Document&, Type);
 
-    static PassRefPtr<IncreaseSelectionListLevelCommand> create(Document* document, Type type)
+    static PassRefPtr<IncreaseSelectionListLevelCommand> create(Document& document, Type type)
     {
         return adoptRef(new IncreaseSelectionListLevelCommand(document, type));
     }
 
-    IncreaseSelectionListLevelCommand(Document*, Type);
+    IncreaseSelectionListLevelCommand(Document&, Type);
 
     virtual void doApply();
 
@@ -73,16 +73,16 @@ private:
 // DecreaseSelectionListLevelCommand moves the selected list items one level shallower.
 class DecreaseSelectionListLevelCommand : public ModifySelectionListLevelCommand {
 public:
-    static bool canDecreaseSelectionListLevel(Document*);
-    static void decreaseSelectionListLevel(Document*);
+    static bool canDecreaseSelectionListLevel(Document&);
+    static void decreaseSelectionListLevel(Document&);
 
 private:
-    static PassRefPtr<DecreaseSelectionListLevelCommand> create(Document* document)
+    static PassRefPtr<DecreaseSelectionListLevelCommand> create(Document& document)
     {
         return adoptRef(new DecreaseSelectionListLevelCommand(document));
     }
 
-    explicit DecreaseSelectionListLevelCommand(Document*);
+    explicit DecreaseSelectionListLevelCommand(Document&);
 
     virtual void doApply();
 };

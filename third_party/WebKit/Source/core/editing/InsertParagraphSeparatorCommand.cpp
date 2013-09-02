@@ -58,7 +58,7 @@ static Element* highestVisuallyEquivalentDivBelowRoot(Element* startBlock)
     return curBlock;
 }
 
-InsertParagraphSeparatorCommand::InsertParagraphSeparatorCommand(Document *document, bool mustUseDefaultParagraphElement, bool pasteBlockqutoeIntoUnquotedArea)
+InsertParagraphSeparatorCommand::InsertParagraphSeparatorCommand(Document& document, bool mustUseDefaultParagraphElement, bool pasteBlockqutoeIntoUnquotedArea)
     : CompositeEditCommand(document)
     , m_mustUseDefaultParagraphElement(mustUseDefaultParagraphElement)
     , m_pasteBlockqutoeIntoUnquotedArea(pasteBlockqutoeIntoUnquotedArea)
@@ -201,12 +201,13 @@ void InsertParagraphSeparatorCommand::doApply()
     // Create block to be inserted.
     RefPtr<Element> blockToInsert;
     if (startBlock->isRootEditableElement()) {
-        blockToInsert = createDefaultParagraphElement(document());
+        blockToInsert = createDefaultParagraphElement(&document());
         nestNewBlock = true;
-    } else if (shouldUseDefaultParagraphElement(startBlock.get()))
-        blockToInsert = createDefaultParagraphElement(document());
-    else
+    } else if (shouldUseDefaultParagraphElement(startBlock.get())) {
+        blockToInsert = createDefaultParagraphElement(&document());
+    } else {
         blockToInsert = startBlock->cloneElementWithoutChildren();
+    }
 
     //---------------------------------------------------------------------
     // Handle case when position is in the last visible position in its block,
@@ -216,7 +217,7 @@ void InsertParagraphSeparatorCommand::doApply()
             if (isFirstInBlock && !lineBreakExistsAtVisiblePosition(visiblePos)) {
                 // The block is empty.  Create an empty block to
                 // represent the paragraph that we're leaving.
-                RefPtr<Element> extraBlock = createDefaultParagraphElement(document());
+                RefPtr<Element> extraBlock = createDefaultParagraphElement(&document());
                 appendNode(extraBlock, startBlock);
                 appendBlockPlaceholder(extraBlock);
             }
@@ -296,7 +297,7 @@ void InsertParagraphSeparatorCommand::doApply()
     // it if visiblePos is at the start of a paragraph so that the
     // content will move down a line.
     if (isStartOfParagraph(visiblePos)) {
-        RefPtr<Element> br = createBreakElement(document());
+        RefPtr<Element> br = createBreakElement(&document());
         insertNodeAt(br.get(), insertionPosition);
         insertionPosition = positionInParentAfterNode(br.get());
         // If the insertion point is a break element, there is nothing else
@@ -359,13 +360,13 @@ void InsertParagraphSeparatorCommand::doApply()
     else
         insertNodeAfter(blockToInsert.get(), startBlock);
 
-    document()->updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheets();
 
     // If the paragraph separator was inserted at the end of a paragraph, an empty line must be
     // created.  All of the nodes, starting at visiblePos, are about to be added to the new paragraph
     // element.  If the first node to be inserted won't be one that will hold an empty line open, add a br.
     if (isEndOfParagraph(visiblePos) && !lineBreakExistsAtVisiblePosition(visiblePos))
-        appendNode(createBreakElement(document()).get(), blockToInsert.get());
+        appendNode(createBreakElement(&document()).get(), blockToInsert.get());
 
     // Move the start node and the siblings of the start node.
     if (VisiblePosition(insertionPosition) != VisiblePosition(positionBeforeNode(blockToInsert.get()))) {
@@ -391,7 +392,7 @@ void InsertParagraphSeparatorCommand::doApply()
 
     // Handle whitespace that occurs after the split
     if (positionAfterSplit.isNotNull()) {
-        document()->updateLayoutIgnorePendingStylesheets();
+        document().updateLayoutIgnorePendingStylesheets();
         if (!positionAfterSplit.isRenderedCharacter()) {
             // Clear out all whitespace and insert one non-breaking space
             ASSERT(!positionAfterSplit.containerNode()->renderer() || positionAfterSplit.containerNode()->renderer()->style()->collapseWhiteSpace());

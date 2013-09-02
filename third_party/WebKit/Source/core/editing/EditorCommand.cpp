@@ -192,7 +192,8 @@ static bool executeApplyParagraphStyle(Frame& frame, EditorCommandSource source,
 
 static bool executeInsertFragment(Frame& frame, PassRefPtr<DocumentFragment> fragment)
 {
-    applyCommand(ReplaceSelectionCommand::create(frame.document(), fragment, ReplaceSelectionCommand::PreventNesting, EditActionUnspecified));
+    ASSERT(frame.document());
+    applyCommand(ReplaceSelectionCommand::create(*frame.document(), fragment, ReplaceSelectionCommand::PreventNesting, EditActionUnspecified));
     return true;
 }
 
@@ -289,7 +290,8 @@ static bool executeCreateLink(Frame& frame, Event*, EditorCommandSource, const S
     // FIXME: If userInterface is true, we should display a dialog box to let the user enter a URL.
     if (value.isEmpty())
         return false;
-    applyCommand(CreateLinkCommand::create(frame.document(), value));
+    ASSERT(frame.document());
+    applyCommand(CreateLinkCommand::create(*frame.document(), value));
     return true;
 }
 
@@ -327,7 +329,8 @@ static bool executeDelete(Frame& frame, Event*, EditorCommandSource source, cons
     case CommandFromDOMWithUserInterface:
         // If the current selection is a caret, delete the preceding character. IE performs forwardDelete, but we currently side with Firefox.
         // Doesn't scroll to make the selection visible, or modify the kill ring (this time, siding with IE, not Firefox).
-        TypingCommand::deleteKeyPressed(frame.document(), frame.selection()->granularity() == WordGranularity ? TypingCommand::SmartDelete : 0);
+        ASSERT(frame.document());
+        TypingCommand::deleteKeyPressed(*frame.document(), frame.selection()->granularity() == WordGranularity ? TypingCommand::SmartDelete : 0);
         return true;
     }
     ASSERT_NOT_REACHED();
@@ -447,7 +450,8 @@ static bool executeFormatBlock(Frame& frame, Event*, EditorCommandSource, const 
         return false;
     QualifiedName qualifiedTagName(prefix, localName, xhtmlNamespaceURI);
 
-    RefPtr<FormatBlockCommand> command = FormatBlockCommand::create(frame.document(), qualifiedTagName);
+    ASSERT(frame.document());
+    RefPtr<FormatBlockCommand> command = FormatBlockCommand::create(*frame.document(), qualifiedTagName);
     applyCommand(command);
     return command->didApply();
 }
@@ -463,7 +467,8 @@ static bool executeForwardDelete(Frame& frame, Event*, EditorCommandSource sourc
         // Doesn't scroll to make the selection visible, or modify the kill ring.
         // ForwardDelete is not implemented in IE or Firefox, so this behavior is only needed for
         // backward compatibility with ourselves, and for consistency with Delete.
-        TypingCommand::forwardDeleteKeyPressed(frame.document());
+        ASSERT(frame.document());
+        TypingCommand::forwardDeleteKeyPressed(*frame.document());
         return true;
     }
     ASSERT_NOT_REACHED();
@@ -478,7 +483,8 @@ static bool executeIgnoreSpelling(Frame& frame, Event*, EditorCommandSource, con
 
 static bool executeIndent(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    applyCommand(IndentOutdentCommand::create(frame.document(), IndentOutdentCommand::Indent));
+    ASSERT(frame.document());
+    applyCommand(IndentOutdentCommand::create(*frame.document(), IndentOutdentCommand::Indent));
     return true;
 }
 
@@ -518,7 +524,8 @@ static bool executeInsertLineBreak(Frame& frame, Event* event, EditorCommandSour
         // Doesn't scroll to make the selection visible, or modify the kill ring.
         // InsertLineBreak is not implemented in IE or Firefox, so this behavior is only needed for
         // backward compatibility with ourselves, and for consistency with other commands.
-        TypingCommand::insertLineBreak(frame.document(), 0);
+        ASSERT(frame.document());
+        TypingCommand::insertLineBreak(*frame.document(), 0);
         return true;
     }
     ASSERT_NOT_REACHED();
@@ -533,19 +540,22 @@ static bool executeInsertNewline(Frame& frame, Event* event, EditorCommandSource
 
 static bool executeInsertNewlineInQuotedContent(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    TypingCommand::insertParagraphSeparatorInQuotedContent(frame.document());
+    ASSERT(frame.document());
+    TypingCommand::insertParagraphSeparatorInQuotedContent(*frame.document());
     return true;
 }
 
 static bool executeInsertOrderedList(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    applyCommand(InsertListCommand::create(frame.document(), InsertListCommand::OrderedList));
+    ASSERT(frame.document());
+    applyCommand(InsertListCommand::create(*frame.document(), InsertListCommand::OrderedList));
     return true;
 }
 
 static bool executeInsertParagraph(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    TypingCommand::insertParagraphSeparator(frame.document(), 0);
+    ASSERT(frame.document());
+    TypingCommand::insertParagraphSeparator(*frame.document(), 0);
     return true;
 }
 
@@ -556,13 +566,15 @@ static bool executeInsertTab(Frame& frame, Event* event, EditorCommandSource, co
 
 static bool executeInsertText(Frame& frame, Event*, EditorCommandSource, const String& value)
 {
-    TypingCommand::insertText(frame.document(), value, 0);
+    ASSERT(frame.document());
+    TypingCommand::insertText(*frame.document(), value, 0);
     return true;
 }
 
 static bool executeInsertUnorderedList(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    applyCommand(InsertListCommand::create(frame.document(), InsertListCommand::UnorderedList));
+    ASSERT(frame.document());
+    applyCommand(InsertListCommand::create(*frame.document(), InsertListCommand::UnorderedList));
     return true;
 }
 
@@ -910,7 +922,8 @@ static bool executeMoveToRightEndOfLineAndModifySelection(Frame& frame, Event*, 
 
 static bool executeOutdent(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    applyCommand(IndentOutdentCommand::create(frame.document(), IndentOutdentCommand::Outdent));
+    ASSERT(frame.document());
+    applyCommand(IndentOutdentCommand::create(*frame.document(), IndentOutdentCommand::Outdent));
     return true;
 }
 
@@ -1133,7 +1146,8 @@ static bool executeUndo(Frame& frame, Event*, EditorCommandSource, const String&
 
 static bool executeUnlink(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    applyCommand(UnlinkCommand::create(frame.document()));
+    ASSERT(frame.document());
+    applyCommand(UnlinkCommand::create(*frame.document()));
     return true;
 }
 

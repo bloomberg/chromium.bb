@@ -57,14 +57,14 @@ public:
     };
     typedef unsigned Options;
 
-    static void deleteSelection(Document*, Options = 0);
-    static void deleteKeyPressed(Document*, Options = 0, TextGranularity = CharacterGranularity);
-    static void forwardDeleteKeyPressed(Document*, Options = 0, TextGranularity = CharacterGranularity);
-    static void insertText(Document*, const String&, Options, TextCompositionType = TextCompositionNone);
-    static void insertText(Document*, const String&, const VisibleSelection&, Options, TextCompositionType = TextCompositionNone);
-    static void insertLineBreak(Document*, Options);
-    static void insertParagraphSeparator(Document*, Options);
-    static void insertParagraphSeparatorInQuotedContent(Document*);
+    static void deleteSelection(Document&, Options = 0);
+    static void deleteKeyPressed(Document&, Options = 0, TextGranularity = CharacterGranularity);
+    static void forwardDeleteKeyPressed(Document&, Options = 0, TextGranularity = CharacterGranularity);
+    static void insertText(Document&, const String&, Options, TextCompositionType = TextCompositionNone);
+    static void insertText(Document&, const String&, const VisibleSelection&, Options, TextCompositionType = TextCompositionNone);
+    static void insertLineBreak(Document&, Options);
+    static void insertParagraphSeparator(Document&, Options);
+    static void insertParagraphSeparatorInQuotedContent(Document&);
     static void closeTyping(Frame*);
 
     void insertText(const String &text, bool selectInsertedText);
@@ -78,17 +78,17 @@ public:
     void setCompositionType(TextCompositionType type) { m_compositionType = type; }
 
 private:
-    static PassRefPtr<TypingCommand> create(Document* document, ETypingCommand command, const String& text = "", Options options = 0, TextGranularity granularity = CharacterGranularity)
+    static PassRefPtr<TypingCommand> create(Document& document, ETypingCommand command, const String& text = "", Options options = 0, TextGranularity granularity = CharacterGranularity)
     {
         return adoptRef(new TypingCommand(document, command, text, options, granularity, TextCompositionNone));
     }
 
-    static PassRefPtr<TypingCommand> create(Document* document, ETypingCommand command, const String& text, Options options, TextCompositionType compositionType)
+    static PassRefPtr<TypingCommand> create(Document& document, ETypingCommand command, const String& text, Options options, TextCompositionType compositionType)
     {
         return adoptRef(new TypingCommand(document, command, text, options, CharacterGranularity, compositionType));
     }
 
-    TypingCommand(Document*, ETypingCommand, const String& text, Options, TextGranularity, TextCompositionType);
+    TypingCommand(Document&, ETypingCommand, const String& text, Options, TextGranularity, TextCompositionType);
 
     bool smartDelete() const { return m_smartDelete; }
     void setSmartDelete(bool smartDelete) { m_smartDelete = smartDelete; }

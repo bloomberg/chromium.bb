@@ -507,7 +507,8 @@ bool DragController::concludeEditDrag(DragData* dragData)
                     options |= ReplaceSelectionCommand::SmartReplace;
                 if (chosePlainText)
                     options |= ReplaceSelectionCommand::MatchStyle;
-                applyCommand(ReplaceSelectionCommand::create(m_documentUnderMouse.get(), fragment, options));
+                ASSERT(m_documentUnderMouse);
+                applyCommand(ReplaceSelectionCommand::create(*m_documentUnderMouse.get(), fragment, options));
             }
         }
     } else {
@@ -516,8 +517,10 @@ bool DragController::concludeEditDrag(DragData* dragData)
             return false;
         }
 
-        if (setSelectionToDragCaret(innerFrame.get(), dragCaret, range, point))
-            applyCommand(ReplaceSelectionCommand::create(m_documentUnderMouse.get(), createFragmentFromText(range.get(), text),  ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::MatchStyle | ReplaceSelectionCommand::PreventNesting));
+        if (setSelectionToDragCaret(innerFrame.get(), dragCaret, range, point)) {
+            ASSERT(m_documentUnderMouse);
+            applyCommand(ReplaceSelectionCommand::create(*m_documentUnderMouse.get(), createFragmentFromText(range.get(), text),  ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::MatchStyle | ReplaceSelectionCommand::PreventNesting));
+        }
     }
 
     if (rootEditableElement) {
