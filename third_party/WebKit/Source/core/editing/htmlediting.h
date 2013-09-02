@@ -188,7 +188,7 @@ VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope);
 
 // Functions returning Range
 
-PassRefPtr<Range> createRange(PassRefPtr<Document>, const VisiblePosition& start, const VisiblePosition& end, ExceptionState&);
+PassRefPtr<Range> createRange(Document*, const VisiblePosition& start, const VisiblePosition& end, ExceptionState&);
 
 // -------------------------------------------------------------------------
 // HTMLElement

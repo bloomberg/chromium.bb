@@ -527,9 +527,9 @@ VisiblePosition visiblePositionAfterNode(Node* node)
 }
 
 // Create a range object with two visible positions, start and end.
-// create(PassRefPtr<Document>, const Position&, const Position&); will use deprecatedEditingOffset
+// create(Document*, const Position&, const Position&); will use deprecatedEditingOffset
 // Use this function instead of create a regular range object (avoiding editing offset).
-PassRefPtr<Range> createRange(PassRefPtr<Document> document, const VisiblePosition& start, const VisiblePosition& end, ExceptionState& es)
+PassRefPtr<Range> createRange(Document* document, const VisiblePosition& start, const VisiblePosition& end, ExceptionState& es)
 {
     RefPtr<Range> selectedRange = Range::create(document);
     selectedRange->setStart(start.deepEquivalent().containerNode(), start.deepEquivalent().computeOffsetInContainerNode(), es);

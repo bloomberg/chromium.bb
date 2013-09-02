@@ -49,9 +49,9 @@ class Text;
 
 class Range : public RefCounted<Range>, public ScriptWrappable {
 public:
-    static PassRefPtr<Range> create(PassRefPtr<Document>);
-    static PassRefPtr<Range> create(PassRefPtr<Document>, PassRefPtr<Node> startContainer, int startOffset, PassRefPtr<Node> endContainer, int endOffset);
-    static PassRefPtr<Range> create(PassRefPtr<Document>, const Position&, const Position&);
+    static PassRefPtr<Range> create(Document*);
+    static PassRefPtr<Range> create(Document*, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
+    static PassRefPtr<Range> create(Document*, const Position&, const Position&);
     ~Range();
 
     Document* ownerDocument() const { return m_ownerDocument.get(); }
@@ -150,8 +150,8 @@ public:
 #endif
 
 private:
-    explicit Range(PassRefPtr<Document>);
-    Range(PassRefPtr<Document>, PassRefPtr<Node> startContainer, int startOffset, PassRefPtr<Node> endContainer, int endOffset);
+    explicit Range(Document*);
+    Range(Document*, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
 
     void setDocument(Document*);
 

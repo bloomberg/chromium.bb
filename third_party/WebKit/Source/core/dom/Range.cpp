@@ -59,7 +59,7 @@ using namespace HTMLNames;
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, rangeCounter, ("Range"));
 
-inline Range::Range(PassRefPtr<Document> ownerDocument)
+inline Range::Range(Document* ownerDocument)
     : m_ownerDocument(ownerDocument)
     , m_start(m_ownerDocument)
     , m_end(m_ownerDocument)
@@ -72,12 +72,12 @@ inline Range::Range(PassRefPtr<Document> ownerDocument)
     m_ownerDocument->attachRange(this);
 }
 
-PassRefPtr<Range> Range::create(PassRefPtr<Document> ownerDocument)
+PassRefPtr<Range> Range::create(Document* ownerDocument)
 {
     return adoptRef(new Range(ownerDocument));
 }
 
-inline Range::Range(PassRefPtr<Document> ownerDocument, PassRefPtr<Node> startContainer, int startOffset, PassRefPtr<Node> endContainer, int endOffset)
+inline Range::Range(Document* ownerDocument, Node* startContainer, int startOffset, Node* endContainer, int endOffset)
     : m_ownerDocument(ownerDocument)
     , m_start(m_ownerDocument)
     , m_end(m_ownerDocument)
@@ -95,12 +95,12 @@ inline Range::Range(PassRefPtr<Document> ownerDocument, PassRefPtr<Node> startCo
     setEnd(endContainer, endOffset);
 }
 
-PassRefPtr<Range> Range::create(PassRefPtr<Document> ownerDocument, PassRefPtr<Node> startContainer, int startOffset, PassRefPtr<Node> endContainer, int endOffset)
+PassRefPtr<Range> Range::create(Document* ownerDocument, Node* startContainer, int startOffset, Node* endContainer, int endOffset)
 {
     return adoptRef(new Range(ownerDocument, startContainer, startOffset, endContainer, endOffset));
 }
 
-PassRefPtr<Range> Range::create(PassRefPtr<Document> ownerDocument, const Position& start, const Position& end)
+PassRefPtr<Range> Range::create(Document* ownerDocument, const Position& start, const Position& end)
 {
     return adoptRef(new Range(ownerDocument, start.containerNode(), start.computeOffsetInContainerNode(), end.containerNode(), end.computeOffsetInContainerNode()));
 }
@@ -1229,7 +1229,7 @@ PassRefPtr<Range> Range::cloneRange(ExceptionState& es) const
         return 0;
     }
 
-    return Range::create(m_ownerDocument, m_start.container(), m_start.offset(), m_end.container(), m_end.offset());
+    return Range::create(m_ownerDocument.get(), m_start.container(), m_start.offset(), m_end.container(), m_end.offset());
 }
 
 void Range::setStartAfter(Node* refNode, ExceptionState& es)
