@@ -727,7 +727,13 @@ TEST(SafeSPrintfTest, EmbeddedNul) {
 #endif
 }
 
-TEST(SafeSPrintfTest, EmitNULL) {
+// TODO(markus): crbug.com/283595
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+#define MAYBE_EmitNULL DISABLED_EmitNULL
+#else
+#define MAYBE_EmitNULL EmitNULL
+#endif
+TEST(SafeSPrintfTest, MAYBE_EmitNULL) {
   char buf[40];
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
