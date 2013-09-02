@@ -538,7 +538,7 @@ bool MarkupAccumulator::elementCannotHaveEndTag(const Node* node)
     // ieForbidsInsertHTML is used to disallow setting innerHTML/outerHTML
     // or createContextualFragment.  It does not necessarily align with
     // which elements should be serialized w/o end tags.
-    return static_cast<const HTMLElement*>(node)->ieForbidsInsertHTML();
+    return toHTMLElement(node)->ieForbidsInsertHTML();
 }
 
 void MarkupAccumulator::appendEndMarkup(StringBuilder& result, const Node* node)

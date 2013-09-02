@@ -105,8 +105,7 @@ static bool isInterchangeNewlineNode(const Node *node)
 static bool isInterchangeConvertedSpaceSpan(const Node *node)
 {
     DEFINE_STATIC_LOCAL(String, convertedSpaceSpanClassString, (AppleConvertedSpace));
-    return node->isHTMLElement() &&
-           static_cast<const HTMLElement *>(node)->getAttribute(classAttr) == convertedSpaceSpanClassString;
+    return node->isHTMLElement() && toHTMLElement(node)->getAttribute(classAttr) == convertedSpaceSpanClassString;
 }
 
 static Position positionAvoidingPrecedingNodes(Position pos)
@@ -863,7 +862,7 @@ static bool isInlineNodeWithStyle(const Node* node)
 
     // We can skip over elements whose class attribute is
     // one of our internal classes.
-    const HTMLElement* element = static_cast<const HTMLElement*>(node);
+    const HTMLElement* element = toHTMLElement(node);
     const AtomicString& classAttributeValue = element->getAttribute(classAttr);
     if (classAttributeValue == AppleTabSpanClass
         || classAttributeValue == AppleConvertedSpace
