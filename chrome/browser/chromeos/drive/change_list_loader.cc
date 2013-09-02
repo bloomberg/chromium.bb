@@ -26,6 +26,217 @@ using content::BrowserThread;
 namespace drive {
 namespace internal {
 
+typedef base::Callback<void(FileError, ScopedVector<ChangeList>)>
+    FeedFetcherCallback;
+
+class ChangeListLoader::FeedFetcher {
+ public:
+  virtual ~FeedFetcher() {}
+  virtual void Run(const FeedFetcherCallback& callback) = 0;
+};
+
+namespace {
+
+// Fetches all the (currently available) resource entries from the server.
+class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
+ public:
+  explicit FullFeedFetcher(JobScheduler* scheduler)
+      : scheduler_(scheduler),
+        weak_ptr_factory_(this) {
+  }
+
+  virtual ~FullFeedFetcher() {
+  }
+
+  virtual void Run(const FeedFetcherCallback& callback) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(!callback.is_null());
+
+    // Rememeber the time stamp for usage stats.
+    start_time_ = base::TimeTicks::Now();
+
+    // This is full resource list fetch.
+    scheduler_->GetAllResourceList(
+        base::Bind(&FullFeedFetcher::OnChangeListFetched,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+ private:
+  void OnChangeListFetched(
+      const FeedFetcherCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::ResourceList> resource_list) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(!callback.is_null());
+
+    // Looks the UMA stats we take here is useless as many methods use this
+    // callback. crbug.com/229407
+    if (change_lists_.empty()) {
+      UMA_HISTOGRAM_TIMES("Drive.InitialFeedLoadTime",
+                          base::TimeTicks::Now() - start_time_);
+    }
+
+    FileError error = GDataToFileError(status);
+    if (error != FILE_ERROR_OK) {
+      callback.Run(error, ScopedVector<ChangeList>());
+      return;
+    }
+
+    DCHECK(resource_list);
+    change_lists_.push_back(new ChangeList(*resource_list));
+
+    GURL next_url;
+    if (resource_list->GetNextFeedURL(&next_url) && !next_url.is_empty()) {
+      // There is the remaining result so fetch it.
+      scheduler_->GetRemainingChangeList(
+          next_url.spec(),  // TODO(hidehiko): Go back to GURL.
+          base::Bind(&FullFeedFetcher::OnChangeListFetched,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+      return;
+    }
+
+    // This UMA stats looks also different from what we want. crbug.com/229407
+    UMA_HISTOGRAM_TIMES("Drive.EntireFeedLoadTime",
+                        base::TimeTicks::Now() - start_time_);
+
+    // Note: The fetcher is managed by ChangeListLoader, and the instance
+    // will be deleted in the callback. Do not touch the fields after this
+    // invocation.
+    callback.Run(FILE_ERROR_OK, change_lists_.Pass());
+  }
+
+  JobScheduler* scheduler_;
+  ScopedVector<ChangeList> change_lists_;
+  base::TimeTicks start_time_;
+  base::WeakPtrFactory<FullFeedFetcher> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(FullFeedFetcher);
+};
+
+// Fetches the delta changes since |start_change_id|.
+class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
+ public:
+  DeltaFeedFetcher(JobScheduler* scheduler, int64 start_change_id)
+      : scheduler_(scheduler),
+        start_change_id_(start_change_id),
+        weak_ptr_factory_(this) {
+  }
+
+  virtual ~DeltaFeedFetcher() {
+  }
+
+  virtual void Run(const FeedFetcherCallback& callback) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(!callback.is_null());
+
+    scheduler_->GetChangeList(
+        start_change_id_,
+        base::Bind(&DeltaFeedFetcher::OnChangeListFetched,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+ private:
+  void OnChangeListFetched(
+      const FeedFetcherCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::ResourceList> resource_list) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(!callback.is_null());
+
+    FileError error = GDataToFileError(status);
+    if (error != FILE_ERROR_OK) {
+      callback.Run(error, ScopedVector<ChangeList>());
+      return;
+    }
+
+    DCHECK(resource_list);
+    change_lists_.push_back(new ChangeList(*resource_list));
+
+    GURL next_url;
+    if (resource_list->GetNextFeedURL(&next_url) && !next_url.is_empty()) {
+      // There is the remaining result so fetch it.
+      scheduler_->GetRemainingChangeList(
+          next_url.spec(),  // TODO(hidehiko): Go back to GURL.
+          base::Bind(&DeltaFeedFetcher::OnChangeListFetched,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+      return;
+    }
+
+    // Note: The fetcher is managed by ChangeListLoader, and the instance
+    // will be deleted in the callback. Do not touch the fields after this
+    // invocation.
+    callback.Run(FILE_ERROR_OK, change_lists_.Pass());
+  }
+
+  JobScheduler* scheduler_;
+  int64 start_change_id_;
+  ScopedVector<ChangeList> change_lists_;
+  base::WeakPtrFactory<DeltaFeedFetcher> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(DeltaFeedFetcher);
+};
+
+// Fetches the resource entries in the directory with |directory_resource_id|.
+class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
+ public:
+  FastFetchFeedFetcher(JobScheduler* scheduler,
+                       const std::string& directory_resource_id)
+      : scheduler_(scheduler),
+        directory_resource_id_(directory_resource_id),
+        weak_ptr_factory_(this) {
+  }
+
+  virtual ~FastFetchFeedFetcher() {
+  }
+
+  virtual void Run(const FeedFetcherCallback& callback) OVERRIDE {
+    scheduler_->GetResourceListInDirectory(
+        directory_resource_id_,
+        base::Bind(&FastFetchFeedFetcher::OnFileListFetched,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+ private:
+  void OnFileListFetched(
+      const FeedFetcherCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::ResourceList> resource_list) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(!callback.is_null());
+
+    FileError error = GDataToFileError(status);
+    if (error != FILE_ERROR_OK) {
+      callback.Run(error, ScopedVector<ChangeList>());
+      return;
+    }
+
+    // Add the current change list to the list of collected lists.
+    DCHECK(resource_list);
+    change_lists_.push_back(new ChangeList(*resource_list));
+
+    GURL next_url;
+    if (resource_list->GetNextFeedURL(&next_url) && !next_url.is_empty()) {
+      // There is the remaining result so fetch it.
+      scheduler_->GetRemainingFileList(
+          next_url.spec(),  // TODO(hidehiko): Go back to GURL.
+          base::Bind(&FastFetchFeedFetcher::OnFileListFetched,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+      return;
+    }
+
+    // Note: The fetcher is managed by ChangeListLoader, and the instance
+    // will be deleted in the callback. Do not touch the fields after this
+    // invocation.
+    callback.Run(FILE_ERROR_OK, change_lists_.Pass());
+  }
+
+  JobScheduler* scheduler_;
+  std::string directory_resource_id_;
+  ScopedVector<ChangeList> change_lists_;
+  base::WeakPtrFactory<FastFetchFeedFetcher> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(FastFetchFeedFetcher);
+};
+
+}  // namespace
+
 ChangeListLoader::ChangeListLoader(
     base::SequencedTaskRunner* blocking_task_runner,
     ResourceMetadata* resource_metadata,
@@ -39,6 +250,7 @@ ChangeListLoader::ChangeListLoader(
 }
 
 ChangeListLoader::~ChangeListLoader() {
+  STLDeleteValues(&fast_fetch_feed_fetcher_map_);
 }
 
 bool ChangeListLoader::IsRefreshing() const {
@@ -335,88 +547,34 @@ void ChangeListLoader::LoadChangeListFromServer(
     scoped_ptr<google_apis::AboutResource> about_resource,
     int64 start_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!change_feed_fetcher_);
 
   bool is_delta_update = start_changestamp != 0;
-  const LoadChangeListCallback& completion_callback =
+
+  // Set up feed fetcher.
+  if (is_delta_update) {
+    change_feed_fetcher_.reset(
+        new DeltaFeedFetcher(scheduler_, start_changestamp));
+  } else {
+    change_feed_fetcher_.reset(new FullFeedFetcher(scheduler_));
+  }
+
+  change_feed_fetcher_->Run(
       base::Bind(&ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&about_resource),
-                 is_delta_update);
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  if (is_delta_update) {
-    scheduler_->GetChangeList(
-        start_changestamp,
-        base::Bind(&ChangeListLoader::OnGetChangeList,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(ScopedVector<ChangeList>()),
-                   completion_callback,
-                   start_time));
-  } else {
-    // This is full resource list fetch.
-    scheduler_->GetAllResourceList(
-        base::Bind(&ChangeListLoader::OnGetChangeList,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(ScopedVector<ChangeList>()),
-                   completion_callback,
-                   start_time));
-  }
-}
-
-void ChangeListLoader::OnGetChangeList(
-    ScopedVector<ChangeList> change_lists,
-    const LoadChangeListCallback& callback,
-    base::TimeTicks start_time,
-    google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::ResourceList> resource_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // Looks the UMA stats we take here is useless as many methods use this
-  // callback. crbug.com/229407
-  if (change_lists.empty()) {
-    UMA_HISTOGRAM_TIMES("Drive.InitialFeedLoadTime",
-                        base::TimeTicks::Now() - start_time);
-  }
-
-  FileError error = GDataToFileError(status);
-  if (error != FILE_ERROR_OK) {
-    callback.Run(ScopedVector<ChangeList>(), error);
-    return;
-  }
-
-  // Add the current change list to the list of collected lists.
-  DCHECK(resource_list);
-  change_lists.push_back(new ChangeList(*resource_list));
-
-  // TODO(hidehiko): Use page token instead of next url.
-  GURL next_url;
-  if (resource_list->GetNextFeedURL(&next_url) &&
-      !next_url.is_empty()) {
-    // There is the remaining result so fetch it.
-    scheduler_->GetRemainingChangeList(
-        next_url.spec(),
-        base::Bind(&ChangeListLoader::OnGetChangeList,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&change_lists),
-                   callback,
-                   start_time));
-    return;
-  }
-
-  // This UMA stats looks also different from what we want. crbug.com/229407
-  UMA_HISTOGRAM_TIMES("Drive.EntireFeedLoadTime",
-                      base::TimeTicks::Now() - start_time);
-
-  // Run the callback so the client can process the retrieved change lists.
-  callback.Run(change_lists.Pass(), FILE_ERROR_OK);
+                 is_delta_update));
 }
 
 void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
     scoped_ptr<google_apis::AboutResource> about_resource,
     bool is_delta_update,
-    ScopedVector<ChangeList> change_lists,
-    FileError error) {
+    FileError error,
+    ScopedVector<ChangeList> change_lists) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Delete the fetcher first.
+  change_feed_fetcher_.reset();
 
   if (error != FILE_ERROR_OK) {
     OnChangeListLoadComplete(error);
@@ -528,53 +686,20 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
     return;
   }
 
-  const LoadChangeListCallback& completion_callback =
+  DCHECK_EQ(
+      0U,
+      fast_fetch_feed_fetcher_map_.count(directory_fetch_info.resource_id()));
+
+  FastFetchFeedFetcher* fetcher = new FastFetchFeedFetcher(
+      scheduler_,
+      directory_fetch_info.resource_id());
+  fast_fetch_feed_fetcher_map_.insert(
+      make_pair(directory_fetch_info.resource_id(), fetcher));
+  fetcher->Run(
       base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
-                 callback);
-  scheduler_->GetResourceListInDirectory(
-      directory_fetch_info.resource_id(),
-      base::Bind(&ChangeListLoader::OnGetFileList,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(ScopedVector<ChangeList>()),
-                 completion_callback));
-}
-
-void ChangeListLoader::OnGetFileList(
-    ScopedVector<ChangeList> change_lists,
-    const LoadChangeListCallback& callback,
-    google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::ResourceList> resource_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  FileError error = GDataToFileError(status);
-  if (error != FILE_ERROR_OK) {
-    callback.Run(ScopedVector<ChangeList>(), error);
-    return;
-  }
-
-  // Add the current change list to the list of collected lists.
-  DCHECK(resource_list);
-  change_lists.push_back(new ChangeList(*resource_list));
-
-  // TODO(hidehiko): Use page token instead of next url.
-  GURL next_url;
-  if (resource_list->GetNextFeedURL(&next_url) &&
-      !next_url.is_empty()) {
-    // There is the remaining result so fetch it.
-    scheduler_->GetRemainingFileList(
-        next_url.spec(),
-        base::Bind(&ChangeListLoader::OnGetFileList,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&change_lists),
-                   callback));
-    return;
-  }
-
-  // Run the callback so the client can process the retrieved change lists.
-  callback.Run(change_lists.Pass(), FILE_ERROR_OK);
+                 callback));
 }
 
 void
@@ -657,11 +782,18 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterAddMyDrive(
 void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
     const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback,
-    ScopedVector<ChangeList> change_lists,
-    FileError error) {
+    FileError error,
+    ScopedVector<ChangeList> change_lists) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK(!directory_fetch_info.empty());
+
+  // Delete the fetcher.
+  std::map<std::string, FeedFetcher*>::iterator it =
+      fast_fetch_feed_fetcher_map_.find(directory_fetch_info.resource_id());
+  DCHECK(it != fast_fetch_feed_fetcher_map_.end());
+  delete it->second;
+  fast_fetch_feed_fetcher_map_.erase(it);
 
   if (error != FILE_ERROR_OK) {
     LOG(ERROR) << "Failed to load directory: "

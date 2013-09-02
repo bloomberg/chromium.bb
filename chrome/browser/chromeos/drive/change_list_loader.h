@@ -58,6 +58,9 @@ typedef base::Callback<void(ScopedVector<ChangeList> change_lists,
 // refers to metadata from the server when fetching changes (delta).
 class ChangeListLoader {
  public:
+  // Resource feed fetcher from the server.
+  class FeedFetcher;
+
   ChangeListLoader(base::SequencedTaskRunner* blocking_task_runner,
                    ResourceMetadata* resource_metadata,
                    JobScheduler* scheduler);
@@ -169,8 +172,8 @@ class ChangeListLoader {
   void LoadChangeListFromServerAfterLoadChangeList(
       scoped_ptr<google_apis::AboutResource> about_resource,
       bool is_delta_update,
-      ScopedVector<ChangeList> change_lists,
-      FileError error);
+      FileError error,
+      ScopedVector<ChangeList> change_lists);
 
   // Part of LoadChangeListFromServer().
   // Called when the resource metadata is updated.
@@ -224,8 +227,8 @@ class ChangeListLoader {
   void DoLoadDirectoryFromServerAfterLoad(
       const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
-      ScopedVector<ChangeList> change_lists,
-      FileError error);
+      FileError error,
+      ScopedVector<ChangeList> change_lists);
 
   // Part of DoLoadDirectoryFromServer().
   void DoLoadDirectoryFromServerAfterRefresh(
@@ -235,27 +238,6 @@ class ChangeListLoader {
       FileError error);
 
   // ================= Implementation for other stuff =================
-
-  // This function is used to handle pagenation for the result from
-  // JobScheduler::GetChangeList()/GetAllResourceList().
-  //
-  // After all the change lists are fetched, |callback| will be invoked with
-  // the collected change lists.
-  void OnGetChangeList(ScopedVector<ChangeList> change_lists,
-                       const LoadChangeListCallback& callback,
-                       base::TimeTicks start_time,
-                       google_apis::GDataErrorCode status,
-                       scoped_ptr<google_apis::ResourceList> resource_list);
-
-  // This function is used to handle pagenation for the result from
-  // JobScheduler::GetResourceListInDirectory().
-  //
-  // After all the file lists are fetched, |callback| will be invoked with
-  // the collected file lists.
-  void OnGetFileList(ScopedVector<ChangeList> change_lists,
-                     const LoadChangeListCallback& callback,
-                     google_apis::GDataErrorCode status,
-                     scoped_ptr<google_apis::ResourceList> resource_list);
 
   // Updates from the whole change list collected in |change_lists|.
   // Record file statistics as UMA histograms.
@@ -286,6 +268,12 @@ class ChangeListLoader {
       LoadCallbackMap;
   LoadCallbackMap pending_load_callback_;
   FileOperationCallback pending_update_check_callback_;
+
+  // Running feed fetcher.
+  scoped_ptr<FeedFetcher> change_feed_fetcher_;
+
+  // Map from resource id to the running feed fetcher for the fast fetch.
+  std::map<std::string, FeedFetcher*> fast_fetch_feed_fetcher_map_;
 
   // The last known remote changestamp. Used to check if a directory
   // changestamp is up-to-date for fast fetch.
