@@ -1136,9 +1136,9 @@ static PassRefPtr<CSSValue> createTimingFunctionValue(const TimingFunction* timi
     case TimingFunction::CubicBezierFunction:
         {
             const CubicBezierTimingFunction* bezierTimingFunction = static_cast<const CubicBezierTimingFunction*>(timingFunction);
-            if (bezierTimingFunction->timingFunctionPreset() != CubicBezierTimingFunction::Custom) {
+            if (bezierTimingFunction->subType() != CubicBezierTimingFunction::Custom) {
                 CSSValueID valueId = CSSValueInvalid;
-                switch (bezierTimingFunction->timingFunctionPreset()) {
+                switch (bezierTimingFunction->subType()) {
                 case CubicBezierTimingFunction::Ease:
                     valueId = CSSValueEase;
                     break;

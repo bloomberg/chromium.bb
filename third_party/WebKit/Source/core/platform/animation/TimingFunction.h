@@ -37,13 +37,13 @@ namespace WebCore {
 class TimingFunction : public RefCounted<TimingFunction> {
 public:
 
-    enum TimingFunctionType {
+    enum Type {
         LinearFunction, CubicBezierFunction, StepsFunction
     };
 
     virtual ~TimingFunction() { }
 
-    TimingFunctionType type() const { return m_type; }
+    Type type() const { return m_type; }
 
     // Evaluates the timing function at the given fraction. The accuracy parameter provides a hint as to the required
     // accuracy and is not guaranteed.
@@ -51,12 +51,12 @@ public:
     virtual bool operator==(const TimingFunction& other) const = 0;
 
 protected:
-    TimingFunction(TimingFunctionType type)
+    TimingFunction(Type type)
         : m_type(type)
     {
     }
 
-    TimingFunctionType m_type;
+    Type m_type;
 };
 
 class LinearTimingFunction : public TimingFunction {
@@ -87,7 +87,7 @@ private:
 
 class CubicBezierTimingFunction : public TimingFunction {
 public:
-    enum TimingFunctionPreset {
+    enum SubType {
         Ease,
         EaseIn,
         EaseOut,
@@ -100,9 +100,9 @@ public:
         return adoptRef(new CubicBezierTimingFunction(Custom, x1, y1, x2, y2));
     }
 
-    static CubicBezierTimingFunction* preset(TimingFunctionPreset type)
+    static CubicBezierTimingFunction* preset(SubType subType)
     {
-        switch (type) {
+        switch (subType) {
         case Ease:
             {
                 static CubicBezierTimingFunction* ease = adoptRef(new CubicBezierTimingFunction(Ease, 0.25, 0.1, 0.25, 1.0)).leakRef();
@@ -142,8 +142,8 @@ public:
     {
         if (other.type() == CubicBezierFunction) {
             const CubicBezierTimingFunction* ctf = static_cast<const CubicBezierTimingFunction*>(&other);
-            if (m_timingFunctionPreset != Custom)
-                return m_timingFunctionPreset == ctf->m_timingFunctionPreset;
+            if (m_subType != Custom)
+                return m_subType == ctf->m_subType;
 
             return m_x1 == ctf->m_x1 && m_y1 == ctf->m_y1 && m_x2 == ctf->m_x2 && m_y2 == ctf->m_y2;
         }
@@ -155,16 +155,16 @@ public:
     double x2() const { return m_x2; }
     double y2() const { return m_y2; }
 
-    TimingFunctionPreset timingFunctionPreset() const { return m_timingFunctionPreset; }
+    SubType subType() const { return m_subType; }
 
 private:
-    explicit CubicBezierTimingFunction(TimingFunctionPreset preset, double x1, double y1, double x2, double y2)
+    explicit CubicBezierTimingFunction(SubType subType, double x1, double y1, double x2, double y2)
         : TimingFunction(CubicBezierFunction)
         , m_x1(x1)
         , m_y1(y1)
         , m_x2(x2)
         , m_y2(y2)
-        , m_timingFunctionPreset(preset)
+        , m_subType(subType)
     {
     }
 
@@ -172,7 +172,7 @@ private:
     double m_y1;
     double m_x2;
     double m_y2;
-    TimingFunctionPreset m_timingFunctionPreset;
+    SubType m_subType;
     mutable OwnPtr<UnitBezier> m_bezier;
 };
 
