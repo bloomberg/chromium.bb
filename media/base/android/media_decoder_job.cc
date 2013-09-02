@@ -283,6 +283,7 @@ void MediaDecoderJob::OnDecodeCompleted(
     DecodeStatus status, const base::TimeDelta& presentation_timestamp,
     size_t audio_output_bytes) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
+  DCHECK(status != DECODE_STOPPED || received_data_.access_units.empty());
 
   if (destroy_pending_) {
     delete this;
@@ -293,7 +294,8 @@ void MediaDecoderJob::OnDecodeCompleted(
 
   if (status != MediaDecoderJob::DECODE_FAILED &&
       status != MediaDecoderJob::DECODE_TRY_ENQUEUE_INPUT_AGAIN_LATER &&
-      status != MediaDecoderJob::DECODE_INPUT_END_OF_STREAM) {
+      status != MediaDecoderJob::DECODE_INPUT_END_OF_STREAM &&
+      status != MediaDecoderJob::DECODE_STOPPED) {
     access_unit_index_++;
   }
 
