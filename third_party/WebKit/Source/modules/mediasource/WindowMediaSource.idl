@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 partial interface Window {
-    [EnabledAtRuntime=webKitMediaSource] attribute WebKitMediaSourceConstructor WebKitMediaSource;
-    [EnabledAtRuntime=webKitMediaSource] attribute WebKitSourceBufferConstructor WebKitSourceBuffer;
-    [EnabledAtRuntime=webKitMediaSource] attribute WebKitSourceBufferListConstructor WebKitSourceBufferList;
+    [EnabledAtRuntime=WebKitMediaSource] attribute WebKitMediaSourceConstructor WebKitMediaSource;
+    [EnabledAtRuntime=WebKitMediaSource] attribute WebKitSourceBufferConstructor WebKitSourceBuffer;
+    [EnabledAtRuntime=WebKitMediaSource] attribute WebKitSourceBufferListConstructor WebKitSourceBufferList;
 };

@@ -38,7 +38,7 @@ interface HTMLFormElement : HTMLElement {
     [CustomElementCallbacks=Enable] void reset();
     boolean checkValidity();
 
-    [EnabledAtRuntime=requestAutocomplete] void requestAutocomplete();
-    [EnabledAtRuntime=requestAutocomplete,NotEnumerable] attribute EventHandler onautocomplete;
-    [EnabledAtRuntime=requestAutocomplete,NotEnumerable] attribute EventHandler onautocompleteerror;
+    [EnabledAtRuntime=RequestAutocomplete] void requestAutocomplete();
+    [EnabledAtRuntime=RequestAutocomplete, NotEnumerable] attribute EventHandler onautocomplete;
+    [EnabledAtRuntime=RequestAutocomplete, NotEnumerable] attribute EventHandler onautocompleteerror;
 };

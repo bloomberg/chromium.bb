@@ -124,16 +124,16 @@
 
     // Mozilla version
     const unsigned short ALLOW_KEYBOARD_INPUT = 1;
-    [EnabledAtRuntime=fullscreen] void webkitRequestFullScreen([Default=Undefined] optional unsigned short flags);
+    [EnabledAtRuntime=Fullscreen] void webkitRequestFullScreen([Default=Undefined] optional unsigned short flags);
 
     // W3C version
-    [EnabledAtRuntime=fullscreen] void webkitRequestFullscreen();
+    [EnabledAtRuntime=Fullscreen] void webkitRequestFullscreen();
 
     void webkitRequestPointerLock();
 
     // CSS Regions API
-    [EnabledAtRuntime=cssRegions, PerWorldBindings] readonly attribute DOMString webkitRegionOverset;
-    [EnabledAtRuntime=cssRegions] sequence<Range> webkitGetRegionFlowRanges();
+    [EnabledAtRuntime=CSSRegions, PerWorldBindings] readonly attribute DOMString webkitRegionOverset;
+    [EnabledAtRuntime=CSSRegions] sequence<Range> webkitGetRegionFlowRanges();
 
     // Event handler DOM attributes
     [NotEnumerable, PerWorldBindings] attribute EventHandler onabort;
@@ -203,10 +203,10 @@
     [NotEnumerable, PerWorldBindings] attribute EventHandler onreset;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onsearch;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onselectstart;
-    [NotEnumerable, EnabledAtRuntime=touch, PerWorldBindings] attribute EventHandler ontouchstart;
-    [NotEnumerable, EnabledAtRuntime=touch, PerWorldBindings] attribute EventHandler ontouchmove;
-    [NotEnumerable, EnabledAtRuntime=touch, PerWorldBindings] attribute EventHandler ontouchend;
-    [NotEnumerable, EnabledAtRuntime=touch, PerWorldBindings] attribute EventHandler ontouchcancel;
+    [NotEnumerable, EnabledAtRuntime=Touch, PerWorldBindings] attribute EventHandler ontouchstart;
+    [NotEnumerable, EnabledAtRuntime=Touch, PerWorldBindings] attribute EventHandler ontouchmove;
+    [NotEnumerable, EnabledAtRuntime=Touch, PerWorldBindings] attribute EventHandler ontouchend;
+    [NotEnumerable, EnabledAtRuntime=Touch, PerWorldBindings] attribute EventHandler ontouchcancel;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onwebkitfullscreenchange;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onwebkitfullscreenerror;
 };

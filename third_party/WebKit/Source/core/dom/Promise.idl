@@ -36,7 +36,7 @@ callback AnyCallback = any (optional any value);
 [
    GlobalContext=Window&WorkerGlobalScope,
    CustomConstructor(PromiseInit init),
-   EnabledAtRuntime=promise
+   EnabledAtRuntime=Promise
 ] interface Promise {
    [Custom] Promise then(optional AnyCallback fulfillCallback, optional AnyCallback rejectCallback);
    [Custom] Promise catch(optional AnyCallback rejectCallback);

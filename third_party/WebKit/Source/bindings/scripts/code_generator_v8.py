@@ -45,7 +45,7 @@ import jinja2
 
 templates_dir = os.path.join(module_path, os.pardir, 'templates')
 
-ACRONYMS = ['CSS', 'HTML', 'IME', 'JS', 'SVG', 'URL', 'XML', 'XSLT']
+ACRONYMS = ['CSS', 'HTML', 'IME', 'JS', 'SVG', 'URL', 'WOFF', 'XML', 'XSLT']
 CALLBACK_INTERFACE_CPP_INCLUDES = set([
     'core/dom/ScriptExecutionContext.h',
     'bindings/v8/V8Binding.h',

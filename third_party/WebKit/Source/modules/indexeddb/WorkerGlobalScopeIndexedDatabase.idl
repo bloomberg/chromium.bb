@@ -25,7 +25,7 @@
  */
 
 partial interface WorkerGlobalScope {
-    [ImplementedAs=indexedDB,EnabledAtRuntime=indexedDB] readonly attribute IDBFactory webkitIndexedDB;
+    [ImplementedAs=indexedDB, EnabledAtRuntime=IndexedDB] readonly attribute IDBFactory webkitIndexedDB;
 
     attribute IDBCursorConstructor webkitIDBCursor;
     attribute IDBDatabaseConstructor webkitIDBDatabase;

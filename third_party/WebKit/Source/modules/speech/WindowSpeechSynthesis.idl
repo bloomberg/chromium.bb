@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=speechSynthesis,
+    EnabledAtRuntime=SpeechSynthesis,
     ImplementedAs=DOMWindowSpeechSynthesis
 ] partial interface Window {
     readonly attribute SpeechSynthesis speechSynthesis;

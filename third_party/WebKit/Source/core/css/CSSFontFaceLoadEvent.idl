@@ -30,7 +30,7 @@
 
 [
     NoInterfaceObject,
-    EnabledAtRuntime=fontLoadEvents,
+    EnabledAtRuntime=FontLoadEvents,
     ConstructorTemplate=Event
 ] interface CSSFontFaceLoadEvent : Event {
     [InitializedByEventConstructor] readonly attribute CSSFontFaceRule fontface;

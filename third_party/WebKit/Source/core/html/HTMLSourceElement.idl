@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=media
+    EnabledAtRuntime=Media
 ] interface HTMLSourceElement : HTMLElement {
 [Reflect, URL] attribute DOMString src;
     attribute DOMString type;

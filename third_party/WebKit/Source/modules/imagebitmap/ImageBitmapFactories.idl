@@ -33,7 +33,7 @@ typedef any PromiseValue;
 
 [
     NoInterfaceObject,
-    EnabledAtRuntime=experimentalCanvasFeatures
+    EnabledAtRuntime=ExperimentalCanvasFeatures
 ] interface ImageBitmapFactories {
     [RaisesException] PromiseValue createImageBitmap(Blob blob);
     [RaisesException] PromiseValue createImageBitmap(Blob blob, long sx, long sy, long sw, long sh);

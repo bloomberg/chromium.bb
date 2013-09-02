@@ -165,9 +165,9 @@ callback CustomElementConstructor = Element ();
     void webkitExitPointerLock();
     readonly attribute Element webkitPointerLockElement;
 
-    [EnabledAtRuntime=cssRegions] WebKitNamedFlowCollection webkitGetNamedFlows();
+    [EnabledAtRuntime=CSSRegions] WebKitNamedFlowCollection webkitGetNamedFlows();
 
-    [EnabledAtRuntime=fontLoadEvents] readonly attribute FontLoader fontloader;
+    [EnabledAtRuntime=FontLoadEvents] readonly attribute FontLoader fontloader;
 
     // Event handler DOM attributes
     [NotEnumerable] attribute EventHandler onabort;
@@ -238,17 +238,17 @@ callback CustomElementConstructor = Element ();
     [NotEnumerable] attribute EventHandler onsearch;
     [NotEnumerable] attribute EventHandler onselectstart;
     [NotEnumerable] attribute EventHandler onselectionchange;
-    [NotEnumerable,EnabledAtRuntime=touch] attribute EventHandler ontouchstart;
-    [NotEnumerable,EnabledAtRuntime=touch] attribute EventHandler ontouchmove;
-    [NotEnumerable,EnabledAtRuntime=touch] attribute EventHandler ontouchend;
-    [NotEnumerable,EnabledAtRuntime=touch] attribute EventHandler ontouchcancel;
+    [NotEnumerable, EnabledAtRuntime=Touch] attribute EventHandler ontouchstart;
+    [NotEnumerable, EnabledAtRuntime=Touch] attribute EventHandler ontouchmove;
+    [NotEnumerable, EnabledAtRuntime=Touch] attribute EventHandler ontouchend;
+    [NotEnumerable, EnabledAtRuntime=Touch] attribute EventHandler ontouchcancel;
     [NotEnumerable] attribute EventHandler onwebkitfullscreenchange;
     [NotEnumerable] attribute EventHandler onwebkitfullscreenerror;
     [NotEnumerable] attribute EventHandler onwebkitpointerlockchange;
     [NotEnumerable] attribute EventHandler onwebkitpointerlockerror;
-    [NotEnumerable, EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] attribute EventHandler onsecuritypolicyviolation;
+    [NotEnumerable, EnabledAtRuntime=ExperimentalContentSecurityPolicyFeatures] attribute EventHandler onsecuritypolicyviolation;
 
-    [EnabledAtRuntime=touch] Touch createTouch([Default=Undefined] optional Window window,
+    [EnabledAtRuntime=Touch] Touch createTouch([Default=Undefined] optional Window window,
                                                [Default=Undefined] optional EventTarget target,
                                                [Default=Undefined] optional long identifier,
                                                [Default=Undefined] optional long pageX,
@@ -259,10 +259,10 @@ callback CustomElementConstructor = Element ();
                                                [Default=Undefined] optional long webkitRadiusY,
                                                [Default=Undefined] optional float webkitRotationAngle,
                                                [Default=Undefined] optional float webkitForce);
-    [EnabledAtRuntime=touch, Custom, RaisesException] TouchList createTouchList();
+    [EnabledAtRuntime=Touch, Custom, RaisesException] TouchList createTouchList();
 
-    [DeprecateAs=PrefixedDocumentRegister, EnabledAtRuntime=customElements, ImplementedAs=registerElement, CallWith=ScriptState, CustomElementCallbacks=Enable, RaisesException] CustomElementConstructor webkitRegister(DOMString name, optional Dictionary options);
-    [EnabledAtRuntime=customElements, ImplementedAs=registerElement, CallWith=ScriptState, CustomElementCallbacks=Enable, RaisesException] CustomElementConstructor register(DOMString name, optional Dictionary options);
+    [DeprecateAs=PrefixedDocumentRegister, EnabledAtRuntime=CustomElements, ImplementedAs=registerElement, CallWith=ScriptState, CustomElementCallbacks=Enable, RaisesException] CustomElementConstructor webkitRegister(DOMString name, optional Dictionary options);
+    [EnabledAtRuntime=CustomElements, ImplementedAs=registerElement, CallWith=ScriptState, CustomElementCallbacks=Enable, RaisesException] CustomElementConstructor register(DOMString name, optional Dictionary options);
     [CustomElementCallbacks=Enable, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension);
     [CustomElementCallbacks=Enable, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
                             [TreatNullAs=NullString] DOMString typeExtension);
@@ -272,7 +272,7 @@ callback CustomElementConstructor = Element ();
     readonly attribute boolean webkitHidden;
 
     // Security Policy API: http://dvcs.w3.org/hg/content-security-policy/raw-file/tip/csp-specification.dev.html#script-interfaces
-    [EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] readonly attribute SecurityPolicy securityPolicy;
+    [EnabledAtRuntime=ExperimentalContentSecurityPolicyFeatures] readonly attribute SecurityPolicy securityPolicy;
 
     readonly attribute HTMLScriptElement currentScript;
 };

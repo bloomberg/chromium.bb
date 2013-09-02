@@ -31,7 +31,7 @@
 [
     NoInterfaceObject,
     ActiveDOMObject,
-    EnabledAtRuntime=mediaSource
+    EnabledAtRuntime=MediaSource
 ] interface SourceBuffer : EventTarget {
 
     readonly attribute boolean updating;

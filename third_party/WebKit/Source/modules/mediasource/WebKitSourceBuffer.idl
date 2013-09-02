@@ -30,7 +30,7 @@
 
 [
     NoInterfaceObject,
-    EnabledAtRuntime=webKitMediaSource
+    EnabledAtRuntime=WebKitMediaSource
 ] interface WebKitSourceBuffer {
 
     // Returns the time ranges buffered.

@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=speechSynthesis,
+    EnabledAtRuntime=SpeechSynthesis,
     ConstructorCallWith=ScriptExecutionContext,
     Constructor([Default=NullString] optional DOMString text)
 ] interface SpeechSynthesisUtterance : EventTarget {

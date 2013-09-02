@@ -18,7 +18,7 @@
  */
 
 partial interface Navigator {
-    [EnabledAtRuntime=mediaStream, RaisesException] void webkitGetUserMedia(Dictionary options,
+    [EnabledAtRuntime=MediaStream, RaisesException] void webkitGetUserMedia(Dictionary options,
                                                  NavigatorUserMediaSuccessCallback successCallback,
                                                  optional NavigatorUserMediaErrorCallback errorCallback);
 };

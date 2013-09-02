@@ -174,6 +174,7 @@
           'inputs': [
             '<@(scripts_for_in_files)',
             'scripts/make_runtime_features.py',
+            'scripts/name_utilities.py',
             'page/RuntimeEnabledFeatures.in',
             'scripts/templates/RuntimeEnabledFeatures.cpp.tmpl',
             'scripts/templates/RuntimeEnabledFeatures.h.tmpl',
@@ -372,6 +373,7 @@
           'inputs': [
             '<@(scripts_for_in_files)',
             'scripts/make_event_factory.py',
+            'scripts/name_utilities.py',
             '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
             'dom/EventAliases.in',
           ],
@@ -394,6 +396,7 @@
           'inputs': [
             '<@(scripts_for_in_files)',
             'scripts/make_event_factory.py',
+            'scripts/name_utilities.py',
             'dom/EventTargetFactory.in',
           ],
           'outputs': [

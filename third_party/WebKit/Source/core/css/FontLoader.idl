@@ -30,7 +30,7 @@
 
 [
     NoInterfaceObject,
-    EnabledAtRuntime=fontLoadEvents,
+    EnabledAtRuntime=FontLoadEvents,
     ActiveDOMObject,
     GenerateIsReachable=document
 ] interface FontLoader : EventTarget {

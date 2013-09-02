@@ -28,7 +28,7 @@
 [
     Conditional=TEST,
     ImplementedAs=Event,
-    EnabledAtRuntime=test,
+    EnabledAtRuntime=Test,
     ConstructorTemplate=Event
 ] interface TestExtendedEvent
     : TestEvent {

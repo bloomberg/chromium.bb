@@ -27,6 +27,7 @@ CSSRegions status=experimental
 CSSShapes status=experimental, writeable=True
 CSSTouchAction status=test
 CSSVariables status=experimental
+CSSViewport status=experimental
 CSS3Text status=experimental
 CSS3TextDecorations status=experimental
 CustomElements status=experimental
@@ -47,7 +48,6 @@ ExperimentalContentSecurityPolicyFeatures status=experimental
 FileSystem status=stable
 FontLoadEvents status=experimental
 Fullscreen status=stable
-CSSViewport status=experimental
 Gamepad status=stable
 Geolocation status=stable
 HTMLImports status=test

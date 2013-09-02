@@ -45,7 +45,7 @@
     [RaisesException] void insertAdjacentText([Default=Undefined] optional DOMString where,
                             [Default=Undefined] optional DOMString text);
 
-    [EnabledAtRuntime=imeAPI] readonly attribute InputMethodContext inputMethodContext;
+    [EnabledAtRuntime=IMEAPI] readonly attribute InputMethodContext inputMethodContext;
 
     [TreatNullAs=NullString, CustomElementCallbacks=Enable, SetterRaisesException] attribute DOMString contentEditable;
     readonly attribute boolean isContentEditable;

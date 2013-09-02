@@ -59,7 +59,7 @@
     [TreatNullAs=NullString, SetterRaisesException, CustomElementCallbacks=Enable] attribute DOMString value;
     [SetterRaisesException, CustomElementCallbacks=Enable] attribute Date valueAsDate;
     [SetterRaisesException, CustomElementCallbacks=Enable] attribute double valueAsNumber;
-    [EnabledAtRuntime=inputModeAttribute, Reflect] attribute DOMString inputMode;
+    [EnabledAtRuntime=InputModeAttribute, Reflect] attribute DOMString inputMode;
 
     [RaisesException, CustomElementCallbacks=Enable] void stepUp(optional long n);
     [RaisesException, CustomElementCallbacks=Enable] void stepDown(optional long n);
@@ -91,11 +91,11 @@
 
     // Non-standard attributes
     [Reflect] attribute DOMString align;
-    [Reflect, EnabledAtRuntime=directoryUpload] attribute boolean webkitdirectory;
+    [Reflect, EnabledAtRuntime=DirectoryUpload] attribute boolean webkitdirectory;
     [Reflect] attribute DOMString useMap;
     [Reflect] attribute boolean incremental;
-    [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime=speechInput] attribute boolean webkitSpeech;
-    [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime=speechInput] attribute boolean webkitGrammar;
+    [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime=SpeechInput] attribute boolean webkitSpeech;
+    [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime=SpeechInput] attribute boolean webkitGrammar;
     [Conditional=INPUT_SPEECH, NotEnumerable] attribute EventHandler onwebkitspeechchange;
 
     // See http://www.w3.org/TR/html-media-capture/

@@ -5778,6 +5778,7 @@ sub ToMethodName
     my $param = shift;
     my $ret = lcfirst($param);
     $ret =~ s/hTML/html/ if $ret =~ /^hTML/;
+    $ret =~ s/iME/ime/ if $ret =~ /^iME/;
     $ret =~ s/uRL/url/ if $ret =~ /^uRL/;
     $ret =~ s/jS/js/ if $ret =~ /^jS/;
     $ret =~ s/xML/xml/ if $ret =~ /^xML/;

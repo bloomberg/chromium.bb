@@ -33,7 +33,7 @@ typedef any PromiseValue;
 
 [
     ImplementedAs=ImageBitmapFactories,
-    EnabledAtRuntime=experimentalCanvasFeatures
+    EnabledAtRuntime=ExperimentalCanvasFeatures
 ] partial interface Window {
     [RaisesException] PromiseValue createImageBitmap(HTMLImageElement image);
     [RaisesException] PromiseValue createImageBitmap(HTMLImageElement image, long sx, long sy, long sw, long sh);

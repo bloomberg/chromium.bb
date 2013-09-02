@@ -127,9 +127,9 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     [RaisesException] void drawImage(HTMLVideoElement? video, float x, float y);
     [RaisesException] void drawImage(HTMLVideoElement? video, float x, float y, float width, float height);
     [RaisesException] void drawImage(HTMLVideoElement? video, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
-    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float x, float y);
-    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float x, float y, float width, float height);
-    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
+    [EnabledAtRuntime=ExperimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float x, float y);
+    [EnabledAtRuntime=ExperimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float x, float y, float width, float height);
+    [EnabledAtRuntime=ExperimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
 
     void drawImageFromRect(HTMLImageElement image,
                            optional float sx, optional float sy, optional float sw, optional float sh,
@@ -161,14 +161,14 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     [RaisesException] ImageData webkitGetImageDataHD(float sx, float sy, float sw, float sh);
 
     // Focus rings
-    [EnabledAtRuntime=experimentalCanvasFeatures] void drawSystemFocusRing(Element element);
-    [EnabledAtRuntime=experimentalCanvasFeatures] boolean drawCustomFocusRing(Element element);
+    [EnabledAtRuntime=ExperimentalCanvasFeatures] void drawSystemFocusRing(Element element);
+    [EnabledAtRuntime=ExperimentalCanvasFeatures] boolean drawCustomFocusRing(Element element);
 
     readonly attribute float webkitBackingStorePixelRatio;
 
     [ImplementedAs=imageSmoothingEnabled] attribute boolean webkitImageSmoothingEnabled;
     attribute boolean imageSmoothingEnabled;
 
-    [EnabledAtRuntime=experimentalCanvasFeatures] Canvas2DContextAttributes getContextAttributes();
+    [EnabledAtRuntime=ExperimentalCanvasFeatures] Canvas2DContextAttributes getContextAttributes();
 };
 

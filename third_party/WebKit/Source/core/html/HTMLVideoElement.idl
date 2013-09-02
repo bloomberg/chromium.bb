@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=media
+    EnabledAtRuntime=Media
 ] interface HTMLVideoElement : HTMLMediaElement {
     [Reflect] attribute unsigned long width;
     [Reflect] attribute unsigned long height;

@@ -32,6 +32,7 @@ import sys
 
 from in_file import InFile
 import in_generator
+from name_utilities import lower_first
 import template_expander
 
 
@@ -59,7 +60,7 @@ class RuntimeFeatureWriter(in_generator.Writer):
         self._features = self.in_file.name_dictionaries
         # Make sure the resulting dictionaries have all the keys we expect.
         for feature in self._features:
-            feature['first_lowered_name'] = self._lower_first(feature['name'])
+            feature['first_lowered_name'] = lower_first(feature['name'])
             # Most features just check their isFooEnabled bool
             # but some depend on more than one bool.
             enabled_condition = "is%sEnabled" % feature['name']
@@ -67,15 +68,6 @@ class RuntimeFeatureWriter(in_generator.Writer):
                 enabled_condition += " && is%sEnabled" % dependant_name
             feature['enabled_condition'] = enabled_condition
         self._non_custom_features = filter(lambda feature: not feature['custom'], self._features)
-
-    def _lower_first(self, string):
-        lowered = string[0].lower() + string[1:]
-        lowered = lowered.replace("cSS", "css")
-        lowered = lowered.replace("iME", "ime")
-        lowered = lowered.replace("hTML", "html")
-        lowered = lowered.replace("sVG", "svg")
-        lowered = lowered.replace("wOFF", "woff")
-        return lowered
 
     def _feature_sets(self):
         # Another way to think of the status levels is as "sets of features"

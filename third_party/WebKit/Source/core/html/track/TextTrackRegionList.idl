@@ -26,7 +26,7 @@
 [
     NoInterfaceObject,
     Conditional=WEBVTT_REGIONS,
-    EnabledAtRuntime=videoTrack
+    EnabledAtRuntime=VideoTrack
 ] interface TextTrackRegionList {
     readonly attribute unsigned long length;
     getter TextTrackRegion item(unsigned long index);

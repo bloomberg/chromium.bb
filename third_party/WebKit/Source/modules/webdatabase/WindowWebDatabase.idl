@@ -27,6 +27,6 @@
 [
     ImplementedAs=DOMWindowWebDatabase
 ] partial interface Window {
-    [EnabledAtRuntime=database, MeasureAs=OpenWebDatabase, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, optional DatabaseCallback creationCallback);
+    [EnabledAtRuntime=Database, MeasureAs=OpenWebDatabase, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, optional DatabaseCallback creationCallback);
 };
 

@@ -33,6 +33,7 @@ import shutil
 
 from in_file import InFile
 import name_macros
+from name_utilities import lower_first
 import license
 
 
@@ -73,9 +74,10 @@ class EventFactoryWriter(name_macros.Writer):
         return self.in_file.name_dictionaries
 
     def _factory_implementation(self, event):
-        runtime_condition = ''
         if event['EnabledAtRuntime']:
-            runtime_condition = ' && RuntimeEnabledFeatures::' + event['EnabledAtRuntime'] + '()'
+            runtime_condition = ' && RuntimeEnabledFeatures::%s()' % lower_first(event['EnabledAtRuntime'])
+        else:
+            runtime_condition = ''
         name = os.path.basename(event['name'])
         class_name = self._class_name_for_entry(event)
         implementation = """    if (type == "%(name)s"%(runtime_condition)s)
