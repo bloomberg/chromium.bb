@@ -203,27 +203,28 @@ base::TimeTicks DelayBasedTimeSource::Now() const {
 //      now=37   tick_target=16.667  new_target=50.000  -->
 //          tick(), PostDelayedTask(floor(50.000-37)) --> PostDelayedTask(13)
 base::TimeTicks DelayBasedTimeSource::NextTickTarget(base::TimeTicks now) {
-  const base::TimeDelta epsilon(base::TimeDelta::FromMicroseconds(1));
   base::TimeDelta new_interval = next_parameters_.interval;
 
-  // Integer division rounds towards 0, but we always want to round down the
-  // number of intervals_elapsed, so we need the extra condition here.
-  int intervals_elapsed;
-  if (next_parameters_.tick_target < now) {
-    intervals_elapsed =
-        (now - next_parameters_.tick_target + new_interval - epsilon) /
-        new_interval;
-  } else {
-    intervals_elapsed = (now - next_parameters_.tick_target) / new_interval;
+  // |interval_offset| is the offset from |now| to the next multiple of
+  // |interval| after |tick_target|, possibly negative if in the past.
+  base::TimeDelta interval_offset = base::TimeDelta::FromInternalValue(
+      (next_parameters_.tick_target - now).ToInternalValue() %
+      new_interval.ToInternalValue());
+  // If |now| is exactly on the interval (i.e. offset==0), don't adjust.
+  // Otherwise, if |tick_target| was in the past, adjust forward to the next
+  // tick after |now|.
+  if (interval_offset.ToInternalValue() != 0 &&
+      next_parameters_.tick_target < now) {
+    interval_offset += new_interval;
   }
-  base::TimeTicks new_tick_target =
-      next_parameters_.tick_target + new_interval * intervals_elapsed;
+
+  base::TimeTicks new_tick_target = now + interval_offset;
   DCHECK(now <= new_tick_target)
       << "now = " << now.ToInternalValue()
       << "; new_tick_target = " << new_tick_target.ToInternalValue()
       << "; new_interval = " << new_interval.InMicroseconds()
       << "; tick_target = " << next_parameters_.tick_target.ToInternalValue()
-      << "; intervals_elapsed = " << intervals_elapsed;
+      << "; interval_offset = " << interval_offset.ToInternalValue();
 
   // Avoid double ticks when:
   // 1) Turning off the timer and turning it right back on.
