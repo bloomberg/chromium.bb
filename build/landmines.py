@@ -83,15 +83,13 @@ def set_up_landmines(target, new_landmines):
       os.remove(triggered)
 
 
-def process_options():
-  """Returns a list of landmine emitting scripts."""
+def main():
   parser = optparse.OptionParser()
   parser.add_option(
       '-s', '--landmine-scripts', action='append',
       default=[os.path.join(SRC_DIR, 'build', 'get_landmines.py')],
       help='Path to the script which emits landmines to stdout. The target '
-           'is passed to this script via option -t. Note that an extra '
-           'script can be specified via an env var EXTRA_LANDMINES_SCRIPT.')
+           'is passed to this script via option -t.')
   parser.add_option('-v', '--verbose', action='store_true',
       default=('LANDMINES_VERBOSE' in os.environ),
       help=('Emit some extra debugging information (default off). This option '
@@ -106,20 +104,11 @@ def process_options():
   logging.basicConfig(
       level=logging.DEBUG if options.verbose else logging.ERROR)
 
-  extra_script = os.environ.get('EXTRA_LANDMINES_SCRIPT')
-  if extra_script:
-    return options.landmine_scripts + [extra_script]
-  else:
-    return options.landmine_scripts
-
-
-def main():
-  landmine_scripts = process_options()
   gyp_helper.apply_chromium_gyp_env()
 
   for target in ('Debug', 'Release', 'Debug_x64', 'Release_x64'):
     landmines = []
-    for s in landmine_scripts:
+    for s in options.landmine_scripts:
       proc = subprocess.Popen([sys.executable, s, '-t', target],
                               stdout=subprocess.PIPE)
       output, _ = proc.communicate()
