@@ -1393,6 +1393,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var kind = event.kind;
     var entry = event.entry;
     this.directoryModel_.onEntryChanged(kind, entry);
+    this.selectionHandler_.onFileSelectionChanged();
 
     if (kind == util.EntryChangedKind.CREATE && FileType.isImage(entry)) {
       // Preload a thumbnail if the new copied entry an image.
