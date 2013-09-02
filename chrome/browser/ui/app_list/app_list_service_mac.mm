@@ -46,17 +46,43 @@ namespace gfx {
 class ImageSkia;
 }
 
+// Controller for animations that show or hide the app list.
+@interface AppListAnimationController : NSObject<NSAnimationDelegate> {
+ @private
+  // When closing, the window to close. Retained until the animation ends.
+  base::scoped_nsobject<NSWindow> window_;
+  // The animation started and owned by |self|. Reset when the animation ends.
+  base::scoped_nsobject<NSViewAnimation> animation_;
+}
+
+// Returns whether |window_| is scheduled to be closed when the animation ends.
+- (BOOL)isClosing;
+
+// Animate |window| to show or close it, after cancelling any current animation.
+// Translates from the current location to |targetOrigin| and fades in or out.
+- (void)animateWindow:(NSWindow*)window
+         targetOrigin:(NSPoint)targetOrigin
+              closing:(BOOL)closing;
+
+@end
+
 namespace {
 
 // Version of the app list shortcut version installed.
 const int kShortcutVersion = 1;
+
+// Duration of show and hide animations.
+const NSTimeInterval kAnimationDuration = 0.2;
+
+// Distance towards the screen edge that the app list moves from when showing.
+const CGFloat kDistanceMovedOnShow = 20;
 
 // AppListServiceMac manages global resources needed for the app list to
 // operate, and controls when the app list is opened and closed.
 class AppListServiceMac : public AppListServiceImpl,
                           public apps::AppShimHandler {
  public:
-  virtual ~AppListServiceMac() {}
+  virtual ~AppListServiceMac();
 
   static AppListServiceMac* GetInstance() {
     return Singleton<AppListServiceMac,
@@ -90,10 +116,12 @@ class AppListServiceMac : public AppListServiceImpl,
  private:
   friend struct DefaultSingletonTraits<AppListServiceMac>;
 
-  AppListServiceMac() {}
+  AppListServiceMac();
 
   base::scoped_nsobject<AppListWindowController> window_controller_;
+  base::scoped_nsobject<AppListAnimationController> animation_controller_;
   base::scoped_nsobject<NSRunningApplication> previously_active_application_;
+  NSPoint last_start_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceMac);
 };
@@ -289,6 +317,12 @@ void AppListControllerDelegateCocoa::LaunchApp(
       profile, extension, NEW_FOREGROUND_TAB));
 }
 
+AppListServiceMac::AppListServiceMac() {
+  animation_controller_.reset([[AppListAnimationController alloc] init]);
+}
+
+AppListServiceMac::~AppListServiceMac() {}
+
 void AppListServiceMac::Init(Profile* initial_profile) {
   // On Mac, Init() is called multiple times for a process: any time there is no
   // browser window open and a new window is opened, and during process startup
@@ -379,11 +413,14 @@ void AppListServiceMac::DismissAppList() {
   if ([prior_app activateWithOptions:NSApplicationActivateIgnoringOtherApps])
     return;
 
-  [[window_controller_ window] close];
+  [animation_controller_ animateWindow:[window_controller_ window]
+                          targetOrigin:last_start_origin_
+                               closing:YES];
 }
 
 bool AppListServiceMac::IsAppListVisible() const {
-  return [[window_controller_ window] isVisible];
+  return [[window_controller_ window] isVisible] &&
+      ![animation_controller_ isClosing];
 }
 
 void AppListServiceMac::CreateShortcut() {
@@ -457,7 +494,8 @@ int AdjustPointForDynamicDock(int anchor, int screen_edge, int work_area_edge) {
       (screen_edge < work_area_edge ? kExtraDistance : -kExtraDistance);
 }
 
-NSPoint GetAppListWindowOrigin(NSWindow* window) {
+void GetAppListWindowOrigins(
+    NSWindow* window, NSPoint* target_origin, NSPoint* start_origin) {
   gfx::Screen* const screen = gfx::Screen::GetScreenFor([window contentView]);
   // Ensure y coordinates are flipped back into AppKit's coordinate system.
   const CGFloat max_y = NSMaxY([[[NSScreen screens] objectAtIndex:0] frame]);
@@ -472,7 +510,9 @@ NSPoint GetAppListWindowOrigin(NSWindow* window) {
     const gfx::Rect work_area = key_view && [NSApp isActive] ?
         screen->GetDisplayNearestWindow(key_view).work_area() :
         screen->GetPrimaryDisplay().work_area();
-    return NSMakePoint(work_area.x(), max_y - work_area.bottom());
+    *target_origin = NSMakePoint(work_area.x(), max_y - work_area.bottom());
+    *start_origin = *target_origin;
+    return;
   }
 
   gfx::Point anchor = screen->GetCursorScreenPoint();
@@ -482,7 +522,10 @@ NSPoint GetAppListWindowOrigin(NSWindow* window) {
 
   if (dock_location == DockLocationOtherDisplay) {
     // Just display at the bottom-left of the display the cursor is on.
-    return NSMakePoint(display_bounds.x(), max_y - display_bounds.bottom());
+    *target_origin = NSMakePoint(display_bounds.x(),
+                                 max_y - display_bounds.bottom());
+    *start_origin = *target_origin;
+    return;
   }
 
   // Anchor the center of the window in a region that prevents the window
@@ -512,25 +555,95 @@ NSPoint GetAppListWindowOrigin(NSWindow* window) {
       NOTREACHED();
   }
 
-  return NSMakePoint(
-      anchor.x() - window_size.width / 2,
-      max_y - anchor.y() - window_size.height / 2);
+  *target_origin = NSMakePoint(anchor.x() - window_size.width / 2,
+                               max_y - anchor.y() - window_size.height / 2);
+  *start_origin = *target_origin;
+
+  switch (dock_location) {
+    case DockLocationBottom:
+      start_origin->y -= kDistanceMovedOnShow;
+      break;
+    case DockLocationLeft:
+      start_origin->x -= kDistanceMovedOnShow;
+      break;
+    case DockLocationRight:
+      start_origin->x += kDistanceMovedOnShow;
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void AppListServiceMac::ShowWindowNearDock() {
   NSWindow* window = GetAppListWindow();
   DCHECK(window);
-  [window setFrameOrigin:GetAppListWindowOrigin(window)];
+  NSPoint target_origin;
+  GetAppListWindowOrigins(window, &target_origin, &last_start_origin_);
+  [window setFrameOrigin:last_start_origin_];
 
   // Before activating, see if an application other than Chrome is currently the
   // active application, so that it can be reactivated when dismissing.
   previously_active_application_.reset([ActiveApplicationNotChrome() retain]);
 
+  [animation_controller_ animateWindow:[window_controller_ window]
+                          targetOrigin:target_origin
+                               closing:NO];
   [window makeKeyAndOrderFront:nil];
   [NSApp activateIgnoringOtherApps:YES];
 }
 
 }  // namespace
+
+@implementation AppListAnimationController
+
+- (BOOL)isClosing {
+  return !!window_;
+}
+
+- (void)animateWindow:(NSWindow*)window
+         targetOrigin:(NSPoint)targetOrigin
+              closing:(BOOL)closing {
+  // First, stop the existing animation, if there is one.
+  [animation_ stopAnimation];
+
+  NSRect targetFrame = [window frame];
+  targetFrame.origin = targetOrigin;
+
+  // NSViewAnimation has a quirk when setting the curve to NSAnimationEaseOut
+  // where it attempts to auto-reverse the animation. FadeOut becomes FadeIn
+  // (good), but FrameKey is also switched (bad). So |targetFrame| needs to be
+  // put on the StartFrameKey when using NSAnimationEaseOut for showing.
+  NSArray* animationArray = @[
+    @{
+      NSViewAnimationTargetKey : window,
+      NSViewAnimationEffectKey : NSViewAnimationFadeOutEffect,
+      (closing ? NSViewAnimationEndFrameKey : NSViewAnimationStartFrameKey) :
+          [NSValue valueWithRect:targetFrame]
+    }
+  ];
+  animation_.reset(
+      [[NSViewAnimation alloc] initWithViewAnimations:animationArray]);
+  [animation_ setDuration:kAnimationDuration];
+  [animation_ setDelegate:self];
+
+  if (closing) {
+    [animation_ setAnimationCurve:NSAnimationEaseIn];
+    window_.reset([window retain]);
+  } else {
+    [window setAlphaValue:0.0f];
+    [animation_ setAnimationCurve:NSAnimationEaseOut];
+    window_.reset();
+  }
+  [animation_ startAnimation];
+}
+
+- (void)animationDidEnd:(NSAnimation*)animation {
+  [window_ close];
+  window_.reset();
+  animation_.reset();
+}
+
+@end
 
 // static
 AppListService* AppListService::Get() {
