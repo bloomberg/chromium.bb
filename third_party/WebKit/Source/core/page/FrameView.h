@@ -74,9 +74,8 @@ public:
     virtual bool scheduleAnimation();
 
     Frame* frame() const { return m_frame.get(); }
-    void clearFrame();
 
-    RenderView* renderView() const { return m_frame ? m_frame->contentRenderer() : 0; }
+    RenderView* renderView() const { return m_frame->contentRenderer(); }
 
     int mapFromLayoutToCSSUnits(LayoutUnit);
     LayoutUnit mapFromCSSToLayoutUnits(int);

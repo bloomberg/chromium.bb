@@ -180,11 +180,8 @@ FrameView::FrameView(Frame* frame)
     , m_hasSoftwareFilters(false)
     , m_visibleContentScaleFactor(1)
 {
+    ASSERT(m_frame);
     init();
-
-    // FIXME: Can m_frame ever be null here?
-    if (!m_frame)
-        return;
 
     Page* page = m_frame->page();
     if (!page)
@@ -287,12 +284,6 @@ void FrameView::removeFromAXObjectCache()
         cache->remove(this);
 }
 
-void FrameView::clearFrame()
-{
-    RELEASE_ASSERT(!isInLayout());
-    m_frame = 0;
-}
-
 void FrameView::resetScrollbars()
 {
     // Reset the document's scrollbars back to our defaults before we yield the floor.
@@ -313,7 +304,7 @@ void FrameView::init()
     m_size = LayoutSize();
 
     // Propagate the marginwidth/height and scrolling modes to the view.
-    Element* ownerElement = m_frame ? m_frame->ownerElement() : 0;
+    Element* ownerElement = m_frame->ownerElement();
     if (ownerElement && (ownerElement->hasTagName(frameTag) || ownerElement->hasTagName(iframeTag))) {
         HTMLFrameElementBase* frameElt = toHTMLFrameElementBase(ownerElement);
         if (frameElt->scrollingMode() == ScrollbarAlwaysOff)
@@ -408,9 +399,6 @@ void FrameView::invalidateRect(const IntRect& rect)
         return;
     }
 
-    if (!m_frame)
-        return;
-
     RenderPart* renderer = m_frame->ownerRenderer();
     if (!renderer)
         return;
@@ -429,7 +417,7 @@ void FrameView::setFrameRect(const IntRect& newRect)
 
     // Autosized font sizes depend on the width of the viewing area.
     if (newRect.width() != oldRect.width()) {
-        Page* page = m_frame ? m_frame->page() : 0;
+        Page* page = m_frame->page();
         if (page && page->mainFrame() == m_frame && page->settings().textAutosizingEnabled()) {
             for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext())
                 m_frame->document()->textAutosizer()->recalculateMultipliers();
@@ -1309,7 +1297,7 @@ IntSize FrameView::scrollOffsetForFixedPosition() const
 
 IntPoint FrameView::lastKnownMousePosition() const
 {
-    return m_frame ? m_frame->eventHandler()->lastKnownMousePosition() : IntPoint();
+    return m_frame->eventHandler()->lastKnownMousePosition();
 }
 
 bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)
@@ -1941,8 +1929,6 @@ bool FrameView::needsLayout() const
     // This can return true in cases where the document does not have a body yet.
     // Document::shouldScheduleLayout takes care of preventing us from scheduling
     // layout in that case.
-    if (!m_frame)
-        return false;
 
     RenderView* renderView = this->renderView();
     return layoutPending()
@@ -2420,7 +2406,7 @@ IntRect FrameView::windowClipRect(bool clipToContents) const
 
     // Set our clip rect to be our contents.
     IntRect clipRect = contentsToWindow(visibleContentRect(clipToContents ? ExcludeScrollbars : IncludeScrollbars));
-    if (!m_frame || !m_frame->ownerElement())
+    if (!m_frame->ownerElement())
         return clipRect;
 
     // Take our owner element and get its clip rect.
@@ -2500,9 +2486,6 @@ void FrameView::setVisibleContentScaleFactor(float visibleContentScaleFactor)
 
 bool FrameView::scrollbarsCanBeActive() const
 {
-    if (!m_frame)
-        return false;
-
     if (m_frame->view() != this)
         return false;
 
@@ -2796,7 +2779,7 @@ void FrameView::updateControlTints()
     // to define when controls get the tint and to call this function when that changes.
 
     // Optimize the common case where we bring a window to the front while it's still empty.
-    if (!m_frame || m_frame->document()->url().isEmpty())
+    if (m_frame->document()->url().isEmpty())
         return;
 
     if (RenderTheme::theme().supportsControlTints() || hasCustomScrollbars())

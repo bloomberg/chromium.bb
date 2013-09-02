@@ -711,11 +711,7 @@ bool ScrollingCoordinator::isForMainFrame(ScrollableArea* scrollableArea) const
 
 GraphicsLayer* ScrollingCoordinator::scrollLayerForFrameView(FrameView* frameView)
 {
-    Frame* frame = frameView->frame();
-    if (!frame)
-        return 0;
-
-    RenderView* renderView = frame->contentRenderer();
+    RenderView* renderView = frameView->frame()->contentRenderer();
     if (!renderView)
         return 0;
     return renderView->compositor()->scrollLayer();

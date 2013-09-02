@@ -2089,9 +2089,6 @@ AccessibilitySVGRoot* AccessibilityRenderObject::remoteSVGRootElement() const
     if (!frameView)
         return 0;
     Frame* frame = frameView->frame();
-    if (!frame)
-        return 0;
-
     Document* doc = frame->document();
     if (!doc || !doc->isSVGDocument())
         return 0;
