@@ -64,8 +64,8 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MediaInternals_PlayerInfo) {
   RunMediaInternalsTest(FILE_PATH_LITERAL("player_info_test.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MediaInternals_Manager) {
-  RunMediaInternalsTest(FILE_PATH_LITERAL("manager_test.html"));
+IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MediaInternals_PlayerManager) {
+  RunMediaInternalsTest(FILE_PATH_LITERAL("player_manager_test.html"));
 }
 
 }  // namespace content
