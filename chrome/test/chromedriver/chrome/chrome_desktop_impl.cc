@@ -29,8 +29,9 @@ namespace {
 bool KillProcess(base::ProcessHandle process_id) {
 #if defined(OS_POSIX)
   kill(process_id, SIGKILL);
-  base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(5);
-  while (base::Time::Now() < deadline) {
+  base::TimeTicks deadline =
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(5);
+  while (base::TimeTicks::Now() < deadline) {
     pid_t pid = HANDLE_EINTR(waitpid(process_id, NULL, WNOHANG));
     if (pid == process_id)
       return true;
@@ -90,9 +91,9 @@ ChromeDesktopImpl::~ChromeDesktopImpl() {
 Status ChromeDesktopImpl::WaitForPageToLoad(const std::string& url,
                                             const base::TimeDelta& timeout,
                                             scoped_ptr<WebView>* web_view) {
-  base::Time deadline = base::Time::Now() + timeout;
+  base::TimeTicks deadline = base::TimeTicks::Now() + timeout;
   std::string id;
-  while (base::Time::Now() < deadline) {
+  while (base::TimeTicks::Now() < deadline) {
     WebViewsInfo views_info;
     Status status = devtools_http_client_->GetWebViewsInfo(&views_info);
     if (status.IsError())
@@ -118,7 +119,7 @@ Status ChromeDesktopImpl::WaitForPageToLoad(const std::string& url,
     return status;
 
   status = web_view_tmp->WaitForPendingNavigations(
-      std::string(), deadline - base::Time::Now(), false);
+      std::string(), deadline - base::TimeTicks::Now(), false);
   if (status.IsOk())
     *web_view = web_view_tmp.Pass();
   return status;

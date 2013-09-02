@@ -34,7 +34,7 @@ Status SendKeysToElement(
     const ListValue* key_list) {
   bool is_displayed = false;
   bool is_focused = false;
-  base::Time start_time = base::Time::Now();
+  base::TimeTicks start_time = base::TimeTicks::Now();
   while (true) {
     Status status = IsElementDisplayed(
         session, web_view, element_id, true, &is_displayed);
@@ -47,7 +47,7 @@ Status SendKeysToElement(
       return status;
     if (is_focused)
       break;
-    if (base::Time::Now() - start_time >= session->implicit_wait) {
+    if (base::TimeTicks::Now() - start_time >= session->implicit_wait) {
       return Status(kElementNotVisible);
     }
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));

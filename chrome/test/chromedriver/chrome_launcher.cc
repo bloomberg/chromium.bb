@@ -151,8 +151,9 @@ Status WaitForDevToolsAndCheckVersion(
     scoped_ptr<DevToolsHttpClient>* user_client) {
   scoped_ptr<DevToolsHttpClient> client(new DevToolsHttpClient(
       address, context_getter, socket_factory, log));
-  base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
-  Status status = client->Init(deadline - base::Time::Now());
+  base::TimeTicks deadline =
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(20);
+  Status status = client->Init(deadline - base::TimeTicks::Now());
   if (status.IsError())
     return status;
   if (client->build_no() < kMinimumSupportedChromeBuildNo) {
@@ -160,12 +161,14 @@ Status WaitForDevToolsAndCheckVersion(
         GetMinimumSupportedChromeVersion());
   }
 
-  while (base::Time::Now() < deadline) {
+  while (base::TimeTicks::Now() < deadline) {
     WebViewsInfo views_info;
     client->GetWebViewsInfo(&views_info);
-    if (views_info.GetSize()) {
-      *user_client = client.Pass();
-      return Status(kOk);
+    for (size_t i = 0; i < views_info.GetSize(); ++i) {
+      if (views_info.Get(i).type == WebViewInfo::kPage) {
+        *user_client = client.Pass();
+        return Status(kOk);
+      }
     }
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
   }

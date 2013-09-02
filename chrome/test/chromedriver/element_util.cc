@@ -247,7 +247,7 @@ Status FindElement(
   if (root_element_id)
     arguments.Append(CreateElement(*root_element_id));
 
-  base::Time start_time = base::Time::Now();
+  base::TimeTicks start_time = base::TimeTicks::Now();
   while (true) {
     scoped_ptr<base::Value> temp;
     Status status = web_view->CallFunction(
@@ -271,7 +271,7 @@ Status FindElement(
       }
     }
 
-    if (base::Time::Now() - start_time >= session->implicit_wait) {
+    if (base::TimeTicks::Now() - start_time >= session->implicit_wait) {
       if (only_one) {
         return Status(kNoSuchElement);
       } else {

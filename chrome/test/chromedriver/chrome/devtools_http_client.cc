@@ -79,14 +79,16 @@ DevToolsHttpClient::DevToolsHttpClient(
 DevToolsHttpClient::~DevToolsHttpClient() {}
 
 Status DevToolsHttpClient::Init(const base::TimeDelta& timeout) {
-  base::Time deadline = base::Time::Now() + timeout;
+  base::TimeTicks deadline = base::TimeTicks::Now() + timeout;
   std::string devtools_version;
   while (true) {
     Status status = GetVersion(&devtools_version);
     if (status.IsOk())
       break;
-    if (status.code() != kChromeNotReachable || base::Time::Now() > deadline)
+    if (status.code() != kChromeNotReachable ||
+        base::TimeTicks::Now() > deadline) {
       return status;
+    }
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
   }
 
@@ -151,8 +153,9 @@ Status DevToolsHttpClient::CloseWebView(const std::string& id) {
   }
 
   // Wait for the target window to be completely closed.
-  base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
-  while (base::Time::Now() < deadline) {
+  base::TimeTicks deadline =
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(20);
+  while (base::TimeTicks::Now() < deadline) {
     WebViewsInfo views_info;
     Status status = GetWebViewsInfo(&views_info);
     if (status.code() == kChromeNotReachable)
@@ -253,8 +256,9 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
   }
 
   // Wait until DevTools UI disconnects from the given web view.
-  base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
-  while (base::Time::Now() < deadline) {
+  base::TimeTicks deadline =
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(20);
+  while (base::TimeTicks::Now() < deadline) {
     status = GetWebViewsInfo(&views_info);
     if (status.IsError())
       return status;

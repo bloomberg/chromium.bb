@@ -141,8 +141,9 @@ TEST_F(SyncWebSocketImplTest, Reconnect) {
   ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
   ASSERT_TRUE(sock.Send("1"));
   // Wait for SyncWebSocket to receive the response from the server.
-  base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
-  while (base::Time::Now() < deadline) {
+  base::TimeTicks deadline =
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(20);
+  while (base::TimeTicks::Now() < deadline) {
     if (sock.IsConnected() && !sock.HasNextMessage())
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
     else
