@@ -198,5 +198,8 @@ const char kUseNewNetworkConfigurationHandlers[] =
 // Disables user image sync.
 const char kDisableUserImageSync[] = "disable-user-image-sync";
 
+// Enables new first-run overlay UI.
+const char kEnableFirstRunUI[] = "enable-first-run-ui";
+
 }  // namespace switches
 }  // namespace chromeos

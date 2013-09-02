@@ -51,7 +51,7 @@ class WebUILoginView : public views::View,
   // Initializes the webui login view.
   virtual void Init();
 
-  // Overridden from views::Views:
+  // Overridden from views::View:
   virtual bool AcceleratorPressed(
       const ui::Accelerator& accelerator) OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;

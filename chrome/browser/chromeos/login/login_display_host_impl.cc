@@ -25,6 +25,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/first_run/first_run_controller.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -277,6 +278,13 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   chrome::EndKeepAlive();
 
   default_host_ = NULL;
+  // TODO(dzhioev): find better place for starting tutorial.
+  if (CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kEnableFirstRunUI)) {
+    // FirstRunController manages its lifetime and destructs after tutorial
+    // completion.
+    (new FirstRunController())->Start();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
