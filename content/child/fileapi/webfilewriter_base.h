@@ -25,11 +25,8 @@ class CONTENT_EXPORT WebFileWriterBase
 
   // WebFileWriter implementation
   virtual void truncate(long long length);
-  virtual void write(long long position, const WebKit::WebString& id);
-  virtual void cancel();
-
-  // DEPRECATED: see crbug/174200
   virtual void write(long long position, const WebKit::WebURL& blobURL);
+  virtual void cancel();
 
  protected:
   // This calls DidSucceed() or DidFail() based on the value of |error_code|.
@@ -43,11 +40,8 @@ class CONTENT_EXPORT WebFileWriterBase
   // the requested operation, and they must call the appropiate DidSomething
   // method upon completion and as progress is made in the Write case.
   virtual void DoTruncate(const GURL& path, int64 offset) = 0;
-  virtual void DoWriteDeprecated(const GURL& path,
-                                 const GURL& blob_url,
-                                 int64 offset) = 0;
   virtual void DoWrite(const GURL& path,
-                       const std::string& blob_id,
+                       const GURL& blob_url,
                        int64 offset) = 0;
   virtual void DoCancel() = 0;
 

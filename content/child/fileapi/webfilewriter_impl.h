@@ -5,8 +5,6 @@
 #ifndef CONTENT_CHILD_FILEAPI_WEBFILEWRITER_IMPL_H_
 #define CONTENT_CHILD_FILEAPI_WEBFILEWRITER_IMPL_H_
 
-#include <string>
-
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -32,9 +30,7 @@ class WebFileWriterImpl : public WebFileWriterBase,
  protected:
   // WebFileWriterBase overrides
   virtual void DoTruncate(const GURL& path, int64 offset) OVERRIDE;
-  virtual void DoWriteDeprecated(
-      const GURL& path, const GURL& blob_url, int64 offset) OVERRIDE;
-  virtual void DoWrite(const GURL& path, const std::string& blob_id,
+  virtual void DoWrite(const GURL& path, const GURL& blob_url,
                        int64 offset) OVERRIDE;
   virtual void DoCancel() OVERRIDE;
 

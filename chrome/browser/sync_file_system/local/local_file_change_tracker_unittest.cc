@@ -205,9 +205,10 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
   file_system_.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(0U, urls.size());
 
+  const GURL blob_url("blob:test");
   const std::string kData("Lorem ipsum.");
   MockBlobURLRequestContext url_request_context(file_system_context());
-  ScopedTextBlob blob(url_request_context, "blob_id:test", kData);
+  ScopedTextBlob blob(url_request_context, blob_url, kData);
 
   // Create files and nested directories.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
@@ -222,9 +223,9 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
             file_system_.TruncateFile(URL(kPath3), 1));  // Modifies the file.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.CreateFile(URL(kPath4)));    // Creates another file.
-  EXPECT_EQ(static_cast<int64>(kData.size()),         // Modifies the file.
+  EXPECT_EQ(static_cast<int64>(kData.size()),
             file_system_.Write(&url_request_context,
-                               URL(kPath4), blob.GetBlobDataHandle()));
+                               URL(kPath4), blob_url));  // Modifies the file.
 
   // Verify the changes.
   file_system_.GetChangedURLsInTracker(&urls);
@@ -356,9 +357,10 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCopyChanges) {
   file_system_.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(0U, urls.size());
 
+  const GURL blob_url("blob:test");
   const std::string kData("Lorem ipsum.");
   MockBlobURLRequestContext url_request_context(file_system_context());
-  ScopedTextBlob blob(url_request_context, "blob_id:test", kData);
+  ScopedTextBlob blob(url_request_context, blob_url, kData);
 
   // Create files and nested directories.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
@@ -374,8 +376,8 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCopyChanges) {
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.CreateFile(URL(kPath4)));    // Creates another file.
   EXPECT_EQ(static_cast<int64>(kData.size()),
-            file_system_.Write(&url_request_context,   // Modifies the file.
-                               URL(kPath4), blob.GetBlobDataHandle()));
+            file_system_.Write(&url_request_context,
+                               URL(kPath4), blob_url));  // Modifies the file.
 
   // Verify we have 5 changes for preparation.
   file_system_.GetChangedURLsInTracker(&urls);

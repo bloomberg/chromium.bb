@@ -26,14 +26,9 @@ void ResourceRequestBody::AppendFileRange(
                                       expected_modification_time);
 }
 
-void ResourceRequestBody::AppendBlobDeprecated(const GURL& blob_url) {
+void ResourceRequestBody::AppendBlob(const GURL& blob_url) {
   elements_.push_back(Element());
   elements_.back().SetToBlobUrl(blob_url);
-}
-
-void ResourceRequestBody::AppendBlob(const std::string& uuid) {
-  elements_.push_back(Element());
-  elements_.back().SetToBlob(uuid);
 }
 
 void ResourceRequestBody::AppendFileSystemFileRange(

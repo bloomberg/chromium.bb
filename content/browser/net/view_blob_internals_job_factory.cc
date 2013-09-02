@@ -21,9 +21,9 @@ bool ViewBlobInternalsJobFactory::IsSupportedURL(const GURL& url) {
 net::URLRequestJob* ViewBlobInternalsJobFactory::CreateJobForRequest(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
-    webkit_blob::BlobStorageContext* blob_storage_context) {
+    webkit_blob::BlobStorageController* blob_storage_controller) {
   return new webkit_blob::ViewBlobInternalsJob(
-      request, network_delegate, blob_storage_context);
+      request, network_delegate, blob_storage_controller);
 }
 
 }  // namespace content

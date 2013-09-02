@@ -15,7 +15,6 @@
 #include "base/platform_file.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_status.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
-#include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/quota/quota_callbacks.h"
@@ -127,8 +126,7 @@ class CannedSyncableFileSystem
 
   // Returns the # of bytes written (>=0) or an error code (<0).
   int64 Write(net::URLRequestContext* url_request_context,
-              const fileapi::FileSystemURL& url,
-              scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle);
+              const fileapi::FileSystemURL& url, const GURL& blob_url);
   int64 WriteString(const fileapi::FileSystemURL& url, const std::string& data);
 
   // Purges the file system local storage.
@@ -186,7 +184,7 @@ class CannedSyncableFileSystem
                        const StatusCallback& callback);
   void DoWrite(net::URLRequestContext* url_request_context,
                const fileapi::FileSystemURL& url,
-               scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle,
+               const GURL& blob_url,
                const WriteCallback& callback);
   void DoWriteString(const fileapi::FileSystemURL& url,
                      const std::string& data,

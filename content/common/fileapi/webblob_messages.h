@@ -16,40 +16,35 @@
 
 // Blob messages sent from the renderer to the browser.
 
+// Registers a blob as being built.
 IPC_MESSAGE_CONTROL1(BlobHostMsg_StartBuilding,
-                     std::string /*uuid */)
+                     GURL /* url */)
+
+// Appends data to a blob being built.
 IPC_MESSAGE_CONTROL2(BlobHostMsg_AppendBlobDataItem,
-                     std::string /* uuid */,
+                     GURL /* url */,
                      webkit_blob::BlobData::Item)
+
+// Appends data to a blob being built.
 IPC_SYNC_MESSAGE_CONTROL3_0(BlobHostMsg_SyncAppendSharedMemory,
-                            std::string /*uuid*/,
+                            GURL /* url */,
                             base::SharedMemoryHandle,
                             size_t /* buffer size */)
+
+// Finishes building a blob.
 IPC_MESSAGE_CONTROL2(BlobHostMsg_FinishBuilding,
-                     std::string /* uuid */,
+                     GURL /* url */,
                      std::string /* content_type */)
 
-IPC_MESSAGE_CONTROL1(BlobHostMsg_IncrementRefCount,
-                     std::string /* uuid */)
-IPC_MESSAGE_CONTROL1(BlobHostMsg_DecrementRefCount,
-                     std::string /* uuid */)
-IPC_MESSAGE_CONTROL2(BlobHostMsg_RegisterPublicURL,
-                     GURL,
-                     std::string /* uuid */)
-IPC_MESSAGE_CONTROL1(BlobHostMsg_RevokePublicURL,
-                     GURL)
+// Creates a new blob that's a clone of an existing src blob. The source blob
+// must be fully built.
+IPC_MESSAGE_CONTROL2(BlobHostMsg_Clone,
+                     GURL /* url */,
+                     GURL /* src_url */)
 
-// Temporary support for mapping old style blobUrls to new style uuids.
-IPC_MESSAGE_CONTROL2(BlobHostMsg_DeprecatedRegisterBlobURL,
-                     GURL,
-                     std::string /* uuid */)
-IPC_MESSAGE_CONTROL2(BlobHostMsg_DeprecatedCloneBlobURL,
-                     GURL,
-                     GURL)
-IPC_MESSAGE_CONTROL1(BlobHostMsg_DeprecatedRevokeBlobURL,
-                     GURL)
-
-
+// Removes a blob.
+IPC_MESSAGE_CONTROL1(BlobHostMsg_Remove,
+                     GURL /* url */)
 
 // Stream messages sent from the renderer to the browser.
 

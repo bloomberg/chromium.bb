@@ -48,6 +48,13 @@ class WEBKIT_COMMON_EXPORT DataElement {
     return expected_modification_time_;
   }
 
+  // TODO(michaeln): fixup callers to use filesytem_url() and blob_uuid().
+  const GURL& url() const {
+    if (type_ == TYPE_FILE_FILESYSTEM)
+      return filesystem_url_;
+    return blob_url_;
+  }
+
   // Sets TYPE_BYTES data. This copies the given data into the element.
   void SetToBytes(const char* bytes, int bytes_len) {
     type_ = TYPE_BYTES;

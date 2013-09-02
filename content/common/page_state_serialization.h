@@ -19,11 +19,10 @@ struct CONTENT_EXPORT ExplodedHttpBodyElement {
   WebKit::WebHTTPBody::Element::Type type;
   std::string data;
   base::NullableString16 file_path;
-  GURL filesystem_url;
+  GURL url;
   int64 file_start;
   int64 file_length;
   double file_modification_time;
-  GURL deprecated_blob_url;
 
   ExplodedHttpBodyElement();
   ~ExplodedHttpBodyElement();

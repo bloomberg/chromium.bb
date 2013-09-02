@@ -47,12 +47,11 @@ void ExpectEquality(const ExplodedHttpBodyElement& a,
   EXPECT_EQ(a.type, b.type);
   EXPECT_EQ(a.data, b.data);
   EXPECT_EQ(a.file_path, b.file_path);
-  EXPECT_EQ(a.filesystem_url, b.filesystem_url);
+  EXPECT_EQ(a.url, b.url);
   EXPECT_EQ(a.file_start, b.file_start);
   EXPECT_EQ(a.file_length, b.file_length);
   if (!(isnan(a.file_modification_time) && isnan(b.file_modification_time)))
     EXPECT_DOUBLE_EQ(a.file_modification_time, b.file_modification_time);
-  EXPECT_EQ(a.deprecated_blob_url, b.deprecated_blob_url);
 }
 
 template <>

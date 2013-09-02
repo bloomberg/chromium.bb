@@ -11,7 +11,6 @@
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
@@ -98,10 +97,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
                      const StatusCallback& callback);
 
   // Writes contents of |blob_url| to |url| at |offset|.
-  // |url_request_context| is used to read contents in |blob|.
+  // |url_request_context| is used to read contents in |blob_url|.
   OperationID Write(const net::URLRequestContext* url_request_context,
                     const FileSystemURL& url,
-                    scoped_ptr<webkit_blob::BlobDataHandle> blob,
+                    const GURL& blob_url,
                     int64 offset,
                     const WriteCallback& callback);
 

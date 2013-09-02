@@ -388,7 +388,7 @@ class ChromeProtocolHandler
     // Next check for chrome://blob-internals/, which uses its own job type.
     if (ViewBlobInternalsJobFactory::IsSupportedURL(request->url())) {
       return ViewBlobInternalsJobFactory::CreateJobForRequest(
-          request, network_delegate, blob_storage_context_->context());
+          request, network_delegate, blob_storage_context_->controller());
     }
 
 #if defined(USE_TCMALLOC)

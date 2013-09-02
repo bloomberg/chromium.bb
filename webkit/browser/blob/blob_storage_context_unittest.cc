@@ -203,6 +203,4 @@ TEST(BlobStorageContextTest, EarlyContextDeletion) {
   EXPECT_FALSE(host.RevokePublicBlobURL(kUrl));
 }
 
-// TODO(michaeln): tests for the depcrecated url stuff
-
 }  // namespace webkit_blob

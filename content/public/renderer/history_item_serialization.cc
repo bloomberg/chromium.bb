@@ -42,13 +42,13 @@ void ToExplodedHttpBodyElement(const WebHTTPBody::Element& input,
       output->file_modification_time = input.modificationTime;
       break;
     case WebHTTPBody::Element::TypeURL:
-      output->filesystem_url = input.url;
+      output->url = input.url;
       output->file_start = input.fileStart;
       output->file_length = input.fileLength;
       output->file_modification_time = input.modificationTime;
       break;
     case WebHTTPBody::Element::TypeBlob:
-      output->deprecated_blob_url = input.blobURL;
+      output->url = input.url;
       break;
   }
 }
@@ -68,13 +68,13 @@ void AppendHTTPBodyElement(const ExplodedHttpBodyElement& element,
       break;
     case WebHTTPBody::Element::TypeURL:
       http_body->appendURLRange(
-          element.filesystem_url,
+          element.url,
           element.file_start,
           element.file_length,
           element.file_modification_time);
       break;
     case WebHTTPBody::Element::TypeBlob:
-      http_body->appendBlob(element.deprecated_blob_url);
+      http_body->appendBlob(element.url);
       break;
   }
 }

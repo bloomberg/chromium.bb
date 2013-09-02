@@ -51,18 +51,17 @@ void AppendURLRangeToHttpBody(ExplodedHttpBody* http_body,
                               double file_modification_time) {
   ExplodedHttpBodyElement element;
   element.type = WebKit::WebHTTPBody::Element::TypeURL;
-  element.filesystem_url = url;
+  element.url = url;
   element.file_start = file_start;
   element.file_length = file_length;
   element.file_modification_time = file_modification_time;
   http_body->elements.push_back(element);
 }
 
-void DeprecatedAppendBlobToHttpBody(ExplodedHttpBody* http_body,
-                                    const GURL& url) {
+void AppendBlobToHttpBody(ExplodedHttpBody* http_body, const GURL& url) {
   ExplodedHttpBodyElement element;
   element.type = WebKit::WebHTTPBody::Element::TypeBlob;
-  element.deprecated_blob_url = url;
+  element.url = url;
   http_body->elements.push_back(element);
 }
 
@@ -397,13 +396,12 @@ void WriteHttpBody(const ExplodedHttpBody& http_body, SerializeObject* obj) {
       WriteInteger64(element.file_length, obj);
       WriteReal(element.file_modification_time, obj);
     } else if (element.type == WebKit::WebHTTPBody::Element::TypeURL) {
-      WriteGURL(element.filesystem_url, obj);
+      WriteGURL(element.url, obj);
       WriteInteger64(element.file_start, obj);
       WriteInteger64(element.file_length, obj);
       WriteReal(element.file_modification_time, obj);
     } else {
-      DCHECK(element.type == WebKit::WebHTTPBody::Element::TypeBlob);
-      WriteGURL(element.deprecated_blob_url, obj);
+      WriteGURL(element.url, obj);
     }
   }
   WriteInteger64(http_body.identifier, obj);
@@ -444,7 +442,7 @@ void ReadHttpBody(SerializeObject* obj, ExplodedHttpBody* http_body) {
                                file_modification_time);
     } else if (type == WebKit::WebHTTPBody::Element::TypeBlob) {
       GURL blob_url = ReadGURL(obj);
-      DeprecatedAppendBlobToHttpBody(http_body, blob_url);
+      AppendBlobToHttpBody(http_body, blob_url);
     }
   }
   http_body->identifier = ReadInteger64(obj);

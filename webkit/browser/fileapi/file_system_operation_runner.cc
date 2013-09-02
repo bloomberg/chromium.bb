@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "net/url_request/url_request_context.h"
-#include "webkit/browser/blob/blob_url_request_job_factory.h"
 #include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -208,7 +207,7 @@ OperationID FileSystemOperationRunner::Remove(
 OperationID FileSystemOperationRunner::Write(
     const net::URLRequestContext* url_request_context,
     const FileSystemURL& url,
-    scoped_ptr<webkit_blob::BlobDataHandle> blob,
+    const GURL& blob_url,
     int64 offset,
     const WriteCallback& callback) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
@@ -227,14 +226,11 @@ OperationID FileSystemOperationRunner::Write(
     return kErrorOperationID;
   }
 
+  DCHECK(blob_url.is_valid());
   scoped_ptr<FileWriterDelegate> writer_delegate(
       new FileWriterDelegate(writer.Pass()));
-
-  scoped_ptr<net::URLRequest> blob_request(
-      webkit_blob::BlobProtocolHandler::CreateBlobRequest(
-          blob.Pass(),
-          url_request_context,
-          writer_delegate.get()));
+  scoped_ptr<net::URLRequest> blob_request(url_request_context->CreateRequest(
+      blob_url, writer_delegate.get()));
 
   OperationID id = operations_.Add(operation);
   PrepareForWrite(id, url);

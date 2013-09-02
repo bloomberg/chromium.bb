@@ -94,14 +94,6 @@ scoped_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
   return handle.Pass();
 }
 
-std::string BlobStorageContext::LookupUuidFromDeprecatedURL(
-    const GURL& url) {
-  BlobURLMap::const_iterator found = deprecated_blob_urls_.find(url);
-  if (found == deprecated_blob_urls_.end())
-    return std::string();
-  return found->second;
-}
-
 void BlobStorageContext::StartBuildingBlob(const std::string& uuid) {
   DCHECK(!IsInUse(uuid) && !uuid.empty());
   blob_map_[uuid] = BlobMapEntry(1, BEING_BUILT, new BlobData(uuid));
@@ -228,21 +220,6 @@ void BlobStorageContext::RevokePublicBlobURL(const GURL& blob_url) {
     return;
   DecrementBlobRefCount(public_blob_urls_[blob_url]);
   public_blob_urls_.erase(blob_url);
-}
-
-void BlobStorageContext::DeprecatedRegisterPrivateBlobURL(
-    const GURL& url, const std::string& uuid) {
-  if (!IsInUse(uuid))
-    return;
-  IncrementBlobRefCount(uuid);
-  deprecated_blob_urls_[url] = uuid;
-}
-
-void BlobStorageContext::DeprecatedRevokePrivateBlobURL(const GURL& url) {
-  if (deprecated_blob_urls_.find(url) == deprecated_blob_urls_.end())
-    return;
-  DecrementBlobRefCount(deprecated_blob_urls_[url]);
-  deprecated_blob_urls_.erase(url);
 }
 
 bool BlobStorageContext::ExpandStorageItems(

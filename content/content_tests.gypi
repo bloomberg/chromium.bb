@@ -477,6 +477,7 @@
         '../webkit/browser/appcache/mock_appcache_storage.h',
         '../webkit/browser/appcache/mock_appcache_storage_unittest.cc',
         '../webkit/browser/blob/blob_storage_context_unittest.cc',
+        '../webkit/browser/blob/blob_storage_controller_unittest.cc',
         '../webkit/browser/blob/blob_url_request_job_unittest.cc',
         '../webkit/browser/blob/local_file_stream_reader_unittest.cc',
         '../webkit/browser/blob/mock_blob_url_request_context.cc',

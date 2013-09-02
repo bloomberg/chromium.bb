@@ -16,12 +16,11 @@
 #include "net/base/upload_file_element_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "webkit/browser/blob/blob_storage_context.h"
+#include "webkit/browser/blob/blob_storage_controller.h"
 #include "webkit/common/resource_request_body.h"
 
 using webkit_blob::BlobData;
-using webkit_blob::BlobDataHandle;
-using webkit_blob::BlobStorageContext;
+using webkit_blob::BlobStorageController;
 using webkit_glue::ResourceRequestBody;
 
 namespace content {
@@ -99,20 +98,24 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
   base::Time::FromString("Tue, 15 Nov 1994, 12:45:26 GMT", &time1);
   base::Time::FromString("Mon, 14 Nov 1994, 11:30:49 GMT", &time2);
 
-  BlobStorageContext blob_storage_context;
+  BlobStorageController blob_storage_controller;
+  scoped_refptr<BlobData> blob_data(new BlobData());
 
-  const std::string blob_id0("id-0");
-  scoped_refptr<BlobData> blob_data(new BlobData(blob_id0));
-  scoped_ptr<BlobDataHandle> handle1 =
-      blob_storage_context.AddFinishedBlob(blob_data);
+  GURL blob_url0("blob://url_0");
+  blob_storage_controller.AddFinishedBlob(blob_url0, blob_data.get());
 
-  const std::string blob_id1("id-1");
-  blob_data = new BlobData(blob_id1);
   blob_data->AppendData("BlobData");
   blob_data->AppendFile(
       base::FilePath(FILE_PATH_LITERAL("BlobFile.txt")), 0, 20, time1);
-  scoped_ptr<BlobDataHandle> handle2 =
-      blob_storage_context.AddFinishedBlob(blob_data);
+
+  GURL blob_url1("blob://url_1");
+  blob_storage_controller.AddFinishedBlob(blob_url1, blob_data.get());
+
+  GURL blob_url2("blob://url_2");
+  blob_storage_controller.CloneBlob(blob_url2, blob_url1);
+
+  GURL blob_url3("blob://url_3");
+  blob_storage_controller.CloneBlob(blob_url3, blob_url2);
 
   // Setup upload data elements for comparison.
   ResourceRequestBody::Element blob_element1, blob_element2;
@@ -141,7 +144,7 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
 
   scoped_ptr<net::UploadDataStream> upload(
       UploadDataStreamBuilder::Build(request_body.get(),
-                                     &blob_storage_context,
+                                     &blob_storage_controller,
                                      NULL,
                                      base::MessageLoopProxy::current().get()));
 
@@ -151,22 +154,22 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
 
   // Test having only one blob reference that refers to empty blob data.
   request_body = new ResourceRequestBody();
-  request_body->AppendBlob(blob_id0);
+  request_body->AppendBlob(blob_url0);
 
   upload =
       UploadDataStreamBuilder::Build(request_body.get(),
-                                     &blob_storage_context,
+                                     &blob_storage_controller,
                                      NULL,
                                      base::MessageLoopProxy::current().get());
   ASSERT_EQ(0U, upload->element_readers().size());
 
   // Test having only one blob reference.
   request_body = new ResourceRequestBody();
-  request_body->AppendBlob(blob_id1);
+  request_body->AppendBlob(blob_url1);
 
   upload =
       UploadDataStreamBuilder::Build(request_body.get(),
-                                     &blob_storage_context,
+                                     &blob_storage_controller,
                                      NULL,
                                      base::MessageLoopProxy::current().get());
   ASSERT_EQ(2U, upload->element_readers().size());
@@ -175,7 +178,7 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
 
   // Test having one blob reference at the beginning.
   request_body = new ResourceRequestBody();
-  request_body->AppendBlob(blob_id1);
+  request_body->AppendBlob(blob_url1);
   request_body->AppendBytes(upload_element1.bytes(), upload_element1.length());
   request_body->AppendFileRange(upload_element2.path(),
                                 upload_element2.offset(),
@@ -184,7 +187,7 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
 
   upload =
       UploadDataStreamBuilder::Build(request_body.get(),
-                                     &blob_storage_context,
+                                     &blob_storage_controller,
                                      NULL,
                                      base::MessageLoopProxy::current().get());
   ASSERT_EQ(4U, upload->element_readers().size());
@@ -200,11 +203,11 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
                                 upload_element2.offset(),
                                 upload_element2.length(),
                                 upload_element2.expected_modification_time());
-  request_body->AppendBlob(blob_id1);
+  request_body->AppendBlob(blob_url1);
 
   upload =
       UploadDataStreamBuilder::Build(request_body.get(),
-                                     &blob_storage_context,
+                                     &blob_storage_controller,
                                      NULL,
                                      base::MessageLoopProxy::current().get());
   ASSERT_EQ(4U, upload->element_readers().size());
@@ -216,7 +219,7 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
   // Test having one blob reference in the middle.
   request_body = new ResourceRequestBody();
   request_body->AppendBytes(upload_element1.bytes(), upload_element1.length());
-  request_body->AppendBlob(blob_id1);
+  request_body->AppendBlob(blob_url1);
   request_body->AppendFileRange(upload_element2.path(),
                                 upload_element2.offset(),
                                 upload_element2.length(),
@@ -224,7 +227,7 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
 
   upload =
       UploadDataStreamBuilder::Build(request_body.get(),
-                                     &blob_storage_context,
+                                     &blob_storage_controller,
                                      NULL,
                                      base::MessageLoopProxy::current().get());
   ASSERT_EQ(4U, upload->element_readers().size());
@@ -235,10 +238,10 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
 
   // Test having multiple blob references.
   request_body = new ResourceRequestBody();
-  request_body->AppendBlob(blob_id1);
+  request_body->AppendBlob(blob_url1);
   request_body->AppendBytes(upload_element1.bytes(), upload_element1.length());
-  request_body->AppendBlob(blob_id1);
-  request_body->AppendBlob(blob_id1);
+  request_body->AppendBlob(blob_url2);
+  request_body->AppendBlob(blob_url3);
   request_body->AppendFileRange(upload_element2.path(),
                                 upload_element2.offset(),
                                 upload_element2.length(),
@@ -246,7 +249,7 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
 
   upload =
       UploadDataStreamBuilder::Build(request_body.get(),
-                                     &blob_storage_context,
+                                     &blob_storage_controller,
                                      NULL,
                                      base::MessageLoopProxy::current().get());
   ASSERT_EQ(8U, upload->element_readers().size());

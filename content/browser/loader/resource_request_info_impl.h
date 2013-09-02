@@ -16,6 +16,10 @@
 #include "net/base/load_states.h"
 #include "webkit/common/resource_type.h"
 
+namespace webkit_blob {
+class BlobData;
+}
+
 namespace content {
 class CrossSiteResourceHandler;
 class ResourceContext;
@@ -112,6 +116,13 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int memory_cost() const { return memory_cost_; }
   void set_memory_cost(int cost) { memory_cost_ = cost; }
 
+  // We hold a reference to the requested blob data to ensure it doesn't
+  // get finally released prior to the net::URLRequestJob being started.
+  webkit_blob::BlobData* requested_blob_data() const {
+    return requested_blob_data_.get();
+  }
+  void set_requested_blob_data(webkit_blob::BlobData* data);
+
  private:
   // Non-owning, may be NULL.
   CrossSiteResourceHandler* cross_site_handler_;
@@ -133,6 +144,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   ResourceType::Type resource_type_;
   PageTransition transition_type_;
   int memory_cost_;
+  scoped_refptr<webkit_blob::BlobData> requested_blob_data_;
   WebKit::WebReferrerPolicy referrer_policy_;
   ResourceContext* context_;
   bool is_async_;

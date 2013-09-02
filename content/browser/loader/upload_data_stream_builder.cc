@@ -8,14 +8,12 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
-#include "webkit/browser/blob/blob_data_handle.h"
-#include "webkit/browser/blob/blob_storage_context.h"
+#include "webkit/browser/blob/blob_storage_controller.h"
 #include "webkit/browser/fileapi/upload_file_system_file_element_reader.h"
 #include "webkit/common/resource_request_body.h"
 
 using webkit_blob::BlobData;
-using webkit_blob::BlobDataHandle;
-using webkit_blob::BlobStorageContext;
+using webkit_blob::BlobStorageController;
 using webkit_glue::ResourceRequestBody;
 
 namespace content {
@@ -66,51 +64,49 @@ class FileElementReader : public net::UploadFileElementReader {
 
 void ResolveBlobReference(
     ResourceRequestBody* body,
-    webkit_blob::BlobStorageContext* blob_context,
-    const ResourceRequestBody::Element& element,
+    webkit_blob::BlobStorageController* blob_controller,
+    const GURL& blob_url,
     std::vector<const ResourceRequestBody::Element*>* resolved_elements) {
-  DCHECK(blob_context);
-  std::string uuid = element.blob_uuid();
-  if (uuid.empty())
-    uuid = blob_context->LookupUuidFromDeprecatedURL(element.blob_url());
-  scoped_ptr<webkit_blob::BlobDataHandle> handle =
-      blob_context->GetBlobDataFromUUID(uuid);
-  DCHECK(handle);
-  if (!handle)
+  DCHECK(blob_controller);
+  BlobData* blob_data = blob_controller->GetBlobDataFromUrl(blob_url);
+  DCHECK(blob_data);
+  if (!blob_data)
     return;
 
   // If there is no element in the referred blob data, just return.
-  if (handle->data()->items().empty())
+  if (blob_data->items().empty())
     return;
 
-  // Append the elements in the referenced blob data.
-  for (size_t i = 0; i < handle->data()->items().size(); ++i) {
-    const BlobData::Item& item = handle->data()->items().at(i);
+  // Ensure the blob and any attached shareable files survive until
+  // upload completion.
+  body->SetUserData(blob_data, new base::UserDataAdapter<BlobData>(blob_data));
+
+  // Append the elements in the referred blob data.
+  for (size_t i = 0; i < blob_data->items().size(); ++i) {
+    const BlobData::Item& item = blob_data->items().at(i);
     DCHECK_NE(BlobData::Item::TYPE_BLOB, item.type());
     resolved_elements->push_back(&item);
   }
-
-  // Ensure the blob and any attached shareable files survive until
-  // upload completion. The |body| takes ownership of |handle|.
-  const void* key = handle.get();
-  body->SetUserData(key, handle.release());
 }
 
 }  // namespace
 
 scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
     ResourceRequestBody* body,
-    BlobStorageContext* blob_context,
+    BlobStorageController* blob_controller,
     fileapi::FileSystemContext* file_system_context,
     base::TaskRunner* file_task_runner) {
   // Resolve all blob elements.
   std::vector<const ResourceRequestBody::Element*> resolved_elements;
   for (size_t i = 0; i < body->elements()->size(); ++i) {
     const ResourceRequestBody::Element& element = (*body->elements())[i];
-    if (element.type() == ResourceRequestBody::Element::TYPE_BLOB)
-      ResolveBlobReference(body, blob_context, element, &resolved_elements);
-    else
+    if (element.type() == ResourceRequestBody::Element::TYPE_BLOB) {
+      ResolveBlobReference(body, blob_controller, element.url(),
+                           &resolved_elements);
+    } else {
+      // No need to resolve, just append the element.
       resolved_elements.push_back(&element);
+    }
   }
 
   ScopedVector<net::UploadElementReader> element_readers;
@@ -128,7 +124,7 @@ scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
         element_readers.push_back(
             new fileapi::UploadFileSystemFileElementReader(
                 file_system_context,
-                element.filesystem_url(),
+                element.url(),
                 element.offset(),
                 element.length(),
                 element.expected_modification_time()));
