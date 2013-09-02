@@ -620,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_PopupPositioningMoved) {
 // of simulating mouse drag code's dependency on platforms.
 #if defined(OS_CHROMEOS)
 // http://crbug.com/281001
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, FLAKY_DragDropWithinWebView) {
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_DragDropWithinWebView) {
   SetupTest(
       "web_view/dnd_within_webview",
       "/extensions/platform_apps/web_view/dnd_within_webview/guest.html");
