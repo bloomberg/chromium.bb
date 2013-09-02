@@ -14,13 +14,20 @@
  * @type {number}
  * @const
  */
-var WEBVIEW_WIDTH = 400;
+var WEBVIEW_WIDTH = 735;
 /**
  * The height of the widget (in pixel).
  * @type {number}
  * @const
  */
 var WEBVIEW_HEIGHT = 480;
+
+/**
+ * The mergin inside the widget (in pixel).
+ * @type {number}
+ * @const
+ */
+var WIDGET_MARGIN = 8;
 
 /**
  * The widget of the spinner box (in pixel).
@@ -315,11 +322,15 @@ SuggestAppsDialog.prototype.onWidgetLoaded_ = function(event) {
   this.webviewContainer_.classList.add('loaded');
   this.state_ = SuggestAppsDialog.State.INITIALIZED;
 
-  this.webviewContainer_.style.width = WEBVIEW_WIDTH + 'px';
-  this.webviewContainer_.style.height = WEBVIEW_HEIGHT + 'px';
+  this.webviewContainer_.style.width =
+      (WEBVIEW_WIDTH + WIDGET_MARGIN * 2) + 'px';
+  this.webviewContainer_.style.height =
+      (WEBVIEW_HEIGHT + WIDGET_MARGIN * 2) + 'px';
 
-  this.webview_.style.width = WEBVIEW_WIDTH + 'px';
-  this.webview_.style.height = WEBVIEW_HEIGHT + 'px';
+  this.webview_.style.width =
+      (WEBVIEW_WIDTH + WIDGET_MARGIN * 2) + 'px';
+  this.webview_.style.height =
+      (WEBVIEW_HEIGHT + WIDGET_MARGIN * 2) + 'px';
   this.webview_.focus();
 };
 
