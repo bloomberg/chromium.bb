@@ -801,6 +801,12 @@ inline const Element* toElement(const Node* node)
     return static_cast<const Element*>(node);
 }
 
+inline const Element& toElement(const Node& node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(node.isElementNode());
+    return static_cast<const Element&>(node);
+}
+
 // This will catch anyone doing an unnecessary cast.
 void toElement(const Element*);
 

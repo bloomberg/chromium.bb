@@ -163,7 +163,7 @@ void ShadowRoot::recalcStyle(StyleChange change)
     ASSERT(!hasCustomStyleCallbacks());
 
     StyleResolver* styleResolver = document().styleResolver();
-    styleResolver->pushParentShadowRoot(this);
+    styleResolver->pushParentShadowRoot(*this);
 
     if (!attached()) {
         attach();
@@ -196,7 +196,7 @@ void ShadowRoot::recalcStyle(StyleChange change)
         forceReattachOfAnyWhitespaceSibling = didReattach || forceReattachOfAnyWhitespaceSibling;
     }
 
-    styleResolver->popParentShadowRoot(this);
+    styleResolver->popParentShadowRoot(*this);
     clearNeedsStyleRecalc();
     clearChildNeedsStyleRecalc();
 }
@@ -253,9 +253,9 @@ void ShadowRoot::setResetStyleInheritance(bool value)
 void ShadowRoot::attach(const AttachContext& context)
 {
     StyleResolver* styleResolver = document().styleResolver();
-    styleResolver->pushParentShadowRoot(this);
+    styleResolver->pushParentShadowRoot(*this);
     DocumentFragment::attach(context);
-    styleResolver->popParentShadowRoot(this);
+    styleResolver->popParentShadowRoot(*this);
 }
 
 Node::InsertionNotificationRequest ShadowRoot::insertedInto(ContainerNode* insertionPoint)

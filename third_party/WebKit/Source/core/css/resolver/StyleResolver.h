@@ -181,8 +181,8 @@ public:
     // Using these during tree walk will allow style selector to optimize child and descendant selector lookups.
     void pushParentElement(Element*);
     void popParentElement(Element*);
-    void pushParentShadowRoot(const ShadowRoot*);
-    void popParentShadowRoot(const ShadowRoot*);
+    void pushParentShadowRoot(const ShadowRoot&);
+    void popParentShadowRoot(const ShadowRoot&);
 
     PassRefPtr<RenderStyle> styleForElement(Element*, RenderStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
         RuleMatchingBehavior = MatchAllRules, RenderRegion* regionForStyling = 0);
@@ -224,7 +224,7 @@ public:
 
     ScopedStyleResolver* ensureScopedStyleResolver(const ContainerNode* scope)
     {
-        return m_styleTree.ensureScopedStyleResolver(scope ? scope : &document());
+        return m_styleTree.ensureScopedStyleResolver(scope ? *scope : document());
     }
 
     // FIXME: Used by SharingStyleFinder, but should be removed.

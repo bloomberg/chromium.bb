@@ -50,12 +50,12 @@ class StyleSheetContents;
 class ScopedStyleResolver {
     WTF_MAKE_NONCOPYABLE(ScopedStyleResolver); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<ScopedStyleResolver> create(const ContainerNode* scopingNode) { return adoptPtr(new ScopedStyleResolver(scopingNode)); }
+    static PassOwnPtr<ScopedStyleResolver> create(const ContainerNode& scopingNode) { return adoptPtr(new ScopedStyleResolver(scopingNode)); }
 
     static const ContainerNode* scopingNodeFor(const CSSStyleSheet*);
 
-    const ContainerNode* scopingNode() const { return m_scopingNode; }
-    const TreeScope* treeScope() const { return m_scopingNode->treeScope(); }
+    const ContainerNode& scopingNode() const { return m_scopingNode; }
+    const TreeScope* treeScope() const { return m_scopingNode.treeScope(); }
     void prepareEmptyRuleSet() { m_authorStyle = RuleSet::create(); }
     void setParent(ScopedStyleResolver* newParent) { m_parent = newParent; }
     ScopedStyleResolver* parent() { return m_parent; }
@@ -79,13 +79,12 @@ public:
     void collectViewportRulesTo(StyleResolver*) const;
 
 private:
-    ScopedStyleResolver() : m_scopingNode(0), m_parent(0) { }
-    ScopedStyleResolver(const ContainerNode* scopingNode) : m_scopingNode(scopingNode), m_parent(0) { }
+    explicit ScopedStyleResolver(const ContainerNode& scopingNode) : m_scopingNode(scopingNode), m_parent(0) { }
 
     RuleSet* ensureAtHostRuleSetFor(const ShadowRoot*);
     RuleSet* atHostRuleSetFor(const ShadowRoot*) const;
 
-    const ContainerNode* m_scopingNode;
+    const ContainerNode& m_scopingNode;
     ScopedStyleResolver* m_parent;
 
     OwnPtr<RuleSet> m_authorStyle;
@@ -100,9 +99,9 @@ class ScopedStyleTree {
 public:
     ScopedStyleTree() : m_scopedResolverForDocument(0), m_buildInDocumentOrder(true) { }
 
-    ScopedStyleResolver* ensureScopedStyleResolver(const ContainerNode* scopingNode);
-    ScopedStyleResolver* scopedStyleResolverFor(const ContainerNode* scopingNode);
-    ScopedStyleResolver* addScopedStyleResolver(const ContainerNode* scopingNode, bool& isNewEntry);
+    ScopedStyleResolver* ensureScopedStyleResolver(const ContainerNode& scopingNode);
+    ScopedStyleResolver* scopedStyleResolverFor(const ContainerNode& scopingNode);
+    ScopedStyleResolver* addScopedStyleResolver(const ContainerNode& scopingNode, bool& isNewEntry);
     void clear();
 
     // for fast-path.
@@ -116,8 +115,8 @@ public:
 
     void remove(const ContainerNode* scopingNode);
 
-    void pushStyleCache(const ContainerNode* scopingNode, const ContainerNode* parent);
-    void popStyleCache(const ContainerNode* scopingNode);
+    void pushStyleCache(const ContainerNode& scopingNode, const ContainerNode* parent);
+    void popStyleCache(const ContainerNode& scopingNode);
 
     void collectFeaturesTo(RuleFeatureSet& features);
     void setBuildInDocumentOrder(bool enabled) { m_buildInDocumentOrder = enabled; }

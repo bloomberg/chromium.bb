@@ -184,7 +184,7 @@ void StyleResolver::finishAppendAuthorStyleSheets()
 
 void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
 {
-    ScopedStyleResolver* resolver = scopingNode ? m_styleTree.scopedStyleResolverFor(scopingNode) : m_styleTree.scopedStyleResolverForDocument();
+    ScopedStyleResolver* resolver = scopingNode ? m_styleTree.scopedStyleResolverFor(*scopingNode) : m_styleTree.scopedStyleResolverForDocument();
     if (!resolver)
         return;
 
@@ -210,7 +210,8 @@ void StyleResolver::resetAtHostRules(const ContainerNode* scopingNode)
 
     const ShadowRoot* shadowRoot = toShadowRoot(scopingNode);
     const ContainerNode* shadowHost = shadowRoot->shadowHost();
-    ScopedStyleResolver* resolver = m_styleTree.scopedStyleResolverFor(shadowHost);
+    ASSERT(shadowHost);
+    ScopedStyleResolver* resolver = m_styleTree.scopedStyleResolverFor(*shadowHost);
     if (!resolver)
         return;
 
@@ -244,6 +245,7 @@ void StyleResolver::collectFeatures()
 
 void StyleResolver::pushParentElement(Element* parent)
 {
+    ASSERT(parent);
     const ContainerNode* parentsParent = parent->parentOrShadowHostElement();
 
     // We are not always invoked consistently. For example, script execution can cause us to enter
@@ -256,28 +258,29 @@ void StyleResolver::pushParentElement(Element* parent)
         m_selectorFilter.pushParent(parent);
 
     // Note: We mustn't skip ShadowRoot nodes for the scope stack.
-    m_styleTree.pushStyleCache(parent, parent->parentOrShadowHostNode());
+    m_styleTree.pushStyleCache(*parent, parent->parentOrShadowHostNode());
 }
 
 void StyleResolver::popParentElement(Element* parent)
 {
+    ASSERT(parent);
     // Note that we may get invoked for some random elements in some wacky cases during style resolve.
     // Pause maintaining the stack in this case.
     if (m_selectorFilter.parentStackIsConsistent(parent))
         m_selectorFilter.popParent();
 
-    m_styleTree.popStyleCache(parent);
+    m_styleTree.popStyleCache(*parent);
 }
 
-void StyleResolver::pushParentShadowRoot(const ShadowRoot* shadowRoot)
+void StyleResolver::pushParentShadowRoot(const ShadowRoot& shadowRoot)
 {
-    ASSERT(shadowRoot->host());
-    m_styleTree.pushStyleCache(shadowRoot, shadowRoot->host());
+    ASSERT(shadowRoot.host());
+    m_styleTree.pushStyleCache(shadowRoot, shadowRoot.host());
 }
 
-void StyleResolver::popParentShadowRoot(const ShadowRoot* shadowRoot)
+void StyleResolver::popParentShadowRoot(const ShadowRoot& shadowRoot)
 {
-    ASSERT(shadowRoot->host());
+    ASSERT(shadowRoot.host());
     m_styleTree.popStyleCache(shadowRoot);
 }
 
@@ -316,7 +319,7 @@ inline void StyleResolver::matchShadowDistributedRules(ElementRuleCollector& col
 
 void StyleResolver::matchHostRules(Element* element, ScopedStyleResolver* resolver, ElementRuleCollector& collector, bool includeEmptyRules)
 {
-    if (element != resolver->scopingNode())
+    if (element != &resolver->scopingNode())
         return;
     resolver->matchHostRules(collector, includeEmptyRules);
 }
@@ -379,7 +382,7 @@ void StyleResolver::matchScopedAuthorRules(Element* element, ElementRuleCollecto
     for (unsigned i = 0; i < resolvers.size(); ++i, --cascadeOrder) {
         ScopedStyleResolver* resolver = resolvers.at(i);
         // FIXME: Need to clarify how to treat style scoped.
-        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, resolver->treeScope() == element->treeScope() && resolver->scopingNode()->isShadowRoot() ? 0 : cascadeOrder);
+        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, resolver->treeScope() == element->treeScope() && resolver->scopingNode().isShadowRoot() ? 0 : cascadeOrder);
     }
 
     collector.sortAndTransferMatchedRules();
