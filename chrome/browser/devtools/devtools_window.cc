@@ -288,6 +288,10 @@ void DevToolsWindow::RegisterProfilePrefs(
       prefs::kDevToolsPortForwardingEnabled,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kDevToolsPortForwardingDefaultSet,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDictionaryPref(
       prefs::kDevToolsPortForwardingConfig,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

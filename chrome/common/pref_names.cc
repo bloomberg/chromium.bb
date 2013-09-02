@@ -1821,6 +1821,11 @@ const char kDevToolsOpenDocked[] = "devtools.open_docked";
 const char kDevToolsPortForwardingEnabled[] =
     "devtools.port_forwarding_enabled";
 
+// A boolean specifying whether default port forwarding configuration has been
+// set.
+const char kDevToolsPortForwardingDefaultSet[] =
+    "devtools.port_forwarding_default_set";
+
 // A dictionary of port->location pairs for port forwarding.
 const char kDevToolsPortForwardingConfig[] = "devtools.port_forwarding_config";
 

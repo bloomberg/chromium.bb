@@ -84,6 +84,9 @@ static const char kPortForwardingEnabledCommand[] =
     "set-port-forwarding-enabled";
 static const char kPortForwardingConfigCommand[] = "set-port-forwarding-config";
 
+static const char kPortForwardingDefaultPort[] = "8080";
+static const char kPortForwardingDefaultLocation[] = "localhost:8080";
+
 static const char kTargetTypeField[]  = "type";
 static const char kAttachedField[]  = "attached";
 static const char kProcessIdField[]  = "processId";
@@ -494,6 +497,7 @@ InspectUI::~InspectUI() {
 }
 
 void InspectUI::InitUI() {
+  SetPortForwardingDefaults();
   StartListeningNotifications();
   PopulateLists();
   UpdatePortForwardingEnabled();
@@ -694,16 +698,50 @@ void InspectUI::RemoteDevicesChanged(
 }
 
 void InspectUI::UpdatePortForwardingEnabled() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  const base::Value* value = profile->GetPrefs()->FindPreference(
-      prefs::kDevToolsPortForwardingEnabled)->GetValue();
-  web_ui()->CallJavascriptFunction("updatePortForwardingEnabled", *value);
+  web_ui()->CallJavascriptFunction("updatePortForwardingEnabled",
+      *GetPrefValue(prefs::kDevToolsPortForwardingEnabled));
 
 }
 
 void InspectUI::UpdatePortForwardingConfig() {
+  web_ui()->CallJavascriptFunction("updatePortForwardingConfig",
+      *GetPrefValue(prefs::kDevToolsPortForwardingConfig));
+}
+
+void InspectUI::SetPortForwardingDefaults() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  const base::Value* value = profile->GetPrefs()->FindPreference(
-      prefs::kDevToolsPortForwardingConfig)->GetValue();
-  web_ui()->CallJavascriptFunction("updatePortForwardingConfig", *value);
+  PrefService* prefs = profile->GetPrefs();
+
+  bool default_set;
+  if (!GetPrefValue(prefs::kDevToolsPortForwardingDefaultSet)->
+      GetAsBoolean(&default_set) || default_set) {
+    return;
+  }
+
+  // This is the first chrome://inspect invocation on a fresh profile or after
+  // upgrade from a version that did not have kDevToolsPortForwardingDefaultSet.
+  prefs->SetBoolean(prefs::kDevToolsPortForwardingDefaultSet, true);
+
+  bool enabled;
+  const base::DictionaryValue* config;
+  if (!GetPrefValue(prefs::kDevToolsPortForwardingEnabled)->
+        GetAsBoolean(&enabled) ||
+      !GetPrefValue(prefs::kDevToolsPortForwardingConfig)->
+        GetAsDictionary(&config)) {
+    return;
+  }
+
+  // Do nothing if user already took explicit action.
+  if (enabled || config->size() != 0)
+    return;
+
+  base::DictionaryValue default_config;
+  default_config.SetString(
+      kPortForwardingDefaultPort, kPortForwardingDefaultLocation);
+  prefs->Set(prefs::kDevToolsPortForwardingConfig, default_config);
+}
+
+const base::Value* InspectUI::GetPrefValue(const char* name) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  return profile->GetPrefs()->FindPreference(name)->GetValue();
 }
