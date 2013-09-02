@@ -8,6 +8,8 @@
 #include <string.h>
 #include <string>
 
+#include "sdk_util/string_util.h"
+
 namespace nacl_io {
 
 Path::Path() {}
@@ -170,27 +172,18 @@ std::string Path::Range(const StringArray_t& paths, size_t start, size_t end) {
 
 // static
 StringArray_t Path::Split(const std::string& path) {
+  StringArray_t path_split;
   StringArray_t components;
-  size_t offs = 0;
-  size_t next = 0;
 
-  if (path[0] == '/') {
-    offs = 1;
+  sdk_util::SplitString(path, '/', &path_split);
+
+  if (path[0] == '/')
     components.push_back("/");
-  }
 
-  while (next != std::string::npos) {
-    next = path.find('/', offs);
-
-    // Remove extra separators
-    if (next == offs) {
-      ++offs;
-      continue;
-    }
-
-    std::string part = path.substr(offs, next - offs);
-    if (!part.empty()) components.push_back(part);
-    offs = next + 1;
+  // Copy path_split to components, removing empty path segments.
+  for (StringArray_t::const_iterator it = path_split.begin();
+       it != path_split.end(); ++it) {
+    if (!it->empty()) components.push_back(*it);
   }
   return components;
 }

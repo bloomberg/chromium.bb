@@ -40,6 +40,7 @@
 #include "nacl_io/typed_mount_factory.h"
 #include "sdk_util/auto_lock.h"
 #include "sdk_util/ref_object.h"
+#include "sdk_util/string_util.h"
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 256
@@ -347,20 +348,20 @@ int KernelProxy::mount(const char* source,
   smap["TARGET"] = abs_path;
 
   if (data) {
-    char* str = strdup(static_cast<const char*>(data));
-    char* ptr = strtok(str, ",");
-    char* val;
-    while (ptr != NULL) {
-      val = strchr(ptr, '=');
-      if (val) {
-        *val = 0;
-        smap[ptr] = val + 1;
+    std::vector<std::string> elements;
+    sdk_util::SplitString(static_cast<const char*>(data), ',', &elements);
+
+    for (std::vector<std::string>::const_iterator it = elements.begin();
+         it != elements.end(); ++it) {
+      size_t location = it->find('=');
+      if (location != std::string::npos) {
+        std::string key = it->substr(0, location);
+        std::string val = it->substr(location + 1);
+        smap[key] = val;
       } else {
-        smap[ptr] = "TRUE";
+        smap[*it] = "TRUE";
       }
-      ptr = strtok(NULL, ",");
     }
-    free(str);
   }
 
   ScopedMount mnt;

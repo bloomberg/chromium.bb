@@ -41,7 +41,7 @@ class MountHttp : public Mount {
   virtual void Destroy();
   Error FindOrCreateDir(const Path& path, ScopedMountNode* out_node);
   Error LoadManifest(const std::string& path, char** out_manifest);
-  Error ParseManifest(char *text);
+  Error ParseManifest(const char *text);
 
  private:
   // Gets the URL to fetch for |path|.

@@ -129,7 +129,8 @@ TEST_F(MountHttpTest, ParseManifest) {
 
   mnt_ = new MountHttpMock(args, &ppapi_);
 
-  char manifest[] = "-r-- 123 /mydir/foo\n-rw- 234 /thatdir/bar\n";
+  // Multiple consecutive newlines or spaces should be ignored.
+  char manifest[] = "-r-- 123 /mydir/foo\n\n-rw-   234  /thatdir/bar\n";
   EXPECT_EQ(0, mnt_->ParseManifest(manifest));
 
   ScopedMountNode root;

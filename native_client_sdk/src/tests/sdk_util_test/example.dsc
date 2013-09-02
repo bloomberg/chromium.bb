@@ -10,6 +10,7 @@
       'TYPE' : 'main',
       'SOURCES' : [
         'main.cc',
+        'string_util_test.cc',
       ],
       'DEPS': ['ppapi_simple', 'sdk_util', 'nacl_io'],
       # Order matters here: gtest has a "main" function that will be used if

@@ -21,6 +21,7 @@
         'ref_object.h',
         'scoped_ref.h',
         'simple_lock.h',
+        'string_util.h',
         'thread_pool.h',
         'thread_safe_queue.h'
       ],
