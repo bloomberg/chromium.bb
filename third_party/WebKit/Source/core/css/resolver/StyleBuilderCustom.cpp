@@ -1159,7 +1159,7 @@ static bool percentageOrNumberToFloat(const CSSPrimitiveValue* primitiveValue, f
     return numberToFloat(primitiveValue, out);
 }
 
-static String fragmentIdentifier(const CSSPrimitiveValue* primitiveValue, Document* document)
+static String fragmentIdentifier(const CSSPrimitiveValue* primitiveValue, Document& document)
 {
     if (primitiveValue->primitiveType() != CSSPrimitiveValue::CSS_URI)
         return String();
@@ -2278,21 +2278,21 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(markerStartResource, MarkerStartResource)
         if (primitiveValue)
-            state.style()->accessSVGStyle()->setMarkerStartResource(fragmentIdentifier(primitiveValue, &state.document()));
+            state.style()->accessSVGStyle()->setMarkerStartResource(fragmentIdentifier(primitiveValue, state.document()));
         break;
     }
     case CSSPropertyMarkerMid:
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(markerMidResource, MarkerMidResource)
         if (primitiveValue)
-            state.style()->accessSVGStyle()->setMarkerMidResource(fragmentIdentifier(primitiveValue, &state.document()));
+            state.style()->accessSVGStyle()->setMarkerMidResource(fragmentIdentifier(primitiveValue, state.document()));
         break;
     }
     case CSSPropertyMarkerEnd:
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(markerEndResource, MarkerEndResource)
         if (primitiveValue)
-            state.style()->accessSVGStyle()->setMarkerEndResource(fragmentIdentifier(primitiveValue, &state.document()));
+            state.style()->accessSVGStyle()->setMarkerEndResource(fragmentIdentifier(primitiveValue, state.document()));
         break;
     }
     case CSSPropertyStrokeMiterlimit:
@@ -2307,21 +2307,21 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(filterResource, FilterResource)
         if (primitiveValue)
-            state.style()->accessSVGStyle()->setFilterResource(fragmentIdentifier(primitiveValue, &state.document()));
+            state.style()->accessSVGStyle()->setFilterResource(fragmentIdentifier(primitiveValue, state.document()));
         break;
     }
     case CSSPropertyMask:
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(maskerResource, MaskerResource)
         if (primitiveValue)
-            state.style()->accessSVGStyle()->setMaskerResource(fragmentIdentifier(primitiveValue, &state.document()));
+            state.style()->accessSVGStyle()->setMaskerResource(fragmentIdentifier(primitiveValue, state.document()));
         break;
     }
     case CSSPropertyClipPath:
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(clipperResource, ClipperResource)
         if (primitiveValue)
-            state.style()->accessSVGStyle()->setClipperResource(fragmentIdentifier(primitiveValue, &state.document()));
+            state.style()->accessSVGStyle()->setClipperResource(fragmentIdentifier(primitiveValue, state.document()));
         break;
     }
     case CSSPropertyStopColor:

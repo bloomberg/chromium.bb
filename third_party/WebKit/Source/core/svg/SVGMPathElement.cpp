@@ -64,7 +64,7 @@ void SVGMPathElement::buildPendingResource()
         return;
 
     String id;
-    Element* target = SVGURIReference::targetElementFromIRIString(hrefCurrentValue(), &document(), &id);
+    Element* target = SVGURIReference::targetElementFromIRIString(hrefCurrentValue(), document(), &id);
     if (!target) {
         // Do not register as pending if we are already pending this resource.
         if (document().accessSVGExtensions()->isElementPendingResource(this, id))
@@ -151,7 +151,7 @@ void SVGMPathElement::svgAttributeChanged(const QualifiedName& attrName)
 
 SVGPathElement* SVGMPathElement::pathElement()
 {
-    Element* target = targetElementFromIRIString(hrefCurrentValue(), &document());
+    Element* target = targetElementFromIRIString(hrefCurrentValue(), document());
     if (target && target->hasTagName(SVGNames::pathTag))
         return toSVGPathElement(target);
     return 0;

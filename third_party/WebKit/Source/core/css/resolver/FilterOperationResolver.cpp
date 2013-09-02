@@ -405,7 +405,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const Re
             KURL url = state.document().completeURL(svgDocumentValue->url());
 
             RefPtr<ReferenceFilterOperation> operation = ReferenceFilterOperation::create(svgDocumentValue->url(), url.fragmentIdentifier(), operationType);
-            if (SVGURIReference::isExternalURIReference(svgDocumentValue->url(), &state.document())) {
+            if (SVGURIReference::isExternalURIReference(svgDocumentValue->url(), state.document())) {
                 if (!svgDocumentValue->loadRequested())
                     state.elementStyleResources().addPendingSVGDocument(operation.get(), svgDocumentValue);
                 else if (svgDocumentValue->cachedSVGDocument())

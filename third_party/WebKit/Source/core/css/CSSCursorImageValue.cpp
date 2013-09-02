@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-static inline SVGCursorElement* resourceReferencedByCursorElement(const String& url, Document* document)
+static inline SVGCursorElement* resourceReferencedByCursorElement(const String& url, Document& document)
 {
     Element* element = SVGURIReference::targetElementFromIRIString(url, document);
     if (element && element->hasTagName(SVGNames::cursorTag))
@@ -69,7 +69,7 @@ CSSCursorImageValue::~CSSCursorImageValue()
     for (; it != end; ++it) {
         SVGElement* referencedElement = *it;
         referencedElement->cursorImageValueRemoved();
-        if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(url, &referencedElement->document()))
+        if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(url, referencedElement->document()))
             cursorElement->removeClient(referencedElement);
     }
 }
@@ -96,7 +96,7 @@ bool CSSCursorImageValue::updateIfSVGCursorIsUsed(Element* element)
         return false;
 
     String url = toCSSImageValue(m_imageValue.get())->url();
-    if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(url, &element->document())) {
+    if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(url, element->document())) {
         // FIXME: This will override hot spot specified in CSS, which is probably incorrect.
         SVGLengthContext lengthContext(0);
         m_hasHotSpot = true;
@@ -133,7 +133,7 @@ StyleImage* CSSCursorImageValue::cachedImage(ResourceFetcher* loader, float devi
         if (isSVGCursor() && loader && loader->document()) {
             RefPtr<CSSImageValue> imageValue = toCSSImageValue(m_imageValue.get());
             // FIXME: This will fail if the <cursor> element is in a shadow DOM (bug 59827)
-            if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(imageValue->url(), loader->document())) {
+            if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(imageValue->url(), *loader->document())) {
                 RefPtr<CSSImageValue> svgImageValue = CSSImageValue::create(cursorElement->hrefCurrentValue());
                 StyleFetchedImage* cachedImage = svgImageValue->cachedImage(loader);
                 m_image = cachedImage;

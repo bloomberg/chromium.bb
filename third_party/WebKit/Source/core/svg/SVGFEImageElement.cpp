@@ -92,7 +92,7 @@ void SVGFEImageElement::buildPendingResource()
         return;
 
     String id;
-    Element* target = SVGURIReference::targetElementFromIRIString(hrefCurrentValue(), &document(), &id);
+    Element* target = SVGURIReference::targetElementFromIRIString(hrefCurrentValue(), document(), &id);
     if (!target) {
         if (id.isEmpty())
             fetchImageResource();
@@ -200,7 +200,7 @@ PassRefPtr<FilterEffect> SVGFEImageElement::build(SVGFilterBuilder*, Filter* fil
 {
     if (m_cachedImage)
         return FEImage::createWithImage(filter, m_cachedImage->imageForRenderer(renderer()), preserveAspectRatioCurrentValue());
-    return FEImage::createWithIRIReference(filter, &document(), hrefCurrentValue(), preserveAspectRatioCurrentValue());
+    return FEImage::createWithIRIReference(filter, document(), hrefCurrentValue(), preserveAspectRatioCurrentValue());
 }
 
 void SVGFEImageElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
