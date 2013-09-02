@@ -84,11 +84,23 @@ int main(void) {
   errs += TimeTest(ti.clock_getres, CLOCK_MONOTONIC,
                    "clock_getres on monotonic clock failed",
                    "Monotonic clock resolution");
+  errs += TimeTest(ti.clock_getres, CLOCK_PROCESS_CPUTIME_ID,
+                   "clock_getres on process CPU-time clock failed",
+                   "Process CPU-time clock resolution");
+  errs += TimeTest(ti.clock_getres, CLOCK_THREAD_CPUTIME_ID,
+                   "clock_getres on thread CPU-time clock failed",
+                   "Thread CPU-time clock resolution");
   errs += TimeTest(ti.clock_gettime, CLOCK_REALTIME,
                    "clock_gettime on realtime clock failed",
                    "Realtime clock value");
   errs += TimeTest(ti.clock_gettime, CLOCK_MONOTONIC,
                    "clock_gettime on monotonic clock failed",
                    "Monotonic clock value");
+  errs += TimeTest(ti.clock_gettime, CLOCK_PROCESS_CPUTIME_ID,
+                   "clock_gettime on process CPU-time clock failed",
+                   "Process CPU-time clock value");
+  errs += TimeTest(ti.clock_gettime, CLOCK_THREAD_CPUTIME_ID,
+                   "clock_gettime on thread CPU-time clock failed",
+                   "Thread CPU-time clock value");
   return errs;
 }
