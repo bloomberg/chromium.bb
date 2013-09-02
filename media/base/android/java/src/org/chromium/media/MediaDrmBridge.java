@@ -31,6 +31,8 @@ import java.util.UUID;
 class MediaDrmBridge {
 
     private static final String TAG = "MediaDrmBridge";
+    private static final String SECURITY_LEVEL = "securityLevel";
+    private static final String PRIVACY_MODE = "privacyMode";
     private MediaDrm mMediaDrm;
     private UUID mSchemeUUID;
     private int mNativeMediaDrmBridge;
@@ -57,16 +59,19 @@ class MediaDrmBridge {
         return new UUID(mostSigBits, leastSigBits);
     }
 
-    private MediaDrmBridge(UUID schemeUUID, int nativeMediaDrmBridge) {
+    private MediaDrmBridge(UUID schemeUUID, String securityLevel, int nativeMediaDrmBridge) {
         try {
             mSchemeUUID = schemeUUID;
             mMediaDrm = new MediaDrm(schemeUUID);
-            mNativeMediaDrmBridge = nativeMediaDrmBridge;
-            mMediaDrm.setPropertyString("privacyMode", "enable");
-            mMediaDrm.setOnEventListener(new MediaDrmListener());
             mHandler = new Handler();
+            mNativeMediaDrmBridge = nativeMediaDrmBridge;
+            mMediaDrm.setOnEventListener(new MediaDrmListener());
+            mMediaDrm.setPropertyString(PRIVACY_MODE, "enable");
+            mMediaDrm.setPropertyString(SECURITY_LEVEL, securityLevel);
         } catch (android.media.UnsupportedSchemeException e) {
-            Log.e(TAG, "Unsupported DRM scheme " + e.toString());
+            Log.e(TAG, "Unsupported DRM scheme: " + e.toString());
+        } catch (java.lang.IllegalArgumentException e) {
+            Log.e(TAG, "Failed to set DRM properties: " + e.toString());
         }
     }
 
@@ -113,10 +118,10 @@ class MediaDrmBridge {
             final byte[] sessionId = mMediaDrm.openSession();
             mSessionId = new String(sessionId, "UTF-8");
         } catch (android.media.NotProvisionedException e) {
-            Log.e(TAG, "Cannot open a new session " + e.toString());
+            Log.e(TAG, "Cannot open a new session: " + e.toString());
             return true;
         } catch (Exception e) {
-            Log.e(TAG, "Cannot open a new session " + e.toString());
+            Log.e(TAG, "Cannot open a new session: " + e.toString());
             return false;
         }
 
@@ -134,13 +139,15 @@ class MediaDrmBridge {
      * Create a new MediaDrmBridge from the crypto scheme UUID.
      *
      * @param schemeUUID Crypto scheme UUID.
+     * @param securityLevel Security level to be used.
      * @param nativeMediaDrmBridge Native object of this class.
      */
     @CalledByNative
-    private static MediaDrmBridge create(byte[] schemeUUID, int nativeMediaDrmBridge) {
+    private static MediaDrmBridge create(
+            byte[] schemeUUID, String securityLevel, int nativeMediaDrmBridge) {
         UUID cryptoScheme = getUUIDFromBytes(schemeUUID);
         if (cryptoScheme != null && MediaDrm.isCryptoSchemeSupported(cryptoScheme)) {
-            return new MediaDrmBridge(cryptoScheme, nativeMediaDrmBridge);
+            return new MediaDrmBridge(cryptoScheme, securityLevel, nativeMediaDrmBridge);
         }
         return null;
     }
@@ -166,7 +173,7 @@ class MediaDrmBridge {
                 final byte[] session = mSessionId.getBytes("UTF-8");
                 mMediaDrm.closeSession(session);
             } catch (java.io.UnsupportedEncodingException e) {
-                Log.e(TAG, "Failed to close session " + e.toString());
+                Log.e(TAG, "Failed to close session: " + e.toString());
             }
         }
         mMediaDrm.release();
@@ -230,10 +237,10 @@ class MediaDrmBridge {
         } catch (android.media.NotProvisionedException e) {
             // MediaDrm.EVENT_PROVISION_REQUIRED is also fired in this case.
             // Provisioning is handled in the handler of that event.
-            Log.e(TAG, "Cannot get key request " + e.toString());
+            Log.e(TAG, "Cannot get key request: " + e.toString());
             return;
         } catch (java.io.UnsupportedEncodingException e) {
-            Log.e(TAG, "Cannot get key request " + e.toString());
+            Log.e(TAG, "Cannot get key request: " + e.toString());
         }
         onKeyError();
     }
@@ -252,7 +259,7 @@ class MediaDrmBridge {
             final byte[] session = sessionId.getBytes("UTF-8");
             mMediaDrm.removeKeys(session);
         } catch (java.io.UnsupportedEncodingException e) {
-            Log.e(TAG, "Cannot cancel key request " + e.toString());
+            Log.e(TAG, "Cannot cancel key request: " + e.toString());
         }
     }
 
@@ -285,11 +292,11 @@ class MediaDrmBridge {
             });
             return;
         } catch (android.media.NotProvisionedException e) {
-            Log.e(TAG, "failed to provide key response " + e.toString());
+            Log.e(TAG, "failed to provide key response: " + e.toString());
         } catch (android.media.DeniedByServerException e) {
-            Log.e(TAG, "failed to provide key response " + e.toString());
+            Log.e(TAG, "failed to provide key response: " + e.toString());
         } catch (java.io.UnsupportedEncodingException e) {
-            Log.e(TAG, "failed to provide key response " + e.toString());
+            Log.e(TAG, "failed to provide key response: " + e.toString());
         }
         onKeyError();
     }
@@ -319,7 +326,7 @@ class MediaDrmBridge {
         try {
             mMediaDrm.provideProvisionResponse(response);
         } catch (android.media.DeniedByServerException e) {
-            Log.e(TAG, "failed to provide provision response " + e.toString());
+            Log.e(TAG, "failed to provide provision response: " + e.toString());
             onKeyError();
             return;
         }

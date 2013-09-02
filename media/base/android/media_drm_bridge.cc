@@ -154,12 +154,14 @@ static MediaDrmBridge::SecurityLevel GetSecurityLevelFromString(
 // static
 MediaDrmBridge* MediaDrmBridge::Create(int media_keys_id,
                                        const std::vector<uint8>& scheme_uuid,
+                                       const std::string& security_level,
                                        MediaPlayerManager* manager) {
   if (!IsAvailable() || scheme_uuid.empty())
     return NULL;
 
   // TODO(qinmin): check whether the uuid is valid.
-  return new MediaDrmBridge(media_keys_id, scheme_uuid, manager);
+  return new MediaDrmBridge(
+      media_keys_id, scheme_uuid, security_level, manager);
 }
 
 // static
@@ -192,6 +194,7 @@ bool MediaDrmBridge::RegisterMediaDrmBridge(JNIEnv* env) {
 
 MediaDrmBridge::MediaDrmBridge(int media_keys_id,
                                const std::vector<uint8>& scheme_uuid,
+                               const std::string& security_level,
                                MediaPlayerManager* manager)
     : media_keys_id_(media_keys_id),
       scheme_uuid_(scheme_uuid),
@@ -201,8 +204,11 @@ MediaDrmBridge::MediaDrmBridge(int media_keys_id,
 
   ScopedJavaLocalRef<jbyteArray> j_scheme_uuid =
       base::android::ToJavaByteArray(env, &scheme_uuid[0], scheme_uuid.size());
+  ScopedJavaLocalRef<jstring> j_security_level =
+      ConvertUTF8ToJavaString(env, security_level);
   j_media_drm_.Reset(Java_MediaDrmBridge_create(
-      env, j_scheme_uuid.obj(), reinterpret_cast<intptr_t>(this)));
+      env, j_scheme_uuid.obj(), j_security_level.obj(),
+      reinterpret_cast<intptr_t>(this)));
 }
 
 MediaDrmBridge::~MediaDrmBridge() {

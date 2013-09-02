@@ -513,8 +513,10 @@ void BrowserMediaPlayerManager::RemovePlayer(int player_id) {
 void BrowserMediaPlayerManager::AddDrmBridge(int media_keys_id,
                                              const std::vector<uint8>& uuid) {
   DCHECK(!GetDrmBridge(media_keys_id));
+  // TODO(qinmin): Pass the security level to MediaDrmBridge instead of using
+  // the default L3.
   scoped_ptr<MediaDrmBridge> drm_bridge(
-      MediaDrmBridge::Create(media_keys_id, uuid, this));
+      MediaDrmBridge::Create(media_keys_id, uuid, "L3", this));
   DCHECK(drm_bridge) << "failed to create drm bridge. ";
   drm_bridges_.push_back(drm_bridge.release());
 }

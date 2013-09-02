@@ -34,6 +34,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   // pointer otherwise.
   static MediaDrmBridge* Create(int media_keys_id,
                                 const std::vector<uint8>& scheme_uuid,
+                                const std::string& security_level,
                                 MediaPlayerManager* manager);
 
   // Checks whether MediaDRM is available.
@@ -87,6 +88,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
 
   MediaDrmBridge(int media_keys_id,
                  const std::vector<uint8>& scheme_uuid,
+                 const std::string& security_level,
                  MediaPlayerManager* manager);
 
   // Get the security level of the media.
