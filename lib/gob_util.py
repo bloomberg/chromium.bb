@@ -127,7 +127,11 @@ def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None):
   if o_params:
     q.extend(['o=%s' % p for p in o_params])
   path = 'changes/?%s' % '&'.join(q)
-  result = ReadHttpJsonResponse(CreateHttpConn(host, path), ignore_404=False)
+  try:
+    result = ReadHttpJsonResponse(CreateHttpConn(host, path), ignore_404=False)
+  except GOBError as e:
+    msg = '%s:\n%s' % (e.message, path)
+    raise GOBError(e.http_status, msg)
   return result if len(change_list) == 1 else sum(result, [])
 
 
