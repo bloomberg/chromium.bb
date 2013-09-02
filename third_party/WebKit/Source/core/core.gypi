@@ -910,6 +910,8 @@
             'fetch/ResourceLoader.cpp',
             'fetch/ResourceLoader.h',
             'fetch/ResourceLoaderOptions.h',
+            'fetch/ResourceLoaderSet.cpp',
+            'fetch/ResourceLoaderSet.h',
             'fetch/ResourcePtr.cpp',
             'fetch/ResourcePtr.h',
             'fetch/FetchRequest.cpp',

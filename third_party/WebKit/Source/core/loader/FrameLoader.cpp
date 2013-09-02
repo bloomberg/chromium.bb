@@ -1097,6 +1097,13 @@ void FrameLoader::checkLoadComplete()
     }
 }
 
+void FrameLoader::checkLoadComplete(DocumentLoader* documentLoader)
+{
+    if (documentLoader)
+        documentLoader->checkLoadComplete();
+    checkLoadComplete();
+}
+
 int FrameLoader::numPendingOrLoadingRequests(bool recurse) const
 {
     if (!recurse)

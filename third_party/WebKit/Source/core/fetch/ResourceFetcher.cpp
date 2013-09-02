@@ -36,6 +36,7 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/RawResource.h"
+#include "core/fetch/ResourceLoaderSet.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/fetch/ShaderResource.h"
 #include "core/fetch/TextTrackResource.h"
@@ -1185,26 +1186,56 @@ void ResourceFetcher::didReceiveData(const Resource* resource, const char* data,
 
 void ResourceFetcher::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* loader)
 {
-    if (m_documentLoader)
-        m_documentLoader->subresourceLoaderFinishedLoadingOnePart(loader);
+    if (m_multipartLoaders)
+        m_multipartLoaders->add(loader);
+    if (m_loaders)
+        m_loaders->remove(loader);
+    if (Frame* frame = this->frame())
+        return frame->loader()->checkLoadComplete(m_documentLoader);
 }
 
 void ResourceFetcher::didInitializeResourceLoader(ResourceLoader* loader)
 {
-    if (m_documentLoader)
-        m_documentLoader->addResourceLoader(loader);
+    if (!m_document)
+        return;
+    if (!m_loaders)
+        m_loaders = adoptPtr(new ResourceLoaderSet());
+    ASSERT(!m_loaders->contains(loader));
+    m_loaders->add(loader);
 }
 
 void ResourceFetcher::willTerminateResourceLoader(ResourceLoader* loader)
 {
-    if (m_documentLoader)
-        m_documentLoader->removeResourceLoader(loader);
+    if (!m_loaders || !m_loaders->contains(loader))
+        return;
+    m_loaders->remove(loader);
+    if (Frame* frame = this->frame())
+        frame->loader()->checkLoadComplete(m_documentLoader);
 }
 
 void ResourceFetcher::willStartLoadingResource(ResourceRequest& request)
 {
     if (m_documentLoader)
         m_documentLoader->applicationCacheHost()->willStartLoadingResource(request);
+}
+
+void ResourceFetcher::stopFetching()
+{
+    if (m_multipartLoaders)
+        m_multipartLoaders->cancelAll();
+    if (m_loaders)
+        m_loaders->cancelAll();
+}
+
+bool ResourceFetcher::isFetching() const
+{
+    return m_loaders && !m_loaders->isEmpty();
+}
+
+void ResourceFetcher::setDefersLoading(bool defers)
+{
+    if (m_loaders)
+        m_loaders->setAllDefersLoading(defers);
 }
 
 bool ResourceFetcher::defersLoading() const

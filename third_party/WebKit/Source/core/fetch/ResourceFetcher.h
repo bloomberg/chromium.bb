@@ -57,6 +57,7 @@ class FrameLoader;
 class ImageLoader;
 class KURL;
 class ResourceTimingInfo;
+class ResourceLoaderSet;
 
 // The ResourceFetcher provides a per-context interface to the MemoryCache
 // and enforces a bunch of security checks and rules for resource revalidation.
@@ -130,6 +131,10 @@ public:
     bool canRequest(Resource::Type, const KURL&, const ResourceLoaderOptions&, bool forPreload = false);
     bool canAccess(Resource*);
 
+    void setDefersLoading(bool);
+    void stopFetching();
+    bool isFetching() const;
+
     // ResourceLoaderHost
     virtual void incrementRequestCount(const Resource*) OVERRIDE;
     virtual void decrementRequestCount(const Resource*) OVERRIDE;
@@ -201,6 +206,9 @@ private:
 
     typedef HashMap<Resource*, RefPtr<ResourceTimingInfo> > ResourceTimingInfoMap;
     ResourceTimingInfoMap m_resourceTimingInfoMap;
+
+    OwnPtr<ResourceLoaderSet> m_loaders;
+    OwnPtr<ResourceLoaderSet> m_multipartLoaders;
 
     // 29 bits left
     bool m_autoLoadImages : 1;

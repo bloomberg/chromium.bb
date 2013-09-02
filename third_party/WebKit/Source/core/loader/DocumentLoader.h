@@ -62,8 +62,6 @@ namespace WebCore {
     class ResourceLoader;
     class SharedBuffer;
 
-    typedef HashSet<RefPtr<ResourceLoader> > ResourceLoaderSet;
-
     class DocumentLoader : public RefCounted<DocumentLoader>, private RawResourceClient {
         WTF_MAKE_FAST_ALLOCATED;
     public:
@@ -143,8 +141,6 @@ namespace WebCore {
         bool isLoadingMainResource() const { return m_loadingMainResource; }
 
         void stopLoadingSubresources();
-        void addResourceLoader(ResourceLoader*);
-        void removeResourceLoader(ResourceLoader*);
 
         void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*);
 
@@ -215,8 +211,6 @@ namespace WebCore {
         RefPtr<ResourceFetcher> m_fetcher;
 
         ResourcePtr<RawResource> m_mainResource;
-        ResourceLoaderSet m_resourceLoaders;
-        ResourceLoaderSet m_multipartResourceLoaders;
 
         RefPtr<DocumentWriter> m_writer;
 

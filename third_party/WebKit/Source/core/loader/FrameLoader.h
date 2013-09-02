@@ -149,6 +149,7 @@ public:
 
     void loadedResourceFromMemoryCache(Resource*);
 
+    void checkLoadComplete(DocumentLoader*);
     void checkLoadComplete();
     void detachFromParent();
 

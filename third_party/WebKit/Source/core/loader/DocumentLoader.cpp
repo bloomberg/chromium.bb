@@ -66,24 +66,6 @@
 
 namespace WebCore {
 
-static void cancelAll(const ResourceLoaderSet& loaders)
-{
-    Vector<RefPtr<ResourceLoader> > loadersCopy;
-    copyToVector(loaders, loadersCopy);
-    size_t size = loadersCopy.size();
-    for (size_t i = 0; i < size; ++i)
-        loadersCopy[i]->cancel();
-}
-
-static void setAllDefersLoading(const ResourceLoaderSet& loaders, bool defers)
-{
-    Vector<RefPtr<ResourceLoader> > loadersCopy;
-    copyToVector(loaders, loadersCopy);
-    size_t size = loadersCopy.size();
-    for (size_t i = 0; i < size; ++i)
-        loadersCopy[i]->setDefersLoading(defers);
-}
-
 static bool isArchiveMIMEType(const String& mimeType)
 {
     return mimeType == "multipart/related";
@@ -242,9 +224,6 @@ void DocumentLoader::stopLoading()
             m_frame->loader()->stopLoading();
     }
 
-    // Always cancel multipart loaders
-    cancelAll(m_multipartResourceLoaders);
-
     clearArchiveResources();
 
     if (!loading)
@@ -253,7 +232,7 @@ void DocumentLoader::stopLoading()
     if (isLoadingMainResource()) {
         // Stop the main resource loader and let it send the cancelled message.
         cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
-    } else if (!m_resourceLoaders.isEmpty()) {
+    } else if (m_fetcher->isFetching()) {
         // The main resource loader already finished loading. Set the cancelled error on the
         // document and let the resourceLoaders send individual cancelled messages below.
         setMainDocumentError(ResourceError::cancelledError(m_request.url()));
@@ -263,7 +242,7 @@ void DocumentLoader::stopLoading()
         mainReceivedError(ResourceError::cancelledError(m_request.url()));
     }
 
-    stopLoadingSubresources();
+    m_fetcher->stopFetching();
 }
 
 void DocumentLoader::commitIfReady()
@@ -279,7 +258,7 @@ bool DocumentLoader::isLoading() const
     if (document() && document()->hasActiveParser())
         return true;
 
-    return isLoadingMainResource() || !m_resourceLoaders.isEmpty();
+    return isLoadingMainResource() || m_fetcher->isFetching();
 }
 
 void DocumentLoader::notifyFinished(Resource* resource)
@@ -827,36 +806,7 @@ void DocumentLoader::setDefersLoading(bool defers)
     if (mainResourceLoader() && mainResourceLoader()->isLoadedBy(m_fetcher.get()))
         mainResourceLoader()->setDefersLoading(defers);
 
-    setAllDefersLoading(m_resourceLoaders, defers);
-}
-
-void DocumentLoader::stopLoadingSubresources()
-{
-    cancelAll(m_resourceLoaders);
-}
-
-void DocumentLoader::addResourceLoader(ResourceLoader* loader)
-{
-    // The main resource's underlying ResourceLoader will ask to be added here.
-    // It is much simpler to handle special casing of main resource loads if we don't
-    // let it be added. In the main resource load case, mainResourceLoader()
-    // will still be null at this point, but document() should be zero here if and only
-    // if we are just starting the main resource load.
-    if (!document())
-        return;
-    ASSERT(!m_resourceLoaders.contains(loader));
-    ASSERT(!mainResourceLoader() || mainResourceLoader() != loader);
-    m_resourceLoaders.add(loader);
-}
-
-void DocumentLoader::removeResourceLoader(ResourceLoader* loader)
-{
-    if (!m_resourceLoaders.contains(loader))
-        return;
-    m_resourceLoaders.remove(loader);
-    checkLoadComplete();
-    if (Frame* frame = m_frame)
-        frame->loader()->checkLoadComplete();
+    m_fetcher->setDefersLoading(defers);
 }
 
 bool DocumentLoader::maybeLoadEmpty()
@@ -939,15 +889,6 @@ void DocumentLoader::cancelMainResourceLoad(const ResourceError& resourceError)
         mainResourceLoader()->cancel(error);
 
     mainReceivedError(error);
-}
-
-void DocumentLoader::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* loader)
-{
-    m_multipartResourceLoaders.add(loader);
-    m_resourceLoaders.remove(loader);
-    checkLoadComplete();
-    if (Frame* frame = m_frame)
-        frame->loader()->checkLoadComplete();
 }
 
 DocumentWriter* DocumentLoader::beginWriting(const String& mimeType, const String& encoding, const KURL& url)
