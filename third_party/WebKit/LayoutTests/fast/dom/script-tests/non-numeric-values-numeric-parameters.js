@@ -215,7 +215,7 @@ shouldBe("nonNumericPolicy('createCSSStyleSheet().removeRule(x)')", "'any type a
 
 // CSSValueList
 
-shouldBe("nonNumericPolicy('createCSSValueList().item(x)')", "'any type allowed'");
+shouldBe("nonNumericPolicy('createCSSValueList().item(x)')", "'any type allowed (but not omitted)'");
 
 // Document
 
