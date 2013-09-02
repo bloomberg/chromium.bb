@@ -312,8 +312,8 @@ void CertificateManagerHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_SERVER_CERTS_TAB_LABEL));
   localized_strings->SetString("caCertsTabTitle",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_CERT_AUTHORITIES_TAB_LABEL));
-  localized_strings->SetString("unknownCertsTabTitle",
-      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_UNKNOWN_TAB_LABEL));
+  localized_strings->SetString("otherCertsTabTitle",
+      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_OTHER_TAB_LABEL));
 
   // Tab descriptions.
   localized_strings->SetString("personalCertsTabDescription",
@@ -322,8 +322,8 @@ void CertificateManagerHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_SERVER_TREE_DESCRIPTION));
   localized_strings->SetString("caCertsTabDescription",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_AUTHORITIES_TREE_DESCRIPTION));
-  localized_strings->SetString("unknownCertsTabDescription",
-      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_UNKNOWN_TREE_DESCRIPTION));
+  localized_strings->SetString("otherCertsTabDescription",
+      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_OTHER_TREE_DESCRIPTION));
 
   // Buttons.
   localized_strings->SetString("view_certificate",
@@ -350,9 +350,9 @@ void CertificateManagerHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_DELETE_CA_FORMAT));
   localized_strings->SetString("caCertsTabDeleteImpact",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_DELETE_CA_DESCRIPTION));
-  localized_strings->SetString("unknownCertsTabDeleteConfirm",
-      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_DELETE_UNKNOWN_FORMAT));
-  localized_strings->SetString("unknownCertsTabDeleteImpact", std::string());
+  localized_strings->SetString("otherCertsTabDeleteConfirm",
+      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_DELETE_OTHER_FORMAT));
+  localized_strings->SetString("otherCertsTabDeleteImpact", std::string());
 
   // Certificate Restore overlay strings.
   localized_strings->SetString("certificateRestorePasswordDescription",
@@ -497,7 +497,7 @@ void CertificateManagerHandler::CertificatesRefreshed() {
   PopulateTree("personalCertsTab", net::USER_CERT, web_trusted_certs);
   PopulateTree("serverCertsTab", net::SERVER_CERT, web_trusted_certs);
   PopulateTree("caCertsTab", net::CA_CERT, web_trusted_certs);
-  PopulateTree("otherCertsTab", net::UNKNOWN_CERT, web_trusted_certs);
+  PopulateTree("otherCertsTab", net::OTHER_CERT, web_trusted_certs);
 }
 
 void CertificateManagerHandler::FileSelected(const base::FilePath& path,

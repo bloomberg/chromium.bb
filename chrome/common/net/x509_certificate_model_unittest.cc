@@ -19,7 +19,7 @@ TEST(X509CertificateModelTest, GetTypeCA) {
 
 #if defined(USE_OPENSSL)
   // Remove this when OpenSSL build implements the necessary functions.
-  EXPECT_EQ(net::UNKNOWN_CERT,
+  EXPECT_EQ(net::OTHER_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
 #else
   EXPECT_EQ(net::CA_CERT,
@@ -43,14 +43,14 @@ TEST(X509CertificateModelTest, GetTypeServer) {
 
 #if defined(USE_OPENSSL)
   // Remove this when OpenSSL build implements the necessary functions.
-  EXPECT_EQ(net::UNKNOWN_CERT,
+  EXPECT_EQ(net::OTHER_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
 #else
   // Test mozilla_security_manager::GetCertType with server certs and default
   // trust.  Currently this doesn't work.
   // TODO(mattm): make mozilla_security_manager::GetCertType smarter so we can
   // tell server certs even if they have no trust bits set.
-  EXPECT_EQ(net::UNKNOWN_CERT,
+  EXPECT_EQ(net::OTHER_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
 
   net::NSSCertDatabase* cert_db = net::NSSCertDatabase::GetInstance();

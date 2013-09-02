@@ -37,7 +37,7 @@ std::string GetKeyValuesFromName(X509_NAME* name) {
   return ret;
 }
 
-}  // namepsace
+}  // namespace
 
 namespace x509_certificate_model {
 
@@ -67,7 +67,7 @@ std::string GetVersion(net::X509Certificate::OSCertHandle cert_handle) {
 
 net::CertType GetType(X509Certificate::OSCertHandle os_cert) {
   // TODO(bulach): implement me.
-  return net::UNKNOWN_CERT;
+  return net::OTHER_CERT;
 }
 
 std::string GetEmailAddress(X509Certificate::OSCertHandle os_cert) {

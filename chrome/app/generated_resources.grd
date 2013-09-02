@@ -3041,7 +3041,7 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_CERT_MANAGER_CERT_AUTHORITIES_TAB_LABEL" desc="Title of the notebook page displaying certificate authorities">
         Authorities
       </message>
-      <message name="IDS_CERT_MANAGER_UNKNOWN_TAB_LABEL" desc="Title of the notebook page displaying certificates that don't fall under any of the other categories">
+      <message name="IDS_CERT_MANAGER_OTHER_TAB_LABEL" desc="Title of the notebook page displaying certificates that don't fall under any of the other categories">
         Others
       </message>
       <message name="IDS_CERT_MANAGER_USER_TREE_DESCRIPTION" desc="Description label above the tree showing the user's own certificates">
@@ -3053,7 +3053,7 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_CERT_MANAGER_AUTHORITIES_TREE_DESCRIPTION" desc="Description label above the Certificate Authorities tree">
         You have certificates on file that identify these certificate authorities:
       </message>
-      <message name="IDS_CERT_MANAGER_UNKNOWN_TREE_DESCRIPTION" desc="Description label above the tree showing certificates that don't fall under any of the other categories">
+      <message name="IDS_CERT_MANAGER_OTHER_TREE_DESCRIPTION" desc="Description label above the tree showing certificates that don't fall under any of the other categories">
         You have certificates on file that do not fit in any of the other categories:
       </message>
       <message name="IDS_CERT_MANAGER_VIEW_CERT_BUTTON" desc="Label for the button in the certificate manager which launches the certificate viewer for the selected certificate">
@@ -3089,7 +3089,7 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_CERT_MANAGER_DELETE_CA_DESCRIPTION" desc="Description of impact of deleting a certification authority certificate">
         If you delete a Certification Authority (CA) certificate, your browser will no longer trust any certificates issued by that CA.
       </message>
-      <message name="IDS_CERT_MANAGER_DELETE_UNKNOWN_FORMAT" desc="Confirmation in certificate manager dialog for deleting a certificate of other type">
+      <message name="IDS_CERT_MANAGER_DELETE_OTHER_FORMAT" desc="Confirmation in certificate manager dialog for deleting a certificate of other type">
         Delete certificate "<ph name="CERTIFICATE_NAME">$1<ex>Example Certificate</ex></ph>"?
       </message>
       <message name="IDS_CERT_MANAGER_EXPORT_PASSWORD_DESC" desc="Description of password prompt in certificate manager for exporting a personal certificate">

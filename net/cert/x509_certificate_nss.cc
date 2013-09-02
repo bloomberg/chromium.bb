@@ -106,7 +106,7 @@ std::string X509Certificate::GetDefaultNickname(CertType type) const {
     case SERVER_CERT:
       result = subject_.GetDisplayName();
       break;
-    case UNKNOWN_CERT:
+    case OTHER_CERT:
     default:
       break;
   }

@@ -1059,7 +1059,7 @@ net::CertType GetCertType(CERTCertificate *cert) {
   // TODO(mattm): http://crbug.com/128633.
   if (trust.sslFlags & CERTDB_TERMINAL_RECORD)
     return net::SERVER_CERT;
-  return net::UNKNOWN_CERT;
+  return net::OTHER_CERT;
 }
 
 }  // namespace mozilla_security_manager

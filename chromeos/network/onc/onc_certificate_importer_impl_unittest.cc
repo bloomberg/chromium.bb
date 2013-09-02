@@ -46,12 +46,12 @@ net::CertType GetCertType(net::X509Certificate::OSCertHandle cert) {
   // TODO(mattm): http://crbug.com/128633.
   if (trust.sslFlags & CERTDB_TERMINAL_RECORD)
     return net::SERVER_CERT;
-  return net::UNKNOWN_CERT;
+  return net::OTHER_CERT;
 }
 #else
 net::CertType GetCertType(net::X509Certificate::OSCertHandle cert) {
   NOTIMPLEMENTED();
-  return net::UNKNOWN_CERT;
+  return net::OTHER_CERT;
 }
 #endif  // USE_NSS
 

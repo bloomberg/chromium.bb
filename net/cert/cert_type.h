@@ -16,7 +16,7 @@ namespace net {
 // UNKNOWN_CERT.  If that cert is then trusted with SetCertTrust(cert,
 // SERVER_CERT, TRUSTED_SSL), it would become a SERVER_CERT.
 enum CertType {
-  UNKNOWN_CERT,
+  OTHER_CERT,
   CA_CERT,
   USER_CERT,
   SERVER_CERT,
