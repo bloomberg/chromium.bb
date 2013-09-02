@@ -104,36 +104,36 @@ void LinkLoader::didSendDOMContentLoadedForPrerender()
     m_client->didSendDOMContentLoadedForLinkPrerender();
 }
 
-bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& type, const KURL& href, Document* document)
+bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& type, const KURL& href, Document& document)
 {
     if (relAttribute.isDNSPrefetch()) {
-        Settings* settings = document->settings();
+        Settings* settings = document.settings();
         // FIXME: The href attribute of the link element can be in "//hostname" form, and we shouldn't attempt
         // to complete that as URL <https://bugs.webkit.org/show_bug.cgi?id=48857>.
         if (settings && settings->dnsPrefetchingEnabled() && href.isValid() && !href.isEmpty())
             prefetchDNS(href.host());
     }
 
-    if ((relAttribute.isLinkPrefetch() || relAttribute.isLinkSubresource()) && href.isValid() && document->frame()) {
+    if ((relAttribute.isLinkPrefetch() || relAttribute.isLinkSubresource()) && href.isValid() && document.frame()) {
         if (!m_client->shouldLoadLink())
             return false;
         Resource::Type type = relAttribute.isLinkSubresource() ?  Resource::LinkSubresource : Resource::LinkPrefetch;
-        FetchRequest linkRequest(ResourceRequest(document->completeURL(href)), FetchInitiatorTypeNames::link);
+        FetchRequest linkRequest(ResourceRequest(document.completeURL(href)), FetchInitiatorTypeNames::link);
         if (m_cachedLinkResource) {
             m_cachedLinkResource->removeClient(this);
             m_cachedLinkResource = 0;
         }
-        m_cachedLinkResource = document->fetcher()->fetchLinkResource(type, linkRequest);
+        m_cachedLinkResource = document.fetcher()->fetchLinkResource(type, linkRequest);
         if (m_cachedLinkResource)
             m_cachedLinkResource->addClient(this);
     }
 
     if (relAttribute.isLinkPrerender()) {
         if (!m_prerenderHandle) {
-            m_prerenderHandle = document->prerenderer()->render(this, href);
+            m_prerenderHandle = document.prerenderer()->render(this, href);
         } else if (m_prerenderHandle->url() != href) {
             m_prerenderHandle->cancel();
-            m_prerenderHandle = document->prerenderer()->render(this, href);
+            m_prerenderHandle = document.prerenderer()->render(this, href);
         }
     } else if (m_prerenderHandle) {
         m_prerenderHandle->cancel();
