@@ -55,16 +55,30 @@ scoped_ptr<ProxyConfigDictionary> GetProxyPolicy(
   if (!pref_service || network.guid().empty())
     return scoped_ptr<ProxyConfigDictionary>();
 
-  if (!pref_service->IsManagedPreference(pref_name)) {
-    // No policy set.
+  const PrefService::Preference* preference =
+      pref_service->FindPreference(pref_name);
+  if (!preference) {
+    // The preference may not exit in tests.
     return scoped_ptr<ProxyConfigDictionary>();
   }
 
-  const base::ListValue* onc_policy = pref_service->GetList(pref_name);
-  if (!onc_policy) {
-    LOG(ERROR) << "Pref " << pref_name << " is managed, but no value is set.";
+  // User prefs are not stored in this Preference yet but only the policy.
+  //
+  // The policy server incorrectly configures the OpenNetworkConfiguration user
+  // policy as Recommended. To work around that, we handle the Recommended and
+  // the Mandatory value in the same way.
+  // TODO(pneubeck): Remove this workaround, once the server is fixed. See
+  // http://crbug.com/280553 .
+  if (preference->IsDefaultValue()) {
+    // No policy set.
     return scoped_ptr<ProxyConfigDictionary>();
   }
+  const base::Value* onc_policy_value = preference->GetValue();
+  DCHECK(onc_policy_value);
+
+  const base::ListValue* onc_policy = NULL;
+  onc_policy_value->GetAsList(&onc_policy);
+  DCHECK(onc_policy);
 
   const base::DictionaryValue* network_policy =
       GetNetworkConfigByGUID(*onc_policy, network.guid());
@@ -151,6 +165,8 @@ scoped_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
 
   // No policy set for this network, read instead the user's (shared or
   // unshared) configuration.
+  // The user's proxy setting is not stored in the Chrome preference yet. We
+  // still rely on Shill storing it.
   const base::DictionaryValue& value = network.proxy_config();
   if (value.empty())
     return scoped_ptr<ProxyConfigDictionary>();
@@ -162,6 +178,8 @@ void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
   chromeos::ShillServiceClient* shill_service_client =
       DBusThreadManager::Get()->GetShillServiceClient();
 
+  // The user's proxy setting is not stored in the Chrome preference yet. We
+  // still rely on Shill storing it.
   ProxyPrefs::ProxyMode mode;
   if (!proxy_config.GetMode(&mode) || mode == ProxyPrefs::MODE_DIRECT) {
     // Return empty string for direct mode for portal check to work correctly.

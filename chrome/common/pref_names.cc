@@ -933,6 +933,8 @@ const char kTouchHudProjectionEnabled[] = "touch_hud.projection_enabled";
 // A pref to configure networks. Its value must be a list of
 // NetworkConfigurations according to the OpenNetworkConfiguration
 // specification.
+// Currently, this pref is only used to store the policy. The user's
+// configuration is still stored in Shill.
 const char kOpenNetworkConfiguration[] = "onc";
 #endif  // defined(OS_CHROMEOS)
 
@@ -1316,6 +1318,8 @@ extern const char kFullscreenAllowed[] = "fullscreen.allowed";
 // A pref to configure networks device-wide. Its value must be a list of
 // NetworkConfigurations according to the OpenNetworkConfiguration
 // specification.
+// Currently, this pref is only used to store the policy. The user's
+// configuration is still stored in Shill.
 const char kDeviceOpenNetworkConfiguration[] = "device_onc";
 
 // Directory of the last profile used.
