@@ -95,6 +95,18 @@ string16 PrepareForDisplay(const string16& message, bool bullet_point) {
       message) : message;
 }
 
+// A custom scrollable view implementation for the dialog.
+class CustomScrollableView : public views::View {
+ public:
+  CustomScrollableView();
+  virtual ~CustomScrollableView();
+
+ private:
+  virtual void Layout() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomScrollableView);
+};
+
 // Implements the extension installation dialog for TOOLKIT_VIEWS.
 class ExtensionInstallDialogView : public views::DialogDelegateView,
                                    public views::LinkListener {
@@ -143,7 +155,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   views::ScrollView* scroll_view_;
 
   // The container view for the scroll view.
-  views::View* scrollable_;
+  CustomScrollableView* scrollable_;
 
   // The preferred size of the dialog.
   gfx::Size dialog_size_;
@@ -241,41 +253,15 @@ void ShowExtensionInstallDialogImpl(
       show_params.parent_window)->Show();
 }
 
-// A ScrollView that imposes a maximum size on its viewport but sizes its
-// contents to its preferred size.
-class MaxSizeScrollView : public views::ScrollView {
- public:
-  MaxSizeScrollView(int max_height, int max_width);
-  // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void Layout() OVERRIDE;
-
- private:
-  const int max_height_;
-  const int max_width_;
-
-  DISALLOW_COPY_AND_ASSIGN(MaxSizeScrollView);
-};
-
-MaxSizeScrollView::MaxSizeScrollView(int max_height, int max_width)
-    : max_height_(max_height),
-      max_width_(max_width) {}
-
-gfx::Size MaxSizeScrollView::GetPreferredSize() {
-  gfx::Size size = contents()->GetPreferredSize();
-  size.SetToMin(gfx::Size(max_width_, max_height_));
-  gfx::Insets insets = GetInsets();
-  size.Enlarge(insets.width(), insets.height());
-  size.Enlarge(GetScrollBarWidth(), GetScrollBarHeight());
-  return size;
-}
-
-void MaxSizeScrollView::Layout() {
-  contents()->SizeToPreferredSize();
-  views::ScrollView::Layout();
-}
-
 }  // namespace
+
+CustomScrollableView::CustomScrollableView() {}
+CustomScrollableView::~CustomScrollableView() {}
+
+void CustomScrollableView::Layout() {
+  SetBounds(x(), y(), width(), GetHeightForWidth(width()));
+  views::View::Layout();
+}
 
 ExtensionInstallDialogView::ExtensionInstallDialogView(
     content::PageNavigator* navigator,
@@ -335,8 +321,9 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   // +---------------------------+
 
   scroll_view_ = new views::ScrollView();
+  scroll_view_->set_hide_horizontal_scrollbar(true);
   AddChildView(scroll_view_);
-  scrollable_ = new views::View();
+  scrollable_ = new CustomScrollableView();
   scroll_view_->SetContents(scrollable_);
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(scrollable_);
@@ -673,16 +660,7 @@ void ExtensionInstallDialogView::LinkClicked(views::Link* source,
 }
 
 void ExtensionInstallDialogView::Layout() {
-  views::View* contents_view = scroll_view_->contents();
-  int content_width = width();
-  int content_height = contents_view->GetHeightForWidth(content_width);
-  if (content_height > height()) {
-    content_width -= scroll_view_->GetScrollBarWidth();
-    content_height = contents_view->GetHeightForWidth(content_width);
-  }
-  contents_view->SetBounds(0, 0, content_width, content_height);
   scroll_view_->SetBounds(0, 0, width(), height());
-
   DialogDelegateView::Layout();
 }
 
