@@ -694,7 +694,7 @@ class AppListShower {
   }
 
   gfx::NativeWindow GetWindow() {
-    if (!view_)
+    if (!IsAppListVisible())
       return NULL;
     return view_->GetWindow();
   }
