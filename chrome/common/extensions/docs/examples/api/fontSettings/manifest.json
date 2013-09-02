@@ -1,6 +1,6 @@
 {
   "name": "Advanced Font Settings",
-  "version": "0.4",
+  "version": "0.66",
   "manifest_version": 2,
   "description": "Customize per-script font settings.",
   "options_page": "options.html",

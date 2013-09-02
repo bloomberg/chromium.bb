@@ -2,9 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The scripts supported by the Font Settings Extension API.
-var scripts = [
-  { scriptCode: 'Zyyy', scriptName: 'Default'},
+'use strict';
+
+/**
+ * @fileoverview The Advanced Font Settings Extension implementation.
+ */
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+/**
+ * @namespace
+ */
+var advancedFonts = {};
+
+/**
+ * The ICU script code for the Common, or global, script, which is used as the
+ * fallback when the script is undeclared.
+ * @const
+ */
+advancedFonts.COMMON_SCRIPT = 'Zyyy';
+
+/**
+ * The scripts supported by the Font Settings Extension API.
+ * @const
+ */
+advancedFonts.scripts = [
+  { scriptCode: advancedFonts.COMMON_SCRIPT, scriptName: 'Default'},
   { scriptCode: 'Afak', scriptName: 'Afaka'},
   { scriptCode: 'Arab', scriptName: 'Arabic'},
   { scriptCode: 'Armi', scriptName: 'Imperial Aramaic'},
@@ -158,105 +183,222 @@ var scripts = [
   { scriptCode: 'Zsym', scriptName: 'Symbols'}
 ];
 
-// The generic font families supported by the Font Settings Extension API.
-var families =
-    ["standard", "sansserif", "serif", "fixed", "cursive", "fantasy"];
+/**
+ * The generic font families supported by the Font Settings Extension API.
+ * @const
+ */
+advancedFonts.FAMILIES =
+    ['standard', 'sansserif', 'serif', 'fixed', 'cursive', 'fantasy'];
 
-// Mapping between font list ids and the generic family setting they
-// represent.
-var fontPickers = [
-  { fontList: 'standardFontList', name: 'standard' },
-  { fontList: 'serifFontList', name: 'serif' },
-  { fontList: 'sansSerifFontList', name: 'sansserif' },
-  { fontList: 'fixedFontList', name: 'fixed' }
-];
-
-// Ids of elements to contain the sample text.
-var sampleTextDivIds = [
-  'standardFontSample',
-  'serifFontSample',
-  'sansSerifFontSample',
-  'fixedFontSample',
-  'minFontSample'
-];
-
-// Sample texts.
-var defaultSampleText = 'The quick brown fox jumps over the lazy dog.';
-var scriptSpecificSampleText = {
+/**
+ * Sample texts.
+ * @const
+ */
+advancedFonts.SAMPLE_TEXTS = {
   // "Cyrllic script".
-  'Cyrl': 'Кириллица',
-  'Hang': '정 참판 양반댁 규수 큰 교자 타고 혼례 치른 날.',
-  'Hans': '床前明月光，疑是地上霜。举头望明月，低头思故乡。',
-  'Hant': '床前明月光，疑是地上霜。舉頭望明月，低頭思故鄉。',
-  'Jpan': '吾輩は猫である。名前はまだ無い。',
+  Cyrl: 'Кириллица',
+  Hang: '정 참판 양반댁 규수 큰 교자 타고 혼례 치른 날.',
+  Hans: '床前明月光，疑是地上霜。举头望明月，低头思故乡。',
+  Hant: '床前明月光，疑是地上霜。舉頭望明月，低頭思故鄉。',
+  Jpan: '吾輩は猫である。名前はまだ無い。',
   // "Khmer language".
-  'Khmr': '\u1797\u17B6\u179F\u17B6\u1781\u17D2\u1798\u17C2\u179A',
+  Khmr: '\u1797\u17B6\u179F\u17B6\u1781\u17D2\u1798\u17C2\u179A',
+  Zyyy: 'The quick brown fox jumps over the lazy dog.'
 };
 
-// Definition for ScriptList.
-cr.define('fontSettings.ui', function() {
-  const List = cr.ui.List;
-  const ListItem = cr.ui.ListItem;
-  const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
+/**
+ * Controller of pending changes.
+ * @const
+ */
+advancedFonts.pendingChanges = new PendingChanges();
 
-  function ScriptListItem(info) {
-    var el = cr.doc.createElement('li');
-    el.__proto__ = ScriptListItem.prototype;
-    el.info_ = info;
-    el.decorate();
-    return el;
-  };
+/**
+ * Map from |genericFamily| to UI controls and data for its font setting.
+ */
+advancedFonts.fontSettings = null;
 
-  ScriptListItem.prototype = {
-    __proto__: ListItem.prototype,
+/**
+ * Map from |fontSizeKey| to UI contols and data for its font size setting.
+ */
+advancedFonts.fontSizeSettings = null;
 
-    decorate: function() {
-      this.textContent = this.info_.scriptName;
-      if (this.info_.scriptCode == 'Zyyy') {
-        this.style.marginBottom = '1em';
+/**
+ * Gets the font size used for |fontSizeKey|, including pending changes. Calls
+ * |callback| with the result.
+ *
+ * @param {string} fontSizeKey The font size setting key. See
+ *     PendingChanges.getFontSize().
+ * @param {function(number, boolean)} callback The callback of form
+ *     function(size, controllable). |size| is the effective setting,
+ *     |controllable| is whether the setting can be set.
+ */
+advancedFonts.getEffectiveFontSize = function(fontSizeKey, callback) {
+  advancedFonts.fontSizeSettings[fontSizeKey].getter({}, function(details) {
+    var controllable = advancedFonts.isControllableLevel(
+        details.levelOfControl);
+    var size = details.pixelSize;
+    var pendingFontSize = advancedFonts.pendingChanges.getFontSize(fontSizeKey);
+    // If the setting is not controllable, we can have no pending change.
+    if (!controllable) {
+      if (pendingFontSize != null) {
+        advancedFonts.pendingChanges.setFontSize(fontSizeKey, null);
+        $('apply-settings').disabled = advancedFonts.pendingChanges.isEmpty();
+        pendingFontSize = null;
       }
     }
-  };
 
-  var ScriptList = cr.ui.define('list');
-  ScriptList.prototype = {
-    __proto__: List.prototype,
+    // If we have a pending change, it overrides the current setting.
+    if (pendingFontSize != null)
+      size = pendingFontSize;
+    callback(size, controllable);
+  });
+};
 
-    decorate: function() {
-      List.prototype.decorate.call(this);
-      var sm = new ListSingleSelectionModel();
-      this.selectionModel = sm;
-      this.autoExpands = true;
-      this.dataModel = new cr.ui.ArrayDataModel(scripts);
-      this.style.height = '75vh';
-    },
-
-    createItem: function(info) {
-      return new ScriptListItem(info);
+/**
+ * Gets the font used for |script| and |genericFamily|, including pending
+ * changes. Calls |callback| with the result.
+ *
+ * @param {string} script The script code.
+ * @param {string} genericFamily The generic family.
+ * @param {function(string, boolean, string)} callback The callback of form
+ *     function(font, controllable, effectiveFont). |font| is the setting
+ *     (pending or not), |controllable| is whether the setting can be set,
+ *     |effectiveFont| is the font used taking fallback into consideration.
+ */
+advancedFonts.getEffectiveFont = function(script, genericFamily, callback) {
+  var pendingChanges = advancedFonts.pendingChanges;
+  var details = { script: script, genericFamily: genericFamily };
+  chrome.fontSettings.getFont(details, function(result) {
+    var setting = {};
+    setting.font = result.fontId;
+    setting.controllable =
+        advancedFonts.isControllableLevel(result.levelOfControl);
+    var pendingFont =
+        pendingChanges.getFont(details.script, details.genericFamily);
+    // If the setting is not controllable, we can have no pending change.
+    if (!setting.controllable) {
+      if (pendingFont != null) {
+        pendingChanges.setFont(script, genericFamily, null);
+        $('apply-settings').disabled = advancedFonts.pendingChanges.isEmpty();
+        pendingFont = null;
+      }
     }
-  };
 
-  return {
-    ScriptList: ScriptList,
-    ScriptListItem: ScriptListItem
-  };
-});
+    // If we have a pending change, it overrides the current setting.
+    if (pendingFont != null)
+      setting.font = pendingFont;
 
-function getSelectedScript() {
-  var scriptList = document.getElementById('scriptList');
-  return scriptList.selectedItem.scriptCode;
-}
+    // If we have a font, we're done.
+    if (setting.font) {
+      callback(setting.font, setting.controllable, setting.font);
+      return;
+    }
 
-function getSelectedFont(fontList) {
+    // If we're still here, we have to fallback to common script, unless this
+    // already is common script.
+    if (script == advancedFonts.COMMON_SCRIPT) {
+      callback('', setting.controllable, '');
+      return;
+    }
+    advancedFonts.getEffectiveFont(
+        advancedFonts.COMMON_SCRIPT,
+        genericFamily,
+        callback.bind(null, setting.font, setting.controllable));
+  });
+};
+
+/**
+ * Refreshes the UI controls related to a font setting.
+ *
+ * @param {{fontList: HTMLSelectElement, samples: Array.<HTMLElement>}}
+ *     fontSetting The setting object (see advancedFonts.fontSettings).
+ * @param {string} font The value of the font setting.
+ * @param {boolean} controllable Whether the font setting can be controlled
+ *     by this extension.
+ * @param {string} effectiveFont The font used, including fallback to Common
+ *     script.
+ */
+advancedFonts.refreshFont = function(
+    fontSetting, font, controllable, effectiveFont) {
+  for (var i = 0; i < fontSetting.samples.length; ++i)
+    fontSetting.samples[i].style.fontFamily = effectiveFont;
+  advancedFonts.setSelectedFont(fontSetting.fontList, font);
+  fontSetting.fontList.disabled = !controllable;
+};
+
+/**
+ * Refreshes the UI controls related to a font size setting.
+ *
+ * @param {{label: HTMLElement, slider: Slider, samples: Array.<HTMLElement>}}
+ *     fontSizeSetting The setting object (see advancedFonts.fontSizeSettings).
+ * @param size The value of the font size setting.
+ * @param controllable Whether the setting can be controlled by this extension.
+ */
+advancedFonts.refreshFontSize = function(fontSizeSetting, size, controllable) {
+  fontSizeSetting.label.textContent = 'Size: ' + size + 'px';
+  advancedFonts.setFontSizeSlider(fontSizeSetting.slider, size, controllable);
+  for (var i = 0; i < fontSizeSetting.samples.length; ++i)
+    fontSizeSetting.samples[i].style.fontSize = size + 'px';
+};
+
+/**
+ * Refreshes all UI controls to reflect the current settings, including pending
+ * changes.
+ */
+advancedFonts.refresh = function() {
+  var script = advancedFonts.getSelectedScript();
+  var sample;
+  if (advancedFonts.SAMPLE_TEXTS[script])
+    sample = advancedFonts.SAMPLE_TEXTS[script];
+  else
+    sample = advancedFonts.SAMPLE_TEXTS[advancedFonts.COMMON_SCRIPT];
+  var sampleTexts = document.querySelectorAll('.sample-text-span');
+  for (var i = 0; i < sampleTexts.length; i++)
+    sampleTexts[i].textContent = sample;
+
+  var setting;
+  var callback;
+  for (var genericFamily in advancedFonts.fontSettings) {
+    setting = advancedFonts.fontSettings[genericFamily];
+    callback = advancedFonts.refreshFont.bind(null, setting);
+    advancedFonts.getEffectiveFont(script, genericFamily, callback);
+  }
+
+  for (var fontSizeKey in advancedFonts.fontSizeSettings) {
+    setting = advancedFonts.fontSizeSettings[fontSizeKey];
+    callback = advancedFonts.refreshFontSize.bind(null, setting);
+    advancedFonts.getEffectiveFontSize(fontSizeKey, callback);
+  }
+
+  $('apply-settings').disabled = advancedFonts.pendingChanges.isEmpty();
+};
+
+/**
+ * @return {string} The currently selected script code.
+ */
+advancedFonts.getSelectedScript = function() {
+  var scriptList = $('scriptList');
+  return scriptList.options[scriptList.selectedIndex].value;
+};
+
+/**
+ * @param {HTMLSelectElement} fontList The <select> containing a list of fonts.
+ * @return {string} The currently selected value of |fontList|.
+ */
+advancedFonts.getSelectedFont = function(fontList) {
   return fontList.options[fontList.selectedIndex].value;
-}
+};
 
-// Populates the font lists with the list of system fonts from |fonts|.
-function populateLists(fonts) {
-  for (var i = 0; i < fontPickers.length; i++) {
-    var list = document.getElementById(fontPickers[i].fontList);
+/**
+ * Populates the font lists.
+ * @param {Array.<{fontId: string, displayName: string>} fonts The list of
+ *     fonts on the system.
+ */
+advancedFonts.populateFontLists = function(fonts) {
+  for (var genericFamily in advancedFonts.fontSettings) {
+    var list = advancedFonts.fontSettings[genericFamily].fontList;
 
-    // Add special item to indicate fallback to the non-per-script
+    // Add a special item to indicate fallback to the non-per-script
     // font setting. The Font Settings API uses the empty string to indicate
     // fallback.
     var defaultItem = document.createElement('option');
@@ -264,37 +406,36 @@ function populateLists(fonts) {
     defaultItem.text = '(Use default)';
     list.add(defaultItem);
 
-    for (var j = 0; j < fonts.length; j++) {
+    for (var i = 0; i < fonts.length; ++i) {
       var item = document.createElement('option');
-      item.value = fonts[j].fontId;
-      item.text = fonts[j].displayName;
+      item.value = fonts[i].fontId;
+      item.text = fonts[i].displayName;
       list.add(item);
     }
   }
+  advancedFonts.refresh();
+};
 
-  updateFontListsForScript();
-}
+/**
+ * Handles change events on a <select> element for a font setting.
+ * @param {string} genericFamily The generic family for the font setting.
+ * @param {Event} event The change event.
+ */
+advancedFonts.handleFontListChange = function(genericFamily, event) {
+  var script = advancedFonts.getSelectedScript();
+  var font = advancedFonts.getSelectedFont(event.target);
 
-// Returns a function that updates the font setting for |genericFamily|
-// to match the selected value in |fontList|. It can be used as an event
-// handler for selection changes in |fontList|.
-function getFontChangeHandler(fontList, genericFamily) {
-  return function() {
-    var script = getSelectedScript();
-    var font = getSelectedFont(fontList);
+  advancedFonts.pendingChanges.setFont(script, genericFamily, font);
+  advancedFonts.refresh();
+};
 
-    var details = {};
-    details.genericFamily = genericFamily;
-    details.fontId = font;
-    details.script = script;
-
-    chrome.fontSettings.setFont(details);
-  };
-}
-
-// Sets the selected value of |fontList| to |fontId|.
-function setSelectedFont(fontList, fontId) {
-  var script = getSelectedScript();
+/**
+ * Sets the selected value of |fontList| to |fontId|.
+ * @param {HTMLSelectElement} fontList The <select> containing a list of fonts.
+ * @param {string} fontId The font to set |fontList|'s selection to.
+ */
+advancedFonts.setSelectedFont = function(fontList, fontId) {
+  var script = advancedFonts.getSelectedScript();
   var i;
   for (i = 0; i < fontList.length; i++) {
     if (fontId == fontList.options[i].value) {
@@ -306,122 +447,136 @@ function setSelectedFont(fontList, fontId) {
     console.warn("font '" + fontId + "' for " + fontList.id + ' for ' +
         script + ' is not on the system');
   }
-}
+};
 
-// Returns a callback function that sets the selected value of |list| to the
-// font returned from |chrome.fontSettings.getFont|.
-function getFontHandler(list) {
-  return function(details) {
-    setSelectedFont(list, details.fontId);
-    list.disabled = !isControllableLevel(details.levelOfControl);
-  };
-}
-
-// Called when the script list selection changes. Sets the selected value of
-// each font list to the current font setting, and updates the samples' lang
-// so that they are shown in the current font setting.
-function updateFontListsForScript() {
-  var script = getSelectedScript();
-
-  for (var i = 0; i < fontPickers.length; i++) {
-    var list = document.getElementById(fontPickers[i].fontList);
-    var family = fontPickers[i].name;
-
-    var details = {};
-    details.genericFamily = family;
-    details.script = script;
-    chrome.fontSettings.getFont(details, getFontHandler(list));
+/**
+ * Handles change events on a font size slider.
+ * @param {string} fontSizeKey The key for the font size setting whose slider
+ *     changed. See PendingChanges.getFont.
+ * @param {string} value The new value of the slider.
+ */
+advancedFonts.handleFontSizeSliderChange = function(fontSizeKey, value) {
+  var pixelSize = parseInt(value);
+  if (!isNaN(pixelSize)) {
+    advancedFonts.pendingChanges.setFontSize(fontSizeKey, pixelSize);
+    advancedFonts.refresh();
   }
+};
 
-  if (typeof(scriptSpecificSampleText[script]) != 'undefined')
-    sample = scriptSpecificSampleText[script];
-  else
-    sample = defaultSampleText;
-  for (var i = 0; i < sampleTextDivIds.length; i++) {
-    var sampleTextDiv = document.getElementById(sampleTextDivIds[i]);
-    // For font selection it's the script code that matters, not language, so
-    // just use en for lang.
-    sampleTextDiv.lang = 'en-' + script;
-    sampleTextDiv.innerText = sample;
-  }
-}
-
-// Returns a function to be called when the user changes the font size
-// input element |elem|. The function calls the Font Settings Extension API
-// function |setter| to commit the change.
-function getFontSizeChangedFunc(elem, setter) {
-  return function() {
-    var pixelSize = parseInt(elem.value);
-    if (!isNaN(pixelSize)) {
-      setter({ pixelSize: pixelSize });
-    }
-  }
-}
-
-function isControllableLevel(levelOfControl) {
+/**
+ * @param {string} levelOfControl The level of control string for a setting,
+ *     as returned by the Font Settings Extension API.
+ * @return {boolean} True if |levelOfControl| signifies that the extension can
+ *     control the setting; otherwise, returns false.
+ */
+advancedFonts.isControllableLevel = function(levelOfControl) {
   return levelOfControl == 'controllable_by_this_extension' ||
       levelOfControl == 'controlled_by_this_extension';
-}
+};
 
-// Returns a function to be used as a listener for font size setting changed
-// events from the Font Settings Extension API. The function updates the input
-// element |elem| and the elements in |sampleTexts| to reflect the change.
-function getFontSizeChangedOnBrowserFunc(elem, sampleTexts) {
-  return function(details) {
-    var size = details.pixelSize.toString();
-    elem.value = size;
-    elem.disabled = !isControllableLevel(details.levelOfControl);
-    for (var i = 0; i < sampleTexts.length; i++)
-      document.getElementById(sampleTexts[i]).style.fontSize = size + 'px';
+/*
+ * Updates the specified font size slider's value and enabled property.
+ * @param {Slider} slider The slider for a font size setting.
+ * @param {number} size The value to set the slider to.
+ * @param {boolean} enabled Whether to enable or disable the slider.
+ */
+advancedFonts.setFontSizeSlider = function(slider, size, enabled) {
+  if (slider.getValue() != size)
+    slider.setValue(size);
+  var inputElement = slider.getInput();
+  if (enabled) {
+    inputElement.parentNode.classList.remove('disabled');
+    inputElement.disabled = false;
+  } else {
+    inputElement.parentNode.classList.add('disabled');
+    inputElement.disabled = true;
   }
-}
+};
 
-// Maps the HTML <input> element with |id| to the extension API accessor
-// functions |getter| and |setter| for a setting and onChange event |apiEvent|
-// for the setting. Also, maps the element ids in |sampleTexts| to this setting.
-function initFontSizePref(id, sampleTexts, getter, setter, apiEvent) {
-  var elem = document.getElementById(id);
-  getter({}, function(details) {
+/**
+ * Initializes the UI control elements related to the font size setting
+ * |fontSizeKey| and registers listeners for the user adjusting its slider and
+ * the setting changing on the browser-side.
+ * @param {string} fontSizeKey The key for font size setting. See
+ *     PendingChanges.getFont().
+ */
+advancedFonts.initFontSizeSetting = function(fontSizeKey) {
+  var fontSizeSettings = advancedFonts.fontSizeSettings;
+  var setting = fontSizeSettings[fontSizeKey];
+  var label = setting.label;
+  var samples = setting.samples;
+
+  setting.slider = new Slider(
+      setting.sliderContainer,
+      0,
+      setting.minValue,
+      setting.maxValue,
+      advancedFonts.handleFontSizeSliderChange.bind(null, fontSizeKey)
+  );
+
+  var slider = setting.slider;
+  setting.getter({}, function(details) {
     var size = details.pixelSize.toString();
-    elem.value = size;
-    elem.disabled = !isControllableLevel(details.levelOfControl);
-    for (var i = 0; i < sampleTexts.length; i++)
-      document.getElementById(sampleTexts[i]).style.fontSize = size + 'px';
+    var controllable = advancedFonts.isControllableLevel(
+        details.levelOfControl);
+    advancedFonts.setFontSizeSlider(slider, size, controllable);
+    for (var i = 0; i < samples.length; i++)
+      samples[i].style.fontSize = size + 'px';
   });
-  elem.addEventListener('change', getFontSizeChangedFunc(elem, setter));
-  apiEvent.addListener(getFontSizeChangedOnBrowserFunc(elem, sampleTexts));
-}
+  fontSizeSettings[fontSizeKey].onChanged.addListener(advancedFonts.refresh);
+};
 
-function clearSettingsForScript(script) {
-  for (var i = 0; i < families.length; i++) {
+/**
+ * Clears the font settings for the specified script.
+ * @param {string} script The script code.
+ */
+advancedFonts.clearSettingsForScript = function(script) {
+  advancedFonts.pendingChanges.clearOneScript(script);
+  for (var i = 0; i < advancedFonts.FAMILIES.length; i++) {
     chrome.fontSettings.clearFont({
       script: script,
-      genericFamily: families[i]
+      genericFamily: advancedFonts.FAMILIES[i]
     });
   }
-}
+};
 
-function clearAllSettings() {
-  for (var i = 0; i < scripts.length; i++)
-    clearSettingsForScript(scripts[i].scriptCode);
-
+/**
+ * Clears all font and font size settings.
+ */
+advancedFonts.clearAllSettings = function() {
+  advancedFonts.pendingChanges.clear();
+  for (var i = 0; i < advancedFonts.scripts.length; i++)
+    advancedFonts.clearSettingsForScript(advancedFonts.scripts[i].scriptCode);
   chrome.fontSettings.clearDefaultFixedFontSize();
   chrome.fontSettings.clearDefaultFontSize();
   chrome.fontSettings.clearMinimumFontSize();
-}
+};
 
-function closeOverlay() {
+/**
+ * Closes the overlay.
+ */
+advancedFonts.closeOverlay = function() {
   $('overlay-container').hidden = true;
-}
+};
 
-function initResetButtons() {
+/**
+ * Initializes apply and reset buttons.
+ */
+advancedFonts.initApplyAndResetButtons = function() {
+  var applyButton = $('apply-settings');
+  applyButton.addEventListener('click', function() {
+    advancedFonts.pendingChanges.apply();
+    advancedFonts.refresh();
+  });
+
   var overlay = $('overlay-container');
   cr.ui.overlay.globalInitialization();
   cr.ui.overlay.setupOverlay(overlay);
-  overlay.addEventListener('cancelOverlay', closeOverlay);
+  overlay.addEventListener('cancelOverlay', advancedFonts.closeOverlay);
 
   $('reset-this-script-button').onclick = function(event) {
-    var scriptName = $('scriptList').selectedItem.scriptName;
+    var scriptList = $('scriptList');
+    var scriptName = scriptList.options[scriptList.selectedIndex].text;
     $('reset-this-script-overlay-dialog-content').innerText =
         'Are you sure you want to reset settings for ' + scriptName +
         ' script?';
@@ -429,83 +584,185 @@ function initResetButtons() {
     $('overlay-container').hidden = false;
     $('reset-this-script-overlay-dialog').hidden = false;
     $('reset-all-scripts-overlay-dialog').hidden = true;
-  }
-  $('reset-this-script-ok').onclick = function(event) {
-    clearSettingsForScript(getSelectedScript());
-    closeOverlay();
   };
-  $('reset-this-script-cancel').onclick = closeOverlay;
+  $('reset-this-script-ok').onclick = function(event) {
+    advancedFonts.clearSettingsForScript(advancedFonts.getSelectedScript());
+    advancedFonts.closeOverlay();
+    advancedFonts.refresh();
+  };
+  $('reset-this-script-cancel').onclick = advancedFonts.closeOverlay;
 
   $('reset-all-button').onclick = function(event) {
     $('overlay-container').hidden = false;
     $('reset-all-scripts-overlay-dialog').hidden = false;
     $('reset-this-script-overlay-dialog').hidden = true;
-  }
+  };
   $('reset-all-ok').onclick = function(event) {
-    clearAllSettings();
-    closeOverlay();
+    advancedFonts.clearAllSettings();
+    advancedFonts.closeOverlay();
+    advancedFonts.refresh();
+  };
+  $('reset-all-cancel').onclick = advancedFonts.closeOverlay;
+};
+
+/**
+ * Best guess for system fonts, taken from the IDS_WEB_FONT_FAMILY strings in
+ * Chrome.
+ * TODO: The font should be localized like Chrome does.
+ * @const
+ */
+advancedFonts.systemFonts = {
+  cros: 'Noto Sans UI, sans-serif',
+  linux: 'Ubuntu, sans-serif',
+  mac: 'Lucida Grande, sans-serif',
+  win: 'Segoe UI, Tahoma, sans-serif',
+  unknown: 'sans-serif'
+};
+
+/**
+ * @return {string} The platform this extension is running on.
+ */
+advancedFonts.getPlatform = function() {
+  var ua = window.navigator.appVersion;
+  if (ua.indexOf('Win') != -1) return 'win';
+  if (ua.indexOf('Mac') != -1) return 'mac';
+  if (ua.indexOf('Linux') != -1) return 'linux';
+  if (ua.indexOf('CrOS') != -1) return 'cros';
+  return 'unknown';
+};
+
+/**
+ * Chrome settings tries to use the system font. So does this extension.
+ */
+advancedFonts.useSystemFont = function() {
+  document.body.style.fontFamily =
+      advancedFonts.systemFonts[advancedFonts.getPlatform()];
+};
+
+/**
+ * Sorts the list of script codes by scriptName. Someday this extension will
+ * have localized script names, so the order will depend on locale.
+ */
+advancedFonts.sortScripts = function() {
+  var i;
+  var scripts = advancedFonts.scripts;
+  for (i = 0; i < scripts; ++i) {
+    if (scripts[i].scriptCode == advancedFonts.COMMON_SCRIPT)
+      break;
   }
-  $('reset-all-cancel').onclick = closeOverlay;
-}
+  var defaultScript = scripts.splice(i, 1)[0];
 
-function init() {
-  var scriptList = document.getElementById('scriptList');
-  fontSettings.ui.ScriptList.decorate(scriptList);
-  scriptList.selectionModel.selectedIndex = 0;
-  scriptList.selectionModel.addEventListener('change',
-                                             updateFontListsForScript);
+  scripts.sort(function(a, b) {
+    if (a.scriptName > b.scriptName)
+      return 1;
+    if (a.scriptName < b.scriptName)
+      return -1;
+    return 0;
+  });
 
-  // Populate the font lists.
-  chrome.fontSettings.getFontList(populateLists);
+  scripts.unshift(defaultScript);
+};
 
-  // Add change handlers to the font lists.
-  for (var i = 0; i < fontPickers.length; i++) {
-    var list = document.getElementById(fontPickers[i].fontList);
-    var handler = getFontChangeHandler(list, fontPickers[i].name);
-    list.addEventListener('change', handler);
+/**
+ * Initializes UI controls for font settings.
+ */
+advancedFonts.initFontControls = function() {
+  advancedFonts.fontSettings = {
+    standard: {
+      fontList: $('standardFontList'),
+      samples: [$('standardFontSample'), $('minFontSample')]
+    },
+    serif: {
+      fontList: $('serifFontList'),
+      samples: [$('serifFontSample')]
+    },
+    sansserif: {
+      fontList: $('sansSerifFontList'),
+      samples: [$('sansSerifFontSample')]
+    },
+    fixed: {
+      fontList: $('fixedFontList'),
+      samples: [$('fixedFontSample')]
+    }
+  };
+
+  for (var genericFamily in advancedFonts.fontSettings) {
+    var list = advancedFonts.fontSettings[genericFamily].fontList;
+    list.addEventListener(
+        'change', advancedFonts.handleFontListChange.bind(list, genericFamily));
   }
+  chrome.fontSettings.onFontChanged.addListener(advancedFonts.refresh);
+  chrome.fontSettings.getFontList(advancedFonts.populateFontLists);
+};
 
-  chrome.fontSettings.onFontChanged.addListener(
-      updateFontListsForScript);
+/**
+ * Initializes UI controls for font size settings.
+ */
+advancedFonts.initFontSizeControls = function() {
+  advancedFonts.fontSizeSettings = {
+    defaultFontSize: {
+      sliderContainer: $('defaultFontSizeSliderContainer'),
+      minValue: 6,
+      maxValue: 50,
+      samples: [
+        $('standardFontSample'), $('serifFontSample'), $('sansSerifFontSample')
+      ],
+      label: $('defaultFontSizeLabel'),
+      getter: chrome.fontSettings.getDefaultFontSize,
+      onChanged: chrome.fontSettings.onDefaultFontSizeChanged
+    },
+    defaultFixedFontSize: {
+      sliderContainer: $('defaultFixedFontSizeSliderContainer'),
+      minValue: 6,
+      maxValue: 50,
+      samples: [$('fixedFontSample')],
+      label: $('fixedFontSizeLabel'),
+      getter: chrome.fontSettings.getDefaultFixedFontSize,
+      onChanged: chrome.fontSettings.onDefaultFixedFontSizeChanged
+    },
+    minFontSize: {
+      sliderContainer: $('minFontSizeSliderContainer'),
+      minValue: 6,
+      maxValue: 24,
+      samples: [$('minFontSample')],
+      label: $('minFontSizeLabel'),
+      getter: chrome.fontSettings.getMinimumFontSize,
+      onChanged: chrome.fontSettings.onMinimumFontSizeChanged
+    }
+  };
 
-  initFontSizePref(
-      'defaultFontSizeRocker',
-      ['standardFontSample', 'serifFontSample', 'sansSerifFontSample'],
-      chrome.fontSettings.getDefaultFontSize,
-      chrome.fontSettings.setDefaultFontSize,
-      chrome.fontSettings.onDefaultFontSizeChanged);
-  initFontSizePref(
-      'defaultFontSizeRange',
-      ['standardFontSample', 'serifFontSample', 'sansSerifFontSample'],
-      chrome.fontSettings.getDefaultFontSize,
-      chrome.fontSettings.setDefaultFontSize,
-      chrome.fontSettings.onDefaultFontSizeChanged);
-  initFontSizePref(
-      'defaultFixedFontSizeRocker',
-      ['fixedFontSample'],
-      chrome.fontSettings.getDefaultFixedFontSize,
-      chrome.fontSettings.setDefaultFixedFontSize,
-      chrome.fontSettings.onDefaultFixedFontSizeChanged);
-  initFontSizePref(
-      'defaultFixedFontSizeRange',
-      ['fixedFontSample'],
-      chrome.fontSettings.getDefaultFixedFontSize,
-      chrome.fontSettings.setDefaultFixedFontSize,
-      chrome.fontSettings.onDefaultFixedFontSizeChanged);
-  initFontSizePref(
-      'minFontSizeRocker',
-      ['minFontSample'],
-      chrome.fontSettings.getMinimumFontSize,
-      chrome.fontSettings.setMinimumFontSize,
-      chrome.fontSettings.onMinimumFontSizeChanged);
-  initFontSizePref(
-      'minFontSizeRange',
-      ['minFontSample'],
-      chrome.fontSettings.getMinimumFontSize,
-      chrome.fontSettings.setMinimumFontSize,
-      chrome.fontSettings.onMinimumFontSizeChanged);
+  for (var fontSizeKey in advancedFonts.fontSizeSettings)
+    advancedFonts.initFontSizeSetting(fontSizeKey);
+};
 
-  initResetButtons();
-}
+/**
+ * Initializes the list of scripts.
+ */
+advancedFonts.initScriptList = function() {
+  var scriptList = $('scriptList');
+  advancedFonts.sortScripts();
+  var scripts = advancedFonts.scripts;
+  for (var i = 0; i < scripts.length; i++) {
+    var script = document.createElement('option');
+    script.value = scripts[i].scriptCode;
+    script.text = scripts[i].scriptName;
+    scriptList.add(script);
+  }
+  scriptList.selectedIndex = 0;
+  scriptList.addEventListener('change', advancedFonts.refresh);
+};
 
-document.addEventListener('DOMContentLoaded', init);
+/**
+ * Initializes the extension.
+ */
+advancedFonts.init = function() {
+  advancedFonts.useSystemFont();
+
+  advancedFonts.initFontControls();
+  advancedFonts.initFontSizeControls();
+  advancedFonts.initScriptList();
+
+  advancedFonts.initApplyAndResetButtons();
+};
+
+document.addEventListener('DOMContentLoaded', advancedFonts.init);

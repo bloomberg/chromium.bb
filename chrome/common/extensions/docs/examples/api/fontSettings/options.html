@@ -1,244 +1,302 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-  <head>
-  <meta charset="utf-8">
-  <title>Advanced Font Settings</title>
-  <script src="js/cr.js"></script>
-  <script src="js/cr/event_target.js"></script>
-  <script src="js/cr/ui.js"></script>
-  <script src="js/cr/ui/overlay.js"></script>
-  <script src="js/cr/ui/array_data_model.js"></script>
-  <script src="js/cr/ui/list_item.js"></script>
-  <script src="js/cr/ui/list_selection_controller.js"></script>
-  <script src="js/cr/ui/list_selection_model.js"></script>
-  <script src="js/cr/ui/list_single_selection_model.js"></script>
-  <script src="js/event_tracker.js"></script>
-  <script src="js/cr/ui/touch_handler.js"></script>
-  <script src="js/cr/ui/list.js"></script>
-  <script src="js/util.js"></script>
-  <script src="options.js"></script>
-  <link rel="stylesheet" href="css/chrome_shared.css">
-  <link rel="stylesheet" href="css/overlay.css">
-  <link rel="stylesheet" href="css/widgets.css">
-  <link rel="stylesheet" href="css/uber_shared.css">
-  <link rel="stylesheet" href="css/list.css">
-  <style>
-    body.uber-frame {
-      font-family: sans-serif;
-      -webkit-margin-start: 30px;
-      -webkit-margin-end: 30px;
-      font-size: 14px;
-    }
+<head>
+<meta charset="utf-8">
+<title>Advanced Font Settings</title>
+<script src="js/cr.js"></script>
+<script src="js/cr/ui.js"></script>
+<script src="js/cr/ui/overlay.js"></script>
+<script src="slider.js"></script>
+<script src="pending_changes.js"></script>
+<script src="options.js"></script>
+<link rel="stylesheet" href="css/chrome_shared.css">
+<link rel="stylesheet" href="css/overlay.css">
+<link rel="stylesheet" href="css/widgets.css">
+<link rel="stylesheet" href="css/uber_shared.css">
+<link rel="stylesheet" href="slider.css">
+<style>
+body.uber-frame {
+  -webkit-margin-start: 18px;
+  -webkit-margin-end: 30px;
+}
 
-    body.uber-frame section {
-      max-width: none;
-    }
+body.uber-frame section {
+  max-width: 650px;
+}
 
-    body.uber-frame footer {
-      max-width: none;
-      min-width: 0;
-      border-top: 1px solid #DDD;
-    }
+body.uber-frame section:last-of-type {
+  margin-top: 28px;
+}
 
-    .font-input-div {
-      -webkit-margin-end: 1em;
-      width: 16em;
-    }
+body.uber-frame header {
+  -webkit-padding-start: 18px;
+  left: 0;
+  right: 0;
+}
 
-    .preview-box {
-      background-color: white;
-      margin-top: 10px;
-      padding: 15px;
-      text-align: center;
-    }
+body.uber-frame header > h1 {
+  padding-bottom: 16px;
+}
 
-    .bordered {
-      border: 1px solid #CCC;
-    }
+h1 {
+  font-size: 16px;
+}
 
-    input[type=range] {
-      width: 14em;
-    }
+.script-header {
+  -webkit-margin-before: 12px;
+}
 
-    #right-pane {
-      -webkit-margin-start: 1em;
-      overflow-x: auto;
-      -webkit-box-flex: 1;
-    }
+h3 {
+  -webkit-margin-after: 11px;
+  font-size: 14px;
+}
 
-    .font-setting-group {
-      display: -webkit-box;
-      -webkit-box-orient: horizontal;
-      margin: 2em;
-    }
+section {
+  font-size: 12px;
+}
 
-    .font-setting {
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-box-flex: 1;
-      -webkit-margin-start: 1em;
-    }
+.bordered {
+  border: 1px solid #D9D9D9;
+  border-radius: 2px;
+}
 
-    .font-family-and-size {
-      display: -webkit-box;
-      -webkit-box-orient: horizontal;
-    }
+.smaller {
+  font-size: smaller;
+}
 
-    .font-setting-label {
-      font-weight: bold;
-      width: 6em;
-      text-align: end;
-    }
+.font-settings-div {
+  -webkit-margin-end: 5px;
+  width: 180px;
+}
 
-    .font-size-slider {
-      -webkit-margin-end: 1em;
-    }
+.font-settings-div:first-of-type {
+  width: 138px;
+}
 
-    .overlay {
-      z-index: 100;
-    }
-  </style>
+.font-settings-div > :first-child {
+  -webkit-margin-after: 10px;
+}
+
+.font-settings-div > * {
+  -webkit-margin-after: 14px;
+}
+
+.font-settings-row {
+  display: -webkit-flex;
+  width: 800px;
+}
+
+.sample-text-div {
+  display: -webkit-flex;
+  white-space: nowrap;
+  width: 100%;
+  overflow: hidden;
+}
+
+.sample-text-span {
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 20px;
+}
+
+#overlay-container {
+  z-index: 100;
+}
+
+#standardFontSample {
+  font-family: standard;
+}
+
+#serifFontSample {
+  font-family: serif;
+}
+
+#sansSerifFontSample {
+  font-family: sans-serif;
+}
+
+#fixedFontSample {
+  font-family: monospace;
+}
+
+#minFontSample {
+  font-family: standard;
+}
+
+select {
+  width: 100%;
+}
+
+#footer > button {
+  -webkit-padding-start: 9px;
+  -webkit-padding-end: 9px;
+}
+
+#footer > #apply-settings {
+  -webkit-padding-start: 17px;
+  -webkit-padding-end: 17px;
+}
+
+#apply-settings:enabled {
+  background-color: #4f7dd6;
+  background-image: none;
+  border-color: #2a4aac;
+  box-shadow: none;
+  color: #fbfafb;
+  text-shadow: none;
+}
+
+.slider-legend {
+  position: relative;
+  /* This offset is needed to get the legend to align with the slider. */
+  top: -7px;
+}
+
+.slider-container {
+  display: inline-block;
+  position: relative;
+  top: 1px;
+  height: 24px;
+  width: 88px;
+}
+</style>
 </head>
-<body class="uber-frame" style="background-color: #f2f2f2">
-  <div id="overlay-container" class="overlay transparent" hidden>
-    <div id="reset-overlay" class="page">
-      <div class="close-button"></div>
-      <div id="reset-this-script-overlay-dialog" hidden>
-        <h1>Reset</h1>
-        <div id="reset-this-script-overlay-dialog-content" class="content-area">
-        </div>
-        <div class="action-area">
-          <div class="button-strip">
-            <button id="reset-this-script-cancel">Cancel</button>
-            <button id="reset-this-script-ok">Reset</button>
-          </div>
+<body class="uber-frame">
+<div id="overlay-container" class="overlay" hidden>
+  <div id="reset-overlay" class="page">
+    <div class="close-button"></div>
+    <div id="reset-this-script-overlay-dialog" hidden>
+      <h1>Reset</h1>
+      <div id="reset-this-script-overlay-dialog-content" class="content-area">
+      </div>
+      <div class="action-area">
+        <div class="button-strip">
+          <button id="reset-this-script-cancel">Cancel</button>
+          <button id="reset-this-script-ok">Reset</button>
         </div>
       </div>
-      <div id="reset-all-scripts-overlay-dialog" hidden>
-        <h1>Reset</h1>
-        <div class="content-area">
-          Are you sure you want to reset all settings?
-        </div>
-        <div class="action-area">
-          <div class="button-strip">
-            <button id="reset-all-cancel">Cancel</button>
-            <button id="reset-all-ok">Reset</button>
-          </div>
+    </div>
+    <div id="reset-all-scripts-overlay-dialog" hidden>
+      <h1>Reset</h1>
+      <div class="content-area">
+        Are you sure you want to reset all settings?
+      </div>
+      <div class="action-area">
+        <div class="button-strip">
+          <button id="reset-all-cancel">Cancel</button>
+          <button id="reset-all-ok">Reset</button>
         </div>
       </div>
     </div>
   </div>
-  <div style="display: -webkit-box; -webkit-box-orient: vertical;">
-    <h1>Advanced font settings</h1>
-    <div style="-webkit-box-flex: 1; display: -webkit-box; overflow: auto">
-      <div style="width: 20em; -webkit-box; -webkit-box-orient: vertical">
-        <h4>Script</h4>
-        <div class="bordered" style="-webkit-box-flex: 1;">
-          <list id="scriptList" style="background-color: white"></list>
+</div>
+<div class="page">
+  <header style="-webkit-transform: translateX(0px);">
+    <h1>Advanced Font Settings</h1>
+  </header>
+  <section>
+    <h3 class="script-header">Script</h3>
+    <div class="font-settings-row">
+      <select style="width: 200px" id="scriptList"></select>
+    </div>
+  </section>
+  <section>
+    <h3>Proportional fonts</h3>
+    <div class="font-settings-row">
+      <div class="font-settings-div">
+        <div id="defaultFontSizeLabel"></div>
+        <div style="width: 100%; -webkit-margin-after: 0">
+          <span class="slider-legend smaller">Aa</span>
+          <div id="defaultFontSizeSliderContainer" class="slider-container"></div>
+          <span class="slider-legend">Aa</span>
         </div>
       </div>
-      <div id="right-pane">
-        <div class="font-setting-group">
-          <div class="font-setting-label">Standard</div>
-          <div class="font-setting">
-            <div class="font-family-and-size">
-              <div class="font-input-div">
-                <select id="standardFontList"></select>
-              </div>
-              <div class="font-size-slider">
-                <div>
-                  <span style="float: left">Tiny</span>
-                  <span style="float: right">Huge</span>
-                </div>
-                <input type="range" id="defaultFontSizeRange" min="0" max="36">
-              </div>
-              <input type="number" id="defaultFontSizeRocker" min="0" max="36">
-            </div>
-            <div id="standardFontSample" class="preview-box bordered"
-                style="font-family: standard;">
-            </div>
-          </div>
+      <div class="font-settings-div">
+        <div>Standard</div>
+        <div><select id="standardFontList"></select></div>
+      </div>
+      <div class="font-settings-div">
+        <div>Serif</div>
+        <div><select id="serifFontList"></select></div>
+      </div>
+      <div class="font-settings-div">
+        <div>Sans-Serif</div>
+        <div><select id="sansSerifFontList"></select></div>
+      </div>
+    </div>
+    <div class="bordered" style="position: relative; left: 0; right: 0; height: 160px; width: 702px;">
+      <div class="sample-text-div" style="height: 33%">
+        <span id='standardFontSample' class="sample-text-span">
+          The quick brown fox jumps over the lazy dog.
+        </span>
+      </div>
+      <div class="sample-text-div" style="height: 33%">
+        <span id="serifFontSample" class="sample-text-span">
+          The quick brown fox jumps over the lazy dog.
+        </span>
+      </div>
+      <div class="sample-text-div" style="height: 33%">
+        <span id="sansSerifFontSample" class="sample-text-span">
+          The quick brown fox jumps over the lazy dog.
+        </span>
+      </div>
+    </div>
+  </section>
+  <section>
+    <h3>Fixed-width fonts</h3>
+    <div class="font-settings-row">
+      <div class="font-settings-div">
+        <div id="fixedFontSizeLabel"></div>
+        <div style="width: 100%; -webkit-margin-after: 0">
+          <span class="slider-legend smaller">Aa</span>
+          <div id="defaultFixedFontSizeSliderContainer" class="slider-container"></div>
+          <span class="slider-legend">Aa</span>
         </div>
-        <div class="font-setting-group">
-          <div class="font-setting-label">Serif</div>
-          <div class="font-setting">
-            <div class="font-family-and-size">
-              <div class="font-input-div">
-                <select id="serifFontList"></select>
-              </div>
-            </div>
-            <div id="serifFontSample" class="preview-box bordered"
-                style="font-family: serif;">
-            </div>
-          </div>
-        </div>
-        <div class="font-setting-group">
-          <div class="font-setting-label">Sans-Serif</div>
-          <div class="font-setting">
-            <div class="font-family-and-size">
-              <div class="font-input-div">
-                <select id="sansSerifFontList"></select>
-              </div>
-            </div>
-            <div id="sansSerifFontSample" class="preview-box bordered"
-                 style="font-family: sans-serif;">
-            </div>
-          </div>
-        </div>
-        <div class="font-setting-group">
-          <div class="font-setting-label">Fixed</div>
-          <div class="font-setting">
-            <div class="font-family-and-size">
-              <div class="font-input-div">
-                <select id="fixedFontList"></select>
-              </div>
-              <div class="font-size-slider">
-                <div>
-                  <span style="float: left">Tiny</span>
-                  <span style="float: right">Huge</span>
-                </div>
-                <input type="range" id="defaultFixedFontSizeRange"
-                    min="0" max="36">
-              </div>
-              <input type="number" id="defaultFixedFontSizeRocker"
-                  min="0" max="36">
-            </div>
-            <div id="fixedFontSample" class="preview-box bordered"
-                style="font-family: monospace;">
-            </div>
-          </div>
-        </div>
-        <div class="font-setting-group">
-          <div class="font-setting-label"></div>
-          <div class="font-setting">
-            <div class="font-family-and-size">
-              <div class="font-input-div">Minimum font size</div>
-              <div class="font-size-slider">
-                <div>
-                  <span style="float: left">No minimum</span>
-                  <span style="float: right">Huge</span>
-                </div>
-                <input type="range" id="minFontSizeRange" min="0" max="36">
-              </div>
-              <input type="number" id="minFontSizeRocker" min="0" max="36">
-            </div>
-            <div id="minFontSample" class="preview-box bordered"
-                style="font-family: standard">
-            </div>
-          </div>
+      </div>
+      <div class="font-settings-div">
+        <div>Fixed</div>
+        <div><select id="fixedFontList"></select></div>
+      </div>
+    </div>
+    <div class="bordered" style="position: relative; overflow: hidden; left: 0; right: 0; height: 58px; width: 702px;">
+      <div class="sample-text-div" style="height: 100%">
+        <span id="fixedFontSample" class="sample-text-span">
+          The quick brown fox jumps over the lazy dog.
+        </span>
+      </div>
+    </div>
+  </section>
+  <section>
+    <h3>Minimum font size</h3>
+    <div class="font-settings-row">
+      <div class="font-settings-div">
+        <div id="minFontSizeLabel" style="-webkit-margin-after: 8px"></div>
+        <div style="width: 100%; -webkit-margin-after: 12px">
+          <span class="slider-legend smaller">Aa</span>
+          <div id="minFontSizeSliderContainer" class="slider-container"></div>
+          <span class="slider-legend">Aa</span>
         </div>
       </div>
     </div>
-    <footer>
-      <section>
-        <button id="reset-this-script-button" style="font-size: smaller;">
-          Reset settings for this script
-        </button>
-        <button id="reset-all-button" style="font-size: smaller;">
-          Reset all settings
-        </button>
-      </section>
-    </footer>
-  </div>
+    <div class="bordered" style="position: relative; overflow: hidden; left: 0; right: 0; height: 58px; width: 702px;">
+      <div class="sample-text-div" style="height: 100%">
+        <span id="minFontSample" class="sample-text-span">
+          The quick brown fox jumps over the lazy dog.
+        </span>
+      </div>
+    </div>
+  </section>
+  <section id="footer">
+    <button id="apply-settings">
+      Apply settings
+    </button>
+    <button id="reset-this-script-button">
+      Reset settings for this script
+    </button>
+    <button id="reset-all-button">
+      Reset all settings
+    </button>
+  </section>
+</div>
 </body>
 </html>
