@@ -56,11 +56,11 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_RegularFile) {
   // marks it dirty and requests the observer to upload the file.
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(remote_dest_path, &entry));
   EXPECT_EQ(1U, observer()->upload_needed_local_ids().count(
-      entry.resource_id()));
+      GetLocalId(remote_dest_path)));
   FileCacheEntry cache_entry;
   bool found = false;
   cache()->GetCacheEntryOnUIThread(
-      entry.resource_id(),
+      GetLocalId(remote_dest_path),
       google_apis::test_util::CreateCopyResultCallback(&found, &cache_entry));
   test_util::RunBlockingPoolTask();
   EXPECT_TRUE(found);

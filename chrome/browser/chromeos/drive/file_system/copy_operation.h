@@ -88,12 +88,12 @@ class CopyOperation {
                          scoped_ptr<ResourceEntry> entry);
 
   // Part of TransferFileFromLocalToRemote(). Called after preparation is done.
-  // |resource_id| is available only if the file is JSON GDoc file.
+  // |gdoc_resource_id| is available only if the file is JSON GDoc file.
   void TransferFileFromLocalToRemoteAfterPrepare(
       const base::FilePath& local_src_path,
       const base::FilePath& remote_dest_path,
       const FileOperationCallback& callback,
-      std::string* resource_id,
+      std::string* gdoc_resource_id,
       FileError error);
 
   // Copies resource with |resource_id| into the directory |parent_resource_id|
@@ -151,7 +151,7 @@ class CopyOperation {
   // is completed.
   void ScheduleTransferRegularFileAfterUpdateLocalState(
       const FileOperationCallback& callback,
-      std::string* resource_id,
+      std::string* local_id,
       FileError error);
 
   // Copies the hosted document with |resource_id| to the |dest_path|.

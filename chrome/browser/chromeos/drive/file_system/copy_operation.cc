@@ -62,10 +62,24 @@ int64 GetFileSize(const base::FilePath& file_path) {
 // Stores the copied entry and returns its path.
 FileError UpdateLocalStateForServerSideCopy(
     internal::ResourceMetadata* metadata,
-    const ResourceEntry& entry,
+    scoped_ptr<google_apis::ResourceEntry> resource_entry,
     base::FilePath* file_path) {
+  DCHECK(resource_entry);
+
+  ResourceEntry entry;
+  std::string parent_resource_id;
+  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id))
+    return FILE_ERROR_NOT_A_FILE;
+
+  std::string parent_local_id;
+  FileError error = metadata->GetIdByResourceId(parent_resource_id,
+                                                &parent_local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+  entry.set_parent_local_id(parent_local_id);
+
   std::string local_id;
-  FileError error = metadata->AddEntry(entry, &local_id);
+  error = metadata->AddEntry(entry, &local_id);
   // Depending on timing, the metadata may have inserted via change list
   // already. So, FILE_ERROR_EXISTS is not an error.
   if (error == FILE_ERROR_EXISTS)
@@ -84,23 +98,26 @@ FileError UpdateLocalStateForScheduleTransfer(
     internal::FileCache* cache,
     const base::FilePath& local_src_path,
     const base::FilePath& remote_dest_path,
-    std::string* resource_id) {
+    std::string* local_id) {
+  FileError error = metadata->GetIdByPath(remote_dest_path, local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+
   ResourceEntry entry;
-  FileError error = metadata->GetResourceEntryByPath(remote_dest_path, &entry);
+  error = metadata->GetResourceEntryById(*local_id, &entry);
   if (error != FILE_ERROR_OK)
     return error;
 
   error = cache->Store(
-      entry.resource_id(), entry.file_specific_info().md5(), local_src_path,
+      *local_id, entry.file_specific_info().md5(), local_src_path,
       internal::FileCache::FILE_OPERATION_COPY);
   if (error != FILE_ERROR_OK)
     return error;
 
-  error = cache->MarkDirty(entry.resource_id());
+  error = cache->MarkDirty(*local_id);
   if (error != FILE_ERROR_OK)
     return error;
 
-  *resource_id = entry.resource_id();
   return FILE_ERROR_OK;
 }
 
@@ -110,7 +127,7 @@ FileError PrepareTransferFileFromLocalToRemote(
     internal::ResourceMetadata* metadata,
     const base::FilePath& local_src_path,
     const base::FilePath& remote_dest_path,
-    std::string* resource_id) {
+    std::string* gdoc_resource_id) {
   ResourceEntry parent_entry;
   FileError error = metadata->GetResourceEntryByPath(
       remote_dest_path.DirName(), &parent_entry);
@@ -124,7 +141,7 @@ FileError PrepareTransferFileFromLocalToRemote(
   // Try to parse GDoc File and extract the resource id, if necessary.
   // Failing isn't problem. It'd be handled as a regular file, then.
   if (util::HasGDocFileExtension(local_src_path))
-    *resource_id = util::ReadResourceIdFromGDocFile(local_src_path);
+    *gdoc_resource_id = util::ReadResourceIdFromGDocFile(local_src_path);
 
   return FILE_ERROR_OK;
 }
@@ -266,25 +283,25 @@ void CopyOperation::TransferFileFromLocalToRemote(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  std::string* resource_id = new std::string;
+  std::string* gdoc_resource_id = new std::string;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(
           &PrepareTransferFileFromLocalToRemote,
-          metadata_, local_src_path, remote_dest_path, resource_id),
+          metadata_, local_src_path, remote_dest_path, gdoc_resource_id),
       base::Bind(
           &CopyOperation::TransferFileFromLocalToRemoteAfterPrepare,
           weak_ptr_factory_.GetWeakPtr(),
           local_src_path, remote_dest_path, callback,
-          base::Owned(resource_id)));
+          base::Owned(gdoc_resource_id)));
 }
 
 void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
     const base::FilePath& local_src_path,
     const base::FilePath& remote_dest_path,
     const FileOperationCallback& callback,
-    std::string* resource_id,
+    std::string* gdoc_resource_id,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -295,7 +312,7 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
   }
 
   // For regular files, schedule the transfer.
-  if (resource_id->empty()) {
+  if (gdoc_resource_id->empty()) {
     ScheduleTransferRegularFile(local_src_path, remote_dest_path, callback);
     return;
   }
@@ -305,7 +322,7 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
 
   // GDoc file may contain a resource ID in the old format.
   const std::string canonicalized_resource_id =
-      drive_service_->CanonicalizeResourceId(*resource_id);
+      drive_service_->CanonicalizeResourceId(*gdoc_resource_id);
 
   // TODO(hidehiko): Use CopyResource for Drive API v2.
 
@@ -346,17 +363,6 @@ void CopyOperation::CopyResourceOnServerAfterServerSideCopy(
     return;
   }
 
-  DCHECK(resource_entry);
-  ResourceEntry entry;
-  std::string parent_resource_id;
-  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id)) {
-    callback.Run(FILE_ERROR_NOT_A_FILE);
-    return;
-  }
-
-  // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
-  entry.set_parent_local_id(parent_resource_id);
-
   // The copy on the server side is completed successfully. Update the local
   // metadata.
   base::FilePath* file_path = new base::FilePath;
@@ -364,7 +370,7 @@ void CopyOperation::CopyResourceOnServerAfterServerSideCopy(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&UpdateLocalStateForServerSideCopy,
-                 metadata_, entry, file_path),
+                 metadata_, base::Passed(&resource_entry), file_path),
       base::Bind(&CopyOperation::CopyResourceOnServerAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback, base::Owned(file_path)));
@@ -466,27 +472,27 @@ void CopyOperation::ScheduleTransferRegularFileAfterCreate(
     return;
   }
 
-  std::string* resource_id = new std::string;
+  std::string* local_id = new std::string;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(
           &UpdateLocalStateForScheduleTransfer,
-          metadata_, cache_, local_src_path, remote_dest_path, resource_id),
+          metadata_, cache_, local_src_path, remote_dest_path, local_id),
       base::Bind(
           &CopyOperation::ScheduleTransferRegularFileAfterUpdateLocalState,
-          weak_ptr_factory_.GetWeakPtr(), callback, base::Owned(resource_id)));
+          weak_ptr_factory_.GetWeakPtr(), callback, base::Owned(local_id)));
 }
 
 void CopyOperation::ScheduleTransferRegularFileAfterUpdateLocalState(
     const FileOperationCallback& callback,
-    std::string* resource_id,
+    std::string* local_id,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (error == FILE_ERROR_OK)
-    observer_->OnCacheFileUploadNeededByOperation(*resource_id);
+    observer_->OnCacheFileUploadNeededByOperation(*local_id);
   callback.Run(error);
 }
 
@@ -518,17 +524,6 @@ void CopyOperation::CopyHostedDocumentAfterServerSideCopy(
     return;
   }
 
-  DCHECK(resource_entry);
-  ResourceEntry entry;
-  std::string parent_resource_id;
-  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id)) {
-    callback.Run(FILE_ERROR_NOT_A_FILE);
-    return;
-  }
-
-  // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
-  entry.set_parent_local_id(parent_resource_id);
-
   // The document is copied into the root directory (temporarily) on the server,
   // so we should first update the local metadata, then move it to the
   // destination directory.
@@ -537,7 +532,7 @@ void CopyOperation::CopyHostedDocumentAfterServerSideCopy(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&UpdateLocalStateForServerSideCopy,
-                 metadata_, entry, file_path),
+                 metadata_, base::Passed(&resource_entry), file_path),
       base::Bind(&CopyOperation::CopyHostedDocumentAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  dest_path, callback, base::Owned(file_path)));
