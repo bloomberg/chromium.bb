@@ -188,8 +188,6 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSReflectValue>(*this, other);
         case ShadowClass:
             return compareCSSValues<ShadowValue>(*this, other);
-        case LinearTimingFunctionClass:
-            return compareCSSValues<CSSLinearTimingFunctionValue>(*this, other);
         case CubicBezierTimingFunctionClass:
             return compareCSSValues<CSSCubicBezierTimingFunctionValue>(*this, other);
         case StepsTimingFunctionClass:
@@ -278,8 +276,6 @@ String CSSValue::cssText() const
         return static_cast<const CSSReflectValue*>(this)->customCssText();
     case ShadowClass:
         return static_cast<const ShadowValue*>(this)->customCssText();
-    case LinearTimingFunctionClass:
-        return static_cast<const CSSLinearTimingFunctionValue*>(this)->customCssText();
     case CubicBezierTimingFunctionClass:
         return static_cast<const CSSCubicBezierTimingFunctionValue*>(this)->customCssText();
     case StepsTimingFunctionClass:
@@ -396,9 +392,6 @@ void CSSValue::destroy()
         return;
     case ShadowClass:
         delete static_cast<ShadowValue*>(this);
-        return;
-    case LinearTimingFunctionClass:
-        delete static_cast<CSSLinearTimingFunctionValue*>(this);
         return;
     case CubicBezierTimingFunctionClass:
         delete static_cast<CSSCubicBezierTimingFunctionValue*>(this);

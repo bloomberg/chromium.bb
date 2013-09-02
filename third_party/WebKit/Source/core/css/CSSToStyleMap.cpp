@@ -499,8 +499,7 @@ void CSSToStyleMap::mapAnimationTimingFunction(CSSAnimationData* animation, CSSV
     } else if (value->isStepsTimingFunctionValue()) {
         CSSStepsTimingFunctionValue* stepsTimingFunction = static_cast<CSSStepsTimingFunctionValue*>(value);
         animation->setTimingFunction(StepsTimingFunction::create(stepsTimingFunction->numberOfSteps(), stepsTimingFunction->stepAtStart()));
-    } else if (value->isLinearTimingFunctionValue())
-        animation->setTimingFunction(LinearTimingFunction::create());
+    }
 }
 
 void CSSToStyleMap::mapNinePieceImage(RenderStyle* mutableStyle, CSSPropertyID property, CSSValue* value, NinePieceImage& image)

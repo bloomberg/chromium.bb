@@ -1163,7 +1163,7 @@ static PassRefPtr<CSSValue> createTimingFunctionValue(const TimingFunction* timi
         return CSSStepsTimingFunctionValue::create(stepsTimingFunction->numberOfSteps(), stepsTimingFunction->stepAtStart());
     }
 
-    return CSSLinearTimingFunctionValue::create();
+    return cssValuePool().createIdentifierValue(CSSValueLinear);
 }
 
 static PassRefPtr<CSSValue> valueForAnimationTimingFunction(const CSSAnimationDataList* animList)

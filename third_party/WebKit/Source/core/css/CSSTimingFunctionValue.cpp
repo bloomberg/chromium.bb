@@ -30,11 +30,6 @@
 
 namespace WebCore {
 
-String CSSLinearTimingFunctionValue::customCssText() const
-{
-    return "linear";
-}
-
 String CSSCubicBezierTimingFunctionValue::customCssText() const
 {
     return "cubic-bezier("
