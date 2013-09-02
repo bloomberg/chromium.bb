@@ -32,6 +32,7 @@
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/ContextFeatures.h"
+#include "core/dom/CustomElementRegistrationContext.h"
 #include "core/dom/DocumentInit.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
@@ -196,12 +197,14 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& namespaceUR
     const String& qualifiedName, DocumentType* doctype, ExceptionState& es)
 {
     RefPtr<Document> doc;
-    if (namespaceURI == SVGNames::svgNamespaceURI)
-        doc = SVGDocument::create();
-    else if (namespaceURI == HTMLNames::xhtmlNamespaceURI)
-        doc = Document::createXHTML(DocumentInit().withRegistrationContext(m_document->registrationContext()));
-    else
-        doc = Document::create();
+    DocumentInit init = DocumentInit::fromContext(m_document->contextDocument());
+    if (namespaceURI == SVGNames::svgNamespaceURI) {
+        doc = SVGDocument::create(init);
+    } else if (namespaceURI == HTMLNames::xhtmlNamespaceURI) {
+        doc = Document::createXHTML(init.withRegistrationContext(m_document->registrationContext()));
+    } else {
+        doc = Document::create(init);
+    }
 
     doc->setSecurityOrigin(m_document->securityOrigin());
     doc->setContextFeatures(m_document->contextFeatures());
@@ -304,7 +307,9 @@ bool DOMImplementation::isTextMIMEType(const String& mimeType)
 
 PassRefPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const String& title)
 {
-    RefPtr<HTMLDocument> d = HTMLDocument::create(DocumentInit().withRegistrationContext(m_document->registrationContext()));
+    DocumentInit init = DocumentInit::fromContext(m_document->contextDocument())
+        .withRegistrationContext(m_document->registrationContext());
+    RefPtr<HTMLDocument> d = HTMLDocument::create(init);
     d->open();
     d->write("<!doctype html><html><body></body></html>");
     if (!title.isNull())
