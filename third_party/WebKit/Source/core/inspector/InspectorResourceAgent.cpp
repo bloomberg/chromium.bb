@@ -339,7 +339,7 @@ void InspectorResourceAgent::didReceiveResourceResponse(unsigned long identifier
     Resource* cachedResource = 0;
     if (resourceLoader && !isNotModified)
         cachedResource = resourceLoader->cachedResource();
-    if (!cachedResource)
+    if (!cachedResource || cachedResource->type() == Resource::MainResource)
         cachedResource = InspectorPageAgent::cachedResource(loader->frame(), response.url());
 
     if (cachedResource) {

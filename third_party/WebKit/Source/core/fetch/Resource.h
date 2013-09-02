@@ -146,7 +146,7 @@ public:
     void setLoading(bool b) { m_loading = b; }
     virtual bool stillNeedsLoad() const { return false; }
 
-    ResourceLoader* loader() { return m_loader.get(); }
+    ResourceLoader* loader() const { return m_loader.get(); }
 
     virtual bool isImage() const { return false; }
     bool ignoreForRequestCount() const

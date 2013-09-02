@@ -1170,7 +1170,7 @@ void ResourceFetcher::didReceiveResponse(const Resource* resource, const Resourc
     if (options.sendLoadCallbacks != SendCallbacks)
         return;
     if (FrameLoader* loader = frameLoader())
-        loader->notifier()->dispatchDidReceiveResponse(m_documentLoader, resource->identifier(), response);
+        loader->notifier()->dispatchDidReceiveResponse(m_documentLoader, resource->identifier(), response, resource->loader());
 }
 
 void ResourceFetcher::didReceiveData(const Resource* resource, const char* data, int dataLength, int encodedDataLength, const ResourceLoaderOptions& options)

@@ -270,7 +270,7 @@ void InspectorConsoleAgent::didFinishXHRLoading(ThreadableLoaderClient*, unsigne
     }
 }
 
-void InspectorConsoleAgent::didReceiveResourceResponse(unsigned long requestIdentifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader*)
+void InspectorConsoleAgent::didReceiveResourceResponse(unsigned long requestIdentifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
     if (!loader)
         return;

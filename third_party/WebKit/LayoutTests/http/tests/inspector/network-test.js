@@ -98,7 +98,7 @@ function makeXHR(method, url, async, user, password, headers, withCredentials, p
 function makeXHRForJSONArguments(jsonArgs)
 {
     var args = JSON.parse(jsonArgs);
-    makeXHR(args.method, args.url, args.async, args.user, args.password, args.headers, args.withCredentials, args.payload, xhrLoadedCallback);
+    makeXHR(args.method, args.url, args.async, args.user, args.password, args.headers || [], args.withCredentials, args.payload, xhrLoadedCallback);
 }
 
 

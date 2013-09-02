@@ -286,7 +286,7 @@ void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, cons
     if (m_actualRequest) {
         DocumentLoader* loader = m_document->frame()->loader()->documentLoader();
         InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceResponse(m_document->frame(), identifier, response);
-        InspectorInstrumentation::didReceiveResourceResponse(cookie, identifier, loader, response, 0);
+        InspectorInstrumentation::didReceiveResourceResponse(cookie, identifier, loader, response, m_resource ? m_resource->loader() : 0);
 
         if (!passesAccessControlCheck(response, m_options.allowCredentials, securityOrigin(), accessControlErrorDescription)) {
             preflightFailure(identifier, response.url().string(), accessControlErrorDescription);

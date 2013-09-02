@@ -9,26 +9,41 @@ function test()
     // tests, we need to reset size limits to default ones.
     InspectorTest.resetInspectorResourcesData(step1);
 
+    function initArgs(method, url, async, payload)
+    {
+        var args = {};
+        args.method = method;
+        args.url = url;
+        args.async = async;
+        args.payload = payload;
+        var jsonArgs = JSON.stringify(args).replace(/\"/g, "\\\"");
+        return jsonArgs;
+    }
+
     function step1()
     {
-        InspectorTest.makeSimpleXHRWithPayload("POST", "resources/echo-payload.php", true, 'request1', step2);
+        var jsonArgs1 = initArgs("POST", "resources/echo-payload.php", true, 'request1');
+        var jsonArgs2 = initArgs("POST", "resources/echo-payload.php", true, 'request2');
+        InspectorTest.addConsoleSniffer(step2);
+        InspectorTest.evaluateInPage("makeXHRForJSONArguments(\"" + jsonArgs1 + "\"); makeXHRForJSONArguments(\"" + jsonArgs2 + "\")");
     }
 
-    function step2()
+    var totalXHRs = 2;
+    function step2(msg)
     {
-        InspectorTest.makeSimpleXHRWithPayload("POST", "resources/echo-payload.php", true, 'request2', step3);
-    }
+        if (msg._messageText.indexOf("XHR loaded") === -1 || (--totalXHRs)) {
+            InspectorTest.addConsoleSniffer(step2);
+            return;
+        }
 
-    function step3()
-    {
         var request1 = WebInspector.panel("network").requests[WebInspector.panel("network").requests.length - 2];
         var request2 = WebInspector.panel("network").requests[WebInspector.panel("network").requests.length - 1];
-        request1.requestContent(step4);
-        request2.requestContent(step4);
+        request1.requestContent(step3);
+        request2.requestContent(step3);
     }
 
     var toLoad = 2;
-    function step4()
+    function step3()
     {
         if (--toLoad)
             return;
