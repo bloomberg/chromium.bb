@@ -17,9 +17,7 @@ import android.util.Log;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.content.browser.AndroidBrowserProcess;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.common.ProcessInitException;
 
 import java.util.concurrent.Semaphore;
 
@@ -103,17 +101,16 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
 
     private void startBrowserProcessesSync(
             final BrowserStartupController.StartupCallback callback) {
-        try {
-            AndroidBrowserProcess.init(
-                    mApplication, AndroidBrowserProcess.MAX_RENDERERS_LIMIT);
+        if (BrowserStartupController.get(mApplication).startBrowserProcessesSync(
+                BrowserStartupController.MAX_RENDERERS_LIMIT)) {
             new Handler().post(new Runnable() {
                 @Override
                 public void run() {
                     callback.onSuccess(false);
                 }
             });
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Unable to start browser process.", e);
+        } else {
+            Log.e(TAG, "Unable to start browser process.");
             new Handler().post(new Runnable() {
                 @Override
                 public void run() {
