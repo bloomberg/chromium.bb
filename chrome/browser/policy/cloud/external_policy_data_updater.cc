@@ -5,21 +5,15 @@
 #include "chrome/browser/policy/cloud/external_policy_data_updater.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
+#include "chrome/browser/policy/cloud/external_policy_data_fetcher.h"
 #include "net/base/backoff_entry.h"
-#include "net/base/load_flags.h"
-#include "net/base/net_errors.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 namespace policy {
@@ -116,11 +110,9 @@ const int kMaxLimitedRetries = 3;
 }  // namespace
 
 class ExternalPolicyDataUpdater::FetchJob
-    : public base::SupportsWeakPtr<FetchJob>,
-      public net::URLFetcherDelegate {
+    : public base::SupportsWeakPtr<FetchJob> {
  public:
   FetchJob(ExternalPolicyDataUpdater* updater,
-           int id,
            const std::string& key,
            const ExternalPolicyDataUpdater::Request& request,
            const ExternalPolicyDataUpdater::FetchSuccessCallback& callback);
@@ -131,11 +123,8 @@ class ExternalPolicyDataUpdater::FetchJob
 
   void Start();
 
-  // URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-  virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                          int64 current,
-                                          int64 total) OVERRIDE;
+  void OnFetchFinished(ExternalPolicyDataFetcher::Result result,
+                       scoped_ptr<std::string> data);
 
  private:
   void OnFailed(net::BackoffEntry* backoff_entry);
@@ -144,14 +133,16 @@ class ExternalPolicyDataUpdater::FetchJob
   // Always valid as long as |this| is alive.
   ExternalPolicyDataUpdater* updater_;
 
-  const int id_;
   const std::string key_;
   const ExternalPolicyDataUpdater::Request request_;
   ExternalPolicyDataUpdater::FetchSuccessCallback callback_;
 
-  // If |fetcher_| exists, the job is currently running and must call back to
-  // the |updater_|'s OnJobSucceeded() or OnJobFailed() method eventually.
-  scoped_ptr<net::URLFetcher> fetcher_;
+  // If the job is currently running, a corresponding |fetch_job_| exists in the
+  // |external_policy_data_fetcher_|. The job must eventually call back to the
+  // |updater_|'s OnJobSucceeded() or OnJobFailed() method in this case.
+  // If the job is currently not running, |fetch_job_| is NULL and no callbacks
+  // should be invoked.
+  ExternalPolicyDataFetcher::Job* fetch_job_;  // Not owned.
 
   // Some errors should trigger a limited number of retries, even with backoff.
   // This counts down the number of such retries to stop retrying once the limit
@@ -182,15 +173,14 @@ bool ExternalPolicyDataUpdater::Request::operator==(
 
 ExternalPolicyDataUpdater::FetchJob::FetchJob(
     ExternalPolicyDataUpdater* updater,
-    int id,
     const std::string& key,
     const ExternalPolicyDataUpdater::Request& request,
     const ExternalPolicyDataUpdater::FetchSuccessCallback& callback)
     : updater_(updater),
-      id_(id),
       key_(key),
       request_(request),
       callback_(callback),
+      fetch_job_(NULL),
       limited_retries_remaining_(kMaxLimitedRetries),
       retry_soon_entry_(&kRetrySoonPolicy),
       retry_later_entry_(&kRetryLaterPolicy),
@@ -198,9 +188,10 @@ ExternalPolicyDataUpdater::FetchJob::FetchJob(
 }
 
 ExternalPolicyDataUpdater::FetchJob::~FetchJob() {
-  if (fetcher_) {
-    fetcher_.reset();
-    // This job is currently running. Inform the updater that it was canceled.
+  if (fetch_job_) {
+    // Cancel the fetch job in the |external_policy_data_fetcher_|.
+    updater_->external_policy_data_fetcher_->CancelJob(fetch_job_);
+    // Inform the |updater_| that the job was canceled.
     updater_->OnJobFailed(this);
   }
 }
@@ -215,93 +206,72 @@ const ExternalPolicyDataUpdater::Request&
 }
 
 void ExternalPolicyDataUpdater::FetchJob::Start() {
-  fetcher_.reset(net::URLFetcher::Create(id_, GURL(request_.url),
-                                         net::URLFetcher::GET, this));
-  fetcher_->SetRequestContext(updater_->request_context_.get());
-  fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-                         net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_IS_DOWNLOAD |
-                         net::LOAD_DO_NOT_SEND_COOKIES |
-                         net::LOAD_DO_NOT_SEND_AUTH_DATA);
-  fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
-  fetcher_->Start();
+  DCHECK(!fetch_job_);
+  // Start a fetch job in the |external_policy_data_fetcher_|. This will
+  // eventually call back to OnFetchFinished() with the result.
+  fetch_job_ = updater_->external_policy_data_fetcher_->StartJob(
+      GURL(request_.url), request_.max_size,
+      base::Bind(&ExternalPolicyDataUpdater::FetchJob::OnFetchFinished,
+                 base::Unretained(this)));
 }
 
-void ExternalPolicyDataUpdater::FetchJob::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  DCHECK_EQ(fetcher_.get(), source);
+void ExternalPolicyDataUpdater::FetchJob::OnFetchFinished(
+    ExternalPolicyDataFetcher::Result result,
+    scoped_ptr<std::string> data) {
+  // The fetch job in the |external_policy_data_fetcher_| is finished.
+  fetch_job_ = NULL;
 
-  const net::URLRequestStatus status = source->GetStatus();
-
-  // The connection was interrupted. Try again soon.
-  if (status.error() == net::ERR_CONNECTION_RESET ||
-      status.error() == net::ERR_TEMPORARILY_THROTTLED) {
-    OnFailed(&retry_soon_entry_);
-    return;
+  switch (result) {
+    case ExternalPolicyDataFetcher::CONNECTION_INTERRUPTED:
+      // The connection was interrupted. Try again soon.
+      OnFailed(&retry_soon_entry_);
+      return;
+    case ExternalPolicyDataFetcher::NETWORK_ERROR:
+      // Another network error occurred. Try again later.
+      OnFailed(&retry_later_entry_);
+      return;
+    case ExternalPolicyDataFetcher::SERVER_ERROR:
+      // Problem at the server. Try again soon.
+      OnFailed(&retry_soon_entry_);
+      return;
+    case ExternalPolicyDataFetcher::CLIENT_ERROR:
+      // Client error. This is unlikely to go away. Try again later, and give up
+      // retrying after 3 attempts.
+      OnFailed(limited_retries_remaining_ ? &retry_later_entry_ : NULL);
+      if (limited_retries_remaining_)
+        --limited_retries_remaining_;
+      return;
+    case ExternalPolicyDataFetcher::HTTP_ERROR:
+      // Any other type of HTTP failure. Try again later.
+      OnFailed(&retry_later_entry_);
+      return;
+    case ExternalPolicyDataFetcher::MAX_SIZE_EXCEEDED:
+      // Received |data| exceeds maximum allowed size. This may be because the
+      // data being served is stale. Try again much later.
+      OnFailed(&retry_much_later_entry_);
+      return;
+    case ExternalPolicyDataFetcher::SUCCESS:
+      break;
   }
 
-  // Another network error occurred. Try again later.
-  if (status.status() != net::URLRequestStatus::SUCCESS) {
-    OnFailed(&retry_later_entry_);
-    return;
-  }
-
-  // Problem at the server. Try again soon.
-  if (source->GetResponseCode() >= 500) {
-    OnFailed(&retry_soon_entry_);
-    return;
-  }
-
-  // Client error. This is unlikely to go away. Try again later, and give up
-  // retrying after 3 attempts.
-  if (source->GetResponseCode() >= 400) {
-    OnFailed(limited_retries_remaining_ ? &retry_later_entry_ : NULL);
-    if (limited_retries_remaining_)
-      --limited_retries_remaining_;
-    return;
-  }
-
-  // Any other type of HTTP failure. Try again later.
-  if (source->GetResponseCode() != 200) {
-    OnFailed(&retry_later_entry_);
-    return;
-  }
-
-  std::string data;
-  if (!source->GetResponseAsString(&data) ||
-      static_cast<int64>(data.size()) > request_.max_size ||
-      base::SHA1HashString(data) != request_.hash) {
-    // Failed to retrieve |data|, its size exceeds the limit or its hash does
-    // not match the expected value. This may be because the data being served
-    // is stale. Try again much later.
+  if (base::SHA1HashString(*data) != request_.hash) {
+    // Received |data| does not match expected hash. This may be because the
+    // data being served is stale. Try again much later.
     OnFailed(&retry_much_later_entry_);
     return;
   }
 
   // If the callback rejects the data, try again much later.
-  if (!callback_.Run(data)) {
+  if (!callback_.Run(*data)) {
     OnFailed(&retry_much_later_entry_);
     return;
   }
 
   // Signal success.
-  fetcher_.reset();
   updater_->OnJobSucceeded(this);
 }
 
-void ExternalPolicyDataUpdater::FetchJob::OnURLFetchDownloadProgress(
-    const net::URLFetcher* source,
-    int64 current,
-    int64 total) {
-  DCHECK_EQ(fetcher_.get(), source);
-  // Reject the data if it exceeds the size limit. The content length is in
-  // |total|, and it may be -1 when not known.
-  if (current > request_.max_size || total > request_.max_size)
-    OnFailed(&retry_much_later_entry_);
-}
-
 void ExternalPolicyDataUpdater::FetchJob::OnFailed(net::BackoffEntry* entry) {
-  fetcher_.reset();
-
   if (entry) {
     entry->InformOfRequest(false);
 
@@ -323,13 +293,12 @@ void ExternalPolicyDataUpdater::FetchJob::Reschedule() {
 
 ExternalPolicyDataUpdater::ExternalPolicyDataUpdater(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    scoped_refptr<net::URLRequestContextGetter> request_context,
+    scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher,
     size_t max_parallel_fetches)
     : task_runner_(task_runner),
-      request_context_(request_context),
+      external_policy_data_fetcher_(external_policy_data_fetcher.release()),
       max_parallel_jobs_(max_parallel_fetches),
       running_jobs_(0),
-      next_job_id_(0),
       shutting_down_(false) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 }
@@ -362,7 +331,7 @@ void ExternalPolicyDataUpdater::FetchExternalData(
   }
 
   // Start a new job to handle |request|.
-  job = new FetchJob(this, next_job_id_++, key, request, callback);
+  job = new FetchJob(this, key, request, callback);
   job_map_[key] = job;
   ScheduleJob(job);
 }
