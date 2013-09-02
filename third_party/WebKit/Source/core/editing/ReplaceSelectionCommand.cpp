@@ -245,7 +245,8 @@ void ReplacementFragment::insertNodeBefore(PassRefPtr<Node> node, Node* refNode)
 
 PassRefPtr<Element> ReplacementFragment::insertFragmentForTestRendering(Node* rootEditableElement)
 {
-    RefPtr<Element> holder = createDefaultParagraphElement(m_document.get());
+    ASSERT(m_document);
+    RefPtr<Element> holder = createDefaultParagraphElement(*m_document.get());
 
     holder->appendChild(m_fragment);
     rootEditableElement->appendChild(holder.get());
@@ -818,7 +819,7 @@ void ReplaceSelectionCommand::mergeEndIfNeeded()
     // Merging forward could result in deleting the destination anchor node.
     // To avoid this, we add a placeholder node before the start of the paragraph.
     if (endOfParagraph(startOfParagraphToMove) == destination) {
-        RefPtr<Node> placeholder = createBreakElement(&document());
+        RefPtr<Node> placeholder = createBreakElement(document());
         insertNodeBefore(placeholder, startOfParagraphToMove.deepEquivalent().deprecatedNode());
         destination = VisiblePosition(positionBeforeNode(placeholder.get()));
     }
@@ -1115,7 +1116,7 @@ void ReplaceSelectionCommand::doApply()
     // We inserted before the startBlock to prevent nesting, and the content before the startBlock wasn't in its own block and
     // didn't have a br after it, so the inserted content ended up in the same paragraph.
     if (startBlock && insertionPos.deprecatedNode() == startBlock->parentNode() && (unsigned)insertionPos.deprecatedEditingOffset() < startBlock->nodeIndex() && !isStartOfParagraph(startOfInsertedContent))
-        insertNodeAt(createBreakElement(&document()).get(), startOfInsertedContent.deepEquivalent());
+        insertNodeAt(createBreakElement(document()).get(), startOfInsertedContent.deepEquivalent());
 
     if (endBR && (plainTextFragment || shouldRemoveEndBR(endBR, originalVisPosBeforeEndBR))) {
         RefPtr<Node> parent = endBR->parentNode();
@@ -1150,7 +1151,7 @@ void ReplaceSelectionCommand::doApply()
         // We insert a placeholder before the newly inserted content to avoid being merged into the inline.
         Node* destinationNode = destination.deepEquivalent().deprecatedNode();
         if (m_shouldMergeEnd && destinationNode != enclosingInline(destinationNode) && enclosingInline(destinationNode)->nextSibling())
-            insertNodeBefore(createBreakElement(&document()), refNode.get());
+            insertNodeBefore(createBreakElement(document()), refNode.get());
 
         // Merging the the first paragraph of inserted content with the content that came
         // before the selection that was pasted into would also move content after
@@ -1161,7 +1162,7 @@ void ReplaceSelectionCommand::doApply()
         // comes after and prevent that from happening.
         VisiblePosition endOfInsertedContent = positionAtEndOfInsertedContent();
         if (startOfParagraph(endOfInsertedContent) == startOfParagraphToMove) {
-            insertNodeAt(createBreakElement(&document()).get(), endOfInsertedContent.deepEquivalent());
+            insertNodeAt(createBreakElement(document()).get(), endOfInsertedContent.deepEquivalent());
             // Mutation events (bug 22634) triggered by inserting the <br> might have removed the content we're about to move
             if (!startOfParagraphToMove.deepEquivalent().anchorNode()->inDocument())
                 return;
@@ -1185,7 +1186,7 @@ void ReplaceSelectionCommand::doApply()
                 setEndingSelection(endOfInsertedContent);
                 Node* enclosingNode = enclosingBlock(endOfInsertedContent.deepEquivalent().deprecatedNode());
                 if (isListItem(enclosingNode)) {
-                    RefPtr<Node> newListItem = createListItemElement(&document());
+                    RefPtr<Node> newListItem = createListItemElement(document());
                     insertNodeAfter(newListItem, enclosingNode);
                     setEndingSelection(VisiblePosition(firstPositionInNode(newListItem.get())));
                 } else {

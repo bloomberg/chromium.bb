@@ -752,7 +752,7 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
     Document& document = paragraph->document();
 
     if (string.isEmpty()) {
-        paragraph->appendChild(createBlockPlaceholderElement(&document));
+        paragraph->appendChild(createBlockPlaceholderElement(document));
         return;
     }
 
@@ -769,7 +769,7 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
         // append the non-tab textual part
         if (!s.isEmpty()) {
             if (!tabText.isEmpty()) {
-                paragraph->appendChild(createTabSpanElement(&document, tabText));
+                paragraph->appendChild(createTabSpanElement(document, tabText));
                 tabText = emptyString();
             }
             RefPtr<Node> textNode = document.createTextNode(stringWithRebalancedWhitespace(s, first, i + 1 == numEntries));
@@ -781,7 +781,7 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
         if (i + 1 != numEntries)
             tabText.append('\t');
         else if (!tabText.isEmpty())
-            paragraph->appendChild(createTabSpanElement(&document, tabText));
+            paragraph->appendChild(createTabSpanElement(document, tabText));
 
         first = false;
     }
@@ -818,8 +818,8 @@ PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String
     if (!context)
         return 0;
 
-    Document* document = context->ownerDocument();
-    RefPtr<DocumentFragment> fragment = document->createDocumentFragment();
+    Document& document = *context->ownerDocument();
+    RefPtr<DocumentFragment> fragment = document.createDocumentFragment();
 
     if (text.isEmpty())
         return fragment.release();
@@ -829,7 +829,7 @@ PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String
     string.replace('\r', '\n');
 
     if (shouldPreserveNewline(*context)) {
-        fragment->appendChild(document->createTextNode(string));
+        fragment->appendChild(document.createTextNode(string));
         if (string.endsWith('\n')) {
             RefPtr<Element> element = createBreakElement(document);
             element->setAttribute(classAttr, AppleInterchangeNewline);
@@ -889,7 +889,7 @@ PassRefPtr<DocumentFragment> createFragmentFromNodes(Document *document, const V
 
     size_t size = nodes.size();
     for (size_t i = 0; i < size; ++i) {
-        RefPtr<Element> element = createDefaultParagraphElement(document);
+        RefPtr<Element> element = createDefaultParagraphElement(*document);
         element->appendChild(nodes[i]);
         fragment->appendChild(element.release());
     }
