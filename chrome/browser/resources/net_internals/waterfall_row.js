@@ -261,9 +261,23 @@ var WaterfallRow = (function() {
 
         // Three levels down from URL Requests.
 
+        // TODO(mmenke):  Some of these may be nested in the PROXY_SERVICE
+        //                event, resulting in incorrect display, since nested
+        //                events aren't handled.
         var hostResolverImplRequestPairs = findEntryPairsFromSourceEntries_(
             hostResolverImplSources, EventType.HOST_RESOLVER_IMPL_REQUEST);
         eventPairs = eventPairs.concat(hostResolverImplRequestPairs);
+
+        // Truncate times of connection events such that they don't occur before
+        // the HTTP_STREAM_JOB event or the PROXY_SERVICE event.
+        // TODO(mmenke):  The last HOST_RESOLVER_IMPL_REQUEST may still be a
+        //                problem.
+        var minTime = httpStreamJobSources[i].getLogEntries()[0].time;
+        if (proxyServicePairs.length > 0)
+          minTime = proxyServicePairs[0].endEntry.time;
+        // Convert to number so comparisons will be numeric, not string,
+        // comparisons.
+        minTime = Number(minTime);
 
         var tcpConnectPairs = findEntryPairsFromSourceEntries_(
             socketSources, EventType.TCP_CONNECT);
@@ -276,15 +290,16 @@ var WaterfallRow = (function() {
         // Truncates times of connection events such that they are shown after a
         // proxy service event.
         for (var k = 0; k < connectionPairs.length; ++k) {
-          var eventPair = shallowCloneObject(connectionPairs[k]);
+          var eventPair = connectionPairs[k];
           var eventInRange = false;
-          // Should only have one proxy service event for the streamJob.
-          var proxyEvent = proxyServicePairs[0];
-          if (eventPair.startEntry.time >= proxyEvent.endEntry.time) {
+          if (eventPair.startEntry.time >= minTime) {
             eventInRange = true;
-          } else if (eventPair.endEntry.time > proxyEvent.endEntry.time) {
+          } else if (eventPair.endEntry.time > minTime) {
             eventInRange = true;
-            eventPair.startEntry.time = proxyEvent.endEntry.time;
+            // Should not modify original object.
+            eventPair.startEntry = shallowCloneObject(eventPair.startEntry);
+            // Need to have a string, for consistency.
+            eventPair.startEntry.time = minTime + '';
           }
           if (eventInRange) {
             eventPairs.push(eventPair);
