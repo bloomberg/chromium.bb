@@ -245,12 +245,10 @@ namespace WTF {
         static const bool value = __has_trivial_destructor(T) || IsPod<RemoveConstVolatile<T> >::value;
     };
 
-#define EnsurePtrConvertibleType(ReturnType, From, To) \
-    typename EnableIf<IsPointerConvertible<From, To>::Value, ReturnType>::Type
 #define EnsurePtrConvertibleArgDecl(From, To) \
-    EnsurePtrConvertibleType(bool, From, To) = true
+    typename EnableIf<IsPointerConvertible<From, To>::Value, bool>::Type = true
 #define EnsurePtrConvertibleArgDefn(From, To) \
-    EnsurePtrConvertibleType(bool, From, To)
+    typename EnableIf<IsPointerConvertible<From, To>::Value, bool>::Type
 
 } // namespace WTF
 

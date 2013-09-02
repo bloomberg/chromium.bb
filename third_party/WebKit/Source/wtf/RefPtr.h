@@ -69,8 +69,8 @@ namespace WTF {
 #if !COMPILER_SUPPORTS(CXX_NULLPTR)
         RefPtr& operator=(std::nullptr_t) { clear(); return *this; }
 #endif
-        template<typename U> EnsurePtrConvertibleType(RefPtr<T>&, U, T) operator=(const RefPtr<U>&);
-        template<typename U> EnsurePtrConvertibleType(RefPtr<T>&, U, T) operator=(const PassRefPtr<U>&);
+        template<typename U> RefPtr<T>& operator=(const RefPtr<U>&);
+        template<typename U> RefPtr<T>& operator=(const PassRefPtr<U>&);
 
         void swap(RefPtr&);
 
@@ -99,7 +99,7 @@ namespace WTF {
         return *this;
     }
 
-    template<typename T> template<typename U> inline EnsurePtrConvertibleType(RefPtr<T>&, U, T) RefPtr<T>::operator=(const RefPtr<U>& o)
+    template<typename T> template<typename U> inline RefPtr<T>& RefPtr<T>::operator=(const RefPtr<U>& o)
     {
         RefPtr ptr = o;
         swap(ptr);
@@ -120,7 +120,7 @@ namespace WTF {
         return *this;
     }
 
-    template<typename T> template<typename U> inline EnsurePtrConvertibleType(RefPtr<T>&, U, T) RefPtr<T>::operator=(const PassRefPtr<U>& o)
+    template<typename T> template<typename U> inline RefPtr<T>& RefPtr<T>::operator=(const PassRefPtr<U>& o)
     {
         RefPtr ptr = o;
         swap(ptr);
