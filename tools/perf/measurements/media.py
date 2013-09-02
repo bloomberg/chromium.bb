@@ -5,6 +5,7 @@
 from metrics import media
 from telemetry.page import page_measurement
 
+
 class Media(page_measurement.PageMeasurement):
   """The MediaMeasurement class gathers media-related metrics on a page set.
 
@@ -28,3 +29,4 @@ class Media(page_measurement.PageMeasurement):
     """Measure the page's performance."""
     self._media_metric.Stop(page, tab)
     self._media_metric.AddResults(tab, results)
+
