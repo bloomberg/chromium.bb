@@ -540,6 +540,7 @@
         'renderer/accessibility/renderer_accessibility_focus_only.cc'
         'renderer/media/audio_decoder.cc',
         'renderer/media/filter_helpers.cc',
+        'renderer/media/pepper_platform_video_decoder.cc',
         'renderer/media/webmediaplayer_impl.cc',
       ],
       'dependencies': [

@@ -202,7 +202,9 @@
                 '../third_party/libusb/libusb.gyp:libusb',
               ],
               'sources!': [
+                'browser/devtools/adb/android_rsa.cc',
                 'browser/devtools/browser_list_tabcontents_provider.cc',
+                'browser/devtools/devtools_file_system_indexer.cc',
                 'browser/devtools/devtools_window.cc',
                 'browser/devtools/remote_debugging_server.cc',
               ],

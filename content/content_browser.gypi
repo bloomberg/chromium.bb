@@ -1386,6 +1386,15 @@
         ['include', '^browser/speech/speech_recognizer\\.h$'],
         ['include', '^browser/speech/speech_recognizer_impl_android\\.(cc|h)$'],
       ],
+      'sources!': [
+        'browser/browser_ipc_logging.cc',
+        'browser/font_list_async.cc',
+        'browser/geolocation/device_data_provider.cc',
+        'browser/geolocation/empty_device_data_provider.cc',
+        'browser/geolocation/wifi_data_provider_common.cc',
+        'browser/renderer_host/input/tap_suppression_controller.cc',
+        'browser/renderer_host/native_web_keyboard_event.cc',
+      ]
     }, {  # OS!="android"
       'sources/': [
         ['exclude', '^browser/renderer_host/java/'],

@@ -167,15 +167,12 @@
     'common/file_utilities_messages.h',
     'common/fileapi/file_system_messages.h',
     'common/fileapi/webblob_messages.h',
-    'common/find_match_rect_android.cc',
-    'common/find_match_rect_android.h',
     'common/font_cache_dispatcher_win.cc',
     'common/font_cache_dispatcher_win.h',
     'common/font_config_ipc_linux.cc',
     'common/font_config_ipc_linux.h',
     'common/font_list.cc',
     'common/font_list.h',
-    'common/font_list_android.cc',
     'common/font_list_mac.mm',
     'common/font_list_pango.cc',
     'common/font_list_win.cc',
@@ -426,6 +423,11 @@
       },
     }],
     ['OS=="android"',{
+      'sources!': [
+        'common/font_list.cc',
+        'common/sandbox_util.cc',
+        'public/common/child_process_host_delegate.cc',
+      ],
       'link_settings': {
         'libraries': [
           '-landroid',  # ANativeWindow

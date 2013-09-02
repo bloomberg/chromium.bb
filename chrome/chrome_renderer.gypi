@@ -410,6 +410,18 @@
           'sources!': [
             'renderer/prerender/prerender_media_load_deferrer.cc',
             'renderer/prerender/prerender_media_load_deferrer.h',
+            'renderer/extensions/api_definitions_natives.cc',
+            'renderer/extensions/app_window_custom_bindings.cc',
+            'renderer/extensions/chrome_v8_extension.cc',
+            'renderer/extensions/chrome_v8_extension_handler.cc',
+            'renderer/extensions/context_menus_custom_bindings.cc',
+            'renderer/extensions/extension_custom_bindings.cc',
+            'renderer/extensions/file_browser_handler_custom_bindings.cc',
+            'renderer/extensions/page_actions_custom_bindings.cc',
+            'renderer/extensions/render_view_observer_natives.cc',
+            'renderer/extensions/send_request_natives.cc',
+            'renderer/extensions/tabs_custom_bindings.cc',
+            'renderer/extensions/tts_custom_bindings.cc',
           ],
           'defines': [
             'ENABLE_MOBILE_YOUTUBE_PLUGIN',
