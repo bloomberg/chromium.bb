@@ -203,29 +203,6 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesTrashUrl) {
             test_url_generator_.GetFilesTrashUrl("file:file_id").spec());
 }
 
-TEST_F(DriveApiUrlGeneratorTest, GetFileTouchUrl) {
-  // |file_id| should be embedded into the url.
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0ADK06pfg"
-            "?setModifiedDate=true&updateViewedDate=false",
-            url_generator_.GetFileTouchUrl("0ADK06pfg").spec());
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0Bz0bd074"
-            "?setModifiedDate=true&updateViewedDate=false",
-            url_generator_.GetFileTouchUrl("0Bz0bd074").spec());
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/file%3Afile_id"
-            "?setModifiedDate=true&updateViewedDate=false",
-            url_generator_.GetFileTouchUrl("file:file_id").spec());
-
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/0ADK06pfg"
-            "?setModifiedDate=true&updateViewedDate=false",
-            test_url_generator_.GetFileTouchUrl("0ADK06pfg").spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/0Bz0bd074"
-            "?setModifiedDate=true&updateViewedDate=false",
-            test_url_generator_.GetFileTouchUrl("0Bz0bd074").spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/file%3Afile_id"
-            "?setModifiedDate=true&updateViewedDate=false",
-            test_url_generator_.GetFileTouchUrl("file:file_id").spec());
-}
-
 TEST_F(DriveApiUrlGeneratorTest, GetChangesListUrl) {
   struct TestPattern {
     bool include_deleted;

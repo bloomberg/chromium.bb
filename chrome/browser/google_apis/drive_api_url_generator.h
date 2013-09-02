@@ -54,9 +54,6 @@ class DriveApiUrlGenerator {
   // Returns a URL to trash a resource with the given |file_id|.
   GURL GetFilesTrashUrl(const std::string& file_id) const;
 
-  // Returns a URL to touch a resource specified by |resource_id|.
-  GURL GetFileTouchUrl(const std::string& resource_id) const;
-
   // Returns a URL to fetch a list of changes.
   GURL GetChangesListUrl(bool include_deleted,
                          int max_results,
