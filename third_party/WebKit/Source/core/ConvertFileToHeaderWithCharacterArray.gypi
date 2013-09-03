@@ -43,13 +43,13 @@
     {
       'action_name': 'ConvertFileToHeaderWithCharacterArray',
       'inputs': [
-        'inspector/xxd.pl',
+        'scripts/xxd.pl',
         '<(input_file_path)',
       ],
       'outputs': [ '<@(output_file_path)', ],
       'action': [
         '<(perl_exe)',
-        'inspector/xxd.pl',
+        'scripts/xxd.pl',
         '<(character_array_name)',
         '<(input_file_path)',
         '<@(_outputs)'

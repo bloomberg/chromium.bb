@@ -111,7 +111,7 @@
           'msvs_cygwin_shell': 0,
           'action': [
             '<(perl_exe)',
-            'inspector/xxd.pl',
+            'scripts/xxd.pl',
             'V8ArrayBufferViewCustomScript_js',
             '<@(_inputs)',
             '<@(_outputs)'
@@ -129,7 +129,7 @@
           'msvs_cygwin_shell': 0,
           'action': [
             '<(perl_exe)',
-            'inspector/xxd.pl',
+            'scripts/xxd.pl',
             'XMLViewer_css',
             '<@(_inputs)',
             '<@(_outputs)'
@@ -146,7 +146,7 @@
           'msvs_cygwin_shell': 0,
           'action': [
             '<(perl_exe)',
-            'inspector/xxd.pl',
+            'scripts/xxd.pl',
             'XMLViewer_js',
             '<@(_inputs)',
             '<@(_outputs)'
