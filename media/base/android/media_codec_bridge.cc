@@ -73,14 +73,6 @@ static ScopedJavaLocalRef<jintArray> ToJavaIntArray(
 }
 
 // static
-const base::TimeDelta MediaCodecBridge::kTimeOutInfinity =
-    base::TimeDelta::FromMicroseconds(-1);
-
-// static
-const base::TimeDelta MediaCodecBridge::kTimeOutNoWait =
-    base::TimeDelta::FromMicroseconds(0);
-
-// static
 bool MediaCodecBridge::IsAvailable() {
   // MediaCodec is only available on JB and greater.
   return base::android::BuildInfo::GetInstance()->sdk_int() >= 16;
@@ -185,14 +177,23 @@ void MediaCodecBridge::QueueEOS(int input_buffer_index) {
       input_buffer_index, 0, 0, 0, kBufferFlagEndOfStream);
 }
 
-int MediaCodecBridge::DequeueInputBuffer(base::TimeDelta timeout) {
+MediaCodecStatus MediaCodecBridge::DequeueInputBuffer(
+    const base::TimeDelta& timeout, int* index) {
   JNIEnv* env = AttachCurrentThread();
-  return Java_MediaCodecBridge_dequeueInputBuffer(
+  int result = Java_MediaCodecBridge_dequeueInputBuffer(
       env, j_media_codec_.obj(), timeout.InMicroseconds());
+  if (result == INFO_MEDIA_CODEC_ERROR)
+    return MEDIA_CODEC_ERROR;
+  else if (result == INFO_TRY_AGAIN_LATER)
+    return MEDIA_CODEC_ENQUEUE_INPUT_AGAIN_LATER;
+
+  DCHECK_GE(result, 0);
+  *index = result;
+  return MEDIA_CODEC_OK;
 }
 
-int MediaCodecBridge::DequeueOutputBuffer(
-    base::TimeDelta timeout, size_t* offset, size_t* size,
+MediaCodecStatus MediaCodecBridge::DequeueOutputBuffer(
+    const base::TimeDelta& timeout, int* index, size_t* offset, size_t* size,
     base::TimeDelta* presentation_time, bool* end_of_stream) {
   JNIEnv* env = AttachCurrentThread();
 
@@ -200,21 +201,29 @@ int MediaCodecBridge::DequeueOutputBuffer(
       Java_MediaCodecBridge_dequeueOutputBuffer(env, j_media_codec_.obj(),
                                                 timeout.InMicroseconds());
 
-  int j_buffer = Java_DequeueOutputResult_index(env, result.obj());
-  if (j_buffer >= 0) {
-    int64 presentation_time_us =
-        Java_DequeueOutputResult_presentationTimeMicroseconds(
-            env, result.obj());
-    int flags = Java_DequeueOutputResult_flags(env, result.obj());
-    *offset = base::checked_numeric_cast<size_t>(
-        Java_DequeueOutputResult_offset(env, result.obj()));
-    *size = base::checked_numeric_cast<size_t>(
-        Java_DequeueOutputResult_numBytes(env, result.obj()));
-    *presentation_time =
-        base::TimeDelta::FromMicroseconds(presentation_time_us);
-    *end_of_stream = flags & kBufferFlagEndOfStream;
+  int j_index = Java_DequeueOutputResult_index(env, result.obj());
+  switch (j_index) {
+    case INFO_OUTPUT_BUFFERS_CHANGED:
+      return MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED;
+    case INFO_OUTPUT_FORMAT_CHANGED:
+      return MEDIA_CODEC_OUTPUT_FORMAT_CHANGED;
+    case INFO_TRY_AGAIN_LATER:
+      return MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER;
+    case INFO_MEDIA_CODEC_ERROR:
+      return MEDIA_CODEC_ERROR;
   }
-  return j_buffer;
+
+  DCHECK_GE(j_index, 0);
+  *index = j_index;
+  *offset = base::checked_numeric_cast<size_t>(
+       Java_DequeueOutputResult_offset(env, result.obj()));
+  *size = base::checked_numeric_cast<size_t>(
+       Java_DequeueOutputResult_numBytes(env, result.obj()));
+  *presentation_time = base::TimeDelta::FromMicroseconds(
+      Java_DequeueOutputResult_presentationTimeMicroseconds(env, result.obj()));
+  int flags = Java_DequeueOutputResult_flags(env, result.obj());
+  *end_of_stream = flags & kBufferFlagEndOfStream;
+  return MEDIA_CODEC_OK;
 }
 
 void MediaCodecBridge::ReleaseOutputBuffer(int index, bool render) {

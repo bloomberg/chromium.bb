@@ -18,6 +18,18 @@ namespace media {
 
 struct SubsampleEntry;
 
+enum MediaCodecStatus {
+  MEDIA_CODEC_OK,
+  MEDIA_CODEC_ENQUEUE_INPUT_AGAIN_LATER,
+  MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER,
+  MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED,
+  MEDIA_CODEC_OUTPUT_FORMAT_CHANGED,
+  MEDIA_CODEC_INPUT_END_OF_STREAM,
+  MEDIA_CODEC_OUTPUT_END_OF_STREAM,
+  MEDIA_CODEC_STOPPED,
+  MEDIA_CODEC_ERROR
+};
+
 // This class serves as a bridge for native code to call java functions inside
 // Android MediaCodec class. For more information on Android MediaCodec, check
 // http://developer.android.com/reference/android/media/MediaCodec.html
@@ -32,9 +44,6 @@ class MEDIA_EXPORT MediaCodecBridge {
     INFO_TRY_AGAIN_LATER = -1,
     INFO_MEDIA_CODEC_ERROR = -1000,
   };
-
-  static const base::TimeDelta kTimeOutInfinity;
-  static const base::TimeDelta kTimeOutNoWait;
 
   // Returns true if MediaCodec is available on the device.
   static bool IsAvailable();
@@ -79,19 +88,29 @@ class MEDIA_EXPORT MediaCodecBridge {
   // Submits an empty buffer with a EOS (END OF STREAM) flag.
   void QueueEOS(int input_buffer_index);
 
-  // Returns an index (>=0) of an input buffer to be filled with valid data,
-  // INFO_TRY_AGAIN_LATER if no such buffer is currently available, or
-  // INFO_MEDIA_CODEC_ERROR if unexpected error happens.
-  // Use kTimeOutInfinity for infinite timeout.
-  int DequeueInputBuffer(base::TimeDelta timeout);
+  // Returns:
+  // MEDIA_CODEC_OK if an input buffer is ready to be filled with valid data,
+  // MEDIA_CODEC_ENQUEUE_INPUT_AGAIN_LATER if no such buffer is available, or
+  // MEDIA_CODEC_ERROR if unexpected error happens.
+  // Note: Never use infinite timeout as this would block the decoder thread and
+  // prevent the decoder job from being released.
+  MediaCodecStatus DequeueInputBuffer(const base::TimeDelta& timeout,
+                                      int* index);
 
   // Dequeues an output buffer, block at most timeout_us microseconds.
-  // Returns the index of an output buffer that has been successfully decoded
-  // or one of DequeueBufferInfo above.
-  // Use kTimeOutInfinity for infinite timeout.
-  int DequeueOutputBuffer(
-      base::TimeDelta timeout, size_t* offset, size_t* size,
-      base::TimeDelta* presentation_time, bool* end_of_stream);
+  // Returns the status of this operation. If OK is returned, the output
+  // parameters should be populated. Otherwise, the values of output parameters
+  // should not be used.
+  // Note: Never use infinite timeout as this would block the decoder thread and
+  // prevent the decoder job from being released.
+  // TODO(xhwang): Can we drop |end_of_stream| and return
+  // MEDIA_CODEC_OUTPUT_END_OF_STREAM?
+  MediaCodecStatus DequeueOutputBuffer(const base::TimeDelta& timeout,
+                                       int* index,
+                                       size_t* offset,
+                                       size_t* size,
+                                       base::TimeDelta* presentation_time,
+                                       bool* end_of_stream);
 
   // Returns the buffer to the codec. If you previously specified a surface
   // when configuring this video decoder you can optionally render the buffer.

@@ -43,7 +43,7 @@ class AudioDecoderJob : public MediaDecoderJob {
       int outputBufferIndex, size_t size,
       const base::TimeDelta& presentation_timestamp,
       const MediaDecoderJob::DecoderCallback& callback,
-      DecodeStatus status) OVERRIDE;
+      MediaCodecStatus status) OVERRIDE;
 
   virtual bool ComputeTimeToRender() const OVERRIDE;
 

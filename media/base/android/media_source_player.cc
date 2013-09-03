@@ -411,13 +411,13 @@ void MediaSourcePlayer::ProcessPendingEvents() {
 }
 
 void MediaSourcePlayer::MediaDecoderCallback(
-    bool is_audio, MediaDecoderJob::DecodeStatus decode_status,
+    bool is_audio, MediaCodecStatus status,
     const base::TimeDelta& presentation_timestamp, size_t audio_output_bytes) {
   DVLOG(1) << __FUNCTION__;
   if (is_audio)
     decoder_starvation_callback_.Cancel();
 
-  if (decode_status == MediaDecoderJob::DECODE_FAILED) {
+  if (status == MEDIA_CODEC_ERROR) {
     Release();
     OnMediaError(MEDIA_ERROR_DECODE);
     return;
@@ -428,12 +428,11 @@ void MediaSourcePlayer::MediaDecoderCallback(
     return;
   }
 
-  if (decode_status == MediaDecoderJob::DECODE_SUCCEEDED &&
-      (is_audio || !HasAudio())) {
+  if (status == MEDIA_CODEC_OK && (is_audio || !HasAudio())) {
     UpdateTimestamps(presentation_timestamp, audio_output_bytes);
   }
 
-  if (decode_status == MediaDecoderJob::DECODE_OUTPUT_END_OF_STREAM) {
+  if (status == MEDIA_CODEC_OUTPUT_END_OF_STREAM) {
     PlaybackCompleted(is_audio);
     return;
   }
@@ -446,7 +445,7 @@ void MediaSourcePlayer::MediaDecoderCallback(
 
   base::TimeDelta current_timestamp = GetCurrentTime();
   if (is_audio) {
-    if (decode_status == MediaDecoderJob::DECODE_SUCCEEDED) {
+    if (status == MEDIA_CODEC_OK) {
       base::TimeDelta timeout =
           audio_timestamp_helper_->GetTimestamp() - current_timestamp;
       StartStarvationCallback(timeout);
@@ -455,7 +454,7 @@ void MediaSourcePlayer::MediaDecoderCallback(
     return;
   }
 
-  if (!HasAudio() && decode_status == MediaDecoderJob::DECODE_SUCCEEDED) {
+  if (!HasAudio() && status == MEDIA_CODEC_OK) {
     DCHECK(current_timestamp <= presentation_timestamp);
     // For video only streams, fps can be estimated from the difference
     // between the previous and current presentation timestamps. The

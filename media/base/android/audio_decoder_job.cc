@@ -59,10 +59,10 @@ void AudioDecoderJob::ReleaseOutputBuffer(
     int outputBufferIndex, size_t size,
     const base::TimeDelta& presentation_timestamp,
     const MediaDecoderJob::DecoderCallback& callback,
-    DecodeStatus status) {
+    MediaCodecStatus status) {
   audio_codec_bridge_->PlayOutputBuffer(outputBufferIndex, size);
 
-  if (status != DECODE_OUTPUT_END_OF_STREAM || size != 0u)
+  if (status != MEDIA_CODEC_OUTPUT_END_OF_STREAM || size != 0u)
     audio_codec_bridge_->ReleaseOutputBuffer(outputBufferIndex, false);
 
   callback.Run(status, presentation_timestamp, size);

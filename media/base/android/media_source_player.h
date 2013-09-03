@@ -81,7 +81,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
 
   // Called when the decoder finishes its task.
   void MediaDecoderCallback(
-        bool is_audio, MediaDecoderJob::DecodeStatus decode_status,
+        bool is_audio, MediaCodecStatus status,
         const base::TimeDelta& presentation_timestamp,
         size_t audio_output_bytes);
 

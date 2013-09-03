@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/base/android/demuxer_stream_player_params.h"
+#include "media/base/android/media_codec_bridge.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -16,30 +17,17 @@ class MessageLoopProxy;
 
 namespace media {
 
-class MediaCodecBridge;
-
 // Class for managing all the decoding tasks. Each decoding task will be posted
 // onto the same thread. The thread will be stopped once Stop() is called.
 class MediaDecoderJob {
  public:
-  enum DecodeStatus {
-    DECODE_SUCCEEDED,
-    DECODE_TRY_ENQUEUE_INPUT_AGAIN_LATER,
-    DECODE_TRY_DEQUEUE_OUTPUT_AGAIN_LATER,
-    DECODE_FORMAT_CHANGED,
-    DECODE_INPUT_END_OF_STREAM,
-    DECODE_OUTPUT_END_OF_STREAM,
-    DECODE_FAILED,
-    DECODE_STOPPED
-  };
-
   struct Deleter {
     inline void operator()(MediaDecoderJob* ptr) const { ptr->Release(); }
   };
 
   // Callback when a decoder job finishes its work. Args: whether decode
   // finished successfully, presentation time, audio output bytes.
-  typedef base::Callback<void(DecodeStatus, const base::TimeDelta&,
+  typedef base::Callback<void(MediaCodecStatus, const base::TimeDelta&,
                               size_t)> DecoderCallback;
 
   virtual ~MediaDecoderJob();
@@ -70,7 +58,7 @@ class MediaDecoderJob {
   // this method will just allow the decode to complete as normal. If
   // this object is waiting for a data request to complete, then this method
   // will wait for the data to arrive and then call the |callback|
-  // passed to Decode() with a status of DECODE_STOPPED. This ensures that
+  // passed to Decode() with a status of MEDIA_CODEC_STOPPED. This ensures that
   // the |callback| passed to Decode() is always called and the status
   // reflects whether data was actually decoded or the decode terminated early.
   void StopDecode();
@@ -90,7 +78,7 @@ class MediaDecoderJob {
       int outputBufferIndex, size_t size,
       const base::TimeDelta& presentation_timestamp,
       const DecoderCallback& callback,
-      DecodeStatus status) = 0;
+      MediaCodecStatus status) = 0;
 
   // Returns true if the "time to render" needs to be computed for frames in
   // this decoder job.
@@ -100,7 +88,7 @@ class MediaDecoderJob {
   // Causes this instance to be deleted on the thread it is bound to.
   void Release();
 
-  DecodeStatus QueueInputBuffer(const AccessUnit& unit);
+  MediaCodecStatus QueueInputBuffer(const AccessUnit& unit);
 
   // Initiates a request for more data.
   // |done_cb| is called when more data is available in |received_data_|.
@@ -124,7 +112,7 @@ class MediaDecoderJob {
                       const DecoderCallback& callback);
 
   // Called on the UI thread to indicate that one decode cycle has completed.
-  void OnDecodeCompleted(DecodeStatus status,
+  void OnDecodeCompleted(MediaCodecStatus status,
                          const base::TimeDelta& presentation_timestamp,
                          size_t audio_output_bytes);
 

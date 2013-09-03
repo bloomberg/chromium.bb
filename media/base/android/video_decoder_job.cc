@@ -49,9 +49,8 @@ void VideoDecoderJob::ReleaseOutputBuffer(
     int outputBufferIndex, size_t size,
     const base::TimeDelta& presentation_timestamp,
     const MediaDecoderJob::DecoderCallback& callback,
-    DecodeStatus status) {
-
-  if (status != DECODE_OUTPUT_END_OF_STREAM || size != 0u)
+    MediaCodecStatus status) {
+  if (status != MEDIA_CODEC_OUTPUT_END_OF_STREAM || size != 0u)
     video_codec_bridge_->ReleaseOutputBuffer(outputBufferIndex, true);
 
   callback.Run(status, presentation_timestamp, 0);
