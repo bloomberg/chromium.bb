@@ -6,7 +6,6 @@
 
 # Add new suites here before upgrading them to the stable list below.
 EXPERIMENTAL_TEST_SUITES = [
-    'gl_tests',
 ]
 
 # Do not modify this list without approval of an android owner.
@@ -19,6 +18,7 @@ STABLE_TEST_SUITES = [
     'cc_unittests',
     'components_unittests',
     'content_unittests',
+    'gl_tests',
     'gpu_unittests',
     'ipc_tests',
     'media_unittests',
