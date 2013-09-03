@@ -5,6 +5,9 @@
 
 set -e
 
+http_port=8080
+ssh_port=29418
+
 while test $# -ne 0; do
   case "$1" in
     -v)
@@ -13,6 +16,14 @@ while test $# -ne 0; do
       ;;
     -d)
       rundir="$2"
+      shift
+      ;;
+    --http-port)
+      http_port="$2"
+      shift
+      ;;
+    --ssh-port)
+      ssh_port="$2"
       shift
       ;;
     *)
@@ -137,6 +148,12 @@ cat <<EOF > "${rundir}/etc/gerrit.config"
 [auth]
 	type = http
 	gitBasicAuth = true
+[gerrit]
+	canonicalWebUrl = http://$(hostname):${http_port}/
+[httpd]
+	listenUrl = http://*:${http_port}/
+[sshd]
+	listenAddress = *:${ssh_port}
 EOF
 
 # Initialize the gerrit instance.
@@ -164,22 +181,24 @@ EOF
 
 # Create a .git-credentials file, to enable password-less push.
 cat <<EOF > "${rundir}/tmp/.git-credentials"
-http://${username}:${password}@localhost:8080
+http://${username}:${password}@localhost:${http_port}
 EOF
 
-echo
-echo "To start gerrit server:"
-echo "  ${rundir}/bin/gerrit.sh start"
-echo
-echo "To use the REST API:"
-echo "  curl --netrc-file ${rundir}/tmp/.netrc http://localhost:8080/<endpoint>"
-echo
-echo "To use SSH API:"
-echo "  ssh ${username}@localhost -p 29418 -i ${rundir}/tmp/id_rsa gerrit"
-echo
-echo "To enable 'git push' without a password prompt:"
-echo "  git config credential.helper 'store --file=${rundir}/tmp/.git-credentials'"
-echo
-echo "To stop the server:"
-echo "  ${rundir}/bin/gerrit.sh stop"
-echo
+cat <<EOF
+
+To start gerrit server:
+  ${rundir}/bin/gerrit.sh start
+
+To use the REST API:
+  curl --netrc-file ${rundir}/tmp/.netrc http://localhost:${http_port}/<endpoint>
+
+To use SSH API:
+  ssh ${username}@localhost -p ${ssh_port} -i ${rundir}/tmp/id_rsa gerrit
+
+To enable 'git push' without a password prompt:
+  git config credential.helper 'store --file=${rundir}/tmp/.git-credentials'
+
+To stop the server:
+  ${rundir}/bin/gerrit.sh stop
+
+EOF
