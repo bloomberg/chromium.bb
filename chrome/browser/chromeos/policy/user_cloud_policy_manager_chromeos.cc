@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace em = enterprise_management;
@@ -32,8 +34,16 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
       store_(store.Pass()),
       wait_for_policy_fetch_(wait_for_policy_fetch) {
   if (resource_cache) {
+    // TODO(joaodasilva): Move the backend from the FILE thread to the blocking
+    // pool.
     component_policy_service_.reset(new ComponentCloudPolicyService(
-        this, store_.get(), resource_cache.Pass()));
+        this,
+        store_.get(),
+        resource_cache.Pass(),
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::FILE),
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::IO)));
   }
 }
 
