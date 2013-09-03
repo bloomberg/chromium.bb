@@ -161,6 +161,7 @@
 <translation id="1105130903706696483">Chromium ไม่ได้ปิดลงอย่างถูกต้อง หากต้องการเปิดหน้าเว็บที่คุณเคยเปิดอีกครั้ง ให้คลิก &quot;คืนค่า&quot;</translation>
 <translation id="1531452407274881270">คุณกำลังลงชื่อเข้าใช้ Chromium โดยใช้บัญชี <ph name="USER_EMAIL_ADDRESS"/> คุณจะสามารถเข้าถึงบุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดที่ลงชื่อเข้าใช้</translation>
 <translation id="1929939181775079593">Chromium ไม่ตอบสนอง เปิดใหม่เลยหรือไม่</translation>
+<translation id="1414495520565016063">คุณลงชื่อเข้าใช้ Chromium แล้ว!</translation>
 <translation id="3155163173539279776">เรียกใช้งาน Chromium อีกครั้ง</translation>
 <translation id="2966088006374919794">Chromium จำเป็นต้องเปิดแอปพลิเคชันภายนอกเพื่อจัดการกับลิงก์ <ph name="SCHEME"/> ลิงก์ที่ร้องขอคือ <ph name="PROTOLINK"/></translation>
 <translation id="6287463253129672858">ไม่สามารถติดตั้ง Chromium Frame รุ่นเดียวกับที่กำลังใช้งานอยู่ในขณะนี้ โปรดปิด Chromium Frame และลองอีกครั้ง</translation>
@@ -199,7 +200,6 @@
 การลงชื่อเข้าใช้ต่อไปจะรวมข้อมูล Chromium เช่น บุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ เข้ากับ <ph name="ACCOUNT_EMAIL_NEW"/></translation>
 <translation id="2739631515503418643">ขณะนี้อยู่ระหว่างการดาวน์โหลดหลายรายการ คุณต้องการออกจาก Chromium และยกเลิกการดาวน์โหลดหรือไม่</translation>
 <translation id="9013262824292842194">Chromium ต้องใช้ Windows Vista หรือ Windows XP พร้อม SP2 หรือใหม่กว่า</translation>
-<translation id="7673212349590566645">หากต้องการลงชื่อเข้าใช้ Chromium ด้วย <ph name="USER_EMAIL_ADDRESS"/></translation>
 <translation id="1967743265616885482">เป็นที่ทราบกันว่าโมดูลที่มีชื่อเดียวกันนี้จะขัดแย้งกับ Chromium</translation>
 <translation id="4224199872375172890">Chromium อัปเดตแล้ว</translation>
 <translation id="374481098568514319">คอมพิวเตอร์เครื่องนี้มีส่วนประกอบของ Chromium รุ่นใหม่กว่าอยู่แล้ว โปรดใช้ตัวติดตั้งรุ่นใหม่กว่า</translation>

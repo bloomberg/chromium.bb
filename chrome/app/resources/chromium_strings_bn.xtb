@@ -157,6 +157,7 @@
 <translation id="1105130903706696483">Chromium সঠিকভাবে বন্ধ হয় নি৷আগের খোলা পাতাটি পুনরায় খুলতে,পুনরুদ্ধার ক্লিক করুন৷</translation>
 <translation id="1531452407274881270">আপনি আপনার <ph name="USER_EMAIL_ADDRESS"/> অ্যাকাউন্ট ব্যবহার করে Chromium এ সাইন ইন করছেন৷ আপনি আপনার সমস্ত সাইন ইন করা ডিভাইসগুলিতে বুকমার্কগুলি, ইতিহাস, এবং অন্যান্য সেটিংস অ্যাক্সেস করতে সক্ষম হবেন৷</translation>
 <translation id="1929939181775079593">Chromium সাড়া দিচ্ছে না৷ পুনরায় শুরু করবেন?</translation>
+<translation id="1414495520565016063">আপনি Chromium এ সাইন ইন করেছেন!</translation>
 <translation id="3155163173539279776">Chromium পুনরায় লঞ্চ করুন</translation>
 <translation id="2966088006374919794">Chromiumএকটি বহিঃস্থ অ্যপ্লিকেশন আরম্ভ করার জন্য <ph name="SCHEME"/> সংযোগগুলি নিয়ন্ত্রণ করে৷ অনুরোধকৃত লিংকটি হল <ph name="PROTOLINK"/>৷</translation>
 <translation id="6287463253129672858">একই Chromium ফ্রেম সংস্করণ যা বর্তমানে চলমান, ইনস্টল করতে পারবেন না৷ দয়া করে Chromium ফ্রেম বন্ধ করুন এবং পুনরায় চেষ্টা করুন৷</translation>
@@ -195,7 +196,6 @@
 যেকোনো উপায়ে সাইন ইন করা হলে তা বুকমার্কগুলি, ইতিহাস, এবং অন্যান্য সেটিংসের মত Chromium তথ্যকে <ph name="ACCOUNT_EMAIL_NEW"/> এ মার্জ করবে৷</translation>
 <translation id="2739631515503418643">ডাউনলোডগুলি বর্তমানে চলছে৷ আপনি কি Chromium থেকে প্রস্থান আর ডাউনলোড বাতিল করতে চান?</translation>
 <translation id="9013262824292842194">Windows Vista বা SP2 সহ Windows XP বা উন্নততর Chromium প্রয়োজন৷</translation>
-<translation id="7673212349590566645"><ph name="USER_EMAIL_ADDRESS"/> এর মাধ্যমে Chromium এ সাইন ইন করবেন?</translation>
 <translation id="1967743265616885482">একই নামের একটি মডিউল Chromium সঙ্গে বিরোধে জ্ঞাত হয়েছে৷</translation>
 <translation id="4224199872375172890">Chromium আপ-টু-ডেট আছে৷</translation>
 <translation id="374481098568514319">এই কম্পিউটারটিতে Chromium উপাদানের একটি আরো সাম্প্রতিক সংস্করণ আছে৷ দয়া করে আরো সাম্প্রতিক ইনস্টলার ব্যবহার করুন৷</translation>

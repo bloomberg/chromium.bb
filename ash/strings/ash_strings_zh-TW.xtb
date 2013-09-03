@@ -7,7 +7,7 @@
 <translation id="30155388420722288">溢位按鈕</translation>
 <translation id="8673028979667498656">270 度</translation>
 <translation id="5571066253365925590">藍牙已啟用</translation>
-<translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> 已旋轉為 <ph name="ROTATION"/></translation>
+<translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> 已旋轉到<ph name="ROTATION"/></translation>
 <translation id="9074739597929991885">藍牙</translation>
 <translation id="2268130516524549846">藍牙已停用</translation>
 <translation id="7165320105431587207">無法設定網路</translation>
@@ -162,7 +162,7 @@
 <translation id="4872237917498892622">Alt + 搜尋鍵或 Shift 鍵</translation>
 <translation id="9201131092683066720">電池電量為 <ph name="PERCENTAGE"/>%。</translation>
 <translation id="2983818520079887040">設定...</translation>
-<translation id="1195412055398077112">溢出掃描</translation>
+<translation id="1195412055398077112">遮視區域</translation>
 <translation id="1717216362413677834">座架模式</translation>
 <translation id="112308213915226829">自動隱藏檔案櫃</translation>
 <translation id="8927026611342028580">已要求連線</translation>
@@ -190,7 +190,7 @@
 <translation id="6692173217867674490">通關密語有誤</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
 <translation id="9046895021617826162">連線失敗</translation>
-<translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> 秒後還原成原來的解析度</translation>
+<translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS"/> 秒後還原成原來的解析度</translation>
 <translation id="973896785707726617">這個工作階段將在 <ph name="SESSION_TIME_REMAINING"/>後結束，系統會自動將您登出。</translation>
 <translation id="8372369524088641025">WEP 金鑰有誤</translation>
 <translation id="6636709850131805001">不明狀態</translation>

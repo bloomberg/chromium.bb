@@ -146,11 +146,11 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
         ja poista valinta kohdasta &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot;.
         Jos ongelma ei ratkea, valitse tämä vaihtoehto
         uudelleen suorituskyvyn parantamiseksi.</translation>
-<translation id="8333216950301932607">Kirjaudutaanko Chromeen tilillä <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Päivitä &amp;Chrome-käyttöjärjestelmä</translation>
 <translation id="8547799825197623713">Chrome Canary -sovellusten käynnistysohjelma</translation>
 <translation id="5577648424992741236">Tietokoneessa on jo Google Chrome -kehyksen uudempi versio. Jos sovellus ei toimi, poista Google Chrome -kehys ja yritä uudelleen.</translation>
 <translation id="6326175484149238433">Poista Chromesta</translation>
+<translation id="2871893339301912279">Olet kirjautunut Chromeen!</translation>
 <translation id="7161904924553537242">Tervetuloa Google Chromeen</translation>
 <translation id="1686446242839005801">Kirjaudut Chromeen tilillä <ph name="USER_EMAIL_ADDRESS"/>. Voit käyttää kirjanmerkkejäsi, historiaa ja muita asetuksia kaikilla laitteilla, joihin olet kirjautunut.</translation>
 <translation id="4147555960264124640">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Google Chrome -profiiliasi. Chrome-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME"/>. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. <ph name="LEARN_MORE"/></translation>

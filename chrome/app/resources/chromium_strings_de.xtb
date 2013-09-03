@@ -136,6 +136,7 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte e
 <translation id="1105130903706696483">Chromium wurde nicht richtig heruntergefahren. Klicken Sie auf &quot;Wiederherstellen&quot;, um die zuletzt geöffneten Seiten erneut zu öffnen.</translation>
 <translation id="1531452407274881270">Sie werden mit Ihrem Konto <ph name="USER_EMAIL_ADDRESS"/> in Chromium angemeldet. Auf allen Geräten, auf denen Sie angemeldet sind, sind Ihre Lesezeichen, Ihr Verlauf und andere Einstellungen verfügbar.</translation>
 <translation id="1929939181775079593">Chromium reagiert nicht. Jetzt neu starten?</translation>
+<translation id="1414495520565016063">Sie sind in Chromium angemeldet.</translation>
 <translation id="3155163173539279776">Chromium neu starten</translation>
 <translation id="2966088006374919794">Chromium muss eine externe App zur Verarbeitung von <ph name="SCHEME"/>-Links starten. Der angeforderte Link ist <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Die Chromium Frame-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Chromium Frame bitte und versuchen Sie es erneut.</translation>
@@ -173,7 +174,6 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte e
 Sollten Sie sich trotzdem anmelden, werden die Chromium-Daten wie Lesezeichen, Verlauf und andere Einstellungen in <ph name="ACCOUNT_EMAIL_NEW"/> zusammengeführt.</translation>
 <translation id="2739631515503418643">Momentan werden Downloads durchgeführt. Möchten Sie Chromium beenden und die Downloads abbrechen?</translation>
 <translation id="9013262824292842194">Für Chromium ist Windows Vista oder Windows XP SP2 oder höher erforderlich.</translation>
-<translation id="7673212349590566645">Mit <ph name="USER_EMAIL_ADDRESS"/> in Chromium anmelden?</translation>
 <translation id="1967743265616885482">Es ist bekannt, dass ein Modul mit dem gleichen Namen einen Konflikt mit Chromium verursacht.</translation>
 <translation id="4224199872375172890">Chromium ist auf dem neuesten Stand.</translation>
 <translation id="374481098568514319">Dieser Computer verfügt bereits über eine neuere Version der Chromium-Komponenten. Bitte verwenden Sie einen neueren Installer.</translation>

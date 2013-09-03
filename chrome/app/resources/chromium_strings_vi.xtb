@@ -161,6 +161,7 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="1105130903706696483">Chromium đã không được tắt đúng cách. Để mở lại các trang bạn đã mở, hãy nhấp vào Khôi phục.</translation>
 <translation id="1531452407274881270">Bạn đang đăng nhập vào Chromium bằng tài khoản <ph name="USER_EMAIL_ADDRESS"/>. Bạn sẽ có thể truy cập vào dấu trang, lịch sử và các cài đặt khác trên tất cả các thiết bị mà bạn đã đăng nhập.</translation>
 <translation id="1929939181775079593">Chromium không phản hồi. Khởi chạy lại ngay bây giờ?</translation>
+<translation id="1414495520565016063">Bạn đã đăng nhập vào Chromium!</translation>
 <translation id="3155163173539279776">Khởi chạy lại Chromium</translation>
 <translation id="2966088006374919794">Chromium cần khởi chạy ứng dụng bên ngoài để xử lý các liên kết <ph name="SCHEME"/>. Liên kết được yêu cầu là <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Không thể cài đặt phiên bản Chromium Frame giống với phiên bản hiện đang chạy. Hãy đóng Chromium Frame và thử lại.</translation>
@@ -199,7 +200,6 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 Đăng nhập bằng mọi cách sẽ kết hợp thông tin Chromium như dấu trang, lịch sử và các cài đặt khác vào <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Quá trình tải xuống hiện đang diễn ra. Bạn có muốn thoát Chromium và hủy tải xuống không?</translation>
 <translation id="9013262824292842194">Chromium yêu cầu Windows Vista hoặc Windows XP có SP2 trở lên.</translation>
-<translation id="7673212349590566645">Đăng nhập Chromium bằng <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Một mô-đun có cùng tên đã được xác định là xung đột với Chromium.</translation>
 <translation id="4224199872375172890">Chromium đã được cập nhật.</translation>
 <translation id="374481098568514319">Máy tính này đã có phiên bản mới hơn của các cấu phần Chromium. Vui lòng sử dụng một trình cài đặt mới hơn.</translation>

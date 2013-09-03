@@ -146,11 +146,11 @@
 <ph name="ADVANCED_TITLE"/>
 и премахнете отметката от „<ph name="NO_PREFETCH_DESCRIPTION"/>“.
 Ако това не реши проблема, препоръчваме ви да изберете отново тази опция, за да подобрите ефективността.</translation>
-<translation id="8333216950301932607">Да се влезе ли в Chrome с/ъс <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Актуализиране на &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Стартов панел за приложения в ранната версия на Chrome</translation>
 <translation id="5577648424992741236">На този компютър вече има по-нова версия на Google Chrome Frame. Ако софтуерът не работи, моля, деинсталирайте Google Chrome Frame и опитайте отново.</translation>
 <translation id="6326175484149238433">Премахване от Chrome</translation>
+<translation id="2871893339301912279">Влязохте в Chrome!</translation>
 <translation id="7161904924553537242">Добре дошли в Google Chrome</translation>
 <translation id="1686446242839005801">Влизате в Chrome посредством профила си <ph name="USER_EMAIL_ADDRESS"/>. Ще имате достъп до отметките, историята и другите си настройки на всички устройства, на които сте влезли чрез него.</translation>
 <translation id="4147555960264124640">Влизате с управляван профил и давате на администратора му контрол над потребителския си профил в Google Chrome. Данните ви в браузъра, като например приложения, отметки, история, пароли и други настройки, ще се свържат за постоянно с/ъс <ph name="USER_NAME"/>. Ще можете да ги изтриете чрез таблото за управление на Google Профили, но не и да ги свържете с друг профил. <ph name="LEARN_MORE"/></translation>

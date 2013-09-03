@@ -151,11 +151,11 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
         a zrušte výber položky <ph name="NO_PREFETCH_DESCRIPTION"/>.
          Ak to problém nevyrieši, odporúčame túto možnosť znova vybrať
         z dôvodu zlepšenia výkonnosti.</translation>
-<translation id="8333216950301932607">Prihlásiť sa do prehliadača Chrome pomocou účtu <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Aktualizácia systému &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Spúšťač aplikácií Chrome Canary</translation>
 <translation id="5577648424992741236">Tento počítač už obsahuje novšiu verziu doplnku Google Chrome Frame. Ak softvér nefunguje, odinštalujte doplnok Google Chrome a skúste to znova.</translation>
 <translation id="6326175484149238433">Odstrániť z prehliadača Chrome</translation>
+<translation id="2871893339301912279">Ste prihlásený/-á do prehliadača Chrome.</translation>
 <translation id="7161904924553537242">Víta vás prehľadávač Google Chrome</translation>
 <translation id="1686446242839005801">Do prehliadača Chrome sa prihlasujete pomocou svojho účtu <ph name="USER_EMAIL_ADDRESS"/>. Na všetkých zariadeniach, na ktorých ste prihlásený/-á, získate prístup k svojim záložkám, histórii a ďalším nastaveniam.</translation>
 <translation id="4147555960264124640">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom prehliadača Chrome. Vaše údaje prehliadača Chrome, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME"/>. Tieto údaje budete môcť odstrániť len pomocou panela Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu. <ph name="LEARN_MORE"/></translation>

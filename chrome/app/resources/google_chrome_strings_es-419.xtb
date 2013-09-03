@@ -145,11 +145,11 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
         y selecciona &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot;.
         Si esto no resuelve el problema, te recomendamos seleccionar esta opción
         nuevamente para mejorar el rendimiento.</translation>
-<translation id="8333216950301932607">¿Quieres acceder a Chrome con <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Actualizar el &amp;sistema operativo de Chrome</translation>
 <translation id="8547799825197623713">Selector de aplicaciones de Google Chrome Canary</translation>
 <translation id="5577648424992741236">Este equipo ya tiene una versión más reciente de Google Chrome Frame. Si el software no funciona, desinstala Google Chrome Frame y vuelve a intentarlo.</translation>
 <translation id="6326175484149238433">Eliminar de Chrome</translation>
+<translation id="2871893339301912279">Accediste a Google Chrome.</translation>
 <translation id="7161904924553537242">Bienvenido a Google Chrome</translation>
 <translation id="1686446242839005801">Estás accediendo a Chrome con tu cuenta <ph name="USER_EMAIL_ADDRESS"/>. Podrás acceder a tus marcadores, el historial y otros parámetros de configuración en todos los dispositivos en los que hayas accedido.</translation>
 <translation id="4147555960264124640">Estás por acceder con una cuenta administrada, lo que significa que proporcionarás al administrador el control sobre tu perfil de Google Chrome. Tus datos de Google Chrome, como las aplicaciones, los marcadores, el historial, las contraseñas y otros parámetros de configuración quedarán vinculados a <ph name="USER_NAME"/> de forma permanente. Podrás eliminar estos datos a través del Panel de control de Cuentas de Google, pero no podrás asociarlos a otra cuenta. <ph name="LEARN_MORE"/></translation>

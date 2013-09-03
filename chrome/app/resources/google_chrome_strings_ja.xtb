@@ -145,11 +145,11 @@
         の順に移動して、[<ph name="NO_PREFETCH_DESCRIPTION"/>] チェックボックスをオフにします。
         このオプションを無効にしても問題が解決しない場合は、ページの表示速度を
         向上させるために再度有効にすることをおすすめします。</translation>
-<translation id="8333216950301932607"><ph name="USER_EMAIL_ADDRESS"/> で Chrome にログインしますか？</translation>
 <translation id="61852838583753520">Chrome OS を更新(&amp;C)</translation>
 <translation id="8547799825197623713">Chrome アプリ ランチャー（Canary 向け）</translation>
 <translation id="5577648424992741236">新しいバージョンの Google Chrome Frame が既にインストールされています。ソフトウェアが動作しない場合は、Google Chrome Frame をアンインストールしてからもう一度お試しください。</translation>
 <translation id="6326175484149238433">Chrome から削除</translation>
+<translation id="2871893339301912279">Chrome にログインしました</translation>
 <translation id="7161904924553537242">Google Chrome へようこそ</translation>
 <translation id="1686446242839005801"><ph name="USER_EMAIL_ADDRESS"/> アカウントを使用して Chrome にログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="4147555960264124640">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME"/> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE"/></translation>

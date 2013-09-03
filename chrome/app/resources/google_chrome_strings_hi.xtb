@@ -80,7 +80,7 @@
 <translation id="4585888816441913908">इस कंप्‍यूटर में पहले से ही Google Chrome और Google Chrome Frame का कोई अधिक नवीन संस्‍करण है. यदि सॉफ़्टवेयर कार्य नहीं कर रहा है, तो कृपया Google Chrome और Google Chrome Frame दोनों को अनइंस्‍टॉल करें और पुन: प्रयास करें.</translation>
 <translation id="3149510190863420837">Chrome एप्लिकेशन</translation>
 <translation id="6368958679917195344">Chrome OS को अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS"/>ओपन सोर्स सॉफ़्टवेयर<ph name="END_LINK_CROS_OSS"/> द्वारा संभव बनाया गया है.</translation>
-<translation id="7459554271817304652">वेब पर अपनी वैयक्तिकृत ब्राउज़र सुविधाएं सहेजने के लिए समन्‍वयन सेट करें और उन तक किसी भी कंप्‍यूटर पर Google Chrome से पहुंचें.</translation>
+<translation id="7459554271817304652">वेब पर अपनी व्यक्तिगत ब्राउज़र सुविधाएं सहेजने के लिए समन्‍वयन सेट करें और उन तक किसी भी कंप्‍यूटर पर Google Chrome से पहुंचें.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">अपडेट करें</translation>
 <translation id="1195935957447623558">Google Chrome ठीक से बंद नहीं हुआ था. आपके द्वारा खोले गए पृष्ठों को पुन: खोलने के लिए, पुनर्स्थापित करें पर क्लिक करें.</translation>
@@ -133,7 +133,7 @@
 <translation id="4273752058983339720">Google Chrome आपके द्वारा अपना कंप्‍यूटर प्रारंभ करते ही लॉन्‍च होने के लिए कॉन्‍फ़ि‍गर किया गया है.</translation>
 <translation id="1104959162601287462">&amp;Chrome OS के बारे में</translation>
 <translation id="5328989068199000832">Google Chrome बाइनरी</translation>
-<translation id="5941830788786076944">Google Chrome को डिफ़ॉल्ट ब्राउज़र बनाएं</translation>
+<translation id="5941830788786076944">Google Chrome को सामान्य ब्राउज़र बनाएं</translation>
 <translation id="1469002951682717133">Chrome एप्लिकेशन लॉन्चर</translation>
 <translation id="4990567037958725628">Google Chrome कैनरी</translation>
 <translation id="4561051373932531560">Google Chrome आपको वेब पर फ़ोन नंबर क्लिक करने और उसे Skype से कॉल करने की सुविधा देता है!</translation>
@@ -147,11 +147,11 @@
         पर जाएं और &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot; का चयन रद्द करें.
         यदि इससे समस्या का समाधान नहीं होता, तो हम बेहतर प्रदर्शन के लिए इस
         विकल्प को पुन: चुनने की अनुशंसा करते हैं.</translation>
-<translation id="8333216950301932607"><ph name="USER_EMAIL_ADDRESS"/> से Chrome में प्रवेश करें?</translation>
 <translation id="61852838583753520">&amp;Chrome OS को अपडेट करें</translation>
 <translation id="8547799825197623713">Chrome एप्लिकेशन लॉन्चर Canary</translation>
 <translation id="5577648424992741236">इस कंप्यूटर में Google Chrome Frame का अधिक नवीन संस्करण पहले से मौजूद है. यदि सॉफ़्टवेयर काम नहीं कर रहा है, तो कृपया Google Chrome Frame को अनइंस्टॉल करें और पुनः प्रयास करें.</translation>
 <translation id="6326175484149238433">Chrome से नि‍कालें</translation>
+<translation id="2871893339301912279">आप Chrome में प्रवेश हैं.</translation>
 <translation id="7161904924553537242">Google Chrome में आपका स्वागत है</translation>
 <translation id="1686446242839005801">आप अपने <ph name="USER_EMAIL_ADDRESS"/> खाते का उपयोग करके Chrome में प्रवेश कर रहे हैं. आप अपने सभी प्रवेश किए गए उपकरणों पर बुकमार्क, इतिहास, और अन्य सेटिंग एक्सेस कर सकेंगे.</translation>
 <translation id="4147555960264124640">आप प्रबंधित खाते से प्रवेश कर रहे हैं और उसके व्यवस्थापक को अपनी Google Chrome प्रोफ़ाइल पर नियंत्रण दे रहे हैं. आपका Chrome डेटा, जैसे आपके एप्लिकेशन, बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग <ph name="USER_NAME"/> से स्थायी रूप से जुड़ जाएंगी. आप Google खाता डैशबोर्ड से इस डेटा को हटा सकेंगे, लेकिन आप किसी अन्य खाते से इस डेटा को संबद्ध नहीं कर सकेंगे. <ph name="LEARN_MORE"/></translation>
@@ -184,7 +184,7 @@
 <translation id="8205111949707227942">वैकल्पिक: अपने आप उपयोग के आंकड़े और क्रैश रिपोर्ट भेजकर Chrome OS को बेहतर बनाने में सहायता करें.</translation>
 <translation id="7253415505590551024">डाउनलोड वर्तमान में चल रहे हैं. क्या आप Google Chrome से बाहर निकलना और डाउनलोड को रद्द करना चाहते हैं?</translation>
 <translation id="7196020411877309443">मैं यह क्यों देख रहा/रही हूं?</translation>
-<translation id="2769762047821873045">Google Chrome आपका डिफ़ॉल्ट ब्राउज़र नहीं है.</translation>
+<translation id="2769762047821873045">Google Chrome आपका सामान्य ब्राउज़र नहीं है.</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> Chrome में आपकी खोजों के कार्य करने के तरीके के बदल सकती है.</translation>
 <translation id="6855094794438142393">यहां
           Chrome मेनू &gt;

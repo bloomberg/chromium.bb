@@ -159,6 +159,7 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="1105130903706696483">O Chromium não foi encerrado corretamente. Para reabrir as páginas que tinha abertas, clique em Restaurar.</translation>
 <translation id="1531452407274881270">Está a iniciar sessão no Chromium utilizando a conta <ph name="USER_EMAIL_ADDRESS"/>. Poderá aceder aos seus marcadores, histórico e outras definições em todos os dispositivos com sessão iniciada.</translation>
 <translation id="1929939181775079593">O Chromium não responde. Reiniciar agora?</translation>
+<translation id="1414495520565016063">Tem sessão iniciada no Chromium!</translation>
 <translation id="3155163173539279776">Reiniciar o Chromium</translation>
 <translation id="2966088006374919794">O Chromium precisa de iniciar uma aplicação externa para processar links de <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Não é possível instalar a mesma versão do Chromium Frame que está atualmente em execução. Feche o Chromium Frame e tente novamente.</translation>
@@ -196,7 +197,6 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 Se continuar com este início de sessão, as informações do Chromium, como marcadores, histórico e outras definições, fundir-se-ão com <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">As transferências estão atualmente em curso. Pretende sair do Chromium e cancelar as transferências?</translation>
 <translation id="9013262824292842194">O Chromium requer o Windows Vista ou Windows XP com SP2 ou superior.</translation>
-<translation id="7673212349590566645">Iniciar sessão no Chromium com <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">É conhecido um módulo com o mesmo nome que entra em conflito com o Chromium.</translation>
 <translation id="4224199872375172890">O Chromium está atualizado.</translation>
 <translation id="374481098568514319">Este computador já tem uma versão mais recente dos componentes de Chromium. Utilize um instalador mais recente.</translation>

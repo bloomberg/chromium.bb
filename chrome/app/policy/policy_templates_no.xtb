@@ -359,7 +359,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
       Disse innstillingene skal bare brukes for å konfigurere Chrome-økter internt i organisasjonen din. Hvis du bruker disse innstillingene utenfor organisasjonen din (f.eks. i et program som er offentlig tilgjengelig), anses dette som skadelig programvare og blir sannsynligvis merket som skadelig programvare av Google og anti-virusleverandører.
 
-      Merk: Fra og meg 28 lastes innstillingene inn direkte fra Group Policy API-en i Windows. Innstillinger som legges til manuelt i registeret blir ignorert. Du finner mer informasjon på http://crbug.com/259236</translation>
+      Merk: Fra og med Chrome 28 lastes innstillingene inn direkte fra Group Policy API-en i Windows. Innstillinger som legges til manuelt i registeret blir ignorert. Du finner mer informasjon på http://crbug.com/259236</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> kan bruke en Google-nett-tjeneste for å få bukt med stavefeil. Hvis denne innstillingen er aktivert, så blir denne tjenesten alltid brukt. Hvis innstillinger er deaktivert, forblir tjenesten ubrukt.
 
       Du kan fortsatt utføre stavekontroll av innhold, men da med en ordliste du har lastet ned selv – denne innstillingen styrer bare bruk av tjenesten på nettet.
@@ -431,7 +431,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
           Hvis denne innstillingen er deaktivert eller ikke angitt, kan både lokale og eksterne brukere samhandle med verten når den deles.</translation>
 <translation id="1426410128494586442">Ja</translation>
-<translation id="4897928009230106190">Angir parameterene som brukes når du utfører et forslagssøk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {searchTerms} i eksempelet ovenfor, blir den erstattet med virkelig søkeordsdata.
+<translation id="4897928009230106190">Angir parameterene som brukes når du utfører et forslagssøk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {searchTerms} i eksempelet ovenfor, blir den erstattet med virkelige søkeordsdata.
 
           Denne innstillingen er valgfri. Hvis den ikke er angitt, blir forespørsler om søkeforslag sendt via GET-metoden.
 
@@ -649,7 +649,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Innstillingsverdien skal angis i millisekunder. Verdiene må være mindre enn eller lik med inaktivitetsperioden.</translation>
 <translation id="1098794473340446990">Rapportér aktivitetstider for enhet. Hvis denne innstillingen er aktivert, rapporterer registrerte enheter om hvilke tidsperioder en bruker er aktiv på enheten. Hvis denne innstillingen ikke er angitt eller deaktivert, blir ikke aktivitetstider registrert eller rapportert.</translation>
 <translation id="7937766917976512374">Tillat eller blokkér videoopptak</translation>
-<translation id="427632463972968153">Angir parameterene som brukes når du utfører et bildesøk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {imageThumbnail} i eksempelet ovenfor, blir den erstattet med virkelig miniatyrbildedata.
+<translation id="427632463972968153">Angir parameterene som brukes når du utfører et bildesøk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {imageThumbnail} i eksempelet ovenfor, blir den erstattet med virkelige miniatyrbildedata.
 
           Denne innstillingen er valgfri. Hvis den ikke er angitt, blir forespørsler om bildesøk sendt via GET-metoden.
 
@@ -869,7 +869,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Hvis den ikke er angitt eller har verdien «False», kan brukere overføre filer til Google Disk.</translation>
 <translation id="1964634611280150550">Inkognitomodus er deaktivert</translation>
 <translation id="5971128524642832825">Deaktiverer Disk i Chrome OS Filer-appen</translation>
-<translation id="1847960418907100918">Angir parameterene som brukes når du utfører et Instant-søk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {searchTerms} i eksempelet ovenfor, blir den erstattet med virkelig søkeordsdata.
+<translation id="1847960418907100918">Angir parameterene som brukes når du utfører et Instant-søk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {searchTerms} i eksempelet ovenfor, blir den erstattet med virkelige søkeordsdata.
 
           Denne innstillingen er valgfri. Hvis den ikke er angitt, blir forespørsler om søkeforslag sendt via GET-metoden.
 

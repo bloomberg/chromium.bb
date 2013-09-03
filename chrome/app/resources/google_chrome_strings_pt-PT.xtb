@@ -145,11 +145,11 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
         e desmarque &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot;.
         Se isso não resolver o problema, recomendamos que selecione esta opção
         novamente para obter um desempenho melhorado.</translation>
-<translation id="8333216950301932607">Iniciar sessão no Chrome com <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Atualizar o SO &amp;Chrome</translation>
 <translation id="8547799825197623713">Iniciador de Aplicações do Chrome para o Canary</translation>
 <translation id="5577648424992741236">Este computador já tem uma versão mais recente do Google Chrome Frame. Se o software não estiver a funcionar, desinstale o Google Chrome Frame e tente novamente.</translation>
 <translation id="6326175484149238433">Remover do Chrome</translation>
+<translation id="2871893339301912279">Tem sessão iniciada no Chrome!</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
 <translation id="1686446242839005801">Está a iniciar sessão no Chrome utilizando a conta <ph name="USER_EMAIL_ADDRESS"/>. Poderá aceder aos seus marcadores, histórico e outras definições em todos os dispositivos com sessão iniciada.</translation>
 <translation id="4147555960264124640">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME"/>. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. <ph name="LEARN_MORE"/></translation>

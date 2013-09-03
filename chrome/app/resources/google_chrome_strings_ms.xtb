@@ -144,11 +144,11 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
         <ph name="ADVANCED_TITLE"/>
         dan nyahpilih &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;
         Jika tindakan ini tidak menyelesaikan isu ini, kami cadangkan agar memilih pilihan ini sekali lagi untuk prestasi yang dipertingkatkan.</translation>
-<translation id="8333216950301932607">Log masuk ke Chrome dengan <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Kemas kini &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Pelancar Apl Chrome Canary</translation>
 <translation id="5577648424992741236">Komputer ini telah mempunyai versi terbaru Google Chrome Frame. Jika perisian tidak berfungsi, sila nyahpasang Google Chrome Frame dan cuba semula.</translation>
 <translation id="6326175484149238433">Alih keluar dari Chrome</translation>
+<translation id="2871893339301912279">Anda kini telah log masuk ke Chrome!</translation>
 <translation id="7161904924553537242">Selamat Datang ke Google Chrome</translation>
 <translation id="1686446242839005801">Anda log masuk ke Chrome menggunakan akaun <ph name="USER_EMAIL_ADDRESS"/> anda. Anda akan dapat mengakses penanda halaman, sejarah dan tetapan lain pada semua peranti yang anda gunakan untuk log masuk.</translation>
 <translation id="4147555960264124640">Anda log masuk menggunakan akaun terurus dan memberikan pentadbirnya kawalan terhadap profil Google Chrome anda. Data Chrome anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME"/> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. <ph name="LEARN_MORE"/></translation>

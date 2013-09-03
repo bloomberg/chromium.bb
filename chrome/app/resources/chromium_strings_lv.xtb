@@ -161,6 +161,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="1105130903706696483">Chromium netika aizvērts pareizi. Lai atvērtās lapas atvērtu no jauna, noklikšķiniet uz Atjaunot.</translation>
 <translation id="1531452407274881270">Jūs pierakstāties operētājsistēmā Chromium, izmantojot šo kontu: <ph name="USER_EMAIL_ADDRESS"/>. Varēsiet piekļūt savām grāmatzīmēm, vēsturei un citiem iestatījumiem visās ierīcēs, kurās esat pierakstījies.</translation>
 <translation id="1929939181775079593">Chromium nereaģē. Vai restartēt to tūlīt?</translation>
+<translation id="1414495520565016063">Esat pierakstījies operētājsistēmā Chromium!</translation>
 <translation id="3155163173539279776">Restartēt Chromium</translation>
 <translation id="2966088006374919794">Chromium ir jāpalaiž ārēja lietojumprogramma, lai rīkotos ar <ph name="SCHEME"/> saitēm. Pieprasītā saite ir <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Nevar instalēt to pašu Chromium Frame versiju, kas jau šobrīd darbojas. Aizveriet Chromium Frame un mēģiniet vēlreiz.</translation>
@@ -199,7 +200,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 Ja pierakstīsieties tik un tā, Chromium informācija, piemēram, grāmatzīmes, vēsture un citi iestatījumi, tiks apvienota ar konta <ph name="ACCOUNT_EMAIL_NEW"/> informāciju.</translation>
 <translation id="2739631515503418643">Lejupielādes vēl nav pabeigtas. Vai vēlaties iziet no pārlūkprogrammas Chromium un atcelt lejupielādes?</translation>
 <translation id="9013262824292842194">Pārlūka Chromium izmantošanai nepieciešama operētājsistēma Windows Vista vai Windows XP ar SP2, vai jaunāka tās versija.</translation>
-<translation id="7673212349590566645">Vai vēlaties pierakstīties operētājsistēmā Chromium, izmantojot šo kontu: <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Ir zināms, ka modulis ar tādu pašu nosaukumu konfliktē ar Chromium.</translation>
 <translation id="4224199872375172890">Chromium ir atjaunināts.</translation>
 <translation id="374481098568514319">Šajā datorā jau ir instalēta jaunāka Chromium komponentu versija. Lūdzu, izmantojiet jaunāku instalēšanas programmu.</translation>

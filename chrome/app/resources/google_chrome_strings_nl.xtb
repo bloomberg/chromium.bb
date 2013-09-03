@@ -151,11 +151,11 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
         en verwijder het vinkje bij '<ph name="NO_PREFETCH_DESCRIPTION"/>'.
         Als dit het probleem niet oplost, raden we aan deze optie opnieuw
         aan te vinken voor verbeterde prestaties.</translation>
-<translation id="8333216950301932607">Inloggen bij Chrome met <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">&amp;Chrome OS bijwerken</translation>
 <translation id="8547799825197623713">Chrome App Launcher Canary</translation>
 <translation id="5577648424992741236">Deze computer beschikt al over een nieuwere versie van Google Chrome Frame. Als de software niet werkt, verwijder je Google Chrome Frame en probeer je het opnieuw.</translation>
 <translation id="6326175484149238433">Verwijderen uit Chrome</translation>
+<translation id="2871893339301912279">U bent ingelogd bij Chrome.</translation>
 <translation id="7161904924553537242">Welkom bij Google Chrome</translation>
 <translation id="1686446242839005801">Je logt in bij Chrome met je account <ph name="USER_EMAIL_ADDRESS"/>. Je kunt toegang krijgen tot je bladwijzers, geschiedenis en andere instellingen op al je ingelogde apparaten.</translation>
 <translation id="4147555960264124640">Je logt in op een beheerd account en geeft de beheerderscontrole over aan je Google Chrome-profiel. Je Chrome-gegevens zoals je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden permanent gekoppeld aan <ph name="USER_NAME"/>. Je kunt deze gegevens verwijderen via het Google Accounts Dashboard, maar je kunt deze gegevens niet koppelen aan een ander account. <ph name="LEARN_MORE"/></translation>

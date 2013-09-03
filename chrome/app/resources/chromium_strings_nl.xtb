@@ -161,6 +161,7 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="1105130903706696483">Chromium is niet correct afgesloten. Als je de pagina's die geopend waren opnieuw wilt openen, moet je op 'Herstellen' klikken.</translation>
 <translation id="1531452407274881270">Je logt in bij Chromium met je account <ph name="USER_EMAIL_ADDRESS"/>. Je kunt toegang krijgen tot je bladwijzers, geschiedenis en andere instellingen op al je ingelogde apparaten.</translation>
 <translation id="1929939181775079593">Chromium reageert niet. Nu opnieuw starten?</translation>
+<translation id="1414495520565016063">U bent ingelogd bij Chromium.</translation>
 <translation id="3155163173539279776">Chromium opnieuw starten</translation>
 <translation id="2966088006374919794">Chromium moet een externe applicatie starten om <ph name="SCHEME"/>-links te kunnen verwerken. De opgevraagde link is <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Kan niet dezelfde Chromium Frame-versie installeren, omdat deze versie nu actief is. Sluit Chromium Frame en probeer het opnieuw.</translation>
@@ -198,7 +199,6 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 Als je toch inlogt, worden Chromium-gegevens zoals bladwijzers, geschiedenis en andere instellingen samengevoegd met <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Er worden momenteel downloads uitgevoerd. Wil je Chromium afsluiten en de downloads annuleren?</translation>
 <translation id="9013262824292842194">Voor Chromium is Windows Vista of Windows XP met SP2 of hoger vereist.</translation>
-<translation id="7673212349590566645">Inloggen bij Chromium met <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Van een module met dezelfde naam is bekend dat deze conflicteert met Chromium.</translation>
 <translation id="4224199872375172890">Chromium is bijgewerkt.</translation>
 <translation id="374481098568514319">Deze computer beschikt al over een recentere versie van de Chromium-componenten. Gebruik een recenter installatieprogramma.</translation>

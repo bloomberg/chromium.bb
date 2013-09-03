@@ -161,6 +161,7 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="1105130903706696483">Chromium lukkede ikke korrekt ned. Klik på Gendan for at genåbne de sider, du havde åbne.</translation>
 <translation id="1531452407274881270">Du logger ind på Chromium med kontoen <ph name="USER_EMAIL_ADDRESS"/>. Du har adgang til dine bogmærker, din historik og andre indstillinger på alle de enheder, hvor du er logget ind.</translation>
 <translation id="1929939181775079593">Chromium svarer ikke. Vil du genstarte nu?</translation>
+<translation id="1414495520565016063">Du er logget ind på Chromium.</translation>
 <translation id="3155163173539279776">Genstart Chromium</translation>
 <translation id="2966088006374919794">Chromium skal starte en ekstern applikation for at håndtere <ph name="SCHEME"/>-links. Det link, der er anmodet om, er <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Kan ikke installere den samme version af Chromium Frame som den, der kører i øjeblikket. Luk Chromium Frame, og prøv igen.</translation>
@@ -199,7 +200,6 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 Hvis du logger ind alligevel, flettes Chromium-oplysninger, som f.eks. bogmærker, historik og andre indstillinger, med <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Downloads er i øjeblikket i gang. Vil du afslutte Chromium og annullere downloads?</translation>
 <translation id="9013262824292842194">Chromium kræver Windows Vista eller Windows XP med SP2 eller højere.</translation>
-<translation id="7673212349590566645">Vil du logge ind på Chromium med <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Et modul med samme navn er i strid med Chromium.</translation>
 <translation id="4224199872375172890">Chromium er opdateret.</translation>
 <translation id="374481098568514319">Denne computer har allerede en nyere version af Chromium-komponenterne. Brug et nyere installationsprogram.</translation>

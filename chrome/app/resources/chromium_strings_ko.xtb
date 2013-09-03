@@ -159,6 +159,7 @@
 <translation id="1105130903706696483">Chromium이 제대로 종료되지 않았습니다. 사용 중이던 페이지를 다시 열려면 '복구'를 클릭하세요.</translation>
 <translation id="1531452407274881270"><ph name="USER_EMAIL_ADDRESS"/> 계정으로 Chromium에 로그인 중입니다. 로그인한 모든 기기에서 북마크, 방문 기록 및 기타 설정에 액세스할 수 있습니다.</translation>
 <translation id="1929939181775079593">Chromium이 응답하지 않습니다. 다시 시작하시겠습니까?</translation>
+<translation id="1414495520565016063">Chromium에 로그인했습니다.</translation>
 <translation id="3155163173539279776">Chromium 다시 시작</translation>
 <translation id="2966088006374919794"><ph name="SCHEME"/> 링크 처리를 위해 Chrome에서 외부 응용 프로그램을 실행해야 합니다. 요청 링크는 <ph name="PROTOLINK"/>입니다.</translation>
 <translation id="6287463253129672858">이미 실행 중인 Chromium 프레임과 동일한 버전을 설치할 수 없습니다. Chromium 프레임을 종료한 뒤 다시 시도하세요.</translation>
@@ -197,7 +198,6 @@
 로그인하면 북마크, 방문 기록 및 기타 설정과 같은 Chromium 정보가 <ph name="ACCOUNT_EMAIL_NEW"/>에 병합됩니다.</translation>
 <translation id="2739631515503418643">현재 여러 개의 다운로드가 진행 중입니다. Chromium을 종료하고 다운로드를 취소하시겠습니까?</translation>
 <translation id="9013262824292842194">Chromium은 Windows Vista 또는 Windows XP 서비스 팩 2 이상이 설치된 컴퓨터에서 사용하실 수 있습니다.</translation>
-<translation id="7673212349590566645"><ph name="USER_EMAIL_ADDRESS"/>(으)로 Chromium에 로그인하시겠습니까?</translation>
 <translation id="1967743265616885482">같은 이름의 모듈이 Chromium과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="4224199872375172890">Chromium이 최신 버전입니다.</translation>
 <translation id="374481098568514319">컴퓨터에 이미 최신 버전의 Chromium 구성 요소가 있습니다. 좀더 최신 버전의 설치 프로그램을 사용하세요.</translation>

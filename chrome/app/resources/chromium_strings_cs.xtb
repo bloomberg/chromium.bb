@@ -163,6 +163,7 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="1105130903706696483">Prohlížeč Chromium nebyl řádně ukončen. Chcete-li znovu otevřít stránky, které byly otevřené, klikněte na možnost Obnovit.</translation>
 <translation id="1531452407274881270">Přihlašujete se do prohlížeče Chromium pomocí účtu <ph name="USER_EMAIL_ADDRESS"/>. Budete moci přistupovat ke všem svým záložkám, historii a dalším nastavením ve všech přihlášených zařízeních.</translation>
 <translation id="1929939181775079593">Prohlížeč Chromium neodpovídá. Chcete jej znovu načíst?</translation>
+<translation id="1414495520565016063">Jste přihlášeni do prohlížeče Chromium.</translation>
 <translation id="3155163173539279776">Restartovat Chromium</translation>
 <translation id="2966088006374919794">Chromium potřebuje spustit externí aplikaci pro práci s odkazy typu <ph name="SCHEME"/>. Požadovaný odkaz je <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Nelze nainstalovat verzi pluginu Chromium Frame, která je právě spuštěná. Ukončete Chromium Frame a zkuste to znovu.</translation>
@@ -201,7 +202,6 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 Pokud se přesto přihlásíte, budou data prohlížeče Chromium (například záložky, historie a další nastavení) sloučena s účtem <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Probíhá stahování. Chcete Chromium ukončit a stahování zrušit?</translation>
 <translation id="9013262824292842194">Chromium vyžaduje operační systém Windows Vista nebo Windows XP SP2 nebo vyšší.</translation>
-<translation id="7673212349590566645">Přihlásit se do prohlížeče Chromium pomocí účtu <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">O modulu se stejným názvem je známo, že u něj dochází ke konfliktu s prohlížečem Chromium.</translation>
 <translation id="4224199872375172890">Chromium je aktuální.</translation>
 <translation id="374481098568514319">V tomto počítači je již používána novější verze komponent aplikace Chromium. Použijte prosím novější instalátor.</translation>

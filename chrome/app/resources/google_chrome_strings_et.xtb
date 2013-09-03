@@ -149,11 +149,11 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
         ja tühistage valik „<ph name="NO_PREFETCH_DESCRIPTION"/>”.
         Kui see probleemi ei lahenda, soovitame toimivuse parandamiseks
         selle valiku uuesti teha.</translation>
-<translation id="8333216950301932607">Kas soovite Chrome'i sisse logida kontoga <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Värskenda &amp;Chrome OS-i</translation>
 <translation id="8547799825197623713">Chrome'i rakenduste käiviti Canary</translation>
 <translation id="5577648424992741236">Selles arvutis on juba Google Chrome Frame'i uuem versioon. Kui tarkvara ei tööta, desinstallige Google Chrome Frame ja proovige uuesti.</translation>
 <translation id="6326175484149238433">Eemalda Chrome'ist</translation>
+<translation id="2871893339301912279">Olete Chrome'i sisse logitud.</translation>
 <translation id="7161904924553537242">Tere tulemast Google Chrome'i</translation>
 <translation id="1686446242839005801">Logite Chrome'i sisse kontoga <ph name="USER_EMAIL_ADDRESS"/>. Pääsete kõigis sisselogitud seadmetes juurde oma järjehoidjatele, ajaloole ja muudele seadetele.</translation>
 <translation id="4147555960264124640">Logite sisse hallatud kontoga ja annate selle administraatorile üle Google Chrome'i profiili juhtimise. Teie Chrome'i andmed, nagu rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME"/>. Saate need andmed Google'i kontode juhtpaneeli kaudu kustutada, kuid te ei saa neid seostada teise kontoga. <ph name="LEARN_MORE"/></translation>

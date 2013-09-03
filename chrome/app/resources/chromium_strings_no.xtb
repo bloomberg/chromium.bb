@@ -120,7 +120,7 @@
 <translation id="3069161343438701711">Chromium-arbeider</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">Ikke spør meg igjen</translation>
-<translation id="1745962126679160932">Chromium lagrer informasjonen din sikkert, slik at du slipper å skrive den inn på nytt. Du må imidlertid bekrefte kortets sikkerhetskode ved fremtidig bruk.</translation>
+<translation id="1745962126679160932">Chromium lagrer informasjonen din sikkert, slik at du slipper å skrive den inn på nytt. Du må imidlertid bekrefte sikkerhetskoden for kortet ved fremtidige betalinger.</translation>
 <translation id="275588974610408078">Krasjrapportering er ikke tilgjengelig i Chromium.</translation>
 <translation id="5909170354645388250">Ikke brukt i Chromium. Plassholder for å holde ressurskart synkroniserte. Den forventer ett argument: $1.</translation>
 <translation id="7937630085815544518">Du ble logget på Chromium som <ph name="USER_EMAIL_ADDRESS"/>. Du må logge deg på igjen med samme konto.</translation>
@@ -159,6 +159,7 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="1105130903706696483">Chromium ble ikke avsluttet på riktig måte. Klikk på Gjenopprett for å åpne sidene du hadde åpnet, på nytt.</translation>
 <translation id="1531452407274881270">Du logger deg på Chromium ved bruk av <ph name="USER_EMAIL_ADDRESS"/>-kontoen din. Du får tilgang til bokmerkene dine, logger og andre innstillinger på alle de påloggede enhetene dine.</translation>
 <translation id="1929939181775079593">Chromium svarer ikke. Vil du starte den på nytt nå?</translation>
+<translation id="1414495520565016063">Du er logget på Chromium.</translation>
 <translation id="3155163173539279776">Start Chromium på nytt</translation>
 <translation id="2966088006374919794">Chromium må starte et eksternt program for å håndtere <ph name="SCHEME"/>-linker. Den påkrevde linken er <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Kan ikke installere den samme Chromium Frame-versjonen som kjører. Lukk Chromium Frame og prøv på nytt.</translation>
@@ -196,7 +197,6 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 Hvis du logger deg på allikevel, blir Chromium-informasjon som bokmerker, loggen og andre innstillinger slått sammen med <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Du har aktive nedlastinger. Vil du avslutte Chromium og avbryte nedlastingene?</translation>
 <translation id="9013262824292842194">Chromium krever Windows Vista eller Windows XP med SP2 eller høyere.</translation>
-<translation id="7673212349590566645">Vil du logge deg på Chromium med <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Vi har tidligere lagt merke til at en modul med det samme navnet, har kommet i konflikt med Chromium.</translation>
 <translation id="4224199872375172890">Chromium er oppdatert.</translation>
 <translation id="374481098568514319">Denne datamaskinen har allerede en nyere versjon av Chromium-komponentene. Bruk et nyere installeringsprogram.</translation>

@@ -144,11 +144,11 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
         <ph name="ADVANCED_TITLE"/>
         pa poništite odabir stavke &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot;.
         Ako se time ne riješi problem, preporučujemo da ponovo odaberete tu opciju radi bolje izvedbe.</translation>
-<translation id="8333216950301932607">Želite li se prijaviti u Chrome e-adresom <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Ažuriraj OS &amp;Chrome</translation>
 <translation id="8547799825197623713">Pokretač aplikacija za Chromeov kanal Canary</translation>
 <translation id="5577648424992741236">Na ovom računalu već postoji novija verzija programa Google Chrome Frame. Ako softver ne radi, deinstalirajte Google Chrome Frame i pokušajte ponovo.</translation>
 <translation id="6326175484149238433">Ukloni iz programa Chrome</translation>
+<translation id="2871893339301912279">Prijavljeni ste na Chrome!</translation>
 <translation id="7161904924553537242">Dobro došli u Google Chrome</translation>
 <translation id="1686446242839005801">Prijavljujete se u Chrome svojim računom <ph name="USER_EMAIL_ADDRESS"/>. Moći ćete pristupiti svojim oznakama, povijesti i drugim postavkama na svim uređajima na kojima se prijavljujete.</translation>
 <translation id="4147555960264124640">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Google Chrome. Vaši podaci u sustavu Chrome, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME"/>. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. <ph name="LEARN_MORE"/></translation>

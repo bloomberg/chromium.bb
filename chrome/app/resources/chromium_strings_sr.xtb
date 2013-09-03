@@ -161,6 +161,7 @@
 <translation id="1105130903706696483">Chromium се није исправно затворио. Да бисте поново отворили странице које су биле отворене, кликните на Поново отвори.</translation>
 <translation id="1531452407274881270">Пријављујете се на Chromium помоћу налога <ph name="USER_EMAIL_ADDRESS"/>. Моћи ћете да приступате обележивачима, историји и другим подешавањима на свим уређајима на којима сте пријављени.</translation>
 <translation id="1929939181775079593">Chromium не реагује. Желите ли да га одмах поново покренете?</translation>
+<translation id="1414495520565016063">Пријављени сте на Chromium!</translation>
 <translation id="3155163173539279776">Поново покрени Chromium</translation>
 <translation id="2966088006374919794">Chromium мора да покрене спољну апликацију ради обраде <ph name="SCHEME"/> веза. Захтевана веза је <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Није могуће инсталирати исту верзију Chromium Frame-а која се тренутно користи. Затворите Chromium Frame и покушајте поново.</translation>
@@ -199,7 +200,6 @@
 Ако се ипак пријавите, Chromium информације као што су обележивачи, историја и друга подешавања ће бити обједињене на <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Преузимања су у току. Да ли желите да изађете из Chromium-а и откажете преузимања?</translation>
 <translation id="9013262824292842194">За Chromium је неопходан Windows Vista или Windows XP са SP2 или новија верзија.</translation>
-<translation id="7673212349590566645">Желите ли да се пријавите на Chromium помоћу адресе <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Модул истог назива се већ сукобљавао са Chromium-ом.</translation>
 <translation id="4224199872375172890">Chromium је ажуриран.</translation>
 <translation id="374481098568514319">Овај рачунар већ има новију верзију Chromium компоненти. Користите новији инсталациони програм.</translation>

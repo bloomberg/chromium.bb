@@ -159,6 +159,7 @@
 <translation id="1105130903706696483">‏لم يتم إيقاف تشغيل Chromium بشكل صحيح. لإعادة فتح الصفحات التي كانت مفتوحة، انقر على &quot;استعادة&quot;.</translation>
 <translation id="1531452407274881270">‏أنت تسجّل الدخول إلى Chromium باستخدام الحساب <ph name="USER_EMAIL_ADDRESS"/>. سيكون بمقدورك الدخول إلى إشاراتك المرجعية وسجلك والإعدادات الأخرى على كل الأجهزة التي سجلت الدخول عليها.</translation>
 <translation id="1929939181775079593">‏لا يستجيب Chromium. هل تريد إعادة التشغيل الآن؟</translation>
+<translation id="1414495520565016063">‏تم تسجيل دخولك إلى Chromium!</translation>
 <translation id="3155163173539279776">‏إعادة تشغيل Chromium</translation>
 <translation id="2966088006374919794">‏يحتاج Chromium إلى تشغيل تطبيق خارجي للتعامل مع روابط <ph name="SCHEME"/>. والرابط المطلوب هو <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">‏لا يمكن تثبيت إصدار إطار Chromium ذاته الذي يتم تشغيله حاليًا. الرجاء إغلاق إطار Chromium وإعادة المحاولة.</translation>
@@ -197,7 +198,6 @@
 سيؤدي تسجيل الدخول على أية حال إلى دمج معلومات Chromium مثل الإشارات المرجعية والسجل والإعدادات الأخرى مع <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">‏هناك تنزيلات قيد التقدم حاليًا. هل تريد الخروج من Chromium وإلغاء التنزيلات؟</translation>
 <translation id="9013262824292842194">‏يتطلب Chromium نظام التشغيل Windows Vista أو Windows XP المزود بحزمة الخدمة SP2 أو الإصدارات الأحدث.</translation>
-<translation id="7673212349590566645">‏هل تريد تسجيل الدخول إلى Chromium باستخدام <ph name="USER_EMAIL_ADDRESS"/>؟</translation>
 <translation id="1967743265616885482">‏هناك وحدة تحمل الاسم نفسه ومعروف أنها تتعارض مع Chromium.</translation>
 <translation id="4224199872375172890">‏Chromium محدّث.</translation>
 <translation id="374481098568514319">‏يوجد على هذا الكمبيوتر إصدارًا أحدث من مكونات Chromium. الرجاء استخدام أداة تثبيت أحدث.</translation>

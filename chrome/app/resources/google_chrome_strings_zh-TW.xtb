@@ -147,11 +147,11 @@ Google Chrome 無法復原您的設定。</translation>
         然後取消勾選 [<ph name="NO_PREFETCH_DESCRIPTION"/>]。
         如果仍然無法解決問題，建議您重新勾選這個選項
         以增進效能。</translation>
-<translation id="8333216950301932607">要使用 <ph name="USER_EMAIL_ADDRESS"/> 登入 Chrome 嗎？</translation>
 <translation id="61852838583753520">更新 Chrome 作業系統(&amp;C)</translation>
 <translation id="8547799825197623713">Chrome 應用程式啟動器 Canary 頻道</translation>
 <translation id="5577648424992741236">這台電腦已安裝較新的「Google Chrome 內嵌框架」版本，如果軟體無法順利運作，請解除安裝「Google Chrome 內嵌框架」，然後再試一次。</translation>
 <translation id="6326175484149238433">從 Chrome 中移除</translation>
+<translation id="2871893339301912279">您已登入 Chrome！</translation>
 <translation id="7161904924553537242">歡迎使用 Google Chrome</translation>
 <translation id="1686446242839005801">您已使用 <ph name="USER_EMAIL_ADDRESS"/> 帳戶登入 Chrome，這表示您可以在所有登入的裝置上使用您的書籤、紀錄和其他設定。</translation>
 <translation id="4147555960264124640">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chrome 設定檔。您的 Chrome 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME"/> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。<ph name="LEARN_MORE"/></translation>

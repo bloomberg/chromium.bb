@@ -161,6 +161,7 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="1105130903706696483">Chromium nu s-a închis corect. Pentru a redeschide paginile pe care le-ați avut deschise, faceți clic pe Restabiliți.</translation>
 <translation id="1531452407274881270">Vă conectați la Chromium utilizând contul <ph name="USER_EMAIL_ADDRESS"/>. Vă veți putea accesa marcajele, istoricul și alte setări de pe toate dispozitivele conectate.</translation>
 <translation id="1929939181775079593">Chromium nu mai răspunde. Îl reporniți acum?</translation>
+<translation id="1414495520565016063">V-ați conectat la Chromium!</translation>
 <translation id="3155163173539279776">Reporniți Chromium</translation>
 <translation id="2966088006374919794">Chromium necesită lansarea unei aplicații externe pentru a gestiona linkuri <ph name="SCHEME"/>. Linkul solicitat este <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Nu se poate instala aceeași versiune de Chromium Frame care rulează în prezent. Închideți Chromium Frame și încercați din nou.</translation>
@@ -199,7 +200,6 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 Dacă totuși vă conectați, informațiile Chromium cum ar fi marcajele, istoricul și alte setări vor fi îmbinate cu <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Mai multe descărcări sunt în desfășurare. Doriți să ieșiți din Chromium și să anulați descărcările?</translation>
 <translation id="9013262824292842194">Chromium necesită Windows Vista sau Windows XP cu SP2 sau o versiune ulterioară.</translation>
-<translation id="7673212349590566645">Vă conectați la Chromium cu <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Despre un modul cu același nume se cunoaște că intră în conflict cu Chromium.</translation>
 <translation id="4224199872375172890">Chromium este actualizat.</translation>
 <translation id="374481098568514319">Acest computer are deja o versiune mai recentă a componentelor Chromium. Vă rugăm să folosiți un program de instalare mai recent.</translation>

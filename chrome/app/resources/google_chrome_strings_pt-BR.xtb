@@ -146,11 +146,11 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
         e desmarque &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot;.
         Se isso não resolver o problema, recomendamos selecionar esta opção
         novamente para melhorar o desempenho.</translation>
-<translation id="8333216950301932607">Fazer login no Google Chrome com <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Atualizar o Chrome OS</translation>
 <translation id="8547799825197623713">Iniciador de aplicativos do Google Chrome no Canary</translation>
 <translation id="5577648424992741236">Este computador já tem uma versão mais recente do Frame do Google Chrome. Caso e o software não esteja funcionando, desinstale-o e tente novamente.</translation>
 <translation id="6326175484149238433">Remover do Google Chrome</translation>
+<translation id="2871893339301912279">Você fez login no Google Chrome.</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
 <translation id="1686446242839005801">Você está fazendo login no Google Chrome usando sua conta <ph name="USER_EMAIL_ADDRESS"/>. Assim, poderá acessar seus favoritos, histórico e outras configurações em todos os dispositivos conectados.</translation>
 <translation id="4147555960264124640">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Google Chrome, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME"/>. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. <ph name="LEARN_MORE"/></translation>

@@ -145,11 +145,11 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
         og fjern valget for «<ph name="NO_PREFETCH_DESCRIPTION"/>».
         Hvis dette ikke løser problemet, anbefaler vi deg å velge dette alternativet
         igjen for bedre ytelse.</translation>
-<translation id="8333216950301932607">Vil du logge deg på Chrome med <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Oppdater &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Chrome-appvelger – Canary</translation>
 <translation id="5577648424992741236">Denne datamaskinen har allerede en nyere versjon av Google Chrome Frame. Hvis programvaren ikke fungerer, må du avinstallere Google Chrome Frame og prøve på nytt.</translation>
 <translation id="6326175484149238433">Fjern fra Chrome</translation>
+<translation id="2871893339301912279">Du er nå logget på Chrome.</translation>
 <translation id="7161904924553537242">Velkommen til Google Chrome</translation>
 <translation id="1686446242839005801">Du logger deg på Chrome ved bruk av <ph name="USER_EMAIL_ADDRESS"/>-kontoen din. Du får tilgang til bokmerkene dine, logger og andre innstillinger på alle de påloggede enhetene dine.</translation>
 <translation id="4147555960264124640">Du er i ferd med å logge deg på med en administrert konto og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine, som apper, bokmerker, loggen, passord og andre innstillinger, blir permanent knyttet til <ph name="USER_NAME"/>. Du kan slette disse dataene via kontooversikten for Google, men du kan ikke knytte disse dataene til en annen konto. <ph name="LEARN_MORE"/></translation>

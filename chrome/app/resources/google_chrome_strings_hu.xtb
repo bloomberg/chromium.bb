@@ -145,11 +145,11 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
         és törölje a jelet a(z) „<ph name="NO_PREFETCH_DESCRIPTION"/>” jelölőnégyzetből.
         Ha ettől nem szűnik meg a probléma, javasoljuk, hogy jelölje be ismét
         ezt a lehetőséget a jobb teljesítmény érdekében.</translation>
-<translation id="8333216950301932607">Bejelentkezik a Chrome-ba a következő címmel: <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">A &amp;Chrome OS frissítése</translation>
 <translation id="8547799825197623713">Chrome Alkalmazásindító Canary</translation>
 <translation id="5577648424992741236">A számítógépen már megtalálható a Google Chrome Frame újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el a Google Chrome Frame alkalmazást, majd próbálkozzon ismét.</translation>
 <translation id="6326175484149238433">Eltávolítás a Chrome-ból</translation>
+<translation id="2871893339301912279">Bejelentkezett a Chrome-ba.</translation>
 <translation id="7161904924553537242">Üdvözli Önt a Google Chrome!</translation>
 <translation id="1686446242839005801"><ph name="USER_EMAIL_ADDRESS"/> fiók használatával jelentkezik be a Chrome-ba. Könyvjelzőit, előzményeit és más beállításait minden olyan eszközön elérheti majd, amelyen bejelentkezett.</translation>
 <translation id="4147555960264124640">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Google Chrome-profiljához. Chrome-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME"/> fiókhoz. Ezen adatokat a Google-fiókok Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. <ph name="LEARN_MORE"/></translation>

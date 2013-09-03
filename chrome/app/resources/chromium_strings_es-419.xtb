@@ -157,6 +157,7 @@
 <translation id="1105130903706696483">Chromium no se cerró correctamente. Para volver a abrir las páginas que tenías abiertas, haz clic en Restaurar.</translation>
 <translation id="1531452407274881270">Estás accediendo a Chromium con tu cuenta <ph name="USER_EMAIL_ADDRESS"/>. Podrás acceder a tus marcadores, el historial y otros parámetros de configuración en todos los dispositivos en los que hayas accedido.</translation>
 <translation id="1929939181775079593">Chromium no responde. ¿Quieres reiniciarlo ahora?</translation>
+<translation id="1414495520565016063">Accediste a Chromium.</translation>
 <translation id="3155163173539279776">Reiniciar Chromium</translation>
 <translation id="2966088006374919794">Chromium necesita iniciar una aplicación externa para utilizar vínculos <ph name="SCHEME"/>. El vínculo solicitado es <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">No es posible instalar la misma versión de Chromium Frame que se está ejecutando. Cierra Chromium Frame y vuelve a intentarlo.</translation>
@@ -194,7 +195,6 @@
 Si accedes de todos modos, se fusionará la información de Chromium, como los marcadores, el historial y otros parámetros de configuración en <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Actualmente hay descargas en curso. ¿Quieres salir de Chromium y cancelarlas?</translation>
 <translation id="9013262824292842194">Para usar Chromium Frame, se necesita Windows Vista o Windows XP con SP2 o superior.</translation>
-<translation id="7673212349590566645">¿Quieres acceder a Chromium con <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Un módulo con el mismo nombre provoca un conflicto con Chromium.</translation>
 <translation id="4224199872375172890">Chromium está actualizado.</translation>
 <translation id="374481098568514319">Esta computadora ya cuenta con una versión más reciente de los componentes de Chromium. Utiliza un archivo de instalación más reciente.</translation>

@@ -131,11 +131,11 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="5788838254726722945">Google Chrome App Launcher deinstallieren</translation>
 <translation id="3612333635265770873">Es ist bekannt, dass ein Modul mit dem gleichen Namen in Konflikt mit Google Chrome steht.</translation>
 <translation id="5875635642195358109">Gehen Sie zum Chrome-Menü &gt; &quot;<ph name="SETTINGS_TITLE"/>&quot; &gt; &quot;<ph name="ADVANCED_TITLE"/>&quot; und deaktivieren Sie die Option &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot;. Wenn das Problem danach weiterhin besteht, aktivieren Sie diese Option wieder, um die Leistung zu verbessern.</translation>
-<translation id="8333216950301932607">Mit <ph name="USER_EMAIL_ADDRESS"/> in Chrome anmelden?</translation>
 <translation id="61852838583753520">&amp;Chrome OS aktualisieren</translation>
 <translation id="8547799825197623713">Chrome-App-Übersicht für Canary</translation>
 <translation id="5577648424992741236">Auf diesem Computer befindet sich bereits eine neuere Version von Google Chrome Frame. Falls die Software nicht funktioniert, deinstallieren Sie Google Chrome Frame und versuchen Sie es erneut.</translation>
 <translation id="6326175484149238433">Aus Chrome entfernen</translation>
+<translation id="2871893339301912279">Sie sind in Chrome angemeldet.</translation>
 <translation id="7161904924553537242">Willkommen bei Chrome</translation>
 <translation id="1686446242839005801">Sie werden mit Ihrem Konto <ph name="USER_EMAIL_ADDRESS"/> in Chrome angemeldet. Auf allen Geräten, auf denen Sie angemeldet sind, sind Ihre Lesezeichen, Ihr Verlauf und andere Einstellungen verfügbar.</translation>
 <translation id="4147555960264124640">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Google Chrome-Profil. Ihre Chrome-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME"/> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. <ph name="LEARN_MORE"/></translation>

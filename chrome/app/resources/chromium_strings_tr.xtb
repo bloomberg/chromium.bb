@@ -155,6 +155,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="1105130903706696483">Chromium düzgün şekilde kapatılmadı. Daha önce açık olan sayfaların tekrar açılması için Geri yükle'yi tıklayın.</translation>
 <translation id="1531452407274881270"><ph name="USER_EMAIL_ADDRESS"/> hesabınızı kullanarak Chromium'da oturum açıyorsunuz. Oturum açtığınız tüm cihazlardan yer işaretlerinize, geçmişinize ve diğer ayarlarınıza erişebileceksiniz.</translation>
 <translation id="1929939181775079593">Chromium yanıt vermiyor. Şimdi yeniden başlatılsın mı?</translation>
+<translation id="1414495520565016063">Chromium'da oturum açtınız!</translation>
 <translation id="3155163173539279776">Chromium'u Yeniden Başlat</translation>
 <translation id="2966088006374919794">Chromium'un, <ph name="SCHEME"/> bağlantılarını kullanabilmek için harici bir uygulamayı başlatması gerekiyor. İstenen bağlantı: <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Şu anda çalışan aynı Chromium Frame sürümünü yükleyemezsiniz. Lütfen Chromium Frame'i kapatın ve yeniden deneyin.</translation>
@@ -193,7 +194,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarlarınız gibi Chromium bilgileriniz <ph name="ACCOUNT_EMAIL_NEW"/> ile birleştirilecektir.</translation>
 <translation id="2739631515503418643">Şu anda devam eden indirme işlemleri var. Chromium'dan çıkmak ve indirme işlemlerini iptal etmek istiyor musunuz?</translation>
 <translation id="9013262824292842194">Chromium; Windows Vista veya Windows XP SP2 ya da daha ileri bir sürümü gerektirir.</translation>
-<translation id="7673212349590566645">Chromium'da <ph name="USER_EMAIL_ADDRESS"/> ile oturum açılsın mı?</translation>
 <translation id="1967743265616885482">Aynı isme sahip bir modülün Chromium'la çakıştığı bilinmektedir.</translation>
 <translation id="4224199872375172890">Chromium güncel durumda.</translation>
 <translation id="374481098568514319">Bu bilgisayar zaten Chromium bileşenlerinin daha yeni bir sürümüne sahip. Lütfen daha yeni bir yükleme programı kullanın.</translation>

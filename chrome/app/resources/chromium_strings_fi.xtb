@@ -161,6 +161,7 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="1105130903706696483">Chromiumia ei sammutettu oikein. Voit avata avoinna olleet sivut valitsemalla Palauta.</translation>
 <translation id="1531452407274881270">Kirjaudut Chromiumiin tilillä <ph name="USER_EMAIL_ADDRESS"/>. Voit käyttää kirjanmerkkejäsi, historiaa ja muita asetuksia kaikilla laitteilla, joihin olet kirjautunut.</translation>
 <translation id="1929939181775079593">Chromium ei vastaa. Käynnistetäänkö uudelleen?</translation>
+<translation id="1414495520565016063">Olet kirjautunut Chromiumiin!</translation>
 <translation id="3155163173539279776">Käynnistä Chromium uudelleen</translation>
 <translation id="2966088006374919794">Chromiumin täytyy käynnistää ulkopuolinen sovellus <ph name="SCHEME"/>-linkkien käsittelyä varten. Pyyntöön liittyvä linkki on <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Chromium-kehyksestä ei voi asentaa versiota, joka on tällä hetkellä käynnissä. Sulje Chromium-kehys ja yritä uudelleen.</translation>
@@ -198,7 +199,6 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 Jos kirjaudut silti sisään, Chromium-tiedot, kuten kirjanmerkit, historia ja asetukset, yhdistetään tilin <ph name="ACCOUNT_EMAIL_NEW"/> tietoihin.</translation>
 <translation id="2739631515503418643">Latauksia on käynnissä. Haluatko sulkea Chromiumin ja peruuttaa lataukset?</translation>
 <translation id="9013262824292842194">Chromium edellyttää, että käyttöjärjestelmä on Windows Vista tai Windows XP SP2 tai uudempi.</translation>
-<translation id="7673212349590566645">Kirjaudutaanko Chromiumiin tilillä <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Samanniminen moduuli on aiheuttanut aiemmin ristiriitoja Chromiumin kanssa.</translation>
 <translation id="4224199872375172890">Chromium on ajan tasalla.</translation>
 <translation id="374481098568514319">Tietokoneessa on jo uudempi Chromium-komponenttien versio. Käytä uudempaa asennusohjelmaa.</translation>

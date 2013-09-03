@@ -160,6 +160,7 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="1105130903706696483">Chromium tidak ditutup dengan betul. Untuk membuka semula halaman yang anda telah buka, klik Pulihkan.</translation>
 <translation id="1531452407274881270">Anda log masuk ke Chromium menggunakan akaun <ph name="USER_EMAIL_ADDRESS"/> anda. Anda akan dapat mengakses penanda halaman, sejarah dan tetapan lain pada semua peranti yang anda gunakan untuk log masuk.</translation>
 <translation id="1929939181775079593">Chromium tidak responsif. Lancarkan semula sekarang?</translation>
+<translation id="1414495520565016063">Anda log masuk ke Chromium!</translation>
 <translation id="3155163173539279776">Lancarkan Semula Chromium</translation>
 <translation id="2966088006374919794">Chromium perlu melancarkan aplikasi luaran untuk mengendalikan pautan <ph name="SCHEME"/>. Pautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Tidak boleh memasang versi Chromium Frame yang sama dengan yang sedang dijalankan. Sila tutup Chromium Frame dan cuba lagi.</translation>
@@ -198,7 +199,6 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 Meneruskan juga log masuk akan menggabungkan maklumat Chromium seperti penanda halaman, sejarah dan tetapan lain ke <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Muat turun sedang dijalankan. Adakah anda ingin keluar dari Chromium dan membatalkan muat turun?</translation>
 <translation id="9013262824292842194">Chromium memerlukan Windows Vista atau Windows XP dengan SP2 atau lebih tinggi.</translation>
-<translation id="7673212349590566645">Log masuk ke Chromium dengan <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Modul dengan nama yang sama telah diketahui bercanggah dengan Chromium.</translation>
 <translation id="4224199872375172890">Chromium telah dikemas kini</translation>
 <translation id="374481098568514319">Komputer ini sudah mempunyai versi komponen Chromium yang lebih baharu. Sila gunakan pemasang yang lebih baharu.</translation>

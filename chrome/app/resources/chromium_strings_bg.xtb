@@ -156,6 +156,7 @@
 <translation id="1105130903706696483">Chromium не се затвори правилно. За да видите отново отворените си страници, кликнете върху „Възстановяване“.</translation>
 <translation id="1531452407274881270">Влизате в Chromium посредством профила си <ph name="USER_EMAIL_ADDRESS"/>. Ще имате достъп до отметките, историята и другите си настройки на всички устройства, на които сте влезли чрез него.</translation>
 <translation id="1929939181775079593">Chromium блокира. Да се стартира ли отново сега?</translation>
+<translation id="1414495520565016063">Влязохте в Chromium!</translation>
 <translation id="3155163173539279776">Рестартиране на Chromium</translation>
 <translation id="2966088006374919794">Chromium трябва да стартира външно приложение, за да обработва връзки от тип <ph name="SCHEME"/>. Заявената връзка е <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Не може да се инсталира същата версия на Chromium Frame, която се използва понастоящем. Моля, затворете приставката и опитайте отново.</translation>
@@ -194,7 +195,6 @@
 В случай че влезете въпреки това, данните в Chromium като отметки, история и други настройки ще се обединят с/ъс <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Понастоящем се извършват изтегляния. Искате ли да излезете от Chromium и да ги анулирате?</translation>
 <translation id="9013262824292842194">Chromium изисква Windows Vista или Windows XP с SP2 или по-нова версия.</translation>
-<translation id="7673212349590566645">Да се влезе ли в Chromium с/ъс <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Известно е, че модул със същото име влиза в конфликт с Chromium.</translation>
 <translation id="4224199872375172890">Chromium е актуален.</translation>
 <translation id="374481098568514319">На този компютър вече има по-скорошна версия на компонентите на Chromium. Моля, използвайте по-нова инсталационна програма.</translation>

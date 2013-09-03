@@ -157,6 +157,7 @@
 <translation id="1105130903706696483">O Chromium não foi encerrado corretamente. Para reabrir as páginas que você tinha aberto, clique em &quot;Restaurar&quot;.</translation>
 <translation id="1531452407274881270">Você está fazendo login no Chromium usando sua conta <ph name="USER_EMAIL_ADDRESS"/>. Assim, poderá acessar seus favoritos, histórico e outras configurações em todos os dispositivos conectados.</translation>
 <translation id="1929939181775079593">O Chromium não está respondendo. Reiniciar agora?</translation>
+<translation id="1414495520565016063">Você está conectado ao Chromium.</translation>
 <translation id="3155163173539279776">Reiniciar Chromium</translation>
 <translation id="2966088006374919794">O Chromium precisa iniciar um aplicativo externo para lidar com os links <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Não é possível instalar a mesma versão do Chromium Frame que está sendo executada. Feche o Chromium Frame e tente novamente.</translation>
@@ -195,7 +196,6 @@
 Se você decidir fazer login assim mesmo, as informações do Chromium, como favoritos, histórico e outras configurações serão mescladas com as informações de <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Há downloads em andamento. Deseja sair do Chromium e cancelar os downloads?</translation>
 <translation id="9013262824292842194">O Chromium requer o Windows Vista ou Windows XP com SP2 ou superior.</translation>
-<translation id="7673212349590566645">Fazer login no Chromium com <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Um módulo com o mesmo nome é conhecido por entrar em conflito com o Chromium.</translation>
 <translation id="4224199872375172890">O Chromium está atualizado.</translation>
 <translation id="374481098568514319">Este computador já possui uma versão mais recente dos componentes do Chromium. Use um instalador mais recente.</translation>

@@ -153,11 +153,11 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
         y desactiva la opción <ph name="NO_PREFETCH_DESCRIPTION"/>.
         Si el problema persiste, te recomendamos que vuelvas a seleccionar esta
         opción para conseguir un mejor rendimiento.</translation>
-<translation id="8333216950301932607">¿Quieres iniciar sesión en Chrome con la cuenta <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Información de &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Barra de aplicaciones de Google Chrome Canary</translation>
 <translation id="5577648424992741236">Este ordenador tiene instalada una versión más reciente de Google Chrome Frame. Si no funciona el software, desinstala Google Chrome Frame y vuelve a intentarlo.</translation>
 <translation id="6326175484149238433">Eliminar de Chrome</translation>
+<translation id="2871893339301912279">Has iniciado sesión en Chrome</translation>
 <translation id="7161904924553537242">Bienvenido a Google Chrome</translation>
 <translation id="1686446242839005801">Vas a iniciar sesión en Chrome con tu cuenta <ph name="USER_EMAIL_ADDRESS"/>, lo que te permitirá acceder a tus marcadores, a tu historial y a otras opciones de configuración en todos los dispositivos en los que hayas iniciado sesión.</translation>
 <translation id="4147555960264124640">Vas a iniciar sesión con una cuenta administrada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Google Chrome. Tus datos de Chrome como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME"/>. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociar estos datos a otra cuenta. <ph name="LEARN_MORE"/></translation>

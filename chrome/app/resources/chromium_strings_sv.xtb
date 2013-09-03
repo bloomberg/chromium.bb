@@ -163,6 +163,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="1105130903706696483">Chromium stängdes inte av korrekt. Om du vill öppna sidorna som var öppna igen klickar du på Återställ.</translation>
 <translation id="1531452407274881270">Du loggar in i Chromium med ditt <ph name="USER_EMAIL_ADDRESS"/>-konto. Du kommer att kunna komma åt dina bokmärken, historik och andra inställningar på alla enheter där du är inloggad.</translation>
 <translation id="1929939181775079593">Chromium svarar inte. Vill du starta om?</translation>
+<translation id="1414495520565016063">Du är inloggad i Chromium.</translation>
 <translation id="3155163173539279776">Starta om Chromium</translation>
 <translation id="2966088006374919794">Chromium måste starta ett externt program för att kunna hantera <ph name="SCHEME"/>-länkar. Den länk som efterfrågas är <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Det går inte att installera samma version av Chromium Frame som den som redan körs. Stäng Chromium Frame och försök igen.</translation>
@@ -201,7 +202,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 Om du loggar in ändå kommer information som bokmärken, historik och andra inställningar i Chromium att synkroniseras med <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Hämtningar pågår. Vill du avsluta Chromium och avbryta hämtningarna?</translation>
 <translation id="9013262824292842194">För Chromium krävs Windows Vista eller Windows XP med SP2 eller senare.</translation>
-<translation id="7673212349590566645">Vill du logga in i Chromium med <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">En modul med samma namn har tidigare varit i konflikt med Chromium.</translation>
 <translation id="4224199872375172890">Chromium är uppdaterat.</translation>
 <translation id="374481098568514319">Datorn har redan en nyare version av Chromium-komponenterna. Använd ett nyare installationsprogram.</translation>

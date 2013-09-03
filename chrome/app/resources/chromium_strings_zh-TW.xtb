@@ -161,6 +161,7 @@
 <translation id="1105130903706696483">Chromium 上次執行時並未正確關閉。如果要重新開啟您之前瀏覽的網頁，請按一下 [還原]。</translation>
 <translation id="1531452407274881270">您已使用 <ph name="USER_EMAIL_ADDRESS"/> 帳戶登入 Chromium，這表示您可以在所有登入的裝置上使用您的書籤、瀏覽紀錄和其他設定。</translation>
 <translation id="1929939181775079593">Chromium 沒有回應，要立即重新啟動嗎？</translation>
+<translation id="1414495520565016063">您已登入 Chromium！</translation>
 <translation id="3155163173539279776">重新啟動 Chromium</translation>
 <translation id="2966088006374919794">Chromium 需要啟用外部應用程式才能處理 <ph name="SCHEME"/> 連結。所要求的連結為 <ph name="PROTOLINK"/>。</translation>
 <translation id="6287463253129672858">無法安裝這個版本的 Chromium 頁框，因為目前正在執行相同版本。請關閉 Chromium 頁框，然後再試一次。</translation>
@@ -199,7 +200,6 @@
 如果您仍要繼續登入帳戶，各項 Chromium 資訊 (例如書籤、紀錄和其他設定) 則會合併至 <ph name="ACCOUNT_EMAIL_NEW"/>。</translation>
 <translation id="2739631515503418643">目前正在進行下載，您要結束 Chromium 並取消下載嗎？</translation>
 <translation id="9013262824292842194">Chromium 僅支援 Windows Vista 或 Windows XP SP2 以上版本。</translation>
-<translation id="7673212349590566645">要使用 <ph name="USER_EMAIL_ADDRESS"/> 登入 Chromium 嗎？</translation>
 <translation id="1967743265616885482">已知相同名稱的模組會與 Chromium 衝突。</translation>
 <translation id="4224199872375172890">Chromium 目前是最新版本。</translation>
 <translation id="374481098568514319">這台電腦已經有更新版本的 Chromium 元件，請使用較新的安裝程式。</translation>

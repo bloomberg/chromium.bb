@@ -149,11 +149,11 @@
         وألغ تحديد &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;
         في حالة ما إذا لم يؤد ذلك إلى حل المشكلة، فنوصي بتحديد هذا الخيار
         مرة أخرى لتحسين الأداء.</translation>
-<translation id="8333216950301932607">‏هل تريد تسجيل الدخول إلى Chrome باستخدام <ph name="USER_EMAIL_ADDRESS"/>؟</translation>
 <translation id="61852838583753520">‏تحديث ن&amp;ظام التشغيل Google Chrome</translation>
 <translation id="8547799825197623713">‏مشغل تطبيقات Chrome في Canary</translation>
 <translation id="5577648424992741236">‏يحتوي جهاز الكمبيوتر هذا على إصدار أحدث من إطار Google Chrome. إذا كان البرنامج لا يعمل، فالرجاء إزالة إطار Google Chrome وإعادة المحاولة.</translation>
 <translation id="6326175484149238433">‏إزالة من Chrome</translation>
+<translation id="2871893339301912279">‏تم تسجيل دخولك إلى Chrome!</translation>
 <translation id="7161904924553537242">‏مرحبًا بك في Google Chrome</translation>
 <translation id="1686446242839005801">‏أنت تسجّل الدخول إلى Chrome باستخدام الحساب <ph name="USER_EMAIL_ADDRESS"/>. سيكون بمقدورك الدخول إلى إشاراتك المرجعية وسجلك والإعدادات الأخرى على كل الأجهزة التي سجلت الدخول عليها.</translation>
 <translation id="4147555960264124640">‏إنك تسجل الدخول باستخدام حساب مُدار وتمنح المشرف إمكانية التحكم في ملفك الشخصي في Google Chrome. وسيتم ربط بيانات Chrome التابعة لك، مثل التطبيقات والإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى بالمستخدم <ph name="USER_NAME"/>. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. <ph name="LEARN_MORE"/></translation>

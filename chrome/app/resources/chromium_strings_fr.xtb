@@ -162,6 +162,7 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="1105130903706696483">Chromium ne s'est pas arrêté correctement. Pour rouvrir les pages que vous aviez ouvertes, cliquez sur &quot;Restaurer&quot;.</translation>
 <translation id="1531452407274881270">Vous êtes en train de vous connecter à Chromium avec le compte <ph name="USER_EMAIL_ADDRESS"/>. Vous pourrez accéder à vos favoris, à votre historique et aux autres paramètres de tous les appareils auxquels vous êtes connecté.</translation>
 <translation id="1929939181775079593">Chromium ne répond pas. Voulez-vous le relancer maintenant ?</translation>
+<translation id="1414495520565016063">Vous êtes connecté à Chromium.</translation>
 <translation id="3155163173539279776">Relancer Chromium</translation>
 <translation id="2966088006374919794">Chromium nécessite le lancement d'une application externe pour gérer les liens <ph name="SCHEME"/>. Le lien demandé est <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Impossible d'installer la même version de Chromium Frame que celle qui est en cours d'exécution. Veuillez fermer Chromium Frame, puis réessayer.</translation>
@@ -200,7 +201,6 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 Si vous vous connectez quand même, toutes les informations Chromium, comme les favoris, l'historique et les autres paramètres, seront fusionnées avec <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Des téléchargements sont actuellement en cours. Voulez-vous quitter Chromium et annuler les téléchargements ?</translation>
 <translation id="9013262824292842194">Chromium requiert Windows Vista ou Windows XP avec SP2 ou une version ultérieure.</translation>
-<translation id="7673212349590566645">Se connecter à Chromium avec l'adresse <ph name="USER_EMAIL_ADDRESS"/> ?</translation>
 <translation id="1967743265616885482">Nous avons constaté qu'un module du même nom n'est pas compatible avec Chromium.</translation>
 <translation id="4224199872375172890">Chromium est à jour.</translation>
 <translation id="374481098568514319">Cet ordinateur possède déjà une version plus récente des composants Chromium. Veuillez utiliser un programme d'installation plus récent.</translation>

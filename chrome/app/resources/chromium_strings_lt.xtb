@@ -163,6 +163,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="1105130903706696483">„Chromium“ išsijungė netinkamai. Jei norite pakartotinai atidaryti puslapius, kurie buvo atidaryti, spustelėkite „Atkurti&quot;.</translation>
 <translation id="1531452407274881270">Prisijungiate prie „Chromium“ naudodami <ph name="USER_EMAIL_ADDRESS"/> paskyrą. Galėsite pasiekti žymes, istoriją ir kitus nustatymus visuose įrenginiuose, kuriuose esate prisijungę.</translation>
 <translation id="1929939181775079593">„Chromium“ neatsako. Paleisti iš naujo dabar?</translation>
+<translation id="1414495520565016063">Esate prisijungę prie „Chromium“.</translation>
 <translation id="3155163173539279776">Iš naujo paleisti „Chromium“</translation>
 <translation id="2966088006374919794">„Chromium“ reikia paleisti išorinę programą, skirtą „<ph name="SCHEME"/>“ nuorodoms tvarkyti. Nuoroda, dėl kurios pateikta užklausa, yra <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Negalima įdiegti tos pačios „Chromium“ rėmelio versijos, kuri šiuo metu paleista. Uždarykite „Chromium“ rėmelį ir bandykite dar kartą.</translation>
@@ -201,7 +202,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 Prisijungus bet kuriuo būdu, „Chromium“ informacija, pvz., žymės, istorija ir kiti nustatymai, bus sujungta su <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Šiuo metu vykdomi atsisiuntimai. Ar norite išeiti iš „Chromium“ ir atšaukti atsisiuntimus?</translation>
 <translation id="9013262824292842194">„Chromium“ reikalinga „Windows Vista“ ar „Windows XP“ su SP2 ar naujesne versija.</translation>
-<translation id="7673212349590566645">Prisijungti prie „Chromium“ naudojant <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Chromium“.</translation>
 <translation id="4224199872375172890">„Chromium“ naujausios versijos.</translation>
 <translation id="374481098568514319">Šiame kompiuteryje jau yra naujesnės versijos „Chromium“ komponentų. Naudokite naujesnę diegimo programą.</translation>

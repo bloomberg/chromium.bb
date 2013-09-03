@@ -160,6 +160,7 @@
 <translation id="1105130903706696483">‏Chromium درست بسته نشده است. برای باز کردن مجدد صفحاتی که بازکرده بودید، روی &quot;بازیابی&quot; کلیک کنید.</translation>
 <translation id="1531452407274881270">‏‫در حال ورود به سیستم Chromium با استفاده از حساب <ph name="USER_EMAIL_ADDRESS"/> خود هستید. در تمام دستگاه‌هایی که در آنها به سیستم وارد شده‌اید قادر خواهید بود به نشانک‌ها، سابقه و سایر تنظیمات خود دسترسی پیدا کنید.</translation>
 <translation id="1929939181775079593">‏Chromium پاسخ نمی‌دهد. مجدداً راه‌اندازی شود؟</translation>
+<translation id="1414495520565016063">‏شما وارد سیستم Chromium شدید!</translation>
 <translation id="3155163173539279776">‏اجرای مجدد Chromium</translation>
 <translation id="2966088006374919794">‏برای کار با پیوندهای <ph name="SCHEME"/>، Chromium باید برنامهٔ کاربردی خارجی را راه‌اندازی کند. پیوند <ph name="PROTOLINK"/> مورد نیاز است.</translation>
 <translation id="6287463253129672858">‏نمی‌توانید Chromium Frame دارای نسخه مشابه با نسخه در حال اجرا را نصب کنید. لطفاً Chromium Frame را ببندید و دوباره سعی کنید.</translation>
@@ -197,7 +198,6 @@
 ورود به سیستم به هر حال اطلاعات Chromium مانند نشانک‌ها، سابقه، و سایر تنظیمات را در <ph name="ACCOUNT_EMAIL_NEW"/> ادغام می‌کند.</translation>
 <translation id="2739631515503418643">‏دانلودهایی اکنون در حال انجام هستند. آیا می‌خواهید از Chromium خارج شوید و دانلودها را لغو کنید؟</translation>
 <translation id="9013262824292842194">‏Chromium به Windows Vista یا Windows XP دارای SP2 یا بالاتر نیاز دارد.</translation>
-<translation id="7673212349590566645">‏با <ph name="USER_EMAIL_ADDRESS"/> به سیستم Chromium وارد می‌شوید؟</translation>
 <translation id="1967743265616885482">‏یک مدول همنام با Chromium تداخل دارد.</translation>
 <translation id="4224199872375172890">‏Chromium به‌روز است.</translation>
 <translation id="374481098568514319">‏این رایانه نسخه جدیدتری از مؤلفه‌های Chromium را دارد. لطفاً از نصب کننده جدیدتری استفاده کنید.</translation>

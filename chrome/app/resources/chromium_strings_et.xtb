@@ -161,6 +161,7 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="1105130903706696483">Chromium ei sulgunud korralikult. Lehtede taasavamiseks klõpsake käsul Taasta.</translation>
 <translation id="1531452407274881270">Logite Chromiumi sisse kontoga <ph name="USER_EMAIL_ADDRESS"/>. Pääsete kõigis sisselogitud seadmetes juurde oma järjehoidjatele, ajaloole ja muudele seadetele.</translation>
 <translation id="1929939181775079593">Chromium ei reageeri. Kas soovite kohe taaskäivitada?</translation>
+<translation id="1414495520565016063">Olete Chromiumi sisse logitud.</translation>
 <translation id="3155163173539279776">Chromiumi taaskäivitamine</translation>
 <translation id="2966088006374919794">Chromium peab rakenduse <ph name="SCHEME"/> linkide käsitlemiseks käivitama välisrakenduse. Taotletud link on <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Ei saa installida sama Chromium Frame'i versiooni, mis praegu töötab. Sulgege Chromium Frame ja proovige uuesti.</translation>
@@ -199,7 +200,6 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 Kui logite siiski sisse, liidetakse Chromiumi teave, nagu järjehoidjad, ajalugu ja muud seaded, kontoga <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Allalaadimised on pooleli. Kas soovite Chromiumist väljuda ja allalaadimised tühistada?</translation>
 <translation id="9013262824292842194">Chromium nõuab Windows Vistat või Windows XP-d vähemalt hoolduspaketiga SP2.</translation>
-<translation id="7673212349590566645">Kas soovite Chromiumi sisse logida kontoga <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Samanimeline moodul põhjustab teadaolevalt Chromiumiga vastuolusid.</translation>
 <translation id="4224199872375172890">Chromium on ajakohane.</translation>
 <translation id="374481098568514319">Selles arvutis on juba Chromiumi komponentide uuem versioon. Kasutage uuemat installerit.</translation>

@@ -145,11 +145,11 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
         i desmarqueu <ph name="NO_PREFETCH_DESCRIPTION"/>.
         Si això no resol el problema, us recomanem que torneu a seleccionar
         aquesta opció per obtenir un rendiment millorat.</translation>
-<translation id="8333216950301932607">Voleu iniciar la sessió a Chrome amb <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Actualitza &amp;SO Chrome</translation>
 <translation id="8547799825197623713">Menú d'aplicacions de Chrome per a Canary</translation>
 <translation id="5577648424992741236">Aquest equip ja disposa d'una versió més recent de Google Chrome Frame. Si el programari no funciona, desinstal·leu Google Chrome Frame i torneu-ho a provar.</translation>
 <translation id="6326175484149238433">Elimina de Chrome</translation>
+<translation id="2871893339301912279">Teniu la sessió iniciada a Chrome.</translation>
 <translation id="7161904924553537242">Us donem la benvinguda a Google Chrome.</translation>
 <translation id="1686446242839005801">Inicieu la sessió a Chrome amb el compte <ph name="USER_EMAIL_ADDRESS"/>. Podreu accedir a les adreces d'interès, a l'historial i a altres opcions de configuració en tots els dispositius on hàgiu iniciat la sessió.</translation>
 <translation id="4147555960264124640">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Google Chrome a l'administrador corresponent. Les vostres dades de Chrome, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres opcions, s'enllaçaran permanentment amb <ph name="USER_NAME"/>. Podreu suprimir aquestes dades mitjançant el tauler de control de comptes de Google, però no les podreu associar amb un altre compte. <ph name="LEARN_MORE"/></translation>

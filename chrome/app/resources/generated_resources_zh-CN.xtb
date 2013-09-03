@@ -2751,13 +2751,13 @@
 <translation id="5681833099441553262">激活上一个标签页</translation>
 <translation id="6227235786875481728">此文件无法播放。</translation>
 <translation id="192465552172364263">启用此选项后，所有固定位置元素都会创建新的 CSS 堆叠上下文。</translation>
-<translation id="3121147067826817533"><ph name="BEGIN_BOLD"/>您已进入隐身模式<ph name="END_BOLD"/>。您在该窗口中浏览的网页不会显示在浏览器历史记录或搜索记录中，而且在您关闭 &lt;strong&gt;所有&lt;/strong&gt;打开的隐身窗口后，也不会在您的计算机上留下其他痕迹（例如 Cookie）。但是，您创建的书签都会保留下来。
+<translation id="3121147067826817533"><ph name="BEGIN_BOLD"/>您已进入隐身模式<ph name="END_BOLD"/>。您在该窗口中浏览的网页不会显示在浏览器历史记录或搜索记录中，而且在您关闭 &lt;strong&gt;所有&lt;/strong&gt;打开的隐身窗口后，也不会在您的计算机上留下其他痕迹（例如 Cookie）。不过，您下载的所有文件和创建的任何书签都会保留下来。
           <ph name="LINE_BREAK"/>
-          <ph name="BEGIN_BOLD"/>通过隐身模式浏览不会影响其他用户、服务器或软件的行为。请谨防以下方面：<ph name="END_BOLD"/>
+          <ph name="BEGIN_BOLD"/>通过隐身模式浏览不会影响其他用户、服务器或软件的行为。请谨防以下情况：<ph name="END_BOLD"/>
           <ph name="BEGIN_LIST"/>
-            <ph name="BEGIN_LIST_ITEM"/>收集或分享您的相关信息的网站<ph name="END_LIST_ITEM"/>
-            <ph name="BEGIN_LIST_ITEM"/>跟踪您所访问网页的互联网服务提供商或雇主<ph name="END_LIST_ITEM"/>
-            <ph name="BEGIN_LIST_ITEM"/>以提供免费表情图片的名义跟踪按键记录的恶意软件<ph name="END_LIST_ITEM"/>
+            <ph name="BEGIN_LIST_ITEM"/>网站收集或分享您的相关信息<ph name="END_LIST_ITEM"/>
+            <ph name="BEGIN_LIST_ITEM"/>互联网服务提供商或雇主跟踪您访问过哪些网页<ph name="END_LIST_ITEM"/>
+            <ph name="BEGIN_LIST_ITEM"/>以提供免费表情图片为名跟踪按键记录的恶意软件<ph name="END_LIST_ITEM"/>
             <ph name="BEGIN_LIST_ITEM"/>不怀好意的监视者<ph name="END_LIST_ITEM"/>
             <ph name="BEGIN_LIST_ITEM"/>他人的窥视<ph name="END_LIST_ITEM"/>
           <ph name="END_LIST"/>

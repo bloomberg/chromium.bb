@@ -45,7 +45,7 @@
 <translation id="4430435636878359009">停用與這台電腦的遠端連線</translation>
 <translation id="6001953797859482435">Chrome 遠端桌面主機偏好設定</translation>
 <translation id="9188433529406846933">授權</translation>
-<translation id="228809120910082333">請在下方確認您的帳戶和 PIN，允許透過 Chromoting 進行存取。</translation>
+<translation id="228809120910082333">請在下方確認您的帳戶和 PIN，以便授予 Chromoting 存取權限。</translation>
 <translation id="5826423541626112308">Chrome 遠端桌面主機</translation>
 <translation id="2851674870054673688">對方輸入存取碼之後，共用工作階段即會開始。</translation>
 <translation id="5593560073513909978">服務暫時無法使用，請稍後再試。</translation>
@@ -54,11 +54,11 @@
 <translation id="5379087427956679853">Chrome 遠端桌面提供了安全的連線機制，可讓您透過網路與他人共用自己的電腦。您和共用對象都必須執行 Chrome 遠端桌面應用程式，請前往 <ph name="URL"/> 安裝。</translation>
 <translation id="1409991159633941777">找不到 Chrome 遠端桌面所需的部分元件。請確認您執行的是最新版本的 Chrome，然後再試一次。</translation>
 <translation id="174018511426417793">您尚未註冊任何電腦。如要為電腦啟用遠端連線，請在電腦上安裝 Chrome 遠端桌面，然後按一下 [<ph name="BUTTON_NAME"/>]。</translation>
-<translation id="253387295088602549">在安全的連線機制下，允許其他使用者透過網際網路存取您的電腦。</translation>
+<translation id="253387295088602549">在安全連線機制下，允許其他使用者透過網際網路存取您的電腦。</translation>
 <translation id="629730747756840877">帳戶</translation>
 <translation id="8525306231823319788">全螢幕</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (版本過舊)</translation>
-<translation id="3884839335308961732">請在下方確認您的帳戶和 PIN，允許透過 Chrome 遠端桌面進行存取。</translation>
+<translation id="3884839335308961732">請在下方確認您的帳戶和 PIN，以便授予 Chrome 遠端桌面存取權限。</translation>
 <translation id="327263477022142889">想要協助改善 Chrome 遠端桌面嗎？<ph name="LINK_BEGIN"/>請填寫我們的問卷調查<ph name="LINK_END"/>。</translation>
 <translation id="5702987232842159181">已連線的電腦：</translation>
 <translation id="8509907436388546015">桌面整合處理序</translation>

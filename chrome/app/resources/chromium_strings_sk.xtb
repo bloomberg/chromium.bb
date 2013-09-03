@@ -163,6 +163,7 @@ Niektoré funkcie nemusia byť k dispozícii. Zadajte iný adresár profilu aleb
 <translation id="1105130903706696483">Prehliadač Chromium nebol ukončený správne. Ak chcete znova otvoriť stránky, ktoré boli otvorené, kliknite na možnosť Obnoviť.</translation>
 <translation id="1531452407274881270">Do prehliadača Chromium sa prihlasujete pomocou svojho účtu <ph name="USER_EMAIL_ADDRESS"/>. Na všetkých zariadeniach, na ktorých ste prihlásený/-á, získate prístup k svojim záložkám, histórii a ďalším nastaveniam.</translation>
 <translation id="1929939181775079593">Chromium nereaguje. Chcete ho spustiť znova?</translation>
+<translation id="1414495520565016063">Ste prihlásený/-á do prehliadača Chromium.</translation>
 <translation id="3155163173539279776">Znova spustiť prehliadač Chromium</translation>
 <translation id="2966088006374919794">Systém Chromium potrebuje na spracovanie odkazov typu <ph name="SCHEME"/> spustiť externú aplikáciu. Typ požadovaného odkazu: <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Nemôžete nainštalovať rovnakú verziu aplikácie Chromium Frame ako je tá, ktorá je momentálne spustená. Zatvorte aplikáciu Chromium Frame a skúste to znova.</translation>
@@ -200,7 +201,6 @@ Niektoré funkcie nemusia byť k dispozícii. Zadajte iný adresár profilu aleb
 Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chromium, ako sú záložky, história a iné nastavenia, sa priradia k účtu <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Prebieha preberanie. Chcete Chromium ukončiť a preberanie zrušiť?</translation>
 <translation id="9013262824292842194">Prehliadač Chromium vyžaduje systém Windows Vista alebo Windows XP s balíkom SP2 alebo vyšším.</translation>
-<translation id="7673212349590566645">Prihlásiť sa do prehliadača Chromium pomocou účtu <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Zistilo sa, že modul s rovnakým názvom spôsobuje konflikt s prehliadačom Chromium.</translation>
 <translation id="4224199872375172890">Prehliadač Chromium bol aktualizovaný.</translation>
 <translation id="374481098568514319">V tomto počítači sa už používa novšia verzia komponentov aplikácie Chromium. Použite novší inštalátor.</translation>

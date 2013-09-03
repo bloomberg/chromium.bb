@@ -155,11 +155,11 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
         ir panaikinkite „<ph name="NO_PREFETCH_DESCRIPTION"/>“ pasirinkimą.
         Jei tai atlikus problema išlieka, rekomenduojame vėl pasirinkti šią parinktį,
         kad pagerėtų našumas.</translation>
-<translation id="8333216950301932607">Prisijungti prie „Chrome“ naudojant <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Atnaujinti „&amp;Chrome“ OS</translation>
 <translation id="8547799825197623713">„Chrome“ programų paleidimo priemonė („Canary“)</translation>
 <translation id="5577648424992741236">Kompiuteryje jau įdiegta naujesnė „Google Chrome“ rėmelio versija. Jei programinė įranga neveikia, pašalinkite „Google Chrome“ rėmelį ir bandykite dar kartą.</translation>
 <translation id="6326175484149238433">Pašalinti iš „Chrome“</translation>
+<translation id="2871893339301912279">Esate prisijungę prie „Chrome“.</translation>
 <translation id="7161904924553537242">Sveiki atvykę į „Google Chrome“</translation>
 <translation id="1686446242839005801">Prisijungiate prie „Chrome“ naudodami <ph name="USER_EMAIL_ADDRESS"/> paskyrą. Galėsite pasiekti žymes, istoriją ir kitus nustatymus visuose įrenginiuose, kuriuose esate prisijungę.</translation>
 <translation id="4147555960264124640">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Google Chrome“ profilį. „Chrome“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME"/>. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. <ph name="LEARN_MORE"/></translation>

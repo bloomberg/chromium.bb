@@ -161,6 +161,7 @@ Alcune funzioni potrebbero non essere disponibili. Specifica un'altra directory 
 <translation id="1105130903706696483">Chromium non è stato chiuso correttamente. Per riaprire le pagine che avevi aperto, fai clic su Ripristina.</translation>
 <translation id="1531452407274881270">Stai per accedere a Chromium con il tuo account <ph name="USER_EMAIL_ADDRESS"/>. Potrai accedere ai tuoi Preferiti, alla cronologia e ad altre impostazioni su tutti i dispositivi su cui esegui l'accesso.</translation>
 <translation id="1929939181775079593">Chromium non risponde. Riavviarlo ora?</translation>
+<translation id="1414495520565016063">Hai eseguito l'accesso a Chromium.</translation>
 <translation id="3155163173539279776">Riavvia Chromium</translation>
 <translation id="2966088006374919794">Chromium deve avviare un'applicazione esterna per poter gestire i link <ph name="SCHEME"/>. Il link richiesto è <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Impossibile installare una versione di Chromium Frame uguale a quella in esecuzione. Chiudi Chromium Frame e riprova.</translation>
@@ -199,7 +200,6 @@ Alcune funzioni potrebbero non essere disponibili. Specifica un'altra directory 
 Se esegui comunque l'accesso, le informazioni di Chromium come Preferiti, cronologia e altre impostazioni verranno unite a quelle di <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Sono in corso dei download. Vuoi uscire da Chromium e annullare i download?</translation>
 <translation id="9013262824292842194">Chromium richiede Windows Vista o Windows XP con SP2 o versioni successive.</translation>
-<translation id="7673212349590566645">Vuoi accedere a Chromium con l'indirizzo <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Un modulo con lo stesso nome risulta in conflitto con Chromium.</translation>
 <translation id="4224199872375172890">Chromium è aggiornato.</translation>
 <translation id="374481098568514319">Questo computer ha già una versione più recente dei componenti di Chromium. Utilizza un programma di installazione più recente.</translation>

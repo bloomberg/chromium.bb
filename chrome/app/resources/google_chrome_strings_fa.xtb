@@ -145,11 +145,11 @@
         <ph name="ADVANCED_TITLE"/>
          بروید و علامت انتخاب «<ph name="NO_PREFETCH_DESCRIPTION"/>» را بردارید.
         در صورتی که با این کار مشکل حل نشد، توصیه می‌کنیم برای عملکرد پیشرفته، این گزینه را دوباره انتخاب کنید.</translation>
-<translation id="8333216950301932607">‏با <ph name="USER_EMAIL_ADDRESS"/> به سیستم Chrome وارد می‌شوید؟</translation>
 <translation id="61852838583753520">‏به‌روزرسانی سیستم عامل Ch&amp;rome</translation>
 <translation id="8547799825197623713">Chrome App Launcher Canary</translation>
 <translation id="5577648424992741236">‏این رایانه در حال حاضر دارای نسخه جدیدتری از Google Chrome Frame است. اگر نرم‌افزار کار نمی‌کند، لطفاً Google Chrome Frame را حذف نصب کنید و دوباره امتحان کنید.</translation>
 <translation id="6326175484149238433">‏حذف از Chrome</translation>
+<translation id="2871893339301912279">‏شما در حال حاضر وارد سیستم Chrome شده‌اید!</translation>
 <translation id="7161904924553537242">‏به Google Chrome خوش آمدید</translation>
 <translation id="1686446242839005801">‏در حال ورود به سیستم Chrome با استفاده از حساب <ph name="USER_EMAIL_ADDRESS"/> خود هستید. در تمامی دستگاه‌هایی که در آنها به سیستم وارد شده‌اید قادر خواهید بود به نشانک‌ها، سابقه و سایر تنظیمات خود دسترسی پیدا کنید.</translation>
 <translation id="4147555960264124640">‏شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست آن اجازه کنترل بر نمایه Google Chrome خود را می‌دهید. داده‌های Chrome شما شامل برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات برای همیشه به <ph name="USER_NAME"/> مرتبط خواهد شد. می‌توانید این داده‌ها را از طریق داشبورد حساب‌های Google حذف کنید اما نمی‌توانید این داده‌ها را به حساب دیگری مرتبط سازید. <ph name="LEARN_MORE"/></translation>

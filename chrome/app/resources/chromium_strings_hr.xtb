@@ -161,6 +161,7 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
 <translation id="1105130903706696483">Chromium se nije ispravno isključio. Da biste ponovo otvorili stranice koje su bile otvorene, kliknite &quot;Vrati&quot;.</translation>
 <translation id="1531452407274881270">Prijavljujete se u Chromium svojim računom <ph name="USER_EMAIL_ADDRESS"/>. Moći ćete pristupiti svojim oznakama, povijesti i drugim postavkama na svim uređajima na kojima se prijavljujete.</translation>
 <translation id="1929939181775079593">Chromium ne reagira. Ponovo pokrenuti sada?</translation>
+<translation id="1414495520565016063">Prijavljeni ste na Chromium!</translation>
 <translation id="3155163173539279776">Ponovo pokreni Chromium</translation>
 <translation id="2966088006374919794">Chromium mora pokrenuti vanjsku aplikaciju za obradu veza <ph name="SCHEME"/>. Zatražena je veza <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Ne možete instalirati istu verziju aplikacije Chromium Frame koja se trenutačno izvršava. Zatvorite Chromium Frame i pokušajte ponovo.</translation>
@@ -198,7 +199,6 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
 Ako se ipak prijavite, podaci sustava Chromium kao što su oznake, povijest i ostale postavke spojit će se s korisnikom <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Preuzimanja su u tijeku. Želite li napustiti Chromium i otkazati ta preuzimanja?</translation>
 <translation id="9013262824292842194">Chromium zahtijeva sustav Windows Vista ili Windows XP sa servisnim paketom SP2 ili novijim.</translation>
-<translation id="7673212349590566645">Želite li se prijaviti u Chromium e-adresom <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Modul s tim nazivom već je bio u konfliktu s preglednikom Chromium.</translation>
 <translation id="4224199872375172890">Chromium je ažuran.</translation>
 <translation id="374481098568514319">Ovo računalo već ima noviju verziju komponenti Chromiuma. Upotrijebite noviji instalacijski program.</translation>

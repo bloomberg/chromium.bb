@@ -153,11 +153,11 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
         and deselect &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;
         If this does not resolve the issue, we recommend selecting this option
         again for improved performance.</translation>
-<translation id="8333216950301932607">Sign in to Chrome with <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Update the &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Chrome App Launcher Canary</translation>
 <translation id="5577648424992741236">This computer already has a more recent version of Google Chrome Frame. If the software is not working, please uninstall Google Chrome Frame and download it again.</translation>
 <translation id="6326175484149238433">Remove from Chrome</translation>
+<translation id="2871893339301912279">You're signed in to Chrome!</translation>
 <translation id="7161904924553537242">Welcome to Google Chrome</translation>
 <translation id="1686446242839005801">You're signing in to Chrome using your <ph name="USER_EMAIL_ADDRESS"/> account. You will be able to access your bookmarks, history and other settings on all of your signed in devices.</translation>
 <translation id="4147555960264124640">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME"/>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE"/></translation>

@@ -162,6 +162,7 @@
 <translation id="1105130903706696483">Google Chrome በትክክል አልተዘጋም። ከፍተዋቸው የነበሩትን ገፆች ዳግም ለመክፈት እነበረበት መልስ የሚለውን ጠቅ ያድርጉ።</translation>
 <translation id="1531452407274881270">የ<ph name="USER_EMAIL_ADDRESS"/> መለያዎን ተጠቅመው ወደ Chromium እየገቡ ነው። ሁሉንም ዕልባቶችዎ፣ ታሪክዎ እና ሌሎች ቅንብሮችዎን በሁሉም የተገባባቸው መሣሪያዎችዎ ላይ ሊደርሱባቸው ይችላሉ።</translation>
 <translation id="1929939181775079593">Chromium መልስ አይሰጥም። አሁን ዳግም ይጀምር?</translation>
+<translation id="1414495520565016063">ወደ Chromium ገብተዋል!</translation>
 <translation id="3155163173539279776">Chromiumን ዳግም አስጀምር</translation>
 <translation id="2966088006374919794">Chromium የ<ph name="SCHEME"/> አገናኞችን ለማስተናገድ አንድ ውጫዊ መተግበሪያ ማስጀመር አለበት። የተጠየቀው አገናኝ <ph name="PROTOLINK"/> ነው።</translation>
 <translation id="6287463253129672858">አሁን እያሄደ ያለ ተመሳሳዩን የChromium ክፍለ ገጸ ድር ስሪት መጫን አይቻልም። እባክዎ Chromium ክፍለ ገጸ ድርን ይዝጉ እና እንደገና ይሞክሩ።</translation>
@@ -200,7 +201,6 @@
 ዝም ብሎ መግባት እንደ ዕልባቶች፣ ታሪክ እና ሌሎች ቅንብሮች ያሉ የChromium መረጃዎችን ከ<ph name="ACCOUNT_EMAIL_NEW"/> ጋር ያዋህዳቸዋል።</translation>
 <translation id="2739631515503418643">ውርዶች በአሁኑ ጊዜ በሂደት ላይ ናቸው። ከChromium መውጣትና ውርዶቹን መሰረዝ ይፈልጋሉ?</translation>
 <translation id="9013262824292842194">Chromium Windows Vista ወይም Windows XP ከSP2 ወይም ከዚያ በላይ ይፈልጋል።</translation>
-<translation id="7673212349590566645">በ<ph name="USER_EMAIL_ADDRESS"/> ወደ Chromium ይገቡ?</translation>
 <translation id="1967743265616885482">ተመሳሳይ ስም ያለው ሞዱል ከChromium ጋር የሚጋጭ መሆኑ ይታወቃል።</translation>
 <translation id="4224199872375172890">Chromium የተዘመነ ነው።</translation>
 <translation id="374481098568514319">ይህ ኮምፒውተር አስቀድሞ ይበልጥ ቅርብ የሆነ የChromium ምንዝሮች ስሪት አለው። እባክዎ ይበልጥ ቅርብ የሆነ ጫኚ ይጠቀሙ።</translation>

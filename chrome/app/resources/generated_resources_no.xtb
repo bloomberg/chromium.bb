@@ -173,7 +173,7 @@
 <translation id="2231238007119540260">Hvis du sletter et tjenersertifikat, gjenoppretter du de vanlige sikkerhetskontrollene for tjeneren og krever at den bruker et gyldig sertifikat.</translation>
 <translation id="9110235431257073974">Aktiver integrering av Nettbutikken og Files.app.</translation>
 <translation id="8186609076106987817">Tjeneren fant ikke filen.</translation>
-<translation id="2846816712032308263">Muliggjør rask lukking av faner og vinduer – kjøres på fanens onunload js-behandler atskilt fra GUI,</translation>
+<translation id="2846816712032308263">Muliggjør rask lukking av faner og vinduer – kjøres på fanens onunload js-behandler, uavhengig av GUI,</translation>
 <translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> kan ikke laste inn nettsiden fordi det tok <ph name="HOST_NAME"/> for lang tid å svare. Nettstedet kan være nede, eller det kan ha oppstått problemer med Internett-forbindelsen din.</translation>
 <translation id="7624154074265342755">Trådløse nettverk</translation>
 <translation id="2391762656119864333">Opphev</translation>
@@ -1353,7 +1353,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
  • administrere andre innstillinger.
 
 Oppretting av en overvåket bruker oppretter ikke noen Google-konto, og innstillingene og dataene
- følger ikke med til andre enheter med Chrome-synkronisering. For øyeblikket blir en overvåket bruker bare gjeldende på denne enheten via denne installasjonen av Chrome.
+ følger ikke med til andre enheter med Chrome-synkronisering. Innstillingen for overvåket bruker gjelder for øyeblikket bare på denne enheten via denne installasjonen av Chrome.
       
 Etter at du har opprettet en ny overvåket bruker kan du administrere tilhørende innstillinger når som helst fra hvilken som helst enhet, på www.chrome.com/manage.</translation>
 <translation id="2409527877874991071">Skriv inn et nytt navn</translation>
@@ -2516,7 +2516,7 @@ Du må være pålogget for å bruke denne funksjonen.</translation>
 <translation id="5298219193514155779">Tema opprettet av</translation>
 <translation id="6307722552931206656">Google-navnetjenere – <ph name="BEGIN_LINK"/>Finn ut mer<ph name="END_LINK"/></translation>
 <translation id="1047726139967079566">Legg til bokmerke for denne siden</translation>
-<translation id="627097898354643712">Med Trege taster kan brukere trykke på og slippe en modifikatortast, som Shift, Ctrl, eller Alt, og la tasten være aktiv til en annen tast trykkes på.</translation>
+<translation id="627097898354643712">Med Trege taster kan brukere trykke på og slippe en modifikatortast, som Shift, Ctrl, eller Alt, og la tasten være aktiv til det trykkes på en annen tast.</translation>
 <translation id="9020142588544155172">Tjeneren tillot ikke tilkoblingen.</translation>
 <translation id="1800987794509850828">Programtilleggsmegler: <ph name="PLUGIN_NAME"/></translation>
 <translation id="8871696467337989339">Du bruker et kommandolinjeflagg som ikke håndteres: <ph name="BAD_FLAG"/>. Dette vil skade stabiliteten og sikkerheten.</translation>

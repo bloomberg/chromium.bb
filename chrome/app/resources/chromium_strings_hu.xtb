@@ -156,6 +156,7 @@
 <translation id="1105130903706696483">A Chromium nem záródott be megfelelően. A megnyitott alkalmazások visszaállításához kattintson a Visszaállítás lehetőségre.</translation>
 <translation id="1531452407274881270"><ph name="USER_EMAIL_ADDRESS"/> fiók használatával jelentkezik be a Chromiumba. Könyvjelzőit, előzményeit és más beállításait minden olyan eszközön elérheti majd, amelyen bejelentkezett.</translation>
 <translation id="1929939181775079593">A Chromium nem válaszol. Újraindítja most?</translation>
+<translation id="1414495520565016063">Bejelentkezett a Chromiumba.</translation>
 <translation id="3155163173539279776">A Chromium újraindítása</translation>
 <translation id="2966088006374919794">A Chromiumnak külső alkalmazást kell indítania a(z) <ph name="SCHEME"/> linkek kezeléséhez. A kért link: <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Nem lehet ugyanazt a Chromium Frame-verziót telepíteni, amely jelenleg is fut. Zárja be a Chromium Frame-et, és próbálja újra.</translation>
@@ -194,7 +195,6 @@
 Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/> fiókkal az olyan Chromium-adatokat, mint a könyvjelzők, az előzmények és más beállítások.</translation>
 <translation id="2739631515503418643">Folyamatban van több letöltés. Szeretne kilépni a Chromiumból, és megszakítja a letöltéseket?</translation>
 <translation id="9013262824292842194">A Chromium futtatásához Windows Vista, illetve Windows XP SP2 vagy újabb verzió szükséges.</translation>
-<translation id="7673212349590566645">Bejelentkezik a Chromiumba a következő címmel: <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Egy ugyanilyen nevű modul ismereteink szerint ütközik a Chromiummal.</translation>
 <translation id="4224199872375172890">A Chromium naprakész.</translation>
 <translation id="374481098568514319">Ez a számítógép már rendelkezik a Chromium komponensek egy újabb változatával. Kérjük, használjon újabb telepítőt.</translation>

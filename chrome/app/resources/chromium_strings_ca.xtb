@@ -161,6 +161,7 @@
 <translation id="1105130903706696483">Chromium no s'ha tancat correctament. Per tornar a obrir les pàgines que teníeu obertes, feu clic a Restaura.</translation>
 <translation id="1531452407274881270">Inicieu la sessió a Chromium amb el compte <ph name="USER_EMAIL_ADDRESS"/>. Podreu accedir a les adreces d'interès, a l'historial i a altres configuracions que tingueu en tots els dispositius on inicieu la sessió.</translation>
 <translation id="1929939181775079593">Chromium no respon. Voleu tornar-lo a iniciar ara?</translation>
+<translation id="1414495520565016063">Teniu la sessió iniciada a Chromium.</translation>
 <translation id="3155163173539279776">Torna a iniciar Chromium</translation>
 <translation id="2966088006374919794">Chromium necessita iniciar una aplicació externa per gestionar els enllaços <ph name="SCHEME"/>. L'enllaç sol·licitat és <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">No es pot instal·lar la mateixa versió de Chromium Frame que s'està executant actualment. Tanqueu Chromium Frame i torneu-ho a provar.</translation>
@@ -198,7 +199,6 @@
 En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name="ACCOUNT_EMAIL_NEW"/> la informació de Chromium com ara adreces d'interès, historial i altres configuracions.</translation>
 <translation id="2739631515503418643">En aquests moments hi ha baixades en curs. Voleu sortir de Chromium i cancel·lar les baixades?</translation>
 <translation id="9013262824292842194">Chromium requereix Windows Vista o Windows XP amb SP2 o superior.</translation>
-<translation id="7673212349590566645">Voleu iniciar la sessió a Chromium amb <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Se sap que un mòdul amb el mateix nom entra en conflicte amb Chromium.</translation>
 <translation id="4224199872375172890">Chromium està actualitzat.</translation>
 <translation id="374481098568514319">Aquest equip ja disposa d'una versió més recent dels components de Chromium. Feu servir un instal·lador més recent.</translation>

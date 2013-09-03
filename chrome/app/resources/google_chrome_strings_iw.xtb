@@ -145,11 +145,11 @@
         ובטל את הבחירה באפשרות &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;
         אם פעולה זו אינה פותרת את הבעיה, מומלץ לבחור באפשרות זו שוב
         לקבלת ביצועים משופרים.</translation>
-<translation id="8333216950301932607">‏האם להיכנס ל-Chrome באמצעות <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">‏עדכן את מערכת ההפעלה של Chrome&amp;</translation>
 <translation id="8547799825197623713">‏מפעיל היישומים של Chrome - קאנארי</translation>
 <translation id="5577648424992741236">‏במחשב זה מותקנת כבר גירסה מתקדמת יותר של Google Chrome Frame. אם התוכנה אינה פועלת, הסר את ההתקנה של Google Chrome Frame ונסה שוב.</translation>
 <translation id="6326175484149238433">‏הסר מ-Chrome</translation>
+<translation id="2871893339301912279">‏נכנסת ל-Chrome!</translation>
 <translation id="7161904924553537242">‏ברוך הבא ל-Google Chrome</translation>
 <translation id="1686446242839005801">‏אתה נכנס ל-Chrome באמצעות חשבון <ph name="USER_EMAIL_ADDRESS"/> שלך. תוכל לגשת אל הסימניות, ההיסטוריה והגדרות אחרות בכל המכשירים שבהם אתה מחובר לחשבון.</translation>
 <translation id="4147555960264124640">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Chrome. הנתונים שלך ב-Chrome, כגון יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME"/>. תוכל למחוק את הנתונים האלה באמצעות מרכז השליטה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר. <ph name="LEARN_MORE"/></translation>

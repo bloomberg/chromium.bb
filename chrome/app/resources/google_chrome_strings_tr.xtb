@@ -145,11 +145,11 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
         öğesine giderek &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot; seçeneğinin işaretini kaldırın.
         Bu işlem sorunu çözmüyorsa, performansın iyileşmesi için bu seçeneği
         tekrar işaretlemenizi öneririz.</translation>
-<translation id="8333216950301932607"><ph name="USER_EMAIL_ADDRESS"/> ile Chrome'da oturum açılsın mı?</translation>
 <translation id="61852838583753520">&amp;Chrome OS'u güncelle</translation>
 <translation id="8547799825197623713">Chrome Uygulama Başlatıcısı Canary</translation>
 <translation id="5577648424992741236">Bu bilgisayarda Google Chrome Frame'in daha yeni bir sürümü zaten var. Yazılım çalışmıyorsa, lütfen Google Chrome Frame'in yüklemesini kaldırın ve tekrar deneyin.</translation>
 <translation id="6326175484149238433">Chrome'dan kaldır</translation>
+<translation id="2871893339301912279">Chrome'da oturum açtınız!</translation>
 <translation id="7161904924553537242">Google Chrome'a Hoş Geldiniz</translation>
 <translation id="1686446242839005801"><ph name="USER_EMAIL_ADDRESS"/> hesabınızı kullanarak Chrome'da oturum açıyorsunuz. Oturum açtığınız tüm cihazlardan yer işaretlerinize, geçmişinize ve diğer ayarlara erişebileceksiniz.</translation>
 <translation id="4147555960264124640">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Google Chrome profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chrome verileriniz kalıcı olarak <ph name="USER_NAME"/> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz.<ph name="LEARN_MORE"/></translation>

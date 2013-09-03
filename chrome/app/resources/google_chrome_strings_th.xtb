@@ -146,11 +146,11 @@
         และยกเลิกการเลือก &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot;
         หากการกระทำดังกล่าวไม่ช่วยแก้ไขปัญหา เราขอแนะนำให้เลือกตัวเลือกนี้
         อีกครั้งเพื่อให้มีประสิทธิภาพในการทำงานที่ดียิ่งขึ้น</translation>
-<translation id="8333216950301932607">หากต้องการลงชื่อเข้าใช้ Chrome ด้วย <ph name="USER_EMAIL_ADDRESS"/></translation>
 <translation id="61852838583753520">อัปเดต &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Chrome App Launcher Canary</translation>
 <translation id="5577648424992741236">คอมพิวเตอร์เครื่องนี้มี Google Chrome Frame รุ่นใหม่กว่าแล้ว หากซอฟต์แวร์ไม่ทำงาน โปรดถอนการติดตั้ง Google Chrome Frame แล้วลองใหม่อีกครั้ง</translation>
 <translation id="6326175484149238433">นำออกจาก Chrome</translation>
+<translation id="2871893339301912279">คุณได้ลงชื่อเข้าใช้ Chrome แล้ว!</translation>
 <translation id="7161904924553537242">ยินดีต้อนรับสู่ Google Chrome</translation>
 <translation id="1686446242839005801">คุณกำลังลงชื่อเข้าใช้ Chrome โดยใช้บัญชี <ph name="USER_EMAIL_ADDRESS"/> ของคุณ คุณจะสามารถเข้าถึงบุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดที่ลงชื่อเข้าใช้</translation>
 <translation id="4147555960264124640">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่จัดการ และให้การควบคุมระดับผู้ดูแลระบบของบัญชีดังกล่าวเหนือโปรไฟล์ Google Chrome ของคุณ ข้อมูล Chrome เช่น แอป บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะเชื่อมโยงอย่างถาวรกับ <ph name="USER_NAME"/> คุณจะสามารถลบข้อมูลนี้ผ่านทางแผงควบคุมบัญชี Google แต่คุณจะไม่สามารถเชื่อมโยงข้อมูลนี้กับบัญชีอื่น <ph name="LEARN_MORE"/></translation>

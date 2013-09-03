@@ -150,11 +150,11 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
         và bỏ chọn &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;
         Nếu thao tác này không giải quyết được sự cố, chúng tôi khuyên bạn chọn lại tùy chọn này
         để cải thiện hiệu suất.</translation>
-<translation id="8333216950301932607">Đăng nhập vào Chrome bằng <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Cập nhật &amp;hệ điều hành Chrome</translation>
 <translation id="8547799825197623713">Canary trình khởi chạy ứng dụng Chrome</translation>
 <translation id="5577648424992741236">Máy tính này đã có phiên bản Google Chrome Frame mới hơn. Nếu phần mềm hiện không hoạt động, vui lòng gỡ cài đặt Google Chrome Frame và thử lại.</translation>
 <translation id="6326175484149238433">Xóa khỏi Chrome</translation>
+<translation id="2871893339301912279">Bạn đã đăng nhập vào Chrome!</translation>
 <translation id="7161904924553537242">Chào mừng bạn đến với Google Chrome</translation>
 <translation id="1686446242839005801">Bạn đang đăng nhập vào Chrome bằng tài khoản <ph name="USER_EMAIL_ADDRESS"/>. Bạn sẽ có thể truy cập vào dấu trang, lịch sử và các cài đặt khác trên tất cả các thiết bị mà bạn đã đăng nhập.</translation>
 <translation id="4147555960264124640">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình trên Google Chrome của bạn. Dữ liệu Chrome của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME"/>. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. <ph name="LEARN_MORE"/></translation>

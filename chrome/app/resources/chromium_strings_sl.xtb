@@ -163,6 +163,7 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="1105130903706696483">Chromium se ni pravilno zaustavil. Če želite odpreti strani, ki so bile odprte, kliknite »Obnovi«.</translation>
 <translation id="1531452407274881270">V Chromium se boste prijavili z računom <ph name="USER_EMAIL_ADDRESS"/>. Dostopali boste lahko do svojih zaznamkov, zgodovine in drugih nastavitev v vseh napravah, v katere ste prijavljeni.</translation>
 <translation id="1929939181775079593">Chromium se ne odziva. Ga želite znova zagnati?</translation>
+<translation id="1414495520565016063">Prijavljeni ste v Chromium.</translation>
 <translation id="3155163173539279776">Znova zaženite Chromium</translation>
 <translation id="2966088006374919794">Chromium mora zagnati zunanji program za obdelavo povezav <ph name="SCHEME"/>. Zahtevana povezava je <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Ni mogoče namestiti iste različice vtičnika Chromium Frame, ki se trenutno izvaja. Zaprite Chromium Frame in poskusite znova.</translation>
@@ -201,7 +202,6 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 Če se boste kljub temu prijavili, se bodo podatki iz Chromiuma, na primer zaznamki, zgodovina in druge nastavitve, združili v računu <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Trenutno potekajo prenosi. Ali želite zapreti Chromium in preklicati prenose?</translation>
 <translation id="9013262824292842194">Za Chromium potrebujete operacijski sistem Windows Vista ali Windows XP s servisnim paketom SP2 ali novejšim.</translation>
-<translation id="7673212349590566645">Se želite v Chromium prijaviti z e-poštnim naslovom <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Modul z istim imenom je že bil v sporu s Chromiumom.</translation>
 <translation id="4224199872375172890">Chromium je posodobljen.</translation>
 <translation id="374481098568514319">Ta računalnik že ima novejšo različico Chromiumovih komponent. Uporabite novejši namestitveni program.</translation>

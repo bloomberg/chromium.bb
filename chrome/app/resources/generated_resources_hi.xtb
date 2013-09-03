@@ -280,7 +280,7 @@
 <translation id="4058922952496707368">कुंजी &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="2647434099613338025">भाषा जोड़ें</translation>
 <translation id="5078796286268621944">गलत पिन</translation>
-<translation id="3480411814272635771">टैब के निष्क्रिय हो जाने की पुनरावृत्तियां</translation>
+<translation id="3480411814272635771">टैब के प्रयोग में नहीं हो जाने की पुनरावृत्तियां</translation>
 <translation id="8487678622945914333">ज़ूम इन</translation>
 <translation id="3846593650622216128">ये सेटिंग किसी एक्सटेंशन द्वारा लागू की गई हैं.</translation>
 <translation id="2972557485845626008">फ़र्मवेयर</translation>
@@ -336,7 +336,7 @@
 <translation id="8702516222444523256">यह सुनिश्चित करने के लिए सक्षम करें कि एप्लिकेशन फ़ोल्डर के अंतर्गत एप्लिकेशन लॉन्चर के लिए एक OSX एप्लिकेशन बंडल मौजूद है.</translation>
 <translation id="5245965967288377800">Wimax नेटवर्क</translation>
 <translation id="40027638859996362">शब्द स्थानांतरण</translation>
-<translation id="6303187936217840894">आपकी ब्राउज़र सेटिंग अपने मूल डिफ़ॉल्ट रूप में पुनर्स्थापित कर दी जाएंगी. इससे आपका मुखपृष्ठ, नया टैब पृष्ठ और खोज इंजन रीसेट होगा, आपका एक्सटेंशन अक्षम हो जाएगा औऱ सभी टैब अनपिन हो जाएंगी. इससे अन्य अस्थायी और संचित डेटा, जैसे कुकीज़, सामग्री और साइट डेटा भी हट जाएगा.</translation>
+<translation id="6303187936217840894">आपकी ब्राउज़र सेटिंग अपने मूल डिफ़ॉल्ट रूप में पुनर्स्थापित कर दी जाएंगी. इससे आपका मुख्यपृष्ठ, नया टैब पृष्ठ और खोज इंजन रीसेट होगा, आपका एक्सटेंशन अक्षम हो जाएगा औऱ सभी टैब अनपिन हो जाएंगी. इससे अन्य अस्थायी और संग्रहित डेटा, जैसे कुकीज़, सामग्री और साइट डेटा भी हट जाएगा.</translation>
 <translation id="6928441285542626375">TCP फ़ास्ट ओपन सक्षम करें</translation>
 <translation id="7792388396321542707">साझाकरण रोकें</translation>
 <translation id="5463275305984126951"><ph name="LOCATION"/> का इंडेक्स</translation>
@@ -510,7 +510,7 @@
 <translation id="4865571580044923428">अपवाद प्रबंधित करें...</translation>
 <translation id="3716615839203649375">अनुमति दें</translation>
 <translation id="4559767610552730302">बोके</translation>
-<translation id="8884532952272649884">वेबपृष्ठ लोड करने में असमर्थ है क्‍योंकि आपका उपकरण निष्क्रिय या
+<translation id="8884532952272649884">वेबपृष्ठ लोड करने में असमर्थ है क्‍योंकि आपका उपकरण प्रयोग में नहीं या
           हाइबरनेट मोड में चला गया है. जब ऐसा होता है, तो नेटवर्क कनेक्‍शन बंद
           हो जाते हैं और नए नेटवर्क अनुरोध विफल हो जाते हैं. पृष्ठ को पुन: लोड करने से इसका समाधान
           हो जाएगा.</translation>
@@ -532,7 +532,7 @@
 <translation id="2587922270115112871">पर्यवेक्षित उपयोगकर्ता बनाने से Google खाता नहीं बनता, और उसकी सेटिंग और डेटा
     Chrome समन्वयन के साथ अन्य उपकरणों पर उसका अनुसरण नहीं करेंगे. पर्यवेक्षित उपयोगकर्ता केवल इस उपकरण पर लागू होता है.</translation>
 <translation id="4497097279402334319">नेटवर्क से कनेक्ट करने में विफल.</translation>
-<translation id="7342729285348293164">अपनी वैयक्तिकृत ब्राउज़र सुविधाओं को वेब पर सहेजने और उन तक किसी भी कंप्‍यूटर के <ph name="PRODUCT_NAME"/> से पहुंचने के लिए अपने Google खाते के साथ <ph name="PRODUCT_NAME"/> में प्रवेश करें. आप स्‍वचालित रूप से अपनी पसंदीदा Google सेवाओं में भी प्रवेश हो जाएंगे.</translation>
+<translation id="7342729285348293164">अपनी व्यक्तिगत ब्राउज़र सुविधाओं को वेब पर सहेजने और उन तक किसी भी कंप्‍यूटर के <ph name="PRODUCT_NAME"/> से पहुंचने के लिए अपने Google खाते के साथ <ph name="PRODUCT_NAME"/> में प्रवेश करें. आप स्‍वचालित रूप से अपनी पसंदीदा Google सेवाओं में भी प्रवेश हो जाएंगे.</translation>
 <translation id="2542049655219295786">Google तालिका</translation>
 <translation id="3899879303189199559">एक वर्ष से अधिक समय से ऑफ़लाइन</translation>
 <translation id="5303618139271450299">यह वेबपृष्ठ नहीं मिला</translation>
@@ -1098,7 +1098,7 @@
 <translation id="7643817847124207232">इंटरनेट कनेक्शन समाप्त हो गया है.</translation>
 <translation id="4871210892959306034">$1 KB</translation>
 <translation id="6820953843681845914">अपने कंप्यूटर के फ़ोटो, संगीत, और अन्य मीडिया बदलें.</translation>
-<translation id="932327136139879170">मुखपृष्ठ</translation>
+<translation id="932327136139879170">मुख्यपृष्ठ</translation>
 <translation id="3561204836318837461">BSSID:</translation>
 <translation id="2560794850818211873">वीडियो URL की प्र&amp;तिलिपि बनाएं</translation>
 <translation id="2981113813906970160">बड़ा माउस कर्सर दिखाएं</translation>
@@ -1976,7 +1976,7 @@
 <translation id="2681441671465314329">संचय खाली करें</translation>
 <translation id="7317211898702333572">आपको chrome://history पर आपके साइन-इन किए गए उपकरणों की इतिहास प्रविष्टियां देखने और हटाने देता है.</translation>
 <translation id="7885253890047913815">हाल ही के गंतव्य</translation>
-<translation id="3646789916214779970">डिफ़ॉल्ट थीम पर रीसेट करें</translation>
+<translation id="3646789916214779970">सामान्य थीम पर रीसेट करें</translation>
 <translation id="5196749479074304034">समन्वयन सेटिंग में इतिहास सक्षम करें. इससे आपके लिखे हुए URL का इतिहास तथा नेविगेशन इतिहास अन्य क्लाइंट से समन्वयित हो जाता है ताकि ऑम्निबॉक्स स्वत:-पूर्णता और इतिहास UI में सहायता मिल सके.</translation>
 <translation id="151922265591345427">1024</translation>
 <translation id="8867761716563102323">शिपिंग विवरण सबमिट किया गया</translation>
@@ -1988,7 +1988,7 @@
         <ph name="HOST_NAME"/>
         से कनेक्शन प्रयास
         अस्वीकृत कर दिया गया था.  हो सकता है कि वेबसाइट कार्य नहीं कर रही हो, या आपका नेटवर्क ठीक तरह से कॉन्फ़िगर न किया गया हो.</translation>
-<translation id="1708338024780164500">(निष्क्रिय)</translation>
+<translation id="1708338024780164500">(प्रयोग में नहीं)</translation>
 <translation id="6896758677409633944">प्रतिलिपि बनाएं</translation>
 <translation id="8986362086234534611">भूल जाएं</translation>
 <translation id="5260508466980570042">क्षमा करें, आपका ईमेल या पासवर्ड सत्‍यापित नहीं हो सका. कृपया पुनः प्रयास करें.</translation>
@@ -2161,7 +2161,7 @@
 <translation id="5299682071747318445">सभी डेटा आपके समन्वयन पासफ़्रेज़ के साथ एन्क्रिप्ट किया जाएगा</translation>
 <translation id="4041408658944722952">ऑम्निबॉक्‍स स्‍वत: पूर्ण में, HistoryQuickProvider से आने वाले मिलानों को इनलाइन करने की अनुमति दें.</translation>
 <translation id="1383876407941801731">खोज</translation>
-<translation id="6352623521404034263">अपनी वैयक्तिकृत ब्राउज़र सुविधाओं को वेब पर सहेजने और उन्हें किसी भी उपकरण पर <ph name="PRODUCT_NAME"/> से एक्सेस करने के लिए, अपने Google खाते से <ph name="PRODUCT_NAME"/> में प्रवेश करें. आप अपनी पसंदीदा Google सेवाओं में भी स्वचालित रूप से प्रवेश हो जाएंगे.</translation>
+<translation id="6352623521404034263">अपनी व्यक्तिगत ब्राउज़र सुविधाओं को वेब पर सहेजने और उन्हें किसी भी उपकरण पर <ph name="PRODUCT_NAME"/> से एक्सेस करने के लिए, अपने Google खाते से <ph name="PRODUCT_NAME"/> में प्रवेश करें. आप अपनी पसंदीदा Google सेवाओं में भी स्वचालित रूप से प्रवेश हो जाएंगे.</translation>
 <translation id="5441840996921578760">बटुआ आपकी क्रेडिट जानकारी को व्यापारियों के साथ कभी साझा नहीं करता. यह जानते हुए भरोसे के साथ खरीदारी करें कि आपकी क्रेडिट कार्ड ऑनलाइन संरक्षित है.</translation>
 <translation id="23362385947277794">पृष्ठभूमि रंग और चित्र</translation>
 <translation id="2120316813730635488">एक्सटेंशन इंस्टॉल किए जाने की पुनरावृत्तियां</translation>
@@ -2312,7 +2312,7 @@
 <translation id="533433379391851622">अपेक्षित संस्करण &quot;<ph name="EXPECTED_VERSION"/>&quot; है, लेकिन संस्करण &quot;<ph name="NEW_ID"/>&quot; था.</translation>
 <translation id="8874373372646582629">ठीक है, समझ लिया</translation>
 <translation id="1847961471583915783">जब मैं अपना ब्राउज़र बंद करूं, तब कुकी और अन्य साइट एवं प्लग-इन डेटा साफ़ करें</translation>
-<translation id="8870318296973696995">मुखपृष्ठ</translation>
+<translation id="8870318296973696995">मुख्यपृष्ठ</translation>
 <translation id="6659594942844771486">टैब</translation>
 <translation id="8283475148136688298">&quot;<ph name="DEVICE_NAME"/>&quot; से कनेक्ट करते समय प्रमाणीकरण कोड अस्वीकार हो गया.</translation>
 <translation id="6194025908252121648">&quot;<ph name="IMPORT_ID"/>&quot; आईडी वाला एक्सटेंशन आयात करने में असमर्थ रहे क्योंकि यह एक साझा मॉड्यूल नहीं है.</translation>
@@ -2635,7 +2635,7 @@
 <translation id="2391419135980381625">मानक फ़ॉन्ट</translation>
 <translation id="5455374756549232013">खराब नीति टाइमस्टैम्प</translation>
 <translation id="8652139471850419555">पसंदीदा नेटवर्क</translation>
-<translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (डिफ़ॉल्ट)</translation>
+<translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (सामान्य)</translation>
 <translation id="5392544185395226057">स्‍थानीय क्‍लाइंट के लिए समर्थन सक्षम करें.</translation>
 <translation id="5400640815024374115">विश्वसनीय प्लेटफ़ॉर्म मॉड्यूल (TPM) चिप अक्षम या अनुपस्‍थित है.</translation>
 <translation id="2025623846716345241">पुनः लोड की पुष्टि करें</translation>
@@ -2759,7 +2759,7 @@
 <translation id="7410344089573941623">यदि <ph name="HOST"/> आपके कैमरे और माइक्रोफ़ोन को एक्सेस करना चाहे, तो पूछें</translation>
 <translation id="3480892288821151001">विंडो को बाईं ओर डॉक करें</translation>
 <translation id="3031417829280473749">एजेंट X</translation>
-<translation id="2893168226686371498">डिफ़ॉल्ट ब्राउज़र</translation>
+<translation id="2893168226686371498">सामान्य ब्राउज़र</translation>
 <translation id="2435457462613246316">पासवर्ड दिखाएं</translation>
 <translation id="2350182423316644347">एप्लिकेशन आरंभ किया जा रहा है...</translation>
 <translation id="132101382710394432">पसंदीदा नेटवर्क...</translation>
@@ -2789,7 +2789,7 @@
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> वर्तमान में आपका डिफ़ॉल्ट ब्राउज़र नहीं है.</translation>
 <translation id="4068506536726151626">इस पृष्ठ में आपकी स्थिति ट्रैक कर रहे निम्न साइटों के तत्व हैं:</translation>
 <translation id="4220128509585149162">क्रैश</translation>
-<translation id="8798099450830957504">डिफ़ॉल्ट</translation>
+<translation id="8798099450830957504">सामान्य</translation>
 <translation id="5989320800837274978">न तो कोई फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर और न ही कोई .pac स्क्रिप्ट URL निर्दिष्ट किए गए हैं.</translation>
 <translation id="1640283014264083726">RSA एन्क्रिप्शन के साथ PKCS #1 MD4</translation>
 <translation id="7382100469876511275">लॉग कैप्चर करना और अपलोड करना अक्षम है.</translation>
@@ -2855,7 +2855,7 @@
 
 <ph name="EXTENSION_FILE"/>￼</translation>
 <translation id="499165176004408815">उच्च कंट्रास्ट मोड उपयोग करें</translation>
-<translation id="2928940441164925372">निष्पादन-संबंधी मेट्रिक्स और ईवेंट का निष्क्रिय एकत्रीकरण सक्षम करें और इस डेटा को ग्राफ़िकल फ़ैशन में देखने का विकल्प प्रदान करें. डेटा देखने के लिए, chrome://performance पर जाएं.</translation>
+<translation id="2928940441164925372">निष्पादन-संबंधी मेट्रिक्स और ईवेंट का प्रयोग में नहीं एकत्रीकरण सक्षम करें और इस डेटा को ग्राफ़िकल फ़ैशन में देखने का विकल्प प्रदान करें. डेटा देखने के लिए, chrome://performance पर जाएं.</translation>
 <translation id="3289856944988573801">अपडेट की जांच करने के लिए, कृपया Ethernet या Wi-Fi उपयोग करें.</translation>
 <translation id="7248671827512403053">एप्लिकेशन</translation>
 <translation id="1241100329754769291"><ph name="CLOUD_PRINT_NAME"/> आपको इस कंप्‍यूटर के प्रिंटर पर कहीं से भी पहुंचने देता है. सक्षम करने के लिए क्लिक करें.</translation>
@@ -3275,7 +3275,7 @@
 <translation id="7925686952655276919">समन्‍वयन के लिए मोबाइल डेटा का उपयोग न करें</translation>
 <translation id="6503077044568424649">सबसे अधिक देखे गए</translation>
 <translation id="9016164105820007189">&quot;<ph name="DEVICE_NAME"/>&quot; से कनेक्‍ट हो रहा है.</translation>
-<translation id="7168109975831002660">न्यूनतम फ़ॉन्ट आकार</translation>
+<translation id="7168109975831002660">न्यूनतम अक्षरों का आकार</translation>
 <translation id="7070804685954057874">प्रत्यक्ष इनपुट</translation>
 <translation id="2631006050119455616">सहेजा गया</translation>
 <translation id="5175870427301879686"><ph name="URL"/> आपके स्थानीय कंप्यूटर पर स्थायी रूप से डेटा संग्रहीत करना चाहता है.</translation>
@@ -3766,7 +3766,7 @@
 <translation id="1254593899333212300">प्रत्यक्ष इंटरनेट कनेक्‍शन</translation>
 <translation id="6107012941649240045">इसको जारी</translation>
 <translation id="6483805311199035658"><ph name="FILE"/> खोला जा रहा है...</translation>
-<translation id="940425055435005472">फ़ॉन्ट आकार:</translation>
+<translation id="940425055435005472">अक्षरों का आकार:</translation>
 <translation id="494286511941020793">प्रॉक्सी कॉन्फ़िगरेशन सहायता</translation>
 <translation id="2765217105034171413">छोटा</translation>
 <translation id="9154176715500758432">इस पृष्ठ पर बनें रहें</translation>
@@ -4496,7 +4496,7 @@
 <translation id="7607002721634913082">रोका गया</translation>
 <translation id="7928710562641958568">उपकरण निकालें</translation>
 <translation id="8729518820755801792">Chrome इस URL को नहीं खोल सकता.</translation>
-<translation id="480990236307250886">मुखपृष्ठ खोलें</translation>
+<translation id="480990236307250886">मुख्यपृष्ठ खोलें</translation>
 <translation id="6380143666419481200">स्वीकार करें और जारी रखें</translation>
 <translation id="713122686776214250">पृ&amp;ष्ठ जोड़ें...</translation>
 <translation id="4816492930507672669">पृष्ठ में फ़िट करें</translation>
@@ -4679,7 +4679,7 @@
 <translation id="8323056805209852648">Google बटुआ आभासी ऑनलाइन कार्ड</translation>
 <translation id="2501190902826909027">मौखिक फ़ीडबैक अक्षम किए जा रहे हैं.</translation>
 <translation id="1984603991036629094">आर्मेनियाई फ़ोनेटिक कीबोर्ड</translation>
-<translation id="6756161853376828318"><ph name="PRODUCT_NAME"/> को मेरा डिफ़ॉल्ट ब्राउज़र बनाएं</translation>
+<translation id="6756161853376828318"><ph name="PRODUCT_NAME"/> को मेरा सामान्य ब्राउज़र बनाएं</translation>
 <translation id="3046910703532196514">वेबपृष्ठ, पूर्ण</translation>
 <translation id="5316716239522500219">मॉनीटर मिरर करें</translation>
 <translation id="9112614144067920641">कृपया नया पिन चुनें.</translation>
@@ -4692,7 +4692,7 @@
 <translation id="9147392381910171771">&amp;विकल्प</translation>
 <translation id="1803557475693955505">पृष्ठभूमि पृष्ठ '<ph name="BACKGROUND_PAGE"/>' को लोड नहीं कर सका.</translation>
 <translation id="8942091167399397362">नए लॉक एनिमेशन अक्षम करता है.</translation>
-<translation id="3633997706330212530">आप वैकल्पिक रूप से इन सेवाओं को निष्क्रिय कर सकते हैं.</translation>
+<translation id="3633997706330212530">आप वैकल्पिक रूप से इन सेवाओं को प्रयोग में नहीं कर सकते हैं.</translation>
 <translation id="8713130696108419660">खराब आरंभिक हस्ताक्षर</translation>
 <translation id="4335713051520279344">यह कंप्यूटर 1 सेकंड में रीसेट हो जाएगा.
 अन्वेषण जारी रखने के लिए कोई भी कुंजी दबाएं.</translation>

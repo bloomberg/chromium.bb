@@ -153,11 +153,11 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
         och avmarkera <ph name="NO_PREFETCH_DESCRIPTION"/>.
         Om detta inte avhjälper problemet rekommenderar vi att du markerar det 
         här alternativet igen så att funktionaliteten förbättras.</translation>
-<translation id="8333216950301932607">Vill du logga in i Chrome med <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Uppdatera &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Startprogrammet för appar i Chrome Canary</translation>
 <translation id="5577648424992741236">Det finns redan en senare version av Google Chrome Frame på den här datorn. Om programmet inte fungerar avinstallerar du Google Chrome Frame och försöker igen.</translation>
 <translation id="6326175484149238433">Ta bort från Chrome</translation>
+<translation id="2871893339301912279">Du är inloggad i Chrome.</translation>
 <translation id="7161904924553537242">Välkommen till Google Chrome</translation>
 <translation id="1686446242839005801">Du loggar in i Chrome med ditt <ph name="USER_EMAIL_ADDRESS"/>-konto. Du kommer att kunna komma åt dina bokmärken, historik och andra inställningar på alla enheter där du är inloggad.</translation>
 <translation id="4147555960264124640">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Google Chrome-profil. Dina Chrome-uppgifter, t.ex. dina appar, bokmärken, din historik, dina lösenord och andra inställningar, knyts permanent till <ph name="USER_NAME"/>. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dessa uppgifter till ett annat konto. <ph name="LEARN_MORE"/></translation>

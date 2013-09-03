@@ -145,11 +145,11 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
         og fjern markeringen af &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;
         Hvis dette ikke løser problemet, bør du markere denne valgmulighed
         igen for at forbedre effektiviteten.</translation>
-<translation id="8333216950301932607">Vil du logge ind på Chrome med <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Opdater &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Chrome-applikationslisten for Canary</translation>
 <translation id="5577648424992741236">Denne computer har allerede en nyere version af Google Chrome Frame. Hvis programmet ikke virker, skal du afinstallere Google Chrome Frame og downloade det igen.</translation>
 <translation id="6326175484149238433">Fjern fra Chrome</translation>
+<translation id="2871893339301912279">Du er logget ind på Chrome.</translation>
 <translation id="7161904924553537242">Velkommen til Google Chrome</translation>
 <translation id="1686446242839005801">Du logger ind på Chrome med kontoen <ph name="USER_EMAIL_ADDRESS"/>. Du har adgang til dine bogmærker, din historik og andre indstillinger på alle de enheder, hvor du er logget ind.</translation>
 <translation id="4147555960264124640">Du er ved at logge ind med en administreret konto og give dens administrator kontrol over din profil i Google Chrome. Dine Chrome-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME"/>. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. <ph name="LEARN_MORE"/></translation>

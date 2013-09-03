@@ -161,6 +161,7 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="1105130903706696483">Chromium tidak dimatikan dengan benar. Untuk membuka lagi laman yang sebelumnya Anda buka, klik Pulihkan.</translation>
 <translation id="1531452407274881270">Anda masuk ke Chromium menggunakan akun <ph name="USER_EMAIL_ADDRESS"/> Anda. Anda akan dapat mengakses bookmark, riwayat, dan setelan lain di semua perangkat Anda yang sudah masuk.</translation>
 <translation id="1929939181775079593">Chromium tidak merespons. Luncurkan ulang sekarang?</translation>
+<translation id="1414495520565016063">Anda sudah masuk ke Chromium!</translation>
 <translation id="3155163173539279776">Luncurkan ulang Chromium</translation>
 <translation id="2966088006374919794">Chromium harus meluncurkan aplikasi eksternal untuk menangani tautan <ph name="SCHEME"/>. Tautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Tidak dapat memasang Chromium Frame versi yang sama dengan yang sedang Anda jalankan. Tutup Chromium Frame dan coba lagi.</translation>
@@ -199,7 +200,6 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 Tetap masuk akan menggabungkan informasi Chromium seperti bookmark, riwayat, dan setelan lain ke <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Unduhan saat ini sedang berlangsung. Anda ingin keluar dari Chromium dan membatalkan unduhan?</translation>
 <translation id="9013262824292842194">Chromium memerlukan Windows Vista atau Windows XP dengan SP2 atau yang lebih baru.</translation>
-<translation id="7673212349590566645">Masuk ke Chromium dengan <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Modul dengan nama yang sama biasanya konflik dengan Chromium.</translation>
 <translation id="4224199872375172890">Chromium sudah diperbarui.</translation>
 <translation id="374481098568514319">Komputer ini telah memiliki versi yang lebih anyar dari komponen Chromium. Gunakan pemasang yang lebih anyar.</translation>

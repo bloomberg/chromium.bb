@@ -161,6 +161,7 @@
 <translation id="1105130903706696483">Chromium завершив роботу неправильно. Щоб повернутися до відкритих сторінок, натисніть &quot;Відновити&quot;.</translation>
 <translation id="1531452407274881270">Ви входите в Chromium, використовуючи обліковий запис <ph name="USER_EMAIL_ADDRESS"/>. Ваші закладки, історія й інші налаштування будуть доступні на всіх пристроях, на яких ви ввійдете в цей обліковий запис.</translation>
 <translation id="1929939181775079593">Chromium не відповідає. Перезапустити зараз?</translation>
+<translation id="1414495520565016063">Ви ввійшли в Chromium.</translation>
 <translation id="3155163173539279776">Перезапустити Chromium</translation>
 <translation id="2966088006374919794">Chromium потребує запуску зовнішньої програми обробки посилань типу <ph name="SCHEME"/>. Потрібний тип посилання: <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Неможливо встановити версію Chromium Frame, аналогічну запущеній зараз. Закрийте Chromium Frame і повторіть спробу.</translation>
@@ -199,7 +200,6 @@
 Якщо ви все одно ввійдете, наявні дані Chromium, як-от закладки, історію й інші налаштування, буде об’єднано з обліковим записом <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Тривають завантаження. Вийти з Chromium і скасувати ці завантаження?</translation>
 <translation id="9013262824292842194">Chromium потребує ОС Windows Vista чи Windows XP із SP2 або новішу версію.</translation>
-<translation id="7673212349590566645">Увійти в Chromium, використовуючи дані облікового запису <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Відомо, що модуль із такою назвою конфліктує з Chromium.</translation>
 <translation id="4224199872375172890">У вас остання версія Chromium.</translation>
 <translation id="374481098568514319">На цьому комп’ютері вже є новіша версія компонентів Chromium. Скористайтеся новішою програмою встановлення.</translation>

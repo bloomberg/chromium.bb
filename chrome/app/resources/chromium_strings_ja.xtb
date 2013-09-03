@@ -161,6 +161,7 @@
 <translation id="1105130903706696483">Chromium は正しく終了しませんでした。前回アクセスしたページをもう一度開くには、[復元] をクリックします。</translation>
 <translation id="1531452407274881270"><ph name="USER_EMAIL_ADDRESS"/> アカウントを使用して Chromium にログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="1929939181775079593">Chromium が応答しません。今すぐ再起動しますか？</translation>
+<translation id="1414495520565016063">Chromium にログインしました</translation>
 <translation id="3155163173539279776">Chromium を再起動します</translation>
 <translation id="2966088006374919794">Chromium では、<ph name="SCHEME"/> リンクを処理する際に外部アプリケーションの起動が必要になります。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
 <translation id="6287463253129672858">実行中の Chromium Frame と同じバージョンをインストールすることはできません。Chromium Frame を閉じてからもう一度お試しください。</translation>
@@ -199,7 +200,6 @@
 このままログインすると、ブックマーク、履歴、その他の設定などの Chromium データが <ph name="ACCOUNT_EMAIL_NEW"/> と統合されます。</translation>
 <translation id="2739631515503418643">現在ダウンロードを実行中です。ダウンロードがキャンセルされますが、Chromium を終了してもよろしいですか？</translation>
 <translation id="9013262824292842194">Chromium のご利用には Windows Vista または Windows XP SP2 以降が必要です。</translation>
-<translation id="7673212349590566645"><ph name="USER_EMAIL_ADDRESS"/> で Chromium にログインしますか？</translation>
 <translation id="1967743265616885482">同じ名前のモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="4224199872375172890">Chromium は最新版です。</translation>
 <translation id="374481098568514319">新しいバージョンの Chromium コンポーネントが既にインストールされています。最新のインストーラを使用してください。</translation>

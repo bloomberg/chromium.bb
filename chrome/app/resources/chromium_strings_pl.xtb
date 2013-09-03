@@ -159,6 +159,7 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="1105130903706696483">Chromium nie został poprawnie zamknięty. Aby przywrócić otwarte strony, kliknij Przywróć.</translation>
 <translation id="1531452407274881270">Logujesz się w Chromium przy użyciu konta <ph name="USER_EMAIL_ADDRESS"/>. Będziesz mieć dostęp do zakładek, historii i innych ustawień na wszystkich swoich zalogowanych urządzeniach.</translation>
 <translation id="1929939181775079593">Chromium nie odpowiada. Uruchomić go teraz ponownie?</translation>
+<translation id="1414495520565016063">Jesteś zalogowany w Chromium.</translation>
 <translation id="3155163173539279776">Ponownie uruchom Chromium</translation>
 <translation id="2966088006374919794">Chromium musi uruchomić zewnętrzną aplikację do obsługi linków <ph name="SCHEME"/>. Żądany link to <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Nie można zainstalować tej samej wersji Chromium Frame, która jest obecnie uruchomiona. Zamknij Chromium Frame i spróbuj ponownie.</translation>
@@ -197,7 +198,6 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 Jeśli jednak zalogujesz się teraz, informacje Chromium, takie jak zakładki, historia i inne ustawienia, zostaną połączone z kontem <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Trwa pobieranie plików. Czy chcesz wyjść z Chromium i anulować pobieranie?</translation>
 <translation id="9013262824292842194">Chromium wymaga systemu Windows Vista bądź Windows XP z dodatkiem SP2 lub nowszym.</translation>
-<translation id="7673212349590566645">Zalogować się w Chromium jako <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Znane są przypadki konfliktu modułu o takiej nazwie z Chromium.</translation>
 <translation id="4224199872375172890">Chromium jest aktualny.</translation>
 <translation id="374481098568514319">Na tym komputerze są już składniki Chromium w nowszej wersji. Użyj nowszego instalatora.</translation>

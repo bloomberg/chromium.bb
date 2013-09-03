@@ -145,11 +145,11 @@
         и снимите флажок &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot;.
         Если не удалось устранить проблему, снова установите флажок
         для быстрой загрузки страниц.</translation>
-<translation id="8333216950301932607">Использовать аккаунт <ph name="USER_EMAIL_ADDRESS"/> для входа в Chrome?</translation>
 <translation id="61852838583753520">Обновить &amp;Chrome OS</translation>
 <translation id="8547799825197623713">Панель запуска Chrome Canary</translation>
 <translation id="5577648424992741236">На компьютере уже установлена последняя версия Google Chrome Frame. Если она не работает, удалите ее и установите снова.</translation>
 <translation id="6326175484149238433">Удалить</translation>
+<translation id="2871893339301912279">Добро пожаловать в Chrome!</translation>
 <translation id="7161904924553537242">Добро пожаловать в Google Chrome</translation>
 <translation id="1686446242839005801">Для входа в Chrome используется аккаунт <ph name="USER_EMAIL_ADDRESS"/>. Ваши закладки, история и другие настройки будут доступны на всех устройствах, где вы используете этот аккаунт.</translation>
 <translation id="4147555960264124640">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Google Chrome. Ваши данные Chrome (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME"/>. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. <ph name="LEARN_MORE"/></translation>

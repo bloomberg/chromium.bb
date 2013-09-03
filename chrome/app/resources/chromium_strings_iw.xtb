@@ -159,6 +159,7 @@
 <translation id="1105130903706696483">‏Chromium לא נסגר כראוי. לפתיחה מחדש של הדפים שפתחת, לחץ על 'שחזר'.</translation>
 <translation id="1531452407274881270">‏אתה נכנס ל-Chromium באמצעות חשבון <ph name="USER_EMAIL_ADDRESS"/> שלך. תוכל לגשת אל הסימניות, ההיסטוריה והגדרות אחרות בכל המכשירים שבהם אתה מחובר לחשבון.</translation>
 <translation id="1929939181775079593">‏Chromium אינו מגיב. להפעיל מחדש עכשיו?</translation>
+<translation id="1414495520565016063">‏נכנסת ל-Chromium!</translation>
 <translation id="3155163173539279776">‏הפעל מחדש את Chromium</translation>
 <translation id="2966088006374919794">‏Chromium צריך להפעיל יישום חיצוני כדי לטפל בקישורים של <ph name="SCHEME"/>. הקישור הנדרש הוא <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">‏לא ניתן להתקין את אותה גרסת Chromium Frame שפועלת כרגע. סגור את Chromium Frame ונסה שוב.</translation>
@@ -196,7 +197,6 @@
 אם תמשיך בכניסה, המידע ב-Chromuim , כמו סימניות, היסטוריה והגדרות אחרות, ימוזג עם <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">‏הורדות מתבצעות כעת. האם ברצונך לצאת מ-Chromium ולבטל את ההורדות?</translation>
 <translation id="9013262824292842194">‏להפעלת Chromium יש להשתמש במערכת ההפעלה Windows Vista או Windows XP עם SP2 ואילך.</translation>
-<translation id="7673212349590566645">‏האם להיכנס ל-Chromium באמצעות <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">‏מודול בעל אותו שם מתנגש עם Chromium.</translation>
 <translation id="4224199872375172890">‏Chromium‏ מעודכן.</translation>
 <translation id="374481098568514319">‏במחשב זה כבר קיימת גרסה מתקדמת יותר של רכיבי Chromium. השתמש במתקין עדכני יותר.</translation>

@@ -159,6 +159,7 @@
 <translation id="1105130903706696483">Chromium завершил работу неправильно. Чтобы вернуться к открытым страницам, нажмите &quot;Восстановить&quot;.</translation>
 <translation id="1531452407274881270">Для входа в Chromium используется аккаунт <ph name="USER_EMAIL_ADDRESS"/>. Ваши закладки, история и другие настройки будут доступны на всех устройствах, где вы используете этот аккаунт.</translation>
 <translation id="1929939181775079593">Chromium не отвечает. Перезапустить сейчас?</translation>
+<translation id="1414495520565016063">Добро пожаловать в Chromium!</translation>
 <translation id="3155163173539279776">Перезапустить Chromium</translation>
 <translation id="2966088006374919794">Chromium требуется запустить внешнее приложение для обработки ссылок <ph name="SCHEME"/>. Запрашиваемая ссылка: <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Нельзя установить уже работающую в системе версию Chromium Frame. Закройте Chromium Frame и повторите попытку.</translation>
@@ -196,7 +197,6 @@
 Если войти в систему сейчас, закладки, история и прочие данные Chromium будут синхронизированы с новым аккаунтом: <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Идет загрузка. Отменить ее и закрыть Chromium?</translation>
 <translation id="9013262824292842194">Для установки Chromium требуется ОС Windows Vista или Windows XP SP2 или более поздней версии.</translation>
-<translation id="7673212349590566645">Использовать аккаунт <ph name="USER_EMAIL_ADDRESS"/> для входа в Chromium?</translation>
 <translation id="1967743265616885482">Известно, что модуль с таким названием конфликтует с Chromium.</translation>
 <translation id="4224199872375172890">Вы используете актуальную версию Chromium.</translation>
 <translation id="374481098568514319">На компьютере уже есть более новые компоненты Chromium. Используйте более новую версию установщика.</translation>

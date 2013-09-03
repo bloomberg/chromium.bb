@@ -148,11 +148,11 @@
         <ph name="ADVANCED_TITLE"/>
         এবং অনির্বাচন করুন &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;
         যদি এটি সমস্যাটির সমাধান করে, তাহলে উন্নত কার্য সম্পাদনার জন্য পুনরায় এই বিকল্পটি নির্বাচন করা আমরা সুপারিশ করি৷</translation>
-<translation id="8333216950301932607"><ph name="USER_EMAIL_ADDRESS"/> এর মাধ্যমে Chrome এ সাইন ইন করবেন?</translation>
 <translation id="61852838583753520">&amp;Chrome OS আপডেট</translation>
 <translation id="8547799825197623713">Chrome অ্যাপ্লিকেশান লঞ্চার Canary</translation>
 <translation id="5577648424992741236">এই কম্পিউটারটিতে ইতিমধ্যে Google Chrome Frame-এর অতি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যারটি কাজ না করে তবে দয়া করে Google Chrome Frame আনইনস্টল করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="6326175484149238433">Chrome থেকে সরান</translation>
+<translation id="2871893339301912279">আপনি Chrome এ সাইন ইন করেছেন৷</translation>
 <translation id="7161904924553537242">Google Chrome-এ আপনাকে স্বাগতম</translation>
 <translation id="1686446242839005801">আপনি আপনার <ph name="USER_EMAIL_ADDRESS"/> অ্যাকাউন্ট ব্যবহার করে Chrome এ সাইন ইন করছেন৷ আপনি আপনার সমস্ত সাইন ইন করা ডিভাইসগুলিতে বুকমার্কগুলি, ইতিহাস, এবং অন্যান্য সেটিংস অ্যাক্সেস করতে সক্ষম হবেন৷</translation>
 <translation id="4147555960264124640">আপনি একটি পরিচালিত অ্যাকাউন্টের মাধ্যমে সাইন ইন করছেন এবং এর প্রশাসককে আপনার Google Chrome প্রোফাইলের উপরে নিয়ন্ত্রণ দিচ্ছেন৷ আপনার Chrome ডেটা, যেমন অ্যাপ্লিকেশানগুলি, বুকমার্কগুলি, ইতিহাস, পাসওয়ার্ডগুলি এবং অন্যান্য সেটিংস <ph name="USER_NAME"/> এতে স্থায়ীভাবে সম্পৃক্ত হবে৷ আপনি Google অ্যাকাউন্টগুলির ড্যাশবোর্ডের মাধ্যমে এই ডেটাগুলি মুছতে সক্ষম হবেন, কিন্তু আপনি অন্য একটি অ্যাকাউন্টের সাথে এই ডেটা সংশ্লিষ্ট করতে পারবেন না৷ <ph name="LEARN_MORE"/></translation>
