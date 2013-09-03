@@ -823,6 +823,13 @@ int drmGetCap(int fd, uint64_t capability, uint64_t *value)
 	return 0;
 }
 
+int drmSetClientCap(int fd, uint64_t capability, uint64_t value)
+{
+	struct drm_set_client_cap cap  = { capability, value };
+
+	return drmIoctl(fd, DRM_IOCTL_SET_CLIENT_CAP, &cap);
+}
+
 /**
  * Free the bus ID information.
  *

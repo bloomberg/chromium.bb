@@ -609,6 +609,8 @@ extern int           drmUpdateDrawableInfo(int fd, drm_drawable_t handle,
 					   unsigned int num, void *data);
 extern int           drmCtlInstHandler(int fd, int irq);
 extern int           drmCtlUninstHandler(int fd);
+extern int           drmSetClientCap(int fd, uint64_t capability,
+				     uint64_t value);
 
 /* General user-level programmer's API: authenticated client and/or X */
 extern int           drmMap(int fd,
