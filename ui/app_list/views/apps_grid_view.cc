@@ -345,9 +345,12 @@ void AppsGridView::OnGotShortcutPath(const base::FilePath& path) {
 
 void AppsGridView::StartSettingUpSynchronousDrag() {
 #if defined(OS_WIN) && !defined(USE_AURA)
+  if (!delegate_)
+    return;
+
   delegate_->GetShortcutPathForApp(
-    drag_view_->model()->app_id(),
-    base::Bind(&AppsGridView::OnGotShortcutPath, base::Unretained(this)));
+      drag_view_->model()->app_id(),
+      base::Bind(&AppsGridView::OnGotShortcutPath, base::Unretained(this)));
   synchronous_drag_ = new SynchronousDrag(this, drag_view_, drag_view_offset_);
 #endif
 }
