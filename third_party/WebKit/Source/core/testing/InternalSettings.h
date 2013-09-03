@@ -50,7 +50,6 @@ public:
         void restoreTo(Settings*);
 
         bool m_originalCSSExclusionsEnabled;
-        bool m_originalCSSShapesEnabled;
         bool m_originalAuthorShadowDOMForAnyElementEnabled;
         bool m_originalExperimentalWebSocketEnabled;
         bool m_originalStyleScoped;

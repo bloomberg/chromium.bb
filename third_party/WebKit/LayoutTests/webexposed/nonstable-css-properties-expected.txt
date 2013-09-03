@@ -1,0 +1,33 @@
+Test getting and setting nonstable css properties to non-default values
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+el.style.setProperty('-webkit-shape-margin', '10px')
+el.style.getPropertyValue('-webkit-shape-margin', '10px') is 10px
+getComputedStyle(el).getPropertyValue('-webkit-shape-margin', '10px') is 10px
+
+el.style.setProperty('-webkit-shape-padding', '10px')
+el.style.getPropertyValue('-webkit-shape-padding', '10px') is 10px
+getComputedStyle(el).getPropertyValue('-webkit-shape-padding', '10px') is 10px
+
+el.style.setProperty('-webkit-shape-inside', 'circle(10px, 10px, 10px)')
+el.style.getPropertyValue('-webkit-shape-inside', 'circle(10px, 10px, 10px)') is circle(10px, 10px, 10px)
+getComputedStyle(el).getPropertyValue('-webkit-shape-inside', 'circle(10px, 10px, 10px)') is circle(10px, 10px, 10px)
+
+el.style.setProperty('-webkit-shape-outside', 'circle(10px, 10px, 10px)')
+el.style.getPropertyValue('-webkit-shape-outside', 'circle(10px, 10px, 10px)') is circle(10px, 10px, 10px)
+getComputedStyle(el).getPropertyValue('-webkit-shape-outside', 'circle(10px, 10px, 10px)') is circle(10px, 10px, 10px)
+
+el.style.setProperty('-webkit-wrap-flow', 'both')
+el.style.getPropertyValue('-webkit-wrap-flow', 'both') is both
+getComputedStyle(el).getPropertyValue('-webkit-wrap-flow', 'both') is both
+
+el.style.setProperty('-webkit-wrap-through', 'none')
+el.style.getPropertyValue('-webkit-wrap-through', 'none') is none
+getComputedStyle(el).getPropertyValue('-webkit-wrap-through', 'none') is none
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

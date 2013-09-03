@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<body>
+<div id='el'></div>
+
+<script src="../fast/js/resources/js-test-pre.js"></script>
+<script>
+
+description("Test getting and setting nonstable css properties to non-default values");
+
+function testStyle(property, value) {
+    var callArgs = "('" + property + "', '" + value + "')";
+    var el = document.getElementById('el');
+    var test = function(toEval, logResult) {
+        var result = eval(toEval);
+        debug(toEval + (logResult ? " is " + result : ""));
+    }
+    test("el.style.setProperty" + callArgs, false);
+    test("el.style.getPropertyValue" + callArgs, true);
+    test("getComputedStyle(el).getPropertyValue" + callArgs, true);
+    debug("");
+}
+
+var properties = [
+['-webkit-shape-margin', '10px'],
+['-webkit-shape-padding', '10px'],
+['-webkit-shape-inside', 'circle(10px, 10px, 10px)'],
+['-webkit-shape-outside', 'circle(10px, 10px, 10px)'],
+
+['-webkit-wrap-flow', 'both'],
+['-webkit-wrap-through', 'none']
+];
+
+properties.forEach(function(args) {
+    testStyle(args[0], args[1]);
+});
+
+</script>
+<script src="../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>
