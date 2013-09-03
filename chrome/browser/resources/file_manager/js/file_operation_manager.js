@@ -57,6 +57,156 @@ fileOperationUtil.setLastModified = function(entry, modificationTime) {
 };
 
 /**
+ * CAUTION: THIS IS STILL UNDER DEVELOPMENT. DO NOT USE.
+ * This will replace copyRecursively defined below.
+ *
+ * Copies source to parent with the name newName recursively.
+ * This should work very similar to FileSystem API's copyTo. The difference is;
+ * - The progress callback is supported.
+ * - The cancellation is supported.
+ *
+ * @param {Entry} source The entry to be copied.
+ * @param {DirectoryEntry} parent The entry of the destination directory.
+ * @param {string} newName The name of copied file.
+ * @param {function(util.EntryChangedKind, Entry)} entryChangedCallback
+ *     Callback invoked when an entry is changed.
+ * @param {function(Entry, number)} progressCallback Callback invoked
+ *     periodically during the copying. It takes source and the number of
+ *     copied bytes since the last invocation.
+ * @param {function(Entry)} successCallback Callback invoked when the copy
+ *     is successfully done with the entry of the created entry.
+ * @param {function(FileError)} errorCallback Callback invoked when an error
+ *     is found.
+ * @return {function()} Callback to cancel the current file copy operation.
+ *     When the cancel is done, errorCallback will be called. The returned
+ *     callback must not be called more than once.
+ */
+fileOperationUtil.copyTo = function(
+    source, parent, newName, entryChangedCallback, progressCallback,
+    successCallback, errorCallback) {
+  var copyId = null;
+  var pendingCallbacks = [];
+  var resolveQueue = new AsyncUtil.Queue();
+  var lastProgressSize = 0;
+
+  var onCopyProgress = function(progressCopyId, status) {
+    if (copyId == null) {
+      // If the copyId is not yet available, wait for it.
+      pendingCallbacks.push(
+          onCopyProgress.bind(null, progressCopyId, status));
+      return;
+    }
+
+    // This is not what we're interested in.
+    if (progressCopyId != copyId)
+      return;
+
+    switch (status.type) {
+      case 'begin_entry_copy':
+        resolveQueue.run(function(callback) {
+          webkitResolveFileSystemURL(status.url, function(entry) {
+            // Notify progress to update the status.
+            // This will be used to update the entry currently being copied.
+            lastProgressSize = 0;
+            progressCallback(entry, 0);
+            callback();
+          });
+        });
+        break;
+
+      case 'end_entry_copy':
+        resolveQueue.run(function(callback) {
+          webkitResolveFileSystemURL(status.url, function(entry) {
+            // The entry is created.
+            entryChangedCallback(util.EntryChangedKind.CREATED, entry);
+            callback();
+          });
+        });
+        break;
+
+      case 'progress':
+        resolveQueue.run(function(callback) {
+          webkitResolveFileSystemURL(status.url, function(entry) {
+            // For the backword compatibility, here the reported size is the
+            // diff since the last invocation.
+            // TODO(hidehiko): Fix this to report the size directly.
+            var updateSize = status.size - lastProgressSize;
+            lastProgressSize = status.size;
+            progressCallback(entry, updateSize);
+            callback();
+          });
+        });
+        break;
+
+      case 'success':
+        chrome.fileBrowserPrivate.onCopyProgress.removeListener(onCopyProgress);
+        resolveQueue.run(function(callback) {
+          webkitResolveFileSystemURL(status.url, function(entry) {
+            successCallback(entry);
+            // Do not call callback here, because this is the completion
+            // callback.
+          });
+        });
+        break;
+
+      case 'error':
+        chrome.fileBrowserPrivate.onCopyProgress.removeListener(onCopyProgress);
+        resolveQueue.run(function(callback) {
+          errorCallback(util.createFileError(status.error));
+          // Do not call callback here, because this is the completion
+          // callback.
+        });
+        break;
+
+      default:
+        // Found unknown state. Cancel the task, and return an error.
+        console.error('Unknown progress type: ' + status.type);
+        chrome.fileBrowserPrivate.onCopyProgress.removeListener(onCopyProgress);
+        chrome.fileBrowserPrivate.cancelCopy(copyId);
+        resolveQueue.run(function(callback) {
+          errorCallback(util.createFileError(FileError.INVALID_STATE_ERR));
+        });
+
+    }
+  };
+
+  // Register the listener before calling startCopy. Otherwise some events
+  // would be lost.
+  chrome.fileBrowserPrivate.onCopyProgress.addListener(onCopyProgress);
+
+  // Then starts the copy.
+  chrome.fileBrowserPrivate.startCopy(
+      source.toURL(), parent.toURL(), newName, function(startCopyId) {
+        // last error contains the FileError code on error.
+        if (chrome.runtime.lastError) {
+          // Unsubscribe the progress listener.
+          chrome.fileBrowserPrivate.onCopyProgress.removeListener(
+              onCopyProgress);
+          errorCallback(util.createFileError(
+              Integer.parseInt(chrome.runtime.lastError, 10)));
+          return;
+        }
+
+        copyId = startCopyId;
+        for (var i = 0; i < pendingCallbacks.length; i++) {
+          pendingCallbacks[i]();
+        }
+      });
+
+  return function() {
+    // If copyId is not yet available, wait for it.
+    if (copyId == null) {
+      pendingCallbacks.push(function() {
+        chrome.fileBrowserPrivate.cancelCopy(copyId);
+      });
+      return;
+    }
+
+    chrome.fileBrowserPrivate.cancelCopy(copyId);
+  };
+};
+
+/**
  * Copies source to parent with the name newName recursively.
  *
  * @param {Entry} source The entry to be copied.
