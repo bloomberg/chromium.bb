@@ -18,7 +18,7 @@ def pop_known_arguments(args):
   rest = []
   run_test_cases_extra_args = []
   for arg in args:
-    if arg.startswith(('--gtest_filter=', '--gtest_output=')):
+    if arg.startswith(('--gtest_filter=', '--gtest_output=', '--clusters=')):
       run_test_cases_extra_args.append(arg)
     elif arg == '--run-manual':
       run_test_cases_extra_args.append(arg)
