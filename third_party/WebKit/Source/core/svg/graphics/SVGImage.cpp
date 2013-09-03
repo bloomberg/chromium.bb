@@ -42,6 +42,7 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGDocument.h"
+#include "core/svg/SVGFEImageElement.h"
 #include "core/svg/SVGImageElement.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
@@ -77,7 +78,7 @@ bool SVGImage::isInSVGImage(const Element* element)
     return page->chrome().client().isSVGImageChromeClient();
 }
 
-bool SVGImage::hasSingleSecurityOrigin() const
+bool SVGImage::currentFrameHasSingleSecurityOrigin() const
 {
     if (!m_page)
         return true;
@@ -93,13 +94,10 @@ bool SVGImage::hasSingleSecurityOrigin() const
     while (Node* node = walker.get()) {
         if (node->hasTagName(SVGNames::foreignObjectTag))
             return false;
-        // FIXME(crbug.com/249037): Images should be allowed but the
-        // implementation is difficult because images can have animations which
-        // cause them to dynamically change their single-origin state.
         if (node->hasTagName(SVGNames::imageTag))
-            return false;
+            return toSVGImageElement(node)->currentFrameHasSingleSecurityOrigin();
         if (node->hasTagName(SVGNames::feImageTag))
-            return false;
+            return toSVGFEImageElement(node)->currentFrameHasSingleSecurityOrigin();
         walker.next();
     }
 

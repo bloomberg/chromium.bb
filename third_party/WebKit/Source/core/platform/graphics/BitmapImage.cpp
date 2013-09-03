@@ -105,12 +105,6 @@ bool BitmapImage::isBitmapImage() const
     return true;
 }
 
-bool BitmapImage::hasSingleSecurityOrigin() const
-{
-    return true;
-}
-
-
 void BitmapImage::destroyDecodedData(bool destroyAll)
 {
     for (size_t i = 0; i < m_frames.size(); ++i) {

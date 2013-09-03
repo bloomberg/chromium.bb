@@ -67,9 +67,9 @@ public:
     virtual bool isBitmapImage() const { return false; }
     virtual bool currentFrameKnownToBeOpaque() = 0;
 
-    // Derived classes should override this if they can assure that
-    // the image contains only resources from its own security origin.
-    virtual bool hasSingleSecurityOrigin() const { return false; }
+    // Derived classes should override this if they can assure that the current
+    // image frame contains only resources from its own security origin.
+    virtual bool currentFrameHasSingleSecurityOrigin() const { return false; }
 
     static Image* nullImage();
     bool isNull() const { return size().isEmpty(); }

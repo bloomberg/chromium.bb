@@ -81,7 +81,7 @@ static const char* const defaultFont = "10px sans-serif";
 
 static bool isOriginClean(ImageResource* cachedImage, SecurityOrigin* securityOrigin)
 {
-    if (!cachedImage->image()->hasSingleSecurityOrigin())
+    if (!cachedImage->image()->currentFrameHasSingleSecurityOrigin())
         return false;
     if (cachedImage->passesAccessControlCheck(securityOrigin))
         return true;

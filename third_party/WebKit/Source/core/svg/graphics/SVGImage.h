@@ -53,7 +53,7 @@ public:
     virtual bool isSVGImage() const OVERRIDE { return true; }
     virtual IntSize size() const OVERRIDE { return m_intrinsicSize; }
 
-    virtual bool hasSingleSecurityOrigin() const OVERRIDE;
+    virtual bool currentFrameHasSingleSecurityOrigin() const OVERRIDE;
 
     virtual bool hasRelativeWidth() const OVERRIDE;
     virtual bool hasRelativeHeight() const OVERRIDE;

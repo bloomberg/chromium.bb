@@ -21,6 +21,7 @@
 #ifndef SVGFEImageElement_h
 #define SVGFEImageElement_h
 
+#include "SVGNames.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/platform/graphics/ImageBuffer.h"
@@ -39,6 +40,8 @@ class SVGFEImageElement FINAL : public SVGFilterPrimitiveStandardAttributes,
                                 public ImageResourceClient {
 public:
     static PassRefPtr<SVGFEImageElement> create(const QualifiedName&, Document&);
+
+    bool currentFrameHasSingleSecurityOrigin() const;
 
     virtual ~SVGFEImageElement();
 
@@ -68,6 +71,12 @@ private:
 
     ResourcePtr<ImageResource> m_cachedImage;
 };
+
+inline SVGFEImageElement* toSVGFEImageElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::feImageTag));
+    return static_cast<SVGFEImageElement*>(node);
+}
 
 } // namespace WebCore
 

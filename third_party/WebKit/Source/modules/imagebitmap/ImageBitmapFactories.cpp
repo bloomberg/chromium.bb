@@ -100,7 +100,7 @@ ScriptObject ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, H
         es.throwDOMException(IndexSizeError);
         return ScriptObject();
     }
-    if (!image->cachedImage()->image()->hasSingleSecurityOrigin()) {
+    if (!image->cachedImage()->image()->currentFrameHasSingleSecurityOrigin()) {
         es.throwDOMException(SecurityError);
         return ScriptObject();
     }

@@ -66,6 +66,14 @@ SVGFEImageElement::~SVGFEImageElement()
     clearResourceReferences();
 }
 
+bool SVGFEImageElement::currentFrameHasSingleSecurityOrigin() const
+{
+    if (m_cachedImage && m_cachedImage->image())
+        return m_cachedImage->image()->currentFrameHasSingleSecurityOrigin();
+
+    return true;
+}
+
 void SVGFEImageElement::clearResourceReferences()
 {
     if (m_cachedImage) {

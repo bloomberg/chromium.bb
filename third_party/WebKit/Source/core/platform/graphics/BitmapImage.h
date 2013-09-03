@@ -59,7 +59,7 @@ public:
 
     virtual bool isBitmapImage() const OVERRIDE;
 
-    virtual bool hasSingleSecurityOrigin() const OVERRIDE;
+    virtual bool currentFrameHasSingleSecurityOrigin() const OVERRIDE { return true; };
 
     virtual IntSize size() const OVERRIDE;
     IntSize sizeRespectingOrientation() const;
