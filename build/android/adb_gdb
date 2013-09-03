@@ -7,7 +7,7 @@
 
 # A generic script used to attach to a running Chromium process and
 # debug it. Most users should not use this directly, but one of the
-# wrapper scripts like adb_gdb_content_shell, or adb_gdb_drt
+# wrapper scripts like adb_gdb_content_shell
 #
 # Use --help to print full usage instructions.
 #
