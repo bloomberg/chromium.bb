@@ -53,5 +53,5 @@ class LoadingProfile(page_measurement.PageMeasurement):
         break
 
     for function, period in perf_profiler.PerfProfiler.GetTopSamples(
-        profile_file, 10).iteritems():
+        tab.browser.platform.GetOSName(), profile_file, 10).iteritems():
       results.Add(function.replace('.', '_'), 'period', period)
