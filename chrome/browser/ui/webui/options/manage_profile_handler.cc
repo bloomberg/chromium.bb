@@ -108,8 +108,6 @@ void ManageProfileHandler::GetLocalizedValues(
         IDS_PROFILES_CREATE_MANAGED_ACCOUNT_SIGN_IN_AGAIN_LINK },
     { "manageProfilesManagedNotSignedInLink",
         IDS_PROFILES_CREATE_MANAGED_NOT_SIGNED_IN_LINK },
-    { "manageProfilesSelectExistingManagedProfileLabel",
-        IDS_PROFILES_CREATE_MANAGED_FROM_EXISTING_LABEL},
     { "deleteProfileTitle", IDS_PROFILES_DELETE_TITLE },
     { "deleteProfileOK", IDS_PROFILES_DELETE_OK_BUTTON_LABEL },
     { "deleteProfileMessage", IDS_PROFILES_DELETE_MESSAGE },
@@ -120,6 +118,10 @@ void ManageProfileHandler::GetLocalizedValues(
     { "createProfileShortcutCheckbox", IDS_PROFILES_CREATE_SHORTCUT_CHECKBOX },
     { "createProfileShortcutButton", IDS_PROFILES_CREATE_SHORTCUT_BUTTON },
     { "removeProfileShortcutButton", IDS_PROFILES_REMOVE_SHORTCUT_BUTTON },
+    { "importExistingManagedUserLink",
+        IDS_PROFILES_IMPORT_EXISTING_MANAGED_USER_LINK },
+    { "signInToImportManagedUsers",
+        IDS_PROFILES_IMPORT_MANAGED_USER_NOT_SIGNED_IN },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -191,9 +193,6 @@ void ManageProfileHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("removeProfileShortcut",
       base::Bind(&ManageProfileHandler::RemoveProfileShortcut,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("requestExistingManagedUsers",
-      base::Bind(&ManageProfileHandler::RequestExistingManagedUsers,
-                 base::Unretained(this)));
 }
 
 void ManageProfileHandler::Observe(
@@ -237,35 +236,6 @@ void ManageProfileHandler::RequestNewProfileDefaults(const ListValue* args) {
 
   web_ui()->CallJavascriptFunction(
       "ManageProfileOverlay.receiveNewProfileDefaults", profile_info);
-}
-
-void ManageProfileHandler::RequestExistingManagedUsers(const ListValue* args) {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (profile->IsManaged())
-    return;
-
-  const ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  std::set<std::string> managed_user_ids;
-  for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i)
-    managed_user_ids.insert(cache.GetManagedUserIdOfProfileAtIndex(i));
-
-  const DictionaryValue* dict =
-      profile->GetPrefs()->GetDictionary(prefs::kManagedUsers);
-  DictionaryValue id_names_dict;
-  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    if (managed_user_ids.find(it.key()) != managed_user_ids.end())
-      continue;
-    const DictionaryValue* value = NULL;
-    bool success = it.value().GetAsDictionary(&value);
-    DCHECK(success);
-    std::string name;
-    value->GetString("name", &name);
-    id_names_dict.SetString(it.key(), name);
-  }
-
-  web_ui()->CallJavascriptFunction(
-      "CreateProfileOverlay.receiveExistingManagedUsers", id_names_dict);
 }
 
 void ManageProfileHandler::SendProfileIcons(

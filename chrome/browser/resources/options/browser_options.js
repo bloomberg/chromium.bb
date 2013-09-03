@@ -1063,6 +1063,24 @@ cr.define('options', function() {
     },
 
     /**
+     * Reports managed user import errors to the ManagedUserImportOverlay.
+     * @param {string} error The error message to display.
+     * @private
+     */
+    showManagedUserImportError_: function(error) {
+      ManagedUserImportOverlay.onError(error);
+    },
+
+    /**
+     * Reports successful importing of a managed user to
+     * the ManagedUserImportOverlay.
+     * @private
+     */
+    showManagedUserImportSuccess_: function() {
+      ManagedUserImportOverlay.onSuccess();
+    },
+
+    /**
      * Reports an error to the "create" overlay during profile creation.
      * @param {string} error The error message to display.
      * @private
@@ -1468,6 +1486,8 @@ cr.define('options', function() {
     'showBluetoothSettings',
     'showCreateProfileError',
     'showCreateProfileSuccess',
+    'showManagedUserImportError',
+    'showManagedUserImportSuccess',
     'showMouseControls',
     'showTouchpadControls',
     'updateAccountPicture',

@@ -1,0 +1,51 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#create-new-user-link {
+  position: absolute;
+}
+
+#managed-user-import {
+  height: 400px;
+  width: 612px;
+}
+
+#managed-user-import-text {
+  padding-bottom: 10px;
+  padding-left: 17px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+#managed-user-import-error-bubble {
+  -webkit-transition: max-height 200ms, padding 200ms;
+  background-color: rgb(238, 185, 57);
+  border-radius: 4px;
+  font-weight: bold;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 10px;
+  max-height: 50px;
+  overflow: hidden;
+  padding: 1px 10px;
+  text-align: center;
+  width: 80%;
+}
+
+#managed-user-import-error-bubble[hidden] {
+  max-height: 0;
+}
+
+.profile-img-disabled {
+  opacity: 0.4;
+}
+
+.profile-name-disabled {
+  color: rgb(153, 153, 153);
+}
+
+.already-on-this-device {
+  padding-left: 4px;
+  padding-right: 4px;
+}

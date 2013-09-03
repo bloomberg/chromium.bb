@@ -68,6 +68,22 @@ class BrowserOptionsHandler
   virtual void OnTemplateURLServiceChanged() OVERRIDE;
 
  private:
+  // Represents the final profile creation status. It is used to map
+  // the status to the javascript method to be called.
+  enum ProfileCreationStatus {
+    PROFILE_CREATION_SUCCESS,
+    PROFILE_CREATION_ERROR
+  };
+
+  // Represents errors that could occur during a profile creation.
+  // It is used to map error types to messages that will be displayed
+  // to the user.
+  enum ProfileCreationErrorType {
+    REMOTE_ERROR,
+    LOCAL_ERROR,
+    SIGNIN_ERROR
+  };
+
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -324,6 +340,10 @@ class BrowserOptionsHandler
   void SetupAccessibilityFeatures();
 #endif
 
+  string16 GetProfileCreationErrorMessage(
+      ProfileCreationErrorType error) const;
+  std::string GetJavascriptMethodName(ProfileCreationStatus status) const;
+
   bool IsValidExistingManagedUserId(
       const std::string& existing_managed_user_id) const;
 
@@ -365,6 +385,12 @@ class BrowserOptionsHandler
   PrefChangeRegistrar profile_pref_registrar_;
 
   scoped_ptr<ManagedUserRegistrationUtility> managed_user_registration_utility_;
+
+  // Indicates if the in progress user creation operation is an import operation
+  // for an existing managed user or a new user (either a new managed user or
+  // a new normal user) creation one.
+  // The value is only relevant while we are creating/importing a user.
+  bool importing_existing_managed_user_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserOptionsHandler);
 };

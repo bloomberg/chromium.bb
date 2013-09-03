@@ -100,20 +100,6 @@
             </button>
           </span>
         </label>
-        <label>
-          <span id="select-existing-managed-profile">
-            <input id="select-existing-managed-profile-checkbox"
-                type="checkbox">
-            <span id="select-existing-managed-profile-label"
-                for="select-existing-managed-profile-checkbox"
-                i18n-content="manageProfilesSelectExistingManagedProfileLabel">
-            </span>
-          </span>
-        </label>
-        <label>
-          <select id="choose-existing-managed-profile">
-          </select>
-        </label>
         <span id="create-profile-managed-indicator"
             class="bubble-button controlled-setting-indicator">
         </span>
@@ -121,6 +107,9 @@
     </div>
     <div class="action-area">
       <div id="create-profile-throbber" class="throbber"></div>
+      <button id="import-existing-managed-user-link" class="link-button"
+          i18n-content="importExistingManagedUserLink">
+      </button>
       <div class="button-strip">
         <button id="create-profile-cancel" i18n-content="cancel"></button>
         <button id="create-profile-ok" i18n-content="createProfileConfirm"

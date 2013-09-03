@@ -14256,9 +14256,6 @@ You need to be signed in to use this feature.
     <message name="IDS_PROFILES_CREATE_MANAGED_ACCOUNT_SIGN_IN_AGAIN_LINK" desc="Text for the sign-in promo link, shown after the message telling the user that their sign-in credentials are out of date in the create supervised user dialog.">
       Sign in again
     </message>
-    <message name="IDS_PROFILES_CREATE_MANAGED_FROM_EXISTING_LABEL" desc="Label for the 'Select an exisiting managed user' checkbox. During managed user creation a custodian will have an option to select an existing managed profile rather creating a new one.">
-      Select an existing managed user:
-    </message>
     <message name="IDS_PROFILES_CREATE_SHORTCUT_CHECKBOX" desc="Create Shortcut checkbox when creating a new profile">
       Create a desktop shortcut for this user
     </message>
@@ -14267,6 +14264,12 @@ You need to be signed in to use this feature.
     </message>
     <message name="IDS_PROFILES_REMOVE_SHORTCUT_BUTTON" desc="Remove Shortcut button when editing an existing profile">
       Remove desktop shortcut
+    </message>
+    <message name="IDS_PROFILES_IMPORT_EXISTING_MANAGED_USER_LINK" desc="Label for the 'Import an exisiting supervised user' link. During supervised user creation a custodian will have an option to import an existing supervised profile during the user creation flow.">
+      Import an existing supervised user
+    </message>
+    <message name="IDS_PROFILES_IMPORT_MANAGED_USER_NOT_SIGNED_IN" desc="Text displayed instead of the 'Import an existing supervised user' link when the user is not signed in or his credentials are out of date.">
+      Sign in to import supervised users
     </message>
 
     <!-- Supervised-user creation wizard dialogs -->
@@ -14300,6 +14303,36 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
     </message>
     <message name="IDS_NEW_MANAGED_USER_CREATED_SWITCH_BUTTON" desc="Text for the button that opens a window for the new supervised user, on the supervised user creation confirmation dialog.">
       Switch to <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph>
+    </message>
+
+    <!-- Import existing supervised user dialog -->
+    <message name="IDS_IMPORT_EXISTING_MANAGED_USER_TITLE" desc="Title for the dialog used to import existing supervised users. The dialog appears when the custodian clicks on 'Import existing supervised user' during the user creation flow. The dialog displays a list of existing supervised users for the custodian to choose from">
+      Import an existing supervised user
+    </message>
+    <message name="IDS_IMPORT_EXISTING_MANAGED_USER_TEXT" desc="Text that instructs the user to choose one of the displayed supervised users to import to this device. The text also gives hint to the user about how the supervised user's settings and browsing history will be dealt with across multiple devices.">
+      Choose a supervised user to add to this device.
+The supervised user's settings and browsing history will be merged across devices.
+    </message>
+    <message name="IDS_CREATE_NEW_USER_LINK" desc="The text for the 'Create a new user' link button. The button takes the user back from the dialog for importing an existing supervised user to the user creation dialog.">
+      Create a new user
+    </message>
+    <message name="IDS_IMPORT_EXISTING_MANAGED_USER_OK" desc="Text on the button to confirm importing an existing supervised user.">
+      Import supervised user
+    </message>
+    <message name="IDS_MANAGED_USER_ALREADY_ON_THIS_DEVICE" desc="Text shown in the list of supervised users beside the name of a supervised user that already exists on the current device.">
+      (already on this device)
+    </message>
+    <message name="IDS_MANAGED_USER_NO_EXISTING_ERROR" desc="Message shown to the custodian when he opens the 'supervised user import' overlay but he has no existing supervised users to import.">
+      Oops! looks like you have no existing supervised users to import. Please create one or more from another device then you can import them here.
+    </message>
+    <message name="IDS_MANAGED_USER_IMPORT_LOCAL_ERROR" desc="Message shown when a local error (for example, a disk error) occurs during supervised user import.">
+      Oops! The supervised user couldn't be imported. Please check your hard drive space and permissions and try again.
+    </message>
+    <message name="IDS_MANAGED_USER_IMPORT_REMOTE_ERROR" desc="Message shown when a remote error (for example, a network error) occurs during supervised user import.">
+      Oops! The supervised user couldn't be imported. Please check your network connection and try again later.
+    </message>
+    <message name="IDS_MANAGED_USER_IMPORT_SIGN_IN_ERROR" desc="Message shown when a sign in error occurs during supervised user import.">
+      Oops! The supervised user couldn't be imported. Please make sure you're signed in properly and try again.
     </message>
 
     <if expr="not is_android and not is_ios and not pp_ifdef('chromeos')">

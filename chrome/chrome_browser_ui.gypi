@@ -2288,6 +2288,8 @@
         'browser/ui/webui/options/language_options_handler_common.h',
         'browser/ui/webui/options/managed_user_create_confirm_handler.cc',
         'browser/ui/webui/options/managed_user_create_confirm_handler.h',
+        'browser/ui/webui/options/managed_user_import_handler.cc',
+        'browser/ui/webui/options/managed_user_import_handler.h',
         'browser/ui/webui/options/managed_user_learn_more_handler.cc',
         'browser/ui/webui/options/managed_user_learn_more_handler.h',
         'browser/ui/webui/options/manage_profile_handler.cc',

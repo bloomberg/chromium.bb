@@ -122,3 +122,8 @@ html[dir='rtl'] #delete-profile-message {
 #create-profile-managed-content-area {
   padding-top: 0;
 }
+
+#import-existing-managed-user-link {
+  left: 17px;
+  position: absolute;
+}

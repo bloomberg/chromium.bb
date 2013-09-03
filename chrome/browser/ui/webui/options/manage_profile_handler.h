@@ -53,18 +53,6 @@ class ManageProfileHandler : public OptionsPageUIHandler,
   //   { "name": profileName, "iconURL": iconURL }
   void RequestNewProfileDefaults(const base::ListValue* args);
 
-  // Callback for the "requestExistingManagedUsers" message.
-  // Sends an object to WebUI of the form:
-  //   managedProfiles = {
-  //     "Profile ID 1": "Profile Name 1",
-  //     "Profile ID 2": "Profile Name 2",
-  //     ...
-  //   }
-  // The object holds all existing managed users attached to the
-  // custodian's profile who initiated the request except for
-  // those managed users that are already existing of this machine.
-  void RequestExistingManagedUsers(const base::ListValue* args);
-
   // Send all profile icons to the overlay.
   // |iconGrid| is the name of the grid to populate with icons (i.e.
   // "create-profile-icon-grid" or "manage-profile-icon-grid").
