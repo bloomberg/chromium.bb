@@ -799,10 +799,13 @@ TEST(IndexedDBLevelDBCodingTest, ComparisonTest) {
   keys.push_back(IndexNamesKey::Encode(1, 1, ASCIIToUTF16("")));
   keys.push_back(IndexNamesKey::Encode(1, 1, ASCIIToUTF16("a")));
   keys.push_back(IndexNamesKey::Encode(1, 2, ASCIIToUTF16("a")));
+  keys.push_back(ObjectStoreDataKey::Encode(1, 1, std::string()));
   keys.push_back(ObjectStoreDataKey::Encode(1, 1, MinIDBKey()));
   keys.push_back(ObjectStoreDataKey::Encode(1, 1, MaxIDBKey()));
+  keys.push_back(ExistsEntryKey::Encode(1, 1, std::string()));
   keys.push_back(ExistsEntryKey::Encode(1, 1, MinIDBKey()));
   keys.push_back(ExistsEntryKey::Encode(1, 1, MaxIDBKey()));
+  keys.push_back(IndexDataKey::Encode(1, 1, 30, MinIDBKey(), std::string(), 0));
   keys.push_back(IndexDataKey::Encode(1, 1, 30, MinIDBKey(), MinIDBKey(), 0));
   keys.push_back(IndexDataKey::Encode(1, 1, 30, MinIDBKey(), MinIDBKey(), 1));
   keys.push_back(IndexDataKey::Encode(1, 1, 30, MinIDBKey(), MaxIDBKey(), 0));

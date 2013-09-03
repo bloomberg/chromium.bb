@@ -673,11 +673,21 @@ static int CompareInts(int64 a, int64 b) {
   return 0;
 }
 
+static inline int CompareSizes(size_t a, size_t b) {
+  if (a > b)
+    return 1;
+  if (b > a)
+    return -1;
+  return 0;
+}
+
 static int CompareTypes(WebIDBKeyType a, WebIDBKeyType b) { return b - a; }
 
 int CompareEncodedIDBKeys(StringPiece* slice_a,
                           StringPiece* slice_b,
                           bool* ok) {
+  DCHECK(!slice_a->empty());
+  DCHECK(!slice_b->empty());
   *ok = true;
   unsigned char type_a = (*slice_a)[0];
   unsigned char type_b = (*slice_b)[0];
@@ -764,6 +774,25 @@ int Compare(const StringPiece& a,
   return key_a.Compare(key_b);
 }
 
+template <typename KeyType>
+int CompareSuffix(StringPiece* a,
+                  StringPiece* b,
+                  bool only_compare_index_keys,
+                  bool* ok) {
+  NOTREACHED();
+  return 0;
+}
+
+template <>
+int CompareSuffix<ExistsEntryKey>(StringPiece* slice_a,
+                                  StringPiece* slice_b,
+                                  bool only_compare_index_keys,
+                                  bool* ok) {
+  DCHECK(!slice_a->empty());
+  DCHECK(!slice_b->empty());
+  return CompareEncodedIDBKeys(slice_a, slice_b, ok);
+}
+
 template <>
 int Compare<ExistsEntryKey>(const StringPiece& a,
                             const StringPiece& b,
@@ -788,7 +817,16 @@ int Compare<ExistsEntryKey>(const StringPiece& a,
   // Prefixes are not compared - it is assumed this was already done.
   DCHECK(!prefix_a.Compare(prefix_b));
 
-  return CompareEncodedIDBKeys(&slice_a, &slice_b, ok);
+  return CompareSuffix<ExistsEntryKey>(
+      &slice_a, &slice_b, only_compare_index_keys, ok);
+}
+
+template <>
+int CompareSuffix<ObjectStoreDataKey>(StringPiece* slice_a,
+                                      StringPiece* slice_b,
+                                      bool only_compare_index_keys,
+                                      bool* ok) {
+  return CompareEncodedIDBKeys(slice_a, slice_b, ok);
 }
 
 template <>
@@ -815,7 +853,39 @@ int Compare<ObjectStoreDataKey>(const StringPiece& a,
   // Prefixes are not compared - it is assumed this was already done.
   DCHECK(!prefix_a.Compare(prefix_b));
 
-  return CompareEncodedIDBKeys(&slice_a, &slice_b, ok);
+  return CompareSuffix<ObjectStoreDataKey>(
+      &slice_a, &slice_b, only_compare_index_keys, ok);
+}
+
+template <>
+int CompareSuffix<IndexDataKey>(StringPiece* slice_a,
+                                StringPiece* slice_b,
+                                bool only_compare_index_keys,
+                                bool* ok) {
+  // index key
+  int result = CompareEncodedIDBKeys(slice_a, slice_b, ok);
+  if (!*ok || result)
+    return result;
+  if (only_compare_index_keys)
+    return 0;
+
+  // sequence number [optional]
+  int64 sequence_number_a = -1;
+  int64 sequence_number_b = -1;
+  if (!slice_a->empty() && !DecodeVarInt(slice_a, &sequence_number_a))
+      return 0;
+  if (!slice_b->empty() && !DecodeVarInt(slice_b, &sequence_number_b))
+      return 0;
+
+  if (slice_a->empty() || slice_b->empty())
+    return CompareSizes(slice_a->size(), slice_b->size());
+
+  // primary key [optional]
+  result = CompareEncodedIDBKeys(slice_a, slice_b, ok);
+  if (!*ok || result)
+    return result;
+
+  return CompareInts(sequence_number_a, sequence_number_b);
 }
 
 template <>
@@ -842,38 +912,8 @@ int Compare<IndexDataKey>(const StringPiece& a,
   // Prefixes are not compared - it is assumed this was already done.
   DCHECK(!prefix_a.Compare(prefix_b));
 
-  // index key
-  int result = CompareEncodedIDBKeys(&slice_a, &slice_b, ok);
-  if (!*ok || result)
-    return result;
-  if (only_compare_index_keys)
-    return 0;
-
-  // sequence number [optional]
-  int64 sequence_number_a = -1;
-  int64 sequence_number_b = -1;
-  if (!slice_a.empty()) {
-    if (!DecodeVarInt(&slice_a, &sequence_number_a))
-      return 0;
-  }
-  if (!slice_b.empty()) {
-    if (!DecodeVarInt(&slice_b, &sequence_number_b))
-      return 0;
-  }
-
-  // primary key [optional]
-  if (slice_a.empty() && slice_b.empty())
-    return 0;
-  if (slice_a.empty())
-    return -1;
-  if (slice_b.empty())
-    return 1;
-
-  result = CompareEncodedIDBKeys(&slice_a, &slice_b, ok);
-  if (!*ok || result)
-    return result;
-
-  return CompareInts(sequence_number_a, sequence_number_b);
+  return CompareSuffix<IndexDataKey>(
+      &slice_a, &slice_b, only_compare_index_keys, ok);
 }
 
 int Compare(const StringPiece& a,
@@ -919,6 +959,10 @@ int Compare(const StringPiece& a,
       if (type_byte_a < kMaxSimpleGlobalMetaDataTypeByte)
         return 0;
 
+      // Compare<> is used (which re-decodes the prefix) rather than an
+      // specialized CompareSuffix<> because metadata is relatively uncommon
+      // in the database.
+
       if (type_byte_a == kDatabaseFreeListTypeByte)
         return Compare<DatabaseFreeListKey>(
             a, b, only_compare_index_keys, ok);
@@ -949,6 +993,10 @@ int Compare(const StringPiece& a,
       if (type_byte_a < DatabaseMetaDataKey::MAX_SIMPLE_METADATA_TYPE)
         return 0;
 
+      // Compare<> is used (which re-decodes the prefix) rather than an
+      // specialized CompareSuffix<> because metadata is relatively uncommon
+      // in the database.
+
       if (type_byte_a == kObjectStoreMetaDataTypeByte)
         return Compare<ObjectStoreMetaDataKey>(
             a, b, only_compare_index_keys, ok);
@@ -971,32 +1019,30 @@ int Compare(const StringPiece& a,
     }
 
     case KeyPrefix::OBJECT_STORE_DATA: {
+      // Provide a stable ordering for invalid data.
       if (slice_a.empty() || slice_b.empty())
-        return slice_a.size() - slice_b.size();
-      // TODO(jsbell): This case of non-existing user keys should not have to be
-      // handled this way.
+        return CompareSizes(slice_a.size(), slice_b.size());
 
-      return Compare<ObjectStoreDataKey>(
-          a, b, /*only_compare_index_keys*/ false, ok);
+      return CompareSuffix<ObjectStoreDataKey>(
+          &slice_a, &slice_b, /*only_compare_index_keys*/ false, ok);
     }
 
     case KeyPrefix::EXISTS_ENTRY: {
+      // Provide a stable ordering for invalid data.
       if (slice_a.empty() || slice_b.empty())
-        return slice_a.size() - slice_b.size();
-      // TODO(jsbell): This case of non-existing user keys should not have to be
-      // handled this way.
+        return CompareSizes(slice_a.size(), slice_b.size());
 
-      return Compare<ExistsEntryKey>(
-          a, b, /*only_compare_index_keys*/ false, ok);
+      return CompareSuffix<ExistsEntryKey>(
+          &slice_a, &slice_b, /*only_compare_index_keys*/ false, ok);
     }
 
     case KeyPrefix::INDEX_DATA: {
+      // Provide a stable ordering for invalid data.
       if (slice_a.empty() || slice_b.empty())
-        return slice_a.size() - slice_b.size();
-      // TODO(jsbell): This case of non-existing user keys should not have to be
-      // handled this way.
+        return CompareSizes(slice_a.size(), slice_b.size());
 
-      return Compare<IndexDataKey>(a, b, only_compare_index_keys, ok);
+      return CompareSuffix<IndexDataKey>(
+          &slice_a, &slice_b, only_compare_index_keys, ok);
     }
 
     case KeyPrefix::INVALID_TYPE:
@@ -1365,10 +1411,7 @@ int ObjectStoreMetaDataKey::Compare(const ObjectStoreMetaDataKey& other) {
   DCHECK_GE(object_store_id_, 0);
   if (int x = CompareInts(object_store_id_, other.object_store_id_))
     return x;
-  int64 result = meta_data_type_ - other.meta_data_type_;
-  if (result < 0)
-    return -1;
-  return (result > 0) ? 1 : result;
+  return meta_data_type_ - other.meta_data_type_;
 }
 
 IndexMetaDataKey::IndexMetaDataKey()
