@@ -185,14 +185,14 @@
     if (expectation !== undefined) {
       replica = createTarget(id);
       replica.classList.add('replica');
-      replica.style[params.property] = expectation;
+      replica.style.setProperty(params.property, expectation);
     }
     target.getResultString = function() {
-      var value = getComputedStyle(this)[params.property];
+      var value = getComputedStyle(this).getPropertyValue(params.property);
       var result = '';
       var reason = '';
       if (expectation !== undefined) {
-        var parsedExpectation = getComputedStyle(replica)[params.property];
+        var parsedExpectation = getComputedStyle(replica).getPropertyValue(params.property);
         var pass = normalizeValue(value) === normalizeValue(parsedExpectation);
         result = pass ? 'PASS: ' : 'FAIL: ';
         reason = pass ? '' : ', expected [' + expectation + ']';
@@ -203,7 +203,7 @@
           ' at ' + fraction + reason;
     };
     target.convertToReference = function() {
-      this.style[params.property] = getComputedStyle(this)[params.property];
+      this.style[params.property] = getComputedStyle(this).getPropertyValue(params.property);
     };
     var easing = createEasing(fraction);
     cssText += '.' + id + '.active {\n' +
