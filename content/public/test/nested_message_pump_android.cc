@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "jni/NestedSystemMessageHandler_jni.h"
 
@@ -95,6 +96,7 @@ void NestedMessagePumpAndroid::Run(Delegate* delegate) {
         g_message_handler_obj.Get().obj());
     CHECK(ret) << "Error running java message loop, tests will likely fail.";
 
+    base::ThreadRestrictions::ScopedAllowWait allow_wait;
     if (state_->delayed_work_time.is_null()) {
       state_->waitable_event.TimedWait(max_delay);
     } else {

@@ -45,6 +45,7 @@ class BrowserGpuChannelHostFactory;
 class BrowserTestBase;
 class GLHelper;
 class GpuChannelHost;
+class NestedMessagePumpAndroid;
 class RenderWidgetHelper;
 class ScopedAllowWaitForAndroidLayoutTests;
 class TextInputClientMac;
@@ -176,6 +177,7 @@ class BASE_EXPORT ThreadRestrictions {
   // DO NOT ADD ANY OTHER FRIEND STATEMENTS, talk to jam or brettw first.
   // BEGIN ALLOWED USAGE.
   friend class content::BrowserTestBase;
+  friend class content::NestedMessagePumpAndroid;
   friend class content::RenderWidgetHelper;
   friend class content::ScopedAllowWaitForAndroidLayoutTests;
   friend class ::HistogramSynchronizer;
