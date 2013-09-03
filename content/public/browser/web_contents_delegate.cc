@@ -146,6 +146,13 @@ content::ColorChooser* WebContentsDelegate::OpenColorChooser(
   return NULL;
 }
 
+void WebContentsDelegate::RequestMediaAccessPermission(
+    WebContents* web_contents,
+    const MediaStreamRequest& request,
+    const MediaResponseCallback& callback) {
+  callback.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
+}
+
 bool WebContentsDelegate::RequestPpapiBrokerPermission(
     WebContents* web_contents,
     const GURL& url,
