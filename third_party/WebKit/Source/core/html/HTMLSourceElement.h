@@ -57,6 +57,12 @@ private:
     Timer<HTMLSourceElement> m_errorEventTimer;
 };
 
-} //namespace
+inline HTMLSourceElement* toHTMLSourceElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::sourceTag));
+    return static_cast<HTMLSourceElement*>(node);
+}
+
+} // namespace WebCore
 
 #endif

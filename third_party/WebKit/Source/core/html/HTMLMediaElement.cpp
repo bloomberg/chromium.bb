@@ -1443,7 +1443,7 @@ void HTMLMediaElement::cancelPendingEventsAndCallbacks()
 
     for (Node* node = firstChild(); node; node = node->nextSibling()) {
         if (node->hasTagName(sourceTag))
-            static_cast<HTMLSourceElement*>(node)->cancelPendingErrorEvent();
+            toHTMLSourceElement(node)->cancelPendingErrorEvent();
     }
 }
 
@@ -2932,7 +2932,7 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
         if (node->parentNode() != this)
             continue;
 
-        source = static_cast<HTMLSourceElement*>(node);
+        source = toHTMLSourceElement(node);
 
         // If candidate does not have a src attribute, or if its src attribute's value is the empty string ... jump down to the failed step below
         mediaURL = source->getNonEmptyURLAttribute(srcAttr);
