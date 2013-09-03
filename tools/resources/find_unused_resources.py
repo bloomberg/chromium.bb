@@ -38,7 +38,7 @@ def GetBaseResourceId(resource_id):
   """
   suffixes = [
       '_TOP_LEFT', '_TOP', '_TOP_RIGHT',
-      '_LEFT', '_MIDDLE', '_RIGHT',
+      '_LEFT', '_CENTER', '_RIGHT',
       '_BOTTOM_LEFT', '_BOTTOM', '_BOTTOM_RIGHT',
       '_TL', '_T', '_TR',
       '_L', '_M', '_R',
