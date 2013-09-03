@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tests that unprefixed animation events are correctly fired when using html event listeners (only unprefixed should be fired).</title>
+  <style>
+    #box {
+      position: relative;
+      left: 100px;
+      top: 10px;
+      height: 100px;
+      width: 100px;
+      animation-duration: 0.3s;
+      animation-name: anim;
+      background-color: #999;
+      animation-iteration-count: 3;
+    }
+    @keyframes anim {
+        from { left: 200px; }
+        to   { left: 300px; }
+    }
+  </style>
+  <script>
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+
+    function fail() {
+      document.getElementById('result').innerHTML = 'FAIL: Got ' + iterationEventReceived + ' animationCount events and '
+      + prefixedEventReceived + ' prefixed events.';
+    }
+
+    var iterationEventReceived = 0;
+    var startEventReceived = false;
+    var prefixedEventReceived = 0;
+
+    function recordPrefixedEvent() {
+      prefixedEventReceived++;
+    }
+
+    function recordAnimationStart() {
+      startEventReceived = true;
+    }
+
+    function recordAnimationIteration() {
+      ++iterationEventReceived;
+    }
+
+    function recordAnimationEnd() {
+        if (iterationEventReceived > 0 && iterationEventReceived <= 2 && startEventReceived && prefixedEventReceived == 0)
+            document.getElementById('result').innerHTML = 'PASS: All events have been received as expected.';
+        else
+            fail();
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }
+  </script>
+</head>
+<body>
+Tests that unprefixed animation events are correctly fired when using html event listeners (only unprefixed should be fired).
+<pre id="result">FAIL: No animation events received</pre>
+<div id="box" onwebkitanimationstart="recordPrefixedEvent();" onwebkitanimationend="recordPrefixedEvent();" onwebkitanimationiteration="recordPrefixedEvent();" onanimationstart="recordAnimationStart();" onanimationend="recordAnimationEnd();" onanimationiteration="recordAnimationIteration();"></div>
+</body>
+</html>

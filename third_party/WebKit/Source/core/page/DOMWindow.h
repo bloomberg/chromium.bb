@@ -257,6 +257,9 @@ namespace WebCore {
         void dispatchLoadEvent();
 
         DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(animationend);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(animationiteration);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(animationstart);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(beforeunload);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(blur);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(canplay);
@@ -318,6 +321,7 @@ namespace WebCore {
         DEFINE_ATTRIBUTE_EVENT_LISTENER(submit);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(suspend);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(timeupdate);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(transitionend);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(unload);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(volumechange);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(waiting);
@@ -327,7 +331,6 @@ namespace WebCore {
         DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationiteration, webkitAnimationIteration);
         DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationend, webkitAnimationEnd);
         DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkittransitionend, webkitTransitionEnd);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(transitionend);
 
         void captureEvents() { }
         void releaseEvents() { }

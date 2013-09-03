@@ -245,6 +245,9 @@
     // Webkit extensions
     attribute EventHandler onreset;
     attribute EventHandler onsearch;
+    [EnabledAtRuntime=CSSAnimationUnprefixed] attribute EventHandler onanimationend;
+    [EnabledAtRuntime=CSSAnimationUnprefixed] attribute EventHandler onanimationiteration;
+    [EnabledAtRuntime=CSSAnimationUnprefixed] attribute EventHandler onanimationstart;
     attribute EventHandler onwebkitanimationend;
     attribute EventHandler onwebkitanimationiteration;
     attribute EventHandler onwebkitanimationstart;

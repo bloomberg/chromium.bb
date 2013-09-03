@@ -202,6 +202,9 @@ AtomicString HTMLElement::eventNameForAttributeName(const QualifiedName& attrNam
     typedef HashMap<AtomicString, AtomicString> StringToStringMap;
     DEFINE_STATIC_LOCAL(StringToStringMap, attributeNameToEventNameMap, ());
     if (!attributeNameToEventNameMap.size()) {
+        attributeNameToEventNameMap.set(onanimationstartAttr.localName(), eventNames().animationstartEvent);
+        attributeNameToEventNameMap.set(onanimationiterationAttr.localName(), eventNames().animationiterationEvent);
+        attributeNameToEventNameMap.set(onanimationendAttr.localName(), eventNames().animationendEvent);
         attributeNameToEventNameMap.set(onclickAttr.localName(), eventNames().clickEvent);
         attributeNameToEventNameMap.set(oncontextmenuAttr.localName(), eventNames().contextmenuEvent);
         attributeNameToEventNameMap.set(ondblclickAttr.localName(), eventNames().dblclickEvent);
