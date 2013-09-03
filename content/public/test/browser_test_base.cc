@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
+#include "base/message_loop/message_loop.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -69,9 +70,7 @@ void RunTaskOnRendererThread(const base::Closure& task,
 extern int BrowserMain(const MainFunctionParams&);
 
 BrowserTestBase::BrowserTestBase()
-    : embedded_test_server_(
-        new net::test_server::EmbeddedTestServer(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))),
+    : embedded_test_server_io_thread_("EmbeddedTestServer io thread"),
       allow_test_contexts_(true),
       allow_osmesa_(true) {
 #if defined(OS_MACOSX)
@@ -82,6 +81,16 @@ BrowserTestBase::BrowserTestBase()
 #if defined(OS_POSIX)
   handle_sigterm_ = true;
 #endif
+
+  // Create a separate thread for the test server to run on. It's tempting to
+  // use actual browser threads, but that doesn't work for cases where the test
+  // server needs to be started before the browser, for example when the server
+  // URL should be passed in command-line parameters.
+  base::Thread::Options thread_options;
+  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  CHECK(embedded_test_server_io_thread_.StartWithOptions(thread_options));
+  embedded_test_server_.reset(new net::test_server::EmbeddedTestServer(
+      embedded_test_server_io_thread_.message_loop_proxy()));
 }
 
 BrowserTestBase::~BrowserTestBase() {
@@ -179,7 +188,6 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
   }
 #endif  // defined(OS_POSIX)
   RunTestOnMainThreadLoop();
-  embedded_test_server_.reset();
 }
 
 void BrowserTestBase::CreateTestServer(const base::FilePath& test_server_base) {

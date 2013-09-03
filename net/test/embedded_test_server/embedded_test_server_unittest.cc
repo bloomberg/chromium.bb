@@ -40,8 +40,8 @@ std::string GetContentTypeFromFetcher(const URLFetcher& fetcher) {
 
 }  // namespace
 
-class EmbeddedTestServerTest : public testing::Test,
-                       public URLFetcherDelegate {
+class EmbeddedTestServerTest: public testing::Test,
+                              public URLFetcherDelegate {
  public:
   EmbeddedTestServerTest()
       : num_responses_received_(0),
@@ -239,6 +239,91 @@ TEST_F(EmbeddedTestServerTest, ConcurrentFetches) {
   EXPECT_EQ("No chocolates", GetContentFromFetcher(*fetcher3));
   EXPECT_EQ("text/plain", GetContentTypeFromFetcher(*fetcher3));
 }
+
+// Below test exercises EmbeddedTestServer's ability to cope with the situation
+// where there is no MessageLoop available on the thread at EmbeddedTestServer
+// initialization and/or destruction.
+
+typedef std::tr1::tuple<bool, bool> ThreadingTestParams;
+
+class EmbeddedTestServerThreadingTest
+    : public testing::TestWithParam<ThreadingTestParams> {};
+
+class EmbeddedTestServerThreadingTestDelegate
+    : public base::PlatformThread::Delegate,
+      public URLFetcherDelegate {
+ public:
+  EmbeddedTestServerThreadingTestDelegate(
+      bool message_loop_present_on_initialize,
+      bool message_loop_present_on_shutdown)
+      : message_loop_present_on_initialize_(message_loop_present_on_initialize),
+        message_loop_present_on_shutdown_(message_loop_present_on_shutdown) {}
+
+  // base::PlatformThread::Delegate:
+  virtual void ThreadMain() OVERRIDE {
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner;
+    base::Thread io_thread("io_thread");
+    base::Thread::Options thread_options;
+    thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+    ASSERT_TRUE(io_thread.StartWithOptions(thread_options));
+    io_thread_runner = io_thread.message_loop_proxy();
+
+    scoped_ptr<base::MessageLoop> loop;
+    if (message_loop_present_on_initialize_)
+      loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
+
+    // Create the test server instance.
+    EmbeddedTestServer server(io_thread_runner);
+    base::FilePath src_dir;
+    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+    ASSERT_TRUE(server.InitializeAndWaitUntilReady());
+
+    // Make a request and wait for the reply.
+    if (!loop)
+      loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
+
+    scoped_ptr<URLFetcher> fetcher(URLFetcher::Create(
+        server.GetURL("/test?q=foo"), URLFetcher::GET, this));
+    fetcher->SetRequestContext(
+        new TestURLRequestContextGetter(loop->message_loop_proxy()));
+    fetcher->Start();
+    loop->Run();
+    fetcher.reset();
+
+    // Shut down.
+    if (message_loop_present_on_shutdown_)
+      loop.reset();
+
+    ASSERT_TRUE(server.ShutdownAndWaitUntilComplete());
+  }
+
+  // URLFetcherDelegate override.
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
+    base::MessageLoop::current()->Quit();
+  }
+
+ private:
+  bool message_loop_present_on_initialize_;
+  bool message_loop_present_on_shutdown_;
+
+  DISALLOW_COPY_AND_ASSIGN(EmbeddedTestServerThreadingTestDelegate);
+};
+
+TEST_P(EmbeddedTestServerThreadingTest, RunTest) {
+  // The actual test runs on a separate thread so it can screw with the presence
+  // of a MessageLoop - the test suite already sets up a MessageLoop for the
+  // main test thread.
+  base::PlatformThreadHandle thread_handle;
+  EmbeddedTestServerThreadingTestDelegate delegate(
+      std::tr1::get<0>(GetParam()),
+      std::tr1::get<1>(GetParam()));
+  ASSERT_TRUE(base::PlatformThread::Create(0, &delegate, &thread_handle));
+  base::PlatformThread::Join(thread_handle);
+}
+
+INSTANTIATE_TEST_CASE_P(EmbeddedTestServerThreadingTestInstantiation,
+                        EmbeddedTestServerThreadingTest,
+                        testing::Combine(testing::Bool(), testing::Bool()));
 
 }  // namespace test_server
 }  // namespace net

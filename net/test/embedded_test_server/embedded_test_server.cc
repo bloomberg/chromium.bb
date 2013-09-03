@@ -5,8 +5,9 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -118,15 +119,10 @@ EmbeddedTestServer::~EmbeddedTestServer() {
 bool EmbeddedTestServer::InitializeAndWaitUntilReady() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  base::RunLoop run_loop;
-  if (!io_thread_->PostTaskAndReply(
-          FROM_HERE,
-          base::Bind(&EmbeddedTestServer::InitializeOnIOThread,
-                     base::Unretained(this)),
-          run_loop.QuitClosure())) {
+  if (!PostTaskToIOThreadAndWait(base::Bind(
+          &EmbeddedTestServer::InitializeOnIOThread, base::Unretained(this)))) {
     return false;
   }
-  run_loop.Run();
 
   return Started() && base_url_.is_valid();
 }
@@ -134,17 +130,8 @@ bool EmbeddedTestServer::InitializeAndWaitUntilReady() {
 bool EmbeddedTestServer::ShutdownAndWaitUntilComplete() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  base::RunLoop run_loop;
-  if (!io_thread_->PostTaskAndReply(
-          FROM_HERE,
-          base::Bind(&EmbeddedTestServer::ShutdownOnIOThread,
-                     base::Unretained(this)),
-          run_loop.QuitClosure())) {
-    return false;
-  }
-  run_loop.Run();
-
-  return true;
+  return PostTaskToIOThreadAndWait(base::Bind(
+      &EmbeddedTestServer::ShutdownOnIOThread, base::Unretained(this)));
 }
 
 void EmbeddedTestServer::InitializeOnIOThread() {
@@ -272,6 +259,28 @@ HttpConnection* EmbeddedTestServer::FindConnection(
     return NULL;
   }
   return it->second;
+}
+
+bool EmbeddedTestServer::PostTaskToIOThreadAndWait(
+    const base::Closure& closure) {
+  // Note that PostTaskAndReply below requires base::MessageLoopProxy::current()
+  // to return a loop for posting the reply task. However, in order to make
+  // EmbeddedTestServer universally usable, it needs to cope with the situation
+  // where it's running on a thread on which a message loop is not (yet)
+  // available or as has been destroyed already.
+  //
+  // To handle this situation, create temporary message loop to support the
+  // PostTaskAndReply operation if the current thread as no message loop.
+  scoped_ptr<base::MessageLoop> temporary_loop;
+  if (!base::MessageLoop::current())
+    temporary_loop.reset(new base::MessageLoop());
+
+  base::RunLoop run_loop;
+  if (!io_thread_->PostTaskAndReply(FROM_HERE, closure, run_loop.QuitClosure()))
+    return false;
+  run_loop.Run();
+
+  return true;
 }
 
 }  // namespace test_server

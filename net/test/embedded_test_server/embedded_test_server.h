@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -53,7 +54,7 @@ class HttpListenSocket : public TCPListenSocket {
 //
 // void SetUp() {
 //   base::Thread::Options thread_options;
-//   thread_options.message_loop_type = MessageLoop::TYPE_IO;
+//   thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
 //   ASSERT_TRUE(io_thread_.StartWithOptions(thread_options));
 //
 //   test_server_.reset(
@@ -144,6 +145,10 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   virtual void DidClose(StreamListenSocket* connection) OVERRIDE;
 
   HttpConnection* FindConnection(StreamListenSocket* socket);
+
+  // Posts a task to the |io_thread_| and waits for a reply.
+  bool PostTaskToIOThreadAndWait(
+      const base::Closure& closure) WARN_UNUSED_RESULT;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
 
