@@ -118,7 +118,8 @@ def RunRdfaValidator(options, data):
   data += (-len(data) % BUNDLE_SIZE) * '\x90'
   assert len(data) % BUNDLE_SIZE == 0
 
-  tmp = tempfile.NamedTemporaryFile(mode='wb', delete=False)
+  tmp = tempfile.NamedTemporaryFile(
+      prefix='tmp_legacy_validator_', mode='wb', delete=False)
   try:
     tmp.write(CreateElfContent(options.bits, data))
     tmp.close()
