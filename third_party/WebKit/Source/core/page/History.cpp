@@ -150,7 +150,7 @@ void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const Str
         es.throwSecurityError("A history state object with URL '" + fullURL.elidedString() + "' cannot be created in a document with origin '" + m_frame->document()->securityOrigin()->toString() + "'.");
         return;
     }
-    m_frame->loader()->updateForSameDocumentNavigation(fullURL, sameDocumentNavigationSource, data, title);
+    m_frame->loader()->updateForSameDocumentNavigation(fullURL, sameDocumentNavigationSource, data, title, FrameLoader::DoNotUpdateBackForwardList);
 }
 
 } // namespace WebCore
