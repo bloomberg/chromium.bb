@@ -326,7 +326,7 @@ void StyleResolver::matchHostRules(Element* element, ScopedStyleResolver* resolv
 
 static inline bool applyAuthorStylesOf(const Element* element)
 {
-    return element->treeScope()->applyAuthorStyles() || (element->shadow() && element->shadow()->applyAuthorStyles());
+    return element->treeScope().applyAuthorStyles() || (element->shadow() && element->shadow()->applyAuthorStyles());
 }
 
 void StyleResolver::matchScopedAuthorRulesForShadowHost(Element* element, ElementRuleCollector& collector, bool includeEmptyRules, Vector<ScopedStyleResolver*, 8>& resolvers, Vector<ScopedStyleResolver*, 8>& resolversInShadowTree)
@@ -341,7 +341,7 @@ void StyleResolver::matchScopedAuthorRulesForShadowHost(Element* element, Elemen
     for (int j = resolversInShadowTree.size() - 1; j >= 0; --j)
         resolversInShadowTree.at(j)->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope, cascadeOrder++);
 
-    if (resolvers.isEmpty() || resolvers.first()->treeScope() != element->treeScope())
+    if (resolvers.isEmpty() || resolvers.first()->treeScope() != &element->treeScope())
         ++cascadeScope;
     cascadeOrder += resolvers.size();
     for (unsigned i = 0; i < resolvers.size(); ++i)
@@ -382,7 +382,7 @@ void StyleResolver::matchScopedAuthorRules(Element* element, ElementRuleCollecto
     for (unsigned i = 0; i < resolvers.size(); ++i, --cascadeOrder) {
         ScopedStyleResolver* resolver = resolvers.at(i);
         // FIXME: Need to clarify how to treat style scoped.
-        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, resolver->treeScope() == element->treeScope() && resolver->scopingNode().isShadowRoot() ? 0 : cascadeOrder);
+        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, resolver->treeScope() == &element->treeScope() && resolver->scopingNode().isShadowRoot() ? 0 : cascadeOrder);
     }
 
     collector.sortAndTransferMatchedRules();

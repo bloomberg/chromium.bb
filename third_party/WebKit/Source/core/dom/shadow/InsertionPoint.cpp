@@ -173,7 +173,7 @@ Node::InsertionNotificationRequest InsertionPoint::insertedInto(ContainerNode* i
     if (ShadowRoot* root = containingShadowRoot()) {
         if (ElementShadow* rootOwner = root->owner()) {
             rootOwner->setNeedsDistributionRecalc();
-            if (isActive() && !m_registeredWithShadowRoot && insertionPoint->treeScope()->rootNode() == root) {
+            if (isActive() && !m_registeredWithShadowRoot && insertionPoint->treeScope().rootNode() == root) {
                 m_registeredWithShadowRoot = true;
                 root->addInsertionPoint(this);
                 rootOwner->didAffectApplyAuthorStyles();
@@ -203,7 +203,7 @@ void InsertionPoint::removedFrom(ContainerNode* insertionPoint)
     // Since this insertion point is no longer visible from the shadow subtree, it need to clean itself up.
     clearDistribution();
 
-    if (m_registeredWithShadowRoot && insertionPoint->treeScope()->rootNode() == root) {
+    if (m_registeredWithShadowRoot && insertionPoint->treeScope().rootNode() == root) {
         ASSERT(root);
         m_registeredWithShadowRoot = false;
         root->removeInsertionPoint(this);

@@ -963,7 +963,7 @@ AccessibilityObject* AccessibilityRenderObject::activeDescendant() const
     if (activeDescendantAttrStr.isNull() || activeDescendantAttrStr.isEmpty())
         return 0;
 
-    Element* target = element->treeScope()->getElementById(activeDescendantAttrStr);
+    Element* target = element->treeScope().getElementById(activeDescendantAttrStr);
     if (!target)
         return 0;
 

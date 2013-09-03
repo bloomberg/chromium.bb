@@ -157,7 +157,7 @@ void HTMLFormControlElement::disabledAttributeChanged()
     didAffectSelector(AffectedSelectorDisabled | AffectedSelectorEnabled);
     if (renderer() && renderer()->style()->hasAppearance())
         RenderTheme::theme().stateChanged(renderer(), EnabledState);
-    if (isDisabledFormControl() && treeScope()->adjustedFocusedElement() == this) {
+    if (isDisabledFormControl() && treeScope().adjustedFocusedElement() == this) {
         // We might want to call blur(), but it's dangerous to dispatch events
         // here.
         document().setNeedsFocusedElementCheck();

@@ -246,7 +246,7 @@ PassOwnPtr<SimpleNodeList> SelectorDataList::findTraverseRoots(Node* rootNode, b
 
     for (const CSSSelector* selector = m_selectors[0].selector; selector; selector = selector->tagHistory()) {
         if (selector->m_match == CSSSelector::Id && !rootNode->document().containsMultipleElementsWithId(selector->value())) {
-            Element* element = rootNode->treeScope()->getElementById(selector->value());
+            Element* element = rootNode->treeScope().getElementById(selector->value());
             if (element && (isTreeScopeRoot(rootNode) || element->isDescendantOf(rootNode)))
                 rootNode = element;
             else if (!element || isRightmostSelector)
@@ -317,7 +317,7 @@ void SelectorDataList::executeQueryAll(Node* rootNode, Vector<RefPtr<Node> >& ma
                     break;
 
                 // Just the same as getElementById.
-                Element* element = rootNode->treeScope()->getElementById(firstSelector->value());
+                Element* element = rootNode->treeScope().getElementById(firstSelector->value());
                 if (element && (isTreeScopeRoot(rootNode) || element->isDescendantOf(rootNode)))
                     matchedElements.append(element);
                 return;
@@ -375,7 +375,7 @@ Node* SelectorDataList::findTraverseRoot(Node* rootNode, bool& matchTraverseRoot
     bool startFromParent = false;
     for (const CSSSelector* selector = m_selectors[0].selector; selector; selector = selector->tagHistory()) {
         if (selector->m_match == CSSSelector::Id && !rootNode->document().containsMultipleElementsWithId(selector->value())) {
-            Element* element = rootNode->treeScope()->getElementById(selector->value());
+            Element* element = rootNode->treeScope().getElementById(selector->value());
             if (element && (isTreeScopeRoot(rootNode) || element->isDescendantOf(rootNode)))
                 rootNode = element;
             else if (!element || matchSingleNode)
@@ -429,7 +429,7 @@ Element* SelectorDataList::executeQueryFirst(Node* rootNode) const
             {
                 if (rootNode->document().containsMultipleElementsWithId(selector->value()))
                     break;
-                Element* element = rootNode->treeScope()->getElementById(selector->value());
+                Element* element = rootNode->treeScope().getElementById(selector->value());
                 return element && (isTreeScopeRoot(rootNode) || element->isDescendantOf(rootNode)) ? element : 0;
             }
         case CSSSelector::Class:

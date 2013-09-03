@@ -100,14 +100,14 @@ void ElementRuleCollector::addElementStyleProperties(const StylePropertySet* pro
 
 static bool rulesApplicableInCurrentTreeScope(const Element* element, const ContainerNode* scopingNode, SelectorChecker::BehaviorAtBoundary behaviorAtBoundary, bool elementApplyAuthorStyles)
 {
-    TreeScope* treeScope = element->treeScope();
+    TreeScope& treeScope = element->treeScope();
 
     // [skipped, because already checked] a) it's a UA rule
     // b) element is allowed to apply author rules
     if (elementApplyAuthorStyles)
         return true;
     // c) the rules comes from a scoped style sheet within the same tree scope
-    if (!scopingNode || treeScope == scopingNode->treeScope())
+    if (!scopingNode || &treeScope == &scopingNode->treeScope())
         return true;
     // d) the rules comes from a scoped style sheet within an active shadow root whose host is the given element
     if (element->isInShadowTree() && (behaviorAtBoundary & SelectorChecker::ScopeIsShadowHost) && scopingNode == element->containingShadowRoot()->host())

@@ -725,9 +725,9 @@ private:
     void synchronizeAttribute(const AtomicString& localName) const;
 
     void updateId(const AtomicString& oldId, const AtomicString& newId);
-    void updateId(TreeScope*, const AtomicString& oldId, const AtomicString& newId);
+    void updateId(TreeScope&, const AtomicString& oldId, const AtomicString& newId);
     void updateName(const AtomicString& oldName, const AtomicString& newName);
-    void updateLabel(TreeScope*, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue);
+    void updateLabel(TreeScope&, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue);
 
     void scrollByUnits(int units, ScrollGranularity);
 
@@ -987,7 +987,7 @@ inline void Node::removedFrom(ContainerNode* insertionPoint)
     ASSERT(insertionPoint->inDocument() || isContainerNode());
     if (insertionPoint->inDocument())
         clearFlag(InDocumentFlag);
-    if (isInShadowTree() && !treeScope()->rootNode()->isShadowRoot())
+    if (isInShadowTree() && !treeScope().rootNode()->isShadowRoot())
         clearFlag(IsInShadowTreeFlag);
 }
 

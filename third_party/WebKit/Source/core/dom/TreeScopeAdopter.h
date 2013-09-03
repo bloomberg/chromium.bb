@@ -55,10 +55,11 @@ private:
     TreeScope* m_oldScope;
 };
 
+// FIXME: Should take |TreeScope&| instead of |TreeScope*|.
 inline TreeScopeAdopter::TreeScopeAdopter(Node* toAdopt, TreeScope* newScope)
     : m_toAdopt(toAdopt)
     , m_newScope(newScope)
-    , m_oldScope(toAdopt->treeScope())
+    , m_oldScope(&toAdopt->treeScope())
 {
     ASSERT(newScope);
 }

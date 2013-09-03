@@ -273,7 +273,7 @@ public:
     bool isStyledElement() const { return isHTMLElement() || isSVGElement(); }
 
     bool isDocumentNode() const;
-    bool isTreeScope() const { return treeScope()->rootNode() == this; }
+    bool isTreeScope() const { return treeScope().rootNode() == this; }
     bool isDocumentFragment() const { return getFlag(IsDocumentFragmentFlag); }
     bool isShadowRoot() const { return isDocumentFragment() && isTreeScope(); }
     bool isInsertionPoint() const { return getFlag(IsInsertionPointFlag); }
@@ -492,9 +492,7 @@ public:
         return *documentInternal();
     }
 
-    // Can never return 0.
-    // FIXME: This should return a reference.
-    TreeScope* treeScope() const { return m_treeScope; }
+    TreeScope& treeScope() const { return *m_treeScope; }
 
     // Returns true if this node is associated with a document and is in its associated document's
     // node tree, false otherwise.
@@ -819,7 +817,7 @@ protected:
 
     void setHasCustomStyleCallbacks() { setFlag(true, HasCustomStyleCallbacksFlag); }
 
-    Document* documentInternal() const { return treeScope()->documentScope(); }
+    Document* documentInternal() const { return treeScope().documentScope(); }
     void setTreeScope(TreeScope* scope) { m_treeScope = scope; }
 
 private:

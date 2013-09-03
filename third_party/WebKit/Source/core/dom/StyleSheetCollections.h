@@ -115,7 +115,7 @@ private:
     StyleSheetCollections(Document&);
 
     StyleSheetCollection* ensureStyleSheetCollectionFor(TreeScope&);
-    StyleSheetCollection* styleSheetCollectionFor(TreeScope*);
+    StyleSheetCollection* styleSheetCollectionFor(TreeScope&);
     void activeStyleSheetsUpdatedForInspector();
     bool shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode);
 
@@ -161,4 +161,3 @@ private:
 }
 
 #endif
-

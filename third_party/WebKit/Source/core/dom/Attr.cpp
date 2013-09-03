@@ -85,7 +85,7 @@ void Attr::createTextChild()
         // This does everything appendChild() would do in this situation (assuming m_ignoreChildrenChanged was set),
         // but much more efficiently.
         textNode->setParentOrShadowHostNode(this);
-        treeScope()->adoptIfNeeded(textNode.get());
+        treeScope().adoptIfNeeded(textNode.get());
         setFirstChild(textNode.get());
         setLastChild(textNode.get());
     }

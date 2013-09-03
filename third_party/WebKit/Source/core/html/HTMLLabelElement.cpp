@@ -78,7 +78,7 @@ LabelableElement* HTMLLabelElement::control()
         return 0;
     }
 
-    if (Element* element = treeScope()->getElementById(controlId)) {
+    if (Element* element = treeScope().getElementById(controlId)) {
         if (supportsLabels(element))
             return toLabelableElement(element);
     }

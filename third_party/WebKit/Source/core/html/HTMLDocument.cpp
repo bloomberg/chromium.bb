@@ -111,7 +111,7 @@ void HTMLDocument::setDesignMode(const String& value)
 
 Element* HTMLDocument::activeElement()
 {
-    if (Element* element = treeScope()->adjustedFocusedElement())
+    if (Element* element = treeScope().adjustedFocusedElement())
         return element;
     return body();
 }

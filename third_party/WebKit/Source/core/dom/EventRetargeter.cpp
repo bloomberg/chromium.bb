@@ -40,7 +40,7 @@ namespace WebCore {
 
 static inline bool inTheSameScope(ShadowRoot* shadowRoot, EventTarget* target)
 {
-    return target->toNode() && target->toNode()->treeScope()->rootNode() == shadowRoot;
+    return target->toNode() && target->toNode()->treeScope().rootNode() == shadowRoot;
 }
 
 static inline EventDispatchBehavior determineDispatchBehavior(Event* event, ShadowRoot* shadowRoot, EventTarget* target)
@@ -118,7 +118,7 @@ void EventRetargeter::calculateAdjustedEventPathForEachNode(EventPath& eventPath
     TreeScope* lastScope = 0;
     size_t eventPathSize = eventPath.size();
     for (size_t i = 0; i < eventPathSize; ++i) {
-        TreeScope* currentScope = eventPath[i]->node()->treeScope();
+        TreeScope* currentScope = &eventPath[i]->node()->treeScope();
         if (currentScope == lastScope) {
             // Fast path.
             eventPath[i]->setEventPath(eventPath[i - 1]->eventPath());
@@ -128,7 +128,7 @@ void EventRetargeter::calculateAdjustedEventPathForEachNode(EventPath& eventPath
         Vector<RefPtr<Node> > nodes;
         for (size_t j = 0; j < eventPathSize; ++j) {
             Node* node = eventPath[j]->node();
-            if (node->treeScope()->isInclusiveAncestorOf(currentScope))
+            if (node->treeScope().isInclusiveAncestorOf(currentScope))
                 nodes.append(node);
         }
         eventPath[i]->adoptEventPath(nodes);
@@ -213,7 +213,7 @@ void EventRetargeter::calculateAdjustedNodes(const Node* node, const Node* relat
     TreeScope* lastTreeScope = 0;
     Node* adjustedNode = 0;
     for (EventPath::const_iterator iter = eventPath.begin(); iter < eventPath.end(); ++iter) {
-        TreeScope* scope = (*iter)->node()->treeScope();
+        TreeScope* scope = &(*iter)->node()->treeScope();
         if (scope == lastTreeScope) {
             // Re-use the previous adjustedRelatedTarget if treeScope does not change. Just for the performance optimization.
             adjustedNodes.append(adjustedNode);
@@ -225,7 +225,7 @@ void EventRetargeter::calculateAdjustedNodes(const Node* node, const Node* relat
         if (eventWithRelatedTargetDispatchBehavior == DoesNotStopAtBoundary)
             continue;
         if (targetIsIdenticalToToRelatedTarget) {
-            if (node->treeScope()->rootNode() == (*iter)->node()) {
+            if (node->treeScope().rootNode() == (*iter)->node()) {
                 eventPath.shrink(iter + 1 - eventPath.begin());
                 break;
             }
@@ -248,7 +248,7 @@ void EventRetargeter::buildRelatedNodeMap(const Node* relatedNode, RelatedNodeMa
             relatedNodeStack.append(node);
         else if (walker.isVisitingInsertionPointInReprojection())
             relatedNodeStack.append(relatedNodeStack.last());
-        TreeScope* scope = node->treeScope();
+        TreeScope* scope = &node->treeScope();
         // Skips adding a node to the map if treeScope does not change. Just for the performance optimization.
         if (scope != lastTreeScope)
             relatedNodeMap.add(scope, relatedNodeStack.last());

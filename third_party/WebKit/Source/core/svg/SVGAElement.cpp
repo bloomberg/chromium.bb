@@ -163,7 +163,7 @@ void SVGAElement::defaultEventHandler(Event* event)
             String url = stripLeadingAndTrailingHTMLSpaces(hrefCurrentValue());
 
             if (url[0] == '#') {
-                Element* targetElement = treeScope()->getElementById(url.substring(1));
+                Element* targetElement = treeScope().getElementById(url.substring(1));
                 if (SVGSMILElement::isSMILElement(targetElement)) {
                     toSVGSMILElement(targetElement)->beginByLinkActivation();
                     event->setDefaultHandled();

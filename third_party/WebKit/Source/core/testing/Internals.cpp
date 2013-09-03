@@ -319,7 +319,7 @@ Node* Internals::treeScopeRootNode(Node* node, ExceptionState& es)
         return 0;
     }
 
-    return node->treeScope()->rootNode();
+    return node->treeScope().rootNode();
 }
 
 Node* Internals::parentTreeScope(Node* node, ExceptionState& es)
@@ -328,7 +328,7 @@ Node* Internals::parentTreeScope(Node* node, ExceptionState& es)
         es.throwDOMException(InvalidAccessError);
         return 0;
     }
-    const TreeScope* parentTreeScope = node->treeScope()->parentTreeScope();
+    const TreeScope* parentTreeScope = node->treeScope().parentTreeScope();
     return parentTreeScope ? parentTreeScope->rootNode() : 0;
 }
 

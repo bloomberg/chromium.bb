@@ -1234,8 +1234,8 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
     if (isUpgradedCustomElement() && inDocument())
         CustomElement::didEnterDocument(this, document());
 
-    TreeScope* scope = insertionPoint->treeScope();
-    if (scope != treeScope())
+    TreeScope& scope = insertionPoint->treeScope();
+    if (&scope != &treeScope())
         return InsertionDone;
 
     const AtomicString& idValue = getIdAttribute();
@@ -1247,7 +1247,7 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
         updateName(nullAtom, nameValue);
 
     if (hasTagName(labelTag)) {
-        if (scope->shouldCacheLabelsByForAttribute())
+        if (scope.shouldCacheLabelsByForAttribute())
             updateLabel(scope, nullAtom, fastGetAttribute(forAttr));
     }
 
@@ -1279,7 +1279,7 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 
     setSavedLayerScrollOffset(IntSize());
 
-    if (insertionPoint->isInTreeScope() && treeScope() == &document()) {
+    if (insertionPoint->isInTreeScope() && &treeScope() == &document()) {
         const AtomicString& idValue = getIdAttribute();
         if (!idValue.isNull())
             updateId(insertionPoint->treeScope(), idValue, nullAtom);
@@ -1289,8 +1289,8 @@ void Element::removedFrom(ContainerNode* insertionPoint)
             updateName(nameValue, nullAtom);
 
         if (hasTagName(labelTag)) {
-            TreeScope* treeScope = insertionPoint->treeScope();
-            if (treeScope->shouldCacheLabelsByForAttribute())
+            TreeScope& treeScope = insertionPoint->treeScope();
+            if (treeScope.shouldCacheLabelsByForAttribute())
                 updateLabel(treeScope, fastGetAttribute(forAttr), nullAtom);
         }
     }
@@ -1844,7 +1844,7 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& es)
     setAttributeInternal(index, attrNode->qualifiedName(), attrNode->value(), NotInSynchronizationOfLazyAttribute);
 
     attrNode->attachToElement(this);
-    treeScope()->adoptIfNeeded(attrNode);
+    treeScope().adoptIfNeeded(attrNode);
     ensureAttrNodeListForElement(this)->append(attrNode);
 
     return oldAttrNode.release();
@@ -2068,7 +2068,7 @@ void Element::updateFocusAppearance(bool /*restorePreviousSelection*/)
 void Element::blur()
 {
     cancelFocusAppearanceUpdate();
-    if (treeScope()->adjustedFocusedElement() == this) {
+    if (treeScope().adjustedFocusedElement() == this) {
         Document& doc = document();
         if (doc.page())
             doc.page()->focusController().setFocusedElement(0, doc.frame());
@@ -2775,21 +2775,21 @@ inline void Element::updateId(const AtomicString& oldId, const AtomicString& new
     updateId(treeScope(), oldId, newId);
 }
 
-inline void Element::updateId(TreeScope* scope, const AtomicString& oldId, const AtomicString& newId)
+inline void Element::updateId(TreeScope& scope, const AtomicString& oldId, const AtomicString& newId)
 {
     ASSERT(isInTreeScope());
     ASSERT(oldId != newId);
 
     if (!oldId.isEmpty())
-        scope->removeElementById(oldId, this);
+        scope.removeElementById(oldId, this);
     if (!newId.isEmpty())
-        scope->addElementById(newId, this);
+        scope.addElementById(newId, this);
 
     if (shouldRegisterAsExtraNamedItem())
         updateExtraNamedItemRegistration(oldId, newId);
 }
 
-void Element::updateLabel(TreeScope* scope, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue)
+void Element::updateLabel(TreeScope& scope, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue)
 {
     ASSERT(hasTagName(labelTag));
 
@@ -2800,9 +2800,9 @@ void Element::updateLabel(TreeScope* scope, const AtomicString& oldForAttributeV
         return;
 
     if (!oldForAttributeValue.isEmpty())
-        scope->removeLabel(oldForAttributeValue, toHTMLLabelElement(this));
+        scope.removeLabel(oldForAttributeValue, toHTMLLabelElement(this));
     if (!newForAttributeValue.isEmpty())
-        scope->addLabel(newForAttributeValue, toHTMLLabelElement(this));
+        scope.addLabel(newForAttributeValue, toHTMLLabelElement(this));
 }
 
 static bool hasSelectorForAttribute(Document* document, const AtomicString& localName)
@@ -2817,8 +2817,8 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
     else if (name == HTMLNames::nameAttr)
         updateName(oldValue, newValue);
     else if (name == HTMLNames::forAttr && hasTagName(labelTag)) {
-        TreeScope* scope = treeScope();
-        if (scope->shouldCacheLabelsByForAttribute())
+        TreeScope& scope = treeScope();
+        if (scope.shouldCacheLabelsByForAttribute())
             updateLabel(scope, oldValue, newValue);
     }
 
@@ -2960,7 +2960,7 @@ PassRefPtr<Attr> Element::ensureAttr(const QualifiedName& name)
     RefPtr<Attr> attrNode = findAttrNodeInList(attrNodeList, name);
     if (!attrNode) {
         attrNode = Attr::create(this, name);
-        treeScope()->adoptIfNeeded(attrNode.get());
+        treeScope().adoptIfNeeded(attrNode.get());
         attrNodeList->append(attrNode);
     }
     return attrNode.release();

@@ -285,7 +285,7 @@ void HTMLAnchorElement::parseAttribute(const QualifiedName& name, const AtomicSt
         setIsLink(!value.isNull());
         if (wasLink != isLink()) {
             didAffectSelector(AffectedSelectorLink | AffectedSelectorVisited | AffectedSelectorEnabled);
-            if (wasLink && treeScope()->adjustedFocusedElement() == this) {
+            if (wasLink && treeScope().adjustedFocusedElement() == this) {
                 // We might want to call blur(), but it's dangerous to dispatch
                 // events here.
                 document().setNeedsFocusedElementCheck();

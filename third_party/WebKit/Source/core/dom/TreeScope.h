@@ -124,6 +124,7 @@ public:
 
     void removedLastRefToScope();
 
+    // FIXME: These should take a const reference.
     bool isInclusiveAncestorOf(const TreeScope*) const;
     unsigned short comparePosition(const TreeScope*) const;
 

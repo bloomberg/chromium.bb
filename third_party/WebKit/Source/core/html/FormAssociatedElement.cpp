@@ -107,7 +107,7 @@ HTMLFormElement* FormAssociatedElement::findAssociatedForm(const HTMLElement* el
         // the value of form attribute, so we put the result of
         // treeScope()->getElementById() over the given element.
         HTMLFormElement* newForm = 0;
-        Element* newFormCandidate = element->treeScope()->getElementById(formId);
+        Element* newFormCandidate = element->treeScope().getElementById(formId);
         if (newFormCandidate && newFormCandidate->hasTagName(formTag))
             newForm = toHTMLFormElement(newFormCandidate);
         return newForm;
@@ -295,7 +295,7 @@ PassOwnPtr<FormAttributeTargetObserver> FormAttributeTargetObserver::create(cons
 }
 
 FormAttributeTargetObserver::FormAttributeTargetObserver(const AtomicString& id, FormAssociatedElement* element)
-    : IdTargetObserver(toHTMLElement(element)->treeScope()->idTargetObserverRegistry(), id)
+    : IdTargetObserver(toHTMLElement(element)->treeScope().idTargetObserverRegistry(), id)
     , m_element(element)
 {
 }

@@ -94,7 +94,7 @@ FocusNavigationScope FocusNavigationScope::focusNavigationScopeOf(Node* node)
         root = n;
     // The result is not always a ShadowRoot nor a DocumentNode since
     // a starting node is in an orphaned tree in composed shadow tree.
-    return FocusNavigationScope(root->treeScope());
+    return FocusNavigationScope(&root->treeScope());
 }
 
 FocusNavigationScope FocusNavigationScope::ownedByNonFocusableFocusScopeOwner(Node* node)

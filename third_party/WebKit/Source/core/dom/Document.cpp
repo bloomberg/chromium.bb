@@ -3204,7 +3204,7 @@ void Document::removeFocusedElementOfSubtree(Node* node, bool amongChildrenOnly)
     if (!m_focusedElement)
         return;
 
-    Element* focusedElement = node->treeScope()->adjustedFocusedElement();
+    Element* focusedElement = node->treeScope().adjustedFocusedElement();
     if (!focusedElement)
         return;
 

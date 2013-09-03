@@ -119,12 +119,12 @@ StyleSheetCollection* StyleSheetCollections::ensureStyleSheetCollectionFor(TreeS
     return result.iterator->value.get();
 }
 
-StyleSheetCollection* StyleSheetCollections::styleSheetCollectionFor(TreeScope* treeScope)
+StyleSheetCollection* StyleSheetCollections::styleSheetCollectionFor(TreeScope& treeScope)
 {
-    if (treeScope == &m_document)
+    if (&treeScope == &m_document)
         return &m_documentStyleSheetCollection;
 
-    HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::iterator it = m_styleSheetCollectionMap.find(treeScope);
+    HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::iterator it = m_styleSheetCollectionMap.find(&treeScope);
     if (it == m_styleSheetCollectionMap.end())
         return 0;
     return it->value.get();
@@ -279,7 +279,7 @@ void StyleSheetCollections::removePendingSheet(Node* styleSheetCandidateNode, Re
 
     m_pendingStylesheets--;
 
-    TreeScope* treeScope = isHTMLStyleElement(styleSheetCandidateNode) ? styleSheetCandidateNode->treeScope() : &m_document;
+    TreeScope* treeScope = isHTMLStyleElement(styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : &m_document;
     if (treeScope == &m_document)
         m_needsDocumentStyleSheetsUpdate = true;
     else
@@ -303,7 +303,7 @@ void StyleSheetCollections::addStyleSheetCandidateNode(Node* node, bool createdB
     if (!node->inDocument())
         return;
 
-    TreeScope& treeScope = isHTMLStyleElement(node) ? *node->treeScope() : m_document;
+    TreeScope& treeScope = isHTMLStyleElement(node) ? node->treeScope() : m_document;
     ASSERT(isHTMLStyleElement(node) || &treeScope == &m_document);
 
     StyleSheetCollection* collection = ensureStyleSheetCollectionFor(treeScope);
@@ -321,19 +321,19 @@ void StyleSheetCollections::addStyleSheetCandidateNode(Node* node, bool createdB
 
 void StyleSheetCollections::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopingNode)
 {
-    TreeScope* treeScope = scopingNode ? scopingNode->treeScope() : &m_document;
-    ASSERT(isHTMLStyleElement(node) || treeScope == &m_document);
+    TreeScope& treeScope = scopingNode ? scopingNode->treeScope() : m_document;
+    ASSERT(isHTMLStyleElement(node) || &treeScope == &m_document);
 
     StyleSheetCollection* collection = styleSheetCollectionFor(treeScope);
     ASSERT(collection);
     collection->removeStyleSheetCandidateNode(node, scopingNode);
 
-    if (treeScope == &m_document) {
+    if (&treeScope == &m_document) {
         m_needsDocumentStyleSheetsUpdate = true;
         return;
     }
-    m_dirtyTreeScopes.add(treeScope);
-    m_activeTreeScopes.remove(treeScope);
+    m_dirtyTreeScopes.add(&treeScope);
+    m_activeTreeScopes.remove(&treeScope);
 }
 
 void StyleSheetCollections::modifiedStyleSheetCandidateNode(Node* node)
@@ -341,13 +341,13 @@ void StyleSheetCollections::modifiedStyleSheetCandidateNode(Node* node)
     if (!node->inDocument())
         return;
 
-    TreeScope* treeScope = isHTMLStyleElement(node) ? node->treeScope() : &m_document;
-    ASSERT(isHTMLStyleElement(node) || treeScope == &m_document);
-    if (treeScope == &m_document) {
+    TreeScope& treeScope = isHTMLStyleElement(node) ? node->treeScope() : m_document;
+    ASSERT(isHTMLStyleElement(node) || &treeScope == &m_document);
+    if (&treeScope == &m_document) {
         m_needsDocumentStyleSheetsUpdate = true;
         return;
     }
-    m_dirtyTreeScopes.add(treeScope);
+    m_dirtyTreeScopes.add(&treeScope);
 }
 
 bool StyleSheetCollections::shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode updateMode)
@@ -379,7 +379,7 @@ bool StyleSheetCollections::updateActiveStyleSheets(StyleResolverUpdateMode upda
         for (TreeScopeSet::iterator it = treeScopes.begin(); it != treeScopes.end(); ++it) {
             TreeScope* treeScope = *it;
             ASSERT(treeScope != &m_document);
-            ShadowTreeStyleSheetCollection* collection = static_cast<ShadowTreeStyleSheetCollection*>(styleSheetCollectionFor(treeScope));
+            ShadowTreeStyleSheetCollection* collection = static_cast<ShadowTreeStyleSheetCollection*>(styleSheetCollectionFor(*treeScope));
             ASSERT(collection);
             collection->updateActiveStyleSheets(this, updateMode);
             if (!collection->hasStyleSheetCandidateNodes())

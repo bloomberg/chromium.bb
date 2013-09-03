@@ -292,7 +292,7 @@ void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& 
         int tabindex = 0;
         if (value.isEmpty()) {
             clearTabIndexExplicitlyIfNeeded();
-            if (treeScope()->adjustedFocusedElement() == this) {
+            if (treeScope().adjustedFocusedElement() == this) {
                 // We might want to call blur(), but it's dangerous to dispatch
                 // events here.
                 document().setNeedsFocusedElementCheck();

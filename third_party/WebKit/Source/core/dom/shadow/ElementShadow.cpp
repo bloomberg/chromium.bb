@@ -60,7 +60,7 @@ ShadowRoot* ElementShadow::addShadowRoot(Element* shadowHost, ShadowRoot::Shadow
     RefPtr<ShadowRoot> shadowRoot = ShadowRoot::create(&shadowHost->document(), type);
 
     shadowRoot->setParentOrShadowHostNode(shadowHost);
-    shadowRoot->setParentTreeScope(shadowHost->treeScope());
+    shadowRoot->setParentTreeScope(&shadowHost->treeScope());
     m_shadowRoots.push(shadowRoot.get());
     ChildNodeInsertionNotifier(shadowHost).notify(shadowRoot.get());
     setNeedsDistributionRecalc();
