@@ -68,7 +68,7 @@ class IdlReader:
         if self.extended_attribute_validator:
             try:
                 self.extended_attribute_validator.validate_extended_attributes(definitions)
-            except idl_validator.IDLInvalidExtendedAttributeError, error:
+            except idl_validator.IDLInvalidExtendedAttributeError as error:
                 raise idl_validator.IDLInvalidExtendedAttributeError("""IDL ATTRIBUTE ERROR in file %s:
     %s
     If you want to add a new IDL extended attribute, please add it to bindings/scripts/IDLAttributes.txt and add an explanation to the Blink IDL document at http://chromium.org/blink/webidl

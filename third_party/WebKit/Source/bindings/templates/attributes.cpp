@@ -1,3 +1,4 @@
+{##############################################################################}
 {% macro attribute_getter(attribute) %}
 static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -27,14 +28,4 @@ static void {{attribute.name}}AttributeGetterCallback(v8::Local<v8::String> name
     {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
-{% endmacro %}
-
-
-{##############################################################################}
-{% macro class_attributes() %}
-static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attributes[] = {
-{% for attribute in attributes %}
-    {"{{attribute.name}}", {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-{% endfor %}
-};
 {% endmacro %}

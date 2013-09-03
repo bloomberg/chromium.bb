@@ -293,7 +293,7 @@ def parse_idl_files(idl_files, global_constructors_filenames):
         implemented_interfaces = implements_interfaces[interface_name]
         try:
             interface_paths = map(lambda x: interface_name_to_idl_file[x], implemented_interfaces)
-        except KeyError, key_name:
+        except KeyError as key_name:
             raise IdlInterfaceFileNotFoundError('Could not find the IDL file where the following implemented interface is defined: %s' % key_name)
         dependencies[idl_file_path] = sorted(partial_interface_files[interface_name] + interface_paths)
 
