@@ -196,12 +196,17 @@ static void EnumerateOnFileThread(crypto::RSAPrivateKey* rsa_key,
     if (!usb_device)
       continue;
 
+    bool claimed = false;
     for (size_t j = 0; j < config->GetNumInterfaces(); ++j) {
       scoped_refptr<AndroidUsbDevice> device =
           ClaimInterface(rsa_key, usb_device, config->GetInterface(j), j);
-      if (device.get())
+      if (device.get()) {
         devices.push_back(device);
+        claimed = true;
+      }
     }
+    if (!claimed)
+      usb_device->Close();
   }
 
   *result = devices;
