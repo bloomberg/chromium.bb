@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2013 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<resources>
+    <attr name="action_mode_share_drawable" format="reference" />
+    <attr name="action_mode_web_search_drawable" format="reference" />
+</resources>

@@ -16,12 +16,14 @@ package org.chromium.content;
  * com.android.internal.R.
  */
 public final class R {
+    public static final class attr {
+        public static int action_mode_share_drawable;
+        public static int action_mode_web_search_drawable;
+    }
     public static final class dimen {
         public static int link_preview_overlay_radius;
     }
     public static final class drawable {
-        public static int ic_menu_search_holo_light;
-        public static int ic_menu_share_holo_light;
         public static int ondemand_overlay;
     }
     public static final class id {
@@ -68,5 +70,8 @@ public final class R {
         public static int time_picker_dialog_second_subsecond_separator;
         public static int time_picker_dialog_pm;
         public static int week_picker_dialog_title;
+    }
+    public static final class style {
+        public static int ContentActionBar;
     }
 }
