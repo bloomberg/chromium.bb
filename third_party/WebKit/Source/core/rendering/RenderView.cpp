@@ -136,11 +136,9 @@ void RenderView::checkLayoutState(const LayoutState& state)
 }
 #endif
 
-static RenderBox* enclosingSeamlessRenderer(Document* doc)
+static RenderBox* enclosingSeamlessRenderer(const Document& doc)
 {
-    if (!doc)
-        return 0;
-    Element* ownerElement = doc->seamlessParentIFrame();
+    Element* ownerElement = doc.seamlessParentIFrame();
     if (!ownerElement)
         return 0;
     return ownerElement->renderBox();
@@ -151,7 +149,7 @@ void RenderView::addChild(RenderObject* newChild, RenderObject* beforeChild)
     // Seamless iframes are considered part of an enclosing render flow thread from the parent document. This is necessary for them to look
     // up regions in the parent document during layout.
     if (newChild && !newChild->isRenderFlowThread()) {
-        RenderBox* seamlessBox = enclosingSeamlessRenderer(&document());
+        RenderBox* seamlessBox = enclosingSeamlessRenderer(document());
         if (seamlessBox && seamlessBox->flowThreadContainingBlock())
             newChild->setFlowThreadState(seamlessBox->flowThreadState());
     }
@@ -167,7 +165,7 @@ bool RenderView::initializeLayoutState(LayoutState& state)
 
     // Check the writing mode of the seamless ancestor. It has to match our document's writing mode, or we won't inherit any
     // pagination information.
-    RenderBox* seamlessAncestor = enclosingSeamlessRenderer(&document());
+    RenderBox* seamlessAncestor = enclosingSeamlessRenderer(document());
     LayoutState* seamlessLayoutState = seamlessAncestor ? seamlessAncestor->view()->layoutState() : 0;
     bool shouldInheritPagination = seamlessLayoutState && !m_pageLogicalHeight && seamlessAncestor->style()->writingMode() == style()->writingMode();
 
