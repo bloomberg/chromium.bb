@@ -5,6 +5,7 @@
 var callbackPass = chrome.test.callbackPass;
 var callbackFail = chrome.test.callbackFail;
 var assertTrue = chrome.test.assertTrue;
+var assertFalse = chrome.test.assertFalse;
 var assertEq = chrome.test.assertEq;
 
 // Test properties for the verification API.
@@ -82,6 +83,29 @@ var availableTests = [
     chrome.networkingPrivate.getProperties(
       "nonexistent_path",
       callbackFail("Error.DBusFailed"));
+  },
+  function createNetwork() {
+    chrome.networkingPrivate.createNetwork(
+      false,  // shared
+      { "Type": "WiFi",
+        "GUID": "ignored_guid",
+        "WiFi": {
+          "SSID": "wifi_created",
+          "Security": "WEP-PSK"
+        }
+      },
+      callbackPass(function(guid) {
+        assertFalse(guid == "");
+        assertFalse(guid == "ignored_guid");
+        chrome.networkingPrivate.getProperties(
+          guid,
+          callbackPass(function(properties) {
+            assertEq("WiFi", properties.Type);
+            assertEq(guid, properties.GUID);
+            assertEq("wifi_created", properties.WiFi.SSID);
+            assertEq("WEP-PSK", properties.WiFi.Security);
+          }));
+      }));
   },
   function getVisibleNetworks() {
     chrome.networkingPrivate.getVisibleNetworks(

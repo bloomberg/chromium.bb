@@ -55,6 +55,16 @@ ShillManagerClient::VerificationProperties ConvertVerificationProperties(
   return output;
 }
 
+std::string GetUserIdHash(Profile* profile) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles)) {
+    return g_browser_process->platform_part()->
+        profile_helper()->GetUserIdHashFromProfile(profile);
+  } else {
+    return g_browser_process->platform_part()->
+        profile_helper()->active_user_id_hash();
+  }
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -107,16 +117,8 @@ bool NetworkingPrivateGetManagedPropertiesFunction::RunImpl() {
       api::GetManagedProperties::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // User ID hash presence is only enforced when multi-profiles are turned on.
   std::string user_id_hash;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles)) {
-    user_id_hash = g_browser_process->platform_part()->
-        profile_helper()->GetUserIdHashFromProfile(profile());
-  } else {
-    user_id_hash = g_browser_process->platform_part()->
-        profile_helper()->active_user_id_hash();
-  }
-
+  GetUserIdHash(profile());
   NetworkHandler::Get()->managed_network_configuration_handler()->
       GetManagedProperties(
           user_id_hash,
@@ -210,6 +212,49 @@ void NetworkingPrivateSetPropertiesFunction::ErrorCallback(
 }
 
 void NetworkingPrivateSetPropertiesFunction::ResultCallback() {
+  SendResponse(true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateCreateNetworkFunction
+
+NetworkingPrivateCreateNetworkFunction::
+~NetworkingPrivateCreateNetworkFunction() {
+}
+
+bool NetworkingPrivateCreateNetworkFunction::RunImpl() {
+  scoped_ptr<api::CreateNetwork::Params> params =
+      api::CreateNetwork::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  std::string user_id_hash;
+  if (!params->shared)
+    user_id_hash = GetUserIdHash(profile());
+
+  scoped_ptr<base::DictionaryValue> properties_dict(
+      params->properties.ToValue());
+
+  NetworkHandler::Get()->managed_network_configuration_handler()->
+      CreateConfiguration(
+          user_id_hash,
+          *properties_dict,
+          base::Bind(&NetworkingPrivateCreateNetworkFunction::ResultCallback,
+                     this),
+          base::Bind(&NetworkingPrivateCreateNetworkFunction::ErrorCallback,
+                     this));
+  return true;
+}
+
+void NetworkingPrivateCreateNetworkFunction::ErrorCallback(
+    const std::string& error_name,
+    const scoped_ptr<base::DictionaryValue> error_data) {
+  error_ = error_name;
+  SendResponse(false);
+}
+
+void NetworkingPrivateCreateNetworkFunction::ResultCallback(
+    const std::string& guid) {
+  results_ = api::CreateNetwork::Results::Create(guid);
   SendResponse(true);
 }
 

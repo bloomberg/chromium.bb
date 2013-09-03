@@ -98,6 +98,26 @@ class NetworkingPrivateSetPropertiesFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateSetPropertiesFunction);
 };
 
+// Implements the chrome.networkingPrivate.createNetwork method.
+class NetworkingPrivateCreateNetworkFunction : public AsyncExtensionFunction {
+ public:
+  NetworkingPrivateCreateNetworkFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.createNetwork",
+                             NETWORKINGPRIVATE_CREATENETWORK);
+
+ protected:
+  virtual ~NetworkingPrivateCreateNetworkFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void ErrorCallback(const std::string& error_name,
+                     const scoped_ptr<base::DictionaryValue> error_data);
+  void ResultCallback(const std::string& guid);
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateCreateNetworkFunction);
+};
+
 // Implements the chrome.networkingPrivate.getVisibleNetworks method.
 class NetworkingPrivateGetVisibleNetworksFunction
     : public SyncExtensionFunction {
@@ -251,4 +271,3 @@ class NetworkingPrivateVerifyAndEncryptDataFunction
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_API_H_
-

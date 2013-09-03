@@ -248,6 +248,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, CreateNetwork) {
+  EXPECT_TRUE(RunNetworkingSubtest("createNetwork")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetVisibleNetworks) {
   EXPECT_TRUE(RunNetworkingSubtest("getVisibleNetworks")) << message_;
 }

@@ -193,6 +193,31 @@ bool NetworkingPrivateSetPropertiesFunction::RunImpl() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateCreateNetworkFunction
+
+NetworkingPrivateCreateNetworkFunction::
+~NetworkingPrivateCreateNetworkFunction() {
+}
+
+bool NetworkingPrivateCreateNetworkFunction::RunImpl() {
+  scoped_ptr<api::CreateNetwork::Params> params =
+      api::CreateNetwork::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // Store properties_dict in profile to return from GetProperties.
+  scoped_ptr<base::DictionaryValue> properties_dict(
+      params->properties.ToValue());
+  properties_dict->SetString("GUID", "fake_guid");
+  profile()->SetUserData(
+      kNetworkingPrivateProperties,
+      new NetworkingPrivatePropertiesData(properties_dict.get()));
+
+  results_ = api::CreateNetwork::Results::Create("fake_guid");
+  SendResponse(true);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NetworkingPrivateGetVisibleNetworksFunction
 
 NetworkingPrivateGetVisibleNetworksFunction::

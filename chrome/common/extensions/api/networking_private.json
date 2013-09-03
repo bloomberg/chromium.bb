@@ -144,6 +144,32 @@
         ]
       },
       {
+        "name": "createNetwork",
+        "description": "Creates a new network configuration from propeties. If a matching configured network already exists, this will fail. Otherwise returns the guid of the new network.",
+        "parameters": [
+          {
+            "name": "shared",
+            "type": "boolean",
+            "description": "If true, share this network configuration with other users."
+          },
+          {
+            "name": "properties",
+            "$ref": "NetworkProperties",
+            "description": "The properties to configure the new network with."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "guid",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "getVisibleNetworks",
         "description": "Gets the list of visible networks, and returns a list of cached, read-only network properties for each.",
         "parameters": [
