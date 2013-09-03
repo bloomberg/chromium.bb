@@ -240,8 +240,15 @@ calculate_pixman_format(struct fb_var_screeninfo *vinfo,
 		return 0;
 
 	/* We only handle true-colour frame buffers at the moment. */
-	if (finfo->visual != FB_VISUAL_TRUECOLOR || vinfo->grayscale != 0)
-		return 0;
+	switch(finfo->visual) {
+		case FB_VISUAL_TRUECOLOR:
+		case FB_VISUAL_DIRECTCOLOR:
+			if (vinfo->grayscale != 0)
+				return 0;
+		break;
+		default:
+			return 0;
+	}
 
 	/* We only support formats with MSBs on the left. */
 	if (vinfo->red.msb_right != 0 || vinfo->green.msb_right != 0 ||
