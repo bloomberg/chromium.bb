@@ -737,16 +737,17 @@ gfx::Vector2dF InProcessViewRenderer::GetTotalRootLayerScrollOffset() {
 }
 
 void InProcessViewRenderer::DidOverscroll(
+    gfx::Vector2dF accumulated_overscroll,
     gfx::Vector2dF latest_overscroll_delta,
     gfx::Vector2dF current_fling_velocity) {
-  // TODO(mkosiba): Enable this once flinging is handled entirely Java-side.
-  // DCHECK(current_fling_velocity.IsZero());
+  DCHECK(current_fling_velocity.IsZero());
   const float physical_pixel_scale = dip_scale_ * page_scale_factor_;
-  gfx::Vector2dF scaled_overscroll_delta = gfx::ScaleVector2d(
-      latest_overscroll_delta + overscroll_rounding_error_,
-      physical_pixel_scale);
-  gfx::Vector2d rounded_overscroll_delta =
-      gfx::ToRoundedVector2d(scaled_overscroll_delta);
+  if (accumulated_overscroll == latest_overscroll_delta)
+    overscroll_rounding_error_ = gfx::Vector2dF();
+  gfx::Vector2dF scaled_overscroll_delta =
+      gfx::ScaleVector2d(latest_overscroll_delta, physical_pixel_scale);
+  gfx::Vector2d rounded_overscroll_delta = gfx::ToRoundedVector2d(
+      scaled_overscroll_delta + overscroll_rounding_error_);
   overscroll_rounding_error_ =
       scaled_overscroll_delta - rounded_overscroll_delta;
   client_->DidOverscroll(rounded_overscroll_delta);

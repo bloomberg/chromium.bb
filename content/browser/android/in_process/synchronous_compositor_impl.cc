@@ -314,7 +314,8 @@ void SynchronousCompositorImpl::SetInputHandler(
 void SynchronousCompositorImpl::DidOverscroll(
     const cc::DidOverscrollParams& params) {
   if (compositor_client_) {
-    compositor_client_->DidOverscroll(params.latest_overscroll_delta,
+    compositor_client_->DidOverscroll(params.accumulated_overscroll,
+                                      params.latest_overscroll_delta,
                                       params.current_fling_velocity);
   }
 }
