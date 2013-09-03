@@ -243,6 +243,7 @@
         }],
         ['OS=="android"', {
           'dependencies': [
+            '../ui/ui.gyp:shell_dialogs',
             'test_support_content_jni_headers',
           ],
         }],
@@ -706,9 +707,6 @@
           ],
         }],
         ['OS == "android"', {
-          'dependencies': [
-            '../ui/ui.gyp:shell_dialogs',
-          ],
           'sources!': [
             'browser/geolocation/gps_location_provider_unittest_linux.cc',
             'browser/geolocation/network_location_provider_unittest.cc',
@@ -1025,6 +1023,13 @@
             'common/gpu/client/gl_helper_unittests.cc',
             'common/gpu/client/gpu_in_process_context_tests.cc',
           ],
+          'conditions': [
+            ['OS=="android"', {
+              'dependencies': [
+                '../testing/android/native_test.gyp:native_test_native_code',
+              ],
+            }],
+          ],
         },
         {
           'target_name': 'content_gl_benchmark',
@@ -1159,6 +1164,21 @@
     # See base.gyp for TODO(jrg)s about this strategy.
     ['OS == "android" and gtest_target_type == "shared_library"', {
       'targets': [
+        {
+          'target_name': 'content_gl_tests_apk',
+          'type': 'none',
+          'dependencies': [
+            'content_gl_tests',
+            'content_java_test_support',
+          ],
+          'variables': {
+            'test_suite_name': 'content_gl_tests',
+            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)content_gl_tests<(SHARED_LIB_SUFFIX)',
+          },
+          'includes': [
+            '../build/apk_test.gypi',
+          ],
+        },
         {
           'target_name': 'content_unittests_apk',
           'type': 'none',
