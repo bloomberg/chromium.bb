@@ -187,6 +187,11 @@ void WebSettingsImpl::setViewportMetaLayoutSizeQuirk(bool viewportMetaLayoutSize
     m_viewportMetaLayoutSizeQuirk = viewportMetaLayoutSizeQuirk;
 }
 
+void WebSettingsImpl::setViewportMetaZeroValuesQuirk(bool viewportMetaZeroValuesQuirk)
+{
+    m_settings->setViewportMetaZeroValuesQuirk(viewportMetaZeroValuesQuirk);
+}
+
 void WebSettingsImpl::setSupportsMultipleWindows(bool supportsMultipleWindows)
 {
     m_settings->setSupportsMultipleWindows(supportsMultipleWindows);
