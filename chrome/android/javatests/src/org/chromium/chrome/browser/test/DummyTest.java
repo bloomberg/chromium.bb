@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser.test;
 
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.HostDrivenTest;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
 
 /**
  * Dummy test suite for verifying the host-driven test framework.
  */
 public class DummyTest extends ChromiumTestShellTestBase {
-    @DisabledTest
+    @HostDrivenTest
     public void testPass() {}
 }

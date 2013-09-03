@@ -21,7 +21,7 @@ PICKLE_FORMAT_VERSION = 1
 class TestJar(object):
   _ANNOTATIONS = frozenset(
       ['Smoke', 'SmallTest', 'MediumTest', 'LargeTest', 'EnormousTest',
-       'FlakyTest', 'DisabledTest', 'Manual', 'PerfTest'])
+       'FlakyTest', 'DisabledTest', 'Manual', 'PerfTest', 'HostDrivenTest'])
   _DEFAULT_ANNOTATION = 'SmallTest'
   _PROGUARD_CLASS_RE = re.compile(r'\s*?- Program class:\s*([\S]+)$')
   _PROGUARD_METHOD_RE = re.compile(r'\s*?- Method:\s*(\S*)[(].*$')
