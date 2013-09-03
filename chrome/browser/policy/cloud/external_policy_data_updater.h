@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 
@@ -20,9 +19,11 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace policy {
+namespace net {
+class URLRequestContextGetter;
+}
 
-class ExternalPolicyDataFetcher;
+namespace policy {
 
 // This class downloads external policy data. Given a |Request|, data is fetched
 // from the |url|, verified to not exceed |max_size| and to match the expected
@@ -30,8 +31,6 @@ class ExternalPolicyDataFetcher;
 // finally deciding whether the fetched data is valid.
 // If a fetch is not successful or retrieves invalid data, retries are scheduled
 // with exponential backoff.
-// The actual fetching is handled by an ExternalPolicyDataFetcher, allowing this
-// class to run on a background thread where network I/O is not possible.
 class ExternalPolicyDataUpdater : public base::NonThreadSafe {
  public:
   struct Request {
@@ -59,12 +58,12 @@ class ExternalPolicyDataUpdater : public base::NonThreadSafe {
   // used in all cases.
   typedef base::Callback<bool(const std::string&)> FetchSuccessCallback;
 
-  // This class runs on the background thread represented by |task_runner|,
-  // which must support file I/O. All network I/O is forwarded to a different
-  // thread by the |external_policy_data_fetcher|.
+  // |task_runner| must support file I/O, and is used to post delayed retry
+  // tasks.
+  // |request_context| will be used for the download fetchers.
   ExternalPolicyDataUpdater(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher,
+      scoped_refptr<net::URLRequestContextGetter> request_context,
       size_t max_parallel_fetches);
   ~ExternalPolicyDataUpdater();
 
@@ -99,13 +98,16 @@ class ExternalPolicyDataUpdater : public base::NonThreadSafe {
   void OnJobFailed(FetchJob* job);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // The maximum number of jobs to run in parallel.
   size_t max_parallel_jobs_;
 
   // The number of jobs currently running.
   size_t running_jobs_;
+
+  // A monotonically increasing job ID. Used to identify jobs in tests.
+  int next_job_id_;
 
   // Queue of jobs waiting to be run. Jobs are taken off the queue and started
   // by StartNextJobs().

@@ -174,9 +174,7 @@ void CouldExternalDataManagerBaseTest::TearDown() {
 
 void CouldExternalDataManagerBaseTest::SetUpExternalDataManager() {
   external_data_manager_.reset(new CloudExternalDataManagerBase(
-      &kPolicyDefinitionList,
-      base::MessageLoopProxy::current(),
-      base::MessageLoopProxy::current()));
+      &kPolicyDefinitionList, base::MessageLoopProxy::current()));
   external_data_manager_->SetExternalDataStore(make_scoped_ptr(
       new CloudExternalDataStore(kCacheKey, resource_cache_.get())));
   external_data_manager_->SetPolicyStore(&cloud_policy_store_);

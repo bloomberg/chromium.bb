@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/component_cloud_policy_store.h"
-#include "chrome/browser/policy/cloud/external_policy_data_fetcher.h"
 #include "chrome/browser/policy/cloud/policy_builder.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
@@ -78,7 +77,6 @@ class ComponentCloudPolicyUpdaterTest : public testing::Test {
   MockComponentCloudPolicyStoreDelegate store_delegate_;
   net::TestURLFetcherFactory fetcher_factory_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  scoped_ptr<ExternalPolicyDataFetcherBackend> fetcher_backend_;
   scoped_ptr<ComponentCloudPolicyUpdater> updater_;
   ComponentPolicyBuilder builder_;
   PolicyBundle expected_bundle_;
@@ -92,12 +90,9 @@ void ComponentCloudPolicyUpdaterTest::SetUp() {
                          ComponentPolicyBuilder::kFakeToken);
   fetcher_factory_.set_remove_fetcher_on_delete(true);
   task_runner_ = new base::TestSimpleTaskRunner();
-  fetcher_backend_.reset(new ExternalPolicyDataFetcherBackend(
-      task_runner_,
-      scoped_refptr<net::URLRequestContextGetter>()));
   updater_.reset(new ComponentCloudPolicyUpdater(
       task_runner_,
-      fetcher_backend_->CreateFrontend(task_runner_),
+      scoped_refptr<net::URLRequestContextGetter>(),
       store_.get()));
   ASSERT_EQ(store_->policy().end(), store_->policy().begin());
 
@@ -124,7 +119,6 @@ scoped_ptr<em::PolicyFetchResponse>
 TEST_F(ComponentCloudPolicyUpdaterTest, FetchAndCache) {
   // Submit a policy fetch response.
   updater_->UpdateExternalPolicy(CreateResponse());
-  task_runner_->RunUntilIdle();
 
   // Verify that a download has been started.
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
@@ -134,10 +128,12 @@ TEST_F(ComponentCloudPolicyUpdaterTest, FetchAndCache) {
   // Complete the download.
   fetcher->set_response_code(200);
   fetcher->SetResponseString(kTestPolicy);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
-  task_runner_->RunUntilIdle();
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
   Mock::VerifyAndClearExpectations(&store_delegate_);
+
+  // Verify that the download is no longer running.
+  ASSERT_FALSE(fetcher_factory_.GetFetcherByID(0));
 
   // Verify that the downloaded policy is being served.
   EXPECT_TRUE(store_->policy().Equals(expected_bundle_));
@@ -157,7 +153,6 @@ TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseTooLarge) {
   builder_.policy_data().set_settings_entity_id(kTestExtension3);
   builder_.payload().set_download_url(kTestDownload3);
   updater_->UpdateExternalPolicy(CreateResponse());
-  task_runner_->RunUntilIdle();
 
   // Verify that the first policy fetch response has been ignored and downloads
   // have been started for the next two fetch responses instead.
@@ -182,7 +177,6 @@ TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseInvalid) {
   builder_.policy_data().set_settings_entity_id(kTestExtension3);
   builder_.payload().set_download_url(kTestDownload3);
   updater_->UpdateExternalPolicy(CreateResponse());
-  task_runner_->RunUntilIdle();
 
   // Verify that the first policy fetch response has been ignored and downloads
   // have been started for the next two fetch responses instead.
@@ -208,47 +202,38 @@ TEST_F(ComponentCloudPolicyUpdaterTest, AlreadyCached) {
   // Submit a policy fetch response whose extension ID and hash match the
   // already cached policy.
   updater_->UpdateExternalPolicy(CreateResponse());
-  task_runner_->RunUntilIdle();
 
   // Verify that no download has been started.
   EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
 }
 
 TEST_F(ComponentCloudPolicyUpdaterTest, PolicyDataInvalid) {
-  // Submit three policy fetch responses.
+  // Submit two policy fetch responses.
   updater_->UpdateExternalPolicy(CreateResponse());
   builder_.payload().set_download_url(kTestDownload2);
   builder_.policy_data().set_settings_entity_id(kTestExtension2);
   updater_->UpdateExternalPolicy(CreateResponse());
-  builder_.policy_data().set_settings_entity_id(kTestExtension3);
-  builder_.payload().set_download_url(kTestDownload3);
-  updater_->UpdateExternalPolicy(CreateResponse());
-  task_runner_->RunUntilIdle();
 
   // Verify that the first download has been started.
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   EXPECT_EQ(GURL(kTestDownload), fetcher->GetOriginalURL());
 
+  // Indicate that the policy data size will exceed allowed maximum.
+  fetcher->delegate()->OnURLFetchDownloadProgress(fetcher, 6 * 1024 * 1024, -1);
+
+  // Verify that the first download is no longer running.
+  ASSERT_FALSE(fetcher_factory_.GetFetcherByID(0));
+
   // Verify that the second download has been started.
   fetcher = fetcher_factory_.GetFetcherByID(1);
   ASSERT_TRUE(fetcher);
   EXPECT_EQ(GURL(kTestDownload2), fetcher->GetOriginalURL());
-
-  // Indicate that the policy data size will exceed allowed maximum.
-  fetcher->delegate()->OnURLFetchDownloadProgress(fetcher, 6 * 1024 * 1024, -1);
-  task_runner_->RunUntilIdle();
-
-  // Verify that the third download has been started.
-  fetcher = fetcher_factory_.GetFetcherByID(2);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(GURL(kTestDownload3), fetcher->GetOriginalURL());
 }
 
 TEST_F(ComponentCloudPolicyUpdaterTest, FetchUpdatedData) {
   // Submit a policy fetch response.
   updater_->UpdateExternalPolicy(CreateResponse());
-  task_runner_->RunUntilIdle();
 
   // Verify that the first download has been started.
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
@@ -259,10 +244,9 @@ TEST_F(ComponentCloudPolicyUpdaterTest, FetchUpdatedData) {
   // updated download URL.
   builder_.payload().set_download_url(kTestDownload2);
   updater_->UpdateExternalPolicy(CreateResponse());
-  task_runner_->RunUntilIdle();
 
   // Verify that the first download is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+  ASSERT_FALSE(fetcher_factory_.GetFetcherByID(0));
 
   // Verify that the second download has been started.
   fetcher = fetcher_factory_.GetFetcherByID(1);
@@ -273,7 +257,6 @@ TEST_F(ComponentCloudPolicyUpdaterTest, FetchUpdatedData) {
 TEST_F(ComponentCloudPolicyUpdaterTest, FetchUpdatedDataWithoutPolicy) {
   // Submit a policy fetch response.
   updater_->UpdateExternalPolicy(CreateResponse());
-  task_runner_->RunUntilIdle();
 
   // Verify that the download has been started.
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
@@ -283,10 +266,12 @@ TEST_F(ComponentCloudPolicyUpdaterTest, FetchUpdatedDataWithoutPolicy) {
   // Complete the download.
   fetcher->set_response_code(200);
   fetcher->SetResponseString(kTestPolicy);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
-  task_runner_->RunUntilIdle();
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
   Mock::VerifyAndClearExpectations(&store_delegate_);
+
+  // Verify that the download is no longer running.
+  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
 
   // Verify that the downloaded policy is being served.
   EXPECT_TRUE(store_->policy().Equals(expected_bundle_));
@@ -298,7 +283,6 @@ TEST_F(ComponentCloudPolicyUpdaterTest, FetchUpdatedDataWithoutPolicy) {
   EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
   updater_->UpdateExternalPolicy(CreateResponse());
   Mock::VerifyAndClearExpectations(&store_delegate_);
-  task_runner_->RunUntilIdle();
 
   // Verify that no download has been started.
   EXPECT_FALSE(fetcher_factory_.GetFetcherByID(1));
@@ -311,19 +295,17 @@ TEST_F(ComponentCloudPolicyUpdaterTest, FetchUpdatedDataWithoutPolicy) {
 TEST_F(ComponentCloudPolicyUpdaterTest, NoPolicy) {
   // Submit a policy fetch response with a valid download URL.
   updater_->UpdateExternalPolicy(CreateResponse());
-  task_runner_->RunUntilIdle();
 
   // Verify that the download has been started.
-  EXPECT_TRUE(fetcher_factory_.GetFetcherByID(0));
+  ASSERT_TRUE(fetcher_factory_.GetFetcherByID(0));
 
   // Update the policy fetch response before the download has finished. The new
   // policy fetch response has no download URL.
   builder_.payload().Clear();
   updater_->UpdateExternalPolicy(CreateResponse());
-  task_runner_->RunUntilIdle();
 
   // Verify that the download is no longer running.
-  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+  ASSERT_FALSE(fetcher_factory_.GetFetcherByID(0));
 }
 
 }  // namespace policy

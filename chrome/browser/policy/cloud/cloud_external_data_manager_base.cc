@@ -12,16 +12,15 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/policy/cloud/cloud_external_data_store.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
-#include "chrome/browser/policy/cloud/external_policy_data_fetcher.h"
 #include "chrome/browser/policy/cloud/external_policy_data_updater.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
 
@@ -32,6 +31,12 @@ namespace {
 // Fetch data for at most two external data references at the same time.
 const int kMaxParallelFetches = 2;
 
+void RunCallbackOnUIThread(const ExternalDataFetcher::FetchCallback& callback,
+                           scoped_ptr<std::string> data) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  callback.Run(data.Pass());
+}
+
 }  // namespace
 
 // Backend for the CloudExternalDataManagerBase that handles all data download,
@@ -39,12 +44,10 @@ const int kMaxParallelFetches = 2;
 class CloudExternalDataManagerBase::Backend {
  public:
   // The |policy_definitions| are used to determine the maximum size that the
-  // data referenced by each policy can have. This class can be instantiated on
-  // any thread but from then on, may be accessed via the |task_runner_| only.
-  // All FetchCallbacks will be invoked via |callback_task_runner|.
+  // data referenced by each policy can have. This class is instantiated on the
+  // UI thread but from then on, is accessed via the |task_runner_| only.
   Backend(const PolicyDefinitionList* policy_definitions,
-          scoped_refptr<base::SequencedTaskRunner> task_runner,
-          scoped_refptr<base::SequencedTaskRunner> callback_task_runner);
+          scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Allows downloaded external data to be cached in |external_data_store|.
   // Ownership of the store is taken. The store can be destroyed by calling
@@ -52,9 +55,9 @@ class CloudExternalDataManagerBase::Backend {
   void SetExternalDataStore(
       scoped_ptr<CloudExternalDataStore> external_data_store);
 
-  // Allows downloading of external data via the |external_policy_data_fetcher|.
-  void Connect(
-      scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher);
+  // Allows downloading of external data by constructing URLFetchers from
+  // |request_context|.
+  void Connect(scoped_refptr<net::URLRequestContextGetter> request_context);
 
   // Prevents further external data downloads and aborts any downloads currently
   // in progress
@@ -101,8 +104,7 @@ class CloudExternalDataManagerBase::Backend {
   // |policy_definitions_|.
   size_t GetMaxExternalDataSize(const std::string& policy) const;
 
-  // Invokes |callback| via the |callback_task_runner_|, passing |data| as a
-  // parameter.
+  // Invokes |callback| on the UI thread, passing |data| as a parameter.
   void RunCallback(const ExternalDataFetcher::FetchCallback& callback,
                    scoped_ptr<std::string> data) const;
 
@@ -115,7 +117,6 @@ class CloudExternalDataManagerBase::Backend {
   const PolicyDefinitionList* policy_definitions_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
 
   // Contains the policies for which a download of the referenced external data
   // has been requested. Each policy is mapped to a list of callbacks to invoke
@@ -144,11 +145,9 @@ class CloudExternalDataManagerBase::Backend {
 
 CloudExternalDataManagerBase::Backend::Backend(
     const PolicyDefinitionList* policy_definitions,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    scoped_refptr<base::SequencedTaskRunner> callback_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : policy_definitions_(policy_definitions),
       task_runner_(task_runner),
-      callback_task_runner_(callback_task_runner),
       metadata_set_(false) {
 }
 
@@ -160,12 +159,11 @@ void CloudExternalDataManagerBase::Backend::SetExternalDataStore(
 }
 
 void CloudExternalDataManagerBase::Backend::Connect(
-    scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher) {
+    scoped_refptr<net::URLRequestContextGetter> request_context) {
   DCHECK(!updater_);
-  updater_.reset(new ExternalPolicyDataUpdater(
-      task_runner_,
-      external_policy_data_fetcher.Pass(),
-      kMaxParallelFetches));
+  updater_.reset(new ExternalPolicyDataUpdater(task_runner_,
+                                               request_context,
+                                               kMaxParallelFetches));
   for (FetchCallbackMap::const_iterator it = pending_downloads_.begin();
        it != pending_downloads_.end(); ++it) {
     StartDownload(it->first);
@@ -309,8 +307,9 @@ size_t CloudExternalDataManagerBase::Backend::GetMaxExternalDataSize(
 void CloudExternalDataManagerBase::Backend::RunCallback(
     const ExternalDataFetcher::FetchCallback& callback,
     scoped_ptr<std::string> data) const {
-  callback_task_runner_->PostTask(FROM_HERE,
-                                  base::Bind(callback, base::Passed(&data)));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(RunCallbackOnUIThread, callback, base::Passed(&data)));
 }
 
 void CloudExternalDataManagerBase::Backend::StartDownload(
@@ -333,34 +332,28 @@ void CloudExternalDataManagerBase::Backend::StartDownload(
 
 CloudExternalDataManagerBase::CloudExternalDataManagerBase(
     const PolicyDefinitionList* policy_definitions,
-    scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
     : backend_task_runner_(backend_task_runner),
-      io_task_runner_(io_task_runner),
-      backend_(new Backend(policy_definitions,
-                           backend_task_runner_,
-                           base::MessageLoopProxy::current())) {
+      backend_(new Backend(policy_definitions, backend_task_runner_)) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
 CloudExternalDataManagerBase::~CloudExternalDataManagerBase() {
-  DCHECK(CalledOnValidThread());
-  io_task_runner_->DeleteSoon(FROM_HERE,
-                              external_policy_data_fetcher_backend_.release());
-  backend_task_runner_->DeleteSoon(FROM_HERE, backend_.release());
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  backend_task_runner_->DeleteSoon(FROM_HERE, backend_);
 }
 
 void CloudExternalDataManagerBase::SetExternalDataStore(
     scoped_ptr<CloudExternalDataStore> external_data_store) {
-  DCHECK(CalledOnValidThread());
   backend_task_runner_->PostTask(FROM_HERE, base::Bind(
       &Backend::SetExternalDataStore,
-      base::Unretained(backend_.get()),
+      base::Unretained(backend_),
       base::Passed(&external_data_store)));
 }
 
 void CloudExternalDataManagerBase::SetPolicyStore(
     CloudPolicyStore* policy_store) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   CloudExternalDataManager::SetPolicyStore(policy_store);
   if (policy_store_ && policy_store_->is_initialized())
     OnPolicyStoreLoaded();
@@ -369,7 +362,7 @@ void CloudExternalDataManagerBase::SetPolicyStore(
 void CloudExternalDataManagerBase::OnPolicyStoreLoaded() {
   // Collect all external data references made by policies in |policy_store_|
   // and pass them to the |backend_|.
-  DCHECK(CalledOnValidThread());
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   scoped_ptr<Metadata> metadata(new Metadata);
   const PolicyMap& policy_map = policy_store_->policy_map();
   for (PolicyMap::const_iterator it = policy_map.begin();
@@ -396,44 +389,35 @@ void CloudExternalDataManagerBase::OnPolicyStoreLoaded() {
 
   backend_task_runner_->PostTask(FROM_HERE, base::Bind(
       &Backend::OnMetadataUpdated,
-      base::Unretained(backend_.get()),
+      base::Unretained(backend_),
       base::Passed(&metadata)));
 }
 
 void CloudExternalDataManagerBase::Connect(
     scoped_refptr<net::URLRequestContextGetter> request_context) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!external_policy_data_fetcher_backend_);
-  external_policy_data_fetcher_backend_.reset(
-      new ExternalPolicyDataFetcherBackend(io_task_runner_,
-                                           request_context));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   backend_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &Backend::Connect,
-      base::Unretained(backend_.get()),
-      base::Passed(external_policy_data_fetcher_backend_->CreateFrontend(
-          backend_task_runner_))));
+      &Backend::Connect, base::Unretained(backend_), request_context));
 }
 
 void CloudExternalDataManagerBase::Disconnect() {
-  DCHECK(CalledOnValidThread());
-  io_task_runner_->DeleteSoon(FROM_HERE,
-                              external_policy_data_fetcher_backend_.release());
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   backend_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &Backend::Disconnect, base::Unretained(backend_.get())));
+      &Backend::Disconnect, base::Unretained(backend_)));
 }
 
 void CloudExternalDataManagerBase::Fetch(
     const std::string& policy,
     const ExternalDataFetcher::FetchCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   backend_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &Backend::Fetch, base::Unretained(backend_.get()), policy, callback));
+      &Backend::Fetch, base::Unretained(backend_), policy, callback));
 }
 
 void CloudExternalDataManagerBase::FetchAll() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   backend_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &Backend::FetchAll, base::Unretained(backend_.get())));
+      &Backend::FetchAll, base::Unretained(backend_)));
 }
 
 }  // namespace policy

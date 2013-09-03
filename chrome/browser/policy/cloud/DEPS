@@ -33,6 +33,10 @@ specific_include_rules = {
   ],
 
   # TODO(joaodasilva): remove these exceptions.
+  r"cloud_external_data_manager_base\.cc": [
+    "+content/public/browser/browser_thread.h",
+  ],
+
   r"cloud_external_data_manager_base_unittest\.cc": [
     "+content/public/test/test_browser_thread_bundle.h",
   ],
@@ -80,6 +84,10 @@ specific_include_rules = {
 
   r"cloud_policy_validator_unittest\.cc": [
     "+content/public/test/test_browser_thread.h",
+  ],
+
+  r"component_cloud_policy_service\.cc": [
+    "+content/public/browser/browser_thread.h",
   ],
 
   r"component_cloud_policy_service_unittest\.cc": [

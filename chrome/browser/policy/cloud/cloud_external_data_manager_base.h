@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
 
 namespace base {
@@ -19,24 +18,20 @@ class SequencedTaskRunner;
 namespace policy {
 
 class CloudExternalDataStore;
-class ExternalPolicyDataFetcherBackend;
 struct PolicyDefinitionList;
 
 // Downloads, verifies, caches and retrieves external data referenced by
 // policies.
 // This is a common base class used by specializations for regular users and
 // device-local accounts.
-class CloudExternalDataManagerBase : public CloudExternalDataManager,
-                                     public base::NonThreadSafe {
+class CloudExternalDataManagerBase : public CloudExternalDataManager {
  public:
   // The |policy_definitions| are used to determine the maximum size that the
-  // data referenced by each policy can have. Download scheduling, verification,
-  // caching and retrieval tasks are done via the |backend_task_runner|, which
-  // must support file I/O. Network I/O is done via the |io_task_runner|.
+  // data referenced by each policy can have. All data download, verification,
+  // caching and retrieval tasks are run via the |backend_task_runner|.
   CloudExternalDataManagerBase(
       const PolicyDefinitionList* policy_definitions,
-      scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
   virtual ~CloudExternalDataManagerBase();
 
   // Allows downloaded external data to be cached in |external_data_store|.
@@ -64,23 +59,13 @@ class CloudExternalDataManagerBase : public CloudExternalDataManager,
   void FetchAll();
 
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
  private:
-  // The |external_policy_data_fetcher_backend_| handles network I/O for the
-  // |backend_| because URLRequestContextGetter and URLFetchers cannot be
-  // referenced from background threads. It is instantiated on the thread |this|
-  // runs on but after that, must only be accessed and eventually destroyed via
-  // the |io_task_runner_|.
-  scoped_ptr<ExternalPolicyDataFetcherBackend>
-      external_policy_data_fetcher_backend_;
-
-  // The |backend_| handles all data download scheduling, verification, caching
-  // and retrieval. It is instantiated on the thread |this| runs on but after
-  // that, must only be accessed and eventually destroyed via the
-  // |backend_task_runner_|.
+  // The |backend_| handles all data download, verification, caching and
+  // retrieval. It is instantiated on the UI thread but from then on, is
+  // accessed via the |backend_task_runner_| only.
   class Backend;
-  scoped_ptr<Backend> backend_;
+  Backend* backend_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudExternalDataManagerBase);
 };

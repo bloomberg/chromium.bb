@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "chrome/browser/policy/policy_bundle.h"
@@ -30,7 +29,6 @@ class URLRequestContextGetter;
 
 namespace policy {
 
-class ExternalPolicyDataFetcherBackend;
 class PolicyDomainDescriptor;
 class ResourceCache;
 
@@ -39,8 +37,7 @@ class ResourceCache;
 // This class takes care of fetching, validating, storing and updating policy
 // for components. The components to manage have to be explicitly registered.
 class ComponentCloudPolicyService : public CloudPolicyClient::Observer,
-                                    public CloudPolicyStore::Observer,
-                                    public base::NonThreadSafe {
+                                    public CloudPolicyStore::Observer {
  public:
   // Key for the ResourceCache where the list of known components is cached.
   static const char kComponentNamespaceCache[];
@@ -61,15 +58,9 @@ class ComponentCloudPolicyService : public CloudPolicyClient::Observer,
 
   // |store| is used to get the current DMToken and the username.
   // |cache| is used to load and store local copies of the downloaded policies.
-  // Download scheduling, validation and caching of policies are done via the
-  // |backend_task_runner|, which must support file I/O. Network I/O is done via
-  // the |io_task_runner|.
-  ComponentCloudPolicyService(
-      Delegate* delegate,
-      CloudPolicyStore* store,
-      scoped_ptr<ResourceCache> cache,
-      scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+  ComponentCloudPolicyService(Delegate* delegate,
+                              CloudPolicyStore* store,
+                              scoped_ptr<ResourceCache> cache);
   virtual ~ComponentCloudPolicyService();
 
   // Returns true if |domain| is supported by the service.
@@ -129,22 +120,14 @@ class ComponentCloudPolicyService : public CloudPolicyClient::Observer,
 
   Delegate* delegate_;
 
+  // This class manages others that live on a background thread; those are
+  // managed by |backend_|. |backend_| lives in the thread that backs
+  // |backend_task_runner_|, but is owned by |this|. It is created on UI, but
+  // from then on it only receives calls on the background thread, including
+  // destruction. So it's always safe to post tasks to |backend_|, since its
+  // deletion is posted after the deletion of |this|.
+  Backend* backend_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
-
-  // The |external_policy_data_fetcher_backend_| handles network I/O for the
-  // |backend_| because URLRequestContextGetter and URLFetchers cannot be
-  // referenced from background threads. It is instantiated on the thread |this|
-  // runs on but after that, must only be accessed and eventually destroyed via
-  // the |io_task_runner_|.
-  scoped_ptr<ExternalPolicyDataFetcherBackend>
-      external_policy_data_fetcher_backend_;
-
-  // The |backend_| handles all download scheduling, validation and caching of
-  // policies. It is instantiated on the thread |this| runs on but after that,
-  // must only be accessed and eventually destroyed via the
-  // |backend_task_runner_|.
-  scoped_ptr<Backend> backend_;
 
   CloudPolicyClient* client_;
   CloudPolicyStore* store_;

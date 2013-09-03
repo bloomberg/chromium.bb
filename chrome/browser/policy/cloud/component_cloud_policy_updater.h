@@ -18,10 +18,13 @@ namespace enterprise_management {
 class PolicyFetchResponse;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace policy {
 
 class ComponentCloudPolicyStore;
-class ExternalPolicyDataFetcher;
 
 // This class downloads external policy data, given PolicyFetchResponses.
 // It validates the PolicyFetchResponse and its corresponding data, and caches
@@ -30,12 +33,14 @@ class ExternalPolicyDataFetcher;
 // It retries to download the policy data periodically when a download fails.
 class ComponentCloudPolicyUpdater {
  public:
-  // This class runs on the background thread represented by |task_runner|,
-  // which must support file I/O. All network I/O is delegated to the
-  // |external_policy_data_fetcher|.
+  // |task_runner| must support file I/O, and is used to post delayed retry
+  // tasks.
+  // |request_context| will be used for the download fetchers.
+  // |store| must outlive the updater, and is where the downloaded data will
+  // be cached.
   ComponentCloudPolicyUpdater(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher,
+      scoped_refptr<net::URLRequestContextGetter> request_context,
       ComponentCloudPolicyStore* store);
   ~ComponentCloudPolicyUpdater();
 

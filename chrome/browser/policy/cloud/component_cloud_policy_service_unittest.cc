@@ -109,11 +109,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     cache_ = new ResourceCache(temp_dir_.path());
     service_.reset(new ComponentCloudPolicyService(
-        &delegate_,
-        &store_,
-        make_scoped_ptr(cache_),
-        loop_.message_loop_proxy(),
-        loop_.message_loop_proxy()));
+        &delegate_, &store_, make_scoped_ptr(cache_)));
 
     builder_.policy_data().set_policy_type(
         dm_protocol::kChromeExtensionPolicyType);
