@@ -33,36 +33,21 @@ namespace WTF {
     class AtomicString;
 
     template<bool isPod, typename T>
-    struct VectorTraitsBase;
-
-    template<typename T>
-    struct VectorTraitsBase<false, T>
+    struct VectorTraitsBase
     {
-        static const bool needsDestruction = true;
-        static const bool needsInitialization = true;
-        static const bool canInitializeWithMemset = false;
-        static const bool canMoveWithMemcpy = false;
-        static const bool canCopyWithMemcpy = false;
-        static const bool canFillWithMemset = false;
-        static const bool canCompareWithMemcmp = false;
-    };
-
-    template<typename T>
-    struct VectorTraitsBase<true, T>
-    {
-        static const bool needsDestruction = false;
-        static const bool needsInitialization = false;
-        static const bool canInitializeWithMemset = true;
-        static const bool canMoveWithMemcpy = true;
-        static const bool canCopyWithMemcpy = true;
-        static const bool canFillWithMemset = sizeof(T) == sizeof(char);
-        static const bool canCompareWithMemcmp = true;
+        static const bool needsDestruction = !isPod;
+        static const bool needsInitialization = !isPod;
+        static const bool canInitializeWithMemset = isPod;
+        static const bool canMoveWithMemcpy = isPod;
+        static const bool canCopyWithMemcpy = isPod;
+        static const bool canFillWithMemset = isPod && (sizeof(T) == sizeof(char));
+        static const bool canCompareWithMemcmp = isPod;
     };
 
     template<typename T>
     struct VectorTraits : VectorTraitsBase<IsPod<T>::value, T> { };
 
-    struct SimpleClassVectorTraits : VectorTraitsBase<false, void>
+    struct SimpleClassVectorTraits : VectorTraitsBase<false, int>
     {
         static const bool canInitializeWithMemset = true;
         static const bool canMoveWithMemcpy = true;
