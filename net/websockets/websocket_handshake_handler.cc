@@ -14,10 +14,13 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/websockets/websocket_handshake_constants.h"
 #include "url/gurl.h"
 
+namespace net {
 namespace {
 
 const size_t kRequestKey3Size = 8U;
@@ -26,9 +29,6 @@ const size_t kResponseKeySize = 16U;
 // First version that introduced new WebSocket handshake which does not
 // require sending "key3" or "response key" data after headers.
 const int kMinVersionOfHybiNewHandshake = 4;
-
-// Used when we calculate the value of Sec-WebSocket-Accept.
-const char* const kWebSocketGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
 void ParseHandshakeHeader(
     const char* handshake_message, int len,
@@ -117,8 +117,8 @@ std::string FilterHeaders(
 
 int GetVersionFromRequest(const std::string& request_headers) {
   std::vector<std::string> values;
-  const char* const headers_to_get[2] = { "sec-websocket-version",
-                                          "sec-websocket-draft" };
+  const char* const headers_to_get[2] = {
+      websockets::kSecWebSocketVersionLowercase, "sec-websocket-draft"};
   FetchHeaders(request_headers, headers_to_get, 2, &values);
   DCHECK_LE(values.size(), 1U);
   if (values.empty())
@@ -130,9 +130,27 @@ int GetVersionFromRequest(const std::string& request_headers) {
   return version;
 }
 
-}  // namespace
+// Append a header to a string. Equivalent to
+//   response_message += header + ": " + value + "\r\n"
+// but avoids unnecessary allocations and copies.
+void AppendHeader(const base::StringPiece& header,
+                  const base::StringPiece& value,
+                  std::string* response_message) {
+  static const char kColonSpace[] = ": ";
+  const size_t kColonSpaceSize = sizeof(kColonSpace) - 1;
+  static const char kCrNl[] = "\r\n";
+  const size_t kCrNlSize = sizeof(kCrNl) - 1;
 
-namespace net {
+  size_t extra_size =
+      header.size() + kColonSpaceSize + value.size() + kCrNlSize;
+  response_message->reserve(response_message->size() + extra_size);
+  response_message->append(header.begin(), header.end());
+  response_message->append(kColonSpace, kColonSpace + kColonSpaceSize);
+  response_message->append(value.begin(), value.end());
+  response_message->append(kCrNl, kCrNl + kCrNlSize);
+}
+
+}  // namespace
 
 namespace internal {
 
@@ -242,15 +260,15 @@ HttpRequestInfo WebSocketHandshakeRequestHandler::GetRequestInfo(
   request_info.extra_headers.Clear();
   request_info.extra_headers.AddHeadersFromString(headers_);
 
-  request_info.extra_headers.RemoveHeader("Upgrade");
-  request_info.extra_headers.RemoveHeader("Connection");
+  request_info.extra_headers.RemoveHeader(websockets::kUpgrade);
+  request_info.extra_headers.RemoveHeader(HttpRequestHeaders::kConnection);
 
   if (protocol_version_ >= kMinVersionOfHybiNewHandshake) {
     std::string key;
-    bool header_present =
-        request_info.extra_headers.GetHeader("Sec-WebSocket-Key", &key);
+    bool header_present = request_info.extra_headers.GetHeader(
+        websockets::kSecWebSocketKey, &key);
     DCHECK(header_present);
-    request_info.extra_headers.RemoveHeader("Sec-WebSocket-Key");
+    request_info.extra_headers.RemoveHeader(websockets::kSecWebSocketKey);
     *challenge = key;
   } else {
     challenge->clear();
@@ -294,33 +312,34 @@ bool WebSocketHandshakeRequestHandler::GetRequestHeaderBlock(
 
   HttpUtil::HeadersIterator iter(headers_.begin(), headers_.end(), "\r\n");
   while (iter.GetNext()) {
-    if (LowerCaseEqualsASCII(iter.name_begin(), iter.name_end(), "upgrade") ||
+    if (LowerCaseEqualsASCII(iter.name_begin(),
+                             iter.name_end(),
+                             websockets::kUpgradeLowercase) ||
+        LowerCaseEqualsASCII(
+            iter.name_begin(), iter.name_end(), "connection") ||
         LowerCaseEqualsASCII(iter.name_begin(),
                              iter.name_end(),
-                             "connection") ||
-        LowerCaseEqualsASCII(iter.name_begin(),
-                             iter.name_end(),
-                             "sec-websocket-version")) {
+                             websockets::kSecWebSocketVersionLowercase)) {
       // These headers must be ignored.
       continue;
     } else if (LowerCaseEqualsASCII(iter.name_begin(),
                                     iter.name_end(),
-                                    "sec-websocket-key")) {
+                                    websockets::kSecWebSocketKeyLowercase)) {
       *challenge = iter.values();
       // Sec-WebSocket-Key is not sent to the server.
       continue;
-    } else if (LowerCaseEqualsASCII(iter.name_begin(),
-                                    iter.name_end(),
-                                    "host") ||
-               LowerCaseEqualsASCII(iter.name_begin(),
-                                    iter.name_end(),
-                                    "origin") ||
-               LowerCaseEqualsASCII(iter.name_begin(),
-                                    iter.name_end(),
-                                    "sec-websocket-protocol") ||
-               LowerCaseEqualsASCII(iter.name_begin(),
-                                    iter.name_end(),
-                                    "sec-websocket-extensions")) {
+    } else if (LowerCaseEqualsASCII(
+                   iter.name_begin(), iter.name_end(), "host") ||
+               LowerCaseEqualsASCII(
+                   iter.name_begin(), iter.name_end(), "origin") ||
+               LowerCaseEqualsASCII(
+                   iter.name_begin(),
+                   iter.name_end(),
+                   websockets::kSecWebSocketProtocolLowercase) ||
+               LowerCaseEqualsASCII(
+                   iter.name_begin(),
+                   iter.name_end(),
+                   websockets::kSecWebSocketExtensionsLowercase)) {
       // TODO(toyoshim): Some WebSocket extensions may not be compatible with
       // SPDY. We should omit them from a Sec-WebSocket-Extension header.
       std::string name;
@@ -425,28 +444,34 @@ bool WebSocketHandshakeResponseHandler::ParseResponseInfo(
   if (!response_info.headers.get())
     return false;
 
+  // TODO(ricea): Eliminate all the reallocations and string copies.
   std::string response_message;
   response_message = response_info.headers->GetStatusLine();
   response_message += "\r\n";
   if (protocol_version_ >= kMinVersionOfHybiNewHandshake)
-    response_message += "Upgrade: websocket\r\n";
+    AppendHeader(websockets::kUpgrade,
+                 websockets::kWebSocketLowercase,
+                 &response_message);
   else
-    response_message += "Upgrade: WebSocket\r\n";
-  response_message += "Connection: Upgrade\r\n";
+    AppendHeader(websockets::kUpgrade, "WebSocket", &response_message);
+  AppendHeader(
+      HttpRequestHeaders::kConnection, websockets::kUpgrade, &response_message);
 
   if (protocol_version_ >= kMinVersionOfHybiNewHandshake) {
-    std::string hash = base::SHA1HashString(challenge + kWebSocketGuid);
+    std::string hash =
+        base::SHA1HashString(challenge + websockets::kWebSocketGuid);
     std::string websocket_accept;
     bool encode_success = base::Base64Encode(hash, &websocket_accept);
     DCHECK(encode_success);
-    response_message += "Sec-WebSocket-Accept: " + websocket_accept + "\r\n";
+    AppendHeader(
+        websockets::kSecWebSocketAccept, websocket_accept, &response_message);
   }
 
   void* iter = NULL;
   std::string name;
   std::string value;
   while (response_info.headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    response_message += name + ": " + value + "\r\n";
+    AppendHeader(name, value, &response_message);
   }
   response_message += "\r\n";
 
@@ -473,17 +498,22 @@ bool WebSocketHandshakeResponseHandler::ParseResponseHeaderBlock(
     status = headers.find(":status");
   if (status == headers.end())
     return false;
-  std::string response_message;
-  response_message =
-      base::StringPrintf("%s%s\r\n", "HTTP/1.1 ", status->second.c_str());
-  response_message += "Upgrade: websocket\r\n";
-  response_message += "Connection: Upgrade\r\n";
 
-  std::string hash = base::SHA1HashString(challenge + kWebSocketGuid);
+  std::string hash =
+      base::SHA1HashString(challenge + websockets::kWebSocketGuid);
   std::string websocket_accept;
   bool encode_success = base::Base64Encode(hash, &websocket_accept);
   DCHECK(encode_success);
-  response_message += "Sec-WebSocket-Accept: " + websocket_accept + "\r\n";
+
+  std::string response_message = base::StringPrintf(
+      "%s %s\r\n", websockets::kHttpProtocolVersion, status->second.c_str());
+
+  AppendHeader(
+      websockets::kUpgrade, websockets::kWebSocketLowercase, &response_message);
+  AppendHeader(
+      HttpRequestHeaders::kConnection, websockets::kUpgrade, &response_message);
+  AppendHeader(
+      websockets::kSecWebSocketAccept, websocket_accept, &response_message);
 
   for (SpdyHeaderBlock::const_iterator iter = headers.begin();
        iter != headers.end();
@@ -510,11 +540,13 @@ bool WebSocketHandshakeResponseHandler::ParseResponseHeaderBlock(
       else
         tval = value.substr(start);
       if (spdy_protocol_version >= 3 &&
-          (LowerCaseEqualsASCII(iter->first, ":sec-websocket-protocol") ||
-           LowerCaseEqualsASCII(iter->first, ":sec-websocket-extensions")))
-        response_message += iter->first.substr(1) + ": " + tval + "\r\n";
+          (LowerCaseEqualsASCII(iter->first,
+                                websockets::kSecWebSocketProtocolSpdy3) ||
+           LowerCaseEqualsASCII(iter->first,
+                                websockets::kSecWebSocketExtensionsSpdy3)))
+        AppendHeader(iter->first.substr(1), tval, &response_message);
       else
-        response_message += iter->first + ": " + tval + "\r\n";
+        AppendHeader(iter->first, tval, &response_message);
       start = end + 1;
     } while (end != std::string::npos);
   }

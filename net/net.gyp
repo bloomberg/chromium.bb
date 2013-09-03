@@ -1102,6 +1102,8 @@
         'websockets/websocket_frame.h',
         'websockets/websocket_frame_parser.cc',
         'websockets/websocket_frame_parser.h',
+        'websockets/websocket_handshake_constants.cc',
+        'websockets/websocket_handshake_constants.h',
         'websockets/websocket_handshake_handler.cc',
         'websockets/websocket_handshake_handler.h',
         'websockets/websocket_job.cc',
