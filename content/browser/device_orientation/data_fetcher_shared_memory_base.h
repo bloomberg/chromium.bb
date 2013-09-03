@@ -45,7 +45,7 @@ class CONTENT_EXPORT DataFetcherSharedMemoryBase {
   DataFetcherSharedMemoryBase();
   virtual ~DataFetcherSharedMemoryBase();
 
-  void* InitSharedMemoryBuffer(ConsumerType consumer_type, size_t buffer_size);
+  void* GetSharedMemoryBuffer(ConsumerType consumer_type);
 
   // Returns the message loop of the polling thread.
   // Returns NULL if there is no polling thread.
@@ -67,8 +67,7 @@ class CONTENT_EXPORT DataFetcherSharedMemoryBase {
 
  private:
   bool InitAndStartPollingThreadIfNecessary();
-  base::SharedMemory* InitSharedMemory(ConsumerType consumer_type,
-      size_t buffer_size);
+  base::SharedMemory* GetSharedMemory(ConsumerType consumer_type);
 
   unsigned started_consumers_;
 

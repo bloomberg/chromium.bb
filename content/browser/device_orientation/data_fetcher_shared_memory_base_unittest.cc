@@ -5,6 +5,7 @@
 #include "content/browser/device_orientation/data_fetcher_shared_memory_base.h"
 
 #include "base/logging.h"
+#include "base/process/process_handle.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "content/common/device_motion_hardware_buffer.h"
@@ -36,13 +37,11 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
         motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(
-             InitSharedMemoryBuffer(consumer_type,
-                 sizeof(DeviceMotionHardwareBuffer)));
+            GetSharedMemoryBuffer(consumer_type));
         break;
       case CONSUMER_TYPE_ORIENTATION:
         orientation_buffer_ = static_cast<DeviceOrientationHardwareBuffer*>(
-            InitSharedMemoryBuffer(consumer_type,
-                sizeof(DeviceOrientationHardwareBuffer)));
+            GetSharedMemoryBuffer(consumer_type));
         break;
       default:
         return false;
@@ -130,6 +129,10 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
   virtual ~FakeNonPollingDataFetcher() { }
 
   virtual bool Start(ConsumerType consumer_type) OVERRIDE {
+    base::SharedMemoryHandle handle = GetSharedMemoryHandleForProcess(
+        consumer_type, base::GetCurrentProcessHandle());
+    EXPECT_TRUE(base::SharedMemory::IsHandleValid(handle));
+
     Init(consumer_type);
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
@@ -181,6 +184,9 @@ class FakePollingDataFetcher : public FakeDataFetcher {
 
   virtual bool Start(ConsumerType consumer_type) OVERRIDE {
     EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
+    base::SharedMemoryHandle handle = GetSharedMemoryHandleForProcess(
+        consumer_type, base::GetCurrentProcessHandle());
+    EXPECT_TRUE(base::SharedMemory::IsHandleValid(handle));
 
     Init(consumer_type);
     switch (consumer_type) {

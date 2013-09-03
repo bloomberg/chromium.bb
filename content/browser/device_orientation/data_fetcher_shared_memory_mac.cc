@@ -117,24 +117,22 @@ bool DataFetcherSharedMemory::IsPolling() const {
 
 bool DataFetcherSharedMemory::Start(ConsumerType consumer_type) {
   DCHECK(base::MessageLoop::current() == GetPollingMessageLoop());
+
+  void* buffer = GetSharedMemoryBuffer(consumer_type);
+  DCHECK(buffer);
+
   switch (consumer_type) {
     case CONSUMER_TYPE_MOTION:
-      if (void* buffer = InitSharedMemoryBuffer(consumer_type,
-          sizeof(DeviceMotionHardwareBuffer))) {
-        motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(buffer);
-        if (!sudden_motion_sensor_)
-          sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
-        return true;
-      }
+      motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(buffer);
+      if (!sudden_motion_sensor_)
+        sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
+      return true;
     case CONSUMER_TYPE_ORIENTATION:
-      if (void* buffer = InitSharedMemoryBuffer(consumer_type,
-          sizeof(DeviceOrientationHardwareBuffer))) {
-        orientation_buffer_ =
-            static_cast<DeviceOrientationHardwareBuffer*>(buffer);
-        if (!sudden_motion_sensor_)
-          sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
-        return true;
-      }
+      orientation_buffer_ =
+          static_cast<DeviceOrientationHardwareBuffer*>(buffer);
+      if (!sudden_motion_sensor_)
+        sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
+      return true;
     default:
       NOTREACHED();
   }
@@ -143,18 +141,23 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type) {
 
 bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
   DCHECK(base::MessageLoop::current() == GetPollingMessageLoop());
+
   switch (consumer_type) {
     case CONSUMER_TYPE_MOTION:
-      motion_buffer_->seqlock.WriteBegin();
-      motion_buffer_->data.allAvailableSensorsAreActive = false;
-      motion_buffer_->seqlock.WriteEnd();
-      motion_buffer_ = NULL;
+      if (motion_buffer_) {
+        motion_buffer_->seqlock.WriteBegin();
+        motion_buffer_->data.allAvailableSensorsAreActive = false;
+        motion_buffer_->seqlock.WriteEnd();
+        motion_buffer_ = NULL;
+      }
       return true;
     case CONSUMER_TYPE_ORIENTATION:
-      orientation_buffer_->seqlock.WriteBegin();
-      orientation_buffer_->data.allAvailableSensorsAreActive = false;
-      orientation_buffer_->seqlock.WriteEnd();
-      orientation_buffer_ = NULL;
+      if (orientation_buffer_) {
+        orientation_buffer_->seqlock.WriteBegin();
+        orientation_buffer_->data.allAvailableSensorsAreActive = false;
+        orientation_buffer_->seqlock.WriteEnd();
+        orientation_buffer_ = NULL;
+      }
       return true;
     default:
       NOTREACHED();

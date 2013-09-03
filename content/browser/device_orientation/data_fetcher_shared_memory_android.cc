@@ -18,23 +18,18 @@ DataFetcherSharedMemory::~DataFetcherSharedMemory() {
 }
 
 bool DataFetcherSharedMemory::Start(ConsumerType consumer_type) {
+  void* buffer = GetSharedMemoryBuffer(consumer_type);
+  DCHECK(buffer);
+
   switch (consumer_type) {
     case CONSUMER_TYPE_MOTION:
-      if (void* buffer = InitSharedMemoryBuffer(consumer_type,
-          sizeof(DeviceMotionHardwareBuffer))) {
-        return DataFetcherImplAndroid::GetInstance()->
-            StartFetchingDeviceMotionData(
-                static_cast<DeviceMotionHardwareBuffer*>(buffer));
-      }
-      break;
+      return DataFetcherImplAndroid::GetInstance()->
+          StartFetchingDeviceMotionData(
+              static_cast<DeviceMotionHardwareBuffer*>(buffer));
     case CONSUMER_TYPE_ORIENTATION:
-      if (void* buffer = InitSharedMemoryBuffer(consumer_type,
-          sizeof(DeviceOrientationHardwareBuffer))) {
-        return DataFetcherImplAndroid::GetInstance()->
-            StartFetchingDeviceOrientationData(
-                static_cast<DeviceOrientationHardwareBuffer*>(buffer));
-      }
-      break;
+      return DataFetcherImplAndroid::GetInstance()->
+          StartFetchingDeviceOrientationData(
+              static_cast<DeviceOrientationHardwareBuffer*>(buffer));
     default:
       NOTREACHED();
   }

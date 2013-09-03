@@ -30,13 +30,13 @@ DataFetcherSharedMemory::~DataFetcherSharedMemory() {
 }
 
 bool DataFetcherSharedMemory::Start(ConsumerType consumer_type) {
+  void* buffer = GetSharedMemoryBuffer(consumer_type);
+  DCHECK(buffer);
+
   switch (consumer_type) {
     case CONSUMER_TYPE_MOTION:
-      if (void* buffer = InitSharedMemoryBuffer(consumer_type,
-          sizeof(DeviceMotionHardwareBuffer)))
-        return SetMotionBuffer(
-            static_cast<DeviceMotionHardwareBuffer*>(buffer), true);
-      break;
+      return SetMotionBuffer(
+          static_cast<DeviceMotionHardwareBuffer*>(buffer), true);
     case CONSUMER_TYPE_ORIENTATION:
       NOTIMPLEMENTED();
       break;
@@ -47,13 +47,13 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type) {
 }
 
 bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
+  void* buffer = GetSharedMemoryBuffer(consumer_type);
+  DCHECK(buffer);
+
   switch (consumer_type) {
     case CONSUMER_TYPE_MOTION:
-      if (void* buffer = InitSharedMemoryBuffer(consumer_type,
-          sizeof(DeviceMotionHardwareBuffer)))
-        return SetMotionBuffer(
-            static_cast<DeviceMotionHardwareBuffer*>(buffer), false);
-      break;
+      return SetMotionBuffer(
+          static_cast<DeviceMotionHardwareBuffer*>(buffer), false);
     case CONSUMER_TYPE_ORIENTATION:
       NOTIMPLEMENTED();
       break;
