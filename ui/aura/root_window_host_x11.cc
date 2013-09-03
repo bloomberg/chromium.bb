@@ -373,7 +373,8 @@ RootWindowHostX11::RootWindowHostX11(const gfx::Rect& bounds)
       focus_when_shown_(false),
       touch_calibrate_(new internal::TouchEventCalibrate),
       mouse_move_filter_(new MouseMoveFilter),
-      atom_cache_(xdisplay_, kAtomsToCache) {
+      atom_cache_(xdisplay_, kAtomsToCache),
+      bezel_tracking_ids_(0) {
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = None;
@@ -912,15 +913,22 @@ void RootWindowHostX11::DispatchXI2Event(const base::NativeEvent& event) {
     case ui::ET_TOUCH_PRESSED:
     case ui::ET_TOUCH_CANCELLED:
     case ui::ET_TOUCH_RELEASED: {
+      ui::TouchEvent touchev(xev);
 #if defined(USE_XI2_MT)
-      // Ignore events from the bezel when the side bezel flag is not explicitly
-      // enabled.
-      if (!IsSideBezelsEnabled() &&
-          touch_calibrate_->IsEventOnSideBezels(xev, bounds_)) {
-        break;
+      // Ignore touch events with touch press happening on the side bezel.
+      if (!IsSideBezelsEnabled()) {
+        uint32 tracking_id = (1 << touchev.touch_id());
+        if (type == ui::ET_TOUCH_PRESSED &&
+            touch_calibrate_->IsEventOnSideBezels(xev, bounds_))
+          bezel_tracking_ids_ |= tracking_id;
+        if (bezel_tracking_ids_ & tracking_id) {
+          if (type == ui::ET_TOUCH_CANCELLED || type == ui::ET_TOUCH_RELEASED)
+            bezel_tracking_ids_ =
+                (bezel_tracking_ids_ | tracking_id) ^ tracking_id;
+          return;
+        }
       }
 #endif  // defined(USE_XI2_MT)
-      ui::TouchEvent touchev(xev);
 #if defined(OS_CHROMEOS)
       if (base::chromeos::IsRunningOnChromeOS()) {
         if (!bounds_.Contains(touchev.location()))

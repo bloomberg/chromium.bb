@@ -138,6 +138,9 @@ class RootWindowHostX11 : public RootWindowHost,
 
   ui::X11AtomCache atom_cache_;
 
+  // Touch ids of which the touch press happens at side bezel region.
+  uint32 bezel_tracking_ids_;
+
   DISALLOW_COPY_AND_ASSIGN(RootWindowHostX11);
 };
 
