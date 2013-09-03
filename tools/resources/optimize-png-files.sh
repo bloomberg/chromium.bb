@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -273,8 +273,8 @@ function process_file {
   fi
 }
 
-# Usage: sanitize_file <file>
-function sanitize_file {
+# Usage: optimize_file <file>
+function optimize_file {
   local file=$1
   local name=$(basename $file)
   local old=$(stat -c%s $file)
@@ -302,13 +302,13 @@ function sanitize_file {
   fi
 }
 
-function sanitize_dir {
+function optimize_dir {
   local dir=$1
   for f in $(find $dir -name "*.png"); do
     if $using_cygwin ; then
-      sanitize_file $(cygpath -w $f)
+      optimize_file $(cygpath -w $f)
     else
-      sanitize_file $f
+      optimize_file $f
     fi
   done
 }
@@ -319,7 +319,8 @@ function install_if_not_installed {
   which $program > /dev/null 2>&1
   if [ "$?" != "0" ]; then
     if $using_cygwin ; then
-      echo "Couldn't find $program.  Please run setup.exe and install the $package package."
+      echo "Couldn't find $program. " \
+           "Please run cygwin's setup.exe and install the $package package."
       exit 1
     else
       read -p "Couldn't find $program. Do you want to install? (y/n)"
@@ -416,7 +417,7 @@ fi
 # Make sure we cleanup temp dir
 trap "rm -rf $TMP_DIR" EXIT
 
-# If no directories are specified, sanitize all directories.
+# If no directories are specified, optimize all directories.
 DIRS=$@
 set ${DIRS:=$ALL_DIRS}
 
@@ -425,8 +426,8 @@ for d in $DIRS; do
   if $using_cygwin ; then
     d=$(cygpath -w $d)
   fi
-  echo "Sanitizing png files in $d"
-  sanitize_dir $d
+  echo "Optimizing png files in $d"
+  optimize_dir $d
   echo
 done
 
