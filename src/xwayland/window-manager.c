@@ -753,26 +753,11 @@ weston_wm_window_set_net_wm_state(struct weston_wm_window *window)
 }
 
 static void
-weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
+weston_wm_window_create_frame(struct weston_wm_window *window)
 {
-	xcb_map_request_event_t *map_request =
-		(xcb_map_request_event_t *) event;
-	struct weston_wm_window *window;
+	struct weston_wm *wm = window->wm;
 	uint32_t values[3];
 	int x, y, width, height;
-
-	if (our_resource(wm, map_request->window)) {
-		wm_log("XCB_MAP_REQUEST (window %d, ours)\n",
-		       map_request->window);
-		return;
-	}
-
-	window = hash_table_lookup(wm->window_hash, map_request->window);
-
-	if (window->frame_id)
-		return;
-
-	weston_wm_window_read_properties(window);
 
 	weston_wm_window_get_frame_size(window, &width, &height);
 	weston_wm_window_get_child_position(window, &x, &y);
@@ -810,15 +795,6 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	xcb_configure_window(wm->conn, window->id,
 			     XCB_CONFIG_WINDOW_BORDER_WIDTH, values);
 
-	wm_log("XCB_MAP_REQUEST (window %d, %p, frame %d)\n",
-	       window->id, window, window->frame_id);
-
-	weston_wm_window_set_wm_state(window, ICCCM_NORMAL_STATE);
-	weston_wm_window_set_net_wm_state(window);
-
-	xcb_map_window(wm->conn, map_request->window);
-	xcb_map_window(wm->conn, window->frame_id);
-
 	window->cairo_surface =
 		cairo_xcb_surface_create_with_xrender_format(wm->conn,
 							     wm->screen,
@@ -827,6 +803,36 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 							     width, height);
 
 	hash_table_insert(wm->window_hash, window->frame_id, window);
+}
+
+static void
+weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
+{
+	xcb_map_request_event_t *map_request =
+		(xcb_map_request_event_t *) event;
+	struct weston_wm_window *window;
+
+	if (our_resource(wm, map_request->window)) {
+		wm_log("XCB_MAP_REQUEST (window %d, ours)\n",
+		       map_request->window);
+		return;
+	}
+
+	window = hash_table_lookup(wm->window_hash, map_request->window);
+
+	weston_wm_window_read_properties(window);
+
+	if (window->frame_id == XCB_WINDOW_NONE)
+		weston_wm_window_create_frame(window);
+
+	wm_log("XCB_MAP_REQUEST (window %d, %p, frame %d)\n",
+	       window->id, window, window->frame_id);
+
+	weston_wm_window_set_wm_state(window, ICCCM_NORMAL_STATE);
+	weston_wm_window_set_net_wm_state(window);
+
+	xcb_map_window(wm->conn, map_request->window);
+	xcb_map_window(wm->conn, window->frame_id);
 }
 
 static void
