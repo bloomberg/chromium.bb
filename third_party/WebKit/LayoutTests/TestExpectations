@@ -717,8 +717,6 @@ crbug.com/245611 [ Win ] virtual/gpu/fast/hidpi/image-set-without-specified-widt
 crbug.com/245611 [ Win ] fast/hidpi/image-set-out-of-order.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 [ Win ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ ImageOnlyFailure Pass ]
 
-webkit.org/b/98087 fast/css/lang-mapped-to-webkit-locale-dynamic.xhtml [ Failure Pass ]
-
 webkit.org/b/97179 http/tests/css/link-css-disabled-value-with-slow-loading-sheet.html [ Failure Pass ]
 
 webkit.org/b/97296 [ Win ] fast/text/international/hebrew-selection.html [ ImageOnlyFailure ]
