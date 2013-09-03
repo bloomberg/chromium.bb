@@ -474,6 +474,13 @@ class QuicConnectionTest : public ::testing::Test {
         QuicBandwidth::FromKBitsPerSecond(100)));
     EXPECT_CALL(*send_algorithm_, SmoothedRtt()).WillRepeatedly(Return(
         QuicTime::Delta::FromMilliseconds(100)));
+    // TODO(rch): remove this.
+    QuicConnection::g_acks_do_not_instigate_acks = true;
+  }
+
+  ~QuicConnectionTest() {
+    // TODO(rch): remove this.
+    QuicConnection::g_acks_do_not_instigate_acks = false;
   }
 
   QuicAckFrame* outgoing_ack() {

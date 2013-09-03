@@ -127,6 +127,14 @@ class TimeoutAlarm : public QuicAlarm::Delegate {
 
 }  // namespace
 
+// TODO(rch): Remove this.
+// Because of a bug in the interaction between the TcpCubicSender and
+// QuicConnection, acks currently count against the congestion window.
+// This means that if acks are not acked, and data is only flowing in
+// one direction, then the connection will deadlock.
+// static
+bool QuicConnection::g_acks_do_not_instigate_acks = false;
+
 #define ENDPOINT (is_server_ ? "Server: " : " Client: ")
 
 QuicConnection::QuicConnection(QuicGuid guid,
@@ -747,7 +755,8 @@ void QuicConnection::MaybeSendInResponseToPacket(
     bool last_packet_should_instigate_ack) {
   packet_generator_.StartBatchOperations();
 
-  if (last_packet_should_instigate_ack) {
+  if (last_packet_should_instigate_ack ||
+      !g_acks_do_not_instigate_acks) {
     if (send_ack_in_response_to_packet_) {
       SendAck();
     } else if (last_packet_should_instigate_ack) {

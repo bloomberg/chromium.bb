@@ -126,12 +126,16 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
     peer_addr_ = IPEndPoint(ip, 443);
     self_addr_ = IPEndPoint(ip, 8435);
+    // TODO(rch): remove this.
+    QuicConnection::g_acks_do_not_instigate_acks = true;
   }
 
   ~QuicHttpStreamTest() {
     for (size_t i = 0; i < writes_.size(); i++) {
       delete writes_[i].packet;
     }
+    // TODO(rch): remove this.
+    QuicConnection::g_acks_do_not_instigate_acks = false;
   }
 
   // Adds a packet to the list of expected writes.
