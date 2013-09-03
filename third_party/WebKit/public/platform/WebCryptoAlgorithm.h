@@ -44,6 +44,7 @@ enum WebCryptoAlgorithmId {
     WebCryptoAlgorithmIdAesCbc,
     WebCryptoAlgorithmIdHmac,
     WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+    WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
     WebCryptoAlgorithmIdSha1,
     WebCryptoAlgorithmIdSha224,
     WebCryptoAlgorithmIdSha256,

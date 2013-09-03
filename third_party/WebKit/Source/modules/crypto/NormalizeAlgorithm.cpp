@@ -70,6 +70,7 @@ const AlgorithmNameMapping algorithmNameMappings[] = {
     {"AES-CBC", WebKit::WebCryptoAlgorithmIdAesCbc},
     {"HMAC", WebKit::WebCryptoAlgorithmIdHmac},
     {"RSASSA-PKCS1-v1_5", WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5},
+    {"RSAES-PKCS1-v1_5", WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5},
     {"SHA-1", WebKit::WebCryptoAlgorithmIdSha1},
     {"SHA-224", WebKit::WebCryptoAlgorithmIdSha224},
     {"SHA-256", WebKit::WebCryptoAlgorithmIdSha256},
@@ -96,6 +97,12 @@ const OperationParamsMapping operationParamsMappings[] = {
     {WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, Verify, WebKit::WebCryptoAlgorithmParamsTypeRsaSsaParams},
     {WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, GenerateKey, WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams},
     {WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, ImportKey, WebKit::WebCryptoAlgorithmParamsTypeNone},
+
+    // RSAES-PKCS1-v1_5
+    {WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, Encrypt, WebKit::WebCryptoAlgorithmParamsTypeNone},
+    {WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, Decrypt, WebKit::WebCryptoAlgorithmParamsTypeNone},
+    {WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, GenerateKey, WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams},
+    {WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, ImportKey, WebKit::WebCryptoAlgorithmParamsTypeNone},
 
     // SHA-*
     {WebKit::WebCryptoAlgorithmIdSha1, Digest, WebKit::WebCryptoAlgorithmParamsTypeNone},

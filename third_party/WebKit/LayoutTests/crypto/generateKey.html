@@ -61,6 +61,19 @@ shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength
 shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: 10}, extractable , keyUsages)");
 shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: null}, extractable , keyUsages)");
 
+// ---------------------------------------------------
+// RSAES-PKCS1-v1_5 normalization failures (RsaKeyGenParams)
+// ---------------------------------------------------
+
+// Note: these are the same tests as for RSASSA-PKCS1-v1_5 above.
+
+shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: -30}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: NaN}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5'}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: 10}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: 10, publicExponent: 10}, extractable , keyUsages)");
+shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: 10, publicExponent: null}, extractable , keyUsages)");
+
 // Note that fractional numbers are truncated, so this length should be
 // interpreted as 1024.
 crypto.subtle.generateKey({name: 'aes-cbc', length: 1024.9}, extractable, ['decrypt', 'encrypt']).then(function(result) {

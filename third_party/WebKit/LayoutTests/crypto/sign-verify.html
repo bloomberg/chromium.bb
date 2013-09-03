@@ -27,6 +27,10 @@ importTestKeys().then(function(importedKeys) {
     // Operation does not support signing.
     shouldThrow("crypto.subtle.sign({name: 'sha-1'}, keys.hmacSha1, data)");
 
+    // Operation doesn't support signing (also given an invalid key, but the
+    // first failure takes priority)
+    shouldThrow("crypto.subtle.sign({name: 'RSAES-PKCS1-v1_5'}, keys.hmacSha1, data)");
+
     // Key's algorithm must match.
     shouldThrow("crypto.subtle.sign({name: 'hmac', hash: {name: 'sha-256'}}, keys.hmacSha1, data)");
 

@@ -27,6 +27,12 @@ PASS crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5'}, extractable , keyUsa
 PASS crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10}, extractable , keyUsages) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array.
 PASS crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: 10}, extractable , keyUsages) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array.
 PASS crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: null}, extractable , keyUsages) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array.
+PASS crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: -30}, extractable , keyUsages) threw exception TypeError: Algorithm: RSAES-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Outside of numeric range.
+PASS crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: NaN}, extractable , keyUsages) threw exception TypeError: Algorithm: RSAES-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Is not a number.
+PASS crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5'}, extractable , keyUsages) threw exception TypeError: Algorithm: RSAES-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Missing required property.
+PASS crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: 10}, extractable , keyUsages) threw exception TypeError: Algorithm: RSAES-PKCS1-v1_5: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array.
+PASS crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: 10, publicExponent: 10}, extractable , keyUsages) threw exception TypeError: Algorithm: RSAES-PKCS1-v1_5: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array.
+PASS crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: 10, publicExponent: null}, extractable , keyUsages) threw exception TypeError: Algorithm: RSAES-PKCS1-v1_5: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array.
 PASS key.type is 'private'
 PASS key.extractable is true
 PASS key.algorithm.name is 'AES-CBC'
