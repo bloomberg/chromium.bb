@@ -312,17 +312,12 @@ void PasswordManager::OnPasswordFormsRendered(
 
   DCHECK(IsSavingEnabled());
 
-  // First, check for a failed login attempt.
-  for (std::vector<PasswordForm>::const_iterator iter = visible_forms.begin();
-       iter != visible_forms.end(); ++iter) {
-    if (provisional_save_manager_->DoesManage(
-        *iter, PasswordFormManager::ACTION_MATCH_REQUIRED)) {
-      // The form trying to be saved has immediately re-appeared. Assume login
-      // failure and abort this save, by clearing provisional_save_manager_.
-      provisional_save_manager_->SubmitFailed();
-      provisional_save_manager_.reset();
-      return;
-    }
+  // We now assume that if there is at least one visible password form
+  // that means that the previous login attempt failed.
+  if (!visible_forms.empty()) {
+    provisional_save_manager_->SubmitFailed();
+    provisional_save_manager_.reset();
+    return;
   }
 
   if (!provisional_save_manager_->HasValidPasswordForm()) {

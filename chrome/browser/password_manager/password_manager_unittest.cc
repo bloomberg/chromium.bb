@@ -108,6 +108,37 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
     return form;
   }
 
+  // Reproduction of the form present on twitter's login page.
+  PasswordForm MakeTwitterLoginForm() {
+    PasswordForm form;
+    form.origin = GURL("https://twitter.com/");
+    form.action = GURL("https://twitter.com/sessions");
+    form.username_element = ASCIIToUTF16("Email");
+    form.password_element = ASCIIToUTF16("Passwd");
+    form.username_value = ASCIIToUTF16("twitter");
+    form.password_value = ASCIIToUTF16("password");
+    form.password_autocomplete_set = true;
+    form.submit_element = ASCIIToUTF16("signIn");
+    form.signon_realm = "https://twitter.com";
+    return form;
+  }
+
+  // Reproduction of the form present on twitter's failed login page.
+  PasswordForm MakeTwitterFailedLoginForm() {
+    PasswordForm form;
+    form.origin =
+        GURL("https://twitter.com/login/error?redirect_after_login");
+    form.action = GURL("https://twitter.com/sessions");
+    form.username_element = ASCIIToUTF16("EmailField");
+    form.password_element = ASCIIToUTF16("PasswdField");
+    form.username_value = ASCIIToUTF16("twitter");
+    form.password_value = ASCIIToUTF16("password");
+    form.password_autocomplete_set = true;
+    form.submit_element = ASCIIToUTF16("signIn");
+    form.signon_realm = "https://twitter.com";
+    return form;
+  }
+
   bool FormsAreEqual(const content::PasswordForm& lhs,
                      const content::PasswordForm& rhs) {
     if (lhs.origin != rhs.origin)
@@ -535,4 +566,30 @@ TEST_F(PasswordManagerTest, SubmissionCallbackTest) {
   PasswordForm form = MakeSimpleForm();
   OnPasswordFormSubmitted(form);
   EXPECT_TRUE(FormsAreEqual(form, submitted_form_));
+}
+
+TEST_F(PasswordManagerTest, PasswordFormReappearance) {
+  // Test the heuristic to know if a password form reappears.
+  // We assume that if we send our credentials and there
+  // is at least one visible password form in the next page that
+  // means that our previous login attempt failed.
+  std::vector<PasswordForm*> result;  // Empty password store.
+  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(0);
+  EXPECT_CALL(*store_.get(), GetLogins(_, _))
+      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
+  std::vector<PasswordForm> observed;
+  PasswordForm login_form(MakeTwitterLoginForm());
+  observed.push_back(login_form);
+  manager()->OnPasswordFormsParsed(observed);  // The initial load.
+  manager()->OnPasswordFormsRendered(observed);  // The initial layout.
+
+  manager()->ProvisionallySavePassword(login_form);
+
+  PasswordForm failed_login_form(MakeTwitterFailedLoginForm());
+  observed.clear();
+  observed.push_back(failed_login_form);
+  // A PasswordForm appears, and is visible in the layout:
+  // No expected calls to the PasswordStore...
+  manager()->OnPasswordFormsParsed(observed);
+  manager()->OnPasswordFormsRendered(observed);
 }
