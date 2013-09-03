@@ -89,31 +89,23 @@ bool PicasaAlbumTableReader::Init() {
 
     base::Time timestamp = TimeFromMicrosoftVariantTime(date);
 
-    switch (category) {
-      case kAlbumCategoryAlbum: {
-        std::string token;
-        if (!token_column.ReadString(i, &token) || token.empty() ||
-            !StartsWithASCII(token, kAlbumTokenPrefix, false)) {
-          continue;
-        }
-
-        albums_.push_back(AlbumInfo(name, timestamp, uid, base::FilePath()));
-        break;
+    if (category == kAlbumCategoryAlbum) {
+      std::string token;
+      if (!token_column.ReadString(i, &token) || token.empty() ||
+          !StartsWithASCII(token, kAlbumTokenPrefix, false)) {
+        continue;
       }
-      case kAlbumCategoryFolder: {
-        std::string filename;
-        if (!filename_column.ReadString(i, &filename) || filename.empty())
-          continue;
 
-        base::FilePath path =
-            base::FilePath(base::FilePath::FromUTF8Unsafe(filename));
+      albums_.push_back(AlbumInfo(name, timestamp, uid, base::FilePath()));
+    } else if (category == kAlbumCategoryFolder) {
+      std::string filename;
+      if (!filename_column.ReadString(i, &filename) || filename.empty())
+        continue;
 
-        folders_.push_back(AlbumInfo(name, timestamp, uid, path));
-        break;
-      }
-      default: {
-        break;
-      }
+      base::FilePath path =
+          base::FilePath(base::FilePath::FromUTF8Unsafe(filename));
+
+      folders_.push_back(AlbumInfo(name, timestamp, uid, path));
     }
   }
 

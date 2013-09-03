@@ -32,6 +32,13 @@ void ClosePlatformFile(base::PlatformFile* platform_file) {
 
 }  // namespace
 
+const char kPicasaAlbumTableName[] = "albumdata";
+const char kAlbumTokenPrefix[] = "]album:";
+
+const uint32 kAlbumCategoryAlbum = 0;
+const uint32 kAlbumCategoryFolder = 2;
+const uint32 kAlbumCategoryInvalid = 0xffff;  // Sentinel value.
+
 AlbumInfo::AlbumInfo() {}
 
 AlbumInfo::AlbumInfo(const std::string& name, const base::Time& timestamp,

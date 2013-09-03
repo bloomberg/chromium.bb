@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <CoreFoundation/CFTimeZone.h>
 extern "C" {
 #include <sandbox.h>
 }
@@ -307,6 +308,12 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
   }
 
   // Process-type dependent warm-up.
+  if (sandbox_type == SANDBOX_TYPE_UTILITY) {
+    // CFTimeZoneCopyZone() tries to read /etc and /private/etc/localtime - 10.8
+    // Needed by Media Galleries API Picasa - crbug.com/151701
+    CFTimeZoneCopySystem();
+  }
+
   if (sandbox_type == SANDBOX_TYPE_GPU) {
     // Preload either the desktop GL or the osmesa so, depending on the
     // --use-gl flag.

@@ -8,6 +8,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
@@ -149,32 +150,16 @@ void ReadDirectoryTestHelper(fileapi::FileSystemOperationRunner* runner,
   run_loop.Run();
 }
 
+void SynchronouslyRunOnMediaTaskRunner(const base::Closure& closure) {
+  base::RunLoop loop;
+  chrome::MediaFileSystemBackend::MediaTaskRunner()->PostTaskAndReply(
+      FROM_HERE,
+      closure,
+      loop.QuitClosure());
+  loop.Run();
+}
+
 }  // namespace
-
-class TestPicasaDataProvider : public PicasaDataProvider {
- public:
-  TestPicasaDataProvider()
-      : PicasaDataProvider(base::FilePath(FILE_PATH_LITERAL("Fake"))),
-        initialized_(false) {
-  }
-
-  virtual ~TestPicasaDataProvider() {}
-
-  virtual void RefreshData(const base::Closure& ready_callback) OVERRIDE {
-    DCHECK(initialized_);
-    ready_callback.Run();
-  }
-
-  void Init(const std::vector<AlbumInfo>& albums,
-            const std::vector<AlbumInfo>& folders) {
-    UniquifyNames(albums, &album_map_);
-    UniquifyNames(folders, &folder_map_);
-    initialized_ = true;
-  }
-
- private:
-  bool initialized_;
-};
 
 class TestPicasaFileUtil : public PicasaFileUtil {
  public:
@@ -227,8 +212,10 @@ class PicasaFileUtilTest : public testing::Test {
     scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
         new quota::MockSpecialStoragePolicy();
 
+    SynchronouslyRunOnMediaTaskRunner(base::Bind(
+        &PicasaFileUtilTest::SetUpOnMediaTaskRunner, base::Unretained(this)));
+
     media_path_filter_.reset(new chrome::MediaPathFilter());
-    picasa_data_provider_.reset(new TestPicasaDataProvider());
 
     ScopedVector<fileapi::FileSystemBackend> additional_providers;
     additional_providers.push_back(new TestMediaFileSystemBackend(
@@ -247,7 +234,32 @@ class PicasaFileUtilTest : public testing::Test {
         fileapi::CreateAllowFileAccessOptions());
   }
 
+  virtual void TearDown() OVERRIDE {
+    SynchronouslyRunOnMediaTaskRunner(
+        base::Bind(&PicasaFileUtilTest::TearDownOnMediaTaskRunner,
+                   base::Unretained(this)));
+  }
+
  protected:
+  void SetUpOnMediaTaskRunner() {
+    picasa_data_provider_.reset(new PicasaDataProvider(base::FilePath()));
+  }
+
+  void TearDownOnMediaTaskRunner() {
+    picasa_data_provider_.reset();
+  }
+
+  void SetupDataProvider(PicasaDataProvider* picasa_data_provider,
+                         const std::vector<AlbumInfo>& albums,
+                         const std::vector<AlbumInfo>& folders) {
+    PicasaDataProvider::UniquifyNames(albums,
+                                      &picasa_data_provider->album_map_);
+    PicasaDataProvider::UniquifyNames(folders,
+                                      &picasa_data_provider->folder_map_);
+    picasa_data_provider->state_ =
+        PicasaDataProvider::ALBUMS_IMAGES_FRESH_STATE;
+  }
+
   // |test_folders| must be in alphabetical order for easy verification
   void SetupFolders(ScopedVector<TestFolder>* test_folders) {
     std::vector<AlbumInfo> folders;
@@ -257,7 +269,9 @@ class PicasaFileUtilTest : public testing::Test {
       ASSERT_TRUE(test_folder->Init());
       folders.push_back(test_folder->folder_info());
     }
-    picasa_data_provider_->Init(std::vector<AlbumInfo>(), folders);
+
+    SetupDataProvider(
+        picasa_data_provider_.get(), std::vector<AlbumInfo>(), folders);
   }
 
   void VerifyFolderDirectoryList(const ScopedVector<TestFolder>& test_folders) {
@@ -337,8 +351,8 @@ class PicasaFileUtilTest : public testing::Test {
   base::ScopedTempDir profile_dir_;
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_ptr<PicasaDataProvider> picasa_data_provider_;
   scoped_ptr<chrome::MediaPathFilter> media_path_filter_;
-  scoped_ptr<TestPicasaDataProvider> picasa_data_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(PicasaFileUtilTest);
 };

@@ -12,12 +12,6 @@
 
 namespace picasa {
 
-const uint32 kAlbumCategoryAlbum     = 0;
-const uint32 kAlbumCategoryFolder    = 2;
-const uint32 kAlbumCategoryInvalid   = 0xffff;  // Sentinel value.
-
-const char kAlbumTokenPrefix[] = "]album:";
-
 class PicasaAlbumTableReader {
  public:
   explicit PicasaAlbumTableReader(const AlbumTableFiles& table_files);

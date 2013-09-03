@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_galleries/fileapi/safe_picasa_album_table_reader.h"
 
+#include "base/bind.h"
+#include "base/logging.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -15,19 +17,36 @@ using content::BrowserThread;
 namespace picasa {
 
 SafePicasaAlbumTableReader::SafePicasaAlbumTableReader(
-    const AlbumTableFiles& album_table_files,
-    const ParserCallback& callback)
-    : album_table_files_(album_table_files),
-      callback_(callback),
-      parser_state_(INITIAL_STATE) {
+    const AlbumTableFiles& album_table_files)
+    : album_table_files_(album_table_files), parser_state_(INITIAL_STATE) {
   // TODO(tommycli): Add DCHECK to make sure |album_table_files| are all
   // opened read-only once security adds ability to check PlatformFiles.
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
-  DCHECK(!callback_.is_null());
 }
 
-void SafePicasaAlbumTableReader::Start() {
+void SafePicasaAlbumTableReader::Start(const ParserCallback& callback) {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(!callback.is_null());
+
+  callback_ = callback;
+
+  // Don't bother spawning process if any of the files are invalid.
+  if (album_table_files_.indicator_file == base::kInvalidPlatformFileValue ||
+      album_table_files_.category_file == base::kInvalidPlatformFileValue ||
+      album_table_files_.date_file == base::kInvalidPlatformFileValue ||
+      album_table_files_.filename_file == base::kInvalidPlatformFileValue ||
+      album_table_files_.name_file == base::kInvalidPlatformFileValue ||
+      album_table_files_.token_file == base::kInvalidPlatformFileValue ||
+      album_table_files_.uid_file == base::kInvalidPlatformFileValue) {
+    MediaFileSystemBackend::MediaTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(callback_,
+                   false /* parse_success */,
+                   std::vector<AlbumInfo>(),
+                   std::vector<AlbumInfo>()));
+    return;
+  }
+
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -98,18 +117,19 @@ void SafePicasaAlbumTableReader::OnParsePicasaPMPDatabaseFinished(
     const std::vector<AlbumInfo>& albums,
     const std::vector<AlbumInfo>& folders) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback_.is_null());
   if (parser_state_ != STARTED_PARSING_STATE)
     return;
 
   MediaFileSystemBackend::MediaTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(callback_, parse_success, albums, folders));
+      FROM_HERE, base::Bind(callback_, parse_success, albums, folders));
   parser_state_ = FINISHED_PARSING_STATE;
 }
 
 void SafePicasaAlbumTableReader::OnProcessCrashed(int exit_code) {
-  OnParsePicasaPMPDatabaseFinished(false, std::vector<AlbumInfo>(),
-                                   std::vector<AlbumInfo>());
+  DLOG(ERROR) << "SafePicasaAlbumTableReader::OnProcessCrashed()";
+  OnParsePicasaPMPDatabaseFinished(
+      false, std::vector<AlbumInfo>(), std::vector<AlbumInfo>());
 }
 
 bool SafePicasaAlbumTableReader::OnMessageReceived(

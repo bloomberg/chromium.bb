@@ -20,6 +20,7 @@ class ITunesDataProviderTest;
 
 namespace picasa {
 class PicasaDataProvider;
+class PicasaDataProviderTest;
 }
 
 namespace chrome {
@@ -51,6 +52,7 @@ class ImportedMediaGalleryRegistry {
  private:
   friend struct base::DefaultLazyInstanceTraits<ImportedMediaGalleryRegistry>;
   friend class itunes::ITunesDataProviderTest;
+  friend class picasa::PicasaDataProviderTest;
 
   ImportedMediaGalleryRegistry();
   virtual ~ImportedMediaGalleryRegistry();

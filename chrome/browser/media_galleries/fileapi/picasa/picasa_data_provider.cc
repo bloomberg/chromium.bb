@@ -7,10 +7,11 @@
 #include <utility>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/bind_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/safe_picasa_album_table_reader.h"
+#include "chrome/browser/media_galleries/fileapi/safe_picasa_albums_indexer.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
@@ -19,53 +20,184 @@ using chrome::MediaFileSystemBackend;
 
 namespace picasa {
 
+namespace {
+
+void RunAllCallbacks(
+    std::queue<PicasaDataProvider::ReadyCallback>* ready_callbacks_queue,
+    bool success) {
+  while (!ready_callbacks_queue->empty()) {
+    ready_callbacks_queue->front().Run(success);
+    ready_callbacks_queue->pop();
+  }
+}
+
+}  // namespace
+
 PicasaDataProvider::PicasaDataProvider(const base::FilePath& database_path)
     : database_path_(database_path),
-      needs_refresh_(true),
+      state_(STALE_DATA_STATE),
       weak_factory_(this) {
+  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
 }
 
 PicasaDataProvider::~PicasaDataProvider() {}
 
-void PicasaDataProvider::RefreshData(const base::Closure& ready_callback) {
+void PicasaDataProvider::RefreshData(DataType needed_data,
+                                     const ReadyCallback& ready_callback) {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
   // TODO(tommycli): Need to watch the database_path_ folder and handle
   // rereading the data when it changes.
-  if (!needs_refresh_) {
-    ready_callback.Run();
+
+  if (state_ == INVALID_DATA_STATE) {
+    ready_callback.Run(false /* success */);
     return;
   }
 
-  needs_refresh_ = false;
-  album_table_reader_ = new SafePicasaAlbumTableReader(
-      AlbumTableFiles(database_path_),
-      base::Bind(&PicasaDataProvider::OnDataRefreshed,
-                 weak_factory_.GetWeakPtr(),
-                 ready_callback));
-  album_table_reader_->Start();
+  if (needed_data == LIST_OF_ALBUMS_AND_FOLDERS_DATA) {
+    if (state_ == LIST_OF_ALBUMS_AND_FOLDERS_FRESH_STATE ||
+        state_ == ALBUMS_IMAGES_FRESH_STATE) {
+      ready_callback.Run(true /* success */);
+      return;
+    }
+    album_list_ready_callbacks_.push(ready_callback);
+  } else {
+    if (state_ == ALBUMS_IMAGES_FRESH_STATE) {
+      ready_callback.Run(true /* success */);
+      return;
+    }
+    albums_index_ready_callbacks_.push(ready_callback);
+  }
+  DoRefreshIfNecessary();
 }
 
 scoped_ptr<AlbumMap> PicasaDataProvider::GetFolders() {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(state_ == LIST_OF_ALBUMS_AND_FOLDERS_FRESH_STATE ||
+         state_ == ALBUMS_IMAGES_FRESH_STATE);
   return make_scoped_ptr(new AlbumMap(folder_map_));
 }
 
 scoped_ptr<AlbumMap> PicasaDataProvider::GetAlbums() {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(state_ == LIST_OF_ALBUMS_AND_FOLDERS_FRESH_STATE ||
+         state_ == ALBUMS_IMAGES_FRESH_STATE);
   return make_scoped_ptr(new AlbumMap(album_map_));
 }
 
-void PicasaDataProvider::OnDataRefreshed(
-    const base::Closure& ready_callback,
+scoped_ptr<AlbumImages> PicasaDataProvider::FindAlbumImages(
+    const std::string& key,
+    base::PlatformFileError* error) {
+  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(state_ == ALBUMS_IMAGES_FRESH_STATE);
+  DCHECK(error);
+
+  AlbumImagesMap::const_iterator it = albums_images_.find(key);
+
+  if (it == albums_images_.end()) {
+    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return scoped_ptr<AlbumImages>();
+  }
+
+  *error = base::PLATFORM_FILE_OK;
+  return make_scoped_ptr(new AlbumImages(it->second));
+}
+
+void PicasaDataProvider::InvalidateData() {
+  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+
+  // Set data state to stale and ignore responses from any in-flight processes.
+  // TODO(tommycli): Implement and call Cancel function for these
+  // UtilityProcessHostClients to actually kill the in-flight processes.
+  state_ = STALE_DATA_STATE;
+  album_table_reader_ = NULL;
+  albums_indexer_ = NULL;
+
+  DoRefreshIfNecessary();
+}
+
+void PicasaDataProvider::DoRefreshIfNecessary() {
+  DCHECK(state_ != INVALID_DATA_STATE);
+  DCHECK(state_ != ALBUMS_IMAGES_FRESH_STATE);
+  DCHECK(!(album_table_reader_ && albums_indexer_));
+
+  if (album_list_ready_callbacks_.empty() &&
+      albums_index_ready_callbacks_.empty()) {
+    return;
+  }
+
+  if (state_ == STALE_DATA_STATE) {
+    if (album_table_reader_)
+      return;
+    album_table_reader_ =
+        new SafePicasaAlbumTableReader(AlbumTableFiles(database_path_));
+    album_table_reader_->Start(
+        base::Bind(&PicasaDataProvider::OnAlbumTableReaderDone,
+                   weak_factory_.GetWeakPtr(),
+                   album_table_reader_));
+  } else {
+    DCHECK(state_ == LIST_OF_ALBUMS_AND_FOLDERS_FRESH_STATE);
+    if (albums_indexer_)
+      return;
+    albums_indexer_ = new SafePicasaAlbumsIndexer(album_map_, folder_map_);
+    albums_indexer_->Start(base::Bind(&PicasaDataProvider::OnAlbumsIndexerDone,
+                                      weak_factory_.GetWeakPtr(),
+                                      albums_indexer_));
+  }
+}
+
+void PicasaDataProvider::OnAlbumTableReaderDone(
+    scoped_refptr<SafePicasaAlbumTableReader> reader,
     bool parse_success,
     const std::vector<AlbumInfo>& albums,
     const std::vector<AlbumInfo>& folders) {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
-  if (parse_success) {
-    UniquifyNames(albums, &album_map_);
-    UniquifyNames(folders, &folder_map_);
+  // If the reader has already been deemed stale, ignore the result.
+  if (reader != album_table_reader_)
+    return;
+  album_table_reader_ = NULL;
+
+  DCHECK(state_ == STALE_DATA_STATE);
+
+  if (!parse_success) {
+    // If we didn't get the list successfully, fail all those waiting for
+    // the albums indexer also.
+    state_ = INVALID_DATA_STATE;
+    RunAllCallbacks(&album_list_ready_callbacks_, false /* success */);
+    RunAllCallbacks(&albums_index_ready_callbacks_, false /* success */);
+    return;
   }
-  ready_callback.Run();
+
+  album_map_.clear();
+  folder_map_.clear();
+  UniquifyNames(albums, &album_map_);
+  UniquifyNames(folders, &folder_map_);
+
+  state_ = LIST_OF_ALBUMS_AND_FOLDERS_FRESH_STATE;
+  RunAllCallbacks(&album_list_ready_callbacks_, parse_success);
+
+  // Chain from this process onto refreshing the albums images if necessary.
+  DoRefreshIfNecessary();
+}
+
+void PicasaDataProvider::OnAlbumsIndexerDone(
+    scoped_refptr<SafePicasaAlbumsIndexer> indexer,
+    bool success,
+    const picasa::AlbumImagesMap& albums_images) {
+  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  // If the indexer has already been deemed stale, ignore the result.
+  if (indexer != albums_indexer_)
+    return;
+  albums_indexer_ = NULL;
+
+  DCHECK(state_ == LIST_OF_ALBUMS_AND_FOLDERS_FRESH_STATE);
+
+  if (success) {
+    state_ = ALBUMS_IMAGES_FRESH_STATE;
+
+    albums_images_ = albums_images;
+  }
+
+  RunAllCallbacks(&albums_index_ready_callbacks_, success);
 }
 
 // static
@@ -106,6 +238,17 @@ void PicasaDataProvider::UniquifyNames(const std::vector<AlbumInfo>& info_list,
 
     result_map->insert(std::pair<std::string, AlbumInfo>(name, info_list[i]));
   }
+}
+
+void PicasaDataProvider::SetDatabasePathForTesting(
+    const base::FilePath& database_path) {
+  database_path_ = database_path;
+}
+
+void PicasaDataProvider::SetAlbumMapsForTesting(const AlbumMap& album_map,
+                                                const AlbumMap& folder_map) {
+  album_map_ = album_map;
+  folder_map_ = folder_map;
 }
 
 }  // namespace picasa

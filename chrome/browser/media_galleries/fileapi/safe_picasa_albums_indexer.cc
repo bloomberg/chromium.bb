@@ -19,25 +19,21 @@ namespace picasa {
 
 namespace {
 
+// Arbitrarily chosen to be a decent size but not block thread too much.
+const int kPicasaINIReadBatchSize = 10;
+
+}  // namespace
+
 // Picasa INI files are named "picasa.ini" on Picasa for Windows before version
 // 71.18. Later versions and Picasa for Mac uses ".picasa.ini".
 // See: https://support.google.com/picasa/answer/11257?hl=en
 const char kPicasaINIFilename[]       = ".picasa.ini";
 const char kPicasaINIFilenameLegacy[] = "picasa.ini";
 
-// Arbitrarily chosen to be a decent size but not block thread too much.
-const int kPicasaINIReadBatchSize = 10;
-
-}  // namespace
-
-SafePicasaAlbumsIndexer::SafePicasaAlbumsIndexer(
-    const AlbumMap& albums,
-    const AlbumMap& folders,
-    const DoneCallback& callback)
-    : callback_(callback),
-      parser_state_(INITIAL_STATE) {
+SafePicasaAlbumsIndexer::SafePicasaAlbumsIndexer(const AlbumMap& albums,
+                                                 const AlbumMap& folders)
+    : parser_state_(INITIAL_STATE) {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
-  DCHECK(!callback_.is_null());
 
   folders_inis_.reserve(folders.size());
 
@@ -48,9 +44,11 @@ SafePicasaAlbumsIndexer::SafePicasaAlbumsIndexer(
     folders_queue_.push(it->second.path);
 }
 
-void SafePicasaAlbumsIndexer::Start() {
+void SafePicasaAlbumsIndexer::Start(const DoneCallback& callback) {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(!callback.is_null());
 
+  callback_ = callback;
   ProcessFoldersBatch();
 }
 
@@ -109,6 +107,7 @@ void SafePicasaAlbumsIndexer::StartWorkOnIOThread() {
 void SafePicasaAlbumsIndexer::OnIndexPicasaAlbumsContentsFinished(
     const AlbumImagesMap& albums_images) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback_.is_null());
   if (parser_state_ != STARTED_PARSING_STATE)
     return;
 
@@ -120,6 +119,7 @@ void SafePicasaAlbumsIndexer::OnIndexPicasaAlbumsContentsFinished(
 
 void SafePicasaAlbumsIndexer::OnProcessCrashed(int exit_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback_.is_null());
 
   MediaFileSystemBackend::MediaTaskRunner()->PostTask(
       FROM_HERE,

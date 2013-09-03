@@ -49,11 +49,13 @@ class PicasaFileUtil : public chrome::NativeMediaFileUtil {
   void GetFileInfoWithFreshDataProvider(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
-      const GetFileInfoCallback& callback);
+      const GetFileInfoCallback& callback,
+      bool success);
   void ReadDirectoryWithFreshDataProvider(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
-      const ReadDirectoryCallback& callback);
+      const ReadDirectoryCallback& callback,
+      bool success);
 
   virtual PicasaDataProvider* GetDataProvider();
 

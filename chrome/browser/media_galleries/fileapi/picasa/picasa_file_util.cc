@@ -17,6 +17,7 @@
 #include "chrome/browser/media_galleries/fileapi/picasa/picasa_data_provider.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "chrome/common/media_galleries/picasa_types.h"
+#include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -65,8 +66,11 @@ void PicasaFileUtil::GetFileInfoOnTaskRunnerThread(
     const fileapi::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   GetDataProvider()->RefreshData(
+      PicasaDataProvider::LIST_OF_ALBUMS_AND_FOLDERS_DATA,
       base::Bind(&PicasaFileUtil::GetFileInfoWithFreshDataProvider,
-                 weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(&context),
+                 url,
                  callback));
 }
 
@@ -75,8 +79,11 @@ void PicasaFileUtil::ReadDirectoryOnTaskRunnerThread(
     const fileapi::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   GetDataProvider()->RefreshData(
+      PicasaDataProvider::LIST_OF_ALBUMS_AND_FOLDERS_DATA,
       base::Bind(&PicasaFileUtil::ReadDirectoryWithFreshDataProvider,
-                 weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(&context),
+                 url,
                  callback));
 }
 
@@ -282,17 +289,34 @@ base::PlatformFileError PicasaFileUtil::GetLocalFilePath(
 void PicasaFileUtil::GetFileInfoWithFreshDataProvider(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
-    const GetFileInfoCallback& callback) {
-  NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread(context.Pass(), url,
-                                                     callback);
+    const GetFileInfoCallback& callback,
+    bool success) {
+  if (!success) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(
+            callback, base::PLATFORM_FILE_ERROR_IO, base::PlatformFileInfo()));
+    return;
+  }
+  NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread(
+      context.Pass(), url, callback);
 }
 
 void PicasaFileUtil::ReadDirectoryWithFreshDataProvider(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
-    const ReadDirectoryCallback& callback) {
-  NativeMediaFileUtil::ReadDirectoryOnTaskRunnerThread(context.Pass(), url,
-                                                       callback);
+    const ReadDirectoryCallback& callback,
+    bool success) {
+  if (!success) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(callback, base::PLATFORM_FILE_ERROR_IO, EntryList(), false));
+    return;
+  }
+  NativeMediaFileUtil::ReadDirectoryOnTaskRunnerThread(
+      context.Pass(), url, callback);
 }
 
 PicasaDataProvider* PicasaFileUtil::GetDataProvider() {

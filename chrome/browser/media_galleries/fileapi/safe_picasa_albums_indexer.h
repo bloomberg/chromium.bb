@@ -24,6 +24,8 @@ class Message;
 
 namespace picasa {
 
+extern const char kPicasaINIFilename[];
+
 // SafePicasaAlbumsIndexer indexes the contents of Picasa Albums by parsing the
 // INI files found in Folders. The SafePicasaAlbumsIndexer object is ref-counted
 // and kept alive after Start() is called until the ParserCallback is called.
@@ -31,14 +33,13 @@ namespace picasa {
 // utility process replies or when it dies.
 class SafePicasaAlbumsIndexer : public content::UtilityProcessHostClient {
  public:
-  typedef base::Callback<void(bool /* success */,
-                              const picasa::AlbumImagesMap&)> DoneCallback;
+  typedef base::Callback<
+      void(bool parse_success, const picasa::AlbumImagesMap&)>
+      DoneCallback;
 
-  SafePicasaAlbumsIndexer(const AlbumMap& albums,
-                          const AlbumMap& folders,
-                          const DoneCallback& callback);
+  SafePicasaAlbumsIndexer(const AlbumMap& albums, const AlbumMap& folders);
 
-  void Start();
+  void Start(const DoneCallback& callback);
 
  private:
   enum ParserState {
@@ -74,7 +75,7 @@ class SafePicasaAlbumsIndexer : public content::UtilityProcessHostClient {
   std::vector<picasa::FolderINIContents> folders_inis_;
 
   // Only accessed on the Media Task Runner.
-  const DoneCallback callback_;
+  DoneCallback callback_;
 
   // Verifies the messages from the utility process came at the right time.
   // Initialized on the Media Task Runner, but only accessed on the IO thread.
