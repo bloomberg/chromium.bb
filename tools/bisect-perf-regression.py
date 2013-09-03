@@ -79,7 +79,8 @@ DEPOT_DEPS_NAME = {
     "src" : "src/third_party/angle_dx11",
     "recurse" : True,
     "depends" : None,
-    "from" : 'chromium'
+    "from" : 'chromium',
+    "platform": 'nt'
   },
   'v8' : {
     "src" : "src/v8",
@@ -882,6 +883,10 @@ class BisectPerformanceMetrics(object):
       rxp = re.compile(".git@(?P<revision>[a-fA-F0-9]+)")
 
       for d in DEPOT_NAMES:
+        if DEPOT_DEPS_NAME[d].has_key('platform'):
+          if DEPOT_DEPS_NAME[d]['platform'] != os.name:
+            continue
+
         if DEPOT_DEPS_NAME[d]['recurse'] and\
            DEPOT_DEPS_NAME[d]['from'] == depot:
           if locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src']):
@@ -890,8 +895,12 @@ class BisectPerformanceMetrics(object):
             if re_results:
               results[d] = re_results.group('revision')
             else:
+              print 'Couldn\'t parse revision for %s.' % d
+              print
               return None
           else:
+            print 'Couldn\'t find %s while parsing .DEPS.git.' % d
+            print
             return None
     elif depot == 'cros':
       cmd = [CROS_SDK_PATH, '--', 'portageq-%s' % self.opts.cros_board,
@@ -1471,6 +1480,10 @@ class BisectPerformanceMetrics(object):
     """
     external_depot = None
     for current_depot in DEPOT_NAMES:
+      if DEPOT_DEPS_NAME[current_depot].has_key('platform'):
+        if DEPOT_DEPS_NAME[current_depot]['platform'] != os.name:
+          continue
+
       if not (DEPOT_DEPS_NAME[current_depot]["recurse"] and
           DEPOT_DEPS_NAME[current_depot]['from'] ==
           min_revision_data['depot']):
