@@ -7250,9 +7250,3 @@
    fun:_ZN7content23StoragePartitionImplMap3GetERKSsS2_b
    fun:_ZN7content12_GLOBAL__N_129GetStoragePartitionFromConfigEPNS_14BrowserContextERKSsS4_b
 }
-{
-   bug_283372
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN32OpaqueBrowserFrameViewLayoutTest5SetUpEv
-}

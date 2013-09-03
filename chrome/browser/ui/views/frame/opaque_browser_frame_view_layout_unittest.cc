@@ -136,8 +136,8 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   virtual void SetUp() OVERRIDE {
     views::ViewsTestBase::SetUp();
 
-    delegate_ = new TestLayoutDelegate;
-    layout_manager_ = new OpaqueBrowserFrameViewLayout(delegate_);
+    delegate_.reset(new TestLayoutDelegate);
+    layout_manager_ = new OpaqueBrowserFrameViewLayout(delegate_.get());
     widget_ = new Widget;
     widget_->Init(CreateParams(Widget::InitParams::TYPE_POPUP));
     root_view_ = widget_->GetRootView();
@@ -214,7 +214,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   Widget* widget_;
   views::View* root_view_;
   OpaqueBrowserFrameViewLayout* layout_manager_;
-  TestLayoutDelegate* delegate_;
+  scoped_ptr<TestLayoutDelegate> delegate_;
 
   // Widgets:
   views::ImageButton* minimize_button_;
