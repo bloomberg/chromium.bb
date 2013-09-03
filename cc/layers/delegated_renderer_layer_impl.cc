@@ -288,13 +288,13 @@ void DelegatedRendererLayerImpl::AppendQuads(
   DCHECK(root_delegated_render_pass->output_rect.origin().IsOrigin());
   gfx::Size frame_size = root_delegated_render_pass->output_rect.size();
 
-  // If the index of the EenderPassId is 0, then it is a RenderPass generated
-  // for a layer in this compositor, not the delegated renderer. Then we want to
-  // merge our root RenderPass with the target RenderPass. Otherwise, it is some
-  // RenderPass which we added from the delegated renderer.
+  // If the index of the RenderPassId is 0, then it is a RenderPass generated
+  // for a layer in this compositor, not the delegating renderer. Then we want
+  // to merge our root RenderPass with the target RenderPass. Otherwise, it is
+  // some RenderPass which we added from the delegating renderer.
   bool should_merge_root_render_pass_with_target = !target_render_pass_id.index;
   if (should_merge_root_render_pass_with_target) {
-    // Verify that the RenderPass we are appending to is created our
+    // Verify that the RenderPass we are appending to is created by our
     // render_target.
     DCHECK(target_render_pass_id.layer_id == render_target()->id());
 
