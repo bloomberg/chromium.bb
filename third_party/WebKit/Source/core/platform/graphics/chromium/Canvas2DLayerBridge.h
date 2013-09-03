@@ -43,7 +43,25 @@ class WebGraphicsContext3D;
 
 namespace WebCore {
 
-class Canvas2DLayerBridge : public WebKit::WebExternalTextureLayerClient, public SkDeferredCanvas::NotificationClient, public DoublyLinkedListNode<Canvas2DLayerBridge> {
+class Canvas2DLayerBridge;
+class PassCanvas2DLayerBridgePtr;
+
+class Canvas2DLayerBridgePtr {
+public:
+    Canvas2DLayerBridgePtr() { }
+    Canvas2DLayerBridgePtr(const PassRefPtr<Canvas2DLayerBridge>& ptr) { m_ptr = ptr; }
+    ~Canvas2DLayerBridgePtr() { clear(); }
+    Canvas2DLayerBridge* operator->() const { return m_ptr.get(); }
+    Canvas2DLayerBridgePtr& operator=(const PassRefPtr<Canvas2DLayerBridge>&);
+    Canvas2DLayerBridge* get() const { return m_ptr.get(); }
+    operator bool () const { return m_ptr; }
+    void clear();
+    PassRefPtr<Canvas2DLayerBridge> release() WARN_UNUSED_RETURN { return m_ptr.release(); }
+private:
+    RefPtr<Canvas2DLayerBridge> m_ptr;
+};
+
+class Canvas2DLayerBridge : public WebKit::WebExternalTextureLayerClient, public SkDeferredCanvas::NotificationClient, public DoublyLinkedListNode<Canvas2DLayerBridge>, public RefCounted<Canvas2DLayerBridge> {
     WTF_MAKE_NONCOPYABLE(Canvas2DLayerBridge);
 public:
     enum OpacityMode {
@@ -51,7 +69,7 @@ public:
         NonOpaque
     };
 
-    static PassOwnPtr<Canvas2DLayerBridge> create(PassRefPtr<GraphicsContext3D>, const IntSize&, OpacityMode);
+    static PassRefPtr<Canvas2DLayerBridge> create(PassRefPtr<GraphicsContext3D>, const IntSize&, OpacityMode);
 
     virtual ~Canvas2DLayerBridge();
 
@@ -82,6 +100,8 @@ public:
     bool isValid();
 
 protected:
+    void destroy();
+    friend class Canvas2DLayerBridgePtr;
     Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D>, SkDeferredCanvas*, OpacityMode);
     void setRateLimitingEnabled(bool);
 
@@ -92,6 +112,7 @@ protected:
     bool m_didRecordDrawCommand;
     bool m_surfaceIsValid;
     int m_framesPending;
+    bool m_destructionInProgress;
     bool m_rateLimitingEnabled;
 
     friend class WTF::DoublyLinkedListNode<Canvas2DLayerBridge>;
@@ -108,6 +129,7 @@ protected:
         WebKit::WebExternalTextureMailbox m_mailbox;
         SkAutoTUnref<SkImage> m_image;
         MailboxStatus m_status;
+        RefPtr<Canvas2DLayerBridge> m_parentLayerBridge;
 
         MailboxInfo(const MailboxInfo&);
         MailboxInfo() {}
@@ -117,7 +139,5 @@ protected:
     uint32_t m_lastImageId;
     Vector<MailboxInfo> m_mailboxes;
 };
-
 }
-
 #endif

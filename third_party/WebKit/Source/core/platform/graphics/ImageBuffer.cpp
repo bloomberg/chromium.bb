@@ -64,7 +64,7 @@ using namespace std;
 
 namespace WebCore {
 
-static SkCanvas* createAcceleratedCanvas(const IntSize& size, OwnPtr<Canvas2DLayerBridge>* outLayerBridge, OpacityMode opacityMode)
+static SkCanvas* createAcceleratedCanvas(const IntSize& size, Canvas2DLayerBridgePtr* outLayerBridge, OpacityMode opacityMode)
 {
     RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
     if (!context3D)
@@ -177,7 +177,7 @@ GraphicsContext* ImageBuffer::context() const
 
 bool ImageBuffer::isValid() const
 {
-    if (m_layerBridge.get())
+    if (m_layerBridge)
         return const_cast<Canvas2DLayerBridge*>(m_layerBridge.get())->isValid();
     return true;
 }

@@ -57,9 +57,9 @@ public:
 
 class FakeCanvas2DLayerBridge : public Canvas2DLayerBridge {
 public:
-    static PassOwnPtr<FakeCanvas2DLayerBridge> create(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, OpacityMode opacityMode)
+    static PassRefPtr<Canvas2DLayerBridge> create(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, OpacityMode opacityMode)
     {
-        return adoptPtr(new FakeCanvas2DLayerBridge(context, canvas, opacityMode));
+        return adoptRef(static_cast<Canvas2DLayerBridge*>(new FakeCanvas2DLayerBridge(context, canvas, opacityMode)));
     }
 protected:
     FakeCanvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, OpacityMode opacityMode) :
@@ -87,7 +87,7 @@ protected:
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
-        OwnPtr<Canvas2DLayerBridge> bridge = FakeCanvas2DLayerBridge::create(mainContext.release(), canvas.get(), Canvas2DLayerBridge::NonOpaque);
+        Canvas2DLayerBridgePtr bridge = FakeCanvas2DLayerBridge::create(mainContext.release(), canvas.get(), Canvas2DLayerBridge::NonOpaque);
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 

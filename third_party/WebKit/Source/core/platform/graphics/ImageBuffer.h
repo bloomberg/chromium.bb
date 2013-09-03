@@ -34,6 +34,7 @@
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/IntSize.h"
+#include "core/platform/graphics/chromium/Canvas2DLayerBridge.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
@@ -48,7 +49,6 @@ namespace WebKit { class WebLayer; }
 
 namespace WebCore {
 
-class Canvas2DLayerBridge;
 class Image;
 class ImageData;
 class IntPoint;
@@ -144,7 +144,7 @@ private:
     float m_resolutionScale;
     OwnPtr<SkCanvas> m_canvas;
     OwnPtr<GraphicsContext> m_context;
-    OwnPtr<Canvas2DLayerBridge> m_layerBridge;
+    Canvas2DLayerBridgePtr m_layerBridge;
 
     // This constructor will place its success into the given out-variable
     // so that create() knows when it should return failure.

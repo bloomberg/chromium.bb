@@ -44,6 +44,21 @@ using WebKit::WebGraphicsContext3D;
 
 namespace WebCore {
 
+void Canvas2DLayerBridgePtr::clear()
+{
+    if (m_ptr) {
+        m_ptr->destroy();
+        m_ptr.clear();
+    }
+}
+
+Canvas2DLayerBridgePtr& Canvas2DLayerBridgePtr::operator=(const PassRefPtr<Canvas2DLayerBridge>& other)
+{
+    clear();
+    m_ptr = other;
+    return *this;
+}
+
 static SkSurface* createSurface(GraphicsContext3D* context3D, const IntSize& size)
 {
     ASSERT(!context3D->webContext()->isContextLost());
@@ -59,14 +74,15 @@ static SkSurface* createSurface(GraphicsContext3D* context3D, const IntSize& siz
     return SkSurface::NewRenderTarget(gr, info);
 }
 
-PassOwnPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(PassRefPtr<GraphicsContext3D> context, const IntSize& size, OpacityMode opacityMode)
+PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(PassRefPtr<GraphicsContext3D> context, const IntSize& size, OpacityMode opacityMode)
 {
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation");
     SkAutoTUnref<SkSurface> surface(createSurface(context.get(), size));
-    if (!surface.get())
-        return PassOwnPtr<Canvas2DLayerBridge>();
+    if (!surface.get()) {
+        return PassRefPtr<Canvas2DLayerBridge>();
+    }
     SkDeferredCanvas* canvas = SkDeferredCanvas::Create(surface.get());
-    OwnPtr<Canvas2DLayerBridge> layerBridge = adoptPtr(new Canvas2DLayerBridge(context, canvas, opacityMode));
+    RefPtr<Canvas2DLayerBridge> layerBridge = adoptRef(new Canvas2DLayerBridge(context, canvas, opacityMode));
     return layerBridge.release();
 }
 
@@ -77,6 +93,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, 
     , m_didRecordDrawCommand(false)
     , m_surfaceIsValid(true)
     , m_framesPending(0)
+    , m_destructionInProgress(false)
     , m_rateLimitingEnabled(false)
     , m_next(0)
     , m_prev(0)
@@ -95,16 +112,40 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, 
 
 Canvas2DLayerBridge::~Canvas2DLayerBridge()
 {
-    GraphicsLayer::unregisterContentsLayer(m_layer->layer());
-    Canvas2DLayerManager::get().layerToBeDestroyed(this);
-    m_canvas->setNotificationClient(0);
-    m_mailboxes.clear();
-    m_layer->clearTexture();
+    ASSERT(m_destructionInProgress);
     m_layer.clear();
+    Vector<MailboxInfo>::iterator mailboxInfo;
+    for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); mailboxInfo++) {
+        ASSERT(mailboxInfo->m_status != MailboxInUse);
+        if (mailboxInfo->m_status == MailboxReleased) {
+            if (mailboxInfo->m_mailbox.syncPoint) {
+                context()->waitSyncPoint(mailboxInfo->m_mailbox.syncPoint);
+                mailboxInfo->m_mailbox.syncPoint = 0;
+            }
+            // Invalidate texture state in case the compositor altered it since the copy-on-write.
+            mailboxInfo->m_image->getTexture()->invalidateCachedState();
+        }
+    }
+    m_mailboxes.clear();
+}
+
+void Canvas2DLayerBridge::destroy()
+{
+    ASSERT(!m_destructionInProgress);
+    m_destructionInProgress = true;
+    GraphicsLayer::unregisterContentsLayer(m_layer->layer());
+    m_canvas->setNotificationClient(0);
+    m_layer->clearTexture();
+    Canvas2DLayerManager::get().layerToBeDestroyed(this);
+    // Orphaning the layer is required to trigger the recration of a new layer
+    // in the case where destruction is caused by a canvas resize. Test:
+    // virtual/gpu/fast/canvas/canvas-resize-after-paint-without-layout.html
+    m_layer->layer()->removeFromParent();
 }
 
 void Canvas2DLayerBridge::limitPendingFrames()
 {
+    ASSERT(!m_destructionInProgress);
     if (m_didRecordDrawCommand) {
         m_framesPending++;
         m_didRecordDrawCommand = false;
@@ -121,6 +162,7 @@ void Canvas2DLayerBridge::limitPendingFrames()
 
 void Canvas2DLayerBridge::prepareForDraw()
 {
+    ASSERT(!m_destructionInProgress);
     ASSERT(m_layer);
     if (!isValid()) {
         if (m_canvas) {
@@ -134,6 +176,7 @@ void Canvas2DLayerBridge::prepareForDraw()
 
 void Canvas2DLayerBridge::storageAllocatedForRecordingChanged(size_t bytesAllocated)
 {
+    ASSERT(!m_destructionInProgress);
     intptr_t delta = (intptr_t)bytesAllocated - (intptr_t)m_bytesAllocated;
     m_bytesAllocated = bytesAllocated;
     Canvas2DLayerManager::get().layerAllocatedStorageChanged(this, delta);
@@ -141,17 +184,20 @@ void Canvas2DLayerBridge::storageAllocatedForRecordingChanged(size_t bytesAlloca
 
 size_t Canvas2DLayerBridge::storageAllocatedForRecording()
 {
+    ASSERT(!m_destructionInProgress);
     return m_canvas->storageAllocatedForRecording();
 }
 
 void Canvas2DLayerBridge::flushedDrawCommands()
 {
+    ASSERT(!m_destructionInProgress);
     storageAllocatedForRecordingChanged(storageAllocatedForRecording());
     m_framesPending = 0;
 }
 
 void Canvas2DLayerBridge::skippedPendingDrawCommands()
 {
+    ASSERT(!m_destructionInProgress);
     // Stop triggering the rate limiter if SkDeferredCanvas is detecting
     // and optimizing overdraw.
     setRateLimitingEnabled(false);
@@ -160,6 +206,7 @@ void Canvas2DLayerBridge::skippedPendingDrawCommands()
 
 void Canvas2DLayerBridge::setRateLimitingEnabled(bool enabled)
 {
+    ASSERT(!m_destructionInProgress || !enabled);
     if (m_rateLimitingEnabled != enabled) {
         m_rateLimitingEnabled = enabled;
         m_layer->setRateLimitContext(m_rateLimitingEnabled);
@@ -168,6 +215,7 @@ void Canvas2DLayerBridge::setRateLimitingEnabled(bool enabled)
 
 size_t Canvas2DLayerBridge::freeMemoryIfPossible(size_t bytesToFree)
 {
+    ASSERT(!m_destructionInProgress);
     size_t bytesFreed = m_canvas->freeMemoryIfPossible(bytesToFree);
     if (bytesFreed)
         Canvas2DLayerManager::get().layerAllocatedStorageChanged(this, -((intptr_t)bytesFreed));
@@ -177,6 +225,7 @@ size_t Canvas2DLayerBridge::freeMemoryIfPossible(size_t bytesToFree)
 
 void Canvas2DLayerBridge::flush()
 {
+    ASSERT(!m_destructionInProgress);
     if (m_canvas->hasPendingCommands()) {
         TRACE_EVENT0("cc", "Canvas2DLayerBridge::flush");
         m_canvas->flush();
@@ -196,6 +245,8 @@ WebGraphicsContext3D* Canvas2DLayerBridge::context()
 bool Canvas2DLayerBridge::isValid()
 {
     ASSERT(m_layer);
+    if (m_destructionInProgress)
+        return false;
     if (m_context->webContext()->isContextLost() || !m_surfaceIsValid) {
         // Attempt to recover.
         m_layer->clearTexture();
@@ -221,7 +272,6 @@ bool Canvas2DLayerBridge::isValid()
     if (!m_surfaceIsValid)
         setRateLimitingEnabled(false);
     return m_surfaceIsValid;
-
 }
 
 bool Canvas2DLayerBridge::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox, WebKit::WebExternalBitmap* bitmap)
@@ -278,11 +328,16 @@ bool Canvas2DLayerBridge::prepareMailbox(WebKit::WebExternalTextureMailbox* outM
     // we must dirty the context.
     m_context->grContext()->resetContext(kTextureBinding_GrGLBackendState);
 
+    // set m_parentLayerBridge to make sure 'this' stays alive as long as it has
+    // live mailboxes
+    ASSERT(!mailboxInfo->m_parentLayerBridge);
+    mailboxInfo->m_parentLayerBridge = this;
     *outMailbox = mailboxInfo->m_mailbox;
     return true;
 }
 
 Canvas2DLayerBridge::MailboxInfo* Canvas2DLayerBridge::createMailboxInfo() {
+    ASSERT(!m_destructionInProgress);
     MailboxInfo* mailboxInfo;
     for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); mailboxInfo++) {
         if (mailboxInfo->m_status == MailboxAvailable) {
@@ -313,6 +368,11 @@ void Canvas2DLayerBridge::mailboxReleased(const WebKit::WebExternalTextureMailbo
             mailboxInfo->m_mailbox.syncPoint = mailbox.syncPoint;
             ASSERT(mailboxInfo->m_status == MailboxInUse);
             mailboxInfo->m_status = MailboxReleased;
+            // Trigger Canvas2DLayerBridge self-destruction if this is the
+            // last live mailbox and the layer bridge is not externally
+            // referenced.
+            ASSERT(mailboxInfo->m_parentLayerBridge.get() == this);
+            mailboxInfo->m_parentLayerBridge.clear();
             return;
         }
     }
@@ -326,12 +386,14 @@ WebKit::WebLayer* Canvas2DLayerBridge::layer()
 
 void Canvas2DLayerBridge::contextAcquired()
 {
+    ASSERT(!m_destructionInProgress);
     Canvas2DLayerManager::get().layerDidDraw(this);
     m_didRecordDrawCommand = true;
 }
 
 unsigned Canvas2DLayerBridge::backBufferTexture()
 {
+    ASSERT(!m_destructionInProgress);
     if (!isValid())
         return 0;
     contextAcquired();
