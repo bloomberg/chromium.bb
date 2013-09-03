@@ -1468,7 +1468,7 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
         }
 
         if (element->hasTagName(templateTag)) {
-            value->setTemplateContent(buildObjectForNode(static_cast<HTMLTemplateElement*>(element)->content(), 0, nodesMap));
+            value->setTemplateContent(buildObjectForNode(toHTMLTemplateElement(element)->content(), 0, nodesMap));
             forcePushChildren = true;
         }
     } else if (node->isDocumentNode()) {

@@ -815,8 +815,7 @@ void RenderLayerBacking::updateDrawsContent(bool isSimpleContainer)
 
     bool hasPaintedContent = containsPaintedContent(isSimpleContainer);
     if (hasPaintedContent && isAcceleratedCanvas(renderer())) {
-        HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(renderer()->node());
-        CanvasRenderingContext* context = canvas->renderingContext();
+        CanvasRenderingContext* context = toHTMLCanvasElement(renderer()->node())->renderingContext();
         // Content layer may be null if context is lost.
         if (WebKit::WebLayer* contentLayer = context->platformLayer()) {
             Color bgColor;

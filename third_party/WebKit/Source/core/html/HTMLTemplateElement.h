@@ -52,21 +52,17 @@ private:
     mutable RefPtr<DocumentFragment> m_content;
 };
 
-const HTMLTemplateElement* toHTMLTemplateElement(const Node*);
-
 inline HTMLTemplateElement* toHTMLTemplateElement(Node* node)
 {
-    return const_cast<HTMLTemplateElement*>(toHTMLTemplateElement(static_cast<const Node*>(node)));
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || (node->isHTMLElement() && node->hasTagName(HTMLNames::templateTag)));
+    return static_cast<HTMLTemplateElement*>(node);
 }
 
-#ifdef NDEBUG
-
-// The debug version of this, with assertions, is not inlined.
 inline const HTMLTemplateElement* toHTMLTemplateElement(const Node* node)
 {
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || (node->isHTMLElement() && node->hasTagName(HTMLNames::templateTag)));
     return static_cast<const HTMLTemplateElement*>(node);
 }
-#endif // NDEBUG
 
 } // namespace WebCore
 

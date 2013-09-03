@@ -102,7 +102,7 @@ void DocumentStyleSheetCollection::collectStyleSheets(StyleSheetCollections* col
             } else if (n->isSVGElement() && n->hasTagName(SVGNames::styleTag)) {
                 sheet = static_cast<SVGStyleElement*>(n)->sheet();
             } else {
-                sheet = static_cast<HTMLStyleElement*>(n)->sheet();
+                sheet = toHTMLStyleElement(n)->sheet();
             }
 
             if (sheet && !sheet->disabled() && sheet->isCSSStyleSheet())
