@@ -952,20 +952,13 @@ void ContentViewCoreImpl::ScrollEnd(JNIEnv* env, jobject obj, jlong time_ms) {
 }
 
 void ContentViewCoreImpl::ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
-                                   jfloat x, jfloat y, jfloat dx, jfloat dy,
-                                   jboolean last_input_event_for_vsync) {
+                                   jfloat x, jfloat y, jfloat dx, jfloat dy) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureScrollUpdate, time_ms, x, y);
   event.data.scrollUpdate.deltaX = -dx / GetDpiScale();
   event.data.scrollUpdate.deltaY = -dy / GetDpiScale();
 
   SendGestureEvent(event);
-
-  // TODO(brianderson): Clean up last_input_event_for_vsync. crbug.com/247043
-  if (last_input_event_for_vsync) {
-    SendBeginFrame(base::TimeTicks() +
-                   base::TimeDelta::FromMilliseconds(time_ms));
-  }
 }
 
 void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
@@ -1088,19 +1081,12 @@ void ContentViewCoreImpl::PinchEnd(JNIEnv* env, jobject obj, jlong time_ms) {
 
 void ContentViewCoreImpl::PinchBy(JNIEnv* env, jobject obj, jlong time_ms,
                                   jfloat anchor_x, jfloat anchor_y,
-                                  jfloat delta,
-                                  jboolean last_input_event_for_vsync) {
+                                  jfloat delta) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GesturePinchUpdate, time_ms, anchor_x, anchor_y);
   event.data.pinchUpdate.scale = delta;
 
   SendGestureEvent(event);
-
-  // TODO(brianderson): Clean up last_input_event_for_vsync. crbug.com/247043
-  if (last_input_event_for_vsync) {
-    SendBeginFrame(base::TimeTicks() +
-                   base::TimeDelta::FromMilliseconds(time_ms));
-  }
 }
 
 void ContentViewCoreImpl::SelectBetweenCoordinates(JNIEnv* env, jobject obj,

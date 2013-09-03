@@ -1260,17 +1260,11 @@ import java.util.Map;
     }
 
     @Override
-    public boolean sendGesture(int type, long timeMs, int x, int y, boolean lastInputEventForVSync,
-                               Bundle b) {
+    public boolean sendGesture(int type, long timeMs, int x, int y, Bundle b) {
         if (offerGestureToEmbedder(type)) return false;
         if (mNativeContentViewCore == 0) return false;
         updateTextHandlesForGesture(type);
         updateGestureStateListener(type, b);
-        if (lastInputEventForVSync && isVSyncNotificationEnabled()) {
-            assert type == ContentViewGestureHandler.GESTURE_SCROLL_BY ||
-                    type == ContentViewGestureHandler.GESTURE_PINCH_BY;
-            mDidSignalVSyncUsingInputEvent = true;
-        }
         switch (type) {
             case ContentViewGestureHandler.GESTURE_SHOW_PRESSED_STATE:
                 nativeShowPressState(mNativeContentViewCore, timeMs, x, y);
@@ -1303,8 +1297,7 @@ import java.util.Map;
             case ContentViewGestureHandler.GESTURE_SCROLL_BY: {
                 int dx = b.getInt(ContentViewGestureHandler.DISTANCE_X);
                 int dy = b.getInt(ContentViewGestureHandler.DISTANCE_Y);
-                nativeScrollBy(mNativeContentViewCore, timeMs, x, y, dx, dy,
-                        lastInputEventForVSync);
+                nativeScrollBy(mNativeContentViewCore, timeMs, x, y, dx, dy);
                 return true;
             }
             case ContentViewGestureHandler.GESTURE_SCROLL_END:
@@ -1323,14 +1316,23 @@ import java.util.Map;
                 return true;
             case ContentViewGestureHandler.GESTURE_PINCH_BY:
                 nativePinchBy(mNativeContentViewCore, timeMs, x, y,
-                        b.getFloat(ContentViewGestureHandler.DELTA, 0),
-                        lastInputEventForVSync);
+                        b.getFloat(ContentViewGestureHandler.DELTA, 0));
                 return true;
             case ContentViewGestureHandler.GESTURE_PINCH_END:
                 nativePinchEnd(mNativeContentViewCore, timeMs);
                 return true;
             default:
                 return false;
+        }
+    }
+
+    @Override
+    public void onSentLastGestureForVSync(long eventTimeMs) {
+        if (isVSyncNotificationEnabled()) {
+            mDidSignalVSyncUsingInputEvent = true;
+        }
+        if (mNativeContentViewCore != 0) {
+            nativeOnVSync(mNativeContentViewCore, eventTimeMs * 1000);
         }
     }
 
@@ -1779,7 +1781,7 @@ import java.util.Map;
     public void scrollBy(int xPix, int yPix) {
         if (mNativeContentViewCore != 0) {
             nativeScrollBy(mNativeContentViewCore,
-                    System.currentTimeMillis(), 0, 0, xPix, yPix, false);
+                    System.currentTimeMillis(), 0, 0, xPix, yPix);
         }
     }
 
@@ -1796,7 +1798,7 @@ import java.util.Map;
             long time = System.currentTimeMillis();
             nativeScrollBegin(mNativeContentViewCore, time, xCurrentPix, yCurrentPix);
             nativeScrollBy(mNativeContentViewCore,
-                    time, xCurrentPix, yCurrentPix, dxPix, dyPix, false);
+                    time, xCurrentPix, yCurrentPix, dxPix, dyPix);
             nativeScrollEnd(mNativeContentViewCore, time);
         }
     }
@@ -3080,7 +3082,7 @@ import java.util.Map;
 
     private native void nativeScrollBy(
             int nativeContentViewCoreImpl, long timeMs, float x, float y,
-            float deltaX, float deltaY, boolean lastInputEventForVSync);
+            float deltaX, float deltaY);
 
     private native void nativeFlingStart(
             int nativeContentViewCoreImpl, long timeMs, float x, float y, float vx, float vy);
@@ -3114,7 +3116,7 @@ import java.util.Map;
     private native void nativePinchEnd(int nativeContentViewCoreImpl, long timeMs);
 
     private native void nativePinchBy(int nativeContentViewCoreImpl, long timeMs,
-            float anchorX, float anchorY, float deltaScale, boolean lastInputEventForVSync);
+            float anchorX, float anchorY, float deltaScale);
 
     private native void nativeSelectBetweenCoordinates(
             int nativeContentViewCoreImpl, float x1, float y1, float x2, float y2);
