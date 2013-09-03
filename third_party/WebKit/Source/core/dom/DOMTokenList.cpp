@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "core/html/DOMTokenList.h"
+#include "core/dom/DOMTokenList.h"
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"

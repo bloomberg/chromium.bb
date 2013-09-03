@@ -25,10 +25,10 @@
 #define HTMLLinkElement_h
 
 #include "core/css/CSSStyleSheet.h"
+#include "core/dom/DOMSettableTokenList.h"
 #include "core/dom/IconURL.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/StyleSheetResourceClient.h"
-#include "core/html/DOMSettableTokenList.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/html/LinkResource.h"

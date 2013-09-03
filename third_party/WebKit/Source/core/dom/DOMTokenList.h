@@ -41,7 +41,7 @@ public:
     {
         ScriptWrappable::init(this);
     }
-    virtual ~DOMTokenList() {};
+    virtual ~DOMTokenList() { };
 
     virtual void ref() = 0;
     virtual void deref() = 0;

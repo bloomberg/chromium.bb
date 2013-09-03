@@ -37,7 +37,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ClientRect.h"
-#include "core/html/DOMTokenList.h"
+#include "core/dom/DOMTokenList.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/track/WebVTTParser.h"
 #include "core/platform/Logging.h"

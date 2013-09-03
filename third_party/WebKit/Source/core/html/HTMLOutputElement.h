@@ -31,7 +31,7 @@
 #ifndef HTMLOutputElement_h
 #define HTMLOutputElement_h
 
-#include "core/html/DOMSettableTokenList.h"
+#include "core/dom/DOMSettableTokenList.h"
 #include "core/html/HTMLFormControlElement.h"
 
 namespace WebCore {
