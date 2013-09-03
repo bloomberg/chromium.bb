@@ -170,7 +170,6 @@ base::TimeDelta MediaSourcePlayer::GetDuration() {
 
 void MediaSourcePlayer::Release() {
   DVLOG(1) << __FUNCTION__;
-  ClearDecodingData();
   audio_decoder_job_.reset();
   video_decoder_job_.reset();
   reconfig_audio_decoder_ = false;
