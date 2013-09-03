@@ -104,6 +104,10 @@
                         '../core/testing/v8', # for WebCoreTestSupport.h, needed to link in window.internals code.
                     ],
                     'sources': [
+                        # Compile Blink unittest files into webkit.dll in component build mode
+                        # since there're methods that are tested but not exported.
+                        # WebUnitTests.* exports an API that runs all the unittests inside
+                        # webkit.dll.
                         '<@(bindings_unittest_files)',
                         '<@(core_unittest_files)',
                         '<@(modules_unittest_files)',
