@@ -70,9 +70,14 @@ StatsHistogram* StatsHistogram::FactoryGet(const std::string& name,
   return return_histogram;
 }
 
+void StatsHistogram::Disable() {
+  stats_ = NULL;
+}
+
 scoped_ptr<HistogramSamples> StatsHistogram::SnapshotSamples() const {
   scoped_ptr<SampleVector> samples(new SampleVector(bucket_ranges()));
-  stats_->Snapshot(samples.get());
+  if (stats_)
+     stats_->Snapshot(samples.get());
 
   // Only report UMA data once.
   StatsHistogram* mutable_me = const_cast<StatsHistogram*>(this);

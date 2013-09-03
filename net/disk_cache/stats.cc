@@ -92,6 +92,9 @@ Stats::Stats() : size_histogram_(NULL) {
 }
 
 Stats::~Stats() {
+  if (size_histogram_) {
+    size_histogram_->Disable();
+  }
 }
 
 bool Stats::Init(void* data, int num_bytes, Addr address) {

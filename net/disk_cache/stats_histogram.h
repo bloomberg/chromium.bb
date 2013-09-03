@@ -41,6 +41,9 @@ class StatsHistogram : public base::Histogram {
   static StatsHistogram* FactoryGet(const std::string& name,
                                     const Stats* stats);
 
+  // Disables this histogram when the underlying Stats go away.
+  void Disable();
+
   virtual scoped_ptr<base::HistogramSamples> SnapshotSamples() const OVERRIDE;
   virtual int FindCorruption(
       const base::HistogramSamples& samples) const OVERRIDE;
