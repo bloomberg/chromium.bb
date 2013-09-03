@@ -181,7 +181,7 @@ struct AudioDecoderConfig {
 
 // Surface formats based on FOURCC labels, see: http://www.fourcc.org/yuv.php
 enum VideoFormat {
-  kUnknownVideoFormat = 0,  // Unknown format value.  Used for error reporting.
+  kUnknownVideoFormat = 0,  // Unknown format value. Used for error reporting.
   kYv12,  // 12bpp YVU planar 1x1 Y, 2x2 VU samples.
   kI420  // 12bpp YVU planar 1x1 Y, 2x2 UV samples.
 };
@@ -237,6 +237,24 @@ struct VideoDecoderConfig {
 enum StreamType {
   kStreamTypeAudio = 0,
   kStreamTypeVideo = 1
+};
+
+// Structure provided to ContentDecryptionModule::OnPlatformChallengeResponse()
+// after a platform challenge was initiated via Host::SendPlatformChallenge().
+// All values will be NULL / zero in the event of a challenge failure.
+struct PlatformChallengeResponse {
+  // |challenge| provided during Host::SendPlatformChallenge() combined with
+  // nonce data and signed with the platform's private key.
+  uint8_t* signed_data;
+  int32_t signed_data_length;
+
+  // RSASSA-PKCS1-v1_5-SHA256 signature of the |signed_data| block.
+  uint8_t* signed_data_signature;
+  int32_t signed_data_signature_length;
+
+  // X.509 device specific certificate for the |service_id| requested.
+  uint8_t* platform_key_certificate;
+  int32_t platform_key_certificate_length;
 };
 
 // ContentDecryptionModule interface that all CDMs need to implement.
@@ -371,6 +389,18 @@ class ContentDecryptionModule_1 {
   virtual ~ContentDecryptionModule_1() {}
 };
 
+class ContentDecryptionModule_2 : public ContentDecryptionModule_1 {
+ public:
+  // Called by the host after a platform challenge was initiated via
+  // Host::SendPlatformChallenge().
+  virtual void OnPlatformChallengeResponse(
+      const PlatformChallengeResponse& response) = 0;
+
+ protected:
+  ContentDecryptionModule_2() {}
+  virtual ~ContentDecryptionModule_2() {}
+};
+
 const int kCdmInterfaceVersion_1 = 1;
 
 typedef ContentDecryptionModule_1 ContentDecryptionModule;
@@ -438,7 +468,56 @@ class Host_1 {
   virtual ~Host_1() {}
 };
 
+class Host_2 {
+ public:
+  // Returns a Buffer* containing non-zero members upon success, or NULL on
+  // failure. The caller owns the Buffer* after this call. The buffer is not
+  // guaranteed to be zero initialized. The capacity of the allocated Buffer
+  // is guaranteed to be not less than |capacity|.
+  virtual Buffer* Allocate(int32_t capacity) = 0;
+
+  // Requests the host to call ContentDecryptionModule::TimerFired() |delay_ms|
+  // from now with |context|.
+  virtual void SetTimer(int64_t delay_ms, void* context) = 0;
+
+  // Returns the current epoch wall time in seconds.
+  virtual double GetCurrentWallTimeInSeconds() = 0;
+
+  // Sends a keymessage event to the application.
+  // Length parameters should not include null termination.
+  virtual void SendKeyMessage(
+      const char* session_id, int32_t session_id_length,
+      const char* message, int32_t message_length,
+      const char* default_url, int32_t default_url_length) = 0;
+
+  // Sends a keyerror event to the application.
+  // |session_id_length| should not include null termination.
+  virtual void SendKeyError(const char* session_id,
+                            int32_t session_id_length,
+                            MediaKeyError error_code,
+                            uint32_t system_code) = 0;
+
+  // Check if the underlying host platform can be challenged; i.e., verified as
+  // a trusted platform. Returns false if the platform has no support or will
+  // always fail challenge requests (known untrusted).
+  virtual bool CanChallengePlatform() = 0;
+
+  // Sends a platform challenge for the given |service_id|. |challenge| is at
+  // most 256 bits of data to be signed. Once the challenge has been completed,
+  // the host will call ContentDecryptionModule::OnPlatformChallengeResponse()
+  // with the signed challenge response and platform certificate. Length
+  // parameters should not include null termination.
+  virtual void SendPlatformChallenge(
+      const char* service_id, int32_t service_id_length,
+      const char* challenge, int32_t challenge_length) = 0;
+
+ protected:
+  Host_2() {}
+  virtual ~Host_2() {}
+};
+
 const int kHostInterfaceVersion_1 = 1;
+const int kHostInterfaceVersion_2 = 2;
 
 typedef Host_1 Host;
 const int kHostInterfaceVersion = kHostInterfaceVersion_1;
