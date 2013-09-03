@@ -255,9 +255,10 @@ IPC_MESSAGE_ROUTED4(ResourceMsg_DataReceived,
 // Sent when some data from a resource request has been downloaded to
 // file. This is only called in the 'download_to_file' case and replaces
 // ResourceMsg_DataReceived in the call sequence in that case.
-IPC_MESSAGE_ROUTED2(ResourceMsg_DataDownloaded,
+IPC_MESSAGE_ROUTED3(ResourceMsg_DataDownloaded,
                     int /* request_id */,
-                    int /* data_len */)
+                    int /* data_len */,
+                    int /* encoded_data_length */)
 
 // Sent when the request has been completed.
 IPC_MESSAGE_ROUTED5(ResourceMsg_RequestComplete,

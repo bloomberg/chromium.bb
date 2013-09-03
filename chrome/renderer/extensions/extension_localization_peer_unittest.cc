@@ -64,7 +64,7 @@ class MockResourceLoaderBridgePeer
       GURL* new_first_party_for_cookies));
   MOCK_METHOD1(OnReceivedResponse, void(
       const webkit_glue::ResourceResponseInfo& info));
-  MOCK_METHOD1(OnDownloadedData, void(int len));
+  MOCK_METHOD2(OnDownloadedData, void(int len, int encoded_data_length));
   MOCK_METHOD3(OnReceivedData, void(const char* data,
                                     int data_length,
                                     int encoded_data_length));

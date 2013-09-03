@@ -284,8 +284,11 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int bytes_read,
 
 void AsyncResourceHandler::OnDataDownloaded(
     int request_id, int bytes_downloaded) {
+  int encoded_data_length =
+      DevToolsNetLogObserver::GetAndResetEncodedDataLength(request_);
+
   filter_->Send(new ResourceMsg_DataDownloaded(
-      routing_id_, request_id, bytes_downloaded));
+      routing_id_, request_id, bytes_downloaded, encoded_data_length));
 }
 
 bool AsyncResourceHandler::OnResponseCompleted(

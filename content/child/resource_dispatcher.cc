@@ -451,7 +451,8 @@ void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
 
 void ResourceDispatcher::OnDownloadedData(const IPC::Message& message,
                                           int request_id,
-                                          int data_len) {
+                                          int data_len,
+                                          int encoded_data_length) {
   // Acknowledge the reception of this message.
   message_sender()->Send(
       new ResourceHostMsg_DataDownloaded_ACK(message.routing_id(), request_id));
@@ -460,7 +461,7 @@ void ResourceDispatcher::OnDownloadedData(const IPC::Message& message,
   if (!request_info)
     return;
 
-  request_info->peer->OnDownloadedData(data_len);
+  request_info->peer->OnDownloadedData(data_len, encoded_data_length);
 }
 
 void ResourceDispatcher::OnReceivedRedirect(

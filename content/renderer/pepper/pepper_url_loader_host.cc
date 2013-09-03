@@ -152,7 +152,8 @@ void PepperURLLoaderHost::didReceiveResponse(WebURLLoader* loader,
 }
 
 void PepperURLLoaderHost::didDownloadData(WebURLLoader* loader,
-                                          int data_length) {
+                                          int data_length,
+                                          int encoded_data_length) {
   bytes_received_ += data_length;
   UpdateProgress();
 }

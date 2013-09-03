@@ -57,7 +57,7 @@ class TestRequestCallback : public ResourceLoaderBridge::Peer {
   virtual void OnReceivedResponse(const ResourceResponseInfo& info) OVERRIDE {
   }
 
-  virtual void OnDownloadedData(int len) OVERRIDE {
+  virtual void OnDownloadedData(int len, int encoded_data_length) OVERRIDE {
   }
 
   virtual void OnReceivedData(const char* data,
@@ -285,7 +285,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
     set_defer_loading(true);
   }
 
-  virtual void OnDownloadedData(int len) OVERRIDE {
+  virtual void OnDownloadedData(int len, int encoded_data_length) OVERRIDE {
   }
 
   virtual void OnReceivedData(const char* data,
@@ -374,7 +374,7 @@ class TimeConversionTest : public ResourceDispatcherTest,
     response_info_ = info;
   }
 
-  virtual void OnDownloadedData(int len) OVERRIDE {
+  virtual void OnDownloadedData(int len, int encoded_data_length) OVERRIDE {
   }
 
   virtual void OnReceivedData(const char* data,

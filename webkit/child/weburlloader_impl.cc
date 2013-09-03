@@ -346,7 +346,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
       bool* has_new_first_party_for_cookies,
       GURL* new_first_party_for_cookies) OVERRIDE;
   virtual void OnReceivedResponse(const ResourceResponseInfo& info) OVERRIDE;
-  virtual void OnDownloadedData(int len) OVERRIDE;
+  virtual void OnDownloadedData(int len, int encoded_data_length) OVERRIDE;
   virtual void OnReceivedData(const char* data,
                               int data_length,
                               int encoded_data_length) OVERRIDE;
@@ -670,9 +670,10 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   }
 }
 
-void WebURLLoaderImpl::Context::OnDownloadedData(int len) {
+void WebURLLoaderImpl::Context::OnDownloadedData(int len,
+                                                 int encoded_data_length) {
   if (client_)
-    client_->didDownloadData(loader_, len);
+    client_->didDownloadData(loader_, len, encoded_data_length);
 }
 
 void WebURLLoaderImpl::Context::OnReceivedData(const char* data,

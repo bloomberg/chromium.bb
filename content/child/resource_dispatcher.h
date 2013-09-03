@@ -145,7 +145,8 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   void OnDownloadedData(
       const IPC::Message& message,
       int request_id,
-      int data_len);
+      int data_len,
+      int encoded_data_length);
   void OnRequestComplete(
       int request_id,
       int error_code,

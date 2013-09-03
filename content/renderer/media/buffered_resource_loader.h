@@ -152,7 +152,8 @@ class CONTENT_EXPORT BufferedResourceLoader
       const WebKit::WebURLResponse& response);
   virtual void didDownloadData(
       WebKit::WebURLLoader* loader,
-      int data_length);
+      int data_length,
+      int encoded_data_length);
   virtual void didReceiveData(
       WebKit::WebURLLoader* loader,
       const char* data,

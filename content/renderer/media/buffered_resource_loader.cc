@@ -468,7 +468,8 @@ void BufferedResourceLoader::didReceiveData(
 
 void BufferedResourceLoader::didDownloadData(
     WebKit::WebURLLoader* loader,
-    int dataLength) {
+    int dataLength,
+    int encoded_data_length) {
   NOTIMPLEMENTED();
 }
 
