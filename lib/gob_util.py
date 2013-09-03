@@ -132,7 +132,7 @@ def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None):
   except GOBError as e:
     msg = '%s:\n%s' % (e.message, path)
     raise GOBError(e.http_status, msg)
-  return result if len(change_list) == 1 else sum(result, [])
+  return result
 
 
 def GetGerritFetchUrl(host):
