@@ -72,9 +72,6 @@ extern const bool kShowOtherBrowsersInAboutMemory;
 // Should the close button be shown in the Task Manager dialog?
 extern const bool kShowCancelButtonInTaskManager;
 
-// Preferred height of the bookmarks bar when shown on every page.
-extern const int kBookmarkBarHeight;
-
 // ChromiumOS network menu font
 extern const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle;
 

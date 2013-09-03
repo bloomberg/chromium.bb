@@ -886,7 +886,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     AnimatableView* view = [self animatableView];
     // Height takes into account the extra height we have since the toolbar
     // only compresses when we're done.
-    [view animateToNewHeight:(bookmarks::kBookmarkBarHeight -
+    [view animateToNewHeight:(chrome::kBookmarkBarHeight -
                               bookmarks::kBookmarkBarOverlap)
                     duration:kBookmarkBarAnimationDuration];
   } else if ([self isAnimatingFromState:BookmarkBar::SHOW
@@ -910,7 +910,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     AnimatableView* view = [self animatableView];
     // Height takes into account the extra height we have since the toolbar
     // only compresses when we're done.
-    [view animateToNewHeight:(bookmarks::kBookmarkBarHeight -
+    [view animateToNewHeight:(chrome::kBookmarkBarHeight -
                               bookmarks::kBookmarkBarOverlap)
                     duration:kBookmarkBarAnimationDuration];
   } else {
@@ -943,7 +943,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   switch (currentState_) {
     case BookmarkBar::SHOW:
-      return bookmarks::kBookmarkBarHeight;
+      return chrome::kBookmarkBarHeight;
     case BookmarkBar::DETACHED:
       return chrome::kNTPBookmarkBarHeight;
     case BookmarkBar::HIDDEN:

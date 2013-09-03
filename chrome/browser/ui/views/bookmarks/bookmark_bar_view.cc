@@ -692,12 +692,12 @@ gfx::Size BookmarkBarView::GetMinimumSize() {
   // Bookmarks" folder, along with appropriate margins and button padding.
   int width = kLeftMargin;
 
-  int height = browser_defaults::kBookmarkBarHeight;
+  int height = chrome::kBookmarkBarHeight;
   if (IsDetached()) {
     double current_state = 1 - size_animation_->GetCurrentValue();
     width += 2 * static_cast<int>(kNewtabHorizontalPadding * current_state);
     height += static_cast<int>(
-        (chrome::kNTPBookmarkBarHeight - browser_defaults::kBookmarkBarHeight) *
+        (chrome::kNTPBookmarkBarHeight - chrome::kBookmarkBarHeight) *
             current_state);
   }
 
@@ -1727,20 +1727,20 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   int top_margin = IsDetached() ? kDetachedTopMargin : 0;
   int y = top_margin;
   int width = View::width() - kRightMargin - kLeftMargin;
-  int height = browser_defaults::kBookmarkBarHeight - kBottomMargin;
+  int height = chrome::kBookmarkBarHeight - kBottomMargin;
   int separator_margin = kSeparatorMargin;
 
   if (IsDetached()) {
     double current_state = 1 - size_animation_->GetCurrentValue();
     x += static_cast<int>(kNewtabHorizontalPadding * current_state);
-    y += (View::height() - browser_defaults::kBookmarkBarHeight) / 2;
+    y += (View::height() - chrome::kBookmarkBarHeight) / 2;
     width -= static_cast<int>(kNewtabHorizontalPadding * current_state);
     separator_margin -= static_cast<int>(kSeparatorMargin * current_state);
   } else {
     // For the attached appearance, pin the content to the bottom of the bar
     // when animating in/out, as shrinking its height instead looks weird.  This
     // also matches how we layout infobars.
-    y += View::height() - browser_defaults::kBookmarkBarHeight;
+    y += View::height() - chrome::kBookmarkBarHeight;
   }
 
   gfx::Size other_bookmarked_pref = other_bookmarked_button_->visible() ?
@@ -1842,16 +1842,13 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
       x += static_cast<int>(kNewtabHorizontalPadding *
           (1 - size_animation_->GetCurrentValue()));
       prefsize.set_height(
-          browser_defaults::kBookmarkBarHeight +
+          chrome::kBookmarkBarHeight +
           static_cast<int>(
-              (chrome::kNTPBookmarkBarHeight -
-               browser_defaults::kBookmarkBarHeight) *
+              (chrome::kNTPBookmarkBarHeight - chrome::kBookmarkBarHeight) *
               (1 - size_animation_->GetCurrentValue())));
     } else {
-      prefsize.set_height(
-          static_cast<int>(
-              browser_defaults::kBookmarkBarHeight *
-              size_animation_->GetCurrentValue()));
+      prefsize.set_height(static_cast<int>(chrome::kBookmarkBarHeight *
+                                           size_animation_->GetCurrentValue()));
     }
   }
   return prefsize;

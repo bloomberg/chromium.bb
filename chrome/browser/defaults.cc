@@ -72,8 +72,6 @@ const bool kShowCancelButtonInTaskManager = true;
 const bool kShowCancelButtonInTaskManager = false;
 #endif
 
-const int kBookmarkBarHeight = 28;
-
 const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle =
     ui::ResourceBundle::BoldFont;
 

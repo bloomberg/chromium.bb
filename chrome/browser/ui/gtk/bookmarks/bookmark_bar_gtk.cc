@@ -70,9 +70,6 @@ using content::WebContents;
 
 namespace {
 
-// The showing height of the bar.
-const int kBookmarkBarHeight = 29;
-
 // Padding for when the bookmark bar is detached.
 const int kTopBottomNTPPadding = 12;
 const int kLeftRightNTPPadding = 8;
@@ -351,7 +348,7 @@ void BookmarkBarGtk::CalculateMaxHeight() {
     max_height_ = req.height;
   } else {
     max_height_ = (bookmark_bar_state_ == BookmarkBar::DETACHED) ?
-                  chrome::kNTPBookmarkBarHeight : kBookmarkBarHeight;
+        chrome::kNTPBookmarkBarHeight : chrome::kBookmarkBarHeight;
   }
 }
 

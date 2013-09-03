@@ -1910,8 +1910,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     for (NSButton* aButton in buttons_.get()) {
       // If this button is showing its menu then we need to move the menu, too.
       if (aButton == subButton)
-        [folderController_ offsetFolderMenuWindow:NSMakeSize(0.0,
-         bookmarks::kBookmarkBarHeight)];
+        [folderController_
+            offsetFolderMenuWindow:NSMakeSize(0.0, chrome::kBookmarkBarHeight)];
     }
   } else {
     // If all nodes have been removed from this folder then add in the
