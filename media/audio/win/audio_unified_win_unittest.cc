@@ -196,13 +196,13 @@ class AudioUnifiedStreamWrapper {
 
   // Creates an AudioOutputStream object using default parameters.
   WASAPIUnifiedStream* Create() {
-    return static_cast<WASAPIUnifiedStream*> (CreateOutputStream());
+    return static_cast<WASAPIUnifiedStream*>(CreateOutputStream());
   }
 
   // Creates an AudioOutputStream object using default parameters but a
   // specified input device.
   WASAPIUnifiedStream* Create(const std::string device_id) {
-    return static_cast<WASAPIUnifiedStream*> (CreateOutputStream(device_id));
+    return static_cast<WASAPIUnifiedStream*>(CreateOutputStream(device_id));
   }
 
   AudioParameters::Format format() const { return params_.format(); }
@@ -223,20 +223,21 @@ class AudioUnifiedStreamWrapper {
       CoreAudioUtil::CreateDefaultDevice(eCapture, eConsole);
     AudioDeviceName name;
     EXPECT_TRUE(SUCCEEDED(CoreAudioUtil::GetDeviceName(audio_device, &name)));
-    const std::string& device_id = name.unique_id;
-    EXPECT_TRUE(CoreAudioUtil::DeviceIsDefault(eCapture, eConsole, device_id));
+    const std::string& input_device_id = name.unique_id;
+    EXPECT_TRUE(CoreAudioUtil::DeviceIsDefault(eCapture, eConsole,
+        input_device_id));
 
     // Create the unified audio I/O stream using the default input device.
     AudioOutputStream* aos = audio_man_->MakeAudioOutputStream(params_,
-                                                               device_id);
+        "", input_device_id);
     EXPECT_TRUE(aos);
     return aos;
   }
 
-  AudioOutputStream* CreateOutputStream(const std::string& device_id) {
+  AudioOutputStream* CreateOutputStream(const std::string& input_device_id) {
     // Create the unified audio I/O stream using the specified input device.
     AudioOutputStream* aos = audio_man_->MakeAudioOutputStream(params_,
-                                                               device_id);
+        "", input_device_id);
     EXPECT_TRUE(aos);
     return aos;
   }

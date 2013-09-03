@@ -101,7 +101,7 @@ class AudioOutputStreamWrapper {
                  samples_per_packet_);
 
     AudioOutputStream* aos = audio_man_->MakeAudioOutputStream(params,
-                                                               std::string());
+        std::string(), std::string());
     EXPECT_TRUE(aos);
     return aos;
   }

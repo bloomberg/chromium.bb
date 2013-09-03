@@ -168,7 +168,7 @@ void AudioOutputDispatcherImpl::Shutdown() {
 bool AudioOutputDispatcherImpl::CreateAndOpenStream() {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   AudioOutputStream* stream = audio_manager_->MakeAudioOutputStream(
-      params_, input_device_id_);
+      params_, "", input_device_id_);
   if (!stream)
     return false;
 

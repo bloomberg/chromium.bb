@@ -88,7 +88,9 @@ AudioOutputStream* AudioManagerIOS::MakeLinearOutputStream(
 }
 
 AudioOutputStream* AudioManagerIOS::MakeLowLatencyOutputStream(
-    const AudioParameters& params, const std::string& input_device_id) {
+    const AudioParameters& params,
+    const std::string& device_id,
+    const std::string& input_device_id) {
   NOTIMPLEMENTED();  // Only input is supported on iOS.
   return NULL;
 }
@@ -106,7 +108,10 @@ AudioInputStream* AudioManagerIOS::MakeLowLatencyInputStream(
 
 
 AudioParameters AudioManagerIOS::GetPreferredOutputStreamParameters(
+    const std::string& output_device_id,
     const AudioParameters& input_params) {
+  // TODO(tommi): Support |output_device_id|.
+  DLOG_IF(ERROR, !output_device_id.empty()) << "Not implemented!";
   // TODO(xians): handle the case when input_params is valid.
   // TODO(xians): figure out the right output sample rate and sample rate to
   // achieve the best audio performance for iOS devices.

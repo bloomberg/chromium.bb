@@ -115,7 +115,7 @@ void AudioOutputController::DoCreate(bool is_for_device_change) {
   DCHECK_EQ(kEmpty, state_);
 
   stream_ = diverting_to_stream_ ? diverting_to_stream_ :
-      audio_manager_->MakeAudioOutputStreamProxy(params_, input_device_id_);
+      audio_manager_->MakeAudioOutputStreamProxy(params_, "", input_device_id_);
   if (!stream_) {
     state_ = kError;
     handler_->OnError();

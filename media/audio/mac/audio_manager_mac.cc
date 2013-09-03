@@ -445,11 +445,14 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
 
 AudioOutputStream* AudioManagerMac::MakeLinearOutputStream(
     const AudioParameters& params) {
-  return MakeLowLatencyOutputStream(params, std::string());
+  return MakeLowLatencyOutputStream(params, std::string(), std::string());
 }
 
 AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
-    const AudioParameters& params, const std::string& input_device_id) {
+    const AudioParameters& params,
+    const std::string& device_id,
+    const std::string& input_device_id) {
+  DLOG_IF(ERROR, !device_id.empty()) << "Not implemented!";
   // Handle basic output with no input channels.
   if (params.input_channels() == 0) {
     AudioDeviceID device = kAudioObjectUnknown;
@@ -526,7 +529,10 @@ AudioInputStream* AudioManagerMac::MakeLowLatencyInputStream(
 }
 
 AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
+    const std::string& output_device_id,
     const AudioParameters& input_params) {
+  // TODO(tommi): Support |output_device_id|.
+  DLOG_IF(ERROR, !output_device_id.empty()) << "Not implemented!";
   int hardware_channels = 2;
   if (!GetDefaultOutputChannels(&hardware_channels)) {
     // Fallback to stereo.

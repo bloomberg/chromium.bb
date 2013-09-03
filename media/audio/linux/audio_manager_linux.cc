@@ -258,7 +258,9 @@ AudioOutputStream* AudioManagerLinux::MakeLinearOutputStream(
 
 AudioOutputStream* AudioManagerLinux::MakeLowLatencyOutputStream(
     const AudioParameters& params,
+    const std::string& device_id,
     const std::string& input_device_id) {
+  DLOG_IF(ERROR, !device_id.empty()) << "Not implemented!";
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   // TODO(xians): Use input_device_id for unified IO.
   return MakeOutputStream(params);
@@ -277,7 +279,10 @@ AudioInputStream* AudioManagerLinux::MakeLowLatencyInputStream(
 }
 
 AudioParameters AudioManagerLinux::GetPreferredOutputStreamParameters(
+    const std::string& output_device_id,
     const AudioParameters& input_params) {
+  // TODO(tommi): Support |output_device_id|.
+  DLOG_IF(ERROR, !output_device_id.empty()) << "Not implemented!";
   static const int kDefaultOutputBufferSize = 2048;
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
   int sample_rate = kDefaultSampleRate;
