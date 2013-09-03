@@ -44,9 +44,9 @@ static StyleEventSender& styleLoadEventSender()
     return sharedLoadEventSender;
 }
 
-inline HTMLStyleElement::HTMLStyleElement(const QualifiedName& tagName, Document* document, bool createdByParser)
+inline HTMLStyleElement::HTMLStyleElement(const QualifiedName& tagName, Document& document, bool createdByParser)
     : HTMLElement(tagName, document)
-    , StyleElement(document, createdByParser)
+    , StyleElement(&document, createdByParser)
     , m_firedLoad(false)
     , m_loadedSheet(false)
     , m_scopedStyleRegistrationState(NotRegistered)
@@ -64,7 +64,7 @@ HTMLStyleElement::~HTMLStyleElement()
     styleLoadEventSender().cancelEvent(this);
 }
 
-PassRefPtr<HTMLStyleElement> HTMLStyleElement::create(const QualifiedName& tagName, Document* document, bool createdByParser)
+PassRefPtr<HTMLStyleElement> HTMLStyleElement::create(const QualifiedName& tagName, Document& document, bool createdByParser)
 {
     return adoptRef(new HTMLStyleElement(tagName, document, createdByParser));
 }

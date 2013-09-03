@@ -40,7 +40,7 @@ enum TranslateAttributeMode {
 
 class HTMLElement : public Element {
 public:
-    static PassRefPtr<HTMLElement> create(const QualifiedName& tagName, Document*);
+    static PassRefPtr<HTMLElement> create(const QualifiedName& tagName, Document&);
 
     virtual String title() const OVERRIDE FINAL;
 
@@ -96,7 +96,7 @@ public:
     virtual void defaultEventHandler(Event*) OVERRIDE;
 
 protected:
-    HTMLElement(const QualifiedName& tagName, Document*, ConstructionType);
+    HTMLElement(const QualifiedName& tagName, Document&, ConstructionType);
 
     void addHTMLLengthToStyle(MutableStylePropertySet*, CSSPropertyID, const String& value);
     void addHTMLColorToStyle(MutableStylePropertySet*, CSSPropertyID, const String& color);
@@ -150,8 +150,8 @@ inline const HTMLElement* toHTMLElement(const Node* node)
 // This will catch anyone doing an unnecessary cast.
 void toHTMLElement(const HTMLElement*);
 
-inline HTMLElement::HTMLElement(const QualifiedName& tagName, Document* document, ConstructionType type = CreateHTMLElement)
-    : Element(tagName, document, type)
+inline HTMLElement::HTMLElement(const QualifiedName& tagName, Document& document, ConstructionType type = CreateHTMLElement)
+    : Element(tagName, &document, type)
 {
     ASSERT(tagName.localName().impl());
     ScriptWrappable::init(this);

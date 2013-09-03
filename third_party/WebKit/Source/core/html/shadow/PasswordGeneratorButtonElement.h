@@ -42,7 +42,7 @@ class ShadowRoot;
 
 class PasswordGeneratorButtonElement FINAL : public HTMLDivElement {
 public:
-    static PassRefPtr<PasswordGeneratorButtonElement> create(Document* document)
+    static PassRefPtr<PasswordGeneratorButtonElement> create(Document& document)
     {
         return adoptRef(new PasswordGeneratorButtonElement(document));
     }
@@ -53,7 +53,7 @@ public:
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
 
 private:
-    PasswordGeneratorButtonElement(Document*);
+    PasswordGeneratorButtonElement(Document&);
     virtual bool isPasswordGeneratorButtonElement() const OVERRIDE { return true; }
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;

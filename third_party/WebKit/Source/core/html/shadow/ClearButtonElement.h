@@ -41,12 +41,12 @@ public:
         virtual void clearValue() = 0;
     };
 
-    static PassRefPtr<ClearButtonElement> create(Document*, ClearButtonOwner&);
+    static PassRefPtr<ClearButtonElement> create(Document&, ClearButtonOwner&);
     void releaseCapture();
     void removeClearButtonOwner() { m_clearButtonOwner = 0; }
 
 private:
-    ClearButtonElement(Document*, ClearButtonOwner&);
+    ClearButtonElement(Document&, ClearButtonOwner&);
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual bool isMouseFocusable() const { return false; }
     virtual void defaultEventHandler(Event*);

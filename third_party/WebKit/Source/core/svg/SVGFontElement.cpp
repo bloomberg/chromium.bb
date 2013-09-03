@@ -42,7 +42,7 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFontElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFontElement::SVGFontElement(const QualifiedName& tagName, Document* document)
+inline SVGFontElement::SVGFontElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
     , m_missingGlyph(0)
     , m_isGlyphCacheValid(false)
@@ -51,10 +51,10 @@ inline SVGFontElement::SVGFontElement(const QualifiedName& tagName, Document* do
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFontElement();
 
-    UseCounter::count(document, UseCounter::SVGFontElement);
+    UseCounter::count(&document, UseCounter::SVGFontElement);
 }
 
-PassRefPtr<SVGFontElement> SVGFontElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<SVGFontElement> SVGFontElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new SVGFontElement(tagName, document));
 }

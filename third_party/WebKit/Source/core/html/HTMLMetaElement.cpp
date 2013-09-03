@@ -30,19 +30,19 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLMetaElement::HTMLMetaElement(const QualifiedName& tagName, Document* document)
+inline HTMLMetaElement::HTMLMetaElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(metaTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLMetaElement> HTMLMetaElement::create(Document* document)
+PassRefPtr<HTMLMetaElement> HTMLMetaElement::create(Document& document)
 {
     return adoptRef(new HTMLMetaElement(metaTag, document));
 }
 
-PassRefPtr<HTMLMetaElement> HTMLMetaElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLMetaElement> HTMLMetaElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLMetaElement(tagName, document));
 }

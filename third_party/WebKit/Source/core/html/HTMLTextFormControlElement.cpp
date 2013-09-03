@@ -49,7 +49,7 @@ namespace WebCore {
 using namespace HTMLNames;
 using namespace std;
 
-HTMLTextFormControlElement::HTMLTextFormControlElement(const QualifiedName& tagName, Document* doc, HTMLFormElement* form)
+HTMLTextFormControlElement::HTMLTextFormControlElement(const QualifiedName& tagName, Document& doc, HTMLFormElement* form)
     : HTMLFormControlElementWithState(tagName, doc, form)
     , m_lastChangeWasUserEdit(false)
     , m_cachedSelectionStart(-1)
@@ -509,7 +509,7 @@ void HTMLTextFormControlElement::setInnerTextValue(const String& value)
         innerTextElement()->setInnerText(value, ASSERT_NO_EXCEPTION);
 
         if (value.endsWith('\n') || value.endsWith('\r'))
-            innerTextElement()->appendChild(HTMLBRElement::create(&document()));
+            innerTextElement()->appendChild(HTMLBRElement::create(document()));
     }
 
     setFormControlValueMatchesRenderer(true);

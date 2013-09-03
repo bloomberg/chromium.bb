@@ -242,7 +242,7 @@ void TextFieldInputType::createShadowSubtree()
     ASSERT(!m_innerText);
     ASSERT(!m_innerBlock);
 
-    Document* document = &element()->document();
+    Document& document = element()->document();
     bool shouldHaveSpinButton = this->shouldHaveSpinButton();
     bool createsContainer = shouldHaveSpinButton || needsContainer();
 
@@ -411,7 +411,7 @@ void TextFieldInputType::updatePlaceholderText()
         return;
     }
     if (!m_placeholder) {
-        m_placeholder = HTMLDivElement::create(&element()->document());
+        m_placeholder = HTMLDivElement::create(element()->document());
         m_placeholder->setPart(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
         element()->userAgentShadowRoot()->insertBefore(m_placeholder, m_container ? m_container->nextSibling() : innerTextElement()->nextSibling());
     }

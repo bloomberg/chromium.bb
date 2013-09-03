@@ -69,7 +69,7 @@ public:
     virtual void removeAllEventListeners() OVERRIDE FINAL;
 
 protected:
-    HTMLPlugInElement(const QualifiedName& tagName, Document*);
+    HTMLPlugInElement(const QualifiedName& tagName, Document&);
 
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;

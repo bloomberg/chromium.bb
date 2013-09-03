@@ -39,7 +39,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLTemplateElement::HTMLTemplateElement(const QualifiedName& tagName, Document* document)
+inline HTMLTemplateElement::HTMLTemplateElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
 {
     ScriptWrappable::init(this);
@@ -49,7 +49,7 @@ HTMLTemplateElement::~HTMLTemplateElement()
 {
 }
 
-PassRefPtr<HTMLTemplateElement> HTMLTemplateElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLTemplateElement> HTMLTemplateElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLTemplateElement(tagName, document));
 }

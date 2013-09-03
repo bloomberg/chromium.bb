@@ -60,7 +60,7 @@ public:
     virtual void didLoadNonEmptyDocument() { }
 
 protected:
-    HTMLFrameOwnerElement(const QualifiedName& tagName, Document*);
+    HTMLFrameOwnerElement(const QualifiedName& tagName, Document&);
     void setSandboxFlags(SandboxFlags);
 
     bool loadOrRedirectSubframe(const KURL&, const AtomicString& frameName, bool lockBackForwardList);

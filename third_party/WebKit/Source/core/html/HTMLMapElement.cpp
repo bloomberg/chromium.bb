@@ -36,19 +36,19 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLMapElement::HTMLMapElement(const QualifiedName& tagName, Document* document)
+HTMLMapElement::HTMLMapElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(mapTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLMapElement> HTMLMapElement::create(Document* document)
+PassRefPtr<HTMLMapElement> HTMLMapElement::create(Document& document)
 {
     return adoptRef(new HTMLMapElement(mapTag, document));
 }
 
-PassRefPtr<HTMLMapElement> HTMLMapElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLMapElement> HTMLMapElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLMapElement(tagName, document));
 }

@@ -37,15 +37,15 @@
 
 namespace WebCore {
 
-inline HTMLDataListElement::HTMLDataListElement(const QualifiedName& tagName, Document* document)
+inline HTMLDataListElement::HTMLDataListElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLDataListElement> HTMLDataListElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLDataListElement> HTMLDataListElement::create(const QualifiedName& tagName, Document& document)
 {
-    UseCounter::count(document, UseCounter::DataListElement);
+    UseCounter::count(&document, UseCounter::DataListElement);
     return adoptRef(new HTMLDataListElement(tagName, document));
 }
 

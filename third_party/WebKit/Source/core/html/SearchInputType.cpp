@@ -95,8 +95,8 @@ void SearchInputType::createShadowSubtree()
     ASSERT(container);
     ASSERT(textWrapper);
 
-    container->insertBefore(SearchFieldDecorationElement::create(&element()->document()), textWrapper);
-    container->insertBefore(SearchFieldCancelButtonElement::create(&element()->document()), textWrapper->nextSibling());
+    container->insertBefore(SearchFieldDecorationElement::create(element()->document()), textWrapper);
+    container->insertBefore(SearchFieldCancelButtonElement::create(element()->document()), textWrapper->nextSibling());
 }
 
 void SearchInputType::handleKeydownEvent(KeyboardEvent* event)

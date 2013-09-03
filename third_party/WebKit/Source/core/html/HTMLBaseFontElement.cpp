@@ -29,14 +29,14 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLBaseFontElement::HTMLBaseFontElement(const QualifiedName& tagName, Document* document)
+inline HTMLBaseFontElement::HTMLBaseFontElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(basefontTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLBaseFontElement> HTMLBaseFontElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLBaseFontElement> HTMLBaseFontElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLBaseFontElement(tagName, document));
 }

@@ -41,7 +41,7 @@ static bool needsCenteredPositioning(const RenderStyle* style)
     return style->position() == AbsolutePosition && style->hasAutoTopAndBottom();
 }
 
-HTMLDialogElement::HTMLDialogElement(const QualifiedName& tagName, Document* document)
+HTMLDialogElement::HTMLDialogElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
     , m_topIsValid(false)
     , m_top(0)
@@ -52,7 +52,7 @@ HTMLDialogElement::HTMLDialogElement(const QualifiedName& tagName, Document* doc
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLDialogElement> HTMLDialogElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLDialogElement> HTMLDialogElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLDialogElement(tagName, document));
 }

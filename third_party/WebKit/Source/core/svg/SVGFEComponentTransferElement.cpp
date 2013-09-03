@@ -40,7 +40,7 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEComponentTransferElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFEComponentTransferElement::SVGFEComponentTransferElement(const QualifiedName& tagName, Document* document)
+inline SVGFEComponentTransferElement::SVGFEComponentTransferElement(const QualifiedName& tagName, Document& document)
     : SVGFilterPrimitiveStandardAttributes(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::feComponentTransferTag));
@@ -48,7 +48,7 @@ inline SVGFEComponentTransferElement::SVGFEComponentTransferElement(const Qualif
     registerAnimatedPropertiesForSVGFEComponentTransferElement();
 }
 
-PassRefPtr<SVGFEComponentTransferElement> SVGFEComponentTransferElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<SVGFEComponentTransferElement> SVGFEComponentTransferElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new SVGFEComponentTransferElement(tagName, document));
 }

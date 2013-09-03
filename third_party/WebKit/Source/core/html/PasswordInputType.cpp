@@ -69,7 +69,7 @@ void PasswordInputType::createShadowSubtree()
 {
     BaseTextInputType::createShadowSubtree();
     if (isPasswordGenerationEnabled()) {
-        m_generatorButton = PasswordGeneratorButtonElement::create(&element()->document());
+        m_generatorButton = PasswordGeneratorButtonElement::create(element()->document());
         m_generatorButton->decorate(element());
     }
 }

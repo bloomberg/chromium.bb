@@ -41,7 +41,7 @@ class HTMLProgressElement;
 
 class ProgressShadowElement : public HTMLDivElement {
 public:
-    ProgressShadowElement(Document*);
+    ProgressShadowElement(Document&);
     HTMLProgressElement* progressElement() const;
 
 protected:
@@ -50,43 +50,43 @@ protected:
 
 class ProgressInnerElement FINAL : public ProgressShadowElement {
 public:
-    static PassRefPtr<ProgressInnerElement> create(Document*);
+    static PassRefPtr<ProgressInnerElement> create(Document&);
 
 private:
-    ProgressInnerElement(Document*);
+    ProgressInnerElement(Document&);
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
 };
 
-inline PassRefPtr<ProgressInnerElement> ProgressInnerElement::create(Document* document)
+inline PassRefPtr<ProgressInnerElement> ProgressInnerElement::create(Document& document)
 {
     return adoptRef(new ProgressInnerElement(document));
 }
 
 class ProgressBarElement FINAL : public ProgressShadowElement {
 public:
-    static PassRefPtr<ProgressBarElement> create(Document*);
+    static PassRefPtr<ProgressBarElement> create(Document&);
 
 private:
-    ProgressBarElement(Document*);
+    ProgressBarElement(Document&);
 };
 
-inline PassRefPtr<ProgressBarElement> ProgressBarElement::create(Document* document)
+inline PassRefPtr<ProgressBarElement> ProgressBarElement::create(Document& document)
 {
     return adoptRef(new ProgressBarElement(document));
 }
 
 class ProgressValueElement FINAL : public ProgressShadowElement {
 public:
-    static PassRefPtr<ProgressValueElement> create(Document*);
+    static PassRefPtr<ProgressValueElement> create(Document&);
     void setWidthPercentage(double);
 
 private:
-    ProgressValueElement(Document*);
+    ProgressValueElement(Document&);
 };
 
-inline PassRefPtr<ProgressValueElement> ProgressValueElement::create(Document* document)
+inline PassRefPtr<ProgressValueElement> ProgressValueElement::create(Document& document)
 {
     return adoptRef(new ProgressValueElement(document));
 }

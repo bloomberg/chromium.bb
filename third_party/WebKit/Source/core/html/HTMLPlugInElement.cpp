@@ -42,7 +42,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document* doc)
+HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc)
     : HTMLFrameOwnerElement(tagName, doc)
     , m_NPObject(0)
     , m_isCapturingMouseEvents(false)

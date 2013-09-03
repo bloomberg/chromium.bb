@@ -35,7 +35,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLIFrameElement::HTMLIFrameElement(const QualifiedName& tagName, Document* document)
+inline HTMLIFrameElement::HTMLIFrameElement(const QualifiedName& tagName, Document& document)
     : HTMLFrameElementBase(tagName, document)
     , m_didLoadNonEmptyDocument(false)
 {
@@ -44,7 +44,7 @@ inline HTMLIFrameElement::HTMLIFrameElement(const QualifiedName& tagName, Docume
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtr<HTMLIFrameElement> HTMLIFrameElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLIFrameElement> HTMLIFrameElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLIFrameElement(tagName, document));
 }

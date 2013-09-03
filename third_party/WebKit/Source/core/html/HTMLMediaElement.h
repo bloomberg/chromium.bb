@@ -289,7 +289,7 @@ public:
     virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
 
 protected:
-    HTMLMediaElement(const QualifiedName&, Document*, bool);
+    HTMLMediaElement(const QualifiedName&, Document&, bool);
     virtual ~HTMLMediaElement();
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;

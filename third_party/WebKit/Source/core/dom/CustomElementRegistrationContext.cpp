@@ -58,12 +58,9 @@ void CustomElementRegistrationContext::registerElement(Document* document, Custo
         didResolveElement(definition, *it);
 }
 
-PassRefPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Document* document, const QualifiedName& tagName, CreationMode mode)
+PassRefPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Document& document, const QualifiedName& tagName, CreationMode mode)
 {
     ASSERT(CustomElement::isValidName(tagName.localName()));
-
-    if (!document)
-        return 0;
 
     RefPtr<Element> element;
 
@@ -73,7 +70,7 @@ PassRefPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Doc
         element = SVGUnknownElement::create(tagName, document);
     } else {
         // XML elements are not custom elements, so return early.
-        return Element::create(tagName, document);
+        return Element::create(tagName, &document);
     }
 
     element->setCustomElementState(mode == CreatedByParser ? Element::WaitingForParser : Element::WaitingForUpgrade);

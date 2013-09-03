@@ -50,7 +50,7 @@ class MediaControls : public HTMLDivElement {
 
     // This function is to be implemented in your port-specific media
     // controls implementation since it will return a child instance.
-    static PassRefPtr<MediaControls> create(Document*);
+    static PassRefPtr<MediaControls> create(Document&);
 
     virtual void setMediaController(MediaControllerInterface*);
 
@@ -95,7 +95,7 @@ class MediaControls : public HTMLDivElement {
     virtual void updateTextTrackDisplay();
 
 protected:
-    explicit MediaControls(Document*);
+    explicit MediaControls(Document&);
 
     virtual void defaultEventHandler(Event*);
 

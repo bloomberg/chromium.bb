@@ -36,7 +36,7 @@ namespace WebCore {
 
 class TextTrackCueGenericBoxElement FINAL : public TextTrackCueBox {
 public:
-    static PassRefPtr<TextTrackCueGenericBoxElement> create(Document* document, TextTrackCueGeneric* cue)
+    static PassRefPtr<TextTrackCueGenericBoxElement> create(Document& document, TextTrackCueGeneric* cue)
     {
         return adoptRef(new TextTrackCueGenericBoxElement(document, cue));
     }
@@ -44,10 +44,10 @@ public:
     virtual void applyCSSProperties(const IntSize&) OVERRIDE;
 
 private:
-    TextTrackCueGenericBoxElement(Document*, TextTrackCue*);
+    TextTrackCueGenericBoxElement(Document&, TextTrackCue*);
 };
 
-TextTrackCueGenericBoxElement::TextTrackCueGenericBoxElement(Document* document, TextTrackCue* cue)
+TextTrackCueGenericBoxElement::TextTrackCueGenericBoxElement(Document& document, TextTrackCue* cue)
     : TextTrackCueBox(document, cue)
 {
 }
@@ -113,7 +113,8 @@ TextTrackCueGeneric::TextTrackCueGeneric(ScriptExecutionContext* context, double
 
 PassRefPtr<TextTrackCueBox> TextTrackCueGeneric::createDisplayTree()
 {
-    return TextTrackCueGenericBoxElement::create(ownerDocument(), this);
+    ASSERT(ownerDocument());
+    return TextTrackCueGenericBoxElement::create(*ownerDocument(), this);
 }
 
 void TextTrackCueGeneric::setLine(int line, ExceptionState& es)

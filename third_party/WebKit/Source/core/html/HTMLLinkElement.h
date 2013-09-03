@@ -120,7 +120,7 @@ private:
 
 class HTMLLinkElement FINAL : public HTMLElement, public LinkLoaderClient {
 public:
-    static PassRefPtr<HTMLLinkElement> create(const QualifiedName&, Document*, bool createdByParser);
+    static PassRefPtr<HTMLLinkElement> create(const QualifiedName&, Document&, bool createdByParser);
     virtual ~HTMLLinkElement();
 
     KURL href() const;
@@ -189,7 +189,7 @@ private:
     virtual void didSendDOMContentLoadedForLinkPrerender() OVERRIDE;
 
 private:
-    HTMLLinkElement(const QualifiedName&, Document*, bool createdByParser);
+    HTMLLinkElement(const QualifiedName&, Document&, bool createdByParser);
 
     RefPtr<LinkResource> m_link;
     LinkLoader m_linkLoader;

@@ -39,14 +39,14 @@ namespace WebCore {
 
 class HTMLDataListElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLDataListElement> create(const QualifiedName&, Document*);
+    static PassRefPtr<HTMLDataListElement> create(const QualifiedName&, Document&);
 
     PassRefPtr<HTMLCollection> options();
 
     void optionElementChildrenChanged();
 
 private:
-    HTMLDataListElement(const QualifiedName&, Document*);
+    HTMLDataListElement(const QualifiedName&, Document&);
 };
 
 inline HTMLDataListElement* toHTMLDataListElement(Node* node)

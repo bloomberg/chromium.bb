@@ -46,7 +46,7 @@ namespace WebCore {
 
 using namespace SVGNames;
 
-inline SVGFontFaceElement::SVGFontFaceElement(const QualifiedName& tagName, Document* document)
+inline SVGFontFaceElement::SVGFontFaceElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
     , m_fontFaceRule(StyleRuleFontFace::create())
     , m_fontElement(0)
@@ -57,7 +57,7 @@ inline SVGFontFaceElement::SVGFontFaceElement(const QualifiedName& tagName, Docu
     m_fontFaceRule->setProperties(styleDeclaration.release());
 }
 
-PassRefPtr<SVGFontFaceElement> SVGFontFaceElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<SVGFontFaceElement> SVGFontFaceElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new SVGFontFaceElement(tagName, document));
 }

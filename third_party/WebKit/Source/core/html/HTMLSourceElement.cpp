@@ -38,7 +38,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLSourceElement::HTMLSourceElement(const QualifiedName& tagName, Document* document)
+inline HTMLSourceElement::HTMLSourceElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
     , m_errorEventTimer(this, &HTMLSourceElement::errorEventTimerFired)
 {
@@ -47,7 +47,7 @@ inline HTMLSourceElement::HTMLSourceElement(const QualifiedName& tagName, Docume
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLSourceElement> HTMLSourceElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLSourceElement> HTMLSourceElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLSourceElement(tagName, document));
 }

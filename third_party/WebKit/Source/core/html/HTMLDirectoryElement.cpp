@@ -29,14 +29,14 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLDirectoryElement::HTMLDirectoryElement(const QualifiedName& tagName, Document* document)
+inline HTMLDirectoryElement::HTMLDirectoryElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(dirTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLDirectoryElement> HTMLDirectoryElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLDirectoryElement> HTMLDirectoryElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLDirectoryElement(tagName, document));
 }

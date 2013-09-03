@@ -48,7 +48,7 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEImageElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFEImageElement::SVGFEImageElement(const QualifiedName& tagName, Document* document)
+inline SVGFEImageElement::SVGFEImageElement(const QualifiedName& tagName, Document& document)
     : SVGFilterPrimitiveStandardAttributes(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::feImageTag));
@@ -56,7 +56,7 @@ inline SVGFEImageElement::SVGFEImageElement(const QualifiedName& tagName, Docume
     registerAnimatedPropertiesForSVGFEImageElement();
 }
 
-PassRefPtr<SVGFEImageElement> SVGFEImageElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<SVGFEImageElement> SVGFEImageElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new SVGFEImageElement(tagName, document));
 }

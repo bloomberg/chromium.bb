@@ -70,17 +70,12 @@ void mapAttributeToCSSProperty(HashMap<StringImpl*, CSSPropertyID>* propertyName
     propertyNameToIdMap->set(attrName.localName().impl(), propertyId);
 }
 
-SVGElement::SVGElement(const QualifiedName& tagName, Document* document, ConstructionType constructionType)
-    : Element(tagName, document, constructionType)
+SVGElement::SVGElement(const QualifiedName& tagName, Document& document, ConstructionType constructionType)
+    : Element(tagName, &document, constructionType)
 {
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGElement();
     setHasCustomStyleCallbacks();
-}
-
-PassRefPtr<SVGElement> SVGElement::create(const QualifiedName& tagName, Document* document)
-{
-    return adoptRef(new SVGElement(tagName, document));
 }
 
 SVGElement::~SVGElement()

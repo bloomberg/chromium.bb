@@ -52,7 +52,7 @@ static const int sizingMediumHeightThreshold = 300;
 static const float sizingFullPageAreaRatioThreshold = 0.96;
 static const float autostartSoonAfterUserGestureThreshold = 5.0;
 
-HTMLPlugInImageElement::HTMLPlugInImageElement(const QualifiedName& tagName, Document* document, bool createdByParser, PreferPlugInsForImagesOption preferPlugInsForImagesOption)
+HTMLPlugInImageElement::HTMLPlugInImageElement(const QualifiedName& tagName, Document& document, bool createdByParser, PreferPlugInsForImagesOption preferPlugInsForImagesOption)
     : HTMLPlugInElement(tagName, document)
     // m_needsWidgetUpdate(!createdByParser) allows HTMLObjectElement to delay
     // widget updates until after all children are parsed.  For HTMLEmbedElement

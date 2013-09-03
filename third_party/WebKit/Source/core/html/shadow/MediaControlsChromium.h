@@ -34,7 +34,7 @@ namespace WebCore {
 class MediaControlsChromium : public MediaControls {
 public:
     // Called from port-specific parent create function to create custom controls.
-    static PassRefPtr<MediaControlsChromium> createControls(Document*);
+    static PassRefPtr<MediaControlsChromium> createControls(Document&);
 
     virtual void setMediaController(MediaControllerInterface*) OVERRIDE;
 
@@ -51,9 +51,9 @@ public:
     virtual void insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement>);
 
 protected:
-    explicit MediaControlsChromium(Document*);
+    explicit MediaControlsChromium(Document&);
 
-    bool initializeControls(Document*);
+    bool initializeControls(Document&);
 
 private:
     MediaControlTimeRemainingDisplayElement* m_durationDisplay;

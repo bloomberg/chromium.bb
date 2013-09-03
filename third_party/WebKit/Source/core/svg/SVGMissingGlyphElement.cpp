@@ -25,14 +25,14 @@
 
 namespace WebCore {
 
-inline SVGMissingGlyphElement::SVGMissingGlyphElement(const QualifiedName& tagName, Document* document)
+inline SVGMissingGlyphElement::SVGMissingGlyphElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::missing_glyphTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGMissingGlyphElement> SVGMissingGlyphElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<SVGMissingGlyphElement> SVGMissingGlyphElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new SVGMissingGlyphElement(tagName, document));
 }

@@ -32,19 +32,19 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLBRElement::HTMLBRElement(const QualifiedName& tagName, Document* document)
+HTMLBRElement::HTMLBRElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(brTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLBRElement> HTMLBRElement::create(Document* document)
+PassRefPtr<HTMLBRElement> HTMLBRElement::create(Document& document)
 {
     return adoptRef(new HTMLBRElement(brTag, document));
 }
 
-PassRefPtr<HTMLBRElement> HTMLBRElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLBRElement> HTMLBRElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLBRElement(tagName, document));
 }

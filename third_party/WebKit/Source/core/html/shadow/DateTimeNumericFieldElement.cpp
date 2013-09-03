@@ -52,7 +52,7 @@ bool DateTimeNumericFieldElement::Range::isInRange(int value) const
 
 // ----------------------------
 
-DateTimeNumericFieldElement::DateTimeNumericFieldElement(Document* document, FieldOwner& fieldOwner, const Range& range, const Range& hardLimits, const String& placeholder, const DateTimeNumericFieldElement::Step& step)
+DateTimeNumericFieldElement::DateTimeNumericFieldElement(Document& document, FieldOwner& fieldOwner, const Range& range, const Range& hardLimits, const String& placeholder, const DateTimeNumericFieldElement::Step& step)
     : DateTimeFieldElement(document, fieldOwner)
     , m_lastDigitCharTime(0)
     , m_placeholder(placeholder)

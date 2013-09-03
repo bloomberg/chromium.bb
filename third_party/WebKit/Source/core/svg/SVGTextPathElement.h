@@ -109,10 +109,10 @@ public:
         TEXTPATH_SPACINGTYPE_EXACT = SVGTextPathSpacingExact
     };
 
-    static PassRefPtr<SVGTextPathElement> create(const QualifiedName&, Document*);
+    static PassRefPtr<SVGTextPathElement> create(const QualifiedName&, Document&);
 
 private:
-    SVGTextPathElement(const QualifiedName&, Document*);
+    SVGTextPathElement(const QualifiedName&, Document&);
 
     virtual ~SVGTextPathElement();
 

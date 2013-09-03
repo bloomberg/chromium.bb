@@ -35,7 +35,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLOptGroupElement::HTMLOptGroupElement(const QualifiedName& tagName, Document* document)
+inline HTMLOptGroupElement::HTMLOptGroupElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(optgroupTag));
@@ -43,7 +43,7 @@ inline HTMLOptGroupElement::HTMLOptGroupElement(const QualifiedName& tagName, Do
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLOptGroupElement> HTMLOptGroupElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLOptGroupElement> HTMLOptGroupElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLOptGroupElement(tagName, document));
 }

@@ -62,7 +62,7 @@ public:
     };
 
 protected:
-    DateTimeNumericFieldElement(Document*, FieldOwner&, const Range&, const Range& hardLimits, const String& placeholder, const Step& = Step());
+    DateTimeNumericFieldElement(Document&, FieldOwner&, const Range&, const Range& hardLimits, const String& placeholder, const Step& = Step());
 
     int clampValue(int value) const { return m_range.clampValue(value); }
     virtual int defaultValueForStepDown() const;

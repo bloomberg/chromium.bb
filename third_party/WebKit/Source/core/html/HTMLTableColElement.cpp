@@ -34,14 +34,14 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLTableColElement::HTMLTableColElement(const QualifiedName& tagName, Document* document)
+inline HTMLTableColElement::HTMLTableColElement(const QualifiedName& tagName, Document& document)
     : HTMLTablePartElement(tagName, document)
     , m_span(1)
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLTableColElement> HTMLTableColElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLTableColElement> HTMLTableColElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLTableColElement(tagName, document));
 }

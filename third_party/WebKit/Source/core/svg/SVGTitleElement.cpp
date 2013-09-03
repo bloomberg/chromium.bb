@@ -26,14 +26,14 @@
 
 namespace WebCore {
 
-inline SVGTitleElement::SVGTitleElement(const QualifiedName& tagName, Document* document)
+inline SVGTitleElement::SVGTitleElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::titleTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGTitleElement> SVGTitleElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<SVGTitleElement> SVGTitleElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new SVGTitleElement(tagName, document));
 }

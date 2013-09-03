@@ -47,7 +47,7 @@ static AtomicString makeVisibleEmptyValue(const Vector<String>& symbols)
     return builder.toAtomicString();
 }
 
-DateTimeSymbolicFieldElement::DateTimeSymbolicFieldElement(Document* document, FieldOwner& fieldOwner, const Vector<String>& symbols, int minimum, int maximum)
+DateTimeSymbolicFieldElement::DateTimeSymbolicFieldElement(Document& document, FieldOwner& fieldOwner, const Vector<String>& symbols, int minimum, int maximum)
     : DateTimeFieldElement(document, fieldOwner)
     , m_symbols(symbols)
     , m_visibleEmptyValue(makeVisibleEmptyValue(symbols))

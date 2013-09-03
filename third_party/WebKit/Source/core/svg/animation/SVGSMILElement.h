@@ -42,7 +42,7 @@ typedef EventSender<SVGSMILElement> SMILEventSender;
 // This class implements SMIL interval timing model as needed for SVG animation.
 class SVGSMILElement : public SVGElement {
 public:
-    SVGSMILElement(const QualifiedName&, Document*);
+    SVGSMILElement(const QualifiedName&, Document&);
     virtual ~SVGSMILElement();
 
     static bool isSMILElement(Node*);

@@ -644,8 +644,9 @@ String createMarkup(const Range* range, Vector<Node*>* nodes, EAnnotateForInterc
 
 PassRefPtr<DocumentFragment> createFragmentFromMarkup(Document* document, const String& markup, const String& baseURL, ParserContentPolicy parserContentPolicy)
 {
+    ASSERT(document);
     // We use a fake body element here to trick the HTML parser to using the InBody insertion mode.
-    RefPtr<HTMLBodyElement> fakeBody = HTMLBodyElement::create(document);
+    RefPtr<HTMLBodyElement> fakeBody = HTMLBodyElement::create(*document);
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
 
     fragment->parseHTML(markup, fakeBody.get(), parserContentPolicy);
@@ -961,9 +962,9 @@ PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& marku
     return fragment.release();
 }
 
-PassRefPtr<DocumentFragment> createFragmentForTransformToFragment(const String& sourceString, const String& sourceMIMEType, Document* outputDoc)
+PassRefPtr<DocumentFragment> createFragmentForTransformToFragment(const String& sourceString, const String& sourceMIMEType, Document& outputDoc)
 {
-    RefPtr<DocumentFragment> fragment = outputDoc->createDocumentFragment();
+    RefPtr<DocumentFragment> fragment = outputDoc.createDocumentFragment();
 
     if (sourceMIMEType == "text/html") {
         // As far as I can tell, there isn't a spec for how transformToFragment is supposed to work.
@@ -972,9 +973,9 @@ PassRefPtr<DocumentFragment> createFragmentForTransformToFragment(const String& 
         // We achieve that effect here by passing in a fake body element as context for the fragment.
         RefPtr<HTMLBodyElement> fakeBody = HTMLBodyElement::create(outputDoc);
         fragment->parseHTML(sourceString, fakeBody.get());
-    } else if (sourceMIMEType == "text/plain")
-        fragment->parserAppendChild(Text::create(outputDoc, sourceString));
-    else {
+    } else if (sourceMIMEType == "text/plain") {
+        fragment->parserAppendChild(Text::create(&outputDoc, sourceString));
+    } else {
         bool successfulParse = fragment->parseXML(sourceString, 0);
         if (!successfulParse)
             return 0;

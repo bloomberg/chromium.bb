@@ -40,17 +40,17 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-PassRefPtr<HTMLContentElement> HTMLContentElement::create(Document* document)
+PassRefPtr<HTMLContentElement> HTMLContentElement::create(Document& document)
 {
     return adoptRef(new HTMLContentElement(contentTag, document));
 }
 
-PassRefPtr<HTMLContentElement> HTMLContentElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLContentElement> HTMLContentElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLContentElement(tagName, document));
 }
 
-HTMLContentElement::HTMLContentElement(const QualifiedName& name, Document* document)
+HTMLContentElement::HTMLContentElement(const QualifiedName& name, Document& document)
     : InsertionPoint(name, document)
     , m_shouldParseSelect(false)
     , m_isValidSelector(true)

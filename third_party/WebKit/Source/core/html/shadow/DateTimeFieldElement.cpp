@@ -42,7 +42,7 @@ DateTimeFieldElement::FieldOwner::~FieldOwner()
 {
 }
 
-DateTimeFieldElement::DateTimeFieldElement(Document* document, FieldOwner& fieldOwner)
+DateTimeFieldElement::DateTimeFieldElement(Document& document, FieldOwner& fieldOwner)
     : HTMLSpanElement(spanTag, document)
     , m_fieldOwner(&fieldOwner)
 {

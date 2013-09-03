@@ -46,7 +46,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLTableElement::HTMLTableElement(const QualifiedName& tagName, Document* document)
+HTMLTableElement::HTMLTableElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
     , m_borderAttr(false)
     , m_borderColorAttr(false)
@@ -58,12 +58,12 @@ HTMLTableElement::HTMLTableElement(const QualifiedName& tagName, Document* docum
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLTableElement> HTMLTableElement::create(Document* document)
+PassRefPtr<HTMLTableElement> HTMLTableElement::create(Document& document)
 {
     return adoptRef(new HTMLTableElement(tableTag, document));
 }
 
-PassRefPtr<HTMLTableElement> HTMLTableElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLTableElement> HTMLTableElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLTableElement(tagName, document));
 }
@@ -129,7 +129,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::createTHead()
 {
     if (HTMLTableSectionElement* existingHead = tHead())
         return existingHead;
-    RefPtr<HTMLTableSectionElement> head = HTMLTableSectionElement::create(theadTag, &document());
+    RefPtr<HTMLTableSectionElement> head = HTMLTableSectionElement::create(theadTag, document());
     setTHead(head, IGNORE_EXCEPTION);
     return head.release();
 }
@@ -143,7 +143,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::createTFoot()
 {
     if (HTMLTableSectionElement* existingFoot = tFoot())
         return existingFoot;
-    RefPtr<HTMLTableSectionElement> foot = HTMLTableSectionElement::create(tfootTag, &document());
+    RefPtr<HTMLTableSectionElement> foot = HTMLTableSectionElement::create(tfootTag, document());
     setTFoot(foot, IGNORE_EXCEPTION);
     return foot.release();
 }
@@ -155,7 +155,7 @@ void HTMLTableElement::deleteTFoot()
 
 PassRefPtr<HTMLElement> HTMLTableElement::createTBody()
 {
-    RefPtr<HTMLTableSectionElement> body = HTMLTableSectionElement::create(tbodyTag, &document());
+    RefPtr<HTMLTableSectionElement> body = HTMLTableSectionElement::create(tbodyTag, document());
     Node* referenceElement = lastBody() ? lastBody()->nextSibling() : 0;
 
     insertBefore(body, referenceElement);
@@ -166,7 +166,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::createCaption()
 {
     if (HTMLTableCaptionElement* existingCaption = caption())
         return existingCaption;
-    RefPtr<HTMLTableCaptionElement> caption = HTMLTableCaptionElement::create(captionTag, &document());
+    RefPtr<HTMLTableCaptionElement> caption = HTMLTableCaptionElement::create(captionTag, document());
     setCaption(caption, IGNORE_EXCEPTION);
     return caption.release();
 }
@@ -218,15 +218,15 @@ PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& e
     else {
         parent = lastBody();
         if (!parent) {
-            RefPtr<HTMLTableSectionElement> newBody = HTMLTableSectionElement::create(tbodyTag, &document());
-            RefPtr<HTMLTableRowElement> newRow = HTMLTableRowElement::create(&document());
+            RefPtr<HTMLTableSectionElement> newBody = HTMLTableSectionElement::create(tbodyTag, document());
+            RefPtr<HTMLTableRowElement> newRow = HTMLTableRowElement::create(document());
             newBody->appendChild(newRow, es);
             appendChild(newBody.release(), es);
             return newRow.release();
         }
     }
 
-    RefPtr<HTMLTableRowElement> newRow = HTMLTableRowElement::create(&document());
+    RefPtr<HTMLTableRowElement> newRow = HTMLTableRowElement::create(document());
     parent->insertBefore(newRow, row.get(), es);
     return newRow.release();
 }

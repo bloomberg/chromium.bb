@@ -38,7 +38,7 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGGElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
-SVGGElement::SVGGElement(const QualifiedName& tagName, Document* document, ConstructionType constructionType)
+SVGGElement::SVGGElement(const QualifiedName& tagName, Document& document, ConstructionType constructionType)
     : SVGGraphicsElement(tagName, document, constructionType)
 {
     ASSERT(hasTagName(SVGNames::gTag));
@@ -46,7 +46,7 @@ SVGGElement::SVGGElement(const QualifiedName& tagName, Document* document, Const
     registerAnimatedPropertiesForSVGGElement();
 }
 
-PassRefPtr<SVGGElement> SVGGElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<SVGGElement> SVGGElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new SVGGElement(tagName, document));
 }

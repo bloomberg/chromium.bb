@@ -58,7 +58,7 @@ static LinkEventSender& linkLoadEventSender()
     return sharedLoadEventSender;
 }
 
-inline HTMLLinkElement::HTMLLinkElement(const QualifiedName& tagName, Document* document, bool createdByParser)
+inline HTMLLinkElement::HTMLLinkElement(const QualifiedName& tagName, Document& document, bool createdByParser)
     : HTMLElement(tagName, document)
     , m_linkLoader(this)
     , m_sizes(DOMSettableTokenList::create())
@@ -70,7 +70,7 @@ inline HTMLLinkElement::HTMLLinkElement(const QualifiedName& tagName, Document* 
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLLinkElement> HTMLLinkElement::create(const QualifiedName& tagName, Document* document, bool createdByParser)
+PassRefPtr<HTMLLinkElement> HTMLLinkElement::create(const QualifiedName& tagName, Document& document, bool createdByParser)
 {
     return adoptRef(new HTMLLinkElement(tagName, document, createdByParser));
 }

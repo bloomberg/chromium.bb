@@ -64,7 +64,7 @@ using namespace WTF;
 using std::min;
 using std::max;
 
-PassRefPtr<HTMLElement> HTMLElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLElement> HTMLElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLElement(tagName, document));
 }
@@ -388,7 +388,7 @@ PassRefPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, Exc
             return 0;
 
         if (c == '\r' || c == '\n') {
-            fragment->appendChild(HTMLBRElement::create(&document()), es);
+            fragment->appendChild(HTMLBRElement::create(document()), es);
             if (es.hadException())
                 return 0;
             // Make sure \r\n doesn't result in two line breaks.

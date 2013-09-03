@@ -40,7 +40,7 @@ public:
     static const SVGPropertyInfo* pointsPropertyInfo();
 
 protected:
-    SVGPolyElement(const QualifiedName&, Document*);
+    SVGPolyElement(const QualifiedName&, Document&);
 
 private:
     virtual bool isValid() const { return SVGTests::isValid(); }

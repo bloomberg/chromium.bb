@@ -66,7 +66,7 @@ static const float MaxCanvasArea = 32768 * 8192; // Maximum canvas area in CSS p
 //In Skia, we will also limit width/height to 32767.
 static const float MaxSkiaDim = 32767.0F; // Maximum width/height in CSS pixels.
 
-HTMLCanvasElement::HTMLCanvasElement(const QualifiedName& tagName, Document* document)
+HTMLCanvasElement::HTMLCanvasElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
     , m_size(DefaultWidth, DefaultHeight)
     , m_rendererIsCanvas(false)
@@ -82,12 +82,12 @@ HTMLCanvasElement::HTMLCanvasElement(const QualifiedName& tagName, Document* doc
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLCanvasElement> HTMLCanvasElement::create(Document* document)
+PassRefPtr<HTMLCanvasElement> HTMLCanvasElement::create(Document& document)
 {
     return adoptRef(new HTMLCanvasElement(canvasTag, document));
 }
 
-PassRefPtr<HTMLCanvasElement> HTMLCanvasElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLCanvasElement> HTMLCanvasElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLCanvasElement(tagName, document));
 }

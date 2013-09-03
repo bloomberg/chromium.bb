@@ -40,8 +40,8 @@ class HTMLSummaryElement;
 
 class DetailsMarkerControl FINAL : public HTMLDivElement {
 public:
-    DetailsMarkerControl(Document*);
-    static PassRefPtr<DetailsMarkerControl> create(Document*);
+    DetailsMarkerControl(Document&);
+    static PassRefPtr<DetailsMarkerControl> create(Document&);
 
 private:
     virtual RenderObject* createRenderer(RenderStyle*);
@@ -50,7 +50,7 @@ private:
     HTMLSummaryElement* summaryElement();
 };
 
-inline PassRefPtr<DetailsMarkerControl> DetailsMarkerControl::create(Document* document)
+inline PassRefPtr<DetailsMarkerControl> DetailsMarkerControl::create(Document& document)
 {
     RefPtr<DetailsMarkerControl> element = adoptRef(new DetailsMarkerControl(document));
     element->setPart(AtomicString("-webkit-details-marker", AtomicString::ConstructFromLiteral));

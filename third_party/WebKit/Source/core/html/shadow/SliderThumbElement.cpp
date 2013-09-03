@@ -195,13 +195,13 @@ void RenderSliderContainer::layout()
 
 // --------------------------------
 
-inline SliderThumbElement::SliderThumbElement(Document* document)
+inline SliderThumbElement::SliderThumbElement(Document& document)
     : HTMLDivElement(HTMLNames::divTag, document)
     , m_inDragMode(false)
 {
 }
 
-PassRefPtr<SliderThumbElement> SliderThumbElement::create(Document* document)
+PassRefPtr<SliderThumbElement> SliderThumbElement::create(Document& document)
 {
     RefPtr<SliderThumbElement> element = adoptRef(new SliderThumbElement(document));
     element->setAttribute(idAttr, ShadowElementNames::sliderThumb());
@@ -435,12 +435,12 @@ const AtomicString& SliderThumbElement::part() const
 
 // --------------------------------
 
-inline SliderContainerElement::SliderContainerElement(Document* document)
+inline SliderContainerElement::SliderContainerElement(Document& document)
     : HTMLDivElement(HTMLNames::divTag, document)
 {
 }
 
-PassRefPtr<SliderContainerElement> SliderContainerElement::create(Document* document)
+PassRefPtr<SliderContainerElement> SliderContainerElement::create(Document& document)
 {
     return adoptRef(new SliderContainerElement(document));
 }

@@ -31,21 +31,21 @@
 
 namespace WebCore {
 
-MediaControlsChromiumAndroid::MediaControlsChromiumAndroid(Document* document)
+MediaControlsChromiumAndroid::MediaControlsChromiumAndroid(Document& document)
     : MediaControlsChromium(document)
     , m_overlayPlayButton(0)
     , m_overlayEnclosure(0)
 {
 }
 
-PassRefPtr<MediaControls> MediaControls::create(Document* document)
+PassRefPtr<MediaControls> MediaControls::create(Document& document)
 {
     return MediaControlsChromiumAndroid::createControls(document);
 }
 
-PassRefPtr<MediaControlsChromiumAndroid> MediaControlsChromiumAndroid::createControls(Document* document)
+PassRefPtr<MediaControlsChromiumAndroid> MediaControlsChromiumAndroid::createControls(Document& document)
 {
-    if (!document->page())
+    if (!document.page())
         return 0;
 
     RefPtr<MediaControlsChromiumAndroid> controls = adoptRef(new MediaControlsChromiumAndroid(document));

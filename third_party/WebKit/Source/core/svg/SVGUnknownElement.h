@@ -43,13 +43,13 @@ namespace WebCore {
 // false to make sure we don't attempt to render such elements.
 class SVGUnknownElement : public SVGElement {
 public:
-    static PassRefPtr<SVGUnknownElement> create(const QualifiedName& tagName, Document* document)
+    static PassRefPtr<SVGUnknownElement> create(const QualifiedName& tagName, Document& document)
     {
         return adoptRef(new SVGUnknownElement(tagName, document));
     }
 
 private:
-    SVGUnknownElement(const QualifiedName&, Document*);
+    SVGUnknownElement(const QualifiedName&, Document&);
 
     virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE { return false; }
 };

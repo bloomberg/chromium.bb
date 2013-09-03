@@ -35,9 +35,9 @@ class HTMLFormElement;
 class HTMLImageElement FINAL : public HTMLElement {
     friend class HTMLFormElement;
 public:
-    static PassRefPtr<HTMLImageElement> create(Document*);
-    static PassRefPtr<HTMLImageElement> create(const QualifiedName&, Document*, HTMLFormElement*);
-    static PassRefPtr<HTMLImageElement> createForJSConstructor(Document*, const int* optionalWidth, const int* optionalHeight);
+    static PassRefPtr<HTMLImageElement> create(Document&);
+    static PassRefPtr<HTMLImageElement> create(const QualifiedName&, Document&, HTMLFormElement*);
+    static PassRefPtr<HTMLImageElement> createForJSConstructor(Document&, const int* optionalWidth, const int* optionalHeight);
 
     virtual ~HTMLImageElement();
 
@@ -80,7 +80,7 @@ public:
     void removeClient(ImageLoaderClient* client) { m_imageLoader.removeClient(client); }
 
 protected:
-    HTMLImageElement(const QualifiedName&, Document*, HTMLFormElement* = 0);
+    HTMLImageElement(const QualifiedName&, Document&, HTMLFormElement* = 0);
 
     virtual void didMoveToNewDocument(Document* oldDocument) OVERRIDE;
 

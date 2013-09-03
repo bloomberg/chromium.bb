@@ -42,7 +42,7 @@ void CreateLinkCommand::doApply()
     if (endingSelection().isNone())
         return;
 
-    RefPtr<HTMLAnchorElement> anchorElement = HTMLAnchorElement::create(&document());
+    RefPtr<HTMLAnchorElement> anchorElement = HTMLAnchorElement::create(document());
     anchorElement->setHref(m_url);
 
     if (endingSelection().isRange())

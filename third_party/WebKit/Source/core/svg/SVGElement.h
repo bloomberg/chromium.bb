@@ -48,7 +48,6 @@ void mapAttributeToCSSProperty(HashMap<StringImpl*, CSSPropertyID>* propertyName
 
 class SVGElement : public Element, public SVGLangSpace {
 public:
-    static PassRefPtr<SVGElement> create(const QualifiedName&, Document*);
     virtual ~SVGElement();
 
     bool isOutermostSVGSVGElement() const;
@@ -135,7 +134,7 @@ public:
     virtual bool shouldMoveToFlowThread(RenderStyle*) const OVERRIDE;
 
 protected:
-    SVGElement(const QualifiedName&, Document*, ConstructionType = CreateSVGElement);
+    SVGElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 

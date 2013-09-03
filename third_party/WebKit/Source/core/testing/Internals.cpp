@@ -299,7 +299,7 @@ PassRefPtr<Element> Internals::createContentElement(ExceptionState& es)
         return 0;
     }
 
-    return HTMLContentElement::create(document);
+    return HTMLContentElement::create(*document);
 }
 
 bool Internals::isValidContentSelect(Element* insertionPoint, ExceptionState& es)

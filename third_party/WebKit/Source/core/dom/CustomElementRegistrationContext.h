@@ -62,7 +62,7 @@ public:
         NotCreatedByParser
     };
 
-    PassRefPtr<Element> createCustomTagElement(Document*, const QualifiedName&, CreationMode = NotCreatedByParser);
+    PassRefPtr<Element> createCustomTagElement(Document&, const QualifiedName&, CreationMode = NotCreatedByParser);
     static void setIsAttributeAndTypeExtension(Element*, const AtomicString& type);
     static void setTypeExtension(Element*, const AtomicString& type, CreationMode = NotCreatedByParser);
 

@@ -37,19 +37,19 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLTableRowElement::HTMLTableRowElement(const QualifiedName& tagName, Document* document)
+HTMLTableRowElement::HTMLTableRowElement(const QualifiedName& tagName, Document& document)
     : HTMLTablePartElement(tagName, document)
 {
     ASSERT(hasTagName(trTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLTableRowElement> HTMLTableRowElement::create(Document* document)
+PassRefPtr<HTMLTableRowElement> HTMLTableRowElement::create(Document& document)
 {
     return adoptRef(new HTMLTableRowElement(trTag, document));
 }
 
-PassRefPtr<HTMLTableRowElement> HTMLTableRowElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLTableRowElement> HTMLTableRowElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLTableRowElement(tagName, document));
 }
@@ -127,7 +127,7 @@ PassRefPtr<HTMLElement> HTMLTableRowElement::insertCell(int index, ExceptionStat
         return 0;
     }
 
-    RefPtr<HTMLTableCellElement> cell = HTMLTableCellElement::create(tdTag, &document());
+    RefPtr<HTMLTableCellElement> cell = HTMLTableCellElement::create(tdTag, document());
     if (index < 0 || index >= numCells)
         appendChild(cell, es);
     else {

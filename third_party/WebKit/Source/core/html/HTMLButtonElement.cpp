@@ -39,7 +39,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLButtonElement::HTMLButtonElement(const QualifiedName& tagName, Document* document, HTMLFormElement* form)
+inline HTMLButtonElement::HTMLButtonElement(const QualifiedName& tagName, Document& document, HTMLFormElement* form)
     : HTMLFormControlElement(tagName, document, form)
     , m_type(SUBMIT)
     , m_isActivatedSubmit(false)
@@ -48,7 +48,7 @@ inline HTMLButtonElement::HTMLButtonElement(const QualifiedName& tagName, Docume
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLButtonElement> HTMLButtonElement::create(const QualifiedName& tagName, Document* document, HTMLFormElement* form)
+PassRefPtr<HTMLButtonElement> HTMLButtonElement::create(const QualifiedName& tagName, Document& document, HTMLFormElement* form)
 {
     return adoptRef(new HTMLButtonElement(tagName, document, form));
 }

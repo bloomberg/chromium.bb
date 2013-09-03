@@ -85,7 +85,7 @@ protected:
 // one held by the HTMLImageElement.
 TEST_F(ImageBitmapTest, ImageResourceConsistency)
 {
-    RefPtr<HTMLImageElement> imageElement = HTMLImageElement::create(Document::create().get());
+    RefPtr<HTMLImageElement> imageElement = HTMLImageElement::create(*Document::create().get());
     imageElement->setImageResource(new ImageResource(BitmapImage::create(NativeImageSkia::create(m_bitmap)).get()));
 
     RefPtr<ImageBitmap> imageBitmapNoCrop = ImageBitmap::create(imageElement.get(), IntRect(0, 0, m_bitmap.width(), m_bitmap.height()));
@@ -105,19 +105,19 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency)
 // ImageBitmaps that have crop rects outside of the bounds of the HTMLImageElement do not have elevated CacheLiveResourcePriority.
 TEST_F(ImageBitmapTest, ImageBitmapLiveResourcePriority)
 {
-    RefPtr<HTMLImageElement> imageNoCrop = HTMLImageElement::create(Document::create().get());
+    RefPtr<HTMLImageElement> imageNoCrop = HTMLImageElement::create(*Document::create().get());
     ResourcePtr<ImageResource> cachedImageNoCrop = new ImageResource(BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
     imageNoCrop->setImageResource(cachedImageNoCrop.get());
 
-    RefPtr<HTMLImageElement> imageInteriorCrop = HTMLImageElement::create(Document::create().get());
+    RefPtr<HTMLImageElement> imageInteriorCrop = HTMLImageElement::create(*Document::create().get());
     ResourcePtr<ImageResource> cachedImageInteriorCrop = new ImageResource(BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
     imageInteriorCrop->setImageResource(cachedImageInteriorCrop.get());
 
-    RefPtr<HTMLImageElement> imageExteriorCrop = HTMLImageElement::create(Document::create().get());
+    RefPtr<HTMLImageElement> imageExteriorCrop = HTMLImageElement::create(*Document::create().get());
     ResourcePtr<ImageResource> cachedImageExteriorCrop = new ImageResource(BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
     imageExteriorCrop->setImageResource(cachedImageExteriorCrop.get());
 
-    RefPtr<HTMLImageElement> imageOutsideCrop = HTMLImageElement::create(Document::create().get());
+    RefPtr<HTMLImageElement> imageOutsideCrop = HTMLImageElement::create(*Document::create().get());
     ResourcePtr<ImageResource> cachedImageOutsideCrop = new ImageResource(BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
     imageOutsideCrop->setImageResource(cachedImageOutsideCrop.get());
 
@@ -170,7 +170,7 @@ TEST_F(ImageBitmapTest, ImageBitmapLiveResourcePriority)
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a reference to the original Image if the HTMLImageElement src is changed.
 TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
 {
-    RefPtr<HTMLImageElement> image = HTMLImageElement::create(Document::create().get());
+    RefPtr<HTMLImageElement> image = HTMLImageElement::create(*Document::create().get());
     ResourcePtr<ImageResource> originalImageResource = new ImageResource(BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
     image->setImageResource(originalImageResource.get());
 
@@ -193,7 +193,7 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
 // Verifies that ImageBitmaps constructed from ImageBitmaps hold onto their own Image.
 TEST_F(ImageBitmapTest, ImageResourceLifetime)
 {
-    RefPtr<HTMLCanvasElement> canvasElement = HTMLCanvasElement::create(Document::create().get());
+    RefPtr<HTMLCanvasElement> canvasElement = HTMLCanvasElement::create(*Document::create().get());
     canvasElement->setHeight(40);
     canvasElement->setWidth(40);
     RefPtr<ImageBitmap> imageBitmapDerived;

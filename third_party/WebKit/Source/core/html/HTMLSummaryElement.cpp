@@ -35,14 +35,14 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-PassRefPtr<HTMLSummaryElement> HTMLSummaryElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLSummaryElement> HTMLSummaryElement::create(const QualifiedName& tagName, Document& document)
 {
     RefPtr<HTMLSummaryElement> summary = adoptRef(new HTMLSummaryElement(tagName, document));
     summary->ensureUserAgentShadowRoot();
     return summary.release();
 }
 
-HTMLSummaryElement::HTMLSummaryElement(const QualifiedName& tagName, Document* document)
+HTMLSummaryElement::HTMLSummaryElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(summaryTag));
@@ -55,8 +55,8 @@ RenderObject* HTMLSummaryElement::createRenderer(RenderStyle*)
 
 void HTMLSummaryElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 {
-    root->appendChild(DetailsMarkerControl::create(&document()));
-    root->appendChild(HTMLContentElement::create(&document()));
+    root->appendChild(DetailsMarkerControl::create(document()));
+    root->appendChild(HTMLContentElement::create(document()));
 }
 
 HTMLDetailsElement* HTMLSummaryElement::detailsElement() const

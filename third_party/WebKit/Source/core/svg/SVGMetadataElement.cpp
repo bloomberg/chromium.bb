@@ -24,14 +24,14 @@
 
 namespace WebCore {
 
-inline SVGMetadataElement::SVGMetadataElement(const QualifiedName& tagName, Document* document)
+inline SVGMetadataElement::SVGMetadataElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::metadataTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGMetadataElement> SVGMetadataElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<SVGMetadataElement> SVGMetadataElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new SVGMetadataElement(tagName, document));
 }

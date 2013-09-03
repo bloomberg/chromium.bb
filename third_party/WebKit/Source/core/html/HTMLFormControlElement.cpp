@@ -44,7 +44,7 @@ namespace WebCore {
 using namespace HTMLNames;
 using namespace std;
 
-HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName, Document* document, HTMLFormElement* form)
+HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName, Document& document, HTMLFormElement* form)
     : LabelableElement(tagName, document)
     , m_disabled(false)
     , m_isReadOnly(false)

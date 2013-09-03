@@ -30,14 +30,14 @@
 
 namespace WebCore {
 
-inline SVGTextElement::SVGTextElement(const QualifiedName& tagName, Document* doc)
+inline SVGTextElement::SVGTextElement(const QualifiedName& tagName, Document& doc)
     : SVGTextPositioningElement(tagName, doc)
 {
     ASSERT(hasTagName(SVGNames::textTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGTextElement> SVGTextElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<SVGTextElement> SVGTextElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new SVGTextElement(tagName, document));
 }

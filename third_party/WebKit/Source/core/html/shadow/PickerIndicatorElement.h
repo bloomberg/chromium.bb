@@ -53,7 +53,7 @@ public:
         virtual bool setupDateTimeChooserParameters(DateTimeChooserParameters&) = 0;
     };
 
-    static PassRefPtr<PickerIndicatorElement> create(Document*, PickerIndicatorOwner&);
+    static PassRefPtr<PickerIndicatorElement> create(Document&, PickerIndicatorOwner&);
     virtual ~PickerIndicatorElement();
     void openPopup();
     void closePopup();
@@ -65,7 +65,7 @@ public:
     virtual void didEndChooser() OVERRIDE;
 
 private:
-    PickerIndicatorElement(Document*, PickerIndicatorOwner&);
+    PickerIndicatorElement(Document&, PickerIndicatorOwner&);
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual void defaultEventHandler(Event*) OVERRIDE;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;

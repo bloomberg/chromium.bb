@@ -67,7 +67,7 @@ public:
     Node* previousTo(const Node* node) const { return m_distribution.previousTo(node); }
 
 protected:
-    InsertionPoint(const QualifiedName&, Document*);
+    InsertionPoint(const QualifiedName&, Document&);
     virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE;
     virtual void childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta) OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;

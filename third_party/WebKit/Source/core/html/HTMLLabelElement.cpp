@@ -44,14 +44,14 @@ static bool supportsLabels(Element* element)
     return toLabelableElement(element)->supportLabels();
 }
 
-inline HTMLLabelElement::HTMLLabelElement(const QualifiedName& tagName, Document* document)
+inline HTMLLabelElement::HTMLLabelElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(labelTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLLabelElement> HTMLLabelElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLLabelElement> HTMLLabelElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLLabelElement(tagName, document));
 }

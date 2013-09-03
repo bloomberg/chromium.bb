@@ -39,7 +39,7 @@ class SVGScriptElement FINAL
     , public SVGExternalResourcesRequired
     , public ScriptLoaderClient {
 public:
-    static PassRefPtr<SVGScriptElement> create(const QualifiedName&, Document*, bool wasInsertedByParser);
+    static PassRefPtr<SVGScriptElement> create(const QualifiedName&, Document&, bool wasInsertedByParser);
 
     String type() const;
     void setType(const String&);
@@ -47,7 +47,7 @@ public:
     ScriptLoader* loader() const { return m_loader.get(); }
 
 private:
-    SVGScriptElement(const QualifiedName&, Document*, bool wasInsertedByParser, bool alreadyStarted);
+    SVGScriptElement(const QualifiedName&, Document&, bool wasInsertedByParser, bool alreadyStarted);
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;

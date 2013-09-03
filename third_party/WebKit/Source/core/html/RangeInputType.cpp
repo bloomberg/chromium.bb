@@ -244,7 +244,7 @@ void RangeInputType::createShadowSubtree()
 {
     ASSERT(element()->shadow());
 
-    Document* document = &element()->document();
+    Document& document = element()->document();
     RefPtr<HTMLDivElement> track = HTMLDivElement::create(document);
     track->setPart(AtomicString("-webkit-slider-runnable-track", AtomicString::ConstructFromLiteral));
     track->setAttribute(idAttr, ShadowElementNames::sliderTrack());

@@ -339,7 +339,7 @@ sub printConstructorSignature
 {
     my ($F, $tagName, $constructorName, $constructorTagName) = @_;
 
-    print F "static PassRefPtr<$parameters{namespace}Element> ${constructorName}Constructor(const QualifiedName& $constructorTagName, Document* document";
+    print F "static PassRefPtr<$parameters{namespace}Element> ${constructorName}Constructor(const QualifiedName& $constructorTagName, Document& document";
     if ($parameters{namespace} eq "HTML") {
         print F ", HTMLFormElement*";
         print F " formElement" if $enabledTags{$tagName}{constructorNeedsFormElement};
@@ -359,7 +359,7 @@ sub printConstructorInterior
     # Handle media elements.
     if ($enabledTags{$tagName}{wrapperOnlyIfMediaIsAvailable}) {
         print F <<END
-    Settings* settings = document->settings();
+    Settings* settings = document.settings();
     if (!RuntimeEnabledFeatures::mediaEnabled() || (settings && !settings->mediaEnabled()))
         return 0;
 
@@ -370,7 +370,7 @@ END
     my $contextConditional = $enabledTags{$tagName}{contextConditional};
     if ($contextConditional) {
         print F <<END
-    if (!ContextFeatures::${contextConditional}Enabled(document))
+    if (!ContextFeatures::${contextConditional}Enabled(&document))
         return 0;
 END
 ;
@@ -815,7 +815,7 @@ using namespace $parameters{namespace}Names;
 END
 ;
 
-print F "typedef PassRefPtr<$parameters{namespace}Element> (*ConstructorFunction)(const QualifiedName&, Document*";
+print F "typedef PassRefPtr<$parameters{namespace}Element> (*ConstructorFunction)(const QualifiedName&, Document&";
 print F ", HTMLFormElement*" if $parameters{namespace} eq "HTML";
 print F ", bool createdByParser);\n";
 print F <<END
@@ -861,7 +861,7 @@ print F <<END
         return 0;
 
     if (CustomElement::isValidName(qName.localName()) && document->registrationContext()) {
-        RefPtr<Element> element = document->registrationContext()->createCustomTagElement(document, qName, createdByParser ? CustomElementRegistrationContext::CreatedByParser : CustomElementRegistrationContext::NotCreatedByParser);
+        RefPtr<Element> element = document->registrationContext()->createCustomTagElement(*document, qName, createdByParser ? CustomElementRegistrationContext::CreatedByParser : CustomElementRegistrationContext::NotCreatedByParser);
         ASSERT_WITH_SECURITY_IMPLICATION(element->is$parameters{namespace}Element());
         return static_pointer_cast<$parameters{namespace}Element>(element.release());
     }
@@ -873,16 +873,16 @@ END
 ;
 
 if ($parameters{namespace} eq "HTML") {
-    print F "        if (PassRefPtr<$parameters{namespace}Element> element = function(qName, document, formElement, createdByParser))\n";
+    print F "        if (PassRefPtr<$parameters{namespace}Element> element = function(qName, *document, formElement, createdByParser))\n";
     print F "            return element;\n";
 } else {
-    print F "        if (PassRefPtr<$parameters{namespace}Element> element = function(qName, document, createdByParser))\n";
+    print F "        if (PassRefPtr<$parameters{namespace}Element> element = function(qName, *document, createdByParser))\n";
     print F "            return element;\n";
 }
 print F <<END
     }
 
-    return $parameters{fallbackInterfaceName}::create(qName, document);
+    return $parameters{fallbackInterfaceName}::create(qName, *document);
 }
 
 } // namespace WebCore

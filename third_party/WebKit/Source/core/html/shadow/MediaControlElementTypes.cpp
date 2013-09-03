@@ -102,7 +102,7 @@ void MediaControlElement::setDisplayType(MediaControlElementType displayType)
 
 // ----------------------------
 
-MediaControlDivElement::MediaControlDivElement(Document* document, MediaControlElementType displayType)
+MediaControlDivElement::MediaControlDivElement(Document& document, MediaControlElementType displayType)
     : HTMLDivElement(divTag, document)
     , MediaControlElement(displayType, this)
 {
@@ -110,7 +110,7 @@ MediaControlDivElement::MediaControlDivElement(Document* document, MediaControlE
 
 // ----------------------------
 
-MediaControlInputElement::MediaControlInputElement(Document* document, MediaControlElementType displayType)
+MediaControlInputElement::MediaControlInputElement(Document& document, MediaControlElementType displayType)
     : HTMLInputElement(inputTag, document, 0, false)
     , MediaControlElement(displayType, this)
 {
@@ -123,7 +123,7 @@ bool MediaControlInputElement::isMouseFocusable() const
 
 // ----------------------------
 
-MediaControlTimeDisplayElement::MediaControlTimeDisplayElement(Document* document, MediaControlElementType displayType)
+MediaControlTimeDisplayElement::MediaControlTimeDisplayElement(Document& document, MediaControlElementType displayType)
     : MediaControlDivElement(document, displayType)
     , m_currentValue(0)
 {
@@ -136,7 +136,7 @@ void MediaControlTimeDisplayElement::setCurrentValue(double time)
 
 // ----------------------------
 
-MediaControlMuteButtonElement::MediaControlMuteButtonElement(Document* document, MediaControlElementType displayType)
+MediaControlMuteButtonElement::MediaControlMuteButtonElement(Document& document, MediaControlElementType displayType)
     : MediaControlInputElement(document, displayType)
 {
 }
@@ -163,7 +163,7 @@ void MediaControlMuteButtonElement::updateDisplayType()
 
 // ----------------------------
 
-MediaControlVolumeSliderElement::MediaControlVolumeSliderElement(Document* document)
+MediaControlVolumeSliderElement::MediaControlVolumeSliderElement(Document& document)
     : MediaControlInputElement(document, MediaVolumeSlider)
     , m_clearMutedOnUserInteraction(false)
 {

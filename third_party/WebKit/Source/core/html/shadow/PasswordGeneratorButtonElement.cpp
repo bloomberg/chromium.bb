@@ -52,7 +52,7 @@ using namespace HTMLNames;
 
 // FIXME: This class is only used in Chromium and has no layout tests.
 
-PasswordGeneratorButtonElement::PasswordGeneratorButtonElement(Document* document)
+PasswordGeneratorButtonElement::PasswordGeneratorButtonElement(Document& document)
     : HTMLDivElement(HTMLNames::divTag, document)
     , m_isInHoverState(false)
 {
@@ -89,13 +89,13 @@ void PasswordGeneratorButtonElement::decorate(HTMLInputElement* input)
     getDecorationRootAndDecoratedRoot(input, decorationRoot, existingRoot);
     ASSERT(decorationRoot);
     ASSERT(existingRoot);
-    RefPtr<HTMLDivElement> box = HTMLDivElement::create(&input->document());
+    RefPtr<HTMLDivElement> box = HTMLDivElement::create(input->document());
     decorationRoot->appendChild(box);
     box->setInlineStyleProperty(CSSPropertyDisplay, CSSValueFlex);
     box->setInlineStyleProperty(CSSPropertyAlignItems, CSSValueCenter);
     ASSERT(existingRoot->childNodeCount() == 1);
     toHTMLElement(existingRoot->firstChild())->setInlineStyleProperty(CSSPropertyFlexGrow, 1.0, CSSPrimitiveValue::CSS_NUMBER);
-    box->appendChild(HTMLShadowElement::create(HTMLNames::shadowTag, &input->document()));
+    box->appendChild(HTMLShadowElement::create(HTMLNames::shadowTag, input->document()));
     setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
     box->appendChild(this);
 }

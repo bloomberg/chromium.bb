@@ -48,12 +48,12 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-TextControlInnerContainer::TextControlInnerContainer(Document* document)
+TextControlInnerContainer::TextControlInnerContainer(Document& document)
     : HTMLDivElement(divTag, document)
 {
 }
 
-PassRefPtr<TextControlInnerContainer> TextControlInnerContainer::create(Document* document)
+PassRefPtr<TextControlInnerContainer> TextControlInnerContainer::create(Document& document)
 {
     return adoptRef(new TextControlInnerContainer(document));
 }
@@ -63,13 +63,13 @@ RenderObject* TextControlInnerContainer::createRenderer(RenderStyle*)
     return new RenderTextControlInnerContainer(this);
 }
 
-TextControlInnerElement::TextControlInnerElement(Document* document)
+TextControlInnerElement::TextControlInnerElement(Document& document)
     : HTMLDivElement(divTag, document)
 {
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtr<TextControlInnerElement> TextControlInnerElement::create(Document* document)
+PassRefPtr<TextControlInnerElement> TextControlInnerElement::create(Document& document)
 {
     return adoptRef(new TextControlInnerElement(document));
 }
@@ -97,13 +97,13 @@ PassRefPtr<RenderStyle> TextControlInnerElement::customStyleForRenderer()
 
 // ---------------------------
 
-inline TextControlInnerTextElement::TextControlInnerTextElement(Document* document)
+inline TextControlInnerTextElement::TextControlInnerTextElement(Document& document)
     : HTMLDivElement(divTag, document)
 {
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtr<TextControlInnerTextElement> TextControlInnerTextElement::create(Document* document)
+PassRefPtr<TextControlInnerTextElement> TextControlInnerTextElement::create(Document& document)
 {
     return adoptRef(new TextControlInnerTextElement(document));
 }
@@ -143,12 +143,12 @@ PassRefPtr<RenderStyle> TextControlInnerTextElement::customStyleForRenderer()
 
 // ----------------------------
 
-inline SearchFieldDecorationElement::SearchFieldDecorationElement(Document* document)
+inline SearchFieldDecorationElement::SearchFieldDecorationElement(Document& document)
     : HTMLDivElement(divTag, document)
 {
 }
 
-PassRefPtr<SearchFieldDecorationElement> SearchFieldDecorationElement::create(Document* document)
+PassRefPtr<SearchFieldDecorationElement> SearchFieldDecorationElement::create(Document& document)
 {
     RefPtr<SearchFieldDecorationElement> element = adoptRef(new SearchFieldDecorationElement(document));
     element->setAttribute(idAttr, ShadowElementNames::searchDecoration());
@@ -191,13 +191,13 @@ bool SearchFieldDecorationElement::willRespondToMouseClickEvents()
 
 // ----------------------------
 
-inline SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(Document* document)
+inline SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(Document& document)
     : HTMLDivElement(divTag, document)
     , m_capturing(false)
 {
 }
 
-PassRefPtr<SearchFieldCancelButtonElement> SearchFieldCancelButtonElement::create(Document* document)
+PassRefPtr<SearchFieldCancelButtonElement> SearchFieldCancelButtonElement::create(Document& document)
 {
     RefPtr<SearchFieldCancelButtonElement> element = adoptRef(new SearchFieldCancelButtonElement(document));
     element->setPart(AtomicString("-webkit-search-cancel-button", AtomicString::ConstructFromLiteral));
@@ -268,7 +268,7 @@ bool SearchFieldCancelButtonElement::willRespondToMouseClickEvents()
 
 #if ENABLE(INPUT_SPEECH)
 
-inline InputFieldSpeechButtonElement::InputFieldSpeechButtonElement(Document* document)
+inline InputFieldSpeechButtonElement::InputFieldSpeechButtonElement(Document& document)
     : HTMLDivElement(divTag, document)
     , m_capturing(false)
     , m_state(Idle)
@@ -286,7 +286,7 @@ InputFieldSpeechButtonElement::~InputFieldSpeechButtonElement()
     }
 }
 
-PassRefPtr<InputFieldSpeechButtonElement> InputFieldSpeechButtonElement::create(Document* document)
+PassRefPtr<InputFieldSpeechButtonElement> InputFieldSpeechButtonElement::create(Document& document)
 {
     RefPtr<InputFieldSpeechButtonElement> element = adoptRef(new InputFieldSpeechButtonElement(document));
     element->setPart(AtomicString("-webkit-input-speech-button", AtomicString::ConstructFromLiteral));

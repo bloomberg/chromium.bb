@@ -29,13 +29,13 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLModElement::HTMLModElement(const QualifiedName& tagName, Document* document)
+inline HTMLModElement::HTMLModElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLModElement> HTMLModElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLModElement> HTMLModElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLModElement(tagName, document));
 }

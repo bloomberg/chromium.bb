@@ -121,7 +121,7 @@ PassRefPtr<DocumentFragment> XSLTProcessor::transformToFragment(Node* sourceNode
 
     if (!transformToString(sourceNode, resultMIMEType, resultString, resultEncoding))
         return 0;
-    return createFragmentForTransformToFragment(resultString, resultMIMEType, outputDoc);
+    return createFragmentForTransformToFragment(resultString, resultMIMEType, *outputDoc);
 }
 
 void XSLTProcessor::setParameter(const String& /*namespaceURI*/, const String& localName, const String& value)

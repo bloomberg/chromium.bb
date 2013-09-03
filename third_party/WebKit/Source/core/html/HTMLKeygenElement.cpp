@@ -42,7 +42,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLKeygenElement::HTMLKeygenElement(const QualifiedName& tagName, Document* document, HTMLFormElement* form)
+HTMLKeygenElement::HTMLKeygenElement(const QualifiedName& tagName, Document& document, HTMLFormElement* form)
     : HTMLFormControlElementWithState(tagName, document, form)
 {
     ASSERT(hasTagName(keygenTag));
@@ -58,10 +58,10 @@ void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot* root)
     getSupportedKeySizes(keys);
 
     // Create a select element with one option element for each key size.
-    RefPtr<HTMLSelectElement> select = HTMLSelectElement::create(&document());
+    RefPtr<HTMLSelectElement> select = HTMLSelectElement::create(document());
     select->setPart(keygenSelectPseudoId);
     for (size_t i = 0; i < keys.size(); ++i) {
-        RefPtr<HTMLOptionElement> option = HTMLOptionElement::create(&document());
+        RefPtr<HTMLOptionElement> option = HTMLOptionElement::create(document());
         option->appendChild(Text::create(&document(), keys[i]));
         select->appendChild(option);
     }

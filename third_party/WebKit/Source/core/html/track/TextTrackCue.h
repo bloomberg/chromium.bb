@@ -49,7 +49,7 @@ class TextTrackCue;
 
 class TextTrackCueBox : public HTMLDivElement {
 public:
-    static PassRefPtr<TextTrackCueBox> create(Document* document, TextTrackCue* cue)
+    static PassRefPtr<TextTrackCueBox> create(Document& document, TextTrackCue* cue)
     {
         return adoptRef(new TextTrackCueBox(document, cue));
     }
@@ -60,7 +60,7 @@ public:
     static const AtomicString& textTrackCueBoxShadowPseudoId();
 
 protected:
-    TextTrackCueBox(Document*, TextTrackCue*);
+    TextTrackCueBox(Document&, TextTrackCue*);
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 

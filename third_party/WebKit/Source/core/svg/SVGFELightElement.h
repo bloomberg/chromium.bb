@@ -35,7 +35,7 @@ public:
     static PassRefPtr<LightSource> findLightSource(const SVGElement*);
 
 protected:
-    SVGFELightElement(const QualifiedName&, Document*);
+    SVGFELightElement(const QualifiedName&, Document&);
 
 private:
     bool isSupportedAttribute(const QualifiedName&);

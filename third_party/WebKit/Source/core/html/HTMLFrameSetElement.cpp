@@ -43,7 +43,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLFrameSetElement::HTMLFrameSetElement(const QualifiedName& tagName, Document* document)
+HTMLFrameSetElement::HTMLFrameSetElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
     , m_border(6)
     , m_borderSet(false)
@@ -57,7 +57,7 @@ HTMLFrameSetElement::HTMLFrameSetElement(const QualifiedName& tagName, Document*
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtr<HTMLFrameSetElement> HTMLFrameSetElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLFrameSetElement> HTMLFrameSetElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLFrameSetElement(tagName, document));
 }

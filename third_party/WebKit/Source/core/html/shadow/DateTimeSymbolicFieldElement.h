@@ -38,7 +38,7 @@ class DateTimeSymbolicFieldElement : public DateTimeFieldElement, public TypeAhe
     WTF_MAKE_NONCOPYABLE(DateTimeSymbolicFieldElement);
 
 protected:
-    DateTimeSymbolicFieldElement(Document*, FieldOwner&, const Vector<String>&, int minimum, int maximum);
+    DateTimeSymbolicFieldElement(Document&, FieldOwner&, const Vector<String>&, int minimum, int maximum);
     size_t symbolsSize() const { return m_symbols.size(); }
     virtual bool hasValue() const OVERRIDE FINAL;
     void initialize(const AtomicString& pseudo, const String& axHelpText);

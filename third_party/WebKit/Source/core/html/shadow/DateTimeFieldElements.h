@@ -36,10 +36,10 @@ class DateTimeAMPMFieldElement FINAL : public DateTimeSymbolicFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeAMPMFieldElement);
 
 public:
-    static PassRefPtr<DateTimeAMPMFieldElement> create(Document*, FieldOwner&, const Vector<String>&);
+    static PassRefPtr<DateTimeAMPMFieldElement> create(Document&, FieldOwner&, const Vector<String>&);
 
 private:
-    DateTimeAMPMFieldElement(Document*, FieldOwner&, const Vector<String>&);
+    DateTimeAMPMFieldElement(Document&, FieldOwner&, const Vector<String>&);
 
     // DateTimeFieldElement functions.
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
@@ -51,10 +51,10 @@ class DateTimeDayFieldElement FINAL : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeDayFieldElement);
 
 public:
-    static PassRefPtr<DateTimeDayFieldElement> create(Document*, FieldOwner&, const String& placeholder, const Range&);
+    static PassRefPtr<DateTimeDayFieldElement> create(Document&, FieldOwner&, const String& placeholder, const Range&);
 
 private:
-    DateTimeDayFieldElement(Document*, FieldOwner&, const String& placeholder, const Range&);
+    DateTimeDayFieldElement(Document&, FieldOwner&, const String& placeholder, const Range&);
 
     // DateTimeFieldElement functions.
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
@@ -66,7 +66,7 @@ class DateTimeHourFieldElementBase : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeHourFieldElementBase);
 
 protected:
-    DateTimeHourFieldElementBase(Document*, FieldOwner&, const Range&, const Range& hardLimits, const Step&);
+    DateTimeHourFieldElementBase(Document&, FieldOwner&, const Range&, const Range& hardLimits, const Step&);
     void initialize();
 
 private:
@@ -79,10 +79,10 @@ class DateTimeHour11FieldElement FINAL : public DateTimeHourFieldElementBase {
     WTF_MAKE_NONCOPYABLE(DateTimeHour11FieldElement);
 
 public:
-    static PassRefPtr<DateTimeHour11FieldElement> create(Document*, FieldOwner&, const Range&, const Step&);
+    static PassRefPtr<DateTimeHour11FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
-    DateTimeHour11FieldElement(Document*, FieldOwner&, const Range& hour23Range, const Step&);
+    DateTimeHour11FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
 
     // DateTimeFieldElement functions.
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
@@ -93,10 +93,10 @@ class DateTimeHour12FieldElement FINAL : public DateTimeHourFieldElementBase {
     WTF_MAKE_NONCOPYABLE(DateTimeHour12FieldElement);
 
 public:
-    static PassRefPtr<DateTimeHour12FieldElement> create(Document*, FieldOwner&, const Range&, const Step&);
+    static PassRefPtr<DateTimeHour12FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
-    DateTimeHour12FieldElement(Document*, FieldOwner&, const Range& hour23Range, const Step&);
+    DateTimeHour12FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
 
     // DateTimeFieldElement functions.
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
@@ -107,10 +107,10 @@ class DateTimeHour23FieldElement FINAL : public DateTimeHourFieldElementBase {
     WTF_MAKE_NONCOPYABLE(DateTimeHour23FieldElement);
 
 public:
-    static PassRefPtr<DateTimeHour23FieldElement> create(Document*, FieldOwner&, const Range&, const Step&);
+    static PassRefPtr<DateTimeHour23FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
-    DateTimeHour23FieldElement(Document*, FieldOwner&, const Range& hour23Range, const Step&);
+    DateTimeHour23FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
 
     // DateTimeFieldElement functions.
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
@@ -121,10 +121,10 @@ class DateTimeHour24FieldElement FINAL : public DateTimeHourFieldElementBase {
     WTF_MAKE_NONCOPYABLE(DateTimeHour24FieldElement);
 
 public:
-    static PassRefPtr<DateTimeHour24FieldElement> create(Document*, FieldOwner&, const Range&, const Step&);
+    static PassRefPtr<DateTimeHour24FieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
-    DateTimeHour24FieldElement(Document*, FieldOwner&, const Range& hour23Range, const Step&);
+    DateTimeHour24FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
 
     // DateTimeFieldElement functions.
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
@@ -135,10 +135,10 @@ class DateTimeMillisecondFieldElement FINAL : public DateTimeNumericFieldElement
     WTF_MAKE_NONCOPYABLE(DateTimeMillisecondFieldElement);
 
 public:
-    static PassRefPtr<DateTimeMillisecondFieldElement> create(Document*, FieldOwner&, const Range&, const Step&);
+    static PassRefPtr<DateTimeMillisecondFieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
-    DateTimeMillisecondFieldElement(Document*, FieldOwner&, const Range&, const Step&);
+    DateTimeMillisecondFieldElement(Document&, FieldOwner&, const Range&, const Step&);
 
     // DateTimeFieldElement functions.
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
@@ -150,10 +150,10 @@ class DateTimeMinuteFieldElement FINAL : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeMinuteFieldElement);
 
 public:
-    static PassRefPtr<DateTimeMinuteFieldElement> create(Document*, FieldOwner&, const Range&, const Step&);
+    static PassRefPtr<DateTimeMinuteFieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
-    DateTimeMinuteFieldElement(Document*, FieldOwner&, const Range&, const Step&);
+    DateTimeMinuteFieldElement(Document&, FieldOwner&, const Range&, const Step&);
 
     // DateTimeFieldElement functions.
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
@@ -165,10 +165,10 @@ class DateTimeMonthFieldElement FINAL : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeMonthFieldElement);
 
 public:
-    static PassRefPtr<DateTimeMonthFieldElement> create(Document*, FieldOwner&, const String& placeholder, const Range&);
+    static PassRefPtr<DateTimeMonthFieldElement> create(Document&, FieldOwner&, const String& placeholder, const Range&);
 
 private:
-    DateTimeMonthFieldElement(Document*, FieldOwner&, const String& placeholder, const Range&);
+    DateTimeMonthFieldElement(Document&, FieldOwner&, const String& placeholder, const Range&);
 
     // DateTimeFieldElement functions.
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
@@ -180,10 +180,10 @@ class DateTimeSecondFieldElement FINAL : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeSecondFieldElement);
 
 public:
-    static PassRefPtr<DateTimeSecondFieldElement> create(Document*, FieldOwner&, const Range&, const Step&);
+    static PassRefPtr<DateTimeSecondFieldElement> create(Document&, FieldOwner&, const Range&, const Step&);
 
 private:
-    DateTimeSecondFieldElement(Document*, FieldOwner&, const Range&, const Step&);
+    DateTimeSecondFieldElement(Document&, FieldOwner&, const Range&, const Step&);
 
     // DateTimeFieldElement functions.
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
@@ -195,10 +195,10 @@ class DateTimeSymbolicMonthFieldElement FINAL : public DateTimeSymbolicFieldElem
     WTF_MAKE_NONCOPYABLE(DateTimeSymbolicMonthFieldElement);
 
 public:
-    static PassRefPtr<DateTimeSymbolicMonthFieldElement> create(Document*, FieldOwner&, const Vector<String>&, int minimum, int maximum);
+    static PassRefPtr<DateTimeSymbolicMonthFieldElement> create(Document&, FieldOwner&, const Vector<String>&, int minimum, int maximum);
 
 private:
-    DateTimeSymbolicMonthFieldElement(Document*, FieldOwner&, const Vector<String>&, int minimum, int maximum);
+    DateTimeSymbolicMonthFieldElement(Document&, FieldOwner&, const Vector<String>&, int minimum, int maximum);
 
     // DateTimeFieldElement functions.
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
@@ -210,10 +210,10 @@ class DateTimeWeekFieldElement FINAL : public DateTimeNumericFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeWeekFieldElement);
 
 public:
-    static PassRefPtr<DateTimeWeekFieldElement> create(Document*, FieldOwner&, const Range&);
+    static PassRefPtr<DateTimeWeekFieldElement> create(Document&, FieldOwner&, const Range&);
 
 private:
-    DateTimeWeekFieldElement(Document*, FieldOwner&, const Range&);
+    DateTimeWeekFieldElement(Document&, FieldOwner&, const Range&);
 
     // DateTimeFieldElement functions.
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
@@ -241,10 +241,10 @@ public:
         }
     };
 
-    static PassRefPtr<DateTimeYearFieldElement> create(Document*, FieldOwner&, const Parameters&);
+    static PassRefPtr<DateTimeYearFieldElement> create(Document&, FieldOwner&, const Parameters&);
 
 private:
-    DateTimeYearFieldElement(Document*, FieldOwner&, const Parameters&);
+    DateTimeYearFieldElement(Document&, FieldOwner&, const Parameters&);
 
     // DateTimeFieldElement functions.
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;

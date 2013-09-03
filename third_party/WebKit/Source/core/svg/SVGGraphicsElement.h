@@ -51,7 +51,7 @@ public:
     virtual RenderObject* createRenderer(RenderStyle*);
 
 protected:
-    SVGGraphicsElement(const QualifiedName&, Document*, ConstructionType = CreateSVGElement);
+    SVGGraphicsElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;

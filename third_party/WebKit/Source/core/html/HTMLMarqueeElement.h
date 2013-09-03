@@ -33,7 +33,7 @@ class RenderMarquee;
 
 class HTMLMarqueeElement FINAL : public HTMLElement, private ActiveDOMObject {
 public:
-    static PassRefPtr<HTMLMarqueeElement> create(const QualifiedName&, Document*);
+    static PassRefPtr<HTMLMarqueeElement> create(const QualifiedName&, Document&);
 
     int minimumDelay() const;
 
@@ -52,7 +52,7 @@ public:
     void setLoop(int, ExceptionState&);
 
 private:
-    HTMLMarqueeElement(const QualifiedName&, Document*);
+    HTMLMarqueeElement(const QualifiedName&, Document&);
 
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;

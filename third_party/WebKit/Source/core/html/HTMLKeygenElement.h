@@ -32,7 +32,7 @@ class HTMLSelectElement;
 
 class HTMLKeygenElement FINAL : public HTMLFormControlElementWithState {
 public:
-    static PassRefPtr<HTMLKeygenElement> create(const QualifiedName& tagName, Document* document, HTMLFormElement* form)
+    static PassRefPtr<HTMLKeygenElement> create(const QualifiedName& tagName, Document& document, HTMLFormElement* form)
     {
         return adoptRef(new HTMLKeygenElement(tagName, document, form));
     }
@@ -40,7 +40,7 @@ public:
     virtual bool willValidate() const OVERRIDE { return false; }
 
 private:
-    HTMLKeygenElement(const QualifiedName&, Document*, HTMLFormElement*);
+    HTMLKeygenElement(const QualifiedName&, Document&, HTMLFormElement*);
 
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
 

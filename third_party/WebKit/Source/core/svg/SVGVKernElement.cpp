@@ -28,14 +28,14 @@
 
 namespace WebCore {
 
-inline SVGVKernElement::SVGVKernElement(const QualifiedName& tagName, Document* document)
+inline SVGVKernElement::SVGVKernElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::vkernTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGVKernElement> SVGVKernElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<SVGVKernElement> SVGVKernElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new SVGVKernElement(tagName, document));
 }

@@ -61,7 +61,8 @@ inline MockPagePopup::MockPagePopup(PagePopupClient* client, const IntRect& orig
     , m_closeTimer(this, &MockPagePopup::close)
 {
     Document* document = mainFrame->document();
-    m_iframe = HTMLIFrameElement::create(HTMLNames::iframeTag, document);
+    ASSERT(document);
+    m_iframe = HTMLIFrameElement::create(HTMLNames::iframeTag, *document);
     m_iframe->setIdAttribute("mock-page-popup");
     m_iframe->setInlineStyleProperty(CSSPropertyBorderWidth, 0.0, CSSPrimitiveValue::CSS_PX);
     m_iframe->setInlineStyleProperty(CSSPropertyPosition, CSSValueAbsolute);

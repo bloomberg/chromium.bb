@@ -28,14 +28,14 @@
 
 namespace WebCore {
 
-inline SVGTSpanElement::SVGTSpanElement(const QualifiedName& tagName, Document* document)
+inline SVGTSpanElement::SVGTSpanElement(const QualifiedName& tagName, Document& document)
     : SVGTextPositioningElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::tspanTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGTSpanElement> SVGTSpanElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<SVGTSpanElement> SVGTSpanElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new SVGTSpanElement(tagName, document));
 }

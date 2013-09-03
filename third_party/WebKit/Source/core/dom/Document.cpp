@@ -722,7 +722,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
     RefPtr<Element> element;
 
     if (CustomElement::isValidName(localName) && registrationContext())
-        element = registrationContext()->createCustomTagElement(this, QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
+        element = registrationContext()->createCustomTagElement(*this, QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
     else
         element = createElement(localName, es);
 
@@ -746,7 +746,7 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
 
     RefPtr<Element> element;
     if (CustomElement::isValidName(qName.localName()) && registrationContext())
-        element = registrationContext()->createCustomTagElement(this, qName);
+        element = registrationContext()->createCustomTagElement(*this, qName);
     else
         element = createElementNS(namespaceURI, qualifiedName, es);
 
@@ -4582,7 +4582,7 @@ HTMLCanvasElement* Document::getCSSCanvasElement(const String& name)
 {
     RefPtr<HTMLCanvasElement>& element = m_cssCanvasElements.add(name, 0).iterator->value;
     if (!element) {
-        element = HTMLCanvasElement::create(this);
+        element = HTMLCanvasElement::create(*this);
         element->setAccelerationDisabled(true);
     }
     return element.get();

@@ -73,6 +73,7 @@ void PluginDocumentParser::createDocumentStructure()
 {
     // FIXME: Assert we have a loader to figure out why the original null checks
     // and assert were added for the security bug in http://trac.webkit.org/changeset/87566
+    ASSERT(document());
     RELEASE_ASSERT(document()->loader());
 
     Frame* frame = document()->frame();
@@ -83,18 +84,18 @@ void PluginDocumentParser::createDocumentStructure()
     if (!frame->settings() || !frame->loader()->allowPlugins(NotAboutToInstantiatePlugin))
         return;
 
-    RefPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(document());
+    RefPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*document());
     rootElement->insertedByParser();
     document()->appendChild(rootElement);
     frame->loader()->dispatchDocumentElementAvailable();
 
-    RefPtr<HTMLBodyElement> body = HTMLBodyElement::create(document());
+    RefPtr<HTMLBodyElement> body = HTMLBodyElement::create(*document());
     body->setAttribute(marginwidthAttr, "0");
     body->setAttribute(marginheightAttr, "0");
     body->setAttribute(styleAttr, "background-color: rgb(38,38,38)");
     rootElement->appendChild(body);
 
-    m_embedElement = HTMLEmbedElement::create(document());
+    m_embedElement = HTMLEmbedElement::create(*document());
     m_embedElement->setAttribute(widthAttr, "100%");
     m_embedElement->setAttribute(heightAttr, "100%");
     m_embedElement->setAttribute(nameAttr, "plugin");

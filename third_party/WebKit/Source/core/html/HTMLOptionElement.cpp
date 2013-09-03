@@ -46,7 +46,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLOptionElement::HTMLOptionElement(const QualifiedName& tagName, Document* document)
+HTMLOptionElement::HTMLOptionElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
     , m_disabled(false)
     , m_isSelected(false)
@@ -56,22 +56,22 @@ HTMLOptionElement::HTMLOptionElement(const QualifiedName& tagName, Document* doc
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLOptionElement> HTMLOptionElement::create(Document* document)
+PassRefPtr<HTMLOptionElement> HTMLOptionElement::create(Document& document)
 {
     return adoptRef(new HTMLOptionElement(optionTag, document));
 }
 
-PassRefPtr<HTMLOptionElement> HTMLOptionElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLOptionElement> HTMLOptionElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLOptionElement(tagName, document));
 }
 
-PassRefPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document* document, const String& data, const String& value,
+PassRefPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document& document, const String& data, const String& value,
     bool defaultSelected, bool selected, ExceptionState& es)
 {
     RefPtr<HTMLOptionElement> element = adoptRef(new HTMLOptionElement(optionTag, document));
 
-    RefPtr<Text> text = Text::create(document, data.isNull() ? "" : data);
+    RefPtr<Text> text = Text::create(&document, data.isNull() ? "" : data);
 
     element->appendChild(text.release(), es);
     if (es.hadException())

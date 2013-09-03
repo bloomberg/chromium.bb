@@ -34,7 +34,7 @@ class ExceptionState;
 
 class HTMLTableSectionElement FINAL : public HTMLTablePartElement {
 public:
-    static PassRefPtr<HTMLTableSectionElement> create(const QualifiedName&, Document*);
+    static PassRefPtr<HTMLTableSectionElement> create(const QualifiedName&, Document&);
 
     PassRefPtr<HTMLElement> insertRow(int index, ExceptionState&);
     void deleteRow(int index, ExceptionState&);
@@ -56,7 +56,7 @@ public:
     PassRefPtr<HTMLCollection> rows();
 
 private:
-    HTMLTableSectionElement(const QualifiedName& tagName, Document*);
+    HTMLTableSectionElement(const QualifiedName& tagName, Document&);
 
     virtual const StylePropertySet* additionalPresentationAttributeStyle() OVERRIDE;
 };

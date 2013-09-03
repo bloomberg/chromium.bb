@@ -47,7 +47,7 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGAnimationElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTests)
 END_REGISTER_ANIMATED_PROPERTIES
 
-SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName, Document* document)
+SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName, Document& document)
     : SVGSMILElement(tagName, document)
     , m_fromPropertyValueType(RegularPropertyValue)
     , m_toPropertyValueType(RegularPropertyValue)
@@ -60,7 +60,7 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName, Document*
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGAnimationElement();
 
-    UseCounter::count(document, UseCounter::SVGAnimationElement);
+    UseCounter::count(&document, UseCounter::SVGAnimationElement);
 }
 
 static void parseKeyTimes(const String& string, Vector<float>& result, bool verifyOrder)

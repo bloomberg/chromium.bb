@@ -80,6 +80,7 @@ static void V8TestNamedConstructorConstructorCallback(const v8::FunctionCallback
     }
 
     Document* document = currentDocument();
+    ASSERT(document);
 
     // Make sure the document is added to the DOM Node map. Otherwise, the TestNamedConstructor instance
     // may end up being the only node in the map and get garbage-collected prematurely.
@@ -94,7 +95,7 @@ static void V8TestNamedConstructorConstructorCallback(const v8::FunctionCallback
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str2, args[1]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str3, argumentOrNull(args, 2));
 
-    RefPtr<TestNamedConstructor> impl = TestNamedConstructor::createForJSConstructor(document, str1, str2, str3, es);
+    RefPtr<TestNamedConstructor> impl = TestNamedConstructor::createForJSConstructor(*document, str1, str2, str3, es);
     v8::Handle<v8::Object> wrapper = args.Holder();
     if (es.throwIfNeeded())
         return;

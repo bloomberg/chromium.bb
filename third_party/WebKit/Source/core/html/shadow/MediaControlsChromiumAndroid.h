@@ -33,7 +33,7 @@ namespace WebCore {
 
 class MediaControlsChromiumAndroid : public MediaControlsChromium {
 public:
-    static PassRefPtr<MediaControlsChromiumAndroid> createControls(Document*);
+    static PassRefPtr<MediaControlsChromiumAndroid> createControls(Document&);
 
     virtual void setMediaController(MediaControllerInterface*) OVERRIDE;
     virtual void playbackStarted() OVERRIDE;
@@ -42,7 +42,7 @@ public:
     void insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement>) OVERRIDE;
 
 private:
-    explicit MediaControlsChromiumAndroid(Document*);
+    explicit MediaControlsChromiumAndroid(Document&);
 
     MediaControlOverlayPlayButtonElement* m_overlayPlayButton;
     MediaControlOverlayEnclosureElement* m_overlayEnclosure;

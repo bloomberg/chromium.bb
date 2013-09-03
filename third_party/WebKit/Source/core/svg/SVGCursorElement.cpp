@@ -43,7 +43,7 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGCursorElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTests)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGCursorElement::SVGCursorElement(const QualifiedName& tagName, Document* document)
+inline SVGCursorElement::SVGCursorElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
     , m_x(LengthModeWidth)
     , m_y(LengthModeHeight)
@@ -53,7 +53,7 @@ inline SVGCursorElement::SVGCursorElement(const QualifiedName& tagName, Document
     registerAnimatedPropertiesForSVGCursorElement();
 }
 
-PassRefPtr<SVGCursorElement> SVGCursorElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<SVGCursorElement> SVGCursorElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new SVGCursorElement(tagName, document));
 }

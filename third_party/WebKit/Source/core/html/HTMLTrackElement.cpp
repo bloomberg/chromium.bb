@@ -51,7 +51,7 @@ static String urlForLoggingTrack(const KURL& url)
 }
 #endif
 
-inline HTMLTrackElement::HTMLTrackElement(const QualifiedName& tagName, Document* document)
+inline HTMLTrackElement::HTMLTrackElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
     , m_loadTimer(this, &HTMLTrackElement::loadTimerFired)
 {
@@ -66,7 +66,7 @@ HTMLTrackElement::~HTMLTrackElement()
         m_track->clearClient();
 }
 
-PassRefPtr<HTMLTrackElement> HTMLTrackElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLTrackElement> HTMLTrackElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLTrackElement(tagName, document));
 }

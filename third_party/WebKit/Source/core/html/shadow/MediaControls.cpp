@@ -33,7 +33,7 @@ namespace WebCore {
 
 static const double timeWithoutMouseMovementBeforeHidingFullscreenControls = 3;
 
-MediaControls::MediaControls(Document* document)
+MediaControls::MediaControls(Document& document)
     : HTMLDivElement(HTMLNames::divTag, document)
     , m_mediaController(0)
     , m_panel(0)
@@ -352,7 +352,7 @@ void MediaControls::createTextTrackDisplay()
     if (m_textDisplayContainer)
         return;
 
-    RefPtr<MediaControlTextTrackContainerElement> textDisplayContainer = MediaControlTextTrackContainerElement::create(&document());
+    RefPtr<MediaControlTextTrackContainerElement> textDisplayContainer = MediaControlTextTrackContainerElement::create(document());
     m_textDisplayContainer = textDisplayContainer.get();
 
     if (m_mediaController)

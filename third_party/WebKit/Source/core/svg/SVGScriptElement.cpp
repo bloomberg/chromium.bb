@@ -43,7 +43,7 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGScriptElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGScriptElement::SVGScriptElement(const QualifiedName& tagName, Document* document, bool wasInsertedByParser, bool alreadyStarted)
+inline SVGScriptElement::SVGScriptElement(const QualifiedName& tagName, Document& document, bool wasInsertedByParser, bool alreadyStarted)
     : SVGElement(tagName, document)
     , m_svgLoadEventTimer(this, &SVGElement::svgLoadEventTimerFired)
     , m_loader(ScriptLoader::create(this, wasInsertedByParser, alreadyStarted))
@@ -53,7 +53,7 @@ inline SVGScriptElement::SVGScriptElement(const QualifiedName& tagName, Document
     registerAnimatedPropertiesForSVGScriptElement();
 }
 
-PassRefPtr<SVGScriptElement> SVGScriptElement::create(const QualifiedName& tagName, Document* document, bool insertedByParser)
+PassRefPtr<SVGScriptElement> SVGScriptElement::create(const QualifiedName& tagName, Document& document, bool insertedByParser)
 {
     return adoptRef(new SVGScriptElement(tagName, document, insertedByParser, false));
 }
@@ -208,7 +208,7 @@ bool SVGScriptElement::hasSourceAttribute() const
 
 PassRefPtr<Element> SVGScriptElement::cloneElementWithoutAttributesAndChildren()
 {
-    return adoptRef(new SVGScriptElement(tagQName(), &document(), false, m_loader->alreadyStarted()));
+    return adoptRef(new SVGScriptElement(tagQName(), document(), false, m_loader->alreadyStarted()));
 }
 
 void SVGScriptElement::setHaveFiredLoadEvent(bool haveFiredLoadEvent)

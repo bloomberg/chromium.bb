@@ -38,8 +38,8 @@ class HTMLTableSectionElement;
 
 class HTMLTableElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLTableElement> create(Document*);
-    static PassRefPtr<HTMLTableElement> create(const QualifiedName&, Document*);
+    static PassRefPtr<HTMLTableElement> create(Document&);
+    static PassRefPtr<HTMLTableElement> create(const QualifiedName&, Document&);
 
     HTMLTableCaptionElement* caption() const;
     void setCaption(PassRefPtr<HTMLTableCaptionElement>, ExceptionState&);
@@ -70,7 +70,7 @@ public:
     const StylePropertySet* additionalGroupStyle(bool rows);
 
 private:
-    HTMLTableElement(const QualifiedName&, Document*);
+    HTMLTableElement(const QualifiedName&, Document&);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;

@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-SVGUnknownElement::SVGUnknownElement(const QualifiedName& tagName, Document* document)
+SVGUnknownElement::SVGUnknownElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
 {
 }

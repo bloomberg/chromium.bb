@@ -29,12 +29,12 @@ class CSSValueList;
 
 class SVGFontFaceSrcElement FINAL : public SVGElement {
 public:
-    static PassRefPtr<SVGFontFaceSrcElement> create(const QualifiedName&, Document*);
+    static PassRefPtr<SVGFontFaceSrcElement> create(const QualifiedName&, Document&);
 
     PassRefPtr<CSSValueList> srcValue() const;
 
 private:
-    SVGFontFaceSrcElement(const QualifiedName&, Document*);
+    SVGFontFaceSrcElement(const QualifiedName&, Document&);
 
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
     virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE { return false; }

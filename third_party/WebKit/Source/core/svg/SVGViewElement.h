@@ -37,7 +37,7 @@ class SVGViewElement FINAL : public SVGElement,
                              public SVGFitToViewBox,
                              public SVGZoomAndPan {
 public:
-    static PassRefPtr<SVGViewElement> create(const QualifiedName&, Document*);
+    static PassRefPtr<SVGViewElement> create(const QualifiedName&, Document&);
 
     using SVGElement::ref;
     using SVGElement::deref;
@@ -47,7 +47,7 @@ public:
     void setZoomAndPan(unsigned short zoomAndPan) { m_zoomAndPan = SVGZoomAndPan::parseFromNumber(zoomAndPan); }
 
 private:
-    SVGViewElement(const QualifiedName&, Document*);
+    SVGViewElement(const QualifiedName&, Document&);
 
     // FIXME: svgAttributeChanged missing.
     bool isSupportedAttribute(const QualifiedName&);

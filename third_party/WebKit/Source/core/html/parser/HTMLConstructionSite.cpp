@@ -251,7 +251,8 @@ void HTMLConstructionSite::dispatchDocumentElementAvailableIfNeeded()
 
 void HTMLConstructionSite::insertHTMLHtmlStartTagBeforeHTML(AtomicHTMLToken* token)
 {
-    RefPtr<HTMLHtmlElement> element = HTMLHtmlElement::create(m_document);
+    ASSERT(m_document);
+    RefPtr<HTMLHtmlElement> element = HTMLHtmlElement::create(*m_document);
     setAttributes(element.get(), token, m_parserContentPolicy);
     attachLater(m_attachmentRoot, element);
     m_openElements.pushHTMLHtmlElement(HTMLStackItem::create(element, token));
@@ -504,7 +505,7 @@ void HTMLConstructionSite::insertScriptElement(AtomicHTMLToken* token)
     // those flags or effects thereof.
     const bool parserInserted = m_parserContentPolicy != AllowScriptingContentAndDoNotMarkAlreadyStarted;
     const bool alreadyStarted = m_isParsingFragment && parserInserted;
-    RefPtr<HTMLScriptElement> element = HTMLScriptElement::create(scriptTag, &ownerDocumentForCurrentNode(), parserInserted, alreadyStarted);
+    RefPtr<HTMLScriptElement> element = HTMLScriptElement::create(scriptTag, ownerDocumentForCurrentNode(), parserInserted, alreadyStarted);
     setAttributes(element.get(), token, m_parserContentPolicy);
     if (scriptingContentIsAllowed(m_parserContentPolicy))
         attachLater(currentNode(), element);

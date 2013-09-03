@@ -59,6 +59,7 @@ static void v8HTMLImageElementConstructorMethodCustom(const v8::FunctionCallback
     }
 
     Document* document = currentDocument();
+    ASSERT(document);
 
     // Make sure the document is added to the DOM Node map. Otherwise, the HTMLImageElement instance
     // may end up being the only node in the map and get garbage-collected prematurely.
@@ -80,7 +81,7 @@ static void v8HTMLImageElementConstructorMethodCustom(const v8::FunctionCallback
         optionalHeight = &height;
     }
 
-    RefPtr<HTMLImageElement> image = HTMLImageElement::createForJSConstructor(document, optionalWidth, optionalHeight);
+    RefPtr<HTMLImageElement> image = HTMLImageElement::createForJSConstructor(*document, optionalWidth, optionalHeight);
     v8::Handle<v8::Object> wrapper = args.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8HTMLImageElement>(image.release(), &V8HTMLImageElementConstructor::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(args, wrapper);

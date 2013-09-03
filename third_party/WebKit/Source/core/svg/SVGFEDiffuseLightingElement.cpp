@@ -48,7 +48,7 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEDiffuseLightingElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(const QualifiedName& tagName, Document* document)
+inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(const QualifiedName& tagName, Document& document)
     : SVGFilterPrimitiveStandardAttributes(tagName, document)
     , m_diffuseConstant(1)
     , m_surfaceScale(1)
@@ -58,7 +58,7 @@ inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(const QualifiedN
     registerAnimatedPropertiesForSVGFEDiffuseLightingElement();
 }
 
-PassRefPtr<SVGFEDiffuseLightingElement> SVGFEDiffuseLightingElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<SVGFEDiffuseLightingElement> SVGFEDiffuseLightingElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new SVGFEDiffuseLightingElement(tagName, document));
 }

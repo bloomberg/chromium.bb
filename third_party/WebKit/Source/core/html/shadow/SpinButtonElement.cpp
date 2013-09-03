@@ -43,7 +43,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline SpinButtonElement::SpinButtonElement(Document* document, SpinButtonOwner& spinButtonOwner)
+inline SpinButtonElement::SpinButtonElement(Document& document, SpinButtonOwner& spinButtonOwner)
     : HTMLDivElement(divTag, document)
     , m_spinButtonOwner(&spinButtonOwner)
     , m_capturing(false)
@@ -53,7 +53,7 @@ inline SpinButtonElement::SpinButtonElement(Document* document, SpinButtonOwner&
 {
 }
 
-PassRefPtr<SpinButtonElement> SpinButtonElement::create(Document* document, SpinButtonOwner& spinButtonOwner)
+PassRefPtr<SpinButtonElement> SpinButtonElement::create(Document& document, SpinButtonOwner& spinButtonOwner)
 {
     RefPtr<SpinButtonElement> element = adoptRef(new SpinButtonElement(document, spinButtonOwner));
     element->setPart(AtomicString("-webkit-inner-spin-button", AtomicString::ConstructFromLiteral));

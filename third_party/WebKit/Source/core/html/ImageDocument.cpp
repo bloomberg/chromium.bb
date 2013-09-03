@@ -166,23 +166,23 @@ PassRefPtr<DocumentParser> ImageDocument::createParser()
 
 void ImageDocument::createDocumentStructure()
 {
-    RefPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(this);
+    RefPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*this);
     appendChild(rootElement);
     rootElement->insertedByParser();
 
     if (frame() && frame()->loader())
         frame()->loader()->dispatchDocumentElementAvailable();
 
-    RefPtr<HTMLHeadElement> head = HTMLHeadElement::create(this);
-    RefPtr<HTMLMetaElement> meta = HTMLMetaElement::create(this);
+    RefPtr<HTMLHeadElement> head = HTMLHeadElement::create(*this);
+    RefPtr<HTMLMetaElement> meta = HTMLMetaElement::create(*this);
     meta->setAttribute(nameAttr, "viewport");
     meta->setAttribute(contentAttr, "width=device-width");
     head->appendChild(meta);
 
-    RefPtr<HTMLBodyElement> body = HTMLBodyElement::create(this);
+    RefPtr<HTMLBodyElement> body = HTMLBodyElement::create(*this);
     body->setAttribute(styleAttr, "margin: 0px;");
 
-    m_imageElement = HTMLImageElement::create(this);
+    m_imageElement = HTMLImageElement::create(*this);
     m_imageElement->setAttribute(styleAttr, "-webkit-user-select: none");
     m_imageElement->setLoadManually(true);
     m_imageElement->setSrc(url().string());

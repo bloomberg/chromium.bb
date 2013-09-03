@@ -78,7 +78,7 @@ public:
     virtual String visibleValue() const = 0;
 
 protected:
-    DateTimeFieldElement(Document*, FieldOwner&);
+    DateTimeFieldElement(Document&, FieldOwner&);
     virtual void didBlur();
     virtual void didFocus();
     void focusOnNextField();

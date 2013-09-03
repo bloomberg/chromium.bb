@@ -34,7 +34,7 @@ class VisibleSelection;
 
 class HTMLTextAreaElement FINAL : public HTMLTextFormControlElement {
 public:
-    static PassRefPtr<HTMLTextAreaElement> create(const QualifiedName&, Document*, HTMLFormElement*);
+    static PassRefPtr<HTMLTextAreaElement> create(const QualifiedName&, Document&, HTMLFormElement*);
 
     int cols() const { return m_cols; }
     int rows() const { return m_rows; }
@@ -62,7 +62,7 @@ public:
     void setRows(int);
 
 private:
-    HTMLTextAreaElement(const QualifiedName&, Document*, HTMLFormElement*);
+    HTMLTextAreaElement(const QualifiedName&, Document&, HTMLFormElement*);
 
     enum WrapMethod { NoWrap, SoftWrap, HardWrap };
 

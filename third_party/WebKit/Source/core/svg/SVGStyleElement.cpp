@@ -29,9 +29,9 @@
 
 namespace WebCore {
 
-inline SVGStyleElement::SVGStyleElement(const QualifiedName& tagName, Document* document, bool createdByParser)
+inline SVGStyleElement::SVGStyleElement(const QualifiedName& tagName, Document& document, bool createdByParser)
     : SVGElement(tagName, document)
-    , StyleElement(document, createdByParser)
+    , StyleElement(&document, createdByParser)
     , m_svgLoadEventTimer(this, &SVGElement::svgLoadEventTimerFired)
 {
     ASSERT(hasTagName(SVGNames::styleTag));
@@ -43,7 +43,7 @@ SVGStyleElement::~SVGStyleElement()
     StyleElement::clearDocumentData(document(), this);
 }
 
-PassRefPtr<SVGStyleElement> SVGStyleElement::create(const QualifiedName& tagName, Document* document, bool createdByParser)
+PassRefPtr<SVGStyleElement> SVGStyleElement::create(const QualifiedName& tagName, Document& document, bool createdByParser)
 {
     return adoptRef(new SVGStyleElement(tagName, document, createdByParser));
 }

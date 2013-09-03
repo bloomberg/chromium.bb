@@ -37,17 +37,17 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGSwitchElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGSwitchElement::SVGSwitchElement(const QualifiedName& tagName, Document* document)
+inline SVGSwitchElement::SVGSwitchElement(const QualifiedName& tagName, Document& document)
     : SVGGraphicsElement(tagName, document)
 {
     ASSERT(hasTagName(SVGNames::switchTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGSwitchElement();
 
-    UseCounter::count(document, UseCounter::SVGSwitchElement);
+    UseCounter::count(&document, UseCounter::SVGSwitchElement);
 }
 
-PassRefPtr<SVGSwitchElement> SVGSwitchElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<SVGSwitchElement> SVGSwitchElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new SVGSwitchElement(tagName, document));
 }

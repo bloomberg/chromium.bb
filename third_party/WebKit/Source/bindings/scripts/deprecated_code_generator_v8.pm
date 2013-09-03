@@ -2814,6 +2814,7 @@ END
     AddToImplIncludes("V8Document.h");
     $code .= <<END;
     Document* document = currentDocument();
+    ASSERT(document);
 
     // Make sure the document is added to the DOM Node map. Otherwise, the ${implClassName} instance
     // may end up being the only node in the map and get garbage-collected prematurely.
@@ -2831,7 +2832,7 @@ END
     my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface);
     $code .= $parameterCheckString;
 
-    push(@beforeArgumentList, "document");
+    push(@beforeArgumentList, "*document");
 
     if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
         push(@afterArgumentList, "es");

@@ -79,7 +79,7 @@ public:
         }
     };
 
-    static PassRefPtr<DateTimeEditElement> create(Document*, EditControlOwner&);
+    static PassRefPtr<DateTimeEditElement> create(Document&, EditControlOwner&);
 
     virtual ~DateTimeEditElement();
     void addField(PassRefPtr<DateTimeFieldElement>);
@@ -119,7 +119,7 @@ private:
     //  8. AM/PM
     static const int maximumNumberOfFields = 8;
 
-    DateTimeEditElement(Document*, EditControlOwner&);
+    DateTimeEditElement(Document&, EditControlOwner&);
 
     DateTimeFieldElement* fieldAt(size_t) const;
     size_t fieldIndexOf(const DateTimeFieldElement&) const;

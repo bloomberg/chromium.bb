@@ -34,7 +34,7 @@ class Path;
 
 class HTMLAreaElement FINAL : public HTMLAnchorElement {
 public:
-    static PassRefPtr<HTMLAreaElement> create(const QualifiedName&, Document*);
+    static PassRefPtr<HTMLAreaElement> create(const QualifiedName&, Document&);
 
     bool isDefault() const { return m_shape == Default; }
 
@@ -47,7 +47,7 @@ public:
     HTMLImageElement* imageElement() const;
 
 private:
-    HTMLAreaElement(const QualifiedName&, Document*);
+    HTMLAreaElement(const QualifiedName&, Document&);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool supportsFocus() const;

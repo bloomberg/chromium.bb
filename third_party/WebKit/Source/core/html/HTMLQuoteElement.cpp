@@ -31,14 +31,14 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLQuoteElement::HTMLQuoteElement(const QualifiedName& tagName, Document* document)
+inline HTMLQuoteElement::HTMLQuoteElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(qTag) || hasTagName(blockquoteTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLQuoteElement> HTMLQuoteElement::create(const QualifiedName& tagName, Document* document)
+PassRefPtr<HTMLQuoteElement> HTMLQuoteElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLQuoteElement(tagName, document));
 }
