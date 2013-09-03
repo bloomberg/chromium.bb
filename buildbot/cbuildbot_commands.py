@@ -558,13 +558,13 @@ def RunHWTestSuite(build, suite, board, pool, num, file_bugs, wait_for_results,
   cmd = [_AUTOTEST_RPC_CLIENT,
          _AUTOTEST_RPC_HOSTNAME,
          'RunSuite',
-         '-i', build,
-         '-s', suite,
-         '-b', board,
-         '-p', pool,
-         '-u', str(num),
-         '-f', str(file_bugs),
-         '-n', str(not wait_for_results)]
+         '--build', build,
+         '--suite_name', suite,
+         '--board', board,
+         '--pool', pool,
+         '--num', str(num),
+         '--file_bugs', str(file_bugs),
+         '--no_wait', str(not wait_for_results)]
   if debug:
     cros_build_lib.Info('RunHWTestSuite would run: %s',
                         ' '.join(map(repr, cmd)))
