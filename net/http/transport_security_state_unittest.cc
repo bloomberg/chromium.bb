@@ -240,7 +240,7 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
 
   EXPECT_TRUE(ShouldRedirect("chrome.google.com"));
   EXPECT_TRUE(ShouldRedirect("checkout.google.com"));
-  EXPECT_TRUE(ShouldRedirect("health.google.com"));
+  EXPECT_TRUE(ShouldRedirect("wallet.google.com"));
   EXPECT_TRUE(ShouldRedirect("docs.google.com"));
   EXPECT_TRUE(ShouldRedirect("sites.google.com"));
   EXPECT_TRUE(ShouldRedirect("drive.google.com"));
@@ -489,7 +489,7 @@ TEST_F(TransportSecurityStateTest, BuiltinCertPins) {
   EXPECT_TRUE(HasPublicKeyPins("sites.google.com"));
   EXPECT_TRUE(HasPublicKeyPins("drive.google.com"));
   EXPECT_TRUE(HasPublicKeyPins("spreadsheets.google.com"));
-  EXPECT_TRUE(HasPublicKeyPins("health.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("wallet.google.com"));
   EXPECT_TRUE(HasPublicKeyPins("checkout.google.com"));
   EXPECT_TRUE(HasPublicKeyPins("appengine.google.com"));
   EXPECT_TRUE(HasPublicKeyPins("market.android.com"));
