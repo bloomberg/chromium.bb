@@ -988,10 +988,8 @@ cr.define('options.network', function() {
       networkList.deleteItem('wimax');
     }
 
-    // Only show VPN control if there is an available network and an internet
-    // connection.
-    if (data.vpnList.length > 0 && (ethernetConnection ||
-        isConnected_(data.wirelessList)))
+    // Only show VPN control if there is at least one VPN configured.
+    if (data.vpnList.length > 0)
       loadData_('vpn', data.vpnList, data.rememberedList);
     else
       networkList.deleteItem('vpn');
@@ -1111,17 +1109,6 @@ cr.define('options.network', function() {
         menu.parentNode.removeChild(menu);
       activeMenu_ = null;
     }
-  }
-
-  /**
-   * Determines if the user is connected to or in the process of connecting to
-   * a wireless network.
-   * @param {Array.<Object>} networkList List of networks.
-   * @return {boolean} True if connected or connecting to a network.
-   * @private
-   */
-  function isConnected_(networkList) {
-    return getConnection_(networkList) != null;
   }
 
   /**

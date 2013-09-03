@@ -87,6 +87,8 @@ class InternetOptionsHandler
   // NetworkStateHandlerObserver
   virtual void NetworkManagerChanged() OVERRIDE;
   virtual void NetworkListChanged() OVERRIDE;
+  virtual void NetworkConnectionStateChanged(
+      const chromeos::NetworkState* network) OVERRIDE;
   virtual void NetworkPropertiesUpdated(
       const chromeos::NetworkState* network) OVERRIDE;
 
@@ -142,6 +144,9 @@ class InternetOptionsHandler
   void FillNetworkInfo(base::DictionaryValue* dictionary);
 
   content::NotificationRegistrar registrar_;
+
+  // Keep track of the service path for the network shown in the Details view.
+  std::string details_path_;
 
   // Weak pointer factory so we can start connections at a later time
   // without worrying that they will actually try to happen after the lifetime

@@ -666,6 +666,12 @@ void PopulateVPNDetails(const NetworkState* vpn,
   SetValueDictionary(dictionary, kTagServerHostname,
                      new base::StringValue(provider_host),
                      hostname_ui_data);
+
+  // Disable 'Connect' for VPN unless connected to a non-VPN network.
+  const NetworkState* connected_network =
+      NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
+          NetworkStateHandler::kMatchTypeNonVirtual);
+  dictionary->SetBoolean(kTagDisableConnectButton, !connected_network);
 }
 
 // Given a list of supported carrier's by the device, return the index of
@@ -1291,6 +1297,16 @@ void InternetOptionsHandler::NetworkListChanged() {
   RefreshNetworkData();
 }
 
+void InternetOptionsHandler::NetworkConnectionStateChanged(
+    const NetworkState* network) {
+  if (!web_ui())
+    return;
+  // Update the connection data for the detailed view when the connection state
+  // of any network changes.
+  if (!details_path_.empty())
+    UpdateConnectionData(details_path_);
+}
+
 void InternetOptionsHandler::NetworkPropertiesUpdated(
     const NetworkState* network) {
   if (!web_ui())
@@ -1469,6 +1485,8 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
     LOG(ERROR) << "Network properties not found: " << service_path;
     return;
   }
+
+  details_path_ = service_path;
 
   onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
   const base::DictionaryValue* onc =
