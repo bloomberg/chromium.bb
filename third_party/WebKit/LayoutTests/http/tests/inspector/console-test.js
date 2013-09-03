@@ -6,6 +6,18 @@ InspectorTest.showConsolePanel = function()
     WebInspector.drawer.immediatelyFinishAnimation();
 }
 
+InspectorTest.prepareConsoleMessageText = function(messageElement)
+{
+    var messageText = messageElement.textContent.replace(/\u200b/g, "");
+    // Replace scriptIds with generic scriptId string to avoid flakiness.
+    messageText = messageText.replace(/\[VM\]\s+\(\d+\)/g, "[VM] (scriptId)");
+    // Strip out InjectedScript from stack traces to avoid rebaselining each time InjectedScriptSource is edited.
+    messageText = messageText.replace(/InjectedScript[\.a-zA-Z_]+ \[VM\] \(scriptId\):\d+/g, "");
+    // The message might be extremely long in case of dumping stack overflow message.
+    messageText = messageText.substring(0, 1024);
+    return messageText;
+}
+
 InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassNames)
 {
     var result = [];
@@ -22,7 +34,8 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
             }
         }
 
-        InspectorTest.addResult(element.textContent.replace(/\u200b/g, "") + (dumpClassNames ? " " + classNames.join(" > ") : ""));
+        var messageText = InspectorTest.prepareConsoleMessageText(element)
+        InspectorTest.addResult(messageText + (dumpClassNames ? " " + classNames.join(" > ") : ""));
         if (printOriginatingCommand && message.originatingCommand) {
             var originatingElement = message.originatingCommand.toMessageElement();
             InspectorTest.addResult("Originating from: " + originatingElement.textContent.replace(/\u200b/g, ""));
@@ -37,7 +50,8 @@ InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
     var indices = WebInspector.consoleView._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
         var element = WebInspector.console.messages[indices[i]].toMessageElement();
-        InspectorTest.addResult(element.textContent.replace(/\u200b/g, ""));
+        var messageText = InspectorTest.prepareConsoleMessageText(element)
+        InspectorTest.addResult(messageText);
         var spans = element.querySelectorAll(".console-message-text > span > span");
         for (var j = 0; j < spans.length; j++)
             InspectorTest.addResult("Styled text #" + j + ": " + (spans[j].style.cssText || "NO STYLES DEFINED"));
@@ -49,7 +63,8 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
     var indices = WebInspector.consoleView._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
         var element = WebInspector.console.messages[indices[i]].toMessageElement();
-        result.push(element.textContent.replace(/\u200b/g, "") + " " + element.getAttribute("class"));
+        var messageText = InspectorTest.prepareConsoleMessageText(element)
+        result.push(messageText + " " + element.getAttribute("class"));
     }
     if (sortMessages)
         result.sort();

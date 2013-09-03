@@ -40,6 +40,7 @@
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/platform/JSONValues.h"
+#include "wtf/text/StringBuilder.h"
 
 #include <v8-debug.h>
 
@@ -49,6 +50,9 @@ class ScriptExecutionContext;
 
 static ScriptCallFrame toScriptCallFrame(v8::Handle<v8::StackFrame> frame)
 {
+    StringBuilder stringBuilder;
+    stringBuilder.appendNumber(frame->GetScriptId());
+    String scriptId = stringBuilder.toString();
     String sourceName;
     v8::Local<v8::String> sourceNameValue(frame->GetScriptNameOrSourceURL());
     if (!sourceNameValue.IsEmpty())
@@ -61,7 +65,7 @@ static ScriptCallFrame toScriptCallFrame(v8::Handle<v8::StackFrame> frame)
 
     int sourceLineNumber = frame->GetLineNumber();
     int sourceColumn = frame->GetColumn();
-    return ScriptCallFrame(functionName, sourceName, sourceLineNumber, sourceColumn);
+    return ScriptCallFrame(functionName, scriptId, sourceName, sourceLineNumber, sourceColumn);
 }
 
 static void toScriptCallFramesVector(v8::Handle<v8::StackTrace> stackTrace, Vector<ScriptCallFrame>& scriptCallFrames, size_t maxStackSize, bool emptyStackIsAllowed)
@@ -78,7 +82,7 @@ static void toScriptCallFramesVector(v8::Handle<v8::StackTrace> stackTrace, Vect
         // Successfully grabbed stack trace, but there are no frames. It may happen in case
         // when a bound function is called from native code for example.
         // Fallback to setting lineNumber to 0, and source and function name to "undefined".
-        scriptCallFrames.append(ScriptCallFrame("undefined", "undefined", 0));
+        scriptCallFrames.append(ScriptCallFrame("undefined", "", "undefined", 0));
     }
 }
 

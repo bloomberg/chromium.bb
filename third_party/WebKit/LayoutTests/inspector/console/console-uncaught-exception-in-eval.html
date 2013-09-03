@@ -4,20 +4,11 @@
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
 
-function test()
-{
-    InspectorTest.reloadPage(function() {
-        InspectorTest.expandConsoleMessages();
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
-    });
-}
-
-function evalSource()
+function evalSource(name)
 {
     function b()
     {
-        throw new Error("Exception in eval.");
+        throw new Error("Exception in eval:" + name);
     }
 
     function a()
@@ -28,7 +19,42 @@ function evalSource()
     a();
 }
 
-eval("(" + evalSource + ")()//# sourceURL=evalURL.js");
+function doEvalWithSourceURL()
+{
+    var source = "(" + evalSource + ")(\"with sourceURL\")//# sourceURL=evalURL.js";
+    setTimeout(eval.bind(this, source), 0);
+}
+
+function doAnonymousEvalWith()
+{
+    var source = "(" + evalSource + ")(\"anonymous\")";
+    setTimeout(eval.bind(this, source), 0);
+}
+
+function test()
+{
+    InspectorTest.evaluateInPage("doEvalWithSourceURL()", step2.bind(this));
+
+    function step2()
+    {
+        InspectorTest.evaluateInPage("doAnonymousEvalWith()", step3.bind(this));
+    }
+
+    function step3()
+    {
+        if (WebInspector.consoleView._visibleMessagesIndices < 2)
+            InspectorTest.addConsoleSniffer(step3);
+        else
+            step4();
+    }
+
+    function step4()
+    {
+        InspectorTest.expandConsoleMessages();
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+}
 
 </script>
 </head>
