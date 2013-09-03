@@ -870,24 +870,12 @@ weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 		return;
 
 	window = hash_table_lookup(wm->window_hash, unmap_notify->window);
-	if (window->repaint_source)
-		wl_event_source_remove(window->repaint_source);
-	if (window->cairo_surface)
-		cairo_surface_destroy(window->cairo_surface);
-
-	if (window->frame_id) {
-		xcb_reparent_window(wm->conn, window->id, wm->wm_window, 0, 0);
-		xcb_destroy_window(wm->conn, window->frame_id);
-		weston_wm_window_set_wm_state(window, ICCCM_WITHDRAWN_STATE);
-		hash_table_remove(wm->window_hash, window->frame_id);
-		window->frame_id = XCB_WINDOW_NONE;
-	}
-
 	if (wm->focus_window == window)
 		wm->focus_window = NULL;
 	if (window->surface)
 		wl_list_remove(&window->surface_destroy_listener.link);
 	window->surface = NULL;
+	xcb_unmap_window(wm->conn, window->frame_id);
 }
 
 static void
@@ -1055,6 +1043,21 @@ weston_wm_window_create(struct weston_wm *wm,
 static void
 weston_wm_window_destroy(struct weston_wm_window *window)
 {
+	struct weston_wm *wm = window->wm;
+
+	if (window->repaint_source)
+		wl_event_source_remove(window->repaint_source);
+	if (window->cairo_surface)
+		cairo_surface_destroy(window->cairo_surface);
+
+	if (window->frame_id) {
+		xcb_reparent_window(wm->conn, window->id, wm->wm_window, 0, 0);
+		xcb_destroy_window(wm->conn, window->frame_id);
+		weston_wm_window_set_wm_state(window, ICCCM_WITHDRAWN_STATE);
+		hash_table_remove(wm->window_hash, window->frame_id);
+		window->frame_id = XCB_WINDOW_NONE;
+	}
+
 	hash_table_remove(window->wm->window_hash, window->id);
 	free(window);
 }
