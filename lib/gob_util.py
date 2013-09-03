@@ -14,6 +14,7 @@ import json
 import logging
 import netrc
 import os
+import time
 import urllib
 from cStringIO import StringIO
 
@@ -22,6 +23,7 @@ try:
 except (IOError, netrc.NetrcParseError):
   NETRC = netrc.netrc(os.devnull)
 LOGGER = logging.getLogger()
+TRY_LIMIT = 5
 
 
 class GOBError(Exception):
@@ -29,6 +31,7 @@ class GOBError(Exception):
   def __init__(self, http_status, *args, **kwargs):
     super(GOBError, self).__init__(*args, **kwargs)
     self.http_status = http_status
+    self.message = '(%d) %s' % (self.http_status, self.message)
 
 
 def _QueryString(param_dict, first_param=None):
@@ -43,7 +46,6 @@ def _QueryString(param_dict, first_param=None):
 
 def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   """Opens an https connection to a gerrit service, and sends a request."""
-  conn = httplib.HTTPSConnection(host)
   headers = headers or {}
   bare_host = host.partition(';')[0]
   auth = NETRC.authenticators(bare_host)
@@ -61,13 +63,52 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
       LOGGER.debug('%s: %s' % (key, val))
     if body:
       LOGGER.debug(body)
-  conn.request(reqtype, '/a/%s' % path, body=body, headers=headers)
+  conn = httplib.HTTPSConnection(host)
+  conn.host = host
+  conn.req_params = {
+      'url': '/a/%s' % path,
+      'method': reqtype,
+      'headers': headers,
+      'body': body,
+  }
+  conn.request(**conn.req_params)
   return conn
 
 
 def ReadHttpResponse(conn, ignore_404=True):
-  """Reads an http response from a connection into a string buffer."""
-  response = conn.getresponse()
+  """Reads an http response from a connection into a string buffer.
+
+  Args:
+    conn: An HTTPSConnection created by CreateHttpConn, above.
+    ignore_404: For many requests, gerrit-on-borg will return 404 if the request
+                doesn't match the database contents.  In most such cases, we
+                want the API to return None rather than raise an Exception.
+  Returns: A string buffer containing the connection's reply.
+  """
+
+  sleep_time = 0.5
+  for idx in range(TRY_LIMIT):
+    response = conn.getresponse()
+    # If response.status < 500 then the result is final; break retry loop.
+    if response.status < 500:
+      break
+    # A status >=500 is assumed to be a possible transient error; retry.
+    http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
+    msg = (
+        'A transient error occured while querying %s:\n'
+        '%s %s %s\n'
+        '%s %d %s' % (
+            conn.host, conn.params['method'], conn.params['url'],
+            http_version, http_version, response.status, response.reason))
+    if TRY_LIMIT - idx > 1:
+      msg += '\n... will retry %d more times.' % (TRY_LIMIT - idx - 1)
+      time.sleep(sleep_time)
+      sleep_time = sleep_time * 2
+      req_params = conn.req_params
+      conn = httplib.HTTPSConnection(conn.host)
+      conn.req_params = req_params
+      conn.request(**req_params)
+    LOGGER.warn(msg)
   if ignore_404 and response.status == 404:
     return StringIO()
   if response.status != 200:
@@ -238,11 +279,16 @@ def RemoveReviewers(host, change, remove=None):
   for r in remove:
     path = 'change/%s/reviewers/%s' % (change, r)
     conn = CreateHttpConn(host, path, reqtype='DELETE')
-    response = conn.getresponse()
-    if response.status != 204:
+    try:
+      ReadHttpResponse(conn, ignore_404=False)
+    except GOBError as e:
+      # On success, gerrit returns status 204; anything else is an error.
+      if e.http_status != 204:
+        raise
+    else:
       raise GOBError(
-          'Unexpectedly received a %d http status while deleting reviewer "%s" '
-          'from change %s' % (response.status, r, change))
+          'Unexpectedly received a 200 http status while deleting reviewer "%s"'
+          ' from change %s' % (r, change))
 
 
 def ResetReviewLabels(host, change, label, value='0', message=None):
