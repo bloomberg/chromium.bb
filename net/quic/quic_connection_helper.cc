@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
@@ -125,6 +126,7 @@ int QuicConnectionHelper::WritePacketToWire(
   if (rv >= 0) {
     *error = 0;
   } else {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.WriteError", -rv);
     *error = rv;
     rv = -1;
   }
