@@ -57,7 +57,7 @@ const Vector<FormAssociatedElement*>& HTMLFormControlsCollection::formControlEle
     ASSERT(ownerNode()->hasTagName(formTag) || ownerNode()->hasTagName(fieldsetTag));
     if (ownerNode()->hasTagName(formTag))
         return toHTMLFormElement(ownerNode())->associatedElements();
-    return static_cast<HTMLFieldSetElement*>(ownerNode())->associatedElements();
+    return toHTMLFieldSetElement(ownerNode())->associatedElements();
 }
 
 const Vector<HTMLImageElement*>& HTMLFormControlsCollection::formImageElements() const

@@ -106,7 +106,7 @@ void HTMLFormControlElement::updateAncestorDisabledState() const
         if (!legendAncestor && ancestor->hasTagName(legendTag))
             legendAncestor = ancestor;
         if (ancestor->hasTagName(fieldsetTag)) {
-            fieldSetAncestor = static_cast<HTMLFieldSetElement*>(ancestor);
+            fieldSetAncestor = toHTMLFieldSetElement(ancestor);
             break;
         }
     }

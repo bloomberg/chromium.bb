@@ -94,7 +94,7 @@ HTMLLegendElement* HTMLFieldSetElement::legend() const
 {
     for (Element* child = ElementTraversal::firstWithin(this); child; child = ElementTraversal::nextSkippingChildren(child, this)) {
         if (child->hasTagName(legendTag))
-            return static_cast<HTMLLegendElement*>(child);
+            return toHTMLLegendElement(child);
     }
     return 0;
 }

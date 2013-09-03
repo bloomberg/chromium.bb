@@ -900,7 +900,7 @@ AccessibilityObject* AccessibilityNodeObject::titleUIElement() const
         return 0;
 
     if (isFieldset())
-        return axObjectCache()->getOrCreate(static_cast<HTMLFieldSetElement*>(node())->legend());
+        return axObjectCache()->getOrCreate(toHTMLFieldSetElement(node())->legend());
 
     HTMLLabelElement* label = labelForElement(toElement(node()));
     if (label)
