@@ -97,12 +97,13 @@ class Runner(object):
     test_name = os.path.basename(test)
     returncode, stdout, duration = self._call(
         [
-          'swarm_trigger_step.py',
-          '--os_image', platform,
-          '--swarm-url', self.swarm_server,
-          '--test-name-prefix', self.prefix,
-          '--data-server', self.isolate_server,
-          '--run_from_hash',
+          'swarming.py',
+          'trigger',
+          '--os', platform,
+          '--swarming', self.swarm_server,
+          '--task-prefix', self.prefix,
+          '--isolate-server', self.isolate_server,
+          '--task',
           # Isolated hash.
           hash_value,
           # Test name.
@@ -126,8 +127,9 @@ class Runner(object):
     name = '%s_%s' % (platform, test_name)
     returncode, stdout, duration = self._call(
         [
-          'swarm_get_results.py',
-          '--url', self.swarm_server,
+          'swarming.py',
+          'collect',
+          '--swarming', self.swarm_server,
           self.prefix + 'swarm_client_tests_' + name,
         ])
     step_name = '%s/%s (%3.2fs)' % (platform, test_name, duration)
