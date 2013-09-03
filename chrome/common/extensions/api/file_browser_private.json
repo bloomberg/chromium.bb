@@ -824,6 +824,57 @@
         ]
       },
       {
+        "name": "startCopy",
+        "description": "Starts to copy an entry. If the source is a directory, the copy is done recursively.",
+        "parameters": [
+          {
+            "name": "sourceUrl",
+            "type": "string",
+            "description": "URL of the source entry to be copied."
+          },
+          {
+            "name": "parent",
+            "type": "string",
+            "description": "URL of the destination directory."
+          },
+          {
+            "name": "newName",
+            "type": "string",
+            "description": "Name of the new entry. It shouldn't contain '/'."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Completion callback.",
+            "parameters": [
+              {
+                "name": "copyId",
+                "type": "integer",
+                "description": "ID of the copy task. Can be used to identify the progress, and to cancel the task."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "cancelCopy",
+        "description": "Cancels the running copy task.",
+        "parameters": [
+          {
+            "name": "copyId",
+            "type": "integer",
+            "description": "ID of the copy task to be cancelled."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "description": "Completion callback of the cancel.",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "setLastModified",
         "description": "Updates last modified to specified time in seconds",
         "parameters": [

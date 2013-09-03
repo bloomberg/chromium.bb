@@ -220,6 +220,38 @@ class FileBrowserPrivateFormatDeviceFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
+// Implements the chrome.fileBrowserPrivate.startCopy method.
+class FileBrowserPrivateStartCopyFunction
+    : public LoggedAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.startCopy",
+                             FILEBROWSERPRIVATE_STARTCOPY)
+
+  FileBrowserPrivateStartCopyFunction();
+
+ protected:
+  virtual ~FileBrowserPrivateStartCopyFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+};
+
+// Implements the chrome.fileBrowserPrivate.cancelCopy method.
+class FileBrowserPrivateCancelCopyFunction
+    : public LoggedAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.cancelCopy",
+                             FILEBROWSERPRIVATE_CANCELCOPY)
+
+  FileBrowserPrivateCancelCopyFunction();
+
+ protected:
+  virtual ~FileBrowserPrivateCancelCopyFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_FILE_SYSTEM_H_

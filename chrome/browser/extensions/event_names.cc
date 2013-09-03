@@ -17,6 +17,7 @@ const char kOnFileBrowserPreferencesChanged[] =
     "fileBrowserPrivate.onPreferencesChanged";
 const char kOnFileBrowserDriveConnectionStatusChanged[] =
     "fileBrowserPrivate.onDriveConnectionStatusChanged";
+const char kOnFileBrowserCopyProgress[] = "fileBrowserPrivate.onCopyProgress";
 
 const char kOnInputMethodChanged[] = "inputMethodPrivate.onChanged";
 

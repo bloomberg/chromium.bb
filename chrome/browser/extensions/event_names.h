@@ -18,6 +18,7 @@ extern const char kOnFileTransfersUpdated[];
 extern const char kOnDocumentFeedFetched[];
 extern const char kOnFileBrowserPreferencesChanged[];
 extern const char kOnFileBrowserDriveConnectionStatusChanged[];
+extern const char kOnFileBrowserCopyProgress[];
 
 // InputMethod.
 extern const char kOnInputMethodChanged[];

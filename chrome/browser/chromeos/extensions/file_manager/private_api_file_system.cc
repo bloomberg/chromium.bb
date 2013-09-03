@@ -629,4 +629,28 @@ bool FileBrowserPrivateFormatDeviceFunction::RunImpl() {
   return true;
 }
 
+FileBrowserPrivateStartCopyFunction::FileBrowserPrivateStartCopyFunction() {
+}
+
+FileBrowserPrivateStartCopyFunction::~FileBrowserPrivateStartCopyFunction() {
+}
+
+bool FileBrowserPrivateStartCopyFunction::RunImpl() {
+  // TODO(hidehiko): Implement startCopy function.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+FileBrowserPrivateCancelCopyFunction::FileBrowserPrivateCancelCopyFunction() {
+}
+
+FileBrowserPrivateCancelCopyFunction::~FileBrowserPrivateCancelCopyFunction() {
+}
+
+bool FileBrowserPrivateCancelCopyFunction::RunImpl() {
+  // TODO(hidehiko): Implement cancelCopy function.
+  NOTIMPLEMENTED();
+  return false;
+}
+
 }  // namespace extensions
