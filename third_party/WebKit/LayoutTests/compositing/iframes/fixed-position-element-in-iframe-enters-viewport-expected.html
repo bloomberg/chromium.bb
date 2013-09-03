@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #iframe-containing-fixed-position-element {
+            background: green;
+            width: 100px;
+            height: 100px;
+        }
+    </style>
+    <script>
+        if (window.testRunner)
+            testRunner.waitUntilDone();
+
+        function runTest()
+        {
+            if (window.testRunner) {
+                testRunner.display();
+                testRunner.notifyDone();
+            }
+        }
+    </script>
+</head>
+<body onload="runTest()">
+    <div id="iframe-containing-fixed-position-element"></div>
+</body>
+</html>
