@@ -91,6 +91,9 @@
         "GeoTrustPrimary",
         "GeoTrustPrimary_G2",
         "GeoTrustPrimary_G3",
+        "DigiCertGlobalRoot",
+        "DigiCertEVRoot",
+        "DigiCertAssuredIDRoot",
         "Twitter1"
       ]
     },
@@ -115,6 +118,9 @@
         "GeoTrustPrimary",
         "GeoTrustPrimary_G2",
         "GeoTrustPrimary_G3",
+        "DigiCertGlobalRoot",
+        "DigiCertEVRoot",
+        "DigiCertAssuredIDRoot",
         "Twitter1",
 
         "Entrust_2048",

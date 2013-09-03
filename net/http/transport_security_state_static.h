@@ -82,6 +82,14 @@ static const char kSPKIHash_DigiCertEVRoot[] =
     "\x83\x31\x7e\x62\x85\x42\x53\xd6\xd7\x78"
     "\x31\x90\xec\x91\x90\x56\xe9\x91\xb9\xe3";
 
+static const char kSPKIHash_DigiCertAssuredIDRoot[] =
+    "\x68\x33\x0e\x61\x35\x85\x21\x59\x29\x83"
+    "\xa3\xc8\xd2\xd2\xe1\x40\x6e\x7a\xb3\xc1";
+
+static const char kSPKIHash_DigiCertGlobalRoot[] =
+    "\xd5\x2e\x13\xc1\xab\xe3\x49\xda\xe8\xb4"
+    "\x95\x94\xef\x7c\x38\x43\x60\x64\x66\xbd";
+
 static const char kSPKIHash_Tor1[] =
     "\x8e\xe3\x71\x49\x3b\xfd\x50\x03\x66\xa4"
     "\x2f\x64\x17\x91\x8a\xa6\x65\x8d\xc7\x76";
@@ -308,6 +316,9 @@ static const char* const kTwitterComAcceptableCerts[] = {
   kSPKIHash_GeoTrustPrimary,
   kSPKIHash_GeoTrustPrimary_G2,
   kSPKIHash_GeoTrustPrimary_G3,
+  kSPKIHash_DigiCertGlobalRoot,
+  kSPKIHash_DigiCertEVRoot,
+  kSPKIHash_DigiCertAssuredIDRoot,
   kSPKIHash_Twitter1,
   NULL,
 };
@@ -335,6 +346,9 @@ static const char* const kTwitterCDNAcceptableCerts[] = {
   kSPKIHash_GeoTrustPrimary,
   kSPKIHash_GeoTrustPrimary_G2,
   kSPKIHash_GeoTrustPrimary_G3,
+  kSPKIHash_DigiCertGlobalRoot,
+  kSPKIHash_DigiCertEVRoot,
+  kSPKIHash_DigiCertAssuredIDRoot,
   kSPKIHash_Twitter1,
   kSPKIHash_Entrust_2048,
   kSPKIHash_Entrust_EV,
