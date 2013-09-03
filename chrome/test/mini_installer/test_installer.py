@@ -182,11 +182,15 @@ def RunTests(config):
 
   Args:
     config: A Config object.
+
+  Returns:
+    True if all the tests passed, or False otherwise.
   """
   suite = unittest.TestSuite()
   for test in config.tests:
     suite.addTest(InstallerTest(test, config))
-  unittest.TextTestRunner(verbosity=2).run(suite)
+  result = unittest.TextTestRunner(verbosity=2).run(suite)
+  return result.wasSuccessful()
 
 
 def main():
@@ -197,7 +201,8 @@ def main():
     parser.error('Incorrect number of arguments.')
 
   config = ParseConfigFile(args[0])
-  RunTests(config)
+  if not RunTests(config):
+    return 1
   return 0
 
 
