@@ -43,4 +43,19 @@ if sys.platform == 'darwin':
       'resource_bundle.bundle/Contents/MacOS/resource_bundle',
       chdir='sourceless-module')
 
+  # TODO(thakis): shared_libraries that have no sources but depend on static
+  # libraries currently only work with the ninja generator.  This is used by
+  # chrome/mac's components build.
+  if test.format == 'ninja':
+    # Check that an executable depending on a resource framework links fine too.
+    test.build(
+       'test.gyp', 'dependent_on_resource_framework', chdir='sourceless-module')
+
+    test.built_file_must_exist(
+        'resource_framework.framework/Resources/foo.manifest',
+        chdir='sourceless-module')
+    test.built_file_must_exist(
+        'resource_framework.framework/resource_framework',
+        chdir='sourceless-module')
+
   test.pass_test()

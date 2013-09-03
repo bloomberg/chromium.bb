@@ -1073,10 +1073,14 @@ class NinjaWriter:
     return linked_binary
 
   def WriteTarget(self, spec, config_name, config, link_deps, compile_deps):
-    if spec['type'] == 'none' or not link_deps:
+    extra_link_deps = any(self.target_outputs.get(dep).Linkable()
+                          for dep in spec.get('dependencies', [])
+                          if dep in self.target_outputs)
+    if spec['type'] == 'none' or (not link_deps and not extra_link_deps):
       # TODO(evan): don't call this function for 'none' target types, as
       # it doesn't do anything, and we fake out a 'binary' with a stamp file.
       self.target.binary = compile_deps
+      self.target.type = 'none'
     elif spec['type'] == 'static_library':
       self.target.binary = self.ComputeOutput(spec)
       if (self.flavor not in ('mac', 'openbsd', 'win') and not
