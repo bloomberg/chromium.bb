@@ -32,14 +32,14 @@ namespace WebCore {
 
 class TextDocumentParser : public HTMLDocumentParser {
 public:
-    static PassRefPtr<TextDocumentParser> create(Document* document)
+    static PassRefPtr<TextDocumentParser> create(HTMLDocument* document)
     {
         return adoptRef(new TextDocumentParser(document));
     }
     virtual ~TextDocumentParser();
 
 private:
-    explicit TextDocumentParser(Document*);
+    explicit TextDocumentParser(HTMLDocument*);
 
     virtual void append(PassRefPtr<StringImpl>);
     void insertFakePreElement();

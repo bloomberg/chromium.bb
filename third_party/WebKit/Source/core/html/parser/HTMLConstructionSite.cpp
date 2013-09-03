@@ -206,7 +206,7 @@ HTMLConstructionSite::HTMLConstructionSite(Document* document, ParserContentPoli
     , m_redirectAttachToFosterParent(false)
     , m_inQuirksMode(document->inQuirksMode())
 {
-    ASSERT(m_document->isHTMLDocument() || m_document->isSVGDocument() || m_document->isXHTMLDocument());
+    ASSERT(m_document->isHTMLDocument() || m_document->isXHTMLDocument());
 }
 
 HTMLConstructionSite::HTMLConstructionSite(DocumentFragment* fragment, ParserContentPolicy parserContentPolicy)
@@ -217,7 +217,7 @@ HTMLConstructionSite::HTMLConstructionSite(DocumentFragment* fragment, ParserCon
     , m_redirectAttachToFosterParent(false)
     , m_inQuirksMode(fragment->document().inQuirksMode())
 {
-    ASSERT(m_document->isHTMLDocument() || m_document->isSVGDocument() || m_document->isXHTMLDocument());
+    ASSERT(m_document->isHTMLDocument() || m_document->isXHTMLDocument());
 }
 
 HTMLConstructionSite::~HTMLConstructionSite()

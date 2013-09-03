@@ -35,6 +35,7 @@
 #include "XMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DocumentFragment.h"
+#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLOptGroupElement.h"
@@ -272,7 +273,7 @@ private:
     unsigned m_end;
 };
 
-HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, Document* document, ParserContentPolicy parserContentPolicy, bool, const HTMLParserOptions& options)
+HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, HTMLDocument* document, ParserContentPolicy parserContentPolicy, bool, const HTMLParserOptions& options)
     : m_framesetOk(true)
 #ifndef NDEBUG
     , m_isAttached(true)

@@ -29,6 +29,7 @@
 #include "HTMLNames.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
+#include "core/html/HTMLDocument.h"
 #include "core/html/parser/AtomicHTMLToken.h"
 #include "core/html/parser/BackgroundHTMLParser.h"
 #include "core/html/parser/CompactHTMLToken.h"
@@ -73,7 +74,7 @@ static HTMLTokenizer::State tokenizerStateForContextElement(Element* contextElem
     return HTMLTokenizer::DataState;
 }
 
-HTMLDocumentParser::HTMLDocumentParser(Document* document, bool reportErrors)
+HTMLDocumentParser::HTMLDocumentParser(HTMLDocument* document, bool reportErrors)
     : ScriptableDocumentParser(document)
     , m_options(document)
     , m_token(m_options.useThreading ? nullptr : adoptPtr(new HTMLToken))
