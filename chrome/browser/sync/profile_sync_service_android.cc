@@ -35,7 +35,6 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "grit/generated_resources.h"
 #include "jni/ProfileSyncService_jni.h"
-#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "ui/base/l10n/l10n_util.h"
 

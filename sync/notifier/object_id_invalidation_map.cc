@@ -90,35 +90,4 @@ bool ObjectIdInvalidationMapFromValue(const base::ListValue& value,
   return true;
 }
 
-ModelTypeInvalidationMap ObjectIdInvalidationMapToModelTypeInvalidationMap(
-    const ObjectIdInvalidationMap& invalidation_map) {
-  ModelTypeInvalidationMap type_invalidation_map;
-  for (ObjectIdInvalidationMap::const_iterator it = invalidation_map.begin();
-       it != invalidation_map.end(); ++it) {
-    ModelType model_type;
-    if (!ObjectIdToRealModelType(it->first, &model_type)) {
-      DLOG(WARNING) << "Invalid object ID: "
-                    << ObjectIdToString(it->first);
-      continue;
-    }
-    type_invalidation_map[model_type] = it->second;
-  }
-  return type_invalidation_map;
-}
-
-ObjectIdInvalidationMap ModelTypeInvalidationMapToObjectIdInvalidationMap(
-    const ModelTypeInvalidationMap& invalidation_map) {
-  ObjectIdInvalidationMap id_invalidation_map;
-  for (ModelTypeInvalidationMap::const_iterator it = invalidation_map.begin();
-       it != invalidation_map.end(); ++it) {
-    invalidation::ObjectId id;
-    if (!RealModelTypeToObjectId(it->first, &id)) {
-      DLOG(WARNING) << "Invalid model type " << it->first;
-      continue;
-    }
-    id_invalidation_map[id] = it->second;
-  }
-  return id_invalidation_map;
-}
-
 }  // namespace syncer

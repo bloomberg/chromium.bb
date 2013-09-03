@@ -251,8 +251,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
 
   // Called for every notification. This updates the notification statistics
   // to be displayed in about:sync.
-  void UpdateNotificationInfo(
-      const ModelTypeInvalidationMap& invalidation_map);
+  void UpdateNotificationInfo(const ObjectIdInvalidationMap& invalidation_map);
 
   // Checks for server reachabilty and requests a nudge.
   void OnNetworkConnectivityChangedImpl();

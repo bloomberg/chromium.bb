@@ -8,7 +8,6 @@
 
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/invalidator_test_template.h"
 #include "sync/notifier/object_id_invalidation_map_test_util.h"
@@ -96,8 +95,12 @@ class P2PInvalidatorTest : public testing::Test {
     delegate_.GetInvalidator()->UnregisterHandler(&fake_handler_);
   }
 
-  ModelTypeInvalidationMap MakeInvalidationMap(ModelTypeSet types) {
-    return ModelTypeSetToInvalidationMap(types, std::string());
+  ObjectIdInvalidationMap MakeInvalidationMap(ModelTypeSet types) {
+    ObjectIdInvalidationMap invalidations;
+    ObjectIdSet ids = ModelTypeSetToObjectIdSet(types);
+    return ObjectIdSetToInvalidationMap(ids,
+                                        Invalidation::kUnknownVersion,
+                                        std::string());
   }
 
   // Simulate receiving all the notifications we sent out since last
@@ -240,8 +243,7 @@ TEST_F(P2PInvalidatorTest, NotificationsBasic) {
   ReflectSentNotifications();
   EXPECT_EQ(1, fake_handler_.GetInvalidationCount());
   EXPECT_THAT(
-      ModelTypeInvalidationMapToObjectIdInvalidationMap(
-          MakeInvalidationMap(enabled_types)),
+      MakeInvalidationMap(enabled_types),
       Eq(fake_handler_.GetLastInvalidationMap()));
 
   // Sent with target NOTIFY_OTHERS so should not be propagated to
@@ -286,10 +288,8 @@ TEST_F(P2PInvalidatorTest, SendNotificationData) {
 
   ReflectSentNotifications();
   EXPECT_EQ(1, fake_handler_.GetInvalidationCount());
-  EXPECT_THAT(
-      ModelTypeInvalidationMapToObjectIdInvalidationMap(
-          MakeInvalidationMap(enabled_types)),
-      Eq(fake_handler_.GetLastInvalidationMap()));
+  EXPECT_THAT(MakeInvalidationMap(enabled_types),
+              Eq(fake_handler_.GetLastInvalidationMap()));
 
   // Should be dropped.
   invalidator->SendNotificationDataForTest(P2PNotificationData());
@@ -297,8 +297,7 @@ TEST_F(P2PInvalidatorTest, SendNotificationData) {
   EXPECT_EQ(1, fake_handler_.GetInvalidationCount());
 
   const ObjectIdInvalidationMap& expected_ids =
-      ModelTypeInvalidationMapToObjectIdInvalidationMap(
-          MakeInvalidationMap(expected_types));
+      MakeInvalidationMap(expected_types);
 
   // Should be propagated.
   invalidator->SendNotificationDataForTest(

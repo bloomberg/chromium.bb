@@ -23,7 +23,6 @@
 #include "sync/engine/nudge_source.h"
 #include "sync/engine/sync_scheduler.h"
 #include "sync/engine/syncer.h"
-#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/sessions/nudge_tracker.h"
@@ -66,7 +65,7 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
       const tracked_objects::Location& nudge_location) OVERRIDE;
   virtual void ScheduleInvalidationNudge(
       const base::TimeDelta& desired_delay,
-      const ModelTypeInvalidationMap& invalidation_map,
+      const ObjectIdInvalidationMap& invalidation_map,
       const tracked_objects::Location& nudge_location) OVERRIDE;
   virtual void SetNotificationsEnabled(bool notifications_enabled) OVERRIDE;
 

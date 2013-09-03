@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "sync/engine/download.h"
+#include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/nudge_tracker.h"
 #include "sync/test/engine/fake_model_worker.h"
@@ -78,14 +79,11 @@ TEST_F(DownloadUpdatesTest, ExecuteNoStates) {
 TEST_F(DownloadUpdatesTest, ExecuteWithStates) {
   sessions::NudgeTracker nudge_tracker;
   nudge_tracker.RecordRemoteInvalidation(
-      ModelTypeSetToInvalidationMap(ModelTypeSet(AUTOFILL),
-                                    "autofill_payload"));
+      BuildInvalidationMap(AUTOFILL, 1, "autofill_payload"));
   nudge_tracker.RecordRemoteInvalidation(
-      ModelTypeSetToInvalidationMap(ModelTypeSet(BOOKMARKS),
-                                    "bookmark_payload"));
+      BuildInvalidationMap(BOOKMARKS, 1, "bookmark_payload"));
   nudge_tracker.RecordRemoteInvalidation(
-      ModelTypeSetToInvalidationMap(ModelTypeSet(PREFERENCES),
-                                    "preferences_payload"));
+      BuildInvalidationMap(PREFERENCES, 1, "preferences_payload"));
   ModelTypeSet notified_types;
   notified_types.Put(AUTOFILL);
   notified_types.Put(BOOKMARKS);

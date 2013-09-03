@@ -30,7 +30,7 @@ void FakeSyncScheduler::ScheduleLocalRefreshRequest(
 
 void FakeSyncScheduler::ScheduleInvalidationNudge(
     const base::TimeDelta& desired_delay,
-    const ModelTypeInvalidationMap& invalidation_map,
+    const ObjectIdInvalidationMap& invalidation_map,
     const tracked_objects::Location& nudge_location) {
 }
 

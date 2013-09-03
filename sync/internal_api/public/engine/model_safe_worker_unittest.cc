@@ -48,21 +48,5 @@ TEST_F(ModelSafeWorkerTest, GetRoutingInfoTypes) {
   EXPECT_TRUE(GetRoutingInfoTypes(routing_info).Equals(expected_types));
 }
 
-TEST_F(ModelSafeWorkerTest, ModelSafeRoutingInfoToInvalidationMap) {
-  std::string payload = "test";
-  ModelSafeRoutingInfo routing_info;
-  routing_info[BOOKMARKS] = GROUP_PASSIVE;
-  routing_info[NIGORI] = GROUP_UI;
-  routing_info[PREFERENCES] = GROUP_DB;
-  ModelTypeInvalidationMap invalidation_map =
-      ModelSafeRoutingInfoToInvalidationMap(routing_info, payload);
-  ASSERT_EQ(routing_info.size(), invalidation_map.size());
-  for (ModelSafeRoutingInfo::iterator iter = routing_info.begin();
-       iter != routing_info.end();
-       ++iter) {
-    EXPECT_EQ(payload, invalidation_map[iter->first].payload);
-  }
-}
-
 }  // namespace
 }  // namespace syncer

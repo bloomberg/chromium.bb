@@ -23,7 +23,6 @@
 #include "net/http/transport_security_state.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidation_util.h"
@@ -61,13 +60,11 @@ class NotificationPrinter : public InvalidationHandler {
 
   virtual void OnIncomingInvalidation(
       const ObjectIdInvalidationMap& invalidation_map) OVERRIDE {
-    const ModelTypeInvalidationMap& type_invalidation_map =
-        ObjectIdInvalidationMapToModelTypeInvalidationMap(invalidation_map);
-    for (ModelTypeInvalidationMap::const_iterator it =
-             type_invalidation_map.begin(); it != type_invalidation_map.end();
-         ++it) {
-      LOG(INFO) << "Remote invalidation: type = "
-                << ModelTypeToString(it->first)
+    for (ObjectIdInvalidationMap::const_iterator it = invalidation_map.begin();
+         it != invalidation_map.end(); ++it) {
+      LOG(INFO) << "Remote invalidation: id = "
+                << ObjectIdToString(it->first)
+                << ", version = " << it->second.version
                 << ", payload = " << it->second.payload;
     }
   }

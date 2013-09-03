@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/sessions/nudge_tracker.h"
-
-#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -92,9 +91,8 @@ TEST_F(NudgeTrackerTest, SourcePriorities) {
             nudge_tracker.updates_source());
 
   // An invalidation will override the refresh request source.
-  ModelTypeInvalidationMap invalidation_map =
-      ModelTypeSetToInvalidationMap(ModelTypeSet(PREFERENCES),
-                                    std::string("hint"));
+  ObjectIdInvalidationMap invalidation_map =
+      BuildInvalidationMap(PREFERENCES, 1, "hint");
   nudge_tracker.RecordRemoteInvalidation(invalidation_map);
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::NOTIFICATION,
             nudge_tracker.updates_source());
@@ -113,9 +111,8 @@ TEST_F(NudgeTrackerTest, HintCoalescing) {
 
   // Easy case: record one hint.
   {
-    ModelTypeInvalidationMap invalidation_map =
-        ModelTypeSetToInvalidationMap(ModelTypeSet(BOOKMARKS),
-                                      std::string("bm_hint_1"));
+    ObjectIdInvalidationMap invalidation_map =
+        BuildInvalidationMap(BOOKMARKS, 1, "bm_hint_1");
     nudge_tracker.RecordRemoteInvalidation(invalidation_map);
 
     sync_pb::GetUpdateTriggers gu_trigger;
@@ -127,9 +124,8 @@ TEST_F(NudgeTrackerTest, HintCoalescing) {
 
   // Record a second hint for the same type.
   {
-    ModelTypeInvalidationMap invalidation_map =
-        ModelTypeSetToInvalidationMap(ModelTypeSet(BOOKMARKS),
-                                      std::string("bm_hint_2"));
+    ObjectIdInvalidationMap invalidation_map =
+        BuildInvalidationMap(BOOKMARKS, 2, "bm_hint_2");
     nudge_tracker.RecordRemoteInvalidation(invalidation_map);
 
     sync_pb::GetUpdateTriggers gu_trigger;
@@ -144,9 +140,8 @@ TEST_F(NudgeTrackerTest, HintCoalescing) {
 
   // Record a hint for a different type.
   {
-    ModelTypeInvalidationMap invalidation_map =
-        ModelTypeSetToInvalidationMap(ModelTypeSet(PASSWORDS),
-                                      std::string("pw_hint_1"));
+    ObjectIdInvalidationMap invalidation_map =
+        BuildInvalidationMap(PASSWORDS, 1, "pw_hint_1");
     nudge_tracker.RecordRemoteInvalidation(invalidation_map);
 
     // Re-verify the bookmarks to make sure they're unaffected.
@@ -169,9 +164,8 @@ TEST_F(NudgeTrackerTest, HintCoalescing) {
 
 TEST_F(NudgeTrackerTest, DropHintsLocally) {
   NudgeTracker nudge_tracker;
-  ModelTypeInvalidationMap invalidation_map =
-      ModelTypeSetToInvalidationMap(ModelTypeSet(BOOKMARKS),
-                                    std::string("hint"));
+  ObjectIdInvalidationMap invalidation_map =
+      BuildInvalidationMap(BOOKMARKS, 1, "hint");
 
   for (size_t i = 0; i < GetHintBufferSize(); ++i) {
     nudge_tracker.RecordRemoteInvalidation(invalidation_map);
@@ -185,9 +179,8 @@ TEST_F(NudgeTrackerTest, DropHintsLocally) {
   }
 
   // Force an overflow.
-  ModelTypeInvalidationMap invalidation_map2 =
-      ModelTypeSetToInvalidationMap(ModelTypeSet(BOOKMARKS),
-                                    std::string("new_hint"));
+  ObjectIdInvalidationMap invalidation_map2 =
+      BuildInvalidationMap(BOOKMARKS, 1000, "new_hint");
   nudge_tracker.RecordRemoteInvalidation(invalidation_map2);
 
   {
@@ -290,9 +283,8 @@ TEST_F(NudgeTrackerTest, IsSyncRequired) {
   EXPECT_FALSE(nudge_tracker.IsSyncRequired());
 
   // Invalidations.
-  ModelTypeInvalidationMap invalidation_map =
-      ModelTypeSetToInvalidationMap(ModelTypeSet(PREFERENCES),
-                                    std::string("hint"));
+  ObjectIdInvalidationMap invalidation_map =
+      BuildInvalidationMap(PREFERENCES, 1, "hint");
   nudge_tracker.RecordRemoteInvalidation(invalidation_map);
   EXPECT_TRUE(nudge_tracker.IsSyncRequired());
   nudge_tracker.RecordSuccessfulSyncCycle();
@@ -317,9 +309,8 @@ TEST_F(NudgeTrackerTest, IsGetUpdatesRequired) {
   EXPECT_FALSE(nudge_tracker.IsGetUpdatesRequired());
 
   // Invalidations.
-  ModelTypeInvalidationMap invalidation_map =
-      ModelTypeSetToInvalidationMap(ModelTypeSet(PREFERENCES),
-                                    std::string("hint"));
+  ObjectIdInvalidationMap invalidation_map =
+      BuildInvalidationMap(PREFERENCES, 1, "hint");
   nudge_tracker.RecordRemoteInvalidation(invalidation_map);
   EXPECT_TRUE(nudge_tracker.IsGetUpdatesRequired());
   nudge_tracker.RecordSuccessfulSyncCycle();

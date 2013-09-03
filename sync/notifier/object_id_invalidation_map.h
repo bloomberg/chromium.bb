@@ -13,7 +13,6 @@
 #include "google/cacheinvalidation/include/types.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/invalidation.h"
-#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/notifier/invalidation_util.h"
 
 namespace base {
@@ -41,14 +40,6 @@ scoped_ptr<base::ListValue> ObjectIdInvalidationMapToValue(
 
 bool ObjectIdInvalidationMapFromValue(const base::ListValue& value,
                                ObjectIdInvalidationMap* out);
-
-// Converts between ObjectIdInvalidationMaps and ModelTypeInvalidationMaps.
-SYNC_EXPORT_PRIVATE ModelTypeInvalidationMap
-    ObjectIdInvalidationMapToModelTypeInvalidationMap(
-        const ObjectIdInvalidationMap& invalidation_map);
-SYNC_EXPORT ObjectIdInvalidationMap
-    ModelTypeInvalidationMapToObjectIdInvalidationMap(
-        const ModelTypeInvalidationMap& invalidation_map);
 
 }  // namespace syncer
 

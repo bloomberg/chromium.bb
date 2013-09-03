@@ -6,6 +6,8 @@
 
 #include "base/basictypes.h"
 #include "sync/internal_api/public/base/invalidation.h"
+#include "sync/notifier/invalidation_util.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -91,15 +93,19 @@ void NudgeTracker::RecordLocalRefreshRequest(ModelTypeSet types) {
 }
 
 void NudgeTracker::RecordRemoteInvalidation(
-    const ModelTypeInvalidationMap& invalidation_map) {
+    const ObjectIdInvalidationMap& invalidation_map) {
   updates_source_ = sync_pb::GetUpdatesCallerInfo::NOTIFICATION;
 
-  for (ModelTypeInvalidationMap::const_iterator i = invalidation_map.begin();
-       i != invalidation_map.end(); ++i) {
-    const ModelType type = i->first;
-    const std::string& payload = i->second.payload;
+  for (ObjectIdInvalidationMap::const_iterator it = invalidation_map.begin();
+       it != invalidation_map.end(); ++it) {
+    ModelType type;
+    if (!ObjectIdToRealModelType(it->first, &type)) {
+      NOTREACHED()
+          << "Object ID " << ObjectIdToString(it->first)
+          << " does not map to valid model type";
+    }
     DCHECK(type_trackers_.find(type) != type_trackers_.end());
-    type_trackers_[type].RecordRemoteInvalidation(payload);
+    type_trackers_[type].RecordRemoteInvalidation(it->second.payload);
   }
 }
 

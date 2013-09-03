@@ -64,9 +64,11 @@
             'sync_core.gypi',
           ],
           'dependencies': [
+            'sync_notifier',
             'sync_proto',
           ],
           'export_dependent_settings': [
+            'sync_notifier',
             'sync_proto',
           ],
         },
@@ -97,9 +99,6 @@
           'variables': { 'enable_wexit_time_destructors': 1, },
           'includes': [
             'sync_notifier.gypi',
-          ],
-          'dependencies': [
-            'sync_core',
           ],
         },
 

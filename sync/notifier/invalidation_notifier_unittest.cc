@@ -11,7 +11,6 @@
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/fake_invalidation_state_tracker.h"

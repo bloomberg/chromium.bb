@@ -36,8 +36,6 @@
     'internal_api/public/base/invalidation.cc',
     'internal_api/public/base/invalidation.h',
     'internal_api/public/base/model_type.h',
-    'internal_api/public/base/model_type_invalidation_map.cc',
-    'internal_api/public/base/model_type_invalidation_map.h',
     'internal_api/public/base/node_ordinal.cc',
     'internal_api/public/base/node_ordinal.h',
     'internal_api/public/base/ordinal.h',

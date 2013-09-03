@@ -11,7 +11,6 @@
 #include "sync/engine/store_timestamps_command.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
-#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/sessions/nudge_tracker.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/nigori_handler.h"

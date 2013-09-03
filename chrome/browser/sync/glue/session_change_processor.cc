@@ -23,7 +23,6 @@
 #include "content/public/browser/web_contents.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/protocol/session_specifics.pb.h"

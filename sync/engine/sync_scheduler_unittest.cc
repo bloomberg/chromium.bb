@@ -11,6 +11,9 @@
 #include "sync/engine/backoff_delay_provider.h"
 #include "sync/engine/sync_scheduler_impl.h"
 #include "sync/engine/syncer.h"
+#include "sync/internal_api/public/base/model_type_test_util.h"
+#include "sync/notifier/invalidation_util.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/sessions/test_util.h"
 #include "sync/test/callback_counter.h"
 #include "sync/test/engine/fake_model_worker.h"
@@ -450,28 +453,26 @@ TEST_F(SyncSchedulerTest, NudgeCoalescingWithDifferentTimings) {
 TEST_F(SyncSchedulerTest, NudgeWithStates) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
-  SyncShareTimes times;
-  const ModelTypeSet types(BOOKMARKS);
-  ModelTypeInvalidationMap invalidation_map =
-      ModelTypeSetToInvalidationMap(types, "test");
-
+  SyncShareTimes times1;
+  ObjectIdInvalidationMap invalidations1 =
+      BuildInvalidationMap(BOOKMARKS, 10, "test");
   EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
-                      RecordSyncShare(&times)))
+                      RecordSyncShare(&times1)))
       .RetiresOnSaturation();
-  scheduler()->ScheduleInvalidationNudge(zero(), invalidation_map, FROM_HERE);
+  scheduler()->ScheduleInvalidationNudge(zero(), invalidations1, FROM_HERE);
   RunLoop();
 
   Mock::VerifyAndClearExpectations(syncer());
 
   // Make sure a second, later, nudge is unaffected by first (no coalescing).
   SyncShareTimes times2;
-  invalidation_map.erase(BOOKMARKS);
-  invalidation_map[AUTOFILL].payload = "test2";
+  ObjectIdInvalidationMap invalidations2 =
+      BuildInvalidationMap(AUTOFILL, 10, "test2");
   EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
                       RecordSyncShare(&times2)));
-  scheduler()->ScheduleInvalidationNudge(zero(), invalidation_map, FROM_HERE);
+  scheduler()->ScheduleInvalidationNudge(zero(), invalidations2, FROM_HERE);
   RunLoop();
 }
 
@@ -749,9 +750,9 @@ TEST_F(SyncSchedulerTest, TypeThrottlingDoesBlockOtherSources) {
   EXPECT_TRUE(GetThrottledTypes().HasAll(throttled_types));
 
   // Ignore invalidations for throttled types.
-  ModelTypeInvalidationMap invalidation_map =
-      ModelTypeSetToInvalidationMap(throttled_types, "test");
-  scheduler()->ScheduleInvalidationNudge(zero(), invalidation_map, FROM_HERE);
+  ObjectIdInvalidationMap invalidations =
+      BuildInvalidationMap(BOOKMARKS, 10, "test");
+  scheduler()->ScheduleInvalidationNudge(zero(), invalidations, FROM_HERE);
   PumpLoop();
 
   // Ignore refresh requests for throttled types.

@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_invalidation_map_test_util.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/syncable_id.h"
 #include "sync/syncable/syncable_write_transaction.h"
@@ -179,25 +178,6 @@ TEST_F(SyncSessionTest, MoreToDownloadIfGotNoChangesRemaining) {
       ->set_changes_remaining(0);
   EXPECT_TRUE(status()->ServerSaysNothingMoreToDownload());
   EXPECT_TRUE(status()->download_updates_succeeded());
-}
-
-TEST_F(SyncSessionTest, MakeTypeInvalidationMapFromBitSet) {
-  ModelTypeSet types;
-  std::string payload = "test";
-  ModelTypeInvalidationMap invalidation_map =
-      ModelTypeSetToInvalidationMap(types, payload);
-  EXPECT_TRUE(invalidation_map.empty());
-
-  types.Put(BOOKMARKS);
-  types.Put(PASSWORDS);
-  types.Put(AUTOFILL);
-  payload = "test2";
-  invalidation_map = ModelTypeSetToInvalidationMap(types, payload);
-
-  ASSERT_EQ(3U, invalidation_map.size());
-  EXPECT_EQ(invalidation_map[BOOKMARKS].payload, payload);
-  EXPECT_EQ(invalidation_map[PASSWORDS].payload, payload);
-  EXPECT_EQ(invalidation_map[AUTOFILL].payload, payload);
 }
 
 }  // namespace
