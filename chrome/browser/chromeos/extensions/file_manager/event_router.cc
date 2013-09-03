@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/mounted_disk_monitor.h"
 #include "chrome/browser/chromeos/extensions/file_manager/open_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/drive/drive_service_interface.h"
@@ -244,6 +245,10 @@ void EventRouter::Shutdown() {
     return;
   }
 
+  VolumeManager* volume_manager = VolumeManager::Get(profile_);
+  if (volume_manager)
+    volume_manager->RemoveObserver(this);
+
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   if (disk_mount_manager)
     disk_mount_manager->RemoveObserver(this);
@@ -313,6 +318,10 @@ void EventRouter::ObserveFileSystemEvents() {
   pref_change_registrar_->Add(prefs::kDisableDriveHostedFiles, callback);
   pref_change_registrar_->Add(prefs::kDisableDrive, callback);
   pref_change_registrar_->Add(prefs::kUse24HourClock, callback);
+
+  VolumeManager* volume_manager = VolumeManager::Get(profile_);
+  if (volume_manager)
+    volume_manager->AddObserver(this);
 }
 
 // File watch setup routines.
@@ -395,15 +404,7 @@ void EventRouter::OnDiskEvent(DiskMountManager::DiskEvent event,
 
 void EventRouter::OnDeviceEvent(DiskMountManager::DeviceEvent event,
                                 const std::string& device_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (event == DiskMountManager::DEVICE_ADDED) {
-    OnDeviceAdded(device_path);
-  } else if (event == DiskMountManager::DEVICE_REMOVED) {
-    OnDeviceRemoved(device_path);
-  } else if (event == DiskMountManager::DEVICE_SCANNED) {
-    OnDeviceScanned(device_path);
-  }
+  // Device event is dispatched by VolumeManager now. Do nothing.
 }
 
 void EventRouter::OnMountEvent(
@@ -804,10 +805,8 @@ void EventRouter::OnDiskRemoved(const DiskMountManager::Disk* disk) {
 void EventRouter::OnDeviceAdded(const std::string& device_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  VLOG(1) << "Device added : " << device_path;
-
-  // If the policy is set instead of showing the new device notification we show
-  // a notification that the operation is not permitted.
+  // If the policy is set instead of showing the new device notification,
+  // we show a notification that the operation is not permitted.
   if (profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
     notifications_->ShowNotification(
         DesktopNotifications::DEVICE_EXTERNAL_STORAGE_DISABLED,
@@ -824,17 +823,11 @@ void EventRouter::OnDeviceAdded(const std::string& device_path) {
 void EventRouter::OnDeviceRemoved(const std::string& device_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  VLOG(1) << "Device removed : " << device_path;
   notifications_->HideNotification(DesktopNotifications::DEVICE,
                                    device_path);
   notifications_->HideNotification(DesktopNotifications::DEVICE_FAIL,
                                    device_path);
   notifications_->UnregisterDevice(device_path);
-}
-
-void EventRouter::OnDeviceScanned(const std::string& device_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(1) << "Device scanned : " << device_path;
 }
 
 void EventRouter::OnFormatStarted(const std::string& device_path,

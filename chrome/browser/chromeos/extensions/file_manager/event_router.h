@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_watcher.h"
+#include "chrome/browser/chromeos/extensions/file_manager/volume_manager_observer.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -38,7 +39,8 @@ class EventRouter
       public drive::DriveIntegrationServiceObserver,
       public drive::FileSystemObserver,
       public drive::JobListObserver,
-      public drive::DriveServiceObserver {
+      public drive::DriveServiceObserver,
+      public VolumeManagerObserver {
  public:
   explicit EventRouter(Profile* profile);
   virtual ~EventRouter();
@@ -64,7 +66,7 @@ class EventRouter
   void RemoveFileWatch(const base::FilePath& local_path,
                        const std::string& extension_id);
 
-  // CrosDisksClient::Observer overrides.
+  // DiskMountManager::Observer overrides.
   virtual void OnDiskEvent(
       chromeos::disks::DiskMountManager::DiskEvent event,
       const chromeos::disks::DiskMountManager::Disk* disk) OVERRIDE;
@@ -103,6 +105,10 @@ class EventRouter
   virtual void OnFileSystemMounted() OVERRIDE;
   virtual void OnFileSystemBeingUnmounted() OVERRIDE;
 
+  // VolumeManagerObserver overrides.
+  virtual void OnDeviceAdded(const std::string& device_path) OVERRIDE;
+  virtual void OnDeviceRemoved(const std::string& device_path) OVERRIDE;
+
  private:
   typedef std::map<base::FilePath, FileWatcher*> WatcherMap;
 
@@ -111,9 +117,6 @@ class EventRouter
   void OnDiskRemoved(const chromeos::disks::DiskMountManager::Disk* disk);
   void OnDiskMounted(const chromeos::disks::DiskMountManager::Disk* disk);
   void OnDiskUnmounted(const chromeos::disks::DiskMountManager::Disk* disk);
-  void OnDeviceAdded(const std::string& device_path);
-  void OnDeviceRemoved(const std::string& device_path);
-  void OnDeviceScanned(const std::string& device_path);
   void OnFormatStarted(const std::string& device_path, bool success);
   void OnFormatCompleted(const std::string& device_path, bool success);
 

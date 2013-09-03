@@ -9,89 +9,42 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "chrome/browser/chromeos/extensions/file_manager/volume_manager_factory.h"
+#include "chrome/browser/chromeos/extensions/file_manager/volume_manager_observer.h"
+#include "chromeos/dbus/cros_disks_client.h"
+#include "chromeos/disks/disk_mount_manager.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace file_manager {
 namespace {
 
-// Factory to produce VolumeManager.
-class VolumeManagerFactory : public BrowserContextKeyedServiceFactory {
- public:
-  // Returns VolumeManager instance.
-  static VolumeManager* Get(content::BrowserContext* context) {
-    return static_cast<VolumeManager*>(
-        GetInstance()->GetServiceForBrowserContext(context, true));
-  }
-
-  static VolumeManagerFactory* GetInstance() {
-    return Singleton<VolumeManagerFactory>::get();
-  }
-
- protected:
-  // BrowserContextKeyedBaseFactory overrides:
-  virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE {
-    // Explicitly allow this manager in guest login mode.
-    return chrome::GetBrowserContextOwnInstanceInIncognito(context);
-  }
-
-  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE {
-    return true;
-  }
-
-  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE {
-    return true;
-  }
-
-  // BrowserContextKeyedServiceFactory overrides:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE {
-    return new VolumeManager();
-  }
-
- private:
-  // For Singleton.
-  friend struct DefaultSingletonTraits<VolumeManagerFactory>;
-  VolumeManagerFactory()
-      : BrowserContextKeyedServiceFactory(
-            "VolumeManagerFactory",
-            BrowserContextDependencyManager::GetInstance()) {
-  }
-
-  virtual ~VolumeManagerFactory() {}
-
-  DISALLOW_COPY_AND_ASSIGN(VolumeManagerFactory);
-};
-
-VolumeManager::VolumeType MountTypeToVolumeType(
+VolumeType MountTypeToVolumeType(
     chromeos::MountType type) {
   switch (type) {
     case chromeos::MOUNT_TYPE_DEVICE:
-      return VolumeManager::VOLUME_TYPE_REMOVABLE_DISK_PARTITION;
+      return VOLUME_TYPE_REMOVABLE_DISK_PARTITION;
     case chromeos::MOUNT_TYPE_ARCHIVE:
-      return VolumeManager::VOLUME_TYPE_MOUNTED_ARCHIVE_FILE;
+      return VOLUME_TYPE_MOUNTED_ARCHIVE_FILE;
     default:
       NOTREACHED();
   }
 
-  return VolumeManager::VOLUME_TYPE_DOWNLOADS_DIRECTORY;
+  return VOLUME_TYPE_DOWNLOADS_DIRECTORY;
 }
 
-VolumeManager::VolumeInfo CreateDownloadsVolumeInfo(
+VolumeInfo CreateDownloadsVolumeInfo(
     const base::FilePath& downloads_path) {
-  VolumeManager::VolumeInfo volume_info;
-  volume_info.type = VolumeManager::VOLUME_TYPE_DOWNLOADS_DIRECTORY;
+  VolumeInfo volume_info;
+  volume_info.type = VOLUME_TYPE_DOWNLOADS_DIRECTORY;
   // Keep source_path empty.
   volume_info.mount_path = downloads_path;
   volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
   return volume_info;
 }
 
-VolumeManager::VolumeInfo CreateVolumeInfoFromMountPointInfo(
+VolumeInfo CreateVolumeInfoFromMountPointInfo(
     const chromeos::disks::DiskMountManager::MountPointInfo& mount_point) {
-  VolumeManager::VolumeInfo volume_info;
+  VolumeInfo volume_info;
   volume_info.type = MountTypeToVolumeType(mount_point.mount_type);
   volume_info.source_path = base::FilePath(mount_point.source_path);
   volume_info.mount_path = base::FilePath(mount_point.mount_path);
@@ -101,7 +54,10 @@ VolumeManager::VolumeInfo CreateVolumeInfoFromMountPointInfo(
 
 }  // namespace
 
-VolumeManager::VolumeManager() {
+VolumeManager::VolumeManager(
+    chromeos::disks::DiskMountManager* disk_mount_manager)
+    : disk_mount_manager_(disk_mount_manager) {
+  DCHECK(disk_mount_manager);
 }
 
 VolumeManager::~VolumeManager() {
@@ -111,9 +67,31 @@ VolumeManager* VolumeManager::Get(content::BrowserContext* context) {
   return VolumeManagerFactory::Get(context);
 }
 
-std::vector<VolumeManager::VolumeInfo>
-VolumeManager::GetVolumeInfoList() const {
-  std::vector<VolumeManager::VolumeInfo> result;
+void VolumeManager::Initialize() {
+  disk_mount_manager_->AddObserver(this);
+  disk_mount_manager_->RequestMountInfoRefresh();
+}
+
+void VolumeManager::Shutdown() {
+  disk_mount_manager_->RemoveObserver(this);
+}
+
+void VolumeManager::AddObserver(VolumeManagerObserver* observer) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void VolumeManager::RemoveObserver(VolumeManagerObserver* observer) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
+}
+
+std::vector<VolumeInfo> VolumeManager::GetVolumeInfoList() const {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  std::vector<VolumeInfo> result;
 
   // TODO(hidehiko): Adds Drive if available.
 
@@ -125,10 +103,8 @@ VolumeManager::GetVolumeInfoList() const {
   }
 
   // Adds disks (both removable disks and zip archives).
-  chromeos::disks::DiskMountManager* disk_mount_manager =
-      chromeos::disks::DiskMountManager::GetInstance();
   const chromeos::disks::DiskMountManager::MountPointMap& mount_points =
-      disk_mount_manager->mount_points();
+      disk_mount_manager_->mount_points();
   for (chromeos::disks::DiskMountManager::MountPointMap::const_iterator it =
            mount_points.begin();
        it != mount_points.end(); ++it) {
@@ -138,6 +114,48 @@ VolumeManager::GetVolumeInfoList() const {
   }
 
   return result;
+}
+
+void VolumeManager::OnDiskEvent(
+    chromeos::disks::DiskMountManager::DiskEvent event,
+    const chromeos::disks::DiskMountManager::Disk* disk) {
+  // TODO(hidehiko): Move the implementation from EventRouter.
+}
+
+void VolumeManager::OnDeviceEvent(
+    chromeos::disks::DiskMountManager::DeviceEvent event,
+    const std::string& device_path) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DVLOG(1) << "OnDeviceEvent: " << event << ", " << device_path;
+
+  switch (event) {
+    case chromeos::disks::DiskMountManager::DEVICE_ADDED:
+      FOR_EACH_OBSERVER(VolumeManagerObserver, observers_,
+                        OnDeviceAdded(device_path));
+      return;
+    case chromeos::disks::DiskMountManager::DEVICE_REMOVED:
+      FOR_EACH_OBSERVER(VolumeManagerObserver, observers_,
+                        OnDeviceRemoved(device_path));
+      return;
+    case chromeos::disks::DiskMountManager::DEVICE_SCANNED:
+      DVLOG(1) << "Ignore SCANNED event: " << device_path;
+      return;
+  }
+  NOTREACHED();
+}
+
+void VolumeManager::OnMountEvent(
+    chromeos::disks::DiskMountManager::MountEvent event,
+    chromeos::MountError error_code,
+    const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
+  // TODO(hidehiko): Move the implementation from EventRouter.
+}
+
+void VolumeManager::OnFormatEvent(
+    chromeos::disks::DiskMountManager::FormatEvent event,
+    chromeos::FormatError error_code,
+    const std::string& device_path) {
+  // TODO(hidehiko): Move the implementation from EventRouter.
 }
 
 }  // namespace file_manager

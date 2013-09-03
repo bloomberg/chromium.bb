@@ -27,17 +27,17 @@ namespace extensions {
 namespace {
 
 // Returns string representaion of VolumeType.
-std::string VolumeTypeToString(file_manager::VolumeManager::VolumeType type) {
+std::string VolumeTypeToString(file_manager::VolumeType type) {
   switch (type) {
-    case file_manager::VolumeManager::VOLUME_TYPE_GOOGLE_DRIVE:
+    case file_manager::VOLUME_TYPE_GOOGLE_DRIVE:
       return "drive";
-    case file_manager::VolumeManager::VOLUME_TYPE_DOWNLOADS_DIRECTORY:
+    case file_manager::VOLUME_TYPE_DOWNLOADS_DIRECTORY:
       // Return empty string here for backword compatibility.
       // TODO(hidehiko): Fix this to return "downloads".
       return "";
-    case file_manager::VolumeManager::VOLUME_TYPE_REMOVABLE_DISK_PARTITION:
+    case file_manager::VOLUME_TYPE_REMOVABLE_DISK_PARTITION:
       return "device";
-    case file_manager::VolumeManager::VOLUME_TYPE_MOUNTED_ARCHIVE_FILE:
+    case file_manager::VOLUME_TYPE_MOUNTED_ARCHIVE_FILE:
       return "file";
   }
 
@@ -47,7 +47,7 @@ std::string VolumeTypeToString(file_manager::VolumeManager::VolumeType type) {
 
 // Returns the Value of the |volume_info|.
 base::Value* CreateValueFromVolumeInfo(
-    const file_manager::VolumeManager::VolumeInfo& volume_info,
+    const file_manager::VolumeInfo& volume_info,
     Profile* profile,
     const std::string& extension_id) {
   base::DictionaryValue* result = new base::DictionaryValue;
@@ -253,7 +253,7 @@ bool FileBrowserPrivateGetMountPointsFunction::RunImpl() {
   if (args_->GetSize())
     return false;
 
-  const std::vector<file_manager::VolumeManager::VolumeInfo>& volume_info_list =
+  const std::vector<file_manager::VolumeInfo>& volume_info_list =
       file_manager::VolumeManager::Get(profile_)->GetVolumeInfoList();
 
   std::string log_string;
