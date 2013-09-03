@@ -22,7 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
-#include "components/variations/proto/trials_seed.pb.h"
+#include "components/variations/proto/variations_seed.pb.h"
 #include "components/variations/variations_seed_processor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_fetcher.h"
