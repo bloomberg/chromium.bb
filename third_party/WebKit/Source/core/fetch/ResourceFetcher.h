@@ -31,6 +31,7 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceLoaderHost.h"
+#include "core/fetch/ResourceLoaderOptions.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/platform/Timer.h"
 #include "wtf/Deque.h"
@@ -130,6 +131,7 @@ public:
     void printPreloadStats();
     bool canRequest(Resource::Type, const KURL&, const ResourceLoaderOptions&, bool forPreload = false);
     bool canAccess(Resource*);
+    bool checkInsecureContent(Resource::Type, const KURL&, MixedContentBlockingTreatment) const;
 
     void setDefersLoading(bool);
     void stopFetching();
@@ -179,7 +181,6 @@ private:
     void addAdditionalRequestHeaders(ResourceRequest&, Resource::Type);
 
     void notifyLoadedFromMemoryCache(Resource*);
-    bool checkInsecureContent(Resource::Type, const KURL&) const;
 
     void garbageCollectDocumentResourcesTimerFired(Timer<ResourceFetcher>*);
     void performPostLoadActions();

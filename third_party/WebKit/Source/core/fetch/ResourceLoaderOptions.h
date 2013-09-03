@@ -90,6 +90,13 @@ enum CredentialRequest {
     ClientDidNotRequestCredentials
 };
 
+enum MixedContentBlockingTreatment {
+    TreatAsDefaultForType,
+    TreatAsPassiveContent,
+    TreatAsActiveContent,
+    TreatAsAlwaysAllowedContent
+};
+
 struct ResourceLoaderOptions {
     ResourceLoaderOptions()
         : sendLoadCallbacks(DoNotSendCallbacks)
@@ -102,6 +109,7 @@ struct ResourceLoaderOptions {
         , contentSecurityPolicyOption(CheckContentSecurityPolicy)
         , requestOriginPolicy(UseDefaultOriginRestrictionsForType)
         , requestInitiatorContext(DocumentContext)
+        , mixedContentBlockingTreatment(TreatAsDefaultForType)
     {
     }
 
@@ -126,8 +134,10 @@ struct ResourceLoaderOptions {
         , contentSecurityPolicyOption(contentSecurityPolicyOption)
         , requestOriginPolicy(requestOriginPolicy)
         , requestInitiatorContext(requestInitiatorContext)
+        , mixedContentBlockingTreatment(TreatAsDefaultForType)
     {
     }
+
     SendCallbackPolicy sendLoadCallbacks;
     ContentSniffingPolicy sniffContent;
     DataBufferingPolicy dataBufferingPolicy;
@@ -139,6 +149,7 @@ struct ResourceLoaderOptions {
     FetchInitiatorInfo initiatorInfo;
     RequestOriginPolicy requestOriginPolicy;
     RequestInitiatorContext requestInitiatorContext;
+    MixedContentBlockingTreatment mixedContentBlockingTreatment;
 };
 
 } // namespace WebCore

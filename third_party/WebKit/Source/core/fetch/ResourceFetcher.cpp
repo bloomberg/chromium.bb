@@ -303,40 +303,50 @@ ResourcePtr<RawResource> ResourceFetcher::fetchMainResource(FetchRequest& reques
     return static_cast<RawResource*>(requestResource(Resource::MainResource, request).get());
 }
 
-bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url) const
+bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url, MixedContentBlockingTreatment treatment) const
 {
-    switch (type) {
-    case Resource::Script:
-    case Resource::XSLStyleSheet:
-    case Resource::SVGDocument:
-    case Resource::CSSStyleSheet:
-    case Resource::ImportResource:
-        // These resource can inject script into the current document (Script,
-        // XSL) or exfiltrate the content of the current document (CSS).
+    if (treatment == TreatAsDefaultForType) {
+        switch (type) {
+        case Resource::Script:
+        case Resource::XSLStyleSheet:
+        case Resource::SVGDocument:
+        case Resource::CSSStyleSheet:
+        case Resource::ImportResource:
+            // These resource can inject script into the current document (Script,
+            // XSL) or exfiltrate the content of the current document (CSS).
+            treatment = TreatAsActiveContent;
+            break;
+
+        case Resource::TextTrack:
+        case Resource::Shader:
+        case Resource::Raw:
+        case Resource::Image:
+        case Resource::Font:
+            // These resources can corrupt only the frame's pixels.
+            treatment = TreatAsPassiveContent;
+            break;
+
+        case Resource::MainResource:
+        case Resource::LinkPrefetch:
+        case Resource::LinkSubresource:
+            // These cannot affect the current document.
+            treatment = TreatAsAlwaysAllowedContent;
+            break;
+        }
+    }
+    if (treatment == TreatAsActiveContent) {
         if (Frame* f = frame()) {
             if (!f->loader()->mixedContentChecker()->canRunInsecureContent(m_document->securityOrigin(), url))
                 return false;
         }
-
-        break;
-    case Resource::TextTrack:
-    case Resource::Shader:
-    case Resource::Raw:
-    case Resource::Image:
-    case Resource::Font: {
-        // These resources can corrupt only the frame's pixels.
+    } else if (treatment == TreatAsPassiveContent) {
         if (Frame* f = frame()) {
             Frame* top = f->tree()->top();
             if (!top->loader()->mixedContentChecker()->canDisplayInsecureContent(top->document()->securityOrigin(), url))
                 return false;
         }
-        break;
-    }
-    case Resource::MainResource:
-    case Resource::LinkPrefetch:
-    case Resource::LinkSubresource:
-        // Prefetch cannot affect the current document.
-        break;
+    } else {
+        ASSERT(treatment == TreatAsAlwaysAllowedContent);
     }
     return true;
 }
@@ -436,7 +446,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     // They'll still get a warning in the console about CSP blocking the load.
 
     // FIXME: Should we consider forPreload here?
-    if (!checkInsecureContent(type, url))
+    if (!checkInsecureContent(type, url, options.mixedContentBlockingTreatment))
         return false;
 
     return true;

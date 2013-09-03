@@ -749,6 +749,7 @@ void XMLHttpRequest::createRequest(ExceptionState& es)
     options.securityOrigin = securityOrigin();
     options.initiator = FetchInitiatorTypeNames::xmlhttprequest;
     options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(scriptExecutionContext()) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
+    options.mixedContentBlockingTreatment = TreatAsActiveContent;
     options.timeoutMilliseconds = m_timeoutMilliseconds;
 
     m_exceptionCode = 0;

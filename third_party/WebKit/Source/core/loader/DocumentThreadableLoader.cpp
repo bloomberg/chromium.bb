@@ -35,6 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/RawResource.h"
+#include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/CrossOriginAccessControl.h"
@@ -412,8 +413,8 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
     ASSERT(m_sameOriginRequest || requestURL.user().isEmpty());
     ASSERT(m_sameOriginRequest || requestURL.pass().isEmpty());
 
+    ThreadableLoaderOptions options = m_options;
     if (m_async) {
-        ThreadableLoaderOptions options = m_options;
         options.crossOriginCredentialPolicy = DoNotAskClientForCrossOriginCredentials;
         if (m_actualRequest) {
             // Don't sniff content or send load callbacks for the preflight request.
@@ -445,8 +446,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
     ResourceResponse response;
     unsigned long identifier = std::numeric_limits<unsigned long>::max();
     if (Frame* frame = m_document->frame()) {
-        Frame* top = frame->tree()->top();
-        if (!top->loader()->mixedContentChecker()->canDisplayInsecureContent(top->document()->securityOrigin(), requestURL)) {
+        if (!m_document->fetcher()->checkInsecureContent(Resource::Raw, requestURL, options.mixedContentBlockingTreatment)) {
             m_client->didFail(error);
             return;
         }
