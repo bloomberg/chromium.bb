@@ -117,6 +117,13 @@ CHROMEOS_EXPORT extern const char kCountry[];
 CHROMEOS_EXPORT extern const char kName[];
 }  // namespace cellular_provider
 
+namespace cellular_apn {
+CHROMEOS_EXPORT extern const char kName[];
+CHROMEOS_EXPORT extern const char kUsername[];
+CHROMEOS_EXPORT extern const char kPassword[];
+}  // namespace cellular_apn
+
+
 namespace connection_state {
 CHROMEOS_EXPORT extern const char kConnected[];
 CHROMEOS_EXPORT extern const char kConnecting[];

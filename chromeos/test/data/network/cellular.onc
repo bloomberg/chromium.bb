@@ -1,0 +1,11 @@
+{
+  "Type": "Cellular",
+  "Name": "Test Network",
+  "Cellular": {
+    "APN": {
+      "Name": "test-apn",
+      "Username": "test-username",
+      "Password": "test-password"
+    }
+  }
+}

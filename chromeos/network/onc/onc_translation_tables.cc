@@ -110,6 +110,13 @@ const FieldTranslationEntry wifi_fields[] = {
   { NULL }
 };
 
+const FieldTranslationEntry cellular_apn_fields[] = {
+  { cellular_apn::kName, flimflam::kApnProperty },
+  { cellular_apn::kUsername, flimflam::kApnUsernameProperty },
+  { cellular_apn::kPassword, flimflam::kApnPasswordProperty },
+  { NULL }
+};
+
 const FieldTranslationEntry cellular_provider_fields[] = {
   { cellular_provider::kCode, flimflam::kOperatorCodeKey },
   { cellular_provider::kCountry, flimflam::kOperatorCountryKey },
@@ -117,19 +124,17 @@ const FieldTranslationEntry cellular_provider_fields[] = {
   { NULL }
 };
 
-const FieldTranslationEntry cellular_with_state_fields[] = {
+const FieldTranslationEntry cellular_fields[] = {
   { cellular::kActivateOverNonCellularNetwork,
     shill::kActivateOverNonCellularNetworkProperty },
   { cellular::kActivationState, flimflam::kActivationStateProperty },
   { cellular::kAllowRoaming, flimflam::kCellularAllowRoamingProperty },
-  { cellular::kAPN, flimflam::kApnProperty },
   { cellular::kCarrier, flimflam::kCarrierProperty },
   { cellular::kESN, flimflam::kEsnProperty },
   { cellular::kFamily, flimflam::kTechnologyFamilyProperty },
   { cellular::kFirmwareRevision, flimflam::kFirmwareRevisionProperty },
   { cellular::kFoundNetworks, flimflam::kFoundNetworksProperty },
   { cellular::kHardwareRevision, flimflam::kHardwareRevisionProperty },
-  { cellular::kHomeProvider, flimflam::kHomeProviderProperty },
   { cellular::kICCID, flimflam::kIccidProperty },
   { cellular::kIMEI, flimflam::kImeiProperty },
   { cellular::kIMSI, flimflam::kImsiProperty },
@@ -144,7 +149,6 @@ const FieldTranslationEntry cellular_with_state_fields[] = {
     shill::kProviderRequiresRoamingProperty },
   { cellular::kRoamingState, flimflam::kRoamingStateProperty },
   { cellular::kSelectedNetwork, flimflam::kSelectedNetworkProperty },
-  { cellular::kServingOperator, flimflam::kServingOperatorProperty },
   { cellular::kSIMLockStatus, flimflam::kSIMLockStatusProperty },
   { cellular::kSIMPresent, shill::kSIMPresentProperty },
   { cellular::kSupportedCarriers, shill::kSupportedCarriersProperty },
@@ -167,6 +171,11 @@ const FieldTranslationEntry network_fields[] = {
   { NULL }
 };
 
+struct OncValueTranslationEntry {
+  const OncValueSignature* onc_signature;
+  const FieldTranslationEntry* field_translation_table;
+};
+
 const OncValueTranslationEntry onc_value_translation_table[] = {
   { &kEAPSignature, eap_fields },
   { &kIPsecSignature, ipsec_fields },
@@ -175,10 +184,28 @@ const OncValueTranslationEntry onc_value_translation_table[] = {
   { &kVPNSignature, vpn_fields },
   { &kWiFiSignature, wifi_fields },
   { &kWiFiWithStateSignature, wifi_fields },
+  { &kCellularApnSignature, cellular_apn_fields },
   { &kCellularProviderSignature, cellular_provider_fields },
-  { &kCellularWithStateSignature, cellular_with_state_fields },
+  { &kCellularSignature, cellular_fields },
+  { &kCellularWithStateSignature, cellular_fields },
   { &kNetworkWithStateSignature, network_fields },
   { &kNetworkConfigurationSignature, network_fields },
+  { NULL }
+};
+
+struct NestedShillDictionaryEntry {
+  const OncValueSignature* onc_signature;
+  // NULL terminated list of Shill property keys.
+  const char* const* shill_property_path;
+};
+
+const char* cellular_apn_property_path_entries[] = {
+  flimflam::kCellularApnProperty,
+  NULL
+};
+
+const NestedShillDictionaryEntry nested_shill_dictionaries[] = {
+  { &kCellularApnSignature, cellular_apn_property_path_entries },
   { NULL }
 };
 
@@ -236,11 +263,26 @@ const FieldTranslationEntry* GetFieldTranslationTable(
     const OncValueSignature& onc_signature) {
   for (const OncValueTranslationEntry* it = onc_value_translation_table;
        it->onc_signature != NULL; ++it) {
-    if (it->onc_signature != &onc_signature)
-      continue;
-    return it->field_translation_table;
+    if (it->onc_signature == &onc_signature)
+      return it->field_translation_table;
   }
   return NULL;
+}
+
+std::vector<std::string> GetPathToNestedShillDictionary(
+    const OncValueSignature& onc_signature) {
+  std::vector<std::string> shill_property_path;
+  for (const NestedShillDictionaryEntry* it = nested_shill_dictionaries;
+       it->onc_signature != NULL; ++it) {
+    if (it->onc_signature == &onc_signature) {
+      for (const char* const* key = it->shill_property_path; *key != NULL;
+           ++key) {
+        shill_property_path.push_back(std::string(*key));
+      }
+      break;
+    }
+  }
+  return shill_property_path;
 }
 
 bool GetShillPropertyName(const std::string& onc_field_name,

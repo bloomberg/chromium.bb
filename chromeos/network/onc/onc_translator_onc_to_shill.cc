@@ -197,7 +197,6 @@ void LocalTranslator::AddValueAccordingToSignature(
     scoped_ptr<base::Value> value) {
   if (!value || !field_translation_table_)
     return;
-
   std::string shill_property_name;
   if (!GetShillPropertyName(onc_name,
                             field_translation_table_,
@@ -232,8 +231,24 @@ void LocalTranslator::TranslateWithTableAndSet(
 void TranslateONCHierarchy(const OncValueSignature& signature,
                            const base::DictionaryValue& onc_object,
                            base::DictionaryValue* shill_dictionary) {
-  // Translates fields of |onc_object| and writes them to |shill_dictionary_|.
-  LocalTranslator translator(signature, onc_object, shill_dictionary);
+  base::DictionaryValue* target_shill_dictionary = shill_dictionary;
+  std::vector<std::string> path_to_shill_dictionary =
+      GetPathToNestedShillDictionary(signature);
+  for (std::vector<std::string>::const_iterator it =
+           path_to_shill_dictionary.begin();
+       it != path_to_shill_dictionary.end();
+       ++it) {
+    base::DictionaryValue* nested_shill_dict = NULL;
+    target_shill_dictionary->GetDictionaryWithoutPathExpansion(
+        *it, &nested_shill_dict);
+    if (!nested_shill_dict)
+      nested_shill_dict = new base::DictionaryValue;
+    target_shill_dictionary->SetWithoutPathExpansion(*it, nested_shill_dict);
+    target_shill_dictionary = nested_shill_dict;
+  }
+  // Translates fields of |onc_object| and writes them to
+  // |target_shill_dictionary_| nested in |shill_dictionary|.
+  LocalTranslator translator(signature, onc_object, target_shill_dictionary);
   translator.TranslateFields();
 
   // Recurse into nested objects.

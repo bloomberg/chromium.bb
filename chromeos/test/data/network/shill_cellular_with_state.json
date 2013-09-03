@@ -7,5 +7,10 @@
     "code": "test-code",
     "country": "test-country",
     "name" : "test-name"
+  },
+  "Cellular.APN": {
+    "apn": "test-apn",
+    "username": "test-username",
+    "password": "test-password"
   }
 }
