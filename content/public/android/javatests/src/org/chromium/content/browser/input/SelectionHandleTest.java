@@ -420,6 +420,19 @@ public class SelectionHandleTest extends ContentShellTestBase {
         }));
     }
 
+    public void assertWaitForHasInputConnection() {
+        try {
+            assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return getContentViewCore().getInputConnectionForTest() != null;
+                }
+            }));
+        } catch (InterruptedException e) {
+            fail();
+        }
+    }
+
     private ImeAdapter getImeAdapter() {
         return getContentViewCore().getImeAdapterForTest();
     }
@@ -433,6 +446,9 @@ public class SelectionHandleTest extends ContentShellTestBase {
     }
 
     private Editable getEditable() {
+        // We have to wait for the input connection (with the IME) to be created before accessing
+        // the ContentViewCore's editable.
+        assertWaitForHasInputConnection();
         return getContentViewCore().getEditableForTest();
     }
 
