@@ -119,7 +119,7 @@ def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None):
   if not change_list:
     raise RuntimeError(
         "MultiQueryChanges requires a list of change numbers/id's")
-  q = ['q=%s' % urllib.quote(x) for x in change_list]
+  q = ['q=%s' % '+OR+'.join([urllib.quote(str(x)) for x in change_list])]
   if param_dict:
     q.append(_QueryString(param_dict))
   if limit:
