@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
 #include "jni/TabBase_jni.h"
@@ -157,6 +159,40 @@ void TabAndroid::SwapTabContents(content::WebContents* old_contents,
       reinterpret_cast<jint>(new_contents));
 }
 
+void TabAndroid::Observe(int type,
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  switch (type) {
+    case chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED: {
+      TabSpecificContentSettings* settings =
+          TabSpecificContentSettings::FromWebContents(web_contents());
+      if (!settings->IsBlockageIndicated(CONTENT_SETTINGS_TYPE_POPUPS)) {
+        // TODO(dfalcantara): Create an InfoBarDelegate to keep the
+        // PopupBlockedInfoBar logic native-side instead of straddling the JNI
+        // boundary.
+        int num_popups = 0;
+        PopupBlockerTabHelper* popup_blocker_helper =
+            PopupBlockerTabHelper::FromWebContents(web_contents());
+        if (popup_blocker_helper)
+          num_popups = popup_blocker_helper->GetBlockedPopupsCount();
+
+        Java_TabBase_onBlockedPopupsStateChanged(env,
+                                                 weak_java_tab_.get(env).obj(),
+                                                 num_popups);
+        settings->SetBlockageHasBeenIndicated(CONTENT_SETTINGS_TYPE_POPUPS);
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_FAVICON_UPDATED:
+      Java_TabBase_onFaviconUpdated(env, weak_java_tab_.get(env).obj());
+      break;
+    default:
+      NOTREACHED() << "Unexpected notification " << type;
+      break;
+  }
+}
+
 void TabAndroid::InitWebContents(JNIEnv* env,
                                  jobject obj,
                                  jint tab_id,
@@ -185,6 +221,15 @@ void TabAndroid::InitWebContents(JNIEnv* env,
   web_contents_delegate_->LoadProgressChanged(web_contents(), 0);
   web_contents()->SetDelegate(web_contents_delegate_.get());
 
+  notification_registrar_.Add(
+      this,
+      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+      content::Source<content::WebContents>(web_contents()));
+  notification_registrar_.Add(
+      this,
+      chrome::NOTIFICATION_FAVICON_UPDATED,
+      content::Source<content::WebContents>(web_contents()));
+
   // Verify that the WebContents this tab represents matches the expected
   // off the record state.
   CHECK_EQ(GetProfile()->IsOffTheRecord(), incognito);
@@ -193,6 +238,17 @@ void TabAndroid::InitWebContents(JNIEnv* env,
 void TabAndroid::DestroyWebContents(JNIEnv* env,
                                     jobject obj,
                                     jboolean delete_native) {
+  DCHECK(web_contents());
+
+  notification_registrar_.Remove(
+      this,
+      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+      content::Source<content::WebContents>(web_contents()));
+  notification_registrar_.Remove(
+      this,
+      chrome::NOTIFICATION_FAVICON_UPDATED,
+      content::Source<content::WebContents>(web_contents()));
+
   web_contents()->SetDelegate(NULL);
 
   if (delete_native) {
@@ -214,6 +270,19 @@ base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetProfileAndroid(
     return base::android::ScopedJavaLocalRef<jobject>();
 
   return profile_android->GetJavaObject();
+}
+
+void TabAndroid::LaunchBlockedPopups(JNIEnv* env, jobject obj) {
+  PopupBlockerTabHelper* popup_blocker_helper =
+      PopupBlockerTabHelper::FromWebContents(web_contents());
+  DCHECK(popup_blocker_helper);
+  std::map<int32, GURL> blocked_popups =
+      popup_blocker_helper->GetBlockedPopupRequests();
+  for (std::map<int32, GURL>::iterator it = blocked_popups.begin();
+      it != blocked_popups.end();
+      it++) {
+    popup_blocker_helper->ShowBlockedPopup(it->first);
+  }
 }
 
 bool TabAndroid::RegisterTabAndroid(JNIEnv* env) {

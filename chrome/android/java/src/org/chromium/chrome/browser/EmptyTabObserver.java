@@ -20,4 +20,7 @@ public class EmptyTabObserver implements TabObserver {
 
     @Override
     public void onContentChanged(TabBase tab) { }
+
+    @Override
+    public void onFaviconUpdated(TabBase tab) { }
 }

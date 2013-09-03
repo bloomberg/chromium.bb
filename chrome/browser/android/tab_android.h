@@ -14,6 +14,8 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class GURL;
 class Profile;
@@ -39,7 +41,8 @@ struct ContextMenuParams;
 class WebContents;
 }
 
-class TabAndroid : public CoreTabHelperDelegate {
+class TabAndroid : public CoreTabHelperDelegate,
+                   public content::NotificationObserver {
  public:
   // Convenience method to retrieve the Tab associated with the passed
   // WebContents.  Can return NULL.
@@ -123,6 +126,11 @@ class TabAndroid : public CoreTabHelperDelegate {
   virtual void SwapTabContents(content::WebContents* old_contents,
                                content::WebContents* new_contents) OVERRIDE;
 
+  // NotificationObserver -----------------------------------------------------
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   // Methods called from Java via JNI -----------------------------------------
 
   virtual void InitWebContents(JNIEnv* env,
@@ -136,6 +144,7 @@ class TabAndroid : public CoreTabHelperDelegate {
                                   jboolean delete_native);
   base::android::ScopedJavaLocalRef<jobject> GetProfileAndroid(JNIEnv* env,
                                                                jobject obj);
+  void LaunchBlockedPopups(JNIEnv* env, jobject obj);
 
  protected:
   virtual ~TabAndroid();
@@ -145,6 +154,8 @@ class TabAndroid : public CoreTabHelperDelegate {
 
   SessionID session_tab_id_;
   int android_tab_id_;
+
+  content::NotificationRegistrar notification_registrar_;
 
   scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<chrome::android::ChromeWebContentsDelegateAndroid>

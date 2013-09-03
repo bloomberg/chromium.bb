@@ -34,4 +34,10 @@ public interface TabObserver {
      * @param tab The notifying {@link TabBase}.
      */
     public void onContentChanged(TabBase tab);
+
+    /**
+     * Called when the favicon of a {@link TabBase} has been updated.
+     * @param tab The notifying {@link TabBase}.
+     */
+    public void onFaviconUpdated(TabBase tab);
 }

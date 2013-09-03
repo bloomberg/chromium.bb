@@ -414,6 +414,8 @@ public abstract class TabBase implements NavigationClient {
         mWebContentsObserver = createWebContentsObserverAndroid(mContentViewCore);
 
         if (mContentViewClient != null) mContentViewCore.setContentViewClient(mContentViewClient);
+
+        assert mNativeTabAndroid != 0;
         nativeInitWebContents(
                 mNativeTabAndroid, mId, mIncognito, mContentViewCore, mWebContentsDelegate);
     }
@@ -452,6 +454,8 @@ public abstract class TabBase implements NavigationClient {
         mContentViewCore = null;
         mWebContentsDelegate = null;
         mWebContentsObserver = null;
+
+        assert mNativeTabAndroid != 0;
         nativeDestroyWebContents(mNativeTabAndroid, deleteNativeWebContents);
     }
 
@@ -494,6 +498,30 @@ public abstract class TabBase implements NavigationClient {
      */
     protected TabBaseChromeWebContentsDelegateAndroid getChromeWebContentsDelegateAndroid() {
         return mWebContentsDelegate;
+    }
+
+    /**
+     * Launches all currently blocked popups that were spawned by the content of this tab.
+     */
+    protected void launchBlockedPopups() {
+        assert mContentViewCore != null;
+
+        nativeLaunchBlockedPopups(mNativeTabAndroid);
+    }
+
+    /**
+     * Called when the number of blocked popups has changed.
+     * @param numPopups The current number of blocked popups.
+     */
+    @CalledByNative
+    protected void onBlockedPopupsStateChanged(int numPopups) { }
+
+    /**
+     * Called when the favicon of the content this tab represents changes.
+     */
+    @CalledByNative
+    protected void onFaviconUpdated() {
+        for (TabObserver observer : mObservers) observer.onFaviconUpdated(this);
     }
 
     /**
@@ -566,4 +594,5 @@ public abstract class TabBase implements NavigationClient {
             ContentViewCore contentViewCore, ChromeWebContentsDelegateAndroid delegate);
     private native void nativeDestroyWebContents(int nativeTabAndroid, boolean deleteNative);
     private native Profile nativeGetProfileAndroid(int nativeTabAndroid);
+    private native void nativeLaunchBlockedPopups(int nativeTabAndroid);
 }
