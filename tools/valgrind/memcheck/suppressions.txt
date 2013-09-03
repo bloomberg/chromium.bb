@@ -7256,13 +7256,3 @@
    fun:_Znw*
    fun:_ZN32OpaqueBrowserFrameViewLayoutTest5SetUpEv
 }
-{
-   bug_284191
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZNK4base15DictionaryValue8DeepCopyEv
-   fun:_ZN8chromeos38ManagedNetworkConfigurationHandlerImpl16PolicyApplicatorC1EN4base7WeakPtrIS0_EERKNS_14NetworkProfileERKSt3mapISsPKNS2_15DictionaryValueESt4lessISsESaISt4pairIKSsSB_EEEPSt3setISsSD_SaISsEE
-   fun:_ZN8chromeos38ManagedNetworkConfigurationHandlerImpl9SetPolicyENS_3onc9ONCSourceERKSsRKN4base9ListValueE
-   fun:_ZN8chromeos38ManagedNetworkConfigurationHandlerTest9SetPolicyENS_3onc9ONCSourceERKSsS4_
-}

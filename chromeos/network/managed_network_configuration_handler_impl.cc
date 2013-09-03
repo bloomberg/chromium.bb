@@ -351,9 +351,13 @@ class ManagedNetworkConfigurationHandlerImpl::PolicyApplicator
       const base::DictionaryValue& policy,
       const base::DictionaryValue* user_settings);
 
-  // Creates new entries for all remaining policies, i.e. for which not matching
-  // entry was found.
+  // Called once all Profile entries are processed. Calls
+  // ApplyRemainingPolicies.
   virtual ~PolicyApplicator();
+
+  // Creates new entries for all remaining policies, i.e. for which no matching
+  // Profile entry was found.
+  void ApplyRemainingPolicies();
 
   std::set<std::string> remaining_policies_;
   base::WeakPtr<ManagedNetworkConfigurationHandlerImpl> handler_;
@@ -984,6 +988,12 @@ void ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::
 }
 
 ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::~PolicyApplicator() {
+  ApplyRemainingPolicies();
+  STLDeleteValues(&all_policies_);
+}
+
+void ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::
+    ApplyRemainingPolicies() {
   if (!handler_) {
     LOG(WARNING) << "Handler destructed during policy application to profile "
                  << profile_.ToDebugString();
@@ -1011,8 +1021,6 @@ ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::~PolicyApplicator() {
     CreateAndWriteNewShillConfiguration(
         *it, *policy, NULL /* no user settings */);
   }
-
-  STLDeleteValues(&all_policies_);
 }
 
 }  // namespace chromeos
