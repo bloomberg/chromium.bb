@@ -9,10 +9,9 @@ function logIfError() {
 }
 
 function insertText(text) {
-  chrome.experimental.input.virtualKeyboard.insertText(text, logIfError);
+  chrome.virtualKeyboardPrivate.insertText(text, logIfError);
 }
 
 function MoveCursor(swipe_direction, swipe_flags) {
-  chrome.experimental.input.virtualKeyboard.moveCursor(swipe_direction,
-                                                       swipe_flags);
+  chrome.virtualKeyboardPrivate.moveCursor(swipe_direction, swipe_flags);
 }

@@ -16,7 +16,6 @@
       <include name="IDR_EXTENSION_API_JSON_DECLARATIVE_CONTENT" file="extensions\api\declarative_content.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST" file="extensions\api\declarative_web_request.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_ECHOPRIVATE" file="extensions\api\echo_private.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD" file="extensions\api\experimental_input_virtual_keyboard.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ" file="extensions\api\experimental_rlz.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER" file="extensions\api\file_browser_handler.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_FILEBROWSERPRIVATE" file="extensions\api\file_browser_private.json" type="BINDATA" />
@@ -33,6 +32,7 @@
       <include name="IDR_EXTENSION_API_JSON_TTSENGINE" file="extensions\api\tts_engine.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_TYPES" file="extensions\api\types.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_TYPES_PRIVATE" file="extensions\api\types_private.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_VIRTUALKEYBOARDPRIVATE" file="extensions\api\virtual_keyboard_private.json" type="BINDATA" /> 
       <include name="IDR_EXTENSION_API_JSON_WEBREQUESTINTERNAL" file="extensions\api\web_request_internal.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WEBSTORE" file="extensions\api\webstore.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WEBSTOREPRIVATE" file="extensions\api\webstore_private.json" type="BINDATA" />

@@ -136,6 +136,7 @@ class APIPermission {
     kUsb,
     kUsbDevice,
     kVideoCapture,
+    kVirtualKeyboardPrivate,
     kWallpaperPrivate,
     kWebConnectable,  // for externally_connectable manifest key
     kWebNavigation,

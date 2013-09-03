@@ -209,10 +209,6 @@
     "dependencies": ["permission:experimental"],
     "contexts": ["blessed_extension"]
   },
-  "experimental.input.virtualKeyboard": {
-    "dependencies": ["permission:experimental"],
-    "contexts": ["blessed_extension"]
-  },
   "experimental.rlz": {
     "dependencies": ["permission:experimental"],
     "contexts": ["blessed_extension"]
@@ -561,6 +557,11 @@
   },
   "usb": {
     "dependencies": ["permission:usb"],
+    "contexts": ["blessed_extension"]
+  },
+  "virtualKeyboardPrivate": {
+    "platform": "chromeos",
+    "dependencies": ["permission:virtualKeyboardPrivate"],
     "contexts": ["blessed_extension"]
   },
   "wallpaperPrivate": {

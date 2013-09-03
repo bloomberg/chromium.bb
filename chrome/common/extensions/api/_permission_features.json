@@ -663,6 +663,13 @@
     "channel": "stable",
     "extension_types": ["platform_app"]
   },
+  "virtualKeyboardPrivate": {
+    "channel": "stable",
+    "whitelist": [
+      "mppnpdlheglhdfmldimlhpnegondlapf"  // System-level virtual keyboard.
+    ],
+    "extension_types": ["extension"]
+  },
   "wallpaperPrivate": {
     "channel": "stable",
     "extension_types": ["platform_app"],

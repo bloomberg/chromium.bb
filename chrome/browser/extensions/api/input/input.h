@@ -13,24 +13,22 @@ class Profile;
 
 namespace extensions {
 
-class InsertTextInputFunction : public SyncExtensionFunction {
+class InsertTextFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION(
-      "experimental.input.virtualKeyboard.insertText",
-      EXPERIMENTAL_INPUT_VIRTUALKEYBOARD_INSERTTEXT);
+  DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.insertText",
+                             VIRTUALKEYBOARDPRIVATE_INSERTTEXT);
 
  protected:
-  virtual ~InsertTextInputFunction() {}
+  virtual ~InsertTextFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class  MoveCursorFunction : public SyncExtensionFunction {
+class MoveCursorFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION(
-      "experimental.input.virtualKeyboard.moveCursor",
-      EXPERIMENTAL_INPUT_VIRTUALKEYBOARD_MOVECURSOR);
+  DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.moveCursor",
+                             VIRTUALKEYBOARDPRIVATE_MOVECURSOR);
 
  protected:
   virtual ~MoveCursorFunction() {}

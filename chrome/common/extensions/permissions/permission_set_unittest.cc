@@ -721,6 +721,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kStreamsPrivate);
   skip.insert(APIPermission::kSystemPrivate);
   skip.insert(APIPermission::kTerminalPrivate);
+  skip.insert(APIPermission::kVirtualKeyboardPrivate);
   skip.insert(APIPermission::kWallpaperPrivate);
   skip.insert(APIPermission::kWebRequestInternal);
   skip.insert(APIPermission::kWebstorePrivate);

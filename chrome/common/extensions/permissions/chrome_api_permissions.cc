@@ -207,6 +207,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kTerminalPrivate, "terminalPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
+    { APIPermission::kVirtualKeyboardPrivate, "virtualKeyboardPrivate",
+      APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kWallpaperPrivate, "wallpaperPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kWebRequestInternal, "webRequestInternal" },

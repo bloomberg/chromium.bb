@@ -25,7 +25,7 @@ const char kNotYetImplementedError[] =
 
 namespace extensions {
 
-bool InsertTextInputFunction::RunImpl() {
+bool InsertTextFunction::RunImpl() {
 #if defined(USE_ASH)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -57,7 +57,7 @@ bool MoveCursorFunction::RunImpl() {
 InputAPI::InputAPI(Profile* profile) {
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
-  registry->RegisterFunction<InsertTextInputFunction>();
+  registry->RegisterFunction<InsertTextFunction>();
   registry->RegisterFunction<MoveCursorFunction>();
 }
 
