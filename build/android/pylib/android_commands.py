@@ -862,6 +862,8 @@ class AndroidCommands(object):
     self._potential_push_size += size
 
     changed_files = self.GetFilesChanged(host_path, device_path)
+    logging.info('Found %d files that need to be pushed to %s',
+        len(changed_files), device_path)
     if not changed_files:
       return
 
