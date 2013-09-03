@@ -5,11 +5,18 @@
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 
 #include "base/command_line.h"
+#include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/drive/drive_api_service.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/google_apis/drive_api_url_generator.h"
+#include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_service.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_engine.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
@@ -18,6 +25,7 @@ namespace sync_file_system {
 
 namespace {
 const char kDisableLastWriteWin[] = "disable-syncfs-last-write-win";
+const char kEnableSyncFileSystemV2[] = "enable-syncfs-v2";
 }
 
 // static
@@ -43,6 +51,7 @@ SyncFileSystemServiceFactory::SyncFileSystemServiceFactory()
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(drive::DriveNotificationManagerFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(extensions::ExtensionSystemFactory::GetInstance());
 }
 
 SyncFileSystemServiceFactory::~SyncFileSystemServiceFactory() {}
@@ -50,7 +59,7 @@ SyncFileSystemServiceFactory::~SyncFileSystemServiceFactory() {}
 BrowserContextKeyedService*
 SyncFileSystemServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
+  Profile* profile = Profile::FromBrowserContext(context);
 
   SyncFileSystemService* service = new SyncFileSystemService(profile);
 
@@ -60,6 +69,38 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
   scoped_ptr<RemoteFileSyncService> remote_file_service;
   if (mock_remote_file_service_) {
     remote_file_service = mock_remote_file_service_.Pass();
+  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableSyncFileSystemV2)) {
+    RegisterSyncableFileSystem();
+
+    GURL base_drive_url(
+        google_apis::DriveApiUrlGenerator::kBaseUrlForProduction);
+    GURL base_download_url(
+        google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction);
+    GURL wapi_base_url(
+        google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction);
+
+    scoped_ptr<drive::DriveAPIService> drive_api_service(
+        new drive::DriveAPIService(
+            ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+            context->GetRequestContext(),
+            content::BrowserThread::GetBlockingPool(),
+            base_drive_url, base_download_url, wapi_base_url,
+            std::string() /* custom_user_agent */));
+
+    drive::DriveNotificationManager* notification_manager =
+        drive::DriveNotificationManagerFactory::GetForProfile(profile);
+    ExtensionService* extension_service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
+
+    scoped_ptr<drive_backend::SyncEngine> sync_engine(
+        new drive_backend::SyncEngine(
+            context->GetPath(),
+            drive_api_service.Pass(),
+            notification_manager,
+            extension_service));
+
+    remote_file_service = sync_engine.PassAs<RemoteFileSyncService>();
   } else {
     // FileSystem needs to be registered before DriveFileSyncService runs
     // its initialization code.
