@@ -220,8 +220,6 @@ class UI_EXPORT Event {
   void InitLatencyInfo();
 
  private:
-  void operator=(const Event&);
-
   // Safely initializes the native event members of this class.
   void Init();
   void InitWithNativeEvent(const base::NativeEvent& native_event);
