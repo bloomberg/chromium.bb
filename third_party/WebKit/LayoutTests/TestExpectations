@@ -105,7 +105,6 @@ crbug.com/24197 fast/css/disabled-author-styles.html [ Skip ]
 webkit.org/b/83260 fast/text/international/embed-bidi-style-in-isolate-crash.html [ Skip ]
 
 crbug.com/266213 [ Debug ] fast/frames/invalid-frameset.html [ Crash ]
-crbug.com/266213 [ Debug ] tables/table-section-overflow-clip-crash.html [ Crash ]
 
 # -----------------------------------------------------------------
 # Inspector tests

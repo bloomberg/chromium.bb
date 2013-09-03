@@ -59,6 +59,7 @@
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/text/TextStream.h"
+#include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"
@@ -982,6 +983,7 @@ void FrameView::layout(bool allowSubtree)
 
         m_nestedLayoutCount++;
 
+        updateCounters();
         autoSizeIfEnabled();
 
         ScrollbarMode hMode;
@@ -2247,6 +2249,20 @@ void FrameView::sendResizeEventIfNeeded()
 void FrameView::postLayoutTimerFired(Timer<FrameView>*)
 {
     performPostLayoutTasks();
+}
+
+void FrameView::updateCounters()
+{
+    RenderView* view = renderView();
+    if (!view->hasRenderCounters())
+        return;
+
+    for (RenderObject* renderer = view; renderer; renderer = renderer->nextInPreOrder()) {
+        if (!renderer->isCounter())
+            continue;
+
+        toRenderCounter(renderer)->updateCounter();
+    }
 }
 
 void FrameView::autoSizeIfEnabled()

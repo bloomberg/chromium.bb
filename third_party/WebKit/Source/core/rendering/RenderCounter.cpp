@@ -417,23 +417,7 @@ PassRefPtr<StringImpl> RenderCounter::originalText() const
 
 void RenderCounter::updateCounter()
 {
-    computePreferredLogicalWidths(0);
-}
-
-void RenderCounter::computePreferredLogicalWidths(float lead)
-{
-#ifndef NDEBUG
-    // FIXME: We shouldn't be modifying the tree in computePreferredLogicalWidths.
-    // Instead, we should properly hook the appropriate changes in the DOM and modify
-    // the render tree then. When that's done, we also won't need to override
-    // computePreferredLogicalWidths at all.
-    // https://bugs.webkit.org/show_bug.cgi?id=104829
-    SetLayoutNeededForbiddenScope layoutForbiddenScope(this, false);
-#endif
-
     setTextInternal(originalText());
-
-    RenderText::computePreferredLogicalWidths(lead);
 }
 
 void RenderCounter::invalidate()

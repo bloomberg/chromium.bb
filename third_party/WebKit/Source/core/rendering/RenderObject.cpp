@@ -674,12 +674,6 @@ void RenderObject::markContainingBlocksForLayout(bool scheduleRelayout, RenderOb
     bool simplifiedNormalFlowLayout = needsSimplifiedNormalFlowLayout() && !selfNeedsLayout() && !normalChildNeedsLayout();
 
     while (object) {
-#ifndef NDEBUG
-        // FIXME: Remove this once we remove the special cases for counters, quotes and mathml
-        // calling setNeedsLayout during preferred width computation.
-        SetLayoutNeededForbiddenScope layoutForbiddenScope(object, isSetNeedsLayoutForbidden());
-#endif
-
         if (object->selfNeedsLayout())
             return;
 

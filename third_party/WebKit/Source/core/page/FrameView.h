@@ -362,6 +362,7 @@ private:
 
     void paintControlTints();
 
+    void updateCounters();
     void autoSizeIfEnabled();
     void forceLayoutParentViewIfNeeded();
     void performPreLayoutTasks();
