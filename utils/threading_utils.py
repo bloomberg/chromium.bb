@@ -272,6 +272,7 @@ class Progress(object):
     self.index = 0
     self.start = time.time()
     self.size = size
+    self.size_changed = True
     self.use_cr_only = True
     self.unfinished_commands = set()
 
@@ -292,6 +293,7 @@ class Progress(object):
     for handler in logging.root.handlers:
       handler.flush()
 
+    got_one = False
     while True:
       try:
         name, index, size = self.queued_lines.get_nowait()
@@ -300,42 +302,50 @@ class Progress(object):
 
       if size:
         self.size += 1
+        self.size_changed = True
       if index:
         self.index += 1
       if not name:
         continue
 
-      if index:
-        alignment = str(len(str(self.size)))
-        next_line = ('[%' + alignment + 'd/%d] %6.2fs %s') % (
-            self.index,
-            self.size,
-            time.time() - self.start,
-            name)
-        # Fill it with whitespace only if self.use_cr_only is set.
-        prefix = ''
-        if self.use_cr_only:
-          if self.last_printed_line:
-            prefix = '\r'
-        if self.use_cr_only:
-          suffix = ' ' * max(0, len(self.last_printed_line) - len(next_line))
-        else:
-          suffix = '\n'
-        line = '%s%s%s' % (prefix, next_line, suffix)
-        self.last_printed_line = next_line
-      else:
-        line = '\n%s\n' % name.strip('\n')
+      got_one = True
+      if not index:
         self.last_printed_line = ''
+        sys.stdout.write('\n%s\n' % name.strip('\n'))
+      else:
+        line, self.last_printed_line = self.gen_line(name)
+        sys.stdout.write(line)
 
+    if not got_one and self.size_changed:
+      line, self.last_printed_line = self.gen_line('')
       sys.stdout.write(line)
-
-    # Ensure that all the output is flush to prevent it from getting mixed with
-    # other output streams (like the logging streams).
-    sys.stdout.flush()
+      got_one = True
+    self.size_changed = False
+    if got_one:
+      # Ensure that all the output is flush to prevent it from getting mixed
+      # with other output streams (like the logging streams).
+      sys.stdout.flush()
 
     if self.unfinished_commands:
       logging.debug('Waiting for the following commands to finish:\n%s',
                     '\n'.join(self.unfinished_commands))
+
+  def gen_line(self, name):
+    """Generates the line to be printed."""
+    next_line = ('[%*d/%d] %6.2fs %s') % (
+        len(str(self.size)), self.index,
+        self.size,
+        time.time() - self.start,
+        name)
+    # Fill it with whitespace only if self.use_cr_only is set.
+    prefix = ''
+    if self.use_cr_only and self.last_printed_line:
+      prefix = '\r'
+    if self.use_cr_only:
+      suffix = ' ' * max(0, len(self.last_printed_line) - len(next_line))
+    else:
+      suffix = '\n'
+    return '%s%s%s' % (prefix, next_line, suffix), next_line
 
 
 class QueueWithProgress(Queue.PriorityQueue):

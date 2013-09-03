@@ -141,6 +141,7 @@ class IsolateTestCases(unittest.TestCase):
     self.assertEqual(0, proc.returncode, (out, err))
     lines = out.splitlines()
     expected_out_re = [
+      r'\[0/3\]   \d\.\d\ds ',
       r'\[1/3\]   \d+\.\d\ds .+',
       r'\[2/3\]   \d+\.\d\ds .+',
       r'\[3/3\]   \d+\.\d\ds .+',

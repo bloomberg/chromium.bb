@@ -200,6 +200,7 @@ class RunTestCases(unittest.TestCase):
     self.assertEqual(0, return_code)
 
     expected_out_re = [
+      r'\[0/\d\]   \d\.\d\ds ',
       r'\[\d/\d\]   \d\.\d\ds .+',
       r'\[\d/\d\]   \d\.\d\ds .+',
       r'\[\d/\d\]   \d\.\d\ds .+',
@@ -241,6 +242,7 @@ class RunTestCases(unittest.TestCase):
         self.assertEqual(0, return_code)
 
         expected_out_re = [
+          r'\[0/\d\]   (\d\.\d\d)s ',
           r'\[\d/\d\]   (\d\.\d\d)s .+',
           r'\[\d/\d\]   (\d\.\d\d)s .+',
           r'\[\d/\d\]   (\d\.\d\d)s .+',
@@ -294,7 +296,9 @@ class RunTestCases(unittest.TestCase):
 
     self.assertEqual(0, return_code)
 
-    expected_out_re = []
+    expected_out_re = [
+        r'\[0/3\]   \d\.\d\ds '
+    ]
     test_cases = (
       'Foo.Bar2',
       'Foo.Bar1',
@@ -354,6 +358,7 @@ class RunTestCases(unittest.TestCase):
 
     test_failure_output = get_whole_test_re('Baz.Fail', True, '100', 'Baz.Fail')
     expected_out_re = [
+      r'\[0/\d\]   \d\.\d\ds ',
       r'\[1/\d\]   \d\.\d\ds .+',
       r'\[2/\d\]   \d\.\d\ds .+',
       r'\[3/\d\]   \d\.\d\ds .+',
@@ -404,7 +409,9 @@ class RunTestCases(unittest.TestCase):
 
     self.assertEqual(1, return_code)
 
-    expected_out_re = []
+    expected_out_re = [
+      r'\[0/\d\]   \d\.\d\ds '
+    ]
     test_cases = (
       'Foo.Bar3',
       'Foo.Bar1',
@@ -578,6 +585,7 @@ class RunTestCases(unittest.TestCase):
     self.assertEqual(1, return_code)
 
     expected_out_re = [
+      r'\[0\/3\]   \d\.\d\ds ',
       r'\[1\/4\]   \d\.\d\ds Foo\.Bar1 \(\d+\.\d+s\)',
       # Only the header is included since the test was not run alone.
       re.escape('Note: Google Test filter = Foo.Bar3:Foo.Bar2:Foo.Bar1'),
@@ -637,6 +645,7 @@ class RunTestCases(unittest.TestCase):
     self.assertEqual(0, return_code)
 
     expected_out_re = [
+      r'\[0\/2\]   \d\.\d\ds ',
       r'\[1\/2\]   \d\.\d\ds Foo\.Bar1 \(\d+\.\d+s\)',
       r'\[2\/2\]   \d\.\d\ds Foo\.Bar2 \(\d+\.\d+s\) *',
       # Dumping the whole thing:
@@ -701,6 +710,7 @@ class RunTestCases(unittest.TestCase):
     self.assertEqual(1, return_code)
 
     expected_out_re = [
+      r'\[0\/1\]   \d\.\d\ds ',
       r'\[1\/1\]   \d\.\d\ds Foo\.Bar1 \(\d+\.\d\ds\)',
       # TODO(maruel): Why 2 empty lines are stripped off.
     ] + get_whole_test_re('Foo.Bar1', False, '100', 'Foo.Bar1')[:-2] + [
@@ -745,6 +755,7 @@ class RunTestCases(unittest.TestCase):
     self.assertEqual(1, return_code)
 
     expected_out_re = [
+      r'\[0\/1\]   \d\.\d\ds ',
       r'\[1\/2\]   \d\.\d\ds Foo\.Bar1 \(\d+\.\d\ds\)',
     ] + get_whole_test_re('Foo.Bar1', True, '100', 'Foo.Bar1') + [
       r'\[2\/3\]   \d\.\d\ds Foo\.Bar1 \(\d+\.\d\ds\) - retry #1',
@@ -786,6 +797,7 @@ class RunTestCases(unittest.TestCase):
     self.assertEqual(0, return_code, (out, err))
 
     expected_out_re = [
+      r'\[0/\d\]   \d\.\d\ds ',
       r'\[\d/\d\]   \d\.\d\ds .+',
       r'\[\d/\d\]   \d\.\d\ds .+',
       re.escape('Summary:'),

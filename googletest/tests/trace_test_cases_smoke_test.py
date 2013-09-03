@@ -90,6 +90,7 @@ class TraceTestCases(unittest.TestCase):
     lines = out.splitlines()
     expected_out_re = [
       r'Tracing\.\.\.',
+      r'\[0/4\] +\d+\.\d\ds ',
       r'\[1/4\] +\d+\.\d\ds .+',
       r'\[2/4\] +\d+\.\d\ds .+',
       r'\[3/4\] +\d+\.\d\ds .+',
