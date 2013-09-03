@@ -192,6 +192,8 @@ bool FileStructureConsistent(const base::FilePath& path) {
   }
 }
 
+// A short bindable thunk that can call a completion callback. Intended to be
+// used to post a task to run a callback after an operation completes.
 void CallCompletionCallback(const net::CompletionCallback& callback,
                             int error_code) {
   DCHECK(!callback.is_null());
@@ -298,7 +300,7 @@ int SimpleBackendImpl::OpenEntry(const std::string& key,
 int SimpleBackendImpl::CreateEntry(const std::string& key,
                                    Entry** entry,
                                    const CompletionCallback& callback) {
-  DCHECK(key.size() > 0);
+  DCHECK_LT(0u, key.size());
   scoped_refptr<SimpleEntryImpl> simple_entry = CreateOrFindActiveEntry(key);
   return simple_entry->CreateEntry(entry, callback);
 }
@@ -476,7 +478,7 @@ void SimpleBackendImpl::GetNextEntryInIterator(
     const CompletionCallback& callback,
     int error_code) {
   if (error_code != net::OK) {
-    CallCompletionCallback(callback, error_code);
+    callback.Run(error_code);
     return;
   }
   if (*iter == NULL) {
@@ -501,12 +503,12 @@ void SimpleBackendImpl::GetNextEntryInIterator(
       if (error_code_open == net::ERR_IO_PENDING)
         return;
       if (error_code_open != net::ERR_FAILED) {
-        CallCompletionCallback(callback, error_code_open);
+        callback.Run(error_code_open);
         return;
       }
     }
   }
-  CallCompletionCallback(callback, net::ERR_FAILED);
+  callback.Run(net::ERR_FAILED);
 }
 
 void SimpleBackendImpl::OnEntryOpenedFromHash(
@@ -516,7 +518,7 @@ void SimpleBackendImpl::OnEntryOpenedFromHash(
     const CompletionCallback& callback,
     int error_code) {
   if (error_code != net::OK) {
-    CallCompletionCallback(callback, error_code);
+    callback.Run(error_code);
     return;
   }
   DCHECK(*entry);
@@ -529,7 +531,7 @@ void SimpleBackendImpl::OnEntryOpenedFromHash(
     // There is no active entry corresponding to this hash. The entry created
     // is put in the map of active entries and returned to the caller.
     it->second = simple_entry->AsWeakPtr();
-    CallCompletionCallback(callback, error_code);
+    callback.Run(error_code);
   } else {
     // The entry was made active with the key while the creation from hash
     // occurred. The entry created from hash needs to be closed, and the one
@@ -559,7 +561,7 @@ void SimpleBackendImpl::OnEntryOpenedFromKey(
     }
     SIMPLE_CACHE_UMA(BOOLEAN, "KeyMatchedOnOpen", cache_type_, key_matches);
   }
-  CallCompletionCallback(callback, final_code);
+  callback.Run(final_code);
 }
 
 void SimpleBackendImpl::CheckIterationReturnValue(
@@ -571,7 +573,7 @@ void SimpleBackendImpl::CheckIterationReturnValue(
     OpenNextEntry(iter, entry, callback);
     return;
   }
-  CallCompletionCallback(callback, error_code);
+  callback.Run(error_code);
 }
 
 void SimpleBackendImpl::FlushWorkerPoolForTesting() {

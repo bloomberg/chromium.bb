@@ -30,7 +30,8 @@ TEST_F(SimpleUtilTest, ConvertEntryHashKeyToHexString) {
 TEST_F(SimpleUtilTest, GetEntryHashKey) {
   EXPECT_EQ("7ac408c1dff9c84b",
             GetEntryHashKeyAsHexString("http://www.amazon.com/"));
-  EXPECT_EQ(GG_UINT64_C(0x7ac408c1dff9c84b), GetEntryHashKey("http://www.amazon.com/"));
+  EXPECT_EQ(GG_UINT64_C(0x7ac408c1dff9c84b),
+            GetEntryHashKey("http://www.amazon.com/"));
 
   EXPECT_EQ("9fe947998c2ccf47",
             GetEntryHashKeyAsHexString("www.amazon.com"));

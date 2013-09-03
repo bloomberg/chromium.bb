@@ -1167,7 +1167,7 @@ void SimpleEntryImpl::RecordReadIsParallelizable(
     type = READ_FOLLOWS_READ;
   } else if (executing_operation_->type() == SimpleEntryOperation::TYPE_WRITE) {
     if (executing_operation_->ConflictsWith(operation))
-      type = READ_FOLLOWS_CONFLICTING_WRITE ;
+      type = READ_FOLLOWS_CONFLICTING_WRITE;
     else
       type = READ_FOLLOWS_NON_CONFLICTING_WRITE;
   }

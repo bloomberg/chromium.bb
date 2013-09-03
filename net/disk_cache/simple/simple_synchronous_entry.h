@@ -37,7 +37,7 @@ struct SimpleEntryStat {
 };
 
 struct SimpleEntryCreationResults {
-  SimpleEntryCreationResults(SimpleEntryStat entry_stat);
+  explicit SimpleEntryCreationResults(SimpleEntryStat entry_stat);
   ~SimpleEntryCreationResults();
 
   SimpleSynchronousEntry* sync_entry;
