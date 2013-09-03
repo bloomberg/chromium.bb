@@ -70,7 +70,7 @@ PassRefPtr<FileReader> FileReader::create(ScriptExecutionContext* context)
 FileReader::FileReader(ScriptExecutionContext* context)
     : ActiveDOMObject(context)
     , m_state(EMPTY)
-    , m_aborting(false)
+    , m_loadingState(LoadingStateNone)
     , m_readType(FileReaderLoader::ReadAsBinaryString)
     , m_lastProgressNotificationTimeMS(0)
 {
@@ -157,6 +157,7 @@ void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, Excep
     m_blob = blob;
     m_readType = type;
     m_state = LOADING;
+    m_loadingState = LoadingStateLoading;
     m_error = 0;
 
     m_loader = adoptPtr(new FileReaderLoader(m_readType, this));
@@ -174,9 +175,9 @@ void FileReader::abort()
 {
     LOG(FileAPI, "FileReader: aborting\n");
 
-    if (m_aborting || m_state != LOADING)
+    if (m_loadingState != LoadingStateLoading)
         return;
-    m_aborting = true;
+    m_loadingState = LoadingStateAborted;
 
     // Schedule to have the abort done later since abort() might be called from the event handler and we do not want the resource loading code to be in the stack.
     scriptExecutionContext()->postTask(
@@ -188,7 +189,6 @@ void FileReader::doAbort()
     ASSERT(m_state != DONE);
 
     terminate();
-    m_aborting = false;
 
     m_error = FileError::create(FileError::ABORT_ERR);
 
@@ -207,6 +207,7 @@ void FileReader::terminate()
         m_loader = nullptr;
     }
     m_state = DONE;
+    m_loadingState = LoadingStateNone;
 }
 
 void FileReader::didStartLoading()
@@ -228,8 +229,10 @@ void FileReader::didReceiveData()
 
 void FileReader::didFinishLoading()
 {
-    if (m_aborting)
+    if (m_loadingState == LoadingStateAborted)
         return;
+    ASSERT(m_loadingState == LoadingStateLoading);
+    m_loadingState = LoadingStateNone;
 
     fireEvent(eventNames().progressEvent);
 
@@ -245,9 +248,10 @@ void FileReader::didFinishLoading()
 
 void FileReader::didFail(FileError::ErrorCode errorCode)
 {
-    // If we're aborting, do not proceed with normal error handling since it is covered in aborting code.
-    if (m_aborting)
+    if (m_loadingState == LoadingStateAborted)
         return;
+    ASSERT(m_loadingState == LoadingStateLoading);
+    m_loadingState = LoadingStateNone;
 
     ASSERT(m_state != DONE);
     m_state = DONE;

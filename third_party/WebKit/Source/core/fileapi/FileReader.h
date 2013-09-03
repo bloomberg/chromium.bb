@@ -113,7 +113,16 @@ private:
     void fireEvent(const AtomicString& type);
 
     ReadyState m_state;
-    bool m_aborting;
+
+    // Internal loading state, which could differ from ReadyState as it's
+    // for script-visible state while this one's for internal state.
+    enum LoadingState {
+        LoadingStateNone,
+        LoadingStateLoading,
+        LoadingStateAborted
+    };
+    LoadingState m_loadingState;
+
     EventTargetData m_eventTargetData;
 
     RefPtr<Blob> m_blob;

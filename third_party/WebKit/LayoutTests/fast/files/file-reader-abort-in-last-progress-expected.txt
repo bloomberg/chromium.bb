@@ -1,0 +1,3 @@
+
+PASS Check if readyState is done, and calling abort() doesn't crash 
+
