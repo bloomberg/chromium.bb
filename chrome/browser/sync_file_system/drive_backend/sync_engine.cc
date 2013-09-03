@@ -4,8 +4,14 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine.h"
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_api_service.h"
+#include "chrome/browser/sync_file_system/drive_backend/local_to_remote_syncer.h"
+#include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
+#include "chrome/browser/sync_file_system/drive_backend/remote_to_local_syncer.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_engine_initializer.h"
+#include "chrome/browser/sync_file_system/sync_task.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -27,8 +33,14 @@ SyncEngine::~SyncEngine() {
   NOTIMPLEMENTED();
 }
 
-void SyncEngine::Initialize(const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
+void SyncEngine::Initialize() {
+  task_manager_.Initialize(SYNC_STATUS_OK);
+
+  SyncEngineInitializer* initializer = new SyncEngineInitializer;
+  task_manager_.ScheduleSyncTask(
+      scoped_ptr<SyncTask>(initializer),
+      base::Bind(&SyncEngine::DidInitialize, weak_ptr_factory_.GetWeakPtr(),
+                 initializer));
 }
 
 void SyncEngine::AddServiceObserver(SyncServiceObserver* observer) {
@@ -42,36 +54,61 @@ void SyncEngine::AddFileStatusObserver(FileStatusObserver* observer) {
 void SyncEngine::RegisterOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
+  task_manager_.ScheduleTask(
+      base::Bind(&SyncEngine::DoRegisterApp,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 origin.host()),
+      callback);
 }
 
 void SyncEngine::UnregisterOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
+  task_manager_.ScheduleTask(
+      base::Bind(&SyncEngine::DoUnregisterApp,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 origin.host()),
+      callback);
 }
 
 void SyncEngine::EnableOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
+  task_manager_.ScheduleTask(
+      base::Bind(&SyncEngine::DoEnableApp,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 origin.host()),
+      callback);
 }
 
 void SyncEngine::DisableOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
+  task_manager_.ScheduleTask(
+      base::Bind(&SyncEngine::DoDisableApp,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 origin.host()),
+      callback);
 }
 
 void SyncEngine::UninstallOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
+  task_manager_.ScheduleTask(
+      base::Bind(&SyncEngine::DoUninstallApp,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 origin.host()),
+      callback);
 }
 
 void SyncEngine::ProcessRemoteChange(
     const SyncFileCallback& callback) {
-  NOTIMPLEMENTED();
+  RemoteToLocalSyncer* syncer = new RemoteToLocalSyncer;
+  task_manager_.ScheduleSyncTask(
+      scoped_ptr<SyncTask>(syncer),
+      base::Bind(&SyncEngine::DidProcessRemoteChange,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 syncer, callback));
 }
 
 void SyncEngine::SetRemoteChangeProcessor(
@@ -139,7 +176,12 @@ void SyncEngine::ApplyLocalChange(
     const SyncFileMetadata& local_file_metadata,
     const fileapi::FileSystemURL& url,
     const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
+  LocalToRemoteSyncer* syncer = new LocalToRemoteSyncer;
+  task_manager_.ScheduleSyncTask(
+      scoped_ptr<SyncTask>(syncer),
+      base::Bind(&SyncEngine::DidApplyLocalChange,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 syncer, callback));
 }
 
 void SyncEngine::MaybeScheduleNextTask() {
@@ -155,6 +197,49 @@ void SyncEngine::OnNotificationReceived() {
 }
 
 void SyncEngine::OnPushNotificationEnabled(bool enabled) {
+  NOTIMPLEMENTED();
+}
+
+void SyncEngine::DoRegisterApp(const std::string& app_id,
+                               const SyncStatusCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void SyncEngine::DoUnregisterApp(const std::string& app_id,
+                                 const SyncStatusCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void SyncEngine::DoDisableApp(const std::string& app_id,
+                              const SyncStatusCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void SyncEngine::DoEnableApp(const std::string& app_id,
+                             const SyncStatusCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void SyncEngine::DoUninstallApp(const std::string& app_id,
+                                const SyncStatusCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+
+void SyncEngine::DidInitialize(SyncEngineInitializer* initializer,
+                               SyncStatusCode status) {
+  NOTIMPLEMENTED();
+}
+
+void SyncEngine::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
+                                        const SyncFileCallback& callback,
+                                        SyncStatusCode status) {
+  NOTIMPLEMENTED();
+}
+
+void SyncEngine::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
+                                     const SyncStatusCallback& callback,
+                                     SyncStatusCode status) {
   NOTIMPLEMENTED();
 }
 

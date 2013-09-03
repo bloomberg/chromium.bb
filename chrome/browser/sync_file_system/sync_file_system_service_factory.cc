@@ -100,6 +100,7 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
             notification_manager,
             extension_service));
 
+    sync_engine->Initialize();
     remote_file_service = sync_engine.PassAs<RemoteFileSyncService>();
   } else {
     // FileSystem needs to be registered before DriveFileSyncService runs

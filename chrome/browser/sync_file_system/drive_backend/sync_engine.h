@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_ENGINE_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_ENGINE_H_
 
-#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -24,9 +23,10 @@ class DriveNotificationManager;
 namespace sync_file_system {
 namespace drive_backend {
 
-class SyncEngineInitializer;
 class LocalToRemoteSyncer;
+class MetadataDatabase;
 class RemoteToLocalSyncer;
+class SyncEngineInitializer;
 
 class SyncEngine : public RemoteFileSyncService,
                    public LocalChangeProcessor,
@@ -41,7 +41,7 @@ class SyncEngine : public RemoteFileSyncService,
              ExtensionService* extension_service);
   virtual ~SyncEngine();
 
-  void Initialize(const SyncStatusCallback& callback);
+  void Initialize();
 
   // RemoteFileSyncService overrides.
   virtual void AddServiceObserver(SyncServiceObserver* observer) OVERRIDE;
@@ -98,10 +98,31 @@ class SyncEngine : public RemoteFileSyncService,
   virtual void OnPushNotificationEnabled(bool enabled) OVERRIDE;
 
  private:
+  void DoRegisterApp(const std::string& app_id,
+                     const SyncStatusCallback& callback);
+  void DoUnregisterApp(const std::string& app_id,
+                       const SyncStatusCallback& callback);
+  void DoDisableApp(const std::string& app_id,
+                    const SyncStatusCallback& callback);
+  void DoEnableApp(const std::string& app_id,
+                   const SyncStatusCallback& callback);
+  void DoUninstallApp(const std::string& app_id,
+                      const SyncStatusCallback& callback);
+
+  void DidInitialize(SyncEngineInitializer* initializer,
+                     SyncStatusCode status);
+  void DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
+                              const SyncFileCallback& callback,
+                              SyncStatusCode status);
+  void DidApplyLocalChange(LocalToRemoteSyncer* syncer,
+                           const SyncStatusCallback& callback,
+                           SyncStatusCode status);
+
   base::FilePath base_dir_;
   base::FilePath temporary_file_dir_;
 
   scoped_ptr<drive::DriveAPIService> drive_api_;
+  scoped_ptr<MetadataDatabase> metadata_database_;
 
   // These external services are not owned by SyncEngine.
   // The owner of the SyncEngine is responsible for their lifetime.
