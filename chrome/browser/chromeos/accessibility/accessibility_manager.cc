@@ -317,7 +317,8 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
 
 #if defined(USE_ASH)
   // Large cursor is implemented only in ash.
-  ash::Shell::GetInstance()->cursor_manager()->SetScale(enabled ? 2.0 : 1.0);
+  ash::Shell::GetInstance()->cursor_manager()->SetCursorSet(
+      enabled ? ui::CURSOR_SET_LARGE : ui::CURSOR_SET_NORMAL);
 #endif
 }
 
