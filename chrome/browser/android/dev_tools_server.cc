@@ -103,16 +103,17 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
     return "";
   }
 
-  virtual scoped_refptr<net::StreamListenSocket> CreateSocketForTethering(
+  virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
       net::StreamListenSocket::Delegate* delegate,
       std::string* name) OVERRIDE {
     *name = base::StringPrintf(
         kTetheringSocketName, getpid(), ++last_tethering_socket_);
     return net::UnixDomainSocket::CreateAndListenWithAbstractNamespace(
-        *name,
-        "",
-        delegate,
-        base::Bind(&content::CanUserConnectToDevTools));
+               *name,
+               "",
+               delegate,
+               base::Bind(&content::CanUserConnectToDevTools))
+           .PassAs<net::StreamListenSocket>();
   }
 
  private:

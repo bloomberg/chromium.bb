@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/socket/stream_listen_socket.h"
 
 class GURL;
@@ -52,7 +52,7 @@ class DevToolsHttpHandlerDelegate {
 
   // Creates named socket for reversed tethering implementation (used with
   // remote debugging, primarily for mobile).
-  virtual scoped_refptr<net::StreamListenSocket> CreateSocketForTethering(
+  virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
       net::StreamListenSocket::Delegate* delegate,
       std::string* name) = 0;
 };

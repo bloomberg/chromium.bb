@@ -10,9 +10,9 @@
 namespace net {
 namespace test_server {
 
-HttpConnection::HttpConnection(StreamListenSocket* socket,
+HttpConnection::HttpConnection(scoped_ptr<StreamListenSocket> socket,
                                const HandleRequestCallback& callback)
-    : socket_(socket),
+    : socket_(socket.Pass()),
       callback_(callback) {
 }
 

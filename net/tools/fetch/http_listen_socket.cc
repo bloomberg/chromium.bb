@@ -4,11 +4,10 @@
 
 #include "net/tools/fetch/http_listen_socket.h"
 
-#include <map>
-
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/tools/fetch/http_server_request_info.h"
 #include "net/tools/fetch/http_server_response_info.h"
@@ -20,6 +19,7 @@ HttpListenSocket::HttpListenSocket(net::SocketDescriptor s,
 }
 
 HttpListenSocket::~HttpListenSocket() {
+  STLDeleteElements(&connections_);
 }
 
 void HttpListenSocket::Accept() {
@@ -28,15 +28,14 @@ void HttpListenSocket::Accept() {
   if (conn == net::kInvalidSocket) {
     // TODO
   } else {
-    scoped_refptr<HttpListenSocket> sock(
+    scoped_ptr<StreamListenSocket> sock(
         new HttpListenSocket(conn, delegate_));
-    // It's up to the delegate to AddRef if it wants to keep it around.
-    DidAccept(this, sock.get());
+    DidAccept(this, sock.Pass());
   }
 }
 
 // static
-scoped_refptr<HttpListenSocket> HttpListenSocket::CreateAndListen(
+scoped_ptr<HttpListenSocket> HttpListenSocket::CreateAndListen(
     const std::string& ip,
     int port,
     HttpListenSocket::Delegate* delegate) {
@@ -44,11 +43,11 @@ scoped_refptr<HttpListenSocket> HttpListenSocket::CreateAndListen(
   if (s == net::kInvalidSocket) {
     // TODO (ibrar): error handling.
   } else {
-    scoped_refptr<HttpListenSocket> serv = new HttpListenSocket(s, delegate);
+    scoped_ptr<HttpListenSocket> serv(new HttpListenSocket(s, delegate));
     serv->Listen();
-    return serv;
+    return serv.Pass();
   }
-  return NULL;
+  return scoped_ptr<HttpListenSocket>();
 }
 
 //
@@ -180,9 +179,10 @@ HttpServerRequestInfo* HttpListenSocket::ParseHeaders() {
   return NULL;
 }
 
-void HttpListenSocket::DidAccept(net::StreamListenSocket* server,
-                                 net::StreamListenSocket* connection) {
-  connection->AddRef();
+void HttpListenSocket::DidAccept(
+    net::StreamListenSocket* server,
+    scoped_ptr<net::StreamListenSocket> connection) {
+  connections_.insert(connection.release());
 }
 
 void HttpListenSocket::DidRead(net::StreamListenSocket* connection,
@@ -199,7 +199,9 @@ void HttpListenSocket::DidRead(net::StreamListenSocket* connection,
 }
 
 void HttpListenSocket::DidClose(net::StreamListenSocket* sock) {
-  sock->Release();
+  size_t count = connections_.erase(sock);
+  DCHECK_EQ(1u, count);
+  delete sock;
 }
 
 // Convert the numeric status code to a string.

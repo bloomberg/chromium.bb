@@ -30,7 +30,7 @@ class ShellDevToolsDelegate : public DevToolsHttpHandlerDelegate {
   virtual RenderViewHost* CreateNewTarget() OVERRIDE;
   virtual TargetType GetTargetType(RenderViewHost*) OVERRIDE;
   virtual std::string GetViewDescription(content::RenderViewHost*) OVERRIDE;
-  virtual scoped_refptr<net::StreamListenSocket> CreateSocketForTethering(
+  virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
       net::StreamListenSocket::Delegate* delegate,
       std::string* name) OVERRIDE;
 

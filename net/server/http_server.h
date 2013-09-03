@@ -9,7 +9,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/http/http_status_code.h"
 #include "net/socket/stream_listen_socket.h"
 
@@ -65,7 +65,7 @@ class HttpServer : public StreamListenSocket::Delegate,
 
   // ListenSocketDelegate
   virtual void DidAccept(StreamListenSocket* server,
-                         StreamListenSocket* socket) OVERRIDE;
+                         scoped_ptr<StreamListenSocket> socket) OVERRIDE;
   virtual void DidRead(StreamListenSocket* socket,
                        const char* data,
                        int len) OVERRIDE;
@@ -89,7 +89,7 @@ class HttpServer : public StreamListenSocket::Delegate,
   HttpConnection* FindConnection(StreamListenSocket* socket);
 
   HttpServer::Delegate* delegate_;
-  scoped_refptr<StreamListenSocket> server_;
+  scoped_ptr<StreamListenSocket> server_;
   typedef std::map<int, HttpConnection*> IdToConnectionMap;
   IdToConnectionMap id_to_connection_;
   typedef std::map<StreamListenSocket*, HttpConnection*> SocketToConnectionMap;

@@ -156,7 +156,7 @@ void EmbeddedTestServer::InitializeOnIOThread() {
   if (socket_descriptor == kInvalidSocket)
     return;
 
-  listen_socket_ = new HttpListenSocket(socket_descriptor, this);
+  listen_socket_.reset(new HttpListenSocket(socket_descriptor, this));
   listen_socket_->Listen();
 
   IPEndPoint address;
@@ -171,7 +171,7 @@ void EmbeddedTestServer::InitializeOnIOThread() {
 void EmbeddedTestServer::ShutdownOnIOThread() {
   DCHECK(io_thread_->BelongsToCurrentThread());
 
-  listen_socket_ = NULL;  // Release the listen socket.
+  listen_socket_.reset();
   STLDeleteContainerPairSecondPointers(connections_.begin(),
                                        connections_.end());
   connections_.clear();
@@ -224,15 +224,17 @@ void EmbeddedTestServer::RegisterRequestHandler(
   request_handlers_.push_back(callback);
 }
 
-void EmbeddedTestServer::DidAccept(StreamListenSocket* server,
-                           StreamListenSocket* connection) {
+void EmbeddedTestServer::DidAccept(
+    StreamListenSocket* server,
+    scoped_ptr<StreamListenSocket> connection) {
   DCHECK(io_thread_->BelongsToCurrentThread());
 
   HttpConnection* http_connection = new HttpConnection(
-      connection,
+      connection.Pass(),
       base::Bind(&EmbeddedTestServer::HandleRequest,
                  weak_factory_.GetWeakPtr()));
-  connections_[connection] = http_connection;
+  // TODO(szym): Make HttpConnection the StreamListenSocket delegate.
+  connections_[http_connection->socket_.get()] = http_connection;
 }
 
 void EmbeddedTestServer::DidRead(StreamListenSocket* connection,

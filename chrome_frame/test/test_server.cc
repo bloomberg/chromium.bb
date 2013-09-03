@@ -198,9 +198,10 @@ Connection* SimpleWebServer::FindConnection(
   return NULL;
 }
 
-void SimpleWebServer::DidAccept(net::StreamListenSocket* server,
-                                net::StreamListenSocket* connection) {
-  connections_.push_back(new Connection(connection));
+void SimpleWebServer::DidAccept(
+    net::StreamListenSocket* server,
+    scoped_ptr<net::StreamListenSocket> connection) {
+  connections_.push_back(new Connection(connection.Pass()));
 }
 
 void SimpleWebServer::DidRead(net::StreamListenSocket* connection,
@@ -262,7 +263,6 @@ HTTPTestServer::HTTPTestServer(int port, const std::wstring& address,
 }
 
 HTTPTestServer::~HTTPTestServer() {
-  server_ = NULL;
 }
 
 std::list<scoped_refptr<ConfigurableConnection>>::iterator
@@ -294,8 +294,8 @@ scoped_refptr<ConfigurableConnection> HTTPTestServer::ConnectionFromSocket(
 }
 
 void HTTPTestServer::DidAccept(net::StreamListenSocket* server,
-                               net::StreamListenSocket* socket) {
-  connection_list_.push_back(new ConfigurableConnection(socket));
+                               scoped_ptr<net::StreamListenSocket> socket) {
+  connection_list_.push_back(new ConfigurableConnection(socket.Pass()));
 }
 
 void HTTPTestServer::DidRead(net::StreamListenSocket* socket,
@@ -362,12 +362,12 @@ void ConfigurableConnection::SendChunk() {
         FROM_HERE, base::Bind(&ConfigurableConnection::SendChunk, this),
         base::TimeDelta::FromMilliseconds(options_.timeout_));
   } else {
-    socket_ = 0;  // close the connection.
+    Close();
   }
 }
 
 void ConfigurableConnection::Close() {
-  socket_ = NULL;
+  socket_.reset();
 }
 
 void ConfigurableConnection::Send(const std::string& headers,

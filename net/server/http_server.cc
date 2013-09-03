@@ -95,10 +95,11 @@ int HttpServer::GetLocalAddress(IPEndPoint* address) {
 }
 
 void HttpServer::DidAccept(StreamListenSocket* server,
-                           StreamListenSocket* socket) {
-  HttpConnection* connection = new HttpConnection(this, socket);
+                           scoped_ptr<StreamListenSocket> socket) {
+  HttpConnection* connection = new HttpConnection(this, socket.Pass());
   id_to_connection_[connection->id()] = connection;
-  socket_to_connection_[socket] = connection;
+  // TODO(szym): Fix socket access. Make HttpConnection the Delegate.
+  socket_to_connection_[connection->socket_.get()] = connection;
 }
 
 void HttpServer::DidRead(StreamListenSocket* socket,
@@ -180,7 +181,6 @@ void HttpServer::DidClose(StreamListenSocket* socket) {
 HttpServer::~HttpServer() {
   STLDeleteContainerPairSecondPointers(
       id_to_connection_.begin(), id_to_connection_.end());
-  server_ = NULL;
 }
 
 //

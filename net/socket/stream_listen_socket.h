@@ -30,6 +30,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/socket/socket_descriptor.h"
 
@@ -38,7 +39,7 @@ namespace net {
 class IPEndPoint;
 
 class NET_EXPORT StreamListenSocket
-    : public base::RefCountedThreadSafe<StreamListenSocket>,
+    :
 #if defined(OS_WIN)
       public base::win::ObjectWatcher::Delegate {
 #elif defined(OS_POSIX)
@@ -46,16 +47,17 @@ class NET_EXPORT StreamListenSocket
 #endif
 
  public:
+  virtual ~StreamListenSocket();
+
   // TODO(erikkay): this delegate should really be split into two parts
   // to split up the listener from the connected socket.  Perhaps this class
   // should be split up similarly.
   class Delegate {
    public:
     // |server| is the original listening Socket, connection is the new
-    // Socket that was created.  Ownership of |connection| is transferred
-    // to the delegate with this call.
+    // Socket that was created.
     virtual void DidAccept(StreamListenSocket* server,
-                           StreamListenSocket* connection) = 0;
+                           scoped_ptr<StreamListenSocket> connection) = 0;
     virtual void DidRead(StreamListenSocket* connection,
                          const char* data,
                          int len) = 0;
@@ -82,7 +84,6 @@ class NET_EXPORT StreamListenSocket
   };
 
   StreamListenSocket(SocketDescriptor s, Delegate* del);
-  virtual ~StreamListenSocket();
 
   SocketDescriptor AcceptSocket();
   virtual void Accept() = 0;
@@ -100,7 +101,6 @@ class NET_EXPORT StreamListenSocket
   Delegate* const socket_delegate_;
 
  private:
-  friend class base::RefCountedThreadSafe<StreamListenSocket>;
   friend class TransportClientSocketTest;
 
   void SendInternal(const char* bytes, int len);
@@ -139,7 +139,7 @@ class NET_EXPORT StreamListenSocketFactory {
   virtual ~StreamListenSocketFactory() {}
 
   // Returns a new instance of StreamListenSocket or NULL if an error occurred.
-  virtual scoped_refptr<StreamListenSocket> CreateAndListen(
+  virtual scoped_ptr<StreamListenSocket> CreateAndListen(
       StreamListenSocket::Delegate* delegate) const = 0;
 };
 

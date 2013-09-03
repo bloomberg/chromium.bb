@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/http/http_status_code.h"
 
@@ -36,12 +35,10 @@ class HttpConnection {
   friend class HttpServer;
   static int last_id_;
 
-  HttpConnection(HttpServer* server, StreamListenSocket* sock);
-
-  void DetachSocket();
+  HttpConnection(HttpServer* server, scoped_ptr<StreamListenSocket> sock);
 
   HttpServer* server_;
-  scoped_refptr<StreamListenSocket> socket_;
+  scoped_ptr<StreamListenSocket> socket_;
   scoped_ptr<WebSocket> web_socket_;
   std::string recv_data_;
   int id_;

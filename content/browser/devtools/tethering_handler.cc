@@ -61,7 +61,7 @@ class SocketPump : public net::StreamListenSocket::Delegate {
 
  private:
   virtual void DidAccept(net::StreamListenSocket* server,
-                         net::StreamListenSocket* socket) OVERRIDE {
+                         scoped_ptr<net::StreamListenSocket> socket) OVERRIDE {
     if (accepted_socket_.get())
       return;
 
@@ -69,7 +69,7 @@ class SocketPump : public net::StreamListenSocket::Delegate {
     wire_buffer_ = new net::GrowableIOBuffer();
     wire_buffer_->SetCapacity(kBufferSize);
 
-    accepted_socket_ = socket;
+    accepted_socket_ = socket.Pass();
     int result = client_socket_->Read(
         buffer_.get(),
         kBufferSize,
@@ -158,8 +158,8 @@ class SocketPump : public net::StreamListenSocket::Delegate {
 
  private:
   scoped_ptr<net::StreamSocket> client_socket_;
-  scoped_refptr<net::StreamListenSocket> server_socket_;
-  scoped_refptr<net::StreamListenSocket> accepted_socket_;
+  scoped_ptr<net::StreamListenSocket> server_socket_;
+  scoped_ptr<net::StreamListenSocket> accepted_socket_;
   scoped_refptr<net::IOBuffer> buffer_;
   scoped_refptr<net::GrowableIOBuffer> wire_buffer_;
   DevToolsHttpHandlerDelegate* delegate_;

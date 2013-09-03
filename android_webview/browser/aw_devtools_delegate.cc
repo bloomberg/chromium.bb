@@ -238,11 +238,11 @@ std::string AwDevToolsDelegate::GetViewDescription(
   return json;
 }
 
-scoped_refptr<net::StreamListenSocket>
+scoped_ptr<net::StreamListenSocket>
 AwDevToolsDelegate::CreateSocketForTethering(
     net::StreamListenSocket::Delegate* delegate,
     std::string* name) {
-  return NULL;
+  return scoped_ptr<net::StreamListenSocket>();
 }
 
 }  // namespace android_webview

@@ -5,6 +5,8 @@
 #ifndef NET_BASE_TOOLS_HTTP_LISTEN_SOCKET_H_
 #define NET_BASE_TOOLS_HTTP_LISTEN_SOCKET_H_
 
+#include <set>
+
 #include "base/message_loop/message_loop.h"
 #include "net/socket/stream_listen_socket.h"
 #include "net/socket/tcp_listen_socket.h"
@@ -25,7 +27,9 @@ class HttpListenSocket : public net::TCPListenSocket,
     virtual ~Delegate() {}
   };
 
-  static scoped_refptr<HttpListenSocket> CreateAndListen(
+  virtual ~HttpListenSocket();
+
+  static scoped_ptr<HttpListenSocket> CreateAndListen(
       const std::string& ip, int port, HttpListenSocket::Delegate* delegate);
 
   // Send a server response.
@@ -33,8 +37,9 @@ class HttpListenSocket : public net::TCPListenSocket,
   void Respond(HttpServerResponseInfo* info, std::string& data);
 
   // StreamListenSocket::Delegate.
-  virtual void DidAccept(net::StreamListenSocket* server,
-                         net::StreamListenSocket* connection) OVERRIDE;
+  virtual void DidAccept(
+      net::StreamListenSocket* server,
+      scoped_ptr<net::StreamListenSocket> connection) OVERRIDE;
   virtual void DidRead(net::StreamListenSocket* connection,
                        const char* data, int len) OVERRIDE;
   virtual void DidClose(net::StreamListenSocket* sock) OVERRIDE;
@@ -44,13 +49,10 @@ class HttpListenSocket : public net::TCPListenSocket,
   virtual void Accept() OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<net::StreamListenSocket>;
-
   static const int kReadBufSize = 16 * 1024;
 
   // Must run in the IO thread.
   HttpListenSocket(net::SocketDescriptor s, HttpListenSocket::Delegate* del);
-  virtual ~HttpListenSocket();
 
   // Expects the raw data to be stored in recv_data_. If parsing is successful,
   // will remove the data parsed from recv_data_, leaving only the unused
@@ -59,6 +61,8 @@ class HttpListenSocket : public net::TCPListenSocket,
 
   HttpListenSocket::Delegate* const delegate_;
   std::string recv_data_;
+
+  std::set<StreamListenSocket*> connections_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpListenSocket);
 };

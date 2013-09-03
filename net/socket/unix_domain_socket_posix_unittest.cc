@@ -103,9 +103,9 @@ class TestListenSocketDelegate : public StreamListenSocket::Delegate {
       : event_manager_(event_manager) {}
 
   virtual void DidAccept(StreamListenSocket* server,
-                         StreamListenSocket* connection) OVERRIDE {
+                         scoped_ptr<StreamListenSocket> connection) OVERRIDE {
     LOG(ERROR) << __PRETTY_FUNCTION__;
-    connection_ = connection;
+    connection_ = connection.Pass();
     Notify(EVENT_ACCEPT);
   }
 
@@ -139,7 +139,7 @@ class TestListenSocketDelegate : public StreamListenSocket::Delegate {
   }
 
   const scoped_refptr<EventManager> event_manager_;
-  scoped_refptr<StreamListenSocket> connection_;
+  scoped_ptr<StreamListenSocket> connection_;
   base::Lock mutex_;
   string data_;
 };
@@ -173,7 +173,7 @@ class UnixDomainSocketTestHelper : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     DeleteSocketFile();
-    socket_ = NULL;
+    socket_.reset();
     socket_delegate_.reset();
     event_manager_ = NULL;
   }
@@ -222,7 +222,7 @@ class UnixDomainSocketTestHelper : public testing::Test {
   const bool allow_user_;
   scoped_refptr<EventManager> event_manager_;
   scoped_ptr<TestListenSocketDelegate> socket_delegate_;
-  scoped_refptr<UnixDomainSocket> socket_;
+  scoped_ptr<UnixDomainSocket> socket_;
 };
 
 class UnixDomainSocketTest : public UnixDomainSocketTestHelper {
@@ -265,7 +265,7 @@ TEST_F(UnixDomainSocketTestWithInvalidPath,
 }
 
 TEST_F(UnixDomainSocketTest, TestFallbackName) {
-  scoped_refptr<UnixDomainSocket> existing_socket =
+  scoped_ptr<UnixDomainSocket> existing_socket =
       UnixDomainSocket::CreateAndListenWithAbstractNamespace(
           file_path_.value(), "", socket_delegate_.get(), MakeAuthCallback());
   EXPECT_FALSE(existing_socket.get() == NULL);
@@ -281,7 +281,6 @@ TEST_F(UnixDomainSocketTest, TestFallbackName) {
       socket_delegate_.get(),
       MakeAuthCallback());
   EXPECT_FALSE(socket_.get() == NULL);
-  existing_socket = NULL;
 }
 #endif
 

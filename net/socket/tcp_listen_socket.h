@@ -8,19 +8,19 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 #include "net/socket/socket_descriptor.h"
 #include "net/socket/stream_listen_socket.h"
 
 namespace net {
 
-// Implements a TCP socket. Note that this is ref counted.
+// Implements a TCP socket.
 class NET_EXPORT TCPListenSocket : public StreamListenSocket {
  public:
+  virtual ~TCPListenSocket();
   // Listen on port for the specified IP address.  Use 127.0.0.1 to only
   // accept local connections.
-  static scoped_refptr<TCPListenSocket> CreateAndListen(
+  static scoped_ptr<TCPListenSocket> CreateAndListen(
       const std::string& ip, int port, StreamListenSocket::Delegate* del);
 
   // Get raw TCP socket descriptor bound to ip:port.
@@ -31,10 +31,7 @@ class NET_EXPORT TCPListenSocket : public StreamListenSocket {
                                                int* port);
 
  protected:
-  friend class scoped_refptr<TCPListenSocket>;
-
   TCPListenSocket(SocketDescriptor s, StreamListenSocket::Delegate* del);
-  virtual ~TCPListenSocket();
 
   // Implements StreamListenSocket::Accept.
   virtual void Accept() OVERRIDE;
@@ -50,7 +47,7 @@ class NET_EXPORT TCPListenSocketFactory : public StreamListenSocketFactory {
   virtual ~TCPListenSocketFactory();
 
   // StreamListenSocketFactory overrides.
-  virtual scoped_refptr<StreamListenSocket> CreateAndListen(
+  virtual scoped_ptr<StreamListenSocket> CreateAndListen(
       StreamListenSocket::Delegate* delegate) const OVERRIDE;
 
  private:

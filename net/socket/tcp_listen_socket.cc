@@ -30,14 +30,14 @@ using std::string;
 namespace net {
 
 // static
-scoped_refptr<TCPListenSocket> TCPListenSocket::CreateAndListen(
+scoped_ptr<TCPListenSocket> TCPListenSocket::CreateAndListen(
     const string& ip, int port, StreamListenSocket::Delegate* del) {
   SocketDescriptor s = CreateAndBind(ip, port);
   if (s == kInvalidSocket)
-    return NULL;
-  scoped_refptr<TCPListenSocket> sock(new TCPListenSocket(s, del));
+    return scoped_ptr<TCPListenSocket>();
+  scoped_ptr<TCPListenSocket> sock(new TCPListenSocket(s, del));
   sock->Listen();
-  return sock;
+  return sock.Pass();
 }
 
 TCPListenSocket::TCPListenSocket(SocketDescriptor s,
@@ -101,13 +101,13 @@ void TCPListenSocket::Accept() {
   SocketDescriptor conn = AcceptSocket();
   if (conn == kInvalidSocket)
     return;
-  scoped_refptr<TCPListenSocket> sock(
+  scoped_ptr<TCPListenSocket> sock(
       new TCPListenSocket(conn, socket_delegate_));
   // It's up to the delegate to AddRef if it wants to keep it around.
 #if defined(OS_POSIX)
   sock->WatchSocket(WAITING_READ);
 #endif
-  socket_delegate_->DidAccept(this, sock.get());
+  socket_delegate_->DidAccept(this, sock.PassAs<StreamListenSocket>());
 }
 
 TCPListenSocketFactory::TCPListenSocketFactory(const string& ip, int port)
@@ -117,9 +117,10 @@ TCPListenSocketFactory::TCPListenSocketFactory(const string& ip, int port)
 
 TCPListenSocketFactory::~TCPListenSocketFactory() {}
 
-scoped_refptr<StreamListenSocket> TCPListenSocketFactory::CreateAndListen(
+scoped_ptr<StreamListenSocket> TCPListenSocketFactory::CreateAndListen(
     StreamListenSocket::Delegate* delegate) const {
-  return TCPListenSocket::CreateAndListen(ip_, port_, delegate);
+  return TCPListenSocket::CreateAndListen(ip_, port_, delegate)
+      .PassAs<StreamListenSocket>();
 }
 
 }  // namespace net

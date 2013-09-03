@@ -139,7 +139,7 @@ std::string BrowserListTabContentsProvider::GetViewDescription(
 #if defined(DEBUG_DEVTOOLS)
 static int g_last_tethering_port_ = 9333;
 
-scoped_refptr<net::StreamListenSocket>
+scoped_ptr<net::StreamListenSocket>
 BrowserListTabContentsProvider::CreateSocketForTethering(
     net::StreamListenSocket::Delegate* delegate,
     std::string* name) {
@@ -147,13 +147,14 @@ BrowserListTabContentsProvider::CreateSocketForTethering(
     g_last_tethering_port_ = 9333;
   int port = ++g_last_tethering_port_;
   *name = base::IntToString(port);
-  return net::TCPListenSocket::CreateAndListen("127.0.0.1", port, delegate);
+  return net::TCPListenSocket::CreateAndListen("127.0.0.1", port, delegate)
+      .PassAs<StreamListenSocket>();
 }
 #else
-scoped_refptr<net::StreamListenSocket>
+scoped_ptr<net::StreamListenSocket>
 BrowserListTabContentsProvider::CreateSocketForTethering(
     net::StreamListenSocket::Delegate* delegate,
     std::string* name) {
-  return NULL;
+  return scoped_ptr<net::StreamListenSocket>();
 }
 #endif  // defined(DEBUG_DEVTOOLS)

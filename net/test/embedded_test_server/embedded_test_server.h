@@ -33,10 +33,10 @@ class HttpListenSocket : public TCPListenSocket {
  public:
   HttpListenSocket(const SocketDescriptor socket_descriptor,
                    StreamListenSocket::Delegate* delegate);
+  virtual ~HttpListenSocket();
   virtual void Listen();
 
  private:
-  virtual ~HttpListenSocket();
 
   base::ThreadChecker thread_checker_;
 };
@@ -137,7 +137,7 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
 
   // StreamListenSocket::Delegate overrides:
   virtual void DidAccept(StreamListenSocket* server,
-                         StreamListenSocket* connection) OVERRIDE;
+                         scoped_ptr<StreamListenSocket> connection) OVERRIDE;
   virtual void DidRead(StreamListenSocket* connection,
                        const char* data,
                        int length) OVERRIDE;
@@ -147,7 +147,7 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
 
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
 
-  scoped_refptr<HttpListenSocket> listen_socket_;
+  scoped_ptr<HttpListenSocket> listen_socket_;
   int port_;
   GURL base_url_;
 

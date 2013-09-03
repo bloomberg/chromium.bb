@@ -29,19 +29,15 @@ void HttpConnection::Send(const HttpServerResponseInfo& response) {
   Send(response.Serialize());
 }
 
-HttpConnection::HttpConnection(HttpServer* server, StreamListenSocket* sock)
+HttpConnection::HttpConnection(HttpServer* server,
+                               scoped_ptr<StreamListenSocket> sock)
     : server_(server),
-      socket_(sock) {
+      socket_(sock.Pass()) {
   id_ = last_id_++;
 }
 
 HttpConnection::~HttpConnection() {
-  DetachSocket();
   server_->delegate_->OnClose(id_);
-}
-
-void HttpConnection::DetachSocket() {
-  socket_ = NULL;
 }
 
 void HttpConnection::Shift(int num_bytes) {

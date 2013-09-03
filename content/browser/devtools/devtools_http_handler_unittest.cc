@@ -23,7 +23,7 @@ class DummyListenSocket : public StreamListenSocket,
 
   // StreamListenSocket::Delegate "implementation"
   virtual void DidAccept(StreamListenSocket* server,
-                         StreamListenSocket* connection) OVERRIDE {}
+                         scoped_ptr<StreamListenSocket> connection) OVERRIDE {}
   virtual void DidRead(StreamListenSocket* connection,
                        const char* data,
                        int len) OVERRIDE {}
@@ -43,11 +43,11 @@ class DummyListenSocketFactory : public net::StreamListenSocketFactory {
         BrowserThread::UI, FROM_HERE, quit_closure_2_);
   }
 
-  virtual scoped_refptr<StreamListenSocket> CreateAndListen(
+  virtual scoped_ptr<StreamListenSocket> CreateAndListen(
       StreamListenSocket::Delegate* delegate) const OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, quit_closure_1_);
-    return new DummyListenSocket();
+    return scoped_ptr<net::StreamListenSocket>(new DummyListenSocket());
   }
  private:
   base::Closure quit_closure_1_;
@@ -71,10 +71,10 @@ class DummyDelegate : public DevToolsHttpHandlerDelegate {
   virtual std::string GetViewDescription(content::RenderViewHost*) OVERRIDE {
     return std::string();
   }
-  virtual scoped_refptr<net::StreamListenSocket> CreateSocketForTethering(
+  virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
     net::StreamListenSocket::Delegate* delegate,
     std::string* name) OVERRIDE {
-    return NULL;
+    return scoped_ptr<net::StreamListenSocket>();
   }
 };
 

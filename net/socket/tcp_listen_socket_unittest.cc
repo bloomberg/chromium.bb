@@ -26,8 +26,6 @@ static const int kDefaultTimeoutMs = 5000;
 
 TCPListenSocketTester::TCPListenSocketTester()
     : loop_(NULL),
-      server_(NULL),
-      connection_(NULL),
       cv_(&lock_),
       server_port_(0) {}
 
@@ -121,17 +119,14 @@ int TCPListenSocketTester::ClearTestSocket() {
 }
 
 void TCPListenSocketTester::Shutdown() {
-  connection_->Release();
-  connection_ = NULL;
-  server_->Release();
-  server_ = NULL;
+  connection_.reset();
+  server_.reset();
   ReportAction(TCPListenSocketTestAction(ACTION_SHUTDOWN));
 }
 
 void TCPListenSocketTester::Listen() {
   server_ = DoListen();
   ASSERT_TRUE(server_.get());
-  server_->AddRef();
 
   // The server's port will be needed to open the client socket.
   IPEndPoint local_address;
@@ -241,10 +236,10 @@ bool TCPListenSocketTester::Send(SocketDescriptor sock,
   return true;
 }
 
-void TCPListenSocketTester::DidAccept(StreamListenSocket* server,
-                                      StreamListenSocket* connection) {
-  connection_ = connection;
-  connection_->AddRef();
+void TCPListenSocketTester::DidAccept(
+    StreamListenSocket* server,
+    scoped_ptr<StreamListenSocket> connection) {
+  connection_ = connection.Pass();
   ReportAction(TCPListenSocketTestAction(ACTION_ACCEPT));
 }
 
@@ -261,7 +256,7 @@ void TCPListenSocketTester::DidClose(StreamListenSocket* sock) {
 
 TCPListenSocketTester::~TCPListenSocketTester() {}
 
-scoped_refptr<TCPListenSocket> TCPListenSocketTester::DoListen() {
+scoped_ptr<TCPListenSocket> TCPListenSocketTester::DoListen() {
   // Let the OS pick a free port.
   return TCPListenSocket::CreateAndListen(kLoopback, 0, this);
 }

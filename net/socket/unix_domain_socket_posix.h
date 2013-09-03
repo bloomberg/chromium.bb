@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/socket/stream_listen_socket.h"
@@ -26,6 +25,8 @@ namespace net {
 // Unix Domain Socket Implementation. Supports abstract namespaces on Linux.
 class NET_EXPORT UnixDomainSocket : public StreamListenSocket {
  public:
+  virtual ~UnixDomainSocket();
+
   // Callback that returns whether the already connected client, identified by
   // its process |user_id| and |group_id|, is allowed to keep the connection
   // open. Note that the socket is closed immediately in case the callback
@@ -38,7 +39,7 @@ class NET_EXPORT UnixDomainSocket : public StreamListenSocket {
 
   // Note that the returned UnixDomainSocket instance does not take ownership of
   // |del|.
-  static scoped_refptr<UnixDomainSocket> CreateAndListen(
+  static scoped_ptr<UnixDomainSocket> CreateAndListen(
       const std::string& path,
       StreamListenSocket::Delegate* del,
       const AuthCallback& auth_callback);
@@ -47,7 +48,7 @@ class NET_EXPORT UnixDomainSocket : public StreamListenSocket {
   // Same as above except that the created socket uses the abstract namespace
   // which is a Linux-only feature. If |fallback_path| is not empty,
   // make the second attempt with the provided fallback name.
-  static scoped_refptr<UnixDomainSocket> CreateAndListenWithAbstractNamespace(
+  static scoped_ptr<UnixDomainSocket> CreateAndListenWithAbstractNamespace(
       const std::string& path,
       const std::string& fallback_path,
       StreamListenSocket::Delegate* del,
@@ -58,9 +59,8 @@ class NET_EXPORT UnixDomainSocket : public StreamListenSocket {
   UnixDomainSocket(SocketDescriptor s,
                    StreamListenSocket::Delegate* del,
                    const AuthCallback& auth_callback);
-  virtual ~UnixDomainSocket();
 
-  static UnixDomainSocket* CreateAndListenInternal(
+  static scoped_ptr<UnixDomainSocket> CreateAndListenInternal(
       const std::string& path,
       const std::string& fallback_path,
       StreamListenSocket::Delegate* del,
@@ -87,7 +87,7 @@ class NET_EXPORT UnixDomainSocketFactory : public StreamListenSocketFactory {
   virtual ~UnixDomainSocketFactory();
 
   // StreamListenSocketFactory:
-  virtual scoped_refptr<StreamListenSocket> CreateAndListen(
+  virtual scoped_ptr<StreamListenSocket> CreateAndListen(
       StreamListenSocket::Delegate* delegate) const OVERRIDE;
 
  protected:
@@ -111,7 +111,7 @@ class NET_EXPORT UnixDomainSocketWithAbstractNamespaceFactory
   virtual ~UnixDomainSocketWithAbstractNamespaceFactory();
 
   // UnixDomainSocketFactory:
-  virtual scoped_refptr<StreamListenSocket> CreateAndListen(
+  virtual scoped_ptr<StreamListenSocket> CreateAndListen(
       StreamListenSocket::Delegate* delegate) const OVERRIDE;
 
  private:

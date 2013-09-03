@@ -19,7 +19,7 @@ class HttpSession : HttpListenSocket::Delegate {
                          HttpServerRequestInfo* info) OVERRIDE;
 
  private:
-  scoped_refptr<HttpListenSocket> socket_;
+  scoped_ptr<HttpListenSocket> socket_;
   DISALLOW_COPY_AND_ASSIGN(HttpSession);
 };
 

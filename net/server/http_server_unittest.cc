@@ -276,9 +276,9 @@ class MockStreamListenSocket : public StreamListenSocket {
 }  // namespace
 
 TEST_F(HttpServerTest, RequestWithBodySplitAcrossPackets) {
-  scoped_refptr<StreamListenSocket> socket(
-      new MockStreamListenSocket(server_.get()));
-  server_->DidAccept(NULL, socket.get());
+  StreamListenSocket* socket =
+      new MockStreamListenSocket(server_.get());
+  server_->DidAccept(NULL, make_scoped_ptr(socket));
   std::string body("body");
   std::string request = base::StringPrintf(
       "GET /test HTTP/1.1\r\n"
@@ -286,9 +286,9 @@ TEST_F(HttpServerTest, RequestWithBodySplitAcrossPackets) {
       "Content-Length: %" PRIuS "\r\n\r\n%s",
       body.length(),
       body.c_str());
-  server_->DidRead(socket.get(), request.c_str(), request.length() - 2);
+  server_->DidRead(socket, request.c_str(), request.length() - 2);
   ASSERT_EQ(0u, requests_.size());
-  server_->DidRead(socket.get(), request.c_str() + request.length() - 2, 2);
+  server_->DidRead(socket, request.c_str() + request.length() - 2, 2);
   ASSERT_EQ(1u, requests_.size());
   ASSERT_EQ(body, requests_[0].data);
 }

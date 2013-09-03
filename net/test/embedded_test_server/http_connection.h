@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "net/test/embedded_test_server/http_request.h"
 
@@ -30,7 +29,7 @@ typedef base::Callback<void(HttpConnection* connection,
 // If a valid request is parsed, then |callback_| is invoked.
 class HttpConnection {
  public:
-  HttpConnection(StreamListenSocket* socket,
+  HttpConnection(scoped_ptr<StreamListenSocket> socket,
                  const HandleRequestCallback& callback);
   ~HttpConnection();
 
@@ -45,7 +44,7 @@ class HttpConnection {
   // called.
   void ReceiveData(const base::StringPiece& data);
 
-  scoped_refptr<StreamListenSocket> socket_;
+  scoped_ptr<StreamListenSocket> socket_;
   const HandleRequestCallback callback_;
   HttpRequestParser request_parser_;
 
