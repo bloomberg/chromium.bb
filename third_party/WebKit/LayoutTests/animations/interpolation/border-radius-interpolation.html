@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<style>
+.target {
+  width: 80px;
+  height: 80px;
+  display: inline-block;
+  background-color: black;
+  margin-right: 5px;
+}
+.replica {
+  background-color: green;
+  margin-right: 15px;
+}
+</style>
+<body>
+<script src="resources/interpolation-test.js"></script>
+<script>
+assertInterpolation({
+  property: 'border-radius',
+  from: '0px',
+  to: '40px'
+}, [
+  {at: -0.3, is: '0px'}, // CSS border-radius can't be negative.
+  {at: 0, is: '0px'},
+  {at: 0.3, is: '12px'},
+  {at: 0.6, is: '24px'},
+  {at: 1, is: '40px'},
+  {at: 1.5, is: '60px'},
+]);
+</script>
+</body>

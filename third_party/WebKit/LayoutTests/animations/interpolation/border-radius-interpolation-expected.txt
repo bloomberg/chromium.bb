@@ -1,0 +1,8 @@
+     
+FAIL: border-radius from [0px] to [40px] was [-12px] at -0.3, expected [0px]
+PASS: border-radius from [0px] to [40px] was [0px] at 0
+PASS: border-radius from [0px] to [40px] was [12px] at 0.3
+PASS: border-radius from [0px] to [40px] was [24px] at 0.6
+PASS: border-radius from [0px] to [40px] was [40px] at 1
+PASS: border-radius from [0px] to [40px] was [60px] at 1.5
+
