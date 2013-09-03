@@ -46,10 +46,18 @@
 
 <!-- Special keys -->
 
-<polymer-element name="kb-shift-key" class="shift dark" char="Shift"
-    extends="kb-key">
+<polymer-element name="kb-shift-key" attributes="unlockedCase lockedCase"
+    class="shift dark" char="Shift" extends="kb-key">
   <script>
     Polymer('kb-shift-key', {
+       /**
+        * Defines how capslock effects keyset transition. We always transition
+        * from the unlockedCase to the lockedCase if capslock is on.
+        * @type {string}
+        */
+      unlockedCase: 'lower',
+      lockedCase: 'upper',
+
       down: function(event) {
         this.super();
         var detail = {};
@@ -60,7 +68,7 @@
         }
         this.fire('enable-dbl', detail);
         this.fire('enable-sel');
-      }
+      },
     });
   </script>
 </polymer-element>

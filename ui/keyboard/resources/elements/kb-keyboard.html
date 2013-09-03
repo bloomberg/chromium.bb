@@ -7,7 +7,7 @@
 <polymer-element name="kb-keyboard" on-key-over="keyOver" on-key-up="keyUp"
     on-key-down="keyDown" on-key-longpress="keyLongpress" on-pointerup="up"
     on-pointerdown="down" on-enable-sel="enableSel"
-    on-enable-dbl="enableDbl" attributes="keyset layout rows">
+    on-enable-dbl="enableDbl" attributes="keyset layout rows capsLocked">
   <template>
     <style>
       @host {
@@ -192,19 +192,18 @@
       dblDetail_: null,
       dblTimer_: null,
       swipeHandler: null,
+      capsLock: null,
 
       /**
       * Handles the state of the shift key.
       */
       keysetChanged: function() {
-        var keysetId = '#' + this.layout + '-' + this.keyset;
-        var keyset = this.querySelector(keysetId);
-
-        // If capslock is enabled and capsLockTo is not null,
-        // redirect to keyset specified by capsLockTo.
-        if (this.classList.contains('caps-locked') && keyset.capsLocksTo)
-          this.keyset = keyset.capsLocksTo;
-        
+        // If capslock is enabled and the current keyset should be redirected,
+        // changes to the keyset specified by capsLockTo.
+        if (this.classList.contains('caps-locked') &&
+            (this.keyset == this.capsLock.unlockedCase)) {
+             this.keyset = this.capsLock.lockedCase;
+        }
       },
 
       ready: function() {
@@ -476,7 +475,21 @@
             this.selectDefaultKeyset();
           } else {
             console.error('Unable to find layout ' + this.layout);
-         }
+          }
+        }
+        this.classList.remove('caps-locked');
+        this.cacheCapsLock();
+      },
+
+      /**
+       * Caches the keyset transitions required when caps lock is enabled.
+       */
+      cacheCapsLock: function() {
+        var shift = this.querySelector('kb-shift-key');
+        if (shift) {
+          this.capsLock = { 'lockedCase' : shift.lockedCase,
+                            'unlockedCase' : shift.unlockedCase
+                          };
         }
       },
 
