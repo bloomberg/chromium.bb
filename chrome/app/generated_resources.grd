@@ -4466,6 +4466,17 @@ Make sure you do not expose any sensitive information.
         Page Action
       </message>
 
+      <!-- Directory access confirmation dialog -->
+      <message name="IDS_EXTENSIONS_DIRECTORY_CONFIRMATION_DIALOG_TITLE" desc="Text of the title of the directory access confirmation dialog.">
+        Confirm access
+      </message>
+      <message name="IDS_EXTENSIONS_DIRECTORY_CONFIRMATION_DIALOG_MESSAGE_READ_ONLY" desc="Text of the message of the directory access confirmation dialog if the app does not have write access.">
+        The folder you selected contains sensitive files. Are you sure you want to grant "$1" permanent read access to this folder?
+      </message>
+      <message name="IDS_EXTENSIONS_DIRECTORY_CONFIRMATION_DIALOG_MESSAGE_WRITABLE" desc="Text of the message of the directory access confirmation dialog if the app has write access.">
+        The folder you selected contains sensitive files. Are you sure you want to grant "$1" permanent write access to this folder?
+      </message>
+
       <!-- chrome://settings/extensions page -->
       <message name="IDS_EXTENSIONS_DEVELOPER_MODE_LINK" desc="Text of the link for developer mode.">
         Developer mode

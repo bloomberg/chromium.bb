@@ -64,6 +64,14 @@ void AddSavedEntry(const base::FilePath& path_to_save,
       extension->id(), "magic id", path_to_save, is_directory);
 }
 
+#if defined(OS_WIN) || defined(OS_POSIX)
+#if defined(OS_WIN)
+  const int kGraylistedPath = base::DIR_PROFILE;
+#elif defined(OS_POSIX)
+  const int kGraylistedPath = base::DIR_HOME;
+#endif
+#endif
+
 }  // namespace
 
 class FileSystemApiTest : public PlatformAppBrowserTest {
@@ -328,6 +336,77 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
       << message_;
   CheckStoredDirectoryMatches(base::FilePath());
 }
+
+#if defined(OS_WIN) || defined(OS_POSIX)
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
+                       FileSystemApiOpenDirectoryOnGraylistAndAllowTest) {
+  FileSystemChooseEntryFunction::SkipDirectoryConfirmationForTest();
+  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
+  base::FilePath test_file = TempFilePath("open_existing.txt", true);
+  ASSERT_FALSE(test_file.empty());
+  base::FilePath test_directory = test_file.DirName();
+  ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+      kGraylistedPath, test_directory, false));
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_directory);
+  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_directory"))
+      << message_;
+  CheckStoredDirectoryMatches(test_file);
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
+                       FileSystemApiOpenDirectoryOnGraylistTest) {
+  FileSystemChooseEntryFunction::AutoCancelDirectoryConfirmationForTest();
+  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
+  base::FilePath test_file = TempFilePath("open_existing.txt", true);
+  ASSERT_FALSE(test_file.empty());
+  base::FilePath test_directory = test_file.DirName();
+  ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+      kGraylistedPath, test_directory, false));
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_directory);
+  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_directory_cancel"))
+      << message_;
+  CheckStoredDirectoryMatches(test_file);
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
+                       FileSystemApiOpenDirectoryContainingGraylistTest) {
+  FileSystemChooseEntryFunction::AutoCancelDirectoryConfirmationForTest();
+  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
+  base::FilePath test_file = TempFilePath("open_existing.txt", true);
+  ASSERT_FALSE(test_file.empty());
+  base::FilePath test_directory = test_file.DirName();
+  base::FilePath parent_directory = test_directory.DirName();
+  ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+      kGraylistedPath, test_directory, false));
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &parent_directory);
+  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_directory_cancel"))
+      << message_;
+  CheckStoredDirectoryMatches(test_directory);
+}
+
+// Test that choosing a subdirectory of a path does not require confirmation.
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
+                       FileSystemApiOpenDirectorySubdirectoryOfGraylistTest) {
+  // If a dialog is erroneously displayed, auto cancel it, so that the test
+  // fails.
+  FileSystemChooseEntryFunction::AutoCancelDirectoryConfirmationForTest();
+  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
+  base::FilePath test_file = TempFilePath("open_existing.txt", true);
+  ASSERT_FALSE(test_file.empty());
+  base::FilePath test_directory = test_file.DirName();
+  base::FilePath parent_directory = test_directory.DirName();
+  ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+      kGraylistedPath, parent_directory, false));
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_directory);
+  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_directory"))
+      << message_;
+  CheckStoredDirectoryMatches(test_file);
+}
+#endif  // defined(OS_WIN) || defined(OS_POSIX)
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
     FileSystemApiInvalidChooseEntryTypeTest) {

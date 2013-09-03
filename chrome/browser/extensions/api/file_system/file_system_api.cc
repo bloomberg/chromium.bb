@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/apps/directory_access_confirmation_dialog.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/file_system.h"
@@ -144,6 +145,8 @@ bool g_skip_picker_for_test = false;
 bool g_use_suggested_path_for_test = false;
 base::FilePath* g_path_to_be_picked_for_test;
 std::vector<base::FilePath>* g_paths_to_be_picked_for_test;
+bool g_skip_directory_confirmation_for_test = false;
+bool g_allow_directory_access_for_test = false;
 
 bool ValidateFileEntryAndGetPath(
     const std::string& filesystem_name,
@@ -257,6 +260,17 @@ bool GetFileTypesFromAcceptOption(
 // Key for the path of the directory of the file last chosen by the user in
 // response to a chrome.fileSystem.chooseEntry() call.
 const char kLastChooseEntryDirectory[] = "last_choose_file_directory";
+
+const int kGraylistedPaths[] = {
+#if defined(OS_WIN)
+  base::DIR_PROFILE,
+  base::DIR_PROGRAM_FILES,
+  base::DIR_PROGRAM_FILESX86,
+  base::DIR_WINDOWS,
+#elif defined(OS_POSIX)
+  base::DIR_HOME,
+#endif
+};
 
 }  // namespace
 
@@ -629,6 +643,23 @@ void FileSystemChooseEntryFunction::StopSkippingPickerForTest() {
 }
 
 // static
+void FileSystemChooseEntryFunction::SkipDirectoryConfirmationForTest() {
+  g_skip_directory_confirmation_for_test = true;
+  g_allow_directory_access_for_test = true;
+}
+
+// static
+void FileSystemChooseEntryFunction::AutoCancelDirectoryConfirmationForTest() {
+  g_skip_directory_confirmation_for_test = true;
+  g_allow_directory_access_for_test = false;
+}
+
+// static
+void FileSystemChooseEntryFunction::StopSkippingDirectoryConfirmationForTest() {
+  g_skip_directory_confirmation_for_test = false;
+}
+
+// static
 void FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
     const std::string& name, const base::FilePath& path) {
   // For testing on Chrome OS, where to deal with remote and local paths
@@ -666,6 +697,98 @@ void FileSystemChooseEntryFunction::FilesSelected(
   file_system_api::SetLastChooseEntryDirectory(ExtensionPrefs::Get(profile()),
                                                GetExtension()->id(),
                                                last_choose_directory);
+  if (is_directory_) {
+    // Get the WebContents for the app window to be the parent window of the
+    // confirmation dialog if necessary.
+    apps::ShellWindowRegistry* registry =
+        apps::ShellWindowRegistry::Get(profile());
+    DCHECK(registry);
+    ShellWindow* shell_window = registry->GetShellWindowForRenderViewHost(
+        render_view_host());
+    if (!shell_window) {
+      error_ = kInvalidCallingPage;
+      SendResponse(false);
+      return;
+    }
+    content::WebContents* web_contents = shell_window->web_contents();
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(
+            &FileSystemChooseEntryFunction::ConfirmDirectoryAccessOnFileThread,
+            this,
+            paths,
+            web_contents));
+    return;
+  }
+
+  OnDirectoryAccessConfirmed(paths);
+}
+
+void FileSystemChooseEntryFunction::FileSelectionCanceled() {
+  error_ = kUserCancelled;
+  SendResponse(false);
+}
+
+void FileSystemChooseEntryFunction::ConfirmDirectoryAccessOnFileThread(
+    const std::vector<base::FilePath>& paths,
+    content::WebContents* web_contents) {
+  DCHECK_EQ(paths.size(), 1u);
+  const base::FilePath path = base::MakeAbsoluteFilePath(paths[0]);
+  if (path.empty()) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&FileSystemChooseEntryFunction::FileSelectionCanceled,
+                   this));
+    return;
+  }
+
+  for (size_t i = 0; i < arraysize(kGraylistedPaths); i++) {
+    base::FilePath graylisted_path;
+    if (PathService::Get(kGraylistedPaths[i], &graylisted_path) &&
+        (path == graylisted_path || path.IsParent(graylisted_path))) {
+      if (g_skip_directory_confirmation_for_test) {
+        if (g_allow_directory_access_for_test) {
+          break;
+        } else {
+          content::BrowserThread::PostTask(
+              content::BrowserThread::UI,
+              FROM_HERE,
+              base::Bind(&FileSystemChooseEntryFunction::FileSelectionCanceled,
+                         this));
+        }
+        return;
+      }
+
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(
+              CreateDirectoryAccessConfirmationDialog,
+              app_file_handler_util::HasFileSystemWritePermission(extension_),
+              UTF8ToUTF16(extension_->name()),
+              web_contents,
+              base::Bind(
+                  &FileSystemChooseEntryFunction::OnDirectoryAccessConfirmed,
+                  this,
+                  paths),
+              base::Bind(&FileSystemChooseEntryFunction::FileSelectionCanceled,
+                         this)));
+      return;
+    }
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&FileSystemChooseEntryFunction::OnDirectoryAccessConfirmed,
+                 this, paths));
+}
+
+void FileSystemChooseEntryFunction::OnDirectoryAccessConfirmed(
+    const std::vector<base::FilePath>& paths) {
   if (app_file_handler_util::HasFileSystemWritePermission(extension_)) {
     CheckWritableFiles(paths);
     return;
@@ -673,11 +796,6 @@ void FileSystemChooseEntryFunction::FilesSelected(
 
   // Don't need to check the file, it's for reading.
   RegisterFileSystemsAndSendResponse(paths);
-}
-
-void FileSystemChooseEntryFunction::FileSelectionCanceled() {
-  error_ = kUserCancelled;
-  SendResponse(false);
 }
 
 void FileSystemChooseEntryFunction::BuildFileTypeInfo(

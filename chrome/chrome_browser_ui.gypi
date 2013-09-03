@@ -190,6 +190,8 @@
         'browser/ui/apps/apps_metro_handler_win.h',
         'browser/ui/apps/chrome_shell_window_delegate.cc',
         'browser/ui/apps/chrome_shell_window_delegate.h',
+        'browser/ui/apps/directory_access_confirmation_dialog.cc',
+        'browser/ui/apps/directory_access_confirmation_dialog.h',
         'browser/ui/ash/ash_keyboard_controller_proxy.cc',
         'browser/ui/ash/ash_keyboard_controller_proxy.h',
         'browser/ui/ash/app_list/app_list_controller_ash.h',

@@ -117,6 +117,10 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
   static void SkipPickerAndSelectSuggestedPathForTest();
   static void SkipPickerAndAlwaysCancelForTest();
   static void StopSkippingPickerForTest();
+  // Allow directory access confirmation UI to be skipped in testing.
+  static void SkipDirectoryConfirmationForTest();
+  static void AutoCancelDirectoryConfirmationForTest();
+  static void StopSkippingDirectoryConfirmationForTest();
   // Call this with the directory for test file paths. On Chrome OS, accessed
   // path needs to be explicitly registered for smooth integration with Google
   // Drive support.
@@ -152,6 +156,16 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
   // FilesSelected and FileSelectionCanceled are called by the file picker.
   void FilesSelected(const std::vector<base::FilePath>& path);
   void FileSelectionCanceled();
+
+  // Check if the chosen directory is or is an ancestor of a sensitive
+  // directory. If so, show a dialog to confirm that the user wants to open the
+  // directory. Calls OnDirectoryAccessConfirmed if the directory isn't
+  // sensitive or the user chooses to open it. Otherwise, calls
+  // FileSelectionCanceled.
+  void ConfirmDirectoryAccessOnFileThread(
+      const std::vector<base::FilePath>& paths,
+      content::WebContents* web_contents);
+  void OnDirectoryAccessConfirmed(const std::vector<base::FilePath>& paths);
 
   base::FilePath initial_path_;
 };
