@@ -284,7 +284,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Gets the device info for all devices signed into the account associated
   // with this profile.
-  virtual ScopedVector<browser_sync::DeviceInfo> GetAllSignedinDevices() const;
+  virtual ScopedVector<browser_sync::DeviceInfo> GetAllSignedInDevices() const;
 
   // Notifies the observer of any device info changes.
   virtual void AddObserverForDeviceInfoChange(

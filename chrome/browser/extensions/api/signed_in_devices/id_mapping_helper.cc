@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/signedin_devices/id_mapping_helper.h"
+#include "chrome/browser/extensions/api/signed_in_devices/id_mapping_helper.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/signedin_devices/signedin_devices_api.h"
+#include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/common/extensions/extension.h"
@@ -90,7 +90,7 @@ scoped_ptr<DeviceInfo> GetDeviceInfoForClientId(
     Profile* profile) {
   DCHECK(Extension::IdIsValid(extension_id)) << extension_id
                                              << " is not valid";
-  ScopedVector<DeviceInfo> devices = GetAllSignedinDevices(extension_id,
+  ScopedVector<DeviceInfo> devices = GetAllSignedInDevices(extension_id,
                                                            profile);
   for (ScopedVector<DeviceInfo>::iterator it = devices.begin();
        it != devices.end();

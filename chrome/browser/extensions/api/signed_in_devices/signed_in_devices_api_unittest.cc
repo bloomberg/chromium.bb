@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/signedin_devices/signedin_devices_api.h"
+#include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -33,7 +33,7 @@ namespace extensions {
 
 namespace utils = extension_function_test_utils;
 
-TEST(SignedinDevicesAPITest, GetSignedInDevices) {
+TEST(SignedInDevicesAPITest, GetSignedInDevices) {
   ProfileSyncServiceMock pss_mock;
   base::MessageLoop message_loop_;
   TestExtensionPrefs extension_prefs(
@@ -58,10 +58,10 @@ TEST(SignedinDevicesAPITest, GetSignedInDevices) {
   devices.push_back(&device_info1);
   devices.push_back(&device_info2);
 
-  EXPECT_CALL(pss_mock, GetAllSignedinDevicesMock()).
+  EXPECT_CALL(pss_mock, GetAllSignedInDevicesMock()).
               WillOnce(Return(&devices));
 
-  ScopedVector<DeviceInfo> output1 = GetAllSignedinDevices(
+  ScopedVector<DeviceInfo> output1 = GetAllSignedInDevices(
       extension_test.get()->id(),
       &pss_mock,
       extension_prefs.prefs());
@@ -86,10 +86,10 @@ TEST(SignedinDevicesAPITest, GetSignedInDevices) {
 
   devices.push_back(&device_info3);
 
-  EXPECT_CALL(pss_mock, GetAllSignedinDevicesMock()).
+  EXPECT_CALL(pss_mock, GetAllSignedInDevicesMock()).
               WillOnce(Return(&devices));
 
-  ScopedVector<DeviceInfo> output2 = GetAllSignedinDevices(
+  ScopedVector<DeviceInfo> output2 = GetAllSignedInDevices(
       extension_test.get()->id(),
       &pss_mock,
       extension_prefs.prefs());
@@ -120,7 +120,7 @@ BrowserContextKeyedService* CreateProfileSyncServiceMock(
   return new ProfileSyncServiceMockForExtensionTests();
 }
 
-class ExtensionSignedinDevicesTest : public BrowserWithTestWindowTest {
+class ExtensionSignedInDevicesTest : public BrowserWithTestWindowTest {
  public:
   virtual void SetUp() {
     BrowserWithTestWindowTest::SetUp();
@@ -188,7 +188,7 @@ base::DictionaryValue* GetDictionaryFromList(int index,
   return dictionary;
 }
 
-TEST_F(ExtensionSignedinDevicesTest, GetAll) {
+TEST_F(ExtensionSignedInDevicesTest, GetAll) {
   ProfileSyncServiceMockForExtensionTests* pss_mock =
       static_cast<ProfileSyncServiceMockForExtensionTests*>(
           ProfileSyncServiceFactory::GetForProfile(profile()));
@@ -207,13 +207,13 @@ TEST_F(ExtensionSignedinDevicesTest, GetAll) {
   devices.push_back(CreateDeviceInfo(device_info1));
   devices.push_back(CreateDeviceInfo(device_info2));
 
-  EXPECT_CALL(*pss_mock, GetAllSignedinDevicesMock()).
+  EXPECT_CALL(*pss_mock, GetAllSignedInDevicesMock()).
               WillOnce(Return(&devices));
 
   EXPECT_CALL(*pss_mock, Shutdown());
 
   scoped_ptr<base::ListValue> result(RunFunctionAndReturnList(
-      new SignedinDevicesGetFunction(), "[null]"));
+      new SignedInDevicesGetFunction(), "[null]"));
 
   // Ensure dictionary matches device info.
   VerifyDictionaryWithDeviceInfo(GetDictionaryFromList(0, result.get()),

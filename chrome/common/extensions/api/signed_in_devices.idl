@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Use the <code>chrome.signedinDevices</code> API to get a list of devices
+// Use the <code>chrome.signedInDevices</code> API to get a list of devices
 // signed into chrome with the same account as the current profile.
-namespace signedinDevices {
+namespace signedInDevices {
   enum OS {
     win,
     mac,

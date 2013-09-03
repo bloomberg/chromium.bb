@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SIGNEDIN_DEVICES_ID_MAPPING_HELPER_H__
-#define CHROME_BROWSER_EXTENSIONS_API_SIGNEDIN_DEVICES_ID_MAPPING_HELPER_H__
+#ifndef CHROME_BROWSER_EXTENSIONS_API_SIGNED_IN_DEVICES_ID_MAPPING_HELPER_H__
+#define CHROME_BROWSER_EXTENSIONS_API_SIGNED_IN_DEVICES_ID_MAPPING_HELPER_H__
 
 #include <string>
 #include <vector>
@@ -57,4 +57,4 @@ scoped_ptr<browser_sync::DeviceInfo> GetDeviceInfoForClientId(
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SIGNEDIN_DEVICES_ID_MAPPING_HELPER_H__
+#endif  // CHROME_BROWSER_EXTENSIONS_API_SIGNED_IN_DEVICES_ID_MAPPING_HELPER_H__

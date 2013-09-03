@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/signedin_devices/signed_in_devices_manager.h"
+#include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_manager.h"
 
 #include <string>
 
@@ -11,7 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/signedin_devices/signedin_devices_api.h"
+#include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_api.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -19,7 +19,7 @@
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/common/extensions/api/signedin_devices.h"
+#include "chrome/common/extensions/api/signed_in_devices.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -51,7 +51,7 @@ SignedInDevicesChangeObserver::~SignedInDevicesChangeObserver() {
 void SignedInDevicesChangeObserver::OnDeviceInfoChange() {
   // There is a change in the list of devices. Get all devices and send them to
   // the listener.
-  ScopedVector<DeviceInfo> devices = GetAllSignedinDevices(extension_id_,
+  ScopedVector<DeviceInfo> devices = GetAllSignedInDevices(extension_id_,
                                                            profile_);
 
   scoped_ptr<base::ListValue> result(new base::ListValue());
@@ -63,7 +63,7 @@ void SignedInDevicesChangeObserver::OnDeviceInfoChange() {
   }
 
   scoped_ptr<Event> event(new Event(
-      api::signedin_devices::OnDeviceInfoChange::kEventName,
+      api::signed_in_devices::OnDeviceInfoChange::kEventName,
       result.Pass()));
 
   event->restrict_to_profile = profile_;
@@ -91,7 +91,7 @@ SignedInDevicesManager::SignedInDevicesManager(Profile* profile)
 
   if (router) {
     router->RegisterObserver(
-        this, api::signedin_devices::OnDeviceInfoChange::kEventName);
+        this, api::signed_in_devices::OnDeviceInfoChange::kEventName);
   }
 
   // Register for unload event so we could clear all our listeners when

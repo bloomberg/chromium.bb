@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/signedin_devices/signedin_devices_api.h"
+#include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_api.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/signedin_devices/id_mapping_helper.h"
+#include "chrome/browser/extensions/api/signed_in_devices/id_mapping_helper.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/common/extensions/api/signedin_devices.h"
+#include "chrome/common/extensions/api/signed_in_devices.h"
 
 using base::DictionaryValue;
 using browser_sync::DeviceInfo;
@@ -48,11 +48,11 @@ const base::DictionaryValue* GetIdMappingDictionary(
 // Helper routine to get all signed in devices. The helper takes in
 // the pointers for |ProfileSyncService| and |Extensionprefs|. This
 // makes it easier to test by passing mock values for these pointers.
-ScopedVector<DeviceInfo> GetAllSignedinDevices(
+ScopedVector<DeviceInfo> GetAllSignedInDevices(
     const std::string& extension_id,
     ProfileSyncService* pss,
     ExtensionPrefs* extension_prefs) {
-  ScopedVector<DeviceInfo> devices = pss->GetAllSignedinDevices();
+  ScopedVector<DeviceInfo> devices = pss->GetAllSignedInDevices();
   const DictionaryValue* mapping_dictionary = GetIdMappingDictionary(
       extension_prefs,
       extension_id);
@@ -73,7 +73,7 @@ ScopedVector<DeviceInfo> GetAllSignedinDevices(
   return devices.Pass();
 }
 
-ScopedVector<DeviceInfo> GetAllSignedinDevices(
+ScopedVector<DeviceInfo> GetAllSignedInDevices(
     const std::string& extension_id,
     Profile* profile) {
   // Get the profile sync service and extension prefs pointers
@@ -81,14 +81,14 @@ ScopedVector<DeviceInfo> GetAllSignedinDevices(
   ProfileSyncService* pss = ProfileSyncServiceFactory::GetForProfile(profile);
   ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile);
 
-  return GetAllSignedinDevices(extension_id,
+  return GetAllSignedInDevices(extension_id,
                                pss,
                                extension_prefs);
 }
 
-bool SignedinDevicesGetFunction::RunImpl() {
-  scoped_ptr<api::signedin_devices::Get::Params> params(
-      api::signedin_devices::Get::Params::Create(*args_));
+bool SignedInDevicesGetFunction::RunImpl() {
+  scoped_ptr<api::signed_in_devices::Get::Params> params(
+      api::signed_in_devices::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   bool is_local = params->is_local.get() ? *params->is_local : false;
@@ -100,7 +100,7 @@ bool SignedinDevicesGetFunction::RunImpl() {
     return true;
   }
 
-  ScopedVector<DeviceInfo> devices = GetAllSignedinDevices(extension_id(),
+  ScopedVector<DeviceInfo> devices = GetAllSignedInDevices(extension_id(),
                                                            profile());
 
   scoped_ptr<base::ListValue> result(new base::ListValue());

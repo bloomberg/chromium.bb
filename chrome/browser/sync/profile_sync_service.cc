@@ -409,7 +409,7 @@ ProfileSyncService::GetDeviceInfo(const std::string& client_id) const {
 }
 
 ScopedVector<browser_sync::DeviceInfo>
-    ProfileSyncService::GetAllSignedinDevices() const {
+    ProfileSyncService::GetAllSignedInDevices() const {
   ScopedVector<browser_sync::DeviceInfo> devices;
   if (backend_) {
     browser_sync::SyncedDeviceTracker* device_tracker =
