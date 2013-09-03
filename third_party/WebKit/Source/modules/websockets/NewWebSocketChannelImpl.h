@@ -31,6 +31,7 @@
 #ifndef NewWebSocketChannelImpl_h
 #define NewWebSocketChannelImpl_h
 
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/fileapi/Blob.h"
 #include "core/page/ConsoleTypes.h"
 #include "modules/websockets/WebSocketChannel.h"
@@ -51,7 +52,7 @@
 namespace WebCore {
 
 // This class may replace MainThreadWebSocketChannel.
-class NewWebSocketChannelImpl : public WebSocketChannel, public RefCounted<NewWebSocketChannelImpl>, public WebKit::WebSocketHandleClient {
+class NewWebSocketChannelImpl : public WebSocketChannel, public RefCounted<NewWebSocketChannelImpl>, public WebKit::WebSocketHandleClient, public ContextLifecycleObserver {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     // You can specify the source file and the line number information
@@ -125,6 +126,10 @@ private:
     virtual void refWebSocketChannel() OVERRIDE { ref(); }
     virtual void derefWebSocketChannel() OVERRIDE { deref(); }
 
+    // LifecycleObserver functions.
+    // This object must be destroyed before the context.
+    virtual void contextDestroyed() OVERRIDE { ASSERT_NOT_REACHED(); }
+
     // m_handle is a handle of the connection.
     // m_handle == 0 means this channel is closed.
     OwnPtr<WebKit::WebSocketHandle> m_handle;
@@ -133,7 +138,6 @@ private:
     // expects that disconnect() is called before the deletion.
     WebSocketChannelClient* m_client;
     KURL m_url;
-    String m_origin;
     Deque<Message> m_messages;
     Vector<char> m_receivingMessageData;
 

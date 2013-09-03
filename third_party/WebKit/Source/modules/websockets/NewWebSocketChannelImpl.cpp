@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/websockets/NewWebSocketChannelImpl.h"
 
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/platform/NotImplemented.h"
@@ -66,9 +67,9 @@ bool isClean(int code)
 } // namespace
 
 NewWebSocketChannelImpl::NewWebSocketChannelImpl(ScriptExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
-    : m_handle(adoptPtr(WebKit::Platform::current()->createWebSocketHandle()))
+    : ContextLifecycleObserver(context)
+    , m_handle(adoptPtr(WebKit::Platform::current()->createWebSocketHandle()))
     , m_client(client)
-    , m_origin(context->securityOrigin()->toString())
     , m_sendingQuota(0)
     , m_receivedDataSizeForFlowControl(receivedDataSizeForFlowControlHighWaterMark * 2) // initial quota
     , m_bufferedAmount(0)
@@ -88,7 +89,8 @@ void NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
     for (size_t i = 0; i < protocols.size(); ++i) {
         webProtocols[i] = protocols[i];
     }
-    m_handle->connect(url, webProtocols, m_origin, this);
+    String origin = scriptExecutionContext()->securityOrigin()->toString();
+    m_handle->connect(url, webProtocols, origin, this);
     flowControlIfNecessary();
 }
 
