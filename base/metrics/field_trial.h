@@ -49,27 +49,6 @@
 // else if (trial->group() == low_mem_group)
 //   SetPruningAlgorithm(kType2);  // Sample alternate setting.
 
-// We then, in addition to our original histogram, output histograms which have
-// slightly different names depending on what group the trial instance happened
-// to randomly be assigned:
-
-// HISTOGRAM_COUNTS("Memory.RendererTotal", count);  // The original histogram.
-// static const bool memory_renderer_total_trial_exists =
-//     FieldTrialList::TrialExists("MemoryExperiment");
-// if (memory_renderer_total_trial_exists) {
-//   HISTOGRAM_COUNTS(FieldTrial::MakeName("Memory.RendererTotal",
-//                                         "MemoryExperiment"), count);
-// }
-
-// The above code will create four distinct histograms, with each run of the
-// application being assigned to of of the three groups, and for each group, the
-// correspondingly named histogram will be populated:
-
-// Memory.RendererTotal              // 100% of users still fill this histogram.
-// Memory.RendererTotal_HighMem      // 2% of users will fill this histogram.
-// Memory.RendererTotal_LowMem       // 2% of users will fill this histogram.
-// Memory.RendererTotal_StandardMem  // 96% of users will fill this histogram.
-
 //------------------------------------------------------------------------------
 
 #ifndef BASE_METRICS_FIELD_TRIAL_H_
@@ -161,11 +140,6 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // is used as the group name. This causes a winner to be chosen if none was.
   const std::string& group_name();
 
-  // Helper function for the most common use: as an argument to specify the
-  // name of a HISTOGRAM.  Use the original histogram name as the name_prefix.
-  static std::string MakeName(const std::string& name_prefix,
-                              const std::string& trial_name);
-
   // Enable benchmarking sets field trials to a common setting.
   static void EnableBenchmarking();
 
@@ -192,7 +166,6 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, ActiveGroupsNotFinalized);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, Save);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, DuplicateRestore);
-  FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, MakeName);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, HashClientId);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, HashClientIdIsUniform);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, NameGroupIds);

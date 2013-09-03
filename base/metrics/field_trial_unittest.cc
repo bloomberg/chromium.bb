@@ -529,13 +529,6 @@ TEST_F(FieldTrialTest, DuplicateFieldTrial) {
   EXPECT_TRUE(trial2 == NULL);
 }
 
-TEST_F(FieldTrialTest, MakeName) {
-  FieldTrial* trial = CreateFieldTrial("Field Trial", 10, "Winner", NULL);
-  trial->group();
-  EXPECT_EQ("Histogram_Winner",
-            FieldTrial::MakeName("Histogram", "Field Trial"));
-}
-
 TEST_F(FieldTrialTest, DisableImmediately) {
   int default_group_number = -1;
   FieldTrial* trial =

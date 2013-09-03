@@ -139,14 +139,6 @@ const std::string& FieldTrial::group_name() {
 }
 
 // static
-std::string FieldTrial::MakeName(const std::string& name_prefix,
-                                 const std::string& trial_name) {
-  std::string big_string(name_prefix);
-  big_string.append(1, kHistogramFieldTrialSeparator);
-  return big_string.append(FieldTrialList::FindFullName(trial_name));
-}
-
-// static
 void FieldTrial::EnableBenchmarking() {
   DCHECK_EQ(0u, FieldTrialList::GetFieldTrialCount());
   enable_benchmarking_ = true;
