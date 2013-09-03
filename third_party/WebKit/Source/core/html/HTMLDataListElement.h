@@ -49,6 +49,12 @@ private:
     HTMLDataListElement(const QualifiedName&, Document*);
 };
 
+inline HTMLDataListElement* toHTMLDataListElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::datalistTag));
+    return static_cast<HTMLDataListElement*>(node);
+}
+
 } // namespace WebCore
 
 #endif // HTMLDataListElement_h
