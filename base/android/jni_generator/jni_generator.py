@@ -456,6 +456,9 @@ class JNIFromJavaP(object):
         '.*?(class|interface) (?P<class_name>.*?)( |{)',
         contents[1]).group('class_name')
     self.fully_qualified_class = self.fully_qualified_class.replace('.', '/')
+    # Java 7's javap includes type parameters in output, like HashSet<T>. Strip
+    # away the <...> and use the raw class name that Java 6 would've given us.
+    self.fully_qualified_class = self.fully_qualified_class.split('<', 1)[0]
     JniParams.SetFullyQualifiedClass(self.fully_qualified_class)
     self.java_class_name = self.fully_qualified_class.split('/')[-1]
     if not self.namespace:
