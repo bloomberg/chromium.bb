@@ -105,6 +105,7 @@ static const char kAdbGlobalIdField[] = "adbGlobalId";
 static const char kAdbBrowsersField[] = "browsers";
 static const char kAdbPagesField[] = "pages";
 static const char kAdbPortStatus[] = "adbPortStatus";
+static const char kGuestList[] = "guests";
 
 DictionaryValue* BuildTargetDescriptor(
     const std::string& target_type,
@@ -554,11 +555,43 @@ void InspectUI::PopulateLists() {
   std::vector<RenderViewHost*> rvh_vector =
       DevToolsAgentHost::GetValidRenderViewHosts();
 
+  std::map<WebContents*, DictionaryValue*> description_map;
+  std::vector<WebContents*> guest_contents;
+
   for (std::vector<RenderViewHost*>::iterator it(rvh_vector.begin());
        it != rvh_vector.end(); it++) {
     bool is_tab = tab_rvhs.find(*it) != tab_rvhs.end();
-    target_list->Append(BuildTargetDescriptor(*it, is_tab));
+    RenderViewHost* rvh = (*it);
+    WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
+    if (rvh->GetProcess()->IsGuest()) {
+      if (web_contents)
+        guest_contents.push_back(web_contents);
+    } else {
+      DictionaryValue* dictionary = BuildTargetDescriptor(rvh, is_tab);
+      if (web_contents)
+        description_map[web_contents] = dictionary;
+      target_list->Append(dictionary);
+    }
   }
+
+  // Add the list of guest-views to each of its embedders.
+  for (std::vector<WebContents*>::iterator it(guest_contents.begin());
+       it != guest_contents.end(); ++it) {
+    WebContents* guest = (*it);
+    WebContents* embedder = guest->GetEmbedderWebContents();
+    if (embedder && description_map.count(embedder) > 0) {
+      DictionaryValue* description = description_map[embedder];
+      ListValue* guests = NULL;
+      if (!description->GetList(kGuestList, &guests)) {
+        guests = new ListValue();
+        description->Set(kGuestList, guests);
+      }
+      RenderViewHost* rvh = guest->GetRenderViewHost();
+      if (rvh)
+        guests->Append(BuildTargetDescriptor(rvh, false));
+    }
+  }
+
   web_ui()->CallJavascriptFunction("populateLists", *target_list.get());
 }
 

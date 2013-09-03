@@ -154,6 +154,10 @@ img {
   margin-top: -2px;
 }
 
+.guest {
+  padding-left: 20px;
+}
+
 .invisible-view {
   color: rgb(151, 156, 160);
 }
@@ -173,7 +177,8 @@ a {
 }
 
 .list.pages .subrow + a,
-.subrow.webview > div:first-child {
+.subrow.webview > div:first-child,
+.guest .subrow + a {
   margin-left: 24px;  /* Align with the favicon */
 }
 

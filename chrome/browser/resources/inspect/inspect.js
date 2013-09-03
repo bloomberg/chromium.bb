@@ -310,7 +310,13 @@ function addToExtensionsList(data) {
 }
 
 function addToAppsList(data) {
-  addTargetToList(data, $('apps-list'), ['name', 'url']);
+  var row = addTargetToList(data, $('apps-list'), ['name', 'url']);
+  if (data.guests) {
+    Array.prototype.forEach.call(data.guests, function(guest) {
+      var guestRow = addTargetToList(guest, row, ['faviconUrl', 'name', 'url']);
+      guestRow.classList.add('guest');
+    });
+  }
 }
 
 function addToWorkersList(data) {
