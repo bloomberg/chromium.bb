@@ -82,33 +82,6 @@ var WARNING_DISMISSED_KEY = 'driveSpaceWarningDismissed';
 var WELCOME_HEADER_COUNTER_LIMIT = 25;
 
 /**
- * Location of the FAQ about Google Drive.
- */
-var GOOGLE_DRIVE_FAQ_URL =
-      'https://support.google.com/chromeos/?p=filemanager_drive';
-
-/**
- * Location of the page to buy more storage for Google Drive.
- */
-var GOOGLE_DRIVE_BUY_STORAGE =
-    'https://www.google.com/settings/storage';
-
-var GOOGLE_DRIVE_REDEEM =
-    'http://www.google.com/intl/en/chrome/devices/goodies.html';
-
-/**
- * Location of the FAQ about the downloads directory.
- */
-var DOWNLOADS_FAQ_URL =
-    'http://support.google.com/chromeos/bin/answer.py?answer=1061547';
-
-/**
- * Location of the help page about connecting to Google Drive.
- */
-var GOOGLE_DRIVE_ERROR_HELP_URL =
-    'https://support.google.com/chromeos/?p=filemanager_driveerror';
-
-/**
  * Initializes the banner to promote DRIVE.
  * This method must be called before any of showing banner functions, and
  * also before registering them as callbacks.
@@ -211,12 +184,12 @@ FileListBannerController.prototype.prepareAndShowWelcomeBanner_ =
     more = util.createChild(links,
         'drive-welcome-button drive-welcome-start', 'a');
     more.textContent = str('DRIVE_WELCOME_CHECK_ELIGIBILITY');
-    more.href = GOOGLE_DRIVE_REDEEM;
+    more.href = urlConstants.GOOGLE_DRIVE_REDEEM;
   } else {
     title.textContent = str('DRIVE_WELCOME_TITLE');
     more = util.createChild(links, 'plain-link', 'a');
     more.textContent = str('DRIVE_LEARN_MORE');
-    more.href = GOOGLE_DRIVE_FAQ_URL;
+    more.href = urlConstants.GOOGLE_DRIVE_FAQ_URL;
   }
   more.target = '_blank';
 
@@ -280,7 +253,7 @@ FileListBannerController.prototype.showLowDriveSpaceWarning_ =
     var link = this.document_.createElement('a');
     link.className = 'plain-link';
     link.textContent = str('DRIVE_BUY_MORE_SPACE_LINK');
-    link.href = GOOGLE_DRIVE_BUY_STORAGE;
+    link.href = urlConstants.GOOGLE_DRIVE_BUY_STORAGE;
     link.target = '_blank';
     box.appendChild(link);
 
@@ -554,7 +527,7 @@ FileListBannerController.prototype.showLowDownloadsSpaceWarning_ =
     var html = util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
     box.innerHTML = html;
     var link = box.querySelector('a');
-    link.href = DOWNLOADS_FAQ_URL;
+    link.href = urlConstants.DOWNLOADS_FAQ_URL;
     link.target = '_blank';
   } else {
     box.innerHTML = '';
@@ -596,7 +569,7 @@ FileListBannerController.prototype.ensureDriveUnmountedPanelInitialized_ =
 
   var learnMore = create(panel, 'a', 'learn-more plain-link',
                          str('DRIVE_LEARN_MORE'));
-  learnMore.href = GOOGLE_DRIVE_ERROR_HELP_URL;
+  learnMore.href = urlConstants.GOOGLE_DRIVE_ERROR_HELP_URL;
   learnMore.target = '_blank';
 };
 

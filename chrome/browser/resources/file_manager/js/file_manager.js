@@ -93,29 +93,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   // Private variables and helper functions.
 
   /**
-   * Location of the page to buy more storage for Google Drive.
-   */
-  FileManager.GOOGLE_DRIVE_BUY_STORAGE =
-      'https://www.google.com/settings/storage';
-
-  /**
-   * Location of Google Drive specific help.
-   */
-  FileManager.GOOGLE_DRIVE_HELP =
-      'https://support.google.com/chromeos/?p=filemanager_drivehelp';
-
-  /**
-   * Location of Google Drive specific help.
-   */
-  FileManager.GOOGLE_DRIVE_ROOT = 'https://drive.google.com';
-
-  /**
-   * Location of Files App specific help.
-   */
-  FileManager.FILES_APP_HELP =
-      'https://support.google.com/chromeos/?p=gsg_files_app';
-
-  /**
    * Number of milliseconds in a day.
    */
   var MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
@@ -1363,7 +1340,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           strf('DRIVE_SERVER_OUT_OF_SPACE_MESSAGE',
               decodeURIComponent(
                   event.error.data.sourceFileUrl.split('/').pop()),
-              FileManager.GOOGLE_DRIVE_BUY_STORAGE));
+              urlConstants.GOOGLE_DRIVE_BUY_STORAGE));
     }
 
     // TODO(benchan): Currently, there is no FileWatcher emulation for
