@@ -132,7 +132,7 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
 // This test is disabled to keep it from running on trybots since
 // it requires network access, and it is not a good idea to run
 // this test as part of a checkin or nightly test.
-IN_PROC_BROWSER_TEST_F(PushMessagingCanaryTest, DISABLED_ReceivesPush) {
+IN_PROC_BROWSER_TEST_F(PushMessagingCanaryTest, MANUAL_ReceivesPush) {
   InitializeSync();
 
   const ExtensionSet* installed_extensions = extension_service()->extensions();
