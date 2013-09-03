@@ -322,7 +322,7 @@ class AndroidDevices(object):
         if not devices:
             raise AssertionError('Unable to find attached Android devices. ADB output: %s' % result)
 
-        for device_serial in devices:
+        for device_serial in sorted(devices):
             commands = AndroidCommands(executive, device_serial, self._debug_logging)
             if self._battery_level_for_device(commands) < AndroidDevices.MINIMUM_BATTERY_PERCENTAGE:
                 _log.warning('Device with serial "%s" skipped because it has less than %d percent battery.'
