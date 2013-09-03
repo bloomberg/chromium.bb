@@ -34,7 +34,6 @@
 #include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/text/DateTimeFormat.h"
-
 #include "public/platform/Platform.h"
 #include "public/platform/WebLocalizedString.h"
 #include "public/platform/WebString.h"
