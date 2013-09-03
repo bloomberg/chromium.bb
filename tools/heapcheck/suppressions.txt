@@ -918,3 +918,12 @@
    fun:base::ASCIIToUTF16
    fun:OpaqueBrowserFrameViewLayoutTest_WithWindowTitleAndIcon_Test::TestBody
 }
+{
+   bug_284191
+   Heapcheck:Leak
+   ...
+   fun:base::DictionaryValue::DeepCopy
+   fun:PolicyApplicator
+   fun:chromeos::ManagedNetworkConfigurationHandlerImpl::SetPolicy
+   fun:chromeos::ManagedNetworkConfigurationHandlerTest::SetPolicy
+}
