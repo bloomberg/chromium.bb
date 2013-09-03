@@ -48,7 +48,7 @@ void SpellingCorrectionCommand::doApply()
     if (!m_corrected.length())
         return;
 
-    if (!document().frame()->selection()->shouldChangeSelection(m_selectionToBeCorrected))
+    if (!document().frame()->selection().shouldChangeSelection(m_selectionToBeCorrected))
         return;
 
     applyCommandToComposite(SetSelectionCommand::create(m_selectionToBeCorrected, FrameSelection::SpellCorrectionTriggered | FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle));

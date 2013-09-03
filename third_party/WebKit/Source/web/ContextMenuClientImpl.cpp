@@ -137,10 +137,10 @@ static String selectMisspelledWord(Frame* selectedFrame)
     // If misspelled word is still empty, then that portion should not be
     // selected. Set the selection to that position only, and do not expand.
     if (misspelledWord.isEmpty())
-        selectedFrame->selection()->setSelection(VisibleSelection(pos));
+        selectedFrame->selection().setSelection(VisibleSelection(pos));
 #else
     // On non-Mac, right-click should not make a range selection in any case.
-    selectedFrame->selection()->setSelection(VisibleSelection(pos));
+    selectedFrame->selection().setSelection(VisibleSelection(pos));
 #endif
     return misspelledWord;
 }
@@ -152,7 +152,7 @@ static bool IsWhiteSpaceOrPunctuation(UChar c)
 
 static String selectMisspellingAsync(Frame* selectedFrame, DocumentMarker& marker)
 {
-    VisibleSelection selection = selectedFrame->selection()->selection();
+    VisibleSelection selection = selectedFrame->selection().selection();
     if (!selection.isCaretOrRange())
         return String();
 
@@ -334,7 +334,7 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
                 }
             }
         }
-        HTMLFormElement* form = selectedFrame->selection()->currentForm();
+        HTMLFormElement* form = selectedFrame->selection().currentForm();
         if (form && r.innerNonSharedNode()->hasTagName(HTMLNames::inputTag)) {
             HTMLInputElement* selectedElement = toHTMLInputElement(r.innerNonSharedNode());
             if (selectedElement) {

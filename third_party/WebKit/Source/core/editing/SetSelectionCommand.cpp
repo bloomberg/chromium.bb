@@ -40,22 +40,18 @@ SetSelectionCommand::SetSelectionCommand(const VisibleSelection& selection, Fram
 
 void SetSelectionCommand::doApply()
 {
-    FrameSelection* selection = document().frame()->selection();
-    ASSERT(selection);
-
-    if (selection->shouldChangeSelection(m_selectionToSet) && m_selectionToSet.isNonOrphanedCaretOrRange()) {
-        selection->setSelection(m_selectionToSet, m_options);
+    FrameSelection& selection = document().frame()->selection();
+    if (selection.shouldChangeSelection(m_selectionToSet) && m_selectionToSet.isNonOrphanedCaretOrRange()) {
+        selection.setSelection(m_selectionToSet, m_options);
         setEndingSelection(m_selectionToSet);
     }
 }
 
 void SetSelectionCommand::doUnapply()
 {
-    FrameSelection* selection = document().frame()->selection();
-    ASSERT(selection);
-
-    if (selection->shouldChangeSelection(startingSelection()) && startingSelection().isNonOrphanedCaretOrRange())
-        selection->setSelection(startingSelection(), m_options);
+    FrameSelection& selection = document().frame()->selection();
+    if (selection.shouldChangeSelection(startingSelection()) && startingSelection().isNonOrphanedCaretOrRange())
+        selection.setSelection(startingSelection(), m_options);
 }
 
 } // namespace WebCore

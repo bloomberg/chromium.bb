@@ -3397,7 +3397,7 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
 SetFocusedElementDone:
     updateStyleIfNeeded();
     if (Frame* frame = this->frame())
-        frame->selection()->didChangeFocus();
+        frame->selection().didChangeFocus();
     return !focusChangeBlocked;
 }
 
@@ -3480,7 +3480,7 @@ void Document::nodeChildrenWillBeRemoved(ContainerNode* container)
     if (Frame* frame = this->frame()) {
         for (Node* n = container->firstChild(); n; n = n->nextSibling()) {
             frame->eventHandler()->nodeWillBeRemoved(n);
-            frame->selection()->nodeWillBeRemoved(n);
+            frame->selection().nodeWillBeRemoved(n);
             frame->page()->dragCaretController().nodeWillBeRemoved(n);
         }
     }
@@ -3500,7 +3500,7 @@ void Document::nodeWillBeRemoved(Node* n)
 
     if (Frame* frame = this->frame()) {
         frame->eventHandler()->nodeWillBeRemoved(n);
-        frame->selection()->nodeWillBeRemoved(n);
+        frame->selection().nodeWillBeRemoved(n);
         frame->page()->dragCaretController().nodeWillBeRemoved(n);
     }
 }
@@ -4363,7 +4363,7 @@ void Document::setUseSecureKeyboardEntryWhenActive(bool usesSecureKeyboard)
         return;
 
     m_useSecureKeyboardEntryWhenActive = usesSecureKeyboard;
-    m_frame->selection()->updateSecureKeyboardEntryIfActive();
+    m_frame->selection().updateSecureKeyboardEntryIfActive();
 }
 
 bool Document::useSecureKeyboardEntryWhenActive() const

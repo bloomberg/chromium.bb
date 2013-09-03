@@ -797,12 +797,12 @@ PassRefPtr<ClientRect> Internals::unscaledViewportRect(ExceptionState& es)
 PassRefPtr<ClientRect> Internals::absoluteCaretBounds(ExceptionState& es)
 {
     Document* document = contextDocument();
-    if (!document || !document->frame() || !document->frame()->selection()) {
+    if (!document || !document->frame()) {
         es.throwDOMException(InvalidAccessError);
         return ClientRect::create();
     }
 
-    return ClientRect::create(document->frame()->selection()->absoluteCaretBounds());
+    return ClientRect::create(document->frame()->selection().absoluteCaretBounds());
 }
 
 PassRefPtr<ClientRect> Internals::boundingBox(Element* element, ExceptionState& es)
@@ -2153,12 +2153,12 @@ void Internals::forceReload(bool endToEnd)
 PassRefPtr<ClientRect> Internals::selectionBounds(ExceptionState& es)
 {
     Document* document = contextDocument();
-    if (!document || !document->frame() || !document->frame()->selection()) {
+    if (!document || !document->frame()) {
         es.throwDOMException(InvalidAccessError);
         return 0;
     }
 
-    return ClientRect::create(document->frame()->selection()->bounds());
+    return ClientRect::create(document->frame()->selection().bounds());
 }
 
 String Internals::markerTextForListItem(Element* element, ExceptionState& es)

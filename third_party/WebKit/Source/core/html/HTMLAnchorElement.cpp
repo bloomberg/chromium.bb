@@ -231,8 +231,8 @@ void HTMLAnchorElement::defaultEventHandler(Event* event)
         if (rendererIsEditable()) {
             // This keeps track of the editable block that the selection was in (if it was in one) just before the link was clicked
             // for the LiveWhenNotFocused editable link behavior
-            if (event->type() == eventNames().mousedownEvent && event->isMouseEvent() && toMouseEvent(event)->button() != RightButton && document().frame() && document().frame()->selection()) {
-                setRootEditableElementForSelectionOnMouseDown(document().frame()->selection()->rootEditableElement());
+            if (event->type() == eventNames().mousedownEvent && event->isMouseEvent() && toMouseEvent(event)->button() != RightButton && document().frame()) {
+                setRootEditableElementForSelectionOnMouseDown(document().frame()->selection().rootEditableElement());
                 m_wasShiftKeyDownOnMouseDown = toMouseEvent(event)->shiftKey();
             } else if (event->type() == eventNames().mouseoverEvent) {
                 // These are cleared on mouseover and not mouseout because their values are needed for drag events,
@@ -265,7 +265,7 @@ void HTMLAnchorElement::setActive(bool down, bool pause)
             // Don't set the link to be active if the current selection is in the same editable block as
             // this link
             case EditableLinkLiveWhenNotFocused:
-                if (down && document().frame() && document().frame()->selection()->rootEditableElement() == rootEditableElement())
+                if (down && document().frame() && document().frame()->selection().rootEditableElement() == rootEditableElement())
                     return;
                 break;
 

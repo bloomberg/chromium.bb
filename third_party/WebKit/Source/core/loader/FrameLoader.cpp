@@ -279,7 +279,7 @@ void FrameLoader::clear(ClearOptions options)
         m_frame->script()->clearWindowShell();
     }
 
-    m_frame->selection()->prepareForDestruction();
+    m_frame->selection().prepareForDestruction();
     m_frame->eventHandler()->clear();
     if (m_frame->view())
         m_frame->view()->clear();

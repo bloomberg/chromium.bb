@@ -401,12 +401,12 @@ String Frame::displayStringModifiedByEncoding(const String& str) const
 
 String Frame::selectedText() const
 {
-    return selection()->selectedText();
+    return selection().selectedText();
 }
 
 String Frame::selectedTextForClipboard() const
 {
-    return selection()->selectedTextForClipboard();
+    return selection().selectedTextForClipboard();
 }
 
 VisiblePosition Frame::visiblePositionForPoint(const IntPoint& framePoint)
@@ -678,14 +678,14 @@ PassOwnPtr<DragImage> Frame::nodeImage(Node* node)
 
 PassOwnPtr<DragImage> Frame::dragImageForSelection()
 {
-    if (!selection()->isRange())
+    if (!selection().isRange())
         return nullptr;
 
     const ScopedFramePaintingState state(this, 0);
     m_view->setPaintBehavior(PaintBehaviorSelectionOnly | PaintBehaviorFlattenCompositingLayers);
     document()->updateLayout();
 
-    IntRect paintingRect = enclosingIntRect(selection()->bounds());
+    IntRect paintingRect = enclosingIntRect(selection().bounds());
 
     float deviceScaleFactor = 1;
     if (m_page)

@@ -564,7 +564,7 @@ bool AccessibilityRenderObject::isFocused() const
     // A web area is represented by the Document node in the DOM tree, which isn't focusable.
     // Check instead if the frame's selection controller is focused
     if (focusedElement == m_renderer->node()
-        || (roleValue() == WebAreaRole && document.frame()->selection()->isFocusedAndActive()))
+        || (roleValue() == WebAreaRole && document.frame()->selection().isFocusedAndActive()))
         return true;
 
     return false;
@@ -1607,7 +1607,7 @@ PlainTextRange AccessibilityRenderObject::selectedTextRange() const
 
 VisibleSelection AccessibilityRenderObject::selection() const
 {
-    return m_renderer->frame()->selection()->selection();
+    return m_renderer->frame()->selection().selection();
 }
 
 String AccessibilityRenderObject::selectedText() const
@@ -1645,7 +1645,7 @@ void AccessibilityRenderObject::setSelectedTextRange(const PlainTextRange& range
     if (!frame)
         return;
     Node* node = m_renderer->node();
-    frame->selection()->setSelection(VisibleSelection(Position(node, range.start, Position::PositionIsOffsetInAnchor),
+    frame->selection().setSelection(VisibleSelection(Position(node, range.start, Position::PositionIsOffsetInAnchor),
         Position(node, range.start + range.length, Position::PositionIsOffsetInAnchor), DOWNSTREAM));
 }
 
@@ -1690,7 +1690,7 @@ void AccessibilityRenderObject::handleActiveDescendantChanged()
     if (!element)
         return;
     Document& doc = renderer()->document();
-    if (!doc.frame()->selection()->isFocusedAndActive() || doc.focusedElement() != element)
+    if (!doc.frame()->selection().isFocusedAndActive() || doc.focusedElement() != element)
         return;
     AccessibilityRenderObject* activedescendant = static_cast<AccessibilityRenderObject*>(activeDescendant());
 

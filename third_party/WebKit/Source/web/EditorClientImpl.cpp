@@ -149,7 +149,7 @@ void EditorClientImpl::toggleContinuousSpellChecking()
     } else {
         m_spellCheckThisFieldStatus = SpellCheckForcedOn;
         if (Frame* frame = m_webView->focusedWebCoreFrame()) {
-            VisibleSelection frameSelection = frame->selection()->selection();
+            VisibleSelection frameSelection = frame->selection().selection();
             // If a selection is in an editable element spell check its content.
             if (Element* rootEditableElement = frameSelection.rootEditableElement()) {
                 frame->editor().elementDidBeginEditing(rootEditableElement);
@@ -242,7 +242,7 @@ void EditorClientImpl::didBeginEditing()
 void EditorClientImpl::respondToChangedSelection(Frame* frame)
 {
     if (m_webView->client() && frame)
-        m_webView->client()->didChangeSelection(!frame->selection()->isRange());
+        m_webView->client()->didChangeSelection(!frame->selection().isRange());
 }
 
 void EditorClientImpl::respondToChangedContents()

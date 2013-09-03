@@ -1671,7 +1671,7 @@ Color RenderObject::selectionBackgroundColor() const
                 return styleColor.color().blendWithWhite();
         }
 
-        backgroundColor = frame()->selection()->isFocusedAndActive() ?
+        backgroundColor = frame()->selection().isFocusedAndActive() ?
             RenderTheme::theme().activeSelectionBackgroundColor() :
             RenderTheme::theme().inactiveSelectionBackgroundColor();
     }
@@ -1690,11 +1690,11 @@ Color RenderObject::selectionColor(int colorProperty) const
     if (RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyle(PseudoStyleRequest(SELECTION))) {
         StyleColor styleColor = resolveCurrentColor(pseudoStyle.get(), colorProperty);
         color = styleColor.isValid() ? styleColor.color() : resolveColor(pseudoStyle.get(), CSSPropertyColor);
-    } else
-        color = frame()->selection()->isFocusedAndActive() ?
+    } else {
+        color = frame()->selection().isFocusedAndActive() ?
             RenderTheme::theme().activeSelectionForegroundColor() :
             RenderTheme::theme().inactiveSelectionForegroundColor();
-
+    }
     return color;
 }
 

@@ -1976,7 +1976,7 @@ void WebViewImpl::setFocus(bool enable)
         RefPtr<Frame> focusedFrame = m_page->focusController().focusedFrame();
         if (focusedFrame) {
             Element* element = focusedFrame->document()->focusedElement();
-            if (element && focusedFrame->selection()->selection().isNone()) {
+            if (element && focusedFrame->selection().selection().isNone()) {
                 // If the selection was cleared while the WebView was not
                 // focused, then the focus element shows with a focus ring but
                 // no caret and does respond to keyboard inputs.
@@ -1988,8 +1988,7 @@ void WebViewImpl::setFocus(bool enable)
                     // instead. Note that this has the side effect of moving the
                     // caret back to the beginning of the text.
                     Position position(element, 0, Position::PositionIsOffsetInAnchor);
-                    focusedFrame->selection()->setSelection(
-                        VisibleSelection(position, SEL_DEFAULT_AFFINITY));
+                    focusedFrame->selection().setSelection(VisibleSelection(position, SEL_DEFAULT_AFFINITY));
                 }
             }
         }
@@ -2132,14 +2131,14 @@ bool WebViewImpl::confirmComposition(const WebString& text, ConfirmCompositionBe
 bool WebViewImpl::compositionRange(size_t* location, size_t* length)
 {
     Frame* focused = focusedWebCoreFrame();
-    if (!focused || !focused->selection() || !m_imeAcceptEvents)
+    if (!focused || !m_imeAcceptEvents)
         return false;
 
     RefPtr<Range> range = focused->inputMethodController().compositionRange();
     if (!range)
         return false;
 
-    if (TextIterator::getLocationAndLengthFromRange(focused->selection()->rootEditableElementOrDocumentElement(), range.get(), *location, *length))
+    if (TextIterator::getLocationAndLengthFromRange(focused->selection().rootEditableElementOrDocumentElement(), range.get(), *location, *length))
         return true;
     return false;
 }
@@ -2152,11 +2151,8 @@ WebTextInputInfo WebViewImpl::textInputInfo()
     if (!focused)
         return info;
 
-    FrameSelection* selection = focused->selection();
-    if (!selection)
-        return info;
-
-    Node* node = selection->selection().rootEditableElement();
+    FrameSelection& selection = focused->selection();
+    Node* node = selection.selection().rootEditableElement();
     if (!node)
         return info;
 
@@ -2176,13 +2172,13 @@ WebTextInputInfo WebViewImpl::textInputInfo()
 
     size_t location;
     size_t length;
-    RefPtr<Range> range = selection->selection().firstRange();
-    if (range && TextIterator::getLocationAndLengthFromRange(selection->rootEditableElement(), range.get(), location, length)) {
+    RefPtr<Range> range = selection.selection().firstRange();
+    if (range && TextIterator::getLocationAndLengthFromRange(selection.rootEditableElement(), range.get(), location, length)) {
         info.selectionStart = location;
         info.selectionEnd = location + length;
     }
     range = focused->inputMethodController().compositionRange();
-    if (range && TextIterator::getLocationAndLengthFromRange(selection->rootEditableElement(), range.get(), location, length)) {
+    if (range && TextIterator::getLocationAndLengthFromRange(selection.rootEditableElement(), range.get(), location, length)) {
         info.compositionStart = location;
         info.compositionEnd = location + length;
     }
@@ -2277,14 +2273,12 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
     const Frame* frame = focusedWebCoreFrame();
     if (!frame)
         return false;
-    FrameSelection* selection = frame->selection();
-    if (!selection)
-        return false;
+    FrameSelection& selection = frame->selection();
 
-    if (selection->isCaret())
-        anchor = focus = selection->absoluteCaretBounds();
-    else {
-        RefPtr<Range> selectedRange = frame->selection()->toNormalizedRange();
+    if (selection.isCaret()) {
+        anchor = focus = selection.absoluteCaretBounds();
+    } else {
+        RefPtr<Range> selectedRange = selection.toNormalizedRange();
         if (!selectedRange)
             return false;
 
@@ -2310,7 +2304,7 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
     anchor = scaledAnchor;
     focus = scaledFocus;
 
-    if (!frame->selection()->selection().isBaseFirst())
+    if (!selection.selection().isBaseFirst())
         std::swap(anchor, focus);
     return true;
 }
@@ -2320,25 +2314,19 @@ bool WebViewImpl::selectionTextDirection(WebTextDirection& start, WebTextDirecti
     const Frame* frame = focusedWebCoreFrame();
     if (!frame)
         return false;
-    FrameSelection* selection = frame->selection();
-    if (!selection)
+    FrameSelection& selection = frame->selection();
+    if (!selection.toNormalizedRange())
         return false;
-    if (!selection->toNormalizedRange())
-        return false;
-    start = selection->start().primaryDirection() == RTL ? WebTextDirectionRightToLeft : WebTextDirectionLeftToRight;
-    end = selection->end().primaryDirection() == RTL ? WebTextDirectionRightToLeft : WebTextDirectionLeftToRight;
+    start = selection.start().primaryDirection() == RTL ? WebTextDirectionRightToLeft : WebTextDirectionLeftToRight;
+    end = selection.end().primaryDirection() == RTL ? WebTextDirectionRightToLeft : WebTextDirectionLeftToRight;
     return true;
 }
 
 bool WebViewImpl::isSelectionAnchorFirst() const
 {
-    const Frame* frame = focusedWebCoreFrame();
-    if (!frame)
-        return false;
-    FrameSelection* selection = frame->selection();
-    if (!selection)
-        return false;
-    return selection->selection().isBaseFirst();
+    if (const Frame* frame = focusedWebCoreFrame())
+        return frame->selection().selection().isBaseFirst();
+    return false;
 }
 
 bool WebViewImpl::setEditableSelectionOffsets(int start, int end)
@@ -2395,14 +2383,11 @@ void WebViewImpl::extendSelectionAndDelete(int before, int after)
     if (!editor.canEdit())
         return;
 
-    FrameSelection* selection = focused->selection();
-    if (!selection)
-        return;
-
+    FrameSelection& selection = focused->selection();
     size_t location;
     size_t length;
-    RefPtr<Range> range = selection->selection().firstRange();
-    if (range && TextIterator::getLocationAndLengthFromRange(selection->rootEditableElement(), range.get(), location, length)) {
+    RefPtr<Range> range = selection.selection().firstRange();
+    if (range && TextIterator::getLocationAndLengthFromRange(selection.rootEditableElement(), range.get(), location, length)) {
         editor.setSelectionOffsets(max(static_cast<int>(location) - before, 0), location + length + after);
         focused->document()->execCommand("delete", true);
     }
@@ -2410,10 +2395,9 @@ void WebViewImpl::extendSelectionAndDelete(int before, int after)
 
 bool WebViewImpl::isSelectionEditable() const
 {
-    const Frame* frame = focusedWebCoreFrame();
-    if (!frame)
-        return false;
-    return frame->selection()->isContentEditable();
+    if (const Frame* frame = focusedWebCoreFrame())
+        return frame->selection().isContentEditable();
+    return false;
 }
 
 WebColor WebViewImpl::backgroundColor() const
@@ -2435,17 +2419,12 @@ bool WebViewImpl::caretOrSelectionRange(size_t* location, size_t* length)
     if (!focused)
         return false;
 
-    FrameSelection* selection = focused->selection();
-    if (!selection)
-        return false;
-
-    RefPtr<Range> range = selection->selection().firstRange();
+    FrameSelection& selection = focused->selection();
+    RefPtr<Range> range = selection.selection().firstRange();
     if (!range)
         return false;
 
-    if (TextIterator::getLocationAndLengthFromRange(selection->rootEditableElementOrTreeScopeRootNode(), range.get(), *location, *length))
-        return true;
-    return false;
+    return TextIterator::getLocationAndLengthFromRange(selection.rootEditableElementOrTreeScopeRootNode(), range.get(), *location, *length);
 }
 
 void WebViewImpl::setTextDirection(WebTextDirection direction)
@@ -2598,9 +2577,8 @@ void WebViewImpl::setFocusedFrame(WebFrame* frame)
 {
     if (!frame) {
         // Clears the focused frame if any.
-        Frame* frame = focusedWebCoreFrame();
-        if (frame)
-            frame->selection()->setFocused(false);
+        if (Frame* focusedFrame = focusedWebCoreFrame())
+            focusedFrame->selection().setFocused(false);
         return;
     }
     Frame* webcoreFrame = toWebFrameImpl(frame)->frame();
@@ -2640,7 +2618,7 @@ void WebViewImpl::clearFocusedNode()
     // processing keyboard events even though focus has been moved to the page and
     // keystrokes get eaten as a result.
     if (oldFocusedElement->isContentEditable() || oldFocusedElement->isTextFormControl())
-        frame->selection()->clear();
+        frame->selection().clear();
 }
 
 void WebViewImpl::scrollFocusedNodeIntoView()

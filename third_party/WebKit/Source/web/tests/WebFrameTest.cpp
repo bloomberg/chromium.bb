@@ -2669,14 +2669,14 @@ TEST_F(WebFrameTest, DISABLED_PositionForPointTest)
     registerMockedHttpURLLoad("select_range_span_editable.html");
     m_webView = createWebViewForTextSelection(m_baseURL + "select_range_span_editable.html");
     WebFrameImpl* mainFrame = toWebFrameImpl(m_webView->mainFrame());
-    WebCore::RenderObject* renderer = mainFrame->frame()->selection()->rootEditableElement()->renderer();
+    WebCore::RenderObject* renderer = mainFrame->frame()->selection().rootEditableElement()->renderer();
     EXPECT_EQ(0, computeOffset(renderer, -1, -1));
     EXPECT_EQ(64, computeOffset(renderer, 1000, 1000));
 
     registerMockedHttpURLLoad("select_range_div_editable.html");
     m_webView = createWebViewForTextSelection(m_baseURL + "select_range_div_editable.html");
     mainFrame = toWebFrameImpl(m_webView->mainFrame());
-    renderer = mainFrame->frame()->selection()->rootEditableElement()->renderer();
+    renderer = mainFrame->frame()->selection().rootEditableElement()->renderer();
     EXPECT_EQ(0, computeOffset(renderer, -1, -1));
     EXPECT_EQ(64, computeOffset(renderer, 1000, 1000));
 }
@@ -3121,7 +3121,7 @@ TEST_F(WebFrameTest, ReplaceMisspelledRange)
     const int allTextBeginOffset = 0;
     const int allTextLength = 11;
     frame->selectRange(WebRange::fromDocumentRange(frame, allTextBeginOffset, allTextLength));
-    RefPtr<Range> selectionRange = frame->frame()->selection()->toNormalizedRange();
+    RefPtr<Range> selectionRange = frame->frame()->selection().toNormalizedRange();
 
     EXPECT_EQ(1, spellcheck.numberOfTimesChecked());
     EXPECT_EQ(1U, document->markers()->markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
@@ -3156,7 +3156,7 @@ TEST_F(WebFrameTest, RemoveSpellingMarkers)
     const int allTextBeginOffset = 0;
     const int allTextLength = 11;
     frame->selectRange(WebRange::fromDocumentRange(frame, allTextBeginOffset, allTextLength));
-    RefPtr<Range> selectionRange = frame->frame()->selection()->toNormalizedRange();
+    RefPtr<Range> selectionRange = frame->frame()->selection().toNormalizedRange();
 
     EXPECT_EQ(0U, document->markers()->markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
 

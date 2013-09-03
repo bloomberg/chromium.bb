@@ -205,7 +205,7 @@ void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfRep
         toProcessingInstruction(this)->checkStyleSheet();
 
     if (document().frame())
-        document().frame()->selection()->textWasReplaced(this, offsetOfReplacedData, oldLength, newLength);
+        document().frame()->selection().textWasReplaced(this, offsetOfReplacedData, oldLength, newLength);
 
     document().incDOMTreeVersion();
     didModifyData(oldData);

@@ -361,7 +361,7 @@ void DOMWindow::setDocument(PassRefPtr<Document> document)
         }
     }
 
-    m_frame->selection()->updateSecureKeyboardEntryIfActive();
+    m_frame->selection().updateSecureKeyboardEntryIfActive();
 
     if (m_frame->page() && m_frame->page()->mainFrame() == m_frame) {
         m_frame->page()->mainFrame()->notifyChromeClientWheelEventHandlerCountChanged();

@@ -189,11 +189,9 @@ bool HitTestResult::isSelected() const
     if (!m_innerNonSharedNode)
         return false;
 
-    Frame* frame = m_innerNonSharedNode->document().frame();
-    if (!frame)
-        return false;
-
-    return frame->selection()->contains(m_hitTestLocation.point());
+    if (Frame* frame = m_innerNonSharedNode->document().frame())
+        return frame->selection().contains(m_hitTestLocation.point());
+    return false;
 }
 
 String HitTestResult::spellingToolTip(TextDirection& dir) const

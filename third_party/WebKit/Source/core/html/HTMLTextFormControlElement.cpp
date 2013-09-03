@@ -304,7 +304,7 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
     newSelection.setIsDirectional(direction != SelectionHasNoDirection);
 
     if (Frame* frame = document().frame())
-        frame->selection()->setSelection(newSelection);
+        frame->selection().setSelection(newSelection);
 }
 
 VisiblePosition HTMLTextFormControlElement::visiblePositionForIndex(int index) const
@@ -346,7 +346,7 @@ int HTMLTextFormControlElement::computeSelectionStart() const
     if (!frame)
         return 0;
 
-    return indexForVisiblePosition(frame->selection()->start());
+    return indexForVisiblePosition(frame->selection().start());
 }
 
 int HTMLTextFormControlElement::selectionEnd() const
@@ -365,7 +365,7 @@ int HTMLTextFormControlElement::computeSelectionEnd() const
     if (!frame)
         return 0;
 
-    return indexForVisiblePosition(frame->selection()->end());
+    return indexForVisiblePosition(frame->selection().end());
 }
 
 static const AtomicString& directionString(TextFieldSelectionDirection direction)
@@ -404,7 +404,7 @@ TextFieldSelectionDirection HTMLTextFormControlElement::computeSelectionDirectio
     if (!frame)
         return SelectionHasNoDirection;
 
-    const VisibleSelection& selection = frame->selection()->selection();
+    const VisibleSelection& selection = frame->selection().selection();
     return selection.isDirectional() ? (selection.isBaseFirst() ? SelectionHasForwardDirection : SelectionHasBackwardDirection) : SelectionHasNoDirection;
 }
 
@@ -474,7 +474,7 @@ void HTMLTextFormControlElement::selectionChanged(bool userTriggered)
     cacheSelection(computeSelectionStart(), computeSelectionEnd(), computeSelectionDirection());
 
     if (Frame* frame = document().frame()) {
-        if (frame->selection()->isRange() && userTriggered)
+        if (frame->selection().isRange() && userTriggered)
             dispatchEvent(Event::createBubble(eventNames().selectEvent));
     }
 }

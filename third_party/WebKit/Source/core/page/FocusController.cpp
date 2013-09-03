@@ -221,12 +221,12 @@ void FocusController::setFocusedFrame(PassRefPtr<Frame> frame)
 
     // Now that the frame is updated, fire events and update the selection focused states of both frames.
     if (oldFrame && oldFrame->view()) {
-        oldFrame->selection()->setFocused(false);
+        oldFrame->selection().setFocused(false);
         oldFrame->document()->dispatchWindowEvent(Event::create(eventNames().blurEvent));
     }
 
     if (newFrame && newFrame->view() && isFocused()) {
-        newFrame->selection()->setFocused(true);
+        newFrame->selection().setFocused(true);
         newFrame->document()->dispatchWindowEvent(Event::create(eventNames().focusEvent));
     }
 
@@ -254,7 +254,7 @@ void FocusController::setFocused(bool focused)
         setFocusedFrame(m_page->mainFrame());
 
     if (m_focusedFrame->view()) {
-        m_focusedFrame->selection()->setFocused(focused);
+        m_focusedFrame->selection().setFocused(focused);
         dispatchEventsOnWindowAndFocusedNode(m_focusedFrame->document(), focused);
     }
 }
@@ -319,7 +319,7 @@ bool FocusController::advanceFocusInDocumentOrder(FocusDirection direction, bool
     bool caretBrowsing = frame->settings() && frame->settings()->caretBrowsingEnabled();
 
     if (caretBrowsing && !currentNode)
-        currentNode = frame->selection()->start().deprecatedNode();
+        currentNode = frame->selection().start().deprecatedNode();
 
     document->updateLayoutIgnorePendingStylesheets();
 
@@ -380,8 +380,8 @@ bool FocusController::advanceFocusInDocumentOrder(FocusDirection direction, bool
     if (caretBrowsing) {
         Position position = firstPositionInOrBeforeNode(element);
         VisibleSelection newSelection(position, position, DOWNSTREAM);
-        if (frame->selection()->shouldChangeSelection(newSelection))
-            frame->selection()->setSelection(newSelection);
+        if (frame->selection().shouldChangeSelection(newSelection))
+            frame->selection().setSelection(newSelection);
     }
 
     element->focus(false, direction);
@@ -576,22 +576,22 @@ static void clearSelectionIfNeeded(Frame* oldFocusedFrame, Frame* newFocusedFram
     if (oldFocusedFrame->document() != newFocusedFrame->document())
         return;
 
-    FrameSelection* s = oldFocusedFrame->selection();
-    if (s->isNone())
+    FrameSelection& selection = oldFocusedFrame->selection();
+    if (selection.isNone())
         return;
 
     bool caretBrowsing = oldFocusedFrame->settings()->caretBrowsingEnabled();
     if (caretBrowsing)
         return;
 
-    Node* selectionStartNode = s->selection().start().deprecatedNode();
+    Node* selectionStartNode = selection.selection().start().deprecatedNode();
     if (selectionStartNode == newFocusedNode || selectionStartNode->isDescendantOf(newFocusedNode) || selectionStartNode->deprecatedShadowAncestorNode() == newFocusedNode)
         return;
 
     if (Node* mousePressNode = newFocusedFrame->eventHandler()->mousePressNode()) {
         if (mousePressNode->renderer() && !mousePressNode->canStartSelection()) {
             // Don't clear the selection for contentEditable elements, but do clear it for input and textarea. See bug 38696.
-            Node * root = s->rootEditableElement();
+            Node* root = selection.rootEditableElement();
             if (!root)
                 return;
 
@@ -602,7 +602,7 @@ static void clearSelectionIfNeeded(Frame* oldFocusedFrame, Frame* newFocusedFram
         }
     }
 
-    s->clear();
+    selection.clear();
 }
 
 bool FocusController::setFocusedElement(Element* element, PassRefPtr<Frame> newFocusedFrame, FocusDirection direction)
@@ -665,7 +665,7 @@ void FocusController::setActive(bool active)
         view->updateControlTints();
     }
 
-    focusedOrMainFrame()->selection()->pageActivationChanged();
+    focusedOrMainFrame()->selection().pageActivationChanged();
 }
 
 static void contentAreaDidShowOrHide(ScrollableArea* scrollableArea, bool didShow)

@@ -120,7 +120,7 @@ void InputMethodController::selectComposition() const
     // See <http://bugs.webkit.org/show_bug.cgi?id=15781>
     VisibleSelection selection;
     selection.setWithoutValidation(range->startPosition(), range->endPosition());
-    m_frame->selection()->setSelection(selection, 0);
+    m_frame->selection().setSelection(selection, 0);
 }
 
 void InputMethodController::confirmComposition()
@@ -168,8 +168,8 @@ void InputMethodController::cancelCompositionIfSelectionIsInvalid()
         return;
 
     // Check if selection start and selection end are valid.
-    Position start = m_frame->selection()->start();
-    Position end = m_frame->selection()->end();
+    Position start = m_frame->selection().start();
+    Position end = m_frame->selection().end();
     if (start.containerNode() == m_compositionNode
         && end.containerNode() == m_compositionNode
         && static_cast<unsigned>(start.computeOffsetInContainerNode()) > m_compositionStart
@@ -192,7 +192,7 @@ void InputMethodController::finishComposition(const String& text, FinishComposit
     else
         selectComposition();
 
-    if (m_frame->selection()->isNone())
+    if (m_frame->selection().isNone())
         return;
 
     // Dispatch a compositionend event to the focused node.
@@ -234,7 +234,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
 
     selectComposition();
 
-    if (m_frame->selection()->isNone())
+    if (m_frame->selection().isNone())
         return;
 
     if (Element* target = m_frame->document()->focusedElement()) {
@@ -286,8 +286,8 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
         TypingCommand::insertText(*m_frame->document(), text, TypingCommand::SelectInsertedText | TypingCommand::PreventSpellChecking, TypingCommand::TextCompositionUpdate);
 
         // Find out what node has the composition now.
-        Position base = m_frame->selection()->base().downstream();
-        Position extent = m_frame->selection()->extent();
+        Position base = m_frame->selection().base().downstream();
+        Position extent = m_frame->selection().extent();
         Node* baseNode = base.deprecatedNode();
         unsigned baseOffset = base.deprecatedEditingOffset();
         Node* extentNode = extent.deprecatedNode();
@@ -309,15 +309,15 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
             unsigned start = std::min(baseOffset + selectionStart, extentOffset);
             unsigned end = std::min(std::max(start, baseOffset + selectionEnd), extentOffset);
             RefPtr<Range> selectedRange = Range::create(&baseNode->document(), baseNode, start, baseNode, end);
-            m_frame->selection()->setSelectedRange(selectedRange.get(), DOWNSTREAM, false);
+            m_frame->selection().setSelectedRange(selectedRange.get(), DOWNSTREAM, false);
         }
     }
 }
 
 void InputMethodController::setCompositionFromExistingText(const Vector<CompositionUnderline>& underlines, unsigned compositionStart, unsigned compositionEnd)
 {
-    Node* editable = m_frame->selection()->rootEditableElement();
-    Position base = m_frame->selection()->base().downstream();
+    Node* editable = m_frame->selection().rootEditableElement();
+    Position base = m_frame->selection().base().downstream();
     Node* baseNode = base.anchorNode();
     if (editable->firstChild() == baseNode && editable->lastChild() == baseNode && baseNode->isTextNode()) {
         m_compositionNode = 0;
@@ -325,7 +325,7 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
 
         if (base.anchorType() != Position::PositionIsOffsetInAnchor)
             return;
-        if (!baseNode || baseNode != m_frame->selection()->extent().anchorNode())
+        if (!baseNode || baseNode != m_frame->selection().extent().anchorNode())
             return;
 
         m_compositionNode = toText(baseNode);
@@ -362,13 +362,13 @@ PassRefPtr<Range> InputMethodController::compositionRange() const
 
 PlainTextOffsets InputMethodController::getSelectionOffsets() const
 {
-    RefPtr<Range> range = m_frame->selection()->selection().firstRange();
+    RefPtr<Range> range = m_frame->selection().selection().firstRange();
     if (!range)
         return PlainTextOffsets();
     size_t location;
     size_t length;
     // FIXME: We should change TextIterator::getLocationAndLengthFromRange() returns PlainTextOffsets.
-    if (TextIterator::getLocationAndLengthFromRange(m_frame->selection()->rootEditableElementOrTreeScopeRootNode(), range.get(), location, length))
+    if (TextIterator::getLocationAndLengthFromRange(m_frame->selection().rootEditableElementOrTreeScopeRootNode(), range.get(), location, length))
         return PlainTextOffsets(location, location + length);
     return PlainTextOffsets();
 }

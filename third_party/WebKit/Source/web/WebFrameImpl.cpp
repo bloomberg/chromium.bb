@@ -1116,7 +1116,7 @@ bool WebFrameImpl::firstRectForCharacterRange(unsigned location, unsigned length
     if ((location + length < location) && (location + length))
         length = 0;
 
-    RefPtr<Range> range = TextIterator::rangeFromLocationAndLength(frame()->selection()->rootEditableElementOrDocumentElement(), location, length);
+    RefPtr<Range> range = TextIterator::rangeFromLocationAndLength(frame()->selection().rootEditableElementOrDocumentElement(), location, length);
     if (!range)
         return false;
     IntRect intRect = frame()->editor().firstRectForRange(range.get());
@@ -1137,7 +1137,7 @@ size_t WebFrameImpl::characterIndexForPoint(const WebPoint& webPoint) const
         return notFound;
 
     size_t location, length;
-    TextIterator::getLocationAndLengthFromRange(frame()->selection()->rootEditableElementOrDocumentElement(), range.get(), location, length);
+    TextIterator::getLocationAndLengthFromRange(frame()->selection().rootEditableElementOrDocumentElement(), range.get(), location, length);
     return location;
 }
 
@@ -1239,7 +1239,7 @@ void WebFrameImpl::replaceMisspelledRange(const WebString& text)
     // If this caret selection has two or more markers, this function replace the range covered by the first marker with the specified word as Microsoft Word does.
     if (pluginContainerFromFrame(frame()))
         return;
-    RefPtr<Range> caretRange = frame()->selection()->toNormalizedRange();
+    RefPtr<Range> caretRange = frame()->selection().toNormalizedRange();
     if (!caretRange)
         return;
     Vector<DocumentMarker*> markers = frame()->document()->markers()->markersInRange(caretRange.get(), DocumentMarker::Spelling | DocumentMarker::Grammar);
@@ -1248,9 +1248,9 @@ void WebFrameImpl::replaceMisspelledRange(const WebString& text)
     RefPtr<Range> markerRange = Range::create(caretRange->ownerDocument(), caretRange->startContainer(), markers[0]->startOffset(), caretRange->endContainer(), markers[0]->endOffset());
     if (!markerRange)
         return;
-    if (!frame()->selection()->shouldChangeSelection(markerRange.get()))
+    if (!frame()->selection().shouldChangeSelection(markerRange.get()))
         return;
-    frame()->selection()->setSelection(markerRange.get(), CharacterGranularity);
+    frame()->selection().setSelection(markerRange.get(), CharacterGranularity);
     frame()->editor().replaceSelectionWithText(text, false, false);
 }
 
@@ -1266,12 +1266,12 @@ bool WebFrameImpl::hasSelection() const
         return pluginContainer->plugin()->hasSelection();
 
     // frame()->selection()->isNone() never returns true.
-    return frame()->selection()->start() != frame()->selection()->end();
+    return frame()->selection().start() != frame()->selection().end();
 }
 
 WebRange WebFrameImpl::selectionRange() const
 {
-    return frame()->selection()->toNormalizedRange();
+    return frame()->selection().toNormalizedRange();
 }
 
 WebString WebFrameImpl::selectionAsText() const
@@ -1280,7 +1280,7 @@ WebString WebFrameImpl::selectionAsText() const
     if (pluginContainer)
         return pluginContainer->plugin()->selectionAsText();
 
-    RefPtr<Range> range = frame()->selection()->toNormalizedRange();
+    RefPtr<Range> range = frame()->selection().toNormalizedRange();
     if (!range)
         return WebString();
 
@@ -1298,7 +1298,7 @@ WebString WebFrameImpl::selectionAsMarkup() const
     if (pluginContainer)
         return pluginContainer->plugin()->selectionAsMarkup();
 
-    RefPtr<Range> range = frame()->selection()->toNormalizedRange();
+    RefPtr<Range> range = frame()->selection().toNormalizedRange();
     if (!range)
         return WebString();
 
@@ -1310,19 +1310,19 @@ void WebFrameImpl::selectWordAroundPosition(Frame* frame, VisiblePosition positi
     VisibleSelection selection(position);
     selection.expandUsingGranularity(WordGranularity);
 
-    if (frame->selection()->shouldChangeSelection(selection)) {
+    if (frame->selection().shouldChangeSelection(selection)) {
         TextGranularity granularity = selection.isRange() ? WordGranularity : CharacterGranularity;
-        frame->selection()->setSelection(selection, granularity);
+        frame->selection().setSelection(selection, granularity);
     }
 }
 
 bool WebFrameImpl::selectWordAroundCaret()
 {
-    FrameSelection* selection = frame()->selection();
-    ASSERT(!selection->isNone());
-    if (selection->isNone() || selection->isRange())
+    FrameSelection& selection = frame()->selection();
+    ASSERT(!selection.isNone());
+    if (selection.isNone() || selection.isRange())
         return false;
-    selectWordAroundPosition(frame(), selection->selection().visibleStart());
+    selectWordAroundPosition(frame(), selection.selection().visibleStart());
     return true;
 }
 
@@ -1334,7 +1334,7 @@ void WebFrameImpl::selectRange(const WebPoint& base, const WebPoint& extent)
 void WebFrameImpl::selectRange(const WebRange& webRange)
 {
     if (RefPtr<Range> range = static_cast<PassRefPtr<Range> >(webRange))
-        frame()->selection()->setSelectedRange(range.get(), WebCore::VP_DEFAULT_AFFINITY, false);
+        frame()->selection().setSelectedRange(range.get(), WebCore::VP_DEFAULT_AFFINITY, false);
 }
 
 void WebFrameImpl::moveCaretSelectionTowardsWindowPoint(const WebPoint& point)
@@ -1344,31 +1344,27 @@ void WebFrameImpl::moveCaretSelectionTowardsWindowPoint(const WebPoint& point)
 
 void WebFrameImpl::moveRangeSelection(const WebPoint& base, const WebPoint& extent)
 {
-    FrameSelection* selection = frame()->selection();
-    if (!selection)
-        return;
-
     VisiblePosition basePosition = visiblePositionForWindowPoint(base);
     VisiblePosition extentPosition = visiblePositionForWindowPoint(extent);
     VisibleSelection newSelection = VisibleSelection(basePosition, extentPosition);
-    if (frame()->selection()->shouldChangeSelection(newSelection))
-        frame()->selection()->setSelection(newSelection, CharacterGranularity);
+    if (frame()->selection().shouldChangeSelection(newSelection))
+        frame()->selection().setSelection(newSelection, CharacterGranularity);
 }
 
 void WebFrameImpl::moveCaretSelection(const WebPoint& point)
 {
-    Element* editable = frame()->selection()->rootEditableElement();
+    Element* editable = frame()->selection().rootEditableElement();
     if (!editable)
         return;
 
     VisiblePosition position = visiblePositionForWindowPoint(point);
-    if (frame()->selection()->shouldChangeSelection(position))
-        frame()->selection()->moveTo(position, UserTriggered);
+    if (frame()->selection().shouldChangeSelection(position))
+        frame()->selection().moveTo(position, UserTriggered);
 }
 
 void WebFrameImpl::setCaretVisible(bool visible)
 {
-    frame()->selection()->setCaretVisible(visible);
+    frame()->selection().setCaretVisible(visible);
 }
 
 VisiblePosition WebFrameImpl::visiblePositionForWindowPoint(const WebPoint& point)
@@ -1380,10 +1376,9 @@ VisiblePosition WebFrameImpl::visiblePositionForWindowPoint(const WebPoint& poin
     HitTestResult result(frame()->view()->windowToContents(roundedIntPoint(unscaledPoint)));
     frame()->document()->renderView()->layer()->hitTest(request, result);
 
-    Node* node = result.targetNode();
-    if (!node)
-        return VisiblePosition();
-    return frame()->selection()->selection().visiblePositionRespectingEditingBoundary(result.localPoint(), node);
+    if (Node* node = result.targetNode())
+        return frame()->selection().selection().visiblePositionRespectingEditingBoundary(result.localPoint(), node);
+    return VisiblePosition();
 }
 
 int WebFrameImpl::printBegin(const WebPrintParams& printParams, const WebNode& constrainToNode, bool* useBrowserOverlays)
@@ -1493,11 +1488,11 @@ bool WebFrameImpl::find(int identifier, const WebString& searchText, const WebFi
     // If the user has selected something since the last Find operation we want
     // to start from there. Otherwise, we start searching from where the last Find
     // operation left off (either a Find or a FindNext operation).
-    VisibleSelection selection(frame()->selection()->selection());
+    VisibleSelection selection(frame()->selection().selection());
     bool activeSelection = !selection.isNone();
     if (activeSelection) {
         m_activeMatch = selection.firstRange().get();
-        frame()->selection()->clear();
+        frame()->selection().clear();
     }
 
     ASSERT(frame() && frame()->view());
@@ -1989,7 +1984,7 @@ int WebFrameImpl::selectFindMatch(unsigned index, WebRect* selectionRect)
         setMarkerActive(m_activeMatch.get(), true);
 
         // Clear any user selection, to make sure Find Next continues on from the match we just activated.
-        frame()->selection()->clear();
+        frame()->selection().clear();
 
         // Make sure no node is focused. See http://crbug.com/38700.
         frame()->document()->setFocusedElement(0);
@@ -2060,7 +2055,7 @@ void WebFrameImpl::printPagesWithBoundaries(WebCanvas* canvas, const WebSize& pa
 
 WebRect WebFrameImpl::selectionBoundsRect() const
 {
-    return hasSelection() ? WebRect(IntRect(frame()->selection()->bounds(false))) : WebRect();
+    return hasSelection() ? WebRect(IntRect(frame()->selection().bounds(false))) : WebRect();
 }
 
 bool WebFrameImpl::selectionStartHasSpellingMarkerFor(int from, int length) const
@@ -2260,7 +2255,7 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
     if (this == mainFrameImpl->activeMatchFrame() && m_activeMatch.get()) {
         // If the user has set the selection since the match was found, we
         // don't focus anything.
-        VisibleSelection selection(frame()->selection()->selection());
+        VisibleSelection selection(frame()->selection().selection());
         if (!selection.isNone())
             return;
 
@@ -2279,7 +2274,7 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
             if (element->isFocusable()) {
                 // Found a focusable parent node. Set the active match as the
                 // selection and focus to the focusable node.
-                frame()->selection()->setSelection(m_activeMatch.get());
+                frame()->selection().setSelection(m_activeMatch.get());
                 frame()->document()->setFocusedElement(element);
                 return;
             }
@@ -2304,7 +2299,7 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
         // you'll have the last thing you found highlighted) and make sure that
         // we have nothing focused (otherwise you might have text selected but
         // a link focused, which is weird).
-        frame()->selection()->setSelection(m_activeMatch.get());
+        frame()->selection().setSelection(m_activeMatch.get());
         frame()->document()->setFocusedElement(0);
 
         // Finally clear the active match, for two reasons:
