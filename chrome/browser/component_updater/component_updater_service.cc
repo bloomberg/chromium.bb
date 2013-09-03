@@ -848,9 +848,11 @@ void CrxUpdateService::OnParseUpdateManifestFailed(
 void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
                                           CRXContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<CRXContext> crx_context(context);
   int error_code = net::OK;
 
-  CrxUpdateItem* crx = FindUpdateItemById(context->id);
+  CrxUpdateItem* crx = FindUpdateItemById(crx_context->id);
   DCHECK(crx->status == CrxUpdateItem::kDownloadingDiff ||
          crx->status == CrxUpdateItem::kDownloading);
 
@@ -907,7 +909,7 @@ void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
         FROM_HERE,
         base::Bind(&CrxUpdateService::Install,
                    base::Unretained(this),
-                   context,
+                   crx_context.release(),
                    temp_crx_path),
         base::TimeDelta::FromMilliseconds(config_->StepDelay()));
   }
