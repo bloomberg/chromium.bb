@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "content/public/browser/notification_observer.h"
@@ -20,10 +21,6 @@
 class GURL;
 class Profile;
 class SkBitmap;
-
-namespace browser_sync {
-class SyncedTabDelegate;
-}
 
 namespace chrome {
 struct NavigateParams;
@@ -65,10 +62,10 @@ class TabAndroid : public CoreTabHelperDelegate,
   // WebContents.  Can return NULL.
   content::ContentViewCore* GetContentViewCore() const;
   Profile* GetProfile() const;
+  browser_sync::SyncedTabDelegate* GetSyncedTabDelegate() const;
 
   virtual ToolbarModel::SecurityLevel GetSecurityLevel();
 
-  virtual browser_sync::SyncedTabDelegate* GetSyncedTabDelegate() = 0;
 
   virtual void HandlePopupNavigation(chrome::NavigateParams* params) = 0;
 
@@ -160,6 +157,8 @@ class TabAndroid : public CoreTabHelperDelegate,
   scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<chrome::android::ChromeWebContentsDelegateAndroid>
       web_contents_delegate_;
+
+  scoped_ptr<browser_sync::SyncedTabDelegateAndroid> synced_tab_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TabAndroid);
 };

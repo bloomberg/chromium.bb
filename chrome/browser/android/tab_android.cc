@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ssl/ssl_tab_helper.h"
+#include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
@@ -116,8 +117,18 @@ TabAndroid* TabAndroid::GetNativeTab(JNIEnv* env, jobject obj) {
 TabAndroid::TabAndroid(JNIEnv* env, jobject obj)
     : weak_java_tab_(env, obj),
       session_tab_id_(),
-      android_tab_id_(-1) {
+      android_tab_id_(-1),
+      synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)) {
   Java_TabBase_setNativePtr(env, obj, reinterpret_cast<jint>(this));
+}
+
+TabAndroid::~TabAndroid() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_TabBase_clearNativePtr(env, obj.obj());
 }
 
 content::ContentViewCore* TabAndroid::GetContentViewCore() const {
@@ -134,13 +145,8 @@ Profile* TabAndroid::GetProfile() const {
   return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 }
 
-TabAndroid::~TabAndroid() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
-  if (obj.is_null())
-    return;
-
-  Java_TabBase_clearNativePtr(env, obj.obj());
+browser_sync::SyncedTabDelegate* TabAndroid::GetSyncedTabDelegate() const {
+  return synced_tab_delegate_.get();
 }
 
 ToolbarModel::SecurityLevel TabAndroid::GetSecurityLevel() {
@@ -230,6 +236,8 @@ void TabAndroid::InitWebContents(JNIEnv* env,
       chrome::NOTIFICATION_FAVICON_UPDATED,
       content::Source<content::WebContents>(web_contents()));
 
+  synced_tab_delegate_->SetWebContents(web_contents());
+
   // Verify that the WebContents this tab represents matches the expected
   // off the record state.
   CHECK_EQ(GetProfile()->IsOffTheRecord(), incognito);
@@ -253,6 +261,7 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
 
   if (delete_native) {
     web_contents_.reset();
+    synced_tab_delegate_->ResetWebContents();
   } else {
     // Release the WebContents so it does not get deleted by the scoped_ptr.
     ignore_result(web_contents_.release());

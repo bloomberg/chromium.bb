@@ -41,8 +41,6 @@ class TestShellTab : public TabAndroid {
   // --------------------------------------------------------------------------
   // TabAndroid Methods
   // --------------------------------------------------------------------------
-  virtual browser_sync::SyncedTabDelegate* GetSyncedTabDelegate() OVERRIDE;
-
   virtual void OnReceivedHttpAuthRequest(jobject auth_handler,
                                          const string16& host,
                                          const string16& realm) OVERRIDE;

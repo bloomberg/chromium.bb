@@ -35,11 +35,6 @@ void TestShellTab::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
-browser_sync::SyncedTabDelegate* TestShellTab::GetSyncedTabDelegate() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 void TestShellTab::OnReceivedHttpAuthRequest(jobject auth_handler,
                                              const string16& host,
                                              const string16& realm) {
