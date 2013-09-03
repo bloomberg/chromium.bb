@@ -530,6 +530,10 @@ void AutofillDialogControllerImpl::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(
       ::prefs::kAutofillDialogAutofillDefault,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      ::prefs::kAutofillDialogSaveData,
+      true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 // static
@@ -736,6 +740,10 @@ bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {
       !profile_->IsOffTheRecord() &&
       IsManuallyEditingAnySection() &&
       !ShouldShowSpinner();
+}
+
+bool AutofillDialogControllerImpl::ShouldSaveInChrome() const {
+  return profile_->GetPrefs()->GetBoolean(::prefs::kAutofillDialogSaveData);
 }
 
 int AutofillDialogControllerImpl::GetDialogButtons() const {
@@ -3091,6 +3099,9 @@ void AutofillDialogControllerImpl::FinishSubmit() {
         PersistAutofillChoice(section, item_key, variant);
       }
     }
+
+    profile_->GetPrefs()->SetBoolean(::prefs::kAutofillDialogSaveData,
+                                     view_->SaveDetailsLocally());
   }
 
   // On a successful submit, if the user manually selected "pay without wallet",

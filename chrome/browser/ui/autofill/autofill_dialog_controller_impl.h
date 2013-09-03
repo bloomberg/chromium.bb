@@ -112,6 +112,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual DialogSignedInState SignedInState() const OVERRIDE;
   virtual bool ShouldShowSpinner() const OVERRIDE;
   virtual bool ShouldOfferToSaveInChrome() const OVERRIDE;
+  virtual bool ShouldSaveInChrome() const OVERRIDE;
   virtual ui::MenuModel* MenuModelForAccountChooser() OVERRIDE;
   virtual gfx::Image AccountChooserImage() OVERRIDE;
   virtual gfx::Image ButtonStripImage() const OVERRIDE;

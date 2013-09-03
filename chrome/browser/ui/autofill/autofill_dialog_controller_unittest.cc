@@ -122,7 +122,8 @@ scoped_ptr<risk::Fingerprint> GetFakeFingerprint() {
 
 class TestAutofillDialogView : public AutofillDialogView {
  public:
-  TestAutofillDialogView() : updates_started_(0) {}
+  TestAutofillDialogView()
+      : updates_started_(0), save_details_locally_checked_(true) {}
   virtual ~TestAutofillDialogView() {}
 
   virtual void Show() OVERRIDE {}
@@ -172,7 +173,11 @@ class TestAutofillDialogView : public AutofillDialogView {
                             const gfx::Point& screen_point) OVERRIDE {
     return false;
   }
-  virtual bool SaveDetailsLocally() OVERRIDE { return true; }
+
+  virtual bool SaveDetailsLocally() OVERRIDE {
+    return save_details_locally_checked_;
+  }
+
   virtual const content::NavigationController* ShowSignIn() OVERRIDE {
     return NULL;
   }
@@ -187,10 +192,15 @@ class TestAutofillDialogView : public AutofillDialogView {
     outputs_[section] = map;
   }
 
+  void CheckSaveDetailsLocallyCheckbox(bool checked) {
+    save_details_locally_checked_ = checked;
+  }
+
  private:
   std::map<DialogSection, DetailOutputMap> outputs_;
 
   int updates_started_;
+  bool save_details_locally_checked_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogView);
 };
@@ -374,6 +384,7 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
     // Don't get stuck on the first run wallet interstitial.
     profile()->GetPrefs()->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet,
                                       true);
+    profile()->GetPrefs()->ClearPref(::prefs::kAutofillDialogSaveData);
 
     SetUpControllerWithFormData(DefaultFormData());
   }
@@ -1975,7 +1986,7 @@ TEST_F(AutofillDialogControllerTest, ViewSubmitSetsPref) {
   EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
       ::prefs::kAutofillDialogPayWithoutWallet));
 
-  // Succesfully choosing wallet does set the pref.
+  // Successfully choosing wallet does set the pref.
   SetUpControllerWithFormData(DefaultFormData());
 
   SwitchToWallet();
@@ -2355,6 +2366,33 @@ TEST_F(AutofillDialogControllerTest, ReloadWithEmptyWalletItems) {
   EXPECT_FALSE(controller()->MenuModelForSection(SECTION_CC_BILLING));
   EXPECT_EQ(
       3, controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
+}
+
+TEST_F(AutofillDialogControllerTest, SaveInChromeByDefault) {
+  EXPECT_TRUE(controller()->ShouldSaveInChrome());
+  SwitchToAutofill();
+  FillCreditCardInputs();
+  controller()->OnAccept();
+  EXPECT_TRUE(controller()->ShouldSaveInChrome());
+}
+
+TEST_F(AutofillDialogControllerTest,
+       SaveInChromePreferenceNotRememberedOnCancel) {
+  EXPECT_TRUE(controller()->ShouldSaveInChrome());
+  SwitchToAutofill();
+  controller()->GetView()->CheckSaveDetailsLocallyCheckbox(false);
+  controller()->OnCancel();
+  EXPECT_TRUE(controller()->ShouldSaveInChrome());
+}
+
+TEST_F(AutofillDialogControllerTest,
+       SaveInChromePreferenceRememberedOnSuccess) {
+  EXPECT_TRUE(controller()->ShouldSaveInChrome());
+  SwitchToAutofill();
+  FillCreditCardInputs();
+  controller()->GetView()->CheckSaveDetailsLocallyCheckbox(false);
+  controller()->OnAccept();
+  EXPECT_FALSE(controller()->ShouldSaveInChrome());
 }
 
 }  // namespace autofill

@@ -1160,6 +1160,9 @@ const char kAutofillDialogPayWithoutWallet[] = "autofill.pay_without_wallet";
 // The number of times the dialog has been shown (all time).
 const char kAutofillDialogShowCount[] = "autofill.show_count";
 
+// Whether a user wants to save data locally in Autofill.
+const char kAutofillDialogSaveData[] = "autofill.save_data";
+
 // The number of times the generated credit card bubble has been shown.
 const char kAutofillGeneratedCardBubbleTimesShown[] =
     "autofill.generated_card_bubble_times_shown";

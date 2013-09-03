@@ -27,6 +27,7 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_CONST_METHOD0(SignedInState, DialogSignedInState());
   MOCK_CONST_METHOD0(ShouldShowSpinner, bool());
   MOCK_CONST_METHOD0(ShouldOfferToSaveInChrome, bool());
+  MOCK_CONST_METHOD0(ShouldSaveInChrome, bool());
   MOCK_METHOD0(MenuModelForAccountChooser, ui::MenuModel*());
   MOCK_METHOD0(AccountChooserImage, gfx::Image());
   MOCK_CONST_METHOD0(ShouldShowProgressBar, bool());

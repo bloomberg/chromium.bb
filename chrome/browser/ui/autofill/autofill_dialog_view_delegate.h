@@ -61,6 +61,9 @@ class AutofillDialogViewDelegate {
   // Whether to show the checkbox to save data locally (in Autofill).
   virtual bool ShouldOfferToSaveInChrome() const = 0;
 
+  // Whether the checkbox to save data locally should be checked initially.
+  virtual bool ShouldSaveInChrome() const = 0;
+
   // Returns the model for the account chooser. It will return NULL if the
   // account chooser should not show a menu. In this case, clicking on the
   // account chooser should initiate sign-in.

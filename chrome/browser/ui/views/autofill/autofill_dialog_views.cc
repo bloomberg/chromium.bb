@@ -1754,7 +1754,7 @@ void AutofillDialogViews::InitChildViews() {
 
   save_in_chrome_checkbox_ =
       new views::Checkbox(delegate_->SaveLocallyText());
-  save_in_chrome_checkbox_->SetChecked(true);
+  save_in_chrome_checkbox_->SetChecked(delegate_->ShouldSaveInChrome());
   save_in_chrome_checkbox_container_->AddChildView(save_in_chrome_checkbox_);
 
   save_in_chrome_checkbox_container_->AddChildView(
