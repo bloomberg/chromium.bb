@@ -87,7 +87,7 @@ void DoLaunchChildTestProcess(
 #endif
 
   std::string output_file_contents;
-  CHECK(file_util::ReadFileToString(output_file, &output_file_contents));
+  CHECK(base::ReadFileToString(output_file, &output_file_contents));
 
   CHECK(base::DeleteFile(output_file, false));
 
