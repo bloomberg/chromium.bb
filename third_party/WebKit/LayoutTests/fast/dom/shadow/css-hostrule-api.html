@@ -42,6 +42,15 @@ shouldBe("hostRule.cssRules.length", '1');
 shouldBe("hostRule.cssText", '"@host { \\n  div { border-color: blue; }\\n}"');
 shouldBe("hostRule.cssRules[0].cssText", '"div { border-color: blue; }"');
 
+debug("Error cases");
+shouldBe("hostRule.cssRules.length", '1');
+shouldThrow("hostRule.insertRule('#host { border-color: green; }')", "'TypeError: Not enough arguments'");
+shouldBe("hostRule.cssRules.length", '1');
+shouldThrow("hostRule.insertRule()", "'TypeError: Not enough arguments'");
+shouldBe("hostRule.cssRules.length", '1');
+shouldThrow("hostRule.deleteRule()", "'TypeError: Not enough arguments'");
+shouldBe("hostRule.cssRules.length", '1');
+
 </script>
 <script src="../../js/resources/js-test-post.js"></script>
 </html>
