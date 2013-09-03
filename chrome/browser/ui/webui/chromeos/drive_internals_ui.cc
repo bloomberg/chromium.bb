@@ -563,7 +563,7 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate(
 
   Profile* profile = Profile::FromWebUI(web_ui());
   drive::DriveNotificationManager* drive_notification_manager =
-      drive::DriveNotificationManagerFactory::GetForProfile(profile);
+      drive::DriveNotificationManagerFactory::GetForBrowserContext(profile);
   if (!drive_notification_manager)
     return;
 

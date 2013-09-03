@@ -90,7 +90,7 @@ DriveFileSyncService::~DriveFileSyncService() {
     api_util_->RemoveObserver(this);
 
   drive::DriveNotificationManager* drive_notification_manager =
-      drive::DriveNotificationManagerFactory::GetForProfile(profile_);
+      drive::DriveNotificationManagerFactory::GetForBrowserContext(profile_);
   if (drive_notification_manager)
     drive_notification_manager->RemoveObserver(this);
 }
@@ -424,7 +424,7 @@ void DriveFileSyncService::DidInitializeMetadataStore(
   may_have_unfetched_changes_ = true;
 
   drive::DriveNotificationManager* drive_notification_manager =
-      drive::DriveNotificationManagerFactory::GetForProfile(profile_);
+      drive::DriveNotificationManagerFactory::GetForBrowserContext(profile_);
   if (drive_notification_manager)
     drive_notification_manager->AddObserver(this);
 }

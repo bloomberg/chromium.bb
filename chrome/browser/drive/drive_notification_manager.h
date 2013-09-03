@@ -12,8 +12,11 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "sync/notifier/invalidation_handler.h"
 
-class Profile;
 class ProfileSyncService;
+
+namespace invalidation {
+class InvalidationService;
+}
 
 namespace drive {
 
@@ -25,7 +28,8 @@ class DriveNotificationManager
     : public BrowserContextKeyedService,
       public syncer::InvalidationHandler {
  public:
-  explicit DriveNotificationManager(Profile* profile);
+  explicit DriveNotificationManager(
+      invalidation::InvalidationService* invalidation_service);
   virtual ~DriveNotificationManager();
 
   // BrowserContextKeyedService override.
@@ -69,7 +73,7 @@ class DriveNotificationManager
   // Returns a string representation of NotificationSource.
   static std::string NotificationSourceToString(NotificationSource source);
 
-  Profile* profile_;
+  invalidation::InvalidationService* invalidation_service_;
   ObserverList<DriveNotificationObserver> observers_;
 
   // True when Drive File Sync Service is registered for Drive notifications.

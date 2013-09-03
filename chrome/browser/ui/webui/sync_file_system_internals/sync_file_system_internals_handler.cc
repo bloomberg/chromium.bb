@@ -90,7 +90,7 @@ void SyncFileSystemInternalsHandler::GetServiceStatus(
 void SyncFileSystemInternalsHandler::GetNotificationSource(
     const base::ListValue* args) {
   drive::DriveNotificationManager* drive_notification_manager =
-      drive::DriveNotificationManagerFactory::GetForProfile(profile_);
+      drive::DriveNotificationManagerFactory::GetForBrowserContext(profile_);
   bool xmpp_enabled = drive_notification_manager->push_notification_enabled();
   std::string notification_source = xmpp_enabled ? "XMPP" : "Polling";
   web_ui()->CallJavascriptFunction("SyncService.onGetNotificationSource",

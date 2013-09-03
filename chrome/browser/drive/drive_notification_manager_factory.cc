@@ -15,12 +15,13 @@ namespace drive {
 
 // static
 DriveNotificationManager*
-DriveNotificationManagerFactory::GetForProfile(Profile* profile) {
+DriveNotificationManagerFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
   if (!ProfileSyncService::IsSyncEnabled())
     return NULL;
 
   return static_cast<DriveNotificationManager*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
@@ -41,8 +42,10 @@ DriveNotificationManagerFactory::~DriveNotificationManagerFactory() {}
 
 BrowserContextKeyedService*
 DriveNotificationManagerFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  return new DriveNotificationManager(static_cast<Profile*>(profile));
+    content::BrowserContext* context) const {
+  return new DriveNotificationManager(
+      invalidation::InvalidationServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(context)));
 }
 
 }  // namespace drive

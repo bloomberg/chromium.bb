@@ -89,7 +89,7 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
             std::string() /* custom_user_agent */));
 
     drive::DriveNotificationManager* notification_manager =
-        drive::DriveNotificationManagerFactory::GetForProfile(profile);
+        drive::DriveNotificationManagerFactory::GetForBrowserContext(profile);
     ExtensionService* extension_service =
         extensions::ExtensionSystem::Get(profile)->extension_service();
 

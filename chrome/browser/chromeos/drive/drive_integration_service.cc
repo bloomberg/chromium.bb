@@ -216,7 +216,7 @@ void DriveIntegrationService::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DriveNotificationManager* drive_notification_manager =
-      DriveNotificationManagerFactory::GetForProfile(profile_);
+      DriveNotificationManagerFactory::GetForBrowserContext(profile_);
   if (drive_notification_manager)
     drive_notification_manager->RemoveObserver(this);
 
@@ -363,7 +363,7 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
 
   // Register for Google Drive invalidation notifications.
   DriveNotificationManager* drive_notification_manager =
-      DriveNotificationManagerFactory::GetForProfile(profile_);
+      DriveNotificationManagerFactory::GetForBrowserContext(profile_);
   if (drive_notification_manager) {
     drive_notification_manager->AddObserver(this);
     const bool registered =
