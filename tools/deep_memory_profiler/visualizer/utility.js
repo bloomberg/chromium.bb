@@ -54,3 +54,13 @@ var difference = function(left, right) {
     return previous;
   }, []);
 };
+
+/**
+ * Output object with indented format.
+ * @param  {Object} obj
+ * @param  {string} title
+ */
+var inspect = function(obj, title) {
+  if (title) console.log(title);
+  console.log(JSON.stringify(obj, null, 2));
+};

@@ -5,7 +5,7 @@
 $(function() {
   // Read original data and plot.
   // TODO(junjianx): Make file path an argument.
-  $.getJSON('sample.json', function(jsonData) {
+  $.getJSON('data/sample.json', function(jsonData) {
     // Create model.
     var profiler = new Profiler(jsonData);
     // Create views subscribing model events.

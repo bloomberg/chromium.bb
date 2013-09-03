@@ -131,6 +131,16 @@ Profiler.prototype.setSub = function(sub) {
   this.reparse();
 };
 
+/**
+ * Calculate the model of certain snapshot.
+ * @param {string} template Local template.
+ * @param {Object} snapshot Current snapshot.
+ * @param {Object} worldUnits Mapping of world units.
+ * @param {Array.<number>} localUnits Array of local units.
+ * @param {string} name Local node path.
+ * @return {Object} Return model, total size and remaining units.
+ * @private
+ */
 Profiler.prototype.accumulate_ = function(
   template, snapshot, worldUnits, localUnits, name) {
   var self = this;
@@ -238,6 +248,11 @@ Profiler.prototype.accumulate_ = function(
   };
 };
 
+/**
+ * Parse template and calculate models of the whole timeline.
+ * @return {Array.<Object>} Models of the whole timeline.
+ * @private
+ */
 Profiler.prototype.parseTemplate_ = function() {
   function calModelId(model, localPath) {
     // Create unique id for every model.
