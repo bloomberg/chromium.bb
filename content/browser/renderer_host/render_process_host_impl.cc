@@ -951,7 +951,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableViewport,
     switches::kEnableInbandTextTracks,
     switches::kEnableOpusPlayback,
-    switches::kEnableVp8AlphaPlayback,
+    switches::kDisableVp8AlphaPlayback,
     switches::kEnableEac3Playback,
     switches::kForceDeviceScaleFactor,
     switches::kFullMemoryCrashReport,

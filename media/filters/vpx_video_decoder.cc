@@ -121,7 +121,7 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
   bool can_handle = false;
   if (config.codec() == kCodecVP9)
     can_handle = true;
-  if (cmd_line->HasSwitch(switches::kEnableVp8AlphaPlayback) &&
+  if (!cmd_line->HasSwitch(switches::kDisableVp8AlphaPlayback) &&
       config.codec() == kCodecVP8 && config.format() == VideoFrame::YV12A) {
     can_handle = true;
   }

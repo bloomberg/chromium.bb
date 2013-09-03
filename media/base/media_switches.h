@@ -18,7 +18,7 @@ MEDIA_EXPORT extern const char kEnableEac3Playback[];
 
 MEDIA_EXPORT extern const char kEnableOpusPlayback[];
 
-MEDIA_EXPORT extern const char kEnableVp8AlphaPlayback[];
+MEDIA_EXPORT extern const char kDisableVp8AlphaPlayback[];
 
 MEDIA_EXPORT extern const char kVideoThreads[];
 

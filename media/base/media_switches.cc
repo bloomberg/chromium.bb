@@ -15,8 +15,8 @@ const char kEnableEac3Playback[] = "enable-eac3-playback";
 // Enables Opus playback in media elements.
 const char kEnableOpusPlayback[] = "enable-opus-playback";
 
-// Enables VP8 Alpha playback in media elements.
-const char kEnableVp8AlphaPlayback[] = "enable-vp8-alpha-playback";
+// Disables VP8 Alpha playback in media elements.
+const char kDisableVp8AlphaPlayback[] = "disable-vp8-alpha-playback";
 
 // Set number of threads to use for video decoding.
 const char kVideoThreads[] = "video-threads";
