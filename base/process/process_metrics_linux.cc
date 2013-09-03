@@ -421,6 +421,17 @@ const size_t kMemInactiveAnonIndex = 25;
 const size_t kMemActiveFileIndex = 28;
 const size_t kMemInactiveFileIndex = 31;
 
+// The format of /proc/vmstat is:
+//
+// nr_free_pages 299878
+// nr_inactive_anon 239863
+// nr_active_anon 1318966
+// nr_inactive_file 2015629
+// ...
+const size_t kVMPagesSwappedIn = 75;
+const size_t kVMPagesSwappedOut = 77;
+const size_t kVMPageMajorFaults = 95;
+
 // The format of /proc/diskstats is:
 //  Device major number
 //  Device minor number
@@ -474,18 +485,29 @@ const size_t kDiskWeightedIOTime = 13;
 
 }  // namespace
 
-SystemMemoryInfoKB::SystemMemoryInfoKB()
-    : total(0),
-      free(0),
-      buffers(0),
-      cached(0),
-      active_anon(0),
-      inactive_anon(0),
-      active_file(0),
-      inactive_file(0),
-      shmem(0),
-      gem_objects(-1),
-      gem_size(-1) {
+SystemMemoryInfoKB::SystemMemoryInfoKB() {
+  total = 0;
+  free = 0;
+  buffers = 0;
+  cached = 0;
+  active_anon = 0;
+  inactive_anon = 0;
+  active_file = 0;
+  inactive_file = 0;
+  swap_total = 0;
+  swap_free = 0;
+  dirty = 0;
+
+  pswpin = 0;
+  pswpout = 0;
+  pgmajfault = 0;
+
+#ifdef OS_CHROMEOS
+  shmem = 0;
+  slab = 0;
+  gem_objects = -1;
+  gem_size = -1;
+#endif
 }
 
 bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
@@ -522,21 +544,30 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   StringToInt(meminfo_fields[kMemBuffersIndex], &meminfo->buffers);
   StringToInt(meminfo_fields[kMemCachedIndex], &meminfo->cached);
   StringToInt(meminfo_fields[kMemActiveAnonIndex], &meminfo->active_anon);
-  StringToInt(meminfo_fields[kMemInactiveAnonIndex],
-                    &meminfo->inactive_anon);
+  StringToInt(meminfo_fields[kMemInactiveAnonIndex], &meminfo->inactive_anon);
   StringToInt(meminfo_fields[kMemActiveFileIndex], &meminfo->active_file);
-  StringToInt(meminfo_fields[kMemInactiveFileIndex],
-                    &meminfo->inactive_file);
+  StringToInt(meminfo_fields[kMemInactiveFileIndex], &meminfo->inactive_file);
+
+  // We don't know when these fields appear, so we must search for them.
+  for (size_t i = kMemCachedIndex+2; i < meminfo_fields.size(); i += 3) {
+    if (meminfo_fields[i] == "SwapTotal:")
+      StringToInt(meminfo_fields[i+1], &meminfo->swap_total);
+    if (meminfo_fields[i] == "SwapFree:")
+      StringToInt(meminfo_fields[i+1], &meminfo->swap_free);
+    if (meminfo_fields[i] == "Dirty:")
+      StringToInt(meminfo_fields[i+1], &meminfo->dirty);
+  }
+
 #if defined(OS_CHROMEOS)
   // Chrome OS has a tweaked kernel that allows us to query Shmem, which is
   // usually video memory otherwise invisible to the OS.  Unfortunately, the
   // meminfo format varies on different hardware so we have to search for the
   // string.  It always appears after "Cached:".
   for (size_t i = kMemCachedIndex+2; i < meminfo_fields.size(); i += 3) {
-    if (meminfo_fields[i] == "Shmem:") {
+    if (meminfo_fields[i] == "Shmem:")
       StringToInt(meminfo_fields[i+1], &meminfo->shmem);
-      break;
-    }
+    if (meminfo_fields[i] == "Slab:")
+      StringToInt(meminfo_fields[i+1], &meminfo->slab);
   }
 
   // Report on Chrome OS GEM object graphics memory. /var/run/debugfs_gpu is a
@@ -574,6 +605,22 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   }
 #endif  // defined(ARCH_CPU_ARM_FAMILY)
 #endif  // defined(OS_CHROMEOS)
+
+  FilePath vmstat_file("/proc/vmstat");
+  std::string vmstat_data;
+  if (!ReadFileToString(vmstat_file, &vmstat_data)) {
+    DLOG(WARNING) << "Failed to open " << vmstat_file.value();
+    return false;
+  }
+
+  std::vector<std::string> vmstat_fields;
+  SplitStringAlongWhitespace(vmstat_data, &vmstat_fields);
+  if (vmstat_fields[kVMPagesSwappedIn-1] == "pswpin")
+    StringToInt(vmstat_fields[kVMPagesSwappedIn], &meminfo->pswpin);
+  if (vmstat_fields[kVMPagesSwappedOut-1] == "pswpout")
+    StringToInt(vmstat_fields[kVMPagesSwappedOut], &meminfo->pswpout);
+  if (vmstat_fields[kVMPageMajorFaults-1] == "pgmajfault")
+    StringToInt(vmstat_fields[kVMPageMajorFaults], &meminfo->pgmajfault);
 
   return true;
 }

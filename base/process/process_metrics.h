@@ -251,14 +251,26 @@ struct BASE_EXPORT SystemMemoryInfoKB {
   int inactive_anon;
   int active_file;
   int inactive_file;
-  int shmem;
+  int swap_total;
+  int swap_free;
+  int dirty;
 
+  // vmstats data.
+  int pswpin;
+  int pswpout;
+  int pgmajfault;
+
+#ifdef OS_CHROMEOS
+  int shmem;
+  int slab;
   // Gem data will be -1 if not supported.
   int gem_objects;
   long long gem_size;
+#endif
 };
 
-// Retrieves data from /proc/meminfo about system-wide memory consumption.
+// Retrieves data from /proc/meminfo and /proc/vmstat
+// about system-wide memory consumption.
 // Fills in the provided |meminfo| structure. Returns true on success.
 // Exposed for memory debugging widget.
 BASE_EXPORT bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo);
@@ -318,7 +330,7 @@ BASE_EXPORT void GetSwapInfo(SwapInfo* swap_info);
 // to serialize the stored data.
 class SystemMetrics {
  public:
-  SystemMetrics() : committed_memory_(0) { }
+  SystemMetrics();
 
   static SystemMetrics Sample();
 
@@ -328,6 +340,10 @@ class SystemMetrics {
   size_t committed_memory_;
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   SystemMemoryInfoKB memory_info_;
+  SystemDiskInfo disk_info_;
+#endif
+#if defined(OS_CHROMEOS)
+  SwapInfo swap_info_;
 #endif
 };
 
