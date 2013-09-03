@@ -29,7 +29,6 @@
 #define ViewportArguments_h
 
 #include "core/page/PageScaleConstraints.h"
-#include "core/platform/Length.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "wtf/Forward.h"
 
@@ -75,7 +74,11 @@ struct ViewportArguments {
     ViewportArguments(Type type = Implicit)
         : type(type)
         , width(ValueAuto)
+        , minWidth(ValueAuto)
+        , maxWidth(ValueAuto)
         , height(ValueAuto)
+        , minHeight(ValueAuto)
+        , maxHeight(ValueAuto)
         , zoom(ValueAuto)
         , minZoom(ValueAuto)
         , maxZoom(ValueAuto)
@@ -89,11 +92,11 @@ struct ViewportArguments {
     PageScaleConstraints resolve(const FloatSize& initialViewportSize, int defaultWidth) const;
 
     float width;
-    Length minWidth;
-    Length maxWidth;
+    float minWidth;
+    float maxWidth;
     float height;
-    Length minHeight;
-    Length maxHeight;
+    float minHeight;
+    float maxHeight;
     float zoom;
     float minZoom;
     float maxZoom;
@@ -123,10 +126,6 @@ struct ViewportArguments {
     {
         return !(*this == other);
     }
-
-private:
-    enum Direction { Horizontal, Vertical };
-    static float resolveViewportLength(const Length&, const FloatSize& initialViewportSize, Direction);
 };
 
 void setViewportFeature(const String& keyString, const String& valueString, Document*, void* data);

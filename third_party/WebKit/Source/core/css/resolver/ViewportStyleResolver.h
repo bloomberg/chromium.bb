@@ -31,7 +31,6 @@
 #define ViewportStyleResolver_h
 
 #include "CSSPropertyNames.h"
-#include "core/platform/Length.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
@@ -59,7 +58,6 @@ private:
     explicit ViewportStyleResolver(Document*);
 
     float getViewportArgumentValue(CSSPropertyID) const;
-    Length getViewportLengthValue(CSSPropertyID) const;
 
     Document* m_document;
     RefPtr<MutableStylePropertySet> m_propertySet;
