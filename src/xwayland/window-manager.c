@@ -1847,6 +1847,8 @@ surface_destroy(struct wl_listener *listener, void *data)
 			     struct weston_wm_window, surface_destroy_listener);
 
 	wm_log("surface for xid %d destroyed\n", window->id);
+
+	window->surface = NULL;
 }
 
 static struct weston_wm_window *
