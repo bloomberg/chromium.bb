@@ -4,11 +4,40 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
 
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
+#include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace file_manager {
 namespace file_tasks {
+namespace {
+
+// Registers the default task preferences. Used for testing
+// ChooseAndSetDefaultTask().
+void RegisterDefaultTaskPreferences(TestingPrefServiceSimple* pref_service) {
+  DCHECK(pref_service);
+
+  pref_service->registry()->RegisterDictionaryPref(
+      prefs::kDefaultTasksByMimeType);
+  pref_service->registry()->RegisterDictionaryPref(
+      prefs::kDefaultTasksBySuffix);
+}
+
+// Updates the default task preferences per the given dictionary values. Used
+// for testing ChooseAndSetDefaultTask.
+void UpdateDefaultTaskPreferences(TestingPrefServiceSimple* pref_service,
+                                  const DictionaryValue& mime_types,
+                                  const DictionaryValue& suffixes) {
+  DCHECK(pref_service);
+
+  pref_service->Set(prefs::kDefaultTasksByMimeType, mime_types);
+  pref_service->Set(prefs::kDefaultTasksBySuffix, suffixes);
+}
+
+}  // namespace
 
 TEST(FileManagerFileTasksTest,
      FullTaskDescriptor_NonDriveAppWithIconAndDefault) {
@@ -147,6 +176,103 @@ TEST(FileManagerFileTasksTest, ParseTaskID_Invalid) {
 TEST(FileManagerFileTasksTest, ParseTaskID_UnknownTaskType) {
   TaskDescriptor task;
   EXPECT_FALSE(ParseTaskID("app-id|unknown|action-id", &task));
+}
+
+// Test that the right task is chosen from multiple choices per mime types
+// and file extensions.
+TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_MultipleTasks) {
+  TestingPrefServiceSimple pref_service;
+  RegisterDefaultTaskPreferences(&pref_service);
+
+  // Text.app and Nice.app were found for "foo.txt".
+  TaskDescriptor text_app_task("text-app-id",
+                               TASK_TYPE_FILE_HANDLER,
+                               "action-id");
+  TaskDescriptor nice_app_task("nice-app-id",
+                               TASK_TYPE_FILE_HANDLER,
+                               "action-id");
+  std::vector<FullTaskDescriptor> tasks;
+  tasks.push_back(FullTaskDescriptor(
+      text_app_task,
+      "Text.app",
+      GURL("http://example.com/text_app.png"),
+      false /* is_default */));
+  tasks.push_back(FullTaskDescriptor(
+      nice_app_task,
+      "Nice.app",
+      GURL("http://example.com/nice_app.png"),
+      false /* is_default */));
+  PathAndMimeTypeSet path_mime_set;
+  path_mime_set.insert(std::make_pair(
+      base::FilePath::FromUTF8Unsafe("foo.txt"),
+      "text/plain"));
+
+  // None of them should be chosen as default, as nothing is set in the
+  // preferences.
+  ChooseAndSetDefaultTask(pref_service, path_mime_set, &tasks);
+  EXPECT_FALSE(tasks[0].is_default());
+  EXPECT_FALSE(tasks[1].is_default());
+
+  // Set Text.app as default for "text/plain" in the preferences.
+  DictionaryValue empty;
+  DictionaryValue mime_types;
+  mime_types.SetStringWithoutPathExpansion(
+      "text/plain",
+      TaskDescriptorToId(text_app_task));
+  UpdateDefaultTaskPreferences(&pref_service, mime_types, empty);
+
+  // Text.app should be chosen as default.
+  ChooseAndSetDefaultTask(pref_service, path_mime_set, &tasks);
+  EXPECT_TRUE(tasks[0].is_default());
+  EXPECT_FALSE(tasks[1].is_default());
+
+  // Change it back to non-default for testing further.
+  tasks[0].set_is_default(false);
+
+  // Clear the preferences and make sure none of them are default.
+  UpdateDefaultTaskPreferences(&pref_service, empty, empty);
+  ChooseAndSetDefaultTask(pref_service, path_mime_set, &tasks);
+  EXPECT_FALSE(tasks[0].is_default());
+  EXPECT_FALSE(tasks[1].is_default());
+
+  // Set Nice.app as default for ".txt" in the preferences.
+  DictionaryValue suffixes;
+  suffixes.SetStringWithoutPathExpansion(
+      ".txt",
+      TaskDescriptorToId(nice_app_task));
+  UpdateDefaultTaskPreferences(&pref_service, empty, suffixes);
+
+  // Now Nice.app should be chosen as default.
+  ChooseAndSetDefaultTask(pref_service, path_mime_set, &tasks);
+  EXPECT_FALSE(tasks[0].is_default());
+  EXPECT_TRUE(tasks[1].is_default());
+}
+
+// Test that Files.app's internal file browser handler is chosen as default
+// even if nothing is set in the preferences.
+TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackFileBrowser) {
+  TestingPrefServiceSimple pref_service;
+  RegisterDefaultTaskPreferences(&pref_service);
+
+  // Files.app's internal file browser handler was found for "foo.txt".
+  TaskDescriptor files_app_task(kFileManagerAppId,
+                                TASK_TYPE_FILE_BROWSER_HANDLER,
+                                "view-in-browser");
+  std::vector<FullTaskDescriptor> tasks;
+  tasks.push_back(FullTaskDescriptor(
+      files_app_task,
+      "View in browser",
+      GURL("http://example.com/some_icon.png"),
+      false /* is_default */));
+  PathAndMimeTypeSet path_mime_set;
+  path_mime_set.insert(std::make_pair(
+      base::FilePath::FromUTF8Unsafe("foo.txt"),
+      "text/plain"));
+
+  // The internal file browser handler should be chosen as default, as it's a
+  // fallback file browser handler.
+  ChooseAndSetDefaultTask(pref_service, path_mime_set, &tasks);
+  EXPECT_TRUE(tasks[0].is_default());
 }
 
 }  // namespace file_tasks

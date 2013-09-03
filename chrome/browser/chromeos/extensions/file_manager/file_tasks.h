@@ -166,14 +166,16 @@ class FullTaskDescriptor {
                      const std::string& task_title,
                      const GURL& icon_url,
                      bool is_default);
+  const TaskDescriptor& task_descriptor() const { return task_descriptor_; }
+
+  // The title of the task.
+  const std::string& task_title() { return task_title_; }
   // The icon URL for the task (ex. app icon)
   const GURL& icon_url() const { return icon_url_; }
 
   // True if this task is set as default.
   bool is_default() const { return is_default_; }
-
-  // The title of the task.
-  const std::string& task_title() { return task_title_; }
+  void set_is_default(bool is_default) { is_default_ = is_default; }
 
   // Returns a DictionaryValue representation, which looks like:
   //
@@ -281,54 +283,37 @@ void GetAvailableDriveTasks(const drive::DriveAppRegistry& registry,
                             const PathAndMimeTypeSet& path_mime_set,
                             TaskInfoMap* task_info_map);
 
-// Looks in the preferences and finds any of the available apps that are
-// also listed as default apps for any of the files in the info list.
-void FindDefaultDriveTasks(const PrefService& pref_service,
-                           const PathAndMimeTypeSet& path_mime_set,
-                           const TaskInfoMap& task_info_map,
-                           std::set<std::string>* default_tasks);
-
 // Creates a list of each task in |task_info_map| and stores the result into
 // |result_list|. If a default task is set in the result list,
 // |default_already_set| is set to true.
 void CreateDriveTasks(const TaskInfoMap& task_info_map,
-                      const std::set<std::string>& default_tasks,
-                      std::vector<FullTaskDescriptor>* result_list,
-                      bool* default_already_set);
+                      std::vector<FullTaskDescriptor>* result_list);
 
 // Finds the drive app tasks that can be used with the given files, and
-// append them to the |result_list|. |*default_already_set| indicates if
-// the |result_list| already contains the default task. If the value is
-// false, the function will find the default task and set the value to true
-// if found.
+// append them to the |result_list|.
 //
 // "taskId" field in |result_list| will look like
 // "<drive-app-id>|drive|open-with" (See also file_tasks.h).
 // "driveApp" field in |result_list| will be set to "true".
 void FindDriveAppTasks(Profile* profile,
                        const PathAndMimeTypeSet& path_mime_set,
-                       std::vector<FullTaskDescriptor>* result_list,
-                       bool* default_already_set);
+                       std::vector<FullTaskDescriptor>* result_list);
 
 // Finds the file handler tasks (apps declaring "file_handlers" in
 // manifest.json) that can be used with the given files, appending them to
-// the |result_list|. See the comment at FindDriveAppTasks() about
-// |default_already_set|
+// the |result_list|.
 void FindFileHandlerTasks(Profile* profile,
                           const PathAndMimeTypeSet& path_mime_set,
-                          std::vector<FullTaskDescriptor>* result_list,
-                          bool* default_already_set);
+                          std::vector<FullTaskDescriptor>* result_list);
 
 // Finds the file browser handler tasks (app/extensions declaring
 // "file_browser_handlers" in manifest.json) that can be used with the
-// given files, appending them to the |result_list|. See the comment at
-// FindDriveAppTasks() about |default_already_set|
+// given files, appending them to the |result_list|.
 void FindFileBrowserHandlerTasks(
     Profile* profile,
     const std::vector<GURL>& file_urls,
     const std::vector<base::FilePath>& file_paths,
-    std::vector<FullTaskDescriptor>* result_list,
-    bool* default_already_set);
+    std::vector<FullTaskDescriptor>* result_list);
 
 // Finds all types (drive, file handlers, file browser handlers) of
 // tasks. See the comment at FindDriveAppTasks() about |result_list|.
@@ -338,6 +323,13 @@ void FindAllTypesOfTasks(
     const std::vector<GURL>& file_urls,
     const std::vector<base::FilePath>& file_paths,
     std::vector<FullTaskDescriptor>* result_list);
+
+// Chooses the default task in |tasks| and sets it as default, if the default
+// task is found (i.e. the default task may not exist in |tasks|). No tasks
+// should be set as default before calling this function.
+void ChooseAndSetDefaultTask(const PrefService& pref_service,
+                             const PathAndMimeTypeSet& path_mime_set,
+                             std::vector<FullTaskDescriptor>* tasks);
 
 }  // namespace file_tasks
 }  // namespace file_manager

@@ -362,60 +362,29 @@ void GetAvailableDriveTasks(
   }
 }
 
-void FindDefaultDriveTasks(
-    const PrefService& pref_service,
-    const PathAndMimeTypeSet& path_mime_set,
-    const TaskInfoMap& task_info_map,
-    std::set<std::string>* default_tasks) {
-  DCHECK(default_tasks);
-
-  for (PathAndMimeTypeSet::const_iterator it = path_mime_set.begin();
-       it != path_mime_set.end(); ++it) {
-    const base::FilePath& file_path = it->first;
-    const std::string& mime_type = it->second;
-    std::string task_id = file_tasks::GetDefaultTaskIdFromPrefs(
-        pref_service, mime_type, file_path.Extension());
-    if (task_info_map.find(task_id) != task_info_map.end())
-      default_tasks->insert(task_id);
-  }
-}
-
 void CreateDriveTasks(
     const TaskInfoMap& task_info_map,
-    const std::set<std::string>& default_tasks,
-    std::vector<FullTaskDescriptor>* result_list,
-    bool* default_already_set) {
+    std::vector<FullTaskDescriptor>* result_list) {
   DCHECK(result_list);
-  DCHECK(default_already_set);
 
   for (TaskInfoMap::const_iterator iter = task_info_map.begin();
        iter != task_info_map.end(); ++iter) {
-    bool is_default = false;
-    // Once we set a default app, we don't want to set any more.
-    if (!(*default_already_set) &&
-        default_tasks.find(iter->first) != default_tasks.end()) {
-      is_default = true;
-      *default_already_set = true;
-    }
-
     TaskDescriptor descriptor;
     DCHECK(ParseTaskID(iter->first, &descriptor));
     result_list->push_back(
         FullTaskDescriptor(descriptor,
                            iter->second.app_name,
                            iter->second.icon_url,
-                           is_default));
+                           false /* is_default */));
   }
 }
 
 void FindDriveAppTasks(
     Profile* profile,
     const PathAndMimeTypeSet& path_mime_set,
-    std::vector<FullTaskDescriptor>* result_list,
-    bool* default_already_set) {
+    std::vector<FullTaskDescriptor>* result_list) {
   DCHECK(!path_mime_set.empty());
   DCHECK(result_list);
-  DCHECK(default_already_set);
 
   drive::DriveIntegrationService* integration_service =
       drive::DriveIntegrationServiceFactory::GetForProfile(profile);
@@ -428,35 +397,21 @@ void FindDriveAppTasks(
   GetAvailableDriveTasks(*integration_service->drive_app_registry(),
                          path_mime_set,
                          &task_info_map);
-
-  std::set<std::string> default_tasks;
-  FindDefaultDriveTasks(*profile->GetPrefs(),
-                        path_mime_set,
-                        task_info_map,
-                        &default_tasks);
-  CreateDriveTasks(
-      task_info_map, default_tasks, result_list, default_already_set);
+  // TODO(satorux): Remove this function. GetAvailableDriveTasks() should
+  // just produce the result list directly.
+  CreateDriveTasks(task_info_map, result_list);
 }
 
 void FindFileHandlerTasks(
     Profile* profile,
     const PathAndMimeTypeSet& path_mime_set,
-    std::vector<FullTaskDescriptor>* result_list,
-    bool* default_already_set) {
+    std::vector<FullTaskDescriptor>* result_list) {
   DCHECK(!path_mime_set.empty());
   DCHECK(result_list);
-  DCHECK(default_already_set);
 
   ExtensionService* service = profile->GetExtensionService();
   if (!service)
     return;
-
-  std::set<std::string> default_tasks;
-  for (PathAndMimeTypeSet::iterator it = path_mime_set.begin();
-       it != path_mime_set.end(); ++it) {
-    default_tasks.insert(file_tasks::GetDefaultTaskIdFromPrefs(
-        *profile->GetPrefs(), it->second, it->first.Extension()));
-  }
 
   for (ExtensionSet::const_iterator iter = service->extensions()->begin();
        iter != service->extensions()->end();
@@ -482,12 +437,6 @@ void FindFileHandlerTasks(
       std::string task_id = file_tasks::MakeTaskID(
           extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER, (*i)->id);
 
-      bool is_default = false;
-      if (!(*default_already_set) && ContainsKey(default_tasks, task_id)) {
-        is_default = true;
-        *default_already_set = true;
-      }
-
       GURL best_icon = extensions::ExtensionIconSource::GetIconURL(
           extension,
           drive::util::kPreferredIconSize,
@@ -501,7 +450,7 @@ void FindFileHandlerTasks(
                          (*i)->id),
           (*i)->title,
           best_icon,
-          is_default));
+          false /* is_default */));
     }
   }
 }
@@ -510,20 +459,15 @@ void FindFileBrowserHandlerTasks(
     Profile* profile,
     const std::vector<GURL>& file_urls,
     const std::vector<base::FilePath>& file_paths,
-    std::vector<FullTaskDescriptor>* result_list,
-    bool* default_already_set) {
+    std::vector<FullTaskDescriptor>* result_list) {
   DCHECK(!file_paths.empty());
   DCHECK(!file_urls.empty());
   DCHECK(result_list);
-  DCHECK(default_already_set);
 
   file_browser_handlers::FileBrowserHandlerList common_tasks =
       file_browser_handlers::FindCommonFileBrowserHandlers(profile, file_urls);
   if (common_tasks.empty())
     return;
-  file_browser_handlers::FileBrowserHandlerList default_tasks =
-      file_browser_handlers::FindDefaultFileBrowserHandlers(
-          *profile->GetPrefs(), file_paths, common_tasks);
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -545,22 +489,13 @@ void FindFileBrowserHandlerTasks(
         false,  // grayscale
         NULL);  // exists
 
-    // Only set the default if there isn't already a default set.
-    bool is_default = false;
-    if (!*default_already_set &&
-        std::find(default_tasks.begin(), default_tasks.end(), *iter) !=
-        default_tasks.end()) {
-      is_default = true;
-      *default_already_set = true;
-    }
-
     result_list->push_back(FullTaskDescriptor(
         TaskDescriptor(extension_id,
                        file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
                        handler->id()),
         handler->title(),
         icon_url,
-        is_default));
+        false /* is_default */));
   }
 }
 
@@ -584,15 +519,11 @@ void FindAllTypesOfTasks(
     }
   }
 
-  // Find the Drive app tasks first, because we want them to take precedence
-  // when setting the default app.
-  bool default_already_set = false;
   // Google document are not opened by drive apps but file manager.
   if (!has_google_document) {
     FindDriveAppTasks(profile,
                       path_mime_set,
-                      result_list,
-                      &default_already_set);
+                      result_list);
   }
 
   // Find and append file handler tasks. We know there aren't duplicates
@@ -600,8 +531,7 @@ void FindAllTypesOfTasks(
   // tasks.
   FindFileHandlerTasks(profile,
                        path_mime_set,
-                       result_list,
-                       &default_already_set);
+                       result_list);
 
   // Find and append file browser handler tasks. We know there aren't
   // duplicates because "file_browser_handlers" and "file_handlers" shouldn't
@@ -609,8 +539,50 @@ void FindAllTypesOfTasks(
   FindFileBrowserHandlerTasks(profile,
                               file_urls,
                               file_paths,
-                              result_list,
-                              &default_already_set);
+                              result_list);
+
+  ChooseAndSetDefaultTask(*profile->GetPrefs(),
+                          path_mime_set,
+                          result_list);
+}
+
+void ChooseAndSetDefaultTask(const PrefService& pref_service,
+                             const PathAndMimeTypeSet& path_mime_set,
+                             std::vector<FullTaskDescriptor>* tasks) {
+  // Collect the task IDs of default tasks from the preferences into a set.
+  std::set<std::string> default_task_ids;
+  for (PathAndMimeTypeSet::const_iterator it = path_mime_set.begin();
+       it != path_mime_set.end(); ++it) {
+    const base::FilePath& file_path = it->first;
+    const std::string& mime_type = it->second;
+    std::string task_id = file_tasks::GetDefaultTaskIdFromPrefs(
+        pref_service, mime_type, file_path.Extension());
+    default_task_ids.insert(task_id);
+  }
+
+  // Go through all the tasks from the beginning and see if there is any
+  // default task. If found, pick and set it as default and return.
+  for (size_t i = 0; i < tasks->size(); ++i) {
+    FullTaskDescriptor* task = &tasks->at(i);
+    DCHECK(!task->is_default());
+    const std::string task_id = TaskDescriptorToId(task->task_descriptor());
+    if (ContainsKey(default_task_ids, task_id)) {
+      task->set_is_default(true);
+      return;
+    }
+  }
+
+  // No default tasks found. If there is any fallback file browser handler,
+  // make it as default task, so it's selected by default.
+  for (size_t i = 0; i < tasks->size(); ++i) {
+    FullTaskDescriptor* task = &tasks->at(i);
+    DCHECK(!task->is_default());
+    if (file_browser_handlers::IsFallbackFileBrowserHandler(
+            task->task_descriptor())) {
+      task->set_is_default(true);
+      return;
+    }
+  }
 }
 
 }  // namespace file_tasks
