@@ -27,6 +27,12 @@ body: [regular, 1:0-1:4] {
 body: [regular, 5:0-5:4] {
     ['color':'after-import' non-parsed] @[6:4-6:24] active
 }
+body: [regular, 1:0-1:4] {
+    ['color':'before-viewport' non-parsed] @[2:4-2:27] active
+}
+body: [regular, 6:0-6:4] {
+    ['color':'after-viewport' non-parsed] @[7:4-7:26] active
+}
 body: [regular, 4:0-4:4] {
     ['color':'after-invalid-font-face' non-parsed] @[5:4-5:35] active
 }

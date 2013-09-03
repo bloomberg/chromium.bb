@@ -11634,8 +11634,10 @@ unsigned CSSParser::safeUserStringTokenOffset()
 
 StyleRuleBase* CSSParser::createViewportRule()
 {
-    if (!RuntimeEnabledFeatures::cssViewportEnabled())
+    if (!RuntimeEnabledFeatures::cssViewportEnabled()) {
+        endRuleBody(true);
         return 0;
+    }
 
     m_allowImportRules = m_allowNamespaceDeclarations = false;
 
