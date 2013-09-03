@@ -232,6 +232,10 @@ void FileReader::didFinishLoading()
     if (m_loadingState == LoadingStateAborted)
         return;
     ASSERT(m_loadingState == LoadingStateLoading);
+
+    // It's important that we change m_loadingState before firing any events
+    // since any of the events could call abort(), which internally checks
+    // if we're still loading (therefore we need abort process) or not.
     m_loadingState = LoadingStateNone;
 
     fireEvent(eventNames().progressEvent);
