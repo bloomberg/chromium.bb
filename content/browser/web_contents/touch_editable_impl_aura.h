@@ -37,6 +37,9 @@ class CONTENT_EXPORT TouchEditableImplAura
   // depending on the current selection and cursor state.
   void UpdateEditingController();
 
+  void OverscrollStarted();
+  void OverscrollCompleted();
+
   // Overridden from RenderWidgetHostViewAura::TouchEditingClient.
   virtual void StartTouchEditing() OVERRIDE;
   virtual void EndTouchEditing() OVERRIDE;
@@ -87,7 +90,15 @@ class CONTENT_EXPORT TouchEditableImplAura
   // change in selection (long press, double tap or triple tap).
   bool selection_gesture_in_process_;
 
+  // Set to true if handles are hidden when user is scrolling. Used to determine
+  // whether to re-show handles after a scrolling session.
   bool handles_hidden_due_to_scroll_;
+
+  // Keeps track of when the user is scrolling.
+  bool scroll_in_progress_;
+
+  // Set to true when the page starts an overscroll.
+  bool overscroll_in_progress_;
 
   // Used to track if the current tap gesture is on a focused textfield.
   bool is_tap_on_focused_textfield_;
