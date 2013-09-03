@@ -8,13 +8,17 @@
 
 #include "apps/launcher.h"
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -33,6 +37,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/renderer_preferences.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
 
@@ -206,8 +212,6 @@ WebContents* OpenApplicationTab(Profile* profile,
     add_type |= TabStripModel::ADD_PINNED;
 
   GURL extension_url = UrlForExtension(extension, override_url);
-  // TODO(erikkay): START_PAGE doesn't seem like the right transition in all
-  // cases.
   chrome::NavigateParams params(browser, extension_url,
                                 content::PAGE_TRANSITION_AUTO_TOPLEVEL);
   params.tabstrip_add_types = add_type;
@@ -342,6 +346,27 @@ WebContents* OpenApplication(const AppLaunchParams& params) {
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);
 
   if (extension->is_platform_app()) {
+#if !defined(OS_CHROMEOS)
+    SigninManager* signin_manager =
+        SigninManagerFactory::GetForProfile(profile);
+    if (signin_manager && signin_manager->GetAuthenticatedUsername().empty()) {
+      const char kEnforceSigninToUseAppsFieldTrial[] = "EnforceSigninToUseApps";
+
+      std::string field_trial_value =
+          base::FieldTrialList::FindFullName(kEnforceSigninToUseAppsFieldTrial);
+
+      // Only enforce signin if the field trial is set.
+      if (!field_trial_value.empty()) {
+        GURL gurl(l10n_util::GetStringFUTF8(IDS_APP_LAUNCH_NOT_SIGNED_IN_LINK,
+                                            UTF8ToUTF16(extension->id())));
+        chrome::NavigateParams params(profile, gurl,
+                                      content::PAGE_TRANSITION_LINK);
+        chrome::Navigate(&params);
+        return NULL;
+      }
+    }
+#endif
+
     apps::LaunchPlatformAppWithCommandLine(
         profile, extension, params.command_line, params.current_directory);
     return NULL;
