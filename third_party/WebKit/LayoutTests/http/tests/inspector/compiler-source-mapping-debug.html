@@ -2,7 +2,9 @@
 <head>
 <script src="inspector-test.js"></script>
 <script src="debugger-test.js"></script>
+<script src="console-test.js"></script>
 <script src="resources/compiled.js"></script>
+<script src="resources/compiled-with-wrong-source-map-url.js"></script>
 
 <script>
 
@@ -35,6 +37,31 @@ function test()
             function paused(callFrames)
             {
                 InspectorTest.captureStackTrace(callFrames);
+                next();
+            }
+        },
+
+        function testNo404InConsole(next)
+        {
+            function callbackWhenSourceMapRequestIsAvailable(callback)
+            {
+                var requests = WebInspector.panel("network").requests;
+                for (var i = 0; i < requests.length; ++i) {
+                    if (requests[i].url.indexOf("source-map.json_not_found") === -1 || !requests[i].finished)
+                        continue;
+                    var request = requests[i];
+                    callback(request);
+                    return;
+                }
+                InspectorTest.addSniffer(WebInspector.NetworkManager.prototype, "_finishNetworkRequest", callbackWhenSourceMapRequestIsAvailable);
+            }
+
+            callbackWhenSourceMapRequestIsAvailable(step2);
+
+            function step2(request)
+            {
+                InspectorTest.assertEquals(request.statusCode, 404);
+                InspectorTest.dumpConsoleMessages();
                 next();
             }
         }

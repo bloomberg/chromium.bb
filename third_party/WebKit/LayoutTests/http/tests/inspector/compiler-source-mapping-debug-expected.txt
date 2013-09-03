@@ -10,7 +10,9 @@ Script source was shown.
 Script execution paused.
 Call stack:
     0) handleClick (compiled.js:2)
-    1) clickButton (compiler-source-mapping-debug.html:11)
+    1) clickButton (compiler-source-mapping-debug.html:13)
+
+Running: testNo404InConsole
 Script execution resumed.
 Debugger was disabled.
 
