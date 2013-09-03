@@ -209,8 +209,11 @@ void CaretBase::repaintCaretForLocalRect(Node* node, const LayoutRect& rect)
 bool CaretBase::shouldRepaintCaret(const RenderView* view, bool isContentEditable) const
 {
     ASSERT(view);
-    Frame* frame = view->frameView() ? view->frameView()->frame() : 0; // The frame where the selection started.
-    bool caretBrowsing = frame && frame->settings() && frame->settings()->caretBrowsingEnabled();
+    bool caretBrowsing = false;
+    if (FrameView* frameView = view->frameView()) {
+        Frame& frame = frameView->frame(); // The frame where the selection started
+        caretBrowsing = frame.settings() && frame.settings()->caretBrowsingEnabled();
+    }
     return (caretBrowsing || isContentEditable);
 }
 

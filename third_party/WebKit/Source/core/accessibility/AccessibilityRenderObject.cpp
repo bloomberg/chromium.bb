@@ -2088,8 +2088,7 @@ AccessibilitySVGRoot* AccessibilityRenderObject::remoteSVGRootElement() const
     FrameView* frameView = svgImage->frameView();
     if (!frameView)
         return 0;
-    Frame* frame = frameView->frame();
-    Document* doc = frame->document();
+    Document* doc = frameView->frame().document();
     if (!doc || !doc->isSVGDocument())
         return 0;
 
@@ -2100,7 +2099,7 @@ AccessibilitySVGRoot* AccessibilityRenderObject::remoteSVGRootElement() const
     if (!rendererRoot)
         return 0;
 
-    AccessibilityObject* rootSVGObject = frame->document()->axObjectCache()->getOrCreate(rendererRoot);
+    AccessibilityObject* rootSVGObject = doc->axObjectCache()->getOrCreate(rendererRoot);
 
     // In order to connect the AX hierarchy from the SVG root element from the loaded resource
     // the parent must be set, because there's no other way to get back to who created the image.

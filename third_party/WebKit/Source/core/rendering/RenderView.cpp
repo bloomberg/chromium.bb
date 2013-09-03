@@ -872,7 +872,7 @@ bool RenderView::shouldUsePrintingLayout() const
 {
     if (!printing() || !m_frameView)
         return false;
-    return m_frameView->frame()->shouldUsePrintingLayout();
+    return m_frameView->frame().shouldUsePrintingLayout();
 }
 
 size_t RenderView::getRetainedWidgets(Vector<RenderWidget*>& renderWidgets)
@@ -1008,7 +1008,7 @@ int RenderView::viewLogicalHeight() const
 
 float RenderView::zoomFactor() const
 {
-    return m_frameView->frame()->pageZoomFactor();
+    return m_frameView->frame().pageZoomFactor();
 }
 
 void RenderView::pushLayoutState(RenderObject* root)
@@ -1111,7 +1111,7 @@ bool RenderView::backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const
     // FIXME: Remove this main frame check. Same concept applies to subframes too.
     Page* page = document().page();
     Frame* mainFrame = page ? page->mainFrame() : 0;
-    if (!m_frameView || m_frameView->frame() != mainFrame)
+    if (!m_frameView || &m_frameView->frame() != mainFrame)
         return false;
 
     return m_frameView->hasOpaqueBackground();

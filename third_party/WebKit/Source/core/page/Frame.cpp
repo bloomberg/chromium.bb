@@ -311,18 +311,16 @@ Frame* Frame::frameForWidget(const Widget* widget)
     // Assume all widgets are either a FrameView or owned by a RenderWidget.
     // FIXME: That assumption is not right for scroll bars!
     ASSERT_WITH_SECURITY_IMPLICATION(widget->isFrameView());
-    return toFrameView(widget)->frame();
+    return &toFrameView(widget)->frame();
 }
 
 void Frame::clearTimers(FrameView *view, Document *document)
 {
     if (view) {
         view->unscheduleRelayout();
-        if (view->frame()) {
-            if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-                view->frame()->animation()->suspendAnimationsForDocument(document);
-            view->frame()->eventHandler()->stopAutoscrollTimer();
-        }
+        if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
+            view->frame().animation()->suspendAnimationsForDocument(document);
+        view->frame().eventHandler()->stopAutoscrollTimer();
     }
 }
 

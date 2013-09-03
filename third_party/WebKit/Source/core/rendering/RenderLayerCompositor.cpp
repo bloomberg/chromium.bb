@@ -362,7 +362,7 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
     if (!m_reevaluateCompositingAfterLayout && !m_compositing)
         return;
 
-    AnimationUpdateBlock animationUpdateBlock(m_renderView->frameView()->frame()->animation());
+    AnimationUpdateBlock animationUpdateBlock(m_renderView->frameView()->frame().animation());
 
     TemporaryChange<bool> postLayoutChange(m_inPostLayoutUpdate, true);
 
@@ -431,8 +431,8 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
         m_obligatoryBackingStoreBytes = 0;
         m_secondaryBackingStoreBytes = 0;
 
-        Frame* frame = m_renderView->frameView()->frame();
-        LOG(Compositing, "\nUpdate %d of %s.\n", m_rootLayerUpdateCount, isMainFrame() ? "main frame" : frame->tree()->uniqueName().string().utf8().data());
+        Frame& frame = m_renderView->frameView()->frame();
+        LOG(Compositing, "\nUpdate %d of %s.\n", m_rootLayerUpdateCount, isMainFrame() ? "main frame" : frame.tree()->uniqueName().string().utf8().data());
     }
 #endif
 
@@ -2237,7 +2237,7 @@ void RenderLayerCompositor::didCommitChangesForLayer(const GraphicsLayer*) const
 
 static bool shouldCompositeOverflowControls(FrameView* view)
 {
-    if (Page* page = view->frame()->page()) {
+    if (Page* page = view->frame().page()) {
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
             if (scrollingCoordinator->coordinatesScrollingForFrameView(view))
                 return true;
@@ -2464,11 +2464,11 @@ void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
             ASSERT_NOT_REACHED();
             break;
         case RootLayerAttachedViaChromeClient: {
-            Frame* frame = m_renderView->frameView()->frame();
-            Page* page = frame ? frame->page() : 0;
+            Frame& frame = m_renderView->frameView()->frame();
+            Page* page = frame.page();
             if (!page)
                 return;
-            page->chrome().client().attachRootGraphicsLayer(frame, rootGraphicsLayer());
+            page->chrome().client().attachRootGraphicsLayer(&frame, rootGraphicsLayer());
             break;
         }
         case RootLayerAttachedViaEnclosingFrame: {
@@ -2501,11 +2501,11 @@ void RenderLayerCompositor::detachRootLayer()
         break;
     }
     case RootLayerAttachedViaChromeClient: {
-        Frame* frame = m_renderView->frameView()->frame();
-        Page* page = frame ? frame->page() : 0;
+        Frame& frame = m_renderView->frameView()->frame();
+        Page* page = frame.page();
         if (!page)
             return;
-        page->chrome().client().attachRootGraphicsLayer(frame, 0);
+        page->chrome().client().attachRootGraphicsLayer(&frame, 0);
     }
     break;
     case RootLayerUnattached:
@@ -2530,11 +2530,11 @@ bool RenderLayerCompositor::isMainFrame() const
 // to use a synthetic style change to get the iframes into RenderLayers in order to allow them to composite.
 void RenderLayerCompositor::notifyIFramesOfCompositingChange()
 {
-    Frame* frame = m_renderView->frameView() ? m_renderView->frameView()->frame() : 0;
-    if (!frame)
+    if (!m_renderView->frameView())
         return;
+    Frame& frame = m_renderView->frameView()->frame();
 
-    for (Frame* child = frame->tree()->firstChild(); child; child = child->tree()->traverseNext(frame)) {
+    for (Frame* child = frame.tree()->firstChild(); child; child = child->tree()->traverseNext(&frame)) {
         if (child->document() && child->document()->ownerElement())
             child->document()->ownerElement()->scheduleLayerUpdate();
     }
@@ -2705,10 +2705,7 @@ GraphicsLayerFactory* RenderLayerCompositor::graphicsLayerFactory() const
 
 Page* RenderLayerCompositor::page() const
 {
-    if (Frame* frame = m_renderView->frameView()->frame())
-        return frame->page();
-
-    return 0;
+    return m_renderView->frameView()->frame().page();
 }
 
 String RenderLayerCompositor::debugName(const GraphicsLayer* graphicsLayer)

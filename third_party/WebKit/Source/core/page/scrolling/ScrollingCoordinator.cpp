@@ -526,7 +526,7 @@ bool ScrollingCoordinator::coordinatesScrollingForFrameView(FrameView* frameView
     ASSERT(m_page);
 
     // We currently only handle the main frame.
-    if (frameView->frame() != m_page->mainFrame())
+    if (&frameView->frame() != m_page->mainFrame())
         return false;
 
     // We currently only support composited mode.
@@ -711,7 +711,7 @@ bool ScrollingCoordinator::isForMainFrame(ScrollableArea* scrollableArea) const
 
 GraphicsLayer* ScrollingCoordinator::scrollLayerForFrameView(FrameView* frameView)
 {
-    RenderView* renderView = frameView->frame()->contentRenderer();
+    RenderView* renderView = frameView->frame().contentRenderer();
     if (!renderView)
         return 0;
     return renderView->compositor()->scrollLayer();

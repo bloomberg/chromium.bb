@@ -71,7 +71,7 @@ void PopupMenuChromium::show(const FloatQuad& controlPosition, const IntSize& co
 {
     if (!m_popup) {
         PopupContainerSettings popupSettings = dropDownSettings;
-        popupSettings.deviceSupportsTouch = m_frameView->frame()->page()->settings().deviceSupportsTouch();
+        popupSettings.deviceSupportsTouch = m_frameView->frame().page()->settings().deviceSupportsTouch();
         m_popup = PopupContainer::create(client(), PopupContainer::Select, popupSettings);
     }
     m_popup->showInRect(controlPosition, controlSize, m_frameView.get(), index);

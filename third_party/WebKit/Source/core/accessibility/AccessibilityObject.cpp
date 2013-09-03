@@ -558,7 +558,7 @@ Document* AccessibilityObject::document() const
     if (!frameView)
         return 0;
 
-    return frameView->frame()->document();
+    return frameView->frame().document();
 }
 
 FrameView* AccessibilityObject::documentFrameView() const

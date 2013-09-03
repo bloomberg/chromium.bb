@@ -922,16 +922,16 @@ void AXObjectCache::postPlatformNotification(AccessibilityObject* obj, AXNotific
         Scrollbar* scrollBar = static_cast<AccessibilityScrollbar*>(obj)->scrollbar();
         if (!scrollBar || !scrollBar->parent() || !scrollBar->parent()->isFrameView())
             return;
-        Document* document = toFrameView(scrollBar->parent())->frame()->document();
+        Document* document = toFrameView(scrollBar->parent())->frame().document();
         if (document != document->topDocument())
             return;
         obj = get(document->renderer());
     }
 
-    if (!obj || !obj->document() || !obj->documentFrameView() || !obj->documentFrameView()->frame() || !obj->documentFrameView()->frame()->page())
+    if (!obj || !obj->document() || !obj->documentFrameView() || !obj->documentFrameView()->frame().page())
         return;
 
-    ChromeClient& client = obj->documentFrameView()->frame()->page()->chrome().client();
+    ChromeClient& client = obj->documentFrameView()->frame().page()->chrome().client();
 
     if (notification == AXActiveDescendantChanged
         && obj->document()->focusedElement()

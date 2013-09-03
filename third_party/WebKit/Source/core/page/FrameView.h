@@ -73,7 +73,7 @@ public:
 
     virtual bool scheduleAnimation();
 
-    Frame* frame() const { return m_frame.get(); }
+    Frame& frame() const { return *m_frame; }
 
     RenderView* renderView() const { return m_frame->contentRenderer(); }
 

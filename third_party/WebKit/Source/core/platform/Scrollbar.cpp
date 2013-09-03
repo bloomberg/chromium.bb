@@ -442,7 +442,7 @@ void Scrollbar::mouseUp(const PlatformMouseEvent& mouseEvent)
     }
 
     if (parent() && parent()->isFrameView())
-        toFrameView(parent())->frame()->eventHandler()->setMousePressed(false);
+        toFrameView(parent())->frame().eventHandler()->setMousePressed(false);
 }
 
 void Scrollbar::mouseDown(const PlatformMouseEvent& evt)

@@ -697,7 +697,7 @@ void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)
     // A windowless plugin can change the cursor in response to a mouse move
     // event.  We need to reflect the changed cursor in the frame view as the
     // mouse is moved in the boundaries of the windowless plugin.
-    Page* page = parentView->frame()->page();
+    Page* page = parentView->frame().page();
     if (!page)
         return;
     ChromeClientImpl* chromeClient = static_cast<ChromeClientImpl*>(&page->chrome().client());
@@ -852,11 +852,11 @@ void WebPluginContainerImpl::synthesizeMouseEventIfPossible(TouchEvent* event)
 
 void WebPluginContainerImpl::focusPlugin()
 {
-    Frame* containingFrame = static_cast<FrameView*>(parent())->frame();
-    if (Page* currentPage = containingFrame->page())
-        currentPage->focusController().setFocusedElement(m_element, containingFrame);
+    Frame& containingFrame = static_cast<FrameView*>(parent())->frame();
+    if (Page* currentPage = containingFrame.page())
+        currentPage->focusController().setFocusedElement(m_element, &containingFrame);
     else
-        containingFrame->document()->setFocusedElement(m_element);
+        containingFrame.document()->setFocusedElement(m_element);
 }
 
 void WebPluginContainerImpl::calculateGeometry(const IntRect& frameRect,

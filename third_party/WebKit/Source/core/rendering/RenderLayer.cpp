@@ -2298,7 +2298,7 @@ static inline bool frameElementAndViewPermitScroll(HTMLFrameElementBase* frameEl
 
     // Forbid autoscrolls when scrollbars are off, but permits other programmatic scrolls,
     // like navigation to an anchor.
-    Page* page = frameView->frame()->page();
+    Page* page = frameView->frame().page();
     if (!page)
         return false;
     return !page->autoscrollInProgress();

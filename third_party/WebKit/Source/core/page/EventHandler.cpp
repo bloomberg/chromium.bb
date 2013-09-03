@@ -1050,7 +1050,7 @@ Frame* EventHandler::subframeForTargetNode(Node* node)
     if (!widget || !widget->isFrameView())
         return 0;
 
-    return toFrameView(widget)->frame();
+    return &toFrameView(widget)->frame();
 }
 
 static bool isSubmitImage(Node* node)
@@ -2462,7 +2462,7 @@ bool EventHandler::passGestureEventToWidget(const PlatformGestureEvent& gestureE
     if (!widget->isFrameView())
         return false;
 
-    return toFrameView(widget)->frame()->eventHandler()->handleGestureEvent(gestureEvent);
+    return toFrameView(widget)->frame().eventHandler()->handleGestureEvent(gestureEvent);
 }
 
 bool EventHandler::passGestureEventToWidgetIfPossible(const PlatformGestureEvent& gestureEvent, RenderObject* renderer)
@@ -3819,7 +3819,7 @@ bool EventHandler::passWheelEventToWidget(const PlatformWheelEvent& wheelEvent, 
     if (!widget->isFrameView())
         return false;
 
-    return toFrameView(widget)->frame()->eventHandler()->handleWheelEvent(wheelEvent);
+    return toFrameView(widget)->frame().eventHandler()->handleWheelEvent(wheelEvent);
 }
 
 bool EventHandler::passWidgetMouseDownEventToWidget(const MouseEventWithHitTestResults& event)

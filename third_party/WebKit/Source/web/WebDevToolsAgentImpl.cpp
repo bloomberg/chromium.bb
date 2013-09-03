@@ -212,7 +212,7 @@ public:
         m_originalZoomFactor = 0;
         m_webView->setTextZoomFactor(textZoomFactor);
         applySizeOverrideInternal(view, FitWindowAllowed);
-        autoZoomPageToFitWidth(view->frame());
+        autoZoomPageToFitWidth(&view->frame());
 
         m_webView->sendResizeEventAndRepaint();
     }
@@ -228,9 +228,6 @@ public:
 
     void autoZoomPageToFitWidth(Frame* frame)
     {
-        if (!frame)
-            return;
-
         frame->setTextZoomFactor(m_webView->textZoomFactor());
         ensureOriginalZoomFactor(frame->view());
         Document* document = frame->document();
@@ -338,7 +335,7 @@ private:
         if (IntSize(overrideWidth, overrideHeight) != frameView->size())
             frameView->resize(overrideWidth, overrideHeight);
 
-        Document* doc = frameView->frame()->document();
+        Document* doc = frameView->frame().document();
         doc->styleResolverChanged(RecalcStyleImmediately);
         doc->updateLayout();
     }

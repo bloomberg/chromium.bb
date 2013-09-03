@@ -208,7 +208,7 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
 void PopupContainer::showPopup(FrameView* view)
 {
     m_frameView = view;
-    listBox()->m_focusedElement = m_frameView->frame()->document()->focusedElement();
+    listBox()->m_focusedElement = m_frameView->frame().document()->focusedElement();
 
     IntSize transformOffset(m_controlPosition.p4().x() - m_controlPosition.p1().x(), m_controlPosition.p4().y() - m_controlPosition.p1().y() - m_controlSize.height());
     chromeClient().popupOpened(this, layoutAndCalculateWidgetRect(m_controlSize.height(), transformOffset, roundedIntPoint(m_controlPosition.p4())), false);
@@ -365,7 +365,7 @@ bool PopupContainer::isInterestedInEventForKey(int keyCode)
 
 ChromeClient& PopupContainer::chromeClient()
 {
-    return m_frameView->frame()->page()->chrome().client();
+    return m_frameView->frame().page()->chrome().client();
 }
 
 void PopupContainer::showInRect(const FloatQuad& controlPosition, const IntSize& controlSize, FrameView* v, int index)
