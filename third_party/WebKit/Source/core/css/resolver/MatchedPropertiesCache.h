@@ -40,6 +40,9 @@ struct CachedMatchedProperties {
     MatchRanges ranges;
     RefPtr<RenderStyle> renderStyle;
     RefPtr<RenderStyle> parentRenderStyle;
+
+    void set(const RenderStyle*, const RenderStyle* parentStyle, const MatchResult&);
+    void clear();
 };
 
 class MatchedPropertiesCache {
@@ -61,7 +64,7 @@ private:
 
     unsigned m_additionsSinceLastSweep;
 
-    typedef HashMap<unsigned, CachedMatchedProperties> Cache;
+    typedef HashMap<unsigned, OwnPtr<CachedMatchedProperties> > Cache;
     Cache m_cache;
 
     Timer<MatchedPropertiesCache> m_sweepTimer;

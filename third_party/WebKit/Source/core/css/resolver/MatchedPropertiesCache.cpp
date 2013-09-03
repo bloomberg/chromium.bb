@@ -35,6 +35,24 @@
 
 namespace WebCore {
 
+void CachedMatchedProperties::set(const RenderStyle* style, const RenderStyle* parentStyle, const MatchResult& matchResult)
+{
+    matchedProperties.append(matchResult.matchedProperties);
+    ranges = matchResult.ranges;
+
+    // Note that we don't cache the original RenderStyle instance. It may be further modified.
+    // The RenderStyle in the cache is really just a holder for the substructures and never used as-is.
+    this->renderStyle = RenderStyle::clone(style);
+    this->parentRenderStyle = RenderStyle::clone(parentStyle);
+}
+
+void CachedMatchedProperties::clear()
+{
+    matchedProperties.clear();
+    renderStyle = 0;
+    parentRenderStyle = 0;
+}
+
 MatchedPropertiesCache::MatchedPropertiesCache()
     : m_additionsSinceLastSweep(0)
     , m_sweepTimer(this, &MatchedPropertiesCache::sweep)
@@ -48,20 +66,21 @@ const CachedMatchedProperties* MatchedPropertiesCache::find(unsigned hash, const
     Cache::iterator it = m_cache.find(hash);
     if (it == m_cache.end())
         return 0;
-    CachedMatchedProperties& cacheItem = it->value;
+    CachedMatchedProperties* cacheItem = it->value.get();
+    ASSERT(cacheItem);
 
     size_t size = matchResult.matchedProperties.size();
-    if (size != cacheItem.matchedProperties.size())
+    if (size != cacheItem->matchedProperties.size())
         return 0;
-    if (cacheItem.renderStyle->insideLink() != styleResolverState.style()->insideLink())
+    if (cacheItem->renderStyle->insideLink() != styleResolverState.style()->insideLink())
         return 0;
     for (size_t i = 0; i < size; ++i) {
-        if (matchResult.matchedProperties[i] != cacheItem.matchedProperties[i])
+        if (matchResult.matchedProperties[i] != cacheItem->matchedProperties[i])
             return 0;
     }
-    if (cacheItem.ranges != matchResult.ranges)
+    if (cacheItem->ranges != matchResult.ranges)
         return 0;
-    return &cacheItem;
+    return cacheItem;
 }
 
 void MatchedPropertiesCache::add(const RenderStyle* style, const RenderStyle* parentStyle, unsigned hash, const MatchResult& matchResult)
@@ -74,14 +93,15 @@ void MatchedPropertiesCache::add(const RenderStyle* style, const RenderStyle* pa
     }
 
     ASSERT(hash);
-    CachedMatchedProperties cacheItem;
-    cacheItem.matchedProperties.append(matchResult.matchedProperties);
-    cacheItem.ranges = matchResult.ranges;
-    // Note that we don't cache the original RenderStyle instance. It may be further modified.
-    // The RenderStyle in the cache is really just a holder for the substructures and never used as-is.
-    cacheItem.renderStyle = RenderStyle::clone(style);
-    cacheItem.parentRenderStyle = RenderStyle::clone(parentStyle);
-    m_cache.add(hash, cacheItem);
+    Cache::AddResult addResult = m_cache.add(hash, nullptr);
+    if (addResult.isNewEntry)
+        addResult.iterator->value = adoptPtr(new CachedMatchedProperties);
+
+    CachedMatchedProperties* cacheItem = addResult.iterator->value.get();
+    if (!addResult.isNewEntry)
+        cacheItem->clear();
+
+    cacheItem->set(style, parentStyle, matchResult);
 }
 
 void MatchedPropertiesCache::clear()
@@ -98,7 +118,8 @@ void MatchedPropertiesCache::sweep(Timer<MatchedPropertiesCache>*)
     Cache::iterator it = m_cache.begin();
     Cache::iterator end = m_cache.end();
     for (; it != end; ++it) {
-        Vector<MatchedProperties>& matchedProperties = it->value.matchedProperties;
+        CachedMatchedProperties* cacheItem = it->value.get();
+        Vector<MatchedProperties>& matchedProperties = cacheItem->matchedProperties;
         for (size_t i = 0; i < matchedProperties.size(); ++i) {
             if (matchedProperties[i].properties->hasOneRef()) {
                 toRemove.append(it->key);
