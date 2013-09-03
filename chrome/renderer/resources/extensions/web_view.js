@@ -63,6 +63,10 @@ var WEB_VIEW_EVENTS = {
     evt: CreateEvent('webview.onLoadCommit'),
     fields: ['url', 'isTopLevel']
   },
+  'loadprogress': {
+    evt: CreateEvent('webview.onLoadProgress'),
+    fields: ['url', 'progress']
+  },
   'loadredirect': {
     evt: CreateEvent('webview.onLoadRedirect'),
     fields: ['isTopLevel', 'oldUrl', 'newUrl']

@@ -3180,10 +3180,8 @@ void WebContentsImpl::DidCancelLoading() {
 }
 
 void WebContentsImpl::DidChangeLoadProgress(double progress) {
-#if defined(OS_ANDROID)
   if (delegate_)
     delegate_->LoadProgressChanged(this, progress);
-#endif
 }
 
 void WebContentsImpl::DidDisownOpener(RenderViewHost* rvh) {

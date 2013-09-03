@@ -669,6 +669,12 @@ void BrowserPluginGuest::CanDownload(
                  callback));
 }
 
+void BrowserPluginGuest::LoadProgressChanged(WebContents* contents,
+                                             double progress) {
+  if (delegate_)
+    delegate_->LoadProgressed(progress);
+}
+
 void BrowserPluginGuest::CloseContents(WebContents* source) {
   if (!delegate_)
     return;

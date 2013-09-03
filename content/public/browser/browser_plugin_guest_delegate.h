@@ -47,6 +47,10 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
                          const GURL& url,
                          const std::string& error_type) {}
 
+  // Notification that the page has made some progress loading. |progress| is a
+  // value between 0.0 (nothing loaded) and 1.0 (page loaded completely).
+  virtual void LoadProgressed(double progress) {}
+
   // Notification that the guest is no longer hung.
   virtual void RendererResponsive() {}
 

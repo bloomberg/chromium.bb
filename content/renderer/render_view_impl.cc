@@ -829,9 +829,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       pepper_last_mouse_event_target_(NULL),
 #endif
       enumeration_completion_id_(0),
-#if defined(OS_ANDROID)
       load_progress_tracker_(new LoadProgressTracker(this)),
-#endif
       session_storage_namespace_id_(params->session_storage_namespace_id),
       decrement_shared_popup_at_destruction_(false),
       handling_select_range_(false),

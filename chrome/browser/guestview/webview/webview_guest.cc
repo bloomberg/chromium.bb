@@ -195,6 +195,13 @@ bool WebViewGuest::HandleKeyboardEvent(
   return false;
 }
 
+void WebViewGuest::LoadProgressed(double progress) {
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  args->SetString(guestview::kUrl, web_contents()->GetURL().spec());
+  args->SetDouble(webview::kProgress, progress);
+  DispatchEvent(new GuestView::Event(webview::kEventLoadProgress, args.Pass()));
+}
+
 void WebViewGuest::LoadAbort(bool is_top_level,
                              const GURL& url,
                              const std::string& error_type) {

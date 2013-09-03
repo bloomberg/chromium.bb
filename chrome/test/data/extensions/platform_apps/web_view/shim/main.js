@@ -361,6 +361,24 @@ function testEventName() {
   document.body.appendChild(webview);
 }
 
+// Tests that the 'loadprogress' event is triggered correctly.
+function testLoadProgressEvent() {
+  var webview = document.createElement('webview');
+  var progress = 0;
+
+  webview.addEventListener('loadstop', function(evt) {
+    embedder.test.assertEq(1, progress);
+    embedder.test.succeed();
+  });
+
+  webview.addEventListener('loadprogress', function(evt) {
+    progress = evt.progress;
+  });
+
+  webview.setAttribute('src', 'data:text/html,trigger navigation');
+  document.body.appendChild(webview);
+}
+
 // This test registers two listeners on an event (loadcommit) and removes
 // the <webview> tag when the first listener fires.
 // Current expected behavior is that the second event listener will still
@@ -991,6 +1009,7 @@ embedder.test.testList = {
   'testAPIMethodExistence': testAPIMethodExistence,
   'testWebRequestAPIExistence': testWebRequestAPIExistence,
   'testEventName': testEventName,
+  'testLoadProgressEvent': testLoadProgressEvent,
   'testDestroyOnEventListener': testDestroyOnEventListener,
   'testCannotMutateEventName': testCannotMutateEventName,
   'testPartitionRaisesException': testPartitionRaisesException,

@@ -43,6 +43,7 @@ class WebViewGuest : public GuestView,
                                    const string16& message,
                                    int32 line_no,
                                    const string16& source_id) OVERRIDE;
+  virtual void LoadProgressed(double progress) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void GuestProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual bool HandleKeyboardEvent(

@@ -619,6 +619,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestEventName) {
              "web_view/shim");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadProgressEvent) {
+  TestHelper("testLoadProgressEvent",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
 // WebViewTest.Shim_TestDestroyOnEventListener is flaky, so disable it.
 // http://crbug.com/255106
 IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_Shim_TestDestroyOnEventListener) {
