@@ -11,6 +11,7 @@ pnacl/scripts/parse_llvm_test_report.py [options]+ reportfile
 """
 
 import csv
+import logging
 import optparse
 import os
 import sys
@@ -79,7 +80,7 @@ def ParseTestsuiteCSV(filecontents):
     elif row['Exec'] == '*':
       failures[fullname] = 'exec'
 
-  print testcount, 'tests,', len(failures), 'failures'
+  logging.info('%d tests, %d failures', testcount, len(failures))
   return alltests, failures
 
 def ParseLit(filecontents):
@@ -103,7 +104,7 @@ def ParseLit(filecontents):
       alltests[shortname] = fullnames
     if l[0] in ('FAIL:', 'XPASS:'):
       failures[fullname] = l[1]
-  print testcount, 'tests,', len(failures), 'failures'
+  logging.info('%d tests, %d failures', testcount, len(failures))
   return alltests, failures
 
 def ParseExcludeFile(filename, config_attributes,
@@ -150,24 +151,32 @@ def ParseExcludeFile(filename, config_attributes,
 
     EXCLUDES[fullname] = filename
   f.close()
-  print 'parsed', filename + ': now', len(EXCLUDES), 'total excludes'
+  logging.info('parsed %s: now %d total excludes', filename, len(EXCLUDES))
 
 def DumpFileContents(name):
-  print name
-  print open(name, 'rb').read()
+  error = not os.path.exists(name)
+  logging.debug(name)
+  try:
+    logging.debug(open(name, 'rb').read())
+  except IOError:
+    error = True;
+  if error:
+    logging.error("Error: couldn't open file: %s", name)
+    # Make the bots go red
+    logging.error('@@@STEP_FAILURE@@@')
 
 def PrintCompilationResult(path, test):
   ''' Print the compilation and run results for the specified test.
       These results are left in several different log files by the testsuite
       driver, and are different for MultiSource/SingleSource tests
   '''
-  print 'RESULTS for', test
+  logging.debug('RESULTS for %s', test)
   testpath = os.path.join(path, test)
   testdir, testname = os.path.split(testpath)
   outputdir = os.path.join(testdir, 'Output')
 
-  print 'COMPILE phase'
-  print 'OBJECT file phase'
+  logging.debug('COMPILE phase')
+  logging.debug('OBJECT file phase')
   if test.startswith('MultiSource'):
     for f in os.listdir(outputdir):
       if f.endswith('llvm.o.compile'):
@@ -177,16 +186,20 @@ def PrintCompilationResult(path, test):
   else:
     Fatal('ERROR: unrecognized test type ' + test)
 
-  print 'PEXE generation phase'
-  DumpFileContents(os.path.join(outputdir, testname + '.pexe.compile'))
+  logging.debug('PEXE generation phase')
+  DumpFileContents(os.path.join(outputdir,
+                                testname + '.nonfinal.pexe.compile'))
 
-  print 'TRANSLATION phase'
+  logging.debug('PEXE finalization phase')
+  DumpFileContents(os.path.join(outputdir, testname + '.final.pexe.finalize'))
+
+  logging.debug('TRANSLATION phase')
   DumpFileContents(os.path.join(outputdir, testname + '.nexe.translate'))
 
-  print 'EXECUTION phase'
-  print 'native output:'
+  logging.debug('EXECUTION phase')
+  logging.debug('native output:')
   DumpFileContents(os.path.join(outputdir, testname + '.out-nat'))
-  print 'pnacl output:'
+  logging.debug('pnacl output:')
   DumpFileContents(os.path.join(outputdir, testname + '.out-pnacl'))
 
 def main(argv):
@@ -199,16 +212,18 @@ def main(argv):
 
 
 def Report(options, filename=None, filecontents=None):
+  loglevel = logging.INFO
   if options['verbose']:
+    loglevel = logging.DEBUG
     if options['buildpath'] is None:
       Fatal('ERROR: must specify build path if verbose output is desired')
+  logging.basicConfig(level=loglevel, format='%(message)s')
 
   if not (filename or filecontents):
     Fatal('ERROR: must specify filename or filecontents')
 
   failures = {}
-  if options['verbose']:
-    print 'Full test results:'
+  logging.debug('Full test results:')
 
   if not filecontents:
     with open(filename, 'rb') as f:
@@ -228,6 +243,15 @@ def Report(options, filename=None, filecontents=None):
     ParseExcludeFile(f, set(options['attributes']),
                      check_test_names=check_test_names, alltests=alltests)
 
+  # Regardless of the verbose option, do a dry run of
+  # PrintCompilationResult so we can catch errors when intermediate
+  # filenames in the compilation pipeline change.
+  # E.g. https://code.google.com/p/nativeclient/issues/detail?id=3659
+  if len(alltests):
+    logging.disable(logging.INFO)
+    PrintCompilationResult(options['buildpath'], alltests.values()[0][0])
+    logging.disable(logging.NOTSET)
+
   # intersect them and check for unexpected fails/passes
   unexpected_failures = 0
   unexpected_passes = 0
@@ -236,15 +260,14 @@ def Report(options, filename=None, filecontents=None):
       if test in failures:
         if test not in EXCLUDES:
           unexpected_failures += 1
-          print '[  FAILED  ] ' + test + ': ' + failures[test] + ' failure'
-          if options['verbose']:
-            PrintCompilationResult(options['buildpath'], test)
+          logging.info('[  FAILED  ] %s: %s failure', test, failures[test])
+          PrintCompilationResult(options['buildpath'], test)
       elif test in EXCLUDES:
         unexpected_passes += 1
-        print test + ': ' + ' unexpected success'
+        logging.info('%s: unexpected success', test)
 
-  print unexpected_failures, 'unexpected failures',
-  print unexpected_passes, 'unexpected passes'
+  logging.info('%d unexpected failures %d unexpected passes',
+               unexpected_failures, unexpected_passes)
 
   if options['check_excludes']:
     return unexpected_failures + unexpected_passes > 0
