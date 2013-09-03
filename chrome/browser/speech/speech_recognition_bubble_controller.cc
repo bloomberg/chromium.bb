@@ -115,14 +115,14 @@ void SpeechRecognitionBubbleController::InfoBubbleFocusChanged() {
 void SpeechRecognitionBubbleController::InvokeDelegateButtonClicked(
     SpeechRecognitionBubble::Button button) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_NE(kInvalidSessionId, current_bubble_session_id_);
-  delegate_->InfoBubbleButtonClicked(current_bubble_session_id_, button);
+  if (kInvalidSessionId != current_bubble_session_id_)
+    delegate_->InfoBubbleButtonClicked(current_bubble_session_id_, button);
 }
 
 void SpeechRecognitionBubbleController::InvokeDelegateFocusChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_NE(kInvalidSessionId, current_bubble_session_id_);
-  delegate_->InfoBubbleFocusChanged(current_bubble_session_id_);
+  if (kInvalidSessionId != current_bubble_session_id_)
+    delegate_->InfoBubbleFocusChanged(current_bubble_session_id_);
 }
 
 void SpeechRecognitionBubbleController::ProcessRequestInUiThread(
