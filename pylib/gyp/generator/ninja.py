@@ -474,15 +474,17 @@ class NinjaWriter:
 
     # Write out a link step, if needed.
     output = None
+    is_empty_bundle = True
     if link_deps or self.target.actions_stamp or actions_depends:
       output = self.WriteTarget(spec, config_name, config, link_deps,
                                 self.target.actions_stamp or actions_depends)
       if self.is_mac_bundle:
+        is_empty_bundle = not link_deps and not mac_bundle_depends
         mac_bundle_depends.append(output)
 
     # Bundle all of the above together, if needed.
     if self.is_mac_bundle:
-      output = self.WriteMacBundle(spec, mac_bundle_depends)
+      output = self.WriteMacBundle(spec, mac_bundle_depends, is_empty_bundle)
 
     if not output:
       return None
@@ -1071,7 +1073,7 @@ class NinjaWriter:
     return linked_binary
 
   def WriteTarget(self, spec, config_name, config, link_deps, compile_deps):
-    if spec['type'] == 'none':
+    if spec['type'] == 'none' or not link_deps:
       # TODO(evan): don't call this function for 'none' target types, as
       # it doesn't do anything, and we fake out a 'binary' with a stamp file.
       self.target.binary = compile_deps
@@ -1117,14 +1119,16 @@ class NinjaWriter:
       self.target.binary = self.WriteLink(spec, config_name, config, link_deps)
     return self.target.binary
 
-  def WriteMacBundle(self, spec, mac_bundle_depends):
+  def WriteMacBundle(self, spec, mac_bundle_depends, is_empty):
     assert self.is_mac_bundle
     package_framework = spec['type'] in ('shared_library', 'loadable_module')
     output = self.ComputeMacBundleOutput()
+    if is_empty:
+      output += '.stamp'
     variables = []
     self.AppendPostbuildVariable(variables, spec, output, self.target.binary,
                                  is_command_start=not package_framework)
-    if package_framework:
+    if package_framework and not is_empty:
       variables.append(('version', self.xcode_settings.GetFrameworkVersion()))
       self.ninja.build(output, 'package_framework', mac_bundle_depends,
                        variables=variables)
