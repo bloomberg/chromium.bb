@@ -16,7 +16,7 @@
 #include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/startup_metric_utils.h"
+#include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 

@@ -13,6 +13,7 @@ include_rules = [
   "+components/nacl/common",
   "+components/navigation_interception",
   "+components/policy",
+  "+components/startup_metric_utils",
   "+components/user_prefs",
   "+components/visitedlink/browser",
   "+components/webdata",

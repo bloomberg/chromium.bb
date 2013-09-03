@@ -19,6 +19,7 @@
     'navigation_interception.gypi',
     'policy.gypi',
     'sessions.gypi',
+    'startup_metric_utils.gypi',
     'user_prefs.gypi',
     'variations.gypi',
     'visitedlink.gypi',

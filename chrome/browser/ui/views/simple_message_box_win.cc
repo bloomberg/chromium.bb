@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/simple_message_box.h"
 
-#include "chrome/common/startup_metric_utils.h"
+#include "components/startup_metric_utils/startup_metric_utils.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/message_box_win.h"
 

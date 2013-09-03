@@ -9,7 +9,7 @@
 #include "chrome/browser/android/chrome_jni_registrar.h"
 #include "chrome/browser/android/chrome_startup_flags.h"
 #include "chrome/browser/android/uma_utils.h"
-#include "chrome/common/startup_metric_utils.h"
+#include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/browser_main_runner.h"
 
 // ChromeMainDelegateAndroid is created when the library is loaded. It is always

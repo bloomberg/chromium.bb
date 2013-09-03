@@ -30,8 +30,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/startup_metric_utils.h"
 #include "chrome/common/url_constants.h"
+#include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 

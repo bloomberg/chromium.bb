@@ -11,6 +11,7 @@ include_rules = [
   "+components/breakpad",
   "+components/nacl/common",
   "+components/nacl/zygote",
+  "+components/startup_metric_utils",
   "+content/public/app",
   "+content/public/browser/browser_main_runner.h",
   "+content/public/browser/render_process_host.h",

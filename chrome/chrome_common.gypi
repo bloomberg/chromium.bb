@@ -452,8 +452,6 @@
         'common/spellcheck_marker.h',
         'common/spellcheck_messages.h',
         'common/spellcheck_result.h',
-        'common/startup_metric_utils.cc',
-        'common/startup_metric_utils.h',
         'common/switch_utils.cc',
         'common/switch_utils.h',
         'common/thumbnail_score.cc',

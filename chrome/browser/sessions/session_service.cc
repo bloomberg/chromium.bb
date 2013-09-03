@@ -33,7 +33,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/startup_metric_utils.h"
+#include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"

@@ -29,6 +29,7 @@
         '../components/components.gyp:browser_context_keyed_service',
         '../components/components.gyp:encryptor',
         '../components/components.gyp:sessions',
+        '../components/components.gyp:startup_metric_utils',
         '../components/components.gyp:user_prefs',
         # The direct variations_seed_proto dependency is needed, rather than
         # using common's dependency on variations, because the proto sources

@@ -37,6 +37,8 @@ per-file sessions.gypi=sky@chromium.org
 per-file tracing*=jbauman@chromium.org
 per-file tracing*=nduca@chromium.org
 
+per-file startup_metric_utils.gypi=jeremy@chromium.org
+
 per-file user_prefs.gypi=battre@chromium.org
 per-file user_prefs.gypi=bauerb@chromium.org
 per-file user_prefs.gypi=mnissler@chromium.org
