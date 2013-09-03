@@ -83,9 +83,6 @@ bool AudioManagerMac::HasUnifiedDefaultIO() {
 
 static void GetAudioDeviceInfo(bool is_input,
                                media::AudioDeviceNames* device_names) {
-  DCHECK(device_names);
-  device_names->clear();
-
   // Query the number of total devices.
   AudioObjectPropertyAddress property_address = {
     kAudioHardwarePropertyDevices,
@@ -397,6 +394,7 @@ int AudioManagerMac::HardwareSampleRate() {
 
 void AudioManagerMac::GetAudioInputDeviceNames(
     media::AudioDeviceNames* device_names) {
+  DCHECK(device_names->empty());
   GetAudioDeviceInfo(true, device_names);
   if (!device_names->empty()) {
     // Prepend the default device to the list since we always want it to be

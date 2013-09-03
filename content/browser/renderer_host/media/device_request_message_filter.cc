@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include "content/browser/renderer_host/media/device_request_message_filter.h"
 
 #include "base/strings/string_number_conversions.h"

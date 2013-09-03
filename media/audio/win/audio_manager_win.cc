@@ -242,6 +242,7 @@ void AudioManagerWin::ShowAudioInputSettings() {
 
 void AudioManagerWin::GetAudioInputDeviceNames(
     media::AudioDeviceNames* device_names) {
+  DCHECK(device_names->empty());
   DCHECK(enumeration_type() !=  kUninitializedEnumeration);
   // Enumerate all active audio-endpoint capture devices.
   if (enumeration_type() == kWaveEnumeration) {

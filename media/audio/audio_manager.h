@@ -58,8 +58,9 @@ class MEDIA_EXPORT AudioManager {
   // threads to avoid blocking the rest of the application.
   virtual void ShowAudioInputSettings() = 0;
 
-  // Appends a list of available input devices. It is not guaranteed that
-  // all the devices in the list support all formats and sample rates for
+  // Appends a list of available input devices to |device_names|,
+  // which must initially be empty. It is not guaranteed that all the
+  // devices in the list support all formats and sample rates for
   // recording.
   virtual void GetAudioInputDeviceNames(AudioDeviceNames* device_names) = 0;
 
