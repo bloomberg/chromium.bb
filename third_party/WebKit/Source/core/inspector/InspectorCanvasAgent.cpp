@@ -53,7 +53,7 @@ using WebCore::TypeBuilder::Canvas::ResourceId;
 using WebCore::TypeBuilder::Canvas::ResourceState;
 using WebCore::TypeBuilder::Canvas::TraceLog;
 using WebCore::TypeBuilder::Canvas::TraceLogId;
-using WebCore::TypeBuilder::Network::FrameId;
+using WebCore::TypeBuilder::Page::FrameId;
 using WebCore::TypeBuilder::Runtime::RemoteObject;
 
 namespace WebCore {
