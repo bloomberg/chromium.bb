@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -184,8 +185,7 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
       const testing::TestCase* test_case,
       const testing::TestInfo* test_info,
       const base::TestLauncherDelegate::TestResultCallback& callback) OVERRIDE;
-  virtual void RunRemainingTests(
-      const RunRemainingTestsCallback& callback) OVERRIDE;
+  virtual void RunRemainingTests() OVERRIDE;
 
  private:
   content::TestLauncherDelegate* launcher_delegate_;
@@ -245,16 +245,22 @@ void WrapperTestLauncherDelegate::RunTest(
   base::TestResult result;
   result.test_case_name = test_case->name();
   result.test_name = test_info->name();
-  result.success = (exit_code == 0);
+
+  // TODO(phajdan.jr): Recognize crashes.
+  if (exit_code == 0)
+    result.status = base::TestResult::TEST_SUCCESS;
+  else if (was_timeout)
+    result.status = base::TestResult::TEST_TIMEOUT;
+  else
+    result.status = base::TestResult::TEST_FAILURE;
+
   result.elapsed_time = (base::TimeTicks::Now() - start_time);
 
   callback.Run(result);
 }
 
-void WrapperTestLauncherDelegate::RunRemainingTests(
-    const RunRemainingTestsCallback& callback) {
+void WrapperTestLauncherDelegate::RunRemainingTests() {
   // No need to do anything else here, we launch tests synchronously.
-  callback.Run();
 }
 
 }  // namespace
@@ -352,6 +358,8 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   base::AtExitManager at_exit;
   testing::InitGoogleTest(&argc, argv);
   TestTimeouts::Initialize();
+
+  base::MessageLoop message_loop;
 
   WrapperTestLauncherDelegate delegate(launcher_delegate);
   return base::LaunchTests(&delegate, argc, argv);

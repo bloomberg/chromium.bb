@@ -882,6 +882,8 @@
         'test/multiprocess_test_android.cc',
         'test/null_task_runner.cc',
         'test/null_task_runner.h',
+        'test/parallel_test_launcher.cc',
+        'test/parallel_test_launcher.h',
         'test/perf_test_suite.cc',
         'test/perf_test_suite.h',
         'test/perftimer.cc',

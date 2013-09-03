@@ -147,8 +147,7 @@ bool ProcessGTestOutput(const base::FilePath& output_file,
           result.elapsed_time = TimeDelta();
 
           // Assume the test crashed - we can correct that later.
-          result.success = false;
-          result.crashed = true;
+          result.status = TestResult::TEST_CRASH;
 
           results->push_back(result);
         } else if (node_name == "testcase" && !xml_reader.IsClosingElement()) {
@@ -174,13 +173,13 @@ bool ProcessGTestOutput(const base::FilePath& output_file,
               TimeDelta::FromMicroseconds(strtod(test_time_str.c_str(), NULL) *
                                           Time::kMicrosecondsPerSecond);
 
-          result.success = true;
-          result.crashed = false;
+          result.status = TestResult::TEST_SUCCESS;
 
           if (!results->empty() &&
               results->at(results->size() - 1).GetFullName() ==
                   result.GetFullName() &&
-              results->at(results->size() - 1).crashed) {
+              results->at(results->size() - 1).status ==
+                  TestResult::TEST_CRASH) {
             // Erase the fail-safe "crashed" result - now we know the test did
             // not crash.
             results->pop_back();
@@ -193,7 +192,7 @@ bool ProcessGTestOutput(const base::FilePath& output_file,
             return false;
 
           DCHECK(!results->empty());
-          results->at(results->size() - 1).success = false;
+          results->at(results->size() - 1).status = TestResult::TEST_FAILURE;
 
           state = STATE_FAILURE;
         } else if (node_name == "testcase" && xml_reader.IsClosingElement()) {

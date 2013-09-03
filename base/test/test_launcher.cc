@@ -17,8 +17,10 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -99,6 +101,8 @@ bool ShouldRunTestOnShard(int total_shards, int shard_index, int test_id) {
   return (test_id % total_shards) == shard_index;
 }
 
+typedef Callback<void(bool)> RunTestsCallback;
+
 // A helper class to output results.
 // Note: as currently XML is the only supported format by gtest, we don't
 // check output format (e.g. "xml:" prefix) here and output an XML file
@@ -110,25 +114,30 @@ bool ShouldRunTestOnShard(int total_shards, int shard_index, int test_id) {
 // detailed failure messages either.
 class ResultsPrinter {
  public:
-  explicit ResultsPrinter(const CommandLine& command_line);
+  ResultsPrinter(const CommandLine& command_line,
+                 const RunTestsCallback& callback);
   ~ResultsPrinter();
+
+  // Called when test named |name| is scheduled to be started.
+  void OnTestStarted(const std::string& name);
 
   // Adds |result| to the stored test results.
   void AddTestResult(const TestResult& result);
 
-  // Returns list of full names of failed tests.
-  const std::vector<std::string>& failed_tests() const { return failed_tests_; }
-
-  // Returns total number of tests run.
-  size_t test_run_count() const { return test_run_count_; }
-
  private:
+  // Prints a list of tests that finished with |status|.
+  void PrintTestsByStatus(TestResult::Status status,
+                          const std::string& description);
+
   // Test results grouped by test case name.
   typedef std::map<std::string, std::vector<TestResult> > ResultsMap;
   ResultsMap results_;
 
   // List of full names of failed tests.
-  std::vector<std::string> failed_tests_;
+  typedef std::map<TestResult::Status, std::vector<std::string> > StatusMap;
+  StatusMap tests_by_status_;
+
+  size_t test_started_count_;
 
   // Total number of tests run.
   size_t test_run_count_;
@@ -136,12 +145,19 @@ class ResultsPrinter {
   // File handle of output file (can be NULL if no file).
   FILE* out_;
 
+  RunTestsCallback callback_;
+
+  ThreadChecker thread_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(ResultsPrinter);
 };
 
-ResultsPrinter::ResultsPrinter(const CommandLine& command_line)
-    : test_run_count_(0),
-      out_(NULL) {
+ResultsPrinter::ResultsPrinter(const CommandLine& command_line,
+                               const RunTestsCallback& callback)
+    : test_started_count_(0),
+      test_run_count_(0),
+      out_(NULL),
+      callback_(callback) {
   if (!command_line.HasSwitch(kGTestOutputFlag))
     return;
   std::string flag = command_line.GetSwitchValueASCII(kGTestOutputFlag);
@@ -179,6 +195,8 @@ ResultsPrinter::ResultsPrinter(const CommandLine& command_line)
 }
 
 ResultsPrinter::~ResultsPrinter() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (!out_)
     return;
   fprintf(out_, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -195,7 +213,7 @@ ResultsPrinter::~ResultsPrinter() {
               result.test_name.c_str(),
               result.elapsed_time.InSecondsF(),
               result.test_case_name.c_str());
-      if (!result.success)
+      if (result.status != TestResult::TEST_SUCCESS)
         fprintf(out_, "      <failure message=\"\" type=\"\"></failure>\n");
       fprintf(out_, "    </testcase>\n");
     }
@@ -205,14 +223,73 @@ ResultsPrinter::~ResultsPrinter() {
   fclose(out_);
 }
 
+void ResultsPrinter::OnTestStarted(const std::string& name) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ++test_started_count_;
+}
+
 void ResultsPrinter::AddTestResult(const TestResult& result) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   ++test_run_count_;
   results_[result.test_case_name].push_back(result);
 
-  if (!result.success) {
-    failed_tests_.push_back(
-        std::string(result.test_case_name) + "." + result.test_name);
+  // TODO(phajdan.jr): Align counter (padding).
+  std::string status_line(StringPrintf("[%" PRIuS "/%" PRIuS "] %s ",
+                                       test_run_count_,
+                                       test_started_count_,
+                                       result.GetFullName().c_str()));
+  if (result.completed()) {
+    status_line.append(StringPrintf("(%" PRId64 " ms)",
+                       result.elapsed_time.InMilliseconds()));
+  } else if (result.status == TestResult::TEST_TIMEOUT) {
+    status_line.append("(TIMED OUT)");
+  } else if (result.status == TestResult::TEST_CRASH) {
+    status_line.append("(CRASHED)");
+  } else if (result.status == TestResult::TEST_UNKNOWN) {
+    status_line.append("(UNKNOWN)");
+  } else {
+    // Fail very loudly so it's not ignored.
+    CHECK(false) << "Unhandled test result status: " << result.status;
   }
+  fprintf(stdout, "%s\n", status_line.c_str());
+  fflush(stdout);
+
+  tests_by_status_[result.status].push_back(result.GetFullName());
+
+  if (test_run_count_ == test_started_count_) {
+    fprintf(stdout, "%" PRIuS " test%s run\n",
+            test_run_count_,
+            test_run_count_ > 1 ? "s" : "");
+    fflush(stdout);
+
+    PrintTestsByStatus(TestResult::TEST_FAILURE, "failed");
+    PrintTestsByStatus(TestResult::TEST_TIMEOUT, "timed out");
+    PrintTestsByStatus(TestResult::TEST_CRASH, "crashed");
+    PrintTestsByStatus(TestResult::TEST_UNKNOWN, "had unknown result");
+
+    callback_.Run(
+        tests_by_status_[TestResult::TEST_SUCCESS].size() == test_run_count_);
+
+    delete this;
+  }
+}
+
+void ResultsPrinter::PrintTestsByStatus(TestResult::Status status,
+                                        const std::string& description) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  const std::vector<std::string>& tests = tests_by_status_[status];
+  if (tests.empty())
+    return;
+  fprintf(stdout,
+          "%" PRIuS " test%s %s:\n",
+          tests.size(),
+          tests.size() != 1 ? "s" : "",
+          description.c_str());
+  for (size_t i = 0; i < tests.size(); i++)
+    fprintf(stdout, "    %s\n", tests[i].c_str());
+  fflush(stdout);
 }
 
 // For a basic pattern matching for gtest_filter options.  (Copied from
@@ -256,40 +333,6 @@ bool MatchesFilter(const std::string& name, const std::string& filter) {
   }
 }
 
-typedef Callback<void(bool)> RunTestsCallback;
-
-void RunRemainingTestsDone(scoped_ptr<ResultsPrinter> printer,
-                           size_t num_started_tests,
-                           const RunTestsCallback& callback) {
-  bool result = true;
-
-  printf("%" PRIuS " test%s run\n",
-         printer->test_run_count(),
-         printer->test_run_count() > 1 ? "s" : "");
-  printf("%" PRIuS " test%s failed\n",
-         printer->failed_tests().size(),
-         printer->failed_tests().size() != 1 ? "s" : "");
-  if (num_started_tests != printer->test_run_count()) {
-    result = false;
-    // TODO(phajdan.jr): Print more detailed info which test results
-    // are missing or superfluous.
-    printf("BUG: %" PRIuS " tests started but only got results for %" PRIuS
-           " tests back.\n", num_started_tests, printer->test_run_count());
-  }
-
-  if (!printer->failed_tests().empty()) {
-    result = false;
-
-    printf("Failing tests:\n");
-    for (size_t i = 0; i < printer->failed_tests().size(); ++i)
-      printf("%s\n", printer->failed_tests()[i].c_str());
-  }
-
-  fflush(stdout);
-
-  callback.Run(result);
-}
-
 void RunTests(TestLauncherDelegate* launcher_delegate,
               int total_shards,
               int shard_index,
@@ -313,9 +356,10 @@ void RunTests(TestLauncherDelegate* launcher_delegate,
   }
 
   int num_runnable_tests = 0;
-  size_t num_started_tests = 0;
 
-  scoped_ptr<ResultsPrinter> printer(new ResultsPrinter(*command_line));
+  // ResultsPrinter detects when all tests are done and deletes itself.
+  ResultsPrinter* printer = new ResultsPrinter(*command_line, callback);
+
   for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
     const testing::TestCase* test_case = unit_test->GetTestCase(i);
     for (int j = 0; j < test_case->total_test_count(); ++j) {
@@ -346,18 +390,21 @@ void RunTests(TestLauncherDelegate* launcher_delegate,
       if (!should_run)
         continue;
 
-      num_started_tests++;
-      launcher_delegate->RunTest(test_case,
-                                 test_info,
-                                 base::Bind(
-                                     &ResultsPrinter::AddTestResult,
-                                     base::Unretained(printer.get())));
+      printer->OnTestStarted(test_name);
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          Bind(&TestLauncherDelegate::RunTest,
+               Unretained(launcher_delegate),
+               test_case,
+               test_info,
+               Bind(&ResultsPrinter::AddTestResult, Unretained(printer))));
     }
   }
 
-  launcher_delegate->RunRemainingTests(
-      Bind(&RunRemainingTestsDone,
-           Passed(&printer), num_started_tests, callback));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      Bind(&TestLauncherDelegate::RunRemainingTests,
+      Unretained(launcher_delegate)));
 }
 
 void RunTestIteration(TestLauncherDelegate* launcher_delegate,
@@ -402,7 +449,7 @@ const char kGTestOutputFlag[] = "gtest_output";
 
 const char kHelpFlag[]   = "help";
 
-TestResult::TestResult() : success(false), crashed(false) {
+TestResult::TestResult() : status(TEST_UNKNOWN) {
 }
 
 TestLauncherDelegate::~TestLauncherDelegate() {
@@ -412,6 +459,25 @@ int LaunchChildGTestProcess(const CommandLine& command_line,
                             const std::string& wrapper,
                             base::TimeDelta timeout,
                             bool* was_timeout) {
+  LaunchOptions options;
+
+#if defined(OS_POSIX)
+  // On POSIX, we launch the test in a new process group with pgid equal to
+  // its pid. Any child processes that the test may create will inherit the
+  // same pgid. This way, if the test is abruptly terminated, we can clean up
+  // any orphaned child processes it may have left behind.
+  options.new_process_group = true;
+#endif
+
+  return LaunchChildTestProcessWithOptions(
+      PrepareCommandLineForGTest(command_line, wrapper),
+      options,
+      timeout,
+      was_timeout);
+}
+
+CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
+                                       const std::string& wrapper) {
   CommandLine new_command_line(command_line.GetProgram());
   CommandLine::SwitchMap switches = command_line.GetSwitches();
 
@@ -433,18 +499,20 @@ int LaunchChildGTestProcess(const CommandLine& command_line,
   new_command_line.PrependWrapper(wrapper);
 #endif
 
-  base::ProcessHandle process_handle;
-  base::LaunchOptions options;
+  return new_command_line;
+}
 
+int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
+                                      const LaunchOptions& options,
+                                      base::TimeDelta timeout,
+                                      bool* was_timeout) {
 #if defined(OS_POSIX)
-  // On POSIX, we launch the test in a new process group with pgid equal to
-  // its pid. Any child processes that the test may create will inherit the
-  // same pgid. This way, if the test is abruptly terminated, we can clean up
-  // any orphaned child processes it may have left behind.
-  options.new_process_group = true;
+  // Make sure an option we rely on is present - see LaunchChildGTestProcess.
+  DCHECK(options.new_process_group);
 #endif
 
-  if (!base::LaunchProcess(new_command_line, options, &process_handle))
+  base::ProcessHandle process_handle;
+  if (!base::LaunchProcess(command_line, options, &process_handle))
     return -1;
 
   int exit_code = 0;
@@ -488,8 +556,8 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
     StringToInt(command_line->GetSwitchValueASCII(kGTestRepeatFlag), &cycles);
 
   int exit_code = 0;
-  MessageLoop message_loop;
-  message_loop.PostTask(
+
+  MessageLoop::current()->PostTask(
       FROM_HERE,
       Bind(&RunTestIteration,
            launcher_delegate,
@@ -499,7 +567,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
            &exit_code,
            true));
 
-  message_loop.Run();
+  MessageLoop::current()->Run();
 
   return exit_code;
 }

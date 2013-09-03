@@ -21,6 +21,8 @@ class TestInfo;
 
 namespace base {
 
+struct LaunchOptions;
+
 // Constants for GTest command-line flags.
 extern const char kGTestFilterFlag[];
 extern const char kGTestListTestsFlag[];
@@ -30,9 +32,24 @@ extern const char kGTestOutputFlag[];
 
 // Structure containing result of a single test.
 struct TestResult {
-  std::string GetFullName() const { return test_case_name + "." + test_name; }
+  enum Status {
+    TEST_UNKNOWN,  // Status not set.
+    TEST_SUCCESS,  // Test passed.
+    TEST_FAILURE,  // Assertion failure (think EXPECT_TRUE, not DCHECK).
+    TEST_TIMEOUT,  // Test timed out and was killed.
+    TEST_CRASH,    // Test crashed (includes CHECK/DCHECK failures).
+  };
 
   TestResult();
+
+  std::string GetFullName() const { return test_case_name + "." + test_name; }
+
+  // Returns true if the test has completed (i.e. the test binary exited
+  // normally, possibly with an exit code indicating failure, but didn't crash
+  // or time out in the middle of the test).
+  bool completed() const {
+    return status == TEST_SUCCESS || status == TEST_FAILURE;
+  }
 
   // Name of the test case (before the dot, e.g. "A" for test "A.B").
   std::string test_case_name;
@@ -40,12 +57,7 @@ struct TestResult {
   // Name of the test (after the dot, e.g. "B" for test "A.B").
   std::string test_name;
 
-  // True if the test passed.
-  bool success;
-
-  // True if the test binary crashed while executing this test (i.e. the test
-  // didn't actually finish).
-  bool crashed;
+  Status status;
 
   // Time it took to run the test.
   base::TimeDelta elapsed_time;
@@ -72,8 +84,7 @@ class TestLauncherDelegate {
   // If the delegate is running tests asynchronously, it must finish
   // running all pending tests and call their callbacks before returning
   // from this method.
-  typedef base::Closure RunRemainingTestsCallback;
-  virtual void RunRemainingTests(const RunRemainingTestsCallback& callback) = 0;
+  virtual void RunRemainingTests() = 0;
 
  protected:
   virtual ~TestLauncherDelegate();
@@ -87,6 +98,19 @@ int LaunchChildGTestProcess(const CommandLine& command_line,
                             const std::string& wrapper,
                             base::TimeDelta timeout,
                             bool* was_timeout);
+
+// Returns command line command line after gtest-specific processing
+// and applying |wrapper|.
+CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
+                                       const std::string& wrapper);
+
+// Launches a child process using |command_line|. If the child process is still
+// running after |timeout|, it is terminated and |*was_timeout| is set to true.
+// Returns exit code of the process.
+int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
+                                      const LaunchOptions& options,
+                                      base::TimeDelta timeout,
+                                      bool* was_timeout);
 
 // Launches GTest-based tests from the current executable
 // using |launcher_delegate|.
