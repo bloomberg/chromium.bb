@@ -2140,7 +2140,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       console.warn('Unable to share multiple items at once.');
       return;
     }
+    // Add the overlapped class to prevent the applicaiton window from
+    // captureing mouse events.
+    this.enableDragOnTitleArea_(false);
     this.shareDialog_.show(entries[0], function(result) {
+      this.enableDragOnTitleArea_(true);
       if (result == ShareDialog.Result.NETWORK_ERROR)
         this.error.show(str('SHARE_ERROR'));
     }.bind(this));
@@ -2365,6 +2369,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             }
           });
     }.bind(this));
+  };
+
+  /**
+   * Set a flag to show whether users can drag on the title area or not.
+   * @param {boolean} flag True if users can drag on the title area.
+   * @private
+   */
+  FileManager.prototype.enableDragOnTitleArea_ = function(flag) {
+    this.dialogContainer_.classList.toggle('disable-header-drag', !flag);
   };
 
   /**

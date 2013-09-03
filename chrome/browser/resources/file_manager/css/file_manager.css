@@ -160,6 +160,12 @@ body {
   position: relative;
 }
 
+/* The style applied when a modal dialog box overlap the dialog container. */
+.dialog-container.disable-header-drag .dialog-navigation-list-header,
+.dialog-container.disable-header-drag .dialog-header {
+  -webkit-app-region: no-drag;
+}
+
 /* List/grid and preview are inside this container. */
 .dialog-main {
   -webkit-box-align: stretch;
