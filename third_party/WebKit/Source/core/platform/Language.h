@@ -37,15 +37,8 @@ Vector<String> userPreferredLanguagesOverride();
 void overrideUserPreferredLanguages(const Vector<String>&);
 size_t indexOfBestMatchingLanguageInList(const String& language, const Vector<String>& languageList);
 
-// The observer function will be called when system language changes.
-typedef void (*LanguageChangeObserverFunction)(void* context);
-void addLanguageChangeObserver(void* context, LanguageChangeObserverFunction);
-void removeLanguageChangeObserver(void* context);
-
 Vector<String> platformUserPreferredLanguages();
 
-// Called from platform specific code when the user's preferred language(s) change.
-void languageDidChange();
 }
 
 #endif

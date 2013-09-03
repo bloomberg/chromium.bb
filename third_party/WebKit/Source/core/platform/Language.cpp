@@ -26,36 +26,9 @@
 #include "config.h"
 #include "core/platform/Language.h"
 
-#include "wtf/HashMap.h"
-#include "wtf/RetainPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-
-typedef HashMap<void*, LanguageChangeObserverFunction> ObserverMap;
-static ObserverMap& observerMap()
-{
-    DEFINE_STATIC_LOCAL(ObserverMap, map, ());
-    return map;
-}
-
-void addLanguageChangeObserver(void* context, LanguageChangeObserverFunction customObserver)
-{
-    observerMap().set(context, customObserver);
-}
-
-void removeLanguageChangeObserver(void* context)
-{
-    ASSERT(observerMap().contains(context));
-    observerMap().remove(context);
-}
-
-void languageDidChange()
-{
-    ObserverMap::iterator end = observerMap().end();
-    for (ObserverMap::iterator iter = observerMap().begin(); iter != end; ++iter)
-        iter->value(iter->key);
-}
 
 String defaultLanguage()
 {
