@@ -6,6 +6,8 @@ if (!window.WebInspector)
     window.WebInspector = {};
 InspectorTest.importScript("../../../../../Source/devtools/front_end/HeapSnapshot.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/JSHeapSnapshot.js");
+InspectorTest.importScript("../../../../../Source/devtools/front_end/UIString.js");
+InspectorTest.importScript("../../../../../Source/devtools/front_end/utilities.js");
 
 InspectorTest.fail = function(message)
 {
@@ -43,7 +45,7 @@ InspectorTest.takeHeapSnapshot = function(callback)
     {
         var serializedSnapshot = chunks.join("");
         var parsed = JSON.parse(serializedSnapshot);
-        var snapshot = new WebInspector.JSHeapSnapshot(parsed);
+        var snapshot = new WebInspector.JSHeapSnapshot(parsed, new WebInspector.HeapSnapshotProgress());
         callback(snapshot);
     }
 
