@@ -10,13 +10,13 @@ from metrics import Metric
 class SpeedIndexMetric(Metric):
   """The speed index metric is one way of measuring page load speed.
 
-  It is meant to approximate user perception of page load speed --
-  it's based on the amount of time that it takes to paint to the visual
-  portion of the screen -- it includes paint events done after the load
-  event, and it doesn't include time loading things off-screen
+  It is meant to approximate user perception of page load speed, and it
+  is based on the amount of time that it takes to paint to the visual
+  portion of the screen. It includes paint events that occur after the
+  onload event, and it doesn't include time loading things off-screen.
 
-  This speed index metric is based on the one in WebPagetest:
-  http://goo.gl/e7AH5l
+  This speed index metric is based on the devtools speed index at
+  WebPageTest.org (WPT). For more info see: http://goo.gl/e7AH5l
   """
   def __init__(self):
     super(SpeedIndexMetric, self).__init__()
@@ -42,7 +42,6 @@ class SpeedIndexMetric(Metric):
   def AddResults(self, tab, results):
     """Calculate the speed index and add it to the results."""
     events = tab.timeline_model.GetAllEvents()
-    assert len(events) > 0
     results.Add('speed_index', 'ms', _SpeedIndex(events))
 
   def IsFinished(self, tab):
@@ -85,94 +84,148 @@ class SpeedIndexMetric(Metric):
 def _SpeedIndex(events):
   """Calculate the speed index of a page load from a list of events.
 
+  The speed index number conceptually represents the number of milliseconds
+  that the page was "visually incomplete". If the page were 0% complete for
+  1000 ms, then the score would be 1000; if it were 0% complete for 100 ms
+  then 90% complete (ie 10% incomplete) for 900 ms, then the score would be
+  1.0*100 + 0.1*900 = 190.
+
   Args:
-    events: A flat list of telemetry.core.timeline.slice.Slice objects
-      as returned by telemetry.core.timeline.model.GetAllEvents().
+    events: A list of telemetry.core.timeline.slice.Slice objects
 
   Returns:
-    A single integer which represents the total time in milliseconds
-    that the page was "visually incomplete". If the page were 100% incomplete
-    (i.e. nothing painted) for 1000 ms, then the score would be 1000; if it
-    were empty for 100 ms, then 90% complete (10% incomplete) for 900 ms, then
-    the score would be 100 + 0.1*900 = 190.
+    A single number, milliseconds of visual incompleteness.
   """
-  paint_events = _GetPaintEvents(events)
-  time_area_pairs = _GetTimeAreaPairs(paint_events)
-  time_completeness_pairs = _GetTimeCompletenessPairs(time_area_pairs)
-  speed_index = 0
-  prev_time = _StartTime(events)
-  completeness = 0.0
-  for this_time, this_completeness in time_completeness_pairs:
-    # Add the value for the time interval up to this event
-    time_interval = this_time - prev_time
-    speed_index += time_interval * (1 - completeness)
+  paint_events = _IncludedPaintEvents(events)
+  time_area_dict = _TimeAreaDict(paint_events)
+  time_completeness_dict = _TimeCompletenessDict(time_area_dict)
+  # The first time interval starts from the start of the first event.
+  prev_time = events[0].start
+  prev_completeness = 0.0
+  speed_index = 0.0
+  for time, completeness in sorted(time_completeness_dict.items()):
+    # Add the incemental value for the interval just before this event.
+    elapsed_time = time - prev_time
+    incompleteness = (1.0 - prev_completeness)
+    speed_index += elapsed_time * incompleteness
 
-    # Update variables for next iteration
-    completeness = this_completeness
-    prev_time = this_time
+    # Update variables for next iteration.
+    prev_completeness = completeness
+    prev_time = time
+
   return speed_index
 
 
-def _GetPaintEvents(timeline_events):
-  """Get the paint events in the time range relevant to the speed index."""
-  start = _StartTime(timeline_events)
-  return [event for event in timeline_events
-          if event.name == 'Paint' and event.start >= start]
+def _TimeCompletenessDict(time_area_dict):
+  """Make a dictionary of time to visual completeness.
 
-
-def _StartTime(timeline_events):
-  """Get the time of the earliest Paint event that should be considered.
-
-  Before there are any ResourceReceiveResponse or Layout events,
-  there may be Paint events. These paint events probably should be ignored,
-  because they probably aren't actual elements of the page being displayed.
-
-  Returns:
-    If there's a ResourceReceiveResponse event then a Layout event, return the
-    start time of the Layout event. Otherwise, return the time of the start
-    of the first event.
+  In the WPT PHP implementation, this is also called 'visual progress'.
   """
-  has_received_response = False
-  assert len(timeline_events) > 0
-  for event in timeline_events:
-    if event.name == "ResourceReceiveResponse":
-      has_received_response = True
-    elif has_received_response and event.name == "Layout":
-      return event.start
-  return timeline_events[0].start
+  total_area = sum(time_area_dict.values())
+  assert total_area > 0.0, 'Total paint event area must be greater than 0.'
+  completeness = 0.0
+  time_completeness_dict = {}
+  for time, area in sorted(time_area_dict.items()):
+    completeness += float(area) / total_area
+    # Visual progress is rounded to the nearest percentage point as in WPT.
+    time_completeness_dict[time] = round(completeness, 2)
+  return time_completeness_dict
 
 
-def _GetTimeAreaPairs(paint_events):
-  """Make a list of pairs associating event time and adjusted area value.
+def _IncludedPaintEvents(events):
+  """Get all events that are counted in the calculation of the speed index.
 
-  The area value of a paint event is determined by how many paint events paint
-  the same rectangle, and whether it is painting full window.
+  There's one category of paint event that's filtered out: paint events
+  that occur before the first 'ResourceReceiveResponse' and 'Layout' events.
+
+  Previously in the WPT speed index, paint events that contain children paint
+  events were also filtered out.
+  """
+  def FirstLayoutTime(events):
+    """Get the start time of the first layout after a resource received."""
+    has_received_response = False
+    for event in events:
+      if event.name == 'ResourceReceiveResponse':
+        has_received_response = True
+      elif has_received_response and event.name == 'Layout':
+        return event.start
+    assert False, 'There were no layout events after resource receive events.'
+
+  paint_events = [e for e in events
+                  if e.start >= FirstLayoutTime(events) and e.name == 'Paint']
+  return paint_events
+
+
+def _TimeAreaDict(paint_events):
+  """Make a dict from time to adjusted area value for events at that time.
+
+  The adjusted area value of each paint event is determined by how many paint
+  events cover the same rectangle, and whether it's a full-window paint event.
+  "Adjusted area" can also be thought of as "points" of visual completeness --
+  each rectangle has a certain number of points and these points are
+  distributed amongst the paint events that paint that rectangle.
 
   Args:
-    paint_events: A list of Paint events
+    paint_events: A list of paint events
 
   Returns:
-    A list of pairs of the time of each paint event (in milliseconds) and the
+    A dictionary of times of each paint event (in milliseconds) to the
     adjusted area that the paint event is worth.
   """
-  def _RectangleArea(rectangle):
-    return rectangle[3] * rectangle[4]
   grouped = _GroupEventByRectangle(paint_events)
+  # Note: It is assumed here that the fullscreen area is considered to be
+  # area of the largest paint event that has NOT been filtered out.
   fullscreen_area = max([_RectangleArea(rect) for rect in grouped.keys()])
-  event_area_pairs = []
+  event_area_dict = collections.defaultdict(int)
+
   for rectangle in grouped:
+    # The area points for each rectangle are divided up among the paint
+    # events in that rectangle.
     area = _RectangleArea(rectangle)
-    # Paint events that are considered "full-screen" paint events
-    # are discounted because they're often just painting a white background.
-    # They are not completely disregarded though, because if we're painting
-    # a colored background, it should be counted.
-    if _RectangleArea(rectangle) == fullscreen_area:
-      area /= 2
-    area_per_event = area / len(grouped[rectangle])
+    update_count = len(grouped[rectangle])
+    adjusted_area = float(area) / update_count
+
+    # Paint events for the largest-area rectangle are counted as 50%.
+    if area == fullscreen_area:
+      adjusted_area /= 2
+
     for event in grouped[rectangle]:
-      end_time = event.end
-      event_area_pairs.append((end_time, area_per_event))
-  return event_area_pairs
+      # The end time for an event is used for that event's time.
+      event_time = event.end
+      event_area_dict[event_time] += adjusted_area
+
+  return event_area_dict
+
+
+def _GetRectangle(paint_event):
+  """Get the specific rectangle on the screen for a paint event.
+
+  Each paint event belongs to a frame (as in html <frame> or <iframe>).
+  This, together with location and dimensions, comprises a rectangle.
+  In the WPT source, this 'rectangle' is also called a 'region'.
+  """
+  def GetBox(quad):
+    """Convert the "clip" data in a paint event to coordinates and dimensions.
+
+    In the timeline data from devtools, paint rectangle dimensions are
+    represented x-y coordinates of four corners, clockwise from the top-left.
+    See: function WebInspector.TimelinePresentationModel.quadFromRectData
+    in file src/out/Debug/obj/gen/devtools/TimelinePanel.js.
+    """
+    x0, y0, _, _, x1, y1, _, _ = quad
+    width, height = (x1 - x0), (y1 - y0)
+    return (x0, y0, width, height)
+
+  assert paint_event.name == 'Paint'
+  frame = paint_event.args['frameId']
+  x, y, width, height = GetBox(paint_event.args['data']['clip'])
+  return (frame, x, y, width, height)
+
+
+def _RectangleArea(rectangle):
+  """Get the area of a rectangle as returned by _GetRectangle, above."""
+  # Width and height are the last two items in the 5-tuple.
+  return rectangle[3] * rectangle[4]
 
 
 def _GroupEventByRectangle(paint_events):
@@ -182,44 +235,3 @@ def _GroupEventByRectangle(paint_events):
     assert event.name == 'Paint'
     result[_GetRectangle(event)].append(event)
   return result
-
-
-def _GetRectangle(paint_event):
-  """Get the specific rectangle on the screen for a paint event.
-
-  Each paint event belongs to a frame (as in html <frame> or <iframe>).
-  This, together with location and dimensions, comprises a rectangle.
-  """
-  assert paint_event.name == 'Paint'
-  frame = paint_event.args['frameId']
-  x, y, width, height = _GetBox(paint_event.args['data']['clip'])
-  return (frame, x, y, width, height)
-
-
-def _GetBox(quad):
-  """Convert the "clip" data in a paint event to coordinates and dimensions.
-
-  In the timeline data from devtools, paint rectangle dimensions are
-  represented x-y coordinates of four corners, clockwise from the top-left.
-  See: function WebInspector.TimelinePresentationModel.quadFromRectData
-  in file src/out/Debug/obj/gen/devtools/TimelinePanel.js.
-  """
-  x0, y0, _, _, x1, y1, _, _ = quad
-  width, height = (x1 - x0), (y1 - y0)
-  return (x0, y0, width, height)
-
-
-def _GetTimeCompletenessPairs(time_area_pairs):
-  """Make a list associating time with the % completeness at that time.
-
-  The list returned will also be ordered by time.
-  """
-  total_area = float(sum([area for (_, area) in time_area_pairs]))
-  time_completeness_pairs = []
-  completeness = 0
-  for event_time, area in sorted(time_area_pairs):
-    completeness_impact = float(area) / total_area
-    completeness += completeness_impact
-    time_completeness_pairs.append((event_time, completeness))
-  return time_completeness_pairs
-
