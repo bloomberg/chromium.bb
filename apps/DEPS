@@ -12,9 +12,7 @@ include_rules = [
   "+win8",
   # Temporary allowed includes.
   # TODO(benwells): remove these (http://crbug.com/159366)
-  "+chrome/browser/apps/app_browsertest_util.h",
   "+chrome/browser/browser_process.h",
-  "+chrome/browser/browser_shutdown.h",
   "+chrome/browser/chrome_notification_types.h",
   "+chrome/browser/chromeos/drive",
   "+chrome/browser/extensions",
@@ -25,6 +23,16 @@ include_rules = [
   "+chrome/browser/ui/host_desktop.h",
   "+chrome/common/chrome_switches.h",
   "+chrome/common/extensions",
-  "+chrome/test/base/interactive_test_utils.h",
-  "+chrome/test/base/testing_profile.h",
 ]
+
+specific_include_rules = {
+  "(.*test\.cc|.*test_mac\.mm)": [
+    "+chrome/browser/browser_shutdown.h",
+    "+chrome/test/base/interactive_test_utils.h",
+    "+chrome/test/base/testing_profile.h",
+    # Temporary allowed testing include.
+    # TODO(benwells): Move app_browsertest_util into apps component once there
+    # is an apps shell to test with.
+    "+chrome/browser/apps/app_browsertest_util.h",
+  ]
+}
