@@ -79,16 +79,42 @@ StepsRunner.prototype.run_ = function(steps) {
   this.next();
 };
 
+/**
+ * Adds the givin entries to the target volume(s).
+ * @param {Array.<string>} volumeNames Names of target volumes.
+ * @param {Array.<TestEntryInfo>} entries List of entries to be added.
+ * @param {function(boolean)} callback Callback function to be passed the result
+ *     of function. The argument is true on success.
+ */
+function addEntries(volumeNames, entries, callback) {
+  if (volumeNames.length == 0) {
+    callback(true);
+    return;
+  }
+  chrome.test.sendMessage(JSON.stringify({
+    name: 'addEntries',
+    volume: volumeNames.shift(),
+    entries: entries
+  }), chrome.test.callbackPass(function(result) {
+    if (result == "onEntryAdded")
+      addEntries(volumeNames, entries, callback);
+    else
+      callback(false);
+  }));
+};
+
 var steps = [
   // Check for the guest mode.
   function() {
-    chrome.test.sendMessage('isInGuestMode', steps.shift());
+    chrome.test.sendMessage(
+        JSON.stringify({name: 'isInGuestMode'}), steps.shift());
   },
   // Obtain the test case name.
   function(result) {
     if (JSON.parse(result) != chrome.extension.inIncognitoContext)
       return;
-    chrome.test.sendMessage('getTestName', steps.shift());
+    chrome.test.sendMessage(
+        JSON.stringify({name: 'getTestName'}), steps.shift());
   },
   // Run the test case.
   function(testCaseName) {

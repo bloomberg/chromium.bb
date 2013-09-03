@@ -177,12 +177,17 @@ testcase.intermediate.fileDisplay = function(path) {
     function(inAppId, actualFilesBefore) {
       appId = inAppId;
       chrome.test.assertEq(expectedFilesBefore, actualFilesBefore);
-      chrome.test.sendMessage('addEntry', this.next);
+      addEntries(['local', 'drive'], [{
+        type: 'file',
+        source_file_name: 'music.ogg',
+        target_name: 'newly added file.ogg',
+        mime_type: 'audio/ogg',
+        shared_option: 'none',
+        last_modified_time: '4 Sep 1998 00:00:00'
+      }], this.next);
     },
-    // Confirm that the file has been added externally and wait for it
-    // to appear in UI.
-    function(reply) {
-      chrome.test.assertEq('onEntryAdded', reply);
+    function(result) {
+      chrome.test.assertTrue(result);
       callRemoteTestUtil(
           'waitForFileListChange',
           appId,
@@ -617,7 +622,7 @@ testcase.openSidebarOffline = function() {
   var appId;
   StepsRunner.run([
     function() {
-      setupAndWaitUntilReady('/drive/root/', this.next)
+      setupAndWaitUntilReady('/drive/root/', this.next);
     },
     // Click the icon of the Offline volume.
     function(inAppId) {

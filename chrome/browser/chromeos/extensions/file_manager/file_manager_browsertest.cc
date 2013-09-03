@@ -15,6 +15,9 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_value_converter.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -45,6 +48,11 @@ enum EntryType {
   DIRECTORY,
 };
 
+enum TargetVolume {
+  LOCAL_VOLUME,
+  DRIVE_VOLUME,
+};
+
 enum SharedOption {
   NONE,
   SHARED,
@@ -52,7 +60,7 @@ enum SharedOption {
 
 enum GuestMode {
   NOT_IN_GUEST_MODE,
-  IN_GUEST_MODE
+  IN_GUEST_MODE,
 };
 
 // This global operator is used from Google Test to format error messages.
@@ -61,7 +69,50 @@ std::ostream& operator<<(std::ostream& os, const GuestMode& guest_mode) {
                 "IN_GUEST_MODE" : "NOT_IN_GUEST_MODE");
 }
 
+// Maps the given string to EntryType. Returns true on success.
+bool MapStringToEntryType(const base::StringPiece& value, EntryType* output) {
+  if (value == "file")
+    *output = FILE;
+  else if (value == "directory")
+    *output = DIRECTORY;
+  else
+    return false;
+  return true;
+}
+
+// Maps the given string to SharedOption. Returns true on success.
+bool MapStringToSharedOption(const base::StringPiece& value,
+                             SharedOption* output) {
+  if (value == "shared")
+    *output = SHARED;
+  else if (value == "none")
+    *output = NONE;
+  else
+    return false;
+  return true;
+}
+
+// Maps the given string to TargetVolume. Returns true on success.
+bool MapStringToTargetVolume(const base::StringPiece& value,
+                             TargetVolume* output) {
+  if (value == "drive")
+    *output = DRIVE_VOLUME;
+  else if (value == "local")
+    *output = LOCAL_VOLUME;
+  else
+    return false;
+  return true;
+}
+
+// Maps the given string to base::Time. Returns true on success.
+bool MapStringToTime(const base::StringPiece& value, base::Time* time) {
+  return base::Time::FromString(value.as_string().c_str(), time);
+}
+
+// Test data of file or directory.
 struct TestEntryInfo {
+  TestEntryInfo() : type(FILE), shared_option(NONE) {}
+
   TestEntryInfo(EntryType type,
                 const std::string& source_file_name,
                 const std::string& target_name,
@@ -82,7 +133,54 @@ struct TestEntryInfo {
   std::string mime_type;
   SharedOption shared_option;
   base::Time last_modified_time;
+
+  // Registers the member information to the given converter.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<TestEntryInfo>* converter);
 };
+
+// static
+void TestEntryInfo::RegisterJSONConverter(
+    base::JSONValueConverter<TestEntryInfo>* converter) {
+  converter->RegisterCustomField("type",
+                                 &TestEntryInfo::type,
+                                 &MapStringToEntryType);
+  converter->RegisterStringField("source_file_name",
+                                 &TestEntryInfo::source_file_name);
+  converter->RegisterStringField("target_name", &TestEntryInfo::target_name);
+  converter->RegisterStringField("mime_type", &TestEntryInfo::mime_type);
+  converter->RegisterCustomField("shared_option",
+                                 &TestEntryInfo::shared_option,
+                                 &MapStringToSharedOption);
+  converter->RegisterCustomField("last_modified_time",
+                                 &TestEntryInfo::last_modified_time,
+                                 &MapStringToTime);
+}
+
+// Message from JavaScript to add entries.
+struct AddEntriesMessage {
+  // Target volume to be added the |entries|.
+  TargetVolume volume;
+
+  // Entries to be added.
+  ScopedVector<TestEntryInfo> entries;
+
+  // Registers the member information to the given converter.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<AddEntriesMessage>* converter);
+};
+
+
+// static
+void AddEntriesMessage::RegisterJSONConverter(
+    base::JSONValueConverter<AddEntriesMessage>* converter) {
+  converter->RegisterCustomField("volume",
+                                 &AddEntriesMessage::volume,
+                                 &MapStringToTargetVolume);
+  converter->RegisterRepeatedMessage<TestEntryInfo>(
+      "entries",
+      &AddEntriesMessage::entries);
+}
 
 // Create the test entry data for common use.
 std::vector<TestEntryInfo> createTestEntrySetCommon() {
@@ -110,7 +208,7 @@ std::vector<TestEntryInfo> createTestEntrySetCommon() {
   return entryInfoSet;
 }
 
-// Create the test entry data for the drive volume.
+// Creates the test entry data for the drive volume.
 std::vector<TestEntryInfo> createTestEntrySetDriveOnly() {
   std::vector<TestEntryInfo> entryInfoSet;
   base::Time time;
@@ -184,7 +282,7 @@ class DriveTestVolume {
                       integration_service_(NULL) {
   }
 
-  // Send request to add this volume to the file system as Google drive.
+  // Sends request to add this volume to the file system as Google drive.
   // This method must be calld at SetUp method of FileManagerBrowserTestBase.
   // Returns true on success.
   bool SetUp() {
@@ -456,6 +554,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
   // Handle the messages from JavaScript.
   // The while loop is break when the test is passed or failed.
   FileManagerTestListener listener;
+  base::JSONValueConverter<AddEntriesMessage> add_entries_message_converter;
   while (true) {
     FileManagerTestListener::Message entry = listener.GetNextMessage();
     if (entry.type == chrome::NOTIFICATION_EXTENSION_TEST_PASSED) {
@@ -465,26 +564,46 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
       // Test failed.
       ADD_FAILURE() << entry.message;
       break;
-    } else if (entry.message == "getTestName") {
+    }
+
+    // Parse the message value as JSON.
+    const scoped_ptr<const base::Value> value(
+        base::JSONReader::Read(entry.message));
+
+    // If the message is not the expected format, just ignore it.
+    const base::DictionaryValue* message_dictionary = NULL;
+    std::string name;
+    if (!value || !value->GetAsDictionary(&message_dictionary) ||
+        !message_dictionary->GetString("name", &name))
+      continue;
+
+    if (name == "getTestName") {
       // Pass the test case name.
       entry.function->Reply(std::tr1::get<1>(GetParam()));
-    } else if (entry.message == "isInGuestMode") {
-      // Obtains whther the test is in guest mode or not.
+    } else if (name == "isInGuestMode") {
+      // Obtain whether the test is in guest mode or not.
       entry.function->Reply(std::tr1::get<0>(GetParam()) ? "true" : "false");
-    } else if (entry.message == "addEntry") {
-      // Add the extra entry.
-      base::Time time;
-      ASSERT_TRUE(base::Time::FromString("4 Sep 1998 00:00:00", &time));
-      const TestEntryInfo file(
-          FILE,
-          "music.ogg",  // Prototype file name.
-          "newly added file.ogg",  // Target file name.
-          "audio/ogg",
-          NONE,
-          time);
-      if (drive_volume_)
-        drive_volume_->CreateEntry(file);
-      local_volume_->CreateEntry(file);
+    } else if (name == "addEntries") {
+      // Add entries to the specified volume.
+      AddEntriesMessage message;
+      if (!add_entries_message_converter.Convert(*value.get(), &message)) {
+        entry.function->Reply("onError");
+        continue;
+      }
+      for (size_t i = 0; i < message.entries.size(); ++i) {
+        switch (message.volume) {
+          case LOCAL_VOLUME:
+            local_volume_->CreateEntry(*message.entries[i]);
+            break;
+          case DRIVE_VOLUME:
+            if (drive_volume_)
+              drive_volume_->CreateEntry(*message.entries[i]);
+            break;
+          default:
+            NOTREACHED();
+            break;
+        }
+      }
       entry.function->Reply("onEntryAdded");
     }
   }
