@@ -50,8 +50,7 @@ TEST_F(SearchOperationTest, ContentSearch) {
   EXPECT_EQ(ARRAYSIZE_UNSAFE(kExpectedResults), results->size());
   for (size_t i = 0; i < results->size(); i++) {
     EXPECT_EQ(kExpectedResults[i].path, results->at(i).path.AsUTF8Unsafe());
-    EXPECT_EQ(kExpectedResults[i].is_directory,
-              results->at(i).entry.file_info().is_directory());
+    EXPECT_EQ(kExpectedResults[i].is_directory, results->at(i).is_directory);
   }
 }
 
@@ -93,7 +92,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
     EXPECT_EQ(kExpectedResultsBeforeLoad[i].path,
               results->at(i).path.AsUTF8Unsafe());
     EXPECT_EQ(kExpectedResultsBeforeLoad[i].is_directory,
-              results->at(i).entry.file_info().is_directory());
+              results->at(i).is_directory);
   }
 
   // Load the change from FakeDriveService.
@@ -117,7 +116,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
     EXPECT_EQ(kExpectedResultsAfterLoad[i].path,
               results->at(i).path.AsUTF8Unsafe());
     EXPECT_EQ(kExpectedResultsAfterLoad[i].is_directory,
-              results->at(i).entry.file_info().is_directory());
+              results->at(i).is_directory);
   }
 }
 

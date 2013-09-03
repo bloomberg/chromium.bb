@@ -19,20 +19,17 @@ namespace drive {
 
 class FileSystemObserver;
 
-typedef std::vector<ResourceEntry> ResourceEntryVector;
-
 // Information about search result returned by Search Async callback.
 // This is data needed to create a file system entry that will be used by file
 // browser.
 struct SearchResultInfo {
-  SearchResultInfo(const base::FilePath& path,
-                   const ResourceEntry& entry)
+  SearchResultInfo(const base::FilePath& path, bool is_directory)
       : path(path),
-        entry(entry) {
+        is_directory(is_directory) {
   }
 
   base::FilePath path;
-  ResourceEntry entry;
+  bool is_directory;
 };
 
 // Struct to represent a search result for SearchMetadata().

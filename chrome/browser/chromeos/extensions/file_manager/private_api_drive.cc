@@ -31,7 +31,6 @@ const char kDriveConnectionTypeOffline[] = "offline";
 const char kDriveConnectionTypeMetered[] = "metered";
 const char kDriveConnectionTypeOnline[] = "online";
 
-
 // List of reasons of kDriveConnectionType*.
 // Keep this in sync with the DriveConnectionReason in volume_manager.js.
 const char kDriveConnectionReasonNotReady[] = "not_ready";
@@ -442,8 +441,7 @@ void FileBrowserPrivateSearchDriveFunction::OnSearch(
     entry->SetString("fileSystemName", file_system_name);
     entry->SetString("fileSystemRoot", file_system_root_url.spec());
     entry->SetString("fileFullPath", "/" + results->at(i).path.value());
-    entry->SetBoolean("fileIsDirectory",
-                      results->at(i).entry.file_info().is_directory());
+    entry->SetBoolean("fileIsDirectory", results->at(i).is_directory);
     entries->Append(entry);
   }
 
