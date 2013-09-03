@@ -2081,9 +2081,6 @@ class BisectPerformanceMetrics(object):
             std_error, state_str)
 
     if last_broken_revision != None and first_working_revision != None:
-      # Give a "confidence" in the bisect. At the moment we use how distinct the
-      # values are before and after the last broken revision, and how noisy the
-      # overall graph is.
       bounds_broken = [revision_data[last_broken_revision]['value']['mean'],
           revision_data[last_broken_revision]['value']['mean']]
       broken_mean = []
@@ -2106,6 +2103,27 @@ class BisectPerformanceMetrics(object):
               revision_data_sorted[i][1]['value']['mean'])
           working_mean.extend(revision_data_sorted[i][1]['value']['values'])
 
+      # Calculate the approximate size of the regression
+      mean_of_bad_runs = CalculateTruncatedMean(broken_mean, 0.0)
+      mean_of_good_runs = CalculateTruncatedMean(working_mean, 0.0)
+
+      regression_size = math.fabs(max(mean_of_good_runs, mean_of_bad_runs) /
+          min(mean_of_good_runs, mean_of_bad_runs)) * 100.0 - 100.0
+
+      regression_size_max = math.fabs(max(bounds_working[0], bounds_broken[1]) /
+          min(bounds_working[0], bounds_broken[1])) * 100.0 - 100.0
+      regression_size_min = math.fabs(max(bounds_working[1], bounds_broken[0]) /
+          min(bounds_working[1], bounds_broken[0])) * 100.0 - 100.0
+      regression_diff = max(math.fabs(regression_size_max - regression_size),
+          math.fabs(regression_size - regression_size_min))
+
+      print
+      print 'Approximate size of regression: %.02f%%  +- %.02f%%' % (
+          regression_size, regression_diff)
+
+      # Give a "confidence" in the bisect. At the moment we use how distinct the
+      # values are before and after the last broken revision, and how noisy the
+      # overall graph is.
       dist_between_groups = min(math.fabs(bounds_broken[1] - bounds_working[0]),
           math.fabs(bounds_broken[0] - bounds_working[1]))
       len_working_group = CalculateStandardError(working_mean)
@@ -2115,7 +2133,6 @@ class BisectPerformanceMetrics(object):
           max(0.0001, (len_broken_group + len_working_group ))))
       confidence = min(1.0, max(confidence, 0.0)) * 100.0
 
-      print
       print 'Confidence in Bisection Results: %d%%' % int(confidence)
       print
 
