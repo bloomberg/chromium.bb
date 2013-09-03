@@ -9,7 +9,6 @@
       'file_downloader.cc',
       'file_utils.cc',
       'json_manifest.cc',
-      'local_temp_file.cc',
       'module_ppapi.cc',
       'nacl_http_response_headers.cc',
       'nacl_subprocess.cc',

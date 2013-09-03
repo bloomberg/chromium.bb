@@ -14,11 +14,8 @@
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/private/ppb_uma_private.h"
-#include "ppapi/cpp/file_io.h"
 
-#include "ppapi/native_client/src/trusted/plugin/local_temp_file.h"
 #include "ppapi/native_client/src/trusted/plugin/manifest.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_http_response_headers.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin.h"
@@ -26,11 +23,6 @@
 #include "ppapi/native_client/src/trusted/plugin/pnacl_translate_thread.h"
 #include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
 #include "ppapi/native_client/src/trusted/plugin/temporary_file.h"
-
-namespace {
-const char kPnaclTempDir[] = "/.pnacl";
-const uint32_t kCopyBufSize = 512 << 10;
-}
 
 namespace plugin {
 
@@ -259,13 +251,10 @@ PnaclCoordinator::PnaclCoordinator(
   : translate_finish_error_(PP_OK),
     plugin_(plugin),
     translate_notify_callback_(translate_notify_callback),
-    file_system_(new pp::FileSystem(plugin, PP_FILESYSTEMTYPE_LOCALTEMPORARY)),
     manifest_(new PnaclManifest()),
     pexe_url_(pexe_url),
     pnacl_options_(pnacl_options),
-    use_new_cache_(true),
     is_cache_hit_(PP_FALSE),
-    nexe_handle_(PP_kInvalidFileHandle),
     error_already_reported_(false),
     off_the_record_(false),
     pnacl_init_time_(0),
@@ -275,10 +264,6 @@ PnaclCoordinator::PnaclCoordinator(
   PLUGIN_PRINTF(("PnaclCoordinator::PnaclCoordinator (this=%p, plugin=%p)\n",
                  static_cast<void*>(this), static_cast<void*>(plugin)));
   callback_factory_.Initialize(this);
-  if (getenv("PNACL_USE_OLD_CACHE")) {
-    PLUGIN_PRINTF(("PnaclCoordinator using old translation cache\n"));
-    use_new_cache_ = false;
-  }
 }
 
 PnaclCoordinator::~PnaclCoordinator() {
@@ -293,6 +278,11 @@ PnaclCoordinator::~PnaclCoordinator() {
   if (translate_thread_.get() != NULL) {
     translate_thread_->AbortSubprocesses();
   }
+}
+
+nacl::DescWrapper* PnaclCoordinator::ReleaseTranslatedFD() {
+  DCHECK(temp_nexe_file_ != NULL);
+  return temp_nexe_file_->release_read_wrapper();
 }
 
 void PnaclCoordinator::ReportNonPpapiError(enum PluginErrorCode err_code,
@@ -339,11 +329,9 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   // Bail out if there was an earlier error (e.g., pexe load failure),
   // or if there is an error from the translation thread.
   if (translate_finish_error_ != PP_OK || pp_error != PP_OK) {
-    if (use_new_cache_) {
-      plugin_->nacl_interface()->ReportTranslationFinished(
-          plugin_->pp_instance(),
-          PP_FALSE);
-    }
+    plugin_->nacl_interface()->ReportTranslationFinished(
+        plugin_->pp_instance(),
+        PP_FALSE);
     ExitWithError();
     return;
   }
@@ -388,242 +376,6 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
     HistogramRatio("NaCl.Perf.Size.PexeNexeSizePct", pexe_size_, nexe_size);
   }
 
-  // The nexe is written to the temp_nexe_file_.  We must Reset() the file
-  // pointer to be able to read it again from the beginning.
-  temp_nexe_file_->Reset();
-
-  if (use_new_cache_) {
-    // Report to the browser that translation finished. The browser will take
-    // care of caching.
-    plugin_->nacl_interface()->ReportTranslationFinished(
-        plugin_->pp_instance(), PP_TRUE);
-
-    // These can maybe move up with the rest of the UMA stats when we remove
-    // the old cache code
-    int64_t total_time = NaClGetTimeOfDayMicroseconds() - pnacl_init_time_;
-    HistogramTime("NaCl.Perf.PNaClLoadTime.TotalUncachedTime",
-                  total_time / NACL_MICROS_PER_MILLI);
-    HistogramKBPerSec("NaCl.Perf.PNaClLoadTime.TotalUncachedKBPerSec",
-                      pexe_size_ / 1024.0,
-                      total_time / 1000000.0);
-    NexeReadDidOpen(PP_OK);
-    return;
-  }
-  if (pnacl_options_.HasCacheKey() && cached_nexe_file_ != NULL) {
-    // We are using a cache, but had a cache miss, which is why we did the
-    // translation.  Reset cached_nexe_file_ to have a random name,
-    // for scratch purposes, before renaming to the final cache_identity.
-    cached_nexe_file_.reset(new LocalTempFile(plugin_, file_system_.get(),
-                                              nacl::string(kPnaclTempDir)));
-    pp::CompletionCallback cb = callback_factory_.NewCallback(
-        &PnaclCoordinator::CachedNexeOpenedForWrite);
-    cached_nexe_file_->OpenWrite(cb);
-  } else {
-    // For now, tolerate bitcode that is missing a cache identity, and
-    // tolerate the lack of caching in incognito mode.
-    PLUGIN_PRINTF(("PnaclCoordinator -- not caching.\n"));
-    NexeReadDidOpen(PP_OK);
-  }
-}
-
-void PnaclCoordinator::CachedNexeOpenedForWrite(int32_t pp_error) {
-  if (pp_error != PP_OK) {
-    if (pp_error == PP_ERROR_NOACCESS) {
-      ReportPpapiError(
-          ERROR_PNACL_CACHE_FILEOPEN_NOACCESS,
-          pp_error,
-          "PNaCl translation cache failed to open file for write "
-          "(no access).");
-      return;
-    }
-    if (pp_error == PP_ERROR_NOQUOTA) {
-      ReportPpapiError(
-          ERROR_PNACL_CACHE_FILEOPEN_NOQUOTA,
-          pp_error,
-          "PNaCl translation cache failed to open file for write "
-          "(no quota).");
-      return;
-    }
-    if (pp_error == PP_ERROR_NOSPACE) {
-      ReportPpapiError(
-          ERROR_PNACL_CACHE_FILEOPEN_NOSPACE,
-          pp_error,
-          "PNaCl translation cache failed to open file for write "
-          "(no space).");
-      return;
-    }
-    if (pp_error == PP_ERROR_NOTAFILE) {
-      ReportPpapiError(ERROR_PNACL_CACHE_FILEOPEN_NOTAFILE,
-                       pp_error,
-                       "PNaCl translation cache failed to open file for write."
-                       "  File already exists as a directory.");
-      return;
-    }
-    ReportPpapiError(ERROR_PNACL_CACHE_FILEOPEN_OTHER,
-                     pp_error,
-                     "PNaCl translation cache failed to open file for write.");
-    return;
-  }
-
-  // Copy the contents from temp_nexe_file_ -> cached_nexe_file_,
-  // then rename the cached_nexe_file_ file to the cache id.
-  int64_t cur_offset = 0;
-  nacl::DescWrapper* read_wrapper = temp_nexe_file_->read_wrapper();
-  char buf[kCopyBufSize];
-  int32_t num_read =
-    nacl::assert_cast<int32_t>(read_wrapper->Read(buf, sizeof buf));
-  // Hit EOF or something.
-  if (num_read == 0) {
-    NexeWasCopiedToCache(PP_OK);
-    return;
-  }
-  if (num_read < 0) {
-    PLUGIN_PRINTF(("PnaclCoordinator::CachedNexeOpenedForWrite read failed "
-                   "(error=%" NACL_PRId32 ")\n", num_read));
-    NexeWasCopiedToCache(PP_ERROR_FAILED);
-    return;
-  }
-  pp::CompletionCallback cb = callback_factory_.NewCallback(
-      &PnaclCoordinator::DidCopyNexeToCachePartial, num_read, cur_offset);
-  cached_nexe_file_->write_file_io()->Write(cur_offset, buf, num_read, cb);
-}
-
-void PnaclCoordinator::DidCopyNexeToCachePartial(int32_t pp_error,
-                                                 int32_t num_read_prev,
-                                                 int64_t cur_offset) {
-  PLUGIN_PRINTF(("PnaclCoordinator::DidCopyNexeToCachePartial "
-                 "(pp_error=%" NACL_PRId32 ", num_read_prev=%" NACL_PRId32
-                 ", cur_offset=%" NACL_PRId64 ").\n",
-                 pp_error, num_read_prev, cur_offset));
-  // Assume we are done.
-  if (pp_error == PP_OK) {
-    NexeWasCopiedToCache(PP_OK);
-    return;
-  }
-  if (pp_error < PP_OK) {
-    PLUGIN_PRINTF(("PnaclCoordinator::DidCopyNexeToCachePartial failed (err=%"
-                   NACL_PRId32 ")\n", pp_error));
-    NexeWasCopiedToCache(pp_error);
-    return;
-  }
-
-  // Check if we wrote as much as we read.
-  nacl::DescWrapper* read_wrapper = temp_nexe_file_->read_wrapper();
-  if (pp_error != num_read_prev) {
-    PLUGIN_PRINTF(("PnaclCoordinator::DidCopyNexeToCachePartial partial "
-                   "write (bytes_written=%" NACL_PRId32 " vs "
-                   "read=%" NACL_PRId32 ")\n", pp_error, num_read_prev));
-    CHECK(pp_error < num_read_prev);
-    // Seek back to re-read the bytes that were not written.
-    nacl_off64_t seek_result =
-        read_wrapper->Seek(pp_error - num_read_prev, SEEK_CUR);
-    if (seek_result < 0) {
-      PLUGIN_PRINTF(("PnaclCoordinator::DidCopyNexeToCachePartial seek failed "
-                     "(err=%" NACL_PRId64 ")\n", seek_result));
-      NexeWasCopiedToCache(PP_ERROR_FAILED);
-      return;
-    }
-  }
-
-  int64_t next_offset = cur_offset + pp_error;
-  char buf[kCopyBufSize];
-  int32_t num_read =
-    nacl::assert_cast<int32_t>(read_wrapper->Read(buf, sizeof buf));
-  PLUGIN_PRINTF(("PnaclCoordinator::DidCopyNexeToCachePartial read (bytes=%"
-                 NACL_PRId32 ")\n", num_read));
-  // Hit EOF or something.
-  if (num_read == 0) {
-    NexeWasCopiedToCache(PP_OK);
-    return;
-  }
-  if (num_read < 0) {
-    PLUGIN_PRINTF(("PnaclCoordinator::DidCopyNexeToCachePartial read failed "
-                   "(error=%" NACL_PRId32 ")\n", num_read));
-    NexeWasCopiedToCache(PP_ERROR_FAILED);
-    return;
-  }
-  pp::CompletionCallback cb = callback_factory_.NewCallback(
-      &PnaclCoordinator::DidCopyNexeToCachePartial, num_read, next_offset);
-  PLUGIN_PRINTF(("PnaclCoordinator::CopyNexeToCache Writing ("
-                 "bytes=%" NACL_PRId32 ", buf=%p, file_io=%p)\n", num_read, buf,
-                 cached_nexe_file_->write_file_io()));
-  cached_nexe_file_->write_file_io()->Write(next_offset, buf, num_read, cb);
-}
-
-void PnaclCoordinator::NexeWasCopiedToCache(int32_t pp_error) {
-  if (pp_error != PP_OK) {
-    // Try to delete the partially written not-yet-committed cache file before
-    // returning. We pass the current pp_error along so that it can be reported
-    // before returning.
-    pp::CompletionCallback cb = callback_factory_.NewCallback(
-        &PnaclCoordinator::CorruptCacheFileWasDeleted, pp_error);
-    cached_nexe_file_->Delete(cb);
-    return;
-  }
-  // Rename the cached_nexe_file_ file to the cache id, to finalize.
-  pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::NexeFileWasRenamed);
-  cached_nexe_file_->Rename(pnacl_options_.GetCacheKey(), cb);
-}
-
-void PnaclCoordinator::CorruptCacheFileWasDeleted(int32_t delete_pp_error,
-                                                  int32_t orig_pp_error) {
-  if (delete_pp_error != PP_OK) {
-    // The cache file was certainly already opened by the time we tried
-    // to write to it, so it should certainly be deletable.
-    PLUGIN_PRINTF(("PnaclCoordinator::CorruptCacheFileWasDeleted "
-                   "delete failed with pp_error=%" NACL_PRId32 "\n",
-                   delete_pp_error));
-    // fall through and report the original error.
-  }
-  // Report the original error that caused us to consider the
-  // cache file corrupted.
-  if (orig_pp_error == PP_ERROR_NOQUOTA) {
-    ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_COPY_NOQUOTA,
-                     orig_pp_error,
-                     "Failed to copy translated nexe to cache (no quota).");
-    return;
-  }
-  if (orig_pp_error == PP_ERROR_NOSPACE) {
-    ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_COPY_NOSPACE,
-                     orig_pp_error,
-                     "Failed to copy translated nexe to cache (no space).");
-      return;
-  }
-  ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_COPY_OTHER,
-                   orig_pp_error,
-                   "Failed to copy translated nexe to cache.");
-  return;
-}
-
-void PnaclCoordinator::NexeFileWasRenamed(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::NexeFileWasRenamed (pp_error=%"
-                 NACL_PRId32 ")\n", pp_error));
-  if (pp_error != PP_OK) {
-    if (pp_error == PP_ERROR_NOACCESS) {
-      ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_RENAME_NOACCESS,
-                       pp_error,
-                       "Failed to finalize cached translation (no access).");
-      return;
-    } else if (pp_error != PP_ERROR_FILEEXISTS) {
-      ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_RENAME_OTHER,
-                       pp_error,
-                       "Failed to finalize cached translation.");
-      return;
-    } else { // pp_error == PP_ERROR_FILEEXISTS.
-      // NOTE: if the file already existed, it looks like the rename will
-      // happily succeed.  However, we should add a test for this.
-      // Could be a hash collision, or it could also be two tabs racing to
-      // translate the same pexe. We may want UMA stats to know if this happens.
-      // For now, assume that it is a race and try to continue.
-      // If there is truly a corrupted file, then sel_ldr should prevent the
-      // file from loading due to the file size not matching the ELF header.
-      PLUGIN_PRINTF(("PnaclCoordinator::NexeFileWasRenamed file existed\n"));
-    }
-  }
-
-  cached_nexe_file_->FinishRename();
-
   int64_t total_time = NaClGetTimeOfDayMicroseconds() - pnacl_init_time_;
   HistogramTime("NaCl.Perf.PNaClLoadTime.TotalUncachedTime",
                 total_time / NACL_MICROS_PER_MILLI);
@@ -631,10 +383,16 @@ void PnaclCoordinator::NexeFileWasRenamed(int32_t pp_error) {
                     pexe_size_ / 1024.0,
                     total_time / 1000000.0);
 
-  // Open the cache file for reading.
-  pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::NexeReadDidOpen);
-  cached_nexe_file_->OpenRead(cb);
+  // The nexe is written to the temp_nexe_file_.  We must Reset() the file
+  // pointer to be able to read it again from the beginning.
+  temp_nexe_file_->Reset();
+
+  // Report to the browser that translation finished. The browser will take
+  // care of storing the nexe in the cache.
+  plugin_->nacl_interface()->ReportTranslationFinished(
+      plugin_->pp_instance(), PP_TRUE);
+
+  NexeReadDidOpen(PP_OK);
 }
 
 void PnaclCoordinator::NexeReadDidOpen(int32_t pp_error) {
@@ -659,12 +417,6 @@ void PnaclCoordinator::NexeReadDidOpen(int32_t pp_error) {
     return;
   }
 
-  // Transfer ownership of cache/temp file's wrapper to the coordinator.
-  if (cached_nexe_file_ != NULL) {
-    translated_fd_.reset(cached_nexe_file_->release_read_wrapper());
-  } else {
-    translated_fd_.reset(temp_nexe_file_->release_read_wrapper());
-  }
   translate_notify_callback_.Run(pp_error);
 }
 
@@ -710,97 +462,6 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
     return;
   }
 
-  if (!off_the_record_) {
-    if (use_new_cache_) {
-      OpenBitcodeStream();
-    } else {
-      // Open the local temporary FS to see if we get a hit in the cache.
-      pp::CompletionCallback cb =
-          callback_factory_.NewCallback(&PnaclCoordinator::FileSystemDidOpen);
-      int32_t open_error = file_system_->Open(0, cb);
-      if (open_error != PP_OK_COMPLETIONPENDING) {
-        // At this point, no async request has kicked off to check for
-        // permissions, space, etc., so the only error that can be detected
-        // now is that an open() is already in progress (or a really terrible
-        // error).
-        if (pp_error == PP_ERROR_INPROGRESS) {
-          ReportPpapiError(
-              ERROR_PNACL_CACHE_OPEN_INPROGRESS,
-              pp_error,
-              "File system for PNaCl translation cache failed to open "
-              "(in progress).");
-          return;
-        }
-        ReportPpapiError(
-            ERROR_PNACL_CACHE_OPEN_OTHER,
-            pp_error,
-            "File system for PNaCl translation cache failed to open.");
-      }
-    }
-  } else {
-    // We don't have a cache, so do the non-cached codepath.
-    OpenBitcodeStream();
-  }
-}
-
-void PnaclCoordinator::FileSystemDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::FileSystemDidOpen (pp_error=%"
-                 NACL_PRId32 ")\n", pp_error));
-  if (pp_error != PP_OK) {
-    if (pp_error == PP_ERROR_NOACCESS) {
-      ReportPpapiError(
-          ERROR_PNACL_CACHE_OPEN_NOACCESS,
-          pp_error,
-          "File system for PNaCl translation cache failed to open "
-          "(no access).");
-      return;
-    }
-    if (pp_error == PP_ERROR_NOQUOTA) {
-      ReportPpapiError(
-          ERROR_PNACL_CACHE_OPEN_NOQUOTA,
-          pp_error,
-          "File system for PNaCl translation cache failed to open "
-          "(no quota).");
-      return;
-    }
-    if (pp_error == PP_ERROR_NOSPACE) {
-      ReportPpapiError(
-          ERROR_PNACL_CACHE_OPEN_NOSPACE,
-          pp_error,
-          "File system for PNaCl translation cache failed to open "
-          "(no space).");
-      return;
-    }
-    ReportPpapiError(ERROR_PNACL_CACHE_OPEN_OTHER,
-                     pp_error,
-                     "File system for PNaCl translation cache failed to open.");
-  }
-  dir_ref_.reset(new pp::FileRef(*file_system_, kPnaclTempDir));
-  // Attempt to create the directory.
-  pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::DirectoryWasCreated);
-  dir_ref_->MakeDirectory(cb);
-}
-
-void PnaclCoordinator::DirectoryWasCreated(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::DirectoryWasCreated (pp_error=%"
-                 NACL_PRId32 ")\n", pp_error));
-  if (pp_error != PP_ERROR_FILEEXISTS && pp_error != PP_OK) {
-    // Directory did not exist and could not be created.
-    if (pp_error == PP_ERROR_NOACCESS) {
-      ReportPpapiError(
-          ERROR_PNACL_CACHE_DIRECTORY_CREATE,
-          pp_error,
-          "PNaCl translation cache directory creation/check failed "
-          "(no access).");
-      return;
-    }
-    ReportPpapiError(
-        ERROR_PNACL_CACHE_DIRECTORY_CREATE,
-        pp_error,
-        "PNaCl translation cache directory creation/check failed.");
-    return;
-  }
   OpenBitcodeStream();
 }
 
@@ -820,14 +481,6 @@ void PnaclCoordinator::OpenBitcodeStream() {
         "PnaclCoordinator: could not allocate translation thread.");
     return;
   }
-  if (!use_new_cache_) {
-    // We also want to open the object file now so the
-    // translator can start writing to it during streaming translation.
-    obj_file_.reset(new TempFile(plugin_));
-    pp::CompletionCallback obj_cb =
-        callback_factory_.NewCallback(&PnaclCoordinator::ObjectFileDidOpen);
-    obj_file_->Open(obj_cb, true);
-  }
 
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::BitcodeStreamDidOpen);
@@ -842,66 +495,38 @@ void PnaclCoordinator::OpenBitcodeStream() {
 void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
   if (pp_error != PP_OK) {
     BitcodeStreamDidFinish(pp_error);
-    // In the new cache case, we have not spun up the translation process yet,
-    // so we need to call TranslateFinished here.
-    if (use_new_cache_)
-      TranslateFinished(pp_error);
+    // We have not spun up the translation process yet, so we need to call
+    // TranslateFinished here.
+    TranslateFinished(pp_error);
     return;
   }
 
-  if (!off_the_record_ || use_new_cache_) {
-    // Get the cache key and try to open an existing entry.
-    nacl::string headers = streaming_downloader_->GetResponseHeaders();
-    NaClHttpResponseHeaders parser;
-    parser.Parse(headers);
-    nacl::string cache_validators = parser.GetCacheValidators();
-    if (parser.CacheControlNoStore() || cache_validators.empty()) {
-      // We can't cache in this case.
-      pnacl_options_.set_cache_validators("");
-      CachedFileDidOpen(PP_ERROR_FAILED);
-      return;
-    } else {
-      nacl::string url = streaming_downloader_->url();
-      // For now, combine the cache_validators + the URL as the key.
-      // When we change the cache backend to be not-origin-specific
-      // we should send the URL separately, and check in the browser's
-      // RenderViewHost / SiteInstance's IsSameWebsite() to prevent
-      // people from forging the URL for a different origin.
-      pnacl_options_.set_cache_validators(cache_validators + url);
-    }
-    if (use_new_cache_) {
-      pp::CompletionCallback cb =
-          callback_factory_.NewCallback(&PnaclCoordinator::NexeFdDidOpen);
-      int32_t nexe_fd_err =
-          plugin_->nacl_interface()->GetNexeFd(
-              plugin_->pp_instance(),
-              streaming_downloader_->url().c_str(),
-              // TODO(dschuff): Get this value from the pnacl json file after it
-              // rolls in from NaCl.
-              1,
-              pnacl_options_.opt_level(),
-              parser.GetHeader("last-modified").c_str(),
-              parser.GetHeader("etag").c_str(),
-              &is_cache_hit_,
-              &nexe_handle_,
-              cb.pp_completion_callback());
-      if (nexe_fd_err < PP_OK_COMPLETIONPENDING) {
-        ReportPpapiError(ERROR_PNACL_CREATE_TEMP, nexe_fd_err,
-                         nacl::string("Call to GetNexeFd failed"));
-        return;
-      }
-    } else {
-      cached_nexe_file_.reset(new LocalTempFile(
-          plugin_, file_system_.get(),
-          nacl::string(kPnaclTempDir),
-          pnacl_options_.GetCacheKey()));
-      pp::CompletionCallback cb =
-          callback_factory_.NewCallback(&PnaclCoordinator::CachedFileDidOpen);
-      cached_nexe_file_->OpenRead(cb);
-    }
-  } else {
-    // No cache case.
-    CachedFileDidOpen(PP_ERROR_FAILED);
+  // Get the cache key and try to open an existing entry.
+  nacl::string headers = streaming_downloader_->GetResponseHeaders();
+  NaClHttpResponseHeaders parser;
+  parser.Parse(headers);
+  // TODO(dschuff): honor parser.CacheControlNoStore(). It wasn't handled in
+  // the new cache case before.
+
+  temp_nexe_file_.reset(new TempFile(plugin_));
+  pp::CompletionCallback cb =
+      callback_factory_.NewCallback(&PnaclCoordinator::NexeFdDidOpen);
+  int32_t nexe_fd_err =
+      plugin_->nacl_interface()->GetNexeFd(
+          plugin_->pp_instance(),
+          streaming_downloader_->url().c_str(),
+          // TODO(dschuff): Get this value from the pnacl json file after it
+          // rolls in from NaCl.
+          1,
+          pnacl_options_.opt_level(),
+          parser.GetHeader("last-modified").c_str(),
+          parser.GetHeader("etag").c_str(),
+          &is_cache_hit_,
+          temp_nexe_file_->existing_handle(),
+          cb.pp_completion_callback());
+  if (nexe_fd_err < PP_OK_COMPLETIONPENDING) {
+    ReportPpapiError(ERROR_PNACL_CREATE_TEMP, nexe_fd_err,
+                     nacl::string("Call to GetNexeFd failed"));
   }
 }
 
@@ -909,14 +534,14 @@ void PnaclCoordinator::NexeFdDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::NexeFdDidOpen (pp_error=%"
                  NACL_PRId32 ", hit=%d, handle=%d)\n", pp_error,
                  is_cache_hit_ == PP_TRUE,
-                 nexe_handle_));
+                 *temp_nexe_file_->existing_handle()));
   if (pp_error < PP_OK) {
     ReportPpapiError(ERROR_PNACL_CREATE_TEMP, pp_error,
                      nacl::string("GetNexeFd failed"));
     return;
   }
-  temp_nexe_file_.reset(new TempFile(plugin_));
-  if (!temp_nexe_file_->SetExistingFd(nexe_handle_)) {
+
+  if (*temp_nexe_file_->existing_handle() == PP_kInvalidFileHandle) {
     ReportNonPpapiError(
         ERROR_PNACL_CREATE_TEMP,
         nacl::string(
@@ -950,25 +575,6 @@ void PnaclCoordinator::NexeFdDidOpen(int32_t pp_error) {
   }
 }
 
-void PnaclCoordinator::CachedFileDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::CachedFileDidOpen (pp_error=%"
-                 NACL_PRId32 ")\n", pp_error));
-  if (pp_error == PP_OK) {
-    // Cache hit -- no need to stream the rest of the file.
-    streaming_downloader_.reset(NULL);
-    HistogramEnumerateTranslationCache(true);
-    NexeReadDidOpen(PP_OK);
-    return;
-  }
-  // Otherwise, the cache file is missing so we must translate.
-  HistogramEnumerateTranslationCache(false);
-
-  // Continue streaming.
-  pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::BitcodeStreamDidFinish);
-  streaming_downloader_->FinishStreaming(cb);
-}
-
 void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeStreamDidFinish (pp_error=%"
                  NACL_PRId32 ")\n", pp_error));
@@ -989,11 +595,9 @@ void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
       ss << "PnaclCoordinator: pexe load failed (pp_error=" << pp_error << ").";
       error_info_.SetReport(ERROR_PNACL_PEXE_FETCH_OTHER, ss.str());
     }
-    if (use_new_cache_) {
-      plugin_->nacl_interface()->ReportTranslationFinished(
-          plugin_->pp_instance(),
-          PP_FALSE);
-    }
+    plugin_->nacl_interface()->ReportTranslationFinished(
+        plugin_->pp_instance(),
+        PP_FALSE);
     translate_thread_->AbortSubprocesses();
   } else {
     // Compare download completion pct (100% now), to compile completion pct.
@@ -1068,19 +672,13 @@ void PnaclCoordinator::ObjectFileDidOpen(int32_t pp_error) {
     ReportPpapiError(ERROR_PNACL_CREATE_TEMP,
                      pp_error,
                      "Failed to open scratch object file.");
-    if (use_new_cache_) {
-      plugin_->nacl_interface()->ReportTranslationFinished(
-          plugin_->pp_instance(),
-          PP_FALSE);
-    }
+    plugin_->nacl_interface()->ReportTranslationFinished(
+        plugin_->pp_instance(),
+        PP_FALSE);
     return;
   }
   // Open the nexe file for connecting ld and sel_ldr.
   // Start translation when done with this last step of setup!
-  if (!use_new_cache_)
-    // In the new cache case, the TempFile has already been created.
-    temp_nexe_file_.reset(new TempFile(plugin_));
-
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::RunTranslate);
   temp_nexe_file_->Open(cb, true);

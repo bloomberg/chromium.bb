@@ -37,14 +37,6 @@ TempFile::~TempFile() {
   PLUGIN_PRINTF(("TempFile::~TempFile\n"));
 }
 
-bool TempFile::SetExistingFd(PP_FileHandle handle) {
-  // Check if we got a bad handle or if Open has already been called.
-  if (handle == PP_kInvalidFileHandle || read_wrapper_.get() != NULL)
-    return false;
-  existing_handle_ = handle;
-  return true;
-}
-
 void TempFile::Open(const pp::CompletionCallback& cb, bool writeable) {
   PLUGIN_PRINTF(("TempFile::Open\n"));
   PP_FileHandle file_handle;

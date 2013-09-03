@@ -6,7 +6,6 @@
 
 #include <stdlib.h>
 #include "base/command_line.h"
-#include "base/environment.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/values.h"
@@ -317,11 +316,6 @@ bool NaClBrowserTestPnaclDisabled::IsPnaclDisabled() {
 void NaClBrowserTestPnaclDisabled::SetUpCommandLine(CommandLine* command_line) {
   NaClBrowserTestBase::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kDisablePnacl);
-}
-
-NaClBrowserTestPnaclWithOldCache::NaClBrowserTestPnaclWithOldCache() {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  env->SetVar("PNACL_USE_OLD_CACHE", "true");
 }
 
 base::FilePath::StringType NaClBrowserTestStatic::Variant() {

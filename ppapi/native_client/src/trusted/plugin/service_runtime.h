@@ -11,7 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SERVICE_RUNTIME_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SERVICE_RUNTIME_H_
 
-#include <map>
+#include <set>
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
@@ -123,35 +123,20 @@ struct CloseManifestEntryResource {
   bool* op_result_ptr;
 };
 
-enum QuotaDataType {
-  PepperQuotaType,
-  TempQuotaType
-};
-
-struct QuotaData {
-  QuotaData(QuotaDataType type_, PP_Resource resource_)
-      : type(type_), resource(resource_) {}
-  QuotaData()
-      : type(PepperQuotaType), resource(0) {}
-
-  QuotaDataType type;
-  PP_Resource resource;
-};
-
 struct QuotaRequest {
  public:
-  QuotaRequest(QuotaData quota_data,
+  QuotaRequest(PP_Resource pp_resource,
                int64_t start_offset,
                int64_t quota_bytes_requested,
                int64_t* quota_bytes_granted,
                bool* op_complete)
-      : data(quota_data),
+      : resource(pp_resource),
         offset(start_offset),
         bytes_requested(quota_bytes_requested),
         bytes_granted(quota_bytes_granted),
         op_complete_ptr(op_complete) { }
 
-  QuotaData data;
+  PP_Resource resource;
   int64_t offset;
   int64_t bytes_requested;
   int64_t* bytes_granted;
@@ -225,14 +210,6 @@ class PluginReverseInterface: public nacl::ReverseInterface {
       CloseManifestEntryResource* cls,
       int32_t err);
 
-  virtual void QuotaRequest_MainThreadContinuation(
-      QuotaRequest* request,
-      int32_t err);
-
-  virtual void QuotaRequest_MainThreadResponse(
-      QuotaRequest* request,
-      int32_t err);
-
  private:
   nacl::WeakRefAnchor* anchor_;  // holds a ref
   Plugin* plugin_;  // value may be copied, but should be used only in
@@ -241,7 +218,7 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   ServiceRuntime* service_runtime_;
   NaClMutex mu_;
   NaClCondVar cv_;
-  std::map<int64_t, QuotaData> quota_map_;
+  std::set<int64_t> quota_files_;
   bool shutting_down_;
 
   nacl::scoped_ptr<PnaclCoordinator> pnacl_coordinator_;

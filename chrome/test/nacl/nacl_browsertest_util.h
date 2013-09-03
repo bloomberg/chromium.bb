@@ -136,13 +136,6 @@ class NaClBrowserTestPnaclDisabled : public NaClBrowserTestBase {
   virtual bool IsPnaclDisabled() OVERRIDE;
 };
 
-// Temporary class for running tests with the old cache enabled. Once all the
-// pieces are stable and the old code is gone, this will go away.
-class NaClBrowserTestPnaclWithOldCache : public NaClBrowserTestPnacl {
- public:
-  NaClBrowserTestPnaclWithOldCache();
-};
-
 // A NaCl browser test only using static files.
 class NaClBrowserTestStatic : public NaClBrowserTestBase {
  public:

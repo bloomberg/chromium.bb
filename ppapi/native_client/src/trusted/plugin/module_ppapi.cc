@@ -5,9 +5,9 @@
  */
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
+#include "native_client/src/shared/platform/nacl_secure_random.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
-
 
 #include "ppapi/native_client/src/trusted/plugin/module_ppapi.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"

@@ -44,10 +44,8 @@
 #include "native_client/src/trusted/validator/nacl_file_info.h"
 
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/cpp/core.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/file_io.h"
 
 #include "ppapi/native_client/src/trusted/plugin/manifest.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin.h"
@@ -61,8 +59,10 @@
 namespace {
 
 // For doing crude quota enforcement on writes to temp files.
-// We do not allow a temp file bigger than 512 MB for now.
-const uint64_t kMaxTempQuota = 0x20000000;
+// We do not allow a temp file bigger than 128 MB for now.
+// There is currently a limit of 32M for nexe text size, so 128M
+// should be plenty for static data
+const int64_t kMaxTempQuota = 0x8000000;
 
 }  // namespace
 
@@ -475,142 +475,36 @@ void PluginReverseInterface::ReportExitStatus(int exit_status) {
   service_runtime_->set_exit_status(exit_status);
 }
 
-void PluginReverseInterface::QuotaRequest_MainThreadContinuation(
-    QuotaRequest* request,
-    int32_t err) {
-  if (err != PP_OK) {
-    return;
-  }
-
-  switch (request->data.type) {
-    case plugin::PepperQuotaType: {
-      const PPB_FileIOTrusted* file_io_trusted =
-          static_cast<const PPB_FileIOTrusted*>(
-              pp::Module::Get()->GetBrowserInterface(
-                  PPB_FILEIOTRUSTED_INTERFACE));
-      // Copy the request object because this one will be deleted on return.
-      // copy ctor!
-      QuotaRequest* cont_for_response = new QuotaRequest(*request);
-      pp::CompletionCallback quota_cc = WeakRefNewCallback(
-          anchor_,
-          this,
-          &PluginReverseInterface::QuotaRequest_MainThreadResponse,
-          cont_for_response);
-      file_io_trusted->WillWrite(request->data.resource,
-                                 request->offset,
-                                 // TODO(sehr): remove need for cast.
-                                 // Unify WillWrite interface vs Quota request.
-                                 nacl::assert_cast<int32_t>(
-                                     request->bytes_requested),
-                                 quota_cc.pp_completion_callback());
-      break;
-    }
-    case plugin::TempQuotaType: {
-      uint64_t len = request->offset + request->bytes_requested;
-      nacl::MutexLocker take(&mu_);
-      // Do some crude quota enforcement.
-      if (len > kMaxTempQuota) {
-        *request->bytes_granted = 0;
-      } else {
-        *request->bytes_granted = request->bytes_requested;
-      }
-      *request->op_complete_ptr = true;
-      NaClXCondVarBroadcast(&cv_);
-      break;
-    }
-  }
-  // request automatically deleted
-}
-
-void PluginReverseInterface::QuotaRequest_MainThreadResponse(
-    QuotaRequest* request,
-    int32_t err) {
-  NaClLog(4,
-          "PluginReverseInterface::QuotaRequest_MainThreadResponse:"
-          " (resource=%" NACL_PRIx32 ", offset=%" NACL_PRId64 ", requested=%"
-          NACL_PRId64 ", err=%" NACL_PRId32 ")\n",
-          request->data.resource,
-          request->offset, request->bytes_requested, err);
-  nacl::MutexLocker take(&mu_);
-  if (err >= PP_OK) {
-    *request->bytes_granted = err;
-  } else {
-    *request->bytes_granted = 0;
-  }
-  *request->op_complete_ptr = true;
-  NaClXCondVarBroadcast(&cv_);
-  // request automatically deleted
-}
-
 int64_t PluginReverseInterface::RequestQuotaForWrite(
     nacl::string file_id, int64_t offset, int64_t bytes_to_write) {
   NaClLog(4,
           "PluginReverseInterface::RequestQuotaForWrite:"
           " (file_id='%s', offset=%" NACL_PRId64 ", bytes_to_write=%"
           NACL_PRId64 ")\n", file_id.c_str(), offset, bytes_to_write);
-  QuotaData quota_data;
-  {
-    nacl::MutexLocker take(&mu_);
-    uint64_t file_key = STRTOULL(file_id.c_str(), NULL, 10);
-    if (quota_map_.find(file_key) == quota_map_.end()) {
-      // Look up failed to find the requested quota managed resource.
-      NaClLog(4, "PluginReverseInterface::RequestQuotaForWrite: failed...\n");
-      return 0;
-    }
-    quota_data = quota_map_[file_key];
-  }
-  // Variables set by requesting quota.
-  int64_t quota_granted = 0;
-  bool op_complete = false;
-  QuotaRequest* continuation =
-      new QuotaRequest(quota_data, offset, bytes_to_write, &quota_granted,
-                       &op_complete);
-  // The reverse service is running on a background thread and the PPAPI quota
-  // methods must be invoked only from the main thread.
-  plugin::WeakRefCallOnMainThread(
-      anchor_,
-      0,  /* delay in ms */
-      this,
-      &plugin::PluginReverseInterface::QuotaRequest_MainThreadContinuation,
-      continuation);
-  // Wait for the main thread to request quota and signal completion.
-  // It is also possible that the main thread will signal shut down.
-  bool shutting_down;
-  do {
-    nacl::MutexLocker take(&mu_);
-    for (;;) {
-      shutting_down = shutting_down_;
-      if (op_complete || shutting_down) {
-        break;
-      }
-      NaClXCondVarWait(&cv_, &mu_);
-    }
-  } while (0);
-  if (shutting_down) return 0;
-  return quota_granted;
-}
-
-void PluginReverseInterface::AddQuotaManagedFile(const nacl::string& file_id,
-                                                 const pp::FileIO& file_io) {
-  PP_Resource resource = file_io.pp_resource();
-  NaClLog(4,
-          "PluginReverseInterface::AddQuotaManagedFile: "
-          "(file_id='%s', file_io_ref=%" NACL_PRIx32 ")\n",
-          file_id.c_str(), resource);
-  nacl::MutexLocker take(&mu_);
   uint64_t file_key = STRTOULL(file_id.c_str(), NULL, 10);
-  QuotaData data(plugin::PepperQuotaType, resource);
-  quota_map_[file_key] = data;
+  nacl::MutexLocker take(&mu_);
+  if (quota_files_.count(file_key) == 0) {
+    // Look up failed to find the requested quota managed resource.
+    NaClLog(4, "PluginReverseInterface::RequestQuotaForWrite: failed...\n");
+    return 0;
+  }
+
+  // Because we now only support this interface for tempfiles which are not
+  // pepper objects, we can just do some crude quota enforcement here rather
+  // than calling out to pepper from the main thread.
+  if (offset + bytes_to_write >= kMaxTempQuota)
+    return 0;
+
+  return bytes_to_write;
 }
 
 void PluginReverseInterface::AddTempQuotaManagedFile(
     const nacl::string& file_id) {
   NaClLog(4, "PluginReverseInterface::AddTempQuotaManagedFile: "
           "(file_id='%s')\n", file_id.c_str());
-  nacl::MutexLocker take(&mu_);
   uint64_t file_key = STRTOULL(file_id.c_str(), NULL, 10);
-  QuotaData data(plugin::TempQuotaType, 0);
-  quota_map_[file_key] = data;
+  nacl::MutexLocker take(&mu_);
+  quota_files_.insert(file_key);
 }
 
 ServiceRuntime::ServiceRuntime(Plugin* plugin,

@@ -41,9 +41,6 @@ class TempFile {
   explicit TempFile(Plugin* plugin);
   ~TempFile();
 
-  // Set an existing Fd instead of getting one from the nacl interface on open.
-  // Must be called before Open.
-  bool SetExistingFd(PP_FileHandle handle);
   // Opens a temporary file object and descriptor wrapper referring to the file.
   // If |writeable| is true, the descriptor will be opened for writing, and
   // write_wrapper will return a valid pointer, otherwise it will return NULL.
@@ -58,6 +55,8 @@ class TempFile {
   nacl::DescWrapper* release_read_wrapper() {
     return read_wrapper_.release();
   }
+
+  PP_FileHandle* existing_handle() { return &existing_handle_; }
 
   // For quota management.
   const nacl::string identifier() const {
