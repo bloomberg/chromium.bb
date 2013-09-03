@@ -85,6 +85,44 @@ class TaskManagerClient
   int idle_task_scheduled_count_;
 
   SyncStatusCode last_operation_status_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerClient);
+};
+
+class MultihopSyncTask : public SyncTask {
+ public:
+  MultihopSyncTask(bool* task_started,
+                   bool* task_completed)
+      : task_started_(task_started),
+        task_completed_(task_completed),
+        weak_ptr_factory_(this) {
+    DCHECK(task_started_);
+    DCHECK(task_completed_);
+  }
+
+  virtual ~MultihopSyncTask() {}
+
+  virtual void Run(const SyncStatusCallback& callback) OVERRIDE {
+    DCHECK(!*task_started_);
+    *task_started_ = true;
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&MultihopSyncTask::CompleteTask,
+                              weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+ private:
+  void CompleteTask(const SyncStatusCallback& callback) {
+    DCHECK(*task_started_);
+    DCHECK(!*task_completed_);
+    *task_completed_ = true;
+    callback.Run(SYNC_STATUS_OK);
+  }
+
+  bool* task_started_;
+  bool* task_completed_;
+  base::WeakPtrFactory<MultihopSyncTask> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(MultihopSyncTask);
 };
 
 // Arbitrary non-default status values for testing.
@@ -170,6 +208,31 @@ TEST(SyncTaskManagerTest, ScheduleIdleTaskWhileNotIdle) {
   EXPECT_EQ(1, client.maybe_schedule_next_task_count());
   EXPECT_EQ(1, client.task_scheduled_count());
   EXPECT_EQ(0, client.idle_task_scheduled_count());
+}
+
+TEST(SyncTaskManagerTest, ScheduleAndCancelSyncTask) {
+  base::MessageLoop message_loop;
+
+  int callback_count = 0;
+  SyncStatusCode status = SYNC_STATUS_UNKNOWN;
+
+  bool task_started = false;
+  bool task_completed = false;
+
+  {
+    SyncTaskManager task_manager((base::WeakPtr<SyncTaskManager::Client>()));
+    task_manager.Initialize(SYNC_STATUS_OK);
+    task_manager.ScheduleSyncTask(
+        scoped_ptr<SyncTask>(new MultihopSyncTask(
+            &task_started, &task_completed)),
+        base::Bind(&IncrementAndAssign, &callback_count, &status));
+  }
+
+  message_loop.RunUntilIdle();
+  EXPECT_EQ(0, callback_count);
+  EXPECT_EQ(SYNC_STATUS_UNKNOWN, status);
+  EXPECT_TRUE(task_started);
+  EXPECT_FALSE(task_completed);
 }
 
 }  // namespace sync_file_system

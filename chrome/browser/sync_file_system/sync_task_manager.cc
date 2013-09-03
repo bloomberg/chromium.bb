@@ -80,11 +80,36 @@ void SyncTaskManager::ScheduleTask(
   task.Run(CreateCompletionCallback(token.Pass(), callback));
 }
 
+void SyncTaskManager::ScheduleSyncTask(
+    scoped_ptr<SyncTask> task,
+    const SyncStatusCallback& callback) {
+  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
+  if (!token) {
+    pending_tasks_.push_back(
+        base::Bind(&SyncTaskManager::ScheduleSyncTask,
+                   AsWeakPtr(), base::Passed(&task), callback));
+    return;
+  }
+  DCHECK(!running_task_);
+  running_task_ = task.Pass();
+  running_task_->Run(CreateCompletionCallback(token.Pass(), callback));
+}
+
 void SyncTaskManager::ScheduleTaskIfIdle(const Task& task) {
   scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
   if (!token)
     return;
   task.Run(CreateCompletionCallback(token.Pass(), SyncStatusCallback()));
+}
+
+void SyncTaskManager::ScheduleSyncTaskIfIdle(scoped_ptr<SyncTask> task) {
+  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
+  if (!token)
+    return;
+  DCHECK(!running_task_);
+  running_task_ = task.Pass();
+  running_task_->Run(CreateCompletionCallback(token.Pass(),
+                                              SyncStatusCallback()));
 }
 
 void SyncTaskManager::NotifyTaskDone(
@@ -94,13 +119,15 @@ void SyncTaskManager::NotifyTaskDone(
   DCHECK(token);
   last_operation_status_ = status;
   token_ = token.Pass();
+  scoped_ptr<SyncTask> task = running_task_.Pass();
   TRACE_EVENT_ASYNC_END0("Sync FileSystem", "GetToken", this);
 
   DVLOG(3) << "NotifyTaskDone: " << "finished with status=" << status
            << " (" << SyncStatusCodeToString(status) << ")"
            << " " << token_->location().ToString();
 
-  client_->NotifyLastOperationStatus(last_operation_status_);
+  if (client_)
+    client_->NotifyLastOperationStatus(last_operation_status_);
 
   if (!callback.is_null())
     callback.Run(status);
@@ -112,7 +139,8 @@ void SyncTaskManager::NotifyTaskDone(
     return;
   }
 
-  client_->MaybeScheduleNextTask();
+  if (client_)
+    client_->MaybeScheduleNextTask();
 }
 
 scoped_ptr<SyncTaskManager::TaskToken> SyncTaskManager::GetToken(

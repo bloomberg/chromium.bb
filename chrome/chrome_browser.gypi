@@ -2270,6 +2270,7 @@
         'browser/sync_file_system/sync_service_state.h',
         'browser/sync_file_system/sync_status_code.cc',
         'browser/sync_file_system/sync_status_code.h',
+        'browser/sync_file_system/sync_task.h',
         'browser/sync_file_system/sync_task_manager.cc',
         'browser/sync_file_system/sync_task_manager.h',
         'browser/sync_file_system/syncable_file_system_util.cc',

@@ -13,8 +13,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
-
-class Profile;
+#include "chrome/browser/sync_file_system/sync_task.h"
 
 namespace tracked_objects {
 class Location;
@@ -49,11 +48,16 @@ class SyncTaskManager
   // service status. This should not be called more than once.
   void Initialize(SyncStatusCode status);
 
+  // Note that the argument of |task|'s parameter owns |callback|.
+  // The reference from |callback| to |task| causes circular dependency.
   void ScheduleTask(const Task& task,
                     const SyncStatusCallback& callback);
+  void ScheduleSyncTask(scoped_ptr<SyncTask> task,
+                        const SyncStatusCallback& callback);
 
   // Runs the posted task only when we're idle.
   void ScheduleTaskIfIdle(const Task& task);
+  void ScheduleSyncTaskIfIdle(scoped_ptr<SyncTask> task);
 
   void NotifyTaskDone(scoped_ptr<TaskToken> token,
                       const SyncStatusCallback& callback,
@@ -72,6 +76,7 @@ class SyncTaskManager
   base::WeakPtr<Client> client_;
 
   SyncStatusCode last_operation_status_;
+  scoped_ptr<SyncTask> running_task_;
   std::deque<base::Closure> pending_tasks_;
 
   // Absence of |token_| implies a task is running. Incoming tasks should
