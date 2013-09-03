@@ -396,7 +396,7 @@ TEST(VariationsSeedProcessorTest, NonExpiredStudyPrioritizedOverExpiredStudy) {
   const std::string kTrialName = "A";
   const std::string kGroup1Name = "Group1";
 
-  TrialsSeed seed;
+  VariationsSeed seed;
   Study* study1 = seed.add_study();
   study1->set_name(kTrialName);
   study1->set_default_experiment_name("Default");

@@ -187,8 +187,8 @@ VariationsService::~VariationsService() {
 bool VariationsService::CreateTrialsFromSeed() {
   create_trials_from_seed_called_ = true;
 
-  TrialsSeed seed;
-  if (!LoadTrialsSeedFromPref(&seed))
+  VariationsSeed seed;
+  if (!LoadVariationsSeedFromPref(&seed))
     return false;
 
   const int64 date_value = local_state_->GetInt64(prefs::kVariationsSeedDate);
@@ -436,7 +436,7 @@ bool VariationsService::StoreSeedData(const std::string& seed_data,
   }
 
   // Only store the seed data if it parses correctly.
-  TrialsSeed seed;
+  VariationsSeed seed;
   if (!seed.ParseFromString(seed_data)) {
     VLOG(1) << "Variations Seed data from server is not in valid proto format, "
             << "rejecting the seed.";
@@ -461,7 +461,7 @@ bool VariationsService::StoreSeedData(const std::string& seed_data,
   return true;
 }
 
-bool VariationsService::LoadTrialsSeedFromPref(TrialsSeed* seed) {
+bool VariationsService::LoadVariationsSeedFromPref(VariationsSeed* seed) {
   const std::string base64_seed_data =
       local_state_->GetString(prefs::kVariationsSeed);
   if (base64_seed_data.empty()) {

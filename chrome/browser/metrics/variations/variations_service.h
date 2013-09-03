@@ -27,7 +27,7 @@ class PrefRegistrySimple;
 
 namespace chrome_variations {
 
-class TrialsSeed;
+class VariationsSeed;
 
 // Used to setup field trials based on stored variations seed data, and fetch
 // new seed data from the variations server.
@@ -108,10 +108,10 @@ class VariationsService
   // fails, the existing prefs are left as is and the function returns false.
   bool StoreSeedData(const std::string& seed_data, const base::Time& seed_date);
 
-  // Loads the Variations seed data from local state into |seed|. If there is a
+  // Loads the variations seed data from local state into |seed|. If there is a
   // problem with loading, the pref value is cleared and false is returned. If
   // successful, |seed| will contain the loaded data and true is returned.
-  bool LoadTrialsSeedFromPref(TrialsSeed* seed);
+  bool LoadVariationsSeedFromPref(VariationsSeed* seed);
 
   // Record the time of the most recent successful fetch.
   void RecordLastFetchTime();

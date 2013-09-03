@@ -34,7 +34,7 @@
         '..',
       ],
       'sources': [
-        'variations/proto/trials_seed.proto',
+        'variations/proto/variations_seed.proto',
         'variations/proto/study.proto',
       ],
       'variables': {

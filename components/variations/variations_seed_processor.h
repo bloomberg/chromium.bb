@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "base/version.h"
 #include "components/variations/proto/study.pb.h"
-#include "components/variations/proto/trials_seed.pb.h"
+#include "components/variations/proto/variations_seed.pb.h"
 
 namespace chrome_variations {
 
@@ -25,7 +25,7 @@ class VariationsSeedProcessor {
 
   // Creates field trials from the specified variations |seed|, based on the
   // specified configuration (locale, current date, version and channel).
-  void CreateTrialsFromSeed(const TrialsSeed& seed,
+  void CreateTrialsFromSeed(const VariationsSeed& seed,
                             const std::string& locale,
                             const base::Time& reference_date,
                             const base::Version& version,

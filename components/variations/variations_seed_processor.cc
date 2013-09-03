@@ -52,7 +52,7 @@ VariationsSeedProcessor::~VariationsSeedProcessor() {
 }
 
 void VariationsSeedProcessor::CreateTrialsFromSeed(
-    const TrialsSeed& seed,
+    const VariationsSeed& seed,
     const std::string& locale,
     const base::Time& reference_date,
     const base::Version& version,

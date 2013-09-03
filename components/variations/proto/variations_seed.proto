@@ -10,13 +10,13 @@ package chrome_variations;
 
 import "study.proto";
 
-// The TrialsSeed is a protobuf response from the server that contains the list
-// of studies and a serial number to uniquely identify its contents. The
+// The VariationsSeed is a protobuf response from the server that contains the
+// list of studies and a serial number to uniquely identify its contents. The
 // serial number allows the client to easily determine if the list of
-// experiments has changed from the previous TrialsSeed seen by the client.
+// experiments has changed from the previous VariationsSeed seen by the client.
 //
 // Next tag: 3
-message TrialsSeed {
+message VariationsSeed {
   optional string serial_number = 1;
   repeated Study study = 2;
 }
