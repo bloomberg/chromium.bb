@@ -1399,6 +1399,7 @@ void BrowserPluginGuest::OnSetSize(
   if (auto_size_enabled_ && (!old_auto_size_enabled ||
                              (old_max_size != max_auto_size_) ||
                              (old_min_size != min_auto_size_))) {
+    RecordAction(UserMetricsAction("BrowserPlugin.Guest.EnableAutoResize"));
     GetWebContents()->GetRenderViewHost()->EnableAutoResize(
         min_auto_size_, max_auto_size_);
     // TODO(fsamuel): If we're changing autosize parameters, then we force
