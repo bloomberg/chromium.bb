@@ -42,6 +42,8 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::enablePagePopup(false);
   // datalist on Android is not enabled
   WebRuntimeFeatures::enableDataListElement(false);
+  // Android does not yet support the Web Notification API. crbug.com/115320
+  WebRuntimeFeatures::enableNotifications(false);
 #endif  // defined(OS_ANDROID)
 }
 
