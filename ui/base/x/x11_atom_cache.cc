@@ -6,8 +6,8 @@
 
 #include <X11/Xatom.h>
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_pump_aurax11.h"
 
 namespace ui {
 

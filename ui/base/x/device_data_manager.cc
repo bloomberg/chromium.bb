@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_pump_aurax11.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/touch/touch_factory_x11.h"
