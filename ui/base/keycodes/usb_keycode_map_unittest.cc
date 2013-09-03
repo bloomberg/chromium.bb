@@ -11,16 +11,16 @@ namespace {
 
 #if defined(OS_WIN)
 const size_t kExpectedMappedKeyCount = 138;
-#define USB_KEYMAP(usb, xkb, win, mac) {usb, win}
+#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, win, code}
 #elif defined(OS_LINUX)
 const size_t kExpectedMappedKeyCount = 145;
-#define USB_KEYMAP(usb, xkb, win, mac) {usb, xkb}
+#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, xkb, code}
 #elif defined(OS_MACOSX)
 const size_t kExpectedMappedKeyCount = 118;
-#define USB_KEYMAP(usb, xkb, win, mac) {usb, mac}
+#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, mac, code}
 #else
 const size_t kExpectedMappedKeyCount = 0;
-#define USB_KEYMAP(usb, xkb, win, mac) {usb, 0}
+#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, 0, code}
 #endif
 #include "ui/base/keycodes/usb_keycode_map.h"
 #undef USB_KEYMAP

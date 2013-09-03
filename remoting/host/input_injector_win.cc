@@ -27,7 +27,7 @@ using protocol::KeyEvent;
 using protocol::MouseEvent;
 
 // USB to XKB keycode map table.
-#define USB_KEYMAP(usb, xkb, win, mac) {usb, win}
+#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, win, code}
 #include "ui/base/keycodes/usb_keycode_map.h"
 #undef USB_KEYMAP
 

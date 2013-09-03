@@ -13,7 +13,7 @@ namespace content {
 
 namespace {
 
-#define USB_KEYMAP(usb, xkb, win, mac) {usb, mac}
+#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, mac, code}
 #include "ui/base/keycodes/usb_keycode_map.h"
 #undef USB_KEYMAP
 
