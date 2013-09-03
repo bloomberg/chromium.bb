@@ -92,6 +92,11 @@ IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_SelectFolderDone,
 
 // Messages sent from the browser to the viewer:
 
+// Requests the viewer to open a URL in desktop mode.
+IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_OpenURLOnDesktop,
+                     base::FilePath,  /* shortcut */
+                     string16         /* url */);
+
 // Requests the viewer to change the pointer to a new cursor.
 IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_SetCursor,
                      int64         /* cursor */);

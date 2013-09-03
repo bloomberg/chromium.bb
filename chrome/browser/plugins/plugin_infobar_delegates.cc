@@ -37,6 +37,10 @@
 #if defined(OS_WIN)
 #include <shellapi.h>
 #include "ui/base/win/shell.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/remote_root_window_host_win.h"
+#endif
 #endif
 
 using content::UserMetricsAction;
@@ -485,6 +489,7 @@ string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
       IDS_WIN8_DESKTOP_RESTART : IDS_WIN8_DESKTOP_OPEN);
 }
 
+#if defined(USE_AURA) && defined(USE_ASH)
 void LaunchDesktopInstanceHelper(const string16& url) {
   base::FilePath exe_path;
   if (!PathService::Get(base::FILE_EXE, &exe_path))
@@ -492,14 +497,13 @@ void LaunchDesktopInstanceHelper(const string16& url) {
   base::FilePath shortcut_path(
       ShellIntegration::GetStartMenuShortcut(exe_path));
 
-  SHELLEXECUTEINFO sei = { sizeof(sei) };
-  sei.fMask = SEE_MASK_FLAG_LOG_USAGE;
-  sei.nShow = SW_SHOWNORMAL;
-  sei.lpFile = shortcut_path.value().c_str();
-  sei.lpDirectory = L"";
-  sei.lpParameters = url.c_str();
-  ShellExecuteEx(&sei);
+  // Actually launching the process needs to happen in the metro viewer,
+  // otherwise it won't automatically transition to desktop.  So we have
+  // to send an IPC to the viewer to do the ShellExecute.
+  aura::RemoteRootWindowHostWin::Instance()->HandleOpenURLOnDesktop(
+      shortcut_path, url);
 }
+#endif
 
 bool PluginMetroModeInfoBarDelegate::Accept() {
 #if defined(USE_AURA) && defined(USE_ASH)
@@ -507,7 +511,7 @@ bool PluginMetroModeInfoBarDelegate::Accept() {
   content::BrowserThread::PostTask(
       content::BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
       base::Bind(&LaunchDesktopInstanceHelper,
-                 UTF8ToUTF16(web_contents()->GetURL().spec())));
+      UTF8ToUTF16(web_contents()->GetURL().spec())));
 #else
   chrome::AttemptRestartWithModeSwitch();
 #endif

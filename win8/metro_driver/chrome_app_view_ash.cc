@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/threading/thread.h"
@@ -83,6 +84,8 @@ class ChromeChannelListener : public IPC::Listener {
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     IPC_BEGIN_MESSAGE_MAP(ChromeChannelListener, message)
+      IPC_MESSAGE_HANDLER(MetroViewerHostMsg_OpenURLOnDesktop,
+                          OnOpenURLOnDesktop)
       IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetCursor, OnSetCursor)
       IPC_MESSAGE_HANDLER(MetroViewerHostMsg_DisplayFileOpen,
                           OnDisplayFileOpenDialog)
@@ -102,6 +105,14 @@ class ChromeChannelListener : public IPC::Listener {
   }
 
  private:
+  void OnOpenURLOnDesktop(const base::FilePath& shortcut,
+                          const string16& url) {
+    ui_proxy_->PostTask(FROM_HERE,
+        base::Bind(&ChromeAppViewAsh::OnOpenURLOnDesktop,
+        base::Unretained(app_view_),
+        shortcut, url));
+  }
+
   void OnSetCursor(int64 cursor) {
     ui_proxy_->PostTask(FROM_HERE,
                         base::Bind(&ChromeAppViewAsh::OnSetCursor,
@@ -501,6 +512,18 @@ HRESULT ChromeAppViewAsh::Unsnap() {
   return hr;
 }
 
+
+void ChromeAppViewAsh::OnOpenURLOnDesktop(const base::FilePath& shortcut,
+    const string16& url) {
+  base::FilePath::StringType file = shortcut.value();
+  SHELLEXECUTEINFO sei = { sizeof(sei) };
+  sei.fMask = SEE_MASK_FLAG_LOG_USAGE;
+  sei.nShow = SW_SHOWNORMAL;
+  sei.lpFile = file.c_str();
+  sei.lpDirectory = L"";
+  sei.lpParameters = url.c_str();
+  BOOL result = ShellExecuteEx(&sei);
+}
 
 void ChromeAppViewAsh::OnSetCursor(HCURSOR cursor) {
   ::SetCursor(HCURSOR(cursor));

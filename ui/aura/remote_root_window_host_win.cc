@@ -178,6 +178,14 @@ bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void RemoteRootWindowHostWin::HandleOpenURLOnDesktop(
+    const base::FilePath& shortcut,
+    const base::string16& url) {
+  if (!host_)
+    return;
+  host_->Send(new MetroViewerHostMsg_OpenURLOnDesktop(shortcut, url));
+}
+
 void RemoteRootWindowHostWin::HandleOpenFile(
     const base::string16& title,
     const base::FilePath& default_path,

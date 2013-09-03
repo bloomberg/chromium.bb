@@ -101,6 +101,9 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   // Called when we have a message from the remote process.
   bool OnMessageReceived(const IPC::Message& message);
 
+  void HandleOpenURLOnDesktop(const base::FilePath& shortcut,
+                              const base::string16& url);
+
   void HandleOpenFile(const base::string16& title,
                       const base::FilePath& default_path,
                       const base::string16& filter,

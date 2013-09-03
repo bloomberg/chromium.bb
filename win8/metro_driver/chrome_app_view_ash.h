@@ -10,16 +10,19 @@
 #include <windows.ui.input.h>
 #include <windows.ui.viewmanagement.h>
 
-#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "ui/base/events/event_constants.h"
 #include "win8/metro_driver/direct3d_helper.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace IPC {
-  class Listener;
-  class ChannelProxy;
+class Listener;
+class ChannelProxy;
 }
 
 class OpenFilePickerSession;
@@ -46,6 +49,7 @@ class ChromeAppViewAsh
   // Returns S_OK on success.
   static HRESULT Unsnap();
 
+  void OnOpenURLOnDesktop(const base::FilePath& shortcut, const string16& url);
   void OnSetCursor(HCURSOR cursor);
   void OnDisplayFileOpenDialog(const string16& title,
                                const string16& filter,
