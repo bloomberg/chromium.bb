@@ -31,7 +31,13 @@
       <output filename="app_locale_settings_eo.pak" type="data_package" lang="eo" />
     </if>
     <output filename="app_locale_settings_es.pak" type="data_package" lang="es" />
-    <output filename="app_locale_settings_es-419.pak" type="data_package" lang="es-419" />
+    <if expr="is_ios">
+      <!-- iOS uses es-MX for es-419 -->
+      <output filename="app_locale_settings_es-MX.pak" type="data_package" lang="es-419" />
+    </if>
+    <if expr="not is_ios">
+      <output filename="app_locale_settings_es-419.pak" type="data_package" lang="es-419" />
+    </if>
     <output filename="app_locale_settings_et.pak" type="data_package" lang="et" />
     <if expr="pp_ifdef('use_third_party_translations')">
       <output filename="app_locale_settings_eu.pak" type="data_package" lang="eu" />

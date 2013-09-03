@@ -42,7 +42,13 @@ need to be translated for each locale.-->
       <output filename="ui_strings_eo.pak" type="data_package" lang="eo" />
     </if>
     <output filename="ui_strings_es.pak" type="data_package" lang="es" />
-    <output filename="ui_strings_es-419.pak" type="data_package" lang="es-419" />
+    <if expr="is_ios">
+      <!-- iOS uses es-MX for es-419 -->
+      <output filename="ui_strings_es-MX.pak" type="data_package" lang="es-419" />
+    </if>
+    <if expr="not is_ios">
+      <output filename="ui_strings_es-419.pak" type="data_package" lang="es-419" />
+    </if>
     <output filename="ui_strings_et.pak" type="data_package" lang="et" />
     <if expr="pp_ifdef('use_third_party_translations')">
       <output filename="ui_strings_eu.pak" type="data_package" lang="eu" />
