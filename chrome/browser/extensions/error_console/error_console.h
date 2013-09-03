@@ -24,10 +24,12 @@ class NotificationSource;
 class RenderViewHost;
 }
 
+class ExtensionService;
 class Profile;
 
 namespace extensions {
 class ErrorConsoleUnitTest;
+class Extension;
 
 // The ErrorConsole is a central object to which all extension errors are
 // reported. This includes errors detected in extensions core, as well as
@@ -49,7 +51,7 @@ class ErrorConsole : public content::NotificationObserver {
     virtual void OnErrorConsoleDestroyed();
   };
 
-  explicit ErrorConsole(Profile* profile);
+  explicit ErrorConsole(Profile* profile, ExtensionService* extension_service);
   virtual ~ErrorConsole();
 
   // Convenience method to return the ErrorConsole for a given profile.
@@ -72,8 +74,9 @@ class ErrorConsole : public content::NotificationObserver {
  private:
   FRIEND_TEST_ALL_PREFIXES(ErrorConsoleUnitTest, AddAndRemoveErrors);
 
-  // Enable the error console for error collection and retention.
-  void Enable();
+  // Enable the error console for error collection and retention. This involves
+  // subscribing to the appropriate notifications and fetching manifest errors.
+  void Enable(ExtensionService* extension_service);
   // Disable the error console, removing the subscriptions to notifications and
   // removing all current errors.
   void Disable();
@@ -82,6 +85,9 @@ class ErrorConsole : public content::NotificationObserver {
   // since we use this as a heuristic to determine if the console is enabled or
   // not.
   void OnPrefChanged();
+
+  // Add manifest errors from an extension's install warnings.
+  void AddManifestErrorsForExtension(const Extension* extension);
 
   // Remove all errors which happened while incognito; we have to do this once
   // the incognito profile is destroyed.

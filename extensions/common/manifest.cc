@@ -160,8 +160,8 @@ bool Manifest::ValidateManifest(
        it.Advance()) {
     if (!provider->GetFeature(it.key())) {
       warnings->push_back(InstallWarning(
-          base::StringPrintf("Unrecognized manifest key '%s'.",
-                             it.key().c_str()),
+          ErrorUtils::FormatErrorMessage(
+              manifest_errors::kUnrecognizedManifestKey, it.key()),
           it.key()));
     }
   }

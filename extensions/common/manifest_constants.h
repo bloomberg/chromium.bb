@@ -153,6 +153,11 @@ namespace manifest_keys {
   extern const char kWebURLs[];
 }  // namespace manifest_keys
 
+namespace manifest_errors {
+extern const char kPermissionUnknownOrMalformed[];
+extern const char kUnrecognizedManifestKey[];
+}  // namespace manifest_errors
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_COMMON_MANIFEST_CONSTANTS_H_

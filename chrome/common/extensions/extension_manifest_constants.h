@@ -253,10 +253,10 @@ namespace extension_manifest_errors {
   extern const char kMultipleOverrides[];
   extern const char kNoPermissionForMIMETypes[];
   extern const char kNoWildCardsInPaths[];
+  extern const char kOneUISurfaceOnly[];
   extern const char kPermissionMustBeOptional[];
   extern const char kPermissionNotAllowed[];
   extern const char kPermissionNotAllowedInManifest[];
-  extern const char kOneUISurfaceOnly[];
   extern const char kReservedMessageFound[];
   extern const char kScriptBadgeRequiresFlag[];
   extern const char kScriptBadgeIconIgnored[];

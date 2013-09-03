@@ -73,12 +73,24 @@ class ExtensionError {
 class ManifestError : public ExtensionError {
  public:
   ManifestError(const std::string& extension_id,
-                const base::string16& message);
+                const base::string16& message,
+                const base::string16& manifest_key,
+                const base::string16& manifest_specific);
   virtual ~ManifestError();
 
   virtual std::string PrintForTest() const OVERRIDE;
+
+  const base::string16& manifest_key() const { return manifest_key_; }
+  const base::string16& manifest_specific() const { return manifest_specific_; }
  private:
   virtual bool IsEqualImpl(const ExtensionError* rhs) const OVERRIDE;
+
+  // If present, this indicates the feature in the manifest which caused the
+  // error.
+  base::string16 manifest_key_;
+  // If present, this is a more-specific location of the error - for instance,
+  // a specific permission which is incorrect, rather than simply "permissions".
+  base::string16 manifest_specific_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestError);
 };

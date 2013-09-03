@@ -5,16 +5,20 @@
 #include "chrome/browser/extensions/error_console/error_console.h"
 
 #include <list>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
@@ -42,6 +46,21 @@ void DeleteIncognitoErrorsFromList(ErrorConsole::ErrorList* list) {
   }
 }
 
+// Iterate through an error list and remove and delete all errors of a given
+// |type|.
+void DeleteErrorsOfTypeFromList(ErrorConsole::ErrorList* list,
+                                ExtensionError::Type type) {
+  ErrorConsole::ErrorList::iterator iter = list->begin();
+  while (iter != list->end()) {
+    if ((*iter)->type() == type) {
+      delete *iter;
+      iter = list->erase(iter);
+    } else {
+      ++iter;
+    }
+  }
+}
+
 base::LazyInstance<ErrorConsole::ErrorList> g_empty_error_list =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -50,8 +69,9 @@ base::LazyInstance<ErrorConsole::ErrorList> g_empty_error_list =
 void ErrorConsole::Observer::OnErrorConsoleDestroyed() {
 }
 
-ErrorConsole::ErrorConsole(Profile* profile) : enabled_(false),
-                                               profile_(profile) {
+ErrorConsole::ErrorConsole(Profile* profile,
+                           ExtensionService* extension_service)
+     : enabled_(false), profile_(profile) {
 // TODO(rdevlin.cronin): Remove once crbug.com/159265 is fixed.
 #if !defined(ENABLE_EXTENSIONS)
   return;
@@ -69,7 +89,7 @@ ErrorConsole::ErrorConsole(Profile* profile) : enabled_(false),
                                  base::Unretained(this)));
 
   if (profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode))
-    Enable();
+    Enable(extension_service);
 }
 
 ErrorConsole::~ErrorConsole() {
@@ -141,12 +161,12 @@ void ErrorConsole::OnPrefChanged() {
       profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
 
   if (developer_mode && !enabled_)
-    Enable();
+    Enable(ExtensionSystem::Get(profile_)->extension_service());
   else if (!developer_mode && enabled_)
     Disable();
 }
 
-void ErrorConsole::Enable() {
+void ErrorConsole::Enable(ExtensionService* extension_service) {
   enabled_ = true;
 
   notification_registrar_.Add(
@@ -157,12 +177,38 @@ void ErrorConsole::Enable() {
       this,
       chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
       content::Source<Profile>(profile_));
+  notification_registrar_.Add(
+      this,
+      chrome::NOTIFICATION_EXTENSION_INSTALLED,
+      content::Source<Profile>(profile_));
+
+  if (extension_service) {
+    // Get manifest errors for extensions already installed.
+    const ExtensionSet* extensions = extension_service->extensions();
+    for (ExtensionSet::const_iterator iter = extensions->begin();
+         iter != extensions->end(); ++iter) {
+      AddManifestErrorsForExtension(iter->get());
+    }
+  }
 }
 
 void ErrorConsole::Disable() {
   notification_registrar_.RemoveAll();
   RemoveAllErrors();
   enabled_ = false;
+}
+
+void ErrorConsole::AddManifestErrorsForExtension(const Extension* extension) {
+  const std::vector<InstallWarning>& warnings =
+      extension->install_warnings();
+  for (std::vector<InstallWarning>::const_iterator iter = warnings.begin();
+       iter != warnings.end(); ++iter) {
+    ReportError(scoped_ptr<ExtensionError>(new ManifestError(
+        extension->id(),
+        base::UTF8ToUTF16(iter->message),
+        base::UTF8ToUTF16(iter->key),
+        base::UTF8ToUTF16(iter->specific))));
+  }
 }
 
 void ErrorConsole::RemoveIncognitoErrors() {
@@ -204,6 +250,23 @@ void ErrorConsole::Observe(int type,
       RemoveErrorsForExtension(
           content::Details<Extension>(details).ptr()->id());
       break;
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+      const InstalledExtensionInfo* info =
+          content::Details<InstalledExtensionInfo>(details).ptr();
+
+      // We don't want to have manifest errors from previous installs. We want
+      // to keep runtime errors, though, because extensions are reloaded on a
+      // refresh of chrome:extensions, and we don't want to wipe our history
+      // whenever that happens.
+      ErrorMap::iterator iter = errors_.find(info->extension->id());
+      if (iter != errors_.end()) {
+        DeleteErrorsOfTypeFromList(&(iter->second),
+                                   ExtensionError::MANIFEST_ERROR);
+      }
+
+      AddManifestErrorsForExtension(info->extension);
+      break;
+    }
     default:
       NOTREACHED();
   }

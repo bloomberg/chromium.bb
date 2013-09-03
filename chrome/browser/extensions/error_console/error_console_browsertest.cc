@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/error_console/error_console.h"
 
+#include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +19,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -96,6 +99,26 @@ void CheckRuntimeError(const ExtensionError* error,
   EXPECT_EQ(level, runtime_error->level());
   EXPECT_EQ(context, runtime_error->context_url());
   EXPECT_EQ(expected_stack_size, runtime_error->stack_trace().size());
+}
+
+void CheckManifestError(const ExtensionError* error,
+                        const std::string& id,
+                        const std::string& message,
+                        const std::string& manifest_key,
+                        const std::string& manifest_specific) {
+  CheckError(error,
+             ExtensionError::MANIFEST_ERROR,
+             id,
+             // source is always the manifest for ManifestErrors.
+             base::FilePath(kManifestFilename).AsUTF8Unsafe(),
+             false,  // manifest errors are never from incognito.
+             message);
+
+  const ManifestError* manifest_error =
+      static_cast<const ManifestError*>(error);
+  EXPECT_EQ(UTF8ToUTF16(manifest_key), manifest_error->manifest_key());
+  EXPECT_EQ(UTF8ToUTF16(manifest_specific),
+            manifest_error->manifest_specific());
 }
 
 }  // namespace
@@ -249,6 +272,83 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
   // Weak reference to the ErrorConsole.
   ErrorConsole* error_console_;
 };
+
+// Test to ensure that we are successfully reporting manifest errors as an
+// extension is installed.
+IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, ReportManifestErrors) {
+  const Extension* extension = NULL;
+  // We expect two errors - one for an invalid permission, and a second for
+  // an unknown key.
+  LoadExtensionAndCheckErrors("manifest_warnings",
+                              ExtensionBrowserTest::kFlagIgnoreManifestWarnings,
+                              2,
+                              ACTION_NONE,
+                              &extension);
+
+  const ErrorConsole::ErrorList& errors =
+      error_console()->GetErrorsForExtension(extension->id());
+
+  // Unfortunately, there's not always a hard guarantee of order in parsing the
+  // manifest, so there's not a definitive order in which these errors may
+  // occur. As such, we need to determine which error corresponds to which
+  // expected error.
+  const ExtensionError* permissions_error = NULL;
+  const ExtensionError* unknown_key_error = NULL;
+  const char kFakeKey[] = "not_a_real_key";
+  for (size_t i = 0; i < errors.size(); ++i) {
+    ASSERT_EQ(ExtensionError::MANIFEST_ERROR, errors[i]->type());
+    std::string utf8_key = UTF16ToUTF8(
+        (static_cast<const ManifestError*>(errors[i]))->manifest_key());
+    if (utf8_key == manifest_keys::kPermissions)
+      permissions_error = errors[i];
+    else if (utf8_key == kFakeKey)
+      unknown_key_error = errors[i];
+  }
+  ASSERT_TRUE(permissions_error);
+  ASSERT_TRUE(unknown_key_error);
+
+  const char kFakePermission[] = "not_a_real_permission";
+  CheckManifestError(permissions_error,
+                     extension->id(),
+                     ErrorUtils::FormatErrorMessage(
+                         manifest_errors::kPermissionUnknownOrMalformed,
+                         kFakePermission),
+                     manifest_keys::kPermissions,
+                     kFakePermission);
+
+  CheckManifestError(unknown_key_error,
+                     extension->id(),
+                     ErrorUtils::FormatErrorMessage(
+                         manifest_errors::kUnrecognizedManifestKey,
+                         kFakeKey),
+                     kFakeKey,
+                     EmptyString());
+}
+
+// Test that we do not store any errors unless the Developer Mode switch is
+// toggled on the profile.
+IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest,
+                       DontStoreErrorsWithoutDeveloperMode) {
+  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, false);
+
+  const Extension* extension = NULL;
+  // Same test as ReportManifestErrors, except we don't expect any errors since
+  // we disable Developer Mode.
+  LoadExtensionAndCheckErrors("manifest_warnings",
+                              ExtensionBrowserTest::kFlagIgnoreManifestWarnings,
+                              0,
+                              ACTION_NONE,
+                              &extension);
+
+  // Now if we enable developer mode, the errors should be reported...
+  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
+  EXPECT_EQ(2u, error_console()->GetErrorsForExtension(extension->id()).size());
+
+  // ... and if we disable it again, all errors which we were holding should be
+  // removed.
+  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, false);
+  EXPECT_EQ(0u, error_console()->GetErrorsForExtension(extension->id()).size());
+}
 
 // Load an extension which, upon visiting any page, first sends out a console
 // log, and then crashes with a JS TypeError.

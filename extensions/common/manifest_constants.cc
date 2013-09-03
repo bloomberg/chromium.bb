@@ -149,4 +149,12 @@ const char kWebURLs[] = "app.urls";
 
 }  // namespace manifest_keys
 
+namespace manifest_errors {
+
+const char kPermissionUnknownOrMalformed[] =
+    "Permission '*' is unknown or URL pattern is malformed.";
+const char kUnrecognizedManifestKey[] = "Unrecognized manifest key '*'.";
+
+}  // namespace manifest_errors
+
 }  // namespace extensions

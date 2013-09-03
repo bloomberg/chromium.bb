@@ -34,7 +34,7 @@ TestExtensionSystem::TestExtensionSystem(Profile* profile)
     : profile_(profile),
       value_store_(NULL),
       info_map_(new ExtensionInfoMap()),
-      error_console_(new ErrorConsole(profile)) {
+      error_console_(new ErrorConsole(profile, NULL)) {
 }
 
 TestExtensionSystem::~TestExtensionSystem() {

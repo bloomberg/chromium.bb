@@ -23,6 +23,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/common/user_script.h"
@@ -231,9 +232,9 @@ bool ParseHelper(Extension* extension,
     // It's probably an unknown API permission. Do not throw an error so
     // extensions can retain backwards compatability (http://crbug.com/42742).
     extension->AddInstallWarning(InstallWarning(
-       base::StringPrintf(
-            "Permission '%s' is unknown or URL pattern is malformed.",
-            permission_str.c_str()),
+        ErrorUtils::FormatErrorMessage(
+            manifest_errors::kPermissionUnknownOrMalformed,
+            permission_str),
         key,
         permission_str));
   }
