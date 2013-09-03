@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "components/variations/variations_associated_data.h"
 
 using base::FieldTrial;
 using base::FieldTrialList;
@@ -59,13 +60,17 @@ const char kSkipWhitelist[] = "SkipWhitelist";
 const char kSkipServiceWhitelist[] = "SkipServiceWhitelist";
 const char kSkipLoggedIn[] = "SkipLoggedIn";
 const char kSkipDefaultNoPrerender[] = "SkipDefaultNoPrerender";
-const char kLocalPredictorServiceURLPrefixTrialName[] =
-    "PrerenderLocalPredictorServiceURLPrefix";
+const char kPrerenderServiceURLPrefixParameterName[] =
+    "PrerenderServiceURLPrefix";
 const char kDefaultPrerenderServiceURLPrefix[] =
     "https://clients4.google.com/prerenderservice/?q=";
 const int kMinPrerenderServiceTimeoutMs = 1;
 const int kMaxPrerenderServiceTimeoutMs = 10000;
 const int kDefaultPrerenderServiceTimeoutMs = 1000;
+const char kSkipPrerenderLocalCanadidates[] = "SkipPrerenderLocalCandidates";
+const char kSkipPrerenderServiceCanadidates[] =
+    "SkipPrerenderServiceCandidates";
+
 
 void SetupPrefetchFieldTrial() {
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
@@ -369,8 +374,9 @@ bool ShouldQueryPrerenderService(Profile* profile) {
 }
 
 string GetPrerenderServiceURLPrefix() {
-  string prefix =
-      FieldTrialList::FindFullName(kLocalPredictorServiceURLPrefixTrialName);
+  string prefix = chrome_variations::GetVariationParamValue(
+      kLocalPredictorSpecTrialName,
+      kPrerenderServiceURLPrefixParameterName);
   if (prefix.empty())
     prefix = kDefaultPrerenderServiceURLPrefix;
   return prefix;
@@ -452,6 +458,16 @@ bool SkipLocalPredictorLoggedIn() {
 
 bool SkipLocalPredictorDefaultNoPrerender() {
   return GetLocalPredictorSpecValue(kSkipDefaultNoPrerender) == kEnabledGroup;
+}
+
+bool SkipLocalPredictorLocalCandidates() {
+  return GetLocalPredictorSpecValue(kSkipPrerenderLocalCanadidates) ==
+      kEnabledGroup;
+}
+
+bool SkipLocalPredictorServiceCandidates() {
+  return GetLocalPredictorSpecValue(kSkipPrerenderServiceCanadidates) ==
+      kEnabledGroup;
 }
 
 }  // namespace prerender

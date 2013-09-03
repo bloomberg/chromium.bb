@@ -72,6 +72,8 @@ bool SkipLocalPredictorWhitelist();
 bool SkipLocalPredictorServiceWhitelist();
 bool SkipLocalPredictorLoggedIn();
 bool SkipLocalPredictorDefaultNoPrerender();
+bool SkipLocalPredictorLocalCandidates();
+bool SkipLocalPredictorServiceCandidates();
 
 }  // namespace prerender
 

@@ -120,16 +120,23 @@ struct PrerenderLocalPredictor::CandidatePrerenderInfo {
   }
   void MaybeAddCandidateURLInternal(const LocalPredictorURLInfo& info) {
     // TODO(tburkard): clean up this code, potentially using a list or a heap
+    int max_candidates = kNumPrerenderCandidates;
+    // We first insert local candidates, then service candidates.
+    // Since we want to keep kNumPrerenderCandidates for both local & service
+    // candidates, we need to double the maximum number of candidates once
+    // we start seeing service candidates.
+    if (!info.local_history_based)
+      max_candidates *= 2;
     int insert_pos = candidate_urls_.size();
-    if (insert_pos < kNumPrerenderCandidates)
+    if (insert_pos < max_candidates)
       candidate_urls_.push_back(info);
     while (insert_pos > 0 &&
            candidate_urls_[insert_pos - 1].priority < info.priority) {
-      if (insert_pos < kNumPrerenderCandidates)
+      if (insert_pos < max_candidates)
         candidate_urls_[insert_pos] = candidate_urls_[insert_pos - 1];
       insert_pos--;
     }
-    if (insert_pos < kNumPrerenderCandidates)
+    if (insert_pos < max_candidates)
       candidate_urls_[insert_pos] = info;
   }
 };
@@ -1058,6 +1065,20 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
   for (int i = 0; i < static_cast<int>(info->candidate_urls_.size()); i++) {
     RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_EXAMINE_NEXT_URL);
     url_info.reset(new LocalPredictorURLInfo(info->candidate_urls_[i]));
+    if (url_info->local_history_based) {
+      if (SkipLocalPredictorLocalCandidates()) {
+        url_info.reset(NULL);
+        continue;
+      }
+      RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_EXAMINE_NEXT_URL_LOCAL);
+    }
+    if (!url_info->local_history_based) {
+      if (SkipLocalPredictorServiceCandidates()) {
+        url_info.reset(NULL);
+        continue;
+      }
+      RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_EXAMINE_NEXT_URL_SERVICE);
+    }
 
     // We need to check whether we can issue a prerender for this URL.
     // We test a set of conditions. Each condition can either rule out
