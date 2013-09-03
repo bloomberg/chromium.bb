@@ -326,6 +326,26 @@ GURL FilesListRequest::GetURL() const {
   return url_generator_.GetFilesListUrl(max_results_, page_token_, q_);
 }
 
+//======================== FilesListNextPageRequest =========================
+
+FilesListNextPageRequest::FilesListNextPageRequest(
+    RequestSender* sender,
+    const FileListCallback& callback)
+    : GetDataRequest(
+          sender,
+          base::Bind(&ParseJsonOnBlockingPoolAndRun<FileList>,
+                     make_scoped_refptr(sender->blocking_task_runner()),
+                     callback)) {
+  DCHECK(!callback.is_null());
+}
+
+FilesListNextPageRequest::~FilesListNextPageRequest() {
+}
+
+GURL FilesListNextPageRequest::GetURL() const {
+  return next_link_;
+}
+
 //============================ FilesTrashRequest =============================
 
 FilesTrashRequest::FilesTrashRequest(
@@ -389,6 +409,26 @@ ChangesListRequest::~ChangesListRequest() {}
 GURL ChangesListRequest::GetURL() const {
   return url_generator_.GetChangesListUrl(
       include_deleted_, max_results_, page_token_, start_change_id_);
+}
+
+//======================== ChangesListNextPageRequest =========================
+
+ChangesListNextPageRequest::ChangesListNextPageRequest(
+    RequestSender* sender,
+    const ChangeListCallback& callback)
+    : GetDataRequest(
+          sender,
+          base::Bind(&ParseJsonOnBlockingPoolAndRun<ChangeList>,
+                     make_scoped_refptr(sender->blocking_task_runner()),
+                     callback)) {
+  DCHECK(!callback.is_null());
+}
+
+ChangesListNextPageRequest::~ChangesListNextPageRequest() {
+}
+
+GURL ChangesListNextPageRequest::GetURL() const {
+  return next_link_;
 }
 
 //============================== AppsListRequest ===========================

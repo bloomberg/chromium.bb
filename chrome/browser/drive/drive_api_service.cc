@@ -55,6 +55,7 @@ using google_apis::UploadRangeResponse;
 using google_apis::drive::AboutGetRequest;
 using google_apis::drive::AppsListRequest;
 using google_apis::drive::ChangesListRequest;
+using google_apis::drive::ChangesListNextPageRequest;
 using google_apis::drive::ChildrenDeleteRequest;
 using google_apis::drive::ChildrenInsertRequest;
 using google_apis::drive::ContinueGetFileListRequest;
@@ -64,6 +65,7 @@ using google_apis::drive::FilesGetRequest;
 using google_apis::drive::FilesInsertRequest;
 using google_apis::drive::FilesPatchRequest;
 using google_apis::drive::FilesListRequest;
+using google_apis::drive::FilesListNextPageRequest;
 using google_apis::drive::FilesTrashRequest;
 using google_apis::drive::GetUploadStatusRequest;
 using google_apis::drive::InitiateUploadExistingFileRequest;
@@ -499,9 +501,12 @@ CancelCallback DriveAPIService::GetRemainingChangeList(
   DCHECK(!page_token.empty());
   DCHECK(!callback.is_null());
 
-  // Currently page_token is a URL.
-  // TODO(hidehiko): Use actual page token.
-  return ContinueGetResourceList(GURL(page_token), callback);
+  ChangesListNextPageRequest* request = new ChangesListNextPageRequest(
+      sender_.get(),
+      base::Bind(&ConvertChangeListToResourceListOnBlockingPoolAndRun,
+                 blocking_task_runner_, callback));
+  request->set_next_link(GURL(page_token));
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::GetRemainingFileList(
@@ -511,9 +516,12 @@ CancelCallback DriveAPIService::GetRemainingFileList(
   DCHECK(!page_token.empty());
   DCHECK(!callback.is_null());
 
-  // Currently page_token is a URL.
-  // TODO(hidehiko): Use actual page token.
-  return ContinueGetResourceList(GURL(page_token), callback);
+  FilesListNextPageRequest* request = new FilesListNextPageRequest(
+      sender_.get(),
+      base::Bind(&ConvertFileListToResourceListOnBlockingPoolAndRun,
+                 blocking_task_runner_, callback));
+  request->set_next_link(GURL(page_token));
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::GetResourceEntry(

@@ -258,6 +258,31 @@ class FilesListRequest : public GetDataRequest {
   DISALLOW_COPY_AND_ASSIGN(FilesListRequest);
 };
 
+//========================= FilesListNextPageRequest ==========================
+
+// There are two ways to obtain next pages of "Files: list" result (if paged).
+// 1) Set pageToken and all params used for the initial request.
+// 2) Use URL in the nextLink field in the previous response.
+// This class implements 2)'s request.
+class FilesListNextPageRequest : public GetDataRequest {
+ public:
+  FilesListNextPageRequest(RequestSender* sender,
+                           const FileListCallback& callback);
+  virtual ~FilesListNextPageRequest();
+
+  const GURL& next_link() const { return next_link_; }
+  void set_next_link(const GURL& next_link) { next_link_ = next_link; }
+
+ protected:
+  // Overridden from GetDataRequest.
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  GURL next_link_;
+
+  DISALLOW_COPY_AND_ASSIGN(FilesListNextPageRequest);
+};
+
 //=========================== TrashResourceRequest ===========================
 
 // This class performs the request for trashing a resource.
@@ -355,6 +380,31 @@ class ChangesListRequest : public GetDataRequest {
   int64 start_change_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangesListRequest);
+};
+
+//======================== ChangesListNextPageRequest =========================
+
+// There are two ways to obtain next pages of "Changes: list" result (if paged).
+// 1) Set pageToken and all params used for the initial request.
+// 2) Use URL in the nextLink field in the previous response.
+// This class implements 2)'s request.
+class ChangesListNextPageRequest : public GetDataRequest {
+ public:
+  ChangesListNextPageRequest(RequestSender* sender,
+                             const ChangeListCallback& callback);
+  virtual ~ChangesListNextPageRequest();
+
+  const GURL& next_link() const { return next_link_; }
+  void set_next_link(const GURL& next_link) { next_link_ = next_link; }
+
+ protected:
+  // Overridden from GetDataRequest.
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  GURL next_link_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChangesListNextPageRequest);
 };
 
 //============================= AppsListRequest ============================

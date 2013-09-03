@@ -555,6 +555,33 @@ TEST_F(DriveApiRequestsTest, ChangesListRequest) {
   EXPECT_TRUE(result);
 }
 
+TEST_F(DriveApiRequestsTest, ChangesListNextPageRequest) {
+  // Set an expected data file containing valid result.
+  expected_data_file_path_ = test_util::GetTestFilePath(
+      "drive/changelist.json");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ChangeList> result;
+
+  {
+    base::RunLoop run_loop;
+    drive::ChangesListNextPageRequest* request =
+        new drive::ChangesListNextPageRequest(
+            request_sender_.get(),
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &result)));
+    request->set_next_link(test_server_.GetURL("/continue/get/change/list"));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/continue/get/change/list", http_request_.relative_url);
+  EXPECT_TRUE(result);
+}
+
 TEST_F(DriveApiRequestsTest, FilesCopyRequest) {
   // Set an expected data file containing the dummy file entry data.
   // It'd be returned if we copy a file.
@@ -651,6 +678,33 @@ TEST_F(DriveApiRequestsTest, FilesListRequest) {
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/drive/v2/files?maxResults=50&q=%22abcde%22+in+parents",
             http_request_.relative_url);
+  EXPECT_TRUE(result);
+}
+
+TEST_F(DriveApiRequestsTest, FilesListNextPageRequest) {
+  // Set an expected data file containing valid result.
+  expected_data_file_path_ = test_util::GetTestFilePath(
+      "drive/filelist.json");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<FileList> result;
+
+  {
+    base::RunLoop run_loop;
+    drive::FilesListNextPageRequest* request =
+        new drive::FilesListNextPageRequest(
+            request_sender_.get(),
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &result)));
+    request->set_next_link(test_server_.GetURL("/continue/get/file/list"));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/continue/get/file/list", http_request_.relative_url);
   EXPECT_TRUE(result);
 }
 
