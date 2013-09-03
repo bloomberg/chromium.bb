@@ -182,7 +182,7 @@ CWSContainerClient.prototype.postInstallSuccessMessage_ = function(itemId) {
 CWSContainerClient.prototype.postInitializeMessage_ = function() {
   var message = {
     message: 'initialize',
-    hl: 'en',
+    hl: util.getCurrentLocaleOrDefault(),
     widgth: this.width_,
     height: this.height_,
     file_extension: this.ext_,

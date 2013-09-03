@@ -1215,3 +1215,13 @@ util.visitURL = function(url) {
       chrome.windows.create(params);
   });
 };
+
+/**
+ * Returns normalized current locale, or default locale - 'en'.
+ * @return {string} Current locale
+ */
+util.getCurrentLocaleOrDefault = function() {
+  // chrome.i18n.getMessage('@@ui_locale') can't be used in packed app.
+  // Instead, we pass it from C++-side with strings.
+  return str('UI_LOCALE') || 'en';
+};

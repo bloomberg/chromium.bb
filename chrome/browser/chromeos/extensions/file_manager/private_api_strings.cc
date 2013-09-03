@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/open_with_browser.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "grit/app_locale_settings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -525,6 +526,9 @@ bool FileBrowserPrivateGetStringsFunction::RunImpl() {
     board = "unknown";
   }
   dict->SetString(chromeos::system::kMachineInfoBoard, board);
+
+  dict->SetString("UI_LOCALE", extension_l10n_util::CurrentLocaleOrDefault());
+
   return true;
 }
 
