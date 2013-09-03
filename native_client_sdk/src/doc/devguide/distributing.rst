@@ -1,3 +1,4 @@
+====================================
 Distributing Your Application (NaCl)
 ====================================
 
@@ -15,10 +16,11 @@ on the web, and Native Client applications through the
 
 
 Introduction
-------------
+============
 
 Portable Native Client
-......................
+----------------------
+
 
 Portable Native Client is enabled by default for web pages. The only constraint
 is that the .html file, .nmf file (Portable Native Client manifest file), and
@@ -27,7 +29,7 @@ Portable Native Client applications may also be distributed through the Chrome
 Web Store.
 
 Chrome Web Store
-................
+----------------
 
 Native Client is only enabled by default for applications distributed through
 the Chrome Web Store (CWS). That means that Native Client applications must be
@@ -44,7 +46,7 @@ your applications. You can upload your applications to the CWS for free, and
 distribute them for free or for payment.
 
 CWS application types
-.....................
+---------------------
 
 Before you upload an application to the Chrome Web Store, you must choose how
 you want to distribute the application.  The CWS can be used to distribute
@@ -52,9 +54,9 @@ three types of applications: hosted applications, packaged applications, and ext
 
 * A **packaged application** is an application that is bundled into one
   file, hosted in the Chrome Web Store, and downloaded to the user's machine.
-* An **extension** is similar to a packaged application&mdash;the
+* An **extension** is similar to a packaged application---the
   application is bundled into one file, hosted in the Chrome Web Store,
-  and downloaded to the user's machine&mdash;but the application is
+  and downloaded to the user's machine---but the application is
   specifically designed to extend the functionality of the Chrome browser.
 * A **hosted application** is an application that is hosted somewhere
   other than the Chrome Web Store (such as your own web server or
@@ -83,12 +85,12 @@ For help choosing how to distribute your application, refer to
 The next section of this document provides details about how to distribute each type of application.
 
 Distribution details
---------------------
+====================
 
 .. _packaged:
 
 Packaged application
-....................
+--------------------
 
 A packaged application is a special zip file (with a .crx extension) hosted in
 the Chrome Web Store. This file contains all of the application parts: A Chrome
@@ -106,7 +108,7 @@ application and upload it to the Chrome Web Store.
 .. _multi-platform-zip:
 
 Reducing the size of the user download package
-++++++++++++++++++++++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. Note::
    :class: note
@@ -136,151 +138,151 @@ feature works:
 Here is how to use this feature:
 
 1. Create a directory called ``_platform_specific``.
-      Put this directory at the same level where your CWS manifest file,
-      ``manifest.json``, is located.
+   Put this directory at the same level where your CWS manifest file,
+   ``manifest.json``, is located.
 
 2. Create a subdirectory for each specific architecture that you support,
    and add the files for each architecture in the relevant subdirectory.
 
-      Here is a sample app directory structure:
+   Here is a sample app directory structure:
    
-      .. naclcode::
-         :prettyprint: 0
-   
-            |-- my_app_directory/
-            |       |-- manifest.json
-            |       |-- my_app.html
-            |       |-- my_module.nmf
-            |       +-- css/
-            |       +-- images/
-            |       +-- scripts/
-            |       |-- **_platform_specific/**
-            |       |       |-- x86-64/
-            |       |       |       |-- my_module_x86_64.nexe
-            |       |       |-- x86-32/
-            |       |       |       |-- my_module_x86_32.nexe
-            |       |       |-- arm/
-            |       |       |       |-- my_module_arm.nexe
-            |       |       |-- all/
-            |       |       |       |-- my_module_x86_64.nexe
-            |       |       |       |-- my_module_x86_64.nexe
-            |       |       |       |-- my_module_x86_32.nexe
-   
-      Please note a few important points about the app directory structure:
-   
-      * The architecture-specific subdirectories:
-   
-        * can have arbitrary names;
-        * must be directly under the ``_platform_specific`` directory; and
-        * must be listed in the CWS manifest file (see step 3 below).
-   
-      * You can include a fallback subdirectory that provides a download package
-        with all the architecture-specific files.  (In the example above this
-        is the ``all/`` subdirectory.) This folder is used if the user has an
-        earlier version of Chrome (prior to Chrome 28) that does not support
-        multi-platform zip files.
+   .. naclcode::
+      :prettyprint: 0
 
-      * You cannot include any files directly in the folder
-        ``_platform_specific``.  All architecture-specific files
-        must be under one of the architecture-specific subdirectories.
+         |-- my_app_directory/
+         |       |-- manifest.json
+         |       |-- my_app.html
+         |       |-- my_module.nmf
+         |       +-- css/
+         |       +-- images/
+         |       +-- scripts/
+         |       |-- **_platform_specific/**
+         |       |       |-- x86-64/
+         |       |       |       |-- my_module_x86_64.nexe
+         |       |       |-- x86-32/
+         |       |       |       |-- my_module_x86_32.nexe
+         |       |       |-- arm/
+         |       |       |       |-- my_module_arm.nexe
+         |       |       |-- all/
+         |       |       |       |-- my_module_x86_64.nexe
+         |       |       |       |-- my_module_x86_64.nexe
+         |       |       |       |-- my_module_x86_32.nexe
+   
+   Please note a few important points about the app directory structure:
 
-      * Files that are not under the ``_platform_specific`` directory are
-        included in all download packages.  (In the example above, that
-        includes ``my_app.html``, ``my_module.nmf``,
-        and the ``css/``, ``images/``, and ``scripts/`` directories.)
+   * The architecture-specific subdirectories:
+
+     * can have arbitrary names;
+     * must be directly under the ``_platform_specific`` directory; and
+     * must be listed in the CWS manifest file (see step 3 below).
+
+   * You can include a fallback subdirectory that provides a download package
+     with all the architecture-specific files.  (In the example above this
+     is the ``all/`` subdirectory.) This folder is used if the user has an
+     earlier version of Chrome (prior to Chrome 28) that does not support
+     multi-platform zip files.
+
+   * You cannot include any files directly in the folder
+     ``_platform_specific``.  All architecture-specific files
+     must be under one of the architecture-specific subdirectories.
+
+   * Files that are not under the ``_platform_specific`` directory are
+     included in all download packages.  (In the example above, that
+     includes ``my_app.html``, ``my_module.nmf``,
+     and the ``css/``, ``images/``, and ``scripts/`` directories.)
 
 
 3. Modify the CWS manifest file, ``manifest.json``, so that it specifies which
    subdirectory under ``_platform_specific`` corresponds to which architecture.
 
-      The CWS manifest file must include a new name/value pair, where the name
-      is ``platforms`` and the value is an array.  The array has an object for
-      each Native Client architecture with two name/value pairs:
-   
-      +----------------------+---------------------------------------+
-      | Name                 | Value                                 |
-      +======================+=======================================+
-      | ``nacl_arch``        | ``x86-64``, ``x86-32``, or ``arm``    |
-      +----------------------+---------------------------------------+
-      | ``sub_package_path`` | the path of the directory (starting   |
-      |                      | with ``_platform_specific``) that     |
-      |                      | contains the files for the designated |
-      |                      | NaCl architecture                     |
-      +----------------------+---------------------------------------+
-   
-      Here is a sample ``manifest.json`` file:
-   
-      .. naclcode::
-         :prettyprint: 0
-   
-         {
-           "name": "My Reminder App",
-           "description": "A reminder app that syncs across Chrome browsers.",
-           "manifest_version": 2,
-           "minimum_chrome_version": "28",
-           "offline_enabled": true,
-           "version": "0.3",
-           "permissions": [
-             {"fileSystem": ["write"]},
-             "alarms",
-             "storage"
-           ],
-           "app": {
-             "background": {
-               "scripts": ["scripts/background.js"]
-             }
-           },
-           "icons": {
-             "16": "images/icon-16x16.png",
-             "128": "images/icon-128x128.png"
-           },
-           **"platforms": [
-             {
-               "nacl_arch": "x86-64",
-               "sub_package_path": "_platform_specific/x86-64/"
-             },
-             {
-               "nacl_arch": "x86-32",
-               "sub_package_path": "_platform_specific/x86-32/"
-             },
-             {
-               "nacl_arch": "arm",
-               "sub_package_path": "_platform_specific/arm/"
-             },
-             {
-               "sub_package_path": "_platform_specific/all/"
-             }
-           ]**
-         }
-   
-      Note the last entry in the CWS manifest file above, which specifies a
-      ``sub_package_path`` without a corresponding ``nacl_arch``. This entry
-      identifies the fallback directory, which is included in the download
-      package if the user architecture does not match any of the listed NaCl
-      architectures, or if the user is using an older version of Chrome that
-      does not support multi-platform zip files.
+   The CWS manifest file must include a new name/value pair, where the name
+   is ``platforms`` and the value is an array.  The array has an object for
+   each Native Client architecture with two name/value pairs:
+
+   +----------------------+---------------------------------------+
+   | Name                 | Value                                 |
+   +======================+=======================================+
+   | ``nacl_arch``        | ``x86-64``, ``x86-32``, or ``arm``    |
+   +----------------------+---------------------------------------+
+   | ``sub_package_path`` | the path of the directory (starting   |
+   |                      | with ``_platform_specific``) that     |
+   |                      | contains the files for the designated |
+   |                      | NaCl architecture                     |
+   +----------------------+---------------------------------------+
+
+   Here is a sample ``manifest.json`` file:
+
+   .. naclcode::
+      :prettyprint: 0
+
+      {
+        "name": "My Reminder App",
+        "description": "A reminder app that syncs across Chrome browsers.",
+        "manifest_version": 2,
+        "minimum_chrome_version": "28",
+        "offline_enabled": true,
+        "version": "0.3",
+        "permissions": [
+          {"fileSystem": ["write"]},
+          "alarms",
+          "storage"
+        ],
+        "app": {
+          "background": {
+            "scripts": ["scripts/background.js"]
+          }
+        },
+        "icons": {
+          "16": "images/icon-16x16.png",
+          "128": "images/icon-128x128.png"
+        },
+        **"platforms": [
+          {
+            "nacl_arch": "x86-64",
+            "sub_package_path": "_platform_specific/x86-64/"
+          },
+          {
+            "nacl_arch": "x86-32",
+            "sub_package_path": "_platform_specific/x86-32/"
+          },
+          {
+            "nacl_arch": "arm",
+            "sub_package_path": "_platform_specific/arm/"
+          },
+          {
+            "sub_package_path": "_platform_specific/all/"
+          }
+        ]**
+      }
+
+   Note the last entry in the CWS manifest file above, which specifies a
+   ``sub_package_path`` without a corresponding ``nacl_arch``. This entry
+   identifies the fallback directory, which is included in the download
+   package if the user architecture does not match any of the listed NaCl
+   architectures, or if the user is using an older version of Chrome that
+   does not support multi-platform zip files.
 
 4. Modify your application as necessary so that it uses the files for the
    correct user architecture.
 
-      To reference architecture-specific files, use the JavaScript API
-      `chrome.runtime.getPlatformInfo() <http://developer.chrome.com/trunk/extensions/runtime.html#method-getPlatformInfo>`_.
-      As an example, if you have architecture-specific files in the directories
-      ``x86-64``, ``x86-32``, and ``arm``, you can use the following JavaScript
-      code to create a path for the files:
-   
-      .. naclcode::
-   
-         function getPath(name) {
-           return '_platform_specific/' +
-             chrome.runtime.getPlatformInfo().nacl_arch +
-             '/' + name;
-         }
+   To reference architecture-specific files, use the JavaScript API
+   `chrome.runtime.getPlatformInfo() <http://developer.chrome.com/trunk/extensions/runtime.html#method-getPlatformInfo>`_.
+   As an example, if you have architecture-specific files in the directories
+   ``x86-64``, ``x86-32``, and ``arm``, you can use the following JavaScript
+   code to create a path for the files:
+
+   .. naclcode::
+
+      function getPath(name) {
+        return '_platform_specific/' +
+          chrome.runtime.getPlatformInfo().nacl_arch +
+          '/' + name;
+      }
 
 5. Test your app, create a zip file, and upload the app to the CWS as before.
 
 Additional considerations for a packaged application
-++++++++++++++++++++++++++++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * In the description of your application in the CWS, make sure to mention that
   your application is a Native Client application that only works with the
@@ -309,7 +311,7 @@ Additional considerations for a packaged application
   for more information.
 
 Extension
-.........
+---------
 
 An extension consists of a special zip file (with a .crx extension) hosted in
 the Chrome Web Store containing all of the application parts: A Chrome Web
@@ -332,7 +334,7 @@ upload it to the Chrome Web Store.
    the download and storage requirements for your extension.
 
 Hosted application
-..................
+------------------
 
 A hosted application is a normal web application with some extra metadata for
 the Chrome Web Store. Specifically, a hosted application consists of three
@@ -358,7 +360,7 @@ parts:
    or Data Storage for Developers.
 
 Hosting options
-+++++++++++++++
+^^^^^^^^^^^^^^^
 
 Google offers a couple of hosting options you might consider instead of your
 own:
@@ -374,7 +376,7 @@ own:
   for pricing information.
 
 Additional considerations for a hosted application
-++++++++++++++++++++++++++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * The .html file, .nmf file (Native Client manifest file), and .nexe files
   (compiled Native Client modules) must be served from the same domain, and the
@@ -467,7 +469,7 @@ example shows an extension with two .nmf files that handle three MIME types.
       }]
    }
 
-The ``nacl_modules`` attribute is optional&mdash;specify this attribute only if
+The ``nacl_modules`` attribute is optional---specify this attribute only if
 you want Chrome to use a Native Client module to display a particular type of
 content.
 
@@ -478,10 +480,10 @@ Once you've published an application, you may be wondering how users will find
 and install the application. For users who browse the Chrome Web Store and find
 your application, installing the application is a simple one-click process.
 However, if a user is already on your site, it can be cumbersome for them to
-complete the installation&mdash;they would need to navigate away from your site
+complete the installation---they would need to navigate away from your site
 to the CWS, complete the installation process, and then return to your site. To
 address this issue, you can initiate installation of applications "inline" from
-your site&mdash;the applications are still hosted in the Chrome Web Store, but
+your site---the applications are still hosted in the Chrome Web Store, but
 users no longer have to leave your site to install them. See
 `Using Inline Installation </chrome/web-store/docs/inline_installation>`_
 for information on how to use this feature.

@@ -39,6 +39,8 @@ Quotes (``<blockquote>``) are created by indenting the paragraph:
   get adulation by the public, but because it is fun to program.
   -- Linus Torvalds
 
+Here's an en-dash -- and an m-dash --- too.
+
 Images
 ======
 
