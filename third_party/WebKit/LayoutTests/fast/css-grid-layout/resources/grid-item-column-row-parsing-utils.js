@@ -3,23 +3,22 @@
 function checkColumnRowValues(gridItem, columnValue, rowValue)
 {
     this.gridItem = gridItem;
-    this.gridColumnValue = columnValue;
-    this.gridRowValue = rowValue;
+    var gridItemId = gridItem.id ? gridItem.id : "gridItem";
 
     var gridColumnStartEndValues = columnValue.split("/")
-    this.gridColumnStartValue = gridColumnStartEndValues[0].trim();
-    this.gridColumnEndValue = gridColumnStartEndValues[1].trim();
+    var gridColumnStartValue = gridColumnStartEndValues[0].trim();
+    var gridColumnEndValue = gridColumnStartEndValues[1].trim();
 
     var gridRowStartEndValues = rowValue.split("/")
-    this.gridRowStartValue = gridRowStartEndValues[0].trim();
-    this.gridRowEndValue = gridRowStartEndValues[1].trim();
+    var gridRowStartValue = gridRowStartEndValues[0].trim();
+    var gridRowEndValue = gridRowStartEndValues[1].trim();
 
-    shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-column')", "gridColumnValue");
-    shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-column-start')", "gridColumnStartValue");
-    shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-column-end')", "gridColumnEndValue");
-    shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-row')", "gridRowValue");
-    shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-row-start')", "gridRowStartValue");
-    shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-row-end')", "gridRowEndValue");
+    shouldBeEqualToString("getComputedStyle(" + gridItemId + ", '').getPropertyValue('grid-column')", columnValue);
+    shouldBeEqualToString("getComputedStyle(" + gridItemId + ", '').getPropertyValue('grid-column-start')", gridColumnStartValue);
+    shouldBeEqualToString("getComputedStyle(" + gridItemId + ", '').getPropertyValue('grid-column-end')", gridColumnEndValue);
+    shouldBeEqualToString("getComputedStyle(" + gridItemId + ", '').getPropertyValue('grid-row')", rowValue);
+    shouldBeEqualToString("getComputedStyle(" + gridItemId + ", '').getPropertyValue('grid-row-start')", gridRowStartValue);
+    shouldBeEqualToString("getComputedStyle(" + gridItemId + ", '').getPropertyValue('grid-row-end')", gridRowEndValue);
 }
 
 window.testColumnRowCSSParsing = function(id, columnValue, rowValue)
