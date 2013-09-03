@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -227,6 +228,7 @@ class ChangeListLoader {
   void DoLoadDirectoryFromServerAfterLoad(
       const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
+      FeedFetcher* fetcher,
       FileError error,
       ScopedVector<ChangeList> change_lists);
 
@@ -272,8 +274,8 @@ class ChangeListLoader {
   // Running feed fetcher.
   scoped_ptr<FeedFetcher> change_feed_fetcher_;
 
-  // Map from resource id to the running feed fetcher for the fast fetch.
-  std::map<std::string, FeedFetcher*> fast_fetch_feed_fetcher_map_;
+  // Set of the running feed fetcher for the fast fetch.
+  std::set<FeedFetcher*> fast_fetch_feed_fetcher_set_;
 
   // The last known remote changestamp. Used to check if a directory
   // changestamp is up-to-date for fast fetch.

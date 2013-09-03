@@ -250,7 +250,7 @@ ChangeListLoader::ChangeListLoader(
 }
 
 ChangeListLoader::~ChangeListLoader() {
-  STLDeleteValues(&fast_fetch_feed_fetcher_map_);
+  STLDeleteElements(&fast_fetch_feed_fetcher_set_);
 }
 
 bool ChangeListLoader::IsRefreshing() const {
@@ -686,20 +686,16 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
     return;
   }
 
-  DCHECK_EQ(
-      0U,
-      fast_fetch_feed_fetcher_map_.count(directory_fetch_info.resource_id()));
-
   FastFetchFeedFetcher* fetcher = new FastFetchFeedFetcher(
       scheduler_,
       directory_fetch_info.resource_id());
-  fast_fetch_feed_fetcher_map_.insert(
-      make_pair(directory_fetch_info.resource_id(), fetcher));
+  fast_fetch_feed_fetcher_set_.insert(fetcher);
   fetcher->Run(
       base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
-                 callback));
+                 callback,
+                 fetcher));
 }
 
 void
@@ -782,6 +778,7 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterAddMyDrive(
 void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
     const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback,
+    FeedFetcher* fetcher,
     FileError error,
     ScopedVector<ChangeList> change_lists) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -789,11 +786,8 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
   DCHECK(!directory_fetch_info.empty());
 
   // Delete the fetcher.
-  std::map<std::string, FeedFetcher*>::iterator it =
-      fast_fetch_feed_fetcher_map_.find(directory_fetch_info.resource_id());
-  DCHECK(it != fast_fetch_feed_fetcher_map_.end());
-  delete it->second;
-  fast_fetch_feed_fetcher_map_.erase(it);
+  fast_fetch_feed_fetcher_set_.erase(fetcher);
+  delete fetcher;
 
   if (error != FILE_ERROR_OK) {
     LOG(ERROR) << "Failed to load directory: "
