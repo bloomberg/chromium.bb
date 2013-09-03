@@ -2282,14 +2282,14 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
         if (!selectedRange)
             return false;
 
-        RefPtr<Range> range(Range::create(&selectedRange->startContainer()->document(),
+        RefPtr<Range> range(Range::create(selectedRange->startContainer()->document(),
             selectedRange->startContainer(),
             selectedRange->startOffset(),
             selectedRange->startContainer(),
             selectedRange->startOffset()));
         anchor = frame->editor().firstRectForRange(range.get());
 
-        range = Range::create(&selectedRange->endContainer()->document(),
+        range = Range::create(selectedRange->endContainer()->document(),
             selectedRange->endContainer(),
             selectedRange->endOffset(),
             selectedRange->endContainer(),

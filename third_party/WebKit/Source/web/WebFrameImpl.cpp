@@ -1482,7 +1482,7 @@ bool WebFrameImpl::find(int identifier, const WebString& searchText, const WebFi
     else
         setMarkerActive(m_activeMatch.get(), false);
 
-    if (m_activeMatch && m_activeMatch->ownerDocument() != frame()->document())
+    if (m_activeMatch && &m_activeMatch->ownerDocument() != frame()->document())
         m_activeMatch = 0;
 
     // If the user has selected something since the last Find operation we want

@@ -531,7 +531,7 @@ VisiblePosition visiblePositionAfterNode(Node* node)
 // Use this function instead of create a regular range object (avoiding editing offset).
 PassRefPtr<Range> createRange(Document& document, const VisiblePosition& start, const VisiblePosition& end, ExceptionState& es)
 {
-    RefPtr<Range> selectedRange = Range::create(&document);
+    RefPtr<Range> selectedRange = Range::create(document);
     selectedRange->setStart(start.deepEquivalent().containerNode(), start.deepEquivalent().computeOffsetInContainerNode(), es);
     if (!es.hadException())
         selectedRange->setEnd(end.deepEquivalent().containerNode(), end.deepEquivalent().computeOffsetInContainerNode(), es);
@@ -1066,7 +1066,7 @@ int indexForVisiblePosition(const VisiblePosition& visiblePosition, RefPtr<Conta
     else
         scope = document.documentElement();
 
-    RefPtr<Range> range = Range::create(&document, firstPositionInNode(scope.get()), p.parentAnchoredEquivalent());
+    RefPtr<Range> range = Range::create(document, firstPositionInNode(scope.get()), p.parentAnchoredEquivalent());
 
     return TextIterator::rangeLength(range.get(), true);
 }

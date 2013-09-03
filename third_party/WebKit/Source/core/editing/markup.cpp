@@ -258,7 +258,7 @@ String StyledMarkupAccumulator::renderedText(const Node* node, const Range* rang
 
     Position start = createLegacyEditingPosition(const_cast<Node*>(node), startOffset);
     Position end = createLegacyEditingPosition(const_cast<Node*>(node), endOffset);
-    return plainText(Range::create(&node->document(), start, end).get());
+    return plainText(Range::create(node->document(), start, end).get());
 }
 
 String StyledMarkupAccumulator::stringValueForRange(const Node* node, const Range* range)
@@ -542,10 +542,9 @@ static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterch
 
 // FIXME: Shouldn't we omit style info when annotate == DoNotAnnotateForInterchange?
 // FIXME: At least, annotation and style info should probably not be included in range.markupString()
-static String createMarkupInternal(Document* document, const Range* range, const Range* updatedRange, Vector<Node*>* nodes,
+static String createMarkupInternal(Document& document, const Range* range, const Range* updatedRange, Vector<Node*>* nodes,
     EAnnotateForInterchange shouldAnnotate, bool convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
 {
-    ASSERT(document);
     ASSERT(range);
     ASSERT(updatedRange);
     DEFINE_STATIC_LOCAL(const String, interchangeNewlineString, ("<br class=\"" AppleInterchangeNewline "\">"));
@@ -557,7 +556,7 @@ static String createMarkupInternal(Document* document, const Range* range, const
     if (!commonAncestor)
         return emptyString();
 
-    document->updateLayoutIgnorePendingStylesheets();
+    document.updateLayoutIgnorePendingStylesheets();
 
     Node* body = enclosingNodeWithTag(firstPositionInNode(commonAncestor), bodyTag);
     Node* fullySelectedRoot = 0;
@@ -604,7 +603,7 @@ static String createMarkupInternal(Document* document, const Range* range, const
                         fullySelectedRootStyle->style()->setProperty(CSSPropertyTextDecoration, CSSValueNone);
                     if (!propertyMissingOrEqualToNone(fullySelectedRootStyle->style(), CSSPropertyWebkitTextDecorationsInEffect))
                         fullySelectedRootStyle->style()->setProperty(CSSPropertyWebkitTextDecorationsInEffect, CSSValueNone);
-                    accumulator.wrapWithStyleNode(fullySelectedRootStyle->style(), document, true);
+                    accumulator.wrapWithStyleNode(fullySelectedRootStyle->style(), &document, true);
                 }
             } else {
                 // Since this node and all the other ancestors are not in the selection we want to set RangeFullySelectsNode to DoesNotFullySelectNode
@@ -633,10 +632,7 @@ String createMarkup(const Range* range, Vector<Node*>* nodes, EAnnotateForInterc
     if (!range)
         return emptyString();
 
-    Document* document = range->ownerDocument();
-    if (!document)
-        return emptyString();
-
+    Document& document = range->ownerDocument();
     const Range* updatedRange = range;
 
     return createMarkupInternal(document, range, updatedRange, nodes, shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
@@ -718,7 +714,7 @@ PassRefPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document* docum
     if (!findNodesSurroundingContext(taggedDocument.get(), nodeBeforeContext, nodeAfterContext))
         return 0;
 
-    RefPtr<Range> range = Range::create(taggedDocument.get(),
+    RefPtr<Range> range = Range::create(*taggedDocument.get(),
         positionAfterNode(nodeBeforeContext.get()).parentAnchoredEquivalent(),
         positionBeforeNode(nodeAfterContext.get()).parentAnchoredEquivalent());
 
@@ -819,7 +815,7 @@ PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String
     if (!context)
         return 0;
 
-    Document& document = *context->ownerDocument();
+    Document& document = context->ownerDocument();
     RefPtr<DocumentFragment> fragment = document.createDocumentFragment();
 
     if (text.isEmpty())

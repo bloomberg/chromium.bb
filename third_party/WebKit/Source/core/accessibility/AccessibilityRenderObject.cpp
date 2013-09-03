@@ -1766,7 +1766,7 @@ VisiblePosition AccessibilityRenderObject::visiblePositionForIndex(int index) co
     if (index <= 0)
         return VisiblePosition(firstPositionInOrBeforeNode(node), DOWNSTREAM);
 
-    RefPtr<Range> range = Range::create(&m_renderer->document());
+    RefPtr<Range> range = Range::create(m_renderer->document());
     range->selectNodeContents(node, IGNORE_EXCEPTION);
     CharacterIterator it(range.get());
     it.advance(index - 1);
@@ -1792,7 +1792,7 @@ int AccessibilityRenderObject::indexForVisiblePosition(const VisiblePosition& po
     if (indexPosition.isNull() || highestEditableRoot(indexPosition, HasEditableAXRole) != node)
         return 0;
 
-    RefPtr<Range> range = Range::create(&m_renderer->document());
+    RefPtr<Range> range = Range::create(m_renderer->document());
     range->setStart(node, 0, IGNORE_EXCEPTION);
     range->setEnd(indexPosition, IGNORE_EXCEPTION);
 

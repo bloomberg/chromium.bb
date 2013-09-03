@@ -425,7 +425,7 @@ void Editor::replaceSelectionWithFragment(PassRefPtr<DocumentFragment> fragment,
     if (!nodeToCheck)
         return;
 
-    RefPtr<Range> rangeToCheck = Range::create(m_frame->document(), firstPositionInNode(nodeToCheck), lastPositionInNode(nodeToCheck));
+    RefPtr<Range> rangeToCheck = Range::create(*m_frame->document(), firstPositionInNode(nodeToCheck), lastPositionInNode(nodeToCheck));
     m_spellCheckRequester->requestCheckingFor(SpellCheckRequest::create(resolveTextCheckingTypeMask(TextCheckingTypeSpelling | TextCheckingTypeGrammar), TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
 }
 
@@ -1740,7 +1740,8 @@ void Editor::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSelectionA
     // we would like to remove the marker from word "avant" and whitespace as well. So we need to get the continous range of
     // of marker that contains the word in question, and remove marker on that whole range.
     Document* document = m_frame->document();
-    RefPtr<Range> wordRange = Range::create(document, startOfFirstWord.deepEquivalent(), endOfLastWord.deepEquivalent());
+    ASSERT(document);
+    RefPtr<Range> wordRange = Range::create(*document, startOfFirstWord.deepEquivalent(), endOfLastWord.deepEquivalent());
 
     document->markers()->removeMarkers(wordRange.get(), DocumentMarker::Spelling | DocumentMarker::Grammar, DocumentMarkerController::RemovePartiallyOverlappingMarker);
 }

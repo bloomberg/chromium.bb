@@ -59,8 +59,8 @@ using namespace HTMLNames;
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, rangeCounter, ("Range"));
 
-inline Range::Range(Document* ownerDocument)
-    : m_ownerDocument(ownerDocument)
+inline Range::Range(Document& ownerDocument)
+    : m_ownerDocument(&ownerDocument)
     , m_start(m_ownerDocument)
     , m_end(m_ownerDocument)
 {
@@ -72,13 +72,13 @@ inline Range::Range(Document* ownerDocument)
     m_ownerDocument->attachRange(this);
 }
 
-PassRefPtr<Range> Range::create(Document* ownerDocument)
+PassRefPtr<Range> Range::create(Document& ownerDocument)
 {
     return adoptRef(new Range(ownerDocument));
 }
 
-inline Range::Range(Document* ownerDocument, Node* startContainer, int startOffset, Node* endContainer, int endOffset)
-    : m_ownerDocument(ownerDocument)
+inline Range::Range(Document& ownerDocument, Node* startContainer, int startOffset, Node* endContainer, int endOffset)
+    : m_ownerDocument(&ownerDocument)
     , m_start(m_ownerDocument)
     , m_end(m_ownerDocument)
 {
@@ -95,12 +95,12 @@ inline Range::Range(Document* ownerDocument, Node* startContainer, int startOffs
     setEnd(endContainer, endOffset);
 }
 
-PassRefPtr<Range> Range::create(Document* ownerDocument, Node* startContainer, int startOffset, Node* endContainer, int endOffset)
+PassRefPtr<Range> Range::create(Document& ownerDocument, Node* startContainer, int startOffset, Node* endContainer, int endOffset)
 {
     return adoptRef(new Range(ownerDocument, startContainer, startOffset, endContainer, endOffset));
 }
 
-PassRefPtr<Range> Range::create(Document* ownerDocument, const Position& start, const Position& end)
+PassRefPtr<Range> Range::create(Document& ownerDocument, const Position& start, const Position& end)
 {
     return adoptRef(new Range(ownerDocument, start.containerNode(), start.computeOffsetInContainerNode(), end.containerNode(), end.computeOffsetInContainerNode()));
 }
@@ -115,14 +115,14 @@ Range::~Range()
 #endif
 }
 
-void Range::setDocument(Document* document)
+void Range::setDocument(Document& document)
 {
-    ASSERT(m_ownerDocument != document);
-    if (m_ownerDocument)
-        m_ownerDocument->detachRange(this);
-    m_ownerDocument = document;
-    m_start.setToStartOfNode(document);
-    m_end.setToStartOfNode(document);
+    ASSERT(m_ownerDocument != &document);
+    ASSERT(m_ownerDocument);
+    m_ownerDocument->detachRange(this);
+    m_ownerDocument = &document;
+    m_start.setToStartOfNode(&document);
+    m_end.setToStartOfNode(&document);
     m_ownerDocument->attachRange(this);
 }
 
@@ -223,7 +223,7 @@ void Range::setStart(PassRefPtr<Node> refNode, int offset, ExceptionState& es)
 
     bool didMoveDocument = false;
     if (&refNode->document() != m_ownerDocument) {
-        setDocument(&refNode->document());
+        setDocument(refNode->document());
         didMoveDocument = true;
     }
 
@@ -251,7 +251,7 @@ void Range::setEnd(PassRefPtr<Node> refNode, int offset, ExceptionState& es)
 
     bool didMoveDocument = false;
     if (&refNode->document() != m_ownerDocument) {
-        setDocument(&refNode->document());
+        setDocument(refNode->document());
         didMoveDocument = true;
     }
 
@@ -1229,7 +1229,7 @@ PassRefPtr<Range> Range::cloneRange(ExceptionState& es) const
         return 0;
     }
 
-    return Range::create(m_ownerDocument.get(), m_start.container(), m_start.offset(), m_end.container(), m_end.offset());
+    return Range::create(*m_ownerDocument.get(), m_start.container(), m_start.offset(), m_end.container(), m_end.offset());
 }
 
 void Range::setStartAfter(Node* refNode, ExceptionState& es)
@@ -1318,7 +1318,7 @@ void Range::selectNode(Node* refNode, ExceptionState& es)
     }
 
     if (m_ownerDocument != &refNode->document())
-        setDocument(&refNode->document());
+        setDocument(refNode->document());
 
     setStartBefore(refNode);
     setEndAfter(refNode);
@@ -1359,7 +1359,7 @@ void Range::selectNodeContents(Node* refNode, ExceptionState& es)
     }
 
     if (m_ownerDocument != &refNode->document())
-        setDocument(&refNode->document());
+        setDocument(refNode->document());
 
     m_start.setToStartOfNode(refNode);
     m_end.setToEndOfNode(refNode);
@@ -1620,7 +1620,7 @@ bool areRangesEqual(const Range* a, const Range* b)
 PassRefPtr<Range> rangeOfContents(Node* node)
 {
     ASSERT(node);
-    RefPtr<Range> range = Range::create(&node->document());
+    RefPtr<Range> range = Range::create(node->document());
     range->selectNodeContents(node, IGNORE_EXCEPTION);
     return range.release();
 }

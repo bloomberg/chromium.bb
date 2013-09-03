@@ -455,7 +455,7 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     Document& d = boundary->document();
     Position start = createLegacyEditingPosition(boundary, 0).parentAnchoredEquivalent();
     Position end = pos.parentAnchoredEquivalent();
-    RefPtr<Range> searchRange = Range::create(&d);
+    RefPtr<Range> searchRange = Range::create(d);
 
     Vector<UChar, 1024> string;
     unsigned suffixLength = 0;

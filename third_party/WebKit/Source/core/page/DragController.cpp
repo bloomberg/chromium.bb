@@ -149,9 +149,8 @@ static PassRefPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragD
     ASSERT(dragData);
     chosePlainText = false;
 
-    Document* document = context->ownerDocument();
-    ASSERT(document);
-    if (document && dragData->containsCompatibleContent()) {
+    Document& document = context->ownerDocument();
+    if (dragData->containsCompatibleContent()) {
         if (PassRefPtr<DocumentFragment> fragment = dragData->asFragment(frame, context, allowPlainText, chosePlainText))
             return fragment;
 
@@ -159,7 +158,7 @@ static PassRefPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragD
             String title;
             String url = dragData->asURL(frame, DragData::DoNotConvertFilenames, &title);
             if (!url.isEmpty()) {
-                RefPtr<HTMLAnchorElement> anchor = HTMLAnchorElement::create(*document);
+                RefPtr<HTMLAnchorElement> anchor = HTMLAnchorElement::create(document);
                 anchor->setHref(url);
                 if (title.isEmpty()) {
                     // Try the plain text first because the url might be normalized or escaped.
@@ -168,9 +167,9 @@ static PassRefPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragD
                     if (title.isEmpty())
                         title = url;
                 }
-                RefPtr<Node> anchorText = document->createTextNode(title);
+                RefPtr<Node> anchorText = document.createTextNode(title);
                 anchor->appendChild(anchorText);
-                RefPtr<DocumentFragment> fragment = document->createDocumentFragment();
+                RefPtr<DocumentFragment> fragment = document.createDocumentFragment();
                 fragment->appendChild(anchor);
                 return fragment.release();
             }
@@ -485,7 +484,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
     // manually controlling drag behaviour
     if (!range)
         return false;
-    ResourceFetcher* fetcher = range->ownerDocument()->fetcher();
+    ResourceFetcher* fetcher = range->ownerDocument().fetcher();
     ResourceCacheValidationSuppressor validationSuppressor(fetcher);
     if (dragIsMove(innerFrame->selection(), dragData) || dragCaret.isContentRichlyEditable()) {
         bool chosePlainText = false;

@@ -2551,7 +2551,7 @@ END
         } elsif ($interface->extendedAttributes->{"ConstructorCallWith"} eq "Document") {
             push(@beforeArgumentList, "document");
             $code .= "\n";
-            $code .= "    Document* document = toDocument(getScriptExecutionContext());";
+            $code .= "    Document& document = *toDocument(getScriptExecutionContext());";
         }
     }
 

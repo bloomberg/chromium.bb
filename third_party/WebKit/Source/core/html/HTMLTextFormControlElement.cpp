@@ -311,7 +311,7 @@ VisiblePosition HTMLTextFormControlElement::visiblePositionForIndex(int index) c
 {
     if (index <= 0)
         return VisiblePosition(firstPositionInNode(innerTextElement()), DOWNSTREAM);
-    RefPtr<Range> range = Range::create(&document());
+    RefPtr<Range> range = Range::create(document());
     range->selectNodeContents(innerTextElement(), ASSERT_NO_EXCEPTION);
     CharacterIterator it(range.get());
     it.advance(index - 1);
@@ -323,7 +323,8 @@ int HTMLTextFormControlElement::indexForVisiblePosition(const VisiblePosition& p
     Position indexPosition = pos.deepEquivalent().parentAnchoredEquivalent();
     if (enclosingTextFormControl(indexPosition) != this)
         return 0;
-    RefPtr<Range> range = Range::create(indexPosition.document());
+    ASSERT(indexPosition.document());
+    RefPtr<Range> range = Range::create(*indexPosition.document());
     range->setStart(innerTextElement(), 0, ASSERT_NO_EXCEPTION);
     range->setEnd(indexPosition.containerNode(), indexPosition.offsetInContainerNode(), ASSERT_NO_EXCEPTION);
     return TextIterator::rangeLength(range.get());
@@ -433,7 +434,7 @@ PassRefPtr<Range> HTMLTextFormControlElement::selection() const
         return 0;
 
     if (!innerText->firstChild())
-        return Range::create(&document(), innerText, 0, innerText, 0);
+        return Range::create(document(), innerText, 0, innerText, 0);
 
     int offset = 0;
     Node* startNode = 0;
@@ -457,7 +458,7 @@ PassRefPtr<Range> HTMLTextFormControlElement::selection() const
     if (!startNode || !endNode)
         return 0;
 
-    return Range::create(&document(), startNode, start, endNode, end);
+    return Range::create(document(), startNode, start, endNode, end);
 }
 
 void HTMLTextFormControlElement::restoreCachedSelection()

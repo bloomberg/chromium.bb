@@ -891,7 +891,7 @@ PassRefPtr<Range> Internals::markerRangeForNode(Node* node, const String& marker
     DocumentMarker* marker = markerAt(node, markerType, index, es);
     if (!marker)
         return 0;
-    return Range::create(&node->document(), node, marker->startOffset(), node, marker->endOffset());
+    return Range::create(node->document(), node, marker->startOffset(), node, marker->endOffset());
 }
 
 String Internals::markerDescriptionForNode(Node* node, const String& markerType, unsigned index, ExceptionState& es)
@@ -904,8 +904,8 @@ String Internals::markerDescriptionForNode(Node* node, const String& markerType,
 
 void Internals::addTextMatchMarker(const Range* range, bool isActive)
 {
-    range->ownerDocument()->updateLayoutIgnorePendingStylesheets();
-    range->ownerDocument()->markers()->addTextMatchMarker(range, isActive);
+    range->ownerDocument().updateLayoutIgnorePendingStylesheets();
+    range->ownerDocument().markers()->addTextMatchMarker(range, isActive);
 }
 
 void Internals::setMarkersActive(Node* node, unsigned startOffset, unsigned endOffset, bool active, ExceptionState& es)

@@ -127,7 +127,7 @@ WebVector<WebFloatQuad> WebRange::textQuads() const
     if (isNull())
         return WebVector<WebFloatQuad>();
 
-    Frame* frame = m_private->ownerDocument() ? m_private->ownerDocument()->frame() : 0;
+    Frame* frame = m_private->ownerDocument().frame();
     if (!frame)
         return WebVector<WebFloatQuad>();
 

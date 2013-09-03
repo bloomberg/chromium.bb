@@ -49,12 +49,12 @@ class Text;
 
 class Range : public RefCounted<Range>, public ScriptWrappable {
 public:
-    static PassRefPtr<Range> create(Document*);
-    static PassRefPtr<Range> create(Document*, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
-    static PassRefPtr<Range> create(Document*, const Position&, const Position&);
+    static PassRefPtr<Range> create(Document&);
+    static PassRefPtr<Range> create(Document&, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
+    static PassRefPtr<Range> create(Document&, const Position&, const Position&);
     ~Range();
 
-    Document* ownerDocument() const { return m_ownerDocument.get(); }
+    Document& ownerDocument() const { ASSERT(m_ownerDocument); return *m_ownerDocument.get(); }
     Node* startContainer() const { return m_start.container(); }
     int startOffset() const { return m_start.offset(); }
     Node* endContainer() const { return m_end.container(); }
@@ -150,10 +150,10 @@ public:
 #endif
 
 private:
-    explicit Range(Document*);
-    Range(Document*, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
+    explicit Range(Document&);
+    Range(Document&, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
 
-    void setDocument(Document*);
+    void setDocument(Document&);
 
     Node* checkNodeWOffset(Node*, int offset, ExceptionState&) const;
     void checkNodeBA(Node*, ExceptionState&, const char* methodName) const;
@@ -168,7 +168,7 @@ private:
     enum ContentsProcessDirection { ProcessContentsForward, ProcessContentsBackward };
     static PassRefPtr<Node> processAncestorsAndTheirSiblings(ActionType, Node* container, ContentsProcessDirection, PassRefPtr<Node> clonedContainer, Node* commonRoot, ExceptionState&);
 
-    RefPtr<Document> m_ownerDocument;
+    RefPtr<Document> m_ownerDocument; // Cannot be null.
     RangeBoundaryPoint m_start;
     RangeBoundaryPoint m_end;
 };
