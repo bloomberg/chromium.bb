@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
+#include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 using base::FilePath;
@@ -31,7 +32,6 @@ namespace picasa {
 
 namespace {
 
-// |error| is only set when the method fails and the return is NULL.
 base::PlatformFileError FindAlbumInfo(const std::string& key,
                                       const AlbumMap* map,
                                       AlbumInfo* album_info) {
@@ -47,6 +47,17 @@ base::PlatformFileError FindAlbumInfo(const std::string& key,
     *album_info = it->second;
 
   return base::PLATFORM_FILE_OK;
+}
+
+PicasaDataProvider::DataType GetDataTypeForURL(
+    const fileapi::FileSystemURL& url) {
+  std::vector<std::string> components;
+  fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
+
+  if (components.size() >= 2 && components[0] == kPicasaDirAlbums)
+    return PicasaDataProvider::ALBUMS_IMAGES_DATA;
+
+  return PicasaDataProvider::LIST_OF_ALBUMS_AND_FOLDERS_DATA;
 }
 
 }  // namespace
@@ -66,7 +77,7 @@ void PicasaFileUtil::GetFileInfoOnTaskRunnerThread(
     const fileapi::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   GetDataProvider()->RefreshData(
-      PicasaDataProvider::LIST_OF_ALBUMS_AND_FOLDERS_DATA,
+      GetDataTypeForURL(url),
       base::Bind(&PicasaFileUtil::GetFileInfoWithFreshDataProvider,
                  weak_factory_.GetWeakPtr(),
                  base::Passed(&context),
@@ -79,7 +90,7 @@ void PicasaFileUtil::ReadDirectoryOnTaskRunnerThread(
     const fileapi::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   GetDataProvider()->RefreshData(
-      PicasaDataProvider::LIST_OF_ALBUMS_AND_FOLDERS_DATA,
+      GetDataTypeForURL(url),
       base::Bind(&PicasaFileUtil::ReadDirectoryWithFreshDataProvider,
                  weak_factory_.GetWeakPtr(),
                  base::Passed(&context),
@@ -206,7 +217,33 @@ base::PlatformFileError PicasaFileUtil::ReadDirectorySync(
       break;
     case 2:
       if (components[0] == kPicasaDirAlbums) {
-        // TODO(tommycli): Implement album contents.
+        scoped_ptr<AlbumMap> album_map = GetDataProvider()->GetAlbums();
+        AlbumInfo album_info;
+        base::PlatformFileError error =
+            FindAlbumInfo(components[1], album_map.get(), &album_info);
+        if (error != base::PLATFORM_FILE_OK)
+          return error;
+
+        scoped_ptr<AlbumImages> album_images =
+            GetDataProvider()->FindAlbumImages(album_info.uid, &error);
+        if (error != base::PLATFORM_FILE_OK)
+          return error;
+
+        for (AlbumImages::const_iterator it = album_images->begin();
+             it != album_images->end();
+             ++it) {
+          fileapi::DirectoryEntry entry;
+          base::PlatformFileInfo info;
+
+          // Simply skip files that we can't get info on.
+          if (fileapi::NativeFileUtil::GetFileInfo(it->second, &info) !=
+              base::PLATFORM_FILE_OK) {
+            continue;
+          }
+
+          file_list->push_back(DirectoryEntry(
+              it->first, DirectoryEntry::FILE, info.size, info.last_modified));
+        }
       }
 
       if (components[0] == kPicasaDirFolders) {
@@ -254,13 +291,23 @@ base::PlatformFileError PicasaFileUtil::GetLocalFilePath(
     case 3:
       if (components[0] == kPicasaDirAlbums) {
         scoped_ptr<AlbumMap> album_map = GetDataProvider()->GetAlbums();
+        AlbumInfo album_info;
         base::PlatformFileError error =
-            FindAlbumInfo(components[1], album_map.get(), NULL);
+            FindAlbumInfo(components[1], album_map.get(), &album_info);
         if (error != base::PLATFORM_FILE_OK)
           return error;
 
-        // TODO(tommycli): Implement album contents.
-        return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+        scoped_ptr<AlbumImages> album_images =
+            GetDataProvider()->FindAlbumImages(album_info.uid, &error);
+        if (error != base::PLATFORM_FILE_OK)
+          return error;
+
+        AlbumImages::const_iterator it = album_images->find(components[2]);
+        if (it == album_images->end())
+          return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+
+        *local_file_path = it->second;
+        return base::PLATFORM_FILE_OK;
       }
 
       if (components[0] == kPicasaDirFolders) {

@@ -10,9 +10,11 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/platform_file.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -34,6 +36,7 @@
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
+#include "webkit/common/blob/shareable_file_reference.h"
 
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemOperationContext;
@@ -45,6 +48,11 @@ namespace picasa {
 namespace {
 
 base::Time::Exploded test_date_exploded = { 2013, 4, 0, 16, 0, 0, 0, 0 };
+
+bool WriteJPEGHeader(const base::FilePath& path) {
+  const char kJpegHeader[] = "\xFF\xD8\xFF";  // Per HTML5 specification.
+  return file_util::WriteFile(path, kJpegHeader, arraysize(kJpegHeader)) != -1;
+}
 
 class TestFolder {
  public:
@@ -65,14 +73,13 @@ class TestFolder {
 
     folder_info_ = AlbumInfo(name_, timestamp_, uid_, folder_dir_.path());
 
-    const char kJpegHeader[] = "\xFF\xD8\xFF";  // Per HTML5 specification.
     for (unsigned int i = 0; i < image_files_; ++i) {
       std::string image_filename = base::StringPrintf("img%05d.jpg", i);
       image_filenames_.insert(image_filename);
 
       base::FilePath path = folder_dir_.path().AppendASCII(image_filename);
 
-      if (file_util::WriteFile(path, kJpegHeader, arraysize(kJpegHeader)) == -1)
+      if (!WriteJPEGHeader(path))
         return false;
     }
 
@@ -157,6 +164,23 @@ void SynchronouslyRunOnMediaTaskRunner(const base::Closure& closure) {
       closure,
       loop.QuitClosure());
   loop.Run();
+}
+
+void CreateSnapshotFileTestHelperCallback(
+    base::RunLoop* run_loop,
+    base::PlatformFileError* error,
+    base::FilePath* platform_path_result,
+    base::PlatformFileError result,
+    const base::PlatformFileInfo& file_info,
+    const base::FilePath& platform_path,
+    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+  DCHECK(run_loop);
+  DCHECK(error);
+  DCHECK(platform_path_result);
+
+  *error = result;
+  *platform_path_result = platform_path;
+  run_loop->Quit();
 }
 
 }  // namespace
@@ -249,19 +273,10 @@ class PicasaFileUtilTest : public testing::Test {
     picasa_data_provider_.reset();
   }
 
-  void SetupDataProvider(PicasaDataProvider* picasa_data_provider,
-                         const std::vector<AlbumInfo>& albums,
-                         const std::vector<AlbumInfo>& folders) {
-    PicasaDataProvider::UniquifyNames(albums,
-                                      &picasa_data_provider->album_map_);
-    PicasaDataProvider::UniquifyNames(folders,
-                                      &picasa_data_provider->folder_map_);
-    picasa_data_provider->state_ =
-        PicasaDataProvider::ALBUMS_IMAGES_FRESH_STATE;
-  }
-
   // |test_folders| must be in alphabetical order for easy verification
-  void SetupFolders(ScopedVector<TestFolder>* test_folders) {
+  void SetupFolders(ScopedVector<TestFolder>* test_folders,
+                    const std::vector<AlbumInfo>& albums,
+                    const AlbumImagesMap& albums_images) {
     std::vector<AlbumInfo> folders;
     for (ScopedVector<TestFolder>::iterator it = test_folders->begin();
         it != test_folders->end(); ++it) {
@@ -270,8 +285,13 @@ class PicasaFileUtilTest : public testing::Test {
       folders.push_back(test_folder->folder_info());
     }
 
-    SetupDataProvider(
-        picasa_data_provider_.get(), std::vector<AlbumInfo>(), folders);
+    PicasaDataProvider::UniquifyNames(albums,
+                                      &picasa_data_provider_->album_map_);
+    PicasaDataProvider::UniquifyNames(folders,
+                                      &picasa_data_provider_->folder_map_);
+    picasa_data_provider_->albums_images_ = albums_images;
+    picasa_data_provider_->state_ =
+        PicasaDataProvider::ALBUMS_IMAGES_FRESH_STATE;
   }
 
   void VerifyFolderDirectoryList(const ScopedVector<TestFolder>& test_folders) {
@@ -320,14 +340,23 @@ class PicasaFileUtilTest : public testing::Test {
     return PicasaDataProvider::DateToPathString(time);
   }
 
-  void TestNonexistentFolder(const std::string& path_append) {
+  void TestNonexistentDirectory(const std::string& path) {
     FileSystemOperation::FileEntryList contents;
-    FileSystemURL url = CreateURL(
-        std::string(kPicasaDirFolders) + path_append);
+    FileSystemURL url = CreateURL(path);
     bool completed = false;
     ReadDirectoryTestHelper(operation_runner(), url, &contents, &completed);
 
     ASSERT_FALSE(completed);
+  }
+
+  void TestEmptyDirectory(const std::string& path) {
+    FileSystemOperation::FileEntryList contents;
+    FileSystemURL url = CreateURL(path);
+    bool completed = false;
+    ReadDirectoryTestHelper(operation_runner(), url, &contents, &completed);
+
+    ASSERT_TRUE(completed);
+    EXPECT_EQ(0u, contents.size());
   }
 
   FileSystemURL CreateURL(const std::string& virtual_path) const {
@@ -398,7 +427,7 @@ TEST_F(PicasaFileUtilTest, NameDeduplication) {
       new TestFolder("unique_name", test_date, "uuid1", 0, 0));
   expected_names.push_back("unique_name " + test_date_string);
 
-  SetupFolders(&test_folders);
+  SetupFolders(&test_folders, std::vector<AlbumInfo>(), AlbumImagesMap());
 
   FileSystemOperation::FileEntryList contents;
   FileSystemURL url = CreateURL(kPicasaDirFolders);
@@ -417,7 +446,7 @@ TEST_F(PicasaFileUtilTest, NameDeduplication) {
 
 TEST_F(PicasaFileUtilTest, RootFolders) {
   ScopedVector<TestFolder> empty_folders_list;
-  SetupFolders(&empty_folders_list);
+  SetupFolders(&empty_folders_list, std::vector<AlbumInfo>(), AlbumImagesMap());
 
   FileSystemOperation::FileEntryList contents;
   FileSystemURL url = CreateURL("");
@@ -439,11 +468,11 @@ TEST_F(PicasaFileUtilTest, RootFolders) {
 
 TEST_F(PicasaFileUtilTest, NonexistentFolder) {
   ScopedVector<TestFolder> empty_folders_list;
-  SetupFolders(&empty_folders_list);
+  SetupFolders(&empty_folders_list, std::vector<AlbumInfo>(), AlbumImagesMap());
 
-  TestNonexistentFolder("/foo");
-  TestNonexistentFolder("/foo/bar");
-  TestNonexistentFolder("/foo/bar/baz");
+  TestNonexistentDirectory(std::string(kPicasaDirFolders) + "/foo");
+  TestNonexistentDirectory(std::string(kPicasaDirFolders) + "/foo/bar");
+  TestNonexistentDirectory(std::string(kPicasaDirFolders) + "/foo/bar/baz");
 }
 
 TEST_F(PicasaFileUtilTest, FolderContentsTrivial) {
@@ -459,7 +488,7 @@ TEST_F(PicasaFileUtilTest, FolderContentsTrivial) {
   test_folders.push_back(
       new TestFolder("folder-4-both", test_date, "uid-both", 5, 5));
 
-  SetupFolders(&test_folders);
+  SetupFolders(&test_folders, std::vector<AlbumInfo>(), AlbumImagesMap());
   VerifyFolderDirectoryList(test_folders);
 }
 
@@ -470,7 +499,7 @@ TEST_F(PicasaFileUtilTest, FolderWithManyFiles) {
   test_folders.push_back(
       new TestFolder("folder-many-files", test_date, "uid-both", 500, 500));
 
-  SetupFolders(&test_folders);
+  SetupFolders(&test_folders, std::vector<AlbumInfo>(), AlbumImagesMap());
   VerifyFolderDirectoryList(test_folders);
 }
 
@@ -489,8 +518,83 @@ TEST_F(PicasaFileUtilTest, ManyFolders) {
                        base::StringPrintf("uid%05d", i), i % 5, i % 3));
   }
 
-  SetupFolders(&test_folders);
+  SetupFolders(&test_folders, std::vector<AlbumInfo>(), AlbumImagesMap());
   VerifyFolderDirectoryList(test_folders);
+}
+
+TEST_F(PicasaFileUtilTest, AlbumExistence) {
+  ScopedVector<TestFolder> test_folders;
+  base::Time test_date = base::Time::FromLocalExploded(test_date_exploded);
+
+  std::vector<AlbumInfo> albums;
+  AlbumInfo info;
+  info.name = "albumname";
+  info.uid = "albumuid";
+  info.timestamp = test_date;
+  albums.push_back(info);
+
+  AlbumImagesMap albums_images;
+  albums_images[info.uid] = AlbumImages();
+
+  SetupFolders(&test_folders, albums, albums_images);
+
+  TestEmptyDirectory(std::string(kPicasaDirAlbums) + "/albumname 2013-04-16");
+  TestNonexistentDirectory(std::string(kPicasaDirAlbums) +
+                           "/albumname 2013-04-16/toodeep");
+  TestNonexistentDirectory(std::string(kPicasaDirAlbums) + "/wrongname");
+}
+
+TEST_F(PicasaFileUtilTest, AlbumContents) {
+  ScopedVector<TestFolder> test_folders;
+  base::Time test_date = base::Time::FromLocalExploded(test_date_exploded);
+
+  std::vector<AlbumInfo> albums;
+  AlbumInfo info;
+  info.name = "albumname";
+  info.uid = "albumuid";
+  info.timestamp = test_date;
+  albums.push_back(info);
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  base::FilePath image_path = temp_dir.path().AppendASCII("img.jpg");
+  ASSERT_TRUE(WriteJPEGHeader(image_path));
+
+  AlbumImagesMap albums_images;
+  albums_images[info.uid] = AlbumImages();
+  albums_images[info.uid]["mapped_name.jpg"] = image_path;
+
+  SetupFolders(&test_folders, albums, albums_images);
+
+  FileSystemOperation::FileEntryList contents;
+  FileSystemURL url =
+      CreateURL(std::string(kPicasaDirAlbums) + "/albumname 2013-04-16");
+  bool completed = false;
+  ReadDirectoryTestHelper(operation_runner(), url, &contents, &completed);
+
+  ASSERT_TRUE(completed);
+  EXPECT_EQ(1u, contents.size());
+  EXPECT_EQ("mapped_name.jpg",
+            base::FilePath(contents.begin()->name).AsUTF8Unsafe());
+  EXPECT_FALSE(contents.begin()->is_directory);
+
+  // Create a snapshot file to verify the file path.
+  base::RunLoop loop;
+  base::PlatformFileError error;
+  base::FilePath platform_path_result;
+  fileapi::FileSystemOperationRunner::SnapshotFileCallback snapshot_callback =
+      base::Bind(&CreateSnapshotFileTestHelperCallback,
+                 &loop,
+                 &error,
+                 &platform_path_result);
+  operation_runner()->CreateSnapshotFile(
+      CreateURL(std::string(kPicasaDirAlbums) +
+                "/albumname 2013-04-16/mapped_name.jpg"),
+      snapshot_callback);
+  loop.Run();
+  EXPECT_EQ(base::PLATFORM_FILE_OK, error);
+  EXPECT_EQ(image_path, platform_path_result);
 }
 
 }  // namespace picasa

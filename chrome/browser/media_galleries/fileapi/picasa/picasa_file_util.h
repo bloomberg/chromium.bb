@@ -16,6 +16,15 @@ class PicasaDataProvider;
 extern const char kPicasaDirAlbums[];
 extern const char kPicasaDirFolders[];
 
+// PicasaFileUtil virtual directory structure example:
+//   - /albums/
+//   - /albums/albumname 2013-08-21/
+//   - /albums/albumname 2013-08-21/imagename.jpg
+//   - /albums/duplicatename 2013-08-21/
+//   - /albums/duplicatename 2013-08-21 (1)/
+//   - /folders/
+//   - /folders/My Pictures 2013-08-21/flower.jpg
+//   - /folders/Photos 2013-08-21/
 class PicasaFileUtil : public chrome::NativeMediaFileUtil {
  public:
   explicit PicasaFileUtil(chrome::MediaPathFilter* media_path_filter);
