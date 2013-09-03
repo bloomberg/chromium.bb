@@ -312,7 +312,6 @@ void FindFileHandlerTasks(Profile* profile,
 void FindFileBrowserHandlerTasks(
     Profile* profile,
     const std::vector<GURL>& file_urls,
-    const std::vector<base::FilePath>& file_paths,
     std::vector<FullTaskDescriptor>* result_list);
 
 // Finds all types (drive, file handlers, file browser handlers) of
@@ -321,7 +320,6 @@ void FindAllTypesOfTasks(
     Profile* profile,
     const PathAndMimeTypeSet& path_mime_set,
     const std::vector<GURL>& file_urls,
-    const std::vector<base::FilePath>& file_paths,
     std::vector<FullTaskDescriptor>* result_list);
 
 // Chooses the default task in |tasks| and sets it as default, if the default

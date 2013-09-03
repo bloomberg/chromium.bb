@@ -458,9 +458,7 @@ void FindFileHandlerTasks(
 void FindFileBrowserHandlerTasks(
     Profile* profile,
     const std::vector<GURL>& file_urls,
-    const std::vector<base::FilePath>& file_paths,
     std::vector<FullTaskDescriptor>* result_list) {
-  DCHECK(!file_paths.empty());
   DCHECK(!file_urls.empty());
   DCHECK(result_list);
 
@@ -503,16 +501,16 @@ void FindAllTypesOfTasks(
     Profile* profile,
     const PathAndMimeTypeSet& path_mime_set,
     const std::vector<GURL>& file_urls,
-    const std::vector<base::FilePath>& file_paths,
     std::vector<FullTaskDescriptor>* result_list) {
   DCHECK(profile);
   DCHECK(result_list);
 
   // Check if file_paths contain a google document.
   bool has_google_document = false;
-  for (size_t i = 0; i < file_paths.size(); ++i) {
+  for (PathAndMimeTypeSet::const_iterator iter = path_mime_set.begin();
+       iter != path_mime_set.end(); ++iter) {
     if (google_apis::ResourceEntry::ClassifyEntryKindByFileExtension(
-            file_paths[i]) &
+            iter->first) &
         google_apis::ResourceEntry::KIND_OF_GOOGLE_DOCUMENT) {
       has_google_document = true;
       break;
@@ -538,7 +536,6 @@ void FindAllTypesOfTasks(
   // be used in the same manifest.json.
   FindFileBrowserHandlerTasks(profile,
                               file_urls,
-                              file_paths,
                               result_list);
 
   ChooseAndSetDefaultTask(*profile->GetPrefs(),

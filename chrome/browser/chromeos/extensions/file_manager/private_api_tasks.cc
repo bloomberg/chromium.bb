@@ -159,7 +159,6 @@ bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {
   // file paths.
   PathAndMimeTypeSet path_mime_set;
   std::vector<GURL> file_urls;
-  std::vector<base::FilePath> file_paths;
   for (size_t i = 0; i < files_list->GetSize(); ++i) {
     std::string file_url_str;
     if (!files_list->GetString(i, &file_url_str))
@@ -178,7 +177,6 @@ bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {
     const base::FilePath file_path = file_system_url.path();
 
     file_urls.push_back(file_url);
-    file_paths.push_back(file_path);
 
     // If MIME type is not provided, guess it from the file path.
     if (mime_type.empty())
@@ -191,7 +189,6 @@ bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {
   file_manager::file_tasks::FindAllTypesOfTasks(profile_,
                                                 path_mime_set,
                                                 file_urls,
-                                                file_paths,
                                                 &tasks);
   // Convert the tasks into JSON format.
   ListValue* result_list = new ListValue();
