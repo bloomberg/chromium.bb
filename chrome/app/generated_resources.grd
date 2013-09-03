@@ -14583,9 +14583,9 @@ Do you accept?
             desc="Title for notification displayed when a download request is completed">
       Download complete notification
     </message>
-    <message name="IDS_WIN8_RESTART"
-             desc="Text for the infobar button to restart Chrome in desktop mode. Doesn't explicitly mention 'on the desktop' because the infobar message already says that.">
-      Relaunch Chrome
+    <message name="IDS_WIN8_DESKTOP_OPEN"
+             desc="Text for the infobar button to open Chrome in desktop mode.">
+      Open Chrome on the desktop
     </message>
     <message name="IDS_WIN8_DESKTOP_RESTART"
              desc="Text for the menu item to restart chrome in desktop mode. Aplies to Windows 8 only">

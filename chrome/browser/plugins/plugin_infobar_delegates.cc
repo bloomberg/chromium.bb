@@ -476,15 +476,13 @@ string16 PluginMetroModeInfoBarDelegate::GetMessageText() const {
 }
 
 int PluginMetroModeInfoBarDelegate::GetButtons() const {
-  return (mode_ == MISSING_PLUGIN) ? BUTTON_OK : (BUTTON_OK | BUTTON_CANCEL);
+  return BUTTON_OK;
 }
 
 string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  if (button == BUTTON_CANCEL)
-    return l10n_util::GetStringUTF16(IDS_DONT_ASK_AGAIN_INFOBAR_BUTTON_LABEL);
   return l10n_util::GetStringUTF16((mode_ == MISSING_PLUGIN) ?
-      IDS_WIN8_DESKTOP_RESTART : IDS_WIN8_RESTART);
+      IDS_WIN8_DESKTOP_RESTART : IDS_WIN8_DESKTOP_OPEN);
 }
 
 void LaunchDesktopInstanceHelper(const string16& url) {
@@ -513,17 +511,6 @@ bool PluginMetroModeInfoBarDelegate::Accept() {
 #else
   chrome::AttemptRestartWithModeSwitch();
 #endif
-  return true;
-}
-
-bool PluginMetroModeInfoBarDelegate::Cancel() {
-  DCHECK_EQ(DESKTOP_MODE_REQUIRED, mode_);
-  Profile::FromBrowserContext(web_contents()->GetBrowserContext())->
-      GetHostContentSettingsMap()->SetContentSetting(
-          ContentSettingsPattern::FromURL(web_contents()->GetURL()),
-          ContentSettingsPattern::Wildcard(),
-          CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP, std::string(),
-          CONTENT_SETTING_BLOCK);
   return true;
 }
 
