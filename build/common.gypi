@@ -4644,6 +4644,19 @@
       ],
     }],
   ],
+  'configurations': {
+    # DON'T ADD ANYTHING NEW TO THIS BLOCK UNLESS YOU REALLY REALLY NEED IT!
+    # This block adds *project-wide* configuration settings to each project
+    # file.  It's almost always wrong to put things here.  Specify your
+    # custom |configurations| in target_defaults to add them to targets instead.
+    'Debug': {
+      'xcode_settings': {
+        # Enable 'Build Active Architecture Only' for Debug. This
+        # avoids a project-level warning in Xcode.
+        'ONLY_ACTIVE_ARCH': 'YES',
+      },
+    },
+  },
   'xcode_settings': {
     # DON'T ADD ANYTHING NEW TO THIS BLOCK UNLESS YOU REALLY REALLY NEED IT!
     # This block adds *project-wide* configuration settings to each project
