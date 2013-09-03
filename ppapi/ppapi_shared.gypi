@@ -93,6 +93,8 @@
           'shared_impl/resource.h',
           'shared_impl/resource_tracker.cc',
           'shared_impl/resource_tracker.h',
+          'shared_impl/resource_var.cc',
+          'shared_impl/resource_var.h',
           'shared_impl/scoped_pp_resource.cc',
           'shared_impl/scoped_pp_resource.h',
           'shared_impl/scoped_pp_var.cc',

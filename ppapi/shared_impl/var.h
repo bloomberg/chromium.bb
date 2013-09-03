@@ -22,6 +22,7 @@ class ArrayVar;
 class DictionaryVar;
 class NPObjectVar;
 class ProxyObjectVar;
+class ResourceVar;
 class StringVar;
 class VarTracker;
 
@@ -41,6 +42,7 @@ class PPAPI_SHARED_EXPORT Var : public base::RefCounted<Var> {
   virtual ProxyObjectVar* AsProxyObjectVar();
   virtual ArrayVar* AsArrayVar();
   virtual DictionaryVar* AsDictionaryVar();
+  virtual ResourceVar* AsResourceVar();
 
   // Creates a PP_Var corresponding to this object. The return value will have
   // one reference addrefed on behalf of the caller.

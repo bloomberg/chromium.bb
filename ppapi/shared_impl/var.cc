@@ -91,6 +91,10 @@ DictionaryVar* Var::AsDictionaryVar() {
   return NULL;
 }
 
+ResourceVar* Var::AsResourceVar() {
+  return NULL;
+}
+
 PP_Var Var::GetPPVar() {
   int32 id = GetOrCreateVarID();
   if (!id)

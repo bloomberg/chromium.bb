@@ -48,6 +48,7 @@
         '../gpu/command_buffer/command_buffer.gyp:gles2_utils',
         '../gpu/gpu.gyp:command_buffer_client',
         '../gpu/gpu.gyp:gles2_implementation',
+        '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:shared_memory_support',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icuuc',
@@ -225,6 +226,7 @@
             'ppapi.gyp:ppapi_c',
             '../base/base.gyp:base_nacl_win64',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
+            '../ipc/ipc.gyp:ipc_win64',
           ],
           'defines': [
             '<@(nacl_win64_defines)',
