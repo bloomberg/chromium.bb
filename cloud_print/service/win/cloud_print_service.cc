@@ -7,6 +7,9 @@
 
 #include <iomanip>
 #include <iostream>
+#include <iterator>
+#include <string>
+#include <vector>
 
 #include "base/at_exit.h"
 #include "base/bind.h"

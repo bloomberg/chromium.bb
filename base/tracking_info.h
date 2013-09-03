@@ -11,6 +11,7 @@
 #ifndef BASE_TRACKING_INFO_H_
 #define BASE_TRACKING_INFO_H_
 
+#include "base/base_export.h"
 #include "base/profiler/tracked_time.h"
 #include "base/time/time.h"
 

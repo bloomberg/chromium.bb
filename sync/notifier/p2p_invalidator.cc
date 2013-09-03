@@ -5,6 +5,7 @@
 #include "sync/notifier/p2p_invalidator.h"
 
 #include <algorithm>
+#include <iterator>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"

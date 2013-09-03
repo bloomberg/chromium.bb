@@ -4,6 +4,9 @@
 
 #include "base/value_conversions.h"
 
+#include <string>
+
+#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"

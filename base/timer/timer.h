@@ -50,6 +50,7 @@
 // should be able to tell the difference.
 
 #include "base/base_export.h"
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -59,7 +60,6 @@
 namespace base {
 
 class BaseTimerTaskInternal;
-class MessageLoop;
 
 //-----------------------------------------------------------------------------
 // This class wraps MessageLoop::PostDelayedTask to manage delayed and repeating

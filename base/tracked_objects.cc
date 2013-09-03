@@ -4,21 +4,23 @@
 
 #include "base/tracked_objects.h"
 
-#include <math.h>
+#include <limits.h>
 #include <stdlib.h>
 
 #include "base/compiler_specific.h"
 #include "base/debug/leak_annotations.h"
-#include "base/format_macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/port.h"
+#include "base/logging.h"
 #include "base/process/process_handle.h"
 #include "base/profiler/alternate_timer.h"
 #include "base/strings/stringprintf.h"
 #include "base/third_party/valgrind/memcheck.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/tracking_info.h"
 
 using base::TimeDelta;
+
+namespace base {
+class TimeDelta;
+}
 
 namespace tracked_objects {
 

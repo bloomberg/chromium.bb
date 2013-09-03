@@ -4,13 +4,13 @@
 
 #include "base/time/time.h"
 
-#include <math.h>
 #include <limits>
+#include <ostream>
 
 #include "base/float_util.h"
 #include "base/logging.h"
-#include "base/strings/sys_string_conversions.h"
 #include "base/third_party/nspr/prtime.h"
+#include "base/third_party/nspr/prtypes.h"
 
 namespace base {
 

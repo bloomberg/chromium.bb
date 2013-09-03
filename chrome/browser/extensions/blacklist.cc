@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/blacklist.h"
 
 #include <algorithm>
+#include <iterator>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"

@@ -5,7 +5,6 @@
 #ifndef BASE_VLOG_H_
 #define BASE_VLOG_H_
 
-#include <cstddef>
 #include <string>
 #include <vector>
 

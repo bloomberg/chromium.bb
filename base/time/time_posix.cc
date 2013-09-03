@@ -4,16 +4,21 @@
 
 #include "base/time/time.h"
 
+#include <stdint.h>
 #include <sys/time.h>
 #include <time.h>
 #if defined(OS_ANDROID)
 #include <time64.h>
 #endif
+#include <unistd.h>
 
 #include <limits>
+#include <ostream>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/port.h"
+#include "build/build_config.h"
 
 #if defined(OS_ANDROID)
 #include "base/os_compat_android.h"

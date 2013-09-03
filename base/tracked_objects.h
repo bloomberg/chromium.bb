@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -20,7 +21,10 @@
 #include "base/profiler/tracked_time.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local_storage.h"
-#include "base/tracking_info.h"
+
+namespace base {
+struct TrackingInfo;
+}
 
 // TrackedObjects provides a database of stats about objects (generally Tasks)
 // that are tracked.  Tracking means their birth, death, duration, birth thread,

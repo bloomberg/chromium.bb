@@ -25,9 +25,9 @@
 
 #include <time.h>
 
-#include "base/atomicops.h"
 #include "base/base_export.h"
 #include "base/basictypes.h"
+#include "build/build_config.h"
 
 #if defined(OS_MACOSX)
 #include <CoreFoundation/CoreFoundation.h>

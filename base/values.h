@@ -17,9 +17,12 @@
 #ifndef BASE_VALUES_H_
 #define BASE_VALUES_H_
 
-#include <iterator>
+#include <stddef.h>
+
+#include <iosfwd>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base_export.h"
@@ -35,7 +38,6 @@
 // http://crbug.com/88666
 namespace base {
 
-class BinaryValue;
 class DictionaryValue;
 class FundamentalValue;
 class ListValue;
