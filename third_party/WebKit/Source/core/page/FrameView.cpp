@@ -1089,7 +1089,7 @@ void FrameView::layout(bool allowSubtree)
 #ifndef NDEBUG
     // Post-layout assert that nobody was re-marked as needing layout during layout.
     for (RenderObject* renderer = document->renderer(); renderer; renderer = renderer->nextInPreOrder())
-        ASSERT(!renderer->needsLayout());
+        ASSERT_WITH_SECURITY_IMPLICATION(!renderer->needsLayout());
 #endif
 
     // FIXME: It should be not possible to remove the FrameView from the frame/page during layout
