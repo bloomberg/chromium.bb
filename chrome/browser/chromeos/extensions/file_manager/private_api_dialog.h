@@ -24,10 +24,8 @@ class FileBrowserPrivateCancelDialogFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.cancelDialog",
                              FILEBROWSERPRIVATE_CANCELDIALOG)
 
-  FileBrowserPrivateCancelDialogFunction();
-
  protected:
-  virtual ~FileBrowserPrivateCancelDialogFunction();
+  virtual ~FileBrowserPrivateCancelDialogFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -39,10 +37,8 @@ class FileBrowserPrivateSelectFileFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.selectFile",
                              FILEBROWSERPRIVATE_SELECTFILE)
 
-  FileBrowserPrivateSelectFileFunction();
-
  protected:
-  virtual ~FileBrowserPrivateSelectFileFunction();
+  virtual ~FileBrowserPrivateSelectFileFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -50,6 +46,7 @@ class FileBrowserPrivateSelectFileFunction
  private:
   // A callback method to handle the result of GetSelectedFileInfo.
   void GetSelectedFileInfoResponse(
+      int index,
       const std::vector<ui::SelectedFileInfo>& files);
 };
 
@@ -60,10 +57,8 @@ class FileBrowserPrivateSelectFilesFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.selectFiles",
                              FILEBROWSERPRIVATE_SELECTFILES)
 
-  FileBrowserPrivateSelectFilesFunction();
-
  protected:
-  virtual ~FileBrowserPrivateSelectFilesFunction();
+  virtual ~FileBrowserPrivateSelectFilesFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
