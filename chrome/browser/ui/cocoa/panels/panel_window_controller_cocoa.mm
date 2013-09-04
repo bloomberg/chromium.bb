@@ -816,6 +816,11 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 }
 
 - (void)windowDidResize:(NSNotification*)notification {
+  Panel* panel = windowShim_->panel();
+  if (![self isAnimatingBounds] ||
+      panel->collection()->type() != PanelCollection::DOCKED)
+    return;
+
   // Remove the web contents view from the view hierarchy when the panel is not
   // taller than the titlebar. Put it back when the panel grows taller than
   // the titlebar. Note that RenderWidgetHostViewMac works for the case that
@@ -823,18 +828,18 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   // is not the main one), but it does not work well, like causing occasional
   // crashes (http://crbug.com/265932), if the web contents view is made hidden.
   //
-  // The reason for doing this is to ensure that our titlebar view, that is
-  // somewhat taller than the standard titlebar, does not overlap with the web
-  // contents view because the the web contents view assumes that its view will
-  // never overlap with another view in order to paint the web contents view
-  // directly. If we do not do this, some part of the web contents view will
-  // become visible and overlap the bottom area of the titlebar.
-  content::WebContents* webContents = windowShim_->panel()->GetWebContents();
+  // This is needed when the docked panels are being animated. When the
+  // animation starts, the contents view autosizing is disabled. After the
+  // animation ends, the contents view autosizing is reenabled and the frame
+  // of contents view is updated. Thus it is likely that the contents view will
+  // overlap with the titlebar view when the panel shrinks to be very small.
+  // The implementation of the web contents view assumes that it will never
+  // overlap with another view in order to paint the web contents view directly.
+  content::WebContents* webContents = panel->GetWebContents();
   if (!webContents)
     return;
   NSView* contentView = webContents->GetView()->GetNativeView();
-  if (NSHeight([self contentRectForFrameRect:[[self window] frame]]) <=
-      panel::kTitlebarHeight) {
+  if (NSHeight([self contentRectForFrameRect:[[self window] frame]]) <= 0) {
     // No need to retain the view before it is removed from its superview
     // because WebContentsView keeps a reference to this view.
     if ([contentView superview])
