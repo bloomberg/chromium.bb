@@ -157,5 +157,7 @@ void ParseShareUrlAndRun(const google_apis::GetShareUrlCallback& callback,
   callback.Run(error, share_link ? share_link->href() : GURL());
 }
 
+const char kWapiRootDirectoryResourceId[] = "folder:root";
+
 }  // namespace util
 }  // namespace drive

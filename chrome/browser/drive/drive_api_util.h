@@ -62,6 +62,10 @@ void ParseShareUrlAndRun(const google_apis::GetShareUrlCallback& callback,
                          google_apis::GDataErrorCode error,
                          scoped_ptr<base::Value> value);
 
+// The resource ID for the root directory for WAPI is defined in the spec:
+// https://developers.google.com/google-apps/documents-list/
+extern const char kWapiRootDirectoryResourceId[];
+
 }  // namespace util
 }  // namespace drive
 

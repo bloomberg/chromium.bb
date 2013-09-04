@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
@@ -57,7 +58,6 @@ using google_apis::ResourceList;
 using google_apis::UploadRangeCallback;
 using google_apis::UploadRangeResponse;
 namespace test_util = google_apis::test_util;
-namespace util = google_apis::util;
 
 namespace drive {
 namespace {
@@ -873,9 +873,10 @@ CancelCallback FakeDriveService::TouchResource(
   }
 
   entry->SetString("updated.$t",
-                   util::FormatTimeAsString(modified_date));
-  entry->SetString("gd$lastViewed.$t",
-                   util::FormatTimeAsString(last_viewed_by_me_date));
+                   google_apis::util::FormatTimeAsString(modified_date));
+  entry->SetString(
+      "gd$lastViewed.$t",
+      google_apis::util::FormatTimeAsString(last_viewed_by_me_date));
   AddNewChangestampAndETag(entry);
 
   scoped_ptr<ResourceEntry> parsed_entry(ResourceEntry::CreateFrom(*entry));
@@ -1223,7 +1224,11 @@ CancelCallback FakeDriveService::AuthorizeApp(
 CancelCallback FakeDriveService::GetResourceListInDirectoryByWapi(
     const std::string& directory_resource_id,
     const google_apis::GetResourceListCallback& callback) {
-  return GetResourceListInDirectory(directory_resource_id, callback);
+  return GetResourceListInDirectory(
+      directory_resource_id == util::kWapiRootDirectoryResourceId ?
+          GetRootResourceId() :
+          directory_resource_id,
+      callback);
 }
 
 CancelCallback FakeDriveService::GetRemainingResourceList(
@@ -1350,8 +1355,9 @@ void FakeDriveService::SetLastModifiedTime(
   if (last_modified_time.is_null()) {
     entry->Remove("updated.$t", NULL);
   } else {
-    entry->SetString("updated.$t",
-                     util::FormatTimeAsString(last_modified_time));
+    entry->SetString(
+        "updated.$t",
+        google_apis::util::FormatTimeAsString(last_modified_time));
   }
 
   scoped_ptr<ResourceEntry> parsed_entry(
@@ -1508,8 +1514,9 @@ const base::DictionaryValue* FakeDriveService::AddNewEntry(
 
   base::Time published_date =
       base::Time() + base::TimeDelta::FromMilliseconds(++published_date_seq_);
-  new_entry->SetString("published.$t",
-                       util::FormatTimeAsString(published_date));
+  new_entry->SetString(
+      "published.$t",
+      google_apis::util::FormatTimeAsString(published_date));
 
   // If there are no entries, prepare an empty entry to add.
   if (!resource_list_value_->HasKey("entry"))

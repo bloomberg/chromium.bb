@@ -70,10 +70,6 @@ namespace {
 const char kSpreadsheetsScope[] = "https://spreadsheets.google.com/feeds/";
 const char kUserContentScope[] = "https://docs.googleusercontent.com/";
 
-// The resource ID for the root directory for WAPI is defined in the spec:
-// https://developers.google.com/google-apps/documents-list/
-const char kWapiRootDirectoryResourceId[] = "folder:root";
-
 // Parses the JSON value to ResourceEntry runs |callback|.
 void ParseResourceEntryAndRun(const GetResourceEntryCallback& callback,
                               GDataErrorCode error,
@@ -106,7 +102,7 @@ void ParseAboutResourceAndRun(
   scoped_ptr<AboutResource> about_resource;
   if (account_metadata) {
     about_resource = AboutResource::CreateFromAccountMetadata(
-        *account_metadata, kWapiRootDirectoryResourceId);
+        *account_metadata, util::kWapiRootDirectoryResourceId);
   }
 
   callback.Run(error, about_resource.Pass());
@@ -189,7 +185,7 @@ std::string GDataWapiService::CanonicalizeResourceId(
 }
 
 std::string GDataWapiService::GetRootResourceId() const {
-  return kWapiRootDirectoryResourceId;
+  return util::kWapiRootDirectoryResourceId;
 }
 
 // Because GData WAPI support is expected to be gone somehow soon by migration

@@ -178,9 +178,11 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
 class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
  public:
   FastFetchFeedFetcher(JobScheduler* scheduler,
-                       const std::string& directory_resource_id)
+                       const std::string& directory_resource_id,
+                       const std::string& root_folder_id)
       : scheduler_(scheduler),
         directory_resource_id_(directory_resource_id),
+        root_folder_id_(root_folder_id),
         weak_ptr_factory_(this) {
   }
 
@@ -188,13 +190,59 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
   }
 
   virtual void Run(const FeedFetcherCallback& callback) OVERRIDE {
-    scheduler_->GetResourceListInDirectory(
-        directory_resource_id_,
+    if (util::IsDriveV2ApiEnabled() && root_folder_id_.empty()) {
+      // The root folder id is not available yet. Fetch from the server.
+      scheduler_->GetAboutResource(
+          base::Bind(&FastFetchFeedFetcher::RunAfterGetAboutResource,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+      return;
+    }
+
+    StartGetResourceListInDirectory(callback);
+  }
+
+ private:
+  void RunAfterGetAboutResource(
+      const FeedFetcherCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::AboutResource> about_resource) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(!callback.is_null());
+
+    FileError error = GDataToFileError(status);
+    if (error != FILE_ERROR_OK) {
+      callback.Run(error, ScopedVector<ChangeList>());
+      return;
+    }
+
+    root_folder_id_ = about_resource->root_folder_id();
+    StartGetResourceListInDirectory(callback);
+  }
+
+  void StartGetResourceListInDirectory(const FeedFetcherCallback& callback) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(!callback.is_null());
+    DCHECK(!directory_resource_id_.empty());
+    DCHECK(!util::IsDriveV2ApiEnabled() || !root_folder_id_.empty());
+
+    // We use WAPI's GetResourceListInDirectory even if Drive API v2 is
+    // enabled. This is the short term work around of the performance
+    // regression.
+
+    std::string resource_id = directory_resource_id_;
+    if (util::IsDriveV2ApiEnabled() &&
+        directory_resource_id_ == root_folder_id_) {
+      // GData WAPI doesn't accept the root directory id which is used in Drive
+      // API v2. So it is necessary to translate it here.
+      resource_id = util::kWapiRootDirectoryResourceId;
+    }
+
+    scheduler_->GetResourceListInDirectoryByWapi(
+        resource_id,
         base::Bind(&FastFetchFeedFetcher::OnFileListFetched,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
- private:
   void OnFileListFetched(
       const FeedFetcherCallback& callback,
       google_apis::GDataErrorCode status,
@@ -210,7 +258,10 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
 
     // Add the current change list to the list of collected lists.
     DCHECK(resource_list);
-    change_lists_.push_back(new ChangeList(*resource_list));
+    ChangeList* change_list = new ChangeList(*resource_list);
+    if (util::IsDriveV2ApiEnabled())
+      FixResourceIdInChangeList(change_list);
+    change_lists_.push_back(change_list);
 
     GURL next_url;
     if (resource_list->GetNextFeedURL(&next_url) && !next_url.is_empty()) {
@@ -228,8 +279,34 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
     callback.Run(FILE_ERROR_OK, change_lists_.Pass());
   }
 
+  void FixResourceIdInChangeList(ChangeList* change_list) {
+    std::vector<ResourceEntry>* entries = change_list->mutable_entries();
+    for (size_t i = 0; i < entries->size(); ++i) {
+      ResourceEntry* entry = &(*entries)[i];
+      if (entry->has_resource_id()) {
+        entry->set_resource_id(UpgradeResourceIdFromGDataWapiToDriveApiV2(
+            entry->resource_id()));
+      }
+
+      // Currently parent local id is the parent's resource id.
+      // It will be replaced by actual local id. (crbug.com/260514).
+      if (entry->has_parent_local_id()) {
+        entry->set_parent_local_id(UpgradeResourceIdFromGDataWapiToDriveApiV2(
+            entry->parent_local_id()));
+      }
+    }
+  }
+
+  std::string UpgradeResourceIdFromGDataWapiToDriveApiV2(
+      const std::string& resource_id) {
+    if (resource_id == util::kWapiRootDirectoryResourceId)
+      return root_folder_id_;
+    return drive::util::CanonicalizeResourceId(resource_id);
+  }
+
   JobScheduler* scheduler_;
   std::string directory_resource_id_;
+  std::string root_folder_id_;
   ScopedVector<ChangeList> change_lists_;
   base::WeakPtrFactory<FastFetchFeedFetcher> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(FastFetchFeedFetcher);
@@ -481,6 +558,7 @@ void ChangeListLoader::LoadFromServerIfNeededAfterGetAbout(
   if (GDataToFileError(status) == FILE_ERROR_OK) {
     DCHECK(about_resource);
     last_known_remote_changestamp_ = about_resource->largest_change_id();
+    root_folder_id_ = about_resource->root_folder_id();
   }
 
   int64 remote_changestamp =
@@ -607,8 +685,11 @@ void ChangeListLoader::LoadDirectoryFromServerAfterGetAbout(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (GDataToFileError(status) == FILE_ERROR_OK)
+  if (GDataToFileError(status) == FILE_ERROR_OK) {
+    DCHECK(about_resource);
     last_known_remote_changestamp_ = about_resource->largest_change_id();
+    root_folder_id_ = about_resource->root_folder_id();
+  }
 
   DoLoadDirectoryFromServer(
       DirectoryFetchInfo(directory_resource_id, last_known_remote_changestamp_),
@@ -688,7 +769,8 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
 
   FastFetchFeedFetcher* fetcher = new FastFetchFeedFetcher(
       scheduler_,
-      directory_fetch_info.resource_id());
+      directory_fetch_info.resource_id(),
+      root_folder_id_);
   fast_fetch_feed_fetcher_set_.insert(fetcher);
   fetcher->Run(
       base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterLoad,

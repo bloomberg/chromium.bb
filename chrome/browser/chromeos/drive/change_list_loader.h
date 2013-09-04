@@ -281,6 +281,9 @@ class ChangeListLoader {
   // changestamp is up-to-date for fast fetch.
   int64 last_known_remote_changestamp_;
 
+  // The cache of the root_folder_id.
+  std::string root_folder_id_;
+
   // True if the full resource list is loaded (i.e. the resource metadata is
   // stored locally).
   bool loaded_;
