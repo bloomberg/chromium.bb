@@ -110,7 +110,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual string16 SaveLocallyText() const OVERRIDE;
   virtual string16 SaveLocallyTooltip() const OVERRIDE;
   virtual string16 LegalDocumentsText() OVERRIDE;
-  virtual DialogSignedInState SignedInState() const OVERRIDE;
+  virtual bool ShouldDisableSignInLink() const OVERRIDE;
   virtual bool ShouldShowSpinner() const OVERRIDE;
   virtual bool ShouldOfferToSaveInChrome() const OVERRIDE;
   virtual bool ShouldSaveInChrome() const OVERRIDE;
@@ -288,6 +288,14 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   void DoFinishSubmit();
 
  private:
+  enum DialogSignedInState {
+    REQUIRES_RESPONSE,
+    REQUIRES_SIGN_IN,
+    REQUIRES_PASSIVE_SIGN_IN,
+    SIGNED_IN,
+    SIGN_IN_DISABLED,
+  };
+
   // Whether or not the current request wants credit info back.
   bool RequestingCreditCardInfo() const;
 
@@ -302,6 +310,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // Stop showing sign in flow.
   void HideSignIn();
+
+  // Whether the user is known to be signed in.
+  DialogSignedInState SignedInState() const;
 
   // Handles the SignedInState() on Wallet or sign-in state update.
   // Triggers the user name fetch and passive sign-in.

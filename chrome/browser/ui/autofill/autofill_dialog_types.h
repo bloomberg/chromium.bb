@@ -154,14 +154,6 @@ class DialogNotification {
 
 extern SkColor const kWarningColor;
 
-enum DialogSignedInState {
-  REQUIRES_RESPONSE,
-  REQUIRES_SIGN_IN,
-  REQUIRES_PASSIVE_SIGN_IN,
-  SIGNED_IN,
-  SIGN_IN_DISABLED,
-};
-
 struct SuggestionState {
   SuggestionState();
   SuggestionState(bool visible,

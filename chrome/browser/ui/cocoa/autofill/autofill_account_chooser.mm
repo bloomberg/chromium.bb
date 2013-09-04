@@ -107,6 +107,7 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
   NSString* linkTitle =
       base::SysUTF16ToNSString(delegate_->SignInLinkText());
   [link_ setTitle:linkTitle];
+  [link_ setEnabled:!delegate_->ShouldDisableSignInLink()];
 
   // populate menu
   NSMenu* accountMenu = [popup_ attachedMenu];

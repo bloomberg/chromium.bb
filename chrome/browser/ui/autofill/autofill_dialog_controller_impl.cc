@@ -730,20 +730,8 @@ string16 AutofillDialogControllerImpl::LegalDocumentsText() {
   return legal_documents_text_;
 }
 
-DialogSignedInState AutofillDialogControllerImpl::SignedInState() const {
-  if (wallet_error_notification_)
-    return SIGN_IN_DISABLED;
-
-  if (signin_helper_ || !wallet_items_)
-    return REQUIRES_RESPONSE;
-
-  if (wallet_items_->HasRequiredAction(wallet::GAIA_AUTH))
-    return REQUIRES_SIGN_IN;
-
-  if (wallet_items_->HasRequiredAction(wallet::PASSIVE_GAIA_AUTH))
-    return REQUIRES_PASSIVE_SIGN_IN;
-
-  return SIGNED_IN;
+bool AutofillDialogControllerImpl::ShouldDisableSignInLink() const {
+  return SignedInState() == REQUIRES_RESPONSE;
 }
 
 bool AutofillDialogControllerImpl::ShouldShowSpinner() const {
@@ -891,6 +879,23 @@ void AutofillDialogControllerImpl::HideSignIn() {
   signin_registrar_.RemoveAll();
   view_->HideSignIn();
   view_->UpdateAccountChooser();
+}
+
+AutofillDialogControllerImpl::DialogSignedInState
+    AutofillDialogControllerImpl::SignedInState() const {
+  if (wallet_error_notification_)
+    return SIGN_IN_DISABLED;
+
+  if (signin_helper_ || !wallet_items_)
+    return REQUIRES_RESPONSE;
+
+  if (wallet_items_->HasRequiredAction(wallet::GAIA_AUTH))
+    return REQUIRES_SIGN_IN;
+
+  if (wallet_items_->HasRequiredAction(wallet::PASSIVE_GAIA_AUTH))
+    return REQUIRES_PASSIVE_SIGN_IN;
+
+  return SIGNED_IN;
 }
 
 void AutofillDialogControllerImpl::SignedInStateUpdated() {

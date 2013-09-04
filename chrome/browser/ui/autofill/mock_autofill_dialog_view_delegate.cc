@@ -22,7 +22,6 @@ MockAutofillDialogViewDelegate::MockAutofillDialogViewDelegate() {
   DefaultValue<const DetailInputs&>::Set(default_inputs_);
   DefaultValue<string16>::Set(string16());
   DefaultValue<ValidityData>::Set(ValidityData());
-  DefaultValue<DialogSignedInState>::Set(REQUIRES_RESPONSE);
   DefaultValue<gfx::Image>::Set(gfx::Image());
   DefaultValue<SuggestionState>::Set(SuggestionState(false,
                                                      string16(),
@@ -55,7 +54,6 @@ MockAutofillDialogViewDelegate::~MockAutofillDialogViewDelegate() {
 
   DefaultValue<SuggestionState>::Clear();
   DefaultValue<gfx::Image>::Clear();
-  DefaultValue<DialogSignedInState>::Clear();
   DefaultValue<ValidityData>::Clear();
   DefaultValue<string16>::Clear();
   DefaultValue<const DetailInputs&>::Clear();

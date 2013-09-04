@@ -52,8 +52,8 @@ class AutofillDialogViewDelegate {
 
   // State ---------------------------------------------------------------------
 
-  // Whether the user is known to be signed in.
-  virtual DialogSignedInState SignedInState() const = 0;
+  // Whether the sign-in link should be disabled.
+  virtual bool ShouldDisableSignInLink() const = 0;
 
   // Whether the dialog is in a not exactly well-defined state
   // (while attempting to sign-in or retrieving the wallet data etc).

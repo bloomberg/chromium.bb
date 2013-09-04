@@ -567,6 +567,7 @@ void AutofillDialogViews::AccountChooser::Update() {
   menu_button_->SetVisible(!show_link);
   link_->SetText(delegate_->SignInLinkText());
   link_->SetVisible(show_link);
+  link_->SetEnabled(!delegate_->ShouldDisableSignInLink());
 
   menu_runner_.reset();
 
