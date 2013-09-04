@@ -197,7 +197,7 @@ void TypingCommand::insertLineBreak(Document& document, Options options)
         return;
     }
 
-    applyCommand(TypingCommand::create(document, InsertLineBreak, "", options));
+    TypingCommand::create(document, InsertLineBreak, "", options)->apply();
 }
 
 void TypingCommand::insertParagraphSeparatorInQuotedContent(Document& document)
@@ -207,7 +207,7 @@ void TypingCommand::insertParagraphSeparatorInQuotedContent(Document& document)
         return;
     }
 
-    applyCommand(TypingCommand::create(document, InsertParagraphSeparatorInQuotedContent));
+    TypingCommand::create(document, InsertParagraphSeparatorInQuotedContent)->apply();
 }
 
 void TypingCommand::insertParagraphSeparator(Document& document, Options options)
@@ -218,7 +218,7 @@ void TypingCommand::insertParagraphSeparator(Document& document, Options options
         return;
     }
 
-    applyCommand(TypingCommand::create(document, InsertParagraphSeparator, "", options));
+    TypingCommand::create(document, InsertParagraphSeparator, "", options)->apply();
 }
 
 PassRefPtr<TypingCommand> TypingCommand::lastTypingCommandIfStillOpenForTyping(Frame* frame)

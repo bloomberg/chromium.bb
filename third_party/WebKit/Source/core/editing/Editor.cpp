@@ -347,7 +347,7 @@ void Editor::deleteSelectionWithSmartDelete(bool smartDelete)
         return;
 
     ASSERT(m_frame->document());
-    applyCommand(DeleteSelectionCommand::create(*m_frame->document(), smartDelete));
+    DeleteSelectionCommand::create(*m_frame->document(), smartDelete)->apply();
 }
 
 void Editor::pasteAsPlainText(const String& pastingText, bool smartReplace)
@@ -416,7 +416,7 @@ void Editor::replaceSelectionWithFragment(PassRefPtr<DocumentFragment> fragment,
     if (matchStyle)
         options |= ReplaceSelectionCommand::MatchStyle;
     ASSERT(m_frame->document());
-    applyCommand(ReplaceSelectionCommand::create(*m_frame->document(), fragment, options, EditActionPaste));
+    ReplaceSelectionCommand::create(*m_frame->document(), fragment, options, EditActionPaste)->apply();
     revealSelectionAfterEditingOperation();
 
     if (m_frame->selection().isInPasswordField() || !isContinuousSpellCheckingEnabled())
@@ -606,7 +606,7 @@ void Editor::decreaseSelectionListLevel()
 void Editor::removeFormattingAndStyle()
 {
     ASSERT(m_frame->document());
-    applyCommand(RemoveFormatCommand::create(*m_frame->document()));
+    RemoveFormatCommand::create(*m_frame->document())->apply();
 }
 
 void Editor::clearLastEditCommand()
@@ -664,7 +664,7 @@ void Editor::applyStyle(StylePropertySet* style, EditAction editingAction)
     case VisibleSelection::RangeSelection:
         if (style) {
             ASSERT(m_frame->document());
-            applyCommand(ApplyStyleCommand::create(*m_frame->document(), EditingStyle::create(style).get(), editingAction));
+            ApplyStyleCommand::create(*m_frame->document(), EditingStyle::create(style).get(), editingAction)->apply();
         }
         break;
     }
@@ -685,7 +685,7 @@ void Editor::applyParagraphStyle(StylePropertySet* style, EditAction editingActi
     case VisibleSelection::RangeSelection:
         if (style) {
             ASSERT(m_frame->document());
-            applyCommand(ApplyStyleCommand::create(*m_frame->document(), EditingStyle::create(style).get(), editingAction, ApplyStyleCommand::ForceBlockProperties));
+            ApplyStyleCommand::create(*m_frame->document(), EditingStyle::create(style).get(), editingAction, ApplyStyleCommand::ForceBlockProperties)->apply();
         }
         break;
     }
@@ -735,13 +735,13 @@ String Editor::selectionStartCSSPropertyValue(CSSPropertyID propertyID)
 void Editor::indent()
 {
     ASSERT(m_frame->document());
-    applyCommand(IndentOutdentCommand::create(*m_frame->document(), IndentOutdentCommand::Indent));
+    IndentOutdentCommand::create(*m_frame->document(), IndentOutdentCommand::Indent)->apply();
 }
 
 void Editor::outdent()
 {
     ASSERT(m_frame->document());
-    applyCommand(IndentOutdentCommand::create(*m_frame->document(), IndentOutdentCommand::Outdent));
+    IndentOutdentCommand::create(*m_frame->document(), IndentOutdentCommand::Outdent)->apply();
 }
 
 static void dispatchEditableContentChangedEvents(PassRefPtr<Element> startRoot, PassRefPtr<Element> endRoot)
@@ -1015,7 +1015,7 @@ void Editor::simplifyMarkup(Node* startNode, Node* endNode)
     }
 
     ASSERT(m_frame->document());
-    applyCommand(SimplifyMarkupCommand::create(*m_frame->document(), startNode, (endNode) ? NodeTraversal::next(endNode) : 0));
+    SimplifyMarkupCommand::create(*m_frame->document(), startNode, endNode ? NodeTraversal::next(endNode) : 0)->apply();
 }
 
 void Editor::copyURL(const KURL& url, const String& title)
@@ -1919,7 +1919,7 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editin
     RefPtr<EditingStyle> blockStyle = typingStyle->extractAndRemoveBlockProperties();
     if (!blockStyle->isEmpty()) {
         ASSERT(m_frame->document());
-        applyCommand(ApplyStyleCommand::create(*m_frame->document(), blockStyle.get(), editingAction));
+        ApplyStyleCommand::create(*m_frame->document(), blockStyle.get(), editingAction)->apply();
     }
 
     // Set the remaining style as the typing style.

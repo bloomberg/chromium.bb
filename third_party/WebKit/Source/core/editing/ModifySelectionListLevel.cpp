@@ -287,7 +287,7 @@ bool DecreaseSelectionListLevelCommand::canDecreaseSelectionListLevel(Document& 
 void DecreaseSelectionListLevelCommand::decreaseSelectionListLevel(Document& document)
 {
     ASSERT(document.frame());
-    applyCommand(create(document));
+    create(document)->apply();
 }
 
 }

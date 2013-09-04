@@ -144,11 +144,6 @@ void EditCommandComposition::setEndingSelection(const VisibleSelection& selectio
     m_endingRootEditableElement = selection.rootEditableElement();
 }
 
-void applyCommand(PassRefPtr<CompositeEditCommand> command)
-{
-    command->apply();
-}
-
 CompositeEditCommand::CompositeEditCommand(Document& document)
     : EditCommand(document)
 {

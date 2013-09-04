@@ -171,8 +171,6 @@ private:
     RefPtr<EditCommandComposition> m_composition;
 };
 
-void applyCommand(PassRefPtr<CompositeEditCommand>);
-
 inline CompositeEditCommand* toCompositeEditCommand(EditCommand* command)
 {
     ASSERT(command);

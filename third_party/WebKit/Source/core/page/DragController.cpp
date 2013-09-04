@@ -498,7 +498,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
             // but only to smart insert if the selection granularity is word granularity.
             bool smartDelete = innerFrame->editor().smartInsertDeleteEnabled();
             bool smartInsert = smartDelete && innerFrame->selection().granularity() == WordGranularity && dragData->canSmartReplace();
-            applyCommand(MoveSelectionCommand::create(fragment, dragCaret.base(), smartInsert, smartDelete));
+            MoveSelectionCommand::create(fragment, dragCaret.base(), smartInsert, smartDelete)->apply();
         } else {
             if (setSelectionToDragCaret(innerFrame.get(), dragCaret, range, point)) {
                 ReplaceSelectionCommand::CommandOptions options = ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::PreventNesting;
@@ -507,7 +507,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
                 if (chosePlainText)
                     options |= ReplaceSelectionCommand::MatchStyle;
                 ASSERT(m_documentUnderMouse);
-                applyCommand(ReplaceSelectionCommand::create(*m_documentUnderMouse.get(), fragment, options));
+                ReplaceSelectionCommand::create(*m_documentUnderMouse.get(), fragment, options)->apply();
             }
         }
     } else {
@@ -518,7 +518,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
 
         if (setSelectionToDragCaret(innerFrame.get(), dragCaret, range, point)) {
             ASSERT(m_documentUnderMouse);
-            applyCommand(ReplaceSelectionCommand::create(*m_documentUnderMouse.get(), createFragmentFromText(range.get(), text),  ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::MatchStyle | ReplaceSelectionCommand::PreventNesting));
+            ReplaceSelectionCommand::create(*m_documentUnderMouse.get(), createFragmentFromText(range.get(), text),  ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::MatchStyle | ReplaceSelectionCommand::PreventNesting)->apply();
         }
     }
 
