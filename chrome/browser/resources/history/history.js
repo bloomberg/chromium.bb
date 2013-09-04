@@ -929,14 +929,15 @@ HistoryView.prototype.getOffset = function() {
  */
 HistoryView.prototype.onModelReady = function(doneLoading) {
   this.displayResults_(doneLoading);
-  this.updateNavBar_();
 
-  if (isMobileVersion()) {
-    // Hide the search field if it is empty and there are no results.
-    var hasResults = this.model_.visits_.length > 0;
-    var isSearch = this.model_.getSearchText().length > 0;
-    $('search-field').hidden = !(hasResults || isSearch);
-  }
+  // Allow custom styling based on whether there are any results on the page.
+  // To make this easier, add a class to the body if there are any results.
+  if (this.model_.visits_.length)
+    document.body.classList.add('has-results');
+  else
+    document.body.classList.remove('has-results');
+
+  this.updateNavBar_();
 };
 
 /**
@@ -1297,6 +1298,7 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
           createElementWithClassName('div', 'no-results-message'));
       noResults.textContent = loadTimeData.getString('noResults');
       this.resultDiv_.appendChild(resultsFragment);
+      this.updateNavBar_();
       return;
     }
 
@@ -1324,6 +1326,7 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
     // Add all the days and their visits to the page.
     this.resultDiv_.appendChild(resultsFragment);
   }
+  this.updateNavBar_();
 };
 
 /**
@@ -1332,10 +1335,9 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
  */
 HistoryView.prototype.updateNavBar_ = function() {
   this.updateRangeButtons_();
-
-  // Managed users have the control bar on top, don't show it on the bottom
-  // as well.
   if (!loadTimeData.getBoolean('isManagedProfile')) {
+    // Managed users have the control bar on top, don't show it on the bottom
+    // as well.
     $('newest-button').hidden = this.pageIndex_ == 0;
     $('newer-button').hidden = this.pageIndex_ == 0;
     $('older-button').hidden =

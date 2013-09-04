@@ -572,6 +572,10 @@ button.menu-button.drop-down {
   outline: none;
 }
 
+body:not(.has-results) #results-pagination {
+  display: none;
+}
+
 #older-button {
   float: right;
 }
