@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if ENABLE_NOTIFICATIONS
 #include "NotificationPresenter.h"
 
 #include "public/platform/Platform.h"
@@ -167,5 +166,3 @@ void NotificationPresenter::requestPermission(
 }
 
 }
-
-#endif // ENABLE_NOTIFICATIONS

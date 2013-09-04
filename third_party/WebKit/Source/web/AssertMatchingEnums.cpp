@@ -600,11 +600,9 @@ COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayerClient::MediaKeyErrorCodeDomain, Medi
 COMPILE_ASSERT_MATCHING_ENUM(WebContentDecryptionModuleSession::Client::MediaKeyErrorCodeUnknown, ContentDecryptionModuleSessionClient::UnknownError);
 COMPILE_ASSERT_MATCHING_ENUM(WebContentDecryptionModuleSession::Client::MediaKeyErrorCodeClient, ContentDecryptionModuleSessionClient::ClientError);
 
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 COMPILE_ASSERT_MATCHING_ENUM(WebNotificationPresenter::PermissionAllowed, NotificationClient::PermissionAllowed);
 COMPILE_ASSERT_MATCHING_ENUM(WebNotificationPresenter::PermissionNotAllowed, NotificationClient::PermissionNotAllowed);
 COMPILE_ASSERT_MATCHING_ENUM(WebNotificationPresenter::PermissionDenied, NotificationClient::PermissionDenied);
-#endif
 
 COMPILE_ASSERT_MATCHING_ENUM(WebScrollbar::Horizontal, HorizontalScrollbar);
 COMPILE_ASSERT_MATCHING_ENUM(WebScrollbar::Vertical, VerticalScrollbar);

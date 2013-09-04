@@ -36,7 +36,7 @@ modules/mediastream/MediaStreamTrack
 modules/mediastream/RTCDTMFSender
 modules/mediastream/RTCDataChannel
 modules/mediastream/RTCPeerConnection
-modules/notifications/Notification Conditional=NOTIFICATIONS
+modules/notifications/Notification
 modules/speech/SpeechRecognition
 modules/speech/SpeechSynthesisUtterance
 modules/webaudio/AudioContext Conditional=WEB_AUDIO

@@ -27,7 +27,7 @@
 #ifndef WorkerGlobalScopeNotifications_h
 #define WorkerGlobalScopeNotifications_h
 
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
+#if ENABLE(LEGACY_NOTIFICATIONS)
 
 #include "core/platform/Supplementable.h"
 
@@ -56,6 +56,6 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
-
 #endif // WorkerGlobalScopeNotifications_h
+
+#endif // ENABLE(LEGACY_NOTIFICATIONS)

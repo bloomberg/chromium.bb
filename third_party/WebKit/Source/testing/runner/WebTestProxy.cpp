@@ -1100,11 +1100,7 @@ void WebTestProxyBase::printPage(WebFrame* frame)
 
 WebNotificationPresenter* WebTestProxyBase::notificationPresenter()
 {
-#if ENABLE_NOTIFICATIONS
     return m_testInterfaces->testRunner()->notificationPresenter();
-#else
-    return 0;
-#endif
 }
 
 WebGeolocationClient* WebTestProxyBase::geolocationClient()

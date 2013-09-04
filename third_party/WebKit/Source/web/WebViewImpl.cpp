@@ -450,9 +450,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     provideSpeechInputTo(m_page.get(), m_speechInputClient.get());
 #endif
     provideSpeechRecognitionTo(m_page.get(), m_speechRecognitionClient.get());
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
     provideNotification(m_page.get(), notificationPresenterImpl());
-#endif
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
     provideNavigatorContentUtilsTo(m_page.get(), m_navigatorContentUtilsClient.get());
 #endif
@@ -3725,14 +3723,12 @@ void WebViewImpl::setOverlayLayer(WebCore::GraphicsLayer* layer)
     }
 }
 
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 NotificationPresenterImpl* WebViewImpl::notificationPresenterImpl()
 {
     if (!m_notificationPresenter.isInitialized() && m_client)
         m_notificationPresenter.initialize(m_client->notificationPresenter());
     return &m_notificationPresenter;
 }
-#endif
 
 void WebViewImpl::refreshAutofillPopup()
 {

@@ -459,10 +459,8 @@ public:
         m_autofillPopupShowing = false;
     }
 
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
     // Returns the provider of desktop notifications.
     NotificationPresenterImpl* notificationPresenterImpl();
-#endif
 
     // Tries to scroll a frame or any parent of a frame. Returns true if the view
     // was scrolled.
@@ -774,10 +772,8 @@ private:
     typedef HashMap<WTF::String, WTF::String> SettingsMap;
     OwnPtr<SettingsMap> m_inspectorSettingsMap;
 
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
     // The provider of desktop notifications;
     NotificationPresenterImpl m_notificationPresenter;
-#endif
 
     // If set, the (plugin) node which has mouse capture.
     RefPtr<WebCore::Node> m_mouseCaptureNode;

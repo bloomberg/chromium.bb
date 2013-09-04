@@ -62,10 +62,8 @@ namespace WebCore {
         static unsigned workerThreadCount();
         static void releaseFastMallocFreeMemoryInAllThreads();
 
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
         NotificationClient* getNotificationClient() { return m_notificationClient; }
         void setNotificationClient(NotificationClient* client) { m_notificationClient = client; }
-#endif
 
     protected:
         WorkerThread(WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
@@ -94,9 +92,7 @@ namespace WebCore {
 
         OwnPtr<WorkerThreadStartupData> m_startupData;
 
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
         NotificationClient* m_notificationClient;
-#endif
     };
 
 } // namespace WebCore

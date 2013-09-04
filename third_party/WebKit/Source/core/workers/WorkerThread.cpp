@@ -69,9 +69,7 @@ WorkerThread::WorkerThread(WorkerLoaderProxy& workerLoaderProxy, WorkerReporting
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
     , m_startupData(startupData)
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
     , m_notificationClient(0)
-#endif
 {
     MutexLocker lock(threadSetMutex());
     workerThreads().add(this);

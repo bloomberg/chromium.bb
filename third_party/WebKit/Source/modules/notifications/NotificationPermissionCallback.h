@@ -26,8 +26,6 @@
 #ifndef NotificationPermissionCallback_h
 #define NotificationPermissionCallback_h
 
-#if ENABLE(NOTIFICATIONS)
-
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
@@ -40,7 +38,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(NOTIFICATIONS)
 
 #endif // NotificationPermissionCallback_h

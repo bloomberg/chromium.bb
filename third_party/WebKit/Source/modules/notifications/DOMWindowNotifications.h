@@ -27,7 +27,7 @@
 #ifndef DOMWindowNotifications_h
 #define DOMWindowNotifications_h
 
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
+#if ENABLE(LEGACY_NOTIFICATIONS)
 
 #include "core/page/DOMWindowProperty.h"
 #include "core/platform/Supplementable.h"
@@ -60,6 +60,6 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
+#endif // ENABLE(LEGACY_NOTIFICATIONS)
 
 #endif // DOMWindowNotifications_h

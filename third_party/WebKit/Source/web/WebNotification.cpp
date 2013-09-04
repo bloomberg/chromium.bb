@@ -31,8 +31,6 @@
 #include "config.h"
 #include "WebNotification.h"
 
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
-
 #include "WebTextDirection.h"
 #include "core/dom/Event.h"
 #include "core/dom/UserGestureIndicator.h"
@@ -156,5 +154,3 @@ void WebNotification::assign(WebNotificationPrivate* p)
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)

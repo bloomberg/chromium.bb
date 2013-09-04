@@ -31,8 +31,6 @@
 
 #include "config.h"
 
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
-
 #include "modules/notifications/NotificationCenter.h"
 
 #include "core/dom/Document.h"
@@ -74,9 +72,7 @@ int NotificationCenter::checkPermission()
     ASSERT_NOT_REACHED();
     return m_client->checkPermission(scriptExecutionContext());
 }
-#endif
 
-#if ENABLE(LEGACY_NOTIFICATIONS)
 void NotificationCenter::requestPermission(PassRefPtr<VoidCallback> callback)
 {
     if (!client() || !scriptExecutionContext())
@@ -138,5 +134,3 @@ void NotificationCenter::NotificationRequestCallback::timerFired(Timer<Notificat
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)

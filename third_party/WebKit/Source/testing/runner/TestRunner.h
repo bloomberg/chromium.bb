@@ -123,9 +123,7 @@ public:
     bool policyDelegateShouldNotifyDone() const;
     bool shouldInterceptPostMessage() const;
     bool shouldDumpResourcePriorities() const;
-#if ENABLE_NOTIFICATIONS
     WebKit::WebNotificationPresenter* notificationPresenter() const;
-#endif
     bool requestPointerLock();
     void requestPointerUnlock();
     bool isPointerLocked();
@@ -468,14 +466,12 @@ private:
     void setMIDIAccessorResult(const CppArgumentList&, CppVariant*);
     void setMIDISysExPermission(const CppArgumentList&, CppVariant*);
 
-#if ENABLE_NOTIFICATIONS
     // Grants permission for desktop notifications to an origin
     void grantWebNotificationPermission(const CppArgumentList&, CppVariant*);
     // Simulates a click on a desktop notification.
     void simulateLegacyWebNotificationClick(const CppArgumentList&, CppVariant*);
     // Cancel all active desktop notifications.
     void cancelAllActiveNotifications(const CppArgumentList& arguments, CppVariant* result);
-#endif
 
     // Speech input related functions.
     void addMockSpeechInputResult(const CppArgumentList&, CppVariant*);
@@ -709,9 +705,7 @@ private:
     // WebPermissionClient mock object.
     std::auto_ptr<WebPermissions> m_webPermissions;
 
-#if ENABLE_NOTIFICATIONS
     std::auto_ptr<NotificationPresenter> m_notificationPresenter;
-#endif
 
     bool m_pointerLocked;
     enum {

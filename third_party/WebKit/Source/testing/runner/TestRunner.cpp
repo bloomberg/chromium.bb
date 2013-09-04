@@ -157,9 +157,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     , m_webView(0)
     , m_pageOverlay(0)
     , m_webPermissions(new WebPermissions)
-#if ENABLE_NOTIFICATIONS
     , m_notificationPresenter(new NotificationPresenter)
-#endif
 {
     // Initialize the map that associates methods of this class with the names
     // they will use when called by JavaScript. The actual binding of those
@@ -281,11 +279,9 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("setMockGeolocationPosition", &TestRunner::setMockGeolocationPosition);
     bindMethod("setMIDIAccessorResult", &TestRunner::setMIDIAccessorResult);
     bindMethod("setMIDISysExPermission", &TestRunner::setMIDISysExPermission);
-#if ENABLE_NOTIFICATIONS
     bindMethod("grantWebNotificationPermission", &TestRunner::grantWebNotificationPermission);
     bindMethod("simulateLegacyWebNotificationClick", &TestRunner::simulateLegacyWebNotificationClick);
     bindMethod("cancelAllActiveNotifications", &TestRunner::cancelAllActiveNotifications);
-#endif
     bindMethod("addMockSpeechInputResult", &TestRunner::addMockSpeechInputResult);
     bindMethod("setMockSpeechInputDumpRect", &TestRunner::setMockSpeechInputDumpRect);
     bindMethod("addMockSpeechRecognitionResult", &TestRunner::addMockSpeechRecognitionResult);
@@ -346,9 +342,7 @@ void TestRunner::setDelegate(WebTestDelegate* delegate)
 {
     m_delegate = delegate;
     m_webPermissions->setDelegate(delegate);
-#if ENABLE_NOTIFICATIONS
     m_notificationPresenter->setDelegate(delegate);
-#endif
 }
 
 void TestRunner::setWebView(WebView* webView, WebTestProxyBase* proxy)
@@ -440,9 +434,8 @@ void TestRunner::reset()
 
     m_webPermissions->reset();
 
-#if ENABLE_NOTIFICATIONS
     m_notificationPresenter->reset();
-#endif
+
     m_pointerLocked = false;
     m_pointerLockPlannedResult = PointerLockWillSucceed;
 
@@ -686,12 +679,10 @@ bool TestRunner::shouldDumpResourcePriorities() const
     return m_shouldDumpResourcePriorities;
 }
 
-#if ENABLE_NOTIFICATIONS
 WebNotificationPresenter* TestRunner::notificationPresenter() const
 {
     return m_notificationPresenter.get();
 }
-#endif
 
 bool TestRunner::requestPointerLock()
 {
@@ -1849,7 +1840,6 @@ void TestRunner::setMIDISysExPermission(const CppArgumentList& arguments, CppVar
         windowList.at(i)->midiClientMock()->setSysExPermission(arguments[0].toBoolean());
 }
 
-#if ENABLE_NOTIFICATIONS
 void TestRunner::grantWebNotificationPermission(const CppArgumentList& arguments, CppVariant* result)
 {
     if (arguments.size() != 1 || !arguments[0].isString()) {
@@ -1874,7 +1864,6 @@ void TestRunner::cancelAllActiveNotifications(const CppArgumentList& arguments, 
     m_notificationPresenter->cancelAllActiveNotifications();
     result->set(true);
 }
-#endif
 
 void TestRunner::addMockSpeechInputResult(const CppArgumentList& arguments, CppVariant* result)
 {

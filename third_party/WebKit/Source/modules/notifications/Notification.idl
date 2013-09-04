@@ -30,18 +30,18 @@
  */
 
 [
-    Conditional=NOTIFICATIONS|LEGACY_NOTIFICATIONS,
     ActiveDOMObject,
     Constructor(DOMString title, [Default=Undefined] optional Dictionary options),
     ConstructorCallWith=ScriptExecutionContext,
+    EnabledAtRuntime=notifications
 ] interface Notification : EventTarget {
     void show();
     [Conditional=LEGACY_NOTIFICATIONS] void cancel();
-    [Conditional=NOTIFICATIONS] void close();
+    void close();
 
 
-    [CallWith=ScriptExecutionContext, Conditional=NOTIFICATIONS] static readonly attribute DOMString permission;
-    [CallWith=ScriptExecutionContext, Conditional=NOTIFICATIONS] static void requestPermission(optional NotificationPermissionCallback callback);
+    [CallWith=ScriptExecutionContext] static readonly attribute DOMString permission;
+    [CallWith=ScriptExecutionContext] static void requestPermission(optional NotificationPermissionCallback callback);
 
     attribute EventHandler onshow;
     [Conditional=LEGACY_NOTIFICATIONS] attribute EventHandler ondisplay;
@@ -51,6 +51,5 @@
 
     [Conditional=LEGACY_NOTIFICATIONS] attribute DOMString dir;
     [Conditional=LEGACY_NOTIFICATIONS] attribute DOMString replaceId;
-    [Conditional=NOTIFICATIONS] attribute DOMString tag;
+    attribute DOMString tag;
 };
-

@@ -37,14 +37,13 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/html/VoidCallback.h"
+#include "core/platform/Supplementable.h"
 #include "core/platform/Timer.h"
 #include "modules/notifications/Notification.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
-
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 
 namespace WebCore {
 
@@ -98,7 +97,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 
 #endif // NotificationCenter_h

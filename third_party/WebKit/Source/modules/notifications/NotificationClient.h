@@ -77,9 +77,7 @@ public:
     // made a decision.
     virtual void requestPermission(ScriptExecutionContext*, PassRefPtr<VoidCallback>) = 0;
 #endif
-#if ENABLE(NOTIFICATIONS)
     virtual void requestPermission(ScriptExecutionContext*, PassRefPtr<NotificationPermissionCallback>) = 0;
-#endif
 
     // Cancel all outstanding requests for the ScriptExecutionContext
     virtual void cancelRequestsForPermission(ScriptExecutionContext*) = 0;

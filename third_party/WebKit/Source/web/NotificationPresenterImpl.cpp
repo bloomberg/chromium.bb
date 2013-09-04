@@ -31,8 +31,6 @@
 #include "config.h"
 #include "NotificationPresenterImpl.h"
 
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
-
 #include "WebNotification.h"
 #include "WebNotificationPermissionCallback.h"
 #include "WebNotificationPresenter.h"
@@ -67,7 +65,6 @@ private:
 };
 #endif // ENABLE(LEGACY_NOTIFICATIONS)
 
-#if ENABLE(NOTIFICATIONS)
 class NotificationPermissionCallbackClient : public WebNotificationPermissionCallback {
 public:
     NotificationPermissionCallbackClient(WebNotificationPresenter* presenter, PassRefPtr<SecurityOrigin> securityOrigin, PassRefPtr<NotificationPermissionCallback> callback)
@@ -91,7 +88,6 @@ private:
     RefPtr<SecurityOrigin> m_securityOrigin;
     RefPtr<NotificationPermissionCallback> m_callback;
 };
-#endif // ENABLE(NOTIFICATIONS)
 
 void NotificationPresenterImpl::initialize(WebNotificationPresenter* presenter)
 {
@@ -135,13 +131,9 @@ void NotificationPresenterImpl::requestPermission(ScriptExecutionContext* contex
 }
 #endif // ENABLE(LEGACY_NOTIFICATIONS)
 
-#if ENABLE(NOTIFICATIONS)
 void NotificationPresenterImpl::requestPermission(ScriptExecutionContext* context, WTF::PassRefPtr<NotificationPermissionCallback> callback)
 {
     m_presenter->requestPermission(WebSecurityOrigin(context->securityOrigin()), new NotificationPermissionCallbackClient(m_presenter, context->securityOrigin(), callback));
 }
-#endif // ENABLE(NOTIFICATIONS)
 
 } // namespace WebKit
-
-#endif // ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)

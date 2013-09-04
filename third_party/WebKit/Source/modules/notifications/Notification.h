@@ -38,6 +38,7 @@
 #include "core/dom/EventTarget.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/platform/SharedBuffer.h"
+#include "core/platform/Timer.h"
 #include "core/platform/text/TextDirection.h"
 #include "modules/notifications/NotificationClient.h"
 #include "weborigin/KURL.h"
@@ -47,11 +48,6 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicStringHash.h"
 
-#if ENABLE(NOTIFICATIONS)
-#include "core/platform/Timer.h"
-#endif
-
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 namespace WebCore {
 
 class Dictionary;
@@ -70,9 +66,7 @@ public:
 #if ENABLE(LEGACY_NOTIFICATIONS)
     static PassRefPtr<Notification> create(const String& title, const String& body, const String& iconURI, ScriptExecutionContext*, ExceptionState&, PassRefPtr<NotificationCenter> provider);
 #endif
-#if ENABLE(NOTIFICATIONS)
     static PassRefPtr<Notification> create(ScriptExecutionContext*, const String& title, const Dictionary& options);
-#endif
 
     virtual ~Notification();
 
@@ -135,19 +129,15 @@ public:
 
     void finalize();
 
-#if ENABLE(NOTIFICATIONS)
     static const String& permission(ScriptExecutionContext*);
     static const String& permissionString(NotificationClient::Permission);
     static void requestPermission(ScriptExecutionContext*, PassRefPtr<NotificationPermissionCallback> = 0);
-#endif
 
 private:
 #if ENABLE(LEGACY_NOTIFICATIONS)
     Notification(const String& title, const String& body, const String& iconURI, ScriptExecutionContext*, ExceptionState&, PassRefPtr<NotificationCenter>);
 #endif
-#if ENABLE(NOTIFICATIONS)
     Notification(ScriptExecutionContext*, const String& title);
-#endif
 
     void setBody(const String& body) { m_body = body; }
 
@@ -160,9 +150,7 @@ private:
     void startLoadingIcon();
     void finishLoadingIcon();
 
-#if ENABLE(NOTIFICATIONS)
     void taskTimerFired(Timer<Notification>*);
-#endif
 
     // Text notifications.
     KURL m_icon;
@@ -181,17 +169,13 @@ private:
 
     NotificationState m_state;
 
-    RefPtr<NotificationCenter> m_notificationCenter;
+    NotificationClient* m_notificationClient;
 
     EventTargetData m_eventTargetData;
 
-#if ENABLE(NOTIFICATIONS)
     OwnPtr<Timer<Notification> > m_taskTimer;
-#endif
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 
 #endif // Notifications_h

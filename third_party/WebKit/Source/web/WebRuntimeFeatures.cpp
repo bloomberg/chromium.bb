@@ -231,18 +231,12 @@ bool WebRuntimeFeatures::isMediaStreamEnabled()
 
 void WebRuntimeFeatures::enableNotifications(bool enable)
 {
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
     RuntimeEnabledFeatures::setNotificationsEnabled(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isNotificationsEnabled()
 {
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
     return RuntimeEnabledFeatures::notificationsEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enablePagePopup(bool enable)

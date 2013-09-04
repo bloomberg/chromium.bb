@@ -27,7 +27,7 @@
 #include "config.h"
 #include "modules/notifications/DOMWindowNotifications.h"
 
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
+#if ENABLE(LEGACY_NOTIFICATIONS)
 
 #include "core/dom/Document.h"
 #include "core/page/DOMWindow.h"
@@ -104,4 +104,4 @@ NotificationCenter* DOMWindowNotifications::webkitNotifications()
 
 } // namespace WebCore
 
-#endif // ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
+#endif // ENABLE(LEGACY_NOTIFICATIONS)

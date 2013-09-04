@@ -28,7 +28,7 @@
 #include "config.h"
 #include "modules/notifications/WorkerGlobalScopeNotifications.h"
 
-#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
+#if ENABLE(LEGACY_NOTIFICATIONS)
 
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
@@ -74,4 +74,4 @@ NotificationCenter* WorkerGlobalScopeNotifications::webkitNotifications()
 
 } // namespace WebCore
 
-#endif // ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
+#endif // ENABLE(LEGACY_NOTIFICATIONS)
