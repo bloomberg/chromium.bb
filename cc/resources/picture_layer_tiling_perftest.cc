@@ -6,6 +6,7 @@
 #include "cc/test/fake_picture_layer_tiling_client.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/perf/perf_test.h"
 
 namespace cc {
 
@@ -34,12 +35,6 @@ class PictureLayerTilingPerfTest : public testing::Test {
     elapsed_ = base::TimeTicks::HighResNow() - start_time_;
   }
 
-  void AfterTest(const std::string& test_name) {
-    printf("*RESULT %s: %.2f runs/s\n",
-           test_name.c_str(),
-           num_runs_ / elapsed_.InSecondsF());
-  }
-
   bool DidRun() {
     ++num_runs_;
     if (num_runs_ == kWarmupRuns)
@@ -62,7 +57,8 @@ class PictureLayerTilingPerfTest : public testing::Test {
       picture_layer_tiling_->Invalidate(region);
     } while (DidRun());
 
-    AfterTest(test_name);
+    perf_test::PrintResult("invalidation", "", test_name,
+                           num_runs_ / elapsed_.InSecondsF(), "runs/s", true);
   }
 
   void RunUpdateTilePrioritiesStationaryTest(
@@ -88,7 +84,8 @@ class PictureLayerTilingPerfTest : public testing::Test {
         250);
     } while (DidRun());
 
-    AfterTest(test_name);
+    perf_test::PrintResult("update_tile_priorities_stationary", "", test_name,
+                           num_runs_ / elapsed_.InSecondsF(), "runs/s", true);
   }
 
   void RunUpdateTilePrioritiesScrollingTest(
@@ -132,7 +129,8 @@ class PictureLayerTilingPerfTest : public testing::Test {
       }
     } while (DidRun());
 
-    AfterTest(test_name);
+    perf_test::PrintResult("update_tile_priorities_scrolling", "", test_name,
+                           num_runs_ / elapsed_.InSecondsF(), "runs/s", true);
   }
 
  private:
@@ -146,39 +144,27 @@ class PictureLayerTilingPerfTest : public testing::Test {
 
 TEST_F(PictureLayerTilingPerfTest, Invalidate) {
   Region one_tile(gfx::Rect(256, 256));
-  RunInvalidateTest("invalidation_1x1", one_tile);
+  RunInvalidateTest("1x1", one_tile);
 
   Region half_region(gfx::Rect(25 * 256, 50 * 256));
-  RunInvalidateTest("invalidation_25x50", half_region);
+  RunInvalidateTest("25x50", half_region);
 
   Region full_region(gfx::Rect(50 * 256, 50 * 256));
-  RunInvalidateTest("invalidation_50x50", full_region);
+  RunInvalidateTest("50x50", full_region);
 }
 
 TEST_F(PictureLayerTilingPerfTest, UpdateTilePriorities) {
   gfx::Transform transform;
-  RunUpdateTilePrioritiesStationaryTest(
-      "update_tile_priorities_stationary_no_transform",
-      transform);
-  RunUpdateTilePrioritiesScrollingTest(
-      "update_tile_priorities_scrolling_no_transform",
-      transform);
+  RunUpdateTilePrioritiesStationaryTest("no_transform", transform);
+  RunUpdateTilePrioritiesScrollingTest("no_transform", transform);
 
   transform.Rotate(10);
-  RunUpdateTilePrioritiesStationaryTest(
-      "update_tile_priorities_stationary_rotation",
-      transform);
-  RunUpdateTilePrioritiesScrollingTest(
-      "update_tile_priorities_scrolling_rotation",
-      transform);
+  RunUpdateTilePrioritiesStationaryTest("rotation", transform);
+  RunUpdateTilePrioritiesScrollingTest("rotation", transform);
 
   transform.ApplyPerspectiveDepth(10);
-  RunUpdateTilePrioritiesStationaryTest(
-      "update_tile_priorities_stationary_perspective",
-      transform);
-  RunUpdateTilePrioritiesScrollingTest(
-      "update_tile_priorities_scrolling_perspective",
-      transform);
+  RunUpdateTilePrioritiesStationaryTest("perspective", transform);
+  RunUpdateTilePrioritiesScrollingTest("perspective", transform);
 }
 
 }  // namespace

@@ -236,6 +236,7 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../testing/perf/perf_test.gyp:*',
         '../ui/ui.gyp:ui',
         'cc.gyp:cc',
         'cc_test_support',

@@ -7,6 +7,7 @@
 #include "base/time/time.h"
 #include "cc/test/lap_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/perf/perf_test.h"
 
 namespace cc {
 
@@ -134,12 +135,6 @@ class RasterWorkerPoolPerfTest : public testing::Test {
     raster_worker_pool_->Shutdown();
   }
 
-  void AfterTest(const std::string test_name) {
-    // Format matches chrome/test/perf/perf_test.h:PrintResult
-    printf(
-        "*RESULT %s: %.2f runs/s\n", test_name.c_str(), timer_.LapsPerSecond());
-  }
-
   void CreateTasks(RasterWorkerPool::RasterTask::Queue* tasks,
                    unsigned num_raster_tasks,
                    unsigned num_image_decode_tasks) {
@@ -193,7 +188,8 @@ class RasterWorkerPoolPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    AfterTest(test_name);
+    perf_test::PrintResult("build_task_graph", "", test_name,
+                           timer_.LapsPerSecond(), "runs/s", true);
   }
 
  protected:
@@ -206,18 +202,18 @@ class RasterWorkerPoolPerfTest : public testing::Test {
 };
 
 TEST_F(RasterWorkerPoolPerfTest, BuildTaskGraph) {
-  RunBuildTaskGraphTest("build_task_graph_10_0", 10, 0);
-  RunBuildTaskGraphTest("build_task_graph_100_0", 100, 0);
-  RunBuildTaskGraphTest("build_task_graph_1000_0", 1000, 0);
-  RunBuildTaskGraphTest("build_task_graph_10_1", 10, 1);
-  RunBuildTaskGraphTest("build_task_graph_100_1", 100, 1);
-  RunBuildTaskGraphTest("build_task_graph_1000_1", 1000, 1);
-  RunBuildTaskGraphTest("build_task_graph_10_4", 10, 4);
-  RunBuildTaskGraphTest("build_task_graph_100_4", 100, 4);
-  RunBuildTaskGraphTest("build_task_graph_1000_4", 1000, 4);
-  RunBuildTaskGraphTest("build_task_graph_10_16", 10, 16);
-  RunBuildTaskGraphTest("build_task_graph_100_16", 100, 16);
-  RunBuildTaskGraphTest("build_task_graph_1000_16", 1000, 16);
+  RunBuildTaskGraphTest("10_0", 10, 0);
+  RunBuildTaskGraphTest("100_0", 100, 0);
+  RunBuildTaskGraphTest("1000_0", 1000, 0);
+  RunBuildTaskGraphTest("10_1", 10, 1);
+  RunBuildTaskGraphTest("100_1", 100, 1);
+  RunBuildTaskGraphTest("1000_1", 1000, 1);
+  RunBuildTaskGraphTest("10_4", 10, 4);
+  RunBuildTaskGraphTest("100_4", 100, 4);
+  RunBuildTaskGraphTest("1000_4", 1000, 4);
+  RunBuildTaskGraphTest("10_16", 10, 16);
+  RunBuildTaskGraphTest("100_16", 100, 16);
+  RunBuildTaskGraphTest("1000_16", 1000, 16);
 }
 
 }  // namespace

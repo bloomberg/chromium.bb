@@ -8,6 +8,7 @@
 #include "cc/base/completion_event.h"
 #include "cc/test/lap_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/perf/perf_test.h"
 
 namespace cc {
 
@@ -181,7 +182,8 @@ class WorkerPoolPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    AfterTest(test_name);
+    perf_test::PrintResult("schedule_tasks", "", test_name,
+                           timer_.LapsPerSecond(), "runs/s", true);
   }
 
   void RunExecuteTasksTest(const std::string test_name,
@@ -199,7 +201,8 @@ class WorkerPoolPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    AfterTest(test_name);
+    perf_test::PrintResult("execute_tasks", "", test_name,
+                           timer_.LapsPerSecond(), "runs/s", true);
   }
 
  protected:
@@ -208,23 +211,23 @@ class WorkerPoolPerfTest : public testing::Test {
 };
 
 TEST_F(WorkerPoolPerfTest, ScheduleTasks) {
-  RunScheduleTasksTest("schedule_tasks_1_10", 1, 10);
-  RunScheduleTasksTest("schedule_tasks_1_1000", 1, 1000);
-  RunScheduleTasksTest("schedule_tasks_2_10", 2, 10);
-  RunScheduleTasksTest("schedule_tasks_5_5", 5, 5);
-  RunScheduleTasksTest("schedule_tasks_10_2", 10, 2);
-  RunScheduleTasksTest("schedule_tasks_1000_1", 1000, 1);
-  RunScheduleTasksTest("schedule_tasks_10_1", 10, 1);
+  RunScheduleTasksTest("1_10", 1, 10);
+  RunScheduleTasksTest("1_1000", 1, 1000);
+  RunScheduleTasksTest("2_10", 2, 10);
+  RunScheduleTasksTest("5_5", 5, 5);
+  RunScheduleTasksTest("10_2", 10, 2);
+  RunScheduleTasksTest("1000_1", 1000, 1);
+  RunScheduleTasksTest("10_1", 10, 1);
 }
 
 TEST_F(WorkerPoolPerfTest, ExecuteTasks) {
-  RunExecuteTasksTest("execute_tasks_1_10", 1, 10);
-  RunExecuteTasksTest("execute_tasks_1_1000", 1, 1000);
-  RunExecuteTasksTest("execute_tasks_2_10", 2, 10);
-  RunExecuteTasksTest("execute_tasks_5_5", 5, 5);
-  RunExecuteTasksTest("execute_tasks_10_2", 10, 2);
-  RunExecuteTasksTest("execute_tasks_1000_1", 1000, 1);
-  RunExecuteTasksTest("execute_tasks_10_1", 10, 1);
+  RunExecuteTasksTest("1_10", 1, 10);
+  RunExecuteTasksTest("1_1000", 1, 1000);
+  RunExecuteTasksTest("2_10", 2, 10);
+  RunExecuteTasksTest("5_5", 5, 5);
+  RunExecuteTasksTest("10_2", 10, 2);
+  RunExecuteTasksTest("1000_1", 1000, 1);
+  RunExecuteTasksTest("10_1", 10, 1);
 }
 
 }  // namespace
