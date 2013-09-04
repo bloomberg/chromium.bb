@@ -4,18 +4,17 @@
     {
       'NAME' : 'graphics_3d',
       'TYPE' : 'main',
-      'SOURCES' : ['graphics_3d.cc', 'matrix.cc', 'matrix.h'],
-      'CXXFLAGS': [
-        '-I../../src',
-        '-I../../src/ppapi/lib/gl'
+      'SOURCES' : [
+        'graphics_3d.cc',
+        'matrix.cc',
+        'matrix.h',
+        'texture.cc',
       ],
-      'LIBS': ['ppapi_gles2', 'ppapi', 'pthread']
+      'LIBS': ['ppapi_gles2', 'ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DATA': [
-    'fragment_shader_es2.frag',
-    'hello.raw',
-    'vertex_shader_es2.vert'
+    'example.js'
   ],
   'DEST': 'examples/api',
   'NAME': 'graphics_3d',
