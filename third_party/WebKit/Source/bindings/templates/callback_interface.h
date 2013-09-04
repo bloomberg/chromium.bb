@@ -56,7 +56,7 @@ public:
     virtual ~{{v8_class_name}}();
 
 {% for method in methods %}
-    virtual {{method.return_cpp_type}} {{method.name}}({{method.argument_declaration}});
+    virtual {{method.return_cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}});
 {% endfor %}
 
     virtual ScriptExecutionContext* scriptExecutionContext() const { return ContextLifecycleObserver::scriptExecutionContext(); }

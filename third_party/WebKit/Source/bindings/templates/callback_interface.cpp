@@ -54,7 +54,7 @@ namespace WebCore {
 
 {% for method in methods %}
 {% if not method.custom %}
-{{method.return_cpp_type}} {{v8_class_name}}::{{method.name}}({{method.argument_declaration}})
+{{method.return_cpp_type}} {{v8_class_name}}::{{method.name}}({{method.argument_declarations | join(', ')}})
 {
     if (!canInvokeCallback())
         return true;
@@ -76,8 +76,8 @@ namespace WebCore {
         return true;
     }
 {% endfor %}
-{% if method.arguments | length > 0 %}
-    v8::Handle<v8::Value> argv[] = { {{method.handles}} };
+{% if method.arguments %}
+    v8::Handle<v8::Value> argv[] = { {{method.handles | join(', ')}} };
 {% else %}
     v8::Handle<v8::Value> *argv = 0;
 {% endif %}
