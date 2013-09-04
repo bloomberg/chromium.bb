@@ -47,6 +47,8 @@
       ],
       'sources': [
         # All .cc, .h under ash, except unittests
+        'accelerators/accelerator_commands.cc',
+        'accelerators/accelerator_commands.h',
         'accelerators/accelerator_controller.cc',
         'accelerators/accelerator_controller.h',
         'accelerators/accelerator_dispatcher.cc',
@@ -535,6 +537,8 @@
       'conditions': [
         ['OS=="mac"', {
           'sources/': [
+            ['exclude', 'accelerators/accelerator_commands.cc'],
+            ['exclude', 'accelerators/accelerator_commands.h'],
             ['exclude', 'accelerators/accelerator_controller.cc'],
             ['exclude', 'accelerators/accelerator_controller.h'],
             ['exclude', 'accelerators/accelerator_dispatcher.cc'],
@@ -679,6 +683,7 @@
         '../ui/compositor/test/layer_animator_test_controller.h',
         '../ui/views/test/test_views_delegate.cc',
         '../ui/views/test/test_views_delegate.h',
+        'accelerators/accelerator_commands_unittest.cc',
         'accelerators/accelerator_controller_unittest.cc',
         'accelerators/accelerator_filter_unittest.cc',
         'accelerators/accelerator_table_unittest.cc',

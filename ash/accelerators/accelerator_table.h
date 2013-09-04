@@ -12,6 +12,32 @@
 
 namespace ash {
 
+// There are four classes of accelerators in Ash:
+//
+// Ash (OS) reserved:
+// * Neither packaged apps nor web pages can cancel.
+// * For example, Alt-Tab window cycling.
+// * See kReservedActions below.
+//
+// Ash (OS) non-reserved:
+// * Packaged apps can cancel but web pages cannot.
+// * For example, volume up and down.
+// * See kActionsAllowedInAppMode below.
+//
+// Browser reserved:
+// * Packaged apps can cancel but web pages cannot.
+// * For example, browser back and forward from first-row function keys.
+// * See IsReservedCommandOrKey() in
+//   chrome/browser/ui/browser_command_controller.cc.
+//
+// Browser non-reserved:
+// * Both packaged apps and web pages can cancel.
+// * For example, selecting tabs by number with Ctrl-1 to Ctrl-9.
+// * See kAcceleratorMap in chrome/browser/ui/views/accelerator_table.cc.
+//
+// In particular, there is not an accelerator processing pass for Ash after
+// the browser gets the accelerator.  See crbug.com/285308 for details.
+//
 // Please put if/def sections at the end of the bare section and keep the list
 // within each section in alphabetical order.
 enum AcceleratorAction {

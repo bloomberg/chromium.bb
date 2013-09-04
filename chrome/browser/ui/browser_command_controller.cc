@@ -51,6 +51,7 @@
 #endif
 
 #if defined(USE_ASH)
+#include "ash/accelerators/accelerator_commands.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
 
@@ -444,6 +445,11 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_TOGGLE_ASH_DESKTOP:
       chrome::ToggleAshDesktop();
       break;
+    case IDC_MINIMIZE_WINDOW:
+      ash::accelerators::ToggleMinimized();
+      break;
+    // If Ash needs many more commands here we should implement a general
+    // mechanism to pass accelerators back into Ash. http://crbug.com/285308
 #endif
 
 #if defined(OS_WIN)
@@ -835,6 +841,9 @@ void BrowserCommandController::InitCommandState() {
   if (base::win::GetVersion() < base::win::VERSION_WIN8 &&
       chrome::HOST_DESKTOP_TYPE_NATIVE != chrome::HOST_DESKTOP_TYPE_ASH)
     command_updater_.UpdateCommandEnabled(IDC_TOGGLE_ASH_DESKTOP, true);
+#endif
+#if defined(USE_ASH)
+  command_updater_.UpdateCommandEnabled(IDC_MINIMIZE_WINDOW, true);
 #endif
 
   // Page-related commands

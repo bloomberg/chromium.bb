@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 
+#include "ash/accelerators/accelerator_commands.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_switches.h"
 #include "ash/caps_lock_delegate.h"
@@ -843,23 +844,8 @@ bool AcceleratorController::PerformAction(int action,
                                        internal::SnapSizer::RIGHT_EDGE);
       return true;
     }
-    case WINDOW_MINIMIZE: {
-      aura::Window* window = wm::GetActiveWindow();
-      // Attempt to restore the window that would be cycled through next from
-      // the launcher when there is no active window.
-      if (!window)
-        return HandleCycleWindowMRU(WindowCycleController::FORWARD, false);
-      // Disable the shortcut for minimizing full screen window due to
-      // crbug.com/131709, which is a crashing issue related to minimizing
-      // full screen pepper window.
-      if (!wm::IsWindowFullscreen(window) && wm::CanMinimizeWindow(window)) {
-        ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(
-            ash::UMA_MINIMIZE_PER_KEY);
-        wm::MinimizeWindow(window);
-        return true;
-      }
-      break;
-    }
+    case WINDOW_MINIMIZE:
+      return accelerators::ToggleMinimized();
     case TOGGLE_FULLSCREEN: {
       if (key_code == ui::VKEY_MEDIA_LAUNCH_APP2) {
         shell->delegate()->RecordUserMetricsAction(
