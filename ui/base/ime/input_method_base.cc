@@ -52,6 +52,15 @@ void InputMethodBase::SetFocusedTextInputClient(TextInputClient* client) {
     NotifyTextInputStateChanged(text_input_client_);
 }
 
+void InputMethodBase::DetachTextInputClient(TextInputClient* client) {
+  if (text_input_client_ == client) {
+    OnWillChangeFocusedClient(client, NULL);
+    text_input_client_ = NULL;
+    OnDidChangeFocusedClient(client, NULL);
+    NotifyTextInputStateChanged(text_input_client_);
+  }
+}
+
 TextInputClient* InputMethodBase::GetTextInputClient() const {
   return system_toplevel_window_focused_ ? text_input_client_ : NULL;
 }

@@ -809,7 +809,7 @@ bool RenderWidgetHostViewWin::CanSubscribeFrame() const {
 
 void RenderWidgetHostViewWin::WillWmDestroy() {
   CleanupCompositorWindow();
-  if (base::win::IsTSFAwareRequired() && GetFocus() == m_hWnd)
+  if (base::win::IsTSFAwareRequired())
     ui::TSFBridge::GetInstance()->RemoveFocusedClient(this);
 }
 

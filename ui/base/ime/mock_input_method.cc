@@ -24,6 +24,11 @@ void MockInputMethod::SetFocusedTextInputClient(TextInputClient* client) {
     OnTextInputTypeChanged(client);
 }
 
+void MockInputMethod::DetachTextInputClient(TextInputClient* client) {
+  if (text_input_client_ == client)
+    text_input_client_ = NULL;
+}
+
 TextInputClient* MockInputMethod::GetTextInputClient() const {
   return text_input_client_;
 }

@@ -2464,6 +2464,13 @@ void RenderWidgetHostViewAura::OnWindowDestroying() {
   LPARAM lparam = reinterpret_cast<LPARAM>(this);
   EnumChildWindows(parent, WindowDestroyingCallback, lparam);
 #endif
+
+  // Make sure that the input method no longer references to this object before
+  // this object is removed from the root window (i.e. this object loses access
+  // to the input method).
+  ui::InputMethod* input_method = GetInputMethod();
+  if (input_method)
+    input_method->DetachTextInputClient(this);
 }
 
 void RenderWidgetHostViewAura::OnWindowDestroyed() {

@@ -83,8 +83,13 @@ class InputMethod {
   // SetCompositionText(). |client| can be NULL. A gfx::NativeWindow which
   // implementes TextInputClient interface, e.g. NWA and RWHVA, should register
   // itself by calling the method when it is focused, and unregister itself by
-  // calling the metho with NULL when it is unfocused.
+  // calling the method with NULL when it is unfocused.
   virtual void SetFocusedTextInputClient(TextInputClient* client) = 0;
+
+  // Detaches and forgets the |client| regardless of whether it has the focus or
+  // not.  This method is meant to be called when the |client| is going to be
+  // destroyed.
+  virtual void DetachTextInputClient(TextInputClient* client) = 0;
 
   // Gets the current text input client. Returns NULL when no client is set.
   virtual TextInputClient* GetTextInputClient() const = 0;

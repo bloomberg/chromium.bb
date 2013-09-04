@@ -55,6 +55,14 @@ void FakeInputMethod::SetFocusedTextInputClient(TextInputClient* client) {
                     OnTextInputStateChanged(client));
 }
 
+void FakeInputMethod::DetachTextInputClient(TextInputClient* client) {
+  if (text_input_client_ == client) {
+    text_input_client_ = NULL;
+    FOR_EACH_OBSERVER(InputMethodObserver, observers_,
+                      OnTextInputStateChanged(client));
+  }
+}
+
 TextInputClient* FakeInputMethod::GetTextInputClient() const {
   return text_input_client_;
 }
