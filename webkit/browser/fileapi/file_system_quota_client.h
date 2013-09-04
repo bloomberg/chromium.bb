@@ -56,6 +56,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemQuotaClient
       const GURL& origin,
       quota::StorageType type,
       const DeletionCallback& callback) OVERRIDE;
+  virtual bool DoesSupport(quota::StorageType type) const OVERRIDE;
 
  private:
   base::SequencedTaskRunner* file_task_runner() const;

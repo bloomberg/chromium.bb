@@ -139,6 +139,10 @@ void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
       origin, GetServiceDeleteCallback()->callback());
 }
 
+bool AppCacheQuotaClient::DoesSupport(quota::StorageType type) const {
+  return type == quota::kStorageTypeTemporary;
+}
+
 void AppCacheQuotaClient::DidDeleteAppCachesForOrigin(int rv) {
   DCHECK(service_);
   if (quota_manager_is_destroyed_)

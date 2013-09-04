@@ -43,6 +43,7 @@ class IndexedDBQuotaClient : public quota::QuotaClient,
   virtual void DeleteOriginData(const GURL& origin,
                                 quota::StorageType type,
                                 const DeletionCallback& callback) OVERRIDE;
+  virtual bool DoesSupport(quota::StorageType type) const OVERRIDE;
 
  private:
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;

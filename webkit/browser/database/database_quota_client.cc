@@ -215,4 +215,8 @@ void DatabaseQuotaClient::DeleteOriginData(
       delete_callback);
 }
 
+bool DatabaseQuotaClient::DoesSupport(quota::StorageType type) const {
+  return type == quota::kStorageTypeTemporary;
+}
+
 }  // namespace webkit_database

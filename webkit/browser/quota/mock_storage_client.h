@@ -59,6 +59,7 @@ class MockStorageClient : public QuotaClient {
   virtual void DeleteOriginData(const GURL& origin,
                                 StorageType type,
                                 const DeletionCallback& callback) OVERRIDE;
+  virtual bool DoesSupport(quota::StorageType type) const OVERRIDE;
 
  private:
   void RunGetOriginUsage(const GURL& origin_url,

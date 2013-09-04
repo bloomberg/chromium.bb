@@ -121,6 +121,10 @@ void MockStorageClient::DeleteOriginData(
                  weak_factory_.GetWeakPtr(), origin, type, callback));
 }
 
+bool MockStorageClient::DoesSupport(quota::StorageType type) const {
+  return true;
+}
+
 void MockStorageClient::RunGetOriginUsage(
     const GURL& origin_url, StorageType type,
     const GetUsageCallback& callback) {

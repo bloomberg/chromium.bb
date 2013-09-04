@@ -197,6 +197,12 @@ void FileSystemQuotaClient::DeleteOriginData(
       callback);
 }
 
+bool FileSystemQuotaClient::DoesSupport(quota::StorageType storage_type) const {
+  FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
+  DCHECK(type != kFileSystemTypeUnknown);
+  return file_system_context_->IsSandboxFileSystem(type);
+}
+
 base::SequencedTaskRunner* FileSystemQuotaClient::file_task_runner() const {
   return file_system_context_->default_file_task_runner();
 }

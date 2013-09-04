@@ -121,11 +121,6 @@ FileSystemContext::FileSystemContext(
       external_mount_points_(external_mount_points),
       partition_path_(partition_path),
       operation_runner_(new FileSystemOperationRunner(this)) {
-  if (quota_manager_proxy) {
-    quota_manager_proxy->RegisterClient(CreateQuotaClient(
-            this, options.is_incognito()));
-  }
-
   RegisterBackend(sandbox_backend_.get());
   RegisterBackend(isolated_backend_.get());
 
@@ -133,6 +128,12 @@ FileSystemContext::FileSystemContext(
           additional_backends_.begin();
        iter != additional_backends_.end(); ++iter) {
     RegisterBackend(*iter);
+  }
+
+  if (quota_manager_proxy) {
+    // Quota client assumes all backends have registered.
+    quota_manager_proxy->RegisterClient(CreateQuotaClient(
+            this, options.is_incognito()));
   }
 
   sandbox_backend_->Initialize(this);
@@ -222,7 +223,8 @@ FileSystemBackend* FileSystemContext::GetFileSystemBackend(
 }
 
 bool FileSystemContext::IsSandboxFileSystem(FileSystemType type) const {
-  return GetQuotaUtil(type) != NULL;
+  FileSystemBackendMap::const_iterator found = backend_map_.find(type);
+  return found != backend_map_.end() && found->second->GetQuotaUtil();
 }
 
 const UpdateObserverList* FileSystemContext::GetUpdateObservers(

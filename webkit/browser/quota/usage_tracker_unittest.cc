@@ -89,6 +89,10 @@ class MockQuotaClient : public QuotaClient {
         FROM_HERE, base::Bind(callback, kQuotaStatusOk));
   }
 
+  virtual bool DoesSupport(quota::StorageType type) const OVERRIDE {
+    return type == quota::kStorageTypeTemporary;
+  }
+
   int64 GetUsage(const GURL& origin) {
     UsageMap::const_iterator found = usage_map_.find(origin);
     if (found == usage_map_.end())

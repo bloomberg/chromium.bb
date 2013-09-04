@@ -69,6 +69,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaClient {
   virtual void DeleteOriginData(const GURL& origin,
                                 StorageType type,
                                 const DeletionCallback& callback) = 0;
+
+  virtual bool DoesSupport(StorageType type) const = 0;
 };
 
 // TODO(dmikurube): Replace it to std::vector for efficiency.

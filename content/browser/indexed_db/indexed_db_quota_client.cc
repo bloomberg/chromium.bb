@@ -175,4 +175,8 @@ void IndexedDBQuotaClient::DeleteOriginData(const GURL& origin,
       callback);
 }
 
+bool IndexedDBQuotaClient::DoesSupport(quota::StorageType type) const {
+  return type == quota::kStorageTypeTemporary;
+}
+
 }  // namespace content

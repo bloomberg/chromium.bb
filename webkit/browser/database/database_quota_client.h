@@ -39,10 +39,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE DatabaseQuotaClient
                                  const GetOriginsCallback& callback) OVERRIDE;
   virtual void GetOriginsForHost(quota::StorageType type,
                                  const std::string& host,
-                                 const GetOriginsCallback& callback)  OVERRIDE;
+                                 const GetOriginsCallback& callback) OVERRIDE;
   virtual void DeleteOriginData(const GURL& origin,
                                 quota::StorageType type,
                                 const DeletionCallback& callback) OVERRIDE;
+  virtual bool DoesSupport(quota::StorageType type) const OVERRIDE;
  private:
   scoped_refptr<base::MessageLoopProxy> db_tracker_thread_;
   scoped_refptr<DatabaseTracker> db_tracker_;  // only used on its thread

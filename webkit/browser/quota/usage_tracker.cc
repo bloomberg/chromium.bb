@@ -78,8 +78,10 @@ UsageTracker::UsageTracker(const QuotaClientList& clients,
   for (QuotaClientList::const_iterator iter = clients.begin();
       iter != clients.end();
       ++iter) {
-    client_tracker_map_[(*iter)->id()] =
-        new ClientUsageTracker(this, *iter, type, special_storage_policy);
+    if ((*iter)->DoesSupport(type)) {
+      client_tracker_map_[(*iter)->id()] =
+          new ClientUsageTracker(this, *iter, type, special_storage_policy);
+    }
   }
 }
 
