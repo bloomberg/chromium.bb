@@ -12671,6 +12671,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Renderer.CompositedScrolling" enum="CompositedScrolling">
+  <summary>
+    Total count of the number of RenderLayers which are scrollable areas, need
+    to be promoted to stacking containers, and will use composited scrolling.
+    Each bucket is sampled at most once per RenderLayer, when the RenderLayer
+    first becomes scrollable, first needs to become a stacking container, and
+    first uses composited scrolling, respectively.
+  </summary>
+</histogram>
+
 <histogram name="Renderer.DrawDuration" units="milliseconds">
   <summary>The time it takes for the compositor to draw a frame.</summary>
 </histogram>
@@ -18579,6 +18589,12 @@ other types of suffix sets.
   <int value="0" label="No Advantage"/>
   <int value="1" label="Header packets Only"/>
   <int value="30" label="More Than 30"/>
+</enum>
+
+<enum name="CompositedScrolling" type="int">
+  <int value="0" label="Is scrollable area"/>
+  <int value="1" label="Needs to be stacking container"/>
+  <int value="2" label="Will use composited scrolling"/>
 </enum>
 
 <enum name="ConnectionType" type="int">
