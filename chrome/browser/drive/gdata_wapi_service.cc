@@ -277,43 +277,24 @@ CancelCallback GDataWapiService::GetChangeList(
                                  callback));
 }
 
-CancelCallback GDataWapiService::ContinueGetResourceList(
-    const GURL& override_url,
-    const GetResourceListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!override_url.is_empty());
-  DCHECK(!callback.is_null());
-
-  return sender_->StartRequestWithRetry(
-      new GetResourceListRequest(sender_.get(),
-                                 url_generator_,
-                                 override_url,
-                                 0,              // start changestamp
-                                 std::string(),  // empty search query
-                                 std::string(),  // no directory resource id
-                                 callback));
-}
-
 CancelCallback GDataWapiService::GetRemainingChangeList(
-    const std::string& page_token,
+    const GURL& next_link,
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!page_token.empty());
+  DCHECK(!next_link.is_empty());
   DCHECK(!callback.is_null());
 
-  // The page token for the GData WAPI is an URL.
-  return ContinueGetResourceList(GURL(page_token), callback);
+  return GetRemainingResourceList(next_link, callback);
 }
 
 CancelCallback GDataWapiService::GetRemainingFileList(
-    const std::string& page_token,
+    const GURL& next_link,
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!page_token.empty());
+  DCHECK(!next_link.is_empty());
   DCHECK(!callback.is_null());
 
-  // The page token for the GData WAPI is an URL.
-  return ContinueGetResourceList(GURL(page_token), callback);
+  return GetRemainingResourceList(next_link, callback);
 }
 
 CancelCallback GDataWapiService::GetResourceEntry(
@@ -633,9 +614,20 @@ CancelCallback GDataWapiService::GetResourceListInDirectoryByWapi(
 }
 
 CancelCallback GDataWapiService::GetRemainingResourceList(
-    const GURL& next_url,
+    const GURL& next_link,
     const google_apis::GetResourceListCallback& callback) {
-  return ContinueGetResourceList(next_url, callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!next_link.is_empty());
+  DCHECK(!callback.is_null());
+
+  return sender_->StartRequestWithRetry(
+      new GetResourceListRequest(sender_.get(),
+                                 url_generator_,
+                                 next_link,
+                                 0,              // start changestamp
+                                 std::string(),  // empty search query
+                                 std::string(),  // no directory resource id
+                                 callback));
 }
 
 bool GDataWapiService::HasAccessToken() const {

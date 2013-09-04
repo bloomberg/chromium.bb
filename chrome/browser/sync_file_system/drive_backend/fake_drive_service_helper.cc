@@ -273,7 +273,6 @@ GDataErrorCode FakeDriveServiceHelper::CompleteListing(
       *itr = NULL;
     }
 
-    // TODO(hidehiko): Use page token instead of next feed.
     GURL next_feed;
     if (!list->GetNextFeedURL(&next_feed))
       return google_apis::HTTP_SUCCESS;
@@ -281,7 +280,7 @@ GDataErrorCode FakeDriveServiceHelper::CompleteListing(
     GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
     list.reset();
     fake_drive_service_->GetRemainingFileList(
-        next_feed.spec(),
+        next_feed,
         base::Bind(&ResourceListResultCallback, &error, &list));
     FlushMessageLoop();
     if (error != google_apis::HTTP_SUCCESS)

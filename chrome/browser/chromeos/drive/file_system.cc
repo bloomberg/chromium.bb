@@ -895,11 +895,11 @@ void FileSystem::OnGetResourceEntryForGetShareUrl(
 }
 
 void FileSystem::Search(const std::string& search_query,
-                        const std::string& page_token,
+                        const GURL& next_link,
                         const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  search_operation_->Search(search_query, page_token, callback);
+  search_operation_->Search(search_query, next_link, callback);
 }
 
 void FileSystem::SearchMetadata(const std::string& query,

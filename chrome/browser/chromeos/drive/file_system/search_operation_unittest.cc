@@ -37,16 +37,16 @@ TEST_F(SearchOperationTest, ContentSearch) {
   };
 
   FileError error = FILE_ERROR_FAILED;
-  std::string page_token;
+  GURL next_link;
   scoped_ptr<std::vector<SearchResultInfo> > results;
 
-  operation.Search("Directory", std::string(),
+  operation.Search("Directory", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
-                       &error, &page_token, &results));
+                       &error, &next_link, &results));
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(std::string(), page_token);
+  EXPECT_TRUE(next_link.is_empty());
   EXPECT_EQ(ARRAYSIZE_UNSAFE(kExpectedResults), results->size());
   for (size_t i = 0; i < results->size(); i++) {
     EXPECT_EQ(kExpectedResults[i].path, results->at(i).path.AsUTF8Unsafe());
@@ -77,16 +77,16 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
   };
 
   FileError error = FILE_ERROR_FAILED;
-  std::string page_token;
+  GURL next_link;
   scoped_ptr<std::vector<SearchResultInfo> > results;
 
-  operation.Search("\"Directory 1\"", std::string(),
+  operation.Search("\"Directory 1\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
-                       &error, &page_token, &results));
+                       &error, &next_link, &results));
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(std::string(), page_token);
+  EXPECT_TRUE(next_link.is_empty());
   ASSERT_EQ(ARRAYSIZE_UNSAFE(kExpectedResultsBeforeLoad), results->size());
   for (size_t i = 0; i < results->size(); i++) {
     EXPECT_EQ(kExpectedResultsBeforeLoad[i].path,
@@ -104,13 +104,13 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
       { "drive/root/New Directory 1!", true },
   };
   error = FILE_ERROR_FAILED;
-  operation.Search("\"Directory 1\"", std::string(),
+  operation.Search("\"Directory 1\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
-                       &error, &page_token, &results));
+                       &error, &next_link, &results));
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(std::string(), page_token);
+  EXPECT_TRUE(next_link.is_empty());
   ASSERT_EQ(ARRAYSIZE_UNSAFE(kExpectedResultsAfterLoad), results->size());
   for (size_t i = 0; i < results->size(); i++) {
     EXPECT_EQ(kExpectedResultsAfterLoad[i].path,
@@ -124,16 +124,16 @@ TEST_F(SearchOperationTest, ContentSearchEmptyResult) {
   SearchOperation operation(blocking_task_runner(), scheduler(), metadata());
 
   FileError error = FILE_ERROR_FAILED;
-  std::string page_token;
+  GURL next_link;
   scoped_ptr<std::vector<SearchResultInfo> > results;
 
-  operation.Search("\"no-match query\"", std::string(),
+  operation.Search("\"no-match query\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
-                       &error, &page_token, &results));
+                       &error, &next_link, &results));
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(std::string(), page_token);
+  EXPECT_TRUE(next_link.is_empty());
   EXPECT_EQ(0U, results->size());
 }
 

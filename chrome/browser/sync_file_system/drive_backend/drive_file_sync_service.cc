@@ -893,11 +893,10 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
     AppendFetchChange(origin, path, entry.resource_id(), file_type);
   }
 
-  // TODO(hidehiko): Use page token instead of next feed url.
   GURL next_feed_url;
   if (feed->GetNextFeedURL(&next_feed_url)) {
     api_util_->ContinueListing(
-        next_feed_url.spec(),
+        next_feed_url,
         base::Bind(&DriveFileSyncService::DidGetDirectoryContentForBatchSync,
                    AsWeakPtr(),
                    callback,

@@ -89,7 +89,7 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
     if (resource_list->GetNextFeedURL(&next_url) && !next_url.is_empty()) {
       // There is the remaining result so fetch it.
       scheduler_->GetRemainingChangeList(
-          next_url.spec(),  // TODO(hidehiko): Go back to GURL.
+          next_url,
           base::Bind(&FullFeedFetcher::OnChangeListFetched,
                      weak_ptr_factory_.GetWeakPtr(), callback));
       return;
@@ -155,7 +155,7 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
     if (resource_list->GetNextFeedURL(&next_url) && !next_url.is_empty()) {
       // There is the remaining result so fetch it.
       scheduler_->GetRemainingChangeList(
-          next_url.spec(),  // TODO(hidehiko): Go back to GURL.
+          next_url,
           base::Bind(&DeltaFeedFetcher::OnChangeListFetched,
                      weak_ptr_factory_.GetWeakPtr(), callback));
       return;
@@ -216,7 +216,7 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
     if (resource_list->GetNextFeedURL(&next_url) && !next_url.is_empty()) {
       // There is the remaining result so fetch it.
       scheduler_->GetRemainingFileList(
-          next_url.spec(),  // TODO(hidehiko): Go back to GURL.
+          next_url,
           base::Bind(&FastFetchFeedFetcher::OnFileListFetched,
                      weak_ptr_factory_.GetWeakPtr(), callback));
       return;

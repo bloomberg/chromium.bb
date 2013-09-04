@@ -75,7 +75,7 @@ class FakeAPIUtil : public APIUtilInterface {
                          const ResourceListCallback& callback) OVERRIDE;
   virtual void ListChanges(int64 start_changestamp,
                            const ResourceListCallback& callback) OVERRIDE;
-  virtual void ContinueListing(const std::string& page_token,
+  virtual void ContinueListing(const GURL& next_link,
                                const ResourceListCallback& callback) OVERRIDE;
   virtual void DownloadFile(const std::string& resource_id,
                             const std::string& local_file_md5,

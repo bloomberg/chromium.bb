@@ -46,14 +46,11 @@ class DummyDriveService : public DriveServiceInterface {
   virtual google_apis::CancelCallback GetChangeList(
       int64 start_changestamp,
       const google_apis::GetResourceListCallback& callback) OVERRIDE;
-  virtual google_apis::CancelCallback ContinueGetResourceList(
-      const GURL& override_url,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetRemainingChangeList(
-      const std::string& page_token,
+      const GURL& next_link,
       const google_apis::GetResourceListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetRemainingFileList(
-      const std::string& page_token,
+      const GURL& next_link,
       const google_apis::GetResourceListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetResourceEntry(
       const std::string& resource_id,
@@ -144,7 +141,7 @@ class DummyDriveService : public DriveServiceInterface {
       const std::string& directory_resource_id,
       const google_apis::GetResourceListCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback GetRemainingResourceList(
-      const GURL& next_url,
+      const GURL& next_link,
       const google_apis::GetResourceListCallback& callback) OVERRIDE;
 };
 

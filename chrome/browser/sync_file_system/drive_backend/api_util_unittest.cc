@@ -527,7 +527,6 @@ void APIUtilTest::TestListFiles() {
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
   EXPECT_EQ(3U, document_feed->entries().size());
 
-  // TODO(hidehiko): Use page token instead of feed url.
   GURL feed_url;
   ASSERT_TRUE(document_feed->GetNextFeedURL(&feed_url));
 
@@ -535,7 +534,7 @@ void APIUtilTest::TestListFiles() {
   document_feed.reset();
 
   api_util()->ContinueListing(
-      feed_url.spec(),
+      feed_url,
       base::Bind(&DidGetResourceList, &error, &document_feed));
   base::MessageLoop::current()->RunUntilIdle();
 

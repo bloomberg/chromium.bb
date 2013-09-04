@@ -42,13 +42,13 @@ class SearchOperation {
   ~SearchOperation();
 
   // Performs server side content search operation for |search_query|.  If
-  // |next_url| is set, this is the search result url that will be fetched.
+  // |next_link| is set, this is the search result url that will be fetched.
   // Upon completion, |callback| will be called with the result.  This is
   // implementation of FileSystemInterface::Search() method.
   //
   // |callback| must not be null.
   void Search(const std::string& search_query,
-              const std::string& page_token,
+              const GURL& next_link,
               const SearchCallback& callback);
 
  private:
@@ -61,7 +61,7 @@ class SearchOperation {
   // Part of Search(), called after |result| is filled on the blocking pool.
   void SearchAfterResolveSearchResult(
       const SearchCallback& callback,
-      const std::string& page_token,
+      const GURL& next_link,
       scoped_ptr<std::vector<SearchResultInfo> > result,
       FileError error);
 

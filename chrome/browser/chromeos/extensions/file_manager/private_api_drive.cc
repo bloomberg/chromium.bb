@@ -413,14 +413,14 @@ bool FileBrowserPrivateSearchDriveFunction::RunImpl() {
     return false;
 
   integration_service->file_system()->Search(
-      query, next_feed,
+      query, GURL(next_feed),
       base::Bind(&FileBrowserPrivateSearchDriveFunction::OnSearch, this));
   return true;
 }
 
 void FileBrowserPrivateSearchDriveFunction::OnSearch(
     drive::FileError error,
-    const std::string& next_feed,
+    const GURL& next_link,
     scoped_ptr<std::vector<drive::SearchResultInfo> > results) {
   if (error != drive::FILE_ERROR_OK) {
     SendResponse(false);
@@ -449,7 +449,7 @@ void FileBrowserPrivateSearchDriveFunction::OnSearch(
 
   base::DictionaryValue* result = new DictionaryValue();
   result->Set("entries", entries);
-  result->SetString("nextFeed", next_feed);
+  result->SetString("nextFeed", next_link.spec());
 
   SetResult(result);
   SendResponse(true);

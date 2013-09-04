@@ -82,7 +82,7 @@ typedef base::Callback<void(FileError error,
 // If |error| is not FILE_ERROR_OK, |result_paths| is empty.
 typedef base::Callback<void(
     FileError error,
-    const std::string& page_token,
+    const GURL& next_link,
     scoped_ptr<std::vector<SearchResultInfo> > result_paths)> SearchCallback;
 
 // Callback for SearchMetadata(). On success, |error| is FILE_ERROR_OK, and
@@ -362,14 +362,14 @@ class FileSystemInterface {
       const ReadDirectoryCallback& callback) = 0;
 
   // Does server side content search for |search_query|.
-  // If |page_token| is set, this is the search result url that will be
+  // If |next_link| is set, this is the search result url that will be
   // fetched. Search results will be returned as a list of results'
   // |SearchResultInfo| structs, which contains file's path and is_directory
   // flag.
   //
   // |callback| must not be null.
   virtual void Search(const std::string& search_query,
-                      const std::string& page_token,
+                      const GURL& next_link,
                       const SearchCallback& callback) = 0;
 
   // Searches the local resource metadata, and returns the entries

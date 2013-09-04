@@ -135,37 +135,24 @@ class DriveServiceInterface {
       int64 start_changestamp,
       const google_apis::GetResourceListCallback& callback) = 0;
 
-  // THIS METHOD IS DEPRECATED. NEW CLIENTS SHOULD USE GetRemainingChangeList()
-  // or GetRemainingFileList().
-  //
-  // Requests returning GetResourceList may be paged. In such a case,
-  // a URL to fetch remaining result is returned. The URL can be used for this
-  // method. |callback| will be called upon completion.
-  //
-  // |override_url| must not be empty.
-  // |callback| must not be null.
-  virtual google_apis::CancelCallback ContinueGetResourceList(
-      const GURL& override_url,
-      const google_apis::GetResourceListCallback& callback) = 0;
-
   // The result of GetChangeList() and GetAllResourceList() may be paged.
-  // In such a case, a page token to fetch remaining result is returned.
+  // In such a case, a next link to fetch remaining result is returned.
   // The page token can be used for this method. |callback| will be called upon
   // completion.
   //
-  // |page_token| must not be empty. |callback| must not be null.
+  // |next_link| must not be empty. |callback| must not be null.
   virtual google_apis::CancelCallback GetRemainingChangeList(
-      const std::string& page_token,
+      const GURL& next_link,
       const google_apis::GetResourceListCallback& callback) = 0;
 
   // The result of GetResourceListInDirectory(), Search() and SearchByTitle()
-  // may be paged. In such a case, a page token to fetch remaining result is
+  // may be paged. In such a case, a next link to fetch remaining result is
   // returned. The page token can be used for this method. |callback| will be
   // called upon completion.
   //
-  // |page_token| must not be empty. |callback| must not be null.
+  // |next_link| must not be empty. |callback| must not be null.
   virtual google_apis::CancelCallback GetRemainingFileList(
-      const std::string& page_token,
+      const GURL& next_link,
       const google_apis::GetResourceListCallback& callback) = 0;
 
   // Fetches single entry metadata from server. The entry's resource id equals
@@ -383,7 +370,7 @@ class DriveServiceInterface {
   //
   // |callback| must not be null.
   virtual google_apis::CancelCallback GetRemainingResourceList(
-      const GURL& next_url,
+      const GURL& next_link,
       const google_apis::GetResourceListCallback& callback) = 0;
 };
 

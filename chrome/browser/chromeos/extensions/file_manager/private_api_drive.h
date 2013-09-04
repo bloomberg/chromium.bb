@@ -139,7 +139,7 @@ class FileBrowserPrivateSearchDriveFunction
  private:
   // Callback for Search().
   void OnSearch(drive::FileError error,
-                const std::string& next_feed,
+                const GURL& next_link,
                 scoped_ptr<std::vector<drive::SearchResultInfo> > result_paths);
 };
 

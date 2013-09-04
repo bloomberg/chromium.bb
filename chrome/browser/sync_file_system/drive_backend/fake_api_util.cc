@@ -139,7 +139,7 @@ void FakeAPIUtil::ListChanges(int64 start_changestamp,
           callback, google_apis::HTTP_SUCCESS, base::Passed(&change_feed)));
 }
 
-void FakeAPIUtil::ContinueListing(const std::string& page_token,
+void FakeAPIUtil::ContinueListing(const GURL& next_link,
                                   const ResourceListCallback& callback) {
   NOTREACHED();
 }

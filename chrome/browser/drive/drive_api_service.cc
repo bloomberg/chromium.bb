@@ -479,48 +479,33 @@ CancelCallback DriveAPIService::GetChangeList(
   return sender_->StartRequestWithRetry(request);
 }
 
-CancelCallback DriveAPIService::ContinueGetResourceList(
-    const GURL& override_url,
-    const GetResourceListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  return sender_->StartRequestWithRetry(
-      new ContinueGetFileListRequest(
-          sender_.get(),
-          override_url,
-          base::Bind(&ParseResourceListOnBlockingPoolAndRun,
-                     blocking_task_runner_,
-                     callback)));
-}
-
 CancelCallback DriveAPIService::GetRemainingChangeList(
-    const std::string& page_token,
+    const GURL& next_link,
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!page_token.empty());
+  DCHECK(!next_link.is_empty());
   DCHECK(!callback.is_null());
 
   ChangesListNextPageRequest* request = new ChangesListNextPageRequest(
       sender_.get(),
       base::Bind(&ConvertChangeListToResourceListOnBlockingPoolAndRun,
                  blocking_task_runner_, callback));
-  request->set_next_link(GURL(page_token));
+  request->set_next_link(next_link);
   return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::GetRemainingFileList(
-    const std::string& page_token,
+    const GURL& next_link,
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!page_token.empty());
+  DCHECK(!next_link.is_empty());
   DCHECK(!callback.is_null());
 
   FilesListNextPageRequest* request = new FilesListNextPageRequest(
       sender_.get(),
       base::Bind(&ConvertFileListToResourceListOnBlockingPoolAndRun,
                  blocking_task_runner_, callback));
-  request->set_next_link(GURL(page_token));
+  request->set_next_link(next_link);
   return sender_->StartRequestWithRetry(request);
 }
 
@@ -853,16 +838,16 @@ CancelCallback DriveAPIService::GetResourceListInDirectoryByWapi(
 }
 
 CancelCallback DriveAPIService::GetRemainingResourceList(
-    const GURL& next_url,
+    const GURL& next_link,
     const google_apis::GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!next_url.is_empty());
+  DCHECK(!next_link.is_empty());
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
       new GetResourceListRequest(sender_.get(),
                                  wapi_url_generator_,
-                                 next_url,
+                                 next_link,
                                  0,              // start changestamp
                                  std::string(),  // empty search query
                                  std::string(),  // no directory resource id
