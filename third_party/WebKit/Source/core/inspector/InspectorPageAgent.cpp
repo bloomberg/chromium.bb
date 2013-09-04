@@ -655,7 +655,7 @@ void InspectorPageAgent::setDocumentContent(ErrorString* errorString, const Stri
         *errorString = "No Document instance to set HTML for";
         return;
     }
-    DOMPatchSupport::patchDocument(document, html);
+    DOMPatchSupport::patchDocument(*document, html);
 }
 
 void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int width, int height, double fontScaleFactor, bool fitWindow)

@@ -794,7 +794,7 @@ bool Document::haveImportsLoaded() const
 
 PassRefPtr<DocumentFragment> Document::createDocumentFragment()
 {
-    return DocumentFragment::create(&document());
+    return DocumentFragment::create(document());
 }
 
 PassRefPtr<Text> Document::createTextNode(const String& data)
@@ -5348,10 +5348,10 @@ Locale& Document::getCachedLocale(const AtomicString& locale)
     return *(result.iterator->value);
 }
 
-Document* Document::ensureTemplateDocument()
+Document& Document::ensureTemplateDocument()
 {
     if (const Document* document = templateDocument())
-        return const_cast<Document*>(document);
+        return *const_cast<Document*>(document);
 
     if (isHTMLDocument()) {
         DocumentInit init = DocumentInit::fromContext(contextDocument(), blankURL())
@@ -5363,7 +5363,7 @@ Document* Document::ensureTemplateDocument()
 
     m_templateDocument->setTemplateDocumentHost(this); // balanced in dtor.
 
-    return m_templateDocument.get();
+    return *m_templateDocument.get();
 }
 
 PassRefPtr<FontLoader> Document::fontloader()

@@ -199,7 +199,8 @@ static bool executeInsertFragment(Frame& frame, PassRefPtr<DocumentFragment> fra
 
 static bool executeInsertNode(Frame& frame, PassRefPtr<Node> content)
 {
-    RefPtr<DocumentFragment> fragment = DocumentFragment::create(frame.document());
+    ASSERT(frame.document());
+    RefPtr<DocumentFragment> fragment = DocumentFragment::create(*frame.document());
     TrackExceptionState es;
     fragment->appendChild(content, es);
     if (es.hadException())
@@ -503,7 +504,8 @@ static bool executeInsertHorizontalRule(Frame& frame, Event*, EditorCommandSourc
 
 static bool executeInsertHTML(Frame& frame, Event*, EditorCommandSource, const String& value)
 {
-    return executeInsertFragment(frame, createFragmentFromMarkup(frame.document(), value, ""));
+    ASSERT(frame.document());
+    return executeInsertFragment(frame, createFragmentFromMarkup(*frame.document(), value, ""));
 }
 
 static bool executeInsertImage(Frame& frame, Event*, EditorCommandSource, const String& value)

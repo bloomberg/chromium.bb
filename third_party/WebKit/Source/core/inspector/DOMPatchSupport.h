@@ -48,9 +48,9 @@ class Node;
 class DOMPatchSupport {
     WTF_MAKE_NONCOPYABLE(DOMPatchSupport);
 public:
-    static void patchDocument(Document*, const String& markup);
+    static void patchDocument(Document&, const String& markup);
 
-    DOMPatchSupport(DOMEditor*, Document*);
+    DOMPatchSupport(DOMEditor*, Document&);
     virtual ~DOMPatchSupport();
 
     void patchDocument(const String& markup);
@@ -73,7 +73,7 @@ private:
 #endif
 
     DOMEditor* m_domEditor;
-    Document* m_document;
+    Document& m_document;
 
     UnusedNodesMap m_unusedNodesMap;
 };

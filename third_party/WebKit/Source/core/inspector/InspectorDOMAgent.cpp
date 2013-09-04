@@ -786,7 +786,8 @@ void InspectorDOMAgent::getOuterHTML(ErrorString* errorString, int nodeId, WTF::
 void InspectorDOMAgent::setOuterHTML(ErrorString* errorString, int nodeId, const String& outerHTML)
 {
     if (!nodeId) {
-        DOMPatchSupport domPatchSupport(m_domEditor.get(), m_document.get());
+        ASSERT(m_document);
+        DOMPatchSupport domPatchSupport(m_domEditor.get(), *m_document.get());
         domPatchSupport.patchDocument(outerHTML);
         return;
     }

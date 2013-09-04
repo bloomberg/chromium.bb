@@ -330,8 +330,9 @@ PassRefPtr<DocumentFragment>  WebVTTParser::createDocumentFragmentFromCueText(co
 
     ASSERT(m_scriptExecutionContext->isDocument());
     Document* document = toDocument(m_scriptExecutionContext);
+    ASSERT(document);
 
-    RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
+    RefPtr<DocumentFragment> fragment = DocumentFragment::create(*document);
 
     if (!text.length()) {
         fragment->parserAppendChild(Text::create(document, ""));

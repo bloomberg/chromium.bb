@@ -638,16 +638,15 @@ String createMarkup(const Range* range, Vector<Node*>* nodes, EAnnotateForInterc
     return createMarkupInternal(document, range, updatedRange, nodes, shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
 }
 
-PassRefPtr<DocumentFragment> createFragmentFromMarkup(Document* document, const String& markup, const String& baseURL, ParserContentPolicy parserContentPolicy)
+PassRefPtr<DocumentFragment> createFragmentFromMarkup(Document& document, const String& markup, const String& baseURL, ParserContentPolicy parserContentPolicy)
 {
-    ASSERT(document);
     // We use a fake body element here to trick the HTML parser to using the InBody insertion mode.
-    RefPtr<HTMLBodyElement> fakeBody = HTMLBodyElement::create(*document);
+    RefPtr<HTMLBodyElement> fakeBody = HTMLBodyElement::create(document);
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
 
     fragment->parseHTML(markup, fakeBody.get(), parserContentPolicy);
 
-    if (!baseURL.isEmpty() && baseURL != blankURL() && baseURL != document->baseURL())
+    if (!baseURL.isEmpty() && baseURL != blankURL() && baseURL != document.baseURL())
         completeURLs(fragment.get(), baseURL);
 
     return fragment.release();
@@ -692,7 +691,7 @@ static void trimFragment(DocumentFragment* fragment, Node* nodeBeforeContext, No
     }
 }
 
-PassRefPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document* document, const String& markup, unsigned fragmentStart, unsigned fragmentEnd,
+PassRefPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document& document, const String& markup, unsigned fragmentStart, unsigned fragmentEnd,
     const String& baseURL, ParserContentPolicy parserContentPolicy)
 {
     // FIXME: Need to handle the case where the markup already contains these markers.
@@ -706,7 +705,7 @@ PassRefPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document* docum
 
     RefPtr<DocumentFragment> taggedFragment = createFragmentFromMarkup(document, taggedMarkup.toString(), baseURL, parserContentPolicy);
     RefPtr<Document> taggedDocument = Document::create();
-    taggedDocument->setContextFeatures(document->contextFeatures());
+    taggedDocument->setContextFeatures(document.contextFeatures());
     taggedDocument->takeAllChildrenFrom(taggedFragment.get());
 
     RefPtr<Node> nodeBeforeContext;
@@ -942,10 +941,10 @@ String urlToMarkup(const KURL& url, const String& title)
 
 PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& markup, Element* contextElement, ParserContentPolicy parserContentPolicy, ExceptionState& es)
 {
-    Document* document = contextElement->hasTagName(templateTag) ? contextElement->document().ensureTemplateDocument() : &contextElement->document();
+    Document& document = contextElement->hasTagName(templateTag) ? contextElement->document().ensureTemplateDocument() : contextElement->document();
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
 
-    if (document->isHTMLDocument()) {
+    if (document.isHTMLDocument()) {
         fragment->parseHTML(markup, contextElement, parserContentPolicy);
         return fragment;
     }

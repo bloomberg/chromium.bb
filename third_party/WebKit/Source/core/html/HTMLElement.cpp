@@ -371,7 +371,7 @@ void HTMLElement::setOuterHTML(const String& html, ExceptionState& es)
 
 PassRefPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, ExceptionState& es)
 {
-    RefPtr<DocumentFragment> fragment = DocumentFragment::create(&document());
+    RefPtr<DocumentFragment> fragment = DocumentFragment::create(document());
     unsigned int i, length = text.length();
     UChar c = 0;
     for (unsigned int start = 0; start < length; ) {

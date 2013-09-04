@@ -221,7 +221,8 @@ public:
     virtual bool perform(ExceptionState& es)
     {
         m_oldHTML = createMarkup(m_node.get());
-        DOMPatchSupport domPatchSupport(m_domEditor.get(), m_node->ownerDocument());
+        ASSERT(m_node->ownerDocument());
+        DOMPatchSupport domPatchSupport(m_domEditor.get(), *m_node->ownerDocument());
         m_newNode = domPatchSupport.patchNode(m_node.get(), m_html, es);
         return !es.hadException();
     }

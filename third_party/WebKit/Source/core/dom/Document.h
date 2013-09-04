@@ -1052,7 +1052,7 @@ public:
     HTMLDialogElement* activeModalDialog() const;
 
     const Document* templateDocument() const;
-    Document* ensureTemplateDocument();
+    Document& ensureTemplateDocument();
     void setTemplateDocumentHost(Document* templateDocumentHost) { m_templateDocumentHost = templateDocumentHost; }
     Document* templateDocumentHost() { return m_templateDocumentHost; }
 

@@ -78,7 +78,7 @@ void HTMLTemplateElement::didMoveToNewDocument(Document* oldDocument)
     HTMLElement::didMoveToNewDocument(oldDocument);
     if (!m_content)
         return;
-    document().ensureTemplateDocument()->adoptIfNeeded(m_content.get());
+    document().ensureTemplateDocument().adoptIfNeeded(m_content.get());
 }
 
 } // namespace WebCore
