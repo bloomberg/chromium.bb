@@ -65,6 +65,7 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName, Doc
 
 HTMLFormControlElement::~HTMLFormControlElement()
 {
+    setForm(0);
 }
 
 String HTMLFormControlElement::formEnctype() const

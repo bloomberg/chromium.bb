@@ -55,7 +55,7 @@ FormAssociatedElement::FormAssociatedElement()
 
 FormAssociatedElement::~FormAssociatedElement()
 {
-    setForm(0);
+    // We can't call setForm here because it contains virtual calls.
 }
 
 ValidityState* FormAssociatedElement::validity()

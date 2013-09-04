@@ -158,6 +158,7 @@ private:
 
     Node* elementFromPastNamesMap(const AtomicString&) const;
     void addToPastNamesMap(Node*, const AtomicString& pastName);
+    void removeFromPastNamesMap(HTMLElement&);
 
     typedef HashMap<AtomicString, RefPtr<Node> > PastNamesMap;
 

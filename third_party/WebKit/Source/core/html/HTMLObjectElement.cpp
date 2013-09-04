@@ -62,6 +62,7 @@ inline HTMLObjectElement::HTMLObjectElement(const QualifiedName& tagName, Docume
 
 inline HTMLObjectElement::~HTMLObjectElement()
 {
+    setForm(0);
 }
 
 PassRefPtr<HTMLObjectElement> HTMLObjectElement::create(const QualifiedName& tagName, Document& document, HTMLFormElement* form, bool createdByParser)

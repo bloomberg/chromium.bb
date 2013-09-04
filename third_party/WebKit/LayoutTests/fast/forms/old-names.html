@@ -130,10 +130,10 @@ function runTest()
     form.removeChild(a);
 
     shouldBe('form.length', '1');
-    shouldBe('form.original', 'a');
+    shouldBeUndefined('form.original', 'a');
     shouldBe('form.originalB', 'b');
     shouldBe('form.second', 'b');
-    shouldBe('form.third', 'a');
+    shouldBeUndefined('form.third', 'a');
     shouldBe('form.fourth', 'b');
     shouldBe('form.elements.original', 'undefined');
     shouldBe('form.elements.originalB', 'undefined');
@@ -142,13 +142,13 @@ function runTest()
     shouldBe('form.elements.fourth', 'b');
  
     debug('');
-    debug("check we still remember names we should");
+    debug("check that we no longer remember the past names of a");
     debug('');
 
     shouldBe('form.thisWillBeForgotten', 'undefined');
     shouldBe('form.thisWillBeForgottenToo', 'undefined');
-    shouldBe('form.thisWillBeRemembered', 'a');
-    shouldBe('form.thisWillBeRememberedToo', 'a');
+    shouldBeUndefined('form.thisWillBeRemembered');
+    shouldBeUndefined('form.thisWillBeRememberedToo');
     debug('');
 }
 </script>
@@ -158,9 +158,39 @@ function runTest()
 <input type='hidden' id='a' name='original'>
 <input type='hidden' id='b' name='originalB'>
 </form>
+
+<form id="form1"><input name="foo" id="input3"></form>
+<form id="form2"></form>
+
+<form id="form4"><input name="foo"><input name="bar"><input name="bar"></form>
+
 <p id="description"></p>
 <div id="console"></div>
-<script>runTest();</script>
+<script>
+runTest();
+
+debug('Ensures elements are removed from the past names map of a form element once they are no longer associated with the form element.');
+var form1 = document.querySelector("#form1");
+var input3 = document.querySelector("#input3");
+shouldBe("form1['foo']", "input3");
+shouldBeUndefined("form2.appendChild(form1.firstChild); form1['foo']");
+
+shouldBe("form2['foo']", "input3");
+shouldBeUndefined("form2.removeChild(input3); form2['foo']");
+
+shouldBe("form1.appendChild(input3); form1['foo']", "input3");
+// input3 will be an orphan. So form content attribute doesn't work.
+shouldBeUndefined("input3.setAttribute('form', 'form1'); form1.removeChild(input3); input3.appendChild(form1); form1['foo']");
+shouldNotBe("form1['foo']", "input3");
+
+debug("");
+debug("Don't add the element from the past names map if we've found elements of the given name.");
+var form4 = document.querySelector("#form4");
+shouldBe("form4['foo']", "form4.childNodes[0]");
+shouldBe("form4['bar'][0]", "form4.childNodes[1]");
+shouldBe("form4['bar'][1]", "form4.childNodes[2]");
+shouldBe("form4.childNodes[0].name = 'bar'; form4.childNodes[1].name = form4.childNodes[2].name = 'foo'; form4['foo'].length", "2");
+</script>
 <script src="../js/resources/js-test-post.js"></script>
 </body>
 </html>

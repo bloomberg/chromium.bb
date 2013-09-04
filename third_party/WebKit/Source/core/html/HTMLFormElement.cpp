@@ -41,6 +41,7 @@
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLObjectElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoader.h"
@@ -566,6 +567,7 @@ void HTMLFormElement::removeFormElement(FormAssociatedElement* e)
         --m_associatedElementsBeforeIndex;
     if (index < m_associatedElementsAfterIndex)
         --m_associatedElementsAfterIndex;
+    removeFromPastNamesMap(*toHTMLElement(e));
     removeFromVector(m_associatedElements, e);
 }
 
@@ -583,6 +585,7 @@ void HTMLFormElement::registerImgElement(HTMLImageElement* e)
 void HTMLFormElement::removeImgElement(HTMLImageElement* e)
 {
     ASSERT(m_imageElements.find(e) != notFound);
+    removeFromPastNamesMap(*e);
     removeFromVector(m_imageElements, e);
 }
 
@@ -687,7 +690,20 @@ Node* HTMLFormElement::elementFromPastNamesMap(const AtomicString& pastName) con
 {
     if (pastName.isEmpty() || !m_pastNamesMap)
         return 0;
-    return m_pastNamesMap->get(pastName.impl());
+    Node* node = m_pastNamesMap->get(pastName.impl());
+#if !ASSERT_DISABLED
+    if (!node)
+        return 0;
+    ASSERT_WITH_SECURITY_IMPLICATION(toHTMLElement(node)->form() == this);
+    if (node->hasTagName(imgTag)) {
+        ASSERT_WITH_SECURITY_IMPLICATION(m_imageElements.find(node) != notFound);
+    } else if (node->hasTagName(objectTag)) {
+        ASSERT_WITH_SECURITY_IMPLICATION(m_associatedElements.find(toHTMLObjectElement(node)) != notFound);
+    } else {
+        ASSERT_WITH_SECURITY_IMPLICATION(m_associatedElements.find(toHTMLFormControlElement(node)) != notFound);
+    }
+#endif
+    return node;
 }
 
 void HTMLFormElement::addToPastNamesMap(Node* element, const AtomicString& pastName)
@@ -699,6 +715,19 @@ void HTMLFormElement::addToPastNamesMap(Node* element, const AtomicString& pastN
     m_pastNamesMap->set(pastName.impl(), element);
 }
 
+void HTMLFormElement::removeFromPastNamesMap(HTMLElement& element)
+{
+    if (!m_pastNamesMap)
+        return;
+    PastNamesMap::iterator end = m_pastNamesMap->end();
+    for (PastNamesMap::iterator it = m_pastNamesMap->begin(); it != end; ++it) {
+        if (it->value.get() == &element) {
+            it->value = 0;
+            // Keep looping. Single element can have multiple names.
+        }
+    }
+}
+
 void HTMLFormElement::getNamedElements(const AtomicString& name, Vector<RefPtr<Node> >& namedItems)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/forms.html#dom-form-nameditem
@@ -707,7 +736,7 @@ void HTMLFormElement::getNamedElements(const AtomicString& name, Vector<RefPtr<N
     Node* elementFromPast = elementFromPastNamesMap(name);
     if (namedItems.size() && namedItems.first() != elementFromPast)
         addToPastNamesMap(namedItems.first().get(), name);
-    else if (elementFromPast && namedItems.find(elementFromPast) == notFound)
+    else if (elementFromPast && namedItems.isEmpty())
         namedItems.append(elementFromPast);
 }
 
