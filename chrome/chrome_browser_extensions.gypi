@@ -134,6 +134,8 @@
         'browser/extensions/api/bookmarks/bookmark_api_helpers.h',
         'browser/extensions/api/bookmarks/bookmarks_api.cc',
         'browser/extensions/api/bookmarks/bookmarks_api.h',
+        'browser/extensions/api/braille_display_private/braille_display_private_api.h',
+        'browser/extensions/api/braille_display_private/braille_display_private_api.cc',
         'browser/extensions/api/browsing_data/browsing_data_api.cc',
         'browser/extensions/api/browsing_data/browsing_data_api.h',
         'browser/extensions/api/cloud_print_private/cloud_print_private_api.cc',

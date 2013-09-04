@@ -49,6 +49,7 @@ class APIPermission {
     kBluetooth,
     kBookmark,
     kBookmarkManagerPrivate,
+    kBrailleDisplayPrivate,
     kBrowsingData,
     kChromeosInfoPrivate,
     kClipboardRead,

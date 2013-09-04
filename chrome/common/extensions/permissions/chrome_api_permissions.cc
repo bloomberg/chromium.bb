@@ -89,6 +89,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
     { APIPermission::kBookmark, "bookmarks", APIPermissionInfo::kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,
       PermissionMessage::kBookmarks },
+    { APIPermission::kBrailleDisplayPrivate, "brailleDisplayPrivate",
+      APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kBrowsingData, "browsingData" },
     { APIPermission::kContentSettings, "contentSettings",
       APIPermissionInfo::kFlagNone,
