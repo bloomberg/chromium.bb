@@ -830,6 +830,11 @@ void InspectorPageAgent::didCommitLoad(Frame*, DocumentLoader* loader)
     m_frontend->frameNavigated(buildObjectForFrame(loader->frame()));
 }
 
+void InspectorPageAgent::frameAttachedToParent(Frame* frame)
+{
+    m_frontend->frameAttached(frameId(frame));
+}
+
 void InspectorPageAgent::frameDetachedFromParent(Frame* frame)
 {
     HashMap<Frame*, String>::iterator iterator = m_frameToIdentifier.find(frame);

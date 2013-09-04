@@ -41,6 +41,7 @@
 #include "core/editing/markup.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/html/HTMLFrameElementBase.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
@@ -133,6 +134,7 @@ PassRefPtr<Frame> Frame::create(Page* page, HTMLFrameOwnerElement* ownerElement,
     RefPtr<Frame> frame = adoptRef(new Frame(page, ownerElement, client));
     if (!ownerElement)
         page->setMainFrame(frame);
+    InspectorInstrumentation::frameAttachedToParent(frame.get());
     return frame.release();
 }
 

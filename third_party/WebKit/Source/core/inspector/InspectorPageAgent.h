@@ -133,6 +133,7 @@ public:
     void loadEventFired(Frame*);
     void childDocumentOpened(Document*);
     void didCommitLoad(Frame*, DocumentLoader*);
+    void frameAttachedToParent(Frame*);
     void frameDetachedFromParent(Frame*);
     void loaderDetachedFromFrame(DocumentLoader*);
     void frameStartedLoading(Frame*);
