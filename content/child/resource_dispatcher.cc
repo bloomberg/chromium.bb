@@ -183,8 +183,11 @@ bool IPCResourceLoaderBridge::Start(Peer* peer) {
   peer_ = peer;
 
   // generate the request ID, and append it to the message
-  request_id_ = dispatcher_->AddPendingRequest(
-      peer_, request_.resource_type, frame_origin_, request_.url);
+  request_id_ = dispatcher_->AddPendingRequest(peer_,
+                                               request_.resource_type,
+                                               request_.origin_pid,
+                                               frame_origin_,
+                                               request_.url);
 
   return dispatcher_->message_sender()->Send(
       new ResourceHostMsg_RequestResource(routing_id_, request_id_, request_));
@@ -355,6 +358,7 @@ void ResourceDispatcher::OnReceivedResponse(
                                           request_info->frame_origin,
                                           request_info->response_url,
                                           request_info->resource_type,
+                                          request_info->origin_pid,
                                           renderer_response_info);
   request_info->peer->OnReceivedResponse(renderer_response_info);
 }
@@ -547,12 +551,13 @@ void ResourceDispatcher::OnRequestComplete(
 int ResourceDispatcher::AddPendingRequest(
     ResourceLoaderBridge::Peer* callback,
     ResourceType::Type resource_type,
+    int origin_pid,
     const GURL& frame_origin,
     const GURL& request_url) {
   // Compute a unique request_id for this renderer process.
   int id = MakeRequestID();
-  pending_requests_[id] =
-      PendingRequestInfo(callback, resource_type, frame_origin, request_url);
+  pending_requests_[id] = PendingRequestInfo(
+      callback, resource_type, origin_pid, frame_origin, request_url);
   return id;
 }
 
@@ -625,10 +630,12 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo()
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     webkit_glue::ResourceLoaderBridge::Peer* peer,
     ResourceType::Type resource_type,
+    int origin_pid,
     const GURL& frame_origin,
     const GURL& request_url)
     : peer(peer),
       resource_type(resource_type),
+      origin_pid(origin_pid),
       is_deferred(false),
       url(request_url),
       frame_origin(frame_origin),

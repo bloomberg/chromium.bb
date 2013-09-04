@@ -54,6 +54,8 @@ namespace content {
 
 class CONTENT_EXPORT SiteIsolationPolicy {
  public:
+  // Set activation flag for the UMA data collection for this renderer process.
+  static void SetPolicyEnabled(bool enabled);
 
   // Records the bookkeeping data about the HTTP header information for the
   // request identified by |request_id|. The bookkeeping data is used by
@@ -63,6 +65,7 @@ class CONTENT_EXPORT SiteIsolationPolicy {
                                  GURL& frame_origin,
                                  GURL& response_url,
                                  ResourceType::Type resource_type,
+                                 int origin_pid,
                                  const webkit_glue::ResourceResponseInfo& info);
 
   // Examines the first network packet in case response_url is registered as a
@@ -166,6 +169,10 @@ private:
   // decision will remain the same for following data. This map maintains the
   // decision. The key is a request id maintained by ResourceDispatcher.
   static RequestIdToResultMap* GetRequestIdToResultMap();
+
+  // This is false by default, but enables UMA logging and cross-site document
+  // blocking.
+  static bool g_policy_enabled;
 
   // Never needs to be constructed/destructed.
   SiteIsolationPolicy() {}

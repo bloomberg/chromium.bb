@@ -187,4 +187,8 @@ bool ContentRendererClient::ShouldReportDetailedMessageForSource(
   return false;
 }
 
+bool ContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
+  return true;
+}
+
 }  // namespace content

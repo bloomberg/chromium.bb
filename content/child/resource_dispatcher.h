@@ -45,6 +45,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // requests' ID
   int AddPendingRequest(webkit_glue::ResourceLoaderBridge::Peer* callback,
                         ResourceType::Type resource_type,
+                        int origin_pid,
                         const GURL& frame_origin,
                         const GURL& request_url);
 
@@ -86,6 +87,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
     PendingRequestInfo(webkit_glue::ResourceLoaderBridge::Peer* peer,
                        ResourceType::Type resource_type,
+                       int origin_pid,
                        const GURL& frame_origin,
                        const GURL& request_url);
 
@@ -93,6 +95,10 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
     webkit_glue::ResourceLoaderBridge::Peer* peer;
     ResourceType::Type resource_type;
+    // The PID of the original process which issued this request. This gets
+    // non-zero only for a request proxied by another renderer, particularly
+    // requests from plugins.
+    int origin_pid;
     MessageQueue deferred_message_queue;
     bool is_deferred;
     // Original requested url.

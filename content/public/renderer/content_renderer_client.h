@@ -250,6 +250,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // and can be external or internal.
   virtual bool ShouldReportDetailedMessageForSource(
       const base::string16& source) const;
+
+  // Returns true if we should apply the cross-site document blocking policy to
+  // this renderer process. Currently, we apply the policy only to a renderer
+  // process running on a normal page from the web.
+  virtual bool ShouldEnableSiteIsolationPolicy() const;
 };
 
 }  // namespace content

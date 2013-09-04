@@ -21,6 +21,7 @@
 #include "content/child/child_thread.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/child/npapi/plugin_lib.h"
+#include "content/child/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -72,6 +73,10 @@ RenderProcessImpl::RenderProcessImpl()
     webkit_glue::SetJavaScriptFlags(
         command_line.GetSwitchValueASCII(switches::kJavaScriptFlags));
   }
+
+  // Turn on cross-site document blocking for renderer processes.
+  SiteIsolationPolicy::SetPolicyEnabled(
+      GetContentClient()->renderer()->ShouldEnableSiteIsolationPolicy());
 }
 
 RenderProcessImpl::~RenderProcessImpl() {

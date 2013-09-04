@@ -138,6 +138,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       WebKit::WebSpeechSynthesizerClient* client) OVERRIDE;
   virtual bool ShouldReportDetailedMessageForSource(
       const base::string16& source) const OVERRIDE;
+  virtual bool ShouldEnableSiteIsolationPolicy() const OVERRIDE;
   virtual bool AllowPepperMediaStreamAPI(const GURL& url) OVERRIDE;
 
   // For testing.

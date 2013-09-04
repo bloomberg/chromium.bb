@@ -47,12 +47,32 @@ const char kTextPlain[] = "text/plain";
 
 SiteIsolationPolicy::ResponseMetaData::ResponseMetaData() {}
 
+// The cross-site document blocking/UMA data collection is deactivated by
+// default, and only activated in renderer processes.
+bool SiteIsolationPolicy::g_policy_enabled = false;
+
+void SiteIsolationPolicy::SetPolicyEnabled(bool enabled) {
+  g_policy_enabled = enabled;
+}
+
 void SiteIsolationPolicy::OnReceivedResponse(
     int request_id,
     GURL& frame_origin,
     GURL& response_url,
     ResourceType::Type resource_type,
+    int origin_pid,
     const webkit_glue::ResourceResponseInfo& info) {
+  if (!g_policy_enabled)
+    return;
+
+  // if |origin_pid| is non-zero, it means that this response is for a plugin
+  // spawned from this renderer process. We exclude responses for plugins for
+  // now, but eventually, we're going to make plugin processes directly talk to
+  // the browser process so that we don't apply cross-site document blocking to
+  // them.
+  if (origin_pid)
+    return;
+
   UMA_HISTOGRAM_COUNTS("SiteIsolation.AllResponses", 1);
 
   // See if this is for navigation. If it is, don't block it, under the
@@ -156,6 +176,9 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
     const char* data,
     int length,
     std::string* alternative_data) {
+  if (!g_policy_enabled)
+    return false;
+
   RequestIdToMetaDataMap* metadata_map = GetRequestIdToMetaDataMap();
   RequestIdToResultMap* result_map = GetRequestIdToResultMap();
 
@@ -270,7 +293,6 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
     LOG(ERROR) << resp_data.response_url
                << " is blocked as an illegal cross-site document from "
                << resp_data.frame_origin;
-
   }
   return result;
 }
@@ -280,6 +302,8 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
 #undef SITE_ISOLATION_POLICY_COUNT_BLOCK
 
 void SiteIsolationPolicy::OnRequestComplete(int request_id) {
+  if (!g_policy_enabled)
+    return;
   RequestIdToMetaDataMap* metadata_map = GetRequestIdToMetaDataMap();
   RequestIdToResultMap* result_map = GetRequestIdToResultMap();
   metadata_map->erase(request_id);
