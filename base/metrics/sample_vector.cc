@@ -24,7 +24,8 @@ SampleVector::~SampleVector() {}
 
 void SampleVector::Accumulate(Sample value, Count count) {
   size_t bucket_index = GetBucketIndex(value);
-  counts_[bucket_index] += count;
+  subtle::NoBarrier_Store(&counts_[bucket_index],
+      subtle::NoBarrier_Load(&counts_[bucket_index]) + count);
   IncreaseSum(count * value);
   IncreaseRedundantCount(count);
 }
