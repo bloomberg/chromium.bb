@@ -227,7 +227,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FrameTree) {
 
 // TODO(sail): enable this for MAC when auto resizing of WebContentsViewCocoa is
 // fixed.
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+// TODO(shrikant): enable this for Windows when issue with
+// force-compositing-mode is resolved (http://crbug.com/281726).
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
 #define MAYBE_GetSizeForNewRenderView DISABLED_GetSizeForNewRenderView
 #else
 #define MAYBE_GetSizeForNewRenderView GetSizeForNewRenderView
