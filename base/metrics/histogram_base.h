@@ -50,8 +50,8 @@ BASE_EXPORT void DeserializeHistogramAndAddSamples(PickleIterator* iter);
 
 class BASE_EXPORT HistogramBase {
  public:
-  typedef int Sample;                   // Used for samples.
-  typedef subtle::Atomic32 Count;     // Used to count samples.
+  typedef int Sample;  // Used for samples.
+  typedef int Count;   // Used to count samples.
 
   static const Sample kSampleType_MAX;  // INT_MAX
 
