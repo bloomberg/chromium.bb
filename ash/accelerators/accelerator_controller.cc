@@ -87,6 +87,11 @@ bool DebugShortcutsEnabled() {
 #endif
 }
 
+bool OverviewEnabled() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshDisableOverviewMode);
+}
+
 bool HandleCycleWindowMRU(WindowCycleController::Direction direction,
                           bool is_alt_down) {
   Shell::GetInstance()->
@@ -525,24 +530,19 @@ bool AcceleratorController::PerformAction(int action,
     case CYCLE_BACKWARD_MRU:
       if (key_code == ui::VKEY_TAB)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_TAB);
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAshEnableOverviewMode)) {
+      if (OverviewEnabled())
         return HandleCycleWindowOverviewMRU(WindowSelector::BACKWARD);
-      }
       return HandleCycleWindowMRU(WindowCycleController::BACKWARD,
                                   accelerator.IsAltDown());
     case CYCLE_FORWARD_MRU:
       if (key_code == ui::VKEY_TAB)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_TAB);
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAshEnableOverviewMode)) {
+      if (OverviewEnabled())
         return HandleCycleWindowOverviewMRU(WindowSelector::FORWARD);
-      }
       return HandleCycleWindowMRU(WindowCycleController::FORWARD,
                                   accelerator.IsAltDown());
     case CYCLE_BACKWARD_LINEAR:
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAshEnableOverviewMode)) {
+      if (OverviewEnabled()) {
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_OVERVIEW_F5);
         ToggleOverviewMode();
         return true;
@@ -552,8 +552,7 @@ bool AcceleratorController::PerformAction(int action,
       HandleCycleWindowLinear(CYCLE_BACKWARD);
       return true;
     case CYCLE_FORWARD_LINEAR:
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAshEnableOverviewMode)) {
+      if (OverviewEnabled()) {
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_OVERVIEW_F5);
         ToggleOverviewMode();
         return true;

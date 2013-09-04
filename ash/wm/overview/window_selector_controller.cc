@@ -50,6 +50,10 @@ void WindowSelectorController::HandleCycleWindow(
   if (!IsSelecting()) {
     std::vector<aura::Window*> windows = ash::Shell::GetInstance()->
         mru_window_tracker()->BuildMruWindowList();
+    // Don't cycle with no windows.
+    if (windows.empty())
+      return;
+
     // Removing focus will hide popup windows like the omnibar or open menus.
     window_selector_.reset(
         new WindowSelector(windows, WindowSelector::CYCLE, this));
