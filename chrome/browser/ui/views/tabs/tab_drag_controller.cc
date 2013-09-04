@@ -10,7 +10,6 @@
 #include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/debug/alias.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -376,13 +375,11 @@ TabDragController::TabDragController()
       tab_strip_to_attach_to_after_exit_(NULL),
       move_loop_widget_(NULL),
       destroyed_(NULL),
-      is_mutating_(false),
-      saving_focus_(false) {
+      is_mutating_(false) {
   instance_ = this;
 }
 
 TabDragController::~TabDragController() {
-  CHECK(!saving_focus_);
   if (instance_ == this)
     instance_ = NULL;
 
@@ -749,14 +746,6 @@ void TabDragController::SaveFocus() {
   DCHECK(!old_focused_view_);  // This should only be invoked once.
   DCHECK(source_tabstrip_);
   old_focused_view_ = source_tabstrip_->GetFocusManager()->GetFocusedView();
-  // TODO(sky): used in tracking crash; see 275931.
-  const char* old_focused_view_class_name =
-      old_focused_view_ ? old_focused_view_->GetClassName() : NULL;
-  base::debug::Alias(old_focused_view_class_name);
-  const int old_focused_view_id =
-      old_focused_view_ ? old_focused_view_->id() : 0;
-  base::debug::Alias(&old_focused_view_id);
-  base::AutoReset<bool> setter(&saving_focus_, true);
   source_tabstrip_->GetFocusManager()->SetFocusedView(source_tabstrip_);
 }
 

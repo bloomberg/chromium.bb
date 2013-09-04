@@ -618,9 +618,6 @@ class TabDragController : public content::WebContentsDelegate,
   // See description above getter.
   bool is_mutating_;
 
-  // TODO(sky): used in tracking crash; see 275931.
-  bool saving_focus_;
-
   DISALLOW_COPY_AND_ASSIGN(TabDragController);
 };
 
