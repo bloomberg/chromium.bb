@@ -43,6 +43,8 @@ ElementResolveContext::ElementResolveContext(Element* element)
     Node* documentElement = document().documentElement();
     RenderStyle* documentStyle = document().renderStyle();
     m_rootElementStyle = documentElement && element != documentElement ? documentElement->renderStyle() : documentStyle;
+    if (!m_rootElementStyle)
+        m_rootElementStyle = documentStyle;
 }
 
 } // namespace WebCore

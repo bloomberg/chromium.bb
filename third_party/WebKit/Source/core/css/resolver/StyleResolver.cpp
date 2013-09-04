@@ -503,7 +503,7 @@ bool StyleResolver::styleSharingCandidateMatchesRuleSet(const ElementResolveCont
     return collector.hasAnyMatchingRules(ruleSet);
 }
 
-PassRefPtr<RenderStyle> StyleResolver::styleForDocument(const Document& document, CSSFontSelector* fontSelector)
+PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document& document, CSSFontSelector* fontSelector)
 {
     const Frame* frame = document.frame();
 
@@ -529,45 +529,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(const Document& document
     // This overrides any -webkit-user-modify inherited from the parent iframe.
     documentStyle->setUserModify(document.inDesignMode() ? READ_WRITE : READ_ONLY);
 
-    Element* docElement = document.documentElement();
-    RenderObject* docElementRenderer = docElement ? docElement->renderer() : 0;
-    if (docElementRenderer) {
-        // Use the direction and writing-mode of the body to set the
-        // viewport's direction and writing-mode unless the property is set on the document element.
-        // If there is no body, then use the document element.
-        RenderObject* bodyRenderer = document.body() ? document.body()->renderer() : 0;
-        if (bodyRenderer && !document.writingModeSetOnDocumentElement())
-            documentStyle->setWritingMode(bodyRenderer->style()->writingMode());
-        else
-            documentStyle->setWritingMode(docElementRenderer->style()->writingMode());
-        if (bodyRenderer && !document.directionSetOnDocumentElement())
-            documentStyle->setDirection(bodyRenderer->style()->direction());
-        else
-            documentStyle->setDirection(docElementRenderer->style()->direction());
-    }
-
-    if (frame) {
-        if (FrameView* frameView = frame->view()) {
-            const Pagination& pagination = frameView->pagination();
-            if (pagination.mode != Pagination::Unpaginated) {
-                Pagination::setStylesForPaginationMode(pagination.mode, documentStyle.get());
-                documentStyle->setColumnGap(pagination.gap);
-                if (RenderView* view = document.renderView()) {
-                    if (view->hasColumns())
-                        view->updateColumnInfoFromStyle(documentStyle.get());
-                }
-            }
-        }
-    }
-
-    // Seamless iframes want to inherit their font from their parent iframe, so early return before setting the font.
-    if (seamlessWithParent)
-        return documentStyle.release();
-
-    FontBuilder fontBuilder;
-    fontBuilder.initForStyleResolve(document, documentStyle.get(), document.isSVGDocument());
-    fontBuilder.createFontForDocument(fontSelector, documentStyle.get());
-
+    document.setStyleDependentState(documentStyle.get());
     return documentStyle.release();
 }
 
@@ -916,8 +878,6 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
     if (!e)
         return 0;
 
-    if (e == document().documentElement())
-        resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState state(document(), e, parentStyle);
 
     if (pseudoStyleRequest.allowsInheritance(state.parentStyle())) {

@@ -43,6 +43,7 @@
 #include "bindings/v8/ScriptController.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/animation/DocumentTimeline.h"
+#include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/FontLoader.h"
@@ -50,6 +51,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/StyleSheetList.h"
+#include "core/css/resolver/FontBuilder.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Attr.h"
 #include "core/dom/BeforeUnloadEvent.h"
@@ -77,6 +79,7 @@
 #include "core/dom/NodeFilter.h"
 #include "core/dom/NodeIterator.h"
 #include "core/dom/NodeRareData.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/NodeWithIndex.h"
@@ -1602,6 +1605,78 @@ void Document::updateDistributionForNodeIfNeeded(Node* node)
         root->recalcDistribution();
 }
 
+void Document::setStyleDependentState(RenderStyle* documentStyle)
+{
+    const Pagination& pagination = view()->pagination();
+    if (pagination.mode != Pagination::Unpaginated) {
+        Pagination::setStylesForPaginationMode(pagination.mode, documentStyle);
+        documentStyle->setColumnGap(pagination.gap);
+        if (renderView()->hasColumns())
+            renderView()->updateColumnInfoFromStyle(documentStyle);
+    }
+
+    // Seamless iframes want to inherit their font from their parent iframe, so early return before setting the font.
+    if (shouldDisplaySeamlesslyWithParent())
+        return;
+
+    FontBuilder fontBuilder;
+    fontBuilder.initForStyleResolve(*this, documentStyle, isSVGDocument());
+    RefPtr<CSSFontSelector> selector = m_styleResolver ? m_styleResolver->fontSelector() : 0;
+    fontBuilder.createFontForDocument(selector, documentStyle);
+}
+
+void Document::inheritHtmlAndBodyElementStyles(StyleChange change)
+{
+    RenderView* renderView = this->renderView();
+
+    if (!documentElement() || !frame() || !view())
+        return;
+
+    RefPtr<RenderStyle> documentElementStyle = documentElement()->renderStyle();
+    if (!documentElementStyle || documentElement()->needsStyleRecalc() || change == Force)
+        documentElementStyle = styleResolver()->styleForElement(documentElement());
+
+    RefPtr<RenderStyle> bodyStyle = 0;
+    if (body()) {
+        bodyStyle = body()->renderStyle();
+        if (!bodyStyle || body()->needsStyleRecalc() || documentElement()->needsStyleRecalc() || change == Force)
+            bodyStyle = styleResolver()->styleForElement(body(), documentElementStyle.get());
+    }
+
+    WritingMode rootWritingMode = documentElementStyle->writingMode();
+    bool isHorizontalWritingMode = documentElementStyle->isHorizontalWritingMode();
+    TextDirection rootDirection = documentElementStyle->direction();
+
+    if (!writingModeSetOnDocumentElement() && body()) {
+        rootWritingMode = bodyStyle->writingMode();
+        isHorizontalWritingMode = bodyStyle->isHorizontalWritingMode();
+    }
+
+    if (!directionSetOnDocumentElement() && body())
+        rootDirection = bodyStyle->direction();
+
+    RefPtr<RenderStyle> documentStyle = renderView->style();
+    if (documentStyle->writingMode() != rootWritingMode || documentStyle->direction() != rootDirection) {
+        RefPtr<RenderStyle> newStyle = RenderStyle::clone(documentStyle.get());
+        newStyle->setWritingMode(rootWritingMode);
+        newStyle->setDirection(rootDirection);
+        renderView->setStyle(newStyle);
+        setStyleDependentState(newStyle.get());
+    }
+
+    if (body()) {
+        if (RenderStyle* style = body()->renderStyle()) {
+            if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
+                body()->setNeedsStyleRecalc();
+        }
+    }
+
+    if (RenderStyle* style = documentElement()->renderStyle()) {
+        if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
+            documentElement()->setNeedsStyleRecalc();
+    }
+}
+
 void Document::recalcStyle(StyleChange change)
 {
     // we should not enter style recalc while painting
@@ -1649,16 +1724,15 @@ void Document::recalcStyle(StyleChange change)
         if (styleChangeType() >= SubtreeStyleChange)
             change = Force;
 
-        // Recalculating the root style (on the document) is not needed in the common case.
         if ((change == Force) || (shouldDisplaySeamlesslyWithParent() && (change >= Inherit))) {
-            // style selector may set this again during recalc
             m_hasNodesWithPlaceholderStyle = false;
-
             RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*this, m_styleResolver ? m_styleResolver->fontSelector() : 0);
-            StyleChange ch = Node::diff(documentStyle.get(), renderer()->style(), *this);
-            if (ch != NoChange)
+            StyleChange localChange = Node::diff(documentStyle.get(), renderer()->style(), *this);
+            if (localChange != NoChange)
                 renderer()->setStyle(documentStyle.release());
         }
+
+        inheritHtmlAndBodyElementStyles(change);
 
         for (Node* n = firstChild(); n; n = n->nextSibling()) {
             if (!n->isElementNode())

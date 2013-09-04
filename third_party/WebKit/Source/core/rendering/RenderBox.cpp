@@ -276,33 +276,8 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
         }
     }
 
-    bool isBodyRenderer = isBody();
-    bool isRootRenderer = isRoot();
-
-    if (isRootRenderer || isBodyRenderer) {
-        // Propagate the new writing mode and direction up to the RenderView.
-        RenderView* viewRenderer = view();
-        RenderStyle* viewStyle = viewRenderer->style();
-        if (viewStyle->direction() != newStyle->direction() && (isRootRenderer || !document().directionSetOnDocumentElement())) {
-            viewStyle->setDirection(newStyle->direction());
-            if (isBodyRenderer)
-                document().documentElement()->renderer()->style()->setDirection(newStyle->direction());
-            setNeedsLayoutAndPrefWidthsRecalc();
-        }
-
-        if (viewStyle->writingMode() != newStyle->writingMode() && (isRootRenderer || !document().writingModeSetOnDocumentElement())) {
-            viewStyle->setWritingMode(newStyle->writingMode());
-            viewRenderer->setHorizontalWritingMode(newStyle->isHorizontalWritingMode());
-            viewRenderer->markAllDescendantsWithFloatsForLayout();
-            if (isBodyRenderer) {
-                document().documentElement()->renderer()->style()->setWritingMode(newStyle->writingMode());
-                document().documentElement()->renderer()->setHorizontalWritingMode(newStyle->isHorizontalWritingMode());
-            }
-            setNeedsLayoutAndPrefWidthsRecalc();
-        }
-
-        frame()->view()->recalculateScrollbarOverlayStyle();
-    }
+    if (isRoot() || isBody())
+        document().view()->recalculateScrollbarOverlayStyle();
 
     updateShapeOutsideInfoAfterStyleChange(style()->shapeOutside(), oldStyle ? oldStyle->shapeOutside() : 0);
     updateGridPositionAfterStyleChange(oldStyle);

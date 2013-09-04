@@ -1324,6 +1324,10 @@ void Element::attach(const AttachContext& context)
             data->resetStyleState();
     }
 
+    // FIXME: Remove this once we lazyAttach everywhere.
+    if (!document().inStyleRecalc() && (this == document().documentElement() || this == document().body()))
+        document().setNeedsStyleRecalc(LocalStyleChange);
+
     NodeRenderingContext(this, context.resolvedStyle).createRendererForElementIfNeeded();
 
     createPseudoElementIfNeeded(BEFORE);

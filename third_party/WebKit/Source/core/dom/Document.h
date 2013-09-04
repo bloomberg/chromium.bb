@@ -484,6 +484,8 @@ public:
     PassRefPtr<CSSStyleDeclaration> createCSSStyleDeclaration();
     PassRefPtr<Text> createEditingTextNode(const String&);
 
+    void setStyleDependentState(RenderStyle* documentStyle);
+    void inheritHtmlAndBodyElementStyles(StyleChange);
     void recalcStyle(StyleChange = NoChange);
     void updateStyleIfNeeded();
     void updateStyleForNodeIfNeeded(Node*);
