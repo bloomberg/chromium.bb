@@ -122,17 +122,17 @@
             'content_resources.gyp:content_resources',
           ],
           'conditions': [
-            ['OS != "ios" and chrome_multiple_dll != 1', {
+            ['java_bridge==1', {
+              'dependencies': [
+                'content_child',
+              ]
+            }],
+            ['OS=="android"', {
               'dependencies': [
                 'content_gpu',
                 'content_utility',
               ],
             }],
-            ['java_bridge==1', {
-              'dependencies': [
-                'content_child',
-              ]
-            }]
           ],
         },
         {

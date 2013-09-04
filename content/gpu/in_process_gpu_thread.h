@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_GPU_GPU_MAIN_THREAD_H_
-#define CONTENT_GPU_GPU_MAIN_THREAD_H_
+#ifndef CONTENT_GPU_IN_PROCESS_GPU_THREAD_H_
+#define CONTENT_GPU_IN_PROCESS_GPU_THREAD_H_
 
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
@@ -14,10 +14,10 @@ class GpuProcess;
 
 // This class creates a GPU thread (instead of a GPU process), when running
 // with --in-process-gpu or --single-process.
-class GpuMainThread : public base::Thread {
+class InProcessGpuThread : public base::Thread {
  public:
-  explicit GpuMainThread(const std::string& channel_id);
-  virtual ~GpuMainThread();
+  explicit InProcessGpuThread(const std::string& channel_id);
+  virtual ~InProcessGpuThread();
 
  protected:
   virtual void Init() OVERRIDE;
@@ -28,11 +28,12 @@ class GpuMainThread : public base::Thread {
   // Deleted in CleanUp() on the gpu thread, so don't use smart pointers.
   GpuProcess* gpu_process_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuMainThread);
+  DISALLOW_COPY_AND_ASSIGN(InProcessGpuThread);
 };
 
-CONTENT_EXPORT base::Thread* CreateGpuMainThread(const std::string& channel_id);
+CONTENT_EXPORT base::Thread* CreateInProcessGpuThread(
+    const std::string& channel_id);
 
 }  // namespace content
 
-#endif  // CONTENT_GPU_GPU_MAIN_THREAD_H_
+#endif  // CONTENT_GPU_IN_PROCESS_GPU_THREAD_H_

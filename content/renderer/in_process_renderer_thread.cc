@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/renderer_main_thread.h"
+#include "content/renderer/in_process_renderer_thread.h"
 
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_process_impl.h"
@@ -10,20 +10,20 @@
 
 namespace content {
 
-RendererMainThread::RendererMainThread(const std::string& channel_id)
+InProcessRendererThread::InProcessRendererThread(const std::string& channel_id)
     : Thread("Chrome_InProcRendererThread"), channel_id_(channel_id) {
 }
 
-RendererMainThread::~RendererMainThread() {
+InProcessRendererThread::~InProcessRendererThread() {
   Stop();
 }
 
-void RendererMainThread::Init() {
+void InProcessRendererThread::Init() {
   render_process_.reset(new RenderProcessImpl());
   new RenderThreadImpl(channel_id_);
 }
 
-void RendererMainThread::CleanUp() {
+void InProcessRendererThread::CleanUp() {
   render_process_.reset();
 
   // It's a little lame to manually set this flag.  But the single process
@@ -38,8 +38,8 @@ void RendererMainThread::CleanUp() {
   SetThreadWasQuitProperly(true);
 }
 
-base::Thread* CreateRendererMainThread(const std::string& channel_id) {
-  return new RendererMainThread(channel_id);
+base::Thread* CreateInProcessRendererThread(const std::string& channel_id) {
+  return new InProcessRendererThread(channel_id);
 }
 
 }  // namespace content

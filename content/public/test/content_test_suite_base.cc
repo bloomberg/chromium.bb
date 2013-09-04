@@ -12,13 +12,13 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/url_schemes.h"
-#include "content/gpu/gpu_main_thread.h"
+#include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
-#include "content/renderer/renderer_main_thread.h"
-#include "content/utility/utility_main_thread.h"
+#include "content/renderer/in_process_renderer_thread.h"
+#include "content/utility/in_process_utility_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -70,10 +70,11 @@ void ContentTestSuiteBase::Initialize() {
 #endif
 
 #if !defined(OS_IOS)
-  UtilityProcessHost::RegisterUtilityMainThreadFactory(CreateUtilityMainThread);
+  UtilityProcessHost::RegisterUtilityMainThreadFactory(
+      CreateInProcessUtilityThread);
   RenderProcessHost::RegisterRendererMainThreadFactory(
-      CreateRendererMainThread);
-  GpuProcessHost::RegisterGpuMainThreadFactory(CreateGpuMainThread);
+      CreateInProcessRendererThread);
+  GpuProcessHost::RegisterGpuMainThreadFactory(CreateInProcessGpuThread);
   if (external_libraries_enabled_)
     media::InitializeMediaLibraryForTesting();
 #endif

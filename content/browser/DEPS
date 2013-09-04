@@ -1,5 +1,4 @@
 include_rules = [
-  "+content/gpu",  # For gpu_info_collector.h and in-process GPU
   "+content/port/browser",
   "+content/public/browser",
   "+content/child/webkitplatformsupport_impl.h",  # For in-process webkit

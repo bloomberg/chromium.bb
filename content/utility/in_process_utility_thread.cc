@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/utility/utility_main_thread.h"
+#include "content/utility/in_process_utility_thread.h"
 
 #include "content/child/child_process.h"
 #include "content/utility/utility_thread_impl.h"
@@ -13,23 +13,24 @@ namespace content {
 // are many globals used in the utility process.
 static base::LazyInstance<base::Lock> g_one_utility_thread_lock;
 
-UtilityMainThread::UtilityMainThread(const std::string& channel_id)
+InProcessUtilityThread::InProcessUtilityThread(const std::string& channel_id)
     : Thread("Chrome_InProcUtilityThread"), channel_id_(channel_id) {
 }
 
-UtilityMainThread::~UtilityMainThread() {
+InProcessUtilityThread::~InProcessUtilityThread() {
   Stop();
 }
 
-void UtilityMainThread::Init() {
+void InProcessUtilityThread::Init() {
   // We need to return right away or else the main thread that started us will
   // hang.
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&UtilityMainThread::InitInternal, base::Unretained(this)));
+      base::Bind(&InProcessUtilityThread::InitInternal,
+                 base::Unretained(this)));
 }
 
-void UtilityMainThread::CleanUp() {
+void InProcessUtilityThread::CleanUp() {
   child_process_.reset();
 
   // See comment in RendererMainThread.
@@ -37,14 +38,14 @@ void UtilityMainThread::CleanUp() {
   g_one_utility_thread_lock.Get().Release();
 }
 
-void UtilityMainThread::InitInternal() {
+void InProcessUtilityThread::InitInternal() {
   g_one_utility_thread_lock.Get().Acquire();
   child_process_.reset(new ChildProcess());
   child_process_->set_main_thread(new UtilityThreadImpl(channel_id_));
 }
 
-base::Thread* CreateUtilityMainThread(const std::string& channel_id) {
-  return new UtilityMainThread(channel_id);
+base::Thread* CreateInProcessUtilityThread(const std::string& channel_id) {
+  return new InProcessUtilityThread(channel_id);
 }
 
 }  // namespace content

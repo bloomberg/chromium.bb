@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDERER_MAIN_THREAD_H_
-#define CONTENT_RENDERER_RENDERER_MAIN_THREAD_H_
+#ifndef CONTENT_RENDERER_IN_PROCESS_RENDERER_THREAD_H_
+#define CONTENT_RENDERER_IN_PROCESS_RENDERER_THREAD_H_
 
 #include <string>
 
@@ -15,10 +15,10 @@ class RenderProcess;
 
 // This class creates the IO thread for the renderer when running in
 // single-process mode.  It's not used in multi-process mode.
-class RendererMainThread : public base::Thread {
+class InProcessRendererThread : public base::Thread {
  public:
-  explicit RendererMainThread(const std::string& channel_id);
-  virtual ~RendererMainThread();
+  explicit InProcessRendererThread(const std::string& channel_id);
+  virtual ~InProcessRendererThread();
 
  protected:
   virtual void Init() OVERRIDE;
@@ -28,12 +28,12 @@ class RendererMainThread : public base::Thread {
   std::string channel_id_;
   scoped_ptr<RenderProcess> render_process_;
 
-  DISALLOW_COPY_AND_ASSIGN(RendererMainThread);
+  DISALLOW_COPY_AND_ASSIGN(InProcessRendererThread);
 };
 
-CONTENT_EXPORT base::Thread* CreateRendererMainThread(
+CONTENT_EXPORT base::Thread* CreateInProcessRendererThread(
     const std::string& channel_id);
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_RENDERER_MAIN_THREAD_H_
+#endif  // CONTENT_RENDERER_IN_PROCESS_RENDERER_THREAD_H_
