@@ -595,7 +595,7 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
 
 #if defined(ARCH_CPU_ARM_FAMILY)
   // Incorporate Mali graphics memory if present.
-  FilePath mali_memory_file("/sys/devices/platform/mali.0/memory");
+  FilePath mali_memory_file("/sys/class/misc/mali0/device/memory");
   std::string mali_memory_data;
   if (ReadFileToString(mali_memory_file, &mali_memory_data)) {
     long long mali_size = -1;
