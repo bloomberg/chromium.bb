@@ -362,6 +362,12 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/sqlite': [
         'UNKNOWN',
     ],
+
+    # https://code.google.com/p/colorama/issues/detail?id=44
+    'tools/swarm_client/third_party/colorama': [
+        'UNKNOWN',
+    ],
+
     'third_party/swig/Lib/linkruntime.c': [  # http://crbug.com/98585
         'UNKNOWN',
     ],
