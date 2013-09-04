@@ -34,7 +34,9 @@ namespace WebCore {
 // than Mac. Mac's overlay scrollbars are in ScrollbarThemeMac*.
 class ScrollbarThemeOverlay : public ScrollbarTheme {
 public:
-    ScrollbarThemeOverlay(int thumbThickness, int scrollbarMargin);
+    enum HitTestBehavior { AllowHitTest, DisallowHitTest };
+
+    ScrollbarThemeOverlay(int thumbThickness, int scrollbarMargin, HitTestBehavior allowHitTesting);
     virtual ~ScrollbarThemeOverlay() { }
 
     virtual int scrollbarThickness(ScrollbarControlSize) OVERRIDE;
@@ -51,10 +53,12 @@ public:
     virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) OVERRIDE;
 
     virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+    virtual ScrollbarPart hitTest(ScrollbarThemeClient*, const IntPoint&) OVERRIDE;
 
 private:
     int m_thumbThickness;
     int m_scrollbarMargin;
+    HitTestBehavior m_allowHitTest;
 };
 
 } // namespace WebCore

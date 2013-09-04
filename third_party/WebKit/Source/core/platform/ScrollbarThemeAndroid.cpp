@@ -32,7 +32,7 @@ namespace WebCore {
 
 ScrollbarTheme* ScrollbarTheme::nativeTheme()
 {
-    DEFINE_STATIC_LOCAL(ScrollbarThemeOverlay, theme, (3, 4));
+    DEFINE_STATIC_LOCAL(ScrollbarThemeOverlay, theme, (3, 4, ScrollbarThemeOverlay::DisallowHitTest));
     return &theme;
 }
 
