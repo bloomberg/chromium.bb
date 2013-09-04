@@ -78,7 +78,8 @@ SfiValidator::SfiValidator(uint32_t bytes_per_bundle,
       read_only_registers_(read_only_registers),
       data_address_registers_(data_address_registers),
       decode_state_(),
-      construction_failed_(false) {
+      construction_failed_(false),
+      is_position_independent_(true) {
   NaClCopyCPUFeaturesArm(&cpu_features_, cpu_features);
   // Make sure we can construct sane masks with the values.
   if ((nacl::PopCount(bytes_per_bundle_) != 1) ||
@@ -100,7 +101,8 @@ SfiValidator::SfiValidator(const SfiValidator& v)
       read_only_registers_(v.read_only_registers_),
       data_address_registers_(v.data_address_registers_),
       decode_state_(),
-      construction_failed_(v.construction_failed_) {
+      construction_failed_(v.construction_failed_),
+      is_position_independent_(v.is_position_independent_) {
   NaClCopyCPUFeaturesArm(&cpu_features_, v.CpuFeatures());
 }
 
@@ -112,6 +114,7 @@ SfiValidator& SfiValidator::operator=(const SfiValidator& v) {
   read_only_registers_.Copy(v.read_only_registers_);
   data_address_registers_.Copy(v.data_address_registers_);
   construction_failed_ = v.construction_failed_;
+  is_position_independent_ = v.is_position_independent_;
   return *this;
 }
 
@@ -327,6 +330,11 @@ nacl_arm_dec::ViolationSet SfiValidator::validate_branches(
 
   vector<CodeSegment>::const_iterator seg_it = segments.begin();
 
+  if (segments.size() > 1) {
+    // If there are multiple segments, their relative positioning matters.
+    is_position_independent_ = false;
+  }
+
   for (AddressSet::Iterator it = branches.begin(); it != branches.end(); ++it) {
     uint32_t va = *it;
 
@@ -358,45 +366,50 @@ nacl_arm_dec::ViolationSet SfiValidator::validate_branches(
             "pattern at %08"NACL_PRIx32".",
             target_va);
       }
-    } else if ((target_va & code_address_mask()) == 0) {
-      // Ensure that relative direct branches which don't go to known
-      // segments are to bundle-aligned targets, and that the branch
-      // doesn't escape from the sandbox. ARM relative direct branches
-      // have a +/-32MiB range, code at the edges of the sandbox could
-      // therefore potentially escape if left unchecked. This implies
-      // that validation is position-dependent, which matters for
-      // validation caching: code segments need to be mapped at the same
-      // addresses as the ones at which they were validated.
-      //
-      // We could make it a sandbox invariant that user code cannot be
-      // mapped within 32MiB of the sandbox's edges (and then only check
-      // bundle alignment with is_bundle_head(target_va)), but this may
-      // break some assumptions in user code.
-      //
-      // We could also track the furthest negative and positive relative
-      // direct branches seen per segment and record that
-      // information. This information would then allow validation
-      // caching to be mostly position independent, as long as code
-      // segments are mapped far enough from the sandbox's edges.
-      //
-      // Branches leaving the segment could be useful for dynamic code
-      // generation as well as to directly branch to the runtime's
-      // trampolines. The IRT curently doesn't do the latter because the
-      // compiler doesn't know that the trampolines will be in range of
-      // relative direct branch immediates. Indirect branches are
-      // instead used and the loader doesn't reoptimize the code.
     } else {
-      found_violations =
-          nacl_arm_dec::ViolationUnion(
-              found_violations,
-              nacl_arm_dec::ViolationBit(
-                  nacl_arm_dec::BRANCH_OUT_OF_RANGE_VIOLATION));
-      if (out == NULL) return found_violations;
-      out->ReportProblemDiagnostic(
-          nacl_arm_dec::BRANCH_OUT_OF_RANGE_VIOLATION,
-          va,
-          "Instruction branches to invalid address %08"NACL_PRIx32".",
-          target_va);
+      // If the jump is outside the segment, absolute position matters.
+      is_position_independent_ = false;
+
+      if ((target_va & code_address_mask()) == 0) {
+        // Ensure that relative direct branches which don't go to known
+        // segments are to bundle-aligned targets, and that the branch
+        // doesn't escape from the sandbox. ARM relative direct branches
+        // have a +/-32MiB range, code at the edges of the sandbox could
+        // therefore potentially escape if left unchecked. This implies
+        // that validation is position-dependent, which matters for
+        // validation caching: code segments need to be mapped at the
+        // same addresses as the ones at which they were validated.
+        //
+        // We could make it a sandbox invariant that user code cannot be
+        // mapped within 32MiB of the sandbox's edges (and then only check
+        // bundle alignment with is_bundle_head(target_va)), but this may
+        // break some assumptions in user code.
+        //
+        // We could also track the furthest negative and positive relative
+        // direct branches seen per segment and record that
+        // information. This information would then allow validation
+        // caching to be mostly position independent, as long as code
+        // segments are mapped far enough from the sandbox's edges.
+        //
+        // Branches leaving the segment could be useful for dynamic code
+        // generation as well as to directly branch to the runtime's
+        // trampolines. The IRT curently doesn't do the latter because the
+        // compiler doesn't know that the trampolines will be in range of
+        // relative direct branch immediates. Indirect branches are
+        // instead used and the loader doesn't reoptimize the code.
+      } else {
+        found_violations =
+            nacl_arm_dec::ViolationUnion(
+                found_violations,
+                nacl_arm_dec::ViolationBit(
+                    nacl_arm_dec::BRANCH_OUT_OF_RANGE_VIOLATION));
+        if (out == NULL) return found_violations;
+        out->ReportProblemDiagnostic(
+            nacl_arm_dec::BRANCH_OUT_OF_RANGE_VIOLATION,
+            va,
+            "Instruction branches to invalid address %08"NACL_PRIx32".",
+            target_va);
+      }
     }
   }
 

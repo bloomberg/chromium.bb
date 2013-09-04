@@ -59,7 +59,8 @@
       'type': 'static_library',
       'sources': [ 'ncvalidate.cc' ],
       'dependencies': [
-        'arm_validator_core'
+        'arm_validator_core',
+        '<(DEPTH)/native_client/src/trusted/validator/validator.gyp:validation_cache',
       ],
     },
     # ----------------------------------------------------------------------

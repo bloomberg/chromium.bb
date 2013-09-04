@@ -223,6 +223,7 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
     'arm': {
         'ncvalidate_arm_v2': [
             'arm_validator_core',
+            'validation_cache',
             ],
         'validators': [
             'ncvalidate_arm_v2',

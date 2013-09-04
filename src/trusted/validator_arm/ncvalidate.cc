@@ -17,6 +17,7 @@
 #include "native_client/src/trusted/cpu_features/arch/arm/cpu_arm.h"
 #include "native_client/src/trusted/validator_arm/model.h"
 #include "native_client/src/trusted/validator_arm/validator.h"
+#include "native_client/src/trusted/validator/validation_cache.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
 using nacl_arm_val::SfiValidator;
@@ -117,10 +118,8 @@ static int NCValidateSegment(
     uint8_t *mbase,
     uint32_t vbase,
     size_t size,
-    const NaClCPUFeatures *cpu_features) {
-  /* TODO(jfb) Use a safe cast here. */
-  const NaClCPUFeaturesArm *features =
-      (const NaClCPUFeaturesArm *) cpu_features;
+    const NaClCPUFeaturesArm *features,
+    bool *is_position_independent) {
 
   SfiValidator validator(
       kBytesPerBundle,
@@ -134,6 +133,7 @@ static int NCValidateSegment(
   segments.push_back(CodeSegment(mbase, vbase, size));
 
   bool success = validator.validate(segments, NULL);
+  *is_position_independent = validator.is_position_independent();
   if (!success) return 2;  // for compatibility with old validator
   return 0;
 }
@@ -147,25 +147,73 @@ static NaClValidationStatus ApplyValidatorArm(
     const NaClCPUFeatures *cpu_features,
     const struct NaClValidationMetadata *metadata,
     struct NaClValidationCache *cache) {
-  /* The ARM validator is currently unsafe w.r.t. caching. */
-  UNREFERENCED_PARAMETER(metadata);
-  UNREFERENCED_PARAMETER(cache);
+  // The ARM validator never modifies the text, so this flag can be ignored.
+  UNREFERENCED_PARAMETER(readonly_text);
   CheckAddressAlignAndOverflow((uint8_t *) guest_addr, size);
   CheckAddressOverflow(data, size);
   CheckAddressOverflow(data, size);
 
   if (stubout_mode)
     return NaClValidationFailedNotImplemented;
-  if (readonly_text)
-    return NaClValidationFailedNotImplemented;
 
   CHECK(guest_addr <= std::numeric_limits<uint32_t>::max());
-  return (NCValidateSegment(data,
-                            static_cast<uint32_t>(guest_addr),
-                            size,
-                            cpu_features) == 0)
-         ? NaClValidationSucceeded
-         : NaClValidationFailed;
+
+  // These checks are redundant with ones done inside the validator. It is done
+  // here so that the cache can memoize the validation result without needing to
+  // take guest_addr into account. Note that overflow is checked above. Also
+  // note that the sanbox is based at zero so there is no need to check the
+  // bottom edge.
+  if (guest_addr >= kBytesOfCodeSpace ||
+      guest_addr + size > kBytesOfCodeSpace) {
+    return NaClValidationFailed;
+  }
+
+  /* TODO(jfb) Use a safe cast here. */
+  const NaClCPUFeaturesArm *features =
+      (const NaClCPUFeaturesArm *) cpu_features;
+
+  /* If the validation caching interface is available, perform a query. */
+  void *query = NULL;
+  if (cache != NULL && NaClCachingIsInexpensive(cache, metadata))
+    query = cache->CreateQuery(cache->handle);
+  if (query != NULL) {
+    const char validator_id[] = "arm_v2";
+    cache->AddData(query, (uint8_t *) validator_id, sizeof(validator_id));
+    // The ARM validator is highly parameterizable.  These parameters should not
+    // change much in practice, but making them part of the query is a cheap way
+    // to be defensive.
+    uintptr_t params[] = {
+        kBytesPerBundle,
+        kBytesOfCodeSpace,
+        kBytesOfDataSpace,
+        RegisterList(Register::Tp()).bits(),
+        RegisterList(Register::Sp()).bits()
+    };
+    cache->AddData(query, (uint8_t *) params, sizeof(params));
+    cache->AddData(query, (uint8_t *) features, sizeof(*features));
+    NaClAddCodeIdentity(data, size, metadata, cache, query);
+    if (cache->QueryKnownToValidate(query)) {
+      cache->DestroyQuery(query);
+      return NaClValidationSucceeded;
+    }
+  }
+
+  bool is_position_independent = false;
+  bool ok = NCValidateSegment(data,
+                              static_cast<uint32_t>(guest_addr),
+                              size,
+                              features,
+                              &is_position_independent) == 0;
+
+  /* Cache the result if validation succeded. */
+  if (query != NULL) {
+    if (ok && is_position_independent) {
+      cache->SetKnownToValidate(query);
+    }
+    cache->DestroyQuery(query);
+  }
+
+  return ok ? NaClValidationSucceeded : NaClValidationFailed;
 }
 
 static struct NaClValidatorInterface validator = {

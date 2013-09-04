@@ -97,6 +97,11 @@ class SfiValidator {
     return find_violations(segments, out) == nacl_arm_dec::kNoViolations;
   }
 
+  // Returns true if validation did not depend on the code's base address.
+  bool is_position_independent() {
+    return is_position_independent_;
+  }
+
   // Alternate validator entry point. Validates the provided
   // CodeSegments, which must be in sorted order, reporting any
   // problems through the ProblemSink.
@@ -262,6 +267,8 @@ class SfiValidator {
   const nacl_arm_dec::Arm32DecoderState decode_state_;
   // True if construction failed and further validation should be prevented.
   bool construction_failed_;
+  // True if validation did not depend on the code's base address.
+  bool is_position_independent_;
 };
 
 
