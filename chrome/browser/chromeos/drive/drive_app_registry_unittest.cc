@@ -72,14 +72,14 @@ TEST_F(DriveAppRegistryTest, LoadAndFindDriveApps) {
   // Find by primary extension 'exe'.
   ScopedVector<DriveAppInfo> ext_results;
   base::FilePath ext_file(FILE_PATH_LITERAL("drive/file.exe"));
-  web_apps_registry_->GetAppsForFile(ext_file, std::string(), &ext_results);
+  web_apps_registry_->GetAppsForFile(ext_file.Extension(), "", &ext_results);
   ASSERT_EQ(1U, ext_results.size());
   VerifyApp(ext_results, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
             "Drive app 1", "", true);
 
   // Find by primary MIME type.
   ScopedVector<DriveAppInfo> primary_app;
-  web_apps_registry_->GetAppsForFile(base::FilePath(),
+  web_apps_registry_->GetAppsForFile(base::FilePath::StringType(),
       "application/vnd.google-apps.drive-sdk.123456788192", &primary_app);
   ASSERT_EQ(1U, primary_app.size());
   VerifyApp(primary_app, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
@@ -88,7 +88,7 @@ TEST_F(DriveAppRegistryTest, LoadAndFindDriveApps) {
   // Find by secondary MIME type.
   ScopedVector<DriveAppInfo> secondary_app;
   web_apps_registry_->GetAppsForFile(
-      base::FilePath(), "text/html", &secondary_app);
+      base::FilePath::StringType(), "text/html", &secondary_app);
   ASSERT_EQ(1U, secondary_app.size());
   VerifyApp(secondary_app, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
             "Drive app 1", "", false);
@@ -105,7 +105,7 @@ TEST_F(DriveAppRegistryTest, UpdateFromAppList) {
   // Confirm that something was loaded from applist.json.
   ScopedVector<DriveAppInfo> ext_results;
   base::FilePath ext_file(FILE_PATH_LITERAL("drive/file.exe"));
-  web_apps_registry_->GetAppsForFile(ext_file, std::string(), &ext_results);
+  web_apps_registry_->GetAppsForFile(ext_file.Extension(), "", &ext_results);
   ASSERT_EQ(1U, ext_results.size());
 }
 

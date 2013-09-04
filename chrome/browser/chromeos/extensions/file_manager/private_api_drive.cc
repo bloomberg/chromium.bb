@@ -138,7 +138,9 @@ void FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetFileInfo(
   // doc icon for the drive app, which is set as default.
   ScopedVector<drive::DriveAppInfo> drive_apps;
   integration_service->drive_app_registry()->GetAppsForFile(
-      file_path_, file_specific_info.content_mime_type(), &drive_apps);
+      file_path_.Extension(),
+      file_specific_info.content_mime_type(),
+      &drive_apps);
   if (!drive_apps.empty()) {
     std::string default_task_id =
         file_manager::file_tasks::GetDefaultTaskIdFromPrefs(

@@ -9,16 +9,13 @@
 #include <set>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "url/gurl.h"
-
-namespace base {
-class FilePath;
-}  // namespace base
 
 namespace google_apis {
 class AppList;
@@ -66,8 +63,9 @@ class DriveAppRegistry {
   explicit DriveAppRegistry(JobScheduler* scheduler);
   ~DriveAppRegistry();
 
-  // Returns a list of web app information for the |file| with |mime_type|.
-  void GetAppsForFile(const base::FilePath& file_path,
+  // Returns a list of Drive app information for the |file_extension| with
+  // |mime_type|.
+  void GetAppsForFile(const base::FilePath::StringType& file_extension,
                       const std::string& mime_type,
                       ScopedVector<DriveAppInfo>* apps) const;
 
@@ -116,12 +114,12 @@ class DriveAppRegistry {
   typedef std::map<const DriveAppFileSelector*,
                    DriveAppInfo*> SelectorAppList;
 
-  // Part of Update(). Runs upon the completion of fetching the web apps
+  // Part of Update(). Runs upon the completion of fetching the Drive apps
   // data from the server.
   void UpdateAfterGetAppList(google_apis::GDataErrorCode gdata_error,
                              scoped_ptr<google_apis::AppList> app_list);
 
-  // Helper function for loading web application file |selectors| into
+  // Helper function for loading Drive application file |selectors| into
   // corresponding |map|.
   static void AddAppSelectorList(
       const GURL& product_link,

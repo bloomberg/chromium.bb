@@ -107,26 +107,21 @@ DriveAppRegistry::~DriveAppRegistry() {
 }
 
 void DriveAppRegistry::GetAppsForFile(
-    const base::FilePath& file_path,
+    const base::FilePath::StringType& file_extension,
     const std::string& mime_type,
     ScopedVector<DriveAppInfo>* apps) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   SelectorAppList result_map;
-  if (!file_path.empty()) {
-    base::FilePath::StringType extension = file_path.Extension();
-    if (extension.size() < 2)
-      return;
-
-    extension = extension.substr(1);
-    if (!extension.empty())
-      FindAppsForSelector(extension, app_extension_map_, &result_map);
+  if (!file_extension.empty()) {
+    const base::FilePath::StringType without_dot = file_extension.substr(1);
+    FindAppsForSelector(without_dot, app_extension_map_, &result_map);
   }
 
   if (!mime_type.empty())
     FindAppsForSelector(mime_type, app_mimetypes_map_, &result_map);
 
-  // Insert found web apps into |apps|, but skip duplicate results.
+  // Insert found Drive apps into |apps|, but skip duplicate results.
   std::set<std::string> inserted_app_ids;
   for (SelectorAppList::const_iterator it = result_map.begin();
        it != result_map.end(); ++it) {
@@ -260,30 +255,30 @@ void DriveAppRegistry::FindAppsForSelector(
     SelectorAppList* apps) const {
   for (DriveAppFileSelectorMap::const_iterator it = map.find(file_selector);
        it != map.end() && it->first == file_selector; ++it) {
-    const DriveAppFileSelector* web_app = it->second;
+    const DriveAppFileSelector* drive_app = it->second;
     std::map<GURL, std::string>::const_iterator product_iter =
-        url_to_name_map_.find(web_app->product_link);
+        url_to_name_map_.find(drive_app->product_link);
     if (product_iter == url_to_name_map_.end()) {
       NOTREACHED();
       continue;
     }
 
-    std::string web_store_id = GetWebStoreIdFromUrl(web_app->product_link);
+    std::string web_store_id = GetWebStoreIdFromUrl(drive_app->product_link);
     if (web_store_id.empty())
       continue;
 
-    if (apps->find(web_app) != apps->end())
+    if (apps->find(drive_app) != apps->end())
       continue;
 
     apps->insert(std::make_pair(
-        web_app,
-        new DriveAppInfo(web_app->app_id,
-                         web_app->app_icons,
-                         web_app->document_icons,
+        drive_app,
+        new DriveAppInfo(drive_app->app_id,
+                         drive_app->app_icons,
+                         drive_app->document_icons,
                          web_store_id,
                          product_iter->second,  // app name
-                         web_app->object_type,
-                         web_app->is_primary_selector)));
+                         drive_app->object_type,
+                         drive_app->is_primary_selector)));
   }
 }
 

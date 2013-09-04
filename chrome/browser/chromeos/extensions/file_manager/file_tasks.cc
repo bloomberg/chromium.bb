@@ -323,7 +323,9 @@ void FindDriveAppTasks(
       continue;
 
     ScopedVector<drive::DriveAppInfo> app_info_list;
-    drive_app_registry.GetAppsForFile(file_path, mime_type, &app_info_list);
+    drive_app_registry.GetAppsForFile(file_path.Extension(),
+                                      mime_type,
+                                      &app_info_list);
 
     if (is_first) {
       // For the first file, we store all the info.
