@@ -38,11 +38,9 @@ class ResourceCreationProxy : public InterfaceProxy,
 
   // ResourceCreationAPI (called in plugin).
   virtual PP_Resource CreateFileIO(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateFileRef(PP_Instance instance,
-                                    PP_Resource file_system,
-                                    const char* path) OVERRIDE;
   virtual PP_Resource CreateFileRef(
-      const PPB_FileRef_CreateInfo& create_info) OVERRIDE;
+      PP_Instance instance,
+      const FileRefCreateInfo& create_info) OVERRIDE;
   virtual PP_Resource CreateFileSystem(PP_Instance instance,
                                        PP_FileSystemType type) OVERRIDE;
   virtual PP_Resource CreateIMEInputEvent(PP_Instance instance,

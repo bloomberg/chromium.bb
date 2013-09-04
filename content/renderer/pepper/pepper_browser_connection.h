@@ -29,12 +29,6 @@ class PepperBrowserConnection
  public:
   typedef base::Callback<void(const std::vector<int>&)>
       PendingResourceIDCallback;
-  typedef base::Callback<void(
-      const std::vector<PP_Resource>&,
-      const std::vector<PP_FileSystemType>&,
-      const std::vector<std::string>&,
-      const std::vector<base::FilePath>&)> FileRefGetInfoCallback;
-
   explicit PepperBrowserConnection(RenderView* render_view);
   virtual ~PepperBrowserConnection();
 
@@ -51,13 +45,6 @@ class PepperBrowserConnection
                          const std::vector<IPC::Message>& create_messages,
                          const PendingResourceIDCallback& callback);
 
-  // Sends a request to the browser to get information about the given FileRef
-  // |resource|. |callback| will be run when a reply is received with the
-  // file information.
-  void SendBrowserFileRefGetInfo(int child_process_id,
-                                 const std::vector<PP_Resource>& resource,
-                                 const FileRefGetInfoCallback& callback);
-
   // Called when the renderer creates an in-process instance.
   void DidCreateInProcessInstance(PP_Instance instance,
                                   int render_view_id,
@@ -72,12 +59,6 @@ class PepperBrowserConnection
   void OnMsgCreateResourceHostsFromHostReply(
       int32_t sequence_number,
       const std::vector<int>& pending_resource_host_ids);
-  void OnMsgFileRefGetInfoReply(
-      int32_t sequence_number,
-      const std::vector<PP_Resource>& resources,
-      const std::vector<PP_FileSystemType>& types,
-      const std::vector<std::string>& file_system_url_specs,
-      const std::vector<base::FilePath>& external_paths);
 
   // Return the next sequence number.
   int32_t GetNextSequence();
@@ -87,7 +68,6 @@ class PepperBrowserConnection
 
   // Maps a sequence number to the callback to be run.
   std::map<int32_t, PendingResourceIDCallback> pending_create_map_;
-  std::map<int32_t, FileRefGetInfoCallback> get_info_map_;
   DISALLOW_COPY_AND_ASSIGN(PepperBrowserConnection);
 };
 

@@ -13,6 +13,7 @@
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_file_ref_api.h"
 
 namespace ppapi {
 namespace proxy {

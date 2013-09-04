@@ -101,7 +101,6 @@
 #include "ppapi/proxy/ppb_broker_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_core_proxy.h"
-#include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"

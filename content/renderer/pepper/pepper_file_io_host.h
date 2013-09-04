@@ -26,6 +26,7 @@
 using ppapi::host::ReplyMessageContext;
 
 namespace content {
+class PepperPluginInstanceImpl;
 class QuotaFileIO;
 
 class PepperFileIOHost : public ppapi::host::ResourceHost,
@@ -105,7 +106,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
                                     int bytes_written);
 
   RendererPpapiHost* renderer_ppapi_host_;
-
+  PepperPluginInstanceImpl* plugin_instance_;
   base::PlatformFile file_;
 
   // The file system type specified in the Open() call. This will be
