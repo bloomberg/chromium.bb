@@ -17,6 +17,7 @@
 #        'cast_receiver_impl.h',
       ], # source
       'dependencies': [
+         'rtp_receiver/rtp_receiver.gyp:*',
 #        'audio_receiver',
 #        'video_receiver',
         'framer/framer.gyp:cast_framer',
