@@ -148,7 +148,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
 
   void OnClosedStream();
 
-  void CloseSessionOnErrorInner(int error);
+  void CloseSessionOnErrorInner(int net_error, QuicErrorCode quic_error);
 
   // Posts a task to notify the factory that this session has been closed.
   void NotifyFactoryOfSessionCloseLater();

@@ -7786,6 +7786,13 @@ other types of suffix sets.
   <summary>Version of the QUIC protocol used for this connection.</summary>
 </histogram>
 
+<histogram name="Net.QuicSession.ReadError" enum="NetErrorCodes">
+  <summary>
+    The network error code returned when attempting to read to a QUIC
+    connection.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.WriteError" enum="NetErrorCodes">
   <summary>
     The network error code returned when attempting to write to a QUIC

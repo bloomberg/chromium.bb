@@ -334,25 +334,26 @@ void QuicClientSession::StartReading() {
 
 void QuicClientSession::CloseSessionOnError(int error) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.CloseSessionOnError", -error);
-  CloseSessionOnErrorInner(error);
+  CloseSessionOnErrorInner(error, QUIC_INTERNAL_ERROR);
   NotifyFactoryOfSessionClose();
 }
 
-void QuicClientSession::CloseSessionOnErrorInner(int error) {
+void QuicClientSession::CloseSessionOnErrorInner(int net_error,
+                                                 QuicErrorCode quic_error) {
   if (!callback_.is_null()) {
-    base::ResetAndReturn(&callback_).Run(error);
+    base::ResetAndReturn(&callback_).Run(net_error);
   }
   while (!streams()->empty()) {
     ReliableQuicStream* stream = streams()->begin()->second;
     QuicStreamId id = stream->id();
-    static_cast<QuicReliableClientStream*>(stream)->OnError(error);
+    static_cast<QuicReliableClientStream*>(stream)->OnError(net_error);
     CloseStream(id);
   }
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_CLOSE_ON_ERROR,
-      NetLog::IntegerCallback("net_error", error));
+      NetLog::IntegerCallback("net_error", net_error));
 
-  connection()->CloseConnection(QUIC_INTERNAL_ERROR, false);
+  connection()->CloseConnection(quic_error, false);
   DCHECK(!connection()->connected());
 }
 
@@ -378,7 +379,8 @@ void QuicClientSession::OnReadComplete(int result) {
 
   if (result < 0) {
     DLOG(INFO) << "Closing session on read error: " << result;
-    CloseSessionOnErrorInner(result);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.ReadError", -result);
+    CloseSessionOnErrorInner(result, QUIC_PACKET_READ_ERROR);
     NotifyFactoryOfSessionCloseLater();
     return;
   }

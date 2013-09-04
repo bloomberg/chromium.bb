@@ -350,8 +350,10 @@ enum QuicErrorCode {
   QUIC_CONNECTION_TIMED_OUT = 25,
   // There was an error encountered migrating addresses
   QUIC_ERROR_MIGRATING_ADDRESS = 26,
-  // There was an error while writing the packet.
+  // There was an error while writing to the socket.
   QUIC_PACKET_WRITE_ERROR = 27,
+  // There was an error while reading from the socket.
+  QUIC_PACKET_READ_ERROR = 51,
 
 
   // Crypto errors.
@@ -398,7 +400,7 @@ enum QuicErrorCode {
   QUIC_CRYPTO_SERVER_CONFIG_EXPIRED = 45,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 49,
+  QUIC_LAST_ERROR = 52,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
