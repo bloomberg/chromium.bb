@@ -124,7 +124,6 @@ bool CreateWebURLRequest(ppapi::URLRequestInfoData* data,
     return false;
 
   dest->initialize();
-  dest->setTargetType(WebURLRequest::TargetIsObject);
   dest->setURL(frame->document().completeURL(WebString::fromUTF8(
       data->url)));
   dest->setDownloadToFile(data->stream_to_file);
