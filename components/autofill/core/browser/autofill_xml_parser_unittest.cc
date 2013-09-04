@@ -162,13 +162,6 @@ TEST_F(AutofillQueryXmlParserTest, ParseExperimentId) {
   EXPECT_EQ("ServerSmartyPants", experiment_id_);
 }
 
-// Fails on ASAN bot. http://crbug.com/253797
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ParseAutofillFlow DISABLED_ParseAutofillFlow
-#else
-#define MAYBE_ParseAutofillFlow ParseAutofillFlow
-#endif
-
 // Test badly formed XML queries.
 TEST_F(AutofillQueryXmlParserTest, ParseErrors) {
   // Test no Autofill type.
