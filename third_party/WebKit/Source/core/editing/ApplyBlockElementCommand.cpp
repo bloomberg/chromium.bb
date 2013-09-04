@@ -29,6 +29,7 @@
 
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/dom/Text.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
@@ -169,14 +170,14 @@ static bool isNewLineAtPosition(const Position& position)
     return textAtPosition[0] == '\n';
 }
 
-static RenderStyle* renderStyleOfEnclosingTextNode(const Position& position)
+RenderStyle* ApplyBlockElementCommand::renderStyleOfEnclosingTextNode(const Position& position)
 {
-    if (position.anchorType() != Position::PositionIsOffsetInAnchor
-        || !position.containerNode()
-        || !position.containerNode()->isTextNode()
-        || !position.containerNode()->renderer())
+    if (position.anchorType() != Position::PositionIsOffsetInAnchor || !position.containerNode() || !position.containerNode()->isTextNode())
         return 0;
-    return position.containerNode()->renderer()->style();
+
+    document().updateStyleForNodeIfNeeded(position.containerNode());
+
+    return position.containerNode()->renderStyle();
 }
 
 void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const VisiblePosition& endOfCurrentParagraph, Position& start, Position& end)
