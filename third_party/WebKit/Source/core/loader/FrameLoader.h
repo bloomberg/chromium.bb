@@ -110,8 +110,15 @@ public:
     // FIXME: clear() is trying to do too many things. We should break it down into smaller functions.
     void clear(ClearOptions);
 
+    // Sets a timer to notify the client that the initial empty document has
+    // been accessed, and thus it is no longer safe to show a provisional URL
+    // above the document without risking a URL spoof.
     void didAccessInitialDocument();
-    void didAccessInitialDocumentTimerFired(Timer<FrameLoader>*);
+
+    // If the initial empty document is showing and has been accessed, this
+    // cancels the timer and immediately notifies the client in cases that
+    // waiting to notify would allow a URL spoof.
+    void notifyIfInitialDocumentAccessed();
 
     bool isLoading() const;
 
@@ -224,6 +231,7 @@ private:
     void completed();
 
     void checkTimerFired(Timer<FrameLoader>*);
+    void didAccessInitialDocumentTimerFired(Timer<FrameLoader>*);
 
     void insertDummyHistoryItem();
 

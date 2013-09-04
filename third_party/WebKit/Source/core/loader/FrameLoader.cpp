@@ -877,6 +877,15 @@ void FrameLoader::didAccessInitialDocumentTimerFired(Timer<FrameLoader>*)
     m_client->didAccessInitialDocument();
 }
 
+void FrameLoader::notifyIfInitialDocumentAccessed()
+{
+    if (m_didAccessInitialDocumentTimer.isActive()
+        && m_stateMachine.isDisplayingInitialEmptyDocument()) {
+        m_didAccessInitialDocumentTimer.stop();
+        didAccessInitialDocumentTimerFired(0);
+    }
+}
+
 bool FrameLoader::isLoading() const
 {
     DocumentLoader* docLoader = activeDocumentLoader();

@@ -3432,6 +3432,39 @@ TEST_F(WebFrameTest, DidAccessInitialDocumentViaJavascriptUrl)
     m_webView = 0;
 }
 
+TEST_F(WebFrameTest, DidAccessInitialDocumentBodyBeforeModalDialog)
+{
+    TestAccessInitialDocumentWebFrameClient webFrameClient;
+    m_webView = FrameTestHelpers::createWebView(true, &webFrameClient);
+    runPendingTasks();
+    EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
+
+    // Create another window that will try to access it.
+    WebView* newView = FrameTestHelpers::createWebView(true);
+    newView->mainFrame()->setOpener(m_webView->mainFrame());
+    runPendingTasks();
+    EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
+
+    // Access the initial document by modifying the body. We normally set a
+    // timer to notify the client.
+    newView->mainFrame()->executeScript(
+        WebScriptSource("window.opener.document.body.innerHTML += 'Modified';"));
+    EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
+
+    // Make sure that a modal dialog forces us to notify right away.
+    newView->mainFrame()->executeScript(
+        WebScriptSource("window.opener.confirm('Modal');"));
+    EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
+
+    // Ensure that we don't notify again later.
+    runPendingTasks();
+    EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
+
+    newView->close();
+    m_webView->close();
+    m_webView = 0;
+}
+
 class TestMainFrameUserOrProgrammaticScrollFrameClient : public WebFrameClient {
 public:
     TestMainFrameUserOrProgrammaticScrollFrameClient() { reset(); }
