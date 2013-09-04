@@ -214,7 +214,6 @@ void NetworkMenuModel::ConnectToNetworkAt(int index) {
   const std::string& service_path = menu_items_[index].service_path;
   gfx::NativeWindow native_window = owner_->delegate()->GetNativeWindow();
   ash::network_connect::ConnectToNetwork(service_path, native_window);
-  owner_->delegate()->OnConnectToNetworkRequested(service_path);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -310,9 +309,12 @@ void NetworkMenuModel::ActivatedAt(int index) {
   } else if (flags & FLAG_TOGGLE_MOBILE) {
     ToggleTechnology(NetworkStateHandler::kMatchTypeMobile);
   } else if (flags & FLAG_ETHERNET) {
-    // Do nothing (used in login screen only)
+    owner_->delegate()->OnConnectToNetworkRequested(
+        menu_items_[index].service_path);
   } else if (flags & (FLAG_WIFI | FLAG_WIMAX | FLAG_CELLULAR)) {
     ConnectToNetworkAt(index);
+    owner_->delegate()->OnConnectToNetworkRequested(
+        menu_items_[index].service_path);
   } else if (flags & FLAG_ADD_WIFI) {
     ShowOther(flimflam::kTypeWifi);
   } else if (flags & FLAG_ADD_CELLULAR) {
