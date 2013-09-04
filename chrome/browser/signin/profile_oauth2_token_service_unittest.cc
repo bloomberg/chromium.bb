@@ -331,7 +331,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
 
   request = oauth2_service_->StartRequest(scope_list, &consumer_);
   base::RunLoop().RunUntilIdle();
-  fetcher = factory_.GetFetcherByID(0);
+  fetcher = factory_.GetFetcherByID(1);
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(GetValidTokenResponse("another token", 3600));
   fetcher->delegate()->OnURLFetchComplete(fetcher);

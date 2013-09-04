@@ -56,13 +56,14 @@ static GoogleServiceAuthError CreateAuthError(URLRequestStatus status) {
   }
 }
 
-static URLFetcher* CreateFetcher(URLRequestContextGetter* getter,
+static URLFetcher* CreateFetcher(int id,
+                                 URLRequestContextGetter* getter,
                                  const GURL& url,
                                  const std::string& body,
                                  URLFetcherDelegate* delegate) {
   bool empty_body = body.empty();
   URLFetcher* result = net::URLFetcher::Create(
-      0, url,
+      id, url,
       empty_body ? URLFetcher::GET : URLFetcher::POST,
       delegate);
 
@@ -81,6 +82,8 @@ static URLFetcher* CreateFetcher(URLRequestContextGetter* getter,
   return result;
 }
 }  // namespace
+
+int OAuth2AccessTokenFetcher::last_fetcher_id_ = 0;
 
 OAuth2AccessTokenFetcher::OAuth2AccessTokenFetcher(
     OAuth2AccessTokenConsumer* consumer,
@@ -110,6 +113,7 @@ void OAuth2AccessTokenFetcher::StartGetAccessToken() {
   CHECK_EQ(INITIAL, state_);
   state_ = GET_ACCESS_TOKEN_STARTED;
   fetcher_.reset(CreateFetcher(
+      last_fetcher_id_++,
       getter_,
       MakeGetAccessTokenUrl(),
       MakeGetAccessTokenBody(
@@ -230,4 +234,9 @@ bool OAuth2AccessTokenFetcher::ParseGetAccessTokenResponse(
       static_cast<base::DictionaryValue*>(value.get());
   return dict->GetString(kAccessTokenKey, access_token) &&
       dict->GetInteger(kExpiresInKey, expires_in);
+}
+
+// static
+void OAuth2AccessTokenFetcher::ResetLastFetcherIdForTest() {
+  last_fetcher_id_ = 0;
 }
