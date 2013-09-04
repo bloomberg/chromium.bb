@@ -568,8 +568,6 @@ class AppListViewWin {
       window_icon_updated_(false) {
   }
 
-  app_list::AppListView* view() { return view_; }
-
   void Show() {
     view_->GetWidget()->Show();
     if (!window_icon_updated_) {
@@ -701,12 +699,6 @@ class AppListShower {
     return view_->GetWindow();
   }
 
-  app_list::AppListModel* GetGurrentModel() {
-    if (!view_)
-      return NULL;
-    return view_->view()->model();
-  }
-
   void OnSigninStatusChanged() {
     if (view_)
       view_->OnSigninStatusChanged();
@@ -798,7 +790,7 @@ class AppListShower {
 // TODO(tapted): Rename this class to AppListServiceWin and move entire file to
 // chrome/browser/ui/app_list/app_list_service_win.cc after removing
 // chrome/browser/ui/views dependency.
-class AppListController : public AppListServiceWin {
+class AppListController : public AppListServiceImpl {
  public:
   virtual ~AppListController();
 
@@ -827,9 +819,6 @@ class AppListController : public AppListServiceWin {
 
   // AppListServiceImpl overrides:
   virtual void CreateShortcut() OVERRIDE;
-
-  // AppListServiceWin overrides:
-  virtual app_list::AppListModel* GetAppListModelForTesting() OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<AppListController>;
@@ -948,10 +937,6 @@ gfx::NativeWindow AppListController::GetAppListWindow() {
 
 AppListControllerDelegate* AppListController::CreateControllerDelegate() {
   return new AppListControllerDelegateWin();
-}
-
-app_list::AppListModel* AppListController::GetAppListModelForTesting() {
-  return shower_->GetGurrentModel();
 }
 
 void AppListController::ShowForProfile(Profile* requested_profile) {

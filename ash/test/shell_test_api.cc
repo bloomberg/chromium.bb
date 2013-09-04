@@ -52,10 +52,6 @@ internal::DragDropController* ShellTestApi::drag_drop_controller() {
   return shell_->drag_drop_controller_.get();
 }
 
-internal::AppListController* ShellTestApi::app_list_controller() {
-  return shell_->app_list_controller_.get();
-}
-
 void ShellTestApi::DisableOutputConfiguratorAnimation() {
 #if defined(OS_CHROMEOS)
   if (shell_->output_configurator_animation_) {

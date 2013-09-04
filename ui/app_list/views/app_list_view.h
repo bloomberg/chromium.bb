@@ -88,8 +88,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   HWND GetHWND() const;
 #endif
 
-  AppListModel* model() { return model_.get(); }
-
  private:
   // Overridden from views::WidgetDelegateView:
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;

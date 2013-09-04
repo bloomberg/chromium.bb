@@ -29,10 +29,6 @@ class LocatedEvent;
 }
 
 namespace ash {
-namespace test {
-class AppListControllerTestApi;
-}
-
 namespace internal {
 
 // AppListController is a controller that manages app list UI for shell.
@@ -67,8 +63,6 @@ class AppListController : public ui::EventHandler,
   aura::Window* GetWindow();
 
  private:
-  friend class test::AppListControllerTestApi;
-
   // If |drag_and_drop_host| is not NULL it will be called upon drag and drop
   // operations outside the application list.
   void SetDragAndDropHostOfCurrentAppList(

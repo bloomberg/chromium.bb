@@ -117,7 +117,6 @@
         'browser/ui/app_list/app_list_service_disabled.cc',
         'browser/ui/app_list/app_list_service_impl.cc',
         'browser/ui/app_list/app_list_service_impl.h',
-        'browser/ui/app_list/app_list_service_mac.h',
         'browser/ui/app_list/app_list_service_mac.mm',
         'browser/ui/app_list/app_list_service_win.cc',
         'browser/ui/app_list/app_list_service_win.h',

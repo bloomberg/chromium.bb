@@ -110,7 +110,6 @@ void SearchBoxModelObserverBridge::TextChanged() {
   // it is changed in tests to establish a particular state.
   [[parent_ searchTextField]
       setStringValue:base::SysUTF16ToNSString(GetModel()->text())];
-  [[parent_ delegate] modelTextDidChange];
 }
 
 }  // namespace app_list

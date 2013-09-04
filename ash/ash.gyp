@@ -595,8 +595,6 @@
         'ash_resources',
       ],
       'sources': [
-        'test/app_list_controller_test_api.cc',
-        'test/app_list_controller_test_api.h',
         'test/ash_test_base.cc',
         'test/ash_test_base.h',
         'test/ash_test_helper.cc',
