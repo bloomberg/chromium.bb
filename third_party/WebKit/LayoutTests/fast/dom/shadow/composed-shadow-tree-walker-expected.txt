@@ -5,351 +5,351 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 ShadowRoot should be used.
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=b
+#a
+	#b
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=b
+#a
+#b
 Traverse in backward.
-DIV	 id=b
-DIV	 id=a
+#b
+#a
 
 A content element should select light children
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=b
-	DIV	 id=c
-	DIV	 id=d
+#a
+	#b
+	#c
+	#d
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=b
-DIV	 id=c
-DIV	 id=d
+#a
+#b
+#c
+#d
 Traverse in backward.
-DIV	 id=d
-DIV	 id=c
-DIV	 id=b
-DIV	 id=a
+#d
+#c
+#b
+#a
 
 Test for content element selector.
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=b
-	DIV	 id=d
+#a
+	#b
+	#d
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=b
-DIV	 id=d
+#a
+#b
+#d
 Traverse in backward.
-DIV	 id=d
-DIV	 id=b
-DIV	 id=a
+#d
+#b
+#a
 
 Light children should be selected only at once.
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=b
-	DIV	 id=d
-	DIV	 id=c
-	DIV	 id=e
+#a
+	#b
+	#d
+	#c
+	#e
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=b
-DIV	 id=d
-DIV	 id=c
-DIV	 id=e
+#a
+#b
+#d
+#c
+#e
 Traverse in backward.
-DIV	 id=e
-DIV	 id=c
-DIV	 id=d
-DIV	 id=b
-DIV	 id=a
+#e
+#c
+#d
+#b
+#a
 
 A content element can have fallback elements.
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=b
-	DIV	 id=f1
-	DIV	 id=f2
+#a
+	#b
+	#f1
+	#f2
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=b
-DIV	 id=f1
-DIV	 id=f2
+#a
+#b
+#f1
+#f2
 Traverse in backward.
-DIV	 id=f2
-DIV	 id=f1
-DIV	 id=b
-DIV	 id=a
+#f2
+#f1
+#b
+#a
 
 Fallback elements should not be used if a content element selects an element.
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=b
-	DIV	 id=c
+#a
+	#b
+	#c
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=b
-DIV	 id=c
+#a
+#b
+#c
 Traverse in backward.
-DIV	 id=c
-DIV	 id=b
-DIV	 id=a
+#c
+#b
+#a
 
 Test for traversal, starting with a fallback element which is not used.
 Composed Shadow Tree:
-DIV	 id=f1
-	DIV	 id=f2
+#f1
+	#f2
 
 Traverse in forward.
-DIV	 id=f1
-DIV	 id=f2
+#f1
+#f2
 Traverse in backward.
-DIV	 id=f2
-DIV	 id=f1
+#f2
+#f1
 
-Next node of [DIV	 id=f1] is [DIV	 id=f2]
-Next node of [DIV	 id=f2] is [(null)]
+Next node of [#f1] is [#f2]
+Next node of [#f2] is [null]
 
 Test for Nested ShadowRoots.
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=b
-		DIV	 id=c
-		DIV	 id=e
-		DIV	 id=d
-	DIV	 id=f
-	DIV	 id=h
-	DIV	 id=i
-	DIV	 id=g
+#a
+	#b
+		#c
+		#e
+		#d
+	#f
+	#h
+	#i
+	#g
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=b
-DIV	 id=c
-DIV	 id=e
-DIV	 id=d
-DIV	 id=f
-DIV	 id=h
-DIV	 id=i
-DIV	 id=g
+#a
+#b
+#c
+#e
+#d
+#f
+#h
+#i
+#g
 Traverse in backward.
-DIV	 id=g
-DIV	 id=i
-DIV	 id=h
-DIV	 id=f
-DIV	 id=d
-DIV	 id=e
-DIV	 id=c
-DIV	 id=b
-DIV	 id=a
+#g
+#i
+#h
+#f
+#d
+#e
+#c
+#b
+#a
 
 Test for Multiple ShadowRoots.
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=d
-	DIV	 id=b
-	DIV	 id=f
-	DIV	 id=c
-	DIV	 id=e
+#a
+	#d
+	#b
+	#f
+	#c
+	#e
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=d
-DIV	 id=b
-DIV	 id=f
-DIV	 id=c
-DIV	 id=e
+#a
+#d
+#b
+#f
+#c
+#e
 Traverse in backward.
-DIV	 id=e
-DIV	 id=c
-DIV	 id=f
-DIV	 id=b
-DIV	 id=d
-DIV	 id=a
+#e
+#c
+#f
+#b
+#d
+#a
 
 Test for inactive insertion points.
 Composed Shadow Tree:
-DIV	 id=a
-	CONTENT	 id=b
-		CONTENT	 id=c
+#a
+	#b
+		#c
 
 Traverse in forward.
-DIV	 id=a
-CONTENT	 id=b
-CONTENT	 id=c
+#a
+#b
+#c
 Traverse in backward.
-CONTENT	 id=c
-CONTENT	 id=b
-DIV	 id=a
+#c
+#b
+#a
 
 Test for an orphaned shadow subtree.
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=d
+#a
+	#d
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=d
+#a
+#d
 Traverse in backward.
-DIV	 id=d
-DIV	 id=a
+#d
+#a
 
 Test for traversal, starting with a node in an orphaned shadow subtree.
 Composed Shadow Tree:
-DIV	 id=b
-	DIV	 id=c
+#b
+	#c
 
 Traverse in forward.
-DIV	 id=b
-DIV	 id=c
+#b
+#c
 Traverse in backward.
-DIV	 id=c
-DIV	 id=b
+#c
+#b
 
 Test for a content element which does not select any nodes nor have fallback elements.
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=b
-	DIV	 id=c
+#a
+	#b
+	#c
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=b
-DIV	 id=c
+#a
+#b
+#c
 Traverse in backward.
-DIV	 id=c
-DIV	 id=b
-DIV	 id=a
+#c
+#b
+#a
 
 Test for a nested insertion point.
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=b
-		DIV	 id=c
+#a
+	#b
+		#c
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=b
-DIV	 id=c
+#a
+#b
+#c
 Traverse in backward.
-DIV	 id=c
-DIV	 id=b
-DIV	 id=a
+#c
+#b
+#a
 
 Test for nested insertion points. Some of them are either empty insertion points or inactive insertion points.
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=b
-		DIV	 id=c
-		DIV	 id=d class=select-2
-		DIV	 id=e class=select-2
+#a
+	#b
+		#c
+		#d
+		#e
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=b
-DIV	 id=c
-DIV	 id=d class=select-2
-DIV	 id=e class=select-2
+#a
+#b
+#c
+#d
+#e
 Traverse in backward.
-DIV	 id=e class=select-2
-DIV	 id=d class=select-2
-DIV	 id=c
-DIV	 id=b
-DIV	 id=a
+#e
+#d
+#c
+#b
+#a
 
 Test for a re-projection.
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=b
-		DIV	 id=c
+#a
+	#b
+		#c
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=b
-DIV	 id=c
+#a
+#b
+#c
 Traverse in backward.
-DIV	 id=c
-DIV	 id=b
-DIV	 id=a
+#c
+#b
+#a
 
 Test for a content element which is selected by another content element.
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=b
-		DIV	 id=most-inner-child
-		DIV	 id=host-child
+#a
+	#b
+		#most-inner-child
+		#host-child
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=b
-DIV	 id=most-inner-child
-DIV	 id=host-child
+#a
+#b
+#most-inner-child
+#host-child
 Traverse in backward.
-DIV	 id=host-child
-DIV	 id=most-inner-child
-DIV	 id=b
-DIV	 id=a
+#host-child
+#most-inner-child
+#b
+#a
 
 Test for a reprojection. Content elements should be used in document order.
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=host-child1 class=child
-	DIV	 id=b
-		DIV	 id=host-child2 class=child
+#a
+	#host-child1
+	#b
+		#host-child2
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=host-child1 class=child
-DIV	 id=b
-DIV	 id=host-child2 class=child
+#a
+#host-child1
+#b
+#host-child2
 Traverse in backward.
-DIV	 id=host-child2 class=child
-DIV	 id=b
-DIV	 id=host-child1 class=child
-DIV	 id=a
+#host-child2
+#b
+#host-child1
+#a
 
 Test for complex re-projections.
 Composed Shadow Tree:
-DIV	 id=a
-	DIV	 id=b
-		DIV	 id=child-1 class=foo
-		DIV	 id=d class=foo
-			DIV	 id=e
-			DIV	 id=child-2 class=foo
-			DIV	 id=g class=foo
-			DIV	 id=f
-		DIV	 id=h class=foo
-		DIV	 id=c
+#a
+	#b
+		#child-1
+		#d
+			#e
+			#child-2
+			#g
+			#f
+		#h
+		#c
 
 Traverse in forward.
-DIV	 id=a
-DIV	 id=b
-DIV	 id=child-1 class=foo
-DIV	 id=d class=foo
-DIV	 id=e
-DIV	 id=child-2 class=foo
-DIV	 id=g class=foo
-DIV	 id=f
-DIV	 id=h class=foo
-DIV	 id=c
+#a
+#b
+#child-1
+#d
+#e
+#child-2
+#g
+#f
+#h
+#c
 Traverse in backward.
-DIV	 id=c
-DIV	 id=h class=foo
-DIV	 id=f
-DIV	 id=g class=foo
-DIV	 id=child-2 class=foo
-DIV	 id=e
-DIV	 id=d class=foo
-DIV	 id=child-1 class=foo
-DIV	 id=b
-DIV	 id=a
+#c
+#h
+#f
+#g
+#child-2
+#e
+#d
+#child-1
+#b
+#a
 
 PASS successfullyParsed is true
 

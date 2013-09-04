@@ -13,78 +13,6 @@ description("Tests for Composed Shadow DOM Tree Traversal APIs. Can only run wit
 if (window.testRunner)
     testRunner.dumpAsText();
 
-function dumpNode(node)
-{
-    if (!node)
-        return '(null)'
-    var output = node.nodeName + "\t";
-    if (node.id)
-        output += ' id=' + node.id;
-    if (node.className)
-        output += ' class=' + node.className;
-    return output;
-}
-
-function dumpComposedShadowTree(node, indent)
-{
-    indent = indent || "";
-    var output = indent + dumpNode(node) + "\n";
-    var child;
-    for (child = internals.firstChildByWalker(node); child; child = internals.nextSiblingByWalker(child))
-         output += dumpComposedShadowTree(child, indent + "\t");
-    return output;
-}
-
-function lastNodeByWalker(root)
-{
-    var lastNode = root;
-    while (internals.lastChildByWalker(lastNode))
-        lastNode = internals.lastChildByWalker(lastNode);
-    return lastNode;
-}
-
-function showComposedShadowTreeByTraversingInForward(root)
-{
-    var node = root;
-    var last = lastNodeByWalker(root);
-    while (node) {
-        debug(dumpNode(node));
-        if (node == last)
-            break;
-        node = internals.nextNodeByWalker(node);
-    }
-}
-
-function showComposedShadowTreeByTraversingInBackward(root)
-{
-    var node = lastNodeByWalker(root);
-    while (node) {
-        debug(dumpNode(node));
-        if (node == root)
-            break;
-        node = internals.previousNodeByWalker(node);
-    }
-}
-
-function showComposedShadowTree(node)
-{
-    debug('Composed Shadow Tree:');
-    debug(dumpComposedShadowTree(node));
-
-    debug('Traverse in forward.');
-    showComposedShadowTreeByTraversingInForward(node);
-
-    debug('Traverse in backward.');
-    showComposedShadowTreeByTraversingInBackward(node);
-
-    debug('');
-}
-
-function showNextNode(node) {
-    var next = internals.nextNodeByWalker(node);
-    debug('Next node of [' + dumpNode(node) + '] is [' + dumpNode(next) + ']');
-}
-
 function testComposedShadowTree(node)
 {
     var sandbox = document.getElementById('sandbox');
@@ -182,7 +110,7 @@ testComposedShadowTree(
                                          createShadowRoot(createDOM('div', {'id': 'u'}),
                                                           createDOM('content', {'id': 'v'}),
                                                           createDOM('div', {'id': 'w'}))))));
-                        
+
 
 </script>
 <script src="../../js/resources/js-test-post.js"></script>

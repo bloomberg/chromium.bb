@@ -177,3 +177,63 @@ function testFocusNavigationBackward(elements)
     for (var i = 0; i + 1 < elements.length; ++i)
         shouldNavigateFocus(elements[i], elements[i + 1], 'backward');
 }
+
+function dumpComposedShadowTree(node, indent)
+{
+    indent = indent || "";
+    var output = indent + dumpNode(node) + "\n";
+    var child;
+    for (child = internals.firstChildByWalker(node); child; child = internals.nextSiblingByWalker(child))
+         output += dumpComposedShadowTree(child, indent + "\t");
+    return output;
+}
+
+function lastNodeByWalker(root)
+{
+    var lastNode = root;
+    while (internals.lastChildByWalker(lastNode))
+        lastNode = internals.lastChildByWalker(lastNode);
+    return lastNode;
+}
+
+function showComposedShadowTreeByTraversingInForward(root)
+{
+    var node = root;
+    var last = lastNodeByWalker(root);
+    while (node) {
+        debug(dumpNode(node));
+        if (node == last)
+            break;
+        node = internals.nextNodeByWalker(node);
+    }
+}
+
+function showComposedShadowTreeByTraversingInBackward(root)
+{
+    var node = lastNodeByWalker(root);
+    while (node) {
+        debug(dumpNode(node));
+        if (node == root)
+            break;
+        node = internals.previousNodeByWalker(node);
+    }
+}
+
+function showComposedShadowTree(node)
+{
+    debug('Composed Shadow Tree:');
+    debug(dumpComposedShadowTree(node));
+
+    debug('Traverse in forward.');
+    showComposedShadowTreeByTraversingInForward(node);
+
+    debug('Traverse in backward.');
+    showComposedShadowTreeByTraversingInBackward(node);
+
+    debug('');
+}
+
+function showNextNode(node) {
+    var next = internals.nextNodeByWalker(node);
+    debug('Next node of [' + dumpNode(node) + '] is [' + dumpNode(next) + ']');
+}
