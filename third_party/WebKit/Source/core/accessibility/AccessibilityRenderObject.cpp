@@ -1677,7 +1677,7 @@ void AccessibilityRenderObject::scrollTo(const IntPoint& point) const
         return;
 
     RenderLayer* layer = box->layer();
-    layer->scrollToOffset(toIntSize(point), RenderLayer::ScrollOffsetClamped);
+    layer->scrollToOffset(toIntSize(point), ScrollOffsetClamped);
 }
 
 //

@@ -44,16 +44,22 @@
 #include "config.h"
 #include "core/rendering/RenderLayer.h"
 
+#include "core/editing/FrameSelection.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/ScrollAnimator.h"
+#include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 
 RenderLayerScrollableArea::RenderLayerScrollableArea(RenderLayer* layer)
     : m_layer(layer)
+    , m_scrollDimensionsDirty(true)
 {
     ScrollableArea::setConstrainsScrollingToContentEdge(false);
 
@@ -185,9 +191,67 @@ int RenderLayerScrollableArea::scrollSize(ScrollbarOrientation orientation) cons
     return m_layer->scrollSize(orientation);
 }
 
-void RenderLayerScrollableArea::setScrollOffset(const IntPoint& offset)
+void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 {
-    m_layer->setScrollOffset(offset);
+    if (!toRenderBox(renderer())->isMarquee()) {
+        // Ensure that the dimensions will be computed if they need to be (for overflow:hidden blocks).
+        if (m_scrollDimensionsDirty)
+            computeScrollDimensions();
+    }
+
+    if (scrollOffset() == toIntSize(newScrollOffset))
+        return;
+
+    setScrollOffset(toIntSize(newScrollOffset));
+
+    Frame* frame = renderer()->frame();
+    InspectorInstrumentation::willScrollLayer(renderer());
+
+    RenderView* view = renderer()->view();
+
+    // We should have a RenderView if we're trying to scroll.
+    ASSERT(view);
+
+    // Update the positions of our child layers (if needed as only fixed layers should be impacted by a scroll).
+    // We don't update compositing layers, because we need to do a deep update from the compositing ancestor.
+    bool inLayout = view ? view->frameView()->isInLayout() : false;
+    if (!inLayout) {
+        // If we're in the middle of layout, we'll just update layers once layout has finished.
+        m_layer->updateLayerPositionsAfterOverflowScroll();
+        if (view) {
+            // Update regions, scrolling may change the clip of a particular region.
+            view->frameView()->updateAnnotatedRegions();
+            view->updateWidgetPositions();
+        }
+
+        m_layer->updateCompositingLayersAfterScroll();
+    }
+
+    RenderLayerModelObject* repaintContainer = renderer()->containerForRepaint();
+    if (frame) {
+        // The caret rect needs to be invalidated after scrolling
+        frame->selection().setCaretRectNeedsUpdate();
+
+        FloatQuad quadForFakeMouseMoveEvent = FloatQuad(m_layer->m_repaintRect);
+        if (repaintContainer)
+            quadForFakeMouseMoveEvent = repaintContainer->localToAbsoluteQuad(quadForFakeMouseMoveEvent);
+        frame->eventHandler()->dispatchFakeMouseMoveEventSoonInQuad(quadForFakeMouseMoveEvent);
+    }
+
+    bool requiresRepaint = true;
+
+    if (m_layer->compositor()->inCompositingMode() && m_layer->usesCompositedScrolling())
+        requiresRepaint = false;
+
+    // Just schedule a full repaint of our object.
+    if (view && requiresRepaint)
+        renderer()->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_layer->m_repaintRect));
+
+    // Schedule the scroll DOM event.
+    if (renderer()->node())
+        renderer()->node()->document().eventQueue()->enqueueOrDispatchScrollEvent(renderer()->node(), DocumentEventQueue::ScrollEventElementTarget);
+
+    InspectorInstrumentation::didScrollLayer(renderer());
 }
 
 IntPoint RenderLayerScrollableArea::scrollPosition() const
@@ -197,12 +261,17 @@ IntPoint RenderLayerScrollableArea::scrollPosition() const
 
 IntPoint RenderLayerScrollableArea::minimumScrollPosition() const
 {
-    return m_layer->minimumScrollPosition();
+    return -scrollOrigin();
 }
 
 IntPoint RenderLayerScrollableArea::maximumScrollPosition() const
 {
-    return m_layer->maximumScrollPosition();
+    RenderBox* box = toRenderBox(renderer());
+
+    if (!box->hasOverflowClip())
+        return -scrollOrigin();
+
+    return -scrollOrigin() + enclosingIntRect(m_overflowRect).size() - enclosingIntRect(box->clientBoxRect()).size();
 }
 
 IntRect RenderLayerScrollableArea::visibleContentRect(VisibleContentRectIncludesScrollbars scrollbarInclusion) const
@@ -230,7 +299,7 @@ int RenderLayerScrollableArea::visibleWidth() const
 
 IntSize RenderLayerScrollableArea::contentsSize() const
 {
-    return m_layer->contentsSize();
+    return IntSize(scrollWidth(), scrollHeight());
 }
 
 IntSize RenderLayerScrollableArea::overhangAmount() const
@@ -273,6 +342,104 @@ RenderLayerModelObject* RenderLayerScrollableArea::renderer() const
     // Only RenderBoxes can have a scrollable area, however we allocate an
     // RenderLayerScrollableArea for any renderers (FIXME).
     return m_layer->renderer();
+}
+
+int RenderLayerScrollableArea::scrollWidth() const
+{
+    RenderBox* box = toRenderBox(renderer());
+    if (m_scrollDimensionsDirty)
+        const_cast<RenderLayerScrollableArea*>(this)->computeScrollDimensions();
+    return snapSizeToPixel(m_overflowRect.width(), box->clientLeft() + box->x());
+}
+
+int RenderLayerScrollableArea::scrollHeight() const
+{
+    RenderBox* box = toRenderBox(renderer());
+    if (m_scrollDimensionsDirty)
+        const_cast<RenderLayerScrollableArea*>(this)->computeScrollDimensions();
+    return snapSizeToPixel(m_overflowRect.height(), box->clientTop() + box->y());
+}
+
+void RenderLayerScrollableArea::computeScrollDimensions()
+{
+    RenderBox* box = toRenderBox(renderer());
+
+    m_scrollDimensionsDirty = false;
+
+    m_overflowRect = box->layoutOverflowRect();
+    box->flipForWritingMode(m_overflowRect);
+
+    int scrollableLeftOverflow = m_overflowRect.x() - box->borderLeft();
+    int scrollableTopOverflow = m_overflowRect.y() - box->borderTop();
+    setScrollOrigin(IntPoint(-scrollableLeftOverflow, -scrollableTopOverflow));
+}
+
+void RenderLayerScrollableArea::scrollToOffset(const IntSize& scrollOffset, ScrollOffsetClamping clamp)
+{
+    IntSize newScrollOffset = clamp == ScrollOffsetClamped ? clampScrollOffset(scrollOffset) : scrollOffset;
+    if (newScrollOffset != adjustedScrollOffset())
+        scrollToOffsetWithoutAnimation(-scrollOrigin() + newScrollOffset);
+}
+
+void RenderLayerScrollableArea::updateAfterLayout()
+{
+    m_scrollDimensionsDirty = true;
+    IntSize originalScrollOffset = adjustedScrollOffset();
+
+    computeScrollDimensions();
+
+    if (!toRenderBox(renderer())->isMarquee()) {
+        // Layout may cause us to be at an invalid scroll position. In this case we need
+        // to pull our scroll offsets back to the max (or push them up to the min).
+        IntSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset());
+        if (clampedScrollOffset != adjustedScrollOffset())
+            scrollToOffset(clampedScrollOffset);
+    }
+
+    if (originalScrollOffset != adjustedScrollOffset())
+        scrollToOffsetWithoutAnimation(-scrollOrigin() + adjustedScrollOffset());
+}
+
+bool RenderLayerScrollableArea::hasHorizontalOverflow() const
+{
+    ASSERT(!m_scrollDimensionsDirty);
+
+    return scrollWidth() > toRenderBox(renderer())->pixelSnappedClientWidth();
+}
+
+bool RenderLayerScrollableArea::hasVerticalOverflow() const
+{
+    ASSERT(!m_scrollDimensionsDirty);
+
+    return scrollHeight() > toRenderBox(renderer())->pixelSnappedClientHeight();
+}
+
+bool RenderLayerScrollableArea::hasScrollableHorizontalOverflow() const
+{
+    return hasHorizontalOverflow() && toRenderBox(renderer())->scrollsOverflowX();
+}
+
+bool RenderLayerScrollableArea::hasScrollableVerticalOverflow() const
+{
+    return hasVerticalOverflow() && toRenderBox(renderer())->scrollsOverflowY();
+}
+
+void RenderLayerScrollableArea::updateAfterStyleChange(const RenderStyle*)
+{
+    if (!m_scrollDimensionsDirty)
+        m_layer->updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
+}
+
+IntSize RenderLayerScrollableArea::clampScrollOffset(const IntSize& scrollOffset) const
+{
+    RenderBox* box = toRenderBox(renderer());
+
+    int maxX = scrollWidth() - box->pixelSnappedClientWidth();
+    int maxY = scrollHeight() - box->pixelSnappedClientHeight();
+
+    int x = std::max(std::min(scrollOffset.width(), maxX), 0);
+    int y = std::max(std::min(scrollOffset.height(), maxY), 0);
+    return IntSize(x, y);
 }
 
 } // Namespace WebCore

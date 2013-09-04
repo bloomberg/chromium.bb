@@ -187,7 +187,7 @@ void TextFieldInputType::forwardEvent(Event* event)
             if (RenderBox* innerTextRenderer = innerTextElement()->renderBox()) {
                 if (RenderLayer* innerLayer = innerTextRenderer->layer()) {
                     IntSize scrollOffset(!renderTextControl->style()->isLeftToRightDirection() ? innerLayer->scrollWidth() : 0, 0);
-                    innerLayer->scrollToOffset(scrollOffset, RenderLayer::ScrollOffsetClamped);
+                    innerLayer->scrollToOffset(scrollOffset, ScrollOffsetClamped);
                 }
             }
 

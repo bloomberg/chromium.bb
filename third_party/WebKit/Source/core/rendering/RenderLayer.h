@@ -383,17 +383,11 @@ public:
 
     void panScrollFromPoint(const IntPoint&);
 
-    enum ScrollOffsetClamping {
-        ScrollOffsetUnclamped,
-        ScrollOffsetClamped
-    };
-
     // Scrolling methods for layers that can scroll their overflow.
     void scrollByRecursively(const IntSize&, ScrollOffsetClamping = ScrollOffsetUnclamped);
     void scrollToOffset(const IntSize&, ScrollOffsetClamping = ScrollOffsetUnclamped);
     void scrollToXOffset(int x, ScrollOffsetClamping clamp = ScrollOffsetUnclamped) { scrollToOffset(IntSize(x, scrollYOffset()), clamp); }
     void scrollToYOffset(int y, ScrollOffsetClamping clamp = ScrollOffsetUnclamped) { scrollToOffset(IntSize(scrollXOffset(), y), clamp); }
-
     void scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
 
     LayoutRect getRectToExpose(const LayoutRect& visibleRect, const LayoutRect& exposeRect, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
@@ -886,8 +880,6 @@ private:
     typedef unsigned UpdateLayerPositionsAfterScrollFlags;
     void updateLayerPositionsAfterScroll(RenderGeometryMap*, UpdateLayerPositionsAfterScrollFlags = NoFlag);
 
-    IntSize clampScrollOffset(const IntSize&) const;
-
     void setNextSibling(RenderLayer* next) { m_next = next; }
     void setPreviousSibling(RenderLayer* prev) { m_previous = prev; }
     void setParent(RenderLayer* parent);
@@ -977,12 +969,6 @@ private:
 
     bool listBackgroundIsKnownToBeOpaqueInRect(const Vector<RenderLayer*>*, const LayoutRect&) const;
 
-    void computeScrollDimensions();
-    bool hasHorizontalOverflow() const;
-    bool hasVerticalOverflow() const;
-    bool hasScrollableHorizontalOverflow() const;
-    bool hasScrollableVerticalOverflow() const;
-
     bool shouldBeNormalFlowOnly() const;
     bool shouldBeNormalFlowOnlyIgnoringCompositedScrolling() const;
 
@@ -1022,12 +1008,8 @@ private:
     IntPoint convertFromScrollbarToContainingView(const Scrollbar*, const IntPoint&) const;
     IntPoint convertFromContainingViewToScrollbar(const Scrollbar*, const IntPoint&) const;
     int scrollSize(ScrollbarOrientation) const;
-    void setScrollOffset(const IntPoint&);
-    IntPoint minimumScrollPosition() const;
-    IntPoint maximumScrollPosition() const;
     int visibleHeight() const;
     int visibleWidth() const;
-    IntSize contentsSize() const;
     IntSize overhangAmount() const;
     IntPoint lastKnownMousePosition() const;
     bool shouldSuspendScrollAnimations() const;
@@ -1120,7 +1102,6 @@ protected:
     // Keeps track of whether the layer is currently resizing, so events can cause resizing to start and stop.
     unsigned m_inResizeMode : 1;
 
-    unsigned m_scrollDimensionsDirty : 1;
     unsigned m_zOrderListsDirty : 1;
     unsigned m_normalFlowListDirty: 1;
     unsigned m_isNormalFlowOnly : 1;
@@ -1205,9 +1186,6 @@ protected:
 
     // The layer's width/height
     IntSize m_layerSize;
-
-    // The width/height of our scrolled area.
-    LayoutRect m_overflowRect;
 
     // For layers with overflow, we have a pair of scrollbars.
     RefPtr<Scrollbar> m_hBar;
