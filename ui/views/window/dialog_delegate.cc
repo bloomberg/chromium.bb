@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
@@ -30,8 +29,8 @@ DialogDelegate::~DialogDelegate() {
 
 // static
 bool DialogDelegate::UseNewStyle() {
-  return switches::IsNewDialogStyleEnabled() &&
-         Textfield::IsViewsTextfieldEnabled();
+  // The new dialog style cannot host native Windows textfield controls.
+  return Textfield::IsViewsTextfieldEnabled();
 }
 
 // static

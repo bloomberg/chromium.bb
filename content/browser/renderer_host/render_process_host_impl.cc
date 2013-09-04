@@ -863,7 +863,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableHistogramCustomizer,
     switches::kDisableLocalStorage,
     switches::kDisableLogging,
-    switches::kDisableNewDialogStyle,
     switches::kDisableSeccompFilterSandbox,
     switches::kDisableSessionStorage,
     switches::kDisableSharedWorkers,
@@ -918,7 +917,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableOverscrollNotifications,
     switches::kEnableStrictSiteIsolation,
     switches::kDisableFullScreen,
-    switches::kEnableNewDialogStyle,
 #if defined(ENABLE_PLUGINS)
     switches::kEnablePepperTesting,
     switches::kDisablePepper3d,

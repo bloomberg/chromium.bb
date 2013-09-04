@@ -16,7 +16,6 @@
 #include "ui/base/range/range.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/native_theme/native_theme.h"
@@ -61,9 +60,6 @@ bool Textfield::IsViewsTextfieldEnabled() {
   if (command_line->HasSwitch(switches::kDisableViewsTextfield))
     return false;
   if (command_line->HasSwitch(switches::kEnableViewsTextfield))
-    return true;
-  // The new dialog style cannot host native Windows textfield controls.
-  if (switches::IsNewDialogStyleEnabled())
     return true;
   // Avoid native Windows Textfields if the RichEdit library is not available.
   static const HMODULE loaded_msftedit_dll = LoadLibrary(L"msftedit.dll");

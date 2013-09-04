@@ -13,8 +13,6 @@ namespace switches {
 UI_EXPORT bool IsTouchDragDropEnabled();
 UI_EXPORT bool IsTouchEditingEnabled();
 
-UI_EXPORT bool IsNewDialogStyleEnabled();
-
 }  // namespace switches
 
 #endif  // UI_BASE_UI_BASE_SWITCHES_UTIL_H_

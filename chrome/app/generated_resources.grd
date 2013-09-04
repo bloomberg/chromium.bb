@@ -6265,12 +6265,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_PINCH_VIRTUAL_VIEWPORT_DESCRIPTION" desc="Description of the flag to turn on experimental pinch virtual viewport.">
         When zoomed in, fixed-position elements and scaled scrollbars attach to this viewport.
       </message>
-      <message name="IDS_FLAGS_NEW_DIALOG_STYLE_NAME" desc="Name of the flag to use the classic or new dialog style.">
-        New Dialog Style.
-      </message>
-      <message name="IDS_FLAGS_NEW_DIALOG_STYLE_DESCRIPTION" desc="Description of the flag to use the new dialog style.">
-        A new visual style for application dialogs and controls; does not affect web content.
-      </message>
       <message name="IDS_FLAGS_VIEWS_TEXTFIELD_NAME" desc="Name of the flag to use NativeTextfieldViews or NativeTextfieldWin.">
         Views Textfield.
       </message>
