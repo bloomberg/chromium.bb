@@ -47,6 +47,9 @@ const char kFileBrowserHandlerTaskType[] = "file";
 const char kFileHandlerTaskType[] = "app";
 const char kDriveAppTaskType[] = "drive";
 
+// Drive apps always use the action ID.
+const char kDriveAppActionID[] = "open-with";
+
 // Default icon path for drive docs.
 const char kDefaultIcon[] = "images/filetype_generic.png";
 
@@ -204,7 +207,7 @@ std::string MakeTaskID(const std::string& app_id,
 }
 
 std::string MakeDriveAppTaskId(const std::string& app_id) {
-  return MakeTaskID(app_id, TASK_TYPE_DRIVE_APP, "open-with");
+  return MakeTaskID(app_id, TASK_TYPE_DRIVE_APP, kDriveAppActionID);
 }
 
 std::string TaskDescriptorToId(const TaskDescriptor& task_descriptor) {
@@ -264,7 +267,7 @@ bool ExecuteFileTask(Profile* profile,
 
   // drive::FileTaskExecutor is responsible to handle drive tasks.
   if (task.task_type == TASK_TYPE_DRIVE_APP) {
-    DCHECK_EQ("open-with", task.action_id);
+    DCHECK_EQ(kDriveAppActionID, task.action_id);
     drive::FileTaskExecutor* executor =
         new drive::FileTaskExecutor(profile, task.app_id);
     executor->Execute(file_urls, done);
@@ -302,23 +305,16 @@ bool ExecuteFileTask(Profile* profile,
   return false;
 }
 
-struct TaskInfo {
-  TaskInfo(const std::string& app_name, const GURL& icon_url)
-      : app_name(app_name), icon_url(icon_url) {
-  }
-
-  std::string app_name;
-  GURL icon_url;
-};
-
-void GetAvailableDriveTasks(
+void FindDriveAppTasks(
     const drive::DriveAppRegistry& drive_app_registry,
     const PathAndMimeTypeSet& path_mime_set,
-    TaskInfoMap* task_info_map) {
-  DCHECK(task_info_map);
-  DCHECK(task_info_map->empty());
+    std::vector<FullTaskDescriptor>* result_list) {
+  DCHECK(result_list);
 
   bool is_first = true;
+  typedef std::map<std::string, drive::DriveAppInfo> DriveAppInfoMap;
+  DriveAppInfoMap drive_app_map;
+
   for (PathAndMimeTypeSet::const_iterator it = path_mime_set.begin();
        it != path_mime_set.end(); ++it) {
     const base::FilePath& file_path = it->first;
@@ -333,25 +329,18 @@ void GetAvailableDriveTasks(
       // For the first file, we store all the info.
       for (size_t j = 0; j < app_info_list.size(); ++j) {
         const drive::DriveAppInfo& app_info = *app_info_list[j];
-        GURL icon_url = drive::util::FindPreferredIcon(
-            app_info.app_icons,
-            drive::util::kPreferredIconSize);
-        task_info_map->insert(std::pair<std::string, TaskInfo>(
-            file_tasks::MakeDriveAppTaskId(app_info.app_id),
-            TaskInfo(app_info.app_name, icon_url)));
+        drive_app_map[app_info.app_id] = app_info;
       }
     } else {
-      // For remaining files, take the intersection with the current result,
-      // based on the task id.
-      std::set<std::string> task_id_set;
-      for (size_t j = 0; j < app_info_list.size(); ++j) {
-        task_id_set.insert(
-            file_tasks::MakeDriveAppTaskId(app_info_list[j]->app_id));
-      }
-      for (TaskInfoMap::iterator iter = task_info_map->begin();
-           iter != task_info_map->end(); ) {
-        if (task_id_set.find(iter->first) == task_id_set.end()) {
-          task_info_map->erase(iter++);
+      // For remaining files, take the intersection with the current
+      // result, based on the app id.
+      std::set<std::string> app_id_set;
+      for (size_t j = 0; j < app_info_list.size(); ++j)
+        app_id_set.insert(app_info_list[j]->app_id);
+      for (DriveAppInfoMap::iterator iter = drive_app_map.begin();
+           iter != drive_app_map.end();) {
+        if (app_id_set.count(iter->first) == 0) {
+          drive_app_map.erase(iter++);
         } else {
           ++iter;
         }
@@ -360,46 +349,22 @@ void GetAvailableDriveTasks(
 
     is_first = false;
   }
-}
 
-void CreateDriveTasks(
-    const TaskInfoMap& task_info_map,
-    std::vector<FullTaskDescriptor>* result_list) {
-  DCHECK(result_list);
-
-  for (TaskInfoMap::const_iterator iter = task_info_map.begin();
-       iter != task_info_map.end(); ++iter) {
-    TaskDescriptor descriptor;
-    DCHECK(ParseTaskID(iter->first, &descriptor));
+  for (DriveAppInfoMap::const_iterator iter = drive_app_map.begin();
+       iter != drive_app_map.end(); ++iter) {
+    const drive::DriveAppInfo& app_info = iter->second;
+    TaskDescriptor descriptor(app_info.app_id,
+                              TASK_TYPE_DRIVE_APP,
+                              kDriveAppActionID);
+    GURL icon_url = drive::util::FindPreferredIcon(
+        app_info.app_icons,
+        drive::util::kPreferredIconSize);
     result_list->push_back(
         FullTaskDescriptor(descriptor,
-                           iter->second.app_name,
-                           iter->second.icon_url,
+                           app_info.app_name,
+                           icon_url,
                            false /* is_default */));
   }
-}
-
-void FindDriveAppTasks(
-    Profile* profile,
-    const PathAndMimeTypeSet& path_mime_set,
-    std::vector<FullTaskDescriptor>* result_list) {
-  DCHECK(!path_mime_set.empty());
-  DCHECK(result_list);
-
-  drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::GetForProfile(profile);
-  // |integration_service| is NULL if Drive is disabled.
-  if (!integration_service || !integration_service->drive_app_registry())
-    return;
-
-  // Map of task_id to TaskInfo of available tasks.
-  TaskInfoMap task_info_map;
-  GetAvailableDriveTasks(*integration_service->drive_app_registry(),
-                         path_mime_set,
-                         &task_info_map);
-  // TODO(satorux): Remove this function. GetAvailableDriveTasks() should
-  // just produce the result list directly.
-  CreateDriveTasks(task_info_map, result_list);
 }
 
 void FindFileHandlerTasks(
@@ -519,7 +484,13 @@ void FindAllTypesOfTasks(
 
   // Google document are not opened by drive apps but file manager.
   if (!has_google_document) {
-    FindDriveAppTasks(profile,
+    drive::DriveIntegrationService* integration_service =
+        drive::DriveIntegrationServiceFactory::GetForProfile(profile);
+    // |integration_service| is NULL if Drive is disabled.
+    if (!integration_service || !integration_service->drive_app_registry())
+      return;
+
+    FindDriveAppTasks(*integration_service->drive_app_registry(),
                       path_mime_set,
                       result_list);
   }

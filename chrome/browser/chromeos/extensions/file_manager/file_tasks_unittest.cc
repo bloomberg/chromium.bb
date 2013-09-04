@@ -4,11 +4,17 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/drive/drive_app_registry.h"
 #include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace file_manager {
@@ -176,6 +182,76 @@ TEST(FileManagerFileTasksTest, ParseTaskID_Invalid) {
 TEST(FileManagerFileTasksTest, ParseTaskID_UnknownTaskType) {
   TaskDescriptor task;
   EXPECT_FALSE(ParseTaskID("app-id|unknown|action-id", &task));
+}
+
+TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
+  // For DriveAppRegistry, which checks CurrentlyOn(BrowserThread::UI).
+  content::TestBrowserThreadBundle thread_bundle;
+
+  // Foo.app can handle "text/plain" and "text/html"
+  scoped_ptr<google_apis::AppResource> foo_app(new google_apis::AppResource);
+  foo_app->set_product_url(
+      GURL("https://chrome.google.com/webstore/detail/foo_app_id"));
+  foo_app->set_application_id("foo_app_id");
+  foo_app->set_name("Foo");
+  foo_app->set_object_type("foo_object_type");
+  ScopedVector<std::string> foo_mime_types;
+  foo_mime_types.push_back(new std::string("text/plain"));
+  foo_mime_types.push_back(new std::string("text/html"));
+  foo_app->set_primary_mimetypes(&foo_mime_types);
+
+  // Bar.app can only handle "text/plain".
+  scoped_ptr<google_apis::AppResource> bar_app(new google_apis::AppResource);
+  bar_app->set_product_url(
+      GURL("https://chrome.google.com/webstore/detail/bar_app_id"));
+  bar_app->set_application_id("bar_app_id");
+  bar_app->set_name("Bar");
+  bar_app->set_object_type("bar_object_type");
+  ScopedVector<std::string> bar_mime_types;
+  bar_mime_types.push_back(new std::string("text/plain"));
+  bar_app->set_primary_mimetypes(&bar_mime_types);
+
+  // Prepare DriveAppRegistry from Foo.app and Bar.app.
+  ScopedVector<google_apis::AppResource> app_resources;
+  app_resources.push_back(foo_app.release());
+  app_resources.push_back(bar_app.release());
+  google_apis::AppList app_list;
+  app_list.set_items(&app_resources);
+  drive::DriveAppRegistry drive_app_registry(NULL);
+  drive_app_registry.UpdateFromAppList(app_list);
+
+  // Find apps for a "text/plain" file. Foo.app and Bar.app should be found.
+  PathAndMimeTypeSet path_mime_set;
+  path_mime_set.insert(
+      std::make_pair(base::FilePath::FromUTF8Unsafe("foo.txt"), "text/plain"));
+  std::vector<FullTaskDescriptor> tasks;
+  FindDriveAppTasks(drive_app_registry,
+                    path_mime_set,
+                    &tasks);
+  ASSERT_EQ(2U, tasks.size());
+  // Sort the app IDs, as the order is not guaranteed.
+  std::vector<std::string> app_ids;
+  app_ids.push_back(tasks[0].task_descriptor().app_id);
+  app_ids.push_back(tasks[1].task_descriptor().app_id);
+  std::sort(app_ids.begin(), app_ids.end());
+  // Confirm that both Foo.app and Bar.app are found.
+  EXPECT_EQ("bar_app_id", app_ids[0]);
+  EXPECT_EQ("foo_app_id", app_ids[1]);
+
+  // Find apps for "text/plain" and "text/html" files. Only Foo.app should be
+  // found.
+  path_mime_set.clear();
+  path_mime_set.insert(
+      std::make_pair(base::FilePath::FromUTF8Unsafe("foo.txt"), "text/plain"));
+  path_mime_set.insert(
+      std::make_pair(base::FilePath::FromUTF8Unsafe("foo.html"), "text/html"));
+  tasks.clear();
+  FindDriveAppTasks(drive_app_registry,
+                    path_mime_set,
+                    &tasks);
+  ASSERT_EQ(1U, tasks.size());
+  // Confirm that both Foo.app is found.
+  EXPECT_EQ("foo_app_id", tasks[0].task_descriptor().app_id);
 }
 
 // Test that the right task is chosen from multiple choices per mime types

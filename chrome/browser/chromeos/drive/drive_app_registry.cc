@@ -50,6 +50,9 @@ bool SortBySize(const google_apis::InstalledApp::IconList::value_type& a,
 
 // DriveAppInfo struct implementation.
 
+DriveAppInfo::DriveAppInfo() {
+}
+
 DriveAppInfo::DriveAppInfo(
     const std::string& app_id,
     const google_apis::InstalledApp::IconList& app_icons,

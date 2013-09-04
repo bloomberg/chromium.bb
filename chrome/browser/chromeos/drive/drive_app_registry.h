@@ -32,6 +32,7 @@ class JobScheduler;
 // https://chrome.google.com/webstore/category/collection/drive_apps for
 // Drive apps available on the webstore.
 struct DriveAppInfo {
+  DriveAppInfo();
   DriveAppInfo(const std::string& app_id,
                const google_apis::InstalledApp::IconList& app_icons,
                const google_apis::InstalledApp::IconList& document_icons,

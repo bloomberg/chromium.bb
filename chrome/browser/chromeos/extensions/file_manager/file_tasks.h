@@ -270,32 +270,9 @@ bool ExecuteFileTask(Profile* profile,
 typedef extensions::app_file_handler_util::PathAndMimeTypeSet
     PathAndMimeTypeSet;
 
-// Holds fields to build a task result.
-struct TaskInfo;
-
-// Map from a task id to TaskInfo.
-typedef std::map<std::string, TaskInfo> TaskInfoMap;
-
-// Looks up available apps for each file in |path_mime_set| in the
-// |registry|, and returns the intersection of all available apps as a
-// map from task id to TaskInfo.
-void GetAvailableDriveTasks(const drive::DriveAppRegistry& registry,
-                            const PathAndMimeTypeSet& path_mime_set,
-                            TaskInfoMap* task_info_map);
-
-// Creates a list of each task in |task_info_map| and stores the result into
-// |result_list|. If a default task is set in the result list,
-// |default_already_set| is set to true.
-void CreateDriveTasks(const TaskInfoMap& task_info_map,
-                      std::vector<FullTaskDescriptor>* result_list);
-
-// Finds the drive app tasks that can be used with the given files, and
-// append them to the |result_list|.
-//
-// "taskId" field in |result_list| will look like
-// "<drive-app-id>|drive|open-with" (See also file_tasks.h).
-// "driveApp" field in |result_list| will be set to "true".
-void FindDriveAppTasks(Profile* profile,
+// Finds the drive app tasks that can be used with the given |path_mime_set|
+// from |drive_app_registry|, and append them to the |result_list|.
+void FindDriveAppTasks(const drive::DriveAppRegistry& drive_app_registry,
                        const PathAndMimeTypeSet& path_mime_set,
                        std::vector<FullTaskDescriptor>* result_list);
 
