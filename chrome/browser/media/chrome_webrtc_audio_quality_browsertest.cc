@@ -72,15 +72,13 @@ base::FilePath GetTestDataDir() {
 // 4. In pavucontrol, go to the recording tab.
 // 5. For the ALSA plug-in [aplay]: ALSA Capture from, change from <x> to
 //    <Monitor of x>, where x is whatever your primary sound device is called.
-//    This test expects the device id to be render.monitor - if it's something
-//    else, the microphone level will not get forced to 100% appropriately.
-//    See ForceMicrophoneVolumeTo100% for more details. You can list the
-//    available monitor devices on your system by running the command
-//    pacmd list-sources | grep name | grep monitor.
 // 6. Try launching chrome as the target user on the target machine, try
 //    playing, say, a YouTube video, and record with # arecord -f dat tmp.dat.
 //    Verify the recording with aplay (should have recorded what you played
 //    from chrome).
+//
+// Note: the volume for ALL your input devices will be forced to 100% by
+//       running this test on Linux.
 //
 // On Windows 7:
 // 1. Control panel > Sound > Manage audio devices.
@@ -266,30 +264,35 @@ class AudioRecorder {
   base::ProcessHandle recording_application_;
 };
 
-void ForceMicrophoneVolumeTo100Percent() {
+bool ForceMicrophoneVolumeTo100Percent() {
 #if defined(OS_WIN)
   CommandLine command_line(GetTestDataDir().Append(kToolsPath).Append(
       FILE_PATH_LITERAL("force_mic_volume_max.exe")));
-#else
-  const std::string kRecordingDeviceId = "render.monitor";
-  const std::string kHundredPercentVolume = "65536";
-
-  CommandLine command_line(base::FilePath(FILE_PATH_LITERAL("pacmd")));
-  command_line.AppendArg("set-source-volume");
-  command_line.AppendArg(kRecordingDeviceId);
-  command_line.AppendArg(kHundredPercentVolume);
-#endif
-
   LOG(INFO) << "Running " << command_line.GetCommandLineString();
   std::string result;
   if (!base::GetAppOutput(command_line, &result)) {
-    // It's hard to figure out for instance the default PA recording device name
-    // for different systems, so just warn here. Users will most often have a
-    // reasonable mic level on their systems.
-    LOG(WARNING) << "Failed to set mic volume to 100% on your system. " <<
-        "The test may fail or have results distorted; please ensure that " <<
-        "your mic level is 100% manually.";
+    LOG(ERROR) << "Failed to set source volume: output was " << result;
+    return false;
   }
+#else
+  // Just force the volume of, say the first 5 devices. A machine will rarely
+  // have more input sources than that. This is way easier than finding the
+  // input device we happen to be using.
+  for (int device_index = 0; device_index < 5; ++device_index) {
+    std::string result;
+    const std::string kHundredPercentVolume = "65536";
+    CommandLine command_line(base::FilePath(FILE_PATH_LITERAL("pacmd")));
+    command_line.AppendArg("set-source-volume");
+    command_line.AppendArg(base::StringPrintf("%d", device_index));
+    command_line.AppendArg(kHundredPercentVolume);
+    LOG(INFO) << "Running " << command_line.GetCommandLineString();
+    if (!base::GetAppOutput(command_line, &result)) {
+      LOG(ERROR) << "Failed to set source volume: output was " << result;
+      return false;
+    }
+  }
+#endif
+  return true;
 }
 
 // Removes silence from beginning and end of the |input_audio_file| and writes
@@ -414,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioQualityBrowserTest,
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     // It would take work to implement this on XP; not prioritized right now.
-    LOG(INFO) << "This test is not implemented for Windows XP.";
+    LOG(ERROR) << "This test is not implemented for Windows XP.";
     return;
   }
 #endif
@@ -424,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioQualityBrowserTest,
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(peerconnection_server_.Start());
 
-  ForceMicrophoneVolumeTo100Percent();
+  ASSERT_TRUE(ForceMicrophoneVolumeTo100Percent());
 
   ui_test_utils::NavigateToURL(
       browser(), test_server()->GetURL(kMainWebrtcTestHtmlPage));
