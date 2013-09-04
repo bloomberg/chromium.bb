@@ -3,18 +3,18 @@
 # found in the LICENSE file.
 
 import _winreg
-import path_resolver
 
 
-def VerifyRegistryEntries(entries):
+def VerifyRegistryEntries(entries, path_resolver):
   """Verifies that the current registry matches the specified criteria.
 
   Args:
     entries: A dictionary whose keys are registry keys and values are
         expectation dictionaries.
+    path_resolver: A PathResolver object.
   """
   for key, expectation in entries.iteritems():
-    VerifyRegistryEntry(key, expectation)
+    VerifyRegistryEntry(key, expectation, path_resolver)
 
 
 def RootKeyConstant(root_key):
@@ -48,7 +48,7 @@ def ValueTypeConstant(value_type):
   return value_type_mapping[value_type]
 
 
-def VerifyRegistryEntry(key, expectation):
+def VerifyRegistryEntry(key, expectation, path_resolver):
   """Verifies a registry key according to the |expectation|.
 
   The |expectation| specifies whether or not the registry key should exist
@@ -64,6 +64,7 @@ def VerifyRegistryEntry(key, expectation):
                 'type' a string indicating the type of the registry value.
                 'data' the associated data of the registry value. If it is a
                     string, it is expanded using ResolvePath.
+    path_resolver: A PathResolver object.
   """
   resolved_key = path_resolver.ResolvePath(key)
   root_key, sub_key = resolved_key.split('\\', 1)

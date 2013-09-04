@@ -40,11 +40,13 @@ def CloseWindows(process_path):
 
 
 def main():
-  parser = optparse.OptionParser(description='Quit Chrome.')
-  parser.add_option('--system-level', action='store_true', dest='system_level',
-                    default=False, help='Quit Chrome at system level.')
-  options, _ = parser.parse_args()
-  chrome_path = chrome_helper.GetChromePath(options.system_level)
+  usage = 'usage: %prog chrome_path'
+  parser = optparse.OptionParser(usage, description='Quit Chrome.')
+  _, args = parser.parse_args()
+  if len(args) != 1:
+    parser.error('Incorrect number of arguments.')
+  chrome_path = args[0]
+
   if not CloseWindows(chrome_path):
     raise Exception('Could not quit Chrome.')
   return 0

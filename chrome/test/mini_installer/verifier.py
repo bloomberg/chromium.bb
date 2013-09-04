@@ -7,7 +7,7 @@ import process_verifier
 import registry_verifier
 
 
-def Verify(property):
+def Verify(property, path_resolver):
   """Verifies that the current machine states match the property dictionary.
 
   A property dictionary is a dictionary where each key is a verifier's name and
@@ -16,14 +16,15 @@ def Verify(property):
 
   Args:
     property: A property dictionary.
+    path_resolver: A PathResolver object.
   """
   for verifier_name, value in property.iteritems():
     if verifier_name == 'Files':
-      file_verifier.VerifyFiles(value)
+      file_verifier.VerifyFiles(value, path_resolver)
     elif verifier_name == 'Processes':
-      process_verifier.VerifyProcesses(value)
+      process_verifier.VerifyProcesses(value, path_resolver)
     elif verifier_name == 'RegistryEntries':
-      registry_verifier.VerifyRegistryEntries(value)
+      registry_verifier.VerifyRegistryEntries(value, path_resolver)
     else:
       # TODO(sukolsak): Implement other verifiers
       raise KeyError('Unknown verifier %s' % verifier_name)

@@ -3,10 +3,9 @@
 # found in the LICENSE file.
 
 import chrome_helper
-import path_resolver
 
 
-def VerifyProcesses(processes):
+def VerifyProcesses(processes, path_resolver):
   """Verifies that the running processes match the expectation dictionaries.
 
   This method will throw an AssertionError if process state doesn't match the
@@ -18,6 +17,7 @@ def VerifyProcesses(processes):
         the following key and value:
             'running' a boolean indicating whether the process should be
                 running.
+    path_resolver: A PathResolver object.
   """
   # Create a list of paths of all running processes.
   running_process_paths = [path for (_, path) in

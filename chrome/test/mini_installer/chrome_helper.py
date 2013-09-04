@@ -11,8 +11,6 @@ import win32con
 import win32gui
 import win32process
 
-import path_resolver
-
 
 def GetProcessIDAndPathPairs():
   """Returns a list of 2-tuples of (process id, process path).
@@ -87,13 +85,3 @@ def WindowExists(process_ids, class_pattern):
     if re.match(class_pattern, win32gui.GetClassName(hwnd)):
       return True
   return False
-
-
-def GetChromePath(system_level):
-  """Returns the path to Chrome, at the |system_level| or user level."""
-  chrome_path = None
-  if system_level:
-    chrome_path = '$PROGRAM_FILES\\$CHROME_DIR\\Application\\chrome.exe'
-  else:
-    chrome_path = '$LOCAL_APPDATA\\$CHROME_DIR\\Application\\chrome.exe'
-  return path_resolver.ResolvePath(chrome_path)

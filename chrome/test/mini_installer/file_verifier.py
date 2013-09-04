@@ -4,10 +4,8 @@
 
 import os
 
-import path_resolver
 
-
-def VerifyFiles(files):
+def VerifyFiles(files, path_resolver):
   """Verifies that the current files match the expectation dictionaries.
 
   This method will throw an AssertionError if file state doesn't match the
@@ -18,6 +16,7 @@ def VerifyFiles(files):
         dictionaries. An expectation dictionary is a dictionary with the
         following key and value:
             'exists' a boolean indicating whether the file should exist.
+    path_resolver: A PathResolver object.
   """
   for file_path, expectation in files.iteritems():
     file_exists = os.path.exists(path_resolver.ResolvePath(file_path))

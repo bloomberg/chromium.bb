@@ -16,7 +16,7 @@ import subprocess
 import sys
 import unittest
 
-import path_resolver
+from path_resolver import PathResolver
 import verifier
 
 
@@ -39,17 +39,19 @@ class Config:
 class InstallerTest(unittest.TestCase):
   """Tests a test case in the config file."""
 
-  def __init__(self, test, config):
+  def __init__(self, test, config, path_resolver):
     """Constructor.
 
     Args:
       test: An array of alternating state names and action names, starting and
           ending with state names.
       config: The Config object.
+      path_resolver: A PathResolver object.
     """
     super(InstallerTest, self).__init__()
     self._test = test
     self._config = config
+    self._path_resolver = path_resolver
 
   def __str__(self):
     """Returns a string representing the test case.
@@ -97,14 +99,14 @@ class InstallerTest(unittest.TestCase):
       state: A state name.
     """
     try:
-      verifier.Verify(self._config.states[state])
+      verifier.Verify(self._config.states[state], self._path_resolver)
     except AssertionError as e:
       # If an AssertionError occurs, we intercept it and add the state name
       # to the error message so that we know where the test fails.
       raise AssertionError("In state '%s', %s" % (state, e))
 
   def _RunCommand(self, command):
-    exit_status = subprocess.call(path_resolver.ResolvePath(command),
+    exit_status = subprocess.call(self._path_resolver.ResolvePath(command),
                                   shell=True)
     if exit_status != 0:
       self.fail('Command %s returned non-zero exit status %s' % (command,
@@ -177,31 +179,43 @@ def ParseConfigFile(filename):
   return config
 
 
-def RunTests(config):
+def RunTests(mini_installer_path, config):
   """Tests the installer using the given Config object.
 
   Args:
+    mini_installer_path: The path to mini_installer.exe.
     config: A Config object.
 
   Returns:
     True if all the tests passed, or False otherwise.
   """
   suite = unittest.TestSuite()
+  path_resolver = PathResolver(mini_installer_path)
   for test in config.tests:
-    suite.addTest(InstallerTest(test, config))
+    suite.addTest(InstallerTest(test, config, path_resolver))
   result = unittest.TextTestRunner(verbosity=2).run(suite)
   return result.wasSuccessful()
 
 
 def main():
-  usage = 'usage: %prog config_filename'
+  usage = 'usage: %prog [options] config_filename'
   parser = optparse.OptionParser(usage, description='Test the installer.')
-  _, args = parser.parse_args()
+  parser.add_option('--build-dir', default='out',
+                    help='Path to main build directory (the parent of the '
+                         'Release or Debug directory)')
+  parser.add_option('--target', default='Release',
+                    help='Build target (Release or Debug)')
+  options, args = parser.parse_args()
   if len(args) != 1:
     parser.error('Incorrect number of arguments.')
+  config_filename = args[0]
 
-  config = ParseConfigFile(args[0])
-  if not RunTests(config):
+  mini_installer_path = os.path.join(options.build_dir, options.target,
+                                     'mini_installer.exe')
+  assert os.path.exists(mini_installer_path), ('Could not find file %s' %
+                                               mini_installer_path)
+  config = ParseConfigFile(config_filename)
+  if not RunTests(mini_installer_path, config):
     return 1
   return 0
 
