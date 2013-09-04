@@ -55,8 +55,6 @@ class UserPolicySigninServiceFactory
   UserPolicySigninServiceFactory();
   virtual ~UserPolicySigninServiceFactory();
 
-  DeviceManagementService* device_management_service_;
-
   DISALLOW_COPY_AND_ASSIGN(UserPolicySigninServiceFactory);
 };
 
