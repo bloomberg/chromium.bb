@@ -358,6 +358,8 @@
             'autofill/content/renderer/page_click_tracker.h',
             'autofill/content/renderer/password_autofill_agent.cc',
             'autofill/content/renderer/password_autofill_agent.h',
+            'autofill/content/renderer/password_form_conversion_utils.cc',
+            'autofill/content/renderer/password_form_conversion_utils.h',
             'autofill/content/renderer/password_generation_manager.cc',
             'autofill/content/renderer/password_generation_manager.h',
           ],

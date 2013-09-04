@@ -1,16 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/renderer/password_form_conversion_utils.h"
+#include "components/autofill/content/renderer/password_form_conversion_utils.h"
 
 #include "content/public/common/password_form.h"
 #include "third_party/WebKit/public/web/WebPasswordFormData.h"
 
+using content::PasswordForm;
 using WebKit::WebFormElement;
 using WebKit::WebPasswordFormData;
 
-namespace content {
+namespace autofill {
 namespace {
 
 scoped_ptr<PasswordForm> InitPasswordFormFromWebPasswordForm(
@@ -50,4 +51,4 @@ scoped_ptr<PasswordForm> CreatePasswordForm(const WebFormElement& webform) {
   return scoped_ptr<PasswordForm>();
 }
 
-}  // namespace content
+}  // namespace autofill

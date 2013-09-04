@@ -856,7 +856,6 @@
             'renderer/cpp_bound_class_unittest.cc',
             'renderer/dom_serializer_browsertest.cc',
             'renderer/mouse_lock_dispatcher_browsertest.cc',
-            'renderer/password_form_conversion_utils_browsertest.cc',
             'renderer/pepper/mock_renderer_ppapi_host.cc',
             'renderer/pepper/pepper_device_enumeration_host_helper_unittest.cc',
             'renderer/pepper/pepper_file_chooser_host_unittest.cc',

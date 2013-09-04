@@ -4,8 +4,8 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "content/public/common/password_form.h"
-#include "content/public/renderer/password_form_conversion_utils.h"
 #include "content/public/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -13,17 +13,18 @@
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebPasswordFormData.h"
 
+using content::PasswordForm;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebPasswordFormData;
 using WebKit::WebVector;
 
-namespace content {
+namespace autofill {
 namespace {
 
-class PasswordFormConversionUtilsTest : public RenderViewTest {
+class PasswordFormConversionUtilsTest : public content::RenderViewTest {
  public:
-  PasswordFormConversionUtilsTest() : RenderViewTest() {}
+  PasswordFormConversionUtilsTest() : content::RenderViewTest() {}
   virtual ~PasswordFormConversionUtilsTest() {}
 
  private:
@@ -88,4 +89,4 @@ TEST_F(PasswordFormConversionUtilsTest, InvalidWebFormElementToPasswordForm) {
   EXPECT_EQ(static_cast<PasswordForm*>(NULL), password_form.get());
 }
 
-}  // namespace content
+}  // namespace autofill

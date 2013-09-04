@@ -5,9 +5,9 @@
 #include "components/autofill/content/renderer/password_generation_manager.h"
 
 #include "base/logging.h"
+#include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "content/public/renderer/password_form_conversion_utils.h"
 #include "content/public/renderer/render_view.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
@@ -109,7 +109,7 @@ void PasswordGenerationManager::DidFinishLoad(WebKit::WebFrame* frame) {
     // If we can't get a valid PasswordForm, we skip this form because the
     // the password won't get saved even if we generate it.
     scoped_ptr<content::PasswordForm> password_form(
-        content::CreatePasswordForm(forms[i]));
+        CreatePasswordForm(forms[i]));
     if (!password_form.get()) {
       DVLOG(2) << "Skipping form as it would not be saved";
       continue;
@@ -155,7 +155,7 @@ void PasswordGenerationManager::openPasswordGenerator(
   WebKit::WebElement button(element.passwordGeneratorButtonElement());
   gfx::Rect rect(button.boundsInViewportSpace());
   scoped_ptr<content::PasswordForm> password_form(
-      content::CreatePasswordForm(element.form()));
+      CreatePasswordForm(element.form()));
   // We should not have shown the icon we can't create a valid PasswordForm.
   DCHECK(password_form.get());
 
