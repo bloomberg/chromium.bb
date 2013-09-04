@@ -127,7 +127,8 @@ void MediaInfoLoader::didReceiveData(
 
 void MediaInfoLoader::didDownloadData(
     WebKit::WebURLLoader* loader,
-    int dataLength) {
+    int dataLength,
+    int encodedDataLength) {
   NOTIMPLEMENTED();
 }
 

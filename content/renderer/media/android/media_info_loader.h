@@ -83,7 +83,8 @@ class CONTENT_EXPORT MediaInfoLoader : private WebKit::WebURLLoaderClient {
       const WebKit::WebURLResponse& response);
   virtual void didDownloadData(
       WebKit::WebURLLoader* loader,
-      int data_length);
+      int data_length,
+      int encodedDataLength);
   virtual void didReceiveData(
       WebKit::WebURLLoader* loader,
       const char* data,
