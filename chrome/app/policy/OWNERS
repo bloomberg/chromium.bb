@@ -4,3 +4,14 @@ joaodasilva@chromium.org
 bartfab@chromium.org
 atwilson@chromium.org
 pneubeck@chromium.org
+
+# Updating policy_templates.json can have drastic effects for systems depending
+# on policy definitions (for example, Google's cloud management tools for
+# Chrome and Chrome OS). Thus, special attention to forward/backward
+# compatibility issues is required and review is restricted to the list of
+# people below.
+# The rules are documented at:
+# https://sites.google.com/a/chromium.org/dev/developers/how-tos/enterprise/adding-new-policies
+per-file policy_templates.json=set noparent
+per-file policy_templates.json=dconnelly@chromium.org
+per-file policy_templates.json=joaodasilva@chromium.org
