@@ -31,6 +31,8 @@
         var actualWidth;
         var actualHeight;
 
+        document.body.offsetHeight;
+
         var vpString = internals.viewportAsText(document, 1, 320, 352);
         var match = /viewport size (.+)x(.+) scale (.+ )/.exec(vpString);
 
@@ -42,7 +44,6 @@
         test(function(){
             assert_equals(actualWidth, 450);
         }, "Check that we get the viewport width from the user stylesheet.");
-        document.body.offsetHeight;
 
         test(function(){
             assert_equals(actualHeight, 2000);
