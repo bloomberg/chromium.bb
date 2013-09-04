@@ -436,8 +436,12 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_PrintPreviewInvalidPrinterSettings,
 
 // Run a nested message loop in the renderer until print preview for
 // window.print() finishes.
-IPC_SYNC_MESSAGE_ROUTED1_0(PrintHostMsg_ScriptedPrintPreview,
-                           bool /* is_modifiable */)
+IPC_SYNC_MESSAGE_ROUTED0_0(PrintHostMsg_SetupScriptedPrintPreview)
+
+// Tell the browser to show the print preview, when the document is sufficiently
+// loaded such that the renderer can determine whether it is modifiable or not.
+IPC_MESSAGE_ROUTED1(PrintHostMsg_ShowScriptedPrintPreview,
+                    bool /* is_modifiable */)
 
 // Notify the browser that the PDF in the initiator renderer has disabled print
 // scaling option.

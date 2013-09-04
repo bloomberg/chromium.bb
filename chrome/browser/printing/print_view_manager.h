@@ -74,8 +74,8 @@ class PrintViewManager : public PrintViewManagerBase,
 
   // IPC Message handlers.
   void OnDidShowPrintDialog();
-  void OnScriptedPrintPreview(bool source_is_modifiable,
-                              IPC::Message* reply_msg);
+  void OnSetupScriptedPrintPreview(IPC::Message* reply_msg);
+  void OnShowScriptedPrintPreview(bool source_is_modifiable);
   void OnScriptedPrintPreviewReply(IPC::Message* reply_msg);
 
   // Weak pointer to an observer that is notified when the print dialog is

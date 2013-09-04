@@ -97,7 +97,8 @@ bool PrintViewManager::PrintPreviewNow(bool selection_only) {
 }
 
 void PrintViewManager::PrintPreviewForWebNode() {
-  DCHECK_EQ(NOT_PREVIEWING, print_preview_state_);
+  if (print_preview_state_ != NOT_PREVIEWING)
+    return;
   print_preview_state_ = USER_INITIATED_PREVIEW;
 }
 
@@ -133,8 +134,7 @@ void PrintViewManager::OnDidShowPrintDialog() {
     observer_->OnPrintDialogShown();
 }
 
-void PrintViewManager::OnScriptedPrintPreview(bool source_is_modifiable,
-                                              IPC::Message* reply_msg) {
+void PrintViewManager::OnSetupScriptedPrintPreview(IPC::Message* reply_msg) {
   BrowserThread::CurrentlyOn(BrowserThread::UI);
   ScriptedPrintPreviewClosureMap& map =
       g_scripted_print_preview_closure_map.Get();
@@ -168,7 +168,15 @@ void PrintViewManager::OnScriptedPrintPreview(bool source_is_modifiable,
                  reply_msg);
   map[rph] = callback;
   scripted_print_preview_rph_ = rph;
+}
 
+void PrintViewManager::OnShowScriptedPrintPreview(bool source_is_modifiable) {
+  PrintPreviewDialogController* dialog_controller =
+      PrintPreviewDialogController::GetInstance();
+  if (!dialog_controller) {
+    PrintPreviewDone();
+    return;
+  }
   dialog_controller->PrintPreview(web_contents());
   PrintHostMsg_RequestPrintPreview_Params params;
   params.is_modifiable = source_is_modifiable;
@@ -185,8 +193,10 @@ bool PrintViewManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintViewManager, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidShowPrintDialog, OnDidShowPrintDialog)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_ScriptedPrintPreview,
-                                    OnScriptedPrintPreview)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_SetupScriptedPrintPreview,
+                                    OnSetupScriptedPrintPreview)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_ShowScriptedPrintPreview,
+                        OnShowScriptedPrintPreview)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

@@ -304,14 +304,16 @@ void ComputeWebKitPrintParamsInDesiredDpi(
                   print_params.desired_dpi);
 }
 
+WebKit::WebPlugin* GetPlugin(const WebKit::WebFrame* frame) {
+  return frame->document().isPluginDocument() ?
+         frame->document().to<WebKit::WebPluginDocument>().plugin() : NULL;
+}
+
 bool PrintingNodeOrPdfFrame(const WebKit::WebFrame* frame,
                             const WebKit::WebNode& node) {
   if (!node.isNull())
     return true;
-  if (!frame->document().isPluginDocument())
-    return false;
-  WebKit::WebPlugin* plugin =
-      frame->document().to<WebKit::WebPluginDocument>().plugin();
+  WebKit::WebPlugin* plugin = GetPlugin(frame);
   return plugin && plugin->supportsPaginatedPrint();
 }
 
@@ -741,7 +743,10 @@ PrintWebViewHelper::PrintWebViewHelper(content::RenderView* render_view)
       is_scripted_printing_blocked_(false),
       notify_browser_of_print_failure_(true),
       print_for_preview_(false),
-      print_node_in_progress_(false) {
+      print_node_in_progress_(false),
+      is_loading_(false),
+      is_scripted_preview_delayed_(false),
+      weak_ptr_factory_(this) {
 }
 
 PrintWebViewHelper::~PrintWebViewHelper() {}
@@ -759,6 +764,15 @@ bool PrintWebViewHelper::IsScriptInitiatedPrintAllowed(
       !user_initiated)
     return !IsScriptInitiatedPrintTooFrequent(frame);
   return true;
+}
+
+void PrintWebViewHelper::DidStartLoading() {
+  is_loading_ = true;
+}
+
+void PrintWebViewHelper::DidStopLoading() {
+  is_loading_ = false;
+  ShowScriptedPrintPreview();
 }
 
 // Prints |frame| which called window.print().
@@ -1658,6 +1672,15 @@ void PrintWebViewHelper::IncrementScriptedPrintCount() {
   last_cancelled_script_print_ = base::Time::Now();
 }
 
+
+void PrintWebViewHelper::ShowScriptedPrintPreview() {
+  if (is_scripted_preview_delayed_) {
+    is_scripted_preview_delayed_ = false;
+    Send(new PrintHostMsg_ShowScriptedPrintPreview(routing_id(),
+            print_preview_context_.IsModifiable()));
+  }
+}
+
 void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {
   const bool is_modifiable = print_preview_context_.IsModifiable();
   const bool has_selection = print_preview_context_.HasSelection();
@@ -1667,10 +1690,27 @@ void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {
   params.has_selection = has_selection;
   switch (type) {
     case PRINT_PREVIEW_SCRIPTED: {
+      // Shows scripted print preview in two stages.
+      // 1. PrintHostMsg_SetupScriptedPrintPreview blocks this call and JS by
+      //    pumping messages here.
+      // 2. PrintHostMsg_ShowScriptedPrintPreview shows preview once the
+      //    document has been loaded.
+      is_scripted_preview_delayed_ = true;
+      if (is_loading_ && GetPlugin(print_preview_context_.source_frame())) {
+        // Wait for DidStopLoading. Plugins may not know the correct
+        // |is_modifiable| value until they are fully loaded, which occurs when
+        // DidStopLoading() is called. Defer showing the preview until then.
+      } else {
+        base::MessageLoop::current()->PostTask(
+            FROM_HERE,
+            base::Bind(&PrintWebViewHelper::ShowScriptedPrintPreview,
+                       weak_ptr_factory_.GetWeakPtr()));
+      }
       IPC::SyncMessage* msg =
-          new PrintHostMsg_ScriptedPrintPreview(routing_id(), is_modifiable);
+          new PrintHostMsg_SetupScriptedPrintPreview(routing_id());
       msg->EnableMessagePumping();
       Send(msg);
+      is_scripted_preview_delayed_ = false;
       return;
     }
     case PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME: {
