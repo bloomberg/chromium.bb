@@ -266,7 +266,7 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
                                v8::Handle<v8::Context> context,
                                v8::Handle<v8::Value>* result) {
   v8::Context::Scope context_scope(context);
-  v8::HandleScope handle_scope;
+  v8::HandleScope handle_scope(context->GetIsolate());
 
   VarHandleMap visited_ids;
   ParentVarSet parent_ids;
@@ -370,7 +370,7 @@ void V8VarConverter::FromV8Value(
     v8::Handle<v8::Context> context,
     const base::Callback<void(const ScopedPPVar&, bool)>& callback) {
   v8::Context::Scope context_scope(context);
-  v8::HandleScope handle_scope;
+  v8::HandleScope handle_scope(context->GetIsolate());
 
   HandleVarMap visited_handles;
   ParentHandleSet parent_handles;

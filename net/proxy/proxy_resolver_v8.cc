@@ -184,11 +184,12 @@ v8::Local<v8::String> ASCIILiteralToV8String(const char* ascii) {
 // Stringizes a V8 object by calling its toString() method. Returns true
 // on success. This may fail if the toString() throws an exception.
 bool V8ObjectToUTF16String(v8::Handle<v8::Value> object,
-                           base::string16* utf16_result) {
+                           base::string16* utf16_result,
+                           v8::Isolate* isolate) {
   if (object.IsEmpty())
     return false;
 
-  v8::HandleScope scope;
+  v8::HandleScope scope(isolate);
   v8::Local<v8::String> str_object = object->ToString();
   if (str_object.IsEmpty())
     return false;
@@ -507,7 +508,7 @@ class ProxyResolverV8::Context {
 
     if (!message.IsEmpty()) {
       line_number = message->GetLineNumber();
-      V8ObjectToUTF16String(message->Get(), &error_message);
+      V8ObjectToUTF16String(message->Get(), &error_message, isolate_);
     }
 
     js_bindings()->OnError(line_number, error_message);
@@ -547,7 +548,7 @@ class ProxyResolverV8::Context {
     if (args.Length() == 0) {
       message = ASCIIToUTF16("undefined");
     } else {
-      if (!V8ObjectToUTF16String(args[0], &message))
+      if (!V8ObjectToUTF16String(args[0], &message, args.GetIsolate()))
         return;  // toString() threw an exception.
     }
 

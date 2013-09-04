@@ -366,7 +366,7 @@ void MessageChannel::NPVariantToPPVar(const NPVariant* variant) {
 }
 
 void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
-  v8::HandleScope scope;
+  v8::HandleScope scope(v8::Isolate::GetCurrent());
 
   // Because V8 is probably not on the stack for Native->JS calls, we need to
   // enter the appropriate context for the plugin.

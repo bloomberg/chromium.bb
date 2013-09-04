@@ -767,7 +767,7 @@ void BrowserPlugin::TriggerEvent(const std::string& event_name,
   if (!frame)
     return;
 
-  v8::HandleScope handle_scope;
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   v8::Context::Scope context_scope(context);
 
