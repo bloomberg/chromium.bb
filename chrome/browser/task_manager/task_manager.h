@@ -306,6 +306,9 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // changes to the model.
   void ModelChanged();
 
+   // Updates the values for all rows.
+  void Refresh();
+
   void NotifyResourceTypeStats(
         base::ProcessId renderer_id,
         const WebKit::WebCache::ResourceTypeStats& stats);
@@ -449,9 +452,6 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   // Callback from the timer to refresh. Invokes Refresh() as appropriate.
   void RefreshCallback();
-
-   // Updates the values for all rows.
-  void Refresh();
 
   void RefreshVideoMemoryUsageStats();
 

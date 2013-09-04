@@ -1163,6 +1163,60 @@ void TaskManagerModel::ModelChanged() {
   FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_, OnModelChanged());
 }
 
+void TaskManagerModel::Refresh() {
+  goat_salt_ = base::RandUint64();
+
+  per_resource_cache_.clear();
+  per_process_cache_.clear();
+
+  // Compute the CPU usage values.
+  // Note that we compute the CPU usage for all resources (instead of doing it
+  // lazily) as process_util::GetCPUUsage() returns the CPU usage since the last
+  // time it was called, and not calling it everytime would skew the value the
+  // next time it is retrieved (as it would be for more than 1 cycle).
+  for (ResourceList::iterator iter = resources_.begin();
+       iter != resources_.end(); ++iter) {
+    base::ProcessHandle process = (*iter)->GetProcess();
+    PerProcessValues& values(per_process_cache_[process]);
+    if (values.is_cpu_usage_valid)
+      continue;
+
+    values.is_cpu_usage_valid = true;
+    MetricsMap::iterator metrics_iter = metrics_map_.find(process);
+    DCHECK(metrics_iter != metrics_map_.end());
+    values.cpu_usage = metrics_iter->second->GetCPUUsage();
+  }
+
+  // Send a request to refresh GPU memory consumption values
+  RefreshVideoMemoryUsageStats();
+
+  // Compute the new network usage values.
+  base::TimeDelta update_time =
+      base::TimeDelta::FromMilliseconds(kUpdateTimeMs);
+  for (ResourceValueMap::iterator iter = current_byte_count_map_.begin();
+       iter != current_byte_count_map_.end(); ++iter) {
+    PerResourceValues* values = &(per_resource_cache_[iter->first]);
+    if (update_time > base::TimeDelta::FromSeconds(1))
+      values->network_usage = iter->second / update_time.InSeconds();
+    else
+      values->network_usage = iter->second * (1 / update_time.InSeconds());
+
+    // Then we reset the current byte count.
+    iter->second = 0;
+  }
+
+  // Let resources update themselves if they need to.
+  for (ResourceList::iterator iter = resources_.begin();
+       iter != resources_.end(); ++iter) {
+     (*iter)->Refresh();
+  }
+
+  if (!resources_.empty()) {
+    FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
+                      OnItemsChanged(0, ResourceCount()));
+  }
+}
+
 void TaskManagerModel::NotifyResourceTypeStats(
     base::ProcessId renderer_id,
     const WebKit::WebCache::ResourceTypeStats& stats) {
@@ -1274,60 +1328,6 @@ void TaskManagerModel::RefreshCallback() {
       FROM_HERE,
       base::Bind(&TaskManagerModel::RefreshCallback, this),
       base::TimeDelta::FromMilliseconds(kUpdateTimeMs));
-}
-
-void TaskManagerModel::Refresh() {
-  goat_salt_ = base::RandUint64();
-
-  per_resource_cache_.clear();
-  per_process_cache_.clear();
-
-  // Compute the CPU usage values.
-  // Note that we compute the CPU usage for all resources (instead of doing it
-  // lazily) as process_util::GetCPUUsage() returns the CPU usage since the last
-  // time it was called, and not calling it everytime would skew the value the
-  // next time it is retrieved (as it would be for more than 1 cycle).
-  for (ResourceList::iterator iter = resources_.begin();
-       iter != resources_.end(); ++iter) {
-    base::ProcessHandle process = (*iter)->GetProcess();
-    PerProcessValues& values(per_process_cache_[process]);
-    if (values.is_cpu_usage_valid)
-      continue;
-
-    values.is_cpu_usage_valid = true;
-    MetricsMap::iterator metrics_iter = metrics_map_.find(process);
-    DCHECK(metrics_iter != metrics_map_.end());
-    values.cpu_usage = metrics_iter->second->GetCPUUsage();
-  }
-
-  // Send a request to refresh GPU memory consumption values
-  RefreshVideoMemoryUsageStats();
-
-  // Compute the new network usage values.
-  base::TimeDelta update_time =
-      base::TimeDelta::FromMilliseconds(kUpdateTimeMs);
-  for (ResourceValueMap::iterator iter = current_byte_count_map_.begin();
-       iter != current_byte_count_map_.end(); ++iter) {
-    PerResourceValues* values = &(per_resource_cache_[iter->first]);
-    if (update_time > base::TimeDelta::FromSeconds(1))
-      values->network_usage = iter->second / update_time.InSeconds();
-    else
-      values->network_usage = iter->second * (1 / update_time.InSeconds());
-
-    // Then we reset the current byte count.
-    iter->second = 0;
-  }
-
-  // Let resources update themselves if they need to.
-  for (ResourceList::iterator iter = resources_.begin();
-       iter != resources_.end(); ++iter) {
-     (*iter)->Refresh();
-  }
-
-  if (!resources_.empty()) {
-    FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
-                      OnItemsChanged(0, ResourceCount()));
-  }
 }
 
 void TaskManagerModel::RefreshVideoMemoryUsageStats() {
