@@ -83,16 +83,8 @@ public:
     virtual void doUnapply() = 0;
     virtual void doReapply(); // calls doApply()
 
-#ifndef NDEBUG
-    virtual void getNodesInCommand(HashSet<Node*>&) = 0;
-#endif
-
 protected:
     explicit SimpleEditCommand(Document& document) : EditCommand(document) { }
-
-#ifndef NDEBUG
-    void addNodeAndDescendants(Node*, HashSet<Node*>&);
-#endif
 
 private:
     virtual bool isSimpleEditCommand() const OVERRIDE { return true; }

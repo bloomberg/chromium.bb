@@ -87,12 +87,4 @@ void WrapContentsInDummySpanCommand::doReapply()
     executeApply();
 }
 
-#ifndef NDEBUG
-void WrapContentsInDummySpanCommand::getNodesInCommand(HashSet<Node*>& nodes)
-{
-    addNodeAndDescendants(m_element.get(), nodes);
-    addNodeAndDescendants(m_dummySpan.get(), nodes);
-}
-#endif
-
 } // namespace WebCore

@@ -69,11 +69,4 @@ void DeleteFromTextNodeCommand::doUnapply()
     m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION, DeprecatedAttachNow);
 }
 
-#ifndef NDEBUG
-void DeleteFromTextNodeCommand::getNodesInCommand(HashSet<Node*>& nodes)
-{
-    addNodeAndDescendants(m_node.get(), nodes);
-}
-#endif
-
 } // namespace WebCore

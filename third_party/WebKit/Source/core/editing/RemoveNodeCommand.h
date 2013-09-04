@@ -43,10 +43,6 @@ private:
     virtual void doApply() OVERRIDE;
     virtual void doUnapply() OVERRIDE;
 
-#ifndef NDEBUG
-    void getNodesInCommand(HashSet<Node*>&) OVERRIDE;
-#endif
-
     RefPtr<Node> m_node;
     RefPtr<ContainerNode> m_parent;
     RefPtr<Node> m_refChild;

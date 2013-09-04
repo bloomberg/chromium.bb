@@ -144,15 +144,6 @@ void EditCommandComposition::setEndingSelection(const VisibleSelection& selectio
     m_endingRootEditableElement = selection.rootEditableElement();
 }
 
-#ifndef NDEBUG
-void EditCommandComposition::getNodesInCommand(HashSet<Node*>& nodes)
-{
-    size_t size = m_commands.size();
-    for (size_t i = 0; i < size; ++i)
-        m_commands[i]->getNodesInCommand(nodes);
-}
-#endif
-
 void applyCommand(PassRefPtr<CompositeEditCommand> command)
 {
     command->apply();

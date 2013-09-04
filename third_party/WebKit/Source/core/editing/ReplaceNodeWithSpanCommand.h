@@ -53,10 +53,6 @@ private:
     virtual void doApply() OVERRIDE;
     virtual void doUnapply() OVERRIDE;
 
-#ifndef NDEBUG
-    virtual void getNodesInCommand(HashSet<Node*>&) OVERRIDE;
-#endif
-
     RefPtr<HTMLElement> m_elementToReplace;
     RefPtr<HTMLElement> m_spanElement;
 };

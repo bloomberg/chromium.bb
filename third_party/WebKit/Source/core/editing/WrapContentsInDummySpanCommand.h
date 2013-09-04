@@ -47,10 +47,6 @@ private:
     virtual void doReapply() OVERRIDE;
     void executeApply();
 
-#ifndef NDEBUG
-    virtual void getNodesInCommand(HashSet<Node*>&) OVERRIDE;
-#endif
-
     RefPtr<Element> m_element;
     RefPtr<HTMLElement> m_dummySpan;
 };

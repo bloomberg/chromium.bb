@@ -55,10 +55,6 @@ public:
     Element* startingRootEditableElement() const { return m_startingRootEditableElement.get(); }
     Element* endingRootEditableElement() const { return m_endingRootEditableElement.get(); }
 
-#ifndef NDEBUG
-    virtual void getNodesInCommand(HashSet<Node*>&);
-#endif
-
 private:
     EditCommandComposition(Document*, const VisibleSelection& startingSelection, const VisibleSelection& endingSelection, EditAction);
 

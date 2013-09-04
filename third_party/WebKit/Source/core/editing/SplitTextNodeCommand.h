@@ -47,10 +47,6 @@ private:
     virtual void doReapply() OVERRIDE;
     void insertText1AndTrimText2();
 
-#ifndef NDEBUG
-    virtual void getNodesInCommand(HashSet<Node*>&) OVERRIDE;
-#endif
-
     RefPtr<Text> m_text1;
     RefPtr<Text> m_text2;
     unsigned m_offset;

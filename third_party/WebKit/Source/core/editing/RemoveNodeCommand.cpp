@@ -65,13 +65,4 @@ void RemoveNodeCommand::doUnapply()
     parent->insertBefore(m_node.get(), refChild.get(), IGNORE_EXCEPTION);
 }
 
-#ifndef NDEBUG
-void RemoveNodeCommand::getNodesInCommand(HashSet<Node*>& nodes)
-{
-    addNodeAndDescendants(m_parent.get(), nodes);
-    addNodeAndDescendants(m_refChild.get(), nodes);
-    addNodeAndDescendants(m_node.get(), nodes);
-}
-#endif
-
 }

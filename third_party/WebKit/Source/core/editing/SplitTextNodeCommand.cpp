@@ -103,12 +103,4 @@ void SplitTextNodeCommand::insertText1AndTrimText2()
     m_text2->deleteData(0, m_offset, es, DeprecatedAttachNow);
 }
 
-#ifndef NDEBUG
-void SplitTextNodeCommand::getNodesInCommand(HashSet<Node*>& nodes)
-{
-    addNodeAndDescendants(m_text1.get(), nodes);
-    addNodeAndDescendants(m_text2.get(), nodes);
-}
-#endif
-
 } // namespace WebCore
