@@ -12,7 +12,6 @@
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
-#include "sync/syncable/syncable_id.h"
 
 namespace syncer {
 namespace sessions {
@@ -37,22 +36,22 @@ class SYNC_EXPORT_PRIVATE OrderedCommitSet {
     return inserted_metahandles_.count(metahandle) > 0;
   }
 
-  void AddCommitItem(const int64 metahandle, const syncable::Id& commit_id,
-                     ModelType type);
+  void AddCommitItem(const int64 metahandle, ModelType type);
+  void AddCommitItems(const std::vector<int64> metahandles, ModelType type);
 
-  const std::vector<syncable::Id>& GetAllCommitIds() const {
-    return commit_ids_;
+  const std::vector<int64>& GetAllCommitHandles() const {
+    return metahandle_order_;
   }
 
-  // Return the Id at index |position| in this OrderedCommitSet.  Note that
+  // Return the handle at index |position| in this OrderedCommitSet.  Note that
   // the index uniquely identifies the same logical item in each of:
   // 1) this OrderedCommitSet
   // 2) the CommitRequest sent to the server
   // 3) the list of EntryResponse objects in the CommitResponse.
   // These together allow re-association of the pre-commit Id with the
   // actual committed entry.
-  const syncable::Id& GetCommitIdAt(const size_t position) const {
-    return commit_ids_[position];
+  int64 GetCommitHandleAt(const size_t position) const {
+    return metahandle_order_[position];
   }
 
   // Same as above, but for ModelType of the item.
@@ -68,7 +67,7 @@ class SYNC_EXPORT_PRIVATE OrderedCommitSet {
       ModelSafeGroup group) const;
 
   size_t Size() const {
-    return commit_ids_.size();
+    return metahandle_order_.size();
   }
 
   bool Empty() const {
@@ -99,7 +98,6 @@ class SYNC_EXPORT_PRIVATE OrderedCommitSet {
   // Helper container for return value of GetCommitItemAt.
   struct CommitItem {
     int64 meta;
-    syncable::Id id;
     ModelType group;
   };
 
@@ -108,16 +106,13 @@ class SYNC_EXPORT_PRIVATE OrderedCommitSet {
   // These lists are different views of the same items; e.g they are
   // isomorphic.
   std::set<int64> inserted_metahandles_;
-  std::vector<syncable::Id> commit_ids_;
   std::vector<int64> metahandle_order_;
   Projections projections_;
 
   // We need this because of operations like AppendReverse that take ids from
   // one OrderedCommitSet and insert into another -- we need to know the
   // group for each ID so that the insertion can update the appropriate
-  // projection.  We could store it in commit_ids_, but sometimes we want
-  // to just return the vector of Ids, so this is more straightforward
-  // and shouldn't take up too much extra space since commit lists are small.
+  // projection.
   std::vector<ModelType> types_;
 
   // The set of types which are included in this particular list.

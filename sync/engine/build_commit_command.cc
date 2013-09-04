@@ -119,10 +119,10 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
   AddClientConfigParamsToMessage(session, commit_message);
 
   for (size_t i = 0; i < batch_commit_set_.Size(); i++) {
-    Id id = batch_commit_set_.GetCommitIdAt(i);
+    int64 handle = batch_commit_set_.GetCommitHandleAt(i);
     sync_pb::SyncEntity* sync_entry = commit_message->add_entries();
 
-    Entry meta_entry(trans_, syncable::GET_BY_ID, id);
+    Entry meta_entry(trans_, syncable::GET_BY_HANDLE, handle);
     CHECK(meta_entry.good());
 
     DCHECK_NE(0UL,

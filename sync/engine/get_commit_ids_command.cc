@@ -74,12 +74,6 @@ SyncerError GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
                  session->context()->routing_info(),
                  ready_unsynced_set);
 
-  const vector<syncable::Id>& verified_commit_ids =
-      commit_set_->GetAllCommitIds();
-
-  for (size_t i = 0; i < verified_commit_ids.size(); i++)
-    DVLOG(1) << "Debug commit batch result:" << verified_commit_ids[i];
-
   return SYNCER_OK;
 }
 
@@ -225,8 +219,7 @@ void GetCommitIdsCommand::TryAddItem(const std::set<int64>& ready_unsynced_set,
   DCHECK(item.Get(syncable::IS_UNSYNCED));
   int64 item_handle = item.Get(syncable::META_HANDLE);
   if (ready_unsynced_set.count(item_handle) != 0) {
-    result->AddCommitItem(item_handle, item.Get(syncable::ID),
-                          item.GetModelType());
+    result->AddCommitItem(item_handle, item.GetModelType());
   }
 }
 
@@ -366,9 +359,7 @@ void GetCommitIdsCommand::AddDeletes(
           DVLOG(1) << "Inserting moved and deleted entry, will be missed by "
                    << "delete roll." << entry.Get(syncable::ID);
 
-          commit_set_->AddCommitItem(metahandle,
-              entry.Get(syncable::ID),
-              entry.GetModelType());
+          commit_set_->AddCommitItem(metahandle, entry.GetModelType());
         }
 
         // Skip this entry since it's a child of a parent that will be
@@ -404,8 +395,7 @@ void GetCommitIdsCommand::AddDeletes(
     if (entry.Get(syncable::IS_DEL)) {
       syncable::Id parent_id = entry.Get(syncable::PARENT_ID);
       if (legal_delete_parents.count(parent_id)) {
-        commit_set_->AddCommitItem(metahandle, entry.Get(syncable::ID),
-            entry.GetModelType());
+        commit_set_->AddCommitItem(metahandle, entry.GetModelType());
       }
     }
   }

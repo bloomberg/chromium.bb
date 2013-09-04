@@ -26,10 +26,10 @@ namespace {
 void SetAllSyncingBitsToValue(WriteTransaction* trans,
                               const sessions::OrderedCommitSet& commit_set,
                               bool value_to_set) {
-  const std::vector<syncable::Id>& commit_ids = commit_set.GetAllCommitIds();
-  for (std::vector<syncable::Id>::const_iterator it = commit_ids.begin();
-       it != commit_ids.end(); ++it) {
-    syncable::MutableEntry entry(trans, syncable::GET_BY_ID, *it);
+  const std::vector<int64>& commit_handles = commit_set.GetAllCommitHandles();
+  for (std::vector<int64>::const_iterator it = commit_handles.begin();
+       it != commit_handles.end(); ++it) {
+    syncable::MutableEntry entry(trans, syncable::GET_BY_HANDLE, *it);
     if (entry.good()) {
       entry.Put(syncable::SYNCING, value_to_set);
     }

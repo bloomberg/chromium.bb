@@ -70,7 +70,7 @@ class SYNC_EXPORT_PRIVATE ProcessCommitResponseCommand
       syncable::WriteTransaction* trans,
       const sync_pb::CommitResponse_EntryResponse& pb_commit_response,
       const sync_pb::SyncEntity& pb_committed_entry,
-      const syncable::Id& pre_commit_id,
+      int64 metahandle,
       std::set<syncable::Id>* deleted_folders);
 
   void ProcessSuccessfulCommitResponse(

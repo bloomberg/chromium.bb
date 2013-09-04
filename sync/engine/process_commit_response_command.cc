@@ -38,6 +38,7 @@ using syncable::MutableEntry;
 using syncable::Entry;
 using syncable::BASE_VERSION;
 using syncable::GET_BY_ID;
+using syncable::GET_BY_HANDLE;
 using syncable::ID;
 using syncable::IS_DEL;
 using syncable::IS_DIR;
@@ -100,7 +101,7 @@ SyncerError ProcessCommitResponseCommand::ModelChangingExecuteImpl(
           &trans,
           cr.entryresponse(proj[i]),
           commit_message.entries(proj[i]),
-          commit_set_.GetCommitIdAt(proj[i]),
+          commit_set_.GetCommitHandleAt(proj[i]),
           &deleted_folders);
       switch (response_type) {
         case CommitResponse::INVALID_MESSAGE:
@@ -168,10 +169,9 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
     syncable::WriteTransaction* trans,
     const sync_pb::CommitResponse_EntryResponse& server_entry,
     const sync_pb::SyncEntity& commit_request_entry,
-    const syncable::Id& pre_commit_id,
+    const int64 metahandle,
     set<syncable::Id>* deleted_folders) {
-
-  MutableEntry local_entry(trans, GET_BY_ID, pre_commit_id);
+  MutableEntry local_entry(trans, GET_BY_HANDLE, metahandle);
   CHECK(local_entry.good());
   bool syncing_was_set = local_entry.Get(SYNCING);
   local_entry.Put(SYNCING, false);
@@ -216,11 +216,13 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
   // it as an error response and retry later.
   const syncable::Id& server_entry_id =
       SyncableIdFromProto(server_entry.id_string());
-  if (pre_commit_id != server_entry_id) {
+  if (local_entry.Get(ID) != server_entry_id) {
     Entry e(trans, GET_BY_ID, server_entry_id);
     if (e.good()) {
-      LOG(ERROR) << "Got duplicate id when commiting id: " << pre_commit_id <<
-                 ". Treating as an error return";
+      LOG(ERROR)
+          << "Got duplicate id when commiting id: "
+          << local_entry.Get(ID)
+          << ". Treating as an error return";
       return CommitResponse::INVALID_MESSAGE;
     }
   }
@@ -230,7 +232,7 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
   }
 
   ProcessSuccessfulCommitResponse(commit_request_entry, server_entry,
-      pre_commit_id, &local_entry, syncing_was_set, deleted_folders);
+      local_entry.Get(ID), &local_entry, syncing_was_set, deleted_folders);
   return response;
 }
 

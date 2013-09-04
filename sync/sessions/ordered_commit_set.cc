@@ -18,16 +18,23 @@ OrderedCommitSet::OrderedCommitSet(const ModelSafeRoutingInfo& routes)
 OrderedCommitSet::~OrderedCommitSet() {}
 
 void OrderedCommitSet::AddCommitItem(const int64 metahandle,
-                                     const syncable::Id& commit_id,
                                      ModelType type) {
   if (!HaveCommitItem(metahandle)) {
     inserted_metahandles_.insert(metahandle);
     metahandle_order_.push_back(metahandle);
-    commit_ids_.push_back(commit_id);
     projections_[GetGroupForModelType(type, routes_)].push_back(
-        commit_ids_.size() - 1);
+        inserted_metahandles_.size() - 1);
     types_.push_back(type);
     types_in_list_.Put(type);
+  }
+}
+
+void OrderedCommitSet::AddCommitItems(
+    const std::vector<int64> metahandles,
+    ModelType type) {
+  for (std::vector<int64>::const_iterator it = metahandles.begin();
+       it != metahandles.end(); ++it) {
+    AddCommitItem(*it, type);
   }
 }
 
@@ -41,14 +48,14 @@ const OrderedCommitSet::Projection& OrderedCommitSet::GetCommitIdProjection(
 void OrderedCommitSet::Append(const OrderedCommitSet& other) {
   for (size_t i = 0; i < other.Size(); ++i) {
     CommitItem item = other.GetCommitItemAt(i);
-    AddCommitItem(item.meta, item.id, item.group);
+    AddCommitItem(item.meta, item.group);
   }
 }
 
 void OrderedCommitSet::AppendReverse(const OrderedCommitSet& other) {
   for (int i = other.Size() - 1; i >= 0; i--) {
     CommitItem item = other.GetCommitItemAt(i);
-    AddCommitItem(item.meta, item.id, item.group);
+    AddCommitItem(item.meta, item.group);
   }
 }
 
@@ -72,7 +79,6 @@ void OrderedCommitSet::Truncate(size_t max_size) {
       if (element != p.end())
         p.erase(element, p.end());
     }
-    commit_ids_.resize(max_size);
     metahandle_order_.resize(max_size);
     types_.resize(max_size);
   }
@@ -80,7 +86,6 @@ void OrderedCommitSet::Truncate(size_t max_size) {
 
 void OrderedCommitSet::Clear() {
   inserted_metahandles_.clear();
-  commit_ids_.clear();
   metahandle_order_.clear();
   for (Projections::iterator it = projections_.begin();
        it != projections_.end(); ++it) {
@@ -94,7 +99,6 @@ OrderedCommitSet::CommitItem OrderedCommitSet::GetCommitItemAt(
     const size_t position) const {
   DCHECK(position < Size());
   CommitItem return_item = {metahandle_order_[position],
-      commit_ids_[position],
       types_[position]};
   return return_item;
 }
@@ -116,7 +120,6 @@ bool OrderedCommitSet::HasBookmarkCommitId() const {
 
 void OrderedCommitSet::operator=(const OrderedCommitSet& other) {
   inserted_metahandles_ = other.inserted_metahandles_;
-  commit_ids_ = other.commit_ids_;
   metahandle_order_ = other.metahandle_order_;
   projections_ = other.projections_;
   types_ = other.types_;

@@ -393,8 +393,8 @@ class SyncerTest : public testing::Test,
   }
 
   void DoTruncationTest(const vector<int64>& unsynced_handle_view,
-                        const vector<syncable::Id>& expected_id_order) {
-    for (size_t limit = expected_id_order.size() + 2; limit > 0; --limit) {
+                        const vector<int64>& expected_handle_order) {
+    for (size_t limit = expected_handle_order.size() + 2; limit > 0; --limit) {
       WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
 
       ModelSafeRoutingInfo routes;
@@ -407,10 +407,10 @@ class SyncerTest : public testing::Test,
                                    ModelTypeSet(), false,
                                    unsynced_handle_view, &ready_unsynced_set);
       command.BuildCommitIds(&wtrans, routes, ready_unsynced_set);
-      size_t truncated_size = std::min(limit, expected_id_order.size());
+      size_t truncated_size = std::min(limit, expected_handle_order.size());
       ASSERT_EQ(truncated_size, output_set.Size());
       for (size_t i = 0; i < truncated_size; ++i) {
-        ASSERT_EQ(expected_id_order[i], output_set.GetCommitIdAt(i))
+        ASSERT_EQ(expected_handle_order[i], output_set.GetCommitHandleAt(i))
             << "At index " << i << " with batch size limited to " << limit;
       }
       sessions::OrderedCommitSet::Projection proj;
@@ -418,10 +418,10 @@ class SyncerTest : public testing::Test,
       ASSERT_EQ(truncated_size, proj.size());
       for (size_t i = 0; i < truncated_size; ++i) {
         SCOPED_TRACE(::testing::Message("Projection mismatch with i = ") << i);
-        syncable::Id projected = output_set.GetCommitIdAt(proj[i]);
-        ASSERT_EQ(expected_id_order[proj[i]], projected);
+        int64 projected = output_set.GetCommitHandleAt(proj[i]);
+        ASSERT_EQ(expected_handle_order[proj[i]], projected);
         // Since this projection is the identity, the following holds.
-        ASSERT_EQ(expected_id_order[i], projected);
+        ASSERT_EQ(expected_handle_order[i], projected);
       }
     }
   }
@@ -600,6 +600,7 @@ TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
   CreateUnsyncedDirectory("E", ids_.MakeLocal("e"));
   CreateUnsyncedDirectory("J", ids_.MakeLocal("j"));
 
+  vector<int64> expected_order;
   {
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry_x(&wtrans, GET_BY_ID, ids_.MakeServer("x"));
@@ -620,24 +621,24 @@ TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
     entry_w.Put(SERVER_VERSION, 20);
     entry_w.Put(IS_UNAPPLIED_UPDATE, true);  // Fake a conflict.
     entry_j.PutPredecessor(entry_w.Get(ID));
+
+    // The expected order is "x", "b", "c", "d", "e", "j", truncated
+    // appropriately.
+    expected_order.push_back(entry_x.Get(META_HANDLE));
+    expected_order.push_back(entry_b.Get(META_HANDLE));
+    expected_order.push_back(entry_c.Get(META_HANDLE));
+    expected_order.push_back(entry_d.Get(META_HANDLE));
+    expected_order.push_back(entry_e.Get(META_HANDLE));
+    expected_order.push_back(entry_j.Get(META_HANDLE));
   }
 
   // The arrangement is now: x (b (d) c (e)) w j
   // Entry "w" is in conflict, so it is not eligible for commit.
   vector<int64> unsynced_handle_view;
-  vector<syncable::Id> expected_order;
   {
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
     GetUnsyncedEntries(&rtrans, &unsynced_handle_view);
   }
-  // The expected order is "x", "b", "c", "d", "e", "j", truncated
-  // appropriately.
-  expected_order.push_back(ids_.MakeServer("x"));
-  expected_order.push_back(ids_.MakeLocal("b"));
-  expected_order.push_back(ids_.MakeLocal("c"));
-  expected_order.push_back(ids_.MakeLocal("d"));
-  expected_order.push_back(ids_.MakeLocal("e"));
-  expected_order.push_back(ids_.MakeLocal("j"));
   DoTruncationTest(unsynced_handle_view, expected_order);
 }
 

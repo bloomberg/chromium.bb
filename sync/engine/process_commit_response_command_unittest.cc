@@ -98,7 +98,7 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
 
     // ProcessCommitResponseCommand consumes commit_ids from the session
     // state, so we need to update that.  O(n^2) because it's a test.
-    commit_set->AddCommitItem(metahandle, item_id, model_type);
+    commit_set->AddCommitItem(metahandle, model_type);
 
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::GET_BY_ID, item_id);
