@@ -1238,8 +1238,6 @@ crbug.com/280203 [ Mac ] virtual/gpu/compositedscrolling/overflow/remove-overflo
 crbug.com/280203 [ Mac ] virtual/gpu/compositedscrolling/overflow/scroll-ancestor-update.html [ ImageOnlyFailure ]
 crbug.com/280203 [ Mac ] virtual/gpu/compositedscrolling/scrollbars/scrollbars-on-positioned-content.html [ ImageOnlyFailure ]
 
-Bug(ojan) fast/table/dynamic-caption-add-before-child.xhtml [ NeedsRebaseline ]
-
 crbug.com/280554 [ Linux SnowLeopard Lion ] css3/filters/custom/custom-filter-a-tex-coord-optional.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/280554 [ Linux SnowLeopard Lion ] css3/filters/custom/custom-filter-array-uniform-indirect-index.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/280554 [ Linux SnowLeopard Lion ] css3/filters/custom/custom-filter-array.html [ ImageOnlyFailure Timeout Pass ]
