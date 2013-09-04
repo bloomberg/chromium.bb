@@ -29,7 +29,8 @@
  */
 
 #include "config.h"
-#include <unicode/locid.h>
+
+#include "SkFontMgr.h"
 #include "SkTypeface.h"
 #include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/Font.h"
@@ -39,6 +40,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/CString.h"
+#include <unicode/locid.h>
 
 namespace WebCore {
 
@@ -145,6 +147,12 @@ SkTypeface* FontCache::createTypeface(const FontDescription& fontDescription, co
         style |= SkTypeface::kBold;
     if (fontDescription.italic())
         style |= SkTypeface::kItalic;
+
+    // FIXME: Use SkFontStyle and matchFamilyStyle instead of legacyCreateTypeface.
+#if OS(WINDOWS) && !ENABLE(GDI_FONTS_ON_WINDOWS)
+    if (m_fontManager)
+        return m_fontManager->legacyCreateTypeface(name.data(), style);
+#endif
 
     return SkTypeface::CreateFromName(name.data(), static_cast<SkTypeface::Style>(style));
 }

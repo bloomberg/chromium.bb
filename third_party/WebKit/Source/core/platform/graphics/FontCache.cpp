@@ -53,10 +53,12 @@ FontCache* fontCache()
     return &globalFontCache;
 }
 
+#if !OS(WINDOWS) || ENABLE(GDI_FONTS_ON_WINDOWS)
 FontCache::FontCache()
     : m_purgePreventCount(0)
 {
 }
+#endif // !OS(WINDOWS) || ENABLE(GDI_FONTS_ON_WINDOWS)
 
 struct FontPlatformDataCacheKey {
     WTF_MAKE_FAST_ALLOCATED;

@@ -32,6 +32,8 @@
 #include "config.h"
 #include "core/platform/graphics/FontCache.h"
 
+#include "SkFontMgr.h"
+#include "SkTypeface_win.h"
 #include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SimpleFontData.h"
@@ -39,6 +41,13 @@
 #include "core/platform/graphics/chromium/FontUtilsChromiumWin.h"
 
 namespace WebCore {
+
+FontCache::FontCache()
+    : m_purgePreventCount(0)
+{
+    m_fontManager = adoptPtr(SkFontMgr_New_GDI());
+}
+
 
 static bool fontContainsCharacter(const FontPlatformData* fontData, const wchar_t* family, UChar32 character)
 {

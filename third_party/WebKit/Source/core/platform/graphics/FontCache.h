@@ -45,6 +45,10 @@
 #include <mlang.h>
 #endif
 
+#if OS(WINDOWS) && !ENABLE(GDI_FONTS_ON_WINDOWS)
+#include "SkFontMgr.h"
+#endif
+
 class SkTypeface;
 
 namespace WebCore {
@@ -138,6 +142,10 @@ private:
 
     // Don't purge if this count is > 0;
     int m_purgePreventCount;
+
+#if OS(WINDOWS) && !ENABLE(GDI_FONTS_ON_WINDOWS)
+    OwnPtr<SkFontMgr> m_fontManager;
+#endif
 
 #if OS(DARWIN) || OS(ANDROID)
     friend class ComplexTextController;
