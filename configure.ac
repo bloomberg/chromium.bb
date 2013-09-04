@@ -247,12 +247,11 @@ if test x$enable_vaapi_recorder != xno; then
                     [have_libva=yes], [have_libva=no])
   if test "x$have_libva" = "xno" -a "x$enable_vaapi_recorder" = "xyes"; then
     AC_MSG_ERROR([vaapi-recorder explicitly enabled, but libva couldn't be found])
-  else
-    AC_DEFINE([BUILD_VAAPI_RECORDER], [1], [Build the vaapi recorder])
   fi
+  AS_IF([test "x$have_libva" = "xyes"],
+        [AC_DEFINE([BUILD_VAAPI_RECORDER], [1], [Build the vaapi recorder])])
 fi
-AM_CONDITIONAL(ENABLE_VAAPI_RECORDER,
-	       test "x$enable_libva_recorder" != xno -a "x$have_libva" = xyes)
+AM_CONDITIONAL(ENABLE_VAAPI_RECORDER, test "x$have_libva" = xyes)
 
 
 AC_CHECK_LIB([jpeg], [jpeg_CreateDecompress], have_jpeglib=yes)
