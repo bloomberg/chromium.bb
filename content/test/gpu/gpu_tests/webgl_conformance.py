@@ -21,13 +21,19 @@ conformance_harness_script = r"""
   testHarness._messages = '';
   testHarness._failures = 0;
   testHarness._finished = false;
+  testHarness._originalLog = window.console.log;
+
+  testHarness.log = function(msg) {
+    testHarness._messages += msg + "\n";
+    testHarness._originalLog.apply(window.console, [msg]);
+  }
 
   testHarness.reportResults = function(success, msg) {
     testHarness._allTestSucceeded = testHarness._allTestSucceeded && !!success;
     if(!success) {
       testHarness._failures++;
       if(msg) {
-        testHarness._messages += msg + "\n";
+        testHarness.log(msg);
       }
     }
   };
@@ -42,6 +48,7 @@ conformance_harness_script = r"""
   window.webglTestHarness = testHarness;
   window.parent.webglTestHarness = testHarness;
   console.log("Harness injected.");
+  window.console.log = testHarness.log;
 """
 
 def _DidWebGLTestSucceed(tab):
