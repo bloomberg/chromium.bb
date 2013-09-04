@@ -53,6 +53,7 @@ class ResourceError;
 class ResourceResponse;
 class TouchEvent;
 class WheelEvent;
+class Widget;
 }
 
 namespace WebKit {
@@ -196,6 +197,24 @@ private:
     TouchEventRequestType m_touchEventRequestType;
     bool m_wantsWheelEvents;
 };
+
+inline WebPluginContainerImpl* toPluginContainerImpl(WebCore::Widget* widget)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!widget || widget->isPluginContainer());
+    // We need to ensure that the object is actually of type PluginContainer
+    // as there are many subclasses of Widget.
+    return static_cast<WebPluginContainerImpl*>(widget);
+}
+
+inline WebPluginContainerImpl* toPluginContainerImpl(WebPluginContainer* container)
+{
+    // Unlike Widget, we need not worry about object type for container.
+    // WebPluginContainerImpl is the only subclass of WebPluginContainer.
+    return static_cast<WebPluginContainerImpl*>(container);
+}
+
+// This will catch anyone doing an unnecessary cast.
+void toPluginContainerImpl(const WebPluginContainerImpl*);
 
 } // namespace WebKit
 

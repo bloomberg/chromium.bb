@@ -243,7 +243,7 @@ WebPluginContainer* WebNode::pluginContainer() const
         if (object && object->isWidget()) {
             Widget* widget = WebCore::toRenderWidget(object)->widget();
             if (widget && widget->isPluginContainer())
-                return static_cast<WebPluginContainerImpl*>(widget);
+                return toPluginContainerImpl(widget);
         }
     }
     return 0;

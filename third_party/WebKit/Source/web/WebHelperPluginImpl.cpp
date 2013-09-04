@@ -166,7 +166,7 @@ WebPlugin* WebHelperPluginImpl::getPlugin()
     WebCore::Widget* widget = toHTMLPlugInElement(node)->pluginWidget();
     if (!widget)
         return 0;
-    WebPlugin* plugin = static_cast<WebPluginContainerImpl*>(widget)->plugin();
+    WebPlugin* plugin = toPluginContainerImpl(widget)->plugin();
     ASSERT(plugin);
     // If the plugin is a placeholder, it is not useful to the caller, and it
     // could be replaced at any time. Therefore, do not return it.

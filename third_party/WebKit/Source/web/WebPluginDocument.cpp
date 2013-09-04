@@ -48,7 +48,7 @@ WebPlugin* WebPluginDocument::plugin()
     if (!isPluginDocument())
         return 0;
     PluginDocument* doc = unwrap<PluginDocument>();
-    WebPluginContainerImpl* container = static_cast<WebPluginContainerImpl*>(static_cast<PluginDocument*>(doc)->pluginWidget());
+    WebPluginContainerImpl* container = toPluginContainerImpl(static_cast<PluginDocument*>(doc)->pluginWidget());
     return container->plugin();
 }
 

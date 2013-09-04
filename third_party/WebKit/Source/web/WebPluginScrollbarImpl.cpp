@@ -50,7 +50,7 @@ WebPluginScrollbar* WebPluginScrollbar::createForPlugin(Orientation orientation,
                                                         WebPluginContainer* pluginContainer,
                                                         WebPluginScrollbarClient* client)
 {
-    WebPluginContainerImpl* plugin = static_cast<WebPluginContainerImpl*>(pluginContainer);
+    WebPluginContainerImpl* plugin = toPluginContainerImpl(pluginContainer);
     return new WebPluginScrollbarImpl(orientation, plugin->scrollbarGroup(), client);
 }
 
