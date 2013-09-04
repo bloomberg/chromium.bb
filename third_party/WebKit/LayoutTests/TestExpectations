@@ -1281,3 +1281,6 @@ crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/nested-embedded-svg-size-ch
 crbug.com/284779 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass Crash ]
 crbug.com/284789 http/tests/media/media-source/mediasource-buffered.html [ Failure Pass ]
 crbug.com/284793 http/tests/media/media-source/mediasource-play-then-seek-back.html [ Failure Pass ]
+
+# Temporarily mark as flaky in advance of Chromium change.
+crbug.com/276769 http/tests/security/contentSecurityPolicy/source-list-parsing-nonascii.html [ Failure Pass ]

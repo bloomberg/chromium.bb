@@ -88,12 +88,31 @@ std::string WebString::utf8() const
 
 WebString WebString::fromUTF8(const char* data, size_t length)
 {
-    return WTF::String::fromUTF8(data, length);
+    return String::fromUTF8(data, length);
 }
 
 WebString WebString::fromUTF8(const char* data)
 {
-    return WTF::String::fromUTF8(data);
+    return String::fromUTF8(data);
+}
+
+std::string WebString::latin1() const
+{
+    String string(m_private.get());
+
+    if (string.isEmpty())
+        return std::string();
+
+    if (string.is8Bit())
+        return std::string(reinterpret_cast<const char*>(string.characters8()), string.length());
+
+    WebCString latin1 = string.latin1();
+    return std::string(latin1.data(), latin1.length());
+}
+
+WebString WebString::fromLatin1(const WebLChar* data, size_t length)
+{
+    return String(data, length);
 }
 
 bool WebString::equals(const WebString& s) const

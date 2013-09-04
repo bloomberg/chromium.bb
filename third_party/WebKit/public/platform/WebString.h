@@ -99,6 +99,15 @@ public:
         return fromUTF8(s.data(), s.length());
     }
 
+    BLINK_COMMON_EXPORT std::string latin1() const;
+
+    BLINK_COMMON_EXPORT static WebString fromLatin1(const WebLChar* data, size_t length);
+
+    static WebString fromLatin1(const std::string& s)
+    {
+        return fromLatin1(reinterpret_cast<const WebLChar*>(s.data()), s.length());
+    }
+
     template <int N> WebString(const char (&data)[N])
     {
         assign(fromUTF8(data, N - 1));
