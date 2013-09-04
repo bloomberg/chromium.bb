@@ -446,19 +446,23 @@ NavigationList.prototype = {
   __proto__: cr.ui.List.prototype,
 
   set dataModel(dataModel) {
-    if (!this.boundHandleListChanged_)
-      this.boundHandleListChanged_ = this.onListContentChanged_.bind(this);
+    if (!this.onListContentChangedBound_)
+      this.onListContentChangedBound_ = this.onListContentChanged_.bind(this);
 
     if (this.dataModel_) {
-      dataModel.removeEventListener('change', this.boundHandleListChanged_);
-      dataModel.removeEventListener('permuted', this.boundHandleListChanged_);
+      this.dataModel_.removeEventListener(
+          'change', this.onListContentChangedBound_);
+      this.dataModel_.removeEventListener(
+          'permuted', this.onListContentChangedBound_);
     }
 
-    dataModel.addEventListener('change', this.boundHandleListChanged_);
-    dataModel.addEventListener('permuted', this.boundHandleListChanged_);
-
     var parentSetter = cr.ui.List.prototype.__lookupSetter__('dataModel');
-    return parentSetter.call(this, dataModel);
+    parentSetter.call(this, dataModel);
+
+    // This must be placed after the parent method is called, in order to make
+    // it sure that the list was changed.
+    dataModel.addEventListener('change', this.onListContentChangedBound_);
+    dataModel.addEventListener('permuted', this.onListContentChangedBound_);
   },
 
   get dataModel() {
