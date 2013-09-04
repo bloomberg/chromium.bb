@@ -128,7 +128,7 @@ void EventRetargeter::calculateAdjustedEventPathForEachNode(EventPath& eventPath
         Vector<RefPtr<Node> > nodes;
         for (size_t j = 0; j < eventPathSize; ++j) {
             Node* node = eventPath[j]->node();
-            if (node->treeScope().isInclusiveAncestorOf(currentScope))
+            if (node->treeScope().isInclusiveAncestorOf(*currentScope))
                 nodes.append(node);
         }
         eventPath[i]->adoptEventPath(nodes);

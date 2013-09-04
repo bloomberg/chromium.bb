@@ -97,7 +97,7 @@ void StyleSheetCollections::insertTreeScopeInDocumentOrder(TreeScopeSet& treeSco
     do {
         --it;
         TreeScope* n = *it;
-        unsigned short position = n->comparePosition(treeScope);
+        unsigned short position = n->comparePosition(*treeScope);
         if (position & Node::DOCUMENT_POSITION_FOLLOWING) {
             treeScopes.insertBefore(followingTreeScope, treeScope);
             return;

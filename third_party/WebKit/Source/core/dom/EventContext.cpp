@@ -133,7 +133,7 @@ bool TouchEventContext::isTouchEventContext() const
 void TouchEventContext::checkReachability(TouchList* touchList) const
 {
     for (size_t i = 0; i < touchList->length(); ++i)
-        ASSERT(touchList->item(i)->target()->toNode()->treeScope().isInclusiveAncestorOf(&m_node->treeScope()));
+        ASSERT(touchList->item(i)->target()->toNode()->treeScope().isInclusiveAncestorOf(m_node->treeScope()));
 }
 #endif
 

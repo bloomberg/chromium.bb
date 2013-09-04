@@ -124,9 +124,8 @@ public:
 
     void removedLastRefToScope();
 
-    // FIXME: These should take a const reference.
-    bool isInclusiveAncestorOf(const TreeScope*) const;
-    unsigned short comparePosition(const TreeScope*) const;
+    bool isInclusiveAncestorOf(const TreeScope&) const;
+    unsigned short comparePosition(const TreeScope&) const;
 
     Element* getElementByAccessKey(const String& key) const;
 

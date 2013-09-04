@@ -112,7 +112,7 @@ inline TouchEventContext* toTouchEventContext(EventContext* eventContext)
 inline bool EventContext::isUnreachableNode(EventTarget* target)
 {
     // FIXME: Checks also for SVG elements.
-    return target && target->toNode() && !target->toNode()->isSVGElement() && !target->toNode()->treeScope().isInclusiveAncestorOf(&m_node->treeScope());
+    return target && target->toNode() && !target->toNode()->isSVGElement() && !target->toNode()->treeScope().isInclusiveAncestorOf(m_node->treeScope());
 }
 #endif
 

@@ -379,12 +379,9 @@ Element* TreeScope::adjustedFocusedElement()
     return 0;
 }
 
-unsigned short TreeScope::comparePosition(const TreeScope* otherScope) const
+unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const
 {
-    if (!otherScope)
-        return Node::DOCUMENT_POSITION_DISCONNECTED;
-
-    if (otherScope == this)
+    if (&otherScope == this)
         return Node::DOCUMENT_POSITION_EQUIVALENT;
 
     Vector<const TreeScope*, 16> chain1;
@@ -392,7 +389,7 @@ unsigned short TreeScope::comparePosition(const TreeScope* otherScope) const
     const TreeScope* current;
     for (current = this; current; current = current->parentTreeScope())
         chain1.append(current);
-    for (current = otherScope; current; current = current->parentTreeScope())
+    for (current = &otherScope; current; current = current->parentTreeScope())
         chain2.append(current);
 
     unsigned index1 = chain1.size();
@@ -477,11 +474,10 @@ int TreeScope::refCount() const
     return 0;
 }
 
-bool TreeScope::isInclusiveAncestorOf(const TreeScope* scope) const
+bool TreeScope::isInclusiveAncestorOf(const TreeScope& scope) const
 {
-    ASSERT(scope);
-    for (; scope; scope = scope->parentTreeScope()) {
-        if (scope == this)
+    for (const TreeScope* current = &scope; current; current = current->parentTreeScope()) {
+        if (current == this)
             return true;
     }
     return false;

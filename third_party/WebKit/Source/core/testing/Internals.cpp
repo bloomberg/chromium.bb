@@ -403,7 +403,7 @@ unsigned short Internals::compareTreeScopePosition(const Node* node1, const Node
         es.throwDOMException(InvalidAccessError);
         return 0;
     }
-    return treeScope1->comparePosition(treeScope2);
+    return treeScope1->comparePosition(*treeScope2);
 }
 
 unsigned Internals::numberOfActiveAnimations() const
