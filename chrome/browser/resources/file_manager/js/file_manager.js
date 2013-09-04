@@ -179,15 +179,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }.bind(this));
     }.bind(this));
 
-    // TODO(yoshiki): Remove the flag when the feature is launched.
-    this.enableExperimentalWebstoreIntegration_ = false;
-    group.add(function(done) {
-      chrome.commandLinePrivate.hasSwitch(
-          'file-manager-enable-webstore-integration', function(flag) {
-        this.enableExperimentalWebstoreIntegration_ = flag;
-        done();
-      }.bind(this));
-    }.bind(this));
+    // TODO(yoshiki): Now the integration is always enabled. Remove this code
+    // when the feature is launched successfully in M31. Until then, we keep it
+    // just in case.
+    this.enableExperimentalWebstoreIntegration_ = true;
 
     group.run(callback);
   };
@@ -2279,6 +2274,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             this.alert.showHtml(filename, text, function() {});
           }.bind(this);
 
+          // TODO(yoshiki): Now the integration is always enabled. Remove this
+          // code when the feature is launched successfully in M31.
           if (!this.enableExperimentalWebstoreIntegration_) {
             showAlert();
             return;
