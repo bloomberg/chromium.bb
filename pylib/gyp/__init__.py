@@ -542,5 +542,9 @@ def main(args):
     sys.stderr.write("gyp: %s\n" % e)
     return 1
 
+# NOTE: setuptools generated console_scripts calls function with no arguments
+def script_main():
+  return main(sys.argv[1:])
+
 if __name__ == '__main__':
-  sys.exit(main(sys.argv[1:]))
+  sys.exit(script_main())
