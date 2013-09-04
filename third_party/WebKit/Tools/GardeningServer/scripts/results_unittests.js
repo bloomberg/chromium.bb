@@ -29,6 +29,8 @@ var unittest = unittest || {};
 
 module("results");
 
+var MockResultsBaseURL = 'https://storage.googleapis.com/chromium-layout-test-archives/Mock_Builder/results/layout-test-results';
+
 unittest.kExampleResultsJSON = {
     "tests": {
         "scrollbars": {
@@ -464,7 +466,7 @@ test("fetchResultsURLs", 5, function() {
             'failureTypeList': ['IMAGE', 'CRASH'],
         }, function(resultURLs) {
             deepEqual(resultURLs, [
-                "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/another-test-crash-log.txt"
+                MockResultsBaseURL + "/userscripts/another-test-crash-log.txt"
             ]);
         });
         results.fetchResultsURLs({
@@ -480,27 +482,27 @@ test("fetchResultsURLs", 5, function() {
             'failureTypeList': ['IMAGE', 'IMAGE+TEXT'],
         }, function(resultURLs) {
             deepEqual(resultURLs, [
-                "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/taco-expected.png",
-                "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/taco-actual.png",
-                "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/taco-diff.png",
-                "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/taco-expected.txt",
-                "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/taco-actual.txt",
-                "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/taco-diff.txt",
+                MockResultsBaseURL + "/userscripts/taco-expected.png",
+                MockResultsBaseURL + "/userscripts/taco-actual.png",
+                MockResultsBaseURL + "/userscripts/taco-diff.png",
+                MockResultsBaseURL + "/userscripts/taco-expected.txt",
+                MockResultsBaseURL + "/userscripts/taco-actual.txt",
+                MockResultsBaseURL + "/userscripts/taco-diff.txt",
             ]);
         });
     });
 
     deepEqual(probedURLs, [
-        "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/another-test-expected.png",
-        "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/another-test-actual.png",
-        "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/another-test-diff.png",
-        "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/another-test-crash-log.txt",
-        "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/taco-expected.png",
-        "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/taco-actual.png",
-        "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/taco-diff.png",
-        "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/taco-actual.txt",
-        "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/taco-expected.txt",
-        "http://build.chromium.org/f/chromium/layout_test_results/Mock_Builder/results/layout-test-results/userscripts/taco-diff.txt",
+        MockResultsBaseURL + "/userscripts/another-test-expected.png",
+        MockResultsBaseURL + "/userscripts/another-test-actual.png",
+        MockResultsBaseURL + "/userscripts/another-test-diff.png",
+        MockResultsBaseURL + "/userscripts/another-test-crash-log.txt",
+        MockResultsBaseURL + "/userscripts/taco-expected.png",
+        MockResultsBaseURL + "/userscripts/taco-actual.png",
+        MockResultsBaseURL + "/userscripts/taco-diff.png",
+        MockResultsBaseURL + "/userscripts/taco-actual.txt",
+        MockResultsBaseURL + "/userscripts/taco-expected.txt",
+        MockResultsBaseURL + "/userscripts/taco-diff.txt",
     ]);
 });
 
@@ -526,8 +528,8 @@ test("fetchResultsByBuilder", 3, function() {
     });
 
     deepEqual(probedURLs, [
-        "http://build.chromium.org/f/chromium/layout_test_results/MockBuilder1/results/layout-test-results/failing_results.json",
-        "http://build.chromium.org/f/chromium/layout_test_results/MockBuilder2/results/layout-test-results/failing_results.json"
+        MockResultsBaseURL.replace('Mock_Builder', 'MockBuilder1') + "/failing_results.json",
+        MockResultsBaseURL.replace('Mock_Builder', 'MockBuilder2') + "/failing_results.json"
     ]);
 
 });

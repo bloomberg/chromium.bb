@@ -33,7 +33,8 @@ config.kPlatforms = {
     'chromium' : {
         label : 'Chromium',
         buildConsoleURL: 'http://build.chromium.org/p/chromium.webkit',
-        layoutTestResultsURL: 'http://build.chromium.org/f/chromium/layout_test_results',
+
+        layoutTestResultsURL: 'https://storage.googleapis.com/chromium-layout-test-archives',
         waterfallURL: 'http://build.chromium.org/p/chromium.webkit/waterfall',
         builders: {
             'WebKit XP': {version: 'xp'},

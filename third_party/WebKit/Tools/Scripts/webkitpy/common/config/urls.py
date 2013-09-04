@@ -37,8 +37,11 @@ def view_revision_url(revision_number):
     return "http://trac.webkit.org/changeset/%s" % revision_number
 
 
+def chromium_results_url_base():
+    return 'https://storage.googleapis.com/chromium-layout-test-archives'
+
 def chromium_results_zip_url(builder_name):
-    return 'http://build.chromium.org/f/chromium/layout_test_results/%s/layout-test-results.zip' % builder_name
+    return chromium_results_url_base() + '/%s/results/layout-test-results.zip' % builder_name
 
 chromium_lkgr_url = "http://chromium-status.appspot.com/lkgr"
 contribution_guidelines = "http://webkit.org/coding/contributing.html"

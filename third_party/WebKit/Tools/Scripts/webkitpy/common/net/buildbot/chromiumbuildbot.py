@@ -36,7 +36,7 @@ class ChromiumBuilder(Builder):
     # The build.chromium.org builders store their results in a different
     # location than the build.webkit.org builders.
     def results_url(self):
-        return "http://build.chromium.org/f/chromium/layout_test_results/%s" % builder_path_from_name(self._name)
+        return '%s/%s' % (config_urls.chromium_results_url_base(), self._name)
 
     def accumulated_results_url(self):
         return self.results_url() + "/results/layout-test-results"
