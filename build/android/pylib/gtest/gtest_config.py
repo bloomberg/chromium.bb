@@ -6,13 +6,13 @@
 
 # Add new suites here before upgrading them to the stable list below.
 EXPERIMENTAL_TEST_SUITES = [
+    'content_browsertests',
 ]
 
 # Do not modify this list without approval of an android owner.
 # This list determines which suites are run by default, both for local
 # testing and on android trybots running on commit-queue.
 STABLE_TEST_SUITES = [
-    'content_browsertests',
     'android_webview_unittests',
     'base_unittests',
     'cc_unittests',
