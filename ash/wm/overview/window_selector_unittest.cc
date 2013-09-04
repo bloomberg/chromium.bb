@@ -54,7 +54,8 @@ class WindowSelectorTest : public test::AshTestBase {
   }
 
   void StopCycling() {
-    ash::Shell::GetInstance()->window_selector_controller()->AltKeyReleased();
+    ash::Shell::GetInstance()->window_selector_controller()->window_selector_->
+        SelectWindow();
   }
 
   void FireOverviewStartTimer() {

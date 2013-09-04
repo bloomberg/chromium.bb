@@ -20,7 +20,7 @@ class RootWindow;
 }
 
 namespace ui {
-class LocatedEvent;
+class EventHandler;
 }
 
 namespace ash {
@@ -100,6 +100,10 @@ class ASH_EXPORT WindowSelector
 
   // The window selection mode.
   Mode mode_;
+
+  // An event handler listening for the release of the alt key during alt-tab
+  // cycling.
+  scoped_ptr<ui::EventHandler> event_handler_;
 
   base::DelayTimer<WindowSelector> start_overview_timer_;
   scoped_ptr<WindowOverview> window_overview_;

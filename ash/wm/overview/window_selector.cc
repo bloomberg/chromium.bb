@@ -17,6 +17,8 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/events/event.h"
+#include "ui/base/events/event_handler.h"
 
 namespace ash {
 
@@ -37,6 +39,42 @@ struct WindowSelectorWindowComparator
 
   const aura::Window* target;
 };
+
+// Filter to watch for the termination of a keyboard gesture to cycle through
+// multiple windows.
+class WindowSelectorEventFilter : public ui::EventHandler {
+ public:
+  WindowSelectorEventFilter(WindowSelector* selector);
+  virtual ~WindowSelectorEventFilter();
+
+  // Overridden from ui::EventHandler:
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+
+ private:
+  // A weak pointer to the WindowSelector which owns this instance.
+  WindowSelector* selector_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowSelectorEventFilter);
+};
+
+// Watch for all keyboard events by filtering the root window.
+WindowSelectorEventFilter::WindowSelectorEventFilter(WindowSelector* selector)
+    : selector_(selector) {
+  Shell::GetInstance()->AddPreTargetHandler(this);
+}
+
+WindowSelectorEventFilter::~WindowSelectorEventFilter() {
+  Shell::GetInstance()->RemovePreTargetHandler(this);
+}
+
+void WindowSelectorEventFilter::OnKeyEvent(ui::KeyEvent* event) {
+  // Views uses VKEY_MENU for both left and right Alt keys.
+  if (event->key_code() == ui::VKEY_MENU &&
+      event->type() == ui::ET_KEY_RELEASED) {
+    selector_->SelectWindow();
+    // Warning: |this| will be deleted from here on.
+  }
+}
 
 }  // namespace
 
@@ -73,10 +111,12 @@ WindowSelector::WindowSelector(const WindowList& windows,
     }
   }
 
-  if (mode == WindowSelector::CYCLE)
+  if (mode == WindowSelector::CYCLE) {
+    event_handler_.reset(new WindowSelectorEventFilter(this));
     start_overview_timer_.Reset();
-  else
+  } else {
     StartOverview();
+  }
 }
 
 WindowSelector::~WindowSelector() {

@@ -19,10 +19,6 @@ namespace aura {
 class Window;
 }
 
-namespace ui {
-class EventHandler;
-}
-
 namespace ash {
 
 namespace internal {
@@ -53,10 +49,6 @@ class ASH_EXPORT WindowSelectorController
   // released.
   void HandleCycleWindow(WindowSelector::Direction direction);
 
-  // Informs the controller that the Alt key has been released and it can
-  // terminate the existing multi-step cycle.
-  void AltKeyReleased();
-
   // Returns true if window selection mode is active.
   bool IsSelecting();
 
@@ -68,7 +60,6 @@ class ASH_EXPORT WindowSelectorController
   friend class internal::WindowSelectorTest;
 
   scoped_ptr<WindowSelector> window_selector_;
-  scoped_ptr<ui::EventHandler> event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorController);
 };
