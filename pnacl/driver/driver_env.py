@@ -282,10 +282,12 @@ class Environment(object):
   # Set one or more variables using named arguments
   def setmany(self, **kwargs):
     for k,v in kwargs.iteritems():
-      if isinstance(v, str):
+      if isinstance(v, types.StringTypes):
         self.set(k, v)
-      else:
+      elif isinstance(v, types.ListType):
         self.set(k, *v)
+      else:
+        Log.Fatal('env.setmany given a non-string and non-list value')
 
   def clear(self, varname):
     self.data[varname] = ''

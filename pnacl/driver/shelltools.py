@@ -11,6 +11,8 @@
 
 from driver_log import Log
 
+import types
+
 ######################################################################
 #
 # Shell Utilities
@@ -36,7 +38,7 @@ class shell(object):
     For example: split('cmd -arg1 -arg2="a b c"')
     Returns ['cmd', '-arg1', '-arg2=a b c']
     """
-    assert(isinstance(s, str))
+    assert(isinstance(s, types.StringTypes))
     out = []
     inspace = True
     inquote = False
