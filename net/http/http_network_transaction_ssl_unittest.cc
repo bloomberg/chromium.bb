@@ -132,9 +132,6 @@ TEST_F(HttpNetworkTransactionSSLTest, SSL3FallbackDisabled_Google) {
   scoped_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
-  SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
-  ssl_config.unrestricted_ssl3_fallback_enabled = false;
-
   TestCompletionCallback callback;
   // This will consume only |ssl_data1|. |ssl_data2| will not be consumed.
   int rv = callback.GetResult(
@@ -147,6 +144,7 @@ TEST_F(HttpNetworkTransactionSSLTest, SSL3FallbackDisabled_Google) {
   // Confirms that only |ssl_data1| is consumed.
   EXPECT_EQ(1u, mock_data.next_index());
 
+  SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
   // |version_max| never fallbacks to SSLv3 for Google properties.
   EXPECT_EQ(SSL_PROTOCOL_VERSION_TLS1, ssl_config.version_max);
   EXPECT_FALSE(ssl_config.version_fallback);
@@ -225,9 +223,6 @@ TEST_F(HttpNetworkTransactionSSLTest, SSL3FallbackDisabled_Paypal) {
   scoped_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
-  SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
-  ssl_config.unrestricted_ssl3_fallback_enabled = false;
-
   TestCompletionCallback callback;
   // This will consume |ssl_data1| and |ssl_data2|.
   int rv = callback.GetResult(
@@ -240,6 +235,7 @@ TEST_F(HttpNetworkTransactionSSLTest, SSL3FallbackDisabled_Paypal) {
   // Confirms that both |ssl_data1| and |ssl_data2| are consumed.
   EXPECT_EQ(2u, mock_data.next_index());
 
+  SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
   // |version_max| fallbacks to SSL 3.0.
   EXPECT_EQ(SSL_PROTOCOL_VERSION_SSL3, ssl_config.version_max);
   EXPECT_TRUE(ssl_config.version_fallback);
@@ -278,9 +274,6 @@ TEST_F(HttpNetworkTransactionSSLTest, SSLFallback) {
   scoped_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
-  SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
-  ssl_config.unrestricted_ssl3_fallback_enabled = true;
-
   TestCompletionCallback callback;
   // This will consume |ssl_data1|, |ssl_data2| and |ssl_data3|.
   int rv = callback.GetResult(
@@ -293,6 +286,7 @@ TEST_F(HttpNetworkTransactionSSLTest, SSLFallback) {
   // Confirms that |ssl_data1|, |ssl_data2| and |ssl_data3| are consumed.
   EXPECT_EQ(3u, mock_data.next_index());
 
+  SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
   // |version_max| fallbacks to SSL 3.0.
   EXPECT_EQ(SSL_PROTOCOL_VERSION_SSL3, ssl_config.version_max);
   EXPECT_TRUE(ssl_config.version_fallback);

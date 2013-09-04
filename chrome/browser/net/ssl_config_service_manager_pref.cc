@@ -244,10 +244,8 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
                                 default_config.channel_id_enabled);
   registry->RegisterBooleanPref(prefs::kDisableSSLRecordSplitting,
                                 !default_config.false_start_enabled);
-  // Note: until http://crbug/237055 is resolved, unrestricted SSL 3.0 fallback
-  // is always enabled.
   registry->RegisterBooleanPref(prefs::kEnableUnrestrictedSSL3Fallback,
-      true /* default_config.unrestricted_ssl3_fallback_enabled */);
+      default_config.unrestricted_ssl3_fallback_enabled);
   registry->RegisterListPref(prefs::kCipherSuiteBlacklist);
 }
 

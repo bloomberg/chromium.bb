@@ -161,8 +161,6 @@ TEST_F(SSLConfigServiceManagerPrefTest, BadDisabledCipherSuites) {
 //   SSL 3.0 ~ default_version_max() are enabled;
 // * without --enable-unrestricted-ssl3-fallback,
 //   |unrestricted_ssl3_fallback_enabled| is false.
-// TODO(thaidn): |unrestricted_ssl3_fallback_enabled| is true by default
-// temporarily until we have fixed deployment issues.
 TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
   scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
 
@@ -186,7 +184,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
   EXPECT_EQ(net::SSL_PROTOCOL_VERSION_SSL3, ssl_config.version_min);
   EXPECT_EQ(net::SSLConfigService::default_version_max(),
             ssl_config.version_max);
-  EXPECT_TRUE(ssl_config.unrestricted_ssl3_fallback_enabled);
+  EXPECT_FALSE(ssl_config.unrestricted_ssl3_fallback_enabled);
 
   // The settings should not be added to the local_state.
   EXPECT_FALSE(local_state->HasPrefPath(prefs::kSSLVersionMin));
