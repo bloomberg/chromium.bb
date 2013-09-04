@@ -8,8 +8,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -19,7 +17,6 @@ class SadTab;
 
 // Per-tab class to manage sad tab views.
 class SadTabHelper : public content::WebContentsObserver,
-                     public content::NotificationObserver,
                      public content::WebContentsUserData<SadTabHelper> {
  public:
   virtual ~SadTabHelper();
@@ -34,15 +31,8 @@ class SadTabHelper : public content::WebContentsObserver,
   void InstallSadTab(base::TerminationStatus status);
 
   // Overridden from content::WebContentsObserver:
+  virtual void RenderViewReady() OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
-
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // Used to get notifications about renderers coming and going.
-  content::NotificationRegistrar registrar_;
 
   scoped_ptr<chrome::SadTab> sad_tab_;
 

@@ -7,8 +7,6 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/ui/sad_tab.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 
@@ -19,8 +17,13 @@ SadTabHelper::~SadTabHelper() {
 
 SadTabHelper::SadTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
-  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
-                 content::Source<content::WebContents>(web_contents));
+}
+
+void SadTabHelper::RenderViewReady() {
+  if (sad_tab_) {
+    sad_tab_->Close();
+    sad_tab_.reset();
+  }
 }
 
 void SadTabHelper::RenderProcessGone(base::TerminationStatus status) {
@@ -35,16 +38,6 @@ void SadTabHelper::RenderProcessGone(base::TerminationStatus status) {
 
   if (chrome::SadTab::ShouldShow(status))
     InstallSadTab(status);
-}
-
-void SadTabHelper::Observe(int type,
-                           const content::NotificationSource& source,
-                           const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_CONNECTED, type);
-  if (sad_tab_) {
-    sad_tab_->Close();
-    sad_tab_.reset();
-  }
 }
 
 void SadTabHelper::InstallSadTab(base::TerminationStatus status) {
