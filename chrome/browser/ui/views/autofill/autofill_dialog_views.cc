@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_sign_in_delegate.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
+#include "chrome/browser/ui/autofill/loading_animation.h"
 #include "chrome/browser/ui/views/autofill/decorated_textfield.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
@@ -27,6 +28,7 @@
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/multi_animation.h"
+#include "ui/base/animation/throb_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/menu_model.h"
@@ -390,6 +392,82 @@ class NotificationView : public views::View {
   views::Checkbox* checkbox_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationView);
+};
+
+// A view that displays a loading message with some dancing dots.
+class LoadingAnimationView : public views::View,
+                             public ui::AnimationDelegate {
+ public:
+  explicit LoadingAnimationView(const base::string16& text) :
+      container_(new views::View()),
+      animation_(this) {
+
+    set_background(views::Background::CreateSolidBackground(
+        GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_DialogBackground)));
+
+    AddChildView(container_);
+    container_->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+
+    gfx::Font font = ui::ResourceBundle::GetSharedInstance().GetFont(
+        ui::ResourceBundle::BaseFont).DeriveFont(8);
+
+    views::Label* label = new views::Label();
+    label->SetText(text);
+    label->SetFont(font);
+    container_->AddChildView(label);
+
+    for (size_t i = 0; i < 3; ++i) {
+      views::Label* dot = new views::Label();
+      dot->SetText(ASCIIToUTF16("."));
+      dot->SetFont(font);
+      container_->AddChildView(dot);
+    }
+  }
+
+  virtual ~LoadingAnimationView() {}
+
+  // views::View implementation.
+  virtual void SetVisible(bool visible) OVERRIDE {
+    if (visible)
+      animation_.Start();
+    else
+      animation_.Reset();
+
+    views::View::SetVisible(visible);
+  }
+
+  virtual void Layout() OVERRIDE {
+    gfx::Size container_size = container_->GetPreferredSize();
+    gfx::Rect container_bounds((width() - container_size.width()) / 2,
+                               (height() - container_size.height()) / 2,
+                               container_size.width(),
+                               container_size.height());
+    container_->SetBoundsRect(container_bounds);
+    container_->Layout();
+
+    for (size_t i = 0; i < 3; ++i) {
+      views::View* dot = container_->child_at(i + 1);
+      dot->SetY(dot->y() + animation_.GetCurrentValueForDot(i) * 10.0);
+    }
+  }
+
+  // ui::AnimationDelegate implementation.
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+    DCHECK_EQ(animation, &animation_);
+    Layout();
+  }
+
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {}
+
+ private:
+  // Contains the "Loading" label and the dots.
+  views::View* container_;
+
+  LoadingAnimation animation_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoadingAnimationView);
 };
 
 }  // namespace
@@ -1231,13 +1309,10 @@ void AutofillDialogViews::UpdatesFinished() {
 
 void AutofillDialogViews::UpdateAccountChooser() {
   account_chooser_->Update();
-  // TODO(estade): replace this with a better loading image/animation.
-  // See http://crbug.com/230932
-  base::string16 new_loading_message = (delegate_->ShouldShowSpinner() ?
-      ASCIIToUTF16("Loading...") : base::string16());
-  if (new_loading_message != loading_shield_->text()) {
-    loading_shield_->SetText(new_loading_message);
-    loading_shield_->SetVisible(!new_loading_message.empty());
+
+  bool show_loading = delegate_->ShouldShowSpinner();
+  if (show_loading != loading_shield_->visible()) {
+    loading_shield_->SetVisible(show_loading);
     Layout();
   }
 
@@ -1773,13 +1848,8 @@ void AutofillDialogViews::InitChildViews() {
   scrollable_area_->SetContents(CreateDetailsContainer());
   AddChildView(scrollable_area_);
 
-  loading_shield_ = new views::Label();
+  loading_shield_ = new LoadingAnimationView(delegate_->SpinnerText());
   loading_shield_->SetVisible(false);
-  loading_shield_->set_background(views::Background::CreateSolidBackground(
-      GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_DialogBackground)));
-  loading_shield_->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::BaseFont).DeriveFont(15));
   AddChildView(loading_shield_);
 
   sign_in_webview_ = new views::WebView(delegate_->profile());

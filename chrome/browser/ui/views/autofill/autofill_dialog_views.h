@@ -614,7 +614,7 @@ class AutofillDialogViews : public AutofillDialogView,
   views::View* details_container_;
 
   // A view that overlays |this| (for "loading..." messages).
-  views::Label* loading_shield_;
+  views::View* loading_shield_;
 
   // The view that completely overlays the dialog (used for the splash page).
   OverlayView* overlay_view_;

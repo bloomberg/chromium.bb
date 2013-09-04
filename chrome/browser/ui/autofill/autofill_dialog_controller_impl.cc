@@ -668,6 +668,27 @@ string16 AutofillDialogControllerImpl::DialogTitle() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_TITLE);
 }
 
+string16 AutofillDialogControllerImpl::AccountChooserText() const {
+  if (!account_chooser_model_.WalletIsSelected())
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PAYING_WITHOUT_WALLET);
+
+  if (SignedInState() == SIGNED_IN)
+    return account_chooser_model_.active_wallet_account_name();
+
+  // In this case, the account chooser should be showing the signin link.
+  return string16();
+}
+
+string16 AutofillDialogControllerImpl::SignInLinkText() const {
+  return l10n_util::GetStringUTF16(
+      signin_registrar_.IsEmpty() ? IDS_AUTOFILL_DIALOG_SIGN_IN :
+                                    IDS_AUTOFILL_DIALOG_CANCEL_SIGN_IN);
+}
+
+string16 AutofillDialogControllerImpl::SpinnerText() const {
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_LOADING);
+}
+
 string16 AutofillDialogControllerImpl::EditSuggestionText() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EDIT);
 }
@@ -716,23 +737,6 @@ DialogSignedInState AutofillDialogControllerImpl::SignedInState() const {
 bool AutofillDialogControllerImpl::ShouldShowSpinner() const {
   return account_chooser_model_.WalletIsSelected() &&
          SignedInState() == REQUIRES_RESPONSE;
-}
-
-string16 AutofillDialogControllerImpl::AccountChooserText() const {
-  if (!account_chooser_model_.WalletIsSelected())
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PAYING_WITHOUT_WALLET);
-
-  if (SignedInState() == SIGNED_IN)
-    return account_chooser_model_.active_wallet_account_name();
-
-  // In this case, the account chooser should be showing the signin link.
-  return string16();
-}
-
-string16 AutofillDialogControllerImpl::SignInLinkText() const {
-  return l10n_util::GetStringUTF16(
-      signin_registrar_.IsEmpty() ? IDS_AUTOFILL_DIALOG_SIGN_IN :
-                                    IDS_AUTOFILL_DIALOG_CANCEL_SIGN_IN);
 }
 
 bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {

@@ -18,6 +18,7 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_CONST_METHOD0(DialogTitle, string16());
   MOCK_CONST_METHOD0(AccountChooserText, string16());
   MOCK_CONST_METHOD0(SignInLinkText, string16());
+  MOCK_CONST_METHOD0(SpinnerText, string16());
   MOCK_CONST_METHOD0(EditSuggestionText, string16());
   MOCK_CONST_METHOD0(CancelButtonText, string16());
   MOCK_CONST_METHOD0(ConfirmButtonText, string16());

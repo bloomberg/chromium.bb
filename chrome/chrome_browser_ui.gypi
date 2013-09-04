@@ -307,6 +307,8 @@
         'browser/ui/autofill/generated_credit_card_bubble_view.h',
         'browser/ui/autofill/generated_credit_card_bubble_controller.cc',
         'browser/ui/autofill/generated_credit_card_bubble_controller.h',
+        'browser/ui/autofill/loading_animation.cc',
+        'browser/ui/autofill/loading_animation.h',
         'browser/ui/autofill/new_credit_card_bubble_view.cc',
         'browser/ui/autofill/new_credit_card_bubble_view.h',
         'browser/ui/autofill/new_credit_card_bubble_controller.cc',

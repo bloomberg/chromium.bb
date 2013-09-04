@@ -42,6 +42,7 @@ class AutofillDialogViewDelegate {
   virtual string16 DialogTitle() const = 0;
   virtual string16 AccountChooserText() const = 0;
   virtual string16 SignInLinkText() const = 0;
+  virtual string16 SpinnerText() const = 0;
   virtual string16 EditSuggestionText() const = 0;
   virtual string16 CancelButtonText() const = 0;
   virtual string16 ConfirmButtonText() const = 0;
