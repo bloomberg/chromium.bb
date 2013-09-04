@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_APP_REGISTRY_H_
 
 #include <map>
-#include <set>
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -76,43 +76,10 @@ class DriveAppRegistry {
   void UpdateFromAppList(const google_apis::AppList& app_list);
 
  private:
-  // Defines application details that are associated with a given
-  // file extension or content mimetype.
-  struct DriveAppFileSelector {
-    DriveAppFileSelector(
-        const GURL& product_link,
-        const google_apis::InstalledApp::IconList& app_icons,
-        const google_apis::InstalledApp::IconList& document_icons,
-        const std::string& object_type,
-        const std::string& app_id,
-        bool is_primary_selector);
-    ~DriveAppFileSelector();
-    // Product link to the webstore.
-    GURL product_link;
-    // Drive application icon URLs for this app, paired with their size (length
-    // of a side in pixels).
-    google_apis::InstalledApp::IconList app_icons;
-    // Drive document icon URLs for this app, paired with their size (length of
-    // a side in pixels).
-    google_apis::InstalledApp::IconList document_icons;
-    // Object (file) type description.
-    std::string object_type;
-    // Drive app id
-    std::string app_id;
-    // True if the selector is the default one. The default selector should
-    // trigger on file double-click events. Non-default selectors only show up
-    // in "Open with..." pop-up menu.
-    bool is_primary_selector;
-  };
 
   // Defines mapping between file content type selectors (extensions, MIME
   // types) and corresponding app.
-  typedef std::multimap<std::string,
-                        DriveAppFileSelector*> DriveAppFileSelectorMap;
-
-  // Helper map used for deduplication of selector matching results.
-  typedef std::map<const DriveAppFileSelector*,
-                   DriveAppInfo*> SelectorAppList;
+  typedef std::multimap<std::string, DriveAppInfo*> DriveAppFileSelectorMap;
 
   // Part of Update(). Runs upon the completion of fetching the Drive apps
   // data from the server.
@@ -122,7 +89,8 @@ class DriveAppRegistry {
   // Helper function for loading Drive application file |selectors| into
   // corresponding |map|.
   static void AddAppSelectorList(
-      const GURL& product_link,
+      const std::string& web_store_id,
+      const std::string& app_name,
       const google_apis::InstalledApp::IconList& app_icons,
       const google_apis::InstalledApp::IconList& document_icons,
       const std::string& object_type,
@@ -134,12 +102,9 @@ class DriveAppRegistry {
   // Finds matching |apps| from |map| based on provided file |selector|.
   void FindAppsForSelector(const std::string& selector,
                            const DriveAppFileSelectorMap& map,
-                           SelectorAppList* apps) const;
+                           std::vector<DriveAppInfo*>* matched_apps) const;
 
   JobScheduler* scheduler_;
-
-  // Map of web store product URL to application name.
-  std::map<GURL, std::string> url_to_name_map_;
 
   // Map of filename extension to application info.
   DriveAppFileSelectorMap app_extension_map_;
