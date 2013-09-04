@@ -170,6 +170,11 @@ def PrintCompilationResult(path, test):
       These results are left in several different log files by the testsuite
       driver, and are different for MultiSource/SingleSource tests
   '''
+  if not path:
+    # The path, which comes from options['buildpath'], is only valid
+    # and set for the LLVM testsuite.  The LLVM regression/lit tests
+    # don't set buildpath and shouldn't expect to execute this code.
+    return
   logging.debug('RESULTS for %s', test)
   testpath = os.path.join(path, test)
   testdir, testname = os.path.split(testpath)
