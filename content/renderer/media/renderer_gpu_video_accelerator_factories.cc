@@ -223,7 +223,9 @@ void RendererGpuVideoAcceleratorFactories::AsyncCreateTextures(
                         GL_UNSIGNED_BYTE,
                         NULL);
     }
-    gles2->GenMailboxCHROMIUM(created_texture_mailboxes_[i].name);
+    // GLES2Implementation doesn't currently have the fast path of mailbox
+    // generation, but WebGraphicsContext3DCommandBufferImpl does.
+    context_->genMailboxCHROMIUM(created_texture_mailboxes_[i].name);
     gles2->ProduceTextureCHROMIUM(texture_target,
                                   created_texture_mailboxes_[i].name);
   }
