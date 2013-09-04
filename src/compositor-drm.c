@@ -456,7 +456,7 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 		return NULL;
 
 	bo = gbm_bo_import(c->gbm, GBM_BO_IMPORT_WL_BUFFER,
-			   buffer, GBM_BO_USE_SCANOUT);
+			   buffer->resource, GBM_BO_USE_SCANOUT);
 
 	/* Unable to use the buffer for scanout */
 	if (!bo)
@@ -822,7 +822,8 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 		return NULL;
 
 	bo = gbm_bo_import(c->gbm, GBM_BO_IMPORT_WL_BUFFER,
-			   es->buffer_ref.buffer, GBM_BO_USE_SCANOUT);
+			   es->buffer_ref.buffer->resource,
+			   GBM_BO_USE_SCANOUT);
 	if (!bo)
 		return NULL;
 
