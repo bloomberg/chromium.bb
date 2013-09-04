@@ -156,7 +156,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual void NotificationCheckboxStateChanged(DialogNotification::Type type,
                                                 bool checked) OVERRIDE;
   virtual void LegalDocumentLinkClicked(const ui::Range& range) OVERRIDE;
-  virtual void OverlayButtonPressed() OVERRIDE;
   virtual bool OnCancel() OVERRIDE;
   virtual bool OnAccept() OVERRIDE;
   virtual Profile* profile() OVERRIDE;
@@ -283,6 +282,10 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual void ShowNewCreditCardBubble(
       scoped_ptr<CreditCard> new_card,
       scoped_ptr<AutofillProfile> billing_profile);
+
+  // Called when there's nothing left to accept, update, save, or authenticate
+  // in order to fill |form_structure_| and pass data back to the invoking page.
+  void DoFinishSubmit();
 
  private:
   // Whether or not the current request wants credit info back.
@@ -485,8 +488,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // Whether submission is currently waiting for |action| to be handled.
   bool IsSubmitPausedOn(wallet::RequiredAction action) const;
 
-  // Called when there's nothing left to accept, update, save, or authenticate
-  // in order to fill |form_structure_| and pass data back to the invoking page.
+  // Shows a card generation overlay if necessary, then calls DoFinishSubmit.
   void FinishSubmit();
 
   // Writes to prefs the choice of AutofillDataModel for |section|.

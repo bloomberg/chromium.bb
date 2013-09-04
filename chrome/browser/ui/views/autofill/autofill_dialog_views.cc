@@ -600,10 +600,12 @@ void AutofillDialogViews::AccountChooser::LinkClicked(views::Link* source,
 
 // AutofillDialogViews::OverlayView --------------------------------------------
 
-AutofillDialogViews::OverlayView::OverlayView(views::ButtonListener* listener)
-    : image_view_(new views::ImageView()),
+AutofillDialogViews::OverlayView::OverlayView(
+    AutofillDialogViewDelegate* delegate)
+    : delegate_(delegate),
+      image_view_(new views::ImageView()),
       message_stack_(new views::View()),
-      button_(new views::BlueButton(listener, base::string16())) {
+      refresh_timer_(false, false) {
   set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
       GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
 
@@ -615,9 +617,6 @@ AutofillDialogViews::OverlayView::OverlayView(views::ButtonListener* listener)
                            kOverlayTextInterlineSpacing));
   message_stack_->set_border(views::Border::CreateEmptyBorder(
       kDialogEdgePadding, kDialogEdgePadding, 0, kDialogEdgePadding));
-
-  AddChildView(button_);
-  button_->set_focusable(true);
 }
 
 AutofillDialogViews::OverlayView::~OverlayView() {}
@@ -630,14 +629,15 @@ int AutofillDialogViews::OverlayView::GetHeightForContentsForWidth(int width) {
   return kOverlayImageBottomMargin +
       views::kButtonVEdgeMarginNew +
       message_stack_->GetHeightForWidth(width) +
-      image_view_->GetHeightForWidth(width) +
-      (button_->visible() ? button_->GetHeightForWidth(width) +
-          views::kButtonVEdgeMarginNew : 0);
+      image_view_->GetHeightForWidth(width);
+}
+
+void AutofillDialogViews::OverlayView::UpdateState() {
+  SetState(delegate_->GetDialogOverlay());
 }
 
 void AutofillDialogViews::OverlayView::SetState(
-    const DialogOverlayState& state,
-    views::ButtonListener* listener) {
+    const DialogOverlayState& state) {
   // Don't update anything if we're still fading out the old state.
   if (fade_out_)
     return;
@@ -662,13 +662,19 @@ void AutofillDialogViews::OverlayView::SetState(
   }
   message_stack_->SetVisible(message_stack_->child_count() > 0);
 
-  button_->SetVisible(!state.button_text.empty());
-  if (!state.button_text.empty())
-    button_->SetText(state.button_text);
-
   SetVisible(true);
+  InvalidateLayout();
   if (parent())
     parent()->Layout();
+
+  if (state.expiry != base::TimeDelta()) {
+    refresh_timer_.Start(FROM_HERE,
+                         state.expiry,
+                         base::Bind(&OverlayView::UpdateState,
+                                    base::Unretained(this)));
+  } else {
+    refresh_timer_.Stop();
+  }
 }
 
 void AutofillDialogViews::OverlayView::BeginFadeOut() {
@@ -712,17 +718,8 @@ void AutofillDialogViews::OverlayView::Layout() {
     return;
   }
 
-  int y = bounds.bottom() - views::kButtonVEdgeMarginNew;
-  if (button_->visible()) {
-    button_->SizeToPreferredSize();
-    y -= button_->height();
-    button_->SetPosition(gfx::Point(
-        bounds.CenterPoint().x() - button_->width() / 2, y));
-    y -= views::kButtonVEdgeMarginNew;
-  }
-
   int message_height = message_stack_->GetHeightForWidth(bounds.width());
-  y -= message_height;
+  int y = bounds.bottom() - views::kButtonVEdgeMarginNew - message_height;
   message_stack_->SetBounds(bounds.x(), y, bounds.width(), message_height);
 
   gfx::Size image_size = image_view_->GetPreferredSize();
@@ -1284,7 +1281,7 @@ void AutofillDialogViews::Show() {
   if (!splash_image.IsEmpty()) {
     DialogOverlayState state;
     state.image = splash_image;
-    overlay_view_->SetState(state, NULL);
+    overlay_view_->SetState(state);
     overlay_view_->BeginFadeOut();
   }
 }
@@ -1342,7 +1339,8 @@ void AutofillDialogViews::UpdateButtonStrip() {
   UpdateButtonStripExtraView();
   GetDialogClientView()->UpdateDialogButtons();
 
-  overlay_view_->SetState(delegate_->GetDialogOverlay(), this);
+  DialogOverlayState overlay_state = delegate_->GetDialogOverlay();
+  overlay_view_->UpdateState();
 
   ContentsPreferredSizeChanged();
 }
@@ -1666,12 +1664,6 @@ views::NonClientFrameView* AutofillDialogViews::CreateNonClientFrameView(
       delegate_->GetWebContents()->GetBrowserContext());
 }
 
-void AutofillDialogViews::ButtonPressed(views::Button* sender,
-                                        const ui::Event& event) {
-  DCHECK(sender->GetAncestorWithClassName(kOverlayViewClassName));
-  delegate_->OverlayButtonPressed();
-}
-
 void AutofillDialogViews::ContentsChanged(views::Textfield* sender,
                                           const base::string16& new_contents) {
   TextfieldEditedOrActivated(sender, true);
@@ -1859,7 +1851,7 @@ void AutofillDialogViews::InitChildViews() {
       new AutofillDialogSignInDelegate(this,
                                        sign_in_webview_->GetWebContents()));
 
-  overlay_view_ = new OverlayView(this);
+  overlay_view_ = new OverlayView(delegate_);
   overlay_view_->SetVisible(false);
 }
 

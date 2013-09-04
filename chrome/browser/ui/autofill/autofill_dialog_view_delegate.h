@@ -180,9 +180,6 @@ class AutofillDialogViewDelegate {
   // A legal document link has been clicked.
   virtual void LegalDocumentLinkClicked(const ui::Range& range) = 0;
 
-  // A button in the dialog's overlay has been pressed.
-  virtual void OverlayButtonPressed() = 0;
-
   // Called when the view has been cancelled. Returns true if the dialog should
   // now close, or false to keep it open.
   virtual bool OnCancel() = 0;

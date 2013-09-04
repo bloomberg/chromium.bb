@@ -281,6 +281,13 @@ class TestAutofillDialogController
     OnWalletSigninError();
   }
 
+  // Skips past the 2 second wait between FinishSubmit and DoFinishSubmit.
+  void ForceFinishSubmit() {
+#if defined(TOOLKIT_VIEWS)
+    DoFinishSubmit();
+#endif
+  }
+
   MOCK_METHOD0(LoadRiskFingerprintData, void());
   using AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData;
   using AutofillDialogControllerImpl::IsEditingExistingData;
@@ -1911,13 +1918,11 @@ TEST_F(AutofillDialogControllerTest, SubmitWithSigninErrorDoesntSetPref) {
       ::prefs::kAutofillDialogPayWithoutWallet));
 }
 
-// Tests that there's an overlay shown while waiting for full wallet items,
-// and on first run an additional expository wallet overlay shown after full
-// wallet items are returned.
+// Tests that there's an overlay shown while waiting for full wallet items.
 // TODO(estade): enable on other platforms when overlays are supported there.
 #if defined(TOOLKIT_VIEWS)
 TEST_F(AutofillDialogControllerTest, WalletFirstRun) {
-  // Simulate first run.
+  // Simulate fist run.
   PrefService* prefs = profile()->GetPrefs();
   prefs->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet, false);
   SetUpControllerWithFormData(DefaultFormData());
@@ -1934,27 +1939,11 @@ TEST_F(AutofillDialogControllerTest, WalletFirstRun) {
   EXPECT_FALSE(controller()->GetDialogOverlay().image.IsEmpty());
   EXPECT_FALSE(form_structure());
 
-  controller()->OverlayButtonPressed();
-  EXPECT_TRUE(prefs->GetBoolean(::prefs::kAutofillDialogHasPaidWithWallet));
+  // Don't wait for 2 seconds.
+  controller()->ForceFinishSubmit();
   EXPECT_TRUE(form_structure());
 }
 #endif
-
-// On second run, the second overlay doesn't show.
-TEST_F(AutofillDialogControllerTest, WalletSecondRun) {
-  SwitchToWallet();
-  EXPECT_TRUE(controller()->GetDialogOverlay().image.IsEmpty());
-
-  SubmitWithWalletItems(CompleteAndValidWalletItems());
-  EXPECT_FALSE(controller()->GetDialogOverlay().image.IsEmpty());
-
-  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
-      ::prefs::kAutofillDialogHasPaidWithWallet));
-  controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
-  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
-      ::prefs::kAutofillDialogHasPaidWithWallet));
-  EXPECT_TRUE(form_structure());
-}
 
 TEST_F(AutofillDialogControllerTest, ViewSubmitSetsPref) {
   ASSERT_FALSE(profile()->GetPrefs()->HasPrefPath(
@@ -1995,6 +1984,7 @@ TEST_F(AutofillDialogControllerTest, ViewSubmitSetsPref) {
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
+  controller()->ForceFinishSubmit();
 
   EXPECT_TRUE(profile()->GetPrefs()->HasPrefPath(
       ::prefs::kAutofillDialogPayWithoutWallet));
@@ -2025,7 +2015,9 @@ TEST_F(AutofillDialogControllerTest, HideWalletEmail) {
 
   controller()->OnAccept();
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
+  controller()->ForceFinishSubmit();
 
+  ASSERT_TRUE(form_structure());
   size_t i = 0;
   for (; i < form_structure()->field_count(); ++i) {
     if (form_structure()->field(i)->Type().GetStorableType() == EMAIL_ADDRESS) {
@@ -2042,6 +2034,8 @@ TEST_F(AutofillDialogControllerTest, AutofillTypes) {
   controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
   controller()->OnAccept();
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
+  controller()->ForceFinishSubmit();
+  ASSERT_TRUE(form_structure());
   ASSERT_EQ(20U, form_structure()->field_count());
   EXPECT_EQ(EMAIL_ADDRESS,
             form_structure()->field(0)->Type().GetStorableType());
@@ -2203,6 +2197,7 @@ TEST_F(AutofillDialogControllerTest, ShippingSectionCanBeHiddenForWallet) {
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   SubmitWithWalletItems(wallet_items.Pass());
   controller()->OnDidGetFullWallet(wallet::GetTestFullWalletInstrumentOnly());
+  controller()->ForceFinishSubmit();
   EXPECT_TRUE(form_structure());
 }
 
@@ -2291,6 +2286,7 @@ TEST_F(AutofillDialogControllerTest, GeneratedCardBubbleShown) {
 
   SubmitWithWalletItems(CompleteAndValidWalletItems());
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
+  controller()->ForceFinishSubmit();
   controller()->ViewClosed();
 
   EXPECT_EQ(0, mock_new_card_bubble_controller()->bubbles_shown());

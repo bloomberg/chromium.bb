@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -187,10 +188,11 @@ struct SuggestionState {
 struct DialogOverlayString {
   DialogOverlayString();
   ~DialogOverlayString();
-  // TODO(estade): need to set a color as well.
   base::string16 text;
+  // TODO(estade): should be able to remove this; text is always black.
   SkColor text_color;
   gfx::Font font;
+  // TODO(estade): should be able to remove this; text is always centered.
   gfx::HorizontalAlignment alignment;
 };
 
@@ -203,9 +205,12 @@ struct DialogOverlayState {
   // more or less front and center.
   gfx::Image image;
   // If non-empty, messages to display.
+  // TODO(estade): make this a single string, no longer need to support multiple
+  // messages.
   std::vector<DialogOverlayString> strings;
-  // If non-empty, holds text that should go on a button.
-  base::string16 button_text;
+  // The amount of time this dialog is valid for. After this time has elapsed,
+  // the view should update the overlay.
+  base::TimeDelta expiry;
 };
 
 enum ValidationType {

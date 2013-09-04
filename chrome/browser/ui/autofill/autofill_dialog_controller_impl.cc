@@ -13,9 +13,11 @@
 #include "apps/shell_window_registry.h"
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -456,24 +458,34 @@ scoped_ptr<DialogNotification> GetWalletError(
                                  text)));
 }
 
-gfx::Image GetGeneratedCardImage(const string16& card_number) {
+gfx::Image GetGeneratedCardImage(const base::string16& card_number,
+                                 const base::string16& name) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::ImageSkia* card =
       rb.GetImageSkiaNamed(IDR_AUTOFILL_GENERATED_CARD);
   gfx::Canvas canvas(card->size(), ui::SCALE_FACTOR_100P, false);
   canvas.DrawImageInt(*card, 0, 0);
 
+  // TODO(estade): space the text out a bit better. We might need a larger
+  // card image.
   gfx::Rect display_rect(gfx::Point(), card->size());
-  display_rect.Inset(14, 0, 14, 0);
-  // TODO(estade): fallback font for systems that don't have Helvetica?
-  gfx::Font helvetica("Helvetica", 14);
+  display_rect.Inset(8, 0, 14, 0);
+  gfx::Font monospace("monospace", 12);
   gfx::ShadowValues shadows;
   shadows.push_back(gfx::ShadowValue(gfx::Point(0, 1),
                     0.0,
                     SkColorSetARGB(85, 0, 0, 0)));
   canvas.DrawStringWithShadows(
       card_number,
-      helvetica,
+      monospace,
+      SK_ColorWHITE,
+      display_rect, 0, 0, shadows);
+
+  base::string16 capitalized_name = base::i18n::ToUpper(name);
+  display_rect.set_y(24);
+  canvas.DrawStringWithShadows(
+      capitalized_name,
+      monospace,
       SK_ColorWHITE,
       display_rect, 0, 0, shadows);
 
@@ -783,6 +795,8 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
   state.strings.push_back(DialogOverlayString());
   DialogOverlayString& string = state.strings.back();
   string.font = rb.GetFont(ui::ResourceBundle::BaseFont).DeriveFont(4);
+  string.alignment = gfx::ALIGN_CENTER;
+  string.text_color = SK_ColorBLACK;
 
   // First-run, post-submit, Wallet expository page.
   if (full_wallet_ && full_wallet_->required_actions().empty()) {
@@ -790,33 +804,29 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
         full_wallet_->GetInfo(AutofillType(CREDIT_CARD_NUMBER));
     DCHECK_EQ(16U, cc_number.size());
     state.image = GetGeneratedCardImage(
-        ASCIIToUTF16("xxxx xxxx xxxx ") +
-        cc_number.substr(cc_number.size() - 4));
+        ASCIIToUTF16("XXXX XXXX XXXX ") +
+            cc_number.substr(cc_number.size() - 4),
+        full_wallet_->billing_address()->recipient_name());
+
     string.text = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_CARD_GENERATION_DONE);
-    string.text_color = SK_ColorBLACK;
-    string.alignment = gfx::ALIGN_CENTER;
-
     state.strings.push_back(DialogOverlayString());
-    DialogOverlayString& subtext = state.strings.back();
-    subtext.font = rb.GetFont(ui::ResourceBundle::BaseFont);
-    subtext.text_color = SkColorSetRGB(102, 102, 102);
-    subtext.text = l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_DIALOG_CARD_GENERATION_EXPLANATION);
-    subtext.alignment = gfx::ALIGN_CENTER;
-
-    state.button_text = l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_DIALOG_CARD_GENERATION_OK_BUTTON);
   } else {
-    // TODO(estade): fix this (animation?).
-    state.image =
-        GetGeneratedCardImage(ASCIIToUTF16("xxxx xxxx xx..."));
+    // Generate a random card number. Tell the view to update it 100ms from now
+    // (at which point we'll generate another random card number).
+    std::string card_number;
+    for (size_t i = 0; i < 4; ++i) {
+      int part = base::RandInt(0, 10000);
+      base::StringAppendF(&card_number, "%04d ", part);
+    }
+    state.image = GetGeneratedCardImage(
+        ASCIIToUTF16(card_number),
+        ActiveInstrument()->address().recipient_name());
+    state.expiry = base::TimeDelta::FromMilliseconds(100);
 
     // "Submitting" waiting page.
     string.text = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_CARD_GENERATION_IN_PROGRESS);
-    string.text_color = SK_ColorBLACK;
-    string.alignment = gfx::ALIGN_CENTER;
   }
 
   return state;
@@ -1858,14 +1868,6 @@ void AutofillDialogControllerImpl::LegalDocumentLinkClicked(
   }
 
   NOTREACHED();
-}
-
-void AutofillDialogControllerImpl::OverlayButtonPressed() {
-  DCHECK(is_submitting_);
-  DCHECK(full_wallet_);
-  profile_->GetPrefs()->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet,
-                                   true);
-  FinishSubmit();
 }
 
 bool AutofillDialogControllerImpl::OnCancel() {
@@ -3052,23 +3054,29 @@ void AutofillDialogControllerImpl::HandleSaveOrUpdateRequiredActions(
 }
 
 void AutofillDialogControllerImpl::FinishSubmit() {
-  if (IsPayingWithWallet() &&
-      !profile_->GetPrefs()->GetBoolean(
-          ::prefs::kAutofillDialogHasPaidWithWallet)) {
-    if (GetDialogType() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE) {
-      // To get past this point, the view must call back OverlayButtonPressed.
 #if defined(TOOLKIT_VIEWS)
-      ScopedViewUpdates updates(view_.get());
-      view_->UpdateButtonStrip();
-#else
-      // TODO(estade): implement overlays on other platforms.
-      OverlayButtonPressed();
+  // TODO(estade): implement overlays on other platforms.
+  if (IsPayingWithWallet()) {
+    // To get past this point, the view must call back OverlayButtonPressed.
+    ScopedViewUpdates updates(view_.get());
+    view_->UpdateButtonStrip();
+
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&AutofillDialogControllerImpl::DoFinishSubmit,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(2));
+    return;
+  }
 #endif
-      return;
-    } else {
-      profile_->GetPrefs()->SetBoolean(
-        ::prefs::kAutofillDialogHasPaidWithWallet, true);
-    }
+
+  DoFinishSubmit();
+}
+
+void AutofillDialogControllerImpl::DoFinishSubmit() {
+  if (IsPayingWithWallet()) {
+    profile_->GetPrefs()->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet,
+                                     true);
   }
 
   FillOutputForSection(SECTION_EMAIL);

@@ -65,7 +65,6 @@ class AutofillDialogViews : public AutofillDialogView,
                             public TestableAutofillDialogView,
                             public views::DialogDelegateView,
                             public views::WidgetObserver,
-                            public views::ButtonListener,
                             public views::TextfieldController,
                             public views::FocusChangeListener,
                             public views::ComboboxListener,
@@ -140,10 +139,6 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
   virtual void OnWidgetBoundsChanged(views::Widget* widget,
                                      const gfx::Rect& new_bounds) OVERRIDE;
-
-  // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
 
   // views::TextfieldController implementation:
   virtual void ContentsChanged(views::Textfield* sender,
@@ -245,8 +240,7 @@ class AutofillDialogViews : public AutofillDialogView,
   class OverlayView : public views::View,
                       public ui::AnimationDelegate {
    public:
-    // The listener is informed when |button_| is pressed.
-    explicit OverlayView(views::ButtonListener* listener);
+    explicit OverlayView(AutofillDialogViewDelegate* delegate);
     virtual ~OverlayView();
 
     // Returns a height which should be used when the contents view has width
@@ -254,9 +248,12 @@ class AutofillDialogViews : public AutofillDialogView,
     // dialog's contents.
     int GetHeightForContentsForWidth(int width);
 
-    // Sets properties that should be displayed.
-    void SetState(const DialogOverlayState& state,
-                  views::ButtonListener* listener);
+    // Sets the state to whatever |delegate_| says it should be.
+    void UpdateState();
+
+    // Sets properties that should be displayed. Note that |state| may not come
+    // from |delegate_|.
+    void SetState(const DialogOverlayState& state);
 
     // Fades the view out after a delay.
     void BeginFadeOut();
@@ -279,17 +276,21 @@ class AutofillDialogViews : public AutofillDialogView,
     // Gets the bounds of this view without the frame view's bubble border.
     gfx::Rect ContentBoundsSansBubbleBorder();
 
+    // The delegate that provides |state| when UpdateState is called.
+    AutofillDialogViewDelegate* delegate_;
+
     // Child View. Front and center.
     views::ImageView* image_view_;
     // Child View. When visible, below |image_view_|.
     views::View* message_stack_;
-    // Child View. When visible, below |message_stack_|.
-    views::LabelButton* button_;
 
     // This MultiAnimation is used to first fade out the contents of the
     // overlay, then fade out the background of the overlay (revealing the
     // dialog behind the overlay). This avoids cross-fade.
     scoped_ptr<ui::MultiAnimation> fade_out_;
+
+    // A timer that tells |this| when it's time to refresh the overlay.
+    base::Timer refresh_timer_;
 
     DISALLOW_COPY_AND_ASSIGN(OverlayView);
   };
