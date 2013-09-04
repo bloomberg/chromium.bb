@@ -30,7 +30,7 @@ class OverscrollGlow {
   // If |enabled| is false, the effect will be be deactivated until
   // SetEnabled(true) is called.
   // The caller should attach |root_layer| to the desired layer tree.
-  static scoped_ptr<OverscrollGlow> Create(bool enabled);
+  static scoped_ptr<OverscrollGlow> Create(bool enabled, gfx::SizeF size);
 
   // Force loading of any necessary resources.  This function is thread-safe.
   static void EnsureResources();
@@ -79,7 +79,10 @@ class OverscrollGlow {
  private:
   enum Axis { AXIS_X, AXIS_Y };
 
-  OverscrollGlow(bool enabled, const SkBitmap& edge, const SkBitmap& glow);
+  OverscrollGlow(bool enabled,
+                 gfx::SizeF size,
+                 const SkBitmap& edge,
+                 const SkBitmap& glow);
 
   void Pull(base::TimeTicks current_time,
             gfx::Vector2dF added_overscroll);

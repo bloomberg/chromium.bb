@@ -829,7 +829,7 @@ void RenderWidgetHostViewAndroid::CreateOverscrollEffectIfNecessary() {
   if (!overscroll_effect_enabled_ || overscroll_effect_)
     return;
 
-  overscroll_effect_ = OverscrollGlow::Create(true);
+  overscroll_effect_ = OverscrollGlow::Create(true, content_size_in_layer_);
 
   // Prevent future creation attempts on failure.
   if (!overscroll_effect_)

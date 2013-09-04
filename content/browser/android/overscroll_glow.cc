@@ -65,13 +65,14 @@ gfx::Vector2dF ZeroSmallComponents(gfx::Vector2dF vector) {
 
 } // namespace
 
-scoped_ptr<OverscrollGlow> OverscrollGlow::Create(bool enabled) {
+scoped_ptr<OverscrollGlow> OverscrollGlow::Create(bool enabled,
+                                                  gfx::SizeF size) {
   const SkBitmap& edge = g_overscroll_resources.Get().edge_bitmap();
   const SkBitmap& glow = g_overscroll_resources.Get().glow_bitmap();
   if (edge.isNull() || glow.isNull())
     return scoped_ptr<OverscrollGlow>();
 
-  return make_scoped_ptr(new OverscrollGlow(enabled, edge, glow));
+  return make_scoped_ptr(new OverscrollGlow(enabled, size, edge, glow));
 }
 
 void OverscrollGlow::EnsureResources() {
@@ -79,9 +80,11 @@ void OverscrollGlow::EnsureResources() {
 }
 
 OverscrollGlow::OverscrollGlow(bool enabled,
+                               gfx::SizeF size,
                                const SkBitmap& edge,
                                const SkBitmap& glow)
   : enabled_(enabled),
+    size_(size),
     horizontal_overscroll_enabled_(true),
     vertical_overscroll_enabled_(true),
     root_layer_(cc::Layer::Create()) {
