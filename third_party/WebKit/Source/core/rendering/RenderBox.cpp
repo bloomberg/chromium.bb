@@ -331,7 +331,8 @@ void RenderBox::updateGridPositionAfterStyleChange(const RenderStyle* oldStyle)
         && oldStyle->gridColumnEnd() == style()->gridColumnEnd()
         && oldStyle->gridRowStart() == style()->gridRowStart()
         && oldStyle->gridRowEnd() == style()->gridRowEnd()
-        && oldStyle->order() == style()->order())
+        && oldStyle->order() == style()->order()
+        && oldStyle->hasOutOfFlowPosition() == style()->hasOutOfFlowPosition())
         return;
 
     // It should be possible to not dirty the grid in some cases (like moving an explicitly placed grid item).
