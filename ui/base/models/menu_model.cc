@@ -36,11 +36,11 @@ base::string16 MenuModel::GetSublabelAt(int index) const {
   return base::string16();
 }
 
-const gfx::Font* MenuModel::GetLabelFontAt(int index) const {
-  return NULL;
+base::string16 MenuModel::GetMinorTextAt(int index) const {
+  return base::string16();
 }
 
-const gfx::Font* MenuModel::GetSublabelFontAt(int index) const {
+const gfx::Font* MenuModel::GetLabelFontAt(int index) const {
   return NULL;
 }
 

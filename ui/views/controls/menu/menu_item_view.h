@@ -164,6 +164,7 @@ class VIEWS_EXPORT MenuItemView : public View {
                               int item_id,
                               const string16& label,
                               const string16& sublabel,
+                              const string16& minor_text,
                               const gfx::ImageSkia& icon,
                               Type type,
                               ui::MenuSeparatorType separator_style);
@@ -224,6 +225,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   MenuItemView* AppendMenuItemImpl(int item_id,
                                    const string16& label,
                                    const string16& sublabel,
+                                   const string16& minor_text,
                                    const gfx::ImageSkia& icon,
                                    Type type,
                                    ui::MenuSeparatorType separator_style);
@@ -248,6 +250,9 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Sets the subtitle.
   void SetSubtitle(const string16& subtitle);
+
+  // Sets the minor text.
+  void SetMinorText(const string16& minor_text);
 
   // Returns the type of this menu.
   const Type& GetType() const { return type_; }
@@ -474,6 +479,9 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Subtitle/sublabel.
   string16 subtitle_;
+
+  // Minor text.
+  string16 minor_text_;
 
   // Does the title have a mnemonic? Only useful on the root menu item.
   bool has_mnemonics_;

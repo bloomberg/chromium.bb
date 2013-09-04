@@ -2393,7 +2393,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
         wallet_items_->addresses();
     for (size_t i = 0; i < addresses.size(); ++i) {
       std::string key = base::IntToString(i);
-      suggested_shipping_.AddKeyedItemWithSublabel(
+      suggested_shipping_.AddKeyedItemWithMinorText(
           key,
           addresses[i]->DisplayName(),
           addresses[i]->DisplayNameDetail());
@@ -2423,7 +2423,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
               gfx::ImageSkia::CreateFrom1xBitmap(disabled_bitmap));
         }
         std::string key = base::IntToString(i);
-        suggested_cc_billing_.AddKeyedItemWithSublabelAndIcon(
+        suggested_cc_billing_.AddKeyedItemWithMinorTextAndIcon(
             key,
             instruments[i]->DisplayName(),
             instruments[i]->DisplayNameDetail(),
@@ -2449,7 +2449,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
           kAddNewItemKey,
           l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_BILLING_DETAILS));
       if (!wallet_items_->HasRequiredAction(wallet::SETUP_WALLET)) {
-        suggested_cc_billing_.AddKeyedItemWithSublabel(
+        suggested_cc_billing_.AddKeyedItemWithMinorText(
             kManageItemsKey,
             l10n_util::GetStringUTF16(
                 IDS_AUTOFILL_DIALOG_MANAGE_BILLING_DETAILS),
@@ -2536,7 +2536,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
         kManageItemsKey,
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_SHIPPING_ADDRESS));
   } else if (!wallet_items_->HasRequiredAction(wallet::SETUP_WALLET)) {
-    suggested_shipping_.AddKeyedItemWithSublabel(
+    suggested_shipping_.AddKeyedItemWithMinorText(
         kManageItemsKey,
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_SHIPPING_ADDRESS),
         UTF8ToUTF16(wallet::GetManageAddressesUrl().host()));

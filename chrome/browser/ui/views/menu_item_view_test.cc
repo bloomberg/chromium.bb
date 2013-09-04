@@ -218,6 +218,7 @@ class MenuItemViewTestInsert : public MenuItemViewTestBase {
                                           1000,
                                           ASCIIToUTF16("inserted item"),
                                           string16(),
+                                          string16(),
                                           gfx::ImageSkia(),
                                           views::MenuItemView::NORMAL,
                                           ui::NORMAL_SEPARATOR);
@@ -329,6 +330,7 @@ class MenuItemViewTestInsertWithSubmenu : public MenuItemViewTestBase {
     inserted_item_ = menu_->AddMenuItemAt(INSERT_INDEX,
                                           1000,
                                           ASCIIToUTF16("inserted item"),
+                                          string16(),
                                           string16(),
                                           gfx::ImageSkia(),
                                           views::MenuItemView::NORMAL,

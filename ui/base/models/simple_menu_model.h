@@ -38,10 +38,12 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
         int command_id,
         ui::Accelerator* accelerator) = 0;
 
-    // Some command ids have labels, sublabels and icons that change over time.
+    // Some command ids have labels, sublabels, minor text and icons that change
+    // over time.
     virtual bool IsItemForCommandIdDynamic(int command_id) const;
     virtual base::string16 GetLabelForCommandId(int command_id) const;
     virtual base::string16 GetSublabelForCommandId(int command_id) const;
+    virtual base::string16 GetMinorTextForCommandId(int command_id) const;
     // Gets the icon for the item with the specified id, returning true if there
     // is an icon, false otherwise.
     virtual bool GetIconForCommandId(int command_id,
@@ -125,6 +127,9 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   // Sets the sublabel for the item at |index|.
   void SetSublabel(int index, const base::string16& sublabel);
 
+  // Sets the minor text for the item at |index|.
+  void SetMinorText(int index, const base::string16& minor_text);
+
   // Clears all items. Note that it does not free MenuModel of submenu.
   void Clear();
 
@@ -140,6 +145,7 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   virtual int GetCommandIdAt(int index) const OVERRIDE;
   virtual base::string16 GetLabelAt(int index) const OVERRIDE;
   virtual base::string16 GetSublabelAt(int index) const OVERRIDE;
+  virtual base::string16 GetMinorTextAt(int index) const OVERRIDE;
   virtual bool IsItemDynamicAt(int index) const OVERRIDE;
   virtual bool GetAcceleratorAt(int index,
                                 ui::Accelerator* accelerator) const OVERRIDE;

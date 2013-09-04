@@ -45,18 +45,18 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
                             const string16& display_label,
                             const gfx::Image& icon);
 
-  // Adds a label with a sublabel and its identifying key to the model.
+  // Adds a label with a minor text and its identifying key to the model.
   // Keys needn't be unique.
-  void AddKeyedItemWithSublabel(const std::string& key,
+  void AddKeyedItemWithMinorText(const std::string& key,
                                 const string16& display_label,
-                                const string16& display_sublabel);
+                                const string16& display_minor_text);
 
   // As above, but also accepts an image which will be displayed alongside the
   // text.
-  void AddKeyedItemWithSublabelAndIcon(const std::string& key,
-                                       const string16& display_label,
-                                       const string16& display_sublabel,
-                                       const gfx::Image& icon);
+  void AddKeyedItemWithMinorTextAndIcon(const std::string& key,
+                                        const string16& display_label,
+                                        const string16& display_minor_text,
+                                        const gfx::Image& icon);
 
   // Resets the model to empty.
   void Reset();
@@ -146,6 +146,6 @@ class YearComboboxModel : public ui::ComboboxModel {
   DISALLOW_COPY_AND_ASSIGN(YearComboboxModel);
 };
 
-}  // autofill
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_MODELS_H_
