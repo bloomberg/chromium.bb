@@ -26,7 +26,7 @@
 #ifndef V8ScriptRunner_h
 #define V8ScriptRunner_h
 
-#include "core/loader/CrossOriginAccessControl.h"
+#include "core/fetch/CrossOriginAccessControl.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"

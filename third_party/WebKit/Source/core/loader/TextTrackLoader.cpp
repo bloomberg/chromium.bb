@@ -29,11 +29,11 @@
 
 #include "FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
+#include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/TextTrackResource.h"
 #include "core/html/track/WebVTTParser.h"
-#include "core/loader/CrossOriginAccessControl.h"
 #include "core/platform/Logging.h"
 #include "core/platform/SharedBuffer.h"
 #include "weborigin/SecurityOrigin.h"

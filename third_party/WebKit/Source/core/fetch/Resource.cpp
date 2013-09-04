@@ -24,6 +24,8 @@
 #include "config.h"
 #include "core/fetch/Resource.h"
 
+#include "core/fetch/CachedMetadata.h"
+#include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceClientWalker.h"
@@ -31,8 +33,6 @@
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/loader/CachedMetadata.h"
-#include "core/loader/CrossOriginAccessControl.h"
 #include "core/platform/Logging.h"
 #include "core/platform/PurgeableBuffer.h"
 #include "core/platform/SharedBuffer.h"

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/loader/CachedMetadata.h"
+#include "core/fetch/CachedMetadata.h"
 
 namespace WebCore {
 

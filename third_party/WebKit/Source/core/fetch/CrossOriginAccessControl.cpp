@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/loader/CrossOriginAccessControl.h"
+#include "core/fetch/CrossOriginAccessControl.h"
 
 #include "core/platform/network/HTTPParsers.h"
 #include "core/platform/network/ResourceRequest.h"

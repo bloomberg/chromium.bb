@@ -34,7 +34,7 @@
 #include "bindings/v8/ScriptInstance.h"
 #include "bindings/v8/ScriptValue.h"
 
-#include "core/loader/CrossOriginAccessControl.h"
+#include "core/fetch/CrossOriginAccessControl.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefCounted.h"

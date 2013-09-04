@@ -31,7 +31,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/SecurityContext.h"
-#include "core/loader/CrossOriginAccessControl.h"
+#include "core/fetch/CrossOriginAccessControl.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/page/DOMTimer.h"
 #include "core/platform/LifecycleContext.h"

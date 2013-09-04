@@ -30,8 +30,8 @@
 #include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8RecursionScope.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/fetch/CachedMetadata.h"
 #include "core/fetch/ScriptResource.h"
-#include "core/loader/CachedMetadata.h"
 #include "core/platform/chromium/TraceEvent.h"
 
 namespace WebCore {
