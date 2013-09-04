@@ -30,6 +30,8 @@ var nodeParentPairs = [];
 
 // Script entry point.
 
+var tree;
+
 function prepareWebKitXMLViewer(noStyleMessage)
 {
     var html = createHTMLElement('html');
@@ -60,10 +62,9 @@ function prepareWebKitXMLViewer(noStyleMessage)
     headerSpan.textContent = noStyleMessage;
     header.appendChild(createHTMLElement('br'));
 
-    var tree = createHTMLElement('div');
+    tree = createHTMLElement('div');
     body.appendChild(tree);
     tree.classList.add('pretty-print');
-    tree.id = 'tree';
     window.onload = sourceXMLLoaded;
 }
 
@@ -72,10 +73,9 @@ function sourceXMLLoaded()
     var sourceXML = document.getElementById('webkit-xml-viewer-source-xml');
     if (!sourceXML)
         return; // Stop if some XML tree extension is already processing this document
-    var root = document.getElementById('tree');
 
     for (var child = sourceXML.firstChild; child; child = child.nextSibling)
-        nodeParentPairs.push({parentElement: root, node: child});
+        nodeParentPairs.push({parentElement: tree, node: child});
 
     for (var i = 0; i < nodeParentPairs.length; i++)
         processNode(nodeParentPairs[i].parentElement, nodeParentPairs[i].node);
