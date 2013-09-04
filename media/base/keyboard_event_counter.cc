@@ -15,7 +15,8 @@ KeyboardEventCounter::~KeyboardEventCounter() {}
 
 void KeyboardEventCounter::Reset() {
   pressed_keys_.clear();
-  total_key_presses_ = 0;
+  base::subtle::NoBarrier_Store(
+      reinterpret_cast<base::subtle::AtomicWord*>(&total_key_presses_), 0);
 }
 
 void KeyboardEventCounter::OnKeyboardEvent(ui::EventType event,
