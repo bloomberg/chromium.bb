@@ -134,6 +134,8 @@ ParallelTestLauncher::ParallelTestLauncher(size_t jobs)
 
 ParallelTestLauncher::~ParallelTestLauncher() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  worker_pool_->Shutdown();
 }
 
 void ParallelTestLauncher::LaunchChildGTestProcess(

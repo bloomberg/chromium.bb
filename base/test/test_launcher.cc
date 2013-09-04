@@ -121,6 +121,10 @@ class ResultsPrinter {
   // Called when test named |name| is scheduled to be started.
   void OnTestStarted(const std::string& name);
 
+  // Called when all tests that were to be started have been scheduled
+  // to be started.
+  void OnAllTestsStarted();
+
   // Adds |result| to the stored test results.
   void AddTestResult(const TestResult& result);
 
@@ -226,6 +230,18 @@ ResultsPrinter::~ResultsPrinter() {
 void ResultsPrinter::OnTestStarted(const std::string& name) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ++test_started_count_;
+}
+
+void ResultsPrinter::OnAllTestsStarted() {
+  if (test_started_count_ == 0) {
+    fprintf(stdout, "0 tests run\n");
+    fflush(stdout);
+
+    // No tests have actually been started, so fire the callback
+    // to avoid a hang.
+    callback_.Run(true);
+    delete this;
+  }
 }
 
 void ResultsPrinter::AddTestResult(const TestResult& result) {
@@ -405,6 +421,10 @@ void RunTests(TestLauncherDelegate* launcher_delegate,
       FROM_HERE,
       Bind(&TestLauncherDelegate::RunRemainingTests,
       Unretained(launcher_delegate)));
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      Bind(&ResultsPrinter::OnAllTestsStarted, Unretained(printer)));
 }
 
 void RunTestIteration(TestLauncherDelegate* launcher_delegate,
