@@ -30,32 +30,22 @@ function test(destination, frame_doc)
         return;
     }
 
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
+    internals.settings.setAsynchronousSpellCheckingEnabled(false);
     internals.settings.setUnifiedTextCheckerEnabled(true);
-
-    function waitForMarkersToAppear(node, nretry)
-    {
-        if (nretry > 0 && !internals.markerCountForNode(node, "spelling")) {
-            window.setTimeout(function() { waitForMarkersToAppear(node, nretry - 1); }, 1);
-        }
-    }
 
     destination_elm = destination;
     destination_elm_in_frame = frame_doc.body;
     destination_elm.focus();
     document.execCommand("InsertText", false, "zz.");
-    waitForMarkersToAppear(destination_elm.childNodes[0], 10);
     shouldBe('internals.markerCountForNode(destination_elm.childNodes[0], "spelling")', '1');
     destination_elm_in_frame.focus();
     frame_doc.execCommand("InsertText", false, "zz.");
-    waitForMarkersToAppear(destination_elm_in_frame.childNodes[0], 10);
     shouldBe('internals.markerCountForNode(destination_elm_in_frame.childNodes[0], "spelling")', '1');
     internals.setContinuousSpellCheckingEnabled(false);
     shouldBe('internals.markerCountForNode(destination_elm.childNodes[0], "spelling")', '0');
     shouldBe('internals.markerCountForNode(destination_elm_in_frame.childNodes[0], "spelling")', '0');
     destination_elm.focus();
     internals.setContinuousSpellCheckingEnabled(true);
-    waitForMarkersToAppear(destination_elm.childNodes[0], 10);
     shouldBe('internals.markerCountForNode(destination_elm.childNodes[0], "spelling")', '1');
 
     finishJSTest();

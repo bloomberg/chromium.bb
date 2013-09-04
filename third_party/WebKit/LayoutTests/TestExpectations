@@ -1219,7 +1219,6 @@ Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Pass Failure ]
 crbug.com/276861 [ Win ] fast/filesystem/op-restricted-unicode.html [ Failure Pass ]
 
 crbug.com/278318 [ Win7 Lion Debug Release SnowLeopard Debug Release Linux ] editing/spelling/spellcheck-editable-on-focus.html [ Failure Pass ]
-crbug.com/282426 editing/spelling/spellcheck-disable-enable.html [ Failure ]
 
 crbug.com/282708 fast/regions/changing-writing-mode-2.html [ ImageOnlyFailure ]
 crbug.com/282708 fast/regions/changing-writing-mode-5.html [ ImageOnlyFailure ]
