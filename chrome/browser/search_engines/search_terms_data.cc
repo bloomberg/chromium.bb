@@ -177,7 +177,9 @@ std::string UIThreadSearchTermsData::NTPIsThemedParam() const {
   // TODO(dhollowa): Determine fraction of custom themes that don't affect the
   // NTP background and/or color.
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
-  if (theme_service && !theme_service->UsingDefaultTheme())
+  // NTP is considered themed if the theme is not default and not native (GTK+).
+  if (theme_service && !theme_service->UsingDefaultTheme() &&
+      !theme_service->UsingNativeTheme())
     return "es_th=1&";
 #endif  // defined(ENABLE_THEMES)
 
