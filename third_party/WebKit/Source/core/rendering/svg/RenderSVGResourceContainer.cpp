@@ -155,6 +155,14 @@ void RenderSVGResourceContainer::removeClient(RenderObject* client)
     m_clients.remove(client);
 }
 
+void RenderSVGResourceContainer::addClientRenderLayer(Node* node)
+{
+    ASSERT(node);
+    if (!node->renderer() || !node->renderer()->hasLayer())
+        return;
+    m_clientLayers.add(toRenderLayerModelObject(node->renderer())->layer());
+}
+
 void RenderSVGResourceContainer::addClientRenderLayer(RenderLayer* client)
 {
     ASSERT(client);

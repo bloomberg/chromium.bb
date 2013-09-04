@@ -42,6 +42,8 @@ public:
     static PassRefPtr<SVGFilterElement> create(const QualifiedName&, Document&);
 
     void setFilterRes(unsigned filterResX, unsigned filterResY);
+    void addClient(Node*);
+    void removeClient(Node*);
 
 private:
     SVGFilterElement(const QualifiedName&, Document&);
@@ -73,6 +75,8 @@ private:
         DECLARE_ANIMATED_STRING(Href, href)
         DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
+
+    HashSet<RefPtr<Node> > m_clientsToAdd;
 };
 
 inline SVGFilterElement* toSVGFilterElement(Node* node)
