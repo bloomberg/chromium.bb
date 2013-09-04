@@ -121,7 +121,7 @@ void ContainerNode::takeAllChildrenFrom(ContainerNode* oldParent)
         // (if the document changed or oldParent was in a shadow tree, AND *this is in a shadow tree).
         // Can we do better?
         treeScope().adoptIfNeeded(child.get());
-        parserAppendChild(child.get(), DeprecatedAttachNow);
+        parserAppendChild(child.get());
     }
 }
 
