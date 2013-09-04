@@ -217,7 +217,7 @@ TEST_F(LauncherTooltipManagerTest, ShouldHideForEvents) {
   EXPECT_FALSE(TooltipIsVisible());
 }
 
-TEST_F(LauncherTooltipManagerTest, HideForMouseEvent) {
+TEST_F(LauncherTooltipManagerTest, HideForMouseMoveEvent) {
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
 
@@ -239,6 +239,41 @@ TEST_F(LauncherTooltipManagerTest, HideForMouseEvent) {
 
   // Should hide if the mouse is out of the tooltip.
   test_api.set_location(tooltip_rect.origin() + gfx::Vector2d(-1, -1));
+  event_handler->OnMouseEvent(&mouse_event);
+  EXPECT_FALSE(mouse_event.handled());
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(TooltipIsVisible());
+}
+
+//Checks that tooltip is hidden when mouse is pressed in anywhere.
+TEST_F(LauncherTooltipManagerTest, HideForMouseClickEvent) {
+  ShowImmediately();
+  ASSERT_TRUE(TooltipIsVisible());
+
+  aura::RootWindow* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
+  ui::EventHandler* event_handler = GetEventHandler();
+
+  gfx::Rect tooltip_rect = GetTooltipWidget()->GetNativeWindow()->bounds();
+  ASSERT_FALSE(tooltip_rect.IsEmpty());
+
+  // Should hide if the mouse is pressed in the tooltip.
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, tooltip_rect.CenterPoint(),
+                             tooltip_rect.CenterPoint(), ui::EF_NONE);
+
+  SetEventTarget(root_window, &mouse_event);
+  event_handler->OnMouseEvent(&mouse_event);
+  EXPECT_FALSE(mouse_event.handled());
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(TooltipIsVisible());
+
+  // Should hide if the mouse is pressed outside of the tooltip.
+  ShowImmediately();
+  ASSERT_TRUE(TooltipIsVisible());
+
+  ui::LocatedEvent::TestApi test_api(&mouse_event);
+  test_api.set_location(tooltip_rect.origin() + gfx::Vector2d(-1, -1));
+
+  SetEventTarget(root_window, &mouse_event);
   event_handler->OnMouseEvent(&mouse_event);
   EXPECT_FALSE(mouse_event.handled());
   RunAllPendingInMessageLoop();

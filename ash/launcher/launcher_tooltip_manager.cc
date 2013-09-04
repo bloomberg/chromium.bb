@@ -256,6 +256,12 @@ void LauncherTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(view_);
   DCHECK(launcher_view_);
 
+  // Pressing the mouse button anywhere should close the tooltip.
+  if (event->type() == ui::ET_MOUSE_PRESSED) {
+    CloseSoon();
+    return;
+  }
+
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (widget_->GetNativeWindow()->GetRootWindow() != target->GetRootWindow()) {
     CloseSoon();

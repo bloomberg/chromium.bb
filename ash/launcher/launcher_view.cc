@@ -1517,7 +1517,6 @@ void LauncherView::PointerPressedOnButton(views::View* view,
   if (drag_view_)
     return;
 
-  tooltip_->Close();
   int index = view_model_->GetIndexOfView(view);
   if (index == -1)
     return;
@@ -1604,8 +1603,6 @@ void LauncherView::ButtonPressed(views::Button* sender,
   // Do not handle mouse release during drag.
   if (dragging())
     return;
-
-  tooltip_->Close();
 
   if (sender == overflow_button_) {
     ToggleOverflowBubble();
@@ -1696,8 +1693,6 @@ void LauncherView::ShowContextMenuForView(views::View* source,
       model_->items()[view_index].type == TYPE_APP_LIST) {
     view_index = -1;
   }
-
-  tooltip_->Close();
 
   if (view_index == -1) {
     Shell::GetInstance()->ShowContextMenu(point, source_type);
