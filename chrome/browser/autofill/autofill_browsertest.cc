@@ -562,9 +562,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithInvalidEmail) {
 // Test profile is saved if phone number is valid in selected country.
 // The data file contains two profiles with valid phone numbers and two
 // profiles with invalid phone numbers from their respective country.
-// DISABLED: http://crbug.com/281582
-IN_PROC_BROWSER_TEST_F(AutofillTest,
-                       DISABLED_ProfileSavedWithValidCountryPhone) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileSavedWithValidCountryPhone) {
   ASSERT_TRUE(test_server()->Start());
   std::vector<FormMap> profiles;
 
@@ -619,7 +617,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
   ASSERT_EQ(ASCIIToUTF16("(408) 871-4567"),
             personal_data_manager()->GetProfiles()[0]->GetRawInfo(
                 PHONE_HOME_WHOLE_NUMBER));
-  ASSERT_EQ(ASCIIToUTF16("+49 40/808179000"),
+  ASSERT_EQ(ASCIIToUTF16("+49 40 808179000"),
             personal_data_manager()->GetProfiles()[1]->GetRawInfo(
                 PHONE_HOME_WHOLE_NUMBER));
 }
