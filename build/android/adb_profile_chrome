@@ -103,6 +103,7 @@ do_timed_capture() {
   echo "done"
 
   echo -n "Downloading trace..."
+  sleep $[${INTERVAL} / 4 + 1]
   download_latest_trace
   echo "done"
 
