@@ -58,7 +58,8 @@ void V8WorkerGlobalScopeEventListener::handleEvent(ScriptExecutionContext* conte
     // See issue 889829.
     RefPtr<V8AbstractEventListener> protect(this);
 
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = getIsolateFromScriptExecutionContext(context);
+    v8::HandleScope handleScope(isolate);
 
     WorkerScriptController* script = toWorkerGlobalScope(context)->script();
     if (!script)
@@ -72,7 +73,6 @@ void V8WorkerGlobalScopeEventListener::handleEvent(ScriptExecutionContext* conte
     v8::Context::Scope scope(v8Context);
 
     // Get the V8 wrapper for the event object.
-    v8::Isolate* isolate = v8Context->GetIsolate();
     v8::Handle<v8::Value> jsEvent = toV8(event, v8::Handle<v8::Object>(), isolate);
 
     invokeEventHandler(context, event, v8::Local<v8::Value>::New(isolate, jsEvent));

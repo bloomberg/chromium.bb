@@ -109,7 +109,7 @@ public:
     ScriptStateProtectedPtr(ScriptState* scriptState)
         : m_scriptState(scriptState)
     {
-        v8::HandleScope handleScope;
+        v8::HandleScope handleScope(scriptState->isolate());
         // Keep the context from being GC'ed. ScriptState is guaranteed to be live while the context is live.
         m_context.set(scriptState->isolate(), scriptState->context());
     }

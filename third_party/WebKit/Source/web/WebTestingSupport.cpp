@@ -34,13 +34,13 @@ namespace WebKit {
 
 void WebTestingSupport::injectInternalsObject(WebFrame* frame)
 {
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     WebCoreTestSupport::injectInternalsObject(frame->mainWorldScriptContext());
 }
 
 void WebTestingSupport::resetInternalsObject(WebFrame* frame)
 {
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     WebCoreTestSupport::resetInternalsObject(frame->mainWorldScriptContext());
 }
 

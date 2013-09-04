@@ -633,6 +633,8 @@ namespace WebCore {
 
     v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate*, ScriptWrappable*, v8::Handle<v8::String> key);
 
+    v8::Isolate* getIsolateFromScriptExecutionContext(ScriptExecutionContext*);
+
 } // namespace WebCore
 
 #endif // V8Binding_h

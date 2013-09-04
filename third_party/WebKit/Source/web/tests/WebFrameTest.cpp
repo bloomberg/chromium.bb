@@ -214,7 +214,7 @@ TEST_F(WebFrameTest, FrameForEnteredContext)
 
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "iframes_test.html", true);
 
-    v8::HandleScope scope;
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
     EXPECT_EQ(m_webView->mainFrame(),
               WebFrame::frameForContext(
                   m_webView->mainFrame()->mainWorldScriptContext()));
@@ -1806,7 +1806,7 @@ public:
 // TODO(aa): Deflake this test.
 TEST_F(WebFrameTest, FLAKY_ContextNotificationsLoadUnload)
 {
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
 
     registerMockedHttpURLLoad("context_notifications_test.html");
     registerMockedHttpURLLoad("context_notifications_test_frame.html");
@@ -1846,7 +1846,7 @@ TEST_F(WebFrameTest, FLAKY_ContextNotificationsLoadUnload)
 
 TEST_F(WebFrameTest, ContextNotificationsReload)
 {
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
 
     registerMockedHttpURLLoad("context_notifications_test.html");
     registerMockedHttpURLLoad("context_notifications_test_frame.html");

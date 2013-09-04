@@ -311,26 +311,25 @@ static bool getArrayBufferViewImpl(NPObject* object, WebArrayBufferView* arrayBu
     return true;
 }
 
-static NPObject* makeIntArrayImpl(const WebVector<int>& data)
+static NPObject* makeIntArrayImpl(const WebVector<int>& data, v8::Isolate* isolate)
 {
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Array> result = v8::Array::New(data.size());
     for (size_t i = 0; i < data.size(); ++i)
         result->Set(i, v8::Number::New(data[i]));
 
-    DOMWindow* window = toDOMWindow(v8::Context::GetCurrent());
+    DOMWindow* window = toDOMWindow(isolate->GetCurrentContext());
     return npCreateV8ScriptObject(0, result, window);
 }
 
-static NPObject* makeStringArrayImpl(const WebVector<WebString>& data)
+static NPObject* makeStringArrayImpl(const WebVector<WebString>& data, v8::Isolate* isolate)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Array> result = v8::Array::New(data.size());
     for (size_t i = 0; i < data.size(); ++i)
         result->Set(i, v8String(data[i], isolate));
 
-    DOMWindow* window = toDOMWindow(v8::Context::GetCurrent());
+    DOMWindow* window = toDOMWindow(isolate->GetCurrentContext());
     return npCreateV8ScriptObject(0, result, window);
 }
 
@@ -361,12 +360,12 @@ bool WebBindings::getElement(NPObject* element, WebElement* webElement)
 
 NPObject* WebBindings::makeIntArray(const WebVector<int>& data)
 {
-    return makeIntArrayImpl(data);
+    return makeIntArrayImpl(data, v8::Isolate::GetCurrent());
 }
 
 NPObject* WebBindings::makeStringArray(const WebVector<WebString>& data)
 {
-    return makeStringArrayImpl(data);
+    return makeStringArrayImpl(data, v8::Isolate::GetCurrent());
 }
 
 void WebBindings::pushExceptionHandler(ExceptionHandler handler, void* data)

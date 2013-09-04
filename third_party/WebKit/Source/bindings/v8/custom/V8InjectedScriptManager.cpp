@@ -68,10 +68,10 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHos
 
 ScriptObject InjectedScriptManager::createInjectedScript(const String& scriptSource, ScriptState* inspectedScriptState, int id)
 {
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = inspectedScriptState->isolate();
+    v8::HandleScope handleScope(isolate);
 
     v8::Local<v8::Context> inspectedContext = inspectedScriptState->context();
-    v8::Isolate* isolate = inspectedContext->GetIsolate();
     v8::Context::Scope contextScope(inspectedContext);
 
     // Call custom code to create InjectedScripHost wrapper specific for the context
@@ -99,7 +99,7 @@ ScriptObject InjectedScriptManager::createInjectedScript(const String& scriptSou
 
 bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
 {
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(scriptState->isolate());
     v8::Local<v8::Context> context = scriptState->context();
     v8::Local<v8::Object> global = context->Global();
     if (global.IsEmpty())

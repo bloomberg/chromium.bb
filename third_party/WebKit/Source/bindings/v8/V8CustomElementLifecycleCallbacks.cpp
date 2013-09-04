@@ -125,7 +125,7 @@ V8CustomElementLifecycleCallbacks::~V8CustomElementLifecycleCallbacks()
     if (!m_owner)
         return;
 
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(getIsolateFromScriptExecutionContext(scriptExecutionContext()));
     if (V8PerContextData* perContextData = creationContextData())
         perContextData->clearCustomElementBinding(m_owner);
 }
@@ -153,13 +153,13 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
 
     element->setCustomElementState(Element::Upgraded);
 
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = getIsolateFromScriptExecutionContext(scriptExecutionContext());
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> context = toV8Context(scriptExecutionContext(), m_world.get());
     if (context.IsEmpty())
         return;
 
     v8::Context::Scope scope(context);
-    v8::Isolate* isolate = context->GetIsolate();
 
     v8::Handle<v8::Object> receiver = DOMDataStore::current(isolate)->get<V8Element>(element, isolate);
     if (!receiver.IsEmpty()) {
@@ -201,13 +201,13 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
     if (!canInvokeCallback())
         return;
 
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = getIsolateFromScriptExecutionContext(scriptExecutionContext());
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> context = toV8Context(scriptExecutionContext(), m_world.get());
     if (context.IsEmpty())
         return;
 
     v8::Context::Scope scope(context);
-    v8::Isolate* isolate = context->GetIsolate();
 
     v8::Handle<v8::Object> receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
     ASSERT(!receiver.IsEmpty());
@@ -232,7 +232,7 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
     if (!canInvokeCallback())
         return;
 
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(getIsolateFromScriptExecutionContext(scriptExecutionContext()));
     v8::Handle<v8::Context> context = toV8Context(scriptExecutionContext(), m_world.get());
     if (context.IsEmpty())
         return;

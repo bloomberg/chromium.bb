@@ -631,10 +631,11 @@ Page* InspectorOverlay::overlayPage()
     DocumentWriter* writer = loader->activeDocumentLoader()->beginWriting("text/html", "UTF-8");
     writer->addData(reinterpret_cast<const char*>(InspectorOverlayPage_html), sizeof(InspectorOverlayPage_html));
     loader->activeDocumentLoader()->endWriting(writer);
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = frame->script()->isolate();
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> frameContext = frame->script()->currentWorldContext();
     v8::Context::Scope contextScope(frameContext);
-    v8::Handle<v8::Value> overlayHostObj = toV8(m_overlayHost.get(), v8::Handle<v8::Object>(), frameContext->GetIsolate());
+    v8::Handle<v8::Value> overlayHostObj = toV8(m_overlayHost.get(), v8::Handle<v8::Object>(), isolate);
     v8::Handle<v8::Object> global = frameContext->Global();
     global->Set(v8::String::New("InspectorOverlayHost"), overlayHostObj);
 
@@ -697,4 +698,3 @@ void InspectorOverlay::freePage()
 }
 
 } // namespace WebCore
-

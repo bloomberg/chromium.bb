@@ -42,8 +42,7 @@ namespace WebCoreTestSupport {
 void injectInternalsObject(v8::Local<v8::Context> context)
 {
     v8::Context::Scope contextScope(context);
-    v8::HandleScope scope;
-
+    v8::HandleScope scope(context->GetIsolate());
     ScriptExecutionContext* scriptContext = getScriptExecutionContext();
     if (scriptContext->isDocument())
         context->Global()->Set(v8::String::New(Internals::internalsId), toV8(Internals::create(toDocument(scriptContext)), v8::Handle<v8::Object>(), context->GetIsolate()));
@@ -56,7 +55,7 @@ void resetInternalsObject(v8::Local<v8::Context> context)
         return;
 
     v8::Context::Scope contextScope(context);
-    v8::HandleScope scope;
+    v8::HandleScope scope(context->GetIsolate());
 
     ScriptExecutionContext* scriptContext = getScriptExecutionContext();
     Page* page = toDocument(scriptContext)->frame()->page();

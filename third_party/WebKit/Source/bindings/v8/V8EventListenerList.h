@@ -74,7 +74,7 @@ private:
     static V8EventListener* doFindWrapper(v8::Local<v8::Object> object, v8::Handle<v8::String> wrapperProperty)
     {
         ASSERT(v8::Context::InContext());
-        v8::HandleScope scope;
+        v8::HandleScope scope(v8::Isolate::GetCurrent());
         v8::Local<v8::Value> listener = object->GetHiddenValue(wrapperProperty);
         if (listener.IsEmpty())
             return 0;

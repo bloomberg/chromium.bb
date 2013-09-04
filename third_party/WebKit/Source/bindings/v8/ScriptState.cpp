@@ -83,8 +83,9 @@ ScriptState* ScriptState::forContext(v8::Handle<v8::Context> context)
 
 ScriptState* ScriptState::current()
 {
-    v8::HandleScope handleScope;
-    v8::Local<v8::Context> context = v8::Context::GetCurrent();
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
     ASSERT(!context.IsEmpty());
     return ScriptState::forContext(context);
 }
@@ -108,7 +109,7 @@ void ScriptState::setEvalEnabled(bool enabled)
 
 ScriptState* mainWorldScriptState(Frame* frame)
 {
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(frame->script()->isolate());
     return ScriptState::forContext(frame->script()->mainWorldContext());
 }
 
@@ -118,7 +119,7 @@ ScriptState* scriptStateFromWorkerGlobalScope(WorkerGlobalScope* workerGlobalSco
     if (!script)
         return 0;
 
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(script->isolate());
     return ScriptState::forContext(script->context());
 }
 

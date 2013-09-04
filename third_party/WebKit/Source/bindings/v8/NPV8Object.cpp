@@ -336,7 +336,7 @@ bool _NPN_EvaluateHelper(NPP npp, bool popupsAllowed, NPObject* npObject, NPStri
     if (!v8NpObject)
         return false;
 
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     v8::Handle<v8::Context> context = toV8Context(npp, npObject);
     if (context.IsEmpty())
         return false;
@@ -504,7 +504,7 @@ void _NPN_SetException(NPObject* npObject, const NPUTF8 *message)
         return;
     }
 
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     v8::Handle<v8::Context> context = toV8Context(0, npObject);
     if (context.IsEmpty())
         return;

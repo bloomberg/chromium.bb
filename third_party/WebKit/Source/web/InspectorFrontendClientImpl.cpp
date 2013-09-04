@@ -63,7 +63,7 @@ InspectorFrontendClientImpl::~InspectorFrontendClientImpl()
 
 void InspectorFrontendClientImpl::windowObjectCleared()
 {
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     v8::Handle<v8::Context> frameContext = m_frontendPage->mainFrame() ? m_frontendPage->mainFrame()->script()->currentWorldContext() : v8::Local<v8::Context>();
     v8::Context::Scope contextScope(frameContext);
 

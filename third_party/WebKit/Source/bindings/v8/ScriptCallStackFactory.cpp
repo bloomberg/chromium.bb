@@ -86,27 +86,28 @@ static void toScriptCallFramesVector(v8::Handle<v8::StackTrace> stackTrace, Vect
     }
 }
 
-static PassRefPtr<ScriptCallStack> createScriptCallStack(v8::Handle<v8::StackTrace> stackTrace, size_t maxStackSize, bool emptyStackIsAllowed)
+static PassRefPtr<ScriptCallStack> createScriptCallStack(v8::Handle<v8::StackTrace> stackTrace, size_t maxStackSize, bool emptyStackIsAllowed, v8::Isolate* isolate)
 {
     ASSERT(v8::Context::InContext());
-    v8::HandleScope scope;
+    v8::HandleScope scope(isolate);
     Vector<ScriptCallFrame> scriptCallFrames;
     toScriptCallFramesVector(stackTrace, scriptCallFrames, maxStackSize, emptyStackIsAllowed);
     return ScriptCallStack::create(scriptCallFrames);
 }
 
-PassRefPtr<ScriptCallStack> createScriptCallStack(v8::Handle<v8::StackTrace> stackTrace, size_t maxStackSize)
+PassRefPtr<ScriptCallStack> createScriptCallStack(v8::Handle<v8::StackTrace> stackTrace, size_t maxStackSize, v8::Isolate* isolate)
 {
-    return createScriptCallStack(stackTrace, maxStackSize, true);
+    return createScriptCallStack(stackTrace, maxStackSize, true, isolate);
 }
 
 PassRefPtr<ScriptCallStack> createScriptCallStack(size_t maxStackSize, bool emptyStackIsAllowed)
 {
     if (!v8::Context::InContext())
         return 0;
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::StackTrace> stackTrace(v8::StackTrace::CurrentStackTrace(maxStackSize, stackTraceOptions));
-    return createScriptCallStack(stackTrace, maxStackSize, emptyStackIsAllowed);
+    return createScriptCallStack(stackTrace, maxStackSize, emptyStackIsAllowed, isolate);
 }
 
 PassRefPtr<ScriptCallStack> createScriptCallStackForConsole(size_t maxStackSize)
@@ -132,8 +133,9 @@ PassRefPtr<ScriptCallStack> createScriptCallStack(ScriptState*, size_t maxStackS
 
 PassRefPtr<ScriptArguments> createScriptArguments(const v8::FunctionCallbackInfo<v8::Value>& v8arguments, unsigned skipArgumentCount)
 {
-    v8::HandleScope scope;
-    v8::Local<v8::Context> context = v8::Context::GetCurrent();
+    v8::Isolate* isolate = v8arguments.GetIsolate();
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
     ScriptState* state = ScriptState::forContext(context);
 
     Vector<ScriptValue> arguments;

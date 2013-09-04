@@ -131,10 +131,10 @@ void PromiseTask::performTask(ScriptExecutionContext* context)
     }
     ASSERT(state);
 
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = state->isolate();
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> v8Context = state->context();
     v8::Context::Scope scope(v8Context);
-    v8::Isolate* isolate = v8Context->GetIsolate();
     v8::Handle<v8::Value> args[] = { m_result.newLocal(isolate) };
     V8ScriptRunner::callFunction(m_callback.newLocal(isolate), context, m_receiver.newLocal(isolate), WTF_ARRAY_LENGTH(args), args);
 };

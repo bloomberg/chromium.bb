@@ -94,12 +94,14 @@ namespace WebCore {
         ScriptValue evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, WorkerGlobalScopeExecutionState*);
 
         // Returns a local handle of the context.
-        v8::Local<v8::Context> context() { return m_context.newLocal(v8::Isolate::GetCurrent()); }
+        v8::Local<v8::Context> context() { return m_context.newLocal(m_isolate); }
 
         // Send a notification about current thread is going to be idle.
         // Returns true if the embedder should stop calling idleNotification
         // until real work has been done.
         bool idleNotification() { return v8::V8::IdleNotification(); }
+
+        v8::Isolate* isolate() const { return m_isolate; }
 
     private:
         bool initializeContextIfNeeded();

@@ -159,6 +159,8 @@ public:
     bool setContextDebugId(int);
     static int contextDebugId(v8::Handle<v8::Context>);
 
+    v8::Isolate* isolate() const { return m_isolate; }
+
 private:
     typedef HashMap<int, OwnPtr<V8WindowShell> > IsolatedWorldMap;
     typedef HashMap<Widget*, NPObject*> PluginObjectMap;

@@ -590,4 +590,16 @@ v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate* isolate, Sc
     return wrapper.IsEmpty() ? v8::Local<v8::Value>() : wrapper->GetHiddenValue(key);
 }
 
+v8::Isolate* getIsolateFromScriptExecutionContext(ScriptExecutionContext* context)
+{
+    ASSERT(context);
+    if (context->isDocument()) {
+        static v8::Isolate* mainWorldIsolate = 0;
+        if (!mainWorldIsolate)
+            mainWorldIsolate = v8::Isolate::GetCurrent();
+        return mainWorldIsolate;
+    }
+    return v8::Isolate::GetCurrent();
+}
+
 } // namespace WebCore

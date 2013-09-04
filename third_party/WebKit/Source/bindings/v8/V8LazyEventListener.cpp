@@ -120,11 +120,11 @@ void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
 
     ASSERT(context->isDocument());
 
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = getIsolateFromScriptExecutionContext(context);
+    v8::HandleScope handleScope(isolate);
 
     // Use the outer scope to hold context.
     v8::Local<v8::Context> v8Context = toV8Context(context, world());
-    v8::Isolate* isolate = v8Context->GetIsolate();
     // Bail out if we cannot get the context.
     if (v8Context.IsEmpty())
         return;

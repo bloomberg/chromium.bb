@@ -48,7 +48,7 @@ String ScriptString::flattenToString() const
 {
     if (hasNoValue())
         return String();
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     v8::Handle<v8::String> value = v8::Handle<v8::String>::Cast(v8Value());
     return v8StringToWebCoreString<String>(value, Externalize);
 }

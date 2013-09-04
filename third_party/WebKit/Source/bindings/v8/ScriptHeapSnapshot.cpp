@@ -47,7 +47,7 @@ ScriptHeapSnapshot::~ScriptHeapSnapshot()
 
 String ScriptHeapSnapshot::title() const
 {
-    v8::HandleScope scope;
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
     return toWebCoreString(m_snapshot->GetTitle());
 }
 

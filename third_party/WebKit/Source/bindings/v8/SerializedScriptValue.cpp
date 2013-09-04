@@ -1985,7 +1985,7 @@ public:
         if (!m_reader.readVersion(m_version) || m_version > wireFormatVersion)
             return v8NullWithCheck(m_reader.getIsolate());
         m_reader.setVersion(m_version);
-        v8::HandleScope scope;
+        v8::HandleScope scope(m_reader.getIsolate());
         while (!m_reader.isEof()) {
             if (!doDeserialize())
                 return v8NullWithCheck(m_reader.getIsolate());
@@ -2507,7 +2507,7 @@ v8::Handle<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, M
 
 ScriptValue SerializedScriptValue::deserializeForInspector(ScriptState* scriptState)
 {
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(scriptState->isolate());
     v8::Context::Scope contextScope(scriptState->context());
 
     return ScriptValue(deserialize(scriptState->isolate()));

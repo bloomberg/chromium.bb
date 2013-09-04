@@ -39,6 +39,7 @@ public:
     explicit DOMRequestState(ScriptExecutionContext* scriptExecutionContext)
         : m_scriptExecutionContext(scriptExecutionContext)
         , m_world(DOMWrapperWorld::current())
+        , m_isolate(getIsolateFromScriptExecutionContext(scriptExecutionContext))
     {
     }
 
@@ -51,7 +52,8 @@ public:
     class Scope {
     public:
         explicit Scope(DOMRequestState& state)
-            : m_contextScope(state.context())
+            : m_handleScope(state.isolate())
+            , m_contextScope(state.context())
         {
         }
     private:
@@ -64,9 +66,15 @@ public:
         return toV8Context(m_scriptExecutionContext, m_world.get());
     }
 
+    v8::Isolate* isolate() const
+    {
+        return m_isolate;
+    }
+
 private:
     ScriptExecutionContext* m_scriptExecutionContext;
     RefPtr<DOMWrapperWorld> m_world;
+    v8::Isolate* m_isolate;
 };
 
 }

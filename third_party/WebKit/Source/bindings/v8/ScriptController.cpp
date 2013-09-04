@@ -455,9 +455,9 @@ static NPObject* createNoScriptObject()
     return 0;
 }
 
-static NPObject* createScriptObject(Frame* frame)
+static NPObject* createScriptObject(Frame* frame, v8::Isolate* isolate)
 {
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> v8Context = ScriptController::mainWorldContext(frame);
     if (v8Context.IsEmpty())
         return createNoScriptObject();
@@ -478,7 +478,7 @@ NPObject* ScriptController::windowScriptNPObject()
     if (canExecuteScripts(NotAboutToExecuteScript)) {
         // JavaScript is enabled, so there is a JavaScript window object.
         // Return an NPObject bound to the window object.
-        m_windowScriptNPObject = createScriptObject(m_frame);
+        m_windowScriptNPObject = createScriptObject(m_frame, m_isolate);
         _NPN_RegisterObject(m_windowScriptNPObject, 0);
     } else {
         // JavaScript is not enabled, so we cannot bind the NPObject to the
@@ -495,7 +495,7 @@ NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement
     if (!canExecuteScripts(NotAboutToExecuteScript))
         return createNoScriptObject();
 
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(m_isolate);
     v8::Handle<v8::Context> v8Context = ScriptController::mainWorldContext(m_frame);
     if (v8Context.IsEmpty())
         return createNoScriptObject();
@@ -528,7 +528,7 @@ void ScriptController::setCaptureCallStackForUncaughtExceptions(bool value)
 
 void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*> >& result)
 {
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(m_isolate);
     for (IsolatedWorldMap::iterator it = m_isolatedWorlds.begin(); it != m_isolatedWorlds.end(); ++it) {
         V8WindowShell* isolatedWorldShell = it->value.get();
         SecurityOrigin* origin = isolatedWorldShell->world()->isolatedWorldSecurityOrigin();
@@ -547,7 +547,7 @@ bool ScriptController::setContextDebugId(int debugId)
     ASSERT(debugId > 0);
     if (!m_windowShell->isContextInitialized())
         return false;
-    v8::HandleScope scope;
+    v8::HandleScope scope(m_isolate);
     v8::Local<v8::Context> context = m_windowShell->context();
     return V8PerContextDebugData::setContextDebugData(context, "page", debugId);
 }
@@ -663,7 +663,7 @@ ScriptValue ScriptController::executeScriptInMainWorld(const ScriptSourceCode& s
     const String* savedSourceURL = m_sourceURL;
     m_sourceURL = &sourceURL;
 
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(m_isolate);
     v8::Handle<v8::Context> v8Context = ScriptController::mainWorldContext(m_frame);
     if (v8Context.IsEmpty())
         return ScriptValue();
@@ -690,10 +690,10 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
 {
     ASSERT(worldID > 0);
 
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(m_isolate);
     v8::Local<v8::Array> v8Results;
     {
-        v8::HandleScope evaluateHandleScope;
+        v8::HandleScope evaluateHandleScope(m_isolate);
         RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::ensureIsolatedWorld(worldID, extensionGroup);
         V8WindowShell* isolatedWorldShell = windowShell(world.get());
 

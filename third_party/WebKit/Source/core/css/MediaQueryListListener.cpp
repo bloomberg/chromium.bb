@@ -28,7 +28,7 @@ namespace WebCore {
 void MediaQueryListListener::queryChanged(ScriptState* state, MediaQueryList* query)
 {
     ScriptCallback callback(state, m_value);
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(state->isolate());
 
     v8::Handle<v8::Context> context = state->context();
     if (context.IsEmpty())

@@ -38,6 +38,7 @@
 #include "WebView.h"
 #include "WebViewImpl.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
@@ -105,7 +106,7 @@ TEST(CustomEventTest, InitWithSerializedScriptValue)
     WebDOMEvent event = frame->frame()->document()->createEvent("CustomEvent", IGNORE_EXCEPTION);
     WebDOMCustomEvent customEvent = event.to<WebDOMCustomEvent>();
 
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(frame->frame()->script()->isolate());
     customEvent.initCustomEvent("blah", false, false, WebSerializedScriptValue::serialize(v8::Boolean::New(true)));
     RefPtr<EventListener> listener = TestListener::create(frame->mainWorldScriptContext());
     frame->frame()->document()->addEventListener("blah", listener, false);

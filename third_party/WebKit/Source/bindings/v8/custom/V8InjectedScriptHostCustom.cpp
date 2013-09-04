@@ -71,13 +71,13 @@ Node* InjectedScriptHost::scriptValueAsNode(ScriptValue value)
 
 ScriptValue InjectedScriptHost::nodeAsScriptValue(ScriptState* state, Node* node)
 {
-    v8::HandleScope scope;
+    v8::HandleScope scope(state->isolate());
     v8::Local<v8::Context> context = state->context();
     v8::Context::Scope contextScope(context);
 
     if (!BindingSecurity::shouldAllowAccessToNode(node))
         return ScriptValue(v8::Null());
-    return ScriptValue(toV8(node, v8::Handle<v8::Object>(), context->GetIsolate()));
+    return ScriptValue(toV8(node, v8::Handle<v8::Object>(), state->isolate()));
 }
 
 void V8InjectedScriptHost::inspectedObjectMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

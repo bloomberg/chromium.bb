@@ -135,7 +135,7 @@ bool V8DOMWrapper::maybeDOMWrapper(v8::Handle<v8::Value> value)
     v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
     ASSERT(object->InternalFieldCount() >= v8DefaultWrapperInternalFieldCount);
 
-    v8::HandleScope scope;
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
     ASSERT(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
 
     return true;

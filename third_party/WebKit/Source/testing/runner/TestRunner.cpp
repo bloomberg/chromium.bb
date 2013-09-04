@@ -1171,7 +1171,7 @@ void TestRunner::setDomainRelaxationForbiddenForURLScheme(const CppArgumentList&
 
 void TestRunner::evaluateScriptInIsolatedWorldAndReturnValue(const CppArgumentList& arguments, CppVariant* result)
 {
-    v8::HandleScope scope;
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
     WebVector<v8::Local<v8::Value> > values;
     if (arguments.size() >= 2 && arguments[0].isNumber() && arguments[1].isString()) {
         WebScriptSource source(cppVariantToWebString(arguments[1]));
