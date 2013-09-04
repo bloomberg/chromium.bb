@@ -143,13 +143,27 @@ class MEDIA_EXPORT AudioManager {
   // streams. It is a convenience interface to
   // AudioManagerBase::GetPreferredOutputStreamParameters and each AudioManager
   // does not need their own implementation to this interface.
+  // TODO(tommi): Remove this method and use GetOutputStreamParameteres instead.
   virtual AudioParameters GetDefaultOutputStreamParameters() = 0;
+
+  // Returns the output hardware audio parameters for a specific output device.
+  virtual AudioParameters GetOutputStreamParameters(
+      const std::string& device_id) = 0;
 
   // Returns the input hardware audio parameters of the specific device
   // for opening input streams. Each AudioManager needs to implement their own
   // version of this interface.
   virtual AudioParameters GetInputStreamParameters(
       const std::string& device_id) = 0;
+
+  // Returns the device id of an output device that belongs to the same hardware
+  // as the specified input device.
+  // If the hardware has only an input device (e.g. a webcam), the return value
+  // will be empty (which the caller can then interpret to be the default output
+  // device).  Implementations that don't yet support this feature, must return
+  // an empty string.
+  virtual std::string GetAssociatedOutputDeviceID(
+      const std::string& input_device_id) = 0;
 
  protected:
   AudioManager();

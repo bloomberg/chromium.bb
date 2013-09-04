@@ -403,10 +403,22 @@ AudioParameters AudioManagerBase::GetDefaultOutputStreamParameters() {
   return GetPreferredOutputStreamParameters("", AudioParameters());
 }
 
+AudioParameters AudioManagerBase::GetOutputStreamParameters(
+    const std::string& device_id) {
+  return GetPreferredOutputStreamParameters(device_id,
+      AudioParameters());
+}
+
 AudioParameters AudioManagerBase::GetInputStreamParameters(
     const std::string& device_id) {
   NOTREACHED();
   return AudioParameters();
+}
+
+std::string AudioManagerBase::GetAssociatedOutputDeviceID(
+    const std::string& input_device_id) {
+  NOTIMPLEMENTED();
+  return "";
 }
 
 std::string AudioManagerBase::GetDefaultOutputDeviceID() {

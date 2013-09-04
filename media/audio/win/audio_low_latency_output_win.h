@@ -149,8 +149,9 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   static ChannelLayout HardwareChannelLayout();
 
   // Retrieves the sample rate the audio engine uses for its internal
-  // processing/mixing of shared-mode streams for the default endpoint device.
-  static int HardwareSampleRate();
+  // processing/mixing of shared-mode streams.  To fetch the settings for the
+  // default device, pass an empty string as the |device_id|.
+  static int HardwareSampleRate(const std::string& device_id);
 
   // Returns AUDCLNT_SHAREMODE_EXCLUSIVE if --enable-exclusive-mode is used
   // as command-line flag and AUDCLNT_SHAREMODE_SHARED otherwise (default).

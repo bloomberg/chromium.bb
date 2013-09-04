@@ -79,9 +79,19 @@ AudioParameters MockAudioManager::GetDefaultOutputStreamParameters() {
   return AudioParameters();
 }
 
+AudioParameters MockAudioManager::GetOutputStreamParameters(
+      const std::string& device_id) {
+  return AudioParameters();
+}
+
 AudioParameters MockAudioManager::GetInputStreamParameters(
     const std::string& device_id) {
   return AudioParameters();
+}
+
+std::string MockAudioManager::GetAssociatedOutputDeviceID(
+    const std::string& input_device_id) {
+  return std::string();
 }
 
 }  // namespace media.

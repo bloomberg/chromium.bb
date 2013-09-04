@@ -511,4 +511,12 @@ TEST_F(CoreAudioUtilWinTest, GetMatchingOutputDeviceID) {
   EXPECT_TRUE(found_a_pair);
 }
 
+TEST_F(CoreAudioUtilWinTest, GetDefaultOutputDeviceID) {
+  if (!CanRunAudioTest())
+    return;
+
+  std::string default_device_id(CoreAudioUtil::GetDefaultOutputDeviceID());
+  EXPECT_FALSE(default_device_id.empty());
+}
+
 }  // namespace media

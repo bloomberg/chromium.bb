@@ -111,11 +111,22 @@ ChannelLayout WASAPIAudioOutputStream::HardwareChannelLayout() {
 }
 
 // static
-int WASAPIAudioOutputStream::HardwareSampleRate() {
+int WASAPIAudioOutputStream::HardwareSampleRate(const std::string& device_id) {
   WAVEFORMATPCMEX format;
-  return SUCCEEDED(CoreAudioUtil::GetDefaultSharedModeMixFormat(
-      eRender, eConsole, &format)) ?
-      static_cast<int>(format.Format.nSamplesPerSec) : 0;
+  ScopedComPtr<IAudioClient> client;
+  if (device_id.empty()) {
+    client = CoreAudioUtil::CreateDefaultClient(eRender, eConsole);
+  } else {
+    ScopedComPtr<IMMDevice> device(CoreAudioUtil::CreateDevice(device_id));
+    if (!device)
+      return 0;
+    client = CoreAudioUtil::CreateClient(device);
+  }
+
+  if (!client || FAILED(CoreAudioUtil::GetSharedModeMixFormat(client, &format)))
+    return 0;
+
+  return static_cast<int>(format.Format.nSamplesPerSec);
 }
 
 WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,

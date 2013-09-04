@@ -268,7 +268,7 @@ TEST(WASAPIAudioOutputStreamTest, HardwareSampleRate) {
   // Default device intended for games, system notification sounds,
   // and voice commands.
   int fs = static_cast<int>(
-      WASAPIAudioOutputStream::HardwareSampleRate());
+      WASAPIAudioOutputStream::HardwareSampleRate(std::string()));
   EXPECT_GE(fs, 0);
 }
 

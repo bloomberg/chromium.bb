@@ -94,8 +94,14 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
       AudioDeviceListener* listener) OVERRIDE;
 
   virtual AudioParameters GetDefaultOutputStreamParameters() OVERRIDE;
+  virtual AudioParameters GetOutputStreamParameters(
+      const std::string& device_id) OVERRIDE;
+
   virtual AudioParameters GetInputStreamParameters(
       const std::string& device_id) OVERRIDE;
+
+  virtual std::string GetAssociatedOutputDeviceID(
+      const std::string& input_device_id) OVERRIDE;
 
  protected:
   AudioManagerBase();
