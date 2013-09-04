@@ -249,6 +249,23 @@ h2 {
   margin-bottom: 10px;
 }
 
+.h2-secondary {
+  float: __MSG_@@bidi_end_edge__;
+}
+
+#host-list-loading-indicator:not(.loading) #host-list-loading,
+#host-list-loading-indicator.loading #host-list-reload {
+  display: none;
+}
+
+#host-list-reload > img {
+  opacity: 0.3;
+}
+
+#host-list-reload:hover > img {
+  opacity: 0.4;
+}
+
 section > h2 {
   color: #666;
 }

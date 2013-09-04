@@ -126,6 +126,7 @@
       'resources/icon_warning.webp',
       'resources/infographic_my_computers.webp',
       'resources/infographic_remote_assistance.webp',
+      'resources/reload.webp',
       'resources/tick.webp',
       'webapp/connection_history.css',
       'webapp/connection_stats.css',

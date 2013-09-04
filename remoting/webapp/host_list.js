@@ -23,8 +23,12 @@ var remoting = remoting || {};
  * @param {Element} errorMsg The HTML <div> to display error messages.
  * @param {Element} errorButton The HTML <button> to display the error
  *     resolution action.
+ * @param {HTMLElement} loadingIndicator The HTML <span> to update while the
+ *     host list is being loaded. The first element of this span should be
+ *     the reload button.
  */
-remoting.HostList = function(table, noHosts, errorMsg, errorButton) {
+remoting.HostList = function(table, noHosts, errorMsg, errorButton,
+                             loadingIndicator) {
   /**
    * @type {Element}
    * @private
@@ -47,6 +51,11 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton) {
    * @private
    */
   this.errorButton_ = errorButton;
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.loadingIndicator_ = loadingIndicator;
   /**
    * @type {Array.<remoting.HostTableEntry>}
    * @private
@@ -81,6 +90,15 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton) {
   this.errorButton_.addEventListener('click',
                                      this.onErrorClick_.bind(this),
                                      false);
+  var reloadButton = this.loadingIndicator_.firstElementChild;
+  /** @type {remoting.HostList} */
+  var that = this;
+  /** @param {Event} event */
+  function refresh(event) {
+    event.preventDefault();
+    that.refresh(that.display.bind(that));
+  };
+  reloadButton.addEventListener('click', refresh, false);
 };
 
 /**
@@ -130,6 +148,7 @@ remoting.HostList.prototype.getHostForId = function(hostId) {
  * @return {void} Nothing.
  */
 remoting.HostList.prototype.refresh = function(onDone) {
+  this.loadingIndicator_.classList.add('loading');
   /** @param {XMLHttpRequest} xhr The response from the server. */
   var parseHostListResponse = this.parseHostListResponse_.bind(this, onDone);
   /** @type {remoting.HostList} */
@@ -207,6 +226,7 @@ remoting.HostList.prototype.parseHostListResponse_ = function(onDone, xhr) {
     this.lastError_ = remoting.Error.UNEXPECTED;
   }
   this.save_();
+  this.loadingIndicator_.classList.remove('loading');
   onDone(this.lastError_ == '');
 };
 

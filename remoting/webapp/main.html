@@ -153,7 +153,15 @@ found in the LICENSE file.
       </section> <!-- Remote Assistance -->
 
       <section id="host-list-div" class="host-list-container">
-        <h2 i18n-content="MODE_ME2ME"></h2>
+        <h2>
+          <span i18n-content="MODE_ME2ME"></span>
+          <span class="h2-secondary" id="host-list-loading-indicator">
+            <a href="#" id="host-list-reload">
+              <img src="reload.webp">
+            </a>
+            <img src="spinner.gif" id="host-list-loading">
+          </span>
+        </h2>
         <div id="me2me-first-run">
           <div>
             <p class="infographic-description"

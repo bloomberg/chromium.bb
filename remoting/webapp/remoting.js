@@ -74,7 +74,8 @@ remoting.init = function() {
       document.getElementById('host-list'),
       document.getElementById('host-list-empty'),
       document.getElementById('host-list-error-message'),
-      document.getElementById('host-list-refresh-failed-button'));
+      document.getElementById('host-list-refresh-failed-button'),
+      document.getElementById('host-list-loading-indicator'));
   remoting.toolbar = new remoting.Toolbar(
       document.getElementById('session-toolbar'));
   remoting.clipboard = new remoting.Clipboard();
