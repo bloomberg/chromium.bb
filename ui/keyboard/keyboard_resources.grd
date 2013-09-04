@@ -36,6 +36,7 @@
       <include name="IDR_KEYBOARD_INDEX" file="resources/index.html" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_KEYBOARD_LAYOUTS_DVORAK" file="resources/layouts/dvorak.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_LAYOUTS_LATIN_ACCENTS" file="resources/layouts/latin-accents.js" type="BINDATA" />
+      <include name="IDR_KEYBOARD_LAYOUTS_NUMERIC" file="resources/layouts/numeric.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_LAYOUTS_QWERTY" file="resources/layouts/qwerty.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_LAYOUTS_SYMBOL_ALTKEYS" file="resources/layouts/symbol-altkeys.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_MAIN_JS" file="resources/main.js" type="BINDATA" />

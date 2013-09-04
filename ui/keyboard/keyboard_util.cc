@@ -133,6 +133,7 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
     {"keyboard/index.html", IDR_KEYBOARD_INDEX},
     {"keyboard/layouts/dvorak.html", IDR_KEYBOARD_LAYOUTS_DVORAK},
     {"keyboard/layouts/latin-accents.js", IDR_KEYBOARD_LAYOUTS_LATIN_ACCENTS},
+    {"keyboard/layouts/numeric.html", IDR_KEYBOARD_LAYOUTS_NUMERIC},
     {"keyboard/layouts/qwerty.html", IDR_KEYBOARD_LAYOUTS_QWERTY},
     {"keyboard/layouts/symbol-altkeys.js",
         IDR_KEYBOARD_LAYOUTS_SYMBOL_ALTKEYS},
