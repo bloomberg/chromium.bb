@@ -4106,9 +4106,18 @@ void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event)
 
 bool WebViewImpl::shouldDisableDesktopWorkarounds()
 {
-    ViewportArguments arguments = mainFrameImpl()->frame()->document()->viewportArguments();
-    return arguments.width == ViewportArguments::ValueDeviceWidth || !arguments.userZoom
-        || (arguments.minZoom == arguments.maxZoom && arguments.minZoom != ViewportArguments::ValueAuto);
+    if (!settings()->viewportEnabled() || !isFixedLayoutModeEnabled())
+        return false;
+
+    // A document is considered adapted to small screen UAs if one of these holds:
+    // 1. The author specified viewport has a constrained width that is equal to
+    //    the initial viewport width.
+    // 2. The author has disabled viewport zoom.
+
+    const PageScaleConstraints& constraints = m_pageScaleConstraintsSet.pageDefinedConstraints();
+
+    return fixedLayoutSize().width == m_size.width
+        || (constraints.minimumScale == constraints.maximumScale && constraints.minimumScale != -1);
 }
 
 } // namespace WebKit

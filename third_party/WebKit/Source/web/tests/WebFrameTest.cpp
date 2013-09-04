@@ -2888,6 +2888,47 @@ TEST_F(WebFrameTest, DisambiguationPopupMobileSite)
     // Make sure we initialize to minimum scale, even if the window size
     // only becomes available after the load begins.
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + htmlFile, true, 0, &client);
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setViewportEnabled(true);
+    m_webView->resize(WebSize(1000, 1000));
+    m_webView->layout();
+
+    client.resetTriggered();
+    m_webView->handleInputEvent(fatTap(0, 0));
+    EXPECT_FALSE(client.triggered());
+
+    client.resetTriggered();
+    m_webView->handleInputEvent(fatTap(200, 115));
+    EXPECT_FALSE(client.triggered());
+
+    for (int i = 0; i <= 46; i++) {
+        client.resetTriggered();
+        m_webView->handleInputEvent(fatTap(120, 230 + i * 5));
+        EXPECT_FALSE(client.triggered());
+    }
+
+    for (int i = 0; i <= 46; i++) {
+        client.resetTriggered();
+        m_webView->handleInputEvent(fatTap(10 + i * 5, 590));
+        EXPECT_FALSE(client.triggered());
+    }
+
+    m_webView->close();
+    m_webView = 0;
+}
+
+TEST_F(WebFrameTest, DisambiguationPopupViewportSite)
+{
+    const std::string htmlFile = "disambiguation_popup_viewport_site.html";
+    registerMockedHttpURLLoad(htmlFile);
+
+    DisambiguationPopupTestWebViewClient client;
+
+    // Make sure we initialize to minimum scale, even if the window size
+    // only becomes available after the load begins.
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + htmlFile, true, 0, &client);
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setViewportEnabled(true);
     m_webView->resize(WebSize(1000, 1000));
     m_webView->layout();
 
