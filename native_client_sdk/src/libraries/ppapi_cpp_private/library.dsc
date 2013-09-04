@@ -13,7 +13,8 @@
           'file_io_private.cc',
           'host_resolver_private.cc',
           'net_address_private.cc',
-          'output_protection_private.cc',
+          # TODO(binji): Remove comment when this file is added.
+          # 'output_protection_private.cc',
           'pass_file_handle.cc',
           'tcp_socket_private.cc',
           'tcp_server_socket_private.cc',
@@ -48,7 +49,8 @@
         'file_io_private.h',
         'host_resolver_private.h',
         'net_address_private.h',
-        'output_protection_private.h',
+        # TODO(binji): Remove comment when this file is added.
+        # 'output_protection_private.h',
         'pass_file_handle.h',
         'tcp_server_socket_private.h',
         'tcp_socket_private.h',
