@@ -530,6 +530,10 @@ class NinjaWriter:
     """Write out the Actions, Rules, and Copies steps.  Return a path
     representing the outputs of these steps."""
     outputs = []
+    if self.is_mac_bundle:
+      mac_bundle_resources = spec.get('mac_bundle_resources', [])[:]
+    else:
+      mac_bundle_resources = []
     extra_mac_bundle_resources = []
 
     if 'actions' in spec:
@@ -537,6 +541,7 @@ class NinjaWriter:
                                    extra_mac_bundle_resources)
     if 'rules' in spec:
       outputs += self.WriteRules(spec['rules'], extra_sources, prebuild,
+                                 mac_bundle_resources,
                                  extra_mac_bundle_resources)
     if 'copies' in spec:
       outputs += self.WriteCopies(spec['copies'], prebuild, mac_bundle_depends)
@@ -547,9 +552,8 @@ class NinjaWriter:
     stamp = self.WriteCollapsedDependencies('actions_rules_copies', outputs)
 
     if self.is_mac_bundle:
-      mac_bundle_resources = spec.get('mac_bundle_resources', []) + \
-                             extra_mac_bundle_resources
-      self.WriteMacBundleResources(mac_bundle_resources, mac_bundle_depends)
+      self.WriteMacBundleResources(
+          mac_bundle_resources + extra_mac_bundle_resources, mac_bundle_depends)
       self.WriteMacInfoPlist(mac_bundle_depends)
 
     return stamp
@@ -606,7 +610,7 @@ class NinjaWriter:
     return all_outputs
 
   def WriteRules(self, rules, extra_sources, prebuild,
-                 extra_mac_bundle_resources):
+                 mac_bundle_resources, extra_mac_bundle_resources):
     env = self.GetSortedXcodeEnv()
     all_outputs = []
     for rule in rules:
@@ -660,8 +664,16 @@ class NinjaWriter:
 
         if int(rule.get('process_outputs_as_sources', False)):
           extra_sources += outputs
-        if int(rule.get('process_outputs_as_mac_bundle_resources', False)):
+
+        was_mac_bundle_resource = source in mac_bundle_resources
+        if was_mac_bundle_resource or \
+            int(rule.get('process_outputs_as_mac_bundle_resources', False)):
           extra_mac_bundle_resources += outputs
+          # Note: This is n_resources * n_outputs_in_rule.  Put to-be-removed
+          # items in a set and remove them all in a single pass if this becomes
+          # a performance issue.
+          if was_mac_bundle_resource:
+            mac_bundle_resources.remove(source)
 
         extra_bindings = []
         for var in needed_variables:
