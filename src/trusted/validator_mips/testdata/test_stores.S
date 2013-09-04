@@ -1,6 +1,6 @@
-# Copyright 2012 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 # Several test cases are implemented in this file:
 #  1. Test if all store instructions are recognized as such.
@@ -8,11 +8,13 @@
 #  3. Test if mask and instruction are split with delay slot.
 #  4. Test if mask and instruction are in the same bundle.
 
-.globl _start
-_start:
-.align 4
-.set noreorder
-.set STORE_MASK,$t7
+#include "native_client/pnacl/support/nacl_mips_defs.h"
+
+  .align 4
+  .globl __start
+__start:
+  .set noreorder
+  .set mips32r2
 
   # Check store with mask.
 
@@ -71,7 +73,7 @@ bundle_chk_bundle_cross_1:
   and     $a3, $a3, STORE_MASK
 
 bundle_chk_bundle_cross_2:
-  sw      $a3, 16($a3)	         # Error, pseudo-instruction crosses bundle.
+  sw      $a3, 16($a3)           # Error, pseudo-instruction crosses bundle.
   nop
   nop
   nop

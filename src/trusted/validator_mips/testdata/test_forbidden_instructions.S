@@ -5,10 +5,10 @@
 #
 # Tests a few instructions that are always illegal in NaCl.
 #
-
-.globl _start
-.set mips32r2
-_start:
+  .align 4
+  .globl __start
+__start:
+  .set mips32r2
 
   eret               # Error, (forbidden) unsafe instruction.
 

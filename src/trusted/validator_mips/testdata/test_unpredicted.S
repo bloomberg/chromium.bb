@@ -8,14 +8,15 @@
 # Tests unpredicted situations in NaCl for Mips.
 #
 
-.set JUMP_MASK,   $t6
+#include "native_client/pnacl/support/nacl_mips_defs.h"
 
-.globl _start
-.set noreorder
-_start:
+   .align 4
+   .globl __start
+__start:
+   .set noreorder
 
-   b   _start - 0x10000        # OK - trampoline start.
-    b   _start - 0x10000       # Error - branch is in the delay slot.
+   b   __start - 0x10000       # OK - trampoline start.
+    b   __start - 0x10000      # Error - branch is in the delay slot.
    nop
    nop
 
@@ -26,10 +27,10 @@ _start:
 
    and  $v0, $v0, JUMP_MASK
    jr   $v0                    # OK
-    b   _start - 0x10000       # Error - branch is in the delay slot.
+    b   __start - 0x10000      # Error - branch is in the delay slot.
    nop
 
-   b   _start - 0x10000        # OK - trampoline start.
+   b   __start - 0x10000       # OK - trampoline start.
     jr   $v0                   # Error - jump is in the delay slot.
    nop
    nop

@@ -99,18 +99,26 @@ if env.Bit('linux'):
     'test_unpredicted': 1,
   }
 
-  for test, exit_status in validator_tests.iteritems():
-    node = env.CommandTest(
-        test + '_actual_mips.out',
-        [ncval, env.File('testdata/' + test + '.nexe')],
-        exit_status = str(exit_status),
-        filter_regex = "'^ncval'",
-        stderr_golden = env.File('testdata/' + test + '.err'))
+  if env.Bit('build_mips32'):
+    for test, exit_status in validator_tests.iteritems():
+      if test == 'test_invalid_dest':
+        text_section_start = '-Wl,--section-start,.text=0x0FFFA000'
+      else:
+        text_section_start = '-Wl,--section-start,.text=0x00020000'
+      nexe = env.ComponentProgram(
+          'testdata/%s.nexe' % test,
+          'testdata/%s.S' % test,
+          LINKFLAGS=['-nostdlib', text_section_start],
+          ASFLAGS=['-static'])
+      node = env.CommandTest(
+          '%s_actual_mips.out' % test,
+          [ncval, env.File(nexe)],
+          exit_status=str(exit_status),
+          filter_regex="'^ncval'",
+          stderr_golden=env.File('testdata/%s.err' % test))
 
-    # TODO(petarj): validator_tests need to be disabled until tools for MIPS
-    # architecture are available in the repository.
-    # env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
-    #                       "run_mips_" + test)
+      env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
+                             'run_mips_' + test)
 
   # Do NOT name this program 'validator_tests' because this is the same name as
   # a test suite, and scons will run that test suite if it ever builds

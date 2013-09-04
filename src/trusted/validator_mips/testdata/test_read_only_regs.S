@@ -1,18 +1,19 @@
-# Copyright 2012 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 #
 # Tests alteration of value stored in read-only registers.
 #
 
-.globl _start
-_start:
-.align 4
-.set noreorder
-.set STORE_MASK, $t7
-.set JUMP_MASK, $t6
-.set TLS_REG, $t8
+#include "native_client/pnacl/support/nacl_mips_defs.h"
+
+   .align 4
+   .globl __start
+__start:
+   .set noreorder
+   .set mips32r2
+   .set TLS_REG, $t8
 
    # Testing instructions that alter t6 (JUMP_MASK).
 

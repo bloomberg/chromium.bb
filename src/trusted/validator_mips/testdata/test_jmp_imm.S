@@ -1,6 +1,6 @@
-# Copyright 2012 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 # Test cases for jumps/branches.
 # There are several kinds of jumps/branches regarding destination address:
@@ -12,27 +12,27 @@
 # Besides destination address we also check the position of branch/jump-and-link
 # instructions, which need to be at bundle offset +8.
 
-.globl _start
-_start:
-.align 4
-.set noreorder
+   .align 4
+   .globl __start
+__start:
+   .set noreorder
 
    # Branches to null guard region, everything is OK.
 
 bundle_b_to_0_0x1000:
-   b   _start - 0x10010    # Destination address is 0xfff0 - OK.
+   b   __start - 0x10010   # Destination address is 0xfff0 - OK.
     nop                    # Instruction in the delay slot is always indented.
-   b   _start - 0x1fff4    # Destination address is 0xc - OK.
+   b   __start - 0x1fff4   # Destination address is 0xc - OK.
     nop
 
    # Branches to trampoline code section, must be bundle aligned.
 
 bundle_b_to_0x1000_0x20000:
-   b   _start - 0x10000    # OK - trampoline start.
+   b   __start - 0x10000   # OK - trampoline start.
     nop
-   b   _start - 0xfff0     # OK - bundle aligned jump into trampoline.
+   b   __start - 0xfff0    # OK - bundle aligned jump into trampoline.
     nop
-   b   _start - 0xfff4     # Error, destination address is 0x1000c, which is
+   b   __start - 0xfff4    # Error, destination address is 0x1000c, which is
     nop                    # is not bundle aligned.
    nop
    nop
@@ -40,11 +40,11 @@ bundle_b_to_0x1000_0x20000:
    # Branches to code area.
 
 bundle_b_to_code_area:
-   b   _start + 0x1000     # OK
+   b   __start + 0x1000    # OK
     nop
-   b   _start + 0x1004     # OK
+   b   __start + 0x1004    # OK
     nop
-   b   _start + 0x10       # OK
+   b   __start + 0x10      # OK
     nop
    b   end_of_code         # OK
     nop
@@ -106,9 +106,9 @@ bundle_check_b_dest_addr:
 
    # Test if branch and link is located at bundle offset 8.
 
-   bal     0x10000         # Error, misaligned call.
+   jal     0x10000         # Error, misaligned call.
     nop
-   bal     0x10000         # OK
+   jal     0x10000         # OK
     nop
 
    # Test if jump and link is located at bundle offset 8.
