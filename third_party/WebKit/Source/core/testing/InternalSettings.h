@@ -66,6 +66,7 @@ public:
         bool m_shouldDisplayCaptions;
         bool m_shouldDisplayTextDescriptions;
         String m_defaultVideoPosterURL;
+        bool m_originalCompositorDrivenAcceleratedScrollEnabled;
     };
 
     static PassRefPtr<InternalSettings> create(Page* page)
