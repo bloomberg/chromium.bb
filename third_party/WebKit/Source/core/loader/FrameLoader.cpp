@@ -45,6 +45,7 @@
 #include "core/dom/EventNames.h"
 #include "core/dom/PageTransitionEvent.h"
 #include "core/editing/Editor.h"
+#include "core/fetch/FetchContext.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/history/BackForwardController.h"
@@ -58,6 +59,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FormSubmission.h"
+#include "core/loader/FrameFetchContext.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/IconController.h"
@@ -152,8 +154,8 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     : m_frame(frame)
     , m_client(client)
     , m_history(frame)
-    , m_notifer(frame)
     , m_icon(adoptPtr(new IconController(frame)))
+    , m_fetchContext(FrameFetchContext::create(frame))
     , m_mixedContentChecker(frame)
     , m_state(FrameStateProvisional)
     , m_loadType(FrameLoadTypeStandard)
@@ -788,7 +790,7 @@ bool FrameLoader::willLoadMediaElementURL(KURL& url)
     unsigned long identifier;
     ResourceError error;
     requestFromDelegate(request, identifier, error);
-    notifier()->sendRemainingDelegateMessages(m_documentLoader.get(), identifier, ResourceResponse(url, String(), -1, String(), String()), 0, -1, -1, error);
+    m_frame->fetchContext().sendRemainingDelegateMessages(m_documentLoader.get(), identifier, ResourceResponse(url, String(), -1, String(), String()), 0, -1, -1, error);
 
     url = request.url();
 
@@ -1260,7 +1262,7 @@ unsigned long FrameLoader::loadResourceSynchronously(const ResourceRequest& requ
         ResourceLoader::loadResourceSynchronously(newRequest, storedCredentials, error, response, data);
     }
     int encodedDataLength = response.resourceLoadInfo() ? static_cast<int>(response.resourceLoadInfo()->encodedDataLength) : -1;
-    notifier()->sendRemainingDelegateMessages(m_documentLoader.get(), identifier, response, data.data(), data.size(), encodedDataLength, error);
+    m_frame->fetchContext().sendRemainingDelegateMessages(m_documentLoader.get(), identifier, response, data.data(), data.size(), encodedDataLength, error);
     return identifier;
 }
 
@@ -1508,7 +1510,7 @@ void FrameLoader::requestFromDelegate(ResourceRequest& request, unsigned long& i
         identifier = createUniqueIdentifier();
 
     ResourceRequest newRequest(request);
-    notifier()->dispatchWillSendRequest(m_documentLoader.get(), identifier, newRequest, ResourceResponse());
+    m_frame->fetchContext().dispatchWillSendRequest(m_documentLoader.get(), identifier, newRequest, ResourceResponse());
 
     if (newRequest.isNull())
         error = ResourceError::cancelledError(request.url());
@@ -1538,7 +1540,7 @@ void FrameLoader::loadedResourceFromMemoryCache(Resource* resource)
     ResourceError error;
     requestFromDelegate(request, identifier, error);
     InspectorInstrumentation::markResourceAsCached(page, identifier);
-    notifier()->sendRemainingDelegateMessages(m_documentLoader.get(), identifier, resource->response(), 0, resource->encodedSize(), 0, error);
+    m_frame->fetchContext().sendRemainingDelegateMessages(m_documentLoader.get(), identifier, resource->response(), 0, resource->encodedSize(), 0, error);
 }
 
 void FrameLoader::applyUserAgent(ResourceRequest& request)

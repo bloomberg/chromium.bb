@@ -44,6 +44,7 @@ namespace WebCore {
 
 class CSSStyleSheetResource;
 class DocumentResource;
+class FetchContext;
 class FontResource;
 class ImageResource;
 class RawResource;
@@ -110,9 +111,8 @@ public:
 
     bool shouldDeferImageLoad(const KURL&) const;
 
-    CachePolicy cachePolicy(Resource::Type) const;
-
     Frame* frame() const; // Can be null
+    FetchContext& context() const;
     Document* document() const { return m_document; } // Can be null
     void setDocument(Document* document) { m_document = document; }
 
@@ -163,7 +163,6 @@ private:
 
     explicit ResourceFetcher(DocumentLoader*);
 
-    FrameLoader* frameLoader();
     bool shouldLoadNewResource() const;
 
     ResourcePtr<Resource> requestResource(Resource::Type, FetchRequest&);

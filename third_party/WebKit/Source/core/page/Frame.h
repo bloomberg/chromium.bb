@@ -48,6 +48,7 @@ namespace WebCore {
     class Editor;
     class Element;
     class EventHandler;
+    class FetchContext;
     class FloatSize;
     class FrameDestructionObserver;
     class FrameSelection;
@@ -102,6 +103,7 @@ namespace WebCore {
         FrameTree* tree() const;
         AnimationController* animation() const;
         InputMethodController& inputMethodController() const;
+        FetchContext& fetchContext() const { return loader()->fetchContext(); }
         ScriptController* script();
 
         RenderView* contentRenderer() const; // Root of the render tree for the document contained in this frame.

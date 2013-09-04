@@ -36,6 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/dom/Event.h"
+#include "core/fetch/FetchContext.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
@@ -283,7 +284,7 @@ void DocumentLoader::finishedLoading(double finishTime)
     RefPtr<DocumentLoader> protect(this);
 
     if (m_identifierForLoadWithoutResourceLoader) {
-        frameLoader()->notifier()->dispatchDidFinishLoading(this, m_identifierForLoadWithoutResourceLoader, finishTime);
+        m_frame->fetchContext().dispatchDidFinishLoading(this, m_identifierForLoadWithoutResourceLoader, finishTime);
         m_identifierForLoadWithoutResourceLoader = 0;
     }
 
@@ -537,7 +538,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
         m_mainResource->setDataBufferingPolicy(BufferData);
 
     if (m_identifierForLoadWithoutResourceLoader)
-        frameLoader()->notifier()->dispatchDidReceiveResponse(this, m_identifierForLoadWithoutResourceLoader, m_response, 0);
+        m_frame->fetchContext().dispatchDidReceiveResponse(this, m_identifierForLoadWithoutResourceLoader, m_response, 0);
 
     if (!shouldContinueForResponse()) {
         InspectorInstrumentation::continueWithPolicyIgnore(m_frame, this, m_mainResource->identifier(), m_response);
@@ -604,7 +605,7 @@ void DocumentLoader::dataReceived(Resource* resource, const char* data, int leng
     RefPtr<DocumentLoader> protectLoader(this);
 
     if (m_identifierForLoadWithoutResourceLoader)
-        frameLoader()->notifier()->dispatchDidReceiveData(this, m_identifierForLoadWithoutResourceLoader, data, length, -1);
+        frame()->fetchContext().dispatchDidReceiveData(this, m_identifierForLoadWithoutResourceLoader, data, length, -1);
 
     m_applicationCacheHost->mainResourceDataReceived(data, length);
     m_timeOfLastDataReceived = monotonicallyIncreasingTime();
@@ -848,7 +849,7 @@ void DocumentLoader::startLoadingMainResource()
 
     if (m_substituteData.isValid()) {
         m_identifierForLoadWithoutResourceLoader = createUniqueIdentifier();
-        frameLoader()->notifier()->dispatchWillSendRequest(this, m_identifierForLoadWithoutResourceLoader, m_request, ResourceResponse());
+        frame()->fetchContext().dispatchWillSendRequest(this, m_identifierForLoadWithoutResourceLoader, m_request, ResourceResponse());
         handleSubstituteDataLoadSoon();
         return;
     }

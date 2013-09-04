@@ -35,7 +35,6 @@
 #include "core/dom/IconURL.h"
 #include "core/dom/SecurityContext.h"
 #include "core/fetch/CachePolicy.h"
-#include "core/fetch/ResourceLoadNotifier.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/loader/FrameLoaderTypes.h"
@@ -54,6 +53,7 @@ class Chrome;
 class DOMWrapperWorld;
 class DocumentLoader;
 class Event;
+class FetchContext;
 class FormState;
 class FormSubmission;
 class FrameLoaderClient;
@@ -83,7 +83,7 @@ public:
     Frame* frame() const { return m_frame; }
 
     HistoryController* history() const { return &m_history; }
-    ResourceLoadNotifier* notifier() const { return &m_notifer; }
+
     IconController* icon() const { return m_icon.get(); }
     MixedContentChecker* mixedContentChecker() const { return &m_mixedContentChecker; }
 
@@ -131,6 +131,7 @@ public:
     DocumentLoader* policyDocumentLoader() const { return m_policyDocumentLoader.get(); }
     DocumentLoader* provisionalDocumentLoader() const { return m_provisionalDocumentLoader.get(); }
     FrameState state() const { return m_state; }
+    FetchContext& fetchContext() const { return *m_fetchContext; }
 
     const ResourceRequest& originalRequest() const;
     void receivedMainResourceError(const ResourceError&);
@@ -275,7 +276,6 @@ private:
     // header dependencies unless performance testing proves otherwise.
     // Some of these could be lazily created for memory savings on devices.
     mutable HistoryController m_history;
-    mutable ResourceLoadNotifier m_notifer;
     mutable FrameLoaderStateMachine m_stateMachine;
     OwnPtr<IconController> m_icon;
     mutable MixedContentChecker m_mixedContentChecker;
@@ -293,6 +293,7 @@ private:
     RefPtr<DocumentLoader> m_documentLoader;
     RefPtr<DocumentLoader> m_provisionalDocumentLoader;
     RefPtr<DocumentLoader> m_policyDocumentLoader;
+    OwnPtr<FetchContext> m_fetchContext;
 
     bool m_inStopAllLoaders;
 
