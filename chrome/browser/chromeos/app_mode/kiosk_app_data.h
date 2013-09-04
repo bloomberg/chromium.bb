@@ -100,6 +100,13 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   virtual void OnWebstoreResponseParseFailure(
       const std::string& error) OVERRIDE;
 
+  // Helper function for testing for the existence of |key| in
+  // |response|. Passes |key|'s content via |value| and returns
+  // true when |key| is present.
+  bool CheckResponseKeyValue(const base::DictionaryValue* response,
+                             const char* key,
+                             std::string* value);
+
   KioskAppDataDelegate* delegate_;  // not owned.
   Status status_;
 
