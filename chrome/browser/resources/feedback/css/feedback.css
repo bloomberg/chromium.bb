@@ -8,6 +8,7 @@ html {
 }
 
 body {
+  background-color: #fbfbfb;
   height: 100%;
   margin: 0;
   padding: 0;
@@ -16,6 +17,7 @@ body {
 
 .title-bar {
   -webkit-align-items: center;
+  -webkit-app-region: drag;
   background-color: #fff;
   box-shadow: 0 1px #d0d0d0;
   color: rgb(80, 80, 82);
@@ -25,7 +27,6 @@ body {
 }
 
 .title-bar #page-title {
-  -webkit-app-region: drag;
   -webkit-flex: 1 1 auto;
   -webkit-margin-start: 20px;
 }
@@ -35,7 +36,6 @@ body {
 }
 
 .content {
-  background-color: #fbfbfb;
   color: #646464;
   font-size: 12px;
   margin: 20px;
