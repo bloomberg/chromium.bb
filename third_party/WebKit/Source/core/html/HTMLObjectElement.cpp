@@ -151,7 +151,7 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames, Vector<S
         if (!child->hasTagName(paramTag))
             continue;
 
-        HTMLParamElement* p = static_cast<HTMLParamElement*>(child);
+        HTMLParamElement* p = toHTMLParamElement(child);
         String name = p->name();
         if (name.isEmpty())
             continue;

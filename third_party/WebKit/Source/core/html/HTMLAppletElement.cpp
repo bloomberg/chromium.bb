@@ -159,7 +159,7 @@ void HTMLAppletElement::updateWidget(PluginCreationOption)
         if (!child->hasTagName(paramTag))
             continue;
 
-        HTMLParamElement* param = static_cast<HTMLParamElement*>(child);
+        HTMLParamElement* param = toHTMLParamElement(child);
         if (param->name().isEmpty())
             continue;
 

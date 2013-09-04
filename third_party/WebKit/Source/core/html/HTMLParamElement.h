@@ -44,6 +44,12 @@ private:
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 };
 
+inline HTMLParamElement* toHTMLParamElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::paramTag));
+    return static_cast<HTMLParamElement*>(node);
+}
+
 } // namespace WebCore
 
 #endif
