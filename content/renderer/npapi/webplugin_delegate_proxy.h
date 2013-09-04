@@ -60,7 +60,7 @@ class WebPluginDelegateProxy
                           bool load_manually) OVERRIDE;
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
                               const gfx::Rect& clip_rect) OVERRIDE;
-  virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect) OVERRIDE;
+  virtual void Paint(SkCanvas* canvas, const gfx::Rect& rect) OVERRIDE;
   virtual NPObject* GetPluginScriptableObject() OVERRIDE;
   virtual struct _NPP* GetPluginNPP() OVERRIDE;
   virtual bool GetFormValue(string16* value) OVERRIDE;

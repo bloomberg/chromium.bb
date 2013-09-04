@@ -103,6 +103,7 @@
     'child/npapi/webplugin_delegate_impl_win.cc',
     'child/npapi/webplugin_ime_win.cc',
     'child/npapi/webplugin_ime_win.h',
+    'child/npapi/webplugin_resource_client.h',
     'child/plugin_message_generator.cc',
     'child/plugin_message_generator.h',
     'child/plugin_messages.h',

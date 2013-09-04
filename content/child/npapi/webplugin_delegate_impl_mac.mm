@@ -275,8 +275,7 @@ void WebPluginDelegateImpl::UpdateGeometryAndContext(
   UpdateGeometry(window_rect, clip_rect);
 }
 
-void WebPluginDelegateImpl::Paint(WebKit::WebCanvas* canvas,
-                                  const gfx::Rect& rect) {
+void WebPluginDelegateImpl::Paint(SkCanvas* canvas, const gfx::Rect& rect) {
   gfx::SkiaBitLocker bit_locker(canvas);
   CGContextRef context = bit_locker.cgContext();
   CGPaint(context, rect);

@@ -52,16 +52,12 @@ class WebPluginProxy : public WebPlugin {
 
   // WebPlugin overrides
   virtual void SetWindow(gfx::PluginWindowHandle window) OVERRIDE;
-
-  // Whether input events should be sent to the delegate.
   virtual void SetAcceptsInputEvents(bool accepts) OVERRIDE;
-
   virtual void WillDestroyWindow(gfx::PluginWindowHandle window) OVERRIDE;
 #if defined(OS_WIN)
   void SetWindowlessData(HANDLE pump_messages_event,
                          gfx::NativeViewId dummy_activation_window);
 #endif
-
   virtual void CancelResource(unsigned long id) OVERRIDE;
   virtual void Invalidate() OVERRIDE;
   virtual void InvalidateRect(const gfx::Rect& rect) OVERRIDE;
@@ -74,30 +70,6 @@ class WebPluginProxy : public WebPlugin {
                          const std::string& cookie) OVERRIDE;
   virtual std::string GetCookies(const GURL& url,
                                  const GURL& first_party_for_cookies) OVERRIDE;
-
-  // class-specific methods
-
-  // Returns a WebPluginResourceClient object given its id, or NULL if no
-  // object with that id exists.
-  WebPluginResourceClient* GetResourceClient(int id);
-
-  // Returns the id of the renderer that contains this plugin.
-  int GetRendererId();
-
-  // Returns the id of the associated render view.
-  int host_render_view_routing_id() const {
-    return host_render_view_routing_id_;
-  }
-
-  // For windowless plugins, paints the given rectangle into the local buffer.
-  void Paint(const gfx::Rect& rect);
-
-  // Callback from the renderer to let us know that a paint occurred.
-  void DidPaint();
-
-  // Notification received on a plugin issued resource request creation.
-  void OnResourceCreated(int resource_id, WebPluginResourceClient* client);
-
   virtual void HandleURLRequest(const char* url,
                                 const char* method,
                                 const char* target,
@@ -125,23 +97,36 @@ class WebPluginProxy : public WebPlugin {
   virtual void StartIme() OVERRIDE;
   virtual WebPluginAcceleratedSurface*
       GetAcceleratedSurface(gfx::GpuPreference gpu_preference) OVERRIDE;
-
-  //----------------------------------------------------------------------
-  // Accelerated plugin implementation which renders via the compositor.
-
-  // Tells the renderer, and from there the GPU process, that the plugin
-  // is using accelerated rather than software rendering.
   virtual void AcceleratedPluginEnabledRendering() OVERRIDE;
-
-  // Tells the renderer, and from there the GPU process, that the plugin
-  // allocated the given IOSurface to be used as its backing store.
   virtual void AcceleratedPluginAllocatedIOSurface(int32 width,
                                                    int32 height,
                                                    uint32 surface_id) OVERRIDE;
   virtual void AcceleratedPluginSwappedIOSurface() OVERRIDE;
 #endif
-
   virtual void URLRedirectResponse(bool allow, int resource_id) OVERRIDE;
+
+  // class-specific methods
+
+  // Returns a WebPluginResourceClient object given its id, or NULL if no
+  // object with that id exists.
+  WebPluginResourceClient* GetResourceClient(int id);
+
+  // Returns the id of the renderer that contains this plugin.
+  int GetRendererId();
+
+  // Returns the id of the associated render view.
+  int host_render_view_routing_id() const {
+    return host_render_view_routing_id_;
+  }
+
+  // For windowless plugins, paints the given rectangle into the local buffer.
+  void Paint(const gfx::Rect& rect);
+
+  // Callback from the renderer to let us know that a paint occurred.
+  void DidPaint();
+
+  // Notification received on a plugin issued resource request creation.
+  void OnResourceCreated(int resource_id, WebPluginResourceClient* client);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Retrieves the IME status from a windowless plug-in and sends it to a

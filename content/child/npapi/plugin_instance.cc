@@ -16,6 +16,7 @@
 #include "content/child/npapi/plugin_string_stream.h"
 #include "content/child/npapi/webplugin.h"
 #include "content/child/npapi/webplugin_delegate.h"
+#include "content/child/npapi/webplugin_resource_client.h"
 #include "content/public/common/content_constants.h"
 #include "net/base/escape.h"
 

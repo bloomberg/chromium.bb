@@ -29,6 +29,7 @@
 #include "content/child/npapi/npobject_stub.h"
 #include "content/child/npapi/npobject_util.h"
 #include "content/child/npapi/webplugin.h"
+#include "content/child/npapi/webplugin_resource_client.h"
 #include "content/child/plugin_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/view_messages.h"
@@ -672,7 +673,7 @@ static void FlipRectVerticallyWithHeight(gfx::Rect* rect, int height) {
 }
 #endif
 
-void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
+void WebPluginDelegateProxy::Paint(SkCanvas* canvas,
                                    const gfx::Rect& damaged_rect) {
   // Limit the damaged rectangle to whatever is contained inside the plugin
   // rectangle, as that's the rectangle that we'll actually draw.

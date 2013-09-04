@@ -95,8 +95,7 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
   // Nothing to do here.
 }
 
-void WebPluginDelegateImpl::Paint(WebKit::WebCanvas* canvas,
-                                  const gfx::Rect& rect) {
+void WebPluginDelegateImpl::Paint(SkCanvas* canvas, const gfx::Rect& rect) {
   if (!windowless_ || !skia::SupportsPlatformPaint(canvas))
     return;
   skia::ScopedPlatformPaint scoped_platform_paint(canvas);

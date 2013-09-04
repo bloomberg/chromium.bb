@@ -10,12 +10,12 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/common/cursors/webcursor.h"
 
 class GURL;
+class SkCanvas;
 struct NPObject;
 
 namespace WebKit {
@@ -66,7 +66,7 @@ class WebPluginDelegate {
 
   // Tells the plugin to paint the damaged rect.  |canvas| is only used for
   // windowless plugins.
-  virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect) = 0;
+  virtual void Paint(SkCanvas* canvas, const gfx::Rect& rect) = 0;
 
   // Informs the plugin that it has gained or lost focus. This is only called in
   // windowless mode.

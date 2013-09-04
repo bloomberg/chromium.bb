@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "content/child/npapi/plugin_stream.h"
-#include "content/child/npapi/webplugin.h"
+#include "content/child/npapi/webplugin_resource_client.h"
 #include "url/gurl.h"
 
 namespace content {

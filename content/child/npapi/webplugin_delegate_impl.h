@@ -89,7 +89,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   virtual void PluginDestroyed() OVERRIDE;
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
                               const gfx::Rect& clip_rect) OVERRIDE;
-  virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect) OVERRIDE;
+  virtual void Paint(SkCanvas* canvas, const gfx::Rect& rect) OVERRIDE;
   virtual void SetFocus(bool focused) OVERRIDE;
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
                                 WebCursor::CursorInfo* cursor_info) OVERRIDE;
