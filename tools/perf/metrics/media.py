@@ -65,13 +65,13 @@ class MediaMetric(Metric):
       return
 
     if not self._skip_basic_metrics:
-      AddOneResult('avg_loop_time', 'sec')
-      AddOneResult('buffering_time', 'sec')
+      AddOneResult('buffering_time', 'ms')
       AddOneResult('decoded_audio_bytes', 'bytes')
       AddOneResult('decoded_video_bytes', 'bytes')
       AddOneResult('decoded_frame_count', 'frames')
       AddOneResult('dropped_frame_count', 'frames')
-      AddOneResult('time_to_play', 'sec')
+      AddOneResult('time_to_play', 'ms')
 
-    AddOneResult('seek', 'sec')
+    AddOneResult('avg_loop_time', 'ms')
+    AddOneResult('seek', 'ms')
 

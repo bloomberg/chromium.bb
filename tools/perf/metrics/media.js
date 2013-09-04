@@ -149,8 +149,8 @@
     },
 
     stop: function() {
-      // Return delta time since start in secs.
-      return ((getCurrentTime() - this.start_) / 1000).toFixed(3);
+      // Return delta time since start in millisecs.
+      return ((getCurrentTime() - this.start_)).toFixed(3);
     }
   };
 
