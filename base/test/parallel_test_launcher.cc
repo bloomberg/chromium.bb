@@ -4,6 +4,12 @@
 
 #include "base/test/parallel_test_launcher.h"
 
+#if defined(OS_POSIX)
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif
+
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
@@ -74,7 +80,16 @@ void DoLaunchChildTestProcess(
   options.stderr_handle = handle.Get();
 #elif defined(OS_POSIX)
   options.new_process_group = true;
-  // TODO(phajdan.jr): Implement output redirection to a file on POSIX.
+
+  int output_file_fd = open(output_file.value().c_str(), O_RDWR);
+  CHECK_GE(output_file_fd, 0);
+
+  file_util::ScopedFD output_file_fd_closer(&output_file_fd);
+
+  base::FileHandleMappingVector fds_mapping;
+  fds_mapping.push_back(std::make_pair(output_file_fd, STDOUT_FILENO));
+  fds_mapping.push_back(std::make_pair(output_file_fd, STDERR_FILENO));
+  options.fds_to_remap = &fds_mapping;
 #endif
 
   bool was_timeout = false;
@@ -84,6 +99,8 @@ void DoLaunchChildTestProcess(
 #if defined(OS_WIN)
   FlushFileBuffers(handle.Get());
   handle.Close();
+#elif defined(OS_POSIX)
+  output_file_fd_closer.reset();
 #endif
 
   std::string output_file_contents;
@@ -169,7 +186,11 @@ void ParallelTestLauncher::OnOutputTimeout() {
   for (RunningProcessesMap::const_iterator i = running_processes_map_.begin();
        i != running_processes_map_.end();
        ++i) {
+#if defined(OS_WIN)
     fwprintf(stdout, L"\t%s\n", i->second.GetCommandLineString().c_str());
+#else
+    fprintf(stdout, "\t%s\n", i->second.GetCommandLineString().c_str());
+#endif
   }
 
   fflush(stdout);
