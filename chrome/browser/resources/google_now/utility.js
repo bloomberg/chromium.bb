@@ -114,8 +114,12 @@ function sendErrorReport(error) {
     }
   }
 
+  var errorText = error.name;
+  if (error.canSendMessageToServer)
+    errorText = errorText + ': ' + error.message;
+
   var requestParameters =
-      'error=' + encodeURIComponent(error.name) +
+      'error=' + encodeURIComponent(errorText) +
       '&script=' + encodeURIComponent(file) +
       '&line=' + encodeURIComponent(line) +
       '&trace=' + encodeURIComponent(filteredStack);
