@@ -16,6 +16,7 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -243,7 +244,8 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
                 service_path);
 
   std::string network_name =
-      NetworkState::GetNameFromProperties(service_path, shill_properties);
+      chromeos::shill_property_util::GetNameFromProperties(service_path,
+                                                           shill_properties);
   std::string network_error_details;
   shill_properties.GetStringWithoutPathExpansion(
         shill::kErrorDetailsProperty, &network_error_details);

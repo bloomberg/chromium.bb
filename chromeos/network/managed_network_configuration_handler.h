@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_handler.h"
@@ -25,7 +24,6 @@ class ListValue;
 namespace chromeos {
 
 class NetworkPolicyObserver;
-class NetworkUIData;
 
 // The ManagedNetworkConfigurationHandler class is used to create and configure
 // networks in ChromeOS using ONC and takes care of network policies.
@@ -54,12 +52,6 @@ class NetworkUIData;
 class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
  public:
   virtual ~ManagedNetworkConfigurationHandler();
-
-  // Returns the NetworkUIData parsed from the UIData property of
-  // |shill_dictionary|. If parsing fails or the field doesn't exist, returns
-  // NULL.
-  static scoped_ptr<NetworkUIData> GetUIData(
-      const base::DictionaryValue& shill_dictionary);
 
   virtual void AddObserver(NetworkPolicyObserver* observer) = 0;
   virtual void RemoveObserver(NetworkPolicyObserver* observer) = 0;

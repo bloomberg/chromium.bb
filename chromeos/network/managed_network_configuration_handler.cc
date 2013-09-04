@@ -14,22 +14,4 @@ namespace chromeos {
 
 ManagedNetworkConfigurationHandler::~ManagedNetworkConfigurationHandler() {}
 
-// static
-scoped_ptr<NetworkUIData> ManagedNetworkConfigurationHandler::GetUIData(
-    const base::DictionaryValue& shill_dictionary) {
-  std::string ui_data_blob;
-  if (shill_dictionary.GetStringWithoutPathExpansion(flimflam::kUIDataProperty,
-                                                     &ui_data_blob) &&
-      !ui_data_blob.empty()) {
-    scoped_ptr<base::DictionaryValue> ui_data_dict =
-        onc::ReadDictionaryFromJson(ui_data_blob);
-    if (ui_data_dict)
-      return make_scoped_ptr(new NetworkUIData(*ui_data_dict));
-    else
-      LOG(ERROR) << "UIData is not a valid JSON dictionary.";
-  }
-  VLOG(2) << "JSON dictionary has no UIData blob: " << shill_dictionary;
-  return scoped_ptr<NetworkUIData>();
-}
-
 }  // namespace chromeos

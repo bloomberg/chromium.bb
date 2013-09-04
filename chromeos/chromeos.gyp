@@ -294,6 +294,8 @@
         'network/onc/onc_validator.h',
         'network/shill_property_handler.cc',
         'network/shill_property_handler.h',
+        'network/shill_property_util.cc',
+        'network/shill_property_util.h',
         'network/sms_watcher.cc',
         'network/sms_watcher.h',
         'network/dhcp_proxy_script_fetcher_chromeos.cc',

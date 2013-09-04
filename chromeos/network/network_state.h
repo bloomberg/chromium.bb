@@ -105,15 +105,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // key.
   static std::string IPConfigProperty(const char* key);
 
-  // Sets |out| to the UIData specified by |value|. Returns true if successfully
-  // parsed.
-  static bool GetUIDataFromValue(const base::Value& value, NetworkUIData* out);
-
-  // Generates a name from properties."Wifi.HexSSID" if present, otherwise
-  // validates properties.Name and returns a valid utf8 version.
-  static std::string GetNameFromProperties(
-      const std::string& service_path,
-      const base::DictionaryValue& properties);
 
  private:
   friend class MobileActivatorTest;

@@ -10,6 +10,7 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
+#include "chromeos/network/shill_property_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -28,10 +29,13 @@ bool FavoriteState::PropertyChanged(const std::string& key,
   if (key == flimflam::kProfileProperty) {
     return GetStringValue(key, value, &profile_path_);
   } else if (key == flimflam::kUIDataProperty) {
-    if (!NetworkState::GetUIDataFromValue(value, &ui_data_)) {
+    scoped_ptr<NetworkUIData> new_ui_data =
+        shill_property_util::GetUIDataFromValue(value);
+    if (!new_ui_data) {
       NET_LOG_ERROR("Failed to parse " + key, path());
       return false;
     }
+    ui_data_ = *new_ui_data;
     return true;
   }
   return false;

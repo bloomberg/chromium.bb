@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
-#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -36,6 +35,7 @@
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/onc/onc_validator.h"
+#include "chromeos/network/shill_property_util.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -83,18 +83,6 @@ void RunErrorCallback(const std::string& service_path,
           network_handler::CreateErrorData(service_path,
                                            error_name,
                                            error_message)));
-}
-
-// Sets the UIData property in |shill_dictionary| to the serialization of
-// |ui_data|.
-void SetUIData(const NetworkUIData& ui_data,
-               base::DictionaryValue* shill_dictionary) {
-  base::DictionaryValue ui_data_dict;
-  ui_data.FillDictionary(&ui_data_dict);
-  std::string ui_data_blob;
-  base::JSONWriter::Write(&ui_data_dict, &ui_data_blob);
-  shill_dictionary->SetStringWithoutPathExpansion(flimflam::kUIDataProperty,
-                                                  ui_data_blob);
 }
 
 void LogErrorWithDict(const tracked_objects::Location& from_where,
@@ -227,7 +215,7 @@ scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
     ui_data->set_user_settings(sanitized_settings.Pass());
   }
 
-  SetUIData(*ui_data, shill_dictionary.get());
+  shill_property_util::SetUIData(*ui_data, shill_dictionary.get());
 
   VLOG(2) << "Created Shill properties: " << *shill_dictionary;
 
@@ -414,7 +402,8 @@ void ManagedNetworkConfigurationHandlerImpl::GetManagedPropertiesCallback(
             << service_path << ".";
   }
 
-  scoped_ptr<NetworkUIData> ui_data = GetUIData(shill_properties);
+  scoped_ptr<NetworkUIData> ui_data =
+      shill_property_util::GetUIDataFromProperties(shill_properties);
 
   const base::DictionaryValue* user_settings = NULL;
   const base::DictionaryValue* shared_settings = NULL;
@@ -886,7 +875,8 @@ void ManagedNetworkConfigurationHandlerImpl::PolicyApplicator::GetEntryCallback(
     // unmanaged.
   }
 
-  scoped_ptr<NetworkUIData> ui_data = GetUIData(entry_properties);
+  scoped_ptr<NetworkUIData> ui_data =
+      shill_property_util::GetUIDataFromProperties(entry_properties);
   if (!ui_data) {
     VLOG(1) << "Entry " << entry << " of profile " << profile_.ToDebugString()
             << " contains no or no valid UIData.";

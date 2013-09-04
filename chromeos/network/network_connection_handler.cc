@@ -12,13 +12,13 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/client_cert_util.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
+#include "chromeos/network/shill_property_util.h"
 #include "dbus/object_path.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -45,14 +45,6 @@ bool IsAuthenticationError(const std::string& error) {
           error == shill::kErrorEapLocalTlsFailed ||
           error == shill::kErrorEapRemoteTlsFailed ||
           error == shill::kErrorEapAuthenticationFailed);
-}
-
-void CopyStringFromDictionary(const base::DictionaryValue& source,
-                              const std::string& key,
-                              base::DictionaryValue* dest) {
-  std::string string_value;
-  if (source.GetStringWithoutPathExpansion(key, &string_value))
-    dest->SetStringWithoutPathExpansion(key, string_value);
 }
 
 bool NetworkRequiresActivation(const NetworkState* network) {
@@ -411,7 +403,7 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     // Note: Wifi/VPNConfigView set these properties explicitly, in which case
     //   only the TPM must be configured.
     scoped_ptr<NetworkUIData> ui_data =
-        ManagedNetworkConfigurationHandler::GetUIData(service_properties);
+        shill_property_util::GetUIDataFromProperties(service_properties);
     if (ui_data && ui_data->certificate_type() == CLIENT_CERT_TYPE_PATTERN) {
       // User must be logged in to connect to a network requiring a certificate.
       if (!logged_in_ || !cert_loader_) {
@@ -456,32 +448,21 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
 
   if (!config_properties.empty()) {
     NET_LOG_EVENT("Configuring Network", service_path);
-
-    // Set configuration properties required by Shill to identify the network.
-    config_properties.SetStringWithoutPathExpansion(
-        flimflam::kTypeProperty, type);
-    CopyStringFromDictionary(service_properties, flimflam::kNameProperty,
-                             &config_properties);
-    CopyStringFromDictionary(service_properties, flimflam::kGuidProperty,
-                             &config_properties);
-    if (type == flimflam::kTypeVPN) {
-      config_properties.SetStringWithoutPathExpansion(
-          flimflam::kProviderTypeProperty, vpn_provider_type);
-      config_properties.SetStringWithoutPathExpansion(
-          flimflam::kProviderHostProperty, vpn_provider_host);
-    } else if (type == flimflam::kTypeWifi) {
-      config_properties.SetStringWithoutPathExpansion(
-          flimflam::kSecurityProperty, security);
+    if (shill_property_util::CopyIdentifyingProperties(service_properties,
+                                                       &config_properties)) {
+      network_configuration_handler_->SetProperties(
+          service_path,
+          config_properties,
+          base::Bind(&NetworkConnectionHandler::CallShillConnect,
+                     AsWeakPtr(),
+                     service_path),
+          base::Bind(&NetworkConnectionHandler::HandleConfigurationFailure,
+                     AsWeakPtr(),
+                     service_path));
+      return;
     }
-
-    network_configuration_handler_->SetProperties(
-        service_path,
-        config_properties,
-        base::Bind(&NetworkConnectionHandler::CallShillConnect,
-                   AsWeakPtr(), service_path),
-        base::Bind(&NetworkConnectionHandler::HandleConfigurationFailure,
-                   AsWeakPtr(), service_path));
-   return;
+    NET_LOG_ERROR("Shill dictionary is missing some relevant entries",
+                  service_path);
   }
 
   // Otherwise, we probably still need to configure the network since

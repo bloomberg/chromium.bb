@@ -4,17 +4,12 @@
 
 #include "chromeos/network/network_state.h"
 
-#include "base/i18n/icu_encoding_detection.h"
-#include "base/i18n/icu_string_conversions.h"
-#include "base/json/json_writer.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversion_utils.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/shill_property_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {
@@ -30,26 +25,6 @@ bool ConvertListValueToStringVector(const base::ListValue& string_list,
     result->push_back(str);
   }
   return true;
-}
-
-// Replace non UTF8 characters in |str| with a replacement character.
-std::string ValidateUTF8(const std::string& str) {
-  std::string result;
-  for (int32 index = 0; index < static_cast<int32>(str.size()); ++index) {
-    uint32 code_point_out;
-    bool is_unicode_char = base::ReadUnicodeCharacter(str.c_str(), str.size(),
-                                                      &index, &code_point_out);
-    const uint32 kFirstNonControlChar = 0x20;
-    if (is_unicode_char && (code_point_out >= kFirstNonControlChar)) {
-      base::WriteUnicodeCharacter(code_point_out, &result);
-    } else {
-      const uint32 kReplacementChar = 0xFFFD;
-      // Puts kReplacementChar if character is a control character [0,0x20)
-      // or is not readable UTF8.
-      base::WriteUnicodeCharacter(kReplacementChar, &result);
-    }
-  }
-  return result;
 }
 
 bool IsCaCertNssSet(const base::DictionaryValue& properties) {
@@ -184,10 +159,13 @@ bool NetworkState::PropertyChanged(const std::string& key,
     }
     return true;
   } else if (key == flimflam::kUIDataProperty) {
-    if (!GetUIDataFromValue(value, &ui_data_)) {
+    scoped_ptr<NetworkUIData> new_ui_data =
+        shill_property_util::GetUIDataFromValue(value);
+    if (!new_ui_data) {
       NET_LOG_ERROR("Failed to parse " + key, path());
       return false;
     }
+    ui_data_ = *new_ui_data;
     return true;
   } else if (key == flimflam::kNetworkTechnologyProperty) {
     return GetStringValue(key, value, &network_technology_);
@@ -339,86 +317,13 @@ std::string NetworkState::GetNetmask() const {
 }
 
 bool NetworkState::UpdateName(const base::DictionaryValue& properties) {
-  std::string updated_name = GetNameFromProperties(path(), properties);
+  std::string updated_name =
+      shill_property_util::GetNameFromProperties(path(), properties);
   if (updated_name != name()) {
     set_name(updated_name);
     return true;
   }
   return false;
-}
-
-// static
-std::string NetworkState::GetNameFromProperties(
-    const std::string& service_path,
-    const base::DictionaryValue& properties) {
-  std::string name, hex_ssid;
-  properties.GetStringWithoutPathExpansion(flimflam::kNameProperty, &name);
-  properties.GetStringWithoutPathExpansion(flimflam::kWifiHexSsid, &hex_ssid);
-
-  if (hex_ssid.empty()) {
-    if (name.empty())
-      return name;
-    // Validate name for UTF8.
-    std::string valid_ssid = ValidateUTF8(name);
-    if (valid_ssid != name) {
-      NET_LOG_DEBUG("GetNameFromProperties", base::StringPrintf(
-          "%s: UTF8: %s", service_path.c_str(), valid_ssid.c_str()));
-    }
-    return valid_ssid;
-  }
-
-  std::string ssid;
-  std::vector<uint8> raw_ssid_bytes;
-  if (base::HexStringToBytes(hex_ssid, &raw_ssid_bytes)) {
-    ssid = std::string(raw_ssid_bytes.begin(), raw_ssid_bytes.end());
-    NET_LOG_DEBUG("GetNameFromProperties", base::StringPrintf(
-        "%s: %s, SSID: %s", service_path.c_str(),
-        hex_ssid.c_str(), ssid.c_str()));
-  } else {
-    NET_LOG_ERROR("GetNameFromProperties",
-                  base::StringPrintf("%s: Error processing: %s",
-                                     service_path.c_str(), hex_ssid.c_str()));
-    return name;
-  }
-
-  if (IsStringUTF8(ssid)) {
-    if (ssid != name) {
-      NET_LOG_DEBUG("GetNameFromProperties", base::StringPrintf(
-          "%s: UTF8: %s", service_path.c_str(), ssid.c_str()));
-    }
-    return ssid;
-  }
-
-  // Detect encoding and convert to UTF-8.
-  std::string country_code;
-  properties.GetStringWithoutPathExpansion(
-      flimflam::kCountryProperty, &country_code);
-  std::string encoding;
-  if (!base::DetectEncoding(ssid, &encoding)) {
-    // TODO(stevenjb): This is currently experimental. If we find a case where
-    // base::DetectEncoding() fails, we need to figure out whether we can use
-    // country_code with ConvertToUtf8(). crbug.com/233267.
-    encoding = country_code;
-  }
-  if (!encoding.empty()) {
-    std::string utf8_ssid;
-    if (base::ConvertToUtf8AndNormalize(ssid, encoding, &utf8_ssid)) {
-      if (utf8_ssid != name) {
-        NET_LOG_DEBUG("GetNameFromProperties", base::StringPrintf(
-            "%s: Encoding=%s: %s", service_path.c_str(),
-            encoding.c_str(), utf8_ssid.c_str()));
-      }
-      return utf8_ssid;
-    }
-  }
-
-  // Unrecognized encoding. Only use raw bytes if name_ is empty.
-  NET_LOG_DEBUG("GetNameFromProperties", base::StringPrintf(
-      "%s: Unrecognized Encoding=%s: %s", service_path.c_str(),
-      encoding.c_str(), ssid.c_str()));
-  if (name.empty() && !ssid.empty())
-    return ssid;
-  return name;
 }
 
 // static
@@ -438,24 +343,6 @@ bool NetworkState::StateIsConnecting(const std::string& connection_state) {
 // static
 std::string NetworkState::IPConfigProperty(const char* key) {
   return base::StringPrintf("%s.%s", shill::kIPConfigProperty, key);
-}
-
-// static
-bool NetworkState::GetUIDataFromValue(const base::Value& ui_data_value,
-                                      NetworkUIData* out) {
-  std::string ui_data_str;
-  if (!ui_data_value.GetAsString(&ui_data_str))
-    return false;
-  if (ui_data_str.empty()) {
-    *out = NetworkUIData();
-    return true;
-  }
-  scoped_ptr<base::DictionaryValue> ui_data_dict(
-      chromeos::onc::ReadDictionaryFromJson(ui_data_str));
-  if (!ui_data_dict)
-    return false;
-  *out = NetworkUIData(*ui_data_dict);
-  return true;
 }
 
 }  // namespace chromeos
