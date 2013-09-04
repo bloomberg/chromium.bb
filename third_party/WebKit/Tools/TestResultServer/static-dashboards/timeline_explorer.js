@@ -229,8 +229,8 @@ function updateBuildInspector(resultsForBuilder, builder, dygraph, index)
     addRow('', '');
     var master = builders.master(builder);
     var buildUrl = master.logPath(builder, resultsForBuilder[results.BUILD_NUMBERS][index]);
-    var resultsUrl = 'http://build.chromium.org/f/chromium/layout_test_results/' +
-        currentBuilders()[builder] + '/' + resultsForBuilder[results.CHROME_REVISIONS][index];
+    var resultsUrl = 'https://storage.googleapis.com/chromium-layout-test-archives/' +
+        currentBuilders()[builder] + '/' + resultsForBuilder[results.BUILD_NUMBERS][index];
 
     addRow('Build:', '<a href="' + buildUrl + '" target="_blank">' + buildNumber + '</a> (<a href="' + resultsUrl + '" target="_blank">results</a>)');
 
