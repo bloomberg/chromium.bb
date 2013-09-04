@@ -108,16 +108,8 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
   fileMenuItem_.reset([NewTopLevelItemFrom(IDC_FILE_MENU) retain]);
   AddDuplicateItem(fileMenuItem_, IDC_FILE_MENU, IDC_CLOSE_WINDOW);
 
-  // Edit menu.
-  editMenuItem_.reset([NewTopLevelItemFrom(IDC_EDIT_MENU) retain]);
-  AddDuplicateItem(editMenuItem_, IDC_EDIT_MENU, IDC_CONTENT_CONTEXT_UNDO);
-  AddDuplicateItem(editMenuItem_, IDC_EDIT_MENU, IDC_CONTENT_CONTEXT_REDO);
-  [[editMenuItem_ submenu] addItem:[NSMenuItem separatorItem]];
-  AddDuplicateItem(editMenuItem_, IDC_EDIT_MENU, IDC_CONTENT_CONTEXT_CUT);
-  AddDuplicateItem(editMenuItem_, IDC_EDIT_MENU, IDC_CONTENT_CONTEXT_COPY);
-  AddDuplicateItem(editMenuItem_, IDC_EDIT_MENU, IDC_CONTENT_CONTEXT_PASTE);
-  AddDuplicateItem(editMenuItem_, IDC_EDIT_MENU, IDC_CONTENT_CONTEXT_DELETE);
-  AddDuplicateItem(editMenuItem_, IDC_EDIT_MENU, IDC_CONTENT_CONTEXT_SELECTALL);
+  // Edit menu. This is copied entirely.
+  editMenuItem_.reset([[[NSApp mainMenu] itemWithTag:IDC_EDIT_MENU] copy]);
 
   // Window menu.
   windowMenuItem_.reset([NewTopLevelItemFrom(IDC_WINDOW_MENU) retain]);
