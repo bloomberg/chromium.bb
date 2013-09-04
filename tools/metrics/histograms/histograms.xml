@@ -27524,6 +27524,7 @@ other types of suffix sets.
   <group name="History" label="History"/>
   <group name="Predictor" label="Predictor"/>
   <group name="Quota" label="Quota"/>
+  <group name="Shortcuts" label="Shortcuts"/>
   <group name="SyncDirectory" label="SyncDirectory"/>
   <group name="Text" label="Text (obsolete 7/24/13)"/>
   <group name="Thumbnail" label="Thumbnail"/>

@@ -57,6 +57,8 @@ ShortcutsDatabase::ShortcutsDatabase(Profile* profile) {
 }
 
 bool ShortcutsDatabase::Init() {
+  db_.set_histogram_tag("Shortcuts");
+
   // Set the database page size to something a little larger to give us
   // better performance (we're typically seek rather than bandwidth limited).
   // This only has an effect before any tables have been created, otherwise
