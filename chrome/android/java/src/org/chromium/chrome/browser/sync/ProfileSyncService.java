@@ -489,6 +489,16 @@ public class ProfileSyncService {
         nativeDisableSync(mNativeProfileSyncServiceAndroid);
     }
 
+    /**
+     * Returns the time when the last sync cycle was completed.
+     *
+     * @return The difference measured in microseconds, between last sync cycle completion time
+     * and 1 January 1970 00:00:00 UTC.
+     */
+    public long getLastSyncedTimeForTest() {
+        return nativeGetLastSyncedTimeForTest(mNativeProfileSyncServiceAndroid);
+    }
+
     // Native methods
     private native void nativeNudgeSyncer(
             int nativeProfileSyncServiceAndroid, String objectId, long version, String payload);
@@ -539,4 +549,5 @@ public class ProfileSyncService {
     private native boolean nativeHasKeepEverythingSynced(int nativeProfileSyncServiceAndroid);
     private native boolean nativeHasUnrecoverableError(int nativeProfileSyncServiceAndroid);
     private native String nativeGetAboutInfoForTest(int nativeProfileSyncServiceAndroid);
+    private native long nativeGetLastSyncedTimeForTest(int nativeProfileSyncServiceAndroid);
 }

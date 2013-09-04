@@ -50,6 +50,7 @@ public class ChromiumTestShellActivity extends ChromiumActivity implements MenuH
     private WindowAndroid mWindow;
     private TabManager mTabManager;
     private DevToolsServer mDevToolsServer;
+    private SyncController mSyncController;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -95,6 +96,10 @@ public class ChromiumTestShellActivity extends ChromiumActivity implements MenuH
 
         mDevToolsServer = new DevToolsServer("chromium_testshell");
         mDevToolsServer.setRemoteDebuggingEnabled(true);
+        mSyncController = SyncController.get(this);
+        // In case this method is called after the first onResume(), we need to inform the
+        // SyncController that we have resumed.
+        mSyncController.onResume();
     }
 
     @Override
@@ -156,6 +161,10 @@ public class ChromiumTestShellActivity extends ChromiumActivity implements MenuH
 
         ContentView view = getActiveContentView();
         if (view != null) view.onActivityResume();
+
+        if (mSyncController != null) {
+            mSyncController.onResume();
+        }
     }
 
     @Override

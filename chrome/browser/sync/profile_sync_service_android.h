@@ -193,6 +193,10 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   // ProfileSyncServiceObserver:
   virtual void OnStateChanged() OVERRIDE;
 
+  // Returns a timestamp for when a sync was last executed. The return value is
+  // the internal value of base::Time.
+  jlong GetLastSyncedTimeForTest(JNIEnv* env, jobject obj);
+
   static ProfileSyncServiceAndroid* GetProfileSyncServiceAndroid();
 
   // Registers the ProfileSyncServiceAndroid's native methods through JNI.

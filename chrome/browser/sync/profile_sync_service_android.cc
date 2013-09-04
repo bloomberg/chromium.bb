@@ -471,6 +471,15 @@ ScopedJavaLocalRef<jstring> ProfileSyncServiceAndroid::GetAboutInfoForTest(
   return ConvertUTF8ToJavaString(env, about_info_json);
 }
 
+jlong ProfileSyncServiceAndroid::GetLastSyncedTimeForTest(
+    JNIEnv* env, jobject obj) {
+  // Use profile preferences here instead of SyncPrefs to avoid an extra
+  // conversion, since SyncPrefs::GetLastSyncedTime() converts the stored value
+  // to to base::Time.
+  return static_cast<jlong>(
+      profile_->GetPrefs()->GetInt64(prefs::kSyncLastSyncedTime));
+}
+
 void ProfileSyncServiceAndroid::NudgeSyncer(JNIEnv* env,
                                             jobject obj,
                                             jstring objectId,

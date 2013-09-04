@@ -3373,6 +3373,8 @@
           'dependencies': [
             'chrome_java',
             '../content/content.gyp:content_java_test_support',
+            '../sync/sync.gyp:sync_java',
+            '../sync/sync.gyp:sync_java_test_support',
           ],
           'includes': [ '../build/java.gypi' ],
         },
