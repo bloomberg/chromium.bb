@@ -849,10 +849,9 @@ bool DeveloperPrivatePackDirectoryFunction::RunImpl() {
   key_path_str_ = params->private_key_path;
 
   base::FilePath root_directory =
-      base::FilePath::FromWStringHack(UTF8ToWide(item_path_str_));
+      base::FilePath::FromUTF8Unsafe(item_path_str_);
 
-  base::FilePath key_file =
-      base::FilePath::FromWStringHack(UTF8ToWide(key_path_str_));
+  base::FilePath key_file = base::FilePath::FromUTF8Unsafe(key_path_str_);
 
   developer::PackDirectoryResponse response;
   if (root_directory.empty()) {
@@ -1146,8 +1145,7 @@ bool DeveloperPrivateChoosePathFunction::RunImpl() {
 
 void DeveloperPrivateChoosePathFunction::FileSelected(
     const base::FilePath& path) {
-  SetResult(new base::StringValue(
-      UTF16ToUTF8(path.LossyDisplayName())));
+  SetResult(new base::StringValue(UTF16ToUTF8(path.LossyDisplayName())));
   SendResponse(true);
   Release();
 }

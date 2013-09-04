@@ -17,7 +17,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/utf_string_conversions.h"  // TODO(viettrungluu): delete me.
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_paths.h"
@@ -775,10 +775,7 @@ bool SandboxedUnpacker::RewriteCatalogFiles() {
       return false;
     }
 
-    // TODO(viettrungluu): Fix the |FilePath::FromWStringHack(UTF8ToWide())|
-    // hack and remove the corresponding #include.
-    base::FilePath relative_path =
-        base::FilePath::FromWStringHack(UTF8ToWide(it.key()));
+    base::FilePath relative_path = base::FilePath::FromUTF8Unsafe(it.key());
     relative_path = relative_path.Append(kMessagesFilename);
     if (relative_path.IsAbsolute() || relative_path.ReferencesParent()) {
       // Invalid path for catalog.

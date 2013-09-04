@@ -8,7 +8,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/value_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/admin_policy.h"
@@ -1238,8 +1237,7 @@ base::FilePath ExtensionPrefs::GetExtensionPath(
   if (!dict->GetString(kPrefPath, &path))
     return base::FilePath();
 
-  return install_directory_.Append(
-      base::FilePath::FromWStringHack(UTF8ToWide(path)));
+  return install_directory_.Append(base::FilePath::FromUTF8Unsafe(path));
 }
 
 scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledInfoHelper(
