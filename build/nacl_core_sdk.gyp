@@ -11,7 +11,8 @@
       'target_name': 'nacl_core_sdk',
       'type': 'none',
       'dependencies': [
-        '../src/untrusted/minidump_generator/minidump_generator.gyp:minidump_generator_lib',
+        # TODO(bradnelson): re-enable after breakpad is relocated.
+        #'../src/untrusted/minidump_generator/minidump_generator.gyp:minidump_generator_lib',
         '../src/untrusted/nacl/nacl.gyp:nacl_dynacode_lib',
         '../src/untrusted/nacl/nacl.gyp:nacl_exception_lib',
         '../src/untrusted/nacl/nacl.gyp:nacl_lib',

@@ -3049,7 +3049,8 @@ nacl_env.Append(
     'src/trusted/validator_x86/nacl.scons',
     'src/trusted/weak_ref/nacl.scons',
     'src/untrusted/crash_dump/nacl.scons',
-    'src/untrusted/minidump_generator/nacl.scons',
+    # TODO(bradnelson): re-enable after breakpad is relocated.
+    #'src/untrusted/minidump_generator/nacl.scons',
     'src/untrusted/nacl/nacl.scons',
     'src/untrusted/valgrind/nacl.scons',
     ####  ALPHABETICALLY SORTED ####
@@ -3160,7 +3161,8 @@ irt_variant_tests = [
     # adding tests to nacl_irt_test_env.
     'tests/inbrowser_test_runner/nacl.scons',
     'tests/untrusted_crash_dump/nacl.scons',
-    'tests/untrusted_minidump/nacl.scons',
+    # TODO(bradnelson): re-enable after breakpad is relocated.
+    #'tests/untrusted_minidump/nacl.scons',
 ]
 
 # These are tests that are NOT worthwhile to run in an IRT variant.
