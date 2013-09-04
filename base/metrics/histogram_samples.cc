@@ -113,7 +113,8 @@ void HistogramSamples::IncreaseSum(int64 diff) {
 }
 
 void HistogramSamples::IncreaseRedundantCount(HistogramBase::Count diff) {
-  redundant_count_ += diff;
+  base::subtle::NoBarrier_Store(&redundant_count_,
+      base::subtle::NoBarrier_Load(&redundant_count_) + diff);
 }
 
 SampleCountIterator::~SampleCountIterator() {}
