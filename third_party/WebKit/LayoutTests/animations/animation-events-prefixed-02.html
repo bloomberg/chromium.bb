@@ -9,11 +9,14 @@
       top: 10px;
       height: 100px;
       width: 100px;
+      background-color: #999;
+    }
+
+    .animate {
       animation-duration: 0.3s;
       animation-name: anim;
-      background-color: #999;
-      animation-iteration-count: 3;
     }
+
     @keyframes anim {
         from { left: 200px; }
         to   { left: 300px; }
@@ -30,19 +33,27 @@
       + prefixedEventReceived + ' prefixed events.';
     }
 
-    var iterationEventReceived = 0;
     var startEventReceived = false;
+    var endEventReceived = false;
     var prefixedEventReceived = 0;
+
     document.addEventListener('webkitAnimationStart', function() {
       prefixedEventReceived++;
     }, false);
+
     document.addEventListener('animationstart', function() {
       startEventReceived = true;
     }, false);
 
     document.addEventListener('animationiteration', function() {
-      ++iterationEventReceived;
+      if (startEventReceived && endEventReceived && prefixedEventReceived == 0) {
+        document.getElementById('result').innerHTML = 'PASS: All events have been received as expected.';
+      } else
+        fail();
+      if (window.testRunner)
+            testRunner.notifyDone();
     }, false);
+
     document.addEventListener('webkitAnimationIteration', function() {
       prefixedEventReceived++;
     }, false);
@@ -50,13 +61,15 @@
     document.addEventListener('webkitAnimationEnd', function() {
       prefixedEventReceived++;
     }, false);
+
     document.addEventListener('animationend', function() {
-        if (iterationEventReceived <= 2 && startEventReceived && prefixedEventReceived == 0)
-            document.getElementById('result').innerHTML = 'PASS: All events have been received as expected.';
-        else
-            fail();
-        if (window.testRunner)
-            testRunner.notifyDone();
+      endEventReceived = true;
+      document.getElementById('box').className = '';
+      // Launch again the animation to catch the animation iteration events this time.
+      setTimeout(function () {
+        document.getElementById('box').style.animationIterationCount = "infinite";
+        document.getElementById('box').className = 'animate';
+      }, 200);
     }, false);
 
     onload = function()
@@ -64,6 +77,7 @@
       // Animation begins once we append the DOM node to the document.
       var boxNode = document.createElement('div');
       boxNode.id = 'box';
+      boxNode.className = 'animate';
       document.body.appendChild(boxNode);
     }
   </script>

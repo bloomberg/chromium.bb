@@ -1032,8 +1032,6 @@ crbug.com/248938 [ Linux Mac Release ] virtual/threaded/animations/interpolation
 crbug.com/248938 [ Linux Release ] virtual/threaded/animations/interpolation/clip-interpolation.html [ Pass Timeout ]
 crbug.com/248938 [ Linux ] virtual/threaded/animations/fill-mode-transform.html [ Pass Timeout ]
 crbug.com/248938 [ Mac Debug ] virtual/threaded/animations/fill-mode-transform.html [ Pass Timeout ]
-crbug.com/284531 [ Debug ] virtual/threaded/animations/animation-events-prefixed-02.html [ Pass Failure ]
-crbug.com/284531 [ Debug ] virtual/threaded/animations/animation-events-prefixed-03.html [ Pass Failure ]
 
 crbug.com/255726 [ Debug ] compositing/contents-opaque/visibility-hidden.html [ Pass Failure ]
 
