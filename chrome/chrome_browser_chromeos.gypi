@@ -900,24 +900,6 @@
             'USE_CRAS',
           ],          
         }],
-        ['file_manager_extension==0', {
-          'sources/': [
-            ['exclude', 'browser/chromeos/extensions/file_manager/file_browser_handler_api.cc'],
-            ['exclude', 'browser/chromeos/extensions/file_manager/file_browser_handler_api.h'],
-            ['exclude', 'browser/chromeos/extensions/file_manager/file_browser_private_api.cc'],
-            ['exclude', 'browser/chromeos/extensions/file_manager/file_browser_private_api.h'],
-            ['exclude', 'browser/chromeos/extensions/file_manager/file_browser_private_api_factory.cc'],
-            ['exclude', 'browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h'],
-            ['exclude', 'browser/chromeos/extensions/file_manager/file_tasks.cc'],
-            ['exclude', 'browser/chromeos/extensions/file_manager/file_tasks.h'],
-            ['exclude', 'browser/chromeos/extensions/file_manager/open_util.cc'],
-            ['exclude', 'browser/chromeos/extensions/file_manager/open_util.h'],
-            ['exclude', 'browser/chromeos/extensions/file_manager/zip_file_creator.cc'],
-            ['exclude', 'browser/chromeos/extensions/file_manager/zip_file_creator.h'],
-            ['exclude', 'browser/chromeos/extensions/media_player_api.cc'],
-            ['exclude', 'browser/chromeos/extensions/media_player_api.h'],
-          ],
-        }],
         ['use_ash==1', {
           'dependencies': [
             '../ash/ash.gyp:ash',
