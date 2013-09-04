@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/layer_animation_delegate.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/test_layer_animation_delegate.h"
 #include "ui/compositor/test/test_utils.h"
 #include "ui/gfx/rect.h"
@@ -23,7 +24,7 @@ namespace {
 // that the element can be reused after it completes.
 TEST(LayerAnimationElementTest, TransformElement) {
   TestLayerAnimationDelegate delegate;
-  gfx::Transform start_transform, target_transform, middle_transform;
+  gfx::Transform start_transform, target_transform;
   start_transform.Rotate(-30.0);
   target_transform.Rotate(30.0);
   base::TimeTicks start_time;
@@ -63,6 +64,36 @@ TEST(LayerAnimationElementTest, TransformElement) {
   LayerAnimationElement::TargetValue target_value(&delegate);
   element->GetTargetValue(&target_value);
   CheckApproximatelyEqual(target_transform, target_value.transform);
+}
+
+// Ensures that duration is copied correctly.
+TEST(LayerAnimationElementTest, InverseElementDurationNoScale) {
+  gfx::Transform transform;
+  base::TimeDelta delta;
+
+  scoped_ptr<LayerAnimationElement> base_element(
+      LayerAnimationElement::CreateTransformElement(transform, delta));
+
+  scoped_ptr<LayerAnimationElement> inverse_element(
+      LayerAnimationElement::CreateInverseTransformElement(transform,
+                                                           base_element.get()));
+  EXPECT_EQ(base_element->duration(), inverse_element->duration());
+}
+
+// Ensures that duration is copied correctly and not double scaled.
+TEST(LayerAnimationElementTest, InverseElementDurationScaled) {
+  gfx::Transform transform;
+  base::TimeDelta delta;
+
+  ScopedAnimationDurationScaleMode faster_duration(
+      ScopedAnimationDurationScaleMode::FAST_DURATION);
+  scoped_ptr<LayerAnimationElement> base_element(
+      LayerAnimationElement::CreateTransformElement(transform, delta));
+
+  scoped_ptr<LayerAnimationElement> inverse_element(
+      LayerAnimationElement::CreateInverseTransformElement(transform,
+                                                           base_element.get()));
+  EXPECT_EQ(base_element->duration(), inverse_element->duration());
 }
 
 // Check that the bounds element progresses the delegate as expected and

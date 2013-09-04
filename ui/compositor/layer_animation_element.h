@@ -57,6 +57,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
 
   LayerAnimationElement(const AnimatableProperties& properties,
                         base::TimeDelta duration);
+
   virtual ~LayerAnimationElement();
 
   // Creates an element that transitions to the given transform. The caller owns
@@ -64,6 +65,14 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   static LayerAnimationElement* CreateTransformElement(
       const gfx::Transform& transform,
       base::TimeDelta duration);
+
+  // Creates an element that counters a transition to the given transform.
+  // This element maintains the invariant uninverted_transition->at(t) *
+  // this->at(t) == base_transform * this->at(t_start) for any t. The caller
+  // owns the return value.
+  static LayerAnimationElement* CreateInverseTransformElement(
+      const gfx::Transform& base_transform,
+      const LayerAnimationElement* uninverted_transition);
 
   // Creates an element that transitions to another in a way determined by an
   // interpolated transform. The element accepts ownership of the interpolated
@@ -178,6 +187,8 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   int animation_group_id() const { return animation_group_id_; }
   void set_animation_group_id(int id) { animation_group_id_ = id; }
 
+  base::TimeDelta duration() const { return duration_; }
+
   // The fraction of the animation that has been completed after the last
   // call made to {Progress, ProgressToEnd}.
   double last_progressed_fraction() const { return last_progressed_fraction_; }
@@ -190,10 +201,10 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   virtual void OnGetTarget(TargetValue* target) const = 0;
   virtual void OnAbort(LayerAnimationDelegate* delegate) = 0;
 
-  base::TimeDelta duration() const { return duration_; }
-
   // Actually start the animation, dispatching to another thread if needed.
   virtual void RequestEffectiveStart(LayerAnimationDelegate* delegate);
+
+  LayerAnimationElement(const LayerAnimationElement& element);
 
  private:
   // For debugging purposes, we sometimes alter the duration we actually use.
@@ -215,7 +226,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
 
   double last_progressed_fraction_;
 
-  DISALLOW_COPY_AND_ASSIGN(LayerAnimationElement);
+  DISALLOW_ASSIGN(LayerAnimationElement);
 };
 
 }  // namespace ui
