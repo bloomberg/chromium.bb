@@ -25,16 +25,15 @@
 
 /* Chromium default media controls */
 
-body:-webkit-full-page-media {
-    background-color: rgb(0, 0, 0);
-}
+/* WARNING: This css file can only style <audio> and <video> elements */
 
 audio {
     width: 300px;
     height: 30px;
 }
 
-::-webkit-media-controls {
+audio::-webkit-media-controls,
+video::-webkit-media-controls {
     width: inherit;
     height: inherit;
     position: relative;

@@ -60,7 +60,11 @@ body {
 }
 
 body:-webkit-seamless-document {
-    margin: 0px;
+    margin: 0px
+}
+
+body:-webkit-full-page-media {
+    background-color: rgb(0, 0, 0)
 }
 
 p {

@@ -24,6 +24,8 @@
 
 /* Media controls for Chromium on Android */
 
+/* WARNING: This css file can only style <audio> and <video> elements */
+
 audio {
     height: 35px;
 }
