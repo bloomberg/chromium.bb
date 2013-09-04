@@ -16,7 +16,10 @@
 
 // Message sent from the renderer to the browser to request that the browser
 // close all sockets.  Used for debugging/testing.
-IPC_MESSAGE_CONTROL0(ChromeViewHostMsg_CloseCurrentConnections)
+//
+// This message must be synchronous so that the test harness can not
+// issue further network requests before it completes.
+IPC_SYNC_MESSAGE_CONTROL0_0(ChromeViewHostMsg_CloseCurrentConnections)
 
 // Message sent from the renderer to the browser to request that the browser
 // enable or disable the cache.  Used for debugging/testing.
