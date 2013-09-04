@@ -1592,9 +1592,6 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragAndDrop) {
 
 // Do tests for removal of items from the shelf by dragging.
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
-  // Set the command line option to enable the new functionality.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      ash::switches::kAshEnableDragOffShelf);
   aura::test::EventGenerator generator(
       ash::Shell::GetPrimaryRootWindow(), gfx::Point());
   ash::test::LauncherViewTestAPI test(launcher_->GetLauncherViewForTest());

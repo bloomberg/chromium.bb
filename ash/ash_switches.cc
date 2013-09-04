@@ -90,8 +90,8 @@ const char kAshEnableBrightnessControl[] = "ash-enable-brightness-control";
 // Enable the dock area on a desktop.
 const char kAshEnableDockedWindows[] = "ash-enable-docked-windows";
 
-// Enable dragging items off the shelf to unpin them.
-const char kAshEnableDragOffShelf[] = "ash-enable-drag-off-shelf";
+// Disable dragging items off the shelf to unpin them.
+const char kAshDisableDragOffShelf[] = "ash-disable-drag-off-shelf";
 
 // Enable immersive fullscreen mode, regardless of default setting.
 const char kAshEnableImmersiveFullscreen[] = "ash-enable-immersive-fullscreen";
@@ -185,8 +185,8 @@ bool UseAlternateShelfLayout() {
 }
 
 bool UseDragOffShelf() {
-  return CommandLine::ForCurrentProcess()->
-      HasSwitch(ash::switches::kAshEnableDragOffShelf);
+  return !CommandLine::ForCurrentProcess()->
+      HasSwitch(ash::switches::kAshDisableDragOffShelf);
 }
 
 bool ShowShelfAlignmentMenu() {

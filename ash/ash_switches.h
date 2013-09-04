@@ -31,6 +31,7 @@ ASH_EXPORT extern const char kAshDisableAudioDeviceMenu[];
 #endif
 ASH_EXPORT extern const char kAshDisableAutoMaximizing[];
 ASH_EXPORT extern const char kAshDisableDisplayChangeLimiter[];
+ASH_EXPORT extern const char kAshDisableDragOffShelf[];
 ASH_EXPORT extern const char kAshDisableImmersiveFullscreen[];
 ASH_EXPORT extern const char kAshDisableNewLockAnimations[];
 ASH_EXPORT extern const char kAshDisableOverviewMode[];
@@ -43,7 +44,6 @@ ASH_EXPORT extern const char kAshEnableAudioDeviceMenu[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
 ASH_EXPORT extern const char kAshEnableDockedWindows[];
-ASH_EXPORT extern const char kAshEnableDragOffShelf[];
 #if defined(OS_LINUX)
 ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 #endif

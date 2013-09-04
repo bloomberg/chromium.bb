@@ -926,11 +926,11 @@ const Experiment kExperiments[] = {
       SINGLE_VALUE_TYPE(ash::switches::kAshUseAlternateShelfLayout)
   },
   {
-      "ash-enable-drag-off-shelf",
+      "ash-disable-drag-off-shelf",
       IDS_FLAGS_DRAG_OFF_SHELF_NAME,
       IDS_FLAGS_DRAG_OFF_SHELF_DESCRIPTION,
       kOsCrOS,
-      SINGLE_VALUE_TYPE(ash::switches::kAshEnableDragOffShelf)
+      SINGLE_VALUE_TYPE(ash::switches::kAshDisableDragOffShelf)
   },
   {
     "enable-background-loader",

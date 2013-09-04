@@ -5362,7 +5362,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Dragging off items from shelf to unpin
         </message>
         <message name="IDS_FLAGS_DRAG_OFF_SHELF_DESCRIPTION">
-          Enable to allow items to be dragged off the shelf to unpin them.
+          Disable to disallow items to be dragged off the shelf to unpin them.
         </message>
         <message name="IDS_FLAGS_RELAUNCH_BUTTON" desc="Text on a button that restarts Chrome OS when clicked. ">
           Restart Now

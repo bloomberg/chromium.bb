@@ -324,7 +324,7 @@ class LauncherViewTest : public AshTestBase {
     views::View* button = test_api_->GetButton(button_index);
     ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED,
                                button->bounds().origin(),
-                               button->bounds().origin(), 0);
+                               button->GetBoundsInScreen().origin(), 0);
     button_host->PointerPressedOnButton(button, pointer, click_event);
     return button;
   }
@@ -349,7 +349,7 @@ class LauncherViewTest : public AshTestBase {
     views::View* destination = test_api_->GetButton(destination_index);
     ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
                               destination->bounds().origin(),
-                              destination->bounds().origin(), 0);
+                              destination->GetBoundsInScreen().origin(), 0);
     button_host->PointerDraggedOnButton(button, pointer, drag_event);
     return button;
   }
