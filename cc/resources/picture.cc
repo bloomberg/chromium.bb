@@ -199,7 +199,7 @@ void Picture::CloneForDrawing(int num_threads) {
                     pixel_refs_));
     clones_.push_back(clone);
 
-    clone->EmitTraceSnapshot();
+    clone->EmitTraceSnapshotAlias(this);
   }
 }
 
@@ -367,6 +367,14 @@ scoped_ptr<base::Value> Picture::AsValue() const {
 void Picture::EmitTraceSnapshot() {
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
       "cc::Picture", this, TracedPicture::AsTraceablePicture(this));
+}
+
+void Picture::EmitTraceSnapshotAlias(Picture* original) {
+  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+      "cc::Picture",
+      this,
+      TracedPicture::AsTraceablePictureAlias(original));
 }
 
 base::LazyInstance<Picture::PixelRefs>

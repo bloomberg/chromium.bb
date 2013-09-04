@@ -116,6 +116,7 @@ class CC_EXPORT Picture
   };
 
   void EmitTraceSnapshot();
+  void EmitTraceSnapshotAlias(Picture* original);
 
  private:
   explicit Picture(gfx::Rect layer_rect);

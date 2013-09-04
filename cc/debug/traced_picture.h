@@ -22,10 +22,17 @@ class TracedPicture : public base::debug::ConvertableToTraceFormat {
   static scoped_ptr<base::debug::ConvertableToTraceFormat>
     AsTraceablePicture(Picture* picture);
 
+  static scoped_ptr<base::debug::ConvertableToTraceFormat>
+    AsTraceablePictureAlias(Picture* original);
+
   virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE;
 
  private:
+  void AppendPicture(std::string* out) const;
+  void AppendPictureAlias(std::string* out) const;
+
   scoped_refptr<Picture> picture_;
+  bool is_alias_;
 
   DISALLOW_COPY_AND_ASSIGN(TracedPicture);
 };
