@@ -1679,6 +1679,13 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     if (!value)
         return false;
 
+    if (inViewport()) {
+        if (!RuntimeEnabledFeatures::cssViewportEnabled())
+            return false;
+
+        return parseViewportProperty(propId, important);
+    }
+
     // Note: m_parsedCalculation is used to pass the calc value to validUnit and then cleared at the end of this function.
     // FIXME: This is to avoid having to pass parsedCalc to all validUnit callers.
     ASSERT(!m_parsedCalculation);
@@ -1714,13 +1721,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             return false;
         addProperty(propId, cssValuePool().createIdentifierValue(id), important);
         return true;
-    }
-
-    if (inViewport()) {
-        if (!RuntimeEnabledFeatures::cssViewportEnabled())
-            return false;
-
-        return parseViewportProperty(propId, important);
     }
 
     bool validPrimitive = false;
