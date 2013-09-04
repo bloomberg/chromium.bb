@@ -316,9 +316,10 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
   // TODO(aelias): This isn't correct in all cases. We should detect these
   // cases and fall back to a persistent bitmap backing
   // (http://crbug.com/280374).
+  skia::RefPtr<SkDrawFilter> opacity_filter =
+      skia::AdoptRef(new skia::OpacityDrawFilter(quad->opacity(), true));
   DCHECK(!current_canvas_->getDrawFilter());
-  current_canvas_->setDrawFilter(new skia::OpacityDrawFilter(quad->opacity(),
-                                                             true));
+  current_canvas_->setDrawFilter(opacity_filter.get());
 
   TRACE_EVENT0("cc",
                "SoftwareRenderer::DrawPictureQuad");
