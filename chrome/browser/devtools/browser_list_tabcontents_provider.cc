@@ -148,7 +148,7 @@ BrowserListTabContentsProvider::CreateSocketForTethering(
   int port = ++g_last_tethering_port_;
   *name = base::IntToString(port);
   return net::TCPListenSocket::CreateAndListen("127.0.0.1", port, delegate)
-      .PassAs<StreamListenSocket>();
+      .PassAs<net::StreamListenSocket>();
 }
 #else
 scoped_ptr<net::StreamListenSocket>
