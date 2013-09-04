@@ -139,7 +139,7 @@ class ScopedPtrHashMap {
   inline bool empty() const { return data_.empty(); }
 
   inline size_t bucket_count() const { return data_.bucket_count(); }
-  inline void resize(size_t size) const { return data_.resize(size); }
+  inline void resize(size_t size) { return data_.resize(size); }
 
   inline iterator begin() { return data_.begin(); }
   inline const_iterator begin() const { return data_.begin(); }
