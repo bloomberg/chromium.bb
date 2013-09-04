@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/test/browser_test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace extensions {
 namespace {
@@ -114,57 +115,58 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
   ext_dir_.WriteManifest(kDeclarativeContentManifest);
   ext_dir_.WriteFile(
       FILE_PATH_LITERAL("background.js"),
-      "var declarative = chrome.declarative;\n"
-      "\n"
       "var PageStateMatcher = chrome.declarativeContent.PageStateMatcher;\n"
-      "function NewPageStateMatcher(obj) {\n"
-      "  return new PageStateMatcher(obj);\n"
-      "}\n"
-      "\n"
-      "chrome.test.runTests([\n"
-      "  function canonicalizesCss() {\n"
-      "    var psm = new PageStateMatcher(\n"
-      "        {css: [\"input[type='password']\"]});\n"
-      "    chrome.test.assertEq(['input[type=\"password\"]'], psm.css);\n"
-      "    chrome.test.succeed();\n"
-      "  },\n"
-      "\n"
-      "  function throwsOnNonArrayCss() {\n"
-      "    chrome.test.assertThrows(NewPageStateMatcher,\n"
-      "                             undefined,\n"
-      "                             [{css: 'Not-an-array'}],\n"
-      "                             /css.*Expected 'array'/);\n"
-      "    chrome.test.succeed();\n"
-      "  },\n"
-      "\n"
-      "  function throwsOnNonStringCss() {\n"
-      "    chrome.test.assertThrows(NewPageStateMatcher,\n"
-      "                             undefined,\n"
-      "                             [{css: [null]}],\n"
-      "                             /css\\.0.*Expected 'string'/);\n"
-      "    chrome.test.succeed();\n"
-      "  },\n"
-      "\n"
-      "  function throwsOnBadCss() {\n"
-      "    chrome.test.assertThrows(NewPageStateMatcher,\n"
-      "                             undefined,\n"
-      "                             [{css: [\"input''\"]}],\n"
-      "                             /valid.*: input''$/);\n"
-      "    chrome.test.succeed();\n"
-      "  },\n"
-      "\n"
-      "  function throwsOnComplexSelector() {\n"
-      "    chrome.test.assertThrows(NewPageStateMatcher,\n"
-      "                             undefined,\n"
-      "                             [{css: [\"div input\"]}],\n"
-      "                             /compound selector.*: div input$/);\n"
-      "    chrome.test.succeed();\n"
-      "  },\n"
-      "]);\n"
-      "\n");
-  ResultCatcher catcher;
-  ASSERT_TRUE(LoadExtension(ext_dir_.unpacked_path()));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+      "function Return(obj) {\n"
+      "  window.domAutomationController.send('' + obj);\n"
+      "}\n");
+  const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
+  ASSERT_TRUE(extension);
+
+  EXPECT_EQ("input[type=\"password\"]",
+            ExecuteScriptInBackgroundPage(
+                extension->id(),
+                "var psm = new PageStateMatcher(\n"
+                "    {css: [\"input[type='password']\"]});\n"
+                "Return(psm.css);"));
+
+  EXPECT_THAT(ExecuteScriptInBackgroundPage(
+                  extension->id(),
+                  "try {\n"
+                  "  new PageStateMatcher({css: 'Not-an-array'});\n"
+                  "  Return('Failed to throw');\n"
+                  "} catch (e) {\n"
+                  "  Return(e.message);\n"
+                  "}\n"),
+              testing::ContainsRegex("css.*Expected 'array'"));
+  EXPECT_THAT(ExecuteScriptInBackgroundPage(
+                  extension->id(),
+                  "try {\n"
+                  "  new PageStateMatcher({css: [null]});\n"  // Not a string.
+                  "  Return('Failed to throw');\n"
+                  "} catch (e) {\n"
+                  "  Return(e.message);\n"
+                  "}\n"),
+              testing::ContainsRegex("css\\.0.*Expected 'string'"));
+  EXPECT_THAT(ExecuteScriptInBackgroundPage(
+                  extension->id(),
+                  "try {\n"
+                  // Invalid CSS:
+                  "  new PageStateMatcher({css: [\"input''\"]});\n"
+                  "  Return('Failed to throw');\n"
+                  "} catch (e) {\n"
+                  "  Return(e.message);\n"
+                  "}\n"),
+              testing::ContainsRegex("valid.*: input''$"));
+  EXPECT_THAT(ExecuteScriptInBackgroundPage(
+                  extension->id(),
+                  "try {\n"
+                  // "Complex" selector:
+                  "  new PageStateMatcher({css: ['div input']});\n"
+                  "  Return('Failed to throw');\n"
+                  "} catch (e) {\n"
+                  "  Return(e.message);\n"
+                  "}\n"),
+              testing::ContainsRegex("compound selector.*: div input$"));
 }
 
 }  // namespace

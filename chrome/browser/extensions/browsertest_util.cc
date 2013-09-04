@@ -1,0 +1,37 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/extensions/browsertest_util.h"
+
+#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "content/public/test/browser_test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace extensions {
+namespace browsertest_util {
+
+std::string ExecuteScriptInBackgroundPage(Profile* profile,
+                                          const std::string& extension_id,
+                                          const std::string& script) {
+  ExtensionProcessManager* manager =
+      extensions::ExtensionSystem::Get(profile)->process_manager();
+  extensions::ExtensionHost* host =
+      manager->GetBackgroundHostForExtension(extension_id);
+  if (host == NULL) {
+    ADD_FAILURE() << "Extension " << extension_id << " has no background page.";
+    return "";
+  }
+  std::string result;
+  if (!content::ExecuteScriptAndExtractString(
+           host->host_contents(), script, &result)) {
+    ADD_FAILURE() << "Executing script failed: " << script;
+    result.clear();
+  }
+  return result;
+}
+
+}  // namespace browsertest_util
+}  // namespace extensions

@@ -230,6 +230,12 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
                                               const std::string& path,
                                               int expected_hosts);
 
+  // Returns
+  // extensions::browsertest_util::ExecuteScriptInBackgroundPage(profile(),
+  // extension_id, script).
+  std::string ExecuteScriptInBackgroundPage(const std::string& extension_id,
+                                            const std::string& script);
+
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,

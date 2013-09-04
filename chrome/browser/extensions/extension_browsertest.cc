@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
@@ -674,6 +675,13 @@ extensions::ExtensionHost* ExtensionBrowserTest::FindHostWithPath(
   }
   EXPECT_EQ(expected_hosts, num_hosts);
   return host;
+}
+
+std::string ExtensionBrowserTest::ExecuteScriptInBackgroundPage(
+    const std::string& extension_id,
+    const std::string& script) {
+  return extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+      profile(), extension_id, script);
 }
 
 void ExtensionBrowserTest::Observe(
