@@ -307,7 +307,7 @@ SegmentID HistoryBackend::UpdateSegments(
   // google.com users navigates through a link, then press back. That last
   // navigation is for the entry google.com transition typed. We end up adding
   // a segment for that one as well. So we end up with google.net and google.com
-  // in the segement table, showing as 2 entries in the NTP.
+  // in the segment table, showing as 2 entries in the NTP.
   // Note also that we should still be updating the visit count for that segment
   // which we are not doing now. It should be addressed when
   // http://crbug.com/96860 is fixed.
@@ -629,7 +629,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
                           db_.get()) != sql::INIT_OK) {
     // Unlike the main database, we don't error out when the database is too
     // new because this error is much less severe. Generally, this shouldn't
-    // happen since the thumbnail and main datbase versions should be in sync.
+    // happen since the thumbnail and main database versions should be in sync.
     // We'll just continue without thumbnails & favicons in this case or any
     // other error.
     LOG(WARNING) << "Could not initialize the thumbnail database.";
@@ -1778,7 +1778,7 @@ void HistoryBackend::MergeFavicon(
   // A site may have changed the favicons that it uses for |page_url|.
   // Example Scenario:
   //   page_url = news.google.com
-  //   Intial State: www.google.com/favicon.ico 16x16, 32x32
+  //   Initial State: www.google.com/favicon.ico 16x16, 32x32
   //   MergeFavicon(news.google.com, news.google.com/news_specific.ico, ...,
   //                ..., 16x16)
   //
@@ -1798,7 +1798,7 @@ void HistoryBackend::MergeFavicon(
   // news.google.com/news_specific.ico (|icon_url|). The favicon sizes for
   // |icon_url| are set to default to indicate that |icon_url| has incomplete
   // / incorrect data.
-  // Difficlty 1: All but news.google.com/news_specific.ico are unmapped from
+  // Difficulty 1: All but news.google.com/news_specific.ico are unmapped from
   //              news.google.com
   // Difficulty 2: The favicon bitmaps for www.google.com/favicon.ico are not
   //               modified.
@@ -2712,8 +2712,9 @@ void HistoryBackend::DeleteAllHistory() {
     // history, we should delete as much as we can.
   }
 
-  // ClearAllMainHistory will change the IDs of the URLs in kept_urls. Therfore,
-  // we clear the list afterwards to make sure nobody uses this invalid data.
+  // ClearAllMainHistory will change the IDs of the URLs in kept_urls.
+  // Therefore, we clear the list afterwards to make sure nobody uses this
+  // invalid data.
   if (!ClearAllMainHistory(kept_urls))
     LOG(ERROR) << "Main history could not be cleared";
   kept_urls.clear();
@@ -2738,7 +2739,7 @@ void HistoryBackend::DeleteAllHistory() {
 
   db_->GetStartDate(&first_recorded_time_);
 
-  // Send out the notfication that history is cleared. The in-memory datdabase
+  // Send out the notification that history is cleared. The in-memory database
   // will pick this up and clear itself.
   URLsDeletedDetails* details = new URLsDeletedDetails;
   details->all_history = true;
@@ -2799,14 +2800,10 @@ bool HistoryBackend::ClearAllMainHistory(const URLRows& kept_urls) {
   if (!db_->CreateTemporaryURLTable())
     return false;
 
-  // Insert the URLs into the temporary table, we need to keep a map of changed
-  // IDs since the ID will be different in the new table.
-  typedef std::map<URLID, URLID> URLIDMap;
-  URLIDMap old_to_new;  // Maps original ID to new one.
+  // Insert the URLs into the temporary table.
   for (URLRows::const_iterator i = kept_urls.begin(); i != kept_urls.end();
        ++i) {
-    URLID new_id = db_->AddTemporaryURL(*i);
-    old_to_new[i->id()] = new_id;
+    db_->AddTemporaryURL(*i);
   }
 
   // Replace the original URL table with the temporary one.
