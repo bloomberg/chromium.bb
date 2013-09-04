@@ -11,6 +11,7 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_app_registry.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/common/pref_names.h"
@@ -69,10 +70,6 @@ TEST(FileManagerFileTasksTest,
   EXPECT_TRUE(dictionary->GetString("title", &title));
   EXPECT_EQ("task title", title);
 
-  bool is_drive_app = false;
-  EXPECT_TRUE(dictionary->GetBoolean("driveApp", &is_drive_app));
-  EXPECT_FALSE(is_drive_app);
-
   bool is_default = false;
   EXPECT_TRUE(dictionary->GetBoolean("isDefault", &is_default));
   EXPECT_TRUE(is_default);
@@ -100,10 +97,6 @@ TEST(FileManagerFileTasksTest,
   std::string title;
   EXPECT_TRUE(dictionary->GetString("title", &title));
   EXPECT_EQ("task title", title);
-
-  bool is_drive_app = false;
-  EXPECT_TRUE(dictionary->GetBoolean("driveApp", &is_drive_app));
-  EXPECT_TRUE(is_drive_app);
 
   bool is_default = false;
   EXPECT_TRUE(dictionary->GetBoolean("isDefault", &is_default));
@@ -223,7 +216,9 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   // Find apps for a "text/plain" file. Foo.app and Bar.app should be found.
   PathAndMimeTypeSet path_mime_set;
   path_mime_set.insert(
-      std::make_pair(base::FilePath::FromUTF8Unsafe("foo.txt"), "text/plain"));
+      std::make_pair(
+          drive::util::GetDriveMountPointPath().AppendASCII("foo.txt"),
+          "text/plain"));
   std::vector<FullTaskDescriptor> tasks;
   FindDriveAppTasks(drive_app_registry,
                     path_mime_set,
@@ -242,9 +237,13 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   // found.
   path_mime_set.clear();
   path_mime_set.insert(
-      std::make_pair(base::FilePath::FromUTF8Unsafe("foo.txt"), "text/plain"));
+      std::make_pair(
+          drive::util::GetDriveMountPointPath().AppendASCII("foo.txt"),
+          "text/plain"));
   path_mime_set.insert(
-      std::make_pair(base::FilePath::FromUTF8Unsafe("foo.html"), "text/html"));
+      std::make_pair(
+          drive::util::GetDriveMountPointPath().AppendASCII("foo.html"),
+          "text/html"));
   tasks.clear();
   FindDriveAppTasks(drive_app_registry,
                     path_mime_set,
@@ -252,6 +251,17 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   ASSERT_EQ(1U, tasks.size());
   // Confirm that both Foo.app is found.
   EXPECT_EQ("foo_app_id", tasks[0].task_descriptor().app_id);
+
+  // Add a "text/plain" file not on Drive. No tasks should be found.
+  path_mime_set.insert(
+      std::make_pair(base::FilePath::FromUTF8Unsafe("not_on_drive.txt"),
+                     "text/plain"));
+  tasks.clear();
+  FindDriveAppTasks(drive_app_registry,
+                    path_mime_set,
+                    &tasks);
+  // Confirm no tasks are found.
+  ASSERT_TRUE(tasks.empty());
 }
 
 // Test that the right task is chosen from multiple choices per mime types

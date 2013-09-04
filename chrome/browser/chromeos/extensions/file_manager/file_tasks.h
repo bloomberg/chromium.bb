@@ -180,7 +180,6 @@ class FullTaskDescriptor {
   // Returns a DictionaryValue representation, which looks like:
   //
   // {
-  //   "driveApp": true,
   //   "iconUrl": "<app_icon_url>",
   //   "isDefault": false,
   //   "taskId": "<drive_app_id>|drive|open-with",
@@ -270,8 +269,9 @@ bool ExecuteFileTask(Profile* profile,
 typedef extensions::app_file_handler_util::PathAndMimeTypeSet
     PathAndMimeTypeSet;
 
-// Finds the drive app tasks that can be used with the given |path_mime_set|
+// Finds the Drive app tasks that can be used with the given |path_mime_set|
 // from |drive_app_registry|, and append them to the |result_list|.
+// Drive app tasks will be found only if all of the files are on Drive.
 void FindDriveAppTasks(const drive::DriveAppRegistry& drive_app_registry,
                        const PathAndMimeTypeSet& path_mime_set,
                        std::vector<FullTaskDescriptor>* result_list);
@@ -293,6 +293,7 @@ void FindFileBrowserHandlerTasks(
 
 // Finds all types (drive, file handlers, file browser handlers) of
 // tasks. See the comment at FindDriveAppTasks() about |result_list|.
+// Drive app tasks will be found only if all of the files are on Drive.
 void FindAllTypesOfTasks(
     Profile* profile,
     const PathAndMimeTypeSet& path_mime_set,

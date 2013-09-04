@@ -28,10 +28,6 @@
             "type": "string",
             "description": "Task icon url (from chrome://extension-icon/...)"
           },
-          "driveApp": {
-            "type": "boolean",
-            "description": "True if this is Drive App."
-          },
           "isDefault": {
             "type": "boolean",
             "description": "True if this task is a default task for the selected files."

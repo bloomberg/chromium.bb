@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/drive/drive_app_registry.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_task_executor.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handlers.h"
 #include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
@@ -131,8 +132,6 @@ FullTaskDescriptor::AsDictionaryValue() const {
   dictionary->SetString("taskId", TaskDescriptorToId(task_descriptor_));
   if (!icon_url_.is_empty())
     dictionary->SetString("iconUrl", icon_url_.spec());
-  dictionary->SetBoolean("driveApp",
-                         task_descriptor_.task_type == TASK_TYPE_DRIVE_APP);
   dictionary->SetString("title", task_title_);
   dictionary->SetBoolean("isDefault", is_default_);
   return dictionary.Pass();
@@ -319,8 +318,10 @@ void FindDriveAppTasks(
        it != path_mime_set.end(); ++it) {
     const base::FilePath& file_path = it->first;
     const std::string& mime_type = it->second;
-    if (file_path.empty())
-      continue;
+    // Return immediately if a file not on Drive is found, as Drive app tasks
+    // work only if all files are on Drive.
+    if (!drive::util::IsUnderDriveMountPoint(file_path))
+      return;
 
     ScopedVector<drive::DriveAppInfo> app_info_list;
     drive_app_registry.GetAppsForFile(file_path.Extension(),

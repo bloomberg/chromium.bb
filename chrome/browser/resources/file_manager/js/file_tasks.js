@@ -190,10 +190,6 @@ FileTasks.prototype.processTasks_ = function(tasks) {
     var task = tasks[i];
     var taskParts = task.taskId.split('|');
 
-    // Skip Drive App if the file is not on Drive.
-    if (!isOnDrive && task.driveApp)
-      continue;
-
     // Skip internal Files.app's handlers.
     if (taskParts[0] == id && (taskParts[2] == 'auto-open' ||
         taskParts[2] == 'select' || taskParts[2] == 'open')) {
