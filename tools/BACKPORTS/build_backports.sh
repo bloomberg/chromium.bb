@@ -481,7 +481,33 @@ while read name id comment ; do
 	    ) < "$1"
 	  fi
 	) done
-	if [[ "$name" != ppapi1[4-9] ]]; then
+	if [[ "$name" == ppapi1[45] ]]; then
+	  patch -p0 <<-END
+	--- native_client/tools/Makefile
+	+++ native_client/tools/Makefile
+	@@ -747,6 +747,7 @@
+	 	  CC="\$\${CC}" \\
+	 	  LDFLAGS="-s" \\
+	 	  ../../SRC/gdb/configure \\
+	+	    --disable-werror \\
+	 	    --prefix=\$(SDKROOT) \\
+	 	    \$\${BUILD} \\
+	 	    --target=nacl
+	END
+	elif [[ "$name" == ppapi1[6-9] ]]; then
+	  patch -p0 <<-END
+	--- native_client/tools/Makefile
+	+++ native_client/tools/Makefile
+	@@ -747,6 +747,7 @@
+	 	  CC="\$\${CC}" \\
+	 	  LDFLAGS="-s" \\
+	 	  ../../SRC/gdb/configure \\
+	+	    --disable-werror \\
+	 	    --prefix=\$(PREFIX) \\
+	 	    \$\${BUILD} \\
+	 	    --target=nacl
+	END
+	else
 	  patch -p0 <<-END
 	--- native_client/tools/SRC/gdb/gdb/doc/Makefile.in
 	+++ native_client/tools/SRC/gdb/gdb/doc/Makefile.in
