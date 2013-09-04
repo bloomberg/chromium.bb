@@ -16,7 +16,7 @@ namespace {
 
 content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
   content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIDevicesHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIDevicesFrameHost);
 
   source->SetDefaultResource(IDR_LOCAL_DISCOVERY_HTML);
   source->AddResourcePath("local_discovery.css", IDR_LOCAL_DISCOVERY_CSS);

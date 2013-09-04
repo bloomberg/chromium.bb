@@ -74,7 +74,16 @@ bool WillHandleBrowserAboutURL(GURL* url,
     // gtk objects after they are destoyed by BrowserWindowGtk::Close().
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(&chrome::AttemptRestart));
+  } else if (host == chrome::kChromeUIDevicesHost) {
+#if defined(ENABLE_MDNS)
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableDeviceDiscovery)) {
+      host = chrome::kChromeUIUberHost;
+      path = chrome::kChromeUIDevicesHost + url->path();
+    }
+#endif
   }
+
   GURL::Replacements replacements;
   replacements.SetHostStr(host);
   if (!path.empty())
@@ -101,4 +110,3 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
 
   return false;
 }
-

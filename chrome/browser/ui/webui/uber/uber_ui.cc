@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
 
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
@@ -62,6 +64,10 @@ content::WebUIDataSource* CreateUberHTMLSource() {
                     ASCIIToUTF16(chrome::kChromeUISettingsFrameURL));
   source->AddString("settingsHost",
                     ASCIIToUTF16(chrome::kChromeUISettingsHost));
+  source->AddString("devicesFrameURL",
+                    ASCIIToUTF16(chrome::kChromeUIDevicesFrameURL));
+  source->AddString("devicesHost",
+                    ASCIIToUTF16(chrome::kChromeUIDevicesHost));
 
   return source;
 }
@@ -113,13 +119,26 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
   source->AddLocalizedString("historyDisplayName", IDS_HISTORY_TITLE);
   source->AddString("settingsHost",
                     ASCIIToUTF16(chrome::kChromeUISettingsHost));
+  source->AddString("devicesHost",
+                    ASCIIToUTF16(chrome::kChromeUIDevicesHost));
   source->AddLocalizedString("settingsDisplayName", IDS_SETTINGS_TITLE);
+  source->AddLocalizedString("devicesDisplayName",
+                             IDS_LOCAL_DISCOVERY_DEVICES_PAGE_TITLE);
   bool overridesHistory = HasExtensionType(profile,
       chrome::kChromeUIHistoryHost);
   source->AddString("overridesHistory",
                     ASCIIToUTF16(overridesHistory ? "yes" : "no"));
   source->DisableDenyXFrameOptions();
   source->OverrideContentSecurityPolicyFrameSrc("frame-src chrome:;");
+
+  bool devicesHidden = true;
+#if defined(ENABLE_MDNS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDeviceDiscovery)) {
+    devicesHidden = false;
+  }
+#endif
+  source->AddBoolean("devicesHidden", devicesHidden);
 
   return source;
 }
@@ -135,6 +154,13 @@ UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   RegisterSubpage(chrome::kChromeUIHistoryFrameURL);
   RegisterSubpage(chrome::kChromeUISettingsFrameURL);
   RegisterSubpage(chrome::kChromeUIUberFrameURL);
+
+#if defined(ENABLE_MDNS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDeviceDiscovery)) {
+    RegisterSubpage(chrome::kChromeUIDevicesFrameURL);
+  }
+#endif
 }
 
 UberUI::~UberUI() {
