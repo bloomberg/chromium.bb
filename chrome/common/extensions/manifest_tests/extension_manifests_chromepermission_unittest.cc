@@ -7,6 +7,8 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
+#include "chrome/common/url_constants.h"
+#include "extensions/common/error_utils.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,8 +18,10 @@ namespace errors = extension_manifest_errors;
 namespace extensions {
 
 TEST_F(ExtensionManifestTest, ChromeURLPermissionInvalid) {
-  LoadAndExpectError("permission_chrome_url_invalid.json",
-                     errors::kInvalidPermissionScheme);
+  LoadAndExpectWarning("permission_chrome_url_invalid.json",
+                       ErrorUtils::FormatErrorMessage(
+                           errors::kInvalidPermissionScheme,
+                           chrome::kChromeUINewTabURL));
 }
 
 TEST_F(ExtensionManifestTest, ChromeURLPermissionAllowedWithFlag) {
@@ -29,14 +33,16 @@ TEST_F(ExtensionManifestTest, ChromeURLPermissionAllowedWithFlag) {
   scoped_refptr<Extension> extension =
     LoadAndExpectSuccess("permission_chrome_url_invalid.json");
   EXPECT_EQ("", error);
-  const GURL newtab_url("chrome://newtab/");
+  const GURL newtab_url(chrome::kChromeUINewTabURL);
   EXPECT_TRUE(PermissionsData::CanExecuteScriptOnPage(
       extension.get(), newtab_url, newtab_url, 0, NULL, -1, &error)) << error;
 }
 
 TEST_F(ExtensionManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {
-  LoadAndExpectError("permission_chrome_resources_url.json",
-                     errors::kInvalidPermissionScheme);
+  LoadAndExpectWarning("permission_chrome_resources_url.json",
+                       ErrorUtils::FormatErrorMessage(
+                           errors::kInvalidPermissionScheme,
+                           "chrome://resources/"));
   std::string error;
   LoadExtension(Manifest("permission_chrome_resources_url.json"),
                 &error,

@@ -379,11 +379,15 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
                                     "extension_wildcard_chrome.json",
                                     Manifest::INTERNAL, Extension::NO_FLAGS,
                                     &error);
-  EXPECT_TRUE(extension.get() == NULL);
-  EXPECT_EQ(
-      ErrorUtils::FormatErrorMessage(
-          extension_manifest_errors::kInvalidPermissionScheme, "chrome://*/"),
-      error);
+  std::vector<InstallWarning> warnings = extension->install_warnings();
+  EXPECT_FALSE(warnings.empty());
+  EXPECT_EQ(ErrorUtils::FormatErrorMessage(
+                extension_manifest_errors::kInvalidPermissionScheme,
+                "chrome://*/"),
+            warnings[0].message);
+  EXPECT_TRUE(Blocked(extension.get(), settings_url));
+  EXPECT_TRUE(Blocked(extension.get(), favicon_url));
+  EXPECT_TRUE(Blocked(extension.get(), about_url));
 
   // Having chrome://favicon/* should not give you chrome://*
   extension = LoadManifestStrict("script_and_capture",

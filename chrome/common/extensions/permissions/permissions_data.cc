@@ -215,9 +215,12 @@ bool ParseHelper(Extension* extension,
       if (!CanSpecifyHostPermission(extension, pattern, *api_permissions)) {
         // TODO(aboxhall): make a warning (see pattern.match_all_urls() block
         // below).
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidPermissionScheme, permission_str);
-        return false;
+        extension->AddInstallWarning(InstallWarning(
+            ErrorUtils::FormatErrorMessage(
+                errors::kInvalidPermissionScheme, permission_str),
+            key,
+            permission_str));
+        continue;
       }
 
       host_permissions->AddPattern(pattern);
