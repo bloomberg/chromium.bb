@@ -2843,6 +2843,11 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
 
 class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
  public:
+  LayerTreeHostImplViewportCoveredTest() :
+      gutter_quad_material_(DrawQuad::SOLID_COLOR),
+      child_(NULL),
+      did_activate_pending_tree_(false) {}
+
   void CreateLayerTreeHostImpl(bool always_draw) {
     LayerTreeSettings settings;
     settings.minimum_occlusion_tracking_size = gfx::Size();
@@ -2887,15 +2892,11 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
     ASSERT_EQ(1u, frame.render_passes.size());
 
-    size_t num_gutter_quads = 0;
-    for (size_t i = 0; i < frame.render_passes[0]->quad_list.size(); ++i)
-      num_gutter_quads += (frame.render_passes[0]->quad_list[i]->material ==
-                           DrawQuad::SOLID_COLOR) ? 1 : 0;
-    EXPECT_EQ(0u, num_gutter_quads);
+    EXPECT_EQ(0u, CountGutterQuads(frame.render_passes[0]->quad_list));
     EXPECT_EQ(1u, frame.render_passes[0]->quad_list.size());
+    ValidateTextureDrawQuads(frame.render_passes[0]->quad_list);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(
-        frame.render_passes[0]->quad_list, gfx::Rect(viewport_size_));
+    VerifyQuadsExactlyCoverViewport(frame.render_passes[0]->quad_list);
     host_impl_->DidDrawAllLayers(frame);
   }
 
@@ -2912,15 +2913,11 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
     ASSERT_EQ(1u, frame.render_passes.size());
 
-    size_t num_gutter_quads = 0;
-    for (size_t i = 0; i < frame.render_passes[0]->quad_list.size(); ++i)
-      num_gutter_quads += (frame.render_passes[0]->quad_list[i]->material ==
-                           DrawQuad::SOLID_COLOR) ? 1 : 0;
-    EXPECT_EQ(1u, num_gutter_quads);
+    EXPECT_EQ(1u, CountGutterQuads(frame.render_passes[0]->quad_list));
     EXPECT_EQ(1u, frame.render_passes[0]->quad_list.size());
+    ValidateTextureDrawQuads(frame.render_passes[0]->quad_list);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(
-        frame.render_passes[0]->quad_list, gfx::Rect(viewport_size_));
+    VerifyQuadsExactlyCoverViewport(frame.render_passes[0]->quad_list);
     host_impl_->DidDrawAllLayers(frame);
   }
 
@@ -2937,15 +2934,11 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
     ASSERT_EQ(1u, frame.render_passes.size());
 
-    size_t num_gutter_quads = 0;
-    for (size_t i = 0; i < frame.render_passes[0]->quad_list.size(); ++i)
-      num_gutter_quads += (frame.render_passes[0]->quad_list[i]->material ==
-                           DrawQuad::SOLID_COLOR) ? 1 : 0;
-    EXPECT_EQ(4u, num_gutter_quads);
+    EXPECT_EQ(4u, CountGutterQuads(frame.render_passes[0]->quad_list));
     EXPECT_EQ(5u, frame.render_passes[0]->quad_list.size());
+    ValidateTextureDrawQuads(frame.render_passes[0]->quad_list);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(
-        frame.render_passes[0]->quad_list, gfx::Rect(viewport_size_));
+    VerifyQuadsExactlyCoverViewport(frame.render_passes[0]->quad_list);
     host_impl_->DidDrawAllLayers(frame);
   }
 
@@ -2963,12 +2956,9 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
     ASSERT_EQ(1u, frame.render_passes.size());
 
-    size_t num_gutter_quads = 0;
-    for (size_t i = 0; i < frame.render_passes[0]->quad_list.size(); ++i)
-      num_gutter_quads += (frame.render_passes[0]->quad_list[i]->material ==
-                           DrawQuad::SOLID_COLOR) ? 1 : 0;
-    EXPECT_EQ(0u, num_gutter_quads);
+    EXPECT_EQ(0u, CountGutterQuads(frame.render_passes[0]->quad_list));
     EXPECT_EQ(1u, frame.render_passes[0]->quad_list.size());
+    ValidateTextureDrawQuads(frame.render_passes[0]->quad_list);
 
     host_impl_->DidDrawAllLayers(frame);
   }
@@ -2977,7 +2967,54 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     did_activate_pending_tree_ = true;
   }
 
+  void set_gutter_quad_material(DrawQuad::Material material) {
+    gutter_quad_material_ = material;
+  }
+  void set_gutter_texture_size(gfx::Size gutter_texture_size) {
+    gutter_texture_size_ = gutter_texture_size;
+  }
+
  protected:
+  size_t CountGutterQuads(const QuadList& quad_list) {
+    size_t num_gutter_quads = 0;
+    for (size_t i = 0; i < quad_list.size(); ++i) {
+      num_gutter_quads += (quad_list[i]->material ==
+                           gutter_quad_material_) ? 1 : 0;
+    }
+    return num_gutter_quads;
+  }
+
+  void VerifyQuadsExactlyCoverViewport(const QuadList& quad_list) {
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(
+        quad_list, gfx::Rect(DipSizeToPixelSize(viewport_size_)));
+  }
+
+  // Make sure that the texture coordinates match their expectations.
+  void ValidateTextureDrawQuads(const QuadList& quad_list) {
+    for (size_t i = 0; i < quad_list.size(); ++i) {
+      if (quad_list[i]->material != DrawQuad::TEXTURE_CONTENT)
+        continue;
+      const TextureDrawQuad* quad = TextureDrawQuad::MaterialCast(quad_list[i]);
+      gfx::SizeF gutter_texture_size_pixels = gfx::ScaleSize(
+          gutter_texture_size_, host_impl_->device_scale_factor());
+      EXPECT_EQ(quad->uv_top_left.x(),
+                quad->rect.x() / gutter_texture_size_pixels.width());
+      EXPECT_EQ(quad->uv_top_left.y(),
+                quad->rect.y() / gutter_texture_size_pixels.height());
+      EXPECT_EQ(quad->uv_bottom_right.x(),
+                quad->rect.right() / gutter_texture_size_pixels.width());
+      EXPECT_EQ(quad->uv_bottom_right.y(),
+                quad->rect.bottom() / gutter_texture_size_pixels.height());
+    }
+  }
+
+  gfx::Size DipSizeToPixelSize(gfx::Size size) {
+    return gfx::ToRoundedSize(
+        gfx::ScaleSize(size, host_impl_->device_scale_factor()));
+  }
+
+  DrawQuad::Material gutter_quad_material_;
+  gfx::Size gutter_texture_size_;
   gfx::Size viewport_size_;
   BlendStateCheckLayer* child_;
   bool did_activate_pending_tree_;
@@ -2987,8 +3024,61 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCovered) {
   bool always_draw = false;
   CreateLayerTreeHostImpl(always_draw);
 
-  host_impl_->SetViewportSize(viewport_size_);
+  host_impl_->SetViewportSize(DipSizeToPixelSize(viewport_size_));
   SetupActiveTreeLayers();
+  TestLayerCoversFullViewport();
+  TestEmptyLayer();
+  TestLayerInMiddleOfViewport();
+  TestLayerIsLargerThanViewport();
+}
+
+TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCoveredScaled) {
+  bool always_draw = false;
+  CreateLayerTreeHostImpl(always_draw);
+
+  host_impl_->SetDeviceScaleFactor(2.f);
+  host_impl_->SetViewportSize(DipSizeToPixelSize(viewport_size_));
+  SetupActiveTreeLayers();
+  TestLayerCoversFullViewport();
+  TestEmptyLayer();
+  TestLayerInMiddleOfViewport();
+  TestLayerIsLargerThanViewport();
+}
+
+TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCoveredOverhangBitmap) {
+  bool always_draw = false;
+  CreateLayerTreeHostImpl(always_draw);
+
+  host_impl_->SetViewportSize(DipSizeToPixelSize(viewport_size_));
+  SetupActiveTreeLayers();
+
+  // Specify an overhang bitmap to use.
+  scoped_refptr<UIResourceBitmap> ui_resource_bitmap(UIResourceBitmap::Create(
+      new uint8_t[4], UIResourceBitmap::RGBA8, gfx::Size(1, 1)));
+  UIResourceId ui_resource_id = 12345;
+  host_impl_->CreateUIResource(ui_resource_id, ui_resource_bitmap);
+  host_impl_->SetOverhangUIResource(ui_resource_id, gfx::Size(32, 32));
+  set_gutter_quad_material(DrawQuad::TEXTURE_CONTENT);
+  set_gutter_texture_size(gfx::Size(32, 32));
+
+  TestLayerCoversFullViewport();
+  TestEmptyLayer();
+  TestLayerInMiddleOfViewport();
+  TestLayerIsLargerThanViewport();
+
+  // Change the resource size.
+  host_impl_->SetOverhangUIResource(ui_resource_id, gfx::Size(128, 16));
+  set_gutter_texture_size(gfx::Size(128, 16));
+
+  TestLayerCoversFullViewport();
+  TestEmptyLayer();
+  TestLayerInMiddleOfViewport();
+  TestLayerIsLargerThanViewport();
+
+  // Change the device scale factor
+  host_impl_->SetDeviceScaleFactor(2.f);
+  host_impl_->SetViewportSize(DipSizeToPixelSize(viewport_size_));
+
   TestLayerCoversFullViewport();
   TestEmptyLayer();
   TestLayerInMiddleOfViewport();
@@ -3001,7 +3091,7 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeGrowViewportInvalid) {
 
   // Pending tree to force active_tree size invalid. Not used otherwise.
   host_impl_->CreatePendingTree();
-  host_impl_->SetViewportSize(viewport_size_);
+  host_impl_->SetViewportSize(DipSizeToPixelSize(viewport_size_));
   EXPECT_TRUE(host_impl_->active_tree()->ViewportSizeInvalid());
 
   SetupActiveTreeLayers();
@@ -3018,16 +3108,15 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeShrinkViewportInvalid) {
   host_impl_->CreatePendingTree();
   gfx::Size larger_viewport(viewport_size_.width() + 100,
                             viewport_size_.height() + 100);
-  host_impl_->SetViewportSize(larger_viewport);
+  host_impl_->SetViewportSize(DipSizeToPixelSize(larger_viewport));
   EXPECT_TRUE(host_impl_->active_tree()->ViewportSizeInvalid());
-  did_activate_pending_tree_ = false;
   host_impl_->ActivatePendingTree();
   EXPECT_TRUE(did_activate_pending_tree_);
   EXPECT_FALSE(host_impl_->active_tree()->ViewportSizeInvalid());
 
   // Shrink pending tree viewport without activating.
   host_impl_->CreatePendingTree();
-  host_impl_->SetViewportSize(viewport_size_);
+  host_impl_->SetViewportSize(DipSizeToPixelSize(viewport_size_));
   EXPECT_TRUE(host_impl_->active_tree()->ViewportSizeInvalid());
 
   SetupActiveTreeLayers();

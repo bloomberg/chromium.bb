@@ -38,6 +38,7 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
+#include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/picture_layer_tiling.h"
 #include "cc/resources/prioritized_resource_manager.h"
@@ -194,6 +195,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       last_sent_memory_use_bytes_(0),
       zero_budget_(false),
       device_scale_factor_(1.f),
+      overhang_ui_resource_id_(0),
       overdraw_bottom_height_(0.f),
       external_stencil_test_enabled_(false),
       animation_registrar_(AnimationRegistrar::Create()),
@@ -525,6 +527,8 @@ static void AppendQuadsForRenderSurfaceLayer(
 }
 
 static void AppendQuadsToFillScreen(
+    ResourceProvider::ResourceId resource_id,
+    gfx::SizeF resource_scaled_size,
     RenderPass* target_render_pass,
     LayerImpl* root_layer,
     SkColor screen_background_color,
@@ -573,11 +577,31 @@ static void AppendQuadsToFillScreen(
     // no perspective, so mapping is sufficient (as opposed to projecting).
     gfx::Rect layer_rect =
         MathUtil::MapClippedRect(transform_to_layer_space, fill_rects.rect());
-    // Skip the quad culler and just append the quads directly to avoid
-    // occlusion checks.
-    scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-    quad->SetNew(shared_quad_state, layer_rect, screen_background_color, false);
-    quad_culler.Append(quad.PassAs<DrawQuad>(), &append_quads_data);
+    if (resource_id) {
+      scoped_ptr<TextureDrawQuad> tex_quad = TextureDrawQuad::Create();
+      const float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
+      tex_quad->SetNew(
+          shared_quad_state,
+          layer_rect,
+          layer_rect,
+          resource_id,
+          false,
+          gfx::PointF(layer_rect.x() / resource_scaled_size.width(),
+                      layer_rect.y() / resource_scaled_size.height()),
+          gfx::PointF(layer_rect.right() / resource_scaled_size.width(),
+                      layer_rect.bottom() / resource_scaled_size.height()),
+          screen_background_color,
+          vertex_opacity,
+          false);
+        quad_culler.Append(tex_quad.PassAs<DrawQuad>(), &append_quads_data);
+    } else {
+      // Skip the quad culler and just append the quads directly to avoid
+      // occlusion checks.
+      scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
+      quad->SetNew(
+          shared_quad_state, layer_rect, screen_background_color, false);
+      quad_culler.Append(quad.PassAs<DrawQuad>(), &append_quads_data);
+    }
   }
 }
 
@@ -789,7 +813,10 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
   if (!active_tree_->has_transparent_background()) {
     frame->render_passes.back()->has_transparent_background = false;
-    AppendQuadsToFillScreen(frame->render_passes.back(),
+    AppendQuadsToFillScreen(ResourceIdForUIResource(overhang_ui_resource_id_),
+                            gfx::ScaleSize(overhang_ui_resource_size_,
+                                           device_scale_factor_),
+                            frame->render_passes.back(),
                             active_tree_->root_layer(),
                             active_tree_->background_color(),
                             occlusion_tracker);
@@ -1790,6 +1817,13 @@ void LayerTreeHostImpl::SetOverdrawBottomHeight(float overdraw_bottom_height) {
 
   UpdateMaxScrollOffset();
   SetFullRootLayerDamage();
+}
+
+void LayerTreeHostImpl::SetOverhangUIResource(
+    UIResourceId overhang_ui_resource_id,
+    gfx::Size overhang_ui_resource_size) {
+  overhang_ui_resource_id_ = overhang_ui_resource_id;
+  overhang_ui_resource_size_ = overhang_ui_resource_size;
 }
 
 void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {

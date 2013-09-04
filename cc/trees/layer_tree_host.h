@@ -24,6 +24,7 @@
 #include "cc/input/top_controls_state.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/output/output_surface.h"
+#include "cc/resources/scoped_ui_resource.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/scheduler/rate_limiter.h"
@@ -224,6 +225,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
     has_transparent_background_ = transparent;
   }
 
+  void SetOverhangBitmap(const SkBitmap& bitmap);
+
   PrioritizedResourceManager* contents_texture_manager() const {
     return contents_texture_manager_.get();
   }
@@ -378,6 +381,10 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
 
   SkColor background_color_;
   bool has_transparent_background_;
+
+  // If set, this texture is used to fill in the parts of the screen not
+  // covered by layers.
+  scoped_ptr<ScopedUIResource> overhang_ui_resource_;
 
   typedef ScopedPtrVector<PrioritizedResource> TextureList;
   size_t partial_texture_update_requests_;

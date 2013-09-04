@@ -22,6 +22,9 @@ class CC_EXPORT ScopedUIResource : public UIResourceClient {
       scoped_refptr<UIResourceBitmap> bitmap);
   virtual ~ScopedUIResource();
 
+  gfx::Size GetSize() const;
+
+  // UIResourceClient implementation.
   virtual scoped_refptr<UIResourceBitmap> GetBitmap(
       UIResourceId uid,
       bool resource_lost) OVERRIDE;

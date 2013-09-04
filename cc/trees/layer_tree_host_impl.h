@@ -278,6 +278,9 @@ class CC_EXPORT LayerTreeHostImpl
   void SetOverdrawBottomHeight(float overdraw_bottom_height);
   float overdraw_bottom_height() const { return overdraw_bottom_height_; }
 
+  void SetOverhangUIResource(UIResourceId overhang_ui_resource_id,
+                             gfx::Size overhang_ui_resource_size);
+
   void SetDeviceScaleFactor(float device_scale_factor);
   float device_scale_factor() const { return device_scale_factor_; }
 
@@ -538,6 +541,10 @@ class CC_EXPORT LayerTreeHostImpl
   // Conversion factor from CSS pixels to physical pixels when
   // pageScaleFactor=1.
   float device_scale_factor_;
+
+  // UI resource to use for drawing overhang gutters.
+  UIResourceId overhang_ui_resource_id_;
+  gfx::Size overhang_ui_resource_size_;
 
   // Vertical amount of the viewport size that's known to covered by a
   // browser-side UI element, such as an on-screen-keyboard.  This affects

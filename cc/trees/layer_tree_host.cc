@@ -142,6 +142,9 @@ bool LayerTreeHost::InitializeProxy(scoped_ptr<Proxy> proxy) {
 
 LayerTreeHost::~LayerTreeHost() {
   TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
+
+  overhang_ui_resource_.reset();
+
   if (root_layer_.get())
     root_layer_->SetLayerTreeHost(NULL);
 
@@ -368,6 +371,11 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     // the queue is processed in LayerTreeHostImpl::ActivatePendingTree.
     if (!settings_.impl_side_painting)
       sync_tree->ProcessUIResourceRequestQueue();
+  }
+  if (overhang_ui_resource_) {
+    host_impl->SetOverhangUIResource(
+        overhang_ui_resource_->id(),
+        overhang_ui_resource_->GetSize());
   }
 
   DCHECK(!sync_tree->ViewportSizeInvalid());
@@ -621,6 +629,21 @@ void LayerTreeHost::SetPageScaleFactorAndLimits(float page_scale_factor,
   min_page_scale_factor_ = min_page_scale_factor;
   max_page_scale_factor_ = max_page_scale_factor;
   SetNeedsCommit();
+}
+
+void LayerTreeHost::SetOverhangBitmap(const SkBitmap& bitmap) {
+  DCHECK(bitmap.width() && bitmap.height());
+  DCHECK_EQ(bitmap.bytesPerPixel(), 4);
+
+  scoped_refptr<UIResourceBitmap> overhang_ui_bitmap(UIResourceBitmap::Create(
+      new uint8_t[bitmap.width() * bitmap.height() * bitmap.bytesPerPixel()],
+      UIResourceBitmap::RGBA8,
+      gfx::Size(bitmap.width(), bitmap.height())));
+  bitmap.copyPixelsTo(
+      overhang_ui_bitmap->GetPixels(),
+      bitmap.width() * bitmap.height() * bitmap.bytesPerPixel(),
+      bitmap.width() * bitmap.bytesPerPixel());
+  overhang_ui_resource_ = ScopedUIResource::Create(this, overhang_ui_bitmap);
 }
 
 void LayerTreeHost::SetVisible(bool visible) {

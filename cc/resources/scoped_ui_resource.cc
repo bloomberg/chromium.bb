@@ -32,6 +32,10 @@ ScopedUIResource::~ScopedUIResource() {
   }
 }
 
+gfx::Size ScopedUIResource::GetSize() const {
+  return bitmap_->GetSize();
+}
+
 scoped_refptr<UIResourceBitmap> ScopedUIResource::GetBitmap(
     UIResourceId uid,
     bool resource_lost) {

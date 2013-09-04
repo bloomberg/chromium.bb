@@ -12,6 +12,7 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
@@ -69,6 +70,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   virtual float deviceScaleFactor() const;
   virtual void setBackgroundColor(WebKit::WebColor color);
   virtual void setHasTransparentBackground(bool transparent);
+  virtual void setOverhangBitmap(const SkBitmap& bitmap);
   virtual void setVisible(bool visible);
   virtual void setPageScaleFactorAndLimits(float page_scale_factor,
                                            float minimum,

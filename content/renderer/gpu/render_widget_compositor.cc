@@ -436,6 +436,10 @@ void RenderWidgetCompositor::setHasTransparentBackground(bool transparent) {
   layer_tree_host_->set_has_transparent_background(transparent);
 }
 
+void RenderWidgetCompositor::setOverhangBitmap(const SkBitmap& bitmap) {
+  layer_tree_host_->SetOverhangBitmap(bitmap);
+}
+
 void RenderWidgetCompositor::setVisible(bool visible) {
   layer_tree_host_->SetVisible(visible);
 }
