@@ -128,6 +128,8 @@ class ResultsPrinter {
   // Adds |result| to the stored test results.
   void AddTestResult(const TestResult& result);
 
+  WeakPtr<ResultsPrinter> GetWeakPtr();
+
  private:
   // Prints a list of tests that finished with |status|.
   void PrintTestsByStatus(TestResult::Status status,
@@ -153,6 +155,8 @@ class ResultsPrinter {
 
   ThreadChecker thread_checker_;
 
+  WeakPtrFactory<ResultsPrinter> weak_ptr_;
+
   DISALLOW_COPY_AND_ASSIGN(ResultsPrinter);
 };
 
@@ -161,7 +165,8 @@ ResultsPrinter::ResultsPrinter(const CommandLine& command_line,
     : test_started_count_(0),
       test_run_count_(0),
       out_(NULL),
-      callback_(callback) {
+      callback_(callback),
+      weak_ptr_(this) {
   if (!command_line.HasSwitch(kGTestOutputFlag))
     return;
   std::string flag = command_line.GetSwitchValueASCII(kGTestOutputFlag);
@@ -289,6 +294,10 @@ void ResultsPrinter::AddTestResult(const TestResult& result) {
 
     delete this;
   }
+}
+
+WeakPtr<ResultsPrinter> ResultsPrinter::GetWeakPtr() {
+  return weak_ptr_.GetWeakPtr();
 }
 
 void ResultsPrinter::PrintTestsByStatus(TestResult::Status status,
@@ -424,7 +433,7 @@ void RunTests(TestLauncherDelegate* launcher_delegate,
 
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      Bind(&ResultsPrinter::OnAllTestsStarted, Unretained(printer)));
+      Bind(&ResultsPrinter::OnAllTestsStarted, printer->GetWeakPtr()));
 }
 
 void RunTestIteration(TestLauncherDelegate* launcher_delegate,
