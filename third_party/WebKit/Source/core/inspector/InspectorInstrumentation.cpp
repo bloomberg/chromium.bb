@@ -162,20 +162,20 @@ String preprocessEventListenerImpl(InstrumentingAgents* instrumentingAgents, Fra
 
 bool canvasAgentEnabled(ScriptExecutionContext* scriptExecutionContext)
 {
-    InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(scriptExecutionContext);
+    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(scriptExecutionContext);
     return instrumentingAgents && instrumentingAgents->inspectorCanvasAgent();
 }
 
 bool consoleAgentEnabled(ScriptExecutionContext* scriptExecutionContext)
 {
-    InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(scriptExecutionContext);
+    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(scriptExecutionContext);
     InspectorConsoleAgent* consoleAgent = instrumentingAgents ? instrumentingAgents->inspectorConsoleAgent() : 0;
     return consoleAgent && consoleAgent->enabled();
 }
 
 bool timelineAgentEnabled(ScriptExecutionContext* scriptExecutionContext)
 {
-    InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(scriptExecutionContext);
+    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(scriptExecutionContext);
     return instrumentingAgents && instrumentingAgents->inspectorTimelineAgent();
 }
 
@@ -207,19 +207,19 @@ InspectorTimelineAgent* retrieveTimelineAgent(const InspectorInstrumentationCook
     return 0;
 }
 
-InstrumentingAgents* instrumentingAgentsForPage(Page* page)
+InstrumentingAgents* instrumentingAgentsFor(Page* page)
 {
     if (!page)
         return 0;
     return instrumentationForPage(page);
 }
 
-InstrumentingAgents* instrumentingAgentsForRenderObject(RenderObject* renderer)
+InstrumentingAgents* instrumentingAgentsFor(RenderObject* renderer)
 {
-    return instrumentingAgentsForFrame(renderer->frame());
+    return instrumentingAgentsFor(renderer->frame());
 }
 
-InstrumentingAgents* instrumentingAgentsForWorkerGlobalScope(WorkerGlobalScope* workerGlobalScope)
+InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope* workerGlobalScope)
 {
     if (!workerGlobalScope)
         return 0;

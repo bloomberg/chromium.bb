@@ -261,7 +261,6 @@ class Method:
             if not "Keep" in self.params_impl[0].options:
                 self.params_impl = self.params_impl[1:]
             self.params_impl = [Parameter("InstrumentingAgents* agents")] + self.params_impl
-            self.agents_selector_class = re.match("(\w*)", self.params[0].type).group(1)
 
         self.agents = filter(lambda option: not "=" in option, self.options)
 
@@ -288,8 +287,7 @@ class Method:
             condition = ""
             template = template_inline_forward
         else:
-            condition = "InstrumentingAgents* agents = instrumentingAgentsFor%s(%s)" % (
-                self.agents_selector_class, self.params[0].name)
+            condition = "InstrumentingAgents* agents = instrumentingAgentsFor(%s)" % self.params[0].name
 
             if self.returns_value:
                 template = template_inline_returns_value

@@ -102,14 +102,16 @@ void unregisterInstrumentingAgents(InstrumentingAgents*);
 
 InspectorTimelineAgent* retrieveTimelineAgent(const InspectorInstrumentationCookie&);
 
-InstrumentingAgents* instrumentingAgentsForPage(Page*);
-InstrumentingAgents* instrumentingAgentsForFrame(Frame*);
-InstrumentingAgents* instrumentingAgentsForScriptExecutionContext(ScriptExecutionContext*);
-InstrumentingAgents* instrumentingAgentsForDocument(Document*);
-InstrumentingAgents* instrumentingAgentsForRenderObject(RenderObject*);
-InstrumentingAgents* instrumentingAgentsForElement(Element*);
+// Called from generated instrumentation code.
+InstrumentingAgents* instrumentingAgentsFor(Page*);
+InstrumentingAgents* instrumentingAgentsFor(Frame*);
+InstrumentingAgents* instrumentingAgentsFor(ScriptExecutionContext*);
+InstrumentingAgents* instrumentingAgentsFor(Document*);
+InstrumentingAgents* instrumentingAgentsFor(RenderObject*);
+InstrumentingAgents* instrumentingAgentsFor(Element*);
+InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope*);
 
-InstrumentingAgents* instrumentingAgentsForWorkerGlobalScope(WorkerGlobalScope*);
+// Helper for the one above.
 InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ScriptExecutionContext*);
 
 }  // namespace InspectorInstrumentation
@@ -134,34 +136,32 @@ extern const char PageId[];
 
 namespace InspectorInstrumentation {
 
-inline InstrumentingAgents* instrumentingAgentsForScriptExecutionContext(ScriptExecutionContext* context)
+inline InstrumentingAgents* instrumentingAgentsFor(ScriptExecutionContext* context)
 {
     if (!context)
         return 0;
-    if (context->isDocument())
-        return instrumentingAgentsForPage(toDocument(context)->page());
-    return instrumentingAgentsForNonDocumentContext(context);
+    return context->isDocument() ? instrumentingAgentsFor(toDocument(context)) : instrumentingAgentsForNonDocumentContext(context);
 }
 
-inline InstrumentingAgents* instrumentingAgentsForFrame(Frame* frame)
+inline InstrumentingAgents* instrumentingAgentsFor(Frame* frame)
 {
-    return frame ? instrumentingAgentsForPage(frame->page()) : 0;
+    return frame ? instrumentingAgentsFor(frame->page()) : 0;
 }
 
-inline InstrumentingAgents* instrumentingAgentsForDocument(Document* document)
+inline InstrumentingAgents* instrumentingAgentsFor(Document* document)
 {
     if (document) {
         Page* page = document->page();
         if (!page && document->templateDocumentHost())
             page = document->templateDocumentHost()->page();
-        return instrumentingAgentsForPage(page);
+        return instrumentingAgentsFor(page);
     }
     return 0;
 }
 
-inline InstrumentingAgents* instrumentingAgentsForElement(Element* element)
+inline InstrumentingAgents* instrumentingAgentsFor(Element* element)
 {
-    return element ? instrumentingAgentsForDocument(&element->document()) : 0;
+    return element ? instrumentingAgentsFor(&element->document()) : 0;
 }
 
 bool cssErrorFilter(const CSSParserString& content, int propertyId, int errorType);
