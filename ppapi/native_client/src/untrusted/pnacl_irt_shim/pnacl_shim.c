@@ -101,6 +101,7 @@
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/c/private/ppb_network_list_private.h"
 #include "ppapi/c/private/ppb_network_monitor_private.h"
+#include "ppapi/c/private/ppb_output_protection_private.h"
 #include "ppapi/c/private/ppb_talk_private.h"
 #include "ppapi/c/private/ppb_tcp_server_socket_private.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
@@ -207,6 +208,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_2_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_1;
@@ -3056,6 +3058,30 @@ static uint32_t Pnacl_M19_PPB_NetworkList_Private_GetMTU(PP_Resource resource, u
 
 /* Not generating wrapper methods for PPB_NetworkMonitor_Private_0_2 */
 
+/* Begin wrapper methods for PPB_OutputProtection_Private_0_1 */
+
+static PP_Resource Pnacl_M31_PPB_OutputProtection_Private_Create(PP_Instance instance) {
+  const struct PPB_OutputProtection_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1.real_iface;
+  return iface->Create(instance);
+}
+
+static PP_Bool Pnacl_M31_PPB_OutputProtection_Private_IsOutputProtection(PP_Resource resource) {
+  const struct PPB_OutputProtection_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1.real_iface;
+  return iface->IsOutputProtection(resource);
+}
+
+static int32_t Pnacl_M31_PPB_OutputProtection_Private_QueryStatus(PP_Resource resource, uint32_t* link_mask, uint32_t* protection_mask, struct PP_CompletionCallback* callback) {
+  const struct PPB_OutputProtection_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1.real_iface;
+  return iface->QueryStatus(resource, link_mask, protection_mask, *callback);
+}
+
+static int32_t Pnacl_M31_PPB_OutputProtection_Private_EnableProtection(PP_Resource resource, uint32_t desired_protection_mask, struct PP_CompletionCallback* callback) {
+  const struct PPB_OutputProtection_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1.real_iface;
+  return iface->EnableProtection(resource, desired_protection_mask, *callback);
+}
+
+/* End wrapper methods for PPB_OutputProtection_Private_0_1 */
+
 /* Begin wrapper methods for PPB_Talk_Private_1_0 */
 
 static PP_Resource Pnacl_M19_PPB_Talk_Private_Create(PP_Instance instance) {
@@ -4712,6 +4738,13 @@ struct PPB_NetworkList_Private_0_2 Pnacl_Wrappers_PPB_NetworkList_Private_0_2 = 
 
 /* Not generating wrapper interface for PPB_NetworkMonitor_Private_0_2 */
 
+struct PPB_OutputProtection_Private_0_1 Pnacl_Wrappers_PPB_OutputProtection_Private_0_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M31_PPB_OutputProtection_Private_Create,
+    .IsOutputProtection = (PP_Bool (*)(PP_Resource resource))&Pnacl_M31_PPB_OutputProtection_Private_IsOutputProtection,
+    .QueryStatus = (int32_t (*)(PP_Resource resource, uint32_t* link_mask, uint32_t* protection_mask, struct PP_CompletionCallback callback))&Pnacl_M31_PPB_OutputProtection_Private_QueryStatus,
+    .EnableProtection = (int32_t (*)(PP_Resource resource, uint32_t desired_protection_mask, struct PP_CompletionCallback callback))&Pnacl_M31_PPB_OutputProtection_Private_EnableProtection
+};
+
 struct PPB_Talk_Private_1_0 Pnacl_Wrappers_PPB_Talk_Private_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M19_PPB_Talk_Private_Create,
     .GetPermission = (int32_t (*)(PP_Resource talk_resource, struct PP_CompletionCallback callback))&Pnacl_M19_PPB_Talk_Private_GetPermission
@@ -5367,6 +5400,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2 =
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1 = {
+  .iface_macro = PPB_OUTPUTPROTECTION_PRIVATE_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_OutputProtection_Private_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_1_0 = {
   .iface_macro = PPB_TALK_PRIVATE_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Talk_Private_1_0,
@@ -5560,6 +5599,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_1_1,
   &Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2,
+  &Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Talk_Private_1_0,
   &Pnacl_WrapperInfo_PPB_Talk_Private_2_0,
   &Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_1,
