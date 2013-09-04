@@ -1642,6 +1642,7 @@
         'browser/ui/views/reload_button_unittest.cc',
         'browser/ui/views/select_file_dialog_extension_unittest.cc',
         'browser/ui/views/status_icons/status_tray_win_unittest.cc',
+        'browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc',
         'browser/ui/views/tabs/fake_base_tab_strip_controller.cc',
         'browser/ui/views/tabs/fake_base_tab_strip_controller.h',
         'browser/ui/views/tabs/stacked_tab_strip_layout_unittest.cc',
@@ -2041,6 +2042,7 @@
             'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',
             'browser/ui/sync/one_click_signin_helper_unittest.cc',
             'browser/ui/sync/one_click_signin_sync_starter_unittest.cc',
+            'browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc',
           ]
         }],
         ['disable_nacl==1', {

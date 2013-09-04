@@ -65,3 +65,5 @@ UserCloudPolicyStoreTest.StoreValidationError
 # Tests are timing out on the bot. crbug.com/248373.
 PnaclTranslationCacheTest.*
 
+# Failing on the bot. crbug.com/266972
+OneClickSigninBubbleViewTest.ShowBubble

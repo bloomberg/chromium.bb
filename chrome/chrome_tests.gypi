@@ -280,7 +280,6 @@
         'browser/ui/views/omnibox/omnibox_view_views_browsertest.cc',
         'browser/ui/views/panels/panel_view_browsertest.cc',
         'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
-        'browser/ui/views/sync/one_click_signin_bubble_view_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest_win.cc',
@@ -298,11 +297,6 @@
         'test/ppapi/ppapi_interactive_browsertest.cc',
       ],
       'conditions': [
-        ['enable_one_click_signin==0', {
-          'sources!': [
-            'browser/ui/views/sync/one_click_signin_bubble_view_interactive_uitest.cc'
-          ]
-        }],
         ['use_x11==1', {
           'dependencies': [
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
