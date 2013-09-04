@@ -51,8 +51,7 @@ enum SSLBlockingPageCommands {
   CMD_DONT_PROCEED,
   CMD_PROCEED,
   CMD_FOCUS,
-  CMD_MORE,
-  CMD_SHOW_UNDERSTAND,  // Used by the Finch trial.
+  CMD_MORE
 };
 
 // Events for UMA.
@@ -68,7 +67,7 @@ enum SSLBlockingPageEvent {
   DONT_PROCEED_DATE,
   DONT_PROCEED_AUTHORITY,
   MORE,
-  SHOW_UNDERSTAND,
+  SHOW_UNDERSTAND,  // Used by the summer 2013 Finch trial. Deprecated.
   SHOW_INTERNAL_HOSTNAME,
   PROCEED_INTERNAL_HOSTNAME,
   SHOW_NEW_SITE,
@@ -137,16 +136,6 @@ void RecordSSLBlockingPageDetailedStats(
   }
 }
 
-// These are the constants for the Finch experiment.
-const char kStudyName[] = "InterstitialSSL517";
-const char kCondition15Control[] = "Condition15SSLControl";
-const char kCondition16Firefox[] = "Condition16SSLFirefox";
-const char kCondition17FancyFirefox[] = "Condition17SSLFancyFirefox";
-const char kCondition18NoImages[] = "Condition18SSLNoImages";
-const char kCondition19Policeman[] = "Condition19SSLPoliceman";
-const char kCondition20Stoplight[] = "Condition20SSLStoplight";
-const char kCondition21Badguy[] = "Condition21SSLBadguy";
-
 }  // namespace
 
 // Note that we always create a navigation entry with SSL errors.
@@ -168,8 +157,6 @@ SSLBlockingPage::SSLBlockingPage(
       strict_enforcement_(strict_enforcement),
       internal_(false),
       num_visits_(-1) {
-  trialCondition_ = base::FieldTrialList::FindFullName(kStudyName);
-
   // For UMA stats.
   if (net::IsHostnameNonUnique(request_url_.HostNoBrackets()))
     internal_ = true;
@@ -252,31 +239,6 @@ std::string SSLBlockingPage::GetHTMLContents() {
 
   strings.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
 
-  // Set up the Finch trial layouts.
-  strings.SetString("trialType", trialCondition_);
-  if (trialCondition_ == kCondition16Firefox ||
-      trialCondition_ == kCondition17FancyFirefox ||
-      trialCondition_ == kCondition18NoImages) {
-    strings.SetString("domain", request_url_.host());
-    std::string font_family = l10n_util::GetStringUTF8(IDS_WEB_FONT_FAMILY);
-#if defined(OS_WIN)
-    if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-      font_family = l10n_util::GetStringUTF8(IDS_WEB_FONT_FAMILY_XP);
-    }
-#endif
-#if defined(TOOLKIT_GTK)
-    font_family = ui::ResourceBundle::GetSharedInstance().GetFont(
-        ui::ResourceBundle::BaseFont).GetFontName() + ", " + font_family;
-#endif
-    strings.SetString("fontfamily", font_family);
-    if (trialCondition_ == kCondition16Firefox ||
-        trialCondition_ == kCondition18NoImages) {
-      resource_id = IDR_SSL_FIREFOX_HTML;
-    } else if (trialCondition_ == kCondition17FancyFirefox) {
-      resource_id = IDR_SSL_FANCY_FIREFOX_HTML;
-    }
-  }
-
   base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           resource_id));
@@ -312,9 +274,6 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
     display_start_time_ = base::TimeTicks::Now();
   } else if (cmd == CMD_MORE) {
     RecordSSLBlockingPageEventStats(MORE);
-  } else if (cmd == CMD_SHOW_UNDERSTAND) {
-    // Used in the Finch experiment.
-    RecordSSLBlockingPageEventStats(SHOW_UNDERSTAND);
   }
 }
 
