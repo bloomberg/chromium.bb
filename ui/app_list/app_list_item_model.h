@@ -31,8 +31,10 @@ class APP_LIST_EXPORT AppListItemModel {
   const gfx::ImageSkia& icon() const { return icon_; }
   bool has_shadow() const { return has_shadow_; }
 
-  void SetTitle(const std::string& title);
+  void SetTitleAndFullName(const std::string& title,
+                           const std::string& full_name);
   const std::string& title() const { return title_; }
+  const std::string& full_name() const { return full_name_; }
 
   void SetHighlighted(bool highlighted);
   bool highlighted() const { return highlighted_; }
@@ -58,6 +60,7 @@ class APP_LIST_EXPORT AppListItemModel {
   gfx::ImageSkia icon_;
   bool has_shadow_;
   std::string title_;
+  std::string full_name_;
   bool highlighted_;
   bool is_installing_;
   int percent_downloaded_;

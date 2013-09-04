@@ -45,8 +45,9 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
   };
 
   explicit WindowTypeLauncherItem(Type type) : type_(type) {
+    std::string title(GetTitle(type));
     SetIcon(GetIcon(type), false);
-    SetTitle(GetTitle(type));
+    SetTitleAndFullName(title, title);
   }
 
   static gfx::ImageSkia GetIcon(Type type) {

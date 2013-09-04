@@ -130,6 +130,11 @@ void AppListItemView::UpdateIcon() {
   icon_->SetImage(resized);
 }
 
+void AppListItemView::UpdateTooltip() {
+  title_->SetTooltipText(model_->title() == model_->full_name() ?
+                             string16() : UTF8ToUTF16(model_->full_name()));
+}
+
 void AppListItemView::SetUIState(UIState state) {
   if (ui_state_ == state)
     return;
@@ -193,6 +198,7 @@ void AppListItemView::ItemIconChanged() {
 void AppListItemView::ItemTitleChanged() {
   title_->SetText(UTF8ToUTF16(model_->title()));
   title_->Invalidate();
+  UpdateTooltip();
   Layout();
 }
 

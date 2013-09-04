@@ -62,6 +62,9 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // Get icon from model and schedule background processing.
   void UpdateIcon();
 
+  // Update the tooltip text from the model.
+  void UpdateTooltip();
+
   void SetUIState(UIState state);
 
   // Sets |touch_dragging_| flag and updates UI.

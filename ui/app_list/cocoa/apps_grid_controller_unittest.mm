@@ -125,7 +125,7 @@ class AppListItemWithMenu : public AppListItemModel {
   AppListItemWithMenu(const std::string& title)
       : menu_model_(NULL),
         menu_ready_(true) {
-    SetTitle(title);
+    SetTitleAndFullName(title, title);
     menu_model_.AddItem(0, UTF8ToUTF16("Menu For: " + title));
   }
 
@@ -434,7 +434,7 @@ TEST_F(AppsGridControllerTest, ModelUpdates) {
 
   // Update the title via the ItemModelObserver.
   app_list::AppListItemModel* item_model = model()->apps()->GetItemAt(2);
-  item_model->SetTitle("UpdatedItem");
+  item_model->SetTitleAndFullName("UpdatedItem", "UpdatedItem");
   EXPECT_NSEQ(@"UpdatedItem", [button title]);
   EXPECT_EQ(std::string("|Item 0,Item 1,UpdatedItem|"), GetViewContent());
 
@@ -467,7 +467,7 @@ TEST_F(AppsGridControllerTest, ModelUpdates) {
   EXPECT_EQ(std::string("|Item 0,Item 2|"), GetViewContent());
 
   // Test inserting in the middle.
-  model()->apps()->AddAt(1, model()->CreateItem("Item One"));
+  model()->apps()->AddAt(1, model()->CreateItem("Item One", "Item One"));
   EXPECT_EQ(3u, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(std::string("|Item 0,Item One,Item 2|"), GetViewContent());
 

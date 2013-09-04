@@ -29,7 +29,14 @@ class AppListTestModel : public AppListModel {
   // Get a string of all apps in |model| joined with ','.
   std::string GetModelContent();
 
-  AppListItemModel* CreateItem(const std::string& title);
+  AppListItemModel* CreateItem(const std::string& title,
+                               const std::string& full_name);
+
+  // Add an item with arbitrary |title| and |full_name| to the model.
+  void AddItem(const std::string& title, const std::string& full_name);
+
+  // Add an item with arbitrary |title| to the model. This is a convenience
+  // version which will use the title for the full_name.
   void AddItem(const std::string& title);
 
   // Call SetHighlighted on the specified item.

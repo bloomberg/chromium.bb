@@ -24,11 +24,13 @@ void AppListItemModel::SetIcon(const gfx::ImageSkia& icon, bool has_shadow) {
   FOR_EACH_OBSERVER(AppListItemModelObserver, observers_, ItemIconChanged());
 }
 
-void AppListItemModel::SetTitle(const std::string& title) {
-  if (title_ == title)
+void AppListItemModel::SetTitleAndFullName(const std::string& title,
+                                           const std::string& full_name) {
+  if (title_ == title && full_name_ == full_name)
     return;
 
   title_ = title;
+  full_name_ = full_name;
   FOR_EACH_OBSERVER(AppListItemModelObserver, observers_, ItemTitleChanged());
 }
 

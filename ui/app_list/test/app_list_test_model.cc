@@ -33,14 +33,20 @@ std::string AppListTestModel::GetModelContent() {
   return content;
 }
 
-AppListItemModel* AppListTestModel::CreateItem(const std::string& title) {
+AppListItemModel* AppListTestModel::CreateItem(const std::string& title,
+                                               const std::string& full_name) {
   AppListItemModel* item = new AppListItemModel;
-  item->SetTitle(title);
+  item->SetTitleAndFullName(title, full_name);
   return item;
 }
 
 void AppListTestModel::AddItem(const std::string& title) {
-  apps()->Add(CreateItem(title));
+  apps()->Add(CreateItem(title, title));
+}
+
+void AppListTestModel::AddItem(const std::string& title,
+                               const std::string& full_name) {
+  apps()->Add(CreateItem(title, full_name));
 }
 
 void AppListTestModel::HighlightItemAt(int index) {

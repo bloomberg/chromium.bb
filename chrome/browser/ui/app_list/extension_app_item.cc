@@ -102,11 +102,11 @@ void ExtensionAppItem::Reload() {
   SetIsInstalling(is_installing);
   set_app_id(extension_id_);
   if (is_installing) {
-    SetTitle(extension_name_);
+    SetTitleAndFullName(extension_name_, extension_name_);
     UpdateIcon();
     return;
   }
-  SetTitle(extension->name());
+  SetTitleAndFullName(extension->short_name(), extension->name());
   LoadImage(extension);
 }
 

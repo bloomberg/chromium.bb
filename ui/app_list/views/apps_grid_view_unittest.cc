@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_item_model.h"
@@ -422,6 +423,38 @@ TEST_F(AppsGridViewTest, HighlightWithKeyboard) {
   SimulateKeyPress(ui::VKEY_UP);
   EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(
       first_index_on_page2)));
+}
+
+TEST_F(AppsGridViewTest, ItemLabelShortNameOverride) {
+  // If the app's full name and short name differ, the title label's tooltip
+  // should always be the full name of the app.
+  std::string expected_text("xyz");
+  std::string expected_tooltip("tooltip");
+  model_->AddItem(expected_text, expected_tooltip);
+
+  string16 actual_tooltip;
+  AppListItemView* item_view = GetItemViewAt(0);
+  ASSERT_TRUE(item_view);
+  const views::Label* title_label = item_view->title();
+  EXPECT_TRUE(title_label->GetTooltipText(
+      title_label->bounds().CenterPoint(), &actual_tooltip));
+  EXPECT_EQ(expected_tooltip, UTF16ToUTF8(actual_tooltip));
+  EXPECT_EQ(expected_text, UTF16ToUTF8(title_label->text()));
+}
+
+TEST_F(AppsGridViewTest, ItemLabelNoShortName) {
+  // If the app's full name and short name are the same, use the default tooltip
+  // behavior of the label (only show a tooltip if the title is truncated).
+  std::string title("a");
+  model_->AddItem(title, title);
+
+  string16 actual_tooltip;
+  AppListItemView* item_view = GetItemViewAt(0);
+  ASSERT_TRUE(item_view);
+  const views::Label* title_label = item_view->title();
+  EXPECT_FALSE(title_label->GetTooltipText(
+      title_label->bounds().CenterPoint(), &actual_tooltip));
+  EXPECT_EQ(title, UTF16ToUTF8(title_label->text()));
 }
 
 }  // namespace test
