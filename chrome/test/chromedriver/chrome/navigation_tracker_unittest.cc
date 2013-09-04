@@ -217,3 +217,20 @@ TEST(NavigationTracker, UnknownStateForcesStartReceivesStop) {
   NavigationTracker tracker(&client);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }
+
+TEST(NavigationTracker, OnSuccessfulNavigate) {
+  base::DictionaryValue params;
+  DeterminingLoadStateDevToolsClient client(
+      true, "Page.frameStoppedLoading", &params);
+  NavigationTracker tracker(&client, NavigationTracker::kNotLoading);
+  tracker.OnCommandSuccess(&client, "Page.navigate");
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
+}
+
+TEST(NavigationTracker, OnSuccessfulNavigateStillWaiting) {
+  base::DictionaryValue params;
+  DeterminingLoadStateDevToolsClient client(true, std::string(), &params);
+  NavigationTracker tracker(&client, NavigationTracker::kNotLoading);
+  tracker.OnCommandSuccess(&client, "Page.navigate");
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
+}

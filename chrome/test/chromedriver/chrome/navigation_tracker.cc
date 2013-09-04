@@ -150,6 +150,7 @@ Status NavigationTracker::OnCommandSuccess(DevToolsClient* client,
     // been received.
     // If case #3, the URL will be blank if the navigation hasn't been started
     // yet. In that case, expect a load to happen in the future.
+    loading_state_ = kUnknown;
     base::DictionaryValue params;
     params.SetString("expression", "document.URL");
     scoped_ptr<base::DictionaryValue> result;
@@ -158,7 +159,7 @@ Status NavigationTracker::OnCommandSuccess(DevToolsClient* client,
     std::string url;
     if (status.IsError() || !result->GetString("result.value", &url))
       return Status(kUnknownError, "cannot determine loading status", status);
-    if (url.empty())
+    if (loading_state_ == kUnknown && url.empty())
       loading_state_ = kLoading;
   }
   return Status(kOk);
