@@ -25144,7 +25144,11 @@ other types of suffix sets.
   <int value="0" label="Other"/>
   <int value="1" label="HTTPS Server Only"/>
   <int value="2" label="HTTP Server Only"/>
-  <int value="3" label="Both HTTP and HTTPS Server"/>
+  <int value="3" label="HTTP Server, HTTPS Server"/>
+  <int value="4" label="HTTP Peer Only"/>
+  <int value="5" label="HTTP Peer and HTTPS Server"/>
+  <int value="6" label="HTTP Peer and HTTP Server"/>
+  <int value="7" label="HTTP Peer, HTTPS Server, and HTTP Server"/>
 </enum>
 
 <enum name="UpdateEngineErrorCode" type="int">
@@ -25918,6 +25922,7 @@ other types of suffix sets.
 </fieldtrial>
 
 <fieldtrial name="InstallerDownloadSources" separator="">
+  <group name="HttpPeer" label="Download Source: HTTP Peer"/>
   <group name="HttpServer" label="Download Source: HTTP Server"/>
   <group name="HttpsServer" label="Download Source: HTTPS Server"/>
   <affected-histogram name="Installer.SuccessfulMBsDownloadedFrom"/>
