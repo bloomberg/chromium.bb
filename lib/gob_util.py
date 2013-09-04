@@ -131,7 +131,8 @@ def ReadHttpJsonResponse(conn, ignore_404=True):
   return json.loads(s)
 
 
-def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None):
+def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
+                 sortkey=None):
   """
   Queries a gerrit-on-borg server for changes matching query terms.
 
@@ -149,6 +150,8 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None):
   if not param_dict and not first_param:
     raise RuntimeError('QueryChanges requires search parameters')
   path = 'changes/?q=%s' % _QueryString(param_dict, first_param)
+  if sortkey:
+    path = '%s&N=%s' % (path, sortkey)
   if limit:
     path = '%s&n=%d' % (path, limit)
   if o_params:
@@ -157,7 +160,8 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None):
   return ReadHttpJsonResponse(CreateHttpConn(host, path), ignore_404=False)
 
 
-def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None):
+def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
+                      sortkey=None):
   """Initiate a query composed of multiple sets of query parameters."""
   if not change_list:
     raise RuntimeError(
@@ -167,6 +171,8 @@ def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None):
     q.append(_QueryString(param_dict))
   if limit:
     q.append('n=%d' % limit)
+  if sortkey:
+    q.append('N=%s' % sortkey)
   if o_params:
     q.extend(['o=%s' % p for p in o_params])
   path = 'changes/?%s' % '&'.join(q)

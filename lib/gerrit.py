@@ -464,6 +464,10 @@ class GerritHelper(object):
 class GerritOnBorgHelper(GerritHelper):
   """Helper class to manage interaction with the gerrit-on-borg service."""
 
+  # Fields that appear in gerrit change query results
+  MORE_CHANGES = '_more_changes'
+  SORTKEY = '_sortkey'
+
   def __init__(self, host, remote, **kwds):
     kwds['ssh_port'] = 0
     kwds['ssh_user'] = None
@@ -534,7 +538,7 @@ class GerritOnBorgHelper(GerritHelper):
     return results[0]
 
   def Query(self, change=None, sort=None, current_patch=True, options=(),
-            dryrun=False, raw=False, _resume_sortkey=None, **query_kwds):
+            dryrun=False, raw=False, sortkey=None, **query_kwds):
     if options:
       raise GerritException('"options" argument unsupported on gerrit-on-borg.')
     url_prefix = gob_util.GetGerritFetchUrl(self.host)
@@ -559,9 +563,6 @@ class GerritOnBorgHelper(GerritHelper):
       raise GerritException('Bad query params: provided a change-id-like query,'
                             ' and a "change" search parameter')
 
-    if _resume_sortkey:
-      query_kwds['resume_sortkey'] = _resume_sortkey
-
     if dryrun:
       logging.info('Would have run gob_util.QueryChanges(%s, %s, '
                    'first_param=%s, limit=%d)', self.host, repr(query_kwds),
@@ -569,13 +570,17 @@ class GerritOnBorgHelper(GerritHelper):
       return []
 
     moar = gob_util.QueryChanges(
-        self.host, query_kwds, first_param=change,
+        self.host, query_kwds, first_param=change, sortkey=sortkey,
         limit=self._GERRIT_MAX_QUERY_RETURN, o_params=o_params)
     result = list(moar)
-    while moar and moar[-1].get('_more_changes'):
-      query_kwds['resume_sortkey'] = result[-1].get['_sortkey']
-      moar = gob_util.QueryChanges(self.host, query_kwds, first_param=change,
-                                   limit=self._GERRIT_MAX_QUERY_RETURN)
+    while moar and self.MORE_CHANGES in moar[-1]:
+      if self.SORTKEY not in moar[-1]:
+        raise GerritException(
+            'Gerrit query has more results, but is missing _sortkey field.')
+      sortkey = moar[-1][self.SORTKEY]
+      moar = gob_util.QueryChanges(
+          self.host, query_kwds, first_param=change, sortkey=sortkey,
+          limit=self._GERRIT_MAX_QUERY_RETURN, o_params=o_params)
       result.extend(moar)
     result = [cros_patch.GerritPatch.ConvertQueryResults(
         x, self.host) for x in result]
@@ -599,11 +604,14 @@ class GerritOnBorgHelper(GerritHelper):
                                       limit=self._GERRIT_MAX_QUERY_RETURN,
                                       o_params=o_params)
     results = list(moar)
-    while moar and '_more_changes' in moar[-1]:
-      query_kwds = { 'resume_sortkey': moar[-1]['_sortkey'] }
-      moar = gob_util.MultiQueryChanges(self.host, query_kwds, changes,
+    while moar and self.MORE_CHANGES in moar[-1]:
+      if self.SORTKEY not in moar[-1]:
+        raise GerritException(
+            'Gerrit query has more results, but is missing _sortkey field.')
+      sortkey = moar[-1][self.SORTKEY]
+      moar = gob_util.MultiQueryChanges(self.host, {}, changes,
                                         limit=self._GERRIT_MAX_QUERY_RETURN,
-                                        o_params=o_params)
+                                        sortkey=sortkey, o_params=o_params)
       results.extend(moar)
     for change in changes:
       change_results = [x for x in results if (
