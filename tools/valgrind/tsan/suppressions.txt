@@ -1136,3 +1136,17 @@
   fun:content::UtilityThreadImpl::UtilityThreadImpl
   fun:content::UtilityMainThread::InitInternal
 }
+{
+   bug_284959
+   ThreadSanitizer:Race
+   fun:std::_Rb_tree_insert_and_rebalance
+   fun:std::_Rb_tree::_M_insert_
+   fun:std::_Rb_tree::_M_insert_unique_
+   fun:std::map::insert
+   fun:std::map::operator[]
+   fun:content::DataFetcherSharedMemoryBase::GetSharedMemory
+   fun:content::DataFetcherSharedMemoryBase::GetSharedMemoryBuffer
+   fun:content::DataFetcherSharedMemoryBase::StartFetchingDeviceData
+   fun:content::::DataFetcherSharedMemoryBaseTest_DoesPollMotionAndOrientation_Test::TestBody
+   fun:testing::internal::HandleSehExceptionsInMethodIfSupported
+}
