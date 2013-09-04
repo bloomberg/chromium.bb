@@ -27,6 +27,10 @@ const char kKeyHome[] = "Home";
 const char kKeyIns[] = "Insert";
 const char kKeyLeft[] = "Left";
 const char kKeyMacCtrl[] = "MacCtrl";
+const char kKeyMediaNextTrack[] = "MediaNextTrack";
+const char kKeyMediaPlayPause[] = "MediaPlayPause";
+const char kKeyMediaPrevTrack[] = "MediaPrevTrack";
+const char kKeyMediaStop[] = "MediaStop";
 const char kKeyPgDwn[] = "PageDown";
 const char kKeyPgUp[] = "PageUp";
 const char kKeyPeriod[] = "Period";
@@ -251,6 +255,8 @@ const char kInvalidKeyBindingDescription[] =
     "Invalid value for 'commands[*].description'.";
 const char kInvalidKeyBindingDictionary[] =
     "Contents of 'commands[*]' invalid.";
+const char kInvalidKeyBindingMediaKeyWithModifier[] =
+    "Media key cannot have any modifier for 'commands[*].*': *.";
 const char kInvalidKeyBindingMissingPlatform[] =
     "Could not find key specification for 'command[*].*': Either specify a key "
     "for '*', or specify a default key.";

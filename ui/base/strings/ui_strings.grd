@@ -1464,6 +1464,18 @@ need to be translated for each locale.-->
       <message name="IDS_APP_PERIOD_KEY" desc="Period key">
         Period
       </message>
+      <message name="IDS_APP_MEDIA_NEXT_TRACK_KEY" desc="Media next track key">
+        Media Next Track
+      </message>
+      <message name="IDS_APP_MEDIA_PLAY_PAUSE_KEY" desc="Media play pause key">
+        Media Play/Pause
+      </message>
+      <message name="IDS_APP_MEDIA_PREV_TRACK_KEY" desc="Media previous track key">
+        Media Previous Track
+      </message>
+      <message name="IDS_APP_MEDIA_STOP_KEY" desc="Media stop key">
+        Media Stop
+      </message>
 
       <!-- Shortcut Modifiers -->
       <message name="IDS_APP_CONTROL_MODIFIER" desc="Control key shortcut modifier">

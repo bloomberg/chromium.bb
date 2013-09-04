@@ -37,6 +37,10 @@ namespace extension_manifest_values {
   extern const char kKeyIns[];
   extern const char kKeyLeft[];
   extern const char kKeyMacCtrl[];
+  extern const char kKeyMediaNextTrack[];
+  extern const char kKeyMediaPlayPause[];
+  extern const char kKeyMediaPrevTrack[];
+  extern const char kKeyMediaStop[];
   extern const char kKeyPgDwn[];
   extern const char kKeyPgUp[];
   extern const char kKeyPeriod[];
@@ -158,6 +162,7 @@ namespace extension_manifest_errors {
   extern const char kInvalidKeyBinding[];
   extern const char kInvalidKeyBindingDescription[];
   extern const char kInvalidKeyBindingDictionary[];
+  extern const char kInvalidKeyBindingMediaKeyWithModifier[];
   extern const char kInvalidKeyBindingMissingPlatform[];
   extern const char kInvalidKeyBindingTooMany[];
   extern const char kInvalidKeyBindingUnknownPlatform[];

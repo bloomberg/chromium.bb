@@ -34,7 +34,8 @@ class Command {
 
   // Parse a string as an accelerator. If the accelerator is unparsable then
   // a generic ui::Accelerator object will be returns (with key_code Unknown).
-  static ui::Accelerator StringToAccelerator(const std::string& accelerator);
+  static ui::Accelerator StringToAccelerator(const std::string& accelerator,
+                                             const std::string& command_name);
 
   // Returns the string representation of an accelerator without localizing the
   // shortcut text (like accelerator::GetShortcutText() does).
