@@ -27,41 +27,27 @@
 #define WTF_MathExtras_h
 
 #include "wtf/CPU.h"
-#include "wtf/StdLibExtras.h"
-#include <algorithm>
 #include <cmath>
-#include <float.h>
 #include <limits>
+
+#if COMPILER(MSVC)
+#include "wtf/Assertions.h"
 #include <stdint.h>
+#endif
 
 #if OS(OPENBSD)
 #include <sys/types.h>
 #include <machine/ieee.h>
 #endif
 
-#ifndef M_PI
-const double piDouble = 3.14159265358979323846;
-const float piFloat = 3.14159265358979323846f;
-#else
 const double piDouble = M_PI;
 const float piFloat = static_cast<float>(M_PI);
-#endif
 
-#ifndef M_PI_2
-const double piOverTwoDouble = 1.57079632679489661923;
-const float piOverTwoFloat = 1.57079632679489661923f;
-#else
 const double piOverTwoDouble = M_PI_2;
 const float piOverTwoFloat = static_cast<float>(M_PI_2);
-#endif
 
-#ifndef M_PI_4
-const double piOverFourDouble = 0.785398163397448309616;
-const float piOverFourFloat = 0.785398163397448309616f;
-#else
 const double piOverFourDouble = M_PI_4;
 const float piOverFourFloat = static_cast<float>(M_PI_4);
-#endif
 
 #if OS(DARWIN)
 

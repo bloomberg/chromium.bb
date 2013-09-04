@@ -44,6 +44,8 @@
 
 #define WinPrecompile_h_
 
+#define _USE_MATH_DEFINES // Make math.h behave like other platforms.
+
 #include <Windows.h>
 
 #include <errno.h>
@@ -58,6 +60,9 @@
 #include <time.h>
 
 #include <algorithm>
+#include <ciso646>
+#include <cmath>
+#include <cstddef>
 #include <limits>
 #include <string>
 #include <utility>
