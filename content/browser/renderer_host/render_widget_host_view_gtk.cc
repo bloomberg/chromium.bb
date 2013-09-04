@@ -839,8 +839,8 @@ void RenderWidgetHostViewGtk::SetIsLoading(bool is_loading) {
 
 void RenderWidgetHostViewGtk::TextInputTypeChanged(
     ui::TextInputType type,
-    bool can_compose_inline,
-    ui::TextInputMode input_mode) {
+    ui::TextInputMode input_mode,
+    bool can_compose_inline) {
   im_context_->UpdateInputMethodState(type, can_compose_inline);
 }
 

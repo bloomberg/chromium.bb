@@ -1728,7 +1728,7 @@ void RenderWidgetHostImpl::OnTextInputTypeChanged(
     ui::TextInputMode input_mode,
     bool can_compose_inline) {
   if (view_)
-    view_->TextInputTypeChanged(type, can_compose_inline, input_mode);
+    view_->TextInputTypeChanged(type, input_mode, can_compose_inline);
 }
 
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)

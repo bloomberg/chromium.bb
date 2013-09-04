@@ -906,8 +906,8 @@ void RenderWidgetHostViewMac::SetIsLoading(bool is_loading) {
 
 void RenderWidgetHostViewMac::TextInputTypeChanged(
     ui::TextInputType type,
-    bool can_compose_inline,
-    ui::TextInputMode input_mode) {
+    ui::TextInputMode input_mode,
+    bool can_compose_inline) {
   if (text_input_type_ != type
       || can_compose_inline_ != can_compose_inline) {
     text_input_type_ = type;

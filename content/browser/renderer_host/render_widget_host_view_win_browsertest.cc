@@ -87,16 +87,16 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinBrowserTest,
   MockIMM32Manager* mock = new MockIMM32Manager();
   mock->Reset();
   view_->imm32_manager_.reset(mock);
-  view_->TextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE, false,
-                              ui::TEXT_INPUT_MODE_EMAIL);
+  view_->TextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE,
+                              ui::TEXT_INPUT_MODE_EMAIL, false);
 
   EXPECT_EQ(1, mock->call_count());
   EXPECT_EQ(view_->m_hWnd, mock->window_handle());
   EXPECT_EQ(ui::TEXT_INPUT_MODE_EMAIL, mock->input_mode());
 
   mock->Reset();
-  view_->TextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE, false,
-                              ui::TEXT_INPUT_MODE_EMAIL);
+  view_->TextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE,
+                              ui::TEXT_INPUT_MODE_EMAIL, false);
   EXPECT_EQ(0, mock->call_count());
 }
 

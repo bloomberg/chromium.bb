@@ -289,11 +289,11 @@ void RenderWidgetHostViewGuest::SetIsLoading(bool is_loading) {
 
 void RenderWidgetHostViewGuest::TextInputTypeChanged(
     ui::TextInputType type,
-    bool can_compose_inline,
-    ui::TextInputMode input_mode) {
+    ui::TextInputMode input_mode,
+    bool can_compose_inline) {
   RenderWidgetHostViewPort::FromRWHV(
       guest_->GetEmbedderRenderWidgetHostView())->
-          TextInputTypeChanged(type, can_compose_inline, input_mode);
+          TextInputTypeChanged(type, input_mode, can_compose_inline);
 }
 
 void RenderWidgetHostViewGuest::ImeCancelComposition() {
