@@ -426,7 +426,6 @@
       'sources!': [
         'common/font_list.cc',
         'common/sandbox_util.cc',
-        'public/common/child_process_host_delegate.cc',
       ],
       'link_settings': {
         'libraries': [
