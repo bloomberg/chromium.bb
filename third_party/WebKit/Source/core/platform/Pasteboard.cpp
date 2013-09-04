@@ -42,7 +42,7 @@
 #include "core/fetch/ImageResource.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/Frame.h"
-#include "core/platform/chromium/ClipboardChromium.h"
+#include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
@@ -51,6 +51,8 @@
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebDragData.h"
 #include "weborigin/KURL.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -146,10 +148,9 @@ void Pasteboard::writeImage(Node* node, const KURL&, const String& title)
     WebKit::Platform::current()->clipboard()->writeImage(webImage, WebKit::WebURL(url), WebKit::WebString(title));
 }
 
-void Pasteboard::writeClipboard(Clipboard* clipboard)
+void Pasteboard::writeDataObject(PassRefPtr<ChromiumDataObject> dataObject)
 {
-    WebKit::WebDragData dragData = static_cast<ClipboardChromium*>(clipboard)->dataObject();
-    WebKit::Platform::current()->clipboard()->writeDataObject(dragData);
+    WebKit::Platform::current()->clipboard()->writeDataObject(dataObject);
 }
 
 bool Pasteboard::canSmartReplace()

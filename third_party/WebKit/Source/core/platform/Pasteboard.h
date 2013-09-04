@@ -39,7 +39,7 @@
 namespace WebCore {
 
 class ArchiveResource;
-class Clipboard;
+class ChromiumDataObject;
 class DocumentFragment;
 class Frame;
 class HitTestResult;
@@ -61,7 +61,7 @@ public:
     void writePlainText(const String&, SmartReplaceOption);
     void writeURL(const KURL&, const String&);
     void writeImage(Node*, const KURL&, const String& title);
-    void writeClipboard(Clipboard*);
+    void writeDataObject(PassRefPtr<ChromiumDataObject>);
     bool canSmartReplace();
     PassRefPtr<DocumentFragment> documentFragment(Frame*, PassRefPtr<Range>, bool allowPlainText, bool& chosePlainText);
     String plainText();

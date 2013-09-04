@@ -75,6 +75,7 @@
 #include "core/platform/KillRing.h"
 #include "core/platform/Pasteboard.h"
 #include "core/platform/Sound.h"
+#include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/text/TextCheckerClient.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBlock.h"
@@ -627,8 +628,10 @@ bool Editor::dispatchCPPEvent(const AtomicString &eventType, ClipboardAccessPoli
     RefPtr<Event> evt = ClipboardEvent::create(eventType, true, true, clipboard);
     target->dispatchEvent(evt, IGNORE_EXCEPTION);
     bool noDefaultProcessing = evt->defaultPrevented();
-    if (noDefaultProcessing && policy == ClipboardWritable)
-        Pasteboard::generalPasteboard()->writeClipboard(clipboard.get());
+    if (noDefaultProcessing && policy == ClipboardWritable) {
+        RefPtr<ChromiumDataObject> dataObject = static_cast<ClipboardChromium*>(clipboard.get())->dataObject();
+        Pasteboard::generalPasteboard()->writeDataObject(dataObject.release());
+    }
 
     // invalidate clipboard here for security
     clipboard->setAccessPolicy(ClipboardNumb);
