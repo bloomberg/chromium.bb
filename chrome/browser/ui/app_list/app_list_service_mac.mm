@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/app_list/app_list_service_mac.h"
+
 #include <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
 
 #include "apps/app_launcher.h"
-#include "apps/app_shim/app_shim_handler_mac.h"
 #include "apps/app_shim/app_shim_mac.h"
 #include "apps/pref_names.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
@@ -76,55 +76,6 @@ const NSTimeInterval kAnimationDuration = 0.2;
 
 // Distance towards the screen edge that the app list moves from when showing.
 const CGFloat kDistanceMovedOnShow = 20;
-
-// AppListServiceMac manages global resources needed for the app list to
-// operate, and controls when the app list is opened and closed.
-class AppListServiceMac : public AppListServiceImpl,
-                          public apps::AppShimHandler {
- public:
-  virtual ~AppListServiceMac();
-
-  static AppListServiceMac* GetInstance() {
-    return Singleton<AppListServiceMac,
-                     LeakySingletonTraits<AppListServiceMac> >::get();
-  }
-
-  void ShowWindowNearDock();
-
-  // AppListService overrides:
-  virtual void Init(Profile* initial_profile) OVERRIDE;
-  virtual void CreateForProfile(Profile* requested_profile) OVERRIDE;
-  virtual void ShowForProfile(Profile* requested_profile) OVERRIDE;
-  virtual void DismissAppList() OVERRIDE;
-  virtual bool IsAppListVisible() const OVERRIDE;
-  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
-  virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
-
-  // AppListServiceImpl overrides:
-  virtual void CreateShortcut() OVERRIDE;
-
-  // AppShimHandler overrides:
-  virtual void OnShimLaunch(apps::AppShimHandler::Host* host,
-                            apps::AppShimLaunchType launch_type) OVERRIDE;
-  virtual void OnShimClose(apps::AppShimHandler::Host* host) OVERRIDE;
-  virtual void OnShimFocus(apps::AppShimHandler::Host* host,
-                           apps::AppShimFocusType focus_type) OVERRIDE;
-  virtual void OnShimSetHidden(apps::AppShimHandler::Host* host,
-                               bool hidden) OVERRIDE;
-  virtual void OnShimQuit(apps::AppShimHandler::Host* host) OVERRIDE;
-
- private:
-  friend struct DefaultSingletonTraits<AppListServiceMac>;
-
-  AppListServiceMac();
-
-  base::scoped_nsobject<AppListWindowController> window_controller_;
-  base::scoped_nsobject<AppListAnimationController> animation_controller_;
-  base::scoped_nsobject<NSRunningApplication> previously_active_application_;
-  NSPoint last_start_origin_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListServiceMac);
-};
 
 class AppListControllerDelegateCocoa : public AppListControllerDelegate {
  public:
@@ -317,11 +268,136 @@ void AppListControllerDelegateCocoa::LaunchApp(
       profile, extension, NEW_FOREGROUND_TAB));
 }
 
+enum DockLocation {
+  DockLocationOtherDisplay,
+  DockLocationBottom,
+  DockLocationLeft,
+  DockLocationRight,
+};
+
+DockLocation DockLocationInDisplay(const gfx::Display& display) {
+  // Assume the dock occupies part of the work area either on the left, right or
+  // bottom of the display. Note in the autohide case, it is always 4 pixels.
+  const gfx::Rect work_area = display.work_area();
+  const gfx::Rect display_bounds = display.bounds();
+  if (work_area.bottom() != display_bounds.bottom())
+    return DockLocationBottom;
+
+  if (work_area.x() != display_bounds.x())
+    return DockLocationLeft;
+
+  if (work_area.right() != display_bounds.right())
+    return DockLocationRight;
+
+  return DockLocationOtherDisplay;
+}
+
+// If |work_area_edge| is too close to the |screen_edge| (e.g. autohide dock),
+// adjust |anchor| away from the edge by a constant amount to reduce overlap and
+// ensure the dock icon can still be clicked to dismiss the app list.
+int AdjustPointForDynamicDock(int anchor, int screen_edge, int work_area_edge) {
+  const int kAutohideDockThreshold = 10;
+  const int kExtraDistance = 50;  // A dock with 40 items is about this size.
+  if (abs(work_area_edge - screen_edge) > kAutohideDockThreshold)
+    return anchor;
+
+  return anchor +
+      (screen_edge < work_area_edge ? kExtraDistance : -kExtraDistance);
+}
+
+void GetAppListWindowOrigins(
+    NSWindow* window, NSPoint* target_origin, NSPoint* start_origin) {
+  gfx::Screen* const screen = gfx::Screen::GetScreenFor([window contentView]);
+  // Ensure y coordinates are flipped back into AppKit's coordinate system.
+  const CGFloat max_y = NSMaxY([[[NSScreen screens] objectAtIndex:0] frame]);
+  if (!CGCursorIsVisible()) {
+    // If Chrome is the active application, display on the same display as
+    // Chrome's keyWindow since this will catch activations triggered, e.g, via
+    // WebStore install. If another application is active, OSX doesn't provide a
+    // reliable way to get the display in use. Fall back to the primary display
+    // since it has the menu bar and is likely to be correct, e.g., for
+    // activations from Spotlight.
+    const gfx::NativeView key_view = [[NSApp keyWindow] contentView];
+    const gfx::Rect work_area = key_view && [NSApp isActive] ?
+        screen->GetDisplayNearestWindow(key_view).work_area() :
+        screen->GetPrimaryDisplay().work_area();
+    *target_origin = NSMakePoint(work_area.x(), max_y - work_area.bottom());
+    *start_origin = *target_origin;
+    return;
+  }
+
+  gfx::Point anchor = screen->GetCursorScreenPoint();
+  const gfx::Display display = screen->GetDisplayNearestPoint(anchor);
+  const DockLocation dock_location = DockLocationInDisplay(display);
+  const gfx::Rect display_bounds = display.bounds();
+
+  if (dock_location == DockLocationOtherDisplay) {
+    // Just display at the bottom-left of the display the cursor is on.
+    *target_origin = NSMakePoint(display_bounds.x(),
+                                 max_y - display_bounds.bottom());
+    *start_origin = *target_origin;
+    return;
+  }
+
+  // Anchor the center of the window in a region that prevents the window
+  // showing outside of the work area.
+  const NSSize window_size = [window frame].size;
+  const gfx::Rect work_area = display.work_area();
+  gfx::Rect anchor_area = work_area;
+  anchor_area.Inset(window_size.width / 2, window_size.height / 2);
+  anchor.SetToMax(anchor_area.origin());
+  anchor.SetToMin(anchor_area.bottom_right());
+
+  // Move anchor to the dock, keeping the other axis aligned with the cursor.
+  switch (dock_location) {
+    case DockLocationBottom:
+      anchor.set_y(AdjustPointForDynamicDock(
+          anchor_area.bottom(), display_bounds.bottom(), work_area.bottom()));
+      break;
+    case DockLocationLeft:
+      anchor.set_x(AdjustPointForDynamicDock(
+          anchor_area.x(), display_bounds.x(), work_area.x()));
+      break;
+    case DockLocationRight:
+      anchor.set_x(AdjustPointForDynamicDock(
+          anchor_area.right(), display_bounds.right(), work_area.right()));
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  *target_origin = NSMakePoint(anchor.x() - window_size.width / 2,
+                               max_y - anchor.y() - window_size.height / 2);
+  *start_origin = *target_origin;
+
+  switch (dock_location) {
+    case DockLocationBottom:
+      start_origin->y -= kDistanceMovedOnShow;
+      break;
+    case DockLocationLeft:
+      start_origin->x -= kDistanceMovedOnShow;
+      break;
+    case DockLocationRight:
+      start_origin->x += kDistanceMovedOnShow;
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+}  // namespace
+
 AppListServiceMac::AppListServiceMac() {
   animation_controller_.reset([[AppListAnimationController alloc] init]);
 }
 
 AppListServiceMac::~AppListServiceMac() {}
+
+// static
+AppListServiceMac* AppListServiceMac::GetInstance() {
+  return Singleton<AppListServiceMac,
+                   LeakySingletonTraits<AppListServiceMac> >::get();
+}
 
 void AppListServiceMac::Init(Profile* initial_profile) {
   // On Mac, Init() is called multiple times for a process: any time there is no
@@ -457,123 +533,6 @@ void AppListServiceMac::OnShimSetHidden(apps::AppShimHandler::Host* host,
 
 void AppListServiceMac::OnShimQuit(apps::AppShimHandler::Host* host) {}
 
-enum DockLocation {
-  DockLocationOtherDisplay,
-  DockLocationBottom,
-  DockLocationLeft,
-  DockLocationRight,
-};
-
-DockLocation DockLocationInDisplay(const gfx::Display& display) {
-  // Assume the dock occupies part of the work area either on the left, right or
-  // bottom of the display. Note in the autohide case, it is always 4 pixels.
-  const gfx::Rect work_area = display.work_area();
-  const gfx::Rect display_bounds = display.bounds();
-  if (work_area.bottom() != display_bounds.bottom())
-    return DockLocationBottom;
-
-  if (work_area.x() != display_bounds.x())
-    return DockLocationLeft;
-
-  if (work_area.right() != display_bounds.right())
-    return DockLocationRight;
-
-  return DockLocationOtherDisplay;
-}
-
-// If |work_area_edge| is too close to the |screen_edge| (e.g. autohide dock),
-// adjust |anchor| away from the edge by a constant amount to reduce overlap and
-// ensure the dock icon can still be clicked to dismiss the app list.
-int AdjustPointForDynamicDock(int anchor, int screen_edge, int work_area_edge) {
-  const int kAutohideDockThreshold = 10;
-  const int kExtraDistance = 50;  // A dock with 40 items is about this size.
-  if (abs(work_area_edge - screen_edge) > kAutohideDockThreshold)
-    return anchor;
-
-  return anchor +
-      (screen_edge < work_area_edge ? kExtraDistance : -kExtraDistance);
-}
-
-void GetAppListWindowOrigins(
-    NSWindow* window, NSPoint* target_origin, NSPoint* start_origin) {
-  gfx::Screen* const screen = gfx::Screen::GetScreenFor([window contentView]);
-  // Ensure y coordinates are flipped back into AppKit's coordinate system.
-  const CGFloat max_y = NSMaxY([[[NSScreen screens] objectAtIndex:0] frame]);
-  if (!CGCursorIsVisible()) {
-    // If Chrome is the active application, display on the same display as
-    // Chrome's keyWindow since this will catch activations triggered, e.g, via
-    // WebStore install. If another application is active, OSX doesn't provide a
-    // reliable way to get the display in use. Fall back to the primary display
-    // since it has the menu bar and is likely to be correct, e.g., for
-    // activations from Spotlight.
-    const gfx::NativeView key_view = [[NSApp keyWindow] contentView];
-    const gfx::Rect work_area = key_view && [NSApp isActive] ?
-        screen->GetDisplayNearestWindow(key_view).work_area() :
-        screen->GetPrimaryDisplay().work_area();
-    *target_origin = NSMakePoint(work_area.x(), max_y - work_area.bottom());
-    *start_origin = *target_origin;
-    return;
-  }
-
-  gfx::Point anchor = screen->GetCursorScreenPoint();
-  const gfx::Display display = screen->GetDisplayNearestPoint(anchor);
-  const DockLocation dock_location = DockLocationInDisplay(display);
-  const gfx::Rect display_bounds = display.bounds();
-
-  if (dock_location == DockLocationOtherDisplay) {
-    // Just display at the bottom-left of the display the cursor is on.
-    *target_origin = NSMakePoint(display_bounds.x(),
-                                 max_y - display_bounds.bottom());
-    *start_origin = *target_origin;
-    return;
-  }
-
-  // Anchor the center of the window in a region that prevents the window
-  // showing outside of the work area.
-  const NSSize window_size = [window frame].size;
-  const gfx::Rect work_area = display.work_area();
-  gfx::Rect anchor_area = work_area;
-  anchor_area.Inset(window_size.width / 2, window_size.height / 2);
-  anchor.SetToMax(anchor_area.origin());
-  anchor.SetToMin(anchor_area.bottom_right());
-
-  // Move anchor to the dock, keeping the other axis aligned with the cursor.
-  switch (dock_location) {
-    case DockLocationBottom:
-      anchor.set_y(AdjustPointForDynamicDock(
-          anchor_area.bottom(), display_bounds.bottom(), work_area.bottom()));
-      break;
-    case DockLocationLeft:
-      anchor.set_x(AdjustPointForDynamicDock(
-          anchor_area.x(), display_bounds.x(), work_area.x()));
-      break;
-    case DockLocationRight:
-      anchor.set_x(AdjustPointForDynamicDock(
-          anchor_area.right(), display_bounds.right(), work_area.right()));
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  *target_origin = NSMakePoint(anchor.x() - window_size.width / 2,
-                               max_y - anchor.y() - window_size.height / 2);
-  *start_origin = *target_origin;
-
-  switch (dock_location) {
-    case DockLocationBottom:
-      start_origin->y -= kDistanceMovedOnShow;
-      break;
-    case DockLocationLeft:
-      start_origin->x -= kDistanceMovedOnShow;
-      break;
-    case DockLocationRight:
-      start_origin->x += kDistanceMovedOnShow;
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
 void AppListServiceMac::ShowWindowNearDock() {
   NSWindow* window = GetAppListWindow();
   DCHECK(window);
@@ -592,7 +551,15 @@ void AppListServiceMac::ShowWindowNearDock() {
   [NSApp activateIgnoringOtherApps:YES];
 }
 
-}  // namespace
+// static
+AppListService* AppListService::Get() {
+  return AppListServiceMac::GetInstance();
+}
+
+// static
+void AppListService::InitAll(Profile* initial_profile) {
+  Get()->Init(initial_profile);
+}
 
 @implementation AppListAnimationController
 
@@ -644,13 +611,3 @@ void AppListServiceMac::ShowWindowNearDock() {
 }
 
 @end
-
-// static
-AppListService* AppListService::Get() {
-  return AppListServiceMac::GetInstance();
-}
-
-// static
-void AppListService::InitAll(Profile* initial_profile) {
-  Get()->Init(initial_profile);
-}

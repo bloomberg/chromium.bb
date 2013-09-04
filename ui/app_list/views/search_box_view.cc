@@ -182,6 +182,7 @@ void SearchBoxView::SelectionModelChanged() {
 
 void SearchBoxView::TextChanged() {
   search_box_->SetText(model_->search_box()->text());
+  NotifyQueryChanged();
 }
 
 }  // namespace app_list

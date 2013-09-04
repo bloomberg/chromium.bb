@@ -117,24 +117,26 @@ TEST_F(AppsSearchBoxControllerTest, SearchBoxModel) {
   model->SetText(search_text);
   EXPECT_NSEQ(base::SysUTF16ToNSString(search_text),
               [[apps_search_box_controller_ searchTextField] stringValue]);
-  // Updates coming via the model should not notify the delegate.
-  EXPECT_EQ(0, [delegate_ textChangeCount]);
+  // Updates coming via the model should notify the delegate.
+  EXPECT_EQ(1, [delegate_ textChangeCount]);
 
   // Updates from the view should update the model and notify the delegate.
   [apps_search_box_controller_ clearSearch];
   EXPECT_EQ(base::string16(), model->text());
   EXPECT_NSEQ([NSString string],
               [[apps_search_box_controller_ searchTextField] stringValue]);
-  EXPECT_EQ(1, [delegate_ textChangeCount]);
+  EXPECT_EQ(2, [delegate_ textChangeCount]);
 
-  // Test pressing escape clears the search.
+  // Test pressing escape clears the search. First add some text.
   model->SetText(search_text);
+  EXPECT_EQ(3, [delegate_ textChangeCount]);
+
   EXPECT_NSEQ(base::SysUTF16ToNSString(search_text),
               [[apps_search_box_controller_ searchTextField] stringValue]);
   SimulateKeyAction(@selector(complete:));
   EXPECT_NSEQ([NSString string],
               [[apps_search_box_controller_ searchTextField] stringValue]);
-  EXPECT_EQ(2, [delegate_ textChangeCount]);
+  EXPECT_EQ(4, [delegate_ textChangeCount]);
 }
 
 // Test the popup menu items.
