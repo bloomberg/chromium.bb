@@ -81,6 +81,16 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // Click on "Get Started" in the Me2Me section and show the host list.
   void StartMe2Me();
 
+  // Simulate a key event.
+  void SimulateKeyPress(ui::KeyboardCode key, int nativeKeyCode);
+
+  void SimulateKeyPress(ui::KeyboardCode key,
+                        int nativeKeyCode,
+                        bool control,
+                        bool shift,
+                        bool alt,
+                        bool command);
+
 
   /*                                                      */
   /* The following helpers each perform a composite task. */
