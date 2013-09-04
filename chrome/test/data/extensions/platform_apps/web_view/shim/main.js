@@ -170,30 +170,36 @@ function testAutosizeWithPartialAttributes() {
 
   var step = 1;
   var sizeChangeHandler = function(e) {
-    window.console.log('sizeChangeHandler, new: ' +
-                       e.newWidth + ' X ' + e.newHeight);
     switch (step) {
       case 1:
         // Expect 300x200.
         embedder.test.assertEq(300, e.newWidth);
         embedder.test.assertEq(200, e.newHeight);
 
-        // Change the min size to cause a relayout.
-        webview.minwidth = 500;
+        // Remove an autosize attribute and verify that it causes relayout.
+        webview.minwidth = null;
         break;
       case 2:
-        embedder.test.assertTrue(e.newWidth >= webview.minwidth);
-        embedder.test.assertTrue(e.newWidth <= webview.maxwidth);
+        // Expect 640x?
+        embedder.test.assertEq(640, e.newWidth);
 
         // Tests when minwidth > maxwidth, minwidth = maxwidth.
-        // i.e. minwidth is essentially 700.
+        webview.maxheight = null;
         webview.minwidth = 800;
+        webview.minheight = 800;
         break;
       case 3:
-        // Expect 700X?
+        // Expect 700X480
         embedder.test.assertEq(700, e.newWidth);
-        embedder.test.assertTrue(e.newHeight >= 200);
-        embedder.test.assertTrue(e.newHeight <= 600);
+        embedder.test.assertEq(480, e.newHeight);
+
+        // Remove maxwidth and make sure the size returns to plugin size.
+        webview.removeAttribute('maxwidth');
+        break;
+      case 4:
+        // Expect original size, 640x480.
+        embedder.test.assertEq(640, e.newWidth);
+        embedder.test.assertEq(480, e.newHeight);
 
         embedder.test.succeed();
         break;
