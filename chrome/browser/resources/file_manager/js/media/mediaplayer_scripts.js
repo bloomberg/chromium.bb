@@ -11,6 +11,7 @@
 
 //<include src="../../../../../../ui/webui/resources/js/cr.js"/>
 //<include src="../../../../../../ui/webui/resources/js/cr/event_target.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/array_data_model.js"/>
 
 (function() {
 // 'strict mode' is invoked for this scope.

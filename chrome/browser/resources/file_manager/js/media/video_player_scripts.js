@@ -9,8 +9,9 @@
 // with a copyright comment anyway.
 
 //<include src="../../../../../../ui/webui/resources/js/cr.js"/>
-//<include src="../../../../../../ui/webui/resources/js/load_time_data.js"/>
 //<include src="../../../../../../ui/webui/resources/js/cr/event_target.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/array_data_model.js"/>
+//<include src="../../../../../../ui/webui/resources/js/load_time_data.js"/>
 
 (function() {
 // 'strict mode' is invoked for this scope.
