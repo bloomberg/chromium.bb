@@ -114,7 +114,7 @@ static void NaClDropFilePosLock(HANDLE hFile) {
                     /* nNumberOfBytesToLockHigh= */ 0,
                     &overlap)) {
     err = GetLastError();
-    NaClLog(LOG_FATAL, "NaClTakeFilePosLock: UnlockFileEx failed, error %u\n",
+    NaClLog(LOG_FATAL, "NaClDropFilePosLock: UnlockFileEx failed, error %u\n",
             err);
   }
 }
