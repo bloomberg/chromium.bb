@@ -138,34 +138,34 @@ TEST_F(SimpleIndexFileTest, Serialize) {
 TEST_F(SimpleIndexFileTest, IsIndexFileStale) {
   base::ScopedTempDir cache_dir;
   ASSERT_TRUE(cache_dir.CreateUniqueTempDir());
-  base::PlatformFileInfo file_info;
+  base::Time cache_mtime;
   const base::FilePath cache_path = cache_dir.path();
 
-  ASSERT_TRUE(file_util::GetFileInfo(cache_path, &file_info));
+  ASSERT_TRUE(simple_util::GetMTime(cache_path, &cache_mtime));
   WrappedSimpleIndexFile simple_index_file(cache_path);
   const base::FilePath& index_path = simple_index_file.GetIndexFilePath();
-  EXPECT_TRUE(WrappedSimpleIndexFile::IsIndexFileStale(file_info.last_modified,
+  EXPECT_TRUE(WrappedSimpleIndexFile::IsIndexFileStale(cache_mtime,
                                                        index_path));
   const std::string kDummyData = "nothing to be seen here";
   EXPECT_EQ(static_cast<int>(kDummyData.size()),
             file_util::WriteFile(index_path,
                                  kDummyData.data(),
                                  kDummyData.size()));
-  ASSERT_TRUE(file_util::GetFileInfo(cache_path, &file_info));
-  EXPECT_FALSE(WrappedSimpleIndexFile::IsIndexFileStale(file_info.last_modified,
+  ASSERT_TRUE(simple_util::GetMTime(cache_path, &cache_mtime));
+  EXPECT_FALSE(WrappedSimpleIndexFile::IsIndexFileStale(cache_mtime,
                                                         index_path));
 
   const base::Time past_time = base::Time::Now() -
       base::TimeDelta::FromSeconds(10);
   EXPECT_TRUE(file_util::TouchFile(index_path, past_time, past_time));
   EXPECT_TRUE(file_util::TouchFile(cache_path, past_time, past_time));
-  ASSERT_TRUE(file_util::GetFileInfo(cache_path, &file_info));
-  EXPECT_FALSE(WrappedSimpleIndexFile::IsIndexFileStale(file_info.last_modified,
+  ASSERT_TRUE(simple_util::GetMTime(cache_path, &cache_mtime));
+  EXPECT_FALSE(WrappedSimpleIndexFile::IsIndexFileStale(cache_mtime,
                                                         index_path));
   const base::Time even_older =
       past_time - base::TimeDelta::FromSeconds(10);
   EXPECT_TRUE(file_util::TouchFile(index_path, even_older, even_older));
-  EXPECT_TRUE(WrappedSimpleIndexFile::IsIndexFileStale(file_info.last_modified,
+  EXPECT_TRUE(WrappedSimpleIndexFile::IsIndexFileStale(cache_mtime,
                                                        index_path));
 
 }
@@ -194,11 +194,11 @@ TEST_F(SimpleIndexFileTest, WriteThenLoadIndex) {
   }
 
   WrappedSimpleIndexFile simple_index_file(cache_dir.path());
-  base::PlatformFileInfo file_info;
-  ASSERT_TRUE(file_util::GetFileInfo(simple_index_file.GetIndexFilePath(),
-                                     &file_info));
+  base::Time fake_cache_mtime;
+  ASSERT_TRUE(simple_util::GetMTime(simple_index_file.GetIndexFilePath(),
+                                    &fake_cache_mtime));
   SimpleIndexLoadResult load_index_result;
-  simple_index_file.LoadIndexEntries(file_info.last_modified,
+  simple_index_file.LoadIndexEntries(fake_cache_mtime,
                                      GetCallback(),
                                      &load_index_result);
   base::RunLoop().RunUntilIdle();
@@ -224,14 +224,14 @@ TEST_F(SimpleIndexFileTest, LoadCorruptIndex) {
             file_util::WriteFile(index_path,
                                  kDummyData.data(),
                                  kDummyData.size()));
-  base::PlatformFileInfo file_info;
-  ASSERT_TRUE(file_util::GetFileInfo(simple_index_file.GetIndexFilePath(),
-                                     &file_info));
-  EXPECT_FALSE(WrappedSimpleIndexFile::IsIndexFileStale(file_info.last_modified,
+  base::Time fake_cache_mtime;
+  ASSERT_TRUE(simple_util::GetMTime(simple_index_file.GetIndexFilePath(),
+                                    &fake_cache_mtime));
+  EXPECT_FALSE(WrappedSimpleIndexFile::IsIndexFileStale(fake_cache_mtime,
                                                         index_path));
 
   SimpleIndexLoadResult load_index_result;
-  simple_index_file.LoadIndexEntries(file_info.last_modified,
+  simple_index_file.LoadIndexEntries(fake_cache_mtime,
                                      GetCallback(),
                                      &load_index_result);
   base::RunLoop().RunUntilIdle();

@@ -411,10 +411,9 @@ SimpleBackendImpl::DiskStatResult SimpleBackendImpl::InitCacheStructureOnDisk(
                << path.LossyDisplayName();
     result.net_error = net::ERR_FAILED;
   } else {
-    base::PlatformFileInfo file_info;
-    bool file_info_result = file_util::GetFileInfo(path, &file_info);
-    DCHECK(file_info_result);
-    result.cache_dir_mtime = file_info.last_modified;
+    bool mtime_result =
+        disk_cache::simple_util::GetMTime(path, &result.cache_dir_mtime);
+    DCHECK(mtime_result);
     if (!result.max_size) {
       int64 available = base::SysInfo::AmountOfFreeDiskSpace(path);
       if (available < 0)

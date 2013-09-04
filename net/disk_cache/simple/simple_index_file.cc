@@ -250,10 +250,9 @@ void SimpleIndexFile::SyncLoadIndexEntries(
     index_file_state = INDEX_STATE_STALE;
   } else {
     index_file_state = INDEX_STATE_FRESH;
-    base::PlatformFileInfo file_info;
-    bool file_info_result = file_util::GetFileInfo(index_file_path, &file_info);
-    DCHECK(file_info_result);
-    if (IsIndexFileStale(file_info.last_modified, index_file_path)) {
+    base::Time latest_dir_mtime;
+    if (simple_util::GetMTime(cache_directory, &latest_dir_mtime) &&
+        IsIndexFileStale(latest_dir_mtime, index_file_path)) {
       // A file operation has updated the directory since we last looked at it
       // during backend initialization.
       index_file_state = INDEX_STATE_FRESH_CONCURRENT_UPDATES;
@@ -431,10 +430,10 @@ void SimpleIndexFile::SyncRestoreFromDisk(
 // static
 bool SimpleIndexFile::IsIndexFileStale(base::Time cache_last_modified,
                                        const base::FilePath& index_file_path) {
-  base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(index_file_path, &file_info))
+  base::Time index_mtime;
+  if (!simple_util::GetMTime(index_file_path, &index_mtime))
     return true;
-  return file_info.last_modified < cache_last_modified;
+  return index_mtime < cache_last_modified;
 }
 
 }  // namespace disk_cache
