@@ -55,26 +55,24 @@ namespace LayerTreeAgentState {
 static const char layerTreeAgentEnabled[] = "layerTreeAgentEnabled";
 };
 
-static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLayer* graphicsLayer, int nodeId, bool forceRoot)
+static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLayer* graphicsLayer, int nodeId)
 {
     RefPtr<TypeBuilder::LayerTree::Layer> layerObject = TypeBuilder::LayerTree::Layer::create()
         .setLayerId(String::number(graphicsLayer->platformLayer()->id()))
-        .setNodeId(nodeId)
         .setOffsetX(graphicsLayer->position().x())
         .setOffsetY(graphicsLayer->position().y())
         .setWidth(graphicsLayer->size().width())
         .setHeight(graphicsLayer->size().height())
         .setPaintCount(graphicsLayer->paintCount());
 
-    // Artificially clip tree at root render layer's graphic layer -- it might be not the real
-    // root of graphics layer hierarchy, as platform adds containing layers (e.g. for frame scrolling).
-    if (!forceRoot) {
-        GraphicsLayer* parent = graphicsLayer->parent();
-        if (!parent)
-            parent = graphicsLayer->replicatedLayer();
-        if (parent)
-            layerObject->setParentLayerId(String::number(parent->platformLayer()->id()));
-    }
+    if (nodeId)
+        layerObject->setNodeId(nodeId);
+
+    GraphicsLayer* parent = graphicsLayer->parent();
+    if (!parent)
+        parent = graphicsLayer->replicatedLayer();
+    if (parent)
+        layerObject->setParentLayerId(String::number(parent->platformLayer()->id()));
     if (!graphicsLayer->contentsAreVisible())
         layerObject->setInvisible(true);
     const TransformationMatrix& transform = graphicsLayer->transform();
@@ -93,11 +91,14 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
     return layerObject;
 }
 
-static void maybeAddGraphicsLayer(GraphicsLayer* graphicsLayer, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >& layers, bool forceRoot = false)
+void gatherGraphicsLayers(GraphicsLayer* root, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >& layers)
 {
-    if (!graphicsLayer)
-        return;
-    layers->addItem(buildObjectForLayer(graphicsLayer, nodeId, forceRoot));
+    int layerId = root->platformLayer()->id();
+    layers->addItem(buildObjectForLayer(root, layerIdToNodeIdMap.get(layerId)));
+    if (GraphicsLayer* replica = root->replicaLayer())
+        gatherGraphicsLayers(replica, layerIdToNodeIdMap, layers);
+    for (size_t i = 0, size = root->children().size(); i < size; ++i)
+        gatherGraphicsLayers(root->children()[i], layerIdToNodeIdMap, layers);
 }
 
 InspectorLayerTreeAgent::InspectorLayerTreeAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InspectorDOMAgent* domAgent, Page* page)
@@ -143,12 +144,6 @@ void InspectorLayerTreeAgent::disable(ErrorString*)
     m_instrumentingAgents->setInspectorLayerTreeAgent(0);
 }
 
-void InspectorLayerTreeAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
-{
-    if (loader->frame() != frame->page()->mainFrame())
-        return;
-}
-
 void InspectorLayerTreeAgent::layerTreeDidChange()
 {
     m_frontend->layerTreeDidChange();
@@ -156,13 +151,17 @@ void InspectorLayerTreeAgent::layerTreeDidChange()
 
 void InspectorLayerTreeAgent::getLayers(ErrorString* errorString, const int* nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >& layers)
 {
+    LayerIdToNodeIdMap layerIdToNodeIdMap;
     layers = TypeBuilder::Array<TypeBuilder::LayerTree::Layer>::create();
 
-    RenderLayerCompositor* compositor = renderLayerCompositor(errorString);
-    if (!compositor)
+    RenderLayerCompositor* compositor = renderLayerCompositor();
+    if (!compositor || !compositor->inCompositingMode()) {
+        *errorString = "Not in the compositing mode";
         return;
+    }
     if (!nodeId) {
-        gatherLayersUsingRenderLayerHierarchy(errorString, compositor->rootRenderLayer(), layers);
+        buildLayerIdToNodeIdMap(errorString, compositor->rootRenderLayer(), layerIdToNodeIdMap);
+        gatherGraphicsLayers(compositor->rootGraphicsLayer(), layerIdToNodeIdMap, layers);
         return;
     }
     Node* node = m_instrumentingAgents->inspectorDOMAgent()->nodeForId(*nodeId);
@@ -175,46 +174,29 @@ void InspectorLayerTreeAgent::getLayers(ErrorString* errorString, const int* nod
         *errorString = "Node for provided node id doesn't have a renderer";
         return;
     }
-    gatherLayersUsingRenderObjectHierarchy(errorString, renderer, layers);
+    RenderLayer* enclosingLayer = renderer->enclosingLayer();
+    GraphicsLayer* enclosingGraphicsLayer = enclosingLayer->enclosingCompositingLayer()->backing()->childForSuperlayers();
+    buildLayerIdToNodeIdMap(errorString, enclosingLayer, layerIdToNodeIdMap);
+    gatherGraphicsLayers(enclosingGraphicsLayer, layerIdToNodeIdMap, layers);
 }
 
-void InspectorLayerTreeAgent::addRenderLayerBacking(ErrorString* errorString, RenderLayerBacking* layerBacking, Node* node, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >& layers)
+void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(ErrorString* errorString, RenderLayer* root, LayerIdToNodeIdMap& layerIdToNodeIdMap)
 {
-    int nodeId = idForNode(errorString, node);
-    bool forceRoot = layerBacking->owningLayer()->isRootLayer();
-    if (layerBacking->ancestorClippingLayer()) {
-        maybeAddGraphicsLayer(layerBacking->ancestorClippingLayer(), nodeId, layers, forceRoot);
-        forceRoot = false;
+    if (root->isComposited()) {
+        if (Node* node = root->renderer()->generatingNode()) {
+            GraphicsLayer* graphicsLayer = root->backing()->childForSuperlayers();
+            layerIdToNodeIdMap.set(graphicsLayer->platformLayer()->id(), idForNode(errorString, node));
+        }
     }
-    maybeAddGraphicsLayer(layerBacking->graphicsLayer(), nodeId, layers, forceRoot);
-    maybeAddGraphicsLayer(layerBacking->clippingLayer(), nodeId, layers);
-    maybeAddGraphicsLayer(layerBacking->foregroundLayer(), nodeId, layers);
-    maybeAddGraphicsLayer(layerBacking->backgroundLayer(), nodeId, layers);
-    maybeAddGraphicsLayer(layerBacking->scrollingLayer(), nodeId, layers);
-    maybeAddGraphicsLayer(layerBacking->scrollingContentsLayer(), nodeId, layers);
-    maybeAddGraphicsLayer(layerBacking->layerForHorizontalScrollbar(), nodeId, layers);
-    maybeAddGraphicsLayer(layerBacking->layerForVerticalScrollbar(), nodeId, layers);
-}
-
-void InspectorLayerTreeAgent::gatherLayersUsingRenderObjectHierarchy(ErrorString* errorString, RenderObject* renderer, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >& layers)
-{
-    if (renderer->hasLayer()) {
-        gatherLayersUsingRenderLayerHierarchy(errorString, toRenderLayerModelObject(renderer)->layer(), layers);
+    for (RenderLayer* child = root->firstChild(); child; child = child->nextSibling())
+        buildLayerIdToNodeIdMap(errorString, child, layerIdToNodeIdMap);
+    if (!root->renderer()->isRenderIFrame())
         return;
+    FrameView* childFrameView = toFrameView(toRenderWidget(root->renderer())->widget());
+    if (RenderView* childRenderView = childFrameView->renderView()) {
+        if (RenderLayerCompositor* childCompositor = childRenderView->compositor())
+            buildLayerIdToNodeIdMap(errorString, childCompositor->rootRenderLayer(), layerIdToNodeIdMap);
     }
-
-    for (renderer = renderer->firstChild(); renderer; renderer = renderer->nextSibling())
-        gatherLayersUsingRenderObjectHierarchy(errorString, renderer, layers);
-}
-
-void InspectorLayerTreeAgent::gatherLayersUsingRenderLayerHierarchy(ErrorString* errorString, RenderLayer* renderLayer, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >& layers)
-{
-    if (renderLayer->isComposited()) {
-        Node* node = (renderLayer->isReflection() ? renderLayer->parent() : renderLayer)->renderer()->generatingNode();
-        addRenderLayerBacking(errorString, renderLayer->backing(), node, layers);
-    }
-    for (renderLayer = renderLayer->firstChild(); renderLayer; renderLayer = renderLayer->nextSibling())
-        gatherLayersUsingRenderLayerHierarchy(errorString, renderLayer, layers);
 }
 
 int InspectorLayerTreeAgent::idForNode(ErrorString* errorString, Node* node)
@@ -228,12 +210,10 @@ int InspectorLayerTreeAgent::idForNode(ErrorString* errorString, Node* node)
     return nodeId;
 }
 
-RenderLayerCompositor* InspectorLayerTreeAgent::renderLayerCompositor(ErrorString* errorString)
+RenderLayerCompositor* InspectorLayerTreeAgent::renderLayerCompositor()
 {
     RenderView* renderView = m_page->mainFrame()->contentRenderer();
     RenderLayerCompositor* compositor = renderView ? renderView->compositor() : 0;
-    if (!compositor)
-        *errorString = "Not in the compositing mode";
     return compositor;
 }
 
@@ -241,6 +221,10 @@ static GraphicsLayer* findLayerById(GraphicsLayer* root, int layerId)
 {
     if (root->platformLayer()->id() == layerId)
         return root;
+    if (root->replicaLayer()) {
+        if (GraphicsLayer* layer = findLayerById(root->replicaLayer(), layerId))
+            return layer;
+    }
     for (size_t i = 0, size = root->children().size(); i < size; ++i) {
         if (GraphicsLayer* layer = findLayerById(root->children()[i], layerId))
             return layer;
@@ -256,7 +240,7 @@ GraphicsLayer* InspectorLayerTreeAgent::layerById(ErrorString* errorString, cons
         *errorString = "Invalid layer id";
         return 0;
     }
-    RenderLayerCompositor* compositor = renderLayerCompositor(errorString);
+    RenderLayerCompositor* compositor = renderLayerCompositor();
     if (!compositor)
         return 0;
 

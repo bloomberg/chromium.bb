@@ -22,7 +22,7 @@ function initialize_LayerTreeTests()
         if (!prefix)
             prefix = "";
         if (!root) {
-            root = InspectorTest._layerTreeModel.root();
+            root = InspectorTest._layerTreeModel.contentRoot();
             if (!root) {
                 InspectorTest.addResult("No layer root, perhaps not in the composited mode! ");
                 InspectorTest.completeTest();

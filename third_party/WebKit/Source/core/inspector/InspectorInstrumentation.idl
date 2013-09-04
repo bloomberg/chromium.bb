@@ -324,7 +324,7 @@ interface InspectorInstrumentation {
     [Page, Inline=FastReturn]
     void childDocumentOpened([Keep] Document*);
 
-    [Console, Resource, CSS, Database, DOM, LayerTree, Inspector, Canvas, Page]
+    [Console, Resource, CSS, Database, DOM, Inspector, Canvas, Page]
     void didCommitLoad([Keep] Frame*, DocumentLoader*);
 
     [DOM, Inline=FastReturn]

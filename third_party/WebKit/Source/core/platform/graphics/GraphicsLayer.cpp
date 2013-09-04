@@ -127,6 +127,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_linkHighlight(0)
     , m_contentsLayerPurpose(NoContentsLayer)
     , m_scrollableArea(0)
+    , m_compositingReasons(WebKit::CompositingReasonUnknown)
 {
 #ifndef NDEBUG
     if (m_client)

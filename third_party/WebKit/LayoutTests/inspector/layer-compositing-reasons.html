@@ -46,7 +46,7 @@ function test()
     }
     function onGotLayers()
     {
-         dumpCompositingReasons(InspectorTest._layerTreeModel.root(), iterateThroughLayers.bind(this, 0));
+         dumpCompositingReasons(InspectorTest._layerTreeModel.contentRoot(), iterateThroughLayers.bind(this, 0));
     }
     InspectorTest._layerTreeModel.requestLayers(onGotLayers);
 }

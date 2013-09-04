@@ -60,7 +60,6 @@ public:
     virtual void clearFrontend();
     virtual void restore();
 
-    void didCommitLoad(Frame*, DocumentLoader*);
     void layerTreeDidChange();
 
     // Called from the front-end.
@@ -70,16 +69,15 @@ public:
     virtual void compositingReasons(ErrorString*, const String& layerId, RefPtr<TypeBuilder::Array<String> >&);
 
 private:
+    typedef HashMap<int, int> LayerIdToNodeIdMap;
+
     InspectorLayerTreeAgent(InstrumentingAgents*, InspectorCompositeState*, InspectorDOMAgent*, Page*);
 
-    RenderLayerCompositor* renderLayerCompositor(ErrorString*);
+    RenderLayerCompositor* renderLayerCompositor();
     GraphicsLayer* layerById(ErrorString*, const String& layerId);
     int idForNode(ErrorString*, Node*);
 
-    void gatherLayersUsingRenderObjectHierarchy(ErrorString*, RenderObject*, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
-    void gatherLayersUsingRenderLayerHierarchy(ErrorString*, RenderLayer*, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
-    void gatherLayersUsingGraphicsLayerHierarchy(ErrorString*, GraphicsLayer*, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
-    void addRenderLayerBacking(ErrorString*, RenderLayerBacking*, Node*, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
+    void buildLayerIdToNodeIdMap(ErrorString*, RenderLayer*, LayerIdToNodeIdMap&);
 
     InspectorFrontend::LayerTree* m_frontend;
     Page* m_page;
