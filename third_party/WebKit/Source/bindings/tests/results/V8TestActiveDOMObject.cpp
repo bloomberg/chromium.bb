@@ -91,7 +91,7 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 
 static void excitingFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1) {
+    if (UNLIKELY(args.Length() < 1)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }
@@ -113,7 +113,7 @@ static void excitingFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 
 static void postMessageMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1) {
+    if (UNLIKELY(args.Length() < 1)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }

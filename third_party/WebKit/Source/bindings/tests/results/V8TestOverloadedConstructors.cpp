@@ -127,7 +127,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
         TestOverloadedConstructorsV8Internal::constructor4(args);
         return;
     }
-    if (args.Length() < 1) {
+    if (UNLIKELY(args.Length() < 1)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }

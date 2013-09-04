@@ -2085,7 +2085,7 @@ END
         $code .= "    }\n";
     }
     if ($leastNumMandatoryParams >= 1) {
-        $code .= "    if (args.Length() < $leastNumMandatoryParams) {\n";
+        $code .= "    if (UNLIKELY(args.Length() < $leastNumMandatoryParams)) {\n";
         $code .= "        throwNotEnoughArgumentsError(args.GetIsolate());\n";
         $code .= "        return;\n";
         $code .= "    }\n";
@@ -2326,7 +2326,7 @@ sub GenerateArgumentsCountCheck
 
     my $argumentsCountCheckString = "";
     if ($numMandatoryParams >= 1) {
-        $argumentsCountCheckString .= "    if (args.Length() < $numMandatoryParams) {\n";
+        $argumentsCountCheckString .= "    if (UNLIKELY(args.Length() < $numMandatoryParams)) {\n";
         $argumentsCountCheckString .= "        throwNotEnoughArgumentsError(args.GetIsolate());\n";
         $argumentsCountCheckString .= "        return;\n";
         $argumentsCountCheckString .= "    }\n";
@@ -2352,7 +2352,7 @@ sub GenerateParametersCheck
         # Optional arguments with [Optional=...] should not generate the early call.
         # Optional Dictionary arguments always considered to have default of empty dictionary.
         if ($parameter->isOptional && !$parameter->extendedAttributes->{"Default"} && $nativeType ne "Dictionary" && !IsCallbackInterface($parameter->type)) {
-            $parameterCheckString .= "    if (args.Length() <= $paramIndex)";
+            $parameterCheckString .= "    if (UNLIKELY(args.Length() <= $paramIndex))";
             my $functionCall = GenerateFunctionCallString($function, $paramIndex, "    " x 2, $interface, $forMainWorldSuffix, %replacements);
             my $multiLine = ($functionCall =~ tr/\n//) > 1;
             $parameterCheckString .= $multiLine ? " {\n" : "\n";
@@ -2492,7 +2492,7 @@ END
         $code .= "    }\n";
     }
     if ($leastNumMandatoryParams >= 1) {
-        $code .= "    if (args.Length() < $leastNumMandatoryParams) {\n";
+        $code .= "    if (UNLIKELY(args.Length() < $leastNumMandatoryParams)) {\n";
         $code .= "        throwNotEnoughArgumentsError(args.GetIsolate());\n";
         $code .= "        return;\n";
         $code .= "    }\n";

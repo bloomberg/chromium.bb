@@ -123,7 +123,7 @@ static void bAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 
 static void func1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1) {
+    if (UNLIKELY(args.Length() < 1)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }
@@ -142,7 +142,7 @@ static void func1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void funcTestInterfaceImplementedAsParamMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1) {
+    if (UNLIKELY(args.Length() < 1)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }

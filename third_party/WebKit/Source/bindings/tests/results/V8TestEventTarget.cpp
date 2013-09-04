@@ -67,7 +67,7 @@ template <typename T> void V8_USE(T) { }
 
 static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1) {
+    if (UNLIKELY(args.Length() < 1)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }
@@ -86,7 +86,7 @@ static void itemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1) {
+    if (UNLIKELY(args.Length() < 1)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }

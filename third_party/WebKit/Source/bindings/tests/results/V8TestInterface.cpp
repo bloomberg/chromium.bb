@@ -763,7 +763,7 @@ static void implementsMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void implementsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 2) {
+    if (UNLIKELY(args.Length() < 2)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }
@@ -852,7 +852,7 @@ static void supplementalMethod1MethodCallback(const v8::FunctionCallbackInfo<v8:
 
 static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 2) {
+    if (UNLIKELY(args.Length() < 2)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }
@@ -916,7 +916,7 @@ static void supplementalMethod4MethodCallback(const v8::FunctionCallbackInfo<v8:
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1) {
+    if (UNLIKELY(args.Length() < 1)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }

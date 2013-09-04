@@ -276,7 +276,7 @@ static void TestTypedefsReplaceableAttributeSetterCallback(v8::Local<v8::String>
 static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    if (args.Length() <= 0) {
+    if (UNLIKELY(args.Length() <= 0)) {
         imp->func();
 
         return;
@@ -296,7 +296,7 @@ static void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void setShadowMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 3) {
+    if (UNLIKELY(args.Length() < 3)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }
@@ -304,13 +304,13 @@ static void setShadowMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     V8TRYCATCH_VOID(float, width, static_cast<float>(args[0]->NumberValue()));
     V8TRYCATCH_VOID(float, height, static_cast<float>(args[1]->NumberValue()));
     V8TRYCATCH_VOID(float, blur, static_cast<float>(args[2]->NumberValue()));
-    if (args.Length() <= 3) {
+    if (UNLIKELY(args.Length() <= 3)) {
         imp->setShadow(width, height, blur);
 
         return;
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, color, args[3]);
-    if (args.Length() <= 4) {
+    if (UNLIKELY(args.Length() <= 4)) {
         imp->setShadow(width, height, blur, color);
 
         return;
@@ -330,7 +330,7 @@ static void setShadowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& a
 
 static void methodWithSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1) {
+    if (UNLIKELY(args.Length() < 1)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }
@@ -349,7 +349,7 @@ static void methodWithSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v
 
 static void nullableArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1) {
+    if (UNLIKELY(args.Length() < 1)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }
@@ -369,7 +369,7 @@ static void nullableArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 
 static void funcWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1) {
+    if (UNLIKELY(args.Length() < 1)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }
@@ -378,7 +378,7 @@ static void funcWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     V8TRYCATCH_VOID(double, arg1NativeValue, args[0]->NumberValue());
     if (!std::isnan(arg1NativeValue))
         arg1 = clampTo<unsigned long long>(arg1NativeValue);
-    if (args.Length() <= 1) {
+    if (UNLIKELY(args.Length() <= 1)) {
         imp->funcWithClamp(arg1);
 
         return;
@@ -415,7 +415,7 @@ static void immutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<
 
 static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1) {
+    if (UNLIKELY(args.Length() < 1)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }
@@ -438,7 +438,7 @@ static void stringArrayFunctionMethodCallback(const v8::FunctionCallbackInfo<v8:
 
 static void stringArrayFunction2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1) {
+    if (UNLIKELY(args.Length() < 1)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }
@@ -479,7 +479,7 @@ static void methodWithExceptionMethodCallback(const v8::FunctionCallbackInfo<v8:
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 2) {
+    if (UNLIKELY(args.Length() < 2)) {
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }
