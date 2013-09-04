@@ -6,8 +6,3 @@ sky@chromium.org
 per-file ash_strings.grd=*
 per-file ash_chromeos_strings.grdp=*
 per-file ash_switches.*=*
-
-per-file ash_root_window_transformer.*=oshima@chromium.org
-per-file extended_desktop_unittest.*=oshima@chromium.org
-per-file root_window_controller*=oshima@chromium.org
-per-file screen_ash*=oshima@chromium.org
