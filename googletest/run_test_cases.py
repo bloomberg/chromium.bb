@@ -1176,7 +1176,7 @@ def run_test_cases(
     clusters = calc_cluster_default(len(test_cases), jobs)
   else:
     # Limit the value.
-    clusters = min(clusters, len(test_cases) / jobs)
+    clusters = max(min(clusters, len(test_cases) / jobs), 1)
 
   logging.debug('%d test cases with clusters of %d', len(test_cases), clusters)
 
