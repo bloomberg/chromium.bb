@@ -56,9 +56,6 @@ public:
     // Called when a chunk of response data is downloaded. This is only called
     // if WebURLRequest's downloadToFile flag was set to true.
     virtual void didDownloadData(WebURLLoader*, int dataLength, int encodedDataLength) { }
-    // FIXME: Remove this stub function when Chrome-side change propagating the
-    // encodedDataLength is landed.
-    virtual void didDownloadData(WebURLLoader* loader, int dataLength) { didDownloadData(loader, dataLength, -1); }
 
     // Called when a chunk of response data is received.
     virtual void didReceiveData(WebURLLoader*, const char* data, int dataLength, int encodedDataLength) { }
