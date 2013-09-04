@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "content/common/accessibility_node_data.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/web/WebAXEnums.h"
 
 #if defined(OS_MACOSX) && __OBJC__
 @class BrowserAccessibilityCocoa;
@@ -231,7 +232,7 @@ class CONTENT_EXPORT BrowserAccessibility {
                        bool* is_mixed) const;
 
   // Returns true if the bit corresponding to the given state enum is 1.
-  bool HasState(AccessibilityNodeData::State state_enum) const;
+  bool HasState(WebKit::WebAXState state_enum) const;
 
   // Returns true if this node is an editable text field of any kind.
   bool IsEditableText() const;

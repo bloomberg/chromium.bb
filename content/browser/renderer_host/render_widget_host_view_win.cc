@@ -2379,10 +2379,10 @@ LRESULT RenderWidgetHostViewWin::OnMoveOrSize(
   return 0;
 }
 
-void RenderWidgetHostViewWin::OnAccessibilityNotifications(
-    const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
+void RenderWidgetHostViewWin::OnAccessibilityEvents(
+    const std::vector<AccessibilityHostMsg_EventParams>& params) {
   CreateBrowserAccessibilityManagerIfNeeded();
-  GetBrowserAccessibilityManager()->OnAccessibilityNotifications(params);
+  GetBrowserAccessibilityManager()->OnAccessibilityEvents(params);
 }
 
 bool RenderWidgetHostViewWin::LockMouse() {

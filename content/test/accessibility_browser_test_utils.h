@@ -7,7 +7,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/common/accessibility_node_data.h"
-#include "content/common/accessibility_notification.h"
 #include "content/common/view_message_enums.h"
 
 namespace content {
@@ -26,7 +25,7 @@ class AccessibilityNotificationWaiter {
   AccessibilityNotificationWaiter(
       Shell* shell,
       AccessibilityMode accessibility_mode,
-      AccessibilityNotification notification);
+      WebKit::WebAXEvent event);
   ~AccessibilityNotificationWaiter();
 
   // Blocks until the specific accessibility notification registered in
@@ -40,7 +39,7 @@ class AccessibilityNotificationWaiter {
 
  private:
   // Callback from RenderViewHostImpl.
-  void OnAccessibilityNotification(AccessibilityNotification notification);
+  void OnAccessibilityEvent(WebKit::WebAXEvent event);
 
   // Helper function to determine if the accessibility tree in
   // GetAccessibilityNodeDataTree() is about the page with the url
@@ -49,7 +48,7 @@ class AccessibilityNotificationWaiter {
 
   Shell* shell_;
   RenderViewHostImpl* view_host_;
-  AccessibilityNotification notification_to_wait_for_;
+  WebKit::WebAXEvent event_to_wait_for_;
   scoped_refptr<MessageLoopRunner> loop_runner_;
   base::WeakPtrFactory<AccessibilityNotificationWaiter> weak_factory_;
 

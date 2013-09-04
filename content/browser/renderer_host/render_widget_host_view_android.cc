@@ -951,8 +951,8 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
-void RenderWidgetHostViewAndroid::OnAccessibilityNotifications(
-    const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
+void RenderWidgetHostViewAndroid::OnAccessibilityEvents(
+    const std::vector<AccessibilityHostMsg_EventParams>& params) {
   if (!host_ ||
       host_->accessibility_mode() != AccessibilityModeComplete ||
       !content_view_core_) {
@@ -966,7 +966,7 @@ void RenderWidgetHostViewAndroid::OnAccessibilityNotifications(
             BrowserAccessibilityManagerAndroid::GetEmptyDocument(),
             this));
   }
-  GetBrowserAccessibilityManager()->OnAccessibilityNotifications(params);
+  GetBrowserAccessibilityManager()->OnAccessibilityEvents(params);
 }
 
 void RenderWidgetHostViewAndroid::SetAccessibilityFocus(int acc_obj_id) {

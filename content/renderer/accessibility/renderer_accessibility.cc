@@ -7,13 +7,12 @@
 #include "base/command_line.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/public/web/WebAccessibilityObject.h"
+#include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebAccessibilityNotification;
-using WebKit::WebAccessibilityObject;
+using WebKit::WebAXObject;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebView;
@@ -44,60 +43,60 @@ WebDocument RendererAccessibility::GetMainDocument() {
 }
 
 #ifndef NDEBUG
-const std::string RendererAccessibility::AccessibilityNotificationToString(
-    AccessibilityNotification notification) {
-  switch (notification) {
-    case AccessibilityNotificationActiveDescendantChanged:
+const std::string RendererAccessibility::AccessibilityEventToString(
+    WebKit::WebAXEvent event) {
+  switch (event) {
+    case WebKit::WebAXEventActiveDescendantChanged:
       return "active descendant changed";
-    case AccessibilityNotificationAriaAttributeChanged:
+    case WebKit::WebAXEventAriaAttributeChanged:
       return "aria attribute changed";
-    case AccessibilityNotificationAutocorrectionOccurred:
+    case WebKit::WebAXEventAutocorrectionOccured:
       return "autocorrection occurred";
-    case AccessibilityNotificationBlur:
+    case WebKit::WebAXEventBlur:
       return "blur";
-    case AccessibilityNotificationAlert:
+    case WebKit::WebAXEventAlert:
       return "alert";
-    case AccessibilityNotificationCheckStateChanged:
+    case WebKit::WebAXEventCheckedStateChanged:
       return "check state changed";
-    case AccessibilityNotificationChildrenChanged:
+    case WebKit::WebAXEventChildrenChanged:
       return "children changed";
-    case AccessibilityNotificationFocusChanged:
+    case WebKit::WebAXEventFocus:
       return "focus changed";
-    case AccessibilityNotificationInvalidStatusChanged:
+    case WebKit::WebAXEventInvalidStatusChanged:
       return "invalid status changed";
-    case AccessibilityNotificationLayoutComplete:
+    case WebKit::WebAXEventLayoutComplete:
       return "layout complete";
-    case AccessibilityNotificationLiveRegionChanged:
+    case WebKit::WebAXEventLiveRegionChanged:
       return "live region changed";
-    case AccessibilityNotificationLoadComplete:
+    case WebKit::WebAXEventLoadComplete:
       return "load complete";
-    case AccessibilityNotificationMenuListItemSelected:
+    case WebKit::WebAXEventMenuListItemSelected:
       return "menu list item selected";
-    case AccessibilityNotificationMenuListValueChanged:
+    case WebKit::WebAXEventMenuListValueChanged:
       return "menu list changed";
-    case AccessibilityNotificationObjectShow:
+    case WebKit::WebAXEventShow:
       return "object show";
-    case AccessibilityNotificationObjectHide:
+    case WebKit::WebAXEventHide:
       return "object hide";
-    case AccessibilityNotificationRowCountChanged:
+    case WebKit::WebAXEventRowCountChanged:
       return "row count changed";
-    case AccessibilityNotificationRowCollapsed:
+    case WebKit::WebAXEventRowCollapsed:
       return "row collapsed";
-    case AccessibilityNotificationRowExpanded:
+    case WebKit::WebAXEventRowExpanded:
       return "row expanded";
-    case AccessibilityNotificationScrolledToAnchor:
+    case WebKit::WebAXEventScrolledToAnchor:
       return "scrolled to anchor";
-    case AccessibilityNotificationSelectedChildrenChanged:
+    case WebKit::WebAXEventSelectedChildrenChanged:
       return "selected children changed";
-    case AccessibilityNotificationSelectedTextChanged:
+    case WebKit::WebAXEventSelectedTextChanged:
       return "selected text changed";
-    case AccessibilityNotificationTextChanged:
+    case WebKit::WebAXEventTextChanged:
       return "text changed";
-    case AccessibilityNotificationTextInserted:
+    case WebKit::WebAXEventTextInserted:
       return "text inserted";
-    case AccessibilityNotificationTextRemoved:
+    case WebKit::WebAXEventTextRemoved:
       return "text removed";
-    case AccessibilityNotificationValueChanged:
+    case WebKit::WebAXEventValueChanged:
       return "value changed";
     default:
       NOTREACHED();

@@ -412,8 +412,8 @@ void RenderWidgetHostViewGuest::GetScreenInfo(WebKit::WebScreenInfo* results) {
   embedder_view->GetScreenInfo(results);
 }
 
-void RenderWidgetHostViewGuest::OnAccessibilityNotifications(
-    const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
+void RenderWidgetHostViewGuest::OnAccessibilityEvents(
+    const std::vector<AccessibilityHostMsg_EventParams>& params) {
 }
 
 #if defined(OS_MACOSX)

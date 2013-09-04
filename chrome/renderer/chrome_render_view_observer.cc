@@ -40,7 +40,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/web/WebAccessibilityObject.h"
+#include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -59,7 +59,7 @@
 
 using base::string16;
 using extensions::APIPermission;
-using WebKit::WebAccessibilityObject;
+using WebKit::WebAXObject;
 using WebKit::WebCString;
 using WebKit::WebDataSource;
 using WebKit::WebDocument;

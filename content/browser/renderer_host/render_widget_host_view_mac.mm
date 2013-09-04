@@ -1858,8 +1858,8 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
         render_widget_host_->GetRoutingID(), background));
 }
 
-void RenderWidgetHostViewMac::OnAccessibilityNotifications(
-    const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
+void RenderWidgetHostViewMac::OnAccessibilityEvents(
+    const std::vector<AccessibilityHostMsg_EventParams>& params) {
   if (!GetBrowserAccessibilityManager()) {
     SetBrowserAccessibilityManager(
         new BrowserAccessibilityManagerMac(
@@ -1867,7 +1867,7 @@ void RenderWidgetHostViewMac::OnAccessibilityNotifications(
             BrowserAccessibilityManagerMac::GetEmptyDocument(),
             NULL));
   }
-  GetBrowserAccessibilityManager()->OnAccessibilityNotifications(params);
+  GetBrowserAccessibilityManager()->OnAccessibilityEvents(params);
 }
 
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {

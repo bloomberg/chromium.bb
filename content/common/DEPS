@@ -30,6 +30,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebString.h",
   "+third_party/WebKit/public/platform/linux/WebFontFamily.h",
   "+third_party/WebKit/public/platform/linux/WebFontRenderStyle.h",
+  "+third_party/WebKit/public/web/WebAXEnums.h",
   "+third_party/WebKit/public/web/WebCompositionUnderline.h",
   "+third_party/WebKit/public/web/WebContentSecurityPolicy.h",
   "+third_party/WebKit/public/web/WebDragOperation.h",

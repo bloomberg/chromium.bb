@@ -23,8 +23,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
   static AccessibilityNodeData GetEmptyDocument();
 
   // Implementation of BrowserAccessibilityManager.
-  virtual void NotifyAccessibilityEvent(int type,
-                                        BrowserAccessibility* node) OVERRIDE;
+  virtual void NotifyAccessibilityEvent(
+      WebKit::WebAXEvent event_type, BrowserAccessibility* node) OVERRIDE;
 
   NSView* parent_view() { return parent_view_; }
 

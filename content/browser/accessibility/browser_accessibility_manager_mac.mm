@@ -31,87 +31,108 @@ BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
 AccessibilityNodeData BrowserAccessibilityManagerMac::GetEmptyDocument() {
   AccessibilityNodeData empty_document;
   empty_document.id = 0;
-  empty_document.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  empty_document.role = WebKit::WebAXRoleRootWebArea;
   empty_document.state =
-      1 << AccessibilityNodeData::STATE_READONLY;
+      1 << WebKit::WebAXStateReadonly;
   return empty_document;
 }
 
 void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
-    int type,
+    WebKit::WebAXEvent event_type,
     BrowserAccessibility* node) {
   if (!node->IsNative())
     return;
 
   // Refer to AXObjectCache.mm (webkit).
   NSString* event_id = @"";
-  switch (type) {
-    case AccessibilityNotificationActiveDescendantChanged:
-      if (node->role() == AccessibilityNodeData::ROLE_TREE)
+  switch (event_type) {
+    case WebKit::WebAXEventActiveDescendantChanged:
+      if (node->role() == WebKit::WebAXRoleTree)
         event_id = NSAccessibilitySelectedRowsChangedNotification;
       else
         event_id = NSAccessibilityFocusedUIElementChangedNotification;
       break;
-    case AccessibilityNotificationAlert:
+    case WebKit::WebAXEventAlert:
       // Not used on Mac.
       return;
-    case AccessibilityNotificationBlur:
+    case WebKit::WebAXEventBlur:
       // A no-op on Mac.
       return;
-    case AccessibilityNotificationCheckStateChanged:
+    case WebKit::WebAXEventCheckedStateChanged:
       // Not used on Mac.
       return;
-    case AccessibilityNotificationChildrenChanged:
+    case WebKit::WebAXEventChildrenChanged:
       // TODO(dtseng): no clear equivalent on Mac.
       return;
-    case AccessibilityNotificationFocusChanged:
+    case WebKit::WebAXEventFocus:
       event_id = NSAccessibilityFocusedUIElementChangedNotification;
       break;
-    case AccessibilityNotificationLayoutComplete:
+    case WebKit::WebAXEventLayoutComplete:
       event_id = @"AXLayoutComplete";
       break;
-    case AccessibilityNotificationLiveRegionChanged:
+    case WebKit::WebAXEventLiveRegionChanged:
       event_id = @"AXLiveRegionChanged";
       break;
-    case AccessibilityNotificationLoadComplete:
+    case WebKit::WebAXEventLoadComplete:
       event_id = @"AXLoadComplete";
       break;
-    case AccessibilityNotificationMenuListValueChanged:
+    case WebKit::WebAXEventMenuListValueChanged:
       // Not used on Mac.
       return;
-    case AccessibilityNotificationObjectShow:
+    case WebKit::WebAXEventShow:
       // Not used on Mac.
       return;
-    case AccessibilityNotificationObjectHide:
+    case WebKit::WebAXEventHide:
       // Not used on Mac.
       return;
-    case AccessibilityNotificationRowCountChanged:
+    case WebKit::WebAXEventRowCountChanged:
       event_id = NSAccessibilityRowCountChangedNotification;
       break;
-    case AccessibilityNotificationRowCollapsed:
+    case WebKit::WebAXEventRowCollapsed:
       event_id = @"AXRowCollapsed";
       break;
-    case AccessibilityNotificationRowExpanded:
+    case WebKit::WebAXEventRowExpanded:
       event_id = @"AXRowExpanded";
       break;
-    case AccessibilityNotificationScrolledToAnchor:
+    case WebKit::WebAXEventScrolledToAnchor:
       // Not used on Mac.
       return;
-    case AccessibilityNotificationSelectedChildrenChanged:
+    case WebKit::WebAXEventSelectedChildrenChanged:
       event_id = NSAccessibilitySelectedChildrenChangedNotification;
       break;
-    case AccessibilityNotificationSelectedTextChanged:
+    case WebKit::WebAXEventSelectedTextChanged:
       event_id = NSAccessibilitySelectedTextChangedNotification;
       break;
-    case AccessibilityNotificationTextInserted:
+    case WebKit::WebAXEventTextInserted:
       // Not used on Mac.
       return;
-    case AccessibilityNotificationTextRemoved:
+    case WebKit::WebAXEventTextRemoved:
       // Not used on Mac.
       return;
-    case AccessibilityNotificationValueChanged:
+    case WebKit::WebAXEventValueChanged:
       event_id = NSAccessibilityValueChangedNotification;
       break;
+    case WebKit::WebAXEventAriaAttributeChanged:
+      // Not used on Mac.
+      return;
+    case WebKit::WebAXEventAutocorrectionOccured:
+      // Not used on Mac.
+      return;
+    case WebKit::WebAXEventInvalidStatusChanged:
+      // Not used on Mac.
+      return;
+    case WebKit::WebAXEventLocationChanged:
+      // Not used on Mac.
+      return;
+    case WebKit::WebAXEventMenuListItemSelected:
+      // Not used on Mac.
+      return;
+    case WebKit::WebAXEventTextChanged:
+      // Not used on Mac.
+      return;
+    default:
+      LOG(WARNING) << "Unknown accessibility event: " << event_type;
+      return;
   }
   BrowserAccessibilityCocoa* native_node = node->ToBrowserAccessibilityCocoa();
   DCHECK(native_node);

@@ -146,8 +146,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
-  virtual void OnAccessibilityNotifications(
-      const std::vector<AccessibilityHostMsg_NotificationParams>&
+  virtual void OnAccessibilityEvents(
+      const std::vector<AccessibilityHostMsg_EventParams>&
           params) OVERRIDE;
 
 #if defined(OS_MACOSX)

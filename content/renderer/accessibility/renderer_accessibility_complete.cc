@@ -10,15 +10,14 @@
 #include "base/message_loop/message_loop.h"
 #include "content/renderer/accessibility/accessibility_node_serializer.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/public/web/WebAccessibilityObject.h"
+#include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebAccessibilityNotification;
-using WebKit::WebAccessibilityObject;
+using WebKit::WebAXObject;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebNode;
@@ -29,78 +28,6 @@ using WebKit::WebView;
 
 namespace content {
 
-bool WebAccessibilityNotificationToAccessibilityNotification(
-    WebAccessibilityNotification notification,
-    AccessibilityNotification* type) {
-  switch (notification) {
-    case WebKit::WebAccessibilityNotificationActiveDescendantChanged:
-      *type = AccessibilityNotificationActiveDescendantChanged;
-      break;
-    case WebKit::WebAccessibilityNotificationAriaAttributeChanged:
-      *type = AccessibilityNotificationAriaAttributeChanged;
-      break;
-    case WebKit::WebAccessibilityNotificationAutocorrectionOccured:
-      *type = AccessibilityNotificationAutocorrectionOccurred;
-      break;
-    case WebKit::WebAccessibilityNotificationCheckedStateChanged:
-      *type = AccessibilityNotificationCheckStateChanged;
-      break;
-    case WebKit::WebAccessibilityNotificationChildrenChanged:
-      *type = AccessibilityNotificationChildrenChanged;
-      break;
-    case WebKit::WebAccessibilityNotificationFocusedUIElementChanged:
-      *type = AccessibilityNotificationFocusChanged;
-      break;
-    case WebKit::WebAccessibilityNotificationInvalidStatusChanged:
-      *type = AccessibilityNotificationInvalidStatusChanged;
-      break;
-    case WebKit::WebAccessibilityNotificationLayoutComplete:
-      *type = AccessibilityNotificationLayoutComplete;
-      break;
-    case WebKit::WebAccessibilityNotificationLiveRegionChanged:
-      *type = AccessibilityNotificationLiveRegionChanged;
-      break;
-    case WebKit::WebAccessibilityNotificationLoadComplete:
-      *type = AccessibilityNotificationLoadComplete;
-      break;
-    case WebKit::WebAccessibilityNotificationMenuListItemSelected:
-      *type = AccessibilityNotificationMenuListItemSelected;
-      break;
-    case WebKit::WebAccessibilityNotificationMenuListValueChanged:
-      *type = AccessibilityNotificationMenuListValueChanged;
-      break;
-    case WebKit::WebAccessibilityNotificationRowCollapsed:
-      *type = AccessibilityNotificationRowCollapsed;
-      break;
-    case WebKit::WebAccessibilityNotificationRowCountChanged:
-      *type = AccessibilityNotificationRowCountChanged;
-      break;
-    case WebKit::WebAccessibilityNotificationRowExpanded:
-      *type = AccessibilityNotificationRowExpanded;
-      break;
-    case WebKit::WebAccessibilityNotificationScrolledToAnchor:
-      *type = AccessibilityNotificationScrolledToAnchor;
-      break;
-    case WebKit::WebAccessibilityNotificationSelectedChildrenChanged:
-      *type = AccessibilityNotificationSelectedChildrenChanged;
-      break;
-    case WebKit::WebAccessibilityNotificationSelectedTextChanged:
-      *type = AccessibilityNotificationSelectedTextChanged;
-      break;
-    case WebKit::WebAccessibilityNotificationTextChanged:
-      *type = AccessibilityNotificationTextChanged;
-      break;
-    case WebKit::WebAccessibilityNotificationValueChanged:
-      *type = AccessibilityNotificationValueChanged;
-      break;
-    default:
-      DLOG(WARNING)
-          << "WebKit accessibility notification not handled in switch!";
-      return false;
-  }
-  return true;
-}
-
 RendererAccessibilityComplete::RendererAccessibilityComplete(
     RenderViewImpl* render_view)
     : RendererAccessibility(render_view),
@@ -108,16 +35,15 @@ RendererAccessibilityComplete::RendererAccessibilityComplete(
       browser_root_(NULL),
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false) {
-  WebAccessibilityObject::enableAccessibility();
+  WebAXObject::enableAccessibility();
 
   const WebDocument& document = GetMainDocument();
   if (!document.isNull()) {
     // It's possible that the webview has already loaded a webpage without
     // accessibility being enabled. Initialize the browser's cached
     // accessibility tree by sending it a notification.
-    HandleAccessibilityNotification(
-        document.accessibilityObject(),
-        AccessibilityNotificationLayoutComplete);
+    HandleWebAccessibilityEvent(document.accessibilityObject(),
+                                WebKit::WebAXEventLayoutComplete);
   }
 }
 
@@ -131,8 +57,8 @@ bool RendererAccessibilityComplete::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_DoDefaultAction,
                         OnDoDefaultAction)
-    IPC_MESSAGE_HANDLER(AccessibilityMsg_Notifications_ACK,
-                        OnNotificationsAck)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_Events_ACK,
+                        OnEventsAck)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_ScrollToMakeVisible,
                         OnScrollToMakeVisible)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_ScrollToPoint,
@@ -153,9 +79,8 @@ void RendererAccessibilityComplete::FocusedNodeChanged(const WebNode& node) {
   if (node.isNull()) {
     // When focus is cleared, implicitly focus the document.
     // TODO(dmazzoni): Make WebKit send this notification instead.
-    HandleAccessibilityNotification(
-        document.accessibilityObject(),
-        AccessibilityNotificationBlur);
+    HandleWebAccessibilityEvent(document.accessibilityObject(),
+                                WebKit::WebAXEventBlur);
   }
 }
 
@@ -168,29 +93,14 @@ void RendererAccessibilityComplete::DidFinishLoad(WebKit::WebFrame* frame) {
   // around WebKit bugs that cause AXObjectCache to be cleared
   // unnecessarily.
   // TODO(dmazzoni): remove this once rdar://5794454 is fixed.
-  WebAccessibilityObject new_root = document.accessibilityObject();
-  if (!browser_root_ || new_root.axID() != browser_root_->id) {
-    HandleAccessibilityNotification(
-        new_root,
-        AccessibilityNotificationLayoutComplete);
-  }
+  WebAXObject new_root = document.accessibilityObject();
+  if (!browser_root_ || new_root.axID() != browser_root_->id)
+    HandleWebAccessibilityEvent(new_root, WebKit::WebAXEventLayoutComplete);
 }
 
-void RendererAccessibilityComplete::HandleWebAccessibilityNotification(
-    const WebAccessibilityObject& obj,
-    WebAccessibilityNotification notification) {
-  AccessibilityNotification temp;
-  if (!WebAccessibilityNotificationToAccessibilityNotification(
-      notification, &temp)) {
-    return;
-  }
-
-  HandleAccessibilityNotification(obj, temp);
-}
-
-void RendererAccessibilityComplete::HandleAccessibilityNotification(
-    const WebKit::WebAccessibilityObject& obj,
-    AccessibilityNotification notification) {
+void RendererAccessibilityComplete::HandleWebAccessibilityEvent(
+    const WebKit::WebAXObject& obj,
+    WebKit::WebAXEvent event) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
@@ -204,35 +114,35 @@ void RendererAccessibilityComplete::HandleAccessibilityNotification(
     // https://bugs.webkit.org/show_bug.cgi?id=73460 is fixed.
     last_scroll_offset_ = scroll_offset;
     if (!obj.equals(document.accessibilityObject())) {
-      HandleAccessibilityNotification(
+      HandleWebAccessibilityEvent(
           document.accessibilityObject(),
-          AccessibilityNotificationLayoutComplete);
+          WebKit::WebAXEventLayoutComplete);
     }
   }
 
   // Add the accessibility object to our cache and ensure it's valid.
-  AccessibilityHostMsg_NotificationParams acc_notification;
-  acc_notification.id = obj.axID();
-  acc_notification.notification_type = notification;
+  AccessibilityHostMsg_EventParams acc_event;
+  acc_event.id = obj.axID();
+  acc_event.event_type = event;
 
-  // Discard duplicate accessibility notifications.
-  for (uint32 i = 0; i < pending_notifications_.size(); ++i) {
-    if (pending_notifications_[i].id == acc_notification.id &&
-        pending_notifications_[i].notification_type ==
-            acc_notification.notification_type) {
+  // Discard duplicate accessibility events.
+  for (uint32 i = 0; i < pending_events_.size(); ++i) {
+    if (pending_events_[i].id == acc_event.id &&
+        pending_events_[i].event_type ==
+            acc_event.event_type) {
       return;
     }
   }
-  pending_notifications_.push_back(acc_notification);
+  pending_events_.push_back(acc_event);
 
   if (!ack_pending_ && !weak_factory_.HasWeakPtrs()) {
-    // When no accessibility notifications are in-flight post a task to send
-    // the notifications to the browser. We use PostTask so that we can queue
-    // up additional notifications.
+    // When no accessibility events are in-flight post a task to send
+    // the events to the browser. We use PostTask so that we can queue
+    // up additional events.
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&RendererAccessibilityComplete::
-                       SendPendingAccessibilityNotifications,
+                       SendPendingAccessibilityEvents,
                    weak_factory_.GetWeakPtr()));
   }
 }
@@ -241,12 +151,12 @@ RendererAccessibilityComplete::BrowserTreeNode::BrowserTreeNode() : id(0) {}
 
 RendererAccessibilityComplete::BrowserTreeNode::~BrowserTreeNode() {}
 
-void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
+void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
 
-  if (pending_notifications_.empty())
+  if (pending_events_.empty())
     return;
 
   if (render_view_->is_swapped_out())
@@ -254,31 +164,31 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
 
   ack_pending_ = true;
 
-  // Make a copy of the notifications, because it's possible that
-  // actions inside this loop will cause more notifications to be
+  // Make a copy of the events, because it's possible that
+  // actions inside this loop will cause more events to be
   // queued up.
-  std::vector<AccessibilityHostMsg_NotificationParams> src_notifications =
-      pending_notifications_;
-  pending_notifications_.clear();
+  std::vector<AccessibilityHostMsg_EventParams> src_events =
+      pending_events_;
+  pending_events_.clear();
 
-  // Generate a notification message from each WebKit notification.
-  std::vector<AccessibilityHostMsg_NotificationParams> notification_msgs;
+  // Generate an event message from each WebKit event.
+  std::vector<AccessibilityHostMsg_EventParams> event_msgs;
 
-  // Loop over each notification and generate an updated notification message.
-  for (size_t i = 0; i < src_notifications.size(); ++i) {
-    AccessibilityHostMsg_NotificationParams& notification =
-        src_notifications[i];
+  // Loop over each event and generate an updated event message.
+  for (size_t i = 0; i < src_events.size(); ++i) {
+    AccessibilityHostMsg_EventParams& event =
+        src_events[i];
 
-    WebAccessibilityObject obj = document.accessibilityObjectFromID(
-        notification.id);
+    WebAXObject obj = document.accessibilityObjectFromID(
+        event.id);
     if (!obj.updateBackingStoreAndCheckValidity())
       continue;
 
-    // When we get a "selected children changed" notification, WebKit
-    // doesn't also send us notifications for each child that changed
+    // When we get a "selected children changed" event, WebKit
+    // doesn't also send us events for each child that changed
     // selection state, so make sure we re-send that whole subtree.
-    if (notification.notification_type ==
-        AccessibilityNotificationSelectedChildrenChanged) {
+    if (event.event_type ==
+        WebKit::WebAXEventSelectedChildrenChanged) {
       base::hash_map<int32, BrowserTreeNode*>::iterator iter =
           browser_id_map_.find(obj.axID());
       if (iter != browser_id_map_.end())
@@ -286,38 +196,38 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
     }
 
     // The browser may not have this object yet, for example if we get a
-    // notification on an object that was recently added, or if we get a
-    // notification on a node before the page has loaded. Work our way
+    // event on an object that was recently added, or if we get a
+    // event on a node before the page has loaded. Work our way
     // up the parent chain until we find a node the browser has, or until
     // we reach the root.
-    WebAccessibilityObject root_object = document.accessibilityObject();
+    WebAXObject root_object = document.accessibilityObject();
     int root_id = root_object.axID();
     while (browser_id_map_.find(obj.axID()) == browser_id_map_.end() &&
            !obj.isDetached() &&
            obj.axID() != root_id) {
       obj = obj.parentObject();
-      if (notification.notification_type ==
-          AccessibilityNotificationChildrenChanged) {
-        notification.id = obj.axID();
+      if (event.event_type ==
+          WebKit::WebAXEventChildrenChanged) {
+        event.id = obj.axID();
       }
     }
 
     if (obj.isDetached()) {
 #ifndef NDEBUG
       if (logging_)
-        LOG(WARNING) << "Got notification on object that is invalid or has"
+        LOG(WARNING) << "Got event on object that is invalid or has"
                      << " invalid ancestor. Id: " << obj.axID();
 #endif
       continue;
     }
 
-    // Another potential problem is that this notification may be on an
+    // Another potential problem is that this event may be on an
     // object that is detached from the tree. Determine if this node is not a
-    // child of its parent, and if so move the notification to the parent.
+    // child of its parent, and if so move the event to the parent.
     // TODO(dmazzoni): see if this can be removed after
     // https://bugs.webkit.org/show_bug.cgi?id=68466 is fixed.
     if (obj.axID() != root_id) {
-      WebAccessibilityObject parent = obj.parentObject();
+      WebAXObject parent = obj.parentObject();
       while (!parent.isDetached() &&
              parent.accessibilityIsIgnored()) {
         parent = parent.parentObject();
@@ -337,7 +247,7 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
 
       if (!is_child_of_parent) {
         obj = parent;
-        notification.id = obj.axID();
+        event.id = obj.axID();
       }
     }
 
@@ -345,39 +255,39 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
     // of read-only queries at once.
     root_object.startCachingComputedObjectAttributesUntilTreeMutates();
 
-    AccessibilityHostMsg_NotificationParams notification_msg;
-    notification_msg.notification_type = notification.notification_type;
-    notification_msg.id = notification.id;
-    SerializeChangedNodes(obj, &notification_msg.nodes);
-    notification_msgs.push_back(notification_msg);
+    AccessibilityHostMsg_EventParams event_msg;
+    event_msg.event_type = event.event_type;
+    event_msg.id = event.id;
+    SerializeChangedNodes(obj, &event_msg.nodes);
+    event_msgs.push_back(event_msg);
 
 #ifndef NDEBUG
     if (logging_) {
       AccessibilityNodeDataTreeNode tree;
-      MakeAccessibilityNodeDataTree(notification_msg.nodes, &tree);
+      MakeAccessibilityNodeDataTree(event_msg.nodes, &tree);
       LOG(INFO) << "Accessibility update: \n"
           << "routing id=" << routing_id()
-          << " notification="
-          << AccessibilityNotificationToString(notification.notification_type)
+          << " event="
+          << AccessibilityEventToString(event.event_type)
           << "\n" << tree.DebugString(true);
     }
 #endif
   }
 
-  AppendLocationChangeNotifications(&notification_msgs);
+  AppendLocationChangeEvents(&event_msgs);
 
-  Send(new AccessibilityHostMsg_Notifications(routing_id(), notification_msgs));
+  Send(new AccessibilityHostMsg_Events(routing_id(), event_msgs));
 }
 
-void RendererAccessibilityComplete::AppendLocationChangeNotifications(
-    std::vector<AccessibilityHostMsg_NotificationParams>* notification_msgs) {
-  std::queue<WebAccessibilityObject> objs_to_explore;
+void RendererAccessibilityComplete::AppendLocationChangeEvents(
+    std::vector<AccessibilityHostMsg_EventParams>* event_msgs) {
+  std::queue<WebAXObject> objs_to_explore;
   std::vector<BrowserTreeNode*> location_changes;
-  WebAccessibilityObject root_object = GetMainDocument().accessibilityObject();
+  WebAXObject root_object = GetMainDocument().accessibilityObject();
   objs_to_explore.push(root_object);
 
   while (objs_to_explore.size()) {
-    WebAccessibilityObject obj = objs_to_explore.front();
+    WebAXObject obj = objs_to_explore.front();
     objs_to_explore.pop();
     int id = obj.axID();
     if (browser_id_map_.find(id) != browser_id_map_.end()) {
@@ -396,20 +306,19 @@ void RendererAccessibilityComplete::AppendLocationChangeNotifications(
   if (location_changes.size() == 0)
     return;
 
-  AccessibilityHostMsg_NotificationParams notification_msg;
-  notification_msg.notification_type =
-      static_cast<AccessibilityNotification>(-1);
-  notification_msg.id = root_object.axID();
-  notification_msg.nodes.resize(location_changes.size());
+  AccessibilityHostMsg_EventParams event_msg;
+  event_msg.event_type = static_cast<WebKit::WebAXEvent>(-1);
+  event_msg.id = root_object.axID();
+  event_msg.nodes.resize(location_changes.size());
   for (size_t i = 0; i < location_changes.size(); i++) {
-    AccessibilityNodeData& serialized_node = notification_msg.nodes[i];
+    AccessibilityNodeData& serialized_node = event_msg.nodes[i];
     serialized_node.id = location_changes[i]->id;
     serialized_node.location = location_changes[i]->location;
     serialized_node.AddBoolAttribute(
         AccessibilityNodeData::ATTR_UPDATE_LOCATION_ONLY, true);
   }
 
-  notification_msgs->push_back(notification_msg);
+  event_msgs->push_back(event_msg);
 }
 
 RendererAccessibilityComplete::BrowserTreeNode*
@@ -418,7 +327,7 @@ RendererAccessibilityComplete::CreateBrowserTreeNode() {
 }
 
 void RendererAccessibilityComplete::SerializeChangedNodes(
-    const WebKit::WebAccessibilityObject& obj,
+    const WebKit::WebAXObject& obj,
     std::vector<AccessibilityNodeData>* dst) {
   // This method has three responsibilities:
   // 1. Serialize |obj| into an AccessibilityNodeData, and append it to
@@ -460,7 +369,7 @@ void RendererAccessibilityComplete::SerializeChangedNodes(
   base::hash_set<int32> new_child_ids;
   const WebDocument& document = GetMainDocument();
   for (unsigned i = 0; i < obj.childCount(); i++) {
-    WebAccessibilityObject child = obj.childAt(i);
+    WebAXObject child = obj.childAt(i);
     if (ShouldIncludeChildNode(obj, child)) {
       int new_child_id = child.axID();
       new_child_ids.insert(new_child_id);
@@ -471,7 +380,7 @@ void RendererAccessibilityComplete::SerializeChangedNodes(
         // object corresponding to the old parent, or the closest ancestor
         // still in the tree.
         BrowserTreeNode* parent = child->parent;
-        WebAccessibilityObject parent_obj;
+        WebAXObject parent_obj;
         while (parent) {
           parent_obj = document.accessibilityObjectFromID(parent->id);
           if (!parent_obj.isDetached())
@@ -515,16 +424,16 @@ void RendererAccessibilityComplete::SerializeChangedNodes(
   AccessibilityNodeData* serialized_node = &dst->back();
   SerializeAccessibilityNode(obj, serialized_node);
   if (serialized_node->id == browser_root_->id)
-    serialized_node->role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+    serialized_node->role = WebKit::WebAXRoleRootWebArea;
 
   // Iterate over the children, make note of the ones that are new
   // and need to be serialized, and update the BrowserTreeNode
   // data structure to reflect the new tree.
-  std::vector<WebAccessibilityObject> children_to_serialize;
+  std::vector<WebAXObject> children_to_serialize;
   int child_count = obj.childCount();
   browser_node->children.reserve(child_count);
   for (int i = 0; i < child_count; i++) {
-    WebAccessibilityObject child = obj.childAt(i);
+    WebAXObject child = obj.childAt(i);
     int child_id = child.axID();
 
     // Checks to make sure the child is valid, attached to this node,
@@ -574,7 +483,7 @@ void RendererAccessibilityComplete::OnDoDefaultAction(int acc_obj_id) {
   if (document.isNull())
     return;
 
-  WebAccessibilityObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
   if (obj.isDetached()) {
 #ifndef NDEBUG
     if (logging_)
@@ -592,7 +501,7 @@ void RendererAccessibilityComplete::OnScrollToMakeVisible(
   if (document.isNull())
     return;
 
-  WebAccessibilityObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
   if (obj.isDetached()) {
 #ifndef NDEBUG
     if (logging_)
@@ -605,13 +514,13 @@ void RendererAccessibilityComplete::OnScrollToMakeVisible(
       WebRect(subfocus.x(), subfocus.y(),
               subfocus.width(), subfocus.height()));
 
-  // Make sure the browser gets a notification when the scroll
+  // Make sure the browser gets an event when the scroll
   // position actually changes.
   // TODO(dmazzoni): remove this once this bug is fixed:
   // https://bugs.webkit.org/show_bug.cgi?id=73460
-  HandleAccessibilityNotification(
+  HandleWebAccessibilityEvent(
       document.accessibilityObject(),
-      AccessibilityNotificationLayoutComplete);
+      WebKit::WebAXEventLayoutComplete);
 }
 
 void RendererAccessibilityComplete::OnScrollToPoint(
@@ -620,7 +529,7 @@ void RendererAccessibilityComplete::OnScrollToPoint(
   if (document.isNull())
     return;
 
-  WebAccessibilityObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
   if (obj.isDetached()) {
 #ifndef NDEBUG
     if (logging_)
@@ -631,13 +540,13 @@ void RendererAccessibilityComplete::OnScrollToPoint(
 
   obj.scrollToGlobalPoint(WebPoint(point.x(), point.y()));
 
-  // Make sure the browser gets a notification when the scroll
+  // Make sure the browser gets an event when the scroll
   // position actually changes.
   // TODO(dmazzoni): remove this once this bug is fixed:
   // https://bugs.webkit.org/show_bug.cgi?id=73460
-  HandleAccessibilityNotification(
+  HandleWebAccessibilityEvent(
       document.accessibilityObject(),
-      AccessibilityNotificationLayoutComplete);
+      WebKit::WebAXEventLayoutComplete);
 }
 
 void RendererAccessibilityComplete::OnSetTextSelection(
@@ -646,7 +555,7 @@ void RendererAccessibilityComplete::OnSetTextSelection(
   if (document.isNull())
     return;
 
-  WebAccessibilityObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
   if (obj.isDetached()) {
 #ifndef NDEBUG
     if (logging_)
@@ -666,10 +575,10 @@ void RendererAccessibilityComplete::OnSetTextSelection(
   }
 }
 
-void RendererAccessibilityComplete::OnNotificationsAck() {
+void RendererAccessibilityComplete::OnEventsAck() {
   DCHECK(ack_pending_);
   ack_pending_ = false;
-  SendPendingAccessibilityNotifications();
+  SendPendingAccessibilityEvents();
 }
 
 void RendererAccessibilityComplete::OnSetFocus(int acc_obj_id) {
@@ -677,7 +586,7 @@ void RendererAccessibilityComplete::OnSetFocus(int acc_obj_id) {
   if (document.isNull())
     return;
 
-  WebAccessibilityObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
   if (obj.isDetached()) {
 #ifndef NDEBUG
     if (logging_) {
@@ -688,7 +597,7 @@ void RendererAccessibilityComplete::OnSetFocus(int acc_obj_id) {
     return;
   }
 
-  WebAccessibilityObject root = document.accessibilityObject();
+  WebAXObject root = document.accessibilityObject();
   if (root.isDetached()) {
 #ifndef NDEBUG
     if (logging_) {

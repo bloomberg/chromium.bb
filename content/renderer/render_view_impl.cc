@@ -151,7 +151,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/web/WebAccessibilityObject.h"
+#include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebColorName.h"
 #include "third_party/WebKit/public/web/WebDOMEvent.h"
 #include "third_party/WebKit/public/web/WebDOMMessageEvent.h"
@@ -249,8 +249,7 @@
 #include "content/renderer/pepper/plugin_module.h"
 #endif
 
-using WebKit::WebAccessibilityNotification;
-using WebKit::WebAccessibilityObject;
+using WebKit::WebAXObject;
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;
 using WebKit::WebCString;
@@ -2841,12 +2840,10 @@ int RenderViewImpl::historyForwardListCount() {
   return history_list_length_ - historyBackListCount() - 1;
 }
 
-void RenderViewImpl::postAccessibilityNotification(
-    const WebAccessibilityObject& obj,
-    WebAccessibilityNotification notification) {
+void RenderViewImpl::postAccessibilityEvent(
+    const WebAXObject& obj, WebKit::WebAXEvent event) {
   if (renderer_accessibility_) {
-    renderer_accessibility_->HandleWebAccessibilityNotification(
-        obj, notification);
+    renderer_accessibility_->HandleWebAccessibilityEvent(obj, event);
   }
 }
 

@@ -30,8 +30,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   static AccessibilityNodeData GetEmptyDocument();
 
   // Implementation of BrowserAccessibilityManager.
-  virtual void NotifyAccessibilityEvent(int type,
-                                        BrowserAccessibility* node) OVERRIDE;
+  virtual void NotifyAccessibilityEvent(
+      WebKit::WebAXEvent event_type, BrowserAccessibility* node) OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI

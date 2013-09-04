@@ -102,7 +102,6 @@
     'public/common/webplugininfo.h',
     'public/common/zygote_fork_delegate_linux.h',
     'common/accessibility_messages.h',
-    'common/accessibility_notification.h',
     'common/accessibility_node_data.cc',
     'common/accessibility_node_data.h',
     'common/all_messages.h',

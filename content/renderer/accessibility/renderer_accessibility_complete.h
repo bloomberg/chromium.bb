@@ -12,10 +12,10 @@
 #include "content/common/accessibility_node_data.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/accessibility/renderer_accessibility.h"
-#include "third_party/WebKit/public/web/WebAccessibilityNotification.h"
+#include "third_party/WebKit/public/web/WebAXEnums.h"
+#include "third_party/WebKit/public/web/WebAXObject.h"
 
 namespace WebKit {
-class WebAccessibilityObject;
 class WebDocument;
 class WebNode;
 };
@@ -43,9 +43,8 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
 
   // RendererAccessibility.
-  virtual void HandleWebAccessibilityNotification(
-      const WebKit::WebAccessibilityObject& obj,
-      WebKit::WebAccessibilityNotification notification) OVERRIDE;
+  virtual void HandleWebAccessibilityEvent(
+      const WebKit::WebAXObject& obj, WebKit::WebAXEvent event) OVERRIDE;
 
   // In order to keep track of what nodes the browser knows about, we keep a
   // representation of the browser tree - just IDs and parent/child
@@ -62,26 +61,21 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   virtual BrowserTreeNode* CreateBrowserTreeNode();
 
  protected:
-  // Send queued notifications from the renderer to the browser.
-  void SendPendingAccessibilityNotifications();
+  // Send queued events from the renderer to the browser.
+  void SendPendingAccessibilityEvents();
 
   // Check the entire accessibility tree to see if any nodes have
   // changed location, by comparing their locations to the cached
-  // versions. If any have moved, append a notification to |notifications|
+  // versions. If any have moved, append a event to |events|
   // that updates the coordinates of these objects.
-  void AppendLocationChangeNotifications(
-      std::vector<AccessibilityHostMsg_NotificationParams>* notifications);
+  void AppendLocationChangeEvents(
+      std::vector<AccessibilityHostMsg_EventParams>* events);
 
  private:
-  // Handle an accessibility notification to be sent to the browser process.
-  void HandleAccessibilityNotification(
-      const WebKit::WebAccessibilityObject& obj,
-      AccessibilityNotification notification);
-
   // Serialize the given accessibility object |obj| and append it to
   // |dst|, and then recursively also serialize any *new* children of
   // |obj|, based on what object ids we know the browser already has.
-  void SerializeChangedNodes(const WebKit::WebAccessibilityObject& obj,
+  void SerializeChangedNodes(const WebKit::WebAXObject& obj,
                              std::vector<AccessibilityNodeData>* dst);
 
   // Clear the given node and recursively delete all of its descendants
@@ -90,7 +84,7 @@ class CONTENT_EXPORT RendererAccessibilityComplete
 
   // Handlers for messages from the browser to the renderer.
   void OnDoDefaultAction(int acc_obj_id);
-  void OnNotificationsAck();
+  void OnEventsAck();
   void OnChangeScrollPosition(int acc_obj_id, int scroll_x, int scroll_y);
   void OnScrollToMakeVisible(int acc_obj_id, gfx::Rect subfocus);
   void OnScrollToPoint(int acc_obj_id, gfx::Point point);
@@ -99,28 +93,28 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   void OnFatalError();
 
   // Checks if a WebKit accessibility object is an editable text node.
-  bool IsEditableText(const WebKit::WebAccessibilityObject& node);
+  bool IsEditableText(const WebKit::WebAXObject& node);
 
   // Recursively explore the tree of WebKit accessibility objects rooted
   // at |src|, and for each editable text node encountered, add a
   // corresponding WebAccessibility node as a child of |dst|.
   void RecursiveAddEditableTextNodesToTree(
-      const WebKit::WebAccessibilityObject& src,
+      const WebKit::WebAXObject& src,
       AccessibilityNodeData* dst);
 
   // Build a tree of serializable AccessibilityNodeData nodes to send to the
-  // browser process, given a WebAccessibilityObject node from WebKit.
+  // browser process, given a WebAXObject node from WebKit.
   // Modifies |dst| in-place, it's assumed to be empty.
-  void BuildAccessibilityTree(const WebKit::WebAccessibilityObject& src,
+  void BuildAccessibilityTree(const WebKit::WebAXObject& src,
                               bool include_children,
                               AccessibilityNodeData* dst);
 
   // So we can queue up tasks to be executed later.
   base::WeakPtrFactory<RendererAccessibilityComplete> weak_factory_;
 
-  // Notifications from WebKit are collected until they are ready to be
+  // Events from WebKit are collected until they are ready to be
   // sent to the browser.
-  std::vector<AccessibilityHostMsg_NotificationParams> pending_notifications_;
+  std::vector<AccessibilityHostMsg_EventParams> pending_events_;
 
   // Our representation of the browser tree.
   BrowserTreeNode* browser_root_;
@@ -136,7 +130,7 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   // The current accessibility mode.
   AccessibilityMode mode_;
 
-  // Set if we are waiting for an accessibility notification ack.
+  // Set if we are waiting for an accessibility event ack.
   bool ack_pending_;
 
   // True if verbose logging of accessibility events is on.

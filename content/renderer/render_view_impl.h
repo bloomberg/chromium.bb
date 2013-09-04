@@ -43,6 +43,7 @@
 #include "content/renderer/stats_collection_observer.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
@@ -511,9 +512,8 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void navigateBackForwardSoon(int offset);
   virtual int historyBackListCount();
   virtual int historyForwardListCount();
-  virtual void postAccessibilityNotification(
-      const WebKit::WebAccessibilityObject& obj,
-      WebKit::WebAccessibilityNotification notification);
+  virtual void postAccessibilityEvent(
+      const WebKit::WebAXObject& obj, WebKit::WebAXEvent event);
   virtual void didUpdateInspectorSetting(const WebKit::WebString& key,
                                          const WebKit::WebString& value);
   virtual WebKit::WebGeolocationClient* geolocationClient();

@@ -12,9 +12,10 @@
 #include "build/build_config.h"
 #include "content/common/accessibility_node_data.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "ui/gfx/native_widget_types.h"
 
-struct AccessibilityHostMsg_NotificationParams;
+struct AccessibilityHostMsg_EventParams;
 
 namespace content {
 class BrowserAccessibility;
@@ -65,12 +66,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
 
   static AccessibilityNodeData GetEmptyDocument();
 
-  // Type is enum AccessibilityNotification.
-  // We pass it as int so that we don't include the message declaration
-  // header here.
   virtual void NotifyAccessibilityEvent(
-      int type,
-      BrowserAccessibility* node) { }
+      WebKit::WebAXEvent event_type, BrowserAccessibility* node) { }
 
   // Return a pointer to the root of the tree, does not make a new reference.
   BrowserAccessibility* GetRoot();
@@ -126,8 +123,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
 
   // Called when the renderer process has notified us of about tree changes.
   // Send a notification to MSAA clients of the change.
-  void OnAccessibilityNotifications(
-      const std::vector<AccessibilityHostMsg_NotificationParams>& params);
+  void OnAccessibilityEvents(
+      const std::vector<AccessibilityHostMsg_EventParams>& params);
 
 #if defined(OS_WIN)
   BrowserAccessibilityManagerWin* ToBrowserAccessibilityManagerWin();
@@ -146,7 +143,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   virtual bool UseRootScrollOffsetsWhenComputingBounds();
 
   // For testing only: update the given nodes as if they were
-  // received from the renderer process in OnAccessibilityNotifications.
+  // received from the renderer process in OnAccessibilityEvents.
   // Takes up to 7 nodes at once so tests don't need to create a vector
   // each time.
   void UpdateNodesForTesting(

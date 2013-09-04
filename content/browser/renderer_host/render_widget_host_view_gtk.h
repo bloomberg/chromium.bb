@@ -131,8 +131,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
-  virtual void OnAccessibilityNotifications(
-      const std::vector<AccessibilityHostMsg_NotificationParams>& params)
+  virtual void OnAccessibilityEvents(
+      const std::vector<AccessibilityHostMsg_EventParams>& params)
       OVERRIDE;
 
   // ActiveWindowWatcherXObserver implementation.

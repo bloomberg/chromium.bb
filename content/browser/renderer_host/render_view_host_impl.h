@@ -18,22 +18,22 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/accessibility_node_data.h"
-#include "content/common/accessibility_notification.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/window_container_type.h"
 #include "net/base/load_states.h"
-#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 
 class SkBitmap;
 class ViewMsg_Navigate;
-struct AccessibilityHostMsg_NotificationParams;
+struct AccessibilityHostMsg_EventParams;
 struct MediaPlayerAction;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
@@ -415,7 +415,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // renderer process, and the accessibility tree it sent can be
   // retrieved using accessibility_tree_for_testing().
   void SetAccessibilityCallbackForTesting(
-      const base::Callback<void(AccessibilityNotification)>& callback);
+      const base::Callback<void(WebKit::WebAXEvent)>& callback);
 
   // Only valid if SetAccessibilityCallbackForTesting was called and
   // the callback was run at least once. Returns a snapshot of the
@@ -561,8 +561,8 @@ class CONTENT_EXPORT RenderViewHostImpl
       const base::TimeTicks& renderer_before_unload_end_time);
   void OnClosePageACK();
   void OnSwapOutACK();
-  void OnAccessibilityNotifications(
-      const std::vector<AccessibilityHostMsg_NotificationParams>& params);
+  void OnAccessibilityEvents(
+      const std::vector<AccessibilityHostMsg_EventParams>& params);
   void OnScriptEvalResponse(int id, const base::ListValue& result);
   void OnDidZoomURL(double zoom_level, bool remember, const GURL& url);
   void OnRequestDesktopNotificationPermission(const GURL& origin,
@@ -682,8 +682,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   std::map<int, JavascriptResultCallback> javascript_callbacks_;
 
   // Accessibility callback for testing.
-  base::Callback<void(AccessibilityNotification)>
-      accessibility_testing_callback_;
+  base::Callback<void(WebKit::WebAXEvent)> accessibility_testing_callback_;
 
   // The most recently received accessibility tree - for testing only.
   AccessibilityNodeDataTreeNode accessibility_tree_;

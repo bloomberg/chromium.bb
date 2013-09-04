@@ -24,7 +24,7 @@
 class SkBitmap;
 class WebCursor;
 
-struct AccessibilityHostMsg_NotificationParams;
+struct AccessibilityHostMsg_EventParams;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 struct ViewHostMsg_TextInputState_Params;
@@ -294,8 +294,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
 
   virtual BrowserAccessibilityManager*
       GetBrowserAccessibilityManager() const = 0;
-  virtual void OnAccessibilityNotifications(
-      const std::vector<AccessibilityHostMsg_NotificationParams>& params) = 0;
+  virtual void OnAccessibilityEvents(
+      const std::vector<AccessibilityHostMsg_EventParams>& params) = 0;
 
   // Return a value that is incremented each time the renderer swaps a new frame
   // to the view.

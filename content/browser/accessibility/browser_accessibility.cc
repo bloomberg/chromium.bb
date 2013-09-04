@@ -142,8 +142,8 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsRect() const {
   // nested web area.
   BrowserAccessibility* parent = parent_;
   bool need_to_offset_web_area =
-      (role_ == AccessibilityNodeData::ROLE_WEB_AREA ||
-       role_ == AccessibilityNodeData::ROLE_ROOT_WEB_AREA);
+      (role_ == WebKit::WebAXRoleWebArea ||
+       role_ == WebKit::WebAXRoleRootWebArea);
   while (parent) {
     if (need_to_offset_web_area &&
         parent->location().width() > 0 &&
@@ -154,13 +154,13 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsRect() const {
 
     // On some platforms, we don't want to take the root scroll offsets
     // into account.
-    if (parent->role() == AccessibilityNodeData::ROLE_ROOT_WEB_AREA &&
+    if (parent->role() == WebKit::WebAXRoleRootWebArea &&
         !manager()->UseRootScrollOffsetsWhenComputingBounds()) {
       break;
     }
 
-    if (parent->role() == AccessibilityNodeData::ROLE_WEB_AREA ||
-        parent->role() == AccessibilityNodeData::ROLE_ROOT_WEB_AREA) {
+    if (parent->role() == WebKit::WebAXRoleWebArea ||
+        parent->role() == WebKit::WebAXRoleRootWebArea) {
       int sx = 0;
       int sy = 0;
       if (parent->GetIntAttribute(AccessibilityNodeData::ATTR_SCROLL_X, &sx) &&
@@ -211,7 +211,7 @@ void BrowserAccessibility::Destroy() {
   PostInitialize();
 
   manager_->NotifyAccessibilityEvent(
-      AccessibilityNotificationObjectHide, this);
+      WebKit::WebAXEventHide, this);
 
   instance_active_ = false;
   manager_->RemoveNode(this);
@@ -456,25 +456,24 @@ bool BrowserAccessibility::GetAriaTristate(
   return false;  // Not set
 }
 
-bool BrowserAccessibility::HasState(
-    AccessibilityNodeData::State state_enum) const {
+bool BrowserAccessibility::HasState(WebKit::WebAXState state_enum) const {
   return (state_ >> state_enum) & 1;
 }
 
 bool BrowserAccessibility::IsEditableText() const {
   // These roles don't have readonly set, but they're not editable text.
-  if (role_ == AccessibilityNodeData::ROLE_SCROLLAREA ||
-      role_ == AccessibilityNodeData::ROLE_COLUMN ||
-      role_ == AccessibilityNodeData::ROLE_TABLE_HEADER_CONTAINER) {
+  if (role_ == WebKit::WebAXRoleScrollArea ||
+      role_ == WebKit::WebAXRoleColumn ||
+      role_ == WebKit::WebAXRoleTableHeaderContainer) {
     return false;
   }
 
-  // Note: STATE_READONLY being false means it's either a text control,
+  // Note: WebAXStateReadonly being false means it's either a text control,
   // or contenteditable. We also check for editable text roles to cover
   // another element that has role=textbox set on it.
-  return (!HasState(AccessibilityNodeData::STATE_READONLY) ||
-          role_ == AccessibilityNodeData::ROLE_TEXT_FIELD ||
-          role_ == AccessibilityNodeData::ROLE_TEXTAREA);
+  return (!HasState(WebKit::WebAXStateReadonly) ||
+          role_ == WebKit::WebAXRoleTextField ||
+          role_ == WebKit::WebAXRoleTextArea);
 }
 
 std::string BrowserAccessibility::GetTextRecursive() const {

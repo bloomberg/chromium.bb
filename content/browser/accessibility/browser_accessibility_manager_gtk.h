@@ -27,8 +27,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerGtk
   static AccessibilityNodeData GetEmptyDocument();
 
   // BrowserAccessibilityManager methods
-  virtual void NotifyAccessibilityEvent(int type, BrowserAccessibility* node)
-      OVERRIDE;
+  virtual void NotifyAccessibilityEvent(
+      WebKit::WebAXEvent event_type, BrowserAccessibility* node) OVERRIDE;
 
   GtkWidget* parent_widget() { return parent_widget_; }
 

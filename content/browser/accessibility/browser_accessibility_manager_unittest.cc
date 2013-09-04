@@ -93,19 +93,19 @@ TEST(BrowserAccessibilityManagerTest, TestNoLeaks) {
   AccessibilityNodeData button;
   button.id = 2;
   button.SetName("Button");
-  button.role = AccessibilityNodeData::ROLE_BUTTON;
+  button.role = WebKit::WebAXRoleButton;
   button.state = 0;
 
   AccessibilityNodeData checkbox;
   checkbox.id = 3;
   checkbox.SetName("Checkbox");
-  checkbox.role = AccessibilityNodeData::ROLE_CHECKBOX;
+  checkbox.role = WebKit::WebAXRoleCheckBox;
   checkbox.state = 0;
 
   AccessibilityNodeData root;
   root.id = 1;
   root.SetName("Document");
-  root.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  root.role = WebKit::WebAXRoleRootWebArea;
   root.state = 0;
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
@@ -171,25 +171,25 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   AccessibilityNodeData tree1_child1;
   tree1_child1.id = 2;
   tree1_child1.SetName("Child1");
-  tree1_child1.role = AccessibilityNodeData::ROLE_BUTTON;
+  tree1_child1.role = WebKit::WebAXRoleButton;
   tree1_child1.state = 0;
 
   AccessibilityNodeData tree1_child2;
   tree1_child2.id = 3;
   tree1_child2.SetName("Child2");
-  tree1_child2.role = AccessibilityNodeData::ROLE_BUTTON;
+  tree1_child2.role = WebKit::WebAXRoleButton;
   tree1_child2.state = 0;
 
   AccessibilityNodeData tree1_child3;
   tree1_child3.id = 4;
   tree1_child3.SetName("Child3");
-  tree1_child3.role = AccessibilityNodeData::ROLE_BUTTON;
+  tree1_child3.role = WebKit::WebAXRoleButton;
   tree1_child3.state = 0;
 
   AccessibilityNodeData tree1_root;
   tree1_root.id = 1;
   tree1_root.SetName("Document");
-  tree1_root.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  tree1_root.role = WebKit::WebAXRoleRootWebArea;
   tree1_root.state = 0;
   tree1_root.child_ids.push_back(2);
   tree1_root.child_ids.push_back(3);
@@ -206,13 +206,13 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   AccessibilityNodeData tree2_child0;
   tree2_child0.id = 5;
   tree2_child0.SetName("Child0");
-  tree2_child0.role = AccessibilityNodeData::ROLE_BUTTON;
+  tree2_child0.role = WebKit::WebAXRoleButton;
   tree2_child0.state = 0;
 
   AccessibilityNodeData tree2_root;
   tree2_root.id = 1;
   tree2_root.SetName("DocumentChanged");
-  tree2_root.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  tree2_root.role = WebKit::WebAXRoleRootWebArea;
   tree2_root.state = 0;
   tree2_root.child_ids.push_back(5);
   tree2_root.child_ids.push_back(2);
@@ -248,14 +248,14 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   EXPECT_EQ(2, child3_accessible->index_in_parent());
 
   // Process a notification containing the changed subtree.
-  std::vector<AccessibilityHostMsg_NotificationParams> params;
-  params.push_back(AccessibilityHostMsg_NotificationParams());
-  AccessibilityHostMsg_NotificationParams* msg = &params[0];
-  msg->notification_type = AccessibilityNotificationChildrenChanged;
+  std::vector<AccessibilityHostMsg_EventParams> params;
+  params.push_back(AccessibilityHostMsg_EventParams());
+  AccessibilityHostMsg_EventParams* msg = &params[0];
+  msg->event_type = WebKit::WebAXEventChildrenChanged;
   msg->nodes.push_back(tree2_root);
   msg->nodes.push_back(tree2_child0);
   msg->id = tree2_root.id;
-  manager->OnAccessibilityNotifications(params);
+  manager->OnAccessibilityEvents(params);
 
   // There should be 5 objects now: the 4 from the new tree, plus the
   // reference to child3 we kept.
@@ -303,46 +303,46 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   AccessibilityNodeData tree1_grandchild1;
   tree1_grandchild1.id = 4;
   tree1_grandchild1.SetName("GrandChild1");
-  tree1_grandchild1.role = AccessibilityNodeData::ROLE_BUTTON;
+  tree1_grandchild1.role = WebKit::WebAXRoleButton;
   tree1_grandchild1.state = 0;
 
   AccessibilityNodeData tree1_child1;
   tree1_child1.id = 3;
   tree1_child1.SetName("Child1");
-  tree1_child1.role = AccessibilityNodeData::ROLE_BUTTON;
+  tree1_child1.role = WebKit::WebAXRoleButton;
   tree1_child1.state = 0;
   tree1_child1.child_ids.push_back(4);
 
   AccessibilityNodeData tree1_grandchild2;
   tree1_grandchild2.id = 6;
   tree1_grandchild2.SetName("GrandChild1");
-  tree1_grandchild2.role = AccessibilityNodeData::ROLE_BUTTON;
+  tree1_grandchild2.role = WebKit::WebAXRoleButton;
   tree1_grandchild2.state = 0;
 
   AccessibilityNodeData tree1_child2;
   tree1_child2.id = 5;
   tree1_child2.SetName("Child2");
-  tree1_child2.role = AccessibilityNodeData::ROLE_BUTTON;
+  tree1_child2.role = WebKit::WebAXRoleButton;
   tree1_child2.state = 0;
   tree1_child2.child_ids.push_back(6);
 
   AccessibilityNodeData tree1_grandchild3;
   tree1_grandchild3.id = 8;
   tree1_grandchild3.SetName("GrandChild3");
-  tree1_grandchild3.role = AccessibilityNodeData::ROLE_BUTTON;
+  tree1_grandchild3.role = WebKit::WebAXRoleButton;
   tree1_grandchild3.state = 0;
 
   AccessibilityNodeData tree1_child3;
   tree1_child3.id = 7;
   tree1_child3.SetName("Child3");
-  tree1_child3.role = AccessibilityNodeData::ROLE_BUTTON;
+  tree1_child3.role = WebKit::WebAXRoleButton;
   tree1_child3.state = 0;
   tree1_child3.child_ids.push_back(8);
 
   AccessibilityNodeData tree1_container;
   tree1_container.id = 2;
   tree1_container.SetName("Container");
-  tree1_container.role = AccessibilityNodeData::ROLE_GROUP;
+  tree1_container.role = WebKit::WebAXRoleGroup;
   tree1_container.state = 0;
   tree1_container.child_ids.push_back(3);
   tree1_container.child_ids.push_back(5);
@@ -351,7 +351,7 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   AccessibilityNodeData tree1_root;
   tree1_root.id = 1;
   tree1_root.SetName("Document");
-  tree1_root.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  tree1_root.role = WebKit::WebAXRoleRootWebArea;
   tree1_root.state = 0;
   tree1_root.child_ids.push_back(2);
 
@@ -370,20 +370,20 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   AccessibilityNodeData tree2_grandchild0;
   tree2_grandchild0.id = 9;
   tree2_grandchild0.SetName("GrandChild0");
-  tree2_grandchild0.role = AccessibilityNodeData::ROLE_BUTTON;
+  tree2_grandchild0.role = WebKit::WebAXRoleButton;
   tree2_grandchild0.state = 0;
 
   AccessibilityNodeData tree2_child0;
   tree2_child0.id = 10;
   tree2_child0.SetName("Child0");
-  tree2_child0.role = AccessibilityNodeData::ROLE_BUTTON;
+  tree2_child0.role = WebKit::WebAXRoleButton;
   tree2_child0.state = 0;
   tree2_child0.child_ids.push_back(9);
 
   AccessibilityNodeData tree2_container;
   tree2_container.id = 2;
   tree2_container.SetName("Container");
-  tree2_container.role = AccessibilityNodeData::ROLE_GROUP;
+  tree2_container.role = WebKit::WebAXRoleGroup;
   tree2_container.state = 0;
   tree2_container.child_ids.push_back(10);
   tree2_container.child_ids.push_back(3);
@@ -424,15 +424,15 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
 
   // Process a notification containing the changed subtree rooted at
   // the container.
-  std::vector<AccessibilityHostMsg_NotificationParams> params;
-  params.push_back(AccessibilityHostMsg_NotificationParams());
-  AccessibilityHostMsg_NotificationParams* msg = &params[0];
-  msg->notification_type = AccessibilityNotificationChildrenChanged;
+  std::vector<AccessibilityHostMsg_EventParams> params;
+  params.push_back(AccessibilityHostMsg_EventParams());
+  AccessibilityHostMsg_EventParams* msg = &params[0];
+  msg->event_type = WebKit::WebAXEventChildrenChanged;
   msg->nodes.push_back(tree2_container);
   msg->nodes.push_back(tree2_child0);
   msg->nodes.push_back(tree2_grandchild0);
   msg->id = tree2_container.id;
-  manager->OnAccessibilityNotifications(params);
+  manager->OnAccessibilityEvents(params);
 
   // There should be 9 objects now: the 8 from the new tree, plus the
   // reference to child3 we kept.
@@ -489,7 +489,7 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
 
   AccessibilityNodeData tree1_1;
   tree1_1.id = 1;
-  tree1_1.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  tree1_1.role = WebKit::WebAXRoleRootWebArea;
   tree1_1.state = 0;
   tree1_1.child_ids.push_back(2);
   tree1_1.child_ids.push_back(3);
@@ -531,16 +531,16 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   ASSERT_EQ(4, CountedBrowserAccessibility::global_obj_count_);
 
   // Process a notification containing the changed subtree.
-  std::vector<AccessibilityHostMsg_NotificationParams> params;
-  params.push_back(AccessibilityHostMsg_NotificationParams());
-  AccessibilityHostMsg_NotificationParams* msg = &params[0];
-  msg->notification_type = AccessibilityNotificationChildrenChanged;
+  std::vector<AccessibilityHostMsg_EventParams> params;
+  params.push_back(AccessibilityHostMsg_EventParams());
+  AccessibilityHostMsg_EventParams* msg = &params[0];
+  msg->event_type = WebKit::WebAXEventChildrenChanged;
   msg->nodes.push_back(tree2_1);
   msg->nodes.push_back(tree2_4);
   msg->nodes.push_back(tree2_5);
   msg->nodes.push_back(tree2_6);
   msg->id = tree2_1.id;
-  manager->OnAccessibilityNotifications(params);
+  manager->OnAccessibilityEvents(params);
 
   // There should be 4 objects now.
   EXPECT_EQ(4, CountedBrowserAccessibility::global_obj_count_);
@@ -557,7 +557,7 @@ TEST(BrowserAccessibilityManagerTest, TestFatalError) {
 
   AccessibilityNodeData root;
   root.id = 1;
-  root.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  root.role = WebKit::WebAXRoleRootWebArea;
   root.child_ids.push_back(2);
   root.child_ids.push_back(2);
 
@@ -575,7 +575,7 @@ TEST(BrowserAccessibilityManagerTest, TestFatalError) {
 
   AccessibilityNodeData root2;
   root2.id = 1;
-  root2.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  root2.role = WebKit::WebAXRoleRootWebArea;
   root2.child_ids.push_back(2);
   root2.child_ids.push_back(3);
 

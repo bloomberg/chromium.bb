@@ -10,7 +10,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #import "content/browser/accessibility/browser_accessibility_delegate_mac.h"
-#include "content/common/accessibility_node_data.h"
+#include "third_party/WebKit/public/web/WebAXEnums.h"
 
 // BrowserAccessibilityCocoa is a cocoa wrapper around the BrowserAccessibility
 // object. The renderer converts webkit's accessibility tree into a
@@ -40,7 +40,7 @@
 
 // Convenience method to get the internal, cross-platform role
 // from browserAccessibility_.
-- (content::AccessibilityNodeData::Role)internalRole;
+- (WebKit::WebAXRole)internalRole;
 
 // Return the method name for the given attribute. For testing only.
 - (NSString*)methodNameForAttribute:(NSString*)attribute;

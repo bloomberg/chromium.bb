@@ -1004,8 +1004,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnDidAccessInitialDocument)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
-    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Notifications,
-                        OnAccessibilityNotifications)
+    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Events, OnAccessibilityEvents)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(
         handled = RenderWidgetHostImpl::OnMessageReceived(msg))
@@ -1799,7 +1798,7 @@ void RenderViewHostImpl::DisownOpener() {
 }
 
 void RenderViewHostImpl::SetAccessibilityCallbackForTesting(
-    const base::Callback<void(AccessibilityNotification)>& callback) {
+    const base::Callback<void(WebKit::WebAXEvent)>& callback) {
   accessibility_testing_callback_ = callback;
 }
 
@@ -1893,13 +1892,13 @@ void RenderViewHostImpl::StopFinding(StopFindAction action) {
   Send(new ViewMsg_StopFinding(GetRoutingID(), action));
 }
 
-void RenderViewHostImpl::OnAccessibilityNotifications(
-    const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
+void RenderViewHostImpl::OnAccessibilityEvents(
+    const std::vector<AccessibilityHostMsg_EventParams>& params) {
   if (view_ && !is_swapped_out_)
-    view_->OnAccessibilityNotifications(params);
+    view_->OnAccessibilityEvents(params);
 
   // Always send an ACK or the renderer can be in a bad state.
-  Send(new AccessibilityMsg_Notifications_ACK(GetRoutingID()));
+  Send(new AccessibilityMsg_Events_ACK(GetRoutingID()));
 
   // The rest of this code is just for testing; bail out if we're not
   // in that mode.
@@ -1907,10 +1906,10 @@ void RenderViewHostImpl::OnAccessibilityNotifications(
     return;
 
   for (unsigned i = 0; i < params.size(); i++) {
-    const AccessibilityHostMsg_NotificationParams& param = params[i];
-    AccessibilityNotification src_type = param.notification_type;
-    if (src_type == AccessibilityNotificationLayoutComplete ||
-        src_type == AccessibilityNotificationLoadComplete) {
+    const AccessibilityHostMsg_EventParams& param = params[i];
+    WebKit::WebAXEvent src_type = param.event_type;
+    if (src_type == WebKit::WebAXEventLayoutComplete ||
+        src_type == WebKit::WebAXEventLoadComplete) {
       MakeAccessibilityNodeDataTree(param.nodes, &accessibility_tree_);
     }
     accessibility_testing_callback_.Run(src_type);

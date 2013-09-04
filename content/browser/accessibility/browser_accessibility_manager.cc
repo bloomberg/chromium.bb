@@ -69,7 +69,7 @@ void BrowserAccessibilityManager::Initialize(const AccessibilityNodeData src) {
 AccessibilityNodeData BrowserAccessibilityManager::GetEmptyDocument() {
   AccessibilityNodeData empty_document;
   empty_document.id = 0;
-  empty_document.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  empty_document.role = WebKit::WebAXRoleRootWebArea;
   return empty_document;
 }
 
@@ -93,7 +93,7 @@ void BrowserAccessibilityManager::GotFocus(bool touch_event_context) {
   if (!focus_)
     return;
 
-  NotifyAccessibilityEvent(AccessibilityNotificationFocusChanged, focus_);
+  NotifyAccessibilityEvent(WebKit::WebAXEventFocus, focus_);
 }
 
 void BrowserAccessibilityManager::WasHidden() {
@@ -102,7 +102,7 @@ void BrowserAccessibilityManager::WasHidden() {
 
 void BrowserAccessibilityManager::GotMouseDown() {
   osk_state_ = OSK_ALLOWED_WITHIN_FOCUSED_OBJECT;
-  NotifyAccessibilityEvent(AccessibilityNotificationFocusChanged, focus_);
+  NotifyAccessibilityEvent(WebKit::WebAXEventFocus, focus_);
 }
 
 bool BrowserAccessibilityManager::IsOSKAllowed(const gfx::Rect& bounds) {
@@ -124,24 +124,24 @@ void BrowserAccessibilityManager::RemoveNode(BrowserAccessibility* node) {
   renderer_id_map_.erase(renderer_id);
 }
 
-void BrowserAccessibilityManager::OnAccessibilityNotifications(
-    const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
+void BrowserAccessibilityManager::OnAccessibilityEvents(
+    const std::vector<AccessibilityHostMsg_EventParams>& params) {
   for (uint32 index = 0; index < params.size(); index++) {
-    const AccessibilityHostMsg_NotificationParams& param = params[index];
+    const AccessibilityHostMsg_EventParams& param = params[index];
 
     // Update nodes that changed.
     if (!UpdateNodes(param.nodes))
       return;
 
     // Find the node corresponding to the id that's the target of the
-    // notification (which may not be the root of the update tree).
+    // event (which may not be the root of the update tree).
     BrowserAccessibility* node = GetFromRendererID(param.id);
     if (!node)
       continue;
 
-    int notification_type = param.notification_type;
-    if (notification_type == AccessibilityNotificationFocusChanged ||
-        notification_type == AccessibilityNotificationBlur) {
+    WebKit::WebAXEvent event_type = param.event_type;
+    if (event_type == WebKit::WebAXEventFocus ||
+        event_type == WebKit::WebAXEventBlur) {
       SetFocus(node, false);
 
       if (osk_state_ != OSK_DISALLOWED_BECAUSE_TAB_HIDDEN &&
@@ -154,15 +154,15 @@ void BrowserAccessibilityManager::OnAccessibilityNotifications(
         continue;
     }
 
-    // Send the notification event to the operating system.
-    NotifyAccessibilityEvent(notification_type, node);
+    // Send the event event to the operating system.
+    NotifyAccessibilityEvent(event_type, node);
 
     // Set initial focus when a page is loaded.
-    if (notification_type == AccessibilityNotificationLoadComplete) {
+    if (event_type == WebKit::WebAXEventLoadComplete) {
       if (!focus_)
         SetFocus(root_, false);
       if (!delegate_ || delegate_->HasFocus())
-        NotifyAccessibilityEvent(AccessibilityNotificationFocusChanged, focus_);
+        NotifyAccessibilityEvent(WebKit::WebAXEventFocus, focus_);
     }
   }
 }
@@ -333,7 +333,7 @@ bool BrowserAccessibilityManager::UpdateNode(const AccessibilityNodeData& src) {
   // and this is a serious error.
   BrowserAccessibility* instance = GetFromRendererID(src.id);
   if (!instance) {
-    if (src.role != AccessibilityNodeData::ROLE_ROOT_WEB_AREA)
+    if (src.role != WebKit::WebAXRoleRootWebArea)
       return false;
     instance = CreateNode(NULL, src.id, 0);
   }
@@ -400,7 +400,7 @@ bool BrowserAccessibilityManager::UpdateNode(const AccessibilityNodeData& src) {
   instance->SwapChildren(new_children);
 
   // Handle the case where this node is the new root of the tree.
-  if (src.role == AccessibilityNodeData::ROLE_ROOT_WEB_AREA &&
+  if (src.role == WebKit::WebAXRoleRootWebArea &&
       (!root_ || root_->renderer_id() != src.id)) {
     if (root_)
       root_->Destroy();
@@ -410,9 +410,9 @@ bool BrowserAccessibilityManager::UpdateNode(const AccessibilityNodeData& src) {
   }
 
   // Keep track of what node is focused.
-  if (src.role != AccessibilityNodeData::ROLE_ROOT_WEB_AREA &&
-      src.role != AccessibilityNodeData::ROLE_WEB_AREA &&
-      (src.state >> AccessibilityNodeData::STATE_FOCUSED & 1)) {
+  if (src.role != WebKit::WebAXRoleRootWebArea &&
+      src.role != WebKit::WebAXRoleWebArea &&
+      (src.state >> WebKit::WebAXStateFocused & 1)) {
     SetFocus(instance, false);
   }
   return success;

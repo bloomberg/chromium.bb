@@ -20,16 +20,16 @@ namespace content {
 AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     Shell* shell,
     AccessibilityMode accessibility_mode,
-    AccessibilityNotification notification)
+    WebKit::WebAXEvent event_type)
     : shell_(shell),
-      notification_to_wait_for_(notification),
+      event_to_wait_for_(event_type),
       loop_runner_(new MessageLoopRunner()),
       weak_factory_(this) {
   WebContents* web_contents = shell_->web_contents();
   view_host_ = static_cast<RenderViewHostImpl*>(
       web_contents->GetRenderViewHost());
   view_host_->SetAccessibilityCallbackForTesting(
-      base::Bind(&AccessibilityNotificationWaiter::OnAccessibilityNotification,
+      base::Bind(&AccessibilityNotificationWaiter::OnAccessibilityEvent,
                  weak_factory_.GetWeakPtr()));
   view_host_->SetAccessibilityMode(accessibility_mode);
 }
@@ -46,9 +46,9 @@ AccessibilityNotificationWaiter::GetAccessibilityNodeDataTree() const {
   return view_host_->accessibility_tree_for_testing();
 }
 
-void AccessibilityNotificationWaiter::OnAccessibilityNotification(
-    AccessibilityNotification notification) {
-  if (!IsAboutBlank() && notification_to_wait_for_ == notification)
+void AccessibilityNotificationWaiter::OnAccessibilityEvent(
+    WebKit::WebAXEvent event_type) {
+  if (!IsAboutBlank() && event_to_wait_for_ == event_type)
     loop_runner_->Quit();
 }
 

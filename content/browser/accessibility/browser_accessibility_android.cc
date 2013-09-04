@@ -30,8 +30,8 @@ bool BrowserAccessibilityAndroid::IsLeaf() const {
 
   // Iframes are always allowed to contain children.
   if (IsIframe() ||
-      role() == AccessibilityNodeData::ROLE_ROOT_WEB_AREA ||
-      role() == AccessibilityNodeData::ROLE_WEB_AREA) {
+      role() == WebKit::WebAXRoleRootWebArea ||
+      role() == WebKit::WebAXRoleWebArea) {
     return false;
   }
 
@@ -41,11 +41,11 @@ bool BrowserAccessibilityAndroid::IsLeaf() const {
 
   // Headings with text can drop their children.
   string16 name = GetText();
-  if (role() == AccessibilityNodeData::ROLE_HEADING && !name.empty())
+  if (role() == WebKit::WebAXRoleHeading && !name.empty())
     return true;
 
   // Focusable nodes with text can drop their children.
-  if (HasState(AccessibilityNodeData::STATE_FOCUSABLE) && !name.empty())
+  if (HasState(WebKit::WebAXStateFocusable) && !name.empty())
     return true;
 
   // Nodes with only static text as children can drop their children.
@@ -60,18 +60,18 @@ bool BrowserAccessibilityAndroid::IsCheckable() const {
   bool is_aria_pressed_defined;
   bool is_mixed;
   GetAriaTristate("aria-pressed", &is_aria_pressed_defined, &is_mixed);
-  if (role() == AccessibilityNodeData::ROLE_CHECKBOX ||
-      role() == AccessibilityNodeData::ROLE_RADIO_BUTTON ||
+  if (role() == WebKit::WebAXRoleCheckBox ||
+      role() == WebKit::WebAXRoleRadioButton ||
       is_aria_pressed_defined) {
     checkable = true;
   }
-  if (HasState(AccessibilityNodeData::STATE_CHECKED))
+  if (HasState(WebKit::WebAXStateChecked))
     checkable = true;
   return checkable;
 }
 
 bool BrowserAccessibilityAndroid::IsChecked() const {
-  return HasState(AccessibilityNodeData::STATE_CHECKED);
+  return HasState(WebKit::WebAXStateChecked);
 }
 
 bool BrowserAccessibilityAndroid::IsClickable() const {
@@ -79,13 +79,13 @@ bool BrowserAccessibilityAndroid::IsClickable() const {
 }
 
 bool BrowserAccessibilityAndroid::IsEnabled() const {
-  return !HasState(AccessibilityNodeData::STATE_UNAVAILABLE);
+  return HasState(WebKit::WebAXStateEnabled);
 }
 
 bool BrowserAccessibilityAndroid::IsFocusable() const {
-  bool focusable = HasState(AccessibilityNodeData::STATE_FOCUSABLE);
+  bool focusable = HasState(WebKit::WebAXStateFocusable);
   if (IsIframe() ||
-      role() == AccessibilityNodeData::ROLE_WEB_AREA) {
+      role() == WebKit::WebAXRoleWebArea) {
     focusable = false;
   }
   return focusable;
@@ -96,7 +96,7 @@ bool BrowserAccessibilityAndroid::IsFocused() const {
 }
 
 bool BrowserAccessibilityAndroid::IsPassword() const {
-  return HasState(AccessibilityNodeData::STATE_PROTECTED);
+  return HasState(WebKit::WebAXStateProtected);
 }
 
 bool BrowserAccessibilityAndroid::IsScrollable() const {
@@ -105,59 +105,59 @@ bool BrowserAccessibilityAndroid::IsScrollable() const {
 }
 
 bool BrowserAccessibilityAndroid::IsSelected() const {
-  return HasState(AccessibilityNodeData::STATE_SELECTED);
+  return HasState(WebKit::WebAXStateSelected);
 }
 
 bool BrowserAccessibilityAndroid::IsVisibleToUser() const {
-  return !HasState(AccessibilityNodeData::STATE_INVISIBLE);
+  return !HasState(WebKit::WebAXStateInvisible);
 }
 
 const char* BrowserAccessibilityAndroid::GetClassName() const {
   const char* class_name = NULL;
 
   switch(role()) {
-    case AccessibilityNodeData::ROLE_EDITABLE_TEXT:
-    case AccessibilityNodeData::ROLE_SPIN_BUTTON:
-    case AccessibilityNodeData::ROLE_TEXTAREA:
-    case AccessibilityNodeData::ROLE_TEXT_FIELD:
+    case WebKit::WebAXRoleEditableText:
+    case WebKit::WebAXRoleSpinButton:
+    case WebKit::WebAXRoleTextArea:
+    case WebKit::WebAXRoleTextField:
       class_name = "android.widget.EditText";
       break;
-    case AccessibilityNodeData::ROLE_SLIDER:
+    case WebKit::WebAXRoleSlider:
       class_name = "android.widget.SeekBar";
       break;
-    case AccessibilityNodeData::ROLE_COMBO_BOX:
+    case WebKit::WebAXRoleComboBox:
       class_name = "android.widget.Spinner";
       break;
-    case AccessibilityNodeData::ROLE_BUTTON:
-    case AccessibilityNodeData::ROLE_MENU_BUTTON:
-    case AccessibilityNodeData::ROLE_POPUP_BUTTON:
+    case WebKit::WebAXRoleButton:
+    case WebKit::WebAXRoleMenuButton:
+    case WebKit::WebAXRolePopUpButton:
       class_name = "android.widget.Button";
       break;
-    case AccessibilityNodeData::ROLE_CHECKBOX:
+    case WebKit::WebAXRoleCheckBox:
       class_name = "android.widget.CheckBox";
       break;
-    case AccessibilityNodeData::ROLE_RADIO_BUTTON:
+    case WebKit::WebAXRoleRadioButton:
       class_name = "android.widget.RadioButton";
       break;
-    case AccessibilityNodeData::ROLE_TOGGLE_BUTTON:
+    case WebKit::WebAXRoleToggleButton:
       class_name = "android.widget.ToggleButton";
       break;
-    case AccessibilityNodeData::ROLE_CANVAS:
-    case AccessibilityNodeData::ROLE_IMAGE:
+    case WebKit::WebAXRoleCanvas:
+    case WebKit::WebAXRoleImage:
       class_name = "android.widget.Image";
       break;
-    case AccessibilityNodeData::ROLE_PROGRESS_INDICATOR:
+    case WebKit::WebAXRoleProgressIndicator:
       class_name = "android.widget.ProgressBar";
       break;
-    case AccessibilityNodeData::ROLE_TAB_LIST:
+    case WebKit::WebAXRoleTabList:
       class_name = "android.widget.TabWidget";
       break;
-    case AccessibilityNodeData::ROLE_GRID:
-    case AccessibilityNodeData::ROLE_TABLE:
+    case WebKit::WebAXRoleGrid:
+    case WebKit::WebAXRoleTable:
       class_name = "android.widget.GridView";
       break;
-    case AccessibilityNodeData::ROLE_LIST:
-    case AccessibilityNodeData::ROLE_LISTBOX:
+    case WebKit::WebAXRoleList:
+    case WebKit::WebAXRoleListBox:
       class_name = "android.widget.ListView";
       break;
     default:
@@ -170,7 +170,7 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
 
 string16 BrowserAccessibilityAndroid::GetText() const {
   if (IsIframe() ||
-      role() == AccessibilityNodeData::ROLE_WEB_AREA) {
+      role() == WebKit::WebAXRoleWebArea) {
     return string16();
   }
 
@@ -192,14 +192,13 @@ string16 BrowserAccessibilityAndroid::GetText() const {
   }
 
   switch(role()) {
-    case AccessibilityNodeData::ROLE_IMAGE_MAP_LINK:
-    case AccessibilityNodeData::ROLE_LINK:
-    case AccessibilityNodeData::ROLE_WEBCORE_LINK:
+    case WebKit::WebAXRoleImageMapLink:
+    case WebKit::WebAXRoleLink:
       if (!text.empty())
         text += ASCIIToUTF16(" ");
       text += ASCIIToUTF16("Link");
       break;
-    case AccessibilityNodeData::ROLE_HEADING:
+    case WebKit::WebAXRoleHeading:
       // Only append "heading" if this node already has text.
       if (!text.empty())
         text += ASCIIToUTF16(" Heading");
@@ -212,12 +211,12 @@ string16 BrowserAccessibilityAndroid::GetText() const {
 int BrowserAccessibilityAndroid::GetItemIndex() const {
   int index = 0;
   switch(role()) {
-    case AccessibilityNodeData::ROLE_LIST_ITEM:
-    case AccessibilityNodeData::ROLE_LISTBOX_OPTION:
+    case WebKit::WebAXRoleListItem:
+    case WebKit::WebAXRoleListBoxOption:
       index = index_in_parent();
       break;
-    case AccessibilityNodeData::ROLE_SLIDER:
-    case AccessibilityNodeData::ROLE_PROGRESS_INDICATOR: {
+    case WebKit::WebAXRoleSlider:
+    case WebKit::WebAXRoleProgressIndicator: {
       float value_for_range;
       if (GetFloatAttribute(
               AccessibilityNodeData::ATTR_VALUE_FOR_RANGE, &value_for_range)) {
@@ -232,12 +231,12 @@ int BrowserAccessibilityAndroid::GetItemIndex() const {
 int BrowserAccessibilityAndroid::GetItemCount() const {
   int count = 0;
   switch(role()) {
-    case AccessibilityNodeData::ROLE_LIST:
-    case AccessibilityNodeData::ROLE_LISTBOX:
+    case WebKit::WebAXRoleList:
+    case WebKit::WebAXRoleListBox:
       count = child_count();
       break;
-    case AccessibilityNodeData::ROLE_SLIDER:
-    case AccessibilityNodeData::ROLE_PROGRESS_INDICATOR: {
+    case WebKit::WebAXRoleSlider:
+    case WebKit::WebAXRoleProgressIndicator: {
       float max_value_for_range;
       if (GetFloatAttribute(AccessibilityNodeData::ATTR_MAX_VALUE_FOR_RANGE,
                             &max_value_for_range)) {
@@ -342,7 +341,7 @@ int BrowserAccessibilityAndroid::GetEditableTextLength() const {
 bool BrowserAccessibilityAndroid::HasFocusableChild() const {
   for (uint32 i = 0; i < child_count(); i++) {
     BrowserAccessibility* child = GetChild(i);
-    if (child->HasState(AccessibilityNodeData::STATE_FOCUSABLE))
+    if (child->HasState(WebKit::WebAXStateFocusable))
       return true;
     if (static_cast<BrowserAccessibilityAndroid*>(child)->HasFocusableChild())
       return true;
@@ -353,7 +352,7 @@ bool BrowserAccessibilityAndroid::HasFocusableChild() const {
 bool BrowserAccessibilityAndroid::HasOnlyStaticTextChildren() const {
   for (uint32 i = 0; i < child_count(); i++) {
     BrowserAccessibility* child = GetChild(i);
-    if (child->role() != AccessibilityNodeData::ROLE_STATIC_TEXT)
+    if (child->role() != WebKit::WebAXRoleStaticText)
       return false;
   }
   return true;
@@ -375,8 +374,8 @@ void BrowserAccessibilityAndroid::PostInitialize() {
     }
   }
 
-  if (role_ == AccessibilityNodeData::ROLE_ALERT && first_time_)
-    manager_->NotifyAccessibilityEvent(AccessibilityNotificationAlert, this);
+  if (role_ == WebKit::WebAXRoleAlert && first_time_)
+    manager_->NotifyAccessibilityEvent(WebKit::WebAXEventAlert, this);
 
   string16 live;
   if (GetString16Attribute(
@@ -395,7 +394,7 @@ void BrowserAccessibilityAndroid::NotifyLiveRegionUpdate(string16& aria_live) {
   string16 text = GetText();
   if (cached_text_ != text) {
     if (!text.empty()) {
-      manager_->NotifyAccessibilityEvent(AccessibilityNotificationObjectShow,
+      manager_->NotifyAccessibilityEvent(WebKit::WebAXEventShow,
                                          this);
     }
     cached_text_ = text;

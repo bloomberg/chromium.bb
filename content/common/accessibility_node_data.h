@@ -11,6 +11,7 @@
 
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "ui/gfx/rect.h"
 
 namespace content {
@@ -19,160 +20,6 @@ namespace content {
 // single web object, in a form that can be serialized and sent from
 // the renderer process to the browser process.
 struct CONTENT_EXPORT AccessibilityNodeData {
-  // An enumeration of accessibility roles.
-  enum Role {
-    ROLE_UNKNOWN = 0,
-
-    // Used by Chromium to distinguish between the root of the tree
-    // for this page, and a web area for a frame within this page.
-    ROLE_ROOT_WEB_AREA,
-
-    // These roles all directly correspond to WebKit accessibility roles,
-    // keep these alphabetical.
-    ROLE_ALERT,
-    ROLE_ALERT_DIALOG,
-    ROLE_ANNOTATION,
-    ROLE_APPLICATION,
-    ROLE_ARTICLE,
-    ROLE_BROWSER,
-    ROLE_BUSY_INDICATOR,
-    ROLE_BUTTON,
-    ROLE_CANVAS,
-    ROLE_CANVAS_WITH_FALLBACK_CONTENT,
-    ROLE_CELL,
-    ROLE_CHECKBOX,
-    ROLE_COLOR_WELL,
-    ROLE_COLUMN,
-    ROLE_COLUMN_HEADER,
-    ROLE_COMBO_BOX,
-    ROLE_DEFINITION,
-    ROLE_DESCRIPTION_LIST_DETAIL,
-    ROLE_DESCRIPTION_LIST_TERM,
-    ROLE_DIALOG,
-    ROLE_DIRECTORY,
-    ROLE_DISCLOSURE_TRIANGLE,
-    ROLE_DIV,
-    ROLE_DOCUMENT,
-    ROLE_DRAWER,
-    ROLE_EDITABLE_TEXT,
-    ROLE_FOOTER,
-    ROLE_FORM,
-    ROLE_GRID,
-    ROLE_GROUP,
-    ROLE_GROW_AREA,
-    ROLE_HEADING,
-    ROLE_HELP_TAG,
-    ROLE_HORIZONTAL_RULE,
-    ROLE_IGNORED,
-    ROLE_IMAGE,
-    ROLE_IMAGE_MAP,
-    ROLE_IMAGE_MAP_LINK,
-    ROLE_INCREMENTOR,
-    ROLE_LABEL,
-    ROLE_LANDMARK_APPLICATION,
-    ROLE_LANDMARK_BANNER,
-    ROLE_LANDMARK_COMPLEMENTARY,
-    ROLE_LANDMARK_CONTENTINFO,
-    ROLE_LANDMARK_MAIN,
-    ROLE_LANDMARK_NAVIGATION,
-    ROLE_LANDMARK_SEARCH,
-    ROLE_LINK,
-    ROLE_LIST,
-    ROLE_LISTBOX,
-    ROLE_LISTBOX_OPTION,
-    ROLE_LIST_ITEM,
-    ROLE_LIST_MARKER,
-    ROLE_LOG,
-    ROLE_MARQUEE,
-    ROLE_MATH,
-    ROLE_MATTE,
-    ROLE_MENU,
-    ROLE_MENU_BAR,
-    ROLE_MENU_ITEM,
-    ROLE_MENU_BUTTON,
-    ROLE_MENU_LIST_OPTION,
-    ROLE_MENU_LIST_POPUP,
-    ROLE_NOTE,
-    ROLE_OUTLINE,
-    ROLE_PARAGRAPH,
-    ROLE_POPUP_BUTTON,
-    ROLE_PRESENTATIONAL,
-    ROLE_PROGRESS_INDICATOR,
-    ROLE_RADIO_BUTTON,
-    ROLE_RADIO_GROUP,
-    ROLE_REGION,
-    ROLE_ROW,
-    ROLE_ROW_HEADER,
-    ROLE_RULER,
-    ROLE_RULER_MARKER,
-    ROLE_SCROLLAREA,
-    ROLE_SCROLLBAR,
-    ROLE_SHEET,
-    ROLE_SLIDER,
-    ROLE_SLIDER_THUMB,
-    ROLE_SPIN_BUTTON,
-    ROLE_SPIN_BUTTON_PART,
-    ROLE_SPLITTER,
-    ROLE_SPLIT_GROUP,
-    ROLE_STATIC_TEXT,
-    ROLE_STATUS,
-    ROLE_SVG_ROOT,
-    ROLE_SYSTEM_WIDE,
-    ROLE_TAB,
-    ROLE_TABLE,
-    ROLE_TABLE_HEADER_CONTAINER,
-    ROLE_TAB_GROUP_UNUSED,  // WebKit doesn't use (uses ROLE_TAB_LIST)
-    ROLE_TAB_LIST,
-    ROLE_TAB_PANEL,
-    ROLE_TEXTAREA,
-    ROLE_TEXT_FIELD,
-    ROLE_TIMER,
-    ROLE_TOGGLE_BUTTON,
-    ROLE_TOOLBAR,
-    ROLE_TOOLTIP,
-    ROLE_TREE,
-    ROLE_TREE_GRID,
-    ROLE_TREE_ITEM,
-    ROLE_VALUE_INDICATOR,
-    ROLE_WEBCORE_LINK,
-    ROLE_WEB_AREA,
-    ROLE_WINDOW,
-    NUM_ROLES
-  };
-
-  // An alphabetical enumeration of accessibility states.
-  // A state bitmask is formed by shifting 1 to the left by each state,
-  // for example:
-  //   int mask = (1 << STATE_CHECKED) | (1 << STATE_FOCUSED);
-  enum State {
-    STATE_BUSY,
-    STATE_CHECKED,
-    STATE_COLLAPSED,
-    STATE_EXPANDED,
-    STATE_FOCUSABLE,
-    STATE_FOCUSED,
-    STATE_HASPOPUP,
-    STATE_HOTTRACKED,
-    STATE_INDETERMINATE,
-    STATE_INVISIBLE,
-    STATE_LINKED,
-    STATE_MULTISELECTABLE,
-    STATE_OFFSCREEN,
-    STATE_PRESSED,
-    STATE_PROTECTED,
-    STATE_READONLY,
-    STATE_REQUIRED,
-    STATE_SELECTABLE,
-    STATE_SELECTED,
-    STATE_TRAVERSED,
-    STATE_UNAVAILABLE,
-    STATE_VERTICAL,
-    STATE_VISITED,
-    NUM_STATES
-  };
-
-  COMPILE_ASSERT(NUM_STATES <= 31, state_enum_not_too_large);
-
   // Additional optional attributes that can be optionally attached to
   // a node.
   enum StringAttribute {
@@ -238,7 +85,7 @@ struct CONTENT_EXPORT AccessibilityNodeData {
     // Relationships between this element and other elements.
     ATTR_TITLE_UI_ELEMENT,
 
-    // Color value for ROLE_COLOR_WELL, each component is 0..255
+    // Color value for WebKit::WebAXRoleColorWell, each component is 0..255
     ATTR_COLOR_VALUE_RED,
     ATTR_COLOR_VALUE_GREEN,
     ATTR_COLOR_VALUE_BLUE
@@ -276,6 +123,9 @@ struct CONTENT_EXPORT AccessibilityNodeData {
     // If this is set, all of the other fields in this struct should
     // be ignored and only the locations should change.
     ATTR_UPDATE_LOCATION_ONLY,
+
+    // Set on a canvas element if it has fallback content.
+    ATTR_CANVAS_HAS_FALLBACK,
   };
 
   enum IntListAttribute {
@@ -320,7 +170,7 @@ struct CONTENT_EXPORT AccessibilityNodeData {
   // This is a simple serializable struct. All member variables should be
   // public and copyable.
   int32 id;
-  Role role;
+  WebKit::WebAXRole role;
   uint32 state;
   gfx::Rect location;
   std::vector<std::pair<StringAttribute, std::string> > string_attributes;

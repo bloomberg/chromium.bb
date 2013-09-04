@@ -43,8 +43,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // BrowserAccessibilityManager methods
   virtual void AddNodeToMap(BrowserAccessibility* node);
   virtual void RemoveNode(BrowserAccessibility* node) OVERRIDE;
-  virtual void NotifyAccessibilityEvent(int type, BrowserAccessibility* node)
-      OVERRIDE;
+  virtual void NotifyAccessibilityEvent(
+      WebKit::WebAXEvent event_type, BrowserAccessibility* node) OVERRIDE;
 
   // Track this object and post a VISIBLE_DATA_CHANGED notification when
   // its container scrolls.

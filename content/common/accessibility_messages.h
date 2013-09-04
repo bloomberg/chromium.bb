@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "content/common/accessibility_node_data.h"
-#include "content/common/accessibility_notification.h"
 #include "content/common/content_export.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/common/common_param_traits.h"
@@ -15,20 +14,20 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_param_traits.h"
 #include "ipc/param_traits_macros.h"
+#include "third_party/WebKit/public/web/WebAXEnums.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START AccessibilityMsgStart
 
-IPC_ENUM_TRAITS(AccessibilityNotification)
+IPC_ENUM_TRAITS(WebKit::WebAXEvent)
+IPC_ENUM_TRAITS(WebKit::WebAXRole)
 
 IPC_ENUM_TRAITS(content::AccessibilityNodeData::BoolAttribute)
 IPC_ENUM_TRAITS(content::AccessibilityNodeData::FloatAttribute)
 IPC_ENUM_TRAITS(content::AccessibilityNodeData::IntAttribute)
 IPC_ENUM_TRAITS(content::AccessibilityNodeData::IntListAttribute)
-IPC_ENUM_TRAITS(content::AccessibilityNodeData::Role)
-IPC_ENUM_TRAITS(content::AccessibilityNodeData::State)
 IPC_ENUM_TRAITS(content::AccessibilityNodeData::StringAttribute)
 
 IPC_STRUCT_TRAITS_BEGIN(content::AccessibilityNodeData)
@@ -45,15 +44,15 @@ IPC_STRUCT_TRAITS_BEGIN(content::AccessibilityNodeData)
   IPC_STRUCT_TRAITS_MEMBER(child_ids)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_BEGIN(AccessibilityHostMsg_NotificationParams)
+IPC_STRUCT_BEGIN(AccessibilityHostMsg_EventParams)
   // Vector of nodes in the tree that need to be updated before
-  // sending the notification.
+  // sending the event.
   IPC_STRUCT_MEMBER(std::vector<content::AccessibilityNodeData>, nodes)
 
-  // Type of notification.
-  IPC_STRUCT_MEMBER(AccessibilityNotification, notification_type)
+  // Type of event.
+  IPC_STRUCT_MEMBER(WebKit::WebAXEvent, event_type)
 
-  // ID of the node that the notification applies to.
+  // ID of the node that the event applies to.
   IPC_STRUCT_MEMBER(int, id)
 IPC_STRUCT_END()
 
@@ -91,9 +90,9 @@ IPC_MESSAGE_ROUTED3(AccessibilityMsg_SetTextSelection,
                     int /* New start offset */,
                     int /* New end offset */)
 
-// Tells the render view that a AccessibilityHostMsg_Notifications
-// message was processed and it can send addition notifications.
-IPC_MESSAGE_ROUTED0(AccessibilityMsg_Notifications_ACK)
+// Tells the render view that a AccessibilityHostMsg_Events
+// message was processed and it can send addition events.
+IPC_MESSAGE_ROUTED0(AccessibilityMsg_Events_ACK)
 
 
 // Kill the renderer because we got a fatal error in the accessibility tree.
@@ -101,8 +100,8 @@ IPC_MESSAGE_ROUTED0(AccessibilityMsg_FatalError)
 
 // Messages sent from the renderer to the browser.
 
-// Sent to notify the browser about renderer accessibility notifications.
-// The browser responds with a AccessibilityMsg_Notifications_ACK.
+// Sent to notify the browser about renderer accessibility events.
+// The browser responds with a AccessibilityMsg_Events_ACK.
 IPC_MESSAGE_ROUTED1(
-    AccessibilityHostMsg_Notifications,
-    std::vector<AccessibilityHostMsg_NotificationParams>)
+    AccessibilityHostMsg_Events,
+    std::vector<AccessibilityHostMsg_EventParams>)

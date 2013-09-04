@@ -35,9 +35,8 @@ RendererAccessibilityFocusOnly::RendererAccessibilityFocusOnly(
 RendererAccessibilityFocusOnly::~RendererAccessibilityFocusOnly() {
 }
 
-void RendererAccessibilityFocusOnly::HandleWebAccessibilityNotification(
-    const WebKit::WebAccessibilityObject& obj,
-    WebKit::WebAccessibilityNotification notification) {
+void RendererAccessibilityFocusOnly::HandleWebAccessibilityEvent(
+    const WebKit::WebAXObject& obj, WebKit::WebAXEvent event) {
   // Do nothing.
 }
 
@@ -80,39 +79,39 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
         node_has_focus && render_view_->IsEditableNode(node);
   }
 
-  std::vector<AccessibilityHostMsg_NotificationParams> notifications;
-  notifications.push_back(AccessibilityHostMsg_NotificationParams());
-  AccessibilityHostMsg_NotificationParams& notification = notifications[0];
+  std::vector<AccessibilityHostMsg_EventParams> events;
+  events.push_back(AccessibilityHostMsg_EventParams());
+  AccessibilityHostMsg_EventParams& event = events[0];
 
   // If we want to update the browser's accessibility tree but not send a
-  // native focus changed notification, we can send a LayoutComplete
-  // notification, which doesn't post a native event on Windows.
-  notification.notification_type =
+  // native focus changed event, we can send a LayoutComplete
+  // event, which doesn't post a native event on Windows.
+  event.event_type =
       send_focus_event ?
-      AccessibilityNotificationFocusChanged :
-      AccessibilityNotificationLayoutComplete;
+      WebKit::WebAXEventFocus :
+      WebKit::WebAXEventLayoutComplete;
 
-  // Set the id that the notification applies to: the root node if nothing
+  // Set the id that the event applies to: the root node if nothing
   // has focus, otherwise the focused node.
-  notification.id = node_has_focus ? next_id_ : 1;
+  event.id = node_has_focus ? next_id_ : 1;
 
-  notification.nodes.resize(2);
-  AccessibilityNodeData& root = notification.nodes[0];
-  AccessibilityNodeData& child = notification.nodes[1];
+  event.nodes.resize(2);
+  AccessibilityNodeData& root = event.nodes[0];
+  AccessibilityNodeData& child = event.nodes[1];
 
   // Always include the root of the tree, the document. It always has id 1.
   root.id = 1;
-  root.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  root.role = WebKit::WebAXRoleRootWebArea;
   root.state =
-      (1 << AccessibilityNodeData::STATE_READONLY) |
-      (1 << AccessibilityNodeData::STATE_FOCUSABLE);
+      (1 << WebKit::WebAXStateReadonly) |
+      (1 << WebKit::WebAXStateFocusable);
   if (!node_has_focus)
-    root.state |= (1 << AccessibilityNodeData::STATE_FOCUSED);
+    root.state |= (1 << WebKit::WebAXStateFocused);
   root.location = gfx::Rect(render_view_->size());
   root.child_ids.push_back(next_id_);
 
   child.id = next_id_;
-  child.role = AccessibilityNodeData::ROLE_GROUP;
+  child.role = WebKit::WebAXRoleGroup;
 
   if (!node.isNull() && node.isElementNode()) {
     child.location = gfx::Rect(
@@ -125,23 +124,23 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
 
   if (node_has_focus) {
     child.state =
-        (1 << AccessibilityNodeData::STATE_FOCUSABLE) |
-        (1 << AccessibilityNodeData::STATE_FOCUSED);
+        (1 << WebKit::WebAXStateFocusable) |
+        (1 << WebKit::WebAXStateFocused);
     if (!node_is_editable_text)
-      child.state |= (1 << AccessibilityNodeData::STATE_READONLY);
+      child.state |= (1 << WebKit::WebAXStateReadonly);
   }
 
 #ifndef NDEBUG
   if (logging_) {
     LOG(INFO) << "Accessibility update: \n"
         << "routing id=" << routing_id()
-        << " notification="
-        << AccessibilityNotificationToString(notification.notification_type)
-        << "\n" << notification.nodes[0].DebugString(true);
+        << " event="
+        << AccessibilityEventToString(event.event_type)
+        << "\n" << event.nodes[0].DebugString(true);
   }
 #endif
 
-  Send(new AccessibilityHostMsg_Notifications(routing_id(), notifications));
+  Send(new AccessibilityHostMsg_Events(routing_id(), events));
 
   // Increment the id, wrap back when we get past a million.
   next_id_++;

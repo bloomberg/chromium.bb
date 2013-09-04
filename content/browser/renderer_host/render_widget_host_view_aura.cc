@@ -2044,12 +2044,12 @@ void RenderWidgetHostViewAura::SetScrollOffsetPinning(
   // Not needed. Mac-only.
 }
 
-void RenderWidgetHostViewAura::OnAccessibilityNotifications(
-    const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
+void RenderWidgetHostViewAura::OnAccessibilityEvents(
+    const std::vector<AccessibilityHostMsg_EventParams>& params) {
   BrowserAccessibilityManager* manager =
       GetOrCreateBrowserAccessibilityManager();
   if (manager)
-    manager->OnAccessibilityNotifications(params);
+    manager->OnAccessibilityEvents(params);
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {

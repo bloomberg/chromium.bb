@@ -250,11 +250,11 @@ static AtkStateSet* browser_accessibility_ref_state_set(AtkObject* atk_object) {
           ref_state_set(atk_object);
   int32 state = obj->state();
 
-  if (state & (1 << AccessibilityNodeData::STATE_FOCUSABLE))
+  if (state & (1 << WebKit::WebAXStateFocusable))
     atk_state_set_add_state(state_set, ATK_STATE_FOCUSABLE);
   if (obj->manager()->GetFocus(NULL) == obj)
     atk_state_set_add_state(state_set, ATK_STATE_FOCUSED);
-  if (!(state & (1 << AccessibilityNodeData::STATE_UNAVAILABLE)))
+  if (state & (1 << WebKit::WebAXStateEnabled))
     atk_state_set_add_state(state_set, ATK_STATE_ENABLED);
 
   return state_set;
@@ -359,9 +359,9 @@ static int GetInterfaceMaskFromObject(BrowserAccessibilityGtk* obj) {
   interface_mask |= 1 << ATK_COMPONENT_INTERFACE;
 
   int role = obj->role();
-  if (role == AccessibilityNodeData::ROLE_PROGRESS_INDICATOR ||
-      role == AccessibilityNodeData::ROLE_SCROLLBAR ||
-      role == AccessibilityNodeData::ROLE_SLIDER) {
+  if (role == WebKit::WebAXRoleProgressIndicator ||
+      role == WebKit::WebAXRoleScrollBar ||
+      role == WebKit::WebAXRoleSlider) {
     interface_mask |= 1 << ATK_VALUE_INTERFACE;
   }
 
@@ -471,41 +471,38 @@ bool BrowserAccessibilityGtk::IsNative() const {
 
 void BrowserAccessibilityGtk::InitRoleAndState() {
   switch(role_) {
-    case AccessibilityNodeData::ROLE_DOCUMENT:
-    case AccessibilityNodeData::ROLE_ROOT_WEB_AREA:
-    case AccessibilityNodeData::ROLE_WEB_AREA:
+    case WebKit::WebAXRoleDocument:
+    case WebKit::WebAXRoleRootWebArea:
+    case WebKit::WebAXRoleWebArea:
       atk_role_ = ATK_ROLE_DOCUMENT_WEB;
       break;
-    case AccessibilityNodeData::ROLE_GROUP:
-    case AccessibilityNodeData::ROLE_DIV:
+    case WebKit::WebAXRoleGroup:
+    case WebKit::WebAXRoleDiv:
       atk_role_ = ATK_ROLE_SECTION;
       break;
-    case AccessibilityNodeData::ROLE_BUTTON:
+    case WebKit::WebAXRoleButton:
       atk_role_ = ATK_ROLE_PUSH_BUTTON;
       break;
-    case AccessibilityNodeData::ROLE_CHECKBOX:
+    case WebKit::WebAXRoleCheckBox:
       atk_role_ = ATK_ROLE_CHECK_BOX;
       break;
-    case AccessibilityNodeData::ROLE_COMBO_BOX:
+    case WebKit::WebAXRoleComboBox:
       atk_role_ = ATK_ROLE_COMBO_BOX;
       break;
-    case AccessibilityNodeData::ROLE_LINK:
+    case WebKit::WebAXRoleLink:
       atk_role_ = ATK_ROLE_LINK;
       break;
-    case AccessibilityNodeData::ROLE_RADIO_BUTTON:
+    case WebKit::WebAXRoleRadioButton:
       atk_role_ = ATK_ROLE_RADIO_BUTTON;
       break;
-    case AccessibilityNodeData::ROLE_STATIC_TEXT:
+    case WebKit::WebAXRoleStaticText:
       atk_role_ = ATK_ROLE_TEXT;
       break;
-    case AccessibilityNodeData::ROLE_TEXTAREA:
+    case WebKit::WebAXRoleTextArea:
       atk_role_ = ATK_ROLE_ENTRY;
       break;
-    case AccessibilityNodeData::ROLE_TEXT_FIELD:
+    case WebKit::WebAXRoleTextField:
       atk_role_ = ATK_ROLE_ENTRY;
-      break;
-    case AccessibilityNodeData::ROLE_WEBCORE_LINK:
-      atk_role_ = ATK_ROLE_LINK;
       break;
     default:
       atk_role_ = ATK_ROLE_UNKNOWN;
