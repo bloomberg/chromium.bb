@@ -5,4 +5,3 @@ Building
 ########
 
 foo
-
