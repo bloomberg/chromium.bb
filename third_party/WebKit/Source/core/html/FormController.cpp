@@ -314,7 +314,7 @@ static inline void recordFormStructure(const HTMLFormElement& form, StringBuilde
     for (size_t i = 0, namedControls = 0; i < controls.size() && namedControls < namedControlsToBeRecorded; ++i) {
         if (!controls[i]->isFormControlElementWithState())
             continue;
-        HTMLFormControlElementWithState* control = static_cast<HTMLFormControlElementWithState*>(controls[i]);
+        HTMLFormControlElementWithState* control = toHTMLFormControlElementWithState(controls[i]);
         if (!ownerFormForState(*control))
             continue;
         AtomicString name = control->name();
@@ -491,7 +491,7 @@ void FormController::restoreControlStateIn(HTMLFormElement& form)
     for (size_t i = 0; i < elements.size(); ++i) {
         if (!elements[i]->isFormControlElementWithState())
             continue;
-        HTMLFormControlElementWithState* control = static_cast<HTMLFormControlElementWithState*>(elements[i]);
+        HTMLFormControlElementWithState* control = toHTMLFormControlElementWithState(elements[i]);
         if (!control->shouldSaveAndRestoreFormControlState())
             continue;
         if (ownerFormForState(*control) != &form)
