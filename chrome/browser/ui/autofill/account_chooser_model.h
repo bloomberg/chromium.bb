@@ -42,8 +42,7 @@ class AccountChooserModel : public ui::SimpleMenuModel,
  public:
   AccountChooserModel(AccountChooserModelDelegate* delegate,
                       PrefService* prefs,
-                      const AutofillMetrics& metric_logger,
-                      DialogType dialog_type);
+                      const AutofillMetrics& metric_logger);
   virtual ~AccountChooserModel();
 
   // ui::SimpleMenuModel::Delegate implementation.
@@ -118,7 +117,6 @@ class AccountChooserModel : public ui::SimpleMenuModel,
 
   // For logging UMA metrics.
   const AutofillMetrics& metric_logger_;
-  const DialogType dialog_type_;
 
   // The name (email) of the account currently used in communications with the
   // Online Wallet service.

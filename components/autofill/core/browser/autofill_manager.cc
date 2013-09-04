@@ -621,11 +621,10 @@ const std::vector<FormStructure*>& AutofillManager::GetFormStructures() {
 void AutofillManager::ShowRequestAutocompleteDialog(
     const FormData& form,
     const GURL& source_url,
-    autofill::DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback) {
   manager_delegate_->ShowRequestAutocompleteDialog(
-      form, source_url, dialog_type, callback);
+      form, source_url, callback);
 }
 
 void AutofillManager::SetTestDelegate(
@@ -670,8 +669,7 @@ void AutofillManager::OnRequestAutocomplete(
   base::Callback<void(const FormStructure*, const std::string&)> callback =
       base::Bind(&AutofillManager::ReturnAutocompleteData,
                  weak_ptr_factory_.GetWeakPtr());
-  ShowRequestAutocompleteDialog(
-      form, frame_url, autofill::DIALOG_TYPE_REQUEST_AUTOCOMPLETE, callback);
+  ShowRequestAutocompleteDialog(form, frame_url, callback);
 }
 
 void AutofillManager::ReturnAutocompleteResult(

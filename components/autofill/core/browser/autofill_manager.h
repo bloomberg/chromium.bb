@@ -112,7 +112,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
-      autofill::DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback);
 

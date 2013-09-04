@@ -29,12 +29,10 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
       content::WebContents* contents,
       const FormData& form_structure,
       const AutofillMetrics& metric_logger,
-      scoped_refptr<content::MessageLoopRunner> runner,
-      const DialogType dialog_type)
+      scoped_refptr<content::MessageLoopRunner> runner)
       : AutofillDialogControllerImpl(contents,
                                      form_structure,
                                      GURL(),
-                                     dialog_type,
                                      base::Bind(MockCallback)),
         metric_logger_(metric_logger) ,
         runner_(runner) {
@@ -85,8 +83,7 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents(),
         form_data,
         metric_logger_,
-        runner_,
-        DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+        runner_);
   }
 
   TestAutofillDialogController* controller() { return controller_; }

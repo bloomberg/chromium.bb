@@ -158,20 +158,6 @@ int GetFieldTypeGroupMetric(const ServerFieldType field_type,
   return (group * num_possible_metrics) + metric;
 }
 
-// Returns the histogram prefix to use for reporting metrics for |dialog_type|.
-std::string GetPrefixForDialogType(autofill::DialogType dialog_type) {
-  switch (dialog_type) {
-    case autofill::DIALOG_TYPE_AUTOCHECKOUT:
-      return "Autocheckout";
-
-    case autofill::DIALOG_TYPE_REQUEST_AUTOCOMPLETE:
-      return "RequestAutocomplete";
-  }
-
-  NOTREACHED();
-  return "UnknownDialogType";
-}
-
 std::string WalletApiMetricToString(
     AutofillMetrics::WalletApiCallMetric metric) {
   switch (metric) {
@@ -331,47 +317,36 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) const {
 }
 
 void AutofillMetrics::LogDialogDismissalState(
-    autofill::DialogType dialog_type,
     DialogDismissalState state) const {
-  std::string name = GetPrefixForDialogType(dialog_type) + ".DismissalState";
-  LogUMAHistogramEnumeration(name, state, NUM_DIALOG_DISMISSAL_STATES);
+  UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.DismissalState",
+                            state, NUM_DIALOG_DISMISSAL_STATES);
 }
 
 void AutofillMetrics::LogDialogInitialUserState(
-    autofill::DialogType dialog_type,
     DialogInitialUserStateMetric user_type) const {
-  std::string name = GetPrefixForDialogType(dialog_type) + ".InitialUserState";
-  LogUMAHistogramEnumeration(
-      name, user_type, NUM_DIALOG_INITIAL_USER_STATE_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.InitialUserState",
+                            user_type, NUM_DIALOG_INITIAL_USER_STATE_METRICS);
 }
 
 void AutofillMetrics::LogDialogLatencyToShow(
-    autofill::DialogType dialog_type,
     const base::TimeDelta& duration) const {
-  std::string name =
-      GetPrefixForDialogType(dialog_type) + ".UiLatencyToShow";
-  LogUMAHistogramTimes(name, duration);
+  LogUMAHistogramTimes("RequestAutocomplete.UiLatencyToShow", duration);
 }
 
-void AutofillMetrics::LogDialogPopupEvent(autofill::DialogType dialog_type,
-                                          DialogPopupEvent event) const {
-  std::string name = GetPrefixForDialogType(dialog_type) + ".PopupInDialog";
-  LogUMAHistogramEnumeration(name, event, NUM_DIALOG_POPUP_EVENTS);
+void AutofillMetrics::LogDialogPopupEvent(DialogPopupEvent event) const {
+  UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.PopupInDialog",
+                            event, NUM_DIALOG_POPUP_EVENTS);
 }
 
 void AutofillMetrics::LogDialogSecurityMetric(
-    autofill::DialogType dialog_type,
     DialogSecurityMetric metric) const {
-  std::string name = GetPrefixForDialogType(dialog_type) + ".Security";
-  LogUMAHistogramEnumeration(name, metric, NUM_DIALOG_SECURITY_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.Security",
+                            metric, NUM_DIALOG_SECURITY_METRICS);
 }
 
 void AutofillMetrics::LogDialogUiDuration(
     const base::TimeDelta& duration,
-    autofill::DialogType dialog_type,
     DialogDismissalAction dismissal_action) const {
-  std::string prefix = GetPrefixForDialogType(dialog_type);
-
   std::string suffix;
   switch (dismissal_action) {
     case DIALOG_ACCEPTED:
@@ -383,20 +358,19 @@ void AutofillMetrics::LogDialogUiDuration(
       break;
   }
 
-  LogUMAHistogramLongTimes(prefix + ".UiDuration", duration);
-  LogUMAHistogramLongTimes(prefix + ".UiDuration." + suffix, duration);
+  LogUMAHistogramLongTimes("RequestAutocomplete.UiDuration", duration);
+  LogUMAHistogramLongTimes("RequestAutocomplete.UiDuration." + suffix,
+                           duration);
 }
 
-void AutofillMetrics::LogDialogUiEvent(autofill::DialogType dialog_type,
-                                       DialogUiEvent event) const {
-  std::string name = GetPrefixForDialogType(dialog_type) + ".UiEvents";
-  LogUMAHistogramEnumeration(name, event, NUM_DIALOG_UI_EVENTS);
+void AutofillMetrics::LogDialogUiEvent(DialogUiEvent event) const {
+  UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.UiEvents", event,
+                            NUM_DIALOG_UI_EVENTS);
 }
 
-void AutofillMetrics::LogWalletErrorMetric(autofill::DialogType dialog_type,
-                                           WalletErrorMetric metric) const {
-  std::string name = GetPrefixForDialogType(dialog_type) + ".WalletErrors";
-  LogUMAHistogramEnumeration(name, metric, NUM_WALLET_ERROR_METRICS);
+void AutofillMetrics::LogWalletErrorMetric(WalletErrorMetric metric) const {
+  UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.WalletErrors", metric,
+                            NUM_WALLET_ERROR_METRICS);
 }
 
 void AutofillMetrics::LogWalletApiCallDuration(
@@ -407,12 +381,9 @@ void AutofillMetrics::LogWalletApiCallDuration(
 }
 
 void AutofillMetrics::LogWalletRequiredActionMetric(
-      autofill::DialogType dialog_type,
       WalletRequiredActionMetric required_action) const {
-  std::string name =
-      GetPrefixForDialogType(dialog_type) + ".WalletRequiredActions";
-  LogUMAHistogramEnumeration(
-      name, required_action, NUM_WALLET_REQUIRED_ACTIONS);
+  UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.WalletRequiredActions",
+                            required_action, NUM_WALLET_REQUIRED_ACTIONS);
 }
 
 void AutofillMetrics::LogDeveloperEngagementMetric(

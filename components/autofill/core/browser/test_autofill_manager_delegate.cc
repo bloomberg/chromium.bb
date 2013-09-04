@@ -29,7 +29,6 @@ void TestAutofillManagerDelegate::ConfirmSaveCreditCard(
 void TestAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     const FormData& form,
     const GURL& source_url,
-    DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback) {}
 

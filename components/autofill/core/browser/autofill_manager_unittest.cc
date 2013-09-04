@@ -2975,7 +2975,6 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
-      DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback) OVERRIDE {
     callback.Run(user_supplied_data_.get(), "google_transaction_id");

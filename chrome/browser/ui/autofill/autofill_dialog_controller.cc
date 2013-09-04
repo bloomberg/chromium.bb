@@ -15,7 +15,6 @@ AutofillDialogController::Create(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback) {
   NOTIMPLEMENTED();

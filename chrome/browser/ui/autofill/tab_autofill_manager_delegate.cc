@@ -21,8 +21,6 @@
 #include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "content/public/browser/navigation_details.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/gfx/rect.h"
@@ -89,7 +87,6 @@ void TabAutofillManagerDelegate::ConfirmSaveCreditCard(
 void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     const FormData& form,
     const GURL& source_url,
-    DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback) {
   HideRequestAutocompleteDialog();
@@ -97,7 +94,6 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
   dialog_controller_ = AutofillDialogController::Create(web_contents_,
                                                         form,
                                                         source_url,
-                                                        dialog_type,
                                                         callback);
   if (dialog_controller_) {
     dialog_controller_->Show();
@@ -167,13 +163,7 @@ void TabAutofillManagerDelegate::DidNavigateMainFrame(
   if (!dialog_controller_.get())
     return;
 
-  bool was_redirect = details.entry &&
-      content::PageTransitionIsRedirect(details.entry->GetTransitionType());
-
-  if (dialog_controller_->GetDialogType() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE ||
-      !was_redirect) {
-    HideRequestAutocompleteDialog();
-  }
+  HideRequestAutocompleteDialog();
 }
 
 void TabAutofillManagerDelegate::WebContentsDestroyed(

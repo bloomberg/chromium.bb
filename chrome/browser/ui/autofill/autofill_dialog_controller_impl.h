@@ -84,7 +84,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback);
 
@@ -185,7 +184,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // wallet::WalletClientDelegate implementation.
   virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE;
-  virtual DialogType GetDialogType() const OVERRIDE;
   virtual std::string GetRiskData() const OVERRIDE;
   virtual std::string GetWalletCookieValue() const OVERRIDE;
   virtual bool IsShippingAddressRequired() const OVERRIDE;
@@ -220,15 +218,12 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual void OnDidFetchWalletCookieValue(
       const std::string& cookie_value) OVERRIDE;
 
-  DialogType dialog_type() const { return dialog_type_; }
-
  protected:
   // Exposed for testing.
   AutofillDialogControllerImpl(
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback);
 
@@ -553,9 +548,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   const AutofillMetrics metric_logger_;
   base::Time dialog_shown_timestamp_;
   AutofillMetrics::DialogInitialUserStateMetric initial_user_state_;
-
-  // Whether this is an Autocheckout or a requestAutocomplete dialog.
-  const DialogType dialog_type_;
 
   FormStructure form_structure_;
 

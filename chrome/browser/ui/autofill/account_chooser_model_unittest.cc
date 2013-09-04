@@ -20,8 +20,7 @@ class TestAccountChooserModel : public AccountChooserModel {
   TestAccountChooserModel(AccountChooserModelDelegate* delegate,
                           PrefService* prefs,
                           const AutofillMetrics& metric_logger)
-      : AccountChooserModel(delegate, prefs, metric_logger,
-                            DIALOG_TYPE_REQUEST_AUTOCOMPLETE) {}
+      : AccountChooserModel(delegate, prefs, metric_logger) {}
   virtual ~TestAccountChooserModel() {}
 
   using AccountChooserModel::kActiveWalletItemId;

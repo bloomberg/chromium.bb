@@ -27,16 +27,14 @@ AccountChooserModelDelegate::~AccountChooserModelDelegate() {}
 AccountChooserModel::AccountChooserModel(
     AccountChooserModelDelegate* delegate,
     PrefService* prefs,
-    const AutofillMetrics& metric_logger,
-    DialogType dialog_type)
+    const AutofillMetrics& metric_logger)
     : ui::SimpleMenuModel(this),
       delegate_(delegate),
       checked_item_(
           prefs->GetBoolean(::prefs::kAutofillDialogPayWithoutWallet) ?
               kAutofillItemId : kActiveWalletItemId),
       had_wallet_error_(false),
-      metric_logger_(metric_logger),
-      dialog_type_(dialog_type) {
+      metric_logger_(metric_logger) {
   ReconstructMenuItems();
 }
 
@@ -102,7 +100,7 @@ void AccountChooserModel::ExecuteCommand(int command_id, int event_flags) {
     chooser_event =
         AutofillMetrics::DIALOG_UI_ACCOUNT_CHOOSER_SWITCHED_WALLET_ACCOUNT;
   }
-  metric_logger_.LogDialogUiEvent(dialog_type_, chooser_event);
+  metric_logger_.LogDialogUiEvent(chooser_event);
 
   checked_item_ = command_id;
   ReconstructMenuItems();

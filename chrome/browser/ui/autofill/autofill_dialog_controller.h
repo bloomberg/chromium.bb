@@ -35,7 +35,6 @@ class AutofillDialogController {
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback);
 
@@ -51,10 +50,6 @@ class AutofillDialogController {
   // Called when the tab hosting this dialog is activated by a user gesture.
   // Used to trigger a refresh of the user's Wallet data.
   virtual void TabActivated() = 0;
-
-  // TODO(ramankk): Get rid of DialogType as there is only one DialogType now.
-  // Returns the dialog type.
-  virtual DialogType GetDialogType() const = 0;
 };
 
 }  // namespace autofill

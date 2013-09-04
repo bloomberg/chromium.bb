@@ -211,8 +211,7 @@ class TestAccountChooserModel : public AccountChooserModel {
   TestAccountChooserModel(AccountChooserModelDelegate* delegate,
                           PrefService* prefs,
                           const AutofillMetrics& metric_logger)
-      : AccountChooserModel(delegate, prefs, metric_logger,
-                            DIALOG_TYPE_REQUEST_AUTOCOMPLETE) {}
+      : AccountChooserModel(delegate, prefs, metric_logger) {}
   virtual ~TestAccountChooserModel() {}
 
   using AccountChooserModel::kActiveWalletItemId;
@@ -231,20 +230,17 @@ class TestAutofillDialogController
       const FormData& form_structure,
       const GURL& source_url,
       const AutofillMetrics& metric_logger,
-      const DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback,
       MockNewCreditCardBubbleController* mock_new_card_bubble_controller)
       : AutofillDialogControllerImpl(contents,
                                      form_structure,
                                      source_url,
-                                     dialog_type,
                                      callback),
         metric_logger_(metric_logger),
         mock_wallet_client_(
             Profile::FromBrowserContext(contents->GetBrowserContext())->
                 GetRequestContext(), this),
-        dialog_type_(dialog_type),
         mock_new_card_bubble_controller_(mock_new_card_bubble_controller) {}
 
   virtual ~TestAutofillDialogController() {}
@@ -270,12 +266,6 @@ class TestAutofillDialogController
   }
 
   const GURL& open_tab_url() { return open_tab_url_; }
-
-  virtual DialogType GetDialogType() const OVERRIDE {
-    return dialog_type_;
-  }
-
-  void set_dialog_type(DialogType dialog_type) { dialog_type_ = dialog_type; }
 
   void SimulateSigninError() {
     OnWalletSigninError();
@@ -328,7 +318,6 @@ class TestAutofillDialogController
   TestPersonalDataManager test_manager_;
   testing::NiceMock<wallet::MockWalletClient> mock_wallet_client_;
   GURL open_tab_url_;
-  DialogType dialog_type_;
   MockNewCreditCardBubbleController* mock_new_card_bubble_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);
@@ -418,7 +407,6 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
         form_data,
         GURL(),
         metric_logger_,
-        DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
         callback,
         mock_new_card_bubble_controller_.get()))->AsWeakPtr();
     controller_->Init(profile());

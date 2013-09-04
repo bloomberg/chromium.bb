@@ -52,17 +52,6 @@ const size_t kMaxBits = 56;
 // accept.
 const size_t kMinBits = 40;
 
-std::string DialogTypeToFeatureString(autofill::DialogType dialog_type) {
-  switch (dialog_type) {
-    case DIALOG_TYPE_REQUEST_AUTOCOMPLETE:
-      return "REQUEST_AUTOCOMPLETE";
-    case DIALOG_TYPE_AUTOCHECKOUT:
-      return "AUTOCHECKOUT";
-  }
-  NOTREACHED();
-  return "NOT_POSSIBLE";
-}
-
 std::string RiskCapabilityToString(
     WalletClient::RiskCapability risk_capability) {
   switch (risk_capability) {
@@ -357,8 +346,7 @@ void WalletClient::GetFullWallet(const FullWalletRequest& full_wallet_request) {
       full_wallet_request.source_url.GetWithEmptyPath().spec());
   request_dict.SetString(kGoogleTransactionIdKey,
                          full_wallet_request.google_transaction_id);
-  request_dict.SetString(kFeatureKey,
-                         DialogTypeToFeatureString(delegate_->GetDialogType()));
+  request_dict.SetString(kFeatureKey, "REQUEST_AUTOCOMPLETE");
 
   scoped_ptr<base::ListValue> risk_capabilities_list(new base::ListValue());
   for (std::vector<RiskCapability>::const_iterator it =
@@ -573,10 +561,8 @@ void WalletClient::MakeWalletRequest(const GURL& url,
   request_->Start();
 
   delegate_->GetMetricLogger().LogWalletErrorMetric(
-      delegate_->GetDialogType(),
       AutofillMetrics::WALLET_ERROR_BASELINE_ISSUED_REQUEST);
   delegate_->GetMetricLogger().LogWalletRequiredActionMetric(
-      delegate_->GetDialogType(),
       AutofillMetrics::WALLET_REQUIRED_ACTION_BASELINE_ISSUED_REQUEST);
 }
 
@@ -802,7 +788,7 @@ void WalletClient::HandleWalletError(WalletClient::ErrorType error_type) {
 
   delegate_->OnWalletError(error_type);
   delegate_->GetMetricLogger().LogWalletErrorMetric(
-      delegate_->GetDialogType(), ErrorTypeToUmaMetric(error_type));
+      ErrorTypeToUmaMetric(error_type));
 }
 
 // Logs an UMA metric for each of the |required_actions|.
@@ -810,7 +796,6 @@ void WalletClient::LogRequiredActions(
     const std::vector<RequiredAction>& required_actions) const {
   for (size_t i = 0; i < required_actions.size(); ++i) {
     delegate_->GetMetricLogger().LogWalletRequiredActionMetric(
-        delegate_->GetDialogType(),
         RequiredActionToUmaMetric(required_actions[i]));
   }
 }

@@ -145,7 +145,6 @@ base::WeakPtr<AutofillDialogController> AutofillDialogControllerAndroid::Create(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback) {
   // AutofillDialogControllerAndroid owns itself.
@@ -153,7 +152,6 @@ base::WeakPtr<AutofillDialogController> AutofillDialogControllerAndroid::Create(
       new AutofillDialogControllerAndroid(contents,
                                           form_structure,
                                           source_url,
-                                          dialog_type,
                                           callback);
   return autofill_dialog_controller->weak_ptr_factory_.GetWeakPtr();
 }
@@ -172,13 +170,11 @@ AutofillDialogController::Create(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback) {
   return AutofillDialogControllerAndroid::Create(contents,
                                                  form_structure,
                                                  source_url,
-                                                 dialog_type,
                                                  callback);
 }
 
@@ -201,21 +197,18 @@ void AutofillDialogControllerAndroid::Show() {
   invoked_from_same_origin_ = active_url.GetOrigin() == source_url_.GetOrigin();
 
   // Log any relevant UI metrics and security exceptions.
-  GetMetricLogger().LogDialogUiEvent(
-      GetDialogType(), AutofillMetrics::DIALOG_UI_SHOWN);
+  GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_SHOWN);
 
   GetMetricLogger().LogDialogSecurityMetric(
-      GetDialogType(), AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
+      AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
 
   if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
     GetMetricLogger().LogDialogSecurityMetric(
-        GetDialogType(),
         AutofillMetrics::SECURITY_METRIC_CREDIT_CARD_OVER_HTTP);
   }
 
   if (!invoked_from_same_origin_) {
     GetMetricLogger().LogDialogSecurityMetric(
-        GetDialogType(),
         AutofillMetrics::SECURITY_METRIC_CROSS_ORIGIN_FRAME);
   }
 
@@ -327,10 +320,6 @@ void AutofillDialogControllerAndroid::Hide() {
 
 void AutofillDialogControllerAndroid::TabActivated() {}
 
-DialogType AutofillDialogControllerAndroid::GetDialogType() const {
-  return dialog_type_;
-}
-
 // static
 bool AutofillDialogControllerAndroid::
     RegisterAutofillDialogControllerAndroid(JNIEnv* env) {
@@ -400,21 +389,18 @@ void AutofillDialogControllerAndroid::DialogContinue(
   callback_.Run(&form_structure_, google_transaction_id);
 
   // This might delete us.
-  if (GetDialogType() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE)
-    Hide();
+  Hide();
 }
 
 AutofillDialogControllerAndroid::AutofillDialogControllerAndroid(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback)
     : profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
       contents_(contents),
       initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),
-      dialog_type_(dialog_type),
       form_structure_(form_structure),
       invoked_from_same_origin_(true),
       source_url_(source_url),
@@ -444,21 +430,17 @@ bool AutofillDialogControllerAndroid::TransmissionWillBeSecure() const {
 void AutofillDialogControllerAndroid::LogOnFinishSubmitMetrics() {
   GetMetricLogger().LogDialogUiDuration(
       base::Time::Now() - dialog_shown_timestamp_,
-      GetDialogType(),
       AutofillMetrics::DIALOG_ACCEPTED);
 
-  GetMetricLogger().LogDialogUiEvent(
-      GetDialogType(), AutofillMetrics::DIALOG_UI_ACCEPTED);
+  GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_ACCEPTED);
 }
 
 void AutofillDialogControllerAndroid::LogOnCancelMetrics() {
   GetMetricLogger().LogDialogUiDuration(
       base::Time::Now() - dialog_shown_timestamp_,
-      GetDialogType(),
       AutofillMetrics::DIALOG_CANCELED);
 
-  GetMetricLogger().LogDialogUiEvent(
-      GetDialogType(), AutofillMetrics::DIALOG_UI_CANCELED);
+  GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_CANCELED);
 }
 
 }  // namespace autofill

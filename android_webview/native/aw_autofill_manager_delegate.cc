@@ -176,7 +176,6 @@ void AwAutofillManagerDelegate::ConfirmSaveCreditCard(
 void AwAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     const autofill::FormData& form,
     const GURL& source_url,
-    autofill::DialogType dialog_type,
     const base::Callback<void(const autofill::FormStructure*,
                               const std::string&)>& callback) {
   NOTIMPLEMENTED();

@@ -36,7 +36,6 @@ void GetFingerprintInternal(
     const std::string& charset,
     const std::string& accept_languages,
     const base::Time& install_time,
-    DialogType dialog_type,
     const std::string& app_locale,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
@@ -134,7 +133,7 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
               machine.unavailable_screen_size().width());
     EXPECT_EQ(unavailable_screen_bounds_.height(),
               machine.unavailable_screen_size().height());
-    EXPECT_EQ(Fingerprint::MachineCharacteristics::FEATURE_AUTOCHECKOUT,
+    EXPECT_EQ(Fingerprint::MachineCharacteristics::FEATURE_REQUEST_AUTOCOMPLETE,
               machine.browser_feature());
     EXPECT_EQ(content_bounds_.width(),
               transient_state.inner_window_size().width());
@@ -193,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
   internal::GetFingerprintInternal(
       kObfuscatedGaiaId, window_bounds_, content_bounds_, screen_info,
       "25.0.0.123", kCharset, kAcceptLanguages, base::Time::Now(),
-      DIALOG_TYPE_AUTOCHECKOUT, g_browser_process->GetApplicationLocale(),
+      g_browser_process->GetApplicationLocale(),
       base::Bind(&AutofillRiskFingerprintTest::GetFingerprintTestCallback,
                  base::Unretained(this)));
 

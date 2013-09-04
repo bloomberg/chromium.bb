@@ -30,7 +30,6 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback);
 
@@ -43,7 +42,6 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void TabActivated() OVERRIDE;
-  virtual DialogType GetDialogType() const OVERRIDE;
 
   // JNI bindings for Java-side AutofillDialogDelegate:
   void DialogCancel(JNIEnv* env, jobject obj);
@@ -64,7 +62,6 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback);
 
@@ -91,9 +88,6 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
   const AutofillMetrics metric_logger_;
   base::Time dialog_shown_timestamp_;
   AutofillMetrics::DialogInitialUserStateMetric initial_user_state_;
-
-  // Whether this is an Autocheckout or a requestAutocomplete dialog.
-  const DialogType dialog_type_;
 
   FormStructure form_structure_;
 

@@ -30,7 +30,6 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
-      DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback) OVERRIDE;
   virtual void ShowAutofillPopup(

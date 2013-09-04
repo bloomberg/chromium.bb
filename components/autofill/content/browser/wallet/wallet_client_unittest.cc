@@ -581,11 +581,9 @@ class MockAutofillMetrics : public AutofillMetrics {
   MOCK_CONST_METHOD2(LogWalletApiCallDuration,
                      void(WalletApiCallMetric metric,
                           const base::TimeDelta& duration));
-  MOCK_CONST_METHOD2(LogWalletErrorMetric,
-                     void(DialogType dialog_type, WalletErrorMetric metric));
-  MOCK_CONST_METHOD2(LogWalletRequiredActionMetric,
-                     void(DialogType dialog_type,
-                          WalletRequiredActionMetric action));
+  MOCK_CONST_METHOD1(LogWalletErrorMetric, void(WalletErrorMetric metric));
+  MOCK_CONST_METHOD1(LogWalletRequiredActionMetric,
+                     void(WalletRequiredActionMetric action));
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
 };
@@ -600,10 +598,6 @@ class MockWalletClientDelegate : public WalletClientDelegate {
 
   virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE {
     return metric_logger_;
-  }
-
-  virtual DialogType GetDialogType() const OVERRIDE {
-    return DIALOG_TYPE_REQUEST_AUTOCOMPLETE;
   }
 
   virtual std::string GetRiskData() const OVERRIDE {
@@ -630,25 +624,19 @@ class MockWalletClientDelegate : public WalletClientDelegate {
   }
 
   void ExpectWalletErrorMetric(AutofillMetrics::WalletErrorMetric metric) {
-    EXPECT_CALL(
-        metric_logger_,
-        LogWalletErrorMetric(
-            DIALOG_TYPE_REQUEST_AUTOCOMPLETE, metric)).Times(1);
+    EXPECT_CALL(metric_logger_, LogWalletErrorMetric(metric)).Times(1);
   }
 
   void ExpectWalletRequiredActionMetric(
       AutofillMetrics::WalletRequiredActionMetric metric) {
-    EXPECT_CALL(
-        metric_logger_,
-        LogWalletRequiredActionMetric(
-            DIALOG_TYPE_REQUEST_AUTOCOMPLETE, metric)).Times(1);
+    EXPECT_CALL(metric_logger_,
+                LogWalletRequiredActionMetric(metric)).Times(1);
   }
 
   void ExpectBaselineMetrics() {
     EXPECT_CALL(
         metric_logger_,
         LogWalletErrorMetric(
-            DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
             AutofillMetrics::WALLET_ERROR_BASELINE_ISSUED_REQUEST))
                 .Times(1);
     ExpectWalletRequiredActionMetric(

@@ -35,14 +35,6 @@ class PasswordGenerator;
 class PersonalDataManager;
 struct FormData;
 
-// TODO(ramankk): Simplify dialog type when removing autocheckout.
-enum DialogType {
-  // Autofill dialog for the Autocheckout feature.
-  DIALOG_TYPE_AUTOCHECKOUT,
-  // Autofill dialog for the requestAutocomplete feature.
-  DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
-};
-
 // A delegate interface that needs to be supplied to AutofillManager
 // by the embedder.
 //
@@ -78,7 +70,6 @@ class AutofillManagerDelegate {
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
-      DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback) = 0;
 

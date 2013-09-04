@@ -33,9 +33,6 @@ class WalletClientDelegate {
   // Wallet metrics.
   virtual const AutofillMetrics& GetMetricLogger() const = 0;
 
-  // Returns the dialog type that the delegate corresponds to.
-  virtual DialogType GetDialogType() const = 0;
-
   // Returns the serialized fingerprint data to be sent to the Risk server.
   virtual std::string GetRiskData() const = 0;
 

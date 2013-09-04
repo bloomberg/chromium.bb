@@ -501,8 +501,7 @@ AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
   if (popup_controller_)
     popup_controller_->Hide();
 
-  GetMetricLogger().LogDialogInitialUserState(
-      GetDialogType(), initial_user_state_);
+  GetMetricLogger().LogDialogInitialUserState(initial_user_state_);
 }
 
 // static
@@ -511,7 +510,6 @@ base::WeakPtr<AutofillDialogControllerImpl>
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback) {
   // AutofillDialogControllerImpl owns itself.
@@ -519,7 +517,6 @@ base::WeakPtr<AutofillDialogControllerImpl>
       new AutofillDialogControllerImpl(contents,
                                        form_structure,
                                        source_url,
-                                       dialog_type,
                                        callback);
   return autofill_dialog_controller->weak_ptr_factory_.GetWeakPtr();
 }
@@ -553,13 +550,11 @@ base::WeakPtr<AutofillDialogController> AutofillDialogController::Create(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback) {
   return AutofillDialogControllerImpl::Create(contents,
                                               form_structure,
                                               source_url,
-                                              dialog_type,
                                               callback);
 }
 
@@ -578,21 +573,18 @@ void AutofillDialogControllerImpl::Show() {
   invoked_from_same_origin_ = active_url.GetOrigin() == source_url_.GetOrigin();
 
   // Log any relevant UI metrics and security exceptions.
-  GetMetricLogger().LogDialogUiEvent(
-      GetDialogType(), AutofillMetrics::DIALOG_UI_SHOWN);
+  GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_SHOWN);
 
   GetMetricLogger().LogDialogSecurityMetric(
-      GetDialogType(), AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
+      AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
 
   if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
     GetMetricLogger().LogDialogSecurityMetric(
-        GetDialogType(),
         AutofillMetrics::SECURITY_METRIC_CREDIT_CARD_OVER_HTTP);
   }
 
   if (!invoked_from_same_origin_) {
     GetMetricLogger().LogDialogSecurityMetric(
-        GetDialogType(),
         AutofillMetrics::SECURITY_METRIC_CROSS_ORIGIN_FRAME);
   }
 
@@ -772,8 +764,7 @@ bool AutofillDialogControllerImpl::IsDialogButtonEnabled(
 
 DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
   bool show_wallet_interstitial = IsPayingWithWallet() && is_submitting_ &&
-      !IsSubmitPausedOn(wallet::VERIFY_CVV) &&
-      GetDialogType() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE;
+      !IsSubmitPausedOn(wallet::VERIFY_CVV);
   if (!show_wallet_interstitial)
     return DialogOverlayState();
 
@@ -1444,7 +1435,7 @@ void AutofillDialogControllerImpl::EditClickedForSection(
   UpdateSection(section);
 
   GetMetricLogger().LogDialogUiEvent(
-      GetDialogType(), common::DialogSectionToUiEditEvent(section));
+      common::DialogSectionToUiEditEvent(section));
 }
 
 gfx::Image AutofillDialogControllerImpl::IconForField(
@@ -1847,7 +1838,7 @@ void AutofillDialogControllerImpl::SignInLinkClicked() {
     view_->UpdateAccountChooser();
 
     GetMetricLogger().LogDialogUiEvent(
-        GetDialogType(), AutofillMetrics::DIALOG_UI_SIGNIN_SHOWN);
+        AutofillMetrics::DIALOG_UI_SIGNIN_SHOWN);
   } else {
     HideSignIn();
   }
@@ -1918,8 +1909,7 @@ content::WebContents* AutofillDialogControllerImpl::GetWebContents() {
 
 void AutofillDialogControllerImpl::OnPopupShown(
     content::RenderWidgetHost::KeyPressEventCallback* callback) {
-  GetMetricLogger().LogDialogPopupEvent(
-      GetDialogType(), AutofillMetrics::DIALOG_POPUP_SHOWN);
+  GetMetricLogger().LogDialogPopupEvent(AutofillMetrics::DIALOG_POPUP_SHOWN);
 }
 
 void AutofillDialogControllerImpl::OnPopupHidden(
@@ -1956,7 +1946,7 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(const string16& value,
   }
 
   GetMetricLogger().LogDialogPopupEvent(
-      GetDialogType(), AutofillMetrics::DIALOG_POPUP_FORM_FILLED);
+      AutofillMetrics::DIALOG_POPUP_FORM_FILLED);
 
   // TODO(estade): not sure why it's necessary to do this explicitly.
   HidePopup();
@@ -2032,10 +2022,6 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
 
 const AutofillMetrics& AutofillDialogControllerImpl::GetMetricLogger() const {
   return metric_logger_;
-}
-
-DialogType AutofillDialogControllerImpl::GetDialogType() const {
-  return dialog_type_;
 }
 
 std::string AutofillDialogControllerImpl::GetRiskData() const {
@@ -2244,19 +2230,16 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback)
     : WebContentsObserver(contents),
       profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
       initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),
-      dialog_type_(dialog_type),
       form_structure_(form_structure),
       invoked_from_same_origin_(true),
       source_url_(source_url),
       callback_(callback),
-      account_chooser_model_(this, profile_->GetPrefs(), metric_logger_,
-                             dialog_type),
+      account_chooser_model_(this, profile_->GetPrefs(), metric_logger_),
       wallet_client_(profile_->GetRequestContext(), this),
       suggested_email_(this),
       suggested_cc_(this),
@@ -2317,7 +2300,7 @@ void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
   risk::GetFingerprint(
       obfuscated_gaia_id, window_bounds, *web_contents(),
       chrome::VersionInfo().Version(), charset, accept_languages, install_time,
-      dialog_type_, g_browser_process->GetApplicationLocale(),
+      g_browser_process->GetApplicationLocale(),
       base::Bind(&AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -3140,8 +3123,7 @@ void AutofillDialogControllerImpl::DoFinishSubmit() {
   data_was_passed_back_ = true;
 
   // This might delete us.
-  if (GetDialogType() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE)
-    Hide();
+  Hide();
 }
 
 void AutofillDialogControllerImpl::PersistAutofillChoice(
@@ -3211,11 +3193,9 @@ size_t AutofillDialogControllerImpl::GetSelectedVariantForModel(
 void AutofillDialogControllerImpl::LogOnFinishSubmitMetrics() {
   GetMetricLogger().LogDialogUiDuration(
       base::Time::Now() - dialog_shown_timestamp_,
-      GetDialogType(),
       AutofillMetrics::DIALOG_ACCEPTED);
 
-  GetMetricLogger().LogDialogUiEvent(
-      GetDialogType(), AutofillMetrics::DIALOG_UI_ACCEPTED);
+  GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_ACCEPTED);
 
   AutofillMetrics::DialogDismissalState dismissal_state;
   if (!IsManuallyEditingAnySection())
@@ -3227,12 +3207,11 @@ void AutofillDialogControllerImpl::LogOnFinishSubmitMetrics() {
   else
     dismissal_state = AutofillMetrics::DIALOG_ACCEPTED_NO_SAVE;
 
-  GetMetricLogger().LogDialogDismissalState(GetDialogType(), dismissal_state);
+  GetMetricLogger().LogDialogDismissalState(dismissal_state);
 }
 
 void AutofillDialogControllerImpl::LogOnCancelMetrics() {
-  GetMetricLogger().LogDialogUiEvent(
-      GetDialogType(), AutofillMetrics::DIALOG_UI_CANCELED);
+  GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_CANCELED);
 
   AutofillMetrics::DialogDismissalState dismissal_state;
   if (!signin_registrar_.IsEmpty())
@@ -3244,11 +3223,10 @@ void AutofillDialogControllerImpl::LogOnCancelMetrics() {
   else
     dismissal_state = AutofillMetrics::DIALOG_CANCELED_WITH_INVALID_FIELDS;
 
-  GetMetricLogger().LogDialogDismissalState(GetDialogType(), dismissal_state);
+  GetMetricLogger().LogDialogDismissalState(dismissal_state);
 
   GetMetricLogger().LogDialogUiDuration(
       base::Time::Now() - dialog_shown_timestamp_,
-      GetDialogType(),
       AutofillMetrics::DIALOG_CANCELED);
 }
 
@@ -3269,7 +3247,7 @@ void AutofillDialogControllerImpl::LogSuggestionItemSelectedMetric(
     return;
   }
 
-  GetMetricLogger().LogDialogUiEvent(GetDialogType(), dialog_ui_event);
+  GetMetricLogger().LogDialogUiEvent(dialog_ui_event);
 }
 
 void AutofillDialogControllerImpl::LogDialogLatencyToShow() {
@@ -3277,7 +3255,6 @@ void AutofillDialogControllerImpl::LogDialogLatencyToShow() {
     return;
 
   GetMetricLogger().LogDialogLatencyToShow(
-      GetDialogType(),
       base::Time::Now() - dialog_shown_timestamp_);
   was_ui_latency_logged_ = true;
 }
