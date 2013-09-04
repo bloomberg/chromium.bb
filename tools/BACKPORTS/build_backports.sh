@@ -519,6 +519,11 @@ while read name id comment ; do
 	      (cd ../.. ; sha1sum "$scriptname" "$1" || shasum "$scriptname" "$1") >"../../$1.$name.lastver" 2>/dev/null
 	      rm -rf "../../$name"
 	    ) else
+	      # PPAPI14 to PPAPI30 were designed to be built on Ubuntu Lucid,
+	      # not on Ubuntu Precise
+	      if [[ "$name" == ppapi[12]? ]] || [[ "$name" == ppapi30 ]]; then
+		BUILDBOT_BUILDERNAME="${BUILDBOT_BUILDERNAME/precise64/lucid64}"
+	      fi
 	      python buildbot/buildbot_selector.py
 	      (cd ../.. ; sha1sum "$scriptname" "$1" || shasum "$scriptname" "$1") >"../../$1.$name.lastver" 2>/dev/null
 	      rm -rf "../../$name"
