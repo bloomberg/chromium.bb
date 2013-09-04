@@ -42,7 +42,6 @@ IPC_STRUCT_TRAITS_BEGIN(nacl::PnaclCacheInfo)
   IPC_STRUCT_TRAITS_MEMBER(opt_level)
   IPC_STRUCT_TRAITS_MEMBER(last_modified)
   IPC_STRUCT_TRAITS_MEMBER(etag)
-  IPC_STRUCT_TRAITS_MEMBER(has_no_store_header)
 IPC_STRUCT_TRAITS_END()
 
 // A renderer sends this to the browser process when it wants to start

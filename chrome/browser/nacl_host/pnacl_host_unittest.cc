@@ -47,10 +47,12 @@ class PnaclHostTest : public testing::Test {
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
   }
-  int GetCacheSize() { return host_->disk_cache_->Size(); }
+  int GetCacheSize() {
+    return host_->disk_cache_->Size();
+  }
 
  public:  // Required for derived classes to bind this method
-          // Callbacks used by tests which call GetNexeFd.
+  // Callbacks used by tests which call GetNexeFd.
   // CallbackExpectMiss checks that the fd is valid and a miss is reported,
   // and also writes some data into the file, which is read back by
   // CallbackExpectHit
@@ -97,22 +99,21 @@ static nacl::PnaclCacheInfo GetTestCacheInfo() {
   info.pexe_url = GURL("http://www.google.com");
   info.abi_version = 0;
   info.opt_level = 0;
-  info.has_no_store_header = false;
   return info;
 }
 
-#define GET_NEXE_FD(renderer, instance, incognito, info, expect_hit) \
-  do {                                                               \
-    SCOPED_TRACE("");                                                \
-    host_->GetNexeFd(                                                \
-        renderer,                                                    \
-        0, /* ignore render_view_id for now */                       \
-        instance,                                                    \
-        incognito,                                                   \
-        info,                                                        \
-        base::Bind(expect_hit ? &PnaclHostTest::CallbackExpectHit    \
-                              : &PnaclHostTest::CallbackExpectMiss,  \
-                   base::Unretained(this)));                         \
+#define GET_NEXE_FD(renderer, instance, incognito, info, expect_hit)\
+  do {                                                              \
+    SCOPED_TRACE("");                                               \
+    host_->GetNexeFd(                                               \
+        renderer,                                                   \
+        0, /* ignore render_view_id for now */                      \
+        instance,                                                   \
+        incognito,                                                  \
+        info,                                                       \
+        base::Bind(expect_hit ? &PnaclHostTest::CallbackExpectHit   \
+                              : &PnaclHostTest::CallbackExpectMiss, \
+                   base::Unretained(this)));                        \
   } while (0)
 
 TEST_F(PnaclHostTest, BasicMiss) {
@@ -163,6 +164,7 @@ TEST_F(PnaclHostTest, BasicHit) {
 
 TEST_F(PnaclHostTest, TranslationErrors) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
+  info.pexe_url = GURL("http://www.google.com");
   GET_NEXE_FD(0, 0, false, info, false);
   // Early abort, before temp file request returns
   host_->TranslationFinished(0, 0, false);
@@ -345,45 +347,6 @@ TEST_F(PnaclHostTest, IncognitoSecondOverlappedMiss) {
   EXPECT_EQ(0U, host_->pending_translations());
 }
 
-// Test that pexes with the no-store header do not get cached.
-TEST_F(PnaclHostTest, CacheControlNoStore) {
-  nacl::PnaclCacheInfo info = GetTestCacheInfo();
-  info.has_no_store_header = true;
-  GET_NEXE_FD(0, 0, false, info, false);
-  FlushQueues();
-  EXPECT_EQ(1, temp_callback_count_);
-  host_->TranslationFinished(0, 0, true);
-  FlushQueues();
-  EXPECT_EQ(0U, host_->pending_translations());
-  EXPECT_EQ(0, GetCacheSize());
-}
-
-// Test that no-store pexes do not wait, but do duplicate translations
-TEST_F(PnaclHostTest, NoStoreOverlappedMiss) {
-  nacl::PnaclCacheInfo info = GetTestCacheInfo();
-  info.has_no_store_header = true;
-  GET_NEXE_FD(0, 0, false, info, false);
-  GET_NEXE_FD(0, 1, false, info, false);
-  FlushQueues();
-  // Check that both translations have returned misses, (i.e. that the
-  // second one has not blocked on the first one)
-  EXPECT_EQ(2, temp_callback_count_);
-  host_->TranslationFinished(0, 0, true);
-  host_->TranslationFinished(0, 1, true);
-  FlushQueues();
-  EXPECT_EQ(0U, host_->pending_translations());
-
-  // Same test, but issue the 2nd request after the first has returned a miss.
-  info.abi_version = 222;
-  GET_NEXE_FD(0, 0, false, info, false);
-  FlushQueues();
-  EXPECT_EQ(3, temp_callback_count_);
-  GET_NEXE_FD(0, 1, false, info, false);
-  FlushQueues();
-  EXPECT_EQ(4, temp_callback_count_);
-  host_->RendererClosing(0);
-}
-
 TEST_F(PnaclHostTest, ClearTranslationCache) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
   // Add 2 entries in the cache
@@ -399,8 +362,8 @@ TEST_F(PnaclHostTest, ClearTranslationCache) {
   EXPECT_EQ(2, GetCacheSize());
   net::TestCompletionCallback cb;
   // Since we are using a memory backend, the clear should happen immediately.
-  host_->ClearTranslationCacheEntriesBetween(
-      base::Time(), base::Time(), base::Bind(cb.callback(), 0));
+  host_->ClearTranslationCacheEntriesBetween(base::Time(), base::Time(),
+                                             base::Bind(cb.callback(), 0));
   EXPECT_EQ(0, cb.GetResult(net::ERR_IO_PENDING));
   // Check that the translation cache has been cleared
   EXPECT_EQ(0, GetCacheSize());

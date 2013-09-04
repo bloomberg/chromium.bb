@@ -6,8 +6,7 @@
 
 namespace nacl {
 
-PnaclCacheInfo::PnaclCacheInfo()
-    : abi_version(0), opt_level(0), has_no_store_header(0) {}
+PnaclCacheInfo::PnaclCacheInfo() {}
 PnaclCacheInfo::~PnaclCacheInfo() {}
 
 // static

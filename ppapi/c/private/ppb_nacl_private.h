@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Aug 29 17:42:12 2013. */
+/* From private/ppb_nacl_private.idl modified Mon Aug 19 14:06:38 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -122,19 +122,18 @@ struct PPB_NaCl_Private_1_0 {
    * returns a posix handle to that temporary file.
    */
   PP_FileHandle (*CreateTemporaryFile)(PP_Instance instance);
-  /* Create a temporary file, which will be deleted by the time the
-   * last handle is closed (or earlier on POSIX systems), to use for
-   * the nexe with the cache information given by |pexe_url|,
-   * |abi_version|, |opt_level|, |last_modified|, |etag|, and
-   * |has_no_store_header|. If the nexe is already present in the
-   * cache, |is_hit| is set to PP_TRUE and the contents of the nexe
-   * will be copied into the temporary file. Otherwise |is_hit| is set
-   * to PP_FALSE and the temporary file will be writeable.  Currently
-   * the implementation is a stub, which always sets is_hit to false
-   * and calls the implementation of CreateTemporaryFile. In a
-   * subsequent CL it will call into the browser which will remember
-   * the association between the cache key and the fd, and copy the
-   * nexe into the cache after the translation finishes.
+  /* Create a temporary file, which will be deleted by the time the last
+   * handle is closed (or earlier on POSIX systems), to use for the nexe
+   * with the cache information given by |pexe_url|, |abi_version|, |opt_level|,
+   * |last_modified|, and |etag|. If the nexe is already present
+   * in the cache, |is_hit| is set to PP_TRUE and the contents of the nexe
+   * will be copied into the temporary file. Otherwise |is_hit| is set to
+   * PP_FALSE and the temporary file will be writeable.
+   * Currently the implementation is a stub, which always sets is_hit to false
+   * and calls the implementation of CreateTemporaryFile. In a subsequent CL
+   * it will call into the browser which will remember the association between
+   * the cache key and the fd, and copy the nexe into the cache after the
+   * translation finishes.
    */
   int32_t (*GetNexeFd)(PP_Instance instance,
                        const char* pexe_url,
@@ -142,7 +141,6 @@ struct PPB_NaCl_Private_1_0 {
                        uint32_t opt_level,
                        const char* last_modified,
                        const char* etag,
-                       PP_Bool has_no_store_header,
                        PP_Bool* is_hit,
                        PP_FileHandle* nexe_handle,
                        struct PP_CompletionCallback callback);

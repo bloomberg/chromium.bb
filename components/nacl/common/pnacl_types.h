@@ -27,7 +27,6 @@ struct PnaclCacheInfo {
   int opt_level;
   base::Time last_modified;
   std::string etag;
-  bool has_no_store_header;
 };
 
 // Progress information for PNaCl on-demand installs.

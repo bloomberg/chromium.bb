@@ -521,7 +521,6 @@ void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
           pnacl_options_.opt_level(),
           parser.GetHeader("last-modified").c_str(),
           parser.GetHeader("etag").c_str(),
-          PP_FromBool(parser.CacheControlNoStore()),
           &is_cache_hit_,
           temp_nexe_file_->existing_handle(),
           cb.pp_completion_callback());
