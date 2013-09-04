@@ -14,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/events/event.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -106,6 +107,9 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   set_color(SkColorSetARGB(kLauncherBackgroundAlpha, 0, 0, 0));
   set_margins(gfx::Insets(kPadding, kPadding, kPadding, kPadding));
   set_move_with_anchor(true);
+  // Overflow bubble should not get focus. If it get focus when it is shown,
+  // active state item is changed to running state.
+  set_use_focusless(true);
 
   // Makes bubble view has a layer and clip its children layers.
   SetPaintToLayer(true);
@@ -242,6 +246,7 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
 
 OverflowBubble::OverflowBubble()
     : bubble_(NULL),
+      anchor_(NULL),
       launcher_view_(NULL) {
 }
 
@@ -255,6 +260,9 @@ void OverflowBubble::Show(views::View* anchor, LauncherView* launcher_view) {
   OverflowBubbleView* bubble_view = new OverflowBubbleView();
   bubble_view->InitOverflowBubble(anchor, launcher_view);
   launcher_view_ = launcher_view;
+  anchor_ = anchor;
+
+  Shell::GetInstance()->AddPreTargetHandler(this);
 
   bubble_ = bubble_view;
   RootWindowController::ForWindow(anchor->GetWidget()->GetNativeView())->
@@ -267,15 +275,34 @@ void OverflowBubble::Hide() {
   if (!IsShowing())
     return;
 
+  Shell::GetInstance()->RemovePreTargetHandler(this);
   bubble_->GetWidget()->RemoveObserver(this);
   bubble_->GetWidget()->Close();
   bubble_ = NULL;
+  anchor_ = NULL;
   launcher_view_ = NULL;
+}
+
+void OverflowBubble::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED &&
+      !bubble_->GetBoundsInScreen().Contains(event->root_location()) &&
+      !anchor_->GetBoundsInScreen().Contains(event->root_location())) {
+    Hide();
+  }
+}
+
+void OverflowBubble::OnTouchEvent(ui::TouchEvent* event) {
+  if (event->type() == ui::ET_TOUCH_PRESSED &&
+      !bubble_->GetBoundsInScreen().Contains(event->root_location()) &&
+      !anchor_->GetBoundsInScreen().Contains(event->root_location())) {
+    Hide();
+  }
 }
 
 void OverflowBubble::OnWidgetDestroying(views::Widget* widget) {
   DCHECK(widget == bubble_->GetWidget());
   bubble_ = NULL;
+  anchor_ = NULL;
   launcher_view_ = NULL;
   ShelfLayoutManager::ForLauncher(
       widget->GetNativeView())->shelf_widget()->launcher()->SchedulePaint();
