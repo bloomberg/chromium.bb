@@ -641,11 +641,11 @@ class CONTENT_EXPORT RenderWidget
   // Stores the current text input type of |webwidget_|.
   ui::TextInputType text_input_type_;
 
-  // Stores the current type of composition text rendering of |webwidget_|.
-  bool can_compose_inline_;
-
   // Stores the current text input mode of |webwidget_|.
   ui::TextInputMode text_input_mode_;
+
+  // Stores the current type of composition text rendering of |webwidget_|.
+  bool can_compose_inline_;
 
   // Stores the current selection bounds.
   gfx::Rect selection_focus_rect_;

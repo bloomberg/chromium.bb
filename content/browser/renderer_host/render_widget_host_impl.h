@@ -659,8 +659,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void OnBlur();
   void OnSetCursor(const WebCursor& cursor);
   void OnTextInputTypeChanged(ui::TextInputType type,
-                              bool can_compose_inline,
-                              ui::TextInputMode input_mode);
+                              ui::TextInputMode input_mode,
+                              bool can_compose_inline);
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   void OnImeCompositionRangeChanged(
       const ui::Range& range,

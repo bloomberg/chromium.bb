@@ -855,8 +855,8 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     ui::TextInputMode input_mode = ui::TEXT_INPUT_MODE_DEFAULT;
     ViewHostMsg_TextInputTypeChanged::Read(msg,
                                            &type,
-                                           &can_compose_inline,
-                                           &input_mode);
+                                           &input_mode,
+                                           &can_compose_inline);
     EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, type);
     EXPECT_EQ(true, can_compose_inline);
 
@@ -874,8 +874,8 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
     ViewHostMsg_TextInputTypeChanged::Read(msg,
                                            &type,
-                                           &can_compose_inline,
-                                           &input_mode);
+                                           &input_mode,
+                                           &can_compose_inline);
     EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, type);
 
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kInputModeTestCases); i++) {
@@ -897,8 +897,8 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
       EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
       ViewHostMsg_TextInputTypeChanged::Read(msg,
                                             &type,
-                                            &can_compose_inline,
-                                            &input_mode);
+                                            &input_mode,
+                                            &can_compose_inline);
       EXPECT_EQ(test_case->expected_mode, input_mode);
     }
   }

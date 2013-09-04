@@ -215,8 +215,8 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       is_swapped_out_(swapped_out),
       input_method_is_active_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
-      can_compose_inline_(true),
       text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
+      can_compose_inline_(true),
       popup_type_(popup_type),
       pending_window_rect_count_(0),
       suppress_next_char_events_(false),
@@ -2185,8 +2185,8 @@ void RenderWidget::UpdateTextInputType() {
       || text_input_mode_ != new_mode) {
     Send(new ViewHostMsg_TextInputTypeChanged(routing_id(),
                                               new_type,
-                                              new_can_compose_inline,
-                                              new_mode));
+                                              new_mode,
+                                              new_can_compose_inline));
     text_input_type_ = new_type;
     can_compose_inline_ = new_can_compose_inline;
     text_input_mode_ = new_mode;
