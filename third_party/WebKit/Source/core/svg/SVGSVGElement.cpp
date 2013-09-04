@@ -716,17 +716,18 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
     // Any view specification attributes included on the given ‘view’ element override the corresponding view specification
     // attributes on the closest ancestor ‘svg’ element.
     if (anchorNode && anchorNode->hasTagName(SVGNames::viewTag)) {
-        if (SVGViewElement* viewElement = anchorNode->hasTagName(SVGNames::viewTag) ? static_cast<SVGViewElement*>(anchorNode) : 0) {
-            SVGElement* element = SVGLocatable::nearestViewportElement(viewElement);
-            if (element->hasTagName(SVGNames::svgTag)) {
-                SVGSVGElement* svg = toSVGSVGElement(element);
-                svg->inheritViewAttributes(viewElement);
+        SVGViewElement* viewElement = toSVGViewElement(anchorNode);
+        if (!viewElement)
+            return;
 
-                if (RenderObject* renderer = svg->renderer())
-                    RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
-            }
+        SVGElement* element = SVGLocatable::nearestViewportElement(viewElement);
+        if (element->hasTagName(SVGNames::svgTag)) {
+            SVGSVGElement* svg = toSVGSVGElement(element);
+            svg->inheritViewAttributes(viewElement);
+
+            if (RenderObject* renderer = svg->renderer())
+                RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
         }
-        return;
     }
 
     // FIXME: We need to decide which <svg> to focus on, and zoom to it.

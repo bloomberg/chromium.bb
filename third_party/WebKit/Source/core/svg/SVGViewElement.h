@@ -21,6 +21,7 @@
 #ifndef SVGViewElement_h
 #define SVGViewElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGAnimatedRect.h"
@@ -64,6 +65,12 @@ private:
     SVGZoomAndPanType m_zoomAndPan;
     SVGStringList m_viewTarget;
 };
+
+inline SVGViewElement* toSVGViewElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::viewTag));
+    return static_cast<SVGViewElement*>(node);
+}
 
 } // namespace WebCore
 
