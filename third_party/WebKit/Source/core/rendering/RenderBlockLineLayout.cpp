@@ -396,7 +396,7 @@ static TextDirection determinePlaintextDirectionality(RenderObject* root, Render
     observer.setStatus(BidiStatus(root->style()->direction(), isOverride(root->style()->unicodeBidi())));
     while (!iter.atEnd()) {
         if (observer.inIsolate()) {
-            iter.increment(&observer);
+            iter.increment(&observer, InlineIterator::FastIncrementInlineRenderer);
             continue;
         }
         if (iter.atParagraphSeparator())
