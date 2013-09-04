@@ -98,6 +98,8 @@ namespace WebCore {
 
         static void appendStyleRecalcDetails(JSONObject* data, unsigned elementCount);
 
+        static void appendImageDetails(JSONObject* data, long long imageElementId, const String& url);
+
         static inline PassRefPtr<JSONObject> createWebSocketCreateData(unsigned long identifier, const KURL& url, const String& protocol)
         {
             RefPtr<JSONObject> data = JSONObject::create();

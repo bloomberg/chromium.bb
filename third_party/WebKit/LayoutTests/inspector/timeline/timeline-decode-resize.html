@@ -12,6 +12,12 @@ div#img-container {
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
+function display()
+{
+    if (window.testRunner)
+        testRunner.display();
+}
+
 function addImage(src, width, height)
 {
     var img = document.getElementById("img-container").firstElementChild;
@@ -84,6 +90,6 @@ function test()
 <p>
 Tests the Timeline API instrumentation of a DecodeImage and ResizeImage events
 </p>
-<div id="img-container"><img></div>
+<div id="img-container"><img onload="display()"></div>
 </body>
 </html>

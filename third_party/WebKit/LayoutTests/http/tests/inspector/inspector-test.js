@@ -131,6 +131,16 @@ InspectorTest.formatters.formatAsRecentTime = function(value)
     return 0 <= delta && delta < 30 * 60 * 1000 ? "<plausible>" : value;
 }
 
+InspectorTest.formatters.formatAsURL = function(value)
+{
+    if (!value)
+        return value;
+    var lastIndex = value.lastIndexOf("inspector/");
+    if (lastIndex < 0)
+        return value;
+    return ".../" + value.substr(lastIndex);
+}
+
 InspectorTest.addObject = function(object, customFormatters, prefix, firstLinePrefix)
 {
     prefix = prefix || "";

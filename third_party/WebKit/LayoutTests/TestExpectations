@@ -1116,8 +1116,6 @@ crbug.com/245644 virtual/gpu/fast/canvas/2d.text.draw.fill.maxWidth.gradient.htm
 
 crbug.com/246072 fast/forms/post-popup-no-multiple-windows.html [ Pass Timeout ]
 
-crbug.com/259560 inspector/timeline/timeline-decode-resize.html [ Skip ]
-
 crbug.com/246549 http/tests/security/svg-image-leak.html [ Failure Pass ]
 
 # Seems to have been timing out for a long time.

@@ -42,6 +42,7 @@
 #include "core/page/Page.h"
 #include "core/platform/network/FormData.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderImage.h"
 #include "core/storage/StorageArea.h"
 #include "modules/websockets/WebSocketFrame.h"
 #include "modules/websockets/WebSocketHandshakeRequest.h"

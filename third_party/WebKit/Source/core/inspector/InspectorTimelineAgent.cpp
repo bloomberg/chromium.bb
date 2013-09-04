@@ -383,6 +383,17 @@ void InspectorTimelineAgent::didPaint(RenderObject* renderer, GraphicsContext*, 
     didCompleteCurrentRecord(TimelineRecordType::Paint);
 }
 
+void InspectorTimelineAgent::willPaintImage(RenderImage* renderImage)
+{
+    ASSERT(!m_imageBeingPainted);
+    m_imageBeingPainted = renderImage;
+}
+
+void InspectorTimelineAgent::didPaintImage()
+{
+    m_imageBeingPainted = 0;
+}
+
 void InspectorTimelineAgent::willScrollLayer(RenderObject* renderer)
 {
     pushCurrentRecord(TimelineRecordFactory::createLayerData(idForNode(renderer->generatingNode())), TimelineRecordType::ScrollLayer, false, renderer->frame());
@@ -395,7 +406,10 @@ void InspectorTimelineAgent::didScrollLayer()
 
 void InspectorTimelineAgent::willDecodeImage(const String& imageType)
 {
-    pushCurrentRecord(TimelineRecordFactory::createDecodeImageData(imageType), TimelineRecordType::DecodeImage, true, 0);
+    RefPtr<JSONObject> data = TimelineRecordFactory::createDecodeImageData(imageType);
+    if (m_imageBeingPainted)
+        populateImageDetails(data.get(), *m_imageBeingPainted);
+    pushCurrentRecord(data, TimelineRecordType::DecodeImage, true, 0);
 }
 
 void InspectorTimelineAgent::didDecodeImage()
@@ -405,7 +419,10 @@ void InspectorTimelineAgent::didDecodeImage()
 
 void InspectorTimelineAgent::willResizeImage(bool shouldCache)
 {
-    pushCurrentRecord(TimelineRecordFactory::createResizeImageData(shouldCache), TimelineRecordType::ResizeImage, true, 0);
+    RefPtr<JSONObject> data = TimelineRecordFactory::createResizeImageData(shouldCache);
+    if (m_imageBeingPainted)
+        populateImageDetails(data.get(), *m_imageBeingPainted);
+    pushCurrentRecord(data, TimelineRecordType::ResizeImage, true, 0);
 }
 
 void InspectorTimelineAgent::didResizeImage()
@@ -693,6 +710,12 @@ void InspectorTimelineAgent::setFrameIdentifier(JSONObject* record, Frame* frame
     record->setString("frameId", frameId);
 }
 
+void InspectorTimelineAgent::populateImageDetails(JSONObject* data, const RenderImage& renderImage)
+{
+    const ImageResource* resource = renderImage.cachedImage();
+    TimelineRecordFactory::appendImageDetails(data, idForNode(renderImage.generatingNode()), resource ? resource->url().string() : "");
+}
+
 void InspectorTimelineAgent::didCompleteCurrentRecord(const String& type)
 {
     // An empty stack could merely mean that the timeline agent was turned on in the middle of
@@ -731,6 +754,7 @@ InspectorTimelineAgent::InspectorTimelineAgent(InstrumentingAgents* instrumentin
     , m_weakFactory(this)
     , m_styleRecalcElementCounter(0)
     , m_layerTreeId(0)
+    , m_imageBeingPainted(0)
 {
 }
 

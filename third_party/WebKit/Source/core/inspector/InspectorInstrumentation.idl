@@ -217,6 +217,12 @@ interface InspectorInstrumentation {
     [Timeline, Page, Inline=FastReturn]
     void didPaint([Keep] RenderObject*, GraphicsContext*, const LayoutRect&);
 
+    [Timeline, Inline=FastReturn]
+    void willPaintImage([Keep] RenderImage*);
+
+    [Timeline, Inline=FastReturn]
+    void didPaintImage(RenderImage*);
+
     [Resource, Timeline, Inline=FastReturn]
     InspectorInstrumentationCookie willRecalculateStyle([Keep] Document*);
 

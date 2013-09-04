@@ -12,7 +12,7 @@ EvaluateScript Properties:
     counters : <object>
     data : {
         lineNumber : <number>
-        url : <string>
+        url : .../inspector/timeline/resources/timeline-iframe-data.html
     }
     endTime : <number>
     frameId : <string>

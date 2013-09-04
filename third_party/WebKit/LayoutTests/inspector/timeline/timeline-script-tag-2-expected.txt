@@ -7,7 +7,7 @@ EvaluateScript Properties:
     counters : <object>
     data : {
         lineNumber : <number>
-        url : <string>
+        url : .../inspector/timeline/timeline-script-tag-2.js
     }
     endTime : <number>
     frameId : <string>

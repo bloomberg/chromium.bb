@@ -7,7 +7,7 @@ InspectorTest.timelinePropertyFormatters = {
     requestId: "formatAsTypeName",
     startTime: "formatAsTypeName",
     stackTrace: "formatAsTypeName",
-    url: "formatAsTypeName",
+    url: "formatAsURL",
     scriptName: "formatAsTypeName",
     usedHeapSize: "formatAsTypeName",
     usedHeapSizeDelta: "skip",
@@ -24,6 +24,7 @@ InspectorTest.timelinePropertyFormatters = {
     root: "formatAsTypeName",
     rootNode: "formatAsTypeName",
     layerRootNode: "formatAsTypeName",
+    elementId: "formatAsTypeName",
     networkTime: "formatAsTypeName",
 };
 

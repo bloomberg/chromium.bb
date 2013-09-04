@@ -6,7 +6,9 @@ DecodeImage Properties:
     children : <object>
     counters : <object>
     data : {
+        elementId : <number>
         imageType : "BMP"
+        url : .../inspector/timeline/resources/test.bmp
     }
     endTime : <number>
     startTime : <number>
@@ -19,6 +21,8 @@ ResizeImage Properties:
     counters : <object>
     data : {
         cached : true
+        elementId : <number>
+        url : .../inspector/timeline/resources/test.bmp
     }
     endTime : <number>
     startTime : <number>
@@ -30,7 +34,9 @@ DecodeImage Properties:
     children : <object>
     counters : <object>
     data : {
+        elementId : <number>
         imageType : "GIF"
+        url : .../inspector/timeline/resources/test.gif
     }
     endTime : <number>
     startTime : <number>
@@ -43,6 +49,8 @@ ResizeImage Properties:
     counters : <object>
     data : {
         cached : true
+        elementId : <number>
+        url : .../inspector/timeline/resources/test.gif
     }
     endTime : <number>
     startTime : <number>
@@ -54,7 +62,9 @@ DecodeImage Properties:
     children : <object>
     counters : <object>
     data : {
+        elementId : <number>
         imageType : "ICO"
+        url : .../inspector/timeline/resources/test.ico
     }
     endTime : <number>
     startTime : <number>
@@ -67,6 +77,8 @@ ResizeImage Properties:
     counters : <object>
     data : {
         cached : true
+        elementId : <number>
+        url : .../inspector/timeline/resources/test.ico
     }
     endTime : <number>
     startTime : <number>
@@ -78,7 +90,9 @@ DecodeImage Properties:
     children : <object>
     counters : <object>
     data : {
+        elementId : <number>
         imageType : "JPEG"
+        url : .../inspector/timeline/resources/test.jpg
     }
     endTime : <number>
     startTime : <number>
@@ -91,6 +105,8 @@ ResizeImage Properties:
     counters : <object>
     data : {
         cached : true
+        elementId : <number>
+        url : .../inspector/timeline/resources/test.jpg
     }
     endTime : <number>
     startTime : <number>
@@ -102,7 +118,9 @@ DecodeImage Properties:
     children : <object>
     counters : <object>
     data : {
+        elementId : <number>
         imageType : "PNG"
+        url : .../inspector/timeline/resources/test.png
     }
     endTime : <number>
     startTime : <number>
@@ -115,6 +133,8 @@ ResizeImage Properties:
     counters : <object>
     data : {
         cached : true
+        elementId : <number>
+        url : .../inspector/timeline/resources/test.png
     }
     endTime : <number>
     startTime : <number>
@@ -126,7 +146,9 @@ DecodeImage Properties:
     children : <object>
     counters : <object>
     data : {
+        elementId : <number>
         imageType : "WEBP"
+        url : .../inspector/timeline/resources/test.webp
     }
     endTime : <number>
     startTime : <number>
@@ -139,6 +161,8 @@ ResizeImage Properties:
     counters : <object>
     data : {
         cached : true
+        elementId : <number>
+        url : .../inspector/timeline/resources/test.webp
     }
     endTime : <number>
     startTime : <number>
@@ -150,7 +174,9 @@ DecodeImage Properties:
     children : <object>
     counters : <object>
     data : {
+        elementId : <number>
         imageType : "PNG"
+        url : .../inspector/timeline/resources/big.png
     }
     endTime : <number>
     startTime : <number>
@@ -163,6 +189,8 @@ ResizeImage Properties:
     counters : <object>
     data : {
         cached : true
+        elementId : <number>
+        url : .../inspector/timeline/resources/big.png
     }
     endTime : <number>
     startTime : <number>

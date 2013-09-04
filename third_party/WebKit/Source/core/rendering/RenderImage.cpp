@@ -35,6 +35,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMapElement.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/Font.h"
@@ -486,7 +487,10 @@ void RenderImage::paintIntoRect(GraphicsContext* context, const LayoutRect& rect
     CompositeOperator compositeOperator = imageElt ? imageElt->compositeOperator() : CompositeSourceOver;
     Image* image = m_imageResource->image().get();
     bool useLowQualityScaling = shouldPaintAtLowQuality(context, image, image, alignedRect.size());
+
+    InspectorInstrumentation::willPaintImage(this);
     context->drawImage(m_imageResource->image(alignedRect.width(), alignedRect.height()).get(), alignedRect, compositeOperator, shouldRespectImageOrientation(), useLowQualityScaling);
+    InspectorInstrumentation::didPaintImage(this);
 }
 
 bool RenderImage::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox*) const

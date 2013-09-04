@@ -141,7 +141,7 @@ EvaluateScript Properties:
     counters : <object>
     data : {
         lineNumber : <number>
-        url : <string>
+        url : 
     }
     endTime : <number>
     frameId : <string>

@@ -9,7 +9,7 @@ ResourceSendRequest Properties:
     data : {
         requestId : <string>
         requestMethod : "GET"
-        url : <string>
+        url : .../inspector/timeline/timeline-network-resource.js
     }
     frameId : <string>
     stackTrace : <object>

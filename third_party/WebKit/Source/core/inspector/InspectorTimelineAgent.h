@@ -62,6 +62,7 @@ class InstrumentingAgents;
 class KURL;
 class Node;
 class Page;
+class RenderImage;
 class RenderObject;
 class ResourceError;
 class ResourceLoader;
@@ -153,6 +154,9 @@ public:
     void willPaint(RenderObject*);
     void didPaint(RenderObject*, GraphicsContext*, const LayoutRect&);
 
+    void willPaintImage(RenderImage*);
+    void didPaintImage();
+
     void willScrollLayer(RenderObject*);
     void didScrollLayer();
 
@@ -237,14 +241,14 @@ private:
     void appendRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, Frame*);
     void pushCurrentRecord(PassRefPtr<JSONObject>, const String& type, bool captureCallStack, Frame*, bool hasLowLevelDetails = false);
 
-    void setDOMCounters(TypeBuilder::Timeline::TimelineEvent* record);
-    void setNativeHeapStatistics(TypeBuilder::Timeline::TimelineEvent* record);
+    void setDOMCounters(TypeBuilder::Timeline::TimelineEvent*);
     void setFrameIdentifier(JSONObject* record, Frame*);
+    void populateImageDetails(JSONObject* data, const RenderImage&);
+
     void pushGCEventRecords();
 
     void didCompleteCurrentRecord(const String& type);
 
-    void setHeapSizeStatistics(JSONObject* record);
     void commitFrameRecord();
 
     void addRecordToTimeline(PassRefPtr<JSONObject>);
@@ -290,6 +294,7 @@ private:
     RefPtr<TimelineTraceEventProcessor> m_traceEventProcessor;
     unsigned m_styleRecalcElementCounter;
     int m_layerTreeId;
+    RenderImage* m_imageBeingPainted;
 };
 
 } // namespace WebCore

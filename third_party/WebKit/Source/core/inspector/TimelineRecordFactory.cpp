@@ -261,5 +261,13 @@ void TimelineRecordFactory::appendStyleRecalcDetails(JSONObject* data, unsigned 
     data->setNumber("elementCount", elementCount);
 }
 
+void TimelineRecordFactory::appendImageDetails(JSONObject* data, long long imageElementId, const String& url)
+{
+    if (imageElementId)
+        data->setNumber("elementId", imageElementId);
+    if (!url.isEmpty())
+        data->setString("url", url);
+}
+
 } // namespace WebCore
 
