@@ -14,6 +14,7 @@
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/prefix_selector.h"
+#include "ui/views/ime/input_method.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -140,6 +141,7 @@ bool Combobox::OnKeyReleased(const ui::KeyEvent& e) {
 }
 
 void Combobox::OnFocus() {
+  GetInputMethod()->OnFocus();
   // Forward the focus to the wrapper.
   if (native_wrapper_) {
     native_wrapper_->SetFocus();
@@ -151,6 +153,7 @@ void Combobox::OnFocus() {
 }
 
 void Combobox::OnBlur() {
+  GetInputMethod()->OnBlur();
   if (selector_)
     selector_->OnViewBlur();
   if (native_wrapper_)
