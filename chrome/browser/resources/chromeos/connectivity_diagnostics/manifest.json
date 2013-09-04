@@ -2,7 +2,7 @@
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDGJWLUb83WKoDeODlrPIZu60M8bzbvrkg3Jf/5aO3ux2FL+G+/BO4Vyt/J0t8lXBtnTOvHo6KPpA042PyE9xMdlufFnJqEkvPXNzRlBWeVQqFHbMWE6o/x8diG69dNmHyFYcUjjFFDk2X2GOLQXNUGJQ6MIikbdzoWdLGttmhAIwIDAQAB",
   "manifest_version": 2,
   "name": "Connectivity Diagnostics",
-  "version": "0.5.2",
+  "version": "0.6.1",
   "minimum_chrome_version": "27",
   "offline_enabled": true,
   "default_locale": "en",
@@ -10,7 +10,6 @@
     "128": "img/icon_128.png",
     "16": "img/icon_16.png"
   },
-  "incognito": "split",
   "permissions" : [
    { "socket" : [
      "tcp-connect:*:443",
