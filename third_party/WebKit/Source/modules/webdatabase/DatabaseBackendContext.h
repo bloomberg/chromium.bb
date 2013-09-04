@@ -33,19 +33,22 @@ namespace WebCore {
 class ScriptExecutionContext;
 class SecurityOrigin;
 
-// FIXME: This implementation of DatabaseBackendContext is only a place holder
-// for the split out of the DatabaseContext backend to be done later. This
-// place holder is needed to allow other code that need to reference the
-// DatabaseBackendContext to do so before the proper backend split is
-// available. This should be replaced with the actual implementation later.
+// FIXME: There is no real distinction between frontend vs backend contexts in Blink.
+// These classes exist as artifacts of when Blink diverged from WebKit and catching work
+// in progress to run the database logic in a seperate process as part of WebKit2.
+// We always instantiate DatabaseBackendContext and never DatabaseContext.
 
 class DatabaseBackendContext : public DatabaseContext {
 public:
     DatabaseContext* frontend();
-
     SecurityOrigin* securityOrigin() const;
-
     bool isContextThread() const;
+
+private:
+    explicit DatabaseBackendContext(ScriptExecutionContext* scriptContext)
+        : DatabaseContext(scriptContext) { }
+
+    friend class DatabaseManager;
 };
 
 } // namespace WebCore

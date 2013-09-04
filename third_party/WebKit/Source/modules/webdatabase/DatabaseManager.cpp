@@ -116,7 +116,7 @@ PassRefPtr<DatabaseContext> DatabaseManager::databaseContextFor(ScriptExecutionC
 {
     RefPtr<DatabaseContext> databaseContext = existingDatabaseContextFor(context);
     if (!databaseContext)
-        databaseContext = adoptRef(new DatabaseContext(context));
+        databaseContext = adoptRef(new DatabaseBackendContext(context));
     return databaseContext.release();
 }
 
