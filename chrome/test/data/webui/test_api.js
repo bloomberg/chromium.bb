@@ -1628,9 +1628,9 @@ var testing = {};
   }
 
   /**
-   * Mock4JS matcher object that matches the actual agrument and the expected
+   * Mock4JS matcher object that matches the actual argument and the expected
    * value iff their JSON represenations are same.
-   * @param {Object} expectedValue Expected value.
+   * @param {Object} expectedValue
    * @constructor
    */
   function MatchJSON(expectedValue) {
@@ -1659,12 +1659,52 @@ var testing = {};
   };
 
   /**
-   * Builds a MatchJSON agrument matcher for a given expected value.
-   * @param {Object} expectedValue Expected value.
+   * Builds a MatchJSON argument matcher for a given expected value.
+   * @param {Object} expectedValue
    * @return {MatchJSON} Resulting Mock4JS matcher.
    */
   function eqJSON(expectedValue) {
     return new MatchJSON(expectedValue);
+  }
+
+  /**
+   * Mock4JS matcher object that matches the actual argument and the expected
+   * value iff the the string representation of the actual argument is equal to
+   * the expected value.
+   * @param {string} expectedValue
+   * @constructor
+   */
+  function MatchToString(expectedValue) {
+    this.expectedValue_ = expectedValue;
+  }
+
+  MatchToString.prototype = {
+    /**
+     * Checks that the the string representation of the actual argument matches
+     * the expected value.
+     * @param {*} actualArgument The argument to match.
+     * @return {boolean} Result of the comparison.
+     */
+    argumentMatches: function(actualArgument) {
+      return this.expectedValue_ === String(actualArgument);
+    },
+
+    /**
+     * Describes the matcher.
+     * @return {string} Description of this Mock4JS matcher.
+     */
+    describe: function() {
+      return 'eqToString("' + this.expectedValue_ + '")';
+    },
+  };
+
+  /**
+   * Builds a MatchToString argument matcher for a given expected value.
+   * @param {Object} expectedValue
+   * @return {MatchToString} Resulting Mock4JS matcher.
+   */
+  function eqToString(expectedValue) {
+    return new MatchToString(expectedValue);
   }
 
   // Exports.
@@ -1684,6 +1724,7 @@ var testing = {};
   exports.callFunctionWithSavedArgs = callFunctionWithSavedArgs;
   exports.callGlobalWithSavedArgs = callGlobalWithSavedArgs;
   exports.eqJSON = eqJSON;
+  exports.eqToString = eqToString;
   exports.expectTrue = createExpect(assertTrue);
   exports.expectFalse = createExpect(assertFalse);
   exports.expectGE = createExpect(assertGE);

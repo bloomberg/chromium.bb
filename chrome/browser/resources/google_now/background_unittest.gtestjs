@@ -16,6 +16,7 @@ GoogleNowBackgroundUnitTest.prototype = {
 
   /** @override */
   extraLibraries: [
+    'common_test_util.js',
     'background_test_util.js',
     'background.js'
   ]

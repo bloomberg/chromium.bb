@@ -1,0 +1,430 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * Test fixture for utility.js.
+ * @constructor
+ * @extends {testing.Test}
+ */
+function GoogleNowUtilityUnitTest () {
+  testing.Test.call(this);
+}
+
+GoogleNowUtilityUnitTest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /** @override */
+  extraLibraries: [
+    'common_test_util.js',
+    'utility_test_util.js',
+    'utility.js'
+  ]
+};
+
+TEST_F('GoogleNowUtilityUnitTest', 'SendErrorReport1', function() {
+  // Test sending report for an error with a message that can be sent to server.
+
+  // Setup and expectations.
+  var testStack = 'Error: TEST ERROR MESSAGE\n    ' +
+      'at buildErrorWithMessageForServer ' +
+      '(chrome-extension://ext_id/utility.js:29:15)\n' +
+      '    at <anonymous>:2:16\n    ' +
+      'at Object.InjectedScript._evaluateOn (<anonymous>:580:39)\n    ' +
+      'at Object.InjectedScript._evaluateAndWrap (<anonymous>:539:52)\n    ' +
+      'at Object.InjectedScript.evaluate (<anonymous>:458:21)';
+
+  var testError = {
+    canSendMessageToServer: true,
+    stack: testStack,
+    name: 'TEST ERROR NAME',
+    message: 'TEST ERROR MESSAGE'
+  };
+
+  this.makeAndRegisterMockGlobals(['buildServerRequest']);
+  this.makeMockLocalFunctions(['sendRequest']);
+
+  var mockRequest = {send: this.mockLocalFunctions.functions().sendRequest};
+
+  var expectedRequestParameters = 'error=TEST%20ERROR%20NAME%3A%20' +
+      'TEST%20ERROR%20MESSAGE&' +
+      'script=%2F%2Fext_id%2Futility.js&' +
+      'line=29&' +
+      'trace=Error%3A%20TEST%20ERROR%20MESSAGE%0A%20%20%20%20' +
+      'at%20buildErrorWithMessageForServer%20' +
+      '(chrome-extension%3A%2F%2Fext_id%2Futility.js%3A29%3A15)%0A' +
+      '%20%20%20%20at%20%3Canonymous%3E%3A2%3A16%0A%20%20%20%20' +
+      'at%20Object.InjectedScript._evaluateOn%20(%3Canonymous%3E%3A580%3A39)' +
+      '%0A%20%20%20%20' +
+      'at%20Object.InjectedScript._evaluateAndWrap%20(%3Canonymous%3E%3A539' +
+      '%3A52)%0A%20%20%20%20' +
+      'at%20Object.InjectedScript.evaluate%20(%3Canonymous%3E%3A458%3A21)';
+
+  this.mockGlobals.expects(once()).
+      buildServerRequest('jserror', 'application/x-www-form-urlencoded').
+      will(returnValue(mockRequest));
+  this.mockLocalFunctions.expects(once()).sendRequest(
+      expectedRequestParameters);
+
+  // Invoking the tested function.
+  sendErrorReport(testError);
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'SendErrorReport2', function() {
+  // Test sending report for an error with a message that should not be sent to
+  // server, with an error generated in an anonymous function.
+
+  // Setup and expectations.
+  var testStack = 'TypeError: Property \'processPendingDismissals\' of ' +
+      'object [object Object] is not a function\n    ' +
+      'at chrome-extension://ext_id/background.js:444:11\n    ' +
+      'at chrome-extension://ext_id/utility.js:509:7';
+
+  var testError = {
+    stack: testStack,
+    name: 'TypeError'
+  };
+
+  this.makeAndRegisterMockGlobals(['buildServerRequest']);
+  this.makeMockLocalFunctions(['sendRequest']);
+
+  var mockRequest = {send: this.mockLocalFunctions.functions().sendRequest};
+
+  var expectedRequestParameters = 'error=TypeError&' +
+      'script=%2F%2Fext_id%2Fbackground.js&' +
+      'line=444&' +
+      'trace=(message%20removed)%0A%20%20%20%20' +
+      'at%20chrome-extension%3A%2F%2Fext_id%2Fbackground.js%3A444%3A11' +
+      '%0A%20%20%20%20' +
+      'at%20chrome-extension%3A%2F%2Fext_id%2Futility.js%3A509%3A7';
+
+  this.mockGlobals.expects(once()).
+      buildServerRequest('jserror', 'application/x-www-form-urlencoded').
+      will(returnValue(mockRequest));
+  this.mockLocalFunctions.expects(once()).sendRequest(
+      expectedRequestParameters);
+
+  // Invoking the tested function.
+  sendErrorReport(testError);
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'WrapperCheckInWrappedCallback', function() {
+  // Test generating an error when calling wrapper.checkInWrappedCallback from a
+  // non-instrumented code.
+
+  // Setup and expectations.
+  var testError = {
+    testField: 'TEST VALUE'
+  };
+
+  this.makeAndRegisterMockGlobals([
+    'buildErrorWithMessageForServer',
+    'reportError'
+  ]);
+
+  this.mockGlobals.expects(once()).
+      buildErrorWithMessageForServer('Not in instrumented callback').
+      will(returnValue(testError));
+  this.mockGlobals.expects(once()).
+      reportError(eqJSON(testError));
+
+  // Invoking the tested function.
+  wrapper.checkInWrappedCallback();
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'WrapperWrapCallbackEvent', function() {
+  // Tests wrapping event handler and that the handler code counts as an
+  // instrumented callback.
+
+  // Setup.
+  var testError = {
+    testField: 'TEST VALUE'
+  };
+
+  this.makeAndRegisterMockGlobals([
+    'buildErrorWithMessageForServer',
+    'reportError'
+  ]);
+  var onSuspendHandlerContainer = getMockHandlerContainer('runtime.onSuspend');
+
+  this.makeMockLocalFunctions(['callback']);
+
+  // Step 1. Wrapping callback.
+  var wrappedCallback =
+    wrapper.wrapCallback(this.mockLocalFunctions.functions().callback, true);
+  Mock4JS.verifyAllMocks();
+
+  // Step 2. Invoking wrapped callback.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).
+      callback('test string', 239).
+      will(callFunction(function() {
+        wrapper.checkInWrappedCallback(); // it should succeed
+      }));
+
+  // Invoking tested function.
+  wrappedCallback('test string', 239);
+  Mock4JS.verifyAllMocks();
+
+  // Step 3. Checking that after the callback we are again in non-instrumented
+  // code. 
+  // Expectations.
+  this.mockGlobals.expects(once()).
+      buildErrorWithMessageForServer('Not in instrumented callback').
+      will(returnValue(testError));
+  this.mockGlobals.expects(once()).
+      reportError(eqJSON(testError));
+
+  // Invocation.
+  wrapper.checkInWrappedCallback();
+
+  // Step 4. Check that there won't be errors whe the page unloads.
+  assertTrue(onSuspendHandlerContainer.length == 1,
+             'onSuspendHandlerContainer.length must be 1');
+  onSuspendHandlerContainer[0]();
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'WrapperWrapCallbackPlugin', function() {
+  // Tests calling plugin's prologue and epilogue.
+
+  // Setup.
+  this.makeMockLocalFunctions([
+    'callback',
+    'pluginFactory',
+    'prologue',
+    'epilogue'
+  ]);
+
+  // Step 1. Registering plugin factory.
+  wrapper.registerWrapperPluginFactory(
+      this.mockLocalFunctions.functions().pluginFactory);
+  Mock4JS.verifyAllMocks();
+
+  // Step 2. Wrapping callback.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).
+      pluginFactory().
+      will(returnValue({
+        prologue: this.mockLocalFunctions.functions().prologue,
+        epilogue: this.mockLocalFunctions.functions().epilogue
+      }));
+
+  // Invoking tested function.
+  var wrappedCallback =
+    wrapper.wrapCallback(this.mockLocalFunctions.functions().callback, true);
+  Mock4JS.verifyAllMocks();
+
+  // Step 3. Calling the wrapped callback.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).prologue();
+  this.mockLocalFunctions.expects(once()).callback();
+  this.mockLocalFunctions.expects(once()).epilogue();
+
+  // Invoking wrapped callback.
+  wrappedCallback();
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'WrapperWrapCallbackCatchError', function() {
+  // Tests catching and sending errors by a wrapped callback.
+
+  // Setup.
+  this.makeAndRegisterMockGlobals([
+    'reportError'
+  ]);
+  this.makeMockLocalFunctions(['callback']);
+
+  // Step 1. Wrapping callback.
+  var wrappedCallback =
+    wrapper.wrapCallback(this.mockLocalFunctions.functions().callback, true);
+  Mock4JS.verifyAllMocks();
+
+  // Step 2. Invoking wrapped callback.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).
+      callback().
+      will(callFunction(function() {
+        undefined.x = 5;
+      }));
+  this.mockGlobals.expects(once()).
+      reportError(
+          eqToString('TypeError: Cannot set property \'x\' of undefined'));
+
+  // Invoking tested function.
+  wrappedCallback();
+});
+
+TEST_F('GoogleNowUtilityUnitTest',
+       'WrapperInstrumentChromeApiFunction',
+       function() {
+  // Tests wrapper.instrumentChromeApiFunction().
+
+  // Setup.
+  this.makeMockLocalFunctions([
+    'apiFunction1',
+    'apiFunction2',
+    'callback1',
+    'callback2',
+    'pluginFactory',
+    'prologue',
+    'epilogue'
+  ]);
+  chrome.testApi = {
+      addListener: this.mockLocalFunctions.functions().apiFunction1
+  };
+
+  // Step 1. Instrumenting the listener.
+  wrapper.instrumentChromeApiFunction('testApi.addListener', 1);
+  Mock4JS.verifyAllMocks();
+
+  // Step 2. Invoking the instrumented API call.
+  // Expectations.
+  var function1SavedArgs = new SaveMockArguments();
+  this.mockLocalFunctions.expects(once()).
+      apiFunction1(
+          function1SavedArgs.match(eq(239)),
+          function1SavedArgs.match(ANYTHING));
+
+  // Invocation.
+  instrumented.testApi.addListener(
+      239, this.mockLocalFunctions.functions().callback1);
+  Mock4JS.verifyAllMocks();
+
+  // Step 3. Invoking the callback that was passed by the instrumented function
+  // to the original one.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).callback1(237);
+
+  // Invocation.
+  function1SavedArgs.arguments[1](237);
+  Mock4JS.verifyAllMocks();
+
+  // Step 4. Register plugin factory.
+  wrapper.registerWrapperPluginFactory(
+      this.mockLocalFunctions.functions().pluginFactory);
+  Mock4JS.verifyAllMocks();
+
+  // Step 5. Binding the API to another function.
+  chrome.testApi.addListener = this.mockLocalFunctions.functions().apiFunction2;
+
+  // Step 6. Invoking the API with another callback.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).
+      pluginFactory().
+      will(returnValue({
+        prologue: this.mockLocalFunctions.functions().prologue,
+        epilogue: this.mockLocalFunctions.functions().epilogue
+      }));
+  var function2SavedArgs = new SaveMockArguments();
+  this.mockLocalFunctions.expects(once()).
+      apiFunction2(
+          function2SavedArgs.match(eq(239)),
+          function2SavedArgs.match(ANYTHING));
+
+  // Invocation.
+  instrumented.testApi.addListener(
+      239, this.mockLocalFunctions.functions().callback2);
+  Mock4JS.verifyAllMocks();
+
+  // Step 7. Invoking the callback that was passed by the instrumented function
+  // to the original one.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).prologue();
+  this.mockLocalFunctions.expects(once()).callback2(237);
+  this.mockLocalFunctions.expects(once()).epilogue();
+
+  // Invocation.
+  function2SavedArgs.arguments[1](237);
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'WrapperOnSuspendListenerFail', function() {
+  // Tests that upon unloading event page, we get an error if there are pending
+  // required callbacks.
+
+  // Setup.
+  var testError = {
+    testField: 'TEST VALUE'
+  };
+  this.makeAndRegisterMockGlobals([
+    'buildErrorWithMessageForServer',
+    'reportError'
+  ]);
+  this.makeMockLocalFunctions(['listener', 'callback']);
+  var onSuspendHandlerContainer = getMockHandlerContainer('runtime.onSuspend');
+
+  // Step 1. Wrapping event listener.
+  var wrappedListener =
+    wrapper.wrapCallback(this.mockLocalFunctions.functions().listener, true);
+  Mock4JS.verifyAllMocks();
+
+  // Step 2. Invoking event listener, which will wrap a required callback.
+  // Setup and expectations.
+  var wrappedCallback;
+  var testFixture = this;
+  this.mockLocalFunctions.expects(once()).
+      listener().
+      will(callFunction(function() {
+        wrappedCallback = wrapper.wrapCallback(
+            testFixture.mockLocalFunctions.functions().callback);
+      }));
+
+  // Invocation.
+  wrappedListener();
+  Mock4JS.verifyAllMocks();
+
+  // Step 3. Firing runtime.onSuspend event.
+  // Expectations.
+  this.mockGlobals.expects(once()).
+      buildErrorWithMessageForServer(stringContains(
+          'ASSERT: Pending callbacks when unloading event page')).
+      will(returnValue(testError));
+  this.mockGlobals.expects(once()).
+      reportError(eqJSON(testError));
+
+  // Invocation.
+  assertTrue(onSuspendHandlerContainer.length == 1,
+             'onSuspendHandlerContainer.length must be 1');
+  onSuspendHandlerContainer[0]();
+});
+
+TEST_F('GoogleNowUtilityUnitTest',
+       'WrapperOnSuspendListenerSuccess',
+       function() {
+  // Tests that upon unloading event page, we don't get an error if there are no
+  // pending required callbacks.
+
+  // Setup.
+  this.makeMockLocalFunctions(['listener', 'callback']);
+  var onSuspendHandlerContainer = getMockHandlerContainer('runtime.onSuspend');
+
+  // Step 1. Wrapping event listener.
+  var wrappedListener =
+    wrapper.wrapCallback(this.mockLocalFunctions.functions().listener, true);
+  Mock4JS.verifyAllMocks();
+
+  // Step 2. Invoking event listener, which will wrap a required callback.
+  // Setup and expectations.
+  var wrappedCallback;
+  var testFixture = this;
+  this.mockLocalFunctions.expects(once()).
+      listener().
+      will(callFunction(function() {
+        wrappedCallback = wrapper.wrapCallback(
+            testFixture.mockLocalFunctions.functions().callback);
+      }));
+
+  // Invocation.
+  wrappedListener();
+  Mock4JS.verifyAllMocks();
+
+  // Step 3. Calling wrapped callback.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).callback();
+
+  // Invocation.
+  wrappedCallback();
+
+  // Step 4. Firing runtime.onSuspend event.
+  assertTrue(onSuspendHandlerContainer.length == 1,
+             'onSuspendHandlerContainer.length must be 1');
+  onSuspendHandlerContainer[0]();
+});
