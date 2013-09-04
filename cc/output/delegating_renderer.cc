@@ -82,7 +82,8 @@ bool DelegatingRenderer::Initialize() {
 
   capabilities_.using_set_visibility = caps.set_visibility;
   capabilities_.using_egl_image = caps.egl_image_external;
-  capabilities_.using_map_image = caps.map_image;
+  capabilities_.using_map_image =
+      Settings().use_map_image && caps.map_image;
 
   return true;
 }
