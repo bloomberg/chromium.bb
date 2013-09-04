@@ -167,6 +167,12 @@ double Animation::TrimTimeToCurrentIteration(double monotonic_time) const {
   // subtract all time spent paused.
   trimmed -= start_time_ + total_paused_time_;
 
+  // If we're just starting or we're waiting on receiving a start time,
+  // time is 'stuck' at the initial state.
+  if ((run_state_ == Starting && !has_set_start_time()) ||
+      needs_synchronized_start_time())
+    trimmed = time_offset_;
+
   // Zero is always the start of the animation.
   if (trimmed <= 0)
     return 0;

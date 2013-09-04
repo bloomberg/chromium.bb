@@ -671,16 +671,6 @@ void LayerAnimationController::TickAnimations(double monotonic_time) {
       double trimmed =
           active_animations_[i]->TrimTimeToCurrentIteration(monotonic_time);
 
-      // Animation assumes its initial value until it gets the synchronized
-      // start time from the impl thread and can start ticking.
-      if (active_animations_[i]->needs_synchronized_start_time())
-        trimmed = 0;
-
-      // A just-started animation assumes its initial value.
-      if (active_animations_[i]->run_state() == Animation::Starting &&
-          !active_animations_[i]->has_set_start_time())
-        trimmed = 0;
-
       switch (active_animations_[i]->target_property()) {
         case Animation::Transform: {
           const TransformAnimationCurve* transform_animation_curve =

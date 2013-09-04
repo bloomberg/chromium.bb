@@ -110,6 +110,41 @@ TEST(AnimationTest, TrimTimeZeroDuration) {
   EXPECT_EQ(0, anim->TrimTimeToCurrentIteration(1.0));
 }
 
+TEST(AnimationTest, TrimTimeStarting) {
+  scoped_ptr<Animation> anim(CreateAnimation(1, 5.0));
+  anim->SetRunState(Animation::Starting, 0.0);
+  EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(-1.0));
+  EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(0.0));
+  EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(1.0));
+  anim->set_time_offset(2.0);
+  EXPECT_EQ(2.0, anim->TrimTimeToCurrentIteration(-1.0));
+  EXPECT_EQ(2.0, anim->TrimTimeToCurrentIteration(0.0));
+  EXPECT_EQ(2.0, anim->TrimTimeToCurrentIteration(1.0));
+  anim->set_start_time(1.0);
+  EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(-1.0));
+  EXPECT_EQ(1.0, anim->TrimTimeToCurrentIteration(0.0));
+  EXPECT_EQ(2.0, anim->TrimTimeToCurrentIteration(1.0));
+  EXPECT_EQ(3.0, anim->TrimTimeToCurrentIteration(2.0));
+}
+
+TEST(AnimationTest, TrimTimeNeedsSynchronizedStartTime) {
+  scoped_ptr<Animation> anim(CreateAnimation(1, 5.0));
+  anim->SetRunState(Animation::Running, 0.0);
+  anim->set_needs_synchronized_start_time(true);
+  EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(-1.0));
+  EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(0.0));
+  EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(1.0));
+  anim->set_time_offset(2.0);
+  EXPECT_EQ(2.0, anim->TrimTimeToCurrentIteration(-1.0));
+  EXPECT_EQ(2.0, anim->TrimTimeToCurrentIteration(0.0));
+  EXPECT_EQ(2.0, anim->TrimTimeToCurrentIteration(1.0));
+  anim->set_start_time(1.0);
+  anim->set_needs_synchronized_start_time(false);
+  EXPECT_EQ(1.0, anim->TrimTimeToCurrentIteration(0.0));
+  EXPECT_EQ(2.0, anim->TrimTimeToCurrentIteration(1.0));
+  EXPECT_EQ(3.0, anim->TrimTimeToCurrentIteration(2.0));
+}
+
 TEST(AnimationTest, IsFinishedAtZeroIterations) {
   scoped_ptr<Animation> anim(CreateAnimation(0));
   anim->SetRunState(Animation::Running, 0.0);
