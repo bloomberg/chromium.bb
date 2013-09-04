@@ -1026,7 +1026,6 @@
         'browser/notifications/sync_notifier/sync_notifier_test_utils.cc',
         'browser/notifications/sync_notifier/sync_notifier_test_utils.h',
         'browser/omnibox/omnibox_field_trial_unittest.cc',
-        'browser/page_cycler/page_cycler_unittest.cc',
         'browser/parsers/metadata_parser_filebase_unittest.cc',
         'browser/password_manager/login_database_unittest.cc',
         'browser/password_manager/native_backend_gnome_x_unittest.cc',
@@ -2351,7 +2350,7 @@
           ],
           # TODO(mark): We really want this for all non-static library targets,
           # but when we tried to pull it up to the common.gypi level, it broke
-          # other things like the ui, startup, and page_cycler tests. *shrug*
+          # other things like the ui and startup tests. *shrug*
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
         }],
         ['OS!="mac" and OS!="ios"', {
@@ -2472,7 +2471,6 @@
             'browser/download/download_shelf_unittest.cc',
             'browser/storage_monitor/media_storage_util_unittest.cc',
             'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
-            'browser/page_cycler/page_cycler_unittest.cc',
             'browser/policy/async_policy_provider_unittest.cc',
             'browser/policy/cloud/cloud_external_data_manager_base_unittest.cc',
             'browser/policy/cloud/cloud_external_data_store_unittest.cc',
@@ -2680,7 +2678,7 @@
         ['OS=="mac"', {
           # TODO(mark): We really want this for all non-static library targets,
           # but when we tried to pull it up to the common.gypi level, it broke
-          # other things like the ui, startup, and page_cycler tests. *shrug*
+          # other things like the ui and startup tests. *shrug*
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
         }],
         ['OS=="win"', {

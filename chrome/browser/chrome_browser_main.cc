@@ -75,7 +75,6 @@
 #include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
-#include "chrome/browser/page_cycler/page_cycler.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/performance_monitor/startup_timer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -1094,11 +1093,6 @@ void ChromeBrowserMainParts::PreBrowserStart() {
 
 void ChromeBrowserMainParts::PostBrowserStart() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostBrowserStart");
-#if !defined(OS_ANDROID)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kVisitURLs))
-    RunPageCycler();
-#endif
-
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostBrowserStart();
 #if !defined(OS_ANDROID)
@@ -1106,26 +1100,6 @@ void ChromeBrowserMainParts::PostBrowserStart() {
   process_singleton_->Unlock();
 #endif
 }
-
-#if !defined(OS_ANDROID)
-void ChromeBrowserMainParts::RunPageCycler() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  Browser* browser = chrome::FindBrowserWithProfile(profile_,
-                                                    chrome::GetActiveDesktop());
-  DCHECK(browser);
-  PageCycler* page_cycler = NULL;
-  base::FilePath input_file =
-      command_line->GetSwitchValuePath(switches::kVisitURLs);
-  page_cycler = new PageCycler(browser, input_file);
-  page_cycler->set_errors_file(
-      input_file.AddExtension(FILE_PATH_LITERAL(".errors")));
-  if (command_line->HasSwitch(switches::kRecordStats)) {
-    page_cycler->set_stats_file(
-        command_line->GetSwitchValuePath(switches::kRecordStats));
-  }
-  page_cycler->Run();
-}
-#endif   // !defined(OS_ANDROID)
 
 void ChromeBrowserMainParts::SetupPlatformFieldTrials() {
   // Base class implementation of this does nothing.

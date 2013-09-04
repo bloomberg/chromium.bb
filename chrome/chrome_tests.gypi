@@ -1131,6 +1131,7 @@
         'chrome_resources.gyp:packed_resources',
         'common/extensions/api/api.gyp:api',
         'renderer',
+        'test/perf/perf_test.gyp:*',
         'test_support_common',
         'test_support_unit',
         '../base/base.gyp:base',
@@ -1496,7 +1497,6 @@
         'browser/notifications/sync_notifier/notification_bitmap_fetcher_browsertest.cc',
         'browser/notifications/sync_notifier/sync_notifier_test_utils.cc',
         'browser/notifications/sync_notifier/sync_notifier_test_utils.h',
-        'browser/page_cycler/page_cycler_browsertest.cc',
         'browser/password_manager/password_manager_browsertest.cc',
         'browser/performance_monitor/performance_monitor_browsertest.cc',
         'browser/policy/cloud/cloud_policy_browsertest.cc',
@@ -2026,8 +2026,7 @@
           ],
           # TODO(mark): We really want this for all non-static library
           # targets, but when we tried to pull it up to the common.gypi
-          # level, it broke other things like the ui, startup, and
-          # page_cycler tests. *shrug*
+          # level, it broke other things like the ui and startup tests. *shrug*
           'xcode_settings': {
             'OTHER_LDFLAGS': [
               '-Wl,-ObjC',
@@ -2149,6 +2148,7 @@
         'chrome_resources.gyp:packed_extra_resources',
         'chrome_resources.gyp:packed_resources',
         'renderer',
+        'test/perf/perf_test.gyp:*',
         'test_support_common',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -2159,6 +2159,7 @@
         '../sync/sync.gyp:sync',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../testing/perf/perf_test.gyp:*',
         '../third_party/cld/cld.gyp:cld',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -2283,8 +2284,7 @@
           ],
           # TODO(mark): We really want this for all non-static library
           # targets, but when we tried to pull it up to the common.gypi
-          # level, it broke other things like the ui, startup, and
-          # page_cycler tests. *shrug*
+          # level, it broke other things like the ui and startup tests. *shrug*
           'xcode_settings': {
             'OTHER_LDFLAGS': [
               '-Wl,-ObjC',
@@ -2382,6 +2382,7 @@
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
         'debugger',
+        'test/perf/perf_test.gyp:*',
         'test_support_common',
         'test_support_ui',
         '../base/base.gyp:base',
@@ -2659,6 +2660,7 @@
         'browser',
         'chrome',
         'common/extensions/api/api.gyp:api',
+        'test/perf/perf_test.gyp:*',
         'test_support_common',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',

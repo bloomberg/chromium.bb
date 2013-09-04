@@ -79,11 +79,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   virtual void PreBrowserStart();
   virtual void PostBrowserStart();
 
-#if !defined(OS_ANDROID)
-  // Runs the PageCycler; called if the switch kVisitURLs is present.
-  virtual void RunPageCycler();
-#endif
-
   // Override this in subclasses to initialize platform specific field trials.
   virtual void SetupPlatformFieldTrials();
 

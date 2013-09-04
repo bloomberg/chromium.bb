@@ -1455,9 +1455,6 @@ const char kVariationsServerURL[]           = "variations-server-url";
 // Prints version information and quits.
 const char kVersion[]                       = "version";
 
-// Cycle through a series of URLs listed in the specified file.
-const char kVisitURLs[]                     = "visit-urls";
-
 // Adds the given extension ID to all the permission whitelists.
 const char kWhitelistedExtensionID[]        = "whitelisted-extension-id";
 

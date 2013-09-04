@@ -390,7 +390,6 @@ extern const char kUserDataDir[];
 extern const char kValidateCrx[];
 extern const char kVariationsServerURL[];
 extern const char kVersion[];
-extern const char kVisitURLs[];
 extern const char kWhitelistedExtensionID[];
 extern const char kWindowPosition[];
 extern const char kWindowSize[];
