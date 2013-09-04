@@ -22,6 +22,7 @@
 
 """Supports checking WebKit style in Python files."""
 
+import os
 import re
 import sys
 
@@ -73,12 +74,17 @@ class PythonChecker(object):
     def _run_pylint(self, path):
         wkf = WebKitFinder(FileSystem())
         executive = Executive()
+        env = os.environ.copy()
+        env['PYTHONPATH'] = ('%s%s%s' % (wkf.path_from_webkit_base('Tools', 'Scripts'),
+                                         os.pathsep,
+                                         wkf.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty')))
         return executive.run_command([sys.executable, wkf.path_from_depot_tools_base('pylint.py'),
                                       '--output-format=parseable',
                                       '--errors-only',
                                       '--rcfile=' + wkf.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'pylintrc'),
                                       path],
-                                      error_handler=executive.ignore_error)
+                                     env=env,
+                                     error_handler=executive.ignore_error)
 
     def _parse_pylint_output(self, output):
         # We filter out these messages because they are bugs in pylint that produce false positives.
