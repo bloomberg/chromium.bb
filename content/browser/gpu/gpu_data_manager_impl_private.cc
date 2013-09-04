@@ -571,30 +571,13 @@ void GpuDataManagerImplPrivate::GetGLStrings(std::string* gl_vendor,
 
 void GpuDataManagerImplPrivate::Initialize() {
   TRACE_EVENT0("startup", "GpuDataManagerImpl::Initialize");
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kSkipGpuDataLoading))
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kSkipGpuDataLoading) &&
+      !command_line->HasSwitch(switches::kUseGpuInTests))
     return;
 
   gpu::GPUInfo gpu_info;
-  if (command_line->GetSwitchValueASCII(
-          switches::kUseGL) == gfx::kGLImplementationOSMesaName) {
-    // If using the OSMesa GL implementation, use fake vendor and device ids to
-    // make sure it never gets blacklisted. This is better than simply
-    // cancelling GPUInfo gathering as it allows us to proceed with loading the
-    // blacklist below which may have non-device specific entries we want to
-    // apply anyways (e.g., OS version blacklisting).
-    gpu_info.gpu.vendor_id = 0xffff;
-    gpu_info.gpu.device_id = 0xffff;
-
-    // Hardcode some values otherwise some blacklisting rules in
-    // kSoftwareRenderingListJson result in a positive match as GpuControlList
-    // assumes a match (by design) when a property is required for the
-    // verification yet not present in the GpuInfo.
-    gpu_info.driver_vendor =
-        gfx::kGLImplementationOSMesaName;  // Bypass rule #74.
-    gpu_info.driver_date = "2013.8";  // Bypass rules #12 and #55.
-    gpu_info.driver_version = "9.0.3";  // Bypass rule #23.
-  } else {
+  {
     TRACE_EVENT0("startup",
       "GpuDataManagerImpl::Initialize:CollectBasicGraphicsInfo");
     gpu::CollectBasicGraphicsInfo(&gpu_info);
@@ -1075,10 +1058,6 @@ void GpuDataManagerImplPrivate::InitializeImpl(
 
   if (!gpu_blacklist_json.empty()) {
     gpu_blacklist_.reset(gpu::GpuBlacklist::Create());
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kLogGpuControlListDecisions)) {
-      gpu_blacklist_->enable_control_list_logging();
-    }
     gpu_blacklist_->LoadList(
         browser_version_string, gpu_blacklist_json,
         gpu::GpuControlList::kCurrentOsOnly);

@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
-#include "build/build_config.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -37,6 +36,11 @@ bool CanDoAcceleratedCompositing() {
   return true;
 }
 
+bool IsForceCompositingModeBlacklisted() {
+  return GpuDataManager::GetInstance()->IsFeatureBlacklisted(
+      gpu::GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE);
+}
+
 }  // namespace
 
 bool IsThreadedCompositingEnabled() {
@@ -45,17 +49,20 @@ bool IsThreadedCompositingEnabled() {
   return true;
 #endif
 
+  if (!CanDoAcceleratedCompositing())
+    return false;
+
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   // Command line switches take precedence over blacklist and field trials.
   if (command_line.HasSwitch(switches::kDisableForceCompositingMode) ||
-      command_line.HasSwitch(switches::kDisableThreadedCompositing)) {
+      command_line.HasSwitch(switches::kDisableThreadedCompositing))
     return false;
-  } else if (command_line.HasSwitch(switches::kEnableThreadedCompositing)) {
-    return true;
-  }
 
-  if (!CanDoAcceleratedCompositing())
+  if (command_line.HasSwitch(switches::kEnableThreadedCompositing))
+    return true;
+
+  if (IsForceCompositingModeBlacklisted())
     return false;
 
   base::FieldTrial* trial =
@@ -70,15 +77,19 @@ bool IsForceCompositingModeEnabled() {
   return true;
 #endif
 
+  if (!CanDoAcceleratedCompositing())
+    return false;
+
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   // Command line switches take precedence over blacklisting and field trials.
   if (command_line.HasSwitch(switches::kDisableForceCompositingMode))
     return false;
-  else if (command_line.HasSwitch(switches::kForceCompositingMode))
+
+  if (command_line.HasSwitch(switches::kForceCompositingMode))
     return true;
 
-  if (!CanDoAcceleratedCompositing())
+  if (IsForceCompositingModeBlacklisted())
     return false;
 
   base::FieldTrial* trial =
