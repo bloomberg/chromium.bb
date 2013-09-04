@@ -2133,7 +2133,7 @@ const AtomicString& Node::interfaceName() const
 
 ScriptExecutionContext* Node::scriptExecutionContext() const
 {
-    return document().contextDocument().get();
+    return &document();
 }
 
 void Node::didMoveToNewDocument(Document* oldDocument)

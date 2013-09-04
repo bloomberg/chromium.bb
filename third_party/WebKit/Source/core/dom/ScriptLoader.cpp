@@ -166,6 +166,14 @@ bool ScriptLoader::isScriptTypeSupported(LegacyTypeSupport supportLegacyTypes) c
     return false;
 }
 
+Document* ScriptLoader::executingDocument() const
+{
+    Document& document = m_element->document();
+    if (!document.import())
+        return &document;
+    return document.import()->master();
+}
+
 // http://dev.w3.org/html5/spec/Overview.html#prepare-a-script
 bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, LegacyTypeSupport supportLegacyTypes)
 {
@@ -203,10 +211,16 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
     m_alreadyStarted = true;
 
     // FIXME: If script is parser inserted, verify it's still in the original document.
+    Document* executingDocument = this->executingDocument();
     Document& elementDocument = m_element->document();
-    Document* contextDocument = elementDocument.contextDocument().get();
 
-    if (!contextDocument || !contextDocument->allowExecutingScripts(m_element))
+    // FIXME: Eventually we'd like to evaluate scripts which are inserted into a
+    // viewless document but this'll do for now.
+    // See http://bugs.webkit.org/show_bug.cgi?id=5727
+    if (!executingDocument->frame())
+        return false;
+
+    if (!executingDocument->frame()->script()->canExecuteScripts(AboutToExecuteScript))
         return false;
 
     if (!isScriptForEventSupported())
@@ -232,10 +246,10 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         m_readyToBeParserExecuted = true;
     } else if (client->hasSourceAttribute() && !client->asyncAttributeValue() && !m_forceAsync) {
         m_willExecuteInOrder = true;
-        contextDocument->scriptRunner()->queueScriptForExecution(this, m_resource, ScriptRunner::IN_ORDER_EXECUTION);
+        executingDocument->scriptRunner()->queueScriptForExecution(this, m_resource, ScriptRunner::IN_ORDER_EXECUTION);
         m_resource->addClient(this);
     } else if (client->hasSourceAttribute()) {
-        contextDocument->scriptRunner()->queueScriptForExecution(this, m_resource, ScriptRunner::ASYNC_EXECUTION);
+        executingDocument->scriptRunner()->queueScriptForExecution(this, m_resource, ScriptRunner::ASYNC_EXECUTION);
         m_resource->addClient(this);
     } else {
         // Reset line numbering for nested writes.
@@ -301,9 +315,9 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
     if (sourceCode.isEmpty())
         return;
 
+    RefPtr<Document> executingDocument = this->executingDocument();
     RefPtr<Document> elementDocument = &m_element->document();
-    RefPtr<Document> contextDocument = elementDocument->contextDocument().get();
-    Frame* frame = contextDocument->frame();
+    Frame* frame = executingDocument->frame();
 
     bool shouldBypassMainWorldContentSecurityPolicy = (frame && frame->script()->shouldBypassMainWorldContentSecurityPolicy()) || elementDocument->contentSecurityPolicy()->allowScriptNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
 
@@ -311,15 +325,15 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
         return;
 
     if (m_isExternalScript && m_resource && !m_resource->mimeTypeAllowedByNosniff()) {
-        contextDocument->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + m_resource->url().elidedString() + "' because its MIME type ('" + m_resource->mimeType() + "') is not executable, and strict MIME type checking is enabled.");
+        executingDocument->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + m_resource->url().elidedString() + "' because its MIME type ('" + m_resource->mimeType() + "') is not executable, and strict MIME type checking is enabled.");
         return;
     }
 
     if (frame) {
-        IgnoreDestructiveWriteCountIncrementer ignoreDesctructiveWriteCountIncrementer(m_isExternalScript ? contextDocument.get() : 0);
+        IgnoreDestructiveWriteCountIncrementer ignoreDesctructiveWriteCountIncrementer(m_isExternalScript ? executingDocument.get() : 0);
 
         if (isHTMLScriptLoader(m_element))
-            contextDocument->pushCurrentScript(toHTMLScriptElement(m_element));
+            executingDocument->pushCurrentScript(toHTMLScriptElement(m_element));
 
         AccessControlStatus corsCheck = NotSharableCrossOrigin;
         if (sourceCode.resource() && sourceCode.resource()->passesAccessControlCheck(m_element->document().securityOrigin()))
@@ -331,8 +345,8 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
         frame->script()->executeScriptInMainWorld(sourceCode, corsCheck);
 
         if (isHTMLScriptLoader(m_element)) {
-            ASSERT(contextDocument->currentScript() == m_element);
-            contextDocument->popCurrentScript();
+            ASSERT(executingDocument->currentScript() == m_element);
+            executingDocument->popCurrentScript();
         }
     }
 }
@@ -363,8 +377,8 @@ void ScriptLoader::notifyFinished(Resource* resource)
 {
     ASSERT(!m_willBeParserExecuted);
 
+    RefPtr<Document> executingDocument = this->executingDocument();
     RefPtr<Document> elementDocument = &m_element->document();
-    RefPtr<Document> contextDocument = elementDocument->contextDocument().get();
 
     // Resource possibly invokes this notifyFinished() more than
     // once because ScriptLoader doesn't unsubscribe itself from
@@ -379,9 +393,9 @@ void ScriptLoader::notifyFinished(Resource* resource)
     }
 
     if (m_willExecuteInOrder)
-        contextDocument->scriptRunner()->notifyScriptReady(this, ScriptRunner::IN_ORDER_EXECUTION);
+        executingDocument->scriptRunner()->notifyScriptReady(this, ScriptRunner::IN_ORDER_EXECUTION);
     else
-        contextDocument->scriptRunner()->notifyScriptReady(this, ScriptRunner::ASYNC_EXECUTION);
+        executingDocument->scriptRunner()->notifyScriptReady(this, ScriptRunner::ASYNC_EXECUTION);
 
     m_resource = 0;
 }

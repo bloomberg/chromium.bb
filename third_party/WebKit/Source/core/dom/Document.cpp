@@ -434,7 +434,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_renderer(0)
     , m_eventQueue(DocumentEventQueue::create(this))
     , m_weakFactory(this)
-    , m_contextDocument(initializer.contextDocument())
     , m_idAttributeName(idAttr)
     , m_hasFullscreenElementStack(false)
     , m_loadEventDelayCount(0)
@@ -4219,15 +4218,6 @@ Document* Document::topDocument() const
     return doc;
 }
 
-WeakPtr<Document> Document::contextDocument()
-{
-    if (m_contextDocument)
-        return m_contextDocument;
-    if (m_frame)
-        return m_weakFactory.createWeakPtr();
-    return WeakPtr<Document>(0);
-}
-
 PassRefPtr<Attr> Document::createAttribute(const String& name, ExceptionState& es)
 {
     return createAttributeNS(String(), name, es, true);
@@ -4465,7 +4455,7 @@ static bool isEligibleForSeamless(Document* parent, Document* child)
 
 void Document::initSecurityContext()
 {
-    initSecurityContext(DocumentInit(m_url, m_frame, contextDocument(), m_import));
+    initSecurityContext(DocumentInit(m_url, m_frame, m_import));
 }
 
 void Document::initSecurityContext(const DocumentInit& initializer)
@@ -4570,20 +4560,6 @@ bool Document::allowInlineEventHandlers(Node* node, EventListener* listener, con
     if (node && &node->document() != this && !node->document().allowInlineEventHandlers(node, listener, contextURL, contextLine))
         return false;
 
-    return true;
-}
-
-bool Document::allowExecutingScripts(Node* node)
-{
-    // FIXME: Eventually we'd like to evaluate scripts which are inserted into a
-    // viewless document but this'll do for now.
-    // See http://bugs.webkit.org/show_bug.cgi?id=5727
-    if (!frame() && !import())
-        return false;
-    if (!node->document().frame() && !node->document().import())
-        return false;
-    if (!contextDocument().get()->frame()->script()->canExecuteScripts(AboutToExecuteScript))
-        return false;
     return true;
 }
 
@@ -5353,13 +5329,10 @@ Document& Document::ensureTemplateDocument()
     if (const Document* document = templateDocument())
         return *const_cast<Document*>(document);
 
-    if (isHTMLDocument()) {
-        DocumentInit init = DocumentInit::fromContext(contextDocument(), blankURL())
-            .withRegistrationContext(registrationContext());
-        m_templateDocument = HTMLDocument::create(init);
-    } else {
+    if (isHTMLDocument())
+        m_templateDocument = HTMLDocument::create(DocumentInit(blankURL()).withRegistrationContext(registrationContext()));
+    else
         m_templateDocument = Document::create(DocumentInit(blankURL()));
-    }
 
     m_templateDocument->setTemplateDocumentHost(this); // balanced in dtor.
 

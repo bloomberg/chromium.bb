@@ -82,6 +82,7 @@ private:
     void stopLoadRequest();
 
     ScriptLoaderClient* client() const;
+    Document* executingDocument() const;
 
     // ResourceClient
     virtual void notifyFinished(Resource*) OVERRIDE;
