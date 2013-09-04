@@ -108,11 +108,7 @@ class StackwalkerAddressListTest : public testing::Test {
     ASSERT_EQ(arraysize(kDummyFrames), frames->size());
     for (size_t i = 0; i < arraysize(kDummyFrames); ++i) {
       ASSERT_EQ(kDummyFrames[i], frames->at(i)->instruction);
-      if (i == 0) {
-        ASSERT_EQ(StackFrame::FRAME_TRUST_CONTEXT, frames->at(i)->trust);
-      } else {
-        ASSERT_EQ(StackFrame::FRAME_TRUST_PREWALKED, frames->at(i)->trust);
-      }
+      ASSERT_EQ(StackFrame::FRAME_TRUST_PREWALKED, frames->at(i)->trust);
     }
     ASSERT_EQ(static_cast<const CodeModule*>(&module2), frames->at(0)->module);
     ASSERT_EQ(static_cast<const CodeModule*>(&module2), frames->at(1)->module);

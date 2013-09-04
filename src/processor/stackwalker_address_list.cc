@@ -64,7 +64,7 @@ StackFrame* StackwalkerAddressList::GetContextFrame() {
 
   StackFrame* frame = new StackFrame();
   frame->instruction = frames_[0];
-  frame->trust = StackFrame::FRAME_TRUST_CONTEXT;
+  frame->trust = StackFrame::FRAME_TRUST_PREWALKED;
   return frame;
 }
 
