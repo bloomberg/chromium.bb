@@ -242,7 +242,7 @@ void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect,
     GraphicsContext gc(canvas);
     IntRect clipRect(IntPoint(webClipRect.x, webClipRect.y), IntSize(webClipRect.width, webClipRect.height));
     gc.clip(clipRect);
-    gc.setFillColor(m_node->renderer()->resolveColor(CSSPropertyWebkitTapHighlightColor));
+    gc.setFillColor(m_node->renderer()->style()->tapHighlightColor());
     gc.fillPath(m_path);
 }
 

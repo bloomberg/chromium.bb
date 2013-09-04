@@ -62,7 +62,7 @@ static bool isValidColorString(const String& value)
     // We don't accept #rgb and #aarrggbb formats.
     if (value.length() != 7)
         return false;
-    StyleColor color(value);
+    Color color(value);
     return color.isValid() && !color.hasAlpha();
 }
 
@@ -109,9 +109,9 @@ String ColorInputType::sanitizeValue(const String& proposedValue) const
     return proposedValue.lower();
 }
 
-StyleColor ColorInputType::valueAsColor() const
+Color ColorInputType::valueAsColor() const
 {
-    return StyleColor(element()->value());
+    return Color(element()->value());
 }
 
 void ColorInputType::createShadowSubtree()
@@ -138,7 +138,7 @@ void ColorInputType::setValue(const String& value, bool valueChanged, TextFieldE
 
     updateColorSwatch();
     if (m_chooser)
-        m_chooser->setSelectedColor(valueAsColor().color());
+        m_chooser->setSelectedColor(valueAsColor());
 }
 
 void ColorInputType::handleDOMActivateEvent(Event* event)
@@ -151,7 +151,7 @@ void ColorInputType::handleDOMActivateEvent(Event* event)
 
     Chrome* chrome = this->chrome();
     if (chrome && !m_chooser)
-        m_chooser = chrome->createColorChooser(this, valueAsColor().color());
+        m_chooser = chrome->createColorChooser(this, valueAsColor());
 
     event->setDefaultHandled();
 }
@@ -213,7 +213,7 @@ IntRect ColorInputType::elementRectRelativeToRootView() const
 
 Color ColorInputType::currentColor()
 {
-    return valueAsColor().color();
+    return valueAsColor();
 }
 
 bool ColorInputType::shouldShowSuggestions() const
@@ -234,10 +234,10 @@ Vector<Color> ColorInputType::suggestions() const
             for (unsigned i = 0; HTMLOptionElement* option = toHTMLOptionElement(options->item(i)); i++) {
                 if (!element()->isValidValue(option->value()))
                     continue;
-                StyleColor color(option->value());
+                Color color(option->value());
                 if (!color.isValid())
                     continue;
-                suggestions.append(color.color());
+                suggestions.append(color);
             }
         }
     }

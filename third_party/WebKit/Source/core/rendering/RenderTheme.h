@@ -342,8 +342,6 @@ private:
     mutable Color m_activeListBoxSelectionForegroundColor;
     mutable Color m_inactiveListBoxSelectionForegroundColor;
 
-    mutable unsigned m_selectionColorsValid;
-
     // This color is expected to be drawn on a semi-transparent overlay,
     // making it more transparent than its alpha value indicates.
     static const RGBA32 defaultTapHighlightColor = 0x66000000;

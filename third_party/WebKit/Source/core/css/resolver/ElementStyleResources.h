@@ -53,7 +53,7 @@ WTF_MAKE_NONCOPYABLE(ElementStyleResources);
 public:
     ElementStyleResources();
 
-    PassRefPtr<StyleImage> styleImage(const TextLinkColors&, CSSPropertyID, CSSValue*);
+    PassRefPtr<StyleImage> styleImage(const TextLinkColors&, Color currentColor, CSSPropertyID, CSSValue*);
 
     PassRefPtr<StyleImage> generatedOrPendingFromValue(CSSPropertyID, CSSImageGeneratorValue*);
     PassRefPtr<StyleImage> cachedOrPendingFromValue(CSSPropertyID, CSSImageValue*);

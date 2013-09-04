@@ -1063,9 +1063,9 @@ void HTMLElement::addHTMLColorToStyle(MutableStylePropertySet* style, CSSPropert
         return;
 
     // If the string is a named CSS color or a 3/6-digit hex color, use that.
-    StyleColor parsedColor(colorString);
+    Color parsedColor(colorString);
     if (!parsedColor.isValid())
-        parsedColor = parseColorStringWithCrazyLegacyRules(colorString);
+        parsedColor.setRGB(parseColorStringWithCrazyLegacyRules(colorString));
 
     style->setProperty(propertyID, cssValuePool().createColorValue(parsedColor.rgb()));
 }

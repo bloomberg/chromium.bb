@@ -114,7 +114,7 @@ Color SVGStopElement::stopColorIncludingOpacity() const
     // which the renderer or style is null. This entire class is scheduled for removal (Bug WK 86941)
     // and we will tolerate this null check until then.
     if (!style || !style->svgStyle())
-        return Color(Color::transparent); // Transparent black.
+        return Color(Color::transparent, true); // Transparent black.
 
     const SVGRenderStyle* svgStyle = style->svgStyle();
     return colorWithOverrideAlpha(svgStyle->stopColor().rgb(), svgStyle->stopOpacity());

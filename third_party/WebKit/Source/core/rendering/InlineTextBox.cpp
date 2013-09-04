@@ -401,8 +401,7 @@ static void paintTextWithShadows(GraphicsContext* context,
             int shadowX = horizontal ? shadow->x() : shadow->y();
             int shadowY = horizontal ? shadow->y() : -shadow->x();
             FloatSize offset(shadowX, shadowY);
-            drawLooper.addShadow(offset, shadow->blur(),
-                renderer->resolveColor(shadow->color(), Color::stdShadowColor),
+            drawLooper.addShadow(offset, shadow->blur(), renderer->resolveColor(shadow->color()),
                 DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
         } while ((shadow = shadow->next()));
         drawLooper.addUnmodifiedContent();
@@ -592,14 +591,14 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
     if (haveSelection) {
         // Check foreground color first.
         Color foreground = paintInfo.forceBlackText() ? Color::black : renderer()->selectionForegroundColor();
-        if (foreground != Color::transparent && foreground != selectionFillColor) {
+        if (foreground.isValid() && foreground != selectionFillColor) {
             if (!paintSelectedTextOnly)
                 paintSelectedTextSeparately = true;
             selectionFillColor = foreground;
         }
 
         Color emphasisMarkForeground = paintInfo.forceBlackText() ? Color::black : renderer()->selectionEmphasisMarkColor();
-        if (emphasisMarkForeground != Color::transparent && emphasisMarkForeground != selectionEmphasisMarkColor) {
+        if (emphasisMarkForeground.isValid() && emphasisMarkForeground != selectionEmphasisMarkColor) {
             if (!paintSelectedTextOnly)
                 paintSelectedTextSeparately = true;
             selectionEmphasisMarkColor = emphasisMarkForeground;
@@ -839,7 +838,7 @@ void InlineTextBox::paintSelection(GraphicsContext* context, const FloatPoint& b
         return;
 
     Color c = renderer()->selectionBackgroundColor();
-    if (!c.alpha())
+    if (!c.isValid() || !c.alpha())
         return;
 
     // If the text color ends up being the same as the selection background, invert the selection
@@ -1133,8 +1132,7 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
             }
             int shadowX = isHorizontal() ? shadow->x() : shadow->y();
             int shadowY = isHorizontal() ? shadow->y() : -shadow->x();
-            context->setShadow(FloatSize(shadowX, shadowY - extraOffset), shadow->blur(),
-                renderer()->resolveColor(shadow->color(), Color::stdShadowColor));
+            context->setShadow(FloatSize(shadowX, shadowY - extraOffset), shadow->blur(), shadow->color());
             shadow = shadow->next();
         }
 

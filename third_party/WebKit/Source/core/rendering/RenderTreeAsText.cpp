@@ -261,17 +261,17 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
             // Do not dump invalid or transparent backgrounds, since that is the default.
             Color backgroundColor = o.resolveColor(CSSPropertyBackgroundColor);
             if (o.parent()->resolveColor(CSSPropertyBackgroundColor) != backgroundColor
-                && backgroundColor.rgb())
+                && backgroundColor.isValid() && backgroundColor.rgb())
                 ts << " [bgcolor=" << backgroundColor.nameForRenderTreeAsText() << "]";
 
             Color textFillColor = o.resolveColor(CSSPropertyWebkitTextFillColor);
             if (o.parent()->resolveColor(CSSPropertyWebkitTextFillColor) != textFillColor
-                && textFillColor != color && textFillColor.rgb())
+                && textFillColor.isValid() && textFillColor != color && textFillColor.rgb())
                 ts << " [textFillColor=" << textFillColor.nameForRenderTreeAsText() << "]";
 
             Color textStrokeColor = o.resolveColor(CSSPropertyWebkitTextStrokeColor);
             if (o.parent()->resolveColor(CSSPropertyWebkitTextStrokeColor) != textStrokeColor
-                && textStrokeColor != color && textStrokeColor.rgb())
+                && textStrokeColor.isValid() && textStrokeColor != color && textStrokeColor.rgb())
                 ts << " [textStrokeColor=" << textStrokeColor.nameForRenderTreeAsText() << "]";
 
             if (o.parent()->style()->textStrokeWidth() != o.style()->textStrokeWidth() && o.style()->textStrokeWidth() > 0)

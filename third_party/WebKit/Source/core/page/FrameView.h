@@ -137,8 +137,8 @@ public:
     bool hasOpaqueBackground() const;
 
     Color baseBackgroundColor() const;
-    void setBaseBackgroundColor(const StyleColor&);
-    void updateBackgroundRecursively(const StyleColor&, bool);
+    void setBaseBackgroundColor(const Color&);
+    void updateBackgroundRecursively(const Color&, bool);
 
     bool shouldUpdateWhileOffscreen() const;
     void setShouldUpdateWhileOffscreen(bool);
@@ -229,7 +229,7 @@ public:
     virtual void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect);
     virtual void paintScrollbar(GraphicsContext*, Scrollbar*, const IntRect&) OVERRIDE;
 
-    StyleColor documentBackgroundColor() const;
+    Color documentBackgroundColor() const;
 
     static double currentFrameTimeStamp() { return s_currentFrameTimeStamp; }
 

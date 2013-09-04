@@ -54,7 +54,7 @@ public:
     bool hasAppearance;
     BorderData border;
     FillLayer backgroundLayers;
-    StyleColor backgroundColor;
+    Color backgroundColor;
 };
 
 

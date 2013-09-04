@@ -61,10 +61,11 @@ public:
     void setFontName(String name) { m_fontName = name; }
 
     Color foregroundColor() const { return m_foregroundColor; }
-    void setForegroundColor(Color color) { m_foregroundColor = color; }
+
+    void setForegroundColor(RGBA32 color) { m_foregroundColor.setRGB(color); }
 
     Color backgroundColor() const { return m_backgroundColor; }
-    void setBackgroundColor(Color color) { m_backgroundColor = color; }
+    void setBackgroundColor(RGBA32 color) { m_backgroundColor.setRGB(color); }
 
     virtual void videoSizeDidChange(const IntSize&);
 

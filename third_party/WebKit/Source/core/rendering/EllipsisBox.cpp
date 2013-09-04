@@ -48,7 +48,7 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
 
         // Select the correct color for painting the text.
         Color foreground = paintInfo.forceBlackText() ? Color::black : renderer()->selectionForegroundColor();
-        if (foreground != Color::transparent && foreground != styleTextColor)
+        if (foreground.isValid() && foreground != styleTextColor)
             context->setFillColor(foreground);
     }
 
@@ -61,8 +61,7 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
             int shadowX = isHorizontal() ? shadow->x() : shadow->y();
             int shadowY = isHorizontal() ? shadow->y() : -shadow->x();
             FloatSize offset(shadowX, shadowY);
-            drawLooper.addShadow(offset, shadow->blur(),
-                m_renderer->resolveColor(shadow->color(), Color::stdShadowColor),
+            drawLooper.addShadow(offset, shadow->blur(), m_renderer->resolveColor(shadow->color()),
                 DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
         } while ((shadow = shadow->next()));
         drawLooper.addUnmodifiedContent();
@@ -132,7 +131,7 @@ void EllipsisBox::paintSelection(GraphicsContext* context, const LayoutPoint& pa
 {
     Color textColor = m_renderer->resolveColor(style, CSSPropertyColor);
     Color c = m_renderer->selectionBackgroundColor();
-    if (!c.alpha())
+    if (!c.isValid() || !c.alpha())
         return;
 
     // If the text color ends up being the same as the selection background, invert the selection

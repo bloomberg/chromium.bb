@@ -43,11 +43,11 @@ public:
         : m_color()
         , m_valid(false)
         , m_currentColor(false) { }
-    StyleColor(RGBA32 color)
+    StyleColor(Color color)
         : m_color(color)
         , m_valid(true)
         , m_currentColor(false) { }
-    StyleColor(Color color, bool valid = true, bool currentColor = false)
+    StyleColor(RGBA32 color, bool valid = true, bool currentColor = false)
         : m_color(color)
         , m_valid(valid)
         , m_currentColor(currentColor) { }
@@ -63,15 +63,12 @@ public:
         : m_color(other.m_color)
         , m_valid(other.m_valid)
         , m_currentColor(other.m_currentColor) { }
-    explicit StyleColor(const String&);
-    explicit StyleColor(const char*);
 
     Color color() const { return m_color; }
     bool isValid() const { return m_valid; }
     bool isCurrentColor() const { return m_currentColor; }
     bool hasAlpha() const { return m_color.hasAlpha(); }
 
-    void setNamedColor(const String&);
     void setRGB(int r, int g, int b)
     {
         m_color.setRGB(r, g, b);

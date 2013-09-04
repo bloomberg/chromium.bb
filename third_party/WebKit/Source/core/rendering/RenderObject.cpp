@@ -1655,18 +1655,16 @@ bool RenderObject::isSelectable() const
 
 Color RenderObject::selectionBackgroundColor() const
 {
-    Color backgroundColor= Color::transparent;
+    Color backgroundColor;
     if (isSelectable()) {
         RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
-        if (pseudoStyle) {
-            StyleColor styleColor = resolveCurrentColor(pseudoStyle.get(), CSSPropertyBackgroundColor);
-            if (styleColor.isValid())
-                return styleColor.color().blendWithWhite();
+        if (pseudoStyle && resolveColor(pseudoStyle.get(), CSSPropertyBackgroundColor).isValid()) {
+            backgroundColor = resolveColor(pseudoStyle.get(), CSSPropertyBackgroundColor).blendWithWhite();
+        } else {
+            backgroundColor = frame()->selection().isFocusedAndActive() ?
+                RenderTheme::theme().activeSelectionBackgroundColor() :
+                RenderTheme::theme().inactiveSelectionBackgroundColor();
         }
-
-        backgroundColor = frame()->selection().isFocusedAndActive() ?
-            RenderTheme::theme().activeSelectionBackgroundColor() :
-            RenderTheme::theme().inactiveSelectionBackgroundColor();
     }
 
     return backgroundColor;
@@ -1681,13 +1679,14 @@ Color RenderObject::selectionColor(int colorProperty) const
 
     Color color;
     if (RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyle(PseudoStyleRequest(SELECTION))) {
-        StyleColor styleColor = resolveCurrentColor(pseudoStyle.get(), colorProperty);
-        color = styleColor.isValid() ? styleColor.color() : resolveColor(pseudoStyle.get(), CSSPropertyColor);
+        Color selectionColor = resolveColor(pseudoStyle.get(), colorProperty);
+        color = selectionColor.isValid() ? selectionColor : resolveColor(pseudoStyle.get(), CSSPropertyColor);
     } else {
         color = frame()->selection().isFocusedAndActive() ?
             RenderTheme::theme().activeSelectionForegroundColor() :
             RenderTheme::theme().inactiveSelectionForegroundColor();
     }
+
     return color;
 }
 
@@ -2903,20 +2902,20 @@ bool RenderObject::hasBlendMode() const
 
 static Color decorationColor(const RenderObject* object, RenderStyle* style)
 {
-    StyleColor result;
+    Color result;
     // Check for text decoration color first.
-    result = object->resolveStyleColor(style, CSSPropertyTextDecorationColor);
+    result = object->resolveColor(style, CSSPropertyTextDecorationColor);
     if (result.isValid())
-        return result.color();
+        return result;
     if (style->textStrokeWidth() > 0) {
         // Prefer stroke color if possible but not if it's fully transparent.
         result = object->resolveColor(style, CSSPropertyWebkitTextStrokeColor);
         if (result.alpha())
-            return result.color();
+            return result;
     }
 
     result = object->resolveColor(style, CSSPropertyWebkitTextFillColor);
-    return result.color();
+    return result;
 }
 
 void RenderObject::getTextDecorationColors(int decorations, Color& underline, Color& overline,

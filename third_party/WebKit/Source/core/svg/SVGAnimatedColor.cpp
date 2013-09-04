@@ -52,7 +52,7 @@ static inline void adjustForCurrentColor(SVGElement* targetElement, Color& color
     ASSERT(targetElement);
 
     if (RenderObject* targetRenderer = targetElement->renderer())
-        color = targetRenderer->resolveColor(CSSPropertyColor);
+        color = targetRenderer->style()->visitedDependentColor(CSSPropertyColor);
     else
         color = Color();
 }
@@ -100,11 +100,11 @@ void SVGAnimatedColorAnimator::calculateAnimatedValue(float percentage, unsigned
 float SVGAnimatedColorAnimator::calculateDistance(const String& fromString, const String& toString)
 {
     ASSERT(m_contextElement);
-    Color from;
-    if (!SVGColor::colorFromRGBColorString(fromString, from))
+    Color from = SVGColor::colorFromRGBColorString(fromString);
+    if (!from.isValid())
         return -1;
-    Color to;
-    if (!SVGColor::colorFromRGBColorString(toString, to))
+    Color to = SVGColor::colorFromRGBColorString(toString);
+    if (!to.isValid())
         return -1;
     return ColorDistance(from, to).distance();
 }

@@ -765,7 +765,7 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
         ts << ")\n";
     }
 
-    if (m_backgroundColor != Color::transparent) {
+    if (m_backgroundColor.isValid() && m_backgroundColor != Color::transparent) {
         writeIndent(ts, indent + 1);
         ts << "(backgroundColor " << m_backgroundColor.nameForRenderTreeAsText() << ")\n";
     }

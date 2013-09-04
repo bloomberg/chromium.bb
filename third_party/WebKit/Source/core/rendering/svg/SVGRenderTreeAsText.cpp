@@ -270,7 +270,7 @@ static void writeStyle(TextStream& ts, const RenderObject& object)
         ASSERT(shape.node());
         ASSERT(shape.node()->isSVGElement());
 
-        StyleColor fallbackColor;
+        Color fallbackColor;
         if (RenderSVGResource* strokePaintingResource = RenderSVGResource::strokePaintingResource(const_cast<RenderSVGShape*>(&shape), shape.style(), fallbackColor)) {
             TextStreamSeparator s(" ");
             ts << " [stroke={" << s;

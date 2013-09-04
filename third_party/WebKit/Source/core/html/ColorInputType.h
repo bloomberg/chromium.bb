@@ -64,7 +64,7 @@ private:
     virtual bool shouldRespectListAttribute() OVERRIDE;
     virtual bool typeMismatchFor(const String&) const OVERRIDE;
 
-    StyleColor valueAsColor() const;
+    Color valueAsColor() const;
     void endColorChooser();
     void updateColorSwatch();
     HTMLElement* shadowColorSwatch() const;

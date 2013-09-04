@@ -358,13 +358,13 @@ void FrameView::recalculateScrollbarOverlayStyle()
     ScrollbarOverlayStyle oldOverlayStyle = scrollbarOverlayStyle();
     ScrollbarOverlayStyle overlayStyle = ScrollbarOverlayStyleDefault;
 
-    StyleColor backgroundColor = documentBackgroundColor();
+    Color backgroundColor = documentBackgroundColor();
     if (backgroundColor.isValid()) {
         // Reduce the background color from RGB to a lightness value
         // and determine which scrollbar style to use based on a lightness
         // heuristic.
         double hue, saturation, lightness;
-        backgroundColor.color().getHSL(hue, saturation, lightness);
+        backgroundColor.getHSL(hue, saturation, lightness);
         if (lightness <= .5)
             overlayStyle = ScrollbarOverlayStyleLight;
     }
@@ -1998,12 +1998,12 @@ Color FrameView::baseBackgroundColor() const
     return m_baseBackgroundColor;
 }
 
-void FrameView::setBaseBackgroundColor(const StyleColor& backgroundColor)
+void FrameView::setBaseBackgroundColor(const Color& backgroundColor)
 {
     if (!backgroundColor.isValid())
         m_baseBackgroundColor = Color::white;
     else
-        m_baseBackgroundColor = backgroundColor.color();
+        m_baseBackgroundColor = backgroundColor;
 
     if (RenderLayerBacking* backing = renderView() ? renderView()->layer()->backing() : 0) {
         backing->updateContentsOpaque();
@@ -2013,7 +2013,7 @@ void FrameView::setBaseBackgroundColor(const StyleColor& backgroundColor)
     recalculateScrollbarOverlayStyle();
 }
 
-void FrameView::updateBackgroundRecursively(const StyleColor& backgroundColor, bool transparent)
+void FrameView::updateBackgroundRecursively(const Color& backgroundColor, bool transparent)
 {
     for (Frame* frame = m_frame.get(); frame; frame = frame->tree()->traverseNext(m_frame.get())) {
         if (FrameView* view = frame->view()) {
@@ -2716,7 +2716,7 @@ void FrameView::paintScrollbar(GraphicsContext* context, Scrollbar* bar, const I
     ScrollView::paintScrollbar(context, bar, rect);
 }
 
-StyleColor FrameView::documentBackgroundColor() const
+Color FrameView::documentBackgroundColor() const
 {
     // <https://bugs.webkit.org/show_bug.cgi?id=59540> We blend the background color of
     // the document and the body against the base background color of the frame view.
@@ -2730,21 +2730,21 @@ StyleColor FrameView::documentBackgroundColor() const
     Element* bodyElement = frame().document()->body();
 
     // Start with invalid colors.
-    StyleColor htmlBackgroundColor;
-    StyleColor bodyBackgroundColor;
+    Color htmlBackgroundColor;
+    Color bodyBackgroundColor;
     if (htmlElement && htmlElement->renderer())
-        htmlBackgroundColor = htmlElement->renderer()->resolveStyleColor(CSSPropertyBackgroundColor);
+        htmlBackgroundColor = htmlElement->renderer()->style()->visitedDependentColor(CSSPropertyBackgroundColor);
     if (bodyElement && bodyElement->renderer())
-        bodyBackgroundColor = bodyElement->renderer()->resolveStyleColor(CSSPropertyBackgroundColor);
+        bodyBackgroundColor = bodyElement->renderer()->style()->visitedDependentColor(CSSPropertyBackgroundColor);
 
     if (!bodyBackgroundColor.isValid()) {
         if (!htmlBackgroundColor.isValid())
-            return StyleColor();
-        return baseBackgroundColor().blend(htmlBackgroundColor.color());
+            return Color();
+        return baseBackgroundColor().blend(htmlBackgroundColor);
     }
 
     if (!htmlBackgroundColor.isValid())
-        return baseBackgroundColor().blend(bodyBackgroundColor.color());
+        return baseBackgroundColor().blend(bodyBackgroundColor);
 
     // We take the aggregate of the base background color
     // the <html> background color, and the <body>
@@ -2753,7 +2753,7 @@ StyleColor FrameView::documentBackgroundColor() const
     // technically part of the document background, but it
     // otherwise poses problems when the aggregate is not
     // fully opaque.
-    return baseBackgroundColor().blend(htmlBackgroundColor.color()).blend(bodyBackgroundColor.color());
+    return baseBackgroundColor().blend(htmlBackgroundColor).blend(bodyBackgroundColor);
 }
 
 bool FrameView::hasCustomScrollbars() const

@@ -38,14 +38,14 @@ ElementStyleResources::ElementStyleResources()
 {
 }
 
-PassRefPtr<StyleImage> ElementStyleResources::styleImage(const TextLinkColors& textLinkColors, CSSPropertyID property, CSSValue* value)
+PassRefPtr<StyleImage> ElementStyleResources::styleImage(const TextLinkColors& textLinkColors, Color currentColor, CSSPropertyID property, CSSValue* value)
 {
     if (value->isImageValue())
         return cachedOrPendingFromValue(property, toCSSImageValue(value));
 
     if (value->isImageGeneratorValue()) {
         if (value->isGradientValue())
-            return generatedOrPendingFromValue(property, static_cast<CSSGradientValue*>(value)->gradientWithStylesResolved(textLinkColors).get());
+            return generatedOrPendingFromValue(property, static_cast<CSSGradientValue*>(value)->gradientWithStylesResolved(textLinkColors, currentColor).get());
         return generatedOrPendingFromValue(property, static_cast<CSSImageGeneratorValue*>(value));
     }
 

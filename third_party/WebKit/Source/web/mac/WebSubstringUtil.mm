@@ -91,11 +91,11 @@ NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFr
         [attrs setObject:font forKey:NSFontAttributeName];
 
         if (style->visitedDependentColor(CSSPropertyColor).alpha())
-            [attrs setObject:nsColor(renderer->resolveColor(CSSPropertyColor)) forKey:NSForegroundColorAttributeName];
+            [attrs setObject:nsColor(style->visitedDependentColor(CSSPropertyColor)) forKey:NSForegroundColorAttributeName];
         else
             [attrs removeObjectForKey:NSForegroundColorAttributeName];
         if (style->visitedDependentColor(CSSPropertyBackgroundColor).alpha())
-            [attrs setObject:nsColor(renderer->resolveColor(CSSPropertyBackgroundColor)) forKey:NSBackgroundColorAttributeName];
+            [attrs setObject:nsColor(style->visitedDependentColor(CSSPropertyBackgroundColor)) forKey:NSBackgroundColorAttributeName];
         else
             [attrs removeObjectForKey:NSBackgroundColorAttributeName];
 

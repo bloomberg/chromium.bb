@@ -487,11 +487,11 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const Re
             ShadowValue* item = static_cast<ShadowValue*>(cssValue);
             IntPoint location(item->x->computeLength<int>(style, rootStyle, zoomFactor), item->y->computeLength<int>(style, rootStyle, zoomFactor));
             int blur = item->blur ? item->blur->computeLength<int>(style, rootStyle, zoomFactor) : 0;
-            StyleColor shadowColor;
+            Color shadowColor;
             if (item->color)
-                shadowColor = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get());
+                shadowColor = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->visitedDependentColor(CSSPropertyColor));
 
-            operations.operations().append(DropShadowFilterOperation::create(location, blur, shadowColor.isValid() ? shadowColor.color() : Color::transparent, operationType));
+            operations.operations().append(DropShadowFilterOperation::create(location, blur, shadowColor.isValid() ? shadowColor : Color::transparent, operationType));
             break;
         }
         case CSSFilterValue::UnknownFilterOperation:

@@ -31,14 +31,12 @@ namespace WebCore {
 SVGColor::SVGColor(const SVGColorType& colorType)
     : CSSValue(SVGColorClass)
     , m_colorType(colorType)
-    , m_valid(false)
 {
 }
 
 SVGColor::SVGColor(ClassType classType, const SVGColorType& colorType)
     : CSSValue(classType)
     , m_colorType(colorType)
-    , m_valid(false)
 {
 }
 
@@ -47,15 +45,13 @@ PassRefPtr<RGBColor> SVGColor::rgbColor() const
     return RGBColor::create(m_color.rgb());
 }
 
-bool SVGColor::colorFromRGBColorString(const String& colorString, Color& color)
+Color SVGColor::colorFromRGBColorString(const String& colorString)
 {
     // FIXME: Rework css parser so it is more SVG aware.
-    RGBA32 rgba;
-    if (CSSParser::parseColor(rgba, colorString.stripWhiteSpace())) {
-        color = rgba;
-        return true;
-    }
-    return false;
+    RGBA32 color;
+    if (CSSParser::parseColor(color, colorString.stripWhiteSpace()))
+        return color;
+    return Color();
 }
 
 void SVGColor::setRGBColor(const String&, ExceptionState& es)
@@ -85,7 +81,7 @@ String SVGColor::customCssText() const
         // FIXME: No ICC color support.
         return m_color.serialized();
     case SVG_COLORTYPE_CURRENTCOLOR:
-        if (m_valid)
+        if (m_color.isValid())
             return m_color.serialized();
         return "currentColor";
     }

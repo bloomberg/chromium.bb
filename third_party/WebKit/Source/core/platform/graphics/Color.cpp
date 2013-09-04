@@ -44,7 +44,6 @@ const RGBA32 Color::darkGray;
 const RGBA32 Color::gray;
 const RGBA32 Color::lightGray;
 const RGBA32 Color::transparent;
-const RGBA32 Color::stdShadowColor;
 #endif
 
 static const RGBA32 lightenedBlack = 0xFF545454;
@@ -179,6 +178,29 @@ int differenceSquared(const Color& c1, const Color& c2)
     return dR * dR + dG * dG + dB * dB;
 }
 
+Color::Color(const String& name)
+{
+    if (name[0] == '#') {
+        if (name.is8Bit())
+            m_valid = parseHexColor(name.characters8() + 1, name.length() - 1, m_color);
+        else
+            m_valid = parseHexColor(name.characters16() + 1, name.length() - 1, m_color);
+    } else {
+        setNamedColor(name);
+    }
+}
+
+Color::Color(const char* name)
+{
+    if (name[0] == '#') {
+        m_valid = parseHexColor(&name[1], m_color);
+    } else {
+        const NamedColor* foundColor = findColor(name, strlen(name));
+        m_color = foundColor ? foundColor->ARGBValue : 0;
+        m_valid = foundColor;
+    }
+}
+
 String Color::serialized() const
 {
     if (!hasAlpha()) {
@@ -221,6 +243,29 @@ String Color::nameForRenderTreeAsText() const
     if (alpha() < 0xFF)
         return String::format("#%02X%02X%02X%02X", red(), green(), blue(), alpha());
     return String::format("#%02X%02X%02X", red(), green(), blue());
+}
+
+static inline const NamedColor* findNamedColor(const String& name)
+{
+    char buffer[64]; // easily big enough for the longest color name
+    unsigned length = name.length();
+    if (length > sizeof(buffer) - 1)
+        return 0;
+    for (unsigned i = 0; i < length; ++i) {
+        UChar c = name[i];
+        if (!c || c > 0x7F)
+            return 0;
+        buffer[i] = toASCIILower(static_cast<char>(c));
+    }
+    buffer[length] = '\0';
+    return findColor(buffer, length);
+}
+
+void Color::setNamedColor(const String& name)
+{
+    const NamedColor* foundColor = findNamedColor(name);
+    m_color = foundColor ? foundColor->ARGBValue : 0;
+    m_valid = foundColor;
 }
 
 Color Color::light() const

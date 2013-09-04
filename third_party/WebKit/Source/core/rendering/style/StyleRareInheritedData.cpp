@@ -33,9 +33,9 @@ namespace WebCore {
 
 struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareInheritedData> {
     void* styleImage;
-    StyleColor firstColor;
+    Color firstColor;
     float firstFloat;
-    StyleColor colors[5];
+    Color colors[5];
     void* ownPtrs[1];
     AtomicString atomicStrings[5];
     void* refPtrs[2];
@@ -46,7 +46,7 @@ struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareI
     unsigned unsigneds[1];
     short hyphenationShorts[3];
 
-    StyleColor touchColors;
+    Color touchColors;
 
     void* variableDataRefs[1];
 };

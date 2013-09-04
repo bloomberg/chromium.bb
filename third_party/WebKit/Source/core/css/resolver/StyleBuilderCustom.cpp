@@ -1095,11 +1095,11 @@ static bool degreeToGlyphOrientation(CSSPrimitiveValue* primitiveValue, EGlyphOr
     return true;
 }
 
-static Color colorFromSVGColorCSSValue(SVGColor* svgColor, const StyleColor& fgColor)
+static Color colorFromSVGColorCSSValue(SVGColor* svgColor, const Color& fgColor)
 {
     Color color;
     if (svgColor->colorType() == SVGColor::SVG_COLORTYPE_CURRENTCOLOR)
-        color = fgColor.color();
+        color = fgColor;
     else
         color = svgColor->color();
     return color;
@@ -1266,6 +1266,10 @@ void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, CS
         return;
     }
 
+    CSSPrimitiveValue* primitiveValue = value->isPrimitiveValue() ? toCSSPrimitiveValue(value) : 0;
+    if (primitiveValue && primitiveValue->getValueID() == CSSValueCurrentcolor)
+        state.style()->setHasCurrentColor();
+
     if (isInherit && !state.parentStyle()->hasExplicitlyInheritedProperties() && !CSSProperty::isInheritedProperty(id))
         state.parentStyle()->setHasExplicitlyInheritedProperties();
 
@@ -1314,7 +1318,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
                 CSSValue* item = i.value();
                 if (item->isImageGeneratorValue()) {
                     if (item->isGradientValue())
-                        state.style()->setContent(StyleGeneratedImage::create(static_cast<CSSGradientValue*>(item)->gradientWithStylesResolved(state.document().textLinkColors()).get()), didSet);
+                        state.style()->setContent(StyleGeneratedImage::create(static_cast<CSSGradientValue*>(item)->gradientWithStylesResolved(state.document().textLinkColors(), state.style()->color()).get()), didSet);
                     else
                         state.style()->setContent(StyleGeneratedImage::create(static_cast<CSSImageGeneratorValue*>(item)), didSet);
                     didSet = true;
@@ -1494,9 +1498,9 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
             int blur = item->blur ? item->blur->computeLength<int>(state.style(), state.rootElementStyle(), zoomFactor) : 0;
             int spread = item->spread ? item->spread->computeLength<int>(state.style(), state.rootElementStyle(), zoomFactor) : 0;
             ShadowStyle shadowStyle = item->style && item->style->getValueID() == CSSValueInset ? Inset : Normal;
-            StyleColor color;
+            Color color;
             if (item->color)
-                color = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get());
+                color = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->visitedDependentColor(CSSPropertyColor));
             else if (state.style())
                 color = state.style()->color();
 
@@ -1614,7 +1618,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         if (!primitiveValue)
             break;
 
-        StyleColor col = state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue);
+        Color col = state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->visitedDependentColor(CSSPropertyColor));
         state.style()->setTapHighlightColor(col);
         return;
     }

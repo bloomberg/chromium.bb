@@ -28,7 +28,7 @@
 #ifndef TextLinkColors_h
 #define TextLinkColors_h
 
-#include "core/css/StyleColor.h"
+#include "core/platform/graphics/Color.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {
@@ -41,25 +41,25 @@ WTF_MAKE_NONCOPYABLE(TextLinkColors);
 public:
     TextLinkColors();
 
-    void setTextColor(const StyleColor& color) { m_textColor = color; }
-    StyleColor textColor() const { return m_textColor; }
+    void setTextColor(const Color& color) { m_textColor = color; }
+    Color textColor() const { return m_textColor; }
 
-    const StyleColor& linkColor() const { return m_linkColor; }
-    const StyleColor& visitedLinkColor() const { return m_visitedLinkColor; }
-    const StyleColor& activeLinkColor() const { return m_activeLinkColor; }
+    const Color& linkColor() const { return m_linkColor; }
+    const Color& visitedLinkColor() const { return m_visitedLinkColor; }
+    const Color& activeLinkColor() const { return m_activeLinkColor; }
     void setLinkColor(const Color& color) { m_linkColor = color; }
     void setVisitedLinkColor(const Color& color) { m_visitedLinkColor = color; }
     void setActiveLinkColor(const Color& color) { m_activeLinkColor = color; }
     void resetLinkColor();
     void resetVisitedLinkColor();
     void resetActiveLinkColor();
-    StyleColor colorFromPrimitiveValue(const CSSPrimitiveValue*, bool forVisitedLink = false) const;
+    Color colorFromPrimitiveValue(const CSSPrimitiveValue*, Color currentColor, bool forVisitedLink = false) const;
 private:
 
-    StyleColor m_textColor;
-    StyleColor m_linkColor;
-    StyleColor m_visitedLinkColor;
-    StyleColor m_activeLinkColor;
+    Color m_textColor;
+    Color m_linkColor;
+    Color m_visitedLinkColor;
+    Color m_activeLinkColor;
 };
 
 }

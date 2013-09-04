@@ -105,7 +105,7 @@ struct GradientStop {
     { }
 };
 
-PassRefPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesResolved(const TextLinkColors& textLinkColors)
+PassRefPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesResolved(const TextLinkColors& textLinkColors, Color currentColor)
 {
     bool derived = false;
     for (unsigned i = 0; i < m_stops.size(); i++)
@@ -128,7 +128,7 @@ PassRefPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesResolved(const 
     }
 
     for (unsigned i = 0; i < result->m_stops.size(); i++)
-        result->m_stops[i].m_resolvedColor = textLinkColors.colorFromPrimitiveValue(result->m_stops[i].m_color.get());
+        result->m_stops[i].m_resolvedColor = textLinkColors.colorFromPrimitiveValue(result->m_stops[i].m_color.get(), currentColor);
 
     return result.release();
 }
@@ -149,7 +149,7 @@ void CSSGradientValue::addStops(Gradient* gradient, RenderObject* renderer, Rend
             else
                 offset = stop.m_position->getFloatValue(CSSPrimitiveValue::CSS_NUMBER);
 
-            gradient->addColorStop(offset, renderer->resolveColor(stop.m_resolvedColor));
+            gradient->addColorStop(offset, stop.m_resolvedColor);
         }
 
         // The back end already sorted the stops.
@@ -174,7 +174,7 @@ void CSSGradientValue::addStops(Gradient* gradient, RenderObject* renderer, Rend
     for (size_t i = 0; i < numStops; ++i) {
         const CSSGradientColorStop& stop = m_stops[i];
 
-        stops[i].color = renderer->resolveColor(stop.m_resolvedColor);
+        stops[i].color = stop.m_resolvedColor;
 
         if (stop.m_position) {
             if (stop.m_position->isPercentage())

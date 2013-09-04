@@ -25,7 +25,6 @@
 #ifndef StyleRareNonInheritedData_h
 #define StyleRareNonInheritedData_h
 
-#include "core/css/StyleColor.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/style/BasicShapes.h"
 #include "core/rendering/style/CounterDirectives.h"
@@ -131,14 +130,14 @@ public:
 
     RefPtr<ClipPathOperation> m_clipPath;
 
-    StyleColor m_textDecorationColor;
-    StyleColor m_visitedLinkTextDecorationColor;
-    StyleColor m_visitedLinkBackgroundColor;
-    StyleColor m_visitedLinkOutlineColor;
-    StyleColor m_visitedLinkBorderLeftColor;
-    StyleColor m_visitedLinkBorderRightColor;
-    StyleColor m_visitedLinkBorderTopColor;
-    StyleColor m_visitedLinkBorderBottomColor;
+    Color m_textDecorationColor;
+    Color m_visitedLinkTextDecorationColor;
+    Color m_visitedLinkBackgroundColor;
+    Color m_visitedLinkOutlineColor;
+    Color m_visitedLinkBorderLeftColor;
+    Color m_visitedLinkBorderRightColor;
+    Color m_visitedLinkBorderTopColor;
+    Color m_visitedLinkBorderBottomColor;
 
     int m_order;
 

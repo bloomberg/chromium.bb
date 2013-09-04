@@ -102,18 +102,18 @@ inline static PassRefPtr<AnimatableValue> createFromLengthBox(const LengthBox le
 
 PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::createFromColor(CSSPropertyID property, const RenderStyle* style)
 {
-    StyleColor color = style->colorIncludingFallback(property, false);
-    StyleColor visitedLinkColor = style->colorIncludingFallback(property, true);
-    Color fallbackColor = style->color().color();
-    Color fallbackVisitedLinkColor = style->visitedLinkColor().color();
+    Color color = style->colorIncludingFallback(property, false);
+    Color visitedLinkColor = style->colorIncludingFallback(property, true);
+    Color fallbackColor = style->color();
+    Color fallbackVisitedLinkColor = style->visitedLinkColor();
     Color resolvedColor;
-    if (color.isValid() && !color.isCurrentColor())
-        resolvedColor = color.color();
+    if (color.isValid())
+        resolvedColor = color;
     else
         resolvedColor = fallbackColor;
     Color resolvedVisitedLinkColor;
-    if (visitedLinkColor.isValid() && !visitedLinkColor.isCurrentColor())
-        resolvedVisitedLinkColor = visitedLinkColor.color();
+    if (visitedLinkColor.isValid())
+        resolvedVisitedLinkColor = visitedLinkColor;
     else
         resolvedVisitedLinkColor = fallbackVisitedLinkColor;
     return AnimatableColor::create(resolvedColor, resolvedVisitedLinkColor);

@@ -25,7 +25,7 @@
 #ifndef ShadowData_h
 #define ShadowData_h
 
-#include "core/css/StyleColor.h"
+#include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "wtf/OwnPtr.h"
@@ -40,7 +40,7 @@ class ShadowData {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<ShadowData> create() { return adoptPtr(new ShadowData); }
-    static PassOwnPtr<ShadowData> create(const IntPoint& location, int blur, int spread, ShadowStyle style, const StyleColor& color)
+    static PassOwnPtr<ShadowData> create(const IntPoint& location, int blur, int spread, ShadowStyle style, const Color& color)
     {
         return adoptPtr(new ShadowData(location, blur, spread, style, color));
     }
@@ -59,7 +59,7 @@ public:
     int blur() const { return m_blur; }
     int spread() const { return m_spread; }
     ShadowStyle style() const { return m_style; }
-    const StyleColor& color() const { return m_color; }
+    const Color& color() const { return m_color; }
 
     const ShadowData* next() const { return m_next.get(); }
     void setNext(PassOwnPtr<ShadowData> shadow) { m_next = shadow; }
@@ -75,7 +75,7 @@ private:
     {
     }
 
-    ShadowData(const IntPoint& location, int blur, int spread, ShadowStyle style, const StyleColor& color)
+    ShadowData(const IntPoint& location, int blur, int spread, ShadowStyle style, const Color& color)
         : m_location(location)
         , m_blur(blur)
         , m_spread(spread)
@@ -89,7 +89,7 @@ private:
     IntPoint m_location;
     int m_blur;
     int m_spread;
-    StyleColor m_color;
+    Color m_color;
     ShadowStyle m_style;
     OwnPtr<ShadowData> m_next;
 };

@@ -25,8 +25,8 @@
 #ifndef StyleRareInheritedData_h
 #define StyleRareInheritedData_h
 
-#include "core/css/StyleColor.h"
 #include "core/platform/Length.h"
+#include "core/platform/graphics/Color.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/AtomicString.h"
@@ -59,14 +59,14 @@ public:
 
     RefPtr<StyleImage> listStyleImage;
 
-    StyleColor textStrokeColor;
+    Color textStrokeColor;
     float textStrokeWidth;
-    StyleColor textFillColor;
-    StyleColor textEmphasisColor;
+    Color textFillColor;
+    Color textEmphasisColor;
 
-    StyleColor visitedLinkTextStrokeColor;
-    StyleColor visitedLinkTextFillColor;
-    StyleColor visitedLinkTextEmphasisColor;
+    Color visitedLinkTextStrokeColor;
+    Color visitedLinkTextFillColor;
+    Color visitedLinkTextEmphasisColor;
 
     OwnPtr<ShadowData> textShadow; // Our text shadow information for shadowed text drawing.
     AtomicString highlight; // Apple-specific extension for custom highlight rendering.
@@ -119,7 +119,7 @@ public:
     AtomicString m_lineGrid;
     unsigned m_tabSize;
 
-    StyleColor tapHighlightColor;
+    Color tapHighlightColor;
 
     DataRef<StyleVariableData> m_variables;
 

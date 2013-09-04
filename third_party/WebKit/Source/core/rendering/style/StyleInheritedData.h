@@ -25,8 +25,8 @@
 #ifndef StyleInheritedData_h
 #define StyleInheritedData_h
 
-#include "core/css/StyleColor.h"
 #include "core/platform/Length.h"
+#include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/Font.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -54,8 +54,8 @@ public:
     Length line_height;
 
     Font font;
-    StyleColor color;
-    StyleColor visitedLinkColor;
+    Color color;
+    Color visitedLinkColor;
 
 private:
     StyleInheritedData();

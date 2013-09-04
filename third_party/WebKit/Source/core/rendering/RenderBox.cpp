@@ -1164,7 +1164,7 @@ LayoutRect RenderBox::backgroundPaintedExtent() const
     ASSERT(hasBackground());
     LayoutRect backgroundRect = pixelSnappedIntRect(borderBoxRect());
 
-    StyleColor backgroundColor = resolveStyleColor(CSSPropertyBackgroundColor);
+    Color backgroundColor = resolveColor(CSSPropertyBackgroundColor);
     if (backgroundColor.isValid() && backgroundColor.alpha())
         return backgroundRect;
     if (!style()->backgroundLayers()->image() || style()->backgroundLayers()->next())
@@ -1179,7 +1179,7 @@ bool RenderBox::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) c
     if (isBody() && skipBodyBackground(this))
         return false;
 
-    StyleColor backgroundColor = resolveStyleColor(CSSPropertyBackgroundColor);
+    Color backgroundColor = resolveColor(CSSPropertyBackgroundColor);
     if (!backgroundColor.isValid() || backgroundColor.hasAlpha())
         return false;
 
@@ -1297,7 +1297,7 @@ bool RenderBox::backgroundHasOpaqueTopLayer() const
 
     // If there is only one layer and no image, check whether the background color is opaque
     if (!fillLayer->next() && !fillLayer->hasImage()) {
-        StyleColor bgColor = resolveStyleColor(CSSPropertyBackgroundColor);
+        Color bgColor = resolveColor(CSSPropertyBackgroundColor);
         if (bgColor.isValid() && bgColor.alpha() == 255)
             return true;
     }

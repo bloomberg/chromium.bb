@@ -248,7 +248,7 @@ namespace WebCore {
 {%- set visited_link_setter = "setVisitedLink" + property.camel_case_name %}
 {{ declare_initial_function(property_id) }}
 {
-    StyleColor color = {{ initial_color or "StyleColor" -}}();
+    Color color = {{ initial_color or "Color" -}}();
     if (state.applyPropertyToRegularStyle())
         {{ set_value(property) }}(color);
     if (state.applyPropertyToVisitedLinkStyle())
@@ -258,7 +258,7 @@ namespace WebCore {
 {{ declare_inherit_function(property_id) }}
 {
     // Visited link style can never explicitly inherit from parent visited link style so no separate getters are needed.
-    StyleColor color = state.parentStyle()->{{property.getter}}();
+    Color color = state.parentStyle()->{{property.getter}}();
     if (!color.isValid())
         color = state.parentStyle()->{{default_getter}}();
     if (state.applyPropertyToRegularStyle())
@@ -282,9 +282,9 @@ namespace WebCore {
 {%- endif %}
 
     if (state.applyPropertyToRegularStyle())
-        {{ set_value(property) }}(state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue));
+        {{ set_value(property) }}(state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->visitedDependentColor(CSSPropertyColor)));
     if (state.applyPropertyToVisitedLinkStyle())
-        state.style()->{{visited_link_setter}}(state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.element()->isLink() /* forVisitedLink */));
+        state.style()->{{visited_link_setter}}(state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->visitedDependentColor(CSSPropertyColor), state.element()->isLink() /* forVisitedLink */));
 }
 {%- endmacro %}
 

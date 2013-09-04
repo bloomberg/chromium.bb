@@ -25,7 +25,7 @@
 #ifndef BorderValue_h
 #define BorderValue_h
 
-#include "core/css/StyleColor.h"
+#include "core/platform/graphics/Color.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
 namespace WebCore {
@@ -36,7 +36,6 @@ public:
     BorderValue()
         : m_color(0)
         , m_colorIsValid(false)
-        , m_currentColor(false)
         , m_width(3)
         , m_style(BNONE)
         , m_isAuto(AUTO_OFF)
@@ -50,7 +49,7 @@ public:
 
     bool isTransparent() const
     {
-        return m_colorIsValid && !m_currentColor && !m_color.alpha();
+        return m_colorIsValid && !alphaChannel(m_color);
     }
 
     bool isVisible(bool checkStyle = true) const
@@ -60,7 +59,7 @@ public:
 
     bool operator==(const BorderValue& o) const
     {
-        return m_width == o.m_width && m_style == o.m_style && m_color == o.m_color && m_colorIsValid == o.m_colorIsValid && m_currentColor == o.m_currentColor;
+        return m_width == o.m_width && m_style == o.m_style && m_color == o.m_color && m_colorIsValid == o.m_colorIsValid;
     }
 
     bool operator!=(const BorderValue& o) const
@@ -68,24 +67,22 @@ public:
         return !(*this == o);
     }
 
-    void setColor(const StyleColor& color)
+    void setColor(const Color& color)
     {
-        m_color = color.color();
+        m_color = color.rgb();
         m_colorIsValid = color.isValid();
-        m_currentColor = color.isCurrentColor();
     }
 
-    StyleColor color() const { return StyleColor(m_color, m_colorIsValid, m_currentColor); }
+    Color color() const { return Color(m_color, m_colorIsValid); }
 
     unsigned width() const { return m_width; }
     EBorderStyle style() const { return static_cast<EBorderStyle>(m_style); }
 
 protected:
-    Color m_color;
+    RGBA32 m_color;
     unsigned m_colorIsValid : 1;
-    unsigned m_currentColor : 1;
 
-    unsigned m_width : 25;
+    unsigned m_width : 26;
     unsigned m_style : 4; // EBorderStyle
 
     // This is only used by OutlineValue but moved here to keep the bits packed.

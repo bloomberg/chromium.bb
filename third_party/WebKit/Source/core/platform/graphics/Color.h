@@ -55,14 +55,16 @@ inline int alphaChannel(RGBA32 color) { return (color >> 24) & 0xFF; }
 class Color {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    Color() : m_color(0) { }
-    Color(RGBA32 color) : m_color(color) { }
-    Color(int r, int g, int b) : m_color(makeRGB(r, g, b)) { }
-    Color(int r, int g, int b, int a) : m_color(makeRGBA(r, g, b, a)) { }
+    Color() : m_color(0), m_valid(false) { }
+    Color(RGBA32 color, bool valid = true) : m_color(color), m_valid(valid) { ASSERT(!m_color || m_valid); }
+    Color(int r, int g, int b) : m_color(makeRGB(r, g, b)), m_valid(true) { }
+    Color(int r, int g, int b, int a) : m_color(makeRGBA(r, g, b, a)), m_valid(true) { }
     // Color is currently limited to 32bit RGBA, perhaps some day we'll support better colors
-    Color(float r, float g, float b, float a) : m_color(makeRGBA32FromFloats(r, g, b, a)) { }
+    Color(float r, float g, float b, float a) : m_color(makeRGBA32FromFloats(r, g, b, a)), m_valid(true) { }
     // Creates a new color from the specific CMYK and alpha values.
-    Color(float c, float m, float y, float k, float a) : m_color(makeRGBAFromCMYKA(c, m, y, k, a)) { }
+    Color(float c, float m, float y, float k, float a) : m_color(makeRGBAFromCMYKA(c, m, y, k, a)), m_valid(true) { }
+    explicit Color(const String&);
+    explicit Color(const char*);
 
     static Color createUnchecked(int r, int g, int b)
     {
@@ -83,6 +85,10 @@ public:
     // The latter format is not a valid CSS color, and should only be seen in DRT dumps.
     String nameForRenderTreeAsText() const;
 
+    void setNamedColor(const String&);
+
+    bool isValid() const { return m_valid; }
+
     bool hasAlpha() const { return alpha() < 255; }
 
     int red() const { return redChannel(m_color); }
@@ -91,8 +97,8 @@ public:
     int alpha() const { return alphaChannel(m_color); }
 
     RGBA32 rgb() const { return m_color; } // Preserve the alpha.
-    void setRGB(int r, int g, int b) { m_color = makeRGB(r, g, b); }
-    void setRGB(RGBA32 rgb) { m_color = rgb; }
+    void setRGB(int r, int g, int b) { m_color = makeRGB(r, g, b); m_valid = true; }
+    void setRGB(RGBA32 rgb) { m_color = rgb; m_valid = true; }
     void getRGBA(float& r, float& g, float& b, float& a) const;
     void getRGBA(double& r, double& g, double& b, double& a) const;
     void getHSL(double& h, double& s, double& l) const;
@@ -114,15 +120,15 @@ public:
     static const RGBA32 gray = 0xFFA0A0A0;
     static const RGBA32 lightGray = 0xFFC0C0C0;
     static const RGBA32 transparent = 0x00000000;
-    static const RGBA32 stdShadowColor = 0x00000055;
 
 private:
     RGBA32 m_color;
+    bool m_valid;
 };
 
 inline bool operator==(const Color& a, const Color& b)
 {
-    return a.rgb() == b.rgb();
+    return a.rgb() == b.rgb() && a.isValid() == b.isValid();
 }
 
 inline bool operator!=(const Color& a, const Color& b)
@@ -135,6 +141,10 @@ RGBA32 premultipliedARGBFromColor(const Color&);
 
 inline Color blend(const Color& from, const Color& to, double progress, bool blendPremultiplied = true)
 {
+    // We need to preserve the state of the valid flag at the end of the animation
+    if (progress == 1 && !to.isValid())
+        return Color();
+
     if (blendPremultiplied) {
         // Contrary to the name, RGBA32 actually stores ARGB, so we can initialize Color directly from premultipliedARGBFromColor().
         // Also, premultipliedARGBFromColor() bails on zero alpha, so special-case that.
