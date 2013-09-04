@@ -632,10 +632,11 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_TASK_MANAGER:
       OpenTaskManager(browser_);
       break;
+#if defined(GOOGLE_CHROME_BUILD)
     case IDC_FEEDBACK:
       OpenFeedbackDialog(browser_);
       break;
-
+#endif
     case IDC_SHOW_BOOKMARK_BAR:
       ToggleBookmarkBar(browser_);
       break;
@@ -1135,7 +1136,9 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
+#if defined(GOOGLE_CHROME_BUILD)
   command_updater_.UpdateCommandEnabled(IDC_FEEDBACK, show_main_ui);
+#endif
   UpdateShowSyncState(show_main_ui);
 
   // Settings page/subpages are forced to open in normal mode. We disable these

@@ -204,6 +204,7 @@ void ToolsMenuModel::Build(Browser* browser) {
 
   AddSeparator(ui::NORMAL_SEPARATOR);
 
+#if defined(GOOLGE_CHROME_BUILD)
 #if !defined(OS_CHROMEOS)
   // Show IDC_FEEDBACK in "Tools" menu for non-ChromeOS platforms.
   if (!chrome::UseAlternateSendFeedbackLocation()) {
@@ -218,6 +219,7 @@ void ToolsMenuModel::Build(Browser* browser) {
     AddSeparator(ui::NORMAL_SEPARATOR);
   }
 #endif
+#endif // GOOGLE_CHROME_BUILD
 
   encoding_menu_model_.reset(new EncodingMenuModel(browser));
   AddSubMenuWithStringId(IDC_ENCODING_MENU, IDS_ENCODING_MENU,
@@ -633,11 +635,13 @@ void WrenchMenuModel::Build(bool is_new_menu) {
     }
   }
 
+#if defined(GOOGLE_CHROME_BUILD)
   if (browser_defaults::kShowFeedbackMenuItem &&
       !chrome::UseAlternateSendFeedbackLocation()) {
     AddItemWithStringId(IDC_FEEDBACK,
                         chrome::GetSendFeedbackMenuLabelID());
   }
+#endif
 
   AddGlobalErrorMenuItems();
 
@@ -646,7 +650,7 @@ void WrenchMenuModel::Build(bool is_new_menu) {
                            tools_menu_model_.get());
   }
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
   // For Send Feedback Link experiment (crbug.com/169339).
   if (chrome::UseAlternateSendFeedbackLocation())
     AddItemWithStringId(IDC_FEEDBACK,

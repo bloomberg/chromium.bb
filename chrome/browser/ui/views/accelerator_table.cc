@@ -141,7 +141,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
 #if !defined(OS_CHROMEOS)
   // For each entry here add an entry into kChromeCmdId2AshActionId below
   // if Ash has a corresponding accelerator.
+#if defined(GOOGLE_CHROME_BUILD)
   { ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FEEDBACK },
+#endif
   { ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_EXIT },
   { ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_NEW_INCOGNITO_WINDOW },
@@ -163,7 +165,9 @@ struct ChromeCmdId2AshActionId {
   const ash::AcceleratorAction ash_action_id;
 };
 const ChromeCmdId2AshActionId kChromeCmdId2AshActionId[] = {
+#if defined(GOOGLE_CHROME_BUILD)
   { IDC_FEEDBACK,             ash::OPEN_FEEDBACK_PAGE },
+#endif
   { IDC_EXIT,                 ash::EXIT },
   { IDC_NEW_INCOGNITO_WINDOW, ash::NEW_INCOGNITO_WINDOW },
   { IDC_NEW_TAB,              ash::NEW_TAB },

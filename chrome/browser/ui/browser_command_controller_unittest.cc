@@ -227,7 +227,9 @@ TEST_F(BrowserCommandControllerFullscreenTest,
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_PREVIOUS_PANE));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_BOOKMARKS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEVELOPER_MENU));
+#if defined(GOOGLE_CHROME_BUILD)
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FEEDBACK));
+#endif
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_EDIT_SEARCH_ENGINES));
@@ -252,7 +254,9 @@ TEST_F(BrowserCommandControllerFullscreenTest,
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_PREVIOUS_PANE));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_BOOKMARKS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_DEVELOPER_MENU));
+#if defined(GOOGLE_CHROME_BUILD)
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FEEDBACK));
+#endif
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_EDIT_SEARCH_ENGINES));
@@ -275,7 +279,9 @@ TEST_F(BrowserCommandControllerFullscreenTest,
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_PREVIOUS_PANE));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_BOOKMARKS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEVELOPER_MENU));
+#if defined(GOOGLE_CHROME_BUILD)
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FEEDBACK));
+#endif
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_EDIT_SEARCH_ENGINES));

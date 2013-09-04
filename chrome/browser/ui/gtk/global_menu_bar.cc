@@ -138,7 +138,9 @@ GlobalMenuBarCommand tools_menu[] = {
 };
 
 GlobalMenuBarCommand help_menu[] = {
+#if defined(GOOGLE_CHROME_BUILD)
   { IDS_FEEDBACK, IDC_FEEDBACK },
+#endif
   { IDS_HELP_PAGE , IDC_HELP_PAGE_VIA_MENU },
   { MENU_END, MENU_END }
 };

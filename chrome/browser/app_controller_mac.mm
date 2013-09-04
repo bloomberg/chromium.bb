@@ -878,9 +878,11 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
                                      currentProfile:lastProfile];
           break;
         }
+#if defined(GOOGLE_CHROME_BUILD)
         case IDC_FEEDBACK:
           enable = NO;
           break;
+#endif
         default:
           enable = menuState_->IsCommandEnabled(tag) ?
                    ![self keyWindowIsModal] : NO;
@@ -1147,7 +1149,9 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   menuState_->UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS, true);
   menuState_->UpdateCommandEnabled(IDC_HELP_PAGE_VIA_MENU, true);
   menuState_->UpdateCommandEnabled(IDC_IMPORT_SETTINGS, true);
+#if defined(GOOGLE_CHROME_BUILD)
   menuState_->UpdateCommandEnabled(IDC_FEEDBACK, true);
+#endif
   menuState_->UpdateCommandEnabled(IDC_SHOW_SYNC_SETUP, true);
   menuState_->UpdateCommandEnabled(IDC_TASK_MANAGER, true);
 }

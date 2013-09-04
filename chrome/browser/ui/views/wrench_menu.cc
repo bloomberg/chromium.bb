@@ -1182,10 +1182,12 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
         bookmark_menu_ = item;
         break;
 
+#if defined(GOOGLE_CHROME_BUILD)
       case IDC_FEEDBACK:
         DCHECK(!feedback_menu_item_);
         feedback_menu_item_ = item;
         break;
+#endif
 
       case IDC_RECENT_TABS_MENU:
         DCHECK(!recent_tabs_menu_model_delegate_.get());
