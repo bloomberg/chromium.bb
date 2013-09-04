@@ -78,6 +78,7 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
     init_params.ownership = Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
     init_params.layer_type = ui::LAYER_NOT_DRAWN;
     init_params.accept_events = full_screen;
+    init_params.can_activate = full_screen;
 
     // This widget instance will get deleted when the window is
     // destroyed.
