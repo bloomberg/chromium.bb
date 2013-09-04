@@ -640,20 +640,7 @@ void DesktopRootWindowHostWin::HandleAppDeactivated() {
 void DesktopRootWindowHostWin::HandleActivationChanged(bool active) {
   if (active)
     root_window_host_delegate_->OnHostActivated();
-  native_widget_delegate_->OnNativeWidgetActivationChanged(active);
-  // If we're not active we need to deactivate the corresponding aura::Window.
-  // This way if a child widget is active it gets correctly deactivated (child
-  // widgets don't get native desktop activation changes, only aura activation
-  // changes).
-  if (!active) {
-    aura::client::ActivationClient* activation_client =
-        aura::client::GetActivationClient(root_window_);
-    if (activation_client) {
-      aura::Window* active_window = activation_client->GetActiveWindow();
-      if (active_window)
-        activation_client->DeactivateWindow(active_window);
-    }
-  }
+  desktop_native_widget_aura_->HandleActivationChanged(active);
 }
 
 bool DesktopRootWindowHostWin::HandleAppCommand(short command) {

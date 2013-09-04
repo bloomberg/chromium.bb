@@ -207,6 +207,7 @@
       'sources': [
         '../apps/app_shim/app_shim_quit_interactive_uitest_mac.mm',
         '../ui/views/corewm/desktop_capture_controller_unittest.cc',
+        '../ui/views/widget/widget_interactive_uitest.cc',
         'browser/apps/app_browsertest_util.cc',
         'browser/apps/app_browsertest_util.h',
         'browser/apps/web_view_interactive_browsertest.cc',
@@ -392,6 +393,7 @@
         ['use_aura==0 or chromeos==1', {
           'sources!': [
             '../ui/views/corewm/desktop_capture_controller_unittest.cc',
+            '../ui/views/widget/widget_interactive_uitest.cc',
           ],
         }],
         ['chromeos==1', {

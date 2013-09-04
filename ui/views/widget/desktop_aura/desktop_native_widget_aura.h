@@ -76,6 +76,10 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // Overridden from NativeWidget:
   virtual ui::EventHandler* GetEventHandler() OVERRIDE;
 
+  // Ensures that the correct window is activated/deactivated based on whether
+  // we are being activated/deactivated.
+  void HandleActivationChanged(bool active);
+
  protected:
   // Overridden from internal::NativeWidgetPrivate:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;

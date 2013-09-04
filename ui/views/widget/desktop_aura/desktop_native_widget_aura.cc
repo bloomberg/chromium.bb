@@ -229,6 +229,37 @@ void DesktopNativeWidgetAura::CreateCaptureClient(aura::RootWindow* root) {
   capture_client_.reset(new corewm::ScopedCaptureClient(root));
 }
 
+void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
+  native_widget_delegate_->OnNativeWidgetActivationChanged(active);
+  aura::client::ActivationClient* activation_client =
+      aura::client::GetActivationClient(root_window_.get());
+  if (!activation_client)
+    return;
+  if (active) {
+    if (GetWidget()->HasFocusManager()) {
+      // This function can be called before the focus manager has had a
+      // chance to set the focused view. In which case we should get the
+      // last focused view.
+      View* view_for_activation =
+          GetWidget()->GetFocusManager()->GetFocusedView() ?
+              GetWidget()->GetFocusManager()->GetFocusedView() :
+                  GetWidget()->GetFocusManager()->GetStoredFocusView();
+      if (!view_for_activation)
+        view_for_activation = GetWidget()->GetRootView();
+      activation_client->ActivateWindow(
+          view_for_activation->GetWidget()->GetNativeView());
+    }
+  } else {
+    // If we're not active we need to deactivate the corresponding
+    // aura::Window. This way if a child widget is active it gets correctly
+    // deactivated (child widgets don't get native desktop activation changes,
+    // only aura activation changes).
+    aura::Window* active_window = activation_client->GetActiveWindow();
+    if (active_window)
+      activation_client->DeactivateWindow(active_window);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, internal::NativeWidgetPrivate implementation:
 
