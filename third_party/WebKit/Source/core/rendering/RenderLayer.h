@@ -1125,6 +1125,10 @@ protected:
     unsigned m_isUnclippedDescendant : 1;
 
     unsigned m_needsCompositedScrolling : 1;
+    unsigned m_needsCompositedScrollingHasBeenRecorded : 1;
+    unsigned m_willUseCompositedScrollingHasBeenRecorded : 1;
+
+    unsigned m_isScrollableAreaHasBeenRecorded : 1;
 
     // If this is true, then no non-descendant appears between any of our
     // descendants in stacking order. This is one of the requirements of being

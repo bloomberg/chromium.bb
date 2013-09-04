@@ -131,6 +131,9 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_hasUnclippedDescendant(false)
     , m_isUnclippedDescendant(false)
     , m_needsCompositedScrolling(false)
+    , m_needsCompositedScrollingHasBeenRecorded(false)
+    , m_willUseCompositedScrollingHasBeenRecorded(false)
+    , m_isScrollableAreaHasBeenRecorded(false)
     , m_canBePromotedToStackingContainer(false)
     , m_canBePromotedToStackingContainerDirty(true)
     , m_isRootLayer(renderer->isRenderView())
@@ -2081,10 +2084,39 @@ void RenderLayer::updateNeedsCompositedScrolling()
     setNeedsCompositedScrolling(needsCompositedScrolling);
 }
 
+enum CompositedScrollingHistogramBuckets {
+    IsScrollableAreaBucket = 0,
+    NeedsToBeStackingContainerBucket = 1,
+    WillUseCompositedScrollingBucket = 2,
+    CompositedScrollingHistogramMax = 3
+};
+
 void RenderLayer::setNeedsCompositedScrolling(bool needsCompositedScrolling)
 {
     if (m_needsCompositedScrolling == needsCompositedScrolling)
         return;
+
+    // Count the total number of RenderLayers which need to be stacking
+    // containers some point. This should be recorded at most once per
+    // RenderLayer, so we check m_needsCompositedScrollingHasBeenRecorded.
+    if (acceleratedCompositingForOverflowScrollEnabled() && !m_needsCompositedScrollingHasBeenRecorded) {
+        HistogramSupport::histogramEnumeration("Renderer.CompositedScrolling", NeedsToBeStackingContainerBucket, CompositedScrollingHistogramMax);
+        m_needsCompositedScrollingHasBeenRecorded = true;
+    }
+
+    // Count the total number of RenderLayers which need composited scrolling at
+    // some point. This should be recorded at most once per RenderLayer, so we
+    // check m_willUseCompositedScrollingHasBeenRecorded.
+    //
+    // FIXME: Currently, this computes the exact same value as the above.
+    // However, it will soon be expanded to cover more than just stacking
+    // containers (see crbug.com/249354). When this happens, we should see a
+    // spike in "WillUseCompositedScrolling", while "NeedsToBeStackingContainer"
+    // will remain relatively static.
+    if (acceleratedCompositingForOverflowScrollEnabled() && !m_willUseCompositedScrollingHasBeenRecorded) {
+        HistogramSupport::histogramEnumeration("Renderer.CompositedScrolling", WillUseCompositedScrollingBucket, CompositedScrollingHistogramMax);
+        m_willUseCompositedScrollingHasBeenRecorded = true;
+    }
 
     m_needsCompositedScrolling = needsCompositedScrolling;
 
@@ -6021,8 +6053,16 @@ void RenderLayer::updateScrollableAreaSet(bool hasOverflow)
         isVisibleToHitTest &= owner->renderer() && owner->renderer()->visibleToHitTesting();
 
     if (hasOverflow && isVisibleToHitTest) {
-        if (frameView->addScrollableArea(scrollableArea()))
+        if (frameView->addScrollableArea(scrollableArea())) {
             compositor()->setNeedsUpdateCompositingRequirementsState();
+
+            // Count the total number of RenderLayers that are scrollable areas for
+            // any period. We only want to record this at most once per RenderLayer.
+            if (!m_isScrollableAreaHasBeenRecorded) {
+                HistogramSupport::histogramEnumeration("Renderer.CompositedScrolling", IsScrollableAreaBucket, CompositedScrollingHistogramMax);
+                m_isScrollableAreaHasBeenRecorded = true;
+            }
+        }
     } else {
         if (frameView->removeScrollableArea(scrollableArea()))
             setNeedsCompositedScrolling(false);
