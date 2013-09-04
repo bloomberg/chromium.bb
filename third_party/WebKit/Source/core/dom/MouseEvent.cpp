@@ -58,7 +58,7 @@ PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& eventType, PassRef
     ASSERT(event.type() == PlatformEvent::MouseMoved || event.button() != NoButton);
 
     bool isMouseEnterOrLeave = eventType == eventNames().mouseenterEvent || eventType == eventNames().mouseleaveEvent;
-    bool isCancelable = eventType != eventNames().mousemoveEvent && !isMouseEnterOrLeave;
+    bool isCancelable = !isMouseEnterOrLeave;
     bool isBubbling = !isMouseEnterOrLeave;
 
     return MouseEvent::create(eventType, isBubbling, isCancelable, view,
