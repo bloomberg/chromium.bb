@@ -108,11 +108,11 @@ unsigned CharacterData::parserAppendData(const String& string, unsigned offset, 
     return characterLengthLimit;
 }
 
-void CharacterData::appendData(const String& data, AttachBehavior attachBehavior)
+void CharacterData::appendData(const String& data)
 {
     String newStr = m_data + data;
 
-    setDataAndUpdate(newStr, m_data.length(), 0, data.length(), attachBehavior);
+    setDataAndUpdate(newStr, m_data.length(), 0, data.length());
 
     // FIXME: Should we call textInserted here?
 }
@@ -153,7 +153,7 @@ void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& 
     document().textRemoved(this, offset, realCount);
 }
 
-void CharacterData::replaceData(unsigned offset, unsigned count, const String& data, ExceptionState& es, AttachBehavior attachBehavior)
+void CharacterData::replaceData(unsigned offset, unsigned count, const String& data, ExceptionState& es)
 {
     if (offset > length()) {
         es.throwDOMException(IndexSizeError);
@@ -170,7 +170,7 @@ void CharacterData::replaceData(unsigned offset, unsigned count, const String& d
     newStr.remove(offset, realCount);
     newStr.insert(data, offset);
 
-    setDataAndUpdate(newStr, offset, count, data.length(), attachBehavior);
+    setDataAndUpdate(newStr, offset, count, data.length());
 
     // update the markers for spell checking and grammar checking
     document().textRemoved(this, offset, realCount);

@@ -37,10 +37,10 @@ public:
     void setData(const String&);
     unsigned length() const { return m_data.length(); }
     String substringData(unsigned offset, unsigned count, ExceptionState&);
-    void appendData(const String&, AttachBehavior = AttachLazily);
+    void appendData(const String&);
     void insertData(unsigned offset, const String&, ExceptionState&, AttachBehavior = AttachLazily);
     void deleteData(unsigned offset, unsigned count, ExceptionState&, AttachBehavior = AttachLazily);
-    void replaceData(unsigned offset, unsigned count, const String&, ExceptionState&, AttachBehavior = AttachLazily);
+    void replaceData(unsigned offset, unsigned count, const String&, ExceptionState&);
 
     bool containsOnlyWhitespace() const;
 
