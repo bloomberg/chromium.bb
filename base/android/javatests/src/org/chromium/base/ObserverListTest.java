@@ -7,6 +7,7 @@ package org.chromium.base;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.ObserverList;
 import org.chromium.base.test.util.Feature;
 
 import java.lang.Iterable;
@@ -176,5 +177,44 @@ public class ObserverListTest extends InstrumentationTestCase {
             noElementExceptionThrown = true;
         }
         assertTrue(noElementExceptionThrown);
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testRewindableIterator() {
+        ObserverList<Integer> observerList = new ObserverList<Integer>();
+        observerList.addObserver(5);
+        observerList.addObserver(10);
+        observerList.addObserver(15);
+        assertEquals(3, getSizeOfIterable(observerList));
+
+        ObserverList.RewindableIterator<Integer> it = observerList.rewindableIterator();
+        assertTrue(it.hasNext());
+        assertTrue(5 == it.next());
+        assertTrue(it.hasNext());
+        assertTrue(10 == it.next());
+        assertTrue(it.hasNext());
+        assertTrue(15 == it.next());
+        assertFalse(it.hasNext());
+
+        it.rewind();
+
+        assertTrue(it.hasNext());
+        assertTrue(5 == it.next());
+        assertTrue(it.hasNext());
+        assertTrue(10 == it.next());
+        assertTrue(it.hasNext());
+        assertTrue(15 == it.next());
+        assertEquals(5, (int) observerList.mObservers.get(0));
+        observerList.removeObserver(5);
+        assertEquals(null, observerList.mObservers.get(0));
+
+        it.rewind();
+
+        assertEquals(10, (int) observerList.mObservers.get(0));
+        assertTrue(it.hasNext());
+        assertTrue(10 == it.next());
+        assertTrue(it.hasNext());
+        assertTrue(15 == it.next());
     }
 }
