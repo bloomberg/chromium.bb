@@ -163,4 +163,8 @@ else:
   settings = dict(base_settings)
   link_env = base_env
   envlist = [base_env]
+  if env.Bit('target_arm'):
+    # Constant pool items sometimes too far away:
+    # BUG: http://code.google.com/p/nativeclient/issues/detail?id=3205
+    settings['allow_double'] = 0
   AddTest(base_env, 'callingconv', envlist, settings, is_broken=False)
