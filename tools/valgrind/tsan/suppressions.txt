@@ -166,13 +166,6 @@
 }
 
 {
-  Two writes, same value (sqlite3_initialize)
-  ThreadSanitizer:Race
-  fun:sqlite3_initialize
-  fun:openDatabase
-}
-
-{
   bug_84094_a  (Could be benign. See bug for details)
   ThreadSanitizer:Race
   ...
