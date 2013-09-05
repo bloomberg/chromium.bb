@@ -54,11 +54,6 @@ WebCryptoAlgorithm::WebCryptoAlgorithm(WebCryptoAlgorithmId id, PassOwnPtr<WebCr
 {
 }
 
-WebCryptoAlgorithm WebCryptoAlgorithm::adoptParamsAndCreate(WebCryptoAlgorithmId id, const char*, WebCryptoAlgorithmParams* params)
-{
-    return WebCryptoAlgorithm(id, adoptPtr(params));
-}
-
 WebCryptoAlgorithm WebCryptoAlgorithm::adoptParamsAndCreate(WebCryptoAlgorithmId id, WebCryptoAlgorithmParams* params)
 {
     return WebCryptoAlgorithm(id, adoptPtr(params));

@@ -86,9 +86,6 @@ public:
     WebCryptoAlgorithm(WebCryptoAlgorithmId, PassOwnPtr<WebCryptoAlgorithmParams>);
 #endif
 
-    // FIXME: delete this once no longer used
-    WEBKIT_EXPORT static WebCryptoAlgorithm adoptParamsAndCreate(WebCryptoAlgorithmId, const char*, WebCryptoAlgorithmParams*);
-
     WEBKIT_EXPORT static WebCryptoAlgorithm adoptParamsAndCreate(WebCryptoAlgorithmId, WebCryptoAlgorithmParams*);
 
     ~WebCryptoAlgorithm() { reset(); }
