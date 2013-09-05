@@ -10,4 +10,8 @@
         <item name="action_mode_share_drawable">@drawable/ic_menu_share_holo_light</item>
         <item name="action_mode_web_search_drawable">@drawable/ic_menu_search_holo_light</item>
     </style>
+    <style name="SelectPopupDialog">
+        <item name="select_dialog_singlechoice">@android:layout/select_dialog_singlechoice</item>
+        <item name="select_dialog_multichoice">@android:layout/select_dialog_multichoice</item>
+    </style>
 </resources>

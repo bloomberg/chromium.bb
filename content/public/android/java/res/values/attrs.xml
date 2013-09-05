@@ -8,4 +8,6 @@
 <resources>
     <attr name="action_mode_share_drawable" format="reference" />
     <attr name="action_mode_web_search_drawable" format="reference" />
+    <attr name="select_dialog_multichoice" format="reference" />
+    <attr name="select_dialog_singlechoice" format="reference" />
 </resources>

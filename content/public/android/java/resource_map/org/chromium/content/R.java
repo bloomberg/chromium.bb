@@ -19,6 +19,8 @@ public final class R {
     public static final class attr {
         public static int action_mode_share_drawable;
         public static int action_mode_web_search_drawable;
+        public static int select_dialog_multichoice;
+        public static int select_dialog_singlechoice;
     }
     public static final class dimen {
         public static int link_preview_overlay_radius;
@@ -73,5 +75,6 @@ public final class R {
     }
     public static final class style {
         public static int ContentActionBar;
+        public static int SelectPopupDialog;
     }
 }
