@@ -1,16 +1,16 @@
-# Copyright (c) 2011, Google Inc. All rights reserved.
+# Copyright (C) 2013 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
 # met:
 #
-#     * Redistributions of source code must retain the above copyright
+#    * Redistributions of source code must retain the above copyright
 # notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
+#    * Redistributions in binary form must reproduce the above
 # copyright notice, this list of conditions and the following disclaimer
 # in the documentation and/or other materials provided with the
 # distribution.
-#     * Neither the name of Google Inc. nor the names of its
+#    * Neither the name of Google Inc. nor the names of its
 # contributors may be used to endorse or promote products derived from
 # this software without specific prior written permission.
 #
@@ -26,22 +26,18 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import webkitpy.common.config.urls as config_urls
-from webkitpy.common.net.buildbot.buildbot import Builder, BuildBot
-# FIXME: builders should probably be in webkitpy.common.config.
-from webkitpy.layout_tests.port.builders import builder_path_from_name
+import webkitpy.thirdparty.unittest2 as unittest
+
+from webkitpy.common.net.buildbot.chromiumbuildbot import ChromiumBuildBot
 
 
-class ChromiumBuilder(Builder):
-    # The build.chromium.org builders store their results in a different
-    # location than the build.webkit.org builders.
-    def results_url(self):
-        return config_urls.chromium_results_url_base_for_builder(self._name)
+class ChromiumBuilderTest(unittest.TestCase):
+    def test_results_url(self):
+        builder = ChromiumBuildBot().builder_with_name('WebKit Mac10.8 (dbg)')
+        self.assertEqual(builder.results_url(),
+                         'https://storage.googleapis.com/chromium-layout-test-archives/WebKit_Mac10_8__dbg_')
 
-    def accumulated_results_url(self):
-        return config_urls.chromium_accumulated_results_url_base_for_builder(self._name)
-
-
-class ChromiumBuildBot(BuildBot):
-    _builder_factory = ChromiumBuilder
-    _default_url = config_urls.chromium_buildbot_url
+    def test_accumulated_results_url(self):
+        builder = ChromiumBuildBot().builder_with_name('WebKit Mac10.8 (dbg)')
+        self.assertEqual(builder.accumulated_results_url(),
+                         'https://storage.googleapis.com/chromium-layout-test-archives/WebKit_Mac10_8__dbg_/results/layout-test-results/layout-test-results')
