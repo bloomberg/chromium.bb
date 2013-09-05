@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_keys.h"
+#include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
 #include "media/cdm/aes_decryptor.h"
 #include "media/filters/chunk_demuxer.h"
@@ -33,6 +34,7 @@ static const char kMP4Video[] = "video/mp4; codecs=\"avc1.4D4041\"";
 static const char kMP4Audio[] = "audio/mp4; codecs=\"mp4a.40.2\"";
 static const char kMP4AudioType[] = "audio/mp4";
 static const char kMP4VideoType[] = "video/mp4";
+static const char kMP3[] = "audio/mpeg";
 
 // Key used to encrypt test files.
 static const uint8 kSecretKey[] = {
@@ -284,13 +286,29 @@ class MockMediaSource {
   }
 
   void DemuxerOpenedTask() {
+    // This code assumes that |mimetype_| is one of the following forms.
+    // 1. audio/mpeg
+    // 2. video/webm;codec="vorbis,vp8".
     size_t semicolon = mimetype_.find(";");
-    std::string type = mimetype_.substr(0, semicolon);
-    size_t quote1 = mimetype_.find("\"");
-    size_t quote2 = mimetype_.find("\"", quote1 + 1);
-    std::string codecStr = mimetype_.substr(quote1 + 1, quote2 - quote1 - 1);
+    std::string type = mimetype_;
     std::vector<std::string> codecs;
-    Tokenize(codecStr, ",", &codecs);
+    if (semicolon != std::string::npos) {
+      type = mimetype_.substr(0, semicolon);
+      size_t codecs_param_start = mimetype_.find("codecs=\"", semicolon);
+
+      CHECK_NE(codecs_param_start, std::string::npos);
+
+      codecs_param_start += 8; // Skip over the codecs=".
+
+      size_t codecs_param_end = mimetype_.find("\"", codecs_param_start);
+
+      CHECK_NE(codecs_param_end, std::string::npos);
+
+      std::string codecs_param =
+          mimetype_.substr(codecs_param_start,
+                           codecs_param_end - codecs_param_start);
+      Tokenize(codecs_param, ",", &codecs);
+    }
 
     CHECK_EQ(chunk_demuxer_->AddId(kSourceId, type, codecs), ChunkDemuxer::kOk);
     AppendData(initial_append_size_);
@@ -627,6 +645,27 @@ TEST_F(PipelineIntegrationTest,
 }
 
 #if defined(USE_PROPRIETARY_CODECS)
+TEST_F(PipelineIntegrationTest, MediaSource_MP3) {
+  MockMediaSource source("sfx.mp3", kMP3, kAppendWholeFile);
+  StartPipelineWithMediaSource(&source);
+  source.EndOfStream();
+
+  Play();
+
+  EXPECT_TRUE(WaitUntilOnEnded());
+}
+
+
+TEST_F(PipelineIntegrationTest, MediaSource_MP3_Icecast) {
+  MockMediaSource source("icy_sfx.mp3", kMP3, kAppendWholeFile);
+  StartPipelineWithMediaSource(&source);
+  source.EndOfStream();
+
+  Play();
+
+  EXPECT_TRUE(WaitUntilOnEnded());
+}
+
 TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_MP4) {
   MockMediaSource source("bear-640x360-av_frag.mp4", kMP4, kAppendWholeFile);
   StartPipelineWithMediaSource(&source);

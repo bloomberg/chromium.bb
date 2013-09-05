@@ -32,7 +32,7 @@ class MEDIA_EXPORT StreamParserFactory {
   //   |has_video| is true if a video codec was specified.
   // Returns NULL otherwise. The values of |has_audio| and |has_video| are
   //   undefined.
-  static scoped_ptr<media::StreamParser> Create(
+  static scoped_ptr<StreamParser> Create(
       const std::string& type, const std::vector<std::string>& codecs,
       const LogCB& log_cb, bool* has_audio, bool* has_video);
 };

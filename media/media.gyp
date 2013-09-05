@@ -41,6 +41,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../crypto/crypto.gyp:crypto',
+        '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../third_party/opus/opus.gyp:opus',
         '../ui/ui.gyp:ui',
@@ -382,6 +383,8 @@
         'midi/midi_manager_mac.h',
         'midi/midi_port_info.cc',
         'midi/midi_port_info.h',
+        'mp3/mp3_stream_parser.cc',
+        'mp3/mp3_stream_parser.h',
         'video/capture/android/video_capture_device_android.cc',
         'video/capture/android/video_capture_device_android.h',
         'video/capture/fake_video_capture_device.cc',

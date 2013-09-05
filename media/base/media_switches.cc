@@ -25,6 +25,9 @@ const char kVideoThreads[] = "video-threads";
 const char kOverrideEncryptedMediaCanPlayType[] =
     "override-encrypted-media-canplaytype";
 
+// Enables MP3 stream parser for Media Source Extensions.
+const char kEnableMP3StreamParser[] = "enable-mp3-stream-parser";
+
 #if defined(GOOGLE_TV)
 // Use external video surface for video with more than or equal pixels to
 // specified value. For example, value of 0 will enable external video surface

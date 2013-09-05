@@ -39,6 +39,8 @@ void TestSuiteNoAtExit::Initialize() {
   // Run this here instead of main() to ensure an AtExitManager is already
   // present.
   media::InitializeMediaLibraryForTesting();
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  cmd_line->AppendSwitch(switches::kEnableMP3StreamParser);
 }
 
 int main(int argc, char** argv) {

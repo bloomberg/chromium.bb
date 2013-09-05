@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/mp3/mp3_stream_parser.h"
 #include "media/webm/webm_stream_parser.h"
 
 #if defined(USE_PROPRIETARY_CODECS)
@@ -28,6 +29,8 @@ struct CodecInfo {
     AUDIO,
     VIDEO
   };
+
+  // Update tools/metrics/histograms/histograms.xml if new values are added.
   enum HistogramTag {
     HISTOGRAM_UNKNOWN,
     HISTOGRAM_VP8,
@@ -37,6 +40,7 @@ struct CodecInfo {
     HISTOGRAM_MPEG2AAC,
     HISTOGRAM_MPEG4AAC,
     HISTOGRAM_EAC3,
+    HISTOGRAM_MP3,
     HISTOGRAM_MAX  // Must be the last entry.
   };
 
@@ -151,6 +155,7 @@ static const CodecInfo* kAudioMP4Codecs[] = {
 static StreamParser* BuildMP4Parser(
     const std::vector<std::string>& codecs, const LogCB& log_cb) {
   std::set<int> audio_object_types;
+
   bool has_sbr = false;
 #if defined(ENABLE_EAC3_PLAYBACK)
   bool enable_eac3 = CommandLine::ForCurrentProcess()->HasSwitch(
@@ -179,12 +184,28 @@ static StreamParser* BuildMP4Parser(
 
   return new mp4::MP4StreamParser(audio_object_types, has_sbr);
 }
+
+static const CodecInfo kMP3CodecInfo = { NULL, CodecInfo::AUDIO, NULL,
+                                         CodecInfo::HISTOGRAM_MP3 };
+
+static const CodecInfo* kAudioMP3Codecs[] = {
+  &kMP3CodecInfo,
+  NULL
+};
+
+static StreamParser* BuildMP3Parser(
+    const std::vector<std::string>& codecs, const LogCB& log_cb) {
+  return new MP3StreamParser();
+}
+
 #endif
+
 
 static const SupportedTypeInfo kSupportedTypeInfo[] = {
   { "video/webm", &BuildWebMParser, kVideoWebMCodecs },
   { "audio/webm", &BuildWebMParser, kAudioWebMCodecs },
 #if defined(USE_PROPRIETARY_CODECS)
+  { "audio/mpeg", &BuildMP3Parser, kAudioMP3Codecs },
   { "video/mp4", &BuildMP4Parser, kVideoMP4Codecs },
   { "audio/mp4", &BuildMP4Parser, kAudioMP4Codecs },
 #endif
@@ -212,6 +233,7 @@ static bool VerifyCodec(
           return false;
       }
 #endif
+
       if (audio_codecs)
         audio_codecs->push_back(codec_info->tag);
       return true;
@@ -253,8 +275,26 @@ static bool CheckTypeAndCodecs(
   for (size_t i = 0; i < arraysize(kSupportedTypeInfo); ++i) {
     const SupportedTypeInfo& type_info = kSupportedTypeInfo[i];
     if (type == type_info.type) {
+      if (codecs.empty()) {
 
-      if (codecs.size() == 0u) {
+#if defined(USE_PROPRIETARY_CODECS)
+        if (type_info.codecs == kAudioMP3Codecs &&
+            !CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kEnableMP3StreamParser)) {
+          DVLOG(1) << "MP3StreamParser is not enabled.";
+          return false;
+        }
+#endif
+
+        const CodecInfo* codec_info = type_info.codecs[0];
+        if (codec_info && !codec_info->pattern &&
+            VerifyCodec(codec_info, audio_codecs, video_codecs)) {
+
+          if (factory_function)
+            *factory_function = type_info.factory_function;
+          return true;
+        }
+
         MEDIA_LOG(log_cb) << "A codecs parameter must be provided for '"
                           << type << "'";
         return false;
@@ -275,6 +315,7 @@ static bool CheckTypeAndCodecs(
             break;  // Since only 1 pattern will match, no need to check others.
           }
         }
+
         if (!found_codec) {
           MEDIA_LOG(log_cb) << "Codec '" << codec_id
                             << "' is not supported for '" << type << "'";
