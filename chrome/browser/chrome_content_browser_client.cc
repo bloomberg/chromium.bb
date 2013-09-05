@@ -32,7 +32,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/browser_permissions_policy_delegate.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -893,9 +892,6 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));
-
-  host->Send(new ChromeViewMsg_SetExtensionActivityLogEnabled(
-      extensions::ActivityLog::GetInstance(profile)->IsLogEnabled()));
 
   SendExtensionWebRequestStatusToHost(host);
 

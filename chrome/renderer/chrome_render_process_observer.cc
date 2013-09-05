@@ -254,8 +254,6 @@ void HeapStatisticsCollector::SendStatsToBrowser(int round_id) {
 
 bool ChromeRenderProcessObserver::is_incognito_process_ = false;
 
-bool ChromeRenderProcessObserver::extension_activity_log_enabled_ = false;
-
 ChromeRenderProcessObserver::ChromeRenderProcessObserver(
     chrome::ChromeContentRendererClient* client)
     : client_(client),
@@ -326,8 +324,6 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderProcessObserver, message)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsIncognitoProcess,
                         OnSetIsIncognitoProcess)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetExtensionActivityLogEnabled,
-                        OnSetExtensionActivityLogEnabled)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetCacheCapacities, OnSetCacheCapacities)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_ClearCache, OnClearCache)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetFieldTrialGroup, OnSetFieldTrialGroup)
@@ -371,11 +367,6 @@ void ChromeRenderProcessObserver::OnRenderProcessShutdown() {
 void ChromeRenderProcessObserver::OnSetIsIncognitoProcess(
     bool is_incognito_process) {
   is_incognito_process_ = is_incognito_process;
-}
-
-void ChromeRenderProcessObserver::OnSetExtensionActivityLogEnabled(
-    bool extension_activity_log_enabled) {
-  extension_activity_log_enabled_ = extension_activity_log_enabled;
 }
 
 void ChromeRenderProcessObserver::OnSetContentSettingRules(

@@ -53,10 +53,10 @@ TEST_F(ActivityLogEnabledTest, NoSwitch) {
 
   ActivityLog* activity_log = ActivityLog::GetInstance(profile.get());
 
-    EXPECT_FALSE(
-      profile->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
-  EXPECT_FALSE(activity_log->IsLogEnabled());
-  EXPECT_FALSE(activity_log->IsLogEnabledOnAnyProfile());
+  EXPECT_FALSE(
+    profile->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
+  EXPECT_FALSE(activity_log->IsDatabaseEnabled());
+  EXPECT_FALSE(activity_log->IsWatchdogAppActive());
 }
 
 TEST_F(ActivityLogEnabledTest, CommandLineSwitch) {
@@ -77,10 +77,10 @@ TEST_F(ActivityLogEnabledTest, CommandLineSwitch) {
       profile1->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
   EXPECT_FALSE(
       profile2->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
-  EXPECT_TRUE(activity_log1->IsLogEnabled());
-  EXPECT_FALSE(activity_log2->IsLogEnabled());
-  EXPECT_TRUE(activity_log1->IsLogEnabledOnAnyProfile());
-  EXPECT_TRUE(activity_log2->IsLogEnabledOnAnyProfile());
+  EXPECT_TRUE(activity_log1->IsDatabaseEnabled());
+  EXPECT_FALSE(activity_log2->IsDatabaseEnabled());
+  EXPECT_FALSE(activity_log1->IsWatchdogAppActive());
+  EXPECT_FALSE(activity_log2->IsWatchdogAppActive());
 }
 
 TEST_F(ActivityLogEnabledTest, PrefSwitch) {
@@ -102,10 +102,10 @@ TEST_F(ActivityLogEnabledTest, PrefSwitch) {
       profile1->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
   EXPECT_FALSE(
       profile2->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
-  EXPECT_TRUE(activity_log1->IsLogEnabled());
-  EXPECT_FALSE(activity_log2->IsLogEnabled());
-  EXPECT_TRUE(activity_log1->IsLogEnabledOnAnyProfile());
-  EXPECT_TRUE(activity_log2->IsLogEnabledOnAnyProfile());
+  EXPECT_TRUE(activity_log1->IsWatchdogAppActive());
+  EXPECT_FALSE(activity_log2->IsWatchdogAppActive());
+  EXPECT_TRUE(activity_log1->IsDatabaseEnabled());
+  EXPECT_FALSE(activity_log2->IsDatabaseEnabled());
 }
 
 TEST_F(ActivityLogEnabledTest, WatchdogSwitch) {
@@ -147,10 +147,10 @@ TEST_F(ActivityLogEnabledTest, WatchdogSwitch) {
       profile1->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
   EXPECT_FALSE(
       profile2->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
-  EXPECT_TRUE(activity_log1->IsLogEnabled());
-  EXPECT_FALSE(activity_log2->IsLogEnabled());
-  EXPECT_TRUE(activity_log1->IsLogEnabledOnAnyProfile());
-  EXPECT_TRUE(activity_log2->IsLogEnabledOnAnyProfile());
+  EXPECT_TRUE(activity_log1->IsWatchdogAppActive());
+  EXPECT_FALSE(activity_log2->IsWatchdogAppActive());
+  EXPECT_TRUE(activity_log1->IsDatabaseEnabled());
+  EXPECT_FALSE(activity_log2->IsDatabaseEnabled());
 
   extension_service1->DisableExtension(kActivityLogExtensionId,
                                        Extension::DISABLE_USER_ACTION);
@@ -159,10 +159,10 @@ TEST_F(ActivityLogEnabledTest, WatchdogSwitch) {
       profile1->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
   EXPECT_FALSE(
       profile2->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
-  EXPECT_FALSE(activity_log1->IsLogEnabled());
-  EXPECT_FALSE(activity_log2->IsLogEnabled());
-  EXPECT_TRUE(activity_log1->IsLogEnabledOnAnyProfile());
-  EXPECT_TRUE(activity_log2->IsLogEnabledOnAnyProfile());
+  EXPECT_FALSE(activity_log1->IsWatchdogAppActive());
+  EXPECT_FALSE(activity_log2->IsWatchdogAppActive());
+  EXPECT_FALSE(activity_log1->IsDatabaseEnabled());
+  EXPECT_FALSE(activity_log2->IsDatabaseEnabled());
 
   extension_service1->EnableExtension(kActivityLogExtensionId);
 
@@ -170,10 +170,10 @@ TEST_F(ActivityLogEnabledTest, WatchdogSwitch) {
       profile1->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
   EXPECT_FALSE(
       profile2->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
-  EXPECT_TRUE(activity_log1->IsLogEnabled());
-  EXPECT_FALSE(activity_log2->IsLogEnabled());
-  EXPECT_TRUE(activity_log1->IsLogEnabledOnAnyProfile());
-  EXPECT_TRUE(activity_log2->IsLogEnabledOnAnyProfile());
+  EXPECT_TRUE(activity_log1->IsWatchdogAppActive());
+  EXPECT_FALSE(activity_log2->IsWatchdogAppActive());
+  EXPECT_TRUE(activity_log1->IsDatabaseEnabled());
+  EXPECT_FALSE(activity_log2->IsDatabaseEnabled());
 
   extension_service1->UninstallExtension(kActivityLogExtensionId, false, NULL);
 
@@ -181,10 +181,63 @@ TEST_F(ActivityLogEnabledTest, WatchdogSwitch) {
       profile1->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
   EXPECT_FALSE(
       profile2->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
-  EXPECT_FALSE(activity_log1->IsLogEnabled());
-  EXPECT_FALSE(activity_log2->IsLogEnabled());
-  EXPECT_TRUE(activity_log1->IsLogEnabledOnAnyProfile());
-  EXPECT_TRUE(activity_log2->IsLogEnabledOnAnyProfile());
+  EXPECT_FALSE(activity_log1->IsWatchdogAppActive());
+  EXPECT_FALSE(activity_log2->IsWatchdogAppActive());
+  EXPECT_FALSE(activity_log1->IsDatabaseEnabled());
+  EXPECT_FALSE(activity_log2->IsDatabaseEnabled());
+}
+
+TEST_F(ActivityLogEnabledTest, AppAndCommandLine) {
+  // Set the command line switch.
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  CommandLine saved_cmdline_ = *CommandLine::ForCurrentProcess();
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExtensionActivityLogging);
+
+  scoped_ptr<TestingProfile> profile(
+    static_cast<TestingProfile*>(CreateBrowserContext()));
+  // Extension service is destroyed by the profile.
+  ExtensionService* extension_service =
+    static_cast<TestExtensionSystem*>(
+        ExtensionSystem::Get(profile.get()))->CreateExtensionService(
+            &command_line, base::FilePath(), false);
+  static_cast<TestExtensionSystem*>(
+      ExtensionSystem::Get(profile.get()))->SetReady();
+
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile.get());
+  // Allow Activity Log to install extension tracker.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(activity_log->IsDatabaseEnabled());
+  EXPECT_FALSE(
+      profile->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
+  EXPECT_FALSE(activity_log->IsWatchdogAppActive());
+
+  // Enable the extension.
+  scoped_refptr<Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(DictionaryBuilder()
+                       .Set("name", "Watchdog Extension ")
+                       .Set("version", "1.0.0")
+                       .Set("manifest_version", 2))
+          .SetID(kActivityLogExtensionId)
+          .Build();
+  extension_service->AddExtension(extension.get());
+
+  EXPECT_TRUE(activity_log->IsDatabaseEnabled());
+  EXPECT_TRUE(
+      profile->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
+  EXPECT_TRUE(activity_log->IsWatchdogAppActive());
+
+  extension_service->UninstallExtension(kActivityLogExtensionId, false, NULL);
+
+  EXPECT_TRUE(activity_log->IsDatabaseEnabled());
+  EXPECT_FALSE(
+      profile->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive));
+  EXPECT_FALSE(activity_log->IsWatchdogAppActive());
+
+  // Cleanup.
+  *CommandLine::ForCurrentProcess() = saved_cmdline_;
 }
 
 } // namespace extensions

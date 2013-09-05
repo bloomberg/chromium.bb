@@ -183,38 +183,33 @@ ActivityLog::ActivityLog(Profile* profile)
     : policy_(NULL),
       policy_type_(ActivityLogPolicy::POLICY_INVALID),
       profile_(profile),
-      enabled_(false),
-      policy_chosen_(false),
+      db_enabled_(false),
       testing_mode_(false),
       has_threads_(true),
       tracker_(NULL),
-      watchdog_extension_active_(false) {
-  // This controls whether logging statements are printed, which policy is set,
-  // etc.
+      watchdog_app_active_(false) {
+  // This controls whether logging statements are printed & which policy is set.
   testing_mode_ = CommandLine::ForCurrentProcess()->HasSwitch(
     switches::kEnableExtensionActivityLogTesting);
 
   // Check if the watchdog extension is previously installed and active.
-  watchdog_extension_active_ =
+  watchdog_app_active_ =
     profile_->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive);
 
   observers_ = new ObserverListThreadSafe<Observer>;
 
-  // Check that the right threads exist. If not, we shouldn't try to do things
-  // that require them.
+  // Check that the right threads exist for logging to the database.
+  // If not, we shouldn't try to do things that require them.
   if (!BrowserThread::IsMessageLoopValid(BrowserThread::DB) ||
       !BrowserThread::IsMessageLoopValid(BrowserThread::FILE) ||
       !BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
-    LOG(ERROR) << "Missing threads, disabling Activity Logging!";
     has_threads_ = false;
   }
 
-  enabled_ = has_threads_
+  db_enabled_ = has_threads_
       && (CommandLine::ForCurrentProcess()->
           HasSwitch(switches::kEnableExtensionActivityLogging)
-      || watchdog_extension_active_);
-
-  if (enabled_) enabled_on_any_profile_ = true;
+      || watchdog_app_active_);
 
   ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE,
@@ -223,31 +218,33 @@ ActivityLog::ActivityLog(Profile* profile)
 }
 
 void ActivityLog::SetDefaultPolicy(ActivityLogPolicy::PolicyType policy_type) {
-  // Can't use IsLogEnabled() here because this is called from inside Init.
-  if (policy_type != policy_type_ && enabled_) {
-    // Deleting the old policy takes place asynchronously, on the database
-    // thread.  Initializing a new policy below similarly happens
-    // asynchronously.  Since the two operations are both queued for the
-    // database, the queue ordering should ensure that the deletion completes
-    // before database initialization occurs.
-    //
-    // However, changing policies at runtime is still not recommended, and
-    // likely only should be done for unit tests.
-    if (policy_)
-      policy_->Close();
+  if (policy_type == policy_type_)
+    return;
+  if (!IsDatabaseEnabled() && !IsWatchdogAppActive())
+    return;
 
-    switch (policy_type) {
-      case ActivityLogPolicy::POLICY_FULLSTREAM:
-        policy_ = new FullStreamUIPolicy(profile_);
-        break;
-      case ActivityLogPolicy::POLICY_COUNTS:
-        policy_ = new CountingPolicy(profile_);
-        break;
-      default:
-        NOTREACHED();
-    }
-    policy_type_ = policy_type;
+  // Deleting the old policy takes place asynchronously, on the database
+  // thread.  Initializing a new policy below similarly happens
+  // asynchronously.  Since the two operations are both queued for the
+  // database, the queue ordering should ensure that the deletion completes
+  // before database initialization occurs.
+  //
+  // However, changing policies at runtime is still not recommended, and
+  // likely only should be done for unit tests.
+  if (policy_)
+    policy_->Close();
+
+  switch (policy_type) {
+    case ActivityLogPolicy::POLICY_FULLSTREAM:
+      policy_ = new FullStreamUIPolicy(profile_);
+      break;
+    case ActivityLogPolicy::POLICY_COUNTS:
+      policy_ = new CountingPolicy(profile_);
+      break;
+    default:
+      NOTREACHED();
   }
+  policy_type_ = policy_type;
 }
 
 // SHUT DOWN. ------------------------------------------------------------------
@@ -269,35 +266,34 @@ void ActivityLog::InitInstallTracker() {
 }
 
 void ActivityLog::ChooseDefaultPolicy() {
-  if (policy_chosen_ || !enabled_) return;
+  if (!(IsDatabaseEnabled() || IsWatchdogAppActive()))
+    return;
   if (testing_mode_)
     SetDefaultPolicy(ActivityLogPolicy::POLICY_FULLSTREAM);
   else
     SetDefaultPolicy(ActivityLogPolicy::POLICY_COUNTS);
 }
 
-// static
-bool ActivityLog::enabled_on_any_profile_ = false;
-
-// static
-bool ActivityLog::IsLogEnabledOnAnyProfile() {
-  return enabled_on_any_profile_;
+bool ActivityLog::IsDatabaseEnabled() {
+  // Make sure we are not enabled when there are no threads.
+  DCHECK(has_threads_ || !db_enabled_);
+  return db_enabled_;
 }
 
-bool ActivityLog::IsLogEnabled() {
-  // Make sure we are not enabled when there are no threads.
-  DCHECK(has_threads_ || !enabled_);
-  return enabled_;
+bool ActivityLog::IsWatchdogAppActive() {
+  return watchdog_app_active_;
+}
+
+void ActivityLog::SetWatchdogAppActive(bool active) {
+  watchdog_app_active_ = active;
 }
 
 void ActivityLog::OnExtensionLoaded(const Extension* extension) {
   if (extension->id() != kActivityLogExtensionId) return;
-  if (has_threads_) {
-    enabled_ = true;
-    enabled_on_any_profile_ = true;
-  }
-  if (!watchdog_extension_active_) {
-    watchdog_extension_active_ = true;
+  if (has_threads_)
+    db_enabled_ = true;
+  if (!watchdog_app_active_) {
+    watchdog_app_active_ = true;
     profile_->GetPrefs()->SetBoolean(prefs::kWatchdogExtensionActive, true);
   }
   ChooseDefaultPolicy();
@@ -305,13 +301,12 @@ void ActivityLog::OnExtensionLoaded(const Extension* extension) {
 
 void ActivityLog::OnExtensionUnloaded(const Extension* extension) {
   if (extension->id() != kActivityLogExtensionId) return;
-  // Make sure we are not enabled when there are no threads.
-  DCHECK(has_threads_ || !enabled_);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableExtensionActivityLogging))
-    enabled_ = false;
-  if (watchdog_extension_active_) {
-    watchdog_extension_active_ = false;
+      switches::kEnableExtensionActivityLogging)) {
+    db_enabled_ = false;
+  }
+  if (watchdog_app_active_) {
+    watchdog_app_active_ = false;
     profile_->GetPrefs()->SetBoolean(prefs::kWatchdogExtensionActive,
                                      false);
   }
@@ -342,8 +337,7 @@ void ActivityLog::RegisterProfilePrefs(
 // LOG ACTIONS. ----------------------------------------------------------------
 
 void ActivityLog::LogAction(scoped_refptr<Action> action) {
-  if (!IsLogEnabled() ||
-      ActivityLogAPI::IsExtensionWhitelisted(action->extension_id()))
+  if (ActivityLogAPI::IsExtensionWhitelisted(action->extension_id()))
     return;
 
   // Perform some preprocessing of the Action data: convert tab IDs to URLs and
@@ -357,9 +351,10 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
   // TODO(mvrable): Add any necessary processing of incognito URLs here, for
   // crbug.com/253368
 
-  if (policy_)
+  if (IsDatabaseEnabled() && policy_)
     policy_->ProcessAction(action);
-  observers_->Notify(&Observer::OnExtensionActivity, action);
+  if (IsWatchdogAppActive())
+    observers_->Notify(&Observer::OnExtensionActivity, action);
   if (testing_mode_)
     LOG(INFO) << action->PrintForDebug();
 }
@@ -369,7 +364,6 @@ void ActivityLog::OnScriptsExecuted(
     const ExecutingScriptsMap& extension_ids,
     int32 on_page_id,
     const GURL& on_url) {
-  if (!IsLogEnabled()) return;
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   const ExtensionService* extension_service =
@@ -440,16 +434,14 @@ void ActivityLog::GetFilteredActions(
 // DELETE ACTIONS. -------------------------------------------------------------
 
 void ActivityLog::RemoveURLs(const std::vector<GURL>& restrict_urls) {
-  if (!policy_ || !IsLogEnabled()) {
+  if (!policy_)
     return;
-  }
   policy_->RemoveURLs(restrict_urls);
 }
 
 void ActivityLog::RemoveURLs(const std::set<GURL>& restrict_urls) {
-  if (!policy_ || !IsLogEnabled()) {
+  if (!policy_)
     return;
-  }
 
   std::vector<GURL> urls;
   for (std::set<GURL>::const_iterator it = restrict_urls.begin();

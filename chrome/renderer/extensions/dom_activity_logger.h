@@ -35,9 +35,8 @@ class DOMActivityLogger: public WebKit::WebDOMActivityLogger {
                    const v8::Handle<v8::Value> argv[],
                    const WebString& call_type);
 
-  // If extension activity logging is enabled then check (using the
-  // WebKit API) if there is no logger attached to the world corresponding
-  // to world_id, and if so, construct a new logger and attach it.
+  // Check (using the WebKit API) if there is no logger attached to the world
+  // corresponding to world_id, and if so, construct a new logger and attach it.
   // worl_id = 0 indicates the main world.
   static void AttachToWorld(int world_id,
                             const std::string& extension_id,

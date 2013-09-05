@@ -124,10 +124,8 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
                                            ListValue* event_args,
                                            UserGestureState user_gesture,
                                            const EventFilteringInfo& info) {
-  if (ActivityLog::IsLogEnabledOnAnyProfile()) {
-    LogExtensionEventMessage(profile_id, extension_id, event_name,
-                             scoped_ptr<ListValue>(event_args->DeepCopy()));
-  }
+  LogExtensionEventMessage(profile_id, extension_id, event_name,
+                           scoped_ptr<ListValue>(event_args->DeepCopy()));
 
   ListValue args;
   args.Set(0, new base::StringValue(event_name));

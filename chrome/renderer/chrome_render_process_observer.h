@@ -36,10 +36,6 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
 
   static bool is_incognito_process() { return is_incognito_process_; }
 
-  static bool extension_activity_log_enabled() {
-    return extension_activity_log_enabled_;
-  }
-
   // Needs to be called by RenderViews in case of navigations to execute
   // any 'clear cache' commands that were delayed until the next navigation.
   void ExecutePendingClearCache();
@@ -55,7 +51,6 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
   virtual void OnRenderProcessShutdown() OVERRIDE;
 
   void OnSetIsIncognitoProcess(bool is_incognito_process);
-  void OnSetExtensionActivityLogEnabled(bool extension_activity_log_enabled);
   void OnSetContentSettingsForCurrentURL(
       const GURL& url, const ContentSettings& content_settings);
   void OnSetContentSettingRules(const RendererContentSettingRules& rules);
@@ -73,7 +68,6 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
   void OnToggleWebKitSharedTimer(bool suspend);
 
   static bool is_incognito_process_;
-  static bool extension_activity_log_enabled_;
   scoped_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
   chrome::ChromeContentRendererClient* client_;
   // If true, the web cache shall be cleared before the next navigation event.

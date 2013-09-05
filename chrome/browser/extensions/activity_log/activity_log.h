@@ -54,16 +54,6 @@ class ActivityLog : public BrowserContextKeyedService,
   // use GetInstance instead.
   static ActivityLog* GetInstance(Profile* profile);
 
-  // Specifies if AL was enabled at least for one profile. We use this method to
-  // check if AL possibly enabled when a profile is not available, e.g., when
-  // executing on thread other than UI.
-  static bool IsLogEnabledOnAnyProfile();
-
-  // Provides up-to-date information about whether the AL is enabled for a
-  // profile. The AL is enabled if the user has installed the whitelisted
-  // AL extension *or* set the --enable-extension-activity-logging flag.
-  bool IsLogEnabled();
-
   // Add/remove observer: the activityLogPrivate API only listens when the
   // ActivityLog extension is registered for an event.
   void AddObserver(Observer* observer);
@@ -137,6 +127,18 @@ class ActivityLog : public BrowserContextKeyedService,
   explicit ActivityLog(Profile* profile);
   virtual ~ActivityLog();
 
+  // Specifies if the Watchdog app is active (installed & enabled).
+  // If so, we need to log to the database and stream to the API.
+  bool IsWatchdogAppActive();
+  // If we're in a browser test, we need to pretend that the watchdog app is
+  // active.
+  void SetWatchdogAppActive(bool active);
+
+  // Specifies if we need to record actions to the db. If so, we need to log to
+  // the database. This is true if the Watchdog app is active *or* the
+  // --enable-extension-activity-logging flag is set.
+  bool IsDatabaseEnabled();
+
   // Delayed initialization of Install Tracker which waits until after the
   // ExtensionSystem/ExtensionService are done with their own setup.
   void InitInstallTracker();
@@ -151,6 +153,8 @@ class ActivityLog : public BrowserContextKeyedService,
 
   // At the moment, ActivityLog will use only one policy for summarization.
   // These methods are used to choose and set the most appropriate policy.
+  // Changing policies at runtime is not recommended, and likely only should be
+  // done for unit tests.
   void ChooseDefaultPolicy();
   void SetDefaultPolicy(ActivityLogPolicy::PolicyType policy_type);
 
@@ -168,30 +172,33 @@ class ActivityLog : public BrowserContextKeyedService,
   ActivityLogPolicy::PolicyType policy_type_;
 
   Profile* profile_;
-  bool enabled_;  // Whether logging is currently enabled.
-  bool policy_chosen_;  // Whether we've already set the default policy.
-  // testing_mode_ controls whether to log API call arguments. By default, we
-  // don't log most arguments to avoid saving too much data. In testing mode,
-  // argument collection is enabled. We also whitelist some arguments for
-  // collection regardless of whether this bool is true.
-  // When testing_mode_ is enabled, we also print to the console.
+  bool db_enabled_;  // Whether logging to disk is currently enabled.
+  // testing_mode_ controls which policy is selected.
+  // * By default, we choose a policy that doesn't log most arguments to avoid
+  // saving too much data. We also elide some arguments for privacy reasons.
+  // * In testing mode, we choose a policy that logs all arguments.
+  // testing_mode_ also causes us to print to the console.
   bool testing_mode_;
-  // We need the DB, FILE, and IO threads to operate. In some cases (tests),
-  // these threads might not exist, so we avoid dispatching anything to the
-  // ActivityDatabase to prevent things from exploding.
+  // We need the DB, FILE, and IO threads to write to the database.
+  // In some cases (tests), these threads might not exist, so we avoid
+  // dispatching anything to the policies/database to prevent things from
+  // exploding.
   bool has_threads_;
 
   // Used to track whether the whitelisted extension is installed. If it's
   // added or removed, enabled_ may change.
   InstallTracker* tracker_;
 
-  // Set if the watchdog extension is present and active. Maintained by
+  // Set if the watchdog app is installed and enabled. Maintained by
   // kWatchdogExtensionActive pref variable.
-  bool watchdog_extension_active_;
+  bool watchdog_app_active_;
 
-  // Specifies if AL was enabled at least for one profile.
-  static bool enabled_on_any_profile_;
-
+  FRIEND_TEST_ALL_PREFIXES(ActivityLogApiTest, TriggerEvent);
+  FRIEND_TEST_ALL_PREFIXES(ActivityLogEnabledTest, AppAndCommandLine);
+  FRIEND_TEST_ALL_PREFIXES(ActivityLogEnabledTest, CommandLineSwitch);
+  FRIEND_TEST_ALL_PREFIXES(ActivityLogEnabledTest, NoSwitch);
+  FRIEND_TEST_ALL_PREFIXES(ActivityLogEnabledTest, PrefSwitch);
+  FRIEND_TEST_ALL_PREFIXES(ActivityLogEnabledTest, WatchdogSwitch);
   DISALLOW_COPY_AND_ASSIGN(ActivityLog);
 };
 

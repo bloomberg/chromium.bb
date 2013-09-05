@@ -76,6 +76,16 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
       activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_COUNTS);
   }
 
+  bool GetDatabaseEnabled() {
+    ActivityLog* activity_log = ActivityLog::GetInstance(profile());
+    return activity_log->IsDatabaseEnabled();
+  }
+
+  bool GetWatchdogActive() {
+    ActivityLog* activity_log = ActivityLog::GetInstance(profile());
+    return activity_log->IsWatchdogAppActive();
+  }
+
   static void Arguments_Prerender(
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     ASSERT_EQ(1U, i->size());
@@ -97,14 +107,14 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(ActivityLogTest, Construct) {
-  ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  ASSERT_TRUE(activity_log->IsLogEnabled());
+  ASSERT_TRUE(GetDatabaseEnabled());
+  ASSERT_FALSE(GetWatchdogActive());
 }
 
 TEST_F(ActivityLogTest, LogAndFetchActions) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  ASSERT_TRUE(activity_log->IsLogEnabled());
+  ASSERT_TRUE(GetDatabaseEnabled());
 
   // Write some API calls
   scoped_refptr<Action> action = new Action(kExtensionId,
@@ -135,7 +145,7 @@ TEST_F(ActivityLogTest, LogPrerender) {
           .Build();
   extension_service_->AddExtension(extension.get());
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  ASSERT_TRUE(activity_log->IsLogEnabled());
+  ASSERT_TRUE(GetDatabaseEnabled());
   GURL url("http://www.google.com");
 
   prerender::PrerenderManager* prerender_manager =

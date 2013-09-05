@@ -60,9 +60,6 @@ void DOMActivityLogger::AttachToWorld(int world_id,
                                       const std::string& extension_id,
                                       const GURL& url,
                                       const string16& title) {
-  // Check if extension activity logging is enabled.
-  if (!ChromeRenderProcessObserver::extension_activity_log_enabled())
-    return;
   // If there is no logger registered for world_id, construct a new logger
   // and register it with world_id.
   if (!WebKit::hasDOMActivityLogger(world_id)) {
