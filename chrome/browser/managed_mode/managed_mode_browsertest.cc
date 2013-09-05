@@ -238,4 +238,36 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   EXPECT_FALSE(results[1].blocked_visit());
 }
 
+IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest, Unblock) {
+  GURL test_url("http://www.example.com/files/simple.html");
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  CheckShownPageIsInterstitial(web_contents);
+
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+
+  // Set the host as allowed.
+  scoped_ptr<DictionaryValue> dict(new DictionaryValue);
+  dict->SetBooleanWithoutPathExpansion(test_url.host(), true);
+  policy::ProfilePolicyConnector* connector =
+      policy::ProfilePolicyConnectorFactory::GetForProfile(
+          browser()->profile());
+  policy::ManagedModePolicyProvider* policy_provider =
+      connector->managed_mode_policy_provider();
+  policy_provider->SetLocalPolicyForTesting(
+      policy::key::kContentPackManualBehaviorHosts, dict.PassAs<Value>());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(
+      ManagedUserService::MANUAL_ALLOW,
+      managed_user_service_->GetManualBehaviorForHost(test_url.host()));
+
+  observer.Wait();
+  EXPECT_EQ(test_url, web_contents->GetURL());
+}
+
 }  // namespace

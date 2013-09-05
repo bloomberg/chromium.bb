@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
 
@@ -35,6 +35,12 @@ class ManagedModeInterstitial : public content::InterstitialPageDelegate {
   virtual void OnProceed() OVERRIDE;
   virtual void OnDontProceed() OVERRIDE;
 
+  // Returns whether the blocked URL is now allowed. Called initially before the
+  // interstitial is shown (to catch race conditions), or when the URL filtering
+  // prefs change.
+  bool ShouldProceed();
+
+  void OnFilteringPrefsChanged();
   void DispatchContinueRequest(bool continue_request);
 
   // Owns the interstitial, which owns us.
@@ -42,11 +48,12 @@ class ManagedModeInterstitial : public content::InterstitialPageDelegate {
 
   content::InterstitialPage* interstitial_page_;  // Owns us.
 
+  PrefChangeRegistrar pref_change_registrar_;
+
   // The UI language. Used for formatting the URL for display.
   std::string languages_;
   GURL url_;
 
-  base::WeakPtrFactory<ManagedModeInterstitial> weak_ptr_factory_;
   base::Callback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedModeInterstitial);

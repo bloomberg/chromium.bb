@@ -17,7 +17,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -34,13 +33,37 @@ ManagedModeInterstitial::ManagedModeInterstitial(
     const GURL& url,
     const base::Callback<void(bool)>& callback)
     : web_contents_(web_contents),
+      interstitial_page_(NULL),
       url_(url),
-      weak_ptr_factory_(this),
       callback_(callback) {
+  if (ShouldProceed()) {
+    // It can happen that the site was only allowed very recently and the URL
+    // filter on the IO thread had not been updated yet. Proceed with the
+    // request without showing the interstitial.
+    DispatchContinueRequest(true);
+    delete this;
+    return;
+  }
+
+  // TODO(bauerb): Extract an observer callback on ManagedUserService for this.
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  languages_ = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  PrefService* prefs = profile->GetPrefs();
+  pref_change_registrar_.Init(prefs);
+  pref_change_registrar_.Add(
+      prefs::kDefaultManagedModeFilteringBehavior,
+      base::Bind(&ManagedModeInterstitial::OnFilteringPrefsChanged,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kManagedModeManualHosts,
+      base::Bind(&ManagedModeInterstitial::OnFilteringPrefsChanged,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kManagedModeManualURLs,
+      base::Bind(&ManagedModeInterstitial::OnFilteringPrefsChanged,
+                 base::Unretained(this)));
 
+  languages_ = prefs->GetString(prefs::kAcceptLanguages);
   interstitial_page_ =
       content::InterstitialPage::Create(web_contents, true, url_, this);
   interstitial_page_->Show();
@@ -125,10 +148,31 @@ void ManagedModeInterstitial::CommandReceived(const std::string& command) {
   NOTREACHED();
 }
 
-void ManagedModeInterstitial::OnProceed() { NOTREACHED(); }
+void ManagedModeInterstitial::OnProceed() {
+  // CHECK instead of DCHECK as defense in depth in case we'd accidentally
+  // proceed on a blocked page.
+  CHECK(ShouldProceed());
+  DispatchContinueRequest(true);
+}
 
 void ManagedModeInterstitial::OnDontProceed() {
   DispatchContinueRequest(false);
+}
+
+bool ManagedModeInterstitial::ShouldProceed() {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  ManagedUserService* managed_user_service =
+      ManagedUserServiceFactory::GetForProfile(profile);
+  ManagedModeURLFilter* url_filter =
+      managed_user_service->GetURLFilterForUIThread();
+  return url_filter->GetFilteringBehaviorForURL(url_) !=
+         ManagedModeURLFilter::BLOCK;
+}
+
+void ManagedModeInterstitial::OnFilteringPrefsChanged() {
+  if (ShouldProceed())
+    interstitial_page_->Proceed();
 }
 
 void ManagedModeInterstitial::DispatchContinueRequest(bool continue_request) {
