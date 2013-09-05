@@ -829,4 +829,85 @@ TEST_F(FocusManagerTest, StoreFocusedView) {
   EXPECT_EQ(&view, GetFocusManager()->GetStoredFocusView());
 }
 
+namespace {
+
+// Trivial WidgetDelegate implementation that allows setting return value of
+// ShouldAdvanceFocusToTopLevelWidget().
+class AdvanceFocusWidgetDelegate : public WidgetDelegate {
+ public:
+  explicit AdvanceFocusWidgetDelegate(Widget* widget)
+      : widget_(widget),
+        should_advance_focus_to_parent_(false) {}
+  virtual ~AdvanceFocusWidgetDelegate() {}
+
+  void set_should_advance_focus_to_parent(bool value) {
+    should_advance_focus_to_parent_ = value;
+  }
+
+  // WidgetDelegate overrides:
+  virtual bool ShouldAdvanceFocusToTopLevelWidget() const OVERRIDE {
+    return should_advance_focus_to_parent_;
+  }
+  virtual Widget* GetWidget() OVERRIDE { return widget_; }
+  virtual const Widget* GetWidget() const OVERRIDE { return widget_; }
+
+ private:
+  Widget* widget_;
+  bool should_advance_focus_to_parent_;
+
+  DISALLOW_COPY_AND_ASSIGN(AdvanceFocusWidgetDelegate);
+};
+
+}  // namespace
+
+// Verifies focus wrapping happens in the same widget.
+TEST_F(FocusManagerTest, AdvanceFocusStaysInWidget) {
+  // Add |widget_view| as a child of the Widget.
+  View* widget_view = new View;
+  widget_view->set_focusable(true);
+  widget_view->SetBounds(20, 0, 20, 20);
+  GetContentsView()->AddChildView(widget_view);
+
+  // Create a widget with two views, focus the second.
+  scoped_ptr<AdvanceFocusWidgetDelegate> delegate;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.child = true;
+  params.bounds = gfx::Rect(10, 10, 100, 100);
+  params.parent = GetWidget()->GetNativeView();
+  Widget child_widget;
+  delegate.reset(new AdvanceFocusWidgetDelegate(&child_widget));
+  params.delegate = delegate.get();
+  child_widget.Init(params);
+  View* view1 = new View;
+  view1->set_focusable(true);
+  view1->SetBounds(0, 0, 20, 20);
+  View* view2 = new View;
+  view2->set_focusable(true);
+  view2->SetBounds(20, 0, 20, 20);
+  child_widget.client_view()->AddChildView(view1);
+  child_widget.client_view()->AddChildView(view2);
+  child_widget.Show();
+  view2->RequestFocus();
+  EXPECT_EQ(view2, GetFocusManager()->GetFocusedView());
+
+  // Advance focus backwards, which should focus the first.
+  GetFocusManager()->AdvanceFocus(false);
+  EXPECT_EQ(view1, GetFocusManager()->GetFocusedView());
+
+  // Focus forward to |view2|.
+  GetFocusManager()->AdvanceFocus(true);
+  EXPECT_EQ(view2, GetFocusManager()->GetFocusedView());
+
+  // And forward again, wrapping back to |view1|.
+  GetFocusManager()->AdvanceFocus(true);
+  EXPECT_EQ(view1, GetFocusManager()->GetFocusedView());
+
+  // Allow focus to go to the parent, and focus backwards which should now move
+  // up |widget_view| (in the parent).
+  delegate->set_should_advance_focus_to_parent(true);
+  GetFocusManager()->AdvanceFocus(true);
+  EXPECT_EQ(widget_view, GetFocusManager()->GetFocusedView());
+}
+
 }  // namespace views

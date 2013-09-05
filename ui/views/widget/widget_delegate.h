@@ -159,6 +159,11 @@ class VIEWS_EXPORT WidgetDelegate {
   // Provides the hit-test mask if HasHitTestMask above returns true.
   virtual void GetWidgetHitTestMask(gfx::Path* mask) const;
 
+  // Returns true if focus should advance to the top level widget when
+  // tab/shift-tab is hit and on the last/first focusable view. Default returns
+  // false, which means tab/shift-tab never advance to the top level Widget.
+  virtual bool ShouldAdvanceFocusToTopLevelWidget() const;
+
   // Returns true if event handling should descend into |child|.
   // |location| is in terms of the Window.
   virtual bool ShouldDescendIntoChildForEventHandling(

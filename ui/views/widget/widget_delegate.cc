@@ -162,6 +162,10 @@ void WidgetDelegate::GetWidgetHitTestMask(gfx::Path* mask) const {
   DCHECK(mask);
 }
 
+bool WidgetDelegate::ShouldAdvanceFocusToTopLevelWidget() const {
+  return false;
+}
+
 bool WidgetDelegate::ShouldDescendIntoChildForEventHandling(
     gfx::NativeView child,
     const gfx::Point& location) {

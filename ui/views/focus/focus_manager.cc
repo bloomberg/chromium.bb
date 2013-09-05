@@ -139,7 +139,7 @@ bool FocusManager::ContainsView(View* view) {
 }
 
 void FocusManager::AdvanceFocus(bool reverse) {
-  View* v = GetNextFocusableView(focused_view_, reverse, false);
+  View* v = GetNextFocusableView(focused_view_, NULL, reverse, false);
   // Note: Do not skip this next block when v == focused_view_.  If the user
   // tabs past the last focusable element in a webpage, we'll get here, and if
   // the TabContentsContainerView is the only focusable view (possible in
@@ -219,6 +219,7 @@ bool FocusManager::RotatePaneFocus(Direction direction,
 }
 
 View* FocusManager::GetNextFocusableView(View* original_starting_view,
+                                         Widget* starting_widget,
                                          bool reverse,
                                          bool dont_loop) {
   FocusTraversable* focus_traversable = NULL;
@@ -262,7 +263,8 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
       }
     }
   } else {
-    focus_traversable = widget_->GetFocusTraversable();
+    Widget* widget = starting_widget ? starting_widget : widget_;
+    focus_traversable = widget->GetFocusTraversable();
   }
 
   // Traverse the FocusTraversable tree down to find the focusable view.
@@ -303,9 +305,12 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
     // infinitely looping in empty windows.
     if (!dont_loop && original_starting_view) {
       // Easy, just clear the selection and press tab again.
-      // By calling with NULL as the starting view, we'll start from the
-      // top_root_view.
-      return GetNextFocusableView(NULL, reverse, true);
+      // By calling with NULL as the starting view, we'll start from either
+      // the starting views widget or |widget_|.
+      Widget* widget = original_starting_view->GetWidget();
+      if (widget->widget_delegate()->ShouldAdvanceFocusToTopLevelWidget())
+        widget = widget_;
+      return GetNextFocusableView(NULL, widget, reverse, true);
     }
   }
   return NULL;

@@ -769,8 +769,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   ObserverList<WidgetObserver> observers_;
 
-  // Non-owned pointer to the Widget's delegate.  May be NULL if no delegate is
-  // being used.
+  // Non-owned pointer to the Widget's delegate. If a NULL delegate is supplied
+  // to Init() a default WidgetDelegate is created.
   WidgetDelegate* widget_delegate_;
 
   // The root of the View hierarchy attached to this window.

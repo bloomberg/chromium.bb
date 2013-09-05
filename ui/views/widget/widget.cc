@@ -86,9 +86,14 @@ class DefaultWidgetDelegate : public WidgetDelegate {
   virtual const Widget* GetWidget() const OVERRIDE {
     return widget_;
   }
-
   virtual bool CanActivate() const OVERRIDE {
     return can_activate_;
+  }
+  virtual bool ShouldAdvanceFocusToTopLevelWidget() const OVERRIDE {
+    // In most situations where a Widget is used without a delegate the Widget
+    // is used as a container, so that we want focus to advance to the top-level
+    // widget. A good example of this is the find bar.
+    return true;
   }
 
  private:
