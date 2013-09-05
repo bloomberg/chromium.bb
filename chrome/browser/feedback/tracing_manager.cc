@@ -93,6 +93,8 @@ void TracingManager::OnEndTracingComplete() {
   if (!current_trace_id_)
     return;
 
+  data_ = std::string("[") + data_ + "]";
+
   std::string output_val;
   feedback_util::ZipString(data_, &output_val);
 
@@ -119,8 +121,11 @@ void TracingManager::OnEndTracingComplete() {
 
 void TracingManager::OnTraceDataCollected(
     const scoped_refptr<base::RefCountedString>& trace_fragment) {
-  if (current_trace_id_)
+  if (current_trace_id_) {
+    if (!data_.empty())
+      data_ += ",";
     data_ += trace_fragment->data();
+  }
 }
 
 // static
