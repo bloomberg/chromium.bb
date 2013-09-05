@@ -38,7 +38,8 @@ def main():
         'HKEY_LOCAL_MACHINE' if options.system_level else 'HKEY_CURRENT_USER',
         sub_key))
   uninstall_string, _ = _winreg.QueryValueEx(key, 'UninstallString')
-  exit_status = subprocess.call(uninstall_string, shell=True)
+  exit_status = subprocess.call(uninstall_string + ' --force-uninstall',
+                                shell=True)
   # The exit status for successful uninstallation of Chrome is 19 (see
   # chrome/installer/util/util_constants.h).
   if exit_status != 19:
