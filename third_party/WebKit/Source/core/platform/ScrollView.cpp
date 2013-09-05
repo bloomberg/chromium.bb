@@ -110,7 +110,7 @@ void ScrollView::setHasVerticalScrollbar(bool hasBar)
 
 PassRefPtr<Scrollbar> ScrollView::createScrollbar(ScrollbarOrientation orientation)
 {
-    return Scrollbar::createNativeScrollbar(this, orientation, RegularScrollbar);
+    return Scrollbar::create(this, orientation, RegularScrollbar);
 }
 
 void ScrollView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode verticalMode,

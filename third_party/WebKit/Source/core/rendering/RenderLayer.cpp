@@ -2818,7 +2818,7 @@ PassRefPtr<Scrollbar> RenderLayer::createScrollbar(ScrollbarOrientation orientat
     if (hasCustomScrollbarStyle)
         widget = RenderScrollbar::createCustomScrollbar(scrollableArea(), orientation, actualRenderer->node());
     else {
-        widget = Scrollbar::createNativeScrollbar(scrollableArea(), orientation, RegularScrollbar);
+        widget = Scrollbar::create(scrollableArea(), orientation, RegularScrollbar);
         if (orientation == HorizontalScrollbar)
             scrollableArea()->didAddHorizontalScrollbar(widget.get());
         else

@@ -66,7 +66,7 @@ WebPluginScrollbarImpl::WebPluginScrollbarImpl(Orientation orientation,
     , m_client(client)
     , m_scrollOffset(0)
 {
-    m_scrollbar = Scrollbar::createNativeScrollbar(
+    m_scrollbar = Scrollbar::create(
         static_cast<ScrollableArea*>(m_group),
         static_cast<WebCore::ScrollbarOrientation>(orientation),
         WebCore::RegularScrollbar);

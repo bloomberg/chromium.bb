@@ -533,7 +533,7 @@ PassRefPtr<Scrollbar> RenderMenuList::createScrollbar(ScrollableArea* scrollable
     if (hasCustomScrollbarStyle)
         widget = RenderScrollbar::createCustomScrollbar(scrollableArea, orientation, this->node());
     else
-        widget = Scrollbar::createNativeScrollbar(scrollableArea, orientation, controlSize);
+        widget = Scrollbar::create(scrollableArea, orientation, controlSize);
     return widget.release();
 }
 

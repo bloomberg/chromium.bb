@@ -50,7 +50,7 @@ using namespace std;
 
 namespace WebCore {
 
-PassRefPtr<Scrollbar> Scrollbar::createNativeScrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize size)
+PassRefPtr<Scrollbar> Scrollbar::create(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize size)
 {
     return adoptRef(new Scrollbar(scrollableArea, orientation, size));
 }

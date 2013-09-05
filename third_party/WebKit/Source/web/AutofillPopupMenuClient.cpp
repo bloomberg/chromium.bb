@@ -239,7 +239,7 @@ PassRefPtr<Scrollbar> AutofillPopupMenuClient::createScrollbar(
     ScrollbarOrientation orientation,
     ScrollbarControlSize size)
 {
-    return Scrollbar::createNativeScrollbar(scrollableArea, orientation, size);
+    return Scrollbar::create(scrollableArea, orientation, size);
 }
 
 void AutofillPopupMenuClient::initialize(

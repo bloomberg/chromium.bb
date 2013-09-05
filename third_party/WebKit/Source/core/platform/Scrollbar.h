@@ -47,8 +47,7 @@ class Scrollbar : public Widget,
                   public ScrollbarThemeClient {
 
 public:
-    // Must be implemented by platforms that can't simply use the Scrollbar base class.  Right now the only platform that is not using the base class is GTK.
-    static PassRefPtr<Scrollbar> createNativeScrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize);
+    static PassRefPtr<Scrollbar> create(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize);
 
     virtual ~Scrollbar();
 
