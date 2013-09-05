@@ -155,19 +155,22 @@ class WindowSizer {
       gfx::Rect* bounds) const;
 
 #if defined(USE_ASH)
-  // Determines the position and size for an ash window as it gets created. This
-  // will be called before other standard placement logic. It will return true
-  // when the function was setting the bounds structure to the desired size.
-  // Otherwise another algorithm should get used to determine the correct
-  // bounds. |show_state| will only be changed if it was set to
-  // SHOW_STATE_DEFAULT.
-  bool GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
-                            ui::WindowShowState* show_state) const;
+  // Determines the position and size for a tabbed browser window in
+  // ash as it gets created. This will be called before other standard
+  // placement logic. |show_state| will only be changed
+  // if it was set to SHOW_STATE_DEFAULT.
+  void GetTabbedBrowserBoundsAsh(gfx::Rect* bounds_in_screen,
+                                 ui::WindowShowState* show_state) const;
 #endif
 
   // Determine the default show state for the window - not looking at other
   // windows or at persistent information.
   ui::WindowShowState GetWindowDefaultShowState() const;
+
+#if defined(USE_ASH)
+  bool IsTabbedBrowserInAsh() const;
+  bool IsPopupBrowserInAsh() const;
+#endif
 
   // Providers for persistent storage and monitor metrics.
   scoped_ptr<StateProvider> state_provider_;

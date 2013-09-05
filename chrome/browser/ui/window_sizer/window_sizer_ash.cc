@@ -11,12 +11,9 @@
 #include "ash/wm/workspace/auto_window_management.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -89,85 +86,66 @@ int WindowSizer::GetForceMaximizedWidthLimit() {
   return maximum_limit;
 }
 
-bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
-                                       ui::WindowShowState* show_state) const {
+void WindowSizer::GetTabbedBrowserBoundsAsh(
+    gfx::Rect* bounds_in_screen,
+    ui::WindowShowState* show_state) const {
   DCHECK(show_state);
   DCHECK(bounds_in_screen);
+  DCHECK(!browser_ || browser_->is_type_tabbed());
 
-  if (browser_ &&
-      browser_->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH) {
-    return false;
-  }
   bounds_in_screen->SetRect(0, 0, 0, 0);
 
-  // Experiment: Force the maximize mode for all windows.
-  if (ash::Shell::IsForcedMaximizeMode()) {
-    // Exceptions: Do not maximize popups and do not maximize windowed V1 apps
-    // which explicitly specify a |show_state| (they might be tuned for a
-    // particular resolution / type).
-    bool is_tabbed = browser_ && browser_->is_type_tabbed();
-    bool is_popup = browser_ && browser_->is_type_popup();
-    if (!is_popup && (is_tabbed || *show_state == ui::SHOW_STATE_DEFAULT))
-      *show_state = ui::SHOW_STATE_MAXIMIZED;
-  }
+  // Experiment: Force the maximize mode for all tabbed windows
+  if (ash::Shell::IsForcedMaximizeMode())
+    *show_state = ui::SHOW_STATE_MAXIMIZED;
 
   ui::WindowShowState passed_show_state = *show_state;
   bool has_saved_bounds = true;
   if (!GetSavedWindowBounds(bounds_in_screen, show_state)) {
     has_saved_bounds = false;
-    GetDefaultWindowBounds(bounds_in_screen);
+    GetDefaultWindowBoundsAsh(bounds_in_screen);
   }
 
-  if (browser_ && browser_->is_type_tabbed()) {
-    aura::RootWindow* active = ash::Shell::GetActiveRootWindow();
-    // Always open new window in the active display.
-    gfx::Rect work_area =
-        screen_->GetDisplayMatching(active->GetBoundsInScreen()).work_area();
+  aura::RootWindow* active = ash::Shell::GetActiveRootWindow();
+  // Always open new window in the active display.
+  gfx::Rect work_area =
+      screen_->GetDisplayMatching(active->GetBoundsInScreen()).work_area();
 
-    // This is a window / app. See if there is no window and try to place it.
-    int count = GetNumberOfValidTopLevelBrowserWindows(work_area);
-    aura::Window* top_window = ash::GetTopWindowForNewWindow(active);
-    // Our window should not have any impact if we are already on top.
-    if (browser_->window() &&
-        top_window == browser_->window()->GetNativeWindow())
-      top_window = NULL;
+  // This is a window / app. See if there is no window and try to place it.
+  int count = GetNumberOfValidTopLevelBrowserWindows(work_area);
+  aura::Window* top_window = ash::GetTopWindowForNewWindow(active);
+  // Our window should not have any impact if we are already on top.
+  if (browser_->window() &&
+      top_window == browser_->window()->GetNativeWindow())
+    top_window = NULL;
 
-    // If there is no valid other window we take the coordinates as is.
-    if ((!count || !top_window)) {
-      if (has_saved_bounds) {
-        // Restore to previous state - if there is one.
-        bounds_in_screen->AdjustToFit(work_area);
-        return true;
-      }
-      // When using "small screens" we want to always open in full screen mode.
-      if (passed_show_state == ui::SHOW_STATE_DEFAULT &&
-          !browser_->is_session_restore() &&
-          work_area.width() <= GetForceMaximizedWidthLimit() &&
-          (!browser_->window() || !browser_->window()->IsFullscreen()) &&
-          (!browser_->fullscreen_controller() ||
-           !browser_->fullscreen_controller()->IsFullscreenForBrowser()))
-        *show_state = ui::SHOW_STATE_MAXIMIZED;
-      return true;
-    }
-    bool maximized = ash::wm::IsWindowMaximized(top_window);
-    // We ignore the saved show state, but look instead for the top level
-    // window's show state.
-    if (passed_show_state == ui::SHOW_STATE_DEFAULT) {
-      *show_state = maximized ? ui::SHOW_STATE_MAXIMIZED :
-                                ui::SHOW_STATE_DEFAULT;
+  // If there is no valid other window we take the coordinates as is.
+  if ((!count || !top_window)) {
+    if (has_saved_bounds) {
+      // Restore to previous state - if there is one.
+      bounds_in_screen->AdjustToFit(work_area);
+      return;
     }
 
-    if (maximized)
-      return true;
-
-    // Use the size of the other window. The window's bound will be rearranged
-    // in ash::WorkspaceLayoutManager using this location.
-    *bounds_in_screen = top_window->GetBoundsInScreen();
-
-    return true;
+    // When using "small screens" we want to always open in full screen mode.
+    if (passed_show_state == ui::SHOW_STATE_DEFAULT &&
+        !browser_->is_session_restore() &&
+        work_area.width() <= GetForceMaximizedWidthLimit() &&
+        (!browser_->window() || !browser_->window()->IsFullscreen()))
+      *show_state = ui::SHOW_STATE_MAXIMIZED;
+    return;
+  }
+  bool maximized = ash::wm::IsWindowMaximized(top_window);
+  // We ignore the saved show state, but look instead for the top level
+  // window's show state.
+  if (passed_show_state == ui::SHOW_STATE_DEFAULT) {
+    *show_state = maximized ? ui::SHOW_STATE_MAXIMIZED :
+        ui::SHOW_STATE_DEFAULT;
   }
 
-  return false;
+  // Use the size of the other window. The window's bound will be rearranged
+  // in ash::WorkspaceLayoutManager using this location.
+  *bounds_in_screen = top_window->GetBoundsInScreen();
 }
 
 void WindowSizer::GetDefaultWindowBoundsAsh(gfx::Rect* default_bounds) const {

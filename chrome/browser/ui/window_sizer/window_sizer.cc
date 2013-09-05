@@ -98,10 +98,11 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     if (browser_ && browser_->window()) {
       window = browser_->window();
     } else {
-      // This code is only ran on the native desktop (on the ash desktop,
-      // GetBoundsOverrideAsh should take over below before this is reached).
-      // TODO(gab): This code should go in a native desktop specific window
-      // sizer as part of fixing crbug.com/175812.
+      // This code is only ran on the native desktop (on the ash
+      // desktop, GetTabbedBrowserBoundsAsh should take over below
+      // before this is reached).  TODO(gab): This code should go in a
+      // native desktop specific window sizer as part of fixing
+      // crbug.com/175812.
       const BrowserList* native_browser_list =
           BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
       for (BrowserList::const_reverse_iterator it =
@@ -193,11 +194,17 @@ void WindowSizer::DetermineWindowBoundsAndShowState(
   if (bounds->IsEmpty()) {
 #if defined(USE_ASH)
     // See if ash should decide the window placement.
-    // TODO(beng): insufficient but currently necessary.
-    // http://crbug.com/133312
-    if (chrome::ShouldOpenAshOnStartup() &&
-        GetBoundsOverrideAsh(bounds, show_state))
+    if (IsTabbedBrowserInAsh()) {
+      GetTabbedBrowserBoundsAsh(bounds, show_state);
       return;
+    } else if (chrome::ShouldOpenAshOnStartup() &&
+               browser_ && browser_->host_desktop_type() ==
+               chrome::HOST_DESKTOP_TYPE_ASH) {
+      // Saved bounds's show state takes precedence over one in last
+      // bounds in ash.  If you have a question or an issue, please
+      // contact oshima@chromium.org.
+      GetSavedWindowBounds(bounds, show_state);
+    }
 #endif
     // See if there's last active window's placement information.
     if (GetLastWindowBounds(bounds, show_state))
@@ -213,9 +220,7 @@ void WindowSizer::DetermineWindowBoundsAndShowState(
     // In case of a popup with an 'unspecified' location in ash, we are
     // looking for a good screen location. We are interpreting (0,0) as an
     // unspecified location.
-    if (chrome::ShouldOpenAshOnStartup() &&
-        browser_ && browser_->is_type_popup() &&
-        bounds->x() == 0 && bounds->y() == 0) {
+    if (IsPopupBrowserInAsh() && bounds->origin().IsOrigin()) {
       *bounds = ChromeShellDelegate::instance()->window_positioner()->
           GetPopupPosition(*bounds);
       return;
@@ -399,3 +404,21 @@ ui::WindowShowState WindowSizer::GetWindowDefaultShowState() const {
   // Otherwise we use the default which can be overridden later on.
   return ui::SHOW_STATE_DEFAULT;
 }
+
+#if defined(USE_ASH)
+bool WindowSizer::IsTabbedBrowserInAsh() const {
+  // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
+  return chrome::ShouldOpenAshOnStartup() &&
+      browser_ &&
+      browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH &&
+      browser_->is_type_tabbed();
+}
+
+bool WindowSizer::IsPopupBrowserInAsh() const {
+  // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
+  return chrome::ShouldOpenAshOnStartup() &&
+      browser_ &&
+      browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH &&
+      browser_->is_type_popup();
+}
+#endif
