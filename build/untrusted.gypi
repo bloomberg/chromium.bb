@@ -678,7 +678,7 @@
                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                   '>@(extra_deps_newlib_arm)',
                   '>(source_list_newlib_arm)',
-                  '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/stamp.prep'
+                  '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep'
                 ],
                 'outputs': ['>(out_newlib_arm)'],
                 'action': [
@@ -1010,7 +1010,7 @@
               '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
               '>@(extra_deps_pnacl_newlib)',
               '>(source_list_pnacl_newlib)',
-              '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/stamp.prep',
+              '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
             ],
             'outputs': ['>(out_pnacl_newlib)'],
             'action': [
@@ -1126,7 +1126,7 @@
               '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
               '>@(extra_deps_pnacl_newlib)',
               '>(source_list_pnacl_newlib)',
-              '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/stamp.prep',
+              '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
             ],
             'outputs': ['>(out_pnacl_newlib)'],
             'action': [

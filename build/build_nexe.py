@@ -185,10 +185,9 @@ class Builder(object):
       raise Error('pnacl glibc not yet supported.')
 
     if self.is_pnacl_toolchain:
-      mainarch = 'x86'
       self.tool_prefix = 'pnacl-'
       tool_subdir = toolname
-      tooldir = '%s_%s_pnacl' % (self.osname, mainarch)
+      tooldir = '%s_pnacl' % self.osname
     else:
       tool_subdir = ''
       tooldir = '%s_%s_%s' % (self.osname, mainarch, toolname)

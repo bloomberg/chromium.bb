@@ -49,7 +49,7 @@
       'variables': {
         'newlib_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib',
         'glibc_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc',
-        'pnacl_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl',
+        'pnacl_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl',
         'arm_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib',
       },
       'conditions': [
@@ -113,7 +113,7 @@
               'action': [
                 '>(python_exe)',
                 '<(DEPTH)/native_client/build/untar_toolchain.py',
-                '--tool', 'x86_pnacl',
+                '--tool', 'pnacl',
                 '--tmp', '<(SHARED_INTERMEDIATE_DIR)/untar',
                 '--sdk', '<(SHARED_INTERMEDIATE_DIR)/sdk',
                 '--os', '<(OS)',
@@ -163,7 +163,7 @@
         'newlib_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib',
         'glibc_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc',
         'arm_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib',
-        'pnacl_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl',
+        'pnacl_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl',
       },
       'conditions': [
         ['disable_newlib==0', {
@@ -234,13 +234,13 @@
               'description': 'Prep pnacl toolchain',
               'inputs': [
                  '<(pnacl_dir)/stamp.untar',
-                 '>!@pymod_do_main(prep_nacl_sdk --inputs --tool x86_pnacl)',
+                 '>!@pymod_do_main(prep_nacl_sdk --inputs --tool pnacl)',
               ],
               'outputs': ['<(pnacl_dir)/stamp.prep'],
               'action': [
                 '>(python_exe)',
                 '<(DEPTH)/native_client/build/prep_nacl_sdk.py',
-                '--tool', 'x86_pnacl',
+                '--tool', 'pnacl',
                 '--path', '<(pnacl_dir)',
               ],
             },
