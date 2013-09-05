@@ -1,0 +1,13 @@
+{
+  "name": "Platform App Test: <webview>",
+  "description": "Checks autosize on <webview>",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

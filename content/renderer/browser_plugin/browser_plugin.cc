@@ -76,11 +76,11 @@ BrowserPlugin::BrowserPlugin(
       render_view_routing_id_(render_view->GetRoutingID()),
       container_(NULL),
       damage_buffer_sequence_id_(0),
-      resize_ack_received_(true),
+      paint_ack_received_(true),
       last_device_scale_factor_(1.0f),
       sad_guest_(NULL),
       guest_crashed_(false),
-      auto_size_ack_pending_(false),
+      is_auto_size_state_dirty_(false),
       persist_storage_(false),
       valid_partition_id_(true),
       content_window_routing_id_(MSG_ROUTING_NONE),
@@ -295,35 +295,45 @@ bool BrowserPlugin::ParseSrcAttribute(std::string* error_message) {
 }
 
 void BrowserPlugin::ParseAutoSizeAttribute() {
-  auto_size_ack_pending_ = true;
   last_view_size_ = plugin_rect_.size();
+  is_auto_size_state_dirty_ = true;
   UpdateGuestAutoSizeState(GetAutoSizeAttribute());
 }
 
 void BrowserPlugin::PopulateAutoSizeParameters(
-    BrowserPluginHostMsg_AutoSize_Params* params, bool current_auto_size) {
-  params->enable = current_auto_size;
+    BrowserPluginHostMsg_AutoSize_Params* params, bool auto_size_enabled) {
+  params->enable = auto_size_enabled;
   // No need to populate the params if autosize is off.
-  if (current_auto_size) {
+  if (auto_size_enabled) {
     params->max_size = gfx::Size(GetAdjustedMaxWidth(), GetAdjustedMaxHeight());
     params->min_size = gfx::Size(GetAdjustedMinWidth(), GetAdjustedMinHeight());
+
+    if (max_auto_size_ != params->max_size)
+      is_auto_size_state_dirty_ = true;
+
+    max_auto_size_ = params->max_size;
+  } else {
+    max_auto_size_ = gfx::Size();
   }
 }
 
-void BrowserPlugin::UpdateGuestAutoSizeState(bool current_auto_size) {
+void BrowserPlugin::UpdateGuestAutoSizeState(bool auto_size_enabled) {
   // If we haven't yet heard back from the guest about the last resize request,
   // then we don't issue another request until we do in
   // BrowserPlugin::UpdateRect.
-  if (!HasGuestInstanceID() || !resize_ack_received_)
+  if (!HasGuestInstanceID() || !paint_ack_received_)
     return;
+
   BrowserPluginHostMsg_AutoSize_Params auto_size_params;
   BrowserPluginHostMsg_ResizeGuest_Params resize_guest_params;
-  if (current_auto_size) {
-    GetDamageBufferWithSizeParams(&auto_size_params, &resize_guest_params);
+  if (auto_size_enabled) {
+    GetDamageBufferWithSizeParams(&auto_size_params,
+                                  &resize_guest_params,
+                                  true);
   } else {
-    GetDamageBufferWithSizeParams(NULL, &resize_guest_params);
+    GetDamageBufferWithSizeParams(NULL, &resize_guest_params, true);
   }
-  resize_ack_received_ = false;
+  paint_ack_received_ = false;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_SetAutoSize(render_view_routing_id_,
                                            guest_instance_id_,
@@ -365,7 +375,8 @@ void BrowserPlugin::Attach(scoped_ptr<base::DictionaryValue> extra_params) {
   attach_params.persist_storage = persist_storage_;
   attach_params.src = GetSrcAttribute();
   GetDamageBufferWithSizeParams(&attach_params.auto_size_params,
-                                &attach_params.resize_guest_params);
+                                &attach_params.resize_guest_params,
+                                false);
 
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Attach(render_view_routing_id_,
@@ -498,19 +509,20 @@ void BrowserPlugin::OnUpdateRect(
 
   bool auto_size = GetAutoSizeAttribute();
   // We receive a resize ACK in regular mode, but not in autosize.
-  // In SW, |resize_ack_received_| is reset in SwapDamageBuffers().
+  // In SW, |paint_ack_received_| is reset in SwapDamageBuffers().
   // In HW mode, we need to do it here so we can continue sending
   // resize messages when needed.
   if (params.is_resize_ack ||
-      (!params.needs_ack && (auto_size || auto_size_ack_pending_))) {
-    resize_ack_received_ = true;
+      (!params.needs_ack && (auto_size || is_auto_size_state_dirty_))) {
+    paint_ack_received_ = true;
   }
 
-  auto_size_ack_pending_ = false;
+  bool was_auto_size_state_dirty = auto_size && is_auto_size_state_dirty_;
+  is_auto_size_state_dirty_ = false;
 
   if ((!auto_size && (width() != params.view_size.width() ||
                       height() != params.view_size.height())) ||
-      (auto_size && (!InAutoSizeBounds(params.view_size))) ||
+      (auto_size && was_auto_size_state_dirty) ||
       GetDeviceScaleFactor() != params.scale_factor) {
     // We are HW accelerated, render widget does not expect an ack,
     // but we still need to update the size.
@@ -519,7 +531,7 @@ void BrowserPlugin::OnUpdateRect(
       return;
     }
 
-    if (!resize_ack_received_) {
+    if (!paint_ack_received_) {
       // The guest has not yet responded to the last resize request, and
       // so we don't want to do anything at this point other than ACK the guest.
       if (auto_size)
@@ -530,9 +542,12 @@ void BrowserPlugin::OnUpdateRect(
       // container size.
       if (auto_size) {
         GetDamageBufferWithSizeParams(&auto_size_params,
-                                      &resize_guest_params);
+                                      &resize_guest_params,
+                                      was_auto_size_state_dirty);
       } else {
-        GetDamageBufferWithSizeParams(NULL, &resize_guest_params);
+        GetDamageBufferWithSizeParams(NULL,
+                                      &resize_guest_params,
+                                      was_auto_size_state_dirty);
       }
     }
     browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
@@ -601,8 +616,10 @@ void BrowserPlugin::OnUpdateRect(
 
 void BrowserPlugin::ParseSizeContraintsChanged() {
   bool auto_size = GetAutoSizeAttribute();
-  if (auto_size)
+  if (auto_size) {
+    is_auto_size_state_dirty_ = true;
     UpdateGuestAutoSizeState(true);
+  }
 }
 
 bool BrowserPlugin::InAutoSizeBounds(const gfx::Size& size) const {
@@ -747,11 +764,11 @@ float BrowserPlugin::GetDeviceScaleFactor() const {
 }
 
 void BrowserPlugin::UpdateDeviceScaleFactor(float device_scale_factor) {
-  if (last_device_scale_factor_ == device_scale_factor || !resize_ack_received_)
+  if (last_device_scale_factor_ == device_scale_factor || !paint_ack_received_)
     return;
 
   BrowserPluginHostMsg_ResizeGuest_Params params;
-  PopulateResizeGuestParameters(&params, plugin_rect());
+  PopulateResizeGuestParameters(&params, plugin_rect(), false);
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
       render_view_routing_id_,
       guest_instance_id_,
@@ -860,11 +877,12 @@ void BrowserPlugin::EnableCompositing(bool enable) {
     // We're switching back to the software path. We create a new damage
     // buffer that can accommodate the current size of the container.
     BrowserPluginHostMsg_ResizeGuest_Params params;
-    PopulateResizeGuestParameters(&params, plugin_rect());
     // Request a full repaint from the guest even if its size is not actually
     // changing.
-    params.repaint = true;
-    resize_ack_received_ = false;
+    PopulateResizeGuestParameters(&params,
+                                  plugin_rect(),
+                                  true /* needs_repaint */);
+    paint_ack_received_ = false;
     browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
         render_view_routing_id_,
         guest_instance_id_,
@@ -1008,12 +1026,12 @@ void BrowserPlugin::updateGeometry(
     return;
 
   // In AutoSize mode, guests don't care when the BrowserPlugin container is
-  // resized. If |!resize_ack_received_|, then we are still waiting on a
+  // resized. If |!paint_ack_received_|, then we are still waiting on a
   // previous resize to be ACK'ed and so we don't issue additional resizes
   // until the previous one is ACK'ed.
   // TODO(mthiesse): Assess the performance of calling GetAutoSizeAttribute() on
   // resize.
-  if (!resize_ack_received_ ||
+  if (!paint_ack_received_ ||
       (old_width == window_rect.width && old_height == window_rect.height) ||
       GetAutoSizeAttribute()) {
     // Let the browser know about the updated view rect.
@@ -1023,8 +1041,8 @@ void BrowserPlugin::updateGeometry(
   }
 
   BrowserPluginHostMsg_ResizeGuest_Params params;
-  PopulateResizeGuestParameters(&params, plugin_rect());
-  resize_ack_received_ = false;
+  PopulateResizeGuestParameters(&params, plugin_rect(), false);
+  paint_ack_received_ = false;
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
       render_view_routing_id_,
       guest_instance_id_,
@@ -1033,14 +1051,16 @@ void BrowserPlugin::updateGeometry(
 
 void BrowserPlugin::SwapDamageBuffers() {
   current_damage_buffer_.reset(pending_damage_buffer_.release());
-  resize_ack_received_ = true;
+  paint_ack_received_ = true;
 }
 
 void BrowserPlugin::PopulateResizeGuestParameters(
     BrowserPluginHostMsg_ResizeGuest_Params* params,
-    const gfx::Rect& view_rect) {
+    const gfx::Rect& view_rect,
+    bool needs_repaint) {
   params->size_changed = true;
   params->view_rect = view_rect;
+  params->repaint = needs_repaint;
   params->scale_factor = GetDeviceScaleFactor();
   if (last_device_scale_factor_ != params->scale_factor){
     params->repaint = true;
@@ -1071,16 +1091,20 @@ void BrowserPlugin::PopulateResizeGuestParameters(
 
 void BrowserPlugin::GetDamageBufferWithSizeParams(
     BrowserPluginHostMsg_AutoSize_Params* auto_size_params,
-    BrowserPluginHostMsg_ResizeGuest_Params* resize_guest_params) {
-  if (auto_size_params)
+    BrowserPluginHostMsg_ResizeGuest_Params* resize_guest_params,
+    bool needs_repaint) {
+  if (auto_size_params) {
     PopulateAutoSizeParameters(auto_size_params, GetAutoSizeAttribute());
+  } else {
+    max_auto_size_ = gfx::Size();
+  }
   gfx::Size view_size = (auto_size_params && auto_size_params->enable) ?
       auto_size_params->max_size : gfx::Size(width(), height());
   if (view_size.IsEmpty())
     return;
-  resize_ack_received_ = false;
+  paint_ack_received_ = false;
   gfx::Rect view_rect = gfx::Rect(plugin_rect_.origin(), view_size);
-  PopulateResizeGuestParameters(resize_guest_params, view_rect);
+  PopulateResizeGuestParameters(resize_guest_params, view_rect, needs_repaint);
 }
 
 #if defined(OS_POSIX)
