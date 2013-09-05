@@ -1,8 +1,0 @@
-PASS sample.innerHTML is "ab<br>"
-PASS selection.type is "Caret"
-PASS selection.focusNode is sample.firstChild
-PASS selection.focusOffset is 2
-PASS successfullyParsed is true
-
-TEST COMPLETE
-

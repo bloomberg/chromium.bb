@@ -774,10 +774,11 @@ void DeleteSelectionCommand::doApply()
     Position downstreamEnd = m_selectionToDelete.end().downstream();
     bool rootWillStayOpenWithoutPlaceholder = downstreamEnd.containerNode() == downstreamEnd.containerNode()->rootEditableElement()
         || (downstreamEnd.containerNode()->isTextNode() && downstreamEnd.containerNode()->parentNode() == downstreamEnd.containerNode()->rootEditableElement());
+    bool lineBreakAtEndOfSelectionToDelete = lineBreakExistsAtVisiblePosition(m_selectionToDelete.visibleEnd());
     m_needPlaceholder = !rootWillStayOpenWithoutPlaceholder
         && isStartOfParagraph(m_selectionToDelete.visibleStart(), CanCrossEditingBoundary)
         && isEndOfParagraph(m_selectionToDelete.visibleEnd(), CanCrossEditingBoundary)
-        && !lineBreakExistsAtVisiblePosition(m_selectionToDelete.visibleEnd());
+        && !lineBreakAtEndOfSelectionToDelete;
     if (m_needPlaceholder) {
         // Don't need a placeholder when deleting a selection that starts just before a table
         // and ends inside it (we do need placeholders to hold open empty cells, but that's
@@ -818,11 +819,9 @@ void DeleteSelectionCommand::doApply()
 
     if (!m_needPlaceholder && rootWillStayOpenWithoutPlaceholder) {
         VisiblePosition visualEnding(m_endingPosition);
-        m_needPlaceholder = !isStartOfParagraph(visualEnding, CanCrossEditingBoundary)
-            && isEndOfParagraph(visualEnding, CanCrossEditingBoundary)
-            && lineBreakExistsAtVisiblePosition(visualEnding)
-            && visualEnding.next(CannotCrossEditingBoundary).isNull()
-            && lineBreakBeforeStart;
+        bool hasPlaceholder = lineBreakExistsAtVisiblePosition(visualEnding)
+            && visualEnding.next(CannotCrossEditingBoundary).isNull();
+        m_needPlaceholder = hasPlaceholder && lineBreakBeforeStart && !lineBreakAtEndOfSelectionToDelete;
     }
 
     RefPtr<Node> placeholder = m_needPlaceholder ? createBreakElement(document()).get() : 0;
