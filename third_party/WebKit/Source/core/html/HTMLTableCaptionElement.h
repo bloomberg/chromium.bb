@@ -41,6 +41,12 @@ private:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 };
 
+inline HTMLTableCaptionElement* toHTMLTableCaptionElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::captionTag));
+    return static_cast<HTMLTableCaptionElement*>(node);
+}
+
 } // namespace
 
 #endif

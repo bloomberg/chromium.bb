@@ -50,6 +50,12 @@ private:
     int m_span;
 };
 
-} //namespace
+inline HTMLTableColElement* toHTMLTableColElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::colTag) || node->hasTagName(HTMLNames::colgroupTag));
+    return static_cast<HTMLTableColElement*>(node);
+}
+
+} // namespace WebCore
 
 #endif
