@@ -592,8 +592,7 @@ v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate* isolate, Sc
 
 v8::Isolate* getIsolateFromScriptExecutionContext(ScriptExecutionContext* context)
 {
-    ASSERT(context);
-    if (context->isDocument()) {
+    if (context && context->isDocument()) {
         static v8::Isolate* mainWorldIsolate = 0;
         if (!mainWorldIsolate)
             mainWorldIsolate = v8::Isolate::GetCurrent();
