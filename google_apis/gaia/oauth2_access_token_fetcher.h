@@ -26,10 +26,6 @@ class URLRequestContextGetter;
 class URLRequestStatus;
 }
 
-namespace policy {
-  class UserPolicySigninServiceTest;
-}
-
 // Abstracts the details to get OAuth2 access token token from
 // OAuth2 refresh token.
 // See "Using the Refresh Token" section in:
@@ -98,9 +94,6 @@ class OAuth2AccessTokenFetcher : public net::URLFetcherDelegate {
                                           std::string* access_token,
                                           int* expires_in);
 
-  // Resets |last_fetcher_id_| to 0.
-  static void ResetLastFetcherIdForTest();
-
   // State that is set during construction.
   OAuth2AccessTokenConsumer* const consumer_;
   net::URLRequestContextGetter* const getter_;
@@ -113,12 +106,7 @@ class OAuth2AccessTokenFetcher : public net::URLFetcherDelegate {
   std::string refresh_token_;
   std::vector<std::string> scopes_;
 
-  // The last fetcher id.
-  static int last_fetcher_id_;
-
   friend class OAuth2AccessTokenFetcherTest;
-  friend class OAuth2TokenServiceTest;
-  friend class policy::UserPolicySigninServiceTest;
   FRIEND_TEST_ALL_PREFIXES(OAuth2AccessTokenFetcherTest,
                            ParseGetAccessTokenResponse);
   FRIEND_TEST_ALL_PREFIXES(OAuth2AccessTokenFetcherTest,

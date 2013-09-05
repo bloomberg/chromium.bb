@@ -32,7 +32,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -143,8 +142,6 @@ class FakeAndroidProfileOAuth2TokenService
 
 #endif
 
-}  // namespace
-
 class UserPolicySigninServiceTest : public testing::Test {
  public:
   UserPolicySigninServiceTest()
@@ -222,7 +219,6 @@ class UserPolicySigninServiceTest : public testing::Test {
     testing_browser_process->SetBrowserPolicyConnector(NULL);
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
-    ResetLastFetcherId();
   }
 
 #if defined(OS_ANDROID)
@@ -350,10 +346,6 @@ class UserPolicySigninServiceTest : public testing::Test {
     // invoked.
     mock_store_->NotifyStoreLoaded();
     Mock::VerifyAndClearExpectations(this);
-  }
-
-  void ResetLastFetcherId() {
-    OAuth2AccessTokenFetcher::ResetLastFetcherIdForTest();
   }
 
   scoped_ptr<TestingProfile> profile_;
@@ -794,7 +786,6 @@ TEST_F(UserPolicySigninServiceTest, SignOutThenSignInAgain) {
   ASSERT_FALSE(manager_->core()->service());
 
   // Now sign in again.
-  ResetLastFetcherId();
   ASSERT_NO_FATAL_FAILURE(TestSuccessfulSignin());
 }
 
@@ -851,5 +842,7 @@ TEST_F(UserPolicySigninServiceTest, PolicyFetchFailureDisableManagement) {
   EXPECT_FALSE(signin_manager_->IsSignoutProhibited());
 #endif
 }
+
+}  // namespace
 
 }  // namespace policy

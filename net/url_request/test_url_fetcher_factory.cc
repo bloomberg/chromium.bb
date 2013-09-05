@@ -275,10 +275,6 @@ void TestURLFetcherFactory::RemoveFetcherFromMap(int id) {
   fetchers_.erase(i);
 }
 
-size_t TestURLFetcherFactory::GetFetcherCount() const {
-  return fetchers_.size();
-}
-
 void TestURLFetcherFactory::SetDelegateForTests(
     TestURLFetcherDelegateForTests* delegate_for_tests) {
   delegate_for_tests_ = delegate_for_tests;

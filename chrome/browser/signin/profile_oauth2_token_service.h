@@ -103,8 +103,7 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // logs back in with a different account, then any in-flight token
   // fetches will be for the old account's refresh token.  Therefore
   // when they come back, they shouldn't be cached.
-  virtual void RegisterCacheEntry(const std::string& client_id,
-                                  const std::string& refresh_token,
+  virtual void RegisterCacheEntry(const std::string& refresh_token,
                                   const ScopeSet& scopes,
                                   const std::string& access_token,
                                   const base::Time& expiration_date) OVERRIDE;

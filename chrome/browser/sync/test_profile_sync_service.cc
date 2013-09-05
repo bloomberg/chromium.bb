@@ -319,11 +319,8 @@ scoped_ptr<OAuth2TokenService::Request> FakeOAuth2TokenService::StartRequest(
     OAuth2TokenService::Consumer* consumer) {
   // Ensure token in question is cached and never expires. Request will succeed
   // without network IO.
-  RegisterCacheEntry("test_client_id",
-                     GetRefreshToken(),
-                     scopes,
-                     "access_token",
-                     base::Time::Max());
+  RegisterCacheEntry(GetRefreshToken(), scopes, "access_token",
+      base::Time::Max());
   return ProfileOAuth2TokenService::StartRequest(scopes, consumer);
 }
 

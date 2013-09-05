@@ -10,16 +10,12 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -149,23 +145,8 @@ class OAuth2TokenService : public base::NonThreadSafe {
   // Return the current number of entries in the cache.
   int cache_size_for_testing() const;
   void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
-  // Returns the current number of pending fetchers matching given params.
-  size_t GetNumPendingRequestsForTesting(
-      const std::string& client_id,
-      const std::string& refresh_token,
-      const ScopeSet& scopes) const;
 
  protected:
-  struct ClientScopeSet {
-    ClientScopeSet(const std::string& client_id,
-                   const ScopeSet& scopes);
-    ~ClientScopeSet();
-    bool operator<(const ClientScopeSet& set) const;
-
-    std::string client_id;
-    ScopeSet scopes;
-  };
-
   // Implements a cancelable |OAuth2TokenService::Request|, which should be
   // operated on the UI thread.
   // TODO(davidroche): move this out of header file.
@@ -197,20 +178,19 @@ class OAuth2TokenService : public base::NonThreadSafe {
   // Add a new entry to the cache.
   // Subclasses can override if there are implementation-specific reasons
   // that an access token should ever not be cached.
-  virtual void RegisterCacheEntry(const std::string& client_id,
-                                  const std::string& refresh_token,
+  virtual void RegisterCacheEntry(const std::string& refresh_token,
                                   const ScopeSet& scopes,
                                   const std::string& access_token,
                                   const base::Time& expiration_date);
 
   // Returns true if GetCacheEntry would return a valid cache entry for the
   // given scopes.
-  bool HasCacheEntry(const ClientScopeSet& client_scopes);
+  bool HasCacheEntry(const ScopeSet& scopes);
 
   // Posts a task to fire the Consumer callback with the cached token.  Must
   // Must only be called if HasCacheEntry() returns true.
   void StartCacheLookupRequest(RequestImpl* request,
-                               const ClientScopeSet& client_scopes,
+                               const ScopeSet& scopes,
                                Consumer* consumer);
 
   // Clears the internal token cache.
@@ -228,6 +208,10 @@ class OAuth2TokenService : public base::NonThreadSafe {
   void FireRefreshTokensLoaded();
   void FireRefreshTokensCleared();
 
+  // Derived classes must provide a request context used for fetching access
+  // tokens with the |StartRequest| method.
+  virtual net::URLRequestContextGetter* GetRequestContext() = 0;
+
   // Fetches an OAuth token for the specified client/scopes. Virtual so it can
   // be overridden for tests and for platform-specific behavior on Android.
   virtual void FetchOAuth2Token(RequestImpl* request,
@@ -235,31 +219,12 @@ class OAuth2TokenService : public base::NonThreadSafe {
                                 const std::string& client_id,
                                 const std::string& client_secret,
                                 const ScopeSet& scopes);
+
  private:
+  // Class that fetches an OAuth2 access token for a given set of scopes and
+  // OAuth2 refresh token.
   class Fetcher;
   friend class Fetcher;
-
-  // The parameters used to fetch an OAuth2 access token.
-  struct FetchParameters {
-    FetchParameters(const std::string& client_id,
-                    const std::string& refresh_token,
-                    const ScopeSet& scopes);
-    ~FetchParameters();
-    bool operator<(const FetchParameters& params) const;
-
-    // OAuth2 client id.
-    std::string client_id;
-    // Refresh token used for minting access tokens within this request.
-    std::string refresh_token;
-    // URL scopes for the requested access token.
-    ScopeSet scopes;
-  };
-
-  typedef std::map<FetchParameters, Fetcher*> PendingFetcherMap;
-
-  // Derived classes must provide a request context used for fetching access
-  // tokens with the |StartRequest| method.
-  virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
   // Struct that contains the information of an OAuth2 access token.
   struct CacheEntry {
@@ -279,14 +244,14 @@ class OAuth2TokenService : public base::NonThreadSafe {
 
   // Returns a currently valid OAuth2 access token for the given set of scopes,
   // or NULL if none have been cached. Note the user of this method should
-  // ensure no entry with the same |client_scopes| is added before the usage of
-  // the returned entry is done.
-  const CacheEntry* GetCacheEntry(const ClientScopeSet& client_scopes);
+  // ensure no entry with the same |scopes| is added before the usage of the
+  // returned entry is done.
+  const CacheEntry* GetCacheEntry(const ScopeSet& scopes);
 
 
   // Removes an access token for the given set of scopes from the cache.
   // Returns true if the entry was removed, otherwise false.
-  bool RemoveCacheEntry(const ClientScopeSet& client_scopes,
+  bool RemoveCacheEntry(const OAuth2TokenService::ScopeSet& scopes,
                         const std::string& token_to_remove);
 
 
@@ -297,12 +262,15 @@ class OAuth2TokenService : public base::NonThreadSafe {
   void CancelFetchers(std::vector<Fetcher*> fetchers_to_cancel);
 
   // The cache of currently valid tokens.
-  typedef std::map<ClientScopeSet, CacheEntry> TokenCache;
+  typedef std::map<ScopeSet, CacheEntry> TokenCache;
   TokenCache token_cache_;
 
+  // The parameters (refresh token and scope set) used to fetch an OAuth2 access
+  // token.
+  typedef std::pair<std::string, ScopeSet> FetchParameters;
   // A map from fetch parameters to a fetcher that is fetching an OAuth2 access
   // token using these parameters.
-  PendingFetcherMap pending_fetchers_;
+  std::map<FetchParameters, Fetcher*> pending_fetchers_;
 
   // List of observers to notify when token availability changes.
   // Makes sure list is empty on destruction.
@@ -310,11 +278,6 @@ class OAuth2TokenService : public base::NonThreadSafe {
 
   // Maximum number of retries in fetching an OAuth2 access token.
   static int max_fetch_retry_num_;
-
-  FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest, ClientScopeSetOrderTest);
-  FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest, FetchParametersOrderTest);
-  FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest,
-                           SameScopesRequestedForDifferentClients);
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2TokenService);
 };

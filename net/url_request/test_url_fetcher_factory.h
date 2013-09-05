@@ -241,7 +241,6 @@ class TestURLFetcherFactory : public URLFetcherFactory,
       URLFetcherDelegate* d) OVERRIDE;
   TestURLFetcher* GetFetcherByID(int id) const;
   void RemoveFetcherFromMap(int id);
-  size_t GetFetcherCount() const;
   void SetDelegateForTests(TestURLFetcherDelegateForTests* delegate_for_tests);
   void set_remove_fetcher_on_delete(bool remove_fetcher_on_delete) {
     remove_fetcher_on_delete_ = remove_fetcher_on_delete;

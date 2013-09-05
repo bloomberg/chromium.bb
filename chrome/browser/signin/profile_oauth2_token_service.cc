@@ -168,15 +168,13 @@ GoogleServiceAuthError ProfileOAuth2TokenService::GetAuthStatus() const {
 }
 
 void ProfileOAuth2TokenService::RegisterCacheEntry(
-    const std::string& client_id,
     const std::string& refresh_token,
     const ScopeSet& scopes,
     const std::string& access_token,
     const base::Time& expiration_date) {
   if (ShouldCacheForRefreshToken(TokenServiceFactory::GetForProfile(profile_),
                                  refresh_token)) {
-    OAuth2TokenService::RegisterCacheEntry(client_id,
-                                           refresh_token,
+    OAuth2TokenService::RegisterCacheEntry(refresh_token,
                                            scopes,
                                            access_token,
                                            expiration_date);
