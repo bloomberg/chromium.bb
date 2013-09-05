@@ -37,7 +37,10 @@ namespace WTF {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 static const size_t kInitialVectorSize = 1;
 #else
-static const size_t kInitialVectorSize = 16;
+#ifndef WTF_VECTOR_INITIAL_SIZE
+#define WTF_VECTOR_INITIAL_SIZE 16
+#endif
+static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 #endif
 
     template <bool needsDestruction, typename T>
