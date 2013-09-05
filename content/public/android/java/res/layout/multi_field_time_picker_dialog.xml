@@ -26,7 +26,7 @@
     />
 
     <View
-	android:layout_width="fill_parent"
+	android:layout_width="match_parent"
 	android:layout_height="2dp"
 	android:paddingBottom="5dp"
 	android:paddingTop="5dp"
@@ -41,12 +41,12 @@
 
 	<NumberPicker
 	    android:id="@+id/hour"
-	    android:layout_width="0dip"
+	    android:layout_width="0dp"
 	    android:layout_weight=".2"
 	    android:textSize="12sp"
 	    android:layout_height="wrap_content"
-	    android:layout_marginStart="4dip"
-	    android:layout_marginEnd="4dip"
+	    android:layout_marginStart="4dp"
+	    android:layout_marginEnd="4dp"
 	    android:focusable="true"
 	    android:focusableInTouchMode="true"
 	    android:contentDescription="@string/accessibility_time_picker_hour"
@@ -59,12 +59,12 @@
 	    />
 	<NumberPicker
 	    android:id="@+id/minute"
-	    android:layout_width="0dip"
+	    android:layout_width="0dp"
 	    android:layout_weight=".2"
 	    android:textSize="12sp"
 	    android:layout_height="wrap_content"
-	    android:layout_marginStart="4dip"
-	    android:layout_marginEnd="4dip"
+	    android:layout_marginStart="4dp"
+	    android:layout_marginEnd="4dp"
 	    android:focusable="true"
 	    android:focusableInTouchMode="true"
 	    android:contentDescription="@string/accessibility_time_picker_minute"
@@ -77,12 +77,12 @@
 	    android:text="@string/time_picker_dialog_minute_second_separator"	    />
 	<NumberPicker
 	    android:id="@+id/second"
-	    android:layout_width="0dip"
+	    android:layout_width="0dp"
 	    android:layout_weight=".2"
 	    android:textSize="12sp"
 	    android:layout_height="wrap_content"
-	    android:layout_marginStart="4dip"
-	    android:layout_marginEnd="4dip"
+	    android:layout_marginStart="4dp"
+	    android:layout_marginEnd="4dp"
 	    android:focusable="true"
 	    android:focusableInTouchMode="true"
 	    android:contentDescription="@string/accessibility_time_picker_second"
@@ -96,24 +96,24 @@
 	    />
 	<NumberPicker
 	    android:id="@+id/milli"
-	    android:layout_width="0dip"
+	    android:layout_width="0dp"
 	    android:layout_weight=".2"
 	    android:textSize="12sp"
 	    android:layout_height="wrap_content"
-	    android:layout_marginStart="4dip"
-	    android:layout_marginEnd="4dip"
+	    android:layout_marginStart="4dp"
+	    android:layout_marginEnd="4dp"
 	    android:focusable="true"
 	    android:focusableInTouchMode="true"
 	    android:contentDescription="@string/accessibility_time_picker_milli"
 	    />
 	<NumberPicker
 	    android:id="@+id/ampm"
-	    android:layout_width="0dip"
+	    android:layout_width="0dp"
 	    android:layout_weight=".2"
 	    android:textSize="12sp"
 	    android:layout_height="wrap_content"
-	    android:layout_marginStart="4dip"
-	    android:layout_marginEnd="4dip"
+	    android:layout_marginStart="4dp"
+	    android:layout_marginEnd="4dp"
 	    android:focusable="true"
 	    android:focusableInTouchMode="true"
 	    android:contentDescription="@string/accessibility_time_picker_ampm"
