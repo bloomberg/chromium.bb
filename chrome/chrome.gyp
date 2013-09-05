@@ -177,6 +177,8 @@
             'browser/devtools/browser_list_tabcontents_provider.h',
             'browser/devtools/devtools_adb_bridge.cc',
             'browser/devtools/devtools_adb_bridge.h',
+            'browser/devtools/devtools_embedder_message_dispatcher.cc',
+            'browser/devtools/devtools_embedder_message_dispatcher.h',
             'browser/devtools/devtools_file_helper.cc',
             'browser/devtools/devtools_file_helper.h',
             'browser/devtools/devtools_file_system_indexer.cc',

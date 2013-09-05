@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/devtools/devtools_embedder_message_dispatcher.h"
 #include "chrome/browser/devtools/devtools_file_helper.h"
 #include "chrome/browser/devtools/devtools_file_system_indexer.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
@@ -55,7 +56,8 @@ enum DevToolsDockSide {
 
 class DevToolsWindow : private content::NotificationObserver,
                        private content::WebContentsDelegate,
-                       private content::DevToolsFrontendHostDelegate {
+                       private content::DevToolsFrontendHostDelegate,
+                       private DevToolsEmbedderMessageDispatcher::Delegate {
  public:
   typedef base::Callback<void(bool)> InfoBarCallback;
 
@@ -181,9 +183,11 @@ class DevToolsWindow : private content::NotificationObserver,
       const content::FileChooserParams& params) OVERRIDE;
   virtual void WebContentsFocused(content::WebContents* contents) OVERRIDE;
 
-  // content::DevToolsFrontendHostDelegate:
+  // content::DevToolsFrontendHostDelegate override:
+  virtual void DispatchOnEmbedder(const std::string& message) OVERRIDE;
+
+  // DevToolsEmbedderMessageDispatcher::Delegate overrides:
   virtual void ActivateWindow() OVERRIDE;
-  virtual void ChangeAttachedWindowHeight(unsigned height) OVERRIDE;
   virtual void CloseWindow() OVERRIDE;
   virtual void MoveWindow(int x, int y) OVERRIDE;
   virtual void SetDockSide(const std::string& side) OVERRIDE;
@@ -266,6 +270,7 @@ class DevToolsWindow : private content::NotificationObserver,
   int height_;
   DevToolsDockSide dock_side_before_minimized_;
 
+  scoped_ptr<DevToolsEmbedderMessageDispatcher> embedder_message_dispatcher_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);
 };
 

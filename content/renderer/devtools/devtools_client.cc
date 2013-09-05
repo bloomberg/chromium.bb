@@ -55,75 +55,9 @@ void DevToolsClient::sendMessageToBackend(const WebString& message)  {
                                                        message.utf8()));
 }
 
-void DevToolsClient::activateWindow() {
-  Send(new DevToolsHostMsg_ActivateWindow(routing_id()));
-}
-
-void DevToolsClient::changeAttachedWindowHeight(unsigned height) {
-  Send(new DevToolsHostMsg_ChangeAttachedWindowHeight(routing_id(), height));
-}
-
-void DevToolsClient::closeWindow() {
-  Send(new DevToolsHostMsg_CloseWindow(routing_id()));
-}
-
-void DevToolsClient::moveWindowBy(const WebKit::WebFloatPoint& offset) {
-  Send(new DevToolsHostMsg_MoveWindow(routing_id(), offset.x, offset.y));
-}
-
-void DevToolsClient::requestSetDockSide(const WebKit::WebString& side) {
-  Send(new DevToolsHostMsg_RequestSetDockSide(routing_id(), side.utf8()));
-}
-
-void DevToolsClient::openInNewTab(const WebKit::WebString& url) {
-  Send(new DevToolsHostMsg_OpenInNewTab(routing_id(),
-                                        url.utf8()));
-}
-
-void DevToolsClient::save(const WebKit::WebString& url,
-                          const WebKit::WebString& content,
-                          bool save_as) {
-  Send(new DevToolsHostMsg_Save(routing_id(),
-                                url.utf8(),
-                                content.utf8(),
-                                save_as));
-}
-
-void DevToolsClient::append(const WebKit::WebString& url,
-                            const WebKit::WebString& content) {
-  Send(new DevToolsHostMsg_Append(routing_id(),
-                                  url.utf8(),
-                                  content.utf8()));
-}
-
-void DevToolsClient::requestFileSystems() {
-  Send(new DevToolsHostMsg_RequestFileSystems(routing_id()));
-}
-
-void DevToolsClient::addFileSystem() {
-  Send(new DevToolsHostMsg_AddFileSystem(routing_id()));
-}
-
-void DevToolsClient::removeFileSystem(const WebString& file_system_path) {
-  Send(new DevToolsHostMsg_RemoveFileSystem(routing_id(),
-                                            file_system_path.utf8()));
-}
-
-void DevToolsClient::indexPath(int request_id,
-                               const WebKit::WebString& file_system_path) {
-  Send(new DevToolsHostMsg_IndexPath(
-      routing_id(), request_id, file_system_path.utf8()));
-}
-
-void DevToolsClient::stopIndexing(int request_id) {
-  Send(new DevToolsHostMsg_StopIndexing(routing_id(), request_id));
-}
-
-void DevToolsClient::searchInPath(int request_id,
-                                  const WebKit::WebString& file_system_path,
-                                  const WebKit::WebString& query) {
-  Send(new DevToolsHostMsg_SearchInPath(
-      routing_id(), request_id, file_system_path.utf8(), query.utf8()));
+void DevToolsClient::sendMessageToEmbedder(const WebString& message) {
+  Send(new DevToolsHostMsg_DispatchOnEmbedder(routing_id(),
+                                              message.utf8()));
 }
 
 bool DevToolsClient::isUnderTest() {

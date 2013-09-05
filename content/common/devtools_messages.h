@@ -107,65 +107,9 @@ IPC_MESSAGE_ROUTED0(DevToolsMsg_SetupDevToolsClient)
 //-----------------------------------------------------------------------------
 // These are messages sent from the renderer to the browser.
 
-// Activates (brings to the front) corresponding dev tools window.
-IPC_MESSAGE_ROUTED0(DevToolsHostMsg_ActivateWindow)
-
-// Sets the height of corresponding dev tools window.
-IPC_MESSAGE_ROUTED1(DevToolsHostMsg_ChangeAttachedWindowHeight,
-                    unsigned /* height */)
-
-// Closes dev tools window that is inspecting current render_view_host.
-IPC_MESSAGE_ROUTED0(DevToolsHostMsg_CloseWindow)
-
-// Moves the corresponding dev tools window by the specified offset.
-IPC_MESSAGE_ROUTED2(DevToolsHostMsg_MoveWindow,
-                    int /* x */,
-                    int /* y */)
-
-// Specifies side for devtools to dock to.
-IPC_MESSAGE_ROUTED1(DevToolsHostMsg_RequestSetDockSide,
-                    std::string /* side */)
-
-// Opens given URL in the new tab.
-IPC_MESSAGE_ROUTED1(DevToolsHostMsg_OpenInNewTab,
-                    std::string /* url */)
-
-// Shows Save As dialog for content.
-IPC_MESSAGE_ROUTED3(DevToolsHostMsg_Save,
-                    std::string /* url */,
-                    std::string /* content */,
-                    bool /* save_as */)
-
-// Appends given |content| to the file that has been associated with the
-// given |url| by Save message handler.
-IPC_MESSAGE_ROUTED2(DevToolsHostMsg_Append,
-                    std::string /* url */,
-                    std::string /* content */)
-
-// Requests the list of filesystems previously added for devtools.
-IPC_MESSAGE_ROUTED0(DevToolsHostMsg_RequestFileSystems)
-
-// Shows a dialog to select a folder to which an isolated filesystem is added.
-IPC_MESSAGE_ROUTED0(DevToolsHostMsg_AddFileSystem)
-
-// Removes a previously added devtools filesystem given by |file_system_path|.
-IPC_MESSAGE_ROUTED1(DevToolsHostMsg_RemoveFileSystem,
-                    std::string /* file_system_path */)
-
-// Performs file system indexing for given |file_system_path| and sends progress
-// callbacks.
-IPC_MESSAGE_ROUTED2(DevToolsHostMsg_IndexPath,
-                    int /* request_id */,
-                    std::string /* file_system_path */)
-
-// Stops file system indexing.
-IPC_MESSAGE_ROUTED1(DevToolsHostMsg_StopIndexing, int /* request_id */)
-
-// Performs trigram search for given |query| in |file_system_path|.
-IPC_MESSAGE_ROUTED3(DevToolsHostMsg_SearchInPath,
-                    int /* request_id */,
-                    std::string /* file_system_path */,
-                    std::string /* query */)
+// Transport from Inspector frontend to frontend host.
+IPC_MESSAGE_ROUTED1(DevToolsHostMsg_DispatchOnEmbedder,
+                    std::string /* message */)
 
 // Updates agent runtime state stored in devtools manager in order to support
 // cross-navigation instrumentation.

@@ -40,22 +40,7 @@ class DevToolsFrontendHost : public DevToolsClientHost,
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
 
   void OnDispatchOnInspectorBackend(const std::string& message);
-  void OnActivateWindow();
-  void OnChangeAttachedWindowHeight(unsigned height);
-  void OnCloseWindow();
-  void OnMoveWindow(int x, int y);
-  void OnRequestSetDockSide(const std::string& side);
-  void OnOpenInNewTab(const std::string& url);
-  void OnSave(const std::string& url, const std::string& content, bool save_as);
-  void OnAppend(const std::string& url, const std::string& content);
-  void OnRequestFileSystems();
-  void OnAddFileSystem();
-  void OnRemoveFileSystem(const std::string& file_system_path);
-  void OnIndexPath(int request_id, const std::string& file_system_path);
-  void OnStopIndexing(int request_id);
-  void OnSearchInPath(int request_id,
-                      const std::string& file_system_path,
-                      const std::string& query);
+  void OnDispatchOnEmbedder(const std::string& message);
 
   DevToolsFrontendHostDelegate* delegate_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsFrontendHost);

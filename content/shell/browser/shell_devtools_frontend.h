@@ -38,26 +38,7 @@ class ShellDevToolsFrontend : public WebContentsObserver,
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
   // DevToolsFrontendHostDelegate implementation
-  virtual void ActivateWindow() OVERRIDE {}
-  virtual void ChangeAttachedWindowHeight(unsigned height) OVERRIDE {}
-  virtual void CloseWindow() OVERRIDE {}
-  virtual void MoveWindow(int x, int y) OVERRIDE {}
-  virtual void SetDockSide(const std::string& side) OVERRIDE {}
-  virtual void OpenInNewTab(const std::string& url) OVERRIDE {}
-  virtual void SaveToFile(const std::string& url,
-                          const std::string& content,
-                          bool save_as) OVERRIDE {}
-  virtual void AppendToFile(const std::string& url,
-                            const std::string& content) OVERRIDE {}
-  virtual void RequestFileSystems() OVERRIDE {}
-  virtual void AddFileSystem() OVERRIDE {}
-  virtual void RemoveFileSystem(const std::string& file_system_path) OVERRIDE {}
-  virtual void IndexPath(int request_id,
-                         const std::string& file_system_path) OVERRIDE {}
-  virtual void StopIndexing(int request_id) OVERRIDE {}
-  virtual void SearchInPath(int request_id,
-                            const std::string& file_system_path,
-                            const std::string& query) OVERRIDE {}
+  virtual void DispatchOnEmbedder(const std::string& message) OVERRIDE {}
 
   virtual void InspectedContentsClosing() OVERRIDE;
 

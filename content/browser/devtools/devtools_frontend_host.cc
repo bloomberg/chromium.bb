@@ -63,23 +63,8 @@ bool DevToolsFrontendHost::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(DevToolsFrontendHost, message)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,
                         OnDispatchOnInspectorBackend)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ActivateWindow, OnActivateWindow)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ChangeAttachedWindowHeight,
-                        OnChangeAttachedWindowHeight)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_CloseWindow, OnCloseWindow)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_MoveWindow, OnMoveWindow)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestSetDockSide,
-                        OnRequestSetDockSide)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_OpenInNewTab, OnOpenInNewTab)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_Save, OnSave)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_Append, OnAppend)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestFileSystems,
-                        OnRequestFileSystems)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_AddFileSystem, OnAddFileSystem)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_RemoveFileSystem, OnRemoveFileSystem)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_IndexPath, OnIndexPath)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_StopIndexing, OnStopIndexing)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_SearchInPath, OnSearchInPath)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_DispatchOnEmbedder,
+                        OnDispatchOnEmbedder)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -101,72 +86,11 @@ void DevToolsFrontendHost::RenderProcessGone(
 void DevToolsFrontendHost::OnDispatchOnInspectorBackend(
     const std::string& message) {
   DevToolsManagerImpl::GetInstance()->DispatchOnInspectorBackend(this, message);
-//  delegate_->DispatchOnInspectorBackend(message);
 }
 
-void DevToolsFrontendHost::OnActivateWindow() {
-  delegate_->ActivateWindow();
-}
-
-void DevToolsFrontendHost::OnChangeAttachedWindowHeight(unsigned height) {
-  delegate_->ChangeAttachedWindowHeight(height);
-}
-
-void DevToolsFrontendHost::OnCloseWindow() {
-  delegate_->CloseWindow();
-}
-
-void DevToolsFrontendHost::OnMoveWindow(int x, int y) {
-  delegate_->MoveWindow(x, y);
-}
-
-void DevToolsFrontendHost::OnOpenInNewTab(const std::string& url) {
-  delegate_->OpenInNewTab(url);
-}
-
-void DevToolsFrontendHost::OnSave(
-    const std::string& url,
-    const std::string& content,
-    bool save_as) {
-  delegate_->SaveToFile(url, content, save_as);
-}
-
-void DevToolsFrontendHost::OnAppend(
-    const std::string& url,
-    const std::string& content) {
-  delegate_->AppendToFile(url, content);
-}
-
-void DevToolsFrontendHost::OnRequestFileSystems() {
-  delegate_->RequestFileSystems();
-}
-
-void DevToolsFrontendHost::OnAddFileSystem() {
-  delegate_->AddFileSystem();
-}
-
-void DevToolsFrontendHost::OnRemoveFileSystem(
-    const std::string& file_system_path) {
-  delegate_->RemoveFileSystem(file_system_path);
-}
-
-void DevToolsFrontendHost::OnIndexPath(int request_id,
-                                       const std::string& file_system_path) {
-  delegate_->IndexPath(request_id, file_system_path);
-}
-
-void DevToolsFrontendHost::OnStopIndexing(int request_id) {
-  delegate_->StopIndexing(request_id);
-}
-
-void DevToolsFrontendHost::OnSearchInPath(int request_id,
-                                          const std::string& file_system_path,
-                                          const std::string& query) {
-  delegate_->SearchInPath(request_id, file_system_path, query);
-}
-
-void DevToolsFrontendHost::OnRequestSetDockSide(const std::string& side) {
-  delegate_->SetDockSide(side);
+void DevToolsFrontendHost::OnDispatchOnEmbedder(
+    const std::string& message) {
+  delegate_->DispatchOnEmbedder(message);
 }
 
 }  // namespace content

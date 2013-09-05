@@ -40,29 +40,7 @@ class CONTENT_EXPORT DevToolsClient
 
   // WebDevToolsFrontendClient implementation.
   virtual void sendMessageToBackend(const WebKit::WebString&) OVERRIDE;
-
-  virtual void activateWindow() OVERRIDE;
-  virtual void changeAttachedWindowHeight(unsigned height) OVERRIDE;
-  virtual void closeWindow() OVERRIDE;
-  virtual void moveWindowBy(const WebKit::WebFloatPoint& offset) OVERRIDE;
-  virtual void requestSetDockSide(const WebKit::WebString& side) OVERRIDE;
-  virtual void openInNewTab(const WebKit::WebString& side) OVERRIDE;
-  virtual void save(const WebKit::WebString& url,
-                    const WebKit::WebString& content,
-                    bool save_as) OVERRIDE;
-  virtual void append(const WebKit::WebString& url,
-                      const WebKit::WebString& content) OVERRIDE;
-
-  virtual void requestFileSystems() OVERRIDE;
-  virtual void addFileSystem() OVERRIDE;
-  virtual void removeFileSystem(
-      const WebKit::WebString& file_system_path) OVERRIDE;
-  virtual void indexPath(int request_id,
-                         const WebKit::WebString& file_system_path) OVERRIDE;
-  virtual void stopIndexing(int request_id) OVERRIDE;
-  virtual void searchInPath(int request_id,
-                            const WebKit::WebString& file_system_path,
-                            const WebKit::WebString& query) OVERRIDE;
+  virtual void sendMessageToEmbedder(const WebKit::WebString&) OVERRIDE;
 
   virtual bool isUnderTest() OVERRIDE;
 
