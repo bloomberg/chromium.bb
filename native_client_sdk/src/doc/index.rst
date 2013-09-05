@@ -21,6 +21,7 @@ Contents:
    devguide/coding/application-structure.rst
    devguide/coding/message-system.rst
    devguide/coding/progress-events.rst
-
    devguide/distributing.rst
+   community/application-gallery.rst
+   peppercpp/index.rst
 
