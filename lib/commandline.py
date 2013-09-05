@@ -102,6 +102,12 @@ def NormalizeGSPath(value):
   return gs.CanonicalizeURL(value, strict=True).rstrip('/')
 
 
+def NormalizeLocalOrGSPath(value):
+  """Normalize a local or GS path."""
+  ptype = 'gs_path' if value.startswith(gs.BASE_GS_URL) else 'path'
+  return VALID_TYPES[ptype](value)
+
+
 def OptparseWrapCheck(desc, check_f, _option, opt, value):
   """Optparse adapter for type checking functionality."""
   try:
@@ -114,6 +120,7 @@ def OptparseWrapCheck(desc, check_f, _option, opt, value):
 VALID_TYPES = {
     'path': osutils.ExpandPath,
     'gs_path': NormalizeGSPath,
+    'local_or_gs_path': NormalizeLocalOrGSPath,
 }
 
 

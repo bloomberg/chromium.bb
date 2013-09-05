@@ -22,6 +22,7 @@ SOURCE_ROOT = _FindSourceRoot()
 CHROOT_SOURCE_ROOT = '/mnt/host/source'
 
 CROSUTILS_DIR = os.path.join(SOURCE_ROOT, 'src/scripts')
+CHROMITE_DIR = os.path.join(SOURCE_ROOT, 'chromite')
 CHROMITE_BIN_SUBDIR = 'chromite/bin'
 CHROMITE_BIN_DIR = os.path.join(SOURCE_ROOT, CHROMITE_BIN_SUBDIR)
 PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
@@ -375,6 +376,8 @@ def _SlashToUnderscore(string):
   return string.replace('/', '_')
 
 DEFAULT_ARCHIVE_BUCKET = 'gs://chromeos-image-archive'
+RELEASE_BUCKET = 'gs://chromeos-releases'
+TRASH_BUCKET = 'gs://chromeos-throw-away-bucket'
 CHROME_SYSROOT_TAR = 'sysroot_%s.tar.xz' % _SlashToUnderscore(CHROME_CP)
 CHROME_ENV_TAR = 'environment_%s.tar.xz' % _SlashToUnderscore(CHROME_CP)
 CHROME_ENV_FILE = 'environment'
