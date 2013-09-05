@@ -434,7 +434,7 @@ LayoutPoint RenderFlowThread::adjustedPositionRelativeToOffsetParent(const Rende
         if (wasComputedRelativeToOtherRegion) {
             if (boxModelObject.isBox()) {
                 // Use borderBoxRectInRegion to account for variations such as percentage margins.
-                LayoutRect borderBoxRect = toRenderBox(&boxModelObject)->borderBoxRectInRegion(startRegion, 0, RenderBox::DoNotCacheRenderBoxRegionInfo);
+                LayoutRect borderBoxRect = toRenderBox(&boxModelObject)->borderBoxRectInRegion(startRegion, RenderBox::DoNotCacheRenderBoxRegionInfo);
                 referencePoint.move(borderBoxRect.location().x(), 0);
             }
 
@@ -571,7 +571,7 @@ void RenderFlowThread::removeRenderBoxRegionInfo(RenderBox* box)
     m_regionRangeMap.remove(box);
 }
 
-bool RenderFlowThread::logicalWidthChangedInRegions(const RenderBlock* block, LayoutUnit offsetFromLogicalTopOfFirstPage)
+bool RenderFlowThread::logicalWidthChangedInRegionsForBlock(const RenderBlock* block)
 {
     if (!hasRegions())
         return false;
@@ -597,7 +597,7 @@ bool RenderFlowThread::logicalWidthChangedInRegions(const RenderBlock* block, La
             continue;
 
         LayoutUnit oldLogicalWidth = oldInfo->logicalWidth();
-        RenderBoxRegionInfo* newInfo = block->renderBoxRegionInfo(region, offsetFromLogicalTopOfFirstPage);
+        RenderBoxRegionInfo* newInfo = block->renderBoxRegionInfo(region);
         if (!newInfo || newInfo->logicalWidth() != oldLogicalWidth)
             return true;
 
@@ -1004,6 +1004,106 @@ LayoutRect RenderFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundin
     }
 
     return result;
+}
+
+bool RenderFlowThread::cachedOffsetFromLogicalTopOfFirstRegion(const RenderBox* box, LayoutUnit& result) const
+{
+    RenderBoxToOffsetMap::const_iterator offsetIterator = m_boxesToOffsetMap.find(box);
+    if (offsetIterator == m_boxesToOffsetMap.end())
+        return false;
+
+    result = offsetIterator->value;
+    return true;
+}
+
+void RenderFlowThread::setOffsetFromLogicalTopOfFirstRegion(const RenderBox* box, LayoutUnit offset)
+{
+    m_boxesToOffsetMap.set(box, offset);
+}
+
+void RenderFlowThread::clearOffsetFromLogicalTopOfFirstRegion(const RenderBox* box)
+{
+    ASSERT(m_boxesToOffsetMap.contains(box));
+    m_boxesToOffsetMap.remove(box);
+}
+
+const RenderBox* RenderFlowThread::currentStatePusherRenderBox() const
+{
+    const RenderObject* currentObject = m_statePusherObjectsStack.isEmpty() ? 0 : m_statePusherObjectsStack.last();
+    if (currentObject && currentObject->isBox())
+        return toRenderBox(currentObject);
+
+    return 0;
+}
+
+void RenderFlowThread::pushFlowThreadLayoutState(const RenderObject* object)
+{
+    if (const RenderBox* currentBoxDescendant = currentStatePusherRenderBox()) {
+        LayoutState* layoutState = currentBoxDescendant->view()->layoutState();
+        if (layoutState && layoutState->isPaginated()) {
+            ASSERT(layoutState->renderer() == currentBoxDescendant);
+            LayoutSize offsetDelta = layoutState->m_layoutOffset - layoutState->m_pageOffset;
+            setOffsetFromLogicalTopOfFirstRegion(currentBoxDescendant, currentBoxDescendant->isHorizontalWritingMode() ? offsetDelta.height() : offsetDelta.width());
+        }
+    }
+
+    m_statePusherObjectsStack.add(object);
+}
+
+void RenderFlowThread::popFlowThreadLayoutState()
+{
+    m_statePusherObjectsStack.removeLast();
+
+    if (const RenderBox* currentBoxDescendant = currentStatePusherRenderBox()) {
+        LayoutState* layoutState = currentBoxDescendant->view()->layoutState();
+        if (layoutState && layoutState->isPaginated())
+            clearOffsetFromLogicalTopOfFirstRegion(currentBoxDescendant);
+    }
+}
+
+LayoutUnit RenderFlowThread::offsetFromLogicalTopOfFirstRegion(const RenderBlock* currentBlock) const
+{
+    // First check if we cached the offset for the block if it's an ancestor containing block of the box
+    // being currently laid out.
+    LayoutUnit offset;
+    if (cachedOffsetFromLogicalTopOfFirstRegion(currentBlock, offset))
+        return offset;
+
+    // If it's the current box being laid out, use the layout state.
+    const RenderBox* currentBoxDescendant = currentStatePusherRenderBox();
+    if (currentBlock == currentBoxDescendant) {
+        LayoutState* layoutState = view()->layoutState();
+        ASSERT(layoutState->renderer() == currentBlock);
+        ASSERT(layoutState && layoutState->isPaginated());
+        LayoutSize offsetDelta = layoutState->m_layoutOffset - layoutState->m_pageOffset;
+        return currentBoxDescendant->isHorizontalWritingMode() ? offsetDelta.height() : offsetDelta.width();
+    }
+
+    // As a last resort, take the slow path.
+    LayoutRect blockRect(0, 0, currentBlock->width(), currentBlock->height());
+    while (currentBlock && !currentBlock->isRenderFlowThread()) {
+        RenderBlock* containerBlock = currentBlock->containingBlock();
+        ASSERT(containerBlock);
+        if (!containerBlock)
+            return 0;
+        LayoutPoint currentBlockLocation = currentBlock->location();
+
+        if (containerBlock->style()->writingMode() != currentBlock->style()->writingMode()) {
+            // We have to put the block rect in container coordinates
+            // and we have to take into account both the container and current block flipping modes
+            if (containerBlock->style()->isFlippedBlocksWritingMode()) {
+                if (containerBlock->isHorizontalWritingMode())
+                    blockRect.setY(currentBlock->height() - blockRect.maxY());
+                else
+                    blockRect.setX(currentBlock->width() - blockRect.maxX());
+            }
+            currentBlock->flipForWritingMode(blockRect);
+        }
+        blockRect.moveBy(currentBlockLocation);
+        currentBlock = containerBlock;
+    }
+
+    return currentBlock->isHorizontalWritingMode() ? blockRect.y() : blockRect.x();
 }
 
 void RenderFlowThread::RegionSearchAdapter::collectIfNeeded(const RegionInterval& interval)

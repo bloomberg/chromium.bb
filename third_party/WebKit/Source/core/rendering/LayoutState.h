@@ -90,6 +90,10 @@ public:
     bool needsBlockDirectionLocationSetBeforeLayout() const { return m_lineGrid || (m_isPaginated && m_pageLogicalHeight); }
 
     ShapeInsideInfo* shapeInsideInfo() const { return m_shapeInsideInfo; }
+
+#ifndef NDEBUG
+    RenderObject* renderer() const { return m_renderer; }
+#endif
 private:
     void propagateLineGridInfo(RenderBox*);
     void establishLineGrid(RenderBlock*);

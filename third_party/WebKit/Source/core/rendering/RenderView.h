@@ -222,6 +222,7 @@ private:
             || (renderer->isRenderBlock() && toRenderBlock(renderer)->shapeInsideInfo())
             || (m_layoutState->shapeInsideInfo() && renderer->isRenderBlock() && !toRenderBlock(renderer)->allowsShapeInsideInfoSharing())
             ) {
+            pushLayoutStateForCurrentFlowThread(renderer);
             m_layoutState = new LayoutState(m_layoutState, renderer, offset, pageHeight, pageHeightChanged, colInfo);
             return true;
         }
@@ -233,6 +234,7 @@ private:
         LayoutState* state = m_layoutState;
         m_layoutState = state->m_next;
         delete state;
+        popLayoutStateForCurrentFlowThread();
     }
 
     // Suspends the LayoutState optimization. Used under transforms that cannot be represented by
@@ -251,6 +253,9 @@ private:
 
     size_t getRetainedWidgets(Vector<RenderWidget*>&);
     void releaseWidgets(Vector<RenderWidget*>&);
+
+    void pushLayoutStateForCurrentFlowThread(const RenderObject*);
+    void popLayoutStateForCurrentFlowThread();
 
     friend class LayoutStateMaintainer;
     friend class LayoutStateDisabler;

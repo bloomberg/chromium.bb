@@ -455,9 +455,8 @@ LayoutUnit RenderFlexibleBox::computeMainAxisExtentForChild(RenderBox* child, Si
         return child->computeContentLogicalHeight(size, child->logicalHeight() - child->borderAndPaddingLogicalHeight());
     }
     // FIXME: Figure out how this should work for regions and pass in the appropriate values.
-    LayoutUnit offsetFromLogicalTopOfFirstPage = 0;
     RenderRegion* region = 0;
-    return child->computeLogicalWidthInRegionUsing(sizeType, size, contentLogicalWidth(), this, region, offsetFromLogicalTopOfFirstPage) - child->borderAndPaddingLogicalWidth();
+    return child->computeLogicalWidthInRegionUsing(sizeType, size, contentLogicalWidth(), this, region) - child->borderAndPaddingLogicalWidth();
 }
 
 WritingMode RenderFlexibleBox::transformedWritingMode() const
