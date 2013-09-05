@@ -168,7 +168,9 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   void DidLoseOutputSurface();
   void SetExternalStencilTest(bool enabled);
   void SetExternalDrawConstraints(const gfx::Transform& transform,
-                                  gfx::Rect viewport);
+                                  gfx::Rect viewport,
+                                  gfx::Rect clip,
+                                  bool valid_for_tile_management);
 
   // virtual for testing.
   virtual base::TimeDelta AlternateRetroactiveBeginFramePeriod();

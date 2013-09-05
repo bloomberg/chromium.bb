@@ -66,9 +66,8 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
     DelegatedFrameData* last_frame_data = last_frame.delegated_frame_data.get();
     ASSERT_TRUE(last_frame.delegated_frame_data);
     EXPECT_FALSE(last_frame.gl_frame_data);
-    EXPECT_EQ(
-        gfx::Rect(host_impl->device_viewport_size()).ToString(),
-        last_frame_data->render_pass_list.back()->output_rect.ToString());
+    EXPECT_EQ(host_impl->DeviceViewport().ToString(),
+              last_frame_data->render_pass_list.back()->output_rect.ToString());
     EXPECT_EQ(0.5f, last_frame.metadata.min_page_scale_factor);
     EXPECT_EQ(4.f, last_frame.metadata.max_page_scale_factor);
 

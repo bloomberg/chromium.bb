@@ -186,10 +186,9 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
 }
 
 namespace {
-void AdjustTransformForClip(gfx::Transform* transform, gfx::Rect clip) {
-  // The system-provided transform translates us from the screen origin to the
-  // origin of the clip rect, but CC's draw origin starts at the clip.
-  transform->matrix().postTranslate(-clip.x(), -clip.y(), 0);
+void AdjustTransform(gfx::Transform* transform, gfx::Rect viewport) {
+  // CC's draw origin starts at the viewport.
+  transform->matrix().postTranslate(-viewport.x(), -viewport.y(), 0);
 }
 } // namespace
 
@@ -215,18 +214,16 @@ void SynchronousCompositorOutputSurface::ReleaseHwDraw() {
 bool SynchronousCompositorOutputSurface::DemandDrawHw(
     gfx::Size surface_size,
     const gfx::Transform& transform,
+    gfx::Rect viewport,
     gfx::Rect clip,
     bool stencil_enabled) {
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
   DCHECK(context_provider_);
 
-  gfx::Transform adjusted_transform = transform;
-  AdjustTransformForClip(&adjusted_transform, clip);
   surface_size_ = surface_size;
-  SetExternalDrawConstraints(adjusted_transform, clip);
   SetExternalStencilTest(stencil_enabled);
-  InvokeComposite(clip.size());
+  InvokeComposite(transform, viewport, clip, true);
 
   return did_swap_buffer_;
 }
@@ -243,26 +240,45 @@ bool SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
 
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
   transform.matrix() = canvas->getTotalMatrix();  // Converts 3x3 matrix to 4x4.
-  AdjustTransformForClip(&transform, clip);
 
   surface_size_ = gfx::Size(canvas->getDeviceSize().width(),
                             canvas->getDeviceSize().height());
-  SetExternalDrawConstraints(transform, clip);
   SetExternalStencilTest(false);
 
-  InvokeComposite(clip.size());
+  InvokeComposite(transform, clip, clip, false);
 
   return did_swap_buffer_;
 }
 
 void SynchronousCompositorOutputSurface::InvokeComposite(
-    gfx::Size damage_size) {
+    const gfx::Transform& transform,
+    gfx::Rect viewport,
+    gfx::Rect clip,
+    bool valid_for_tile_management) {
   DCHECK(!invoking_composite_);
   base::AutoReset<bool> invoking_composite_resetter(&invoking_composite_, true);
   did_swap_buffer_ = false;
-  SetNeedsRedrawRect(gfx::Rect(damage_size));
+
+  gfx::Transform adjusted_transform = transform;
+  AdjustTransform(&adjusted_transform, viewport);
+  SetExternalDrawConstraints(
+      adjusted_transform, viewport, clip, valid_for_tile_management);
+  SetNeedsRedrawRect(gfx::Rect(viewport.size()));
+
   if (needs_begin_frame_)
     BeginFrame(cc::BeginFrameArgs::CreateForSynchronousCompositor());
+
+  // After software draws (which might move the viewport arbitrarily), restore
+  // the previous hardware viewport to allow CC's tile manager to prioritize
+  // properly.
+  if (valid_for_tile_management) {
+    cached_hw_transform_ = adjusted_transform;
+    cached_hw_viewport_ = viewport;
+    cached_hw_clip_ = clip;
+  } else {
+    SetExternalDrawConstraints(
+        cached_hw_transform_, cached_hw_viewport_, cached_hw_clip_, true);
+  }
 
   if (did_swap_buffer_)
     OnSwapBuffersComplete(NULL);

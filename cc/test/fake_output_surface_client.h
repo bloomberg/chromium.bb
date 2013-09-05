@@ -27,8 +27,11 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) OVERRIDE {}
   virtual void DidLoseOutputSurface() OVERRIDE;
-  virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
-                                          gfx::Rect viewport) OVERRIDE {}
+  virtual void SetExternalDrawConstraints(
+      const gfx::Transform& transform,
+      gfx::Rect viewport,
+      gfx::Rect clip,
+      bool valid_for_tile_management) OVERRIDE {}
   virtual void SetExternalStencilTest(bool enable) OVERRIDE {}
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
   virtual void SetDiscardBackBufferWhenNotVisible(bool discard) OVERRIDE;

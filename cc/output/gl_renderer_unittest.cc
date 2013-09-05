@@ -158,6 +158,9 @@ class FakeRendererClient : public RendererClient {
     static gfx::Size fake_size(1, 1);
     return gfx::Rect(fake_size);
   }
+  virtual gfx::Rect DeviceClip() const OVERRIDE {
+    return DeviceViewport();
+  }
   virtual float DeviceScaleFactor() const OVERRIDE {
     return scale_factor_;
   }

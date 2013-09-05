@@ -1149,6 +1149,31 @@ TEST_F(ExternalStencilPixelTest, RenderSurfacesIgnoreStencil) {
       ExactPixelComparator(true)));
 }
 
+TEST_F(ExternalStencilPixelTest, DeviceClip) {
+  ClearBackgroundToGreen();
+  gfx::Rect clip_rect(gfx::Point(150, 150), gfx::Size(50, 50));
+  this->ForceDeviceClip(clip_rect);
+
+  // Draw a blue quad that covers the entire device viewport. It should be
+  // clipped to the bottom right corner by the device clip.
+  gfx::Rect rect(this->device_viewport_size_);
+  RenderPass::Id id(1, 1);
+  scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+  scoped_ptr<SharedQuadState> blue_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect);
+  scoped_ptr<SolidColorDrawQuad> blue = SolidColorDrawQuad::Create();
+  blue->SetNew(blue_shared_state.get(), rect, SK_ColorBLUE, false);
+  pass->quad_list.push_back(blue.PassAs<DrawQuad>());
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      PixelTest::NoOffscreenContext,
+      base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")),
+      ExactPixelComparator(true)));
+}
+
 // Software renderer does not support anti-aliased edges.
 TEST_F(GLRendererPixelTest, AntiAliasing) {
   gfx::Rect rect(this->device_viewport_size_);

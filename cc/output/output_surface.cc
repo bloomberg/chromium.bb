@@ -224,8 +224,11 @@ void OutputSurface::SetExternalStencilTest(bool enabled) {
 }
 
 void OutputSurface::SetExternalDrawConstraints(const gfx::Transform& transform,
-                                               gfx::Rect viewport) {
-  client_->SetExternalDrawConstraints(transform, viewport);
+                                               gfx::Rect viewport,
+                                               gfx::Rect clip,
+                                               bool valid_for_tile_management) {
+  client_->SetExternalDrawConstraints(
+      transform, viewport, clip, valid_for_tile_management);
 }
 
 OutputSurface::~OutputSurface() {

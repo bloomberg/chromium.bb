@@ -15,7 +15,11 @@ void PixelTestOutputSurface::Reshape(gfx::Size size, float scale_factor) {
   OutputSurface::Reshape(expanded_size, scale_factor);
 
   gfx::Rect offset_viewport = gfx::Rect(size) + viewport_offset_;
-  SetExternalDrawConstraints(gfx::Transform(), offset_viewport);
+  gfx::Rect offset_clip = device_clip_.IsEmpty()
+                              ? offset_viewport
+                              : device_clip_ + viewport_offset_;
+  SetExternalDrawConstraints(
+      gfx::Transform(), offset_viewport, offset_clip, true);
 }
 
 }  // namespace cc

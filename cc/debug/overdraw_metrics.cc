@@ -147,11 +147,11 @@ void OverdrawMetrics::RecordMetrics(
   }
 }
 
-static gfx::Size DeviceViewportSize(const LayerTreeHost* host) {
+static gfx::Size DrawViewportSize(const LayerTreeHost* host) {
   return host->device_viewport_size();
 }
-static gfx::Size DeviceViewportSize(const LayerTreeHostImpl* host_impl) {
-  return host_impl->device_viewport_size();
+static gfx::Size DrawViewportSize(const LayerTreeHostImpl* host_impl) {
+  return host_impl->DrawViewportSize();
 }
 
 template <typename LayerTreeHostType>
@@ -160,13 +160,13 @@ void OverdrawMetrics::RecordMetricsInternal(
     const LayerTreeHostType* layer_tree_host) const {
   // This gives approximately 10x the percentage of pixels to fill the viewport
   // once.
-  float normalization = 1000.f / (DeviceViewportSize(layer_tree_host).width() *
-                                  DeviceViewportSize(layer_tree_host).height());
+  float normalization = 1000.f / (DrawViewportSize(layer_tree_host).width() *
+                                  DrawViewportSize(layer_tree_host).height());
   // This gives approximately 100x the percentage of tiles to fill the viewport
   // once, if all tiles were 256x256.
   float tile_normalization =
-      10000.f / (DeviceViewportSize(layer_tree_host).width() / 256.f *
-                 DeviceViewportSize(layer_tree_host).height() / 256.f);
+      10000.f / (DrawViewportSize(layer_tree_host).width() / 256.f *
+                 DrawViewportSize(layer_tree_host).height() / 256.f);
   // This gives approximately 10x the percentage of bytes to fill the viewport
   // once, assuming 4 bytes per pixel.
   float byte_normalization = normalization / 4;

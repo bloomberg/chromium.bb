@@ -241,6 +241,51 @@ TEST_F(PictureLayerImplTest, CloneNoInvalidation) {
     VerifyAllTilesExistAndHavePile(tilings->tiling_at(i), active_pile.get());
 }
 
+TEST_F(PictureLayerImplTest, SuppressUpdateTilePriorities) {
+  base::TimeTicks time_ticks;
+  host_impl_.SetCurrentFrameTimeTicks(time_ticks);
+
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(400, 400);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  SetupTrees(pending_pile, active_pile);
+
+  Region invalidation;
+  AddDefaultTilingsWithInvalidation(invalidation);
+  EXPECT_TRUE(host_impl_.manage_tiles_needed());
+  active_layer_->UpdateTilePriorities();
+  host_impl_.ManageTiles();
+  EXPECT_FALSE(host_impl_.manage_tiles_needed());
+
+  time_ticks += base::TimeDelta::FromMilliseconds(200);
+  host_impl_.SetCurrentFrameTimeTicks(time_ticks);
+
+  // Setting this boolean should cause an early out in UpdateTilePriorities.
+  bool valid_for_tile_management = false;
+  host_impl_.SetExternalDrawConstraints(gfx::Transform(),
+                                        gfx::Rect(layer_bounds),
+                                        gfx::Rect(layer_bounds),
+                                        valid_for_tile_management);
+  active_layer_->UpdateTilePriorities();
+  EXPECT_FALSE(host_impl_.manage_tiles_needed());
+
+  time_ticks += base::TimeDelta::FromMilliseconds(200);
+  host_impl_.SetCurrentFrameTimeTicks(time_ticks);
+
+  valid_for_tile_management = true;
+  host_impl_.SetExternalDrawConstraints(gfx::Transform(),
+                                        gfx::Rect(layer_bounds),
+                                        gfx::Rect(layer_bounds),
+                                        valid_for_tile_management);
+  active_layer_->UpdateTilePriorities();
+  EXPECT_TRUE(host_impl_.manage_tiles_needed());
+}
+
 TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(400, 400);

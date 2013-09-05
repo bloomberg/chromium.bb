@@ -18,10 +18,11 @@ class ScopedResource;
 
 class CC_EXPORT RendererClient {
  public:
-  // Draw viewport in non-y-flipped window space. Note that while a draw is in
-  // progress, this is guaranteed to be contained within the output surface
-  // size.
+  // These return the draw viewport and clip in non-y-flipped window space.
+  // Note that while a draw is in progress, these are guaranteed to be
+  // contained within the output surface size.
   virtual gfx::Rect DeviceViewport() const = 0;
+  virtual gfx::Rect DeviceClip() const = 0;
 
   virtual float DeviceScaleFactor() const = 0;
   virtual const LayerTreeSettings& Settings() const = 0;

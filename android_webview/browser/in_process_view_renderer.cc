@@ -387,15 +387,20 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   // Assume we always draw the full visible rect if we are drawing into a layer.
   bool drew_full_visible_rect = true;
 
+  gfx::Rect viewport_rect;
   if (!draw_info->is_layer) {
-    clip_rect.Intersect(cached_global_visible_rect_);
-    drew_full_visible_rect = clip_rect.Contains(cached_global_visible_rect_);
+    viewport_rect = cached_global_visible_rect_;
+    clip_rect.Intersect(viewport_rect);
+    drew_full_visible_rect = clip_rect.Contains(viewport_rect);
+  } else {
+    viewport_rect = clip_rect;
   }
 
   block_invalidates_ = true;
   // TODO(joth): Check return value.
   compositor_->DemandDrawHw(gfx::Size(draw_info->width, draw_info->height),
                             transform,
+                            viewport_rect,
                             clip_rect,
                             state_restore.stencil_enabled());
   block_invalidates_ = false;

@@ -684,7 +684,7 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
   }
 
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    EXPECT_EQ(gfx::Size(20, 20), impl->device_viewport_size());
+    EXPECT_EQ(gfx::Size(20, 20), impl->DrawViewportSize());
     EXPECT_EQ(SK_ColorGRAY, impl->active_tree()->background_color());
 
     EndTest();
@@ -1036,7 +1036,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     ASSERT_EQ(1u, impl->active_tree()->root_layer()->children().size());
 
     // Device viewport is scaled.
-    EXPECT_EQ(gfx::Size(60, 60), impl->device_viewport_size());
+    EXPECT_EQ(gfx::Size(60, 60), impl->DrawViewportSize());
 
     LayerImpl* root = impl->active_tree()->root_layer();
     LayerImpl* child = impl->active_tree()->root_layer()->children()[0];

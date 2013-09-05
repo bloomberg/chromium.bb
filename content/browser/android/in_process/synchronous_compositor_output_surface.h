@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/output/output_surface.h"
 #include "content/public/browser/android/synchronous_compositor.h"
+#include "ui/gfx/transform.h"
 
 namespace cc {
 class ContextProvider;
@@ -67,6 +68,7 @@ class SynchronousCompositorOutputSurface
   void ReleaseHwDraw();
   bool DemandDrawHw(gfx::Size surface_size,
                     const gfx::Transform& transform,
+                    gfx::Rect viewport,
                     gfx::Rect clip,
                     bool stencil_enabled);
   bool DemandDrawSw(SkCanvas* canvas);
@@ -78,7 +80,10 @@ class SynchronousCompositorOutputSurface
   // Private OutputSurface overrides.
   virtual void PostCheckForRetroactiveBeginFrame() OVERRIDE;
 
-  void InvokeComposite(gfx::Size damage_size);
+  void InvokeComposite(const gfx::Transform& transform,
+                       gfx::Rect viewport,
+                       gfx::Rect clip,
+                       bool valid_for_tile_management);
   bool CalledOnValidThread() const;
   SynchronousCompositorOutputSurfaceDelegate* GetDelegate();
 
@@ -86,6 +91,10 @@ class SynchronousCompositorOutputSurface
   bool needs_begin_frame_;
   bool invoking_composite_;
   bool did_swap_buffer_;
+
+  gfx::Transform cached_hw_transform_;
+  gfx::Rect cached_hw_viewport_;
+  gfx::Rect cached_hw_clip_;
 
   // Only valid (non-NULL) during a DemandDrawSw() call.
   SkCanvas* current_sw_canvas_;

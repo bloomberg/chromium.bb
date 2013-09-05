@@ -28,11 +28,16 @@ class PixelTest::PixelTestRendererClient
     : public RendererClient, public OutputSurfaceClient {
  public:
   explicit PixelTestRendererClient(gfx::Rect device_viewport)
-      : device_viewport_(device_viewport), stencil_enabled_(false) {}
+      : device_viewport_(device_viewport),
+        device_clip_(device_viewport),
+        stencil_enabled_(false) {}
 
   // RendererClient implementation.
   virtual gfx::Rect DeviceViewport() const OVERRIDE {
     return device_viewport_;
+  }
+  virtual gfx::Rect DeviceClip() const OVERRIDE {
+    return device_clip_;
   }
   virtual float DeviceScaleFactor() const OVERRIDE {
     return 1.f;
@@ -64,9 +69,13 @@ class PixelTest::PixelTestRendererClient
   virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE {}
   virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) OVERRIDE {}
   virtual void DidLoseOutputSurface() OVERRIDE {}
-  virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
-                                          gfx::Rect viewport) OVERRIDE {
+  virtual void SetExternalDrawConstraints(
+      const gfx::Transform& transform,
+      gfx::Rect viewport,
+      gfx::Rect clip,
+      bool valid_for_tile_management) OVERRIDE {
     device_viewport_ = viewport;
+    device_clip_ = clip;
   }
   virtual void SetExternalStencilTest(bool enable) OVERRIDE {
     stencil_enabled_ = enable;
@@ -77,6 +86,7 @@ class PixelTest::PixelTestRendererClient
 
  private:
   gfx::Rect device_viewport_;
+  gfx::Rect device_clip_;
   bool stencil_enabled_;
   LayerTreeSettings settings_;
 };
@@ -186,6 +196,11 @@ void PixelTest::ForceExpandedViewport(gfx::Size surface_expansion,
     static_cast<PixelTestSoftwareOutputDevice*>(device)
         ->set_surface_expansion_size(surface_expansion);
   }
+}
+
+void PixelTest::ForceDeviceClip(gfx::Rect clip) {
+  static_cast<PixelTestOutputSurface*>(output_surface_.get())
+      ->set_device_clip(clip);
 }
 
 void PixelTest::EnableExternalStencilTest() {

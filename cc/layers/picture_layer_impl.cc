@@ -293,6 +293,12 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 
 void PictureLayerImpl::UpdateTilePriorities() {
   DCHECK(!needs_post_commit_initialization_);
+  if (!layer_tree_impl()->device_viewport_valid_for_tile_management()) {
+    for (size_t i = 0; i < tilings_->num_tilings(); ++i)
+      DCHECK(tilings_->tiling_at(i)->has_ever_been_updated());
+    return;
+  }
+
   if (!tilings_->num_tilings())
     return;
 
@@ -318,12 +324,13 @@ void PictureLayerImpl::UpdateTilePriorities() {
 
   gfx::Transform current_screen_space_transform = screen_space_transform();
 
+  gfx::Size viewport_size = layer_tree_impl()->DrawViewportSize();
   gfx::Rect viewport_in_content_space;
   gfx::Transform screen_to_layer(gfx::Transform::kSkipInitialization);
   if (screen_space_transform().GetInverse(&screen_to_layer)) {
-    gfx::Rect device_viewport(layer_tree_impl()->device_viewport_size());
-    viewport_in_content_space = gfx::ToEnclosingRect(
-        MathUtil::ProjectClippedRect(screen_to_layer, device_viewport));
+    viewport_in_content_space =
+        gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
+            screen_to_layer, gfx::Rect(viewport_size)));
   }
 
   WhichTree tree =
@@ -332,7 +339,7 @@ void PictureLayerImpl::UpdateTilePriorities() {
       layer_tree_impl()->settings().max_tiles_for_interest_area;
   tilings_->UpdateTilePriorities(
       tree,
-      layer_tree_impl()->device_viewport_size(),
+      viewport_size,
       viewport_in_content_space,
       visible_content_rect(),
       last_bounds_,
@@ -796,6 +803,9 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
   raster_source_scale_was_animating_ = animating_transform_to_screen;
 
   if (!change_target_tiling)
+    return;
+
+  if (!layer_tree_impl()->device_viewport_valid_for_tile_management())
     return;
 
   raster_page_scale_ = ideal_page_scale_;

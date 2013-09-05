@@ -26,9 +26,14 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
 
   virtual void CreatePendingTree() OVERRIDE;
 
+  virtual base::TimeTicks CurrentFrameTimeTicks() OVERRIDE;
+  void SetCurrentFrameTimeTicks(base::TimeTicks current_frame_time_ticks);
+
   using LayerTreeHostImpl::ActivatePendingTree;
+  using LayerTreeHostImpl::manage_tiles_needed;
 
  private:
+  base::TimeTicks current_frame_time_ticks_;
   FakeLayerTreeHostImplClient client_;
   FakeRenderingStatsInstrumentation stats_instrumentation_;
 };

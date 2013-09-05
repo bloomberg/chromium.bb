@@ -55,6 +55,7 @@ class PixelTest : public testing::Test {
 
   void ForceExpandedViewport(gfx::Size surface_expansion,
                              gfx::Vector2d viewport_offset);
+  void ForceDeviceClip(gfx::Rect clip);
   void EnableExternalStencilTest();
 
  private:

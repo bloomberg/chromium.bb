@@ -26,10 +26,14 @@ class PixelTestOutputSurface : public OutputSurface {
   void set_viewport_offset(gfx::Vector2d viewport_offset) {
     viewport_offset_ = viewport_offset;
   }
+  void set_device_clip(gfx::Rect device_clip) {
+    device_clip_ = device_clip;
+  }
 
  private:
   gfx::Size surface_expansion_size_;
   gfx::Vector2d viewport_offset_;
+  gfx::Rect device_clip_;
 };
 
 }  // namespace cc

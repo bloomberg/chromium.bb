@@ -58,6 +58,9 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
   virtual gfx::Rect DeviceViewport() const OVERRIDE {
     return viewport_;
   }
+  virtual gfx::Rect DeviceClip() const OVERRIDE {
+    return DeviceViewport();
+  }
   virtual float DeviceScaleFactor() const OVERRIDE {
     return 1.f;
   }

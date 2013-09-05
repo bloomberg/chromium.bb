@@ -260,14 +260,33 @@ gfx::RectF DirectRenderer::ComputeScissorRectForRenderPass(
   return render_pass_scissor;
 }
 
+bool DirectRenderer::NeedDeviceClip(const DrawingFrame* frame) const {
+  if (frame->current_render_pass != frame->root_render_pass)
+    return false;
+
+  return !client_->DeviceClip().Contains(client_->DeviceViewport());
+}
+
+gfx::Rect DirectRenderer::DeviceClipRect(const DrawingFrame* frame) const {
+  gfx::Rect device_clip_rect = client_->DeviceClip();
+  if (FlippedFramebuffer())
+    device_clip_rect.set_y(current_surface_size_.height() -
+                           device_clip_rect.bottom());
+  return device_clip_rect;
+}
+
 void DirectRenderer::SetScissorStateForQuad(const DrawingFrame* frame,
                                             const DrawQuad& quad) {
   if (quad.isClipped()) {
-    gfx::RectF quad_scissor_rect = quad.clipRect();
-    SetScissorTestRect(MoveFromDrawToWindowSpace(quad_scissor_rect));
-  } else {
-    EnsureScissorTestDisabled();
+    SetScissorTestRectInDrawSpace(frame, quad.clipRect());
+    return;
   }
+  if (NeedDeviceClip(frame)) {
+    SetScissorTestRect(DeviceClipRect(frame));
+    return;
+  }
+
+  EnsureScissorTestDisabled();
 }
 
 void DirectRenderer::SetScissorStateForQuadWithRenderPassScissor(
@@ -286,7 +305,15 @@ void DirectRenderer::SetScissorStateForQuadWithRenderPassScissor(
   }
 
   *should_skip_quad = false;
-  SetScissorTestRect(MoveFromDrawToWindowSpace(quad_scissor_rect));
+  SetScissorTestRectInDrawSpace(frame, quad_scissor_rect);
+}
+
+void DirectRenderer::SetScissorTestRectInDrawSpace(const DrawingFrame* frame,
+                                                   gfx::RectF draw_space_rect) {
+  gfx::Rect window_space_rect = MoveFromDrawToWindowSpace(draw_space_rect);
+  if (NeedDeviceClip(frame))
+    window_space_rect.Intersect(DeviceClipRect(frame));
+  SetScissorTestRect(window_space_rect);
 }
 
 void DirectRenderer::FinishDrawingQuadList() {}
@@ -303,12 +330,14 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
 
   if (using_scissor_as_optimization) {
     render_pass_scissor = ComputeScissorRectForRenderPass(frame);
-    SetScissorTestRect(MoveFromDrawToWindowSpace(render_pass_scissor));
+    SetScissorTestRectInDrawSpace(frame, render_pass_scissor);
   }
 
   if (frame->current_render_pass != frame->root_render_pass ||
       client_->ShouldClearRootRenderPass()) {
-    if (!using_scissor_as_optimization)
+    if (NeedDeviceClip(frame))
+      SetScissorTestRect(DeviceClipRect(frame));
+    else if (!using_scissor_as_optimization)
       EnsureScissorTestDisabled();
     ClearFramebuffer(frame);
   }

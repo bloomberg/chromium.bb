@@ -36,4 +36,15 @@ void FakeLayerTreeHostImpl::CreatePendingTree() {
       1.f, 1.f / arbitrary_large_page_scale, arbitrary_large_page_scale);
 }
 
+base::TimeTicks FakeLayerTreeHostImpl::CurrentFrameTimeTicks() {
+  if (current_frame_time_ticks_.is_null())
+    return LayerTreeHostImpl::CurrentFrameTimeTicks();
+  return current_frame_time_ticks_;
+}
+
+void FakeLayerTreeHostImpl::SetCurrentFrameTimeTicks(
+    base::TimeTicks current_frame_time_ticks) {
+  current_frame_time_ticks_ = current_frame_time_ticks;
+}
+
 }  // namespace cc

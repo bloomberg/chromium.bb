@@ -5006,6 +5006,9 @@ class TestRenderer : public GLRenderer, public RendererClient {
   virtual gfx::Rect DeviceViewport() const OVERRIDE {
     return gfx::Rect(viewport_size_);
   }
+  virtual gfx::Rect DeviceClip() const OVERRIDE {
+    return DeviceViewport();
+  }
   virtual float DeviceScaleFactor() const OVERRIDE {
     return 1.f;
   }
@@ -5441,7 +5444,7 @@ TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, FrameIncludesDamageRect) {
   host_impl_->active_tree()->SetRootLayer(root.PassAs<LayerImpl>());
 
   // Draw a frame. In the first frame, the entire viewport should be damaged.
-  gfx::Rect full_frame_damage = gfx::Rect(host_impl_->device_viewport_size());
+  gfx::Rect full_frame_damage(host_impl_->DrawViewportSize());
   DrawFrameAndTestDamage(full_frame_damage);
 
   // The second frame has damage that doesn't touch the child layer. Its quads

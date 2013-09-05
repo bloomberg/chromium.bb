@@ -197,6 +197,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       device_scale_factor_(1.f),
       overhang_ui_resource_id_(0),
       overdraw_bottom_height_(0.f),
+      device_viewport_valid_for_tile_management_(true),
       external_stencil_test_enabled_(false),
       animation_registrar_(AnimationRegistrar::Create()),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
@@ -293,7 +294,7 @@ bool LayerTreeHostImpl::CanDraw() const {
   if (output_surface_->capabilities().draw_and_swap_full_viewport_every_frame)
     return true;
 
-  if (device_viewport_size_.IsEmpty()) {
+  if (DrawViewportSize().IsEmpty()) {
     TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::CanDraw empty viewport",
                          TRACE_EVENT_SCOPE_THREAD);
     return false;
@@ -328,6 +329,9 @@ void LayerTreeHostImpl::ManageTiles() {
     return;
   if (!manage_tiles_needed_)
     return;
+  if (!device_viewport_valid_for_tile_management_)
+    return;
+
   manage_tiles_needed_ = false;
   tile_manager_->ManageTiles();
 
@@ -355,7 +359,7 @@ void LayerTreeHostImpl::StartPageScaleAnimation(gfx::Vector2d target_offset,
   gfx::Vector2dF scroll_total =
       RootScrollLayer()->scroll_offset() + RootScrollLayer()->ScrollDelta();
   gfx::SizeF scaled_scrollable_size = active_tree_->ScrollableSize();
-  gfx::SizeF viewport_size = VisibleViewportSize();
+  gfx::SizeF viewport_size = UnscaledScrollableViewportSize();
 
   double start_time_seconds = (start_time - base::TimeTicks()).InSecondsF();
 
@@ -1187,9 +1191,13 @@ void LayerTreeHostImpl::SetManagedMemoryPolicy(
 
 void LayerTreeHostImpl::SetExternalDrawConstraints(
     const gfx::Transform& transform,
-    gfx::Rect viewport) {
+    gfx::Rect viewport,
+    gfx::Rect clip,
+    bool valid_for_tile_management) {
   external_transform_ = transform;
   external_viewport_ = viewport;
+  external_clip_ = clip;
+  device_viewport_valid_for_tile_management_ = valid_for_tile_management;
 }
 
 void LayerTreeHostImpl::SetExternalStencilTest(bool enabled) {
@@ -1390,7 +1398,7 @@ float LayerTreeHostImpl::DeviceScaleFactor() const {
   return device_scale_factor_;
 }
 
-gfx::SizeF LayerTreeHostImpl::VisibleViewportSize() const {
+gfx::SizeF LayerTreeHostImpl::UnscaledScrollableViewportSize() const {
   // The container layer bounds should be used if non-overlay scrollbars may
   // exist since it adjusts for them.
   LayerImpl* container_layer = active_tree_->RootContainerLayer();
@@ -1401,7 +1409,7 @@ gfx::SizeF LayerTreeHostImpl::VisibleViewportSize() const {
   }
 
   gfx::SizeF dip_size =
-      gfx::ScaleSize(device_viewport_size(), 1.f / device_scale_factor());
+      gfx::ScaleSize(device_viewport_size_, 1.f / device_scale_factor());
 
   float top_offset =
       top_controls_manager_ ? top_controls_manager_->content_top_offset() : 0.f;
@@ -1796,7 +1804,7 @@ void LayerTreeHostImpl::SetViewportSize(gfx::Size device_viewport_size) {
   if (device_viewport_size == device_viewport_size_)
     return;
 
-  if (pending_tree_ && device_viewport_size_ != device_viewport_size)
+  if (pending_tree_)
     active_tree_->SetViewportSizeInvalid();
 
   device_viewport_size_ = device_viewport_size;
@@ -1838,6 +1846,10 @@ void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {
   SetFullRootLayerDamage();
 }
 
+gfx::Size LayerTreeHostImpl::DrawViewportSize() const {
+  return DeviceViewport().size();
+}
+
 gfx::Rect LayerTreeHostImpl::DeviceViewport() const {
   if (external_viewport_.IsEmpty())
     return gfx::Rect(device_viewport_size_);
@@ -1845,7 +1857,14 @@ gfx::Rect LayerTreeHostImpl::DeviceViewport() const {
   return external_viewport_;
 }
 
-const gfx::Transform& LayerTreeHostImpl::DeviceTransform() const {
+gfx::Rect LayerTreeHostImpl::DeviceClip() const {
+  if (external_clip_.IsEmpty())
+    return DeviceViewport();
+
+  return external_clip_;
+}
+
+const gfx::Transform& LayerTreeHostImpl::DrawTransform() const {
   return external_transform_;
 }
 
@@ -2298,7 +2317,7 @@ scoped_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
 }
 
 void LayerTreeHostImpl::SetFullRootLayerDamage() {
-  SetViewportDamage(gfx::Rect(device_viewport_size_));
+  SetViewportDamage(gfx::Rect(DrawViewportSize()));
 }
 
 void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks time) {

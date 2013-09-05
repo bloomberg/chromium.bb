@@ -52,8 +52,9 @@ class SynchronousCompositorImpl
       scoped_refptr<gfx::GLSurface> surface) OVERRIDE;
   virtual void ReleaseHwDraw() OVERRIDE;
   virtual bool DemandDrawHw(
-      gfx::Size view_size,
+      gfx::Size surface_size,
       const gfx::Transform& transform,
+      gfx::Rect viewport,
       gfx::Rect clip,
       bool stencil_enabled) OVERRIDE;
   virtual bool DemandDrawSw(SkCanvas* canvas) OVERRIDE;

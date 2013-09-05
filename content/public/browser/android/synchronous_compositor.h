@@ -55,9 +55,10 @@ class CONTENT_EXPORT SynchronousCompositor {
   // then transformed through |transform|, and finally clipped to |view_size|
   // and by the existing stencil buffer if any.
   virtual bool DemandDrawHw(
-      gfx::Size view_size,
+      gfx::Size surface_size,
       const gfx::Transform& transform,
-      gfx::Rect damage_area,
+      gfx::Rect viewport,
+      gfx::Rect clip,
       bool stencil_enabled) = 0;
 
   // "On demand" SW draw, into the supplied canvas (observing the transform

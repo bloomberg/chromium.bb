@@ -36,7 +36,9 @@ class CC_EXPORT OutputSurfaceClient {
   virtual void DidLoseOutputSurface() = 0;
   virtual void SetExternalStencilTest(bool enabled) = 0;
   virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
-                                          gfx::Rect viewport) = 0;
+                                          gfx::Rect viewport,
+                                          gfx::Rect clip,
+                                          bool valid_for_tile_management) = 0;
   virtual void SetDiscardBackBufferWhenNotVisible(bool discard) = 0;
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
   // If set, |callback| will be called subsequent to each new tree activation,
