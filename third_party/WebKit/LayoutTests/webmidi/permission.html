@@ -14,52 +14,42 @@ shouldBeDefined("navigator.requestMIDIAccess");
 window.jsTestIsAsync = true;
 
 var finishSuccessfully = function () {
-    testPassed('all permission request rests pass successfully.');
+    testPassed("all permission request rests pass successfully.");
     finishJSTest();
 }
 
 var rejectSysEx = function (next) {
     testRunner.setMIDISysExPermission(false);
-    try {
-        promise = navigator.requestMIDIAccess({'sysex': true});
-        shouldBeDefined("promise");
-        shouldBeDefined("promise.then");
-        promise.then(function(access) {
-            testFailed('sysex permission request should be rejected.');
-            finishJSTest();
-        }, function (error) {
-            testPassed('sysex permission request is successfully rejected.');
-            if (next)
-                next();
-            else
-                finishSuccessfully();
-        });
-    } catch (e) {
-        testFailed('navigator.requestMIDIAccess({\'sysex\': true}) should not throw exception.');
+    shouldNotThrow("promise = navigator.requestMIDIAccess({sysex: true})");
+    shouldBeDefined("promise");
+    shouldBeDefined("promise.then");
+    promise.then(function(access) {
+        testFailed("sysex permission request should be rejected.");
         finishJSTest();
-    }
+    }, function (error) {
+        testPassed("sysex permission request is successfully rejected.");
+        if (next)
+            next();
+        else
+            finishSuccessfully();
+    });
 }
 
 var acceptSysEx = function (next) {
     testRunner.setMIDISysExPermission(true);
-    try {
-        promise = navigator.requestMIDIAccess({'sysex': true});
-        shouldBeDefined("promise");
-        shouldBeDefined("promise.then");
-        promise.then(function(access) {
-            testPassed('sysex permission request is successfully accepted.');
-            if (next)
-                next();
-            else
-                finishSuccessfully();
-        }, function (error) {
-            testFailed('sysex permission request should be accepted.');
-            finishJSTest();
-        });
-    } catch (e) {
-        testFailed('navigator.requestMIDIAccess({\'sysex\': true}) should not throw exception.');
+    shouldNotThrow("promise = navigator.requestMIDIAccess({sysex: true})");
+    shouldBeDefined("promise");
+    shouldBeDefined("promise.then");
+    promise.then(function(access) {
+        testPassed("sysex permission request is successfully accepted.");
+        if (next)
+            next();
+        else
+            finishSuccessfully();
+    }, function (error) {
+        testFailed("sysex permission request should be accepted.");
         finishJSTest();
-    }
+    });
 }
 
 rejectSysEx(acceptSysEx);

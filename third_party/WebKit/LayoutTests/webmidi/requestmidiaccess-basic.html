@@ -5,8 +5,6 @@
 <script src="../fast/js/resources/js-test-pre.js"></script>
 </head>
 <body>
-<p id="description"></p>
-<div id="console"></div>
 <script>
 description("Test if requestMIDIAccess is available.");
 
@@ -18,8 +16,6 @@ shouldBeDefined("promise");
 shouldBeDefined("promise.then");
 
 promise.then(function(){}, function(){});
-
-window.successfullyParsed = true;
 
 </script>
 <script src="../fast/js/resources/js-test-post.js"></script>

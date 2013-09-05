@@ -3,14 +3,13 @@ Tests navigator.requestMIDIAccess.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS navigator.requestMIDIAccess().then(successCallback1, errorCallback1) did not throw exception.
 PASS requestMIDIAccess() succeeded with access [object MIDIAccess].
 PASS access.inputs().length is 1
 PASS access.outputs().length is 1
 PASS input attributes are correct
 PASS output attributes are correct
 PASS requestMIDIAccess() was correctly blocked for System Exclusive access with error [object DOMError].
-PASS navigator.requestMIDIAccess() did not throw exception.
-PASS navigator.requestMIDIAccess() did not throw exception.
 PASS successfullyParsed is true
 
 TEST COMPLETE

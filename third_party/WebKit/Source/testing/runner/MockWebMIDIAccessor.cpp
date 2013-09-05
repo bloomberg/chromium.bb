@@ -33,9 +33,33 @@
 #include "TestInterfaces.h"
 #include "TestRunner.h"
 #include "public/platform/WebMIDIAccessorClient.h"
+#include "public/testing/WebTestDelegate.h"
 #include "public/testing/WebTestRunner.h"
 
 using namespace WebKit;
+
+namespace {
+
+class DidStartSessionTask : public WebTestRunner::WebMethodTask<WebTestRunner::MockWebMIDIAccessor> {
+public:
+    DidStartSessionTask(WebTestRunner::MockWebMIDIAccessor* object, WebKit::WebMIDIAccessorClient* client, bool result)
+        : WebMethodTask<WebTestRunner::MockWebMIDIAccessor>(object)
+        , m_client(client)
+        , m_result(result)
+    {
+    }
+
+    virtual void runIfValid() OVERRIDE
+    {
+        m_client->didStartSession(m_result);
+    }
+
+private:
+    WebKit::WebMIDIAccessorClient* m_client;
+    bool m_result;
+};
+
+} // namespace
 
 namespace WebTestRunner {
 
@@ -54,7 +78,7 @@ void MockWebMIDIAccessor::startSession()
     // Add a mock input and output port.
     m_client->didAddInputPort("MockInputID", "MockInputManufacturer", "MockInputName", "MockInputVersion");
     m_client->didAddOutputPort("MockOutputID", "MockOutputManufacturer", "MockOutputName", "MockOutputVersion");
-    m_client->didStartSession(m_interfaces->testRunner()->midiAccessorResult());
+    m_interfaces->delegate()->postTask(new DidStartSessionTask(this, m_client, m_interfaces->testRunner()->midiAccessorResult()));
 }
 
 } // namespace WebTestRunner

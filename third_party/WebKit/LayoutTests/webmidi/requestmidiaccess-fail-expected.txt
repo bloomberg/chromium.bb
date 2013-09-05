@@ -3,9 +3,9 @@ Tests navigator.requestMIDIAccess failure.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-FAIL error.name should be InvalidStateError. Threw exception ReferenceError: error is not defined
+PASS navigator.requestMIDIAccess().then(successCallback, errorCallback) did not throw exception.
+PASS errorName is 'InvalidStateError'
 PASS requestMIDIAccess() fail as expected.
-PASS navigator.requestMIDIAccess() did not throw exception.
 PASS successfullyParsed is true
 
 TEST COMPLETE

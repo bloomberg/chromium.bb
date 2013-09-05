@@ -33,6 +33,7 @@
 
 #include "TestCommon.h"
 #include "public/platform/WebMIDIAccessor.h"
+#include "public/testing/WebTask.h"
 
 namespace WebKit {
 class WebMIDIAccessorClient;
@@ -55,8 +56,12 @@ public:
         size_t length,
         double timestamp) OVERRIDE { }
 
+    // WebTask related methods
+    WebTaskList* taskList() { return &m_taskList; }
+
 private:
     WebKit::WebMIDIAccessorClient* m_client;
+    WebTaskList m_taskList;
     TestInterfaces* m_interfaces;
 };
 

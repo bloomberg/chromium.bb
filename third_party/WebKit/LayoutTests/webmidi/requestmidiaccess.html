@@ -5,8 +5,6 @@
 <script src="../fast/js/resources/js-test-pre.js"></script>
 </head>
 <body>
-<p id="description"></p>
-<div id="console"></div>
 <script>
 description("Tests navigator.requestMIDIAccess.");
 
@@ -15,11 +13,11 @@ var access;
 function successCallback1(a) {
     access = a;
 
-    testPassed('requestMIDIAccess() succeeded with access ' + access + '.');
+    testPassed("requestMIDIAccess() succeeded with access " + access + ".");
 
     // Validate that we have one mock input and one mock output.
-    shouldBe('access.inputs().length', '1');
-    shouldBe('access.outputs().length', '1');
+    shouldBe("access.inputs().length", "1");
+    shouldBe("access.outputs().length", "1");
 
     var inputs = access.inputs();
     var outputs = access.outputs();
@@ -31,18 +29,18 @@ function successCallback1(a) {
         input.manufacturer == "MockInputManufacturer" &&
         input.name == "MockInputName" &&
         input.version == "MockInputVersion") {
-        testPassed('input attributes are correct');
+        testPassed("input attributes are correct");
     } else {
-        testFailed('input attributes are not correct');
+        testFailed("input attributes are not correct");
     }
 
     if (output.id == "MockOutputID" &&
         output.manufacturer == "MockOutputManufacturer" &&
         output.name == "MockOutputName" &&
         output.version == "MockOutputVersion") {
-        testPassed('output attributes are correct');
+        testPassed("output attributes are correct");
     } else {
-        testFailed('output attributes are not correct');
+        testFailed("output attributes are not correct");
     }
 
     // Test sending of MIDI data with a Uint8Array.
@@ -56,42 +54,28 @@ function successCallback1(a) {
     output.send([0x90, 0x45, 0x7f], performance.now());
 
     // Now test System Exclusive access - our test mock should not allow this type of access.
-    try {
-        navigator.requestMIDIAccess( { sysex: true } ).then(successCallback2, errorCallback2);
-        testPassed('navigator.requestMIDIAccess() did not throw exception.');
-    } catch(e) {
-        testFailed('navigator.requestMIDIAccess() should not throw exception.');
-        finishJSTest();
-    }
+    shouldNotThrow("navigator.requestMIDIAccess({sysex: true}).then(successCallback2, errorCallback2)");
 }
 
 function errorCallback1(error) {
-    testFailed('requestMIDIAccess() error callback should not be called when requesting basic access.');
+    testFailed("requestMIDIAccess() error callback should not be called when requesting basic access.");
     finishJSTest();
 }
 
 function successCallback2(access) {
-    testFailed('requestMIDIAccess() was not correctly blocked for System Exclusive access.');
+    testFailed("requestMIDIAccess() was not correctly blocked for System Exclusive access.");
     finishJSTest();
 }
 
 function errorCallback2(error) {
-    testPassed('requestMIDIAccess() was correctly blocked for System Exclusive access with error ' + error + '.');
+    testPassed("requestMIDIAccess() was correctly blocked for System Exclusive access with error " + error + ".");
     finishJSTest();
 }
 
 window.jsTestIsAsync = true;
 
 // Test basic access, with no System Exclusive.
-try {
-    navigator.requestMIDIAccess().then(successCallback1, errorCallback1);
-    testPassed('navigator.requestMIDIAccess() did not throw exception.');
-} catch(e) {
-    testFailed('navigator.requestMIDIAccess() should not throw exception.');
-    finishJSTest();
-}
-
-window.successfullyParsed = true;
+shouldNotThrow("navigator.requestMIDIAccess().then(successCallback1, errorCallback1)");
 
 </script>
 <script src="../fast/js/resources/js-test-post.js"></script>

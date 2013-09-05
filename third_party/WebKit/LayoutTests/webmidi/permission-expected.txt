@@ -5,9 +5,11 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS testRunner.setMIDISysExPermission is defined.
 PASS navigator.requestMIDIAccess is defined.
+PASS promise = navigator.requestMIDIAccess({sysex: true}) did not throw exception.
 PASS promise is defined.
 PASS promise.then is defined.
 PASS sysex permission request is successfully rejected.
+PASS promise = navigator.requestMIDIAccess({sysex: true}) did not throw exception.
 PASS promise is defined.
 PASS promise.then is defined.
 PASS sysex permission request is successfully accepted.
