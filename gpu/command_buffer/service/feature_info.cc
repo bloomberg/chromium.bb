@@ -684,6 +684,11 @@ void FeatureInfo::InitializeFeatures() {
     // TODO(dsinclair): Add AddExtensionString("GL_CHROMIUM_sampler_objects")
     // when available.
   }
+
+  if (is_es3) {
+    // DiscardFramebufferEXT is automatically bound to InvalidateFramebuffer.
+    AddExtensionString("GL_EXT_discard_framebuffer");
+  }
 }
 
 void FeatureInfo::AddExtensionString(const std::string& str) {

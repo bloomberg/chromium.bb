@@ -747,7 +747,7 @@ GL_FUNCTIONS = [
                        'APPLE_vertex_array_object',
                        'ARB_vertex_array_object'] },
 { 'return_type': 'void',
-  'names': ['glDiscardFramebufferEXT'],
+  'names': ['glDiscardFramebufferEXT', 'glInvalidateFramebuffer'],
   'arguments': 'GLenum target, GLsizei numAttachments, '
       'const GLenum* attachments' },
 ]
