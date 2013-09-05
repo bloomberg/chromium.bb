@@ -1,14 +1,4 @@
 Tests sanity of timeline timestamps.
 
-time is an illusion #0
-time is an illusion #1
-time is an illusion #2
-time is an illusion #3
-time is an illusion #4
-time is an illusion #5
-time is an illusion #6
-time is an illusion #7
-time is an illusion #8
-time is an illusion #9
 done
 

@@ -6,33 +6,24 @@
 
 function performActions()
 {
-    for (var i = 0; i < 10; ++i)
-        console.timeStamp("time is an illusion #" + i);
-    console.timeStamp("done");
+    console.timeStamp("time is an illusion");
 }
 
 function test()
 {
     var beforeStart = Date.now();
-    var previousTime;
     InspectorTest.startTimeline();
     InspectorTest.waitForRecordType("TimeStamp", onTimeStamp);
     InspectorTest.evaluateInPage("performActions()");
 
     function onTimeStamp(record)
     {
-        var model = WebInspector.panels.timeline._model;
-        var startTime = model._startTime;
-        var startTimestamp = model._timestampsBase;
-        InspectorTest.assertTrue(typeof startTime === "number", "Timeline start time is defined.");
-        InspectorTest.assertTrue(typeof startTimestamp === "number", "Timeline start timestamp is defined.");
-        InspectorTest.assertGreaterOrEqual(startTime + record.startTime, beforeStart, "record startTime is not before the timeline start.");
-        if (previousTime)
-            InspectorTest.assertGreaterOrEqual(record.startTime, previousTime, "records startTime should not decrease");
-        previousTime = record.startTime;
-        InspectorTest.addResult(record.data.message);
-        if (record.data.message === "done")
-            InspectorTest.stopTimeline(InspectorTest.completeTest.bind(InspectorTest));
+        var now = Date.now();
+        var eventTime = record.startTime;
+        InspectorTest.assertGreaterOrEqual(eventTime, beforeStart, "event time should be after timeline start time");
+        InspectorTest.assertGreaterOrEqual(now, Math.floor(eventTime), "event time should be before now");
+        InspectorTest.addResult("done");
+        InspectorTest.stopTimeline(InspectorTest.completeTest.bind(InspectorTest));
     }
 }
 

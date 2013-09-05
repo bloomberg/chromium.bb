@@ -47,6 +47,7 @@ InspectorTest.startTimeline = function(callback)
     WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, InspectorTest._addTimelineEvent);
 };
 
+
 InspectorTest.waitForRecordType = function(recordType, callback)
 {
     WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, addEvent);
