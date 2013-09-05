@@ -370,20 +370,29 @@ void RenderTableSection::distributeExtraRowSpanHeightToRemainingRows(RenderTable
     extraRowSpanningHeight -= accumulatedPositionIncrease;
 }
 
-// To avoid unneeded extra height distributions, we apply the following sorting algorithm:
-// 1. We sort by increasing start row but decreasing last row (ie the top-most, shortest cells first).
-// 2. For cells spanning the same rows, we sort by intrinsic size.
-static bool compareRowSpanCellsInHeightDistributionOrder(const RenderTableCell* cell2, const RenderTableCell* cell1)
+static bool cellIsFullyIncludedInOtherCell(const RenderTableCell* cell1, const RenderTableCell* cell2)
 {
-    unsigned cellRowIndex1 = cell1->rowIndex();
-    unsigned cellRowSpan1 = cell1->rowSpan();
-    unsigned cellRowIndex2 = cell2->rowIndex();
-    unsigned cellRowSpan2 = cell2->rowSpan();
+    return (cell1->rowIndex() >= cell2->rowIndex() && (cell1->rowIndex() + cell1->rowSpan()) <= (cell2->rowIndex() + cell2->rowSpan()));
+}
 
-    if (cellRowIndex1 == cellRowIndex2 && cellRowSpan1 == cellRowSpan2)
-        return (cell2->logicalHeightForRowSizing() > cell1->logicalHeightForRowSizing());
+// To avoid unneeded extra height distributions, we apply the following sorting algorithm:
+static bool compareRowSpanCellsInHeightDistributionOrder(const RenderTableCell* cell1, const RenderTableCell* cell2)
+{
+    // Sorting bigger height cell first if cells are at same index with same span because we will skip smaller
+    // height cell to distribute it's extra height.
+    if (cell1->rowIndex() == cell2->rowIndex() && cell1->rowSpan() == cell2->rowSpan())
+        return (cell1->logicalHeightForRowSizing() > cell2->logicalHeightForRowSizing());
+    // Sorting inner most cell first because if inner spanning cell'e extra height is distributed then outer
+    // spanning cell's extra height will adjust accordingly. In reverse order, there is more chances that outer
+    // spanning cell's height will exceed than defined by user.
+    if (cellIsFullyIncludedInOtherCell(cell1, cell2))
+        return true;
+    // Sorting lower row index first because first we need to apply the extra height of spanning cell which
+    // comes first in the table so lower rows's position would increment in sequence.
+    if (cellIsFullyIncludedInOtherCell(cell2, cell1))
+        return (cell1->rowIndex() < cell2->rowIndex());
 
-    return (cellRowIndex2 >= cellRowIndex1 && (cellRowIndex2 + cellRowSpan2) <= (cellRowIndex1 + cellRowSpan1));
+    return false;
 }
 
 // Distribute rowSpan cell height in rows those comes in rowSpan cell based on the ratio of row's height if
