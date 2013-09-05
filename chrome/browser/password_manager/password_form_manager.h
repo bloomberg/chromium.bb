@@ -71,6 +71,18 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // the same thread!
   bool HasCompletedMatching();
 
+  // Sets current password to be saved when ApplyEdits() is called. Will
+  // override a previous call to BlacklistPassword().
+  void SavePassword();
+
+  // Sets current password to be blacklisted when ApplyEdits() is called. Will
+  // override a previous call to SavePassword().
+  void BlacklistPassword();
+
+  // Persist changes from the latest call to either SavePassword() or
+  // BlacklistPassword().
+  void ApplyChange();
+
   // Determines if the user opted to 'never remember' passwords for this form.
   bool IsBlacklisted();
 
@@ -105,6 +117,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // A user opted to 'never remember' passwords for this form.
   // Blacklist it so that from now on when it is seen we ignore it.
+
+  // TODO: Make this private once we switch to the new UI.
   void PermanentlyBlacklist();
 
   // If the user has submitted observed_form_, provisionally hold on to
@@ -120,6 +134,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Handles save-as-new or update of the form managed by this manager.
   // Note the basic data of updated_credentials must match that of
   // observed_form_ (e.g DoesManage(pending_credentials_) == true).
+
+  // TODO: Make this private once we switch to the new UI.
   void Save();
 
   // Call these if/when we know the form submission worked or failed.
@@ -291,6 +307,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
   ManagerAction manager_action_;
   UserAction user_action_;
   SubmitResult submit_result_;
+  bool should_save_password_;
+  bool should_blacklist_password_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };

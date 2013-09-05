@@ -113,6 +113,8 @@ class ContentSettingBubbleContents : public content::NotificationObserver,
   views::Link* custom_link_;
   views::Link* manage_link_;
   views::LabelButton* close_button_;
+  views::LabelButton* never_button_;
+  views::LabelButton* save_button_;
   scoped_ptr<views::MenuRunner> menu_runner_;
   MediaMenuPartsMap media_menus_;
 
