@@ -135,7 +135,7 @@ data_source_send(struct weston_data_source *base,
 		xcb_flush(wm->conn);
 
 		fcntl(fd, F_SETFL, O_WRONLY | O_NONBLOCK);
-		wm->data_source_fd = fcntl(fd, F_DUPFD_CLOEXEC, fd);
+		wm->data_source_fd = fd;
 	}
 }
 
