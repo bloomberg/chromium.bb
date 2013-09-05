@@ -22,7 +22,10 @@ class WebContentsImpl;
 struct FaviconURL;
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
+struct LoadFromMemoryCacheDetails;
 struct Referrer;
+struct ResourceRedirectDetails;
+struct ResourceRequestDetails;
 
 // An observer API implemented by classes which are interested in various page
 // load events from WebContents.  They also get a chance to filter IPC messages.
@@ -97,8 +100,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // This method is invoked right after the DidStartProvisionalLoadForFrame if
   // the provisional load affects the main frame, or if the provisional load
   // was redirected. The latter use case is DEPRECATED. You should listen to
-  // the ResourceDispatcherHost's RESOURCE_RECEIVED_REDIRECT notification
-  // instead.
+  // WebContentsObserver::DidGetRedirectForResourceRequest instead.
   virtual void ProvisionalChangeToMainFrameUrl(
       const GURL& url,
       RenderViewHost* render_view_host) {}
@@ -165,6 +167,20 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                            int error_code,
                            const string16& error_description,
                            RenderViewHost* render_view_host) {}
+
+  // This method is invoked when content was loaded from an in-memory cache.
+  virtual void DidLoadResourceFromMemoryCache(
+      const LoadFromMemoryCacheDetails& details) {}
+
+  // This method is invoked when a response has been received for a resource
+  // request.
+  virtual void DidGetResourceResponseStart(
+      const ResourceRequestDetails& details) {}
+
+  // This method is invoked when a redirect was received while requesting a
+  // resource.
+  virtual void DidGetRedirectForResourceRequest(
+      const ResourceRedirectDetails& details) {}
 
   // This method is invoked when a new non-pending navigation entry is created.
   // This corresponds to one NavigationController entry being created

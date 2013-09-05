@@ -14,8 +14,6 @@
 #include "content/browser/ssl/ssl_policy_backend.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "url/gurl.h"
@@ -29,6 +27,7 @@ class BrowserContext;
 class NavigationEntryImpl;
 class NavigationControllerImpl;
 class SSLPolicy;
+struct LoadCommittedDetails;
 struct LoadFromMemoryCacheDetails;
 struct ResourceRedirectDetails;
 struct ResourceRequestDetails;
@@ -41,7 +40,7 @@ struct ResourceRequestDetails;
 // The security state (secure/insecure) is stored in the navigation entry.
 // Along with it are stored any SSL error code and the associated cert.
 
-class SSLManager : public NotificationObserver {
+class SSLManager {
  public:
   // Entry point for SSLCertificateErrors.  This function begins the process
   // of resolving a certificate error during an SSL connection.  SSLManager
@@ -74,32 +73,16 @@ class SSLManager : public NotificationObserver {
   // NavigationController is guaranteed to outlive the SSLManager.
   NavigationControllerImpl* controller() { return controller_; }
 
-  // This entry point is called directly (instead of via the notification
-  // service) because we need more precise control of the order in which folks
-  // are notified of this event.
-  void DidCommitProvisionalLoad(const NotificationDetails& details);
+  void DidCommitProvisionalLoad(const LoadCommittedDetails& details);
+  void DidLoadFromMemoryCache(const LoadFromMemoryCacheDetails& details);
+  void DidStartResourceResponse(const ResourceRequestDetails& details);
+  void DidReceiveResourceRedirect(const ResourceRedirectDetails& details);
 
   // Insecure content entry point.
   void DidDisplayInsecureContent();
   void DidRunInsecureContent(const std::string& security_origin);
 
-  // Entry point for navigation.  This function begins the process of updating
-  // the security UI when the main frame navigates to a new URL.
-  //
-  // Called on the UI thread.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
-
  private:
-  // Entry points for notifications to which we subscribe. Note that
-  // DidCommitProvisionalLoad uses the abstract NotificationDetails type since
-  // the type we need is in NavigationController which would create a circular
-  // header file dependency.
-  void DidLoadFromMemoryCache(LoadFromMemoryCacheDetails* details);
-  void DidStartResourceResponse(ResourceRequestDetails* details);
-  void DidReceiveResourceRedirect(ResourceRedirectDetails* details);
-
   // Update the NavigationEntry with our current state.
   void UpdateEntry(NavigationEntryImpl* entry);
 
@@ -112,9 +95,6 @@ class SSLManager : public NotificationObserver {
   // The NavigationController that owns this SSLManager.  We are responsible
   // for the security UI of this tab.
   NavigationControllerImpl* controller_;
-
-  // Handles registering notifications with the NotificationService.
-  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLManager);
 };

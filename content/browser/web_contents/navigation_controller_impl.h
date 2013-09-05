@@ -363,7 +363,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   // of the restored entries to update its max page ID.
   int32 max_restored_page_id_;
 
-  // Manages the SSL security UI
+  // Manages the SSL security UI.
   SSLManager ssl_manager_;
 
   // Whether we need to be reloaded when made active.

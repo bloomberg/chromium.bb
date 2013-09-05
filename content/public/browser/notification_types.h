@@ -89,17 +89,20 @@ enum NotificationType {
   // Source<NavigationController> corresponding to the tab in which the load
   // occurred.  Details in the form of a LoadFromMemoryCacheDetails object
   // are provided.
+  // DEPRECATED: Use WebContentsObserver::DidLoadResourceFromMemoryCache()
   NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
 
   // A response has been received for a resource request.  The source will be
   // a Source<WebContents> corresponding to the tab in which the request was
   // issued.  Details in the form of a ResourceRequestDetails object are
   // provided.
+  // DEPRECATED: Use WebContentsObserver::DidGetResourceResponseStart()
   NOTIFICATION_RESOURCE_RESPONSE_STARTED,
 
   // A redirect was received while requesting a resource.  The source will be
   // a Source<WebContents> corresponding to the tab in which the request was
   // issued.  Details in the form of a ResourceRedirectDetails are provided.
+  // DEPRECATED: Use WebContentsObserver::DidGetRedirectForResourceRequest()
   NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
 
   // WebContents ---------------------------------------------------------------

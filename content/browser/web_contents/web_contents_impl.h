@@ -347,6 +347,10 @@ class CONTENT_EXPORT WebContentsImpl
       RenderViewHost* render_view_host,
       const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params)
           OVERRIDE;
+  virtual void DidGetResourceResponseStart(
+      const ResourceRequestDetails& details) OVERRIDE;
+  virtual void DidGetRedirectForResourceRequest(
+      const ResourceRedirectDetails& details) OVERRIDE;
   virtual void DidNavigate(
       RenderViewHost* render_view_host,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;

@@ -58,7 +58,6 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/resource_throttle.h"
@@ -266,17 +265,28 @@ int GetCertID(net::URLRequest* request, int child_id) {
   return 0;
 }
 
-template <class T>
-void NotifyOnUI(int type, int render_process_id, int render_view_id,
-                scoped_ptr<T> detail) {
+void NotifyRedirectOnUI(int render_process_id,
+                        int render_view_id,
+                        scoped_ptr<ResourceRedirectDetails> details) {
   RenderViewHostImpl* host =
       RenderViewHostImpl::FromID(render_process_id, render_view_id);
-  if (host) {
-    RenderViewHostDelegate* delegate = host->GetDelegate();
-    NotificationService::current()->Notify(
-        type, Source<WebContents>(delegate->GetAsWebContents()),
-        Details<T>(detail.get()));
-  }
+  if (!host)
+    return;
+
+  RenderViewHostDelegate* delegate = host->GetDelegate();
+  delegate->DidGetRedirectForResourceRequest(*details.get());
+}
+
+void NotifyResponseOnUI(int render_process_id,
+                        int render_view_id,
+                        scoped_ptr<ResourceRequestDetails> details) {
+  RenderViewHostImpl* host =
+      RenderViewHostImpl::FromID(render_process_id, render_view_id);
+  if (!host)
+    return;
+
+  RenderViewHostDelegate* delegate = host->GetDelegate();
+  delegate->DidGetResourceResponseStart(*details.get());
 }
 
 }  // namespace
@@ -681,8 +691,7 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(ResourceLoader* loader,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
-          &NotifyOnUI<ResourceRedirectDetails>,
-          static_cast<int>(NOTIFICATION_RESOURCE_RECEIVED_REDIRECT),
+          &NotifyRedirectOnUI,
           render_process_id, render_view_id, base::Passed(&detail)));
 }
 
@@ -713,8 +722,7 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
-          &NotifyOnUI<ResourceRequestDetails>,
-          static_cast<int>(NOTIFICATION_RESOURCE_RESPONSE_STARTED),
+          &NotifyResponseOnUI,
           render_process_id, render_view_id, base::Passed(&detail)));
 }
 
