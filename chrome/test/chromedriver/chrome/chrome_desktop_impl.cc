@@ -63,13 +63,11 @@ bool KillProcess(base::ProcessHandle process_id) {
 ChromeDesktopImpl::ChromeDesktopImpl(
     scoped_ptr<DevToolsHttpClient> client,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
-    Log* log,
     base::ProcessHandle process,
     base::ScopedTempDir* user_data_dir,
     base::ScopedTempDir* extension_dir)
     : ChromeImpl(client.Pass(),
-                 devtools_event_listeners,
-                 log),
+                 devtools_event_listeners),
       process_(process),
       quit_(false) {
   if (user_data_dir->IsValid())
@@ -113,7 +111,7 @@ Status ChromeDesktopImpl::WaitForPageToLoad(const std::string& url,
     return Status(kUnknownError, "page could not be found: " + url);
 
   scoped_ptr<WebView> web_view_tmp(new WebViewImpl(
-      id, GetBuildNo(), devtools_http_client_->CreateClient(id), log_));
+      id, GetBuildNo(), devtools_http_client_->CreateClient(id)));
   Status status = web_view_tmp->ConnectIfNecessary();
   if (status.IsError())
     return status;

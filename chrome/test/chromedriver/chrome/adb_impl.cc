@@ -17,7 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
-#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/net/adb_client_socket.h"
 
@@ -74,8 +73,8 @@ void ExecuteCommandOnIOThread(
 
 AdbImpl::AdbImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-    Log* log, int port)
-    : io_task_runner_(io_task_runner), log_(log), port_(port) {
+    int port)
+    : io_task_runner_(io_task_runner), port_(port) {
   CHECK(io_task_runner_.get());
 }
 
@@ -219,14 +218,15 @@ Status AdbImpl::GetPidByName(const std::string& device_serial,
 Status AdbImpl::ExecuteCommand(
     const std::string& command, std::string* response) {
   scoped_refptr<ResponseBuffer> response_buffer = new ResponseBuffer;
-  log_->AddEntry(Log::kDebug, "Sending adb command: " + command);
+  VLOG(1) << "Sending adb command: " << command;
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ExecuteCommandOnIOThread, command, response_buffer, port_));
   Status status = response_buffer->GetResponse(
       response, base::TimeDelta::FromSeconds(30));
-  if (status.IsOk())
-    log_->AddEntry(Log::kDebug, "Received adb response: " + *response);
+  if (status.IsOk()) {
+    VLOG(1) << "Received adb response: " << *response;
+  }
   return status;
 }
 

@@ -13,6 +13,7 @@
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/util.h"
 #include "chrome/test/chromedriver/net/sync_websocket.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 
@@ -70,13 +71,11 @@ DevToolsClientImpl::DevToolsClientImpl(
     const SyncWebSocketFactory& factory,
     const std::string& url,
     const std::string& id,
-    const FrontendCloserFunc& frontend_closer_func,
-    Log* log)
+    const FrontendCloserFunc& frontend_closer_func)
     : socket_(factory.Run().Pass()),
       url_(url),
       id_(id),
       frontend_closer_func_(frontend_closer_func),
-      log_(log),
       parser_func_(base::Bind(&internal::ParseInspectorMessage)),
       unnotified_event_(NULL),
       next_id_(1),
@@ -87,13 +86,11 @@ DevToolsClientImpl::DevToolsClientImpl(
     const std::string& url,
     const std::string& id,
     const FrontendCloserFunc& frontend_closer_func,
-    Log* log,
     const ParserFunc& parser_func)
     : socket_(factory.Run().Pass()),
       url_(url),
       id_(id),
       frontend_closer_func_(frontend_closer_func),
-      log_(log),
       parser_func_(parser_func),
       unnotified_event_(NULL),
       next_id_(1),
@@ -207,9 +204,11 @@ Status DevToolsClientImpl::SendCommandInternal(
   command.SetInteger("id", command_id);
   command.SetString("method", method);
   command.Set("params", params.DeepCopy());
-  std::string message;
-  base::JSONWriter::Write(&command, &message);
-  log_->AddEntry(Log::kDebug, "sending Inspector command " + message);
+  std::string message = SerializeValue(&command);
+  if (IsVLogOn(1)) {
+    VLOG(1) << "COMMAND " << method << " (id=" << command_id << ") "
+            << FormatValueForDisplay(params);
+  }
   if (!socket_->Send(message))
     return Status(kDisconnected, "unable to send message to renderer");
 
@@ -260,16 +259,19 @@ Status DevToolsClientImpl::ProcessNextMessage(
   std::string message;
   switch (socket_->ReceiveNextMessage(&message, timeout)) {
     case SyncWebSocket::kOk:
-      log_->AddEntry(Log::kDebug, "received Inspector response " + message);
       break;
-    case SyncWebSocket::kDisconnected:
-      message = "unable to receive message from renderer";
-      log_->AddEntry(Log::kDebug, message);
-      return Status(kDisconnected, message);
-    case SyncWebSocket::kTimeout:
-      message = "timed out receiving message from renderer";
-      log_->AddEntry(Log::kDebug, message);
-      return Status(kTimeout, message);
+    case SyncWebSocket::kDisconnected: {
+      std::string err = "Unable to receive message from renderer";
+      LOG(ERROR) << err;
+      return Status(kDisconnected, err);
+    }
+    case SyncWebSocket::kTimeout: {
+      std::string err =
+          "Timed out receiving message from renderer: " +
+          base::StringPrintf("%.3lf", timeout.InSecondsF());
+      LOG(ERROR) << err;
+      return Status(kTimeout, err);
+    }
     default:
       NOTREACHED();
       break;
@@ -278,8 +280,10 @@ Status DevToolsClientImpl::ProcessNextMessage(
   internal::InspectorMessageType type;
   internal::InspectorEvent event;
   internal::InspectorCommandResponse response;
-  if (!parser_func_.Run(message, expected_id, &type, &event, &response))
+  if (!parser_func_.Run(message, expected_id, &type, &event, &response)) {
+    LOG(ERROR) << "Bad inspector message: " << message;
     return Status(kUnknownError, "bad inspector message: " + message);
+  }
 
   if (type == internal::kEventMessageType)
     return ProcessEvent(event);
@@ -288,6 +292,10 @@ Status DevToolsClientImpl::ProcessNextMessage(
 }
 
 Status DevToolsClientImpl::ProcessEvent(const internal::InspectorEvent& event) {
+  if (IsVLogOn(1)) {
+    VLOG(1) << "EVENT " << event.method << " "
+            << FormatValueForDisplay(*event.params);
+  }
   unnotified_event_listeners_ = listeners_;
   unnotified_event_ = &event;
   Status status = EnsureListenersNotifiedOfEvent();
@@ -327,7 +335,20 @@ Status DevToolsClientImpl::ProcessEvent(const internal::InspectorEvent& event) {
 
 Status DevToolsClientImpl::ProcessCommandResponse(
     const internal::InspectorCommandResponse& response) {
-  if (response_info_map_.count(response.id) == 0)
+  ResponseInfoMap::iterator iter = response_info_map_.find(response.id);
+  if (IsVLogOn(1)) {
+    std::string method, result;
+    if (iter != response_info_map_.end())
+      method = iter->second->method;
+    if (response.result)
+      result = FormatValueForDisplay(*response.result);
+    else
+      result = response.error;
+    VLOG(1) << "RESPONSE " << method << " (id=" << response.id
+            << ") " << result;
+  }
+
+  if (iter == response_info_map_.end())
     return Status(kUnknownError, "unexpected command response");
 
   linked_ptr<ResponseInfo> response_info = response_info_map_[response.id];

@@ -4,18 +4,19 @@
 
 #include "chrome/test/chromedriver/chrome/log.h"
 
-#include <stdio.h>
-
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
+
+void Log::AddEntry(Level level, const std::string& message) {
+  AddEntryTimestamped(base::Time::Now(), level, message);
+}
 
 namespace {
 
-// Truncates the given string to 200 characters, adding an ellipsis if
-// truncation was necessary.
+IsVLogOnFunc g_is_vlog_on_func = NULL;
+
 void TruncateString(std::string* data) {
   const size_t kMaxLength = 200;
   if (data->length() > kMaxLength) {
@@ -24,8 +25,7 @@ void TruncateString(std::string* data) {
   }
 }
 
-// Truncates all strings contained in the given value.
-void TruncateContainedStrings(base::Value* value) {
+base::Value* TruncateContainedStrings(base::Value* value) {
   base::ListValue* list = NULL;
   base::DictionaryValue* dict = NULL;
   if (value->GetAsDictionary(&dict)) {
@@ -55,80 +55,45 @@ void TruncateContainedStrings(base::Value* value) {
       }
     }
   }
-}
-
-std::string ConvertForDisplayInternal(const std::string& input) {
-  size_t left = input.find("{");
-  size_t right = input.rfind("}");
-  if (left == std::string::npos || right == std::string::npos)
-    return input.substr(0, 10 << 10);
-
-  scoped_ptr<base::Value> value(
-      base::JSONReader::Read(input.substr(left, right - left + 1)));
-  if (!value)
-    return input.substr(0, 10 << 10);
-  TruncateContainedStrings(value.get());
-  std::string json;
-  base::JSONWriter::WriteWithOptions(
-      value.get(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
-  std::string display = input.substr(0, left) + json;
-  if (input.length() > right)
-    display += input.substr(right + 1);
-  return display;
-}
-
-// Pretty prints encapsulated JSON and truncates long strings for display.
-std::string ConvertForDisplay(const std::string& input) {
-  std::string display = ConvertForDisplayInternal(input);
-  char remove_chars[] = {'\r', '\0'};
-  RemoveChars(display, remove_chars, &display);
-  return display;
+  return value;
 }
 
 }  // namespace
 
-void Log::AddEntry(Level level, const std::string& message) {
- AddEntryTimestamped(base::Time::Now(), level, message);
+void InitLogging(IsVLogOnFunc is_vlog_on_func) {
+  g_is_vlog_on_func = is_vlog_on_func;
 }
 
-Logger::Logger() : min_log_level_(kLog), start_(base::Time::Now()) {}
+bool IsVLogOn(int vlog_level) {
+  if (!g_is_vlog_on_func)
+    return false;
+  return g_is_vlog_on_func(vlog_level);
+}
 
-Logger::Logger(Level min_log_level)
-    : min_log_level_(min_log_level), start_(base::Time::Now()) {}
+std::string PrettyPrintValue(const base::Value& value) {
+  std::string json;
+  base::JSONWriter::WriteWithOptions(
+      &value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+#if defined(OS_WIN)
+  RemoveChars(json, "\r", &json);
+#endif
+  // Remove the trailing newline.
+  if (json.length())
+    json.resize(json.length() - 1);
+  return json;
+}
 
-Logger::~Logger() {}
+std::string FormatValueForDisplay(const base::Value& value) {
+  scoped_ptr<base::Value> truncated(TruncateContainedStrings(value.DeepCopy()));
+  return PrettyPrintValue(*truncated);
+}
 
-void Logger::AddEntryTimestamped(const base::Time& timestamp,
-                                 Level level,
-                                 const std::string& message) {
-  if (level < min_log_level_)
-    return;
-
-  const char* level_name = "UNKNOWN";
-  switch (level) {
-    case kDebug:
-      level_name = "DEBUG";
-      break;
-    case kLog:
-      level_name = "INFO";
-      break;
-    case kWarning:
-      level_name = "WARNING";
-      break;
-    case kError:
-      level_name = "ERROR";
-      break;
-    default:
-      break;
+std::string FormatJsonForDisplay(const std::string& json) {
+  scoped_ptr<base::Value> value(base::JSONReader::Read(json));
+  if (!value) {
+    std::string truncated = json;
+    TruncateString(&truncated);
+    return truncated;
   }
-  std::string entry =
-      base::StringPrintf("[%.3lf][%s]: %s",
-                         base::TimeDelta(timestamp - start_).InSecondsF(),
-                         level_name,
-                         ConvertForDisplay(message).c_str());
-  const char* format = "%s\n";
-  if (entry[entry.length() - 1] == '\n')
-    format = "%s";
-  fprintf(stderr, format, entry.c_str());
-  fflush(stderr);
+  return PrettyPrintValue(*TruncateContainedStrings(value.get()));
 }

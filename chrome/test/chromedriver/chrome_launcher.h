@@ -24,14 +24,12 @@ class FilePath;
 
 class Chrome;
 class DeviceManager;
-class Log;
 class Status;
 class URLRequestContextGetter;
 
 Status LaunchChrome(
     URLRequestContextGetter* context_getter,
     const SyncWebSocketFactory& socket_factory,
-    Log* log,
     DeviceManager* device_manager,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,

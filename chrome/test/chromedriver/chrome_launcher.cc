@@ -32,7 +32,6 @@
 #include "chrome/test/chromedriver/chrome/device_manager.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/embedded_automation_extension.h"
-#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/user_data_dir.h"
 #include "chrome/test/chromedriver/chrome/version.h"
@@ -147,10 +146,9 @@ Status WaitForDevToolsAndCheckVersion(
     const NetAddress& address,
     URLRequestContextGetter* context_getter,
     const SyncWebSocketFactory& socket_factory,
-    Log* log,
     scoped_ptr<DevToolsHttpClient>* user_client) {
   scoped_ptr<DevToolsHttpClient> client(new DevToolsHttpClient(
-      address, context_getter, socket_factory, log));
+      address, context_getter, socket_factory));
   base::TimeTicks deadline =
       base::TimeTicks::Now() + base::TimeDelta::FromSeconds(20);
   Status status = client->Init(deadline - base::TimeTicks::Now());
@@ -178,14 +176,13 @@ Status WaitForDevToolsAndCheckVersion(
 Status LaunchExistingChromeSession(
     URLRequestContextGetter* context_getter,
     const SyncWebSocketFactory& socket_factory,
-    Log* log,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<Chrome>* chrome) {
   Status status(kOk);
   scoped_ptr<DevToolsHttpClient> devtools_client;
   status = WaitForDevToolsAndCheckVersion(
-      capabilities.debugger_address, context_getter, socket_factory, log,
+      capabilities.debugger_address, context_getter, socket_factory,
       &devtools_client);
   if (status.IsError()) {
     return Status(kUnknownError, "cannot connect to chrome at " +
@@ -193,8 +190,7 @@ Status LaunchExistingChromeSession(
                   status);
   }
   chrome->reset(new ChromeExistingImpl(devtools_client.Pass(),
-      devtools_event_listeners,
-      log));
+                                       devtools_event_listeners));
   return Status(kOk);
 }
 
@@ -202,7 +198,6 @@ Status LaunchDesktopChrome(
     URLRequestContextGetter* context_getter,
     int port,
     const SyncWebSocketFactory& socket_factory,
-    Log* log,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<Chrome>* chrome) {
@@ -233,14 +228,14 @@ Status LaunchDesktopChrome(
 #else
   std::string command_string = command.GetCommandLineString();
 #endif
-  log->AddEntry(Log::kLog, "Launching chrome: " + command_string);
+  VLOG(0) << "Launching chrome: " << command_string;
   base::ProcessHandle process;
   if (!base::LaunchProcess(command, options, &process))
     return Status(kUnknownError, "chrome failed to start");
 
   scoped_ptr<DevToolsHttpClient> devtools_client;
   status = WaitForDevToolsAndCheckVersion(
-      NetAddress(port), context_getter, socket_factory, log, &devtools_client);
+      NetAddress(port), context_getter, socket_factory, &devtools_client);
 
   if (status.IsError()) {
     int exit_code;
@@ -279,7 +274,6 @@ Status LaunchDesktopChrome(
   scoped_ptr<ChromeDesktopImpl> chrome_desktop(
       new ChromeDesktopImpl(devtools_client.Pass(),
                             devtools_event_listeners,
-                            log,
                             process,
                             &user_data_dir,
                             &extension_dir));
@@ -302,7 +296,6 @@ Status LaunchAndroidChrome(
     URLRequestContextGetter* context_getter,
     int port,
     const SyncWebSocketFactory& socket_factory,
-    Log* log,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     DeviceManager* device_manager,
@@ -336,13 +329,12 @@ Status LaunchAndroidChrome(
   status = WaitForDevToolsAndCheckVersion(NetAddress(port),
                                           context_getter,
                                           socket_factory,
-                                          log,
                                           &devtools_client);
   if (status.IsError())
     return status;
 
   chrome->reset(new ChromeAndroidImpl(
-      devtools_client.Pass(), devtools_event_listeners, device.Pass(), log));
+      devtools_client.Pass(), devtools_event_listeners, device.Pass()));
   return Status(kOk);
 }
 
@@ -351,7 +343,6 @@ Status LaunchAndroidChrome(
 Status LaunchChrome(
     URLRequestContextGetter* context_getter,
     const SyncWebSocketFactory& socket_factory,
-    Log* log,
     DeviceManager* device_manager,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
@@ -359,7 +350,7 @@ Status LaunchChrome(
   if (capabilities.IsExistingBrowser()) {
     return LaunchExistingChromeSession(
         context_getter, socket_factory,
-        log, capabilities, devtools_event_listeners, chrome);
+        capabilities, devtools_event_listeners, chrome);
   }
 
   int port;
@@ -368,11 +359,11 @@ Status LaunchChrome(
 
   if (capabilities.IsAndroid()) {
     return LaunchAndroidChrome(
-        context_getter, port, socket_factory, log, capabilities,
+        context_getter, port, socket_factory, capabilities,
         devtools_event_listeners, device_manager, chrome);
   } else {
     return LaunchDesktopChrome(
-        context_getter, port, socket_factory, log, capabilities,
+        context_getter, port, socket_factory, capabilities,
         devtools_event_listeners, chrome);
   }
 }

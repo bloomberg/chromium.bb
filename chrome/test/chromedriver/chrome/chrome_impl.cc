@@ -7,7 +7,6 @@
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
-#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
 
@@ -61,7 +60,7 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
         // OnConnected will fire when DevToolsClient connects later.
       }
       web_views_.push_back(make_linked_ptr(new WebViewImpl(
-          view.id, GetBuildNo(), client.Pass(), log_)));
+          view.id, GetBuildNo(), client.Pass())));
     }
   }
 
@@ -109,9 +108,7 @@ Status ChromeImpl::GetAutomationExtension(AutomationExtension** extension) {
 
 ChromeImpl::ChromeImpl(
     scoped_ptr<DevToolsHttpClient> client,
-    ScopedVector<DevToolsEventListener>& devtools_event_listeners,
-    Log* log)
-    : devtools_http_client_(client.Pass()),
-      log_(log) {
+    ScopedVector<DevToolsEventListener>& devtools_event_listeners)
+    : devtools_http_client_(client.Pass()) {
   devtools_event_listeners_.swap(devtools_event_listeners);
 }

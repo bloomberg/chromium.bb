@@ -37,8 +37,7 @@ void OnResponse(net::HttpServerResponseInfo* response_to_set,
 }  // namespace
 
 TEST(HttpHandlerTest, HandleOutsideOfBaseUrl) {
-  Logger log;
-  HttpHandler handler(&log, "base/url/");
+  HttpHandler handler("base/url/");
   net::HttpServerRequestInfo request;
   request.method = "get";
   request.path = "base/path";
@@ -49,8 +48,7 @@ TEST(HttpHandlerTest, HandleOutsideOfBaseUrl) {
 }
 
 TEST(HttpHandlerTest, HandleUnknownCommand) {
-  Logger log;
-  HttpHandler handler(&log, "/");
+  HttpHandler handler("/");
   net::HttpServerRequestInfo request;
   request.method = "get";
   request.path = "/path";
@@ -60,8 +58,7 @@ TEST(HttpHandlerTest, HandleUnknownCommand) {
 }
 
 TEST(HttpHandlerTest, HandleNewSession) {
-  Logger log;
-  HttpHandler handler(&log, "/base/");
+  HttpHandler handler("/base/");
   handler.command_map_.reset(new HttpHandler::CommandMap());
   handler.command_map_->push_back(
       CommandMapping(kPost, internal::kNewSessionPathPattern,
@@ -78,8 +75,7 @@ TEST(HttpHandlerTest, HandleNewSession) {
 }
 
 TEST(HttpHandlerTest, HandleInvalidPost) {
-  Logger log;
-  HttpHandler handler(&log, "/");
+  HttpHandler handler("/");
   handler.command_map_->push_back(
       CommandMapping(kPost, "path", base::Bind(&DummyCommand, Status(kOk))));
   net::HttpServerRequestInfo request;
@@ -92,8 +88,7 @@ TEST(HttpHandlerTest, HandleInvalidPost) {
 }
 
 TEST(HttpHandlerTest, HandleUnimplementedCommand) {
-  Logger log;
-  HttpHandler handler(&log, "/");
+  HttpHandler handler("/");
   handler.command_map_->push_back(
       CommandMapping(kPost, "path",
                      base::Bind(&DummyCommand, Status(kUnknownCommand))));
@@ -106,8 +101,7 @@ TEST(HttpHandlerTest, HandleUnimplementedCommand) {
 }
 
 TEST(HttpHandlerTest, HandleCommand) {
-  Logger log;
-  HttpHandler handler(&log, "/");
+  HttpHandler handler("/");
   handler.command_map_->push_back(
       CommandMapping(kPost, "path", base::Bind(&DummyCommand, Status(kOk))));
   net::HttpServerRequestInfo request;

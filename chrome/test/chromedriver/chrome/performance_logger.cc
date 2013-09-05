@@ -60,6 +60,6 @@ Status PerformanceLogger::OnEvent(
   // Look at where it is for Page, Network, Timeline events.
   base::JSONWriter::Write(&log_message_dict, &log_message_json);
 
-  log_->AddEntry(Log::kLog, log_message_json);
+  log_->AddEntry(Log::kInfo, log_message_json);
   return Status(kOk);
 }

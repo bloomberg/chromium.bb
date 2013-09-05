@@ -117,7 +117,7 @@ scoped_ptr<DictionaryValue> ParseDictionary(const std::string& json) {
 void ValidateLogEntry(const LogEntry *entry,
                       const std::string& expected_webview,
                       const std::string& expected_method) {
-  EXPECT_EQ(Log::kLog, entry->level);
+  EXPECT_EQ(Log::kInfo, entry->level);
   EXPECT_LT(0, entry->timestamp.ToTimeT());
 
   scoped_ptr<base::DictionaryValue> message(ParseDictionary(entry->message));

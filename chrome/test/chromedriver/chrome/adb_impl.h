@@ -16,14 +16,13 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-class Log;
 class Status;
 
 class AdbImpl : public Adb {
  public:
   explicit AdbImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_message_loop_proxy,
-      Log* log, int port);
+      int port);
   virtual ~AdbImpl();
 
   // Overridden from Adb:
@@ -60,7 +59,6 @@ class AdbImpl : public Adb {
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  Log* log_;
   int port_;
 };
 

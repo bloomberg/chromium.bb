@@ -20,7 +20,6 @@ class Value;
 }
 
 class DeviceManager;
-class Log;
 struct Session;
 class Status;
 class URLRequestContextGetter;
@@ -32,14 +31,12 @@ void ExecuteGetStatus(
     const CommandCallback& callback);
 
 struct NewSessionParams {
-  NewSessionParams(Log* log,
-                   SessionThreadMap* session_thread_map,
+  NewSessionParams(SessionThreadMap* session_thread_map,
                    scoped_refptr<URLRequestContextGetter> context_getter,
                    const SyncWebSocketFactory& socket_factory,
                    DeviceManager* device_manager);
   ~NewSessionParams();
 
-  Log* log;
   SessionThreadMap* session_thread_map;
   scoped_refptr<URLRequestContextGetter> context_getter;
   SyncWebSocketFactory socket_factory;

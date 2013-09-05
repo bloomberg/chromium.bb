@@ -56,9 +56,8 @@ CommandMapping::CommandMapping(HttpMethod method,
 
 CommandMapping::~CommandMapping() {}
 
-HttpHandler::HttpHandler(Log* log, const std::string& url_base)
-    : log_(log),
-      url_base_(url_base),
+HttpHandler::HttpHandler(const std::string& url_base)
+    : url_base_(url_base),
       received_shutdown_(false),
       command_map_(new CommandMap()),
       weak_ptr_factory_(this) {}
@@ -66,11 +65,9 @@ HttpHandler::HttpHandler(Log* log, const std::string& url_base)
 HttpHandler::HttpHandler(
     const base::Closure& quit_func,
     const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    Log* log,
     const std::string& url_base,
     int adb_port)
     : quit_func_(quit_func),
-      log_(log),
       url_base_(url_base),
       received_shutdown_(false),
       weak_ptr_factory_(this) {
@@ -79,15 +76,14 @@ HttpHandler::HttpHandler(
 #endif
   context_getter_ = new URLRequestContextGetter(io_task_runner);
   socket_factory_ = CreateSyncWebSocketFactory(context_getter_.get());
-  adb_.reset(new AdbImpl(io_task_runner, log_, adb_port));
+  adb_.reset(new AdbImpl(io_task_runner, adb_port));
   device_manager_.reset(new DeviceManager(adb_.get()));
 
   CommandMapping commands[] = {
       CommandMapping(kPost,
                      internal::kNewSessionPathPattern,
                      base::Bind(&ExecuteNewSession,
-                                NewSessionParams(log_,
-                                                 &session_thread_map_,
+                                NewSessionParams(&session_thread_map_,
                                                  context_getter_,
                                                  socket_factory_,
                                                  device_manager_.get()))),
@@ -491,11 +487,10 @@ void HttpHandler::HandleCommand(
     const net::HttpServerRequestInfo& request,
     const std::string& trimmed_path,
     const HttpResponseSenderFunc& send_response_func) {
-  log_->AddEntry(Log::kLog,
-                 base::StringPrintf("handling command: %s %s %s",
-                                    request.method.c_str(),
-                                    trimmed_path.c_str(),
-                                    request.data.c_str()));
+  if (IsVLogOn(0)) {
+    VLOG(0) << "Handling command: " << request.method << " " << trimmed_path
+            << " " << FormatJsonForDisplay(request.data);
+  }
 
   base::DictionaryValue params;
   std::string session_id;
@@ -545,10 +540,10 @@ void HttpHandler::PrepareResponse(
   CHECK(thread_checker_.CalledOnValidThread());
   scoped_ptr<net::HttpServerResponseInfo> response =
       PrepareResponseHelper(trimmed_path, status, value.Pass(), session_id);
-  log_->AddEntry(Log::kLog,
-                 base::StringPrintf("sending response: %d %s",
-                                    response->status_code(),
-                                    response->body().c_str()));
+  if (IsVLogOn(0)) {
+    VLOG(0) << "Sending response: " << response->status_code() << " "
+            << FormatJsonForDisplay(response->body());
+  }
   send_response_func.Run(response.Pass());
   if (trimmed_path == kShutdownPath)
     quit_func_.Run();

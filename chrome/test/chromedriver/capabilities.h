@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/net/net_util.h"
 
 namespace base {
@@ -21,7 +22,6 @@ class DictionaryValue;
 }
 
 class CommandLine;
-class Log;
 class Status;
 
 class Switches {
@@ -57,6 +57,8 @@ class Switches {
   SwitchMap switch_map_;
 };
 
+typedef std::map<std::string, Log::Level> LoggingPrefs;
+
 struct Capabilities {
   Capabilities();
   ~Capabilities();
@@ -67,7 +69,7 @@ struct Capabilities {
   // Return true if android package is specified.
   bool IsAndroid() const;
 
-  Status Parse(const base::DictionaryValue& desired_caps, Log* log);
+  Status Parse(const base::DictionaryValue& desired_caps);
 
   std::string android_activity;
 
@@ -101,7 +103,7 @@ struct Capabilities {
 
   std::string log_path;
 
-  scoped_ptr<base::DictionaryValue> logging_prefs;
+  LoggingPrefs logging_prefs;
 
   scoped_ptr<base::DictionaryValue> prefs;
 

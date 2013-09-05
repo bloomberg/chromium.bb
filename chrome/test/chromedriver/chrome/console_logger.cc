@@ -53,7 +53,7 @@ Status ConsoleLogger::OnEvent(
   if (params.GetDictionary("message", &message_dict)) {
     std::string text;
     std::string level_name;
-    Log::Level level = Log::kLog;
+    Log::Level level = Log::kInfo;
     if (message_dict->GetString("text", &text) && !text.empty() &&
         message_dict->GetString("level", &level_name) &&
         ConsoleLevelToLogLevel(level_name, &level)) {

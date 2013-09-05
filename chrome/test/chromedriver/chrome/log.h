@@ -10,15 +10,21 @@
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 
+namespace base {
+class Value;
+}
+
 // Abstract class for logging entries with a level, timestamp, string message.
 class Log {
  public:
   // Log entry severity level.
   enum Level {
+    kAll,
     kDebug,
-    kLog,
+    kInfo,
     kWarning,
-    kError
+    kError,
+    kOff
   };
 
   virtual ~Log() {}
@@ -32,21 +38,18 @@ class Log {
   void AddEntry(Level level, const std::string& message);
 };
 
-// Writes log entries using printf.
-class Logger : public Log {
- public:
-  // Creates a logger with a minimum level of |kDebug|.
-  Logger();
-  explicit Logger(Level min_log_level);
-  virtual ~Logger();
+typedef bool (*IsVLogOnFunc)(int vlog_level);
+void InitLogging(IsVLogOnFunc is_vlog_on_func);
 
-  virtual void AddEntryTimestamped(const base::Time& timestamp,
-                                   Level level,
-                                   const std::string& message) OVERRIDE;
+// Returns whether the given VLOG level is on.
+bool IsVLogOn(int vlog_level);
 
- private:
-  Level min_log_level_;
-  base::Time start_;
-};
+std::string PrettyPrintValue(const base::Value& value);
+
+// Returns a pretty printed value, after truncating long strings.
+std::string FormatValueForDisplay(const base::Value& value);
+
+// Returns a pretty printed json string, after truncating long strings.
+std::string FormatJsonForDisplay(const std::string& json);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_LOG_H_

@@ -17,8 +17,7 @@ class ChromeExistingImpl : public ChromeImpl {
  public:
   ChromeExistingImpl(
       scoped_ptr<DevToolsHttpClient> client,
-      ScopedVector<DevToolsEventListener>& devtools_event_listeners,
-      Log* log);
+      ScopedVector<DevToolsEventListener>& devtools_event_listeners);
   virtual ~ChromeExistingImpl();
 
   // Overridden from Chrome.

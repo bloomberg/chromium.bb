@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
-#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/net/sync_websocket.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
@@ -105,9 +104,8 @@ class DevToolsClientImplTest : public testing::Test {
 TEST_F(DevToolsClientImplTest, SendCommand) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger);
+                            base::Bind(&CloserFunc));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   base::DictionaryValue params;
   params.SetInteger("param", 1);
@@ -117,9 +115,8 @@ TEST_F(DevToolsClientImplTest, SendCommand) {
 TEST_F(DevToolsClientImplTest, SendCommandAndGetResult) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger);
+                            base::Bind(&CloserFunc));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   base::DictionaryValue params;
   params.SetInteger("param", 1);
@@ -168,9 +165,8 @@ class MockSyncWebSocket2 : public SyncWebSocket {
 TEST_F(DevToolsClientImplTest, ConnectIfNecessaryConnectFails) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket2>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger);
+                            base::Bind(&CloserFunc));
   ASSERT_EQ(kDisconnected, client.ConnectIfNecessary().code());
 }
 
@@ -214,9 +210,8 @@ class MockSyncWebSocket3 : public SyncWebSocket {
 TEST_F(DevToolsClientImplTest, SendCommandSendFails) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket3>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger);
+                            base::Bind(&CloserFunc));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   base::DictionaryValue params;
   ASSERT_TRUE(client.SendCommand("method", params).IsError());
@@ -261,9 +256,8 @@ class MockSyncWebSocket4 : public SyncWebSocket {
 TEST_F(DevToolsClientImplTest, SendCommandReceiveNextMessageFails) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket4>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger);
+                            base::Bind(&CloserFunc));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   base::DictionaryValue params;
   ASSERT_TRUE(client.SendCommand("method", params).IsError());
@@ -469,9 +463,8 @@ Status AlwaysError(bool* is_met) {
 TEST_F(DevToolsClientImplTest, SendCommandOnlyConnectsOnce) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<FakeSyncWebSocket>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger,
+                            base::Bind(&CloserFunc),
                             base::Bind(&ReturnCommand));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   base::DictionaryValue params;
@@ -482,9 +475,8 @@ TEST_F(DevToolsClientImplTest, SendCommandOnlyConnectsOnce) {
 TEST_F(DevToolsClientImplTest, SendCommandBadResponse) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<FakeSyncWebSocket>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger,
+                            base::Bind(&CloserFunc),
                             base::Bind(&ReturnBadResponse));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   base::DictionaryValue params;
@@ -494,9 +486,8 @@ TEST_F(DevToolsClientImplTest, SendCommandBadResponse) {
 TEST_F(DevToolsClientImplTest, SendCommandBadId) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<FakeSyncWebSocket>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger,
+                            base::Bind(&CloserFunc),
                             base::Bind(&ReturnCommandBadId));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   base::DictionaryValue params;
@@ -506,9 +497,8 @@ TEST_F(DevToolsClientImplTest, SendCommandBadId) {
 TEST_F(DevToolsClientImplTest, SendCommandResponseError) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<FakeSyncWebSocket>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger,
+                            base::Bind(&CloserFunc),
                             base::Bind(&ReturnCommandError));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   base::DictionaryValue params;
@@ -520,9 +510,8 @@ TEST_F(DevToolsClientImplTest, SendCommandEventBeforeResponse) {
       base::Bind(&CreateMockSyncWebSocket<FakeSyncWebSocket>);
   MockListener listener;
   bool first = true;
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger,
+                            base::Bind(&CloserFunc),
                             base::Bind(&ReturnEventThenResponse, &first));
   client.AddListener(&listener);
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
@@ -614,9 +603,8 @@ TEST_F(DevToolsClientImplTest, HandleEventsUntil) {
   MockListener listener;
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger,
+                            base::Bind(&CloserFunc),
                             base::Bind(&ReturnEvent));
   client.AddListener(&listener);
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
@@ -628,9 +616,8 @@ TEST_F(DevToolsClientImplTest, HandleEventsUntil) {
 TEST_F(DevToolsClientImplTest, HandleEventsUntilTimeout) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger,
+                            base::Bind(&CloserFunc),
                             base::Bind(&ReturnEvent));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   Status status = client.HandleEventsUntil(base::Bind(&AlwaysTrue),
@@ -641,9 +628,8 @@ TEST_F(DevToolsClientImplTest, HandleEventsUntilTimeout) {
 TEST_F(DevToolsClientImplTest, WaitForNextEventCommand) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger,
+                            base::Bind(&CloserFunc),
                             base::Bind(&ReturnCommand));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   Status status = client.HandleEventsUntil(base::Bind(&AlwaysTrue),
@@ -654,9 +640,8 @@ TEST_F(DevToolsClientImplTest, WaitForNextEventCommand) {
 TEST_F(DevToolsClientImplTest, WaitForNextEventError) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger,
+                            base::Bind(&CloserFunc),
                             base::Bind(&ReturnError));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   Status status = client.HandleEventsUntil(base::Bind(&AlwaysTrue),
@@ -667,9 +652,8 @@ TEST_F(DevToolsClientImplTest, WaitForNextEventError) {
 TEST_F(DevToolsClientImplTest, WaitForNextEventConditionalFuncReturnsError) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger,
+                            base::Bind(&CloserFunc),
                             base::Bind(&ReturnEvent));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   Status status = client.HandleEventsUntil(base::Bind(&AlwaysError),
@@ -681,9 +665,8 @@ TEST_F(DevToolsClientImplTest, NestedCommandsWithOutOfOrderResults) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
   int recurse_count = 0;
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger);
+                            base::Bind(&CloserFunc));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   client.SetParserFuncForTesting(
       base::Bind(&ReturnOutOfOrderResponses, &recurse_count, &client));
@@ -810,9 +793,8 @@ class OnConnectedSyncWebSocket : public SyncWebSocket {
 TEST_F(DevToolsClientImplTest, ProcessOnConnectedFirstOnCommand) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<OnConnectedSyncWebSocket>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "onconnected-id",
-                            base::Bind(&CloserFunc), &logger);
+                            base::Bind(&CloserFunc));
   OnConnectedListener listener1("DOM.getDocument", &client);
   OnConnectedListener listener2("Runtime.enable", &client);
   OnConnectedListener listener3("Page.enable", &client);
@@ -827,9 +809,8 @@ TEST_F(DevToolsClientImplTest, ProcessOnConnectedFirstOnCommand) {
 TEST_F(DevToolsClientImplTest, ProcessOnConnectedFirstOnHandleEventsUntil) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<OnConnectedSyncWebSocket>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "onconnected-id",
-                            base::Bind(&CloserFunc), &logger);
+                            base::Bind(&CloserFunc));
   OnConnectedListener listener1("DOM.getDocument", &client);
   OnConnectedListener listener2("Runtime.enable", &client);
   OnConnectedListener listener3("Page.enable", &client);
@@ -930,9 +911,8 @@ class OnEventListener : public DevToolsEventListener {
 TEST_F(DevToolsClientImplTest, ProcessOnEventFirst) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket5>);
-  Logger logger;
   DevToolsClientImpl client(factory, "http://url", "id",
-                            base::Bind(&CloserFunc), &logger);
+                            base::Bind(&CloserFunc));
   OtherEventListener listener2;
   OnEventListener listener1(&client, &listener2);
   client.AddListener(&listener1);
@@ -979,12 +959,10 @@ TEST_F(DevToolsClientImplTest, Reconnect) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<DisconnectedSyncWebSocket>);
   bool is_called = false;
-  Logger logger;
   DevToolsClientImpl client(factory,
                             "http://url",
                             "id",
-                            base::Bind(&CheckCloserFuncCalled, &is_called),
-                            &logger);
+                            base::Bind(&CheckCloserFuncCalled, &is_called));
   ASSERT_FALSE(is_called);
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   ASSERT_FALSE(is_called);
@@ -1070,9 +1048,8 @@ scoped_ptr<SyncWebSocket> CreateMockSyncWebSocket6(
 TEST_F(DevToolsClientImplTest, BlockedByAlert) {
   std::list<std::string> msgs;
   SyncWebSocketFactory factory = base::Bind(&CreateMockSyncWebSocket6, &msgs);
-  Logger logger;
   DevToolsClientImpl client(
-      factory, "http://url", "id", base::Bind(&CloserFunc), &logger);
+      factory, "http://url", "id", base::Bind(&CloserFunc));
   msgs.push_back(
       "{\"method\": \"Page.javascriptDialogOpening\", \"params\": {}}");
   msgs.push_back("{\"id\": 2, \"result\": {}}");
@@ -1101,9 +1078,8 @@ TEST_F(DevToolsClientImplTest, CorrectlyDeterminesWhichIsBlockedByAlert) {
   //                       response for 6
   std::list<std::string> msgs;
   SyncWebSocketFactory factory = base::Bind(&CreateMockSyncWebSocket6, &msgs);
-  Logger logger;
   DevToolsClientImpl client(
-      factory, "http://url", "id", base::Bind(&CloserFunc), &logger);
+      factory, "http://url", "id", base::Bind(&CloserFunc));
   MockDevToolsEventListener listener;
   client.AddListener(&listener);
   msgs.push_back("{\"method\": \"FirstEvent\", \"params\": {}}");
@@ -1155,9 +1131,8 @@ void HandleReceivedEvents(DevToolsClient* client) {
 TEST_F(DevToolsClientImplTest, ReceivesCommandResponse) {
   std::list<std::string> msgs;
   SyncWebSocketFactory factory = base::Bind(&CreateMockSyncWebSocket6, &msgs);
-  Logger logger;
   DevToolsClientImpl client(
-      factory, "http://url", "id", base::Bind(&CloserFunc), &logger);
+      factory, "http://url", "id", base::Bind(&CloserFunc));
   MockCommandListener listener1;
   listener1.callback_ = base::Bind(&HandleReceivedEvents);
   MockCommandListener listener2;

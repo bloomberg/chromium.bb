@@ -389,7 +389,7 @@ Status ExecuteGetAvailableLogTypes(
   for (ScopedVector<WebDriverLog>::const_iterator log
        = session->devtools_logs.begin();
        log != session->devtools_logs.end(); ++log) {
-    types->AppendString((*log)->GetType());
+    types->AppendString((*log)->type());
   }
   value->reset(types.release());
   return Status(kOk);
@@ -406,7 +406,7 @@ Status ExecuteGetLog(
   for (ScopedVector<WebDriverLog>::const_iterator log
        = session->devtools_logs.begin();
        log != session->devtools_logs.end(); ++log) {
-    if (log_type == (*log)->GetType()) {
+    if (log_type == (*log)->type()) {
       scoped_ptr<base::ListValue> log_entries = (*log)->GetAndClearEntries();
       value->reset(log_entries.release());
       return Status(kOk);

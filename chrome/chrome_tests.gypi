@@ -846,6 +846,8 @@
         'test/chromedriver/chrome/status.h',
         'test/chromedriver/chrome/ui_events.cc',
         'test/chromedriver/chrome/ui_events.h',
+        'test/chromedriver/chrome/util.cc',
+        'test/chromedriver/chrome/util.h',
         'test/chromedriver/chrome/version.cc',
         'test/chromedriver/chrome/version.h',
         'test/chromedriver/chrome/web_view.h',

@@ -19,7 +19,6 @@
 #include "chrome/test/chromedriver/chrome/geolocation_override_manager.h"
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/js.h"
-#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/navigation_tracker.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
@@ -112,8 +111,7 @@ const char* GetAsString(KeyEventType type) {
 
 WebViewImpl::WebViewImpl(const std::string& id,
                          int build_no,
-                         scoped_ptr<DevToolsClient> client,
-                         Log* log)
+                         scoped_ptr<DevToolsClient> client)
     : id_(id),
       build_no_(build_no),
       dom_tracker_(new DomTracker(client.get())),
@@ -122,8 +120,7 @@ WebViewImpl::WebViewImpl(const std::string& id,
       dialog_manager_(new JavaScriptDialogManager(client.get())),
       geolocation_override_manager_(
           new GeolocationOverrideManager(client.get())),
-      client_(client.release()),
-      log_(log) {}
+      client_(client.release()) {}
 
 WebViewImpl::~WebViewImpl() {}
 
@@ -322,14 +319,14 @@ Status WebViewImpl::DeleteCookie(const std::string& name,
 Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
                                               const base::TimeDelta& timeout,
                                               bool stop_load_on_timeout) {
-  log_->AddEntry(Log::kLog, "waiting for pending navigations...");
+  VLOG(0) << "Waiting for pending navigations...";
   Status status = client_->HandleEventsUntil(
       base::Bind(&WebViewImpl::IsNotPendingNavigation,
                  base::Unretained(this),
                  frame_id),
       timeout);
   if (status.code() == kTimeout && stop_load_on_timeout) {
-    log_->AddEntry(Log::kLog, "timed out. stopping navigations...");
+    VLOG(0) << "Timed out. Stopping navigation...";
     scoped_ptr<base::Value> unused_value;
     EvaluateScript(std::string(), "window.stop();", &unused_value);
     Status new_status = client_->HandleEventsUntil(
@@ -339,7 +336,7 @@ Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
     if (new_status.IsError())
       status = new_status;
   }
-  log_->AddEntry(Log::kLog, "done waiting for pending navigations");
+  VLOG(0) << "Done waiting for pending navigations";
   return status;
 }
 

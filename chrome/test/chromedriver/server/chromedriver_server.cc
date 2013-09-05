@@ -22,8 +22,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
-#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/version.h"
+#include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -31,11 +31,6 @@
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 #include "net/socket/tcp_listen_socket.h"
-
-#if defined(OS_POSIX)
-#include <fcntl.h>
-#include <unistd.h>
-#endif
 
 namespace {
 
@@ -139,18 +134,15 @@ void StartServerOnIOThread(int port,
   lazy_tls_server.Pointer()->Set(temp_server.release());
 }
 
-void RunServer(Log::Level log_level, int port, const std::string& url_base,
-               int adb_port) {
+void RunServer(int port, const std::string& url_base, int adb_port) {
   base::Thread io_thread("ChromeDriver IO");
   CHECK(io_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
   base::MessageLoop cmd_loop;
   base::RunLoop cmd_run_loop;
-  Logger log(log_level);
   HttpHandler handler(cmd_run_loop.QuitClosure(),
                       io_thread.message_loop_proxy(),
-                      &log,
                       url_base,
                       adb_port);
   HttpRequestHandlerFunc handle_request_func =
@@ -185,8 +177,6 @@ int main(int argc, char *argv[]) {
   int port = 9515;
   int adb_port = 5037;
   std::string url_base;
-  base::FilePath log_path;
-  Log::Level log_level = Log::kError;
   if (cmd_line->HasSwitch("h") || cmd_line->HasSwitch("help")) {
     std::string options;
     const char* kOptionAndDescriptions[] = {
@@ -225,47 +215,17 @@ int main(int argc, char *argv[]) {
     url_base = "/" + url_base;
   if (url_base[url_base.length() - 1] != '/')
     url_base = url_base + "/";
-  if (cmd_line->HasSwitch("log-path")) {
-    log_level = Log::kLog;
-    log_path = cmd_line->GetSwitchValuePath("log-path");
-#if defined(OS_WIN)
-    FILE* redir_stderr = _wfreopen(log_path.value().c_str(), L"w", stderr);
-#else
-    FILE* redir_stderr = freopen(log_path.value().c_str(), "w", stderr);
-#endif
-    if (!redir_stderr) {
-      printf("Failed to redirect stderr to log file. Exiting...\n");
-      return 1;
-    }
-  }
-  if (cmd_line->HasSwitch("verbose")) {
-    log_level = Log::kDebug;
-  } else {
-#if defined(OS_POSIX)
-    // Close stderr on exec, so that Chrome log spew doesn't confuse users.
-    fcntl(STDERR_FILENO, F_SETFD, FD_CLOEXEC);
-#endif
-  }
   if (!cmd_line->HasSwitch("silent")) {
     printf(
         "Starting ChromeDriver (v%s) on port %d\n", kChromeDriverVersion, port);
     fflush(stdout);
   }
 
-
-  logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  bool success = logging::InitLogging(settings);
-  if (!success) {
-    PLOG(ERROR) << "Unable to initialize logging";
+  if (!InitLogging()) {
+    printf("Unable to initialize logging. Exiting...\n");
+    return 1;
   }
-  logging::SetLogItems(false,  // enable_process_id
-                       false,  // enable_thread_id
-                       false,  // enable_timestamp
-                       false); // enable_tickcount
-  if (!cmd_line->HasSwitch("verbose"))
-    logging::SetMinLogLevel(logging::LOG_FATAL);
 
-  RunServer(log_level, port, url_base, adb_port);
+  RunServer(port, url_base, adb_port);
   return 0;
 }

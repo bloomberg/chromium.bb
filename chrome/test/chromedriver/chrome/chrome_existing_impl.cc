@@ -8,9 +8,8 @@
 
 ChromeExistingImpl::ChromeExistingImpl(
     scoped_ptr<DevToolsHttpClient> client,
-    ScopedVector<DevToolsEventListener>& devtools_event_listeners,
-    Log* log)
-    : ChromeImpl(client.Pass(), devtools_event_listeners, log) {}
+    ScopedVector<DevToolsEventListener>& devtools_event_listeners)
+    : ChromeImpl(client.Pass(), devtools_event_listeners) {}
 
 ChromeExistingImpl::~ChromeExistingImpl() {}
 

@@ -47,7 +47,6 @@ struct InspectorCommandResponse {
 }  // namespace internal
 
 class DevToolsEventListener;
-class Log;
 class Status;
 class SyncWebSocket;
 
@@ -57,8 +56,7 @@ class DevToolsClientImpl : public DevToolsClient {
   DevToolsClientImpl(const SyncWebSocketFactory& factory,
                      const std::string& url,
                      const std::string& id,
-                     const FrontendCloserFunc& frontend_closer_func,
-                     Log* log);
+                     const FrontendCloserFunc& frontend_closer_func);
 
   typedef base::Callback<bool(
       const std::string&,
@@ -70,7 +68,6 @@ class DevToolsClientImpl : public DevToolsClient {
                      const std::string& url,
                      const std::string& id,
                      const FrontendCloserFunc& frontend_closer_func,
-                     Log* log,
                      const ParserFunc& parser_func);
 
   virtual ~DevToolsClientImpl();
@@ -130,7 +127,6 @@ class DevToolsClientImpl : public DevToolsClient {
   GURL url_;
   const std::string id_;
   FrontendCloserFunc frontend_closer_func_;
-  Log* log_;
   ParserFunc parser_func_;
   std::list<DevToolsEventListener*> listeners_;
   std::list<DevToolsEventListener*> unnotified_connect_listeners_;

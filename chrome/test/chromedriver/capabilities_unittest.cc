@@ -101,8 +101,7 @@ TEST(ParseCapabilities, WithAndroidPackage) {
   Capabilities capabilities;
   base::DictionaryValue caps;
   caps.SetString("chromeOptions.androidPackage", "abc");
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(capabilities.IsAndroid());
   ASSERT_EQ("abc", capabilities.android_package);
@@ -112,8 +111,7 @@ TEST(ParseCapabilities, EmptyAndroidPackage) {
   Capabilities capabilities;
   base::DictionaryValue caps;
   caps.SetString("chromeOptions.androidPackage", std::string());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
 
@@ -121,8 +119,7 @@ TEST(ParseCapabilities, IllegalAndroidPackage) {
   Capabilities capabilities;
   base::DictionaryValue caps;
   caps.SetInteger("chromeOptions.androidPackage", 123);
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
 
@@ -130,8 +127,7 @@ TEST(ParseCapabilities, LogPath) {
   Capabilities capabilities;
   base::DictionaryValue caps;
   caps.SetString("chromeOptions.logPath", "path/to/logfile");
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_STREQ("path/to/logfile", capabilities.log_path.c_str());
 }
@@ -144,8 +140,7 @@ TEST(ParseCapabilities, Args) {
   base::DictionaryValue caps;
   caps.Set("chromeOptions.args", args.DeepCopy());
 
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
 
   ASSERT_EQ(2u, capabilities.switches.GetSize());
@@ -162,8 +157,7 @@ TEST(ParseCapabilities, Prefs) {
   prefs.SetString("key2.k", "value2");
   base::DictionaryValue caps;
   caps.Set("chromeOptions.prefs", prefs.DeepCopy());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(capabilities.prefs->Equals(&prefs));
 }
@@ -175,8 +169,7 @@ TEST(ParseCapabilities, LocalState) {
   local_state.SetString("s2.s", "v2");
   base::DictionaryValue caps;
   caps.Set("chromeOptions.localState", local_state.DeepCopy());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(capabilities.local_state->Equals(&local_state));
 }
@@ -188,8 +181,7 @@ TEST(ParseCapabilities, Extensions) {
   extensions.AppendString("ext2");
   base::DictionaryValue caps;
   caps.Set("chromeOptions.extensions", extensions.DeepCopy());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(2u, capabilities.extensions.size());
   ASSERT_EQ("ext1", capabilities.extensions[0]);
@@ -202,8 +194,7 @@ TEST(ParseCapabilities, UnrecognizedProxyType) {
   proxy.SetString("proxyType", "unknown proxy type");
   base::DictionaryValue caps;
   caps.Set("proxy", proxy.DeepCopy());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
 
@@ -213,8 +204,7 @@ TEST(ParseCapabilities, IllegalProxyType) {
   proxy.SetInteger("proxyType", 123);
   base::DictionaryValue caps;
   caps.Set("proxy", proxy.DeepCopy());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
 
@@ -224,8 +214,7 @@ TEST(ParseCapabilities, DirectProxy) {
   proxy.SetString("proxyType", "DIRECT");
   base::DictionaryValue caps;
   caps.Set("proxy", proxy.DeepCopy());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(1u, capabilities.switches.GetSize());
   ASSERT_TRUE(capabilities.switches.HasSwitch("no-proxy-server"));
@@ -237,8 +226,7 @@ TEST(ParseCapabilities, SystemProxy) {
   proxy.SetString("proxyType", "system");
   base::DictionaryValue caps;
   caps.Set("proxy", proxy.DeepCopy());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(0u, capabilities.switches.GetSize());
 }
@@ -250,8 +238,7 @@ TEST(ParseCapabilities, PacProxy) {
   proxy.SetString("proxyAutoconfigUrl", "test.wpad");
   base::DictionaryValue caps;
   caps.Set("proxy", proxy.DeepCopy());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(1u, capabilities.switches.GetSize());
   ASSERT_EQ("test.wpad", capabilities.switches.GetSwitchValue("proxy-pac-url"));
@@ -264,8 +251,7 @@ TEST(ParseCapabilities, MissingProxyAutoconfigUrl) {
   proxy.SetString("httpProxy", "http://localhost:8001");
   base::DictionaryValue caps;
   caps.Set("proxy", proxy.DeepCopy());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
 
@@ -275,8 +261,7 @@ TEST(ParseCapabilities, AutodetectProxy) {
   proxy.SetString("proxyType", "autodetect");
   base::DictionaryValue caps;
   caps.Set("proxy", proxy.DeepCopy());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(1u, capabilities.switches.GetSize());
   ASSERT_TRUE(capabilities.switches.HasSwitch("proxy-auto-detect"));
@@ -292,8 +277,7 @@ TEST(ParseCapabilities, ManualProxy) {
   proxy.SetString("noProxy", "google.com, youtube.com");
   base::DictionaryValue caps;
   caps.Set("proxy", proxy.DeepCopy());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(2u, capabilities.switches.GetSize());
   ASSERT_EQ(
@@ -310,8 +294,7 @@ TEST(ParseCapabilities, MissingSettingForManualProxy) {
   proxy.SetString("proxyType", "manual");
   base::DictionaryValue caps;
   caps.Set("proxy", proxy.DeepCopy());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
 
@@ -324,8 +307,7 @@ TEST(ParseCapabilities, IgnoreNullValueForManualProxy) {
   proxy.Set("noProxy", base::Value::CreateNullValue());
   base::DictionaryValue caps;
   caps.Set("proxy", proxy.DeepCopy());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(1u, capabilities.switches.GetSize());
   ASSERT_TRUE(capabilities.switches.HasSwitch("proxy-server"));
@@ -340,22 +322,17 @@ TEST(ParseCapabilities, LoggingPrefsOk) {
   logging_prefs.SetString("Network", "INFO");
   base::DictionaryValue caps;
   caps.Set("loggingPrefs", logging_prefs.DeepCopy());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
-  ASSERT_TRUE(capabilities.logging_prefs.get());
-  ASSERT_EQ(1u, capabilities.logging_prefs->size());
-  std::string log_level;
-  ASSERT_TRUE(capabilities.logging_prefs->GetString("Network", &log_level));
-  ASSERT_STREQ("INFO", log_level.c_str());
+  ASSERT_EQ(1u, capabilities.logging_prefs.size());
+  ASSERT_EQ(Log::kInfo, capabilities.logging_prefs["Network"]);
 }
 
 TEST(ParseCapabilities, LoggingPrefsNotDict) {
   Capabilities capabilities;
   base::DictionaryValue caps;
   caps.SetString("loggingPrefs", "INFO");
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
 
@@ -366,8 +343,7 @@ TEST(ParseCapabilities, ExcludeSwitches) {
   exclude_switches.AppendString("switch2");
   base::DictionaryValue caps;
   caps.Set("chromeOptions.excludeSwitches", exclude_switches.DeepCopy());
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(2u, capabilities.exclude_switches.size());
   const std::set<std::string>& switches = capabilities.exclude_switches;
@@ -379,8 +355,7 @@ TEST(ParseCapabilities, UseExistingBrowser) {
   Capabilities capabilities;
   base::DictionaryValue caps;
   caps.SetString("chromeOptions.debuggerAddress", "abc:123");
-  Logger log(Log::kError);
-  Status status = capabilities.Parse(caps, &log);
+  Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(capabilities.IsExistingBrowser());
   ASSERT_EQ("abc", capabilities.debugger_address.host());

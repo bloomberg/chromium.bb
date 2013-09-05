@@ -173,7 +173,7 @@ TEST(ConsoleLogger, ConsoleMessages) {
 
   ASSERT_EQ(8u, log.GetEntries().size());
   ValidateLogEntry(log.GetEntries()[0], Log::kDebug, "url1 10:1 text1");
-  ValidateLogEntry(log.GetEntries()[1], Log::kLog, "source2 - text2");
+  ValidateLogEntry(log.GetEntries()[1], Log::kInfo, "source2 - text2");
   ValidateLogEntry(log.GetEntries()[2], Log::kWarning, "url3 30 text3");
   ValidateLogEntry(log.GetEntries()[3], Log::kError, "url4 - text4");
   ValidateLogEntry(

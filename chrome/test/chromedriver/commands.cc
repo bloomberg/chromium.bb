@@ -56,13 +56,11 @@ void ExecuteGetStatus(
 }
 
 NewSessionParams::NewSessionParams(
-    Log* log,
     SessionThreadMap* session_thread_map,
     scoped_refptr<URLRequestContextGetter> context_getter,
     const SyncWebSocketFactory& socket_factory,
     DeviceManager* device_manager)
-    : log(log),
-      session_thread_map(session_thread_map),
+    : session_thread_map(session_thread_map),
       context_getter(context_getter),
       socket_factory(socket_factory),
       device_manager(device_manager) {}
@@ -84,22 +82,24 @@ Status CreateSessionOnSessionThreadHelper(
     return Status(kUnknownError, "cannot find dict 'desiredCapabilities'");
 
   Capabilities capabilities;
-  Status status = capabilities.Parse(*desired_caps, bound_params.log);
+  Status status = capabilities.Parse(*desired_caps);
   if (status.IsError())
     return status;
 
   // Create Log's and DevToolsEventListener's for ones that are DevTools-based.
   // Session will own the Log's, Chrome will own the listeners.
   ScopedVector<WebDriverLog> devtools_logs;
+  // TODO(kkania): Save this log in the session.
+  scoped_ptr<WebDriverLog> driver_log;
   ScopedVector<DevToolsEventListener> devtools_event_listeners;
-  status = CreateLogs(capabilities, &devtools_logs, &devtools_event_listeners);
+  status = CreateLogs(
+      capabilities, &devtools_logs, &driver_log, &devtools_event_listeners);
   if (status.IsError())
     return status;
 
   scoped_ptr<Chrome> chrome;
   status = LaunchChrome(bound_params.context_getter.get(),
                         bound_params.socket_factory,
-                        bound_params.log,
                         bound_params.device_manager,
                         capabilities,
                         devtools_event_listeners,

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/string_escape.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -16,8 +17,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/logging.h"
 #include "net/base/net_util.h"
 
 namespace {
@@ -68,13 +69,10 @@ Status ParseDict(scoped_ptr<base::DictionaryValue>* to_set,
 }
 
 Status IgnoreDeprecatedOption(
-    Log* log,
     const char* option_name,
     const base::Value& option,
     Capabilities* capabilities) {
-  log->AddEntry(Log::kWarning,
-                base::StringPrintf("deprecated chrome option is ignored: '%s'",
-                                   option_name));
+  LOG(WARNING) << "Deprecated chrome option is ignored: " << option_name;
   return Status(kOk);
 }
 
@@ -223,18 +221,25 @@ Status ParseUseExistingBrowser(const base::Value& option,
 
 Status ParseLoggingPrefs(const base::Value& option,
                          Capabilities* capabilities) {
-  const base::DictionaryValue* logging_prefs_dict = NULL;
-  if (!option.GetAsDictionary(&logging_prefs_dict))
+  const base::DictionaryValue* logging_prefs = NULL;
+  if (!option.GetAsDictionary(&logging_prefs))
     return Status(kUnknownError, "must be a dictionary");
 
-  // TODO(klm): verify log types.
-  // TODO(klm): verify log levels.
-  capabilities->logging_prefs.reset(logging_prefs_dict->DeepCopy());
+  for (base::DictionaryValue::Iterator pref(*logging_prefs);
+       !pref.IsAtEnd(); pref.Advance()) {
+    std::string type = pref.key();
+    Log::Level level;
+    std::string level_name;
+    if (!pref.value().GetAsString(&level_name) ||
+        !WebDriverLog::NameToLevel(level_name, &level)) {
+      return Status(kUnknownError, "invalid log level for '" + type + "' log");
+    }
+    capabilities->logging_prefs.insert(std::make_pair(type, level));
+  }
   return Status(kOk);
 }
 
 Status ParseChromeOptions(
-    Log* log,
     const base::Value& capability,
     Capabilities* capabilities) {
   const base::DictionaryValue* chrome_options = NULL;
@@ -270,8 +275,7 @@ Status ParseChromeOptions(
     parser_map["extensions"] = base::Bind(&ParseExtensions);
     parser_map["forceDevToolsScreenshot"] = base::Bind(
         &ParseBoolean, &capabilities->force_devtools_screenshot);
-    parser_map["loadAsync"] =
-        base::Bind(&IgnoreDeprecatedOption, log, "loadAsync");
+    parser_map["loadAsync"] = base::Bind(&IgnoreDeprecatedOption, "loadAsync");
     parser_map["localState"] =
         base::Bind(&ParseDict, &capabilities->local_state);
     parser_map["logPath"] = base::Bind(&ParseLogPath);
@@ -414,11 +418,9 @@ bool Capabilities::IsExistingBrowser() const {
   return debugger_address.IsValid();
 }
 
-Status Capabilities::Parse(
-    const base::DictionaryValue& desired_caps,
-    Log* log) {
+Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
   std::map<std::string, Parser> parser_map;
-  parser_map["chromeOptions"] = base::Bind(&ParseChromeOptions, log);
+  parser_map["chromeOptions"] = base::Bind(&ParseChromeOptions);
   parser_map["loggingPrefs"] = base::Bind(&ParseLoggingPrefs);
   parser_map["proxy"] = base::Bind(&ParseProxy);
   for (std::map<std::string, Parser>::iterator it = parser_map.begin();

@@ -67,11 +67,9 @@ const WebViewInfo* WebViewsInfo::GetForId(const std::string& id) const {
 DevToolsHttpClient::DevToolsHttpClient(
     const NetAddress& address,
     scoped_refptr<URLRequestContextGetter> context_getter,
-    const SyncWebSocketFactory& socket_factory,
-    Log* log)
+    const SyncWebSocketFactory& socket_factory)
     : context_getter_(context_getter),
       socket_factory_(socket_factory),
-      log_(log),
       server_url_("http://" + address.ToString()),
       web_socket_url_prefix_(base::StringPrintf(
           "ws://%s/devtools/page/", address.ToString().c_str())) {}
@@ -141,8 +139,7 @@ scoped_ptr<DevToolsClient> DevToolsHttpClient::CreateClient(
       web_socket_url_prefix_ + id,
       id,
       base::Bind(
-          &DevToolsHttpClient::CloseFrontends, base::Unretained(this), id),
-      log_));
+          &DevToolsHttpClient::CloseFrontends, base::Unretained(this), id)));
 }
 
 Status DevToolsHttpClient::CloseWebView(const std::string& id) {
@@ -234,10 +231,9 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
         socket_factory_,
         web_socket_url_prefix_ + *it,
         *it,
-        base::Bind(&FakeCloseFrontends),
-        log_));
+        base::Bind(&FakeCloseFrontends)));
     scoped_ptr<WebViewImpl> web_view(
-        new WebViewImpl(*it, build_no_, client.Pass(), log_));
+        new WebViewImpl(*it, build_no_, client.Pass()));
 
     status = web_view->ConnectIfNecessary();
     // Ignore disconnected error, because the debugger might have closed when
@@ -279,12 +275,13 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
 bool DevToolsHttpClient::FetchUrlAndLog(const std::string& url,
                                         URLRequestContextGetter* getter,
                                         std::string* response) {
-  log_->AddEntry(Log::kDebug, "devtools request: " + url);
+  VLOG(1) << "DevTools request: " << url;
   bool ok = FetchUrl(url, getter, response);
-  if (ok)
-    log_->AddEntry(Log::kDebug, "devtools response: " + *response);
-  else
-    log_->AddEntry(Log::kDebug, "devtools request failed");
+  if (ok) {
+    VLOG(1) << "DevTools response: " << *response;
+  } else {
+    VLOG(1) << "DevTools request failed";
+  }
   return ok;
 }
 

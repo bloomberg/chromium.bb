@@ -22,25 +22,12 @@ class Status;
 // See https://code.google.com/p/selenium/wiki/Logging.
 class WebDriverLog : public Log {
  public:
-  // Constants corresponding to log entry severity levels in the wire protocol.
-  enum WebDriverLevel {
-    kWdAll,
-    kWdDebug,
-    kWdInfo,
-    kWdWarning,
-    kWdSevere,
-    kWdOff
-  };
-
-  // Converts WD wire protocol level name -> WebDriverLevel, false on bad name.
-  static bool NameToLevel(const std::string& name, WebDriverLevel* out_level);
+  // Converts WD wire protocol level name -> Level, false on bad name.
+  static bool NameToLevel(const std::string& name, Level* out_level);
 
   // Creates a WebDriverLog with the given type and minimum level.
-  WebDriverLog(const std::string& type, WebDriverLevel min_wd_level);
+  WebDriverLog(const std::string& type, Level min_level);
   virtual ~WebDriverLog();
-
-  // Returns this log's type, for the WD wire protocol "/log" and "/log/types".
-  const std::string& GetType();
 
   // Returns entries accumulated so far, as a ListValue ready for serialization
   // into the wire protocol response to the "/log" command.
@@ -53,17 +40,24 @@ class WebDriverLog : public Log {
                                    Level level,
                                    const std::string& message) OVERRIDE;
 
+  const std::string& type() const;
+  Level min_level() const;
+
  private:
   const std::string type_;  // WebDriver log type.
-  const WebDriverLevel min_wd_level_;  // Minimum level of entries to store.
+  const Level min_level_;  // Minimum level of entries to store.
   scoped_ptr<base::ListValue> entries_;  // Accumulated entries.
 
   DISALLOW_COPY_AND_ASSIGN(WebDriverLog);
 };
 
-// Creates Log's and DevToolsEventListener's for ones that are DevTools-based.
+// Initializes logging system for ChromeDriver. Returns true on success.
+bool InitLogging();
+
+// Creates Log's and DevToolsEventListener's based on logging preferences.
 Status CreateLogs(const Capabilities& capabilities,
-                  ScopedVector<WebDriverLog>* out_devtools_logs,
+                  ScopedVector<WebDriverLog>* out_logs,
+                  scoped_ptr<WebDriverLog>* out_driver_log,
                   ScopedVector<DevToolsEventListener>* out_listeners);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_LOGGING_H_
