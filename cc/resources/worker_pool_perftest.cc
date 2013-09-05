@@ -160,13 +160,13 @@ class WorkerPoolPerfTest : public testing::Test {
     worker_pool_->CheckForCompletedTasks();
   }
 
-  void AfterTest(const std::string test_name) {
+  void AfterTest(const std::string& test_name) {
     // Format matches chrome/test/perf/perf_test.h:PrintResult
     printf(
         "*RESULT %s: %.2f runs/s\n", test_name.c_str(), timer_.LapsPerSecond());
   }
 
-  void RunScheduleTasksTest(const std::string test_name,
+  void RunScheduleTasksTest(const std::string& test_name,
                             unsigned max_depth,
                             unsigned num_children_per_node) {
     timer_.Reset();
@@ -186,7 +186,7 @@ class WorkerPoolPerfTest : public testing::Test {
                            timer_.LapsPerSecond(), "runs/s", true);
   }
 
-  void RunExecuteTasksTest(const std::string test_name,
+  void RunExecuteTasksTest(const std::string& test_name,
                            unsigned max_depth,
                            unsigned num_children_per_node) {
     timer_.Reset();

@@ -126,7 +126,7 @@ class TileManagerPerfTest : public testing::Test {
     CreateBinTiles(count - 3 * count_per_bin, NEVER_BIN, tiles);
   }
 
-  void RunManageTilesTest(const std::string test_name,
+  void RunManageTilesTest(const std::string& test_name,
                           unsigned tile_count,
                           unsigned priority_change_percent) {
     DCHECK_GE(tile_count, 100u);

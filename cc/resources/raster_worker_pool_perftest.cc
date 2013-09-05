@@ -176,7 +176,7 @@ class RasterWorkerPoolPerfTest : public testing::Test {
     }
   }
 
-  void RunBuildTaskGraphTest(const std::string test_name,
+  void RunBuildTaskGraphTest(const std::string& test_name,
                              unsigned num_raster_tasks,
                              unsigned num_image_decode_tasks) {
     timer_.Reset();
