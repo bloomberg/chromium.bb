@@ -65,7 +65,11 @@ static const CodecInfo kVorbisCodecInfo = { "vorbis", CodecInfo::AUDIO, NULL,
 
 static const CodecInfo* kVideoWebMCodecs[] = {
   &kVP8CodecInfo,
+#if !defined(OS_ANDROID)
+  // TODO(wonsik): crbug.com/285016 query Android platform for codec
+  // capabilities.
   &kVP9CodecInfo,
+#endif
   &kVorbisCodecInfo,
   NULL
 };
