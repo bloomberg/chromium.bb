@@ -23,6 +23,7 @@
       -- keyboard layouts.
       -->
     <content select="#{{layout}}-{{keyset}}"></content>
+    <kb-key-codes id="keyCodeMetadata"></kb-key-codes>
   </template>
   <script>
     /**
@@ -297,12 +298,13 @@
         }
 
         if (detail.repeat) {
-          insertText(detail.char);
+          this.keyTyped(detail);
           repeatKey.key = this.lastPressedKey;
+          var self = this;
           repeatKey.timer = setTimeout(function() {
             repeatKey.timer = undefined;
             repeatKey.interval = setInterval(function() {
-               insertText(detail.char);
+               self.keyTyped(detail);
             }, REPEAT_INTERVAL_MSEC);
           }, Math.max(0, REPEAT_DELAY_MSEC - REPEAT_INTERVAL_MSEC));
         }
@@ -435,7 +437,10 @@
           default:
             break;
         }
-        insertText(char);
+        if (char.length == 1)
+          this.keyTyped(detail);
+        else
+          insertText(char);
       },
 
       /*
@@ -491,6 +496,17 @@
                             'unlockedCase' : shift.unlockedCase
                           };
         }
+      },
+
+      /**
+       * Generates fabricated key events to simulate typing on a
+       * physical keyboard.
+       * @param {Object} detail Attributes of the key being typed.
+       */
+      keyTyped: function(detail) {
+        var builder = this.$.keyCodeMetadata;
+        sendKeyEvent(builder.createVirtualKeyEvent(detail, "keydown"));
+        sendKeyEvent(builder.createVirtualKeyEvent(detail, "keyup"));
       },
 
       /**

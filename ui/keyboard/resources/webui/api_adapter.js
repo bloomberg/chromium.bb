@@ -6,6 +6,10 @@ function insertText(text) {
   chrome.send('insertText', [ text ]);
 }
 
+function sendKeyEvent(event) {
+  chrome.send('sendKeyEvent', [ event ]);
+}
+
 (function(exports) {
   /**
    * An array to save callbacks of each request.

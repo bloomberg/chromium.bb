@@ -1,11 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/api/input/input.h"
 
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,11 +53,41 @@ bool MoveCursorFunction::RunImpl() {
   return false;
 }
 
+bool SendKeyEventFunction::RunImpl() {
+#if defined(USE_ASH)
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  base::Value* options_value = NULL;
+  base::DictionaryValue* params = NULL;
+  std::string type;
+  int char_value;
+  int key_code;
+  bool shift_modifier;
+
+  EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &options_value));
+  EXTENSION_FUNCTION_VALIDATE(options_value->GetAsDictionary(&params));
+  EXTENSION_FUNCTION_VALIDATE(params->GetString("type", &type));
+  EXTENSION_FUNCTION_VALIDATE(params->GetInteger("charValue", &char_value));
+  EXTENSION_FUNCTION_VALIDATE(params->GetInteger("keyCode", &key_code));
+  EXTENSION_FUNCTION_VALIDATE(params->GetBoolean("shiftKey", &shift_modifier));
+
+  return keyboard::SendKeyEvent(type,
+                                char_value,
+                                key_code,
+                                shift_modifier,
+                                ash::Shell::GetPrimaryRootWindow());
+
+#endif
+  error_ = kNotYetImplementedError;
+  return false;
+}
+
 InputAPI::InputAPI(Profile* profile) {
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
   registry->RegisterFunction<InsertTextFunction>();
   registry->RegisterFunction<MoveCursorFunction>();
+  registry->RegisterFunction<SendKeyEventFunction>();
 }
 
 InputAPI::~InputAPI() {

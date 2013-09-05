@@ -39,7 +39,18 @@
        * Keys with a high weighting are wider than normal keys.
        * @type {number}
        */
-      weight: 1
+      weight: 1,
+
+      /**
+       * Returns a subset of the key attributes.
+       * @return {Object} Mapping of attributes for the key element.
+       */
+      PopulateDetails: function() {
+        var details = this.super();
+        details.keyCode = this.keyCode;
+        details.shiftModifier = this.shiftModifier;
+        return details;
+      },
     });
   </script>
 </polymer-element>

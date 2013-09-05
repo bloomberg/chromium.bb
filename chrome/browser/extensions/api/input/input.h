@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,19 @@ class MoveCursorFunction : public SyncExtensionFunction {
   virtual ~MoveCursorFunction() {}
 
   // ExtensionFunction.
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class SendKeyEventFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "virtualKeyboardPrivate.sendKeyEvent",
+      VIRTUALKEYBOARDPRIVATE_SENDKEYEVENT);
+
+ protected:
+  virtual ~SendKeyEventFunction() {}
+
+  // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 

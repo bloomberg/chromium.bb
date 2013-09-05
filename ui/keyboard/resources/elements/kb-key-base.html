@@ -109,11 +109,7 @@
         }
       },
       down: function(event) {
-        var detail = {
-            char: this.charValue,
-            toLayout: this.toLayout,
-            repeat: this.repeat
-        };
+        var detail = this.PopulateDetails();
         if (this.keysetRules && this.keysetRules.down != undefined) {
           detail.toKeyset = this.keysetRules.down[TO_KEYSET - OFFSET];
           detail.nextKeyset = this.keysetRules.down[NEXT_KEYSET - OFFSET];
@@ -136,10 +132,7 @@
       },
       up: function(event) {
         clearTimeout(this.longPressTimer);
-        var detail = {
-            char: this.charValue,
-            toLayout: this.toLayout
-        };
+        var detail = this.PopulateDetails();
         if (this.keysetRules && this.keysetRules.up != undefined) {
           detail.toKeyset = this.keysetRules.up[TO_KEYSET - OFFSET];
           detail.nextKeyset = this.keysetRules.up[NEXT_KEYSET - OFFSET];
@@ -155,6 +148,14 @@
        */
       get charValue() {
         return this.char || this.textContent;
+      },
+
+      PopulateDetails: function() {
+         return {
+            char: this.charValue,
+            toLayout: this.toLayout,
+            repeat: this.repeat
+         };
       },
     });
   </script>

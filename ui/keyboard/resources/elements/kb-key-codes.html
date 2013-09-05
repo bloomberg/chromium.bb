@@ -7,6 +7,9 @@
 <polymer-element name="kb-key-codes">
 <script>
   (function() {
+    // Each virtual key event is assigned a unique ID.
+    var nextRequestID = 0;
+
     // Keycodes have been deprecated in the KeyEvent specification, but are
     // nonetheless required to support legacy web content.  The Keycodes in the
     // following table are based on subset of US-EN 101-key keyboard. These
@@ -139,31 +142,36 @@
 
      /**
       * Creates a virtual key event for use with the keyboard extension API.
-      * @param {kb-key} key Instance of the kb-key element being pressed or
-      *     released.
+      * See http://www.w3.org/TR/DOM-Level-3-Events/#events-KeyboardEvent.
+      * @param {Object} detail Attribute of the key being pressed or released.
       * @param {string} type The type of key event, which may be keydown
-      *     or keyreleased.
-      * @return {keyCode: numeric,
-      *          modifiers: Array.<string>,
-      *          type: string,
-      *          value: string}
+      *     or keyup.
+      * @return {?KeyboardEvent} A KeyboardEvent object, or undefined on
+      *     failure.
       */
-     CreateVirtualKeyEvent: function(key, type) {
-       var keyCode = key.keyCode;
-       var shiftModifier = key.shiftModifier;
-       if (keyCode == undefined) {
-         var state = this.GetKeyCodeAndModifiers(key.charValue);
-         keyCode = state.keyCode;
-         shiftModifier = state.shiftModifier;
+     createVirtualKeyEvent: function(detail, type) {
+       var char = detail.char;
+       if (!char || char.length != 1) {
+         console.error('Invalid key. Expected single character.');
+         return;
        }
-       var modifiers = [];
-       if (shiftModifier)
-         modifiers.push('shiftKey');
+       var keyCode = detail.keyCode;
+       var shiftModifier = detail.shiftModifier;
+       if (keyCode == undefined) {
+         var state = this.GetKeyCodeAndModifiers(char);
+         if (state) {
+           keyCode = state.keyCode;
+           shiftModifier = state.shiftModifier;
+         } else {
+           keyCode = 0;
+           shiftModifier = false;
+         }
+       }
        return {
-         keyCode: keyCode,
-         modifiers: modifiers,
          type: type,
-         value: key.charValue,
+         charValue: char.charCodeAt(0),
+         keyCode: keyCode,
+         shiftKey: shiftModifier
        };
      },
     });

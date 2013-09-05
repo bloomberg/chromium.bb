@@ -36,6 +36,11 @@ void KeyboardUIHandler::RegisterMessages() {
       "getInputContext",
       base::Bind(&KeyboardUIHandler::HandleGetInputContextMessage,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "sendKeyEvent",
+      base::Bind(&KeyboardUIHandler::HandleSendKeyEventMessage,
+                 base::Unretained(this)));
+
 }
 
 void KeyboardUIHandler::HandleInsertTextMessage(const base::ListValue* args) {
@@ -85,6 +90,39 @@ void KeyboardUIHandler::HandleGetInputContextMessage(
 
   web_ui()->CallJavascriptFunction("GetInputContextCallback",
                                    results);
+}
+
+void KeyboardUIHandler::HandleSendKeyEventMessage(
+    const base::ListValue* args) {
+  const base::DictionaryValue* params = NULL;
+  std::string type;
+  int char_value;
+  int key_code;
+  bool shift_modifier;
+
+  if (!args->GetDictionary(0, &params) ||
+      !params->GetString("type", &type) ||
+      !params->GetInteger("charValue", &char_value) ||
+      !params->GetInteger("keyCode", &key_code) ||
+      !params->GetBoolean("shiftKey", &shift_modifier)) {
+    LOG(ERROR) << "SendKeyEvent failed: bad argument";
+    return;
+  }
+
+  aura::RootWindow* root_window =
+      web_ui()->GetWebContents()->GetView()->GetNativeView()->GetRootWindow();
+  if (!root_window) {
+    LOG(ERROR) << "sendKeyEvent failed: no root window";
+    return;
+  }
+
+  if (!keyboard::SendKeyEvent(type,
+                              char_value,
+                              key_code,
+                              shift_modifier,
+                              root_window)) {
+    LOG(ERROR) << "sendKeyEvent failed";
+  }
 }
 
 }  // namespace keyboard

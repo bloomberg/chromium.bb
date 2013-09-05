@@ -29,6 +29,11 @@ class KeyboardUIHandler : public content::WebUIMessageHandler {
   // |args| should be an integer representing request ID.
   void HandleGetInputContextMessage(const base::ListValue* args);
 
+  // Callback for the "sendKeyEvent" message. The first element in |args| is a
+  // dictionary containing an event type, the character being pressed or
+  // released, a virtual key code, and the state of the shift key.
+  void HandleSendKeyEventMessage(const base::ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(KeyboardUIHandler);
 };
 

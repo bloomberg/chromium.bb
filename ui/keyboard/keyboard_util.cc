@@ -17,6 +17,13 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/keyboard/keyboard_switches.h"
 
+namespace {
+
+const char kKeyDown[] ="keydown";
+const char kKeyUp[] = "keyup";
+
+}  // namespace
+
 namespace keyboard {
 
 bool IsKeyboardEnabled() {
@@ -27,28 +34,6 @@ bool IsKeyboardEnabled() {
 bool InsertText(const base::string16& text, aura::RootWindow* root_window) {
   if (!root_window)
     return false;
-
-  // Handle Backspace and Enter specially: using TextInputClient::InsertText is
-  // very unreliable for these characters.
-  // TODO(bryeung): remove this code once virtual keyboards are able to send
-  // these events directly via the Input Injection API.
-  if (text.length() == 1) {
-    ui::KeyboardCode code = ui::VKEY_UNKNOWN;
-    if (text[0] == L'\n')
-      code = ui::VKEY_RETURN;
-    else if (text[0] == L'\b')
-      code = ui::VKEY_BACK;
-
-    if (code != ui::VKEY_UNKNOWN) {
-      ui::KeyEvent press_event(ui::ET_KEY_PRESSED, code, 0, 0);
-      root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&press_event);
-
-      ui::KeyEvent release_event(ui::ET_KEY_RELEASED, code, 0, 0);
-      root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&release_event);
-
-      return true;
-    }
-  }
 
   ui::InputMethod* input_method = root_window->GetProperty(
       aura::client::kRootWindowInputMethodKey);
@@ -99,6 +84,41 @@ bool MoveCursor(int swipe_direction,
     root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&press_event);
     ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codey, modifier_flags, 0);
     root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&release_event);
+  }
+  return true;
+}
+
+bool SendKeyEvent(const std::string type,
+                  int key_value,
+                  int key_code,
+                  bool shift_modifier,
+                  aura::RootWindow* root_window) {
+  ui::EventType event_type = ui::ET_UNKNOWN;
+  if (type == kKeyDown)
+    event_type = ui::ET_KEY_PRESSED;
+  else if (type == kKeyUp)
+    event_type = ui::ET_KEY_RELEASED;
+  if (event_type == ui::ET_UNKNOWN)
+    return false;
+
+  int flags = ui::EF_NONE;
+  if (shift_modifier)
+    flags = ui::EF_SHIFT_DOWN;
+
+  ui::KeyboardCode code = static_cast<ui::KeyboardCode>(key_code);
+
+  ui::KeyEvent event(event_type, code, flags, false);
+  event.set_character(key_value);
+  event.set_unmodified_character(key_value);
+
+  if (code != ui::VKEY_UNKNOWN) {
+    root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&event);
+  } else if (event_type == ui::ET_KEY_RELEASED) {
+    // TODO(kevers): Fix key handling to support key_value when code is
+    // VKEY_UNKNOWN.
+    base::string16 text;
+    text.push_back(static_cast<char16>(key_value));
+    InsertText(text, root_window);
   }
   return true;
 }

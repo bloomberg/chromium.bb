@@ -7,6 +7,18 @@
     "namespace": "virtualKeyboardPrivate",
     "platforms": ["chromeos"],
     "description": "none",
+    "types": [
+      {
+        "id": "VirtualKeyboardEvent",
+        "type": "object",
+        "properties": {
+          "type": {"type": "string", "description": "One of keyup or keydown.", "enum": ["keyup", "keydown"]},
+          "charValue": {"type": "integer", "description": "Unicode value of the key."},
+          "keyCode": {"type": "integer", "description": "Virtual key code, which is independent of the keyboard layout or modifier state."},
+          "shiftKey": {"type": "boolean", "optional": true, "description": "Whether or not the SHIFT key is pressed."}
+        }
+      }
+    ],
     "functions": [
       {
         "name": "insertText",
@@ -45,6 +57,23 @@
             "parameters": []
           }
 	]
+      },
+      {
+        "name": "sendKeyEvent",
+        "type": "function",
+        "description": "Sends a fabricated key event to the focused input field.",
+        "parameters": [
+          { "name": "keyEvent",
+            "$ref": "VirtualKeyboardEvent",
+            "description": ""
+          },
+          { "name": "callback",
+            "type": "function",
+            "optional": true,
+            "description": "Called after processing the event.",
+            "parameters": []
+          }
+        ]
       }
     ]
   }

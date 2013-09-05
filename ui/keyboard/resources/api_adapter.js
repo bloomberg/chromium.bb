@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,4 +14,8 @@ function insertText(text) {
 
 function MoveCursor(swipe_direction, swipe_flags) {
   chrome.virtualKeyboardPrivate.moveCursor(swipe_direction, swipe_flags);
+}
+
+function sendKeyEvent(event) {
+  chrome.virtualKeyboardPrivate.sendKeyEvent(event, logIfError);
 }
