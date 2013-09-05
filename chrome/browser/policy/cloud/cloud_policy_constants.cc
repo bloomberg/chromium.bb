@@ -39,6 +39,8 @@ const char kChromeDevicePolicyType[] = "google/chromeos/device";
 const char kChromeUserPolicyType[] = "google/chromeos/user";
 #elif defined(OS_ANDROID)
 const char kChromeUserPolicyType[] = "google/android/user";
+#elif defined(OS_IOS)
+const char kChromeUserPolicyType[] = "google/ios/user";
 #else
 const char kChromeUserPolicyType[] = "google/chrome/user";
 #endif
@@ -48,7 +50,7 @@ const char kChromeExtensionPolicyType[] = "google/chrome/extension";
 }  // namespace dm_protocol
 
 const char* GetChromeUserPolicyType() {
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kFakeCloudPolicyType))
     return "google/chrome/user";

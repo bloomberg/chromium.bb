@@ -401,13 +401,13 @@ extern const char kPluginsMetadataServerURL[];
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 extern const char kEnableSpdyProxyAuth[];
+extern const char kFakeCloudPolicyType[];
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_ANDROID)
 extern const char kEnableAccessibilityTabSwitcher[];
 extern const char kEnableNewNTP[];
 extern const char kEnableTranslate[];
-extern const char kFakeCloudPolicyType[];
 extern const char kTabletUI[];
 #endif
 

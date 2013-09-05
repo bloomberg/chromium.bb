@@ -20,11 +20,12 @@ message DeviceRegisterRequest {
   // client has been registered properly.  For example, a client must
   // register with type DEVICE in order to retrieve device policies.
   enum Type {
-    TT   = 0;       // Register for TT release.
-    USER = 1;       // Register for Chrome OS user polices.
-    DEVICE = 2;     // Register for device policies.
-    BROWSER = 3;    // Register for Chrome user policies.
+    TT   = 0;             // Register for TT release.
+    USER = 1;             // Register for Chrome OS user polices.
+    DEVICE = 2;           // Register for device policies.
+    BROWSER = 3;          // Register for Chrome user policies.
     ANDROID_BROWSER = 4;  // Register for Android Chrome browser user policies.
+    IOS_BROWSER = 5;      // Register for iOS Chrome browser user policies.
   }
   // NOTE: we also use this field to detect client version.  If this
   // field is missing, then the request comes from TT.  We will remove
@@ -135,6 +136,7 @@ message PolicyFetchRequest {
   //   google/chromeos/publicaccount => ChromeSettingsProto
   //   google/chrome/extension => ExternalPolicyData
   //   google/android/user => ChromeSettingsProto
+  //   google/ios/user => ChromeSettingsProto
   optional string policy_type = 1;
 
   // This is the last policy timestamp that client received from server.

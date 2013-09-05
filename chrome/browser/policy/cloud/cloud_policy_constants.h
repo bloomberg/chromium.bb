@@ -105,7 +105,7 @@ enum DeviceMode {
 typedef std::pair<std::string, std::string> PolicyNamespaceKey;
 
 // Returns the Chrome user policy type to use. This allows overridding the
-// default user policy type on Android for testing purposes.
+// default user policy type on Android and iOS for testing purposes.
 // TODO(joaodasilva): remove this once the server is ready.
 // http://crbug.com/248527
 const char* GetChromeUserPolicyType();
