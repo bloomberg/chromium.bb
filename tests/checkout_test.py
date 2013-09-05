@@ -32,6 +32,8 @@ BAD_PATCH = ''.join(
 
 
 class FakeRepos(fake_repos.FakeReposBase):
+  TEST_GIT_REPO = 'repo_1'
+
   def populateSvn(self):
     """Creates a few revisions of changes files."""
     subprocess2.check_call(
@@ -39,11 +41,63 @@ class FakeRepos(fake_repos.FakeReposBase):
          '--non-interactive', '--no-auth-cache',
          '--username', self.USERS[0][0], '--password', self.USERS[0][1]])
     assert os.path.isdir(os.path.join(self.svn_checkout, '.svn'))
-    self._commit_svn(self._tree_1())
-    self._commit_svn(self._tree_2())
+    self._commit_svn(self._svn_tree_1())
+    self._commit_svn(self._svn_tree_2())
+
+  def populateGit(self):
+    """Creates a few revisions of changes files."""
+    self._commit_git(self.TEST_GIT_REPO, self._git_tree())
+    # Fix for the remote rejected error. For more details see:
+    # http://stackoverflow.com/questions/2816369/git-push-error-remote
+    subprocess2.check_output(
+        ['git', '--git-dir',
+         os.path.join(self.git_root, self.TEST_GIT_REPO, '.git'),
+         'config', '--bool', 'core.bare', 'true'])
+
+    assert os.path.isdir(
+        os.path.join(self.git_root, self.TEST_GIT_REPO, '.git'))
 
   @staticmethod
-  def _tree_1():
+  def _git_tree():
+    fs = {}
+    fs['origin'] = 'git@1'
+    fs['extra'] = 'dummy\n'  # new
+    fs['codereview.settings'] = (
+        '# Test data\n'
+        'bar: pouet\n')
+    fs['chrome/file.cc'] = (
+        'a\n'
+        'bb\n'
+        'ccc\n'
+        'dd\n'
+        'e\n'
+        'ff\n'
+        'ggg\n'
+        'hh\n'
+        'i\n'
+        'jj\n'
+        'kkk\n'
+        'll\n'
+        'm\n'
+        'nn\n'
+        'ooo\n'
+        'pp\n'
+        'q\n')
+    fs['chromeos/views/DOMui_menu_widget.h'] = (
+      '// Copyright (c) 2010\n'
+      '// Use of this source code\n'
+      '// found in the LICENSE file.\n'
+      '\n'
+      '#ifndef DOM\n'
+      '#define DOM\n'
+      '#pragma once\n'
+      '\n'
+      '#include <string>\n'
+      '#endif\n')
+    return fs
+
+  @staticmethod
+  def _svn_tree_1():
     fs = {}
     fs['trunk/origin'] = 'svn@1'
     fs['trunk/codereview.settings'] = (
@@ -70,8 +124,8 @@ class FakeRepos(fake_repos.FakeReposBase):
     return fs
 
   @classmethod
-  def _tree_2(cls):
-    fs = cls._tree_1()
+  def _svn_tree_2(cls):
+    fs = cls._svn_tree_1()
     fs['trunk/origin'] = 'svn@2\n'
     fs['trunk/extra'] = 'dummy\n'
     fs['trunk/bin_file'] = '\x00'
@@ -87,9 +141,6 @@ class FakeRepos(fake_repos.FakeReposBase):
       '#include <string>\n'
       '#endif\n')
     return fs
-
-  def populateGit(self):
-    raise NotImplementedError()
 
 
 # pylint: disable=R0201
@@ -127,70 +178,10 @@ class BaseTest(fake_repos.FakeReposTestBase):
     ])
 
   def get_trunk(self, modified):
-    tree = {}
-    subroot = 'trunk/'
-    for k, v in self.FAKE_REPOS.svn_revs[-1].iteritems():
-      if k.startswith(subroot):
-        f = k[len(subroot):]
-        assert f not in tree
-        tree[f] = v
+    raise NotImplementedError()
 
-    if modified:
-      content_lines = tree['chrome/file.cc'].splitlines(True)
-      tree['chrome/file.cc'] = ''.join(
-          content_lines[0:5] + ['FOO!\n'] + content_lines[5:])
-      del tree['extra']
-      tree['new_dir/subdir/new_file'] = 'A new file\nshould exist.\n'
-    return tree
-
-  def _check_base(self, co, root, git, expected):
-    read_only = isinstance(co, checkout.ReadOnlyCheckout)
-    self.assertEquals(not read_only, bool(expected))
-    self.assertEquals(read_only, self.is_read_only)
-    if not read_only:
-      self.FAKE_REPOS.svn_dirty = True
-
-    self.assertEquals(root, co.project_path)
-    self.assertEquals(self.previous_log['revision'], co.prepare(None))
-    self.assertEquals('pouet', co.get_settings('bar'))
-    self.assertTree(self.get_trunk(False), root)
-    patches = self.get_patches()
-    co.apply_patch(patches)
-    self.assertEquals(
-        ['bin_file', 'chrome/file.cc', 'new_dir/subdir/new_file', 'extra'],
-        patches.filenames)
-
-    if git:
-      # Hackish to verify _branches() internal function.
-      # pylint: disable=W0212
-      self.assertEquals(
-          (['master', 'working_branch'], 'working_branch'),
-          co._branches())
-
-    # Verify that the patch is applied even for read only checkout.
-    self.assertTree(self.get_trunk(True), root)
-    fake_author = self.FAKE_REPOS.USERS[1][0]
-    revision = co.commit(u'msg', fake_author)
-    # Nothing changed.
-    self.assertTree(self.get_trunk(True), root)
-
-    if read_only:
-      self.assertEquals('FAKE', revision)
-      self.assertEquals(self.previous_log['revision'], co.prepare(None))
-      # Changes should be reverted now.
-      self.assertTree(self.get_trunk(False), root)
-      expected = self.previous_log
-    else:
-      self.assertEquals(self.previous_log['revision'] + 1, revision)
-      self.assertEquals(self.previous_log['revision'] + 1, co.prepare(None))
-      self.assertTree(self.get_trunk(True), root)
-      expected = expected.copy()
-      expected['msg'] = 'msg'
-      expected['revision'] = self.previous_log['revision'] + 1
-      expected.setdefault('author', fake_author)
-
-    actual = self._log()
-    self.assertEquals(expected, actual)
+  def _check_base(self, co, root, expected):
+    raise NotImplementedError()
 
   def _check_exception(self, co, err_msg):
     co.prepare(None)
@@ -285,8 +276,204 @@ class SvnBaseTest(BaseTest):
         data['revprops'].append((prop.attrib['name'], prop.text))
     return data
 
+  def _check_base(self, co, root, expected):
+    read_only = isinstance(co, checkout.ReadOnlyCheckout)
+    self.assertEquals(not read_only, bool(expected))
+    self.assertEquals(read_only, self.is_read_only)
+    if not read_only:
+      self.FAKE_REPOS.svn_dirty = True
+
+    self.assertEquals(root, co.project_path)
+    self.assertEquals(self.previous_log['revision'], co.prepare(None))
+    self.assertEquals('pouet', co.get_settings('bar'))
+    self.assertTree(self.get_trunk(False), root)
+    patches = self.get_patches()
+    co.apply_patch(patches)
+    self.assertEquals(
+        ['bin_file', 'chrome/file.cc', 'new_dir/subdir/new_file', 'extra'],
+        patches.filenames)
+
+    # Verify that the patch is applied even for read only checkout.
+    self.assertTree(self.get_trunk(True), root)
+    fake_author = self.FAKE_REPOS.USERS[1][0]
+    revision = co.commit(u'msg', fake_author)
+    # Nothing changed.
+    self.assertTree(self.get_trunk(True), root)
+
+    if read_only:
+      self.assertEquals('FAKE', revision)
+      self.assertEquals(self.previous_log['revision'], co.prepare(None))
+      # Changes should be reverted now.
+      self.assertTree(self.get_trunk(False), root)
+      expected = self.previous_log
+    else:
+      self.assertEquals(self.previous_log['revision'] + 1, revision)
+      self.assertEquals(self.previous_log['revision'] + 1, co.prepare(None))
+      self.assertTree(self.get_trunk(True), root)
+      expected = expected.copy()
+      expected['msg'] = 'msg'
+      expected['revision'] = self.previous_log['revision'] + 1
+      expected.setdefault('author', fake_author)
+
+    actual = self._log()
+    self.assertEquals(expected, actual)
+
   def _test_prepare(self, co):
     self.assertEquals(1, co.prepare(1))
+
+  def get_trunk(self, modified):
+    tree = {}
+    subroot = 'trunk/'
+    for k, v in self.FAKE_REPOS.svn_revs[-1].iteritems():
+      if k.startswith(subroot):
+        f = k[len(subroot):]
+        assert f not in tree
+        tree[f] = v
+
+    if modified:
+      content_lines = tree['chrome/file.cc'].splitlines(True)
+      tree['chrome/file.cc'] = ''.join(
+          content_lines[0:5] + ['FOO!\n'] + content_lines[5:])
+      del tree['extra']
+      tree['new_dir/subdir/new_file'] = 'A new file\nshould exist.\n'
+    return tree
+
+
+class GitBaseTest(BaseTest):
+  def setUp(self):
+    super(GitBaseTest, self).setUp()
+    self.enabled = self.FAKE_REPOS.set_up_git()
+    self.assertTrue(self.enabled)
+    self.previous_log = self._log()
+
+  # pylint: disable=W0221
+  def _log(self, log_from_local_repo=False):
+    if log_from_local_repo:
+      repo_root = os.path.join(self.root_dir, self.name)
+    else:
+      repo_root = os.path.join(self.FAKE_REPOS.git_root,
+                               self.FAKE_REPOS.TEST_GIT_REPO)
+    out = subprocess2.check_output(
+        ['git',
+         '--git-dir',
+         os.path.join(repo_root, '.git'),
+         'log', '--pretty=format:"%H%x09%ae%x09%ad%x09%s"',
+         '--max-count=1']).strip('"')
+    if out and len(out.split()) != 0:
+      revision = out.split()[0]
+    else:
+      return {'revision': 0}
+
+    return {
+        'revision': revision,
+        'author': out.split()[1],
+        'msg': out.split()[-1],
+    }
+
+  def _check_base(self, co, root, expected):
+    read_only = isinstance(co, checkout.ReadOnlyCheckout)
+    self.assertEquals(read_only, self.is_read_only)
+    if not read_only:
+      self.FAKE_REPOS.git_dirty = True
+
+    self.assertEquals(root, co.project_path)
+    self.assertEquals(self.previous_log['revision'], co.prepare(None))
+    self.assertEquals('pouet', co.get_settings('bar'))
+    self.assertTree(self.get_trunk(False), root)
+    patches = self.get_patches()
+    co.apply_patch(patches)
+    self.assertEquals(
+        ['bin_file', 'chrome/file.cc', 'new_dir/subdir/new_file', 'extra'],
+        patches.filenames)
+
+    # Hackish to verify _branches() internal function.
+    # pylint: disable=W0212
+    self.assertEquals(
+        (['master', 'working_branch'], 'working_branch'),
+        co._branches())
+
+    # Verify that the patch is applied even for read only checkout.
+    self.assertTree(self.get_trunk(True), root)
+    fake_author = self.FAKE_REPOS.USERS[1][0]
+    revision = co.commit(u'msg', fake_author)
+    # Nothing changed.
+    self.assertTree(self.get_trunk(True), root)
+
+    if read_only:
+      self.assertEquals('FAKE', revision)
+      self.assertEquals(self.previous_log['revision'], co.prepare(None))
+      # Changes should be reverted now.
+      self.assertTree(self.get_trunk(False), root)
+      expected = self.previous_log
+    else:
+      self.assertEquals(self._log()['revision'], revision)
+      self.assertEquals(self._log()['revision'], co.prepare(None))
+      self.assertTree(self.get_trunk(True), root)
+      expected = self._log()
+
+    actual = self._log(log_from_local_repo=True)
+    self.assertEquals(expected, actual)
+
+  def get_trunk(self, modified):
+    tree = {}
+    for k, v in self.FAKE_REPOS.git_hashes[
+        self.FAKE_REPOS.TEST_GIT_REPO][1][1].iteritems():
+      assert k not in tree
+      tree[k] = v 
+
+    if modified:
+      content_lines = tree['chrome/file.cc'].splitlines(True)
+      tree['chrome/file.cc'] = ''.join(
+          content_lines[0:5] + ['FOO!\n'] + content_lines[5:])
+      tree['bin_file'] = '\x00'
+      del tree['extra']
+      tree['new_dir/subdir/new_file'] = 'A new file\nshould exist.\n'
+    return tree
+
+  def _test_prepare(self, co):
+    print co.prepare(None)
+
+
+class GitCheckout(GitBaseTest):
+  def _get_co(self, post_processors):
+    self.assertNotEqual(False, post_processors)
+    return checkout.GitCheckout(
+      root_dir=self.root_dir,
+      project_name=self.name,
+      remote_branch='master',
+      git_url=os.path.join(self.FAKE_REPOS.git_root,
+                           self.FAKE_REPOS.TEST_GIT_REPO),
+      commit_user=self.usr,
+      post_processors=post_processors)
+
+  def testAll(self):
+    root = os.path.join(self.root_dir, self.name)
+    self._check_base(self._get_co(None), root, None)
+
+  def testException(self):
+    self._check_exception(
+        self._get_co(None),
+        'While running git apply --index -p1;\n  fatal: corrupt patch at line '
+        '12\n')
+
+  def testProcess(self):
+    self._test_process(self._get_co)
+
+  def _testPrepare(self):
+    self._test_prepare(self._get_co(None))
+
+  def testMove(self):
+    co = self._get_co(None)
+    self._check_move(co)
+    out = subprocess2.check_output(
+        ['git', 'diff', 'HEAD~', '--name-status'], cwd=co.project_path)
+    out = sorted(out.splitlines())
+    expected = sorted(
+      [
+        'A\tchromeos/views/webui_menu_widget.h',
+        'D\tchromeos/views/DOMui_menu_widget.h',
+      ])
+    self.assertEquals(expected, out)
 
 
 class SvnCheckout(SvnBaseTest):
@@ -302,7 +489,7 @@ class SvnCheckout(SvnBaseTest):
         'revprops': [('realauthor', self.FAKE_REPOS.USERS[1][0])]
     }
     root = os.path.join(self.root_dir, self.name)
-    self._check_base(self._get_co(None), root, False, expected)
+    self._check_base(self._get_co(None), root, expected)
 
   def testException(self):
     self._check_exception(
@@ -357,7 +544,7 @@ class SvnCheckout(SvnBaseTest):
         'revprops': [('commit-bot', 'user1@example.com')],
     }
     root = os.path.join(self.root_dir, self.name)
-    self._check_base(self._get_co(None), root, False, expected)
+    self._check_base(self._get_co(None), root, expected)
 
   def testWithRevPropsSupportNotCommitBot(self):
     # Add the hook that will commit in a way that removes the race condition.
@@ -372,7 +559,7 @@ class SvnCheckout(SvnBaseTest):
     expected = {
         'author': self.FAKE_REPOS.USERS[1][0],
     }
-    self._check_base(co, root, False, expected)
+    self._check_base(co, root, expected)
 
   def testAutoProps(self):
     co = self._get_co(None)
@@ -512,7 +699,7 @@ class ReadOnlyCheckout(SvnBaseTest):
 
   def testAll(self):
     root = os.path.join(self.root_dir, self.name)
-    self._check_base(self._get_co(None), root, False, None)
+    self._check_base(self._get_co(None), root, None)
 
   def testException(self):
     self._check_exception(

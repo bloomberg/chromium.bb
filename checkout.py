@@ -550,16 +550,21 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
     return len([l for l in out.splitlines() if l.startswith('r')]) - 1
 
 
-class GitCheckoutBase(CheckoutBase):
-  """Base class for git checkout. Not to be used as-is."""
-  def __init__(self, root_dir, project_name, remote_branch,
-      post_processors=None):
-    super(GitCheckoutBase, self).__init__(
-        root_dir, project_name, post_processors)
-    # There is no reason to not hardcode it.
-    self.remote = 'origin'
+class GitCheckout(CheckoutBase):
+  """Manages a git checkout."""
+  def __init__(self, root_dir, project_name, remote_branch, git_url,
+      commit_user, post_processors=None):
+    assert git_url
+    assert commit_user
+    super(GitCheckout, self).__init__(root_dir, project_name, post_processors)
+    self.git_url = git_url
+    self.commit_user = commit_user
     self.remote_branch = remote_branch
+    # The working branch where patches will be applied. It will track the
+    # remote branch.
     self.working_branch = 'working_branch'
+    # There is no reason to not hardcode origin.
+    self.remote = 'origin'
 
   def prepare(self, revision):
     """Resets the git repository in a clean state.
@@ -567,10 +572,25 @@ class GitCheckoutBase(CheckoutBase):
     Checks it out if not present and deletes the working branch.
     """
     assert self.remote_branch
-    assert os.path.isdir(self.project_path)
-    self._check_call_git(['reset', '--hard', '--quiet'])
+
+    if not os.path.isdir(self.project_path):
+      # Clone the repo if the directory is not present.
+      logging.info(
+          'Checking out %s in %s', self.project_name, self.project_path)
+      self._check_call_git(
+          ['clone', self.git_url, '-b', self.remote_branch, self.project_path],
+          cwd=None, timeout=FETCH_TIMEOUT)
+    else:
+      # Throw away all uncommitted changes in the existing checkout.
+      self._check_call_git(['checkout', self.remote_branch])
+      self._check_call_git(
+          ['reset', '--hard', '--quiet',
+           '%s/%s' % (self.remote, self.remote_branch)])
+
     if revision:
       try:
+        # Look if the commit hash already exist. If so, we can skip a
+        # 'git fetch' call.
         revision = self._check_output_git(['rev-parse', revision])
       except subprocess.CalledProcessError:
         self._check_call_git(
@@ -581,12 +601,32 @@ class GitCheckoutBase(CheckoutBase):
       branches, active = self._branches()
       if active != 'master':
         self._check_call_git(['checkout', '--force', '--quiet', 'master'])
-      self._check_call_git(['pull', self.remote, self.remote_branch, '--quiet'])
+      self._sync_remote_branch()
+
       if self.working_branch in branches:
         self._call_git(['branch', '-D', self.working_branch])
+    return self._get_head_commit_hash()
+
+  def _sync_remote_branch(self):
+    """Syncs the remote branch."""
+    # We do a 'git pull origin master:refs/remotes/origin/master' instead of
+    # 'git pull origin master' because from the manpage for git-pull: 
+    #   A parameter <ref> without a colon is equivalent to <ref>: when
+    #   pulling/fetching, so it merges <ref> into the current branch without
+    #   storing the remote branch anywhere locally.
+    remote_tracked_path = 'refs/remotes/%s/%s' % (
+        self.remote, self.remote_branch)
+    self._check_call_git(
+        ['pull', self.remote,
+         '%s:%s' % (self.remote_branch, remote_tracked_path),
+         '--quiet'])
+
+  def _get_head_commit_hash(self):
+    """Gets the current revision from the local branch."""
+    return self._check_output_git(['rev-parse', 'HEAD']).strip()
 
   def apply_patch(self, patches, post_processors=None, verbose=False):
-    """Applies a patch on 'working_branch' and switch to it.
+    """Applies a patch on 'working_branch' and switches to it.
 
     Also commits the changes on the local branch.
 
@@ -597,8 +637,9 @@ class GitCheckoutBase(CheckoutBase):
     # trying again?
     if self.remote_branch:
       self._check_call_git(
-          ['checkout', '-b', self.working_branch,
-            '%s/%s' % (self.remote, self.remote_branch), '--quiet'])
+          ['checkout', '-b', self.working_branch, '-t', self.remote_branch,
+           '--quiet'])
+
     for index, p in enumerate(patches):
       stdout = []
       try:
@@ -667,20 +708,42 @@ class GitCheckoutBase(CheckoutBase):
     if verbose:
       cmd.append('--verbose')
     self._check_call_git(cmd)
-    # TODO(maruel): Weirdly enough they don't match, need to investigate.
-    #found_files = self._check_output_git(
-    #    ['diff', 'master', '--name-only']).splitlines(False)
-    #assert sorted(patches.filenames) == sorted(found_files), (
-    #    sorted(out), sorted(found_files))
+    found_files = self._check_output_git(
+        ['diff', '%s/%s' % (self.remote, self.remote_branch),
+         '--name-only']).splitlines(False)
+    assert sorted(patches.filenames) == sorted(found_files), (
+        sorted(patches.filenames), sorted(found_files))
 
   def commit(self, commit_message, user):
-    """Updates the commit message.
-
-    Subclass needs to dcommit or push.
-    """
+    """Commits, updates the commit message and pushes."""
     assert isinstance(commit_message, unicode)
-    self._check_call_git(['commit', '--amend', '-m', commit_message])
-    return self._check_output_git(['rev-parse', 'HEAD']).strip()
+    current_branch = self._check_output_git(
+        ['rev-parse', '--abbrev-ref', 'HEAD']).strip()
+    assert current_branch == self.working_branch
+ 
+    commit_cmd = ['commit', '--amend', '-m', commit_message]
+    if user and user != self.commit_user:
+      # We do not have the first or last name of the user, grab the username
+      # from the email and call it the original author's name.
+      # TODO(rmistry): Do not need the below if user is already in
+      #                "Name <email>" format.
+      name = user.split('@')[0]
+      commit_cmd.extend(['--author', '%s <%s>' % (name, user)])
+    self._check_call_git(commit_cmd)
+
+    # Push to the remote repository.
+    self._check_call_git(
+        ['push', 'origin', '%s:%s' % (self.working_branch, self.remote_branch),
+         '--force', '--quiet'])
+    # Get the revision after the push.
+    revision = self._get_head_commit_hash()
+    # Switch back to the remote_branch and sync it.
+    self._check_call_git(['checkout', self.remote_branch])
+    self._sync_remote_branch()
+    # Delete the working branch since we are done with it.
+    self._check_call_git(['branch', '-D', self.working_branch])
+
+    return revision
 
   def _check_call_git(self, args, **kwargs):
     kwargs.setdefault('cwd', self.project_path)
@@ -727,13 +790,7 @@ class GitCheckoutBase(CheckoutBase):
 
   def _fetch_remote(self):
     """Fetches the remote without rebasing."""
-    raise NotImplementedError()
-
-
-class GitCheckout(GitCheckoutBase):
-  """Git checkout implementation."""
-  def _fetch_remote(self):
-    # git fetch is always verbose even with -q -q so redirect its output.
+    # git fetch is always verbose even with -q, so redirect its output.
     self._check_output_git(['fetch', self.remote, self.remote_branch],
                            timeout=FETCH_TIMEOUT)
 
