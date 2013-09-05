@@ -30,7 +30,7 @@
 #include "xwayland.h"
 
 static int
-weston_wm_write_property(int fd, uint32_t mask, void *data)
+writable_callback(int fd, uint32_t mask, void *data)
 {
 	struct weston_wm *wm = data;
 	unsigned char *property;
@@ -43,7 +43,9 @@ weston_wm_write_property(int fd, uint32_t mask, void *data)
 	len = write(fd, property + wm->property_start, remainder);
 	if (len == -1) {
 		free(wm->property_reply);
-		wl_event_source_remove(wm->property_source);
+		wm->property_reply = NULL;
+		if (wm->property_source)
+			wl_event_source_remove(wm->property_source);
 		close(fd);
 		weston_log("write error to target fd: %m\n");
 		return 1;
@@ -56,7 +58,9 @@ weston_wm_write_property(int fd, uint32_t mask, void *data)
 	wm->property_start += len;
 	if (len == remainder) {
 		free(wm->property_reply);
-		wl_event_source_remove(wm->property_source);
+		wm->property_reply = NULL;
+		if (wm->property_source)
+			wl_event_source_remove(wm->property_source);
 
 		if (wm->incr) {
 			xcb_delete_property(wm->conn,
@@ -69,6 +73,21 @@ weston_wm_write_property(int fd, uint32_t mask, void *data)
 	}
 
 	return 1;
+}
+
+static void
+weston_wm_write_property(struct weston_wm *wm, xcb_get_property_reply_t *reply)
+{
+	wm->property_start = 0;
+	wm->property_reply = reply;
+	writable_callback(wm->data_source_fd, WL_EVENT_WRITABLE, wm);
+
+	if (wm->property_reply)
+		wm->property_source =
+			wl_event_loop_add_fd(wm->server->loop,
+					     wm->data_source_fd,
+					     WL_EVENT_WRITABLE,
+					     writable_callback, wm);
 }
 
 static void
@@ -90,14 +109,7 @@ weston_wm_get_incr_chunk(struct weston_wm *wm)
 	dump_property(wm, wm->atom.wl_selection, reply);
 
 	if (xcb_get_property_value_length(reply) > 0) {
-		wm->property_start = 0;
-		wm->property_source =
-			wl_event_loop_add_fd(wm->server->loop,
-					     wm->data_source_fd,
-					     WL_EVENT_WRITABLE,
-					     weston_wm_write_property,
-					     wm);
-		wm->property_reply = reply;
+		weston_wm_write_property(wm, reply);
 	} else {
 		weston_log("transfer complete\n");
 		close(wm->data_source_fd);
@@ -223,14 +235,7 @@ weston_wm_get_selection_data(struct weston_wm *wm)
 	} else {
 		dump_property(wm, wm->atom.wl_selection, reply);
 		wm->incr = 0;
-		wm->property_start = 0;
-		wm->property_source =
-			wl_event_loop_add_fd(wm->server->loop,
-					     wm->data_source_fd,
-					     WL_EVENT_WRITABLE,
-					     weston_wm_write_property,
-					     wm);
-		wm->property_reply = reply;
+		weston_wm_write_property(wm, reply);
 	}
 }
 
