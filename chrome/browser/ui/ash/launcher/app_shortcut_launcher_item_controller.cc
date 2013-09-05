@@ -145,11 +145,6 @@ void AppShortcutLauncherItemController::OnRemoved() {
   delete this;
 }
 
-void AppShortcutLauncherItemController::LauncherItemChanged(
-    int model_index,
-    const ash::LauncherItem& old_item) {
-}
-
 ChromeLauncherAppMenuItems
 AppShortcutLauncherItemController::GetApplicationList(int event_flags) {
   ChromeLauncherAppMenuItems items;

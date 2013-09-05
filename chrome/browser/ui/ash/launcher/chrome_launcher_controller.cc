@@ -996,9 +996,6 @@ void ChromeLauncherController::LauncherItemMoved(int start_index,
 void ChromeLauncherController::LauncherItemChanged(
     int index,
     const ash::LauncherItem& old_item) {
-  ash::LauncherID id = model_->items()[index].id;
-  DCHECK(HasItemController(id));
-  id_to_item_controller_map_[id]->LauncherItemChanged(index, old_item);
 }
 
 void ChromeLauncherController::LauncherStatusChanged() {

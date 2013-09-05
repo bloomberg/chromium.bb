@@ -35,9 +35,6 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
   virtual void Launch(int event_flags) OVERRIDE;
   virtual void Activate() OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual void LauncherItemChanged(
-      int model_index,
-      const ash::LauncherItem& old_item) OVERRIDE;
   virtual void Clicked(const ui::Event& event) OVERRIDE;
   virtual void OnRemoved() OVERRIDE;
   virtual ChromeLauncherAppMenuItems GetApplicationList(

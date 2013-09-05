@@ -108,11 +108,6 @@ void BrowserShortcutLauncherItemController::Activate() {
 void BrowserShortcutLauncherItemController::Close() {
 }
 
-void BrowserShortcutLauncherItemController::LauncherItemChanged(
-    int model_index,
-    const ash::LauncherItem& old_item) {
-}
-
 void BrowserShortcutLauncherItemController::Clicked(const ui::Event& event) {
   #if defined(OS_CHROMEOS)
     chromeos::default_pinned_apps_field_trial::RecordShelfClick(
