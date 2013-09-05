@@ -37,6 +37,8 @@ FileTaskExecutor::~FileTaskExecutor() {
 void FileTaskExecutor::Execute(
     const std::vector<FileSystemURL>& file_urls,
     const file_manager::file_tasks::FileTaskFinishedCallback& done) {
+  done_ = done;
+
   std::vector<base::FilePath> paths;
   for (size_t i = 0; i < file_urls.size(); ++i) {
     base::FilePath path = util::ExtractDrivePathFromFileSystemUrl(file_urls[i]);
@@ -47,17 +49,14 @@ void FileTaskExecutor::Execute(
     paths.push_back(path);
   }
 
-  DriveIntegrationService* integration_service =
-      DriveIntegrationServiceFactory::GetForProfile(profile_);
-  DCHECK_EQ(current_index_, 0);
-  if (!integration_service || !integration_service->file_system()) {
+  FileSystemInterface* file_system = util::GetFileSystemByProfile(profile_);
+  if (!file_system) {
     Done(false);
     return;
   }
-  FileSystemInterface* file_system = integration_service->file_system();
 
-  done_ = done;
   // Reset the index, so we know when we're done.
+  DCHECK_EQ(current_index_, 0);
   current_index_ = paths.size();
 
   for (size_t i = 0; i < paths.size(); ++i) {
@@ -70,20 +69,17 @@ void FileTaskExecutor::Execute(
 
 void FileTaskExecutor::OnFileEntryFetched(FileError error,
                                           scoped_ptr<ResourceEntry> entry) {
-  DriveIntegrationService* integration_service =
-      DriveIntegrationServiceFactory::GetForProfile(profile_);
-
   // Here, we are only interested in files.
   if (entry.get() && !entry->has_file_specific_info())
     error = FILE_ERROR_NOT_FOUND;
 
-  if (!integration_service || error != FILE_ERROR_OK) {
+  DriveServiceInterface* drive_service =
+      util::GetDriveServiceByProfile(profile_);
+
+  if (!drive_service || error != FILE_ERROR_OK) {
     Done(false);
     return;
   }
-
-  DriveServiceInterface* drive_service =
-      integration_service->drive_service();
 
   // Send off a request for the drive service to authorize the apps for the
   // current document entry for this document so we can get the
@@ -100,15 +96,14 @@ void FileTaskExecutor::OnAppAuthorized(const std::string& resource_id,
                                        const GURL& open_link) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
+  // TODO(hidehiko): GetForProfile will return the instance always even if
+  // Drive is disabled. Need to check the mounting state then.
+  // crbug.com/284972
   DriveIntegrationService* integration_service =
       DriveIntegrationServiceFactory::GetForProfile(profile_);
 
-  if (!integration_service || error != google_apis::HTTP_SUCCESS) {
-    Done(false);
-    return;
-  }
-
-  if (open_link.is_empty()) {
+  if (!integration_service || error != google_apis::HTTP_SUCCESS ||
+      open_link.is_empty()) {
     Done(false);
     return;
   }
