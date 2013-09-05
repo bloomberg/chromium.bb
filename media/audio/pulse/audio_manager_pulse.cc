@@ -66,19 +66,13 @@ AudioManagerPulse::~AudioManagerPulse() {
 
 // Implementation of AudioManager.
 bool AudioManagerPulse::HasAudioOutputDevices() {
-  DCHECK(input_mainloop_);
-  DCHECK(input_context_);
-  media::AudioDeviceNames devices;
-  AutoPulseLock auto_lock(input_mainloop_);
-  devices_ = &devices;
-  pa_operation* operation = pa_context_get_sink_info_list(
-      input_context_, OutputDevicesInfoCallback, this);
-  WaitForOperationCompletion(input_mainloop_, operation);
+  AudioDeviceNames devices;
+  GetAudioOutputDeviceNames(&devices);
   return !devices.empty();
 }
 
 bool AudioManagerPulse::HasAudioInputDevices() {
-  media::AudioDeviceNames devices;
+  AudioDeviceNames devices;
   GetAudioInputDeviceNames(&devices);
   return !devices.empty();
 }
@@ -87,23 +81,39 @@ void AudioManagerPulse::ShowAudioInputSettings() {
   AudioManagerLinux::ShowLinuxAudioInputSettings();
 }
 
-void AudioManagerPulse::GetAudioInputDeviceNames(
-    media::AudioDeviceNames* device_names) {
+void AudioManagerPulse::GetAudioDeviceNames(
+    bool input, media::AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
   DCHECK(input_mainloop_);
   DCHECK(input_context_);
   AutoPulseLock auto_lock(input_mainloop_);
   devices_ = device_names;
-  pa_operation* operation = pa_context_get_source_info_list(
+  pa_operation* operation = NULL;
+  if (input) {
+    operation = pa_context_get_source_info_list(
       input_context_, InputDevicesInfoCallback, this);
+  } else {
+    operation = pa_context_get_sink_info_list(
+        input_context_, OutputDevicesInfoCallback, this);
+  }
   WaitForOperationCompletion(input_mainloop_, operation);
 
-  // Append the default device on the top of the list if the list is not empty.
+  // Prepend the default device if the list is not empty.
   if (!device_names->empty()) {
     device_names->push_front(
         AudioDeviceName(AudioManagerBase::kDefaultDeviceName,
                         AudioManagerBase::kDefaultDeviceId));
   }
+}
+
+void AudioManagerPulse::GetAudioInputDeviceNames(
+    AudioDeviceNames* device_names) {
+  GetAudioDeviceNames(true, device_names);
+}
+
+void AudioManagerPulse::GetAudioOutputDeviceNames(
+    AudioDeviceNames* device_names) {
+  GetAudioDeviceNames(false, device_names);
 }
 
 AudioParameters AudioManagerPulse::GetInputStreamParameters(
@@ -292,8 +302,8 @@ void AudioManagerPulse::InputDevicesInfoCallback(pa_context* context,
 
   // Exclude the output devices.
   if (info->monitor_of_sink == PA_INVALID_INDEX) {
-    manager->devices_->push_back(media::AudioDeviceName(info->description,
-                                                        info->name));
+    manager->devices_->push_back(AudioDeviceName(info->description,
+                                                 info->name));
   }
 }
 
@@ -308,8 +318,8 @@ void AudioManagerPulse::OutputDevicesInfoCallback(pa_context* context,
     return;
   }
 
-  manager->devices_->push_back(media::AudioDeviceName(info->description,
-                                                      info->name));
+  manager->devices_->push_back(AudioDeviceName(info->description,
+                                               info->name));
 }
 
 void AudioManagerPulse::SampleRateInfoCallback(pa_context* context,

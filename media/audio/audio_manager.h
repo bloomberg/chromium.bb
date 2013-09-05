@@ -64,6 +64,10 @@ class MEDIA_EXPORT AudioManager {
   // recording.
   virtual void GetAudioInputDeviceNames(AudioDeviceNames* device_names) = 0;
 
+  // Appends a list of available output devices to |device_names|,
+  // which must initially be empty.
+  virtual void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) = 0;
+
   // Factory for all the supported stream formats. |params| defines parameters
   // of the audio stream to be created.
   //

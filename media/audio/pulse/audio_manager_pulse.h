@@ -27,6 +27,8 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
   virtual void ShowAudioInputSettings() OVERRIDE;
   virtual void GetAudioInputDeviceNames(media::AudioDeviceNames* device_names)
       OVERRIDE;
+  virtual void GetAudioOutputDeviceNames(media::AudioDeviceNames* device_names)
+      OVERRIDE;
   virtual AudioParameters GetInputStreamParameters(
       const std::string& device_id) OVERRIDE;
 
@@ -50,6 +52,8 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
  private:
   bool Init();
   void DestroyPulse();
+
+  void GetAudioDeviceNames(bool input, media::AudioDeviceNames* device_names);
 
   // Callback to get the devices' info like names, used by GetInputDevices().
   static void InputDevicesInfoCallback(pa_context* context,

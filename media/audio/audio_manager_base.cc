@@ -309,7 +309,13 @@ void AudioManagerBase::ShowAudioInputSettings() {
 }
 
 void AudioManagerBase::GetAudioInputDeviceNames(
-    media::AudioDeviceNames* device_names) {
+    AudioDeviceNames* device_names) {
+}
+
+void AudioManagerBase::GetAudioOutputDeviceNames(
+    AudioDeviceNames* device_names) {
+  // TODO(joi): Remove this and keep pure virtual once implemented everywhere.
+  NOTIMPLEMENTED();
 }
 
 void AudioManagerBase::ReleaseOutputStream(AudioOutputStream* stream) {

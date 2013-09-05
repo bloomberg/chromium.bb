@@ -47,7 +47,10 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   virtual void ShowAudioInputSettings() OVERRIDE;
 
   virtual void GetAudioInputDeviceNames(
-      media::AudioDeviceNames* device_names) OVERRIDE;
+      AudioDeviceNames* device_names) OVERRIDE;
+
+  virtual void GetAudioOutputDeviceNames(
+      AudioDeviceNames* device_names) OVERRIDE;
 
   virtual AudioOutputStream* MakeAudioOutputStream(
       const AudioParameters& params,

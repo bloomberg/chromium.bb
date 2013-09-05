@@ -916,6 +916,7 @@
         'audio/audio_input_unittest.cc',
         'audio/audio_input_volume_unittest.cc',
         'audio/audio_low_latency_input_output_unittest.cc',
+        'audio/audio_manager_unittest.cc',
         'audio/audio_output_controller_unittest.cc',
         'audio/audio_output_device_unittest.cc',
         'audio/audio_output_proxy_unittest.cc',
@@ -1039,6 +1040,11 @@
         }, {  # media_use_ffmpeg== 0
           'sources!': [
             'base/media_file_checker_unittest.cc',
+          ],
+        }],
+        ['use_pulseaudio==1', {
+          'defines': [
+            'USE_PULSEAUDIO',
           ],
         }],
         ['os_posix==1 and OS!="mac" and OS!="ios"', {
