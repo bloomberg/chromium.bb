@@ -119,6 +119,7 @@ class ExtensionServiceInterface : public syncer::SyncableService {
   virtual void UnloadExtension(
       const std::string& extension_id,
       extension_misc::UnloadedExtensionReason reason) = 0;
+  virtual void RemoveComponentExtension(const std::string& extension_id) = 0;
 
   virtual void SyncExtensionChangeIfNeeded(
       const extensions::Extension& extension) = 0;
@@ -376,6 +377,10 @@ class ExtensionService
   virtual void UnloadExtension(
       const std::string& extension_id,
       extension_misc::UnloadedExtensionReason reason) OVERRIDE;
+
+  // Remove the specified component extension.
+  virtual void RemoveComponentExtension(const std::string& extension_id)
+      OVERRIDE;
 
   // Unload all extensions. This is currently only called on shutdown, and
   // does not send notifications.

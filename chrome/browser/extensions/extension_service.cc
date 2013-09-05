@@ -1961,6 +1961,17 @@ void ExtensionService::UnloadExtension(
       content::Details<const Extension>(extension.get()));
 }
 
+void ExtensionService::RemoveComponentExtension(
+    const std::string& extension_id) {
+  scoped_refptr<const Extension> extension(
+      GetExtensionById(extension_id, false));
+  UnloadExtension(extension_id, extension_misc::UNLOAD_REASON_UNINSTALL);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+      content::Source<Profile>(profile_),
+      content::Details<const Extension>(extension.get()));
+}
+
 void ExtensionService::UnloadAllExtensions() {
   profile_->GetExtensionSpecialStoragePolicy()->RevokeRightsForAllExtensions();
 

@@ -101,9 +101,6 @@ void InstallTracker::Observe(int type,
       const Extension* extension = unload_info->extension;
       FOR_EACH_OBSERVER(InstallObserver, observers_,
                         OnExtensionUnloaded(extension));
-      if (unload_info->reason == extension_misc::UNLOAD_REASON_UNINSTALL)
-        FOR_EACH_OBSERVER(InstallObserver, observers_,
-                          OnExtensionUninstalled(extension));
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {

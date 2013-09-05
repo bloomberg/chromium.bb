@@ -17,8 +17,6 @@ class PrefService;
 
 namespace extensions {
 
-class Extension;
-
 // For registering, loading, and unloading component extensions.
 class ComponentLoader {
  public:

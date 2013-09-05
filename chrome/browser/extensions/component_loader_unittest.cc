@@ -49,6 +49,11 @@ class MockExtensionService : public TestExtensionService {
     unloaded_count_++;
   }
 
+  virtual void RemoveComponentExtension(const std::string & extension_id)
+      OVERRIDE {
+    UnloadExtension(extension_id, extension_misc::UNLOAD_REASON_DISABLE);
+  }
+
   virtual bool is_ready() OVERRIDE {
     return ready_;
   }

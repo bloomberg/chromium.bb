@@ -500,8 +500,7 @@ void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {
   delete component->manifest;
   if (extension_service_->is_ready()) {
     extension_service_->
-        UnloadExtension(component->extension_id,
-                        extension_misc::UNLOAD_REASON_UNINSTALL);
+        RemoveComponentExtension(component->extension_id);
   }
 }
 

@@ -130,6 +130,11 @@ void TestExtensionService::UnloadExtension(
   ADD_FAILURE();
 }
 
+void TestExtensionService::RemoveComponentExtension(
+    const std::string& extension_id) {
+  ADD_FAILURE();
+}
+
 void TestExtensionService::SyncExtensionChangeIfNeeded(
     const Extension& extension) {
   ADD_FAILURE();

@@ -76,6 +76,8 @@ class TestExtensionService : public ExtensionServiceInterface {
   virtual void UnloadExtension(
       const std::string& extension_id,
       extension_misc::UnloadedExtensionReason reason) OVERRIDE;
+  virtual void RemoveComponentExtension(const std::string & extension_id)
+      OVERRIDE;
 
   virtual void SyncExtensionChangeIfNeeded(
       const extensions::Extension& extension) OVERRIDE;
