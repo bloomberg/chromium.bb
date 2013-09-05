@@ -64,6 +64,7 @@
             'Int32Array.h',
             'Int8Array.h',
             'IntegralTypedArrayBase.h',
+            'LeakAnnotations.h',
             'LinkedStack.h',
             'ListHashSet.h',
             'Locker.h',
