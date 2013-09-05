@@ -134,6 +134,15 @@ bool InspectorProfilerAgent::enabled()
     return m_state->getBoolean(ProfilerAgentState::profilerEnabled);
 }
 
+void InspectorProfilerAgent::setSamplingInterval(ErrorString* error, int interval)
+{
+    if (m_recordingCPUProfile) {
+        *error = "Cannot change sampling interval when profiling.";
+        return;
+    }
+    ScriptProfiler::setSamplingInterval(interval);
+}
+
 String InspectorProfilerAgent::getCurrentUserInitiatedProfileName(bool incrementProfileNumber)
 {
     if (incrementProfileNumber)
