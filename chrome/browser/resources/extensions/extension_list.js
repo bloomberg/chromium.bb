@@ -2,20 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="extension_error.js"></include>
+
 cr.define('options', function() {
   'use strict';
-
-  /**
-   * A lookup helper function to find the first node that has an id (starting
-   * at |node| and going up the parent chain).
-   * @param {Element} node The node to start looking at.
-   */
-  function findIdNode(node) {
-    while (node && !node.id) {
-      node = node.parentNode;
-    }
-    return node;
-  }
 
   /**
    * Creates a new list of extensions.
@@ -315,8 +305,14 @@ cr.define('options', function() {
         });
       }
 
-      // The install warnings.
-      if (extension.installWarnings) {
+      // The manifest errors and warnings, in one of two formats (depending on
+      // if the ErrorConsole is enabled).
+      if (extension.manifestErrors) {
+        var manifestErrors = node.querySelector('.manifest-errors');
+        manifestErrors.hidden = false;
+        manifestErrors.appendChild(
+            new extensions.ExtensionErrorList(extension.manifestErrors));
+      } else if (extension.installWarnings) {
         var panel = node.querySelector('.install-warnings');
         panel.hidden = false;
         var list = panel.querySelector('ul');
@@ -337,7 +333,7 @@ cr.define('options', function() {
           topScroll -= pad / 2;
         document.body.scrollTop = topScroll;
       }
-    }
+    },
   };
 
   return {

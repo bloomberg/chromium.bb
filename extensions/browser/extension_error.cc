@@ -11,30 +11,20 @@
 #include "url/gurl.h"
 
 using base::string16;
+using base::DictionaryValue;
 
 namespace extensions {
 
-namespace {
+////////////////////////////////////////////////////////////////////////////////
+// ExtensionError
 
-const char kLineNumberKey[] = "lineNumber";
-const char kColumnNumberKey[] = "columnNumber";
-const char kURLKey[] = "url";
-const char kFunctionNameKey[] = "functionName";
-const char kExecutionContextURLKey[] = "executionContextURL";
-const char kStackTraceKey[] = "stackTrace";
-
-// Try to retrieve an extension ID from a |url|. On success, returns true and
-// populates |extension_id| with the ID. On failure, returns false and leaves
-// extension_id untouched.
-bool GetExtensionIDFromGURL(const GURL& url, std::string* extension_id) {
-  if (url.SchemeIs(kExtensionScheme)) {
-    *extension_id = url.host();
-    return true;
-  }
-  return false;
-}
-
-}  // namespace
+// Static JSON keys.
+const char ExtensionError::kExtensionIdKey[] = "extensionId";
+const char ExtensionError::kFromIncognitoKey[] = "fromIncognito";
+const char ExtensionError::kLevelKey[] = "level";
+const char ExtensionError::kMessageKey[] = "message";
+const char ExtensionError::kSourceKey[] = "source";
+const char ExtensionError::kTypeKey[] = "type";
 
 ExtensionError::ExtensionError(Type type,
                                const std::string& extension_id,
@@ -52,6 +42,20 @@ ExtensionError::ExtensionError(Type type,
 }
 
 ExtensionError::~ExtensionError() {
+}
+
+scoped_ptr<DictionaryValue> ExtensionError::ToValue() const {
+  // TODO(rdevlin.cronin): Use ValueBuilder when it's moved from
+  // chrome/common/extensions.
+  scoped_ptr<DictionaryValue> value(new DictionaryValue);
+  value->SetInteger(kTypeKey, static_cast<int>(type_));
+  value->SetString(kExtensionIdKey, extension_id_);
+  value->SetBoolean(kFromIncognitoKey, from_incognito_);
+  value->SetInteger(kLevelKey, static_cast<int>(level_));
+  value->SetString(kSourceKey, source_);
+  value->SetString(kMessageKey, message_);
+
+  return value.Pass();
 }
 
 std::string ExtensionError::PrintForTest() const {
@@ -72,6 +76,13 @@ bool ExtensionError::IsEqual(const ExtensionError* rhs) const {
          IsEqualImpl(rhs);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// ManifestError
+
+// Static JSON keys.
+const char ManifestError::kManifestKeyKey[] = "manifestKey";
+const char ManifestError::kManifestSpecificKey[] = "manifestSpecific";
+
 ManifestError::ManifestError(const std::string& extension_id,
                              const string16& message,
                              const string16& manifest_key,
@@ -87,6 +98,15 @@ ManifestError::ManifestError(const std::string& extension_id,
 }
 
 ManifestError::~ManifestError() {
+}
+
+scoped_ptr<DictionaryValue> ManifestError::ToValue() const {
+  scoped_ptr<DictionaryValue> value = ExtensionError::ToValue();
+  if (!manifest_key_.empty())
+    value->SetString(kManifestKeyKey, manifest_key_);
+  if (!manifest_specific_.empty())
+    value->SetString(kManifestSpecificKey, manifest_specific_);
+  return value.Pass();
 }
 
 std::string ManifestError::PrintForTest() const {

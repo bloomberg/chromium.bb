@@ -514,6 +514,7 @@
         '../components/autofill/content/renderer/test_password_autofill_agent.cc',
         '../components/autofill/content/renderer/test_password_autofill_agent.h',
         '../extensions/browser/file_reader_unittest.cc',
+        '../extensions/browser/manifest_highlighter_unittest.cc',
         '../extensions/common/event_filter_unittest.cc',
         '../extensions/common/extension_resource_unittest.cc',
         '../extensions/common/id_util_unittest.cc',

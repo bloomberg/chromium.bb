@@ -10,9 +10,14 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "extensions/common/stack_frame.h"
 #include "url/gurl.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace extensions {
 
@@ -24,6 +29,9 @@ class ExtensionError {
   };
 
   virtual ~ExtensionError();
+
+  // Serializes the ExtensionError into JSON format.
+  virtual scoped_ptr<base::DictionaryValue> ToValue() const;
 
   virtual std::string PrintForTest() const;
 
@@ -39,6 +47,14 @@ class ExtensionError {
   const base::string16& message() const { return message_; }
   size_t occurrences() const { return occurrences_; }
   void set_occurrences(size_t occurrences) { occurrences_ = occurrences; }
+
+  // Keys used for retrieving JSON values.
+  static const char kExtensionIdKey[];
+  static const char kFromIncognitoKey[];
+  static const char kLevelKey[];
+  static const char kMessageKey[];
+  static const char kSourceKey[];
+  static const char kTypeKey[];
 
  protected:
   ExtensionError(Type type,
@@ -78,10 +94,17 @@ class ManifestError : public ExtensionError {
                 const base::string16& manifest_specific);
   virtual ~ManifestError();
 
+  virtual scoped_ptr<base::DictionaryValue> ToValue() const OVERRIDE;
+
   virtual std::string PrintForTest() const OVERRIDE;
 
   const base::string16& manifest_key() const { return manifest_key_; }
   const base::string16& manifest_specific() const { return manifest_specific_; }
+
+  // Keys used for retrieving JSON values.
+  static const char kManifestKeyKey[];
+  static const char kManifestSpecificKey[];
+
  private:
   virtual bool IsEqualImpl(const ExtensionError* rhs) const OVERRIDE;
 

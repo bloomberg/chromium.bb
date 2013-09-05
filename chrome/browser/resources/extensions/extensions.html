@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 
 <link rel="stylesheet" href="extension_commands_overlay.css">
+<link rel="stylesheet" href="extension_error.css">
+<link rel="stylesheet" href="extension_error_overlay.css">
 <link rel="stylesheet" href="extensions.css">
 <link rel="stylesheet" href="pack_extension_overlay.css">
 <link rel="stylesheet" href="chrome://resources/css/alert_overlay.css">
@@ -43,6 +45,7 @@
 
 <div id="overlay" class="overlay" hidden>
   <include src="extension_commands_overlay.html">
+  <include src="extension_error_overlay.html">
   <include src="pack_extension_overlay.html">
   <include src="../../../../ui/webui/resources/html/alert_overlay.html">
 <if expr="pp_ifdef('chromeos')">
@@ -152,6 +155,7 @@
             <span i18n-content="extensionSettingsInspectViews"></span>
             <a href="#"></a>
           </div>
+          <div class="manifest-errors" hidden></div>
           <div class="install-warnings" hidden>
             <span i18n-content="extensionSettingsInstallWarnings"></span>
             <ul></ul>
@@ -201,6 +205,7 @@
   </div>
 
   <include src="../../../../ui/webui/resources/html/trash.html">
+  <include src="extension_error.html">
 
 </div>
 

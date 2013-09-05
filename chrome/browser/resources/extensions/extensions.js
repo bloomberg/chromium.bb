@@ -7,6 +7,7 @@
 <include src="extension_focus_manager.js"></include>
 <include src="extension_list.js"></include>
 <include src="pack_extension_overlay.js"></include>
+<include src="extension_error_overlay.js"></include>
 
 <if expr="pp_ifdef('chromeos')">
 <include src="chromeos/kiosk_apps.js"></include>
@@ -120,8 +121,7 @@ cr.define('extensions', function() {
                                                   dragWrapperHandler);
       }
 
-      var packExtensionOverlay = extensions.PackExtensionOverlay.getInstance();
-      packExtensionOverlay.initializePage();
+      extensions.PackExtensionOverlay.getInstance().initializePage();
 
       // Hook up the configure commands link to the overlay.
       var link = document.querySelector('.extension-commands-config');
@@ -129,9 +129,9 @@ cr.define('extensions', function() {
           this.handleExtensionCommandsConfig_.bind(this));
 
       // Initialize the Commands overlay.
-      var extensionCommandsOverlay =
-          extensions.ExtensionCommandsOverlay.getInstance();
-      extensionCommandsOverlay.initializePage();
+      extensions.ExtensionCommandsOverlay.getInstance().initializePage();
+
+      extensions.ExtensionErrorOverlay.getInstance().initializePage();
 
       // Initialize the kiosk overlay.
       if (cr.isChromeOS) {

@@ -58,6 +58,8 @@
         '../extensions/browser/extension_error.h',
         '../extensions/browser/file_reader.cc',
         '../extensions/browser/file_reader.h',
+        '../extensions/browser/manifest_highlighter.cc',
+        '../extensions/browser/manifest_highlighter.h',
         '../extensions/browser/pref_names.cc',
         '../extensions/browser/pref_names.h',
         '../extensions/browser/view_type_utils.cc',

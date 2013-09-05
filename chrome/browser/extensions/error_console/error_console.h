@@ -69,6 +69,7 @@ class ErrorConsole : public content::NotificationObserver {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  bool enabled() const { return enabled_; }
   const ErrorMap& errors() const { return errors_; }
 
  private:

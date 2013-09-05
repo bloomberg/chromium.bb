@@ -1,0 +1,54 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.extension-error-list a {
+  cursor: pointer;
+}
+
+.extension-error-list-contents {
+  -webkit-padding-start: 20px;
+  list-style-type: none;
+}
+
+.extension-error-list-show-more {
+  text-align: center;
+  width: 100%;
+}
+
+.extension-error-simple-wrapper {
+  width: 100%;
+}
+
+.extension-error-icon {
+  -webkit-margin-end: 3px;
+  -webkit-margin-start: 3px;
+  height: 15px;
+  vertical-align: middle;
+  width: 15px;
+}
+
+.extension-error-severity-info .extension-error-message {
+  color: #333;
+}
+.extension-error-severity-info .extension-error-icon {
+  content: url('extension_error_severity_info.png');
+}
+
+.extension-error-severity-warning .extension-error-message {
+  color: rgba(250, 145, 0, 255);
+}
+.extension-error-severity-warning .extension-error-icon {
+  content: url('extension_error_severity_warning.png');
+}
+
+.extension-error-severity-fatal .extension-error-message {
+  color: rgba(200, 50, 50, 255);
+}
+.extension-error-severity-fatal .extension-error-icon {
+  content: url('extension_error_severity_fatal.png');
+}
+
+.extension-error-view-source {
+  float: right;
+}

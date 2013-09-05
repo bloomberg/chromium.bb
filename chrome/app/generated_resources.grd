@@ -4598,6 +4598,18 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSIONS_INSTALL_WARNINGS" desc="The text which says that an extension has warnings when it was installed.">
         There were warnings when trying to install this extension:
       </message>
+      <message name="IDS_EXTENSIONS_ERRORS_MANIFEST_ERRORS" desc="The text which says that errors were found in an extension's manifest during installation.">
+        Manifest Errors:
+      </message>
+      <message name="IDS_EXTENSIONS_ERRORS_SHOW_MORE" desc="The text which allows the user to display more errors for a given extension.">
+        Show more...
+      </message>
+      <message name="IDS_EXTENSIONS_ERRORS_SHOW_FEWER" desc="The text which allows the user to display fewer errors for a given extension.">
+        Show fewer...
+      </message>
+      <message name="IDS_EXTENSIONS_ERROR_VIEW_SOURCE" desc="The link to view the source code for a file relating to an extension error.">
+        View source
+      </message>
       <message name="IDS_EXTENSIONS_ENABLE" desc="The link for enabling extensions.">
         Enable
       </message>
