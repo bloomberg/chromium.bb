@@ -80,21 +80,13 @@ public:
 private:
     class FontLoadHistograms {
     public:
-        enum UsageType {
-            StyledAndUsed,
-            StyledButNotUsed,
-            NotStyledButUsed,
-            UsageTypeMax
-        };
-        FontLoadHistograms() : m_styledTime(0), m_loadStartTime(0) { }
-        ~FontLoadHistograms();
+        FontLoadHistograms() : m_loadStartTime(0) { }
         void willUseFontData();
         void loadStarted();
         void recordLocalFont(bool loadSuccess);
         void recordRemoteFont(const FontResource*);
     private:
         const char* histogramName(const FontResource*);
-        double m_styledTime;
         double m_loadStartTime;
     };
 

@@ -250,37 +250,14 @@ bool CSSFontFaceSource::isLocalFontAvailable(const FontDescription& fontDescript
 
 void CSSFontFaceSource::willUseFontData()
 {
-    if (!isLoaded())
-        m_histograms.willUseFontData();
-}
-
-CSSFontFaceSource::FontLoadHistograms::~FontLoadHistograms()
-{
-    if (m_styledTime > 0)
-        HistogramSupport::histogramEnumeration("WebFont.UsageType", StyledButNotUsed, UsageTypeMax);
-}
-
-void CSSFontFaceSource::FontLoadHistograms::willUseFontData()
-{
-    if (!m_styledTime)
-        m_styledTime = currentTimeMS();
+    if (m_font)
+        m_font->willUseFontData();
 }
 
 void CSSFontFaceSource::FontLoadHistograms::loadStarted()
 {
     if (!m_loadStartTime)
         m_loadStartTime = currentTimeMS();
-
-    if (m_styledTime < 0)
-        return;
-    if (!m_styledTime) {
-        HistogramSupport::histogramEnumeration("WebFont.UsageType", NotStyledButUsed, UsageTypeMax);
-    } else {
-        int duration = static_cast<int>(currentTimeMS() - m_styledTime);
-        HistogramSupport::histogramCustomCounts("WebFont.StyleRecalcToDownloadLatency", duration, 0, 10000, 50);
-        HistogramSupport::histogramEnumeration("WebFont.UsageType", StyledAndUsed, UsageTypeMax);
-    }
-    m_styledTime = -1;
 }
 
 void CSSFontFaceSource::FontLoadHistograms::recordLocalFont(bool loadSuccess)

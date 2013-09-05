@@ -30,9 +30,11 @@
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/TextResourceDecoder.h"
+#include "core/platform/HistogramSupport.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontCustomPlatformData.h"
 #include "core/platform/graphics/FontPlatformData.h"
+#include "wtf/CurrentTime.h"
 
 #if ENABLE(SVG_FONTS)
 #include "SVGNames.h"
@@ -77,6 +79,7 @@ void FontResource::beginLoadIfNeeded(ResourceFetcher* dl)
         ResourceClientWalker<FontResourceClient> walker(m_clients);
         while (FontResourceClient* client = walker.next())
             client->didStartFontLoad(this);
+        m_histograms.loadStarted();
     }
 }
 
@@ -160,6 +163,38 @@ void FontResource::checkNotify()
     ResourceClientWalker<FontResourceClient> w(m_clients);
     while (FontResourceClient* c = w.next())
         c->fontLoaded(this);
+}
+
+void FontResource::willUseFontData()
+{
+    if (!isLoaded())
+        m_histograms.willUseFontData();
+}
+
+FontResource::FontResourceHistograms::~FontResourceHistograms()
+{
+    if (m_styledTime > 0)
+        HistogramSupport::histogramEnumeration("WebFont.Resource.UsageType", StyledButNotUsed, UsageTypeMax);
+}
+
+void FontResource::FontResourceHistograms::willUseFontData()
+{
+    if (!m_styledTime)
+        m_styledTime = currentTimeMS();
+}
+
+void FontResource::FontResourceHistograms::loadStarted()
+{
+    if (m_styledTime < 0)
+        return;
+    if (!m_styledTime) {
+        HistogramSupport::histogramEnumeration("WebFont.Resource.UsageType", NotStyledButUsed, UsageTypeMax);
+    } else {
+        int duration = static_cast<int>(currentTimeMS() - m_styledTime);
+        HistogramSupport::histogramCustomCounts("WebFont.Resource.StyleRecalcToDownloadLatency", duration, 0, 10000, 50);
+        HistogramSupport::histogramEnumeration("WebFont.Resource.UsageType", StyledAndUsed, UsageTypeMax);
+    }
+    m_styledTime = -1;
 }
 
 }
