@@ -60,14 +60,9 @@ static inline bool nodeCanBeDistributed(const Node* node)
 Node* ComposedTreeWalker::traverseChild(const Node* node, TraversalDirection direction) const
 {
     ASSERT(node);
-    if (canCrossUpperBoundary()) {
-        ElementShadow* shadow = shadowFor(node);
-        return shadow ? traverseLightChildren(shadow->youngestShadowRoot(), direction)
+    ElementShadow* shadow = shadowFor(node);
+    return shadow ? traverseLightChildren(shadow->youngestShadowRoot(), direction)
             : traverseLightChildren(node, direction);
-    }
-    if (isShadowHost(node))
-        return 0;
-    return traverseLightChildren(node, direction);
 }
 
 Node* ComposedTreeWalker::traverseLightChildren(const Node* node, TraversalDirection direction)
@@ -170,11 +165,6 @@ Node* ComposedTreeWalker::traverseParent(const Node* node, ParentTraversalDetail
     if (node->isPseudoElement())
         return node->parentOrShadowHostNode();
 
-    if (!canCrossUpperBoundary() && node->isShadowRoot()) {
-        ASSERT(toShadowRoot(node)->isYoungest());
-        return 0;
-    }
-
     if (nodeCanBeDistributed(node)) {
         if (InsertionPoint* insertionPoint = resolveReprojection(node)) {
             if (details)
@@ -202,13 +192,9 @@ Node* ComposedTreeWalker::traverseParentBackToYoungerShadowRootOrHost(const Shad
     ASSERT(!shadowRoot->insertionPoint());
 
     if (shadowRoot->isYoungest()) {
-        if (canCrossUpperBoundary()) {
-            if (details)
-                details->didTraverseShadowRoot(shadowRoot);
-            return shadowRoot->host();
-        }
-
-        return const_cast<ShadowRoot*>(shadowRoot);
+        if (details)
+            details->didTraverseShadowRoot(shadowRoot);
+        return shadowRoot->host();
     }
 
     return 0;

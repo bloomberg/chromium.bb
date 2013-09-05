@@ -42,17 +42,12 @@ class ComposedTreeWalker {
 public:
     typedef NodeRenderingTraversal::ParentDetails ParentTraversalDetails;
 
-    enum Policy {
-        CrossUpperBoundary,
-        DoNotCrossUpperBoundary,
-    };
-
     enum StartPolicy {
         CanStartFromShadowBoundary,
         CannotStartFromShadowBoundary
     };
 
-    ComposedTreeWalker(const Node*, Policy = CrossUpperBoundary, StartPolicy = CannotStartFromShadowBoundary);
+    ComposedTreeWalker(const Node*, StartPolicy = CannotStartFromShadowBoundary);
 
     Node* get() const { return const_cast<Node*>(m_node); }
 
@@ -77,16 +72,11 @@ private:
         TraversalDirectionBackward
     };
 
-    bool canCrossUpperBoundary() const { return m_policy == CrossUpperBoundary; }
-
     void assertPrecondition() const
     {
 #ifndef NDEBUG
         ASSERT(m_node);
-        if (canCrossUpperBoundary())
-            ASSERT(!m_node->isShadowRoot());
-        else
-            ASSERT(!m_node->isShadowRoot() || toShadowRoot(m_node)->isYoungest());
+        ASSERT(!m_node->isShadowRoot());
         ASSERT(!isActiveInsertionPoint(m_node));
 #endif
     }
@@ -123,12 +113,10 @@ private:
     Node* traverseParentBackToYoungerShadowRootOrHost(const ShadowRoot*, ParentTraversalDetails* = 0) const;
 
     const Node* m_node;
-    Policy m_policy;
 };
 
-inline ComposedTreeWalker::ComposedTreeWalker(const Node* node, Policy policy, StartPolicy startPolicy)
+inline ComposedTreeWalker::ComposedTreeWalker(const Node* node, StartPolicy startPolicy)
     : m_node(node)
-    , m_policy(policy)
 {
     UNUSED_PARAM(startPolicy);
 #ifndef NDEBUG

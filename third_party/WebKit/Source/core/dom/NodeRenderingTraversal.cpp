@@ -50,7 +50,7 @@ void ParentDetails::didTraverseShadowRoot(const ShadowRoot* root)
 ContainerNode* parent(const Node* node, ParentDetails* details)
 {
     // FIXME: Once everything lazy attaches we should assert that we don't need a distribution recalc here.
-    ComposedTreeWalker walker(node, ComposedTreeWalker::CrossUpperBoundary, ComposedTreeWalker::CanStartFromShadowBoundary);
+    ComposedTreeWalker walker(node, ComposedTreeWalker::CanStartFromShadowBoundary);
     ContainerNode* found = toContainerNode(walker.traverseParent(walker.get(), details));
     return details->outOfComposition() ? 0 : found;
 }
@@ -91,34 +91,6 @@ Node* previousSibling(const Node* node)
         return toElement(parent)->pseudoElement(BEFORE);
 
     return 0;
-}
-
-Node* nextInScope(const Node* node)
-{
-    ComposedTreeWalker walker = ComposedTreeWalker(node, ComposedTreeWalker::DoNotCrossUpperBoundary);
-    walker.next();
-    return walker.get();
-}
-
-Node* previousInScope(const Node* node)
-{
-    ComposedTreeWalker walker = ComposedTreeWalker(node, ComposedTreeWalker::DoNotCrossUpperBoundary);
-    walker.previous();
-    return walker.get();
-}
-
-Node* parentInScope(const Node* node)
-{
-    ComposedTreeWalker walker = ComposedTreeWalker(node, ComposedTreeWalker::DoNotCrossUpperBoundary);
-    walker.parent();
-    return walker.get();
-}
-
-Node* lastChildInScope(const Node* node)
-{
-    ComposedTreeWalker walker = ComposedTreeWalker(node, ComposedTreeWalker::DoNotCrossUpperBoundary);
-    walker.lastChild();
-    return walker.get();
 }
 
 }
