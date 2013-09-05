@@ -1,6 +1,7 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
 <script src="../../http/tests/inspector/extensions-test.js"></script>
 <script type="text/javascript">
 
@@ -32,9 +33,41 @@ function extension_testReloadInjectsCode(nextTest)
     });
 }
 
+function extension_testReloadPreprocessesCode(nextTest)
+{
+    var valueWithPreprocessedCode;
+    function onPageWithPreprocessedCodeLoaded()
+    {
+        webInspector.inspectedWindow.eval("window.__preprocessed", function(value) {
+            valueWithPreprocessedCode = value;
+            evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", onPageWithoutPreprocessedCodeLoaded);
+            webInspector.inspectedWindow.reload({ });
+        });
+    }
+    function onPageWithoutPreprocessedCodeLoaded()
+    {
+        webInspector.inspectedWindow.eval("window.__preprocessed", function(value) {
+            output("With preprocessor:\n" + valueWithPreprocessedCode.map(function(url) { return url.split('/').pop(); }).join("\n"));
+            output("Without preprocessor: " + value);
+            nextTest();
+        });
+    }
+
+    evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", onPageWithPreprocessedCodeLoaded);
+    function preprocessor(src, url, fName)
+    {
+        var surl = url + (fName ? '_' + fName : '') + '.js';
+        return src + '\nwindow.__preprocessed.push(\"' + surl + '\");\n'+ '//@ sourceURL=' + surl;
+    }
+    webInspector.inspectedWindow.reload({
+        injectedScript: "window.__preprocessed = [];",
+        preprocessingScript:  "(" + preprocessor +")"
+    });
+}
+
 </script>
 </head>
 <body onload="runTest()">
-<p>Tests that webInspector.inspectedWindow.reload() successfully injects user's code upon reload</p>
+<p>Tests that webInspector.inspectedWindow.reload() successfully injects and preprocesses user's code upon reload</p>
 </body>
 </html>
