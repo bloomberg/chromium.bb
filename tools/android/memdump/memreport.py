@@ -234,10 +234,12 @@ def _RunManualGraph(package_name, interval):
   t = threading.Thread(target=_Loop)
 
 
-  print >>sys.stderr, 'Press enter to stop'
+  print >>sys.stderr, 'Press enter or CTRL+C to stop'
   t.start()
   try:
     _ = raw_input()
+  except KeyboardInterrupt:
+    pass
   finally:
     should_quit.set()
 
