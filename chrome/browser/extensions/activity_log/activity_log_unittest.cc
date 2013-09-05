@@ -90,11 +90,17 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     ASSERT_EQ(1U, i->size());
     scoped_refptr<Action> last = i->front();
-    std::string args =
-        "ID=odlameecjipmbmbejkplpemijjgpljce CATEGORY=content_script API= "
-        "ARGS=[\"script\"] PAGE_URL=http://www.google.com/ "
-        "OTHER={\"prerender\":true}";
-    ASSERT_EQ(args, last->PrintForDebug());
+
+    ASSERT_EQ("odlameecjipmbmbejkplpemijjgpljce", last->extension_id());
+    ASSERT_EQ(Action::ACTION_CONTENT_SCRIPT, last->action_type());
+    ASSERT_EQ("[\"script\"]",
+              ActivityLogPolicy::Util::Serialize(last->args()));
+    ASSERT_EQ("http://www.google.com/", last->SerializePageUrl());
+    ASSERT_EQ("{\"prerender\":true}",
+              ActivityLogPolicy::Util::Serialize(last->other()));
+    ASSERT_EQ("", last->api_name());
+    ASSERT_EQ("", last->page_title());
+    ASSERT_EQ("", last->SerializeArgUrl());
   }
 
   ExtensionService* extension_service_;

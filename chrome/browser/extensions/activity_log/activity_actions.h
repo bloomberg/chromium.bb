@@ -108,6 +108,10 @@ class Action : public base::RefCountedThreadSafe<Action> {
   std::string SerializeArgUrl() const;
   void ParseArgUrl(const std::string& url);
 
+  // Number of merged records for this action.
+  int count() const { return count_; }
+  void set_count(int count) { count_ = count; }
+
   // Flatten the activity's type-specific fields into an ExtensionActivity.
   scoped_ptr<api::activity_log_private::ExtensionActivity>
       ConvertToExtensionActivity();
@@ -132,6 +136,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
   GURL arg_url_;
   bool arg_incognito_;
   scoped_ptr<DictionaryValue> other_;
+  int count_;
 
   DISALLOW_COPY_AND_ASSIGN(Action);
 };

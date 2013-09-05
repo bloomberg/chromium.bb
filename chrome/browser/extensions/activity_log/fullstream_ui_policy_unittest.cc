@@ -164,36 +164,28 @@ class FullStreamUIPolicyTest : public testing::Test {
 
   static void Arguments_Present(scoped_ptr<Action::ActionVector> i) {
     scoped_refptr<Action> last = i->front();
-    std::string args =
-        "ID=odlameecjipmbmbejkplpemijjgpljce CATEGORY=api_call "
-        "API=extension.connect ARGS=[\"hello\",\"world\"]";
-    ASSERT_EQ(args, last->PrintForDebug());
+    CheckAction(*last, "odlameecjipmbmbejkplpemijjgpljce",
+                Action::ACTION_API_CALL, "extension.connect",
+                "[\"hello\",\"world\"]", "", "", "");
   }
 
   static void Arguments_GetTodaysActions(
       scoped_ptr<Action::ActionVector> actions) {
-    std::string api_print =
-        "ID=punky CATEGORY=api_call API=brewster ARGS=[\"woof\"] "
-        "PAGE_TITLE=\"Page Title\" ARG_URL=http://www.arg-url.com/";
-    std::string dom_print =
-        "ID=punky CATEGORY=dom_access API=lets ARGS=[\"vamoose\"] "
-        "PAGE_URL=http://www.google.com/ PAGE_TITLE=\"Page Title\" "
-        "ARG_URL=http://www.arg-url.com/";
     ASSERT_EQ(2, static_cast<int>(actions->size()));
-    ASSERT_EQ(dom_print, actions->at(0)->PrintForDebug());
-    ASSERT_EQ(api_print, actions->at(1)->PrintForDebug());
+    CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
+                "[\"vamoose\"]", "http://www.google.com/", "Page Title",
+                "http://www.arg-url.com/");
+    CheckAction(*actions->at(1), "punky", Action::ACTION_API_CALL, "brewster",
+                "[\"woof\"]", "", "Page Title", "http://www.arg-url.com/");
   }
 
   static void Arguments_GetOlderActions(
       scoped_ptr<Action::ActionVector> actions) {
-    std::string api_print =
-        "ID=punky CATEGORY=api_call API=brewster ARGS=[\"woof\"]";
-    std::string dom_print =
-        "ID=punky CATEGORY=dom_access API=lets ARGS=[\"vamoose\"] "
-        "PAGE_URL=http://www.google.com/";
     ASSERT_EQ(2, static_cast<int>(actions->size()));
-    ASSERT_EQ(dom_print, actions->at(0)->PrintForDebug());
-    ASSERT_EQ(api_print, actions->at(1)->PrintForDebug());
+    CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
+                "[\"vamoose\"]", "http://www.google.com/", "", "");
+    CheckAction(*actions->at(1), "punky", Action::ACTION_API_CALL, "brewster",
+                "[\"woof\"]", "", "", "");
   }
 
   static void AllURLsRemoved(scoped_ptr<Action::ActionVector> actions) {

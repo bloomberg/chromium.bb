@@ -127,36 +127,6 @@ static const char kUrlTableCleanup[] =
 
 namespace extensions {
 
-// A specialized Action subclass which is used to represent an action read from
-// the database with a corresponding count.
-class CountedAction : public Action {
- public:
-  CountedAction(const std::string& extension_id,
-                const base::Time& time,
-                const ActionType action_type,
-                const std::string& api_name)
-      : Action(extension_id, time, action_type, api_name),
-        count_(0) {
-  }
-
-  // Number of merged records for this action.
-  int count() const { return count_; }
-  void set_count(int count) { count_ = count; }
-
-  virtual std::string PrintForDebug() const OVERRIDE;
-
- protected:
-  virtual ~CountedAction() {}
-
- private:
-  int count_;
-};
-
-std::string CountedAction::PrintForDebug() const {
-  return base::StringPrintf(
-      "%s COUNT=%d", Action::PrintForDebug().c_str(), count());
-}
-
 const char* CountingPolicy::kTableName = "activitylog_compressed";
 const char* CountingPolicy::kReadViewName = "activitylog_uncompressed";
 
@@ -461,8 +431,8 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
 
   // Execute the query and get results.
   while (query.is_valid() && query.Step()) {
-    scoped_refptr<CountedAction> action =
-        new CountedAction(query.ColumnString(0),
+    scoped_refptr<Action> action =
+        new Action(query.ColumnString(0),
                    base::Time::FromInternalValue(query.ColumnInt64(1)),
                    static_cast<Action::ActionType>(query.ColumnInt(2)),
                    query.ColumnString(3));
@@ -526,11 +496,11 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadData(
   query.BindInt64(2, late_bound);
 
   while (query.is_valid() && query.Step()) {
-    scoped_refptr<CountedAction> action =
-        new CountedAction(extension_id,
-                          base::Time::FromInternalValue(query.ColumnInt64(0)),
-                          static_cast<Action::ActionType>(query.ColumnInt(1)),
-                          query.ColumnString(2));
+    scoped_refptr<Action> action =
+        new Action(extension_id,
+                   base::Time::FromInternalValue(query.ColumnInt64(0)),
+                   static_cast<Action::ActionType>(query.ColumnInt(1)),
+                   query.ColumnString(2));
 
     if (query.ColumnType(3) != sql::COLUMN_TYPE_NULL) {
       scoped_ptr<Value> parsed_value(

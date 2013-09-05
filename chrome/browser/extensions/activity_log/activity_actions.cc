@@ -51,7 +51,8 @@ Action::Action(const std::string& extension_id,
       action_type_(action_type),
       api_name_(api_name),
       page_incognito_(false),
-      arg_incognito_(false) {}
+      arg_incognito_(false),
+      count_(0) {}
 
 Action::~Action() {}
 
@@ -230,6 +231,7 @@ std::string Action::PrintForDebug() const {
     result += " OTHER=" + Serialize(other_.get());
   }
 
+  result += base::StringPrintf(" COUNT=%d", count_);
   return result;
 }
 

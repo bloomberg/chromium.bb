@@ -44,13 +44,20 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
     ASSERT_TRUE(i->size());
     scoped_refptr<Action> last = i->front();
 
+    ASSERT_EQ(extension_id, last->extension_id());
     ASSERT_EQ(Action::ACTION_CONTENT_SCRIPT, last->action_type());
     ASSERT_EQ("[\"/google_cs.js\"]",
               ActivityLogPolicy::Util::Serialize(last->args()));
-    ASSERT_EQ(base::StringPrintf("http://www.google.com.bo:%d/test.html", port),
-              last->page_url().spec());
+    ASSERT_EQ(
+        base::StringPrintf("http://www.google.com.bo:%d/test.html", port),
+        last->SerializePageUrl());
+    ASSERT_EQ(
+        base::StringPrintf("www.google.com.bo:%d/test.html", port),
+        last->page_title());
     ASSERT_EQ("{\"prerender\":true}",
               ActivityLogPolicy::Util::Serialize(last->other()));
+    ASSERT_EQ("", last->api_name());
+    ASSERT_EQ("", last->SerializeArgUrl());
   }
 };
 

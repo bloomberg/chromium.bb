@@ -193,48 +193,39 @@ class CountingPolicyTest : public testing::Test {
 
   static void Arguments_Stripped(scoped_ptr<Action::ActionVector> i) {
     scoped_refptr<Action> last = i->front();
-    std::string args =
-        "ID=odlameecjipmbmbejkplpemijjgpljce CATEGORY=api_call "
-        "API=extension.connect ARGS=[\"hello\",\"world\"] COUNT=1";
-    ASSERT_EQ(args, last->PrintForDebug());
+    CheckAction(*last, "odlameecjipmbmbejkplpemijjgpljce",
+                Action::ACTION_API_CALL, "extension.connect",
+                "[\"hello\",\"world\"]", "", "", "", 1);
   }
 
   static void Arguments_GetTodaysActions(
       scoped_ptr<Action::ActionVector> actions) {
-    std::string api_stripped_print =
-        "ID=punky CATEGORY=api_call API=brewster COUNT=2";
-    std::string api_print =
-        "ID=punky CATEGORY=api_call API=extension.sendMessage "
-        "ARGS=[\"not\",\"stripped\"] COUNT=1";
-    std::string dom_print =
-        "ID=punky CATEGORY=dom_access API=lets ARGS=[\"vamoose\"] "
-        "PAGE_URL=http://www.google.com/ COUNT=1";
     ASSERT_EQ(3, static_cast<int>(actions->size()));
-    ASSERT_EQ(dom_print, actions->at(0)->PrintForDebug());
-    ASSERT_EQ(api_print, actions->at(1)->PrintForDebug());
-    ASSERT_EQ(api_stripped_print, actions->at(2)->PrintForDebug());
+    CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
+                "[\"vamoose\"]", "http://www.google.com/", "", "", 1);
+    CheckAction(*actions->at(1), "punky", Action::ACTION_API_CALL,
+                "extension.sendMessage", "[\"not\",\"stripped\"]", "", "", "",
+                1);
+    CheckAction(*actions->at(2), "punky", Action::ACTION_API_CALL, "brewster",
+                "", "", "", "", 2);
   }
 
   static void Arguments_GetOlderActions(
       scoped_ptr<Action::ActionVector> actions) {
-    std::string api_print =
-        "ID=punky CATEGORY=api_call API=brewster COUNT=1";
-    std::string dom_print =
-        "ID=punky CATEGORY=dom_access API=lets ARGS=[\"vamoose\"] "
-        "PAGE_URL=http://www.google.com/ COUNT=1";
     ASSERT_EQ(2, static_cast<int>(actions->size()));
-    ASSERT_EQ(dom_print, actions->at(0)->PrintForDebug());
-    ASSERT_EQ(api_print, actions->at(1)->PrintForDebug());
+    CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
+                "[\"vamoose\"]", "http://www.google.com/", "", "", 1);
+    CheckAction(*actions->at(1), "punky", Action::ACTION_API_CALL, "brewster",
+                "", "", "", "", 1);
   }
 
   static void Arguments_CheckMergeCount(
       int count,
       scoped_ptr<Action::ActionVector> actions) {
-    std::string api_print = base::StringPrintf(
-        "ID=punky CATEGORY=api_call API=brewster COUNT=%d", count);
     if (count > 0) {
       ASSERT_EQ(1u, actions->size());
-      ASSERT_EQ(api_print, actions->at(0)->PrintForDebug());
+      CheckAction(*actions->at(0), "punky", Action::ACTION_API_CALL, "brewster",
+                  "", "", "", "", count);
     } else {
       ASSERT_EQ(0u, actions->size());
     }
@@ -244,11 +235,10 @@ class CountingPolicyTest : public testing::Test {
       int count,
       const base::Time& time,
       scoped_ptr<Action::ActionVector> actions) {
-    std::string api_print = base::StringPrintf(
-        "ID=punky CATEGORY=api_call API=brewster COUNT=%d", count);
     if (count > 0) {
       ASSERT_EQ(1u, actions->size());
-      ASSERT_EQ(api_print, actions->at(0)->PrintForDebug());
+      CheckAction(*actions->at(0), "punky", Action::ACTION_API_CALL, "brewster",
+                  "", "", "", "", count);
       ASSERT_EQ(time, actions->at(0)->time());
     } else {
       ASSERT_EQ(0u, actions->size());
@@ -258,9 +248,9 @@ class CountingPolicyTest : public testing::Test {
   static void AllURLsRemoved(scoped_ptr<Action::ActionVector> actions) {
     ASSERT_EQ(2, static_cast<int>(actions->size()));
     CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "", "", "");
+                "[\"vamoose\"]", "", "", "", 1);
     CheckAction(*actions->at(1), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "", "", "");
+                "[\"vamoose\"]", "", "", "", 1);
   }
 
   static void SomeURLsRemoved(scoped_ptr<Action::ActionVector> actions) {
@@ -268,18 +258,17 @@ class CountingPolicyTest : public testing::Test {
     ASSERT_EQ(5, static_cast<int>(actions->size()));
     CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
                 "[\"vamoose\"]", "http://www.google.com/", "Google",
-                "http://www.args-url.com/");
+                "http://www.args-url.com/", 1);
     CheckAction(*actions->at(1), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "http://www.google.com/", "Google", "");
+                "[\"vamoose\"]", "http://www.google.com/", "Google", "", 1);
     CheckAction(*actions->at(2), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "", "", "");
+                "[\"vamoose\"]", "", "", "", 1);
     CheckAction(*actions->at(3), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "", "", "http://www.google.com/");
+                "[\"vamoose\"]", "", "", "http://www.google.com/", 1);
     CheckAction(*actions->at(4), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "", "", "");
+                "[\"vamoose\"]", "", "", "", 1);
   }
 
-  // TODO(karenlees): add checking for the count value.
   static void CheckAction(const Action& action,
                           const std::string& expected_id,
                           const Action::ActionType& expected_type,
@@ -287,7 +276,8 @@ class CountingPolicyTest : public testing::Test {
                           const std::string& expected_args_str,
                           const std::string& expected_page_url,
                           const std::string& expected_page_title,
-                          const std::string& expected_arg_url) {
+                          const std::string& expected_arg_url,
+                          int expected_count) {
     ASSERT_EQ(expected_id, action.extension_id());
     ASSERT_EQ(expected_type, action.action_type());
     ASSERT_EQ(expected_api_name, action.api_name());
@@ -296,6 +286,7 @@ class CountingPolicyTest : public testing::Test {
     ASSERT_EQ(expected_page_url, action.SerializePageUrl());
     ASSERT_EQ(expected_page_title, action.page_title());
     ASSERT_EQ(expected_arg_url, action.SerializeArgUrl());
+    ASSERT_EQ(expected_count, action.count());
   }
 
  protected:
