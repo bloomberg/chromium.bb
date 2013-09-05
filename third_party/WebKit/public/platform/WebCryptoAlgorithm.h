@@ -103,12 +103,12 @@ public:
 
     // Retrieves the type-specific parameters. The algorithm contains at most 1
     // type of parameters. Retrieving an invalid parameter will return 0.
-    WEBKIT_EXPORT WebCryptoAesCbcParams* aesCbcParams() const;
-    WEBKIT_EXPORT WebCryptoAesKeyGenParams* aesKeyGenParams() const;
-    WEBKIT_EXPORT WebCryptoHmacParams* hmacParams() const;
-    WEBKIT_EXPORT WebCryptoHmacKeyParams* hmacKeyParams() const;
-    WEBKIT_EXPORT WebCryptoRsaSsaParams* rsaSsaParams() const;
-    WEBKIT_EXPORT WebCryptoRsaKeyGenParams* rsaKeyGenParams() const;
+    WEBKIT_EXPORT const WebCryptoAesCbcParams* aesCbcParams() const;
+    WEBKIT_EXPORT const WebCryptoAesKeyGenParams* aesKeyGenParams() const;
+    WEBKIT_EXPORT const WebCryptoHmacParams* hmacParams() const;
+    WEBKIT_EXPORT const WebCryptoHmacKeyParams* hmacKeyParams() const;
+    WEBKIT_EXPORT const WebCryptoRsaSsaParams* rsaSsaParams() const;
+    WEBKIT_EXPORT const WebCryptoRsaKeyGenParams* rsaKeyGenParams() const;
 
 private:
     WEBKIT_EXPORT void assign(const WebCryptoAlgorithm& other);
