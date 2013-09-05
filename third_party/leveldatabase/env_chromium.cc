@@ -454,10 +454,15 @@ Status ChromiumWritableFile::SyncParent() {
 
   int parent_fd =
       HANDLE_EINTR(open(parent_dir_.c_str(), O_RDONLY));
-  if (parent_fd < 0)
-    return MakeIOError(parent_dir_, strerror(errno), kSyncParent);
+  if (parent_fd < 0) {
+    int saved_errno = errno;
+    return MakeIOError(
+        parent_dir_, strerror(saved_errno), kSyncParent, saved_errno);
+  }
   if (HANDLE_EINTR(fsync(parent_fd)) != 0) {
-    s = MakeIOError(parent_dir_, strerror(errno), kSyncParent);
+    int saved_errno = errno;
+    s = MakeIOError(
+        parent_dir_, strerror(saved_errno), kSyncParent, saved_errno);
   };
   HANDLE_EINTR(close(parent_fd));
 #endif
