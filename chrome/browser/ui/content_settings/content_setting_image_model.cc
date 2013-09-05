@@ -64,6 +64,7 @@ class ContentSettingSavePasswordImageModel : public ContentSettingImageModel {
   ContentSettingSavePasswordImageModel();
 
   virtual void UpdateFromWebContents(WebContents* web_contents) OVERRIDE;
+  virtual bool ShouldShowBubbleOnBlockage() OVERRIDE;
 };
 
 namespace {
@@ -233,6 +234,10 @@ void ContentSettingSavePasswordImageModel::UpdateFromWebContents(
   }
 }
 
+bool ContentSettingSavePasswordImageModel::ShouldShowBubbleOnBlockage() {
+  return true;
+}
+
 ContentSettingMediaImageModel::ContentSettingMediaImageModel(
     ContentSettingsType type)
     : ContentSettingImageModel(type) {
@@ -375,6 +380,10 @@ ContentSettingImageModel::ContentSettingImageModel(
       is_visible_(false),
       icon_(0),
       explanatory_string_id_(0) {
+}
+
+bool ContentSettingImageModel::ShouldShowBubbleOnBlockage() {
+  return false;
 }
 
 // static

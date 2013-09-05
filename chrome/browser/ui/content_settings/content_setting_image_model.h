@@ -28,6 +28,10 @@ class ContentSettingImageModel {
   // update its visibility, icon and tooltip.
   virtual void UpdateFromWebContents(content::WebContents* web_contents) = 0;
 
+  // Returns true if the icon should automatically show its bubble as part of
+  // indicating that the relevant content was blocked.
+  virtual bool ShouldShowBubbleOnBlockage();
+
   ContentSettingsType get_content_settings_type() const {
     return content_settings_type_;
   }

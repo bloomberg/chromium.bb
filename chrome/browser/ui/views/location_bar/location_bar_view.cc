@@ -385,8 +385,6 @@ void LocationBarView::Init() {
   // Initialize the location entry. We do this to avoid a black flash which is
   // visible when the location entry has just been initialized.
   Update(NULL);
-
-  OnChanged();
 }
 
 bool LocationBarView::IsInitialized() const {
@@ -498,7 +496,7 @@ void LocationBarView::Update(const WebContents* contents) {
   mic_search_view_->SetVisible(
       !GetToolbarModel()->input_in_progress() && browser_ &&
       browser_->search_model()->voice_search_supported());
-  RefreshContentSettingViews();
+  UpdateContentSettingViewsPreLayout();
   generated_credit_card_view_->Update();
   ZoomBubbleView::CloseBubble();
   RefreshZoomView();
@@ -522,13 +520,14 @@ void LocationBarView::Update(const WebContents* contents) {
   else
     location_entry_->Update();
 
-  OnChanged();
+  OnChanged();  // NOTE: Calls Layout().
+  UpdateContentSettingViewsPostLayout();
 }
 
 void LocationBarView::UpdateContentSettingsIcons() {
-  RefreshContentSettingViews();
-
+  UpdateContentSettingViewsPreLayout();
   Layout();
+  UpdateContentSettingViewsPostLayout();
   SchedulePaint();
 }
 
@@ -1134,10 +1133,18 @@ int LocationBarView::GetHorizontalEdgeThickness() const {
       browser_->window()->IsMaximized()) ? 0 : vertical_edge_thickness();
 }
 
-void LocationBarView::RefreshContentSettingViews() {
+void LocationBarView::UpdateContentSettingViewsPreLayout() {
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
-    (*i)->Update(GetToolbarModel()->input_in_progress() ?
+    (*i)->UpdatePreLayout(GetToolbarModel()->input_in_progress() ?
+        NULL : GetWebContents());
+  }
+}
+
+void LocationBarView::UpdateContentSettingViewsPostLayout() {
+  for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
+       i != content_setting_views_.end(); ++i) {
+    (*i)->UpdatePostLayout(GetToolbarModel()->input_in_progress() ?
         NULL : GetWebContents());
   }
 }

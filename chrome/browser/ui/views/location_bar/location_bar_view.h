@@ -383,9 +383,18 @@ class LocationBarView : public LocationBar,
     return is_popup_mode_ ? kPopupEdgeThickness : kNormalEdgeThickness;
   }
 
-  // Update the visibility state of the Content Blocked icons to reflect what is
-  // actually blocked on the current page.
-  void RefreshContentSettingViews();
+  // Updates the visibility state of the Content Blocked icons to reflect what
+  // is actually blocked on the current page. Calling this function should
+  // always eventually be followed by calling Layout() and then
+  // UpdateContentSettingViewsPostLayout(), to ensure the icons can completely
+  // update their states.
+  void UpdateContentSettingViewsPreLayout();
+
+  // Updates after the correct screen coordinates have been set for icons.
+  // Allows content setting icons to perform any updating which can't complete
+  // until after the icons have been correctly laid out.  This should be called
+  // after UpdateContentSettingViewsPreLayout() and a subsequent Layout().
+  void UpdateContentSettingViewsPostLayout();
 
   // Delete all page action views that we have created.
   void DeletePageActionViews();

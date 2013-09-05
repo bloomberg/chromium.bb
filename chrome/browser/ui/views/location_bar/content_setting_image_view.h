@@ -41,8 +41,12 @@ class ContentSettingImageView : public ui::AnimationDelegate,
                           SkColor parent_background_color);
   virtual ~ContentSettingImageView();
 
-  // Update the decoration from the shown WebContents.
-  void Update(content::WebContents* web_contents);
+  // Updates the decoration from the shown WebContents.
+  void UpdatePreLayout(content::WebContents* web_contents);
+
+  // Performs any updates which depend on the image having already been laid out
+  // by the owning LocationBarView.
+  void UpdatePostLayout(content::WebContents* web_contents);
 
  private:
   // Number of milliseconds spent animating open; also the time spent animating
@@ -82,6 +86,7 @@ class ContentSettingImageView : public ui::AnimationDelegate,
 
   int GetTotalSpacingWhileAnimating() const;
   void OnClick();
+  void CreateBubble(content::WebContents* web_contents);
 
   LocationBarView* parent_;  // Weak, owns us.
   scoped_ptr<ContentSettingImageModel> content_setting_image_model_;

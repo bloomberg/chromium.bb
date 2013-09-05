@@ -94,7 +94,8 @@ ContentSettingImageView::~ContentSettingImageView() {
     bubble_widget_->RemoveObserver(this);
 }
 
-void ContentSettingImageView::Update(content::WebContents* web_contents) {
+void ContentSettingImageView::UpdatePreLayout(
+    content::WebContents* web_contents) {
   // Note: We explicitly want to call this even if |web_contents| is NULL, so we
   // get hidden properly while the user is editing the omnibox.
   content_setting_image_model_->UpdateFromWebContents(web_contents);
@@ -127,9 +128,29 @@ void ContentSettingImageView::Update(content::WebContents* web_contents) {
     text_label_->SetVisible(true);
     slide_animator_.Show();
   }
+  // Since indicating blockage may include showing a bubble, which must be done
+  // in UpdatePostLayout() in order for the bubble to have the right anchor
+  // coordinates, we delay calling SetBlockageHasBeeenIndicated() until that
+  // function completes.
+}
 
-  content_settings->SetBlockageHasBeenIndicated(
-      content_setting_image_model_->get_content_settings_type());
+void ContentSettingImageView::UpdatePostLayout(
+    content::WebContents* web_contents) {
+  if (!content_setting_image_model_->is_visible())
+    return;
+
+  TabSpecificContentSettings* content_settings = web_contents ?
+     TabSpecificContentSettings::FromWebContents(web_contents) : NULL;
+  if (!content_settings)
+    return;
+
+  if (!content_settings->IsBlockageIndicated(
+      content_setting_image_model_->get_content_settings_type())) {
+    if (content_setting_image_model_->ShouldShowBubbleOnBlockage())
+      CreateBubble(web_contents);
+    content_settings->SetBlockageHasBeenIndicated(
+        content_setting_image_model_->get_content_settings_type());
+  }
 }
 
 // static
@@ -246,14 +267,19 @@ void ContentSettingImageView::OnClick() {
 
   content::WebContents* web_contents = parent_->GetWebContents();
   if (web_contents && !bubble_widget_) {
-    bubble_widget_ =
-        parent_->delegate()->CreateViewsBubble(new ContentSettingBubbleContents(
-            ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-                parent_->delegate()->GetContentSettingBubbleModelDelegate(),
-                web_contents, parent_->profile(),
-                content_setting_image_model_->get_content_settings_type()),
-            web_contents, this, views::BubbleBorder::TOP_RIGHT));
-    bubble_widget_->AddObserver(this);
-    bubble_widget_->Show();
+    CreateBubble(web_contents);
   }
 }
+
+void ContentSettingImageView::CreateBubble(content::WebContents* web_contents) {
+  bubble_widget_ =
+      parent_->delegate()->CreateViewsBubble(new ContentSettingBubbleContents(
+          ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+              parent_->delegate()->GetContentSettingBubbleModelDelegate(),
+              web_contents, parent_->profile(),
+              content_setting_image_model_->get_content_settings_type()),
+          web_contents, this, views::BubbleBorder::TOP_RIGHT));
+  bubble_widget_->AddObserver(this);
+  bubble_widget_->Show();
+}
+
