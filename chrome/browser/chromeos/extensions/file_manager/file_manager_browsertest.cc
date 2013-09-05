@@ -22,7 +22,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
-#include "chrome/browser/chromeos/extensions/file_manager/drive_test_util.h"
+#include "chrome/browser/chromeos/file_manager/drive_test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/browser/extensions/component_loader.h"

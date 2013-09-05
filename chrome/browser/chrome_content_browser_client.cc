@@ -199,7 +199,7 @@
 #endif
 
 #if defined(FILE_MANAGER_EXTENSION)
-#include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
+#include "chrome/browser/chromeos/file_manager/app_id.h"
 #endif
 
 #if defined(TOOLKIT_GTK)

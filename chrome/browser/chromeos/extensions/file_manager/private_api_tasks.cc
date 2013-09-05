@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_tasks.h"
 
-#include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
-#include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
-#include "chrome/browser/chromeos/extensions/file_manager/mime_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
+#include "chrome/browser/chromeos/file_manager/file_tasks.h"
+#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/file_manager/mime_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_view_host.h"

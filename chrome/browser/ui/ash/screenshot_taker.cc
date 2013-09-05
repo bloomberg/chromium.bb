@@ -43,7 +43,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/extensions/file_manager/open_util.h"
+#include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"

@@ -53,7 +53,7 @@
 #include "net/http/http_status_code.h"
 
 #ifdef FILE_MANAGER_EXTENSION
-#include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
+#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "extensions/common/constants.h"
 #endif
 

@@ -8,7 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/extensions/file_manager/drive_test_util.h"
+#include "chrome/browser/chromeos/file_manager/drive_test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/google_apis/test_util.h"

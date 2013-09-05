@@ -9,7 +9,7 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
-#include "chrome/browser/chromeos/extensions/file_manager/zip_file_creator.h"
+#include "chrome/browser/chromeos/file_manager/zip_file_creator.h"
 
 namespace extensions {
 
