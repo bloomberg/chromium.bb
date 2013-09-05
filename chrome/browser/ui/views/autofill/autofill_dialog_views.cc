@@ -1800,6 +1800,9 @@ gfx::Size AutofillDialogViews::CalculatePreferredSize() {
     const int kWindowDecorationHeight = 200;
     int browser_constrained_height =
         browser_window_height - height - kWindowDecorationHeight;
+    if (footnote_view_->visible())
+      browser_constrained_height -= footnote_view_->GetHeightForWidth(width);
+
     int scroll_height = std::min(
         scroll_size.height(),
         std::max(kMinimumContentsHeight, browser_constrained_height));
