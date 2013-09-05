@@ -1584,7 +1584,8 @@ class DependencyGraphNode(object):
 
     return dependencies
 
-  def LinkDependencies(self, targets, dependencies=None, initial=True):
+  def _LinkDependenciesInternal(self, targets, include_shared_libraries,
+                                dependencies=None, initial=True):
     """Returns a list of dependency targets that are linked into this target.
 
     This function has a split personality, depending on the setting of
@@ -1594,6 +1595,9 @@ class DependencyGraphNode(object):
     When adding a target to the list of dependencies, this function will
     recurse into itself with |initial| set to False, to collect dependencies
     that are linked into the linkable target for which the list is being built.
+
+    If |include_shared_libraries| is False, the resulting dependencies will not
+    include shared_library targets that are linked into this target.
     """
     if dependencies == None:
       dependencies = []
@@ -1638,6 +1642,16 @@ class DependencyGraphNode(object):
     if not initial and target_type in ('executable', 'loadable_module'):
       return dependencies
 
+    # Shared libraries are already fully linked.  They should only be included
+    # in |dependencies| when adjusting static library dependencies (in order to
+    # link against the shared_library's import lib), but should not be included
+    # in |dependencies| when propagating link_settings.
+    # The |include_shared_libraries| flag controls which of these two cases we
+    # are handling.
+    if (not initial and target_type == 'shared_library' and
+        not include_shared_libraries):
+      return dependencies
+
     # The target is linkable, add it to the list of link dependencies.
     if self.ref not in dependencies:
       dependencies.append(self.ref)
@@ -1647,9 +1661,24 @@ class DependencyGraphNode(object):
         # this target linkable.  Always look at dependencies of the initial
         # target, and always look at dependencies of non-linkables.
         for dependency in self.dependencies:
-          dependency.LinkDependencies(targets, dependencies, False)
+          dependency._LinkDependenciesInternal(targets,
+                                               include_shared_libraries,
+                                               dependencies, False)
 
     return dependencies
+
+  def DependenciesForLinkSettings(self, targets):
+    """
+    Returns a list of dependency targets whose link_settings should be merged
+    into this target.
+    """
+    return self._LinkDependenciesInternal(targets, False)
+
+  def DependenciesToLinkAgainst(self, targets):
+    """
+    Returns a list of dependency targets that are linked into this target.
+    """
+    return self._LinkDependenciesInternal(targets, True)
 
 
 def BuildDependencyList(targets):
@@ -1767,7 +1796,8 @@ def DoDependentSettings(key, flat_list, targets, dependency_nodes):
       dependencies = \
           dependency_nodes[target].DirectAndImportedDependencies(targets)
     elif key == 'link_settings':
-      dependencies = dependency_nodes[target].LinkDependencies(targets)
+      dependencies = \
+          dependency_nodes[target].DependenciesForLinkSettings(targets)
     else:
       raise GypError("DoDependentSettings doesn't know how to determine "
                       'dependencies for ' + key)
@@ -1840,7 +1870,8 @@ def AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes,
       # target.  Add them to the dependencies list if they're not already
       # present.
 
-      link_dependencies = dependency_nodes[target].LinkDependencies(targets)
+      link_dependencies = \
+          dependency_nodes[target].DependenciesToLinkAgainst(targets)
       for dependency in link_dependencies:
         if dependency == target:
           continue
