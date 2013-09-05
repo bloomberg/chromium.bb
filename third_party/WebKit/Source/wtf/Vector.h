@@ -276,27 +276,27 @@ static const size_t kInitialVectorSize = 16;
             m_buffer = static_cast<T*>(fastRealloc(m_buffer, sizeToAllocate));
         }
 
-        ALWAYS_INLINE T* buffer() { return m_buffer; }
-        ALWAYS_INLINE const T* buffer() const { return m_buffer; }
-        ALWAYS_INLINE size_t capacity() const { return m_capacity; }
+        T* buffer() { return m_buffer; }
+        const T* buffer() const { return m_buffer; }
+        size_t capacity() const { return m_capacity; }
 
     protected:
         VectorBufferBase()
             : m_buffer(0)
             , m_capacity(0)
-            , m_size(0)
         {
         }
 
         VectorBufferBase(T* buffer, size_t capacity)
             : m_buffer(buffer)
             , m_capacity(capacity)
-            , m_size(0)
         {
         }
 
         ~VectorBufferBase()
         {
+            m_buffer = 0;
+            m_size = 0;
         }
 
         T* m_buffer;
@@ -324,10 +324,6 @@ static const size_t kInitialVectorSize = 16;
                 allocateBuffer(capacity);
         }
 
-        ~VectorBuffer()
-        {
-        }
-
         void deallocateBuffer(T* bufferToDeallocate)
         {
             fastFree(bufferToDeallocate);
@@ -339,10 +335,9 @@ static const size_t kInitialVectorSize = 16;
             m_capacity = 0;
         }
 
-        void destruct()
+        ~VectorBuffer()
         {
-            deallocateBuffer(m_buffer);
-            m_buffer = 0;
+            deallocateBuffer(buffer());
         }
 
         void swap(VectorBuffer<T, 0>& other)
@@ -386,26 +381,21 @@ static const size_t kInitialVectorSize = 16;
                 Base::allocateBuffer(capacity);
         }
 
-        ~VectorBuffer()
-        {
-        }
-
         void deallocateBuffer(T* bufferToDeallocate)
         {
             if (UNLIKELY(bufferToDeallocate != inlineBuffer()))
                 fastFree(bufferToDeallocate);
         }
 
-        void destruct()
-        {
-            deallocateBuffer(m_buffer);
-            m_buffer = 0;
-        }
-
         void clearBufferPointer()
         {
             m_buffer = 0;
             m_capacity = 0;
+        }
+
+        ~VectorBuffer()
+        {
+            deallocateBuffer(buffer());
         }
 
         void allocateBuffer(size_t newCapacity)
@@ -471,8 +461,8 @@ static const size_t kInitialVectorSize = 16;
         using Base::m_capacity;
 
         static const size_t m_inlineBufferSize = inlineCapacity * sizeof(T);
-        ALWAYS_INLINE T* inlineBuffer() { return reinterpret_cast_ptr<T*>(m_inlineBuffer.buffer); }
-        ALWAYS_INLINE const T* inlineBuffer() const { return reinterpret_cast_ptr<const T*>(m_inlineBuffer.buffer); }
+        T* inlineBuffer() { return reinterpret_cast_ptr<T*>(m_inlineBuffer.buffer); }
+        const T* inlineBuffer() const { return reinterpret_cast_ptr<const T*>(m_inlineBuffer.buffer); }
 
         AlignedBuffer<m_inlineBufferSize, WTF_ALIGN_OF(T)> m_inlineBuffer;
     };
@@ -494,7 +484,7 @@ static const size_t kInitialVectorSize = 16;
 
         Vector()
         {
-            // Initialization occurs on the base classes.
+            m_size = 0;
         }
 
         explicit Vector(size_t size)
@@ -506,15 +496,7 @@ static const size_t kInitialVectorSize = 16;
 
         ~Vector()
         {
-            if (!inlineCapacity) {
-                if (LIKELY(!Base::buffer()))
-                    return;
-                shrink(0);
-            } else {
-                if (UNLIKELY(m_size))
-                    shrink(0);
-            }
-            Base::destruct();
+            shrink(0);
         }
 
         Vector(const Vector&);
@@ -530,9 +512,9 @@ static const size_t kInitialVectorSize = 16;
         Vector& operator=(Vector&&);
 #endif
 
-        ALWAYS_INLINE size_t size() const { return m_size; }
-        ALWAYS_INLINE size_t capacity() const { return Base::capacity(); }
-        ALWAYS_INLINE bool isEmpty() const { return !size(); }
+        size_t size() const { return m_size; }
+        size_t capacity() const { return Base::capacity(); }
+        bool isEmpty() const { return !size(); }
 
         T& at(size_t i)
         {

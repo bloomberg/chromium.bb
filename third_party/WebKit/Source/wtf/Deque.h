@@ -325,7 +325,6 @@ namespace WTF {
         checkValidity();
         invalidateIterators();
         destroyAll();
-        m_buffer.destruct();
     }
 
     template<typename T, size_t inlineCapacity>
