@@ -34,6 +34,7 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
+#include "core/page/Settings.h"
 #include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/ScrollbarTheme.h"
@@ -208,6 +209,13 @@ static PassOwnPtr<WebScrollbarLayer> createScrollbarLayer(Scrollbar* scrollbar)
     return scrollbarLayer.release();
 }
 
+PassOwnPtr<WebScrollbarLayer> ScrollingCoordinator::createSolidColorScrollbarLayer(ScrollbarOrientation orientation, int thumbThickness)
+{
+    WebKit::WebScrollbar::Orientation webOrientation = (orientation == HorizontalScrollbar) ? WebKit::WebScrollbar::Horizontal : WebKit::WebScrollbar::Vertical;
+    OwnPtr<WebScrollbarLayer> scrollbarLayer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createSolidColorScrollbarLayer(webOrientation, thumbThickness));
+    return scrollbarLayer.release();
+}
+
 static void detachScrollbarLayer(GraphicsLayer* scrollbarGraphicsLayer)
 {
     ASSERT(scrollbarGraphicsLayer);
@@ -271,8 +279,18 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
         }
 
         WebScrollbarLayer* scrollbarLayer = getWebScrollbarLayer(scrollableArea, orientation);
-        if (!scrollbarLayer)
-            scrollbarLayer = addWebScrollbarLayer(scrollableArea, orientation, createScrollbarLayer(scrollbar));
+        if (!scrollbarLayer) {
+            Settings* settings = m_page->mainFrame()->document()->settings();
+
+            OwnPtr<WebScrollbarLayer> webScrollbarLayer;
+            if (settings->useSolidColorScrollbars()) {
+                ASSERT(settings->usesOverlayScrollbars());
+                webScrollbarLayer = createSolidColorScrollbarLayer(orientation, -1);
+            } else {
+                webScrollbarLayer = createScrollbarLayer(scrollbar);
+            }
+            scrollbarLayer = addWebScrollbarLayer(scrollableArea, orientation, webScrollbarLayer.release());
+        }
 
         // Root layer non-overlay scrollbars should be marked opaque to disable
         // blending.
