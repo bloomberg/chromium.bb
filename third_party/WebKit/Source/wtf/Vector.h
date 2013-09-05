@@ -296,14 +296,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         const T* buffer() const { return m_buffer; }
         size_t capacity() const { return m_capacity; }
 
-        T* releaseBuffer()
-        {
-            T* buffer = m_buffer;
-            m_buffer = 0;
-            m_capacity = 0;
-            return buffer;
-        }
-
     protected:
         VectorBufferBase()
             : m_buffer(0)
@@ -367,8 +359,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         using Base::buffer;
         using Base::capacity;
-
-        using Base::releaseBuffer;
 
     protected:
         using Base::m_size;
@@ -462,13 +452,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         using Base::buffer;
         using Base::capacity;
-
-        T* releaseBuffer()
-        {
-            if (buffer() == inlineBuffer())
-                return 0;
-            return Base::releaseBuffer();
-        }
 
     protected:
         using Base::m_size;
@@ -617,8 +600,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         template<typename Iterator> void appendRange(Iterator start, Iterator end);
 
-        T* releaseBuffer();
-
         void swap(Vector<T, inlineCapacity>& other)
         {
             std::swap(m_size, other.m_size);
@@ -642,7 +623,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         using Base::shouldReallocateBuffer;
         using Base::reallocateBuffer;
         using Base::restoreInlineBufferIfNeeded;
-        using Base::releaseBuffer;
     };
 
     template<typename T, size_t inlineCapacity>
@@ -1060,22 +1040,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     {
         for (size_t i = 0; i < m_size / 2; ++i)
             std::swap(at(i), at(m_size - 1 - i));
-    }
-
-    template<typename T, size_t inlineCapacity>
-    inline T* Vector<T, inlineCapacity>::releaseBuffer()
-    {
-        T* buffer = Base::releaseBuffer();
-        if (inlineCapacity && !buffer && m_size) {
-            // If the vector had some data, but no buffer to release,
-            // that means it was using the inline buffer. In that case,
-            // we create a brand new buffer so the caller always gets one.
-            size_t bytes = m_size * sizeof(T);
-            buffer = static_cast<T*>(fastMalloc(bytes));
-            memcpy(buffer, data(), bytes);
-        }
-        m_size = 0;
-        return buffer;
     }
 
     template<typename T, size_t inlineCapacity>
