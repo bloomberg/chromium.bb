@@ -649,6 +649,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
       has_composition_text_(false),
+      last_output_surface_id_(0),
       last_swapped_surface_scale_factor_(1.f),
       paint_canvas_(NULL),
       synthetic_move_sent_(false),
@@ -1458,6 +1459,17 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
         host_->GetRoutingID(), output_surface_id,
         host_->GetProcess()->GetID(), ack);
     return;
+  }
+  if (output_surface_id != last_output_surface_id_) {
+    // Resource ids are scoped by the output surface.
+    // If the originating output surface doesn't match the last one, it
+    // indicates the renderer's output surface may have been recreated, in which
+    // case we should recreate the DelegatedRendererLayer, to avoid matching
+    // resources from the old one with resources from the new one which would
+    // have the same id.
+    window_->layer()->SetDelegatedFrame(scoped_ptr<cc::DelegatedFrameData>(),
+                                        frame_size_in_dip);
+    last_output_surface_id_ = output_surface_id;
   }
   window_->layer()->SetDelegatedFrame(frame_data.Pass(), frame_size_in_dip);
   released_front_lock_ = NULL;

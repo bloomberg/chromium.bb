@@ -588,6 +588,11 @@ class RenderWidgetHostViewAura
   // This holds the current software framebuffer.
   scoped_refptr<MemoryHolder> framebuffer_holder_;
 
+  // With delegated renderer, this is the last output surface, used to
+  // disambiguate resources with the same id coming from different output
+  // surfaces.
+  uint32 last_output_surface_id_;
+
   // The damage in the previously presented buffer.
   SkRegion previous_damage_;
 
