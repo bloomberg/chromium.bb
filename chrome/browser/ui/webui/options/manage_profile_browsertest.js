@@ -301,6 +301,36 @@ TEST_F('ManageProfileUITest', 'PolicyDynamicRefresh', function() {
                're-allowed and signed in');
 });
 
+// The managed user checkbox should correctly update its state during profile
+// creation and afterwards.
+TEST_F('ManageProfileUITest', 'CreateInProgress', function() {
+  ManageProfileOverlay.getInstance().initializePage();
+
+  var custodianEmail = 'chrome.playpen.test@gmail.com';
+  CreateProfileOverlay.updateSignedInStatus(custodianEmail);
+  CreateProfileOverlay.updateManagedUsersAllowed(true);
+  var checkbox = $('create-profile-managed');
+  var link = $('create-profile-managed-not-signed-in-link');
+  var indicator = $('create-profile-managed-indicator');
+
+  assertFalse(checkbox.disabled, 'allowed and signed in');
+  assertFalse(link.hidden, 'allowed and signed in');
+  assertEquals('none', window.getComputedStyle(indicator, null).display,
+               'allowed and signed in');
+  assertFalse(indicator.hasAttribute('controlled-by'));
+
+  CreateProfileOverlay.updateCreateInProgress(true);
+  assertTrue(checkbox.disabled, 'creation in progress');
+
+  // A no-op update to the sign-in status should not change the UI.
+  CreateProfileOverlay.updateSignedInStatus(custodianEmail);
+  CreateProfileOverlay.updateManagedUsersAllowed(true);
+  assertTrue(checkbox.disabled, 'creation in progress');
+
+  CreateProfileOverlay.updateCreateInProgress(false);
+  assertFalse(checkbox.disabled, 'creation finished');
+});
+
 // Managed users shouldn't be able to open the delete or create dialogs.
 TEST_F('ManageProfileUITest', 'ManagedShowDeleteAndCreate', function() {
   this.setProfileManaged_(false);

@@ -514,10 +514,12 @@ cr.define('options', function() {
      * @private
      */
     updateCreateInProgress_: function(inProgress) {
+      this.createInProgress_ = inProgress;
+      this.updateCreateManagedUserCheckbox_();
+
       $('create-profile-icon-grid').disabled = inProgress;
       $('create-profile-name').disabled = inProgress;
       $('create-shortcut').disabled = inProgress;
-      $('create-profile-managed').disabled = inProgress;
       $('create-profile-ok').disabled = inProgress;
 
       $('create-profile-throbber').hidden = !inProgress;
@@ -620,7 +622,7 @@ cr.define('options', function() {
     },
 
     /**
-     * Updates the status of the "create managed user" checkbox. Called by the
+     * Sets whether creating managed users is allowed or not. Called by the
      * handler in response to the 'requestCreateProfileUpdate' message or a
      * change in the (policy-controlled) pref that prohibits creating managed
      * users, after the signed-in status has been updated.
@@ -629,9 +631,8 @@ cr.define('options', function() {
      * @private
      */
     updateManagedUsersAllowed_: function(allowed) {
-      var isSignedIn = this.signedInEmail_ !== '';
-      $('create-profile-managed').disabled =
-          !isSignedIn || !allowed || this.hasError_;
+      this.managedUsersAllowed_ = allowed;
+      this.updateCreateManagedUserCheckbox_();
 
       $('create-profile-managed-not-signed-in-link').hidden = !allowed;
       if (!allowed) {
@@ -640,6 +641,19 @@ cr.define('options', function() {
       } else {
         $('create-profile-managed-indicator').removeAttribute('controlled-by');
       }
+    },
+
+    /**
+     * Updates the status of the "create managed user" checkbox. Called from
+     * updateManagedUsersAllowed_() or updateCreateInProgress_().
+     * updateSignedInStatus_() does not call this method directly, because it
+     * will be followed by a call to updateManagedUsersAllowed_().
+     * @private
+     */
+    updateCreateManagedUserCheckbox_: function() {
+      $('create-profile-managed').disabled =
+          !this.managedUsersAllowed_ || this.createInProgress_ ||
+          this.signedInEmail_ == '' || this.hasError_;
     },
   };
 
