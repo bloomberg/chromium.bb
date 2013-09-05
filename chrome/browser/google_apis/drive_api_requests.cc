@@ -449,23 +449,6 @@ GURL AppsListRequest::GetURL() const {
   return url_generator_.GetAppsListUrl();
 }
 
-//======================= ContinueGetFileListRequest =========================
-
-ContinueGetFileListRequest::ContinueGetFileListRequest(
-    RequestSender* sender,
-    const GURL& url,
-    const GetDataCallback& callback)
-    : GetDataRequest(sender, callback),
-      url_(url) {
-  DCHECK(!callback.is_null());
-}
-
-ContinueGetFileListRequest::~ContinueGetFileListRequest() {}
-
-GURL ContinueGetFileListRequest::GetURL() const {
-  return url_;
-}
-
 //========================== ChildrenInsertRequest ============================
 
 ChildrenInsertRequest::ChildrenInsertRequest(

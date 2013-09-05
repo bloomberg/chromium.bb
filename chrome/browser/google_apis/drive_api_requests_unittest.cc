@@ -708,33 +708,6 @@ TEST_F(DriveApiRequestsTest, FilesListNextPageRequest) {
   EXPECT_TRUE(result);
 }
 
-TEST_F(DriveApiRequestsTest, ContinueGetFileListRequest) {
-  // Set an expected data file containing valid result.
-  expected_data_file_path_ = test_util::GetTestFilePath(
-      "drive/filelist.json");
-
-  GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> result;
-
-  {
-    base::RunLoop run_loop;
-    drive::ContinueGetFileListRequest* request =
-        new drive::ContinueGetFileListRequest(
-            request_sender_.get(),
-            test_server_.GetURL("/continue/get/file/list"),
-            test_util::CreateQuitCallback(
-                &run_loop,
-                test_util::CreateCopyResultCallback(&error, &result)));
-    request_sender_->StartRequestWithRetry(request);
-    run_loop.Run();
-  }
-
-  EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/continue/get/file/list", http_request_.relative_url);
-  EXPECT_TRUE(result);
-}
-
 TEST_F(DriveApiRequestsTest, FilesTrashRequest) {
   // Set data for the expected result. Directory entry should be returned
   // if the trashing entry is a directory, so using it here should be fine.

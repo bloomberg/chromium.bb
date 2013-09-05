@@ -283,7 +283,7 @@ class FilesListNextPageRequest : public GetDataRequest {
   DISALLOW_COPY_AND_ASSIGN(FilesListNextPageRequest);
 };
 
-//=========================== TrashResourceRequest ===========================
+//============================= FilesTrashRequest =============================
 
 // This class performs the request for trashing a resource.
 // This request is mapped to
@@ -310,7 +310,6 @@ class FilesTrashRequest : public GetDataRequest {
 
   DISALLOW_COPY_AND_ASSIGN(FilesTrashRequest);
 };
-
 
 //============================== AboutGetRequest =============================
 
@@ -429,25 +428,6 @@ class AppsListRequest : public GetDataRequest {
   DISALLOW_COPY_AND_ASSIGN(AppsListRequest);
 };
 
-//======================= ContinueGetFileListRequest =========================
-
-// This class performs the request to fetch remaining Filelist result.
-class ContinueGetFileListRequest : public GetDataRequest {
- public:
-  ContinueGetFileListRequest(RequestSender* sender,
-                             const GURL& url,
-                             const GetDataCallback& callback);
-  virtual ~ContinueGetFileListRequest();
-
- protected:
-  virtual GURL GetURL() const OVERRIDE;
-
- private:
-  const GURL url_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContinueGetFileListRequest);
-};
-
 //========================== ChildrenInsertRequest ============================
 
 // This class performs the request for inserting a resource to a directory.
@@ -559,8 +539,7 @@ class InitiateUploadNewFileRequest : public InitiateUploadRequestBase {
 
 // This class performs the request for initiating the upload of an existing
 // file.
-class InitiateUploadExistingFileRequest
-    : public InitiateUploadRequestBase {
+class InitiateUploadExistingFileRequest : public InitiateUploadRequestBase {
  public:
   // |upload_url| should be the upload_url() of the file
   //    (resumable-create-media URL)

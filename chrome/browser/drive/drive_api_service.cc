@@ -58,7 +58,6 @@ using google_apis::drive::ChangesListRequest;
 using google_apis::drive::ChangesListNextPageRequest;
 using google_apis::drive::ChildrenDeleteRequest;
 using google_apis::drive::ChildrenInsertRequest;
-using google_apis::drive::ContinueGetFileListRequest;
 using google_apis::drive::DownloadFileRequest;
 using google_apis::drive::FilesCopyRequest;
 using google_apis::drive::FilesGetRequest;
@@ -91,74 +90,13 @@ const char kFolderMimeType[] = "application/vnd.google-apps.folder";
 const int kMaxNumFilesResourcePerRequest = 500;
 const int kMaxNumFilesResourcePerRequestForSearch = 50;
 
-scoped_ptr<ResourceList> ParseChangeListJsonToResourceList(
-    scoped_ptr<base::Value> value) {
-  scoped_ptr<ChangeList> change_list(ChangeList::CreateFrom(*value));
-  if (!change_list) {
-    return scoped_ptr<ResourceList>();
-  }
-
-  return ResourceList::CreateFromChangeList(*change_list);
-}
-
-scoped_ptr<ResourceList> ParseFileListJsonToResourceList(
-    scoped_ptr<base::Value> value) {
-  scoped_ptr<FileList> file_list(FileList::CreateFrom(*value));
-  if (!file_list) {
-    return scoped_ptr<ResourceList>();
-  }
-
-  return ResourceList::CreateFromFileList(*file_list);
-}
-
-// Parses JSON value representing either ChangeList or FileList into
-// ResourceList.
-scoped_ptr<ResourceList> ParseResourceListOnBlockingPool(
-    scoped_ptr<base::Value> value) {
-  DCHECK(value);
-
-  // Dispatch the parsing based on kind field.
-  if (ChangeList::HasChangeListKind(*value)) {
-    return ParseChangeListJsonToResourceList(value.Pass());
-  }
-  if (FileList::HasFileListKind(*value)) {
-    return ParseFileListJsonToResourceList(value.Pass());
-  }
-
-  // The value type is unknown, so give up to parse and return an error.
-  return scoped_ptr<ResourceList>();
-}
-
 // Callback invoked when the parsing of resource list is completed,
 // regardless whether it is succeeded or not.
-void DidParseResourceListOnBlockingPool(
+void DidConvertToResourceListOnBlockingPool(
     const GetResourceListCallback& callback,
     scoped_ptr<ResourceList> resource_list) {
   GDataErrorCode error = resource_list ? HTTP_SUCCESS : GDATA_PARSE_ERROR;
   callback.Run(error, resource_list.Pass());
-}
-
-// Sends a task to parse the JSON value into ResourceList on blocking pool,
-// with a callback which is called when the task is done.
-void ParseResourceListOnBlockingPoolAndRun(
-    scoped_refptr<base::TaskRunner> blocking_task_runner,
-    const GetResourceListCallback& callback,
-    GDataErrorCode error,
-    scoped_ptr<base::Value> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != HTTP_SUCCESS) {
-    // An error occurs, so run callback immediately.
-    callback.Run(error, scoped_ptr<ResourceList>());
-    return;
-  }
-
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner.get(),
-      FROM_HERE,
-      base::Bind(&ParseResourceListOnBlockingPool, base::Passed(&value)),
-      base::Bind(&DidParseResourceListOnBlockingPool, callback));
 }
 
 // Converts the FileResource value to ResourceEntry and runs |callback| on the
@@ -212,7 +150,7 @@ void ConvertFileListToResourceListOnBlockingPoolAndRun(
       blocking_task_runner.get(),
       FROM_HERE,
       base::Bind(&ConvertFileListToResourceList, base::Passed(&value)),
-      base::Bind(&DidParseResourceListOnBlockingPool, callback));
+      base::Bind(&DidConvertToResourceListOnBlockingPool, callback));
 }
 
 // Thin adapter of CreateFromChangeList.
@@ -241,12 +179,12 @@ void ConvertChangeListToResourceListOnBlockingPoolAndRun(
       blocking_task_runner.get(),
       FROM_HERE,
       base::Bind(&ConvertChangeListToResourceList, base::Passed(&value)),
-      base::Bind(&DidParseResourceListOnBlockingPool, callback));
+      base::Bind(&DidConvertToResourceListOnBlockingPool, callback));
 }
 
-// Parses the FileResource value to ResourceEntry for upload range request,
+// Converts the FileResource value to ResourceEntry for upload range request,
 // and runs |callback| on the UI thread.
-void ParseResourceEntryForUploadRangeAndRun(
+void ConvertFileResourceToResourceEntryForUploadRangeAndRun(
     const UploadRangeCallback& callback,
     const UploadRangeResponse& response,
     scoped_ptr<FileResource> value) {
@@ -788,7 +726,8 @@ CancelCallback DriveAPIService::ResumeUpload(
           content_length,
           content_type,
           local_file_path,
-          base::Bind(&ParseResourceEntryForUploadRangeAndRun, callback),
+          base::Bind(&ConvertFileResourceToResourceEntryForUploadRangeAndRun,
+                     callback),
           progress_callback));
 }
 
@@ -803,7 +742,8 @@ CancelCallback DriveAPIService::GetUploadStatus(
       sender_.get(),
       upload_url,
       content_length,
-      base::Bind(&ParseResourceEntryForUploadRangeAndRun, callback)));
+      base::Bind(&ConvertFileResourceToResourceEntryForUploadRangeAndRun,
+                 callback)));
 }
 
 CancelCallback DriveAPIService::AuthorizeApp(
