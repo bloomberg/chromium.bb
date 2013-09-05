@@ -1,7 +1,7 @@
 Name: Compact Language Detection
 Short Name: cld
 URL: http://src.chromium.org/viewvc/chrome/trunk/src/third_party/cld/
-Version: unknown
+Version: 0
 License: BSD
 Security Critical: yes
 

@@ -24,7 +24,6 @@
         # TODO(gregoryd): chrome_resources and chrome_strings could be
         #  shared with the 64-bit target, but it does not work due to a gyp
         # issue.
-        '../third_party/cld/cld.gyp:cld',
         'common_net',
         'common_version',
         'installer_util',
@@ -666,6 +665,16 @@
             'common/print_messages.cc',
             'common/print_messages.h',
           ]
+        }],
+        ['cld_version==0 or cld_version==1', {
+          'dependencies': [
+            '<(DEPTH)/third_party/cld/cld.gyp:cld',
+          ],
+        }],
+        ['cld_version==0 or cld_version==2', {
+          'dependencies': [
+            '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld_2',
+          ],
         }],
       ],
       'target_conditions': [
