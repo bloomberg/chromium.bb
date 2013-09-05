@@ -41,6 +41,7 @@ public:
 
 private:
     virtual void layout() OVERRIDE;
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
     bool isOutside() const;
     bool isOverlapping() const;

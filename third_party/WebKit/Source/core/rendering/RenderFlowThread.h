@@ -268,6 +268,10 @@ protected:
     bool m_pageLogicalSizeChanged : 1;
     bool m_inConstrainedLayoutPhase : 1;
     bool m_needsTwoPhasesLayout : 1;
+
+private:
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
+
 };
 
 inline RenderFlowThread* toRenderFlowThread(RenderObject* object)

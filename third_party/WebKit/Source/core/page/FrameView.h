@@ -32,6 +32,7 @@
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/rendering/Pagination.h"
 #include "core/rendering/PaintPhase.h"
+#include "core/rendering/PartialLayoutState.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -334,6 +335,8 @@ public:
     // DEPRECATED: Use viewportConstrainedVisibleContentRect() instead.
     IntSize scrollOffsetForFixedPosition() const;
 
+    PartialLayoutState& partialLayout() { return m_partialLayout; }
+
 protected:
     virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect);
     virtual void scrollContentsSlowPath(const IntRect& updateRect);
@@ -531,6 +534,8 @@ private:
     bool m_hasSoftwareFilters;
 
     float m_visibleContentScaleFactor;
+
+    PartialLayoutState m_partialLayout;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

@@ -156,6 +156,7 @@
 #include "core/platform/DateComponents.h"
 #include "core/platform/HistogramSupport.h"
 #include "core/platform/Language.h"
+#include "core/platform/ScrollbarTheme.h"
 #include "core/platform/Timer.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/network/HTTPParsers.h"
@@ -1822,6 +1823,9 @@ void Document::updateLayout()
     if (frameView && renderer() && (frameView->layoutPending() || renderer()->needsLayout()))
         frameView->layout();
 
+    if (frameView)
+        frameView->partialLayout().reset();
+
     setNeedsFocusedElementCheck();
 }
 
@@ -1834,6 +1838,31 @@ void Document::setNeedsFocusedElementCheck()
     m_didPostCheckFocusedElementTask = true;
 }
 
+void Document::recalcStyleForLayoutIgnoringPendingStylesheets()
+{
+    TemporaryChange<bool> ignorePendingStylesheets(m_ignorePendingStylesheets, m_ignorePendingStylesheets);
+    if (!haveStylesheetsLoaded()) {
+        m_ignorePendingStylesheets = true;
+        // FIXME: We are willing to attempt to suppress painting with outdated style info only once.
+        // Our assumption is that it would be dangerous to try to stop it a second time, after page
+        // content has already been loaded and displayed with accurate style information. (Our
+        // suppression involves blanking the whole page at the moment. If it were more refined, we
+        // might be able to do something better.) It's worth noting though that this entire method
+        // is a hack, since what we really want to do is suspend JS instead of doing a layout with
+        // inaccurate information.
+        HTMLElement* bodyElement = body();
+        if (bodyElement && !bodyElement->renderer() && m_pendingSheetLayout == NoLayoutWithPendingSheets) {
+            m_pendingSheetLayout = DidLayoutWithPendingSheets;
+            styleResolverChanged(RecalcStyleImmediately);
+        } else if (m_hasNodesWithPlaceholderStyle) {
+            // If new nodes have been added or style recalc has been done with style sheets still
+            // pending, some nodes may not have had their real style calculated yet. Normally this
+            // gets cleaned when style sheets arrive but here we need up-to-date style immediately.
+            recalcStyle(Force);
+        }
+    }
+}
+
 // FIXME: This is a bad idea and needs to be removed eventually.
 // Other browsers load stylesheets before they continue parsing the web page.
 // Since we don't, we can run JavaScript code that needs answers before the
@@ -1842,30 +1871,40 @@ void Document::setNeedsFocusedElementCheck()
 // to instead suspend JavaScript execution.
 void Document::updateLayoutIgnorePendingStylesheets()
 {
-    bool oldIgnore = m_ignorePendingStylesheets;
+    recalcStyleForLayoutIgnoringPendingStylesheets();
+    updateLayout();
+}
 
-    if (!haveStylesheetsLoaded()) {
-        m_ignorePendingStylesheets = true;
-        // FIXME: We are willing to attempt to suppress painting with outdated style info only once.  Our assumption is that it would be
-        // dangerous to try to stop it a second time, after page content has already been loaded and displayed
-        // with accurate style information.  (Our suppression involves blanking the whole page at the
-        // moment.  If it were more refined, we might be able to do something better.)
-        // It's worth noting though that this entire method is a hack, since what we really want to do is
-        // suspend JS instead of doing a layout with inaccurate information.
-        HTMLElement* bodyElement = body();
-        if (bodyElement && !bodyElement->renderer() && m_pendingSheetLayout == NoLayoutWithPendingSheets) {
-            m_pendingSheetLayout = DidLayoutWithPendingSheets;
-            styleResolverChanged(RecalcStyleImmediately);
-        } else if (m_hasNodesWithPlaceholderStyle)
-            // If new nodes have been added or style recalc has been done with style sheets still pending, some nodes
-            // may not have had their real style calculated yet. Normally this gets cleaned when style sheets arrive
-            // but here we need up-to-date style immediately.
-            recalcStyle(Force);
+void Document::partialUpdateLayoutIgnorePendingStylesheets(Node* stopLayoutAtNode)
+{
+    // Non-overlay scrollbars can cause a second layout that is dependent
+    // on a first layout. This is disabled for partial layout for now.
+    if (!RuntimeEnabledFeatures::partialLayoutEnabled() || !ScrollbarTheme::theme()->usesOverlayScrollbars()) {
+        updateLayoutIgnorePendingStylesheets();
+        return;
+    }
+
+    TemporaryChange<bool> ignorePendingStylesheets(m_ignorePendingStylesheets, m_ignorePendingStylesheets);
+    recalcStyleForLayoutIgnoringPendingStylesheets();
+
+    if (stopLayoutAtNode) {
+        RenderObject* renderer = stopLayoutAtNode->renderer();
+        bool canPartialLayout = renderer;
+        while (renderer) {
+            if (!renderer->supportsPartialLayout()) {
+                canPartialLayout = false;
+                break;
+            }
+            renderer = renderer->parent();
+        }
+        if (canPartialLayout && view())
+            view()->partialLayout().setStopAtRenderer(stopLayoutAtNode->renderer());
     }
 
     updateLayout();
 
-    m_ignorePendingStylesheets = oldIgnore;
+    if (view())
+        view()->partialLayout().reset();
 }
 
 PassRefPtr<RenderStyle> Document::styleForElementIgnoringPendingStylesheets(Element* element)

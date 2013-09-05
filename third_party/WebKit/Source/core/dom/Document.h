@@ -491,6 +491,7 @@ public:
     void updateStyleForNodeIfNeeded(Node*);
     void updateLayout();
     void updateLayoutIgnorePendingStylesheets();
+    void partialUpdateLayoutIgnorePendingStylesheets(Node*);
     PassRefPtr<RenderStyle> styleForElementIgnoringPendingStylesheets(Element*);
     PassRefPtr<RenderStyle> styleForPage(int pageIndex);
 
@@ -1120,6 +1121,8 @@ private:
     void executeScriptsWaitingForResourcesIfNeeded();
 
     void seamlessParentUpdatedStylesheets();
+
+    void recalcStyleForLayoutIgnoringPendingStylesheets();
 
     PassRefPtr<NodeList> handleZeroPadding(const HitTestRequest&, HitTestResult&) const;
 

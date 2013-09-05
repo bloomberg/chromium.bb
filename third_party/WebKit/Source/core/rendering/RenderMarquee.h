@@ -88,6 +88,8 @@ private:
 
     virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0) OVERRIDE FINAL;
 
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
+
     void timerFired(Timer<RenderMarquee>*);
 
     int m_currentLoop;

@@ -41,6 +41,8 @@ private:
 
     virtual bool isRenderSVGBlock() const OVERRIDE FINAL { return true; };
 
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
+
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const OVERRIDE FINAL;
 
     virtual void styleWillChange(StyleDifference, const RenderStyle* newStyle) OVERRIDE FINAL;

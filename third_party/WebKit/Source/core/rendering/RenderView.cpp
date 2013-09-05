@@ -120,8 +120,13 @@ void RenderView::layoutContent(const LayoutState& state)
     ASSERT(needsLayout());
 
     RenderBlock::layout();
+
+    if (m_frameView->partialLayout().isStopping())
+        return;
+
     if (hasRenderNamedFlowThreads())
         flowThreadController()->layoutRenderNamedFlowThreads();
+
 #ifndef NDEBUG
     checkLayoutState(state);
 #endif
@@ -212,6 +217,11 @@ bool RenderView::initializeLayoutState(LayoutState& state)
 // as detected in the previous step.
 void RenderView::layoutContentInAutoLogicalHeightRegions(const LayoutState& state)
 {
+    if (!m_frameView->partialLayout().isStopping()) {
+        // Disable partial layout for any two-pass layout algorithm.
+        m_frameView->partialLayout().reset();
+    }
+
     // We need to invalidate all the flows with auto-height regions if one such flow needs layout.
     // If none is found we do a layout a check back again afterwards.
     if (!flowThreadController()->updateFlowThreadsNeedingLayout()) {
@@ -279,6 +289,11 @@ void RenderView::layout()
         layoutContentInAutoLogicalHeightRegions(state);
     else
         layoutContent(state);
+
+    if (m_frameView->partialLayout().isStopping()) {
+        m_layoutState = 0;
+        return;
+    }
 
 #ifndef NDEBUG
     checkLayoutState(state);

@@ -30,6 +30,9 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # this test will always fail.
 [ Linux Win ] fast/events/option-tab.html [ WontFix ]
 
+# This test only applies to overlay scrollbar platforms.
+[ SnowLeopard Win Linux ] fast/dom/partial-layout-overlay-scrollbars.html [ WontFix ]
+
 # <progress> on Mac is always animated. So it's hard to get a reliable pixel result.
 [ Mac ] fast/dom/HTMLProgressElement/progress-element.html [ WontFix ]
 

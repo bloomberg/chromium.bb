@@ -66,6 +66,8 @@ private:
 
     virtual void computePreferredLogicalWidths();
 
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
+
     void layoutHorizontalPart();
     void layoutVerticalPart();
 

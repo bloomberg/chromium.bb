@@ -47,6 +47,7 @@ public:
 
 private:
     RenderFullScreen();
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
     virtual void willBeDestroyed();
 
 protected:

@@ -39,6 +39,7 @@ public:
     }
 private:
     virtual bool isRenderFullScreenPlaceholder() const { return true; }
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
     virtual void willBeDestroyed();
     RenderFullScreen* m_owner;
 };

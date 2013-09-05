@@ -40,6 +40,7 @@ public:
 
 private:
     virtual void layout();
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 };
 
 

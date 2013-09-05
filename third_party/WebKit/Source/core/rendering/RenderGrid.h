@@ -92,6 +92,8 @@ private:
 
     void layoutGridItems();
 
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
+
     typedef LayoutUnit (RenderGrid::* SizingFunction)(RenderBox*, TrackSizingDirection, Vector<GridTrack>&);
     typedef LayoutUnit (GridTrack::* AccumulatorGetter)() const;
     typedef void (GridTrack::* AccumulatorGrowFunction)(LayoutUnit);

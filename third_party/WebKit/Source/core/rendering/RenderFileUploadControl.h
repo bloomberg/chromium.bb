@@ -52,6 +52,8 @@ private:
 
     virtual bool requiresForcedStyleRecalcPropagation() const { return true; }
 
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
+
     int maxFilenameWidth() const;
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE FINAL;

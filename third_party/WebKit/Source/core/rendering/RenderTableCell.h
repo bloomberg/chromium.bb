@@ -121,6 +121,8 @@ public:
 
     virtual void layout();
 
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
+
     virtual void paint(PaintInfo&, const LayoutPoint&);
 
     void paintCollapsedBorders(PaintInfo&, const LayoutPoint&);

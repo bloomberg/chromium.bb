@@ -68,6 +68,8 @@ private:
 
     virtual void layout();
 
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
+
     void positionListMarker();
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);

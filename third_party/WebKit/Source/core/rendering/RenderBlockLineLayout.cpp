@@ -2154,7 +2154,7 @@ void RenderBlock::layoutInlineChildren(bool relayoutChildren, LayoutUnit& repain
         }
 
         for (size_t i = 0; i < replacedChildren.size(); i++)
-             replacedChildren[i]->layoutIfNeeded();
+            replacedChildren[i]->layoutIfNeeded();
 
         layoutRunsAndFloats(layoutState, hasInlineChild);
     }

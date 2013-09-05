@@ -40,6 +40,8 @@ private:
     virtual void updateLogicalWidth() OVERRIDE;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
 
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
+
     virtual const char* renderName() const { return "RenderMeter"; }
     virtual bool isMeter() const { return true; }
     virtual bool requiresForcedStyleRecalcPropagation() const { return true; }

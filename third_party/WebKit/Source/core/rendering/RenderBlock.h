@@ -498,6 +498,8 @@ protected:
     void layoutPositionedObjects(bool relayoutChildren, bool fixedPositionObjectsOnly = false);
     void markFixedPositionObjectForLayoutIfNeeded(RenderObject* child, SubtreeLayoutScope&);
 
+    virtual bool supportsPartialLayout() const OVERRIDE { return true; };
+
     virtual void paint(PaintInfo&, const LayoutPoint&);
     virtual void paintObject(PaintInfo&, const LayoutPoint&);
     virtual void paintChildren(PaintInfo&, const LayoutPoint&);

@@ -164,6 +164,7 @@ private:
     virtual void willBeRemovedFromTree() OVERRIDE;
 
     virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0) OVERRIDE;
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
     virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
     virtual void installFlowThread();

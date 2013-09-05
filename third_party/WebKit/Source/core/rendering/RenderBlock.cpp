@@ -1386,6 +1386,9 @@ void RenderBlock::layout()
     // layoutBlock().
     layoutBlock(false);
 
+    if (frameView()->partialLayout().isStopping())
+        return;
+
     // It's safe to check for control clip here, since controls can never be table cells.
     // If we have a lightweight clip, there can never be any overflow from children.
     if (hasControlClip() && m_overflow)
@@ -1596,6 +1599,11 @@ void RenderBlock::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeigh
     else
         layoutBlockChildren(relayoutChildren, maxFloatLogicalBottom, layoutScope);
 
+    if (frameView()->partialLayout().isStopping()) {
+        statePusher.pop();
+        return;
+    }
+
     // Expand our intrinsic height to encompass floats.
     LayoutUnit toAdd = borderAfter() + paddingAfter() + scrollbarLogicalHeight();
     if (lowestFloatLogicalBottom() > (logicalHeight() - toAdd) && expandsToEncloseOverhangingFloats())
@@ -1642,6 +1650,9 @@ void RenderBlock::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeigh
     statePusher.pop();
 
     fitBorderToLinesIfNeeded();
+
+    if (frameView()->partialLayout().isStopping())
+        return;
 
     if (renderView->layoutState()->m_pageLogicalHeight)
         setPageLogicalOffset(renderView->layoutState()->pageLogicalOffset(this, logicalTop()));
@@ -2515,6 +2526,10 @@ void RenderBlock::layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloa
 
         // Lay out the child.
         layoutBlockChild(child, marginInfo, previousFloatLogicalBottom, maxFloatLogicalBottom);
+
+        // If doing a partial layout and the child was the target renderer, early exit here.
+        if (frameView()->partialLayout().checkPartialLayoutComplete(child))
+            break;
     }
 
     // Now do the handling of the bottom of the block, adding in our bottom border/padding and
@@ -2579,6 +2594,9 @@ void RenderBlock::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo, Lay
     bool childNeededLayout = child->needsLayout();
     if (childNeededLayout)
         child->layout();
+
+    if (frameView()->partialLayout().isStopping())
+        return;
 
     // Cache if we are at the top of the block right now.
     bool atBeforeSideOfBlock = marginInfo.atBeforeSideOfBlock();

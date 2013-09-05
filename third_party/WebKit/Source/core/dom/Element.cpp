@@ -569,7 +569,7 @@ static int adjustForLocalZoom(LayoutUnit value, RenderObject* renderer)
 
 int Element::offsetLeft()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().partialUpdateLayoutIgnorePendingStylesheets(this);
     if (RenderBoxModelObject* renderer = renderBoxModelObject())
         return adjustForLocalZoom(renderer->pixelSnappedOffsetLeft(), renderer);
     return 0;
@@ -577,7 +577,7 @@ int Element::offsetLeft()
 
 int Element::offsetTop()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().partialUpdateLayoutIgnorePendingStylesheets(this);
     if (RenderBoxModelObject* renderer = renderBoxModelObject())
         return adjustForLocalZoom(renderer->pixelSnappedOffsetTop(), renderer);
     return 0;
@@ -592,7 +592,7 @@ int Element::offsetWidth()
             return adjustLayoutUnitForAbsoluteZoom(renderer->fixedOffsetWidth(), renderer).round();
     }
 
-    document().updateLayoutIgnorePendingStylesheets();
+    document().partialUpdateLayoutIgnorePendingStylesheets(this);
     if (RenderBoxModelObject* renderer = renderBoxModelObject())
         return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedOffsetWidth(), renderer).round();
     return 0;
@@ -600,7 +600,7 @@ int Element::offsetWidth()
 
 int Element::offsetHeight()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().partialUpdateLayoutIgnorePendingStylesheets(this);
     if (RenderBoxModelObject* renderer = renderBoxModelObject())
         return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedOffsetHeight(), renderer).round();
     return 0;

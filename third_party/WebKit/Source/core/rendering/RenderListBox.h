@@ -81,6 +81,8 @@ private:
 
     virtual void layout();
 
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
+
     virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer = 0) OVERRIDE;
 
     virtual bool canBeProgramaticallyScrolled() const { return true; }

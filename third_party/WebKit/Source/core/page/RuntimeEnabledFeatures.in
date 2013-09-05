@@ -66,6 +66,7 @@ MediaStream status=stable
 Notifications status=stable
 ObjectFitPosition status=experimental
 PagePopup status=stable
+PartialLayout status=experimental
 PathOpsSVGClipping
 PeerConnection depends_on=MediaStream, status=stable
 ProgrammaticScrollNotifications status=test

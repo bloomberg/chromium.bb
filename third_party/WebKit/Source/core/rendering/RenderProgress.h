@@ -45,6 +45,7 @@ private:
     virtual const char* renderName() const { return "RenderProgress"; }
     virtual bool isProgress() const { return true; }
     virtual bool requiresForcedStyleRecalcPropagation() const { return true; }
+    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
     virtual bool canBeReplacedWithInlineRunIn() const OVERRIDE;
 
     void animationTimerFired(Timer<RenderProgress>*);
