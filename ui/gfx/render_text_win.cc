@@ -684,7 +684,6 @@ void RenderTextWin::LayoutTextRun(internal::TextRun* run) {
   // in the case where no font is able to display the entire run.
   int best_partial_font_missing_char_count = INT_MAX;
   Font best_partial_font = original_font;
-  bool using_best_partial_font = false;
   Font current_font;
 
   run->logical_clusters.reset(new WORD[run_length]);
