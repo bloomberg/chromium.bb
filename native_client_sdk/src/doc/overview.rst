@@ -12,364 +12,222 @@ Technical Overview
 Introduction
 ============
 
-**Native Client** is an open-source technology for running native compiled code
-in the browser, with the goal of maintaining the OS portability and safety
-that people expect from web apps. Native Client expands web programming
-beyond JavaScript, enabling developers to enhance their web applications
-using their preferred language. This document describes a few of the key
-benefits of Native Client, as well as current limitations, common use cases,
-and tips for getting started with Native Client.
+**Native Client** (NaCl) is an open-source technology for running native
+applications in the browser, with the goal of maintaining the portability
+and safety that people expect from web applications. Native Client expands web
+programming beyond JavaScript, enabling developers to enhance their web
+applications using their preferred language. This document describes a few of
+the key benefits of Native Client, as well as current limitations and common use
+cases.
 
-Google has implemented the open-source
-`Native Client project <http://www.chromium.org/nativeclient>`_ in the Chrome
-browser on Windows, Mac, Linux, and Chrome OS. The **Native Client Software
-Development Kit (SDK)**, itself an open-source project, lets developers create
-web applications that use Native Client and run in Chrome across OS
-platforms. In addition to software libraries, the SDK includes a toolchain
-tailored to generate executable Native Client code, as well as a variety of
-code examples and documentation.
+Google has implemented the open-source `Native Client project
+<http://www.chromium.org/nativeclient>`_ in the Chrome browser on Windows, Mac,
+Linux, and Chrome OS. The :doc:`Native Client Software Development Kit (SDK)
+<sdk/index>`, itself an open-source project, lets developers create web
+applications that use NaCl and run in Chrome across OS platforms.
 
-A web application that uses Native Client generally consists of a combination
-of JavaScript, HTML, CSS, and a Native Client module that is written in a
-language supported by a Native Client compiler. The Native Client SDK
-currently supports C and C++. As compilers for additional languages are
-developed, the SDK will be updated to support those languages as well.
+A web application that uses NaCl generally consists of a combination of
+JavaScript, HTML, CSS, and a NaCl module that is written in a language supported
+by the SDK. The NaCl SDK currently supports C and C++. As compilers for
+additional languages are developed, the SDK will be updated to support those
+languages as well.
 
-.. image:: /images/NaclBlock.png
+.. image:: /images/web-app-with-nacl.png
 
 Why use Native Client?
 ======================
 
-The Native Client open-source technology is designed to run native compiled
-code securely inside browsers. Native Client puts web applications on the same
-playing field as local applications, providing the raw speed needed to compete
-with traditional software like 3D games, video editing, and other applications.
-Native Client also gives languages like C and C++ (and eventually others as
-well) the same level of portability and safety that JavaScript provides on the
-web today.
+The Native Client open-source technology is designed to run compiled code
+securely inside a browser at near-native speeds. Native Client puts web
+applications on the same playing field as traditional (locally-run) software; it
+provides the means to fully harness the system's computational resources for
+applications like 3D games and multimedia editors. Native Client also aims to
+give C and C++ (and eventually other languages) the same level of portability
+and safety that JavaScript provides on the web today.
 
 Here are some of the key features that Native Client offers:
 
 * **Graphics, audio, and much more:** Run native code modules that render 2D
   and 3D graphics, play audio, respond to mouse and keyboard events, run on
   multiple threads, and access memory directly---all without requiring
-  the user to install a plug-in.
-* **Portability:** Write your apps once and you'll be able to run them on
-  Windows, Linux, Mac, and Chrome OS.
-* **Security:** Installing a desktop app or a browser plug-in can present
-  serious security risks and deter potential users. Native Client uses a
-  double sandbox designed to protect resources on the user's system. This
-  framework offers the safety of traditional web apps in addition to the
-  performance benefits of native compiled code, without requiring users to
-  install a plug-in.
-* **Easy migration path to the web:** Many developers and companies have
-  years of work invested in existing desktop applications. Native Client
-  makes the transition from desktop app to web app significantly easier
-  because Native Client supports C and C++ (and will continue to add more
-  languages).
-* **Performance:** Native Client allows your app to run at a speed comparable
-  to a desktop app. This capability enables demanding applications such as
-  console-quality games to run inside the browser.
+  the user to install a plugin.
+* **Portability:** Write your applications once and you'll be able to run them
+  across operating systems (Windows, Linux, Mac, and Chrome OS) and CPU
+  architectures (x86, ARM).
+* **Easy migration path to the web:** Many developers and companies have years
+  of work invested in existing desktop applications. Native Client makes the
+  transition from the desktop to a web application significantly easier because
+  it supports C and C++.
+* **Security:** Native Client uses a double sandbox model designed to protect
+  the user's system from malicious or buggy applications. This model offers the
+  safety of traditional web applications without sacrificing performance and
+  without requiring users to install a plugin.
+* **Performance:** Native Client allows your application to run at a speed
+  comparable to a desktop app (within 5-15% of native speed); it also allows
+  harnessing all available CPU cores via a threading API. This capability
+  enables demanding applications such as console-quality games to run inside the
+  browser.
 
 Common use cases
 ================
 
-Native Client enables you to extend web apps running in the browser with custom
-features and proprietary code. Typical use cases for Native Client include the
-following:
+Typical use cases for Native Client include the following:
 
-* **Existing software components:** With its native language support
-  (currently C and C++), Native Client enables you to reuse current software
-  modules in a web app---you don't need to spend time reinventing and debugging
-  code that's already proven to work well.
+* **Existing software components:** With its C and C++ language support, Native
+  Client enables you to reuse current software modules in a web
+  application---you don't need to spend time reinventing and debugging code
+  that's already proven to work well.
 * **Legacy desktop applications:** Native Client provides a smooth migration
-  path from desktop application to web app. You can port and recompile
-  existing code for the computation engine of your application directly to
-  Native Client, and need repurpose only the user interface and event
-  handling portions to the new browser platform. Native Client allows you to
-  embed existing functionality directly into the browser at the same time
-  your application takes advantage of things the browser does well: handling
-  user interaction and processing events, based on the latest developments in
-  HTML5.
+  path from desktop applications to the web. You can port and recompile existing
+  code for the computation engine of your application directly to Native Client,
+  and need repurpose only the user interface and event handling portions to the
+  new browser platform. Native Client allows you to embed existing functionality
+  directly into the browser. At the same time, your application takes advantage
+  of things the browser does well: handling user interaction and processing
+  events, based on the latest developments in HTML5.
 * **Enterprise applications that require heavy computation:** Native Client
-  handles the number crunching required by large-scale enterprise apps. To
-  ensure protection of user data, Native Client enables you to build complex
+  handles the number crunching required by large-scale enterprise applications.
+  To ensure protection of user data, Native Client enables you to build complex
   cryptographic algorithms directly into the browser so that unencrypted data
   never goes out over the network.
-* **Multimedia apps:** Codecs for processing sounds, images, and movies can
-  be added to the browser in a Native Client web app.
-* **Games:** Native Client enables a web app to run close to native speed,
-  reusing existing multithreaded/multicore C/C++ code bases, combined with
-  low-level access to low-latency audio and (coming soon) networking APIs and
-  OpenGL ES with programmable shaders. Programming to Native Client also
-  enables your binary to run unchanged across many platforms. Native Client
-  is a natural fit for running a physics engine or artificial intelligence
-  module that powers a sophisticated web game.
-
-Compiling existing native code for your app helps protect the investment you've
-made in research and development. In addition to the protection offered by
-Native Client compile-time restrictions, users benefit from the security
-offered by its runtime validator. The validator decodes modules and limits the
-instructions that can run in the browser, and the sandboxed environment proxies
-system calls Users can run Native Client apps without installing a new
-application or a browser plug-in, and you can update your app without requiring
-user intervention.
-
-Current limitations
-===================
-
-Native Client currently has the following limitations:
-
-* no support for hardware exceptions
-* no support for process creation / subprocesses
-* no support for raw TCP/UDP sockets (analogous versions---websockets for TCP
-  and peer connect for UDP---are in the works and will be available soon)
-* no support for query to available memory
-* inline assembly must be compatible with the Native Client validator (you
-  can use the ncval utility in the SDK to check)
-
-Some of these limitations are required to execute code safely in a browser. To
-understand the reasons for these limitations read the `Google Chrome technical
-booklet <http://www.google.com/googlebooks/chrome/index.html>`_ and the `Native
-Client technical paper
-<http://src.chromium.org/viewvc/native_client/data/docs_tarball/nacl/googleclient/native_client/documentation/nacl_paper.pdf>`_
-(PDF).
+* **Multimedia applications:** Codecs for processing sounds, images, and movies
+  can be added to the browser in a Native Client module.
+* **Games:** Native Client enables a web application to run close to native
+  speed, reusing existing multithreaded/multicore C/C++ code bases, combined
+  with low-level access to low-latency audio, networking APIs and OpenGL ES with
+  programmable shaders. Programming to Native Client also enables your binary to
+  run unchanged across many platforms. Native Client is a natural fit for
+  running a physics engine or artificial intelligence module that powers a
+  sophisticated web game.
+* **Any application that requires acceleration**: Native Client fits seamlessly
+  into any web application, so it is up to the developer to decide to what
+  extent to utilize it. Native Client usage covers the full spectrum from
+  complete applications to small optimized routines that accelerate vital parts
+  of traditional web applications.
 
 How Native Client works
 =======================
 
-In order to be safe and portable for the web, the executable native code that
-is produced must be sandbox-safe. More specifically, it cannot cause any
-malicious or harmful effects on an end-user's machine. Native Client achieves
-this security through a number of techniques, including API restrictions and
-use of a modified compilation process.
+Native Client is an umbrella name for a set of interrelated software components
+that work together to provide a way to develop C/C++ applications and run them
+securely on the web.
 
-Even though it provides software-based fault isolation on the x86 architecture,
-Native Client still maintains the speed of native code---or thereabout. As of
-current timings, the Native Client sandbox adds only about 5% overhead, which
-makes it possible to do serious rendering and serious number-crunching in the
-browser without a big performance hit.
+At a high level, Native Client consists of:
 
-A compiled Native Client module (.nexe file) is loaded into a web page through
-an <embed> element. Once uploaded to a server, the .html page and the .nexe
-file(s) define a web application.
+* **Toolchains**: collections of development tools (compilers, linkers, etc.)
+  that transform C/C++ code to Native Client modules.
+* **Runtime components**: embedded in the browser (or another host platform),
+  that allow to execute Native Client modules securely and efficiently.
 
-To the Native Client runtime system, a Native Client module is simply a set of
-machine code, formatted to adhere to a few special rules. No matter whether the
-code starts out as C or C++ or any other language, the Native Client runtime
-system performs the steps shown in the following figure:
+The following diagram shows how these components interact:
 
-.. image:: /images/NaClExecution.png
+.. image:: /images/nacl-pnacl-component-diagram.png
 
-To ensure that system resources are untouched, the Native Client runtime system
-prevents the following unsafe activities:
+Native Client executables and sandbox
+-------------------------------------
 
-* Manipulating devices or files directly (instead, a special file system API
-  is provided)
-* Directly accessing the operating system
-* Using self-modifying code to hide the code's intent (such as attempts to
-  write to protected memory)
+Since Native Client permits executing native code on the client's machine,
+special security measures have to be implemented. The security is achieved
+through the following means:
 
-Salt & Pepper
--------------
+* The NaCl sandbox ensures that code accesses system resources only through
+  safe, whitelisted APIs, and operates within its limits without attempting to
+  interfere with other code running within the browser or outside it.
+* The NaCl validator is used prior to running native code to statically analyze
+  the code and make sure it only uses allowed and safe code and data patterns.
 
-Native Client product names follow a salt & pepper theme. Native Client,
-abbreviated to **NaCl**, started the salt & pepper naming theme.
+These come in addition to the existing sandbox in the browser---the Native
+Client module always executes within a process with restricted permissions. The
+only interaction of this process with the outside world is through sanctioned
+browser interfaces. For this reason, we say that Native Client employs a *double
+sandbox* design.
 
-The Pepper Plug-in API (PPAPI), called **Pepper** for convenience, is an
-open-source, cross-platform API for web browser plug-ins. From the point of
-view of Native Client, Pepper is a set of APIs that allow a C or C++ Native
-Client module to communicate with the hosting browser and get access to
-system-level functions in a safe and portable way. One of the security
-constraints in Native Client is that modules cannot make any OS-level calls.
-Pepper provides analogous APIs that modules can target instead. You can use the
-Pepper APIs to:
+PNaCl and NaCl
+--------------
 
-* `talk to the JavaScript code in your application
-  <https://developers.google.com/native-client/devguide/coding/message-system>`_
-  from the C++ code in your NaCl module
-* `do FileIO
-  <https://developers.google.com/native-client/devguide/coding/FileIO>`_
-* `play audio
-  <https://developers.google.com/native-client/devguide/coding/audio>`_
-* `render 3D graphics
-  <https://developers.google.com/native-client/devguide/coding/3D-graphics>`_
+*PNaCl* (Portable Native Client) employs state-of-the-art compiler technology to
+compile C/C++ source code to a portable bitcode executable (**pexe**). PNaCl
+bitcode is an OS- and architecture-independent format that can be freely
+distributed on the web and :ref:`embedded in web
+applications<link_nacl_in_web_apps>`.
 
-The figure below illustrates how Pepper serves as a bridge between Native
-Client modules and the browser:
+The *PNaCl translator* is a component embedded in the web browser; its task is
+to run a **pexe**. Internally, the translator compiles a **pexe** to a **nexe**
+(a native executable for the host platform's architecture) and then executes it
+within the Native Client sandbox as described above. It also uses intelligent
+caching to avoid this compilation if this **pexe** was already compiled on the
+client's browser.
 
-.. image:: /images/pepper.jpg
+Native Client also supports running a **nexe** directly in the browser. However,
+since a **nexe** contains architecture-specific machine code, distributing
+**nexe** modules on the open web is not allowed. **nexe** modules can only be
+used as part of applications that are installed from the Chrome Web Store and in
+browser extensions.
 
-Pepper includes both a C API and a C++ API. The C++ API is a set of bindings
-written on top of the C API. You can access reference documentation for both
-the C API and the C++ API through the left-nav on this site. For additional
-information about Pepper, see `Pepper Concepts
-<http://code.google.com/p/ppapi/wiki/Concepts>`_.
+Toolchains
+----------
 
-Application Structure
-=====================
+A *toolchain* is a set of tools used to create an application from a set of
+source files. In the case of Native Client, a toolchain consists of a compiler,
+linker, assembler and other tools that are used by the developer to convert an
+application written in C/C++ into a module loadable by the browser.
 
-A Native Client application is divided into three main parts:
+The Native Client SDK provides two toolchains:
 
-* **HTML/JavaScript application:** Provides the user interface and event
-  handling mechanisms as well as the main HTML document; can perform
-  computation as well.
-* **Pepper API:** Enables the JavaScript code and the Native Client module to
-  send messages to each other, and provides interfaces that allow Native
-  Client modules to create and use browser resources.
-* **Native Client module:** Typically, performs numerical computation and
-  other compute-intensive tasks. Handles large-scale data manipulation. Also
-  provides event handling APIs for apps such as games where the user interface
-  is integrated into the code that is run natively.
+* A PNaCl toolchain for generating portable NaCl modules (**pexe**).
+* A gcc-based toolchain (**nacl-gcc**) for generating native NaCl modules
+  (**nexe**).
 
-The following diagram shows how Pepper provides the bridge between the Native
-Client module's code and the browser's JavaScript:
+For most applications, the PNaCl toolchain is recommended. The **nacl-gcc**
+toolchain should only be used if the application will not be available on the
+open web.
 
-.. image:: /images/ProgramStructure.png
-   :align: center
-   :alt: Program Structure
+.. _link_nacl_in_web_apps:
 
-Files in a Native Client application
-------------------------------------
+Native Client in a web application
+==================================
 
 A Native Client application consists of a set of files:
 
-* The **HTML web page**, **CSS**, and **JavaScript** files. Most Native Client
-  apps contain at least an HTML document, optional CSS for styling of the web
-  page, and one or more supporting JavaScript files for user interface
-  objects, event handling, and simple programming tasks and calculations
-  suitable for the JavaScript layer.
-* The **Native Client module**. This module contains the native compiled
-  code, and uses the Pepper Library (included in the SDK), which provides the
-  bridge between the Native Client module and JavaScript and browser
-  resources. Currently, the SDK supports the C and C++ languages for Native
-  Client modules. When compiled, the extension for this filename is
-  *.nexe*.
-* A **manifest** file that specifies modules to load for different
-  processors. This file includes a set of key-value pairs, where a key is the
-  end-user's processor (for example, x86-32, x86-64, or ARM) and the
-  corresponding value is the URL of the module compiled for that processor.
-  The extension for this filename is *.nmf*.
+* **HTML web page**, **CSS**, and **JavaScript** files, as in any modern web
+  application. The JavaScript is also responsible for communicating with the
+  NaCl module.
+* The **pexe** (portable NaCl module). This module uses the :ref:`Pepper
+  <link_pepper>` API, which provides the bridge to JavaScript and
+  browser resources.
+* A **manifest** file that specifies the **pexe** to load with some loading
+  options. This manifest file is embedded into the HTML page through an
+  ``<embed>`` tag.
 
-HTML file
-^^^^^^^^^
+.. image:: /images/nacl-in-a-web-app.png
 
-The HTML file contains the ``<embed>`` tag that loads the Native Client module.
-For example::
+For more details, see TODO (link to example walk-through).
 
-   <embed name="nacl_module"
-          id="hello_world"
-          width=0 height=0
-          src="hello_world.nmf"
-          type="application/x-nacl">
+.. _link_pepper:
 
-The mimetype for a Native Client module, specified in the ``type`` attribute, is
-``application/x-nacl``.
+Pepper Plugin API
+-----------------
 
-Native Client modules are operating system independent, but they are not (yet)
-processor independent. Therefore, you must compile separate versions of a Native
-Client module for x86 32-bit, x86 64-bit, ARM, and other processors. The
-manifest file, specified in the ``src`` attribute of the ``<embed>``
-tag, specifies which version of the Native Client module to load depending on
-the end-user's processor.
+The Pepper Plugin API (PPAPI), called **Pepper** for convenience, is an
+open-source, cross-platform C/C++ API for web browser plugins. From the point
+of view of NaCl, Pepper allows a C/C++ NaCl module to communicate with the
+hosting browser and get access to system-level functions in a safe and portable
+way. One of the security constraints in NaCl is that modules cannot make any
+OS-level calls directly. Pepper provides analogous APIs that modules can target
+instead.
 
-Native Client module
-^^^^^^^^^^^^^^^^^^^^
+You can use the Pepper APIs to gain access to the full array of browser
+capabilities, including:
 
-You can write a Native Client module in C or C++, and use existing libraries
-and modules compatible with that language. After you've implemented your
-functions in the module, you can use the Pepper API to pass messages to and
-receive messages from the JavaScript/browser side of the application.
+* :doc:`Talk to the JavaScript code in your application
+  <devguide/coding/message-system>` from the C++ code in your NaCl module.
+* :doc:`Do file I/O <devguide/coding/FileIO>`.
+* :doc:`Play audio <devguide/coding/audio>`.
+* :doc:`Render 3D graphics <devguide/coding/3D-graphics>`.
 
-
-Creating a Native Client application
-====================================
-
-Native Client is extremely flexible, allowing for numerous ways to develop an
-application. The following is one of the more common approaches:
-
-1. :doc:`Download <sdk/download>` the Native Client SDK. You may also need to
-   download and install Python, which is required to run a number of tools in
-   the SDK.
-2. Write the application:
-
-   a. Create a user interface using HTML, JavaScript, and CSS.
-   b. If necessary, port existing libraries to compile with your Native Client
-      module. If you find yourself missing a common library, have a look at
-      `NaCl ports <http://code.google.com/p/naclports>`_, a repository for open
-      source libraries. Contributions are welcome.
-   c. Create the Native Client module and `build
-      <https://developers.google.com/native-client/devguide/devcycle/building>`_
-      it using one of the NaCl toolchains in the SDK.
-3. `Run
-   <https://developers.google.com/native-client/devguide/devcycle/running>`_ the
-   application.
-4. `Distribute
-   <https://developers.google.com/native-client/devguide/distributing>`_ the
-   application.
-
-For detailed, step-by-step instructions on how to create a Native Client
-application, see the `Getting Started Tutorial
-<https://developers.google.com/native-client/devguide/tutorial>`_. The tutorial
-includes a basic set of template files that you can modify for your project.
-
-Using existing code
-===================
-
-The Native Client SDK comes with a modified version of the GNU toolchain
-(including GCC and G++) that produces sandbox-safe native code to be run in the
-browser. This opens the browser to 3D games, video editing, and other
-applications that can be moved to the web with relatively little effort. Some
-work is required, however, to keep code safe for execution on the web. For
-instance, OS-level calls must be redirected to target the Pepper API, and there
-are also restrictions on how file IO and threading operations work.
-
-Distributing a Native Client application
-========================================
-
-The Chrome browser only runs Native Client applications published through the
-`Chrome Web Store
-<https://chrome.google.com/webstore/search/%22native%20client%22%20OR%20nativeclient%20OR%20nacl>`_
-(CWS). To distribute an application, you must compile the application for both
-the 32-bit and 64-bit x86 architectures, and publish the application in the
-CWS.
-
-Native Client has not been standardized yet, and currently it requires
-compilation for specific instruction set architectures. Google only allows
-Native Client applications into the CWS if the applications are available for
-both 32-bit and 64-bit x86 architectures; developers are also strongly
-encouraged to provide a build for the ARM architecture. The intent behind the
-current policy of requiring applications to be compiled for multiple
-architectures is not to bake one instruction set into the web, and to make sure
-that future architectures are supported as well.
-
-Note that this is only a temporary requirement: The ultimate plan is to create
-a new version of Native Client executables that can run on any processor. This
-new Native Client technology is called Portable Native Client (PNaCl,
-pronounced "pinnacle"), and it is already under development. Instead of
-generating x86 code or ARM code, PNaCl transforms high-level code into bitcode
-using a compiler based on the open source LLVM (low-level virtual machine)
-project. When the browser downloads the bitcode, PNaCl then translates it to
-native machine code and validates it in the same way Native Client validates
-machine code today.
-
-PNaCl could potentially give Native Client the same reach as JavaScript, but
-there are still hurdles to overcome. Part of the problem is that PNaCl has more
-overhead. Currently PNaCl can execute much faster than JavaScript, but it does
-not yet start up as quickly. Before officially launching PNaCl, Google wants to
-make sure to close that gap.
-
-The Native Client SDK
-=====================
-
-The Native Client SDK includes the following:
-
-* GNU-based toolchains: gcc, g++, as, ld, gdb, and other tools customized for
-  Native Client
-* API libraries (Pepper, POSIX)
-* Makefiles for building Native Client applications
-* Examples
-* Documentation
+Pepper includes both a C API and a C++ API. The C++ API is a set of bindings
+written on top of the C API. For additional information about Pepper, see
+`Pepper Concepts <http://code.google.com/p/ppapi/wiki/Concepts>`_.
 
 Versioning
 ==========
@@ -383,3 +241,11 @@ work with subsequent versions of Pepper/Chrome. The SDK includes multiple
 `versions <https://developers.google.com/native-client/version>`_ of the Pepper
 APIs to help developers make adjustments to API changes and take advantage of
 new features.
+
+Where to go next
+================
+
+The :doc:`quick start <quick-start>` document provides links to downloads and
+documentation that should help you get started with developing and distributing
+NaCl applications.
+
