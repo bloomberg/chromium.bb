@@ -120,14 +120,14 @@ class ReplayServer(object):
 
   def _AddDefaultReplayOptions(self):
     """Set WPR command-line options. Can be overridden if needed."""
-    self.replay_options += [
+    self.replay_options = [
         '--host', str(self._replay_host),
         '--port', str(self._http_port),
         '--ssl_port', str(self._https_port),
         '--use_closest_match',
         '--no-dns_forwarding',
         '--log_level', 'warning'
-        ]
+        ] + self.replay_options
 
   def _CheckPath(self, label, path):
     if not os.path.exists(path):
