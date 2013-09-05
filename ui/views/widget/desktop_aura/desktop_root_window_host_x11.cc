@@ -32,7 +32,6 @@
 #include "ui/views/corewm/cursor_manager.h"
 #include "ui/views/corewm/focus_controller.h"
 #include "ui/views/ime/input_method.h"
-#include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
@@ -128,10 +127,8 @@ DesktopRootWindowHostX11::DesktopRootWindowHostX11(
 
 DesktopRootWindowHostX11::~DesktopRootWindowHostX11() {
   root_window_->ClearProperty(kHostForRootWindow);
-  if (corewm::UseFocusControllerOnDesktop()) {
-    aura::client::SetFocusClient(root_window_, NULL);
-    aura::client::SetActivationClient(root_window_, NULL);
-  }
+  aura::client::SetFocusClient(root_window_, NULL);
+  aura::client::SetActivationClient(root_window_, NULL);
 }
 
 // static
@@ -896,18 +893,12 @@ aura::RootWindow* DesktopRootWindowHostX11::InitRootWindow(
   // messages to us.
   X11DesktopHandler::get();
 
-  if (corewm::UseFocusControllerOnDesktop()) {
-    corewm::FocusController* focus_controller =
-        new corewm::FocusController(new DesktopFocusRules);
-    focus_client_.reset(focus_controller);
-    aura::client::SetFocusClient(root_window_, focus_controller);
-    aura::client::SetActivationClient(root_window_, focus_controller);
-    root_window_->AddPreTargetHandler(focus_controller);
-  } else {
-    focus_client_.reset(new aura::FocusManager);
-    aura::client::SetFocusClient(root_window_, focus_client_.get());
-    activation_client_.reset(new DesktopActivationClient(root_window_));
-  }
+  corewm::FocusController* focus_controller =
+      new corewm::FocusController(new DesktopFocusRules);
+  focus_client_.reset(focus_controller);
+  aura::client::SetFocusClient(root_window_, focus_controller);
+  aura::client::SetActivationClient(root_window_, focus_controller);
+  root_window_->AddPreTargetHandler(focus_controller);
 
   dispatcher_client_.reset(new DesktopDispatcherClient);
   aura::client::SetDispatcherClient(root_window_,
@@ -936,8 +927,7 @@ aura::RootWindow* DesktopRootWindowHostX11::InitRootWindow(
   aura::client::SetDragDropClient(root_window_, drag_drop_client_.get());
 
   // TODO(erg): Unify this code once the other consumer goes away.
-  x11_window_event_filter_.reset(
-      new X11WindowEventFilter(root_window_, activation_client_.get()));
+  x11_window_event_filter_.reset(new X11WindowEventFilter(root_window_));
   x11_window_event_filter_->SetUseHostWindowBorders(false);
   desktop_native_widget_aura_->root_window_event_filter()->AddHandler(
       x11_window_event_filter_.get());

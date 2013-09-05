@@ -16,7 +16,6 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
-#include "ash/wm/activation_controller.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
@@ -138,8 +137,6 @@ class WorkspaceControllerTest : public test::AshTestBase {
   }
 
  private:
-  scoped_ptr<ActivationController> activation_controller_;
-
   DISALLOW_COPY_AND_ASSIGN(WorkspaceControllerTest);
 };
 

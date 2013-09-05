@@ -39,11 +39,9 @@ typedef test::AshTestBase ShelfWidgetTest;
 
 // Launcher can't be activated on mouse click, but it is activable from
 // the focus cycler or as fallback.
-TEST_F(ShelfWidgetTest, ActivateAsFallback) {
-  // TODO(mtomasz): make this test work with the FocusController.
-  if (views::corewm::UseFocusController())
-    return;
-
+// TODO(mtomasz): make this test work with the FocusController.
+// crbug.com/285364.
+TEST_F(ShelfWidgetTest, DISABLED_ActivateAsFallback) {
   Launcher* launcher = Launcher::ForPrimaryDisplay();
   ShelfWidget* shelf_widget = launcher->shelf_widget();
   EXPECT_FALSE(shelf_widget->CanActivate());

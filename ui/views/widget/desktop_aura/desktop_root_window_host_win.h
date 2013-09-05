@@ -19,7 +19,6 @@ class ScreenPositionClient;
 }
 
 namespace views {
-class DesktopActivationClient;
 class DesktopCursorClient;
 class DesktopDispatcherClient;
 class DesktopDragDropClientWin;
@@ -215,8 +214,6 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   scoped_ptr<HWNDMessageHandler> message_handler_;
   scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
-  // Depends on focus_manager_.
-  scoped_ptr<DesktopActivationClient> activation_client_;
 
   // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura
   //             instead of providing this route back to Widget.

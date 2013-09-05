@@ -9,7 +9,6 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 
 #if !defined(OS_CHROMEOS)
 #include "ui/views/ime/input_method.h"

@@ -354,8 +354,6 @@
         'widget/aero_tooltip_manager.h',
         'widget/child_window_message_processor.cc',
         'widget/child_window_message_processor.h',
-        'widget/desktop_aura/desktop_activation_client.cc',
-        'widget/desktop_aura/desktop_activation_client.h',
         'widget/desktop_aura/desktop_cursor_loader_updater.h',
         'widget/desktop_aura/desktop_cursor_loader_updater_aurax11.cc',
         'widget/desktop_aura/desktop_cursor_loader_updater_aurax11.h',

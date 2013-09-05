@@ -154,12 +154,10 @@ void BaseLayoutManager::OnWindowBoundsChanged(aura::Window* window,
 
 void BaseLayoutManager::OnWindowActivated(aura::Window* gained_active,
                                           aura::Window* lost_active) {
-  if (views::corewm::UseFocusController()) {
-    if (gained_active && wm::IsWindowMinimized(gained_active) &&
-        !gained_active->IsVisible()) {
-      gained_active->Show();
-      DCHECK(!wm::IsWindowMinimized(gained_active));
-    }
+  if (gained_active && wm::IsWindowMinimized(gained_active) &&
+      !gained_active->IsVisible()) {
+    gained_active->Show();
+    DCHECK(!wm::IsWindowMinimized(gained_active));
   }
 }
 

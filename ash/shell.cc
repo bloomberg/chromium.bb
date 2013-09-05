@@ -42,9 +42,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/wm/activation_controller.h"
 #include "ash/wm/app_list_controller.h"
-#include "ash/wm/ash_activation_controller.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/ash_native_cursor_manager.h"
 #include "ash/wm/base_layout_manager.h"
@@ -322,10 +320,6 @@ Shell::~Shell() {
   display_controller_.reset();
   screen_position_controller_.reset();
 
-  // Delete the activation controller after other controllers and launcher
-  // because they might have registered ActivationChangeObserver.
-  activation_controller_.reset();
-
 #if defined(OS_CHROMEOS) && defined(USE_X11)
    if (display_change_observer_)
     output_configurator_->RemoveObserver(display_change_observer_.get());
@@ -482,22 +476,11 @@ void Shell::Init() {
   // initialized first by the ActivationController, but now that FocusController
   // no longer does this we need to do it explicitly.
   aura::Env::GetInstance();
-  if (views::corewm::UseFocusController()) {
-    views::corewm::FocusController* focus_controller =
-        new views::corewm::FocusController(new wm::AshFocusRules);
-    focus_client_.reset(focus_controller);
-    activation_client_ = focus_controller;
-    activation_client_->AddObserver(this);
-  } else {
-    focus_client_.reset(new aura::FocusManager);
-    activation_controller_.reset(
-        new internal::ActivationController(
-            focus_client_.get(),
-            new internal::AshActivationController));
-    activation_client_ = activation_controller_.get();
-    AddPreTargetHandler(activation_controller_.get());
-  }
-
+  views::corewm::FocusController* focus_controller =
+      new views::corewm::FocusController(new wm::AshFocusRules);
+  focus_client_.reset(focus_controller);
+  activation_client_ = focus_controller;
+  activation_client_->AddObserver(this);
   focus_cycler_.reset(new internal::FocusCycler());
 
   screen_position_controller_.reset(new internal::ScreenPositionController);
@@ -927,11 +910,9 @@ void Shell::InitRootWindowController(
   aura::client::SetFocusClient(root_window, focus_client_.get());
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window);
   aura::client::SetActivationClient(root_window, activation_client_);
-  if (views::corewm::UseFocusController()) {
-    views::corewm::FocusController* controller =
-        static_cast<views::corewm::FocusController*>(activation_client_);
-    root_window->AddPreTargetHandler(controller);
-  }
+  views::corewm::FocusController* focus_controller =
+      static_cast<views::corewm::FocusController*>(activation_client_);
+  root_window->AddPreTargetHandler(focus_controller);
   aura::client::SetVisibilityClient(root_window, visibility_controller_.get());
   aura::client::SetDragDropClient(root_window, drag_drop_controller_.get());
   aura::client::SetScreenPositionClient(root_window,

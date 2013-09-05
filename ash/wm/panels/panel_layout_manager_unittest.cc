@@ -446,8 +446,7 @@ TEST_F(PanelLayoutManagerTest, MultiplePanelCallout) {
   wm::ActivateWindow(w3.get());
   EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(w3.get()));
   w3.reset();
-  if (views::corewm::UseFocusController())
-    EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(w2.get()));
+  EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(w2.get()));
 }
 
 // Tests removing panels.

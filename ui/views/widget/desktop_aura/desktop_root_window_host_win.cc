@@ -29,7 +29,6 @@
 #include "ui/views/corewm/input_method_event_filter.h"
 #include "ui/views/corewm/window_animations.h"
 #include "ui/views/ime/input_method_bridge.h"
-#include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_win.h"
@@ -67,10 +66,8 @@ DesktopRootWindowHostWin::DesktopRootWindowHostWin(
 }
 
 DesktopRootWindowHostWin::~DesktopRootWindowHostWin() {
-  if (corewm::UseFocusControllerOnDesktop()) {
-    aura::client::SetFocusClient(root_window_, NULL);
-    aura::client::SetActivationClient(root_window_, NULL);
-  }
+  aura::client::SetFocusClient(root_window_, NULL);
+  aura::client::SetActivationClient(root_window_, NULL);
 }
 
 // static
@@ -128,18 +125,12 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
 
   desktop_native_widget_aura_->CreateCaptureClient(root_window_);
 
-  if (corewm::UseFocusControllerOnDesktop()) {
-    corewm::FocusController* focus_controller =
-        new corewm::FocusController(new DesktopFocusRules);
-    focus_client_.reset(focus_controller);
-    aura::client::SetFocusClient(root_window_, focus_controller);
-    aura::client::SetActivationClient(root_window_, focus_controller);
-    root_window_->AddPreTargetHandler(focus_controller);
-  } else {
-    focus_client_.reset(new aura::FocusManager);
-    aura::client::SetFocusClient(root_window_, focus_client_.get());
-    activation_client_.reset(new DesktopActivationClient(root_window_));
-  }
+  corewm::FocusController* focus_controller =
+      new corewm::FocusController(new DesktopFocusRules);
+  focus_client_.reset(focus_controller);
+  aura::client::SetFocusClient(root_window_, focus_controller);
+  aura::client::SetActivationClient(root_window_, focus_controller);
+  root_window_->AddPreTargetHandler(focus_controller);
 
   dispatcher_client_.reset(new DesktopDispatcherClient);
   aura::client::SetDispatcherClient(root_window_,

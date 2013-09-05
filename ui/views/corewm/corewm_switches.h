@@ -21,14 +21,6 @@ VIEWS_EXPORT extern const char kNoDropShadows[];
 VIEWS_EXPORT extern const char kWindowAnimationsDisabled[];
 
 }  // namespace switches
-
-// Returns true if the new FocusController should be used as the
-// Activation/FocusClient.
-VIEWS_EXPORT bool UseFocusController();
-
-// Same as above but for Desktop mode.
-VIEWS_EXPORT bool UseFocusControllerOnDesktop();
-
 }  // namespace corewm
 }  // namespace views
 

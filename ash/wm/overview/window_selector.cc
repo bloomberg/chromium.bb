@@ -7,13 +7,13 @@
 #include <algorithm>
 
 #include "ash/shell.h"
-#include "ash/wm/activation_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_overview.h"
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_window.h"
 #include "base/auto_reset.h"
 #include "base/timer/timer.h"
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"

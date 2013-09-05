@@ -29,7 +29,6 @@ class ScreenPositionClient;
 }
 
 namespace views {
-class DesktopActivationClient;
 class DesktopDragDropClientAuraX11;
 class DesktopDispatcherClient;
 class DesktopRootWindowHostObserverX11;
@@ -224,7 +223,6 @@ private:
 
   // aura:: objects that we own.
   scoped_ptr<aura::client::FocusClient> focus_client_;
-  scoped_ptr<DesktopActivationClient> activation_client_;
   scoped_ptr<views::corewm::CursorManager> cursor_client_;
   scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
   scoped_ptr<aura::client::ScreenPositionClient> position_client_;

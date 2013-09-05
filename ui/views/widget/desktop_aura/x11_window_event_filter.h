@@ -25,14 +25,12 @@ class Point;
 }
 
 namespace views {
-class DesktopActivationClient;
 class NativeWidgetAura;
 
 // An EventFilter that sets properties on X11 windows.
 class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {
  public:
-  explicit X11WindowEventFilter(aura::RootWindow* root_window,
-                                DesktopActivationClient* activation_client);
+  explicit X11WindowEventFilter(aura::RootWindow* root_window);
   virtual ~X11WindowEventFilter();
 
   // Changes whether borders are shown on this |root_window|.
@@ -46,8 +44,6 @@ class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {
   // to act as if a border or titlebar drag occurred.
   bool DispatchHostWindowDragMovement(int hittest,
                                       const gfx::Point& screen_location);
-
-  DesktopActivationClient* activation_client_;
 
   // The display and the native X window hosting the root window.
   Display* xdisplay_;

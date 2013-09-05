@@ -7,7 +7,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_activation_delegate.h"
-#include "ash/wm/activation_controller.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/activation_delegate.h"
@@ -319,8 +318,7 @@ TEST_F(WindowManagerTest, ActivateOnMouse) {
   d1.set_activate(true);
   w2.reset();
   EXPECT_EQ(0, d2.activated_count());
-  EXPECT_EQ(views::corewm::UseFocusController() ? 1 : 0,
-            d2.lost_active_count());
+  EXPECT_EQ(1, d2.lost_active_count());
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_EQ(w1.get(), focus_client->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());
@@ -473,8 +471,7 @@ TEST_F(WindowManagerTest, ActivateOnTouch) {
   d1.set_activate(true);
   w2.reset();
   EXPECT_EQ(0, d2.activated_count());
-  EXPECT_EQ(views::corewm::UseFocusController() ? 1 : 0,
-            d2.lost_active_count());
+  EXPECT_EQ(1, d2.lost_active_count());
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_EQ(w1.get(), focus_client->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());

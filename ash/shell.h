@@ -100,7 +100,6 @@ class WindowSelectorController;
 
 namespace internal {
 class AcceleratorFilter;
-class ActivationController;
 class AppListController;
 class AppListLauncherItemDelegate;
 class CaptureController;
@@ -555,7 +554,6 @@ class ASH_EXPORT Shell
 
   scoped_ptr<internal::AppListController> app_list_controller_;
 
-  scoped_ptr<internal::ActivationController> activation_controller_;
   scoped_ptr<internal::DragDropController> drag_drop_controller_;
   scoped_ptr<internal::ResizeShadowController> resize_shadow_controller_;
   scoped_ptr<views::corewm::ShadowController> shadow_controller_;

@@ -15,7 +15,6 @@
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/hit_test.h"
-#include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace {
@@ -59,10 +58,8 @@ const char* kAtomsToCache[] = {
 namespace views {
 
 X11WindowEventFilter::X11WindowEventFilter(
-    aura::RootWindow* root_window,
-    DesktopActivationClient* activation_client)
-    : activation_client_(activation_client),
-      xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
+    aura::RootWindow* root_window)
+    : xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
       xwindow_(root_window->GetAcceleratedWidget()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
