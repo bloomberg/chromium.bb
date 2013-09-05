@@ -17,8 +17,7 @@ DataFetcherSharedMemory::DataFetcherSharedMemory() {
 DataFetcherSharedMemory::~DataFetcherSharedMemory() {
 }
 
-bool DataFetcherSharedMemory::Start(ConsumerType consumer_type) {
-  void* buffer = GetSharedMemoryBuffer(consumer_type);
+bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
   DCHECK(buffer);
 
   switch (consumer_type) {

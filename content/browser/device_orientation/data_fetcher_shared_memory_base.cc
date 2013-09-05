@@ -36,7 +36,7 @@ class DataFetcherSharedMemoryBase::PollingThread : public base::Thread {
   PollingThread(const char* name, DataFetcherSharedMemoryBase* fetcher);
   virtual ~PollingThread();
 
-  void AddConsumer(ConsumerType consumer_type);
+  void AddConsumer(ConsumerType consumer_type, void* buffer);
   void RemoveConsumer(ConsumerType consumer_type);
 
   unsigned GetConsumersBitmask() const { return consumers_bitmask_; }
@@ -63,9 +63,9 @@ DataFetcherSharedMemoryBase::PollingThread::~PollingThread() {
 }
 
 void DataFetcherSharedMemoryBase::PollingThread::AddConsumer(
-    ConsumerType consumer_type) {
+    ConsumerType consumer_type, void* buffer) {
   DCHECK(fetcher_);
-  if (!fetcher_->Start(consumer_type))
+  if (!fetcher_->Start(consumer_type, buffer))
     return;
 
   consumers_bitmask_ |= consumer_type;
@@ -119,7 +119,8 @@ bool DataFetcherSharedMemoryBase::StartFetchingDeviceData(
   if (started_consumers_ & consumer_type)
     return true;
 
-  if (!GetSharedMemoryBuffer(consumer_type))
+  void* buffer = GetSharedMemoryBuffer(consumer_type);
+  if (!buffer)
     return false;
 
   if (IsPolling()) {
@@ -129,9 +130,9 @@ bool DataFetcherSharedMemoryBase::StartFetchingDeviceData(
         FROM_HERE,
         base::Bind(&PollingThread::AddConsumer,
                    base::Unretained(polling_thread_.get()),
-                   consumer_type));
+                   consumer_type, buffer));
   } else {
-    if (!Start(consumer_type))
+    if (!Start(consumer_type, buffer))
       return false;
   }
 

@@ -115,10 +115,8 @@ bool DataFetcherSharedMemory::IsPolling() const {
   return true;
 }
 
-bool DataFetcherSharedMemory::Start(ConsumerType consumer_type) {
+bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
   DCHECK(base::MessageLoop::current() == GetPollingMessageLoop());
-
-  void* buffer = GetSharedMemoryBuffer(consumer_type);
   DCHECK(buffer);
 
   switch (consumer_type) {

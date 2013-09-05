@@ -33,15 +33,16 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
   }
   virtual ~FakeDataFetcher() { }
 
-  bool Init(ConsumerType consumer_type) {
+  bool Init(ConsumerType consumer_type, void* buffer) {
+    EXPECT_TRUE(buffer);
+
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
-        motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(
-            GetSharedMemoryBuffer(consumer_type));
+        motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(buffer);
         break;
       case CONSUMER_TYPE_ORIENTATION:
-        orientation_buffer_ = static_cast<DeviceOrientationHardwareBuffer*>(
-            GetSharedMemoryBuffer(consumer_type));
+        orientation_buffer_ =
+            static_cast<DeviceOrientationHardwareBuffer*>(buffer);
         break;
       default:
         return false;
@@ -128,12 +129,12 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
   FakeNonPollingDataFetcher() { }
   virtual ~FakeNonPollingDataFetcher() { }
 
-  virtual bool Start(ConsumerType consumer_type) OVERRIDE {
+  virtual bool Start(ConsumerType consumer_type, void* buffer) OVERRIDE {
     base::SharedMemoryHandle handle = GetSharedMemoryHandleForProcess(
         consumer_type, base::GetCurrentProcessHandle());
     EXPECT_TRUE(base::SharedMemory::IsHandleValid(handle));
 
-    Init(consumer_type);
+    Init(consumer_type, buffer);
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
         UpdateMotion();
@@ -182,13 +183,13 @@ class FakePollingDataFetcher : public FakeDataFetcher {
   FakePollingDataFetcher() { }
   virtual ~FakePollingDataFetcher() { }
 
-  virtual bool Start(ConsumerType consumer_type) OVERRIDE {
+  virtual bool Start(ConsumerType consumer_type, void* buffer) OVERRIDE {
     EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
     base::SharedMemoryHandle handle = GetSharedMemoryHandleForProcess(
         consumer_type, base::GetCurrentProcessHandle());
     EXPECT_TRUE(base::SharedMemory::IsHandleValid(handle));
 
-    Init(consumer_type);
+    Init(consumer_type, buffer);
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
         start_motion_.Signal();

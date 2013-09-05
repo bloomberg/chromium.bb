@@ -7,10 +7,12 @@
 
 #include "content/browser/device_orientation/data_fetcher_shared_memory_base.h"
 
-#if defined(OS_MACOSX)
+#if !defined(OS_ANDROID)
 #include "content/common/device_motion_hardware_buffer.h"
 #include "content/common/device_orientation/device_orientation_hardware_buffer.h"
+#endif
 
+#if defined(OS_MACOSX)
 class SuddenMotionSensor;
 #endif
 
@@ -24,16 +26,17 @@ class CONTENT_EXPORT DataFetcherSharedMemory
   virtual ~DataFetcherSharedMemory();
 
  private:
-
-  virtual bool Start(ConsumerType consumer_type) OVERRIDE;
+  virtual bool Start(ConsumerType consumer_type, void* buffer) OVERRIDE;
   virtual bool Stop(ConsumerType consumer_type) OVERRIDE;
 
+#if !defined(OS_ANDROID)
+  DeviceMotionHardwareBuffer* motion_buffer_;
+  DeviceOrientationHardwareBuffer* orientation_buffer_;
+#endif
 #if defined(OS_MACOSX)
   virtual void Fetch(unsigned consumer_bitmask) OVERRIDE;
   virtual bool IsPolling() const OVERRIDE;
 
-  DeviceMotionHardwareBuffer* motion_buffer_;
-  DeviceOrientationHardwareBuffer* orientation_buffer_;
   scoped_ptr<SuddenMotionSensor> sudden_motion_sensor_;
 #endif
 
