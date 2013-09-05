@@ -830,11 +830,6 @@
             ['exclude', 'platform/chromium/PlatformThemeChromiumDefault\\.(cpp|h)'],
           ],
         }],
-        ['use_default_render_theme==0 and OS!="android"', {
-          'sources/': [
-            ['exclude', 'platform/ScrollbarThemeOverlay\\.(cpp|h)'],
-          ]
-        }],
       ],
     },
     {

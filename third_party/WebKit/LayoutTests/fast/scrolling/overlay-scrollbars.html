@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+}
+.container {
+    width: 100px;
+    height: 100px;
+    overflow: auto;
+    background-color: lime;
+}
+.box {
+    width: 500px;
+    height: 500px;
+}
+</style>
+<script>
+if (window.internals) {
+    testRunner.dumpAsText(true);
+    internals.setUsesOverlayScrollbars(true);
+    internals.settings.setMockScrollbarsEnabled(true);
+}
+</script>
+</head>
+<body>
+<p>You should see 2 green boxes with overlay scrollbars. The second box
+should have a scrollbar on the left.</p>
+<div class="container"><div class="box"></div></div>
+<div dir="rtl" class="container"><div class="box"></div></div>
+</body>
+</html>

@@ -37,11 +37,12 @@ using namespace std;
 
 namespace WebCore {
 
-ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumbThickness, int scrollbarMargin, HitTestBehavior allowHitTest)
+ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumbThickness, int scrollbarMargin, HitTestBehavior allowHitTest, Color color)
     : ScrollbarTheme()
     , m_thumbThickness(thumbThickness)
     , m_scrollbarMargin(scrollbarMargin)
     , m_allowHitTest(allowHitTest)
+    , m_color(color)
 {
 }
 
@@ -72,7 +73,7 @@ int ScrollbarThemeOverlay::thumbLength(ScrollbarThemeClient* scrollbar)
     if (!scrollbar->totalSize())
         return trackLen;
 
-    float proportion = (float)scrollbar->visibleSize() / scrollbar->totalSize();
+    float proportion = static_cast<float>(scrollbar->visibleSize()) / scrollbar->totalSize();
     int length = round(proportion * trackLen);
     length = min(max(length, minimumThumbLength(scrollbar)), trackLen);
     return length;
@@ -110,7 +111,7 @@ void ScrollbarThemeOverlay::paintThumb(GraphicsContext* context, ScrollbarThemeC
         thumbRect.setHeight(thumbRect.height() - m_scrollbarMargin);
     else
         thumbRect.setWidth(thumbRect.width() - m_scrollbarMargin);
-    context->fillRect(thumbRect, Color(128, 128, 128, 128));
+    context->fillRect(thumbRect, m_color);
 }
 
 ScrollbarPart ScrollbarThemeOverlay::hitTest(ScrollbarThemeClient* scrollbar, const IntPoint& position)

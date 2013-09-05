@@ -36,7 +36,7 @@ class ScrollbarThemeOverlay : public ScrollbarTheme {
 public:
     enum HitTestBehavior { AllowHitTest, DisallowHitTest };
 
-    ScrollbarThemeOverlay(int thumbThickness, int scrollbarMargin, HitTestBehavior allowHitTesting);
+    ScrollbarThemeOverlay(int thumbThickness, int scrollbarMargin, HitTestBehavior, Color = Color(128, 128, 128, 128));
     virtual ~ScrollbarThemeOverlay() { }
 
     virtual int scrollbarThickness(ScrollbarControlSize) OVERRIDE;
@@ -59,6 +59,7 @@ private:
     int m_thumbThickness;
     int m_scrollbarMargin;
     HitTestBehavior m_allowHitTest;
+    Color m_color;
 };
 
 } // namespace WebCore

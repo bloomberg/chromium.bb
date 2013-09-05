@@ -30,12 +30,18 @@
 #include "core/platform/ScrollbarThemeClient.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/mock/ScrollbarThemeMock.h"
+#include "core/platform/mock/ScrollbarThemeOverlayMock.h"
 
 namespace WebCore {
 
 ScrollbarTheme* ScrollbarTheme::theme()
 {
     if (Settings::mockScrollbarsEnabled()) {
+        if (Settings::usesOverlayScrollbars()) {
+            DEFINE_STATIC_LOCAL(ScrollbarThemeOverlayMock, overlayMockTheme, ());
+            return &overlayMockTheme;
+        }
+
         DEFINE_STATIC_LOCAL(ScrollbarThemeMock, mockTheme, ());
         return &mockTheme;
     }

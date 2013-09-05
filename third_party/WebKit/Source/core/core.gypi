@@ -3164,6 +3164,7 @@
             'platform/mock/PlatformSpeechSynthesizerMock.h',
             'platform/mock/ScrollbarThemeMock.cpp',
             'platform/mock/ScrollbarThemeMock.h',
+            'platform/mock/ScrollbarThemeOverlayMock.h',
             'platform/network/BlobData.cpp',
             'platform/network/BlobData.h',
             'platform/network/DNS.cpp',
