@@ -391,7 +391,7 @@ bool ExceptionHandler::HandleSignal(int sig, siginfo_t* info, void* uc) {
   bool signal_pid_trusted = info->si_code == SI_USER ||
       info->si_code == SI_TKILL;
   if (signal_trusted || (signal_pid_trusted && info->si_pid == getpid())) {
-    sys_prctl(PR_SET_DUMPABLE, 1);
+    sys_prctl(PR_SET_DUMPABLE, 1, 0, 0, 0);
   }
   CrashContext context;
   memcpy(&context.siginfo, info, sizeof(siginfo_t));
@@ -469,7 +469,7 @@ bool ExceptionHandler::GenerateDump(CrashContext *context) {
 
   int r, status;
   // Allow the child to ptrace us
-  sys_prctl(PR_SET_PTRACER, child);
+  sys_prctl(PR_SET_PTRACER, child, 0, 0, 0);
   SendContinueSignalToChild();
   do {
     r = sys_waitpid(child, &status, __WALL);
@@ -573,7 +573,7 @@ bool ExceptionHandler::WriteMinidump() {
   }
 
   // Allow this process to be dumped.
-  sys_prctl(PR_SET_DUMPABLE, 1);
+  sys_prctl(PR_SET_DUMPABLE, 1, 0, 0, 0);
 
   CrashContext context;
   int getcontext_result = getcontext(&context.context);
