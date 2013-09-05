@@ -17744,7 +17744,33 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebFont.Resource.StyleRecalcToDownloadLatency"
+    units="milliseconds">
+  <summary>
+    The time from when the webfont was referenced by a calculated style for the
+    first time to the start of the font download. Recorded at most once for each
+    FontResource object (not recorded if the font is retrieved from the memory
+    cache).
+  </summary>
+</histogram>
+
+<histogram name="WebFont.Resource.UsageType" enum="WebFontUsageType">
+  <summary>
+    For each webfont, this records (a) if the font was 'styled', i.e. referenced
+    by a calculated style for a RenderText before the font data was used, and
+    (b) if the font was actually used or not, i.e. the renderer requested the
+    font data or not. (A Font can be used without being styled, for example when
+    drawn by a Canvas 2D Context.) This is recorded upon a download request of a
+    webfont, or destruction of a FontResource object. Recorded at most once for
+    each FontResource object in the renderer's memory cahce.
+  </summary>
+</histogram>
+
 <histogram name="WebFont.StyleRecalcToDownloadLatency" units="milliseconds">
+  <obsolete>
+    Deprecated as of 9/2013, replaced by
+    WebFont.Resource.StyleRecalcToDownloadLatency.
+  </obsolete>
   <summary>
     The time from when the webfont was referenced by a calculated style for the
     first time to the start of the font download.
@@ -17752,6 +17778,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="WebFont.UsageType" enum="WebFontUsageType">
+  <obsolete>
+    Deprecated as of 9/2013, replaced by WebFont.Resource.UsageType.
+  </obsolete>
   <summary>
     For each webfont, this records (a) if the font was 'styled', i.e. referenced
     by a calculated style for a RenderText before the font data was used, and
