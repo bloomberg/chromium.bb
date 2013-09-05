@@ -64,6 +64,12 @@ SyncChange MockChangeProcessor::GetChange(const std::string& id) const {
   return SyncChange();
 }
 
+// Callback for ManagedUserSyncService::GetManagedUsersAsync().
+void GetManagedUsersCallback(const base::DictionaryValue** dict,
+                             const base::DictionaryValue* managed_users) {
+  *dict = managed_users;
+}
+
 }  // namespace
 
 class ManagedUserSyncServiceTest : public ::testing::Test {
@@ -75,11 +81,6 @@ class ManagedUserSyncServiceTest : public ::testing::Test {
   scoped_ptr<SyncChangeProcessor> CreateChangeProcessor();
   scoped_ptr<SyncErrorFactory> CreateErrorFactory();
   SyncData CreateRemoteData(const std::string& id, const std::string& name);
-
-  SyncMergeResult StartInitialSync();
-
-  void Acknowledge();
-  void ResetService();
 
   PrefService* prefs() { return profile_.GetPrefs(); }
   ManagedUserSyncService* service() { return service_; }
@@ -126,33 +127,23 @@ SyncData ManagedUserSyncServiceTest::CreateRemoteData(
   return SyncData::CreateRemoteData(++sync_data_id_, specifics, base::Time());
 }
 
-SyncMergeResult ManagedUserSyncServiceTest::StartInitialSync() {
-  SyncDataList initial_sync_data;
+TEST_F(ManagedUserSyncServiceTest, MergeEmpty) {
   SyncMergeResult result =
       service()->MergeDataAndStartSyncing(MANAGED_USERS,
-                                          initial_sync_data,
+                                          SyncDataList(),
                                           CreateChangeProcessor(),
                                           CreateErrorFactory());
   EXPECT_FALSE(result.error().IsSet());
-  return result;
-}
-
-void ManagedUserSyncServiceTest::ResetService() {
-  service_->StopSyncing(MANAGED_USERS);
-  service_->Shutdown();
-}
-
-TEST_F(ManagedUserSyncServiceTest, MergeEmpty) {
-  SyncMergeResult result = StartInitialSync();
   EXPECT_EQ(0, result.num_items_added());
   EXPECT_EQ(0, result.num_items_modified());
   EXPECT_EQ(0, result.num_items_deleted());
   EXPECT_EQ(0, result.num_items_before_association());
   EXPECT_EQ(0, result.num_items_after_association());
-  EXPECT_EQ(0u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
+  EXPECT_EQ(0u, service()->GetManagedUsers()->size());
   EXPECT_EQ(0u, change_processor()->changes().size());
 
-  ResetService();
+  service()->StopSyncing(MANAGED_USERS);
+  service()->Shutdown();
 }
 
 TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
@@ -179,6 +170,10 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
     managed_users->Set(kUserId2, dict);
   }
 
+  const base::DictionaryValue* async_managed_users = NULL;
+  service()->GetManagedUsersAsync(
+      base::Bind(&GetManagedUsersCallback, &async_managed_users));
+
   SyncDataList initial_sync_data;
   initial_sync_data.push_back(CreateRemoteData(kUserId2, kName2));
   initial_sync_data.push_back(CreateRemoteData(kUserId3, kName3));
@@ -196,9 +191,11 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
   EXPECT_EQ(2, result.num_items_before_association());
   EXPECT_EQ(4, result.num_items_after_association());
 
-  const DictionaryValue* managed_users =
-      prefs()->GetDictionary(prefs::kManagedUsers);
+  const DictionaryValue* managed_users = service()->GetManagedUsers();
   EXPECT_EQ(4u, managed_users->size());
+  EXPECT_TRUE(async_managed_users);
+  EXPECT_TRUE(managed_users->Equals(async_managed_users));
+
   {
     const DictionaryValue* managed_user = NULL;
     ASSERT_TRUE(managed_users->GetDictionary(kUserId2, &managed_user));

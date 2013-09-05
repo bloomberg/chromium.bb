@@ -10,6 +10,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/managed_mode/managed_user_sync_service.h"
+#include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -60,7 +62,7 @@ void ManagedUserImportHandler::RequestExistingManagedUsers(
     managed_user_ids.insert(cache.GetManagedUserIdOfProfileAtIndex(i));
 
   const DictionaryValue* dict =
-      profile->GetPrefs()->GetDictionary(prefs::kManagedUsers);
+      ManagedUserSyncServiceFactory::GetForProfile(profile)->GetManagedUsers();
   ListValue managed_users;
   for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     const DictionaryValue* value = NULL;

@@ -31,6 +31,8 @@
 #include "chrome/browser/managed_mode/managed_user_registration_utility.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#include "chrome/browser/managed_mode/managed_user_sync_service.h"
+#include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
@@ -1845,9 +1847,9 @@ bool BrowserOptionsHandler::IsValidExistingManagedUserId(
     return false;
   }
 
-  DictionaryPrefUpdate update(Profile::FromWebUI(web_ui())->GetPrefs(),
-                              prefs::kManagedUsers);
-  DictionaryValue* dict = update.Get();
+  Profile* profile = Profile::FromWebUI(web_ui());
+  const DictionaryValue* dict =
+      ManagedUserSyncServiceFactory::GetForProfile(profile)->GetManagedUsers();
   if (!dict->HasKey(existing_managed_user_id))
     return false;
 

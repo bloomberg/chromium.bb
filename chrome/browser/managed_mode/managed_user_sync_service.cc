@@ -5,6 +5,7 @@
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -121,6 +122,23 @@ void ManagedUserSyncService::DeleteManagedUser(const std::string& id) {
   DCHECK(!sync_error.IsSet());
 }
 
+const DictionaryValue* ManagedUserSyncService::GetManagedUsers() {
+  DCHECK(sync_processor_);
+  return prefs_->GetDictionary(prefs::kManagedUsers);
+}
+
+void ManagedUserSyncService::GetManagedUsersAsync(
+    const ManagedUsersCallback& callback) {
+  // If we are already syncing, just run the callback.
+  if (sync_processor_) {
+    callback.Run(GetManagedUsers());
+    return;
+  }
+
+  // Otherwise queue it up until we start syncing.
+  callbacks_.push_back(callback);
+}
+
 void ManagedUserSyncService::Shutdown() {
   NotifyManagedUsersSyncingStopped();
 }
@@ -183,6 +201,8 @@ SyncMergeResult ManagedUserSyncService::MergeDataAndStartSyncing(
   result.set_num_items_modified(num_items_modified);
   result.set_num_items_added(num_items_added);
   result.set_num_items_after_association(dict->size());
+
+  DispatchCallbacks();
 
   return result;
 }
@@ -286,4 +306,14 @@ void ManagedUserSyncService::NotifyManagedUserAcknowledged(
 void ManagedUserSyncService::NotifyManagedUsersSyncingStopped() {
   FOR_EACH_OBSERVER(ManagedUserSyncServiceObserver, observers_,
                     OnManagedUsersSyncingStopped());
+}
+
+void ManagedUserSyncService::DispatchCallbacks() {
+  const DictionaryValue* managed_users =
+      prefs_->GetDictionary(prefs::kManagedUsers);
+  for (std::vector<ManagedUsersCallback>::iterator it = callbacks_.begin();
+       it != callbacks_.end(); ++it) {
+    it->Run(managed_users);
+  }
+  callbacks_.clear();
 }
