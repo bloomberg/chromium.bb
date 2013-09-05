@@ -110,7 +110,6 @@ bool GpuChannelHost::Send(IPC::Message* msg) {
 CommandBufferProxyImpl* GpuChannelHost::CreateViewCommandBuffer(
     int32 surface_id,
     CommandBufferProxyImpl* share_group,
-    const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference) {
@@ -122,7 +121,6 @@ CommandBufferProxyImpl* GpuChannelHost::CreateViewCommandBuffer(
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id =
       share_group ? share_group->GetRouteID() : MSG_ROUTING_NONE;
-  init_params.allowed_extensions = allowed_extensions;
   init_params.attribs = attribs;
   init_params.active_url = active_url;
   init_params.gpu_preference = gpu_preference;
@@ -142,7 +140,6 @@ CommandBufferProxyImpl* GpuChannelHost::CreateViewCommandBuffer(
 CommandBufferProxyImpl* GpuChannelHost::CreateOffscreenCommandBuffer(
     const gfx::Size& size,
     CommandBufferProxyImpl* share_group,
-    const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference) {
@@ -151,7 +148,6 @@ CommandBufferProxyImpl* GpuChannelHost::CreateOffscreenCommandBuffer(
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id =
       share_group ? share_group->GetRouteID() : MSG_ROUTING_NONE;
-  init_params.allowed_extensions = allowed_extensions;
   init_params.attribs = attribs;
   init_params.active_url = active_url;
   init_params.gpu_preference = gpu_preference;

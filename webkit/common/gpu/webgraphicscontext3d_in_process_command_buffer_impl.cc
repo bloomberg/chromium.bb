@@ -148,8 +148,6 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
   g_gles2_initializer.Get();
 
   if (!context_) {
-    const char* preferred_extensions = "*";
-
     // TODO(kbr): More work will be needed in this implementation to
     // properly support GPU switching. Like in the out-of-process
     // command buffer implementation, all previously created contexts
@@ -165,7 +163,6 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
         window_,
         gfx::Size(1, 1),
         attributes_.shareResources,
-        preferred_extensions,
         attrib_struct,
         gpu_preference));
   }

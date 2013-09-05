@@ -64,16 +64,15 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     GLint max_cube_map_texture_size;
   };
 
+  // Constructor with workarounds taken from the current process's CommandLine
   FeatureInfo();
 
-  // If allowed features = NULL or "*", all features are allowed. Otherwise
-  // only features that match the strings in allowed_features are allowed.
-  bool Initialize(const char* allowed_features);
-  bool Initialize(const DisallowedFeatures& disallowed_features,
-                  const char* allowed_features);
+  // Constructor with workarounds taken from |command_line|
+  FeatureInfo(const CommandLine& command_line);
 
-  // Turns on certain features if they can be turned on.
-  void AddFeatures(const CommandLine& command_line);
+  // Initializes the feature information. Needs a current GL context.
+  bool Initialize();
+  bool Initialize(const DisallowedFeatures& disallowed_features);
 
   const Validators* validators() const {
     return &validators_;
@@ -106,6 +105,8 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   ~FeatureInfo();
 
   void AddExtensionString(const std::string& str);
+  void InitializeBasicState(const CommandLine& command_line);
+  void InitializeFeatures();
 
   Validators validators_;
 

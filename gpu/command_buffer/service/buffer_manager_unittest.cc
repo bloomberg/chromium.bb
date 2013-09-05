@@ -27,7 +27,7 @@ class BufferManagerTestBase : public testing::Test {
     ::gfx::GLInterface::SetGLInterface(gl_.get());
     if (feature_info) {
       TestHelper::SetupFeatureInfoInitExpectations(gl_.get(), extensions);
-      feature_info->Initialize(NULL);
+      feature_info->Initialize();
     }
     error_state_.reset(new MockErrorState());
     manager_.reset(new BufferManager(memory_tracker, feature_info));

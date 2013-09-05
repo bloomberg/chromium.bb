@@ -305,8 +305,7 @@ bool WebGraphicsContext3DCommandBufferImpl::Initialize(
   return true;
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
-    const char* allowed_extensions) {
+bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
   if (initialized_)
     return true;
 
@@ -315,11 +314,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
 
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::MaybeInitializeGL");
 
-  const char* preferred_extensions = "*";
-
-  if (!CreateContext(surface_id_ != 0,
-                     allowed_extensions ?
-                         allowed_extensions : preferred_extensions)) {
+  if (!CreateContext(surface_id_ != 0)) {
     Destroy();
     initialize_failed_ = true;
     return false;
@@ -372,8 +367,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
-    bool onscreen,
-    const char* allowed_extensions) {
+    bool onscreen) {
   if (!host_.get())
     return false;
   // We need to lock g_all_shared_contexts to ensure that the context we picked
@@ -407,7 +401,6 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
     command_buffer_.reset(host_->CreateViewCommandBuffer(
         surface_id_,
         share_group,
-        allowed_extensions,
         attribs,
         active_url_,
         gpu_preference_));
@@ -415,7 +408,6 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
     command_buffer_.reset(host_->CreateOffscreenCommandBuffer(
         gfx::Size(1, 1),
         share_group,
-        allowed_extensions,
         attribs,
         active_url_,
         gpu_preference_));
@@ -429,15 +421,12 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
-    bool onscreen,
-    const char* allowed_extensions) {
-
+    bool onscreen) {
   // Ensure the gles2 library is initialized first in a thread safe way.
   g_gles2_initializer.Get();
 
   if (!command_buffer_ &&
-      !InitializeCommandBuffer(onscreen,
-                               allowed_extensions)) {
+      !InitializeCommandBuffer(onscreen)) {
     return false;
   }
 
@@ -499,7 +488,7 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::makeContextCurrent() {
-  if (!MaybeInitializeGL(NULL))
+  if (!MaybeInitializeGL())
     return false;
   gles2::SetGLContext(gl_);
   if (command_buffer_->GetLastError() != gpu::error::kNoError)

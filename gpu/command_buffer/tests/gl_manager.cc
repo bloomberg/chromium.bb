@@ -107,7 +107,6 @@ void GLManager::Initialize(const GLManager::Options& options) {
       share_group ? share_group : new gfx::GLShareGroup;
 
   gfx::GpuPreference gpu_preference(gfx::PreferDiscreteGpu);
-  const char* allowed_extensions = "*";
   std::vector<int32> attribs;
   gles2::ContextCreationAttribHelper attrib_helper;
   attrib_helper.red_size_ = 8;
@@ -172,7 +171,6 @@ void GLManager::Initialize(const GLManager::Options& options) {
       true,
       options.size,
       ::gpu::gles2::DisallowedFeatures(),
-      allowed_extensions,
       attribs)) << "could not initialize decoder";
 
   command_buffer_->SetPutOffsetChangeCallback(

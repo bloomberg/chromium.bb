@@ -34,7 +34,6 @@ CreateWebGraphicsContext3D(scoped_refptr<gfx::GLSurface> surface) {
   if (!gfx::GLSurface::InitializeOneOff())
     return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>();
 
-  const char* allowed_extensions = "*";
   const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
   WebKit::WebGraphicsContext3D::Attributes attributes;
@@ -48,7 +47,6 @@ CreateWebGraphicsContext3D(scoped_refptr<gfx::GLSurface> surface) {
   scoped_ptr<gpu::GLInProcessContext> context(
       gpu::GLInProcessContext::CreateWithSurface(surface,
                                                  attributes.shareResources,
-                                                 allowed_extensions,
                                                  in_process_attribs,
                                                  gpu_preference));
 

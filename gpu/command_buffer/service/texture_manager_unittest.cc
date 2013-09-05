@@ -318,7 +318,7 @@ TEST_F(TextureManagerTest, ValidForTargetNPOT) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_npot");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize(NULL);
+  feature_info->Initialize();
   TextureManager manager(
      NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   // Check NPOT width on level 0
@@ -356,7 +356,7 @@ class TextureTestBase : public testing::Test {
     if (!extensions.empty()) {
       TestHelper::SetupFeatureInfoInitExpectations(gl_.get(),
                                                    extensions.c_str());
-      feature_info_->Initialize(NULL);
+      feature_info_->Initialize();
     }
 
     manager_.reset(new TextureManager(
@@ -796,7 +796,7 @@ TEST_F(TextureTest, NPOT2DNPOTOK) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_npot");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize(NULL);
+  feature_info->Initialize();
   TextureManager manager(
       NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.CreateTexture(kClient1Id, kService1Id);
@@ -1087,7 +1087,7 @@ TEST_F(TextureTest, FloatNotLinear) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_float");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize(NULL);
+  feature_info->Initialize();
   TextureManager manager(
       NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.CreateTexture(kClient1Id, kService1Id);
@@ -1114,7 +1114,7 @@ TEST_F(TextureTest, FloatLinear) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_float GL_OES_texture_float_linear");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize(NULL);
+  feature_info->Initialize();
   TextureManager manager(
       NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.CreateTexture(kClient1Id, kService1Id);
@@ -1133,7 +1133,7 @@ TEST_F(TextureTest, HalfFloatNotLinear) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_half_float");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize(NULL);
+  feature_info->Initialize();
   TextureManager manager(
       NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.CreateTexture(kClient1Id, kService1Id);
@@ -1160,7 +1160,7 @@ TEST_F(TextureTest, HalfFloatLinear) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_half_float GL_OES_texture_half_float_linear");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize(NULL);
+  feature_info->Initialize();
   TextureManager manager(
       NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.CreateTexture(kClient1Id, kService1Id);
@@ -1179,7 +1179,7 @@ TEST_F(TextureTest, EGLImageExternal) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_EGL_image_external");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize(NULL);
+  feature_info->Initialize();
   TextureManager manager(
       NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.CreateTexture(kClient1Id, kService1Id);
@@ -1196,7 +1196,7 @@ TEST_F(TextureTest, DepthTexture) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_ANGLE_depth_texture");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-  feature_info->Initialize(NULL);
+  feature_info->Initialize();
   TextureManager manager(
       NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.CreateTexture(kClient1Id, kService1Id);

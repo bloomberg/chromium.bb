@@ -541,7 +541,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
                           bool offscreen,
                           const gfx::Size& size,
                           const DisallowedFeatures& disallowed_features,
-                          const char* allowed_extensions,
                           const std::vector<int32>& attribs) OVERRIDE;
   virtual void Destroy(bool have_context) OVERRIDE;
   virtual void SetSurface(
@@ -2121,7 +2120,6 @@ bool GLES2DecoderImpl::Initialize(
     bool offscreen,
     const gfx::Size& size,
     const DisallowedFeatures& disallowed_features,
-    const char* allowed_extensions,
     const std::vector<int32>& attribs) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::Initialize");
   DCHECK(context->IsCurrent(surface.get()));
@@ -2149,7 +2147,7 @@ bool GLES2DecoderImpl::Initialize(
   context_ = context;
   surface_ = surface;
 
-  if (!group_->Initialize(this, disallowed_features, allowed_extensions)) {
+  if (!group_->Initialize(this, disallowed_features)) {
     LOG(ERROR) << "GpuScheduler::InitializeCommon failed because group "
                << "failed to initialize.";
     group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
@@ -8720,7 +8718,7 @@ error::Error GLES2DecoderImpl::HandleGetRequestableExtensionsCHROMIUM(
     const cmds::GetRequestableExtensionsCHROMIUM& c) {
   Bucket* bucket = CreateBucket(c.bucket_id);
   scoped_refptr<FeatureInfo> info(new FeatureInfo());
-  info->Initialize(disallowed_features_, NULL);
+  info->Initialize(disallowed_features_);
   bucket->SetFromString(info->extensions().c_str());
   return error::kNoError;
 }

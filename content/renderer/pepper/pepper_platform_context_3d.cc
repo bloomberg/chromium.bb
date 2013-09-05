@@ -96,7 +96,6 @@ bool PlatformContext3D::Init(const int32* attrib_list,
   command_buffer_ = channel_->CreateOffscreenCommandBuffer(
       surface_size,
       share_buffer,
-      "*",
       attribs,
       GURL::EmptyGURL(),
       gpu_preference);

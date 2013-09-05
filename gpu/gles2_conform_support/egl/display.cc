@@ -165,7 +165,6 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
                             gl_surface_->IsOffscreen(),
                             size,
                             gpu::gles2::DisallowedFeatures(),
-                            NULL,
                             attribs)) {
     return EGL_NO_SURFACE;
   }

@@ -77,15 +77,14 @@ static void GetIntegerv(GLenum pname, uint32* var) {
 
 bool ContextGroup::Initialize(
     GLES2Decoder* decoder,
-    const DisallowedFeatures& disallowed_features,
-    const char* allowed_features) {
+    const DisallowedFeatures& disallowed_features) {
   // If we've already initialized the group just add the context.
   if (HaveContexts()) {
     decoders_.push_back(base::AsWeakPtr<GLES2Decoder>(decoder));
     return true;
   }
 
-  if (!feature_info_->Initialize(disallowed_features, allowed_features)) {
+  if (!feature_info_->Initialize(disallowed_features)) {
     LOG(ERROR) << "ContextGroup::Initialize failed because FeatureInfo "
                << "initialization failed.";
     return false;

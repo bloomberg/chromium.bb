@@ -57,7 +57,6 @@ class GLInProcessContextImpl
                   bool share_resources,
                   gfx::AcceleratedWidget window,
                   const gfx::Size& size,
-                  const char* allowed_extensions,
                   const GLInProcessContextAttribs& attribs,
                   gfx::GpuPreference gpu_preference);
 
@@ -153,7 +152,6 @@ bool GLInProcessContextImpl::Initialize(
     bool share_resources,
     gfx::AcceleratedWidget window,
     const gfx::Size& size,
-    const char* allowed_extensions,
     const GLInProcessContextAttribs& attribs,
     gfx::GpuPreference gpu_preference) {
   DCHECK(size.width() >= 0 && size.height() >= 0);
@@ -233,7 +231,6 @@ bool GLInProcessContextImpl::Initialize(
                                    share_resources,
                                    window,
                                    size,
-                                   allowed_extensions,
                                    attrib_vector,
                                    gpu_preference,
                                    wrapped_callback,
@@ -367,7 +364,6 @@ GLInProcessContext* GLInProcessContext::CreateContext(
     gfx::AcceleratedWidget window,
     const gfx::Size& size,
     bool share_resources,
-    const char* allowed_extensions,
     const GLInProcessContextAttribs& attribs,
     gfx::GpuPreference gpu_preference) {
   scoped_ptr<GLInProcessContextImpl> context(
@@ -378,7 +374,6 @@ GLInProcessContext* GLInProcessContext::CreateContext(
       share_resources,
       window,
       size,
-      allowed_extensions,
       attribs,
       gpu_preference))
     return NULL;
@@ -390,7 +385,6 @@ GLInProcessContext* GLInProcessContext::CreateContext(
 GLInProcessContext* GLInProcessContext::CreateWithSurface(
     scoped_refptr<gfx::GLSurface> surface,
     bool share_resources,
-    const char* allowed_extensions,
     const GLInProcessContextAttribs& attribs,
     gfx::GpuPreference gpu_preference) {
   scoped_ptr<GLInProcessContextImpl> context(
@@ -401,7 +395,6 @@ GLInProcessContext* GLInProcessContext::CreateWithSurface(
       share_resources,
       gfx::kNullAcceleratedWidget,
       surface->GetSize(),
-      allowed_extensions,
       attribs,
       gpu_preference))
     return NULL;

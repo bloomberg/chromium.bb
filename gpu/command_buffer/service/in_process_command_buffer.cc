@@ -299,7 +299,6 @@ bool InProcessCommandBuffer::Initialize(
     bool share_resources,
     gfx::AcceleratedWidget window,
     const gfx::Size& size,
-    const char* allowed_extensions,
     const std::vector<int32>& attribs,
     gfx::GpuPreference gpu_preference,
     const base::Closure& context_lost_callback,
@@ -322,7 +321,6 @@ bool InProcessCommandBuffer::Initialize(
                  is_offscreen,
                  window,
                  size,
-                 allowed_extensions,
                  attribs,
                  gpu_preference);
 
@@ -338,7 +336,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
     bool is_offscreen,
     gfx::AcceleratedWidget window,
     const gfx::Size& size,
-    const char* allowed_extensions,
     const std::vector<int32>& attribs,
     gfx::GpuPreference gpu_preference) {
   CheckSequencedThread();
@@ -465,7 +462,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
                             is_offscreen,
                             size,
                             disallowed_features,
-                            allowed_extensions,
                             attribs)) {
     LOG(ERROR) << "Could not initialize decoder.";
     DestroyOnGpuThread();

@@ -70,7 +70,6 @@ class GpuCommandBufferStub
       gpu::gles2::ImageManager* image_manager,
       const gfx::Size& size,
       const gpu::gles2::DisallowedFeatures& disallowed_features,
-      const std::string& allowed_extensions,
       const std::vector<int32>& attribs,
       gfx::GpuPreference gpu_preference,
       bool use_virtualized_gl_context,
@@ -214,7 +213,6 @@ class GpuCommandBufferStub
   gfx::GLSurfaceHandle handle_;
   gfx::Size initial_size_;
   gpu::gles2::DisallowedFeatures disallowed_features_;
-  std::string allowed_extensions_;
   std::vector<int32> requested_attribs_;
   gfx::GpuPreference gpu_preference_;
   bool use_virtualized_gl_context_;

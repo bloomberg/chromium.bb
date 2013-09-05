@@ -103,9 +103,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   //      bound, offscreen contexts render to an internal buffer, onscreen ones
   //      to the surface.
   //  size: the size if the GL context is offscreen.
-  //  allowed_extensions: A string in the same format as
-  //      glGetString(GL_EXTENSIONS) that lists the extensions this context
-  //      should allow. Passing NULL or "*" means allow all extensions.
   // Returns:
   //   true if successful.
   virtual bool Initialize(const scoped_refptr<gfx::GLSurface>& surface,
@@ -113,7 +110,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
                           bool offscreen,
                           const gfx::Size& size,
                           const DisallowedFeatures& disallowed_features,
-                          const char* allowed_extensions,
                           const std::vector<int32>& attribs) = 0;
 
   // Destroys the graphics context.

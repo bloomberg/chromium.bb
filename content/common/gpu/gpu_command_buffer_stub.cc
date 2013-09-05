@@ -109,7 +109,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     gpu::gles2::ImageManager* image_manager,
     const gfx::Size& size,
     const gpu::gles2::DisallowedFeatures& disallowed_features,
-    const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
     gfx::GpuPreference gpu_preference,
     bool use_virtualized_gl_context,
@@ -122,7 +121,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       handle_(handle),
       initial_size_(size),
       disallowed_features_(disallowed_features),
-      allowed_extensions_(allowed_extensions),
       requested_attribs_(attribs),
       gpu_preference_(gpu_preference),
       use_virtualized_gl_context_(use_virtualized_gl_context),
@@ -503,7 +501,6 @@ void GpuCommandBufferStub::OnInitialize(
                             !surface_id(),
                             initial_size_,
                             disallowed_features_,
-                            allowed_extensions_.c_str(),
                             requested_attribs_)) {
     DLOG(ERROR) << "Failed to initialize decoder.";
     OnInitializeFailed(reply_message);

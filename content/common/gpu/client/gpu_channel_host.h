@@ -109,7 +109,6 @@ class GpuChannelHost : public IPC::Sender,
   CommandBufferProxyImpl* CreateViewCommandBuffer(
       int32 surface_id,
       CommandBufferProxyImpl* share_group,
-      const std::string& allowed_extensions,
       const std::vector<int32>& attribs,
       const GURL& active_url,
       gfx::GpuPreference gpu_preference);
@@ -118,7 +117,6 @@ class GpuChannelHost : public IPC::Sender,
   CommandBufferProxyImpl* CreateOffscreenCommandBuffer(
       const gfx::Size& size,
       CommandBufferProxyImpl* share_group,
-      const std::string& allowed_extensions,
       const std::vector<int32>& attribs,
       const GURL& active_url,
       gfx::GpuPreference gpu_preference);

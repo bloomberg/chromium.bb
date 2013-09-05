@@ -119,7 +119,7 @@ void GLES2DecoderTestBase::InitDecoder(
   // will initialize itself.
   mock_decoder_.reset(new MockGLES2Decoder());
   EXPECT_TRUE(
-      group_->Initialize(mock_decoder_.get(), DisallowedFeatures(), NULL));
+      group_->Initialize(mock_decoder_.get(), DisallowedFeatures()));
 
   AddExpectationsForVertexAttribManager();
 
@@ -267,9 +267,12 @@ void GLES2DecoderTestBase::InitDecoder(
 
   decoder_.reset(GLES2Decoder::Create(group_.get()));
   decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
-  decoder_->Initialize(
-      surface_, context_, false, surface_->GetSize(), DisallowedFeatures(),
-      NULL, attribs);
+  decoder_->Initialize(surface_,
+                       context_,
+                       false,
+                       surface_->GetSize(),
+                       DisallowedFeatures(),
+                       attribs);
   decoder_->MakeCurrent();
   decoder_->set_engine(engine_.get());
 

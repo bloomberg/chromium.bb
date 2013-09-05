@@ -133,6 +133,22 @@ FeatureInfo::Workarounds::Workarounds() :
 }
 
 FeatureInfo::FeatureInfo() {
+  InitializeBasicState(*CommandLine::ForCurrentProcess());
+}
+
+FeatureInfo::FeatureInfo(const CommandLine& command_line) {
+  InitializeBasicState(command_line);
+}
+
+void FeatureInfo::InitializeBasicState(const CommandLine& command_line) {
+  if (command_line.HasSwitch(switches::kGpuDriverBugWorkarounds)) {
+    std::string types = command_line.GetSwitchValueASCII(
+        switches::kGpuDriverBugWorkarounds);
+    StringToWorkarounds(types, &workarounds_);
+  }
+  feature_flags_.enable_shader_name_hashing =
+      !command_line.HasSwitch(switches::kDisableShaderNameHashing);
+
   static const GLenum kAlphaTypes[] = {
       GL_UNSIGNED_BYTE,
   };
@@ -168,32 +184,22 @@ FeatureInfo::FeatureInfo() {
   }
 }
 
-bool FeatureInfo::Initialize(const char* allowed_features) {
+bool FeatureInfo::Initialize() {
   disallowed_features_ = DisallowedFeatures();
-  AddFeatures(*CommandLine::ForCurrentProcess());
+  InitializeFeatures();
   return true;
 }
 
-bool FeatureInfo::Initialize(const DisallowedFeatures& disallowed_features,
-                             const char* allowed_features) {
+bool FeatureInfo::Initialize(const DisallowedFeatures& disallowed_features) {
   disallowed_features_ = disallowed_features;
-  AddFeatures(*CommandLine::ForCurrentProcess());
+  InitializeFeatures();
   return true;
 }
 
-void FeatureInfo::AddFeatures(const CommandLine& command_line) {
+void FeatureInfo::InitializeFeatures() {
   // Figure out what extensions to turn on.
   StringSet extensions(
       reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
-
-  if (command_line.HasSwitch(switches::kGpuDriverBugWorkarounds)) {
-    std::string types = command_line.GetSwitchValueASCII(
-        switches::kGpuDriverBugWorkarounds);
-    StringToWorkarounds(types, &workarounds_);
-  }
-
-  feature_flags_.enable_shader_name_hashing =
-      !command_line.HasSwitch(switches::kDisableShaderNameHashing);
 
   bool npot_ok = false;
 

@@ -106,7 +106,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
     if (!gfx::GLSurface::InitializeOneOff())
       return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>();
 
-    const char* allowed_extensions = "*";
     const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
     WebKit::WebGraphicsContext3D::Attributes attributes;
@@ -122,7 +121,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
                                                NULL,
                                                gfx::Size(1, 1),
                                                attributes.shareResources,
-                                               allowed_extensions,
                                                in_process_attribs,
                                                gpu_preference));
 

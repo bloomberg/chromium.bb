@@ -54,7 +54,6 @@ class GLES2_IMPL_EXPORT GLInProcessContext {
       gfx::AcceleratedWidget window,
       const gfx::Size& size,
       bool share_resources,
-      const char* allowed_extensions,
       const GLInProcessContextAttribs& attribs,
       gfx::GpuPreference gpu_preference);
 
@@ -65,7 +64,6 @@ class GLES2_IMPL_EXPORT GLInProcessContext {
   static GLInProcessContext* CreateWithSurface(
       scoped_refptr<gfx::GLSurface> surface,
       bool share_resources,
-      const char* allowed_extensions,
       const GLInProcessContextAttribs& attribs,
       gfx::GpuPreference gpu_preference);
 

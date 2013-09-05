@@ -34,13 +34,12 @@ class MockGLES2Decoder : public GLES2Decoder {
   MockGLES2Decoder();
   virtual ~MockGLES2Decoder();
 
-  MOCK_METHOD7(Initialize,
+  MOCK_METHOD6(Initialize,
                bool(const scoped_refptr<gfx::GLSurface>& surface,
                     const scoped_refptr<gfx::GLContext>& context,
                     bool offscreen,
                     const gfx::Size& size,
                     const DisallowedFeatures& disallowed_features,
-                    const char* allowed_extensions,
                     const std::vector<int32>& attribs));
   MOCK_METHOD1(Destroy, void(bool have_context));
   MOCK_METHOD1(SetSurface, void(const scoped_refptr<gfx::GLSurface>& surface));
