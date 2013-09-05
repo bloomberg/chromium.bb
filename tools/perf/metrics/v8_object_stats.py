@@ -32,7 +32,7 @@ _COUNTER_NAMES = [
     'V8.MemoryPropertyCellSpaceBytesUsed',
     'V8.MemoryLoSpaceBytesAvailable',
     'V8.MemoryLoSpaceBytesCommitted',
-    'V8.MemoryLoSpaceBytesUsed)',
+    'V8.MemoryLoSpaceBytesUsed',
     'V8.SizeOf_ACCESSOR_PAIR_TYPE',
     'V8.SizeOf_ACCESS_CHECK_INFO_TYPE',
     'V8.SizeOf_ALIASED_ARGUMENTS_ENTRY_TYPE',
@@ -164,6 +164,26 @@ class V8ObjectStatsMetric(Metric):
     options.AppendExtraBrowserArg('--enable-benchmarking')
     options.AppendExtraBrowserArg(
         '--js-flags=--track_gc_object_stats --expose_gc')
+    # TODO(rmcilroy): This is needed for --enable-stats-table.  Update once
+    # https://codereview.chromium.org/22911027/ lands.
+    options.AppendExtraBrowserArg('--no-sandbox')
+
+  @staticmethod
+  def GetV8StatsTable(tab, counters=None):
+    counters = counters or _COUNTER_NAMES
+
+    return tab.EvaluateJavaScript("""
+     (function(counters) {
+       var results = {};
+       if (!window.chrome || !window.chrome.benchmarking)
+        return results;
+       window.gc();  // Trigger GC to ensure stats are checkpointed.
+       for (var i = 0; i < counters.length; i++)
+         results[counters[i]] =
+             chrome.benchmarking.counterForRenderer(counters[i]);
+       return results;
+     })(%s);
+     """ % json.dumps(counters))
 
   def Start(self, page, tab):
     """Do Nothing."""
@@ -171,17 +191,7 @@ class V8ObjectStatsMetric(Metric):
 
   def Stop(self, page, tab):
     """Get the values in the stats table after the page is loaded."""
-    self._results = tab.EvaluateJavaScript("""
- (function(counters) {
-   var results = {};
-   if (!window.chrome || !window.chrome.benchmarking)
-    return results;
-   window.gc();  // Trigger GC to ensure stats are checkpointed.
-   for (var i = 0; i < counters.length; i++)
-     results[counters[i]] = chrome.benchmarking.counterForRenderer(counters[i]);
-   return results;
- })(%s);
- """ % json.dumps(_COUNTER_NAMES))
+    self._results = V8ObjectStatsMetric.GetV8StatsTable(tab)
     if not self._results:
       logging.warning('No V8 object stats from website: ' + page.display_name)
 
