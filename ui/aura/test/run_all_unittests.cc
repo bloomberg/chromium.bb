@@ -2,8 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/test/unit_test_launcher.h"
 #include "ui/aura/test/test_suite.h"
 
 int main(int argc, char** argv) {
-  return aura::test::AuraTestSuite(argc, argv).Run();
+  aura::test::AuraTestSuite test_suite(argc, argv);
+
+  return base::LaunchUnitTests(
+      argc, argv, base::Bind(&aura::test::AuraTestSuite::Run,
+                             base::Unretained(&test_suite)));
 }

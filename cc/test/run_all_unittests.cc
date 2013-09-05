@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_suite.h"
+#include "base/test/unit_test_launcher.h"
 #include "cc/test/cc_test_suite.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleMock(&argc, argv);
   cc::CCTestSuite test_suite(argc, argv);
-  int result = test_suite.Run();
 
-  return result;
+  return base::LaunchUnitTests(
+      argc, argv, base::Bind(&cc::CCTestSuite::Run,
+                             base::Unretained(&test_suite)));
 }

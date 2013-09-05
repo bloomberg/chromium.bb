@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/metrics/statistics_recorder.h"
+#include "base/test/unit_test_launcher.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
 #include "net/socket/client_socket_pool_base.h"
@@ -49,5 +50,7 @@ int main(int argc, char** argv) {
   net::ProxyResolverV8::RememberDefaultIsolate();
 #endif
 
-  return test_suite.Run();
+  return base::LaunchUnitTests(
+      argc, argv, base::Bind(&NetTestSuite::Run,
+                             base::Unretained(&test_suite)));
 }

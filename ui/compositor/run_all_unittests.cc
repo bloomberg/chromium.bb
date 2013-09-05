@@ -2,8 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/test/unit_test_launcher.h"
 #include "ui/compositor/test/test_suite.h"
 
 int main(int argc, char** argv) {
-  return ui::test::CompositorTestSuite(argc, argv).Run();
+  ui::test::CompositorTestSuite test_suite(argc, argv);
+
+  return base::LaunchUnitTests(
+      argc, argv, base::Bind(&ui::test::CompositorTestSuite::Run,
+                             base::Unretained(&test_suite)));
 }

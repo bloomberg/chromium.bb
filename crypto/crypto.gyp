@@ -243,10 +243,6 @@
       'target_name': 'crypto_unittests',
       'type': 'executable',
       'sources': [
-        # Infrastructure files.
-        'run_all_unittests.cc',
-
-        # Tests.
         'curve25519_unittest.cc',
         'ec_private_key_unittest.cc',
         'ec_signature_creator_unittest.cc',
@@ -270,6 +266,7 @@
       'dependencies': [
         'crypto',
         '../base/base.gyp:base',
+        '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',

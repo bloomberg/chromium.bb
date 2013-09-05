@@ -2656,6 +2656,7 @@
         '<@(chromium_child_dependencies)',
         '../content/content.gyp:content_app_both',
         # 2) test-specific support libraries:
+        '../base/base.gyp:run_all_unittests',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'test_support_common',
@@ -2671,7 +2672,6 @@
         'app/delay_load_hook_win.h',
         'app/delay_load_hook_unittest_win.cc',
         'app/hard_error_handler_win.cc',
-        'app/run_all_unittests.cc',
         'common/crash_keys.cc',
         'common/crash_keys.h',
       ],

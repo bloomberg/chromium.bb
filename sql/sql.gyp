@@ -78,12 +78,12 @@
       'dependencies': [
         'sql',
         'test_support_sql',
+        '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
         '../third_party/sqlite/sqlite.gyp:sqlite',
       ],
       'sources': [
-        'run_all_unittests.cc',
         'connection_unittest.cc',
         'recovery_unittest.cc',
         'sqlite_features_unittest.cc',

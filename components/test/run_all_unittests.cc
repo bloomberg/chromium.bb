@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/test_suite.h"
+#include "base/test/unit_test_launcher.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,5 +41,7 @@ int main(int argc, char** argv) {
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new components::ComponentsUnitTestEventListener());
 
-  return test_suite.Run();
+  return base::LaunchUnitTests(
+      argc, argv, base::Bind(&base::TestSuite::Run,
+                             base::Unretained(&test_suite)));
 }
