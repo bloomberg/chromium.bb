@@ -30,8 +30,6 @@
 
 namespace WTF {
 
-    // Unlike most of our smart pointers, OwnPtr can take either the pointer type or the pointed-to type.
-
     template<typename T> class PassOwnPtr;
     template<typename T> PassOwnPtr<T> adoptPtr(T*);
 
@@ -43,7 +41,7 @@ namespace WTF {
 #endif
         WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(OwnPtr);
     public:
-        typedef typename RemovePointer<T>::Type ValueType;
+        typedef T ValueType;
         typedef ValueType* PtrType;
 
         OwnPtr() : m_ptr(0) { }

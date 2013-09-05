@@ -66,7 +66,7 @@ PageOverlay::PageOverlay(WebViewImpl* viewImpl, WebPageOverlay* overlay)
 
 class OverlayGraphicsLayerClientImpl : public WebCore::GraphicsLayerClient {
 public:
-    static PassOwnPtr<OverlayGraphicsLayerClientImpl*> create(WebPageOverlay* overlay)
+    static PassOwnPtr<OverlayGraphicsLayerClientImpl> create(WebPageOverlay* overlay)
     {
         return adoptPtr(new OverlayGraphicsLayerClientImpl(overlay));
     }
