@@ -1045,7 +1045,6 @@ crbug.com/231863 compositing/visibility/visibility-composited-animation.html [ P
 crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]
 crbug.com/231880 fast/dom/Window/open-window-min-size.html [ Failure Pass ]
 crbug.com/231917 [ Win Mac ] fast/parser/external-entities-in-xslt.xml [ Failure Pass ]
-crbug.com/231932 http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
 crbug.com/235449 fast/loader/stateobjects/state-attribute-history-getter.html [ Failure Pass ]
 crbug.com/235448 fast/loader/stateobjects/popstate-fires-on-history-traversal.html [ Failure Pass ]
 crbug.com/235110 [ Mac ] virtual/softwarecompositing [ Skip ]
