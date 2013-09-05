@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -32,8 +33,7 @@ class WebGraphicsContext3DCommandBufferImpl;
 //
 // The public methods of the class can be called from any thread, and are
 // internally trampolined to the appropriate thread.  GPU/GL-related calls go to
-// the constructor-argument loop (the media thread), and shmem-related calls go
-// to the render thread.
+// the constructor-argument loop (the media thread).
 class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
     : public media::GpuVideoAcceleratorFactories {
  public:
@@ -82,11 +82,10 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   // |message_loop_|.
   void AsyncGetContext(WebGraphicsContext3DCommandBufferImpl* context);
 
-  // Async versions of the public methods.  They use output parameters instead
-  // of return values and each takes a WaitableEvent* param to signal completion
-  // (except for DeleteTexture, which is fire-and-forget).
-  // AsyncCreateSharedMemory runs on the renderer thread and the rest run on
-  // |message_loop_|.
+  // Async versions of the public methods, run on |message_loop_|.
+  // They use output parameters instead of return values and each takes
+  // a WaitableEvent* param to signal completion (except for DeleteTexture,
+  // which is fire-and-forget).
   // AsyncCreateVideoDecodeAccelerator returns its output in the |vda_| member.
   // AsyncCreateVideoEncodeAccelerator returns its output in the |vea_| member.
   void AsyncCreateVideoDecodeAccelerator(
@@ -103,14 +102,15 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   void AsyncReadPixels(uint32 texture_id,
                        uint32 texture_target,
                        const gfx::Size& size);
-  void AsyncCreateSharedMemory(size_t size);
   void AsyncDestroyVideoDecodeAccelerator();
   void AsyncDestroyVideoEncodeAccelerator();
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
-  scoped_refptr<base::MessageLoopProxy> main_message_loop_;
   scoped_refptr<GpuChannelHost> gpu_channel_host_;
   base::WeakPtr<WebGraphicsContext3DCommandBufferImpl> context_;
+
+  // For sending requests to allocate shared memory in the Browser process.
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   // This event is signaled if we have been asked to Abort().
   base::WaitableEvent aborted_waiter_;
@@ -120,19 +120,11 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   // e.g. AsyncCreateVideoDecodeAccelerator()/AsyncCreateTextures() etc.
   base::WaitableEvent message_loop_async_waiter_;
 
-  // This event is signaled by asynchronous tasks posted to the renderer thread
-  // message loop to indicate their completion. e.g. AsyncCreateSharedMemory.
-  base::WaitableEvent render_thread_async_waiter_;
-
   // The vda returned by the CreateVideoDecodeAccelerator function.
   scoped_ptr<media::VideoDecodeAccelerator> vda_;
 
   // The vea returned by the CreateVideoEncodeAccelerator function.
   scoped_ptr<media::VideoEncodeAccelerator> vea_;
-
-  // Shared memory segment which is returned by the CreateSharedMemory()
-  // function.
-  scoped_ptr<base::SharedMemory> shared_memory_segment_;
 
   // Bitmap returned by ReadPixels().
   SkBitmap read_pixels_bitmap_;

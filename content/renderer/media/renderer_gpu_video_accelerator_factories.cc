@@ -23,11 +23,10 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     WebGraphicsContext3DCommandBufferImpl* context)
     : message_loop_(message_loop),
-      main_message_loop_(base::MessageLoopProxy::current()),
       gpu_channel_host_(gpu_channel_host),
+      thread_safe_sender_(ChildThread::current()->thread_safe_sender()),
       aborted_waiter_(true, false),
-      message_loop_async_waiter_(false, false),
-      render_thread_async_waiter_(false, false) {
+      message_loop_async_waiter_(false, false) {
   // |context| is only required to support HW-accelerated decode.
   if (!context)
     return;
@@ -55,8 +54,7 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
 
 RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories()
     : aborted_waiter_(true, false),
-      message_loop_async_waiter_(false, false),
-      render_thread_async_waiter_(false, false) {}
+      message_loop_async_waiter_(false, false) {}
 
 void RendererGpuVideoAcceleratorFactories::AsyncGetContext(
     WebGraphicsContext3DCommandBufferImpl* context) {
@@ -365,30 +363,7 @@ void RendererGpuVideoAcceleratorFactories::AsyncReadPixels(
 
 base::SharedMemory* RendererGpuVideoAcceleratorFactories::CreateSharedMemory(
     size_t size) {
-  if (main_message_loop_->BelongsToCurrentThread()) {
-    return ChildThread::current()->AllocateSharedMemory(size);
-  }
-  main_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&RendererGpuVideoAcceleratorFactories::AsyncCreateSharedMemory,
-                 this,
-                 size));
-
-  base::WaitableEvent* objects[] = {&aborted_waiter_,
-                                    &render_thread_async_waiter_};
-  if (base::WaitableEvent::WaitMany(objects, arraysize(objects)) == 0)
-    return NULL;
-  return shared_memory_segment_.release();
-}
-
-void RendererGpuVideoAcceleratorFactories::AsyncCreateSharedMemory(
-    size_t size) {
-  DCHECK_EQ(base::MessageLoop::current(),
-            ChildThread::current()->message_loop());
-
-  shared_memory_segment_.reset(
-      ChildThread::current()->AllocateSharedMemory(size));
-  render_thread_async_waiter_.Signal();
+  return ChildThread::AllocateSharedMemory(size, thread_safe_sender_.get());
 }
 
 scoped_refptr<base::MessageLoopProxy>
@@ -407,9 +382,9 @@ RendererGpuVideoAcceleratorFactories::Clone() {
   scoped_refptr<RendererGpuVideoAcceleratorFactories> factories =
       new RendererGpuVideoAcceleratorFactories();
   factories->message_loop_ = message_loop_;
-  factories->main_message_loop_ = main_message_loop_;
   factories->gpu_channel_host_ = gpu_channel_host_;
   factories->context_ = context_;
+  factories->thread_safe_sender_ = thread_safe_sender_;
   return factories;
 }
 

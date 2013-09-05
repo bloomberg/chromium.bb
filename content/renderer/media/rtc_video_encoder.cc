@@ -250,7 +250,6 @@ void RTCVideoEncoder::Impl::Destroy() {
 void RTCVideoEncoder::Impl::NotifyInitializeDone() {
   DVLOG(3) << "Impl::NotifyInitializeDone()";
   DCHECK(thread_checker_.CalledOnValidThread());
-  SignalAsyncWaiter(WEBRTC_VIDEO_CODEC_OK);
 }
 
 void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
@@ -298,6 +297,7 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
     video_encoder_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
         i, output_buffers_[i]->handle(), output_buffers_[i]->mapped_size()));
   }
+  SignalAsyncWaiter(WEBRTC_VIDEO_CODEC_OK);
 }
 
 void RTCVideoEncoder::Impl::BitstreamBufferReady(int32 bitstream_buffer_id,
@@ -614,10 +614,12 @@ void RTCVideoEncoder::ReturnEncodedImage(scoped_ptr<webrtc::EncodedImage> image,
     return;
 
   webrtc::CodecSpecificInfo info;
+  memset(&info, 0, sizeof(info));
   info.codecType = video_codec_type_;
 
   // Generate a header describing a single fragment.
   webrtc::RTPFragmentationHeader header;
+  memset(&header, 0, sizeof(header));
   header.VerifyAndAllocateFragmentationHeader(1);
   header.fragmentationOffset[0] = 0;
   header.fragmentationLength[0] = image->_length;
