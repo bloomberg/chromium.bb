@@ -23,6 +23,7 @@
 #define SVGGlyphElement_h
 
 #if ENABLE(SVG_FONTS)
+#include "SVGNames.h"
 #include "core/platform/graphics/SVGGlyph.h"
 #include "core/svg/SVGElement.h"
 
@@ -56,6 +57,12 @@ private:
 
     void invalidateGlyphCache();
 };
+
+inline SVGGlyphElement* toSVGGlyphElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::glyphTag));
+    return static_cast<SVGGlyphElement*>(node);
+}
 
 } // namespace WebCore
 

@@ -21,6 +21,7 @@
 #define SVGVKernElement_h
 
 #if ENABLE(SVG_FONTS)
+#include "SVGNames.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFontElement.h"
 
@@ -40,6 +41,12 @@ private:
 
     virtual bool rendererIsNeeded(const NodeRenderingContext&) { return false; }
 };
+
+inline SVGVKernElement* toSVGVKernElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::vkernTag));
+    return static_cast<SVGVKernElement*>(node);
+}
 
 } // namespace WebCore
 

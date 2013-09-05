@@ -124,7 +124,7 @@ void SVGFontElement::ensureGlyphCache()
     Vector<String> ligatures;
     for (Node* child = firstChild(); child; child = child->nextSibling()) {
         if (child->hasTagName(SVGNames::glyphTag)) {
-            SVGGlyphElement* glyph = static_cast<SVGGlyphElement*>(child);
+            SVGGlyphElement* glyph = toSVGGlyphElement(child);
             AtomicString unicode = glyph->fastGetAttribute(SVGNames::unicodeAttr);
             AtomicString glyphId = glyph->getIdAttribute();
             if (glyphId.isEmpty() && unicode.isEmpty())
@@ -136,11 +136,9 @@ void SVGFontElement::ensureGlyphCache()
             if (unicode.length() > 1 && !U16_IS_SURROGATE(unicode[0]))
                 ligatures.append(unicode.string());
         } else if (child->hasTagName(SVGNames::hkernTag)) {
-            SVGHKernElement* hkern = static_cast<SVGHKernElement*>(child);
-            hkern->buildHorizontalKerningPair(m_horizontalKerningPairs);
+            toSVGHKernElement(child)->buildHorizontalKerningPair(m_horizontalKerningPairs);
         } else if (child->hasTagName(SVGNames::vkernTag)) {
-            SVGVKernElement* vkern = static_cast<SVGVKernElement*>(child);
-            vkern->buildVerticalKerningPair(m_verticalKerningPairs);
+            toSVGVKernElement(child)->buildVerticalKerningPair(m_verticalKerningPairs);
         } else if (child->hasTagName(SVGNames::missing_glyphTag) && !firstMissingGlyphElement) {
             firstMissingGlyphElement = toSVGMissingGlyphElement(child);
         }
