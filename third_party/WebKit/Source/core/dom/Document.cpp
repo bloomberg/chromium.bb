@@ -3665,6 +3665,9 @@ void Document::textNodeSplit(Text* oldNode)
             (*it)->textNodeSplit(oldNode);
     }
 
+    if (m_frame)
+        m_frame->selection().textNodeSplit(*oldNode);
+
     // FIXME: This should update markers for spelling and grammar checking.
 }
 

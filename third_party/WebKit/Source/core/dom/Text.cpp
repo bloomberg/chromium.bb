@@ -72,11 +72,11 @@ PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& es)
     if (es.hadException())
         return 0;
 
-    if (parentNode())
-        document().textNodeSplit(this);
-
     if (renderer())
         toRenderText(renderer())->setTextWithOffset(dataImpl(), 0, oldStr.length());
+
+    if (parentNode())
+        document().textNodeSplit(this);
 
     return newText.release();
 }

@@ -37,6 +37,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"
+#include "core/dom/Text.h"
 #include "core/editing/Editor.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/RenderedPosition.h"
@@ -387,54 +388,80 @@ void FrameSelection::respondToNodeModification(Node* node, bool baseRemoved, boo
         setSelection(VisibleSelection(), DoNotSetFocus);
 }
 
-static void updatePositionAfterAdoptingTextReplacement(Position& position, CharacterData* node, unsigned offset, unsigned oldLength, unsigned newLength)
+static Position updatePositionAfterAdoptingTextReplacement(const Position& position, CharacterData* node, unsigned offset, unsigned oldLength, unsigned newLength)
 {
     if (!position.anchorNode() || position.anchorNode() != node || position.anchorType() != Position::PositionIsOffsetInAnchor)
-        return;
+        return position;
 
     // See: http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html#Level-2-Range-Mutation
     ASSERT(position.offsetInContainerNode() >= 0);
     unsigned positionOffset = static_cast<unsigned>(position.offsetInContainerNode());
     // Replacing text can be viewed as a deletion followed by insertion.
     if (positionOffset >= offset && positionOffset <= offset + oldLength)
-        position.moveToOffset(offset);
+        positionOffset = offset;
 
     // Adjust the offset if the position is after the end of the deleted contents
     // (positionOffset > offset + oldLength) to avoid having a stale offset.
     if (positionOffset > offset + oldLength)
-        position.moveToOffset(positionOffset - oldLength + newLength);
+        positionOffset = positionOffset - oldLength + newLength;
 
-    ASSERT(static_cast<unsigned>(position.offsetInContainerNode()) <= node->length());
+    ASSERT(positionOffset <= node->length());
+    // CharacterNode in VisibleSelection must be Text node, because Comment
+    // and ProcessingInstruction node aren't visible.
+    return Position(toText(node), positionOffset);
 }
 
-static inline bool nodeIsDetachedFromDocument(Node* node)
+static inline bool nodeIsDetachedFromDocument(const Node& node)
 {
-    ASSERT(node);
-    Node* highest = highestAncestor(node);
+    Node* highest = node.highestAncestor();
     return highest->nodeType() == Node::DOCUMENT_FRAGMENT_NODE && !highest->isShadowRoot();
 }
 
 void FrameSelection::textWasReplaced(CharacterData* node, unsigned offset, unsigned oldLength, unsigned newLength)
 {
     // The fragment check is a performance optimization. See http://trac.webkit.org/changeset/30062.
-    if (isNone() || !node || nodeIsDetachedFromDocument(node))
+    if (isNone() || !node || nodeIsDetachedFromDocument(*node))
         return;
 
-    Position base = m_selection.base();
-    Position extent = m_selection.extent();
-    Position start = m_selection.start();
-    Position end = m_selection.end();
-    updatePositionAfterAdoptingTextReplacement(base, node, offset, oldLength, newLength);
-    updatePositionAfterAdoptingTextReplacement(extent, node, offset, oldLength, newLength);
-    updatePositionAfterAdoptingTextReplacement(start, node, offset, oldLength, newLength);
-    updatePositionAfterAdoptingTextReplacement(end, node, offset, oldLength, newLength);
+    Position base = updatePositionAfterAdoptingTextReplacement(m_selection.base(), node, offset, oldLength, newLength);
+    Position extent = updatePositionAfterAdoptingTextReplacement(m_selection.extent(), node, offset, oldLength, newLength);
+    Position start = updatePositionAfterAdoptingTextReplacement(m_selection.start(), node, offset, oldLength, newLength);
+    Position end = updatePositionAfterAdoptingTextReplacement(m_selection.end(), node, offset, oldLength, newLength);
+    updateSelectionIfNeeded(base, extent, start, end);
+}
 
-    if (base != m_selection.base() || extent != m_selection.extent() || start != m_selection.start() || end != m_selection.end()) {
-        VisibleSelection newSelection;
-        newSelection.setWithoutValidation(base, extent);
-        m_frame->document()->updateLayout();
-        setSelection(newSelection, DoNotSetFocus);
-    }
+static Position updatePostionAfterAdoptingTextNodeSplit(const Position& position, const Text& oldNode)
+{
+    if (!position.anchorNode() || position.anchorNode() != &oldNode || position.anchorType() != Position::PositionIsOffsetInAnchor)
+        return position;
+    // See: http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html#Level-2-Range-Mutation
+    ASSERT(position.offsetInContainerNode() >= 0);
+    unsigned positionOffset = static_cast<unsigned>(position.offsetInContainerNode());
+    unsigned oldLength = oldNode.length();
+    if (positionOffset <= oldLength)
+        return position;
+    return Position(toText(oldNode.nextSibling()), positionOffset - oldLength);
+}
+
+void FrameSelection::textNodeSplit(const Text& oldNode)
+{
+    if (isNone() || nodeIsDetachedFromDocument(oldNode))
+        return;
+    Position base = updatePostionAfterAdoptingTextNodeSplit(m_selection.base(), oldNode);
+    Position extent = updatePostionAfterAdoptingTextNodeSplit(m_selection.extent(), oldNode);
+    Position start = updatePostionAfterAdoptingTextNodeSplit(m_selection.start(), oldNode);
+    Position end = updatePostionAfterAdoptingTextNodeSplit(m_selection.end(), oldNode);
+    updateSelectionIfNeeded(base, extent, start, end);
+}
+
+void FrameSelection::updateSelectionIfNeeded(const Position& base, const Position& extent, const Position& start, const Position& end)
+{
+    if (base == m_selection.base() && extent == m_selection.extent() && start == m_selection.start() && end == m_selection.end())
+        return;
+    VisibleSelection newSelection;
+    newSelection.setWithoutValidation(base, extent);
+    m_frame->document()->updateLayout();
+    setSelection(newSelection, DoNotSetFocus);
 }
 
 TextDirection FrameSelection::directionOfEnclosingBlock()
