@@ -41,9 +41,7 @@
         "type": "object",
         "description": "This holds the results of a lookup, the filter of the lookup, the time of the lookup, and whether there are more results that match.",
         "properties": {
-          "activities": {"type": "array", "items": {"$ref": "ExtensionActivity"}},
-          "maxTime": {"type": "integer", "optional": true},
-          "moreResults": {"type": "boolean"}
+          "activities": {"type": "array", "items": {"$ref": "ExtensionActivity"}}
         }
       }
     ],
@@ -57,12 +55,6 @@
             "name": "filter",
             "$ref": "Filter",
             "description": "Fill out the fields that you want to search for in the database."
-          },
-          {
-            "name": "maxTime",
-            "type": "integer",
-            "optional": true,
-            "description": "Specify this if you want results that weren't available in the first page."
           },
           {
             "name": "callback",

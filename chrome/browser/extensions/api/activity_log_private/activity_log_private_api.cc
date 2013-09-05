@@ -163,12 +163,8 @@ void ActivityLogPrivateGetExtensionActivitiesFunction::OnLookupCompleted(
   }
 
   // Populate the return object.
-  // TODO(felt): Implement paging. Right now max_time and more_results are
-  // placeholder values.
   scoped_ptr<ActivityResultSet> result_set(new ActivityResultSet);
   result_set->activities = result_arr;
-  result_set->max_time = scoped_ptr<int>(new int(0));
-  result_set->more_results = false;
   results_ = activity_log_private::GetExtensionActivities::Results::Create(
       *result_set);
 

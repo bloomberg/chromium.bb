@@ -186,6 +186,11 @@ class CountingPolicyTest : public testing::Test {
     ASSERT_EQ(2, static_cast<int>(i->size()));
   }
 
+  static void RetrieveActions_FetchFilteredActions300(
+      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
+    ASSERT_EQ(300, static_cast<int>(i->size()));
+  }
+
   static void Arguments_Stripped(scoped_ptr<Action::ActionVector> i) {
     scoped_refptr<Action> last = i->front();
     std::string args =
@@ -779,6 +784,31 @@ TEST_F(CountingPolicyTest, EarlyFlush) {
   policy->ScheduleAndForget(policy, &CountingPolicyTest::CheckQueueSize);
   WaitOnThread(BrowserThread::DB);
 
+  policy->Close();
+}
+
+TEST_F(CountingPolicyTest, CapReturns) {
+  CountingPolicy* policy = new CountingPolicy(profile_.get());
+
+  for (int i = 0; i < 305; i++) {
+    scoped_refptr<Action> action =
+        new Action("punky",
+                   base::Time::Now(),
+                   Action::ACTION_API_CALL,
+                   base::StringPrintf("apicall_%d", i));
+    policy->ProcessAction(action);
+  }
+  policy->Flush();
+
+  CheckReadFilteredData(
+      policy,
+      "punky",
+      Action::ACTION_ANY,
+      "",
+      "",
+      "",
+      base::Bind(
+          &CountingPolicyTest::RetrieveActions_FetchFilteredActions300));
   policy->Close();
 }
 

@@ -442,7 +442,8 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
     where_str += where_next + "arg_url LIKE ?";
   std::string query_str = base::StringPrintf(
       "SELECT extension_id,time, action_type, api_name, args, page_url,"
-      "page_title, arg_url, other, count FROM %s WHERE %s ORDER BY time DESC",
+      "page_title, arg_url, other, count FROM %s WHERE %s ORDER BY count DESC "
+      "LIMIT 300",
       kReadViewName,
       where_str.c_str());
   sql::Statement query(db->GetUniqueStatement(query_str.c_str()));

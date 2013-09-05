@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
@@ -154,6 +155,11 @@ class FullStreamUIPolicyTest : public testing::Test {
   static void RetrieveActions_FetchFilteredActions2(
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     ASSERT_EQ(2, static_cast<int>(i->size()));
+  }
+
+  static void RetrieveActions_FetchFilteredActions300(
+      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
+    ASSERT_EQ(300, static_cast<int>(i->size()));
   }
 
   static void Arguments_Present(scoped_ptr<Action::ActionVector> i) {
@@ -639,6 +645,31 @@ TEST_F(FullStreamUIPolicyTest, RemoveSpecificURLs) {
       "punky",
       0,
       base::Bind(&FullStreamUIPolicyTest::SomeURLsRemoved));
+  policy->Close();
+}
+
+TEST_F(FullStreamUIPolicyTest, CapReturns) {
+  FullStreamUIPolicy* policy = new FullStreamUIPolicy(profile_.get());
+
+  for (int i = 0; i < 305; i++) {
+    scoped_refptr<Action> action =
+        new Action("punky",
+                   base::Time::Now(),
+                   Action::ACTION_API_CALL,
+                   base::StringPrintf("apicall_%d", i));
+    policy->ProcessAction(action);
+  }
+  policy->Flush();
+
+  CheckReadFilteredData(
+      policy,
+      "punky",
+      Action::ACTION_ANY,
+      "",
+      "",
+      "",
+      base::Bind(
+          &FullStreamUIPolicyTest::RetrieveActions_FetchFilteredActions300));
   policy->Close();
 }
 

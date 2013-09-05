@@ -158,7 +158,7 @@ scoped_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadFilteredData(
   }
   std::string query_str = base::StringPrintf(
       "SELECT extension_id,time,action_type,api_name,args,page_url,page_title,"
-      "arg_url,other FROM %s WHERE %s ORDER BY time DESC",
+      "arg_url,other FROM %s WHERE %s ORDER BY time DESC LIMIT 300",
       kTableName,
       where_str.c_str());
   sql::Statement query(db->GetUniqueStatement(query_str.c_str()));
