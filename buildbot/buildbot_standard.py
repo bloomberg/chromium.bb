@@ -217,9 +217,6 @@ def BuildScript(status, context):
   # Clean out build directories.
   with Step('clobber', status):
     RemoveDirectory('scons-out')
-    # TODO(bradnelson): drop this once breakpad is re-enabled at its new
-    # location.
-    RemoveDirectory('../breakpad')
     RemoveGypBuildDirectories()
 
   with Step('cleanup_temp', status):

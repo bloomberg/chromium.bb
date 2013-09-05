@@ -20,10 +20,9 @@ vars = {
 }
 
 deps = {
-  # TODO(bradnelson): Re-enable this after the bots have relocated breakpad.
-  #"breakpad":
-  #  ((Var("googlecode_url") % "google-breakpad") + "/trunk@" +
-  #   Var('breakpad_rev')),
+  "breakpad":
+    ((Var("googlecode_url") % "google-breakpad") + "/trunk@" +
+     Var('breakpad_rev')),
   "native_client/tools/perf_expectations":
     Var("chromium_trunk") + "/src/tools/perf_expectations@" + Var("chrome_rev"),
   "testing/gtest":

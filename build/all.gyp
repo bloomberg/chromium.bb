@@ -24,8 +24,7 @@
         '../src/trusted/service_runtime/service_runtime.gyp:*',
         '../src/untrusted/irt/irt.gyp:irt_core_nexe',
         '../src/untrusted/irt/irt_test.gyp:*',
-        # TODO(bradnelson): re-enable after breakpad is relocated.
-        #'../src/untrusted/minidump_generator/minidump_generator.gyp:*',
+        '../src/untrusted/minidump_generator/minidump_generator.gyp:*',
         '../src/untrusted/nacl/nacl.gyp:*',
         '../src/untrusted/nosys/nosys.gyp:*',
         '../src/untrusted/pthread/pthread.gyp:*',
