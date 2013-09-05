@@ -44,7 +44,6 @@
    * timings for resources such as images and script files, and it includes
    * resources requested via XMLHttpRequest.
    *
-   *
    * @return {number} The time since either the load event, or the last
    *   the last resource was received after the load event. If the load
    *   event hasn't yet happened, return 0.
@@ -65,7 +64,10 @@
     // so we must also get load time in the same terms.
     var timing = window.performance.timing;
     var loadTime = timing.loadEventEnd - timing.navigationStart;
-    if (loadTime > lastEntry.responseEnd) {
+
+    // If there have been no resource timing entries, or the last entry was
+    // before the load event, then return the time since the load event.
+    if (!lastEntry || lastEntry.responseEnd < loadTime) {
       return window.performance.now() - loadTime;
     }
     return window.performance.now() - lastEntry.responseEnd;
