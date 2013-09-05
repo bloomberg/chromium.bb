@@ -21,6 +21,7 @@ ContextProvider::Capabilities::Capabilities()
       texture_format_bgra8888(false),
       texture_rectangle(false),
       texture_storage(false),
-      texture_usage(false) {}
+      texture_usage(false),
+      discard_framebuffer(false) {}
 
 }  // namespace cc

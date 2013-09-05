@@ -702,14 +702,15 @@ TEST(GLRendererTest2, InitializationWithQuicklyLostContextDoesNotAssert) {
 
 class ClearCountingContext : public TestWebGraphicsContext3D {
  public:
-  ClearCountingContext() : clear_(0) {}
+  ClearCountingContext() {
+    test_capabilities_.discard_framebuffer = true;
+  }
 
-  virtual void clear(WGC3Dbitfield) { clear_++; }
-
-  int clear_count() const { return clear_; }
-
- private:
-  int clear_;
+  MOCK_METHOD3(discardFramebufferEXT,
+               void(WGC3Denum target,
+                    WGC3Dsizei numAttachments,
+                    const WGC3Denum* attachments));
+  MOCK_METHOD1(clear, void(WGC3Dbitfield mask));
 };
 
 TEST(GLRendererTest2, OpaqueBackground) {
@@ -732,15 +733,17 @@ TEST(GLRendererTest2, OpaqueBackground) {
 
   EXPECT_TRUE(renderer.Initialize());
 
-  renderer.DrawFrame(renderer_client.render_passes_in_draw_order(), NULL);
-
 // On DEBUG builds, render passes with opaque background clear to blue to
 // easily see regions that were not drawn on the screen.
+  EXPECT_CALL(*context, discardFramebufferEXT(GL_FRAMEBUFFER, 1, _))
+      .Times(1);
 #ifdef NDEBUG
-  EXPECT_EQ(0, context->clear_count());
+  EXPECT_CALL(*context, clear(_)).Times(0);
 #else
-  EXPECT_EQ(1, context->clear_count());
+  EXPECT_CALL(*context, clear(_)).Times(1);
 #endif
+  renderer.DrawFrame(renderer_client.render_passes_in_draw_order(), NULL);
+  Mock::VerifyAndClearExpectations(context);
 }
 
 TEST(GLRendererTest2, TransparentBackground) {
@@ -763,9 +766,12 @@ TEST(GLRendererTest2, TransparentBackground) {
 
   EXPECT_TRUE(renderer.Initialize());
 
+  EXPECT_CALL(*context, discardFramebufferEXT(GL_FRAMEBUFFER, 1, _))
+      .Times(1);
+  EXPECT_CALL(*context, clear(_)).Times(1);
   renderer.DrawFrame(renderer_client.render_passes_in_draw_order(), NULL);
 
-  EXPECT_EQ(1, context->clear_count());
+  Mock::VerifyAndClearExpectations(context);
 }
 
 class VisibilityChangeIsLastCallTrackingContext

@@ -83,6 +83,7 @@ struct CC_EXPORT RendererCapabilities {
   bool avoid_pow2_textures;
   bool using_map_image;
   bool using_shared_memory_resources;
+  bool using_discard_framebuffer;
 };
 
 struct CC_EXPORT UIResourceRequest {

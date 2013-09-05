@@ -264,6 +264,9 @@ void ContextProviderCommandBuffer::InitializeCapabilities() {
   caps.texture_usage = extension_set.count("GL_ANGLE_texture_usage") > 0;
   caps.texture_storage = extension_set.count("GL_EXT_texture_storage") > 0;
 
+  caps.discard_framebuffer =
+      extension_set.count("GL_EXT_discard_framebuffer") > 0;
+
   capabilities_ = caps;
 }
 

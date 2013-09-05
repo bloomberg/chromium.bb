@@ -204,6 +204,9 @@ bool GLRenderer::Initialize() {
   capabilities_.using_map_image =
       Settings().use_map_image && context_caps.map_image;
 
+  capabilities_.using_discard_framebuffer =
+      context_caps.discard_framebuffer;
+
   is_using_bind_uniform_ = context_caps.bind_uniform_location;
 
   if (!InitializeSharedObjects())
@@ -291,6 +294,14 @@ void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
       frame->current_render_pass == frame->root_render_pass) {
     DCHECK(!frame->current_render_pass->has_transparent_background);
     return;
+  }
+
+  if (capabilities_.using_discard_framebuffer) {
+    GLenum attachments[] = {
+        GL_COLOR_EXT
+    };
+    context_->discardFramebufferEXT(
+        GL_FRAMEBUFFER, arraysize(attachments), attachments);
   }
 
   // On DEBUG builds, opaque render passes are cleared to blue to easily see

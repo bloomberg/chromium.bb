@@ -56,7 +56,8 @@ RendererCapabilities::RendererCapabilities()
       max_texture_size(0),
       avoid_pow2_textures(false),
       using_map_image(false),
-      using_shared_memory_resources(false) {}
+      using_shared_memory_resources(false),
+      using_discard_framebuffer(false) {}
 
 RendererCapabilities::~RendererCapabilities() {}
 
