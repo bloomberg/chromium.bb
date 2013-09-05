@@ -134,129 +134,42 @@ void OpenFileManagerWithInternalActionId(const base::FilePath& file_path,
   ExecuteFileTaskForUrl(profile, task, url);
 }
 
-// Opens the file specified by |file_path| and |url| with a file handler,
-// preferably the default handler for the type of the file.  Returns false if
-// no file handler is found.
-bool OpenFileWithFileHandler(Profile* profile,
-                              const base::FilePath& file_path,
-                              const GURL& url,
-                              const std::string& mime_type,
-                              const std::string& default_task_id) {
-  ExtensionService* service = profile->GetExtensionService();
-  if (!service)
-    return false;
-
-  PathAndMimeTypeSet files;
-  files.insert(std::make_pair(file_path, mime_type));
-  const extensions::FileHandlerInfo* first_handler = NULL;
-  const extensions::Extension* extension_for_first_handler = NULL;
-
-  // If we find the default handler, we execute it immediately, but otherwise,
-  // we remember the first handler, and if there was no default handler, simply
-  // execute the first one.
-  for (ExtensionSet::const_iterator iter = service->extensions()->begin();
-       iter != service->extensions()->end();
-       ++iter) {
-    const Extension* extension = iter->get();
-
-    // We don't support using hosted apps to open files.
-    if (!extension->is_platform_app())
-      continue;
-
-    // We only support apps that specify "incognito: split" if in incognito
-    // mode.
-    if (profile->IsOffTheRecord() &&
-        !service->IsIncognitoEnabled(extension->id()))
-      continue;
-
-    typedef std::vector<const extensions::FileHandlerInfo*> FileHandlerList;
-    FileHandlerList file_handlers = FindFileHandlersForFiles(*extension, files);
-    for (FileHandlerList::iterator i = file_handlers.begin();
-         i != file_handlers.end(); ++i) {
-      const extensions::FileHandlerInfo* handler = *i;
-      std::string task_id = file_tasks::MakeTaskID(
-          extension->id(),
-          file_tasks::TASK_TYPE_FILE_HANDLER,
-          handler->id);
-      if (task_id == default_task_id) {
-        file_tasks::TaskDescriptor task(extension->id(),
-                                        file_tasks::TASK_TYPE_FILE_HANDLER,
-                                        handler->id);
-        ExecuteFileTaskForUrl(profile, task, url);
-        return true;
-
-      } else if (!first_handler) {
-        first_handler = handler;
-        extension_for_first_handler = extension;
-      }
-    }
-  }
-  if (first_handler) {
-    file_tasks::TaskDescriptor task(extension_for_first_handler->id(),
-                                    file_tasks::TASK_TYPE_FILE_HANDLER,
-                                    first_handler->id);
-    ExecuteFileTaskForUrl(profile, task, url);
-    return true;
-  }
-  return false;
-}
-
-// Opens the file specified by |file_path| and |url| with the file browser
-// handler specified by |handler|. Returns false if failed to open the file.
-bool OpenFileWithFileBrowserHandler(Profile* profile,
-                                    const base::FilePath& file_path,
-                                    const FileBrowserHandler& handler,
-                                    const GURL& url) {
-  file_tasks::TaskDescriptor task(handler.extension_id(),
-                                  file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
-                                  handler.id());
-  ExecuteFileTaskForUrl(profile, task, url);
-  return true;
-}
-
-// Opens the file specified by |file_path| with a handler (either of file
-// browser handler or file handler, preferably the default handler for the
-// type of the file), or opens the file with the browser. Returns false if
-// failed to open the file.
-bool OpenFileWithHandler(Profile* profile, const base::FilePath& file_path) {
+// Opens the file specified by |file_path| by finding and executing a file
+// task for the file. Returns false if failed to open the file (i.e. no file
+// task is found).
+bool OpenFile(Profile* profile, const base::FilePath& file_path) {
   GURL url;
   if (!ConvertAbsoluteFilePathToFileSystemUrl(
           profile, file_path, kFileManagerAppId, &url))
     return false;
 
+  // The file is opened per the file extension, hence extension-less files
+  // cannot be opened properly.
   std::string mime_type = GetMimeTypeForPath(file_path);
-  std::string default_task_id = file_tasks::GetDefaultTaskIdFromPrefs(
-      *profile->GetPrefs(), mime_type, file_path.Extension());
+  extensions::app_file_handler_util::PathAndMimeTypeSet path_mime_set;
+  path_mime_set.insert(std::make_pair(file_path, mime_type));
 
-  // We choose the file handler from the following in decreasing priority or
-  // fail if none support the file type:
-  // 1. default file browser handler
-  // 2. default file handler
-  // 3. a fallback handler (e.g. opening in the browser)
-  // 4. non-default file handler
-  // 5. non-default file browser handler
-  // Note that there can be at most one of default extension and default app.
-  const FileBrowserHandler* handler =
-      file_browser_handlers::FindFileBrowserHandlerForURLAndPath(
-          profile, url, file_path);
-  if (!handler) {
-    return OpenFileWithFileHandler(
-        profile, file_path, url, mime_type, default_task_id);
+  std::vector<GURL> file_urls;
+  file_urls.push_back(url);
+
+  std::vector<file_tasks::FullTaskDescriptor> tasks;
+  file_tasks::FindAllTypesOfTasks(profile,
+                                  path_mime_set,
+                                  file_urls,
+                                  &tasks);
+  if (tasks.empty())
+    return false;
+
+  const file_tasks::FullTaskDescriptor* chosen_task = &tasks[0];
+  for (size_t i = 0; i < tasks.size(); ++i) {
+    if (tasks[i].is_default()) {
+      chosen_task = &tasks[i];
+      break;
+    }
   }
 
-  const file_tasks::TaskDescriptor task_descriptor(
-      handler->extension_id(),
-      file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
-      handler->id());
-  const std::string handler_task_id =
-      file_tasks::TaskDescriptorToId(task_descriptor);
-  if (handler_task_id != default_task_id &&
-      !file_browser_handlers::IsFallbackFileBrowserHandler(task_descriptor) &&
-      OpenFileWithFileHandler(
-          profile, file_path, url, mime_type, default_task_id)) {
-    return true;
-  }
-  return OpenFileWithFileBrowserHandler(profile, file_path, *handler, url);
+  ExecuteFileTaskForUrl(profile, chosen_task->task_descriptor(), url);
+  return true;
 }
 
 // Used to implement OpenItem().
@@ -269,8 +182,8 @@ void ContinueOpenItem(Profile* profile,
     // A directory exists at |file_path|. Open it with the file manager.
     OpenFileManagerWithInternalActionId(file_path, "open");
   } else {
-    // |file_path| should be a file. Open it with a handler.
-    if (!OpenFileWithHandler(profile, file_path))
+    // |file_path| should be a file. Open it.
+    if (!OpenFile(profile, file_path))
       ShowWarningMessageBox(profile, file_path);
   }
 }

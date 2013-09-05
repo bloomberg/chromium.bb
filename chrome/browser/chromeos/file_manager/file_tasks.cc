@@ -431,7 +431,7 @@ void FindFileBrowserHandlerTasks(
   DCHECK(result_list);
 
   file_browser_handlers::FileBrowserHandlerList common_tasks =
-      file_browser_handlers::FindCommonFileBrowserHandlers(profile, file_urls);
+      file_browser_handlers::FindFileBrowserHandlers(profile, file_urls);
   if (common_tasks.empty())
     return;
 

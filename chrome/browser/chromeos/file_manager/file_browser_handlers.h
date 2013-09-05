@@ -43,29 +43,11 @@ typedef std::vector<const FileBrowserHandler*> FileBrowserHandlerList;
 // extensions.
 bool IsFallbackFileBrowserHandler(const file_tasks::TaskDescriptor& task);
 
-// Finds file browser handlers set as default from |common_tasks| for
-// |file_list|. If no handlers are set as default, choose the the firstly
-// found fallback handler as default.
-FileBrowserHandlerList FindDefaultFileBrowserHandlers(
-    const PrefService& pref_service,
-    const std::vector<base::FilePath>& file_list,
-    const FileBrowserHandlerList& common_tasks);
-
 // Returns the list of file browser handlers that can open all files in
 // |file_list|.
-FileBrowserHandlerList FindCommonFileBrowserHandlers(
+FileBrowserHandlerList FindFileBrowserHandlers(
     Profile* profile,
     const std::vector<GURL>& file_list);
-
-// Finds a file browser handler for a file whose URL is |url| and whose path
-// is |path|. Returns the default handler if one is defined (The default
-// handler is the one that is assigned to the file manager task button by
-// default). If the default handler is not found, tries to match the url with
-// one of the file browser handlers.
-const FileBrowserHandler* FindFileBrowserHandlerForURLAndPath(
-    Profile* profile,
-    const GURL& url,
-    const base::FilePath& path);
 
 // Executes a file browser handler specified by |extension| of the given
 // action ID for |file_urls|. Returns false if undeclared handlers are

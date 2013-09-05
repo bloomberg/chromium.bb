@@ -527,51 +527,7 @@ bool IsFallbackFileBrowserHandler(const file_tasks::TaskDescriptor& task) {
            task.app_id == extension_misc::kQuickOfficeExtensionId));
 }
 
-FileBrowserHandlerList FindDefaultFileBrowserHandlers(
-    const PrefService& pref_service,
-    const std::vector<base::FilePath>& file_list,
-    const FileBrowserHandlerList& common_handlers) {
-  FileBrowserHandlerList default_handlers;
-
-  std::set<std::string> default_ids;
-  for (std::vector<base::FilePath>::const_iterator it = file_list.begin();
-       it != file_list.end(); ++it) {
-    std::string task_id = file_tasks::GetDefaultTaskIdFromPrefs(
-        pref_service, "", it->Extension());
-    if (!task_id.empty())
-      default_ids.insert(task_id);
-  }
-
-  const FileBrowserHandler* fallback_handler = NULL;
-  // Convert the default task IDs collected above to one of the handler pointers
-  // from common_handlers.
-  for (size_t i = 0; i < common_handlers.size(); ++i) {
-    const FileBrowserHandler* handler = common_handlers[i];
-    const file_tasks::TaskDescriptor task_descriptor(
-        handler->extension_id(),
-        file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
-        handler->id());
-    const std::string task_id =
-        file_tasks::TaskDescriptorToId(task_descriptor);
-    std::set<std::string>::iterator default_iter = default_ids.find(task_id);
-    if (default_iter != default_ids.end()) {
-      default_handlers.push_back(handler);
-      continue;
-    }
-
-    // Remember the first fallback handler.
-    if (!fallback_handler && IsFallbackFileBrowserHandler(task_descriptor))
-      fallback_handler = handler;
-  }
-
-  // If there are no default handlers found, use fallback as default.
-  if (fallback_handler && default_handlers.empty())
-    default_handlers.push_back(fallback_handler);
-
-  return default_handlers;
-}
-
-FileBrowserHandlerList FindCommonFileBrowserHandlers(
+FileBrowserHandlerList FindFileBrowserHandlers(
     Profile* profile,
     const std::vector<GURL>& file_list) {
   FileBrowserHandlerList common_handlers;
@@ -620,40 +576,6 @@ FileBrowserHandlerList FindCommonFileBrowserHandlers(
   }
 
   return common_handlers;
-}
-
-const FileBrowserHandler* FindFileBrowserHandlerForURLAndPath(
-    Profile* profile,
-    const GURL& url,
-    const base::FilePath& file_path) {
-  std::vector<GURL> file_urls;
-  file_urls.push_back(url);
-
-  FileBrowserHandlerList common_handlers =
-      FindCommonFileBrowserHandlers(profile, file_urls);
-  if (common_handlers.empty())
-    return NULL;
-
-  std::vector<base::FilePath> file_paths;
-  file_paths.push_back(file_path);
-
-  FileBrowserHandlerList default_handlers =
-      FindDefaultFileBrowserHandlers(*profile->GetPrefs(),
-                                     file_paths,
-                                     common_handlers);
-
-  // If there's none, or more than one, then we don't have a canonical default.
-  if (!default_handlers.empty()) {
-    // There should not be multiple default handlers for a single URL.
-    DCHECK_EQ(1u, default_handlers.size());
-
-    return *default_handlers.begin();
-  }
-
-  // If there are no default handlers, use first handler in the list (file
-  // manager does the same in this situation).  TODO(tbarzic): This is not so
-  // optimal behaviour.
-  return *common_handlers.begin();
 }
 
 }  // namespace file_browser_handlers
