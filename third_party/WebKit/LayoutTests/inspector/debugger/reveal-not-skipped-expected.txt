@@ -1,0 +1,30 @@
+CONSOLE MESSAGE: line 11: Uncaught ReferenceError: unknown_var is not defined
+CONSOLE MESSAGE: line 11: Uncaught ReferenceError: unknown_var is not defined
+Tests that certain user actions in scripts panel reveal execution line.
+
+Debugger was enabled.
+
+Running: testRevealAfterPausedOnException
+Showing script1 source...
+Script source was shown for 'script1.js'.
+Throwing exception...
+Script source was shown for 'reveal-not-skipped.html'.
+Reloading page...
+Script execution paused.
+Script execution resumed.
+Page reloaded.
+Showing script1 source...
+Script source was shown for 'script1.js'.
+Throwing exception...
+Script source was shown for 'reveal-not-skipped.html'.
+
+Running: testRevealAfterPrettyPrintWhenPaused
+Throwing exception...
+Script execution paused.
+Showing script1 source...
+Script source was shown for 'script1.js'.
+Formatting...
+Script source was shown for 'reveal-not-skipped.html'.
+Script execution resumed.
+Debugger was disabled.
+
