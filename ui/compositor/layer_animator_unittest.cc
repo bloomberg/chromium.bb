@@ -112,7 +112,6 @@ class DeletingLayerAnimationObserver : public LayerAnimationObserver {
 
  private:
   LayerAnimator* animator_;
-  LayerAnimationSequence* sequence_;
 
   DISALLOW_COPY_AND_ASSIGN(DeletingLayerAnimationObserver);
 };
