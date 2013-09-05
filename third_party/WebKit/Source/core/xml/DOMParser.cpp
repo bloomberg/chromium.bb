@@ -20,14 +20,13 @@
 #include "core/xml/DOMParser.h"
 
 #include "core/dom/DOMImplementation.h"
-#include "core/dom/Document.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 PassRefPtr<Document> DOMParser::parseFromString(const String& str, const String& contentType)
 {
-    if (!DOMImplementation::isXMLMIMEType(contentType))
+    if (!DOMImplementation::isXMLMIMEType(contentType) && contentType != "text/html")
         return 0;
 
     RefPtr<Document> doc = DOMImplementation::createDocument(contentType, 0, KURL(), false);
