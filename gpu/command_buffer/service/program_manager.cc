@@ -118,6 +118,20 @@ bool GetUniformNameSansElement(
   return true;
 }
 
+bool IsBuiltInVarying(const std::string& name) {
+  // Built-in variables.
+  const char* kBuiltInVaryings[] = {
+      "gl_FragCoord",
+      "gl_FrontFacing",
+      "gl_PointCoord"
+  };
+  for (size_t ii = 0; ii < arraysize(kBuiltInVaryings); ++ii) {
+    if (name == kBuiltInVaryings[ii])
+      return true;
+  }
+  return false;
+}
+
 }  // anonymous namespace.
 
 Program::UniformInfo::UniformInfo()
@@ -542,6 +556,10 @@ bool Program::Link(ShaderManager* manager,
     set_log_info("Varyings with the same name but different type, "
                  "or statically used varyings in fragment shader are not "
                  "declared in vertex shader");
+    return false;
+  }
+  if (!CheckVaryingsPacking()) {
+    set_log_info("Varyings over maximum register limit");
     return false;
   }
 
@@ -1034,21 +1052,8 @@ bool Program::DetectVaryingsMismatch() const {
   for (ShaderTranslator::VariableMap::const_iterator iter =
            fragment_varyings->begin();
        iter != fragment_varyings->end(); ++iter) {
-    // Built-in variables.
-    const char* kBuiltInVaryings[] = {
-        "gl_FragCoord",
-        "gl_FrontFacing",
-        "gl_PointCoord"
-    };
     const std::string& name = iter->first;
-    bool is_built_in = false;
-    for (size_t ii = 0; ii < arraysize(kBuiltInVaryings); ++ii) {
-      if (name == kBuiltInVaryings[ii]) {
-        is_built_in = true;
-        break;
-      }
-    }
-    if (is_built_in)
+    if (IsBuiltInVarying(name))
       continue;
 
     ShaderTranslator::VariableMap::const_iterator hit =
@@ -1065,6 +1070,55 @@ bool Program::DetectVaryingsMismatch() const {
 
   }
   return false;
+}
+
+bool Program::CheckVaryingsPacking() const {
+  DCHECK(attached_shaders_[0] &&
+         attached_shaders_[0]->shader_type() == GL_VERTEX_SHADER &&
+         attached_shaders_[1] &&
+         attached_shaders_[1]->shader_type() == GL_FRAGMENT_SHADER);
+  const ShaderTranslator::VariableMap* vertex_varyings =
+      &(attached_shaders_[0]->varying_map());
+  const ShaderTranslator::VariableMap* fragment_varyings =
+      &(attached_shaders_[1]->varying_map());
+
+  std::map<std::string, ShVariableInfo> combined_map;
+
+  for (ShaderTranslator::VariableMap::const_iterator iter =
+           fragment_varyings->begin();
+       iter != fragment_varyings->end(); ++iter) {
+    if (!iter->second.static_use)
+      continue;
+    if (!IsBuiltInVarying(iter->first)) {
+      ShaderTranslator::VariableMap::const_iterator vertex_iter =
+          vertex_varyings->find(iter->first);
+      if (vertex_iter == vertex_varyings->end() ||
+          !vertex_iter->second.static_use)
+        continue;
+    }
+
+    ShVariableInfo var;
+    var.type = static_cast<ShDataType>(iter->second.type);
+    var.size = iter->second.size;
+    combined_map[iter->first] = var;
+  }
+
+  if (combined_map.size() == 0)
+    return true;
+  scoped_ptr<ShVariableInfo[]> variables(
+      new ShVariableInfo[combined_map.size()]);
+  size_t index = 0;
+  for (std::map<std::string, ShVariableInfo>::const_iterator iter =
+           combined_map.begin();
+       iter != combined_map.end(); ++iter) {
+    variables[index].type = iter->second.type;
+    variables[index].size = iter->second.size;
+    ++index;
+  }
+  return ShCheckVariablesWithinPackingLimits(
+      static_cast<int>(manager_->max_varying_vectors()),
+      variables.get(),
+      combined_map.size()) == 1;
 }
 
 static uint32 ComputeOffset(const void* start, const void* position) {
@@ -1164,13 +1218,15 @@ Program::~Program() {
 }
 
 
-ProgramManager::ProgramManager(ProgramCache* program_cache)
+ProgramManager::ProgramManager(ProgramCache* program_cache,
+                               uint32 max_varying_vectors)
     : program_count_(0),
       have_context_(true),
       disable_workarounds_(
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisableGpuDriverBugWorkarounds)),
-      program_cache_(program_cache) { }
+      program_cache_(program_cache),
+      max_varying_vectors_(max_varying_vectors) { }
 
 ProgramManager::~ProgramManager() {
   DCHECK(programs_.empty());
