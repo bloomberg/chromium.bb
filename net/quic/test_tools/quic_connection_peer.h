@@ -78,6 +78,9 @@ class QuicConnectionPeer {
   static void SetSelfAddress(QuicConnection* connection,
                              const IPEndPoint& self_address);
 
+  static void SetPeerAddress(QuicConnection* connection,
+                             const IPEndPoint& peer_address);
+
   static void SwapCrypters(QuicConnection* connection, QuicFramer* framer);
 
   static void SetMaxPacketsPerRetransmissionAlarm(QuicConnection* connection,

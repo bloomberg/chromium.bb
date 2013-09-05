@@ -55,6 +55,10 @@ bool QuicClientSession::CryptoConnect() {
   return crypto_stream_.CryptoConnect();
 }
 
+int QuicClientSession::GetNumSentClientHellos() const {
+  return crypto_stream_.num_sent_client_hellos();
+}
+
 ReliableQuicStream* QuicClientSession::CreateIncomingReliableStream(
     QuicStreamId id) {
   DLOG(ERROR) << "Server push not supported";

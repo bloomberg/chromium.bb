@@ -176,6 +176,15 @@ TEST_F(QuicSessionTest, IsClosedStreamDefault) {
   }
 }
 
+TEST_F(QuicSessionTest, ImplicitlyCreatedStreams) {
+  ASSERT_TRUE(session_.GetIncomingReliableStream(7) != NULL);
+  // Both 3 and 5 should be implicitly created.
+  EXPECT_FALSE(session_.IsClosedStream(3));
+  EXPECT_FALSE(session_.IsClosedStream(5));
+  ASSERT_TRUE(session_.GetIncomingReliableStream(5) != NULL);
+  ASSERT_TRUE(session_.GetIncomingReliableStream(3) != NULL);
+}
+
 TEST_F(QuicSessionTest, IsClosedStreamLocallyCreated) {
   TestStream* stream2 = session_.CreateOutgoingReliableStream();
   EXPECT_EQ(2u, stream2->id());

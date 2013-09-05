@@ -570,20 +570,27 @@ class QuicConnectionTest : public ::testing::Test {
     return ProcessDataPacket(number, 1, entropy_flag);
   }
 
-  // Sends an FEC packet that covers the packets that would have been sent.
+  // Processes an FEC packet that covers the packets that would have been
+  // received.
   size_t ProcessFecPacket(QuicPacketSequenceNumber number,
                           QuicPacketSequenceNumber min_protected_packet,
                           bool expect_revival,
-                          bool entropy_flag) {
+                          bool entropy_flag,
+                          QuicPacket* packet) {
     if (expect_revival) {
       EXPECT_CALL(visitor_, OnPacket(_, _, _, _)).WillOnce(DoAll(
           SaveArg<2>(&revived_header_), Return(accept_packet_)));
     }
 
     // Construct the decrypted data packet so we can compute the correct
-    // redundancy.
-    scoped_ptr<QuicPacket> data_packet(ConstructDataPacket(number, 1,
-                                                           !kEntropyFlag));
+    // redundancy. If |packet| has been provided then use that, otherwise
+    // construct a default data packet.
+    scoped_ptr<QuicPacket> data_packet;
+    if (packet) {
+      data_packet.reset(packet);
+    } else {
+      data_packet.reset(ConstructDataPacket(number, 1, !kEntropyFlag));
+    }
 
     header_.public_header.guid = guid_;
     header_.public_header.reset_flag = false;
@@ -595,6 +602,7 @@ class QuicConnectionTest : public ::testing::Test {
     header_.fec_group = min_protected_packet;
     QuicFecData fec_data;
     fec_data.fec_group = header_.fec_group;
+
     // Since all data packets in this test have the same payload, the
     // redundancy is either equal to that payload or the xor of that payload
     // with itself, depending on the number of packets.
@@ -608,6 +616,7 @@ class QuicConnectionTest : public ::testing::Test {
       }
     }
     fec_data.redundancy = data_packet->FecProtectedData();
+
     scoped_ptr<QuicPacket> fec_packet(
         framer_.BuildFecPacket(header_, fec_data).packet);
     scoped_ptr<QuicEncryptedPacket> encrypted(
@@ -1598,14 +1607,14 @@ TEST_F(QuicConnectionTest, DontLatchUnackedPacket) {
 
 TEST_F(QuicConnectionTest, ReviveMissingPacketAfterFecPacket) {
   // Don't send missing packet 1.
-  ProcessFecPacket(2, 1, true, !kEntropyFlag);
+  ProcessFecPacket(2, 1, true, !kEntropyFlag, NULL);
   EXPECT_FALSE(revived_header_.entropy_flag);
 }
 
 TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPacketThenFecPacket) {
   ProcessFecProtectedPacket(1, false, kEntropyFlag);
   // Don't send missing packet 2.
-  ProcessFecPacket(3, 1, true, !kEntropyFlag);
+  ProcessFecPacket(3, 1, true, !kEntropyFlag, NULL);
   EXPECT_TRUE(revived_header_.entropy_flag);
 }
 
@@ -1613,13 +1622,13 @@ TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPacketsThenFecPacket) {
   ProcessFecProtectedPacket(1, false, !kEntropyFlag);
   // Don't send missing packet 2.
   ProcessFecProtectedPacket(3, false, !kEntropyFlag);
-  ProcessFecPacket(4, 1, true, kEntropyFlag);
+  ProcessFecPacket(4, 1, true, kEntropyFlag, NULL);
   EXPECT_TRUE(revived_header_.entropy_flag);
 }
 
 TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPacket) {
   // Don't send missing packet 1.
-  ProcessFecPacket(3, 1, false, !kEntropyFlag);
+  ProcessFecPacket(3, 1, false, !kEntropyFlag, NULL);
   // out of order
   ProcessFecProtectedPacket(2, true, !kEntropyFlag);
   EXPECT_FALSE(revived_header_.entropy_flag);
@@ -1628,7 +1637,7 @@ TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPacket) {
 TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPackets) {
   ProcessFecProtectedPacket(1, false, !kEntropyFlag);
   // Don't send missing packet 2.
-  ProcessFecPacket(6, 1, false, kEntropyFlag);
+  ProcessFecPacket(6, 1, false, kEntropyFlag, NULL);
   ProcessFecProtectedPacket(3, false, kEntropyFlag);
   ProcessFecProtectedPacket(4, false, kEntropyFlag);
   ProcessFecProtectedPacket(5, true, !kEntropyFlag);
@@ -1899,7 +1908,7 @@ TEST_F(QuicConnectionTest, DontUpdateQuicCongestionFeedbackFrameForRevived) {
   // Process an FEC packet, and revive the missing data packet
   // but only contact the receive_algorithm once.
   EXPECT_CALL(*receive_algorithm_, RecordIncomingPacket(_, _, _, _));
-  ProcessFecPacket(2, 1, true, !kEntropyFlag);
+  ProcessFecPacket(2, 1, true, !kEntropyFlag, NULL);
 }
 
 TEST_F(QuicConnectionTest, InitialTimeout) {
@@ -2477,7 +2486,7 @@ TEST_F(QuicConnectionTest, CheckReceiveStats) {
   received_bytes += ProcessFecProtectedPacket(3, false, !kEntropyFlag);
   // Should be counted against dropped packets.
   received_bytes += ProcessDataPacket(3, 1, !kEntropyFlag);
-  received_bytes += ProcessFecPacket(4, 1, true, !kEntropyFlag);  // Fec packet
+  received_bytes += ProcessFecPacket(4, 1, true, !kEntropyFlag, NULL);
 
   EXPECT_CALL(*send_algorithm_, SmoothedRtt()).WillOnce(
       Return(QuicTime::Delta::Zero()));
@@ -2610,6 +2619,129 @@ TEST_F(QuicConnectionTest, ConnectionCloseWhenNothingPending) {
   EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_PACKET_HEADER, false));
   ProcessDataPacket(6000, 0, !kEntropyFlag);
   EXPECT_EQ(1u, helper_->packets_write_attempts());
+}
+
+TEST_F(QuicConnectionTest, AckNotifierTriggerCallback) {
+  // Create a delegate which we expect to be called.
+  MockAckNotifierDelegate delegate;
+  EXPECT_CALL(delegate, OnAckNotification()).Times(1);;
+
+  // Send some data, which will register the delegate to be notified.
+  connection_.SendStreamDataAndNotifyWhenAcked(1, "foo", 0, !kFin, &delegate);
+
+  // Process an ACK from the server which should trigger the callback.
+  EXPECT_CALL(visitor_, OnAck(_)).Times(1);
+  EXPECT_CALL(*send_algorithm_, OnIncomingAck(_, _, _)).Times(1);
+  QuicAckFrame frame(1, QuicTime::Zero(), 0);
+  ProcessAckPacket(&frame, true);
+}
+
+TEST_F(QuicConnectionTest, AckNotifierFailToTriggerCallback) {
+  // Create a delegate which we don't expect to be called.
+  MockAckNotifierDelegate delegate;
+  EXPECT_CALL(delegate, OnAckNotification()).Times(0);;
+
+  EXPECT_CALL(visitor_, OnAck(_)).Times(1);
+  EXPECT_CALL(*send_algorithm_, OnIncomingAck(_, _, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_, OnIncomingLoss(_)).Times(1);
+
+  // Send some data, which will register the delegate to be notified. This will
+  // not be ACKed and so the delegate should never be called.
+  connection_.SendStreamDataAndNotifyWhenAcked(1, "foo", 0, !kFin, &delegate);
+
+  // Send some other data which we will ACK.
+  connection_.SendStreamData(1, "foo", 0, !kFin);
+  connection_.SendStreamData(1, "bar", 0, !kFin);
+
+  // Now we receive ACK for packets 2 and 3, but importantly missing packet 1
+  // which we registered to be notified about.
+  QuicAckFrame frame(3, QuicTime::Zero(), 0);
+  frame.received_info.missing_packets.insert(1);
+  ProcessAckPacket(&frame, true);
+}
+
+TEST_F(QuicConnectionTest, AckNotifierCallbackAfterRetransmission) {
+  // Create a delegate which we expect to be called.
+  MockAckNotifierDelegate delegate;
+  EXPECT_CALL(delegate, OnAckNotification()).Times(1);;
+
+  // OnAck called twice: once with missing packet, once after retransmit.
+  EXPECT_CALL(visitor_, OnAck(_)).Times(2);
+
+  // In total expect ACKs for all 4 packets.
+  EXPECT_CALL(*send_algorithm_, OnIncomingAck(_, _, _)).Times(4);
+
+  // We will lose the second packet.
+  EXPECT_CALL(*send_algorithm_, OnIncomingLoss(_)).Times(1);
+
+  // Send four packets, and register to be notified on ACK of packet 2.
+  connection_.SendStreamData(1, "foo", 0, !kFin);
+  connection_.SendStreamDataAndNotifyWhenAcked(1, "bar", 0, !kFin, &delegate);
+  connection_.SendStreamData(1, "baz", 0, !kFin);
+  connection_.SendStreamData(1, "qux", 0, !kFin);
+
+  // Now we receive ACK for packets 1, 3, and 4.
+  QuicAckFrame frame(4, QuicTime::Zero(), 0);
+  frame.received_info.missing_packets.insert(2);
+  ProcessAckPacket(&frame, true);
+
+  // Advance time to trigger RTO, for packet 2 (which should be retransmitted as
+  // packet 5).
+  EXPECT_CALL(*send_algorithm_, AbandoningPacket(2, _)).Times(1);
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(1);
+
+  clock_.AdvanceTime(DefaultRetransmissionTime());
+  connection_.OnRetransmissionTimeout();
+
+  // Now we get an ACK for packet 5 (retransmitted packet 2), which should
+  // trigger the callback.
+  QuicAckFrame second_ack_frame(5, QuicTime::Zero(), 0);
+  ProcessAckPacket(&second_ack_frame, true);
+}
+
+// TODO(rjshade): Add a similar test that FEC recovery on peer (and resulting
+//                ACK) triggers notification on our end.
+TEST_F(QuicConnectionTest, AckNotifierCallbackAfterFECRecovery) {
+  EXPECT_CALL(visitor_, OnCanWrite()).Times(1).WillOnce(Return(true));
+
+  // Create a delegate which we expect to be called.
+  MockAckNotifierDelegate delegate;
+  EXPECT_CALL(delegate, OnAckNotification()).Times(1);;
+
+  // Expect ACKs for 1 packet.
+  EXPECT_CALL(visitor_, OnAck(_)).Times(1);
+  EXPECT_CALL(*send_algorithm_, OnIncomingAck(_, _, _)).Times(1);
+
+  // Send one packet, and register to be notified on ACK.
+  connection_.SendStreamDataAndNotifyWhenAcked(1, "foo", 0, !kFin, &delegate);
+
+  // Ack packet gets dropped, but we receive an FEC packet that covers it.
+  // Should recover the Ack packet and trigger the notification callback.
+  QuicFrames frames;
+
+  QuicAckFrame ack_frame(1, QuicTime::Zero(), 0);
+  frames.push_back(QuicFrame(&ack_frame));
+
+  // Dummy stream frame to satisfy expectations set elsewhere.
+  QuicFrame frame(&frame1_);
+  frames.push_back(frame);
+
+  QuicPacketHeader ack_header;
+  ack_header.public_header.guid = guid_;
+  ack_header.public_header.reset_flag = false;
+  ack_header.public_header.version_flag = false;
+  ack_header.entropy_flag = !kEntropyFlag;
+  ack_header.fec_flag = true;
+  ack_header.packet_sequence_number = 42;
+  ack_header.is_in_fec_group = IN_FEC_GROUP;
+  ack_header.fec_group = 1;
+
+  QuicPacket* packet =
+      framer_.BuildUnsizedDataPacket(ack_header, frames).packet;
+
+  // Take the packet which contains the ACK frame, and construct and deliver an
+  // FEC packet which allows the ACK packet to be recovered.
+  ProcessFecPacket(2, 1, true, !kEntropyFlag, packet);
 }
 
 class MockQuicConnectionDebugVisitor

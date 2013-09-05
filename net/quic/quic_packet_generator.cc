@@ -12,6 +12,8 @@ using base::StringPiece;
 
 namespace net {
 
+class QuicAckNotifier;
+
 QuicPacketGenerator::QuicPacketGenerator(DelegateInterface* delegate,
                                          DebugDelegateInterface* debug_delegate,
                                          QuicPacketCreator* creator)
@@ -60,7 +62,6 @@ void QuicPacketGenerator::SetShouldSendAck(bool also_send_feedback) {
   SendQueuedFrames();
 }
 
-
 void QuicPacketGenerator::AddControlFrame(const QuicFrame& frame) {
   queued_control_frames_.push_back(frame);
   SendQueuedFrames();
@@ -70,6 +71,14 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
                                                   StringPiece data,
                                                   QuicStreamOffset offset,
                                                   bool fin) {
+  return ConsumeData(id, data, offset, fin, NULL);
+}
+
+QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
+                                                  StringPiece data,
+                                                  QuicStreamOffset offset,
+                                                  bool fin,
+                                                  QuicAckNotifier* notifier) {
   IsHandshake handshake = id == kCryptoStreamId ? IS_HANDSHAKE : NOT_HANDSHAKE;
   // The caller should have flushed pending frames before sending handshake
   // messages.
@@ -82,8 +91,15 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
   while (delegate_->CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
                              handshake)) {
     QuicFrame frame;
-    size_t bytes_consumed = packet_creator_->CreateStreamFrame(
+    size_t bytes_consumed;
+    if (notifier != NULL) {
+      // We want to track which packet this stream frame ends up in.
+      bytes_consumed = packet_creator_->CreateStreamFrameWithNotifier(
+        id, data, offset + total_bytes_consumed, fin, notifier, &frame);
+    } else {
+      bytes_consumed = packet_creator_->CreateStreamFrame(
         id, data, offset + total_bytes_consumed, fin, &frame);
+    }
     bool success = AddFrame(frame);
     DCHECK(success);
 

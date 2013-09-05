@@ -366,6 +366,14 @@ class TestDecompressorVisitor : public QuicSpdyDecompressor::Visitor {
   bool error_;
 };
 
+class MockAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
+ public:
+  MockAckNotifierDelegate();
+  virtual ~MockAckNotifierDelegate();
+
+  MOCK_METHOD0(OnAckNotification, void());
+};
+
 }  // namespace test
 }  // namespace net
 

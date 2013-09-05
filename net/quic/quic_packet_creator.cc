@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "net/quic/crypto/quic_random.h"
+#include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_utils.h"
 
@@ -30,7 +31,7 @@ QuicPacketCreator::QuicPacketCreator(QuicGuid guid,
       send_version_in_packet_(!is_server),
       sequence_number_length_(options_.send_sequence_number_length),
       packet_size_(0) {
-  framer_->set_fec_builder(this);
+  framer_->set_fec_builder(reinterpret_cast<QuicFecBuilderInterface*>(this));
 }
 
 QuicPacketCreator::~QuicPacketCreator() {
@@ -138,6 +139,23 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
   return bytes_consumed;
 }
 
+size_t QuicPacketCreator::CreateStreamFrameWithNotifier(
+    QuicStreamId id,
+    StringPiece data,
+    QuicStreamOffset offset,
+    bool fin,
+    QuicAckNotifier* notifier,
+    QuicFrame* frame) {
+  size_t bytes_consumed = CreateStreamFrame(id, data, offset, fin, frame);
+
+  // The frame keeps track of the QuicAckNotifier until it is serialized into
+  // a packet. At that point the notifier is informed of the sequence number
+  // of the packet that this frame was eventually sent in.
+  frame->stream_frame->notifier = notifier;
+
+  return bytes_consumed;
+}
+
 SerializedPacket QuicPacketCreator::ReserializeAllFrames(
     const QuicFrames& frames,
     QuicSequenceNumberLength original_length) {
@@ -215,8 +233,19 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
   QuicPacketHeader header;
   FillPacketHeader(fec_group_number_, false, false, &header);
 
-  SerializedPacket serialized = framer_->BuildDataPacket(
-      header, queued_frames_, PacketSize());
+  SerializedPacket serialized =
+      framer_->BuildDataPacket(header, queued_frames_, packet_size_);
+
+  // Run through all the included frames and if any of them have an AckNotifier
+  // registered, then inform the AckNotifier that it should be interested in
+  // this packet's sequence number.
+  for (QuicFrames::iterator it = queued_frames_.begin();
+       it != queued_frames_.end(); ++it) {
+    if (it->type == STREAM_FRAME && it->stream_frame->notifier != NULL) {
+      it->stream_frame->notifier->AddSequenceNumber(serialized.sequence_number);
+    }
+  }
+
   packet_size_ = 0;
   queued_frames_.clear();
   serialized.retransmittable_frames = queued_retransmittable_frames_.release();

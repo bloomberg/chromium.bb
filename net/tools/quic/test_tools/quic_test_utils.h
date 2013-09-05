@@ -103,6 +103,14 @@ class TestSession : public QuicSession {
   DISALLOW_COPY_AND_ASSIGN(TestSession);
 };
 
+class MockAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
+ public:
+  MockAckNotifierDelegate();
+  virtual ~MockAckNotifierDelegate();
+
+  MOCK_METHOD0(OnAckNotification, void());
+};
+
 }  // namespace test
 }  // namespace tools
 }  // namespace net

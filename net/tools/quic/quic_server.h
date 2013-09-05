@@ -18,8 +18,6 @@
 
 namespace net {
 
-class QuicCryptoServerConfig;
-
 namespace tools {
 
 class QuicDispatcher;
@@ -66,6 +64,10 @@ class QuicServer : public EpollCallbackInterface {
                                   const QuicEncryptedPacket& packet,
                                   const IPEndPoint& server_address,
                                   const IPEndPoint& client_address);
+
+  void SetStrikeRegisterNoStartupPeriod() {
+    crypto_config_.set_strike_register_no_startup_period();
+  }
 
   bool overflow_supported() { return overflow_supported_; }
 

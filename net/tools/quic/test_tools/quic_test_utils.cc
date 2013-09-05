@@ -76,6 +76,12 @@ QuicCryptoStream* TestSession::GetCryptoStream() {
   return crypto_stream_;
 }
 
+MockAckNotifierDelegate::MockAckNotifierDelegate() {
+}
+
+MockAckNotifierDelegate::~MockAckNotifierDelegate() {
+}
+
 }  // namespace test
 }  // namespace tools
 }  // namespace net

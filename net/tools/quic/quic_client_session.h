@@ -39,6 +39,11 @@ class QuicClientSession : public QuicSession {
   // handshake is started successfully.
   bool CryptoConnect();
 
+  // Returns the number of client hello messages that have been sent on the
+  // crypto stream. If the handshake has completed then this is one greater
+  // than the number of round-trips needed for the handshake.
+  int GetNumSentClientHellos() const;
+
  protected:
   // QuicSession methods:
   virtual ReliableQuicStream* CreateIncomingReliableStream(

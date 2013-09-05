@@ -1606,6 +1606,11 @@ std::string IPAddressToStringWithPort(const IPAddressNumber& addr,
   return IPAddressToStringWithPort(&addr.front(), addr.size(), port);
 }
 
+std::string IPAddressToPackedString(const IPAddressNumber& addr) {
+  return std::string(reinterpret_cast<const char *>(&addr.front()),
+                     addr.size());
+}
+
 std::string GetHostName() {
 #if defined(OS_WIN)
   EnsureWinsockInit();

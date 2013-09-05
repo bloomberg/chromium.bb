@@ -27,6 +27,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/linked_hash_map.h"
 #include "net/quic/congestion_control/quic_congestion_manager.h"
+#include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_alarm.h"
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_connection_stats.h"
@@ -213,6 +214,16 @@ class NET_EXPORT_PRIVATE QuicConnection
                                   base::StringPiece data,
                                   QuicStreamOffset offset,
                                   bool fin);
+  // Same as above, except that the provided delegate will be informed once ACKs
+  // have been received for all the packets written.
+  // The |delegate| is not owned by the QuicConnection and must outlive it.
+  QuicConsumedData SendStreamDataAndNotifyWhenAcked(
+      QuicStreamId id,
+      base::StringPiece data,
+      QuicStreamOffset offset,
+      bool fin,
+      QuicAckNotifier::DelegateInterface* delegate);
+
   // Send a stream reset frame to the peer.
   virtual void SendRstStream(QuicStreamId id,
                              QuicRstStreamErrorCode error);
@@ -504,6 +515,7 @@ class NET_EXPORT_PRIVATE QuicConnection
                               std::vector<RetransmissionTime>,
                               RetransmissionTimeComparator>
       RetransmissionTimeouts;
+  typedef std::list<QuicAckNotifier*> AckNotifierList;
 
   // Sends a version negotiation packet to the peer.
   void SendVersionNegotiationPacket();
@@ -700,6 +712,12 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Set to true if the udp packet headers have a new self or peer address.
   // This is checked later on validating a data or version negotiation packet.
   bool address_migrating_;
+
+  // On every ACK frame received by this connection, all the ack_notifiers_ will
+  // be told which sequeunce numbers were ACKed.
+  // Once a given QuicAckNotifier has seen all the sequence numbers it is
+  // interested in, it will be deleted, and removed from this list.
+  AckNotifierList ack_notifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

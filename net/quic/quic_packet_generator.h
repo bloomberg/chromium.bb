@@ -57,6 +57,8 @@
 
 namespace net {
 
+class QuicAckNotifier;
+
 class NET_EXPORT_PRIVATE QuicPacketGenerator {
  public:
   class NET_EXPORT_PRIVATE DelegateInterface {
@@ -90,10 +92,23 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
 
   void SetShouldSendAck(bool also_send_feedback);
   void AddControlFrame(const QuicFrame& frame);
+
+  // Given some data, may consume part or all of it and pass it to the packet
+  // creator to be serialized into packets. If not in batch mode, these packets
+  // will also be sent during this call.
   QuicConsumedData ConsumeData(QuicStreamId id,
                                base::StringPiece data,
                                QuicStreamOffset offset,
                                bool fin);
+
+  // As above, but attaches a QuicAckNotifier to any created stream frames,
+  // which will be called once the frame is ACKed by the peer.
+  // The QuicAckNotifier is owned by the QuicConnection.
+  QuicConsumedData ConsumeData(QuicStreamId id,
+                               base::StringPiece data,
+                               QuicStreamOffset offset,
+                               bool fin,
+                               QuicAckNotifier* notifier);
 
   // Indicates whether batch mode is currently enabled.
   bool InBatchMode();
@@ -121,6 +136,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   bool AddNextPendingFrame();
 
   bool AddFrame(const QuicFrame& frame);
+
   void SerializeAndSendPacket();
 
   DelegateInterface* delegate_;

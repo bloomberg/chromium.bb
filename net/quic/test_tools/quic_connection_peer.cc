@@ -127,6 +127,12 @@ void QuicConnectionPeer::SetSelfAddress(QuicConnection* connection,
 }
 
 // static
+void QuicConnectionPeer::SetPeerAddress(QuicConnection* connection,
+                                        const IPEndPoint& peer_address) {
+  connection->peer_address_ = peer_address;
+}
+
+// static
 void QuicConnectionPeer::SwapCrypters(QuicConnection* connection,
                                       QuicFramer* framer) {
   framer->SwapCryptersForTest(&connection->framer_);

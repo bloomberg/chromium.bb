@@ -152,7 +152,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
       crypto_config_->LookupOrCreate(server_hostname_);
 
   if (in != NULL) {
-    DVLOG(1) << "Client received: " << in->DebugString();
+    DVLOG(1) << "Client: Received " << in->DebugString();
   }
 
   for (;;) {
@@ -172,7 +172,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           crypto_config_->FillInchoateClientHello(
               server_hostname_, cached, &crypto_negotiated_params_, &out);
           next_state_ = STATE_RECV_REJ;
-          DVLOG(1) << "Client Sending: " << out.DebugString();
+          DVLOG(1) << "Client: Sending " << out.DebugString();
           SendHandshakeMessage(out);
           return;
         }
@@ -200,7 +200,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           cert_verify_result_.reset();
         }
         next_state_ = STATE_RECV_SHLO;
-        DVLOG(1) << "Client Sending: " << out.DebugString();
+        DVLOG(1) << "Client: Sending " << out.DebugString();
         SendHandshakeMessage(out);
         // Be prepared to decrypt with the new server write key.
         session()->connection()->SetAlternativeDecrypter(

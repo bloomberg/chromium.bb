@@ -102,7 +102,8 @@ QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
     : stream_id(stream_id),
       fin(fin),
       offset(offset),
-      data(data) {
+      data(data),
+      notifier(NULL) {
 }
 
 uint32 MakeQuicTag(char a, char b, char c, char d) {
@@ -126,6 +127,8 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
       return MakeQuicTag('Q', '0', '0', '8');
     case QUIC_VERSION_9:
       return MakeQuicTag('Q', '0', '0', '9');
+    case QUIC_VERSION_10:
+      return MakeQuicTag('Q', '0', '1', '0');
     default:
       // This shold be an ERROR because we should never attempt to convert an
       // invalid QuicVersion to be written to the wire.
@@ -138,6 +141,7 @@ QuicVersion QuicTagToQuicVersion(const QuicTag version_tag) {
   const QuicTag quic_tag_v7 = MakeQuicTag('Q', '0', '0', '7');
   const QuicTag quic_tag_v8 = MakeQuicTag('Q', '0', '0', '8');
   const QuicTag quic_tag_v9 = MakeQuicTag('Q', '0', '0', '9');
+  const QuicTag quic_tag_v10 = MakeQuicTag('Q', '0', '1', '0');
 
   if (version_tag == quic_tag_v7) {
     return QUIC_VERSION_7;
@@ -145,6 +149,8 @@ QuicVersion QuicTagToQuicVersion(const QuicTag version_tag) {
     return QUIC_VERSION_8;
   }  else if (version_tag == quic_tag_v9) {
     return QUIC_VERSION_9;
+  } else if (version_tag == quic_tag_v10) {
+    return QUIC_VERSION_10;
   } else {
     // Reading from the client so this should not be considered an ERROR.
     DLOG(INFO) << "Unsupported QuicTag version: "
@@ -162,6 +168,7 @@ string QuicVersionToString(const QuicVersion version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_7);
     RETURN_STRING_LITERAL(QUIC_VERSION_8);
     RETURN_STRING_LITERAL(QUIC_VERSION_9);
+    RETURN_STRING_LITERAL(QUIC_VERSION_10);
     default:
       return "QUIC_VERSION_UNSUPPORTED";
   }
@@ -413,6 +420,21 @@ const QuicFrame& RetransmittableFrames::AddNonStreamFrame(
 void RetransmittableFrames::set_encryption_level(EncryptionLevel level) {
   encryption_level_ = level;
 }
+
+SerializedPacket::SerializedPacket(
+    QuicPacketSequenceNumber sequence_number,
+    QuicSequenceNumberLength sequence_number_length,
+    QuicPacket* packet,
+    QuicPacketEntropyHash entropy_hash,
+    RetransmittableFrames* retransmittable_frames)
+    : sequence_number(sequence_number),
+      sequence_number_length(sequence_number_length),
+      packet(packet),
+      entropy_hash(entropy_hash),
+      retransmittable_frames(retransmittable_frames) {
+}
+
+SerializedPacket::~SerializedPacket() {}
 
 ostream& operator<<(ostream& os, const QuicEncryptedPacket& s) {
   os << s.length() << "-byte data";

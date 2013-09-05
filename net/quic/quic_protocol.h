@@ -27,6 +27,7 @@ namespace net {
 
 using ::operator<<;
 
+class QuicAckNotifier;
 class QuicPacket;
 struct QuicPacketHeader;
 
@@ -99,12 +100,12 @@ enum IsHandshake {
 
 enum QuicFrameType {
   PADDING_FRAME = 0,
-  STREAM_FRAME,
-  ACK_FRAME,
-  CONGESTION_FEEDBACK_FRAME,
   RST_STREAM_FRAME,
   CONNECTION_CLOSE_FRAME,
   GOAWAY_FRAME,
+  STREAM_FRAME,
+  ACK_FRAME,
+  CONGESTION_FEEDBACK_FRAME,
   NUM_FRAME_TYPES
 };
 
@@ -190,7 +191,8 @@ enum QuicVersion {
 
   QUIC_VERSION_7 = 7,
   QUIC_VERSION_8 = 8,
-  QUIC_VERSION_9 = 9,  // Current version.
+  QUIC_VERSION_9 = 9,
+  QUIC_VERSION_10 = 10,  // Current version.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -198,7 +200,7 @@ enum QuicVersion {
 // element, with subsequent elements in descending order (versions can be
 // skipped as necessary).
 static const QuicVersion kSupportedQuicVersions[] =
-    {QUIC_VERSION_9};
+    {QUIC_VERSION_10, QUIC_VERSION_9};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -474,6 +476,10 @@ struct NET_EXPORT_PRIVATE QuicStreamFrame {
   bool fin;
   QuicStreamOffset offset;  // Location of this data in the stream.
   base::StringPiece data;
+
+  // If this is set, then when this packet is ACKed the AckNotifier will be
+  // informed.
+  QuicAckNotifier* notifier;
 };
 
 // TODO(ianswett): Re-evaluate the trade-offs of hash_set vs set when framing
@@ -829,28 +835,24 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
                    QuicSequenceNumberLength sequence_number_length,
                    QuicPacket* packet,
                    QuicPacketEntropyHash entropy_hash,
-                   RetransmittableFrames* retransmittable_frames)
-      : sequence_number(sequence_number),
-        sequence_number_length(sequence_number_length),
-        packet(packet),
-        entropy_hash(entropy_hash),
-        retransmittable_frames(retransmittable_frames) {}
+                   RetransmittableFrames* retransmittable_frames);
+  ~SerializedPacket();
 
   QuicPacketSequenceNumber sequence_number;
   QuicSequenceNumberLength sequence_number_length;
   QuicPacket* packet;
   QuicPacketEntropyHash entropy_hash;
   RetransmittableFrames* retransmittable_frames;
+
+  // If set, these will be called when this packet is ACKed by the peer.
+  std::set<QuicAckNotifier*> notifiers;
 };
 
 // A struct for functions which consume data payloads and fins.
-// The first member of the pair indicates bytes consumed.
-// The second member of the pair indicates if an incoming fin was consumed.
 struct QuicConsumedData {
   QuicConsumedData(size_t bytes_consumed, bool fin_consumed)
       : bytes_consumed(bytes_consumed),
         fin_consumed(fin_consumed) {}
-
   // By default, gtest prints the raw bytes of an object. The bool data
   // member causes this object to have padding bytes, which causes the
   // default gtest object printer to read uninitialize memory. So we need
@@ -858,7 +860,10 @@ struct QuicConsumedData {
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os, const QuicConsumedData& s);
 
+  // How many bytes were consumed.
   size_t bytes_consumed;
+
+  // True if an incoming fin was consumed.
   bool fin_consumed;
 };
 

@@ -61,13 +61,18 @@ void GenerateBody(string* body, int length) {
 // Simple wrapper class to run server in a thread.
 class ServerThread : public base::SimpleThread {
  public:
-  explicit ServerThread(IPEndPoint address, const QuicConfig& config)
+  ServerThread(IPEndPoint address,
+               const QuicConfig& config,
+               bool strike_register_no_startup_period)
       : SimpleThread("server_thread"),
         listening_(true, false),
         quit_(true, false),
         server_(config),
         address_(address),
         port_(0) {
+    if (strike_register_no_startup_period) {
+      server_.SetStrikeRegisterNoStartupPeriod();
+    }
   }
   virtual ~ServerThread() {
   }
@@ -116,7 +121,8 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
   EndToEndTest()
       : server_hostname_("example.com"),
-        server_started_(false) {
+        server_started_(false),
+        strike_register_no_startup_period_(false) {
     net::IPAddressNumber ip;
     CHECK(net::ParseIPLiteralToNumber("127.0.0.1", &ip));
     server_address_ = IPEndPoint(ip, 0);
@@ -154,7 +160,8 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   void StartServer() {
-    server_thread_.reset(new ServerThread(server_address_, server_config_));
+    server_thread_.reset(new ServerThread(server_address_, server_config_,
+                                          strike_register_no_startup_period_));
     server_thread_->Start();
     server_thread_->listening()->Wait();
     server_address_ = IPEndPoint(server_address_.address(),
@@ -210,6 +217,7 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
   QuicConfig client_config_;
   QuicConfig server_config_;
   QuicVersion version_;
+  bool strike_register_no_startup_period_;
 };
 
 // Run all end to end tests with all supported versions.
@@ -442,6 +450,9 @@ TEST_P(EndToEndTest, LargePost) {
 }
 
 TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
+  // Have the server accept 0-RTT without waiting a startup period.
+  strike_register_no_startup_period_ = true;
+
   // Send a request and then disconnect. This prepares the client to attempt
   // a 0-RTT handshake for the next request.
   ASSERT_TRUE(Initialize());
@@ -454,14 +465,15 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
   request.AddBody(body, true);
 
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+  EXPECT_EQ(2, client_->client()->session()->GetNumSentClientHellos());
 
   client_->Disconnect();
 
   // The 0-RTT handshake should succeed.
-  // TODO(wtc): figure out why this 0-RTT handshake takes 1 RTT.
   client_->Connect();
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+  EXPECT_EQ(1, client_->client()->session()->GetNumSentClientHellos());
 
   client_->Disconnect();
 
@@ -472,6 +484,7 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
   client_->Connect();
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+  EXPECT_EQ(2, client_->client()->session()->GetNumSentClientHellos());
 }
 
 // TODO(ianswett): Enable once b/9295090 is fixed.

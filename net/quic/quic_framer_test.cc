@@ -319,6 +319,18 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
     framer_.set_version(version_);
   }
 
+  // Helper function to get unsigned char representation of digit in the
+  // units place of the current QUIC version number.
+  unsigned char GetQuicVersionDigitOnes() {
+    return static_cast<unsigned char> ('0' + version_%10);
+  }
+
+  // Helper function to get unsigned char representation of digit in the
+  // tens place of the current QUIC version number.
+  unsigned char GetQuicVersionDigitTens() {
+    return static_cast<unsigned char> ('0' + (version_/10)%10);
+  }
+
   bool CheckEncryption(QuicPacketSequenceNumber sequence_number,
                        QuicPacket* packet) {
     if (sequence_number != encrypter_->sequence_number_) {
@@ -423,20 +435,6 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
                   &framer_, PACKET_6BYTE_SEQUENCE_NUMBER, wire_sequence_number))
         << "last_sequence_number: " << last_sequence_number
         << " wire_sequence_number: " << wire_sequence_number;
-  }
-
-  char LastCharOfVersion() {
-    switch (GetParam()) {
-      case QUIC_VERSION_7:
-        return '7';
-      case QUIC_VERSION_8:
-        return '8';
-      case QUIC_VERSION_9:
-        return '9';
-      default:
-        CHECK(0) << "Invalid version";
-        return 0;
-    }
   }
 
   test::TestEncrypter* encrypter_;
@@ -814,7 +812,7 @@ TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', LastCharOfVersion(),
+    'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -1040,23 +1038,10 @@ TEST_P(QuicFramerTest, InvalidPublicFlag) {
     // private flags
     0x00,
 
-    // frame count
-    0x01,
-    // frame type (stream frame)
-    0x01,
-    // stream id
-    0x04, 0x03, 0x02, 0x01,
-    // fin
-    0x01,
-    // offset
-    0x54, 0x76, 0x10, 0x32,
-    0xDC, 0xFE, 0x98, 0xBA,
-    // data length
-    0x0c, 0x00,
-    // data
-    'h',  'e',  'l',  'l',
-    'o',  ' ',  'w',  'o',
-    'r',  'l',  'd',  '!',
+    // frame type (padding)
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x07 : 0x00),
+    0x00, 0x00, 0x00, 0x00
   };
   CheckProcessingFails(packet,
                        arraysize(packet),
@@ -1072,30 +1057,17 @@ TEST_P(QuicFramerTest, InvalidPublicFlagWithMatchingVersions) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', LastCharOfVersion(),
+    'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
     // private flags
     0x00,
 
-    // frame count
-    0x01,
-    // frame type (stream frame)
-    0x01,
-    // stream id
-    0x04, 0x03, 0x02, 0x01,
-    // fin
-    0x01,
-    // offset
-    0x54, 0x76, 0x10, 0x32,
-    0xDC, 0xFE, 0x98, 0xBA,
-    // data length
-    0x0c, 0x00,
-    // data
-    'h',  'e',  'l',  'l',
-    'o',  ' ',  'w',  'o',
-    'r',  'l',  'd',  '!',
+    // frame type (padding)
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x07 : 0x00),
+    0x00, 0x00, 0x00, 0x00
   };
   CheckProcessingFails(packet,
                        arraysize(packet),
@@ -1119,7 +1091,9 @@ TEST_P(QuicFramerTest, LargePublicFlagWithMismatchedVersions) {
     0x00,
 
     // frame type (padding frame)
-    0x07,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x07 : 0x00),
+    0x00, 0x00, 0x00, 0x00
   };
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_TRUE(framer_.ProcessPacket(encrypted));
@@ -1142,23 +1116,10 @@ TEST_P(QuicFramerTest, InvalidPrivateFlag) {
     // private flags
     0x10,
 
-    // frame count
-    0x01,
-    // frame type (stream frame)
-    0x01,
-    // stream id
-    0x04, 0x03, 0x02, 0x01,
-    // fin
-    0x01,
-    // offset
-    0x54, 0x76, 0x10, 0x32,
-    0xDC, 0xFE, 0x98, 0xBA,
-    // data length
-    0x0c, 0x00,
-    // data
-    'h',  'e',  'l',  'l',
-    'o',  ' ',  'w',  'o',
-    'r',  'l',  'd',  '!',
+    // frame type (padding)
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x07 : 0x00),
+    0x00, 0x00, 0x00, 0x00
   };
   CheckProcessingFails(packet,
                        arraysize(packet),
@@ -1202,14 +1163,20 @@ TEST_P(QuicFramerTest, PaddingFrame) {
     0x00,
 
     // frame type (padding frame)
-    0x07,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x07 : 0x00),
     // Ignored data (which in this case is a stream frame)
-    0x01,
+    // frame type (stream frame with fin)
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0xFE : 0xFF),
+    // stream id
     0x04, 0x03, 0x02, 0x01,
-    0x01,
+    // offset
     0x54, 0x76, 0x10, 0x32,
     0xDC, 0xFE, 0x98, 0xBA,
+    // data length
     0x0c, 0x00,
+    // data
     'h',  'e',  'l',  'l',
     'o',  ' ',  'w',  'o',
     'r',  'l',  'd',  '!',
@@ -1245,7 +1212,8 @@ TEST_P(QuicFramerTest, StreamFrame) {
     0x00,
 
     // frame type (stream frame with fin)
-    0xFE,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0xFE : 0xFF),
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // offset
@@ -1293,7 +1261,8 @@ TEST_P(QuicFramerTest, StreamFrame3ByteStreamId) {
     0x00,
 
     // frame type (stream frame with fin)
-    0xFC,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0xFC : 0xFE),
     // stream id
     0x04, 0x03, 0x02,
     // offset
@@ -1316,7 +1285,7 @@ TEST_P(QuicFramerTest, StreamFrame3ByteStreamId) {
 
   ASSERT_EQ(1u, visitor_.stream_frames_.size());
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
-  EXPECT_EQ(static_cast<uint64>(0x00020304),
+  EXPECT_EQ(GG_UINT64_C(0x00020304),
             visitor_.stream_frames_[0]->stream_id);
   EXPECT_TRUE(visitor_.stream_frames_[0]->fin);
   EXPECT_EQ(GG_UINT64_C(0xBA98FEDC32107654),
@@ -1342,7 +1311,8 @@ TEST_P(QuicFramerTest, StreamFrame2ByteStreamId) {
     0x00,
 
     // frame type (stream frame with fin)
-    0xFA,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0xFA : 0xFD),
     // stream id
     0x04, 0x03,
     // offset
@@ -1391,7 +1361,8 @@ TEST_P(QuicFramerTest, StreamFrame1ByteStreamId) {
     0x00,
 
     // frame type (stream frame with fin)
-    0xF8,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0xF8 : 0xFC),
     // stream id
     0x04,
     // offset
@@ -1434,7 +1405,7 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', LastCharOfVersion(),
+    'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -1442,7 +1413,8 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
     0x00,
 
     // frame type (stream frame with fin)
-    0xFE,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0xFE : 0xFF),
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // offset
@@ -1494,7 +1466,8 @@ TEST_P(QuicFramerTest, RejectPacket) {
     0x00,
 
     // frame type (stream frame with fin)
-    0xFE,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0xFE : 0xFF),
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // offset
@@ -1522,7 +1495,8 @@ TEST_P(QuicFramerTest, RejectPacket) {
 TEST_P(QuicFramerTest, RevivedStreamFrame) {
   unsigned char payload[] = {
     // frame type (stream frame with fin)
-    0xFE,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0xFE : 0xFF),
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // offset
@@ -1591,7 +1565,8 @@ TEST_P(QuicFramerTest, StreamFrameInFecGroup) {
     0x02,
 
     // frame type (stream frame with fin)
-    0xFE,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0xFE : 0xFF),
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // offset
@@ -1643,7 +1618,8 @@ TEST_P(QuicFramerTest, AckFrame) {
     0x00,
 
     // frame type (ack frame)
-    static_cast<unsigned char>(0x01),
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x01 : 0x40),
     // entropy hash of sent packets till least awaiting - 1.
     0xAB,
     // least packet sequence number awaiting an ack
@@ -1736,7 +1712,8 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameTCP) {
     0x00,
 
     // frame type (congestion feedback frame)
-    0x03,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x03 : 0x20),
     // congestion feedback type (tcp)
     0x00,
     // ack_frame.feedback.tcp.accumulated_number_of_lost_packets
@@ -1793,7 +1770,8 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
     0x00,
 
     // frame type (congestion feedback frame)
-    0x03,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x03 : 0x20),
     // congestion feedback type (inter arrival)
     0x01,
     // accumulated_number_of_lost_packets
@@ -1889,7 +1867,8 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameFixRate) {
     0x00,
 
     // frame type (congestion feedback frame)
-    0x03,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x03 : 0x20),
     // congestion feedback type (fix rate)
     0x02,
     // bitrate_in_bytes_per_second;
@@ -1941,7 +1920,8 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameInvalidFeedback) {
     0x00,
 
     // frame type (congestion feedback frame)
-    0x03,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x03 : 0x20),
     // congestion feedback type (invalid)
     0x03,
   };
@@ -1966,7 +1946,8 @@ TEST_P(QuicFramerTest, RstStreamFrame) {
     0x00,
 
     // frame type (rst stream frame)
-    static_cast<unsigned char>(0x27),
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x27 : 0x01),
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // error code
@@ -2025,7 +2006,8 @@ TEST_P(QuicFramerTest, ConnectionCloseFrame) {
     0x00,
 
     // frame type (connection close frame)
-    static_cast<unsigned char>(0x2F),
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x2F : 0x02),
     // error code
     0x11, 0x00, 0x00, 0x00,
 
@@ -2112,7 +2094,8 @@ TEST_P(QuicFramerTest, GoAwayFrame) {
     0x00,
 
     // frame type (go away frame)
-    static_cast<unsigned char>(0x37),
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x37 : 0x03),
     // error code
     0x09, 0x00, 0x00, 0x00,
     // stream id
@@ -2219,7 +2202,7 @@ TEST_P(QuicFramerTest, VersionNegotiationPacket) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', LastCharOfVersion(),
+    'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
     'Q', '2', '.', '0',
   };
 
@@ -2312,7 +2295,9 @@ TEST_P(QuicFramerTest, BuildPaddingFramePacket) {
     0x00,
 
     // frame type (padding frame)
-    static_cast<unsigned char>(0x07),
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x07 : 0x00),
+    0x00, 0x00, 0x00, 0x00
   };
 
   uint64 header_size =
@@ -2357,7 +2342,9 @@ TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
     0x00,
 
     // frame type (padding frame)
-    static_cast<unsigned char>(0x07),
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x07 : 0x00),
+    0x00, 0x00, 0x00, 0x00
   };
 
   uint64 header_size =
@@ -2402,7 +2389,9 @@ TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
     0x00,
 
     // frame type (padding frame)
-    static_cast<unsigned char>(0x07),
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x07 : 0x00),
+    0x00, 0x00, 0x00, 0x00
   };
 
   uint64 header_size =
@@ -2447,7 +2436,9 @@ TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
     0x00,
 
     // frame type (padding frame)
-    static_cast<unsigned char>(0x07),
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x07 : 0x00),
+    0x00, 0x00, 0x00, 0x00
   };
 
   uint64 header_size =
@@ -2496,7 +2487,8 @@ TEST_P(QuicFramerTest, BuildStreamFramePacket) {
     0x01,
 
     // frame type (stream frame with fin and no length)
-    0xBE,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0xBE : 0xDF),
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // offset
@@ -2543,7 +2535,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', LastCharOfVersion(),
+    'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -2551,7 +2543,8 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
     0x01,
 
     // frame type (stream frame with fin and no length)
-    0xBE,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0xBE : 0xDF),
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // offset
@@ -2586,7 +2579,7 @@ TEST_P(QuicFramerTest, BuildVersionNegotiationPacket) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', LastCharOfVersion(),
+    'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
   };
 
   QuicVersionVector versions;
@@ -2634,7 +2627,8 @@ TEST_P(QuicFramerTest, BuildAckFramePacket) {
     0x01,
 
     // frame type (ack frame)
-    static_cast<unsigned char>(0x01),
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x01 : 0x40),
     // entropy hash of sent packets till least awaiting - 1.
     0x14,
     // least packet sequence number awaiting an ack
@@ -2694,7 +2688,8 @@ TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketTCP) {
     0x00,
 
     // frame type (congestion feedback frame)
-    0x03,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x03 : 0x20),
     // congestion feedback type (TCP)
     0x00,
     // accumulated number of lost packets
@@ -2753,7 +2748,8 @@ TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketInterArrival) {
     0x00,
 
     // frame type (congestion feedback frame)
-    0x03,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x03 : 0x20),
     // congestion feedback type (inter arrival)
     0x01,
     // accumulated_number_of_lost_packets
@@ -2816,7 +2812,8 @@ TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketFixRate) {
     0x00,
 
     // frame type (congestion feedback frame)
-    0x03,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x03 : 0x20),
     // congestion feedback type (fix rate)
     0x02,
     // bitrate_in_bytes_per_second;
@@ -2882,7 +2879,8 @@ TEST_P(QuicFramerTest, BuildRstFramePacket) {
     0x00,
 
     // frame type (rst stream frame)
-    static_cast<unsigned char>(0x27),
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x27 : 0x01),
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // error code
@@ -2945,7 +2943,8 @@ TEST_P(QuicFramerTest, BuildCloseFramePacket) {
     0x01,
 
     // frame type (connection close frame)
-    static_cast<unsigned char>(0x2F),
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x2F : 0x02),
     // error code
     0x08, 0x07, 0x06, 0x05,
     // error details length
@@ -3016,7 +3015,8 @@ TEST_P(QuicFramerTest, BuildGoAwayPacket) {
     0x01,
 
     // frame type (go away frame)
-    static_cast<unsigned char>(0x37),
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x37 : 0x03),
     // error code
     0x08, 0x07, 0x06, 0x05,
     // stream id
@@ -3357,7 +3357,8 @@ TEST_P(QuicFramerTest, EntropyFlagTest) {
     0x01,
 
     // frame type (stream frame with fin and no length)
-    0xBE,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0xBE : 0xDF),
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // offset
@@ -3394,7 +3395,8 @@ TEST_P(QuicFramerTest, FecEntropyTest) {
     0xFF,
 
     // frame type (stream frame with fin and no length)
-    0xBE,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0xBE : 0xDF),
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // offset
@@ -3429,7 +3431,8 @@ TEST_P(QuicFramerTest, StopPacketProcessing) {
     0x01,
 
     // frame type (stream frame with fin)
-    0xFE,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0xFE : 0xFF),
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // offset
@@ -3443,7 +3446,8 @@ TEST_P(QuicFramerTest, StopPacketProcessing) {
     'r',  'l',  'd',  '!',
 
     // frame type (ack frame)
-    0x02,
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x01 : 0x40),
     // entropy hash of sent packets till least awaiting - 1.
     0x14,
     // least packet sequence number awaiting an ack
@@ -3488,7 +3492,8 @@ TEST_P(QuicFramerTest, ConnectionCloseWithInvalidAck) {
     0x00,
 
     // frame type (connection close frame)
-    static_cast<unsigned char>(0x2F),
+    static_cast<unsigned char>(
+        GetParam() < QUIC_VERSION_10 ? 0x2F : 0x02),
     // error code
     0x11, 0x00, 0x00, 0x00,
     // error details length

@@ -20,6 +20,19 @@ namespace net {
 
 namespace {
 
+// TODO(jri): Remove uses of QuicFrameTypeOld when
+// QUIC versions < 10 are no longer supported.
+enum QuicFrameTypeOld {
+  PADDING_FRAME_OLD = 0,
+  STREAM_FRAME_OLD,
+  ACK_FRAME_OLD,
+  CONGESTION_FEEDBACK_FRAME_OLD,
+  RST_STREAM_FRAME_OLD,
+  CONNECTION_CLOSE_FRAME_OLD,
+  GOAWAY_FRAME_OLD,
+  NUM_FRAME_TYPES_OLD
+};
+
 // Mask to select the lowest 48 bits of a sequence number.
 const QuicPacketSequenceNumber k6ByteSequenceNumberMask =
     GG_UINT64_C(0x0000FFFFFFFFFFFF);
@@ -33,8 +46,36 @@ const QuicPacketSequenceNumber k1ByteSequenceNumberMask =
 const QuicGuid k1ByteGuidMask = GG_UINT64_C(0x00000000000000FF);
 const QuicGuid k4ByteGuidMask = GG_UINT64_C(0x00000000FFFFFFFF);
 
+// New Frame Types, QUIC v. >= 10:
+// There are two interpretations for the Frame Type byte in the QUIC protocol,
+// resulting in two Frame Types: Special Frame Types and Regular Frame Types.
+//
+// Regular Frame Types use the Frame Type byte simply. Currently defined
+// Regular Frame Types are:
+// Padding            : 0b 00000000 (0x00)
+// ResetStream        : 0b 00000001 (0x01)
+// ConnectionClose    : 0b 00000010 (0x02)
+// GoAway             : 0b 00000011 (0x03)
+//
+// Special Frame Types encode both a Frame Type and corresponding flags
+// all in the Frame Type byte. Currently defined Special Frame Types are:
+// Stream             : 0b 1xxxxxxx
+// Ack                : 0b 01xxxxxx
+// CongestionFeedback : 0b 001xxxxx
+//
+// Semantics of the flag bits above (the x bits) depends on the frame type.
+
+// Masks to determine if the frame type is a special use
+// and for specific special frame types.
+const uint8 kQuicFrameTypeSpecialMask = 0xE0;  // 0b 11100000
+const uint8 kQuicFrameTypeStreamMask = 0x80;
+const uint8 kQuicFrameTypeAckMask = 0x40;
+const uint8 kQuicFrameTypeCongestionFeedbackMask = 0x20;
+
 // Mask to determine if it's a special frame type(Stream, Ack, or
 // Congestion Control) by checking if the first bit is 0, then shifting right.
+// TODO(jri): Remove kQuicFrameType0BitMask constant from v. 10 onwards.
+// Replaced by kQuicFrameTypeStream defined above.
 const uint8 kQuicFrameType0BitMask = 0x01;
 
 // Default frame type shift and mask.
@@ -891,62 +932,16 @@ bool QuicFramer::ProcessFrameData() {
       return RaiseError(QUIC_INVALID_FRAME_DATA);
     }
 
-    if ((frame_type & kQuicFrameType0BitMask) == 0) {
-      QuicStreamFrame frame;
-      if (!ProcessStreamFrame(frame_type, &frame)) {
-        return RaiseError(QUIC_INVALID_STREAM_DATA);
-      }
-      if (!visitor_->OnStreamFrame(frame)) {
-        DLOG(INFO) << "Visitor asked to stop further processing.";
-        // Returning true since there was no parsing error.
-        return true;
-      }
-      continue;
-    }
-
-    frame_type >>= 1;
-    if ((frame_type & kQuicFrameType0BitMask) == 0) {
-      QuicAckFrame frame;
-      if (!ProcessAckFrame(&frame)) {
-        return RaiseError(QUIC_INVALID_ACK_DATA);
-      }
-      if (!visitor_->OnAckFrame(frame)) {
-        DLOG(INFO) << "Visitor asked to stop further processing.";
-        // Returning true since there was no parsing error.
-        return true;
-      }
-      continue;
-    }
-
-    frame_type >>= 1;
-    if ((frame_type & kQuicFrameType0BitMask) == 0) {
-      QuicCongestionFeedbackFrame frame;
-      if (!ProcessQuicCongestionFeedbackFrame(&frame)) {
-        return RaiseError(QUIC_INVALID_CONGESTION_FEEDBACK_DATA);
-      }
-      if (!visitor_->OnCongestionFeedbackFrame(frame)) {
-        DLOG(INFO) << "Visitor asked to stop further processing.";
-        // Returning true since there was no parsing error.
-        return true;
-      }
-      continue;
-    }
-
-    frame_type >>= 1;
-
-    switch (frame_type) {
-      // STREAM_FRAME, ACK_FRAME, and CONGESTION_FEEDBACK_FRAME are handled
-      // above.
-      case PADDING_FRAME:
-        // We're done with the packet
-        return true;
-
-      case RST_STREAM_FRAME: {
-        QuicRstStreamFrame frame;
-        if (!ProcessRstStreamFrame(&frame)) {
-          return RaiseError(QUIC_INVALID_RST_STREAM_DATA);
+    // TODO(jri): Remove this entire if block when support for
+    // QUIC version < 10 removed.
+    if (version() < QUIC_VERSION_10) {
+      // Special frame type processing for QUIC version < 10.
+      if ((frame_type & kQuicFrameType0BitMask) == 0) {
+        QuicStreamFrame frame;
+        if (!ProcessStreamFrame(frame_type, &frame)) {
+          return RaiseError(QUIC_INVALID_STREAM_DATA);
         }
-        if (!visitor_->OnRstStreamFrame(frame)) {
+        if (!visitor_->OnStreamFrame(frame)) {
           DLOG(INFO) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
           return true;
@@ -954,19 +949,13 @@ bool QuicFramer::ProcessFrameData() {
         continue;
       }
 
-      case CONNECTION_CLOSE_FRAME: {
-        QuicConnectionCloseFrame frame;
-        if (!ProcessConnectionCloseFrame(&frame)) {
-          return RaiseError(QUIC_INVALID_CONNECTION_CLOSE_DATA);
+      frame_type >>= 1;
+      if ((frame_type & kQuicFrameType0BitMask) == 0) {
+        QuicAckFrame frame;
+        if (!ProcessAckFrame(&frame)) {
+          return RaiseError(QUIC_INVALID_ACK_DATA);
         }
-
-        if (!visitor_->OnAckFrame(frame.ack_frame)) {
-          DLOG(INFO) << "Visitor asked to stop further processing.";
-          // Returning true since there was no parsing error.
-          return true;
-        }
-
-        if (!visitor_->OnConnectionCloseFrame(frame)) {
+        if (!visitor_->OnAckFrame(frame)) {
           DLOG(INFO) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
           return true;
@@ -974,12 +963,13 @@ bool QuicFramer::ProcessFrameData() {
         continue;
       }
 
-      case GOAWAY_FRAME: {
-        QuicGoAwayFrame goaway_frame;
-        if (!ProcessGoAwayFrame(&goaway_frame)) {
-          return RaiseError(QUIC_INVALID_GOAWAY_DATA);
+      frame_type >>= 1;
+      if ((frame_type & kQuicFrameType0BitMask) == 0) {
+        QuicCongestionFeedbackFrame frame;
+        if (!ProcessQuicCongestionFeedbackFrame(&frame)) {
+          return RaiseError(QUIC_INVALID_CONGESTION_FEEDBACK_DATA);
         }
-        if (!visitor_->OnGoAwayFrame(goaway_frame)) {
+        if (!visitor_->OnCongestionFeedbackFrame(frame)) {
           DLOG(INFO) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
           return true;
@@ -987,10 +977,178 @@ bool QuicFramer::ProcessFrameData() {
         continue;
       }
 
-      set_detailed_error("Illegal frame type.");
-      DLOG(WARNING) << "Illegal frame type: "
-                    << static_cast<int>(frame_type);
-      return RaiseError(QUIC_INVALID_FRAME_DATA);
+      frame_type >>= 1;
+      switch (frame_type) {
+        // STREAM_FRAME, ACK_FRAME, and CONGESTION_FEEDBACK_FRAME are handled
+        // above.
+        case PADDING_FRAME_OLD:
+          // We're done with the packet.
+          return true;
+
+        case RST_STREAM_FRAME_OLD: {
+          QuicRstStreamFrame frame;
+          if (!ProcessRstStreamFrame(&frame)) {
+            return RaiseError(QUIC_INVALID_RST_STREAM_DATA);
+          }
+          if (!visitor_->OnRstStreamFrame(frame)) {
+            DLOG(INFO) << "Visitor asked to stop further processing.";
+            // Returning true since there was no parsing error.
+            return true;
+          }
+          continue;
+        }
+
+        case CONNECTION_CLOSE_FRAME_OLD: {
+          QuicConnectionCloseFrame frame;
+          if (!ProcessConnectionCloseFrame(&frame)) {
+            return RaiseError(QUIC_INVALID_CONNECTION_CLOSE_DATA);
+          }
+
+          if (!visitor_->OnAckFrame(frame.ack_frame)) {
+            DLOG(INFO) << "Visitor asked to stop further processing.";
+            // Returning true since there was no parsing error.
+            return true;
+          }
+
+          if (!visitor_->OnConnectionCloseFrame(frame)) {
+            DLOG(INFO) << "Visitor asked to stop further processing.";
+            // Returning true since there was no parsing error.
+            return true;
+          }
+          continue;
+        }
+
+        case GOAWAY_FRAME_OLD: {
+          QuicGoAwayFrame goaway_frame;
+          if (!ProcessGoAwayFrame(&goaway_frame)) {
+            return RaiseError(QUIC_INVALID_GOAWAY_DATA);
+          }
+          if (!visitor_->OnGoAwayFrame(goaway_frame)) {
+            DLOG(INFO) << "Visitor asked to stop further processing.";
+            // Returning true since there was no parsing error.
+            return true;
+          }
+          continue;
+        }
+
+          set_detailed_error("Illegal frame type.");
+          DLOG(WARNING) << "Illegal frame type: "
+                        << static_cast<int>(frame_type);
+          return RaiseError(QUIC_INVALID_FRAME_DATA);
+      }
+    } else {
+      // TODO(jri): Retain this else block when support for
+      // QUIC version < 10 removed. Remove above if block.
+
+      // Special frame type processing for QUIC version >= 10
+      if (frame_type & kQuicFrameTypeSpecialMask) {
+        // Stream Frame
+        if (frame_type & kQuicFrameTypeStreamMask) {
+          QuicStreamFrame frame;
+          if (!ProcessStreamFrame(frame_type, &frame)) {
+            return RaiseError(QUIC_INVALID_STREAM_DATA);
+          }
+          if (!visitor_->OnStreamFrame(frame)) {
+            DLOG(INFO) << "Visitor asked to stop further processing.";
+            // Returning true since there was no parsing error.
+            return true;
+          }
+          continue;
+        }
+
+        // Ack Frame
+        if (frame_type & kQuicFrameTypeAckMask) {
+          QuicAckFrame frame;
+          if (!ProcessAckFrame(&frame)) {
+            return RaiseError(QUIC_INVALID_ACK_DATA);
+          }
+          if (!visitor_->OnAckFrame(frame)) {
+            DLOG(INFO) << "Visitor asked to stop further processing.";
+            // Returning true since there was no parsing error.
+            return true;
+          }
+          continue;
+        }
+
+        // Congestion Feedback Frame
+        if (frame_type & kQuicFrameTypeCongestionFeedbackMask) {
+          QuicCongestionFeedbackFrame frame;
+          if (!ProcessQuicCongestionFeedbackFrame(&frame)) {
+            return RaiseError(QUIC_INVALID_CONGESTION_FEEDBACK_DATA);
+          }
+          if (!visitor_->OnCongestionFeedbackFrame(frame)) {
+            DLOG(INFO) << "Visitor asked to stop further processing.";
+            // Returning true since there was no parsing error.
+            return true;
+          }
+          continue;
+        }
+
+        // This was a special frame type that did not match any
+        // of the known ones. Error.
+        set_detailed_error("Illegal frame type.");
+        DLOG(WARNING) << "Illegal frame type: "
+                      << static_cast<int>(frame_type);
+        return RaiseError(QUIC_INVALID_FRAME_DATA);
+      }
+
+      switch (frame_type) {
+        case PADDING_FRAME:
+          // We're done with the packet.
+          return true;
+
+        case RST_STREAM_FRAME: {
+          QuicRstStreamFrame frame;
+          if (!ProcessRstStreamFrame(&frame)) {
+            return RaiseError(QUIC_INVALID_RST_STREAM_DATA);
+          }
+          if (!visitor_->OnRstStreamFrame(frame)) {
+            DLOG(INFO) << "Visitor asked to stop further processing.";
+            // Returning true since there was no parsing error.
+            return true;
+          }
+          continue;
+        }
+
+        case CONNECTION_CLOSE_FRAME: {
+          QuicConnectionCloseFrame frame;
+          if (!ProcessConnectionCloseFrame(&frame)) {
+            return RaiseError(QUIC_INVALID_CONNECTION_CLOSE_DATA);
+          }
+
+          if (!visitor_->OnAckFrame(frame.ack_frame)) {
+            DLOG(INFO) << "Visitor asked to stop further processing.";
+            // Returning true since there was no parsing error.
+            return true;
+          }
+
+          if (!visitor_->OnConnectionCloseFrame(frame)) {
+            DLOG(INFO) << "Visitor asked to stop further processing.";
+            // Returning true since there was no parsing error.
+            return true;
+          }
+          continue;
+        }
+
+        case GOAWAY_FRAME: {
+          QuicGoAwayFrame goaway_frame;
+          if (!ProcessGoAwayFrame(&goaway_frame)) {
+            return RaiseError(QUIC_INVALID_GOAWAY_DATA);
+          }
+          if (!visitor_->OnGoAwayFrame(goaway_frame)) {
+            DLOG(INFO) << "Visitor asked to stop further processing.";
+            // Returning true since there was no parsing error.
+            return true;
+          }
+          continue;
+        }
+
+        default:
+          set_detailed_error("Illegal frame type.");
+          DLOG(WARNING) << "Illegal frame type: "
+                        << static_cast<int>(frame_type);
+          return RaiseError(QUIC_INVALID_FRAME_DATA);
+      }
     }
   }
 
@@ -999,7 +1157,15 @@ bool QuicFramer::ProcessFrameData() {
 
 bool QuicFramer::ProcessStreamFrame(uint8 frame_type,
                                     QuicStreamFrame* frame) {
-  uint8 stream_flags = frame_type >> 1;
+  uint8 stream_flags = frame_type;
+
+  // TODO(jri): Remove if block after support for ver. < 10 removed.
+  if (version() < QUIC_VERSION_10) {
+    stream_flags >>= 1;
+  } else {
+    stream_flags &= ~kQuicFrameTypeStreamMask;
+  }
+
   // Read from right to left: StreamID, Offset, Data Length, Fin.
   const uint8 stream_id_length = (stream_flags & kQuicStreamIDLengthMask) + 1;
   stream_flags >>= kQuicStreamIdShift;
@@ -1547,22 +1713,44 @@ bool QuicFramer::AppendTypeByte(const QuicFrame& frame,
       type_byte <<= kQuicStreamIdShift;
       type_byte |= GetStreamIdSize(frame.stream_frame->stream_id) - 1;
 
-      type_byte <<= 1;  // Leaves the last bit as a 0.
+      // TODO(jri): Remove if block when support for QUIC ver. < 10 removed.
+      if (version() < QUIC_VERSION_10) {
+        type_byte <<= 1;  // Leaves the last bit as a 0.
+      } else {
+        type_byte |= kQuicFrameTypeStreamMask;  // Set Stream Frame Type to 1.
+      }
       break;
     }
     case ACK_FRAME: {
       // TODO(ianswett): Use extra 5 bits in the ack framing.
-      type_byte = 0x01;
+      // TODO(jri): Remove if block when support for QUIC ver. < 10 removed.
+      if (version() < QUIC_VERSION_10) {
+        type_byte = 0x01;
+      } else {
+        type_byte = kQuicFrameTypeAckMask;
+      }
       break;
     }
     case CONGESTION_FEEDBACK_FRAME: {
       // TODO(ianswett): Use extra 5 bits in the congestion feedback framing.
-      type_byte = 0x03;
+      // TODO(jri): Remove if block when support for QUIC ver. < 10 removed.
+      if (version() < QUIC_VERSION_10) {
+        type_byte = 0x03;
+      } else {
+        type_byte = kQuicFrameTypeCongestionFeedbackMask;
+      }
       break;
     }
     default:
-      type_byte =
-          frame.type << kQuicDefaultFrameTypeShift | kQuicDefaultFrameTypeMask;
+      type_byte = frame.type;
+      // TODO(jri): Remove if block when support for QUIC ver. < 10 removed.
+      if (version() < QUIC_VERSION_10) {
+        if (type_byte > 0) {
+          type_byte += 3;
+        }
+        type_byte = (type_byte << kQuicDefaultFrameTypeShift) |
+            kQuicDefaultFrameTypeMask;
+      }
       break;
   }
 

@@ -166,6 +166,9 @@ NET_EXPORT std::string IPAddressToString(const IPAddressNumber& addr);
 NET_EXPORT std::string IPAddressToStringWithPort(
     const IPAddressNumber& addr, uint16 port);
 
+// Returns the address as a sequence of bytes in network-byte-order.
+NET_EXPORT std::string IPAddressToPackedString(const IPAddressNumber& addr);
+
 // Returns the hostname of the current system. Returns empty string on failure.
 NET_EXPORT std::string GetHostName();
 

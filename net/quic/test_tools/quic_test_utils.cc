@@ -284,6 +284,12 @@ MockSendAlgorithm::MockSendAlgorithm() {
 MockSendAlgorithm::~MockSendAlgorithm() {
 }
 
+MockAckNotifierDelegate::MockAckNotifierDelegate() {
+}
+
+MockAckNotifierDelegate::~MockAckNotifierDelegate() {
+}
+
 namespace {
 
 string HexDumpWithMarks(const char* data, int length,

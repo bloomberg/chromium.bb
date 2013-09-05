@@ -155,6 +155,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // request to be processed twice.
   void set_replay_protection(bool on);
 
+  // set_strike_register_no_startup_period configures the strike register to
+  // not have a startup period.
+  void set_strike_register_no_startup_period();
+
   // set_strike_register_max_entries sets the maximum number of entries that
   // the internal strike register will hold. If the strike register fills up
   // then the oldest entries (by the client's clock) will be dropped.
@@ -351,6 +355,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // These fields store configuration values. See the comments for their
   // respective setter functions.
+  bool strike_register_no_startup_period_;
   uint32 strike_register_max_entries_;
   uint32 strike_register_window_secs_;
   uint32 source_address_token_future_secs_;
