@@ -1287,3 +1287,5 @@ crbug.com/276769 http/tests/security/contentSecurityPolicy/source-list-parsing-n
 
 crbug.com/280709 fast/text/international/unicode-bidi-plaintext-in-textarea.html [ NeedsRebaseline ]
 crbug.com/280709 fast/text/international/unicode-bidi-plaintext.html [ NeedsRebaseline ]
+
+crbug.com/285703 [ Debug ] fast/table/table-rowspan-crash-with-huge-rowspan-cells.html [ Crash Pass ]
