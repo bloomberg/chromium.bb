@@ -26,6 +26,7 @@ var elementsToSuccess = [
     document.createElement('section'),
 ];
 
+// See crbug.com/234020 .
 var elementsToFail = [
     document.createElement('input'),
     document.getElementById('tref'),
