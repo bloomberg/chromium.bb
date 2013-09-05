@@ -44,7 +44,7 @@ crbug.com/24182 [ Win ] http/tests/xmlhttprequest/supported-xml-content-types.ht
 crbug.com/24182 [ Debug ] html5lib/webkit-resumer.html [ Pass Timeout ]
 crbug.com/24182 [ Win Debug ] http/tests/cache/stopped-revalidation.html [ Pass Timeout ]
 crbug.com/24182 http/tests/navigation/slowtimerredirect-basic.html [ Pass Timeout ]
-crbug.com/24182 [ Win ] http/tests/history/back-to-post.php [ Pass Timeout ]
+crbug.com/24182 [ Win ] http/tests/history/back-to-post.html [ Pass Timeout ]
 
 crbug.com/255183 http/tests/cache/cancel-image-via-src-change.html [ Failure Pass ]
 

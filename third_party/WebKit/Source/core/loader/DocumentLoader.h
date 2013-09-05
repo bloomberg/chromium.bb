@@ -197,7 +197,7 @@ namespace WebCore {
 
         bool maybeLoadEmpty();
 
-        bool isPostOrRedirectAfterPost(const ResourceRequest&, const ResourceResponse&);
+        bool isRedirectAfterPost(const ResourceRequest&, const ResourceResponse&);
 
         bool shouldContinueForResponse() const;
 
