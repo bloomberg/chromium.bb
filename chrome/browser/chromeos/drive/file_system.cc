@@ -455,8 +455,9 @@ void FileSystem::CreateDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  change_list_loader_->LoadIfNeeded(
-      internal::DirectoryFetchInfo(),
+  // Ensure its parent directory is loaded to the local metadata.
+  LoadDirectoryIfNeeded(
+      directory_path.DirName(),
       base::Bind(&FileSystem::CreateDirectoryAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_path, is_exclusive, is_recursive, callback));
