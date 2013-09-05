@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_ROOT_WINDOW_SETTINGS_H_
-#define ASH_WM_ROOT_WINDOW_SETTINGS_H_
+#ifndef ASH_ROOT_WINDOW_SETTINGS_H_
+#define ASH_ROOT_WINDOW_SETTINGS_H_
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
@@ -35,8 +35,8 @@ struct RootWindowSettings {
   RootWindowController* controller;
 };
 
-// Initializes and creates RootWindowSettings for |root|, and returns
-// the property.
+// Initializes and returns RootWindowSettings for |root|.
+// It is owned by the |root|.
 RootWindowSettings* InitRootWindowSettings(aura::RootWindow* root);
 
 // Returns the RootWindowSettings for |root|.
@@ -49,4 +49,4 @@ GetRootWindowSettings(const aura::RootWindow* root);
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_WM_ROOT_WINDOW_SETTINGS_H_
+#endif  // ASH_ROOT_WINDOW_SETTINGS_H_

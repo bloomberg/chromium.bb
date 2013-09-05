@@ -23,9 +23,9 @@ RootWindowSettings::RootWindowSettings()
 }
 
 RootWindowSettings* InitRootWindowSettings(aura::RootWindow* root) {
-  RootWindowSettings* property = new RootWindowSettings();
-  root->SetProperty(kRootWindowSettingsKey, property);
-  return property;
+  RootWindowSettings* settings = new RootWindowSettings();
+  root->SetProperty(kRootWindowSettingsKey, settings);
+  return settings;
 }
 
 RootWindowSettings* GetRootWindowSettings(aura::RootWindow* root) {
