@@ -125,6 +125,8 @@ class PnaclHost {
 
   typedef std::pair<int, int> TranslationID;
   typedef std::map<TranslationID, PendingTranslation> PendingTranslationMap;
+  static bool TranslationMayBeCached(
+      const PendingTranslationMap::iterator& entry);
 
   void InitForTest(base::FilePath temp_dir);
   void OnCacheInitialized(int net_error);

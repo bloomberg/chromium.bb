@@ -45,6 +45,12 @@ PnaclHost::PendingTranslation::PendingTranslation()
       cache_info(nacl::PnaclCacheInfo()) {}
 PnaclHost::PendingTranslation::~PendingTranslation() {}
 
+bool PnaclHost::TranslationMayBeCached(
+    const PendingTranslationMap::iterator& entry) {
+  return !entry->second.is_incognito &&
+         !entry->second.cache_info.has_no_store_header;
+}
+
 /////////////////////////////////////// Initialization
 
 static base::FilePath GetCachePath() {
@@ -268,11 +274,10 @@ void PnaclHost::OnTempFileReturn(const TranslationID& id,
     // waiting for its result.
     LOG(ERROR) << "OnTempFileReturn: temp file creation failed";
     std::string key(entry->second.cache_key);
-    bool is_incognito = entry->second.is_incognito;
     entry->second.callback.Run(fd, false);
     pending_translations_.erase(entry);
-    // No translations will be waiting for an incongnito translation
-    if (!is_incognito)
+    // No translations will be waiting for entries that will not be stored.
+    if (TranslationMayBeCached(entry))
       RequeryMatchingTranslations(key);
     return;
   }
@@ -299,9 +304,9 @@ void PnaclHost::CheckCacheQueryReady(
       if (it->second.cache_key == entry->second.cache_key &&
           // and it's not this translation,
           it->first != entry->first &&
-          // and it's not incognito,
-          !it->second.is_incognito &&
-          // and if it's already gotten past this check and returned the miss.
+          // and it can be stored in the cache,
+          TranslationMayBeCached(it) &&
+          // and it's already gotten past this check and returned the miss.
           it->second.got_cache_reply &&
           it->second.got_nexe_fd) {
         return;
@@ -384,7 +389,7 @@ void PnaclHost::TranslationFinished(int render_process_id,
   // TODO(dschuff): use a separate in-memory cache for incognito
   // translations.
   if (!entry->second.got_nexe_fd || !entry->second.got_cache_reply ||
-      !success || entry->second.is_incognito) {
+      !success || !TranslationMayBeCached(entry)) {
     store_nexe = false;
   } else if (!base::PostTaskAndReplyWithResult(
                   BrowserThread::GetBlockingPool(),
@@ -525,10 +530,10 @@ void PnaclHost::RendererClosing(int render_process_id) {
           base::Bind(base::IgnoreResult(base::ClosePlatformFile),
                      to_erase->second.nexe_fd));
       std::string key(to_erase->second.cache_key);
-      bool is_incognito = to_erase->second.is_incognito;
+      bool may_be_cached = TranslationMayBeCached(to_erase);
       pending_translations_.erase(to_erase);
-      // No translations will be blocked waiting for an incongnito translation
-      if (!is_incognito)
+      // No translations will be waiting for entries that will not be stored.
+      if (may_be_cached)
         RequeryMatchingTranslations(key);
     }
   }
