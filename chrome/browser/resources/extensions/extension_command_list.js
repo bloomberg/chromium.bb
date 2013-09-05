@@ -20,12 +20,25 @@ cr.define('options', function() {
   /** @const */ var keyHome = 36;
   /** @const */ var keyIns = 45;
   /** @const */ var keyLeft = 37;
+  /** @const */ var keyMediaNextTrack = 176;
+  /** @const */ var keyMediaPlayPause = 179;
+  /** @const */ var keyMediaPrevTrack = 177;
+  /** @const */ var keyMediaStop = 178;
   /** @const */ var keyPageDown = 34;
   /** @const */ var keyPageUp = 33;
   /** @const */ var keyPeriod = 190;
   /** @const */ var keyRight = 39;
   /** @const */ var keyTab = 9;
   /** @const */ var keyUp = 38;
+
+  /**
+   * Enum for whether we require modifiers of a keycode.
+   * @enum {number}
+   */
+  var Modifiers = {
+    ARE_NOT_ALLOWED: 0,
+    ARE_REQUIRED: 1
+  };
 
   /**
    * Returns whether the passed in |keyCode| is a valid extension command
@@ -42,6 +55,10 @@ cr.define('options', function() {
            keyCode == keyHome ||
            keyCode == keyIns ||
            keyCode == keyLeft ||
+           keyCode == keyMediaNextTrack ||
+           keyCode == keyMediaPlayPause ||
+           keyCode == keyMediaPrevTrack ||
+           keyCode == keyMediaStop ||
            keyCode == keyPageDown ||
            keyCode == keyPageUp ||
            keyCode == keyPeriod ||
@@ -90,6 +107,14 @@ cr.define('options', function() {
             output += 'Insert'; break;
           case keyLeft:
             output += 'Left'; break;
+          case keyMediaNextTrack:
+            output += 'MediaNextTrack'; break;
+          case keyMediaPlayPause:
+            output += 'MediaPlayPause'; break;
+          case keyMediaPrevTrack:
+            output += 'MediaPrevTrack'; break;
+          case keyMediaStop:
+            output += 'MediaStop'; break;
           case keyPageDown:
             output += 'PageDown'; break;
           case keyPageUp:
@@ -107,6 +132,38 @@ cr.define('options', function() {
     }
 
     return output;
+  }
+
+  /**
+   * Returns whether the passed in |keyCode| require modifiers. Currently only
+   * "MediaNextTrack", "MediaPrevTrack", "MediaStop", "MediaPlayPause" are
+   * required to be used without any modifier.
+   * @param {int} keyCode The keycode to consider.
+   * @return {Modifiers} Returns whether the keycode require modifiers.
+   */
+  function modifiers(keyCode) {
+    switch (keyCode) {
+      case keyMediaNextTrack:
+      case keyMediaPlayPause:
+      case keyMediaPrevTrack:
+      case keyMediaStop:
+        return Modifiers.ARE_NOT_ALLOWED;
+      default:
+        return Modifiers.ARE_REQUIRED;
+    }
+  }
+
+  /**
+   * Return true if the specified keyboard event has any one of following
+   * modifiers: "Ctrl", "Alt", "Cmd" on Mac, and "Shift" when the
+   * countShiftAsModifier is true.
+   * @param {Event} event The keyboard event to consider.
+   * @param {boolean} countShiftAsModifier Whether the 'ShiftKey' should be
+   *     counted as modifier.
+   */
+  function hasModifier(event, countShiftAsModifier) {
+    return event.ctrlKey || event.altKey || (cr.isMac && event.metaKey) ||
+           (countShiftAsModifier && event.shiftKey);
   }
 
   ExtensionCommandList.prototype = {
@@ -323,8 +380,16 @@ cr.define('options', function() {
       event.preventDefault();
       event.stopPropagation();
 
-      if (!event.ctrlKey && !event.altKey && (!cr.isMac || !event.metaKey))
-        return;  // Ctrl or Alt is a must (or Cmd on Mac).
+      if (modifiers(event.keyCode) == Modifiers.ARE_REQUIRED &&
+          !hasModifier(event, false)) {
+        // Ctrl or Alt (or Cmd on Mac) is a must for most shortcuts.
+        return;
+      }
+
+      if (modifiers(event.keyCode) == Modifiers.ARE_NOT_ALLOWED &&
+          hasModifier(event, true)) {
+        return;
+      }
 
       var shortcutNode = this.capturingElement_;
       var keystroke = keystrokeToString(event);
