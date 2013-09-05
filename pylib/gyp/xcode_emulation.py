@@ -609,7 +609,7 @@ class XcodeSettings(object):
     ldflags.append('-L' + product_dir)
 
     install_name = self.GetInstallName()
-    if install_name:
+    if install_name and self.spec['type'] != 'loadable_module':
       ldflags.append('-install_name ' + install_name.replace(' ', r'\ '))
 
     for rpath in self._Settings().get('LD_RUNPATH_SEARCH_PATHS', []):
