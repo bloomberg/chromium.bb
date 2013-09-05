@@ -328,6 +328,56 @@ void CloseChromeFrameHelperProcess() {
   }
 }
 
+// Updates shortcuts to |old_target_exe| to target |new_target_exe| instead. If
+// |require_args| is set, then only updates shortcuts with non-empty targets.
+// This should only be called from user-level.
+void RetargetShortcuts(const InstallerState& installer_state,
+                       const Product& product,
+                       const base::FilePath& old_target_exe,
+                       const base::FilePath& new_target_exe,
+                       bool require_args) {
+  BrowserDistribution* dist = product.distribution();
+  DCHECK(!installer_state.system_install());
+  ShellUtil::ShellChange install_level = ShellUtil::CURRENT_USER;
+  ShellUtil::ShortcutProperties updated_properties(install_level);
+  updated_properties.set_target(new_target_exe);
+
+  VLOG(1) << "Retargeting Desktop shortcuts.";
+  if (!ShellUtil::UpdateShortcuts(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist,
+                                  install_level, old_target_exe, require_args,
+                                  updated_properties)) {
+    LOG(WARNING) << "Failed to retarget Desktop shortcuts.";
+  }
+
+  VLOG(1) << "Retargeting Quick Launch shortcuts.";
+  if (!ShellUtil::UpdateShortcuts(ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
+                                  dist, install_level, old_target_exe,
+                                  require_args, updated_properties)) {
+    LOG(WARNING) << "Failed to retarget Quick Launch shortcuts.";
+  }
+
+  VLOG(1) << "Retargeting Start Menu shortcuts.";
+  if (!ShellUtil::UpdateShortcuts(ShellUtil::SHORTCUT_LOCATION_START_MENU, dist,
+                                  install_level, old_target_exe, require_args,
+                                  updated_properties)) {
+    LOG(WARNING) << "Failed to retarget Start Menu shortcuts.";
+  }
+
+  // Retarget pinned-to-taskbar shortcuts that point to |chrome_exe|.
+  if (!ShellUtil::UpdateShortcuts(ShellUtil::SHORTCUT_LOCATION_TASKBAR_PINS,
+                                  dist, ShellUtil::CURRENT_USER, old_target_exe,
+                                  require_args, updated_properties)) {
+    LOG(WARNING) << "Failed to retarget taskbar shortcuts at user-level.";
+  }
+
+  // Retarget the folder of secondary tiles from the start screen for |dist|.
+  if (!ShellUtil::UpdateShortcuts(ShellUtil::SHORTCUT_LOCATION_APP_SHORTCUTS,
+                                  dist, install_level, old_target_exe,
+                                  require_args, updated_properties)) {
+    LOG(WARNING) << "Failed to retarget start-screen shortcuts.";
+  }
+}
+
 // Deletes shortcuts at |install_level| from Start menu, Desktop,
 // Quick Launch, taskbar, and secondary tiles on the Start Screen (Win8+).
 // Only shortcuts pointing to |target_exe| will be removed.
@@ -1135,6 +1185,26 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
     auto_launch_util::DisableAllAutoStartFeatures(
         ASCIIToUTF16(chrome::kInitialProfile));
+
+    // Self-destruct flow: removing user-level Chrome because system-level
+    // Chrome exists.
+    if (cmd_line.HasSwitch(installer::switches::kSelfDestruct) &&
+        !installer_state.system_install()) {
+      const base::FilePath system_chrome_path(
+          GetChromeInstallPath(true, browser_dist).
+              Append(installer::kChromeExe));
+      VLOG(1) << "Retargeting user-generated Chrome shortcuts.";
+      if (base::PathExists(system_chrome_path)) {
+        // Retarget all user-generated shortcuts to user-level chrome.exe to
+        // system-level chrome.exe. Heuristic: consider only shortcuts that have
+        // non-empty args. Therefore the main user-level chrome.exe will not get
+        // retarged, and will get deleted by DeleteShortcuts() below.
+        RetargetShortcuts(installer_state, product, base::FilePath(chrome_exe),
+                          system_chrome_path, true);
+      } else {
+        VLOG(1) << "Retarget failed: system-level Chrome not found.";
+      }
+    }
 
     DeleteShortcuts(installer_state, product, base::FilePath(chrome_exe));
 

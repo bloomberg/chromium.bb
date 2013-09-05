@@ -1203,13 +1203,15 @@ typedef base::Callback<bool(const base::FilePath& /*shortcut_path*/,
     ShortcutFilterCallback;
 
 // FilterTargetEq is a shortcut filter that matches only shortcuts that have a
-// specific target.
+// specific target, and optionally matches shortcuts that have non-empty
+// arguments.
 class FilterTargetEq {
  public:
-  explicit FilterTargetEq(const base::FilePath& desired_target_exe);
+  FilterTargetEq(const base::FilePath& desired_target_exe, bool require_args);
 
   // Returns true if filter rules are satisfied, i.e.:
-  // - |target_path| matches |desired_target_compare_|.
+  // - |target_path|'s target == |desired_target_compare_|, and
+  // - |args| is non-empty (if |require_args_| == true).
   bool Match(const base::FilePath& target_path, const string16& args) const;
 
   // A convenience routine to create a callback to call Match().
@@ -1219,14 +1221,22 @@ class FilterTargetEq {
 
  private:
   InstallUtil::ProgramCompare desired_target_compare_;
+
+  bool require_args_;
 };
 
-FilterTargetEq::FilterTargetEq(const base::FilePath& desired_target_exe)
-    : desired_target_compare_(desired_target_exe) {}
+FilterTargetEq::FilterTargetEq(const base::FilePath& desired_target_exe,
+                               bool require_args)
+    : desired_target_compare_(desired_target_exe),
+      require_args_(require_args) {}
 
 bool FilterTargetEq::Match(const base::FilePath& target_path,
                            const string16& args) const {
-  return desired_target_compare_.EvaluatePath(target_path);
+  if (!desired_target_compare_.EvaluatePath(target_path))
+    return false;
+  if (require_args_ && args.empty())
+    return false;
+  return true;
 }
 
 ShortcutFilterCallback FilterTargetEq::AsShortcutFilterCallback() {
@@ -2042,7 +2052,7 @@ bool ShellUtil::RemoveShortcuts(ShellUtil::ShortcutLocation location,
   if (!ShellUtil::ShortcutLocationIsSupported(location))
     return true;  // Vacuous success.
 
-  FilterTargetEq shortcut_filter(target_exe);
+  FilterTargetEq shortcut_filter(target_exe, false);
   // Main operation to apply to each shortcut in the directory specified.
   ShortcutOperationCallback shortcut_operation(
       location == SHORTCUT_LOCATION_TASKBAR_PINS ?
@@ -2064,11 +2074,12 @@ bool ShellUtil::UpdateShortcuts(
     BrowserDistribution* dist,
     ShellChange level,
     const base::FilePath& target_exe,
+    bool require_args,
     const ShellUtil::ShortcutProperties& properties) {
   if (!ShellUtil::ShortcutLocationIsSupported(location))
     return true;  // Vacuous success.
 
-  FilterTargetEq shortcut_filter(target_exe);
+  FilterTargetEq shortcut_filter(target_exe, require_args);
   ShortcutOperationCallback shortcut_operation(
       base::Bind(&ShortcutOpUpdate, TranslateShortcutProperties(properties)));
   return BatchShortcutAction(shortcut_filter.AsShortcutFilterCallback(),
