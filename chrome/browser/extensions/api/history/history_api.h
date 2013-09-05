@@ -84,6 +84,9 @@ class HistoryAPI : public ProfileKeyedAPI,
   scoped_ptr<HistoryEventRouter> history_event_router_;
 };
 
+template<>
+void ProfileKeyedAPIFactory<HistoryAPI>::DeclareFactoryDependencies();
+
 // Base class for history function APIs.
 class HistoryFunction : public AsyncExtensionFunction {
  protected:

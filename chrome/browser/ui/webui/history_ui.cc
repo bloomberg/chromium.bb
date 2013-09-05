@@ -24,6 +24,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
@@ -616,6 +617,17 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const ListValue* args) {
         expire_list,
         base::Bind(&BrowsingHistoryHandler::RemoveWebHistoryComplete,
                    base::Unretained(this)));
+  }
+
+  // If the profile has activity logging enabled also clean up any URLs from
+  // the extension activity log. The extension activity log contains URLS
+  // which websites an extension has activity on so it will indirectly
+  // contain websites that a user has visited.
+  extensions::ActivityLog* activity_log =
+      extensions::ActivityLog::GetInstance(profile);
+  for (std::vector<history::ExpireHistoryArgs>::const_iterator it =
+       expire_list.begin(); it != expire_list.end(); ++it) {
+    activity_log->RemoveURLs(it->urls);
   }
 }
 

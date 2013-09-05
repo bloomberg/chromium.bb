@@ -19,6 +19,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/history/history_service.h"
@@ -270,6 +271,11 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
           base::Bind(&BrowsingDataRemover::OnHistoryDeletionDone,
                      base::Unretained(this)),
           &history_task_tracker_);
+
+      // The extension activity contains details of which websites extensions
+      // were active on. It therefore indirectly stores details of websites a
+      // user has visited so best clean from here as well.
+      extensions::ActivityLog::GetInstance(profile_)->RemoveURLs(restrict_urls);
     }
 
     // Need to clear the host cache and accumulated speculative data, as it also
