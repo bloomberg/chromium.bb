@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 

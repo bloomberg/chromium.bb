@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <vector>
 
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 class SkBitmap;
 

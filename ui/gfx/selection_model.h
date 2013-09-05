@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ui/base/range/range.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 

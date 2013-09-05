@@ -5,8 +5,8 @@
 #ifndef UI_GFX_BLIT_H_
 #define UI_GFX_BLIT_H_
 
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/base/ui_export.h"
 
 class SkCanvas;
 

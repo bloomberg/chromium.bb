@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 typedef struct _GdkDisplay GdkDisplay;
 typedef struct _GdkPixbuf GdkPixbuf;

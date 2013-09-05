@@ -13,7 +13,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/vector2d_f.h"
 
 namespace gfx {

@@ -5,7 +5,7 @@
 #ifndef UI_GFX_POINT_H_
 #define UI_GFX_POINT_H_
 
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/point_base.h"
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/vector2d.h"

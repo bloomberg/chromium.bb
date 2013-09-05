@@ -6,7 +6,7 @@
 #define UI_GFX_SKIA_UTILS_GTK_H_
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 typedef struct _GdkColor GdkColor;
 

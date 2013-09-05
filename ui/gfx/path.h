@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {

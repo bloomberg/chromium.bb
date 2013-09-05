@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "ui/base/layout.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 class Size;

@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/vector2d_f.h"
 
 namespace gfx {

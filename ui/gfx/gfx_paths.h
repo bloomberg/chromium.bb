@@ -5,7 +5,7 @@
 #ifndef UI_GFX_GFX_PATHS_H_
 #define UI_GFX_GFX_PATHS_H_
 
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 // This file declares path keys for the app module.  These can be used with
 // the PathService to access various special directories and files.

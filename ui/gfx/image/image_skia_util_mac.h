@@ -7,7 +7,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 #ifdef __LP64__
 typedef CGSize NSSize;

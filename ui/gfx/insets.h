@@ -8,7 +8,7 @@
 #include <string>
 
 #include "build/build_config.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/insets_base.h"
 
 #if defined(TOOLKIT_GTK)

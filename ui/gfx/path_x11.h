@@ -8,7 +8,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xregion.h>
 
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 class SkPath;
 

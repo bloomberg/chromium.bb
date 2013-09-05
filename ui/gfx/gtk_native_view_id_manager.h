@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/synchronization/lock.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 template <typename T> struct DefaultSingletonTraits;

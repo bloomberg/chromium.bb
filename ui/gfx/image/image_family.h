@@ -9,7 +9,7 @@
 #include <map>
 #include <utility>
 
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/image/image.h"
 
 namespace gfx {

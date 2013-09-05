@@ -5,7 +5,7 @@
 #ifndef UI_GFX_DISPLAY_OBSERVER_H_
 #define UI_GFX_DISPLAY_OBSERVER_H_
 
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 class Display;

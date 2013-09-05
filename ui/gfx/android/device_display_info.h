@@ -10,7 +10,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 

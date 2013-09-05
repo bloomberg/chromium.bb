@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 typedef struct _GdkPixbuf GdkPixbuf;
 typedef struct _GdkRegion GdkRegion;

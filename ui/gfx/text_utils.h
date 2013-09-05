@@ -6,7 +6,7 @@
 #define UI_GFX_TEXT_UTILS_H_
 
 #include "base/strings/string16.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 

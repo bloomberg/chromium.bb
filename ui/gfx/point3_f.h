@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/vector3d_f.h"
 

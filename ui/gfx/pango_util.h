@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 typedef struct _PangoContext PangoContext;
 

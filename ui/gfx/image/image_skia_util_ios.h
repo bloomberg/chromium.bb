@@ -6,7 +6,7 @@
 #define UI_GFX_IMAGE_IMAGE_SKIA_UTIL_IOS_H_
 
 #include "ui/base/layout.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 #ifdef __OBJC__
 @class UIImage;

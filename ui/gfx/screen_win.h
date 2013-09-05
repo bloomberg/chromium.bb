@@ -6,7 +6,7 @@
 #define UI_GFX_SCREEN_WIN_H_
 
 #include "base/compiler_specific.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/screen.h"
 
 namespace gfx {

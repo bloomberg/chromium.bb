@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 class SkBitmap;
 

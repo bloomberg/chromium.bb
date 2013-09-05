@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/screen_type_delegate.h"

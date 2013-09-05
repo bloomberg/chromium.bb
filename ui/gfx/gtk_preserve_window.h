@@ -9,7 +9,7 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 // GtkFixed creates an X window when realized and destroys an X window
 // when unrealized. GtkPreserveWindow allows overrides this

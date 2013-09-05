@@ -7,7 +7,7 @@
 
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/size.h"
 
 namespace gfx {

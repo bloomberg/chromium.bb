@@ -7,7 +7,7 @@
 
 #include "base/memory/shared_memory.h"
 #include "build/build_config.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 #if defined(OS_ANDROID)
 #include <third_party/khronos/EGL/egl.h>

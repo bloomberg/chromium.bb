@@ -8,7 +8,7 @@
 #include <vector>
 #include <windows.h>
 
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/path.h"
 

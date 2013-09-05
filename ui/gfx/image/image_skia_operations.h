@@ -7,8 +7,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "skia/ext/image_operations.h"
-#include "ui/base/ui_export.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skbitmap_operations.h"
 
