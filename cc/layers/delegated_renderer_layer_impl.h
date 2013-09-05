@@ -71,8 +71,11 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
       ScopedPtrVector<RenderPass>* render_passes_in_draw_order);
   void ClearRenderPasses();
 
-  RenderPass::Id ConvertDelegatedRenderPassId(
-      RenderPass::Id delegated_render_pass_id) const;
+  // Returns |true| if the delegated_render_pass_id is part of the current
+  // frame and can be converted.
+  bool ConvertDelegatedRenderPassId(
+      RenderPass::Id delegated_render_pass_id,
+      RenderPass::Id* output_render_pass_id) const;
 
   gfx::Transform DelegatedFrameToLayerSpaceTransform(gfx::Size frame_size)
       const;

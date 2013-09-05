@@ -50,7 +50,7 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
 
 // Adds a render pass quad with the given mask resource, filter, and transform.
 void AddRenderPassQuad(TestRenderPass* toPass,
-                       TestRenderPass* contributingPass,
+                       TestRenderPass* contributing_pass,
                        ResourceProvider::ResourceId mask_resource_id,
                        skia::RefPtr<SkImageFilter> filter,
                        gfx::Transform transform);

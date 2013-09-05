@@ -1245,5 +1245,58 @@ TEST_F(DelegatedRendererLayerImplTestClip, QuadsClipped_LayerClipped_Surface) {
   host_impl_->DidDrawAllLayers(frame);
 }
 
+TEST_F(DelegatedRendererLayerImplTest, InvalidRenderPassDrawQuad) {
+  scoped_ptr<LayerImpl> root_layer = LayerImpl::Create(
+      host_impl_->active_tree(), 1).PassAs<LayerImpl>();
+  scoped_ptr<FakeDelegatedRendererLayerImpl> delegated_renderer_layer =
+      FakeDelegatedRendererLayerImpl::Create(host_impl_->active_tree(), 4);
+
+  host_impl_->SetViewportSize(gfx::Size(100, 100));
+
+  delegated_renderer_layer->SetPosition(gfx::Point(3, 3));
+  delegated_renderer_layer->SetBounds(gfx::Size(10, 10));
+  delegated_renderer_layer->SetContentBounds(gfx::Size(10, 10));
+  delegated_renderer_layer->SetDrawsContent(true);
+
+  ScopedPtrVector<RenderPass> delegated_render_passes;
+  TestRenderPass* pass1 = AddRenderPass(
+      &delegated_render_passes,
+      RenderPass::Id(9, 6),
+      gfx::Rect(0, 0, 10, 10),
+      gfx::Transform());
+  AddQuad(pass1, gfx::Rect(0, 0, 6, 6), 33u);
+
+  // This render pass isn't part of the frame.
+  scoped_ptr<TestRenderPass> missing_pass(TestRenderPass::Create());
+  missing_pass->SetNew(RenderPass::Id(9, 7),
+                       gfx::Rect(7, 7, 7, 7),
+                       gfx::Rect(7, 7, 7, 7),
+                       gfx::Transform());
+
+  // But a render pass quad refers to it.
+  AddRenderPassQuad(pass1, missing_pass.get());
+
+  delegated_renderer_layer->SetFrameDataForRenderPasses(
+      &delegated_render_passes);
+
+  // The RenderPasses should be taken by the layer.
+  EXPECT_EQ(0u, delegated_render_passes.size());
+
+  root_layer->AddChild(delegated_renderer_layer.PassAs<LayerImpl>());
+  host_impl_->active_tree()->SetRootLayer(root_layer.Pass());
+
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+
+  // The DelegatedRendererLayerImpl should drop the bad RenderPassDrawQuad.
+  ASSERT_EQ(1u, frame.render_passes.size());
+  ASSERT_EQ(1u, frame.render_passes[0]->quad_list.size());
+  EXPECT_EQ(DrawQuad::SOLID_COLOR,
+            frame.render_passes[0]->quad_list[0]->material);
+
+  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DidDrawAllLayers(frame);
+}
+
 }  // namespace
 }  // namespace cc
