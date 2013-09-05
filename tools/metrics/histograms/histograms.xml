@@ -3071,6 +3071,47 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.UserPolicyChromeOS.DelayInitialization"
+    units="milliseconds">
+  <summary>Initialization delay due to loading the user policy cache.</summary>
+</histogram>
+
+<histogram name="Enterprise.UserPolicyChromeOS.InitialFetch.ClientError"
+    enum="EnterpriseDeviceManagementStatus">
+  <summary>Policy client error during initial policy fetch.</summary>
+</histogram>
+
+<histogram
+    name="Enterprise.UserPolicyChromeOS.InitialFetch.DelayClientRegister"
+    units="milliseconds">
+  <summary>Delay for registering the client with the policy server.</summary>
+</histogram>
+
+<histogram name="Enterprise.UserPolicyChromeOS.InitialFetch.DelayOAuth2Token"
+    units="milliseconds">
+  <summary>Delay for minting an OAuth2 acccess token.</summary>
+</histogram>
+
+<histogram name="Enterprise.UserPolicyChromeOS.InitialFetch.DelayPolicyFetch"
+    units="milliseconds">
+  <summary>Delay for fetching policy from the policy server.</summary>
+</histogram>
+
+<histogram name="Enterprise.UserPolicyChromeOS.InitialFetch.DelayTotal"
+    units="milliseconds">
+  <summary>Total delay for the initial policy fetch.</summary>
+</histogram>
+
+<histogram name="Enterprise.UserPolicyChromeOS.InitialFetch.OAuth2Error"
+    enum="GoogleServiceAuthError">
+  <summary>Service error during OAuth2 access token fetch.</summary>
+</histogram>
+
+<histogram name="Enterprise.UserPolicyChromeOS.InitialFetch.OAuth2NetworkError"
+    enum="NetErrorCodes">
+  <summary>Network error during OAuth2 access token fetch.</summary>
+</histogram>
+
 <histogram name="Event.CoalescedCount.Mouse">
   <summary>Number of Mouse events coalesced.</summary>
 </histogram>
@@ -21027,6 +21068,22 @@ other types of suffix sets.
   <int value="8" label="SHOW_WELCOME_TOAST"/>
   <int value="9" label="STOPPED"/>
   <int value="10" label="USER_SUPPRESSED"/>
+</enum>
+
+<enum name="GoogleServiceAuthError" type="int">
+  <int value="0" label="NONE"/>
+  <int value="1" label="INVALID_GAIA_CREDENTIALS"/>
+  <int value="2" label="USER_NOT_SIGNED_UP"/>
+  <int value="3" label="CONNECTION_FAILED"/>
+  <int value="4" label="CAPTCHA_REQUIRED"/>
+  <int value="5" label="ACCOUNT_DELETED"/>
+  <int value="6" label="ACCOUNT_DISABLED"/>
+  <int value="7" label="SERVICE_UNAVAILABLE"/>
+  <int value="8" label="TWO_FACTOR"/>
+  <int value="9" label="REQUEST_CANCELED"/>
+  <int value="10" label="HOSTED_NOT_ALLOWED"/>
+  <int value="11" label="UNEXPECTED_SERVICE_RESPONSE"/>
+  <int value="12" label="SERVICE_ERROR"/>
 </enum>
 
 <enum name="HttpAuthCount" type="int">

@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/cloud_policy_manager.h"
@@ -133,6 +134,12 @@ class UserCloudPolicyManagerChromeOS
   // The access token passed to OnAccessTokenAvailable. It is stored here so
   // that it can be used if OnInitializationCompleted is called later.
   std::string access_token_;
+
+  // Timestamps for collecting timing UMA stats.
+  base::Time time_init_started_;
+  base::Time time_init_completed_;
+  base::Time time_token_available_;
+  base::Time time_client_registered_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerChromeOS);
 };

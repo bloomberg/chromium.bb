@@ -33,8 +33,8 @@ class DictionaryValue;
 class GoogleServiceAuthError {
  public:
   //
-  // These enumerations are referenced by integer value in HTML login code.
-  // Do not change the numeric values.
+  // These enumerations are referenced by integer value in HTML login code and
+  // in UMA histograms. Do not change the numeric values.
   //
   enum State {
     // The user is authenticated.
