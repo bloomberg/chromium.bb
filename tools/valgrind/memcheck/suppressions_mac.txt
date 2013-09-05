@@ -386,6 +386,18 @@
    fun:allocateBranchIsland
    fun:mach_override_ptr
 }
+{
+   # Intentional leak of a time-based self-deleting object.
+   bug_264886
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base26MessagePumpInstrumentation6CreateERKNS_9TimeDeltaES3_
+   fun:_ZN4base24MessagePumpCFRunLoopBase21EnableInstrumentationEv
+   fun:_ZN4base24MessagePumpNSApplicationC2Ev
+   fun:_ZN4base24MessagePumpCrApplicationC2Ev
+   fun:_ZN4base24MessagePumpCrApplicationC1Ev
+   fun:_ZN4base14MessagePumpMac6CreateEv
+}
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 {
