@@ -159,55 +159,57 @@ static bool buildNodeQuads(Node* node, Vector<FloatQuad>& quads)
         return false;
     }
 
-    if (renderer->isBox() || renderer->isRenderInline()) {
-        LayoutRect contentBox;
-        LayoutRect paddingBox;
-        LayoutRect borderBox;
-        LayoutRect marginBox;
+    if (!renderer->isBox() && !renderer->isRenderInline())
+        return false;
 
-        if (renderer->isBox()) {
-            RenderBox* renderBox = toRenderBox(renderer);
+    LayoutRect contentBox;
+    LayoutRect paddingBox;
+    LayoutRect borderBox;
+    LayoutRect marginBox;
 
-            // RenderBox returns the "pure" content area box, exclusive of the scrollbars (if present), which also count towards the content area in CSS.
-            contentBox = renderBox->contentBoxRect();
-            contentBox.setWidth(contentBox.width() + renderBox->verticalScrollbarWidth());
-            contentBox.setHeight(contentBox.height() + renderBox->horizontalScrollbarHeight());
+    if (renderer->isBox()) {
+        RenderBox* renderBox = toRenderBox(renderer);
 
-            paddingBox = LayoutRect(contentBox.x() - renderBox->paddingLeft(), contentBox.y() - renderBox->paddingTop(),
-                    contentBox.width() + renderBox->paddingLeft() + renderBox->paddingRight(), contentBox.height() + renderBox->paddingTop() + renderBox->paddingBottom());
-            borderBox = LayoutRect(paddingBox.x() - renderBox->borderLeft(), paddingBox.y() - renderBox->borderTop(),
-                    paddingBox.width() + renderBox->borderLeft() + renderBox->borderRight(), paddingBox.height() + renderBox->borderTop() + renderBox->borderBottom());
-            marginBox = LayoutRect(borderBox.x() - renderBox->marginLeft(), borderBox.y() - renderBox->marginTop(),
-                    borderBox.width() + renderBox->marginWidth(), borderBox.height() + renderBox->marginHeight());
-        } else {
-            RenderInline* renderInline = toRenderInline(renderer);
+        // RenderBox returns the "pure" content area box, exclusive of the scrollbars (if present), which also count towards the content area in CSS.
+        contentBox = renderBox->contentBoxRect();
+        contentBox.setWidth(contentBox.width() + renderBox->verticalScrollbarWidth());
+        contentBox.setHeight(contentBox.height() + renderBox->horizontalScrollbarHeight());
 
-            // RenderInline's bounding box includes paddings and borders, excludes margins.
-            borderBox = renderInline->linesBoundingBox();
-            paddingBox = LayoutRect(borderBox.x() + renderInline->borderLeft(), borderBox.y() + renderInline->borderTop(),
-                    borderBox.width() - renderInline->borderLeft() - renderInline->borderRight(), borderBox.height() - renderInline->borderTop() - renderInline->borderBottom());
-            contentBox = LayoutRect(paddingBox.x() + renderInline->paddingLeft(), paddingBox.y() + renderInline->paddingTop(),
-                    paddingBox.width() - renderInline->paddingLeft() - renderInline->paddingRight(), paddingBox.height() - renderInline->paddingTop() - renderInline->paddingBottom());
-            // Ignore marginTop and marginBottom for inlines.
-            marginBox = LayoutRect(borderBox.x() - renderInline->marginLeft(), borderBox.y(),
-                    borderBox.width() + renderInline->marginWidth(), borderBox.height());
-        }
+        paddingBox = LayoutRect(contentBox.x() - renderBox->paddingLeft(), contentBox.y() - renderBox->paddingTop(),
+            contentBox.width() + renderBox->paddingLeft() + renderBox->paddingRight(), contentBox.height() + renderBox->paddingTop() + renderBox->paddingBottom());
+        borderBox = LayoutRect(paddingBox.x() - renderBox->borderLeft(), paddingBox.y() - renderBox->borderTop(),
+            paddingBox.width() + renderBox->borderLeft() + renderBox->borderRight(), paddingBox.height() + renderBox->borderTop() + renderBox->borderBottom());
+        marginBox = LayoutRect(borderBox.x() - renderBox->marginLeft(), borderBox.y() - renderBox->marginTop(),
+            borderBox.width() + renderBox->marginWidth(), borderBox.height() + renderBox->marginHeight());
+    } else {
+        RenderInline* renderInline = toRenderInline(renderer);
 
-        FloatQuad absContentQuad = renderer->localToAbsoluteQuad(FloatRect(contentBox));
-        FloatQuad absPaddingQuad = renderer->localToAbsoluteQuad(FloatRect(paddingBox));
-        FloatQuad absBorderQuad = renderer->localToAbsoluteQuad(FloatRect(borderBox));
-        FloatQuad absMarginQuad = renderer->localToAbsoluteQuad(FloatRect(marginBox));
-
-        contentsQuadToPage(mainView, containingView, absContentQuad);
-        contentsQuadToPage(mainView, containingView, absPaddingQuad);
-        contentsQuadToPage(mainView, containingView, absBorderQuad);
-        contentsQuadToPage(mainView, containingView, absMarginQuad);
-
-        quads.append(absMarginQuad);
-        quads.append(absBorderQuad);
-        quads.append(absPaddingQuad);
-        quads.append(absContentQuad);
+        // RenderInline's bounding box includes paddings and borders, excludes margins.
+        borderBox = renderInline->linesBoundingBox();
+        paddingBox = LayoutRect(borderBox.x() + renderInline->borderLeft(), borderBox.y() + renderInline->borderTop(),
+            borderBox.width() - renderInline->borderLeft() - renderInline->borderRight(), borderBox.height() - renderInline->borderTop() - renderInline->borderBottom());
+        contentBox = LayoutRect(paddingBox.x() + renderInline->paddingLeft(), paddingBox.y() + renderInline->paddingTop(),
+            paddingBox.width() - renderInline->paddingLeft() - renderInline->paddingRight(), paddingBox.height() - renderInline->paddingTop() - renderInline->paddingBottom());
+        // Ignore marginTop and marginBottom for inlines.
+        marginBox = LayoutRect(borderBox.x() - renderInline->marginLeft(), borderBox.y(),
+            borderBox.width() + renderInline->marginWidth(), borderBox.height());
     }
+
+    FloatQuad absContentQuad = renderer->localToAbsoluteQuad(FloatRect(contentBox));
+    FloatQuad absPaddingQuad = renderer->localToAbsoluteQuad(FloatRect(paddingBox));
+    FloatQuad absBorderQuad = renderer->localToAbsoluteQuad(FloatRect(borderBox));
+    FloatQuad absMarginQuad = renderer->localToAbsoluteQuad(FloatRect(marginBox));
+
+    contentsQuadToPage(mainView, containingView, absContentQuad);
+    contentsQuadToPage(mainView, containingView, absPaddingQuad);
+    contentsQuadToPage(mainView, containingView, absBorderQuad);
+    contentsQuadToPage(mainView, containingView, absMarginQuad);
+
+    quads.append(absMarginQuad);
+    quads.append(absBorderQuad);
+    quads.append(absPaddingQuad);
+    quads.append(absContentQuad);
+
     return true;
 }
 

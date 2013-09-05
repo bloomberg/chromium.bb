@@ -1355,6 +1355,14 @@ void InspectorDOMAgent::getBoxModel(ErrorString* errorString, int nodeId, RefPtr
 
 void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int y, int* nodeId)
 {
+    // This call operates no handles, it could emerge before getDocument.
+    if (!m_documentNodeToIdMap.contains(m_document)) {
+        RefPtr<TypeBuilder::DOM::Node> root;
+        getDocument(errorString, root);
+        if (!errorString->isEmpty())
+            return;
+    }
+
     Node* node = hoveredNodeForPoint(m_document->frame(), IntPoint(x, y), false);
     if (!node) {
         *errorString = "No node found at given location";

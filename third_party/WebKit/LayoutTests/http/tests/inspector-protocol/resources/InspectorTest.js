@@ -75,6 +75,59 @@ InspectorTest.log = function(message)
 }
 
 /**
+* Formats and logs object to document.
+* @param {Object} object
+* @param {string=} title
+*/
+InspectorTest.logObject = function(object, title)
+{
+    var lines = [];
+
+    function dumpValue(value, prefix, prefixWithName)
+    {
+        if (typeof value === "object" && value !== null) {
+            if (value instanceof Array)
+                dumpItems(value, prefix, prefixWithName);
+            else
+                dumpProperties(value, prefix, prefixWithName);
+        } else {
+            lines.push(prefixWithName + String(value).replace(/\n/g, " "));
+        }
+    }
+
+    function dumpProperties(object, prefix, firstLinePrefix)
+    {
+        prefix = prefix || "";
+        firstLinePrefix = firstLinePrefix || prefix;
+        lines.push(firstLinePrefix + "{");
+
+        var propertyNames = Object.keys(object);
+        propertyNames.sort();
+        for (var i = 0; i < propertyNames.length; ++i) {
+            var name = propertyNames[i];
+            if (typeof object.hasOwnProperty === "function" && !object.hasOwnProperty(name))
+                continue;
+            var prefixWithName = "    " + prefix + name + " : ";
+            dumpValue(object[name], "    " + prefix, prefixWithName);
+        }
+        lines.push(prefix + "}");
+    }
+
+    function dumpItems(object, prefix, firstLinePrefix)
+    {
+        prefix = prefix || "";
+        firstLinePrefix = firstLinePrefix || prefix;
+        lines.push(firstLinePrefix + "[");
+        for (var i = 0; i < object.length; ++i)
+            dumpValue(object[i], "    " + prefix, "    " + prefix + "[" + i + "] : ");
+        lines.push(prefix + "]");
+    }
+
+    dumpValue(object, "", title);
+    InspectorTest.log(lines.join("\n"));
+}
+
+/**
 * Logs message directly to process stdout via alert function (hopefully followed by flush call).
 * This message should survive process crash or kill by timeout. 
 * @param {string} message
