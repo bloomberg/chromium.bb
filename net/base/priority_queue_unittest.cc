@@ -91,7 +91,22 @@ TEST_F(PriorityQueueTest, EraseFromMiddle) {
   queue_.Erase(pointers_[2]);
   queue_.Erase(pointers_[3]);
 
-  int expected_order[] = { 8, 1, 6, 0, 5, 4, 7 };
+  const int expected_order[] = { 8, 1, 6, 0, 5, 4, 7 };
+
+  for (size_t i = 0; i < arraysize(expected_order); ++i) {
+    EXPECT_EQ(expected_order[i], queue_.FirstMin().value());
+    queue_.Erase(queue_.FirstMin());
+  }
+  CheckEmpty();
+}
+
+TEST_F(PriorityQueueTest, InsertAtFront) {
+  queue_.InsertAtFront(9, 2);
+  queue_.InsertAtFront(10, 0);
+  queue_.InsertAtFront(11, 1);
+  queue_.InsertAtFront(12, 1);
+
+  const int expected_order[] = { 10, 3, 8, 12, 11, 1, 6, 9, 0, 2, 5, 4, 7 };
 
   for (size_t i = 0; i < arraysize(expected_order); ++i) {
     EXPECT_EQ(expected_order[i], queue_.FirstMin().value());

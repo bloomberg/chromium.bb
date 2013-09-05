@@ -139,6 +139,24 @@ class PriorityQueue : public base::NonThreadSafe {
 #endif
   }
 
+  // Adds |value| with |priority| to the queue. Returns a pointer to the
+  // created element.
+  Pointer InsertAtFront(const T& value, Priority priority) {
+    DCHECK(CalledOnValidThread());
+    DCHECK_LT(priority, lists_.size());
+    ++size_;
+    List& list = lists_[priority];
+#if !defined(NDEBUG)
+    unsigned id = next_id_;
+    valid_ids_.insert(id);
+    ++next_id_;
+    return Pointer(priority, list.insert(list.begin(),
+                                         std::make_pair(id, value)));
+#else
+    return Pointer(priority, list.insert(list.begin(), value));
+#endif
+  }
+
   // Removes the value pointed by |pointer| from the queue. All pointers to this
   // value including |pointer| become invalid.
   void Erase(const Pointer& pointer) {
@@ -212,6 +230,9 @@ class PriorityQueue : public base::NonThreadSafe {
 #endif
     size_ = 0u;
   }
+
+  // Returns the number of priorities the queue supports.
+  size_t num_priorities() const { return lists_.size(); }
 
   // Returns number of queued values.
   size_t size() const {

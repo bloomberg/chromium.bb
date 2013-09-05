@@ -52,13 +52,17 @@ class PrioritizedDispatcherTest : public testing::Test {
       return handle_;
     }
 
-    void Add() {
+    void Add(bool at_head) {
       CHECK(handle_.is_null());
       CHECK(!running_);
       size_t num_queued = dispatcher_->num_queued_jobs();
       size_t num_running = dispatcher_->num_running_jobs();
 
-      handle_ = dispatcher_->Add(this, priority_);
+      if (!at_head) {
+        handle_ = dispatcher_->Add(this, priority_);
+      } else {
+        handle_ = dispatcher_->AddAtHead(this, priority_);
+      }
 
       if (handle_.is_null()) {
         EXPECT_EQ(num_queued, dispatcher_->num_queued_jobs());
@@ -140,7 +144,14 @@ class PrioritizedDispatcherTest : public testing::Test {
   TestJob* AddJob(char data, Priority priority) {
     TestJob* job = new TestJob(dispatcher_.get(), data, priority, &log_);
     jobs_.push_back(job);
-    job->Add();
+    job->Add(false);
+    return job;
+  }
+
+  TestJob* AddJobAtHead(char data, Priority priority) {
+    TestJob* job = new TestJob(dispatcher_.get(), data, priority, &log_);
+    jobs_.push_back(job);
+    job->Add(true);
     return job;
   }
 
@@ -155,6 +166,38 @@ class PrioritizedDispatcherTest : public testing::Test {
   scoped_ptr<PrioritizedDispatcher> dispatcher_;
   ScopedVector<TestJob> jobs_;
 };
+
+TEST_F(PrioritizedDispatcherTest, GetLimits) {
+  // Set non-trivial initial limits.
+  PrioritizedDispatcher::Limits original_limits(NUM_PRIORITIES, 5);
+  original_limits.reserved_slots[HIGHEST] = 1;
+  original_limits.reserved_slots[LOW] = 2;
+  Prepare(original_limits);
+
+  // Get current limits, make sure the original limits are returned.
+  PrioritizedDispatcher::Limits retrieved_limits = dispatcher_->GetLimits();
+  ASSERT_EQ(original_limits.total_jobs, retrieved_limits.total_jobs);
+  ASSERT_EQ(NUM_PRIORITIES, retrieved_limits.reserved_slots.size());
+  for (size_t priority = 0; priority < NUM_PRIORITIES; ++priority) {
+    EXPECT_EQ(original_limits.reserved_slots[priority],
+              retrieved_limits.reserved_slots[priority]);
+  }
+
+  // Set new limits.
+  PrioritizedDispatcher::Limits new_limits(NUM_PRIORITIES, 6);
+  new_limits.reserved_slots[MEDIUM] = 3;
+  new_limits.reserved_slots[LOWEST] = 1;
+  Prepare(new_limits);
+
+  // Get current limits, make sure the new limits are returned.
+  retrieved_limits = dispatcher_->GetLimits();
+  ASSERT_EQ(new_limits.total_jobs, retrieved_limits.total_jobs);
+  ASSERT_EQ(NUM_PRIORITIES, retrieved_limits.reserved_slots.size());
+  for (size_t priority = 0; priority < NUM_PRIORITIES; ++priority) {
+    EXPECT_EQ(new_limits.reserved_slots[priority],
+              retrieved_limits.reserved_slots[priority]);
+  }
+}
 
 TEST_F(PrioritizedDispatcherTest, AddAFIFO) {
   // Allow only one running job.
@@ -202,6 +245,33 @@ TEST_F(PrioritizedDispatcherTest, AddPriority) {
   Expect("a.c.d.b.e.");
 }
 
+TEST_F(PrioritizedDispatcherTest, AddAtHead) {
+  PrioritizedDispatcher::Limits limits(NUM_PRIORITIES, 1);
+  Prepare(limits);
+
+  TestJob* job_a = AddJob('a', MEDIUM);
+  TestJob* job_b = AddJobAtHead('b', MEDIUM);
+  TestJob* job_c = AddJobAtHead('c', HIGHEST);
+  TestJob* job_d = AddJobAtHead('d', HIGHEST);
+  TestJob* job_e = AddJobAtHead('e', MEDIUM);
+  TestJob* job_f = AddJob('f', MEDIUM);
+
+  ASSERT_TRUE(job_a->running());
+  job_a->Finish();
+  ASSERT_TRUE(job_d->running());
+  job_d->Finish();
+  ASSERT_TRUE(job_c->running());
+  job_c->Finish();
+  ASSERT_TRUE(job_e->running());
+  job_e->Finish();
+  ASSERT_TRUE(job_b->running());
+  job_b->Finish();
+  ASSERT_TRUE(job_f->running());
+  job_f->Finish();
+
+  Expect("a.d.c.e.b.f.");
+}
+
 TEST_F(PrioritizedDispatcherTest, EnforceLimits) {
   // Reserve 2 for HIGHEST and 1 for LOW or higher.
   // This leaves 2 for LOWEST or lower.
@@ -245,29 +315,40 @@ TEST_F(PrioritizedDispatcherTest, EnforceLimits) {
 }
 
 TEST_F(PrioritizedDispatcherTest, ChangePriority) {
-  PrioritizedDispatcher::Limits limits(NUM_PRIORITIES, 1);
+  PrioritizedDispatcher::Limits limits(NUM_PRIORITIES, 2);
+  // Reserve one slot only for HIGHEST priority requests.
+  limits.reserved_slots[HIGHEST] = 1;
   Prepare(limits);
 
   TestJob* job_a = AddJob('a', IDLE);
-  TestJob* job_b = AddJob('b', MEDIUM);
-  TestJob* job_c = AddJob('c', HIGHEST);
-  TestJob* job_d = AddJob('d', HIGHEST);
+  TestJob* job_b = AddJob('b', LOW);
+  TestJob* job_c = AddJob('c', MEDIUM);
+  TestJob* job_d = AddJob('d', MEDIUM);
+  TestJob* job_e = AddJob('e', IDLE);
 
   ASSERT_FALSE(job_b->running());
   ASSERT_FALSE(job_c->running());
-  job_b->ChangePriority(HIGHEST);
-  job_c->ChangePriority(MEDIUM);
+  job_b->ChangePriority(MEDIUM);
+  job_c->ChangePriority(LOW);
 
   ASSERT_TRUE(job_a->running());
   job_a->Finish();
   ASSERT_TRUE(job_d->running());
   job_d->Finish();
+
+  EXPECT_FALSE(job_e->running());
+  // Increasing |job_e|'s priority to HIGHEST should result in it being
+  // started immediately.
+  job_e->ChangePriority(HIGHEST);
+  ASSERT_TRUE(job_e->running());
+  job_e->Finish();
+
   ASSERT_TRUE(job_b->running());
   job_b->Finish();
   ASSERT_TRUE(job_c->running());
   job_c->Finish();
 
-  Expect("a.d.b.c.");
+  Expect("a.d.be..c.");
 }
 
 TEST_F(PrioritizedDispatcherTest, Cancel) {
@@ -322,6 +403,127 @@ TEST_F(PrioritizedDispatcherTest, EvictFromEmpty) {
   PrioritizedDispatcher::Limits limits(NUM_PRIORITIES, 1);
   Prepare(limits);
   EXPECT_TRUE(dispatcher_->EvictOldestLowest() == NULL);
+}
+
+TEST_F(PrioritizedDispatcherTest, AddWhileZeroLimits) {
+  PrioritizedDispatcher::Limits limits(NUM_PRIORITIES, 2);
+  Prepare(limits);
+
+  dispatcher_->SetLimitsToZero();
+  TestJob* job_a = AddJob('a', LOW);
+  TestJob* job_b = AddJob('b', MEDIUM);
+  TestJob* job_c = AddJobAtHead('c', MEDIUM);
+
+  EXPECT_EQ(0u, dispatcher_->num_running_jobs());
+  EXPECT_EQ(3u, dispatcher_->num_queued_jobs());
+
+  dispatcher_->SetLimits(limits);
+  EXPECT_EQ(2u, dispatcher_->num_running_jobs());
+  EXPECT_EQ(1u, dispatcher_->num_queued_jobs());
+
+  ASSERT_TRUE(job_b->running());
+  job_b->Finish();
+
+  ASSERT_TRUE(job_c->running());
+  job_c->Finish();
+
+  ASSERT_TRUE(job_a->running());
+  job_a->Finish();
+
+  Expect("cb.a..");
+}
+
+TEST_F(PrioritizedDispatcherTest, ReduceLimitsWhileJobQueued) {
+  PrioritizedDispatcher::Limits initial_limits(NUM_PRIORITIES, 2);
+  Prepare(initial_limits);
+
+  TestJob* job_a = AddJob('a', MEDIUM);
+  TestJob* job_b = AddJob('b', MEDIUM);
+  TestJob* job_c = AddJob('c', MEDIUM);
+  TestJob* job_d = AddJob('d', MEDIUM);
+  TestJob* job_e = AddJob('e', MEDIUM);
+
+  EXPECT_EQ(2u, dispatcher_->num_running_jobs());
+  EXPECT_EQ(3u, dispatcher_->num_queued_jobs());
+
+  // Reduce limits to just allow one job at a time.  Running jobs should not
+  // be affected.
+  dispatcher_->SetLimits(PrioritizedDispatcher::Limits(NUM_PRIORITIES, 1));
+
+  EXPECT_EQ(2u, dispatcher_->num_running_jobs());
+  EXPECT_EQ(3u, dispatcher_->num_queued_jobs());
+
+  // Finishing a job should not result in another job starting.
+  ASSERT_TRUE(job_a->running());
+  job_a->Finish();
+  EXPECT_EQ(1u, dispatcher_->num_running_jobs());
+  EXPECT_EQ(3u, dispatcher_->num_queued_jobs());
+
+  ASSERT_TRUE(job_b->running());
+  job_b->Finish();
+  EXPECT_EQ(1u, dispatcher_->num_running_jobs());
+  EXPECT_EQ(2u, dispatcher_->num_queued_jobs());
+
+  // Increasing the limits again should let c start.
+  dispatcher_->SetLimits(initial_limits);
+
+  ASSERT_TRUE(job_c->running());
+  job_c->Finish();
+  ASSERT_TRUE(job_d->running());
+  job_d->Finish();
+  ASSERT_TRUE(job_e->running());
+  job_e->Finish();
+
+  Expect("ab..cd.e..");
+}
+
+TEST_F(PrioritizedDispatcherTest, ZeroLimitsThenCancel) {
+  PrioritizedDispatcher::Limits limits(NUM_PRIORITIES, 1);
+  Prepare(limits);
+
+  TestJob* job_a = AddJob('a', IDLE);
+  TestJob* job_b = AddJob('b', IDLE);
+  TestJob* job_c = AddJob('c', IDLE);
+  dispatcher_->SetLimitsToZero();
+
+  ASSERT_TRUE(job_a->running());
+  EXPECT_FALSE(job_b->running());
+  EXPECT_FALSE(job_c->running());
+  job_a->Finish();
+
+  EXPECT_FALSE(job_b->running());
+  EXPECT_FALSE(job_c->running());
+
+  // Cancelling b shouldn't start job c.
+  job_b->Cancel();
+  EXPECT_FALSE(job_c->running());
+
+  // Restoring the limits should start c.
+  dispatcher_->SetLimits(limits);
+  ASSERT_TRUE(job_c->running());
+  job_c->Finish();
+
+  Expect("a.c.");
+}
+
+TEST_F(PrioritizedDispatcherTest, ZeroLimitsThenIncreasePriority) {
+  PrioritizedDispatcher::Limits limits(NUM_PRIORITIES, 2);
+  limits.reserved_slots[HIGHEST] = 1;
+  Prepare(limits);
+
+  TestJob* job_a = AddJob('a', IDLE);
+  TestJob* job_b = AddJob('b', IDLE);
+  EXPECT_TRUE(job_a->running());
+  EXPECT_FALSE(job_b->running());
+  dispatcher_->SetLimitsToZero();
+
+  job_b->ChangePriority(HIGHEST);
+  EXPECT_FALSE(job_b->running());
+  job_a->Finish();
+  EXPECT_FALSE(job_b->running());
+
+  job_b->Cancel();
+  Expect("a.");
 }
 
 #if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)

@@ -157,6 +157,10 @@ class NET_EXPORT HostResolverImpl
   typedef std::map<Key, Job*> JobMap;
   typedef ScopedVector<Request> RequestsList;
 
+  // Number of consecutive failures of DnsTask (with successful fallback to
+  // ProcTask) before the DnsClient is disabled until the next DNS change.
+  static const unsigned kMaximumDnsFailures;
+
   // Helper used by |Resolve()| and |ResolveFromCache()|.  Performs IP
   // literal, cache and HOSTS lookup (if enabled), returns OK if successful,
   // ERR_NAME_NOT_RESOLVED if either hostname is invalid or IP literal is
@@ -208,6 +212,11 @@ class NET_EXPORT HostResolverImpl
   // requests. Might start new jobs.
   void AbortAllInProgressJobs();
 
+  // Aborts all in progress DnsTasks. In-progress jobs will fall back to
+  // ProcTasks. Might start new jobs, if any jobs were taking up two dispatcher
+  // slots.
+  void AbortDnsTasks();
+
   // Attempts to serve each Job in |jobs_| from the HOSTS file if we have
   // a DnsClient with a valid DnsConfig.
   void TryServingAllJobsFromHosts();
@@ -225,8 +234,10 @@ class NET_EXPORT HostResolverImpl
   // and resulted in |net_error|.
   void OnDnsTaskResolve(int net_error);
 
-  // Allows the tests to catch slots leaking out of the dispatcher.
-  size_t num_running_jobs_for_tests() const {
+  // Allows the tests to catch slots leaking out of the dispatcher.  One
+  // HostResolverImpl::Job could occupy multiple PrioritizedDispatcher job
+  // slots.
+  size_t num_running_dispatcher_jobs_for_tests() const {
     return dispatcher_.num_running_jobs();
   }
 

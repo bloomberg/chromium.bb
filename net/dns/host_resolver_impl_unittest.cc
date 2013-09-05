@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
@@ -420,6 +421,20 @@ class HostResolverImplTest : public testing::Test {
 
   HostResolverImplTest() : proc_(new MockHostResolverProc()) {}
 
+  void CreateResolver() {
+    CreateResolverWithLimitsAndParams(DefaultLimits(),
+                                      DefaultParams(proc_.get()));
+  }
+
+  // This HostResolverImpl will only allow 1 outstanding resolve at a time and
+  // perform no retries.
+  void CreateSerialResolver() {
+    HostResolverImpl::ProcTaskParams params = DefaultParams(proc_.get());
+    params.max_retry_attempts = 0u;
+    PrioritizedDispatcher::Limits limits(NUM_PRIORITIES, 1);
+    CreateResolverWithLimitsAndParams(limits, params);
+  }
+
  protected:
   // A Request::Handler which is a proxy to the HostResolverImplTest fixture.
   struct Handler : public Request::Handler {
@@ -443,24 +458,22 @@ class HostResolverImplTest : public testing::Test {
     HostResolverImplTest* test;
   };
 
-  void CreateResolver() {
-    resolver_.reset(new HostResolverImpl(HostCache::CreateDefaultCache(),
-                                         DefaultLimits(),
-                                         DefaultParams(proc_.get()),
-                                         NULL));
+  // testing::Test implementation:
+  virtual void SetUp() OVERRIDE {
+    CreateResolver();
   }
 
-  // This HostResolverImpl will only allow 1 outstanding resolve at a time and
-  // perform no retries.
-  void CreateSerialResolver() {
-    HostResolverImpl::ProcTaskParams params = DefaultParams(proc_.get());
-    params.max_retry_attempts = 0u;
-    PrioritizedDispatcher::Limits limits(NUM_PRIORITIES, 1);
-    resolver_.reset(new HostResolverImpl(
-        HostCache::CreateDefaultCache(),
-        limits,
-        params,
-        NULL));
+  virtual void TearDown() OVERRIDE {
+    if (resolver_.get())
+      EXPECT_EQ(0u, resolver_->num_running_dispatcher_jobs_for_tests());
+    EXPECT_FALSE(proc_->HasBlockedRequests());
+  }
+
+  virtual void CreateResolverWithLimitsAndParams(
+      const PrioritizedDispatcher::Limits& limits,
+      const HostResolverImpl::ProcTaskParams& params) {
+    resolver_.reset(new HostResolverImpl(HostCache::CreateDefaultCache(),
+                                         limits, params, NULL));
   }
 
   // The Request will not be made until a call to |Resolve()|, and the Job will
@@ -496,30 +509,24 @@ class HostResolverImplTest : public testing::Test {
     return CreateRequest(hostname, kDefaultPort);
   }
 
-  virtual void SetUp() OVERRIDE {
-    CreateResolver();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    if (resolver_.get())
-      EXPECT_EQ(0u, resolver_->num_running_jobs_for_tests());
-    EXPECT_FALSE(proc_->HasBlockedRequests());
-  }
-
   void set_handler(Handler* handler) {
     handler_.reset(handler);
     handler_->test = this;
   }
 
   // Friendship is not inherited, so use proxies to access those.
-  size_t num_running_jobs() const {
+  size_t num_running_dispatcher_jobs() const {
     DCHECK(resolver_.get());
-    return resolver_->num_running_jobs_for_tests();
+    return resolver_->num_running_dispatcher_jobs_for_tests();
   }
 
   void set_fallback_to_proctask(bool fallback_to_proctask) {
     DCHECK(resolver_.get());
     resolver_->fallback_to_proctask_ = fallback_to_proctask;
+  }
+
+  static unsigned maximum_dns_failures() {
+    return HostResolverImpl::kMaximumDnsFailures;
   }
 
   scoped_refptr<MockHostResolverProc> proc_;
@@ -898,7 +905,7 @@ TEST_F(HostResolverImplTest, ObeyPoolConstraintsAfterIPAddressChange) {
 
   EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[0]->WaitForResult());
 
-  EXPECT_EQ(1u, num_running_jobs());
+  EXPECT_EQ(1u, num_running_dispatcher_jobs());
 
   EXPECT_FALSE(requests_[1]->completed());
   EXPECT_FALSE(requests_[2]->completed());
@@ -1265,36 +1272,70 @@ DnsConfig CreateValidDnsConfig() {
 
 // Specialized fixture for tests of DnsTask.
 class HostResolverImplDnsTest : public HostResolverImplTest {
+ public:
+  HostResolverImplDnsTest() : dns_client_(NULL) {}
+
  protected:
+  // testing::Test implementation:
   virtual void SetUp() OVERRIDE {
-    AddDnsRule("nx", dns_protocol::kTypeA, MockDnsClientRule::FAIL);
-    AddDnsRule("nx", dns_protocol::kTypeAAAA, MockDnsClientRule::FAIL);
-    AddDnsRule("ok", dns_protocol::kTypeA, MockDnsClientRule::OK);
-    AddDnsRule("ok", dns_protocol::kTypeAAAA, MockDnsClientRule::OK);
-    AddDnsRule("4ok", dns_protocol::kTypeA, MockDnsClientRule::OK);
-    AddDnsRule("4ok", dns_protocol::kTypeAAAA, MockDnsClientRule::EMPTY);
-    AddDnsRule("6ok", dns_protocol::kTypeA, MockDnsClientRule::EMPTY);
-    AddDnsRule("6ok", dns_protocol::kTypeAAAA, MockDnsClientRule::OK);
-    AddDnsRule("4nx", dns_protocol::kTypeA, MockDnsClientRule::OK);
-    AddDnsRule("4nx", dns_protocol::kTypeAAAA, MockDnsClientRule::FAIL);
+    AddDnsRule("nx", dns_protocol::kTypeA, MockDnsClientRule::FAIL, false);
+    AddDnsRule("nx", dns_protocol::kTypeAAAA, MockDnsClientRule::FAIL, false);
+    AddDnsRule("ok", dns_protocol::kTypeA, MockDnsClientRule::OK, false);
+    AddDnsRule("ok", dns_protocol::kTypeAAAA, MockDnsClientRule::OK, false);
+    AddDnsRule("4ok", dns_protocol::kTypeA, MockDnsClientRule::OK, false);
+    AddDnsRule("4ok", dns_protocol::kTypeAAAA, MockDnsClientRule::EMPTY, false);
+    AddDnsRule("6ok", dns_protocol::kTypeA, MockDnsClientRule::EMPTY, false);
+    AddDnsRule("6ok", dns_protocol::kTypeAAAA, MockDnsClientRule::OK, false);
+    AddDnsRule("4nx", dns_protocol::kTypeA, MockDnsClientRule::OK, false);
+    AddDnsRule("4nx", dns_protocol::kTypeAAAA, MockDnsClientRule::FAIL, false);
+    AddDnsRule("empty", dns_protocol::kTypeA, MockDnsClientRule::EMPTY, false);
+    AddDnsRule("empty", dns_protocol::kTypeAAAA, MockDnsClientRule::EMPTY,
+               false);
+
+    AddDnsRule("slow_nx", dns_protocol::kTypeA, MockDnsClientRule::FAIL, true);
+    AddDnsRule("slow_nx", dns_protocol::kTypeAAAA, MockDnsClientRule::FAIL,
+               true);
+
+    AddDnsRule("4slow_ok", dns_protocol::kTypeA, MockDnsClientRule::OK, true);
+    AddDnsRule("4slow_ok", dns_protocol::kTypeAAAA, MockDnsClientRule::OK,
+               false);
+    AddDnsRule("6slow_ok", dns_protocol::kTypeA, MockDnsClientRule::OK, false);
+    AddDnsRule("6slow_ok", dns_protocol::kTypeAAAA, MockDnsClientRule::OK,
+               true);
+    AddDnsRule("4slow_4ok", dns_protocol::kTypeA, MockDnsClientRule::OK, true);
+    AddDnsRule("4slow_4ok", dns_protocol::kTypeAAAA, MockDnsClientRule::EMPTY,
+               false);
+    AddDnsRule("4slow_4timeout", dns_protocol::kTypeA,
+               MockDnsClientRule::TIMEOUT, true);
+    AddDnsRule("4slow_4timeout", dns_protocol::kTypeAAAA, MockDnsClientRule::OK,
+               false);
+    AddDnsRule("4slow_6timeout", dns_protocol::kTypeA,
+               MockDnsClientRule::OK, true);
+    AddDnsRule("4slow_6timeout", dns_protocol::kTypeAAAA,
+               MockDnsClientRule::TIMEOUT, false);
     CreateResolver();
   }
 
-  void CreateResolver() {
+  // HostResolverImplTest implementation:
+  virtual void CreateResolverWithLimitsAndParams(
+      const PrioritizedDispatcher::Limits& limits,
+      const HostResolverImpl::ProcTaskParams& params) OVERRIDE {
     resolver_.reset(new HostResolverImpl(HostCache::CreateDefaultCache(),
-                                         DefaultLimits(),
-                                         DefaultParams(proc_.get()),
+                                         limits,
+                                         params,
                                          NULL));
     // Disable IPv6 support probing.
     resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
-    resolver_->SetDnsClient(CreateMockDnsClient(DnsConfig(), dns_rules_));
+    dns_client_ = new MockDnsClient(DnsConfig(), dns_rules_);
+    resolver_->SetDnsClient(scoped_ptr<DnsClient>(dns_client_));
   }
 
   // Adds a rule to |dns_rules_|. Must be followed by |CreateResolver| to apply.
   void AddDnsRule(const std::string& prefix,
                   uint16 qtype,
-                  MockDnsClientRule::Result result) {
-    dns_rules_.push_back(MockDnsClientRule(prefix, qtype, result));
+                  MockDnsClientRule::Result result,
+                  bool delay) {
+    dns_rules_.push_back(MockDnsClientRule(prefix, qtype, result, delay));
   }
 
   void ChangeDnsConfig(const DnsConfig& config) {
@@ -1304,6 +1345,8 @@ class HostResolverImplDnsTest : public HostResolverImplTest {
   }
 
   MockDnsClientRuleList dns_rules_;
+  // Owned by |resolver_|.
+  MockDnsClient* dns_client_;
 };
 
 // TODO(szym): Test AbortAllInProgressJobs due to DnsConfig change.
@@ -1371,7 +1414,8 @@ TEST_F(HostResolverImplDnsTest, NoFallbackToProcTask) {
 
   // Simulate the case when the preference or policy has disabled the DNS client
   // causing AbortDnsTasks.
-  resolver_->SetDnsClient(CreateMockDnsClient(DnsConfig(), dns_rules_));
+  resolver_->SetDnsClient(
+      scoped_ptr<DnsClient>(new MockDnsClient(DnsConfig(), dns_rules_)));
   ChangeDnsConfig(CreateValidDnsConfig());
 
   // First request is resolved by MockDnsClient, others should fail due to
@@ -1530,7 +1574,7 @@ TEST_F(HostResolverImplDnsTest, DisableDnsClientOnPersistentFailure) {
   EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
   EXPECT_EQ(OK, req->WaitForResult());
 
-  for (unsigned i = 0; i < 20; ++i) {
+  for (unsigned i = 0; i < maximum_dns_failures(); ++i) {
     // Use custom names to require separate Jobs.
     std::string hostname = base::StringPrintf("nx_%u", i);
     // Ensure fallback to ProcTask succeeds.
@@ -1595,7 +1639,8 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost) {
                                        DefaultLimits(),
                                        DefaultParams(proc.get()),
                                        NULL));
-  resolver_->SetDnsClient(CreateMockDnsClient(DnsConfig(), dns_rules_));
+  resolver_->SetDnsClient(
+      scoped_ptr<DnsClient>(new MockDnsClient(DnsConfig(), dns_rules_)));
   resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_IPV4);
 
   // Get the expected output.
@@ -1646,6 +1691,348 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost) {
 
   EXPECT_EQ(saw_ipv4, req->HasAddress("127.0.0.1", 80));
   EXPECT_EQ(saw_ipv6, req->HasAddress("::1", 80));
+}
+
+// Cancel a request with a single DNS transaction active.
+TEST_F(HostResolverImplDnsTest, CancelWithOneTransactionActive) {
+  resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_IPV4);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok", 80)->Resolve());
+  EXPECT_EQ(1u, num_running_dispatcher_jobs());
+  requests_[0]->Cancel();
+
+  // Dispatcher state checked in TearDown.
+}
+
+// Cancel a request with a single DNS transaction active and another pending.
+TEST_F(HostResolverImplDnsTest, CancelWithOneTransactionActiveOnePending) {
+  CreateSerialResolver();
+  resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok", 80)->Resolve());
+  EXPECT_EQ(1u, num_running_dispatcher_jobs());
+  requests_[0]->Cancel();
+
+  // Dispatcher state checked in TearDown.
+}
+
+// Cancel a request with two DNS transactions active.
+TEST_F(HostResolverImplDnsTest, CancelWithTwoTransactionsActive) {
+  resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok", 80)->Resolve());
+  EXPECT_EQ(2u, num_running_dispatcher_jobs());
+  requests_[0]->Cancel();
+
+  // Dispatcher state checked in TearDown.
+}
+
+// Delete a resolver with some active requests and some queued requests.
+TEST_F(HostResolverImplDnsTest, DeleteWithActiveTransactions) {
+  // At most 10 Jobs active at once.
+  CreateResolverWithLimitsAndParams(
+      PrioritizedDispatcher::Limits(NUM_PRIORITIES, 10u),
+      DefaultParams(proc_.get()));
+
+  resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  // First active job is an IPv4 request.
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok", 80, MEDIUM,
+                                          ADDRESS_FAMILY_IPV4)->Resolve());
+
+  // Add 10 more DNS lookups for different hostnames.  First 4 should have two
+  // active jobs, next one has a single active job, and one pending.  Others
+  // should all be queued.
+  for (int i = 0; i < 10; ++i) {
+    EXPECT_EQ(ERR_IO_PENDING, CreateRequest(
+        base::StringPrintf("ok%i", i))->Resolve());
+  }
+  EXPECT_EQ(10u, num_running_dispatcher_jobs());
+
+  resolver_.reset();
+}
+
+// Cancel a request with only the IPv6 transaction active.
+TEST_F(HostResolverImplDnsTest, CancelWithIPv6TransactionActive) {
+  resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("6slow_ok", 80)->Resolve());
+  EXPECT_EQ(2u, num_running_dispatcher_jobs());
+
+  // The IPv4 request should complete, the IPv6 request is still pending.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, num_running_dispatcher_jobs());
+  requests_[0]->Cancel();
+
+  // Dispatcher state checked in TearDown.
+}
+
+// Cancel a request with only the IPv4 transaction pending.
+TEST_F(HostResolverImplDnsTest, CancelWithIPv4TransactionPending) {
+  set_fallback_to_proctask(false);
+  resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("4slow_ok", 80)->Resolve());
+  EXPECT_EQ(2u, num_running_dispatcher_jobs());
+
+  // The IPv6 request should complete, the IPv4 request is still pending.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, num_running_dispatcher_jobs());
+
+  requests_[0]->Cancel();
+}
+
+// Test cases where AAAA completes first.
+TEST_F(HostResolverImplDnsTest, AAAACompletesFirst) {
+  set_fallback_to_proctask(false);
+  resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("4slow_ok", 80)->Resolve());
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("4slow_4ok", 80)->Resolve());
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("4slow_4timeout", 80)->Resolve());
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("4slow_6timeout", 80)->Resolve());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(requests_[0]->completed());
+  EXPECT_FALSE(requests_[1]->completed());
+  EXPECT_FALSE(requests_[2]->completed());
+  // The IPv6 of the third request should have failed and resulted in cancelling
+  // the IPv4 request.
+  EXPECT_TRUE(requests_[3]->completed());
+  EXPECT_EQ(ERR_DNS_TIMED_OUT, requests_[3]->result());
+  EXPECT_EQ(3u, num_running_dispatcher_jobs());
+
+  dns_client_->CompleteDelayedTransactions();
+  EXPECT_TRUE(requests_[0]->completed());
+  EXPECT_EQ(OK, requests_[0]->result());
+  EXPECT_EQ(2u, requests_[0]->NumberOfAddresses());
+  EXPECT_TRUE(requests_[0]->HasAddress("127.0.0.1", 80));
+  EXPECT_TRUE(requests_[0]->HasAddress("::1", 80));
+
+  EXPECT_TRUE(requests_[1]->completed());
+  EXPECT_EQ(OK, requests_[1]->result());
+  EXPECT_EQ(1u, requests_[1]->NumberOfAddresses());
+  EXPECT_TRUE(requests_[1]->HasAddress("127.0.0.1", 80));
+
+  EXPECT_TRUE(requests_[2]->completed());
+  EXPECT_EQ(ERR_DNS_TIMED_OUT, requests_[2]->result());
+}
+
+// Test the case where only a single transaction slot is available.
+TEST_F(HostResolverImplDnsTest, SerialResolver) {
+  CreateSerialResolver();
+  set_fallback_to_proctask(false);
+  resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok", 80)->Resolve());
+  EXPECT_EQ(1u, num_running_dispatcher_jobs());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(requests_[0]->completed());
+  EXPECT_EQ(OK, requests_[0]->result());
+  EXPECT_EQ(2u, requests_[0]->NumberOfAddresses());
+  EXPECT_TRUE(requests_[0]->HasAddress("127.0.0.1", 80));
+  EXPECT_TRUE(requests_[0]->HasAddress("::1", 80));
+}
+
+// Test the case where the AAAA query is started when another transaction
+// completes.
+TEST_F(HostResolverImplDnsTest, AAAAStartsAfterOtherJobFinishes) {
+  CreateResolverWithLimitsAndParams(
+      PrioritizedDispatcher::Limits(NUM_PRIORITIES, 2),
+      DefaultParams(proc_.get()));
+  set_fallback_to_proctask(false);
+  resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok", 80, MEDIUM,
+                                          ADDRESS_FAMILY_IPV4)->Resolve());
+  EXPECT_EQ(ERR_IO_PENDING,
+            CreateRequest("4slow_ok", 80, MEDIUM)->Resolve());
+  // An IPv4 request should have been started pending for each job.
+  EXPECT_EQ(2u, num_running_dispatcher_jobs());
+
+  // Request 0's IPv4 request should complete, starting Request 1's IPv6
+  // request, which should also complete.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, num_running_dispatcher_jobs());
+  EXPECT_TRUE(requests_[0]->completed());
+  EXPECT_FALSE(requests_[1]->completed());
+
+  dns_client_->CompleteDelayedTransactions();
+  EXPECT_TRUE(requests_[1]->completed());
+  EXPECT_EQ(OK, requests_[1]->result());
+  EXPECT_EQ(2u, requests_[1]->NumberOfAddresses());
+  EXPECT_TRUE(requests_[1]->HasAddress("127.0.0.1", 80));
+  EXPECT_TRUE(requests_[1]->HasAddress("::1", 80));
+}
+
+// Tests the case that a Job with a single transaction receives an empty address
+// list, triggering fallback to ProcTask.
+TEST_F(HostResolverImplDnsTest, IPv4EmptyFallback) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+  proc_->AddRuleForAllFamilies("empty_fallback", "192.168.0.1");
+  proc_->SignalMultiple(1u);
+  EXPECT_EQ(ERR_IO_PENDING,
+            CreateRequest("empty_fallback", 80, MEDIUM,
+                          ADDRESS_FAMILY_IPV4)->Resolve());
+  EXPECT_EQ(OK, requests_[0]->WaitForResult());
+  EXPECT_TRUE(requests_[0]->HasOneAddress("192.168.0.1", 80));
+}
+
+// Tests the case that a Job with two transactions receives two empty address
+// lists, triggering fallback to ProcTask.
+TEST_F(HostResolverImplDnsTest, UnspecEmptyFallback) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+  proc_->AddRuleForAllFamilies("empty_fallback", "192.168.0.1");
+  proc_->SignalMultiple(1u);
+  EXPECT_EQ(ERR_IO_PENDING,
+            CreateRequest("empty_fallback", 80, MEDIUM,
+                          ADDRESS_FAMILY_UNSPECIFIED)->Resolve());
+  EXPECT_EQ(OK, requests_[0]->WaitForResult());
+  EXPECT_TRUE(requests_[0]->HasOneAddress("192.168.0.1", 80));
+}
+
+// Tests getting a new invalid DnsConfig while there are active DnsTasks.
+TEST_F(HostResolverImplDnsTest, InvalidDnsConfigWithPendingRequests) {
+  // At most 3 jobs active at once.  This number is important, since we want to
+  // make sure that aborting the first HostResolverImpl::Job does not trigger
+  // another DnsTransaction on the second Job when it releases its second
+  // prioritized dispatcher slot.
+  CreateResolverWithLimitsAndParams(
+      PrioritizedDispatcher::Limits(NUM_PRIORITIES, 3u),
+      DefaultParams(proc_.get()));
+
+  resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  proc_->AddRuleForAllFamilies("slow_nx1", "192.168.0.1");
+  proc_->AddRuleForAllFamilies("slow_nx2", "192.168.0.2");
+  proc_->AddRuleForAllFamilies("ok", "192.168.0.3");
+
+  // First active job gets two slots.
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("slow_nx1")->Resolve());
+  // Next job gets one slot, and waits on another.
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("slow_nx2")->Resolve());
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok")->Resolve());
+
+  EXPECT_EQ(3u, num_running_dispatcher_jobs());
+
+  // Clear DNS config.  Two in-progress jobs should be aborted, and the next one
+  // should use a ProcTask.
+  ChangeDnsConfig(DnsConfig());
+  EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[0]->WaitForResult());
+  EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[1]->WaitForResult());
+
+  // Finish up the third job.  Should bypass the DnsClient, and get its results
+  // from MockHostResolverProc.
+  EXPECT_FALSE(requests_[2]->completed());
+  proc_->SignalMultiple(1u);
+  EXPECT_EQ(OK, requests_[2]->WaitForResult());
+  EXPECT_TRUE(requests_[2]->HasOneAddress("192.168.0.3", 80));
+}
+
+// Tests the case that DnsClient is automatically disabled due to failures
+// while there are active DnsTasks.
+TEST_F(HostResolverImplDnsTest,
+       AutomaticallyDisableDnsClientWithPendingRequests) {
+  // Trying different limits is important for this test:  Different limits
+  // result in different behavior when aborting in-progress DnsTasks.  Having
+  // a DnsTask that has one job active and one in the queue when another job
+  // occupying two slots has its DnsTask aborted is the case most likely to run
+  // into problems.
+  for (size_t limit = 1u; limit < 6u; ++limit) {
+    CreateResolverWithLimitsAndParams(
+        PrioritizedDispatcher::Limits(NUM_PRIORITIES, limit),
+        DefaultParams(proc_.get()));
+
+    resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
+    ChangeDnsConfig(CreateValidDnsConfig());
+
+    // Queue up enough failures to disable DnsTasks.  These will all fall back
+    // to ProcTasks, and succeed there.
+    for (unsigned i = 0u; i < maximum_dns_failures(); ++i) {
+      std::string host = base::StringPrintf("nx%u", i);
+      proc_->AddRuleForAllFamilies(host, "192.168.0.1");
+      EXPECT_EQ(ERR_IO_PENDING, CreateRequest(host)->Resolve());
+    }
+
+    // These requests should all bypass DnsTasks, due to the above failures,
+    // so should end up using ProcTasks.
+    proc_->AddRuleForAllFamilies("slow_ok1", "192.168.0.2");
+    EXPECT_EQ(ERR_IO_PENDING, CreateRequest("slow_ok1")->Resolve());
+    proc_->AddRuleForAllFamilies("slow_ok2", "192.168.0.3");
+    EXPECT_EQ(ERR_IO_PENDING, CreateRequest("slow_ok2")->Resolve());
+    proc_->AddRuleForAllFamilies("slow_ok3", "192.168.0.4");
+    EXPECT_EQ(ERR_IO_PENDING, CreateRequest("slow_ok3")->Resolve());
+    proc_->SignalMultiple(maximum_dns_failures() + 3);
+
+    for (size_t i = 0u; i < maximum_dns_failures(); ++i) {
+      EXPECT_EQ(OK, requests_[i]->WaitForResult());
+      EXPECT_TRUE(requests_[i]->HasOneAddress("192.168.0.1", 80));
+    }
+
+    EXPECT_EQ(OK, requests_[maximum_dns_failures()]->WaitForResult());
+    EXPECT_TRUE(requests_[maximum_dns_failures()]->HasOneAddress(
+                    "192.168.0.2", 80));
+    EXPECT_EQ(OK, requests_[maximum_dns_failures() + 1]->WaitForResult());
+    EXPECT_TRUE(requests_[maximum_dns_failures() + 1]->HasOneAddress(
+                    "192.168.0.3", 80));
+    EXPECT_EQ(OK, requests_[maximum_dns_failures() + 2]->WaitForResult());
+    EXPECT_TRUE(requests_[maximum_dns_failures() + 2]->HasOneAddress(
+                    "192.168.0.4", 80));
+    requests_.clear();
+  }
+}
+
+// Tests a call to SetDnsClient while there are active DnsTasks.
+TEST_F(HostResolverImplDnsTest, ManuallyDisableDnsClientWithPendingRequests) {
+  // At most 3 jobs active at once.  This number is important, since we want to
+  // make sure that aborting the first HostResolverImpl::Job does not trigger
+  // another DnsTransaction on the second Job when it releases its second
+  // prioritized dispatcher slot.
+  CreateResolverWithLimitsAndParams(
+      PrioritizedDispatcher::Limits(NUM_PRIORITIES, 3u),
+      DefaultParams(proc_.get()));
+
+  resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  proc_->AddRuleForAllFamilies("slow_ok1", "192.168.0.1");
+  proc_->AddRuleForAllFamilies("slow_ok2", "192.168.0.2");
+  proc_->AddRuleForAllFamilies("ok", "192.168.0.3");
+
+  // First active job gets two slots.
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("slow_ok1")->Resolve());
+  // Next job gets one slot, and waits on another.
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("slow_ok2")->Resolve());
+  // Next one is queued.
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok")->Resolve());
+
+  EXPECT_EQ(3u, num_running_dispatcher_jobs());
+
+  // Clear DnsClient.  The two in-progress jobs should fall back to a ProcTask,
+  // and the next one should be started with a ProcTask.
+  resolver_->SetDnsClient(scoped_ptr<DnsClient>());
+
+  // All three in-progress requests should now be running a ProcTask.
+  EXPECT_EQ(3u, num_running_dispatcher_jobs());
+  proc_->SignalMultiple(3u);
+
+  EXPECT_EQ(OK, requests_[0]->WaitForResult());
+  EXPECT_TRUE(requests_[0]->HasOneAddress("192.168.0.1", 80));
+  EXPECT_EQ(OK, requests_[1]->WaitForResult());
+  EXPECT_TRUE(requests_[1]->HasOneAddress("192.168.0.2", 80));
+  EXPECT_EQ(OK, requests_[2]->WaitForResult());
+  EXPECT_TRUE(requests_[2]->HasOneAddress("192.168.0.3", 80));
 }
 
 }  // namespace net

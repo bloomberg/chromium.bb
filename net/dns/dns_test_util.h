@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/dns/dns_client.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/dns_protocol.h"
 
@@ -174,7 +175,9 @@ static const int kT3TTL = 0x00000015;
 // +2 for the CNAME records, +1 for TXT record.
 static const unsigned kT3RecordCount = arraysize(kT3IpAddresses) + 3;
 
+class AddressSorter;
 class DnsClient;
+class MockTransactionFactory;
 
 struct MockDnsClientRule {
   enum Result {
@@ -184,21 +187,43 @@ struct MockDnsClientRule {
     OK,       // Return a response with loopback address.
   };
 
+  // If |delay| is true, matching transactions will be delayed until triggered
+  // by the consumer.
   MockDnsClientRule(const std::string& prefix_arg,
                     uint16 qtype_arg,
-                    Result result_arg)
-      : result(result_arg), prefix(prefix_arg), qtype(qtype_arg) { }
+                    Result result_arg,
+                    bool delay)
+      : result(result_arg), prefix(prefix_arg), qtype(qtype_arg),
+        delay(delay) {}
 
   Result result;
   std::string prefix;
   uint16 qtype;
+  bool delay;
 };
 
 typedef std::vector<MockDnsClientRule> MockDnsClientRuleList;
 
-// Creates mock DnsClient for testing HostResolverImpl.
-scoped_ptr<DnsClient> CreateMockDnsClient(const DnsConfig& config,
-                                          const MockDnsClientRuleList& rules);
+// MockDnsClient provides MockTransactionFactory.
+class MockDnsClient : public DnsClient {
+ public:
+  MockDnsClient(const DnsConfig& config, const MockDnsClientRuleList& rules);
+  virtual ~MockDnsClient();
+
+  // DnsClient interface:
+  virtual void SetConfig(const DnsConfig& config) OVERRIDE;
+  virtual const DnsConfig* GetConfig() const OVERRIDE;
+  virtual DnsTransactionFactory* GetTransactionFactory() OVERRIDE;
+  virtual AddressSorter* GetAddressSorter() OVERRIDE;
+
+  // Completes all DnsTransactions that were delayed by a rule.
+  void CompleteDelayedTransactions();
+
+ private:
+  DnsConfig config_;
+  scoped_ptr<MockTransactionFactory> factory_;
+  scoped_ptr<AddressSorter> address_sorter_;
+};
 
 }  // namespace net
 
