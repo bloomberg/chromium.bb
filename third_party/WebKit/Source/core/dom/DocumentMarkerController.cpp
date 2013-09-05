@@ -346,20 +346,6 @@ Vector<DocumentMarker*> DocumentMarkerController::markersFor(Node* node, Documen
     return result;
 }
 
-// FIXME: Should be removed after all relevant patches are landed
-Vector<DocumentMarker> DocumentMarkerController::markersForNode(Node* node)
-{
-    Vector<DocumentMarker> result;
-    MarkerList* list = m_markers.get(node);
-    if (!list)
-        return result;
-
-    for (size_t i = 0; i < list->size(); ++i)
-        result.append(list->at(i));
-
-    return result;
-}
-
 Vector<DocumentMarker*> DocumentMarkerController::markers()
 {
     Vector<DocumentMarker*> result;
