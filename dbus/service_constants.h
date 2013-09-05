@@ -1305,6 +1305,7 @@ const char kGetVolumeState[] = "GetVolumeState";
 const char kGetNodes[] = "GetNodes";
 const char kSetActiveOutputNode[] = "SetActiveOutputNode";
 const char kSetActiveInputNode[] = "SetActiveInputNode";
+const char kGetNumberOfActiveStreams[] = "GetNumberOfActiveStreams";
 
 // Names of properties returned by GetNodes()
 const char kIsInputProperty[] = "IsInput";
@@ -1323,6 +1324,7 @@ const char kInputMuteChanged[] = "InputMuteChanged";
 const char kNodesChanged[] = "NodesChanged";
 const char kActiveOutputNodeChanged[] = "ActiveOutputNodeChanged";
 const char kActiveInputNodeChanged[] = "ActiveInputNodeChanged";
+const char kNumberOfActiveStreamsChanged[] = "NumberOfActiveStreamsChanged";
 }  // namespace cras
 
 #endif  // DBUS_SERVICE_CONSTANTS_H_
