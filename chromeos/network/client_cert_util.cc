@@ -91,6 +91,13 @@ class IssuerCaFilter {
   const std::vector<std::string>& issuer_ca_pems_;
 };
 
+std::string GetStringFromDictionary(const base::DictionaryValue& dict,
+                                    const std::string& key) {
+  std::string s;
+  dict.GetStringWithoutPathExpansion(key, &s);
+  return s;
+}
+
 }  // namespace
 
 // Returns true only if any fields set in this pattern match exactly with
@@ -236,6 +243,36 @@ void SetShillProperties(const client_cert::ConfigType cert_config_type,
   DCHECK(tpm_pin_property);
   if (!tpm_pin.empty())
     properties->SetStringWithoutPathExpansion(tpm_pin_property, tpm_pin);
+}
+
+bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,
+                             const base::DictionaryValue& service_properties) {
+  // VPN certificate properties are read from the Provider dictionary.
+  const base::DictionaryValue* provider_properties = NULL;
+  service_properties.GetDictionaryWithoutPathExpansion(
+      flimflam::kProviderProperty, &provider_properties);
+  switch (cert_config_type) {
+    case CONFIG_TYPE_NONE:
+      return true;
+    case CONFIG_TYPE_OPENVPN:
+      // OpenVPN generally requires a passphrase and we don't know whether or
+      // not one is required, so always return false here.
+      return false;
+    case CONFIG_TYPE_IPSEC:
+      // IPSec may require a passphrase, so return false here also.
+      return false;
+    case CONFIG_TYPE_EAP: {
+      std::string cert_id = GetStringFromDictionary(
+          service_properties, flimflam::kEapCertIdProperty);
+      std::string key_id = GetStringFromDictionary(
+          service_properties, flimflam::kEapKeyIdProperty);
+      std::string identity = GetStringFromDictionary(
+          service_properties, flimflam::kEapIdentityProperty);
+      return !cert_id.empty() && !key_id.empty() && !identity.empty();
+    }
+  }
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace client_cert

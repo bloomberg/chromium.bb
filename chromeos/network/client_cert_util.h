@@ -54,6 +54,10 @@ void SetShillProperties(const ConfigType cert_config_type,
                         const std::string* pkcs11_id,
                         base::DictionaryValue* properties);
 
+// Returns true if all required configuration properties are set and not empty.
+bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,
+                             const base::DictionaryValue& service_properties);
+
 }  // namespace client_cert
 
 }  // namespace chromeos

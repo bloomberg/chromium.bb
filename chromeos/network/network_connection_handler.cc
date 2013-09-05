@@ -431,6 +431,12 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
         ErrorCallbackForPendingRequest(service_path, kErrorCertificateRequired);
         return;
       }
+    } else if (check_error_state &&
+               !client_cert::IsCertificateConfigured(client_cert_type,
+                                                     service_properties)) {
+      // Network may not be configured.
+      ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
+      return;
     }
 
     // The network may not be 'Connectable' because the TPM properties are not
