@@ -19,11 +19,6 @@
 
 #if defined(USE_ASH)
 #include "ash/wm/window_util.h"
-#include "chrome/browser/ui/ash/ash_init.h"
-#endif
-
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/frame/desktop_browser_frame_aura.h"
 #endif
 
 using aura::Window;
@@ -160,25 +155,6 @@ void BrowserFrameAura::TabStripDisplayModeChanged() {
 const gfx::Font& BrowserFrame::GetTitleFont() {
   static gfx::Font* title_font = new gfx::Font;
   return *title_font;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeBrowserFrame, public:
-
-// static
-NativeBrowserFrame* NativeBrowserFrame::CreateNativeBrowserFrame(
-    BrowserFrame* browser_frame,
-    BrowserView* browser_view) {
-#if !defined(OS_CHROMEOS)
-  if (
-#if defined(USE_ASH)
-      !chrome::ShouldOpenAshOnStartup() &&
-#endif
-      browser_view->browser()->
-          host_desktop_type() == chrome::HOST_DESKTOP_TYPE_NATIVE)
-    return new DesktopBrowserFrameAura(browser_frame, browser_view);
-#endif
-  return new BrowserFrameAura(browser_frame, browser_view);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

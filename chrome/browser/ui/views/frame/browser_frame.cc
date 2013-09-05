@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
+#include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 #include "chrome/browser/ui/views/frame/system_menu_model_builder.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -63,7 +64,7 @@ BrowserFrame::~BrowserFrame() {
 
 void BrowserFrame::InitBrowserFrame() {
   native_browser_frame_ =
-      NativeBrowserFrame::CreateNativeBrowserFrame(this, browser_view_);
+      NativeBrowserFrameFactory::CreateNativeBrowserFrame(this, browser_view_);
   views::Widget::InitParams params;
   params.delegate = browser_view_;
   params.native_widget = native_browser_frame_->AsNativeWidget();

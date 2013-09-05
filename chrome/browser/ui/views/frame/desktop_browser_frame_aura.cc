@@ -37,6 +37,12 @@ DesktopBrowserFrameAura::DesktopBrowserFrameAura(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// DesktopBrowserFrameAura, protected:
+
+DesktopBrowserFrameAura::~DesktopBrowserFrameAura() {
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // DesktopBrowserFrameAura, views::DesktopNativeWidgetAura overrides:
 
 void DesktopBrowserFrameAura::InitNativeWidget(
@@ -90,10 +96,4 @@ int DesktopBrowserFrameAura::GetMinimizeButtonOffset() const {
 }
 
 void DesktopBrowserFrameAura::TabStripDisplayModeChanged() {
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// DesktopBrowserFrameAura, private:
-
-DesktopBrowserFrameAura::~DesktopBrowserFrameAura() {
 }

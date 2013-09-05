@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -35,6 +36,11 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/frame/desktop_browser_frame_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#endif
 
 #if defined(USE_ASH)
 #include "ash/display/display_controller.h"
@@ -236,6 +242,91 @@ class ScreenEventGeneratorDelegate : public aura::test::EventGeneratorDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(ScreenEventGeneratorDelegate);
 };
+
+#endif
+
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+
+// Following classes verify a crash scenario. Specifically on Windows when focus
+// changes it can trigger capture being lost. This was causing a crash in tab
+// dragging as it wasn't set up to handle this scenario. These classes
+// synthesize this scenario.
+
+// Allows making ClearNativeFocus() invoke ReleaseCapture().
+class TestDesktopBrowserFrameAura : public DesktopBrowserFrameAura {
+ public:
+  TestDesktopBrowserFrameAura(
+      BrowserFrame* browser_frame,
+      BrowserView* browser_view)
+      : DesktopBrowserFrameAura(browser_frame, browser_view),
+        release_capture_(false) {}
+  virtual ~TestDesktopBrowserFrameAura() {}
+
+  void ReleaseCaptureOnNextClear() {
+    release_capture_ = true;
+  }
+
+  virtual void ClearNativeFocus() OVERRIDE {
+    views::DesktopNativeWidgetAura::ClearNativeFocus();
+    if (release_capture_) {
+      release_capture_ = false;
+      GetWidget()->ReleaseCapture();
+    }
+  }
+
+ private:
+  // If true ReleaseCapture() is invoked in ClearNativeFocus().
+  bool release_capture_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDesktopBrowserFrameAura);
+};
+
+// Factory for creating a TestDesktopBrowserFrameAura.
+class TestNativeBrowserFrameFactory : public NativeBrowserFrameFactory {
+ public:
+  TestNativeBrowserFrameFactory() {}
+  virtual ~TestNativeBrowserFrameFactory() {}
+
+  virtual NativeBrowserFrame* Create(
+      BrowserFrame* browser_frame,
+      BrowserView* browser_view) OVERRIDE {
+    return new TestDesktopBrowserFrameAura(browser_frame, browser_view);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestNativeBrowserFrameFactory);
+};
+
+class TabDragCaptureLostTest : public TabDragControllerTest {
+ public:
+  TabDragCaptureLostTest() {
+    NativeBrowserFrameFactory::Set(new TestNativeBrowserFrameFactory);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TabDragCaptureLostTest);
+};
+
+// See description above for details.
+IN_PROC_BROWSER_TEST_F(TabDragCaptureLostTest, ReleaseCaptureOnDrag) {
+  AddTabAndResetBrowser(browser());
+
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  gfx::Point tab_1_center(GetCenterInScreenCoordinates(tab_strip->tab_at(1)));
+  ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_1_center) &&
+              ui_test_utils::SendMouseEventsSync(
+                  ui_controls::LEFT, ui_controls::DOWN));
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  TestDesktopBrowserFrameAura* frame =
+      static_cast<TestDesktopBrowserFrameAura*>(
+          BrowserView::GetBrowserViewForBrowser(browser())->GetWidget()->
+          native_widget_private());
+  // Invoke ReleaseCaptureOnDrag() so that when the drag happens and focus
+  // changes capture is released and the drag cancels.
+  frame->ReleaseCaptureOnNextClear();
+  ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
+  EXPECT_FALSE(tab_strip->IsDragSessionActive());
+}
 
 #endif
 

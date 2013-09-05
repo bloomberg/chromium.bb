@@ -43,6 +43,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -360,7 +361,8 @@ TabDragController::TabDragController()
       screen_(NULL),
       host_desktop_type_(chrome::HOST_DESKTOP_TYPE_NATIVE),
       offset_to_width_ratio_(0),
-      old_focused_view_(NULL),
+      old_focused_view_id_(
+          views::ViewStorage::GetInstance()->CreateStorageID()),
       last_move_screen_loc_(0),
       started_drag_(false),
       active_(true),
@@ -380,6 +382,8 @@ TabDragController::TabDragController()
 }
 
 TabDragController::~TabDragController() {
+  views::ViewStorage::GetInstance()->RemoveView(old_focused_view_id_);
+
   if (instance_ == this)
     instance_ = NULL;
 
@@ -498,8 +502,16 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
     if (!CanStartDrag(point_in_screen))
       return;  // User hasn't dragged far enough yet.
 
+    // On windows SaveFocus() may trigger a capture lost, which destroys us.
+    {
+      bool destroyed = false;
+      destroyed_ = &destroyed;
+      SaveFocus();
+      if (destroyed)
+        return;
+      destroyed_ = NULL;
+    }
     started_drag_ = true;
-    SaveFocus();
     Attach(source_tabstrip_, gfx::Point());
     if (detach_into_browser_ && static_cast<int>(drag_data_.size()) ==
         GetModel(source_tabstrip_)->count()) {
@@ -743,16 +755,25 @@ void TabDragController::UpdateDockInfo(const gfx::Point& point_in_screen) {
 }
 
 void TabDragController::SaveFocus() {
-  DCHECK(!old_focused_view_);  // This should only be invoked once.
   DCHECK(source_tabstrip_);
-  old_focused_view_ = source_tabstrip_->GetFocusManager()->GetFocusedView();
+  views::View* focused_view =
+      source_tabstrip_->GetFocusManager()->GetFocusedView();
+  if (focused_view)
+    views::ViewStorage::GetInstance()->StoreView(old_focused_view_id_,
+                                                 focused_view);
   source_tabstrip_->GetFocusManager()->SetFocusedView(source_tabstrip_);
+  // WARNING: we may have been deleted.
 }
 
 void TabDragController::RestoreFocus() {
-  if (old_focused_view_ && attached_tabstrip_ == source_tabstrip_)
-    old_focused_view_->GetFocusManager()->SetFocusedView(old_focused_view_);
-  old_focused_view_ = NULL;
+  if (attached_tabstrip_ != source_tabstrip_)
+    return;
+  views::View* old_focused_view =
+      views::ViewStorage::GetInstance()->RetrieveView(
+      old_focused_view_id_);
+  if (!old_focused_view)
+    return;
+  old_focused_view->GetFocusManager()->SetFocusedView(old_focused_view);
 }
 
 bool TabDragController::CanStartDrag(const gfx::Point& point_in_screen) const {

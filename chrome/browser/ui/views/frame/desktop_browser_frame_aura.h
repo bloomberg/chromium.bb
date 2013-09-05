@@ -42,6 +42,8 @@ class DesktopBrowserFrameAura : public views::DesktopNativeWidgetAura,
   BrowserView* browser_view() const { return browser_view_; }
 
  protected:
+  virtual ~DesktopBrowserFrameAura();
+
   // Overridden from views::DesktopNativeWidgetAura:
   virtual void InitNativeWidget(
       const views::Widget::InitParams& params) OVERRIDE;
@@ -55,8 +57,6 @@ class DesktopBrowserFrameAura : public views::DesktopNativeWidgetAura,
   virtual void TabStripDisplayModeChanged() OVERRIDE;
 
  private:
-  virtual ~DesktopBrowserFrameAura();
-
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;
   BrowserFrame* browser_frame_;

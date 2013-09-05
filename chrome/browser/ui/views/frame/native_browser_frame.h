@@ -16,11 +16,6 @@ class NativeBrowserFrame {
  public:
   virtual ~NativeBrowserFrame() {}
 
-  // Construct a platform-specific implementation of this interface.
-  static NativeBrowserFrame* CreateNativeBrowserFrame(
-      BrowserFrame* browser_frame,
-      BrowserView* browser_view);
-
   virtual views::NativeWidget* AsNativeWidget() = 0;
   virtual const views::NativeWidget* AsNativeWidget() const = 0;
 

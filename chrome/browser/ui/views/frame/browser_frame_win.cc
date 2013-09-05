@@ -522,13 +522,3 @@ bool BrowserFrame::ShouldLeaveOffsetNearTopBorder() {
   }
   return !IsMaximized();
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeBrowserFrame, public:
-
-// static
-NativeBrowserFrame* NativeBrowserFrame::CreateNativeBrowserFrame(
-    BrowserFrame* browser_frame,
-    BrowserView* browser_view) {
-  return new BrowserFrameWin(browser_frame, browser_view);
-}
