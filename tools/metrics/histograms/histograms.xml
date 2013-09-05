@@ -10122,6 +10122,17 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.ThumbnailFallbackRate" units="%">
+  <summary>
+    The percentage of times most visited tiles use the fallback thumbnail. Only
+    requests that actually specify a fallback thumbnail are considered here. We
+    measure the rate instead of the number of errors because multiple attempts
+    are made to load thumbnails at different times during the NTP's lifetime.
+    Each NTP session's error rate is logged after the user navigates to a new
+    URL from that NTP.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.VisibleScreenshots">
   <summary>
     The number of screenshots that were cached for the visible suggestions on

@@ -19,8 +19,15 @@ var NTP_LOGGING_EVENT_TYPE = {
   NTP_MOUSEOVER: 0,
   // The page attempted to load a thumbnail image.
   NTP_THUMBNAIL_ATTEMPT: 1,
-  // There was an error in loading a thumbnail image.
-  NTP_THUMBNAIL_ERROR: 2
+  // There was an error in loading both the thumbnail image and the fallback
+  // (if it was provided), resulting in a grey tile.
+  NTP_THUMBNAIL_ERROR: 2,
+  // The page attempted to load a thumbnail URL while a fallback thumbnail was
+  // provided.
+  NTP_FALLBACK_THUMBNAIL_REQUESTED: 3,
+  // The primary thumbnail image failed to load and caused us to use the
+  // secondary thumbnail as a fallback.
+  NTP_FALLBACK_THUMBNAIL_USED: 4
 };
 
 /**

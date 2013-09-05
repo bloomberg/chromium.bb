@@ -64,6 +64,14 @@ class NTPUserDataLogger
   // of a thumbnail image.
   size_t number_of_thumbnail_errors_;
 
+  // Total number of attempts made to load thumbnail images while providing a
+  // fallback thumbnail for this NTP session.
+  size_t number_of_fallback_thumbnails_requested_;
+
+  // Total number of errors that occurred while trying to load the primary
+  // thumbnail image and that caused a fallback to the secondary thumbnail.
+  size_t number_of_fallback_thumbnails_used_;
+
   // The URL of this New Tab Page - varies based on NTP version.
   GURL ntp_url_;
 

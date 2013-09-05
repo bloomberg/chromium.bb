@@ -51,9 +51,11 @@ window.addEventListener('DOMContentLoaded', function() {
         // The first thumbnail's onerror function will swap the visibility of
         // the two thumbnails.
         image.onerror = function() {
+          logEvent(NTP_LOGGING_EVENT_TYPE.NTP_FALLBACK_THUMBNAIL_USED);
           image.style.visibility = 'hidden';
           image2.style.visibility = 'visible';
         };
+        logEvent(NTP_LOGGING_EVENT_TYPE.NTP_FALLBACK_THUMBNAIL_REQUESTED);
       } else {
         image.onerror = showDomainElement;
       }

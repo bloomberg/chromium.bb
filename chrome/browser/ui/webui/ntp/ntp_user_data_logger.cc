@@ -16,12 +16,23 @@ NTPUserDataLogger::~NTPUserDataLogger() {}
 void NTPUserDataLogger::EmitThumbnailErrorRate() {
   DCHECK_LE(number_of_thumbnail_errors_, number_of_thumbnail_attempts_);
   if (number_of_thumbnail_attempts_ != 0) {
-    UMA_HISTOGRAM_PERCENTAGE("NewTabPage.ThumbnailErrorRate",
-                             GetPercentError(number_of_thumbnail_errors_,
-                                             number_of_thumbnail_attempts_));
+    UMA_HISTOGRAM_PERCENTAGE(
+      "NewTabPage.ThumbnailErrorRate",
+      GetPercentError(number_of_thumbnail_errors_,
+                      number_of_thumbnail_attempts_));
+  }
+  DCHECK_LE(number_of_fallback_thumbnails_used_,
+            number_of_fallback_thumbnails_requested_);
+  if (number_of_fallback_thumbnails_requested_ != 0) {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "NewTabPage.ThumbnailFallbackRate",
+        GetPercentError(number_of_fallback_thumbnails_used_,
+                        number_of_fallback_thumbnails_requested_));
   }
   number_of_thumbnail_attempts_ = 0;
   number_of_thumbnail_errors_ = 0;
+  number_of_fallback_thumbnails_requested_ = 0;
+  number_of_fallback_thumbnails_used_ = 0;
 }
 
 void NTPUserDataLogger::EmitMouseoverCount() {
@@ -39,6 +50,12 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event) {
       break;
     case NTP_THUMBNAIL_ERROR:
       number_of_thumbnail_errors_++;
+      break;
+    case NTP_FALLBACK_THUMBNAIL_REQUESTED:
+      number_of_fallback_thumbnails_requested_++;
+      break;
+    case NTP_FALLBACK_THUMBNAIL_USED:
+      number_of_fallback_thumbnails_used_++;
       break;
     default:
       NOTREACHED();
@@ -64,7 +81,9 @@ NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
     : content::WebContentsObserver(contents),
       number_of_mouseovers_(0),
       number_of_thumbnail_attempts_(0),
-      number_of_thumbnail_errors_(0) {
+      number_of_thumbnail_errors_(0),
+      number_of_fallback_thumbnails_requested_(0),
+      number_of_fallback_thumbnails_used_(0) {
 }
 
 size_t NTPUserDataLogger::GetPercentError(size_t errors, size_t events) const {
