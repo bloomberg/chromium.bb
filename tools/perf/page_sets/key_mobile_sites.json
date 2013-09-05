@@ -70,7 +70,7 @@
       "why": "#1 (Alexa global)",
       "navigate_steps": [
         { "action": "navigate" },
-        { "action": "wait", "javascript": "document.getElementById('u_0_c') !== null" }
+        { "action": "wait", "javascript": "document.getElementById('u_0_c') !== null && document.body.scrollHeight > window.innerHeight" }
       ]
     },
     {
