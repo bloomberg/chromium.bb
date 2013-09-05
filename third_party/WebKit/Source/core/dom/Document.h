@@ -841,6 +841,7 @@ public:
 
     Document* parentDocument() const;
     Document* topDocument() const;
+    WeakPtr<Document> contextDocument();
 
     ScriptRunner* scriptRunner() { return m_scriptRunner.get(); }
 
@@ -924,6 +925,7 @@ public:
     void initContentSecurityPolicy(const ContentSecurityPolicyResponseHeaders&);
 
     bool allowInlineEventHandlers(Node*, EventListener*, const String& contextURL, const WTF::OrdinalNumber& contextLine);
+    bool allowExecutingScripts(Node*);
 
     void statePopped(PassRefPtr<SerializedScriptValue>);
 
@@ -1314,6 +1316,7 @@ private:
     RefPtr<DocumentEventQueue> m_eventQueue;
 
     WeakPtrFactory<Document> m_weakFactory;
+    WeakPtr<Document> m_contextDocument;
 
     QualifiedName m_idAttributeName;
 

@@ -253,10 +253,11 @@ Document* XMLHttpRequest::responseXML(ExceptionState& es)
             || scriptExecutionContext()->isWorkerGlobalScope()) {
             m_responseDocument = 0;
         } else {
+            DocumentInit init = DocumentInit::fromContext(document()->contextDocument(), m_url);
             if (isHTML)
-                m_responseDocument = HTMLDocument::create(DocumentInit(m_url));
+                m_responseDocument = HTMLDocument::create(init);
             else
-                m_responseDocument = Document::create(DocumentInit(m_url));
+                m_responseDocument = Document::create(init);
             // FIXME: Set Last-Modified.
             m_responseDocument->setContent(m_responseText.flattenToString());
             m_responseDocument->setSecurityOrigin(securityOrigin());

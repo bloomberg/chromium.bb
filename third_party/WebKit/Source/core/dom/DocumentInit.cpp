@@ -29,11 +29,33 @@
 #include "core/dom/DocumentInit.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "core/dom/CustomElementRegistrationContext.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLImportsController.h"
 #include "core/page/Frame.h"
 
 namespace WebCore {
+
+DocumentInit::DocumentInit(const KURL& url, Frame* frame, WeakPtr<Document> contextDocument, HTMLImport* import)
+    : m_url(url)
+    , m_frame(frame)
+    , m_contextDocument(contextDocument)
+    , m_import(import)
+{
+}
+
+DocumentInit::DocumentInit(const DocumentInit& other)
+    : m_url(other.m_url)
+    , m_frame(other.m_frame)
+    , m_contextDocument(other.m_contextDocument)
+    , m_import(other.m_import)
+    , m_registrationContext(other.m_registrationContext)
+{
+}
+
+DocumentInit::~DocumentInit()
+{
+}
 
 bool DocumentInit::shouldSetURL() const
 {
@@ -98,6 +120,16 @@ PassRefPtr<CustomElementRegistrationContext> DocumentInit::registrationContext(D
         return m_registrationContext.get();
 
     return CustomElementRegistrationContext::create();
+}
+
+WeakPtr<Document> DocumentInit::contextDocument() const
+{
+    return m_contextDocument;
+}
+
+DocumentInit DocumentInit::fromContext(WeakPtr<Document> contextDocument, const KURL& url)
+{
+    return DocumentInit(url, 0, contextDocument, 0);
 }
 
 } // namespace WebCore

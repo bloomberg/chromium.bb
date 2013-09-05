@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script>
+window.jsTestIsAsync = true;
+window.scheduledImportCount = 0;
+
+description("This ensures that load and error events are fired on sub-imports.");
+
+function handleEvent(event)
+{
+    theEvent = event;
+    switch (event.target.getAttribute("href")) {
+    case "hello.html":
+        shouldBe("theEvent.type", "'load'");
+        shouldBe("theEvent.target.ownerDocument", "root.import");
+        break;
+    case "no-such-file.html":
+        shouldBe("theEvent.type", "'error'");
+        shouldBe("theEvent.target.ownerDocument", "root.import");
+        break;
+    default:
+    }
+
+    window.scheduledImportCount--;
+    if (!window.scheduledImportCount)
+        finishJSTest();
+}
+</script>
+<link id="root" rel="import" href="resources/onload-root.html">
+</head>
+<body>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>

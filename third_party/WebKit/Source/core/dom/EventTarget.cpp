@@ -313,6 +313,9 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
             break;
 
         ScriptExecutionContext* context = scriptExecutionContext();
+        if (!context)
+            break;
+
         InspectorInstrumentationCookie cookie = InspectorInstrumentation::willHandleEvent(context, event);
         // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
         // event listeners, even though that violates some versions of the DOM spec.
