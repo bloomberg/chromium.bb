@@ -35,16 +35,7 @@ NavigationHandler::~NavigationHandler() {
     return;
   }
 
-  Action action;
-  if ((entry->GetTransitionType() & content::PAGE_TRANSITION_CORE_MASK) ==
-      content::PAGE_TRANSITION_GENERATED) {
-    action = ACTION_SEARCHED_USING_OMNIBOX;
-  } else if (google_util::IsGoogleHomePageUrl(entry->GetURL())) {
-    action = ACTION_NAVIGATED_TO_GOOGLE_HOMEPAGE;
-  } else {
-    action = ACTION_NAVIGATED_USING_OMNIBOX;
-  }
-  RecordAction(action);
+  RecordActionForNavigation(*entry);
 }
 
 void NavigationHandler::RegisterMessages() {
@@ -84,6 +75,22 @@ void NavigationHandler::HandleOpenedForeignSession(
   RecordAction(ACTION_OPENED_FOREIGN_SESSION);
 }
 
+// static
+void NavigationHandler::RecordActionForNavigation(
+    const content::NavigationEntry& entry) {
+  Action action;
+  if ((entry.GetTransitionType() & content::PAGE_TRANSITION_CORE_MASK) ==
+      content::PAGE_TRANSITION_GENERATED) {
+    action = ACTION_SEARCHED_USING_OMNIBOX;
+  } else if (google_util::IsGoogleHomePageUrl(entry.GetURL())) {
+    action = ACTION_NAVIGATED_TO_GOOGLE_HOMEPAGE;
+  } else {
+    action = ACTION_NAVIGATED_USING_OMNIBOX;
+  }
+  RecordAction(action);
+}
+
+// static
 void NavigationHandler::RecordAction(Action action) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.ActionAndroid", action, NUM_ACTIONS);
 }

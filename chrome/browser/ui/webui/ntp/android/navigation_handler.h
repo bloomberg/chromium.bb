@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_NTP_ANDROID_NAVIGATION_HANDLER_H_
 
 #include "base/compiler_specific.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -34,6 +35,8 @@ class NavigationHandler : public content::WebUIMessageHandler {
   // Callback for "openedForeignSession".
   void HandleOpenedForeignSession(const base::ListValue* args);
 
+  static void RecordActionForNavigation(const content::NavigationEntry& entry);
+
  private:
   // Possible actions taken by the user on the NTP. This enum is also defined in
   // histograms.xml. WARNING: these values must stay in sync with histograms.xml
@@ -57,7 +60,7 @@ class NavigationHandler : public content::WebUIMessageHandler {
     NUM_ACTIONS = 7
   };
 
-  void RecordAction(Action action);
+  static void RecordAction(Action action);
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandler);
 };
