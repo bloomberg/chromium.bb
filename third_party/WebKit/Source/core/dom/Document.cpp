@@ -43,6 +43,7 @@
 #include "bindings/v8/ScriptController.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/animation/DocumentTimeline.h"
+#include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleSheet.h"
@@ -432,6 +433,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_isViewSource(false)
     , m_sawElementsInKnownNamespaces(false)
     , m_isSrcdocDocument(false)
+    , m_isMobileDocument(false)
     , m_renderer(0)
     , m_eventQueue(DocumentEventQueue::create(this))
     , m_weakFactory(this)
@@ -672,7 +674,7 @@ void Document::setDoctype(PassRefPtr<DocumentType> docType)
     if (m_docType) {
         this->adoptIfNeeded(m_docType.get());
         if (m_docType->publicId().startsWith("-//wapforum//dtd xhtml mobile 1.", /* caseSensitive */ false))
-            processViewport("width=device-width, height=device-height", ViewportArguments::XHTMLMobileProfile);
+            m_isMobileDocument = true;
     }
     // Doctype affects the interpretation of the stylesheets.
     clearStyleResolver();
@@ -3036,17 +3038,48 @@ void Document::processViewport(const String& features, ViewportArguments::Type o
 {
     ASSERT(!features.isNull());
 
-    if (origin < m_viewportArguments.type)
+    // We are adding viewport properties from a legacy meta tag.
+    // The different meta tags have different priorities based on the type regardless
+    // of which order they appear in the DOM. The priority is given by the
+    // ViewportArguments::Type enum. If we process viewport properties with a lower
+    // priority than an already processed meta tag, just ignore it.
+    if (origin < m_legacyViewportArguments.type)
         return;
 
-    m_viewportArguments = ViewportArguments(origin);
-    processArguments(features, (void*)&m_viewportArguments, &setViewportFeature);
+    // Overwrite viewport arguments from previously encountered meta tags.
+    m_legacyViewportArguments = ViewportArguments(origin);
 
-    if (page() && page()->settings().viewportMetaZeroValuesQuirk() && m_viewportArguments.type == ViewportArguments::ViewportMeta
-        && m_viewportArguments.width == ViewportArguments::ValueDeviceWidth && !static_cast<int>(m_viewportArguments.zoom))
-        m_viewportArguments.zoom = 1.0;
+    processArguments(features, (void*)&m_legacyViewportArguments, &setViewportFeature);
 
-    updateViewportArguments();
+    if (m_legacyViewportArguments.minZoom == ViewportArguments::ValueAuto)
+        m_legacyViewportArguments.minZoom = 0.25;
+
+    if (m_legacyViewportArguments.maxZoom == ViewportArguments::ValueAuto) {
+        m_legacyViewportArguments.maxZoom = 5;
+        if (m_legacyViewportArguments.minZoom > 5)
+            m_legacyViewportArguments.minZoom = 5;
+    }
+
+    if (m_legacyViewportArguments.maxWidth.isAuto()) {
+
+        if (m_legacyViewportArguments.zoom == ViewportArguments::ValueAuto) {
+            m_legacyViewportArguments.minWidth = Length(ExtendToZoom);
+            m_legacyViewportArguments.maxWidth = Length(page()->settings().layoutFallbackWidth(), Fixed);
+        } else if (m_legacyViewportArguments.maxHeight.isAuto()) {
+            m_legacyViewportArguments.minWidth = m_legacyViewportArguments.maxWidth = Length(ExtendToZoom);
+        }
+    }
+
+    if (page() && page()->settings().viewportMetaZeroValuesQuirk() && m_legacyViewportArguments.type == ViewportArguments::ViewportMeta
+        && m_legacyViewportArguments.maxWidth.type() == ViewportPercentageWidth && !static_cast<int>(m_legacyViewportArguments.zoom))
+        m_legacyViewportArguments.zoom = 1.0;
+
+    // When no author style for @viewport is present, and a meta tag for defining the
+    // viewport is present, apply the meta tag viewport arguments instead of the UA styles.
+    if (m_viewportArguments.type != ViewportArguments::AuthorStyleSheet) {
+        m_viewportArguments = m_legacyViewportArguments;
+        updateViewportArguments();
+    }
 }
 
 void Document::updateViewportArguments()

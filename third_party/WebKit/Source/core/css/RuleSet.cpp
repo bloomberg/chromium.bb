@@ -393,7 +393,7 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             resolver->setBuildScopedStyleTreeInDocumentOrder(false);
             resolver->ensureScopedStyleResolver(scope->shadowHost())->addHostRule(static_cast<StyleRuleHost*>(rule), hasDocumentSecurityOrigin, scope);
             resolver->setBuildScopedStyleTreeInDocumentOrder(enabled);
-        } else if (RuntimeEnabledFeatures::cssViewportEnabled() && rule->isViewportRule()) {
+        } else if (rule->isViewportRule()) {
             // @viewport should not be scoped.
             if (!isDocumentScope(scope))
                 continue;

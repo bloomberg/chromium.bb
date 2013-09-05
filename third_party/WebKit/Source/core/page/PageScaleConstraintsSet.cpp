@@ -51,9 +51,9 @@ PageScaleConstraints PageScaleConstraintsSet::defaultConstraints() const
     return PageScaleConstraints(-1, defaultMinimumScale, defaultMaximumScale);
 }
 
-void PageScaleConstraintsSet::updatePageDefinedConstraints(const ViewportArguments& arguments, IntSize viewSize, int layoutFallbackWidth)
+void PageScaleConstraintsSet::updatePageDefinedConstraints(const ViewportArguments& arguments, IntSize viewSize)
 {
-    m_pageDefinedConstraints = arguments.resolve(viewSize, layoutFallbackWidth);
+    m_pageDefinedConstraints = arguments.resolve(viewSize);
 
     m_constraintsDirty = true;
 }
@@ -125,7 +125,7 @@ void PageScaleConstraintsSet::adjustPageDefinedConstraintsForAndroidWebView(cons
 {
     float initialScale = m_pageDefinedConstraints.initialScale;
     if (arguments.zoom == -1 && !loadWithOverviewMode) {
-        if (arguments.width == -1 || (useWideViewport && arguments.width != ViewportArguments::ValueDeviceWidth))
+        if (arguments.maxWidth.isAuto() || (useWideViewport && arguments.maxWidth.isFixed()))
             m_pageDefinedConstraints.initialScale = 1.0f;
     }
 
@@ -136,12 +136,12 @@ void PageScaleConstraintsSet::adjustPageDefinedConstraintsForAndroidWebView(cons
     m_pageDefinedConstraints.maximumScale *= targetDensityDPIFactor;
 
     float adjustedLayoutSizeWidth = m_pageDefinedConstraints.layoutSize.width();
-    if (useWideViewport && arguments.width == -1 && arguments.zoom != 1.0f)
+    if (useWideViewport && arguments.maxWidth.type() == ExtendToZoom && arguments.zoom != 1.0f)
         adjustedLayoutSizeWidth = layoutFallbackWidth;
     else {
         if (!useWideViewport)
             adjustedLayoutSizeWidth = getLayoutWidthForNonWideViewport(viewSize, initialScale);
-        if (!useWideViewport || arguments.width == -1 || arguments.width == ViewportArguments::ValueDeviceWidth)
+        if (!useWideViewport || arguments.maxWidth.type() == ExtendToZoom || arguments.maxWidth.isViewportPercentage())
             adjustedLayoutSizeWidth /= targetDensityDPIFactor;
     }
 

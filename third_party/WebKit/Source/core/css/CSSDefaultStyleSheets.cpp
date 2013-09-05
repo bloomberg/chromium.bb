@@ -47,6 +47,7 @@ RuleSet* CSSDefaultStyleSheets::defaultStyle;
 RuleSet* CSSDefaultStyleSheets::defaultQuirksStyle;
 RuleSet* CSSDefaultStyleSheets::defaultPrintStyle;
 RuleSet* CSSDefaultStyleSheets::defaultViewSourceStyle;
+RuleSet* CSSDefaultStyleSheets::defaultXHTMLMobileProfileStyle;
 
 StyleSheetContents* CSSDefaultStyleSheets::simpleDefaultStyleSheet;
 StyleSheetContents* CSSDefaultStyleSheets::defaultStyleSheet;
@@ -152,6 +153,14 @@ RuleSet* CSSDefaultStyleSheets::viewSourceStyle()
     return defaultViewSourceStyle;
 }
 
+RuleSet* CSSDefaultStyleSheets::xhtmlMobileProfileStyle()
+{
+    if (!defaultXHTMLMobileProfileStyle) {
+        defaultXHTMLMobileProfileStyle = RuleSet::create().leakPtr();
+        defaultXHTMLMobileProfileStyle->addRulesFromSheet(parseUASheet(xhtmlmpUserAgentStyleSheet, sizeof(xhtmlmpUserAgentStyleSheet)), screenEval());
+    }
+    return defaultXHTMLMobileProfileStyle;
+}
 
 void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element, bool& changedDefaultStyle)
 {

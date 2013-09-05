@@ -50,6 +50,7 @@ public:
 
     ~ViewportStyleResolver();
 
+    void setHasAuthorStyle() { m_hasAuthorStyle = true; }
     void addViewportRule(StyleRuleViewport*);
 
     void clearDocument();
@@ -63,6 +64,7 @@ private:
 
     Document* m_document;
     RefPtr<MutableStylePropertySet> m_propertySet;
+    bool m_hasAuthorStyle;
 };
 
 } // namespace WebCore

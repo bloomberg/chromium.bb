@@ -178,8 +178,7 @@ void StyleResolver::finishAppendAuthorStyleSheets()
     if (document().renderer() && document().renderer()->style())
         document().renderer()->style()->font().update(fontSelector());
 
-    if (RuntimeEnabledFeatures::cssViewportEnabled())
-        collectViewportRules();
+    collectViewportRules();
 }
 
 void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
@@ -976,11 +975,13 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 
 void StyleResolver::collectViewportRules()
 {
-    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled());
+    collectViewportRules(CSSDefaultStyleSheets::defaultStyle, UserAgentOrigin);
 
-    collectViewportRules(CSSDefaultStyleSheets::defaultStyle);
+    if (document().isMobileDocument())
+        collectViewportRules(CSSDefaultStyleSheets::xhtmlMobileProfileStyle(), UserAgentOrigin);
+
     if (m_ruleSets.userStyle())
-        collectViewportRules(m_ruleSets.userStyle());
+        collectViewportRules(m_ruleSets.userStyle(), UserAgentOrigin);
 
     if (ScopedStyleResolver* scopedResolver = m_styleTree.scopedStyleResolverForDocument())
         scopedResolver->collectViewportRulesTo(this);
@@ -988,13 +989,13 @@ void StyleResolver::collectViewportRules()
     viewportStyleResolver()->resolve();
 }
 
-void StyleResolver::collectViewportRules(RuleSet* rules)
+void StyleResolver::collectViewportRules(RuleSet* rules, ViewportOrigin origin)
 {
-    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled());
-
     rules->compactRulesIfNeeded();
 
     const Vector<StyleRuleViewport*>& viewportRules = rules->viewportRules();
+    if (origin == AuthorOrigin && viewportRules.size())
+        viewportStyleResolver()->setHasAuthorStyle();
     for (size_t i = 0; i < viewportRules.size(); ++i)
         viewportStyleResolver()->addViewportRule(viewportRules[i]);
 }

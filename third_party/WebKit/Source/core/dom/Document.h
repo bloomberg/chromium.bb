@@ -289,11 +289,12 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitvisibilitychange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(securitypolicyviolation);
 
-    void setViewportArguments(const ViewportArguments& viewportArguments) { m_viewportArguments = viewportArguments; }
+    void setViewportArguments(const ViewportArguments&);
     const ViewportArguments& viewportArguments() const { return m_viewportArguments; }
 #ifndef NDEBUG
     bool didDispatchViewportPropertiesChanged() const { return m_didDispatchViewportPropertiesChanged; }
 #endif
+    bool hasLegacyViewportTag() const { return m_legacyViewportArguments.isLegacyViewportType(); }
 
     void setReferrerPolicy(ReferrerPolicy referrerPolicy) { m_referrerPolicy = referrerPolicy; }
     ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
@@ -417,6 +418,7 @@ public:
     bool isFrameSet() const;
 
     bool isSrcdocDocument() const { return m_isSrcdocDocument; }
+    bool isMobileDocument() const { return m_isMobileDocument; }
 
     StyleResolver* styleResolverIfExists() const { return m_styleResolver.get(); }
 
@@ -1311,6 +1313,7 @@ private:
     bool m_isViewSource;
     bool m_sawElementsInKnownNamespaces;
     bool m_isSrcdocDocument;
+    bool m_isMobileDocument;
 
     RenderObject* m_renderer;
     RefPtr<DocumentEventQueue> m_eventQueue;
@@ -1328,6 +1331,7 @@ private:
     Timer<Document> m_loadEventDelayTimer;
 
     ViewportArguments m_viewportArguments;
+    ViewportArguments m_legacyViewportArguments;
 
     ReferrerPolicy m_referrerPolicy;
 
@@ -1398,6 +1402,17 @@ inline const Document* Document::templateDocument() const
         return this;
 
     return m_templateDocument.get();
+}
+
+inline void Document::setViewportArguments(const ViewportArguments& viewportArguments)
+{
+    // If the legacy viewport tag has higher priority than the cascaded @viewport
+    // descriptors, use the values from the legacy tag.
+    if (viewportArguments.type < m_legacyViewportArguments.type)
+        m_viewportArguments = m_legacyViewportArguments;
+    else
+        m_viewportArguments = viewportArguments;
+    updateViewportArguments();
 }
 
 inline Document* toDocument(ScriptExecutionContext* scriptExecutionContext)

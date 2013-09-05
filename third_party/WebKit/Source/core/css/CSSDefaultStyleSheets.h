@@ -35,6 +35,7 @@ public:
     static RuleSet* defaultQuirksStyle;
     static RuleSet* defaultPrintStyle;
     static RuleSet* defaultViewSourceStyle;
+    static RuleSet* defaultXHTMLMobileProfileStyle;
 
     static StyleSheetContents* simpleDefaultStyleSheet;
     static StyleSheetContents* defaultStyleSheet;
@@ -49,6 +50,7 @@ public:
     static void loadSimpleDefaultStyle();
     static void initDefaultStyle(Element*);
     static RuleSet* viewSourceStyle();
+    static RuleSet* xhtmlMobileProfileStyle();
 };
 
 } // namespace WebCore

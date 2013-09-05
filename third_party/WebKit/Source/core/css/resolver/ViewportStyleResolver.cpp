@@ -40,7 +40,8 @@
 namespace WebCore {
 
 ViewportStyleResolver::ViewportStyleResolver(Document* document)
-    : m_document(document)
+    : m_document(document),
+    m_hasAuthorStyle(false)
 {
     ASSERT(m_document);
 }
@@ -78,19 +79,14 @@ void ViewportStyleResolver::resolve()
     if (!m_document)
         return;
 
-    if (!m_propertySet) {
-        // FIXME: This is not entirely correct. If the doctype is XHTML MP, or there is a Meta
-        // element for setting the viewport, the viewport arguments should fall back to those
-        // settings when the @viewport rules are all removed. For now, reset to implicit when
-        // there was an @viewport rule which has now been removed.
-        if (m_document->viewportArguments().type == ViewportArguments::CSSDeviceAdaptation) {
-            m_document->setViewportArguments(ViewportArguments());
-            m_document->updateViewportArguments();
-        }
+    if (!m_propertySet || (!m_hasAuthorStyle && m_document->hasLegacyViewportTag())) {
+        ASSERT(!m_hasAuthorStyle);
+        m_propertySet = 0;
+        m_document->setViewportArguments(ViewportArguments());
         return;
     }
 
-    ViewportArguments arguments(ViewportArguments::CSSDeviceAdaptation);
+    ViewportArguments arguments(m_hasAuthorStyle ? ViewportArguments::AuthorStyleSheet : ViewportArguments::UserAgentStyleSheet);
 
     arguments.userZoom = viewportArgumentValue(CSSPropertyUserZoom);
     arguments.zoom = viewportArgumentValue(CSSPropertyZoom);
@@ -103,9 +99,9 @@ void ViewportStyleResolver::resolve()
     arguments.orientation = viewportArgumentValue(CSSPropertyOrientation);
 
     m_document->setViewportArguments(arguments);
-    m_document->updateViewportArguments();
 
     m_propertySet = 0;
+    m_hasAuthorStyle = false;
 }
 
 float ViewportStyleResolver::viewportArgumentValue(CSSPropertyID id) const

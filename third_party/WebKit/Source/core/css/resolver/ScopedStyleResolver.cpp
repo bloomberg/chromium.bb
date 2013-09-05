@@ -428,7 +428,7 @@ void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector)
 void ScopedStyleResolver::collectViewportRulesTo(StyleResolver* resolver) const
 {
     if (m_authorStyle)
-        resolver->collectViewportRules(m_authorStyle.get());
+        resolver->collectViewportRules(m_authorStyle.get(), StyleResolver::AuthorOrigin);
 }
 
 } // namespace WebCore

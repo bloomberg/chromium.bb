@@ -48,7 +48,7 @@ public:
     // Settings defined in the website's viewport tag, if viewport tag support
     // is enabled.
     const PageScaleConstraints& pageDefinedConstraints() const { return m_pageDefinedConstraints; }
-    void updatePageDefinedConstraints(const ViewportArguments&, IntSize viewSize, int layoutFallbackWidth);
+    void updatePageDefinedConstraints(const ViewportArguments&, IntSize viewSize);
     void adjustPageDefinedConstraintsForAndroidWebView(const ViewportArguments&, IntSize viewSize, int layoutFallbackWidth, float deviceScaleFactor, bool useWideViewport, bool loadWithOverviewMode);
 
     // Constraints may also be set from Chromium -- this overrides any

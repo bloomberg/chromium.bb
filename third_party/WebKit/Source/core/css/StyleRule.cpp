@@ -342,14 +342,12 @@ StyleRuleRegion::StyleRuleRegion(const StyleRuleRegion& o)
 StyleRuleViewport::StyleRuleViewport()
     : StyleRuleBase(Viewport)
 {
-    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled());
 }
 
 StyleRuleViewport::StyleRuleViewport(const StyleRuleViewport& o)
     : StyleRuleBase(o)
     , m_properties(o.m_properties->mutableCopy())
 {
-    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled());
 }
 
 StyleRuleViewport::~StyleRuleViewport()

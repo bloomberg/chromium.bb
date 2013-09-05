@@ -1685,7 +1685,8 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         return false;
 
     if (inViewport()) {
-        if (!RuntimeEnabledFeatures::cssViewportEnabled())
+        // Allow @viewport rules from UA stylesheets even if the feature is disabled.
+        if (!RuntimeEnabledFeatures::cssViewportEnabled() && m_context.mode != UASheetMode)
             return false;
 
         return parseViewportProperty(propId, important);
@@ -11639,7 +11640,8 @@ unsigned CSSParser::safeUserStringTokenOffset()
 
 StyleRuleBase* CSSParser::createViewportRule()
 {
-    if (!RuntimeEnabledFeatures::cssViewportEnabled()) {
+    // Allow @viewport rules from UA stylesheets even if the feature is disabled.
+    if (!RuntimeEnabledFeatures::cssViewportEnabled() && m_context.mode != UASheetMode) {
         endRuleBody(true);
         return 0;
     }
@@ -11660,7 +11662,7 @@ StyleRuleBase* CSSParser::createViewportRule()
 
 bool CSSParser::parseViewportProperty(CSSPropertyID propId, bool important)
 {
-    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled());
+    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled() || m_context.mode == UASheetMode);
 
     CSSParserValue* value = m_valueList->current();
     if (!value)
@@ -11720,7 +11722,7 @@ bool CSSParser::parseViewportProperty(CSSPropertyID propId, bool important)
 
 bool CSSParser::parseViewportShorthand(CSSPropertyID propId, CSSPropertyID first, CSSPropertyID second, bool important)
 {
-    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled());
+    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled() || m_context.mode == UASheetMode);
     unsigned numValues = m_valueList->size();
 
     if (numValues > 2)
