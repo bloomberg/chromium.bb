@@ -70,9 +70,11 @@ cr.define('help', function() {
       $('get-help').onclick = function() {
         chrome.send('openHelpPage');
       };
+<if expr="pp_ifdef('_google_chrome')">
       $('report-issue').onclick = function() {
         chrome.send('openFeedbackDialog');
       };
+</if>
 
       this.maybeSetOnClick_($('more-info-expander'),
           this.toggleMoreInfo_.bind(this));

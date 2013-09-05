@@ -45,7 +45,9 @@
     </div>
     <div id="help-container">
       <button id="get-help" i18n-content="getHelpWithChrome"></button>
+<if expr="pp_ifdef('_google_chrome')">
       <button id="report-issue" i18n-content="reportAnIssue"></button>
+</if>
     </div>
     <div id="version-container">
       <div i18n-content="browserVersion" dir="ltr"></div>
