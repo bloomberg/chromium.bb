@@ -36,7 +36,7 @@ EXTENSIONS_CACHE_PREFIX = '/usr/share/google-chrome/extensions'
 UPLOAD_URL_BASE = 'gs://chromeos-localmirror-private/distfiles'
 
 
-def DownloadCrx(ext, extension, outputdir):
+def DownloadCrx(ext, extension, crxdir):
   """Download .crx file from WebStore and update entry."""
   cros_build_lib.Info('Extension "%s"(%s)...', extension['name'], ext)
 
@@ -63,7 +63,7 @@ def DownloadCrx(ext, extension, outputdir):
                          url, response.getcode())
     return False
 
-  osutils.WriteFile(os.path.join(outputdir, 'extensions', filename),
+  osutils.WriteFile(os.path.join(crxdir, 'extensions', filename),
                     response.read())
 
   # Has to delete because only one of 'external_crx' or
@@ -77,9 +77,37 @@ def DownloadCrx(ext, extension, outputdir):
   return True
 
 
-def CreateCacheTarball(extensions, outputdir, tarball):
+def CreateValidationFiles(validationdir, crxdir, identifier):
+  """Create validationfiles for all extensions in |crxdir|."""
+
+  verified_files = []
+
+  # Discover all extensions to be validated (but not JSON files).
+  for directory, _, filenames in os.walk(os.path.join(crxdir, 'extensions')):
+
+    # Make directory relative to output dir by removing crxdir and /.
+    for filename in filenames:
+      verified_files.append(os.path.join(directory[len(crxdir)+1:],
+                                         filename))
+
+  validation_file = os.path.join(validationdir, '%s.validation' % identifier)
+
+  osutils.SafeMakedirs(validationdir)
+  cros_build_lib.RunCommand(['sha256sum'] + verified_files,
+                            log_stdout_to_file=validation_file,
+                            cwd=crxdir, print_cmd=False)
+  cros_build_lib.Info('Hashes created.')
+
+
+def CreateCacheTarball(extensions, outputdir, identifier, tarball):
   """Cache |extensions| in |outputdir| and pack them in |tarball|."""
-  osutils.SafeMakedirs(os.path.join(outputdir, 'extensions', 'managed_users'))
+
+  crxdir = os.path.join(outputdir, 'crx')
+  jsondir = os.path.join(outputdir, 'json')
+  validationdir = os.path.join(outputdir, 'validation')
+
+  osutils.SafeMakedirs(os.path.join(crxdir, 'extensions', 'managed_users'))
+  osutils.SafeMakedirs(os.path.join(jsondir, 'extensions', 'managed_users'))
   was_errors = False
   for ext in extensions:
     managed_users = extensions[ext].get('managed_users', 'no')
@@ -90,7 +118,7 @@ def CreateCacheTarball(extensions, outputdir, tarball):
       extensions[ext].pop(key, None)
 
     if cache_crx == 'yes':
-      if not DownloadCrx(ext, extensions[ext], outputdir):
+      if not DownloadCrx(ext, extensions[ext], crxdir):
         was_errors = True
     elif cache_crx == 'no':
       pass
@@ -99,7 +127,7 @@ def CreateCacheTarball(extensions, outputdir, tarball):
                          cache_crx, ext)
 
     if managed_users == 'yes':
-      json_file = os.path.join(outputdir,
+      json_file = os.path.join(jsondir,
           'extensions/managed_users/%s.json' % ext)
       json.dump(extensions[ext],
                 open(json_file, 'w'),
@@ -108,7 +136,7 @@ def CreateCacheTarball(extensions, outputdir, tarball):
                 separators=(',', ': '))
 
     if managed_users != 'only':
-      json_file = os.path.join(outputdir, 'extensions/%s.json' % ext)
+      json_file = os.path.join(jsondir, 'extensions/%s.json' % ext)
       json.dump(extensions[ext],
                 open(json_file, 'w'),
                 sort_keys=True,
@@ -118,6 +146,7 @@ def CreateCacheTarball(extensions, outputdir, tarball):
   if was_errors:
     cros_build_lib.Die('FAIL to download some extensions')
 
+  CreateValidationFiles(validationdir, crxdir, identifier)
   cros_build_lib.CreateTarball(tarball, outputdir)
   cros_build_lib.Info('Tarball created %s', tarball)
 
@@ -144,11 +173,13 @@ def main(argv):
     cros_build_lib.Die('No external_extensions.json in %s. Did you forget the '
                        '--path option?', os.getcwd())
 
-  tarball = '%s.tar.xz' % options.version[0]
+  identifier = options.version[0]
+  tarball = '%s.tar.xz' % identifier
   if options.create:
     extensions = json.load(open('external_extensions.json', 'r'))
     with osutils.TempDir() as tempdir:
-      CreateCacheTarball(extensions, tempdir, os.path.abspath(tarball))
+      CreateCacheTarball(extensions, tempdir, identifier,
+                         os.path.abspath(tarball))
 
   if options.upload:
     ctx = gs.GSContext()
