@@ -212,6 +212,7 @@
       "why": "Problematic use of fixed position elements"
     },
     {
+      "disabled": "Page behaves non-deterministically, replaced with test version for now",
       "url": "http://groupcloned.com",
       "why": "crbug.com/172906",
       "navigate_steps": [
@@ -223,6 +224,19 @@
         "action": "scroll",
         "scroll_requires_touch": true,
         "remaining_scroll_distance_function": "function() { return Math.max(0, 1250 + document.getElementById('element-19').contentDocument.getElementById('element-22').getBoundingClientRect().top); }"
+      }
+    },
+    {
+      "url": "http://groupcloned.com/test/list-images-variable/index.html",
+      "why": "crbug.com/172906",
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "javascript": "document.getElementById('element-5') !== null" }
+      ],
+      "smoothness": {
+        "action": "scroll",
+        "scroll_requires_touch": true,
+        "remaining_scroll_distance_function": "function() { return Math.max(0, 1250 + document.getElementById('element-5').getBoundingClientRect().top); }"
       }
     },
     {
