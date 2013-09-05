@@ -36,6 +36,14 @@ namespace chromeos {
 
 namespace {
 
+ExtensionService* GetDefaultExtensionService() {
+  Profile* default_profile = ProfileManager::GetDefaultProfile();
+  if (!default_profile)
+    return NULL;
+  return extensions::ExtensionSystem::Get(
+      default_profile)->extension_service();
+}
+
 typedef base::Callback<void(
     scoped_refptr<Extension>,
     const base::FilePath&)> UnpackCallback;
@@ -96,6 +104,12 @@ void ScreensaverUnpackerClient::LoadScreensaverExtension(
     const base::FilePath& screensaver_extension_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
+  ExtensionService* service = GetDefaultExtensionService();
+  // TODO(rkc): This is a HACK, please remove this method from extension
+  // service once this code is deprecated. See crbug.com/280363
+  if (service)
+    service->disable_garbage_collection();
+
   std::string error;
   scoped_refptr<Extension> screensaver_extension =
       extension_file_util::LoadExtension(screensaver_extension_path,
@@ -153,6 +167,12 @@ KioskModeScreensaver::KioskModeScreensaver()
 KioskModeScreensaver::~KioskModeScreensaver() {
   // If the extension was unpacked.
   if (!extension_base_path_.empty()) {
+    ExtensionService* service = GetDefaultExtensionService();
+    // TODO(rkc): This is a HACK, please remove this method from extension
+    // service once this code is deprecated. See crbug.com/280363
+    if (service)
+      service->enable_garbage_collection();
+
     // Delete it.
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE,
@@ -183,8 +203,8 @@ void KioskModeScreensaver::ScreensaverPathCallback(
   Profile* default_profile = ProfileManager::GetDefaultProfile();
   if (!default_profile)
     return;
-  base::FilePath extensions_dir = extensions::ExtensionSystem::Get(
-      default_profile)->extension_service()->install_directory();
+  base::FilePath extensions_dir =
+      GetDefaultExtensionService()->install_directory();
   scoped_refptr<SandboxedUnpacker> screensaver_unpacker(
       new SandboxedUnpacker(
           screensaver_crx,

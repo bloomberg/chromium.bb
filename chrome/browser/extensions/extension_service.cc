@@ -374,6 +374,9 @@ ExtensionService::ExtensionService(Profile* profile,
       is_first_run_(false),
       app_sync_bundle_(this),
       extension_sync_bundle_(this) {
+#if defined(OS_CHROMEOS)
+  disable_garbage_collection_ = false;
+#endif
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Figure out if extension installation should be enabled.
@@ -1994,6 +1997,11 @@ void ExtensionService::ReloadExtensions() {
 }
 
 void ExtensionService::GarbageCollectExtensions() {
+#if defined(OS_CHROMEOS)
+  if (disable_garbage_collection_)
+    return;
+#endif
+
   if (extension_prefs_->pref_service()->ReadOnly())
     return;
 
