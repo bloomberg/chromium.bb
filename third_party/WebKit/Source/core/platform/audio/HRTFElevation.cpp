@@ -37,6 +37,7 @@
 #include "core/platform/audio/AudioBus.h"
 #include "core/platform/audio/HRTFPanner.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/ThreadingPrimitives.h"
 
 using namespace std;
 
@@ -64,7 +65,9 @@ static PassRefPtr<AudioBus> getConcatenatedImpulseResponsesForSubject(const Stri
 {
     typedef HashMap<String, RefPtr<AudioBus> > AudioBusMap;
     DEFINE_STATIC_LOCAL(AudioBusMap, audioBusMap, ());
+    DEFINE_STATIC_LOCAL(Mutex, mutex, ());
 
+    MutexLocker locker(mutex);
     RefPtr<AudioBus> bus;
     AudioBusMap::iterator iterator = audioBusMap.find(subjectName);
     if (iterator == audioBusMap.end()) {
