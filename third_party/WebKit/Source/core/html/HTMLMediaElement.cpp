@@ -343,6 +343,10 @@ HTMLMediaElement::~HTMLMediaElement()
     // See http://crbug.com/233654 for more details.
     m_completelyLoaded = true;
     m_player.clear();
+#if ENABLE(WEB_AUDIO)
+    if (audioSourceProvider())
+        audioSourceProvider()->setClient(0);
+#endif
 }
 
 void HTMLMediaElement::didMoveToNewDocument(Document* oldDocument)
@@ -3454,6 +3458,10 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
     closeMediaSource();
 
     m_player.clear();
+#if ENABLE(WEB_AUDIO)
+    if (audioSourceProvider())
+        audioSourceProvider()->setClient(0);
+#endif
     stopPeriodicTimers();
     m_loadTimer.stop();
 
