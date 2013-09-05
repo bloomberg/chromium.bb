@@ -183,7 +183,7 @@ class V8ObjectStatsMetric(Metric):
  })(%s);
  """ % json.dumps(_COUNTER_NAMES))
     if not self._results:
-      logging.warning('No V8 object stats from website: ' + page.display_url)
+      logging.warning('No V8 object stats from website: ' + page.display_name)
 
   def AddResults(self, tab, results):
     """Add results for this page to the results object."""

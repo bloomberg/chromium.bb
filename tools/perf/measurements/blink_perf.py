@@ -97,7 +97,7 @@ class BlinkPerf(page_measurement.PageMeasurement):
       parts = line.split()
       values = [float(v.replace(',', '')) for v in parts[1:-1]]
       units = parts[-1]
-      metric = page.display_url.split('.')[0].replace('/', '_')
+      metric = page.display_name.split('.')[0].replace('/', '_')
       results.Add(metric, units, values)
       break
 

@@ -34,7 +34,7 @@ class LoadingProfile(page_measurement.PageMeasurement):
   def WillNavigateToPage(self, page, tab):
     tab.browser.StartProfiling(perf_profiler.PerfProfiler.name(),
                                os.path.join(tempfile.mkdtemp(),
-                                            page.url_as_file_safe_name))
+                                            page.file_safe_name))
 
   def MeasurePage(self, page, tab, results):
     # In current telemetry tests, all tests wait for DocumentComplete state,

@@ -26,7 +26,7 @@ class SkpicturePrinter(page_measurement.PageMeasurement):
       raise Exception('Please specify --skp-outdir')
     outpath = os.path.abspath(
         os.path.join(skp_outdir,
-                     page.url_as_file_safe_name))
+                     page.file_safe_name))
     # Replace win32 path separator char '\' with '\\'.
     js = _JS.format(outpath.replace('\\', '\\\\'))
     tab.EvaluateJavaScript(js)
