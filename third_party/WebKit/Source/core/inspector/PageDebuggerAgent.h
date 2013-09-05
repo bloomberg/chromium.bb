@@ -37,6 +37,7 @@
 
 namespace WebCore {
 
+class DocumentLoader;
 class InspectorOverlay;
 class InspectorPageAgent;
 class Page;
@@ -55,6 +56,7 @@ public:
     void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
     String preprocessEventListener(Frame*, const String& source, const String& url, const String& functionName);
     PassOwnPtr<ScriptSourceCode> preprocess(Frame*, const ScriptSourceCode&);
+    void didCommitLoad(Frame*, DocumentLoader*);
 
 protected:
     virtual void enable();

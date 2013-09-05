@@ -333,7 +333,7 @@ interface InspectorInstrumentation {
     [Page, Inline=FastReturn]
     void childDocumentOpened([Keep] Document*);
 
-    [Console, Resource, CSS, Database, DOM, Inspector, Canvas, Page]
+    [Console, Resource, CSS, Database, DOM, Inspector, Canvas, Page, PageDebugger]
     void didCommitLoad([Keep] Frame*, DocumentLoader*);
 
     [DOM, Inline=FastReturn]

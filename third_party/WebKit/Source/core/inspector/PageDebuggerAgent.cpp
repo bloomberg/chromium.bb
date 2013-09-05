@@ -38,6 +38,7 @@
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
@@ -153,6 +154,13 @@ PassOwnPtr<ScriptSourceCode> PageDebuggerAgent::preprocess(Frame* frame, const S
     ASSERT(m_pageScriptDebugServer);
     ASSERT(frame);
     return m_pageScriptDebugServer->preprocess(frame, sourceCode);
+}
+
+void PageDebuggerAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
+{
+    Frame* mainFrame = frame->page()->mainFrame();
+    if (loader->frame() == mainFrame)
+        pageDidCommitLoad();
 }
 
 } // namespace WebCore

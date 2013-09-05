@@ -1,0 +1,63 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+
+<script>
+
+debugger;
+
+function testFunction()
+{
+    debugger;
+}
+
+
+function test() 
+{
+    // Key constant of the test. Make it false and the test will timeout.
+    var skipAllBreakpointsUntilReload = true;
+    
+     
+    InspectorTest.startDebuggerTest(step1); 
+    InspectorTest.addResult("Paused 0.");
+ 
+    function step1() 
+    { 
+        InspectorTest.showScriptSource("long-resume-vs-reload.html", didShowScriptSource);
+    } 
+
+    function didShowScriptSource(sourceFrame)
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+    }
+
+    function didPause(callFrames)
+    {
+        DebuggerAgent.setSkipAllPauses(true, skipAllBreakpointsUntilReload);
+        InspectorTest.reloadPage();
+        InspectorTest.waitUntilResumed(didResume);
+    }
+    
+    function didResume()
+    {
+        InspectorTest.waitUntilPaused(didPause2);
+    }
+    
+    function didPause2(callFrames)
+    {
+        InspectorTest.completeDebuggerTest();
+    }
+}; 
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests that 'skip all pauses' mode blocks breakpoint and gets cancelled right at page reload,
+so we catch any early breakpoints.
+</p>
+
+</body>
+</html>

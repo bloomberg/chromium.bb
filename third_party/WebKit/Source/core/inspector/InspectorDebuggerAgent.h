@@ -90,6 +90,7 @@ public:
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
     virtual void setBreakpointsActive(ErrorString*, bool active);
+    virtual void setSkipAllPauses(ErrorString*, bool skipped, const bool* untilReload);
 
     virtual void setBreakpointByUrl(ErrorString*, int lineNumber, const String* optionalURL, const String* optionalURLRegex, const int* optionalColumnNumber, const String* optionalCondition, const bool* isAntiBreakpoint, TypeBuilder::Debugger::BreakpointId*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location> >& locations);
     virtual void setBreakpoint(ErrorString*, const RefPtr<JSONObject>& location, const String* optionalCondition, TypeBuilder::Debugger::BreakpointId*, RefPtr<TypeBuilder::Debugger::Location>& actualLocation);
@@ -166,6 +167,7 @@ protected:
     virtual void didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints);
     virtual void didContinue();
     void reset();
+    void pageDidCommitLoad();
 
 private:
     void cancelPauseOnNextStatement();
@@ -208,6 +210,7 @@ private:
     Listener* m_listener;
 
     int m_skipStepInCount;
+    bool m_skipAllPauses;
     OwnPtr<RegularExpression> m_cachedSkipStackRegExp;
 };
 
