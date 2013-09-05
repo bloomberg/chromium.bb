@@ -447,6 +447,7 @@ weston_wm_send_data(struct weston_wm *wm, xcb_atom_t target, const char *mime_ty
 
 	source = seat->selection_data_source;
 	source->send(source, mime_type, p[1]);
+	close(p[1]);
 }
 
 static void
