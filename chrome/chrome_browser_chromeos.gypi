@@ -50,10 +50,10 @@
         # browser_chromeos #includes power_supply_properties.pb.h directly.
         '../chromeos/chromeos.gyp:power_manager_proto',
         '../chromeos/ime/input_method.gyp:gencode',
-        # The direct variations_seed_proto dependency is needed, rather than
-        # using common's dependency on variations, because the proto sources
-        # need to be generated before code in this target can start building.
-        '../components/components.gyp:variations_seed_proto',
+        # This depends directly on the variations target, rather than just
+        # transitively via the common target because the proto sources need to
+        # be generated before code in this target can start building.
+        '../components/components.gyp:variations',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',

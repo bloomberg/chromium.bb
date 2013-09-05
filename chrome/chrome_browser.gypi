@@ -31,10 +31,10 @@
         '../components/components.gyp:sessions',
         '../components/components.gyp:startup_metric_utils',
         '../components/components.gyp:user_prefs',
-        # The direct variations_seed_proto dependency is needed, rather than
-        # using common's dependency on variations, because the proto sources
-        # need to be generated before code in this target can start building.
-        '../components/components.gyp:variations_seed_proto',
+        # This depends directly on the variations target, rather than just
+        # transitively via the common target because the proto sources need to
+        # be generated before code in this target can start building.
+        '../components/components.gyp:variations',
         '../components/components.gyp:visitedlink_browser',
         '../components/components.gyp:visitedlink_common',
         '../components/components.gyp:web_modal',
