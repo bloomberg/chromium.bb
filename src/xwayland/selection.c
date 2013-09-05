@@ -543,7 +543,7 @@ weston_wm_handle_selection_request(struct weston_wm *wm,
 	}
 }
 
-static void
+static int
 weston_wm_handle_xfixes_selection_notify(struct weston_wm *wm,
 				       xcb_generic_event_t *event)
 {
@@ -552,6 +552,9 @@ weston_wm_handle_xfixes_selection_notify(struct weston_wm *wm,
 	struct weston_compositor *compositor;
 	struct weston_seat *seat = weston_wm_pick_seat(wm);
 	uint32_t serial;
+
+	if (xfixes_selection_notify->selection != wm->atom.clipboard)
+		return 0;
 
 	weston_log("xfixes selection notify event: owner %d\n",
 	       xfixes_selection_notify->owner);
@@ -567,7 +570,7 @@ weston_wm_handle_xfixes_selection_notify(struct weston_wm *wm,
 
 		wm->selection_owner = XCB_WINDOW_NONE;
 
-		return;
+		return 1;
 	}
 
 	wm->selection_owner = xfixes_selection_notify->owner;
@@ -578,7 +581,7 @@ weston_wm_handle_xfixes_selection_notify(struct weston_wm *wm,
 	if (xfixes_selection_notify->owner == wm->selection_window) {
 		wm->selection_timestamp = xfixes_selection_notify->timestamp;
 		weston_log("our window, skipping\n");
-		return;
+		return 1;
 	}
 
 	wm->incr = 0;
@@ -589,6 +592,8 @@ weston_wm_handle_xfixes_selection_notify(struct weston_wm *wm,
 			      xfixes_selection_notify->timestamp);
 
 	xcb_flush(wm->conn);
+
+	return 1;
 }
 
 int
@@ -608,8 +613,7 @@ weston_wm_handle_selection_event(struct weston_wm *wm,
 
 	switch (event->response_type - wm->xfixes->first_event) {
 	case XCB_XFIXES_SELECTION_NOTIFY:
-		weston_wm_handle_xfixes_selection_notify(wm, event);
-		return 1;
+		return weston_wm_handle_xfixes_selection_notify(wm, event);
 	}
 
 	return 0;
