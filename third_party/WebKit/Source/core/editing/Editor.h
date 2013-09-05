@@ -267,8 +267,6 @@ public:
     void setMark(const VisibleSelection&);
 
     void computeAndSetTypingStyle(StylePropertySet* , EditAction = EditActionUnspecified);
-    void applyEditingStyleToBodyElement() const;
-    void applyEditingStyleToElement(Element*) const;
 
     IntRect firstRectForRange(Range*) const;
 

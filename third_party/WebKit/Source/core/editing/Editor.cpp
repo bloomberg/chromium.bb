@@ -1961,29 +1961,6 @@ bool Editor::doTextFieldCommandFromEvent(Element* e, KeyboardEvent* ke)
     return client().doTextFieldCommandFromEvent(e, ke);
 }
 
-void Editor::applyEditingStyleToBodyElement() const
-{
-    RefPtr<NodeList> list = m_frame->document()->getElementsByTagName("body");
-    unsigned len = list->length();
-    for (unsigned i = 0; i < len; i++)
-        applyEditingStyleToElement(toElement(list->item(i)));
-}
-
-void Editor::applyEditingStyleToElement(Element* element) const
-{
-    if (!element)
-        return;
-    ASSERT(element->isStyledElement());
-    if (!element->isStyledElement())
-        return;
-
-    // Mutate using the CSSOM wrapper so we get the same event behavior as a script.
-    CSSStyleDeclaration* style = element->style();
-    style->setPropertyInternal(CSSPropertyWordWrap, "break-word", false, IGNORE_EXCEPTION);
-    style->setPropertyInternal(CSSPropertyWebkitLineBreak, "after-white-space", false, IGNORE_EXCEPTION);
-}
-
-// Searches from the beginning of the document if nothing is selected.
 bool Editor::findString(const String& target, bool forward, bool caseFlag, bool wrapFlag, bool startInSelection)
 {
     FindOptions options = (forward ? 0 : Backwards) | (caseFlag ? 0 : CaseInsensitive) | (wrapFlag ? WrapAround : 0) | (startInSelection ? StartInSelection : 0);
