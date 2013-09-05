@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_network_list_api.h"
 
@@ -68,8 +69,7 @@ class PPAPI_SHARED_EXPORT PPB_NetworkList_Private_Shared
   virtual PP_NetworkListType_Private GetType(uint32_t index) OVERRIDE;
   virtual PP_NetworkListState_Private GetState(uint32_t index) OVERRIDE;
   virtual int32_t GetIpAddresses(uint32_t index,
-                                 PP_NetAddress_Private addresses[],
-                                 uint32_t count) OVERRIDE;
+                                 const PP_ArrayOutput& output) OVERRIDE;
   virtual PP_Var GetDisplayName(uint32_t index) OVERRIDE;
   virtual uint32_t GetMTU(uint32_t index) OVERRIDE;
 

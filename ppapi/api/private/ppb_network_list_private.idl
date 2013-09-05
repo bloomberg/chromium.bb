@@ -10,7 +10,7 @@
 [generate_thunk]
 
 label Chrome {
-  M19 = 0.2
+  M31 = 0.3
 };
 
 /**
@@ -76,12 +76,23 @@ interface PPB_NetworkList_Private {
   PP_Bool IsNetworkList([in] PP_Resource resource);
 
   /**
+   * Gets number of interfaces in the list.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a
+   * network list.
+   *
    * @return Returns number of available network interfaces or 0 if
    * the list has never been updated.
    */
   uint32_t GetCount([in] PP_Resource resource);
 
   /**
+   * Gets name of a network interface.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a
+   * network list.
+   * @param[in] index Index of the network interface.
+   *
    * @return Returns name for the network interface with the specified
    * <code>index</code>.
    */
@@ -89,6 +100,12 @@ interface PPB_NetworkList_Private {
                  [in] uint32_t index);
 
   /**
+   * Gets type of a network interface.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a
+   * network list.
+   * @param[in] index Index of the network interface.
+   *
    * @return Returns type of the network interface with the specified
    * <code>index</code>.
    */
@@ -97,6 +114,12 @@ interface PPB_NetworkList_Private {
                                      [in] uint32_t index);
 
   /**
+   * Gets state of a network interface.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a
+   * network list.
+   * @param[in] index Index of the network interface.
+   *
    * @return Returns current state of the network interface with the
    * specified <code>index</code>.
    */
@@ -105,22 +128,29 @@ interface PPB_NetworkList_Private {
                                        [in] uint32_t index);
 
   /**
-   * Gets list of IP addresses for the network interface with the
-   * specified <code>index</code> and stores them in
-   * <code>addresses</code>. If the caller didn't allocate sufficient
-   * space to store all addresses, then only the first
-   * <code>count</code> addresses are filled in.
+   * Gets list of IP addresses for a network interface.
    *
-   * @return Returns total number of IP addresses assigned to the
-   * network interface or a negative error code.
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a
+   * network list.
+   * @param[in] index Index of the network interface.
+   * @param[in] output An output array which will receive
+   * <code>PPB_NetAddress</code> resources on success. Please note that the
+   * ref count of those resources has already been increased by 1 for the
+   * caller.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
    */
-  int32_t GetIpAddresses(
-      [in] PP_Resource resource,
-      [in] uint32_t index,
-      [inout, size_is(count)] PP_NetAddress_Private[] addresses,
-      [in] uint32_t count);
+  int32_t GetIpAddresses([in] PP_Resource resource,
+                         [in] uint32_t index,
+                         [in] PP_ArrayOutput output);
 
   /**
+   * Gets display name of a network interface.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a
+   * network list.
+   * @param[in] index Index of the network interface.
+   *
    * @return Returns display name for the network interface with the
    * specified <code>index</code>.
    */
@@ -128,6 +158,12 @@ interface PPB_NetworkList_Private {
                         [in] uint32_t index);
 
   /**
+   * Gets MTU (Maximum Transmission Unit) of a network interface.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a
+   * network list.
+   * @param[in] index Index of the network interface.
+   *
    * @return Returns MTU for the network interface with the specified
    * <code>index</code> or 0 if MTU is unknown.
    */

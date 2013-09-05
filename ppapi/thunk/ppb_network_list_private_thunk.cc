@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // From private/ppb_network_list_private.idl,
-//   modified Tue Apr 16 11:25:45 2013.
+//   modified Fri Aug 30 12:04:19 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_network_list_private.h"
@@ -59,13 +59,12 @@ PP_NetworkListState_Private GetState(PP_Resource resource, uint32_t index) {
 
 int32_t GetIpAddresses(PP_Resource resource,
                        uint32_t index,
-                       struct PP_NetAddress_Private addresses[],
-                       uint32_t count) {
+                       struct PP_ArrayOutput output) {
   VLOG(4) << "PPB_NetworkList_Private::GetIpAddresses()";
   EnterResource<PPB_NetworkList_API> enter(resource, true);
   if (enter.failed())
     return enter.retval();
-  return enter.object()->GetIpAddresses(index, addresses, count);
+  return enter.object()->GetIpAddresses(index, output);
 }
 
 struct PP_Var GetDisplayName(PP_Resource resource, uint32_t index) {
@@ -84,7 +83,7 @@ uint32_t GetMTU(PP_Resource resource, uint32_t index) {
   return enter.object()->GetMTU(index);
 }
 
-const PPB_NetworkList_Private_0_2 g_ppb_networklist_private_thunk_0_2 = {
+const PPB_NetworkList_Private_0_3 g_ppb_networklist_private_thunk_0_3 = {
   &IsNetworkList,
   &GetCount,
   &GetName,
@@ -97,8 +96,8 @@ const PPB_NetworkList_Private_0_2 g_ppb_networklist_private_thunk_0_2 = {
 
 }  // namespace
 
-const PPB_NetworkList_Private_0_2* GetPPB_NetworkList_Private_0_2_Thunk() {
-  return &g_ppb_networklist_private_thunk_0_2;
+const PPB_NetworkList_Private_0_3* GetPPB_NetworkList_Private_0_3_Thunk() {
+  return &g_ppb_networklist_private_thunk_0_3;
 }
 
 }  // namespace thunk

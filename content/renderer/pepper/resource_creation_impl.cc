@@ -11,7 +11,6 @@
 #include "content/renderer/pepper/ppb_flash_message_loop_impl.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
-#include "content/renderer/pepper/ppb_network_monitor_private_impl.h"
 #include "content/renderer/pepper/ppb_scrollbar_impl.h"
 #include "content/renderer/pepper/ppb_video_decoder_impl.h"
 #include "content/renderer/pepper/ppb_x509_certificate_private_impl.h"
@@ -206,7 +205,7 @@ PP_Resource ResourceCreationImpl::CreateNetworkMonitor(
     PP_Instance instance,
     PPB_NetworkMonitor_Callback callback,
     void* user_data) {
-  return PPB_NetworkMonitor_Private_Impl::Create(instance, callback, user_data);
+  return 0;  // Not supported in-process.
 }
 
 PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,

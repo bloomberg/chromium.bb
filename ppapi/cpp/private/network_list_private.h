@@ -14,6 +14,8 @@
 
 namespace pp {
 
+class NetAddress;
+
 class NetworkListPrivate : public Resource {
  public:
   NetworkListPrivate();
@@ -41,8 +43,8 @@ class NetworkListPrivate : public Resource {
   /// Gets the list of IP addresses for the network interface with the
   /// specified <code>index</code> and stores them in
   /// <code>addresses</code>.
-  void GetIpAddresses(uint32_t index,
-                      std::vector<PP_NetAddress_Private>* addresses) const;
+  int32_t GetIpAddresses(uint32_t index,
+                         std::vector<NetAddress>* addresses) const;
 
   /// @return Returns the display name for the network interface with
   /// the specified <code>index</code>.

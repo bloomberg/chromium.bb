@@ -37,8 +37,8 @@ PROXIED_IFACE(NoAPIName, PPB_NETADDRESS_PRIVATE_INTERFACE_1_0,
               PPB_NetAddress_Private_1_0)
 PROXIED_IFACE(NoAPIName, PPB_NETADDRESS_PRIVATE_INTERFACE_1_1,
               PPB_NetAddress_Private_1_1)
-PROXIED_IFACE(NoAPIName, PPB_NETWORKLIST_PRIVATE_INTERFACE_0_2,
-              PPB_NetworkList_Private_0_2)
+PROXIED_IFACE(NoAPIName, PPB_NETWORKLIST_PRIVATE_INTERFACE_0_3,
+              PPB_NetworkList_Private_0_3)
 PROXIED_IFACE(PPB_NetworkMonitor_Private,
               PPB_NETWORKMONITOR_PRIVATE_INTERFACE_0_2,
               PPB_NetworkMonitor_Private_0_2)

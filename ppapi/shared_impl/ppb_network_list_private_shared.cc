@@ -6,8 +6,10 @@
 
 #include "base/logging.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/array_writer.h"
 #include "ppapi/shared_impl/ppb_network_list_private_shared.h"
 #include "ppapi/shared_impl/var.h"
+#include "ppapi/thunk/enter.h"
 
 namespace ppapi {
 
@@ -83,15 +85,27 @@ PP_NetworkListState_Private PPB_NetworkList_Private_Shared::GetState(
 
 int32_t PPB_NetworkList_Private_Shared::GetIpAddresses(
     uint32_t index,
-    struct PP_NetAddress_Private addresses[],
-    uint32_t count) {
-  if (index >= list_->list().size())
+    const PP_ArrayOutput& output) {
+  ArrayWriter writer(output);
+  if (index >= list_->list().size() || !writer.is_valid())
+    return PP_ERROR_BADARGUMENT;
+
+  thunk::EnterResourceCreationNoLock enter(pp_instance());
+  if (enter.failed())
     return PP_ERROR_FAILED;
-  count = std::min(
-      count, static_cast<uint32_t>(list_->list().at(index).addresses.size()));
-  memcpy(addresses, &(list_->list().at(index).addresses[0]),
-         sizeof(PP_NetAddress_Private) * count);
-  return static_cast<int32_t>(list_->list().at(index).addresses.size());
+
+  const std::vector<PP_NetAddress_Private>& addresses =
+      list_->list().at(index).addresses;
+  std::vector<PP_Resource> addr_resources;
+  for (size_t i = 0; i < addresses.size(); ++i) {
+    addr_resources.push_back(
+        enter.functions()->CreateNetAddressFromNetAddressPrivate(
+            pp_instance(), addresses[i]));
+  }
+  if (!writer.StoreResourceVector(addr_resources))
+    return PP_ERROR_FAILED;
+
+  return PP_OK;
 }
 
 PP_Var PPB_NetworkList_Private_Shared::GetDisplayName(uint32_t index) {

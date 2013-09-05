@@ -207,7 +207,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NaCl_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_2_0;
@@ -3012,49 +3012,49 @@ static void Pnacl_M19_1_PPB_NetAddress_Private_CreateFromIPv6Address(const uint8
 
 /* End wrapper methods for PPB_NetAddress_Private_1_1 */
 
-/* Begin wrapper methods for PPB_NetworkList_Private_0_2 */
+/* Begin wrapper methods for PPB_NetworkList_Private_0_3 */
 
-static PP_Bool Pnacl_M19_PPB_NetworkList_Private_IsNetworkList(PP_Resource resource) {
-  const struct PPB_NetworkList_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2.real_iface;
+static PP_Bool Pnacl_M31_PPB_NetworkList_Private_IsNetworkList(PP_Resource resource) {
+  const struct PPB_NetworkList_Private_0_3 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3.real_iface;
   return iface->IsNetworkList(resource);
 }
 
-static uint32_t Pnacl_M19_PPB_NetworkList_Private_GetCount(PP_Resource resource) {
-  const struct PPB_NetworkList_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2.real_iface;
+static uint32_t Pnacl_M31_PPB_NetworkList_Private_GetCount(PP_Resource resource) {
+  const struct PPB_NetworkList_Private_0_3 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3.real_iface;
   return iface->GetCount(resource);
 }
 
-static void Pnacl_M19_PPB_NetworkList_Private_GetName(struct PP_Var* _struct_result, PP_Resource resource, uint32_t index) {
-  const struct PPB_NetworkList_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2.real_iface;
+static void Pnacl_M31_PPB_NetworkList_Private_GetName(struct PP_Var* _struct_result, PP_Resource resource, uint32_t index) {
+  const struct PPB_NetworkList_Private_0_3 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3.real_iface;
   *_struct_result = iface->GetName(resource, index);
 }
 
-static PP_NetworkListType_Private Pnacl_M19_PPB_NetworkList_Private_GetType(PP_Resource resource, uint32_t index) {
-  const struct PPB_NetworkList_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2.real_iface;
+static PP_NetworkListType_Private Pnacl_M31_PPB_NetworkList_Private_GetType(PP_Resource resource, uint32_t index) {
+  const struct PPB_NetworkList_Private_0_3 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3.real_iface;
   return iface->GetType(resource, index);
 }
 
-static PP_NetworkListState_Private Pnacl_M19_PPB_NetworkList_Private_GetState(PP_Resource resource, uint32_t index) {
-  const struct PPB_NetworkList_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2.real_iface;
+static PP_NetworkListState_Private Pnacl_M31_PPB_NetworkList_Private_GetState(PP_Resource resource, uint32_t index) {
+  const struct PPB_NetworkList_Private_0_3 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3.real_iface;
   return iface->GetState(resource, index);
 }
 
-static int32_t Pnacl_M19_PPB_NetworkList_Private_GetIpAddresses(PP_Resource resource, uint32_t index, struct PP_NetAddress_Private addresses[], uint32_t count) {
-  const struct PPB_NetworkList_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2.real_iface;
-  return iface->GetIpAddresses(resource, index, addresses, count);
+static int32_t Pnacl_M31_PPB_NetworkList_Private_GetIpAddresses(PP_Resource resource, uint32_t index, struct PP_ArrayOutput* output) {
+  const struct PPB_NetworkList_Private_0_3 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3.real_iface;
+  return iface->GetIpAddresses(resource, index, *output);
 }
 
-static void Pnacl_M19_PPB_NetworkList_Private_GetDisplayName(struct PP_Var* _struct_result, PP_Resource resource, uint32_t index) {
-  const struct PPB_NetworkList_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2.real_iface;
+static void Pnacl_M31_PPB_NetworkList_Private_GetDisplayName(struct PP_Var* _struct_result, PP_Resource resource, uint32_t index) {
+  const struct PPB_NetworkList_Private_0_3 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3.real_iface;
   *_struct_result = iface->GetDisplayName(resource, index);
 }
 
-static uint32_t Pnacl_M19_PPB_NetworkList_Private_GetMTU(PP_Resource resource, uint32_t index) {
-  const struct PPB_NetworkList_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2.real_iface;
+static uint32_t Pnacl_M31_PPB_NetworkList_Private_GetMTU(PP_Resource resource, uint32_t index) {
+  const struct PPB_NetworkList_Private_0_3 *iface = Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3.real_iface;
   return iface->GetMTU(resource, index);
 }
 
-/* End wrapper methods for PPB_NetworkList_Private_0_2 */
+/* End wrapper methods for PPB_NetworkList_Private_0_3 */
 
 /* Not generating wrapper methods for PPB_NetworkMonitor_Private_0_2 */
 
@@ -4725,15 +4725,15 @@ struct PPB_NetAddress_Private_1_1 Pnacl_Wrappers_PPB_NetAddress_Private_1_1 = {
     .CreateFromIPv6Address = (void (*)(const uint8_t ip[16], uint32_t scope_id, uint16_t port, struct PP_NetAddress_Private* addr_out))&Pnacl_M19_1_PPB_NetAddress_Private_CreateFromIPv6Address
 };
 
-struct PPB_NetworkList_Private_0_2 Pnacl_Wrappers_PPB_NetworkList_Private_0_2 = {
-    .IsNetworkList = (PP_Bool (*)(PP_Resource resource))&Pnacl_M19_PPB_NetworkList_Private_IsNetworkList,
-    .GetCount = (uint32_t (*)(PP_Resource resource))&Pnacl_M19_PPB_NetworkList_Private_GetCount,
-    .GetName = (struct PP_Var (*)(PP_Resource resource, uint32_t index))&Pnacl_M19_PPB_NetworkList_Private_GetName,
-    .GetType = (PP_NetworkListType_Private (*)(PP_Resource resource, uint32_t index))&Pnacl_M19_PPB_NetworkList_Private_GetType,
-    .GetState = (PP_NetworkListState_Private (*)(PP_Resource resource, uint32_t index))&Pnacl_M19_PPB_NetworkList_Private_GetState,
-    .GetIpAddresses = (int32_t (*)(PP_Resource resource, uint32_t index, struct PP_NetAddress_Private addresses[], uint32_t count))&Pnacl_M19_PPB_NetworkList_Private_GetIpAddresses,
-    .GetDisplayName = (struct PP_Var (*)(PP_Resource resource, uint32_t index))&Pnacl_M19_PPB_NetworkList_Private_GetDisplayName,
-    .GetMTU = (uint32_t (*)(PP_Resource resource, uint32_t index))&Pnacl_M19_PPB_NetworkList_Private_GetMTU
+struct PPB_NetworkList_Private_0_3 Pnacl_Wrappers_PPB_NetworkList_Private_0_3 = {
+    .IsNetworkList = (PP_Bool (*)(PP_Resource resource))&Pnacl_M31_PPB_NetworkList_Private_IsNetworkList,
+    .GetCount = (uint32_t (*)(PP_Resource resource))&Pnacl_M31_PPB_NetworkList_Private_GetCount,
+    .GetName = (struct PP_Var (*)(PP_Resource resource, uint32_t index))&Pnacl_M31_PPB_NetworkList_Private_GetName,
+    .GetType = (PP_NetworkListType_Private (*)(PP_Resource resource, uint32_t index))&Pnacl_M31_PPB_NetworkList_Private_GetType,
+    .GetState = (PP_NetworkListState_Private (*)(PP_Resource resource, uint32_t index))&Pnacl_M31_PPB_NetworkList_Private_GetState,
+    .GetIpAddresses = (int32_t (*)(PP_Resource resource, uint32_t index, struct PP_ArrayOutput output))&Pnacl_M31_PPB_NetworkList_Private_GetIpAddresses,
+    .GetDisplayName = (struct PP_Var (*)(PP_Resource resource, uint32_t index))&Pnacl_M31_PPB_NetworkList_Private_GetDisplayName,
+    .GetMTU = (uint32_t (*)(PP_Resource resource, uint32_t index))&Pnacl_M31_PPB_NetworkList_Private_GetMTU
 };
 
 /* Not generating wrapper interface for PPB_NetworkMonitor_Private_0_2 */
@@ -5394,9 +5394,9 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_1 = 
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2 = {
-  .iface_macro = PPB_NETWORKLIST_PRIVATE_INTERFACE_0_2,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_NetworkList_Private_0_2,
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3 = {
+  .iface_macro = PPB_NETWORKLIST_PRIVATE_INTERFACE_0_3,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_NetworkList_Private_0_3,
   .real_iface = NULL
 };
 
@@ -5598,7 +5598,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_1_1,
-  &Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2,
+  &Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3,
   &Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Talk_Private_1_0,
   &Pnacl_WrapperInfo_PPB_Talk_Private_2_0,

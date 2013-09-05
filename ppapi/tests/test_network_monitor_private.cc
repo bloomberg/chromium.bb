@@ -8,7 +8,7 @@
 
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
-#include "ppapi/cpp/private/net_address_private.h"
+#include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/private/network_list_private.h"
 #include "ppapi/cpp/private/network_monitor_private.h"
 #include "ppapi/tests/testing_instance.h"
@@ -92,31 +92,55 @@ std::string TestNetworkMonitorPrivate::VerifyNetworkList(
   // Iterate over all interfaces and verify their properties.
   for (size_t iface = 0; iface < count; ++iface) {
     // Verify that the first interface has at least one address.
-    std::vector<PP_NetAddress_Private> addresses;
+    std::vector<pp::NetAddress> addresses;
     network_list.GetIpAddresses(iface, &addresses);
     ASSERT_TRUE(addresses.size() >= 1U);
     // Verify that the addresses are valid.
     for (size_t i = 0; i < addresses.size(); ++i) {
-      PP_NetAddressFamily_Private family =
-          pp::NetAddressPrivate::GetFamily(addresses[i]);
+      PP_NetAddress_Family family = addresses[i].GetFamily();
 
-      ASSERT_TRUE(family == PP_NETADDRESSFAMILY_PRIVATE_IPV4 ||
-                  family == PP_NETADDRESSFAMILY_PRIVATE_IPV6);
+      switch (family) {
+        case PP_NETADDRESS_FAMILY_IPV4: {
+          PP_NetAddress_IPv4 ipv4;
+          ASSERT_TRUE(addresses[i].DescribeAsIPv4Address(&ipv4));
 
-      char ip[16] = { 0 };
-      ASSERT_TRUE(pp::NetAddressPrivate::GetAddress(
-          addresses[i], ip, sizeof(ip)));
+          // Verify that the address is not zero.
+          bool all_zeros = true;
+          for (size_t j = 0; j < sizeof(ipv4.addr); ++j) {
+            if (ipv4.addr[j] != 0) {
+              all_zeros = false;
+              break;
+            }
+          }
+          ASSERT_TRUE(!all_zeros);
 
-      // Verify that the address is not zero.
-      size_t j;
-      for (j = 0; j < sizeof(ip); ++j) {
-        if (ip[j] != 0)
+          // Verify that port is set to 0.
+          ASSERT_TRUE(ipv4.port == 0);
           break;
-      }
-      ASSERT_TRUE(j != addresses[i].size);
+        }
 
-      // Verify that port is set to 0.
-      ASSERT_TRUE(pp::NetAddressPrivate::GetPort(addresses[i]) == 0);
+        case PP_NETADDRESS_FAMILY_IPV6: {
+          PP_NetAddress_IPv6 ipv6;
+          ASSERT_TRUE(addresses[i].DescribeAsIPv6Address(&ipv6));
+
+          // Verify that the address is not zero.
+          bool all_zeros = true;
+          for (size_t j = 0; j < sizeof(ipv6.addr); ++j) {
+            if (ipv6.addr[j] != 0) {
+              all_zeros = false;
+              break;
+            }
+          }
+          ASSERT_TRUE(!all_zeros);
+
+          // Verify that port is set to 0.
+          ASSERT_TRUE(ipv6.port == 0);
+          break;
+        }
+
+        default:
+          ASSERT_TRUE(false);
+      }
     }
 
     // Verify that each interface has a unique name and a display name.
@@ -130,33 +154,6 @@ std::string TestNetworkMonitorPrivate::VerifyNetworkList(
     PP_NetworkListState_Private state = network_list.GetState(iface);
     ASSERT_TRUE(state >= PP_NETWORKLIST_DOWN);
     ASSERT_TRUE(state <= PP_NETWORKLIST_UP);
-  }
-
-  // Try to call GetIpAddresses() without C++ wrapper and verify that
-  // it always returns correct value.
-  const PPB_NetworkList_Private* interface =
-      static_cast<const PPB_NetworkList_Private*>(
-          pp::Module::Get()->GetBrowserInterface(
-              PPB_NETWORKLIST_PRIVATE_INTERFACE));
-  ASSERT_TRUE(interface);
-  std::vector<PP_NetAddress_Private> addresses;
-  network_list.GetIpAddresses(0, &addresses);
-  size_t address_count = addresses.size();
-  addresses.resize(addresses.size() + 3);
-  for (size_t i = 0; i < addresses.size(); ++i) {
-    const char kFillValue = 123;
-    memset(&addresses.front(), kFillValue,
-           addresses.size() * sizeof(PP_NetAddress_Private));
-    int result = interface->GetIpAddresses(network_list.pp_resource(), 0,
-                                           &addresses.front(), i);
-    ASSERT_EQ(result, static_cast<int>(address_count));
-
-    // Verify that nothing outside the buffer was touched.
-    for (char* pos = reinterpret_cast<char*>(&addresses[result]);
-         pos != reinterpret_cast<char*>(&addresses[0] + addresses.size());
-         ++pos) {
-      ASSERT_TRUE(*pos == kFillValue);
-    }
   }
 
   PASS();

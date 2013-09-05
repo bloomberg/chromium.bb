@@ -361,8 +361,6 @@
     'renderer/pepper/ppb_graphics_3d_impl.h',
     'renderer/pepper/ppb_image_data_impl.cc',
     'renderer/pepper/ppb_image_data_impl.h',
-    'renderer/pepper/ppb_network_monitor_private_impl.cc',
-    'renderer/pepper/ppb_network_monitor_private_impl.h',
     'renderer/pepper/ppb_proxy_impl.cc',
     'renderer/pepper/ppb_proxy_impl.h',
     'renderer/pepper/ppb_scrollbar_impl.cc',

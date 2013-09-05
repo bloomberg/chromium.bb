@@ -31,8 +31,7 @@ class PPAPI_THUNK_EXPORT PPB_NetworkList_API {
   virtual PP_NetworkListType_Private GetType(uint32_t index) = 0;
   virtual PP_NetworkListState_Private GetState(uint32_t index) = 0;
   virtual int32_t GetIpAddresses(uint32_t index,
-                                 PP_NetAddress_Private addresses[],
-                                 uint32_t count) = 0;
+                                 const PP_ArrayOutput& output) = 0;
   virtual PP_Var GetDisplayName(uint32_t index) = 0;
   virtual uint32_t GetMTU(uint32_t index) = 0;
 };

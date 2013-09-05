@@ -1066,14 +1066,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, NetAddressPrivate) {
 }
 
 // NetworkMonitor tests.
-IN_PROC_BROWSER_TEST_F(PPAPITest, NetworkMonitor) {
-  RunTestViaHTTP(
-      LIST_TEST(NetworkMonitorPrivate_Basic)
-      LIST_TEST(NetworkMonitorPrivate_2Monitors)
-      LIST_TEST(NetworkMonitorPrivate_DeleteInCallback)
-      LIST_TEST(NetworkMonitorPrivate_ListObserver)
-  );
-}
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetworkMonitor) {
   RunTestViaHTTP(
       LIST_TEST(NetworkMonitorPrivate_Basic)
