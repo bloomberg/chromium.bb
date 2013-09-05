@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 
 #include "base/callback.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -58,6 +59,10 @@ void LazyBackgroundTaskQueue::AddPendingTask(
     Profile* profile,
     const std::string& extension_id,
     const PendingTask& task) {
+  if (g_browser_process->IsShuttingDown()) {
+    task.Run(NULL);
+    return;
+  }
   PendingTasksList* tasks_list = NULL;
   PendingTasksKey key(profile, extension_id);
   PendingTasksMap::iterator it = pending_tasks_.find(key);

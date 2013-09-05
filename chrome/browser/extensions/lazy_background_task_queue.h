@@ -42,8 +42,8 @@ class LazyBackgroundTaskQueue : public content::NotificationObserver {
   // Adds a task to the queue for a given extension. If this is the first
   // task added for the extension, its lazy background page will be loaded.
   // The task will be called either when the page is loaded, or when the
-  // page fails to load for some reason (e.g. a crash). In the latter case,
-  // the ExtensionHost parameter is NULL.
+  // page fails to load for some reason (e.g. a crash or browser
+  // shutdown). In the latter case, the ExtensionHost parameter is NULL.
   void AddPendingTask(
       Profile* profile,
       const std::string& extension_id,
