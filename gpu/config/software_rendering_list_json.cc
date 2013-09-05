@@ -89,7 +89,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.7",
+  "version": "6.8",
   "entries": [
     {
       "id": 1,
@@ -604,8 +604,8 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 42,
-      "description": "AMD Radeon HD 6490M on Snow Leopard is buggy.",
-      "cr_bugs": [137307],
+      "description": "AMD Radeon HD 6490M and 6970M on Snow Leopard are buggy.",
+      "cr_bugs": [137307, 285350],
       "os": {
         "type": "macosx",
         "version": {
@@ -614,7 +614,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         }
       },
       "vendor_id": "0x1002",
-      "device_id": ["0x6760"],
+      "device_id": ["0x6760", "0x6720"],
       "features": [
         "webgl"
       ]
