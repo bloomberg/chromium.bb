@@ -42,8 +42,8 @@ const int kMessageLineHeight = 18;
 // Colors.
 const SkColor kNotificationBackgroundColor = SkColorSetRGB(255, 255, 255);
 const SkColor kLegacyIconBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
-const SkColor kRegularTextColor = SkColorSetRGB(0x22, 0x22, 0x22);
-const SkColor kDimTextColor = SkColorSetRGB(0x66, 0x66, 0x66);
+const SkColor kRegularTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
+const SkColor kDimTextColor = SkColorSetRGB(0x7f, 0x7f, 0x7f);
 const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
 
 // Limits.
