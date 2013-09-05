@@ -459,11 +459,17 @@ BrowserView::~BrowserView() {
   // Child views maintain PrefMember attributes that point to
   // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
   RemoveAllChildViews(true);
+  toolbar_ = NULL;
 
   // It is possible that we were forced-closed by the native view system and
-  // that tabs remain in the browser. Close any such remaining tabs.
-  while (browser_->tab_strip_model()->count())
-    delete browser_->tab_strip_model()->GetWebContentsAt(0);
+  // that tabs remain in the browser. Close any such remaining tabs. Detach
+  // before destroying in hopes of avoiding less callbacks trying to access
+  // members since destroyed.
+  {
+    ScopedVector<content::WebContents> contents;
+    while (browser_->tab_strip_model()->count())
+      contents.push_back(browser_->tab_strip_model()->DetachWebContentsAt(0));
+  }
 
   // Explicitly set browser_ to NULL.
   browser_.reset();
@@ -963,7 +969,9 @@ void BrowserView::UpdateReloadStopState(bool is_loading, bool force) {
 }
 
 void BrowserView::UpdateToolbar(content::WebContents* contents) {
-  toolbar_->Update(contents);
+  // We may end up here during destruction.
+  if (toolbar_)
+    toolbar_->Update(contents);
 }
 
 void BrowserView::FocusToolbar() {

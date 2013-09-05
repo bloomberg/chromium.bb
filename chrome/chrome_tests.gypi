@@ -1639,6 +1639,7 @@
         'browser/ui/views/browser_actions_container_browsertest.cc',
         'browser/ui/views/frame/app_non_client_frame_view_ash_browsertest.cc',
         'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
+        'browser/ui/views/frame/browser_view_browsertest.cc',
         'browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc',
         'browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc',
         'browser/ui/views/select_file_dialog_extension_browsertest.cc',
