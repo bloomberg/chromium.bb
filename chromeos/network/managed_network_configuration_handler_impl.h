@@ -15,6 +15,7 @@
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_profile_observer.h"
+#include "chromeos/network/policy_applicator.h"
 
 namespace base {
 class DictionaryValue;
@@ -29,7 +30,8 @@ class NetworkStateHandler;
 
 class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
     : public ManagedNetworkConfigurationHandler,
-      public NetworkProfileObserver {
+      public NetworkProfileObserver,
+      public PolicyApplicator::ConfigurationHandler {
  public:
   typedef std::map<std::string, const base::DictionaryValue*> GuidToPolicyMap;
   typedef std::map<std::string, GuidToPolicyMap> UserToPoliciesMap;
@@ -85,15 +87,14 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   virtual void OnProfileAdded(const NetworkProfile& profile) OVERRIDE;
   virtual void OnProfileRemoved(const NetworkProfile& profile) OVERRIDE;
 
-  NetworkConfigurationHandler* network_configuration_handler() {
-    return network_configuration_handler_;
-  }
+  // PolicyApplicator::ConfigurationHandler overrides
+  virtual void CreateConfigurationFromPolicy(
+      const base::DictionaryValue& shill_properties) OVERRIDE;
 
  private:
   friend class ClientCertResolverTest;
   friend class NetworkHandler;
   friend class ManagedNetworkConfigurationHandlerTest;
-  class PolicyApplicator;
 
   ManagedNetworkConfigurationHandlerImpl();
 
