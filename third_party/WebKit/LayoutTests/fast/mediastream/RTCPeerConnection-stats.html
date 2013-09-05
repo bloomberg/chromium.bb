@@ -54,13 +54,19 @@ function statsHandler2(status)
     // The "local" interface is deprecated. Keep test until interface deleted.
     local = result[0].local;
     timestamp = local.timestamp;
-    shouldBeGreaterThanOrEqual('timestamp', 'startTime');
+    // Windows XP sometimes gives time that appears to go backwards.
+    // This hack will make the tests non-flaky if it never goes backwards
+    // by more than 1 millisecond.
+    fudgeForXP = 1;
+    timediff = timestamp - startTime + fudgeForXP;
+    shouldBeGreaterThanOrEqual('timediff', '0');
     shouldBeGreaterThanOrEqual('local.names().length', '1');
     shouldBeGreaterThanOrEqual('local.names().indexOf("type")', '0');
     shouldBe('local.stat("type")', '"audio"');
     // Newer interface.
     res = result[0];
-    shouldBeGreaterThanOrEqual('res.timestamp', 'startTime');
+    timediff = timestamp - startTime + fudgeForXP;
+    shouldBeGreaterThanOrEqual('timediff', '0');
     shouldBeNonNull('res.id');
     shouldBeNonNull('res.type');
     shouldBeGreaterThanOrEqual('res.names().length', '1');
