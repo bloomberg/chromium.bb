@@ -49,7 +49,7 @@ gfx::Rect GetChromeIconBoundsForRootWindow(aura::RootWindow* root_window) {
   const views::ViewModel* view_model = launcher_view->view_model_for_test();
 
   EXPECT_EQ(2, view_model->view_size());
-  return view_model->view_at(0)->GetBoundsInScreen();
+  return view_model->view_at(1)->GetBoundsInScreen();
 }
 
 void OpenBrowserUsingShelfOnRootWindow(aura::RootWindow* root_window) {
@@ -67,15 +67,15 @@ void OpenBrowserUsingShelfOnRootWindow(aura::RootWindow* root_window) {
 }  // namespace
 
 #if defined(OS_WIN)
-#define MAYBE_OpenBrowserUsingShelfOnOhterDisplay DISABLED_OpenBrowserUsingShelfOnOhterDisplay
-#define MAYBE_OpenBrowserUsingContextMenuOnOhterDisplay DISABLED_OpenBrowserUsingContextMenuOnOhterDisplay
+#define MAYBE_OpenBrowserUsingShelfOnOtherDisplay DISABLED_OpenBrowserUsingShelfOnOtherDisplay
+#define MAYBE_OpenBrowserUsingContextMenuOnOtherDisplay DISABLED_OpenBrowserUsingContextMenuOnOtherDisplay
 #else
-#define MAYBE_OpenBrowserUsingShelfOnOhterDisplay OpenBrowserUsingShelfOnOhterDisplay
-#define MAYBE_OpenBrowserUsingContextMenuOnOhterDisplay OpenBrowserUsingContextMenuOnOhterDisplay
+#define MAYBE_OpenBrowserUsingShelfOnOtherDisplay OpenBrowserUsingShelfOnOtherDisplay
+#define MAYBE_OpenBrowserUsingContextMenuOnOtherDisplay OpenBrowserUsingContextMenuOnOtherDisplay
 #endif
 
 IN_PROC_BROWSER_TEST_F(WindowSizerTest,
-                       MAYBE_OpenBrowserUsingShelfOnOhterDisplay) {
+                       MAYBE_OpenBrowserUsingShelfOnOtherDisplay) {
   // Don't shutdown when closing the last browser window.
   chrome::StartKeepAlive();
 
@@ -163,7 +163,7 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::RootWindow* root_window) {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
-                       MAYBE_OpenBrowserUsingContextMenuOnOhterDisplay) {
+                       MAYBE_OpenBrowserUsingContextMenuOnOtherDisplay) {
   // Don't shutdown when closing the last browser window.
   chrome::StartKeepAlive();
 

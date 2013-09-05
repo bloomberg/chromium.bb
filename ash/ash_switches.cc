@@ -44,6 +44,10 @@ const char kAshDefaultGuestWallpaperSmall[] =
 const char kAshDefaultWallpaperLarge[] = "ash-default-wallpaper-large";
 const char kAshDefaultWallpaperSmall[] = "ash-default-wallpaper-small";
 
+// Disable the alternate shelf layout.
+const char kAshDisableAlternateShelfLayout[] =
+    "ash-disable-alternate-shelf-layout";
+
 #if defined(OS_CHROMEOS)
 // Disable the status tray volume menu for allowing the user to choose an audio
 // input and output device.
@@ -180,8 +184,8 @@ const char kAshDisableDragAndDropAppListToLauncher[] =
 const char kForcedMaximizeMode[] = "forced-maximize-mode";
 
 bool UseAlternateShelfLayout() {
-  return CommandLine::ForCurrentProcess()->
-      HasSwitch(ash::switches::kAshUseAlternateShelfLayout);
+  return !CommandLine::ForCurrentProcess()->
+      HasSwitch(ash::switches::kAshDisableAlternateShelfLayout);
 }
 
 bool UseDragOffShelf() {
@@ -190,8 +194,8 @@ bool UseDragOffShelf() {
 }
 
 bool ShowShelfAlignmentMenu() {
-  return CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kShowShelfAlignmentMenu);
+  return !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kHideShelfAlignmentMenu);
 }
 
 #if defined(OS_CHROMEOS)

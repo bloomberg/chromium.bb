@@ -252,7 +252,7 @@ TEST_F(CustomFrameViewAshTest, MAYBE_ResizeButtonDrag) {
     EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
     // This is a short resizing distance and different touch behavior
     // applies which leads in half of the screen being used.
-    EXPECT_EQ("400,0 400x552", window->bounds().ToString());
+    EXPECT_EQ("400,0 400x553", window->bounds().ToString());
   }
 
   // Snap left.

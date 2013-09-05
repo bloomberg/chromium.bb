@@ -40,7 +40,7 @@ TEST_F(ScreenAshTest, Bounds) {
   EXPECT_EQ("0,0 600x597",
             ScreenAsh::GetMaximizedWindowBoundsInParent(
                 primary->GetNativeView()).ToString());
-  EXPECT_EQ("0,0 500x452",
+  EXPECT_EQ("0,0 500x453",
             ScreenAsh::GetMaximizedWindowBoundsInParent(
                 secondary->GetNativeView()).ToString());
 
@@ -56,7 +56,7 @@ TEST_F(ScreenAshTest, Bounds) {
   EXPECT_EQ("0,0 600x597",
             ScreenAsh::GetDisplayWorkAreaBoundsInParent(
                 primary->GetNativeView()).ToString());
-  EXPECT_EQ("0,0 500x452",
+  EXPECT_EQ("0,0 500x453",
             ScreenAsh::GetDisplayWorkAreaBoundsInParent(
                 secondary->GetNativeView()).ToString());
 }

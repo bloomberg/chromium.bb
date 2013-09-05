@@ -131,8 +131,8 @@ class LauncherPlatformAppBrowserTest
 
   const ash::LauncherItem& GetLastLauncherItem() {
     // Unless there are any panels, the item at index [count - 1] will be
-    // the app list, and the item at [count - 2] will be the desired item.
-    return launcher_model()->items()[launcher_model()->item_count() - 2];
+    // the desired item.
+    return launcher_model()->items()[launcher_model()->item_count() - 1];
   }
 
   const ash::LauncherItem& GetLastLauncherPanelItem() {
@@ -816,10 +816,9 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   // This test creates one shell window and one panel window.
   int launcher_item_count = launcher_model()->item_count();
   ASSERT_EQ(base_launcher_item_count + 2, launcher_item_count);
-  // The Panel will be the last item, the app list second-to-last, the app
-  // third from last.
+  // The Panel will be the last item, the app second-to-last.
   const ash::LauncherItem& app_item =
-      launcher_model()->items()[launcher_item_count - 3];
+      launcher_model()->items()[launcher_item_count - 2];
   const ash::LauncherItem& panel_item =
       launcher_model()->items()[launcher_item_count - 1];
   const LauncherItemController* app_item_controller =
@@ -1377,11 +1376,11 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTestNoDefaultBrowser,
     AltNumberBrowserTabbing) {
   // Get the number of items in the browser menu.
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
-  // The first activation should create a browser.
-  launcher_->ActivateLauncherItem(0);
+  // The first activation should create a browser at index 1 (App List @ 0).
+  launcher_->ActivateLauncherItem(1);
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   // A second activation should not create a new instance.
-  launcher_->ActivateLauncherItem(0);
+  launcher_->ActivateLauncherItem(1);
   Browser* browser1 = chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
   EXPECT_TRUE(browser1);
   aura::Window* window1 = browser1->window()->GetNativeWindow();
@@ -1393,9 +1392,9 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(window2, ash::wm::GetActiveWindow());
 
   // Activate multiple times the switcher to see that the windows get activated.
-  launcher_->ActivateLauncherItem(0);
+  launcher_->ActivateLauncherItem(1);
   EXPECT_EQ(window1, ash::wm::GetActiveWindow());
-  launcher_->ActivateLauncherItem(0);
+  launcher_->ActivateLauncherItem(1);
   EXPECT_EQ(window2, ash::wm::GetActiveWindow());
 
   // Create a third browser - make sure that we do not toggle simply between
@@ -1408,13 +1407,13 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTestNoDefaultBrowser,
   EXPECT_NE(window2, window3);
   EXPECT_EQ(window3, ash::wm::GetActiveWindow());
 
-  launcher_->ActivateLauncherItem(0);
+  launcher_->ActivateLauncherItem(1);
   EXPECT_EQ(window1, ash::wm::GetActiveWindow());
-  launcher_->ActivateLauncherItem(0);
+  launcher_->ActivateLauncherItem(1);
   EXPECT_EQ(window2, ash::wm::GetActiveWindow());
-  launcher_->ActivateLauncherItem(0);
+  launcher_->ActivateLauncherItem(1);
   EXPECT_EQ(window3, ash::wm::GetActiveWindow());
-  launcher_->ActivateLauncherItem(0);
+  launcher_->ActivateLauncherItem(1);
   EXPECT_EQ(window1, ash::wm::GetActiveWindow());
 
   // Create anther app and make sure that none of our browsers is active.
@@ -1423,7 +1422,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTestNoDefaultBrowser,
   EXPECT_NE(window2, ash::wm::GetActiveWindow());
 
   // After activation our browser should be active again.
-  launcher_->ActivateLauncherItem(0);
+  launcher_->ActivateLauncherItem(1);
   EXPECT_EQ(window1, ash::wm::GetActiveWindow());
 }
 

@@ -4,6 +4,7 @@
 
 #include "ash/display/display_controller.h"
 
+#include "ash/ash_switches.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
@@ -13,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
+#include "base/command_line.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
@@ -449,6 +451,100 @@ TEST_F(DisplayControllerTest, InvertLayout) {
 TEST_F(DisplayControllerTest, SwapPrimary) {
   if (!SupportsMultipleDisplays())
     return;
+
+  DisplayController* display_controller =
+      Shell::GetInstance()->display_controller();
+  internal::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
+
+  UpdateDisplay("200x200,300x300");
+  gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
+  gfx::Display secondary_display = ScreenAsh::GetSecondaryDisplay();
+
+  DisplayLayout display_layout(DisplayLayout::RIGHT, 50);
+  display_controller->SetLayoutForCurrentDisplays(display_layout);
+
+  EXPECT_NE(primary_display.id(), secondary_display.id());
+  aura::RootWindow* primary_root =
+      display_controller->GetRootWindowForDisplayId(primary_display.id());
+  aura::RootWindow* secondary_root =
+      display_controller->GetRootWindowForDisplayId(secondary_display.id());
+  EXPECT_NE(primary_root, secondary_root);
+  aura::Window* launcher_window =
+      Launcher::ForPrimaryDisplay()->shelf_widget()->GetNativeView();
+  EXPECT_TRUE(primary_root->Contains(launcher_window));
+  EXPECT_FALSE(secondary_root->Contains(launcher_window));
+  EXPECT_EQ(primary_display.id(),
+            Shell::GetScreen()->GetDisplayNearestPoint(
+                gfx::Point(-100, -100)).id());
+  EXPECT_EQ(primary_display.id(),
+            Shell::GetScreen()->GetDisplayNearestWindow(NULL).id());
+
+  EXPECT_EQ("0,0 200x200", primary_display.bounds().ToString());
+  EXPECT_EQ("0,0 200x153", primary_display.work_area().ToString());
+  EXPECT_EQ("200,0 300x300", secondary_display.bounds().ToString());
+  EXPECT_EQ("200,0 300x253", secondary_display.work_area().ToString());
+  EXPECT_EQ("right, 50",
+            display_manager->GetCurrentDisplayLayout().ToString());
+
+  // Switch primary and secondary
+  display_controller->SetPrimaryDisplay(secondary_display);
+  const DisplayLayout& inverted_layout =
+      display_manager->GetCurrentDisplayLayout();
+  EXPECT_EQ("left, -50", inverted_layout.ToString());
+
+  EXPECT_EQ(secondary_display.id(),
+            Shell::GetScreen()->GetPrimaryDisplay().id());
+  EXPECT_EQ(primary_display.id(), ScreenAsh::GetSecondaryDisplay().id());
+  EXPECT_EQ(secondary_display.id(),
+            Shell::GetScreen()->GetDisplayNearestPoint(
+                gfx::Point(-100, -100)).id());
+  EXPECT_EQ(secondary_display.id(),
+            Shell::GetScreen()->GetDisplayNearestWindow(NULL).id());
+
+  EXPECT_EQ(
+      primary_root,
+      display_controller->GetRootWindowForDisplayId(secondary_display.id()));
+  EXPECT_EQ(
+      secondary_root,
+      display_controller->GetRootWindowForDisplayId(primary_display.id()));
+  EXPECT_TRUE(primary_root->Contains(launcher_window));
+  EXPECT_FALSE(secondary_root->Contains(launcher_window));
+
+  // Test if the bounds are correctly swapped.
+  gfx::Display swapped_primary = Shell::GetScreen()->GetPrimaryDisplay();
+  gfx::Display swapped_secondary = ScreenAsh::GetSecondaryDisplay();
+  EXPECT_EQ("0,0 300x300", swapped_primary.bounds().ToString());
+  EXPECT_EQ("0,0 300x253", swapped_primary.work_area().ToString());
+  EXPECT_EQ("-200,-50 200x200", swapped_secondary.bounds().ToString());
+
+  EXPECT_EQ("-200,-50 200x153", swapped_secondary.work_area().ToString());
+
+  aura::WindowTracker tracker;
+  tracker.Add(primary_root);
+  tracker.Add(secondary_root);
+
+  // Deleting 2nd display should move the primary to original primary display.
+  UpdateDisplay("200x200");
+  RunAllPendingInMessageLoop();  // RootWindow is deleted in a posted task.
+  EXPECT_EQ(1, Shell::GetScreen()->GetNumDisplays());
+  EXPECT_EQ(primary_display.id(), Shell::GetScreen()->GetPrimaryDisplay().id());
+  EXPECT_EQ(primary_display.id(),
+            Shell::GetScreen()->GetDisplayNearestPoint(
+                gfx::Point(-100, -100)).id());
+  EXPECT_EQ(primary_display.id(),
+            Shell::GetScreen()->GetDisplayNearestWindow(NULL).id());
+  EXPECT_TRUE(tracker.Contains(primary_root));
+  EXPECT_FALSE(tracker.Contains(secondary_root));
+  EXPECT_TRUE(primary_root->Contains(launcher_window));
+}
+
+TEST_F(DisplayControllerTest, SwapPrimaryForLegacyShelfLayout) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshDisableAlternateShelfLayout);
 
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();

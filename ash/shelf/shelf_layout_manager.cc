@@ -892,10 +892,10 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 
     if (ash::switches::UseAlternateShelfLayout()) {
       if (alignment_ == SHELF_ALIGNMENT_RIGHT) {
-        target_bounds->shelf_bounds_in_root.set_x(
-            available_bounds.right() - shelf_width + kStatusAreaInset);
+        target_bounds->status_bounds_in_shelf.set_x(kStatusAreaInset);
       } else {
-        target_bounds->shelf_bounds_in_root.set_x(kStatusAreaInset);
+        target_bounds->status_bounds_in_shelf.set_x(
+            available_bounds.right() - shelf_width + kStatusAreaInset);
       }
     } else {
       // The statusbar should be in the center of the shelf.

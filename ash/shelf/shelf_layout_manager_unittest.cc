@@ -709,14 +709,11 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
 
   // Make sure the bounds of the two widgets changed.
   launcher_bounds = shelf->GetNativeView()->bounds();
-  int bottom =
-      screen->GetPrimaryDisplay().bounds().bottom() - shelf_height;
-  EXPECT_EQ(launcher_bounds.y(),
-            bottom + (manager->GetIdealBounds().height() -
-                      launcher_bounds.height()) / 2);
+  EXPECT_LT(launcher_bounds.y(),
+            screen->GetPrimaryDisplay().bounds().bottom());
   status_bounds = shelf->status_area_widget()->GetNativeView()->bounds();
-  EXPECT_EQ(status_bounds.y(),
-            bottom + shelf_height - status_bounds.height());
+  EXPECT_LT(status_bounds.y(),
+            screen->GetPrimaryDisplay().bounds().bottom());
 }
 
 // Makes sure LayoutShelf invoked while animating cleans things up.

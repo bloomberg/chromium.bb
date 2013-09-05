@@ -195,7 +195,7 @@ TEST_F(LauncherViewIconObserverTest, BoundsChanged) {
 
 class LauncherViewTest : public AshTestBase {
  public:
-  LauncherViewTest() : model_(NULL), launcher_view_(NULL) {}
+  LauncherViewTest() : model_(NULL), launcher_view_(NULL), browser_index_(1) {}
   virtual ~LauncherViewTest() {}
 
   virtual void SetUp() OVERRIDE {
@@ -213,7 +213,7 @@ class LauncherViewTest : public AshTestBase {
 
     // Add browser shortcut launcher item at index 0 for test.
     AddBrowserShortcut();
- }
+  }
 
   virtual void TearDown() OVERRIDE {
     test_api_.reset();
@@ -226,7 +226,7 @@ class LauncherViewTest : public AshTestBase {
     browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
 
     LauncherID id = model_->next_id();
-    model_->AddAt(0, browser_shortcut);
+    model_->AddAt(browser_index_, browser_shortcut);
     test_api_->RunMessageLoopUntilAnimationsDone();
     return id;
   }
@@ -366,9 +366,9 @@ class LauncherViewTest : public AshTestBase {
     // Add 5 app launcher buttons for testing.
     for (int i = 0; i < 5; ++i) {
       LauncherID id = AddAppShortcut();
-      // browser shortcut is located at index 0. So we should start to add app
-      // shortcut at index 1.
-      id_map->insert(id_map->begin() + (i + 1),
+      // App Icon is located at index 0, and browser shortcut is located at
+      // index 1. So we should start to add app shortcut at index 2.
+      id_map->insert(id_map->begin() + (i + browser_index_ + 1),
                      std::make_pair(id, GetButtonByID(id)));
     }
     ASSERT_NO_FATAL_FAILURE(CheckModelIDs(*id_map));
@@ -384,11 +384,30 @@ class LauncherViewTest : public AshTestBase {
 
   LauncherModel* model_;
   internal::LauncherView* launcher_view_;
+  int browser_index_;
 
   scoped_ptr<LauncherViewTestAPI> test_api_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LauncherViewTest);
+};
+
+class LauncherViewLegacyShelfLayoutTest : public LauncherViewTest {
+ public:
+  LauncherViewLegacyShelfLayoutTest() : LauncherViewTest() {
+    browser_index_ = 0;
+  }
+
+  virtual ~LauncherViewLegacyShelfLayoutTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshDisableAlternateShelfLayout);
+    LauncherViewTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LauncherViewLegacyShelfLayoutTest);
 };
 
 class LauncherViewTextDirectionTest
@@ -515,6 +534,30 @@ TEST_F(LauncherViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
     ASSERT_LT(items_added, 10000);
   }
 
+  // And the platform app button is invisible.
+  EXPECT_FALSE(GetButtonByID(browser_button_id)->visible());
+}
+
+TEST_F(LauncherViewLegacyShelfLayoutTest,
+       AddAppShortcutWithBrowserButtonUntilOverflow) {
+  // All buttons should be visible.
+  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
+            test_api_->GetButtonCount());
+
+  LauncherID browser_button_id = AddPlatformApp();
+
+  // Add app shortcut until overflow.
+  int items_added = 0;
+  LauncherID last_added = AddAppShortcut();
+  while (!test_api_->IsOverflowButtonVisible()) {
+    // Added button is visible after animation while in this loop.
+    EXPECT_TRUE(GetButtonByID(last_added)->visible());
+
+    last_added = AddAppShortcut();
+    ++items_added;
+    ASSERT_LT(items_added, 10000);
+  }
+
   // The last added app short button should be visible.
   EXPECT_TRUE(GetButtonByID(last_added)->visible());
   // And the platform app button is invisible.
@@ -522,6 +565,33 @@ TEST_F(LauncherViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
 }
 
 TEST_F(LauncherViewTest, AddPanelHidesPlatformAppButton) {
+  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
+            test_api_->GetButtonCount());
+
+  // Add platform app button until overflow, remember last visible platform app
+  // button.
+  int items_added = 0;
+  LauncherID first_added = AddPlatformApp();
+  EXPECT_TRUE(GetButtonByID(first_added)->visible());
+  while (true) {
+    LauncherID added = AddPlatformApp();
+    if (test_api_->IsOverflowButtonVisible()) {
+      EXPECT_FALSE(GetButtonByID(added)->visible());
+      RemoveByID(added);
+      break;
+    }
+    ++items_added;
+    ASSERT_LT(items_added, 10000);
+  }
+
+  LauncherID panel = AddPanel();
+  EXPECT_TRUE(test_api_->IsOverflowButtonVisible());
+
+  RemoveByID(panel);
+  EXPECT_FALSE(test_api_->IsOverflowButtonVisible());
+}
+
+TEST_F(LauncherViewLegacyShelfLayoutTest, AddPanelHidesPlatformAppButton) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
@@ -681,6 +751,73 @@ TEST_F(LauncherViewTest, ModelChangesWhileDragging) {
   std::vector<std::pair<LauncherID, views::View*> > id_map;
   SetupForDragTest(&id_map);
 
+  // Dragging browser shortcut at index 1.
+  EXPECT_TRUE(model_->items()[1].type == TYPE_BROWSER_SHORTCUT);
+  views::View* dragged_button = SimulateDrag(
+      internal::LauncherButtonHost::MOUSE, 1, 3);
+  std::rotate(id_map.begin() + 1,
+              id_map.begin() + 2,
+              id_map.begin() + 4);
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+  button_host->PointerReleasedOnButton(dragged_button,
+                                       internal::LauncherButtonHost::MOUSE,
+                                       false);
+  EXPECT_TRUE(model_->items()[3].type == TYPE_BROWSER_SHORTCUT);
+
+  // Dragging changes model order.
+  dragged_button = SimulateDrag(
+      internal::LauncherButtonHost::MOUSE, 1, 3);
+  std::rotate(id_map.begin() + 1,
+              id_map.begin() + 2,
+              id_map.begin() + 4);
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+
+  // Cancelling the drag operation restores previous order.
+  button_host->PointerReleasedOnButton(dragged_button,
+                                       internal::LauncherButtonHost::MOUSE,
+                                       true);
+  std::rotate(id_map.begin() + 1,
+              id_map.begin() + 3,
+              id_map.begin() + 4);
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+
+  // Deleting an item keeps the remaining intact.
+  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 1, 3);
+  model_->RemoveItemAt(1);
+  id_map.erase(id_map.begin() + 1);
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+  button_host->PointerReleasedOnButton(dragged_button,
+                                       internal::LauncherButtonHost::MOUSE,
+                                       false);
+
+  // Adding a launcher item cancels the drag and respects the order.
+  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 1, 3);
+  LauncherID new_id = AddAppShortcut();
+  id_map.insert(id_map.begin() + 6,
+                std::make_pair(new_id, GetButtonByID(new_id)));
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+  button_host->PointerReleasedOnButton(dragged_button,
+                                       internal::LauncherButtonHost::MOUSE,
+                                       false);
+
+  // Adding a launcher item at the end (i.e. a panel)  canels drag and respects
+  // the order.
+  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 1, 3);
+  new_id = AddPanel();
+  id_map.insert(id_map.begin() + 7,
+                std::make_pair(new_id, GetButtonByID(new_id)));
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+  button_host->PointerReleasedOnButton(dragged_button,
+                                       internal::LauncherButtonHost::MOUSE,
+                                       false);
+}
+
+TEST_F(LauncherViewLegacyShelfLayoutTest, ModelChangesWhileDragging) {
+  internal::LauncherButtonHost* button_host = launcher_view_;
+
+  std::vector<std::pair<LauncherID, views::View*> > id_map;
+  SetupForDragTest(&id_map);
+
   // Dragging browser shortcut at index 0.
   EXPECT_TRUE(model_->items()[0].type == TYPE_BROWSER_SHORTCUT);
   views::View* dragged_button = SimulateDrag(
@@ -751,14 +888,14 @@ TEST_F(LauncherViewTest, SimultaneousDrag) {
 
   // Start a mouse drag.
   views::View* dragged_button_mouse = SimulateDrag(
-      internal::LauncherButtonHost::MOUSE, 0, 2);
-  std::rotate(id_map.begin(),
-              id_map.begin() + 1,
-              id_map.begin() + 3);
+      internal::LauncherButtonHost::MOUSE, 1, 3);
+  std::rotate(id_map.begin() + 1,
+              id_map.begin() + 2,
+              id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   // Attempt a touch drag before the mouse drag finishes.
   views::View* dragged_button_touch = SimulateDrag(
-      internal::LauncherButtonHost::TOUCH, 3, 1);
+      internal::LauncherButtonHost::TOUCH, 4, 2);
 
   // Nothing changes since 2nd drag is ignored.
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
@@ -771,15 +908,15 @@ TEST_F(LauncherViewTest, SimultaneousDrag) {
 
   // Now start a touch drag.
   dragged_button_touch = SimulateDrag(
-      internal::LauncherButtonHost::TOUCH, 3, 1);
-  std::rotate(id_map.begin() + 2,
-              id_map.begin() + 3,
-              id_map.begin() + 4);
+      internal::LauncherButtonHost::TOUCH, 4, 2);
+  std::rotate(id_map.begin() + 3,
+              id_map.begin() + 4,
+              id_map.begin() + 5);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // And attempt a mouse drag before the touch drag finishes.
   dragged_button_mouse = SimulateDrag(
-      internal::LauncherButtonHost::MOUSE, 0, 1);
+      internal::LauncherButtonHost::MOUSE, 1, 2);
 
   // Nothing changes since 2nd drag is ignored.
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
@@ -802,17 +939,17 @@ TEST_F(LauncherViewTest, ClickOneDragAnother) {
   SimulateClick(internal::LauncherButtonHost::MOUSE, 1);
 
   // Dragging browser index at 0 should change the model order correctly.
-  EXPECT_TRUE(model_->items()[0].type == TYPE_BROWSER_SHORTCUT);
+  EXPECT_TRUE(model_->items()[1].type == TYPE_BROWSER_SHORTCUT);
   views::View* dragged_button = SimulateDrag(
-      internal::LauncherButtonHost::MOUSE, 0, 2);
-  std::rotate(id_map.begin(),
-              id_map.begin() + 1,
-              id_map.begin() + 3);
+      internal::LauncherButtonHost::MOUSE, 1, 3);
+  std::rotate(id_map.begin() + 1,
+              id_map.begin() + 2,
+              id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
                                        internal::LauncherButtonHost::MOUSE,
                                        false);
-  EXPECT_TRUE(model_->items()[2].type == TYPE_BROWSER_SHORTCUT);
+  EXPECT_TRUE(model_->items()[3].type == TYPE_BROWSER_SHORTCUT);
 }
 
 // Confirm that item status changes are reflected in the buttons.
@@ -834,7 +971,8 @@ TEST_F(LauncherViewTest, LauncherItemStatus) {
   ASSERT_EQ(internal::LauncherButton::STATE_ATTENTION, button->state());
 }
 
-TEST_F(LauncherViewTest, LauncherItemPositionReflectedOnStateChanged) {
+TEST_F(LauncherViewLegacyShelfLayoutTest,
+       LauncherItemPositionReflectedOnStateChanged) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
@@ -864,19 +1002,6 @@ TEST_F(LauncherViewTest, LauncherItemPositionReflectedOnStateChanged) {
   ASSERT_NE(item1_button->GetIconBounds().y(),
             item2_button->GetIconBounds().y());
   item1_button->ClearState(internal::LauncherButton::STATE_HOVERED);
-
-  // Enable the alternate shelf layout.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      ash::switches::kAshUseAlternateShelfLayout);
-  launcher_view_->Layout();
-
-  // Since default alignment in tests is bottom, state is reflected in y-axis.
-  // In alternate shelf layout there is no visible hovered state.
-  ASSERT_EQ(item1_button->GetIconBounds().y(),
-            item2_button->GetIconBounds().y());
-  item1_button->AddState(internal::LauncherButton::STATE_HOVERED);
-  ASSERT_EQ(item1_button->GetIconBounds().y(),
-            item2_button->GetIconBounds().y());
 }
 
 // Confirm that item status changes are reflected in the buttons
@@ -1052,13 +1177,13 @@ TEST_F(LauncherViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
 
   // Move the mouse cursor slightly to the right of the item. The tooltip should
   // stay open.
-  generator.MoveMouseBy(-(bounds.width() / 2 + 5), 0);
+  generator.MoveMouseBy(bounds.width() / 2 + 5, 0);
   // Make sure there is no delayed close.
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(tooltip_manager->IsVisible());
 
   // Move back - it should still stay open.
-  generator.MoveMouseBy(bounds.width() / 2 + 5, 0);
+  generator.MoveMouseBy(-(bounds.width() / 2 + 5), 0);
   // Make sure there is no delayed close.
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(tooltip_manager->IsVisible());
@@ -1110,7 +1235,7 @@ TEST_F(LauncherViewTest, ResizeDuringOverflowAddAnimation) {
 
 // Check that the first item in the list follows Fitt's law by including the
 // first pixel and being therefore bigger then the others.
-TEST_F(LauncherViewTest, CheckFittsLaw) {
+TEST_F(LauncherViewLegacyShelfLayoutTest, CheckFittsLaw) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());

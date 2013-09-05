@@ -805,7 +805,7 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
 
   // Create Space for the overflow button
   if (show_overflow && ash::switches::UseAlternateShelfLayout() &&
-      last_visible_index_ > 0)
+      last_visible_index_ > 0 && last_visible_index_ < last_button_index)
     --last_visible_index_;
   for (int i = 0; i < view_model_->view_size(); ++i) {
     bool visible = i <= last_visible_index_ || i > last_hidden_index_;
@@ -821,7 +821,8 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     if (last_visible_index_ == -1) {
       x = shelf->SelectValueForShelfAlignment(inset, 0, 0, inset);
       y = shelf->SelectValueForShelfAlignment(0, inset, inset, 0);
-    } else if (last_visible_index_ == last_button_index) {
+    } else if (last_visible_index_ == last_button_index
+        && !ash::switches::UseAlternateShelfLayout()) {
       x = view_model_->ideal_bounds(last_visible_index_).x();
       y = view_model_->ideal_bounds(last_visible_index_).y();
     } else {

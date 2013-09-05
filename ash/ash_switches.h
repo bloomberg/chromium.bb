@@ -26,6 +26,7 @@ ASH_EXPORT extern const char kAshDefaultGuestWallpaperLarge[];
 ASH_EXPORT extern const char kAshDefaultGuestWallpaperSmall[];
 ASH_EXPORT extern const char kAshDefaultWallpaperLarge[];
 ASH_EXPORT extern const char kAshDefaultWallpaperSmall[];
+ASH_EXPORT extern const char kAshDisableAlternateShelfLayout[];
 #if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshDisableAudioDeviceMenu[];
 #endif

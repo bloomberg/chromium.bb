@@ -923,7 +923,8 @@ const Experiment kExperiments[] = {
       IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_NAME,
       IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_DESCRIPTION,
       kOsCrOS,
-      SINGLE_VALUE_TYPE(ash::switches::kAshUseAlternateShelfLayout)
+      ENABLE_DISABLE_VALUE_TYPE(ash::switches::kAshUseAlternateShelfLayout,
+                                ash::switches::kAshDisableAlternateShelfLayout)
   },
   {
       "ash-disable-drag-off-shelf",

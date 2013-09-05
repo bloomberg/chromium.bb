@@ -72,19 +72,19 @@ TEST_F(ShelfWidgetTest, TestAlignment) {
     SCOPED_TRACE("Single Bottom");
     TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
                           SHELF_ALIGNMENT_BOTTOM,
-                          "0,0 400x352");
+                          "0,0 400x353");
   }
   {
     SCOPED_TRACE("Single Right");
     TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
                           SHELF_ALIGNMENT_RIGHT,
-                          "0,0 352x400");
+                          "0,0 353x400");
   }
   {
     SCOPED_TRACE("Single Left");
     TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
                           SHELF_ALIGNMENT_LEFT,
-                          "48,0 352x400");
+                          "47,0 353x400");
   }
   if (!SupportsMultipleDisplays())
     return;
@@ -95,37 +95,37 @@ TEST_F(ShelfWidgetTest, TestAlignment) {
     SCOPED_TRACE("Primary Bottom");
     TestLauncherAlignment(root_windows[0],
                           SHELF_ALIGNMENT_BOTTOM,
-                          "0,0 300x252");
+                          "0,0 300x253");
   }
   {
     SCOPED_TRACE("Primary Right");
     TestLauncherAlignment(root_windows[0],
                           SHELF_ALIGNMENT_RIGHT,
-                          "0,0 252x300");
+                          "0,0 253x300");
   }
   {
     SCOPED_TRACE("Primary Left");
     TestLauncherAlignment(root_windows[0],
                           SHELF_ALIGNMENT_LEFT,
-                          "48,0 252x300");
+                          "47,0 253x300");
   }
   {
     SCOPED_TRACE("Secondary Bottom");
     TestLauncherAlignment(root_windows[1],
                           SHELF_ALIGNMENT_BOTTOM,
-                          "300,0 500x452");
+                          "300,0 500x453");
   }
   {
     SCOPED_TRACE("Secondary Right");
     TestLauncherAlignment(root_windows[1],
                           SHELF_ALIGNMENT_RIGHT,
-                          "300,0 452x500");
+                          "300,0 453x500");
   }
   {
     SCOPED_TRACE("Secondary Left");
     TestLauncherAlignment(root_windows[1],
                           SHELF_ALIGNMENT_LEFT,
-                          "348,0 452x500");
+                          "347,0 453x500");
   }
 }
 

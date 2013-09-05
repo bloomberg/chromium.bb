@@ -138,7 +138,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   // is inside 2nd display.
   wm::MaximizeWindow(window.get());
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_EQ("300,0 400x452", window->GetBoundsInScreen().ToString());
+  EXPECT_EQ("300,0 400x453", window->GetBoundsInScreen().ToString());
 
   wm::RestoreWindow(window.get());
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
@@ -149,7 +149,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   SetRestoreBoundsInScreen(window.get(), gfx::Rect(280, 0, 30, 40));
   wm::MaximizeWindow(window.get());
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_EQ("300,0 400x452", window->GetBoundsInScreen().ToString());
+  EXPECT_EQ("300,0 400x453", window->GetBoundsInScreen().ToString());
 
   wm::RestoreWindow(window.get());
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
@@ -165,7 +165,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   w1->Show();
   EXPECT_TRUE(w1->IsMaximized());
   EXPECT_EQ(root_windows[1], w1->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("300,0 400x452", w1->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("300,0 400x453", w1->GetWindowBoundsInScreen().ToString());
   w1->Restore();
   EXPECT_EQ(root_windows[1], w1->GetNativeView()->GetRootWindow());
   EXPECT_EQ("400,0 30x40", w1->GetWindowBoundsInScreen().ToString());

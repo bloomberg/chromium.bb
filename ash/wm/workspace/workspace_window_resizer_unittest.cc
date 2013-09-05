@@ -1171,11 +1171,11 @@ TEST_F(WorkspaceWindowResizerTest, TestProperSizerResolutions) {
   shelf_layout_manager()->SetAutoHideBehavior(
       SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   rect = resizer->GetTargetBoundsForSize(0);
-  EXPECT_EQ("0,0 720x552", rect.ToString());
+  EXPECT_EQ("0,0 720x553", rect.ToString());
   rect = resizer->GetTargetBoundsForSize(1);
-  EXPECT_EQ("0,0 640x552", rect.ToString());
+  EXPECT_EQ("0,0 640x553", rect.ToString());
   rect = resizer->GetTargetBoundsForSize(2);
-  EXPECT_EQ("0,0 400x552", rect.ToString());
+  EXPECT_EQ("0,0 400x553", rect.ToString());
 }
 
 // Verifies that a dragged window will restore to its pre-maximized size.
