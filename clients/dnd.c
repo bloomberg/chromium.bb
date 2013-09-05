@@ -81,6 +81,8 @@ static const int item_width = 64;
 static const int item_height = 64;
 static const int item_padding = 16;
 
+static const char flower_mime_type[] = "application/x-wayland-dnd-flower";
+
 static struct item *
 item_create(struct display *display, int x, int y, int seed)
 {
@@ -495,14 +497,18 @@ dnd_data_handler(struct window *window,
 		 float x, float y, const char **types, void *data)
 {
 	struct dnd *dnd = data;
+	int i, has_flower = 0;
 
 	if (!types)
 		return;
+	for (i = 0; types[i]; i++)
+		if (strcmp(types[i], flower_mime_type) == 0)
+			has_flower = 1;
 
-	if (dnd_get_item(dnd, x, y) || dnd->self_only) {
+	if (dnd_get_item(dnd, x, y) || dnd->self_only || !has_flower) {
 		input_accept(input, NULL);
 	} else {
-		input_accept(input, types[0]);
+		input_accept(input, flower_mime_type);
 	}
 }
 
@@ -546,7 +552,7 @@ dnd_drop_handler(struct window *window, struct input *input,
 
 	if (!dnd->self_only) {
 		input_receive_drag_data(input,
-					"application/x-wayland-dnd-flower",
+					flower_mime_type,
 					dnd_receive_func, dnd);
 	} else if (dnd->current_drag) {
 		message.seed = dnd->current_drag->item->seed;
