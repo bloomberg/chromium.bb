@@ -1195,6 +1195,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   cc::ResourceProvider::ResourceId mask =
   resource_provider_->CreateResource(gfx::Size(20, 12),
                                      resource_provider_->best_texture_format(),
+                                     GL_CLAMP_TO_EDGE,
                                      ResourceProvider::TextureUsageAny);
   resource_provider_->AllocateForTesting(mask);
 

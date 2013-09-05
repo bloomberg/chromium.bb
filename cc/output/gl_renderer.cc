@@ -1706,6 +1706,7 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
         quad->texture_size,
         GL_RGBA,
         GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
+        GL_CLAMP_TO_EDGE,
         ResourceProvider::TextureUsageAny);
   }
 

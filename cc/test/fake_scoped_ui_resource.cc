@@ -16,7 +16,10 @@ scoped_ptr<FakeScopedUIResource> FakeScopedUIResource::Create(
 FakeScopedUIResource::FakeScopedUIResource(LayerTreeHost* host) {
   ResetCounters();
   bitmap_ = UIResourceBitmap::Create(
-      new uint8_t[1], UIResourceBitmap::RGBA8, gfx::Size(1, 1));
+      new uint8_t[1],
+      UIResourceBitmap::RGBA8,
+      UIResourceBitmap::CLAMP_TO_EDGE,
+      gfx::Size(1, 1));
   host_ = host;
   id_ = host_->CreateUIResource(this);
 }

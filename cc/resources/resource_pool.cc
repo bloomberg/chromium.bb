@@ -14,6 +14,7 @@ ResourcePool::Resource::Resource(cc::ResourceProvider* resource_provider,
     : cc::Resource(resource_provider->CreateManagedResource(
                        size,
                        format,
+                       GL_CLAMP_TO_EDGE,
                        ResourceProvider::TextureUsageAny),
                    size,
                    format),

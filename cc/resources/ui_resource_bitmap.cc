@@ -11,10 +11,12 @@ namespace cc {
 scoped_refptr<UIResourceBitmap>
 UIResourceBitmap::Create(uint8_t* pixels,
                          UIResourceFormat format,
+                         UIResourceWrapMode wrap_mode,
                          gfx::Size size) {
   scoped_refptr<UIResourceBitmap> ret = new UIResourceBitmap();
   ret->pixels_ = scoped_ptr<uint8_t[]>(pixels);
   ret->format_ = format;
+  ret->wrap_mode_ = wrap_mode;
   ret->size_ = size;
 
   return ret;

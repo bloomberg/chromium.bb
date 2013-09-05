@@ -455,7 +455,7 @@ PrioritizedResource::Backing* PrioritizedResourceManager::CreateBacking(
   DCHECK(resource_provider);
   ResourceProvider::ResourceId resource_id =
       resource_provider->CreateManagedResource(
-          size, format, ResourceProvider::TextureUsageAny);
+          size, format, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny);
   PrioritizedResource::Backing* backing = new PrioritizedResource::Backing(
       resource_id, resource_provider, size, format);
   memory_use_bytes_ += backing->bytes();

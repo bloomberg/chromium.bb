@@ -640,6 +640,7 @@ void LayerTreeHost::SetOverhangBitmap(const SkBitmap& bitmap) {
   scoped_refptr<UIResourceBitmap> overhang_ui_bitmap(UIResourceBitmap::Create(
       new uint8_t[bitmap.width() * bitmap.height() * bitmap.bytesPerPixel()],
       UIResourceBitmap::RGBA8,
+      UIResourceBitmap::REPEAT,
       gfx::Size(bitmap.width(), bitmap.height())));
   bitmap.copyPixelsTo(
       overhang_ui_bitmap->GetPixels(),

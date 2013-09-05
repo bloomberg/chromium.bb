@@ -22,7 +22,8 @@ bool ScopedResource::Allocate(gfx::Size size,
   DCHECK(!size.IsEmpty());
 
   set_dimensions(size, format);
-  set_id(resource_provider_->CreateResource(size, format, hint));
+  set_id(resource_provider_->CreateResource(
+      size, format, GL_CLAMP_TO_EDGE, hint));
 
 #ifndef NDEBUG
   allocate_thread_id_ = base::PlatformThread::CurrentId();

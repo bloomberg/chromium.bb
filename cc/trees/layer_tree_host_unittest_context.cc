@@ -1265,6 +1265,7 @@ class LayerTreeHostContextTestDontUseLostResources
       ResourceProvider::ResourceId texture = resource_provider->CreateResource(
           gfx::Size(4, 4),
           resource_provider->default_resource_type(),
+          GL_CLAMP_TO_EDGE,
           ResourceProvider::TextureUsageAny);
       ResourceProvider::ScopedWriteLockGL lock(resource_provider, texture);
 

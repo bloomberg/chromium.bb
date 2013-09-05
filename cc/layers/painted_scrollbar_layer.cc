@@ -218,6 +218,7 @@ scoped_refptr<UIResourceBitmap> PaintedScrollbarLayer::RasterizeScrollbarPart(
   scoped_refptr<UIResourceBitmap> bitmap =
       UIResourceBitmap::Create(new uint8_t[rect.width() * rect.height() * 4],
                                UIResourceBitmap::RGBA8,
+                               UIResourceBitmap::CLAMP_TO_EDGE,
                                rect.size());
 
   SkBitmap skbitmap;

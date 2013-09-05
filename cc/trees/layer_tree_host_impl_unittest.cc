@@ -1509,6 +1509,7 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
       ResourceProvider::ResourceId resource =
           resource_provider->CreateResource(gfx::Size(1, 1),
                                             GL_RGBA,
+                                            GL_CLAMP_TO_EDGE,
                                             ResourceProvider::TextureUsageAny);
       resource_provider->AllocateForTesting(resource);
       PushTileProperties(0, 0, resource, gfx::Rect(), false);
@@ -2600,6 +2601,7 @@ class BlendStateCheckLayer : public LayerImpl {
         resource_id_(resource_provider->CreateResource(
             gfx::Size(1, 1),
             GL_RGBA,
+            GL_CLAMP_TO_EDGE,
             ResourceProvider::TextureUsageAny)) {
     resource_provider->AllocateForTesting(resource_id_);
     SetAnchorPoint(gfx::PointF());
@@ -3054,7 +3056,10 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCoveredOverhangBitmap) {
 
   // Specify an overhang bitmap to use.
   scoped_refptr<UIResourceBitmap> ui_resource_bitmap(UIResourceBitmap::Create(
-      new uint8_t[4], UIResourceBitmap::RGBA8, gfx::Size(1, 1)));
+      new uint8_t[4],
+      UIResourceBitmap::RGBA8,
+      UIResourceBitmap::REPEAT,
+      gfx::Size(1, 1)));
   UIResourceId ui_resource_id = 12345;
   host_impl_->CreateUIResource(ui_resource_id, ui_resource_bitmap);
   host_impl_->SetOverhangUIResource(ui_resource_id, gfx::Size(32, 32));
@@ -6439,7 +6444,10 @@ TEST_F(LayerTreeHostImplTest, UIResourceManagement) {
 
   UIResourceId ui_resource_id = 1;
   scoped_refptr<UIResourceBitmap> bitmap = UIResourceBitmap::Create(
-      new uint8_t[1], UIResourceBitmap::RGBA8, gfx::Size(1, 1));
+      new uint8_t[1],
+      UIResourceBitmap::RGBA8,
+      UIResourceBitmap::CLAMP_TO_EDGE,
+      gfx::Size(1, 1));
   host_impl_->CreateUIResource(ui_resource_id, bitmap);
   EXPECT_EQ(1u, context3d->NumTextures());
   ResourceProvider::ResourceId id1 =

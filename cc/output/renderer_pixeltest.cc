@@ -112,7 +112,8 @@ scoped_ptr<TextureDrawQuad> CreateTestTextureDrawQuad(
   std::vector<uint32_t> pixels(rect.size().GetArea(), pixel_color);
 
   ResourceProvider::ResourceId resource = resource_provider->CreateResource(
-      rect.size(), GL_RGBA, ResourceProvider::TextureUsageAny);
+      rect.size(), GL_RGBA, GL_CLAMP_TO_EDGE,
+      ResourceProvider::TextureUsageAny);
   resource_provider->SetPixels(
       resource,
       reinterpret_cast<uint8_t*>(&pixels.front()),
@@ -409,22 +410,26 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
         resource_provider_->CreateResource(
             this->device_viewport_size_,
             GL_LUMINANCE,
+            GL_CLAMP_TO_EDGE,
             ResourceProvider::TextureUsageAny);
     ResourceProvider::ResourceId u_resource =
         resource_provider_->CreateResource(
             this->device_viewport_size_,
             GL_LUMINANCE,
+            GL_CLAMP_TO_EDGE,
             ResourceProvider::TextureUsageAny);
     ResourceProvider::ResourceId v_resource =
         resource_provider_->CreateResource(
             this->device_viewport_size_,
             GL_LUMINANCE,
+            GL_CLAMP_TO_EDGE,
             ResourceProvider::TextureUsageAny);
     ResourceProvider::ResourceId a_resource = 0;
     if (with_alpha) {
       a_resource = resource_provider_->CreateResource(
                        this->device_viewport_size_,
                        GL_LUMINANCE,
+                       GL_CLAMP_TO_EDGE,
                        ResourceProvider::TextureUsageAny);
     }
 

@@ -22,14 +22,20 @@ class CC_EXPORT UIResourceBitmap
   enum UIResourceFormat {
     RGBA8
   };
+  enum UIResourceWrapMode {
+    CLAMP_TO_EDGE,
+    REPEAT
+  };
 
   // Takes ownership of “pixels”.
   static scoped_refptr<UIResourceBitmap> Create(uint8_t* pixels,
                                                 UIResourceFormat format,
+                                                UIResourceWrapMode wrap_mode,
                                                 gfx::Size size);
 
   gfx::Size GetSize() const { return size_; }
   UIResourceFormat GetFormat() const { return format_; }
+  UIResourceWrapMode GetWrapMode() const { return wrap_mode_; }
   uint8_t* GetPixels() { return pixels_.get(); }
 
  private:
@@ -40,6 +46,7 @@ class CC_EXPORT UIResourceBitmap
 
   scoped_ptr<uint8_t[]> pixels_;
   UIResourceFormat format_;
+  UIResourceWrapMode wrap_mode_;
   gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(UIResourceBitmap);

@@ -195,6 +195,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       resource_id =
           resource_provider_->CreateResource(output_plane_resource_size,
                                              output_resource_format,
+                                             GL_CLAMP_TO_EDGE,
                                              ResourceProvider::TextureUsageAny);
 
       DCHECK(mailbox.IsZero());

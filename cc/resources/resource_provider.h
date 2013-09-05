@@ -79,18 +79,21 @@ class CC_EXPORT ResourceProvider {
   // Creates a resource of the default resource type.
   ResourceId CreateResource(gfx::Size size,
                             GLenum format,
+                            GLint wrap_mode,
                             TextureUsageHint hint);
 
   // Creates a resource which is tagged as being managed for GPU memory
   // accounting purposes.
   ResourceId CreateManagedResource(gfx::Size size,
                                    GLenum format,
+                                   GLint wrap_mode,
                                    TextureUsageHint hint);
 
   // You can also explicitly create a specific resource type.
   ResourceId CreateGLTexture(gfx::Size size,
                              GLenum format,
                              GLenum texture_pool,
+                             GLint wrap_mode,
                              TextureUsageHint hint);
 
   ResourceId CreateBitmap(gfx::Size size);
@@ -310,6 +313,8 @@ class CC_EXPORT ResourceProvider {
   // For tests only!
   void CreateForTesting(ResourceId id);
 
+  GLint WrapModeForTesting(ResourceId id);
+
   // Sets the current read fence. If a resource is locked for read
   // and has read fences enabled, the resource will not allow writes
   // until this fence has passed.
@@ -335,8 +340,13 @@ class CC_EXPORT ResourceProvider {
              GLenum format,
              GLenum filter,
              GLenum texture_pool,
+             GLint wrap_mode,
              TextureUsageHint hint);
-    Resource(uint8_t* pixels, gfx::Size size, GLenum format, GLenum filter);
+    Resource(uint8_t* pixels,
+             gfx::Size size,
+             GLenum format,
+             GLenum filter,
+             GLint wrap_mode);
 
     unsigned gl_id;
     // Pixel buffer used for set pixels without unnecessary copying.
@@ -363,6 +373,7 @@ class CC_EXPORT ResourceProvider {
     GLenum filter;
     unsigned image_id;
     GLenum texture_pool;
+    GLint wrap_mode;
     TextureUsageHint hint;
     ResourceType type;
   };

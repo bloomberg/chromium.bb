@@ -2601,6 +2601,16 @@ void LayerTreeHostImpl::CreateUIResource(
   DCHECK_GT(uid, 0);
   DCHECK_EQ(bitmap->GetFormat(), UIResourceBitmap::RGBA8);
 
+  GLint wrap_mode = 0;
+  switch (bitmap->GetWrapMode()) {
+    case UIResourceBitmap::CLAMP_TO_EDGE:
+      wrap_mode = GL_CLAMP_TO_EDGE;
+      break;
+    case UIResourceBitmap::REPEAT:
+      wrap_mode = GL_REPEAT;
+      break;
+  }
+
   // Allow for multiple creation requests with the same UIResourceId.  The
   // previous resource is simply deleted.
   ResourceProvider::ResourceId id = ResourceIdForUIResource(uid);
@@ -2609,6 +2619,7 @@ void LayerTreeHostImpl::CreateUIResource(
   id = resource_provider_->CreateResource(
       bitmap->GetSize(),
       resource_provider_->best_texture_format(),
+      wrap_mode,
       ResourceProvider::TextureUsageAny);
 
   ui_resource_map_[uid] = id;

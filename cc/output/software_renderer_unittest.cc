@@ -146,10 +146,12 @@ TEST_F(SoftwareRendererTest, TileQuad) {
 
   ResourceProvider::ResourceId resource_yellow =
       resource_provider()->CreateResource(
-          outer_size, GL_RGBA, ResourceProvider::TextureUsageAny);
+          outer_size, GL_RGBA, GL_CLAMP_TO_EDGE,
+          ResourceProvider::TextureUsageAny);
   ResourceProvider::ResourceId resource_cyan =
       resource_provider()->CreateResource(
-          inner_size, GL_RGBA, ResourceProvider::TextureUsageAny);
+          inner_size, GL_RGBA, GL_CLAMP_TO_EDGE,
+          ResourceProvider::TextureUsageAny);
 
   SkBitmap yellow_tile;
   yellow_tile.setConfig(
@@ -232,7 +234,8 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
 
   ResourceProvider::ResourceId resource_cyan =
       resource_provider()->CreateResource(
-          tile_size, GL_RGBA, ResourceProvider::TextureUsageAny);
+          tile_size, GL_RGBA, GL_CLAMP_TO_EDGE,
+          ResourceProvider::TextureUsageAny);
 
   SkBitmap cyan_tile;  // The lowest five rows are yellow.
   cyan_tile.setConfig(
