@@ -67,6 +67,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   virtual void ReadFromDemuxerAck(const DemuxerData& data) OVERRIDE;
   virtual void DurationChanged(const base::TimeDelta& duration) OVERRIDE;
   virtual void SetDrmBridge(MediaDrmBridge* drm_bridge) OVERRIDE;
+  virtual void OnKeyAdded() OVERRIDE;
 
  private:
   // Update the current timestamp.

@@ -235,6 +235,7 @@ bool MediaDrmBridge::GenerateKeyRequest(const std::string& type,
 void MediaDrmBridge::AddKey(const uint8* key, int key_length,
                             const uint8* init_data, int init_data_length,
                             const std::string& session_id) {
+  DVLOG(1) << __FUNCTION__;
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> j_key_data =
       base::android::ToJavaByteArray(env, key, key_length);

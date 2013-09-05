@@ -474,10 +474,17 @@ void BrowserMediaPlayerManager::OnAddKey(int media_keys_id,
                                          const std::vector<uint8>& init_data,
                                          const std::string& session_id) {
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
-  if (drm_bridge) {
-    drm_bridge->AddKey(&key[0], key.size(), &init_data[0], init_data.size(),
-                       session_id);
-  }
+  if (!drm_bridge)
+    return;
+
+  drm_bridge->AddKey(&key[0], key.size(), &init_data[0], init_data.size(),
+                     session_id);
+  // In EME v0.1b MediaKeys lives in the media element. So the |media_keys_id|
+  // is the same as the |player_id|.
+  // TODO(xhwang): Separate |media_keys_id| and |player_id|.
+  MediaPlayerAndroid* player = GetPlayer(media_keys_id);
+  if (player)
+    player->OnKeyAdded();
 }
 
 void BrowserMediaPlayerManager::OnCancelKeyRequest(

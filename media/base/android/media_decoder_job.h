@@ -151,6 +151,10 @@ class MediaDecoderJob {
   // Data received over IPC from last RequestData() operation.
   DemuxerData received_data_;
 
+  // The index of input buffer that can be used by QueueInputBuffer().
+  // If the index is uninitialized or invalid, it must be -1.
+  int input_buf_index_;
+
   bool stop_decode_pending_;
 
   // Indicates that this object should be destroyed once the current

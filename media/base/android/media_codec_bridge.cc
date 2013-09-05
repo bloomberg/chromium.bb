@@ -128,23 +128,24 @@ void MediaCodecBridge::GetOutputFormat(int* width, int* height) {
   *height = Java_MediaCodecBridge_getOutputHeight(env, j_media_codec_.obj());
 }
 
-size_t MediaCodecBridge::QueueInputBuffer(
-    int index, const uint8* data, int size,
+MediaCodecStatus MediaCodecBridge::QueueInputBuffer(
+    int index, const uint8* data, int data_size,
     const base::TimeDelta& presentation_time) {
-  size_t size_to_copy = FillInputBuffer(index, data, size);
+  int size_to_copy = FillInputBuffer(index, data, data_size);
+  DCHECK_EQ(size_to_copy, data_size);
   JNIEnv* env = AttachCurrentThread();
-  Java_MediaCodecBridge_queueInputBuffer(
+  return static_cast<MediaCodecStatus>(Java_MediaCodecBridge_queueInputBuffer(
       env, j_media_codec_.obj(),
-      index, 0, size_to_copy, presentation_time.InMicroseconds(), 0);
-  return size_to_copy;
+      index, 0, size_to_copy, presentation_time.InMicroseconds(), 0));
 }
 
-size_t MediaCodecBridge::QueueSecureInputBuffer(
+MediaCodecStatus MediaCodecBridge::QueueSecureInputBuffer(
     int index, const uint8* data, int data_size, const uint8* key_id,
     int key_id_size, const uint8* iv, int iv_size,
     const SubsampleEntry* subsamples, int subsamples_size,
     const base::TimeDelta& presentation_time) {
-  size_t size_to_copy = FillInputBuffer(index, data, data_size);
+  int size_to_copy = FillInputBuffer(index, data, data_size);
+  DCHECK_EQ(size_to_copy, data_size);
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> j_key_id =
@@ -162,12 +163,11 @@ size_t MediaCodecBridge::QueueSecureInputBuffer(
   ScopedJavaLocalRef<jintArray> cypher_array = ToJavaIntArray(
       env, native_cypher_array.Pass(), subsamples_size);
 
-  Java_MediaCodecBridge_queueSecureInputBuffer(
-      env, j_media_codec_.obj(), index, 0, j_iv.obj(), j_key_id.obj(),
-      clear_array.obj(), cypher_array.obj(), subsamples_size,
-      presentation_time.InMicroseconds());
-
-  return size_to_copy;
+  return static_cast<MediaCodecStatus>(
+      Java_MediaCodecBridge_queueSecureInputBuffer(
+          env, j_media_codec_.obj(), index, 0, j_iv.obj(), j_key_id.obj(),
+          clear_array.obj(), cypher_array.obj(), subsamples_size,
+          presentation_time.InMicroseconds()));
 }
 
 void MediaCodecBridge::QueueEOS(int input_buffer_index) {
@@ -180,41 +180,21 @@ void MediaCodecBridge::QueueEOS(int input_buffer_index) {
 MediaCodecStatus MediaCodecBridge::DequeueInputBuffer(
     const base::TimeDelta& timeout, int* index) {
   JNIEnv* env = AttachCurrentThread();
-  int result = Java_MediaCodecBridge_dequeueInputBuffer(
+  ScopedJavaLocalRef<jobject> result = Java_MediaCodecBridge_dequeueInputBuffer(
       env, j_media_codec_.obj(), timeout.InMicroseconds());
-  if (result == INFO_MEDIA_CODEC_ERROR)
-    return MEDIA_CODEC_ERROR;
-  else if (result == INFO_TRY_AGAIN_LATER)
-    return MEDIA_CODEC_ENQUEUE_INPUT_AGAIN_LATER;
-
-  DCHECK_GE(result, 0);
-  *index = result;
-  return MEDIA_CODEC_OK;
+  *index = Java_DequeueInputResult_index(env, result.obj());
+  return static_cast<MediaCodecStatus>(
+      Java_DequeueInputResult_status(env, result.obj()));
 }
 
 MediaCodecStatus MediaCodecBridge::DequeueOutputBuffer(
     const base::TimeDelta& timeout, int* index, size_t* offset, size_t* size,
     base::TimeDelta* presentation_time, bool* end_of_stream) {
   JNIEnv* env = AttachCurrentThread();
-
   ScopedJavaLocalRef<jobject> result =
       Java_MediaCodecBridge_dequeueOutputBuffer(env, j_media_codec_.obj(),
                                                 timeout.InMicroseconds());
-
-  int j_index = Java_DequeueOutputResult_index(env, result.obj());
-  switch (j_index) {
-    case INFO_OUTPUT_BUFFERS_CHANGED:
-      return MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED;
-    case INFO_OUTPUT_FORMAT_CHANGED:
-      return MEDIA_CODEC_OUTPUT_FORMAT_CHANGED;
-    case INFO_TRY_AGAIN_LATER:
-      return MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER;
-    case INFO_MEDIA_CODEC_ERROR:
-      return MEDIA_CODEC_ERROR;
-  }
-
-  DCHECK_GE(j_index, 0);
-  *index = j_index;
+  *index = Java_DequeueOutputResult_index(env, result.obj());;
   *offset = base::checked_numeric_cast<size_t>(
        Java_DequeueOutputResult_offset(env, result.obj()));
   *size = base::checked_numeric_cast<size_t>(
@@ -223,7 +203,8 @@ MediaCodecStatus MediaCodecBridge::DequeueOutputBuffer(
       Java_DequeueOutputResult_presentationTimeMicroseconds(env, result.obj()));
   int flags = Java_DequeueOutputResult_flags(env, result.obj());
   *end_of_stream = flags & kBufferFlagEndOfStream;
-  return MEDIA_CODEC_OK;
+  return static_cast<MediaCodecStatus>(
+      Java_DequeueOutputResult_status(env, result.obj()));
 }
 
 void MediaCodecBridge::ReleaseOutputBuffer(int index, bool render) {
@@ -303,7 +284,7 @@ bool AudioCodecBridge::ConfigureMediaFormat(
     return true;
 
   JNIEnv* env = AttachCurrentThread();
-  switch(codec) {
+  switch (codec) {
     case kCodecVorbis:
     {
       if (extra_data[0] != 2) {

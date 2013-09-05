@@ -29,6 +29,7 @@ MediaDecoderJob::MediaDecoderJob(
       weak_this_(this),
       request_data_cb_(request_data_cb),
       access_unit_index_(0),
+      input_buf_index_(-1),
       stop_decode_pending_(false),
       destroy_pending_(false) {
 }
@@ -36,6 +37,7 @@ MediaDecoderJob::MediaDecoderJob(
 MediaDecoderJob::~MediaDecoderJob() {}
 
 void MediaDecoderJob::OnDataReceived(const DemuxerData& data) {
+  DVLOG(1) << __FUNCTION__ << ": " << data.access_units.size() << " units";
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(!on_data_received_cb_.is_null());
 
@@ -132,44 +134,59 @@ void MediaDecoderJob::Release() {
   delete this;
 }
 
-MediaCodecStatus MediaDecoderJob::QueueInputBuffer(
-    const AccessUnit& unit) {
-  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(
-      kMediaCodecTimeoutInMilliseconds);
-  int input_buf_index = 0;
-  MediaCodecStatus status =
-      media_codec_bridge_->DequeueInputBuffer(timeout, &input_buf_index);
-  if (status != MEDIA_CODEC_OK)
-    return status;
+MediaCodecStatus MediaDecoderJob::QueueInputBuffer(const AccessUnit& unit) {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(decoder_loop_->BelongsToCurrentThread());
+
+  int input_buf_index = input_buf_index_;
+  input_buf_index_ = -1;
+
+  // TODO(xhwang): Hide DequeueInputBuffer() and the index in MediaCodecBridge.
+  if (input_buf_index == -1) {
+    base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(
+        kMediaCodecTimeoutInMilliseconds);
+    MediaCodecStatus status =
+        media_codec_bridge_->DequeueInputBuffer(timeout, &input_buf_index);
+    if (status != MEDIA_CODEC_OK) {
+      DVLOG(1) << "DequeueInputBuffer fails: " << status;
+      return status;
+    }
+  }
 
   // TODO(qinmin): skip frames if video is falling far behind.
   DCHECK_GE(input_buf_index, 0);
   if (unit.end_of_stream || unit.data.empty()) {
-    media_codec_bridge_->QueueEOS(input_buf_index);
+    media_codec_bridge_->QueueEOS(input_buf_index_);
     return MEDIA_CODEC_INPUT_END_OF_STREAM;
   }
 
   if (unit.key_id.empty()) {
-    media_codec_bridge_->QueueInputBuffer(
+    return media_codec_bridge_->QueueInputBuffer(
         input_buf_index, &unit.data[0], unit.data.size(), unit.timestamp);
-    return MEDIA_CODEC_OK;
   }
 
   if (unit.iv.empty() || unit.subsamples.empty()) {
-    LOG(ERROR) << "The access unit doesn't have iv or subsamples while it "
+    DVLOG(1) << "The access unit doesn't have iv or subsamples while it "
                << "has key IDs!";
     return MEDIA_CODEC_ERROR;
   }
 
-  media_codec_bridge_->QueueSecureInputBuffer(
+  MediaCodecStatus status = media_codec_bridge_->QueueSecureInputBuffer(
       input_buf_index, &unit.data[0], unit.data.size(),
       reinterpret_cast<const uint8*>(&unit.key_id[0]), unit.key_id.size(),
       reinterpret_cast<const uint8*>(&unit.iv[0]), unit.iv.size(),
       &unit.subsamples[0], unit.subsamples.size(), unit.timestamp);
-  return MEDIA_CODEC_OK;
+
+  // In case of MEDIA_CODEC_NO_KEY, we must reuse the |input_buf_index_|.
+  // Otherwise MediaDrm will report errors.
+  if (status == MEDIA_CODEC_NO_KEY)
+    input_buf_index_ = input_buf_index;
+
+  return status;
 }
 
 void MediaDecoderJob::RequestData(const base::Closure& done_cb) {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(on_data_received_cb_.is_null());
 
@@ -201,6 +218,9 @@ void MediaDecoderJob::DecodeInternal(
     const base::TimeDelta& start_presentation_timestamp,
     bool needs_flush,
     const MediaDecoderJob::DecoderCallback& callback) {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(decoder_loop_->BelongsToCurrentThread());
+
   if (needs_flush) {
     DVLOG(1) << "DecodeInternal needs flush.";
     input_eos_encountered_ = false;
@@ -259,7 +279,7 @@ void MediaDecoderJob::DecodeInternal(
 
   // TODO(acolwell): Change to > since the else will never run for audio.
   if (time_to_render >= base::TimeDelta()) {
-    base::MessageLoop::current()->PostDelayedTask(
+    decoder_loop_->PostDelayedTask(
         FROM_HERE,
         base::Bind(&MediaDecoderJob::ReleaseOutputBuffer,
                    weak_this_.GetWeakPtr(), buffer_index, size,
@@ -289,8 +309,9 @@ void MediaDecoderJob::OnDecodeCompleted(
   DCHECK(!decode_cb_.is_null());
 
   if (status != MEDIA_CODEC_ERROR &&
-      status != MEDIA_CODEC_ENQUEUE_INPUT_AGAIN_LATER &&
+      status != MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER &&
       status != MEDIA_CODEC_INPUT_END_OF_STREAM &&
+      status != MEDIA_CODEC_NO_KEY &&
       status != MEDIA_CODEC_STOPPED) {
     access_unit_index_++;
   }

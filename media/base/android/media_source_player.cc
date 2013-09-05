@@ -4,6 +4,8 @@
 
 #include "media/base/android/media_source_player.h"
 
+#include <limits>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/barrier_closure.h"
@@ -185,6 +187,12 @@ void MediaSourcePlayer::SetVolume(double volume) {
   SetVolumeInternal();
 }
 
+void MediaSourcePlayer::OnKeyAdded() {
+  DVLOG(1) << __FUNCTION__;
+  if (playing_)
+    StartInternal();
+}
+
 bool MediaSourcePlayer::CanPause() {
   return Seekable();
 }
@@ -210,7 +218,6 @@ void MediaSourcePlayer::StartInternal() {
   // Create decoder jobs if they are not created
   ConfigureAudioDecoderJob();
   ConfigureVideoDecoderJob();
-
 
   // If one of the decoder job is not ready, do nothing.
   if ((HasAudio() && !audio_decoder_job_) ||
@@ -346,12 +353,15 @@ void MediaSourcePlayer::UpdateTimestamps(
 }
 
 void MediaSourcePlayer::ProcessPendingEvents() {
-  DVLOG(1) << __FUNCTION__ << " : 0x"
-           << std::hex << pending_event_;
+  DVLOG(1) << __FUNCTION__ << " : 0x" << std::hex << pending_event_;
   // Wait for all the decoding jobs to finish before processing pending tasks.
-  if ((audio_decoder_job_ && audio_decoder_job_->is_decoding()) ||
-      (video_decoder_job_ && video_decoder_job_->is_decoding())) {
-    DVLOG(1) << __FUNCTION__ << " : A job is still decoding.";
+  if (video_decoder_job_ && video_decoder_job_->is_decoding()) {
+    DVLOG(1) << __FUNCTION__ << " : A video job is still decoding.";
+    return;
+  }
+
+  if (audio_decoder_job_ && audio_decoder_job_->is_decoding()) {
+    DVLOG(1) << __FUNCTION__ << " : An audio job is still decoding.";
     return;
   }
 
@@ -412,7 +422,7 @@ void MediaSourcePlayer::ProcessPendingEvents() {
 void MediaSourcePlayer::MediaDecoderCallback(
     bool is_audio, MediaCodecStatus status,
     const base::TimeDelta& presentation_timestamp, size_t audio_output_bytes) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__ << ": " << is_audio << ", " << status;
   if (is_audio)
     decoder_starvation_callback_.Cancel();
 
@@ -442,6 +452,9 @@ void MediaSourcePlayer::MediaDecoderCallback(
     return;
   }
 
+  if (status == MEDIA_CODEC_NO_KEY)
+    return;
+
   base::TimeDelta current_timestamp = GetCurrentTime();
   if (is_audio) {
     if (status == MEDIA_CODEC_OK) {
@@ -449,7 +462,7 @@ void MediaSourcePlayer::MediaDecoderCallback(
           audio_timestamp_helper_->GetTimestamp() - current_timestamp;
       StartStarvationCallback(timeout);
     }
-      DecodeMoreAudio();
+    DecodeMoreAudio();
     return;
   }
 

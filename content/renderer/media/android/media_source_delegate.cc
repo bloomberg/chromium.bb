@@ -4,6 +4,10 @@
 
 #include "content/renderer/media/android/media_source_delegate.h"
 
+#include <limits>
+#include <string>
+#include <vector>
+
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/renderer/media/android/webmediaplayer_proxy_android.h"
@@ -83,7 +87,9 @@ MediaSourceDelegate::MediaSourceDelegate(
       video_stream_(NULL),
       seeking_(false),
       last_seek_request_id_(0),
+#if defined(GOOGLE_TV)
       key_added_(false),
+#endif
       access_unit_size_(0) {
 }
 
@@ -632,19 +638,17 @@ void MediaSourceDelegate::OnMediaConfigRequest() {
     NotifyDemuxerReady();
 }
 
-void MediaSourceDelegate::NotifyKeyAdded(const std::string& key_system) {
 #if defined(GOOGLE_TV)
+// TODO(kjyoun): Enhance logic to detect when to call NotifyDemuxerReady()
+// For now, we call it when the first key is added. See http://crbug.com/255781
+void MediaSourceDelegate::NotifyKeyAdded(const std::string& key_system) {
   if (!media_loop_->BelongsToCurrentThread()) {
     media_loop_->PostTask(FROM_HERE,
         base::Bind(&MediaSourceDelegate::NotifyKeyAdded,
                    base::Unretained(this), key_system));
     return;
   }
-#endif
   DVLOG(1) << "NotifyKeyAdded() : " << player_id_;
-  // TODO(kjyoun): Enhance logic to detect when to call NotifyDemuxerReady()
-  // For now, we calls it when the first key is added. See
-  // http://crbug.com/255781
   if (key_added_)
     return;
   key_added_ = true;
@@ -654,6 +658,7 @@ void MediaSourceDelegate::NotifyKeyAdded(const std::string& key_system) {
   if (HasEncryptedStream())
     NotifyDemuxerReady();
 }
+#endif  // defined(GOOGLE_TV)
 
 bool MediaSourceDelegate::CanNotifyDemuxerReady() {
   DCHECK_BELONG_TO_MEDIA_LOOP();
@@ -664,8 +669,10 @@ bool MediaSourceDelegate::CanNotifyDemuxerReady() {
   // See http://crbug.com/255781
   if (!is_demuxer_ready_)
     return false;
+#if defined(GOOGLE_TV)
   if (HasEncryptedStream() && !key_added_)
     return false;
+#endif  // defined(GOOGLE_TV)
   return true;
 }
 
@@ -694,9 +701,9 @@ void MediaSourceDelegate::NotifyDemuxerReady() {
         config.extra_data(), config.extra_data() + config.extra_data_size());
   }
   configs->duration_ms = GetDurationMs();
-  configs->key_system = HasEncryptedStream() ? key_system_ : "";
 
 #if defined(GOOGLE_TV)
+  configs->key_system = HasEncryptedStream() ? key_system_ : "";
   send_demuxer_ready_cb_.Run(configs.Pass());
 #else
   SendDemuxerReady(configs.Pass());

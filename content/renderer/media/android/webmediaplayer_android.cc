@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/android/webmediaplayer_android.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -146,7 +148,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
         proxy_,
         player_id_,  // TODO(xhwang): Use media_keys_id when MediaKeys are
                      // separated from WebMediaPlayer.
-#endif // defined(ENABLE_PEPPER_CDMS)
+#endif  // defined(ENABLE_PEPPER_CDMS)
         // |decryptor_| is owned, so Unretained() is safe here.
         base::Bind(&WebMediaPlayerAndroid::OnKeyAdded, base::Unretained(this)),
         base::Bind(&WebMediaPlayerAndroid::OnKeyError, base::Unretained(this)),
@@ -363,7 +365,7 @@ bool WebMediaPlayerAndroid::hasVideo() const {
   if (!url_.has_path())
     return false;
   std::string mime;
-  if(!net::GetMimeTypeFromFile(base::FilePath(url_.path()), &mime))
+  if (!net::GetMimeTypeFromFile(base::FilePath(url_.path()), &mime))
     return true;
   return mime.find("audio/") == std::string::npos;
 }
@@ -1089,8 +1091,10 @@ WebMediaPlayerAndroid::CancelKeyRequestInternal(
 void WebMediaPlayerAndroid::OnKeyAdded(const std::string& session_id) {
   EmeUMAHistogramCounts(current_key_system_, "KeyAdded", 1);
 
+#if defined(GOOGLE_TV)
   if (media_source_delegate_)
     media_source_delegate_->NotifyKeyAdded(current_key_system_.utf8());
+#endif  // defined(GOOGLE_TV)
 
   client_->keyAdded(current_key_system_, WebString::fromUTF8(session_id));
 }

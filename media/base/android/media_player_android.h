@@ -102,6 +102,10 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   // Pass a drm bridge to a player.
   virtual void SetDrmBridge(MediaDrmBridge* drm_bridge);
 
+  // Notifies the player that a decryption key has been added. The player
+  // may want to start/resume playback if it is waiting for a key.
+  virtual void OnKeyAdded();
+
   int player_id() { return player_id_; }
 
  protected:

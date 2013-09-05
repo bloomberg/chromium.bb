@@ -5,7 +5,9 @@
 #ifndef MEDIA_BASE_ANDROID_DEMUXER_STREAM_PLAYER_PARAMS_H_
 #define MEDIA_BASE_ANDROID_DEMUXER_STREAM_PLAYER_PARAMS_H_
 
+#if defined(GOOGLE_TV)
 #include <string>
+#endif  // defined(GOOGLE_TV)
 #include <vector>
 
 #include "media/base/audio_decoder_config.h"
@@ -33,7 +35,10 @@ struct MEDIA_EXPORT DemuxerConfigs {
   std::vector<uint8> video_extra_data;
 
   int duration_ms;
+
+#if defined(GOOGLE_TV)
   std::string key_system;
+#endif  // defined(GOOGLE_TV)
 };
 
 struct MEDIA_EXPORT AccessUnit {

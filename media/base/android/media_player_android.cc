@@ -92,4 +92,9 @@ void MediaPlayerAndroid::SetDrmBridge(MediaDrmBridge* drm_bridge) {
   return;
 }
 
+void MediaPlayerAndroid::OnKeyAdded() {
+  // Not all players care about the decryption key. Do nothing by default.
+  return;
+}
+
 }  // namespace media

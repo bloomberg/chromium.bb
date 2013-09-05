@@ -42,7 +42,9 @@ IPC_STRUCT_TRAITS_BEGIN(media::DemuxerConfigs)
   IPC_STRUCT_TRAITS_MEMBER(video_extra_data)
 
   IPC_STRUCT_TRAITS_MEMBER(duration_ms)
+#if defined(GOOGLE_TV)
   IPC_STRUCT_TRAITS_MEMBER(key_system)
+#endif  // defined(GOOGLE_TV)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::DemuxerData)
@@ -74,7 +76,7 @@ IPC_MESSAGE_ROUTED2(MediaPlayerMsg_MediaBufferingUpdate,
                     int /* player_id */,
                     int /* percent */)
 
-// A media playback error has occured.
+// A media playback error has occurred.
 IPC_MESSAGE_ROUTED2(MediaPlayerMsg_MediaError,
                     int /* player_id */,
                     int /* error */)
@@ -142,7 +144,7 @@ IPC_MESSAGE_ROUTED2(MediaPlayerMsg_ReadFromDemuxer,
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_MediaConfigRequest,
                     int /* player_id */)
 
-// Messages for controllering the media playback in browser process ----------
+// Messages for controlling the media playback in browser process ----------
 
 // Destroy the media player object.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_DestroyMediaPlayer,

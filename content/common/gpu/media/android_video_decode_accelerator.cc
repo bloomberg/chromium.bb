@@ -152,7 +152,7 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
   media::MediaCodecStatus status = media_codec_->DequeueInputBuffer(
       NoWaitTimeOut(), &input_buf_index);
   if (status != media::MEDIA_CODEC_OK) {
-    DCHECK(status == media::MEDIA_CODEC_ENQUEUE_INPUT_AGAIN_LATER ||
+    DCHECK(status == media::MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER ||
            status == media::MEDIA_CODEC_ERROR);
     return;
   }
@@ -417,7 +417,7 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
 void AndroidVideoDecodeAccelerator::Reset() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  while(!pending_bitstream_buffers_.empty()) {
+  while (!pending_bitstream_buffers_.empty()) {
     media::BitstreamBuffer& bitstream_buffer =
         pending_bitstream_buffers_.front();
     pending_bitstream_buffers_.pop();

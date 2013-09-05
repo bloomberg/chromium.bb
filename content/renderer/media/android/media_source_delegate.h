@@ -5,6 +5,9 @@
 #ifndef CONTENT_RENDERER_MEDIA_ANDROID_MEDIA_SOURCE_DELEGATE_H_
 #define CONTENT_RENDERER_MEDIA_ANDROID_MEDIA_SOURCE_DELEGATE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -233,8 +236,10 @@ class MediaSourceDelegate : public media::DemuxerHost {
   base::TimeDelta last_seek_time_;
   unsigned last_seek_request_id_;
 
+#if defined(GOOGLE_TV)
   bool key_added_;
   std::string key_system_;
+#endif  // defined(GOOGLE_TV)
 
   size_t access_unit_size_;
 

@@ -18,14 +18,17 @@ namespace media {
 
 struct SubsampleEntry;
 
+// These must be in sync with MediaCodecBridge.MEDIA_CODEC_XXX constants in
+// MediaCodecBridge.java.
 enum MediaCodecStatus {
   MEDIA_CODEC_OK,
-  MEDIA_CODEC_ENQUEUE_INPUT_AGAIN_LATER,
+  MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER,
   MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER,
   MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED,
   MEDIA_CODEC_OUTPUT_FORMAT_CHANGED,
   MEDIA_CODEC_INPUT_END_OF_STREAM,
   MEDIA_CODEC_OUTPUT_END_OF_STREAM,
+  MEDIA_CODEC_NO_KEY,
   MEDIA_CODEC_STOPPED,
   MEDIA_CODEC_ERROR
 };
@@ -38,13 +41,6 @@ enum MediaCodecStatus {
 // object.
 class MEDIA_EXPORT MediaCodecBridge {
  public:
-  enum DequeueBufferInfo {
-    INFO_OUTPUT_BUFFERS_CHANGED = -3,
-    INFO_OUTPUT_FORMAT_CHANGED = -2,
-    INFO_TRY_AGAIN_LATER = -1,
-    INFO_MEDIA_CODEC_ERROR = -1000,
-  };
-
   // Returns true if MediaCodec is available on the device.
   static bool IsAvailable();
 
@@ -72,14 +68,16 @@ class MEDIA_EXPORT MediaCodecBridge {
   void GetOutputFormat(int* width, int* height);
 
   // Submits a byte array to the given input buffer. Call this after getting an
-  // available buffer from DequeueInputBuffer(). Returns the number of bytes
-  // put to the input buffer.
-  size_t QueueInputBuffer(int index, const uint8* data, int size,
-                          const base::TimeDelta& presentation_time);
+  // available buffer from DequeueInputBuffer().
+  MediaCodecStatus QueueInputBuffer(int index,
+                                    const uint8* data,
+                                    int size,
+                                    const base::TimeDelta& presentation_time);
 
   // Similar to the above call, but submits a buffer that is encrypted.
-  size_t QueueSecureInputBuffer(
-      int index, const uint8* data, int data_size,
+  MediaCodecStatus QueueSecureInputBuffer(
+      int index,
+      const uint8* data, int data_size,
       const uint8* key_id, int key_id_size,
       const uint8* iv, int iv_size,
       const SubsampleEntry* subsamples, int subsamples_size,
