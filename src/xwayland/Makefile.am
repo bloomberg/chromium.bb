@@ -23,6 +23,7 @@ xwayland_la_SOURCES =				\
 	xwayland.h				\
 	window-manager.c			\
 	selection.c				\
+	dnd.c					\
 	launcher.c				\
 	xserver-protocol.c			\
 	xserver-server-protocol.h		\

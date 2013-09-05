@@ -115,9 +115,6 @@ struct motif_wm_hints {
 #define _NET_WM_MOVERESIZE_MOVE_KEYBOARD    10   /* move via keyboard */
 #define _NET_WM_MOVERESIZE_CANCEL           11   /* cancel operation */
 
-#define SEND_EVENT_MASK (0x80)
-#define EVENT_TYPE(event) ((event)->response_type & ~SEND_EVENT_MASK)
-
 struct weston_wm_window {
 	struct weston_wm *wm;
 	xcb_window_t id;
@@ -1469,6 +1466,12 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 			continue;
 		}
 
+		if (weston_wm_handle_dnd_event(wm, event)) {
+			free(event);
+			count++;
+			continue;
+		}
+
 		switch (EVENT_TYPE(event)) {
 		case XCB_BUTTON_PRESS:
 		case XCB_BUTTON_RELEASE:
@@ -1615,6 +1618,15 @@ weston_wm_get_resources(struct weston_wm *wm)
 		{ "STRING",		F(atom.string) },
 		{ "text/plain;charset=utf-8",	F(atom.text_plain_utf8) },
 		{ "text/plain",		F(atom.text_plain) },
+		{ "XdndSelection",	F(atom.xdnd_selection) },
+		{ "XdndAware",		F(atom.xdnd_aware) },
+		{ "XdndEnter",		F(atom.xdnd_enter) },
+		{ "XdndLeave",		F(atom.xdnd_leave) },
+		{ "XdndDrop",		F(atom.xdnd_drop) },
+		{ "XdndStatus",		F(atom.xdnd_status) },
+		{ "XdndFinished",	F(atom.xdnd_finished) },
+		{ "XdndTypeList",	F(atom.xdnd_type_list) },
+		{ "XdndActionCopy",	F(atom.xdnd_action_copy) }
 	};
 #undef F
 
@@ -1811,6 +1823,8 @@ weston_wm_create(struct weston_xserver *wxs)
 			    ARRAY_LENGTH(supported), supported);
 
 	weston_wm_selection_init(wm);
+
+	weston_wm_dnd_init(wm);
 
 	xcb_flush(wm->conn);
 
