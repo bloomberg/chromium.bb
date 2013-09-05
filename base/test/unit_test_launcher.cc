@@ -13,7 +13,9 @@
 #include "base/format_macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/sys_info.h"
 #include "base/test/gtest_xml_util.h"
 #include "base/test/parallel_test_launcher.h"
 #include "base/test/test_launcher.h"
@@ -26,8 +28,8 @@ namespace base {
 
 namespace {
 
-// This constant controls how many tests are run in a single batch.
-const size_t kTestBatchLimit = 10;
+// This constant controls how many tests are run in a single batch by default.
+const size_t kDefaultTestBatchLimit = 10;
 
 // Flag to enable the new launcher logic.
 // TODO(phajdan.jr): Remove it, http://crbug.com/236893 .
@@ -54,7 +56,9 @@ CommandLine GetCommandLineForChildGTestProcess(
 
 class UnitTestLauncherDelegate : public TestLauncherDelegate {
  public:
-  explicit UnitTestLauncherDelegate(size_t jobs) : parallel_launcher_(jobs) {
+  UnitTestLauncherDelegate(size_t jobs, size_t batch_limit)
+      : parallel_launcher_(jobs),
+        batch_limit_(batch_limit) {
   }
 
   virtual ~UnitTestLauncherDelegate() {
@@ -92,7 +96,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     tests_.push_back(launch_info);
 
     // Run tests in batches no larger than the limit.
-    if (tests_.size() >= kTestBatchLimit)
+    if (tests_.size() >= batch_limit_)
       RunRemainingTests();
   }
 
@@ -280,10 +284,27 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
 
   ParallelTestLauncher parallel_launcher_;
 
+  // Maximum number of tests to run in a single batch.
+  size_t batch_limit_;
+
   std::vector<TestLaunchInfo> tests_;
 
   ThreadChecker thread_checker_;
 };
+
+bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switch_name))
+    return true;
+
+  std::string switch_value =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switch_name);
+  if (!StringToInt(switch_value, result) || *result < 1) {
+    LOG(ERROR) << "Invalid value for " << switch_name << ": " << switch_value;
+    return false;
+  }
+
+  return true;
+}
 
 }  // namespace
 
@@ -298,22 +319,28 @@ int LaunchUnitTests(int argc,
 
   base::TimeTicks start_time(base::TimeTicks::Now());
 
-  fprintf(stdout,
-      "Starting tests...\n"
-      "IMPORTANT DEBUGGING NOTE: batches of tests are run inside their own \n"
-      "process. For debugging a test inside a debugger, use the\n"
-      "--gtest_filter=<your_test_name> flag along with \n"
-      "--single-process-tests.\n");
-  fflush(stdout);
-
   testing::InitGoogleTest(&argc, argv);
   TestTimeouts::Initialize();
 
+  int jobs = SysInfo::NumberOfProcessors();
+  if (!GetSwitchValueAsInt(switches::kTestLauncherJobs, &jobs))
+    return 1;
+
+  int batch_limit = kDefaultTestBatchLimit;
+  if (!GetSwitchValueAsInt(switches::kTestLauncherBatchLimit, &batch_limit))
+    return 1;
+
+  fprintf(stdout,
+          "Starting tests (using %d parallel jobs)...\n"
+          "IMPORTANT DEBUGGING NOTE: batches of tests are run inside their\n"
+          "own process. For debugging a test inside a debugger, use the\n"
+          "--gtest_filter=<your_test_name> flag along with\n"
+          "--single-process-tests.\n", jobs);
+  fflush(stdout);
+
   MessageLoop message_loop;
 
-  // TODO(phajdan.jr): Provide an option to adjust jobs, default to number
-  // of CPU cores.
-  base::UnitTestLauncherDelegate delegate(4);
+  base::UnitTestLauncherDelegate delegate(jobs, batch_limit);
   int exit_code = base::LaunchTests(&delegate, argc, argv);
 
   fprintf(stdout,
