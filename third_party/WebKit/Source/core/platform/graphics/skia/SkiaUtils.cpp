@@ -79,25 +79,26 @@ static const uint8_t gMapBlendOpsToXfermodeModes[] = {
     SkXfermode::kLuminosity_Mode // BlendModeLuminosity
 };
 
-SkXfermode::Mode WebCoreCompositeToSkiaComposite(CompositeOperator op, BlendMode blendMode)
+PassRefPtr<SkXfermode> WebCoreCompositeToSkiaComposite(CompositeOperator op, BlendMode blendMode)
 {
     if (blendMode != BlendModeNormal) {
         if ((uint8_t)blendMode >= SK_ARRAY_COUNT(gMapBlendOpsToXfermodeModes)) {
             SkDEBUGF(("GraphicsContext::setPlatformCompositeOperation unknown BlendMode %d\n", blendMode));
-            return SkXfermode::kSrcOver_Mode;
+            return adoptRef(SkXfermode::Create(SkXfermode::kSrcOver_Mode));
         }
-        return (SkXfermode::Mode)gMapBlendOpsToXfermodeModes[(uint8_t)blendMode];
+        SkXfermode::Mode mode = (SkXfermode::Mode)gMapBlendOpsToXfermodeModes[(uint8_t)blendMode];
+        return adoptRef(SkXfermode::Create(mode));
     }
 
     const CompositOpToXfermodeMode* table = gMapCompositOpsToXfermodeModes;
 
     for (unsigned i = 0; i < SK_ARRAY_COUNT(gMapCompositOpsToXfermodeModes); i++) {
         if (table[i].mCompositOp == op)
-            return (SkXfermode::Mode)table[i].m_xfermodeMode;
+            return adoptRef(SkXfermode::Create((SkXfermode::Mode)table[i].m_xfermodeMode));
     }
 
     SkDEBUGF(("GraphicsContext::setPlatformCompositeOperation unknown CompositeOperator %d\n", op));
-    return SkXfermode::kSrcOver_Mode; // fall-back
+    return adoptRef(SkXfermode::Create(SkXfermode::kSrcOver_Mode)); // fall-back
 }
 
 static U8CPU InvScaleByte(U8CPU component, uint32_t scale)

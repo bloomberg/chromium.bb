@@ -54,7 +54,7 @@ private:
         , m_fillRule(RULE_NONZERO)
         , m_textDrawingMode(TextModeFill)
         , m_alpha(1)
-        , m_xferMode(SkXfermode::kSrcOver_Mode)
+        , m_xferMode(0)
         , m_compositeOperator(CompositeSourceOver)
         , m_blendMode(BlendModeNormal)
 #if USE(LOW_QUALITY_IMAGE_INTERPOLATION)
@@ -123,7 +123,7 @@ private:
 
     // Common shader state.
     float m_alpha;
-    SkXfermode::Mode m_xferMode;
+    RefPtr<SkXfermode> m_xferMode;
     RefPtr<SkColorFilter> m_colorFilter;
 
     // Compositing control, for the CSS and Canvas compositing spec.

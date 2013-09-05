@@ -126,7 +126,7 @@ public:
     // Rectangle of the subset in the scaled image.
     SkBitmap resizedBitmap(const SkISize& scaledImageSize, const SkIRect& scaledImageSubset) const;
 
-    void draw(GraphicsContext*, const SkRect& srcRect, const SkRect& destRect, SkXfermode::Mode) const;
+    void draw(GraphicsContext*, const SkRect& srcRect, const SkRect& destRect, PassRefPtr<SkXfermode>) const;
     void drawPattern(
         GraphicsContext*,
         const FloatRect& srcRect,

@@ -412,7 +412,7 @@ void GraphicsContext::beginTransparencyLayer(float opacity, const FloatRect* bou
 
     SkPaint layerPaint;
     layerPaint.setAlpha(static_cast<unsigned char>(opacity * 255));
-    layerPaint.setXfermodeMode(m_state->m_xferMode);
+    layerPaint.setXfermode(m_state->m_xferMode.get());
 
     if (bounds) {
         SkRect skBounds = WebCoreFloatRectToSKRect(*bounds);
@@ -1701,7 +1701,7 @@ void GraphicsContext::setupPaintCommon(SkPaint* paint) const
 #endif
 
     paint->setAntiAlias(m_state->m_shouldAntialias);
-    paint->setXfermodeMode(m_state->m_xferMode);
+    paint->setXfermode(m_state->m_xferMode.get());
     paint->setLooper(m_state->m_looper.get());
     paint->setColorFilter(m_state->m_colorFilter.get());
 }

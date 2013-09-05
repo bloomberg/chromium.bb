@@ -43,7 +43,7 @@ class SkRegion;
 
 namespace WebCore {
 
-SkXfermode::Mode WebCoreCompositeToSkiaComposite(CompositeOperator, BlendMode = BlendModeNormal);
+PassRefPtr<SkXfermode> WebCoreCompositeToSkiaComposite(CompositeOperator, BlendMode = BlendModeNormal);
 
 // move this guy into SkColor.h
 SkColor SkPMColorToColor(SkPMColor);
