@@ -23,8 +23,6 @@
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request_context.h"
 
-using content::BrowserThread;
-
 namespace android_webview {
 
 namespace {
@@ -43,11 +41,11 @@ class AwResourceContext : public content::ResourceContext {
 
   // content::ResourceContext implementation.
   virtual net::HostResolver* GetHostResolver() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     return getter_->GetURLRequestContext()->host_resolver();
   }
   virtual net::URLRequestContext* GetRequestContext() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     return getter_->GetURLRequestContext();
   }
   virtual bool AllowMicAccess(const GURL& origin) OVERRIDE {
@@ -75,9 +73,6 @@ AwBrowserContext::AwBrowserContext(
       user_pref_service_ready_(false) {
   DCHECK(g_browser_context == NULL);
   g_browser_context = this;
-
-  form_database_service_.reset(
-      new AwFormDatabaseService(context_storage_path_));
 }
 
 AwBrowserContext::~AwBrowserContext() {
@@ -151,6 +146,10 @@ AwQuotaManagerBridge* AwBrowserContext::GetQuotaManagerBridge() {
 }
 
 AwFormDatabaseService* AwBrowserContext::GetFormDatabaseService() {
+  if (!form_database_service_) {
+    form_database_service_.reset(
+        new AwFormDatabaseService(context_storage_path_));
+  }
   return form_database_service_.get();
 }
 
