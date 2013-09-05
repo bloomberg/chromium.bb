@@ -386,9 +386,9 @@ TEST_F(SyncableFileOperationRunnerTest, Cancel) {
   fileapi::FileSystemOperationRunner::OperationID id =
       file_system_.operation_runner()->Truncate(
           URL(kFile), 10,
-          ExpectStatus(FROM_HERE, base::PLATFORM_FILE_ERROR_ABORT));
+          ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
   file_system_.operation_runner()->Cancel(
-      id, ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+      id, ExpectStatus(FROM_HERE, base::PLATFORM_FILE_ERROR_INVALID_OPERATION));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, callback_count_);
 }

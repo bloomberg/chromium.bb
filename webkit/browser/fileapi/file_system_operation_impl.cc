@@ -453,8 +453,12 @@ void FileSystemOperationImpl::DidFinishOperation(
     DCHECK_EQ(kOperationTruncate, pending_operation_);
 
     StatusCallback cancel_callback = cancel_callback_;
-    callback.Run(base::PLATFORM_FILE_ERROR_ABORT);
-    cancel_callback.Run(base::PLATFORM_FILE_OK);
+    callback.Run(rv);
+
+    // Return OK only if we succeeded to stop the operation.
+    cancel_callback.Run(rv == base::PLATFORM_FILE_ERROR_ABORT ?
+                        base::PLATFORM_FILE_OK :
+                        base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
   } else {
     callback.Run(rv);
   }

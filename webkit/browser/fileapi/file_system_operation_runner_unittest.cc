@@ -117,8 +117,8 @@ TEST_F(FileSystemOperationRunnerTest, NotFoundErrorAndCancel) {
 
   ASSERT_TRUE(done);
   ASSERT_TRUE(cancel_done);
-  ASSERT_EQ(base::PLATFORM_FILE_ERROR_ABORT, status);
-  ASSERT_EQ(base::PLATFORM_FILE_OK, cancel_status);
+  ASSERT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status);
+  ASSERT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, cancel_status);
 }
 
 TEST_F(FileSystemOperationRunnerTest, InvalidURLErrorAndCancel) {
