@@ -969,8 +969,6 @@
         'browser/managed_mode/managed_user_sync_service_unittest.cc',
         'browser/managed_mode/managed_user_refresh_token_fetcher_unittest.cc',
         'browser/managed_mode/managed_user_registration_utility_unittest.cc',
-        'browser/managed_mode/managed_user_settings_service_unittest.cc',
-        'browser/managed_mode/supervised_user_pref_store_unittest.cc',
         'browser/media/desktop_media_picker_model_unittest.cc',
         'browser/media/webrtc_log_uploader_unittest.cc',
         'browser/media_galleries/fileapi/native_media_file_util_unittest.cc',
