@@ -68,6 +68,8 @@ int fflush_wrapper(FILE *file) {
 int fdatasync(int fildes) {
 #if defined(OS_WIN)
   return _commit(fildes);
+#elif defined(OS_MACOSX)
+  return HANDLE_EINTR(fcntl(fildes, F_FULLFSYNC, 0));
 #else
   return HANDLE_EINTR(fsync(fildes));
 #endif
@@ -510,7 +512,7 @@ Status ChromiumWritableFile::Sync() {
     error = errno;
   // Sync even if fflush gave an error; perhaps the data actually got out,
   // even though something went wrong.
-  if (fdatasync(fileno(file_)) && !error)
+  if (fdatasync(fileno(file_)) == -1 && !error)
     error = errno;
   // Report the first error we found.
   if (error) {
