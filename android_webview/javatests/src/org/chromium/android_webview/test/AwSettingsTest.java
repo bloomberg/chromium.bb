@@ -2240,8 +2240,12 @@ public class AwSettingsTest extends AwTestBase {
             new AwSettingsUseWideViewportTestHelper(views.getContents1(), views.getClient1()));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /*
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * Failing after Blink r157293, see crbug.com/285995
+     */
+    @DisabledTest
     public void testUseWideViewportLayoutWidth() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
