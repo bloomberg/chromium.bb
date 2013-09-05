@@ -96,7 +96,7 @@ class UsbApiTest : public ExtensionApiTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     mock_device_handle_ = new MockUsbDeviceHandle();
     mock_device_ = new MockUsbDevice(mock_device_handle_.get());
-    extensions::UsbFindDevicesFunction::SetDeviceForTest(mock_device_.get());
+    extensions::UsbGetDevicesFunction::SetDeviceForTest(mock_device_.get());
   }
 
  protected:
@@ -107,14 +107,19 @@ class UsbApiTest : public ExtensionApiTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, DeviceHandling) {
-  EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
+  EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(4);
+  ASSERT_TRUE(RunExtensionTest("usb/device_handling"));
+}
+
+IN_PROC_BROWSER_TEST_F(UsbApiTest, ResetDevice) {
+  EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(2);
   EXPECT_CALL(*mock_device_handle_.get(), ResetDevice())
       .WillOnce(Return(true))
       .WillOnce(Return(false));
   EXPECT_CALL(*mock_device_handle_.get(),
               InterruptTransfer(USB_DIRECTION_OUTBOUND, 2, _, 1, _, _))
       .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_COMPLETED));
-  ASSERT_TRUE(RunExtensionTest("usb/device_handling"));
+  ASSERT_TRUE(RunExtensionTest("usb/reset_device"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, ListInterfaces) {

@@ -44,8 +44,9 @@ bool UsbDevicePermissionData::Check(
   const UsbDevicePermission::CheckParam& specific_param =
       *static_cast<const UsbDevicePermission::CheckParam*>(param);
   return vendor_id_ == specific_param.vendor_id &&
-      product_id_ == specific_param.product_id &&
-      interface_id_ == specific_param.interface_id;
+         product_id_ == specific_param.product_id &&
+         (specific_param.interface_id == UNSPECIFIED_INTERFACE ||
+          interface_id_ == specific_param.interface_id);
 }
 
 scoped_ptr<base::Value> UsbDevicePermissionData::ToValue() const {
@@ -79,6 +80,8 @@ bool UsbDevicePermissionData::FromValue(const base::Value* value) {
 
   if (!dict_value->GetInteger(kInterfaceIdKey, &temp))
     interface_id_ = ANY_INTERFACE;
+  else if (temp < ANY_INTERFACE || temp > kuint8max)
+    return false;
   else
     interface_id_ = temp;
 

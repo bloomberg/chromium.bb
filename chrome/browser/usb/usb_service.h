@@ -10,8 +10,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/usb/usb_device.h"
 
 namespace base {
 
@@ -20,10 +21,14 @@ template <class T> class DeleteHelper;
 }  // namespace base
 
 template <typename T> struct DefaultSingletonTraits;
+
+typedef struct libusb_device* PlatformUsbDevice;
+
 class UsbContext;
+class UsbDevice;
 
 // The USB service handles creating and managing an event handler thread that is
-// used to manage and dispatch USB events. It is also responsbile for device
+// used to manage and dispatch USB events. It is also responsible for device
 // discovery on the system, which allows it to re-use device handles to prevent
 // competition for the same USB device.
 class UsbService {
@@ -34,16 +39,7 @@ class UsbService {
   // Must be called on FILE thread.
   static UsbService* GetInstance();
 
-  // Find all of the devices attached to the system that are identified by
-  // |vendor_id| and |product_id|, inserting them into |devices|. Clears
-  // |devices| before use. Calls |callback| once |devices| is populated.
-  // The result will be sorted by id in increasing order. Must be called on
-  // FILE thread.
-  void FindDevices(
-      const uint16 vendor_id,
-      const uint16 product_id,
-      int interface_id,
-      const base::Callback<void(ScopedDeviceVector vector)>& callback);
+  scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id);
 
   // Get all of the devices attached to the system, inserting them into
   // |devices|. Clears |devices| before use. The result will be sorted by id
@@ -63,28 +59,13 @@ class UsbService {
                             const uint16 vendor_id,
                             const uint16 product_id);
 
-  // This method is called when permission broker replied our request.
-  // We will simply relay it to FILE thread.
-  void OnRequestUsbAccessReplied(
-      const uint16 vendor_id,
-      const uint16 product_id,
-      const base::Callback<void(ScopedDeviceVector vector)>& callback,
-      bool success);
-
-  // FindDevicesImpl is called by FindDevices on ChromeOS after the permission
-  // broker has signaled that permission has been granted to access the
-  // underlying device nodes. On other platforms, it is called directly by
-  // FindDevices.
-  void FindDevicesImpl(
-      const uint16 vendor_id,
-      const uint16 product_id,
-      const base::Callback<void(ScopedDeviceVector vector)>& callback,
-      bool success);
-
   // Enumerate USB devices from OS and Update devices_ map.
   void RefreshDevices();
 
   scoped_refptr<UsbContext> context_;
+
+  // TODO(ikarienator): Figure out a better solution.
+  uint32 next_unique_id_;
 
   // The map from PlatformUsbDevices to UsbDevices.
   typedef std::map<PlatformUsbDevice, scoped_refptr<UsbDevice> > DeviceMap;

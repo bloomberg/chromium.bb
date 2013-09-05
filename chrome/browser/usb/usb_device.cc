@@ -12,16 +12,24 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/chromeos/chromeos_version.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/permission_broker_client.h"
+#endif  // defined(OS_CHROMEOS)
+
 using content::BrowserThread;
 
 UsbDevice::UsbDevice(
     scoped_refptr<UsbContext> context,
     PlatformUsbDevice platform_device,
     uint16 vendor_id,
-    uint16 product_id)
+    uint16 product_id,
+    uint32 unique_id)
     : platform_device_(platform_device),
       vendor_id_(vendor_id),
       product_id_(product_id),
+      unique_id_(unique_id),
       context_(context) {
   CHECK(platform_device) << "platform_device cannot be NULL";
   libusb_ref_device(platform_device);
@@ -31,6 +39,7 @@ UsbDevice::UsbDevice()
     : platform_device_(NULL),
       vendor_id_(0),
       product_id_(0),
+      unique_id_(0),
       context_(NULL) {
 }
 
@@ -44,6 +53,45 @@ UsbDevice::~UsbDevice() {
   STLClearObject(&handles_);
   libusb_unref_device(platform_device_);
 }
+
+#if defined(OS_CHROMEOS)
+void UsbDevice::RequestUsbAcess(
+    int interface_id,
+    const base::Callback<void(bool success)>& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // ChromeOS builds on non-ChromeOS machines (dev) should not attempt to
+  // use permission broker.
+  if (base::chromeos::IsRunningOnChromeOS()) {
+    chromeos::PermissionBrokerClient* client =
+        chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
+    DCHECK(client) << "Could not get permission broker client.";
+    if (!client) {
+      callback.Run(false);
+      return;
+    }
+
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&chromeos::PermissionBrokerClient::RequestUsbAccess,
+                   base::Unretained(client),
+                   this->vendor_id_,
+                   this->product_id_,
+                   interface_id,
+                   base::Bind(&UsbDevice::OnRequestUsbAccessReplied,
+                              base::Unretained(this),
+                              callback)));
+  }
+}
+
+void UsbDevice::OnRequestUsbAccessReplied(
+    const base::Callback<void(bool success)>& callback,
+    bool success) {
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(callback, success));
+}
+
+#endif
 
 scoped_refptr<UsbDeviceHandle> UsbDevice::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());

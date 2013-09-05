@@ -27,7 +27,11 @@ class UsbDevicePermissionData {
     // A special interface id for stating permissions for an entire USB device,
     // no specific interface. This value must match value of Rule::ANY_INTERFACE
     // from ChromeOS permission_broker project.
-    ANY_INTERFACE = -1
+    ANY_INTERFACE = -1,
+
+    // A special interface id for |Check| to indicate that interface field is
+    // not to be checked. Not used in manifest file.
+    UNSPECIFIED_INTERFACE = -2
   };
 
   UsbDevicePermissionData();

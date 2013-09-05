@@ -4,40 +4,28 @@
 
 var usb = chrome.usb;
 
-var tests = [
-  function explicitCloseDevice() {
-    usb.findDevices({vendorId: 0, productId: 0}, function(devices) {
-      usb.closeDevice(devices[0]);
+function getDevices() {
+  usb.getDevices({
+      vendorId: 0,
+      productId: 0
+  }, function(devices) {
+    usb.openDevice(devices[0], function(handle) {
+      usb.closeDevice(handle);
       chrome.test.succeed();
     });
-  },
-  function resetDevice() {
-    usb.findDevices({vendorId: 0, productId: 0}, function(devices) {
-      usb.resetDevice(devices[0], function(result) {
-        chrome.test.assertEq(result, true);
-        // Ensure the device is still open.
-        var transfer = {
-          direction: "out",
-          endpoint: 2,
-          data: new ArrayBuffer(1)
-        };
-        usb.interruptTransfer(devices[0], transfer, function(result) {
-          // This is designed to fail.
-          usb.resetDevice(devices[0], function(result) {
-            chrome.test.assertEq(result, false);
-            usb.interruptTransfer(devices[0], transfer, function(result) {
-              chrome.test.assertEq(result, undefined);
-              chrome.test.assertEq(
-                  chrome.runtime.lastError && chrome.runtime.lastError.message,
-                  'No such device.'
-              );
-              chrome.test.succeed();
-            });
-          });
-        });
-      });
-    });
-  },
-];
+  });
+}
 
-chrome.test.runTests(tests);
+function explicitCloseDevice() {
+  usb.findDevices({
+      vendorId: 0,
+      productId: 0
+  }, function(devices) {
+    usb.closeDevice(devices[0]);
+    chrome.test.succeed();
+  });
+}
+
+chrome.test.runTests([
+    getDevices, explicitCloseDevice
+]);
