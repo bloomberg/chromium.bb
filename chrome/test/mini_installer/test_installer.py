@@ -106,11 +106,17 @@ class InstallerTest(unittest.TestCase):
       raise AssertionError("In state '%s', %s" % (state, e))
 
   def _RunCommand(self, command):
-    exit_status = subprocess.call(self._path_resolver.ResolvePath(command),
-                                  shell=True)
+    """Runs the given command from the current file's directory.
+
+    Args:
+      command: A command to run. It is expanded using ResolvePath.
+    """
+    resolved_command = self._path_resolver.ResolvePath(command)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    exit_status = subprocess.call(resolved_command, shell=True, cwd=script_dir)
     if exit_status != 0:
-      self.fail('Command %s returned non-zero exit status %s' % (command,
-                                                                 exit_status))
+      self.fail('Command %s returned non-zero exit status %s' % (
+          resolved_command, exit_status))
 
 
 def MergePropertyDictionaries(current_property, new_property):
