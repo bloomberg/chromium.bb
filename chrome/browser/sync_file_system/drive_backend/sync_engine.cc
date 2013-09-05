@@ -16,12 +16,20 @@
 namespace sync_file_system {
 namespace drive_backend {
 
+namespace {
+// TODO(tzik): Move this to separate file and consolidate with
+// DriveMetadataStore::kDatabaseName.
+base::FilePath::CharType kDatabaseName[] = FILE_PATH_LITERAL("DriveMetadata");
+}  // namespace
+
 SyncEngine::SyncEngine(
     const base::FilePath& base_dir,
+    base::SequencedTaskRunner* task_runner,
     scoped_ptr<drive::DriveAPIService> drive_api,
     drive::DriveNotificationManager* notification_manager,
     ExtensionService* extension_service)
     : base_dir_(base_dir),
+      task_runner_(task_runner),
       drive_api_(drive_api.Pass()),
       notification_manager_(notification_manager),
       extension_service_(extension_service),
@@ -36,7 +44,10 @@ SyncEngine::~SyncEngine() {
 void SyncEngine::Initialize() {
   task_manager_.Initialize(SYNC_STATUS_OK);
 
-  SyncEngineInitializer* initializer = new SyncEngineInitializer;
+  SyncEngineInitializer* initializer =
+      new SyncEngineInitializer(task_runner_.get(),
+                                drive_api_.get(),
+                                base_dir_.Append(kDatabaseName));
   task_manager_.ScheduleSyncTask(
       scoped_ptr<SyncTask>(initializer),
       base::Bind(&SyncEngine::DidInitialize, weak_ptr_factory_.GetWeakPtr(),

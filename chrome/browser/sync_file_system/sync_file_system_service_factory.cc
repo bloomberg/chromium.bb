@@ -80,11 +80,14 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
     GURL wapi_base_url(
         google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction);
 
+    scoped_refptr<base::SequencedWorkerPool> worker_pool(
+        content::BrowserThread::GetBlockingPool());
+
     scoped_ptr<drive::DriveAPIService> drive_api_service(
         new drive::DriveAPIService(
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
             context->GetRequestContext(),
-            content::BrowserThread::GetBlockingPool(),
+            worker_pool.get(),
             base_drive_url, base_download_url, wapi_base_url,
             std::string() /* custom_user_agent */));
 
@@ -93,9 +96,15 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
     ExtensionService* extension_service =
         extensions::ExtensionSystem::Get(profile)->extension_service();
 
+    scoped_refptr<base::SequencedTaskRunner> task_runner(
+        worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+            worker_pool->GetSequenceToken(),
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+
     scoped_ptr<drive_backend::SyncEngine> sync_engine(
         new drive_backend::SyncEngine(
             context->GetPath(),
+            task_runner.get(),
             drive_api_service.Pass(),
             notification_manager,
             extension_service));

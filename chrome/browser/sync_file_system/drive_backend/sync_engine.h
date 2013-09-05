@@ -15,6 +15,10 @@
 
 class ExtensionService;
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace drive {
 class DriveAPIService;
 class DriveNotificationManager;
@@ -36,6 +40,7 @@ class SyncEngine : public RemoteFileSyncService,
   typedef Observer SyncServiceObserver;
 
   SyncEngine(const base::FilePath& base_dir,
+             base::SequencedTaskRunner* task_runner,
              scoped_ptr<drive::DriveAPIService> drive_api,
              drive::DriveNotificationManager* notification_manager,
              ExtensionService* extension_service);
@@ -120,6 +125,8 @@ class SyncEngine : public RemoteFileSyncService,
 
   base::FilePath base_dir_;
   base::FilePath temporary_file_dir_;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   scoped_ptr<drive::DriveAPIService> drive_api_;
   scoped_ptr<MetadataDatabase> metadata_database_;
