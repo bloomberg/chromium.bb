@@ -189,7 +189,8 @@ function resultsDirectoryURL(platform, builderName)
 {
     if (config.useLocalResults)
         return '/localresult?path=';
-    return resultsDirectoryListingURL(platform, builderName) + 'results/layout-test-results/';
+    // FIXME: The duplicate "layout-test-results" is due to crbug.com/285572.
+    return resultsDirectoryListingURL(platform, builderName) + 'results/layout-test-results/layout-test-results/';
 }
 
 function resultsDirectoryListingURL(platform, builderName)

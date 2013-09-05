@@ -39,7 +39,8 @@ class ChromiumBuilder(Builder):
         return '%s/%s' % (config_urls.chromium_results_url_base(), self._name)
 
     def accumulated_results_url(self):
-        return self.results_url() + "/results/layout-test-results"
+        # FIXME: The duplicate directory is due to crbug.com/285572.
+        return self.results_url() + "/results/layout-test-results/layout-test-results"
 
 
 class ChromiumBuildBot(BuildBot):
