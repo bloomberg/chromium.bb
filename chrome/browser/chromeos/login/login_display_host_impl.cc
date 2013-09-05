@@ -10,7 +10,7 @@
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/window_properties.h"
+#include "ash/wm/frame_painter.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -61,7 +61,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -175,8 +174,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
       is_wallpaper_loaded_(false),
       status_area_saved_visibility_(false),
       crash_count_(0),
-      restore_path_(RESTORE_UNKNOWN),
-      old_ignore_solo_window_frame_painter_policy_value_(false) {
+      restore_path_(RESTORE_UNKNOWN) {
   // We need to listen to CLOSE_ALL_BROWSERS_REQUEST but not APP_TERMINATING
   // because/ APP_TERMINATING will never be fired as long as this keeps
   // ref-count. CLOSE_ALL_BROWSERS_REQUEST is safe here because there will be no
@@ -779,6 +777,7 @@ void LoginDisplayHostImpl::StartPostponedWebUI() {
 void LoginDisplayHostImpl::InitLoginWindowAndView() {
   if (login_window_)
     return;
+  ash::FramePainter::SetSoloWindowHeadersEnabled(false);
 
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -792,17 +791,7 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
 
   login_window_ = new views::Widget;
   login_window_->Init(params);
-  if (login_window_->GetNativeWindow()) {
-    aura::RootWindow* root = login_window_->GetNativeWindow()->GetRootWindow();
-    if (root) {
-      old_ignore_solo_window_frame_painter_policy_value_ =
-          root->GetProperty(ash::internal::kIgnoreSoloWindowFramePainterPolicy);
-      root->SetProperty(ash::internal::kIgnoreSoloWindowFramePainterPolicy,
-                        true);
-    }
-  }
   login_view_ = new WebUILoginView();
-
   login_view_->Init();
 
   views::corewm::SetWindowVisibilityAnimationDuration(
@@ -831,14 +820,7 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
 void LoginDisplayHostImpl::ResetLoginWindowAndView() {
   if (!login_window_)
     return;
-
-  if (login_window_->GetNativeWindow()) {
-    aura::RootWindow* root = login_window_->GetNativeWindow()->GetRootWindow();
-    if (root) {
-      root->SetProperty(ash::internal::kIgnoreSoloWindowFramePainterPolicy,
-                        old_ignore_solo_window_frame_painter_policy_value_);
-    }
-  }
+  ash::FramePainter::SetSoloWindowHeadersEnabled(true);
   login_window_->Close();
   login_window_ = NULL;
   login_view_ = NULL;

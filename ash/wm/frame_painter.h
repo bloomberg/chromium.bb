@@ -72,6 +72,9 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
             views::View* window_icon,
             FrameCaptionButtonContainerView* caption_button_container);
 
+  // Enable/Disable the solo-window transparent header appearance feature.
+  static void SetSoloWindowHeadersEnabled(bool enabled);
+
   // Updates the solo-window transparent header appearance for all windows
   // using frame painters in |root_window|.
   static void UpdateSoloWindowHeader(aura::RootWindow* root_window);

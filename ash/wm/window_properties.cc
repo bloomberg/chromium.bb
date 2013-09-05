@@ -14,7 +14,6 @@ namespace internal {
 DEFINE_WINDOW_PROPERTY_KEY(bool, kAnimateToFullscreenKey, true);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kContinueDragAfterReparent, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kFullscreenUsesMinimalChromeKey, false);
-DEFINE_WINDOW_PROPERTY_KEY(bool, kIgnoreSoloWindowFramePainterPolicy, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kIgnoredByShelfKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kPanelAttachedKey, true);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kStayInSameRootWindowKey, false);

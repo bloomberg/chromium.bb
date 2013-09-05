@@ -76,6 +76,9 @@ const int kActivationCrossfadeDurationMs = 200;
 // Alpha/opacity value for fully-opaque headers.
 const int kFullyOpaque = 255;
 
+// A flag to enable/disable solo window header.
+bool solo_window_header_enabled = true;
+
 // Tiles an image into an area, rounding the top corners. Samples |image|
 // starting |image_inset_x| pixels from the left of the image.
 void TileRoundRect(gfx::Canvas* canvas,
@@ -273,6 +276,11 @@ void FramePainter::Init(
 
   // Solo-window header updates are handled by the workspace controller when
   // this window is added to the desktop.
+}
+
+// static
+void FramePainter::SetSoloWindowHeadersEnabled(bool enabled) {
+  solo_window_header_enabled = enabled;
 }
 
 // static
@@ -748,12 +756,12 @@ int FramePainter::GetHeaderOpacity(
 }
 
 bool FramePainter::UseSoloWindowHeader() const {
+  if (!solo_window_header_enabled)
+    return false;
   // Don't use transparent headers for panels, pop-ups, etc.
   if (!IsSoloWindowHeaderCandidate(window_))
     return false;
   aura::RootWindow* root = window_->GetRootWindow();
-  if (!root || root->GetProperty(internal::kIgnoreSoloWindowFramePainterPolicy))
-    return false;
   // Don't recompute every time, as it would require many window property
   // lookups.
   return internal::GetRootWindowSettings(root)->solo_window_header;
