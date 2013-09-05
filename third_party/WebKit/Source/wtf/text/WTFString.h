@@ -116,7 +116,6 @@ public:
     // Construct a string referencing an existing StringImpl.
     String(StringImpl* impl) : m_impl(impl) { }
     String(PassRefPtr<StringImpl> impl) : m_impl(impl) { }
-    String(RefPtr<StringImpl> impl) : m_impl(impl) { }
 
     // FIXME: Remove this API once all callers are gone.
     enum ConstructFromLiteralTag { ConstructFromLiteral };
