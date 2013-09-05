@@ -33,10 +33,9 @@
 
 #include "wtf/Compiler.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/PartitionAlloc.h"
 
 namespace WTF {
-
-struct PartitionRoot;
 
 // This function must be called exactly once from the main thread before using anything else in WTF.
 WTF_EXPORT void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction);
@@ -44,10 +43,14 @@ WTF_EXPORT void shutdown();
 
 class Partitions {
 public:
-    static PartitionRoot m_bufferRoot;
+    static void initialize();
+    static void shutdown();
+    static ALWAYS_INLINE PartitionRoot* getBufferPartition() { return m_bufferAllocator.root(); }
+
+private:
+    static PartitionAllocator<4096> m_bufferAllocator;
 };
 
-ALWAYS_INLINE PartitionRoot* bufferPartition() { return &Partitions::m_bufferRoot; }
 
 } // namespace WTF
 

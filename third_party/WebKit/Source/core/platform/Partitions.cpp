@@ -34,13 +34,13 @@
 
 namespace WebCore {
 
-PartitionRoot Partitions::m_objectModelRoot;
-PartitionRoot Partitions::m_renderingRoot;
+PartitionAllocator<3072> Partitions::m_objectModelAllocator;
+PartitionAllocator<1024> Partitions::m_renderingAllocator;
 
 void Partitions::init()
 {
-    partitionAllocInit(&m_objectModelRoot);
-    partitionAllocInit(&m_renderingRoot);
+    m_objectModelAllocator.init();
+    m_renderingAllocator.init();
 }
 
 void Partitions::shutdown()
@@ -48,8 +48,8 @@ void Partitions::shutdown()
     // We could ASSERT here for a memory leak within the partition, but it leads
     // to very hard to diagnose ASSERTs, so it's best to leave leak checking for
     // the valgrind and heapcheck bots, which run without partitions.
-    (void) partitionAllocShutdown(&m_objectModelRoot);
-    (void) partitionAllocShutdown(&m_renderingRoot);
+    (void) m_renderingAllocator.shutdown();
+    (void) m_objectModelAllocator.shutdown();
 }
 
 } // namespace WebCore

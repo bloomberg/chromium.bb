@@ -106,7 +106,7 @@ void ArrayBufferContents::copyTo(ArrayBufferContents& other)
 
 void ArrayBufferContents::allocateMemory(size_t size, InitializationPolicy policy, void*& data)
 {
-    data = partitionAllocGeneric(WTF::bufferPartition(), size);
+    data = partitionAllocGeneric(WTF::Partitions::getBufferPartition(), size);
     if (policy == ZeroInitialize)
         memset(data, '\0', size);
 }
@@ -114,7 +114,7 @@ void ArrayBufferContents::allocateMemory(size_t size, InitializationPolicy polic
 void ArrayBufferContents::freeMemory(void* data, size_t size)
 {
     if (data)
-        partitionFreeGeneric(data, size);
+        partitionFreeGeneric(WTF::Partitions::getBufferPartition(), data, size);
 }
 
 } // namespace WTF

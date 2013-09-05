@@ -42,14 +42,16 @@ COMPILE_ASSERT(WTF::kPartitionPageSize < WTF::kSuperPageSize, ok_partition_page_
 
 namespace WTF {
 
-void partitionAllocInit(PartitionRoot* root)
+WTF_EXPORT void partitionAllocInit(PartitionRoot* root, size_t numBuckets, size_t maxAllocation)
 {
     ASSERT(!root->initialized);
     root->initialized = true;
     root->lock = 0;
+    root->numBuckets = numBuckets;
+    root->maxAllocation = maxAllocation;
     size_t i;
-    for (i = 0; i < kNumBuckets; ++i) {
-        PartitionBucket* bucket = &root->buckets[i];
+    for (i = 0; i < root->numBuckets; ++i) {
+        PartitionBucket* bucket = &root->buckets()[i];
         bucket->root = root;
         bucket->currPage = &root->seedPage;
         bucket->freePages = 0;
@@ -127,15 +129,15 @@ bool partitionAllocShutdown(PartitionRoot* root)
     size_t i;
     // First, free the non-freepage buckets. Freeing the free pages in these
     // buckets will depend on the freepage bucket.
-    for (i = 0; i < kNumBuckets; ++i) {
+    for (i = 0; i < root->numBuckets; ++i) {
         if (i != kFreePageBucket) {
-            PartitionBucket* bucket = &root->buckets[i];
+            PartitionBucket* bucket = &root->buckets()[i];
             if (!partitionAllocShutdownBucket(bucket, &superPages))
                 noLeaks = false;
         }
     }
     // Finally, free the freepage bucket.
-    (void) partitionAllocShutdownBucket(&root->buckets[kFreePageBucket], &superPages);
+    (void) partitionAllocShutdownBucket(&root->buckets()[kFreePageBucket], &superPages);
     // Now that we've examined all partition pages in all buckets, it's safe
     // to free all our super pages.
     for (Vector<PartitionPageHeader*>::iterator it = superPages.begin(); it != superPages.end(); ++it)
@@ -310,7 +312,7 @@ void partitionFreeSlowPath(PartitionPageHeader* page)
 
         partitionUnlinkPage(page);
         partitionUnusePage(page);
-        PartitionFreepagelistEntry* entry = static_cast<PartitionFreepagelistEntry*>(partitionBucketAlloc(&bucket->root->buckets[kFreePageBucket]));
+        PartitionFreepagelistEntry* entry = static_cast<PartitionFreepagelistEntry*>(partitionBucketAlloc(&bucket->root->buckets()[kFreePageBucket]));
         entry->page = page;
         entry->next = bucket->freePages;
         bucket->freePages = entry;
@@ -330,16 +332,16 @@ void* partitionReallocGeneric(PartitionRoot* root, void* ptr, size_t oldSize, si
     return realloc(ptr, newSize);
 #else
     size_t oldIndex = partitionAllocRoundup(oldSize) >> kBucketShift;
-    if (oldIndex > kNumBuckets)
-        oldIndex = kNumBuckets;
+    if (oldIndex > root->numBuckets)
+        oldIndex = root->numBuckets;
     size_t newIndex = partitionAllocRoundup(newSize) >> kBucketShift;
-    if (newIndex > kNumBuckets)
-        newIndex = kNumBuckets;
+    if (newIndex > root->numBuckets)
+        newIndex = root->numBuckets;
 
     if (oldIndex == newIndex) {
         // Same bucket. But kNumBuckets indicates the fastMalloc "bucket" so in
         // that case we're not done; we have to forward to fastRealloc.
-        if (oldIndex == kNumBuckets)
+        if (oldIndex == root->numBuckets)
             return WTF::fastRealloc(ptr, newSize);
         return ptr;
     }
@@ -349,7 +351,7 @@ void* partitionReallocGeneric(PartitionRoot* root, void* ptr, size_t oldSize, si
     if (newSize < oldSize)
         copySize = newSize;
     memcpy(ret, ptr, copySize);
-    partitionFreeGeneric(ptr, oldSize);
+    partitionFreeGeneric(root, ptr, oldSize);
     return ret;
 #endif
 }
@@ -359,8 +361,8 @@ void* partitionReallocGeneric(PartitionRoot* root, void* ptr, size_t oldSize, si
 void partitionDumpStats(const PartitionRoot& root)
 {
     size_t i;
-    for (i = 0; i < kNumBuckets; ++i) {
-        const PartitionBucket& bucket = root.buckets[i];
+    for (i = 0; i < root.numBuckets; ++i) {
+        const PartitionBucket& bucket = root.buckets()[i];
         if (bucket.currPage == &bucket.root->seedPage && !bucket.freePages) {
             // Empty bucket with no freelist pages. Skip reporting it.
             continue;

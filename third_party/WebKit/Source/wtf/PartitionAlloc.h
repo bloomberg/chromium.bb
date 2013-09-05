@@ -34,12 +34,19 @@
 // DESCRIPTION
 // partitionAlloc() and partitionFree() are approximately analagous
 // to malloc() and free().
+//
 // The main difference is that a PartitionRoot object must be supplied to
-// partitionAlloc(), representing a specific "heap partition" that will
+// these functions, representing a specific "heap partition" that will
 // be used to satisfy the allocation. Different partitions are guaranteed to
 // exist in separate address spaces, including being separate from the main
 // system heap. If the contained objects are all freed, physical memory is
 // returned to the system but the address space remains reserved.
+//
+// THE ONLY LEGITIMATE WAY TO OBTAIN A PartitionRoot IS THROUGH THE
+// PartitionAllocator TEMPLATED CLASS. To minimize the instruction count
+// to the fullest extent possible, the PartitonRoot is really just a
+// header adjacent to other data areas provided by the PartitionAllocator
+// class.
 //
 // Allocations and frees against a single partition must be single threaded.
 // Allocations must not exceed a max size, typically 4088 bytes at this time.
@@ -93,10 +100,6 @@ namespace WTF {
 static const size_t kAllocationGranularity = sizeof(void*);
 static const size_t kAllocationGranularityMask = kAllocationGranularity - 1;
 static const size_t kBucketShift = (kAllocationGranularity == 8) ? 3 : 2;
-// Supports allocations up to 4088 (one bucket is used for metadata).
-static const size_t kMaxAllocationOrder = 12;
-static const size_t kMaxAllocation = (1 << kMaxAllocationOrder) - kAllocationGranularity;
-static const size_t kNumBuckets = (1 << kMaxAllocationOrder) / (1 << kBucketShift);
 // Underlying partition storage pages are a power-of-two size. It is typical
 // for a partition page to be based on multiple system pages. We rarely deal
 // with system pages. Most references to "page" refer to partition pages. We
@@ -137,23 +140,29 @@ struct PartitionBucket {
     size_t numFullPages;
 };
 
+// Never instantiate a PartitionRoot directly, instead use PartitionAlloc.
 struct PartitionRoot {
     int lock;
-    PartitionPageHeader seedPage;
-    PartitionBucket seedBucket;
-    PartitionBucket buckets[kNumBuckets];
+    unsigned numBuckets;
+    unsigned maxAllocation;
+    bool initialized;
     char* nextSuperPage;
     char* nextPartitionPage;
     char* nextPartitionPageEnd;
-    bool initialized;
+    PartitionPageHeader seedPage;
+    PartitionBucket seedBucket;
+
+    // The PartitionAlloc templated class ensures the following is correct.
+    ALWAYS_INLINE PartitionBucket* buckets() { return reinterpret_cast<PartitionBucket*>(this + 1); }
+    ALWAYS_INLINE const PartitionBucket* buckets() const { return reinterpret_cast<const PartitionBucket*>(this + 1); }
 };
 
-WTF_EXPORT void partitionAllocInit(PartitionRoot*);
-WTF_EXPORT bool partitionAllocShutdown(PartitionRoot*);
+WTF_EXPORT void partitionAllocInit(PartitionRoot*, size_t numBuckets, size_t maxAllocation);
+WTF_EXPORT NEVER_INLINE bool partitionAllocShutdown(PartitionRoot*);
 
 WTF_EXPORT NEVER_INLINE void* partitionAllocSlowPath(PartitionBucket*);
 WTF_EXPORT NEVER_INLINE void partitionFreeSlowPath(PartitionPageHeader*);
-WTF_EXPORT NEVER_INLINE void* partitionReallocGeneric(PartitionRoot*, void*, size_t, size_t);
+WTF_EXPORT NEVER_INLINE void* partitionReallocGeneric(PartitionRoot*, void*, size_t oldSize, size_t newSize);
 
 ALWAYS_INLINE PartitionFreelistEntry* partitionFreelistMask(PartitionFreelistEntry* ptr)
 {
@@ -170,7 +179,7 @@ ALWAYS_INLINE PartitionFreelistEntry* partitionFreelistMask(PartitionFreelistEnt
 ALWAYS_INLINE size_t partitionBucketSize(const PartitionBucket* bucket)
 {
     PartitionRoot* root = bucket->root;
-    size_t index = bucket - &root->buckets[0];
+    size_t index = bucket - &root->buckets()[0];
     size_t size;
     if (UNLIKELY(index == kFreePageBucket))
         size = sizeof(PartitionFreepagelistEntry);
@@ -199,9 +208,9 @@ ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
     return result;
 #else
     size_t index = size >> kBucketShift;
-    ASSERT(index < kNumBuckets);
+    ASSERT(index < root->numBuckets);
     ASSERT(size == index << kBucketShift);
-    PartitionBucket* bucket = &root->buckets[index];
+    PartitionBucket* bucket = &root->buckets()[index];
     return partitionBucketAlloc(bucket);
 #endif
 }
@@ -250,7 +259,7 @@ ALWAYS_INLINE void* partitionAllocGeneric(PartitionRoot* root, size_t size)
     RELEASE_ASSERT(result);
     return result;
 #else
-    if (LIKELY(size <= kMaxAllocation)) {
+    if (LIKELY(size <= root->maxAllocation)) {
         size = partitionAllocRoundup(size);
         spinLockLock(&root->lock);
         void* ret = partitionAlloc(root, size);
@@ -261,14 +270,13 @@ ALWAYS_INLINE void* partitionAllocGeneric(PartitionRoot* root, size_t size)
 #endif
 }
 
-ALWAYS_INLINE void partitionFreeGeneric(void* ptr, size_t size)
+ALWAYS_INLINE void partitionFreeGeneric(PartitionRoot* root, void* ptr, size_t size)
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     free(ptr);
 #else
-    if (LIKELY(size <= kMaxAllocation)) {
+    if (LIKELY(size <= root->maxAllocation)) {
         PartitionPageHeader* page = partitionPointerToPage(ptr);
-        PartitionRoot* root = page->bucket->root;
         spinLockLock(&root->lock);
         partitionFreeWithPage(ptr, page);
         spinLockUnlock(&root->lock);
@@ -278,8 +286,27 @@ ALWAYS_INLINE void partitionFreeGeneric(void* ptr, size_t size)
 #endif
 }
 
+// N (or more accurately, N - sizeof(void*)) represents the largest size in
+// bytes that will be handled by a PartitionAlloctor.
+// Attempts to partitionAlloc() more than this amount will fail. Attempts to
+// partitionAllocGeneic() more than this amount will succeed but will be
+// transparently serviced by the system allocator.
+template <size_t N>
+class PartitionAllocator {
+public:
+    static const size_t kMaxAllocation = N - kAllocationGranularity;
+    static const size_t kNumBuckets = N / kAllocationGranularity;
+    void init() { partitionAllocInit(&m_partitionRoot, kNumBuckets, kMaxAllocation); }
+    bool shutdown() { return partitionAllocShutdown(&m_partitionRoot); }
+    ALWAYS_INLINE PartitionRoot* root() { return &m_partitionRoot; }
+private:
+    PartitionRoot m_partitionRoot;
+    PartitionBucket m_actualBuckets[kNumBuckets];
+};
+
 } // namespace WTF
 
+using WTF::PartitionAllocator;
 using WTF::PartitionRoot;
 using WTF::partitionAllocInit;
 using WTF::partitionAllocShutdown;

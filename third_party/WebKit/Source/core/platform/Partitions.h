@@ -40,12 +40,12 @@ public:
     static void init();
     static void shutdown();
 
-    ALWAYS_INLINE static PartitionRoot* getObjectModelPartition() { return &m_objectModelRoot; }
-    ALWAYS_INLINE static PartitionRoot* getRenderingPartition() { return &m_renderingRoot; }
+    ALWAYS_INLINE static PartitionRoot* getObjectModelPartition() { return m_objectModelAllocator.root(); }
+    ALWAYS_INLINE static PartitionRoot* getRenderingPartition() { return m_renderingAllocator.root(); }
 
 private:
-    static PartitionRoot m_objectModelRoot;
-    static PartitionRoot m_renderingRoot;
+    static PartitionAllocator<3072> m_objectModelAllocator;
+    static PartitionAllocator<1024> m_renderingAllocator;
 };
 
 } // namespace WebCore

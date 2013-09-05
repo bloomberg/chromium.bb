@@ -43,7 +43,7 @@ extern void initializeThreading();
 
 void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction)
 {
-    partitionAllocInit(bufferPartition());
+    Partitions::initialize();
     setCurrentTimeFunction(currentTimeFunction);
     setMonotonicallyIncreasingTimeFunction(monotonicallyIncreasingTimeFunction);
     initializeThreading();
@@ -51,9 +51,19 @@ void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncr
 
 void shutdown()
 {
-    partitionAllocShutdown(bufferPartition());
+    Partitions::shutdown();
 }
 
-PartitionRoot Partitions::m_bufferRoot;
+void Partitions::initialize()
+{
+    m_bufferAllocator.init();
+}
+
+void Partitions::shutdown()
+{
+    m_bufferAllocator.shutdown();
+}
+
+PartitionAllocator<4096> Partitions::m_bufferAllocator;
 
 } // namespace WTF
