@@ -288,7 +288,8 @@ class GSContext(object):
     extra_env.setdefault('BOTO_CONFIG', self.boto_file)
 
     if self.dry_run:
-      logging.debug("%s: would've ran %r", self.__class__.__name__, cmd)
+      logging.debug("%s: would've run: %s", self.__class__.__name__,
+                    ' '.join(map(repr, cmd)))
     else:
       return cros_build_lib.RetryCommand(
           self._RunCommand, retries, cmd, sleep=self._sleep_time,
