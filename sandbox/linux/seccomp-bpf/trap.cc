@@ -61,6 +61,14 @@ void SetIsInSigHandler() {
   }
 }
 
+bool IsDefaultSignalAction(const struct sigaction& sa) {
+  if (sa.sa_flags & SA_SIGINFO ||
+      sa.sa_handler != SIG_DFL) {
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 namespace playground2 {
@@ -74,8 +82,14 @@ Trap::Trap()
   struct sigaction sa = { };
   sa.sa_sigaction = SigSysAction;
   sa.sa_flags = SA_SIGINFO | SA_NODEFER;
-  if (sigaction(SIGSYS, &sa, NULL) < 0) {
+  struct sigaction old_sa;
+  if (sigaction(SIGSYS, &sa, &old_sa) < 0) {
     SANDBOX_DIE("Failed to configure SIGSYS handler");
+  }
+
+  if (!IsDefaultSignalAction(old_sa)) {
+    // TODO(jln): make this FATAL, at least in DEBUG mode.
+    LOG(ERROR) << "Existing signal handler when trying to install SIGSYS";
   }
 
   // Unmask SIGSYS
