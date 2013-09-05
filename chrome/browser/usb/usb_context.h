@@ -27,7 +27,7 @@ class UsbContext : public base::RefCountedThreadSafe<UsbContext> {
   friend class UsbService;
   friend class base::RefCountedThreadSafe<UsbContext>;
 
-  UsbContext();
+  explicit UsbContext(PlatformUsbContext context);
   virtual ~UsbContext();
 
  private:

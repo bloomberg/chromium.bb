@@ -20,9 +20,11 @@ template <class T> class DeleteHelper;
 
 }  // namespace base
 
+struct InitUsbContextTraits;
 template <typename T> struct DefaultSingletonTraits;
 
 typedef struct libusb_device* PlatformUsbDevice;
+typedef struct libusb_context* PlatformUsbContext;
 
 class UsbContext;
 class UsbDevice;
@@ -37,6 +39,7 @@ class UsbService {
       ScopedDeviceVector;
 
   // Must be called on FILE thread.
+  // Returns NULL when failed to initialized.
   static UsbService* GetInstance();
 
   scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id);
@@ -47,10 +50,11 @@ class UsbService {
   void GetDevices(std::vector<scoped_refptr<UsbDevice> >* devices);
 
  private:
+  friend struct InitUsbContextTraits;
   friend struct DefaultSingletonTraits<UsbService>;
   friend class base::DeleteHelper<UsbService>;
 
-  UsbService();
+  explicit UsbService(PlatformUsbContext context);
   virtual ~UsbService();
 
   // Return true if |device|'s vendor and product identifiers match |vendor_id|

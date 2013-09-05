@@ -60,9 +60,8 @@ void UsbContext::UsbEventHandler::ThreadMain() {
   VLOG(1) << "UsbEventHandler shutting down.";
 }
 
-UsbContext::UsbContext() : context_(NULL) {
+UsbContext::UsbContext(PlatformUsbContext context) : context_(context) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK_EQ(0, libusb_init(&context_)) << "Cannot initialize libusb";
   event_handler_ = new UsbEventHandler(context_);
 }
 

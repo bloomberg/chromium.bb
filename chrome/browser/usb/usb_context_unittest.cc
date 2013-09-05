@@ -7,6 +7,7 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libusb/src/libusb/libusb.h"
 
 namespace {
 
@@ -14,7 +15,8 @@ class UsbContextTest : public testing::Test {
  protected:
   class UsbContextForTest : public UsbContext {
    public:
-    UsbContextForTest() : UsbContext() {}
+    explicit UsbContextForTest(PlatformUsbContext context)
+        : UsbContext(context) {}
    private:
     virtual ~UsbContextForTest() {}
     DISALLOW_COPY_AND_ASSIGN(UsbContextForTest);
@@ -36,7 +38,10 @@ class UsbContextTest : public testing::Test {
 TEST_F(UsbContextTest, MAYBE_GracefulShutdown) {
   base::TimeTicks start = base::TimeTicks::Now();
   {
-    scoped_refptr<UsbContextForTest> context(new UsbContextForTest());
+    PlatformUsbContext platform_context;
+    ASSERT_EQ(LIBUSB_SUCCESS, libusb_init(&platform_context));
+    scoped_refptr<UsbContextForTest> context(
+        new UsbContextForTest(platform_context));
   }
   base::TimeDelta elapse = base::TimeTicks::Now() - start;
   if (elapse > base::TimeDelta::FromSeconds(2)) {

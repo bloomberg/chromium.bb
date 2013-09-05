@@ -64,8 +64,8 @@ class ExitObserver : public content::NotificationObserver {
 
 using content::BrowserThread;
 
-UsbService::UsbService()
-    : context_(new UsbContext()),
+UsbService::UsbService(PlatformUsbContext context)
+    : context_(new UsbContext(context)),
       next_unique_id_(0) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // Will be deleted upon NOTIFICATION_APP_TERMINATING.
@@ -79,10 +79,22 @@ UsbService::~UsbService() {
   }
 }
 
+struct InitUsbContextTraits : public LeakySingletonTraits<UsbService> {
+  // LeakySingletonTraits<UsbService>
+  static UsbService* New() {
+    PlatformUsbContext context = NULL;
+    if (libusb_init(&context) != LIBUSB_SUCCESS)
+      return NULL;
+    if (!context)
+      return NULL;
+    return new UsbService(context);
+  }
+};
+
 UsbService* UsbService::GetInstance() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // UsbService deletes itself upon APP_TERMINATING.
-  return Singleton<UsbService, LeakySingletonTraits<UsbService> >::get();
+  return Singleton<UsbService, InitUsbContextTraits>::get();
 }
 
 void UsbService::GetDevices(std::vector<scoped_refptr<UsbDevice> >* devices) {

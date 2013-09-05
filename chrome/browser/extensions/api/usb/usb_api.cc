@@ -59,6 +59,8 @@ namespace {
 const char kDataKey[] = "data";
 const char kResultCodeKey[] = "resultCode";
 
+const char kErrorInitService[] = "Failed to initialize USB service.";
+
 const char kErrorOpen[] = "Failed to open device.";
 const char kErrorCancelled[] = "Transfer was cancelled.";
 const char kErrorDisconnect[] = "Device disconnected.";
@@ -412,6 +414,10 @@ UsbAsyncApiFunction::GetDeviceOrOrCompleteWithError(
   }
 
   UsbService* service = UsbService::GetInstance();
+  if (!service) {
+    CompleteWithError(kErrorInitService);
+    return NULL;
+  }
   scoped_refptr<UsbDevice> device;
 
   device = service->GetDeviceById(input_device.device);
@@ -537,6 +543,11 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
   }
 
   UsbService *service = UsbService::GetInstance();
+  if (!service) {
+    CompleteWithError(kErrorInitService);
+    return;
+  }
+
   ScopedDeviceVector devices(new DeviceVector());
   service->GetDevices(devices.get());
 
@@ -624,6 +635,11 @@ void UsbGetDevicesFunction::AsyncWorkStart() {
   }
 
   UsbService* service = UsbService::GetInstance();
+  if (!service) {
+    CompleteWithError(kErrorInitService);
+    return;
+  }
+
   DeviceVector devices;
   service->GetDevices(&devices);
 
