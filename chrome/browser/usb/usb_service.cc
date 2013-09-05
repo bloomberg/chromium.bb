@@ -38,8 +38,12 @@ namespace {
 class ExitObserver : public content::NotificationObserver {
  public:
   explicit ExitObserver(UsbService* service) : service_(service) {
-    registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
-                   content::NotificationService::AllSources());
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&content::NotificationRegistrar::Add,
+                   base::Unretained(&registrar_), this,
+                   chrome::NOTIFICATION_APP_TERMINATING,
+                   content::NotificationService::AllSources()));
   }
 
  private:
@@ -48,8 +52,8 @@ class ExitObserver : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_APP_TERMINATING) {
-      registrar_.RemoveAll();
       BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, service_);
+      delete this;
     }
   }
   UsbService* service_;
@@ -64,6 +68,8 @@ UsbService::UsbService()
     : context_(new UsbContext()),
       next_unique_id_(0) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  // Will be deleted upon NOTIFICATION_APP_TERMINATING.
+  new ExitObserver(this);
 }
 
 UsbService::~UsbService() {
