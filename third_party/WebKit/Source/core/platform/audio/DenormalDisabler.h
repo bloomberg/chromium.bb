@@ -26,6 +26,7 @@
 #define DenormalDisabler_h
 
 #include "wtf/MathExtras.h"
+#include <float.h>
 
 namespace WebCore {
 
