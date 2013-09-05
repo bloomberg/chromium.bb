@@ -38,7 +38,9 @@ class WebContentsModalDialogManager
   // WillClose() when it is being destroyed.
   void ShowDialog(NativeWebContentsModalDialog dialog);
 
-  // Returns true if a dialog is currently being shown.
+  // Returns true if any dialogs are active and not closed.
+  // TODO(wittman): Give this a better name, since it can return true if no
+  // dialogs are displayed.
   bool IsShowingDialog() const;
 
   // Focus the topmost modal dialog.  IsShowingDialog() must be true when
