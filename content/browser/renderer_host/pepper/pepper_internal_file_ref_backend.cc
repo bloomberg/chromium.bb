@@ -71,6 +71,19 @@ fileapi::FileSystemURL PepperInternalFileRefBackend::GetFileSystemURL() const {
   return fs_url_;
 }
 
+std::string PepperInternalFileRefBackend::GetFileSystemURLSpec() const {
+  if (fs_host_.get() && fs_host_->IsOpened() &&
+      fs_host_->GetRootUrl().is_valid()) {
+    return fs_host_->GetRootUrl().Resolve(
+        net::EscapePath(path_.substr(1))).spec();
+  }
+  return std::string();
+}
+
+base::FilePath PepperInternalFileRefBackend::GetExternalPath() const {
+  return base::FilePath();
+}
+
 scoped_refptr<fileapi::FileSystemContext>
 PepperInternalFileRefBackend::GetFileSystemContext() const {
   if (!fs_host_.get())
@@ -210,7 +223,7 @@ void PepperInternalFileRefBackend::ReadDirectoryComplete(
 
   context.params.set_result(ppapi::PlatformFileErrorToPepperError(error));
 
-  std::vector<ppapi::FileRefCreateInfo> infos;
+  std::vector<ppapi::FileRef_CreateInfo> infos;
   std::vector<PP_FileType> file_types;
   if (error == base::PLATFORM_FILE_OK && fs_host_.get()) {
     std::string dir_path = path_;
@@ -224,7 +237,7 @@ void PepperInternalFileRefBackend::ReadDirectoryComplete(
       else
         file_types.push_back(PP_FILETYPE_REGULAR);
 
-      ppapi::FileRefCreateInfo info;
+      ppapi::FileRef_CreateInfo info;
       info.file_system_type = fs_type_;
       info.file_system_plugin_resource = fs_host_->pp_resource();
       std::string path =

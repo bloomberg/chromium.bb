@@ -11,7 +11,6 @@
 #include "ppapi/proxy/ext_crx_file_system_private_resource.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/file_io_resource.h"
-#include "ppapi/proxy/file_ref_resource.h"
 #include "ppapi/proxy/file_system_resource.h"
 #include "ppapi/proxy/flash_drm_resource.h"
 #include "ppapi/proxy/flash_font_file_resource.h"
@@ -27,6 +26,7 @@
 #include "ppapi/proxy/ppb_audio_proxy.h"
 #include "ppapi/proxy/ppb_broker_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
+#include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
@@ -78,10 +78,15 @@ PP_Resource ResourceCreationProxy::CreateFileIO(PP_Instance instance) {
   return (new FileIOResource(GetConnection(), instance))->GetReference();
 }
 
+PP_Resource ResourceCreationProxy::CreateFileRef(PP_Instance instance,
+                                                 PP_Resource file_system,
+                                                 const char* path) {
+  return PPB_FileRef_Proxy::CreateProxyResource(instance, file_system, path);
+}
+
 PP_Resource ResourceCreationProxy::CreateFileRef(
-    PP_Instance instance,
-    const FileRefCreateInfo& create_info) {
-  return FileRefResource::CreateFileRef(GetConnection(), instance, create_info);
+    const PPB_FileRef_CreateInfo& create_info) {
+  return PPB_FileRef_Proxy::DeserializeFileRef(create_info);
 }
 
 PP_Resource ResourceCreationProxy::CreateFileSystem(

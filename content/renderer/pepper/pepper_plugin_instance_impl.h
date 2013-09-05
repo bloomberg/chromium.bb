@@ -347,6 +347,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual ppapi::VarTracker* GetVarTracker() OVERRIDE;
   virtual const GURL& GetPluginURL() OVERRIDE;
   virtual base::FilePath GetModulePath() OVERRIDE;
+  virtual PP_Resource CreateExternalFileReference(
+      const base::FilePath& external_file_path) OVERRIDE;
   virtual PP_Resource CreateImage(gfx::ImageSkia* source_image,
                                   float scale) OVERRIDE;
   virtual PP_ExternalPluginResult SwitchToOutOfProcessProxy(
@@ -362,8 +364,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual int32_t Navigate(const ppapi::URLRequestInfoData& request,
                            const char* target,
                            bool from_user_action) OVERRIDE;
-  virtual int MakePendingFileRefRendererHost(
-      const base::FilePath& path) OVERRIDE;
 
   // PPB_Instance_API implementation.
   virtual PP_Bool BindGraphics(PP_Instance instance,

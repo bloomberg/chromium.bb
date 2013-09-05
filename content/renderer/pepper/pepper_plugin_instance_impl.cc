@@ -29,7 +29,6 @@
 #include "content/renderer/pepper/message_channel.h"
 #include "content/renderer/pepper/npapi_glue.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
-#include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/pepper/pepper_platform_context_3d.h"
@@ -37,6 +36,7 @@
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
+#include "content/renderer/pepper/ppb_file_ref_impl.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/pepper/ppp_pdf.h"
@@ -768,7 +768,6 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
   DCHECK(pending_host_id);
 
   DataFromWebURLResponse(
-      host_impl,
       pp_instance(),
       response,
       base::Bind(&PepperPluginInstanceImpl::DidDataFromWebURLResponse,
@@ -2614,6 +2613,13 @@ base::FilePath PepperPluginInstanceImpl::GetModulePath() {
   return module_->path();
 }
 
+PP_Resource PepperPluginInstanceImpl::CreateExternalFileReference(
+    const base::FilePath& external_file_path) {
+  PPB_FileRef_Impl* ref = PPB_FileRef_Impl::CreateExternal(
+      pp_instance(), external_file_path, "");
+  return ref->GetReference();
+}
+
 PP_Resource PepperPluginInstanceImpl::CreateImage(gfx::ImageSkia* source_image,
                                                   float scale) {
   ui::ScaleFactor scale_factor = ui::GetScaleFactorFromScale(scale);
@@ -2750,12 +2756,8 @@ int32_t PepperPluginInstanceImpl::Navigate(
   ppapi::URLRequestInfoData completed_request = request;
 
   WebURLRequest web_request;
-  if (!CreateWebURLRequest(pp_instance_,
-                           &completed_request,
-                           frame,
-                           &web_request)) {
+  if (!CreateWebURLRequest(&completed_request, frame, &web_request))
     return PP_ERROR_FAILED;
-  }
   web_request.setFirstPartyForCookies(document.firstPartyForCookies());
   web_request.setHasUserGesture(from_user_action);
 
@@ -2782,15 +2784,6 @@ int32_t PepperPluginInstanceImpl::Navigate(
   WebString target_str = WebString::fromUTF8(target);
   container_->loadFrameRequest(web_request, target_str, false, NULL);
   return PP_OK;
-}
-
-int PepperPluginInstanceImpl::MakePendingFileRefRendererHost(
-    const base::FilePath& path) {
-  RendererPpapiHostImpl* host_impl = module_->renderer_ppapi_host();
-  PepperFileRefRendererHost* file_ref_host(
-      new PepperFileRefRendererHost(host_impl, pp_instance(), 0, path));
-  return host_impl->GetPpapiHost()->AddPendingResourceHost(
-      scoped_ptr<ppapi::host::ResourceHost>(file_ref_host));
 }
 
 bool PepperPluginInstanceImpl::CanAccessMainFrame() const {

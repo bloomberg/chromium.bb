@@ -11,7 +11,6 @@
 #include "content/renderer/pepper/pepper_audio_input_host.h"
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
 #include "content/renderer/pepper/pepper_file_io_host.h"
-#include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_truetype_font_host.h"
@@ -76,18 +75,6 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
     case PpapiHostMsg_FileIO_Create::ID:
       return scoped_ptr<ResourceHost>(new PepperFileIOHost(
           host_, instance, params.pp_resource()));
-    case PpapiHostMsg_FileRef_CreateInternal::ID: {
-      PP_Resource file_system;
-      std::string internal_path;
-      if (!UnpackMessage<PpapiHostMsg_FileRef_CreateInternal>(message,
-                                                              &file_system,
-                                                              &internal_path)) {
-        NOTREACHED();
-        return scoped_ptr<ResourceHost>();
-      }
-      return scoped_ptr<ResourceHost>(new PepperFileRefRendererHost(
-          host_, instance, params.pp_resource(), file_system, internal_path));
-    }
     case PpapiHostMsg_FileSystem_Create::ID: {
       PP_FileSystemType file_system_type;
       if (!UnpackMessage<PpapiHostMsg_FileSystem_Create>(message,
