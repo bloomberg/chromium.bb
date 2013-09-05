@@ -3797,6 +3797,16 @@ input_receive_drag_data(struct input *input, const char *mime_type,
 }
 
 int
+input_receive_drag_data_to_fd(struct input *input,
+			      const char *mime_type, int fd)
+{
+	if (input->drag_offer)
+		wl_data_offer_receive(input->drag_offer->offer, mime_type, fd);
+
+	return 0;
+}
+
+int
 input_receive_selection_data(struct input *input, const char *mime_type,
 			     data_func_t func, void *data)
 {

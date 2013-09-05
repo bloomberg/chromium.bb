@@ -555,6 +555,9 @@ input_accept(struct input *input, const char *type);
 void
 input_receive_drag_data(struct input *input, const char *mime_type,
 			data_func_t func, void *user_data);
+int
+input_receive_drag_data_to_fd(struct input *input,
+			      const char *mime_type, int fd);
 
 int
 input_receive_selection_data(struct input *input, const char *mime_type,

@@ -2128,6 +2128,37 @@ static const struct wl_data_source_listener data_source_listener = {
 	data_source_cancelled
 };
 
+static const char text_mime_type[] = "text/plain;charset=utf-8";
+
+static void
+data_handler(struct window *window,
+	     struct input *input,
+	     float x, float y, const char **types, void *data)
+{
+	int i, has_text = 0;
+
+	if (!types)
+		return;
+	for (i = 0; types[i]; i++)
+		if (strcmp(types[i], text_mime_type) == 0)
+			has_text = 1;
+
+	if (!has_text) {
+		input_accept(input, NULL);
+	} else {
+		input_accept(input, text_mime_type);
+	}
+}
+
+static void
+drop_handler(struct window *window, struct input *input,
+	     int32_t x, int32_t y, void *data)
+{
+	struct terminal *terminal = data;
+
+	input_receive_drag_data_to_fd(input, text_mime_type, terminal->master);
+}
+
 static void
 fullscreen_handler(struct window *window, void *data)
 {
@@ -2629,6 +2660,9 @@ terminal_create(struct display *display)
 	window_set_fullscreen_handler(terminal->window, fullscreen_handler);
 	window_set_output_handler(terminal->window, output_handler);
 	window_set_close_handler(terminal->window, close_handler);
+
+	window_set_data_handler(terminal->window, data_handler);
+	window_set_drop_handler(terminal->window, drop_handler);
 
 	widget_set_redraw_handler(terminal->widget, redraw_handler);
 	widget_set_resize_handler(terminal->widget, resize_handler);
