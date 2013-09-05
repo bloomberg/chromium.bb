@@ -668,14 +668,11 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // CycleForward
   EXPECT_TRUE(ProcessWithContext(
       ui::Accelerator(ui::VKEY_TAB, ui::EF_ALT_DOWN)));
-#if defined(OS_CHROMEOS)
-  // CycleBackward
-  EXPECT_TRUE(ProcessWithContext(
-      ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_SHIFT_DOWN)));
-  // CycleForward
+  // CycleLinear
   EXPECT_TRUE(ProcessWithContext(
       ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE)));
 
+#if defined(OS_CHROMEOS)
   // Take screenshot / partial screenshot
   // True should always be returned regardless of the existence of the delegate.
   {

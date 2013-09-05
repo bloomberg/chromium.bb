@@ -37,8 +37,7 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_TAB, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU },
   { true, ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
     CYCLE_BACKWARD_MRU },
-  { true, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE,
-      CYCLE_FORWARD_LINEAR },
+  { true, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE, CYCLE_LINEAR },
 #if defined(OS_CHROMEOS)
   { true, ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, TOGGLE_APP_LIST },
   { true, ui::VKEY_WLAN, ui::EF_NONE, TOGGLE_WIFI },
@@ -103,8 +102,6 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_BROWSER_REFRESH,
     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     ROTATE_WINDOW },
-  { true, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_SHIFT_DOWN,
-    CYCLE_BACKWARD_LINEAR },
   { true, ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, RESTORE_TAB },
   { true, ui::VKEY_PRINT, ui::EF_NONE, TAKE_SCREENSHOT },
   // On Chrome OS, Search key is mapped to LWIN. The Search key binding should
@@ -343,10 +340,9 @@ const size_t kActionsAllowedAtModalWindowLength =
 
 const AcceleratorAction kNonrepeatableActions[] = {
   // TODO(mazda): Add other actions which should not be repeated.
-  CYCLE_BACKWARD_LINEAR,
   CYCLE_BACKWARD_MRU,
-  CYCLE_FORWARD_LINEAR,
   CYCLE_FORWARD_MRU,
+  CYCLE_LINEAR,
   EXIT,
   PRINT_UI_HIERARCHIES,  // Don't fill the logs if the key is held down.
   ROTATE_SCREEN,
@@ -365,10 +361,9 @@ const size_t kNonrepeatableActionsLength =
 const AcceleratorAction kActionsAllowedInAppMode[] = {
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,
-  CYCLE_BACKWARD_LINEAR,
   CYCLE_BACKWARD_MRU,
-  CYCLE_FORWARD_LINEAR,
   CYCLE_FORWARD_MRU,
+  CYCLE_LINEAR,
   DISABLE_CAPS_LOCK,
   EXIT,
   KEYBOARD_BRIGHTNESS_DOWN,
