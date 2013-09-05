@@ -169,6 +169,9 @@ bool OutputConfigurator::TestApi::TriggerConfigureTimeout() {
 const OutputConfigurator::ModeInfo* OutputConfigurator::GetModeInfo(
     const OutputSnapshot& output,
     RRMode mode) {
+  if (mode == None)
+    return NULL;
+
   std::map<RRMode, ModeInfo>::const_iterator it = output.mode_infos.find(mode);
   if (it == output.mode_infos.end()) {
     LOG(WARNING) << "Unable to find info about mode " << mode
