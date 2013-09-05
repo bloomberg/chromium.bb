@@ -13,8 +13,7 @@ race:base/threading/watchdog_unittest.cc
 race:libevent/event.c
 
 # http://crbug.com/46840
-race:history::HistoryBackend::DeleteFTSIndexDatabases
-race:history::InMemoryHistoryBackend::Init
+race:base::HistogramSamples::IncreaseSum
 
 # http://crbug.com/84094
 race:sqlite3StatusSet
@@ -62,6 +61,9 @@ race:PassRefPtr
 
 # http://crbug.com/224617
 race:base::debug::TraceEventTestFixture_TraceSampling_Test::TestBody
+
+# http://crbug.com/239359
+race:media::TestInputCallback::OnData
 
 # http://crbug.com/244368
 race:skia::BeginPlatformPaint
