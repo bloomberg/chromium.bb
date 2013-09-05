@@ -43,8 +43,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
 
   typedef int OperationID;
 
-  static const OperationID kErrorOperationID;
-
   virtual ~FileSystemOperationRunner();
 
   // Cancels all inflight operations.
@@ -222,35 +220,45 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
                                               base::FilePath* platform_path);
 
  private:
+  class BeginOperationScoper;
+
+  struct OperationHandle {
+    OperationID id;
+    base::WeakPtr<BeginOperationScoper> scope;
+
+    OperationHandle();
+    ~OperationHandle();
+  };
+
   friend class FileSystemContext;
   explicit FileSystemOperationRunner(FileSystemContext* file_system_context);
 
-  void DidFinish(OperationID id,
+  void DidFinish(const OperationHandle& handle,
                  const StatusCallback& callback,
                  base::PlatformFileError rv);
-  void DidGetMetadata(OperationID id,
+  void DidGetMetadata(const OperationHandle& handle,
                       const GetMetadataCallback& callback,
                       base::PlatformFileError rv,
                       const base::PlatformFileInfo& file_info);
-  void DidReadDirectory(OperationID id,
+  void DidReadDirectory(const OperationHandle& handle,
                         const ReadDirectoryCallback& callback,
                         base::PlatformFileError rv,
                         const std::vector<DirectoryEntry>& entries,
                         bool has_more);
-  void DidWrite(OperationID id,
+  void DidWrite(const OperationHandle& handle,
                 const WriteCallback& callback,
                 base::PlatformFileError rv,
                 int64 bytes,
                 bool complete);
   void DidOpenFile(
-      OperationID id,
+      const OperationHandle& handle,
       const OpenFileCallback& callback,
       base::PlatformFileError rv,
       base::PlatformFile file,
       const base::Closure& on_close_callback,
       base::ProcessHandle peer_handle);
   void DidCreateSnapshot(
-      OperationID id,
+      const OperationHandle& handle,
       const SnapshotFileCallback& callback,
       base::PlatformFileError rv,
       const base::PlatformFileInfo& file_info,
@@ -260,7 +268,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   void PrepareForWrite(OperationID id, const FileSystemURL& url);
   void PrepareForRead(OperationID id, const FileSystemURL& url);
 
-  // This must be called at the end of any async operations.
+  // These must be called at the beginning and end of any async operations.
+  OperationHandle BeginOperation(FileSystemOperation* operation,
+                                 base::WeakPtr<BeginOperationScoper> scope);
   void FinishOperation(OperationID id);
 
   // Not owned; file_system_context owns this.
@@ -273,6 +283,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   // we can notify observers when we're done.
   typedef std::map<OperationID, FileSystemURLSet> OperationToURLSet;
   OperationToURLSet write_target_urls_;
+
+  // Operations that are finished but not yet fire their callbacks.
+  std::set<OperationID> finished_operations_;
+
+  // Callbacks for stray cancels whose target operation is already finished.
+  std::map<OperationID, StatusCallback> stray_cancel_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationRunner);
 };

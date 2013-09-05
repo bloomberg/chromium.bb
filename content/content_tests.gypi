@@ -497,6 +497,7 @@
         '../webkit/browser/fileapi/file_system_file_stream_reader_unittest.cc',
         '../webkit/browser/fileapi/file_system_operation_impl_unittest.cc',
         '../webkit/browser/fileapi/file_system_operation_impl_write_unittest.cc',
+        '../webkit/browser/fileapi/file_system_operation_runner_unittest.cc',
         '../webkit/browser/fileapi/file_system_quota_client_unittest.cc',
         '../webkit/browser/fileapi/file_system_url_request_job_unittest.cc',
         '../webkit/browser/fileapi/file_system_url_unittest.cc',
