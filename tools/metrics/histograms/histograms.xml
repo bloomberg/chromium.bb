@@ -16681,6 +16681,17 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="TopSites.NumberOfApplyBlacklist">
+  <summary>The number of times TopSitesImpl::ApplyBlacklist is called.</summary>
+</histogram>
+
+<histogram name="TopSites.NumberOfBlacklistedItems">
+  <summary>
+    The number of items in the user Most Visited blacklist every time
+    TopSitesImpl::ApplyBlacklist is called.
+  </summary>
+</histogram>
+
 <histogram name="Touchpad.Device" enum="TouchpadDeviceState">
   <summary>Tracks touchpad device state.</summary>
 </histogram>
