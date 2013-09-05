@@ -1286,4 +1286,5 @@ crbug.com/284793 http/tests/media/media-source/mediasource-play-then-seek-back.h
 # Temporarily mark as flaky in advance of Chromium change.
 crbug.com/276769 http/tests/security/contentSecurityPolicy/source-list-parsing-nonascii.html [ Failure Pass ]
 
+crbug.com/286081 inspector/debugger/long-resume-vs-reload.html [ Failure Pass Timeout ]
 crbug.com/285703 [ Debug ] fast/table/table-rowspan-crash-with-huge-rowspan-cells.html [ Crash Pass ]
