@@ -11,6 +11,8 @@ vars = {
 }
 
 deps = {
+    'breakpad':
+        Var('git_url') + '/external/google-breakpad.git@85c352695f41b3c4bab8773bc2ace5a730dff2b7',
     'native_client/tools/perf_expectations':
         Var('git_url') + '/chromium/src/tools/perf_expectations.git@25b37aafa73c6530d84e79d95f4b6d75cd4e1e7b',
     'testing/gtest':
