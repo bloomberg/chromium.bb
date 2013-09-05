@@ -92,7 +92,7 @@ class NET_EXPORT_PRIVATE WebSocketStream : public WebSocketStreamBase {
 
   // Reads WebSocket frame data. This operation finishes when new frame data
   // becomes available. Each frame message might be chopped off in the middle
-  // as specified in the description of WebSocketFrameChunk struct.
+  // as specified in the description of the WebSocketFrameChunk struct.
   // |frame_chunks| remains owned by the caller and must be valid until the
   // operation completes or Close() is called. |frame_chunks| must be empty on
   // calling.
@@ -127,19 +127,22 @@ class NET_EXPORT_PRIVATE WebSocketStream : public WebSocketStreamBase {
   virtual int ReadFrames(ScopedVector<WebSocketFrameChunk>* frame_chunks,
                          const CompletionCallback& callback) = 0;
 
-  // Writes WebSocket frame data. |frame_chunks| must obey the rule specified
-  // in the documentation of WebSocketFrameChunk struct: the first chunk of
-  // a WebSocket frame must contain non-NULL |header|, and the last chunk must
-  // have |final_chunk| field set to true. Series of chunks representing a
-  // WebSocket frame must be consistent (the total length of |data| fields must
-  // match |header->payload_length|). |frame_chunks| must be valid until the
-  // operation completes or Close() is called.
+  // Writes WebSocket frame data. |frame_chunks| must only contain complete
+  // frames. Every chunk must have a non-NULL |header| and the |final_chunk|
+  // boolean set to true.
   //
-  // This function should not be called while previous call of WriteFrames() is
-  // still pending.
+  // The |frame_chunks| pointer must remain valid until the operation completes
+  // or Close() is called. WriteFrames() will modify the contents of
+  // |frame_chunks| in the process of sending the message. After WriteFrames()
+  // has completed it is safe to clear and then re-use the vector, but other
+  // than that the caller should make no assumptions about its contents.
   //
-  // Support for incomplete frames is not guaranteed and may be removed from
-  // future iterations of the API.
+  // This function should not be called while a previous call to WriteFrames()
+  // on the same stream is pending.
+  //
+  // Frame boundaries may not be preserved. Frames may be split or
+  // coalesced. Message boundaries are preserved (as required by WebSocket API
+  // semantics).
   //
   // This method will only return OK if all frames were written completely.
   // Otherwise it will return an appropriate net error code.
