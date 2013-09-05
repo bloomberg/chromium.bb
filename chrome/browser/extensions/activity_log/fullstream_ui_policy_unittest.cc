@@ -83,7 +83,7 @@ class FullStreamUIPolicyTest : public testing::Test {
     base::CancelableClosure timeout(
         base::Bind(&FullStreamUIPolicyTest::TimeoutCallback));
     base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, timeout.callback(), base::TimeDelta::FromSeconds(5));
+        FROM_HERE, timeout.callback(), base::TimeDelta::FromSeconds(8));
 
     // Wait for results; either the checker or the timeout callbacks should
     // cause the main loop to exit.
@@ -115,12 +115,12 @@ class FullStreamUIPolicyTest : public testing::Test {
                    checker,
                    base::MessageLoop::current()->QuitClosure()));
 
-    // Set up a timeout that will trigger after 5 seconds; if we haven't
+    // Set up a timeout that will trigger after 8 seconds; if we haven't
     // received any results by then assume that the test is broken.
     base::CancelableClosure timeout(
         base::Bind(&FullStreamUIPolicyTest::TimeoutCallback));
     base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, timeout.callback(), base::TimeDelta::FromSeconds(5));
+        FROM_HERE, timeout.callback(), base::TimeDelta::FromSeconds(8));
 
     // Wait for results; either the checker or the timeout callbacks should
     // cause the main loop to exit.
@@ -659,7 +659,14 @@ TEST_F(FullStreamUIPolicyTest, CapReturns) {
                    base::StringPrintf("apicall_%d", i));
     policy->ProcessAction(action);
   }
+
   policy->Flush();
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(&base::DoNothing),
+      base::MessageLoop::current()->QuitClosure());
+  base::MessageLoop::current()->Run();
 
   CheckReadFilteredData(
       policy,
