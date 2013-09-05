@@ -180,7 +180,6 @@ public class AwContents {
     private Callable<Picture> mPictureListenerContentProvider;
 
     private boolean mContainerViewFocused;
-    private boolean mWindowFocused;
 
     private AwAutofillManagerDelegate mAwAutofillManagerDelegate;
 
@@ -593,10 +592,10 @@ public class AwContents {
         final boolean wasViewVisible = mIsViewVisible;
         final boolean wasWindowVisible = mIsWindowVisible;
         final boolean wasPaused = mIsPaused;
-        final boolean wasFocused = mWindowFocused;
+        final boolean wasFocused = mContainerViewFocused;
 
         // Properly clean up existing mContentViewCore and mNativeAwContents.
-        if (wasFocused) onWindowFocusChanged(false);
+        if (wasFocused) onFocusChanged(false, 0, null);
         if (wasViewVisible) setViewVisibilityInternal(false);
         if (wasWindowVisible) setWindowVisibilityInternal(false);
         if (!wasPaused) onPause();
@@ -612,7 +611,7 @@ public class AwContents {
         onSizeChanged(mContainerView.getWidth(), mContainerView.getHeight(), 0, 0);
         if (wasWindowVisible) setWindowVisibilityInternal(true);
         if (wasViewVisible) setViewVisibilityInternal(true);
-        if (wasFocused) onWindowFocusChanged(true);
+        if (wasFocused) onFocusChanged(true, 0, null);
     }
 
     /**
@@ -1487,8 +1486,7 @@ public class AwContents {
      * @see android.view.View#onWindowFocusChanged()
      */
     public void onWindowFocusChanged(boolean hasWindowFocus) {
-        mWindowFocused = hasWindowFocus;
-        mContentViewCore.onFocusChanged(mContainerViewFocused && mWindowFocused);
+        // If adding any code here, remember to adding correct handling in receivePopupContents().
     }
 
     /**
@@ -1496,7 +1494,7 @@ public class AwContents {
      */
     public void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
         mContainerViewFocused = focused;
-        mContentViewCore.onFocusChanged(mContainerViewFocused && mWindowFocused);
+        mContentViewCore.onFocusChanged(focused);
     }
 
     /**
