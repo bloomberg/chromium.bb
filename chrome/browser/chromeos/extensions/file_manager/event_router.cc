@@ -390,16 +390,7 @@ void EventRouter::RemoveFileWatch(const base::FilePath& local_path,
 
 void EventRouter::OnDiskEvent(DiskMountManager::DiskEvent event,
                               const DiskMountManager::Disk* disk) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Disregard hidden devices.
-  if (disk->is_hidden())
-    return;
-  if (event == DiskMountManager::DISK_ADDED) {
-    OnDiskAdded(disk);
-  } else if (event == DiskMountManager::DISK_REMOVED) {
-    OnDiskRemoved(disk);
-  }
+  // Disk event is dispatched by VolumeManager now. Do nothing.
 }
 
 void EventRouter::OnDeviceEvent(DiskMountManager::DeviceEvent event,
@@ -461,11 +452,7 @@ void EventRouter::OnMountEvent(
 void EventRouter::OnFormatEvent(DiskMountManager::FormatEvent event,
                                 chromeos::FormatError error_code,
                                 const std::string& device_path) {
-  if (event == DiskMountManager::FORMAT_STARTED) {
-    OnFormatStarted(device_path, error_code == chromeos::FORMAT_ERROR_NONE);
-  } else if (event == DiskMountManager::FORMAT_COMPLETED) {
-    OnFormatCompleted(device_path, error_code == chromeos::FORMAT_ERROR_NONE);
-  }
+  // Format event is dispatched by VolumeManager now. Do nothing.
 }
 
 void EventRouter::NetworkManagerChanged() {
@@ -762,44 +749,21 @@ void EventRouter::ShowRemovableDeviceInFileManager(
       base::Bind(&util::OpenRemovableDrive, mount_path));
 }
 
-void EventRouter::OnDiskAdded(const DiskMountManager::Disk* disk) {
+void EventRouter::OnDiskAdded(
+    const DiskMountManager::Disk& disk, bool mounting) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  VLOG(1) << "Disk added: " << disk->device_path();
-  if (disk->device_path().empty()) {
-    VLOG(1) << "Empty system path for " << disk->device_path();
-    return;
-  }
-
-  // If disk is not mounted yet and it has media and there is no policy
-  // forbidding external storage, give it a try.
-  if (disk->mount_path().empty() && disk->has_media() &&
-      !profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
-    // Initiate disk mount operation. MountPath auto-detects the filesystem
-    // format if the second argument is empty. The third argument (mount label)
-    // is not used in a disk mount operation.
-    DiskMountManager::GetInstance()->MountPath(
-        disk->device_path(), std::string(), std::string(),
-        chromeos::MOUNT_TYPE_DEVICE);
-  } else {
-    // Either the disk was mounted or it has no media. In both cases we don't
-    // want the Scanning notification to persist.
+  if (!mounting) {
+    // If the disk is not being mounted, we don't want the Scanning
+    // notification to persist.
     notifications_->HideNotification(DesktopNotifications::DEVICE,
-                                     disk->system_path_prefix());
+                                     disk.system_path_prefix());
   }
 }
 
-void EventRouter::OnDiskRemoved(const DiskMountManager::Disk* disk) {
+void EventRouter::OnDiskRemoved(const DiskMountManager::Disk& disk) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  VLOG(1) << "Disk removed: " << disk->device_path();
-
-  if (!disk->mount_path().empty()) {
-    DiskMountManager::GetInstance()->UnmountPath(
-        disk->mount_path(),
-        chromeos::UNMOUNT_OPTIONS_LAZY,
-        DiskMountManager::UnmountPathCallback());
-  }
+  // Do nothing.
 }
 
 void EventRouter::OnDeviceAdded(const std::string& device_path) {
@@ -857,11 +821,6 @@ void EventRouter::OnFormatCompleted(const std::string& device_path,
         DesktopNotifications::FORMAT_SUCCESS,
         device_path,
         base::TimeDelta::FromSeconds(4));
-    // MountPath auto-detects filesystem format if second argument is empty.
-    // The third argument (mount label) is not used in a disk mount operation.
-    DiskMountManager::GetInstance()->MountPath(device_path, std::string(),
-                                               std::string(),
-                                               chromeos::MOUNT_TYPE_DEVICE);
   } else {
     notifications_->HideNotification(DesktopNotifications::FORMAT_START,
                                      device_path);

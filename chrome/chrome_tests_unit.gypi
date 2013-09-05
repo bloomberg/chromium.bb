@@ -657,6 +657,7 @@
         'browser/chromeos/drive/webkit_file_stream_reader_impl_unittest.cc',
         'browser/chromeos/drive/write_on_cache_file_unittest.cc',
         'browser/chromeos/extensions/default_app_order_unittest.cc',
+        'browser/chromeos/extensions/file_manager/volume_manager_unittest.cc',
         'browser/chromeos/file_manager/desktop_notifications_unittest.cc',
         'browser/chromeos/file_manager/file_tasks_unittest.cc',
         'browser/chromeos/file_manager/file_watcher_unittest.cc',

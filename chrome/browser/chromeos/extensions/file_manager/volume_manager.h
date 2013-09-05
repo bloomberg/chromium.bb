@@ -11,6 +11,8 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
+class Profile;
+
 namespace content {
 class BrowserContext;
 }  // namespace content
@@ -57,8 +59,8 @@ struct VolumeInfo {
 class VolumeManager : public BrowserContextKeyedService,
                       public chromeos::disks::DiskMountManager::Observer {
  public:
-  explicit VolumeManager(
-      chromeos::disks::DiskMountManager* disk_mount_manager);
+  VolumeManager(Profile* profile,
+                chromeos::disks::DiskMountManager* disk_mount_manager);
   virtual ~VolumeManager();
 
   // Returns the instance corresponding to the |context|.
@@ -98,8 +100,9 @@ class VolumeManager : public BrowserContextKeyedService,
       const std::string& device_path) OVERRIDE;
 
  private:
-  ObserverList<VolumeManagerObserver> observers_;
+  Profile* profile_;
   chromeos::disks::DiskMountManager* disk_mount_manager_;
+  ObserverList<VolumeManagerObserver> observers_;
   DISALLOW_COPY_AND_ASSIGN(VolumeManager);
 };
 

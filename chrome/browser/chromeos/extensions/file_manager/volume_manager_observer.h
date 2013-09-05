@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "chromeos/disks/disk_mount_manager.h"
+
 namespace file_manager {
 
 struct VolumeInfo;
@@ -16,11 +18,27 @@ class VolumeManagerObserver {
  public:
   virtual ~VolumeManagerObserver() {}
 
+  // Fired when a new disk is added.
+  virtual void OnDiskAdded(
+      const chromeos::disks::DiskMountManager::Disk& disk, bool mounting) = 0;
+
+  // Fired when a disk is removed.
+  virtual void OnDiskRemoved(
+      const chromeos::disks::DiskMountManager::Disk& disk) = 0;
+
   // Fired when a new device is added.
   virtual void OnDeviceAdded(const std::string& device_path) = 0;
 
-  // Fired when a new device is removed.
+  // Fired when a device is removed.
   virtual void OnDeviceRemoved(const std::string& device_path) = 0;
+
+  // Fired when formatting a device is started (or failed to start).
+  virtual void OnFormatStarted(
+      const std::string& device_path, bool success) = 0;
+
+  // Fired when formatting a device is completed (or terminated on error).
+  virtual void OnFormatCompleted(
+      const std::string& device_path, bool success) = 0;
 };
 
 }  // namespace file_manager

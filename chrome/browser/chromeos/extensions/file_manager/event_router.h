@@ -106,19 +106,24 @@ class EventRouter
   virtual void OnFileSystemBeingUnmounted() OVERRIDE;
 
   // VolumeManagerObserver overrides.
+  virtual void OnDiskAdded(
+      const chromeos::disks::DiskMountManager::Disk& disk,
+      bool mounting) OVERRIDE;
+  virtual void OnDiskRemoved(
+      const chromeos::disks::DiskMountManager::Disk& disk) OVERRIDE;
   virtual void OnDeviceAdded(const std::string& device_path) OVERRIDE;
   virtual void OnDeviceRemoved(const std::string& device_path) OVERRIDE;
+  virtual void OnFormatStarted(
+      const std::string& device_path, bool success) OVERRIDE;
+  virtual void OnFormatCompleted(
+      const std::string& device_path, bool success) OVERRIDE;
 
  private:
   typedef std::map<base::FilePath, FileWatcher*> WatcherMap;
 
   // USB mount event handlers.
-  void OnDiskAdded(const chromeos::disks::DiskMountManager::Disk* disk);
-  void OnDiskRemoved(const chromeos::disks::DiskMountManager::Disk* disk);
   void OnDiskMounted(const chromeos::disks::DiskMountManager::Disk* disk);
   void OnDiskUnmounted(const chromeos::disks::DiskMountManager::Disk* disk);
-  void OnFormatStarted(const std::string& device_path, bool success);
-  void OnFormatCompleted(const std::string& device_path, bool success);
 
   // Called on change to kExternalStorageDisabled pref.
   void OnExternalStorageDisabledChanged();

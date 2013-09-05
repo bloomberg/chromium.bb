@@ -1221,7 +1221,6 @@
         'browser/chromeos/drive/test_util.cc',
         'browser/chromeos/drive/test_util.h',
         'browser/chromeos/extensions/echo_private_apitest.cc',
-        'browser/chromeos/extensions/file_manager/event_router_browsertest.cc',
         'browser/chromeos/extensions/file_manager/file_browser_handler_api_test.cc',
         'browser/chromeos/extensions/file_manager/file_browser_private_apitest.cc',
         'browser/chromeos/extensions/info_private_apitest.cc',

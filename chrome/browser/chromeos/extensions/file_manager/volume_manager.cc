@@ -9,8 +9,11 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/extensions/file_manager/volume_manager_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/volume_manager_observer.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -55,8 +58,10 @@ VolumeInfo CreateVolumeInfoFromMountPointInfo(
 }  // namespace
 
 VolumeManager::VolumeManager(
+    Profile* profile,
     chromeos::disks::DiskMountManager* disk_mount_manager)
-    : disk_mount_manager_(disk_mount_manager) {
+    : profile_(profile),
+      disk_mount_manager_(disk_mount_manager) {
   DCHECK(disk_mount_manager);
 }
 
@@ -119,7 +124,58 @@ std::vector<VolumeInfo> VolumeManager::GetVolumeInfoList() const {
 void VolumeManager::OnDiskEvent(
     chromeos::disks::DiskMountManager::DiskEvent event,
     const chromeos::disks::DiskMountManager::Disk* disk) {
-  // TODO(hidehiko): Move the implementation from EventRouter.
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // Disregard hidden devices.
+  if (disk->is_hidden())
+    return;
+
+  switch (event) {
+    case chromeos::disks::DiskMountManager::DISK_ADDED: {
+      if (disk->device_path().empty()) {
+        DVLOG(1) << "Empty system path for " << disk->device_path();
+        return;
+      }
+
+      bool mounting = false;
+      if (disk->mount_path().empty() && disk->has_media() &&
+          !profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
+        // If disk is not mounted yet and it has media and there is no policy
+        // forbidding external storage, give it a try.
+        // Initiate disk mount operation. MountPath auto-detects the filesystem
+        // format if the second argument is empty. The third argument (mount
+        // label) is not used in a disk mount operation.
+        disk_mount_manager_->MountPath(
+            disk->device_path(), std::string(), std::string(),
+            chromeos::MOUNT_TYPE_DEVICE);
+        mounting = true;
+      }
+
+      // Notify to observers.
+      FOR_EACH_OBSERVER(VolumeManagerObserver, observers_,
+                        OnDiskAdded(*disk, mounting));
+      return;
+    }
+
+    case chromeos::disks::DiskMountManager::DISK_REMOVED:
+      // If the disk is already mounted, unmount it.
+      if (!disk->mount_path().empty()) {
+        disk_mount_manager_->UnmountPath(
+            disk->mount_path(),
+            chromeos::UNMOUNT_OPTIONS_LAZY,
+            chromeos::disks::DiskMountManager::UnmountPathCallback());
+      }
+
+      // Notify to observers.
+      FOR_EACH_OBSERVER(VolumeManagerObserver, observers_,
+                        OnDiskRemoved(*disk));
+      return;
+
+    case chromeos::disks::DiskMountManager::DISK_CHANGED:
+      DVLOG(1) << "Ignore CHANGED event.";
+      return;
+  }
+  NOTREACHED();
 }
 
 void VolumeManager::OnDeviceEvent(
@@ -155,7 +211,36 @@ void VolumeManager::OnFormatEvent(
     chromeos::disks::DiskMountManager::FormatEvent event,
     chromeos::FormatError error_code,
     const std::string& device_path) {
-  // TODO(hidehiko): Move the implementation from EventRouter.
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DVLOG(1) << "OnDeviceEvent: " << event << ", " << error_code
+           << ", " << device_path;
+
+  switch (event) {
+    case chromeos::disks::DiskMountManager::FORMAT_STARTED:
+      FOR_EACH_OBSERVER(
+          VolumeManagerObserver, observers_,
+          OnFormatStarted(device_path,
+                          error_code == chromeos::FORMAT_ERROR_NONE));
+      return;
+    case chromeos::disks::DiskMountManager::FORMAT_COMPLETED:
+      if (error_code == chromeos::FORMAT_ERROR_NONE) {
+        // If format is completed successfully, try to mount the device.
+        // MountPath auto-detects filesystem format if second argument is
+        // empty. The third argument (mount label) is not used in a disk mount
+        // operation.
+        disk_mount_manager_->MountPath(
+            device_path, std::string(), std::string(),
+            chromeos::MOUNT_TYPE_DEVICE);
+      }
+
+      FOR_EACH_OBSERVER(
+          VolumeManagerObserver, observers_,
+          OnFormatCompleted(device_path,
+                            error_code == chromeos::FORMAT_ERROR_NONE));
+
+      return;
+  }
+  NOTREACHED();
 }
 
 }  // namespace file_manager
