@@ -154,7 +154,7 @@ void DateTimeFieldElement::initialize(const AtomicString& pseudo, const String& 
 
     setAttribute(aria_helpAttr, axHelpText);
     setPart(pseudo);
-    appendChild(Text::create(&document(), visibleValue()));
+    appendChild(Text::create(document(), visibleValue()));
 }
 
 bool DateTimeFieldElement::isDateTimeFieldElement() const

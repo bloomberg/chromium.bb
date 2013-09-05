@@ -798,7 +798,7 @@ PassRefPtr<DocumentFragment> Document::createDocumentFragment()
 
 PassRefPtr<Text> Document::createTextNode(const String& data)
 {
-    return Text::create(this, data);
+    return Text::create(*this, data);
 }
 
 PassRefPtr<Comment> Document::createComment(const String& data)
@@ -816,7 +816,7 @@ PassRefPtr<CDATASection> Document::createCDATASection(const String& data, Except
         es.throwDOMException(InvalidCharacterError, "String cannot contain ']]>' since that is the end delimiter of a CData section.");
         return 0;
     }
-    return CDATASection::create(this, data);
+    return CDATASection::create(*this, data);
 }
 
 PassRefPtr<ProcessingInstruction> Document::createProcessingInstruction(const String& target, const String& data, ExceptionState& es)
@@ -834,7 +834,7 @@ PassRefPtr<ProcessingInstruction> Document::createProcessingInstruction(const St
 
 PassRefPtr<Text> Document::createEditingTextNode(const String& text)
 {
-    return Text::createEditingText(this, text);
+    return Text::createEditingText(*this, text);
 }
 
 PassRefPtr<CSSStyleDeclaration> Document::createCSSStyleDeclaration()

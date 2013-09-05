@@ -383,7 +383,7 @@ PassRefPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, Exc
               break;
         }
 
-        fragment->appendChild(Text::create(&document(), text.substring(start, i - start)), es);
+        fragment->appendChild(Text::create(document(), text.substring(start, i - start)), es);
         if (es.hadException())
             return 0;
 
@@ -477,7 +477,7 @@ void HTMLElement::setOuterText(const String &text, ExceptionState& es)
     if (text.contains('\r') || text.contains('\n'))
         newChild = textToFragment(text, es);
     else
-        newChild = Text::create(&document(), text);
+        newChild = Text::create(document(), text);
 
     if (!this || !parentNode())
         es.throwDOMException(HierarchyRequestError);

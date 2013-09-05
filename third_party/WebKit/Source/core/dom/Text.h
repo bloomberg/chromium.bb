@@ -35,14 +35,9 @@ class Text : public CharacterData {
 public:
     static const unsigned defaultLengthLimit = 1 << 16;
 
-    static PassRefPtr<Text> create(Document& document, const String& data)
-    {
-        return create(&document, data);
-    }
-
-    static PassRefPtr<Text> create(Document*, const String&);
-    static PassRefPtr<Text> createWithLengthLimit(Document*, const String&, unsigned positionInString, unsigned lengthLimit = defaultLengthLimit);
-    static PassRefPtr<Text> createEditingText(Document*, const String&);
+    static PassRefPtr<Text> create(Document&, const String&);
+    static PassRefPtr<Text> createWithLengthLimit(Document&, const String&, unsigned positionInString, unsigned lengthLimit = defaultLengthLimit);
+    static PassRefPtr<Text> createEditingText(Document&, const String&);
 
     PassRefPtr<Text> splitText(unsigned offset, ExceptionState&);
 
@@ -62,8 +57,8 @@ public:
     virtual NodeType nodeType() const OVERRIDE;
 
 protected:
-    Text(TreeScope* treeScope, const String& data, ConstructionType type)
-        : CharacterData(treeScope, data, type)
+    Text(TreeScope& treeScope, const String& data, ConstructionType type)
+        : CharacterData(&treeScope, data, type)
     {
         ScriptWrappable::init(this);
     }

@@ -71,7 +71,7 @@ PassRefPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document
 {
     RefPtr<HTMLOptionElement> element = adoptRef(new HTMLOptionElement(optionTag, document));
 
-    RefPtr<Text> text = Text::create(&document, data.isNull() ? "" : data);
+    RefPtr<Text> text = Text::create(document, data.isNull() ? "" : data);
 
     element->appendChild(text.release(), es);
     if (es.hadException())
@@ -145,7 +145,7 @@ void HTMLOptionElement::setText(const String &text, ExceptionState& es)
         toText(child)->setData(text);
     else {
         removeChildren();
-        appendChild(Text::create(&document(), text), es);
+        appendChild(Text::create(document(), text), es);
     }
 
     if (selectIsMenuList && select->selectedIndex() != oldSelectedIndex)

@@ -41,12 +41,12 @@ using namespace std;
 
 namespace WebCore {
 
-PassRefPtr<Text> Text::create(Document* document, const String& data)
+PassRefPtr<Text> Text::create(Document& document, const String& data)
 {
     return adoptRef(new Text(document, data, CreateText));
 }
 
-PassRefPtr<Text> Text::createEditingText(Document* document, const String& data)
+PassRefPtr<Text> Text::createEditingText(Document& document, const String& data)
 {
     return adoptRef(new Text(document, data, CreateEditingText));
 }
@@ -314,10 +314,10 @@ bool Text::childTypeAllowed(NodeType) const
 
 PassRefPtr<Text> Text::cloneWithData(const String& data)
 {
-    return create(&document(), data);
+    return create(document(), data);
 }
 
-PassRefPtr<Text> Text::createWithLengthLimit(Document* document, const String& data, unsigned start, unsigned lengthLimit)
+PassRefPtr<Text> Text::createWithLengthLimit(Document& document, const String& data, unsigned start, unsigned lengthLimit)
 {
     unsigned dataLength = data.length();
 

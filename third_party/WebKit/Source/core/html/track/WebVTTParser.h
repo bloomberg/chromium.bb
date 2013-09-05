@@ -143,7 +143,7 @@ private:
     static void skipLineTerminator(const char* data, unsigned length, unsigned*);
     static String collectNextLine(const char* data, unsigned length, unsigned*);
 
-    void constructTreeFromToken(Document*);
+    void constructTreeFromToken(Document&);
 
     String m_currentHeaderName;
     String m_currentHeaderValue;

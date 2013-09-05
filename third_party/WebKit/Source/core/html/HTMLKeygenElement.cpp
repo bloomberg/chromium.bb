@@ -62,7 +62,7 @@ void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot* root)
     select->setPart(keygenSelectPseudoId);
     for (size_t i = 0; i < keys.size(); ++i) {
         RefPtr<HTMLOptionElement> option = HTMLOptionElement::create(document());
-        option->appendChild(Text::create(&document(), keys[i]));
+        option->appendChild(Text::create(document(), keys[i]));
         select->appendChild(option);
     }
 

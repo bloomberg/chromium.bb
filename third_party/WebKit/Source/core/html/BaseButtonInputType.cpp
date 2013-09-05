@@ -44,7 +44,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 class NonSelectableText : public Text {
-    inline NonSelectableText(Document* document, const String& data)
+    inline NonSelectableText(Document& document, const String& data)
         : Text(document, data, CreateText)
     {
     }
@@ -55,7 +55,7 @@ class NonSelectableText : public Text {
     }
 
 public:
-    static inline PassRefPtr<NonSelectableText> create(Document* document, const String& data)
+    static inline PassRefPtr<NonSelectableText> create(Document& document, const String& data)
     {
         return adoptRef(new NonSelectableText(document, data));
     }
@@ -66,7 +66,7 @@ public:
 void BaseButtonInputType::createShadowSubtree()
 {
     ASSERT(element()->userAgentShadowRoot());
-    RefPtr<Text> text = NonSelectableText::create(&element()->document(), element()->valueWithDefault());
+    RefPtr<Text> text = NonSelectableText::create(element()->document(), element()->valueWithDefault());
     element()->userAgentShadowRoot()->appendChild(text);
 }
 

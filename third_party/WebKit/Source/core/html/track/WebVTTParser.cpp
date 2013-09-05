@@ -335,7 +335,7 @@ PassRefPtr<DocumentFragment>  WebVTTParser::createDocumentFragmentFromCueText(co
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(*document);
 
     if (!text.length()) {
-        fragment->parserAppendChild(Text::create(document, ""));
+        fragment->parserAppendChild(Text::create(*document, ""));
         return fragment;
     }
 
@@ -346,7 +346,7 @@ PassRefPtr<DocumentFragment>  WebVTTParser::createDocumentFragmentFromCueText(co
     m_languageStack.clear();
     SegmentedString content(text);
     while (m_tokenizer->nextToken(content, m_token))
-        constructTreeFromToken(document);
+        constructTreeFromToken(*document);
 
     return fragment.release();
 }
@@ -484,7 +484,7 @@ static WebVTTNodeType tokenToNodeType(WebVTTToken& token)
     return WebVTTNodeTypeNone;
 }
 
-void WebVTTParser::constructTreeFromToken(Document* document)
+void WebVTTParser::constructTreeFromToken(Document& document)
 {
     QualifiedName tagName(nullAtom, AtomicString(m_token.name()), xhtmlNamespaceURI);
 
@@ -501,7 +501,7 @@ void WebVTTParser::constructTreeFromToken(Document* document)
         RefPtr<WebVTTElement> child;
         WebVTTNodeType nodeType = tokenToNodeType(m_token);
         if (nodeType != WebVTTNodeTypeNone)
-            child = WebVTTElement::create(nodeType, document);
+            child = WebVTTElement::create(nodeType, &document);
         if (child) {
             if (m_token.classes().size() > 0)
                 child->setAttribute(classAttr, AtomicString(m_token.classes()));
@@ -534,7 +534,7 @@ void WebVTTParser::constructTreeFromToken(Document* document)
         String charactersString(StringImpl::create8BitIfPossible(m_token.characters()));
         double time = collectTimeStamp(charactersString, &position);
         if (time != malformedTime)
-            m_currentNode->parserAppendChild(ProcessingInstruction::create(document, "timestamp", charactersString));
+            m_currentNode->parserAppendChild(ProcessingInstruction::create(&document, "timestamp", charactersString));
         break;
     }
     default:

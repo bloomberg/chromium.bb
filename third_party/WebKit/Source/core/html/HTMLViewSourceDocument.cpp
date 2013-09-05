@@ -198,7 +198,7 @@ void HTMLViewSourceDocument::addLine(const AtomicString& className)
     m_current = m_td = td;
 
 #ifdef DEBUG_LINE_NUMBERS
-    RefPtr<Text> lineNumberText = Text::create(this, String::number(parser()->lineNumber() + 1) + " ");
+    RefPtr<Text> lineNumberText = Text::create(*this, String::number(parser()->lineNumber() + 1) + " ");
     td->addChild(lineNumberText);
     lineNumberText->lazyAttach();
 #endif
@@ -239,7 +239,7 @@ void HTMLViewSourceDocument::addText(const String& text, const AtomicString& cla
             finishLine();
             continue;
         }
-        RefPtr<Text> t = Text::create(this, substring);
+        RefPtr<Text> t = Text::create(*this, substring);
         m_current->parserAppendChild(t);
         if (i < size - 1)
             finishLine();
