@@ -32,6 +32,7 @@ class ToggleImageButton;
 namespace chromeos {
 
 class NetworkState;
+class PassphraseTextfield;
 
 namespace internal {
 class EAPMethodComboboxModel;
@@ -190,7 +191,7 @@ class WifiConfigView : public ChildNetworkConfigView,
   scoped_ptr<internal::SecurityComboboxModel> security_combobox_model_;
   views::Combobox* security_combobox_;
   views::Label* passphrase_label_;
-  views::Textfield* passphrase_textfield_;
+  PassphraseTextfield* passphrase_textfield_;
   views::ToggleImageButton* passphrase_visible_button_;
   views::Label* error_label_;
 

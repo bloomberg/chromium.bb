@@ -96,6 +96,7 @@ void ShillServiceClientStub::GetProperties(
                                                   NULL);
     call_status = DBUS_METHOD_CALL_SUCCESS;
   } else {
+    LOG(ERROR) << "Properties not found for: " << service_path.value();
     result_properties.reset(new base::DictionaryValue);
     call_status = DBUS_METHOD_CALL_FAILURE;
   }

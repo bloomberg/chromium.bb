@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
+#include "chrome/browser/chromeos/options/passphrase_textfield.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -401,9 +402,10 @@ bool WifiConfigView::CanLogin() {
     return false;
 
   // If the network requires a passphrase, make sure it is the right length.
-  if (passphrase_textfield_ != NULL
-      && passphrase_textfield_->enabled()
-      && passphrase_textfield_->text().length() < kMinWirelessPasswordLen)
+  if (passphrase_textfield_ != NULL &&
+      passphrase_textfield_->enabled() &&
+      !passphrase_textfield_->show_fake() &&
+      passphrase_textfield_->text().length() < kMinWirelessPasswordLen)
     return false;
 
   // If we're using EAP, we must have a method.
@@ -1054,11 +1056,10 @@ void WifiConfigView::Init(bool show_8021x) {
   string16 passphrase_label_text = l10n_util::GetStringUTF16(label_text_id);
   passphrase_label_ = new views::Label(passphrase_label_text);
   layout->AddView(passphrase_label_);
-  passphrase_textfield_ = new views::Textfield(
-      views::Textfield::STYLE_OBSCURED);
+  passphrase_textfield_ = new PassphraseTextfield();
   passphrase_textfield_->SetController(this);
   // Disable passphrase input initially for other network.
-  passphrase_label_->SetEnabled(wifi != NULL);
+  passphrase_label_->SetEnabled(wifi);
   passphrase_textfield_->SetEnabled(wifi && passphrase_ui_data_.IsEditable());
   passphrase_textfield_->SetAccessibleName(passphrase_label_text);
   layout->AddView(passphrase_textfield_);
@@ -1172,13 +1173,13 @@ void WifiConfigView::InitFromProperties(
     bool show_8021x,
     const std::string& service_path,
     const base::DictionaryValue& properties) {
-  std::string passphrase;
-  properties.GetStringWithoutPathExpansion(
-      flimflam::kPassphraseProperty, &passphrase);
-  passphrase_textfield_->SetText(UTF8ToUTF16(passphrase));
-
-  if (!show_8021x)
+  if (!show_8021x) {
+    std::string passphrase;
+    properties.GetStringWithoutPathExpansion(
+        flimflam::kPassphraseProperty, &passphrase);
+    passphrase_textfield_->SetText(UTF8ToUTF16(passphrase));
     return;
+  }
 
   // EAP Method
   std::string eap_method;
@@ -1277,6 +1278,12 @@ void WifiConfigView::InitFromProperties(
     properties.GetStringWithoutPathExpansion(
         flimflam::kEapPasswordProperty, &eap_password);
     passphrase_textfield_->SetText(UTF8ToUTF16(eap_password));
+    // If 'Connectable' is True, show a fake passphrase to indicate that it
+    // has already been set.
+    bool connectable = false;
+    properties.GetBooleanWithoutPathExpansion(
+        flimflam::kConnectableProperty, &connectable);
+    passphrase_textfield_->SetShowFake(connectable);
   }
 
   // Save credentials
