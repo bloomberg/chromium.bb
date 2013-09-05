@@ -1,6 +1,6 @@
 <html>
 <head>
-<script type="text/javascript" src="../http/tests/inspector-protocol/resources/protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/resources/protocol-test.js"></script>
 <script>
 
 
@@ -28,7 +28,8 @@ function test()
                 "workerId": workerId,
                 "message": { "method": method,
                              "params": params,
-                             "id": workerRequestId++ }
+                             "id": workerRequestId++
+                           }
             });
     }
 
@@ -60,15 +61,21 @@ function test()
     {
         var message = messageObject["params"]["message"];
         if (message["method"] === "Debugger.paused") {
-            InspectorTest.log("SUCCESS: Worker paused");
-            sendCommandToWorker("Debugger.disable", {});
-            InspectorTest.completeTest();
+            InspectorTest.log("Worker paused");
+            InspectorTest.sendCommand("Runtime.evaluate", { "expression": "worker.terminate()" }, didTerminateWorker);
         }
+    }
+
+    function didTerminateWorker(messageObject)
+    {
+        InspectorTest.log("SUCCESS: Did terminate paused worker");
+        InspectorTest.completeTest();
     }
 
 }
 </script>
 </head>
-<body onLoad="startWorkerAndRunTest();">
+<body onLoad="startWorkerAndRunTest();">Test that inspected page won't crash if inspected worker is terminated while it is paused. Test passes if it doesn't crash.
+<a href="https://bugs.webkit.org/show_bug.cgi?id=101065">Bug 101065.</a>
 </body>
 </html>
