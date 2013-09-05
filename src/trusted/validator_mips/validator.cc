@@ -161,7 +161,8 @@ static PatternMatch CheckDataRegisterUpdate(const SfiValidator &sfi,
                                             const DecodedInstruction &first,
                                             const DecodedInstruction &second,
                                             ProblemSink *out) {
-  if (first.IsDestGprReg(sfi.data_address_registers())
+  UNREFERENCED_PARAMETER(sfi);
+  if (first.DestGprReg().Equals(Register::Sp())
       && !first.IsMask(first.DestGprReg(), Register::LoadStoreMask())) {
     if (second.IsMask(first.DestGprReg(), Register::LoadStoreMask())) {
       return PATTERN_SAFE;
@@ -179,7 +180,8 @@ static PatternMatch CheckDataRegisterDslot(const SfiValidator &sfi,
                                            const DecodedInstruction &first,
                                            const DecodedInstruction &second,
                                            ProblemSink *out) {
-  if (second.IsDestGprReg(sfi.data_address_registers())
+  UNREFERENCED_PARAMETER(sfi);
+  if (second.DestGprReg().Equals(Register::Sp())
       && !second.IsMask(second.DestGprReg(), Register::LoadStoreMask())) {
     if (first.HasDelaySlot()) {
       out->ReportProblem(second.addr(), second.safety(),
@@ -512,4 +514,4 @@ DecodedInstruction::DecodedInstruction(uint32_t vaddr,
       safety_(decoder.safety(inst_))
 {}
 
-}  // namespace
+}  // namespace nacl_mips_val

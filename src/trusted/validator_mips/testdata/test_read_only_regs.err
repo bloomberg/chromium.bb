@@ -16,10 +16,6 @@ ncval: 00020038 2 kProblemReadOnlyRegister 00000000
 ncval: 0002003C 2 kProblemReadOnlyRegister 00000000
 ncval: 00020040 2 kProblemReadOnlyRegister 00000000
 ncval: 00020044 2 kProblemReadOnlyRegister 00000000
-ncval: 00020040 2 kProblemUnsafeDataWrite 00000000
 ncval: 00020048 2 kProblemReadOnlyRegister 00000000
-ncval: 00020044 2 kProblemUnsafeDataWrite 00000000
 ncval: 0002004C 2 kProblemReadOnlyRegister 00000000
-ncval: 00020048 2 kProblemUnsafeDataWrite 00000000
-ncval: 0002004C 2 kProblemUnsafeDataWrite 00000000
 ncval: 00020058 2 kProblemReadOnlyRegister 00000000

@@ -70,8 +70,11 @@ class Bundle {
  *       read).  This currently applies to t6 - jump mask, t7 - load/store mask
  *       and t8 - tls index.
  *   data_address_registers: registers that must contain a valid data-region
- *       address at all times.  This currently applies to the stack pointer, but
- *       could be extended to include a frame pointer for C-like languages.
+ *       address at all times.  This currently applies to the stack pointer and
+ *       TLS register but could be extended to include a frame pointer for
+ *       C-like languages. Adding register to data_address_registers only means
+ *       that load/store access can be done without checks. Check for register
+ *       value change still needs to be executed.
  *
  * The values of these inputs will typically be taken from the headers of
  * untrusted code -- either by the ABI version they indicate, or (perhaps in
@@ -393,6 +396,6 @@ const char * const kProblemUnalignedJumpToTrampoline =
 const char * const kProblemUnsafeJumpRegister = "kProblemUnsafeJumpRegister";
 // Two consecutive branches/jumps. Branch/jump in the delay slot.
 const char * const kProblemBranchInDelaySlot = "kProblemBranchInDelaySlot";
-}  // namespace
+}  // namespace nacl_mips_val
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_MIPS_VALIDATOR_H
