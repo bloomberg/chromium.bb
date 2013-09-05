@@ -419,14 +419,11 @@ static inline bool isIsolatedInline(RenderObject* object)
     return object->isRenderInline() && isIsolated(object->style()->unicodeBidi());
 }
 
-static inline RenderObject* containingIsolate(RenderObject* object, RenderObject* root)
+static inline RenderObject* highestContainingIsolateWithinRoot(RenderObject* object, RenderObject* root)
 {
     ASSERT(object);
     RenderObject* containingIsolateObj = 0;
     while (object && object != root) {
-        if (containingIsolateObj && !isIsolatedInline(object))
-            break;
-
         if (isIsolatedInline(object))
             containingIsolateObj = object;
 
