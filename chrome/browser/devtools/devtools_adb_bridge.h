@@ -266,9 +266,6 @@ class DevToolsAdbBridge
 
   explicit DevToolsAdbBridge(Profile* profile);
 
-  void EnumerateUsbDevices(const AndroidDevicesCallback& callback);
-  void EnumerateAdbDevices(const AndroidDevicesCallback& callback);
-
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
 
@@ -295,11 +292,6 @@ class DevToolsAdbBridge
   };
 
   virtual ~DevToolsAdbBridge();
-  void ReceivedUsbDevices(const AndroidDevicesCallback& callback,
-                          const AndroidUsbDevices& usb_devices);
-  void ReceivedAdbDevices(const AndroidDevicesCallback& callback,
-                          int result,
-                          const std::string& response);
 
   void RequestRemoteDevices();
   void ReceivedRemoteDevices(RemoteDevices* devices);
