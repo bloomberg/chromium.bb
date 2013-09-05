@@ -5,23 +5,14 @@
 #include "chrome/common/translate/language_detection_util.h"
 
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/translate/translate_common_metrics.h"
 #include "chrome/common/translate/translate_util.h"
-
-#if !defined(CLD_VERSION) || CLD_VERSION==1
 #include "third_party/cld/encodings/compact_lang_det/compact_lang_det.h"
 #include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
-#endif
-
-#if !defined(CLD_VERSION) || CLD_VERSION==2
-#include "third_party/cld_2/src/public/compact_lang_det.h"
-#endif
 
 namespace {
 
@@ -70,63 +61,18 @@ void ApplyLanguageCodeCorrection(std::string* code) {
   TranslateUtil::ToTranslateLanguageSynonym(code);
 }
 
-int GetCLDMajorVersion() {
-#if !defined(CLD_VERSION)
-  std::string group_name = base::FieldTrialList::FindFullName("CLD1VsCLD2");
-  if (group_name == "CLD2")
-    return 2;
-  else
-    return 1;
-#else
-  return CLD_VERSION;
-#endif
-}
-
 // Returns the ISO 639 language code of the specified |text|, or 'unknown' if it
 // failed.
 // |is_cld_reliable| will be set as true if CLD says the detection is reliable.
 std::string DetermineTextLanguage(const base::string16& text,
                                   bool* is_cld_reliable) {
   std::string language = chrome::kUnknownLanguageCode;
+  int num_languages = 0;
   int text_bytes = 0;
   bool is_reliable = false;
-
-  // Language or CLD2::Language
-  int cld_language = 0;
-  bool is_valid_language = false;
-
-  switch (GetCLDMajorVersion()) {
-#if !defined(CLD_VERSION) || CLD_VERSION==1
-    case 1: {
-      int num_languages = 0;
-      cld_language =
-          DetectLanguageOfUnicodeText(NULL, text.c_str(), true, &is_reliable,
-                                      &num_languages, NULL, &text_bytes);
-      is_valid_language = cld_language != NUM_LANGUAGES &&
-          cld_language != UNKNOWN_LANGUAGE &&
-          cld_language != TG_UNKNOWN_LANGUAGE;
-      break;
-    }
-#endif
-#if !defined(CLD_VERSION) || CLD_VERSION==2
-    case 2: {
-      std::string utf8_text(UTF16ToUTF8(text));
-      CLD2::Language language3[3];
-      int percent3[3];
-      cld_language =
-          CLD2::DetectLanguageSummary(utf8_text.c_str(), utf8_text.size(), true,
-                                      language3, percent3,
-                                      &text_bytes, &is_reliable);
-      is_valid_language = cld_language != CLD2::NUM_LANGUAGES &&
-          cld_language != CLD2::UNKNOWN_LANGUAGE &&
-          cld_language != CLD2::TG_UNKNOWN_LANGUAGE;
-      break;
-    }
-#endif
-    default:
-      NOTREACHED();
-  }
-
+  Language cld_language =
+      DetectLanguageOfUnicodeText(NULL, text.c_str(), true, &is_reliable,
+                                  &num_languages, NULL, &text_bytes);
   if (is_cld_reliable != NULL)
     *is_cld_reliable = is_reliable;
 
@@ -136,33 +82,15 @@ std::string DetermineTextLanguage(const base::string16& text,
   // TODO(toyoshim): CLD provides |is_reliable| flag. But, it just says that
   // the determined language code is correct with 50% confidence. Chrome should
   // handle the real confidence value to judge.
-  if (is_reliable && text_bytes >= 100 && is_valid_language) {
+  if (is_reliable && text_bytes >= 100 && cld_language != NUM_LANGUAGES &&
+      cld_language != UNKNOWN_LANGUAGE && cld_language != TG_UNKNOWN_LANGUAGE) {
     // We should not use LanguageCode_ISO_639_1 because it does not cover all
     // the languages CLD can detect. As a result, it'll return the invalid
     // language code for tradtional Chinese among others.
     // |LanguageCodeWithDialect| will go through ISO 639-1, ISO-639-2 and
     // 'other' tables to do the 'right' thing. In addition, it'll return zh-CN
     // for Simplified Chinese.
-    switch (GetCLDMajorVersion()) {
-#if !defined(CLD_VERSION) || CLD_VERSION==1
-      case 1:
-        language =
-            LanguageCodeWithDialects(static_cast<Language>(cld_language));
-        break;
-#endif
-#if !defined(CLD_VERSION) || CLD_VERSION==2
-      case 2:
-        if (cld_language == CLD2::CHINESE) {
-          language = "zh-CN";
-        } else {
-          language =
-              CLD2::LanguageCode(static_cast<CLD2::Language>(cld_language));
-        }
-        break;
-#endif
-      default:
-        NOTREACHED();
-    }
+    language = LanguageCodeWithDialects(cld_language);
   }
   VLOG(9) << "Detected lang_id: " << language << ", from Text:\n" << text
           << "\n*************************************\n";
@@ -363,19 +291,7 @@ bool MaybeServerWrongConfiguration(const std::string& page_language,
 }
 
 std::string GetCLDVersion() {
-  switch (GetCLDMajorVersion()) {
-#if !defined(CLD_VERSION) || CLD_VERSION==1
-    case 1:
-      return CompactLangDet::DetectLanguageVersion();
-#endif
-#if !defined(CLD_VERSION) || CLD_VERSION==2
-    case 2:
-      return CLD2::DetectLanguageVersion();
-#endif
-    default:
-      NOTREACHED();
-  }
-  return "";
+  return CompactLangDet::DetectLanguageVersion();
 }
 
 }  // namespace LanguageDetectionUtil

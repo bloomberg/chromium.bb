@@ -107,6 +107,7 @@
                 '../crypto/crypto.gyp:crypto',
                 '../printing/printing.gyp:printing',
                 '../net/net.gyp:net_resources',
+                '../third_party/cld/cld.gyp:cld',
                 '../ui/views/views.gyp:views',
                 '../webkit/webkit_resources.gyp:webkit_resources',
               ],
@@ -230,16 +231,6 @@
               ],
               'dependencies!': [
                 '../content/content.gyp:content_app_browser',
-              ],
-            }],
-            ['cld_version==0 or cld_version==1', {
-              'dependencies': [
-                '../third_party/cld/cld.gyp:cld',
-              ],
-            }],
-            ['cld_version==0 or cld_version==2', {
-              'dependencies': [
-                '../third_party/cld_2/cld_2.gyp:cld_2',
               ],
             }],
             ['OS=="mac" and component!="shared_library"', {

@@ -46,6 +46,7 @@
             '../printing/printing.gyp:*',
             '../skia/skia.gyp:*',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:*',
+            '../third_party/cld/cld.gyp:*',
             '../third_party/codesighs/codesighs.gyp:*',
             '../third_party/ffmpeg/ffmpeg.gyp:*',
             '../third_party/iccjpeg/iccjpeg.gyp:*',

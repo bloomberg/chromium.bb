@@ -487,6 +487,14 @@
       'include_dirs': [
         '..',
       ],
+      'defines': [
+        'CLD_WINDOWS',
+      ],
+      'direct_dependent_settings': {
+        'defines': [
+          'CLD_WINDOWS',
+        ],
+      },
       'msvs_settings': {
         'VCLinkerTool': {
           'conditions': [
@@ -1932,6 +1940,7 @@
         '../skia/ext/skia_utils_mac_unittest.mm',
         '../skia/ext/vector_canvas_unittest.cc',
         '../testing/gtest_mac_unittest.mm',
+        '../third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
         '../third_party/zlib/google/zip_reader_unittest.cc',
         '../third_party/zlib/google/zip_unittest.cc',
         '../tools/json_schema_compiler/test/additional_properties_unittest.cc',
@@ -1969,6 +1978,7 @@
             '../gpu/gpu.gyp:gpu_unittest_utils',
             '../media/media.gyp:media_test_support',
             '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
+            '../third_party/cld/cld.gyp:cld',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
@@ -2623,22 +2633,6 @@
         ['safe_browsing!=1', {
           'sources/': [
             ['exclude', '^browser/extensions/blacklist_unittest.cc'],
-          ],
-        }],
-        ['cld_version==0 or cld_version==1', {
-          'defines': [
-            'CLD_WINDOWS',
-          ],
-          'direct_dependent_settings': {
-            'defines': [
-              'CLD_WINDOWS',
-            ],
-          },
-          'sources': [
-            '../third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
-          ],
-          'dependencies': [
-            '../third_party/cld/cld.gyp:cld',
           ],
         }],
       ],
