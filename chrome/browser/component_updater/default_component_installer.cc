@@ -161,13 +161,12 @@ void DefaultComponentInstaller::FinishRegistration(
     return;
   }
 
-  base::Version installed_version;
-  if (current_version_.CompareTo(base::Version(kNullVersion)) <= 0) {
+  if (current_version_.CompareTo(base::Version(kNullVersion)) > 0) {
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE, FROM_HERE,
         base::Bind(&ComponentInstallerTraits::ComponentReady,
                    base::Unretained(installer_traits_.get()),
-                   installed_version,
+                   current_version_,
                    GetInstallDirectory()));
   }
 }
