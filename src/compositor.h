@@ -392,6 +392,11 @@ wl_data_device_manager_init(struct wl_display *display);
 void
 weston_seat_set_selection(struct weston_seat *seat,
 			  struct weston_data_source *source, uint32_t serial);
+int
+weston_seat_start_drag(struct weston_seat *seat,
+		       struct weston_data_source *source,
+		       struct weston_surface *icon,
+		       struct wl_client *client);
 
 struct weston_xkb_info {
 	struct xkb_keymap *keymap;
