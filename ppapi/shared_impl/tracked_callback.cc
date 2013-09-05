@@ -165,16 +165,22 @@ void TrackedCallback::PostRun(int32_t result) {
   // should never try to PostRun more than once otherwise.
   DCHECK(result == PP_ERROR_ABORTED || !is_scheduled_);
 
-  base::Closure callback_closure(
-      RunWhileLocked(base::Bind(&TrackedCallback::Run, this, result)));
-  if (!target_loop_.get()) {
-    // We must be running in-process and on the main thread (the Enter
-    // classes protect against having a null target_loop_ otherwise).
-    DCHECK(IsMainThread());
-    DCHECK(PpapiGlobals::Get()->IsHostGlobals());
-    base::MessageLoop::current()->PostTask(FROM_HERE, callback_closure);
+  if (is_blocking()) {
+    // We might not have a MessageLoop to post to, so we must call Run()
+    // directly.
+    Run(result);
   } else {
-    target_loop_->PostClosure(FROM_HERE, callback_closure, 0);
+    base::Closure callback_closure(
+        RunWhileLocked(base::Bind(&TrackedCallback::Run, this, result)));
+    if (target_loop_) {
+      target_loop_->PostClosure(FROM_HERE, callback_closure, 0);
+    } else {
+      // We must be running in-process and on the main thread (the Enter
+      // classes protect against having a null target_loop_ otherwise).
+      DCHECK(IsMainThread());
+      DCHECK(PpapiGlobals::Get()->IsHostGlobals());
+      base::MessageLoop::current()->PostTask(FROM_HERE, callback_closure);
+    }
   }
   is_scheduled_ = true;
 }
