@@ -1026,6 +1026,26 @@ CachePolicy FrameLoader::subresourceCachePolicy() const
 void FrameLoader::checkLoadCompleteForThisFrame()
 {
     ASSERT(m_client->hasWebView());
+
+    if (m_state == FrameStateProvisional && m_provisionalDocumentLoader) {
+        const ResourceError& error = m_provisionalDocumentLoader->mainDocumentError();
+        if (error.isNull())
+            return;
+        RefPtr<DocumentLoader> loader = m_provisionalDocumentLoader;
+        m_client->dispatchDidFailProvisionalLoad(error);
+        if (loader != m_provisionalDocumentLoader)
+            return;
+        m_provisionalDocumentLoader->detachFromFrame();
+        m_provisionalDocumentLoader = 0;
+        m_progressTracker->progressCompleted();
+        m_state = FrameStateComplete;
+
+        // Reset the back forward list to the last committed history item at the top level.
+        RefPtr<HistoryItem> item = m_frame->page()->mainFrame()->loader()->history()->currentItem();
+        if (isBackForwardLoadType(loadType()) && !history()->provisionalItem() && item)
+            m_frame->page()->backForward().setCurrentItem(item.get());
+    }
+
     if (m_state != FrameStateCommittedPage)
         return;
 
@@ -1285,21 +1305,6 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
     ResourceError c(ResourceError::cancelledError(KURL()));
     if (error.errorCode() != c.errorCode() || error.domain() != c.domain())
         handleFallbackContent();
-
-    if (m_state == FrameStateProvisional && m_provisionalDocumentLoader) {
-        m_client->dispatchDidFailProvisionalLoad(error);
-        if (loader != m_provisionalDocumentLoader)
-            return;
-        m_provisionalDocumentLoader->detachFromFrame();
-        m_provisionalDocumentLoader = 0;
-        m_progressTracker->progressCompleted();
-        m_state = FrameStateComplete;
-
-        // Reset the back forward list to the last committed history item at the top level.
-        RefPtr<HistoryItem> item = m_frame->page()->mainFrame()->loader()->history()->currentItem();
-        if (isBackForwardLoadType(loadType()) && !history()->provisionalItem() && item)
-            m_frame->page()->backForward().setCurrentItem(item.get());
-    }
 
     checkCompleted();
     if (m_frame->page())
