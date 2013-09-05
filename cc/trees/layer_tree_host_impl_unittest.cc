@@ -34,6 +34,7 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/layer_tiling_data.h"
 #include "cc/test/animation_test_common.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_proxy.h"
@@ -6431,6 +6432,28 @@ TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
   host_impl_->SetVisible(true);
   EXPECT_EQ(policy1.bytes_limit_when_visible, current_limit_bytes_);
   EXPECT_EQ(visible_cutoff_value, current_priority_cutoff_value_);
+}
+
+class LayerTreeHostImplTestManageTiles : public LayerTreeHostImplTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    LayerTreeSettings settings;
+    settings.impl_side_painting = true;
+
+    fake_host_impl_ = new FakeLayerTreeHostImpl(settings, &proxy_);
+    host_impl_.reset(fake_host_impl_);
+    host_impl_->InitializeRenderer(CreateOutputSurface());
+    host_impl_->SetViewportSize(gfx::Size(10, 10));
+  }
+
+  FakeLayerTreeHostImpl* fake_host_impl_;
+};
+
+TEST_F(LayerTreeHostImplTestManageTiles, ManageTilesWhenInvisible) {
+  fake_host_impl_->SetNeedsManageTiles();
+  EXPECT_TRUE(fake_host_impl_->manage_tiles_needed());
+  fake_host_impl_->SetVisible(false);
+  EXPECT_FALSE(fake_host_impl_->manage_tiles_needed());
 }
 
 TEST_F(LayerTreeHostImplTest, UIResourceManagement) {
