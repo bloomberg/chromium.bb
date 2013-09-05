@@ -2032,6 +2032,8 @@
             'dom/VisitedLinkState.h',
             'dom/WebKitAnimationEvent.cpp',
             'dom/WebKitAnimationEvent.h',
+            'dom/WheelController.cpp',
+            'dom/WheelController.h',
             'dom/WheelEvent.cpp',
             'dom/WheelEvent.h',
             'dom/WindowEventContext.cpp',

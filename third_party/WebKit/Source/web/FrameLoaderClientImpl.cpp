@@ -57,6 +57,7 @@
 #include "core/dom/MessageEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/dom/WheelController.h"
 #include "core/history/HistoryItem.h"
 #include "core/html/HTMLAppletElement.h"
 #include "core/html/HTMLFormElement.h" // needed by core/loader/FormState.h
@@ -119,8 +120,12 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*
 {
     if (m_webFrame->client()) {
         m_webFrame->client()->didClearWindowObject(m_webFrame);
-        if (RuntimeEnabledFeatures::deviceMotionEnabled())
-            DeviceMotionController::from(m_webFrame->frame()->document());
+        Document* document = m_webFrame->frame()->document();
+        if (document) {
+            WheelController::from(document);
+            if (RuntimeEnabledFeatures::deviceMotionEnabled())
+                DeviceMotionController::from(document);
+        }
     }
 }
 

@@ -34,6 +34,7 @@
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Event.h"
+#include "core/dom/WheelController.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
@@ -586,7 +587,7 @@ void Frame::notifyChromeClientWheelEventHandlerCountChanged() const
     unsigned count = 0;
     for (const Frame* frame = this; frame; frame = frame->tree()->traverseNext()) {
         if (frame->document())
-            count += frame->document()->wheelEventHandlerCount();
+            count += WheelController::from(frame->document())->wheelEventHandlerCount();
     }
 
     m_page->chrome().client().numWheelEventHandlersChanged(count);

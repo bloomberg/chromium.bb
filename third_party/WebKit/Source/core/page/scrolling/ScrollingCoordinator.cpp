@@ -30,6 +30,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
+#include "core/dom/WheelController.h"
 #include "core/html/HTMLElement.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
@@ -671,7 +672,7 @@ unsigned ScrollingCoordinator::computeCurrentWheelEventHandlerCount()
 
     for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
         if (frame->document())
-            wheelEventHandlerCount += frame->document()->wheelEventHandlerCount();
+            wheelEventHandlerCount += WheelController::from(frame->document())->wheelEventHandlerCount();
     }
 
     return wheelEventHandlerCount;

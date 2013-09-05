@@ -66,6 +66,7 @@
 #include "core/dom/TreeScopeAdopter.h"
 #include "core/dom/UIEvent.h"
 #include "core/dom/UserActionElementSet.h"
+#include "core/dom/WheelController.h"
 #include "core/dom/WheelEvent.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
@@ -2154,15 +2155,17 @@ void Node::didMoveToNewDocument(Document* oldDocument)
             cache->remove(this);
 
     const EventListenerVector& mousewheelListeners = getEventListeners(eventNames().mousewheelEvent);
+    WheelController* oldController = WheelController::from(oldDocument);
+    WheelController* newController = WheelController::from(&document());
     for (size_t i = 0; i < mousewheelListeners.size(); ++i) {
-        oldDocument->didRemoveWheelEventHandler();
-        document().didAddWheelEventHandler();
+        oldController->didRemoveWheelEventHandler(oldDocument);
+        newController->didAddWheelEventHandler(&document());
     }
 
     const EventListenerVector& wheelListeners = getEventListeners(eventNames().wheelEvent);
     for (size_t i = 0; i < wheelListeners.size(); ++i) {
-        oldDocument->didRemoveWheelEventHandler();
-        document().didAddWheelEventHandler();
+        oldController->didRemoveWheelEventHandler(oldDocument);
+        newController->didAddWheelEventHandler(&document());
     }
 
     if (const TouchEventTargetSet* touchHandlers = oldDocument ? oldDocument->touchEventTargets() : 0) {
@@ -2193,7 +2196,7 @@ static inline bool tryAddEventListener(Node* targetNode, const AtomicString& eve
     Document& document = targetNode->document();
     document.addListenerTypeIfNeeded(eventType);
     if (eventType == eventNames().wheelEvent || eventType == eventNames().mousewheelEvent)
-        document.didAddWheelEventHandler();
+        WheelController::from(&document)->didAddWheelEventHandler(&document);
     else if (eventNames().isTouchEventType(eventType))
         document.didAddTouchEventHandler(targetNode);
 
@@ -2214,7 +2217,7 @@ static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& 
     // listeners for each type, not just a bool - see https://bugs.webkit.org/show_bug.cgi?id=33861
     Document& document = targetNode->document();
     if (eventType == eventNames().wheelEvent || eventType == eventNames().mousewheelEvent)
-        document.didRemoveWheelEventHandler();
+        WheelController::from(&document)->didAddWheelEventHandler(&document);
     else if (eventNames().isTouchEventType(eventType))
         document.didRemoveTouchEventHandler(targetNode);
 

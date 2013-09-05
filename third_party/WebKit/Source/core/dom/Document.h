@@ -981,10 +981,6 @@ public:
 
     void initDNSPrefetch();
 
-    unsigned wheelEventHandlerCount() const { return m_wheelEventHandlerCount; }
-    void didAddWheelEventHandler();
-    void didRemoveWheelEventHandler();
-
     double lastHandledUserGestureTimestamp() const { return m_lastHandledUserGestureTimestamp; }
     void resetLastHandledUserGestureTimestamp();
 
@@ -1342,7 +1338,6 @@ private:
     bool m_writeRecursionIsTooDeep;
     unsigned m_writeRecursionDepth;
 
-    unsigned m_wheelEventHandlerCount;
     OwnPtr<TouchEventTargetSet> m_touchEventTargets;
 
     double m_lastHandledUserGestureTimestamp;

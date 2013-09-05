@@ -445,7 +445,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_didAllowNavigationViaBeforeUnloadConfirmationPanel(false)
     , m_writeRecursionIsTooDeep(false)
     , m_writeRecursionDepth(0)
-    , m_wheelEventHandlerCount(0)
     , m_lastHandledUserGestureTimestamp(0)
     , m_prerenderer(Prerenderer::create(this))
     , m_textAutosizer(TextAutosizer::create(this))
@@ -4981,44 +4980,6 @@ PassRefPtr<Touch> Document::createTouch(DOMWindow* window, EventTarget* target, 
     // and implement them here. See https://bugs.webkit.org/show_bug.cgi?id=47819
     Frame* frame = window ? window->frame() : this->frame();
     return Touch::create(frame, target, identifier, screenX, screenY, pageX, pageY, radiusX, radiusY, rotationAngle, force);
-}
-
-static void wheelEventHandlerCountChanged(Document* document)
-{
-    Page* page = document->page();
-    if (!page)
-        return;
-
-    ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator();
-    if (!scrollingCoordinator)
-        return;
-
-    FrameView* frameView = document->view();
-    if (!frameView)
-        return;
-
-    scrollingCoordinator->frameViewWheelEventHandlerCountChanged(frameView);
-}
-
-void Document::didAddWheelEventHandler()
-{
-    ++m_wheelEventHandlerCount;
-    Frame* mainFrame = page() ? page()->mainFrame() : 0;
-    if (mainFrame)
-        mainFrame->notifyChromeClientWheelEventHandlerCountChanged();
-
-    wheelEventHandlerCountChanged(this);
-}
-
-void Document::didRemoveWheelEventHandler()
-{
-    ASSERT(m_wheelEventHandlerCount > 0);
-    --m_wheelEventHandlerCount;
-    Frame* mainFrame = page() ? page()->mainFrame() : 0;
-    if (mainFrame)
-        mainFrame->notifyChromeClientWheelEventHandlerCountChanged();
-
-    wheelEventHandlerCountChanged(this);
 }
 
 void Document::didAddTouchEventHandler(Node* handler)
