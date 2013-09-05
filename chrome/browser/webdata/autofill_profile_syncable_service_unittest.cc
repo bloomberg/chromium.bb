@@ -99,6 +99,8 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
   MOCK_METHOD2(ProcessSyncChanges,
                syncer::SyncError(const tracked_objects::Location&,
                                  const syncer::SyncChangeList&));
+  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
+      const OVERRIDE { return syncer::SyncDataList(); }
 };
 
 class TestSyncChangeProcessor : public syncer::SyncChangeProcessor {
@@ -111,6 +113,11 @@ class TestSyncChangeProcessor : public syncer::SyncChangeProcessor {
       const syncer::SyncChangeList& changes) OVERRIDE {
     changes_ = changes;
     return syncer::SyncError();
+  }
+
+  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
+      OVERRIDE {
+    return syncer::SyncDataList();
   }
 
   const syncer::SyncChangeList& changes() { return changes_; }

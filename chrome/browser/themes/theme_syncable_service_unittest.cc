@@ -61,6 +61,11 @@ class FakeSyncChangeProcessor : public syncer::SyncChangeProcessor {
     return syncer::SyncError();
   }
 
+  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
+      OVERRIDE {
+    return syncer::SyncDataList();
+  }
+
   void SetChangeOutput(syncer::SyncChangeList *change_output) {
     change_output_ = change_output;
   }

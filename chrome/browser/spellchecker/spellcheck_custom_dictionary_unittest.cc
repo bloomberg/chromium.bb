@@ -127,6 +127,11 @@ class SyncChangeProcessorDelegate : public syncer::SyncChangeProcessor {
     return dictionary_->ProcessSyncChanges(from_here, change_list);
   }
 
+  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
+      OVERRIDE {
+    return syncer::SyncDataList();
+  }
+
  private:
   SpellcheckCustomDictionary* dictionary_;
   DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorDelegate);

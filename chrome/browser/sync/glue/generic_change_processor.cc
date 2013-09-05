@@ -136,9 +136,17 @@ void GenericChangeProcessor::CommitChangesFromSyncModel() {
   }
 }
 
-syncer::SyncError GenericChangeProcessor::GetSyncDataForType(
+syncer::SyncDataList GenericChangeProcessor::GetAllSyncData(
+    syncer::ModelType type) const {
+  // This is slow / memory intensive.  Should be used sparingly by datatypes.
+  syncer::SyncDataList data;
+  GetAllSyncDataReturnError(type, &data);
+  return data;
+}
+
+syncer::SyncError GenericChangeProcessor::GetAllSyncDataReturnError(
     syncer::ModelType type,
-    syncer::SyncDataList* current_sync_data) {
+    syncer::SyncDataList* current_sync_data) const {
   DCHECK(CalledOnValidThread());
   std::string type_name = syncer::ModelTypeToString(type);
   syncer::ReadTransaction trans(FROM_HERE, share_handle());

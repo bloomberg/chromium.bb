@@ -364,7 +364,8 @@ void NonUIDataTypeController::
   base::TimeTicks start_time = base::TimeTicks::Now();
   syncer::SyncDataList initial_sync_data;
   syncer::SyncError error =
-      shared_change_processor->GetSyncData(&initial_sync_data);
+      shared_change_processor->GetAllSyncDataReturnError(
+          type(), &initial_sync_data);
   if (error.IsSet()) {
     local_merge_result.set_error(error);
     StartDone(ASSOCIATION_FAILED,

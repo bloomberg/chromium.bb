@@ -62,10 +62,17 @@ class GenericChangeProcessor : public ChangeProcessor,
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
 
-  // Fills |current_sync_data| with all the syncer data for the specified type.
-  virtual syncer::SyncError GetSyncDataForType(
+  // Fills a list of SyncData. This should create an up to date representation
+  // of all the data known to the ChangeProcessor for |datatype|, and
+  // should match/be a subset of the server's view of that datatype.
+  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
+      const OVERRIDE;
+
+  // Similar to above, but returns a SyncError for use by direct clients
+  // of GenericChangeProcessor that may need more error visibility.
+  virtual syncer::SyncError GetAllSyncDataReturnError(
       syncer::ModelType type,
-      syncer::SyncDataList* current_sync_data);
+      syncer::SyncDataList* data) const;
 
   // Returns the number of items for this type.
   virtual int GetSyncCountForType(syncer::ModelType type);

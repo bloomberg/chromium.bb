@@ -93,6 +93,11 @@ class TestChangeProcessor : public syncer::SyncChangeProcessor {
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
 
+  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
+      OVERRIDE {
+    return syncer::SyncDataList();
+  }
+
   bool contains_guid(const std::string& guid) const {
     return change_map_.count(guid) != 0;
   }
@@ -149,6 +154,11 @@ class SyncChangeProcessorDelegate : public syncer::SyncChangeProcessor {
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
+
+  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
+      OVERRIDE {
+    return recipient_->GetAllSyncData(type);
+  }
 
  private:
   // The recipient of all sync changes.

@@ -93,18 +93,17 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   scoped_ptr<GenericChangeProcessor> change_processor_;
 };
 
-// This test exercises GenericChangeProcessor's GetSyncDataForType function.
-// It's not a great test, but, by modifying some of the parameters, you could
-// turn it into a micro-benchmark for model association.
-TEST_F(SyncGenericChangeProcessorTest, StressGetSyncDataForType) {
+// Similar to above, but focused on the method that implements sync/api
+// interfaces and is hence exposed to datatypes directly.
+TEST_F(SyncGenericChangeProcessorTest, StressGetAllSyncData) {
   const int kNumChildNodes = 1000;
   const int kRepeatCount = 1;
 
   ASSERT_NO_FATAL_FAILURE(BuildChildNodes(kNumChildNodes));
 
   for (int i = 0; i < kRepeatCount; ++i) {
-    syncer::SyncDataList sync_data;
-    change_processor()->GetSyncDataForType(kType, &sync_data);
+    syncer::SyncDataList sync_data =
+        change_processor()->GetAllSyncData(kType);
 
     // Start with a simple test.  We can add more in-depth testing later.
     EXPECT_EQ(static_cast<size_t>(kNumChildNodes), sync_data.size());
@@ -136,10 +135,8 @@ TEST_F(SyncGenericChangeProcessorTest, SetGetPasswords) {
   ASSERT_FALSE(
       change_processor()->ProcessSyncChanges(FROM_HERE, change_list).IsSet());
 
-  syncer::SyncDataList password_list;
-  ASSERT_FALSE(
-      change_processor()->GetSyncDataForType(syncer::PASSWORDS, &password_list).
-          IsSet());
+  syncer::SyncDataList password_list(
+      change_processor()->GetAllSyncData(syncer::PASSWORDS));
 
   ASSERT_EQ(password_list.size(), change_list.size());
   for (int i = 0; i < kNumPasswords; ++i) {
@@ -209,10 +206,8 @@ TEST_F(SyncGenericChangeProcessorTest, UpdatePasswords) {
   ASSERT_FALSE(
       change_processor()->ProcessSyncChanges(FROM_HERE, change_list2).IsSet());
 
-  syncer::SyncDataList password_list;
-  ASSERT_FALSE(
-      change_processor()->GetSyncDataForType(syncer::PASSWORDS, &password_list).
-          IsSet());
+  syncer::SyncDataList password_list(
+      change_processor()->GetAllSyncData(syncer::PASSWORDS));
 
   ASSERT_EQ(password_list.size(), change_list2.size());
   for (int i = 0; i < kNumPasswords; ++i) {

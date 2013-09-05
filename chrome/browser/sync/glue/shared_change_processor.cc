@@ -89,22 +89,6 @@ bool SharedChangeProcessor::Disconnect() {
   return was_connected;
 }
 
-syncer::SyncError SharedChangeProcessor::GetSyncData(
-    syncer::SyncDataList* current_sync_data) {
-  DCHECK(backend_loop_.get());
-  DCHECK(backend_loop_->BelongsToCurrentThread());
-  AutoLock lock(monitor_lock_);
-  if (disconnected_) {
-    syncer::SyncError error(FROM_HERE,
-                            syncer::SyncError::DATATYPE_ERROR,
-                            "Change processor disconnected.",
-                            type_);
-    return error;
-  }
-  return generic_change_processor_->GetSyncDataForType(type_,
-                                                       current_sync_data);
-}
-
 int SharedChangeProcessor::GetSyncCount() {
   DCHECK(backend_loop_.get());
   DCHECK(backend_loop_->BelongsToCurrentThread());
@@ -133,6 +117,29 @@ syncer::SyncError SharedChangeProcessor::ProcessSyncChanges(
   }
   return generic_change_processor_->ProcessSyncChanges(
       from_here, list_of_changes);
+}
+
+syncer::SyncDataList SharedChangeProcessor::GetAllSyncData(
+    syncer::ModelType type) const {
+  syncer::SyncDataList data;
+  GetAllSyncDataReturnError(type, &data);  // Handles the disconnect case.
+  return data;
+}
+
+syncer::SyncError SharedChangeProcessor::GetAllSyncDataReturnError(
+    syncer::ModelType type,
+    syncer::SyncDataList* data) const {
+  DCHECK(backend_loop_.get());
+  DCHECK(backend_loop_->BelongsToCurrentThread());
+  AutoLock lock(monitor_lock_);
+  if (disconnected_) {
+    syncer::SyncError error(FROM_HERE,
+                            syncer::SyncError::DATATYPE_ERROR,
+                            "Change processor disconnected.",
+                            type_);
+    return error;
+  }
+  return generic_change_processor_->GetAllSyncDataReturnError(type, data);
 }
 
 bool SharedChangeProcessor::SyncModelHasUserCreatedNodes(bool* has_nodes) {

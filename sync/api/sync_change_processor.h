@@ -7,8 +7,10 @@
 
 #include <vector>
 
+#include "sync/api/sync_data.h"
 #include "sync/api/sync_error.h"
 #include "sync/base/sync_export.h"
+#include "sync/internal_api/public/base/model_type.h"
 
 namespace tracked_objects {
 class Location;
@@ -36,6 +38,14 @@ class SYNC_EXPORT SyncChangeProcessor {
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const SyncChangeList& change_list) = 0;
+
+  // Fills a list of SyncData. This should create an up to date representation
+  // of all the data known to the ChangeProcessor for |datatype|, and
+  // should match/be a subset of the server's view of that datatype.
+  //
+  // WARNING: This can be a potentially slow & memory intensive operation and
+  // should only be used when absolutely necessary / sparingly.
+  virtual SyncDataList GetAllSyncData(ModelType type) const = 0;
 };
 
 }  // namespace syncer

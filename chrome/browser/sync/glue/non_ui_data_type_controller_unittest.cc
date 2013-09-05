@@ -204,7 +204,7 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*change_processor_.get(), ActivateDataType(_));
     EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
         .WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
-    EXPECT_CALL(*change_processor_.get(), GetSyncData(_))
+    EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_,_))
         .WillOnce(Return(syncer::SyncError()));
     EXPECT_CALL(*change_processor_.get(), GetSyncCount()).WillOnce(Return(0));
     EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
@@ -275,7 +275,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartFirstRun) {
       .WillOnce(Return(true));
   EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
       .WillOnce(DoAll(SetArgumentPointee<0>(false), Return(true)));
-  EXPECT_CALL(*change_processor_.get(), GetSyncData(_))
+  EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_,_))
       .WillOnce(Return(syncer::SyncError()));
   EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
   SetActivateExpectations(DataTypeController::OK_FIRST_RUN);
@@ -315,7 +315,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartAssociationFailed) {
       .WillOnce(Return(true));
   EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
       .WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(*change_processor_.get(), GetSyncData(_))
+  EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_,_))
       .WillOnce(Return(syncer::SyncError()));
   EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
   SetStartFailExpectations(DataTypeController::ASSOCIATION_FAILED);
@@ -382,11 +382,12 @@ TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringAssociation) {
                       WaitOnEvent(&pause_db_thread),
                       SetArgumentPointee<0>(true),
                       Return(true)));
-  EXPECT_CALL(*change_processor_.get(), GetSyncData(_)).WillOnce(
-      Return(syncer::SyncError(FROM_HERE,
-                               syncer::SyncError::DATATYPE_ERROR,
-                               "Disconnected.",
-                               AUTOFILL_PROFILE)));
+  EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_,_))
+      .WillOnce(
+          Return(syncer::SyncError(FROM_HERE,
+                                   syncer::SyncError::DATATYPE_ERROR,
+                                   "Disconnected.",
+                                   AUTOFILL_PROFILE)));
   EXPECT_CALL(*change_processor_.get(), Disconnect())
       .WillOnce(DoAll(SignalEvent(&pause_db_thread), Return(true)));
   EXPECT_CALL(service_, DeactivateDataType(_));

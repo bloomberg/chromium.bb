@@ -5082,6 +5082,11 @@ namespace {
         const syncer::SyncChangeList& change_list) OVERRIDE {
       return syncer::SyncError();
     }
+
+    virtual syncer::SyncDataList GetAllSyncData(
+        syncer::ModelType type) const OVERRIDE {
+      return syncer::SyncDataList();
+    }
   };
 }
 

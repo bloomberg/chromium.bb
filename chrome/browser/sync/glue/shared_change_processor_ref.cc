@@ -20,6 +20,11 @@ syncer::SyncError SharedChangeProcessorRef::ProcessSyncChanges(
   return change_processor_->ProcessSyncChanges(from_here, change_list);
 }
 
+syncer::SyncDataList SharedChangeProcessorRef::GetAllSyncData(
+    syncer::ModelType type) const {
+  return change_processor_->GetAllSyncData(type);
+}
+
 syncer::SyncError SharedChangeProcessorRef::CreateAndUploadError(
     const tracked_objects::Location& from_here,
     const std::string& message) {

@@ -166,9 +166,10 @@ void UIDataTypeController::Associate() {
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
-  syncer::SyncError error;
   syncer::SyncDataList initial_sync_data;
-  error = shared_change_processor_->GetSyncData(&initial_sync_data);
+  syncer::SyncError error =
+      shared_change_processor_->GetAllSyncDataReturnError(
+          type(), &initial_sync_data);
   if (error.IsSet()) {
     local_merge_result.set_error(error);
     StartDone(ASSOCIATION_FAILED,

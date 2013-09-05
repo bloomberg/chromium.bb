@@ -25,7 +25,7 @@ class SyncData;
 class SyncableService;
 
 typedef std::vector<syncer::SyncData> SyncDataList;
-}  // namespace
+}  // namespace syncer
 
 namespace browser_sync {
 
@@ -79,12 +79,14 @@ class SharedChangeProcessor
 
   // GenericChangeProcessor stubs (with disconnect support).
   // Should only be called on the same thread the datatype resides.
-  virtual syncer::SyncError GetSyncData(
-      syncer::SyncDataList* current_sync_data);
   virtual int GetSyncCount();
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list);
+  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const;
+  virtual syncer::SyncError GetAllSyncDataReturnError(
+      syncer::ModelType type,
+      syncer::SyncDataList* data) const;
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
   virtual bool CryptoReadyIfNecessary();
 

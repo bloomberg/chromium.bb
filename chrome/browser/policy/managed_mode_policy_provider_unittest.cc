@@ -32,6 +32,11 @@ class MockChangeProcessor : public syncer::SyncChangeProcessor {
 
   const syncer::SyncChangeList& changes() const { return change_list_; }
 
+  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
+      OVERRIDE {
+    return syncer::SyncDataList();
+  }
+
  private:
   syncer::SyncChangeList change_list_;
 

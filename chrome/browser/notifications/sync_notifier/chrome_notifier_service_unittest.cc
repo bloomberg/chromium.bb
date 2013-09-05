@@ -154,6 +154,11 @@ class TestChangeProcessor : public syncer::SyncChangeProcessor {
     return syncer::SyncError();
   }
 
+  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
+      OVERRIDE {
+    return syncer::SyncDataList();
+  }
+
   size_t change_list_size() { return change_map_.size(); }
 
   bool ContainsId(const std::string& id) {
@@ -185,6 +190,11 @@ class SyncChangeProcessorDelegate : public syncer::SyncChangeProcessor {
       const tracked_objects::Location& from_here,
       const SyncChangeList& change_list) OVERRIDE {
     return recipient_->ProcessSyncChanges(from_here, change_list);
+  }
+
+  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
+      OVERRIDE {
+    return recipient_->GetAllSyncData(type);
   }
 
  private:

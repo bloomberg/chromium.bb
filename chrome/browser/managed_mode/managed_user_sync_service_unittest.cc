@@ -41,6 +41,11 @@ class MockChangeProcessor : public SyncChangeProcessor {
       const tracked_objects::Location& from_here,
       const SyncChangeList& change_list) OVERRIDE;
 
+  virtual SyncDataList GetAllSyncData(syncer::ModelType type) const
+      OVERRIDE {
+    return SyncDataList();
+  }
+
   const SyncChangeList& changes() const { return change_list_; }
   SyncChange GetChange(const std::string& id) const;
 

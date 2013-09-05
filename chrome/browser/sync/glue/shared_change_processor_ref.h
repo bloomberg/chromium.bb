@@ -27,6 +27,8 @@ class SharedChangeProcessorRef : public syncer::SyncChangeProcessor,
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
+  virtual syncer::SyncDataList GetAllSyncData(
+      syncer::ModelType type) const OVERRIDE;
 
   // syncer::SyncErrorFactory implementation.
   virtual syncer::SyncError CreateAndUploadError(

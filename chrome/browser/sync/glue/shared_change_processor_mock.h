@@ -7,6 +7,7 @@
 
 #include "chrome/browser/sync/glue/shared_change_processor.h"
 #include "sync/api/sync_change.h"
+#include "sync/api/sync_data.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -26,8 +27,9 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
   MOCK_METHOD2(ProcessSyncChanges,
                syncer::SyncError(const tracked_objects::Location&,
                          const syncer::SyncChangeList&));
-  MOCK_METHOD1(GetSyncData,
-               syncer::SyncError(syncer::SyncDataList*));
+  MOCK_CONST_METHOD2(GetAllSyncDataReturnError,
+                     syncer::SyncError(syncer::ModelType,
+                                       syncer::SyncDataList*));
   MOCK_METHOD0(GetSyncCount, int());
   MOCK_METHOD1(SyncModelHasUserCreatedNodes,
                bool(bool*));

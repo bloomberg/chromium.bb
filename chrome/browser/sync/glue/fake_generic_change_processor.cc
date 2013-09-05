@@ -18,8 +18,7 @@ FakeGenericChangeProcessor::FakeGenericChangeProcessor()
           NULL),
       sync_model_has_user_created_nodes_(true),
       sync_model_has_user_created_nodes_success_(true),
-      crypto_ready_if_necessary_(true),
-      type_(syncer::UNSPECIFIED) {}
+      crypto_ready_if_necessary_(true) {}
 
 FakeGenericChangeProcessor::~FakeGenericChangeProcessor() {}
 
@@ -50,9 +49,8 @@ syncer::SyncError FakeGenericChangeProcessor::ProcessSyncChanges(
   return process_sync_changes_error_;
 }
 
-syncer::SyncError FakeGenericChangeProcessor::GetSyncDataForType(
-    syncer::ModelType type, syncer::SyncDataList* current_sync_data) {
-  type_ = type;
+syncer::SyncError FakeGenericChangeProcessor::GetAllSyncDataReturnError(
+    syncer::ModelType type, syncer::SyncDataList* current_sync_data) const {
   return get_sync_data_for_type_error_;
 }
 
@@ -62,14 +60,12 @@ int FakeGenericChangeProcessor::GetSyncCountForType(syncer::ModelType type) {
 
 bool FakeGenericChangeProcessor::SyncModelHasUserCreatedNodes(
     syncer::ModelType type, bool* has_nodes) {
-  type_ = type;
   *has_nodes = sync_model_has_user_created_nodes_;
   return sync_model_has_user_created_nodes_success_;
 }
 
 bool FakeGenericChangeProcessor::CryptoReadyIfNecessary(
     syncer::ModelType type) {
-  type_ = type;
   return crypto_ready_if_necessary_;
 }
 
