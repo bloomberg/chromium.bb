@@ -215,6 +215,12 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Returns a DriveIntegrationService.
   drive::DriveIntegrationService* GetIntegrationService();
 
+  // Returns a DriveService instance.
+  drive::DriveServiceInterface* GetDriveService();
+
+  // Returns a FileSystem instance.
+  drive::FileSystemInterface* GetFileSystem();
+
   // Called when the page is first loaded.
   void OnPageLoaded(const base::ListValue* args);
 
@@ -374,8 +380,24 @@ drive::DriveIntegrationService*
 DriveInternalsWebUIHandler::GetIntegrationService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // TODO(hidehiko): GetForProfile will return the instance always even if it
+  // is disabled. Needs to check the mounting state then. crbug.com/284972.
   Profile* profile = Profile::FromWebUI(web_ui());
   return drive::DriveIntegrationServiceFactory::GetForProfile(profile);
+}
+
+drive::DriveServiceInterface* DriveInternalsWebUIHandler::GetDriveService() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  return drive::util::GetDriveServiceByProfile(profile);
+}
+
+drive::FileSystemInterface* DriveInternalsWebUIHandler::GetFileSystem() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  return drive::util::GetFileSystemByProfile(profile);
 }
 
 void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
@@ -522,22 +544,18 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForLocal(
 void DriveInternalsWebUIHandler::ClearAccessToken(const base::ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  drive::DriveIntegrationService* integration_service =
-      GetIntegrationService();
-  if (!integration_service)
-    return;
-  integration_service->drive_service()->ClearAccessToken();
+  drive::DriveServiceInterface* drive_service = GetDriveService();
+  if (drive_service)
+    drive_service->ClearAccessToken();
 }
 
 void DriveInternalsWebUIHandler::ClearRefreshToken(
     const base::ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  drive::DriveIntegrationService* integration_service =
-      GetIntegrationService();
-  if (!integration_service)
-    return;
-  integration_service->drive_service()->ClearRefreshToken();
+  drive::DriveServiceInterface* drive_service = GetDriveService();
+  if (drive_service)
+    drive_service->ClearRefreshToken();
 }
 
 void DriveInternalsWebUIHandler::ListFileEntries(const base::ListValue* args) {
@@ -630,24 +648,25 @@ void DriveInternalsWebUIHandler::UpdateGCacheContentsSection() {
 void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  drive::DriveIntegrationService* integration_service =
-      GetIntegrationService();
-  if (!integration_service)
+  drive::DriveServiceInterface* drive_service = GetDriveService();
+  drive::FileSystemInterface* file_system = GetFileSystem();
+  if (!drive_service || !file_system)
     return;
+
   // Start updating the file system tree section, if we have access token.
-  if (!integration_service->drive_service()->HasAccessToken())
+  if (!drive_service->HasAccessToken())
     return;
 
   // Start rendering the file system tree as text.
   const base::FilePath root_path = drive::util::GetDriveGrandRootPath();
 
-  integration_service->file_system()->GetResourceEntryByPath(
+  file_system->GetResourceEntryByPath(
       root_path,
       base::Bind(&DriveInternalsWebUIHandler::OnGetResourceEntryByPath,
                  weak_ptr_factory_.GetWeakPtr(),
                  root_path));
 
-  integration_service->file_system()->ReadDirectoryByPath(
+  file_system->ReadDirectoryByPath(
       root_path,
       base::Bind(&DriveInternalsWebUIHandler::OnReadDirectoryByPath,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -743,6 +762,7 @@ void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
   if (error == drive::FILE_ERROR_OK) {
     DCHECK(entries.get());
 
+    drive::FileSystemInterface* file_system = GetFileSystem();
     std::string file_system_as_text;
     for (size_t i = 0; i < entries->size(); ++i) {
       const drive::ResourceEntry& entry = (*entries)[i];
@@ -752,7 +772,7 @@ void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
       file_system_as_text.append(FormatEntry(current_path, entry) + "\n");
 
       if (entry.file_info().is_directory()) {
-        GetIntegrationService()->file_system()->ReadDirectoryByPath(
+        file_system->ReadDirectoryByPath(
             current_path,
             base::Bind(&DriveInternalsWebUIHandler::OnReadDirectoryByPath,
                        weak_ptr_factory_.GetWeakPtr(),
