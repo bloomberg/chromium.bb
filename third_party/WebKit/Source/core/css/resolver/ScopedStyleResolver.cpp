@@ -146,7 +146,7 @@ void ScopedStyleTree::resolveScopedKeyframesRules(const Element* element, Vector
     bool applyAuthorStyles = treeScope.applyAuthorStyles();
 
     for (ScopedStyleResolver* scopedResolver = scopedResolverFor(element); scopedResolver; scopedResolver = scopedResolver->parent()) {
-        if (scopedResolver->treeScope() == &treeScope || (applyAuthorStyles && scopedResolver->treeScope() == &document))
+        if (&scopedResolver->treeScope() == &treeScope || (applyAuthorStyles && &scopedResolver->treeScope() == &document))
             resolvers.append(scopedResolver);
     }
 }

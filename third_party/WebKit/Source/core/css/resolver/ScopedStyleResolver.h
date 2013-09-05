@@ -55,8 +55,7 @@ public:
     static const ContainerNode* scopingNodeFor(const CSSStyleSheet*);
 
     const ContainerNode& scopingNode() const { return m_scopingNode; }
-    // FIXME: Should return a const reference.
-    const TreeScope* treeScope() const { return &m_scopingNode.treeScope(); }
+    const TreeScope& treeScope() const { return m_scopingNode.treeScope(); }
     void prepareEmptyRuleSet() { m_authorStyle = RuleSet::create(); }
     void setParent(ScopedStyleResolver* newParent) { m_parent = newParent; }
     ScopedStyleResolver* parent() { return m_parent; }
