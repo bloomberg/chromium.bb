@@ -9,7 +9,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/drive/drive_app_registry.h"
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_task_executor.h"
 #include "chrome/browser/chromeos/file_manager/file_browser_handlers.h"
@@ -487,15 +486,14 @@ void FindAllTypesOfTasks(
 
   // Google document are not opened by drive apps but file manager.
   if (!has_google_document) {
-    drive::DriveIntegrationService* integration_service =
-        drive::DriveIntegrationServiceFactory::GetForProfile(profile);
-    // |integration_service| is NULL if Drive is disabled.
-    if (!integration_service || !integration_service->drive_app_registry())
+    drive::DriveAppRegistry* app_registry =
+        drive::util::GetDriveAppRegistryByProfile(profile);
+    if (!app_registry) {
+      // |app_registry| is NULL if Drive is disabled.
       return;
+    }
 
-    FindDriveAppTasks(*integration_service->drive_app_registry(),
-                      path_mime_set,
-                      result_list);
+    FindDriveAppTasks(*app_registry, path_mime_set, result_list);
   }
 
   // Find and append file handler tasks. We know there aren't duplicates

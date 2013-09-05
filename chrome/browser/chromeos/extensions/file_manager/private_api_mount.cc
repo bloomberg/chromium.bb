@@ -6,7 +6,6 @@
 
 #include "base/format_macros.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/logging.h"
@@ -141,10 +140,8 @@ bool FileBrowserPrivateAddMountFunction::RunImpl() {
 
       // Check if the source path is under Drive cache directory.
       if (drive::util::IsUnderDriveMountPoint(path)) {
-        drive::DriveIntegrationService* integration_service =
-            drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
         drive::FileSystemInterface* file_system =
-            integration_service ? integration_service->file_system() : NULL;
+            drive::util::GetFileSystemByProfile(profile());
         if (!file_system) {
           SendResponse(false);
           break;

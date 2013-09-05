@@ -15,7 +15,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
@@ -441,24 +440,20 @@ bool FileBrowserPrivateGetSizeStatsFunction::RunImpl() {
     return false;
 
   if (file_path == drive::util::GetDriveMountPointPath()) {
-    drive::DriveIntegrationService* integration_service =
-        drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
-    // |integration_service| is NULL if Drive is disabled.
-    if (!integration_service) {
+    drive::FileSystemInterface* file_system =
+        drive::util::GetFileSystemByProfile(profile());
+    if (!file_system) {
+      // |file_system| is NULL if Drive is disabled.
       // If stats couldn't be gotten for drive, result should be left
       // undefined. See comments in GetDriveAvailableSpaceCallback().
       SendResponse(true);
       return true;
     }
 
-    drive::FileSystemInterface* file_system =
-        integration_service->file_system();
-
     file_system->GetAvailableSpace(
         base::Bind(&FileBrowserPrivateGetSizeStatsFunction::
                        GetDriveAvailableSpaceCallback,
                    this));
-
   } else {
     uint64* total_size = new uint64(0);
     uint64* remaining_size = new uint64(0);

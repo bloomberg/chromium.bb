@@ -10,7 +10,6 @@
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
@@ -202,11 +201,11 @@ bool OpenFileWithBrowser(Profile* profile, const base::FilePath& file_path) {
 
   if (file_path.MatchesExtension(kCRXExtension)) {
     if (drive::util::IsUnderDriveMountPoint(file_path)) {
-      drive::DriveIntegrationService* integration_service =
-          drive::DriveIntegrationServiceFactory::GetForProfile(profile);
-      if (!integration_service)
+      drive::FileSystemInterface* file_system =
+          drive::util::GetFileSystemByProfile(profile);
+      if (!file_system)
         return false;
-      integration_service->file_system()->GetFileByPath(
+      file_system->GetFileByPath(
           drive::util::ExtractDrivePath(file_path),
           base::Bind(&OnCRXDownloadCallback, profile));
     } else {

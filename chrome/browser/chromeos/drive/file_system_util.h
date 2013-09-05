@@ -23,6 +23,8 @@ class FileSystemURL;
 
 namespace drive {
 
+class DriveAppRegistry;
+class DriveServiceInterface;
 class FileSystemInterface;
 class ResourceEntry;
 
@@ -71,6 +73,10 @@ const base::FilePath& GetDriveMyDriveRootPath();
 // Returns the Drive mount point path, which looks like "/special/drive".
 const base::FilePath& GetDriveMountPointPath();
 
+// Returns the FileSystem for the |profile|. If not available (not mounted
+// or disabled), returns NULL.
+FileSystemInterface* GetFileSystemByProfile(Profile* profile);
+
 // Returns a FileSystemInterface instance for the |profile_id|, or NULL
 // if the Profile for |profile_id| is destructed or Drive File System is
 // disabled for the profile.
@@ -80,6 +86,14 @@ const base::FilePath& GetDriveMountPointPath();
 // NULL for such a case).
 // This function must be called on UI thread.
 FileSystemInterface* GetFileSystemByProfileId(void* profile_id);
+
+// Returns the DriveAppRegistry for the |profile|. If not available (not
+// mounted or disabled), returns NULL.
+DriveAppRegistry* GetDriveAppRegistryByProfile(Profile* profile);
+
+// Returns the DriveService for the |profile|. If not available (not mounted
+// or disabled), returns NULL.
+DriveServiceInterface* GetDriveServiceByProfile(Profile* profile);
 
 // Checks if the resource ID is a special one, which is effective only in our
 // implementation and is not supposed to be sent to the server.

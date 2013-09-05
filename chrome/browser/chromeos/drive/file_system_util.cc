@@ -70,12 +70,6 @@ const base::FilePath& GetDriveMyDriveMountPointPath() {
   return drive_mydrive_mount_path;
 }
 
-FileSystemInterface* GetFileSystem(Profile* profile) {
-  DriveIntegrationService* integration_service =
-      DriveIntegrationServiceFactory::GetForProfile(profile);
-  return integration_service ? integration_service->file_system() : NULL;
-}
-
 std::string ReadStringFromGDocFile(const base::FilePath& file_path,
                                    const std::string& key) {
   const int64 kMaxGDocSize = 4096;
@@ -120,6 +114,15 @@ void MoveAllFilesFromDirectory(const base::FilePath& directory_from,
   }
 }
 
+// Returns DriveIntegrationService instance, if Drive is enabled.
+// Otherwise, NULL.
+DriveIntegrationService* GetIntegrationServiceByProfile(Profile* profile) {
+  // TODO(hidehiko): GetForProfile will return DriveIntegrationService
+  // regardless of mounting state. Needs to check the mounting state
+  // later. crbug.com/284972.
+  return DriveIntegrationServiceFactory::GetForProfile(profile);
+}
+
 }  // namespace
 
 const base::FilePath& GetDriveGrandRootPath() {
@@ -140,6 +143,14 @@ const base::FilePath& GetDriveMountPointPath() {
   return drive_mount_path;
 }
 
+FileSystemInterface* GetFileSystemByProfile(Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DriveIntegrationService* integration_service =
+      GetIntegrationServiceByProfile(profile);
+  return integration_service ? integration_service->file_system() : NULL;
+}
+
 FileSystemInterface* GetFileSystemByProfileId(void* profile_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -148,7 +159,25 @@ FileSystemInterface* GetFileSystemByProfileId(void* profile_id) {
   Profile* profile = reinterpret_cast<Profile*>(profile_id);
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return NULL;
-  return GetFileSystem(profile);
+  return GetFileSystemByProfile(profile);
+}
+
+DriveAppRegistry* GetDriveAppRegistryByProfile(Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DriveIntegrationService* integration_service =
+      GetIntegrationServiceByProfile(profile);
+  return integration_service ?
+      integration_service->drive_app_registry() :
+      NULL;
+}
+
+DriveServiceInterface* GetDriveServiceByProfile(Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DriveIntegrationService* integration_service =
+      GetIntegrationServiceByProfile(profile);
+  return integration_service ? integration_service->drive_service() : NULL;
 }
 
 bool IsSpecialResourceId(const std::string& resource_id) {
@@ -192,7 +221,7 @@ void MaybeSetDriveURL(Profile* profile, const base::FilePath& path, GURL* url) {
   if (!IsUnderDriveMountPoint(path))
     return;
 
-  FileSystemInterface* file_system = GetFileSystem(profile);
+  FileSystemInterface* file_system = GetFileSystemByProfile(profile);
   if (!file_system)
     return;
 
@@ -319,7 +348,7 @@ void PrepareWritableFileAndRun(Profile* profile,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  FileSystemInterface* file_system = GetFileSystem(profile);
+  FileSystemInterface* file_system = GetFileSystemByProfile(profile);
   if (!file_system || !IsUnderDriveMountPoint(path)) {
     content::BrowserThread::GetBlockingPool()->PostTask(
         FROM_HERE, base::Bind(callback, FILE_ERROR_FAILED, base::FilePath()));
@@ -338,7 +367,7 @@ void EnsureDirectoryExists(Profile* profile,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   if (IsUnderDriveMountPoint(directory)) {
-    FileSystemInterface* file_system = GetFileSystem(profile);
+    FileSystemInterface* file_system = GetFileSystemByProfile(profile);
     DCHECK(file_system);
     file_system->CreateDirectory(
         ExtractDrivePath(directory),
