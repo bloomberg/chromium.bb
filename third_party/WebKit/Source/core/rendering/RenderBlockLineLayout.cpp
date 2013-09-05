@@ -949,8 +949,14 @@ static inline void computeExpansionForJustifiedText(BidiRun* firstRun, BidiRun* 
     }
 }
 
-void RenderBlock::updateLogicalWidthForAlignment(const ETextAlign& textAlign, BidiRun* trailingSpaceRun, float& logicalLeft, float& totalLogicalWidth, float& availableLogicalWidth, int expansionOpportunityCount)
+void RenderBlock::updateLogicalWidthForAlignment(const ETextAlign& textAlign, const RootInlineBox* rootInlineBox, BidiRun* trailingSpaceRun, float& logicalLeft, float& totalLogicalWidth, float& availableLogicalWidth, int expansionOpportunityCount)
 {
+    TextDirection direction;
+    if (rootInlineBox && rootInlineBox->renderer()->style()->unicodeBidi() == Plaintext)
+        direction = rootInlineBox->direction();
+    else
+        direction = style()->direction();
+
     // Armed with the total width of the line (without justification),
     // we now examine our text-align property in order to determine where to position the
     // objects horizontally. The total width of the line can be increased if we end up
@@ -979,13 +985,13 @@ void RenderBlock::updateLogicalWidthForAlignment(const ETextAlign& textAlign, Bi
         }
         // Fall through
     case TASTART:
-        if (style()->isLeftToRightDirection())
+        if (direction == LTR)
             updateLogicalWidthForLeftAlignedBlock(style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth);
         else
             updateLogicalWidthForRightAlignedBlock(style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth);
         break;
     case TAEND:
-        if (style()->isLeftToRightDirection())
+        if (direction == LTR)
             updateLogicalWidthForRightAlignedBlock(style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth);
         else
             updateLogicalWidthForLeftAlignedBlock(style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth);
@@ -1132,7 +1138,7 @@ BidiRun* RenderBlock::computeInlineDirectionPositionsForSegment(RootInlineBox* l
         expansionOpportunityCount--;
     }
 
-    updateLogicalWidthForAlignment(textAlign, trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth, expansionOpportunityCount);
+    updateLogicalWidthForAlignment(textAlign, lineBox, trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth, expansionOpportunityCount);
 
     computeExpansionForJustifiedText(firstRun, trailingSpaceRun, expansionOpportunities, expansionOpportunityCount, totalLogicalWidth, availableLogicalWidth);
 
@@ -1386,7 +1392,7 @@ static inline void constructBidiRunsForLine(const RenderBlock* block, InlineBidi
 }
 
 // This function constructs line boxes for all of the text runs in the resolver and computes their position.
-RootInlineBox* RenderBlock::createLineBoxesFromBidiRuns(BidiRunList<BidiRun>& bidiRuns, const InlineIterator& end, LineInfo& lineInfo, VerticalPositionCache& verticalPositionCache, BidiRun* trailingSpaceRun, WordMeasurements& wordMeasurements)
+RootInlineBox* RenderBlock::createLineBoxesFromBidiRuns(unsigned bidiLevel, BidiRunList<BidiRun>& bidiRuns, const InlineIterator& end, LineInfo& lineInfo, VerticalPositionCache& verticalPositionCache, BidiRun* trailingSpaceRun, WordMeasurements& wordMeasurements)
 {
     if (!bidiRuns.runCount())
         return 0;
@@ -1398,6 +1404,7 @@ RootInlineBox* RenderBlock::createLineBoxesFromBidiRuns(BidiRunList<BidiRun>& bi
     if (!lineBox)
         return 0;
 
+    lineBox->setBidiLevel(bidiLevel);
     lineBox->setEndsWithBreak(lineInfo.previousLineBrokeCleanly());
 
     bool isSVGRootInlineBox = lineBox->isSVGRootInlineBox();
@@ -1860,7 +1867,7 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
             // inline flow boxes.
 
             LayoutUnit oldLogicalHeight = logicalHeight();
-            RootInlineBox* lineBox = createLineBoxesFromBidiRuns(bidiRuns, end, layoutState.lineInfo(), verticalPositionCache, trailingSpaceRun, wordMeasurements);
+            RootInlineBox* lineBox = createLineBoxesFromBidiRuns(resolver.status().context->level(), bidiRuns, end, layoutState.lineInfo(), verticalPositionCache, trailingSpaceRun, wordMeasurements);
 
             bidiRuns.deleteRuns();
             resolver.markCurrentRunEmpty(); // FIXME: This can probably be replaced by an ASSERT (or just removed).
@@ -3367,7 +3374,7 @@ void RenderBlock::deleteEllipsisLineBoxes()
             float logicalLeft = pixelSnappedLogicalLeftOffsetForLine(curr->lineTop(), firstLine);
             float availableLogicalWidth = logicalRightOffsetForLine(curr->lineTop(), false) - logicalLeft;
             float totalLogicalWidth = curr->logicalWidth();
-            updateLogicalWidthForAlignment(textAlign, 0, logicalLeft, totalLogicalWidth, availableLogicalWidth, 0);
+            updateLogicalWidthForAlignment(textAlign, curr, 0, logicalLeft, totalLogicalWidth, availableLogicalWidth, 0);
 
             if (ltr)
                 curr->adjustLogicalPosition((logicalLeft - curr->logicalLeft()), 0);
@@ -3414,7 +3421,7 @@ void RenderBlock::checkLinesForTextOverflow()
 
                 float logicalLeft = 0; // We are only intersted in the delta from the base position.
                 float truncatedWidth = pixelSnappedLogicalRightOffsetForLine(curr->lineTop(), firstLine);
-                updateLogicalWidthForAlignment(textAlign, 0, logicalLeft, totalLogicalWidth, truncatedWidth, 0);
+                updateLogicalWidthForAlignment(textAlign, curr, 0, logicalLeft, totalLogicalWidth, truncatedWidth, 0);
                 if (ltr)
                     curr->adjustLogicalPosition(logicalLeft, 0);
                 else
@@ -3489,7 +3496,7 @@ LayoutUnit RenderBlock::startAlignedOffsetForLine(LayoutUnit position, bool firs
     float totalLogicalWidth = 0;
     float logicalLeft = logicalLeftOffsetForLine(logicalHeight(), false);
     float availableLogicalWidth = logicalRightOffsetForLine(logicalHeight(), false) - logicalLeft;
-    updateLogicalWidthForAlignment(textAlign, 0, logicalLeft, totalLogicalWidth, availableLogicalWidth, 0);
+    updateLogicalWidthForAlignment(textAlign, 0, 0, logicalLeft, totalLogicalWidth, availableLogicalWidth, 0);
 
     if (!style()->isLeftToRightDirection())
         return logicalWidth() - logicalLeft;
