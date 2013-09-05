@@ -456,6 +456,8 @@
         'browser/ui/cocoa/autofill/autofill_notification_controller.mm',
         'browser/ui/cocoa/autofill/autofill_main_container.h',
         'browser/ui/cocoa/autofill/autofill_main_container.mm',
+        'browser/ui/cocoa/autofill/autofill_overlay_controller.h',
+        'browser/ui/cocoa/autofill/autofill_overlay_controller.mm',
         'browser/ui/cocoa/autofill/autofill_popup_view_bridge.h',
         'browser/ui/cocoa/autofill/autofill_popup_view_bridge.mm',
         'browser/ui/cocoa/autofill/autofill_popup_view_cocoa.h',

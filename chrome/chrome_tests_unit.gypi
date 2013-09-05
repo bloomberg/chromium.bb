@@ -1408,6 +1408,7 @@
         'browser/ui/cocoa/autofill/autofill_main_container_unittest.mm',
         'browser/ui/cocoa/autofill/autofill_notification_container_unittest.mm',
         'browser/ui/cocoa/autofill/autofill_notification_controller_unittest.mm',
+        'browser/ui/cocoa/autofill/autofill_overlay_controller_unittest.mm',
         'browser/ui/cocoa/autofill/autofill_pop_up_button_unittest.mm',
         'browser/ui/cocoa/autofill/autofill_textfield_unittest.mm',
         'browser/ui/cocoa/autofill/autofill_section_container_unittest.mm',

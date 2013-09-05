@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_main_container.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_overlay_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_sign_in_container.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
@@ -63,6 +64,7 @@ void AutofillDialogCocoa::Show() {
           initWithCustomWindow:[sheet_delegate_ window]]);
   constrained_window_.reset(
       new ConstrainedWindowMac(this, delegate_->GetWebContents(), sheet));
+  [sheet_delegate_ show];
 }
 
 void AutofillDialogCocoa::Hide() {
@@ -95,6 +97,7 @@ void AutofillDialogCocoa::UpdateAccountChooser() {
 }
 
 void AutofillDialogCocoa::UpdateButtonStrip() {
+  [sheet_delegate_ updateButtonStrip];
 }
 
 void AutofillDialogCocoa::UpdateDetailArea() {
@@ -285,6 +288,11 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     [loadingShieldView setHidden:YES];
     [loadingShieldView addSubview:loadingShieldTextField_];
 
+    overlayController_.reset(
+        [[AutofillOverlayController alloc] initWithDelegate:
+            autofillDialog->delegate()]);
+    [[overlayController_ view] setHidden:YES];
+
     // This needs a flipped content view because otherwise the size
     // animation looks odd. However, replacing the contentView for constrained
     // windows does not work - it does custom rendering.
@@ -294,7 +302,8 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
         @[accountChooser_,
           [mainContainer_ view],
           [signInContainer_ view],
-          loadingShieldView]];
+          loadingShieldView,
+          [overlayController_ view]]];
     [flippedContentView setAutoresizingMask:
         (NSViewWidthSizable | NSViewHeightSizable)];
     [[[self window] contentView] addSubview:flippedContentView];
@@ -306,17 +315,6 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     contentRect.size.height += NSHeight(headerRect) +
                                chrome_style::kClientBottomPadding +
                                chrome_style::kTitleTopPadding;
-    [self performLayout];
-
-    // Resizing the browser causes the ConstrainedWindow to move.
-    // Observe that to allow resizes based on browser size.
-    NSView* contentView = [[self window] contentView];
-    [contentView setPostsFrameChangedNotifications:YES];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(onContentViewFrameDidChange:)
-               name:NSWindowDidMoveNotification
-             object:[self window]];
   }
   return self;
 }
@@ -358,6 +356,16 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   dialogFrameRect = [[self window] contentRectForFrameRect:dialogFrameRect];
   size.height = std::min(NSHeight(dialogFrameRect), size.height);
 
+  if (![[overlayController_ view] isHidden]) {
+    CGFloat height = [overlayController_ heightForWidth:size.width];
+    // TODO(groby): This currently reserves size on top of the overlay image
+    // equivalent to the height of the header. Clarify with UX what the final
+    // padding will be.
+    if (height != 0.0) {
+      size.height = height + headerSize.height + kDetailTopPadding;
+    }
+  }
+
   return size;
 }
 
@@ -393,6 +401,9 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   [loadingShieldTextField_ setFrame:textFrame];
   [[loadingShieldTextField_ superview] setFrame:contentRect];
 
+  [[overlayController_ view] setFrame:contentRect];
+  [overlayController_ performLayout];
+
   NSRect frameRect = [[self window] frameRectForContentRect:contentRect];
   [[self window] setFrame:frameRect display:YES];
 }
@@ -405,6 +416,29 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 - (IBAction)cancel:(id)sender {
   autofillDialog_->delegate()->OnCancel();
   autofillDialog_->PerformClose();
+}
+
+- (void)show {
+  gfx::Image splashImage = autofillDialog_->delegate()->SplashPageImage();
+  if (!splashImage.IsEmpty()) {
+    autofill::DialogOverlayState state;
+    state.image = splashImage;
+    [overlayController_ setState:state];
+    [overlayController_ beginFadeOut];
+  }
+
+  // Resizing the browser causes the ConstrainedWindow to move.
+  // Observe that to allow resizes based on browser size.
+  // NOTE: This MUST come last after all initial setup is done, because there
+  // is an immediate notification post registration.
+  DCHECK([self window]);
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(onContentViewFrameDidChange:)
+             name:NSWindowDidMoveNotification
+           object:[self window]];
+
+  [self requestRelayout];
 }
 
 - (void)hide {
@@ -432,6 +466,10 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
         [newLoadingMessage length] == 0];
     [self requestRelayout];
   }
+}
+
+- (void)updateButtonStrip {
+  [overlayController_ updateState];
 }
 
 - (void)updateSection:(autofill::DialogSection)section {
