@@ -340,6 +340,8 @@
         'browser/extensions/api/networking_private/networking_private_api_chromeos.cc',
         'browser/extensions/api/networking_private/networking_private_api_nonchromeos.cc',
         'browser/extensions/api/networking_private/networking_private_api.h',
+        'browser/extensions/api/networking_private/networking_private_crypto.cc',
+        'browser/extensions/api/networking_private/networking_private_crypto.h',
         'browser/extensions/api/networking_private/networking_private_event_router_chromeos.cc',
         'browser/extensions/api/networking_private/networking_private_event_router.h',
         'browser/extensions/api/networking_private/networking_private_event_router_factory.cc',
