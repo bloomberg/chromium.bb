@@ -536,6 +536,9 @@ void GestureInterpreter::InitializeMouse(void) {
   temp = new AccelFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new ScalingFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),
                                       GESTURES_DEVCLASS_MOUSE);
+  temp = new MetricsFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),
+                                      GESTURES_DEVCLASS_MOUSE);
+  temp = new IntegralGestureFilterInterpreter(temp, tracer_.get());
   temp = loggingFilter_ = new LoggingFilterInterpreter(prop_reg_.get(), temp,
                                                        tracer_.get());
   interpreter_.reset(temp);

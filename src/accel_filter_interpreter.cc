@@ -33,6 +33,7 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
       scroll_x_out_scale_(prop_reg, "Scroll X Out Scale", 3.0),
       scroll_y_out_scale_(prop_reg, "Scroll Y Out Scale", 3.0),
       use_mouse_point_curves_(prop_reg, "Mouse Accel Curves", 0),
+      use_mouse_scroll_curves_(prop_reg, "Mouse Scroll Curves", 0),
       min_reasonable_dt_(prop_reg, "Accel Min dt", 0.003),
       max_reasonable_dt_(prop_reg, "Accel Max dt", 0.050),
       last_reasonable_dt_(0.05),
@@ -187,6 +188,12 @@ void AccelFilterInterpreter::ConsumeGesture(const Gesture& gs) {
         scale_out_y = dy = &copy.details.scroll.dy;
         scale_out_x_ordinal = &copy.details.scroll.ordinal_dx;
         scale_out_y_ordinal = &copy.details.scroll.ordinal_dy;
+      }
+      // We bypass mouse scroll events as they have a separate acceleration
+      // algorithm implemented in mouse_interpreter.
+      if (use_mouse_scroll_curves_.val_) {
+        ProduceGesture(gs);
+        return;
       }
       if (scroll_sensitivity_.val_ >= 1 && scroll_sensitivity_.val_ <= 5) {
         segs = scroll_curves_[scroll_sensitivity_.val_ - 1];

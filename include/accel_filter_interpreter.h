@@ -72,6 +72,7 @@ class AccelFilterInterpreter : public FilterInterpreter {
   DoubleProperty scroll_x_out_scale_;
   DoubleProperty scroll_y_out_scale_;
   BoolProperty use_mouse_point_curves_;
+  BoolProperty use_mouse_scroll_curves_;
 
   // Sometimes on wireless hardware (e.g. Bluetooth), patckets need to be
   // resent. This can lead to a time between packets that very large followed

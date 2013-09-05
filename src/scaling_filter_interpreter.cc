@@ -207,6 +207,13 @@ void ScalingFilterInterpreter::ConsumeGesture(const Gesture& gs) {
       copy.details.move.ordinal_dy *= screen_y_scale_;
       break;
     case kGestureTypeScroll:
+      // We don't scale mouse scroll events as they are derived from discrete
+      // wheel events which are not physical distances. Pointer moves (both
+      // from mice and touchpads), as well as touchpad scrolls are all derived
+      // from real, physical movements which can be connected to the distance
+      // on the screen.
+      if (devclass_ == GESTURES_DEVCLASS_MOUSE)
+        break;
       copy.details.scroll.dx *= screen_x_scale_;
       copy.details.scroll.dy *= screen_y_scale_;
       copy.details.scroll.ordinal_dx *= screen_x_scale_;
