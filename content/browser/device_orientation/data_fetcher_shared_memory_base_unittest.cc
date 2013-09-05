@@ -130,10 +130,6 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
   virtual ~FakeNonPollingDataFetcher() { }
 
   virtual bool Start(ConsumerType consumer_type, void* buffer) OVERRIDE {
-    base::SharedMemoryHandle handle = GetSharedMemoryHandleForProcess(
-        consumer_type, base::GetCurrentProcessHandle());
-    EXPECT_TRUE(base::SharedMemory::IsHandleValid(handle));
-
     Init(consumer_type, buffer);
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
@@ -185,9 +181,6 @@ class FakePollingDataFetcher : public FakeDataFetcher {
 
   virtual bool Start(ConsumerType consumer_type, void* buffer) OVERRIDE {
     EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
-    base::SharedMemoryHandle handle = GetSharedMemoryHandleForProcess(
-        consumer_type, base::GetCurrentProcessHandle());
-    EXPECT_TRUE(base::SharedMemory::IsHandleValid(handle));
 
     Init(consumer_type, buffer);
     switch (consumer_type) {
@@ -304,8 +297,18 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotionAndOrientation) {
 
   EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
       CONSUMER_TYPE_ORIENTATION));
+  base::SharedMemoryHandle handle_orientation =
+      fake_data_fetcher.GetSharedMemoryHandleForProcess(
+          CONSUMER_TYPE_ORIENTATION, base::GetCurrentProcessHandle());
+  EXPECT_TRUE(base::SharedMemory::IsHandleValid(handle_orientation));
+
   EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
       CONSUMER_TYPE_MOTION));
+  base::SharedMemoryHandle handle_motion =
+      fake_data_fetcher.GetSharedMemoryHandleForProcess(
+          CONSUMER_TYPE_MOTION, base::GetCurrentProcessHandle());
+  EXPECT_TRUE(base::SharedMemory::IsHandleValid(handle_motion));
+
   fake_data_fetcher.WaitForStart(CONSUMER_TYPE_ORIENTATION);
   fake_data_fetcher.WaitForStart(CONSUMER_TYPE_MOTION);
 
