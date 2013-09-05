@@ -1598,8 +1598,7 @@ void LayerTreeHostImpl::ReleaseTreeResources() {
   if (recycle_tree_ && recycle_tree_->root_layer())
     SendReleaseResourcesRecursive(recycle_tree_->root_layer());
 
-  // Remove all existing maps from UIResourceId to ResourceId.
-  ui_resource_map_.clear();
+  DeleteAllUIResources();
 }
 
 void LayerTreeHostImpl::CreateAndSetRenderer(
@@ -2626,6 +2625,15 @@ void LayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
     resource_provider_->DeleteResource(id);
     ui_resource_map_.erase(uid);
   }
+}
+
+void LayerTreeHostImpl::DeleteAllUIResources() {
+  for (UIResourceMap::const_iterator iter = ui_resource_map_.begin();
+      iter != ui_resource_map_.end();
+      ++iter) {
+    resource_provider_->DeleteResource(iter->second);
+  }
+  ui_resource_map_.clear();
 }
 
 ResourceProvider::ResourceId LayerTreeHostImpl::ResourceIdForUIResource(

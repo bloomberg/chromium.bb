@@ -409,6 +409,7 @@ class CC_EXPORT LayerTreeHostImpl
                         scoped_refptr<UIResourceBitmap> bitmap);
   // Deletes a UI resource.  May safely be called more than once.
   void DeleteUIResource(UIResourceId uid);
+  void DeleteAllUIResources();
 
   ResourceProvider::ResourceId ResourceIdForUIResource(UIResourceId uid) const;
 

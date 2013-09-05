@@ -323,9 +323,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
 
   bool AnimateLayersRecursive(Layer* current, base::TimeTicks time);
 
-  void UIResourceLost(UIResourceId id);
-
-  void DidLoseUIResources();
+  void RecreateUIResources(bool resource_lost);
 
   typedef base::hash_map<UIResourceId, UIResourceClient*> UIResourceClientMap;
   UIResourceClientMap ui_resource_client_map_;
