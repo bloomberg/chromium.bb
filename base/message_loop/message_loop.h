@@ -478,6 +478,8 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   virtual bool DoWork() OVERRIDE;
   virtual bool DoDelayedWork(TimeTicks* next_delayed_work_time) OVERRIDE;
   virtual bool DoIdleWork() OVERRIDE;
+  virtual void GetQueueingInformation(size_t* queue_size,
+                                      TimeDelta* queueing_delay) OVERRIDE;
 
   Type type_;
 
