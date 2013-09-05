@@ -178,6 +178,7 @@ void MediaSourcePlayer::Release() {
   reconfig_video_decoder_ = false;
   playing_ = false;
   pending_event_ = NO_EVENT_PENDING;
+  decoder_starvation_callback_.Cancel();
   surface_ = gfx::ScopedJavaSurface();
   ReleaseMediaResourcesFromManager();
 }
