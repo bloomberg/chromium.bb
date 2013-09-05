@@ -71,6 +71,8 @@ static base::FilePath GetLibPeerConnectionPath() {
 }
 
 bool InitializeWebRtcModule() {
+  TRACE_EVENT0("webrtc", "InitializeWebRtcModule");
+
   if (g_create_webrtc_media_engine)
     return true;  // InitializeWebRtcModule has already been called.
 
