@@ -9,9 +9,9 @@ PASS text.splitText(4).data is "efg"
 PASS text.data is "abcd"
 PASS text.splitText() threw exception TypeError: Not enough arguments.
 PASS text.data is "abcd"
-PASS text.splitText(999) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS text.splitText(999) threw exception IndexSizeError: Failed to execute 'splitText' on 'Text': The offset 999 is larger than the Text node's length..
 PASS text.data is "abcd"
-PASS text.splitText(-1) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS text.splitText(-1) threw exception IndexSizeError: Failed to execute 'splitText' on 'Text': The offset 4294967295 is larger than the Text node's length..
 PASS text.data is "abcd"
 PASS text.splitText(-4294967294).data is "cd"
 PASS text.data is "ab"
@@ -28,4 +28,4 @@ PASS text.data is "undefined"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
+!DOCTYPE html>

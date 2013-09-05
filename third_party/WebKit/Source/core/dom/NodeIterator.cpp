@@ -25,6 +25,7 @@
 #include "config.h"
 #include "core/dom/NodeIterator.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/dom/Document.h"
@@ -90,7 +91,7 @@ NodeIterator::~NodeIterator()
 PassRefPtr<Node> NodeIterator::nextNode(ScriptState* state, ExceptionState& es)
 {
     if (m_detached) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("nextNode", "NodeIterator", "The iterator is detached."));
         return 0;
     }
 
@@ -119,7 +120,7 @@ PassRefPtr<Node> NodeIterator::nextNode(ScriptState* state, ExceptionState& es)
 PassRefPtr<Node> NodeIterator::previousNode(ScriptState* state, ExceptionState& es)
 {
     if (m_detached) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("previousNode", "NodeIterator", "The iterator is detached."));
         return 0;
     }
 

@@ -12,7 +12,7 @@ length: 0
 [object HTMLDivElement], [object HTMLDivElement], length: 2
 [object HTMLDivElement], [object HTMLDivElement], [object HTMLDivElement], [object HTMLParagraphElement], length: 4
 [object HTMLDivElement], [object HTMLDivElement], [object HTMLDivElement], [object HTMLDivElement], [object HTMLParagraphElement], length: 5
-SyntaxError: An invalid or illegal string was specified.
+SyntaxError: Failed to execute query: '@font-face' is not a valid selector.
 SyntaxError: An invalid or illegal string was specified.
 length: 0
 length: 0
@@ -26,7 +26,7 @@ length: 0
 [object HTMLDivElement], [object HTMLDivElement], length: 2
 [object HTMLDivElement], [object HTMLParagraphElement], length: 2
 [object HTMLDivElement], [object HTMLParagraphElement], length: 2
-SyntaxError: An invalid or illegal string was specified.
+SyntaxError: Failed to execute query: '@font-face' is not a valid selector.
 SyntaxError: An invalid or illegal string was specified.
 length: 0
 length: 0
@@ -39,7 +39,7 @@ length: 0
 [object HTMLDivElement], [object HTMLDivElement], length: 2
 [object HTMLDivElement], [object HTMLDivElement], [object HTMLParagraphElement], length: 3
 [object HTMLDivElement], [object HTMLDivElement], [object HTMLParagraphElement], length: 3
-SyntaxError: An invalid or illegal string was specified.
+SyntaxError: Failed to execute query: '@font-face' is not a valid selector.
 SyntaxError: An invalid or illegal string was specified.
 length: 0
 length: 0
@@ -51,7 +51,7 @@ TypeError: Cannot call method 'dump' of null
 [object HTMLDivElement]
 [object HTMLDivElement]
 [object HTMLDivElement]
-SyntaxError: An invalid or illegal string was specified.
+SyntaxError: Failed to execute query: '@font-face' is not a valid selector.
 SyntaxError: An invalid or illegal string was specified.
 TypeError: Cannot call method 'dump' of null
 TypeError: Cannot call method 'dump' of null
@@ -64,7 +64,7 @@ TypeError: Cannot call method 'dump' of null
 [object HTMLDivElement]
 [object HTMLDivElement]
 [object HTMLDivElement]
-SyntaxError: An invalid or illegal string was specified.
+SyntaxError: Failed to execute query: '@font-face' is not a valid selector.
 SyntaxError: An invalid or illegal string was specified.
 TypeError: Cannot call method 'dump' of null
 TypeError: Cannot call method 'dump' of null
@@ -77,7 +77,7 @@ TypeError: Cannot call method 'dump' of null
 [object HTMLDivElement]
 [object HTMLDivElement]
 [object HTMLDivElement]
-SyntaxError: An invalid or illegal string was specified.
+SyntaxError: Failed to execute query: '@font-face' is not a valid selector.
 SyntaxError: An invalid or illegal string was specified.
 TypeError: Cannot call method 'dump' of null
 TypeError: Cannot call method 'dump' of null

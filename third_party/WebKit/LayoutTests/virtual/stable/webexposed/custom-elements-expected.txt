@@ -13,7 +13,7 @@ document.createElement("x-a") instanceof HTMLUnknownElement
 true
 
 document.querySelector(":unresolved")
-FAIL document.querySelector(":unresolved") threw exception SyntaxError: An invalid or illegal string was specified.
+FAIL document.querySelector(":unresolved") threw exception SyntaxError: Failed to execute query: ':unresolved' is not a valid selector.
 undefined
 
 PASS successfullyParsed is true

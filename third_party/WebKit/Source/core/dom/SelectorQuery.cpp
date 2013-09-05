@@ -491,13 +491,13 @@ SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, const Docu
     parser.parseSelector(selectors, selectorList);
 
     if (!selectorList.first()) {
-        es.throwDOMException(SyntaxError);
+        es.throwDOMException(SyntaxError, "Failed to execute query: '" + selectors + "' is not a valid selector.");
         return 0;
     }
 
     // throw a NamespaceError if the selector includes any namespace prefixes.
     if (selectorList.selectorsNeedNamespaceResolution()) {
-        es.throwDOMException(NamespaceError);
+        es.throwDOMException(NamespaceError, "Failed to execute query: '" + selectors + "' contains namespaces, which are not supported.");
         return 0;
     }
 
