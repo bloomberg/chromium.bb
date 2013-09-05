@@ -48,13 +48,6 @@ namespace content {
 #if defined(OS_LINUX)
 // All tests are flaky on Linux: crbug.com/281492.
 #define MAYBE_WebrtcBrowserTest DISABLED_WebrtcBrowserTest
-
-// Workaround for crbug.com/285051. This can safely be removed if any of the
-// cases selected by --gtest_filter=WebRTC*:Webrtc*:*Dtmf get re-enabled.
-class WebrtcWorkaroundBugWithEmptyFilter: public ContentBrowserTest {};
-IN_PROC_BROWSER_TEST_F(WebrtcWorkaroundBugWithEmptyFilter, Succeeds) {
-  ASSERT_TRUE(true);
-}
 #else
 #define MAYBE_WebrtcBrowserTest WebrtcBrowserTest
 #endif
