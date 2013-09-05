@@ -425,7 +425,8 @@ class AndroidCommands(object):
     if package_name:
       installed_apk_path = self.GetApplicationPath(package_name)
       if (installed_apk_path and
-          not self.GetFilesChanged(apk_path, installed_apk_path)):
+          not self.GetFilesChanged(apk_path, installed_apk_path,
+                                   ignore_filenames=True)):
         logging.info('Skipped install: identical %s APK already installed' %
             package_name)
         return
@@ -805,7 +806,7 @@ class AndroidCommands(object):
     host_hash_tuples = _ParseMd5SumOutput(md5sum_output.splitlines())
     return (host_hash_tuples, device_hash_tuples)
 
-  def GetFilesChanged(self, host_path, device_path):
+  def GetFilesChanged(self, host_path, device_path, ignore_filenames=False):
     """Compares the md5sum of a host path against a device path.
 
     Note: Ignores extra files on the device.
@@ -813,6 +814,9 @@ class AndroidCommands(object):
     Args:
       host_path: Path (file or directory) on the host.
       device_path: Path on the device.
+      ignore_filenames: If True only the file contents are considered when
+          checking whether a file has changed, otherwise the relative path
+          must also match.
 
     Returns:
       A list of tuples of the form (host_path, device_path) for files whose
@@ -822,7 +826,7 @@ class AndroidCommands(object):
         host_path, device_path)
 
     # Ignore extra files on the device.
-    if len(device_hash_tuples) > len(host_hash_tuples):
+    if not ignore_filenames:
       host_files = [os.path.relpath(os.path.normpath(p.path),
                     os.path.normpath(host_path)) for p in host_hash_tuples]
 
