@@ -27,7 +27,7 @@ endif
 
 
 ifeq ($(CONFIG),Release)
-WIN_OPT_FLAGS ?= /O2 /MT /Z7
+WIN_OPT_FLAGS ?= /O2 /MT /Z7 -DNDEBUG
 else
 WIN_OPT_FLAGS ?= /Od /MTd /Z7 -DNACL_SDK_DEBUG
 endif

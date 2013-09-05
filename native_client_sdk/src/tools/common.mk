@@ -284,8 +284,11 @@ endif
 #
 # Common Compile Options
 #
+# For example, -DNDEBUG is added to release builds by default
+# so that calls to assert(3) are not included in the build.
+#
 ifeq ($(CONFIG),Release)
-POSIX_FLAGS ?= -g -O2 -pthread -MMD
+POSIX_FLAGS ?= -g -O2 -pthread -MMD -DNDEBUG
 else
 POSIX_FLAGS ?= -g -O0 -pthread -MMD -DNACL_SDK_DEBUG
 endif

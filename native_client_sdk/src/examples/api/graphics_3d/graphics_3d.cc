@@ -61,9 +61,11 @@ void DecompressTexture() {
    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
   };
   const uint8_t* input = &kRLETextureData[0];
-  const uint8_t * const input_end = &kRLETextureData[kRLETextureDataLength];
+  const uint8_t* const input_end = &kRLETextureData[kRLETextureDataLength];
   uint8_t* output = &g_texture_data[0];
-  const uint8_t * const output_end = &g_texture_data[kTextureDataLength];
+#ifndef NDEBUG
+  const uint8_t* const output_end = &g_texture_data[kTextureDataLength];
+#endif
 
   uint8_t decoded[4];
   int decoded_count = 0;

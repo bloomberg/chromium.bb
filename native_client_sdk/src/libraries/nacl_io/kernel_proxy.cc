@@ -86,7 +86,8 @@ KernelProxy::~KernelProxy() {
   delete ppapi_;
 }
 
-void KernelProxy::Init(PepperInterface* ppapi) {
+Error KernelProxy::Init(PepperInterface* ppapi) {
+  Error rtn = 0;
   ppapi_ = ppapi;
   dev_ = 1;
 
@@ -98,15 +99,33 @@ void KernelProxy::Init(PepperInterface* ppapi) {
 
   int result;
   result = mount("", "/", "passthroughfs", 0, NULL);
-  assert(result == 0);
+  if (result != 0) {
+    assert(false);
+    rtn = errno;
+  }
 
   result = mount("", "/dev", "dev", 0, NULL);
-  assert(result == 0);
+  if (result != 0) {
+    assert(false);
+    rtn = errno;
+  }
 
   // Open the first three in order to get STDIN, STDOUT, STDERR
-  open("/dev/stdin", O_RDONLY);
-  open("/dev/stdout", O_WRONLY);
-  open("/dev/stderr", O_WRONLY);
+  int fd;
+  fd = open("/dev/stdin", O_RDONLY);
+  assert(fd == 0);
+  if (fd < 0)
+    rtn = errno;
+
+  fd = open("/dev/stdout", O_WRONLY);
+  assert(fd == 1);
+  if (fd < 0)
+    rtn = errno;
+
+  fd = open("/dev/stderr", O_WRONLY);
+  assert(fd == 2);
+  if (fd < 0)
+    rtn = errno;
 
 #ifdef PROVIDES_SOCKET_API
   host_resolver_.Init(ppapi_);
@@ -114,7 +133,13 @@ void KernelProxy::Init(PepperInterface* ppapi) {
 
   StringMap_t args;
   socket_mount_.reset(new MountSocket());
-  socket_mount_->Init(0, args, ppapi);
+  result = socket_mount_->Init(0, args, ppapi);
+  if (result != 0) {
+    assert(false);
+    rtn = result;
+  }
+
+  return rtn;
 }
 
 int KernelProxy::open_resource(const char* path) {

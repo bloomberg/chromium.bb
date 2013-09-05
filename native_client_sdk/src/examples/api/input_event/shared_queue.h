@@ -52,6 +52,13 @@ class ScopedLock {
   ScopedLock(const ScopedLock&);
 };
 
+
+#ifdef __GNUC__
+#define UNUSED __attribute__ ((unused))
+#else
+#define UNUSED
+#endif
+
 // LockingQueue contains a collection of <T>, such as a collection of
 // objects or pointers.  The Push() method is used to add items to the
 // queue in a thread-safe manner.  The GetItem() is used to retrieve
@@ -59,7 +66,8 @@ class ScopedLock {
 template <class T> class LockingQueue {
  public:
   LockingQueue() : quit_(false) {
-    int result = pthread_mutex_init(&queue_mutex_, NULL);
+    int result UNUSED;
+    result = pthread_mutex_init(&queue_mutex_, NULL);
     assert(result == 0);
     result = pthread_cond_init(&queue_condition_var_, NULL);
     assert(result == 0);

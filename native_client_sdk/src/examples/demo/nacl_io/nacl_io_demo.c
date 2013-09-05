@@ -86,7 +86,10 @@ char* VprintfToNewString(const char* format, va_list args) {
   length = vsnprintf(NULL, 0, format, args);
   buffer = (char*)malloc(length + 1); /* +1 for NULL-terminator. */
   result = vsnprintf(&buffer[0], length + 1, format, args_copy);
-  assert(result == length);
+  if (result != length) {
+    assert(0);
+    return NULL;
+  }
   return buffer;
 }
 

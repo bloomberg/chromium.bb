@@ -283,9 +283,10 @@ class MountMockInit : public MountMem {
 };
 
 class KernelProxyMountMock : public KernelProxy {
-  virtual void Init(PepperInterface* ppapi) {
+  virtual Error Init(PepperInterface* ppapi) {
     KernelProxy::Init(NULL);
     factories_["initfs"] = new TypedMountFactory<MountMockInit>;
+    return 0;
   }
 };
 
@@ -378,9 +379,10 @@ class MountMockMMap : public Mount {
 };
 
 class KernelProxyMockMMap : public KernelProxy {
-  virtual void Init(PepperInterface* ppapi) {
+  virtual Error Init(PepperInterface* ppapi) {
     KernelProxy::Init(NULL);
     factories_["mmapfs"] = new TypedMountFactory<MountMockMMap>;
+    return 0;
   }
 };
 
@@ -450,11 +452,12 @@ class KernelProxyError : public KernelProxy {
  public:
   KernelProxyError() : mnt_(new MountMock) {}
 
-  virtual void Init(PepperInterface* ppapi) {
+  virtual Error Init(PepperInterface* ppapi) {
     KernelProxy::Init(ppapi);
     factories_["testfs"] = new SingletonMountFactory(mnt_);
 
     EXPECT_CALL(*mnt_, Destroy()).Times(1);
+    return 0;
   }
 
   ScopedRef<MountMock> mnt() { return mnt_; }

@@ -60,10 +60,13 @@ inline void rand_reset(unsigned int seed) {
   g_rand_state = seed;
 }
 
+#ifndef NDEBUG
 // returns true if input is power of two.
+// only used in assertions.
 inline bool is_pow2(int x) {
   return (x & (x - 1)) == 0;
 }
+#endif
 
 inline double getseconds() {
   const double usec_to_sec = 0.000001;

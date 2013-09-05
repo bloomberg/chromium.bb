@@ -48,7 +48,7 @@ class KernelProxy : protected KernelObject {
 
   // Takes ownership of |ppapi|.
   // |ppapi| may be NULL. If so, no mount that uses pepper calls can be mounted.
-  virtual void Init(PepperInterface* ppapi);
+  virtual Error Init(PepperInterface* ppapi);
 
   // NaCl-only function to read resources specified in the NMF file.
   virtual int open_resource(const char* file);

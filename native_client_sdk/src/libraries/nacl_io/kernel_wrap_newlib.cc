@@ -10,7 +10,6 @@
 
 #include "nacl_io/kernel_wrap.h"
 
-#include <assert.h>
 #include <dirent.h>
 #include <errno.h>
 #include <irt.h>
@@ -35,7 +34,6 @@ EXTERN_C_BEGIN
 
 // Assign the REAL function pointer.
 #define ASSIGN_REAL_PTR(group, name) \
-  assert(__libnacl_irt_##group.name != NULL); \
   REAL(name) = __libnacl_irt_##group.name;
 
 // Switch IRT's pointer to the REAL pointer
