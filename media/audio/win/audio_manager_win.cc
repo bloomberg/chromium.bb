@@ -365,9 +365,6 @@ std::string AudioManagerWin::GetDefaultOutputDeviceID() {
 AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
     const std::string& output_device_id,
     const AudioParameters& input_params) {
-  // TODO(tommi): Support |output_device_id|.
-  DLOG_IF(ERROR, !output_device_id.empty()) << "Not implemented!";
-
   const bool core_audio_supported = CoreAudioUtil::IsSupported();
   DLOG_IF(ERROR, !core_audio_supported && !output_device_id.empty())
       << "CoreAudio is required to open non-default devices.";
@@ -392,8 +389,10 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
         channel_layout = input_params.channel_layout();
     } else {
       AudioParameters params;
-      HRESULT hr = CoreAudioUtil::GetPreferredAudioParameters(output_device_id,
-                                                              &params);
+      HRESULT hr = CoreAudioUtil::GetPreferredAudioParameters(
+          output_device_id.empty() ?
+              GetDefaultOutputDeviceID() : output_device_id,
+          &params);
       if (SUCCEEDED(hr)) {
         bits_per_sample = params.bits_per_sample();
         buffer_size = params.frames_per_buffer();

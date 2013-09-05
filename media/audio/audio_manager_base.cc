@@ -400,7 +400,8 @@ void AudioManagerBase::NotifyAllOutputDeviceChangeListeners() {
 }
 
 AudioParameters AudioManagerBase::GetDefaultOutputStreamParameters() {
-  return GetPreferredOutputStreamParameters("", AudioParameters());
+  return GetPreferredOutputStreamParameters(GetDefaultOutputDeviceID(),
+      AudioParameters());
 }
 
 AudioParameters AudioManagerBase::GetOutputStreamParameters(
