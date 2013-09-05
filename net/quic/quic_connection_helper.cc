@@ -126,7 +126,9 @@ int QuicConnectionHelper::WritePacketToWire(
   if (rv >= 0) {
     *error = 0;
   } else {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.WriteError", -rv);
+    if (rv != ERR_IO_PENDING) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.WriteError", -rv);
+    }
     *error = rv;
     rv = -1;
   }
