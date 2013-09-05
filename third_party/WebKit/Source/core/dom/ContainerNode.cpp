@@ -25,6 +25,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ChildListMutationScope.h"
 #include "core/dom/ContainerNodeAlgorithms.h"
 #include "core/dom/ElementTraversal.h"
@@ -72,6 +73,9 @@ static inline void attachAfterInsertion(Node* node, AttachBehavior attachBehavio
         node->lazyAttach();
     else
         node->attach();
+
+    if (StyleResolver* resolver = node->document().styleResolverIfExists())
+        resolver->clearStyleSharingList();
 }
 
 static void collectChildrenAndRemoveFromOldParent(Node* node, NodeVector& nodes, ExceptionState& es)

@@ -242,6 +242,18 @@ void StyleResolver::collectFeatures()
     m_uncommonAttributeRuleSet = makeRuleSet(m_features.uncommonAttributeRules);
 }
 
+void StyleResolver::addToStyleSharingList(Element* element)
+{
+    if (m_styleSharingList.size() >= styleSharingListSize)
+        m_styleSharingList.remove(--m_styleSharingList.end());
+    m_styleSharingList.prepend(element);
+}
+
+void StyleResolver::clearStyleSharingList()
+{
+    m_styleSharingList.clear();
+}
+
 void StyleResolver::pushParentElement(Element* parent)
 {
     ASSERT(parent);

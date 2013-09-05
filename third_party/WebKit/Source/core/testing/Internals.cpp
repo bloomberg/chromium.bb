@@ -1545,11 +1545,17 @@ void Internals::toggleOverwriteModeEnabled(Document* document, ExceptionState&)
 
 unsigned Internals::numberOfLiveNodes() const
 {
+    if (StyleResolver* resolver = contextDocument()->styleResolverIfExists())
+        resolver->clearStyleSharingList();
+
     return InspectorCounters::counterValue(InspectorCounters::NodeCounter);
 }
 
 unsigned Internals::numberOfLiveDocuments() const
 {
+    if (StyleResolver* resolver = contextDocument()->styleResolverIfExists())
+        resolver->clearStyleSharingList();
+
     return InspectorCounters::counterValue(InspectorCounters::DocumentCounter);
 }
 
@@ -1841,6 +1847,11 @@ void Internals::garbageCollectDocumentResources(Document* document, ExceptionSta
         es.throwDOMException(InvalidAccessError);
         return;
     }
+
+    if (StyleResolver* resolver = contextDocument()->styleResolverIfExists())
+        resolver->clearStyleSharingList();
+    if (StyleResolver* resolver = document->styleResolverIfExists())
+        resolver->clearStyleSharingList();
 
     ResourceFetcher* fetcher = document->fetcher();
     if (!fetcher)

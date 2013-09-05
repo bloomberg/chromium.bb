@@ -29,6 +29,7 @@
 
 #include "HTMLElementFactory.h"
 #include "HTMLNames.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Comment.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentType.h"
