@@ -98,7 +98,7 @@ unsigned CharacterData::parserAppendData(const String& string, unsigned offset, 
 
     ASSERT(!renderer() || isTextNode());
     if (isTextNode())
-        toText(this)->updateTextRenderer(oldLength, 0, DeprecatedAttachNow);
+        toText(this)->updateTextRenderer(oldLength, 0);
 
     document().incDOMTreeVersion();
 

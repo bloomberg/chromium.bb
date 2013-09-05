@@ -10,15 +10,18 @@ layer at (0,0) size 800x600
 layer at (10,30) size 179x100 clip at (11,31) size 162x98 scrollHeight 146
   RenderTextControl {TEXTAREA} at (2,22) size 179x100 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 160x144
-      RenderText {#text} at (0,0) size 8x64
+      RenderText {#text} at (0,0) size 8x16
         text run at (0,0) width 8: "1"
-        text run at (8,0) width 0: " "
+      RenderBR {BR} at (8,12) size 0x0
+      RenderText {#text} at (0,16) size 8x16
         text run at (0,16) width 8: "2"
-        text run at (8,16) width 0: " "
+      RenderBR {BR} at (8,28) size 0x0
+      RenderText {#text} at (0,32) size 8x16
         text run at (0,32) width 8: "3"
-        text run at (8,32) width 0: " "
+      RenderBR {BR} at (8,44) size 0x0
+      RenderText {#text} at (0,48) size 8x16
         text run at (0,48) width 8: "4"
-        text run at (8,48) width 0: " "
+      RenderBR {BR} at (8,60) size 0x0
       RenderText {#text} at (0,64) size 8x16
         text run at (0,64) width 8: "5"
       RenderText {#text} at (8,64) size 0x16
@@ -37,4 +40,4 @@ layer at (10,30) size 179x100 clip at (11,31) size 162x98 scrollHeight 146
         text run at (8,112) width 0: " "
       RenderText {#text} at (0,128) size 0x16
         text run at (0,128) width 0: " "
-caret: position 0 of child 9 {#text} of child 0 {DIV} of {#document-fragment} of child 3 {TEXTAREA} of body
+caret: position 0 of child 16 {#text} of child 0 {DIV} of {#document-fragment} of child 3 {TEXTAREA} of body

@@ -106,7 +106,7 @@ static inline void executeInsertTask(HTMLConstructionSiteTask& task)
 {
     ASSERT(task.operation == HTMLConstructionSiteTask::Insert);
 
-    insert(task, DeprecatedAttachNow);
+    insert(task);
 
     task.child->beginParsingChildren();
 

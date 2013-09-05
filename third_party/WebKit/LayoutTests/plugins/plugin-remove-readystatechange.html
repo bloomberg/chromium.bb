@@ -26,6 +26,10 @@ document.addEventListener('readystatechange', function() {
 window.addEventListener('DOMContentLoaded', function() {
     document.body.removeChild(document.getElementById('viewer'));
 });
+
+// FIXME: This shouldn't be needed, but it's here to make our whitespace text node
+// creation deterministic in the face of lazily creating the render tree.
+document.body.offsetHeight;
 </script>
 </body>
 </html>
