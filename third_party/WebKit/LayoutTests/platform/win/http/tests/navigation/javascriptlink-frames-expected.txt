@@ -109,7 +109,7 @@ layer at (0,0) size 800x600
                 text run at (0,0) width 232: "More initial text before user"
                 text run at (232,0) width 8: " "
                 text run at (0,16) width 48: "input."
-                text run at (48,16) width 0: " "
+              RenderBR {BR} at (48,28) size 0x0
               RenderBR {BR} at (0,32) size 0x16
       RenderFrame {FRAME} at (0,540) size 800x60
         layer at (0,0) size 785x90
