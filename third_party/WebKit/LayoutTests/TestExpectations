@@ -1324,6 +1324,5 @@ crbug.com/284793 http/tests/media/media-source/mediasource-play-then-seek-back.h
 crbug.com/276769 http/tests/security/contentSecurityPolicy/source-list-parsing-nonascii.html [ Failure Pass ]
 
 crbug.com/280709 Bug(ojan) fast/text/international/unicode-bidi-plaintext-in-textarea.html [ NeedsRebaseline ]
-crbug.com/280709 fast/text/international/unicode-bidi-plaintext.html [ NeedsRebaseline ]
 
 crbug.com/285703 [ Debug ] fast/table/table-rowspan-crash-with-huge-rowspan-cells.html [ Crash Pass ]
