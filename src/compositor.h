@@ -403,6 +403,7 @@ struct weston_xkb_info {
 	int keymap_fd;
 	size_t keymap_size;
 	char *keymap_area;
+	int32_t ref_count;
 	xkb_mod_index_t shift_mod;
 	xkb_mod_index_t caps_mod;
 	xkb_mod_index_t ctrl_mod;
@@ -473,7 +474,7 @@ struct weston_seat {
 
 	void (*led_update)(struct weston_seat *ws, enum weston_led leds);
 
-	struct weston_xkb_info xkb_info;
+	struct weston_xkb_info *xkb_info;
 	struct {
 		struct xkb_state *state;
 		enum weston_led leds;
@@ -593,7 +594,7 @@ struct weston_compositor {
 
 	struct xkb_rule_names xkb_names;
 	struct xkb_context *xkb_context;
-	struct weston_xkb_info xkb_info;
+	struct weston_xkb_info *xkb_info;
 
 	/* Raw keyboard processing (no libxkbcommon initialization or handling) */
 	int use_xkbcommon;

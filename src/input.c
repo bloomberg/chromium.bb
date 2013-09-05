@@ -760,24 +760,24 @@ notify_modifiers(struct weston_seat *seat, uint32_t serial)
 	/* And update the modifier_state for bindings. */
 	mods_lookup = mods_depressed | mods_latched;
 	seat->modifier_state = 0;
-	if (mods_lookup & (1 << seat->xkb_info.ctrl_mod))
+	if (mods_lookup & (1 << seat->xkb_info->ctrl_mod))
 		seat->modifier_state |= MODIFIER_CTRL;
-	if (mods_lookup & (1 << seat->xkb_info.alt_mod))
+	if (mods_lookup & (1 << seat->xkb_info->alt_mod))
 		seat->modifier_state |= MODIFIER_ALT;
-	if (mods_lookup & (1 << seat->xkb_info.super_mod))
+	if (mods_lookup & (1 << seat->xkb_info->super_mod))
 		seat->modifier_state |= MODIFIER_SUPER;
-	if (mods_lookup & (1 << seat->xkb_info.shift_mod))
+	if (mods_lookup & (1 << seat->xkb_info->shift_mod))
 		seat->modifier_state |= MODIFIER_SHIFT;
 
 	/* Finally, notify the compositor that LEDs have changed. */
 	if (xkb_state_led_index_is_active(seat->xkb_state.state,
-					  seat->xkb_info.num_led))
+					  seat->xkb_info->num_led))
 		leds |= LED_NUM_LOCK;
 	if (xkb_state_led_index_is_active(seat->xkb_state.state,
-					  seat->xkb_info.caps_led))
+					  seat->xkb_info->caps_led))
 		leds |= LED_CAPS_LOCK;
 	if (xkb_state_led_index_is_active(seat->xkb_state.state,
-					  seat->xkb_info.scroll_led))
+					  seat->xkb_info->scroll_led))
 		leds |= LED_SCROLL_LOCK;
 	if (leds != seat->xkb_state.leds && seat->led_update)
 		seat->led_update(seat, leds);
@@ -1243,8 +1243,8 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 
 	if (seat->compositor->use_xkbcommon) {
 		wl_keyboard_send_keymap(cr, WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
-					seat->xkb_info.keymap_fd,
-					seat->xkb_info.keymap_size);
+					seat->xkb_info->keymap_fd,
+					seat->xkb_info->keymap_size);
 	} else {
 		int null_fd = open("/dev/null", O_RDONLY);
 		wl_keyboard_send_keymap(cr, WL_KEYBOARD_KEYMAP_FORMAT_NO_KEYMAP,
@@ -1351,8 +1351,12 @@ weston_compositor_xkb_init(struct weston_compositor *ec,
 	return 0;
 }
 
-static void xkb_info_destroy(struct weston_xkb_info *xkb_info)
+static void 
+weston_xkb_info_destroy(struct weston_xkb_info *xkb_info)
 {
+	if (--xkb_info->ref_count > 0)
+		return;
+
 	if (xkb_info->keymap)
 		xkb_map_unref(xkb_info->keymap);
 
@@ -1360,6 +1364,7 @@ static void xkb_info_destroy(struct weston_xkb_info *xkb_info)
 		munmap(xkb_info->keymap_area, xkb_info->keymap_size);
 	if (xkb_info->keymap_fd >= 0)
 		close(xkb_info->keymap_fd);
+	free(xkb_info);
 }
 
 void
@@ -1377,14 +1382,22 @@ weston_compositor_xkb_destroy(struct weston_compositor *ec)
 	free((char *) ec->xkb_names.layout);
 	free((char *) ec->xkb_names.variant);
 	free((char *) ec->xkb_names.options);
-
-	xkb_info_destroy(&ec->xkb_info);
+	
+	if (ec->xkb_info)
+		weston_xkb_info_destroy(ec->xkb_info);
 	xkb_context_unref(ec->xkb_context);
 }
 
-static int
-weston_xkb_info_new_keymap(struct weston_xkb_info *xkb_info)
+static struct weston_xkb_info *
+weston_xkb_info_create(struct xkb_keymap *keymap)
 {
+	struct weston_xkb_info *xkb_info = zalloc(sizeof *xkb_info);
+	if (xkb_info == NULL)
+		return NULL;
+
+	xkb_info->keymap = xkb_map_ref(keymap);
+	xkb_info->ref_count = 1;
+
 	char *keymap_str;
 
 	xkb_info->shift_mod = xkb_map_mod_get_index(xkb_info->keymap,
@@ -1411,7 +1424,7 @@ weston_xkb_info_new_keymap(struct weston_xkb_info *xkb_info)
 	keymap_str = xkb_map_get_as_string(xkb_info->keymap);
 	if (keymap_str == NULL) {
 		weston_log("failed to get string version of keymap\n");
-		return -1;
+		goto err_keymap;
 	}
 	xkb_info->keymap_size = strlen(keymap_str) + 1;
 
@@ -1433,26 +1446,30 @@ weston_xkb_info_new_keymap(struct weston_xkb_info *xkb_info)
 	strcpy(xkb_info->keymap_area, keymap_str);
 	free(keymap_str);
 
-	return 0;
+	return xkb_info;
 
 err_dev_zero:
 	close(xkb_info->keymap_fd);
-	xkb_info->keymap_fd = -1;
 err_keymap_str:
 	free(keymap_str);
-	return -1;
+err_keymap:
+	xkb_map_unref(xkb_info->keymap);
+	free(xkb_info);
+	return NULL;
 }
 
 static int
 weston_compositor_build_global_keymap(struct weston_compositor *ec)
 {
-	if (ec->xkb_info.keymap != NULL)
+	struct xkb_keymap *keymap;
+
+	if (ec->xkb_info != NULL)
 		return 0;
 
-	ec->xkb_info.keymap = xkb_map_new_from_names(ec->xkb_context,
-						     &ec->xkb_names,
-						     0);
-	if (ec->xkb_info.keymap == NULL) {
+	keymap = xkb_map_new_from_names(ec->xkb_context,
+					&ec->xkb_names,
+					0);
+	if (keymap == NULL) {
 		weston_log("failed to compile global XKB keymap\n");
 		weston_log("  tried rules %s, model %s, layout %s, variant %s, "
 			"options %s\n",
@@ -1462,7 +1479,8 @@ weston_compositor_build_global_keymap(struct weston_compositor *ec)
 		return -1;
 	}
 
-	if (weston_xkb_info_new_keymap(&ec->xkb_info) < 0)
+	ec->xkb_info = weston_xkb_info_create(keymap);
+	if (ec->xkb_info == NULL) 
 		return -1;
 
 	return 0;
@@ -1492,17 +1510,17 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 #ifdef ENABLE_XKBCOMMON
 	if (seat->compositor->use_xkbcommon) {
 		if (keymap != NULL) {
-			seat->xkb_info.keymap = xkb_map_ref(keymap);
-			if (weston_xkb_info_new_keymap(&seat->xkb_info) < 0)
+			seat->xkb_info = weston_xkb_info_create(keymap);
+			if (seat->xkb_info == NULL)
 				return -1;
 		} else {
 			if (weston_compositor_build_global_keymap(seat->compositor) < 0)
 				return -1;
 			seat->xkb_info = seat->compositor->xkb_info;
-			seat->xkb_info.keymap = xkb_map_ref(seat->xkb_info.keymap);
+			seat->xkb_info->ref_count++;
 		}
 
-		seat->xkb_state.state = xkb_state_new(seat->xkb_info.keymap);
+		seat->xkb_state.state = xkb_state_new(seat->xkb_info->keymap);
 		if (seat->xkb_state.state == NULL) {
 			weston_log("failed to initialise XKB state\n");
 			return -1;
@@ -1598,7 +1616,8 @@ weston_seat_release(struct weston_seat *seat)
 	if (seat->compositor->use_xkbcommon) {
 		if (seat->xkb_state.state != NULL)
 			xkb_state_unref(seat->xkb_state.state);
-		xkb_info_destroy(&seat->xkb_info);
+		if (seat->xkb_info)
+			weston_xkb_info_destroy(seat->xkb_info);
 	}
 #endif
 
