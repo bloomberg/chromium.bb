@@ -348,9 +348,6 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
     LookupTabIds(action, profile_);
   }
 
-  // TODO(mvrable): Add any necessary processing of incognito URLs here, for
-  // crbug.com/253368
-
   if (IsDatabaseEnabled() && policy_)
     policy_->ProcessAction(action);
   if (IsWatchdogAppActive())

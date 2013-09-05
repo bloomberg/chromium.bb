@@ -29,7 +29,6 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExtensionActivityLogging);
-    command_line->AppendSwitch(switches::kEnableExtensionActivityLogTesting);
     command_line->AppendSwitchASCII(switches::kPrerenderMode,
                                     switches::kPrerenderModeSwitchValueEnabled);
   }
@@ -45,15 +44,13 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
     ASSERT_TRUE(i->size());
     scoped_refptr<Action> last = i->front();
 
-    std::string args = base::StringPrintf(
-        "ID=%s CATEGORY=content_script API= ARGS=[\"/google_cs.js\"] "
-        "PAGE_URL=http://www.google.com.bo:%d/test.html "
-        "PAGE_TITLE=\"www.google.com.bo:%d/test.html\" "
-        "OTHER={\"prerender\":true}",
-        extension_id.c_str(), port, port);
-    // TODO: Replace PrintForDebug with field testing
-    // when this feature will be available
-    ASSERT_EQ(args, last->PrintForDebug());
+    ASSERT_EQ(Action::ACTION_CONTENT_SCRIPT, last->action_type());
+    ASSERT_EQ("[\"/google_cs.js\"]",
+              ActivityLogPolicy::Util::Serialize(last->args()));
+    ASSERT_EQ(base::StringPrintf("http://www.google.com.bo:%d/test.html", port),
+              last->page_url().spec());
+    ASSERT_EQ("{\"prerender\":true}",
+              ActivityLogPolicy::Util::Serialize(last->other()));
   }
 };
 

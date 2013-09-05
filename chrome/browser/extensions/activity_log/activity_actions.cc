@@ -168,10 +168,10 @@ scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
   if (page_url().is_valid()) {
     if (!page_title().empty())
       result->page_title.reset(new std::string(page_title()));
-    result->page_url.reset(new std::string(page_url().spec()));
+    result->page_url.reset(new std::string(SerializePageUrl()));
   }
   if (arg_url().is_valid())
-    result->arg_url.reset(new std::string(arg_url().spec()));
+    result->arg_url.reset(new std::string(SerializeArgUrl()));
   result->extra.reset(new std::string(Serialize(other())));
 
   return result.Pass();

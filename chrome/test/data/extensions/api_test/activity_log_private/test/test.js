@@ -304,6 +304,17 @@ testCases.push({
   }
 });
 
+function checkIncognito(url, incognitoExpected) {
+  if (url) {
+    incognitoExpected = Boolean(incognitoExpected);
+    var kIncognitoMarker = '<incognito>';
+    var isIncognito =
+        (url.substr(0, kIncognitoMarker.length) == kIncognitoMarker);
+    chrome.test.assertEq(incognitoExpected, isIncognito,
+                         'Bad incognito state for URL ' + url);
+  }
+}
+
 // Listener to check the expected logging is done in the test cases.
 var testCaseIndx = 0;
 var callIndx = -1;
@@ -322,20 +333,8 @@ chrome.activityLogPrivate.onExtensionActivity.addListener(
       chrome.test.assertEq(expectedCall, apiCall);
 
       // Check that no real URLs are logged in incognito-mode tests.
-      // TODO(felt): This isn't working correctly. crbug.com/272920
-      /*if (activity['activityType'] == 'dom_access') {
-        var url = activity['pageUrl'];
-        if (url) {
-          if (testCases[testCaseIndx].is_incognito) {
-            chrome.test.assertEq('<incognito>', url,
-                                 'URL was not anonymized for apiCall:' +
-                                 apiCall);
-          } else {
-            chrome.test.assertTrue(url != '<incognito>',
-                                   'Non-incognito URL was anonymized');
-          }
-        }
-      }*/
+      checkIncognito(activity['pageUrl'], testCases[testCaseIndx].is_incognito);
+      checkIncognito(activity['argUrl'], testCases[testCaseIndx].is_incognito);
 
       // If all the expected calls have been logged for this test case then
       // mark as suceeded and move to the next. Otherwise look for the next

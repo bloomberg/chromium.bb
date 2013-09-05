@@ -25,7 +25,6 @@ class ActivityLogApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpCommandLine(command_line);
     saved_cmdline_ = *CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kEnableExtensionActivityLogging);
-    command_line->AppendSwitch(switches::kEnableExtensionActivityLogTesting);
   }
 
  private:
