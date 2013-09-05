@@ -297,7 +297,11 @@ void ExtensionAppShimHandler::OnShimFocus(Host* host,
     native_windows.insert((*it)->GetNativeWindow());
   }
   if (!native_windows.empty()) {
-    ui::FocusWindowSet(native_windows);
+    // Allow workspace switching. For the browser process, we can
+    // reasonably rely on OS X to switch spaces for us and honor
+    // relevant user settings. But shims don't have windows, so we
+    // have to do it ourselves.
+    ui::FocusWindowSet(native_windows, true);
     return;
   }
 

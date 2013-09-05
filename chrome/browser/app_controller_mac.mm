@@ -1071,20 +1071,20 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // Bring all browser windows to the front. Specifically, this brings them in
   // front of any app windows. FocusWindowSet will also unminimize the most
   // recently minimized window if no windows in the set are visible.
-  // If there are tabbed or popup windows, return here. Otherwise, the windows
-  // are panels or notifications so we still need to open a new window.
+  // If there are any, return here. Otherwise, the windows are panels or
+  // notifications so we still need to open a new window.
   if (hasVisibleWindows) {
-    BOOL foundBrowser = NO;
     std::set<NSWindow*> browserWindows;
     for (chrome::BrowserIterator iter; !iter.done(); iter.Next()) {
       Browser* browser = *iter;
       browserWindows.insert(browser->window()->GetNativeWindow());
-      if (browser->is_type_tabbed() || browser->is_type_popup())
-        foundBrowser = YES;
     }
-    ui::FocusWindowSet(browserWindows);
-    if (foundBrowser)
-      return YES;
+    if (!browserWindows.empty()) {
+      ui::FocusWindowSet(browserWindows, false);
+      // Return NO; we've done the unminimize, so AppKit shouldn't do
+      // anything.
+      return NO;
+    }
   }
 
   // If launched as a hidden login item (due to installation of a persistent app

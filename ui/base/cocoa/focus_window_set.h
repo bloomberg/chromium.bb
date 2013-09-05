@@ -15,7 +15,8 @@ namespace ui {
 // Brings a group of windows to the front without changing their order, and
 // makes the frontmost one key and main. If none are visible, the frontmost
 // miniaturized window is deminiaturized.
-UI_EXPORT void FocusWindowSet(const std::set<gfx::NativeWindow>& windows);
+UI_EXPORT void FocusWindowSet(const std::set<gfx::NativeWindow>& windows,
+                              bool allow_workspace_switch);
 
 }  // namespace ui
 
