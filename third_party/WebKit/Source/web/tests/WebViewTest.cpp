@@ -683,6 +683,68 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea)
     webView->close();
 }
 
+TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));
+    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "input_field_populated.html");
+    webView->setInitialFocus(false);
+
+    std::string compositionTextFirst("hello ");
+    std::string compositionTextSecond("world");
+    WebVector<WebCompositionUnderline> emptyUnderlines;
+
+    webView->confirmComposition(WebString::fromUTF8(compositionTextFirst.c_str()));
+    webView->setComposition(WebString::fromUTF8(compositionTextSecond.c_str()), emptyUnderlines, 5, 5);
+
+    WebTextInputInfo info = webView->textInputInfo();
+    EXPECT_EQ("hello world", std::string(info.value.utf8().data()));
+    EXPECT_EQ(11, info.selectionStart);
+    EXPECT_EQ(11, info.selectionEnd);
+    EXPECT_EQ(6, info.compositionStart);
+    EXPECT_EQ(11, info.compositionEnd);
+
+    webView->setEditableSelectionOffsets(6, 6);
+    info = webView->textInputInfo();
+    EXPECT_EQ("hello world", std::string(info.value.utf8().data()));
+    EXPECT_EQ(6, info.selectionStart);
+    EXPECT_EQ(6, info.selectionEnd);
+    EXPECT_EQ(6, info.compositionStart);
+    EXPECT_EQ(11, info.compositionEnd);
+
+    webView->setEditableSelectionOffsets(8, 8);
+    info = webView->textInputInfo();
+    EXPECT_EQ("hello world", std::string(info.value.utf8().data()));
+    EXPECT_EQ(8, info.selectionStart);
+    EXPECT_EQ(8, info.selectionEnd);
+    EXPECT_EQ(6, info.compositionStart);
+    EXPECT_EQ(11, info.compositionEnd);
+
+    webView->setEditableSelectionOffsets(11, 11);
+    info = webView->textInputInfo();
+    EXPECT_EQ("hello world", std::string(info.value.utf8().data()));
+    EXPECT_EQ(11, info.selectionStart);
+    EXPECT_EQ(11, info.selectionEnd);
+    EXPECT_EQ(6, info.compositionStart);
+    EXPECT_EQ(11, info.compositionEnd);
+
+    webView->setEditableSelectionOffsets(6, 11);
+    info = webView->textInputInfo();
+    EXPECT_EQ("hello world", std::string(info.value.utf8().data()));
+    EXPECT_EQ(6, info.selectionStart);
+    EXPECT_EQ(11, info.selectionEnd);
+    EXPECT_EQ(6, info.compositionStart);
+    EXPECT_EQ(11, info.compositionEnd);
+
+    webView->setEditableSelectionOffsets(2, 2);
+    info = webView->textInputInfo();
+    EXPECT_EQ("hello world", std::string(info.value.utf8().data()));
+    EXPECT_EQ(2, info.selectionStart);
+    EXPECT_EQ(2, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+    webView->close();
+}
+
 TEST_F(WebViewTest, IsSelectionAnchorFirst)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));

@@ -172,8 +172,8 @@ void InputMethodController::cancelCompositionIfSelectionIsInvalid()
     Position end = m_frame->selection().end();
     if (start.containerNode() == m_compositionNode
         && end.containerNode() == m_compositionNode
-        && static_cast<unsigned>(start.computeOffsetInContainerNode()) > m_compositionStart
-        && static_cast<unsigned>(end.computeOffsetInContainerNode()) < m_compositionEnd)
+        && static_cast<unsigned>(start.computeOffsetInContainerNode()) >= m_compositionStart
+        && static_cast<unsigned>(end.computeOffsetInContainerNode()) <= m_compositionEnd)
         return;
 
     cancelComposition();
