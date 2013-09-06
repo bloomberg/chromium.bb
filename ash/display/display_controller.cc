@@ -19,7 +19,6 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
-#include "ash/wm/property_util.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
@@ -260,7 +259,7 @@ void DisplayController::Shutdown() {
   for (std::map<int64, aura::RootWindow*>::const_reverse_iterator it =
            root_windows_.rbegin(); it != root_windows_.rend(); ++it) {
     internal::RootWindowController* controller =
-        GetRootWindowController(it->second);
+        internal::GetRootWindowController(it->second);
     DCHECK(controller);
     delete controller;
   }
@@ -322,7 +321,7 @@ void DisplayController::CloseChildWindows() {
            root_windows_.begin(); it != root_windows_.end(); ++it) {
     aura::RootWindow* root_window = it->second;
     internal::RootWindowController* controller =
-        GetRootWindowController(root_window);
+        internal::GetRootWindowController(root_window);
     if (controller) {
       controller->CloseChildWindows();
     } else {
@@ -339,7 +338,7 @@ std::vector<aura::RootWindow*> DisplayController::GetAllRootWindows() {
   for (std::map<int64, aura::RootWindow*>::const_iterator it =
            root_windows_.begin(); it != root_windows_.end(); ++it) {
     DCHECK(it->second);
-    if (GetRootWindowController(it->second))
+    if (internal::GetRootWindowController(it->second))
       windows.push_back(it->second);
   }
   return windows;
@@ -360,7 +359,7 @@ DisplayController::GetAllRootWindowControllers() {
   for (std::map<int64, aura::RootWindow*>::const_iterator it =
            root_windows_.begin(); it != root_windows_.end(); ++it) {
     internal::RootWindowController* controller =
-        GetRootWindowController(it->second);
+        internal::GetRootWindowController(it->second);
     if (controller)
       controllers.push_back(controller);
   }
@@ -684,7 +683,7 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
         GetDisplayManager()->GetDisplayForId(primary_display_id));
   }
   internal::RootWindowController* controller =
-      GetRootWindowController(root_to_delete);
+      internal::GetRootWindowController(root_to_delete);
   DCHECK(controller);
   controller->MoveWindowsTo(GetPrimaryRootWindow());
   // Delete most of root window related objects, but don't delete

@@ -11,7 +11,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/coordinate_conversion.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
@@ -168,7 +167,7 @@ TEST_F(ExtendedDesktopTest, Basic) {
   ASSERT_EQ(2U, root_windows.size());
   for (Shell::RootWindowList::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
-    EXPECT_TRUE(GetRootWindowController(*iter) != NULL);
+    EXPECT_TRUE(internal::GetRootWindowController(*iter) != NULL);
   }
   // Make sure root windows share the same controllers.
   EXPECT_EQ(aura::client::GetFocusClient(root_windows[0]),

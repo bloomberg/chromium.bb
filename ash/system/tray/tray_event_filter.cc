@@ -12,7 +12,6 @@
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
-#include "ash/wm/property_util.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -57,10 +56,10 @@ bool TrayEventFilter::ProcessLocatedEvent(ui::LocatedEvent* event) {
   if (event->target()) {
     aura::Window* target = static_cast<aura::Window*>(event->target());
     // Don't process events that occurred inside an embedded menu.
-    ash::internal::RootWindowController* root_controller =
-        ash::GetRootWindowController(target->GetRootWindow());
+    internal::RootWindowController* root_controller =
+        internal::GetRootWindowController(target->GetRootWindow());
     if (root_controller && root_controller->GetContainer(
-            ash::internal::kShellWindowId_MenuContainer)->Contains(target)) {
+            internal::kShellWindowId_MenuContainer)->Contains(target)) {
       return false;
     }
   }

@@ -10,7 +10,6 @@
 #include "ui/base/ui_base_types.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 }
 
@@ -20,7 +19,6 @@ class Rect;
 
 namespace ui {
 class Event;
-class Layer;
 }
 
 namespace ash {

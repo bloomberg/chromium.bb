@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 }
 
@@ -17,9 +16,6 @@ class Rect;
 }
 
 namespace ash {
-namespace internal {
-class RootWindowController;
-}
 
 // Sets the restore bounds property on |window| in the virtual screen
 // coordinates.  Deletes existing bounds value if exists.
@@ -63,13 +59,6 @@ ASH_EXPORT bool GetWindowAlwaysRestoresToRestoreBounds(
 ASH_EXPORT void SetTrackedByWorkspace(aura::Window* window, bool value);
 ASH_EXPORT bool GetTrackedByWorkspace(const aura::Window* window);
 
-// Sets/Gets the RootWindowController for |root_window|.
-ASH_EXPORT void SetRootWindowController(
-    aura::RootWindow* root_window,
-    internal::RootWindowController* controller);
-ASH_EXPORT internal::RootWindowController* GetRootWindowController(
-    const aura::RootWindow* root_window);
-
-}
+}  // namespace ash
 
 #endif  // ASH_WM_PROPERTY_UTIL_H_

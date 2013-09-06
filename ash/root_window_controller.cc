@@ -32,7 +32,6 @@
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/panels/panel_window_event_handler.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"
 #include "ash/wm/stacking_controller.h"
@@ -219,7 +218,7 @@ RootWindowController::RootWindowController(aura::RootWindow* root_window)
       panel_layout_manager_(NULL),
       touch_hud_debug_(NULL),
       touch_hud_projection_(NULL) {
-  SetRootWindowController(root_window, this);
+  GetRootWindowSettings(root_window)->controller = this;
   screen_dimmer_.reset(new ScreenDimmer(root_window));
 
   stacking_controller_.reset(new StackingController);
@@ -248,7 +247,7 @@ RootWindowController* RootWindowController::ForWindow(
 
 // static
 RootWindowController* RootWindowController::ForActiveRootWindow() {
-  return GetRootWindowController(Shell::GetActiveRootWindow());
+  return internal::GetRootWindowController(Shell::GetActiveRootWindow());
 }
 
 void RootWindowController::SetWallpaperController(
@@ -282,7 +281,7 @@ void RootWindowController::Shutdown() {
   }
 
   CloseChildWindows();
-  SetRootWindowController(root_window_.get(), NULL);
+  GetRootWindowSettings(root_window_.get())->controller = NULL;
   screen_dimmer_.reset();
   workspace_controller_.reset();
   // Forget with the display ID so that display lookup
@@ -817,6 +816,11 @@ void RootWindowController::OnTouchHudProjectionToggled(bool enabled) {
     EnableTouchHudProjection();
   else
     DisableTouchHudProjection();
+}
+
+RootWindowController* GetRootWindowController(
+    const aura::RootWindow* root_window) {
+  return root_window ? GetRootWindowSettings(root_window)->controller : NULL;
 }
 
 }  // namespace internal

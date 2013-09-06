@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/property_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -26,6 +25,8 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+namespace ash {
+namespace internal {
 namespace {
 
 const int kAffordanceOuterRadius = 60;
@@ -69,9 +70,8 @@ views::Widget* CreateAffordanceWidget(aura::RootWindow* root_window) {
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   widget->Init(params);
   widget->SetOpacity(0xFF);
-  ash::GetRootWindowController(root_window)->GetContainer(
-      ash::internal::kShellWindowId_OverlayContainer)->AddChild(
-          widget->GetNativeWindow());
+  GetRootWindowController(root_window)->GetContainer(
+      kShellWindowId_OverlayContainer)->AddChild(widget->GetNativeWindow());
   return widget;
 }
 
@@ -132,9 +132,6 @@ void PaintAffordanceGlow(gfx::Canvas* canvas,
 }
 
 }  // namespace
-
-namespace ash {
-namespace internal {
 
 // View of the LongPressAffordanceHandler. Draws the actual contents and
 // updates as the animation proceeds. It also maintains the views::Widget that
@@ -297,7 +294,7 @@ void LongPressAffordanceHandler::StartAnimation() {
   aura::RootWindow* root_window = NULL;
   switch (current_animation_type_) {
     case GROW_ANIMATION:
-      root_window = ash::Shell::GetInstance()->display_controller()->
+      root_window = Shell::GetInstance()->display_controller()->
           GetRootWindowForDisplayId(tap_down_display_id_);
       if (!root_window) {
         StopAnimation();

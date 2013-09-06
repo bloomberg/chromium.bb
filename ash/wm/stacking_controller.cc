@@ -10,7 +10,6 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/coordinate_conversion.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -56,7 +55,8 @@ bool IsPanelAttached(aura::Window* window) {
 
 internal::AlwaysOnTopController*
 GetAlwaysOnTopController(aura::RootWindow* root_window) {
-  return GetRootWindowController(root_window)->always_on_top_controller();
+  return internal::GetRootWindowController(root_window)->
+      always_on_top_controller();
 }
 
 }  // namespace

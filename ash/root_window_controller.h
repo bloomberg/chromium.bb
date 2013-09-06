@@ -286,6 +286,11 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);
 };
 
+
+// Gets the RootWindowController for |root_window|.
+ASH_EXPORT RootWindowController* GetRootWindowController(
+    const aura::RootWindow* root_window);
+
 }  // namespace internal
 }  // ash
 

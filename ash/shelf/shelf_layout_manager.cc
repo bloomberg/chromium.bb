@@ -24,7 +24,6 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"

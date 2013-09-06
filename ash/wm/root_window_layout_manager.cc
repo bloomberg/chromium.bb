@@ -6,7 +6,6 @@
 
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/root_window_controller.h"
-#include "ash/wm/property_util.h"
 #include "ui/aura/root_window.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"

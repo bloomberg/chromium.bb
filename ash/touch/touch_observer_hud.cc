@@ -8,7 +8,6 @@
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/property_util.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"

@@ -12,7 +12,6 @@
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/frame_painter.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"

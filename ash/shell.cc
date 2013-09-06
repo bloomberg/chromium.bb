@@ -56,7 +56,6 @@
 #include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/power_button_controller.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"
@@ -368,7 +367,7 @@ void Shell::DeleteInstance() {
 
 // static
 internal::RootWindowController* Shell::GetPrimaryRootWindowController() {
-  return GetRootWindowController(GetPrimaryRootWindow());
+  return internal::GetRootWindowController(GetPrimaryRootWindow());
 }
 
 // static
@@ -646,7 +645,7 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
   // NULL even for the out-of-bounds |location_in_screen| (It should
   // return the primary root). Investigate why/how this is
   // happening. crbug.com/165214.
-  internal::RootWindowController* rwc = GetRootWindowController(root);
+  internal::RootWindowController* rwc = internal::GetRootWindowController(root);
   CHECK(rwc) << "root=" << root
              << ", location:" << location_in_screen.ToString();
   if (rwc)
@@ -796,7 +795,7 @@ void Shell::SetShelfAlignment(ShelfAlignment alignment,
 }
 
 ShelfAlignment Shell::GetShelfAlignment(aura::RootWindow* root_window) {
-  return GetRootWindowController(root_window)->
+  return internal::GetRootWindowController(root_window)->
       GetShelfLayoutManager()->GetAlignment();
 }
 
