@@ -10,8 +10,10 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -38,8 +40,6 @@ class PicasaDataProvider {
 
   // Ask the data provider to refresh the data if necessary. |ready_callback|
   // will be called when the data is up to date.
-  // TODO(tommycli): Investigate having the callback return a bool indicating
-  // success or failure - and handling it intelligently in PicasaFileUtil.
   void RefreshData(DataType needed_data, const ReadyCallback& ready_callback);
 
   // These methods return scoped_ptrs because we want to return a copy that
@@ -50,6 +50,10 @@ class PicasaDataProvider {
   scoped_ptr<AlbumImages> FindAlbumImages(const std::string& key,
                                           base::PlatformFileError* error);
 
+ protected:
+  // Notifies data provider that any currently cached data is stale.
+  virtual void InvalidateData();
+
  private:
   enum State {
     STALE_DATA_STATE,
@@ -59,12 +63,15 @@ class PicasaDataProvider {
   };
 
   friend class PicasaFileUtilTest;
-  friend class PicasaDataProviderInvalidateSimpleTest;
-  friend class PicasaDataProviderInvalidateInflightTableReaderTest;
-  friend class PicasaDataProviderInvalidateInflightAlbumsIndexerTest;
+  friend class TestPicasaDataProvider;
 
-  // Notifies data provider that any currently cached data is stale.
-  void InvalidateData();
+  // Called when the FilePathWatcher for Picasa's temp directory has started.
+  void OnTempDirWatchStarted(
+      scoped_ptr<base::FilePathWatcher> temp_dir_watcher);
+
+  // Called when Picasa's temp directory has changed. Virtual for testing.
+  virtual void OnTempDirChanged(const base::FilePath& temp_dir_path,
+                                bool error);
 
   // Kicks off utility processes needed to fulfill any pending callbacks.
   void DoRefreshIfNecessary();
@@ -81,11 +88,6 @@ class PicasaDataProvider {
   static std::string DateToPathString(const base::Time& time);
   static void UniquifyNames(const std::vector<AlbumInfo>& info_list,
                             AlbumMap* result_map);
-
-  // Methods are used in the browser test to tweak internal data for testing.
-  void SetDatabasePathForTesting(const base::FilePath& database_path);
-  void SetAlbumMapsForTesting(const AlbumMap& album_map,
-                              const AlbumMap& folder_map);
 
   AlbumMap album_map_;
   AlbumMap folder_map_;
@@ -104,6 +106,10 @@ class PicasaDataProvider {
   // time should be non-NULL.
   scoped_refptr<SafePicasaAlbumTableReader> album_table_reader_;
   scoped_refptr<SafePicasaAlbumsIndexer> albums_indexer_;
+
+  // We watch the temp dir, as we can't detect database file modifications on
+  // Mac, but we are able to detect creation and deletion of temporary files.
+  scoped_ptr<base::FilePathWatcher> temp_dir_watcher_;
 
   base::WeakPtrFactory<PicasaDataProvider> weak_factory_;
 

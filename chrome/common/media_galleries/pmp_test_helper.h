@@ -9,30 +9,33 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/common/media_galleries/pmp_constants.h"
-
-namespace base {
-class FilePath;
-}  // namespace base
 
 namespace picasa {
 
 class PmpColumnReader;
 
-// A helper class used for unit tests only
+// A helper class used for tests only
 class PmpTestHelper {
  public:
+  enum ColumnFileDestination {
+    DATABASE_DIRECTORY,
+    TEMPORARY_DIRECTORY
+  };
+
   explicit PmpTestHelper(const std::string& table_name);
 
-  bool Init();
+  bool Init(ColumnFileDestination column_file_destination);
 
-  base::FilePath GetTempDirPath();
+  base::FilePath GetDatabaseDirPath() const;
+  base::FilePath GetTempDirPath() const;
 
   template<class T>
   bool WriteColumnFileFromVector(const std::string& column_name,
                                  const PmpFieldType field_type,
-                                 const std::vector<T>& elements_vector);
+                                 const std::vector<T>& elements_vector) const;
 
   static std::vector<char> MakeHeader(const PmpFieldType field_type,
                                        const uint32 row_count);
@@ -44,7 +47,8 @@ class PmpTestHelper {
 
  private:
   std::string table_name_;
-  base::ScopedTempDir temp_dir_;
+  base::ScopedTempDir root_dir_;
+  base::FilePath column_file_destination_directory_;
 };
 
 }  // namespace picasa

@@ -13,7 +13,7 @@ namespace {
 
 TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
   PmpTestHelper test_helper(kPicasaAlbumTableName);
-  ASSERT_TRUE(test_helper.Init());
+  ASSERT_TRUE(test_helper.Init(PmpTestHelper::DATABASE_DIRECTORY));
 
   int test_time_delta = 100;
 
@@ -65,7 +65,7 @@ TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
   ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
       "uid", PMP_TYPE_STRING, uid_vector));
 
-  AlbumTableFiles album_table_files(test_helper.GetTempDirPath());
+  AlbumTableFiles album_table_files(test_helper.GetDatabaseDirPath());
   PicasaAlbumTableReader reader(album_table_files);
 
   ASSERT_TRUE(reader.Init());

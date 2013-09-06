@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -22,9 +23,9 @@ namespace picasa {
 
 namespace {
 
-void WriteTestAlbumTable(PmpTestHelper* test_helper,
-                         base::FilePath test_folder_1_path,
-                         base::FilePath test_folder_2_path) {
+void WriteTestAlbumTable(const PmpTestHelper* test_helper,
+                         const base::FilePath& test_folder_1_path,
+                         const base::FilePath& test_folder_2_path) {
   std::vector<uint32> category_vector;
   category_vector.push_back(kAlbumCategoryFolder);
   category_vector.push_back(kAlbumCategoryInvalid);
@@ -175,6 +176,55 @@ void VerifyAlbumsImagesIndex(PicasaDataProvider* data_provider,
 
 }  // namespace
 
+class TestPicasaDataProvider : public PicasaDataProvider {
+ public:
+  explicit TestPicasaDataProvider(const base::FilePath& database_path)
+      : PicasaDataProvider(database_path) {
+  }
+
+  virtual ~TestPicasaDataProvider() {}
+
+  // Simulates the actual writing process of moving all the database files
+  // from the temporary directory to the database directory in a loop.
+  void MoveTempFilesToDatabase() {
+    DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+
+    base::FileEnumerator file_enumerator(
+        database_path_.DirName().AppendASCII(kPicasaTempDirName),
+        false /* recursive */,
+        base::FileEnumerator::FILES);
+
+    for (base::FilePath src_path = file_enumerator.Next(); !src_path.empty();
+         src_path = file_enumerator.Next()) {
+      ASSERT_TRUE(
+          base::Move(src_path, database_path_.Append(src_path.BaseName())));
+    }
+  }
+
+  void SetInvalidateCallback(const base::Closure& callback) {
+    DCHECK(invalidate_callback_.is_null());
+    invalidate_callback_ = callback;
+  }
+
+  virtual void InvalidateData() OVERRIDE {
+    PicasaDataProvider::InvalidateData();
+
+    if (!invalidate_callback_.is_null()) {
+      invalidate_callback_.Run();
+      invalidate_callback_.Reset();
+    }
+  }
+
+  void SetAlbumMapsForTesting(const AlbumMap& album_map,
+                              const AlbumMap& folder_map) {
+    album_map_ = album_map;
+    folder_map_ = folder_map;
+  }
+
+ private:
+  base::Closure invalidate_callback_;
+};
+
 class PicasaDataProviderTest : public InProcessBrowserTest {
  public:
   PicasaDataProviderTest() : test_helper_(kPicasaAlbumTableName) {}
@@ -226,18 +276,23 @@ class PicasaDataProviderTest : public InProcessBrowserTest {
 
   PmpTestHelper* test_helper() { return &test_helper_; }
 
-  PicasaDataProvider* data_provider() const {
+  TestPicasaDataProvider* data_provider() const {
     return picasa_data_provider_.get();
   }
 
  private:
+  virtual PmpTestHelper::ColumnFileDestination GetColumnFileDestination() {
+    return PmpTestHelper::DATABASE_DIRECTORY;
+  }
+
   void SetupFoldersAndDataProvider() {
     DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
     ASSERT_TRUE(test_folder_1_.CreateUniqueTempDir());
     ASSERT_TRUE(test_folder_2_.CreateUniqueTempDir());
-    ASSERT_TRUE(test_helper_.Init());
-    picasa_data_provider_.reset(
-        new PicasaDataProvider(test_helper_.GetTempDirPath()));
+    ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(test_helper_.Init(GetColumnFileDestination()));
+    picasa_data_provider_.reset(new TestPicasaDataProvider(
+        test_helper_.GetDatabaseDirPath()));
   }
 
   virtual void StartTestOnMediaTaskRunner() {
@@ -258,9 +313,10 @@ class PicasaDataProviderTest : public InProcessBrowserTest {
 
   base::ScopedTempDir test_folder_1_;
   base::ScopedTempDir test_folder_2_;
+  base::ScopedTempDir database_dir_;
 
   PmpTestHelper test_helper_;
-  scoped_ptr<PicasaDataProvider> picasa_data_provider_;
+  scoped_ptr<TestPicasaDataProvider> picasa_data_provider_;
 
   base::Closure quit_closure_;
 
@@ -430,72 +486,67 @@ IN_PROC_BROWSER_TEST_F(PicasaDataProviderMultipleMixedCallbacksTest,
   RunTest();
 }
 
-class PicasaDataProviderInvalidateSimpleTest : public PicasaDataProviderTest {
+class PicasaDataProviderFileWatcherInvalidateTest
+    : public PicasaDataProviderGetListTest {
  protected:
-  virtual void FirstListCallback(bool parse_success) {
+  virtual void ListCallback(bool parse_success) {
     ASSERT_FALSE(parse_success);
-    WriteTestAlbumTable(
-        test_helper(), test_folder_1_path(), test_folder_2_path());
 
-    // TODO(tommycli): Remove this line once database is under file watch.
-    data_provider()->InvalidateData();
-
-    // Have to post this, otherwise this will run the callback immediately.
-    MediaFileSystemBackend::MediaTaskRunner()->PostTask(
-        FROM_HERE,
+    // Validate the list after the file move triggers an invalidate.
+    data_provider()->SetInvalidateCallback(base::Bind(
+        &PicasaDataProvider::RefreshData,
+        base::Unretained(data_provider()),
+        RequestedDataType(),
         base::Bind(
-            &PicasaDataProvider::RefreshData,
-            base::Unretained(data_provider()),
-            RequestedDataType(),
-            base::Bind(
-                &PicasaDataProviderInvalidateSimpleTest::SecondListCallback,
-                base::Unretained(this))));
-  }
+            &PicasaDataProviderFileWatcherInvalidateTest::VerifyRefreshResults,
+            base::Unretained(this))));
 
-  virtual void SecondListCallback(bool parse_success) {
-    ASSERT_TRUE(parse_success);
-    VerifyAlbumTable(
-        data_provider(), test_folder_1_path(), test_folder_2_path());
-    TestDone();
-  }
-
-  virtual PicasaDataProvider::DataType RequestedDataType() const OVERRIDE {
-    return PicasaDataProvider::ALBUMS_IMAGES_DATA;
+    data_provider()->MoveTempFilesToDatabase();
   }
 
  private:
+  virtual PmpTestHelper::ColumnFileDestination
+  GetColumnFileDestination() OVERRIDE {
+    return PmpTestHelper::TEMPORARY_DIRECTORY;
+  }
+
   virtual void StartTestOnMediaTaskRunner() OVERRIDE {
     DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
 
+    // Refresh before moving album table to database dir, guaranteeing failure.
     data_provider()->RefreshData(
         RequestedDataType(),
-        base::Bind(&PicasaDataProviderInvalidateSimpleTest::FirstListCallback,
-                   base::Unretained(this)));
+        base::Bind(
+            &PicasaDataProviderFileWatcherInvalidateTest::ListCallback,
+            base::Unretained(this)));
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PicasaDataProviderInvalidateSimpleTest,
-                       InvalidateSimpleTest) {
+IN_PROC_BROWSER_TEST_F(PicasaDataProviderFileWatcherInvalidateTest,
+                       FileWatcherInvalidateTest) {
   RunTest();
 }
 
 class PicasaDataProviderInvalidateInflightTableReaderTest
     : public PicasaDataProviderGetListTest {
+ protected:
+  // Don't write the database files until later.
+  virtual void InitializeTestData() OVERRIDE {}
+
  private:
   virtual void StartTestOnMediaTaskRunner() OVERRIDE {
     DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
 
-    // Temporarily empty the database path to guarantee that the first utility
-    // process will fail to read the database.
-    data_provider()->SetDatabasePathForTesting(base::FilePath());
+    // Refresh before the database files have been written.
+    // This is guaranteed to fail to read the album table.
     data_provider()->RefreshData(
         RequestedDataType(),
         base::Bind(&PicasaDataProviderInvalidateInflightTableReaderTest::
                        VerifyRefreshResults,
                    base::Unretained(this)));
 
-    // Now restore the database path and invalidate the inflight table reader.
-    data_provider()->SetDatabasePathForTesting(test_helper()->GetTempDirPath());
+    // Now write the album table and invalidate the inflight table reader.
+    PicasaDataProviderGetListTest::InitializeTestData();
     data_provider()->InvalidateData();
 
     // VerifyRefreshResults callback should receive correct results now.
@@ -514,7 +565,7 @@ class PicasaDataProviderInvalidateInflightAlbumsIndexerTest
     ASSERT_TRUE(parse_success);
 
     // Empty the album maps to guarantee that the first utility process will
-    // give incorrect results.
+    // fail to get the correct albums-images index.
     data_provider()->SetAlbumMapsForTesting(AlbumMap(), AlbumMap());
     data_provider()->RefreshData(
         PicasaDataProvider::ALBUMS_IMAGES_DATA,

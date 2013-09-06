@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/media_galleries/fileapi/file_path_watcher_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "chrome/common/media_galleries/itunes_library.h"
@@ -28,9 +29,6 @@ using chrome::MediaFileSystemBackend;
 namespace itunes {
 
 namespace {
-
-typedef base::Callback<void(scoped_ptr<base::FilePathWatcher> watcher)>
-    FileWatchStartedCallback;
 
 // Colon and slash are not allowed in filenames, replace them with underscore.
 std::string EscapeBadCharacters(const std::string& input) {
@@ -80,36 +78,6 @@ ITunesDataProvider::Album MakeUniqueTrackNames(const parser::Album& album) {
   }
 
   return result;
-}
-
-// Bounces |path| and |error| to |callback| from the FILE thread to the media
-// task runner.
-void OnLibraryChanged(const base::FilePathWatcher::Callback& callback,
-                      const base::FilePath& path,
-                      bool error) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  MediaFileSystemBackend::MediaTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(callback, path, error));
-}
-
-// The watch has to be started on the FILE thread, and the callback called by
-// the FilePathWatcher also needs to run on the FILE thread.
-void StartLibraryWatchOnFileThread(
-    const base::FilePath& library_path,
-    const FileWatchStartedCallback& watch_started_callback,
-    const base::FilePathWatcher::Callback& library_changed_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  // The watcher is created on the FILE thread because it is very difficult
-  // to safely pass an already-created member to a different thread.
-  scoped_ptr<base::FilePathWatcher> watcher(new base::FilePathWatcher);
-  bool success = watcher->Watch(
-      library_path, false /*recursive*/,
-      base::Bind(&OnLibraryChanged, library_changed_callback));
-  if (!success)
-    LOG(ERROR) << "Adding watch for " << library_path.value() << " failed";
-  MediaFileSystemBackend::MediaTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(watch_started_callback, base::Passed(&watcher)));
 }
 
 // |result_path| is set if |locale_string| maps to a localized directory name
@@ -220,15 +188,12 @@ ITunesDataProvider::ITunesDataProvider(const base::FilePath& library_path)
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(!library_path_.empty());
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(StartLibraryWatchOnFileThread,
-                 library_path_,
-                 base::Bind(&ITunesDataProvider::OnLibraryWatchStarted,
-                            weak_factory_.GetWeakPtr()),
-                 base::Bind(&ITunesDataProvider::OnLibraryChanged,
-                            weak_factory_.GetWeakPtr())));
+  chrome::StartFilePathWatchOnMediaTaskRunner(
+      library_path_,
+      base::Bind(&ITunesDataProvider::OnLibraryWatchStarted,
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&ITunesDataProvider::OnLibraryChanged,
+                 weak_factory_.GetWeakPtr()));
 }
 
 ITunesDataProvider::~ITunesDataProvider() {}

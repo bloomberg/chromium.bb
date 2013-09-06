@@ -72,9 +72,6 @@ bool DoRead(const PmpColumnReader* reader, uint32 row, uint64* target) {
 template<class T>
 void TestValid(const PmpFieldType field_type,
                const std::vector<T>& elems) {
-  PmpTestHelper test_helper("test");
-  ASSERT_TRUE(test_helper.Init());
-
   PmpColumnReader reader;
   std::vector<char> data =
       PmpTestHelper::MakeHeaderAndBody(field_type, elems.size(), elems);
@@ -91,9 +88,6 @@ void TestValid(const PmpFieldType field_type,
 template<class T>
 void TestMalformed(const PmpFieldType field_type,
                    const std::vector<T>& elems) {
-  PmpTestHelper test_helper("test");
-  ASSERT_TRUE(test_helper.Init());
-
   PmpColumnReader reader_too_few_declared_rows;
   std::vector<char> data_too_few_declared_rows =
       PmpTestHelper::MakeHeaderAndBody(field_type, elems.size()-1, elems);
@@ -140,9 +134,6 @@ void TestPrimitive(const PmpFieldType field_type) {
 
 
 TEST(PmpColumnReaderTest, HeaderParsingAndValidation) {
-  PmpTestHelper test_helper("test");
-  ASSERT_TRUE(test_helper.Init());
-
   PmpColumnReader reader_good_header;
   std::vector<char> good_header =
       PmpTestHelper::MakeHeader(PMP_TYPE_STRING, 0);

@@ -58,31 +58,45 @@ PmpTestHelper::PmpTestHelper(const std::string& table_name)
     : table_name_(table_name) {
 }
 
-bool PmpTestHelper::Init() {
-  if (!temp_dir_.CreateUniqueTempDir() || !temp_dir_.IsValid())
+bool PmpTestHelper::Init(ColumnFileDestination column_file_destination) {
+  if (!root_dir_.CreateUniqueTempDir() ||
+      !root_dir_.IsValid() ||
+      !file_util::CreateDirectory(GetDatabaseDirPath()) ||
+      !file_util::CreateDirectory(GetTempDirPath())) {
     return false;
+  }
 
-  base::FilePath indicator_path = temp_dir_.path().Append(
+  if (column_file_destination == DATABASE_DIRECTORY)
+    column_file_destination_directory_ = GetDatabaseDirPath();
+  else if (column_file_destination == TEMPORARY_DIRECTORY)
+    column_file_destination_directory_ = GetTempDirPath();
+  else
+    NOTREACHED();
+
+  base::FilePath indicator_path = column_file_destination_directory_.Append(
       base::FilePath::FromUTF8Unsafe(table_name_ + "_0"));
 
   return file_util::WriteFile(indicator_path, NULL, 0) == 0;
 }
 
-base::FilePath PmpTestHelper::GetTempDirPath() {
-  DCHECK(temp_dir_.IsValid());
-  return temp_dir_.path();
+base::FilePath PmpTestHelper::GetDatabaseDirPath() const {
+  DCHECK(root_dir_.IsValid());
+  return root_dir_.path().AppendASCII(kPicasaDatabaseDirName);
+}
+
+base::FilePath PmpTestHelper::GetTempDirPath() const {
+  DCHECK(root_dir_.IsValid());
+  return root_dir_.path().AppendASCII(kPicasaTempDirName);
 }
 
 template<class T>
 bool PmpTestHelper::WriteColumnFileFromVector(
     const std::string& column_name, const PmpFieldType field_type,
-    const std::vector<T>& elements_vector) {
-  DCHECK(temp_dir_.IsValid());
-
+    const std::vector<T>& elements_vector) const {
   std::string file_name = table_name_ + "_" + column_name + "." + kPmpExtension;
 
-  base::FilePath path = temp_dir_.path().Append(
-      base::FilePath::FromUTF8Unsafe(file_name));
+  base::FilePath path =
+      column_file_destination_directory_.AppendASCII(file_name);
 
   std::vector<char> data = PmpTestHelper::MakeHeaderAndBody(
       field_type, elements_vector.size(), elements_vector);
@@ -93,15 +107,16 @@ bool PmpTestHelper::WriteColumnFileFromVector(
 
 // Explicit Instantiation for all the valid types.
 template bool PmpTestHelper::WriteColumnFileFromVector<std::string>(
-    const std::string&, const PmpFieldType, const std::vector<std::string>&);
+    const std::string&, const PmpFieldType,
+    const std::vector<std::string>&) const;
 template bool PmpTestHelper::WriteColumnFileFromVector<uint32>(
-    const std::string&, const PmpFieldType, const std::vector<uint32>&);
+    const std::string&, const PmpFieldType, const std::vector<uint32>&) const;
 template bool PmpTestHelper::WriteColumnFileFromVector<double>(
-    const std::string&, const PmpFieldType, const std::vector<double>&);
+    const std::string&, const PmpFieldType, const std::vector<double>&) const;
 template bool PmpTestHelper::WriteColumnFileFromVector<uint8>(
-    const std::string&, const PmpFieldType, const std::vector<uint8>&);
+    const std::string&, const PmpFieldType, const std::vector<uint8>&) const;
 template bool PmpTestHelper::WriteColumnFileFromVector<uint64>(
-    const std::string&, const PmpFieldType, const std::vector<uint64>&);
+    const std::string&, const PmpFieldType, const std::vector<uint64>&) const;
 
 // Return a vector so we don't have to worry about memory management.
 std::vector<char> PmpTestHelper::MakeHeader(const PmpFieldType field_type,

@@ -2573,6 +2573,8 @@
         }],
         ['OS=="win" or OS=="mac"', {
           'sources': [
+            'browser/media_galleries/fileapi/file_path_watcher_util.cc',
+            'browser/media_galleries/fileapi/file_path_watcher_util.h',
             'browser/media_galleries/fileapi/itunes_data_provider.cc',
             'browser/media_galleries/fileapi/itunes_data_provider.h',
             'browser/media_galleries/fileapi/itunes_file_util.cc',

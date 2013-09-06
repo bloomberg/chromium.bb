@@ -32,6 +32,9 @@ void ClosePlatformFile(base::PlatformFile* platform_file) {
 
 }  // namespace
 
+const char kPicasaDatabaseDirName[] = "db3";
+const char kPicasaTempDirName[] = "tmp";
+
 const char kPicasaAlbumTableName[] = "albumdata";
 const char kAlbumTokenPrefix[] = "]album:";
 

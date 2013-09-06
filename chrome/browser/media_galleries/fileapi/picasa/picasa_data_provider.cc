@@ -8,7 +8,10 @@
 
 #include "base/basictypes.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
+#include "base/file_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/media_galleries/fileapi/file_path_watcher_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/safe_picasa_album_table_reader.h"
 #include "chrome/browser/media_galleries/fileapi/safe_picasa_albums_indexer.h"
@@ -38,6 +41,13 @@ PicasaDataProvider::PicasaDataProvider(const base::FilePath& database_path)
       state_(STALE_DATA_STATE),
       weak_factory_(this) {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+
+  chrome::StartFilePathWatchOnMediaTaskRunner(
+      database_path_.DirName().AppendASCII(kPicasaTempDirName),
+      base::Bind(&PicasaDataProvider::OnTempDirWatchStarted,
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&PicasaDataProvider::OnTempDirChanged,
+                 weak_factory_.GetWeakPtr()));
 }
 
 PicasaDataProvider::~PicasaDataProvider() {}
@@ -113,6 +123,19 @@ void PicasaDataProvider::InvalidateData() {
   albums_indexer_ = NULL;
 
   DoRefreshIfNecessary();
+}
+
+void PicasaDataProvider::OnTempDirWatchStarted(
+    scoped_ptr<base::FilePathWatcher> temp_dir_watcher) {
+  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  temp_dir_watcher_.reset(temp_dir_watcher.release());
+}
+
+void PicasaDataProvider::OnTempDirChanged(const base::FilePath& temp_dir_path,
+                                          bool error) {
+  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  if (file_util::IsDirectoryEmpty(temp_dir_path))
+    InvalidateData();
 }
 
 void PicasaDataProvider::DoRefreshIfNecessary() {
@@ -238,17 +261,6 @@ void PicasaDataProvider::UniquifyNames(const std::vector<AlbumInfo>& info_list,
 
     result_map->insert(std::pair<std::string, AlbumInfo>(name, info_list[i]));
   }
-}
-
-void PicasaDataProvider::SetDatabasePathForTesting(
-    const base::FilePath& database_path) {
-  database_path_ = database_path;
-}
-
-void PicasaDataProvider::SetAlbumMapsForTesting(const AlbumMap& album_map,
-                                                const AlbumMap& folder_map) {
-  album_map_ = album_map;
-  folder_map_ = folder_map;
 }
 
 }  // namespace picasa

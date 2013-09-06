@@ -29,6 +29,9 @@ typedef std::set<std::string> AlbumUIDSet;
 typedef std::map<std::string, AlbumImages> AlbumImagesMap;
 typedef std::map<std::string, AlbumInfo> AlbumMap;
 
+extern const char kPicasaDatabaseDirName[];
+extern const char kPicasaTempDirName[];
+
 extern const char kPicasaAlbumTableName[];
 extern const char kAlbumTokenPrefix[];
 

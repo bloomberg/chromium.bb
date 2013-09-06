@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
+#include "chrome/common/media_galleries/picasa_types.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace picasa {
@@ -33,7 +34,8 @@ base::FilePath FindPicasaDatabaseOnFileThread() {
   return base::FilePath();
 #endif
 
-  path = path.AppendASCII("Google").AppendASCII("Picasa2").AppendASCII("db3");
+  path = path.AppendASCII("Google").AppendASCII("Picasa2")
+             .AppendASCII(kPicasaDatabaseDirName);
 
   // Verify actual existence
   if (!base::DirectoryExists(path))
@@ -50,7 +52,7 @@ void FinishOnOriginalThread(const PicasaFinder::DeviceIDCallback& callback,
         database_path.AsUTF8Unsafe()));
 }
 
-}
+}  // namespace
 
 void PicasaFinder::FindPicasaDatabase(
     const PicasaFinder::DeviceIDCallback& callback) {
