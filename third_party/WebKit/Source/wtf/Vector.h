@@ -38,7 +38,7 @@ namespace WTF {
 static const size_t kInitialVectorSize = 1;
 #else
 #ifndef WTF_VECTOR_INITIAL_SIZE
-#define WTF_VECTOR_INITIAL_SIZE 16
+#define WTF_VECTOR_INITIAL_SIZE 4
 #endif
 static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 #endif
