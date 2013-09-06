@@ -104,12 +104,12 @@
 
   NSSize size = NSMakeSize(std::max(buttonSize.width, detailsSize.width),
                            buttonSize.height + detailsSize.height);
-  size.height += kDetailBottomPadding;
+  size.height += autofill::kDetailBottomPadding;
 
   if (![legalDocumentsView_ isHidden]) {
     NSSize legalDocumentSize =
         [self preferredLegalDocumentSizeForWidth:detailsSize.width];
-    size.height += legalDocumentSize.height + kVerticalSpacing;
+    size.height += legalDocumentSize.height + autofill::kVerticalSpacing;
   }
 
   NSSize notificationSize =
@@ -125,7 +125,8 @@
   if (![legalDocumentsView_ isHidden]) {
     [legalDocumentsView_ setFrameSize:
         [self preferredLegalDocumentSizeForWidth:NSWidth(bounds)]];
-    currentY = NSMaxY([legalDocumentsView_ frame]) + kVerticalSpacing;
+    currentY = NSMaxY([legalDocumentsView_ frame]) +
+        autofill::kVerticalSpacing;
   }
 
   NSRect buttonFrame = [buttonContainer_ frame];
@@ -136,7 +137,7 @@
   checkboxFrame.origin.y = NSMidY(buttonFrame) - NSHeight(checkboxFrame) / 2.0;
   [saveInChromeCheckbox_ setFrameOrigin:checkboxFrame.origin];
 
-  currentY = NSMaxY(buttonFrame) + kDetailBottomPadding;
+  currentY = NSMaxY(buttonFrame) + autofill::kDetailBottomPadding;
 
   NSRect notificationFrame = NSZeroRect;
   notificationFrame.size = [notificationContainer_ preferredSizeForWidth:
@@ -152,7 +153,7 @@
   [detailsContainer_ performLayout];
 
   notificationFrame.origin =
-      NSMakePoint(0, NSMaxY(containerFrame) + kDetailTopPadding);
+      NSMakePoint(0, NSMaxY(containerFrame) + autofill::kDetailTopPadding);
   [[notificationContainer_ view] setFrame:notificationFrame];
   [notificationContainer_ performLayout];
 }
@@ -175,7 +176,7 @@
   [button sizeToFit];
   [buttonContainer_ addSubview:button];
 
-  CGFloat nextX = NSMaxX([button frame]) + kButtonGap;
+  CGFloat nextX = NSMaxX([button frame]) + autofill::kButtonGap;
   button.reset([[ConstrainedWindowButton alloc] initWithFrame:NSZeroRect]);
   [button setFrameOrigin:NSMakePoint(nextX, 0)];
   [button  setTitle:l10n_util::GetNSStringWithFixup(

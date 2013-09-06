@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_CONSTANTS__H_
 
 // Constants governing layout of autofill dialog.
-namespace {
+namespace autofill {
 
 // Horizontal padding between text and other elements (in pixels).
 const CGFloat kAroundTextPadding = 4;
@@ -31,6 +31,6 @@ const int kDetailTopPadding = 20;
 // Padding between the bottom of the details section and the button strip.
 const int kDetailBottomPadding = 30;
 
-}  // namespace
+}  // autofill
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_CONSTANTS__H_

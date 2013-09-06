@@ -144,7 +144,7 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
   [activeControl setFrame:frame];
 
   [icon_ setFrameSize:[[icon_ image] size]];
-  frame.origin.x -= NSWidth([icon_ frame]) + kAroundTextPadding;
+  frame.origin.x -= NSWidth([icon_ frame]) + autofill::kAroundTextPadding;
   [icon_ setFrameOrigin:frame.origin];
 }
 

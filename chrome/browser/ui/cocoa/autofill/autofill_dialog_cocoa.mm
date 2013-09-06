@@ -341,7 +341,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   NSSize headerSize = NSMakeSize(contentSize.width, kAccountChooserHeight);
   NSSize size = NSMakeSize(
       std::max(contentSize.width, headerSize.width),
-      contentSize.height + headerSize.height + kDetailTopPadding);
+      contentSize.height + headerSize.height + autofill::kDetailTopPadding);
   size.width += 2 * chrome_style::kHorizontalPadding;
   size.height += chrome_style::kClientBottomPadding +
                  chrome_style::kTitleTopPadding;
@@ -362,7 +362,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     // equivalent to the height of the header. Clarify with UX what the final
     // padding will be.
     if (height != 0.0) {
-      size.height = height + headerSize.height + kDetailTopPadding;
+      size.height = height + headerSize.height + autofill::kDetailTopPadding;
     }
   }
 
@@ -382,7 +382,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   NSDivideRect(clientRect, &headerRect, &mainRect,
                kAccountChooserHeight, NSMinYEdge);
   NSDivideRect(mainRect, &dummyRect, &mainRect,
-               kDetailTopPadding, NSMinYEdge);
+               autofill::kDetailTopPadding, NSMinYEdge);
 
   [accountChooser_ setFrame:headerRect];
   if ([[signInContainer_ view] isHidden]) {

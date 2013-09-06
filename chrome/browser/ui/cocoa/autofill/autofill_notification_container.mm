@@ -37,7 +37,7 @@
 
   // If the first notification doesn't have an arrow, reserve empty space.
   if (![[notificationControllers_ objectAtIndex:0] hasArrow])
-    preferredSize.height += kArrowHeight;
+    preferredSize.height += autofill::kArrowHeight;
 
   for (AutofillNotificationController* delegate in
        notificationControllers_.get())
@@ -53,7 +53,7 @@
   NSRect remaining = [[self view] bounds];
 
   if (![[notificationControllers_ objectAtIndex:0] hasArrow])
-    remaining.size.height -= kArrowHeight;
+    remaining.size.height -= autofill::kArrowHeight;
 
   for (AutofillNotificationController* delegate in
        notificationControllers_.get()) {

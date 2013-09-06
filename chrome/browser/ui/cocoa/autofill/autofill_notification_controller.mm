@@ -41,12 +41,13 @@
 
     NSBezierPath* arrow = [NSBezierPath bezierPath];
     [arrow moveToPoint:anchorPoint];
-    [arrow relativeLineToPoint:NSMakePoint(-kArrowWidth / 2.0, -kArrowHeight)];
-    [arrow relativeLineToPoint:NSMakePoint(kArrowWidth, 0)];
+    [arrow relativeLineToPoint:
+        NSMakePoint(-autofill::kArrowWidth / 2.0, -autofill::kArrowHeight)];
+    [arrow relativeLineToPoint:NSMakePoint(autofill::kArrowWidth, 0)];
     [arrow closePath];
     [backgroundColor_ setFill];
     [arrow fill];
-    backgroundRect.size.height -= kArrowHeight;
+    backgroundRect.size.height -= autofill::kArrowHeight;
   }
 
   dirtyRect = NSIntersectionRect(backgroundRect, dirtyRect);
@@ -149,9 +150,9 @@
   }
 
   if ([[self notificationView] hasArrow])
-      preferredSize.height += kArrowHeight;
+      preferredSize.height += autofill::kArrowHeight;
 
-  preferredSize.height += 2 * kNotificationPadding;
+  preferredSize.height += 2 * autofill::kNotificationPadding;
   return preferredSize;
 }
 
@@ -163,9 +164,9 @@
 - (void)performLayout {
   NSRect bounds = [[self view] bounds];
   if ([[self notificationView] hasArrow])
-    bounds.size.height -= kArrowHeight;
+    bounds.size.height -= autofill::kArrowHeight;
 
-  NSRect textFrame = NSInsetRect(bounds, 0, kNotificationPadding);
+  NSRect textFrame = NSInsetRect(bounds, 0, autofill::kNotificationPadding);
   if (![checkbox_ isHidden]) {
     // Temporarily resize checkbox to just the box, no extra clickable area.
     textFrame.origin.x += checkboxSizeWithoutTitle_.width;

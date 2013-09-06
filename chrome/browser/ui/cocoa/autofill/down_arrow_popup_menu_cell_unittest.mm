@@ -60,7 +60,7 @@ TEST_F(DownArrowPopupMenuCellTest, Defaults) {
 
   NSAttributedString* title = [cell attributedTitle];
   NSSize titleSize = [title size];
-  EXPECT_EQ(titleSize.width + [image size].width + kButtonGap,
+  EXPECT_EQ(titleSize.width + [image size].width + autofill::kButtonGap,
             [cell cellSize].width);
   EXPECT_EQ(std::max(titleSize.height, [image size].height),
             [cell cellSize].height);

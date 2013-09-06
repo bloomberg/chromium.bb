@@ -23,7 +23,7 @@
   NSAttributedString* title = [self attributedTitle];
   NSSize size = [title size];
   size.height = std::max(size.height, imageSize.height);
-  size.width += kButtonGap + imageSize.width;
+  size.width += autofill::kButtonGap + imageSize.width;
 
   return size;
 }

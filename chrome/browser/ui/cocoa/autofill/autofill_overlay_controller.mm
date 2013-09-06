@@ -114,9 +114,9 @@ void OverlayTimerBridge::UpdateOverlayState() {
   NSColor* shadingColor = gfx::SkColorToCalibratedNSColor(kShadingColor);
   NSColor* borderColor = gfx::SkColorToCalibratedNSColor(kSubtleBorderColor);
 
-  CGFloat arrowHalfWidth = kArrowWidth / 2.0;
+  CGFloat arrowHalfWidth = autofill::kArrowWidth / 2.0;
   NSRect bounds = [self bounds];
-  CGFloat y = NSMaxY(bounds) - kArrowHeight;
+  CGFloat y = NSMaxY(bounds) - autofill::kArrowHeight;
 
   NSBezierPath* arrow = [NSBezierPath bezierPath];
   // Note that we purposely draw slightly outside of |bounds| so that the
@@ -126,8 +126,10 @@ void OverlayTimerBridge::UpdateOverlayState() {
   [arrow moveToPoint:NSMakePoint(NSMinX(arrowBounds), y)];
   [arrow lineToPoint:
       NSMakePoint(NSMidX(arrowBounds) - arrowHalfWidth, y)];
-  [arrow relativeLineToPoint:NSMakePoint(arrowHalfWidth, kArrowHeight)];
-  [arrow relativeLineToPoint:NSMakePoint(arrowHalfWidth, -kArrowHeight)];
+  [arrow relativeLineToPoint:
+      NSMakePoint(arrowHalfWidth,autofill::kArrowHeight)];
+  [arrow relativeLineToPoint:
+      NSMakePoint(arrowHalfWidth, -autofill::kArrowHeight)];
   [arrow lineToPoint:NSMakePoint(NSMaxX(arrowBounds), y)];
   [arrow lineToPoint:NSMakePoint(NSMaxX(arrowBounds), NSMinY(arrowBounds))];
   [arrow lineToPoint:NSMakePoint(NSMinX(arrowBounds), NSMinY(arrowBounds))];
@@ -145,7 +147,7 @@ void OverlayTimerBridge::UpdateOverlayState() {
     height += NSHeight([label frame]);
     height += kOverlayTextInterlineSpacing;
   }
-  return height + kArrowHeight;
+  return height + autofill::kArrowHeight;
 }
 
 - (void)setMessages:
@@ -175,8 +177,8 @@ void OverlayTimerBridge::UpdateOverlayState() {
 }
 
 - (void)performLayout {
-  CGFloat y =
-      NSMaxY([self bounds]) - kArrowHeight - kOverlayTextInterlineSpacing;
+  CGFloat y = NSMaxY([self bounds]) - autofill::kArrowHeight -
+      kOverlayTextInterlineSpacing;
   for (NSTextView* label in [self subviews]) {
     DCHECK([label isKindOfClass:[NSTextView class]]);
     CGFloat labelHeight = NSHeight([label frame]);
