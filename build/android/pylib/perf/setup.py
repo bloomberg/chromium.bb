@@ -13,6 +13,7 @@ import time
 
 from pylib import android_commands
 from pylib import cmd_helper
+from pylib import constants
 from pylib import forwarder
 from pylib import ports
 
@@ -56,6 +57,9 @@ def Setup(test_options):
   Returns:
     A tuple of (TestRunnerFactory, tests).
   """
+  if not os.path.exists(constants.PERF_OUTPUT_DIR):
+    os.makedirs(constants.PERF_OUTPUT_DIR)
+
   # Before running the tests, kill any leftover server.
   _KillPendingServers()
 

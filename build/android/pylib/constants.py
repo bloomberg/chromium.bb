@@ -106,6 +106,7 @@ SDK_BUILD_JAVALIB_DIR = 'lib.java'
 SDK_BUILD_TEST_JAVALIB_DIR = 'test.lib.java'
 SDK_BUILD_APKS_DIR = 'apks'
 
+PERF_OUTPUT_DIR = os.path.join(DIR_SOURCE_ROOT, 'out', 'step_results')
 # The directory on the device where perf test output gets saved to.
 DEVICE_PERF_OUTPUT_DIR = '/data/data/' + CHROME_PACKAGE + '/files'
 
