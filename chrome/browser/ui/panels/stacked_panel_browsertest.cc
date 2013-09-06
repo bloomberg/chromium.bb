@@ -1254,7 +1254,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ClosePanels) {
 
 // Skip the test since active state might not be fully supported for some window
 // managers.
-#if defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK) || defined(OS_MACOSX)
 #define MAYBE_FocusNextPanelOnPanelClose DISABLED_FocusNextPanelOnPanelClose
 #else
 #define MAYBE_FocusNextPanelOnPanelClose FocusNextPanelOnPanelClose

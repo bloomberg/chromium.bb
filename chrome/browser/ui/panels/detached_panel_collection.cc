@@ -239,7 +239,6 @@ void DetachedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
       static_cast<Panel::AttentionMode>(Panel::USE_PANEL_ATTENTION |
                                         Panel::USE_SYSTEM_ATTENTION));
   panel->ShowShadow(true);
-  panel->EnableResizeByMouse(true);
   panel->UpdateMinimizeRestoreButtonVisibility();
   panel->SetWindowCornerStyle(panel::ALL_ROUNDED);
 }

@@ -599,10 +599,6 @@ void PanelView::SetPanelAlwaysOnTop(bool on_top) {
   window_->client_view()->Layout();
 }
 
-void PanelView::EnableResizeByMouse(bool enable) {
-  // Nothing to do since we use system resizing.
-}
-
 void PanelView::UpdatePanelMinimizeRestoreButtonVisibility() {
   GetFrameView()->UpdateTitlebarMinimizeRestoreButtonVisibility();
 }

@@ -765,7 +765,6 @@ void DockedPanelCollection::CloseAll() {
 void DockedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
   panel->set_attention_mode(Panel::USE_PANEL_ATTENTION);
   panel->ShowShadow(true);
-  panel->EnableResizeByMouse(true);
   panel->UpdateMinimizeRestoreButtonVisibility();
   panel->SetWindowCornerStyle(panel::TOP_ROUNDED);
 }

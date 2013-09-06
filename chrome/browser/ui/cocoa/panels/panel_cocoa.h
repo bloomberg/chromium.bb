@@ -46,7 +46,6 @@ class PanelCocoa : public NativePanel {
   virtual void FullScreenModeChanged(bool is_full_screen) OVERRIDE;
   virtual bool IsPanelAlwaysOnTop() const OVERRIDE;
   virtual void SetPanelAlwaysOnTop(bool on_top) OVERRIDE;
-  virtual void EnableResizeByMouse(bool enable) OVERRIDE;
   virtual void UpdatePanelMinimizeRestoreButtonVisibility() OVERRIDE;
   virtual void SetWindowCornerStyle(panel::CornerStyle corner_style) OVERRIDE;
   virtual void PanelExpansionStateChanging(
