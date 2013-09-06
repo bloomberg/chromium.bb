@@ -282,6 +282,15 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // in order to fill |form_structure_| and pass data back to the invoking page.
   void DoFinishSubmit();
 
+  // Delays enabling submit button for a short period of time. Exposed for
+  // testing.
+  virtual void SubmitButtonDelayBegin();
+
+  // Ends the delay for enabling the submit button. Called only from tests.
+  // Without this method, the tests would have to wait for the delay timer to
+  // finish, which would be flaky.
+  void SubmitButtonDelayEndForTesting();
+
  private:
   enum DialogSignedInState {
     REQUIRES_RESPONSE,
@@ -541,6 +550,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // times an Online Wallet fronting card was generated.
   void MaybeShowCreditCardBubble();
 
+  // Called when the delay for enabling the submit button ends.
+  void OnSubmitButtonDelayEnd();
+
   // The |profile| for |contents_|.
   Profile* const profile_;
 
@@ -691,6 +703,10 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // show a bubble as the dialog closes to confirm a user's new card info was
   // saved. Never populated while incognito (as nothing's actually saved).
   scoped_ptr<CreditCard> newly_saved_card_;
+
+  // The timer that delays enabling submit button for a short period of time on
+  // startup.
+  base::OneShotTimer<AutofillDialogControllerImpl> submit_button_delay_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerImpl);
 };

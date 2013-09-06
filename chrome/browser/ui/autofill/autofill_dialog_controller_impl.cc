@@ -114,6 +114,11 @@ const color_utils::HSL kGrayImageShift = {-1, 0, 0.8};
 // Limit Wallet items refresh rate to at most once per minute.
 const int kWalletItemsRefreshRateSeconds = 60;
 
+// The number of milliseconds to delay enabling the submit button after showing
+// the dialog. This delay prevents users from accidentally clicking the submit
+// button on startup.
+const int kSubmitButtonDelayMs = 1000;
+
 // A helper class to make sure an AutofillDialogView knows when a series of
 // updates is incoming.
 class ScopedViewUpdates {
@@ -628,6 +633,8 @@ void AutofillDialogControllerImpl::Show() {
   profile_->GetPrefs()->SetInteger(::prefs::kAutofillDialogShowCount,
                                    show_count + 1);
 
+  SubmitButtonDelayBegin();
+
   // TODO(estade): don't show the dialog if the site didn't specify the right
   // fields. First we must figure out what the "right" fields are.
   view_.reset(CreateView());
@@ -753,6 +760,9 @@ bool AutofillDialogControllerImpl::IsDialogButtonEnabled(
       return true;
 
     if (ShouldShowSpinner() || is_submitting_)
+      return false;
+
+    if (submit_button_delay_timer_.IsRunning())
       return false;
 
     return true;
@@ -2226,6 +2236,20 @@ void AutofillDialogControllerImpl::ShowNewCreditCardBubble(
 #endif
 }
 
+void AutofillDialogControllerImpl::SubmitButtonDelayBegin() {
+  submit_button_delay_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kSubmitButtonDelayMs),
+      this,
+      &AutofillDialogControllerImpl::OnSubmitButtonDelayEnd);
+}
+
+void AutofillDialogControllerImpl::SubmitButtonDelayEndForTesting() {
+  DCHECK(submit_button_delay_timer_.IsRunning());
+  submit_button_delay_timer_.user_task().Run();
+  submit_button_delay_timer_.Stop();
+}
+
 AutofillDialogControllerImpl::AutofillDialogControllerImpl(
     content::WebContents* contents,
     const FormData& form_structure,
@@ -3338,6 +3362,13 @@ void AutofillDialogControllerImpl::MaybeShowCreditCardBubble() {
       full_wallet_->TypeAndLastFourDigits(),
       backing_last_four);
 #endif
+}
+
+void AutofillDialogControllerImpl::OnSubmitButtonDelayEnd() {
+  if (!view_)
+    return;
+  ScopedViewUpdates updates(view_.get());
+  view_->UpdateButtonStrip();
 }
 
 }  // namespace autofill

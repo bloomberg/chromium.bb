@@ -241,7 +241,8 @@ class TestAutofillDialogController
         mock_wallet_client_(
             Profile::FromBrowserContext(contents->GetBrowserContext())->
                 GetRequestContext(), this),
-        mock_new_card_bubble_controller_(mock_new_card_bubble_controller) {}
+        mock_new_card_bubble_controller_(mock_new_card_bubble_controller),
+        submit_button_delay_count_(0) {}
 
   virtual ~TestAutofillDialogController() {}
 
@@ -278,6 +279,19 @@ class TestAutofillDialogController
 #endif
   }
 
+  void SimulateSubmitButtonDelayBegin() {
+    AutofillDialogControllerImpl::SubmitButtonDelayBegin();
+  }
+
+  void SimulateSubmitButtonDelayEnd() {
+    AutofillDialogControllerImpl::SubmitButtonDelayEndForTesting();
+  }
+
+  // Returns the number of times that the submit button was delayed.
+  int get_submit_button_delay_count() const {
+    return submit_button_delay_count_;
+  }
+
   MOCK_METHOD0(LoadRiskFingerprintData, void());
   using AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData;
   using AutofillDialogControllerImpl::IsEditingExistingData;
@@ -308,6 +322,13 @@ class TestAutofillDialogController
                                            billing_profile.Pass());
   }
 
+  // AutofillDialogControllerImpl calls this method before showing the dialog
+  // window.
+  virtual void SubmitButtonDelayBegin() OVERRIDE {
+    // Do not delay enabling the submit button in testing.
+    submit_button_delay_count_++;
+  }
+
  private:
   // To specify our own metric logger.
   virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE {
@@ -319,6 +340,9 @@ class TestAutofillDialogController
   testing::NiceMock<wallet::MockWalletClient> mock_wallet_client_;
   GURL open_tab_url_;
   MockNewCreditCardBubbleController* mock_new_card_bubble_controller_;
+
+  // The number of times that the submit button was delayed.
+  int submit_button_delay_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);
 };
@@ -2377,6 +2401,74 @@ TEST_F(AutofillDialogControllerTest,
   controller()->GetView()->CheckSaveDetailsLocallyCheckbox(false);
   controller()->OnAccept();
   EXPECT_FALSE(controller()->ShouldSaveInChrome());
+}
+
+TEST_F(AutofillDialogControllerTest,
+       SubmitButtonIsDisabled_SpinnerFinishesBeforeDelay) {
+  EXPECT_EQ(1, controller()->get_submit_button_delay_count());
+
+  // Begin the submit button delay.
+  controller()->SimulateSubmitButtonDelayBegin();
+
+  EXPECT_TRUE(controller()->ShouldShowSpinner());
+  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+
+  // Stop the spinner.
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
+
+  EXPECT_FALSE(controller()->ShouldShowSpinner());
+  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+
+  // End the submit button delay.
+  controller()->SimulateSubmitButtonDelayEnd();
+
+  EXPECT_FALSE(controller()->ShouldShowSpinner());
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+}
+
+TEST_F(AutofillDialogControllerTest,
+       SubmitButtonIsDisabled_SpinnerFinishesAfterDelay) {
+  EXPECT_EQ(1, controller()->get_submit_button_delay_count());
+
+  // Begin the submit button delay.
+  controller()->SimulateSubmitButtonDelayBegin();
+
+  EXPECT_TRUE(controller()->ShouldShowSpinner());
+  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+
+  // End the submit button delay.
+  controller()->SimulateSubmitButtonDelayEnd();
+
+  EXPECT_TRUE(controller()->ShouldShowSpinner());
+  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+
+  // Stop the spinner.
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
+
+  EXPECT_FALSE(controller()->ShouldShowSpinner());
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+}
+
+TEST_F(AutofillDialogControllerTest, SubmitButtonIsDisabled_NoSpinner) {
+  EXPECT_EQ(1, controller()->get_submit_button_delay_count());
+
+  // Begin the submit button delay.
+  controller()->SimulateSubmitButtonDelayBegin();
+
+  EXPECT_TRUE(controller()->ShouldShowSpinner());
+  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+
+  // There's no spinner in Autofill mode.
+  SwitchToAutofill();
+
+  EXPECT_FALSE(controller()->ShouldShowSpinner());
+  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+
+  // End the submit button delay.
+  controller()->SimulateSubmitButtonDelayEnd();
+
+  EXPECT_FALSE(controller()->ShouldShowSpinner());
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 }
 
 }  // namespace autofill
