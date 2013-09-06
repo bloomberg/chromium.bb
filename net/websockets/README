@@ -12,18 +12,17 @@ https://docs.google.com/a/google.com/document/d/1_R6YjCIrm4kikJ3YeapcOU2Keqr3lVU
 
 websocket_handshake_handler.cc
 websocket_handshake_handler.h
-websocket_handshake_handler_unittest.cc
-websocket_handshake_handler_spdy2_unittest.cc
-websocket_handshake_handler_spdy3_unittest.cc
+websocket_handshake_handler_test.cc
+websocket_handshake_handler_spdy_test.cc
 websocket_job.cc
 websocket_job.h
-websocket_job_unittest.cc
+websocket_job_test.cc
 websocket_net_log_params.cc
 websocket_net_log_params.h
-websocket_net_log_params_unittest.cc
+websocket_net_log_params_test.cc
 websocket_throttle.cc
 websocket_throttle.h
-websocket_throttle_unittest.cc
+websocket_throttle_test.cc
 
 The following files are part of the new implementation. The new implementation
 performs framing and implements protocol semantics in the browser process, and
@@ -38,14 +37,14 @@ websocket_channel.h
 websocket_channel_test.cc
 websocket_errors.cc
 websocket_errors.h
-websocket_errors_unittest.cc
+websocket_errors_test.cc
 websocket_event_interface.h
 websocket_frame.cc
 websocket_frame.h
 websocket_frame_parser.cc
 websocket_frame_parser.h
-websocket_frame_parser_unittest.cc
-websocket_frame_unittest.cc
+websocket_frame_parser_test.cc
+websocket_frame_test.cc
 websocket_mux.h
 websocket_stream_base.h
 websocket_stream.cc
