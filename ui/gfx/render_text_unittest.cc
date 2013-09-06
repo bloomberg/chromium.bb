@@ -1651,4 +1651,26 @@ TEST_F(RenderTextTest, SelectionKeepsLigatures) {
   }
 }
 
+#if defined(OS_WIN)
+TEST_F(RenderTextTest, Win_BreakRunsByUnicodeBlocks) {
+  scoped_ptr<RenderTextWin> render_text(
+      static_cast<RenderTextWin*>(RenderText::CreateInstance()));
+
+  render_text->SetText(WideToUTF16(L"x\x25B6y"));
+  render_text->EnsureLayout();
+  ASSERT_EQ(3U, render_text->runs_.size());
+  EXPECT_EQ(ui::Range(0, 1), render_text->runs_[0]->range);
+  EXPECT_EQ(ui::Range(1, 2), render_text->runs_[1]->range);
+  EXPECT_EQ(ui::Range(2, 3), render_text->runs_[2]->range);
+
+  render_text->SetText(WideToUTF16(L"x \x25B6 y"));
+  render_text->EnsureLayout();
+  ASSERT_EQ(3U, render_text->runs_.size());
+  EXPECT_EQ(ui::Range(0, 2), render_text->runs_[0]->range);
+  EXPECT_EQ(ui::Range(2, 3), render_text->runs_[1]->range);
+  EXPECT_EQ(ui::Range(3, 5), render_text->runs_[2]->range);
+
+}
+#endif  // !defined(OS_WIN)
+
 }  // namespace gfx
