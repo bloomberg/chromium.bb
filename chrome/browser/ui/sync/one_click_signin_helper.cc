@@ -1251,11 +1251,14 @@ void OneClickSigninHelper::DidStopLoading(
       //   default settings.
       // - If sign in was initiated from the settings page for first time sync
       //   set up, show the advanced sync settings dialog.
-      // - If sign in was initiated from the settings page due to a re-auth,
-      //   simply navigate back to the settings page.
+      // - If sign in was initiated from the settings page due to a re-auth when
+      //   sync was already setup, simply navigate back to the settings page.
+      ProfileSyncService* sync_service =
+          ProfileSyncServiceFactory::GetForProfile(profile);
       OneClickSigninSyncStarter::StartSyncMode start_mode =
           source_ == signin::SOURCE_SETTINGS ?
-              SigninGlobalError::GetForProfile(profile)->HasMenuItem() ?
+              (SigninGlobalError::GetForProfile(profile)->HasMenuItem() &&
+               sync_service && sync_service->HasSyncSetupCompleted()) ?
                   OneClickSigninSyncStarter::SHOW_SETTINGS_WITHOUT_CONFIGURE :
                   OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
               OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;

@@ -155,6 +155,15 @@ void ProfileOAuth2TokenService::Observe(
       break;
     }
     case chrome::NOTIFICATION_TOKEN_LOADING_FINISHED:
+      // During startup, if the user is signed in and the OAuth2 refresh token
+      // is empty, flag it as an error by badging the menu. Otherwise, if the
+      // user goes on to set up sync, they will have to make two attempts:
+      // One to surface the OAuth2 error, and a second one after signing in.
+      // See crbug.com/276650.
+      if (!GetAccountId(profile_).empty() && GetRefreshToken().empty()) {
+        UpdateAuthError(GoogleServiceAuthError(
+            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+      }
       FireRefreshTokensLoaded();
       break;
     default:
