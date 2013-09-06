@@ -15,6 +15,15 @@ NSRect ConvertRectToCocoaCoordinates(const gfx::Rect& bounds) {
       bounds.width(), bounds.height());
 }
 
+gfx::Rect ConvertRectFromCocoaCoordinates(NSRect bounds) {
+  // Flip coordinates based on the primary screen.
+  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+
+  return gfx::Rect(
+      NSMinX(bounds), NSHeight([screen frame]) - NSMaxY(bounds),
+      NSWidth(bounds), NSHeight(bounds));
+}
+
 NSPoint ConvertPointToCocoaCoordinates(const gfx::Point& point) {
   // Flip coordinates based on the primary screen.
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];

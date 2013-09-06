@@ -252,10 +252,6 @@ class Panel : public ui::BaseWindow,
   // being dragged, it is in preview mode.
   void SetPreviewMode(bool in_preview_mode);
 
-  // Sets up the panel for being resizable by the user - for example,
-  // enables the resize mouse cursors when mouse is hovering over the edges.
-  void EnableResizeByMouse(bool enable);
-
   // Sets whether the minimize or restore button, if any, are visible.
   void UpdateMinimizeRestoreButtonVisibility();
 

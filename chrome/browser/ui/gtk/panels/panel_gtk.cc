@@ -1068,9 +1068,6 @@ void PanelGtk::SetPanelAlwaysOnTop(bool on_top) {
     gtk_window_unstick(window_);
 }
 
-void PanelGtk::EnableResizeByMouse(bool enable) {
-}
-
 void PanelGtk::UpdatePanelMinimizeRestoreButtonVisibility() {
   titlebar_->UpdateMinimizeRestoreButtonVisibility();
 }
