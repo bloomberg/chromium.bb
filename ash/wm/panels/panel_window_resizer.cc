@@ -15,6 +15,7 @@
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_properties.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -40,8 +41,6 @@ internal::PanelLayoutManager* GetPanelLayoutManager(
 }  // namespace
 
 PanelWindowResizer::~PanelWindowResizer() {
-  if (destroyed_)
-    *destroyed_ = true;
 }
 
 // static
@@ -59,7 +58,6 @@ PanelWindowResizer::Create(WindowResizer* next_window_resizer,
 void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   last_location_ = location;
   wm::ConvertPointToScreen(GetTarget()->parent(), &last_location_);
-  bool destroyed = false;
   if (!did_move_or_resize_) {
     did_move_or_resize_ = true;
     StartedDragging();
@@ -93,15 +91,12 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   should_attach_ = AttachToLauncher(bounds, &offset);
   gfx::Point modified_location(location.x() + offset.x(),
                                location.y() + offset.y());
-  destroyed_ = &destroyed;
-  next_window_resizer_->Drag(modified_location, event_flags);
 
-  // TODO(flackr): Refactor the way WindowResizer calls into other window
-  // resizers to avoid the awkward pattern here for checking if
-  // next_window_resizer_ destroys the resizer object.
-  if (destroyed)
+  base::WeakPtr<PanelWindowResizer> resizer(weak_ptr_factory_.GetWeakPtr());
+  next_window_resizer_->Drag(modified_location, event_flags);
+  if (!resizer)
     return;
-  destroyed_ = NULL;
+
   if (should_attach_ &&
       !(details_.bounds_change & WindowResizer::kBoundsChange_Resizes)) {
     UpdateLauncherPosition();
@@ -137,7 +132,7 @@ PanelWindowResizer::PanelWindowResizer(WindowResizer* next_window_resizer,
       did_move_or_resize_(false),
       was_attached_(GetTarget()->GetProperty(internal::kPanelAttachedKey)),
       should_attach_(was_attached_),
-      destroyed_(NULL) {
+      weak_ptr_factory_(this) {
   DCHECK(details_.is_resizable);
   panel_container_ = Shell::GetContainer(
       details.window->GetRootWindow(),

@@ -20,6 +20,7 @@
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/command_line.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -47,8 +48,6 @@ DockedWindowLayoutManager* GetDockedLayoutManagerAtPoint(
 }  // namespace
 
 DockedWindowResizer::~DockedWindowResizer() {
-  if (destroyed_)
-    *destroyed_ = true;
 }
 
 // static
@@ -66,7 +65,6 @@ DockedWindowResizer::Create(WindowResizer* next_window_resizer,
 void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   last_location_ = location;
   wm::ConvertPointToScreen(GetTarget()->parent(), &last_location_);
-  bool destroyed = false;
   if (!did_move_or_resize_) {
     did_move_or_resize_ = true;
     StartedDragging();
@@ -83,15 +81,12 @@ void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
     SetTrackedByWorkspace(GetTarget(), false);
   gfx::Point modified_location(location.x() + offset.x(),
                                location.y() + offset.y());
-  destroyed_ = &destroyed;
-  next_window_resizer_->Drag(modified_location, event_flags);
 
-  // TODO(varkha): Refactor the way WindowResizer calls into other window
-  // resizers to avoid the awkward pattern here for checking if
-  // next_window_resizer_ destroys the resizer object.
-  if (destroyed)
+  base::WeakPtr<DockedWindowResizer> resizer(weak_ptr_factory_.GetWeakPtr());
+  next_window_resizer_->Drag(modified_location, event_flags);
+  if (!resizer)
     return;
-  destroyed_ = NULL;
+
   if (set_tracked_by_workspace)
     SetTrackedByWorkspace(GetTarget(), tracked_by_workspace);
 
@@ -185,7 +180,7 @@ DockedWindowResizer::DockedWindowResizer(WindowResizer* next_window_resizer,
       did_move_or_resize_(false),
       was_docked_(false),
       is_docked_(false),
-      destroyed_(NULL) {
+      weak_ptr_factory_(this) {
   DCHECK(details_.is_resizable);
   aura::Window* dock_container = Shell::GetContainer(
       details.window->GetRootWindow(),

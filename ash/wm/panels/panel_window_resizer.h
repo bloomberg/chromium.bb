@@ -7,6 +7,7 @@
 
 #include "ash/wm/window_resizer.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 
 namespace gfx {
 class Rect;
@@ -83,9 +84,7 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
   // True if the window should attach to the launcher after releasing.
   bool should_attach_;
 
-  // If non-NULL the destructor sets this to true. Used to determine if this has
-  // been deleted.
-  bool* destroyed_;
+  base::WeakPtrFactory<PanelWindowResizer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelWindowResizer);
 };

@@ -8,6 +8,7 @@
 #include "ash/wm/window_resizer.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/gfx/point.h"
 
 namespace ash {
@@ -62,12 +63,10 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
 
   gfx::Point last_mouse_location_;
 
-  // If non-NULL the destructor sets this to true. Used to determine if this has
-  // been deleted.
-  bool* destroyed_;
-
   // Current instance for use by the DragWindowResizerTest.
   static DragWindowResizer* instance_;
+
+  base::WeakPtrFactory<DragWindowResizer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DragWindowResizer);
 };

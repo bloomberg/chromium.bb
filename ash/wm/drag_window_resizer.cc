@@ -10,6 +10,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/property_util.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -56,9 +57,6 @@ DragWindowResizer::~DragWindowResizer() {
   shell->mouse_cursor_filter()->HideSharedEdgeIndicator();
   if (instance_ == this)
     instance_ = NULL;
-
-  if (destroyed_)
-    *destroyed_ = true;
 }
 
 // static
@@ -74,18 +72,12 @@ DragWindowResizer* DragWindowResizer::Create(
 }
 
 void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
-  bool destroyed = false;
-  destroyed_ = &destroyed;
+  base::WeakPtr<DragWindowResizer> resizer(weak_ptr_factory_.GetWeakPtr());
   next_window_resizer_->Drag(location, event_flags);
-
-  // TODO(flackr): Refactor the way WindowResizer calls into other window
-  // resizers to avoid the awkward pattern here for checking if
-  // next_window_resizer_ destroys the resizer object.
-  if (destroyed)
+  if (!resizer)
     return;
-  destroyed_ = NULL;
-  last_mouse_location_ = location;
 
+  last_mouse_location_ = location;
   // Show a phantom window for dragging in another root window.
   if (HasSecondaryRootWindow()) {
     gfx::Point location_in_screen = location;
@@ -140,7 +132,7 @@ DragWindowResizer::DragWindowResizer(WindowResizer* next_window_resizer,
                                      const Details& details)
     : next_window_resizer_(next_window_resizer),
       details_(details),
-      destroyed_(NULL) {
+      weak_ptr_factory_(this) {
   // The pointer should be confined in one display during resizing a window
   // because the window cannot span two displays at the same time anyway. The
   // exception is window/tab dragging operation. During that operation,

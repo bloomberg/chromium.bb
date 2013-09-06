@@ -9,6 +9,7 @@
 #include "ash/wm/window_resizer.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 
 namespace gfx {
 class Point;
@@ -98,9 +99,7 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
   // True if the dragged window is docked during the drag.
   bool is_docked_;
 
-  // If non-NULL the destructor sets this to true. Used to determine if this has
-  // been deleted.
-  bool* destroyed_;
+  base::WeakPtrFactory<DockedWindowResizer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DockedWindowResizer);
 };
