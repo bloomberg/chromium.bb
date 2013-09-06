@@ -7,13 +7,11 @@
 #include <algorithm>
 
 #include "base/i18n/break_iterator.h"
-#include "base/i18n/char_iterator.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
-#include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/base/text/utf16_indexing.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_fallback_win.h"
@@ -545,14 +543,13 @@ void RenderTextWin::ItemizeLogicalText() {
   script_state_.uBidiLevel =
       (GetTextDirection() == base::i18n::RIGHT_TO_LEFT) ? 1 : 0;
 
-  const base::string16& layout_text = GetLayoutText();
-  if (layout_text.empty())
+  if (text().empty())
     return;
 
   HRESULT hr = E_OUTOFMEMORY;
   int script_items_count = 0;
   std::vector<SCRIPT_ITEM> script_items;
-  const size_t layout_text_length = layout_text.length();
+  const size_t layout_text_length = GetLayoutText().length();
   // Ensure that |kMaxRuns| is attempted and the loop terminates afterward.
   for (size_t runs = kGuessRuns; hr == E_OUTOFMEMORY && runs <= kMaxRuns;
        runs = std::max(runs + 1, std::min(runs * 2, kMaxRuns))) {
@@ -560,9 +557,9 @@ void RenderTextWin::ItemizeLogicalText() {
     // ScriptItemize always adds a terminal array item so that the length of
     // the last item can be derived from the terminal SCRIPT_ITEM::iCharPos.
     script_items.resize(runs);
-    hr = ScriptItemize(layout_text.c_str(), layout_text_length, runs - 1,
-                       &script_control_, &script_state_, &script_items[0],
-                       &script_items_count);
+    hr = ScriptItemize(GetLayoutText().c_str(), layout_text_length,
+                       runs - 1, &script_control_, &script_state_,
+                       &script_items[0], &script_items_count);
   }
   DCHECK(SUCCEEDED(hr));
   if (!SUCCEEDED(hr) || script_items_count <= 0)
@@ -574,7 +571,7 @@ void RenderTextWin::ItemizeLogicalText() {
   // Build the list of runs from the script items and ranged styles. Use an
   // empty color BreakList to avoid breaking runs at color boundaries.
   BreakList<SkColor> empty_colors;
-  empty_colors.SetMax(layout_text_length);
+  empty_colors.SetMax(text().length());
   internal::StyleIterator style(empty_colors, styles());
   SCRIPT_ITEM* script_item = &script_items[0];
   const size_t max_run_length = kMaxGlyphs / 2;
@@ -595,32 +592,9 @@ void RenderTextWin::ItemizeLogicalText() {
     const size_t script_item_break = (script_item + 1)->iCharPos;
     run_break = std::min(script_item_break,
                          TextIndexToLayoutIndex(style.GetRange().end()));
-
     // Clamp run lengths to avoid exceeding the maximum supported glyph count.
-    if ((run_break - run->range.start()) > max_run_length) {
+    if ((run_break - run->range.start()) > max_run_length)
       run_break = run->range.start() + max_run_length;
-      if (!ui::IsValidCodePointIndex(layout_text, run_break))
-        --run_break;
-    }
-
-    // Break runs between characters in different code blocks. This avoids using
-    // fallback fonts for more characters than needed. http://crbug.com/278913
-    if (run_break > run->range.start()) {
-      const size_t run_start = run->range.start();
-      const int32 run_length = static_cast<int32>(run_break - run_start);
-      base::i18n::UTF16CharIterator iter(layout_text.c_str() + run_start,
-                                         run_length);
-      const UBlockCode first_block_code = ublock_getCode(iter.get());
-      while (iter.Advance() && iter.array_pos() < run_length) {
-        if (ublock_getCode(iter.get()) != first_block_code) {
-          run_break = run_start + iter.array_pos();
-          break;
-        }
-      }
-    }
-
-    DCHECK(ui::IsValidCodePointIndex(layout_text, run_break));
-
     style.UpdatePosition(LayoutIndexToTextIndex(run_break));
     if (script_item_break == run_break)
       script_item++;

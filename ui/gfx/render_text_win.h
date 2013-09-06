@@ -87,7 +87,6 @@ class RenderTextWin : public RenderText {
   virtual void DrawVisualText(Canvas* canvas) OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Win_BreakRunsByUnicodeBlocks);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Win_LogicalClusters);
 
   void ItemizeLogicalText();
