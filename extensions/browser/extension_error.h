@@ -120,7 +120,8 @@ class ManifestError : public ExtensionError {
 
 class RuntimeError : public ExtensionError {
  public:
-  RuntimeError(bool from_incognito,
+  RuntimeError(const std::string& extension_id,  // optional, sometimes unknown.
+               bool from_incognito,
                const base::string16& source,
                const base::string16& message,
                const StackTrace& stack_trace,

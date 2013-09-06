@@ -20,6 +20,7 @@
 #include "extensions/browser/extension_error.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_constants.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -420,7 +421,6 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BrowserActionRuntimeError) {
       ACTION_BROWSER_ACTION,
       &extension);
 
-  std::string event_bindings_str = "event_bindings";
   std::string script_url = extension->url().Resolve("browser_action.js").spec();
 
   const ErrorConsole::ErrorList& errors =
@@ -444,10 +444,77 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BrowserActionRuntimeError) {
                   "extensions::SafeBuiltins",
                   std::string("Function.target.") + kAnonymousFunction);
   CheckStackFrame(
-      stack_trace[2], event_bindings_str, "Event.dispatchToListener");
-  CheckStackFrame(stack_trace[3], event_bindings_str, "Event.dispatch_");
-  CheckStackFrame(stack_trace[4], event_bindings_str, "dispatchArgs");
-  CheckStackFrame(stack_trace[5], event_bindings_str, "dispatchEvent");
+      stack_trace[2], kEventBindings, "Event.dispatchToListener");
+  CheckStackFrame(stack_trace[3], kEventBindings, "Event.dispatch_");
+  CheckStackFrame(stack_trace[4], kEventBindings, "dispatchArgs");
+  CheckStackFrame(stack_trace[5], kEventBindings, "dispatchEvent");
+}
+
+// Test that we can catch an error for calling an API with improper arguments.
+IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIArgumentsRuntimeError) {
+  const Extension* extension = NULL;
+  LoadExtensionAndCheckErrors(
+      "bad_api_arguments_runtime_error",
+      kNoFlags,
+      1,  // One error: call an API with improper arguments.
+      ACTION_NONE,
+      &extension);
+
+  const ErrorConsole::ErrorList& errors =
+      error_console()->GetErrorsForExtension(extension->id());
+
+  CheckRuntimeError(
+      errors[0],
+      extension->id(),
+      kSchemaUtils,  // API calls are checked in schemaUtils.js.
+      false,  // not incognito
+      "Uncaught Error: Invocation of form "
+          "tabs.get(string, function) doesn't match definition "
+          "tabs.get(integer tabId, function callback)",
+      logging::LOG_ERROR,
+      extension->url().Resolve(kBackgroundPageName),
+      1u);
+
+  const StackTrace& stack_trace = GetStackTraceFromError(errors[0]);
+  ASSERT_EQ(1u, stack_trace.size());
+  CheckStackFrame(stack_trace[0],
+                  kSchemaUtils,
+                  kAnonymousFunction);
+}
+
+// Test that we catch an error when we try to call an API method without
+// permission.
+IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIPermissionsRuntimeError) {
+  const Extension* extension = NULL;
+  LoadExtensionAndCheckErrors(
+      "bad_api_permissions_runtime_error",
+      kNoFlags,
+      1,  // One error: we try to call addUrl() on chrome.history without
+          // permission, which results in a TypeError.
+      ACTION_NONE,
+      &extension);
+
+  std::string script_url = extension->url().Resolve("background.js").spec();
+
+  const ErrorConsole::ErrorList& errors =
+      error_console()->GetErrorsForExtension(extension->id());
+
+  CheckRuntimeError(
+      errors[0],
+      extension->id(),
+      script_url,
+      false,  // not incognito
+      "Uncaught TypeError: Cannot call method 'addUrl' of undefined",
+      logging::LOG_ERROR,
+      extension->url().Resolve(kBackgroundPageName),
+      1u);
+
+  const StackTrace& stack_trace = GetStackTraceFromError(errors[0]);
+  ASSERT_EQ(1u, stack_trace.size());
+  CheckStackFrame(stack_trace[0],
+                  script_url,
+                  kAnonymousFunction,
+                  5u, 1u);
 }
 
 }  // namespace extensions

@@ -120,14 +120,15 @@ bool ManifestError::IsEqualImpl(const ExtensionError* rhs) const {
   return true;
 }
 
-RuntimeError::RuntimeError(bool from_incognito,
+RuntimeError::RuntimeError(const std::string& extension_id,
+                           bool from_incognito,
                            const string16& source,
                            const string16& message,
                            const StackTrace& stack_trace,
                            const GURL& context_url,
                            logging::LogSeverity level)
     : ExtensionError(ExtensionError::RUNTIME_ERROR,
-                     GURL(source).host(),
+                     !extension_id.empty() ? extension_id : GURL(source).host(),
                      from_incognito,
                      level,
                      source,

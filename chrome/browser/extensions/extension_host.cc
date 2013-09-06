@@ -586,15 +586,20 @@ void ExtensionHost::OnDetailedConsoleMessageAdded(
     const StackTrace& stack_trace,
     int32 severity_level) {
   if (IsSourceFromAnExtension(source)) {
+    GURL context_url;
+    if (associated_web_contents_)
+      context_url = associated_web_contents_->GetLastCommittedURL();
+    else if (host_contents_.get())
+      context_url = host_contents_->GetLastCommittedURL();
+
     ErrorConsole::Get(profile_)->ReportError(
         scoped_ptr<ExtensionError>(new RuntimeError(
+            extension_id_,
             profile_->IsOffTheRecord(),
             source,
             message,
             stack_trace,
-            associated_web_contents_ ?
-                associated_web_contents_->GetLastCommittedURL() :
-                GURL::EmptyGURL(),
+            context_url,
             static_cast<logging::LogSeverity>(severity_level))));
   }
 }

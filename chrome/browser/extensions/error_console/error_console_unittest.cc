@@ -51,6 +51,7 @@ scoped_ptr<ExtensionError> CreateNewRuntimeError(
     const std::string& extension_id,
     const string16& message) {
   return scoped_ptr<ExtensionError>(new RuntimeError(
+      extension_id,
       from_incognito,
       GetSourceForExtensionId(extension_id),
       message,

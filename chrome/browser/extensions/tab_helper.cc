@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
@@ -364,6 +365,7 @@ void TabHelper::OnDetailedConsoleMessageAdded(
   if (IsSourceFromAnExtension(source)) {
     ErrorConsole::Get(profile_)->ReportError(
         scoped_ptr<ExtensionError>(new RuntimeError(
+            extension_app_ ? extension_app_->id() : EmptyString(),
             profile_->IsOffTheRecord(),
             source,
             message,

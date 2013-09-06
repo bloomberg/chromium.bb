@@ -9,6 +9,12 @@
 
 namespace extensions {
 
+// The name of the event_bindings module.
+extern const char kEventBindings[];
+
+// The name of the schemaUtils module.
+extern const char kSchemaUtils[];
+
 // Determine whether or not a source came from an extension. |source| can link
 // to a page or a script, and can be external (e.g., "http://www.google.com"),
 // extension-related (e.g., "chrome-extension://<extension_id>/background.js"),

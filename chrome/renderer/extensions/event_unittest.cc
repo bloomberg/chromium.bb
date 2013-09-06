@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/module_system_test.h"
 
+#include "extensions/common/extension_urls.h"
 #include "grit/renderer_resources.h"
 
 namespace extensions {
@@ -13,9 +14,9 @@ class EventUnittest : public ModuleSystemTest {
   virtual void SetUp() OVERRIDE {
     ModuleSystemTest::SetUp();
 
-    RegisterModule("event_bindings", IDR_EVENT_BINDINGS_JS);
+    RegisterModule(kEventBindings, IDR_EVENT_BINDINGS_JS);
     RegisterModule("json_schema", IDR_JSON_SCHEMA_JS);
-    RegisterModule("schemaUtils", IDR_SCHEMA_UTILS_JS);
+    RegisterModule(kSchemaUtils, IDR_SCHEMA_UTILS_JS);
     RegisterModule("unload_event", IDR_UNLOAD_EVENT_JS);
     RegisterModule("utils", IDR_UTILS_JS);
 
