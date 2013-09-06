@@ -99,6 +99,20 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
     return gfx::Point(middle_x - size.width() / 2, top_y);
   }
 
+  virtual gfx::Size GetMaximumDialogSize() OVERRIDE {
+    gfx::Rect content_area =
+        browser_view_layout_->contents_container_->ConvertRectToWidget(
+            browser_view_layout_->contents_container_->GetLocalBounds());
+
+    gfx::Size max_dialog_size = content_area.size();
+    // Adjust for difference in alignment between the dialog top and the top of
+    // the content area.
+    int height_offset = content_area.y() -
+        browser_view_layout_->web_contents_modal_dialog_top_y_;
+    max_dialog_size.Enlarge(0, height_offset);
+    return max_dialog_size;
+  }
+
   // Add/remove observer.
   virtual void AddObserver(
       WebContentsModalDialogHostObserver* observer) OVERRIDE {

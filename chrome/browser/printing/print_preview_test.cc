@@ -46,6 +46,10 @@ class PrintPreviewTestBrowserWindow
     return gfx::Point();
   }
 
+  virtual gfx::Size GetMaximumDialogSize() OVERRIDE {
+    return gfx::Size();
+  }
+
   virtual void AddObserver(
       WebContentsModalDialogHostObserver* observer) OVERRIDE {}
   virtual void RemoveObserver(

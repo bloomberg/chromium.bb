@@ -1641,6 +1641,7 @@
         'browser/ui/views/bookmarks/bookmark_bubble_view_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_sync_promo_view_unittest.cc',
         'browser/ui/views/confirm_bubble_views_unittest.cc',
+        'browser/ui/views/constrained_window_views_unittest.cc',
         'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',
         'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
         'browser/ui/views/first_run_bubble_unittest.cc',

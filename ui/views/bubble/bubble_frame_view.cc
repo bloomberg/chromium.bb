@@ -168,18 +168,11 @@ gfx::Insets BubbleFrameView::GetInsets() const {
 }
 
 gfx::Size BubbleFrameView::GetPreferredSize() {
-  const gfx::Size client(GetWidget()->client_view()->GetPreferredSize());
-  gfx::Size size(GetUpdatedWindowBounds(gfx::Rect(), client, false).size());
-  // Accommodate the width of the title bar elements.
-  int title_bar_width = GetInsets().width() + border()->GetInsets().width();
-  if (!title_->text().empty())
-    title_bar_width += kTitleLeftInset + title_->GetPreferredSize().width();
-  if (close_->visible())
-    title_bar_width += close_->width() + 1;
-  if (titlebar_extra_view_ != NULL)
-    title_bar_width += titlebar_extra_view_->GetPreferredSize().width();
-  size.SetToMax(gfx::Size(title_bar_width, 0));
-  return size;
+  return GetSizeForClientSize(GetWidget()->client_view()->GetPreferredSize());
+}
+
+gfx::Size BubbleFrameView::GetMinimumSize() {
+  return GetSizeForClientSize(GetWidget()->client_view()->GetMinimumSize());
 }
 
 void BubbleFrameView::Layout() {
@@ -332,6 +325,21 @@ void BubbleFrameView::OffsetArrowIfOffScreen(const gfx::Rect& anchor_rect,
       bubble_border_->GetArrowOffset(window_bounds.size()) - offscreen_adjust);
   if (offscreen_adjust)
     SchedulePaint();
+}
+
+gfx::Size BubbleFrameView::GetSizeForClientSize(const gfx::Size& client_size) {
+  gfx::Size size(
+      GetUpdatedWindowBounds(gfx::Rect(), client_size, false).size());
+  // Accommodate the width of the title bar elements.
+  int title_bar_width = GetInsets().width() + border()->GetInsets().width();
+  if (!title_->text().empty())
+    title_bar_width += kTitleLeftInset + title_->GetPreferredSize().width();
+  if (close_->visible())
+    title_bar_width += close_->width() + 1;
+  if (titlebar_extra_view_ != NULL)
+    title_bar_width += titlebar_extra_view_->GetPreferredSize().width();
+  size.SetToMax(gfx::Size(title_bar_width, 0));
+  return size;
 }
 
 }  // namespace views

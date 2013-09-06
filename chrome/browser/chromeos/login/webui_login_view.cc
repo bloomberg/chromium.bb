@@ -230,6 +230,10 @@ gfx::Point WebUILoginView::GetDialogPosition(const gfx::Size& size) {
                     widget_size.height() / 2 - size.height() / 2);
 }
 
+gfx::Size WebUILoginView::GetMaximumDialogSize() {
+  return GetWidget()->GetWindowBoundsInScreen().size();
+}
+
 void WebUILoginView::AddObserver(
     web_modal::WebContentsModalDialogHostObserver* observer) {
   if (observer && !observer_list_.HasObserver(observer))

@@ -46,6 +46,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // View overrides:
   virtual gfx::Insets GetInsets() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
@@ -86,6 +87,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // in the monitor bounds.
   void OffsetArrowIfOffScreen(const gfx::Rect& anchor_rect,
                               const gfx::Size& client_size);
+
+  // Calculates the size needed to accommodate the given client area.
+  gfx::Size GetSizeForClientSize(const gfx::Size& client_size);
 
   // The bubble border.
   BubbleBorder* bubble_border_;

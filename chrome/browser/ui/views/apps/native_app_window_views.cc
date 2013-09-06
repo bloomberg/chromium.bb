@@ -449,6 +449,10 @@ gfx::Point NativeAppWindowViews::GetDialogPosition(const gfx::Size& size) {
                     shell_window_size.height() / 2 - size.height() / 2);
 }
 
+gfx::Size NativeAppWindowViews::GetMaximumDialogSize() {
+  return window_->GetWindowBoundsInScreen().size();
+}
+
 void NativeAppWindowViews::AddObserver(
     web_modal::WebContentsModalDialogHostObserver* observer) {
   observer_list_.AddObserver(observer);

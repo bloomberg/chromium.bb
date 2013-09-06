@@ -570,11 +570,19 @@ void ConstrainedWindowFrameView::InitClass() {
 void UpdateWebContentsModalDialogPosition(
     views::Widget* widget,
     web_modal::WebContentsModalDialogHost* dialog_host) {
-  gfx::Size size = widget->GetWindowBoundsInScreen().size();
-  gfx::Point position = dialog_host->GetDialogPosition(size);
+  gfx::Size size = widget->GetRootView()->GetPreferredSize();
   views::Border* border =
       widget->non_client_view()->frame_view()->border();
+  gfx::Size max_size = dialog_host->GetMaximumDialogSize();
+  // Enlarge the max size by the top border, as the dialog will be shifted
+  // outside the area specified by the dialog host by this amount later in the
+  // function.
   // Border may be null during widget initialization.
+  if (border)
+    max_size.Enlarge(0, border->GetInsets().top());
+  size.SetToMin(max_size);
+
+  gfx::Point position = dialog_host->GetDialogPosition(size);
   if (border) {
     // Align the first row of pixels inside the border. This is the apparent
     // top of the dialog.

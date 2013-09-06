@@ -311,6 +311,12 @@ gfx::Point ExtensionHost::GetDialogPosition(const gfx::Size& size) {
       std::max(0, (bounds.height() - size.height()) / 2));
 }
 
+gfx::Size ExtensionHost::GetMaximumDialogSize() {
+  if (!GetVisibleWebContents())
+    return gfx::Size();
+  return GetVisibleWebContents()->GetView()->GetViewBounds().size();
+}
+
 void ExtensionHost::AddObserver(
     web_modal::WebContentsModalDialogHostObserver* observer) {
 }

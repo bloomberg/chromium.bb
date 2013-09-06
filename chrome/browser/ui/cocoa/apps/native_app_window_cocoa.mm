@@ -794,6 +794,11 @@ gfx::Point NativeAppWindowCocoa::GetDialogPosition(const gfx::Size& size) {
   return gfx::Point();
 }
 
+gfx::Size NativeAppWindowCocoa::GetMaximumDialogSize() {
+  NOTIMPLEMENTED();
+  return gfx::Size();
+}
+
 void NativeAppWindowCocoa::AddObserver(
     web_modal::WebContentsModalDialogHostObserver* observer) {
   NOTIMPLEMENTED();

@@ -384,6 +384,13 @@ gfx::Point NativeAppWindowGtk::GetDialogPosition(const gfx::Size& size) {
                     current_height / 2 - size.height() / 2);
 }
 
+gfx::Size NativeAppWindowGtk::GetMaximumDialogSize() {
+  gint current_width = 0;
+  gint current_height = 0;
+  gtk_window_get_size(window_, &current_width, &current_height);
+  return gfx::Size(current_width, current_height);
+}
+
 void NativeAppWindowGtk::AddObserver(
     web_modal::WebContentsModalDialogHostObserver* observer) {
   observer_list_.AddObserver(observer);
