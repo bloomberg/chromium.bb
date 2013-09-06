@@ -25,9 +25,13 @@ const struct json_narrow_test_data {
 
 TEST(StringEscapeTest, JsonDoubleQuoteNarrow) {
   for (size_t i = 0; i < arraysize(json_narrow_cases); ++i) {
-    std::string in = json_narrow_cases[i].to_escape;
+    const char* in_ptr = json_narrow_cases[i].to_escape;
+    std::string in_str = in_ptr;
     std::string out;
-    JsonDoubleQuote(in, false, &out);
+    JsonDoubleQuote(in_ptr, false, &out);
+    EXPECT_EQ(std::string(json_narrow_cases[i].escaped), out);
+    out.erase();
+    JsonDoubleQuote(in_str, false, &out);
     EXPECT_EQ(std::string(json_narrow_cases[i].escaped), out);
   }
 

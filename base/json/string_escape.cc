@@ -78,25 +78,25 @@ void JsonDoubleQuoteT(const STR& str,
 
 }  // namespace
 
-void JsonDoubleQuote(const std::string& str,
+void JsonDoubleQuote(const StringPiece& str,
                      bool put_in_quotes,
                      std::string* dst) {
   JsonDoubleQuoteT(str, put_in_quotes, dst);
 }
 
-std::string GetDoubleQuotedJson(const std::string& str) {
+std::string GetDoubleQuotedJson(const StringPiece& str) {
   std::string dst;
   JsonDoubleQuote(str, true, &dst);
   return dst;
 }
 
-void JsonDoubleQuote(const string16& str,
+void JsonDoubleQuote(const StringPiece16& str,
                      bool put_in_quotes,
                      std::string* dst) {
   JsonDoubleQuoteT(str, put_in_quotes, dst);
 }
 
-std::string GetDoubleQuotedJson(const string16& str) {
+std::string GetDoubleQuotedJson(const StringPiece16& str) {
   std::string dst;
   JsonDoubleQuote(str, true, &dst);
   return dst;

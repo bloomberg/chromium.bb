@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/base_export.h"
-#include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 
 namespace base {
 
@@ -19,19 +19,19 @@ namespace base {
 // If |put_in_quotes| is true, the result will be surrounded in double quotes.
 // The outputted literal, when interpreted by the browser, should result in a
 // javascript string that is identical and the same length as the input |str|.
-BASE_EXPORT void JsonDoubleQuote(const std::string& str,
+BASE_EXPORT void JsonDoubleQuote(const StringPiece& str,
                                  bool put_in_quotes,
                                  std::string* dst);
 
 // Same as above, but always returns the result double quoted.
-BASE_EXPORT std::string GetDoubleQuotedJson(const std::string& str);
+BASE_EXPORT std::string GetDoubleQuotedJson(const StringPiece& str);
 
-BASE_EXPORT void JsonDoubleQuote(const string16& str,
+BASE_EXPORT void JsonDoubleQuote(const StringPiece16& str,
                                  bool put_in_quotes,
                                  std::string* dst);
 
 // Same as above, but always returns the result double quoted.
-BASE_EXPORT std::string GetDoubleQuotedJson(const string16& str);
+BASE_EXPORT std::string GetDoubleQuotedJson(const StringPiece16& str);
 
 }  // namespace base
 
