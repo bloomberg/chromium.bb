@@ -256,6 +256,20 @@
     "description": "Performance on [spaceport.io's perfmarks benchmark](http://spaceport.io/community/perfmarks). This test performs 3 animations (rotate, translate, scale) using a variety of methods (css, webgl, canvas, etc) and reports the number of objects that can be simultaneously animated while still achieving 30FPS.",
     "code": ["chrome/src/tools/perf/benchmarks/spaceport.py"]
   },
+  "startup_cold": {
+    "description": "Measures cold startup time with a clean profile.",
+    "code": [
+      "chrome/src/tools/perf/measurements/startup.py",
+      "src/tools/perf/page_sets/blank_page.json"
+    ]
+  },
+  "startup_cold_dirty": {
+    "description": "Measures cold startup time with a dirty profile.",
+    "code": [
+      "chrome/src/tools/perf/measurements/startup.py",
+      "src/tools/perf/page_sets/blank_page.json"
+    ]
+  },
   "startup_measurement": {
     "description": "Measures startup time under various scenarios. This is a port of our old startup_test target to Telemetry.",
     "code": [
@@ -266,6 +280,20 @@
   "startup_test": {
     "description": "Measures startup and shutdown time for 1 tab, 5 tabs, and 10 tabs under a several different user profiles. These tests are in the process of being ported to Telemetry - see the startup_measurement test.",
     "code": ["chrome/src/chrome/test/perf/startup_test.cc"]
+  },
+  "startup_warm": {
+    "description": "Measures warm startup time with a clean profile.",
+    "code": [
+      "chrome/src/tools/perf/measurements/startup.py",
+      "src/tools/perf/page_sets/blank_page.json"
+    ]
+  },
+  "startup_warm_dirty": {
+    "description": "Measures warm startup time with a dirty profile.",
+    "code": [
+      "chrome/src/tools/perf/measurements/startup.py",
+      "src/tools/perf/page_sets/blank_page.json"
+    ]
   },
   "sunspider": {
     "description": "Performance on the [SunSpider JavaScript benchmark](http://www.webkit.org/perf/sunspider/sunspider.html)",
