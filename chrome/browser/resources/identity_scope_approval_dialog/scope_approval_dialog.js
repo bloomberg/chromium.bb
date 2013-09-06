@@ -20,7 +20,7 @@ function loadAuthUrlAndShowWindow(url, win) {
   });
 
   // Request a customized view from GAIA.
-  webview.onBeforeSendHeaders.addListener(function(details) {
+  webview.request.onBeforeSendHeaders.addListener(function(details) {
     headers = details.requestHeaders || [];
     headers.push({'name': 'X-Browser-View',
                   'value': 'embedded'});
