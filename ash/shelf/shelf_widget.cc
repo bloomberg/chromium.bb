@@ -238,7 +238,8 @@ namespace ash {
 // sizes it to the width of the shelf minus the size of the status area.
 class ShelfWidget::DelegateView : public views::WidgetDelegate,
                                   public views::AccessiblePaneView,
-                                  public internal::BackgroundAnimatorDelegate {
+                                  public internal::BackgroundAnimatorDelegate,
+                                  public aura::WindowObserver {
  public:
   explicit DelegateView(ShelfWidget* shelf);
   virtual ~DelegateView();
@@ -272,7 +273,17 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   virtual bool CanActivate() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void ReorderChildLayers(ui::Layer* parent_layer) OVERRIDE;
+  // This will be called when the parent local bounds change.
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds) OVERRIDE;
+
+  // aura::WindowObserver overrides:
+  // This will be called when the shelf itself changes its absolute position.
+  // Since the |dimmer_| panel needs to be placed in screen coordinates it needs
+  // to be repositioned. The difference to the OnBoundsChanged call above is
+  // that this gets also triggered when the shelf only moves.
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
 
   // BackgroundAnimatorDelegate overrides:
   virtual void UpdateBackground(int alpha) OVERRIDE;
@@ -324,6 +335,8 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf)
 }
 
 ShelfWidget::DelegateView::~DelegateView() {
+  // Make sure that the dimmer goes away since it might have set an observer.
+  SetDimmed(false);
 }
 
 void ShelfWidget::DelegateView::SetDimmed(bool value) {
@@ -348,7 +361,11 @@ void ShelfWidget::DelegateView::SetDimmed(bool value) {
     dimmer_->SetContentsView(dimmer_view_);
     dimmer_->GetNativeView()->SetName("ShelfDimmerView");
     dimmer_->Show();
+    shelf_->GetNativeView()->AddObserver(this);
   } else {
+    // Some unit tests will come here with a destroyed window.
+    if (shelf_->GetNativeView())
+      shelf_->GetNativeView()->RemoveObserver(this);
     dimmer_view_ = NULL;
     dimmer_.reset(NULL);
   }
@@ -426,6 +443,16 @@ void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
   opaque_background_.SetBounds(GetLocalBounds());
   if (dimmer_)
     dimmer_->SetBounds(GetBoundsInScreen());
+}
+
+void ShelfWidget::DelegateView::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds) {
+  // Coming here the shelf got repositioned and since the |dimmer_| is placed
+  // in screen coordinates and not relative to the parent it needs to be
+  // repositioned accordingly.
+  dimmer_->SetBounds(GetBoundsInScreen());
 }
 
 void ShelfWidget::DelegateView::ForceUndimming(bool force) {
