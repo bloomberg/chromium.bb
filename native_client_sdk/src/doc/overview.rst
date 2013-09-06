@@ -187,6 +187,8 @@ open web.
 Native Client in a web application
 ==================================
 
+.. _application_files:
+
 A Native Client application consists of a set of files:
 
 * **HTML web page**, **CSS**, and **JavaScript** files, as in any modern web
