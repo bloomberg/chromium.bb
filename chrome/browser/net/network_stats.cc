@@ -219,8 +219,9 @@ bool NetworkStats::ConnectComplete(int result) {
   }
 
   if (start_test_after_connect_) {
-    ReadData();  // This ReadData() reads data for all HelloReply and all
-                 // subsequent probe tests.
+    // ReadData() reads data for all HelloReply and all subsequent probe tests.
+    if (ReadData() != net::ERR_IO_PENDING)
+      return false;
     SendHelloRequest();
   } else {
     // For unittesting. Only run the callback, do not destroy it.
@@ -291,9 +292,9 @@ void NetworkStats::SendProbeRequest() {
     TestPhaseComplete(WRITE_FAILED, result);
 }
 
-void NetworkStats::ReadData() {
+int NetworkStats::ReadData() {
   if (!socket_.get())
-    return;
+    return 0;
 
   int rv = 0;
   do {
@@ -305,6 +306,7 @@ void NetworkStats::ReadData() {
         kMaxMessageSize,
         base::Bind(&NetworkStats::OnReadComplete, base::Unretained(this)));
   } while (rv > 0 && !ReadComplete(rv));
+  return rv;
 }
 
 void NetworkStats::OnReadComplete(int result) {
@@ -315,7 +317,8 @@ void NetworkStats::OnReadComplete(int result) {
     // loop.
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&NetworkStats::ReadData, weak_factory_.GetWeakPtr()),
+        base::Bind(base::IgnoreResult(&NetworkStats::ReadData),
+                   weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(1));
   }
 }
@@ -420,7 +423,7 @@ int NetworkStats::SendData(const std::string& output) {
   int bytes_written = socket_->Write(
       write_buffer_.get(),
       write_buffer_->BytesRemaining(),
-      base::Bind(&NetworkStats::OnWriteComplete, base::Unretained(this)));
+      base::Bind(&NetworkStats::OnWriteComplete, weak_factory_.GetWeakPtr()));
   if (bytes_written < 0)
     return bytes_written;
   UpdateSendBuffer(bytes_written);

@@ -142,8 +142,9 @@ class NetworkStats {
   void OnWriteComplete(int result);
 
   // Read data from server until an error or IO blocking occurs or reading is
-  // complete.
-  void ReadData();
+  // complete. Return the result value from socket reading and 0 if |socket_|
+  // is Null.
+  int ReadData();
 
   // Send data contained in |str| to server.
   // Return a negative value if IO blocking occurs or there is an error.
