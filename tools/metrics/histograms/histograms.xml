@@ -5277,6 +5277,13 @@ other types of suffix sets.
   <summary>Chrome OS login failure reason.</summary>
 </histogram>
 
+<histogram name="Login.LeastUsedAccountDays" units="days">
+  <summary>
+    Chrome OS histogram that keeps track of the days since the least frequently
+    used account signed in. Reported on every boot and once a day after that.
+  </summary>
+</histogram>
+
 <histogram name="Login.PolicyFilesStatePerBoot" enum="LoginPolicyFilesState">
   <summary>The state of Chrome OS owner key and device policy files.</summary>
 </histogram>
@@ -10548,6 +10555,13 @@ other types of suffix sets.
   <summary>
     Maximum size of user's GCache directory. Logged once a day, if disk usage is
     high.
+  </summary>
+</histogram>
+
+<histogram name="Platform.DiskUsage.LeastUsedAccountDays" units="days">
+  <summary>
+    Days since the least frequently used account signed in. Logged once a day,
+    if disk usage is high.
   </summary>
 </histogram>
 
@@ -25883,6 +25897,7 @@ other types of suffix sets.
   <affected-histogram name="Platform.DiskUsage.Downloads_Max"/>
   <affected-histogram name="Platform.DiskUsage.GCache_Avg"/>
   <affected-histogram name="Platform.DiskUsage.GCache_Max"/>
+  <affected-histogram name="Platform.DiskUsage.LeastUsedAccountDays"/>
 </fieldtrial>
 
 <fieldtrial name="DnsImpact2">
