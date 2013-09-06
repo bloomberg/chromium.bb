@@ -27,6 +27,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/utils/SkCanvasStateUtils.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -454,82 +455,48 @@ bool InProcessViewRenderer::RenderViaAuxilaryBitmapIfNeeded(
   JNIEnv* env = AttachCurrentThread();
   ScopedPixelAccess auto_release_pixels(env, java_canvas);
   AwPixelInfo* pixels = auto_release_pixels.pixels();
-  SkMatrix matrix;
-  SkBitmap::Config config(SkBitmap::kNo_Config);
-  if (pixels) {
-    switch (pixels->config) {
-      case AwConfig_ARGB_8888:
-        config = SkBitmap::kARGB_8888_Config;
-        break;
-      case AwConfig_RGB_565:
-        config = SkBitmap::kRGB_565_Config;
-        break;
-    }
+  if (pixels && pixels->state) {
+    skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(
+        SkCanvasStateUtils::CreateFromCanvasState(pixels->state));
 
-    for (int i = 0; i < 9; i++) {
-      matrix.set(i, pixels->matrix[i]);
+    // Workarounds for http://crbug.com/271096: SW draw only supports
+    // translate & scale transforms, and a simple rectangular clip.
+    if (canvas && (!canvas->getTotalClip().isRect() ||
+          (canvas->getTotalMatrix().getType() &
+           ~(SkMatrix::kTranslate_Mask | SkMatrix::kScale_Mask)))) {
+      canvas.clear();
     }
-    // Workaround for http://crbug.com/271096: SW draw only supports
-    // translate & scale transforms.
-    if (matrix.getType() & ~(SkMatrix::kTranslate_Mask | SkMatrix::kScale_Mask))
-      config = SkBitmap::kNo_Config;
+    if (canvas) {
+      canvas->translate(scroll_correction.x(), scroll_correction.y());
+      return render_source.Run(canvas.get());
+    }
   }
 
-  if (config == SkBitmap::kNo_Config) {
-    // Render into an auxiliary bitmap if pixel info is not available.
-    ScopedJavaLocalRef<jobject> jcanvas(env, java_canvas);
-    TRACE_EVENT0("android_webview", "RenderToAuxBitmap");
-    ScopedJavaLocalRef<jobject> jbitmap(java_helper->CreateBitmap(
-        env, clip.width(), clip.height(), jcanvas, owner_key));
-    if (!jbitmap.obj()) {
-      TRACE_EVENT_INSTANT0("android_webview",
-                           "EarlyOut_BitmapAllocFail",
-                           TRACE_EVENT_SCOPE_THREAD);
-      return false;
-    }
-
-    if (!RasterizeIntoBitmap(env, jbitmap,
-                             clip.x() - scroll_correction.x(),
-                             clip.y() - scroll_correction.y(),
-                             render_source)) {
-      TRACE_EVENT_INSTANT0("android_webview",
-                           "EarlyOut_RasterizeFail",
-                           TRACE_EVENT_SCOPE_THREAD);
-      return false;
-    }
-
-    java_helper->DrawBitmapIntoCanvas(env, jbitmap, jcanvas,
-                                      clip.x(), clip.y());
-    return true;
+  // Render into an auxiliary bitmap if pixel info is not available.
+  ScopedJavaLocalRef<jobject> jcanvas(env, java_canvas);
+  TRACE_EVENT0("android_webview", "RenderToAuxBitmap");
+  ScopedJavaLocalRef<jobject> jbitmap(java_helper->CreateBitmap(
+      env, clip.width(), clip.height(), jcanvas, owner_key));
+  if (!jbitmap.obj()) {
+    TRACE_EVENT_INSTANT0("android_webview",
+                         "EarlyOut_BitmapAllocFail",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return false;
   }
 
-  // Draw in a SkCanvas built over the pixel information.
-  SkBitmap bitmap;
-  bitmap.setConfig(config,
-                   pixels->width,
-                   pixels->height,
-                   pixels->row_bytes);
-  bitmap.setPixels(pixels->pixels);
-  SkBitmapDevice device(bitmap);
-  SkCanvas canvas(&device);
-  canvas.setMatrix(matrix);
-
-  if (pixels->clip_rect_count) {
-    SkRegion clip;
-    for (int i = 0; i < pixels->clip_rect_count; ++i) {
-      clip.op(SkIRect::MakeXYWH(pixels->clip_rects[i + 0],
-                                pixels->clip_rects[i + 1],
-                                pixels->clip_rects[i + 2],
-                                pixels->clip_rects[i + 3]),
-              SkRegion::kUnion_Op);
-    }
-    canvas.setClipRegion(clip);
+  if (!RasterizeIntoBitmap(env, jbitmap,
+                           clip.x() - scroll_correction.x(),
+                           clip.y() - scroll_correction.y(),
+                           render_source)) {
+    TRACE_EVENT_INSTANT0("android_webview",
+                         "EarlyOut_RasterizeFail",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return false;
   }
 
-  canvas.translate(scroll_correction.x(),
-                   scroll_correction.y());
-
-  return render_source.Run(&canvas);
+  java_helper->DrawBitmapIntoCanvas(env, jbitmap, jcanvas,
+                                    clip.x(), clip.y());
+  return true;
 }
 
 skia::RefPtr<SkPicture> InProcessViewRenderer::CapturePicture(int width,

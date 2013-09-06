@@ -123,6 +123,8 @@
     '../third_party/skia/src/utils/SkBase64.h',
     '../third_party/skia/src/utils/SkBitSet.cpp',
     '../third_party/skia/src/utils/SkBitSet.h',
+    '../third_party/skia/src/utils/SkCanvasStack.cpp',
+    '../third_party/skia/src/utils/SkCanvasStateUtils.cpp',
     '../third_party/skia/src/utils/SkDeferredCanvas.cpp',
     '../third_party/skia/src/utils/SkMatrix44.cpp',
     '../third_party/skia/src/utils/SkNullCanvas.cpp',
