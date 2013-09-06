@@ -6,25 +6,23 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_APP_SHIM_HOST_MANAGER_MAC_H_
 
 #include "apps/app_shim/extension_app_shim_handler_mac.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "ipc/ipc_channel_factory.h"
 
 // The AppShimHostManager receives connections from app shims on a UNIX
 // socket (|factory_|) and creates a helper object to manage the connection.
 class AppShimHostManager
     : public IPC::ChannelFactory::Delegate,
-      public base::RefCountedThreadSafe<AppShimHostManager> {
+      public base::SupportsWeakPtr<AppShimHostManager> {
  public:
   AppShimHostManager();
+  virtual ~AppShimHostManager();
 
   apps::ExtensionAppShimHandler* extension_app_shim_handler() {
     return &extension_app_shim_handler_;
   }
 
  private:
-  friend class base::RefCountedThreadSafe<AppShimHostManager>;
-  virtual ~AppShimHostManager();
-
   // IPC::ChannelFactory::Delegate implementation.
   virtual void OnClientConnected(const IPC::ChannelHandle& handle) OVERRIDE;
   virtual void OnListenError() OVERRIDE;
