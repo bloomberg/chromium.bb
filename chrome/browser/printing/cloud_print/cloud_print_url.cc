@@ -14,7 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "net/base/escape.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 // Url must not be matched by "urls" section of
@@ -30,16 +30,23 @@ const char kTestPageURL[] =
 // static
 void CloudPrintURL::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  GURL cloud_print_url(
+      command_line->GetSwitchValueASCII(switches::kCloudPrintServiceURL));
+  if (cloud_print_url.is_empty())
+    cloud_print_url = GURL(kDefaultCloudPrintServiceURL);
   registry->RegisterStringPref(
       prefs::kCloudPrintServiceURL,
-      kDefaultCloudPrintServiceURL,
+      cloud_print_url.spec(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  std::string url = GaiaUrls::GetInstance()->service_login_url();
-  url.append("?service=cloudprint&sarp=1&continue=");
-  url.append(net::EscapeQueryParamValue(kDefaultCloudPrintServiceURL, false));
+  GURL gaia_url(GaiaUrls::GetInstance()->service_login_url());
+  gaia_url = net::AppendQueryParameter(gaia_url, "service", "cloudprint");
+  gaia_url = net::AppendQueryParameter(gaia_url, "sarp", "1");
+  gaia_url = net::AppendQueryParameter(gaia_url, "continue",
+                                       cloud_print_url.spec());
   registry->RegisterStringPref(
       prefs::kCloudPrintSigninURL,
-      url,
+      gaia_url.spec(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
@@ -48,21 +55,12 @@ void CloudPrintURL::RegisterProfilePrefs(
 // command line or by the user preferences.
 GURL CloudPrintURL::GetCloudPrintServiceURL() {
   DCHECK(profile_);
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  GURL cloud_print_service_url = GURL(command_line.GetSwitchValueASCII(
-      switches::kCloudPrintServiceURL));
-  if (cloud_print_service_url.is_empty()) {
-    cloud_print_service_url = GURL(
-        profile_->GetPrefs()->GetString(prefs::kCloudPrintServiceURL));
-  }
-  return cloud_print_service_url;
+  return GURL(profile_->GetPrefs()->GetString(prefs::kCloudPrintServiceURL));
 }
 
 GURL CloudPrintURL::GetCloudPrintSigninURL() {
   DCHECK(profile_);
-
-  GURL cloud_print_signin_url = GURL(
+  GURL cloud_print_signin_url(
       profile_->GetPrefs()->GetString(prefs::kCloudPrintSigninURL));
   return google_util::AppendGoogleLocaleParam(cloud_print_signin_url);
 }
