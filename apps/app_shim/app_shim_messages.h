@@ -25,6 +25,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(apps::AppShimFocusType,
 IPC_MESSAGE_CONTROL1(AppShimMsg_LaunchApp_Done,
                      apps::AppShimLaunchResult /* launch result */)
 
+// Instructs the shim to hide the app.
+IPC_MESSAGE_CONTROL0(AppShimMsg_Hide)
+
 // Instructs the shim to request user attention.
 IPC_MESSAGE_CONTROL0(AppShimMsg_RequestUserAttention)
 

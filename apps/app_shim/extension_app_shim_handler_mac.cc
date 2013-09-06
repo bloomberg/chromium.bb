@@ -183,6 +183,18 @@ void ExtensionAppShimHandler::QuitAppForWindow(ShellWindow* shell_window) {
   }
 }
 
+void ExtensionAppShimHandler::HideAppForWindow(ShellWindow* shell_window) {
+  ExtensionAppShimHandler* handler =
+      g_browser_process->platform_part()->app_shim_host_manager()->
+          extension_app_shim_handler();
+  Profile* profile = shell_window->profile();
+  Host* host = handler->FindHost(profile, shell_window->extension_id());
+  if (host)
+    host->OnAppHide();
+  else
+    SetAppHidden(profile, shell_window->extension_id(), true);
+}
+
 // static
 bool ExtensionAppShimHandler::RequestUserAttentionForWindow(
     ShellWindow* shell_window) {

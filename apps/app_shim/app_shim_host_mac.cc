@@ -114,6 +114,10 @@ void AppShimHost::OnAppClosed() {
   Close();
 }
 
+void AppShimHost::OnAppHide() {
+  Send(new AppShimMsg_Hide);
+}
+
 void AppShimHost::OnAppRequestUserAttention() {
   Send(new AppShimMsg_RequestUserAttention);
 }

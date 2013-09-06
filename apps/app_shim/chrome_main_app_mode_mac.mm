@@ -99,6 +99,9 @@ class AppShimController : public IPC::Listener {
   // shim process should die.
   void OnLaunchAppDone(apps::AppShimLaunchResult result);
 
+  // Hide this app.
+  void OnHide();
+
   // Requests user attention.
   void OnRequestUserAttention();
 
@@ -191,6 +194,7 @@ bool AppShimController::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AppShimController, message)
     IPC_MESSAGE_HANDLER(AppShimMsg_LaunchApp_Done, OnLaunchAppDone)
+    IPC_MESSAGE_HANDLER(AppShimMsg_Hide, OnHide)
     IPC_MESSAGE_HANDLER(AppShimMsg_RequestUserAttention, OnRequestUserAttention)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -209,6 +213,10 @@ void AppShimController::OnLaunchAppDone(apps::AppShimLaunchResult result) {
   }
 
   launch_app_done_ = true;
+}
+
+void AppShimController::OnHide() {
+  [NSApp hide:nil];
 }
 
 void AppShimController::OnRequestUserAttention() {

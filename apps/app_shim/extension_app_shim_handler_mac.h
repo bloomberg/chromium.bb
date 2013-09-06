@@ -69,6 +69,8 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
   static void QuitAppForWindow(ShellWindow* shell_window);
 
+  static void HideAppForWindow(ShellWindow* shell_window);
+
   // Brings the window to the front without showing it and instructs the shim to
   // request user attention. Returns false if there is no shim for this window.
   static bool RequestUserAttentionForWindow(ShellWindow* shell_window);

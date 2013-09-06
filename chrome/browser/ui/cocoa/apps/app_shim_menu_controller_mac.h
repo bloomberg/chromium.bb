@@ -9,6 +9,8 @@
 
 #include "base/mac/scoped_nsobject.h"
 
+@class DoppelgangerMenuItem;
+
 // This controller listens to NSWindowDidBecomeMainNotification and
 // NSWindowDidResignMainNotification and modifies the main menu bar to mimic a
 // main menu for the app. When an app window becomes main, all Chrome menu items
@@ -19,8 +21,9 @@
  @private
   // The extension id of the currently focused packaged app.
   base::scoped_nsobject<NSString> appId_;
-  // A reference to the "Quit Chrome" menu item.
-  base::scoped_nsobject<NSMenuItem> chromeMenuQuitItem_;
+  // Items that need a doppelganger.
+  base::scoped_nsobject<DoppelgangerMenuItem> hideDoppelganger_;
+  base::scoped_nsobject<DoppelgangerMenuItem> quitDoppelganger_;
   // Menu items for the currently focused packaged app.
   base::scoped_nsobject<NSMenuItem> appMenuItem_;
   base::scoped_nsobject<NSMenuItem> fileMenuItem_;
