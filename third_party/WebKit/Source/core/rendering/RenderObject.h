@@ -223,7 +223,7 @@ public:
     // Helper class forbidding calls to setNeedsLayout() during its lifetime.
     class SetLayoutNeededForbiddenScope {
     public:
-        explicit SetLayoutNeededForbiddenScope(RenderObject*, bool isForbidden = true);
+        explicit SetLayoutNeededForbiddenScope(RenderObject*);
         ~SetLayoutNeededForbiddenScope();
     private:
         RenderObject* m_renderObject;
