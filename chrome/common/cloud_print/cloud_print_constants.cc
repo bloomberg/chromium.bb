@@ -29,6 +29,7 @@ const char kZombiePrinterMessageId[] = "zombieprinter";
 
 const char kSuccessValue[] = "success";
 const char kNameValue[] = "name";
+const char kDisplayNameValue[] = "displayName";
 const char kIdValue[] = "id";
 const char kTicketUrlValue[] = "ticketUrl";
 const char kFileUrlValue[] = "fileUrl";
@@ -41,6 +42,8 @@ const char kXMPPJidValue[] = "xmpp_jid";
 const char kOAuthCodeValue[] = "authorization_code";
 const char kCreateTimeValue[] = "createTime";
 const char kPrinterTypeValue[] = "type";
+const char kUserValue[] = "request.user";
+const char kUsersValue[] = "request.users";
 
 const char kChromeVersionTagName[] = "chrome_version";
 const char kSystemNameTagName[] = "system_name";

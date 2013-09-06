@@ -39,6 +39,7 @@ extern const char kZombiePrinterMessageId[];
 // Values in the respone JSON from the cloud print server.
 extern const char kSuccessValue[];
 extern const char kNameValue[];
+extern const char kDisplayNameValue[];
 extern const char kIdValue[];
 extern const char kTicketUrlValue[];
 extern const char kFileUrlValue[];
@@ -51,6 +52,8 @@ extern const char kXMPPJidValue[];
 extern const char kOAuthCodeValue[];
 extern const char kCreateTimeValue[];
 extern const char kPrinterTypeValue[];
+extern const char kUserValue[];
+extern const char kUsersValue[];
 
 // Printer tag names. Don't need prefixes. They will be added on submit.
 extern const char kChromeVersionTagName[];

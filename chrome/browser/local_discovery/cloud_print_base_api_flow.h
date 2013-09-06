@@ -77,8 +77,11 @@ class CloudPrintBaseApiFlow : public net::URLFetcherDelegate,
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                                  const GoogleServiceAuthError& error) OVERRIDE;
 
+  // Return the user index or kAccountIndexUseOAuth2 if none is available.
+  int user_index() { return user_index_; }
+
  private:
-  bool UseOAuth2() { return token_service_ != NULL; }
+  bool UseOAuth2() { return user_index_ == kAccountIndexUseOAuth2; }
 
   void CreateRequest(const GURL& url);
 
