@@ -791,11 +791,8 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(Frame
 
 MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() const
 {
-    // The main thread scrolling reasons are applicable to scrolls of the main
-    // frame. If it does not exist or if it is not scrollable, there is no
-    // reason to force main thread scrolling.
     FrameView* frameView = m_page->mainFrame()->view();
-    if (!frameView || !frameView->isScrollable())
+    if (!frameView)
         return static_cast<MainThreadScrollingReasons>(0);
 
     MainThreadScrollingReasons mainThreadScrollingReasons = (MainThreadScrollingReasons)0;
