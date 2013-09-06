@@ -404,7 +404,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         void deallocateBuffer(T* bufferToDeallocate)
         {
-            if (bufferToDeallocate == inlineBuffer())
+            if (LIKELY(bufferToDeallocate == inlineBuffer()))
                 return;
             Base::deallocateBuffer(bufferToDeallocate);
         }
@@ -491,8 +491,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             : Base(size)
         {
             m_size = size;
-            if (begin())
-                TypeOperations::initialize(begin(), end());
+            TypeOperations::initialize(begin(), end());
         }
 
         ~Vector()
@@ -591,8 +590,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             : Base(size)
         {
             m_size = size;
-            if (begin())
-                TypeOperations::uninitializedFill(begin(), end(), val);
+            TypeOperations::uninitializedFill(begin(), end(), val);
         }
 
         void fill(const T&, size_t);
@@ -630,8 +628,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         : Base(other.capacity())
     {
         m_size = other.size();
-        if (begin())
-            TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
+        TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
     }
 
     template<typename T, size_t inlineCapacity>
@@ -640,14 +637,13 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         : Base(other.capacity())
     {
         m_size = other.size();
-        if (begin())
-            TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
+        TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
     }
 
     template<typename T, size_t inlineCapacity>
     Vector<T, inlineCapacity>& Vector<T, inlineCapacity>::operator=(const Vector<T, inlineCapacity>& other)
     {
-        if (&other == this)
+        if (UNLIKELY(&other == this))
             return *this;
 
         if (size() > other.size())
@@ -812,8 +808,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         else {
             if (size > capacity())
                 expandCapacity(size);
-            if (begin())
-                TypeOperations::initialize(end(), begin() + size);
+            TypeOperations::initialize(end(), begin() + size);
         }
 
         m_size = size;
@@ -833,8 +828,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         ASSERT(size >= m_size);
         if (size > capacity())
             expandCapacity(size);
-        if (begin())
-            TypeOperations::initialize(end(), begin() + size);
+        TypeOperations::initialize(end(), begin() + size);
         m_size = size;
     }
 
