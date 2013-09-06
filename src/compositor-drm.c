@@ -2523,7 +2523,6 @@ recorder_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 		weston_log("[libva recorder] initialized\n");
 	} else {
 		vaapi_recorder_destroy(output->recorder);
-		/* FIXME: close drm fd passed to recorder */
 		output->recorder = NULL;
 
 		output->base.disable_planes--;

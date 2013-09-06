@@ -87,7 +87,7 @@
 #define PROFILE_IDC_HIGH        100
 
 struct vaapi_recorder {
-	int output_fd;
+	int drm_fd, output_fd;
 	int width, height;
 	int frame_count;
 
@@ -942,6 +942,7 @@ vaapi_recorder_create(int drm_fd, int width, int height, const char *filename)
 
 	r->width = width;
 	r->height = height;
+	r->drm_fd = drm_fd;
 
 	flags = O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC;
 	r->output_fd = open(filename, flags, 0644);
@@ -1000,6 +1001,7 @@ vaapi_recorder_destroy(struct vaapi_recorder *r)
 	vaTerminate(r->va_dpy);
 
 	close(r->output_fd);
+	close(r->drm_fd);
 
 	free(r);
 }
