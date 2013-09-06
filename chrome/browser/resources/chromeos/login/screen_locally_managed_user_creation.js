@@ -473,7 +473,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
           'gotit',
           'managedUserCreationFlow',
           this.gotItButtonPressed_.bind(this),
-          ['created-1'],
+          ['created'],
           ['custom-appearance', 'button-fancy', 'button-blue']));
       return buttons;
     },
@@ -673,10 +673,10 @@ login.createScreen('LocallyManagedUserCreationScreen',
                        'manager',
                        'username',
                        'error',
-                       'created-1'];
+                       'created'];
       var pageButtons = {'intro' : 'start',
                          'error' : 'error',
-                         'created-1' : 'gotit'};
+                         'created' : 'gotit'};
       this.hideStatus_();
       for (i in pageNames) {
         var pageName = pageNames[i];
@@ -841,7 +841,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      */
     cancel: function() {
       var notSignedInPages = ['intro', 'manager'];
-      var postCreationPages = ['created-1'];
+      var postCreationPages = ['created'];
       if (notSignedInPages.indexOf(this.currentPage_) >= 0) {
         // Make sure no manager password is kept:
         this.managerList_.clearPods();
@@ -863,18 +863,18 @@ login.createScreen('LocallyManagedUserCreationScreen',
       var managerDisplayId = this.context_.managerDisplayId;
       this.updateElementText_('intro-alternate-text',
                               'createManagedUserIntroAlternateText');
-      this.updateElementText_('created-1-text-1',
-                              'createManagedUserCreated1Text1',
+      this.updateElementText_('created-text-1',
+                              'createManagedUserCreatedText1',
                               this.context_.managedName);
       // TODO(antrim): Move wrapping with strong in grd file, and eliminate this
       //call.
-      this.updateElementText_('created-1-text-2',
-                              'createManagedUserCreated1Text2',
+      this.updateElementText_('created-text-2',
+                              'createManagedUserCreatedText2',
                               this.wrapStrong(
                                   loadTimeData.getString('managementURL')),
                                   this.context_.managedName);
-      this.updateElementText_('created-1-text-3',
-                              'createManagedUserCreated1Text3',
+      this.updateElementText_('created-text-3',
+                              'createManagedUserCreatedText3',
                               managerDisplayId);
       this.updateElementText_('name-explanation',
                               'createManagedUserNameExplanation',
@@ -917,7 +917,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
     },
 
     showTutorialPage: function() {
-      this.setVisiblePage_('created-1');
+      this.setVisiblePage_('created');
     },
 
     showErrorPage: function(errorTitle, errorText, errorButtonText) {

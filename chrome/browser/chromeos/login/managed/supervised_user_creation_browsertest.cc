@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest, PRE_CreateSupervisedUser) {
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 
-  JSExpect("$('managed-user-creation').currentPage_ == 'created-1'");
+  JSExpect("$('managed-user-creation').currentPage_ == 'created'");
   JSEval("$('managed-user-creation-gotit-button').click()");
 }
 
