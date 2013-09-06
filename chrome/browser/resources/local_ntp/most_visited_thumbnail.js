@@ -30,6 +30,9 @@ window.addEventListener('DOMContentLoaded', function() {
         var link = createMostVisitedLink(params, data.url, data.title);
         link.appendChild(shadow);
         link.appendChild(image);
+        // We add 'position: absolute' in anticipation that there could be more
+        // than one thumbnail. This will superpose the elements.
+        link.style.position = 'absolute';
         document.body.appendChild(link);
       };
       if (!isVisible) {
