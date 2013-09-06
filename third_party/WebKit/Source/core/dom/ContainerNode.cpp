@@ -64,15 +64,12 @@ ChildNodesLazySnapshot* ChildNodesLazySnapshot::latestSnapshot = 0;
 unsigned NoEventDispatchAssertion::s_count = 0;
 #endif
 
-static inline void attachAfterInsertion(Node* node, AttachBehavior attachBehavior = AttachLazily)
+static inline void attachAfterInsertion(Node* node)
 {
     if (node->attached() || !node->parentNode() || !node->parentNode()->attached())
         return;
 
-    if (attachBehavior == AttachLazily)
-        node->lazyAttach();
-    else
-        node->attach();
+    node->lazyAttach();
 
     if (StyleResolver* resolver = node->document().styleResolverIfExists())
         resolver->clearStyleSharingList();
@@ -318,7 +315,7 @@ void ContainerNode::insertBeforeCommon(Node* nextChild, Node* newChild)
     newChild->setNextSibling(nextChild);
 }
 
-void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChild, AttachBehavior attachBehavior)
+void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChild)
 {
     ASSERT(newChild);
     ASSERT(nextChild);
@@ -342,7 +339,7 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChil
 
     ChildNodeInsertionNotifier(this).notify(newChild.get());
 
-    attachAfterInsertion(newChild.get(), attachBehavior);
+    attachAfterInsertion(newChild.get());
 }
 
 void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& es)
@@ -657,7 +654,7 @@ void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& es)
     dispatchSubtreeModifiedEvent();
 }
 
-void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild, AttachBehavior attachBehavior)
+void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
 {
     ASSERT(newChild);
     ASSERT(!newChild->parentNode()); // Use appendChild if you need to handle reparenting (and want DOM mutation events).
@@ -682,7 +679,7 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild, AttachBehavior 
     childrenChanged(true, last, 0, 1);
     ChildNodeInsertionNotifier(this).notify(newChild.get());
 
-    attachAfterInsertion(newChild.get(), attachBehavior);
+    attachAfterInsertion(newChild.get());
 }
 
 void ContainerNode::suspendPostAttachCallbacks()

@@ -117,7 +117,7 @@ void CharacterData::appendData(const String& data)
     // FIXME: Should we call textInserted here?
 }
 
-void CharacterData::insertData(unsigned offset, const String& data, ExceptionState& es, AttachBehavior attachBehavior)
+void CharacterData::insertData(unsigned offset, const String& data, ExceptionState& es, RecalcStyleBehavior recalcStyleBehavior)
 {
     if (offset > length()) {
         es.throwDOMException(IndexSizeError);
@@ -127,12 +127,12 @@ void CharacterData::insertData(unsigned offset, const String& data, ExceptionSta
     String newStr = m_data;
     newStr.insert(data, offset);
 
-    setDataAndUpdate(newStr, offset, 0, data.length(), attachBehavior);
+    setDataAndUpdate(newStr, offset, 0, data.length(), recalcStyleBehavior);
 
     document().textInserted(this, offset, data.length());
 }
 
-void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& es, AttachBehavior attachBehavior)
+void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& es, RecalcStyleBehavior recalcStyleBehavior)
 {
     if (offset > length()) {
         es.throwDOMException(IndexSizeError);
@@ -148,7 +148,7 @@ void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& 
     String newStr = m_data;
     newStr.remove(offset, realCount);
 
-    setDataAndUpdate(newStr, offset, count, 0, attachBehavior);
+    setDataAndUpdate(newStr, offset, count, 0, recalcStyleBehavior);
 
     document().textRemoved(this, offset, realCount);
 }
@@ -192,14 +192,14 @@ void CharacterData::setNodeValue(const String& nodeValue)
     setData(nodeValue);
 }
 
-void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength, AttachBehavior attachBehavior)
+void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength, RecalcStyleBehavior recalcStyleBehavior)
 {
     String oldData = m_data;
     m_data = newData;
 
     ASSERT(!renderer() || isTextNode());
     if (isTextNode())
-        toText(this)->updateTextRenderer(offsetOfReplacedData, oldLength, attachBehavior);
+        toText(this)->updateTextRenderer(offsetOfReplacedData, oldLength, recalcStyleBehavior);
 
     if (nodeType() == PROCESSING_INSTRUCTION_NODE)
         toProcessingInstruction(this)->checkStyleSheet();

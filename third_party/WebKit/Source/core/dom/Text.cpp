@@ -293,16 +293,16 @@ bool Text::needsWhitespaceRenderer()
     return false;
 }
 
-void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, AttachBehavior attachBehavior)
+void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior recalcStyleBehavior)
 {
     if (!attached())
         return;
     RenderText* textRenderer = toRenderText(renderer());
     if (!textRenderer || !textRendererIsNeeded(NodeRenderingContext(this, textRenderer->style()))) {
-        if (attachBehavior == DeprecatedAttachNow)
-            reattach();
-        else
-            lazyReattach();
+        lazyReattach();
+        // FIXME: Editing should be updated so this is not neccesary.
+        if (recalcStyleBehavior == DeprecatedRecalcStyleImmediatlelyForEditing)
+            document().updateStyleIfNeeded();
         return;
     }
     textRenderer->setTextWithOffset(dataImpl(), offsetOfReplacedData, lengthOfReplacedData);

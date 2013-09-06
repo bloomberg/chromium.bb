@@ -60,7 +60,7 @@ void InsertIntoTextNodeCommand::doApply()
             renderText->momentarilyRevealLastTypedCharacter(m_offset + m_text.length() - 1);
     }
 
-    m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION, DeprecatedAttachNow);
+    m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
 }
 
 void InsertIntoTextNodeCommand::doUnapply()
@@ -68,7 +68,7 @@ void InsertIntoTextNodeCommand::doUnapply()
     if (!m_node->rendererIsEditable())
         return;
 
-    m_node->deleteData(m_offset, m_text.length(), IGNORE_EXCEPTION, DeprecatedAttachNow);
+    m_node->deleteData(m_offset, m_text.length(), IGNORE_EXCEPTION, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
 }
 
 } // namespace WebCore

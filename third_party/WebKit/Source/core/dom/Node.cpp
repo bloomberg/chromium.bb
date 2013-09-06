@@ -1000,8 +1000,7 @@ inline void Node::detachNode(Node* root, const AttachContext& context)
 
 void Node::reattach(const AttachContext& context)
 {
-    // FIXME: Text::updateTextRenderer calls reattach outside a style recalc.
-    ASSERT(document().inStyleRecalc() || isTextNode());
+    ASSERT(document().inStyleRecalc());
     AttachContext reattachContext(context);
     reattachContext.performingReattach = true;
 

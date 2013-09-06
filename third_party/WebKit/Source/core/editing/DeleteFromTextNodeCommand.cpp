@@ -56,7 +56,7 @@ void DeleteFromTextNodeCommand::doApply()
     if (es.hadException())
         return;
 
-    m_node->deleteData(m_offset, m_count, es, DeprecatedAttachNow);
+    m_node->deleteData(m_offset, m_count, es, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
 }
 
 void DeleteFromTextNodeCommand::doUnapply()
@@ -66,7 +66,7 @@ void DeleteFromTextNodeCommand::doUnapply()
     if (!m_node->rendererIsEditable())
         return;
 
-    m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION, DeprecatedAttachNow);
+    m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
 }
 
 } // namespace WebCore

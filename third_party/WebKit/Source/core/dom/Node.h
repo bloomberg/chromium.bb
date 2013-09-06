@@ -100,11 +100,6 @@ enum StyleChangeSource {
     StyleChangeFromRenderer
 };
 
-enum AttachBehavior {
-    DeprecatedAttachNow,
-    AttachLazily,
-};
-
 class NodeRareDataBase {
 public:
     RenderObject* renderer() const { return m_renderer; }

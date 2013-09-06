@@ -107,9 +107,9 @@ public:
     // These methods are only used during parsing.
     // They don't send DOM mutation events or handle reparenting.
     // However, arbitrary code may be run by beforeload handlers.
-    void parserAppendChild(PassRefPtr<Node>, AttachBehavior = AttachLazily);
+    void parserAppendChild(PassRefPtr<Node>);
     void parserRemoveChild(Node*);
-    void parserInsertBefore(PassRefPtr<Node> newChild, Node* refChild, AttachBehavior = AttachLazily);
+    void parserInsertBefore(PassRefPtr<Node> newChild, Node* refChild);
 
     void removeChildren();
     void takeAllChildrenFrom(ContainerNode*);

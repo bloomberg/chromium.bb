@@ -88,7 +88,7 @@ static inline bool isAllWhitespace(const String& string)
     return string.isAllSpecialCharacters<isHTMLSpace>();
 }
 
-static inline void insert(HTMLConstructionSiteTask& task, AttachBehavior attachBehavior = AttachLazily)
+static inline void insert(HTMLConstructionSiteTask& task)
 {
     if (task.parent->hasTagName(templateTag))
         task.parent = toHTMLTemplateElement(task.parent.get())->content();
@@ -97,9 +97,9 @@ static inline void insert(HTMLConstructionSiteTask& task, AttachBehavior attachB
         parent->parserRemoveChild(task.child.get());
 
     if (task.nextChild)
-        task.parent->parserInsertBefore(task.child.get(), task.nextChild.get(), attachBehavior);
+        task.parent->parserInsertBefore(task.child.get(), task.nextChild.get());
     else
-        task.parent->parserAppendChild(task.child.get(), attachBehavior);
+        task.parent->parserAppendChild(task.child.get());
 }
 
 static inline void executeInsertTask(HTMLConstructionSiteTask& task)
