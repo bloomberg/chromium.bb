@@ -233,7 +233,15 @@ def GetChangeReview(host, change, revision=None):
 def AbandonChange(host, change, msg=''):
   """Abandon a gerrit change."""
   path = 'changes/%s/abandon' % change
-  body = {'message': msg}
+  body = {'message': msg} if msg else None
+  conn = CreateHttpConn(host, path, reqtype='POST', body=body)
+  return ReadHttpJsonResponse(conn, ignore_404=False)
+
+
+def RestoreChange(host, change, msg=''):
+  """Restore a previously abandoned change."""
+  path = 'changes/%s/restore' % change
+  body = {'message': msg} if msg else None
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
   return ReadHttpJsonResponse(conn, ignore_404=False)
 
@@ -291,6 +299,31 @@ def RemoveReviewers(host, change, remove=None):
       raise GOBError(
           'Unexpectedly received a 200 http status while deleting reviewer "%s"'
           ' from change %s' % (r, change))
+
+
+def SetReview(host, change, msg=None, labels=None):
+  """Set labels and/or add a message to a code review."""
+  if not msg and not labels:
+    return
+  jmsg = GetChangeDetail(host, change, o_params=('CURRENT_REVISION',))
+  if not jmsg:
+    raise GOBError(404, 'Change %s not found' % change)
+  elif 'current_revision' not in jmsg:
+    raise GOBError(200, 'Could not get current revision for change %s' % change)
+  path = 'changes/%s/revisions/%s/review' % (change, jmsg['current_revision'])
+  body = {}
+  if msg:
+    body['message'] = msg
+  if labels:
+    body['labels'] = labels
+  conn = CreateHttpConn(host, path, reqtype='POST', body=body)
+  response = ReadHttpJsonResponse(conn)
+  if labels:
+    for key, val in labels.iteritems():
+      if ('labels' not in response or key not in response['labels'] or
+          int(response['labels'][key] != int(val))):
+        raise GOBError(200, 'Unable to set "%s" label on change %s.' % (
+            key, change))
 
 
 def ResetReviewLabels(host, change, label, value='0', message=None):

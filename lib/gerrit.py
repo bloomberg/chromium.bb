@@ -619,23 +619,58 @@ class GerritOnBorgHelper(GerritHelper):
                                                               self.host)
       yield change, cros_patch.GerritPatch(patch_dict, self.remote, url_prefix)
 
+  @staticmethod
+  def _to_changenum(change):
+    """Unequivocally return a gerrit change number.
+
+    The argument may either be an number, which will be returned unchanged;
+    or an instance of GerritPatch, in which case the gerrit number wil be
+    extracted and converted to its 'external' (i.e., raw numeric) form.
+    """
+    if isinstance(change, cros_patch.GerritPatch):
+      change = cros_patch.FormatGerritNumber(change.gerrit_number,
+                                             force_external=True)
+    return change
+
+  def SetReview(self, change, msg=None, labels=None, dryrun=False):
+    if not msg and not labels:
+      return
+    if dryrun:
+      if msg:
+        logging.info('Would have add message "%s" to change "%s".',
+                     msg, change)
+      if labels:
+        for key, val in labels.iteritems():
+          logging.info('Would have set label "%s" to "%s" for change "%s".',
+              key, val, change)
+      return
+    gob_util.SetReview(
+        self.host, self._to_changenum(change), msg=msg, labels=labels)
+
   def RemoveCommitReady(self, change, dryrun=False):
     if dryrun:
-      logging.info('Would have reset Commit-Queue label for %s', (change,))
+      logging.info('Would have reset Commit-Queue label for %s', change)
       return
     gob_util.ResetReviewLabels(
-        self.host,
-        cros_patch.FormatGerritNumber(change.gerrit_number,
-                                      force_external=True),
-        label='Commit-Queue')
+        self.host, self._to_changenum(change), label='Commit-Queue')
 
   def SubmitChange(self, change, dryrun=False):
     if dryrun:
-      logging.info('Would have submitted change %s', (change,))
+      logging.info('Would have submitted change %s', change)
       return
-    gob_util.SubmitChange(
-        self.host, cros_patch.FormatGerritNumber(change.gerrit_number,
-                                                 force_external=True))
+    gob_util.SubmitChange(self.host, self._to_changenum(change))
+
+  def AbandonChange(self, change, dryrun=False):
+    if dryrun:
+      logging.info('Would have abandoned change %s', change)
+      return
+    gob_util.AbandonChange(self.host, self._to_changenum(change))
+
+  def RestoreChange(self, change, dryrun=False):
+    if dryrun:
+      logging.info('Would have restored change %s', change)
+      return
+    gob_util.RestoreChange(self.host, self._to_changenum(change))
 
 
 def GetGerritPatchInfo(patches):
