@@ -54,6 +54,27 @@ bool IsTextureFormatSupportedForStorage(GLenum format) {
   return (format == GL_RGBA || format == GL_BGRA_EXT);
 }
 
+class ScopedSetActiveTexture {
+ public:
+  ScopedSetActiveTexture(WebGraphicsContext3D* context3d, GLenum unit)
+      : context3d_(context3d), unit_(unit) {
+    DCHECK_EQ(GL_TEXTURE0, ResourceProvider::GetActiveTextureUnit(context3d_));
+
+    if (unit_ != GL_TEXTURE0)
+      GLC(context3d_, context3d_->activeTexture(unit_));
+  }
+
+  ~ScopedSetActiveTexture() {
+    // Active unit being GL_TEXTURE0 is effectively the ground state.
+    if (unit_ != GL_TEXTURE0)
+      GLC(context3d_, context3d_->activeTexture(GL_TEXTURE0));
+  }
+
+ private:
+  WebGraphicsContext3D* context3d_;
+  GLenum unit_;
+};
+
 }  // namespace
 
 ResourceProvider::Resource::Resource()
@@ -1097,10 +1118,8 @@ void ResourceProvider::BindForSampling(ResourceProvider::ResourceId resource_id,
   Resource* resource = &it->second;
   DCHECK(resource->lock_for_read_count);
   DCHECK(!resource->locked_for_write || resource->set_pixels_completion_forced);
-  DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(context3d));
 
-  if (unit != GL_TEXTURE0)
-    GLC(context3d, context3d->activeTexture(unit));
+  ScopedSetActiveTexture scoped_active_tex(context3d, unit);
   GLC(context3d, context3d->bindTexture(target, resource->gl_id));
   if (filter != resource->filter) {
     GLC(context3d, context3d->texParameteri(target,
@@ -1114,10 +1133,6 @@ void ResourceProvider::BindForSampling(ResourceProvider::ResourceId resource_id,
 
   if (resource->image_id)
     context3d->bindTexImage2DCHROMIUM(target, resource->image_id);
-
-  // Active unit being GL_TEXTURE0 is effectively the ground state.
-  if (unit != GL_TEXTURE0)
-    GLC(context3d, context3d->activeTexture(GL_TEXTURE0));
 }
 
 void ResourceProvider::UnbindForSampling(
@@ -1131,13 +1146,8 @@ void ResourceProvider::UnbindForSampling(
     return;
 
   WebGraphicsContext3D* context3d = Context3d();
-  DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(context3d));
-  if (unit != GL_TEXTURE0)
-    GLC(context3d, context3d->activeTexture(unit));
+  ScopedSetActiveTexture scoped_active_tex(context3d, unit);
   context3d->releaseTexImage2DCHROMIUM(target, resource->image_id);
-  // Active unit being GL_TEXTURE0 is effectively the ground state.
-  if (unit != GL_TEXTURE0)
-    GLC(context3d, context3d->activeTexture(GL_TEXTURE0));
 }
 
 void ResourceProvider::BeginSetPixels(ResourceId id) {
