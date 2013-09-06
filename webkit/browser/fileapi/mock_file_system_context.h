@@ -29,6 +29,10 @@ FileSystemContext* CreateFileSystemContextWithAdditionalProvidersForTesting(
     ScopedVector<FileSystemBackend> additional_providers,
     const base::FilePath& base_path);
 
+FileSystemContext* CreateIncognitoFileSystemContextForTesting(
+    quota::QuotaManagerProxy* quota_manager_proxy,
+    const base::FilePath& base_path);
+
 }  // namespace fileapi
 
 #endif  // WEBKIT_BROWSER_FILEAPI_MOCK_FILE_SYSTEM_CONTEXT_H_

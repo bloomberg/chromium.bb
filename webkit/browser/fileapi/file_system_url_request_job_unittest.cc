@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/async_file_test_helper.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
@@ -91,7 +92,8 @@ class FileSystemURLRequestJobTest : public testing::Test {
 
   void TestRequestHelper(const GURL& url,
                          const net::HttpRequestHeaders* headers,
-                         bool run_to_completion) {
+                         bool run_to_completion,
+                         FileSystemContext* file_system_context) {
     delegate_.reset(new net::TestDelegate());
     // Make delegate_ exit the MessageLoop when the request is done.
     delegate_->set_quit_on_complete(true);
@@ -101,7 +103,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
       request_->SetExtraRequestHeaders(*headers);
     ASSERT_TRUE(!job_);
     job_ = new FileSystemURLRequestJob(
-        request_.get(), NULL, file_system_context_.get());
+        request_.get(), NULL, file_system_context);
     pending_job_ = job_;
 
     request_->Start();
@@ -111,16 +113,21 @@ class FileSystemURLRequestJobTest : public testing::Test {
   }
 
   void TestRequest(const GURL& url) {
-    TestRequestHelper(url, NULL, true);
+    TestRequestHelper(url, NULL, true, file_system_context_.get());
+  }
+
+  void TestRequestWithContext(const GURL& url,
+                              FileSystemContext* file_system_context) {
+    TestRequestHelper(url, NULL, true, file_system_context);
   }
 
   void TestRequestWithHeaders(const GURL& url,
                               const net::HttpRequestHeaders* headers) {
-    TestRequestHelper(url, headers, true);
+    TestRequestHelper(url, headers, true, file_system_context_.get());
   }
 
   void TestRequestNoRun(const GURL& url) {
-    TestRequestHelper(url, NULL, false);
+    TestRequestHelper(url, NULL, false, file_system_context_.get());
   }
 
   void CreateDirectory(const base::StringPiece& dir_name) {
@@ -330,6 +337,27 @@ TEST_F(FileSystemURLRequestJobTest, GetMimeType) {
   std::string mime_type_from_job;
   request_->GetMimeType(&mime_type_from_job);
   EXPECT_EQ(mime_type_direct, mime_type_from_job);
+}
+
+TEST_F(FileSystemURLRequestJobTest, Incognito) {
+  WriteFile("file", kTestFileData, arraysize(kTestFileData) - 1);
+
+  // Creates a new filesystem context for incognito mode.
+  scoped_refptr<FileSystemContext> file_system_context =
+      CreateIncognitoFileSystemContextForTesting(NULL, temp_dir_.path());
+
+  // The request should return NOT_FOUND error if it's in incognito mode.
+  TestRequestWithContext(CreateFileSystemURL("file"),
+                         file_system_context.get());
+  ASSERT_FALSE(request_->is_pending());
+  EXPECT_TRUE(delegate_->request_failed());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
+
+  // Make sure it returns success with regular (non-incognito) context.
+  TestRequest(CreateFileSystemURL("file"));
+  ASSERT_FALSE(request_->is_pending());
+  EXPECT_EQ(kTestFileData, delegate_->data_received());
+  EXPECT_EQ(200, request_->GetResponseCode());
 }
 
 }  // namespace

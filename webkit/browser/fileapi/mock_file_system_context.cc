@@ -39,4 +39,19 @@ FileSystemContext* CreateFileSystemContextWithAdditionalProvidersForTesting(
       CreateAllowFileAccessOptions());
 }
 
+FileSystemContext* CreateIncognitoFileSystemContextForTesting(
+    quota::QuotaManagerProxy* quota_manager_proxy,
+    const base::FilePath& base_path) {
+  ScopedVector<FileSystemBackend> additional_providers;
+  return new FileSystemContext(
+      base::MessageLoopProxy::current().get(),
+      base::MessageLoopProxy::current().get(),
+      ExternalMountPoints::CreateRefCounted().get(),
+      make_scoped_refptr(new quota::MockSpecialStoragePolicy()).get(),
+      quota_manager_proxy,
+      additional_providers.Pass(),
+      base_path,
+      CreateIncognitoFileSystemOptions());
+}
+
 }  // namespace fileapi

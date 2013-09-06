@@ -78,12 +78,13 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     ASSERT_EQ(base::PLATFORM_FILE_OK, result);
   }
 
-  void TestRequestHelper(const GURL& url, bool run_to_completion) {
+  void TestRequestHelper(const GURL& url, bool run_to_completion,
+                         FileSystemContext* file_system_context) {
     delegate_.reset(new net::TestDelegate());
     delegate_->set_quit_on_redirect(true);
     request_.reset(empty_context_.CreateRequest(url, delegate_.get()));
     job_ = new FileSystemDirURLRequestJob(
-        request_.get(), NULL, file_system_context_.get());
+        request_.get(), NULL, file_system_context);
 
     request_->Start();
     ASSERT_TRUE(request_->is_pending());  // verify that we're starting async
@@ -92,11 +93,16 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   }
 
   void TestRequest(const GURL& url) {
-    TestRequestHelper(url, true);
+    TestRequestHelper(url, true, file_system_context_.get());
+  }
+
+  void TestRequestWithContext(const GURL& url,
+                              FileSystemContext* file_system_context) {
+    TestRequestHelper(url, true, file_system_context);
   }
 
   void TestRequestNoRun(const GURL& url) {
-    TestRequestHelper(url, false);
+    TestRequestHelper(url, false, file_system_context_.get());
   }
 
   FileSystemURL CreateURL(const base::FilePath& file_path) {
@@ -284,6 +290,29 @@ TEST_F(FileSystemDirURLRequestJobTest, Cancel) {
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, request_.release());
   base::MessageLoop::current()->RunUntilIdle();
   // If we get here, success! we didn't crash!
+}
+
+TEST_F(FileSystemDirURLRequestJobTest, Incognito) {
+  CreateDirectory("foo");
+
+  scoped_refptr<FileSystemContext> file_system_context =
+      CreateIncognitoFileSystemContextForTesting(NULL, temp_dir_.path());
+
+  TestRequestWithContext(CreateFileSystemURL("/"),
+                         file_system_context.get());
+  ASSERT_FALSE(request_->is_pending());
+  ASSERT_TRUE(request_->status().is_success());
+
+  std::istringstream in(delegate_->data_received());
+  std::string line;
+  EXPECT_TRUE(std::getline(in, line));
+  EXPECT_FALSE(std::getline(in, line));
+
+  TestRequestWithContext(CreateFileSystemURL("foo"),
+                         file_system_context.get());
+  ASSERT_FALSE(request_->is_pending());
+  ASSERT_FALSE(request_->status().is_success());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
 }
 
 }  // namespace (anonymous)

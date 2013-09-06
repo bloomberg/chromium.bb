@@ -227,6 +227,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
     return sandbox_delegate_.get();
   }
 
+  // Returns true if the requested url is ok to be served.
+  // (E.g. this returns false if the context is created for incognito mode)
+  bool CanServeURLRequest(const FileSystemURL& url) const;
+
  private:
   typedef std::map<FileSystemType, FileSystemBackend*>
       FileSystemBackendMap;
@@ -307,6 +311,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
 
   // The base path of the storage partition for this context.
   const base::FilePath partition_path_;
+
+  bool is_incognito_;
 
   scoped_ptr<FileSystemOperationRunner> operation_runner_;
 

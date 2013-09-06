@@ -157,6 +157,11 @@ void FileSystemURLRequestJob::StartAsync() {
     return;
   DCHECK(!reader_.get());
   url_ = file_system_context_->CrackURL(request_->url());
+  if (!file_system_context_->CanServeURLRequest(url_)) {
+    // In incognito mode the API is not usable and there should be no data.
+    NotifyFailed(net::ERR_FILE_NOT_FOUND);
+    return;
+  }
   file_system_context_->operation_runner()->GetMetadata(
       url_,
       base::Bind(&FileSystemURLRequestJob::DidGetMetadata,

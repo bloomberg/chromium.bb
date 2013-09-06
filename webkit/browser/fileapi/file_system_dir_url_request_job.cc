@@ -23,6 +23,7 @@
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/directory_entry.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 using net::NetworkDelegate;
 using net::URLRequest;
@@ -80,6 +81,19 @@ void FileSystemDirURLRequestJob::StartAsync() {
   if (!request_)
     return;
   url_ = file_system_context_->CrackURL(request_->url());
+  if (!file_system_context_->CanServeURLRequest(url_)) {
+    // In incognito mode the API is not usable and there should be no data.
+    if (url_.is_valid() && VirtualPath::IsRootPath(url_.virtual_path())) {
+      // Return an empty directory if the filesystem root is queried.
+      DidReadDirectory(base::PLATFORM_FILE_OK,
+                       std::vector<DirectoryEntry>(),
+                       false);
+      return;
+    }
+    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
+                                net::ERR_FILE_NOT_FOUND));
+    return;
+  }
   file_system_context_->operation_runner()->ReadDirectory(
       url_,
       base::Bind(&FileSystemDirURLRequestJob::DidReadDirectory, this));

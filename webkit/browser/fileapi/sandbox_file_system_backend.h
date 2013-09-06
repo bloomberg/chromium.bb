@@ -66,6 +66,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
   void set_enable_temporary_file_system_in_incognito(bool enable) {
     enable_temporary_file_system_in_incognito_ = enable;
   }
+  bool enable_temporary_file_system_in_incognito() const {
+    return enable_temporary_file_system_in_incognito_;
+  }
+
 
  private:
   SandboxFileSystemBackendDelegate* delegate_;  // Not owned.
