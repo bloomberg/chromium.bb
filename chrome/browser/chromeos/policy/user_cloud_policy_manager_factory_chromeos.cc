@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -41,6 +42,10 @@ const base::FilePath::CharType kPolicy[] = FILE_PATH_LITERAL("Policy");
 // Directory under kPolicy, in the user's profile dir, where external policy
 // resources are stored.
 const base::FilePath::CharType kResourceDir[] = FILE_PATH_LITERAL("Resources");
+
+// Timeout in seconds after which to abandon the initial policy fetch and start
+// the session regardless.
+const int kInitialPolicyFetchTimeoutSeconds = 10;
 
 }  // namespace
 
@@ -147,9 +152,11 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
     resource_cache.reset(new ResourceCache(resource_cache_dir));
 
   scoped_ptr<UserCloudPolicyManagerChromeOS> manager(
-      new UserCloudPolicyManagerChromeOS(store.PassAs<CloudPolicyStore>(),
-                                         resource_cache.Pass(),
-                                         wait_for_initial_policy));
+      new UserCloudPolicyManagerChromeOS(
+          store.PassAs<CloudPolicyStore>(),
+          resource_cache.Pass(),
+          wait_for_initial_policy,
+          base::TimeDelta::FromSeconds(kInitialPolicyFetchTimeoutSeconds)));
   manager->Init();
   manager->Connect(g_browser_process->local_state(),
                    device_management_service,

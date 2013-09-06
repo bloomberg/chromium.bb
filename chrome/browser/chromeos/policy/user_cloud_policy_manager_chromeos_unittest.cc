@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
@@ -143,13 +144,14 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     profile_manager_->DeleteTestingProfile(chrome::kInitialProfile);
   }
 
-  void CreateManager(bool wait_for_fetch) {
+  void CreateManager(bool wait_for_fetch, int fetch_timeout) {
     store_ = new MockCloudPolicyStore();
     EXPECT_CALL(*store_, Load());
     manager_.reset(new UserCloudPolicyManagerChromeOS(
         scoped_ptr<CloudPolicyStore>(store_),
         scoped_ptr<ResourceCache>(),
-        wait_for_fetch));
+        wait_for_fetch,
+        base::TimeDelta::FromSeconds(fetch_timeout)));
     manager_->Init();
     manager_->AddObserver(&observer_);
     manager_->Connect(&prefs_, &device_management_service_, NULL,
@@ -306,7 +308,7 @@ const char UserCloudPolicyManagerChromeOSTest::kSigninProfile[] =
 TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFirstFetch) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when the policy cache is empty.
-  ASSERT_NO_FATAL_FAILURE(CreateManager(true));
+  ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
 
   // Initialize the CloudPolicyService without any stored data.
   EXPECT_FALSE(manager_->core()->service()->IsInitializationComplete());
@@ -329,7 +331,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFirstFetch) {
 TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingRefreshFetch) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when a previously cached policy and DMToken already exist.
-  ASSERT_NO_FATAL_FAILURE(CreateManager(true));
+  ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
 
   // Set the initially cached data and initialize the CloudPolicyService.
   // The initial policy fetch is issued using the cached DMToken.
@@ -341,7 +343,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingRefreshFetch) {
 TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchStoreError) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when the initial store load fails.
-  ASSERT_NO_FATAL_FAILURE(CreateManager(true));
+  ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
 
   // Initialize the CloudPolicyService without any stored data.
   EXPECT_FALSE(manager_->core()->service()->IsInitializationComplete());
@@ -364,7 +366,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchStoreError) {
 TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchOAuthError) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when the OAuth2 token fetch fails.
-  ASSERT_NO_FATAL_FAILURE(CreateManager(true));
+  ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
 
   // Initialize the CloudPolicyService without any stored data.
   EXPECT_FALSE(manager_->core()->service()->IsInitializationComplete());
@@ -393,7 +395,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchOAuthError) {
 TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchRegisterError) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when the device management registration fails.
-  ASSERT_NO_FATAL_FAILURE(CreateManager(true));
+  ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
 
   // Initialize the CloudPolicyService without any stored data.
   EXPECT_FALSE(manager_->core()->service()->IsInitializationComplete());
@@ -419,7 +421,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchRegisterError) {
 TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchPolicyFetchError) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when the policy fetch request fails.
-  ASSERT_NO_FATAL_FAILURE(CreateManager(true));
+  ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
 
   // Initialize the CloudPolicyService without any stored data.
   EXPECT_FALSE(manager_->core()->service()->IsInitializationComplete());
@@ -457,9 +459,29 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchPolicyFetchError) {
   EXPECT_TRUE(PolicyBundle().Equals(manager_->policies()));
 }
 
+TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchTimeout) {
+  // The blocking fetch should be abandoned after the timeout.
+  ASSERT_NO_FATAL_FAILURE(CreateManager(true, 0));
+
+  // Initialize the CloudPolicyService without any stored data.
+  EXPECT_FALSE(manager_->core()->service()->IsInitializationComplete());
+  store_->NotifyStoreLoaded();
+  EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
+  EXPECT_FALSE(manager_->core()->client()->is_registered());
+
+  // Running the message loop should trigger the timeout.
+  EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get())).Times(AtLeast(1));
+  EXPECT_FALSE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&observer_);
+  EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
+  EXPECT_TRUE(PolicyBundle().Equals(manager_->policies()));
+}
+
+
 TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingFirstFetch) {
   // Tests the first policy fetch request by a Profile that isn't managed.
-  ASSERT_NO_FATAL_FAILURE(CreateManager(false));
+  ASSERT_NO_FATAL_FAILURE(CreateManager(false, 1000));
 
   // Initialize the CloudPolicyService without any stored data. Since the
   // manager is not waiting for the initial fetch, it will become initialized
@@ -502,7 +524,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingFirstFetch) {
 TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingRefreshFetch) {
   // Tests a non-blocking initial policy fetch for a Profile that already has
   // a cached DMToken.
-  ASSERT_NO_FATAL_FAILURE(CreateManager(false));
+  ASSERT_NO_FATAL_FAILURE(CreateManager(false, 1000));
 
   // Set the initially cached data and initialize the CloudPolicyService.
   // The initial policy fetch is issued using the cached DMToken.
