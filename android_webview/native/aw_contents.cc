@@ -27,6 +27,7 @@
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
@@ -250,6 +251,14 @@ jint AwContents::GetWebContents(JNIEnv* env, jobject obj) {
 
 void AwContents::Destroy(JNIEnv* env, jobject obj) {
   delete this;
+
+  // When the last WebView is destroyed free all discardable memory allocated by
+  // Chromium, because the app process may continue to run for a long time
+  // without ever using another WebView.
+  if (base::subtle::NoBarrier_Load(&g_instance_count) == 0) {
+    base::MemoryPressureListener::NotifyMemoryPressure(
+        base::MemoryPressureListener::MEMORY_PRESSURE_CRITICAL);
+  }
 }
 
 static jint Init(JNIEnv* env, jclass, jobject browser_context) {
