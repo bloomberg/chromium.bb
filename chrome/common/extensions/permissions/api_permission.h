@@ -68,6 +68,7 @@ class APIPermission {
     kDesktopCapture,
     kDeveloperPrivate,
     kDevtools,
+    kDns,
     kDownloads,
     kDownloadsInternal,
     kDownloadsOpen,

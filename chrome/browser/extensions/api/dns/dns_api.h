@@ -19,8 +19,7 @@ namespace extensions {
 
 class DnsResolveFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("experimental.dns.resolve",
-                             EXPERIMENTAL_DNS_RESOLVE)
+  DECLARE_EXTENSION_FUNCTION("dns.resolve", DNS_RESOLVE)
 
   DnsResolveFunction();
 

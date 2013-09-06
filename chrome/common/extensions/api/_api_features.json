@@ -162,6 +162,10 @@
     "dependencies": ["permission:dial"],
     "contexts": ["blessed_extension"]
   },
+  "dns": {
+    "dependencies": ["permission:dns"],
+    "contexts": ["blessed_extension"]
+  },
   "downloads": {
     "dependencies": ["permission:downloads"],
     "contexts": ["blessed_extension"]
@@ -194,10 +198,6 @@
     "contexts": ["blessed_extension"]
   },
   "experimental.discovery": {
-    "dependencies": ["permission:experimental"],
-    "contexts": ["blessed_extension"]
-  },
-  "experimental.dns": {
     "dependencies": ["permission:experimental"],
     "contexts": ["blessed_extension"]
   },

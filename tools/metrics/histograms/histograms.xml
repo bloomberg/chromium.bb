@@ -19861,7 +19861,7 @@ other types of suffix sets.
   <int value="90" label="METRICSPRIVATE_RECORDSMALLCOUNT"/>
   <int value="91" label="APP_CURRENTWINDOWINTERNAL_MINIMIZE"/>
   <int value="92" label="DEVELOPERPRIVATE_AUTOUPDATE"/>
-  <int value="93" label="EXPERIMENTAL_DNS_RESOLVE"/>
+  <int value="93" label="DNS_RESOLVE"/>
   <int value="94" label="EXPERIMENTAL_SYSTEMINFO_MEMORY_GET"/>
   <int value="95" label="HISTORY_ADDURL"/>
   <int value="96" label="TABS_GET"/>

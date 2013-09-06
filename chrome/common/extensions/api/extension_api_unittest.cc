@@ -334,8 +334,8 @@ TEST(ExtensionAPITest, LazyGetSchema) {
   EXPECT_EQ(NULL, apis->GetSchema("foo"));
   EXPECT_EQ(NULL, apis->GetSchema("foo"));
 
-  EXPECT_TRUE(apis->GetSchema("experimental.dns"));
-  EXPECT_TRUE(apis->GetSchema("experimental.dns"));
+  EXPECT_TRUE(apis->GetSchema("dns"));
+  EXPECT_TRUE(apis->GetSchema("dns"));
   EXPECT_TRUE(apis->GetSchema("extension"));
   EXPECT_TRUE(apis->GetSchema("extension"));
   EXPECT_TRUE(apis->GetSchema("infobars"));

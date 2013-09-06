@@ -8,7 +8,7 @@ var testIPLiteralResolution = function() {
     chrome.test.assertEq("127.0.0.1", resolveInfo.address);
     chrome.test.succeed("IP literal resolved");
   };
-  chrome.experimental.dns.resolve("127.0.0.1", callback);
+  chrome.dns.resolve("127.0.0.1", callback);
 };
 
 var testHostnameResolution = function() {
@@ -17,7 +17,7 @@ var testHostnameResolution = function() {
     chrome.test.assertEq("9.8.7.6", resolveInfo.address);
     chrome.test.succeed("hostname resolved");
   };
-  chrome.experimental.dns.resolve("www.sowbug.com", callback);
+  chrome.dns.resolve("www.sowbug.com", callback);
 };
 
 var testNonexistentHostnameResolution = function() {
@@ -26,7 +26,7 @@ var testNonexistentHostnameResolution = function() {
     chrome.test.assertEq(-105, resolveInfo.resultCode);
     chrome.test.succeed("hostname correctly failed to resolve");
   };
-  chrome.experimental.dns.resolve("this.hostname.is.bogus", callback);
+  chrome.dns.resolve("this.hostname.is.bogus", callback);
 };
 
 chrome.test.runTests([testIPLiteralResolution,
