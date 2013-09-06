@@ -33,6 +33,20 @@ gfx::Display GetDisplay(MONITORINFOEX& monitor_info) {
   return display;
 }
 
+BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
+                                  HDC hdc,
+                                  LPRECT rect,
+                                  LPARAM data) {
+  std::vector<gfx::Display>* all_displays =
+      reinterpret_cast<std::vector<gfx::Display>*>(data);
+  DCHECK(all_displays);
+
+  MONITORINFOEX monitor_info = GetMonitorInfoForMonitor(monitor);
+  gfx::Display display = GetDisplay(monitor_info);
+  all_displays->push_back(display);
+  return TRUE;
+}
+
 }  // namespace
 
 namespace gfx {
@@ -68,8 +82,10 @@ int ScreenWin::GetNumDisplays() const {
 }
 
 std::vector<gfx::Display> ScreenWin::GetAllDisplays() const {
-  NOTIMPLEMENTED();
-  return std::vector<gfx::Display>(1, GetPrimaryDisplay());
+  std::vector<gfx::Display> all_displays;
+  EnumDisplayMonitors(NULL, NULL, EnumMonitorCallback,
+                      reinterpret_cast<LPARAM>(&all_displays));
+  return all_displays;
 }
 
 gfx::Display ScreenWin::GetDisplayNearestWindow(gfx::NativeView window) const {
