@@ -751,18 +751,11 @@ bool RenderBox::autoscrollInProgress() const
 // There are two kinds of renderer that can autoscroll.
 bool RenderBox::canAutoscroll() const
 {
-    // Check for a box that can be scrolled in its own right.
-    if (canBeScrolledAndHasScrollableArea())
-        return true;
+    if (node() && node()->isDocumentNode())
+        return view()->frameView()->isScrollable();
 
-    // Check for a box that represents the top level of a web page.
-    if (node() != &document())
-        return false;
-    Frame* frame = this->frame();
-    if (!frame)
-        return false;
-    Page* page = frame->page();
-    return page && page->mainFrame() == frame && frame->view()->isScrollable();
+    // Check for a box that can be scrolled in its own right.
+    return canBeScrolledAndHasScrollableArea();
 }
 
 // If specified point is in border belt, returned offset denotes direction of
