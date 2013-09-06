@@ -222,46 +222,6 @@ void IDBTransaction::abort(ExceptionState& es)
     backendDB()->abort(m_id);
 }
 
-IDBTransaction::OpenCursorNotifier::OpenCursorNotifier(PassRefPtr<IDBTransaction> transaction, IDBCursor* cursor)
-    : m_transaction(transaction),
-      m_cursor(cursor)
-{
-    m_transaction->registerOpenCursor(m_cursor);
-}
-
-IDBTransaction::OpenCursorNotifier::~OpenCursorNotifier()
-{
-    if (m_cursor)
-        m_transaction->unregisterOpenCursor(m_cursor);
-}
-
-void IDBTransaction::OpenCursorNotifier::cursorFinished()
-{
-    if (m_cursor) {
-        m_transaction->unregisterOpenCursor(m_cursor);
-        m_cursor = 0;
-        m_transaction.clear();
-    }
-}
-
-void IDBTransaction::registerOpenCursor(IDBCursor* cursor)
-{
-    m_openCursors.add(cursor);
-}
-
-void IDBTransaction::unregisterOpenCursor(IDBCursor* cursor)
-{
-    m_openCursors.remove(cursor);
-}
-
-void IDBTransaction::closeOpenCursors()
-{
-    HashSet<IDBCursor*> cursors;
-    cursors.swap(m_openCursors);
-    for (HashSet<IDBCursor*>::iterator i = cursors.begin(); i != cursors.end(); ++i)
-        (*i)->close();
-}
-
 void IDBTransaction::registerRequest(IDBRequest* request)
 {
     ASSERT(request);
@@ -303,7 +263,6 @@ void IDBTransaction::onAbort(PassRefPtr<DOMError> prpError)
         m_database->close();
     }
     m_objectStoreCleanupMap.clear();
-    closeOpenCursors();
 
     // Enqueue events before notifying database, as database may close which enqueues more events and order matters.
     enqueueEvent(Event::createBubble(eventNames().abortEvent));
@@ -316,7 +275,6 @@ void IDBTransaction::onComplete()
     ASSERT(m_state != Finished);
     m_state = Finishing;
     m_objectStoreCleanupMap.clear();
-    closeOpenCursors();
 
     // Enqueue events before notifying database, as database may close which enqueues more events and order matters.
     enqueueEvent(Event::create(eventNames().completeEvent));

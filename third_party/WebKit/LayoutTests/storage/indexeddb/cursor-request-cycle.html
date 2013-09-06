@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
+<script src="resources/shared.js"></script>
+<script>
+
+description("Verify that that cursors weakly hold request, and work if request is GC'd");
+
+indexedDBTest(prepareDatabase, onOpen);
+
+function prepareDatabase(evt)
+{
+    preamble(evt);
+    evalAndLog("db = event.target.result");
+    evalAndLog("store = db.createObjectStore('store')");
+    store.put("value1", "key1");
+    store.put("value2", "key2");
+}
+
+function onOpen(evt)
+{
+    preamble(evt);
+    evalAndLog("db = event.target.result");
+    evalAndLog("tx = db.transaction('store')");
+    evalAndLog("store = tx.objectStore('store')");
+
+    evalAndLog("cursorRequest = store.openCursor()");
+    cursorRequest.onsuccess = function openCursorRequest(evt) {
+        preamble(evt);
+        evalAndLog("cursor = cursorRequest.result");
+        shouldBeNonNull("cursor");
+        shouldBeEqualToString("cursor.key", "key1");
+        shouldBeEqualToString("cursor.value", "value1");
+    };
+
+    evalAndLog("otherRequest = store.get(0)");
+
+    otherRequest.onsuccess = function otherRequestSuccess(evt) {
+        preamble(evt);
+
+        gc();
+        gc(); // FIXME: Why is this second call necessary?
+        beforeCount = window.internals.numberOfLiveNodes();
+
+        cursorRequest.canary = document.createElement('canary');
+        cursorRequest = null;
+
+        gc();
+        gc(); // FIXME: Why is this second call necessary?
+        afterCount = window.internals.numberOfLiveNodes();
+        shouldBe("afterCount", "beforeCount");
+
+        // The following call should generate a scratch request, invisible to script:
+        evalAndLog("cursor.continue()");
+
+        evalAndLog("finalRequest = store.get(0)");
+        finalRequest.onsuccess = function finalRequestSuccess(evt) {
+            preamble(evt);
+            shouldBeEqualToString("cursor.key", "key2");
+            shouldBeEqualToString("cursor.value", "value2");
+        };
+    };
+
+    tx.oncomplete = finishJSTest;
+}
+
+
+</script>
+<script src="../../fast/js/resources/js-test-post.js"></script>

@@ -75,7 +75,6 @@ public:
     void markEarlyDeath();
     void setCursorDetails(IndexedDB::CursorType, IndexedDB::CursorDirection);
     void setPendingCursor(PassRefPtr<IDBCursor>);
-    void finishCursor();
     void abort();
 
     // IDBCallbacks
@@ -103,12 +102,21 @@ public:
 
     void transactionDidFinishAndDispatch();
 
-    using RefCounted<IDBCallbacks>::ref;
-    using RefCounted<IDBCallbacks>::deref;
+    using IDBCallbacks::ref;
+    using IDBCallbacks::deref;
+
+    virtual void deref() OVERRIDE
+    {
+        if (derefBase())
+            delete this;
+        else if (hasOneRef())
+            checkForReferenceCycle();
+    }
 
     IDBDatabaseBackendInterface::TaskType taskType() { return m_taskType; }
 
     DOMRequestState* requestState() { return &m_requestState; }
+    IDBCursor* getResultCursor();
 
 protected:
     IDBRequest(ScriptExecutionContext*, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType, IDBTransaction*);
@@ -131,8 +139,9 @@ private:
     virtual EventTargetData* eventTargetData();
     virtual EventTargetData* ensureEventTargetData();
 
-    PassRefPtr<IDBCursor> getResultCursor();
     void setResultCursor(PassRefPtr<IDBCursor>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value);
+    void checkForReferenceCycle();
+
 
     RefPtr<IDBAny> m_source;
     const IDBDatabaseBackendInterface::TaskType m_taskType;
@@ -143,7 +152,6 @@ private:
     // Only used if the result type will be a cursor.
     IndexedDB::CursorType m_cursorType;
     IndexedDB::CursorDirection m_cursorDirection;
-    bool m_cursorFinished;
     RefPtr<IDBCursor> m_pendingCursor;
     RefPtr<IDBKey> m_cursorKey;
     RefPtr<IDBKey> m_cursorPrimaryKey;

@@ -79,7 +79,6 @@ IDBRequest::IDBRequest(ScriptExecutionContext* context, PassRefPtr<IDBAny> sourc
     , m_hasPendingActivity(true)
     , m_cursorType(IndexedDB::CursorKeyAndValue)
     , m_cursorDirection(IndexedDB::CursorNext)
-    , m_cursorFinished(false)
     , m_pendingCursor(0)
     , m_didFireUpgradeNeededEvent(false)
     , m_preventPropagation(false)
@@ -184,6 +183,7 @@ void IDBRequest::setPendingCursor(PassRefPtr<IDBCursor> cursor)
     ASSERT(!m_pendingCursor);
     ASSERT(cursor == getResultCursor());
 
+    m_hasPendingActivity = true;
     m_pendingCursor = cursor;
     m_result.clear();
     m_readyState = PENDING;
@@ -191,7 +191,7 @@ void IDBRequest::setPendingCursor(PassRefPtr<IDBCursor> cursor)
     m_transaction->registerRequest(this);
 }
 
-PassRefPtr<IDBCursor> IDBRequest::getResultCursor()
+IDBCursor* IDBRequest::getResultCursor()
 {
     if (!m_result)
         return 0;
@@ -217,11 +217,18 @@ void IDBRequest::setResultCursor(PassRefPtr<IDBCursor> cursor, PassRefPtr<IDBKey
     m_result = IDBAny::create(IDBCursorWithValue::fromCursor(cursor));
 }
 
-void IDBRequest::finishCursor()
+void IDBRequest::checkForReferenceCycle()
 {
-    m_cursorFinished = true;
-    if (m_readyState != PENDING)
-        m_hasPendingActivity = false;
+    // If this request and its cursor have the only references
+    // to each other, then explicitly break the cycle.
+    IDBCursor* cursor = getResultCursor();
+    if (!cursor || cursor->request() != this)
+        return;
+
+    if (!hasOneRef() || !cursor->hasOneRef())
+        return;
+
+    m_result.clear();
 }
 
 bool IDBRequest::shouldEnqueueEvent() const
@@ -496,7 +503,7 @@ bool IDBRequest::dispatchEvent(PassRefPtr<Event> event)
     if (cursorToNotify)
         cursorToNotify->postSuccessHandlerCallback();
 
-    if (m_readyState == DONE && (!cursorToNotify || m_cursorFinished) && event->type() != eventNames().upgradeneededEvent)
+    if (m_readyState == DONE && event->type() != eventNames().upgradeneededEvent)
         m_hasPendingActivity = false;
 
     return dontPreventDefault;

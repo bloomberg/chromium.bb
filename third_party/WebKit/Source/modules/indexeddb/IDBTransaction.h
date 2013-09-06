@@ -79,16 +79,6 @@ public:
     PassRefPtr<IDBObjectStore> objectStore(const String& name, ExceptionState&);
     void abort(ExceptionState&);
 
-    class OpenCursorNotifier {
-    public:
-        OpenCursorNotifier(PassRefPtr<IDBTransaction>, IDBCursor*);
-        ~OpenCursorNotifier();
-        void cursorFinished();
-    private:
-        RefPtr<IDBTransaction> m_transaction;
-        IDBCursor* m_cursor;
-    };
-
     void registerRequest(IDBRequest*);
     void unregisterRequest(IDBRequest*);
     void objectStoreCreated(const String&, PassRefPtr<IDBObjectStore>);
@@ -122,10 +112,6 @@ private:
     IDBTransaction(ScriptExecutionContext*, int64_t, const Vector<String>&, IndexedDB::TransactionMode, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata&);
 
     void enqueueEvent(PassRefPtr<Event>);
-    void closeOpenCursors();
-
-    void registerOpenCursor(IDBCursor*);
-    void unregisterOpenCursor(IDBCursor*);
 
     // EventTarget
     virtual void refEventTarget() { ref(); }
@@ -161,8 +147,6 @@ private:
     typedef HashMap<RefPtr<IDBObjectStore>, IDBObjectStoreMetadata> IDBObjectStoreMetadataMap;
     IDBObjectStoreMetadataMap m_objectStoreCleanupMap;
     IDBDatabaseMetadata m_previousMetadata;
-
-    HashSet<IDBCursor*> m_openCursors;
 
     EventTargetData m_eventTargetData;
 };

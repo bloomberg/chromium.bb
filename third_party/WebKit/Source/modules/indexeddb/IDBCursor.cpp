@@ -80,7 +80,6 @@ IDBCursor::IDBCursor(PassRefPtr<IDBCursorBackendInterface> backend, IndexedDB::C
     , m_direction(direction)
     , m_source(source)
     , m_transaction(transaction)
-    , m_transactionNotifier(transaction, this)
     , m_gotValue(false)
     , m_keyDirty(true)
     , m_primaryKeyDirty(true)
@@ -274,12 +273,21 @@ void IDBCursor::close()
 {
     // The notifier may be the last reference to this cursor.
     RefPtr<IDBCursor> protect(this);
-    m_transactionNotifier.cursorFinished();
-    if (m_request) {
-        m_request->finishCursor();
-        m_request.clear();
-    }
+    m_request.clear();
     m_backend.clear();
+}
+
+void IDBCursor::checkForReferenceCycle()
+{
+    // If this cursor and its request have the only references
+    // to each other, then explicitly break the cycle.
+    if (!m_request || m_request->getResultCursor() != this)
+        return;
+
+    if (!hasOneRef() || !m_request->hasOneRef())
+        return;
+
+    m_request.clear();
 }
 
 ScriptValue IDBCursor::key(ScriptExecutionContext* context)

@@ -91,14 +91,14 @@ public:
 
     Type type() const { return m_type; }
     // Use type() to figure out which one of these you're allowed to call.
-    PassRefPtr<DOMStringList> domStringList();
-    PassRefPtr<IDBCursor> idbCursor();
-    PassRefPtr<IDBCursorWithValue> idbCursorWithValue();
-    PassRefPtr<IDBDatabase> idbDatabase();
-    PassRefPtr<IDBFactory> idbFactory();
-    PassRefPtr<IDBIndex> idbIndex();
-    PassRefPtr<IDBObjectStore> idbObjectStore();
-    PassRefPtr<IDBTransaction> idbTransaction();
+    DOMStringList* domStringList();
+    IDBCursor* idbCursor();
+    IDBCursorWithValue* idbCursorWithValue();
+    IDBDatabase* idbDatabase();
+    IDBFactory* idbFactory();
+    IDBIndex* idbIndex();
+    IDBObjectStore* idbObjectStore();
+    IDBTransaction* idbTransaction();
     const ScriptValue& scriptValue();
     int64_t integer();
     const String& string();

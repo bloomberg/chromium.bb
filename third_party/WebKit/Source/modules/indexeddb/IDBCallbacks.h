@@ -41,9 +41,11 @@ namespace WebCore {
 class DOMError;
 class IDBCursorBackendInterface;
 
-class IDBCallbacks : public RefCounted<IDBCallbacks> {
+class IDBCallbacks : public WTF::RefCountedBase {
 public:
     virtual ~IDBCallbacks() { }
+    virtual void deref() = 0;
+
 
     virtual void onError(PassRefPtr<DOMError>) = 0;
     // From IDBFactory.webkitGetDatabaseNames()

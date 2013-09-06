@@ -46,7 +46,7 @@ class IDBRequest;
 class ScriptExecutionContext;
 class SharedBuffer;
 
-class IDBCursor : public ScriptWrappable, public RefCounted<IDBCursor> {
+class IDBCursor : public ScriptWrappable, public WTF::RefCountedBase {
 public:
     static const AtomicString& directionNext();
     static const AtomicString& directionNextUnique();
@@ -80,6 +80,15 @@ public:
     void close();
     void setValueReady(PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value);
     PassRefPtr<IDBKey> idbPrimaryKey() { return m_primaryKey; }
+    IDBRequest* request() { return m_request.get(); }
+
+    void deref()
+    {
+        if (derefBase())
+            delete this;
+        else if (hasOneRef())
+            checkForReferenceCycle();
+    }
 
 protected:
     IDBCursor(PassRefPtr<IDBCursorBackendInterface>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
@@ -88,6 +97,7 @@ protected:
 private:
     PassRefPtr<IDBObjectStore> effectiveObjectStore();
 
+    void checkForReferenceCycle();
     bool isDeleted() const;
 
     RefPtr<IDBCursorBackendInterface> m_backend;
@@ -95,7 +105,6 @@ private:
     const IndexedDB::CursorDirection m_direction;
     RefPtr<IDBAny> m_source;
     RefPtr<IDBTransaction> m_transaction;
-    IDBTransaction::OpenCursorNotifier m_transactionNotifier;
     bool m_gotValue;
     bool m_keyDirty;
     bool m_primaryKeyDirty;
