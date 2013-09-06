@@ -34,8 +34,18 @@ views::View* GetAnchor(
 GeneratedCreditCardBubbleViews::~GeneratedCreditCardBubbleViews() {}
 
 void GeneratedCreditCardBubbleViews::Show() {
-  // TODO(dbeam): investigate why this steals focus from the web contents.
   views::BubbleDelegateView::CreateBubble(this)->Show();
+
+  // Grab mouse events for 3 seconds after showing. This prevents clicks outside
+  // of the bubble from dismissing the bubble. After 3 seconds, it will revert
+  // to normal close-on-deactivate behavior.
+  GetWidget()->SetCapture(NULL);
+  GetWidget()->set_auto_release_capture(false);
+  capture_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(3),
+      this,
+      &GeneratedCreditCardBubbleViews::ReleaseCapture);
 
   // This bubble doesn't render correctly on Windows without calling
   // |SizeToContents()|. This must be called after showing the widget.
@@ -103,6 +113,10 @@ GeneratedCreditCardBubbleViews::GeneratedCreditCardBubbleViews(
       weak_ptr_factory_(this) {
   gfx::Insets insets = views::BubbleFrameView::GetTitleInsets();
   set_margins(gfx::Insets(0, insets.left(), insets.top(), insets.left()));
+}
+
+void GeneratedCreditCardBubbleViews::ReleaseCapture() {
+  GetWidget()->ReleaseCapture();
 }
 
 }  // namespace autofill

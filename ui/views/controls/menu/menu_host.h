@@ -57,7 +57,6 @@ class MenuHost : public Widget {
  private:
   // Overridden from Widget:
   virtual internal::RootView* CreateRootView() OVERRIDE;
-  virtual bool ShouldReleaseCaptureOnMouseReleased() const OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual void OnNativeWidgetDestroyed() OVERRIDE;
   virtual void OnOwnerClosing() OVERRIDE;

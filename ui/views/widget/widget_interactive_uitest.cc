@@ -3,19 +3,142 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/run_loop.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
-#include "ui/views/test/views_test_base.h"
 #if !defined(OS_CHROMEOS)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #endif
 #endif
 
 namespace views {
+namespace test {
+
+namespace {
+
+// A View that closes the Widget and exits the current message-loop when it
+// receives a mouse-release event.
+class ExitLoopOnRelease : public View {
+ public:
+  ExitLoopOnRelease() {}
+  virtual ~ExitLoopOnRelease() {}
+
+ private:
+  // Overridden from View:
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
+    GetWidget()->Close();
+    base::MessageLoop::current()->QuitNow();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ExitLoopOnRelease);
+};
+
+// A view that does a capture on gesture-begin events.
+class GestureCaptureView : public View {
+ public:
+  GestureCaptureView() {}
+  virtual ~GestureCaptureView() {}
+
+ private:
+  // Overridden from View:
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_GESTURE_BEGIN) {
+      GetWidget()->SetCapture(this);
+      event->StopPropagation();
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(GestureCaptureView);
+};
+
+// A view that always processes all mouse events.
+class MouseView : public View {
+ public:
+  MouseView()
+      : View(),
+        entered_(0),
+        exited_(0),
+        pressed_(0) {
+  }
+  virtual ~MouseView() {}
+
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+    pressed_++;
+    return true;
+  }
+
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
+    entered_++;
+  }
+
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
+    exited_++;
+  }
+
+  // Return the number of OnMouseEntered calls and reset the counter.
+  int EnteredCalls() {
+    int i = entered_;
+    entered_ = 0;
+    return i;
+  }
+
+  // Return the number of OnMouseExited calls and reset the counter.
+  int ExitedCalls() {
+    int i = exited_;
+    exited_ = 0;
+    return i;
+  }
+
+  int pressed() const { return pressed_; }
+
+ private:
+  int entered_;
+  int exited_;
+
+  int pressed_;
+
+  DISALLOW_COPY_AND_ASSIGN(MouseView);
+};
+
+// A View that shows a different widget, sets capture on that widget, and
+// initiates a nested message-loop when it receives a mouse-press event.
+class NestedLoopCaptureView : public View {
+ public:
+  explicit NestedLoopCaptureView(Widget* widget) : widget_(widget) {}
+  virtual ~NestedLoopCaptureView() {}
+
+ private:
+  // Overridden from View:
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+    // Start a nested loop.
+    widget_->Show();
+    widget_->SetCapture(widget_->GetContentsView());
+    EXPECT_TRUE(widget_->HasCapture());
+
+    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+    base::MessageLoop::ScopedNestableTaskAllower allow(loop);
+
+    base::RunLoop run_loop;
+#if defined(USE_AURA)
+    run_loop.set_dispatcher(aura::Env::GetInstance()->GetDispatcher());
+#endif
+    run_loop.Run();
+    return true;
+  }
+
+  Widget* widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(NestedLoopCaptureView);
+};
+
+}  // namespace
 
 #if defined(OS_WIN) && defined(USE_AURA)
 // Tests whether activation and focus change works correctly in Windows AURA.
@@ -28,7 +151,7 @@ namespace views {
 //    window for widget 1 should be set and that for widget 2 should reset.
 // TODO(ananta)
 // Discuss with erg on how to write this test for linux x11 aura.
-TEST_F(ViewsTestBase, DesktopNativeWidgetAuraActivationAndFocusTest) {
+TEST_F(WidgetTest, DesktopNativeWidgetAuraActivationAndFocusTest) {
   // Create widget 1 and expect the active window to be its window.
   View* contents_view1 = new View;
   contents_view1->set_focusable(true);
@@ -82,4 +205,241 @@ TEST_F(ViewsTestBase, DesktopNativeWidgetAuraActivationAndFocusTest) {
 }
 #endif
 
+TEST_F(WidgetTest, CaptureAutoReset) {
+  Widget* toplevel = CreateTopLevelFramelessPlatformWidget();
+  View* container = new View;
+  toplevel->SetContentsView(container);
+
+  EXPECT_FALSE(toplevel->HasCapture());
+  toplevel->SetCapture(NULL);
+  EXPECT_TRUE(toplevel->HasCapture());
+
+  // By default, mouse release removes capture.
+  gfx::Point click_location(45, 15);
+  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, click_location, click_location,
+      ui::EF_LEFT_MOUSE_BUTTON);
+  toplevel->OnMouseEvent(&release);
+  EXPECT_FALSE(toplevel->HasCapture());
+
+  // Now a mouse release shouldn't remove capture.
+  toplevel->set_auto_release_capture(false);
+  toplevel->SetCapture(NULL);
+  EXPECT_TRUE(toplevel->HasCapture());
+  toplevel->OnMouseEvent(&release);
+  EXPECT_TRUE(toplevel->HasCapture());
+  toplevel->ReleaseCapture();
+  EXPECT_FALSE(toplevel->HasCapture());
+
+  toplevel->Close();
+  RunPendingMessages();
+}
+
+TEST_F(WidgetTest, ResetCaptureOnGestureEnd) {
+  Widget* toplevel = CreateTopLevelFramelessPlatformWidget();
+  View* container = new View;
+  toplevel->SetContentsView(container);
+
+  View* gesture = new GestureCaptureView;
+  gesture->SetBounds(0, 0, 30, 30);
+  container->AddChildView(gesture);
+
+  MouseView* mouse = new MouseView;
+  mouse->SetBounds(30, 0, 30, 30);
+  container->AddChildView(mouse);
+
+  toplevel->SetSize(gfx::Size(100, 100));
+  toplevel->Show();
+
+  // Start a gesture on |gesture|.
+  ui::GestureEvent begin(ui::ET_GESTURE_BEGIN,
+      15, 15, 0, base::TimeDelta(),
+      ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0), 1);
+  ui::GestureEvent end(ui::ET_GESTURE_END,
+      15, 15, 0, base::TimeDelta(),
+      ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0), 1);
+  toplevel->OnGestureEvent(&begin);
+
+  // Now try to click on |mouse|. Since |gesture| will have capture, |mouse|
+  // will not receive the event.
+  gfx::Point click_location(45, 15);
+
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, click_location, click_location,
+      ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, click_location, click_location,
+      ui::EF_LEFT_MOUSE_BUTTON);
+
+  EXPECT_TRUE(toplevel->HasCapture());
+
+  toplevel->OnMouseEvent(&press);
+  toplevel->OnMouseEvent(&release);
+  EXPECT_EQ(0, mouse->pressed());
+
+  EXPECT_FALSE(toplevel->HasCapture());
+
+  // The end of the gesture should release the capture, and pressing on |mouse|
+  // should now reach |mouse|.
+  toplevel->OnGestureEvent(&end);
+  toplevel->OnMouseEvent(&press);
+  toplevel->OnMouseEvent(&release);
+  EXPECT_EQ(1, mouse->pressed());
+
+  toplevel->Close();
+  RunPendingMessages();
+}
+
+// Checks that if a mouse-press triggers a capture on a different widget (which
+// consumes the mouse-release event), then the target of the press does not have
+// capture.
+// Fails on chromium.webkit Windows bot, see crbug.com/264872.
+#if defined(OS_WIN)
+#define MAYBE_DisableCaptureWidgetFromMousePress\
+    DISABLED_CaptureWidgetFromMousePress
+#else
+#define MAYBE_DisableCaptureWidgetFromMousePress\
+    CaptureWidgetFromMousePress
+#endif
+TEST_F(WidgetTest, MAYBE_DisableCaptureWidgetFromMousePress) {
+  // The test creates two widgets: |first| and |second|.
+  // The View in |first| makes |second| visible, sets capture on it, and starts
+  // a nested loop (like a menu does). The View in |second| terminates the
+  // nested loop and closes the widget.
+  // The test sends a mouse-press event to |first|, and posts a task to send a
+  // release event to |second|, to make sure that the release event is
+  // dispatched after the nested loop starts.
+
+  Widget* first = CreateTopLevelFramelessPlatformWidget();
+  Widget* second = CreateTopLevelFramelessPlatformWidget();
+
+  View* container = new NestedLoopCaptureView(second);
+  first->SetContentsView(container);
+
+  second->SetContentsView(new ExitLoopOnRelease());
+
+  first->SetSize(gfx::Size(100, 100));
+  first->Show();
+
+  gfx::Point location(20, 20);
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&Widget::OnMouseEvent,
+                 base::Unretained(second),
+                 base::Owned(new ui::MouseEvent(ui::ET_MOUSE_RELEASED,
+                                                location,
+                                                location,
+                                                ui::EF_LEFT_MOUSE_BUTTON))));
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, location, location,
+                       ui::EF_LEFT_MOUSE_BUTTON);
+  first->OnMouseEvent(&press);
+  EXPECT_FALSE(first->HasCapture());
+  first->Close();
+  RunPendingMessages();
+}
+
+// Tests some grab/ungrab events.
+// TODO(estade): can this be enabled now that this is an interactive ui test?
+TEST_F(WidgetTest, DISABLED_GrabUngrab) {
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+  Widget* child1 = CreateChildNativeWidgetWithParent(toplevel);
+  Widget* child2 = CreateChildNativeWidgetWithParent(toplevel);
+
+  toplevel->SetBounds(gfx::Rect(0, 0, 500, 500));
+
+  child1->SetBounds(gfx::Rect(10, 10, 300, 300));
+  View* view = new MouseView();
+  view->SetBounds(0, 0, 300, 300);
+  child1->GetRootView()->AddChildView(view);
+
+  child2->SetBounds(gfx::Rect(200, 10, 200, 200));
+  view = new MouseView();
+  view->SetBounds(0, 0, 200, 200);
+  child2->GetRootView()->AddChildView(view);
+
+  toplevel->Show();
+  RunPendingMessages();
+
+  // Click on child1
+  gfx::Point p1(45, 45);
+  ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, p1, p1,
+                         ui::EF_LEFT_MOUSE_BUTTON);
+  toplevel->OnMouseEvent(&pressed);
+
+  EXPECT_TRUE(toplevel->HasCapture());
+  EXPECT_TRUE(child1->HasCapture());
+  EXPECT_FALSE(child2->HasCapture());
+
+  ui::MouseEvent released(ui::ET_MOUSE_RELEASED, p1, p1,
+                          ui::EF_LEFT_MOUSE_BUTTON);
+  toplevel->OnMouseEvent(&released);
+
+  EXPECT_FALSE(toplevel->HasCapture());
+  EXPECT_FALSE(child1->HasCapture());
+  EXPECT_FALSE(child2->HasCapture());
+
+  RunPendingMessages();
+
+  // Click on child2
+  gfx::Point p2(315, 45);
+  ui::MouseEvent pressed2(ui::ET_MOUSE_PRESSED, p2, p2,
+                          ui::EF_LEFT_MOUSE_BUTTON);
+  toplevel->OnMouseEvent(&pressed2);
+  EXPECT_TRUE(pressed2.handled());
+  EXPECT_TRUE(toplevel->HasCapture());
+  EXPECT_TRUE(child2->HasCapture());
+  EXPECT_FALSE(child1->HasCapture());
+
+  ui::MouseEvent released2(ui::ET_MOUSE_RELEASED, p2, p2,
+                           ui::EF_LEFT_MOUSE_BUTTON);
+  toplevel->OnMouseEvent(&released2);
+  EXPECT_FALSE(toplevel->HasCapture());
+  EXPECT_FALSE(child1->HasCapture());
+  EXPECT_FALSE(child2->HasCapture());
+
+  toplevel->CloseNow();
+}
+
+// Tests mouse move outside of the window into the "resize controller" and back
+// will still generate an OnMouseEntered and OnMouseExited event..
+TEST_F(WidgetTest, CheckResizeControllerEvents) {
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+
+  toplevel->SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  MouseView* view = new MouseView();
+  view->SetBounds(90, 90, 10, 10);
+  toplevel->GetRootView()->AddChildView(view);
+
+  toplevel->Show();
+  RunPendingMessages();
+
+  // Move to an outside position.
+  gfx::Point p1(200, 200);
+  ui::MouseEvent moved_out(ui::ET_MOUSE_MOVED, p1, p1, ui::EF_NONE);
+  toplevel->OnMouseEvent(&moved_out);
+  EXPECT_EQ(0, view->EnteredCalls());
+  EXPECT_EQ(0, view->ExitedCalls());
+
+  // Move onto the active view.
+  gfx::Point p2(95, 95);
+  ui::MouseEvent moved_over(ui::ET_MOUSE_MOVED, p2, p2, ui::EF_NONE);
+  toplevel->OnMouseEvent(&moved_over);
+  EXPECT_EQ(1, view->EnteredCalls());
+  EXPECT_EQ(0, view->ExitedCalls());
+
+  // Move onto the outer resizing border.
+  gfx::Point p3(102, 95);
+  ui::MouseEvent moved_resizer(ui::ET_MOUSE_MOVED, p3, p3, ui::EF_NONE);
+  toplevel->OnMouseEvent(&moved_resizer);
+  EXPECT_EQ(0, view->EnteredCalls());
+  EXPECT_EQ(1, view->ExitedCalls());
+
+  // Move onto the view again.
+  toplevel->OnMouseEvent(&moved_over);
+  EXPECT_EQ(1, view->EnteredCalls());
+  EXPECT_EQ(0, view->ExitedCalls());
+
+  RunPendingMessages();
+
+  toplevel->CloseNow();
+}
+
+}  // namespace test
 }  // namespace views

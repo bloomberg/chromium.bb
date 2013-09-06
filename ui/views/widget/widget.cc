@@ -178,6 +178,7 @@ Widget::Widget()
       is_mouse_button_pressed_(false),
       is_touch_down_(false),
       last_mouse_event_was_move_(false),
+      auto_release_capture_(true),
       root_layers_dirty_(false),
       movement_disabled_(false) {
 }
@@ -1165,10 +1166,8 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
       last_mouse_event_was_move_ = false;
       is_mouse_button_pressed_ = false;
       // Release capture first, to avoid confusion if OnMouseReleased blocks.
-      if (native_widget_->HasCapture() &&
-          ShouldReleaseCaptureOnMouseReleased()) {
+      if (auto_release_capture_ && native_widget_->HasCapture())
         native_widget_->ReleaseCapture();
-      }
       if (root_view)
         root_view->OnMouseReleased(*event);
       if ((event->flags() & ui::EF_IS_NON_CLIENT) == 0)
@@ -1236,7 +1235,7 @@ void Widget::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_END:
       if (event->details().touch_points() == 1) {
         is_touch_down_ = false;
-        if (ShouldReleaseCaptureOnMouseReleased())
+        if (auto_release_capture_)
           ReleaseCapture();
       }
       break;
@@ -1318,10 +1317,6 @@ void Widget::DestroyRootView() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, private:
-
-bool Widget::ShouldReleaseCaptureOnMouseReleased() const {
-  return true;
-}
 
 void Widget::SetInactiveRenderingDisabled(bool value) {
   if (value == disable_inactive_rendering_)

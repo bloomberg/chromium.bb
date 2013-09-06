@@ -631,7 +631,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   }
 
   // Sets capture to the specified view. This makes it so that all mouse, touch
-  // and gesture events go to |view|.
+  // and gesture events go to |view|. If |view| is NULL, the widget still
+  // obtains event capture, but the events will go to the view they'd normally
+  // go to.
   void SetCapture(View* view);
 
   // Releases capture.
@@ -639,6 +641,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Returns true if the widget has capture.
   bool HasCapture();
+
+  void set_auto_release_capture(bool auto_release_capture) {
+    auto_release_capture_ = auto_release_capture;
+  }
 
   // Invoked when the tooltip text changes for the specified views.
   void TooltipTextChanged(View* view);
@@ -734,9 +740,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
  private:
   friend class NativeTextfieldViewsTest;
   friend class NativeComboboxViewsTest;
-
-  // Returns whether capture should be released on mouse release.
-  virtual bool ShouldReleaseCaptureOnMouseReleased() const;
 
   // Sets the value of |disable_inactive_rendering_|. If the value changes,
   // both the NonClientView and WidgetDelegate are notified.
@@ -851,6 +854,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // duplicate move events even though the mouse hasn't moved.
   bool last_mouse_event_was_move_;
   gfx::Point last_mouse_event_position_;
+
+  // True if event capture should be released on a mouse up event. Default is
+  // true.
+  bool auto_release_capture_;
 
   // See description in GetRootLayers().
   std::vector<ui::Layer*> root_layers_;

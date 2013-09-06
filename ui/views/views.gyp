@@ -623,6 +623,8 @@
         'test/test_widget_observer.h',
         'test/views_test_base.cc',
         'test/views_test_base.h',
+        'test/widget_test.cc',
+        'test/widget_test.h',
         'widget/root_view_test_helper.h',
       ],
       'conditions': [

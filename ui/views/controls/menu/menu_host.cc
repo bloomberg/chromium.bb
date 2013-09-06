@@ -29,6 +29,7 @@ MenuHost::MenuHost(SubmenuView* submenu)
     : submenu_(submenu),
       destroying_(false),
       ignore_capture_lost_(false) {
+  set_auto_release_capture(false);
 }
 
 MenuHost::~MenuHost() {
@@ -107,10 +108,6 @@ void MenuHost::ReleaseMenuHostCapture() {
 
 internal::RootView* MenuHost::CreateRootView() {
   return new MenuHostRootView(this, submenu_);
-}
-
-bool MenuHost::ShouldReleaseCaptureOnMouseReleased() const {
-  return false;
 }
 
 void MenuHost::OnMouseCaptureLost() {

@@ -378,6 +378,7 @@
         }, { # else: toolkit_views == 0
           'sources/': [
             ['exclude', '^browser/ui/views/'],
+            ['exclude', '^../ui/views/'],
           ],
         }],
         ['use_ash==1', {
@@ -393,7 +394,6 @@
         ['use_aura==0 or chromeos==1', {
           'sources!': [
             '../ui/views/corewm/desktop_capture_controller_unittest.cc',
-            '../ui/views/widget/widget_interactive_uitest.cc',
           ],
         }],
         ['chromeos==1', {
