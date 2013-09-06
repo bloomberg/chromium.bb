@@ -23,25 +23,25 @@ How to build
 To build the docs you will needs sphinx installed (and sphinx-build in your
 path), and simply run:
 
-    make devsite
+    make
 
 To rebuild all the pages always, add 'SPHINXOPTS=-a', e.g.:
 
-    make SPHINXOPTS=-a devsite
+    make SPHINXOPTS=-a
 
 To emit local-testing mode, instead of production mode, add:
  SPHINXOPTS='-D devsite_production_mode=0'
 e.g.:
 
-    make SPHINXOPTS='-D devsite_production_mode=0' devsite
+    make SPHINXOPTS='-D devsite_production_mode=0'
 
 Production mode contains devsite-specific templating and non-HTML constructs.
 
 The builder prints out the value of this setting - make sure it's what you
 expect it to be. For example:
 
-  $ make devsite
-  sphinx-build -b devsite -d _build/doctrees   . _build/devsite
+  $ make
+  sphinx-build -b devsite -d _build/doctrees . _build/devsite
   Running Sphinx v1.2b1
   loading pickled environment... done
   ----> Devsite builder with production mode = 1

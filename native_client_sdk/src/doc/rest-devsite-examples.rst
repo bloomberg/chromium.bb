@@ -109,12 +109,12 @@ without coloring:
 
 .. naclcode::
 
-   #include <iostream>
+  #include <iostream>
 
-   int main() {
-     std::cout << "Hello world\n";
-     return 0;
-   }
+  int main() {
+    std::cout << "Hello world\n";
+    return 0;
+  }
 
 For some code (like shell samples), we want to disable pretty-printing:
 

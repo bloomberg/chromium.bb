@@ -18,10 +18,12 @@ Contents:
    devguide/devcycle/building.rst
    devguide/devcycle/running.rst
    devguide/devcycle/debugging.rst
+   devguide/coding/3D-graphics.rst
+   devguide/coding/audio.rst
    devguide/coding/application-structure.rst
+   devguide/coding/FileIO.rst
    devguide/coding/message-system.rst
    devguide/coding/progress-events.rst
    devguide/distributing.rst
    community/application-gallery.rst
    peppercpp/index.rst
-

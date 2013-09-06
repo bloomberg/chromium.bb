@@ -152,7 +152,7 @@ Overview <../overview>`.
 For details on how to use ``make``, see the `GNU 'make' Manual
 <http://www.gnu.org/software/make/manual/make.html>`_. For details on how to
 use the SDK toolchain itself, see :doc:`Building Native Client Modules
-<devcycle/building>`.
+<../devguide/devcycle/building>`.
 
 Run the SDK examples
 --------------------
@@ -241,7 +241,7 @@ Chrome is listening on. GDB will respond::
 At this point, you can use the standard GDB commands to debug your NaCl module.
 The most common commands you will use to debug are ``continue``, ``step``,
 ``next``, ``break`` and ``backtrace``. See :doc:`Debugging
-<devcycle/debugging>` for more information about debugging a Native Client
+<../devguide/devcycle/debugging>` for more information about debugging a Native Client
 application.
 
 

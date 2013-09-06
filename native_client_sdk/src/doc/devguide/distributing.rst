@@ -145,29 +145,29 @@ Here is how to use this feature:
    and add the files for each architecture in the relevant subdirectory.
 
    Here is a sample app directory structure:
-   
-   .. naclcode::
-      :prettyprint: 0
 
-         |-- my_app_directory/
-         |       |-- manifest.json
-         |       |-- my_app.html
-         |       |-- my_module.nmf
-         |       +-- css/
-         |       +-- images/
-         |       +-- scripts/
-         |       |-- **_platform_specific/**
-         |       |       |-- x86-64/
-         |       |       |       |-- my_module_x86_64.nexe
-         |       |       |-- x86-32/
-         |       |       |       |-- my_module_x86_32.nexe
-         |       |       |-- arm/
-         |       |       |       |-- my_module_arm.nexe
-         |       |       |-- all/
-         |       |       |       |-- my_module_x86_64.nexe
-         |       |       |       |-- my_module_x86_64.nexe
-         |       |       |       |-- my_module_x86_32.nexe
-   
+   .. naclcode::
+     :prettyprint: 0
+
+     |-- my_app_directory/
+     |       |-- manifest.json
+     |       |-- my_app.html
+     |       |-- my_module.nmf
+     |       +-- css/
+     |       +-- images/
+     |       +-- scripts/
+     |       |-- **_platform_specific/**
+     |       |       |-- x86-64/
+     |       |       |       |-- my_module_x86_64.nexe
+     |       |       |-- x86-32/
+     |       |       |       |-- my_module_x86_32.nexe
+     |       |       |-- arm/
+     |       |       |       |-- my_module_arm.nexe
+     |       |       |-- all/
+     |       |       |       |-- my_module_x86_64.nexe
+     |       |       |       |-- my_module_x86_64.nexe
+     |       |       |       |-- my_module_x86_32.nexe
+
    Please note a few important points about the app directory structure:
 
    * The architecture-specific subdirectories:
@@ -213,47 +213,47 @@ Here is how to use this feature:
    Here is a sample ``manifest.json`` file:
 
    .. naclcode::
-      :prettyprint: 0
+     :prettyprint: 0
 
-      {
-        "name": "My Reminder App",
-        "description": "A reminder app that syncs across Chrome browsers.",
-        "manifest_version": 2,
-        "minimum_chrome_version": "28",
-        "offline_enabled": true,
-        "version": "0.3",
-        "permissions": [
-          {"fileSystem": ["write"]},
-          "alarms",
-          "storage"
-        ],
-        "app": {
-          "background": {
-            "scripts": ["scripts/background.js"]
-          }
-        },
-        "icons": {
-          "16": "images/icon-16x16.png",
-          "128": "images/icon-128x128.png"
-        },
-        **"platforms": [
-          {
-            "nacl_arch": "x86-64",
-            "sub_package_path": "_platform_specific/x86-64/"
-          },
-          {
-            "nacl_arch": "x86-32",
-            "sub_package_path": "_platform_specific/x86-32/"
-          },
-          {
-            "nacl_arch": "arm",
-            "sub_package_path": "_platform_specific/arm/"
-          },
-          {
-            "sub_package_path": "_platform_specific/all/"
-          }
-        ]**
-      }
+     {
+       "name": "My Reminder App",
+       "description": "A reminder app that syncs across Chrome browsers.",
+       "manifest_version": 2,
+       "minimum_chrome_version": "28",
+       "offline_enabled": true,
+       "version": "0.3",
+       "permissions": [
+         {"fileSystem": ["write"]},
+         "alarms",
+         "storage"
+       ],
+       "app": {
+         "background": {
+           "scripts": ["scripts/background.js"]
+         }
+       },
+       "icons": {
+         "16": "images/icon-16x16.png",
+         "128": "images/icon-128x128.png"
+       },
+       **"platforms": [
+         {
+           "nacl_arch": "x86-64",
+           "sub_package_path": "_platform_specific/x86-64/"
+         },
+         {
+           "nacl_arch": "x86-32",
+           "sub_package_path": "_platform_specific/x86-32/"
+         },
+         {
+           "nacl_arch": "arm",
+           "sub_package_path": "_platform_specific/arm/"
+         },
+         {
+           "sub_package_path": "_platform_specific/all/"
+         }
+       ]**
+     }
 
    Note the last entry in the CWS manifest file above, which specifies a
    ``sub_package_path`` without a corresponding ``nacl_arch``. This entry
@@ -294,10 +294,11 @@ Additional considerations for a packaged application
   example:
 
   .. naclcode::
+    :prettyprint: 0
 
-     "launch": {
-       "web_url": "http://mail.google.com/mail/"
-     }
+    "launch": {
+      "web_url": "http://mail.google.com/mail/"
+    }
 
 * If you want to write local data using the Pepper
   `FileIO </native-client/peppercpp/classpp_1_1_file_i_o>`_
@@ -394,11 +395,11 @@ Additional considerations for a hosted application
   example:
 
   .. naclcode::
-     :prettyprint: 0
+    :prettyprint: 0
 
-     "launch": {
-       "web_url": "http://mail.google.com/mail/"
-     }
+    "launch": {
+      "web_url": "http://mail.google.com/mail/"
+    }
 
 * If you want to write local data using the Pepper
   `FileIO </native-client/peppercpp/classpp_1_1_file_i_o>`_
@@ -426,17 +427,17 @@ a Native Client module as the content handler for the OpenOffice spreadsheet
 MIME type:
 
 .. naclcode::
-   :prettyprint: 0
+  :prettyprint: 0
 
-   {
-      "name": "My Native Client Spreadsheet Viewer",
-      "version": "0.1",
-      "description": "Open spreadsheets right in your browser.",
-      **"nacl_modules": [{
-         "path": "SpreadsheetViewer.nmf",
-         "mime_type": "application/vnd.oasis.opendocument.spreadsheet"
-      }]**
-   }
+  {
+     "name": "My Native Client Spreadsheet Viewer",
+     "version": "0.1",
+     "description": "Open spreadsheets right in your browser.",
+     **"nacl_modules": [{
+        "path": "SpreadsheetViewer.nmf",
+        "mime_type": "application/vnd.oasis.opendocument.spreadsheet"
+     }]**
+  }
 
 The value of "path" is the location of a Native Client manifest file (.nmf)
 within the application directory. For more information on Native Client
@@ -449,25 +450,25 @@ file, but a single .nmf file might handle multiple MIME types. The following
 example shows an extension with two .nmf files that handle three MIME types.
 
 .. naclcode::
-   :prettyprint: 0
+  :prettyprint: 0
 
-   {
-      "name": "My Native Client Spreadsheet and Document Viewer",
-      "version": "0.1",
-      "description": "Open spreadsheets and documents right in your browser.",
-      "nacl_modules": [{
+  {
+     "name": "My Native Client Spreadsheet and Document Viewer",
+     "version": "0.1",
+     "description": "Open spreadsheets and documents right in your browser.",
+     "nacl_modules": [{
+       "path": "SpreadsheetViewer.nmf",
+       "mime_type": "application/vnd.oasis.opendocument.spreadsheet"
+     },
+     {
         "path": "SpreadsheetViewer.nmf",
-        "mime_type": "application/vnd.oasis.opendocument.spreadsheet"
-      },
-      {
-         "path": "SpreadsheetViewer.nmf",
-         "mime_type": "application/vnd.oasis.opendocument.spreadsheet-template"
-      },
-      {
-         "path": "DocumentViewer.nmf",
-         "mime_type": "application/vnd.oasis.opendocument.text"
-      }]
-   }
+        "mime_type": "application/vnd.oasis.opendocument.spreadsheet-template"
+     },
+     {
+        "path": "DocumentViewer.nmf",
+        "mime_type": "application/vnd.oasis.opendocument.text"
+     }]
+  }
 
 The ``nacl_modules`` attribute is optional---specify this attribute only if
 you want Chrome to use a Native Client module to display a particular type of
