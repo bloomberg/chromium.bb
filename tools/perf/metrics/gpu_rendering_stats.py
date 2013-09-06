@@ -23,6 +23,7 @@ class GpuRenderingStats(object):
     self.total_time = (self.end - self.start) / 1000.0
     self.animation_frame_count = []
     self.screen_frame_count = []
+    self.screen_frame_timestamps = []
     self.paint_time = []
     self.record_time = []
     self.commit_time = []
@@ -90,10 +91,15 @@ class GpuRenderingStats(object):
       if event.start >= self.start and event.end <= self.end:
         if 'data' not in event.args:
           continue
+        if event.args['data']['screen_frame_count'] > 1:
+          raise ValueError, 'trace contains multi-frame render stats'
         self.animation_frame_count.append(
             event.args['data']['animation_frame_count'])
         self.screen_frame_count.append(
             event.args['data']['screen_frame_count'])
+        if event.args['data']['screen_frame_count'] == 1:
+          self.screen_frame_timestamps.append(
+              event.start)
         self.paint_time.append(
             event.args['data']['paint_time'])
         self.record_time.append(
@@ -117,8 +123,13 @@ class GpuRenderingStats(object):
       if event.start >= self.start and event.end <= self.end:
         if 'data' not in event.args:
           continue
+        if event.args['data']['screen_frame_count'] > 1:
+          raise ValueError, 'trace contains multi-frame render stats'
         self.screen_frame_count.append(
             event.args['data']['screen_frame_count'])
+        if event.args['data']['screen_frame_count'] == 1:
+          self.screen_frame_timestamps.append(
+              event.start)
         self.dropped_frame_count.append(
             event.args['data']['dropped_frame_count'])
         self.rasterize_time.append(

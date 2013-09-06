@@ -4,6 +4,7 @@
 import os
 
 from telemetry.core import util
+from metrics import discrepancy
 
 TIMELINE_MARKER = 'smoothness_scroll'
 
@@ -88,6 +89,32 @@ def Average(numerator, denominator, scale = None, precision = None):
     avg = round(avg, precision)
   return avg
 
+def DivideIfPossibleOrZero(numerator, denominator):
+  if not denominator:
+    return 0.0
+  else:
+    return numerator / denominator
+
+def GeneralizedMean(values, exponent):
+  ''' http://en.wikipedia.org/wiki/Generalized_mean '''
+  if not values:
+    return 0.0
+  sum_of_powers = 0.0
+  for v in values:
+    sum_of_powers += v ** exponent
+  return (sum_of_powers / len(values)) ** (1.0/exponent)
+
+def Median(values):
+  if not values:
+    return 0.0
+  values.sort()
+  n = len(values)
+  if n % 2:
+    median = values[n/2]
+  else:
+    median = 0.5 * (values[n/2] + values[n/2 - 1])
+  return median
+
 def CalcFirstPaintTimeResults(results, tab):
   if tab.browser.is_content_shell:
     results.Add('first_paint', 'ms', 'unsupported')
@@ -110,9 +137,25 @@ def CalcFirstPaintTimeResults(results, tab):
 def CalcResults(benchmark_stats, results):
   s = benchmark_stats
 
+  frame_times = []
+  for i in xrange(1, len(s.screen_frame_timestamps)):
+    frame_times.append(
+        s.screen_frame_timestamps[i] - s.screen_frame_timestamps[i-1])
+
   # Scroll Results
   results.Add('mean_frame_time', 'ms',
               Average(s.total_time, s.screen_frame_count, 1000, 3))
+  # Absolute discrepancy of frame time stamps (experimental)
+  results.Add('experimental_jank', '',
+              round(discrepancy.FrameDiscrepancy(s.screen_frame_timestamps,
+                                                 True), 4))
+  # Generalized mean frame time with exponent=2 (experimental)
+  results.Add('experimental_mean_frame_time', '',
+              round(GeneralizedMean(frame_times, 2.0), 2))
+  # Median frame time (experimental)
+  results.Add('experimental_median_frame_time', '',
+              round(Median(frame_times), 2))
+
   results.Add('dropped_percent', '%',
               Average(s.dropped_frame_count, s.screen_frame_count,
                       100, 1),

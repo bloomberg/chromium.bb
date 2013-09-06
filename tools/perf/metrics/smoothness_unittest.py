@@ -4,6 +4,7 @@
 import unittest
 import random
 
+from metrics import discrepancy
 from metrics import smoothness
 from metrics.gpu_rendering_stats import GpuRenderingStats
 from telemetry.page import page
@@ -238,6 +239,16 @@ class SmoothnessMetricsUnitTest(unittest.TestCase):
         round(rs['totalTimeInSeconds'] / rs['numFramesSentToScreen'] * 1000.0,
               3),
         res.page_results[0]['mean_frame_time'].value, 2)
+    # We don't verify the correctness of the discrepancy computation
+    # itself, because we have a separate unit test for that purpose.
+    self.assertEquals(
+        round(discrepancy.FrameDiscrepancy(stats.screen_frame_timestamps,
+                                           True), 4),
+        res.page_results[0]['absolute_frame_discrepancy'].value)
+    self.assertEquals(
+        round(discrepancy.FrameDiscrepancy(stats.screen_frame_timestamps,
+                                           False), 4),
+        res.page_results[0]['relative_frame_discrepancy'].value)
     self.assertAlmostEquals(
         round(rs['droppedFrameCount'] / rs['numFramesSentToScreen'] * 100.0, 1),
         res.page_results[0]['dropped_percent'].value)
