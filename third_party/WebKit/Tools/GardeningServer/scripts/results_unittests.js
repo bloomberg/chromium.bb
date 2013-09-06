@@ -330,9 +330,17 @@ test("walkHistory", 5, function() {
     simulator.get = function(url, callback) {
         simulator.scheduleCallback(function() {
             if (/Mock_Builder/.test(url))
-                callback('<a href="11101/"></a><a href="11102/"></a><a href="11103/"></a><a href="11104/"></a><a href="11105/"></a><a href="11106/"></a><a href="11107/"></a><a href="11108/"></a>');
+                callback('<Prefix>Mock_Builder/11101/</Prefix>' +
+                         '<Prefix>Mock_Builder/11102/</Prefix>' +
+                         '<Prefix>Mock_Builder/11103/</Prefix>' +
+                         '<Prefix>Mock_Builder/11104/</Prefix>' +
+                         '<Prefix>Mock_Builder/11105/</Prefix>' +
+                         '<Prefix>Mock_Builder/11106/</Prefix>' +
+                         '<Prefix>Mock_Builder/11107/</Prefix>' +
+                         '<Prefix>Mock_Builder/11108/</Prefix>');
             else if (/Another_Builder/.test(url))
-                callback('<a href="22201/"></a><a href="22202/"></a>');
+                callback('<Prefix>Another_Builder/22201/</Prefix>' +
+                         '<Prefix>Another_Builder/22202/</Prefix>');
             else
                 ok(false, 'Unexpected URL: ' + url);
         });

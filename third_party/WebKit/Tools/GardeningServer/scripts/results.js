@@ -29,9 +29,6 @@ var results = results || {};
 
 var kResultsName = 'failing_results.json';
 
-var kBuildLinkRegexp = /a href="\d+\/"/g;
-var kBuildNumberRegexp = /\d+/;
-
 var PASS = 'PASS';
 var TIMEOUT = 'TIMEOUT';
 var TEXT = 'TEXT';
@@ -189,17 +186,17 @@ function resultsDirectoryURL(platform, builderName)
 {
     if (config.useLocalResults)
         return '/localresult?path=';
-    return resultsDirectoryListingURL(platform, builderName) + 'results/layout-test-results/';
+    return layoutTestResultsURL(platform) + '/' + results.directoryForBuilder(builderName) + '/results/layout-test-results/';
 }
 
-function resultsDirectoryListingURL(platform, builderName)
+function resultsPrefixListingURL(platform, builderName)
 {
-    return layoutTestResultsURL(platform) + '/' + results.directoryForBuilder(builderName) + '/';
+    return layoutTestResultsURL(platform) + '/?prefix=' + results.directoryForBuilder(builderName) + '/&delimiter=/';
 }
 
 function resultsDirectoryURLForBuildNumber(platform, builderName, buildNumber)
 {
-    return resultsDirectoryListingURL(platform, builderName) + buildNumber + '/';
+    return layoutTestResultsURL(platform) + '/' + results.directoryForBuilder(builderName) + '/' + buildNumber + '/' ;
 }
 
 function resultsSummaryURL(platform, builderName)
@@ -332,17 +329,20 @@ results.collectUnexpectedResults = function(dictionaryOfResultNodes)
 // Callback data is [{ buildNumber:, url: }]
 function historicalResultsLocations(platform, builderName, callback)
 {
-    var listingURL = resultsDirectoryListingURL(platform, builderName);
-    net.get(listingURL, function(directoryListing) {
-        var historicalResultsData = directoryListing.match(kBuildLinkRegexp).map(function(buildLink) {
-            var buildNumber = parseInt(buildLink.match(kBuildNumberRegexp)[0]);
-            var resultsData = {
-                'buildNumber': buildNumber,
-                'url': resultsSummaryURLForBuildNumber(platform, builderName, buildNumber)
-            };
-            return resultsData;
-        }).reverse();
-
+    var listingURL = resultsPrefixListingURL(platform, builderName);
+    net.get(listingURL, function(prefixListingDocument) {
+        var historicalResultsData = [];
+        $(prefixListingDocument).find("Prefix").each(function() {
+            var buildString = this.textContent.replace(results.directoryForBuilder(builderName) + '/', '');
+            if (buildString.match(/\d+\//)) {
+                var buildNumber = parseInt(buildString);
+                var resultsData = {
+                    'buildNumber': buildNumber,
+                    'url': resultsSummaryURLForBuildNumber(platform, builderName, buildNumber)
+                };
+                historicalResultsData.unshift(resultsData);
+           }
+        });
         callback(historicalResultsData);
     });
 }
