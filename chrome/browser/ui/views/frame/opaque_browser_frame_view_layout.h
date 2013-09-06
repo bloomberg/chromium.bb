@@ -21,6 +21,12 @@ class Label;
 // dependencies with Browser and classes that depend on Browser.
 class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
  public:
+  enum ButtonID {
+    BUTTON_MINIMIZE,
+    BUTTON_MAXIMIZE,
+    BUTTON_CLOSE
+  };
+
   explicit OpaqueBrowserFrameViewLayout(
       OpaqueBrowserFrameViewLayoutDelegate* delegate);
   virtual ~OpaqueBrowserFrameViewLayout();
@@ -30,9 +36,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   static bool ShouldAddDefaultCaptionButtons();
 
   gfx::Rect GetBoundsForTabStrip(
-      const gfx::Size& tabstrip_preferred_size,
-      int available_width) const;
-  gfx::Rect GetBoundsForTabStripAndAvatarArea(
       const gfx::Size& tabstrip_preferred_size,
       int available_width) const;
 
@@ -78,10 +81,31 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   const gfx::Rect& client_view_bounds() const { return client_view_bounds_; }
 
  private:
+  // Whether a specific button should be inserted on the leading or trailing
+  // side.
+  enum ButtonAlignment {
+    ALIGN_LEADING,
+    ALIGN_TRAILING
+  };
+
   // Layout various sub-components of this view.
   void LayoutWindowControls(views::View* host);
-  void LayoutTitleBar();
+  void LayoutTitleBar(views::View* host);
   void LayoutAvatar();
+
+  void ConfigureButton(views::View* host,
+                       ButtonID button_id,
+                       ButtonAlignment align,
+                       int caption_y);
+
+  // Sets the visibility of all buttons associated with |button_id| to false.
+  void HideButton(ButtonID button_id);
+
+  // Adds a window caption button to either the leading or trailing side.
+  void SetBoundsForButton(views::View* host,
+                          views::ImageButton* button,
+                          ButtonAlignment align,
+                          int caption_y);
 
   // Internal implementation of ViewAdded() and ViewRemoved().
   void SetView(int id, views::View* view);
@@ -100,6 +124,23 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // The bounds of the ClientView.
   gfx::Rect client_view_bounds_;
 
+  // The layout of the window icon, if visible.
+  gfx::Rect window_icon_bounds_;
+
+  // How far from the leading/trailing edge of the view the next window control
+  // should be placed.
+  int leading_button_start_;
+  int trailing_button_start_;
+
+  // The size of the window buttons, and the avatar menu item (if any). This
+  // does not count labels or other elements that should be counted in a
+  // minimal frame.
+  int minimum_size_for_buttons_;
+
+  // Whether any of the window control buttons were packed on the leading.
+  bool has_leading_buttons_;
+  bool has_trailing_buttons_;
+
   // Window controls.
   views::ImageButton* minimize_button_;
   views::ImageButton* maximize_button_;
@@ -111,6 +152,9 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   views::View* avatar_label_;
   views::View* avatar_button_;
+
+  std::vector<ButtonID> leading_buttons_;
+  std::vector<ButtonID> trailing_buttons_;
 
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameViewLayout);
 };

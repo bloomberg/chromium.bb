@@ -242,7 +242,7 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, BasicWindow) {
   EXPECT_EQ("-1,13 398x29",
             layout_manager_->GetBoundsForTabStrip(
                 delegate_->GetTabstripPreferredSize(), kWidth).ToString());
-  EXPECT_EQ("226x73", layout_manager_->GetMinimumSize(kWidth).ToString());
+  EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());
 
   // A normal window with no window icon still produces icon bounds for
   // Windows, which has a hidden icon that a user can double click on to close
@@ -263,10 +263,10 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, BasicWindowMaximized) {
   EXPECT_EQ("429,0 25x18", restore_button_->bounds().ToString());
   EXPECT_EQ("454,0 46x18", close_button_->bounds().ToString());
 
-  EXPECT_EQ("-6,-3 393x29",
+  EXPECT_EQ("-5,-3 392x29",
             layout_manager_->GetBoundsForTabStrip(
                 delegate_->GetTabstripPreferredSize(), kWidth).ToString());
-  EXPECT_EQ("231x61", layout_manager_->GetMinimumSize(kWidth).ToString());
+  EXPECT_EQ("262x61", layout_manager_->GetMinimumSize(kWidth).ToString());
 
   // In the maximized case, OpaqueBrowserFrameView::NonClientHitTest() uses
   // this rect, extended to the top left corner of the window.
@@ -299,5 +299,5 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithAvatar) {
   EXPECT_EQ("45,13 352x29",
             layout_manager_->GetBoundsForTabStrip(
                 delegate_->GetTabstripPreferredSize(), kWidth).ToString());
-  EXPECT_EQ("226x73", layout_manager_->GetMinimumSize(kWidth).ToString());
+  EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());
 }
