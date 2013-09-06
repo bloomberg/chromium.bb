@@ -47,9 +47,10 @@ void RemoveFakeCredentials(
     if (value->GetAsDictionary(&nested_object)) {
       const onc::OncFieldSignature* field_signature =
           onc::GetFieldSignature(signature, field_name);
-
-      RemoveFakeCredentials(*field_signature->value_signature,
-                            nested_object);
+      if (field_signature)
+        RemoveFakeCredentials(*field_signature->value_signature, nested_object);
+      else
+        LOG(ERROR) << "ONC has unrecoginzed field: " << field_name;
       continue;
     }
 
