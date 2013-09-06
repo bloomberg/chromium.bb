@@ -1,17 +1,24 @@
 description("Tests basic use of GestureFlingStart");
 
-var expectedWheelEventsOccurred = "2";
 var actualWheelEventsOccurred = 0;
+var cumulativeScrollX = 0;
+var cumulativeScrollY = 0;
+
+var minimumWheelEventsExpected = "6";
+var minimumScrollXExpected = "10";
+var minimumScrollYExpected = "10";
 
 function recordWheelEvent(event)
 {
-    shouldBe('event.clientX', "10");
-    shouldBe('event.clientY', "11");
+    if (event.clientX != 10)
+      debug('FAIL: clientX != 10');
 
-    // Test deliberately does not equality check wheelDeltas to not be fragile in the face of curve adjustment.
-    shouldBeTrue("event.wheelDeltaX > 5");
-    shouldBeTrue("event.wheelDeltaY > 5");
+    if (event.clientY != 11)
+      debug('FAIL: event.clientY != 11');
+
     actualWheelEventsOccurred++;
+    cumulativeScrollX += event.wheelDeltaX;
+    cumulativeScrollY += event.wheelDeltaY;
 }
 
 document.addEventListener("mousewheel", recordWheelEvent);
@@ -24,7 +31,9 @@ if (window.testRunner && window.eventSender && window.eventSender.gestureFlingSt
 }
 
 setTimeout(function() {
-    shouldBe('actualWheelEventsOccurred', expectedWheelEventsOccurred);
+    shouldBeGreaterThanOrEqual('actualWheelEventsOccurred', minimumWheelEventsExpected);
+    shouldBeGreaterThanOrEqual('cumulativeScrollX', minimumScrollXExpected);
+    shouldBeGreaterThanOrEqual('cumulativeScrollY', minimumScrollYExpected);
 }, 100);
 
 if (window.testRunner)

@@ -459,9 +459,6 @@ crbug.com/66751 [ Linux Mac ] http/tests/local/link-stylesheet-load-order.html [
 crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order-preload.html [ Failure Timeout ]
 crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order.html [ Failure Timeout ]
 
-# The result here is flaky. So a rebaseline won't make this pass.
-crbug.com/261277 fast/events/touch/gesture/pad-gesture-fling.html [ Failure ]
-
 # The test is just too slow and has never passed since its introduction on Dbg build.
 webkit.org/b/90363 [ Debug ] fast/overflow/lots-of-sibling-inline-boxes.html [ Timeout ]
 
