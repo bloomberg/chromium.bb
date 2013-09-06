@@ -4,6 +4,7 @@
 
 #include "platform_verification_flow.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
@@ -22,6 +23,11 @@
 #include "content/public/browser/web_contents.h"
 
 namespace {
+// A switch which allows consent to be given on the command line.
+// TODO(dkrahn): Remove this when UI has been implemented (crbug.com/270908).
+const char kAutoApproveSwitch[] =
+    "auto-approve-platform-verification-consent-prompts";
+
 // A callback method to handle DBus errors.
 void DBusCallback(const base::Callback<void(bool)>& on_success,
                   const base::Closure& on_failure,
@@ -39,6 +45,48 @@ void DBusCallback(const base::Callback<void(bool)>& on_success,
 namespace chromeos {
 namespace attestation {
 
+// A default implementation of the Delegate interface.
+class DefaultDelegate : public PlatformVerificationFlow::Delegate {
+ public:
+  DefaultDelegate() {}
+  virtual ~DefaultDelegate() {}
+
+  virtual void ShowConsentPrompt(
+      PlatformVerificationFlow::ConsentType type,
+      content::WebContents* web_contents,
+      const PlatformVerificationFlow::Delegate::ConsentCallback& callback)
+      OVERRIDE {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(kAutoApproveSwitch)) {
+      LOG(WARNING) << "PlatformVerificationFlow: Automatic approval enabled.";
+      callback.Run(PlatformVerificationFlow::CONSENT_RESPONSE_ALLOW);
+    } else {
+      NOTIMPLEMENTED();
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DefaultDelegate);
+};
+
+PlatformVerificationFlow::PlatformVerificationFlow()
+    : attestation_flow_(NULL),
+      async_caller_(cryptohome::AsyncMethodCaller::GetInstance()),
+      cryptohome_client_(DBusThreadManager::Get()->GetCryptohomeClient()),
+      user_manager_(UserManager::Get()),
+      delegate_(NULL),
+      testing_prefs_(NULL),
+      weak_factory_(this) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  scoped_ptr<ServerProxy> attestation_ca_client(new AttestationCAClient());
+  default_attestation_flow_.reset(new AttestationFlow(
+      async_caller_,
+      cryptohome_client_,
+      attestation_ca_client.Pass()));
+  attestation_flow_ = default_attestation_flow_.get();
+  default_delegate_.reset(new DefaultDelegate());
+  delegate_ = default_delegate_.get();
+}
+
 PlatformVerificationFlow::PlatformVerificationFlow(
     AttestationFlow* attestation_flow,
     cryptohome::AsyncMethodCaller* async_caller,
@@ -52,6 +100,7 @@ PlatformVerificationFlow::PlatformVerificationFlow(
       user_manager_(user_manager),
       statistics_provider_(statistics_provider),
       delegate_(delegate),
+      testing_prefs_(NULL),
       weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }

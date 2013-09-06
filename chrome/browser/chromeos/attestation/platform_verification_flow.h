@@ -103,8 +103,7 @@ class PlatformVerificationFlow {
 
   // A constructor that uses the default implementation of all dependencies
   // including Delegate.
-  // TODO(dkrahn): Enable this when the default delegate has been implemented.
-  // PlatformVerificationFlow();
+  PlatformVerificationFlow();
 
   // An alternate constructor which specifies dependent objects explicitly.
   // This is useful in testing.  The caller retains ownership of all pointers.
