@@ -372,8 +372,9 @@ public class AdapterInputConnection extends BaseInputConnection {
      */
     @Override
     public boolean setSelection(int start, int end) {
-        if (DEBUG) Log.w(TAG, "setSelection");
-        if (start < 0 || end < 0) return true;
+        if (DEBUG) Log.w(TAG, "setSelection [" + start + " " + end + "]");
+        int textLength = getEditable().length();
+        if (start < 0 || end < 0 || start > textLength || end > textLength) return true;
         super.setSelection(start, end);
         return mImeAdapter.setEditableSelectionOffsets(start, end);
     }
@@ -395,10 +396,13 @@ public class AdapterInputConnection extends BaseInputConnection {
     @Override
     public boolean setComposingRegion(int start, int end) {
         if (DEBUG) Log.w(TAG, "setComposingRegion [" + start + " " + end + "]");
+        int textLength = getEditable().length();
         int a = Math.min(start, end);
         int b = Math.max(start, end);
         if (a < 0) a = 0;
         if (b < 0) b = 0;
+        if (a > textLength) a = textLength;
+        if (b > textLength) b = textLength;
 
         if (a == b) {
             removeComposingSpans(getEditable());
