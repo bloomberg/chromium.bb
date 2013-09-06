@@ -3283,6 +3283,7 @@
                 ],
                 'defines': [
                   'LEAK_SANITIZER',
+                  'WTF_USE_LEAK_SANITIZER=1',
                 ],
               }],
             ],
