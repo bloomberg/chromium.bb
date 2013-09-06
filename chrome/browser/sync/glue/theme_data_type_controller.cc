@@ -21,7 +21,8 @@ ThemeDataTypeController::ThemeDataTypeController(
 ThemeDataTypeController::~ThemeDataTypeController() {}
 
 bool ThemeDataTypeController::StartModels() {
-  extensions::ExtensionSystem::Get(profile_)->InitForRegularProfile(true);
+  extensions::ExtensionSystem::Get(profile_)
+      ->InitForRegularProfile(true, false);
   return true;
 }
 

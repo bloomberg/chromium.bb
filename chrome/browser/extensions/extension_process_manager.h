@@ -134,6 +134,11 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // onSuspendCanceled() event to it.
   void CancelSuspend(const extensions::Extension* extension);
 
+  // If |defer| is true background host creation is to be deferred until this is
+  // called again with |defer| set to false, at which point all deferred
+  // background hosts will be created.  Defaults to false.
+  void DeferBackgroundHostCreation(bool defer);
+
  protected:
   explicit ExtensionProcessManager(Profile* profile);
 
@@ -199,7 +204,8 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // Returns true if loading background pages should be deferred. This is
   // true if there are no browser windows open and the browser process was
-  // started to show the app launcher.
+  // started to show the app launcher, or if DeferBackgroundHostCreation was
+  // called with true, or if the profile is not yet valid.
   bool DeferLoadingBackgroundHosts() const;
 
   void OnDevToolsStateChanged(content::DevToolsAgentHost*, bool attached);
@@ -218,6 +224,9 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // The time to delay between sending a ShouldSuspend message and
   // sending a Suspend message; read from command-line switch.
   base::TimeDelta event_page_suspending_time_;
+
+  // If true, then creation of background hosts is suspended.
+  bool defer_background_host_creation_;
 
   base::WeakPtrFactory<ExtensionProcessManager> weak_ptr_factory_;
 

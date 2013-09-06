@@ -137,6 +137,7 @@ ExtensionProcessManager* ExtensionProcessManager::Create(Profile* profile) {
 
 ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
   : site_instance_(SiteInstance::Create(profile)),
+    defer_background_host_creation_(false),
     weak_ptr_factory_(this),
     devtools_callback_(base::Bind(
         &ExtensionProcessManager::OnDevToolsStateChanged,
@@ -544,6 +545,16 @@ void ExtensionProcessManager::CancelSuspend(const Extension* extension) {
   }
 }
 
+void ExtensionProcessManager::DeferBackgroundHostCreation(bool defer) {
+  bool previous = defer_background_host_creation_;
+  defer_background_host_creation_ = defer;
+
+  // If we were deferred, and we switch to non-deferred, then create the
+  // background hosts.
+  if (previous && !defer_background_host_creation_)
+    CreateBackgroundHostsForProfileStartup();
+}
+
 void ExtensionProcessManager::Observe(
     int type,
     const content::NotificationSource& source,
@@ -568,12 +579,6 @@ void ExtensionProcessManager::Observe(
     }
     case chrome::NOTIFICATION_EXTENSIONS_READY:
     case chrome::NOTIFICATION_PROFILE_CREATED: {
-      // Don't load background hosts now if the loading should be deferred.
-      // Instead they will be loaded when a browser window for this profile
-      // (or an incognito profile from this profile) is ready.
-      if (DeferLoadingBackgroundHosts())
-        break;
-
       CreateBackgroundHostsForProfileStartup();
       break;
     }
@@ -699,6 +704,13 @@ void ExtensionProcessManager::OnDevToolsStateChanged(
 }
 
 void ExtensionProcessManager::CreateBackgroundHostsForProfileStartup() {
+  // Don't load background hosts now if the loading should be deferred.
+  // Instead they will be loaded when a browser window for this profile
+  // (or an incognito profile from this profile) is ready, or when
+  // DeferBackgroundHostCreation is called with false.
+  if (DeferLoadingBackgroundHosts())
+    return;
+
   ExtensionService* service = GetProfile()->GetExtensionService();
   for (ExtensionSet::const_iterator extension = service->extensions()->begin();
        extension != service->extensions()->end(); ++extension) {
@@ -776,6 +788,10 @@ void ExtensionProcessManager::ClearBackgroundPageData(
 }
 
 bool ExtensionProcessManager::DeferLoadingBackgroundHosts() const {
+  // Don't load background hosts now if the loading should be deferred.
+  if (defer_background_host_creation_)
+    return true;
+
   // The profile may not be valid yet if it is still being initialized.
   // In that case, defer loading, since it depends on an initialized profile.
   // http://crbug.com/222473

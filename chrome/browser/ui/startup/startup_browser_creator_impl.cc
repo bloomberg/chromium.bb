@@ -32,6 +32,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_util.h"
@@ -388,6 +389,14 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   if (process_startup)
     ShellIntegration::MigrateChromiumShortcuts();
 #endif  // defined(OS_WIN)
+
+#if defined(ENABLE_EXTENSIONS)
+  // If we deferred creation of background extension hosts, we want to create
+  // them now that the session (if any) has been restored.
+  ExtensionProcessManager* process_manager =
+      extensions::ExtensionSystem::Get(profile)->process_manager();
+  process_manager->DeferBackgroundHostCreation(false);
+#endif
 
   return true;
 }

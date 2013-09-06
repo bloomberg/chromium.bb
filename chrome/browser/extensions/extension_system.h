@@ -52,8 +52,12 @@ class ExtensionSystem : public BrowserContextKeyedService {
 
   // Initializes extensions machinery.
   // Component extensions are always enabled, external and user extensions
-  // are controlled by |extensions_enabled|.
-  virtual void InitForRegularProfile(bool extensions_enabled) = 0;
+  // are controlled by |extensions_enabled|.  If |defer_background_creation| is
+  // true, then creation of background extension RenderViews will be deferred
+  // until ExtensionProcessManager::DeferBackgroundHostCreation is called with
+  // |defer| set to false.
+  virtual void InitForRegularProfile(bool extensions_enabled,
+                                     bool defer_background_creation) = 0;
 
   // The ExtensionService is created at startup.
   virtual ExtensionService* extension_service() = 0;
@@ -125,7 +129,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE;
+  virtual void InitForRegularProfile(bool extensions_enabled,
+                                     bool defer_background_creation) OVERRIDE;
 
   virtual ExtensionService* extension_service() OVERRIDE;  // shared
   virtual ManagementPolicy* management_policy() OVERRIDE;  // shared
