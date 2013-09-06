@@ -77,8 +77,10 @@ static void RegisterWidevine() {
       kWidevineUuid,
 #endif  // defined(ENABLE_PEPPER_CDMS)
       "com.widevine");
+#if !defined(OS_ANDROID)
   AddSupportedType(kWidevineKeySystem, "video/webm", "vorbis,vp8,vp8.0");
   AddSupportedType(kWidevineKeySystem, "audio/webm", "vorbis");
+#endif  // !defined(OS_ANDROID)
 #if defined(USE_PROPRIETARY_CODECS) && \
     defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
   AddSupportedType(kWidevineKeySystem, "video/mp4", kWidevineVideoMp4Codecs);

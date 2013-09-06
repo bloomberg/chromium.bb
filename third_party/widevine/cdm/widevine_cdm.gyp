@@ -38,6 +38,11 @@
               'binaries/win/<(target_arch)/widevinecdm.dll.lib',
             ],
           }],
+          # TODO(xhwang): Enable this for non-Chrome build if necessary.
+          [ 'OS == "android"', {
+            'widevine_cdm_version_h_file%':
+            'android/widevine_cdm_version.h',
+          }],
         ],
       }],
     ],

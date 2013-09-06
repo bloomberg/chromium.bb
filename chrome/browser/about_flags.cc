@@ -752,7 +752,7 @@ const Experiment kExperiments[] = {
     "override-encrypted-media-canplaytype",
     IDS_FLAGS_ENCRYPTED_MEDIA_CANPLAYTYPE_OVERRIDE_NAME,
     IDS_FLAGS_ENCRYPTED_MEDIA_CANPLAYTYPE_OVERRIDE_DESCRIPTION,
-    kOsMac | kOsWin,
+    kOsMac | kOsWin | kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kOverrideEncryptedMediaCanPlayType)
   },
   {
