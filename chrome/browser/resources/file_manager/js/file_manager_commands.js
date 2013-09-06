@@ -609,10 +609,8 @@ Commands.createFolderShortcutCommand = {
    */
   canExecute: function(event, fileManager) {
     var target = event.target;
-    // TODO(yoshiki): remove this after launching folder shortcuts feature.
-    if (!fileManager.isFolderShortcutsEnabled() ||
-        (!target instanceof NavigationListItem &&
-         !target instanceof DirectoryItem)) {
+    if (!target instanceof NavigationListItem &&
+        !target instanceof DirectoryItem) {
       event.command.setHidden(true);
       return;
     }
@@ -660,10 +658,8 @@ Commands.removeFolderShortcutCommand = {
    */
   canExecute: function(event, fileManager) {
     var target = event.target;
-    // TODO(yoshiki): remove this after launching folder shortcut feature.
-    if (!fileManager.isFolderShortcutsEnabled() ||
-        (!target instanceof NavigationListItem &&
-         !target instanceof DirectoryItem)) {
+    if (!target instanceof NavigationListItem &&
+        !target instanceof DirectoryItem) {
       event.command.setHidden(true);
       return;
     }

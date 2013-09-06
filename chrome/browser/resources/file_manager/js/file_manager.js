@@ -2123,18 +2123,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Folder shared feature is under development and hidden behind flag. This
-   * method returns if the feature is explicitly enabled by the flag or not.
-   * TODO(yoshiki): Remove this after launching folder feature feature.
-   *
-   * @return {boolena} True if the flag is enabled.
-   */
-  FileManager.prototype.isFolderShortcutsEnabled = function() {
-    // TODO(yoshiki): Remove this method in M31.
-    return true;
-  };
-
-  /**
    * Creates a folder shortcut.
    * @param {string} path A shortcut which refers to |path| to be created.
    */
