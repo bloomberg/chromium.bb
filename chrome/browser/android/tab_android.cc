@@ -23,6 +23,8 @@
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
@@ -237,6 +239,17 @@ void TabAndroid::InitWebContents(JNIEnv* env,
       content::Source<content::WebContents>(web_contents()));
 
   synced_tab_delegate_->SetWebContents(web_contents());
+
+  // Set the window ID if there is a valid TabModel.
+  TabModel* model = TabModelList::GetTabModelWithProfile(GetProfile());
+  if (model) {
+    SessionID window_id;
+    window_id.set_id(model->GetSessionId());
+
+    SessionTabHelper* session_tab_helper =
+        SessionTabHelper::FromWebContents(web_contents());
+    session_tab_helper->SetWindowID(window_id);
+  }
 
   // Verify that the WebContents this tab represents matches the expected
   // off the record state.

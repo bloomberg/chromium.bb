@@ -50,8 +50,11 @@ TabModel* TabModelList::GetTabModelWithProfile(
 
   for (TabModelList::const_iterator i = TabModelList::begin();
       i != TabModelList::end(); ++i) {
-    if (profile->IsSameProfile((*i)->GetProfile()))
+    Profile* model_profile = (*i)->GetProfile();
+    if (profile->IsSameProfile(model_profile) &&
+        profile->IsOffTheRecord() == model_profile->IsOffTheRecord()) {
       return *i;
+    }
   }
 
   return NULL;
