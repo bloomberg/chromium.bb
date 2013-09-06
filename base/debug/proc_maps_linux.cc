@@ -4,6 +4,8 @@
 
 #include "base/debug/proc_maps_linux.h"
 
+#include <fcntl.h>
+
 #if defined(OS_LINUX)
 #include <inttypes.h>
 #endif
@@ -22,9 +24,68 @@
 namespace base {
 namespace debug {
 
+// Scans |proc_maps| starting from |pos| returning true if the gate VMA was
+// found, otherwise returns false.
+static bool ContainsGateVMA(std::string* proc_maps, size_t pos) {
+#if defined(ARCH_CPU_ARM_FAMILY)
+  // The gate VMA on ARM kernels is the interrupt vectors page.
+  return proc_maps->find(" [vectors]\n", pos) != std::string::npos;
+#elif defined(ARCH_CPU_X86_64)
+  // The gate VMA on x86 64-bit kernels is the virtual system call page.
+  return proc_maps->find(" [vsyscall]\n", pos) != std::string::npos;
+#else
+  // Otherwise assume there is no gate VMA in which case we shouldn't
+  // get duplicate entires.
+  return false;
+#endif
+}
+
 bool ReadProcMaps(std::string* proc_maps) {
-  FilePath proc_maps_path("/proc/self/maps");
-  return ReadFileToString(proc_maps_path, proc_maps);
+  // seq_file only writes out a page-sized amount on each call. Refer to header
+  // file for details.
+  const long kReadSize = sysconf(_SC_PAGESIZE);
+
+  int fd = HANDLE_EINTR(open("/proc/self/maps", O_RDONLY));
+  if (fd == -1) {
+    DPLOG(ERROR) << "Couldn't open /proc/self/maps";
+    return false;
+  }
+  file_util::ScopedFD fd_closer(&fd);
+  proc_maps->clear();
+
+  while (true) {
+    // To avoid a copy, resize |proc_maps| so read() can write directly into it.
+    // Compute |buffer| afterwards since resize() may reallocate.
+    size_t pos = proc_maps->size();
+    proc_maps->resize(pos + kReadSize);
+    void* buffer = &(*proc_maps)[pos];
+
+    ssize_t bytes_read = HANDLE_EINTR(read(fd, buffer, kReadSize));
+    if (bytes_read < 0) {
+      DPLOG(ERROR) << "Couldn't read /proc/self/maps";
+      proc_maps->clear();
+      return false;
+    }
+
+    // ... and don't forget to trim off excess bytes.
+    proc_maps->resize(pos + bytes_read);
+
+    if (bytes_read == 0)
+      break;
+
+    // The gate VMA is handled as a special case after seq_file has finished
+    // iterating through all entries in the virtual memory table.
+    //
+    // Unfortunately, if additional entries are added at this point in time
+    // seq_file gets confused and the next call to read() will return duplicate
+    // entries including the gate VMA again.
+    //
+    // Avoid this by searching for the gate VMA and breaking early.
+    if (ContainsGateVMA(proc_maps, pos))
+      break;
+  }
+
+  return true;
 }
 
 bool ParseProcMaps(const std::string& input,

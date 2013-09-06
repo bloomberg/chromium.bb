@@ -180,14 +180,7 @@ TEST(ProcMapsTest, Permissions) {
   }
 }
 
-// ProcMapsTest.ReadProcMaps fails under TSan on Linux,
-// see http://crbug.com/258451.
-#if defined(THREAD_SANITIZER)
-#define MAYBE_ReadProcMaps DISABLED_ReadProcMaps
-#else
-#define MAYBE_ReadProcMaps ReadProcMaps
-#endif
-TEST(ProcMapsTest, MAYBE_ReadProcMaps) {
+TEST(ProcMapsTest, ReadProcMaps) {
   std::string proc_maps;
   ASSERT_TRUE(ReadProcMaps(&proc_maps));
 
@@ -236,6 +229,13 @@ TEST(ProcMapsTest, MAYBE_ReadProcMaps) {
   EXPECT_TRUE(found_exe);
   EXPECT_TRUE(found_stack);
   EXPECT_TRUE(found_address);
+}
+
+TEST(ProcMapsTest, ReadProcMapsNonEmptyString) {
+  std::string old_string("I forgot to clear the string");
+  std::string proc_maps(old_string);
+  ASSERT_TRUE(ReadProcMaps(&proc_maps));
+  EXPECT_EQ(std::string::npos, proc_maps.find(old_string));
 }
 
 TEST(ProcMapsTest, MissingFields) {
