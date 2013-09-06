@@ -163,7 +163,7 @@ class TrayBackground : public views::Background {
       orientation = kImageVertical;
 
     int state = kImageTypeDefault;
-    if (tray_background_view_->IsPressed())
+    if (tray_background_view_->draw_background_as_active())
       state = kImageTypePressed;
     else if (shelf_widget && shelf_widget->GetDimsShelf())
       state = kImageTypeOnBlack;
@@ -329,12 +329,13 @@ TrayBackgroundView::TrayBackgroundView(
       hover_background_animator_(
           this, 0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha),
       hovered_(false),
-      pressed_(false),
+      draw_background_as_active_(false),
       widget_observer_(new TrayWidgetObserver(this)) {
   set_notify_enter_exit_on_child(true);
 
   // Initially we want to paint the background, but without the hover effect.
-  SetPaintsBackground(true, internal::BackgroundAnimator::CHANGE_IMMEDIATE);
+  hide_background_animator_.SetPaintsBackground(true,
+      internal::BackgroundAnimator::CHANGE_IMMEDIATE);
   hover_background_animator_.SetPaintsBackground(false,
       internal::BackgroundAnimator::CHANGE_IMMEDIATE);
 
@@ -359,22 +360,18 @@ const char* TrayBackgroundView::GetClassName() const {
 
 void TrayBackgroundView::OnMouseEntered(const ui::MouseEvent& event) {
   hovered_ = true;
-  if (!background_)
+  if (!background_ || draw_background_as_active_ ||
+      ash::switches::UseAlternateShelfLayout())
     return;
-  if (pressed_)
-    return;
-
   hover_background_animator_.SetPaintsBackground(true,
       internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
 
 void TrayBackgroundView::OnMouseExited(const ui::MouseEvent& event) {
   hovered_ = false;
-  if (!background_)
+  if (!background_ || draw_background_as_active_ ||
+      ash::switches::UseAlternateShelfLayout())
     return;
-  if (pressed_)
-    return;
-
   hover_background_animator_.SetPaintsBackground(false,
       internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
@@ -408,11 +405,10 @@ bool TrayBackgroundView::PerformAction(const ui::Event& event) {
 }
 
 void TrayBackgroundView::UpdateBackground(int alpha) {
-  if (!background_)
+  // The animator should never fire when the alternate shelf layout is used.
+  if (!background_ || draw_background_as_active_)
     return;
-  if (pressed_)
-    return;
-
+  DCHECK(!ash::switches::UseAlternateShelfLayout());
   background_->set_alpha(hide_background_animator_.alpha() +
                          hover_background_animator_.alpha());
   SchedulePaint();
@@ -426,6 +422,7 @@ void TrayBackgroundView::SetContents(views::View* contents) {
 void TrayBackgroundView::SetPaintsBackground(
     bool value,
     internal::BackgroundAnimator::ChangeType change_type) {
+  DCHECK(!ash::switches::UseAlternateShelfLayout());
   hide_background_animator_.SetPaintsBackground(value, change_type);
 }
 
@@ -494,10 +491,6 @@ void TrayBackgroundView::InitializeBubbleAnimations(
   views::corewm::SetWindowVisibilityAnimationDuration(
       bubble_widget->GetNativeWindow(),
       base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMS));
-}
-
-bool TrayBackgroundView::IsPressed() {
-  return pressed_;
 }
 
 aura::Window* TrayBackgroundView::GetBubbleWindowContainer() const {
@@ -575,13 +568,13 @@ TrayBubbleView::AnchorAlignment TrayBackgroundView::GetAnchorAlignment() const {
   return TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
 }
 
-void TrayBackgroundView::SetBubbleVisible(bool visible) {
-  pressed_ = visible;
-  if (!background_)
+void TrayBackgroundView::SetDrawBackgroundAsActive(bool visible) {
+  draw_background_as_active_ = visible;
+  if (!background_ || !switches::UseAlternateShelfLayout())
     return;
 
   // Do not change gradually, changing color between grey and blue is weird.
-  if (pressed_)
+  if (draw_background_as_active_)
     background_->set_color(kTrayBackgroundPressedColor);
   else if (hovered_)
     background_->set_alpha(kTrayBackgroundHoverAlpha);

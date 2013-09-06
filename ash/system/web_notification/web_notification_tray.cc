@@ -376,6 +376,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
   status_area_widget()->SetHideSystemNotifications(true);
   GetShelfLayoutManager()->UpdateAutoHideState();
   button_->SetBubbleVisible(true);
+  SetDrawBackgroundAsActive(true);
   return true;
 }
 
@@ -386,6 +387,7 @@ bool WebNotificationTray::ShowMessageCenter() {
 void WebNotificationTray::HideMessageCenter() {
   if (!message_center_bubble())
     return;
+  SetDrawBackgroundAsActive(false);
   message_center_bubble_.reset();
   should_block_shelf_auto_hide_ = false;
   show_message_center_on_unlock_ = false;
@@ -566,10 +568,6 @@ void WebNotificationTray::ExecuteCommand(int command_id, int event_flags) {
       base::TimeDelta::FromDays(1):
       base::TimeDelta::FromHours(1);
   message_center()->EnterQuietModeWithExpire(expires_in);
-}
-
-bool WebNotificationTray::IsPressed() {
-  return IsMessageCenterBubbleVisible();
 }
 
 void WebNotificationTray::ButtonPressed(views::Button* sender,

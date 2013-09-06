@@ -119,9 +119,6 @@ class ASH_EXPORT WebNotificationTray
       ui::Accelerator* accelerator) OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
-  // Overridden from TrayBackgroundView.
-  virtual bool IsPressed() OVERRIDE;
-
   message_center::MessageCenter* message_center() const;
 
  private:
