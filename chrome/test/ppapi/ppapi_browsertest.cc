@@ -1071,7 +1071,6 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetworkMonitor) {
       LIST_TEST(NetworkMonitorPrivate_Basic)
       LIST_TEST(NetworkMonitorPrivate_2Monitors)
       LIST_TEST(NetworkMonitorPrivate_DeleteInCallback)
-      LIST_TEST(NetworkMonitorPrivate_ListObserver)
   );
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NetworkMonitor) {
@@ -1079,7 +1078,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NetworkMonitor) {
       LIST_TEST(NetworkMonitorPrivate_Basic)
       LIST_TEST(NetworkMonitorPrivate_2Monitors)
       LIST_TEST(NetworkMonitorPrivate_DeleteInCallback)
-      LIST_TEST(NetworkMonitorPrivate_ListObserver)
   );
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(NetworkMonitor)) {
@@ -1087,7 +1085,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(NetworkMonitor)) {
       LIST_TEST(NetworkMonitorPrivate_Basic)
       LIST_TEST(NetworkMonitorPrivate_2Monitors)
       LIST_TEST(NetworkMonitorPrivate_DeleteInCallback)
-      LIST_TEST(NetworkMonitorPrivate_ListObserver)
   );
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, NetworkMonitor) {
@@ -1095,7 +1092,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, NetworkMonitor) {
       LIST_TEST(NetworkMonitorPrivate_Basic)
       LIST_TEST(NetworkMonitorPrivate_2Monitors)
       LIST_TEST(NetworkMonitorPrivate_DeleteInCallback)
-      LIST_TEST(NetworkMonitorPrivate_ListObserver)
   );
 }
 

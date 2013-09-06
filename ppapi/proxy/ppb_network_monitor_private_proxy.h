@@ -7,11 +7,11 @@
 
 #include <list>
 
-#include "base/observer_list_threadsafe.h"
+#include "base/observer_list.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/shared_impl/ppb_network_list_private_shared.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
-#include "ppapi/thunk/ppb_network_monitor_private_api.h"
+#include "ppapi/thunk/ppb_network_monitor_api.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -26,9 +26,7 @@ class PPB_NetworkMonitor_Private_Proxy : public InterfaceProxy {
   virtual ~PPB_NetworkMonitor_Private_Proxy();
 
   // Creates n NetworkManager object in the plugin process.
-  static PP_Resource CreateProxyResource(PP_Instance instance,
-                                         PPB_NetworkMonitor_Callback callback,
-                                         void* user_data);
+  static PP_Resource CreateProxyResource(PP_Instance instance);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -47,11 +45,8 @@ class PPB_NetworkMonitor_Private_Proxy : public InterfaceProxy {
   void OnNetworkMonitorDeleted(NetworkMonitor* monitor,
                                PP_Instance instance);
 
-  // We use ObserverListThreadSafe because we want to send notifications to the
-  // same thread that created the NetworkMonitor.
-  scoped_refptr<ObserverListThreadSafe<NetworkMonitor> > monitors_;
+  ObserverList<NetworkMonitor> monitors_;
 
-  int monitors_count_;
   scoped_refptr<NetworkListStorage> current_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_NetworkMonitor_Private_Proxy);

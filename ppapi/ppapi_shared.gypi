@@ -210,7 +210,7 @@
           'thunk/ppb_net_address_thunk.cc',
           'thunk/ppb_network_list_api.h',
           'thunk/ppb_network_list_private_thunk.cc',
-          'thunk/ppb_network_monitor_private_api.h',
+          'thunk/ppb_network_monitor_api.h',
           'thunk/ppb_network_monitor_private_thunk.cc',
           'thunk/ppb_network_proxy_api.h',
           'thunk/ppb_network_proxy_thunk.cc',

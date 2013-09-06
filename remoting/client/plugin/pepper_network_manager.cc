@@ -17,11 +17,15 @@
 namespace remoting {
 
 PepperNetworkManager::PepperNetworkManager(const pp::InstanceHandle& instance)
-    : monitor_(instance, &PepperNetworkManager::OnNetworkListCallbackHandler,
-               this),
+    : monitor_(instance),
       start_count_(0),
       network_list_received_(false),
+      callback_factory_(this),
       weak_factory_(this) {
+  pp::CompletionCallbackWithOutput<pp::NetworkListPrivate> callback =
+      callback_factory_.NewCallbackWithOutput(
+          &PepperNetworkManager::OnNetworkList);
+  monitor_.UpdateNetworkList(callback);
 }
 
 PepperNetworkManager::~PepperNetworkManager() {
@@ -43,18 +47,24 @@ void PepperNetworkManager::StopUpdating() {
   --start_count_;
 }
 
-// static
-void PepperNetworkManager::OnNetworkListCallbackHandler(
-    void* user_data,
-    PP_Resource list_resource) {
-  PepperNetworkManager* object = static_cast<PepperNetworkManager*>(user_data);
-  pp::NetworkListPrivate list(pp::PASS_REF, list_resource);
-  object->OnNetworkList(list);
-}
 
-void PepperNetworkManager::OnNetworkList(const pp::NetworkListPrivate& list) {
+void PepperNetworkManager::OnNetworkList(int32_t result,
+                                         const pp::NetworkListPrivate& list) {
+  if (result != PP_OK) {
+    SignalError();
+    return;
+  }
+  DCHECK(!list.is_null());
+
   network_list_received_ = true;
 
+  // Request for the next update.
+  pp::CompletionCallbackWithOutput<pp::NetworkListPrivate> callback =
+      callback_factory_.NewCallbackWithOutput(
+          &PepperNetworkManager::OnNetworkList);
+  monitor_.UpdateNetworkList(callback);
+
+  // Convert the networks to talk_base::Network.
   std::vector<talk_base::Network*> networks;
   size_t count = list.GetCount();
   for (size_t i = 0; i < count; i++) {

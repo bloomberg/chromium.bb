@@ -5,19 +5,22 @@
 #ifndef PPAPI_CPP_PRIVATE_NETWORK_MONITOR_PRIVATE_H_
 #define PPAPI_CPP_PRIVATE_NETWORK_MONITOR_PRIVATE_H_
 
-#include "ppapi/c/private/ppb_network_monitor_private.h"
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/instance_handle.h"
 
 namespace pp {
 
 class Instance;
+class NetworkListPrivate;
+
+template <typename T> class CompletionCallbackWithOutput;
 
 class NetworkMonitorPrivate : public Resource {
  public:
-  NetworkMonitorPrivate(const InstanceHandle& instance,
-                        PPB_NetworkMonitor_Callback callback,
-                        void* user_data);
+  explicit NetworkMonitorPrivate(const InstanceHandle& instance);
+
+  int32_t UpdateNetworkList(
+      const CompletionCallbackWithOutput<NetworkListPrivate>& callback);
 
   // Returns true if the required interface is available.
   static bool IsAvailable();

@@ -374,8 +374,6 @@
       'utility/graphics/paint_aggregator.h',
       'utility/graphics/paint_manager.cc',
       'utility/graphics/paint_manager.h',
-      'utility/private/network_list_observer_private.cc',
-      'utility/private/network_list_observer_private.h',
       'utility/threading/lock.cc',
       'utility/threading/lock.h',
       'utility/threading/simple_thread.cc',

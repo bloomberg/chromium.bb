@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/private/network_monitor_private.h"
+#include "ppapi/utility/completion_callback_factory.h"
 #include "third_party/libjingle/source/talk/base/network.h"
 
 namespace pp {
@@ -33,13 +34,15 @@ class PepperNetworkManager : public talk_base::NetworkManagerBase {
   static void OnNetworkListCallbackHandler(void* user_data,
                                            PP_Resource list_resource);
 
-  void OnNetworkList(const pp::NetworkListPrivate& list);
+  void OnNetworkList(int32_t result, const pp::NetworkListPrivate& list);
 
   void SendNetworksChangedSignal();
 
   pp::NetworkMonitorPrivate monitor_;
   int start_count_;
   bool network_list_received_;
+
+  pp::CompletionCallbackFactory<PepperNetworkManager> callback_factory_;
 
   base::WeakPtrFactory<PepperNetworkManager> weak_factory_;
 };

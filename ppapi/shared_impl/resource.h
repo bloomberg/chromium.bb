@@ -55,7 +55,7 @@
   F(PPB_MessageLoop_API) \
   F(PPB_NetAddress_API) \
   F(PPB_NetworkList_API) \
-  F(PPB_NetworkMonitor_Private_API) \
+  F(PPB_NetworkMonitor_API) \
   F(PPB_NetworkProxy_API) \
   F(PPB_PDF_API) \
   F(PPB_Printing_API) \

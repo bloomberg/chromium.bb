@@ -218,10 +218,8 @@ PP_Resource ResourceCreationImpl::CreateTouchInputEvent(
       ppapi::OBJECT_IS_IMPL, instance, type, time_stamp, modifiers);
 }
 
-PP_Resource ResourceCreationImpl::CreateNetworkMonitor(
-    PP_Instance instance,
-    PPB_NetworkMonitor_Callback callback,
-    void* user_data) {
+PP_Resource ResourceCreationImpl::CreateNetworkMonitorPrivate(
+    PP_Instance instance) {
   return 0;  // Not supported in-process.
 }
 

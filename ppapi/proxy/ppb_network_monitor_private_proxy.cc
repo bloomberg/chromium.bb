@@ -7,55 +7,84 @@
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/proxy_lock.h"
-#include "ppapi/thunk/ppb_network_monitor_private_api.h"
+#include "ppapi/thunk/ppb_network_monitor_api.h"
 
 namespace ppapi {
 namespace proxy {
 
 class PPB_NetworkMonitor_Private_Proxy::NetworkMonitor
     : public Resource,
-      public thunk::PPB_NetworkMonitor_Private_API,
+      public thunk::PPB_NetworkMonitor_API,
       public base::SupportsWeakPtr<
           PPB_NetworkMonitor_Private_Proxy::NetworkMonitor> {
  public:
   NetworkMonitor(PP_Instance instance,
-                 PPB_NetworkMonitor_Private_Proxy* proxy,
-                 PPB_NetworkMonitor_Callback callback,
-                 void* user_data)
+                 PPB_NetworkMonitor_Private_Proxy* proxy)
       : Resource(OBJECT_IS_PROXY, instance),
         proxy_(proxy),
-        callback_(callback),
-        user_data_(user_data) {
+        initial_list_sent_(false),
+        network_list_(NULL) {
   }
 
   virtual ~NetworkMonitor() {
+    if (TrackedCallback::IsPending(update_callback_))
+      update_callback_->PostAbort();
     proxy_->OnNetworkMonitorDeleted(this, pp_instance());
   }
 
+  // thunk::PPB_NetworkMonitor_API interface.
+  virtual int32_t UpdateNetworkList(
+        PP_Resource* network_list,
+        scoped_refptr<TrackedCallback> callback) OVERRIDE {
+    if (!network_list)
+      return PP_ERROR_BADARGUMENT;
+    if (TrackedCallback::IsPending(update_callback_))
+      return PP_ERROR_INPROGRESS;
+
+    if (current_list_ && !initial_list_sent_) {
+      initial_list_sent_ = true;
+      thunk::EnterResourceCreationNoLock enter(pp_instance());
+      *network_list = PPB_NetworkList_Private_Shared::Create(
+          OBJECT_IS_PROXY, pp_instance(), current_list_);
+      return PP_OK;
+    }
+
+    network_list_ = network_list;
+    update_callback_ = callback;
+    return PP_OK_COMPLETIONPENDING;
+  }
 
   // Resource overrides.
-  virtual ppapi::thunk::PPB_NetworkMonitor_Private_API*
-  AsPPB_NetworkMonitor_Private_API() OVERRIDE {
+  virtual ppapi::thunk::PPB_NetworkMonitor_API*
+  AsPPB_NetworkMonitor_API() OVERRIDE {
     return this;
   }
 
   // This is invoked when a network list is received for this monitor (either
-  // initially or on a change). It acquires the ProxyLock inside because
-  // ObserverListThreadSafe does not support Bind/Closure, otherwise we would
-  // wrap the call with a lock using RunWhileLocked.
-  void OnNetworkListReceivedLocks(
-      const scoped_refptr<NetworkListStorage>& list) {
-    ProxyAutoLock lock;
-    PP_Resource list_resource =
-        PPB_NetworkList_Private_Shared::Create(
+  // initially or on a change).
+  void OnNetworkListReceived(const scoped_refptr<NetworkListStorage>& list) {
+    current_list_ = list;
+
+    if (TrackedCallback::IsPending(update_callback_)) {
+      initial_list_sent_ = true;
+      {
+        thunk::EnterResourceCreationNoLock enter(pp_instance());
+        *network_list_ = PPB_NetworkList_Private_Shared::Create(
             OBJECT_IS_PROXY, pp_instance(), list);
-    CallWhileUnlocked(callback_, user_data_, list_resource);
+        network_list_ = NULL;
+      }
+      update_callback_->Run(PP_OK);
+    }
   }
 
  private:
   PPB_NetworkMonitor_Private_Proxy* proxy_;
-  PPB_NetworkMonitor_Callback callback_;
-  void* user_data_;
+  scoped_refptr<NetworkListStorage> current_list_;
+  bool initial_list_sent_;
+
+  // Parameters passed to UpdateNetworkList();
+  PP_Resource* network_list_;
+  scoped_refptr<TrackedCallback> update_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMonitor);
 };
@@ -63,24 +92,18 @@ class PPB_NetworkMonitor_Private_Proxy::NetworkMonitor
 PPB_NetworkMonitor_Private_Proxy::PPB_NetworkMonitor_Private_Proxy(
     Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
-      monitors_(new ObserverListThreadSafe<NetworkMonitor>()),
-      monitors_count_(0) {
+      monitors_(ObserverList<NetworkMonitor>::NOTIFY_EXISTING_ONLY) {
 }
 
 PPB_NetworkMonitor_Private_Proxy::~PPB_NetworkMonitor_Private_Proxy() {
-  monitors_->AssertEmpty();
+  DCHECK(!monitors_.might_have_observers());
 }
 
 // static
 PP_Resource PPB_NetworkMonitor_Private_Proxy::CreateProxyResource(
-    PP_Instance instance,
-    PPB_NetworkMonitor_Callback callback,
-    void* user_data) {
+    PP_Instance instance) {
   // TODO(dmichael): Check that this thread has a valid message loop associated
   //                 with it.
-  if (!callback)
-    return 0;
-
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return 0;
@@ -90,12 +113,11 @@ PP_Resource PPB_NetworkMonitor_Private_Proxy::CreateProxyResource(
   if (!proxy)
     return 0;
 
-  scoped_refptr<NetworkMonitor> result(
-      new NetworkMonitor(instance, proxy, callback, user_data));
-  proxy->monitors_->AddObserver(result.get());
+  scoped_refptr<NetworkMonitor> result(new NetworkMonitor(instance, proxy));
 
-  proxy->monitors_count_++;
-  if (proxy->monitors_count_ == 1) {
+  bool first_network_monitor = !proxy->monitors_.might_have_observers();
+  proxy->monitors_.AddObserver(result.get());
+  if (first_network_monitor) {
     // If that is the first network monitor then send Start message.
     PluginGlobals::Get()->GetBrowserSender()->Send(
         new PpapiHostMsg_PPBNetworkMonitor_Start(
@@ -106,11 +128,7 @@ PP_Resource PPB_NetworkMonitor_Private_Proxy::CreateProxyResource(
     // here.
     proxy->current_list_ = NULL;
   } else if (proxy->current_list_.get()) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&NetworkMonitor::OnNetworkListReceivedLocks,
-                   result->AsWeakPtr(),
-                   proxy->current_list_));
+    result->OnNetworkListReceived(proxy->current_list_);
   }
 
   return result->GetReference();
@@ -132,15 +150,15 @@ void PPB_NetworkMonitor_Private_Proxy::OnPluginMsgNetworkList(
     const ppapi::NetworkList& list) {
   scoped_refptr<NetworkListStorage> list_storage(new NetworkListStorage(list));
   current_list_ = list_storage;
-  monitors_->Notify(&NetworkMonitor::OnNetworkListReceivedLocks, list_storage);
+  FOR_EACH_OBSERVER(NetworkMonitor, monitors_,
+                    OnNetworkListReceived(list_storage));
 }
 
 void PPB_NetworkMonitor_Private_Proxy::OnNetworkMonitorDeleted(
     NetworkMonitor* monitor,
     PP_Instance instance) {
-  monitors_->RemoveObserver(monitor);
-  monitors_count_--;
-  if (monitors_count_ == 0) {
+  monitors_.RemoveObserver(monitor);
+  if (!monitors_.might_have_observers()) {
     // Send Stop message if that was the last NetworkMonitor.
     PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
     if (dispatcher) {

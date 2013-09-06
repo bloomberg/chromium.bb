@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/net_address.h"
@@ -13,54 +14,25 @@
 #include "ppapi/cpp/private/network_monitor_private.h"
 #include "ppapi/tests/testing_instance.h"
 #include "ppapi/tests/test_utils.h"
-#include "ppapi/utility/private/network_list_observer_private.h"
 
 REGISTER_TEST_CASE(NetworkMonitorPrivate);
 
 namespace {
 
-struct CallbackData {
-  explicit CallbackData(PP_Instance instance)
-      : event(instance),
-        call_counter(0),
-        delete_monitor(false),
-        monitor(NULL) {
-  }
-  ~CallbackData() {
-  }
-  NestedEvent event;
-  int call_counter;
-  pp::NetworkListPrivate network_list;
-  bool delete_monitor;
-  pp::NetworkMonitorPrivate* monitor;
-};
-
-void TestCallback(void* user_data, PP_Resource pp_network_list) {
-  CallbackData* data = static_cast<CallbackData*>(user_data);
-  data->call_counter++;
-
-  data->network_list = pp::NetworkListPrivate(pp::PASS_REF, pp_network_list);
-
-  if (data->delete_monitor)
-    delete data->monitor;
-
-  if (data->call_counter == 1)
-    data->event.Signal();
-}
-
-class TestNetworkListObserver : public pp::NetworkListObserverPrivate {
+class MonitorDeletionCallbackDelegate
+    : public TestCompletionCallback::Delegate {
  public:
-  explicit TestNetworkListObserver(const pp::InstanceHandle& instance)
-      : pp::NetworkListObserverPrivate(instance),
-        event(instance.pp_instance()) {
-  }
-  virtual void OnNetworkListChanged(const pp::NetworkListPrivate& list) {
-    current_list = list;
-    event.Signal();
+  explicit MonitorDeletionCallbackDelegate(pp::NetworkMonitorPrivate* monitor)
+      : monitor_(monitor) {
   }
 
-  pp::NetworkListPrivate current_list;
-  NestedEvent event;
+  // TestCompletionCallback::Delegate interface.
+  virtual void OnCallback(void* user_data, int32_t result) {
+    delete monitor_;
+  }
+
+ private:
+  pp::NetworkMonitorPrivate* monitor_;
 };
 
 }  // namespace
@@ -80,7 +52,6 @@ void TestNetworkMonitorPrivate::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(Basic, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(2Monitors, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(DeleteInCallback, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(ListObserver, filter);
 }
 
 std::string TestNetworkMonitorPrivate::VerifyNetworkList(
@@ -160,59 +131,52 @@ std::string TestNetworkMonitorPrivate::VerifyNetworkList(
 }
 
 std::string TestNetworkMonitorPrivate::TestBasic() {
-  CallbackData callback_data(instance_->pp_instance());
+  TestCompletionCallbackWithOutput<pp::NetworkListPrivate> test_callback(
+      instance_->pp_instance());
+  pp::NetworkMonitorPrivate network_monitor(instance_);
+  test_callback.WaitForResult(
+      network_monitor.UpdateNetworkList(test_callback.GetCallback()));
 
-  pp::NetworkMonitorPrivate network_monitor(
-      instance_, &TestCallback, &callback_data);
-  callback_data.event.Wait();
-  ASSERT_EQ(callback_data.call_counter, 1);
-
-  ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(callback_data.network_list));
+  ASSERT_EQ(test_callback.result(), PP_OK);
+  ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(test_callback.output()));
 
   PASS();
 }
 
 std::string TestNetworkMonitorPrivate::Test2Monitors() {
-  CallbackData callback_data(instance_->pp_instance());
+  TestCompletionCallbackWithOutput<pp::NetworkListPrivate> test_callback(
+     instance_->pp_instance());
+  pp::NetworkMonitorPrivate network_monitor(instance_);
+  test_callback.WaitForResult(
+      network_monitor.UpdateNetworkList(test_callback.GetCallback()));
 
-  pp::NetworkMonitorPrivate network_monitor(
-      instance_, &TestCallback, &callback_data);
-  callback_data.event.Wait();
-  ASSERT_EQ(callback_data.call_counter, 1);
+  ASSERT_EQ(test_callback.result(), PP_OK);
+  ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(test_callback.output()));
 
-  ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(callback_data.network_list));
+  TestCompletionCallbackWithOutput<pp::NetworkListPrivate> test_callback_2(
+      instance_->pp_instance());
+  pp::NetworkMonitorPrivate network_monitor_2(instance_);
+  test_callback_2.WaitForResult(
+      network_monitor_2.UpdateNetworkList(test_callback_2.GetCallback()));
 
-  CallbackData callback_data_2(instance_->pp_instance());
-
-  pp::NetworkMonitorPrivate network_monitor_2(
-      instance_, &TestCallback, &callback_data_2);
-  callback_data_2.event.Wait();
-  ASSERT_EQ(callback_data_2.call_counter, 1);
-
-  ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(callback_data_2.network_list));
+  ASSERT_EQ(test_callback_2.result(), PP_OK);
+  ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(test_callback_2.output()));
 
   PASS();
 }
 
 std::string TestNetworkMonitorPrivate::TestDeleteInCallback() {
-  CallbackData callback_data(instance_->pp_instance());
+  pp::NetworkMonitorPrivate* network_monitor =
+      new pp::NetworkMonitorPrivate(instance_);
+  MonitorDeletionCallbackDelegate deletion_delegate(network_monitor);
+  TestCompletionCallbackWithOutput<pp::NetworkListPrivate> test_callback(
+      instance_->pp_instance());
+  test_callback.SetDelegate(&deletion_delegate);
+  test_callback.WaitForResult(
+      network_monitor->UpdateNetworkList(test_callback.GetCallback()));
 
-  pp::NetworkMonitorPrivate* network_monitor = new pp::NetworkMonitorPrivate(
-      instance_, &TestCallback, &callback_data);
-  callback_data.delete_monitor = true;
-  callback_data.monitor = network_monitor;
+  ASSERT_EQ(test_callback.result(), PP_OK);
+  ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(test_callback.output()));
 
-  callback_data.event.Wait();
-  ASSERT_EQ(callback_data.call_counter, 1);
-
-  ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(callback_data.network_list));
-
-  PASS();
-}
-
-std::string TestNetworkMonitorPrivate::TestListObserver() {
-  TestNetworkListObserver observer(instance_);
-  observer.event.Wait();
-  ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(observer.current_list));
   PASS();
 }

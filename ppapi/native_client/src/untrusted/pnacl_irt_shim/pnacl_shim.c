@@ -208,6 +208,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkMonitor_Private_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_2_0;
@@ -3056,7 +3057,24 @@ static uint32_t Pnacl_M31_PPB_NetworkList_Private_GetMTU(PP_Resource resource, u
 
 /* End wrapper methods for PPB_NetworkList_Private_0_3 */
 
-/* Not generating wrapper methods for PPB_NetworkMonitor_Private_0_2 */
+/* Begin wrapper methods for PPB_NetworkMonitor_Private_0_3 */
+
+static PP_Resource Pnacl_M31_PPB_NetworkMonitor_Private_Create(PP_Instance instance) {
+  const struct PPB_NetworkMonitor_Private_0_3 *iface = Pnacl_WrapperInfo_PPB_NetworkMonitor_Private_0_3.real_iface;
+  return iface->Create(instance);
+}
+
+static int32_t Pnacl_M31_PPB_NetworkMonitor_Private_UpdateNetworkList(PP_Resource network_monitor, PP_Resource* network_list, struct PP_CompletionCallback* callback) {
+  const struct PPB_NetworkMonitor_Private_0_3 *iface = Pnacl_WrapperInfo_PPB_NetworkMonitor_Private_0_3.real_iface;
+  return iface->UpdateNetworkList(network_monitor, network_list, *callback);
+}
+
+static PP_Bool Pnacl_M31_PPB_NetworkMonitor_Private_IsNetworkMonitor(PP_Resource resource) {
+  const struct PPB_NetworkMonitor_Private_0_3 *iface = Pnacl_WrapperInfo_PPB_NetworkMonitor_Private_0_3.real_iface;
+  return iface->IsNetworkMonitor(resource);
+}
+
+/* End wrapper methods for PPB_NetworkMonitor_Private_0_3 */
 
 /* Begin wrapper methods for PPB_OutputProtection_Private_0_1 */
 
@@ -4736,7 +4754,11 @@ struct PPB_NetworkList_Private_0_3 Pnacl_Wrappers_PPB_NetworkList_Private_0_3 = 
     .GetMTU = (uint32_t (*)(PP_Resource resource, uint32_t index))&Pnacl_M31_PPB_NetworkList_Private_GetMTU
 };
 
-/* Not generating wrapper interface for PPB_NetworkMonitor_Private_0_2 */
+struct PPB_NetworkMonitor_Private_0_3 Pnacl_Wrappers_PPB_NetworkMonitor_Private_0_3 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M31_PPB_NetworkMonitor_Private_Create,
+    .UpdateNetworkList = (int32_t (*)(PP_Resource network_monitor, PP_Resource* network_list, struct PP_CompletionCallback callback))&Pnacl_M31_PPB_NetworkMonitor_Private_UpdateNetworkList,
+    .IsNetworkMonitor = (PP_Bool (*)(PP_Resource resource))&Pnacl_M31_PPB_NetworkMonitor_Private_IsNetworkMonitor
+};
 
 struct PPB_OutputProtection_Private_0_1 Pnacl_Wrappers_PPB_OutputProtection_Private_0_1 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M31_PPB_OutputProtection_Private_Create,
@@ -5400,6 +5422,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3 =
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkMonitor_Private_0_3 = {
+  .iface_macro = PPB_NETWORKMONITOR_PRIVATE_INTERFACE_0_3,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_NetworkMonitor_Private_0_3,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1 = {
   .iface_macro = PPB_OUTPUTPROTECTION_PRIVATE_INTERFACE_0_1,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_OutputProtection_Private_0_1,
@@ -5599,6 +5627,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_1_1,
   &Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3,
+  &Pnacl_WrapperInfo_PPB_NetworkMonitor_Private_0_3,
   &Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Talk_Private_1_0,
   &Pnacl_WrapperInfo_PPB_Talk_Private_2_0,
