@@ -16,6 +16,7 @@
 #include "chrome/browser/download/download_resource_throttle.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/google/google_util.h"
@@ -422,9 +423,12 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
     return false;
   }
 
-  RenderViewHost* view = RenderViewHost::FromID(child_id, route_id);
-  if (view && view->GetProcess()->IsGuest())
+  ExtensionRendererState::WebViewInfo info;
+  if (ExtensionRendererState::GetInstance()->GetWebViewInfo(child_id,
+                                                            route_id,
+                                                            &info)) {
     return false;
+  }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
