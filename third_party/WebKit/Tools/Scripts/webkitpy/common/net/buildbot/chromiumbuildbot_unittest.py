@@ -40,4 +40,4 @@ class ChromiumBuilderTest(unittest.TestCase):
     def test_accumulated_results_url(self):
         builder = ChromiumBuildBot().builder_with_name('WebKit Mac10.8 (dbg)')
         self.assertEqual(builder.accumulated_results_url(),
-                         'https://storage.googleapis.com/chromium-layout-test-archives/WebKit_Mac10_8__dbg_/results/layout-test-results/layout-test-results')
+                         'https://storage.googleapis.com/chromium-layout-test-archives/WebKit_Mac10_8__dbg_/results/layout-test-results')
