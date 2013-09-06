@@ -242,11 +242,11 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
 
     scheduler_->GetResourceListInDirectoryByWapi(
         resource_id,
-        base::Bind(&FastFetchFeedFetcher::OnFileListFetched,
+        base::Bind(&FastFetchFeedFetcher::OnResourceListFetched,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void OnFileListFetched(
+  void OnResourceListFetched(
       const FeedFetcherCallback& callback,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceList> resource_list) {
@@ -269,9 +269,9 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
     GURL next_url;
     if (resource_list->GetNextFeedURL(&next_url) && !next_url.is_empty()) {
       // There is the remaining result so fetch it.
-      scheduler_->GetRemainingFileList(
+      scheduler_->GetRemainingResourceList(
           next_url,
-          base::Bind(&FastFetchFeedFetcher::OnFileListFetched,
+          base::Bind(&FastFetchFeedFetcher::OnResourceListFetched,
                      weak_ptr_factory_.GetWeakPtr(), callback));
       return;
     }
