@@ -117,7 +117,10 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   void OnDecoderStarved();
 
   // Starts the |decoder_starvation_callback_| task with the timeout value.
-  void StartStarvationCallback(const base::TimeDelta& timeout);
+  // |presentation_timestamp| - The presentation timestamp used for starvation
+  // timeout computations. It represents the timestamp of the last piece of
+  // decoded data.
+  void StartStarvationCallback(const base::TimeDelta& presentation_timestamp);
 
   // Schedules a seek event in |pending_events_| and calls StopDecode() on all
   // the MediaDecoderJobs.

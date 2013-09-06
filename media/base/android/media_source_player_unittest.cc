@@ -277,7 +277,23 @@ TEST_F(MediaSourcePlayerTest, ReadFromDemuxerAfterSeek) {
 
   // Initiate a seek
   player_->SeekTo(base::TimeDelta());
+
+  // Verify that the seek does not occur until the initial prefetch
+  // completes.
+  EXPECT_EQ(0u, manager_->last_seek_request_id());
+
+  // Simulate aborted read caused by the seek. This aborts the initial
+  // prefetch.
+  DemuxerData data;
+  data.type = DemuxerStream::AUDIO;
+  data.access_units.resize(1);
+  data.access_units[0].status = DemuxerStream::kAborted;
+  player_->ReadFromDemuxerAck(data);
+
+  // Verify that the seek is requested now that the initial prefetch
+  // has completed.
   EXPECT_EQ(1u, manager_->last_seek_request_id());
+
   // Sending back the seek ACK, this should trigger the player to call
   // OnReadFromDemuxer() again.
   player_->OnSeekRequestAck(manager_->last_seek_request_id());
@@ -436,15 +452,31 @@ TEST_F(MediaSourcePlayerTest, StartTimeTicksResetAfterDecoderUnderruns) {
 
   // The decoder job should finish and a new request will be sent.
   EXPECT_EQ(5, manager_->num_requests());
-  EXPECT_FALSE(GetMediaDecoderJob(true)->is_decoding());
+  EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
   base::TimeTicks previous = StartTimeTicks();
 
   // Let the decoder timeout and execute the OnDecoderStarved() callback.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+
+  EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
+  EXPECT_TRUE(StartTimeTicks() != base::TimeTicks());
   manager_->message_loop()->RunUntilIdle();
 
-  // Send new data to the decoder. This should reset the start time ticks.
-  player_->ReadFromDemuxerAck(CreateEOSAck(true));
+  // Send new data to the decoder so it can finish the currently
+  // pending decode.
+  player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForAudio(3));
+  while(GetMediaDecoderJob(true)->is_decoding())
+    manager_->message_loop()->RunUntilIdle();
+
+  // Verify the start time ticks is cleared at this point because the
+  // player is prefetching.
+  EXPECT_TRUE(StartTimeTicks() == base::TimeTicks());
+
+  // Send new data to the decoder so it can finish prefetching. This should
+  // reset the start time ticks.
+  player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForAudio(3));
+  EXPECT_TRUE(StartTimeTicks() != base::TimeTicks());
+
   base::TimeTicks current = StartTimeTicks();
   EXPECT_LE(100.0, (current - previous).InMillisecondsF());
 }

@@ -35,9 +35,6 @@ class MediaDecoderJob {
   // Called by MediaSourcePlayer when more data for this object has arrived.
   void OnDataReceived(const DemuxerData& data);
 
-  // Returns true if this object has data to decode.
-  bool HasData() const;
-
   // Prefetch so we know the decoder job has data when we call Decode().
   // |prefetch_cb| - Run when prefetching has completed.
   void Prefetch(const base::Closure& prefetch_cb);
@@ -89,6 +86,9 @@ class MediaDecoderJob {
   void Release();
 
   MediaCodecStatus QueueInputBuffer(const AccessUnit& unit);
+
+  // Returns true if this object has data to decode.
+  bool HasData() const;
 
   // Initiates a request for more data.
   // |done_cb| is called when more data is available in |received_data_|.

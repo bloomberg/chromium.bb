@@ -342,14 +342,15 @@ void MediaSourcePlayer::OnSeekRequestAck(unsigned seek_request_id) {
 
 void MediaSourcePlayer::UpdateTimestamps(
     const base::TimeDelta& presentation_timestamp, size_t audio_output_bytes) {
+  base::TimeDelta new_max_time = presentation_timestamp;
+
   if (audio_output_bytes > 0) {
     audio_timestamp_helper_->AddFrames(
         audio_output_bytes / (kBytesPerAudioOutputSample * num_channels_));
-    clock_.SetMaxTime(audio_timestamp_helper_->GetTimestamp());
-  } else {
-    clock_.SetMaxTime(presentation_timestamp);
+    new_max_time = audio_timestamp_helper_->GetTimestamp();
   }
 
+  clock_.SetMaxTime(new_max_time);
   OnTimeUpdated();
 }
 
@@ -424,7 +425,10 @@ void MediaSourcePlayer::MediaDecoderCallback(
     bool is_audio, MediaCodecStatus status,
     const base::TimeDelta& presentation_timestamp, size_t audio_output_bytes) {
   DVLOG(1) << __FUNCTION__ << ": " << is_audio << ", " << status;
-  if (is_audio)
+
+  bool is_clock_manager = is_audio || !HasAudio();
+
+  if (is_clock_manager)
     decoder_starvation_callback_.Cancel();
 
   if (status == MEDIA_CODEC_ERROR) {
@@ -438,17 +442,16 @@ void MediaSourcePlayer::MediaDecoderCallback(
     return;
   }
 
-  if (status == MEDIA_CODEC_OK && (is_audio || !HasAudio())) {
-    UpdateTimestamps(presentation_timestamp, audio_output_bytes);
-  }
-
   if (status == MEDIA_CODEC_OUTPUT_END_OF_STREAM) {
     PlaybackCompleted(is_audio);
     return;
   }
 
+  if (status == MEDIA_CODEC_OK && is_clock_manager)
+    UpdateTimestamps(presentation_timestamp, audio_output_bytes);
+
   if (!playing_) {
-    if (is_audio || !HasAudio())
+    if (is_clock_manager)
       clock_.Pause();
     return;
   }
@@ -456,25 +459,12 @@ void MediaSourcePlayer::MediaDecoderCallback(
   if (status == MEDIA_CODEC_NO_KEY)
     return;
 
-  base::TimeDelta current_timestamp = GetCurrentTime();
+  if (status == MEDIA_CODEC_OK && is_clock_manager)
+    StartStarvationCallback(presentation_timestamp);
+
   if (is_audio) {
-    if (status == MEDIA_CODEC_OK) {
-      base::TimeDelta timeout =
-          audio_timestamp_helper_->GetTimestamp() - current_timestamp;
-      StartStarvationCallback(timeout);
-    }
     DecodeMoreAudio();
     return;
-  }
-
-  if (!HasAudio() && status == MEDIA_CODEC_OK) {
-    DCHECK(current_timestamp <= presentation_timestamp);
-    // For video only streams, fps can be estimated from the difference
-    // between the previous and current presentation timestamps. The
-    // previous presentation timestamp is equal to current_timestamp.
-    // TODO(qinmin): determine whether 2 is a good coefficient for estimating
-    // video frame timeout.
-    StartStarvationCallback(2 * (presentation_timestamp - current_timestamp));
   }
 
   DecodeMoreVideo();
@@ -620,8 +610,29 @@ void MediaSourcePlayer::OnDecoderStarved() {
 }
 
 void MediaSourcePlayer::StartStarvationCallback(
-    const base::TimeDelta& timeout) {
-  DVLOG(1) << __FUNCTION__ << "(" << timeout.InSecondsF() << ")";
+    const base::TimeDelta& presentation_timestamp) {
+  // 20ms was chosen because it is the typical size of a compressed audio frame.
+  // Anything smaller than this would likely cause unnecessary cycling in and
+  // out of the prefetch state.
+  const base::TimeDelta kMinStarvationTimeout =
+      base::TimeDelta::FromMilliseconds(20);
+
+  base::TimeDelta current_timestamp = GetCurrentTime();
+  base::TimeDelta timeout;
+  if (HasAudio()) {
+    timeout = audio_timestamp_helper_->GetTimestamp() - current_timestamp;
+  } else {
+    DCHECK(current_timestamp <= presentation_timestamp);
+
+    // For video only streams, fps can be estimated from the difference
+    // between the previous and current presentation timestamps. The
+    // previous presentation timestamp is equal to current_timestamp.
+    // TODO(qinmin): determine whether 2 is a good coefficient for estimating
+    // video frame timeout.
+    timeout = 2 * (presentation_timestamp - current_timestamp);
+  }
+
+  timeout = std::max(timeout, kMinStarvationTimeout);
 
   decoder_starvation_callback_.Reset(
       base::Bind(&MediaSourcePlayer::OnDecoderStarved,

@@ -53,11 +53,6 @@ void MediaDecoderJob::OnDataReceived(const DemuxerData& data) {
   done_cb.Run();
 }
 
-bool MediaDecoderJob::HasData() const {
-  DCHECK(ui_loop_->BelongsToCurrentThread());
-  return access_unit_index_ < received_data_.access_units.size();
-}
-
 void MediaDecoderJob::Prefetch(const base::Closure& prefetch_cb) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(on_data_received_cb_.is_null());
@@ -156,7 +151,7 @@ MediaCodecStatus MediaDecoderJob::QueueInputBuffer(const AccessUnit& unit) {
   // TODO(qinmin): skip frames if video is falling far behind.
   DCHECK_GE(input_buf_index, 0);
   if (unit.end_of_stream || unit.data.empty()) {
-    media_codec_bridge_->QueueEOS(input_buf_index_);
+    media_codec_bridge_->QueueEOS(input_buf_index);
     return MEDIA_CODEC_INPUT_END_OF_STREAM;
   }
 
@@ -185,10 +180,22 @@ MediaCodecStatus MediaDecoderJob::QueueInputBuffer(const AccessUnit& unit) {
   return status;
 }
 
+bool MediaDecoderJob::HasData() const {
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  DCHECK(!input_eos_encountered_ ||
+         (received_data_.access_units.size() > 0 &&
+          access_unit_index_ < received_data_.access_units.size()))
+      << "access_unit_index_.size() " << received_data_.access_units.size()
+      << " access_unit_index_ " << access_unit_index_;
+  return access_unit_index_ < received_data_.access_units.size() ||
+      input_eos_encountered_;
+}
+
 void MediaDecoderJob::RequestData(const base::Closure& done_cb) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(on_data_received_cb_.is_null());
+  DCHECK(!input_eos_encountered_);
 
   received_data_ = DemuxerData();
   access_unit_index_ = 0;
@@ -252,10 +259,6 @@ void MediaDecoderJob::DecodeInternal(
       &output_eos_encountered);
 
   if (status != MEDIA_CODEC_OK) {
-    DCHECK(!(status == MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED ||
-             status == MEDIA_CODEC_OUTPUT_FORMAT_CHANGED) ||
-           (input_status != MEDIA_CODEC_INPUT_END_OF_STREAM));
-
     if (status == MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED) {
         media_codec_bridge_->GetOutputBuffers();
         status = MEDIA_CODEC_OK;
@@ -307,14 +310,24 @@ void MediaDecoderJob::OnDecodeCompleted(
   }
 
   DCHECK(!decode_cb_.is_null());
+  switch (status) {
+    case MEDIA_CODEC_OK:
+    case MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
+    case MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED:
+    case MEDIA_CODEC_OUTPUT_FORMAT_CHANGED:
+    case MEDIA_CODEC_OUTPUT_END_OF_STREAM:
+      if (!input_eos_encountered_)
+        access_unit_index_++;
+      break;
 
-  if (status != MEDIA_CODEC_ERROR &&
-      status != MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER &&
-      status != MEDIA_CODEC_INPUT_END_OF_STREAM &&
-      status != MEDIA_CODEC_NO_KEY &&
-      status != MEDIA_CODEC_STOPPED) {
-    access_unit_index_++;
-  }
+    case MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER:
+    case MEDIA_CODEC_INPUT_END_OF_STREAM:
+    case MEDIA_CODEC_NO_KEY:
+    case MEDIA_CODEC_STOPPED:
+    case MEDIA_CODEC_ERROR:
+      // Do nothing.
+      break;
+  };
 
   stop_decode_pending_ = false;
   base::ResetAndReturn(&decode_cb_).Run(status, presentation_timestamp,
