@@ -14,6 +14,8 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill {
+struct FormData;
+class FormStructure;
 class PasswordGenerator;
 }
 
@@ -49,6 +51,10 @@ class PasswordGenerationManager
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   virtual ~PasswordGenerationManager();
 
+  // Detect account creation forms from forms with autofill type annotated.
+  void DetectAccountCreationForms(
+      const std::vector<autofill::FormStructure*>& forms);
+
  protected:
   explicit PasswordGenerationManager(content::WebContents* contents);
 
@@ -80,6 +86,10 @@ class PasswordGenerationManager
   // Sends a message to the renderer enabling or disabling this feature. This
   // is a separate function to aid in testing.
   virtual void SendStateToRenderer(content::RenderViewHost* host, bool enabled);
+
+  virtual void SendAccountCreationFormsToRenderer(
+      content::RenderViewHost* host,
+      const std::vector<autofill::FormData>& forms);
 
   // Causes the password generation bubble UI to be shown for the specified
   // form. The popup will be anchored at |icon_bounds|. The generated

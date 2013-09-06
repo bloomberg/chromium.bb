@@ -64,6 +64,9 @@ class TabAutofillManagerDelegate
   virtual void HideAutofillPopup() OVERRIDE;
   virtual bool IsAutocompleteEnabled() OVERRIDE;
 
+  virtual void DetectAccountCreationForms(
+      const std::vector<autofill::FormStructure*>& forms) OVERRIDE;
+
   // content::WebContentsObserver implementation.
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,

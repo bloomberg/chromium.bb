@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebPasswordGeneratorClient.h"
@@ -17,6 +18,10 @@
 namespace WebKit {
 class WebCString;
 class WebDocument;
+}
+
+namespace autofill {
+struct FormData;
 }
 
 namespace content {
@@ -54,6 +59,8 @@ class PasswordGenerationManager : public content::RenderViewObserver,
   void OnFormNotBlacklisted(const content::PasswordForm& form);
   void OnPasswordAccepted(const base::string16& password);
   void OnPasswordGenerationEnabled(bool enabled);
+  void OnAccountCreationFormsDetected(
+      const std::vector<autofill::FormData>& forms);
 
   // Helper function to decide whether we should show password generation icon.
   void MaybeShowIcon();
@@ -65,12 +72,16 @@ class PasswordGenerationManager : public content::RenderViewObserver,
   bool enabled_;
 
   // Stores the origin of the account creation form we detected.
-  GURL account_creation_form_origin_;
+  scoped_ptr<content::PasswordForm> possible_account_creation_form_;
 
   // Stores the origins of the password forms confirmed not to be blacklisted
   // by the browser. A form can be blacklisted if a user chooses "never save
   // passwords for this site".
   std::vector<GURL> not_blacklisted_password_form_origins_;
+
+  // Stores each password form for which the Autofill server classifies one of
+  // the form's fields as an ACCOUNT_CREATION_PASSWORD.
+  std::vector<autofill::FormData> account_creation_forms_;
 
   std::vector<WebKit::WebInputElement> passwords_;
 

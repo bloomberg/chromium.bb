@@ -2261,10 +2261,11 @@ TEST(FormStructureTest, CheckFormSignature) {
   field.name = ASCIIToUTF16("first");
   form.fields.push_back(field);
 
-  // Password fields shouldn't affect the signature.
-  field.label = ASCIIToUTF16("Password");
-  field.name = ASCIIToUTF16("password");
-  field.form_control_type = "password";
+  // Checkable fields shouldn't affect the signature.
+  field.label = ASCIIToUTF16("Select");
+  field.name = ASCIIToUTF16("Select");
+  field.form_control_type = "checkbox";
+  field.is_checkable = true;
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
@@ -2291,6 +2292,7 @@ TEST(FormStructureTest, CheckFormSignature) {
       std::string("https://login.facebook.com&login_form&email&first")),
       form_structure->FormSignature());
 
+  field.is_checkable = false;
   field.label = ASCIIToUTF16("Random Field label");
   field.name = ASCIIToUTF16("random1234");
   field.form_control_type = "text";
@@ -2356,14 +2358,16 @@ TEST(FormStructureTest, SkipFieldTest) {
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("password");
-  field.name = ASCIIToUTF16("password");
-  field.form_control_type = "password";
+  field.label = ASCIIToUTF16("select");
+  field.name = ASCIIToUTF16("select");
+  field.form_control_type = "checkbox";
+  field.is_checkable = true;
   form.fields.push_back(field);
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("email");
   field.form_control_type = "text";
+  field.is_checkable = false;
   form.fields.push_back(field);
 
   ScopedVector<FormStructure> forms;

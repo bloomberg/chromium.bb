@@ -46,6 +46,9 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
   virtual void HideAutofillPopup() OVERRIDE;
   virtual bool IsAutocompleteEnabled() OVERRIDE;
 
+  virtual void DetectAccountCreationForms(
+      const std::vector<autofill::FormStructure*>& forms) OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManagerDelegate);
 };

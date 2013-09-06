@@ -99,10 +99,22 @@ enum ServerFieldType {
   NAME_BILLING_FULL = 71,
   NAME_BILLING_SUFFIX = 72,
 
+  // Field types for options generally found in merchant buyflows. Given that
+  // these are likely to be filled out differently on a case by case basis,
+  // they are here primarly for use by Autocheckout.
+  MERCHANT_EMAIL_SIGNUP = 73,
+  MERCHANT_PROMO_CODE = 74,
+
+  // Field types for the password fields. PASSWORD is the default type for all
+  // password fields. ACCOUNT_CREATION_PASSWORD is the first password field in
+  // an account creation form and will trigger password generation.
+  PASSWORD = 75,
+  ACCOUNT_CREATION_PASSWORD = 76,
+
   // No new types can be added without a corresponding change to the Autofill
   // server.
 
-  MAX_VALID_FIELD_TYPE = 73,
+  MAX_VALID_FIELD_TYPE = 77,
 };
 
 // The list of all HTML autocomplete field type hints supported by Chrome.
@@ -181,6 +193,7 @@ enum FieldTypeGroup {
   PHONE_HOME,
   PHONE_BILLING,
   CREDIT_CARD,
+  PASSWORD_FIELD,
 };
 
 typedef std::set<ServerFieldType> ServerFieldTypeSet;

@@ -9,6 +9,7 @@
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/password_manager/password_generation_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
@@ -169,6 +170,14 @@ void TabAutofillManagerDelegate::DidNavigateMainFrame(
 void TabAutofillManagerDelegate::WebContentsDestroyed(
     content::WebContents* web_contents) {
   HideAutofillPopup();
+}
+
+void TabAutofillManagerDelegate::DetectAccountCreationForms(
+    const std::vector<autofill::FormStructure*>& forms) {
+  PasswordGenerationManager* manager =
+      PasswordGenerationManager::FromWebContents(web_contents_);
+  if (manager)
+    manager->DetectAccountCreationForms(forms);
 }
 
 }  // namespace autofill

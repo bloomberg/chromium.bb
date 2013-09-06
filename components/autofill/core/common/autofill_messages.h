@@ -21,7 +21,6 @@
 #include "ipc/ipc_message_utils.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "ui/gfx/rect.h"
-#include "url/gurl.h"
 
 #define IPC_MESSAGE_START AutofillMsgStart
 
@@ -168,6 +167,11 @@ IPC_MESSAGE_ROUTED2(AutofillMsg_RequestAutocompleteResult,
 // Sent when the current page is actually displayed in the browser, possibly
 // after being preloaded.
 IPC_MESSAGE_ROUTED0(AutofillMsg_PageShown)
+
+// Sent when Autofill manager gets the query response from the Autofill server
+// and there are fields classified as ACCOUNT_CREATION_PASSWORD in the response.
+IPC_MESSAGE_ROUTED1(AutofillMsg_AccountCreationFormsDetected,
+                    std::vector<autofill::FormData> /* forms */)
 
 // Autofill messages sent from the renderer to the browser.
 

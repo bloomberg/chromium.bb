@@ -95,6 +95,11 @@ class AutofillManagerDelegate {
 
   // Whether the Autocomplete feature of Autofill should be enabled.
   virtual bool IsAutocompleteEnabled() = 0;
+
+  // Pass the form structures to the password generation manager to detect
+  // account creation forms.
+  virtual void DetectAccountCreationForms(
+      const std::vector<autofill::FormStructure*>& forms) = 0;
 };
 
 }  // namespace autofill

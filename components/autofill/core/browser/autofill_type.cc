@@ -108,6 +108,10 @@ FieldTypeGroup AutofillType::group() const {
     case COMPANY_NAME:
       return COMPANY;
 
+    case PASSWORD:
+    case ACCOUNT_CREATION_PASSWORD:
+      return PASSWORD_FIELD;
+
     case NO_SERVER_DATA:
     case EMPTY_TYPE:
     case PHONE_FAX_NUMBER:
@@ -116,6 +120,8 @@ FieldTypeGroup AutofillType::group() const {
     case PHONE_FAX_CITY_AND_NUMBER:
     case PHONE_FAX_WHOLE_NUMBER:
     case FIELD_WITH_DEFAULT_VALUE:
+    case MERCHANT_EMAIL_SIGNUP:
+    case MERCHANT_PROMO_CODE:
       return NO_GROUP;
 
     case MAX_VALID_FIELD_TYPE:
@@ -529,6 +535,14 @@ std::string AutofillType::ToString() const {
       return "PHONE_BILLING_CITY_AND_NUMBER";
     case PHONE_BILLING_WHOLE_NUMBER:
       return "PHONE_BILLING_WHOLE_NUMBER";
+    case MERCHANT_EMAIL_SIGNUP:
+      return "MERCHANT_EMAIL_SIGNUP";
+    case MERCHANT_PROMO_CODE:
+      return "MERCHANT_PROMO_CODE";
+    case PASSWORD:
+      return "PASSWORD";
+    case ACCOUNT_CREATION_PASSWORD:
+      return "ACCOUNT_CREATION_PASSWORD";
     case MAX_VALID_FIELD_TYPE:
       return std::string();
   }

@@ -660,7 +660,7 @@ std::string FormStructure::FormSignature() const {
 }
 
 bool FormStructure::ShouldSkipField(const FormFieldData& field) const {
-  return (field.is_checkable || field.form_control_type == "password");
+  return field.is_checkable;
 }
 
 bool FormStructure::IsAutofillable(bool require_method_post) const {

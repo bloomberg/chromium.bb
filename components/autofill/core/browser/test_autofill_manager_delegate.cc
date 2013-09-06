@@ -51,4 +51,7 @@ bool TestAutofillManagerDelegate::IsAutocompleteEnabled() {
   return true;
 }
 
+void TestAutofillManagerDelegate::DetectAccountCreationForms(
+    const std::vector<autofill::FormStructure*>& forms) {}
+
 }  // namespace autofill

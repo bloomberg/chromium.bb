@@ -707,6 +707,10 @@ void AutofillManager::OnLoadedServerPredictions(
                                     form_structures_.get(),
                                     *metric_logger_);
 
+  // Forward form structures to the password generation manager to detect
+  // account creation forms.
+  manager_delegate_->DetectAccountCreationForms(form_structures_.get());
+
   // If the corresponding flag is set, annotate forms with the predicted types.
   driver_->SendAutofillTypePredictionsToRenderer(form_structures_.get());
 }

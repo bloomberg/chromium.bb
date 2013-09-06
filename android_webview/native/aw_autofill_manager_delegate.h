@@ -83,6 +83,8 @@ class AwAutofillManagerDelegate
       const std::vector<base::string16>& labels) OVERRIDE;
   virtual void HideAutofillPopup() OVERRIDE;
   virtual bool IsAutocompleteEnabled() OVERRIDE;
+  virtual void DetectAccountCreationForms(
+      const std::vector<autofill::FormStructure*>& forms) OVERRIDE;
 
   void SuggestionSelected(JNIEnv* env,
                           jobject obj,
