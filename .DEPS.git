@@ -102,9 +102,9 @@ deps = {
     'src/third_party/skia/gyp':
         Var('git_url') + '/external/skia/gyp.git@1b87a56cdffc2d7368929d7fea2d87aad0c96e90',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@c63026ddb9c9a749df01ba7987bc9e8e25e7ec28',
+        Var('git_url') + '/external/skia/include.git@536388fcec9a4995f35963061b32277e979003aa',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@637ee776275cb47677ee2517fd8f5b5dd4a2db11',
+        Var('git_url') + '/external/skia/src.git@ef2f43c67949a49cd33592b37b4a45fc56765f5a',
     'src/third_party/smhasher/src':
         Var('git_url') + '/external/smhasher.git@6f63a4882e6b2cf87e8eec1a3ef8644e0d963283',
     'src/third_party/snappy/src':
