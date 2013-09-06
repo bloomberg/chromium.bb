@@ -235,6 +235,8 @@ ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
       web_contents->GetView()->GetNativeView(),
       modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
   web_contents_modal_dialog_manager->ShowDialog(window->GetNativeView());
+  web_contents_modal_dialog_manager->SetCloseOnInterstitialWebUI(
+      window->GetNativeView(), true);
   constrained_delegate->SetWindow(window);
   return constrained_delegate;
 }
