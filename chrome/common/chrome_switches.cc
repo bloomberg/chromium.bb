@@ -1493,6 +1493,9 @@ const char kFakeCloudPolicyType[]           = "fake-cloud-policy-type";
 const char kEnableAccessibilityTabSwitcher[] =
     "enable-accessibility-tab-switcher";
 
+// Makes the "Add to Homescreen" shortcut visible.
+const char kEnableAddToHomescreen[]         = "enable-add-to-homescreen";
+
 // Enables the new NTP.
 const char kEnableNewNTP[]                  = "enable-new-ntp";
 

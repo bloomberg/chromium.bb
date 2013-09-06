@@ -1636,6 +1636,17 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableDeviceMotion)
   },
+  {
+    "enable-add-to-homescreen",
+    IDS_FLAGS_ENABLE_ADD_TO_HOMESCREEN_NAME,
+    IDS_FLAGS_ENABLE_ADD_TO_HOMESCREEN_DESCRIPTION,
+    kOsAndroid,
+#if defined(OS_ANDROID)
+    SINGLE_VALUE_TYPE(switches::kEnableAddToHomescreen)
+#else
+    SINGLE_VALUE_TYPE("")
+#endif
+  },
 };
 
 const Experiment* experiments = kExperiments;

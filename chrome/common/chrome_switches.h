@@ -407,6 +407,7 @@ extern const char kFakeCloudPolicyType[];
 
 #if defined(OS_ANDROID)
 extern const char kEnableAccessibilityTabSwitcher[];
+extern const char kEnableAddToHomescreen[];
 extern const char kEnableNewNTP[];
 extern const char kEnableTranslate[];
 extern const char kTabletUI[];

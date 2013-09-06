@@ -5473,6 +5473,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable the accessibility tab switcher for Android.
         </message>
       </if>
+      <message name="IDS_FLAGS_ENABLE_ADD_TO_HOMESCREEN_NAME" desc="Name of the flag to enable the add to homescreen menu item.">
+        Enable Add to Homescreen
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ADD_TO_HOMESCREEN_DESCRIPTION" desc="Description of the flag to enable the add to homescreen menu item.">
+        Enable the add to homescreen menu item.
+      </message>
       <message name="IDS_TOUCH_EVENTS_NAME" desc="Title of the touch-events flag." >
         Enable touch events
       </message>
