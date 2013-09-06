@@ -138,7 +138,7 @@ private:
         // We don't bother checking the askedToTerminate() flag here, because exceptions should *always* be reported even if the thread is terminated.
         // This is intentionally different than the behavior in MessageWorkerTask, because terminated workers no longer deliver messages (section 4.6 of the WebWorker spec), but they do report exceptions.
 
-        RefPtr<ErrorEvent> event = ErrorEvent::create(m_errorMessage, m_sourceURL, m_lineNumber, m_columnNumber);
+        RefPtr<ErrorEvent> event = ErrorEvent::create(m_errorMessage, m_sourceURL, m_lineNumber, m_columnNumber, 0);
         bool errorHandled = !workerObject->dispatchEvent(event);
         if (!errorHandled)
             context->reportException(event, 0, NotSharableCrossOrigin);

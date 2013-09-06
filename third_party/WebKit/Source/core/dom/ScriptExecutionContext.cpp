@@ -241,7 +241,7 @@ bool ScriptExecutionContext::dispatchErrorEvent(PassRefPtr<ErrorEvent> event, Ac
 
     RefPtr<ErrorEvent> errorEvent = event;
     if (shouldSanitizeScriptError(errorEvent->filename(), corsStatus))
-        errorEvent = ErrorEvent::createSanitizedError();
+        errorEvent = ErrorEvent::createSanitizedError(errorEvent->world());
 
     ASSERT(!m_inDispatchErrorEvent);
     m_inDispatchErrorEvent = true;

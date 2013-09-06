@@ -55,8 +55,12 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptExecutionContext
         return V8EventListener::callListenerFunction(context, jsEvent, event);
 
     ErrorEvent* errorEvent = static_cast<ErrorEvent*>(event);
-    v8::Local<v8::Object> listener = getListenerObject(context);
+
     v8::Isolate* isolate = toV8Context(context, world())->GetIsolate();
+    if (errorEvent->world() && errorEvent->world() != world())
+        return v8::Null(isolate);
+
+    v8::Local<v8::Object> listener = getListenerObject(context);
     v8::Local<v8::Value> returnValue;
     if (!listener.IsEmpty() && listener->IsFunction()) {
         v8::Local<v8::Function> callFunction = v8::Local<v8::Function>::Cast(listener);

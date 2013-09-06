@@ -1,12 +1,6 @@
-Test that window.onerror and "error" event listeners from main world are invoked for uncaught exceptions in scripts running in isolate worlds as well as for exceptions in the main world.
+Test that window.onerror and "error" event listeners from main world are not invoked for uncaught exceptions in scripts running in isolate worlds, but only for exceptions in the main world.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-window.onerror: "Uncaught Error: Error in isolated world inline script." at  (Line: 11, Column: 18)
-No stack trace.
-Returning 'true': the error should not be reported in the console as an unhandled exception.
-
 
 
 Handling 'error' event (phase 2): "Uncaught Error: Error in isolated world inline script." at :11
@@ -17,31 +11,25 @@ Calling e.preventDefault(): the error should not be reported in the console as a
 
 
 
-window.onerror: "Uncaught Error: Error in main world inline script." at window-onerror-isolatedworld-01.html (Line: 33, Column: 18)
+window.onerror: "Uncaught Error: Error in main world inline script." at window-onerror-isolatedworld-01.html (Line: 52, Column: 18)
 Stack Trace:
 Error: Error in main world inline script.
-    at exceptions window-onerror-isolatedworld-01.html:33:19
-    at window-onerror-isolatedworld-01.html:39:9
+    at exceptions window-onerror-isolatedworld-01.html:52:19
+    at window-onerror-isolatedworld-01.html:58:9
 
 Returning 'true': the error should not be reported in the console as an unhandled exception.
 
 
 
-Handling 'error' event (phase 2): "Uncaught Error: Error in main world inline script." at window-onerror-isolatedworld-01.html:33
+Handling 'error' event (phase 2): "Uncaught Error: Error in main world inline script." at window-onerror-isolatedworld-01.html:52
 Stack Trace:
 Error: Error in main world inline script.
-    at exceptions window-onerror-isolatedworld-01.html:33:19
-    at window-onerror-isolatedworld-01.html:39:9
+    at exceptions window-onerror-isolatedworld-01.html:52:19
+    at window-onerror-isolatedworld-01.html:58:9
 
 PASS eventPassedToTheErrorListener is window.event
 PASS eventCurrentTarget is window
 Calling e.preventDefault(): the error should not be reported in the console as an unhandled exception.
-
-
-
-window.onerror: "Uncaught Error: Error in isolated world load handler." at  (Line: 8, Column: 22)
-No stack trace.
-Returning 'true': the error should not be reported in the console as an unhandled exception.
 
 
 
@@ -53,19 +41,19 @@ Calling e.preventDefault(): the error should not be reported in the console as a
 
 
 
-window.onerror: "Uncaught Error: Error in main world load handler." at window-onerror-isolatedworld-01.html (Line: 30, Column: 22)
+window.onerror: "Uncaught Error: Error in main world load handler." at window-onerror-isolatedworld-01.html (Line: 49, Column: 22)
 Stack Trace:
 Error: Error in main world load handler.
-    at window-onerror-isolatedworld-01.html:30:23
+    at window-onerror-isolatedworld-01.html:49:23
 
 Returning 'true': the error should not be reported in the console as an unhandled exception.
 
 
 
-Handling 'error' event (phase 2): "Uncaught Error: Error in main world load handler." at window-onerror-isolatedworld-01.html:30
+Handling 'error' event (phase 2): "Uncaught Error: Error in main world load handler." at window-onerror-isolatedworld-01.html:49
 Stack Trace:
 Error: Error in main world load handler.
-    at window-onerror-isolatedworld-01.html:30:23
+    at window-onerror-isolatedworld-01.html:49:23
 
 PASS eventPassedToTheErrorListener is window.event
 PASS eventCurrentTarget is window
@@ -73,12 +61,7 @@ Calling e.preventDefault(): the error should not be reported in the console as a
 
 
 
-window.onerror: "Uncaught Error: Error in isolated world setTimeout callback." at  (Line: 6, Column: 26)
-No stack trace.
-Returning 'true': the error should not be reported in the console as an unhandled exception.
-
-
-
+FAIL Only main-world exceptions should be caught by ErrorEvent listeners.
 Handling 'error' event (phase 2): "Uncaught Error: Error in isolated world setTimeout callback." at :6
 No stack trace.
 PASS eventPassedToTheErrorListener is window.event
@@ -87,19 +70,20 @@ Calling e.preventDefault(): the error should not be reported in the console as a
 
 
 
-window.onerror: "Uncaught Error: Error in main world setTimeout callback." at window-onerror-isolatedworld-01.html (Line: 28, Column: 26)
+FAIL Only main-world exceptions should be caught by ErrorEvent listeners.
+window.onerror: "Uncaught Error: Error in main world setTimeout callback." at window-onerror-isolatedworld-01.html (Line: 47, Column: 26)
 Stack Trace:
 Error: Error in main world setTimeout callback.
-    at window-onerror-isolatedworld-01.html:28:27
+    at window-onerror-isolatedworld-01.html:47:27
 
 Returning 'true': the error should not be reported in the console as an unhandled exception.
 
 
 
-Handling 'error' event (phase 2): "Uncaught Error: Error in main world setTimeout callback." at window-onerror-isolatedworld-01.html:28
+Handling 'error' event (phase 2): "Uncaught Error: Error in main world setTimeout callback." at window-onerror-isolatedworld-01.html:47
 Stack Trace:
 Error: Error in main world setTimeout callback.
-    at window-onerror-isolatedworld-01.html:28:27
+    at window-onerror-isolatedworld-01.html:47:27
 
 PASS eventPassedToTheErrorListener is window.event
 PASS eventCurrentTarget is window
@@ -107,6 +91,7 @@ Calling e.preventDefault(): the error should not be reported in the console as a
 
 
 
+FAIL Only main-world exceptions should be caught by ErrorEvent listeners.
 PASS successfullyParsed is true
 
 TEST COMPLETE

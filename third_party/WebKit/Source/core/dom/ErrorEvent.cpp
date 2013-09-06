@@ -54,16 +54,18 @@ ErrorEvent::ErrorEvent(const AtomicString& type, const ErrorEventInit& initializ
     , m_fileName(initializer.filename)
     , m_lineNumber(initializer.lineno)
     , m_columnNumber(initializer.colno)
+    , m_world(DOMWrapperWorld::current())
 {
     ScriptWrappable::init(this);
 }
 
-ErrorEvent::ErrorEvent(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber)
+ErrorEvent::ErrorEvent(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, PassRefPtr<DOMWrapperWorld> world)
     : Event(eventNames().errorEvent, false, true)
     , m_sanitizedMessage(message)
     , m_fileName(fileName)
     , m_lineNumber(lineNumber)
     , m_columnNumber(columnNumber)
+    , m_world(world)
 {
     ScriptWrappable::init(this);
 }

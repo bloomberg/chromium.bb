@@ -4,15 +4,11 @@ isolated world window.onerror: Uncaught Error: Error in isolated world inline sc
 Error object present!
 isolated world error event listener: Uncaught Error: Error in isolated world inline script. at :, Line: 41
 Error object present!
-isolated world window.onerror: Uncaught Error: Error in main world inline script. at window-onerror-isolatedworld-02.html, Line: 30, Column: 18
-No error object present!
 isolated world error event listener: Uncaught Error: Error in main world inline script. at window-onerror-isolatedworld-02.html:, Line: 30
 No error object present!
 isolated world window.onerror: Uncaught Error: Error in isolated world load handler. at , Line: 38, Column: 22
 Error object present!
 isolated world error event listener: Uncaught Error: Error in isolated world load handler. at :, Line: 38
 Error object present!
-isolated world window.onerror: Uncaught Error: Error in main world load handler. at window-onerror-isolatedworld-02.html, Line: 27, Column: 22
-No error object present!
 isolated world error event listener: Uncaught Error: Error in main world load handler. at window-onerror-isolatedworld-02.html:, Line: 27
 No error object present!
