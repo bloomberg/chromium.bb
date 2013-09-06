@@ -27,4 +27,19 @@ SystemMetrics SystemMetrics::Sample() {
   return system_metrics;
 }
 
+scoped_ptr<Value> SystemMetrics::ToValue() const {
+  scoped_ptr<DictionaryValue> res(new DictionaryValue());
+
+  res->SetInteger("committed_memory", static_cast<int>(committed_memory_));
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  res->Set("meminfo", memory_info_.ToValue().release());
+  res->Set("diskinfo", disk_info_.ToValue().release());
+#endif
+#if defined(OS_CHROMEOS)
+  res->Set("swapinfo", swap_info_.ToValue().release());
+#endif
+
+  return res.PassAs<Value>();
+}
+
 }  // namespace base

@@ -510,6 +510,34 @@ SystemMemoryInfoKB::SystemMemoryInfoKB() {
 #endif
 }
 
+scoped_ptr<Value> SystemMemoryInfoKB::ToValue() const {
+  scoped_ptr<DictionaryValue> res(new base::DictionaryValue());
+
+  res->SetInteger("total", total);
+  res->SetInteger("free", free);
+  res->SetInteger("buffers", buffers);
+  res->SetInteger("cached", cached);
+  res->SetInteger("active_anon", active_anon);
+  res->SetInteger("inactive_anon", inactive_anon);
+  res->SetInteger("active_file", active_file);
+  res->SetInteger("inactive_file", inactive_file);
+  res->SetInteger("swap_total", swap_total);
+  res->SetInteger("swap_free", swap_free);
+  res->SetInteger("swap_used", swap_total - swap_free);
+  res->SetInteger("dirty", dirty);
+  res->SetInteger("pswpin", pswpin);
+  res->SetInteger("pswpout", pswpout);
+  res->SetInteger("pgmajfault", pgmajfault);
+#ifdef OS_CHROMEOS
+  res->SetInteger("shmem", shmem);
+  res->SetInteger("slab", slab);
+  res->SetInteger("gem_objects", gem_objects);
+  res->SetInteger("gem_size", gem_size);
+#endif
+
+  return res.PassAs<Value>();
+}
+
 bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   // Synchronously reading files in /proc is safe.
   ThreadRestrictions::ScopedAllowIO allow_io;
@@ -639,6 +667,26 @@ SystemDiskInfo::SystemDiskInfo() {
   weighted_io_time = 0;
 }
 
+scoped_ptr<Value> SystemDiskInfo::ToValue() const {
+  scoped_ptr<DictionaryValue> res(new base::DictionaryValue());
+
+  // Write out uint64 variables as doubles.
+  // Note: this may discard some precision, but for JS there's no other option.
+  res->SetDouble("reads", static_cast<double>(reads));
+  res->SetDouble("reads_merged", static_cast<double>(reads_merged));
+  res->SetDouble("sectors_read", static_cast<double>(sectors_read));
+  res->SetDouble("read_time", static_cast<double>(read_time));
+  res->SetDouble("writes", static_cast<double>(writes));
+  res->SetDouble("writes_merged", static_cast<double>(writes_merged));
+  res->SetDouble("sectors_written", static_cast<double>(sectors_written));
+  res->SetDouble("write_time", static_cast<double>(write_time));
+  res->SetDouble("io", static_cast<double>(io));
+  res->SetDouble("io_time", static_cast<double>(io_time));
+  res->SetDouble("weighted_io_time", static_cast<double>(weighted_io_time));
+
+  return res.PassAs<Value>();
+}
+
 bool IsValidDiskName(const std::string& candidate) {
   if (candidate.length() < 3)
     return false;
@@ -744,6 +792,25 @@ bool GetSystemDiskInfo(SystemDiskInfo* diskinfo) {
 }
 
 #if defined(OS_CHROMEOS)
+scoped_ptr<Value> SwapInfo::ToValue() const {
+  scoped_ptr<DictionaryValue> res(new DictionaryValue());
+
+  // Write out uint64 variables as doubles.
+  // Note: this may discard some precision, but for JS there's no other option.
+  res->SetDouble("num_reads", static_cast<double>(num_reads));
+  res->SetDouble("num_writes", static_cast<double>(num_writes));
+  res->SetDouble("orig_data_size", static_cast<double>(orig_data_size));
+  res->SetDouble("compr_data_size", static_cast<double>(compr_data_size));
+  res->SetDouble("mem_used_total", static_cast<double>(mem_used_total));
+  if (compr_data_size > 0)
+    res->SetDouble("compression_ratio", static_cast<double>(orig_data_size) /
+                                        static_cast<double>(compr_data_size));
+  else
+    res->SetDouble("compression_ratio", 0);
+
+  return res.PassAs<Value>();
+}
+
 void GetSwapInfo(SwapInfo* swap_info) {
   // Synchronously reading files in /sys/block/zram0 is safe.
   ThreadRestrictions::ScopedAllowIO allow_io;

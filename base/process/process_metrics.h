@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
+#include "base/values.h"
 
 #if defined(OS_MACOSX)
 #include <mach/mach.h>
@@ -243,6 +244,9 @@ BASE_EXPORT extern const char kProcSelfExe[];
 struct BASE_EXPORT SystemMemoryInfoKB {
   SystemMemoryInfoKB();
 
+  // Serializes the platform specific fields to value.
+  scoped_ptr<Value> ToValue() const;
+
   int total;
   int free;
   int buffers;
@@ -279,6 +283,9 @@ BASE_EXPORT bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo);
 struct BASE_EXPORT SystemDiskInfo {
   SystemDiskInfo();
 
+  // Serializes the platform specific fields to value.
+  scoped_ptr<Value> ToValue() const;
+
   uint64 reads;
   uint64 reads_merged;
   uint64 sectors_read;
@@ -313,6 +320,9 @@ struct BASE_EXPORT SwapInfo {
         mem_used_total(0) {
   }
 
+  // Serializes the platform specific fields to value.
+  scoped_ptr<Value> ToValue() const;
+
   uint64 num_reads;
   uint64 num_writes;
   uint64 compr_data_size;
@@ -333,6 +343,9 @@ class SystemMetrics {
   SystemMetrics();
 
   static SystemMetrics Sample();
+
+  // Serializes the system metrics to value.
+  scoped_ptr<Value> ToValue() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SystemMetricsTest, SystemMetrics);
