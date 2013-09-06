@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/chromeos/extensions/file_manager/volume_manager_observer.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/disks/disk_mount_manager.h"

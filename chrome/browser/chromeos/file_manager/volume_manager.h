@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_VOLUME_MANAGER_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_VOLUME_MANAGER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_VOLUME_MANAGER_H_
+#define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_VOLUME_MANAGER_H_
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
@@ -108,4 +108,4 @@ class VolumeManager : public BrowserContextKeyedService,
 
 }  // namespace file_manager
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_VOLUME_MANAGER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FILE_MANAGER_VOLUME_MANAGER_H_

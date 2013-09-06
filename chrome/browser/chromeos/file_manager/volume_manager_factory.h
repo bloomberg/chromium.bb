@@ -5,8 +5,8 @@
 #include "base/basictypes.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_VOLUME_MANAGER_FACTORY_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_VOLUME_MANAGER_FACTORY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_VOLUME_MANAGER_FACTORY_H_
+#define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_VOLUME_MANAGER_FACTORY_H_
 
 template<typename T> struct DefaultSingletonTraits;
 
@@ -49,4 +49,4 @@ class VolumeManagerFactory : public BrowserContextKeyedServiceFactory {
 
 }  // namespace file_manager
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_VOLUME_MANAGER_FACTORY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FILE_MANAGER_VOLUME_MANAGER_FACTORY_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_manager/volume_manager_factory.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/chromeos/extensions/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/disks/disk_mount_manager.h"
