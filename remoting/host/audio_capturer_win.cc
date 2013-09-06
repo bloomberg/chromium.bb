@@ -242,7 +242,8 @@ void AudioCapturerWin::DoCapture() {
     if (FAILED(hr))
       break;
 
-    if (!silence_detector_.IsSilence(
+    if ((flags & AUDCLNT_BUFFERFLAGS_SILENT) == 0 &&
+        !silence_detector_.IsSilence(
             reinterpret_cast<const int16*>(data), frames * kChannels)) {
       scoped_ptr<AudioPacket> packet =
           scoped_ptr<AudioPacket>(new AudioPacket());
