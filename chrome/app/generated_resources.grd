@@ -10728,12 +10728,22 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         </message>
       </if>
       <if expr="not is_android">
-        <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
-            desc="Used when a person enters Guest Session">
-            <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history or search history, and they won't leave other traces, like cookies, on the computer after you sign out. Files you download and bookmarks you create won't be preserved.
-          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
-          <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about Guest browsing.
-        </message>
+        <if expr="pp_ifdef('chromeos')">
+          <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
+              desc="Used when a person enters Guest Session">
+              <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history and they won't leave other traces, like cookies, on the computer after you sign out. Files you download and bookmarks you create won't be preserved.
+            <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+            <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about Guest browsing.
+          </message>
+        </if>
+        <if expr="not pp_ifdef('chromeos')">
+          <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
+              desc="Used when a person enters Guest Session">
+              <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history and they won't leave other traces, like cookies, on the computer after you close all open Guest windows. Any files you download will be preserved, however.
+            <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+            <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about Guest browsing.
+          </message>
+        </if>
       </if>
       <message name="IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE"
                desc="Title of recently closed windows in the recently closed section of the new tab page when the window has a single tab">
