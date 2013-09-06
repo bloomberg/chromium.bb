@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_var.idl modified Mon Feb 11 15:41:10 2013. */
+/* From pp_var.idl modified Wed Sep  4 10:11:31 2013. */
 
 #ifndef PPAPI_C_PP_VAR_H_
 #define PPAPI_C_PP_VAR_H_
@@ -53,28 +53,38 @@ typedef enum {
   /**
    * The Var represents a string. The <code>as_id</code> field is used to
    * identify the string, which may be created and retrieved from the
-   * <code>PPB_Var</code> interface.
+   * <code>PPB_Var</code> interface. These objects are reference counted, so
+   * AddRef and Release must be used properly to avoid memory leaks.
    */
   PP_VARTYPE_STRING = 5,
   /**
    * Represents a JavaScript object. This vartype is not currently usable
-   * from modules, although it is used internally for some tasks.
+   * from modules, although it is used internally for some tasks. These objects
+   * are reference counted, so AddRef and Release must be used properly to avoid
+   * memory leaks.
    */
   PP_VARTYPE_OBJECT = 6,
   /**
-   * Arrays and dictionaries are not currently supported but will be added
-   * in future revisions. These objects are reference counted so be sure
-   * to properly AddRef/Release them as you would with strings to ensure your
-   * module will continue to work with future versions of the API.
+   * Represents an array of Vars. The <code>as_id</code> field is used to
+   * identify the array, which may be created and manipulated from the
+   * <code>PPB_VarArray</code> interface. These objects are reference counted,
+   * so AddRef and Release must be used properly to avoid memory leaks.
    */
   PP_VARTYPE_ARRAY = 7,
+  /**
+   * Represents a mapping from strings to Vars. The <code>as_id</code> field is
+   * used to identify the dictionary, which may be created and manipulated from
+   * the <code>PPB_VarDictionary</code> interface. These objects are reference
+   * counted, so AddRef and Release must be used properly to avoid memory leaks.
+   */
   PP_VARTYPE_DICTIONARY = 8,
   /**
    * ArrayBuffer represents a JavaScript ArrayBuffer. This is the type which
    * represents Typed Arrays in JavaScript. Unlike JavaScript 'Array', it is
    * only meant to contain basic numeric types, and is always stored
    * contiguously. See PPB_VarArrayBuffer_Dev for functions special to
-   * ArrayBuffer vars.
+   * ArrayBuffer vars. These objects are reference counted, so AddRef and
+   * Release must be used properly to avoid memory leaks.
    */
   PP_VARTYPE_ARRAY_BUFFER = 9
 } PP_VarType;
