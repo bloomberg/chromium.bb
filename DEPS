@@ -251,7 +251,7 @@ deps = {
     "/trunk/deps/third_party/mesa@210110",
 
   "src/third_party/cld_2/src":
-    (Var("googlecode_url") % "cld2") + "/trunk@74",
+    (Var("googlecode_url") % "cld2") + "/trunk@75",
 }
 
 
