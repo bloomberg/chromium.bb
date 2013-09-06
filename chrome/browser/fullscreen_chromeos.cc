@@ -9,5 +9,5 @@
 bool IsFullScreenMode() {
   ash::internal::RootWindowController* controller =
       ash::internal::RootWindowController::ForActiveRootWindow();
-  return controller && controller->GetFullscreenWindow();
+  return controller && controller->GetTopmostFullscreenWindow();
 }

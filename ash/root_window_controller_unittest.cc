@@ -451,9 +451,7 @@ TEST_F(RootWindowControllerTest, ModalContainerBlockedSession) {
   }
 }
 
-// Test that GetFullscreenWindow() returns a fullscreen window only if the
-// fullscreen window is in the active workspace.
-TEST_F(RootWindowControllerTest, GetFullscreenWindow) {
+TEST_F(RootWindowControllerTest, GetTopmostFullscreenWindow) {
   UpdateDisplay("600x600");
   internal::RootWindowController* controller =
       Shell::GetInstance()->GetPrimaryRootWindowController();
@@ -466,15 +464,39 @@ TEST_F(RootWindowControllerTest, GetFullscreenWindow) {
   Widget* w3 = Widget::CreateWindowWithParentAndBounds(NULL,
       w2->GetNativeWindow(), gfx::Rect(0, 0, 100, 100));
 
-  // Test that GetFullscreenWindow() finds the fullscreen window when one of
-  // its transient children is active.
+  // Test that GetTopmostFullscreenWindow() finds the fullscreen window when one
+  // of its transient children is active.
   w3->Activate();
-  EXPECT_EQ(w2->GetNativeWindow(), controller->GetFullscreenWindow());
+  EXPECT_EQ(w2->GetNativeWindow(), controller->GetTopmostFullscreenWindow());
 
   // Since there's only one desktop workspace, it always returns the same
   // fullscreen window.
   w1->Activate();
-  EXPECT_EQ(w2->GetNativeWindow(), controller->GetFullscreenWindow());
+  EXPECT_EQ(w2->GetNativeWindow(), controller->GetTopmostFullscreenWindow());
+}
+
+TEST_F(RootWindowControllerTest, MultipleFullscreenWindows) {
+  UpdateDisplay("600x600");
+  internal::RootWindowController* controller =
+      Shell::GetInstance()->GetPrimaryRootWindowController();
+
+  Widget* w1 = CreateTestWidget(gfx::Rect(0, 0, 100, 100));
+  w1->Maximize();
+  Widget* w2 = CreateTestWidget(gfx::Rect(0, 0, 100, 100));
+  w2->SetFullscreen(true);
+  Widget* w3 = CreateTestWidget(gfx::Rect(0, 0, 100, 100));
+  w3->SetFullscreen(true);
+
+  // Test that GetTopmostFullscreenWindow() finds the active fullscreen window.
+  w2->Activate();
+  EXPECT_EQ(w2->GetNativeWindow(), controller->GetTopmostFullscreenWindow());
+  w3->Activate();
+  EXPECT_EQ(w3->GetNativeWindow(), controller->GetTopmostFullscreenWindow());
+
+  // If the active window is not fullscreen, it still returns the topmost
+  // fullscreen window, which is the last active one.
+  w1->Activate();
+  EXPECT_EQ(w3->GetNativeWindow(), controller->GetTopmostFullscreenWindow());
 }
 
 // Test that user session window can't be focused if user session blocked by

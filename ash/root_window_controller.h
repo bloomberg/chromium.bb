@@ -206,10 +206,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Initialize touch HUDs if necessary.
   void InitTouchHuds();
 
-  // Returns the window, if any, which is in fullscreen mode in the active
-  // workspace. Exposed here so clients of Ash don't need to know the details
-  // of workspace management.
-  const aura::Window* GetFullscreenWindow() const;
+  // Returns the window, if any, which is in fullscreen mode. If multiple
+  // windows are in fullscreen state, the topmost one is preferred.
+  const aura::Window* GetTopmostFullscreenWindow() const;
 
  private:
   void InitLayoutManagers();

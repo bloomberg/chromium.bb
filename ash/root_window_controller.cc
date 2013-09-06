@@ -506,12 +506,13 @@ void RootWindowController::UpdateShelfVisibility() {
   shelf_->shelf_layout_manager()->UpdateVisibilityState();
 }
 
-const aura::Window* RootWindowController::GetFullscreenWindow() const {
-  const aura::Window* container = GetContainer(kShellWindowId_DefaultContainer);
-  for (size_t i = 0; i < container->children().size(); ++i) {
-    aura::Window* child = container->children()[i];
-    if (wm::IsWindowFullscreen(child))
-      return child;
+const aura::Window* RootWindowController::GetTopmostFullscreenWindow() const {
+  const aura::Window::Windows& windows =
+      GetContainer(kShellWindowId_DefaultContainer)->children();
+  for (aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
+       iter != windows.rend(); ++iter) {
+    if (wm::IsWindowFullscreen(*iter))
+      return *iter;
   }
   return NULL;
 }
