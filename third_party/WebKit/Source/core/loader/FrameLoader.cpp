@@ -914,21 +914,15 @@ void FrameLoader::commitProvisionalLoad()
     // The call to closeURL() invokes the unload event handler, which can execute arbitrary
     // JavaScript. If the script initiates a new load, we need to abandon the current load,
     // or the two will stomp each other.
+    // detachChildren will similarly trigger child frame unload event handlers.
     if (m_documentLoader)
         closeURL();
+    detachChildren();
     if (pdl != m_provisionalDocumentLoader)
         return;
-
-    // detachChildren() can trigger this frame's unload event, and therefore
-    // script can run and do just about anything. For example, an unload event that calls
-    // document.write("") on its parent frame can lead to a recursive detachChildren()
-    // invocation for this frame. Leave the loader that is being committed in a temporarily
-    // detached state, such that it can't be found and cancelled.
-    RefPtr<DocumentLoader> loaderBeingCommitted = m_provisionalDocumentLoader.release();
-    detachChildren();
     if (m_documentLoader)
         m_documentLoader->detachFromFrame();
-    m_documentLoader = loaderBeingCommitted;
+    m_documentLoader = m_provisionalDocumentLoader.release();
     m_state = FrameStateCommittedPage;
 
     if (isLoadingMainFrame())
