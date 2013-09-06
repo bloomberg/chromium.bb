@@ -350,10 +350,8 @@ void ActivateCellular(const std::string& service_path) {
   }
   if (!IsDirectActivatedCarrier(cellular_device->carrier())) {
     // For non direct activation, show the mobile setup dialog which can be
-    // used to activate the network. Only show the dialog, if an account
-    // management URL is available.
-    if (!cellular->payment_url().empty())
-      ShowMobileSetup(service_path);
+    // used to activate the network.
+    ShowMobileSetup(service_path);
     return;
   }
   if (cellular->activation_state() == flimflam::kActivationStateActivated) {

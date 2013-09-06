@@ -60,12 +60,9 @@ namespace chromeos {
 
 NetworkState::NetworkState(const std::string& path)
     : ManagedState(MANAGED_TYPE_NETWORK, path),
-      auto_connect_(false),
-      favorite_(false),
-      priority_(0),
+      connectable_(false),
       prefix_length_(0),
       signal_strength_(0),
-      connectable_(false),
       activate_over_non_cellular_networks_(false),
       cellular_out_of_credits_(false),
       has_ca_cert_nss_(false) {
@@ -129,12 +126,6 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &roaming_);
   } else if (key == flimflam::kSecurityProperty) {
     return GetStringValue(key, value, &security_);
-  } else if (key == flimflam::kAutoConnectProperty) {
-    return GetBooleanValue(key, value, &auto_connect_);
-  } else if (key == flimflam::kFavoriteProperty) {
-    return GetBooleanValue(key, value, &favorite_);
-  } else if (key == flimflam::kPriorityProperty) {
-    return GetIntegerValue(key, value, &priority_);
   } else if (key == flimflam::kProxyConfigProperty) {
     std::string proxy_config_str;
     if (!value.GetAsString(&proxy_config_str)) {
@@ -179,21 +170,6 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetBooleanValue(key, value, &activate_over_non_cellular_networks_);
   } else if (key == shill::kOutOfCreditsProperty) {
     return GetBooleanValue(key, value, &cellular_out_of_credits_);
-  } else if (key == flimflam::kUsageURLProperty) {
-    return GetStringValue(key, value, &usage_url_);
-  } else if (key == flimflam::kPaymentPortalProperty) {
-    const DictionaryValue* dict;
-    if (!value.GetAsDictionary(&dict))
-      return false;
-    if (!dict->GetStringWithoutPathExpansion(
-            flimflam::kPaymentPortalURL, &payment_url_) ||
-        !dict->GetStringWithoutPathExpansion(
-            flimflam::kPaymentPortalMethod, &post_method_) ||
-        !dict->GetStringWithoutPathExpansion(
-            flimflam::kPaymentPortalPostData, &post_data_)) {
-      return false;
-    }
-    return true;
   }
   return false;
 }
@@ -232,8 +208,6 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
   name_servers->AppendStrings(dns_servers_);
   ipconfig_properties->SetWithoutPathExpansion(flimflam::kNameServersProperty,
                                                name_servers);
-  ipconfig_properties->SetIntegerWithoutPathExpansion(
-      flimflam::kPrefixlenProperty, prefix_length_);
   ipconfig_properties->SetStringWithoutPathExpansion(
       shill::kWebProxyAutoDiscoveryUrlProperty,
       web_proxy_auto_discovery_url_.spec());
@@ -246,12 +220,6 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
                                             roaming_);
   dictionary->SetStringWithoutPathExpansion(flimflam::kSecurityProperty,
                                             security_);
-  dictionary->SetBooleanWithoutPathExpansion(flimflam::kAutoConnectProperty,
-                                             auto_connect_);
-  dictionary->SetBooleanWithoutPathExpansion(flimflam::kFavoriteProperty,
-                                             favorite_);
-  dictionary->SetIntegerWithoutPathExpansion(flimflam::kPriorityProperty,
-                                             priority_);
   // Proxy config and ONC source are intentionally omitted: These properties are
   // placed in NetworkState to transition ProxyConfigServiceImpl from
   // NetworkLibrary to the new network stack. The networking extension API
@@ -270,18 +238,6 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
       activate_over_non_cellular_networks_);
   dictionary->SetBooleanWithoutPathExpansion(shill::kOutOfCreditsProperty,
                                              cellular_out_of_credits_);
-  base::DictionaryValue* payment_portal_properties = new DictionaryValue;
-  payment_portal_properties->SetStringWithoutPathExpansion(
-      flimflam::kPaymentPortalURL,
-      payment_url_);
-  payment_portal_properties->SetStringWithoutPathExpansion(
-      flimflam::kPaymentPortalMethod,
-      post_method_);
-  payment_portal_properties->SetStringWithoutPathExpansion(
-      flimflam::kPaymentPortalPostData,
-      post_data_);
-  dictionary->SetWithoutPathExpansion(flimflam::kPaymentPortalProperty,
-                                      payment_portal_properties);
 }
 
 bool NetworkState::IsConnectedState() const {

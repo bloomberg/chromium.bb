@@ -564,8 +564,6 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
       item->SetInteger("strength", cellular_networks[i]->strength());
       item->SetString("operator_name", cellular_networks[i]->operator_name());
       item->SetString("operator_code", cellular_networks[i]->operator_code());
-      item->SetString("payment_url", cellular_networks[i]->payment_url());
-      item->SetString("usage_url", cellular_networks[i]->usage_url());
       item->SetString("network_technology",
                       cellular_networks[i]->GetNetworkTechnologyString());
       item->SetString("activation_state",

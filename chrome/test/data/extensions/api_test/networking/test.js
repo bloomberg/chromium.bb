@@ -123,7 +123,6 @@ var availableTests = [
                     "Name": "wifi1",
                     "Type": "WiFi",
                     "WiFi": {
-                      "AutoConnect": false,
                       "Security": "WEP-PSK",
                       "SignalStrength": 0
                     }
@@ -133,9 +132,6 @@ var availableTests = [
                     "GUID": "stub_vpn1",
                     "Name": "vpn1",
                     "Type": "VPN",
-                    "VPN": {
-                      "AutoConnect": false
-                    }
                   },
                   {
                     "ConnectionState": "NotConnected",
@@ -143,7 +139,6 @@ var availableTests = [
                     "Name": "wifi2_PSK",
                     "Type": "WiFi",
                     "WiFi": {
-                      "AutoConnect": false,
                       "Security": "WPA-PSK",
                       "SignalStrength": 80
                     }
@@ -172,7 +167,6 @@ var availableTests = [
                     "Name": "wifi1",
                     "Type": "WiFi",
                     "WiFi": {
-                      "AutoConnect": false,
                       "Security": "WEP-PSK",
                       "SignalStrength": 0
                     }
@@ -183,7 +177,6 @@ var availableTests = [
                     "Name": "wifi2_PSK",
                     "Type": "WiFi",
                     "WiFi": {
-                      "AutoConnect": false,
                       "Security": "WPA-PSK",
                       "SignalStrength": 80
                     }
@@ -306,7 +299,6 @@ var availableTests = [
           "Name": "wifi2_PSK",
           "Type": "WiFi",
           "WiFi": {
-            "AutoConnect": false,
             "Security": "WPA-PSK",
             "SignalStrength": 80
           }

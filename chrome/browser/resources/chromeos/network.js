@@ -4,11 +4,12 @@
 
 var NetworkUI = function() {
   // Properties to display in the network state table
-  var NETWORK_STATE_FIELDS = ['Name', 'Type', 'State', 'Profile', 'Connectable',
-   'Error', 'ADdress', 'Security', 'Cellular.NetworkTechnology',
-   'Cellular.ActivationState', 'Cellular.RoamingState',
-   'Cellular.OutOfCredits', 'signalStrength', 'AutoConnect',
-   'Favorite', 'Priority'];
+  var NETWORK_STATE_FIELDS = [
+    'Name', 'Type', 'State', 'Profile', 'Connectable',
+    'Error', 'Address', 'Security', 'Cellular.NetworkTechnology',
+    'Cellular.ActivationState', 'Cellular.RoamingState',
+    'Cellular.OutOfCredits', 'Strength'
+  ];
 
   var LOG_LEVEL_CLASSNAME = {
     'Error': 'network-log-level-error',
@@ -104,10 +105,11 @@ var NetworkUI = function() {
   var createStatusTableRow = function(path, status) {
     var row = document.createElement('tr');
     row.className = 'network-status-table-row';
+    row.appendChild(createStatusTableCell(path));
+    row.appendChild(createStatusTableCell(status['GUID'].slice(1, 9)));
     for (var i = 0; i < NETWORK_STATE_FIELDS.length; ++i) {
       row.appendChild(createStatusTableCell(status[NETWORK_STATE_FIELDS[i]]));
     }
-    row.appendChild(createStatusTableCell(path));
     return row;
   };
 

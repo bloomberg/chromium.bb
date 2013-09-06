@@ -1560,7 +1560,10 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   dictionary.SetBoolean(kTagShowStaticIPConfig, staticIPConfig);
 
   dictionary.SetBoolean(kTagShowPreferred, !network->profile_path().empty());
-  bool preferred = network->priority() > 0;
+  int priority = 0;
+  shill_properties.GetIntegerWithoutPathExpansion(
+      flimflam::kPriorityProperty, &priority);
+  bool preferred = priority > 0;
   SetValueDictionary(&dictionary, kTagPreferred,
                      new base::FundamentalValue(preferred),
                      property_ui_data);
@@ -1582,8 +1585,11 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
     auto_connect_ui_data.ParseOncProperty(
         onc_source, onc, onc_path_to_auto_connect);
   }
+  bool auto_connect = false;
+  shill_properties.GetBooleanWithoutPathExpansion(
+      flimflam::kAutoConnectProperty, &auto_connect);
   SetValueDictionary(&dictionary, kTagAutoConnect,
-                     new base::FundamentalValue(network->auto_connect()),
+                     new base::FundamentalValue(auto_connect),
                      auto_connect_ui_data);
 
   PopulateConnectionDetails(network, shill_properties, &dictionary);

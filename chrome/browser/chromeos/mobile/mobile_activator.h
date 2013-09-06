@@ -144,8 +144,14 @@ class MobileActivator
   virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
   virtual void NetworkPropertiesUpdated(const NetworkState* network) OVERRIDE;
 
-  // Continue activation after inital setup (config load).
+  // Continue activation after inital setup (config load). Makes an
+  // asynchronous call to NetworkConfigurationHandler::GetProperties.
   void ContinueActivation();
+  void GetPropertiesAndContinueActivation(
+      const std::string& service_path,
+      const base::DictionaryValue& properties);
+  void GetPropertiesFailure(const std::string& error_name,
+                            scoped_ptr<base::DictionaryValue> error_data);
   // Handles the signal that the payment portal has finished loading.
   void HandlePortalLoaded(bool success);
   // Handles the signal that the user has finished with the portal.
@@ -289,6 +295,7 @@ class MobileActivator
   base::Time cellular_plan_payment_time_;
 
   ObserverList<Observer> observers_;
+  base::WeakPtrFactory<MobileActivator> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MobileActivator);
 };

@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_piece.h"
@@ -26,6 +27,8 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -73,6 +76,60 @@ const char kJsGetDeviceInfoCallback[] =
     "mobile.MobileSetupPortal.onGotDeviceInfo";
 const char kJsConnectivityChangedCallback[] =
     "mobile.MobileSetupPortal.onConnectivityChanged";
+
+void DataRequestFailed(
+    const std::string& service_path,
+    const content::URLDataSource::GotDataCallback& callback) {
+  NET_LOG_ERROR("Data Request Failed for Mobile Setup", service_path);
+  scoped_refptr<base::RefCountedBytes> html_bytes(new base::RefCountedBytes);
+  callback.Run(html_bytes.get());
+}
+
+// Converts the network properties into a JS object.
+void GetDeviceInfo(const DictionaryValue& properties, DictionaryValue* value) {
+  std::string name;
+  properties.GetStringWithoutPathExpansion(
+      flimflam::kNameProperty, &name);
+  bool activate_over_non_cellular_networks = false;
+  properties.GetBooleanWithoutPathExpansion(
+      shill::kActivateOverNonCellularNetworkProperty,
+      &activate_over_non_cellular_networks);
+  const DictionaryValue* payment_dict;
+  std::string payment_url, post_method, post_data;
+  if (properties.GetDictionaryWithoutPathExpansion(
+          flimflam::kPaymentPortalProperty, &payment_dict)) {
+    payment_dict->GetStringWithoutPathExpansion(
+        flimflam::kPaymentPortalURL, &payment_url);
+    payment_dict->GetStringWithoutPathExpansion(
+        flimflam::kPaymentPortalMethod, &post_method);
+    payment_dict->GetStringWithoutPathExpansion(
+        flimflam::kPaymentPortalPostData, &post_data);
+  }
+
+  value->SetBoolean("activate_over_non_cellular_network",
+                    activate_over_non_cellular_networks);
+  value->SetString("carrier", name);
+  value->SetString("payment_url", payment_url);
+  if (LowerCaseEqualsASCII(post_method, "post") && !post_data.empty())
+    value->SetString("post_data", post_data);
+
+  // Use the cached DeviceState properties.
+  std::string device_path;
+  if (!properties.GetStringWithoutPathExpansion(
+          flimflam::kDeviceProperty, &device_path) ||
+      device_path.empty()) {
+    return;
+  }
+  const chromeos::DeviceState* device =
+      NetworkHandler::Get()->network_state_handler()->GetDeviceState(
+          device_path);
+  if (!device)
+    return;
+
+  value->SetString("MEID", device->meid());
+  value->SetString("IMEI", device->imei());
+  value->SetString("MDN", device->mdn());
+}
 
 }  // namespace
 
@@ -142,6 +199,18 @@ class MobileSetupUIHTMLSource : public content::URLDataSource {
  private:
   virtual ~MobileSetupUIHTMLSource() {}
 
+  void GetPropertiesAndStartDataRequest(
+      const content::URLDataSource::GotDataCallback& callback,
+      const std::string& service_path,
+      const base::DictionaryValue& properties);
+  void GetPropertiesFailure(
+      const content::URLDataSource::GotDataCallback& callback,
+      const std::string& service_path,
+      const std::string& error_name,
+      scoped_ptr<base::DictionaryValue> error_data);
+
+  base::WeakPtrFactory<MobileSetupUIHTMLSource> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(MobileSetupUIHTMLSource);
 };
 
@@ -177,6 +246,21 @@ class MobileSetupHandler
       MobileActivator::PlanActivationState new_state,
       const std::string& error_description) OVERRIDE;
 
+  // Callbacks for NetworkConfigurationHandler::GetProperties.
+  void GetPropertiesAndCallStatusChanged(
+      MobileActivator::PlanActivationState state,
+      const std::string& error_description,
+      const std::string& service_path,
+      const base::DictionaryValue& properties);
+  void GetPropertiesAndCallGetDeviceInfo(
+      const std::string& service_path,
+      const base::DictionaryValue& properties);
+  void GetPropertiesFailure(
+      const std::string& service_path,
+      const std::string& callback_name,
+      const std::string& error_name,
+      scoped_ptr<base::DictionaryValue> error_data);
+
   // Handlers for JS WebUI messages.
   void HandleSetTransactionStatus(const ListValue* args);
   void HandleStartActivation(const ListValue* args);
@@ -197,16 +281,13 @@ class MobileSetupHandler
   // Sends message to host registration page with system/user info data.
   void SendDeviceInfo();
 
-  // Converts the currently active CellularNetwork device into a JS object.
-  static void GetDeviceInfo(const NetworkState* network,
-                            DictionaryValue* value);
-
   // Type of the mobilesetup webui deduced from received messages.
   Type type_;
   // Whether portal page for lte networks can be reached in current network
   // connection state. This value is reflected in portal webui for lte networks.
   // Initial value is true.
   bool lte_portal_reachable_;
+  base::WeakPtrFactory<MobileSetupHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MobileSetupHandler);
 };
@@ -217,7 +298,8 @@ class MobileSetupHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MobileSetupUIHTMLSource::MobileSetupUIHTMLSource() {
+MobileSetupUIHTMLSource::MobileSetupUIHTMLSource()
+    : weak_ptr_factory_(this) {
 }
 
 std::string MobileSetupUIHTMLSource::GetSource() const {
@@ -229,27 +311,48 @@ void MobileSetupUIHTMLSource::StartDataRequest(
     int render_process_id,
     int render_view_id,
     const content::URLDataSource::GotDataCallback& callback) {
-  const NetworkState* network = NULL;
-  if (!path.empty()) {
-    network = NetworkHandler::Get()->network_state_handler()->GetNetworkState(
-        path);
-  }
+  NetworkHandler::Get()->network_configuration_handler()->GetProperties(
+      path,
+      base::Bind(&MobileSetupUIHTMLSource::GetPropertiesAndStartDataRequest,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback),
+      base::Bind(&MobileSetupUIHTMLSource::GetPropertiesFailure,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback, path));
+}
 
-  if (!network ||
-      (network->payment_url().empty() && network->usage_url().empty() &&
-       network->activation_state() != flimflam::kActivationStateActivated)) {
-    LOG(WARNING) << "Can't find device to activate for service path " << path;
-    scoped_refptr<base::RefCountedBytes> html_bytes(new base::RefCountedBytes);
-    callback.Run(html_bytes.get());
+void MobileSetupUIHTMLSource::GetPropertiesAndStartDataRequest(
+    const content::URLDataSource::GotDataCallback& callback,
+    const std::string& service_path,
+    const base::DictionaryValue& properties) {
+  const DictionaryValue* payment_dict;
+  std::string name, usage_url, activation_state, payment_url;
+  if (!properties.GetStringWithoutPathExpansion(
+          flimflam::kNameProperty, &name) ||
+      !properties.GetStringWithoutPathExpansion(
+          flimflam::kUsageURLProperty, &usage_url) ||
+      !properties.GetStringWithoutPathExpansion(
+          flimflam::kActivationStateProperty, &activation_state) ||
+      !properties.GetDictionaryWithoutPathExpansion(
+          flimflam::kPaymentPortalProperty, &payment_dict) ||
+      !payment_dict->GetStringWithoutPathExpansion(
+          flimflam::kPaymentPortalURL, &payment_url)) {
+    DataRequestFailed(service_path, callback);
     return;
   }
 
-  LOG(WARNING) << "Starting mobile setup for " << path;
+  if (payment_url.empty() && usage_url.empty() &&
+      activation_state != flimflam::kActivationStateActivated) {
+    DataRequestFailed(service_path, callback);
+    return;
+  }
+
+  NET_LOG_EVENT("Starting mobile setup", service_path);
   DictionaryValue strings;
 
   strings.SetString("connecting_header",
                     l10n_util::GetStringFUTF16(IDS_MOBILE_CONNECTING_HEADER,
-                        network ? UTF8ToUTF16(network->name()) : string16()));
+                                               UTF8ToUTF16(name)));
   strings.SetString("error_header",
                     l10n_util::GetStringUTF16(IDS_MOBILE_ERROR_HEADER));
   strings.SetString("activating_header",
@@ -277,7 +380,7 @@ void MobileSetupUIHTMLSource::StartDataRequest(
   // network is activated, the webui goes straight to portal. Otherwise the
   // webui is used for activation flow.
   std::string full_html;
-  if (network->activation_state() == flimflam::kActivationStateActivated) {
+  if (activation_state == flimflam::kActivationStateActivated) {
     static const base::StringPiece html_for_activated(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_MOBILE_SETUP_PORTAL_PAGE_HTML));
@@ -292,6 +395,14 @@ void MobileSetupUIHTMLSource::StartDataRequest(
   callback.Run(base::RefCountedString::TakeString(&full_html));
 }
 
+void MobileSetupUIHTMLSource::GetPropertiesFailure(
+    const content::URLDataSource::GotDataCallback& callback,
+    const std::string& service_path,
+    const std::string& error_name,
+    scoped_ptr<base::DictionaryValue> error_data) {
+  DataRequestFailed(service_path, callback);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // MobileSetupHandler
@@ -299,7 +410,8 @@ void MobileSetupUIHTMLSource::StartDataRequest(
 ////////////////////////////////////////////////////////////////////////////////
 MobileSetupHandler::MobileSetupHandler()
     : type_(TYPE_UNDETERMINED),
-      lte_portal_reachable_(true) {
+      lte_portal_reachable_(true),
+      weak_ptr_factory_(this) {
 }
 
 MobileSetupHandler::~MobileSetupHandler() {
@@ -319,10 +431,25 @@ void MobileSetupHandler::OnActivationStateChanged(
   DCHECK_EQ(TYPE_ACTIVATION, type_);
   if (!web_ui())
     return;
+  NetworkHandler::Get()->network_configuration_handler()->GetProperties(
+      network->path(),
+      base::Bind(&MobileSetupHandler::GetPropertiesAndCallStatusChanged,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 state,
+                 error_description),
+      base::Bind(&MobileSetupHandler::GetPropertiesFailure,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 network->path(),
+                 kJsDeviceStatusChangedCallback));
+}
 
+void MobileSetupHandler::GetPropertiesAndCallStatusChanged(
+    MobileActivator::PlanActivationState state,
+    const std::string& error_description,
+    const std::string& service_path,
+    const base::DictionaryValue& properties) {
   DictionaryValue device_dict;
-  if (network)
-    GetDeviceInfo(network, &device_dict);
+  GetDeviceInfo(properties, &device_dict);
   device_dict.SetInteger("state", state);
   if (error_description.length())
     device_dict.SetString("error", error_description);
@@ -437,9 +564,34 @@ void MobileSetupHandler::HandleGetDeviceInfo(const ListValue* args) {
     }
   }
 
+  NetworkHandler::Get()->network_configuration_handler()->GetProperties(
+      network->path(),
+      base::Bind(&MobileSetupHandler::GetPropertiesAndCallGetDeviceInfo,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&MobileSetupHandler::GetPropertiesFailure,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 network->path(),
+                 kJsGetDeviceInfoCallback));
+}
+
+void MobileSetupHandler::GetPropertiesAndCallGetDeviceInfo(
+    const std::string& service_path,
+    const base::DictionaryValue& properties) {
   DictionaryValue device_info;
-  GetDeviceInfo(network, &device_info);
+  GetDeviceInfo(properties, &device_info);
   web_ui()->CallJavascriptFunction(kJsGetDeviceInfoCallback, device_info);
+}
+
+void MobileSetupHandler::GetPropertiesFailure(
+    const std::string& service_path,
+    const std::string& callback_name,
+    const std::string& error_name,
+    scoped_ptr<base::DictionaryValue> error_data) {
+  NET_LOG_ERROR("MobileActivator GetProperties Failed: " + error_name,
+                service_path);
+  // Invoke |callback_name| with an empty dictionary.
+  DictionaryValue device_dict;
+  web_ui()->CallJavascriptFunction(callback_name, device_dict);
 }
 
 void MobileSetupHandler::NetworkManagerChanged() {
@@ -488,27 +640,6 @@ void MobileSetupHandler::UpdatePortalReachability(
   }
 
   lte_portal_reachable_ = portal_reachable;
-}
-
-void MobileSetupHandler::GetDeviceInfo(const NetworkState* network,
-                                       DictionaryValue* value) {
-  DCHECK(network);
-  value->SetBoolean("activate_over_non_cellular_network",
-                    network->activate_over_non_cellular_networks());
-  value->SetString("carrier", network->name());
-  value->SetString("payment_url", network->payment_url());
-  if (LowerCaseEqualsASCII(network->post_method(), "post") &&
-      !network->post_data().empty())
-    value->SetString("post_data", network->post_data());
-
-  const chromeos::DeviceState* device =
-      NetworkHandler::Get()->network_state_handler()->GetDeviceState(
-          network->device_path());
-  if (device) {
-    value->SetString("MEID", device->meid());
-    value->SetString("IMEI", device->imei());
-    value->SetString("MDN", device->mdn());
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
