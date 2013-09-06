@@ -38,6 +38,7 @@ class MEDIA_EXPORT AudioOutputDispatcher
  public:
   AudioOutputDispatcher(AudioManager* audio_manager,
                         const AudioParameters& params,
+                        const std::string& output_device_id,
                         const std::string& input_device_id);
 
   // Called by AudioOutputProxy to open the stream.
@@ -79,6 +80,7 @@ class MEDIA_EXPORT AudioOutputDispatcher
   AudioManager* audio_manager_;
   base::MessageLoop* message_loop_;
   AudioParameters params_;
+  const std::string output_device_id_;
   const std::string input_device_id_;
 
  private:

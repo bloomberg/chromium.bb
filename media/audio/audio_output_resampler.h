@@ -40,6 +40,7 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
   AudioOutputResampler(AudioManager* audio_manager,
                        const AudioParameters& input_params,
                        const AudioParameters& output_params,
+                       const std::string& output_device_id,
                        const std::string& input_device_id,
                        const base::TimeDelta& close_delay);
 
@@ -73,9 +74,6 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
 
   // AudioParameters used to setup the output stream.
   AudioParameters output_params_;
-
-  // Device ID to be used by the unified IO to open the correct input device.
-  const std::string input_device_id_;
 
   // Whether any streams have been opened through |dispatcher_|, if so we can't
   // fallback on future OpenStream() failures.

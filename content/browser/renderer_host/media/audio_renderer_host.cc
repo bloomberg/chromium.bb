@@ -95,7 +95,9 @@ AudioRendererHost::AudioEntry::AudioEntry(
       stream_id_(stream_id),
       render_view_id_(render_view_id),
       controller_(media::AudioOutputController::Create(
-          host->audio_manager_, this, params, input_device_id, reader.get())),
+          // TODO(tommi): Feed in the proper output device id.
+          host->audio_manager_, this, params, std::string(),
+          input_device_id, reader.get())),
       shared_memory_(shared_memory.Pass()),
       reader_(reader.Pass()) {
   DCHECK(controller_.get());

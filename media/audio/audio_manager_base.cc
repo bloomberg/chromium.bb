@@ -293,9 +293,11 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
   scoped_refptr<AudioOutputDispatcher> dispatcher;
   if (output_params.format() != AudioParameters::AUDIO_FAKE) {
     dispatcher = new AudioOutputResampler(this, params, output_params,
-                                          input_device_id, kCloseDelay);
+                                          output_device_id, input_device_id,
+                                          kCloseDelay);
   } else {
     dispatcher = new AudioOutputDispatcherImpl(this, output_params,
+                                               output_device_id,
                                                input_device_id, kCloseDelay);
   }
 

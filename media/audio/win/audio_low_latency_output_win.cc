@@ -130,6 +130,7 @@ int WASAPIAudioOutputStream::HardwareSampleRate(const std::string& device_id) {
 }
 
 WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
+                                                 const std::string& device_id,
                                                  const AudioParameters& params,
                                                  ERole device_role)
     : creating_thread_id_(base::PlatformThread::CurrentId()),
@@ -138,6 +139,7 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
       audio_parameters_are_valid_(false),
       volume_(1.0),
       endpoint_buffer_size_frames_(0),
+      device_id_(device_id),
       device_role_(device_role),
       share_mode_(GetShareMode()),
       num_written_frames_(0),
@@ -153,12 +155,16 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
     // channel count are excluded) to the preferred (native) audio parameters.
     // Open() will fail if this is not the case.
     AudioParameters preferred_params;
-    HRESULT hr = CoreAudioUtil::GetPreferredAudioParameters(
-        eRender, device_role, &preferred_params);
+    HRESULT hr = device_id_.empty() ?
+        CoreAudioUtil::GetPreferredAudioParameters(eRender, device_role,
+                                                   &preferred_params) :
+        CoreAudioUtil::GetPreferredAudioParameters(device_id_,
+                                                   &preferred_params);
     audio_parameters_are_valid_ = SUCCEEDED(hr) &&
         CompareAudioParametersNoBitDepthOrChannels(params, preferred_params);
     LOG_IF(WARNING, !audio_parameters_are_valid_)
-        << "Input and preferred parameters are not identical.";
+        << "Input and preferred parameters are not identical. "
+        << "Device id: " << device_id_;
   }
 
   // Load the Avrt DLL if not already loaded. Required to support MMCSS.
@@ -214,7 +220,6 @@ bool WASAPIAudioOutputStream::Open() {
   if (opened_)
     return true;
 
-
   // Audio parameters must be identical to the preferred set of parameters
   // if shared mode (default) is utilized.
   if (share_mode_ == AUDCLNT_SHAREMODE_SHARED) {
@@ -225,8 +230,16 @@ bool WASAPIAudioOutputStream::Open() {
   }
 
   // Create an IAudioClient interface for the default rendering IMMDevice.
-  ScopedComPtr<IAudioClient> audio_client =
-      CoreAudioUtil::CreateDefaultClient(eRender, device_role_);
+  ScopedComPtr<IAudioClient> audio_client;
+  if (device_id_.empty()) {
+    audio_client = CoreAudioUtil::CreateDefaultClient(eRender, device_role_);
+  } else {
+    ScopedComPtr<IMMDevice> device(CoreAudioUtil::CreateDevice(device_id_));
+    DLOG_IF(ERROR, !device) << "Failed to open device: " << device_id_;
+    if (device)
+      audio_client = CoreAudioUtil::CreateClient(device);
+  }
+
   if (!audio_client)
     return false;
 

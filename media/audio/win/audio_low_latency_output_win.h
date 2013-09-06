@@ -122,6 +122,7 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // The ctor takes all the usual parameters, plus |manager| which is the
   // the audio manager who is creating this object.
   WASAPIAudioOutputStream(AudioManagerWin* manager,
+                          const std::string& device_id,
                           const AudioParameters& params,
                           ERole device_role);
 
@@ -219,6 +220,9 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
 
   // Length of the audio endpoint buffer.
   uint32 endpoint_buffer_size_frames_;
+
+  // The target device id or an empty string for the default device.
+  const std::string device_id_;
 
   // Defines the role that the system has assigned to an audio endpoint device.
   ERole device_role_;

@@ -147,12 +147,13 @@ static AudioParameters SetupFallbackParams(
 AudioOutputResampler::AudioOutputResampler(AudioManager* audio_manager,
                                            const AudioParameters& input_params,
                                            const AudioParameters& output_params,
+                                           const std::string& output_device_id,
                                            const std::string& input_device_id,
                                            const base::TimeDelta& close_delay)
-    : AudioOutputDispatcher(audio_manager, input_params, input_device_id),
+    : AudioOutputDispatcher(audio_manager, input_params, output_device_id,
+                            input_device_id),
       close_delay_(close_delay),
       output_params_(output_params),
-      input_device_id_(input_device_id),
       streams_opened_(false) {
   DCHECK(input_params.IsValid());
   DCHECK(output_params.IsValid());
@@ -172,7 +173,8 @@ void AudioOutputResampler::Initialize() {
   DCHECK(!streams_opened_);
   DCHECK(callbacks_.empty());
   dispatcher_ = new AudioOutputDispatcherImpl(
-      audio_manager_, output_params_, input_device_id_, close_delay_);
+      audio_manager_, output_params_, output_device_id_, input_device_id_,
+      close_delay_);
 }
 
 bool AudioOutputResampler::OpenStream() {

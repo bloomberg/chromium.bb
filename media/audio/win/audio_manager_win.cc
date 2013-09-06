@@ -310,13 +310,14 @@ AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
     const AudioParameters& params,
     const std::string& device_id,
     const std::string& input_device_id) {
-  DLOG_IF(ERROR, !device_id.empty()) << "Not implemented!";
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   if (params.channels() > kWinMaxChannels)
     return NULL;
 
   if (!CoreAudioUtil::IsSupported()) {
     // Fall back to Windows Wave implementation on Windows XP or lower.
+    DLOG_IF(ERROR, !device_id.empty())
+        << "Opening by device id not supported by PCMWaveOutAudioOutputStream";
     DVLOG(1) << "Using WaveOut since WASAPI requires at least Vista.";
     return new PCMWaveOutAudioOutputStream(
         this, params, media::NumberOfWaveOutBuffers(), WAVE_MAPPER);
@@ -325,10 +326,12 @@ AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
   // TODO(rtoy): support more than stereo input.
   if (params.input_channels() > 0) {
     DVLOG(1) << "WASAPIUnifiedStream is created.";
+    DLOG_IF(ERROR, !device_id.empty())
+        << "Opening by device id not supported by WASAPIUnifiedStream";
     return new WASAPIUnifiedStream(this, params, input_device_id);
   }
 
-  return new WASAPIAudioOutputStream(this, params, eConsole);
+  return new WASAPIAudioOutputStream(this, device_id, params, eConsole);
 }
 
 // Factory for the implementations of AudioInputStream for AUDIO_PCM_LINEAR

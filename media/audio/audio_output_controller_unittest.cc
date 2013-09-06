@@ -29,8 +29,6 @@ static const int kSampleRate = AudioParameters::kAudioCDSampleRate;
 static const int kBitsPerSample = 16;
 static const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
 static const int kSamplesPerPacket = kSampleRate / 100;
-static const int kHardwareBufferSize = kSamplesPerPacket *
-    ChannelLayoutToChannelCount(kChannelLayout) * kBitsPerSample / 8;
 static const double kTestVolume = 0.25;
 
 class MockAudioOutputControllerEventHandler
@@ -122,7 +120,7 @@ class AudioOutputControllerTest : public testing::Test {
 
     controller_ = AudioOutputController::Create(
         audio_manager_.get(), &mock_event_handler_, params_, std::string(),
-        &mock_sync_reader_);
+        std::string(), &mock_sync_reader_);
     if (controller_.get())
       controller_->SetVolume(kTestVolume);
 

@@ -32,14 +32,17 @@ static const int kPowerMeasurementsPerSecond = 30;
 const int AudioOutputController::kPollNumAttempts = 3;
 const int AudioOutputController::kPollPauseInMilliseconds = 3;
 
-AudioOutputController::AudioOutputController(AudioManager* audio_manager,
-                                             EventHandler* handler,
-                                             const AudioParameters& params,
-                                             const std::string& input_device_id,
-                                             SyncReader* sync_reader)
+AudioOutputController::AudioOutputController(
+    AudioManager* audio_manager,
+    EventHandler* handler,
+    const AudioParameters& params,
+    const std::string& output_device_id,
+    const std::string& input_device_id,
+    SyncReader* sync_reader)
     : audio_manager_(audio_manager),
       params_(params),
       handler_(handler),
+      output_device_id_(output_device_id),
       input_device_id_(input_device_id),
       stream_(NULL),
       diverting_to_stream_(NULL),
@@ -67,6 +70,7 @@ scoped_refptr<AudioOutputController> AudioOutputController::Create(
     AudioManager* audio_manager,
     EventHandler* event_handler,
     const AudioParameters& params,
+    const std::string& output_device_id,
     const std::string& input_device_id,
     SyncReader* sync_reader) {
   DCHECK(audio_manager);
@@ -76,7 +80,8 @@ scoped_refptr<AudioOutputController> AudioOutputController::Create(
     return NULL;
 
   scoped_refptr<AudioOutputController> controller(new AudioOutputController(
-      audio_manager, event_handler, params, input_device_id, sync_reader));
+      audio_manager, event_handler, params, output_device_id, input_device_id,
+      sync_reader));
   controller->message_loop_->PostTask(FROM_HERE, base::Bind(
       &AudioOutputController::DoCreate, controller, false));
   return controller;
@@ -114,8 +119,10 @@ void AudioOutputController::DoCreate(bool is_for_device_change) {
   DoStopCloseAndClearStream();  // Calls RemoveOutputDeviceChangeListener().
   DCHECK_EQ(kEmpty, state_);
 
-  stream_ = diverting_to_stream_ ? diverting_to_stream_ :
-      audio_manager_->MakeAudioOutputStreamProxy(params_, "", input_device_id_);
+  stream_ = diverting_to_stream_ ?
+      diverting_to_stream_ :
+      audio_manager_->MakeAudioOutputStreamProxy(params_, output_device_id_,
+                                                 input_device_id_);
   if (!stream_) {
     state_ = kError;
     handler_->OnError();

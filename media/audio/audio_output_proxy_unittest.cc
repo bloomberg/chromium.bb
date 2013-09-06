@@ -166,6 +166,7 @@ class AudioOutputProxyTest : public testing::Test {
     dispatcher_impl_ = new AudioOutputDispatcherImpl(&manager(),
                                                      params_,
                                                      std::string(),
+                                                     std::string(),
                                                      close_delay);
 
     // Necessary to know how long the dispatcher will wait before posting
@@ -472,7 +473,8 @@ class AudioOutputResamplerTest : public AudioOutputProxyTest {
         AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
         16000, 16, 1024);
     resampler_ = new AudioOutputResampler(
-        &manager(), params_, resampler_params_, std::string(), close_delay);
+        &manager(), params_, resampler_params_, std::string(), std::string(),
+        close_delay);
   }
 
   virtual void OnStart() OVERRIDE {
