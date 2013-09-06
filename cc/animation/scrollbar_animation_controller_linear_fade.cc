@@ -24,15 +24,12 @@ ScrollbarAnimationControllerLinearFade::ScrollbarAnimationControllerLinearFade(
     : ScrollbarAnimationController(),
       scroll_layer_(scroll_layer),
       scroll_gesture_in_progress_(false),
+      scroll_gesture_has_scrolled_(false),
       fadeout_delay_(fadeout_delay),
       fadeout_length_(fadeout_length) {}
 
 ScrollbarAnimationControllerLinearFade::
     ~ScrollbarAnimationControllerLinearFade() {}
-
-bool ScrollbarAnimationControllerLinearFade::IsScrollGestureInProgress() const {
-  return scroll_gesture_in_progress_;
-}
 
 bool ScrollbarAnimationControllerLinearFade::IsAnimating() const {
   return !last_awaken_time_.is_null();
@@ -54,28 +51,35 @@ bool ScrollbarAnimationControllerLinearFade::Animate(base::TimeTicks now) {
 }
 
 void ScrollbarAnimationControllerLinearFade::DidScrollGestureBegin() {
-  scroll_layer_->SetScrollbarOpacity(1.0f);
   scroll_gesture_in_progress_ = true;
-  last_awaken_time_ = base::TimeTicks();
+  scroll_gesture_has_scrolled_ = false;
 }
 
 void ScrollbarAnimationControllerLinearFade::DidScrollGestureEnd(
     base::TimeTicks now) {
+  // The animation should not be triggered if no scrolling has occurred.
+  if (scroll_gesture_has_scrolled_)
+    last_awaken_time_ = now;
+  scroll_gesture_has_scrolled_ = false;
   scroll_gesture_in_progress_ = false;
-  last_awaken_time_ = now;
 }
 
-void ScrollbarAnimationControllerLinearFade::DidProgrammaticallyUpdateScroll(
+void ScrollbarAnimationControllerLinearFade::DidScrollUpdate(
     base::TimeTicks now) {
-  // Don't set scroll_gesture_in_progress_ as this scroll is not from a gesture
-  // and we won't receive ScrollEnd.
   scroll_layer_->SetScrollbarOpacity(1.0f);
-  last_awaken_time_ = now;
+  // The animation should only be activated if the scroll updated occurred
+  // programatically, outside the scope of a scroll gesture.
+  if (scroll_gesture_in_progress_) {
+    last_awaken_time_ = base::TimeTicks();
+    scroll_gesture_has_scrolled_ = true;
+  } else {
+    last_awaken_time_ = now;
+  }
 }
 
 float ScrollbarAnimationControllerLinearFade::OpacityAtTime(
     base::TimeTicks now) {
-  if (scroll_gesture_in_progress_)
+  if (scroll_gesture_has_scrolled_)
     return 1.0f;
 
   if (last_awaken_time_.is_null())

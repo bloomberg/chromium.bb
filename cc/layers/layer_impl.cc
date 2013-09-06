@@ -975,9 +975,8 @@ void LayerImpl::UpdateScrollbarPositions() {
     return;
   last_scroll_offset_ = current_offset;
 
-  if (scrollbar_animation_controller_ &&
-      !scrollbar_animation_controller_->IsScrollGestureInProgress()) {
-    scrollbar_animation_controller_->DidProgrammaticallyUpdateScroll(
+  if (scrollbar_animation_controller_) {
+    scrollbar_animation_controller_->DidScrollUpdate(
         layer_tree_impl_->CurrentPhysicalTimeTicks());
   }
 

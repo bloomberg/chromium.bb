@@ -1144,9 +1144,19 @@ TEST_F(LayerTreeHostImplTest, ScrollbarLinearFadeScheduling) {
   EXPECT_EQ(base::TimeDelta(), requested_scrollbar_animation_delay_);
   EXPECT_FALSE(did_request_redraw_);
 
-  // After a scroll, a fade animation should be scheduled about 20ms from now.
+  // If no scroll happened during a scroll gesture, StartScrollbarAnimation
+  // should have no effect.
   host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel);
   host_impl_->ScrollEnd();
+  host_impl_->StartScrollbarAnimation();
+  EXPECT_EQ(base::TimeDelta(), requested_scrollbar_animation_delay_);
+  EXPECT_FALSE(did_request_redraw_);
+
+  // After a scroll, a fade animation should be scheduled about 20ms from now.
+  host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel);
+  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(5, 0));
+  host_impl_->ScrollEnd();
+  did_request_redraw_ = false;
   host_impl_->StartScrollbarAnimation();
   EXPECT_LT(base::TimeDelta::FromMilliseconds(19),
             requested_scrollbar_animation_delay_);

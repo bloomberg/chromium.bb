@@ -23,14 +23,13 @@ class CC_EXPORT ScrollbarAnimationControllerLinearFade
   virtual ~ScrollbarAnimationControllerLinearFade();
 
   // ScrollbarAnimationController overrides.
-  virtual bool IsScrollGestureInProgress() const OVERRIDE;
   virtual bool IsAnimating() const OVERRIDE;
   virtual base::TimeDelta DelayBeforeStart(base::TimeTicks now) const OVERRIDE;
 
   virtual bool Animate(base::TimeTicks now) OVERRIDE;
   virtual void DidScrollGestureBegin() OVERRIDE;
   virtual void DidScrollGestureEnd(base::TimeTicks now) OVERRIDE;
-  virtual void DidProgrammaticallyUpdateScroll(base::TimeTicks now) OVERRIDE;
+  virtual void DidScrollUpdate(base::TimeTicks now) OVERRIDE;
 
  protected:
   ScrollbarAnimationControllerLinearFade(LayerImpl* scroll_layer,
@@ -44,6 +43,7 @@ class CC_EXPORT ScrollbarAnimationControllerLinearFade
 
   base::TimeTicks last_awaken_time_;
   bool scroll_gesture_in_progress_;
+  bool scroll_gesture_has_scrolled_;
 
   base::TimeDelta fadeout_delay_;
   base::TimeDelta fadeout_length_;
