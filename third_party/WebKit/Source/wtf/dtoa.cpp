@@ -39,7 +39,6 @@
 #include "wtf/MathExtras.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
-#include <stdio.h>
 
 #if COMPILER(MSVC)
 #pragma warning(disable: 4244)

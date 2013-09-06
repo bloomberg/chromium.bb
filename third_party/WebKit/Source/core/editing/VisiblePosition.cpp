@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/editing/VisiblePosition.h"
 
-#include <stdio.h>
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
@@ -41,6 +40,10 @@
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RootInlineBox.h"
 #include "wtf/text/CString.h"
+
+#ifndef NDEBUG
+#include <stdio.h>
+#endif
 
 namespace WebCore {
 

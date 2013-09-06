@@ -84,7 +84,9 @@
 #include "wtf/UnusedParam.h"
 #include "wtf/text/StringBuilder.h"
 #include <algorithm>
+#ifndef NDEBUG
 #include <stdio.h>
+#endif
 
 using namespace std;
 

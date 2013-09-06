@@ -40,7 +40,10 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/CharacterNames.h"
+
+#ifndef NDEBUG
 #include <stdio.h>
+#endif
 
 namespace WebCore {
 

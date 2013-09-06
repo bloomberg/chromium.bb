@@ -22,8 +22,11 @@
 #include "config.h"
 #include "core/rendering/CounterNode.h"
 
-#include <stdio.h>
 #include "core/rendering/RenderCounter.h"
+
+#ifndef NDEBUG
+#include <stdio.h>
+#endif
 
 namespace WebCore {
 

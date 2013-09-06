@@ -50,7 +50,9 @@
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
+#ifndef NDEBUG
 #include <stdio.h>
+#endif
 
 namespace WebCore {
 

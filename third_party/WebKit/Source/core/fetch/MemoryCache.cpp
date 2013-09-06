@@ -41,7 +41,6 @@
 #include "wtf/MathExtras.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/CString.h"
-#include <stdio.h>
 
 using namespace std;
 

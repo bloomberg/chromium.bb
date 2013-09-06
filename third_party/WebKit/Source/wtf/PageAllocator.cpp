@@ -55,8 +55,6 @@
 #error Unknown OS
 #endif // OS(UNIX)
 
-#include <stdio.h>
-
 namespace WTF {
 
 void* allocSuperPages(void* addr, size_t len)

@@ -26,12 +26,15 @@
 #include "config.h"
 #include "core/history/HistoryItem.h"
 
-#include <stdio.h>
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/CString.h"
+
+#ifndef NDEBUG
+#include <stdio.h>
+#endif
 
 namespace WebCore {
 
