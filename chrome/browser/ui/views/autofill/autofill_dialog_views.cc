@@ -240,24 +240,6 @@ class ErrorBubbleContents : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ErrorBubbleContents);
 };
 
-// A view that runs a callback whenever its bounds change.
-class DetailsContainerView : public views::View {
- public:
-  explicit DetailsContainerView(const base::Closure& callback)
-      : bounds_changed_callback_(callback) {}
-  virtual ~DetailsContainerView() {}
-
-  // views::View implementation.
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE {
-    bounds_changed_callback_.Run();
-  }
-
- private:
-  base::Closure bounds_changed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(DetailsContainerView);
-};
-
 // A view that propagates visibility and preferred size changes.
 class LayoutPropagationView : public views::View {
  public:
@@ -1067,6 +1049,25 @@ int AutofillDialogViews::SuggestedButton::ResourceIDForState() const {
   return IDR_AUTOFILL_DIALOG_MENU_BUTTON;
 }
 
+// AutofillDialogViews::DetailsContainerView -----------------------------------
+
+AutofillDialogViews::DetailsContainerView::DetailsContainerView(
+    const base::Closure& callback)
+    : bounds_changed_callback_(callback),
+      ignore_layouts_(false) {}
+
+AutofillDialogViews::DetailsContainerView::~DetailsContainerView() {}
+
+void AutofillDialogViews::DetailsContainerView::OnBoundsChanged(
+    const gfx::Rect& previous_bounds) {
+  bounds_changed_callback_.Run();
+}
+
+void AutofillDialogViews::DetailsContainerView::Layout() {
+  if (!ignore_layouts_)
+    views::View::Layout();
+}
+
 // AutofillDialogViews::SuggestionView -----------------------------------------
 
 AutofillDialogViews::SuggestionView::SuggestionView(
@@ -1558,8 +1559,12 @@ void AutofillDialogViews::Layout() {
       scroll_y += notification_height + views::kRelatedControlVerticalSpacing;
 
     int scroll_bottom = content_bounds.bottom();
-    scrollable_area_->contents()->SizeToPreferredSize();
+    DCHECK_EQ(scrollable_area_->contents(), details_container_);
+    details_container_->SizeToPreferredSize();
+    // TODO(estade): remove this hack. See crbug.com/285996
+    details_container_->set_ignore_layouts(true);
     scrollable_area_->SetBounds(x, scroll_y, width, scroll_bottom - scroll_y);
+    details_container_->set_ignore_layouts(false);
   }
 
   if (loading_shield_->visible())

@@ -398,6 +398,30 @@ class AutofillDialogViews : public AutofillDialogView,
     DISALLOW_COPY_AND_ASSIGN(SuggestedButton);
   };
 
+  // A view that runs a callback whenever its bounds change, and which can
+  // optionally suppress layout.
+  class DetailsContainerView : public views::View {
+   public:
+    explicit DetailsContainerView(const base::Closure& callback);
+    virtual ~DetailsContainerView();
+
+    void set_ignore_layouts(bool ignore_layouts) {
+      ignore_layouts_ = ignore_layouts;
+    }
+
+    // views::View implementation.
+    virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+    virtual void Layout() OVERRIDE;
+
+   private:
+    base::Closure bounds_changed_callback_;
+
+    // The view ignores Layout() calls when this is true.
+    bool ignore_layouts_;
+
+    DISALLOW_COPY_AND_ASSIGN(DetailsContainerView);
+  };
+
   // A view that contains a suggestion (such as a known address) and a link to
   // edit the suggestion.
   class SuggestionView : public views::View {
@@ -612,7 +636,7 @@ class AutofillDialogViews : public AutofillDialogView,
   views::ScrollView* scrollable_area_;
 
   // View to host details sections.
-  views::View* details_container_;
+  DetailsContainerView* details_container_;
 
   // A view that overlays |this| (for "loading..." messages).
   views::View* loading_shield_;
