@@ -124,15 +124,8 @@
                 '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_dll_version.rc',
                 '../base/win/dllmain.cc',
 
-                '../ui/resources/cursors/aliasb.cur',
-                '../ui/resources/cursors/cell.cur',
-                '../ui/resources/cursors/col_resize.cur',
-                '../ui/resources/cursors/copy.cur',
-                '../ui/resources/cursors/none.cur',
-                '../ui/resources/cursors/row_resize.cur',
-                '../ui/resources/cursors/vertical_text.cur',
-                '../ui/resources/cursors/zoom_in.cur',
-                '../ui/resources/cursors/zoom_out.cur',
+                # Cursors.
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
               ],
               'include_dirs': [
                 '<(DEPTH)/third_party/wtl/include',
