@@ -170,13 +170,10 @@ static bool isNewLineAtPosition(const Position& position)
     return textAtPosition[0] == '\n';
 }
 
-RenderStyle* ApplyBlockElementCommand::renderStyleOfEnclosingTextNode(const Position& position)
+static RenderStyle* renderStyleOfEnclosingTextNode(const Position& position)
 {
     if (position.anchorType() != Position::PositionIsOffsetInAnchor || !position.containerNode() || !position.containerNode()->isTextNode())
         return 0;
-
-    document().updateStyleForNodeIfNeeded(position.containerNode());
-
     return position.containerNode()->renderStyle();
 }
 
@@ -184,6 +181,8 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
 {
     start = startOfParagraph(endOfCurrentParagraph).deepEquivalent();
     end = endOfCurrentParagraph.deepEquivalent();
+
+    document().updateStyleIfNeeded();
 
     bool isStartAndEndOnSameNode = false;
     if (RenderStyle* startStyle = renderStyleOfEnclosingTextNode(start)) {
@@ -210,6 +209,8 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
             }
         }
     }
+
+    document().updateStyleIfNeeded();
 
     if (RenderStyle* endStyle = renderStyleOfEnclosingTextNode(end)) {
         bool isEndAndEndOfLastParagraphOnSameNode = renderStyleOfEnclosingTextNode(m_endOfLastParagraph) && end.deprecatedNode() == m_endOfLastParagraph.deprecatedNode();

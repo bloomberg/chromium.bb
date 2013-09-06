@@ -36,8 +36,6 @@
 
 namespace WebCore {
 
-class RenderStyle;
-
 class ApplyBlockElementCommand : public CompositeEditCommand {
 protected:
     ApplyBlockElementCommand(Document&, const QualifiedName& tagName, const AtomicString& inlineStyle);
@@ -52,7 +50,6 @@ private:
     virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtr<Element>&) = 0;
     void rangeForParagraphSplittingTextNodesIfNeeded(const VisiblePosition&, Position&, Position&);
     VisiblePosition endOfNextParagrahSplittingTextNodesIfNeeded(VisiblePosition&, Position&, Position&);
-    RenderStyle* renderStyleOfEnclosingTextNode(const Position&);
 
     QualifiedName m_tagName;
     AtomicString m_inlineStyle;
