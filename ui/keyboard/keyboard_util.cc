@@ -22,6 +22,13 @@ namespace {
 const char kKeyDown[] ="keydown";
 const char kKeyUp[] = "keyup";
 
+void SendProcessKeyEvent(ui::EventType type, aura::RootWindow* root_window) {
+  ui::TranslatedKeyEvent event(type == ui::ET_KEY_PRESSED,
+                               ui::VKEY_PROCESSKEY,
+                               ui::EF_NONE);
+  root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&event);
+}
+
 }  // namespace
 
 namespace keyboard {
@@ -107,18 +114,24 @@ bool SendKeyEvent(const std::string type,
 
   ui::KeyboardCode code = static_cast<ui::KeyboardCode>(key_code);
 
-  ui::KeyEvent event(event_type, code, flags, false);
-  event.set_character(key_value);
-  event.set_unmodified_character(key_value);
+  if (code == ui::VKEY_UNKNOWN) {
+    // Handling of special printable characters (e.g. accented characters) for
+    // which there is no key code.
+    if (event_type == ui::ET_KEY_RELEASED) {
+      ui::InputMethod* input_method = root_window->GetProperty(
+          aura::client::kRootWindowInputMethodKey);
+      if (!input_method)
+        return false;
 
-  if (code != ui::VKEY_UNKNOWN) {
+      ui::TextInputClient* tic = input_method->GetTextInputClient();
+
+      SendProcessKeyEvent(ui::ET_KEY_PRESSED, root_window);
+      tic->InsertChar(static_cast<uint16>(key_value), ui::EF_NONE);
+      SendProcessKeyEvent(ui::ET_KEY_RELEASED, root_window);
+    }
+  } else {
+    ui::KeyEvent event(event_type, code, flags, false);
     root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&event);
-  } else if (event_type == ui::ET_KEY_RELEASED) {
-    // TODO(kevers): Fix key handling to support key_value when code is
-    // VKEY_UNKNOWN.
-    base::string16 text;
-    text.push_back(static_cast<char16>(key_value));
-    InsertText(text, root_window);
   }
   return true;
 }
