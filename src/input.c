@@ -398,8 +398,8 @@ weston_touch_destroy(struct weston_touch *touch)
 static void
 seat_send_updated_caps(struct weston_seat *seat)
 {
-	struct wl_list *link;
 	enum wl_seat_capability caps = 0;
+	struct wl_resource *resource;
 
 	if (seat->pointer)
 		caps |= WL_SEAT_CAPABILITY_POINTER;
@@ -408,9 +408,8 @@ seat_send_updated_caps(struct weston_seat *seat)
 	if (seat->touch)
 		caps |= WL_SEAT_CAPABILITY_TOUCH;
 
-	for (link = seat->base_resource_list.next;
-	     link != &seat->base_resource_list; link = link->next) {
-		wl_seat_send_capabilities(wl_resource_from_link(link), caps);
+	wl_resource_for_each(resource, &seat->base_resource_list) {
+		wl_seat_send_capabilities(resource, caps);
 	}
 }
 
