@@ -1,0 +1,2 @@
+This is an effort to extract a lower-level platform from Chrome’s browser,
+renderer, and other processes, that all could be implemented in terms of.
