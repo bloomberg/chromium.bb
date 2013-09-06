@@ -170,6 +170,8 @@ RootWindow::RootWindow(const CreateParams& params)
 }
 
 RootWindow::~RootWindow() {
+  TRACE_EVENT0("shutdown", "RootWindow::Destructor");
+
   compositor_->RemoveObserver(this);
   // Make sure to destroy the compositor before terminating so that state is
   // cleared and we don't hit asserts.

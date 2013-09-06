@@ -73,6 +73,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
+#include "base/debug/trace_event.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/env.h"
@@ -243,6 +244,8 @@ Shell::Shell(ShellDelegate* delegate)
 }
 
 Shell::~Shell() {
+  TRACE_EVENT0("shutdown", "ash::Shell::Destructor");
+
   views::FocusManagerFactory::Install(NULL);
 
   // Remove the focus from any window. This will prevent overhead and side

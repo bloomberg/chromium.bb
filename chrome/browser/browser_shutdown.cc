@@ -90,6 +90,12 @@ void OnShutdownStarting(ShutdownType type) {
   if (shutdown_type_ != NOT_VALID)
     return;
 
+#if !defined(OS_CHROMEOS)
+  // Start the shutdown tracing. Note that On ChromeOS we have started this
+  // already.
+  chrome::StartShutdownTracing();
+#endif
+
   shutdown_type_ = type;
   // For now, we're only counting the number of renderer processes
   // since we can't safely count the number of plugin processes from this

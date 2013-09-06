@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -125,6 +126,7 @@ void CloseAllBrowsers() {
 
 void AttemptUserExit() {
 #if defined(OS_CHROMEOS)
+  StartShutdownTracing();
   chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("LogoutStarted", false);
   // Write /tmp/uptime-logout-started as well.
   const char kLogoutStarted[] = "logout-started";
@@ -138,6 +140,7 @@ void AttemptUserExit() {
         state->GetString(prefs::kApplicationLocale) != owner_locale &&
         !state->IsManagedPreference(prefs::kApplicationLocale)) {
       state->SetString(prefs::kApplicationLocale, owner_locale);
+      TRACE_EVENT0("shutdown", "CommitPendingWrite");
       state->CommitPendingWrite();
     }
   }
@@ -152,6 +155,18 @@ void AttemptUserExit() {
   pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, false);
   AttemptExitInternal();
 #endif
+}
+
+void StartShutdownTracing() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kTraceShutdown)) {
+    base::debug::CategoryFilter category_filter(
+        command_line.GetSwitchValueASCII(switches::kTraceShutdown));
+    base::debug::TraceLog::GetInstance()->SetEnabled(
+        category_filter,
+        base::debug::TraceLog::RECORD_UNTIL_FULL);
+  }
+  TRACE_EVENT0("shutdown", "StartShutdownTracing");
 }
 
 // The Android implementation is in application_lifetime_android.cc

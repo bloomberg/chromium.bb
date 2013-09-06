@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/browser_shutdown_profile_dumper.h"
 #include "content/browser/notification_service_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -124,20 +125,32 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
   virtual void Shutdown() OVERRIDE {
     DCHECK(initialization_started_);
     DCHECK(!is_shutdown_);
-    g_exited_main_message_loop = true;
+    // The shutdown tracing got enabled in AttemptUserExit earlier, but someone
+    // needs to write the result to disc. For that a dumper needs to get created
+    // which will dump the traces to disc when it gets destroyed.
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    scoped_ptr<BrowserShutdownProfileDumper> profiler;
+    if (command_line.HasSwitch(switches::kTraceShutdown))
+      profiler.reset(new BrowserShutdownProfileDumper());
 
-    main_loop_->ShutdownThreadsAndCleanUp();
+    {
+      // The trace event has to stay between profiler creation and destruction.
+      TRACE_EVENT0("shutdown", "BrowserMainRunner");
+      g_exited_main_message_loop = true;
 
-    ui::ShutdownInputMethod();
-#if defined(OS_WIN)
-    ole_initializer_.reset(NULL);
-#endif
+      main_loop_->ShutdownThreadsAndCleanUp();
 
-    main_loop_.reset(NULL);
+      ui::ShutdownInputMethod();
+  #if defined(OS_WIN)
+      ole_initializer_.reset(NULL);
+  #endif
 
-    notification_service_.reset(NULL);
+      main_loop_.reset(NULL);
 
-    is_shutdown_ = true;
+      notification_service_.reset(NULL);
+
+      is_shutdown_ = true;
+    }
   }
 
  protected:

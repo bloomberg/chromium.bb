@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -418,6 +419,8 @@ Compositor::Compositor(CompositorDelegate* delegate,
 }
 
 Compositor::~Compositor() {
+  TRACE_EVENT0("shutdown", "Compositor::destructor");
+
   DCHECK(g_compositor_initialized);
 
   CancelCompositorLock();

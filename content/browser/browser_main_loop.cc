@@ -698,6 +698,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     // Called early, nothing to do
     return;
   }
+  TRACE_EVENT0("shutdown", "BrowserMainLoop::ShutdownThreadsAndCleanUp")
+
   // Teardown may start in PostMainMessageLoopRun, and during teardown we
   // need to be able to perform IO.
   base::ThreadRestrictions::SetIOAllowed(true);
@@ -706,8 +708,11 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
                  true));
 
-  if (parts_)
+  if (parts_) {
+    TRACE_EVENT0("shutdown",
+                 "BrowserMainLoop::Subsystem:PostMainMessageLoopRun");
     parts_->PostMainMessageLoopRun();
+  }
 
   trace_memory_controller_.reset();
 
@@ -716,14 +721,23 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // delete related objects on the GPU thread. This must be done before
   // stopping the GPU thread. The GPU thread will close IPC channels to renderer
   // processes so this has to happen before stopping the IO thread.
-  GpuProcessHostUIShim::DestroyAll();
-
+  {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:GPUProcessHostShim");
+    GpuProcessHostUIShim::DestroyAll();
+  }
   // Cancel pending requests and prevent new requests.
-  if (resource_dispatcher_host_)
+  if (resource_dispatcher_host_) {
+    TRACE_EVENT0("shutdown",
+                 "BrowserMainLoop::Subsystem:ResourceDispatcherHost");
     resource_dispatcher_host_.get()->Shutdown();
+  }
 
 #if defined(USE_AURA)
-  ImageTransportFactory::Terminate();
+  {
+    TRACE_EVENT0("shutdown",
+                 "BrowserMainLoop::Subsystem:ImageTransportFactory");
+    ImageTransportFactory::Terminate();
+  }
 #endif
 
   // The device monitors are using |system_monitor_| as dependency, so delete
@@ -760,29 +774,42 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     //
     // - (Not sure why DB stops last.)
     switch (thread_id) {
-      case BrowserThread::DB:
-        db_thread_.reset();
+      case BrowserThread::DB: {
+          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:DBThread");
+          db_thread_.reset();
+        }
         break;
-      case BrowserThread::FILE_USER_BLOCKING:
-        file_user_blocking_thread_.reset();
+      case BrowserThread::FILE_USER_BLOCKING: {
+          TRACE_EVENT0("shutdown",
+                       "BrowserMainLoop::Subsystem:FileUserBlockingThread");
+          file_user_blocking_thread_.reset();
+        }
         break;
-      case BrowserThread::FILE:
+      case BrowserThread::FILE: {
+          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:FileThread");
 #if !defined(OS_IOS)
-        // Clean up state that lives on or uses the file_thread_ before
-        // it goes away.
-        if (resource_dispatcher_host_)
-          resource_dispatcher_host_.get()->save_file_manager()->Shutdown();
+          // Clean up state that lives on or uses the file_thread_ before
+          // it goes away.
+          if (resource_dispatcher_host_)
+            resource_dispatcher_host_.get()->save_file_manager()->Shutdown();
 #endif  // !defined(OS_IOS)
-        file_thread_.reset();
+          file_thread_.reset();
+        }
         break;
-      case BrowserThread::PROCESS_LAUNCHER:
-        process_launcher_thread_.reset();
+      case BrowserThread::PROCESS_LAUNCHER: {
+          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:LauncherThread");
+          process_launcher_thread_.reset();
+        }
         break;
-      case BrowserThread::CACHE:
-        cache_thread_.reset();
+      case BrowserThread::CACHE: {
+          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:CacheThread");
+          cache_thread_.reset();
+        }
         break;
-      case BrowserThread::IO:
-        io_thread_.reset();
+      case BrowserThread::IO: {
+          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IOThread");
+          io_thread_.reset();
+        }
         break;
       case BrowserThread::UI:
       case BrowserThread::ID_COUNT:
@@ -793,7 +820,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
 
 #if !defined(OS_IOS)
-  indexed_db_thread_.reset();
+  {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IndexedDBThread");
+    indexed_db_thread_.reset();
+  }
 #endif
 
   // Close the blocking I/O pool after the other threads. Other threads such
@@ -802,23 +832,39 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // may also be slow operations pending that will blcok shutdown, so closing
   // it here (which will block until required operations are complete) gives
   // more head start for those operations to finish.
-  BrowserThreadImpl::ShutdownThreadPool();
+  {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:ThreadPool");
+    BrowserThreadImpl::ShutdownThreadPool();
+  }
 
 #if !defined(OS_IOS)
   // Must happen after the IO thread is shutdown since this may be accessed from
   // it.
-  BrowserGpuChannelHostFactory::Terminate();
+  {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:GPUChannelFactory");
+    BrowserGpuChannelHostFactory::Terminate();
+  }
 
   // Must happen after the I/O thread is shutdown since this class lives on the
   // I/O thread and isn't threadsafe.
-  GamepadService::GetInstance()->Terminate();
-  DeviceInertialSensorService::GetInstance()->Shutdown();
-
-  URLDataManager::DeleteDataSources();
+  {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:GamepadService");
+    GamepadService::GetInstance()->Terminate();
+  }
+  {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:SensorService");
+    DeviceInertialSensorService::GetInstance()->Shutdown();
+  }
+  {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:DeleteDataSources");
+    URLDataManager::DeleteDataSources();
+  }
 #endif  // !defined(OS_IOS)
 
-  if (parts_)
+  if (parts_) {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:PostDestroyThreads");
     parts_->PostDestroyThreads();
+  }
 }
 
 void BrowserMainLoop::InitializeMainThread() {

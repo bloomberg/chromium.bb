@@ -333,6 +333,8 @@
     'browser/browser_plugin/browser_plugin_popup_menu_helper_mac.mm',
     'browser/browser_process_sub_thread.cc',
     'browser/browser_process_sub_thread.h',
+    'browser/browser_shutdown_profile_dumper.cc',
+    'browser/browser_shutdown_profile_dumper.h',
     'browser/browser_thread_impl.cc',
     'browser/browser_thread_impl.h',
     'browser/browser_url_handler_impl.cc',

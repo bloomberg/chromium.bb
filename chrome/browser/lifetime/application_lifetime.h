@@ -16,6 +16,11 @@ namespace chrome {
 // SIGTERM to start actual exit process.
 void AttemptUserExit();
 
+// Starts to collect shutdown traces. On ChromeOS this will start immediately
+// on AttemptUserExit() and all other systems will start once all tabs are
+// closed.
+void StartShutdownTracing();
+
 // Starts a user initiated restart process. On platforms other than
 // chromeos, this sets a restart bit in the preference so that
 // chrome will be restarted at the end of shutdown process. On

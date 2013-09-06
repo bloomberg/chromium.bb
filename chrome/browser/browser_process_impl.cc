@@ -197,6 +197,7 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 }
 
 void BrowserProcessImpl::StartTearDown() {
+    TRACE_EVENT0("shutdown", "BrowserProcessImpl::StartTearDown");
 #if defined(ENABLE_AUTOMATION)
   // Delete the AutomationProviderList before NotificationService,
   // since it may try to unregister notifications
@@ -235,7 +236,11 @@ void BrowserProcessImpl::StartTearDown() {
   notification_ui_manager_.reset();
 
   // Need to clear profiles (download managers) before the io_thread_.
-  profile_manager_.reset();
+  {
+    TRACE_EVENT0("shutdown",
+                 "BrowserProcessImpl::StartTearDown:ProfileManager");
+    profile_manager_.reset();
+  }
 
 #if !defined(OS_ANDROID)
   // Debugger must be cleaned up before IO thread and NotificationService.
