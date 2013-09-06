@@ -37,6 +37,8 @@ bool FavoriteState::PropertyChanged(const std::string& key,
     }
     ui_data_ = *new_ui_data;
     return true;
+  } else if (key == flimflam::kGuidProperty) {
+    return GetStringValue(key, value, &guid_);
   }
   return false;
 }

@@ -32,6 +32,7 @@ class CHROMEOS_EXPORT FavoriteState : public ManagedState {
   const std::string& profile_path() const { return profile_path_; }
   bool is_favorite() const { return !profile_path_.empty(); }
   const NetworkUIData& ui_data() const { return ui_data_; }
+  const std::string& guid() const { return guid_; }
 
   // Returns true if the ONC source is a device or user policy.
   bool IsManaged() const;
@@ -42,6 +43,7 @@ class CHROMEOS_EXPORT FavoriteState : public ManagedState {
  private:
   std::string profile_path_;
   NetworkUIData ui_data_;
+  std::string guid_;
 
   DISALLOW_COPY_AND_ASSIGN(FavoriteState);
 };
