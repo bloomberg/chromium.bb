@@ -1,59 +1,51 @@
 {
   "description": "Video Stack Perf benchmark",
-  "play_audio": [
+  "play-action": [
     { "action": "play",
-      "selector": "#audio_1",
-      "wait_for_playing": true,
-      "wait_for_ended": true
-    }
-  ],
-  "play_video": [
-    { "action": "play",
-      "selector": "#video_1",
       "wait_for_playing": true,
       "wait_for_ended": true
     }
   ],
   "pages": [
     {
-      "url": "file:///tough_video_cases/video.html?src=crowd.wav&id=audio_1&type=audio",
-      "media_metrics": {"action": "play_audio"}
+      "url": "file:///tough_video_cases/video.html?src=crowd.wav&type=audio",
+      "media_metrics": {"action": "play-action"}
     },
     {
-      "url": "file:///tough_video_cases/video.html?src=crowd.ogg&id=audio_1&type=audio",
-      "media_metrics": {"action": "play_audio"}
+      "url": "file:///tough_video_cases/video.html?src=crowd.ogg&type=audio",
+      "media_metrics": {"action": "play-action"}
     },
     {
-      "url": "file:///tough_video_cases/video.html?src=crowd1080.ogv&id=video_1&type=video",
-      "media_metrics": {"action": "play_video"}
+      "url": "file:///tough_video_cases/video.html?src=crowd1080.ogv&type=video",
+      "media_metrics": {"action": "play-action"}
     },
     {
-      "url": "file:///tough_video_cases/video.html?src=crowd1080.webm&id=video_1&type=video",
-      "media_metrics": {"action": "play_video"}
+      "url": "file:///tough_video_cases/video.html?src=crowd1080.webm&type=video",
+      "media_metrics": {"action": "play-action"}
     },
     {
-      "url": "file:///tough_video_cases/video.html?src=crowd2160.ogv&id=video_1&type=video",
-      "media_metrics": {"action": "play_video"}
+      "url": "file:///tough_video_cases/video.html?src=crowd2160.ogv&type=video",
+      "media_metrics": {"action": "play-action"}
     },
     {
-      "url": "file:///tough_video_cases/video.html?src=crowd2160.webm&id=video_1&type=video",
-      "media_metrics": {"action": "play_video"}
+      "url": "file:///tough_video_cases/video.html?src=crowd2160.webm&type=video",
+      "media_metrics": {"action": "play-action"}
     },
     {
-      "url": "file:///tough_video_cases/video.html?src=tulip2.ogg&id=audio_1&type=audio",
-      "media_metrics": {"action": "play_audio"}
+      "url": "file:///tough_video_cases/video.html?src=tulip2.ogg&type=audio",
+      "media_metrics": {"action": "play-action"}
     },
     {
-      "url": "file:///tough_video_cases/video.html?src=tulip2.wav&id=audio_1&type=audio",
-      "media_metrics": {"action": "play_audio"}
+      "url": "file:///tough_video_cases/video.html?src=tulip2.wav&type=audio",
+      "media_metrics": {"action": "play-action"}
     },
     {
-      "url": "file:///tough_video_cases/video.html?src=tulip2.ogv&id=video_1&type=video",
-      "media_metrics": {"action": "play_video"}
+      "url": "file:///tough_video_cases/video.html?src=tulip2.ogv&type=video",
+      "media_metrics": {"action": "play-action"}
     },
     {
-      "url": "file:///tough_video_cases/video.html?src=tulip2.webm&id=video_1&type=video",
-      "media_metrics": {"action": "play_video"}
+      "url": "file:///tough_video_cases/video.html?src=tulip2.webm&type=video",
+      "media_metrics": {"action": "play-action"}
     }
   ]
 }
