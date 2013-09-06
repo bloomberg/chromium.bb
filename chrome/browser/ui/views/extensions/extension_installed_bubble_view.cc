@@ -1,15 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/extensions/extension_installed_bubble.h"
+#include "chrome/browser/ui/views/extensions/extension_installed_bubble_view.h"
 
 #include <algorithm>
 #include <string>
 
-#include "base/bind.h"
 #include "base/i18n/rtl.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
@@ -28,13 +26,10 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
-#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
@@ -72,12 +67,6 @@ const int kVertInnerMargin = views::kPanelVertMargin - 8;
 // 4px to align with icon.
 const int kRightcolumnVerticalShift = -4;
 
-// How long to wait for browser action animations to complete before retrying.
-const int kAnimationWaitTime = 50;
-
-// How often we retry when waiting for browser action animation to end.
-const int kAnimationWaitMaxRetry = 10;
-
 }  // namespace
 
 namespace chrome {
@@ -85,13 +74,13 @@ namespace chrome {
 void ShowExtensionInstalledBubble(const Extension* extension,
                                   Browser* browser,
                                   const SkBitmap& icon) {
-  ExtensionInstalledBubble::Show(extension, browser, icon);
+  ExtensionInstalledBubbleView::Show(extension, browser, icon);
 }
 
 }  // namespace chrome
 
 // InstalledBubbleContent is the content view which is placed in the
-// ExtensionInstalledBubble. It displays the install icon and explanatory
+// ExtensionInstalledBubbleView. It displays the install icon and explanatory
 // text about the installed extension.
 class InstalledBubbleContent : public views::View,
                                public views::ButtonListener,
@@ -100,8 +89,8 @@ class InstalledBubbleContent : public views::View,
   InstalledBubbleContent(Browser* browser,
                          const Extension* extension,
                          ExtensionInstalledBubble::BubbleType type,
-                         SkBitmap* icon,
-                         ExtensionInstalledBubble* bubble)
+                         const SkBitmap* icon,
+                         ExtensionInstalledBubbleView* bubble)
       : browser_(browser),
         extension_id_(extension->id()),
         bubble_(bubble),
@@ -495,8 +484,8 @@ class InstalledBubbleContent : public views::View,
   // The id of the extension just installed.
   const std::string extension_id_;
 
-  // The ExtensionInstalledBubble showing us.
-  ExtensionInstalledBubble* bubble_;
+  // The ExtensionInstalledBubbleView showing us.
+  ExtensionInstalledBubbleView* bubble_;
 
   // The string that contains the link text at the beginning of the sign-in
   // promo text.
@@ -529,97 +518,34 @@ class InstalledBubbleContent : public views::View,
   DISALLOW_COPY_AND_ASSIGN(InstalledBubbleContent);
 };
 
-void ExtensionInstalledBubble::Show(const Extension* extension,
+void ExtensionInstalledBubbleView::Show(const Extension* extension,
                                     Browser *browser,
                                     const SkBitmap& icon) {
-  new ExtensionInstalledBubble(extension, browser, icon);
+  new ExtensionInstalledBubbleView(extension, browser, icon);
 }
 
-ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
-                                                   Browser *browser,
-                                                   const SkBitmap& icon)
-    : extension_(extension),
-      browser_(browser),
-      icon_(icon),
-      animation_wait_retries_(0),
-      weak_factory_(this) {
-  if (!extensions::OmniboxInfo::GetKeyword(extension).empty())
-    type_ = OMNIBOX_KEYWORD;
-  else if (extensions::ActionInfo::GetBrowserActionInfo(extension))
-    type_ = BROWSER_ACTION;
-  else if (extensions::ActionInfo::GetPageActionInfo(extension) &&
-           extensions::ActionInfo::IsVerboseInstallMessage(extension))
-    type_ = PAGE_ACTION;
-  else
-    type_ = GENERIC;
-
-  // |extension| has been initialized but not loaded at this point. We need
-  // to wait on showing the Bubble until not only the EXTENSION_LOADED gets
-  // fired, but all of the EXTENSION_LOADED Observers have run. Only then can we
-  // be sure that a BrowserAction or PageAction has had views created which we
-  // can inspect for the purpose of previewing of pointing to them.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-      content::Source<Profile>(browser->profile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-      content::Source<Profile>(browser->profile()));
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
-      content::Source<Browser>(browser));
+ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
+    const Extension* extension, Browser *browser, const SkBitmap& icon)
+    : bubble_(this, extension, browser, icon) {
 }
 
-ExtensionInstalledBubble::~ExtensionInstalledBubble() {}
+ExtensionInstalledBubbleView::~ExtensionInstalledBubbleView() {}
 
-void ExtensionInstalledBubble::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
-    const Extension* extension =
-        content::Details<const Extension>(details).ptr();
-    if (extension == extension_) {
-      animation_wait_retries_ = 0;
-      // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
-      base::MessageLoopForUI::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&ExtensionInstalledBubble::ShowInternal,
-                     weak_factory_.GetWeakPtr()));
-    }
-  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
-    const Extension* extension =
-        content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
-    if (extension == extension_) {
-      // Extension is going away, make sure ShowInternal won't be called.
-      weak_factory_.InvalidateWeakPtrs();
-      extension_ = NULL;
-    }
-  } else if (type == chrome::NOTIFICATION_BROWSER_CLOSING) {
-    delete this;
-  } else {
-    NOTREACHED() << L"Received unexpected notification";
-  }
-}
-
-void ExtensionInstalledBubble::ShowInternal() {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
+bool ExtensionInstalledBubbleView::MaybeShowNow() {
+  BrowserView* browser_view =
+      BrowserView::GetBrowserViewForBrowser(bubble_.browser());
   extensions::ExtensionActionManager* extension_action_manager =
-      extensions::ExtensionActionManager::Get(browser_->profile());
+      extensions::ExtensionActionManager::Get(bubble_.browser()->profile());
 
   views::View* reference_view = NULL;
-  if (type_ == BROWSER_ACTION) {
+  if (bubble_.type() == bubble_.BROWSER_ACTION) {
     BrowserActionsContainer* container =
         browser_view->GetToolbarView()->browser_actions();
-    if (container->animating() &&
-        animation_wait_retries_++ < kAnimationWaitMaxRetry) {
-      // We don't know where the view will be until the container has stopped
-      // animating, so check back in a little while.
-      base::MessageLoopForUI::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&ExtensionInstalledBubble::ShowInternal,
-                     weak_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kAnimationWaitTime));
-      return;
-    }
+    if (container->animating())
+      return false;
+
     reference_view = container->GetBrowserActionView(
-        extension_action_manager->GetBrowserAction(*extension_));
+        extension_action_manager->GetBrowserAction(*bubble_.extension()));
     // If the view is not visible then it is in the chevron, so point the
     // install bubble to the chevron instead. If this is an incognito window,
     // both could be invisible.
@@ -628,15 +554,15 @@ void ExtensionInstalledBubble::ShowInternal() {
       if (!reference_view || !reference_view->visible())
         reference_view = NULL;  // fall back to app menu below.
     }
-  } else if (type_ == PAGE_ACTION) {
+  } else if (bubble_.type() == bubble_.PAGE_ACTION) {
     LocationBarView* location_bar_view = browser_view->GetLocationBarView();
     ExtensionAction* page_action =
-        extension_action_manager->GetPageAction(*extension_);
+        extension_action_manager->GetPageAction(*bubble_.extension());
     location_bar_view->SetPreviewEnabledPageAction(page_action,
                                                    true);  // preview_enabled
     reference_view = location_bar_view->GetPageActionView(page_action);
     DCHECK(reference_view);
-  } else if (type_ == OMNIBOX_KEYWORD) {
+  } else if (bubble_.type() == bubble_.OMNIBOX_KEYWORD) {
     LocationBarView* location_bar_view = browser_view->GetLocationBarView();
     reference_view = location_bar_view;
     DCHECK(reference_view);
@@ -647,40 +573,44 @@ void ExtensionInstalledBubble::ShowInternal() {
     reference_view = browser_view->GetToolbarView()->app_menu();
   set_anchor_view(reference_view);
 
-  set_arrow(type_ == OMNIBOX_KEYWORD ? views::BubbleBorder::TOP_LEFT :
-                                       views::BubbleBorder::TOP_RIGHT);
+  set_arrow(bubble_.type() == bubble_.OMNIBOX_KEYWORD ?
+            views::BubbleBorder::TOP_LEFT :
+            views::BubbleBorder::TOP_RIGHT);
   SetLayoutManager(new views::FillLayout());
-  AddChildView(
-      new InstalledBubbleContent(browser_, extension_, type_, &icon_, this));
+  AddChildView(new InstalledBubbleContent(
+      bubble_.browser(), bubble_.extension(), bubble_.type(),
+      &bubble_.icon(), this));
 
   views::BubbleDelegateView::CreateBubble(this);
 
   // The bubble widget is now the parent and owner of |this| and takes care of
   // deletion when the bubble or browser go away.
-  registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_CLOSING,
-      content::Source<Browser>(browser_));
+  bubble_.IgnoreBrowserClosing();
 
   StartFade(true);
+  return true;
 }
 
-gfx::Rect ExtensionInstalledBubble::GetAnchorRect() {
+gfx::Rect ExtensionInstalledBubbleView::GetAnchorRect() {
   // For omnibox keyword bubbles, move the arrow to point to the left edge
   // of the omnibox, just to the right of the icon.
-  if (type_ == OMNIBOX_KEYWORD) {
+  if (bubble_.type() == bubble_.OMNIBOX_KEYWORD) {
     LocationBarView* location_bar_view =
-        BrowserView::GetBrowserViewForBrowser(browser_)->GetLocationBarView();
+        BrowserView::GetBrowserViewForBrowser(bubble_.browser())->
+        GetLocationBarView();
     return gfx::Rect(location_bar_view->GetLocationEntryOrigin(),
         gfx::Size(0, location_bar_view->location_entry_view()->height()));
   }
   return views::BubbleDelegateView::GetAnchorRect();
 }
 
-void ExtensionInstalledBubble::WindowClosing() {
-  if (extension_ && type_ == PAGE_ACTION) {
-    BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
+void ExtensionInstalledBubbleView::WindowClosing() {
+  if (bubble_.extension() && bubble_.type() == bubble_.PAGE_ACTION) {
+    BrowserView* browser_view =
+        BrowserView::GetBrowserViewForBrowser(bubble_.browser());
     browser_view->GetLocationBarView()->SetPreviewEnabledPageAction(
-        extensions::ExtensionActionManager::Get(browser_->profile())->
-        GetPageAction(*extension_),
+        extensions::ExtensionActionManager::Get(bubble_.browser()->profile())->
+        GetPageAction(*bubble_.extension()),
         false);  // preview_enabled
   }
 }
