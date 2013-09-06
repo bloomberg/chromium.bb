@@ -22,12 +22,16 @@ TEST(TranslatePrefsTest, CreateBlockedLanguages) {
 
   std::vector<std::string> accept_languages;
   accept_languages.push_back("en");
+  // The subcode (IT) will be ignored when merging, except for Chinese.
+  accept_languages.push_back("it-IT");
   accept_languages.push_back("ja");
   // Filippino: synonym to 'tl'
   accept_languages.push_back("fil");
   // General Chinese is not used as Translate language, but not filtered
   // when merging.
   accept_languages.push_back("zh");
+  // Chinese with a sub code is acceptable for the blocked-language list.
+  accept_languages.push_back("zh-TW");
 
   std::vector<std::string> blocked_languages;
 
@@ -41,9 +45,11 @@ TEST(TranslatePrefsTest, CreateBlockedLanguages) {
   expected.push_back("fr");
   expected.push_back("iw");
   expected.push_back("ht");
+  expected.push_back("it");
   expected.push_back("ja");
   expected.push_back("tl");
   expected.push_back("zh");
+  expected.push_back("zh-TW");
 
   EXPECT_EQ(expected.size(), blocked_languages.size());
   for (std::vector<std::string>::const_iterator it = expected.begin();

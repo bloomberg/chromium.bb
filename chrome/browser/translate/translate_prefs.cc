@@ -44,6 +44,26 @@ void GetBlacklistedLanguages(const PrefService* prefs,
   }
 }
 
+// Converts the language code for Translate. This removes the sub code (like
+// -US) except for Chinese, and converts the synonyms.
+// The same logic exists at language_options.js, and please keep consistensy
+// with the JavaScript file.
+std::string ConvertLangCodeForTranslation(const std::string &lang) {
+  std::vector<std::string> tokens;
+  base::SplitString(lang, '-', &tokens);
+  if (tokens.size() < 1)
+    return lang;
+
+  std::string main_part = tokens[0];
+
+  // Translate doesn't support General Chinese and the sub code is necessary.
+  if (main_part == "zh")
+    return lang;
+
+  TranslateUtil::ToTranslateLanguageSynonym(&main_part);
+  return main_part;
+}
+
 }  // namespace
 
 namespace {
@@ -390,15 +410,14 @@ void TranslatePrefs::CreateBlockedLanguages(
 
   for (std::vector<std::string>::const_iterator it = accept_languages.begin();
        it != accept_languages.end(); ++it) {
-    std::string lang = *it;
-    TranslateUtil::ToTranslateLanguageSynonym(&lang);
+    std::string converted_lang = ConvertLangCodeForTranslation(*it);
 
     // Regarding http://crbug.com/36182, even though English exists in Accept
     // language list, English could be translated on non-English locale.
-    if (lang == "en" && !is_ui_english)
+    if (converted_lang == "en" && !is_ui_english)
       continue;
 
-    result.insert(lang);
+    result.insert(converted_lang);
   }
 
   blocked_languages->insert(blocked_languages->begin(),
