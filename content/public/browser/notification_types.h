@@ -112,6 +112,7 @@ enum NotificationType {
   // the WebContents.  A WEB_CONTENTS_DISCONNECTED notification is
   // guaranteed before the source pointer becomes junk.  No details are
   // expected.
+  // DEPRECATED: Use WebContentsObserver::RenderViewReady()
   NOTIFICATION_WEB_CONTENTS_CONNECTED,
 
   // This notification is sent when a WebContents swaps its render view host
@@ -120,11 +121,16 @@ enum NotificationType {
   // NOTIFICATION_WEB_CONTENTS_DISCONNECTED notification is guaranteed before
   // the source pointer becomes junk.  Details are the RenderViewHost that
   // has been replaced, or NULL if the old RVH was shut down.
+  // DEPRECATED: Use WebContentsObserver::RenderViewHostSwapped()
   NOTIFICATION_WEB_CONTENTS_SWAPPED,
 
   // This message is sent after a WebContents is disconnected from the
   // renderer process.  The source is a Source<WebContents> with a pointer to
   // the WebContents (the pointer is usable).  No details are expected.
+  // DEPRECATED: This is fired in two situations: when the render process
+  // crashes, in which case use WebContentsObserver::RenderProcessGone, and when
+  // the WebContents is being torn down, in which case use
+  // WebContentsObserver::WebContentsDestroyed()
   NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
 
   // This notification is sent after WebContents' title is updated. The source
@@ -141,6 +147,7 @@ enum NotificationType {
   // object holding a reference to a WebContents can listen to that
   // notification to properly reset the reference. The source is a
   // Source<WebContents>.
+  // DEPRECATED: Use WebContentsObserver::WebContentsDestroyed()
   NOTIFICATION_WEB_CONTENTS_DESTROYED,
 
   // A RenderViewHost was created for a WebContents. The source is the

@@ -2801,6 +2801,10 @@ void WebContentsImpl::NotifySwapped(RenderViewHost* old_render_view_host) {
   // notification so that clients that pick up a pointer to |this| can NULL the
   // pointer.  See Bug 1230284.
   notify_disconnection_ = true;
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    RenderViewHostSwapped(old_render_view_host));
+
+  // TODO(avi): Remove. http://crbug.com/170921
   NotificationService::current()->Notify(
       NOTIFICATION_WEB_CONTENTS_SWAPPED,
       Source<WebContents>(this),
@@ -2812,14 +2816,8 @@ void WebContentsImpl::NotifySwapped(RenderViewHost* old_render_view_host) {
   RemoveBrowserPluginEmbedder();
 }
 
-void WebContentsImpl::NotifyConnected() {
-  notify_disconnection_ = true;
-  NotificationService::current()->Notify(
-      NOTIFICATION_WEB_CONTENTS_CONNECTED,
-      Source<WebContents>(this),
-      NotificationService::NoDetails());
-}
-
+// TODO(avi): Remove this entire function because this notification is already
+// covered by two observer functions. http://crbug.com/170921
 void WebContentsImpl::NotifyDisconnected() {
   if (!notify_disconnection_)
     return;
@@ -2906,7 +2904,13 @@ void WebContentsImpl::RenderViewReady(RenderViewHost* rvh) {
     return;
   }
 
-  NotifyConnected();
+  notify_disconnection_ = true;
+  // TODO(avi): Remove. http://crbug.com/170921
+  NotificationService::current()->Notify(
+      NOTIFICATION_WEB_CONTENTS_CONNECTED,
+      Source<WebContents>(this),
+      NotificationService::NoDetails());
+
   bool was_crashed = IsCrashed();
   SetIsCrashed(base::TERMINATION_STATUS_STILL_RUNNING, 0);
 

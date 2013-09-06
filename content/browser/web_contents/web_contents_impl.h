@@ -745,7 +745,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Helper functions for sending notifications.
   void NotifySwapped(RenderViewHost* old_render_view_host);
-  void NotifyConnected();
   void NotifyDisconnected();
   void NotifyNavigationEntryCommitted(const LoadCommittedDetails& load_details);
 

@@ -66,6 +66,12 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // invoked.
   virtual void RenderProcessGone(base::TerminationStatus status) {}
 
+  // This method is invoked when a WebContents swaps its render view host with
+  // another one, possibly changing processes. The RenderViewHost that has
+  // been replaced is in |old_render_view_host|, which is NULL if the old RVH
+  // was shut down.
+  virtual void RenderViewHostSwapped(RenderViewHost* old_render_view_host) {}
+
   // This method is invoked after the WebContents decided which RenderViewHost
   // to use for the next navigation, but before the navigation starts.
   virtual void AboutToNavigateRenderView(
