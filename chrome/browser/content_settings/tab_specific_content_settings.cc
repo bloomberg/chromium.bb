@@ -99,18 +99,6 @@ TabSpecificContentSettings::~TabSpecificContentSettings() {
       SiteDataObserver, observer_list_, ContentSettingsDestroyed());
 }
 
-bool TabSpecificContentSettings::PasswordAccepted() {
-  DCHECK(form_to_save_.get());
-  form_to_save_->SavePassword();
-  return true;
-}
-
-bool TabSpecificContentSettings::PasswordFormBlacklisted() {
-  DCHECK(form_to_save_.get());
-  form_to_save_->BlacklistPassword();
-  return true;
-}
-
 TabSpecificContentSettings* TabSpecificContentSettings::Get(
     int render_process_id, int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -475,9 +463,9 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
       content::NotificationService::NoDetails());
 }
 
+// TODO(npentrel): Save the password when user accepts the prompt
 void TabSpecificContentSettings::OnPasswordSubmitted(
       PasswordFormManager* form_to_save) {
-  form_to_save_.reset(form_to_save);
   OnContentAllowed(CONTENT_SETTINGS_TYPE_SAVE_PASSWORD);
   NotifySiteDataObservers();
 }
@@ -659,8 +647,6 @@ bool TabSpecificContentSettings::OnMessageReceived(
 void TabSpecificContentSettings::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  if (form_to_save_)
-    form_to_save_->ApplyChange();
   if (!details.is_in_page) {
     // Clear "blocked" flags.
     ClearBlockedContentSettingsExceptForCookies();

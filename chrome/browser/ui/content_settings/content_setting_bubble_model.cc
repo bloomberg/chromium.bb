@@ -10,6 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -163,8 +164,6 @@ void ContentSettingTitleAndLinkModel::SetManageLink() {
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_PPAPI_BROKER_BUBBLE_MANAGE_LINK},
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_BLOCKED_DOWNLOADS_LINK},
     {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, IDS_MIDI_SYSEX_BUBBLE_MANAGE_LINK},
-    {CONTENT_SETTINGS_TYPE_SAVE_PASSWORD,
-     IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS},
   };
   set_manage_link(l10n_util::GetStringUTF8(
       GetIdForContentType(kLinkIDs, arraysize(kLinkIDs), content_type())));
@@ -574,11 +573,24 @@ void ContentSettingPopupBubbleModel::OnPopupClicked(int index) {
 }
 
 // The model for the save password bubble.
-SavePasswordBubbleModel::SavePasswordBubbleModel(Delegate* delegate,
-                                                 WebContents* web_contents,
+class SavePasswordBubbleModel : public ContentSettingBubbleModel {
+ public:
+  SavePasswordBubbleModel(WebContents* web_contents, Profile* profile);
+  virtual ~SavePasswordBubbleModel() {}
+
+ private:
+  // Sets the title of the bubble.
+  void SetTitle();
+
+  TabSpecificContentSettings::PasswordSavingState state_;
+
+  DISALLOW_COPY_AND_ASSIGN(SavePasswordBubbleModel);
+};
+
+SavePasswordBubbleModel::SavePasswordBubbleModel(WebContents* web_contents,
                                                  Profile* profile)
-    : ContentSettingTitleAndLinkModel(delegate, web_contents, profile,
-                                      CONTENT_SETTINGS_TYPE_SAVE_PASSWORD),
+    : ContentSettingBubbleModel(web_contents, profile,
+                                CONTENT_SETTINGS_TYPE_SAVE_PASSWORD),
       state_(TabSpecificContentSettings::NO_PASSWORD_TO_BE_SAVED) {
   DCHECK(profile);
   TabSpecificContentSettings* content_settings =
@@ -596,18 +608,6 @@ void SavePasswordBubbleModel::SetTitle() {
     title_id = IDS_SAVE_PASSWORD;
 
   set_title(l10n_util::GetStringUTF8(title_id));
-}
-
-void SavePasswordBubbleModel::OnCancelClicked() {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
-  content_settings->PasswordFormBlacklisted();
-}
-
-void SavePasswordBubbleModel::OnSaveClicked() {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
-  content_settings->PasswordAccepted();
 }
 
 // The model of the content settings bubble for media settings.
@@ -1277,7 +1277,7 @@ ContentSettingBubbleModel*
         Profile* profile,
         ContentSettingsType content_type) {
   if (content_type == CONTENT_SETTINGS_TYPE_SAVE_PASSWORD) {
-    return new SavePasswordBubbleModel(delegate, web_contents, profile);
+    return new SavePasswordBubbleModel(web_contents, profile);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
     return new ContentSettingCookiesBubbleModel(delegate, web_contents, profile,

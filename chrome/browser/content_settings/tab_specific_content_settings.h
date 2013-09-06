@@ -222,6 +222,8 @@ class TabSpecificContentSettings
     return midi_usages_state_;
   }
 
+  void OnPasswordSubmitted(PasswordFormManager* form_to_save);
+
   // Call to indicate that there is a protocol handler pending user approval.
   void set_pending_protocol_handler(const ProtocolHandler& handler) {
     pending_protocol_handler_ = handler;
@@ -295,14 +297,6 @@ class TabSpecificContentSettings
   virtual void AppCacheAccessed(const GURL& manifest_url,
                                 bool blocked_by_policy) OVERRIDE;
 
-  // If user clicks on 'save password' this will have the password saved upon
-  // the next navigation.
-  bool PasswordAccepted();
-
-  // If user clicks on 'never save password for this site' this have the
-  // password blacklisted upon the next navigation.
-  bool PasswordFormBlacklisted();
-
   // Message handlers. Public for testing.
   void OnContentBlocked(ContentSettingsType type,
                         const std::string& resource_identifier);
@@ -341,11 +335,6 @@ class TabSpecificContentSettings
       const GURL& request_origin,
       const MediaStreamDevicesController::MediaStreamTypePermissionMap&
           request_permissions);
-
-  // This method is called to pass the |form_to_save| on a successful password
-  // submission. It also updates the status of the save password content
-  // setting.
-  void OnPasswordSubmitted(PasswordFormManager* form_to_save);
 
   // There methods are called to update the status about MIDI access.
   void OnMIDISysExAccessed(const GURL& reqesting_origin);
@@ -427,10 +416,6 @@ class TabSpecificContentSettings
   // settings for one request per tab. The latest request's origin will be
   // stored here. http://crbug.com/259794
   GURL media_stream_access_origin_;
-
-  // The PasswordFormManager managing the form we're asking the user about,
-  // and should update as per the decision.
-  scoped_ptr<PasswordFormManager> form_to_save_;
 
   DISALLOW_COPY_AND_ASSIGN(TabSpecificContentSettings);
 };

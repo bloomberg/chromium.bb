@@ -45,10 +45,5 @@ void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
     return;
   }
 
-  if (type == CONTENT_SETTINGS_TYPE_SAVE_PASSWORD) {
-    chrome::ShowSettingsSubPage(browser_, chrome::kPasswordManagerSubPage);
-    return;
-  }
-
   chrome::ShowContentSettings(browser_, type);
 }
