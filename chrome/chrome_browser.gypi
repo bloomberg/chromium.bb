@@ -968,12 +968,18 @@
         'browser/managed_mode/managed_mode_site_list.h',
         'browser/managed_mode/managed_mode_url_filter.cc',
         'browser/managed_mode/managed_mode_url_filter.h',
+        'browser/managed_mode/managed_user_constants.cc',
+        'browser/managed_mode/managed_user_constants.h',
         'browser/managed_mode/managed_user_refresh_token_fetcher.cc',
         'browser/managed_mode/managed_user_refresh_token_fetcher.h',
         'browser/managed_mode/managed_user_registration_utility.cc',
         'browser/managed_mode/managed_user_registration_utility.h',
         'browser/managed_mode/managed_user_registration_utility_stub.cc',
         'browser/managed_mode/managed_user_registration_utility_stub.h',
+        'browser/managed_mode/managed_user_settings_service.cc',
+        'browser/managed_mode/managed_user_settings_service.h',
+        'browser/managed_mode/managed_user_settings_service_factory.cc',
+        'browser/managed_mode/managed_user_settings_service_factory.h',
         'browser/managed_mode/managed_user_service.cc',
         'browser/managed_mode/managed_user_service.h',
         'browser/managed_mode/managed_user_service_factory.cc',
@@ -986,6 +992,8 @@
         'browser/managed_mode/managed_user_theme.cc',
         'browser/managed_mode/managed_user_theme.h',
         'browser/managed_mode/managed_users.h',
+        'browser/managed_mode/supervised_user_pref_store.cc',
+        'browser/managed_mode/supervised_user_pref_store.h',
         'browser/media/audio_stream_indicator.cc',
         'browser/media/audio_stream_indicator.h',
         'browser/media/chrome_midi_permission_context.cc',
@@ -3332,7 +3340,7 @@
         ['enable_managed_users!=1', {
           'sources/': [
             ['exclude', '^browser/managed_mode/'],
-          ]
+          ],
         }],
         ['enable_webrtc==0', {
           'sources!': [
