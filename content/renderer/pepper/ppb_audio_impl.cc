@@ -30,8 +30,7 @@ namespace content {
 
 PPB_Audio_Impl::PPB_Audio_Impl(PP_Instance instance)
     : Resource(ppapi::OBJECT_IS_IMPL, instance),
-      audio_(NULL),
-      sample_frame_count_(0) {
+      audio_(NULL) {
 }
 
 PPB_Audio_Impl::~PPB_Audio_Impl() {
@@ -47,10 +46,11 @@ PPB_Audio_Impl::~PPB_Audio_Impl() {
 }
 
 // static
-PP_Resource PPB_Audio_Impl::Create(PP_Instance instance,
-                                   PP_Resource config,
-                                   PPB_Audio_Callback audio_callback,
-                                   void* user_data) {
+PP_Resource PPB_Audio_Impl::Create(
+    PP_Instance instance,
+    PP_Resource config,
+    const ppapi::AudioCallbackCombined& audio_callback,
+    void* user_data) {
   scoped_refptr<PPB_Audio_Impl> audio(new PPB_Audio_Impl(instance));
   if (!audio->Init(config, audio_callback, user_data))
     return 0;
@@ -62,14 +62,15 @@ PPB_Audio_API* PPB_Audio_Impl::AsPPB_Audio_API() {
 }
 
 bool PPB_Audio_Impl::Init(PP_Resource config,
-                          PPB_Audio_Callback callback, void* user_data) {
+                          const ppapi::AudioCallbackCombined& callback,
+                          void* user_data) {
   // Validate the config and keep a reference to it.
   EnterResourceNoLock<PPB_AudioConfig_API> enter(config, true);
   if (enter.failed())
     return false;
   config_ = config;
 
-  if (!callback)
+  if (!callback.IsValid())
     return false;
   SetCallback(callback, user_data);
 
@@ -84,7 +85,6 @@ bool PPB_Audio_Impl::Init(PP_Resource config,
       static_cast<int>(enter.object()->GetSampleFrameCount()),
       instance->GetRenderView()->GetRoutingID(),
       this);
-  sample_frame_count_ = enter.object()->GetSampleFrameCount();
   return audio_ != NULL;
 }
 
@@ -158,8 +158,10 @@ void PPB_Audio_Impl::OnSetStreamInfo(
     base::SharedMemoryHandle shared_memory_handle,
     size_t shared_memory_size,
     base::SyncSocket::Handle socket_handle) {
+  EnterResourceNoLock<PPB_AudioConfig_API> enter(config_, true);
   SetStreamInfo(pp_instance(), shared_memory_handle, shared_memory_size,
-                socket_handle, sample_frame_count_);
+                socket_handle, enter.object()->GetSampleRate(),
+                enter.object()->GetSampleFrameCount());
 }
 
 }  // namespace content

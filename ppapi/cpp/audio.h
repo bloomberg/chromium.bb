@@ -41,17 +41,28 @@ class Audio : public Resource {
   ///
   /// @param[in] instance The instance with which this resource will be
   /// associated.
-  //
   /// @param[in] config An <code>AudioConfig</code> containing the audio config
   /// resource.
-  //
   /// @param[in] callback A <code>PPB_Audio_Callback</code> callback function
   /// that the browser calls when it needs more samples to play.
-  //
   /// @param[in] user_data A pointer to user data used in the callback function.
   Audio(const InstanceHandle& instance,
         const AudioConfig& config,
         PPB_Audio_Callback callback,
+        void* user_data);
+
+  /// A constructor that creates an Audio resource.
+  ///
+  /// @param[in] instance The instance with which this resource will be
+  /// associated.
+  /// @param[in] config An <code>AudioConfig</code> containing the audio config
+  /// resource.
+  /// @param[in] callback A <code>PPB_Audio_Callback_1_0</code> callback
+  /// function that the browser calls when it needs more samples to play.
+  /// @param[in] user_data A pointer to user data used in the callback function.
+  Audio(const InstanceHandle& instance,
+        const AudioConfig& config,
+        PPB_Audio_Callback_1_0 callback,
         void* user_data);
 
   /// Getter function for returning the internal <code>PPB_AudioConfig</code>
@@ -79,6 +90,7 @@ class Audio : public Resource {
 
  private:
   AudioConfig config_;
+  bool use_1_0_interface_;
 };
 
 }  // namespace pp

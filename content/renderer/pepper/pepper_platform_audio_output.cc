@@ -14,6 +14,7 @@
 #include "content/renderer/pepper/audio_helper.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/audio_hardware_config.h"
+#include "ppapi/shared_impl/ppb_audio_config_shared.h"
 
 namespace content {
 
@@ -126,7 +127,8 @@ bool PepperPlatformAudioOutput::Initialize(
 
   media::AudioParameters params(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      media::CHANNEL_LAYOUT_STEREO, sample_rate, 16, frames_per_buffer);
+      media::CHANNEL_LAYOUT_STEREO, sample_rate,
+      ppapi::kBitsPerAudioOutputSample, frames_per_buffer);
 
   io_message_loop_proxy_->PostTask(
       FROM_HERE,

@@ -51,6 +51,7 @@
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
+#include "ppapi/shared_impl/ppb_audio_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_resource_array_shared.h"
 #include "ppapi/shared_impl/var.h"
@@ -185,13 +186,22 @@ PP_Resource ResourceCreationProxy::CreateWheelInputEvent(
       wheel_delta, wheel_ticks, scroll_by_page);
 }
 
+PP_Resource ResourceCreationProxy::CreateAudio1_0(
+    PP_Instance instance,
+    PP_Resource config_id,
+    PPB_Audio_Callback_1_0 audio_callback,
+    void* user_data) {
+  return PPB_Audio_Proxy::CreateProxyResource(
+      instance, config_id, AudioCallbackCombined(audio_callback), user_data);
+}
+
 PP_Resource ResourceCreationProxy::CreateAudio(
     PP_Instance instance,
     PP_Resource config_id,
     PPB_Audio_Callback audio_callback,
     void* user_data) {
-  return PPB_Audio_Proxy::CreateProxyResource(instance, config_id,
-                                              audio_callback, user_data);
+  return PPB_Audio_Proxy::CreateProxyResource(
+      instance, config_id, AudioCallbackCombined(audio_callback), user_data);
 }
 
 PP_Resource ResourceCreationProxy::CreateAudioTrusted(PP_Instance instance) {

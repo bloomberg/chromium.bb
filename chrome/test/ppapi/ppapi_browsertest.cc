@@ -1325,35 +1325,45 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_Audio) {
           LIST_TEST(Audio_DestroyNoStop)
           LIST_TEST(Audio_Failures)
           LIST_TEST(Audio_AudioCallback1)
-          LIST_TEST(Audio_AudioCallback2));
+          LIST_TEST(Audio_AudioCallback2)
+          LIST_TEST(Audio_AudioCallback3)
+          LIST_TEST(Audio_AudioCallback4));
 }
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, Audio) {
   RunTest(LIST_TEST(Audio_Creation)
           LIST_TEST(Audio_DestroyNoStop)
           LIST_TEST(Audio_Failures)
           LIST_TEST(Audio_AudioCallback1)
-          LIST_TEST(Audio_AudioCallback2));
+          LIST_TEST(Audio_AudioCallback2)
+          LIST_TEST(Audio_AudioCallback3)
+          LIST_TEST(Audio_AudioCallback4));
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, Audio) {
   RunTestViaHTTP(LIST_TEST(Audio_Creation)
                  LIST_TEST(Audio_DestroyNoStop)
                  LIST_TEST(Audio_Failures)
                  LIST_TEST(Audio_AudioCallback1)
-                 LIST_TEST(Audio_AudioCallback2));
+                 LIST_TEST(Audio_AudioCallback2)
+                 LIST_TEST(Audio_AudioCallback3)
+                 LIST_TEST(Audio_AudioCallback4));
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(Audio)) {
   RunTestViaHTTP(LIST_TEST(Audio_Creation)
                  LIST_TEST(Audio_DestroyNoStop)
                  LIST_TEST(Audio_Failures)
                  LIST_TEST(Audio_AudioCallback1)
-                 LIST_TEST(Audio_AudioCallback2));
+                 LIST_TEST(Audio_AudioCallback2)
+                 LIST_TEST(Audio_AudioCallback3)
+                 LIST_TEST(Audio_AudioCallback4));
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, Audio) {
   RunTestViaHTTP(LIST_TEST(Audio_Creation)
                  LIST_TEST(Audio_DestroyNoStop)
                  LIST_TEST(Audio_Failures)
                  LIST_TEST(Audio_AudioCallback1)
-                 LIST_TEST(Audio_AudioCallback2));
+                 LIST_TEST(Audio_AudioCallback2)
+                 LIST_TEST(Audio_AudioCallback3)
+                 LIST_TEST(Audio_AudioCallback4));
 }
 
 TEST_PPAPI_IN_PROCESS(View_CreatedVisible);

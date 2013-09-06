@@ -21,6 +21,7 @@
 
 namespace ppapi {
 
+class AudioCallbackCombined;
 class HostResource;
 
 namespace proxy {
@@ -33,11 +34,11 @@ class PPB_Audio_Proxy : public InterfaceProxy {
   virtual ~PPB_Audio_Proxy();
 
   // Creates an Audio object in the plugin process.
-  static PP_Resource CreateProxyResource(PP_Instance instance_id,
-                                         PP_Resource config_id,
-                                         PPB_Audio_Callback audio_callback,
-                                         void* user_data);
-
+  static PP_Resource CreateProxyResource(
+      PP_Instance instance_id,
+      PP_Resource config_id,
+      const AudioCallbackCombined& audio_callback,
+      void* user_data);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

@@ -15,6 +15,8 @@ namespace ppapi {
 const int kBitsPerAudioInputSample = 16;
 const int kAudioInputChannels = 1;
 
+// TODO(dalecurtis, yzshen): PPAPI shouldn't hard code these values for all
+// clients.
 const int kBitsPerAudioOutputSample = 16;
 const int kAudioOutputChannels = 2;
 

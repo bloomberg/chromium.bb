@@ -28,14 +28,20 @@ class TestAudio : public TestCase {
   std::string TestAudioCallback1();
   std::string TestAudioCallback2();
   std::string TestAudioCallback3();
+  std::string TestAudioCallback4();
 
   // Calls |audio_callback_method_| (where |user_data| is "this").
   static void AudioCallbackTrampoline(void* sample_buffer,
                                       uint32_t buffer_size_in_bytes,
+                                      PP_TimeDelta latency,
                                       void* user_data);
+  static void AudioCallbackTrampoline1_0(void* sample_buffer,
+                                         uint32_t buffer_size_in_bytes,
+                                         void* user_data);
 
   typedef void (TestAudio::*AudioCallbackMethod)(void* sample_buffer,
-                                                 uint32_t buffer_size_in_bytes);
+                                                 uint32_t buffer_size_in_bytes,
+                                                 PP_TimeDelta latency);
 
   // Method called by |AudioCallbackTrampoline()|. Set only when the callback
   // can't be running (before |StartPlayback()|, after |StopPlayback()| or
@@ -43,19 +49,26 @@ class TestAudio : public TestCase {
   AudioCallbackMethod audio_callback_method_;
 
   // An |AudioCallbackMethod| that just clears |sample_buffer|.
-  void AudioCallbackTrivial(void* sample_buffer, uint32_t buffer_size_in_bytes);
+  void AudioCallbackTrivial(void* sample_buffer,
+                            uint32_t buffer_size_in_bytes,
+                            PP_TimeDelta latency);
 
   // |AudioCallbackMethod| used by |TestAudioCallbackN()|.
-  void AudioCallbackTest(void* sample_buffer, uint32_t buffer_size_in_bytes);
+  void AudioCallbackTest(void* sample_buffer,
+                         uint32_t buffer_size_in_bytes,
+                         PP_TimeDelta latency);
+
+  PP_Resource CreateAudioConfig(PP_AudioSampleRate sample_rate,
+                                uint32_t requested_sample_frame_count);
 
   // Used by |TestAudioCallbackN()|.
   NestedEvent audio_callback_event_;
 
   bool test_done_;
-  bool callback_fired_;
 
   // Raw C-level interfaces, set in |Init()|; do not modify them elsewhere.
-  const PPB_Audio* audio_interface_;
+  const PPB_Audio_1_1* audio_interface_;
+  const PPB_Audio_1_0* audio_interface_1_0_;
   const PPB_AudioConfig* audio_config_interface_;
   const PPB_Core* core_interface_;
 };

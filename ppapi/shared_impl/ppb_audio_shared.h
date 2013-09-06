@@ -11,6 +11,7 @@
 #include "base/threading/simple_thread.h"
 #include "media/base/audio_bus.h"
 #include "ppapi/c/ppb_audio.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_audio_api.h"
 
@@ -19,6 +20,26 @@
 #endif
 
 namespace ppapi {
+
+class PPAPI_SHARED_EXPORT AudioCallbackCombined {
+ public:
+  AudioCallbackCombined();
+  explicit AudioCallbackCombined(PPB_Audio_Callback_1_0 callback_1_0);
+  explicit AudioCallbackCombined(PPB_Audio_Callback callback);
+
+  ~AudioCallbackCombined();
+
+  bool IsValid() const;
+
+  void Run(void* sample_buffer,
+           uint32_t buffer_size_in_bytes,
+           PP_TimeDelta latency,
+           void* user_data) const;
+
+ private:
+  PPB_Audio_Callback_1_0 callback_1_0_;
+  PPB_Audio_Callback callback_;
+};
 
 // Implements the logic to map shared memory and run the audio thread signaled
 // from the sync socket. Both the proxy and the renderer implementation use
@@ -36,7 +57,7 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
   // is optional. Without a callback, the thread will not be run. This
   // non-callback mode is used in the renderer with the proxy, since the proxy
   // handles the callback entirely within the plugin process.
-  void SetCallback(PPB_Audio_Callback callback, void* user_data);
+  void SetCallback(const AudioCallbackCombined& callback, void* user_data);
 
   // Configures the current state to be playing or not. The caller is
   // responsible for ensuring the new state is the opposite of the current one.
@@ -55,6 +76,7 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
                      base::SharedMemoryHandle shared_memory_handle,
                      size_t shared_memory_size,
                      base::SyncSocket::Handle socket_handle,
+                     PP_AudioSampleRate sample_rate,
                      int sample_frame_count);
 
 #if defined(OS_NACL)
@@ -99,7 +121,7 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
 #endif
 
   // Callback to call when audio is ready to accept new samples.
-  PPB_Audio_Callback callback_;
+  AudioCallbackCombined callback_;
 
   // User data pointer passed verbatim to the callback function.
   void* user_data_;
@@ -110,6 +132,9 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
   // Internal buffer for client's integer audio data.
   int client_buffer_size_bytes_;
   scoped_ptr<uint8_t[]> client_buffer_;
+
+  // The size (in bytes) of one second of audio data. Used to calculate latency.
+  size_t bytes_per_second_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Audio_Shared);
 };

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_audio.idl modified Thu Dec 20 13:10:26 2012.
-
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/shared_impl/tracked_callback.h"
@@ -17,6 +15,20 @@ namespace ppapi {
 namespace thunk {
 
 namespace {
+
+PP_Resource Create_1_0(PP_Instance instance,
+                      PP_Resource config,
+                      PPB_Audio_Callback_1_0 audio_callback,
+                      void* user_data) {
+  VLOG(4) << "PPB_Audio::Create()";
+  EnterResourceCreation enter(instance);
+  if (enter.failed())
+    return 0;
+  return enter.functions()->CreateAudio1_0(instance,
+                                           config,
+                                           audio_callback,
+                                           user_data);
+}
 
 PP_Resource Create(PP_Instance instance,
                    PP_Resource config,
@@ -63,6 +75,14 @@ PP_Bool StopPlayback(PP_Resource audio) {
 }
 
 const PPB_Audio_1_0 g_ppb_audio_thunk_1_0 = {
+  &Create_1_0,
+  &IsAudio,
+  &GetCurrentConfig,
+  &StartPlayback,
+  &StopPlayback
+};
+
+const PPB_Audio_1_1 g_ppb_audio_thunk_1_1 = {
   &Create,
   &IsAudio,
   &GetCurrentConfig,
@@ -74,6 +94,10 @@ const PPB_Audio_1_0 g_ppb_audio_thunk_1_0 = {
 
 const PPB_Audio_1_0* GetPPB_Audio_1_0_Thunk() {
   return &g_ppb_audio_thunk_1_0;
+}
+
+const PPB_Audio_1_1* GetPPB_Audio_1_1_Thunk() {
+  return &g_ppb_audio_thunk_1_1;
 }
 
 }  // namespace thunk

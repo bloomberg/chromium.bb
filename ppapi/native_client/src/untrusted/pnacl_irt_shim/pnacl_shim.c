@@ -234,6 +234,8 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Ext_Socket_Dev_0_2;
 
 /* Not generating wrapper methods for PPB_Audio_1_0 */
 
+/* Not generating wrapper methods for PPB_Audio_1_1 */
+
 /* Not generating wrapper methods for PPB_AudioConfig_1_0 */
 
 /* Not generating wrapper methods for PPB_AudioConfig_1_1 */
@@ -3934,6 +3936,8 @@ static int32_t Pnacl_M29_PPB_Ext_Socket_Dev_GetJoinedGroups(PP_Instance instance
 /* End wrapper methods for PPB_Ext_Socket_Dev_0_2 */
 
 /* Not generating wrapper interface for PPB_Audio_1_0 */
+
+/* Not generating wrapper interface for PPB_Audio_1_1 */
 
 /* Not generating wrapper interface for PPB_AudioConfig_1_0 */
 

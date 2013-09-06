@@ -37,7 +37,7 @@ class Audio : public Resource, public PPB_Audio_Shared {
  public:
   Audio(const HostResource& audio_id,
         PP_Resource config_id,
-        PPB_Audio_Callback callback,
+        const AudioCallbackCombined& callback,
         void* user_data);
   virtual ~Audio();
 
@@ -64,7 +64,7 @@ class Audio : public Resource, public PPB_Audio_Shared {
 
 Audio::Audio(const HostResource& audio_id,
              PP_Resource config_id,
-             PPB_Audio_Callback callback,
+             const AudioCallbackCombined& callback,
              void* user_data)
     : Resource(OBJECT_IS_PROXY, audio_id),
       config_(config_id) {
@@ -138,7 +138,7 @@ PPB_Audio_Proxy::~PPB_Audio_Proxy() {
 PP_Resource PPB_Audio_Proxy::CreateProxyResource(
     PP_Instance instance_id,
     PP_Resource config_id,
-    PPB_Audio_Callback audio_callback,
+    const AudioCallbackCombined& audio_callback,
     void* user_data) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance_id);
   if (!dispatcher)
@@ -148,7 +148,7 @@ PP_Resource PPB_Audio_Proxy::CreateProxyResource(
   if (config.failed())
     return 0;
 
-  if (!audio_callback)
+  if (!audio_callback.IsValid())
     return 0;
 
   HostResource result;
@@ -341,6 +341,7 @@ void PPB_Audio_Proxy::OnMsgNotifyAudioStreamCreated(
         enter.resource()->pp_instance(), handle.shmem(),
         media::PacketSizeInBytes(handle.size()),
         IPC::PlatformFileForTransitToPlatformFile(socket_handle.descriptor()),
+        config.object()->GetSampleRate(),
         config.object()->GetSampleFrameCount());
   }
 }

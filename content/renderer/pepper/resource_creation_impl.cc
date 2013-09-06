@@ -16,6 +16,7 @@
 #include "content/renderer/pepper/ppb_video_decoder_impl.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
+#include "ppapi/shared_impl/ppb_audio_shared.h"
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_resource_array_shared.h"
@@ -34,13 +35,24 @@ ResourceCreationImpl::ResourceCreationImpl(PepperPluginInstanceImpl* instance) {
 ResourceCreationImpl::~ResourceCreationImpl() {
 }
 
+PP_Resource ResourceCreationImpl::CreateAudio1_0(
+    PP_Instance instance,
+    PP_Resource config_id,
+    PPB_Audio_Callback_1_0 audio_callback,
+    void* user_data) {
+  return PPB_Audio_Impl::Create(
+      instance, config_id, ppapi::AudioCallbackCombined(audio_callback),
+      user_data);
+}
+
 PP_Resource ResourceCreationImpl::CreateAudio(
     PP_Instance instance,
     PP_Resource config_id,
     PPB_Audio_Callback audio_callback,
     void* user_data) {
-  return PPB_Audio_Impl::Create(instance, config_id, audio_callback,
-                                user_data);
+  return PPB_Audio_Impl::Create(
+      instance, config_id, ppapi::AudioCallbackCombined(audio_callback),
+      user_data);
 }
 
 PP_Resource ResourceCreationImpl::CreateAudioConfig(

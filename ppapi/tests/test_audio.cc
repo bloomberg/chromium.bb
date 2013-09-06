@@ -24,20 +24,27 @@ TestAudio::TestAudio(TestingInstance* instance)
     : TestCase(instance),
       audio_callback_method_(NULL),
       audio_callback_event_(instance->pp_instance()),
-      test_done_(false) {
+      test_done_(false),
+      audio_interface_(NULL),
+      audio_interface_1_0_(NULL),
+      audio_config_interface_(NULL),
+      core_interface_(NULL) {
 }
 
 TestAudio::~TestAudio() {
 }
 
 bool TestAudio::Init() {
-  audio_interface_ = static_cast<const PPB_Audio*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_AUDIO_INTERFACE));
+  audio_interface_ = static_cast<const PPB_Audio_1_1*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_AUDIO_INTERFACE_1_1));
+  audio_interface_1_0_ = static_cast<const PPB_Audio_1_0*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_AUDIO_INTERFACE_1_0));
   audio_config_interface_ = static_cast<const PPB_AudioConfig*>(
       pp::Module::Get()->GetBrowserInterface(PPB_AUDIO_CONFIG_INTERFACE));
   core_interface_ = static_cast<const PPB_Core*>(
       pp::Module::Get()->GetBrowserInterface(PPB_CORE_INTERFACE));
-  return audio_interface_ && audio_config_interface_ && core_interface_;
+  return audio_interface_ && audio_interface_1_0_ && audio_config_interface_ &&
+         core_interface_;
 }
 
 void TestAudio::RunTests(const std::string& filter) {
@@ -47,6 +54,7 @@ void TestAudio::RunTests(const std::string& filter) {
   RUN_TEST(AudioCallback1, filter);
   RUN_TEST(AudioCallback2, filter);
   RUN_TEST(AudioCallback3, filter);
+  RUN_TEST(AudioCallback4, filter);
 }
 
 // Test creating audio resources for all guaranteed sample rates and various
@@ -118,13 +126,7 @@ std::string TestAudio::TestCreation() {
 
 // Test that releasing the resource without calling |StopPlayback()| "works".
 std::string TestAudio::TestDestroyNoStop() {
-  const PP_AudioSampleRate kSampleRate = PP_AUDIOSAMPLERATE_44100;
-  const uint32_t kRequestFrameCount = 2048;
-
-  uint32_t frame_count = audio_config_interface_->RecommendSampleFrameCount(
-      instance_->pp_instance(), kSampleRate, kRequestFrameCount);
-  PP_Resource ac = audio_config_interface_->CreateStereo16Bit(
-      instance_->pp_instance(), kSampleRate, frame_count);
+  PP_Resource ac = CreateAudioConfig(PP_AUDIOSAMPLERATE_44100, 2048);
   ASSERT_TRUE(ac);
   audio_callback_method_ = NULL;
   PP_Resource audio = audio_interface_->Create(
@@ -145,16 +147,10 @@ std::string TestAudio::TestDestroyNoStop() {
 }
 
 std::string TestAudio::TestFailures() {
-  const PP_AudioSampleRate kSampleRate = PP_AUDIOSAMPLERATE_44100;
-  const uint32_t kRequestFrameCount = 2048;
-
   // Test invalid parameters to |Create()|.
 
   // We want a valid config for some of our tests of |Create()|.
-  uint32_t frame_count = audio_config_interface_->RecommendSampleFrameCount(
-      instance_->pp_instance(), kSampleRate, kRequestFrameCount);
-  PP_Resource ac = audio_config_interface_->CreateStereo16Bit(
-      instance_->pp_instance(), kSampleRate, frame_count);
+  PP_Resource ac = CreateAudioConfig(PP_AUDIOSAMPLERATE_44100, 2048);
   ASSERT_TRUE(ac);
 
   // Failure cases should never lead to the callback being called.
@@ -187,24 +183,17 @@ std::string TestAudio::TestFailures() {
   PASS();
 }
 
-// NOTE: |TestAudioCallback1| and |TestAudioCallback2| assume that the audio
-// callback is called at least once. If the audio stream does not start up
-// correctly or is interrupted this may not be the case and these tests will
-// fail. However, in order to properly test the audio callbacks, we must have
-// a configuration where audio can successfully play, so we assume this is the
-// case on bots.
+// NOTE: |TestAudioCallbackN| assumes that the audio callback is called at least
+// once. If the audio stream does not start up correctly or is interrupted this
+// may not be the case and these tests will fail. However, in order to properly
+// test the audio callbacks, we must have a configuration where audio can
+// successfully play, so we assume this is the case on bots.
 
 // This test starts playback and verifies that:
 //  1) the audio callback is actually called;
 //  2) that |StopPlayback()| waits for the audio callback to finish.
 std::string TestAudio::TestAudioCallback1() {
-  const PP_AudioSampleRate kSampleRate = PP_AUDIOSAMPLERATE_44100;
-  const uint32_t kRequestFrameCount = 1024;
-
-  uint32_t frame_count = audio_config_interface_->RecommendSampleFrameCount(
-      instance_->pp_instance(), kSampleRate, kRequestFrameCount);
-  PP_Resource ac = audio_config_interface_->CreateStereo16Bit(
-      instance_->pp_instance(), kSampleRate, frame_count);
+  PP_Resource ac = CreateAudioConfig(PP_AUDIOSAMPLERATE_44100, 1024);
   ASSERT_TRUE(ac);
   audio_callback_method_ = NULL;
   PP_Resource audio = audio_interface_->Create(
@@ -234,13 +223,7 @@ std::string TestAudio::TestAudioCallback1() {
 // This is the same as |TestAudioCallback1()|, except that instead of calling
 // |StopPlayback()|, it just releases the resource.
 std::string TestAudio::TestAudioCallback2() {
-  const PP_AudioSampleRate kSampleRate = PP_AUDIOSAMPLERATE_44100;
-  const uint32_t kRequestFrameCount = 1024;
-
-  uint32_t frame_count = audio_config_interface_->RecommendSampleFrameCount(
-      instance_->pp_instance(), kSampleRate, kRequestFrameCount);
-  PP_Resource ac = audio_config_interface_->CreateStereo16Bit(
-      instance_->pp_instance(), kSampleRate, frame_count);
+  PP_Resource ac = CreateAudioConfig(PP_AUDIOSAMPLERATE_44100, 1024);
   ASSERT_TRUE(ac);
   audio_callback_method_ = NULL;
   PP_Resource audio = audio_interface_->Create(
@@ -250,7 +233,6 @@ std::string TestAudio::TestAudioCallback2() {
 
   audio_callback_event_.Reset();
   test_done_ = false;
-  callback_fired_ = false;
 
   audio_callback_method_ = &TestAudio::AudioCallbackTest;
   ASSERT_TRUE(audio_interface_->StartPlayback(audio));
@@ -272,13 +254,7 @@ std::string TestAudio::TestAudioCallback2() {
 // round of |StartPlayback| and |StopPlayback| to make sure the callback
 // function still responds when using the same audio resource.
 std::string TestAudio::TestAudioCallback3() {
-  const PP_AudioSampleRate kSampleRate = PP_AUDIOSAMPLERATE_44100;
-  const uint32_t kRequestFrameCount = 1024;
-
-  uint32_t frame_count = audio_config_interface_->RecommendSampleFrameCount(
-      instance_->pp_instance(), kSampleRate, kRequestFrameCount);
-  PP_Resource ac = audio_config_interface_->CreateStereo16Bit(
-      instance_->pp_instance(), kSampleRate, frame_count);
+  PP_Resource ac = CreateAudioConfig(PP_AUDIOSAMPLERATE_44100, 1024);
   ASSERT_TRUE(ac);
   audio_callback_method_ = NULL;
   PP_Resource audio = audio_interface_->Create(
@@ -288,7 +264,6 @@ std::string TestAudio::TestAudioCallback3() {
 
   audio_callback_event_.Reset();
   test_done_ = false;
-  callback_fired_ = false;
 
   audio_callback_method_ = &TestAudio::AudioCallbackTest;
   ASSERT_TRUE(audio_interface_->StartPlayback(audio));
@@ -316,6 +291,35 @@ std::string TestAudio::TestAudioCallback3() {
   PASS();
 }
 
+// This is the same as |TestAudioCallback1()|, except that it uses
+// PPB_Audio_1_0.
+std::string TestAudio::TestAudioCallback4() {
+  PP_Resource ac = CreateAudioConfig(PP_AUDIOSAMPLERATE_44100, 1024);
+  ASSERT_TRUE(ac);
+  audio_callback_method_ = NULL;
+  PP_Resource audio = audio_interface_1_0_->Create(
+      instance_->pp_instance(), ac, AudioCallbackTrampoline1_0, this);
+  core_interface_->ReleaseResource(ac);
+  ac = 0;
+
+  audio_callback_event_.Reset();
+  test_done_ = false;
+
+  audio_callback_method_ = &TestAudio::AudioCallbackTest;
+  ASSERT_TRUE(audio_interface_1_0_->StartPlayback(audio));
+
+  // Wait for the audio callback to be called.
+  audio_callback_event_.Wait();
+  ASSERT_TRUE(audio_interface_1_0_->StopPlayback(audio));
+  test_done_ = true;
+
+  // If any more audio callbacks are generated, we should crash (which is good).
+  audio_callback_method_ = NULL;
+
+  core_interface_->ReleaseResource(audio);
+
+  PASS();
+}
 
 // TODO(raymes): Test that actually playback happens correctly, etc.
 
@@ -326,6 +330,7 @@ static void Crash() {
 // static
 void TestAudio::AudioCallbackTrampoline(void* sample_buffer,
                                         uint32_t buffer_size_in_bytes,
+                                        PP_TimeDelta latency,
                                         void* user_data) {
   TestAudio* thiz = static_cast<TestAudio*>(user_data);
 
@@ -334,19 +339,40 @@ void TestAudio::AudioCallbackTrampoline(void* sample_buffer,
     Crash();
 
   AudioCallbackMethod method = thiz->audio_callback_method_;
-  (thiz->*method)(sample_buffer, buffer_size_in_bytes);
+  (thiz->*method)(sample_buffer, buffer_size_in_bytes, latency);
+}
+
+// static
+void TestAudio::AudioCallbackTrampoline1_0(void* sample_buffer,
+                                           uint32_t buffer_size_in_bytes,
+                                           void* user_data) {
+  AudioCallbackTrampoline(sample_buffer, buffer_size_in_bytes, 0.0, user_data);
 }
 
 void TestAudio::AudioCallbackTrivial(void* sample_buffer,
-                                     uint32_t buffer_size_in_bytes) {
+                                     uint32_t buffer_size_in_bytes,
+                                     PP_TimeDelta latency) {
+  if (latency < 0)
+    Crash();
+
   memset(sample_buffer, 0, buffer_size_in_bytes);
 }
 
 void TestAudio::AudioCallbackTest(void* sample_buffer,
-                                  uint32_t buffer_size_in_bytes) {
-  if (test_done_)
+                                  uint32_t buffer_size_in_bytes,
+                                  PP_TimeDelta latency) {
+  if (test_done_ || latency < 0)
     Crash();
 
   memset(sample_buffer, 0, buffer_size_in_bytes);
   audio_callback_event_.Signal();
+}
+
+PP_Resource TestAudio::CreateAudioConfig(
+    PP_AudioSampleRate sample_rate,
+    uint32_t requested_sample_frame_count) {
+  uint32_t frame_count = audio_config_interface_->RecommendSampleFrameCount(
+      instance_->pp_instance(), sample_rate, requested_sample_frame_count);
+  return audio_config_interface_->CreateStereo16Bit(
+      instance_->pp_instance(), sample_rate, frame_count);
 }

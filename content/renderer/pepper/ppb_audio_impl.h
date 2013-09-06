@@ -37,12 +37,12 @@ class PPB_Audio_Impl : public ppapi::Resource,
   // and will return 0 on failure.
   static PP_Resource Create(PP_Instance instance,
                             PP_Resource config_id,
-                            PPB_Audio_Callback audio_callback,
+                            const ppapi::AudioCallbackCombined& audio_callback,
                             void* user_data);
 
   // Initialization function for trusted init.
   bool Init(PP_Resource config_id,
-            PPB_Audio_Callback user_callback,
+            const ppapi::AudioCallbackCombined& user_callback,
             void* user_data);
 
   // Resource overrides.
@@ -72,9 +72,6 @@ class PPB_Audio_Impl : public ppapi::Resource,
   // PluginDelegate audio object that we delegate audio IPC through. We don't
   // own this pointer but are responsible for calling Shutdown on it.
   PepperPlatformAudioOutput* audio_;
-
-  // Track frame count for passing on to PPB_Audio_Shared::SetStreamInfo().
-  int sample_frame_count_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Audio_Impl);
 };

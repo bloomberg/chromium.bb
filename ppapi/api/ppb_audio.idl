@@ -8,10 +8,9 @@
  * realtime stereo audio streaming capabilities.
  */
 
-[generate_thunk]
-
 label Chrome {
-  M14 = 1.0
+  M14 = 1.0,
+  M31 = 1.1
 };
 
 /**
@@ -19,9 +18,16 @@ label Chrome {
  * function used to fill the audio buffer with data. Please see the
  * Create() function in the <code>PPB_Audio</code> interface for
  * more details on this callback.
+ *
+ * @param[in] sample_buffer A buffer to fill with audio data.
+ * @param[in] buffer_size_in_bytes The size of the buffer in bytes.
+ * @param[in] latency How long before the audio data is to be presented.
+ * @param[inout] user_data An opaque pointer that was passed into
+ * <code>PPB_Audio.Create()</code>.
  */
 typedef void PPB_Audio_Callback([out] mem_t sample_buffer,
                                 [in] uint32_t buffer_size_in_bytes,
+                                [in, version=1.1] PP_TimeDelta latency,
                                 [inout] mem_t user_data);
 
 /**

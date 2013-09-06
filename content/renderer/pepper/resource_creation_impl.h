@@ -23,6 +23,10 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
   virtual ~ResourceCreationImpl();
 
   // ResourceCreationAPI implementation.
+  virtual PP_Resource CreateAudio1_0(PP_Instance instance,
+                                     PP_Resource config_id,
+                                     PPB_Audio_Callback_1_0 audio_callback,
+                                     void* user_data) OVERRIDE;
   virtual PP_Resource CreateAudio(PP_Instance instance,
                                   PP_Resource config_id,
                                   PPB_Audio_Callback audio_callback,
