@@ -548,7 +548,6 @@
         'browser/download/download_ui_controller.cc',
         'browser/download/download_ui_controller.h',
         'browser/download/drag_download_item.h',
-        'browser/download/drag_download_item_gtk.cc',
         'browser/download/drag_download_item_views.cc',
         'browser/download/save_package_file_picker.cc',
         'browser/download/save_package_file_picker.h',

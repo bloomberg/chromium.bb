@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/download/drag_download_item.h"
 #include "content/public/browser/download_item.h"
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
@@ -125,4 +126,10 @@ void DownloadItemDrag::OnDragDataGet(GtkWidget* widget,
                                      guint target_type,
                                      guint time) {
   drag_data_->OnDragDataGet(widget, context, selection_data, target_type, time);
+}
+
+void DragDownloadItem(const content::DownloadItem* download,
+                      gfx::Image* icon,
+                      gfx::NativeView view) {
+  DownloadItemDrag::BeginDrag(download, icon);
 }
