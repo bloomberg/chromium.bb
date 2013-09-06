@@ -667,6 +667,11 @@ void Panel::SetPreviewMode(bool in_preview) {
   in_preview_mode_ = in_preview;
 }
 
+void Panel::EnableResizeByMouse(bool enable) {
+  DCHECK(native_panel_);
+  native_panel_->EnableResizeByMouse(enable);
+}
+
 void Panel::UpdateMinimizeRestoreButtonVisibility() {
   native_panel_->UpdatePanelMinimizeRestoreButtonVisibility();
 }

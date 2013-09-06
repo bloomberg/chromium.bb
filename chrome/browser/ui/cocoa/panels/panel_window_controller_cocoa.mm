@@ -28,15 +28,16 @@
 #include "chrome/browser/ui/panels/panel_collection.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/stacked_panel_collection.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/ui_resources.h"
+#include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "webkit/common/cursors/webcursor.h"
 
 using content::WebContents;
 
@@ -44,8 +45,8 @@ const int kMinimumWindowSize = 1;
 const double kBoundsAnimationSpeedPixelsPerSecond = 1000;
 const double kBoundsAnimationMaxDurationSeconds = 0.18;
 
-// Edge thickness to trigger user resizing via system, in screen pixels.
-const double kWidthOfMouseResizeArea = 15.0;
+// Resize edge thickness, in screen pixels.
+const double kWidthOfMouseResizeArea = 4.0;
 
 @interface PanelWindowControllerCocoa (PanelsCanBecomeKey)
 // Internal helper method for extracting the total number of panel windows
@@ -107,49 +108,253 @@ const double kWidthOfMouseResizeArea = 15.0;
     return;
   [super sendEvent:anEvent];
 }
+@end
 
-- (void)mouseMoved:(NSEvent*)event {
-  // Cocoa does not support letting the application determine the edges that
-  // can trigger the user resizing. To work around this, we track the mouse
-  // location. When it is close to the edge/corner where the user resizing
-  // is not desired, we force the min and max size of the window to be same
-  // as current window size. For all other cases, we restore the min and max
-  // size.
-  PanelWindowControllerCocoa* controller =
-      base::mac::ObjCCast<PanelWindowControllerCocoa>([self windowController]);
-  NSRect frame = [self frame];
-  if ([controller canResizeByMouseAtCurrentLocation]) {
-    // Mac window server limits window sizes to 10000.
-    NSSize maxSize = NSMakeSize(10000, 10000);
+// Transparent view covering the whole panel in order to intercept mouse
+// messages for custom user resizing. We need custom resizing because panels
+// use their own constrained layout.
+@interface PanelResizeByMouseOverlay : NSView <MouseDragControllerClient> {
+ @private
+   Panel* panel_;
+   base::scoped_nsobject<MouseDragController> dragController_;
+   base::scoped_nsobject<NSCursor> dragCursor_;
+   base::scoped_nsobject<NSCursor> eastWestCursor_;
+   base::scoped_nsobject<NSCursor> northSouthCursor_;
+   base::scoped_nsobject<NSCursor> northEastSouthWestCursor_;
+   base::scoped_nsobject<NSCursor> northWestSouthEastCursor_;
+   NSRect leftCursorRect_;
+   NSRect rightCursorRect_;
+   NSRect topCursorRect_;
+   NSRect bottomCursorRect_;
+   NSRect topLeftCursorRect_;
+   NSRect topRightCursorRect_;
+   NSRect bottomLeftCursorRect_;
+   NSRect bottomRightCursorRect_;
+}
+@end
 
-    // If the user is resizing a stacked panel by its bottom edge, make sure its
-    // height cannot grow more than what the panel below it could offer. This is
-    // because growing a stacked panel by y amount will shrink the panel below
-    // it by same amount and we do not want the panel below it being shrunk to
-    // be smaller than the titlebar.
-    Panel* panel = [controller panel];
-    NSPoint point = [NSEvent mouseLocation];
-    if (point.y < NSMinY(frame) + kWidthOfMouseResizeArea && panel->stack()) {
-      Panel* belowPanel = panel->stack()->GetPanelBelow(panel);
-      if (belowPanel && !belowPanel->IsMinimized()) {
-        maxSize.height = panel->GetBounds().height() +
-            belowPanel->GetBounds().height() - panel::kTitlebarHeight;
-      }
-    }
+namespace {
+NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
+    return WebCursor(WebCursor::CursorInfo(type)).GetNativeCursor();
+}
+}
 
-    // Enable the user-resizing by setting both min and max size to the right
-    // values.
-    [self setMinSize:NSMakeSize(panel::kPanelMinWidth,
-                                panel::kPanelMinHeight)];
-    [self setMaxSize:maxSize];
-  } else {
-    // Disable the user-resizing by setting both min and max size to be same as
-    // current window size.
-    [self setMinSize:frame.size];
-    [self setMaxSize:frame.size];
+@implementation PanelResizeByMouseOverlay
+- (PanelResizeByMouseOverlay*)initWithFrame:(NSRect)frame panel:(Panel*)panel {
+  if ((self = [super initWithFrame:frame])) {
+    panel_ = panel;
+    dragController_.reset([[MouseDragController alloc] initWithClient:self]);
+
+    eastWestCursor_.reset(
+        [LoadWebKitCursor(WebKit::WebCursorInfo::TypeEastWestResize) retain]);
+    northSouthCursor_.reset(
+        [LoadWebKitCursor(WebKit::WebCursorInfo::TypeNorthSouthResize) retain]);
+    northEastSouthWestCursor_.reset(
+        [LoadWebKitCursor(WebKit::WebCursorInfo::TypeNorthEastSouthWestResize)
+        retain]);
+    northWestSouthEastCursor_.reset(
+        [LoadWebKitCursor(WebKit::WebCursorInfo::TypeNorthWestSouthEastResize)
+        retain]);
+  }
+  return self;
+}
+
+- (BOOL)acceptsFirstMouse:(NSEvent*)event {
+  return YES;
+}
+
+// |pointInWindow| is in window coordinates.
+- (panel::ResizingSides)edgeHitTest:(NSPoint)pointInWindow {
+  panel::Resizability resizability = panel_->CanResizeByMouse();
+  DCHECK_NE(panel::NOT_RESIZABLE, resizability);
+
+  NSPoint point = [self convertPoint:pointInWindow fromView:nil];
+  BOOL flipped = [self isFlipped];
+
+  if ((resizability & panel::RESIZABLE_TOP_LEFT) &&
+      NSMouseInRect(point, topLeftCursorRect_, flipped)) {
+    return panel::RESIZE_TOP_LEFT;
+  }
+  if ((resizability & panel::RESIZABLE_TOP_RIGHT) &&
+      NSMouseInRect(point, topRightCursorRect_, flipped)) {
+    return panel::RESIZE_TOP_RIGHT;
+  }
+  if ((resizability & panel::RESIZABLE_BOTTOM_LEFT) &&
+      NSMouseInRect(point, bottomLeftCursorRect_, flipped)) {
+    return panel::RESIZE_BOTTOM_LEFT;
+  }
+  if ((resizability & panel::RESIZABLE_BOTTOM_RIGHT) &&
+      NSMouseInRect(point, bottomRightCursorRect_, flipped)) {
+    return panel::RESIZE_BOTTOM_RIGHT;
   }
 
-  [super mouseMoved:event];
+  if ((resizability & panel::RESIZABLE_LEFT) &&
+      NSMouseInRect(point, leftCursorRect_, flipped)) {
+    return panel::RESIZE_LEFT;
+  }
+  if ((resizability & panel::RESIZABLE_RIGHT) &&
+      NSMouseInRect(point, rightCursorRect_, flipped)) {
+    return panel::RESIZE_RIGHT;
+  }
+  if ((resizability & panel::RESIZABLE_TOP) &&
+      NSMouseInRect(point, topCursorRect_, flipped)) {
+    return panel::RESIZE_TOP;
+  }
+  if ((resizability & panel::RESIZABLE_BOTTOM) &&
+      NSMouseInRect(point, bottomCursorRect_, flipped)) {
+    return panel::RESIZE_BOTTOM;
+  }
+
+  return panel::RESIZE_NONE;
+}
+
+// NSWindow uses this method to figure out if this view is under the mouse
+// and hence the one to handle the incoming mouse event.
+// Since this view covers the whole panel, it is asked first.
+// See if this is the mouse event we are interested in (in the resize areas)
+// and return 'nil' to let NSWindow find another candidate otherwise.
+// |point| is in coordinate system of the parent view.
+- (NSView*)hitTest:(NSPoint)point {
+  // If panel is not resizable, let the mouse events fall through.
+  if (panel::NOT_RESIZABLE == panel_->CanResizeByMouse())
+    return nil;
+
+  NSPoint pointInWindow = [[self superview] convertPoint:point toView:nil];
+  return [self edgeHitTest:pointInWindow] == panel::RESIZE_NONE ? nil : self;
+}
+
+// Delegate these to MouseDragController, it will call back on
+// MouseDragControllerClient protocol.
+- (void)mouseDown:(NSEvent*)event {
+  [dragController_ mouseDown:event];
+}
+
+- (void)mouseDragged:(NSEvent*)event {
+  [dragController_ mouseDragged:event];
+}
+
+- (void)mouseUp:(NSEvent*)event {
+  [dragController_ mouseUp:event];
+}
+
+// MouseDragControllerClient protocol.
+
+- (void)prepareForDrag {
+  // If the panel is not resizable, hitTest should have failed and no mouse
+  // events should have come here.
+  DCHECK_NE(panel::NOT_RESIZABLE, panel_->CanResizeByMouse());
+
+  // Make sure the cursor stays the same during whole resize operation.
+  // The cursor rects normally do not guarantee the same cursor, since the
+  // mouse may temporarily leave the cursor rect area (or even the window) so
+  // the cursor will flicker. Disable cursor rects and grab the current cursor
+  // so we can set it on mouseDragged: events to avoid flicker.
+  [[self window] disableCursorRects];
+  dragCursor_.reset([[NSCursor currentCursor] retain]);
+}
+
+- (void)cleanupAfterDrag {
+  [[self window] enableCursorRects];
+  dragCursor_.reset();
+}
+
+- (void)dragStarted:(NSPoint)initialMouseLocation {
+  NSPoint initialMouseLocationScreen =
+      [[self window] convertBaseToScreen:initialMouseLocation];
+
+  panel_->manager()->StartResizingByMouse(
+      panel_,
+      cocoa_utils::ConvertPointFromCocoaCoordinates(initialMouseLocationScreen),
+      [self edgeHitTest:initialMouseLocation]);
+}
+
+- (void)dragProgress:(NSPoint)mouseLocation {
+  NSPoint mouseLocationScreen =
+      [[self window] convertBaseToScreen:mouseLocation];
+  panel_->manager()->ResizeByMouse(
+      cocoa_utils::ConvertPointFromCocoaCoordinates(mouseLocationScreen));
+
+  // Set the resize cursor on every mouse drag event in case the mouse
+  // wandered outside the window and was switched to another one.
+  // This does not produce flicker, seems the real cursor is updated after
+  // mouseDrag is processed.
+  [dragCursor_ set];
+}
+
+- (void)dragEnded:(BOOL)cancelled {
+  panel_->manager()->EndResizingByMouse(cancelled);
+}
+
+- (void)resetCursorRects {
+  panel::Resizability resizability = panel_->CanResizeByMouse();
+  if (panel::NOT_RESIZABLE == resizability)
+    return;
+
+  NSRect bounds = [self bounds];
+
+  // Left vertical edge.
+  if (resizability & panel::RESIZABLE_LEFT) {
+    leftCursorRect_ = NSMakeRect(
+        NSMinX(bounds),
+        NSMinY(bounds) + kWidthOfMouseResizeArea,
+        kWidthOfMouseResizeArea,
+        NSHeight(bounds) - 2 * kWidthOfMouseResizeArea);
+    [self addCursorRect:leftCursorRect_ cursor:eastWestCursor_];
+  }
+
+  // Right vertical edge.
+  if (resizability & panel::RESIZABLE_RIGHT) {
+    rightCursorRect_ = leftCursorRect_;
+    rightCursorRect_.origin.x = NSMaxX(bounds) - kWidthOfMouseResizeArea;
+    [self addCursorRect:rightCursorRect_ cursor:eastWestCursor_];
+  }
+
+  // Top horizontal edge.
+  if (resizability & panel::RESIZABLE_TOP) {
+    topCursorRect_ = NSMakeRect(NSMinX(bounds) + kWidthOfMouseResizeArea,
+                                NSMaxY(bounds) - kWidthOfMouseResizeArea,
+                                NSWidth(bounds) - 2 * kWidthOfMouseResizeArea,
+                                kWidthOfMouseResizeArea);
+    [self addCursorRect:topCursorRect_ cursor:northSouthCursor_];
+  }
+
+  // Top left corner.
+  if (resizability & panel::RESIZABLE_TOP_LEFT) {
+    topLeftCursorRect_ = NSMakeRect(NSMinX(bounds),
+                                    NSMaxY(bounds) - kWidthOfMouseResizeArea,
+                                    kWidthOfMouseResizeArea,
+                                    NSMaxY(bounds));
+    [self addCursorRect:topLeftCursorRect_ cursor:northWestSouthEastCursor_];
+  }
+
+  // Top right corner.
+  if (resizability & panel::RESIZABLE_TOP_RIGHT) {
+    topRightCursorRect_ = topLeftCursorRect_;
+    topRightCursorRect_.origin.x = NSMaxX(bounds) - kWidthOfMouseResizeArea;
+    [self addCursorRect:topRightCursorRect_ cursor:northEastSouthWestCursor_];
+  }
+
+  // Bottom horizontal edge.
+  if (resizability & panel::RESIZABLE_BOTTOM) {
+    bottomCursorRect_ = topCursorRect_;
+    bottomCursorRect_.origin.y = NSMinY(bounds);
+    [self addCursorRect:bottomCursorRect_ cursor:northSouthCursor_];
+  }
+
+  // Bottom right corner.
+  if (resizability & panel::RESIZABLE_BOTTOM_RIGHT) {
+    bottomRightCursorRect_ = topRightCursorRect_;
+    bottomRightCursorRect_.origin.y = NSMinY(bounds);
+    [self addCursorRect:bottomRightCursorRect_
+                 cursor:northWestSouthEastCursor_];
+  }
+
+  // Bottom left corner.
+  if (resizability & panel::RESIZABLE_BOTTOM_LEFT) {
+    bottomLeftCursorRect_ = bottomRightCursorRect_;
+    bottomLeftCursorRect_.origin.x = NSMinX(bounds);
+    [self addCursorRect:bottomLeftCursorRect_ cursor:northEastSouthWestCursor_];
+  }
 }
 @end
 
@@ -184,10 +389,6 @@ const double kWidthOfMouseResizeArea = 15.0;
   return self;
 }
 
-- (Panel*)panel {
-  return windowShim_->panel();
-}
-
 - (void)awakeFromNib {
   NSWindow* window = [self window];
 
@@ -210,13 +411,16 @@ const double kWidthOfMouseResizeArea = 15.0;
   frame.size.height = panelBounds.height();
   [window setFrame:frame display:NO];
 
-  // MacOS will turn the user-resizing to the user-dragging if the direction of
-  // the dragging is orthogonal to the direction of the arrow cursor. We do not
-  // want this since it will bypass our dragging logic. The panel window is
-  // still draggable because we track and handle the dragging in our custom way.
-  [[self window] setMovable:NO];
-
-  [self updateTrackingArea];
+  // Add a transparent overlay on top of the whole window to process mouse
+  // events - for example, user-resizing.
+  NSView* superview = [[window contentView] superview];
+  NSRect bounds = [superview bounds];
+  overlayView_.reset(
+      [[PanelResizeByMouseOverlay alloc] initWithFrame:bounds
+                                                 panel:windowShim_->panel()]);
+  // Set autoresizing behavior: glued to edges.
+  [overlayView_ setAutoresizingMask:(NSViewHeightSizable | NSViewWidthSizable)];
+  [superview addSubview:overlayView_ positioned:NSWindowAbove relativeTo:nil];
 }
 
 - (void)updateWebContentsViewFrame {
@@ -598,10 +802,6 @@ const double kWidthOfMouseResizeArea = 15.0;
   }
 
   windowShim_->panel()->OnActiveStateChanged(true);
-
-  // Make the window user-resizable when it gains the focus.
-  [[self window] setStyleMask:
-      [[self window] styleMask] | NSResizableWindowMask];
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification {
@@ -613,64 +813,10 @@ const double kWidthOfMouseResizeArea = 15.0;
     return;
 
   [self onWindowDidResignKey];
-
-  // Make the window not user-resizable when it loses the focus. This is to
-  // solve the problem that the bottom edge of the active panel does not
-  // trigger the user-resizing if this panel stacks with another inactive
-  // panel at the bottom.
-  [[self window] setStyleMask:
-      [[self window] styleMask] & ~NSResizableWindowMask];
-}
-
-- (void)windowWillStartLiveResize:(NSNotification*)notification {
-  // Check if the user-resizing is allowed for the triggering edge/corner.
-  // This is an extra safe guard because we are not able to track the mouse
-  // movement outside the window and Cocoa could trigger the user-resizing
-  // when the mouse moves a bit outside the edge/corner.
-  if (![self canResizeByMouseAtCurrentLocation])
-    return;
-  userResizing_ = YES;
-  windowShim_->panel()->OnPanelStartUserResizing();
-}
-
-- (void)windowDidEndLiveResize:(NSNotification*)notification {
-  if (!userResizing_)
-    return;
-  userResizing_ = NO;
-
-  Panel* panel = windowShim_->panel();
-  panel->OnPanelEndUserResizing();
-
-  gfx::Rect newBounds =
-      cocoa_utils::ConvertRectFromCocoaCoordinates([[self window] frame]);
-  if (windowShim_->panel()->GetBounds() == newBounds)
-    return;
-  windowShim_->set_cached_bounds_directly(newBounds);
-
-  panel->IncreaseMaxSize(newBounds.size());
-  panel->set_full_size(newBounds.size());
-
-  panel->collection()->RefreshLayout();
-}
-
-- (NSSize)windowWillResize:(NSWindow*)sender toSize:(NSSize)newSize {
-  // As an extra safe guard, we avoid the user resizing if it is deemed not to
-  // be allowed (see comment in windowWillStartLiveResize).
-  if ([[self window] inLiveResize] && !userResizing_)
-    return [[self window] frame].size;
-  return newSize;
 }
 
 - (void)windowDidResize:(NSNotification*)notification {
   Panel* panel = windowShim_->panel();
-  if (userResizing_) {
-    panel->collection()->OnPanelResizedByMouse(
-        panel,
-        cocoa_utils::ConvertRectFromCocoaCoordinates([[self window] frame]));
-  }
-
-  [self updateTrackingArea];
-
   if (![self isAnimatingBounds] ||
       panel->collection()->type() != PanelCollection::DOCKED)
     return;
@@ -826,20 +972,10 @@ const double kWidthOfMouseResizeArea = 15.0;
   [[self window] setCollectionBehavior:collectionBehavior];
 }
 
-- (void)updateTrackingArea {
-  NSView* superview = [[[self window] contentView] superview];
-
-  if (trackingArea_.get())
-    [superview removeTrackingArea:trackingArea_.get()];
-
-  trackingArea_.reset(
-          [[CrTrackingArea alloc] initWithRect:[superview bounds]
-                                       options:NSTrackingInVisibleRect |
-                                               NSTrackingMouseMoved |
-                                               NSTrackingActiveInKeyWindow
-                                         owner:superview
-                                      userInfo:nil]);
-  [superview addTrackingArea:trackingArea_.get()];
+- (void)enableResizeByMouse:(BOOL)enable {
+  if (![self isWindowLoaded])
+    return;
+  [[self window] invalidateCursorRectsForView:overlayView_];
 }
 
 - (void)showShadow:(BOOL)show {
@@ -854,46 +990,6 @@ const double kWidthOfMouseResizeArea = 15.0;
 
 - (BOOL)isMiniaturized {
   return [[self window] isMiniaturized];
-}
-
-- (BOOL)canResizeByMouseAtCurrentLocation {
-  panel::Resizability resizability = windowShim_->panel()->CanResizeByMouse();
-  NSRect frame = [[self window] frame];
-  NSPoint point = [NSEvent mouseLocation];
-
-  if (point.y < NSMinY(frame) + kWidthOfMouseResizeArea) {
-    if (point.x < NSMinX(frame) + kWidthOfMouseResizeArea &&
-        (resizability & panel::RESIZABLE_BOTTOM_LEFT) == 0) {
-      return NO;
-    }
-    if (point.x > NSMaxX(frame) - kWidthOfMouseResizeArea &&
-        (resizability & panel::RESIZABLE_BOTTOM_RIGHT) == 0) {
-      return NO;
-    }
-    if ((resizability & panel::RESIZABLE_BOTTOM) == 0)
-      return NO;
-  } else if (point.y > NSMaxY(frame) - kWidthOfMouseResizeArea) {
-    if (point.x < NSMinX(frame) + kWidthOfMouseResizeArea &&
-        (resizability & panel::RESIZABLE_TOP_LEFT) == 0) {
-      return NO;
-    }
-    if (point.x > NSMaxX(frame) - kWidthOfMouseResizeArea &&
-        (resizability & panel::RESIZABLE_TOP_RIGHT) == 0) {
-      return NO;
-    }
-    if ((resizability & panel::RESIZABLE_TOP) == 0)
-      return NO;
-  } else {
-    if (point.x < NSMinX(frame) + kWidthOfMouseResizeArea &&
-        (resizability & panel::RESIZABLE_LEFT) == 0) {
-      return NO;
-    }
-    if (point.x > NSMaxX(frame) - kWidthOfMouseResizeArea &&
-        (resizability & panel::RESIZABLE_RIGHT) == 0) {
-      return NO;
-    }
-  }
-  return YES;
 }
 
 // We have custom implementation of these because our titlebar height is custom

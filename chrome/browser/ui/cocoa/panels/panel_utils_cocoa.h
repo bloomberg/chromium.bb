@@ -12,23 +12,18 @@
 namespace cocoa_utils {
 
 // TODO(dcheng): Move elsewhere so BrowserWindowCocoa can use them too.
-// Converts a rect from the platform-independent screen coordinates (with the
+// Converts a rect from the platfrom-independent screen coordinates (with the
 // (0,0) in the top-left corner of the primary screen) to the Cocoa screen
 // coordinates (with (0,0) in the low-left corner).
 NSRect ConvertRectToCocoaCoordinates(const gfx::Rect& bounds);
 
-// Converts a rect from the Cocoa screen oordinates (with (0,0) in the low-left
-// corner) to the platform-independent screen coordinates (with the (0,0) in
-// the top-left corner of the primary screen).
-gfx::Rect ConvertRectFromCocoaCoordinates(NSRect bounds);
-
-// Converts a point from the platform-independent screen coordinates (with the
+// Converts a point from the platfrom-independent screen coordinates (with the
 // (0,0) in the top-left corner of the primary screen) to the Cocoa screen
 // coordinates (with (0,0) in the low-left corner).
 NSPoint ConvertPointToCocoaCoordinates(const gfx::Point& point);
 
 // Converts a point from the Cocoa screen coordinates (with (0,0) in the
-// low-left corner of the primary screen) to the platform-independent screen
+// low-left corner of the primary screen) to the platfrom-independent screen
 // coordinates (with the (0,0) in the top-left corner).
 gfx::Point ConvertPointFromCocoaCoordinates(NSPoint point);
 

@@ -261,6 +261,10 @@ void PanelCocoa::SetPanelAlwaysOnTop(bool on_top) {
   [controller_ updateWindowCollectionBehavior];
 }
 
+void PanelCocoa::EnableResizeByMouse(bool enable) {
+  [controller_ enableResizeByMouse:enable];
+}
+
 void PanelCocoa::UpdatePanelMinimizeRestoreButtonVisibility() {
   [controller_ updateTitleBarMinimizeRestoreButtonVisibility];
 }

@@ -626,6 +626,7 @@ void StackedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
       static_cast<Panel::AttentionMode>(Panel::USE_PANEL_ATTENTION |
                                         Panel::USE_SYSTEM_ATTENTION));
   panel->ShowShadow(false);
+  panel->EnableResizeByMouse(true);
   panel->UpdateMinimizeRestoreButtonVisibility();
   UpdatePanelCornerStyle(panel);
 }

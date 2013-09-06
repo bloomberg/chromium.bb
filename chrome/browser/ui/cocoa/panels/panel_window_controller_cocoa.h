@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/chrome_browser_window.h"
 #include "chrome/browser/ui/panels/panel.h"
-#import "ui/base/cocoa/tracking_area.h"
 
 class PanelCocoa;
 @class PanelTitlebarViewCocoa;
@@ -43,16 +42,11 @@ class PanelCocoa;
   // window over other application windows due to panels having a higher
   // priority NSWindowLevel, so we distinguish between the two scenarios.
   BOOL activationRequestedByPanel_;
-  // Is user resizing in progress?
-  BOOL userResizing_;
-  // Tracks the whole window in order to receive NSMouseMoved event.
-  ui::ScopedCrTrackingArea trackingArea_;
+  base::scoped_nsobject<NSView> overlayView_;
 }
 
 // Load the window nib and do any Cocoa-specific initialization.
 - (id)initWithPanel:(PanelCocoa*)window;
-
-- (Panel*)panel;
 
 - (void)webContentsInserted:(content::WebContents*)contents;
 - (void)webContentsDetached:(content::WebContents*)contents;
@@ -143,9 +137,8 @@ class PanelCocoa;
 // Adjusts NSWindowCollectionBehavior based on whether panel is always on top.
 - (void)updateWindowCollectionBehavior;
 
-// Updates the tracking area per the window size change. This is needed in
-// order to receive the NSMouseMoved notification.
-- (void)updateTrackingArea;
+// Turns on user-resizable corners/sides indications and enables live resize.
+- (void)enableResizeByMouse:(BOOL)enable;
 
 // Turns on/off shadow effect around the window shape.
 - (void)showShadow:(BOOL)show;
@@ -154,10 +147,6 @@ class PanelCocoa;
 - (void)miniaturize;
 // Returns true if the window is minimized to the dock.
 - (BOOL)isMiniaturized;
-
-// Returns true if the user-resizing is allowed for the edge/corner close to
-// current mouse location.
-- (BOOL)canResizeByMouseAtCurrentLocation;
 
 - (NSRect)frameRectForContentRect:(NSRect)contentRect;
 - (NSRect)contentRectForFrameRect:(NSRect)frameRect;
