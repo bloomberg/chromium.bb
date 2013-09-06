@@ -176,7 +176,9 @@ FakeDriveService::FakeDriveService()
       directory_load_count_(0),
       about_resource_load_count_(0),
       app_list_load_count_(0),
-      offline_(false) {
+      blocked_resource_list_load_count_(0),
+      offline_(false),
+      never_return_all_resource_list_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -327,6 +329,11 @@ CancelCallback FakeDriveService::GetAllResourceList(
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  if (never_return_all_resource_list_) {
+    ++blocked_resource_list_load_count_;
+    return CancelCallback();
+  }
 
   GetResourceListInternal(0,  // start changestamp
                           std::string(),  // empty search query

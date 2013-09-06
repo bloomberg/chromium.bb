@@ -57,8 +57,7 @@ FileError GetLocallyStoredResourceEntry(
     const base::FilePath& file_path,
     ResourceEntry* entry) {
   std::string local_id;
-  FileError error =
-      resource_metadata->GetIdByPath(file_path, &local_id);
+  FileError error = resource_metadata->GetIdByPath(file_path, &local_id);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -647,19 +646,26 @@ void FileSystem::GetResourceEntryByPathAfterGetEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error == FILE_ERROR_OK) {
-    callback.Run(error, entry.Pass());
-    return;
+  if (error == FILE_ERROR_NOT_FOUND) {
+    // If the information about the path is not in the local ResourceMetadata,
+    // try fetching information of the directory and retry.
+    //
+    // Note: this forms mutual recursion between GetResourceEntryByPath and
+    // LoadDirectoryIfNeeded, because directory loading requires the existence
+    // of directory entry itself. The recursion terminates because we always go
+    // up the hierarchy by .DirName() bounded under the Drive root path.
+    if (util::GetDriveGrandRootPath().IsParent(file_path)) {
+      LoadDirectoryIfNeeded(
+          file_path.DirName(),
+          base::Bind(&FileSystem::GetResourceEntryByPathAfterLoad,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     file_path,
+                     callback));
+      return;
+    }
   }
 
-  // If the information about the path is not in the local ResourceMetadata,
-  // try fetching information of the directory and retry.
-  LoadDirectoryIfNeeded(
-      file_path.DirName(),
-      base::Bind(&FileSystem::GetResourceEntryByPathAfterLoad,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
-                 callback));
+  callback.Run(error, entry.Pass());
 }
 
 void FileSystem::GetResourceEntryByPathAfterLoad(
@@ -708,9 +714,7 @@ void FileSystem::LoadDirectoryIfNeeded(const base::FilePath& directory_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // ResourceMetadata may know about the entry even if the resource
-  // metadata is not yet fully loaded.
-  resource_metadata_->GetResourceEntryByPathOnUIThread(
+  GetResourceEntryByPath(
       directory_path,
       base::Bind(&FileSystem::LoadDirectoryIfNeededAfterGetEntry,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -726,12 +730,8 @@ void FileSystem::LoadDirectoryIfNeededAfterGetEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != FILE_ERROR_OK ||
-      entry->resource_id() == util::kDriveOtherDirSpecialResourceId) {
-    // If we don't know about the directory, or it is the "drive/other"
-    // directory that has to gather all orphan entries, start loading full
-    // resource list.
-    change_list_loader_->LoadIfNeeded(internal::DirectoryFetchInfo(), callback);
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
     return;
   }
 

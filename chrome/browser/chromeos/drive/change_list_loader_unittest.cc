@@ -69,35 +69,6 @@ class TestChangeListLoaderObserver : public ChangeListLoaderObserver {
   DISALLOW_COPY_AND_ASSIGN(TestChangeListLoaderObserver);
 };
 
-class TestDriveService : public FakeDriveService {
- public:
-  TestDriveService() : never_return_all_resource_list_(false),
-                       blocked_call_count_(0) {}
-
-  void set_never_return_all_resource_list(bool value) {
-    never_return_all_resource_list_ = value;
-  }
-
-  int blocked_call_count() const { return blocked_call_count_; }
-
-  // FakeDriveService override.
-  virtual google_apis::CancelCallback GetAllResourceList(
-      const google_apis::GetResourceListCallback& callback) OVERRIDE {
-    if (never_return_all_resource_list_) {
-      ++blocked_call_count_;
-      return google_apis::CancelCallback();
-    }
-    return FakeDriveService::GetAllResourceList(callback);
-  }
-
- private:
-  // GetAllResourceList never returns result when this is set to true.
-  // Used to emulate the real server's slowness.
-  bool never_return_all_resource_list_;
-
-  int blocked_call_count_;  // Number of blocked method calls.
-};
-
 class ChangeListLoaderTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
@@ -105,7 +76,7 @@ class ChangeListLoaderTest : public testing::Test {
     pref_service_.reset(new TestingPrefServiceSimple);
     test_util::RegisterDrivePrefs(pref_service_->registry());
 
-    drive_service_.reset(new TestDriveService);
+    drive_service_.reset(new FakeDriveService);
     ASSERT_TRUE(drive_service_->LoadResourceListForWapi(
         "gdata/root_feed.json"));
     ASSERT_TRUE(drive_service_->LoadAccountMetadataForWapi(
@@ -154,7 +125,7 @@ class ChangeListLoaderTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingPrefServiceSimple> pref_service_;
-  scoped_ptr<TestDriveService> drive_service_;
+  scoped_ptr<FakeDriveService> drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<ResourceMetadataStorage,
              test_util::DestroyHelperForTests> metadata_storage_;
@@ -276,7 +247,7 @@ TEST_F(ChangeListLoaderTest, LoadIfNeeded_MyDrive) {
   observer.clear_changed_directories();
 
   // GetAllResourceList() was called.
-  EXPECT_EQ(1, drive_service_->blocked_call_count());
+  EXPECT_EQ(1, drive_service_->blocked_resource_list_load_count());
 
   // My Drive is present in the local metadata, but its child is not.
   ResourceEntry entry;

@@ -40,6 +40,12 @@ class FakeDriveService : public DriveServiceInterface {
   // when offline. By default the offline state is false.
   void set_offline(bool offline) { offline_ = offline; }
 
+  // GetAllResourceList never returns result when this is set to true.
+  // Used to emulate the real server's slowness.
+  void set_never_return_all_resource_list(bool value) {
+    never_return_all_resource_list_ = value;
+  }
+
   // Changes the default max results returned from GetResourceList().
   // By default, it's set to 0, which is unlimited.
   void set_default_max_results(int default_max_results) {
@@ -80,6 +86,12 @@ class FakeDriveService : public DriveServiceInterface {
   // Returns the number of times the app list is successfully loaded by
   // GetAppList().
   int app_list_load_count() const { return app_list_load_count_; }
+
+  // Returns the number of times GetAllResourceList are blocked due to
+  // set_never_return_all_resource_list().
+  int blocked_resource_list_load_count() const {
+    return blocked_resource_list_load_count_;
+  }
 
   // Returns the file path whose request is cancelled just before this method
   // invocation.
@@ -300,7 +312,9 @@ class FakeDriveService : public DriveServiceInterface {
   int directory_load_count_;
   int about_resource_load_count_;
   int app_list_load_count_;
+  int blocked_resource_list_load_count_;
   bool offline_;
+  bool never_return_all_resource_list_;
   base::FilePath last_cancelled_file_;
   GURL share_url_base_;
 

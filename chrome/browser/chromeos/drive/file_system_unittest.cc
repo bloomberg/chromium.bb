@@ -364,13 +364,23 @@ TEST_F(FileSystemTest, GetMyDriveRoot) {
 }
 
 TEST_F(FileSystemTest, GetExistingFile) {
-  const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+  // Simulate the situation that full feed fetching takes very long time,
+  // to test the recursive "fast fetch" feature is properly working.
+  fake_drive_service_->set_never_return_all_resource_list(true);
+
+  const base::FilePath kFilePath(
+      FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntryByPathSync(kFilePath);
   ASSERT_TRUE(entry);
-  EXPECT_EQ("file:2_file_resource_id", entry->resource_id());
+  EXPECT_EQ("file:subdirectory_file_1_id", entry->resource_id());
 
-  EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
-  EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
+  // One server changestamp check (about_resource), three directory load for
+  // "drive", "drive/root", and "drive/root/Directory 1", and one background
+  // full resource list loading. Note that the directory load for "drive" is
+  // special and resorts to about_resource.
+  EXPECT_EQ(2, fake_drive_service_->about_resource_load_count());
+  EXPECT_EQ(2, fake_drive_service_->directory_load_count());
+  EXPECT_EQ(1, fake_drive_service_->blocked_resource_list_load_count());
 }
 
 TEST_F(FileSystemTest, GetExistingDocument) {
@@ -409,6 +419,9 @@ TEST_F(FileSystemTest, GetInSubSubdir) {
 }
 
 TEST_F(FileSystemTest, GetOrphanFile) {
+  ASSERT_TRUE(LoadFullResourceList());
+
+  // Entry without parents are placed under "drive/other".
   const base::FilePath kFilePath(
       FILE_PATH_LITERAL("drive/other/Orphan File 1.txt"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntryByPathSync(kFilePath);
