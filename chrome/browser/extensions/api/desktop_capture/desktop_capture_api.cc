@@ -90,7 +90,7 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
     // Currently DesktopMediaPicker is implemented only for platforms that
     // use Views.
 #if defined(TOOLKIT_VIEWS)
-    model.reset(new DesktopMediaPickerModel(
+    model.reset(new DesktopMediaPickerModelImpl(
         screen_capturer.Pass(), window_capturer.Pass()));
     picker_ = DesktopMediaPicker::Create();
 #else

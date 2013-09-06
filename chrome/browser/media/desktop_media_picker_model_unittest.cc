@@ -129,7 +129,7 @@ class DesktopMediaPickerModelTest : public testing::Test {
 
   void CreateWithDefaultCapturers() {
     window_capturer_ = new FakeWindowCapturer();
-    model_.reset(new DesktopMediaPickerModel(
+    model_.reset(new DesktopMediaPickerModelImpl(
         scoped_ptr<webrtc::ScreenCapturer>(new FakeScreenCapturer()),
         scoped_ptr<webrtc::WindowCapturer>(window_capturer_)));
 
@@ -144,7 +144,7 @@ class DesktopMediaPickerModelTest : public testing::Test {
   // Owned by |model_|;
   FakeWindowCapturer* window_capturer_;
 
-  scoped_ptr<DesktopMediaPickerModel> model_;
+  scoped_ptr<DesktopMediaPickerModelImpl> model_;
 
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -193,7 +193,7 @@ TEST_F(DesktopMediaPickerModelTest, InitialSourceList) {
 
 TEST_F(DesktopMediaPickerModelTest, WindowsOnly) {
   window_capturer_ = new FakeWindowCapturer();
-  model_.reset(new DesktopMediaPickerModel(
+  model_.reset(new DesktopMediaPickerModelImpl(
       scoped_ptr<webrtc::ScreenCapturer>(),
       scoped_ptr<webrtc::WindowCapturer>(window_capturer_)));
 
@@ -219,7 +219,7 @@ TEST_F(DesktopMediaPickerModelTest, WindowsOnly) {
 }
 
 TEST_F(DesktopMediaPickerModelTest, ScreenOnly) {
-  model_.reset(new DesktopMediaPickerModel(
+  model_.reset(new DesktopMediaPickerModelImpl(
       scoped_ptr<webrtc::ScreenCapturer>(new FakeScreenCapturer),
       scoped_ptr<webrtc::WindowCapturer>()));
 

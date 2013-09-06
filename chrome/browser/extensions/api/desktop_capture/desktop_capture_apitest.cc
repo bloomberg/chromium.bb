@@ -84,8 +84,8 @@ class FakeDesktopMediaPickerFactory :
       EXPECT_EQ(expectations_.front().windows, !!window_capturer.get());
     }
     return scoped_ptr<DesktopMediaPickerModel>(
-        new DesktopMediaPickerModel(screen_capturer.Pass(),
-                                    window_capturer.Pass()));
+      new DesktopMediaPickerModelImpl(screen_capturer.Pass(),
+                                      window_capturer.Pass()));
   }
   virtual scoped_ptr<DesktopMediaPicker> CreatePicker() OVERRIDE {
     content::DesktopMediaID next_source;
