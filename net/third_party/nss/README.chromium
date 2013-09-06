@@ -107,8 +107,9 @@ Patches:
     libraries at run time.
     patches/aesgcmchromium.patch
 
-  * On Windows, prefer to generate SHA-1 signatures for TLS 1.2 client
-    authentication if the client private key is in a CAPI service provider.
+  * Prefer to generate SHA-1 signatures for TLS 1.2 client authentication if
+    the client private key is in a CAPI service provider on Windows or if the
+    client private key is a 1024-bit RSA or DSA key.
     patches/tls12backuphash.patch
 
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read

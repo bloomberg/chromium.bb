@@ -3934,7 +3934,6 @@ ssl3_InitHandshakeHashes(sslSocket *ss)
 		return SECFailure;
 	    }
 
-#ifdef _WIN32
 	    /* A backup SHA-1 hash for a potential client auth signature. */
 	    if (!ss->sec.isServer) {
 		ss->ssl3.hs.md5 = PK11_CreateDigestContext(SEC_OID_SHA1);
@@ -3948,7 +3947,6 @@ ssl3_InitHandshakeHashes(sslSocket *ss)
 		    return SECFailure;
 		}
 	    }
-#endif
 	} else {
 	    /* Both ss->ssl3.hs.md5 and ss->ssl3.hs.sha should be NULL or
 	     * created successfully. */
@@ -7049,14 +7047,40 @@ ssl3_HandleCertificateRequest(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
 
 	    if (isTLS12 && ss->ssl3.hs.md5) {
 		PRBool need_backup_hash = PR_FALSE;
+		PRBool prefer_sha1 = PR_FALSE;
 #ifdef _WIN32
 		/* If the key is in CAPI, assume conservatively that the CAPI
 		 * service provider may be unable to sign SHA-256 hashes.
-		 * Use SHA-1 if the server supports it. */
+		 */
 		if (ss->ssl3.platformClientKey->dwKeySpec !=
 		    CERT_NCRYPT_KEY_SPEC) {
+		    /* CAPI only supports RSA and DSA signatures, so we don't
+		     * need to check the key type. */
+		    prefer_sha1 = PR_TRUE;
+		}
+#endif  /* _WIN32 */
+		/* If the key is a 1024-bit RSA or DSA key, assume
+		 * conservatively that it may be unable to sign SHA-256
+		 * hashes. This is the case for older Estonian ID cards that
+		 * have 1024-bit RSA keys. In FIPS 186-2 and older, DSA key
+		 * size is at most 1024 bits and the hash function must be
+		 * SHA-1.
+		 */
+		if (!prefer_sha1) {
+		    SECKEYPublicKey *pubk =
+			CERT_ExtractPublicKey(ss->ssl3.clientCertificate);
+		    if (pubk == NULL) {
+			errCode = SSL_ERROR_EXTRACT_PUBLIC_KEY_FAILURE;
+ 			goto loser;
+		    }
+		    if (pubk->keyType == rsaKey || pubk->keyType == dsaKey) {
+			prefer_sha1 = SECKEY_PublicKeyStrength(pubk) <= 128;
+		    }
+		    SECKEY_DestroyPublicKey(pubk);
+		}
+		/* Use SHA-1 if the server supports it. */
+		if (prefer_sha1) {
 		    for (i = 0; i < algorithms.len; i += 2) {
-			/* CAPI only supports RSA and DSA signatures. */
 			if (algorithms.data[i] == tls_hash_sha1 &&
 			    (algorithms.data[i+1] == tls_sig_rsa ||
 			     algorithms.data[i+1] == tls_sig_dsa)) {
@@ -7065,7 +7089,6 @@ ssl3_HandleCertificateRequest(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
 			}
 		    }
 		}
-#endif  /* _WIN32 */
 		if (!need_backup_hash) {
 		    PK11_DestroyContext(ss->ssl3.hs.md5, PR_TRUE);
 		    ss->ssl3.hs.md5 = NULL;
