@@ -581,6 +581,45 @@ TEST_F(WebFrameTest, NoWideViewportIgnoresPageViewportWidthButAccountsScale)
     EXPECT_EQ(viewportHeight / 2, webViewImpl()->mainFrameImpl()->frameView()->contentsSize().height());
 }
 
+TEST_F(WebFrameTest, WideViewportSetsTo980WithoutViewportTag)
+{
+    registerMockedHttpURLLoad("no_viewport_tag.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "no_viewport_tag.html", true, 0, &client);
+    m_webView->settings()->setSupportDeprecatedTargetDensityDPI(true);
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setUseWideViewport(true);
+    m_webView->settings()->setViewportEnabled(true);
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+
+    EXPECT_EQ(980, webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
+    EXPECT_EQ(980.0 / viewportWidth * viewportHeight, webViewImpl()->mainFrameImpl()->frameView()->contentsSize().height());
+}
+
+TEST_F(WebFrameTest, NoWideViewportAndHeightInMeta)
+{
+    registerMockedHttpURLLoad("viewport-height-1000.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "viewport-height-1000.html", true, 0, &client);
+    m_webView->settings()->setSupportDeprecatedTargetDensityDPI(true);
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setUseWideViewport(false);
+    m_webView->settings()->setViewportEnabled(true);
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+
+    EXPECT_EQ(viewportWidth, webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
+}
+
 TEST_F(WebFrameTest, WideViewportSetsTo980WithAutoWidth)
 {
     registerMockedHttpURLLoad("viewport-2x-initial-scale.html");

@@ -136,12 +136,12 @@ void PageScaleConstraintsSet::adjustPageDefinedConstraintsForAndroidWebView(cons
     m_pageDefinedConstraints.maximumScale *= targetDensityDPIFactor;
 
     float adjustedLayoutSizeWidth = m_pageDefinedConstraints.layoutSize.width();
-    if (useWideViewport && arguments.maxWidth.type() == ExtendToZoom && arguments.zoom != 1.0f)
+    if (useWideViewport && (arguments.maxWidth.isAuto() || arguments.maxWidth.type() == ExtendToZoom) && arguments.zoom != 1.0f)
         adjustedLayoutSizeWidth = layoutFallbackWidth;
     else {
         if (!useWideViewport)
             adjustedLayoutSizeWidth = getLayoutWidthForNonWideViewport(viewSize, initialScale);
-        if (!useWideViewport || arguments.maxWidth.type() == ExtendToZoom || arguments.maxWidth.isViewportPercentage())
+        if (!useWideViewport || (arguments.maxWidth.isAuto() || arguments.maxWidth.type() == ExtendToZoom) || arguments.maxWidth.isViewportPercentage())
             adjustedLayoutSizeWidth /= targetDensityDPIFactor;
     }
 
