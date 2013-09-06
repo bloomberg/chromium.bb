@@ -42,9 +42,9 @@ static const int kDefaultSampleRate = 48000;
 // hence surround devices are not stored in the list.
 static const char* kInvalidAudioInputDevices[] = {
   "default",
+  "dmix",
   "null",
   "pulse",
-  "dmix",
   "surround",
 };
 
@@ -105,7 +105,13 @@ void AudioManagerLinux::ShowAudioInputSettings() {
 void AudioManagerLinux::GetAudioInputDeviceNames(
     media::AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
-  GetAlsaAudioInputDevices(device_names);
+  GetAlsaAudioDevices(kStreamCapture, device_names);
+}
+
+void AudioManagerLinux::GetAudioOutputDeviceNames(
+    media::AudioDeviceNames* device_names) {
+  DCHECK(device_names->empty());
+  GetAlsaAudioDevices(kStreamPlayback, device_names);
 }
 
 AudioParameters AudioManagerLinux::GetInputStreamParameters(
@@ -117,7 +123,8 @@ AudioParameters AudioManagerLinux::GetInputStreamParameters(
       kDefaultSampleRate, 16, kDefaultInputBufferSize);
 }
 
-void AudioManagerLinux::GetAlsaAudioInputDevices(
+void AudioManagerLinux::GetAlsaAudioDevices(
+    StreamType type,
     media::AudioDeviceNames* device_names) {
   // Constants specified by the ALSA API for device hints.
   static const char kPcmInterfaceName[] = "pcm";
@@ -128,37 +135,40 @@ void AudioManagerLinux::GetAlsaAudioInputDevices(
     void** hints = NULL;
     int error = wrapper_->DeviceNameHint(card, kPcmInterfaceName, &hints);
     if (!error) {
-      GetAlsaDevicesInfo(hints, device_names);
+      GetAlsaDevicesInfo(type, hints, device_names);
 
       // Destroy the hints now that we're done with it.
       wrapper_->DeviceNameFreeHint(hints);
     } else {
-      DLOG(WARNING) << "GetAudioInputDevices: unable to get device hints: "
+      DLOG(WARNING) << "GetAlsaAudioDevices: unable to get device hints: "
                     << wrapper_->StrError(error);
     }
   }
 }
 
 void AudioManagerLinux::GetAlsaDevicesInfo(
-    void** hints, media::AudioDeviceNames* device_names) {
+    AudioManagerLinux::StreamType type,
+    void** hints,
+    media::AudioDeviceNames* device_names) {
   static const char kIoHintName[] = "IOID";
   static const char kNameHintName[] = "NAME";
   static const char kDescriptionHintName[] = "DESC";
-  static const char kOutputDevice[] = "Output";
+
+  const char* unwanted_device_type = UnwantedDeviceTypeWhenEnumerating(type);
 
   for (void** hint_iter = hints; *hint_iter != NULL; hint_iter++) {
-    // Only examine devices that are input capable.  Valid values are
+    // Only examine devices of the right type.  Valid values are
     // "Input", "Output", and NULL which means both input and output.
     scoped_ptr_malloc<char> io(wrapper_->DeviceNameGetHint(*hint_iter,
                                                            kIoHintName));
-    if (io != NULL && strcmp(kOutputDevice, io.get()) == 0)
+    if (io != NULL && strcmp(unwanted_device_type, io.get()) == 0)
       continue;
 
-    // Found an input device, prepend the default device since we always want
-    // it to be on the top of the list for all platforms. And there is no
-    // duplicate counting here since it is only done if the list is still empty.
-    // Note, pulse has exclusively opened the default device, so we must open
-    // the device via the "default" moniker.
+    // Found a device, prepend the default device since we always want
+    // it to be on the top of the list for all platforms. And there is
+    // no duplicate counting here since it is only done if the list is
+    // still empty.  Note, pulse has exclusively opened the default
+    // device, so we must open the device via the "default" moniker.
     if (device_names->empty()) {
       device_names->push_front(media::AudioDeviceName(
           AudioManagerBase::kDefaultDeviceName,
@@ -170,7 +180,7 @@ void AudioManagerLinux::GetAlsaDevicesInfo(
         wrapper_->DeviceNameGetHint(*hint_iter, kNameHintName));
 
     // Find out if the device is available.
-    if (IsAlsaDeviceAvailable(unique_device_name.get())) {
+    if (IsAlsaDeviceAvailable(type, unique_device_name.get())) {
       // Get the description for the device.
       scoped_ptr_malloc<char> desc(wrapper_->DeviceNameGetHint(
           *hint_iter, kDescriptionHintName));
@@ -196,25 +206,46 @@ void AudioManagerLinux::GetAlsaDevicesInfo(
   }
 }
 
-bool AudioManagerLinux::IsAlsaDeviceAvailable(const char* device_name) {
+// static
+bool AudioManagerLinux::IsAlsaDeviceAvailable(
+    AudioManagerLinux::StreamType type,
+    const char* device_name) {
   if (!device_name)
     return false;
 
-  // Check if the device is in the list of invalid devices.
-  for (size_t i = 0; i < arraysize(kInvalidAudioInputDevices); ++i) {
-    if (strncmp(kInvalidAudioInputDevices[i], device_name,
-                strlen(kInvalidAudioInputDevices[i])) == 0)
-      return false;
+  // We do prefix matches on the device name to see whether to include
+  // it or not.
+  if (type == kStreamCapture) {
+    // Check if the device is in the list of invalid devices.
+    for (size_t i = 0; i < arraysize(kInvalidAudioInputDevices); ++i) {
+      if (strncmp(kInvalidAudioInputDevices[i], device_name,
+                  strlen(kInvalidAudioInputDevices[i])) == 0)
+        return false;
+    }
+    return true;
+  } else {
+    DCHECK_EQ(kStreamPlayback, type);
+    // We prefer the device type that maps straight to hardware but
+    // goes through software conversion if needed (e.g. incompatible
+    // sample rate).
+    // TODO(joi): Should we prefer "hw" instead?
+    static const char kDeviceTypeDesired[] = "plughw";
+    return strncmp(kDeviceTypeDesired,
+                   device_name,
+                   arraysize(kDeviceTypeDesired) - 1) == 0;
   }
-
-  return true;
 }
 
-bool AudioManagerLinux::HasAnyAlsaAudioDevice(StreamType stream) {
+// static
+const char* AudioManagerLinux::UnwantedDeviceTypeWhenEnumerating(
+    AudioManagerLinux::StreamType wanted_type) {
+  return wanted_type == kStreamPlayback ? "Input" : "Output";
+}
+
+bool AudioManagerLinux::HasAnyAlsaAudioDevice(
+    AudioManagerLinux::StreamType stream) {
   static const char kPcmInterfaceName[] = "pcm";
   static const char kIoHintName[] = "IOID";
-  const char* kNotWantedDevice =
-      (stream == kStreamPlayback ? "Input" : "Output");
   void** hints = NULL;
   bool has_device = false;
   int card = -1;
@@ -230,7 +261,8 @@ bool AudioManagerLinux::HasAnyAlsaAudioDevice(StreamType stream) {
         // "Input", "Output", and NULL which means both input and output.
         scoped_ptr_malloc<char> io(wrapper_->DeviceNameGetHint(*hint_iter,
                                                                kIoHintName));
-        if (io != NULL && strcmp(kNotWantedDevice, io.get()) == 0)
+        const char* unwanted_type = UnwantedDeviceTypeWhenEnumerating(stream);
+        if (io != NULL && strcmp(unwanted_type, io.get()) == 0)
           continue;  // Wrong type, skip the device.
 
         // Found an input device.

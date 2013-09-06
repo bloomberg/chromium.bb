@@ -7,21 +7,19 @@
 #include "media/audio/audio_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_LINUX)
+#include "media/audio/linux/audio_manager_linux.h"
+#endif  // defined(OS_LINUX)
+
 #if defined(USE_PULSEAUDIO)
 #include "media/audio/pulse/audio_manager_pulse.h"
-#endif
+#endif  // defined(USE_PULSEAUDIO)
 
 namespace media {
 
-// TODO(joi): Remove guards once implemented for all platforms.
-TEST(AudioManagerTest, GetAudioOutputDeviceNames) {
-#if defined(USE_PULSEAUDIO)
-  scoped_ptr<AudioManager> audio_manager_pulse(AudioManagerPulse::Create());
-  if (!audio_manager_pulse)
-    return;
-
+void GetAudioOutputDeviceNamesImpl(AudioManager* audio_manager) {
   AudioDeviceNames device_names;
-  audio_manager_pulse->GetAudioOutputDeviceNames(&device_names);
+  audio_manager->GetAudioOutputDeviceNames(&device_names);
 
   VLOG(2) << "Got " << device_names.size() << " audio output devices.";
   for (AudioDeviceNames::iterator it = device_names.begin();
@@ -31,7 +29,26 @@ TEST(AudioManagerTest, GetAudioOutputDeviceNames) {
     EXPECT_FALSE(it->device_name.empty());
     VLOG(2) << "Device ID(" << it->unique_id << "), label: " << it->device_name;
   }
+}
+
+TEST(AudioManagerTest, GetAudioOutputDeviceNames) {
+#if defined(USE_PULSEAUDIO)
+  {
+    VLOG(2) << "Testing AudioManagerPulse.";
+    scoped_ptr<AudioManager> pulse_audio_manager(AudioManagerPulse::Create());
+    if (pulse_audio_manager.get())
+      GetAudioOutputDeviceNamesImpl(pulse_audio_manager.get());
+    else
+      LOG(WARNING) << "No pulseaudio on this system.";
+  }
 #endif  // defined(USE_PULSEAUDIO)
+#if defined(USE_ALSA)
+  {
+    VLOG(2) << "Testing AudioManagerLinux.";
+    scoped_ptr<AudioManager> alsa_audio_manager(new AudioManagerLinux());
+    GetAudioOutputDeviceNamesImpl(alsa_audio_manager.get());
+  }
+#endif  // defined(USE_ALSA)
 }
 
 }  // namespace media

@@ -1042,6 +1042,11 @@
             'base/media_file_checker_unittest.cc',
           ],
         }],
+        ['use_alsa==1', {
+          'defines': [
+            'USE_ALSA',
+          ],
+        }],
         ['use_pulseaudio==1', {
           'defines': [
             'USE_PULSEAUDIO',
