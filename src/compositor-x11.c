@@ -160,7 +160,7 @@ x11_compositor_get_keymap(struct x11_compositor *c)
 static uint32_t
 get_xkb_mod_mask(struct x11_compositor *c, uint32_t in)
 {
-	struct weston_xkb_info *info = &c->core_seat.xkb_info;
+	struct weston_xkb_info *info = c->core_seat.xkb_info;
 	uint32_t ret = 0;
 
 	if ((in & ShiftMask) && info->shift_mod != XKB_MOD_INVALID)
