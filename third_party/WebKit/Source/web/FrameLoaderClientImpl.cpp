@@ -326,18 +326,10 @@ void FrameLoaderClientImpl::dispatchDidFinishDocumentLoad()
         m_webFrame->client()->didFinishDocumentLoad(m_webFrame);
 }
 
-void FrameLoaderClientImpl::dispatchDidLoadResourceFromMemoryCache(
-    DocumentLoader* loader,
-    const ResourceRequest& request,
-    const ResourceResponse& response,
-    int length)
+void FrameLoaderClientImpl::dispatchDidLoadResourceFromMemoryCache(const ResourceRequest& request, const ResourceResponse& response)
 {
-    if (m_webFrame->client()) {
-        WrappedResourceRequest webreq(request);
-        WrappedResourceResponse webresp(response);
-        m_webFrame->client()->didLoadResourceFromMemoryCache(
-            m_webFrame, webreq, webresp);
-    }
+    if (m_webFrame->client())
+        m_webFrame->client()->didLoadResourceFromMemoryCache(m_webFrame, WrappedResourceRequest(request), WrappedResourceResponse(response));
 }
 
 void FrameLoaderClientImpl::dispatchDidHandleOnloadEvents()

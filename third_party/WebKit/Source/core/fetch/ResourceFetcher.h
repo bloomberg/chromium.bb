@@ -81,6 +81,8 @@ public:
     using RefCounted<ResourceFetcher>::ref;
     using RefCounted<ResourceFetcher>::deref;
 
+    unsigned long fetchSynchronously(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>&);
+
     ResourcePtr<ImageResource> fetchImage(FetchRequest&);
     ResourcePtr<CSSStyleSheetResource> fetchCSSStyleSheet(FetchRequest&);
     ResourcePtr<CSSStyleSheetResource> fetchUserCSSStyleSheet(FetchRequest&);

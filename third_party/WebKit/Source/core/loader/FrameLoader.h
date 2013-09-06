@@ -94,9 +94,6 @@ public:
     void reload(ReloadPolicy = NormalReload, const KURL& overrideURL = KURL(), const String& overrideEncoding = String());
     void loadHistoryItem(HistoryItem*); // The entry point for all back/forward loads
 
-    // FIXME: This doesn't really belong here, since we don't load Frames synchronously.
-    unsigned long loadResourceSynchronously(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
-
     HistoryItem* requestedHistoryItem() const { return m_requestedHistoryItem.get(); }
 
     static void reportLocalLoadFailed(Frame*, const String& url);
@@ -136,8 +133,6 @@ public:
     const ResourceRequest& originalRequest() const;
     void receivedMainResourceError(const ResourceError&);
 
-    bool willLoadMediaElementURL(KURL&);
-
     void handleFallbackContent();
 
     bool isHostedByObjectElement() const;
@@ -154,8 +149,6 @@ public:
 
     void didLayout(LayoutMilestones);
     void didFirstLayout();
-
-    void loadedResourceFromMemoryCache(Resource*);
 
     void checkLoadComplete(DocumentLoader*);
     void checkLoadComplete();
@@ -256,8 +249,6 @@ private:
     // Calls continueLoadAfterNavigationPolicy
     void loadWithNavigationAction(const ResourceRequest&, const NavigationAction&,
         FrameLoadType, PassRefPtr<FormState>, const SubstituteData&, const String& overrideEncoding = String());
-
-    void requestFromDelegate(ResourceRequest&, unsigned long& identifier, ResourceError&);
 
     void detachChildren();
     void closeAndRemoveChild(Frame*);

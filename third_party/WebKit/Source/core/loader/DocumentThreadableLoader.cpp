@@ -450,7 +450,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
             m_client->didFail(error);
             return;
         }
-        identifier = frame->loader()->loadResourceSynchronously(request, m_options.allowCredentials, error, response, data);
+        identifier = m_document->fetcher()->fetchSynchronously(request, m_options.allowCredentials, error, response, data);
     }
 
     InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(m_document, identifier, m_client);

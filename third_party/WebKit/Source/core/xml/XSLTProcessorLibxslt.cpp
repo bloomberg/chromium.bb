@@ -104,7 +104,7 @@ static xmlDocPtr docLoaderFunc(const xmlChar* uri,
 
         bool requestAllowed = globalResourceFetcher->frame() && globalResourceFetcher->document()->securityOrigin()->canRequest(url);
         if (requestAllowed) {
-            globalResourceFetcher->frame()->loader()->loadResourceSynchronously(url, AllowStoredCredentials, error, response, data);
+            globalResourceFetcher->fetchSynchronously(url, AllowStoredCredentials, error, response, data);
             requestAllowed = globalResourceFetcher->document()->securityOrigin()->canRequest(response.url());
         }
         if (!requestAllowed) {

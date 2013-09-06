@@ -61,6 +61,10 @@ void FetchContext::dispatchWillSendRequest(DocumentLoader*, unsigned long, Resou
 {
 }
 
+void FetchContext::dispatchDidLoadResourceFromMemoryCache(const ResourceRequest&, const ResourceResponse&)
+{
+}
+
 void FetchContext::dispatchDidReceiveResponse(DocumentLoader*, unsigned long, const ResourceResponse&, ResourceLoader*)
 {
 }

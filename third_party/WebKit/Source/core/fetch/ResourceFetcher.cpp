@@ -37,6 +37,7 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/RawResource.h"
+#include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceLoaderSet.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/fetch/ShaderResource.h"
@@ -208,6 +209,22 @@ FetchContext& ResourceFetcher::context() const
     if (Frame* frame = this->frame())
         return frame->fetchContext();
     return FetchContext::nullInstance();
+}
+
+unsigned long ResourceFetcher::fetchSynchronously(const ResourceRequest& passedRequest, StoredCredentials storedCredentials, ResourceError& error, ResourceResponse& response, Vector<char>& data)
+{
+    ASSERT(document());
+    ResourceRequest request(passedRequest);
+    request.setTimeoutInterval(10);
+    addAdditionalRequestHeaders(request, Resource::Raw);
+
+    unsigned long identifier = createUniqueIdentifier();
+    context().dispatchWillSendRequest(m_documentLoader, identifier, request, ResourceResponse());
+    documentLoader()->applicationCacheHost()->willStartLoadingSynchronously(request);
+    ResourceLoader::loadResourceSynchronously(request, storedCredentials, error, response, data);
+    int encodedDataLength = response.resourceLoadInfo() ? static_cast<int>(response.resourceLoadInfo()->encodedDataLength) : -1;
+    context().sendRemainingDelegateMessages(m_documentLoader, identifier, response, data.data(), data.size(), encodedDataLength, error);
+    return identifier;
 }
 
 ResourcePtr<ImageResource> ResourceFetcher::fetchImage(FetchRequest& request)
@@ -980,11 +997,18 @@ void ResourceFetcher::performPostLoadActions()
 
 void ResourceFetcher::notifyLoadedFromMemoryCache(Resource* resource)
 {
-    if (!frame() || resource->status() != Resource::Cached || m_validatedURLs.contains(resource->url()))
+    if (!frame() || !frame()->page() || resource->status() != Resource::Cached || m_validatedURLs.contains(resource->url()))
+        return;
+    if (!resource->shouldSendResourceLoadCallbacks())
         return;
 
-    // FIXME: If the WebKit client changes or cancels the request, WebCore does not respect this and continues the load.
-    frame()->loader()->loadedResourceFromMemoryCache(resource);
+    ResourceRequest request(resource->url());
+    unsigned long identifier = createUniqueIdentifier();
+    context().dispatchDidLoadResourceFromMemoryCache(request, resource->response());
+    // FIXME: If willSendRequest changes the request, we don't respect it.
+    willSendRequest(resource, request, ResourceResponse(), resource->options());
+    InspectorInstrumentation::markResourceAsCached(frame()->page(), identifier);
+    context().sendRemainingDelegateMessages(m_documentLoader, identifier, resource->response(), 0, resource->encodedSize(), 0, ResourceError());
 }
 
 void ResourceFetcher::incrementRequestCount(const Resource* res)

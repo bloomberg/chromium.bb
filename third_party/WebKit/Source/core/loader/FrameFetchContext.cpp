@@ -114,6 +114,11 @@ void FrameFetchContext::dispatchWillSendRequest(DocumentLoader* loader, unsigned
     InspectorInstrumentation::willSendRequest(m_frame, identifier, ensureLoader(loader), request, redirectResponse, initiatorInfo);
 }
 
+void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(const ResourceRequest& request, const ResourceResponse& response)
+{
+    m_frame->loader()->client()->dispatchDidLoadResourceFromMemoryCache(request, response);
+}
+
 void FrameFetchContext::dispatchDidReceiveResponse(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r, ResourceLoader* resourceLoader)
 {
     if (Page* page = m_frame->page())

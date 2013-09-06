@@ -783,20 +783,6 @@ void FrameLoader::reportLocalLoadFailed(Frame* frame, const String& url)
     frame->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Not allowed to load local resource: " + url);
 }
 
-bool FrameLoader::willLoadMediaElementURL(KURL& url)
-{
-    ResourceRequest request(url);
-
-    unsigned long identifier;
-    ResourceError error;
-    requestFromDelegate(request, identifier, error);
-    m_frame->fetchContext().sendRemainingDelegateMessages(m_documentLoader.get(), identifier, ResourceResponse(url, String(), -1, String(), String()), 0, -1, -1, error);
-
-    url = request.url();
-
-    return error.isNull();
-}
-
 void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, const String& overrideEncoding)
 {
     DocumentLoader* documentLoader = activeDocumentLoader();
@@ -1252,34 +1238,6 @@ void FrameLoader::addHTTPOriginIfNeeded(ResourceRequest& request, const String& 
     request.setHTTPOrigin(origin);
 }
 
-unsigned long FrameLoader::loadResourceSynchronously(const ResourceRequest& request, StoredCredentials storedCredentials, ResourceError& error, ResourceResponse& response, Vector<char>& data)
-{
-    ASSERT(m_frame->document());
-    String referrer = SecurityPolicy::generateReferrerHeader(m_frame->document()->referrerPolicy(), request.url(), outgoingReferrer());
-
-    ResourceRequest initialRequest = request;
-    initialRequest.setTimeoutInterval(10);
-
-    if (!referrer.isEmpty())
-        initialRequest.setHTTPReferrer(referrer);
-    addHTTPOriginIfNeeded(initialRequest, outgoingOrigin());
-
-    addExtraFieldsToRequest(initialRequest);
-
-    unsigned long identifier = 0;
-    ResourceRequest newRequest(initialRequest);
-    requestFromDelegate(newRequest, identifier, error);
-
-    if (error.isNull()) {
-        ASSERT(!newRequest.isNull());
-        documentLoader()->applicationCacheHost()->willStartLoadingSynchronously(newRequest);
-        ResourceLoader::loadResourceSynchronously(newRequest, storedCredentials, error, response, data);
-    }
-    int encodedDataLength = response.resourceLoadInfo() ? static_cast<int>(response.resourceLoadInfo()->encodedDataLength) : -1;
-    m_frame->fetchContext().sendRemainingDelegateMessages(m_documentLoader.get(), identifier, response, data.data(), data.size(), encodedDataLength, error);
-    return identifier;
-}
-
 const ResourceRequest& FrameLoader::originalRequest() const
 {
     return activeDocumentLoader()->originalRequestCopy();
@@ -1498,48 +1456,6 @@ void FrameLoader::checkNewWindowPolicyAndContinue(PassRefPtr<FormState> formStat
     // FIXME: We can't just send our NavigationAction to the new FrameLoader's loadWithNavigationAction(), we need to
     // create a new one with a default NavigationType and no triggering event. We should figure out why.
     mainFrame->loader()->loadWithNavigationAction(action.resourceRequest(), NavigationAction(action.resourceRequest()), FrameLoadTypeStandard, formState, SubstituteData());
-}
-
-void FrameLoader::requestFromDelegate(ResourceRequest& request, unsigned long& identifier, ResourceError& error)
-{
-    ASSERT(!request.isNull());
-
-    identifier = 0;
-    if (m_frame->page())
-        identifier = createUniqueIdentifier();
-
-    ResourceRequest newRequest(request);
-    m_frame->fetchContext().dispatchWillSendRequest(m_documentLoader.get(), identifier, newRequest, ResourceResponse());
-
-    if (newRequest.isNull())
-        error = ResourceError::cancelledError(request.url());
-    else
-        error = ResourceError();
-
-    request = newRequest;
-}
-
-void FrameLoader::loadedResourceFromMemoryCache(Resource* resource)
-{
-    Page* page = m_frame->page();
-    if (!page)
-        return;
-
-    if (!resource->shouldSendResourceLoadCallbacks())
-        return;
-
-    // Main resource delegate messages are synthesized in MainResourceLoader, so we must not send them here.
-    if (resource->type() == Resource::MainResource)
-        return;
-
-    ResourceRequest request(resource->url());
-    m_client->dispatchDidLoadResourceFromMemoryCache(m_documentLoader.get(), request, resource->response(), resource->encodedSize());
-
-    unsigned long identifier;
-    ResourceError error;
-    requestFromDelegate(request, identifier, error);
-    InspectorInstrumentation::markResourceAsCached(page, identifier);
-    m_frame->fetchContext().sendRemainingDelegateMessages(m_documentLoader.get(), identifier, resource->response(), 0, resource->encodedSize(), 0, error);
 }
 
 void FrameLoader::applyUserAgent(ResourceRequest& request)

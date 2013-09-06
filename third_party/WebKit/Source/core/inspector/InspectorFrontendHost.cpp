@@ -32,6 +32,7 @@
 
 #include "bindings/v8/ScriptFunctionCall.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorFrontendClient.h"
@@ -223,7 +224,7 @@ String InspectorFrontendHost::loadResourceSynchronously(const String& url)
     Vector<char> data;
     ResourceError error;
     ResourceResponse response;
-    m_frontendPage->mainFrame()->loader()->loadResourceSynchronously(request, DoNotAllowStoredCredentials, error, response, data);
+    m_frontendPage->mainFrame()->document()->fetcher()->fetchSynchronously(request, DoNotAllowStoredCredentials, error, response, data);
     WTF::TextEncoding textEncoding(response.textEncodingName());
     bool useDetector = false;
     if (!textEncoding.isValid()) {

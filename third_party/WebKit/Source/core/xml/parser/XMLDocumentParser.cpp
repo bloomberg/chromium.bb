@@ -648,7 +648,7 @@ static void* openFunc(const char* uri)
         // FIXME: We should restore the original global error handler as well.
 
         if (fetcher->frame())
-            fetcher->frame()->loader()->loadResourceSynchronously(url, AllowStoredCredentials, error, response, data);
+            fetcher->fetchSynchronously(url, AllowStoredCredentials, error, response, data);
     }
 
     // We have to check the URL again after the load to catch redirects.
