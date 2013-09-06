@@ -567,8 +567,8 @@ class FileResource {
   void set_mime_type(const std::string& mime_type) {
     mime_type_ = mime_type;
   }
-  void set_labels(const FileLabels& labels) {
-    labels_ = labels;
+  FileLabels* mutable_labels() {
+    return &labels_;
   }
   void set_created_date(const base::Time& created_date) {
     created_date_ = created_date;
