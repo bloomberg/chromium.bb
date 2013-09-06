@@ -835,13 +835,12 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     template<typename T, size_t inlineCapacity>
     void Vector<T, inlineCapacity>::reserveCapacity(size_t newCapacity)
     {
-        if (newCapacity <= capacity())
+        if (UNLIKELY(newCapacity <= capacity()))
             return;
         T* oldBuffer = begin();
         T* oldEnd = end();
         Base::allocateBuffer(newCapacity);
-        if (begin())
-            TypeOperations::move(oldBuffer, oldEnd, begin());
+        TypeOperations::move(oldBuffer, oldEnd, begin());
         Base::deallocateBuffer(oldBuffer);
     }
 
