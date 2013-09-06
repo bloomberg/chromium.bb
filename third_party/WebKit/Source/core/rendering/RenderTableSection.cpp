@@ -520,7 +520,12 @@ int RenderTableSection::calcRowLogicalHeight()
     LayoutStateMaintainer statePusher(viewRenderer);
 
     m_rowPos.resize(m_grid.size() + 1);
-    m_rowPos[0] = table()->vBorderSpacing();
+
+    // We ignore the border-spacing on any non-top section as it is already included in the previous section's last row position.
+    if (this == table()->topSection())
+        m_rowPos[0] = table()->vBorderSpacing();
+    else
+        m_rowPos[0] = 0;
 
     SpanningRenderTableCells rowSpanCells;
 
