@@ -366,7 +366,8 @@
     },
     'nacl': {
       'filepath': 'chrome/nacl/|chrome/test/nacl/|'\
-        'chrome/browser/nacl_host/|chrome/common/nacl',
+        'chrome/browser/nacl_host/|chrome/common/nacl|'\
+        'native_client_sdk/src/doc/',
     },
     'native_client_sdk': {
       'filepath': '^native_client_sdk/',
