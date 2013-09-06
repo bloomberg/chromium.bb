@@ -582,8 +582,8 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accState(
   return S_OK;
 }
 
-STDMETHODIMP NativeViewAccessibilityWin::get_accValue(
-    VARIANT var_id, BSTR* value) {
+STDMETHODIMP NativeViewAccessibilityWin::get_accValue(VARIANT var_id,
+                                                      BSTR* value) {
   if (!IsValidId(var_id) || !value)
     return E_INVALIDARG;
 
@@ -604,6 +604,24 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accValue(
     return E_NOTIMPL;
   }
 
+  return S_OK;
+}
+
+STDMETHODIMP NativeViewAccessibilityWin::put_accValue(VARIANT var_id,
+                                                      BSTR new_value) {
+  if (!IsValidId(var_id) || !new_value)
+    return E_INVALIDARG;
+
+  if (!view_)
+    return E_FAIL;
+
+  // Return an error if the view can't set the value.
+  ui::AccessibleViewState state;
+  view_->GetAccessibleState(&state);
+  if (state.set_value_callback.is_null())
+    return E_FAIL;
+
+  state.set_value_callback.Run(new_value);
   return S_OK;
 }
 
@@ -640,12 +658,6 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accHelpTopic(
 
 STDMETHODIMP NativeViewAccessibilityWin::put_accName(
     VARIANT var_id, BSTR put_name) {
-  // Deprecated.
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP NativeViewAccessibilityWin::put_accValue(
-    VARIANT var_id, BSTR put_val) {
   // Deprecated.
   return E_NOTIMPL;
 }

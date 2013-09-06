@@ -190,7 +190,8 @@ LocationBarView::LocationBarView(Browser* browser,
       is_popup_mode_(is_popup_mode),
       show_focus_rect_(false),
       template_url_service_(NULL),
-      animation_offset_(0) {
+      animation_offset_(0),
+      weak_ptr_factory_(this) {
   if (!views::Textfield::IsViewsTextfieldEnabled())
     set_id(VIEW_ID_OMNIBOX);
 
@@ -632,17 +633,6 @@ void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
 
   if (can_show_bubble && zoom_view_->visible() && delegate_->GetWebContents())
     ZoomBubbleView::ShowBubble(delegate_->GetWebContents(), true);
-}
-
-void LocationBarView::RefreshZoomView() {
-  DCHECK(zoom_view_);
-  WebContents* web_contents = GetWebContents();
-  if (!web_contents)
-    return;
-
-  ZoomController* zoom_controller =
-      ZoomController::FromWebContents(web_contents);
-  zoom_view_->Update(zoom_controller);
 }
 
 gfx::Point LocationBarView::GetLocationEntryOrigin() const {
@@ -1121,192 +1111,6 @@ const ToolbarModel* LocationBarView::GetToolbarModel() const {
   return delegate_->GetToolbarModel();
 }
 
-// static
-int LocationBarView::GetBuiltInHorizontalPaddingForChildViews() {
-  return (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) ?
-      GetItemPadding() / 2 : 0;
-}
-
-int LocationBarView::GetHorizontalEdgeThickness() const {
-  // In maximized popup mode, there isn't any edge.
-  return (is_popup_mode_ && browser_ && browser_->window() &&
-      browser_->window()->IsMaximized()) ? 0 : vertical_edge_thickness();
-}
-
-void LocationBarView::UpdateContentSettingViewsPreLayout() {
-  for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
-       i != content_setting_views_.end(); ++i) {
-    (*i)->UpdatePreLayout(GetToolbarModel()->input_in_progress() ?
-        NULL : GetWebContents());
-  }
-}
-
-void LocationBarView::UpdateContentSettingViewsPostLayout() {
-  for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
-       i != content_setting_views_.end(); ++i) {
-    (*i)->UpdatePostLayout(GetToolbarModel()->input_in_progress() ?
-        NULL : GetWebContents());
-  }
-}
-
-void LocationBarView::DeletePageActionViews() {
-  for (PageActionViews::const_iterator i(page_action_views_.begin());
-       i != page_action_views_.end(); ++i)
-    RemoveChildView(*i);
-  STLDeleteElements(&page_action_views_);
-}
-
-void LocationBarView::RefreshPageActionViews() {
-  if (is_popup_mode_)
-    return;
-
-  // Remember the previous visibility of the page actions so that we can
-  // notify when this changes.
-  std::map<ExtensionAction*, bool> old_visibility;
-  for (PageActionViews::const_iterator i(page_action_views_.begin());
-       i != page_action_views_.end(); ++i) {
-    old_visibility[(*i)->image_view()->page_action()] = (*i)->visible();
-  }
-
-  std::vector<ExtensionAction*> new_page_actions;
-
-  WebContents* contents = delegate_->GetWebContents();
-  if (contents) {
-    extensions::TabHelper* extensions_tab_helper =
-        extensions::TabHelper::FromWebContents(contents);
-    extensions::LocationBarController* controller =
-        extensions_tab_helper->location_bar_controller();
-    new_page_actions = controller->GetCurrentActions();
-  }
-
-  // On startup we sometimes haven't loaded any extensions. This makes sure
-  // we catch up when the extensions (and any page actions) load.
-  if (page_actions_ != new_page_actions) {
-    page_actions_.swap(new_page_actions);
-    DeletePageActionViews();  // Delete the old views (if any).
-
-    page_action_views_.resize(page_actions_.size());
-    View* right_anchor = open_pdf_in_reader_view_;
-    if (!right_anchor)
-      right_anchor = star_view_;
-    if (!right_anchor)
-      right_anchor = script_bubble_icon_view_;
-    DCHECK(right_anchor);
-
-    // Add the page actions in reverse order, so that the child views are
-    // inserted in left-to-right order for accessibility.
-    for (int i = page_actions_.size() - 1; i >= 0; --i) {
-      page_action_views_[i] = new PageActionWithBadgeView(
-          delegate_->CreatePageActionImageView(this, page_actions_[i]));
-      page_action_views_[i]->SetVisible(false);
-      AddChildViewAt(page_action_views_[i], GetIndexOf(right_anchor));
-    }
-  }
-
-  if (!page_action_views_.empty() && contents) {
-    Browser* browser = chrome::FindBrowserWithWebContents(contents);
-    GURL url = browser->tab_strip_model()->GetActiveWebContents()->GetURL();
-
-    for (PageActionViews::const_iterator i(page_action_views_.begin());
-         i != page_action_views_.end(); ++i) {
-      (*i)->UpdateVisibility(
-          GetToolbarModel()->input_in_progress() ? NULL : contents, url);
-
-      // Check if the visibility of the action changed and notify if it did.
-      ExtensionAction* action = (*i)->image_view()->page_action();
-      if (old_visibility.find(action) == old_visibility.end() ||
-          old_visibility[action] != (*i)->visible()) {
-        content::NotificationService::current()->Notify(
-            chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
-            content::Source<ExtensionAction>(action),
-            content::Details<WebContents>(contents));
-      }
-    }
-  }
-}
-
-size_t LocationBarView::ScriptBubbleScriptsRunning() {
-  WebContents* contents = delegate_->GetWebContents();
-  if (!contents)
-    return false;
-  extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(contents);
-  if (!extensions_tab_helper)
-    return false;
-  extensions::ScriptBubbleController* script_bubble_controller =
-      extensions_tab_helper->script_bubble_controller();
-  if (!script_bubble_controller)
-    return false;
-  size_t script_count =
-      script_bubble_controller->extensions_running_scripts().size();
-  return script_count;
-}
-
-void LocationBarView::RefreshScriptBubble() {
-  if (!script_bubble_icon_view_)
-    return;
-  size_t script_count = ScriptBubbleScriptsRunning();
-  script_bubble_icon_view_->SetVisible(script_count > 0);
-  if (script_count > 0)
-    script_bubble_icon_view_->SetScriptCount(script_count);
-}
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-void LocationBarView::OnMouseEvent(const ui::MouseEvent& event, UINT msg) {
-  OmniboxViewWin* omnibox_win = GetOmniboxViewWin(location_entry_.get());
-  if (omnibox_win) {
-    UINT flags = event.native_event().wParam;
-    gfx::Point screen_point(event.location());
-    ConvertPointToScreen(this, &screen_point);
-    omnibox_win->HandleExternalMsg(msg, flags, screen_point.ToPOINT());
-  }
-}
-#endif
-
-void LocationBarView::ShowFirstRunBubbleInternal() {
-#if !defined(OS_CHROMEOS)
-  // First run bubble doesn't make sense for Chrome OS.
-  Browser* browser = GetBrowserFromDelegate(delegate_);
-  if (!browser)
-    return; // Possible when browser is shutting down.
-
-  FirstRunBubble::ShowBubble(browser, location_icon_view_);
-#endif
-}
-
-void LocationBarView::PaintPageActionBackgrounds(gfx::Canvas* canvas) {
-  WebContents* web_contents = GetWebContents();
-  // web_contents may be NULL while the browser is shutting down.
-  if (!web_contents)
-    return;
-
-  const int32 tab_id = SessionID::IdForTab(web_contents);
-  const ToolbarModel::SecurityLevel security_level =
-      GetToolbarModel()->GetSecurityLevel(false);
-  const SkColor text_color = GetColor(security_level, TEXT);
-  const SkColor background_color = GetColor(security_level, BACKGROUND);
-
-  for (PageActionViews::const_iterator
-           page_action_view = page_action_views_.begin();
-       page_action_view != page_action_views_.end();
-       ++page_action_view) {
-    gfx::Rect bounds = (*page_action_view)->bounds();
-    int horizontal_padding =
-        GetItemPadding() - GetBuiltInHorizontalPaddingForChildViews();
-    // Make the bounding rectangle include the whole vertical range of the
-    // location bar, and the mid-point pixels between adjacent page actions.
-    //
-    // For odd horizontal_paddings, "horizontal_padding + 1" includes the
-    // mid-point between two page actions in the bounding rectangle.  For even
-    // paddings, the +1 is dropped, which is right since there is no pixel at
-    // the mid-point.
-    bounds.Inset(-(horizontal_padding + 1) / 2, 0);
-    location_bar_util::PaintExtensionActionBackground(
-        *(*page_action_view)->image_view()->page_action(),
-        tab_id, canvas, bounds, text_color, background_color);
-  }
-}
-
 const char* LocationBarView::GetClassName() const {
   return kViewClassName;
 }
@@ -1339,6 +1143,9 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
 }
 
 void LocationBarView::GetAccessibleState(ui::AccessibleViewState* state) {
+  if (!location_entry_)
+    return;
+
   state->role = ui::AccessibilityTypes::ROLE_LOCATION_BAR;
   state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION);
   state->value = location_entry_->GetText();
@@ -1348,6 +1155,14 @@ void LocationBarView::GetAccessibleState(ui::AccessibleViewState* state) {
   location_entry_->GetSelectionBounds(&entry_start, &entry_end);
   state->selection_start = entry_start;
   state->selection_end = entry_end;
+
+  if (is_popup_mode_) {
+    state->state |= ui::AccessibilityTypes::STATE_READONLY;
+  } else {
+    state->set_value_callback =
+        base::Bind(&LocationBarView::AccessibilitySetValue,
+                   weak_ptr_factory_.GetWeakPtr());
+  }
 }
 
 bool LocationBarView::HasFocus() const {
@@ -1563,7 +1378,211 @@ int LocationBarView::GetInternalHeight(bool use_preferred_size) {
   return std::max(total_height - (vertical_edge_thickness() * 2), 0);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// LocationBarView, private:
+
+// static
+int LocationBarView::GetBuiltInHorizontalPaddingForChildViews() {
+  return (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) ?
+      GetItemPadding() / 2 : 0;
+}
+
+int LocationBarView::GetHorizontalEdgeThickness() const {
+  // In maximized popup mode, there isn't any edge.
+  return (is_popup_mode_ && browser_ && browser_->window() &&
+      browser_->window()->IsMaximized()) ? 0 : vertical_edge_thickness();
+}
+
+void LocationBarView::UpdateContentSettingViewsPreLayout() {
+  for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
+       i != content_setting_views_.end(); ++i) {
+    (*i)->UpdatePreLayout(GetToolbarModel()->input_in_progress() ?
+        NULL : GetWebContents());
+  }
+}
+
+void LocationBarView::UpdateContentSettingViewsPostLayout() {
+  for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
+       i != content_setting_views_.end(); ++i) {
+    (*i)->UpdatePostLayout(GetToolbarModel()->input_in_progress() ?
+        NULL : GetWebContents());
+  }
+}
+
+void LocationBarView::DeletePageActionViews() {
+  for (PageActionViews::const_iterator i(page_action_views_.begin());
+       i != page_action_views_.end(); ++i)
+    RemoveChildView(*i);
+  STLDeleteElements(&page_action_views_);
+}
+
+void LocationBarView::RefreshPageActionViews() {
+  if (is_popup_mode_)
+    return;
+
+  // Remember the previous visibility of the page actions so that we can
+  // notify when this changes.
+  std::map<ExtensionAction*, bool> old_visibility;
+  for (PageActionViews::const_iterator i(page_action_views_.begin());
+       i != page_action_views_.end(); ++i) {
+    old_visibility[(*i)->image_view()->page_action()] = (*i)->visible();
+  }
+
+  std::vector<ExtensionAction*> new_page_actions;
+
+  WebContents* contents = delegate_->GetWebContents();
+  if (contents) {
+    extensions::TabHelper* extensions_tab_helper =
+        extensions::TabHelper::FromWebContents(contents);
+    extensions::LocationBarController* controller =
+        extensions_tab_helper->location_bar_controller();
+    new_page_actions = controller->GetCurrentActions();
+  }
+
+  // On startup we sometimes haven't loaded any extensions. This makes sure
+  // we catch up when the extensions (and any page actions) load.
+  if (page_actions_ != new_page_actions) {
+    page_actions_.swap(new_page_actions);
+    DeletePageActionViews();  // Delete the old views (if any).
+
+    page_action_views_.resize(page_actions_.size());
+    View* right_anchor = open_pdf_in_reader_view_;
+    if (!right_anchor)
+      right_anchor = star_view_;
+    if (!right_anchor)
+      right_anchor = script_bubble_icon_view_;
+    DCHECK(right_anchor);
+
+    // Add the page actions in reverse order, so that the child views are
+    // inserted in left-to-right order for accessibility.
+    for (int i = page_actions_.size() - 1; i >= 0; --i) {
+      page_action_views_[i] = new PageActionWithBadgeView(
+          delegate_->CreatePageActionImageView(this, page_actions_[i]));
+      page_action_views_[i]->SetVisible(false);
+      AddChildViewAt(page_action_views_[i], GetIndexOf(right_anchor));
+    }
+  }
+
+  if (!page_action_views_.empty() && contents) {
+    Browser* browser = chrome::FindBrowserWithWebContents(contents);
+    GURL url = browser->tab_strip_model()->GetActiveWebContents()->GetURL();
+
+    for (PageActionViews::const_iterator i(page_action_views_.begin());
+         i != page_action_views_.end(); ++i) {
+      (*i)->UpdateVisibility(
+          GetToolbarModel()->input_in_progress() ? NULL : contents, url);
+
+      // Check if the visibility of the action changed and notify if it did.
+      ExtensionAction* action = (*i)->image_view()->page_action();
+      if (old_visibility.find(action) == old_visibility.end() ||
+          old_visibility[action] != (*i)->visible()) {
+        content::NotificationService::current()->Notify(
+            chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+            content::Source<ExtensionAction>(action),
+            content::Details<WebContents>(contents));
+      }
+    }
+  }
+}
+
+size_t LocationBarView::ScriptBubbleScriptsRunning() {
+  WebContents* contents = delegate_->GetWebContents();
+  if (!contents)
+    return false;
+  extensions::TabHelper* extensions_tab_helper =
+      extensions::TabHelper::FromWebContents(contents);
+  if (!extensions_tab_helper)
+    return false;
+  extensions::ScriptBubbleController* script_bubble_controller =
+      extensions_tab_helper->script_bubble_controller();
+  if (!script_bubble_controller)
+    return false;
+  size_t script_count =
+      script_bubble_controller->extensions_running_scripts().size();
+  return script_count;
+}
+
+void LocationBarView::RefreshScriptBubble() {
+  if (!script_bubble_icon_view_)
+    return;
+  size_t script_count = ScriptBubbleScriptsRunning();
+  script_bubble_icon_view_->SetVisible(script_count > 0);
+  if (script_count > 0)
+    script_bubble_icon_view_->SetScriptCount(script_count);
+}
+
+void LocationBarView::RefreshZoomView() {
+  DCHECK(zoom_view_);
+  WebContents* web_contents = GetWebContents();
+  if (!web_contents)
+    return;
+
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(web_contents);
+  zoom_view_->Update(zoom_controller);
+}
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+void LocationBarView::OnMouseEvent(const ui::MouseEvent& event, UINT msg) {
+  OmniboxViewWin* omnibox_win = GetOmniboxViewWin(location_entry_.get());
+  if (omnibox_win) {
+    UINT flags = event.native_event().wParam;
+    gfx::Point screen_point(event.location());
+    ConvertPointToScreen(this, &screen_point);
+    omnibox_win->HandleExternalMsg(msg, flags, screen_point.ToPOINT());
+  }
+}
+#endif
+
 bool LocationBarView::HasValidSuggestText() const {
   return suggested_text_view_->visible() &&
       !suggested_text_view_->size().IsEmpty();
+}
+
+void LocationBarView::ShowFirstRunBubbleInternal() {
+#if !defined(OS_CHROMEOS)
+  // First run bubble doesn't make sense for Chrome OS.
+  Browser* browser = GetBrowserFromDelegate(delegate_);
+  if (!browser)
+    return; // Possible when browser is shutting down.
+
+  FirstRunBubble::ShowBubble(browser, location_icon_view_);
+#endif
+}
+
+void LocationBarView::PaintPageActionBackgrounds(gfx::Canvas* canvas) {
+  WebContents* web_contents = GetWebContents();
+  // web_contents may be NULL while the browser is shutting down.
+  if (!web_contents)
+    return;
+
+  const int32 tab_id = SessionID::IdForTab(web_contents);
+  const ToolbarModel::SecurityLevel security_level =
+      GetToolbarModel()->GetSecurityLevel(false);
+  const SkColor text_color = GetColor(security_level, TEXT);
+  const SkColor background_color = GetColor(security_level, BACKGROUND);
+
+  for (PageActionViews::const_iterator
+           page_action_view = page_action_views_.begin();
+       page_action_view != page_action_views_.end();
+       ++page_action_view) {
+    gfx::Rect bounds = (*page_action_view)->bounds();
+    int horizontal_padding =
+        GetItemPadding() - GetBuiltInHorizontalPaddingForChildViews();
+    // Make the bounding rectangle include the whole vertical range of the
+    // location bar, and the mid-point pixels between adjacent page actions.
+    //
+    // For odd horizontal_paddings, "horizontal_padding + 1" includes the
+    // mid-point between two page actions in the bounding rectangle.  For even
+    // paddings, the +1 is dropped, which is right since there is no pixel at
+    // the mid-point.
+    bounds.Inset(-(horizontal_padding + 1) / 2, 0);
+    location_bar_util::PaintExtensionActionBackground(
+        *(*page_action_view)->image_view()->page_action(),
+        tab_id, canvas, bounds, text_color, background_color);
+  }
+}
+
+void LocationBarView::AccessibilitySetValue(const string16& new_value) {
+  location_entry_->SetUserText(new_value);
 }

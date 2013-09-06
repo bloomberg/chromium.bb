@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -285,6 +286,11 @@ class VIEWS_EXPORT Textfield : public View {
   // Returns the insets to the rectangle where text is actually painted.
   gfx::Insets GetTextInsets() const;
 
+  // Handles a request to change the value of this text field from software
+  // using an accessibility API (typically automation software, screen readers
+  // don't normally use this). Sets the value and clears the selection.
+  void AccessibilitySetValue(const string16& new_value);
+
   // This is the current listener for events from this Textfield.
   TextfieldController* controller_;
 
@@ -343,6 +349,9 @@ class VIEWS_EXPORT Textfield : public View {
 
   // The duration to reveal the last typed char for obscured textfields.
   base::TimeDelta obscured_reveal_duration_;
+
+  // Used to bind callback functions to this object.
+  base::WeakPtrFactory<Textfield> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Textfield);
 };

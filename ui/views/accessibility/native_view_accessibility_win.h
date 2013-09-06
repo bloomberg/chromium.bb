@@ -114,10 +114,11 @@ NativeViewAccessibilityWin
   // Retrieves the current state of the specified object.
   STDMETHODIMP get_accState(VARIANT var_id, VARIANT* state);
 
-  // Retrieves the current value associated with the specified object.
+  // Retrieve or set the string value associated with the specified object.
+  // Setting the value is not typically used by screen readers, but it's
+  // used frequently by automation software.
   STDMETHODIMP get_accValue(VARIANT var_id, BSTR* value);
-
-  // Non-supported IAccessible methods.
+  STDMETHODIMP put_accValue(VARIANT var_id, BSTR new_value);
 
   // Selections not applicable to views.
   STDMETHODIMP get_accSelection(VARIANT* selected);
@@ -131,7 +132,6 @@ NativeViewAccessibilityWin
 
   // Deprecated functions, not implemented here.
   STDMETHODIMP put_accName(VARIANT var_id, BSTR put_name);
-  STDMETHODIMP put_accValue(VARIANT var_id, BSTR put_val);
 
   //
   // IAccessible2

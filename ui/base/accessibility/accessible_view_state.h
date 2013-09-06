@@ -6,6 +6,7 @@
 #define UI_BASE_ACCESSIBILITY_ACCESSIBLE_VIEW_STATE_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/strings/string16.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/ui_export.h"
@@ -54,6 +55,17 @@ struct UI_EXPORT AccessibleViewState {
   // index and count should be -1 otherwise.
   int index;
   int count;
+
+  // An optional callback that can be used by accessibility clients to
+  // set the string value of this view. This only applies to roles where
+  // setting the value makes sense, like a text box. Not often used by
+  // screen readers, but often used by automation software to script
+  // things like logging into portals or filling forms.
+  //
+  // This callback is only valid for the lifetime of the view, and should
+  // be a safe no-op if the view is deleted. Typically, accessible views
+  // should use a WeakPtr when binding the callback.
+  base::Callback<void(const base::string16&)> set_value_callback;
 };
 
 }  // namespace ui
