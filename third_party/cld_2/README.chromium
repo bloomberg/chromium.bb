@@ -1,0 +1,10 @@
+Name: Compact Language Detection 2
+Short Name: cld_2
+URL: https://code.google.com/p/cld2/
+Version: 0
+License: Apache 2.0
+Security Critical: yes
+
+Description:
+The CLD is used to determine the language of text. In Chromium, this is used
+to determine if Chrome should offer Translate UX to the user.

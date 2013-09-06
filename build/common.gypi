@@ -341,6 +341,12 @@
       # print, UI, etc.
       'enable_printing%': 1,
 
+      # Set the version of CLD.
+      #   0: Don't specify the version. This option is for the Finch testing.
+      #   1: Use only CLD1.
+      #   2: Use only CLD2.
+      'cld_version%': 0,
+
       # Enable spell checker.
       'enable_spellcheck%': 1,
 
@@ -510,10 +516,15 @@
           'enable_one_click_signin%': 1,
         }],
 
+        ['OS=="win"', {
+          'cld_version%': 1,
+        }],
+
         ['OS=="android"', {
           'enable_automation%': 0,
           'enable_extensions%': 0,
           'enable_google_now%': 0,
+          'cld_version%': 1,
           'enable_spellcheck%': 0,
           'enable_themes%': 0,
           'remoting%': 0,
@@ -563,6 +574,7 @@
           'enable_automation%': 0,
           'enable_extensions%': 0,
           'enable_google_now%': 0,
+          'cld_version%': 1,
           'enable_printing%': 0,
           'enable_session_service%': 0,
           'enable_themes%': 0,
@@ -851,6 +863,7 @@
     'enable_printing%': '<(enable_printing)',
     'enable_spellcheck%': '<(enable_spellcheck)',
     'enable_google_now%': '<(enable_google_now)',
+    'cld_version%': '<(cld_version)',
     'enable_captive_portal_detection%': '<(enable_captive_portal_detection)',
     'disable_ftp_support%': '<(disable_ftp_support)',
     'enable_task_manager%': '<(enable_task_manager)',
@@ -2272,6 +2285,9 @@
       }],
       ['enable_google_now==1', {
         'defines': ['ENABLE_GOOGLE_NOW=1'],
+      }],
+      ['cld_version!=0', {
+        'defines': ['CLD_VERSION=<(cld_version)'],
       }],
       ['enable_printing==1', {
         'defines': ['ENABLE_FULL_PRINTING=1', 'ENABLE_PRINTING=1'],
