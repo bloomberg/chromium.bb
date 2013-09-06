@@ -110,10 +110,12 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   virtual bool OnBinary(int id, const uint8* data, int size) OVERRIDE;
 
   bool ParseBlock(bool is_simple_block, const uint8* buf, int size,
-                  const uint8* additional, int additional_size, int duration);
+                  const uint8* additional, int additional_size, int duration,
+                  int64 discard_padding);
   bool OnBlock(bool is_simple_block, int track_num, int timecode, int duration,
                int flags, const uint8* data, int size,
-               const uint8* additional, int additional_size);
+               const uint8* additional, int additional_size,
+               int64 discard_padding);
 
   // Resets the Track objects associated with each text track.
   void ResetTextTracks();
@@ -137,6 +139,8 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   int64 block_add_id_;
   scoped_ptr<uint8[]> block_additional_data_;
   int block_additional_data_size_;
+  int64 discard_padding_;
+  bool discard_padding_set_;
 
   int64 cluster_timecode_;
   base::TimeDelta cluster_start_time_;

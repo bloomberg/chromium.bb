@@ -22618,6 +22618,7 @@ other types of suffix sets.
   <int value="6" label="MPEG4 AAC"/>
   <int value="7" label="EAC3"/>
   <int value="8" label="MP3"/>
+  <int value="9" label="OPUS"/>
 </enum>
 
 <enum name="NavigationScheme" type="int">

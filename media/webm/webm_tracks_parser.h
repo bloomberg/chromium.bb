@@ -83,6 +83,8 @@ class MEDIA_EXPORT WebMTracksParser : public WebMParserClient {
   std::string track_language_;
   std::string codec_id_;
   std::vector<uint8> codec_private_;
+  int64 seek_preroll_;
+  int64 codec_delay_;
   scoped_ptr<WebMContentEncodingsClient> track_content_encodings_client_;
 
   int64 audio_track_num_;

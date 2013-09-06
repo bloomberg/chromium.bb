@@ -41,6 +41,7 @@ struct CodecInfo {
     HISTOGRAM_MPEG4AAC,
     HISTOGRAM_EAC3,
     HISTOGRAM_MP3,
+    HISTOGRAM_OPUS,
     HISTOGRAM_MAX  // Must be the last entry.
   };
 
@@ -66,6 +67,8 @@ static const CodecInfo kVP9CodecInfo = { "vp9", CodecInfo::VIDEO, NULL,
                                          CodecInfo::HISTOGRAM_VP9 };
 static const CodecInfo kVorbisCodecInfo = { "vorbis", CodecInfo::AUDIO, NULL,
                                             CodecInfo::HISTOGRAM_VORBIS };
+static const CodecInfo kOpusCodecInfo = { "opus", CodecInfo::AUDIO, NULL,
+                                          CodecInfo::HISTOGRAM_OPUS };
 
 static const CodecInfo* kVideoWebMCodecs[] = {
   &kVP8CodecInfo,
@@ -75,11 +78,13 @@ static const CodecInfo* kVideoWebMCodecs[] = {
   &kVP9CodecInfo,
 #endif
   &kVorbisCodecInfo,
+  &kOpusCodecInfo,
   NULL
 };
 
 static const CodecInfo* kAudioWebMCodecs[] = {
   &kVorbisCodecInfo,
+  &kOpusCodecInfo,
   NULL
 };
 
@@ -233,7 +238,11 @@ static bool VerifyCodec(
           return false;
       }
 #endif
-
+      if (codec_info->tag == CodecInfo::HISTOGRAM_OPUS) {
+        const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+        if (!cmd_line->HasSwitch(switches::kEnableOpusPlayback))
+          return false;
+      }
       if (audio_codecs)
         audio_codecs->push_back(codec_info->tag);
       return true;

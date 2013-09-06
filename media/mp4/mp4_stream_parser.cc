@@ -257,7 +257,8 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       audio_config.Initialize(
           codec, sample_format, channel_layout, sample_per_second,
           extra_data.size() ? &extra_data[0] : NULL, extra_data.size(),
-          is_audio_track_encrypted_, false);
+          is_audio_track_encrypted_, false, base::TimeDelta(),
+          base::TimeDelta());
       has_audio_ = true;
       audio_track_id_ = track->header.track_id;
     }

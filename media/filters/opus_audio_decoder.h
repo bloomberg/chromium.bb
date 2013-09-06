@@ -70,10 +70,6 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   scoped_ptr<AudioTimestampHelper> output_timestamp_helper_;
   base::TimeDelta last_input_timestamp_;
 
-  // Number of output sample bytes to drop before generating
-  // output buffers.
-  int output_bytes_to_drop_;
-
   ReadCB read_cb_;
 
   int skip_samples_;

@@ -118,6 +118,7 @@ static const ElementIdInfo kBlockGroupIds[] = {
   {UINT, kWebMIdReferencePriority},
   {BINARY, kWebMIdReferenceBlock},
   {BINARY, kWebMIdCodecState},
+  {UINT, kWebMIdDiscardPadding},
   {LIST, kWebMIdSlices},
 };
 
@@ -163,6 +164,8 @@ static const ElementIdInfo kTrackEntryIds[] = {
   {UINT, kWebMIdAttachmentLink},
   {UINT, kWebMIdCodecDecodeAll},
   {UINT, kWebMIdTrackOverlay},
+  {UINT, kWebMIdCodecDelay},
+  {UINT, kWebMIdSeekPreRoll},
   {LIST, kWebMIdTrackTranslate},
   {LIST, kWebMIdVideo},
   {LIST, kWebMIdAudio},

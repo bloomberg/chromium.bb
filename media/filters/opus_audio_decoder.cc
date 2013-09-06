@@ -4,6 +4,8 @@
 
 #include "media/filters/opus_audio_decoder.h"
 
+#include <cmath>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -250,7 +252,6 @@ OpusAudioDecoder::OpusAudioDecoder(
       channel_layout_(CHANNEL_LAYOUT_NONE),
       samples_per_second_(0),
       last_input_timestamp_(kNoTimestamp()),
-      output_bytes_to_drop_(0),
       skip_samples_(0) {
 }
 
@@ -457,10 +458,24 @@ bool OpusAudioDecoder::ConfigureDecoder() {
                   config,
                   &opus_header);
 
-  skip_samples_ = opus_header.skip_samples;
-
-  if (skip_samples_ > 0)
-    output_bytes_to_drop_ = skip_samples_ * config.bytes_per_frame();
+  if (!config.codec_delay().InMicroseconds()) {
+    // TODO(vigneshv): Replace this with return false once ffmpeg demuxer code
+    // starts populating the config correctly.
+    skip_samples_ = opus_header.skip_samples;
+  } else {
+    // Convert from seconds to samples.
+    skip_samples_ = std::ceil(config.codec_delay().InMicroseconds() *
+                              config.samples_per_second() / 1000000.0);
+    if (skip_samples_ < 0) {
+      DVLOG(1) << "Invalid file. Incorrect value for codec delay.";
+      return false;
+    }
+    if (skip_samples_ != opus_header.skip_samples) {
+      DVLOG(1) << "Invalid file. Codec Delay in container does not match the "
+               << "value in Opus header.";
+      return false;
+    }
+  }
 
   uint8 channel_mapping[kMaxVorbisChannels];
   memcpy(&channel_mapping,
@@ -487,9 +502,6 @@ bool OpusAudioDecoder::ConfigureDecoder() {
     return false;
   }
 
-  // TODO(tomfinegan): Handle audio delay once the matroska spec is updated
-  // to represent the value.
-
   bits_per_channel_ = config.bits_per_channel();
   channel_layout_ = config.channel_layout();
   samples_per_second_ = config.samples_per_second();
@@ -508,7 +520,7 @@ void OpusAudioDecoder::CloseDecoder() {
 void OpusAudioDecoder::ResetTimestampState() {
   output_timestamp_helper_->SetBaseTimestamp(kNoTimestamp());
   last_input_timestamp_ = kNoTimestamp();
-  output_bytes_to_drop_ = 0;
+  skip_samples_ = 0;
 }
 
 bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
@@ -539,16 +551,6 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
     output_timestamp_helper_->SetBaseTimestamp(input->timestamp());
   }
 
-  if (decoded_audio_size > 0 && output_bytes_to_drop_ > 0) {
-    int dropped_size = std::min(decoded_audio_size, output_bytes_to_drop_);
-    DCHECK_EQ(dropped_size % kBytesPerChannel, 0);
-    decoded_audio_data += dropped_size;
-    decoded_audio_size -= dropped_size;
-    output_bytes_to_drop_ -= dropped_size;
-    samples_decoded = decoded_audio_size /
-                      demuxer_stream_->audio_decoder_config().bytes_per_frame();
-  }
-
   if (decoded_audio_size > 0) {
     // Copy the audio samples into an output buffer.
     uint8* data[] = { decoded_audio_data };
@@ -560,8 +562,28 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
         output_timestamp_helper_->GetTimestamp(),
         output_timestamp_helper_->GetFrameDuration(samples_decoded));
     output_timestamp_helper_->AddFrames(samples_decoded);
+    if (skip_samples_ > 0) {
+      int dropped_size = std::min(samples_decoded, skip_samples_);
+      output_buffer->get()->TrimStart(dropped_size);
+      skip_samples_ -= dropped_size;
+      samples_decoded -= dropped_size;
+    }
+    if (input->discard_padding().InMicroseconds() > 0) {
+      int discard_padding = std::ceil(
+                                input->discard_padding().InMicroseconds() *
+                                samples_per_second_ / 1000000.0);
+      if (discard_padding < 0 || discard_padding > samples_decoded) {
+        DVLOG(1) << "Invalid file. Incorrect discard padding value.";
+        return false;
+      }
+      output_buffer->get()->TrimEnd(std::min(samples_decoded, discard_padding));
+      samples_decoded -= discard_padding;
+    }
   }
 
+  decoded_audio_size =
+      samples_decoded *
+      demuxer_stream_->audio_decoder_config().bytes_per_frame();
   // Decoding finished successfully, update statistics.
   PipelineStatistics statistics;
   statistics.audio_bytes_decoded = decoded_audio_size;

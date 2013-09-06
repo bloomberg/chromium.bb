@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/time/time.h"
 #include "media/audio/sample_rates.h"
 #include "media/base/limits.h"
 #include "media/base/sample_format.h"
@@ -30,7 +31,8 @@ AudioDecoderConfig::AudioDecoderConfig(AudioCodec codec,
                                        size_t extra_data_size,
                                        bool is_encrypted) {
   Initialize(codec, sample_format, channel_layout, samples_per_second,
-             extra_data, extra_data_size, is_encrypted, true);
+             extra_data, extra_data_size, is_encrypted, true,
+             base::TimeDelta(), base::TimeDelta());
 }
 
 void AudioDecoderConfig::Initialize(AudioCodec codec,
@@ -40,7 +42,9 @@ void AudioDecoderConfig::Initialize(AudioCodec codec,
                                     const uint8* extra_data,
                                     size_t extra_data_size,
                                     bool is_encrypted,
-                                    bool record_stats) {
+                                    bool record_stats,
+                                    base::TimeDelta seek_preroll,
+                                    base::TimeDelta codec_delay) {
   CHECK((extra_data_size != 0) == (extra_data != NULL));
 
   if (record_stats) {
@@ -66,6 +70,8 @@ void AudioDecoderConfig::Initialize(AudioCodec codec,
   bytes_per_channel_ = SampleFormatToBytesPerChannel(sample_format);
   extra_data_.assign(extra_data, extra_data + extra_data_size);
   is_encrypted_ = is_encrypted;
+  seek_preroll_ = seek_preroll;
+  codec_delay_ = codec_delay;
 
   int channels = ChannelLayoutToChannelCount(channel_layout_);
   bytes_per_frame_ = channels * bytes_per_channel_;
@@ -80,7 +86,9 @@ bool AudioDecoderConfig::IsValidConfig() const {
          bytes_per_channel_ <= limits::kMaxBytesPerSample &&
          samples_per_second_ > 0 &&
          samples_per_second_ <= limits::kMaxSampleRate &&
-         sample_format_ != kUnknownSampleFormat;
+         sample_format_ != kUnknownSampleFormat &&
+         seek_preroll_ >= base::TimeDelta() &&
+         codec_delay_ >= base::TimeDelta();
 }
 
 bool AudioDecoderConfig::Matches(const AudioDecoderConfig& config) const {
@@ -92,7 +100,9 @@ bool AudioDecoderConfig::Matches(const AudioDecoderConfig& config) const {
           (!extra_data() || !memcmp(extra_data(), config.extra_data(),
                                     extra_data_size())) &&
           (is_encrypted() == config.is_encrypted()) &&
-          (sample_format() == config.sample_format()));
+          (sample_format() == config.sample_format()) &&
+          (seek_preroll() == config.seek_preroll()) &&
+          (codec_delay() == config.codec_delay()));
 }
 
 }  // namespace media

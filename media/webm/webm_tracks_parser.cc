@@ -31,6 +31,8 @@ static TextKind CodecIdToTextKind(const std::string& codec_id) {
 WebMTracksParser::WebMTracksParser(const LogCB& log_cb, bool ignore_text_tracks)
     : track_type_(-1),
       track_num_(-1),
+      seek_preroll_(-1),
+      codec_delay_(-1),
       audio_track_num_(-1),
       video_track_num_(-1),
       ignore_text_tracks_(ignore_text_tracks),
@@ -161,8 +163,8 @@ bool WebMTracksParser::OnListEnd(int id) {
 
         DCHECK(!audio_decoder_config_.IsValidConfig());
         if (!audio_client_.InitializeConfig(
-                codec_id_, codec_private_, !audio_encryption_key_id_.empty(),
-                &audio_decoder_config_)) {
+                codec_id_, codec_private_, seek_preroll_, codec_delay_,
+                !audio_encryption_key_id_.empty(), &audio_decoder_config_)) {
           return false;
         }
       } else {
@@ -225,6 +227,12 @@ bool WebMTracksParser::OnUInt(int id, int64 val) {
       break;
     case kWebMIdTrackType:
       dst = &track_type_;
+      break;
+    case kWebMIdSeekPreRoll:
+      dst = &seek_preroll_;
+      break;
+    case kWebMIdCodecDelay:
+      dst = &codec_delay_;
       break;
     default:
       return true;

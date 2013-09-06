@@ -378,7 +378,8 @@ int MP3StreamParser::ParseMP3Frame(const uint8* data, int size) {
 
   if (!config_.IsValidConfig()) {
     config_.Initialize(kCodecMP3, kSampleFormatF32, channel_layout,
-                       sample_rate, NULL, 0, false, false);
+                       sample_rate, NULL, 0, false, false,
+                       base::TimeDelta(), base::TimeDelta());
 
     base::TimeDelta base_timestamp;
     if (timestamp_helper_)

@@ -105,6 +105,16 @@ class MEDIA_EXPORT DecoderBuffer
     return side_data_size_;
   }
 
+  base::TimeDelta discard_padding() const {
+    DCHECK(!end_of_stream());
+    return discard_padding_;
+  }
+
+  void set_discard_padding(const base::TimeDelta discard_padding) {
+    DCHECK(!end_of_stream());
+    discard_padding_ = discard_padding;
+  }
+
   const DecryptConfig* decrypt_config() const {
     DCHECK(!end_of_stream());
     return decrypt_config_.get();
@@ -142,6 +152,7 @@ class MEDIA_EXPORT DecoderBuffer
   int side_data_size_;
   scoped_ptr<uint8, base::ScopedPtrAlignedFree> side_data_;
   scoped_ptr<DecryptConfig> decrypt_config_;
+  base::TimeDelta discard_padding_;
 
   // Constructor helper method for memory allocations.
   void Initialize();

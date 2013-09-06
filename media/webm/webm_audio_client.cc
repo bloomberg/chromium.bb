@@ -26,12 +26,15 @@ void WebMAudioClient::Reset() {
 
 bool WebMAudioClient::InitializeConfig(
     const std::string& codec_id, const std::vector<uint8>& codec_private,
-    bool is_encrypted, AudioDecoderConfig* config) {
+    int64 seek_preroll, int64 codec_delay, bool is_encrypted,
+    AudioDecoderConfig* config) {
   DCHECK(config);
 
   AudioCodec audio_codec = kUnknownAudioCodec;
   if (codec_id == "A_VORBIS") {
     audio_codec = kCodecVorbis;
+  } else if (codec_id == "A_OPUS") {
+    audio_codec = kCodecOpus;
   } else {
     MEDIA_LOG(log_cb_) << "Unsupported audio codec_id " << codec_id;
     return false;
@@ -63,8 +66,14 @@ bool WebMAudioClient::InitializeConfig(
   }
 
   config->Initialize(
-      audio_codec, kSampleFormatPlanarF32, channel_layout,
-      samples_per_second, extra_data, extra_data_size, is_encrypted, true);
+      audio_codec,
+      (audio_codec == kCodecOpus) ? kSampleFormatS16 : kSampleFormatPlanarF32,
+      channel_layout,
+      samples_per_second, extra_data, extra_data_size, is_encrypted, true,
+      base::TimeDelta::FromMicroseconds(
+          (seek_preroll != -1 ? seek_preroll : 0) / 1000),
+      base::TimeDelta::FromMicroseconds(
+          (codec_delay != -1 ? codec_delay : 0) / 1000));
   return config->IsValidConfig();
 }
 

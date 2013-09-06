@@ -28,6 +28,7 @@ static const uint8 kInitData[] = { 0x69, 0x6e, 0x69, 0x74 };
 static const char kWebM[] = "video/webm; codecs=\"vp8,vorbis\"";
 static const char kWebMVP9[] = "video/webm; codecs=\"vp9\"";
 static const char kAudioOnlyWebM[] = "video/webm; codecs=\"vorbis\"";
+static const char kOpusAudioOnlyWebM[] = "video/webm; codecs=\"opus\"";
 static const char kVideoOnlyWebM[] = "video/webm; codecs=\"vp8\"";
 static const char kMP4[] = "video/mp4; codecs=\"avc1.4D4041,mp4a.40.2\"";
 static const char kMP4Video[] = "video/mp4; codecs=\"avc1.4D4041\"";
@@ -58,6 +59,8 @@ static const int k640WebMFileDurationMs = 2763;
 static const int k640IsoFileDurationMs = 2737;
 static const int k640IsoCencFileDurationMs = 2736;
 static const int k1280IsoFileDurationMs = 2736;
+static const int kOpusEndTrimmingWebMFileDurationMs = 2771;
+static const uint32 kOpusEndTrimmingWebMFileAudioBytes = 528676;
 static const int kVP9WebMFileDurationMs = 2735;
 static const int kVP8AWebMFileDurationMs = 2700;
 
@@ -530,6 +533,26 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VP8A_WebM) {
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
+  source.Abort();
+  Stop();
+}
+
+TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus_WebM) {
+  EXPECT_CALL(*this, OnSetOpaque(false)).Times(AnyNumber());
+  MockMediaSource source("bear-opus-end-trimming.webm", kOpusAudioOnlyWebM,
+                         kAppendWholeFile);
+  StartPipelineWithMediaSource(&source);
+  source.EndOfStream();
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(kOpusEndTrimmingWebMFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_EQ(kOpusEndTrimmingWebMFileAudioBytes,
+            pipeline_->GetStatistics().audio_bytes_decoded);
   source.Abort();
   Stop();
 }

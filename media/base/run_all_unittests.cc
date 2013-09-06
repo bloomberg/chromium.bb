@@ -41,6 +41,10 @@ void TestSuiteNoAtExit::Initialize() {
   media::InitializeMediaLibraryForTesting();
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   cmd_line->AppendSwitch(switches::kEnableMP3StreamParser);
+
+  // Enable Opus support for all media tests.
+  // TODO(vigneshv): Remove this once the Opus flag is removed or negated.
+  cmd_line->AppendSwitch(switches::kEnableOpusPlayback);
 }
 
 int main(int argc, char** argv) {

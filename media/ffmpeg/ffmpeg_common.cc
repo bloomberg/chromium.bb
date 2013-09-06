@@ -291,7 +291,9 @@ static void AVCodecContextToAudioDecoderConfig(
                      codec_context->extradata,
                      codec_context->extradata_size,
                      is_encrypted,
-                     record_stats);
+                     record_stats,
+                     base::TimeDelta(),
+                     base::TimeDelta());
   if (codec != kCodecOpus) {
     DCHECK_EQ(av_get_bytes_per_sample(codec_context->sample_fmt) * 8,
               config->bits_per_channel());

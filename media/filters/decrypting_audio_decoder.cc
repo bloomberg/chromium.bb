@@ -191,7 +191,9 @@ void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
                     input_config.extra_data(),
                     input_config.extra_data_size(),
                     input_config.is_encrypted(),
-                    false);
+                    false,
+                    base::TimeDelta(),
+                    base::TimeDelta());
 
   state_ = kPendingDecoderInit;
   decryptor_->InitializeAudioDecoder(
@@ -282,7 +284,9 @@ void DecryptingAudioDecoder::DecryptAndDecodeBuffer(
                     input_config.extra_data(),
                     input_config.extra_data_size(),
                     input_config.is_encrypted(),
-                    false);
+                    false,
+                    base::TimeDelta(),
+                    base::TimeDelta());
 
     state_ = kPendingConfigChange;
     decryptor_->DeinitializeDecoder(Decryptor::kAudio);

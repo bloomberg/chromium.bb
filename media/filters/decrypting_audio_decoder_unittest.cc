@@ -113,7 +113,8 @@ class DecryptingAudioDecoderTest : public testing::Test {
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
     config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
-                       CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, true, true);
+                       CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, true, true,
+                       base::TimeDelta(), base::TimeDelta());
     InitializeAndExpectStatus(config_, PIPELINE_OK);
 
     EXPECT_EQ(DecryptingAudioDecoder::kSupportedBitsPerChannel,
