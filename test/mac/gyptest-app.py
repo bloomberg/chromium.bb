@@ -42,12 +42,16 @@ if sys.platform == 'darwin':
   test.must_not_contain(info_plist, '${MACOSX_DEPLOYMENT_TARGET}');
 
   # Resources
-  strings = test.built_file_path(
-      'Test App Gyp.app/Contents/Resources/English.lproj/InfoPlist.strings',
-      chdir='app-bundle')
-  test.must_exist(strings)
-  # Xcodes writes UTF-16LE with BOM.
-  test.must_contain(strings, '\xff\xfe' + '/* Localized'.encode('utf-16le'))
+  strings_files = ['InfoPlist.strings', 'utf-16be.strings', 'utf-16le.strings']
+  for f in strings_files:
+    strings = test.built_file_path(
+        os.path.join('Test App Gyp.app/Contents/Resources/English.lproj', f),
+        chdir='app-bundle')
+    test.must_exist(strings)
+    # Xcodes writes UTF-16LE with BOM.
+    contents = open(strings, 'rb').read()
+    if not contents.startswith('\xff\xfe' + '/* Localized'.encode('utf-16le')):
+      test.fail_test()
 
   test.built_file_must_exist(
       'Test App Gyp.app/Contents/Resources/English.lproj/MainMenu.nib',
@@ -63,10 +67,11 @@ if sys.platform == 'darwin':
   if set(ls(test.built_file_path('Test App Gyp.app', chdir='app-bundle'))) != \
      set(['Contents/MacOS/Test App Gyp',
           'Contents/Info.plist',
-          'Contents/Resources/English.lproj/InfoPlist.strings',
           'Contents/Resources/English.lproj/MainMenu.nib',
           'Contents/PkgInfo',
-          ]):
+          ] +
+         [os.path.join('Contents/Resources/English.lproj', f)
+             for f in strings_files]):
     test.fail_test()
 
   test.pass_test()

@@ -108,9 +108,9 @@ class MacTool(object):
       return None
     fp.close()
     if header.startswith("\xFE\xFF"):
-      return "UTF-16BE"
+      return "UTF-16"
     elif header.startswith("\xFF\xFE"):
-      return "UTF-16LE"
+      return "UTF-16"
     elif header.startswith("\xEF\xBB\xBF"):
       return "UTF-8"
     else:
