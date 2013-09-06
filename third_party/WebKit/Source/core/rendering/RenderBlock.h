@@ -607,7 +607,7 @@ private:
     void makeChildrenNonInline(RenderObject* insertionPoint = 0);
     virtual void removeLeftoverAnonymousBlock(RenderBlock* child);
 
-    static void collapseAnonymousBoxChild(RenderBlock* parent, RenderObject* child);
+    static void collapseAnonymousBlockChild(RenderBlock* parent, RenderBlock* child);
     void moveAllChildrenIncludingFloatsTo(RenderBlock* toBlock, bool fullRemoveInsert);
 
     virtual void dirtyLinesFromChangedChild(RenderObject* child) OVERRIDE FINAL { m_lineBoxes.dirtyLinesFromChangedChild(this, child); }

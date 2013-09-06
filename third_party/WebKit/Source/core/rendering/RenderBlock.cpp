@@ -1109,8 +1109,13 @@ static bool canMergeContiguousAnonymousBlocks(RenderObject* oldChild, RenderObje
            && prev->isAnonymousColumnSpanBlock() == next->isAnonymousColumnSpanBlock();
 }
 
-void RenderBlock::collapseAnonymousBoxChild(RenderBlock* parent, RenderObject* child)
+void RenderBlock::collapseAnonymousBlockChild(RenderBlock* parent, RenderBlock* child)
 {
+    // It's possible that this block's destruction may have been triggered by the
+    // child's removal. Just bail if the anonymous child block is already being
+    // destroyed. See crbug.com/282088
+    if (child->beingDestroyed())
+        return;
     parent->setNeedsLayoutAndPrefWidthsRecalc();
     parent->setChildrenInline(child->childrenInline());
     RenderObject* nextSibling = child->nextSibling();
@@ -1118,13 +1123,14 @@ void RenderBlock::collapseAnonymousBoxChild(RenderBlock* parent, RenderObject* c
     RenderFlowThread* childFlowThread = child->flowThreadContainingBlock();
     CurrentRenderFlowThreadMaintainer flowThreadMaintainer(childFlowThread);
 
-    RenderBlock* anonBlock = toRenderBlock(parent->children()->removeChildNode(parent, child, child->hasLayer()));
-    anonBlock->moveAllChildrenTo(parent, nextSibling, child->hasLayer());
-    // Delete the now-empty block's lines and nuke it.
-    anonBlock->deleteLineBoxTree();
+    parent->children()->removeChildNode(parent, child, child->hasLayer());
+    child->moveAllChildrenTo(parent, nextSibling, child->hasLayer());
+    // Explicitly delete the child's line box tree, or the special anonymous
+    // block handling in willBeDestroyed will cause problems.
+    child->deleteLineBoxTree();
     if (childFlowThread && childFlowThread->isRenderNamedFlowThread())
-        toRenderNamedFlowThread(childFlowThread)->removeFlowChildInfo(anonBlock);
-    anonBlock->destroy();
+        toRenderNamedFlowThread(childFlowThread)->removeFlowChildInfo(child);
+    child->destroy();
 }
 
 void RenderBlock::moveAllChildrenIncludingFloatsTo(RenderBlock* toBlock, bool fullRemoveInsert)
@@ -1236,16 +1242,16 @@ void RenderBlock::removeChild(RenderObject* oldChild)
         // The removal has knocked us down to containing only a single anonymous
         // box.  We can go ahead and pull the content right back up into our
         // box.
-        collapseAnonymousBoxChild(this, child);
+        collapseAnonymousBlockChild(this, toRenderBlock(child));
     } else if (((prev && prev->isAnonymousBlock()) || (next && next->isAnonymousBlock())) && canCollapseAnonymousBlockChild()) {
         // It's possible that the removal has knocked us down to a single anonymous
         // block with pseudo-style element siblings (e.g. first-letter). If these
         // are floating, then we need to pull the content up also.
-        RenderBlock* anonBlock = toRenderBlock((prev && prev->isAnonymousBlock()) ? prev : next);
-        if ((anonBlock->previousSibling() || anonBlock->nextSibling())
-            && (!anonBlock->previousSibling() || (anonBlock->previousSibling()->style()->styleType() != NOPSEUDO && anonBlock->previousSibling()->isFloating() && !anonBlock->previousSibling()->previousSibling()))
-            && (!anonBlock->nextSibling() || (anonBlock->nextSibling()->style()->styleType() != NOPSEUDO && anonBlock->nextSibling()->isFloating() && !anonBlock->nextSibling()->nextSibling()))) {
-            collapseAnonymousBoxChild(this, anonBlock);
+        RenderBlock* anonymousBlock = toRenderBlock((prev && prev->isAnonymousBlock()) ? prev : next);
+        if ((anonymousBlock->previousSibling() || anonymousBlock->nextSibling())
+            && (!anonymousBlock->previousSibling() || (anonymousBlock->previousSibling()->style()->styleType() != NOPSEUDO && anonymousBlock->previousSibling()->isFloating() && !anonymousBlock->previousSibling()->previousSibling()))
+            && (!anonymousBlock->nextSibling() || (anonymousBlock->nextSibling()->style()->styleType() != NOPSEUDO && anonymousBlock->nextSibling()->isFloating() && !anonymousBlock->nextSibling()->nextSibling()))) {
+            collapseAnonymousBlockChild(this, anonymousBlock);
         }
     }
 
