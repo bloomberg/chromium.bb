@@ -1082,9 +1082,7 @@
   ThreadSanitizer:Race
   fun:av_buffer_unref
   fun:av_frame_unref
-  fun:avcodec_decode_video2
   ...
-  fun:media::FFmpegVideoDecoder::Decode
 }
 {
   bug_256792
@@ -1129,3 +1127,4 @@
   fun:content::UtilityThreadImpl::UtilityThreadImpl
   fun:content::UtilityMainThread::InitInternal
 }
+
