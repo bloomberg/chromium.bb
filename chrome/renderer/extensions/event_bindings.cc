@@ -4,6 +4,9 @@
 
 #include "chrome/renderer/extensions/event_bindings.h"
 
+#include <map>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -21,7 +24,6 @@
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/dispatcher.h"
-#include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_thread.h"
@@ -292,6 +294,11 @@ class ExtensionImpl : public ChromeV8Extension {
     if (object->Has(instance_id)) {
       v8::Handle<v8::Value> instance_id_value(object->Get(instance_id));
       info.SetInstanceID(instance_id_value->IntegerValue());
+    }
+    v8::Handle<v8::String> service_type(v8::String::New("serviceType"));
+    if (object->Has(service_type)) {
+      v8::Handle<v8::Value> service_type_value(object->Get(service_type));
+      info.SetServiceType(*v8::String::AsciiValue(service_type_value));
     }
     return info;
   }

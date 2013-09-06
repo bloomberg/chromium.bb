@@ -12,6 +12,8 @@ const char kUrlFiltersKey[] = "url";
 
 namespace extensions {
 
+const char kEventFilterServiceTypeKey[] = "serviceType";
+
 EventMatcher::EventMatcher(scoped_ptr<base::DictionaryValue> filter,
                            int routing_id)
     : filter_(filter.Pass()),
@@ -23,10 +25,13 @@ EventMatcher::~EventMatcher() {
 
 bool EventMatcher::MatchNonURLCriteria(
     const EventFilteringInfo& event_info) const {
-  if (!event_info.has_instance_id())
-    return true;
+  if (event_info.has_instance_id()) {
+    return event_info.instance_id() == GetInstanceID();
+  }
 
-  return event_info.instance_id() == GetInstanceID();
+  const std::string& service_type_filter = GetServiceTypeFilter();
+  return service_type_filter.empty() ||
+         service_type_filter == event_info.service_type();
 }
 
 int EventMatcher::GetURLFilterCount() const {
@@ -46,6 +51,12 @@ bool EventMatcher::GetURLFilter(int i, base::DictionaryValue** url_filter_out) {
 
 int EventMatcher::HasURLFilters() const {
   return GetURLFilterCount() != 0;
+}
+
+std::string EventMatcher::GetServiceTypeFilter() const {
+  std::string service_type_filter;
+  filter_->GetStringASCII(kEventFilterServiceTypeKey, &service_type_filter);
+  return service_type_filter;
 }
 
 int EventMatcher::GetInstanceID() const {

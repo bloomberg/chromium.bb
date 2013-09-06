@@ -38,11 +38,15 @@ scoped_ptr<base::Value> EventFilteringInfo::AsValue() const {
 
   if (has_instance_id_)
     result->SetInteger("instanceId", instance_id_);
+
+  if (!service_type_.empty())
+    result->SetString("serviceType", service_type_);
+
   return result.PassAs<base::Value>();
 }
 
 bool EventFilteringInfo::IsEmpty() const {
-  return !has_url_;
+  return !has_url_ && service_type_.empty();
 }
 
 }  // namespace extensions
