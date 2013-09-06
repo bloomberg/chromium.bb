@@ -136,13 +136,16 @@ void MIDIHost::ReceiveMIDIData(
     double timestamp) {
   TRACE_EVENT0("midi", "MIDIHost::ReceiveMIDIData");
 
-  // For now disallow all System Exclusive messages even if we
-  // have permission.
-  // TODO(toyoshim): allow System Exclusive if browser has granted
-  // this client access.  We'll likely need to pass a GURL
-  // here to compare against our permissions.
-  if (length > 0 && data[0] >= kSysExMessage)
+  // Check a process security policy to receive a system exclusive message.
+  if (length > 0 && data[0] >= kSysExMessage) {
+    if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanSendMIDISysExMessage(
+        renderer_process_id_)) {
+      // MIDI devices may send a system exclusive messages even if the renderer
+      // doesn't have a permission to receive it. Don't kill the renderer as
+      // OnSendData() does.
       return;
+    }
+  }
 
   // Send to the renderer.
   std::vector<uint8> v(data, data + length);
