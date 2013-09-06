@@ -1530,9 +1530,16 @@ class BranchUtilStage(bs.BuilderStage):
       if ls_remote:
         self.RunPush(project, src_ref='')
     elif ls_remote and not self._options.force_create:
-      raise BranchError('Project %s already contains branch %s.  Run with '
-                        '--force-create to overwrite.'
-                        % (project['name'], self.dest_ref))
+      # ls_remote has format '<sha1> <refname>', extract sha1.
+      existing_remote_ref = ls_remote.split()[0]
+      if existing_remote_ref == project['revision']:
+        cros_build_lib.Info('Project %s already contains branch %s and it '
+                            'already points to revision %s' % (project['name'],
+                            self.dest_ref, project['revision']))
+      else:
+        raise BranchError('Project %s already contains branch %s.  Run with '
+                          '--force-create to overwrite.'
+                          % (project['name'], self.dest_ref))
     else:
       self.RunPush(project, force=self._options.force_create)
 
