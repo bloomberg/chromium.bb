@@ -47,11 +47,13 @@
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include <pthread.h>
 
 #include <va/va.h>
 #include <va/va_drm.h>
@@ -89,6 +91,16 @@ struct vaapi_recorder {
 	int width, height;
 	int frame_count;
 
+	int destroying;
+	pthread_t worker_thread;
+	pthread_mutex_t mutex;
+	pthread_cond_t input_cond;
+
+	struct {
+		int valid;
+		int prime_fd, stride;
+	} input;
+
 	VADisplay va_dpy;
 
 	/* video post processing is used for colorspace conversion */
@@ -115,6 +127,9 @@ struct vaapi_recorder {
 		} param;
 	} encoder;
 };
+
+static void *
+worker_thread_function(void *);
 
 /* bistream code used for writing the packed headers */
 
@@ -886,6 +901,33 @@ vpp_destroy(struct vaapi_recorder *r)
 	vaDestroyConfig(r->va_dpy, r->vpp.cfg);
 }
 
+static int
+setup_worker_thread(struct vaapi_recorder *r)
+{
+	pthread_mutex_init(&r->mutex, NULL);
+	pthread_cond_init(&r->input_cond, NULL);
+	pthread_create(&r->worker_thread, NULL, worker_thread_function, r);
+
+	return 1;
+}
+
+static void
+destroy_worker_thread(struct vaapi_recorder *r)
+{
+	pthread_mutex_lock(&r->mutex);
+
+	/* Make sure the worker thread finishes */
+	r->destroying = 1;
+	pthread_cond_signal(&r->input_cond);
+
+	pthread_mutex_unlock(&r->mutex);
+
+	pthread_join(r->worker_thread, NULL);
+
+	pthread_mutex_destroy(&r->mutex);
+	pthread_cond_destroy(&r->input_cond);
+}
+
 struct vaapi_recorder *
 vaapi_recorder_create(int drm_fd, int width, int height, const char *filename)
 {
@@ -904,8 +946,11 @@ vaapi_recorder_create(int drm_fd, int width, int height, const char *filename)
 	flags = O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC;
 	r->output_fd = open(filename, flags, 0644);
 
-	if (r->output_fd < 0)
+	if (setup_worker_thread(r) < 0)
 		goto err_free;
+
+	if (r->output_fd < 0)
+		goto err_thread;
 
 	r->va_dpy = vaGetDisplayDRM(drm_fd);
 	if (!r->va_dpy) {
@@ -936,6 +981,8 @@ err_va_dpy:
 	vaTerminate(r->va_dpy);
 err_fd:
 	close(r->output_fd);
+err_thread:
+	destroy_worker_thread(r);
 err_free:
 	free(r);
 
@@ -945,6 +992,8 @@ err_free:
 void
 vaapi_recorder_destroy(struct vaapi_recorder *r)
 {
+	destroy_worker_thread(r);
+
 	encoder_destroy(r);
 	vpp_destroy(r);
 
@@ -1033,19 +1082,21 @@ convert_rgb_to_yuv(struct vaapi_recorder *r, VASurfaceID rgb_surface)
 	return status;
 }
 
-void
-vaapi_recorder_frame(struct vaapi_recorder *r, int prime_fd,
-		     int stride)
+static void
+recorder_frame(struct vaapi_recorder *r)
 {
 	VASurfaceID rgb_surface;
 	VAStatus status;
 
-	status = create_surface_from_fd(r, prime_fd, stride, &rgb_surface);
+	status = create_surface_from_fd(r, r->input.prime_fd,
+					r->input.stride, &rgb_surface);
 	if (status != VA_STATUS_SUCCESS) {
 		weston_log("[libva recorder] "
 			   "failed to create surface from bo\n");
 		return;
 	}
+
+	close(r->input.prime_fd);
 
 	status = convert_rgb_to_yuv(r, rgb_surface);
 	if (status != VA_STATUS_SUCCESS) {
@@ -1059,4 +1110,44 @@ vaapi_recorder_frame(struct vaapi_recorder *r, int prime_fd,
 	vaDestroySurfaces(r->va_dpy, &rgb_surface, 1);
 }
 
+static void *
+worker_thread_function(void *data)
+{
+	struct vaapi_recorder *r = data;
 
+	pthread_mutex_lock(&r->mutex);
+
+	while (!r->destroying) {
+		if (!r->input.valid)
+			pthread_cond_wait(&r->input_cond, &r->mutex);
+
+		/* If the thread is awaken by destroy_worker_thread(),
+		 * there might not be valid input */
+		if (!r->input.valid)
+			continue;
+
+		recorder_frame(r);
+		r->input.valid = 0;
+	}
+
+	pthread_mutex_unlock(&r->mutex);
+
+	return NULL;
+}
+
+void
+vaapi_recorder_frame(struct vaapi_recorder *r, int prime_fd, int stride)
+{
+	pthread_mutex_lock(&r->mutex);
+
+	/* The mutex is never released while encoding, so this point should
+	 * never be reached if input.valid is true. */
+	assert(!r->input.valid);
+
+	r->input.prime_fd = prime_fd;
+	r->input.stride = stride;
+	r->input.valid = 1;
+	pthread_cond_signal(&r->input_cond);
+
+	pthread_mutex_unlock(&r->mutex);
+}
