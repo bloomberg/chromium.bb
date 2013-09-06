@@ -7,7 +7,7 @@
 
 #include "base/platform_file.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/web/WebFileWriter.h"
+#include "third_party/WebKit/public/platform/WebFileWriter.h"
 #include "url/gurl.h"
 
 namespace WebKit {

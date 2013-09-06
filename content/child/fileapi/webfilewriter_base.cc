@@ -5,9 +5,9 @@
 #include "content/child/fileapi/webfilewriter_base.h"
 
 #include "base/logging.h"
+#include "third_party/WebKit/public/platform/WebFileError.h"
+#include "third_party/WebKit/public/platform/WebFileWriterClient.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebFileError.h"
-#include "third_party/WebKit/public/web/WebFileWriterClient.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 using fileapi::PlatformFileErrorToWebFileError;

@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/platform_file.h"
-#include "third_party/WebKit/public/web/WebFileError.h"
+#include "third_party/WebKit/public/platform/WebFileError.h"
 #include "third_party/WebKit/public/platform/WebFileSystemType.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/quota/quota_types.h"
