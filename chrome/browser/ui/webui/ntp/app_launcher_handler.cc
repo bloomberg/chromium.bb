@@ -295,7 +295,8 @@ void AppLauncherHandler::Observe(int type,
 
       scoped_ptr<DictionaryValue> app_info(GetAppInfo(extension));
       if (app_info.get()) {
-        visible_apps_.erase(extension->id());
+        if (uninstalled)
+          visible_apps_.erase(extension->id());
 
         scoped_ptr<base::FundamentalValue> uninstall_value(
             Value::CreateBooleanValue(uninstalled));
