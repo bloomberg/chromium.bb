@@ -41,29 +41,46 @@ std::vector<std::string> GetSortedBaseNames(
   return base_names;
 }
 
-// Creates a ResourceEntry for a directory.
-ResourceEntry CreateDirectoryEntry(const std::string& title,
-                                   const std::string& parent_local_id) {
+// Creates a ResourceEntry for a directory with explicitly set resource_id.
+ResourceEntry CreateDirectoryEntryWithResourceId(
+    const std::string& title,
+    const std::string& resource_id,
+    const std::string& parent_local_id) {
   ResourceEntry entry;
   entry.set_title(title);
-  entry.set_resource_id("id:" + title);
+  entry.set_resource_id(resource_id);
   entry.set_parent_local_id(parent_local_id);
   entry.mutable_file_info()->set_is_directory(true);
   entry.mutable_directory_specific_info()->set_changestamp(kTestChangestamp);
   return entry;
 }
 
-// Creates a ResourceEntry for a file.
-ResourceEntry CreateFileEntry(const std::string& title,
-                              const std::string& parent_local_id) {
+// Creates a ResourceEntry for a directory.
+ResourceEntry CreateDirectoryEntry(const std::string& title,
+                                   const std::string& parent_local_id) {
+  return CreateDirectoryEntryWithResourceId(
+      title, "id:" + title, parent_local_id);
+}
+
+// Creates a ResourceEntry for a file with explicitly set resource_id.
+ResourceEntry CreateFileEntryWithResourceId(
+    const std::string& title,
+    const std::string& resource_id,
+    const std::string& parent_local_id) {
   ResourceEntry entry;
   entry.set_title(title);
-  entry.set_resource_id("id:" + title);
+  entry.set_resource_id(resource_id);
   entry.set_parent_local_id(parent_local_id);
   entry.mutable_file_info()->set_is_directory(false);
   entry.mutable_file_info()->set_size(1024);
   entry.mutable_file_specific_info()->set_md5("md5:" + title);
   return entry;
+}
+
+// Creates a ResourceEntry for a file.
+ResourceEntry CreateFileEntry(const std::string& title,
+                              const std::string& parent_local_id) {
+  return CreateFileEntryWithResourceId(title, "id:" + title, parent_local_id);
 }
 
 // Creates the following files/directories
@@ -649,6 +666,100 @@ TEST_F(ResourceMetadataTest, Iterate) {
 
   EXPECT_EQ(7, file_count);
   EXPECT_EQ(6, directory_count);
+}
+
+TEST_F(ResourceMetadataTest, DuplicatedNames) {
+  ResourceEntry entry;
+
+  // When multiple entries with the same title are added in a single directory,
+  // their base_names are de-duped.
+  // - drive/root/foo
+  // - drive/root/foo (1)
+  std::string dir_id_0;
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
+      CreateDirectoryEntryWithResourceId(
+          "foo", "foo0", kTestRootResourceId), &dir_id_0));
+  std::string dir_id_1;
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
+      CreateDirectoryEntryWithResourceId(
+          "foo", "foo1", kTestRootResourceId), &dir_id_1));
+
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+      dir_id_0, &entry));
+  EXPECT_EQ("foo", entry.base_name());
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+      dir_id_1, &entry));
+  EXPECT_EQ("foo (1)", entry.base_name());
+
+  // - drive/root/foo/bar.txt
+  // - drive/root/foo/bar (1).txt
+  // - drive/root/foo/bar (2).txt
+  std::string file_id_0;
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
+      CreateFileEntryWithResourceId(
+          "bar.txt", "bar0", dir_id_0), &file_id_0));
+  std::string file_id_1;
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
+      CreateFileEntryWithResourceId(
+          "bar.txt", "bar1", dir_id_0), &file_id_1));
+  std::string file_id_2;
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
+      CreateFileEntryWithResourceId(
+          "bar.txt", "bar2", dir_id_0), &file_id_2));
+
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+      file_id_0, &entry));
+  EXPECT_EQ("bar.txt", entry.base_name());
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+      file_id_1, &entry));
+  EXPECT_EQ("bar (1).txt", entry.base_name());
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+      file_id_2, &entry));
+  EXPECT_EQ("bar (2).txt", entry.base_name());
+
+  // Same name but different parent. No renaming.
+  // - drive/root/foo (1)/bar.txt
+  std::string file_id_3;
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
+      CreateFileEntryWithResourceId(
+          "bar.txt", "bar3", dir_id_1), &file_id_3));
+
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+      file_id_3, &entry));
+  EXPECT_EQ("bar.txt", entry.base_name());
+
+  // Checks that the entries can be looked up by the de-duped paths.
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/foo/bar (2).txt"), &entry));
+  EXPECT_EQ("bar2", entry.resource_id());
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/foo (1)/bar.txt"), &entry));
+  EXPECT_EQ("bar3", entry.resource_id());
+}
+
+TEST_F(ResourceMetadataTest, EncodedNames) {
+  ResourceEntry entry;
+
+  std::string dir_id;
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
+      CreateDirectoryEntry("\\(^o^)/", kTestRootResourceId), &dir_id));
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+      dir_id, &entry));
+  EXPECT_EQ("\\(^o^)\xE2\x88\x95", entry.base_name());
+
+  std::string file_id;
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
+      CreateFileEntryWithResourceId("Slash /.txt", "myfile", dir_id),
+      &file_id));
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+      file_id, &entry));
+  EXPECT_EQ("Slash \xE2\x88\x95.txt", entry.base_name());
+
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe(
+          "drive/root/\\(^o^)\xE2\x88\x95/Slash \xE2\x88\x95.txt"),
+      &entry));
+  EXPECT_EQ("myfile", entry.resource_id());
 }
 
 }  // namespace internal

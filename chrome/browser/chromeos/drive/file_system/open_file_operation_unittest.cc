@@ -116,6 +116,9 @@ TEST_F(OpenFileOperationTest, CreateNonExistingFile) {
           &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
 
+  EXPECT_EQ(1U, observer()->get_changed_paths().size());
+  EXPECT_TRUE(observer()->get_changed_paths().count(file_in_root.DirName()));
+
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(base::PathExists(file_path));
   int64 local_file_size;
@@ -147,6 +150,10 @@ TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
           &error, &file_path, &close_callback));
   test_util::RunBlockingPoolTask();
 
+  // Notified because 'available offline' status of the existing file changes.
+  EXPECT_EQ(1U, observer()->get_changed_paths().size());
+  EXPECT_TRUE(observer()->get_changed_paths().count(file_in_root.DirName()));
+
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(base::PathExists(file_path));
   int64 local_file_size;
@@ -158,6 +165,16 @@ TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
   EXPECT_EQ(
       1U,
       observer()->upload_needed_local_ids().count(src_entry.resource_id()));
+
+  bool success = false;
+  FileCacheEntry cache_entry;
+  cache()->GetCacheEntryOnUIThread(
+      src_entry.resource_id(),
+      google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
+  test_util::RunBlockingPoolTask();
+  EXPECT_TRUE(success);
+  EXPECT_TRUE(cache_entry.is_present());
+  EXPECT_TRUE(cache_entry.is_dirty());
 }
 
 TEST_F(OpenFileOperationTest, OpenOrCreateNonExistingFile) {

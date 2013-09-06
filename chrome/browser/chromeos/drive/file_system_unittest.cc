@@ -83,9 +83,6 @@ class FileSystemTest : public testing::Test {
     pref_service_.reset(new TestingPrefServiceSimple);
     test_util::RegisterDrivePrefs(pref_service_->registry());
 
-    fake_network_change_notifier_.reset(
-        new test_util::FakeNetworkChangeNotifier);
-
     fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadResourceListForWapi(
         "gdata/root_feed.json");
@@ -172,8 +169,7 @@ class FileSystemTest : public testing::Test {
     scoped_ptr<ResourceEntryVector> entries;
     file_system_->ReadDirectoryByPath(
         file_path,
-        google_apis::test_util::CreateCopyResultCallback(
-            &error, &entries));
+        google_apis::test_util::CreateCopyResultCallback(&error, &entries));
     test_util::RunBlockingPoolTask();
 
     return entries.Pass();
@@ -182,16 +178,6 @@ class FileSystemTest : public testing::Test {
   // Returns true if an entry exists at |file_path|.
   bool EntryExists(const base::FilePath& file_path) {
     return GetResourceEntryByPathSync(file_path);
-  }
-
-  // Gets the resource ID of |file_path|. Returns an empty string if not found.
-  std::string GetResourceIdByPath(const base::FilePath& file_path) {
-    scoped_ptr<ResourceEntry> entry =
-        GetResourceEntryByPathSync(file_path);
-    if (entry)
-      return entry->resource_id();
-    else
-      return "";
   }
 
   // Flag for specifying the timestamp of the test filesystem cache.
@@ -289,8 +275,6 @@ class FileSystemTest : public testing::Test {
   // We don't use TestingProfile::GetPrefs() in favor of having less
   // dependencies to Profile in general.
   scoped_ptr<TestingPrefServiceSimple> pref_service_;
-  scoped_ptr<test_util::FakeNetworkChangeNotifier>
-      fake_network_change_notifier_;
 
   scoped_ptr<FakeDriveService> fake_drive_service_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
@@ -404,48 +388,6 @@ TEST_F(FileSystemTest, GetNonExistingFile) {
   EXPECT_FALSE(entry);
 }
 
-TEST_F(FileSystemTest, GetEncodedFileNames) {
-  const base::FilePath kFilePath1(
-      FILE_PATH_LITERAL("drive/root/Slash / in file 1.txt"));
-  scoped_ptr<ResourceEntry> entry = GetResourceEntryByPathSync(kFilePath1);
-  ASSERT_FALSE(entry);
-
-  const base::FilePath kFilePath2 = base::FilePath::FromUTF8Unsafe(
-      "drive/root/Slash \xE2\x88\x95 in file 1.txt");
-  entry = GetResourceEntryByPathSync(kFilePath2);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ("file:slash_file_resource_id", entry->resource_id());
-
-  const base::FilePath kFilePath3 = base::FilePath::FromUTF8Unsafe(
-      "drive/root/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt");
-  entry = GetResourceEntryByPathSync(kFilePath3);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ("file:slash_subdir_file", entry->resource_id());
-}
-
-TEST_F(FileSystemTest, GetDuplicateNames) {
-  const base::FilePath kFilePath1(
-      FILE_PATH_LITERAL("drive/root/Duplicate Name.txt"));
-  scoped_ptr<ResourceEntry> entry = GetResourceEntryByPathSync(kFilePath1);
-  ASSERT_TRUE(entry);
-  const std::string resource_id1 = entry->resource_id();
-
-  const base::FilePath kFilePath2(
-      FILE_PATH_LITERAL("drive/root/Duplicate Name (1).txt"));
-  entry = GetResourceEntryByPathSync(kFilePath2);
-  ASSERT_TRUE(entry);
-  const std::string resource_id2 = entry->resource_id();
-
-  // The entries are de-duped non-deterministically, so we shouldn't rely on the
-  // names matching specific resource ids.
-  const std::string file3_resource_id = "file:3_file_resource_id";
-  const std::string file4_resource_id = "file:4_file_resource_id";
-  EXPECT_TRUE(file3_resource_id == resource_id1 ||
-              file3_resource_id == resource_id2);
-  EXPECT_TRUE(file4_resource_id == resource_id1 ||
-              file4_resource_id == resource_id2);
-}
-
 TEST_F(FileSystemTest, GetExistingDirectory) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/Directory 1"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntryByPathSync(kFilePath);
@@ -541,8 +483,6 @@ TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {
   // Make GetResourceList fail for simulating offline situation. This will
   // leave the file system "loaded from cache, but not synced with server"
   // state.
-  fake_network_change_notifier_->SetConnectionType(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
   fake_drive_service_->set_offline(true);
 
   // Load the root.
@@ -559,19 +499,17 @@ TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {
       FILE_PATH_LITERAL("drive/root/File1"))));
   EXPECT_TRUE(EntryExists(base::FilePath(
       FILE_PATH_LITERAL("drive/root/Dir1"))));
-  EXPECT_TRUE(
-      EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/root/Dir1/File2"))));
+  EXPECT_TRUE(EntryExists(base::FilePath(
+      FILE_PATH_LITERAL("drive/root/Dir1/File2"))));
   EXPECT_TRUE(EntryExists(base::FilePath(
       FILE_PATH_LITERAL("drive/root/Dir1/SubDir2"))));
-  EXPECT_TRUE(EntryExists(
-      base::FilePath(FILE_PATH_LITERAL("drive/root/Dir1/SubDir2/File3"))));
+  EXPECT_TRUE(EntryExists(base::FilePath(
+      FILE_PATH_LITERAL("drive/root/Dir1/SubDir2/File3"))));
 
   // Since the file system has at least succeeded to load cached snapshot,
   // the file system should be able to start periodic refresh.
   // To test it, call CheckForUpdates and verify it does try to check
   // updates, which will cause directory changes.
-  fake_network_change_notifier_->SetConnectionType(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
   fake_drive_service_->set_offline(false);
 
   file_system_->CheckForUpdates();
@@ -714,83 +652,6 @@ TEST_F(FileSystemTest, GetAvailableSpace) {
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(GG_LONGLONG(6789012345), bytes_used);
   EXPECT_EQ(GG_LONGLONG(9876543210), bytes_total);
-}
-
-TEST_F(FileSystemTest, OpenAndCloseFile) {
-  ASSERT_TRUE(LoadFullResourceList());
-
-  const base::FilePath kFileInRoot(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  scoped_ptr<ResourceEntry> entry(GetResourceEntryByPathSync(kFileInRoot));
-  const std::string& file_resource_id = entry->resource_id();
-
-  // Open kFileInRoot ("drive/root/File 1.txt").
-  FileError error = FILE_ERROR_FAILED;
-  base::FilePath file_path;
-  base::Closure close_callback;
-  file_system_->OpenFile(
-      kFileInRoot,
-      OPEN_FILE,
-      std::string(),  // mime_type
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &file_path, &close_callback));
-  test_util::RunBlockingPoolTask();
-  const base::FilePath opened_file_path = file_path;
-
-  // Verify that the file was properly opened.
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  // The opened file is downloaded, which means the file is available
-  // offline. The directory change should be notified so Files.app can change
-  // the offline availability status of the file.
-  ASSERT_EQ(1u, mock_directory_observer_->changed_directories().size());
-  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive/root")),
-            mock_directory_observer_->changed_directories()[0]);
-
-  // Verify that the file contents match the expected contents.
-  const std::string kExpectedContent = "This is some test content.";
-  std::string cache_file_data;
-  EXPECT_TRUE(base::ReadFileToString(opened_file_path, &cache_file_data));
-  EXPECT_EQ(kExpectedContent, cache_file_data);
-
-  FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(file_resource_id, &cache_entry));
-  EXPECT_TRUE(cache_entry.is_present());
-  EXPECT_TRUE(cache_entry.is_dirty());
-
-  base::FilePath cache_file_path;
-  EXPECT_EQ(FILE_ERROR_OK, cache_->GetFile(file_resource_id, &cache_file_path));
-  EXPECT_EQ(cache_file_path, opened_file_path);
-
-  // Write a new content.
-  const std::string kNewContent = kExpectedContent + kExpectedContent;
-  EXPECT_TRUE(google_apis::test_util::WriteStringToFile(cache_file_path,
-                                                        kNewContent));
-
-  // Close kFileInRoot ("drive/root/File 1.txt").
-  ASSERT_FALSE(close_callback.is_null());
-  close_callback.Run();
-  test_util::RunBlockingPoolTask();
-
-  // Verify that the file was properly closed.
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  // Verify that the file was synced as expected.
-  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_FILE_ERROR;
-  scoped_ptr<google_apis::ResourceEntry> gdata_entry;
-  fake_drive_service_->GetResourceEntry(
-      file_resource_id,
-      google_apis::test_util::CreateCopyResultCallback(
-          &gdata_error, &gdata_entry));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(gdata_error, google_apis::HTTP_SUCCESS);
-  ASSERT_TRUE(gdata_entry);
-  EXPECT_EQ(static_cast<int>(kNewContent.size()), gdata_entry->file_size());
-
-  // The modified file is uploaded. The directory change should be notified
-  // so Files.app can show new metadata of the modified file.
-  ASSERT_EQ(2u, mock_directory_observer_->changed_directories().size());
-  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive/root")),
-            mock_directory_observer_->changed_directories()[1]);
 }
 
 TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
