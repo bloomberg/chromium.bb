@@ -250,6 +250,9 @@ namespace extension_misc {
     APP_LAUNCH_BUCKET_INVALID
   };
 
+  // The extension id of the ChromeVox extension.
+  extern const char kChromeVoxExtensionId[];
+
 #if defined(OS_CHROMEOS)
   // Path to preinstalled ChromeVox screen reader extension.
   extern const char kChromeVoxExtensionPath[];

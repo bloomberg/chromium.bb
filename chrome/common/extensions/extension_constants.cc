@@ -125,6 +125,9 @@ const char kPlatformAppLaunchHistogram[] = "Apps.AppLaunch";
 #if defined(OS_CHROMEOS)
 const char kChromeVoxExtensionPath[] =
     "/usr/share/chromeos-assets/accessibility/extensions/access_chromevox";
+// The extension id for the built-in component extension.
+const char kChromeVoxExtensionId[] =
+    "mndnfokpggljbaajbnioimlmbfngpief";
 const char kConnectivityDiagnosticsPath[] =
     "/usr/share/chromeos-assets/connectivity_diagnostics";
 const char kConnectivityDiagnosticsLauncherPath[] =
@@ -134,6 +137,10 @@ const char kSpeechSynthesisExtensionPath[] =
 const char kSpeechSynthesisExtensionId[] =
     "gjjabgpgjpampikjhjpfhneeoapjbjaf";
 const char kWallpaperManagerId[] = "obklkkbkpaoaejdabbfldmcfplpdgolj";
+#else
+// The extension id for the web store extension.
+const char kChromeVoxExtensionId[] =
+    "kgejglhpjiefppelpmljglcjbhoiplfn";
 #endif
 
 const char kAppStateNotInstalled[] = "not_installed";

@@ -30,6 +30,13 @@ bool RendererPermissionsPolicyDelegate::CanExecuteScriptOnPage(
     const UserScript* script,
     int process_id,
     std::string* error) {
+  const Extension::ScriptingWhitelist* whitelist =
+      Extension::GetScriptingWhitelist();
+  if (std::find(whitelist->begin(), whitelist->end(), extension->id()) !=
+      whitelist->end()) {
+    return true;
+  }
+
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSigninProcess)) {
     if (error)
       *error = errors::kCannotScriptSigninPage;
