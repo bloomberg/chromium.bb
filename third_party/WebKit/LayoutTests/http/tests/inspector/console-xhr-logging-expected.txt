@@ -11,18 +11,18 @@ CONSOLE MESSAGE: XMLHttpRequest cannot load http://localhost:8000/inspector/reso
 Tests that XMLHttpRequest Logging works when Enabled and doesn't show logs when Disabled.
 
 sending a GET request to resources/xhr-exists.html console-xhr-logging.html:10
-XHR finished loading: "http://127.0.0.1:8000/inspector/resources/xhr-exists.html". network-test.js:95
+XHR finished loading: "http://127.0.0.1:8000/inspector/resources/xhr-exists.html". network-test.js:97
 sending a GET request to resources/xhr-does-not-exist.html console-xhr-logging.html:10
-GET http://127.0.0.1:8000/inspector/resources/xhr-does-not-exist.html 404 (Not Found) network-test.js:95
-XHR finished loading: "http://127.0.0.1:8000/inspector/resources/xhr-does-not-exist.html". network-test.js:95
+GET http://127.0.0.1:8000/inspector/resources/xhr-does-not-exist.html 404 (Not Found) network-test.js:97
+XHR finished loading: "http://127.0.0.1:8000/inspector/resources/xhr-does-not-exist.html". network-test.js:97
 sending a POST request to resources/post-target.cgi console-xhr-logging.html:10
-XHR finished loading: "http://127.0.0.1:8000/inspector/resources/post-target.cgi". network-test.js:95
+XHR finished loading: "http://127.0.0.1:8000/inspector/resources/post-target.cgi". network-test.js:97
 sending a GET request to http://localhost:8000/inspector/resources/xhr-exists.html console-xhr-logging.html:10
-XMLHttpRequest cannot load http://localhost:8000/inspector/resources/xhr-exists.html. No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access. network-test.js:95
+XMLHttpRequest cannot load http://localhost:8000/inspector/resources/xhr-exists.html. No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access. network-test.js:97
 sending a GET request to resources/xhr-exists.html console-xhr-logging.html:10
 sending a GET request to resources/xhr-does-not-exist.html console-xhr-logging.html:10
-GET http://127.0.0.1:8000/inspector/resources/xhr-does-not-exist.html 404 (Not Found) network-test.js:95
+GET http://127.0.0.1:8000/inspector/resources/xhr-does-not-exist.html 404 (Not Found) network-test.js:97
 sending a POST request to resources/post-target.cgi console-xhr-logging.html:10
 sending a GET request to http://localhost:8000/inspector/resources/xhr-exists.html console-xhr-logging.html:10
-XMLHttpRequest cannot load http://localhost:8000/inspector/resources/xhr-exists.html. No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access. network-test.js:95
+XMLHttpRequest cannot load http://localhost:8000/inspector/resources/xhr-exists.html. No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access. network-test.js:97
 

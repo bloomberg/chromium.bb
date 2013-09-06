@@ -33,15 +33,15 @@ InspectorTest.resetInspectorResourcesData = function(callback)
 
 InspectorTest.makeSimpleXHR = function(method, url, async, callback)
 {
-    InspectorTest.makeXHR(method, url, async, undefined, undefined, [], false, undefined, callback);
+    InspectorTest.makeXHR(method, url, async, undefined, undefined, [], false, undefined, undefined, callback);
 }
 
 InspectorTest.makeSimpleXHRWithPayload = function(method, url, async, payload, callback)
 {
-    InspectorTest.makeXHR(method, url, async, undefined, undefined, [], false, payload, callback);
+    InspectorTest.makeXHR(method, url, async, undefined, undefined, [], false, payload, undefined, callback);
 }
 
-InspectorTest.makeXHR = function(method, url, async, user, password, headers, withCredentials, payload, callback)
+InspectorTest.makeXHR = function(method, url, async, user, password, headers, withCredentials, payload, type, callback)
 {
     var args = {};
     args.method = method;
@@ -52,6 +52,7 @@ InspectorTest.makeXHR = function(method, url, async, user, password, headers, wi
     args.headers = headers;
     args.withCredentials = withCredentials;
     args.payload = payload;
+    args.type = type;
     var jsonArgs = JSON.stringify(args).replace(/\"/g, "\\\"");
 
     function innerCallback(msg)
@@ -78,9 +79,10 @@ function makeSimpleXHRWithPayload(method, url, async, payload, callback)
     makeXHR(method, url, async, undefined, undefined, [], false, payload, callback)
 }
 
-function makeXHR(method, url, async, user, password, headers, withCredentials, payload, callback)
+function makeXHR(method, url, async, user, password, headers, withCredentials, payload, type, callback)
 {
     var xhr = new XMLHttpRequest();
+    xhr.responseType = type;
     xhr.onreadystatechange = function()
     {
         if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -98,7 +100,7 @@ function makeXHR(method, url, async, user, password, headers, withCredentials, p
 function makeXHRForJSONArguments(jsonArgs)
 {
     var args = JSON.parse(jsonArgs);
-    makeXHR(args.method, args.url, args.async, args.user, args.password, args.headers || [], args.withCredentials, args.payload, xhrLoadedCallback);
+    makeXHR(args.method, args.url, args.async, args.user, args.password, args.headers || [], args.withCredentials, args.payload, args.type, xhrLoadedCallback);
 }
 
 
