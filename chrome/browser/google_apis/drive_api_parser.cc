@@ -408,22 +408,22 @@ scoped_ptr<AppResource> AppResource::CreateFromInstalledApp(
   {
     ScopedVector<std::string> primary_mimetypes(
         CopyScopedVectorString(installed_app.primary_mimetypes()));
-    resource->set_primary_mimetypes(&primary_mimetypes);
+    resource->set_primary_mimetypes(primary_mimetypes.Pass());
   }
   {
     ScopedVector<std::string> secondary_mimetypes(
         CopyScopedVectorString(installed_app.secondary_mimetypes()));
-    resource->set_secondary_mimetypes(&secondary_mimetypes);
+    resource->set_secondary_mimetypes(secondary_mimetypes.Pass());
   }
   {
     ScopedVector<std::string> primary_file_extensions(
         CopyScopedVectorString(installed_app.primary_extensions()));
-    resource->set_primary_file_extensions(&primary_file_extensions);
+    resource->set_primary_file_extensions(primary_file_extensions.Pass());
   }
   {
     ScopedVector<std::string> secondary_file_extensions(
         CopyScopedVectorString(installed_app.secondary_extensions()));
-    resource->set_secondary_file_extensions(&secondary_file_extensions);
+    resource->set_secondary_file_extensions(secondary_file_extensions.Pass());
   }
 
   {
@@ -433,7 +433,7 @@ scoped_ptr<AppResource> AppResource::CreateFromInstalledApp(
     for (size_t i = 0; i < app_icons.size(); ++i) {
       icons.push_back(DriveAppIcon::CreateFromAppIcon(*app_icons[i]).release());
     }
-    resource->set_icons(&icons);
+    resource->set_icons(icons.Pass());
   }
 
   // supports_import, installed and authorized are not supported in
@@ -490,7 +490,7 @@ scoped_ptr<AppList> AppList::CreateFromAccountMetadata(
     app_resources.push_back(
         AppResource::CreateFromInstalledApp(*installed_apps[i]).release());
   }
-  resource->set_items(&app_resources);
+  resource->set_items(app_resources.Pass());
 
   // etag is not supported in AccountMetadata.
 

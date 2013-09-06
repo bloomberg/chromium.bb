@@ -265,23 +265,23 @@ class AppResource {
     product_url_ = product_url;
   }
   void set_primary_mimetypes(
-      ScopedVector<std::string>* primary_mimetypes) {
-    primary_mimetypes_.swap(*primary_mimetypes);
+      ScopedVector<std::string> primary_mimetypes) {
+    primary_mimetypes_ = primary_mimetypes.Pass();
   }
   void set_secondary_mimetypes(
-      ScopedVector<std::string>* secondary_mimetypes) {
-    secondary_mimetypes_.swap(*secondary_mimetypes);
+      ScopedVector<std::string> secondary_mimetypes) {
+    secondary_mimetypes_ = secondary_mimetypes.Pass();
   }
   void set_primary_file_extensions(
-      ScopedVector<std::string>* primary_file_extensions) {
-    primary_file_extensions_.swap(*primary_file_extensions);
+      ScopedVector<std::string> primary_file_extensions) {
+    primary_file_extensions_ = primary_file_extensions.Pass();
   }
   void set_secondary_file_extensions(
-      ScopedVector<std::string>* secondary_file_extensions) {
-    secondary_file_extensions_.swap(*secondary_file_extensions);
+      ScopedVector<std::string> secondary_file_extensions) {
+    secondary_file_extensions_ = secondary_file_extensions.Pass();
   }
-  void set_icons(ScopedVector<DriveAppIcon>* icons) {
-    icons_.swap(*icons);
+  void set_icons(ScopedVector<DriveAppIcon> icons) {
+    icons_ = icons.Pass();
   }
 
  private:
@@ -339,8 +339,8 @@ class AppList {
   void set_etag(const std::string& etag) {
     etag_ = etag;
   }
-  void set_items(ScopedVector<AppResource>* items) {
-    items_.swap(*items);
+  void set_items(ScopedVector<AppResource> items) {
+    items_ = items.Pass();
   }
 
  private:
@@ -603,8 +603,8 @@ class FileResource {
   void set_embed_link(const GURL& embed_link) {
     embed_link_ = embed_link;
   }
-  void set_parents(ScopedVector<ParentReference>* parents) {
-    parents_.swap(*parents);
+  void set_parents(ScopedVector<ParentReference> parents) {
+    parents_ = parents.Pass();
   }
   void set_thumbnail_link(const GURL& thumbnail_link) {
     thumbnail_link_ = thumbnail_link;
@@ -688,8 +688,8 @@ class FileList {
   void set_next_link(const GURL& next_link) {
     next_link_ = next_link;
   }
-  void set_items(ScopedVector<FileResource>* items) {
-    items_.swap(*items);
+  void set_items(ScopedVector<FileResource> items) {
+    items_ = items.Pass();
   }
 
  private:
@@ -812,8 +812,8 @@ class ChangeList {
   void set_largest_change_id(int64 largest_change_id) {
     largest_change_id_ = largest_change_id;
   }
-  void set_items(ScopedVector<ChangeResource>* items) {
-    items_.swap(*items);
+  void set_items(ScopedVector<ChangeResource> items) {
+    items_ = items.Pass();
   }
 
  private:

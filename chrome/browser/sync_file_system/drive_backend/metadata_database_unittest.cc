@@ -404,7 +404,7 @@ class MetadataDatabaseTest : public testing::Test {
     }
 
     file_resource->set_file_id(file.file_id());
-    file_resource->set_parents(&parents);
+    file_resource->set_parents(parents.Pass());
     file_resource->set_title(file.details().title());
     if (file.details().file_kind() == FILE_KIND_FOLDER)
       file_resource->set_mime_type("application/vnd.google-apps.folder");

@@ -170,7 +170,7 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   ScopedVector<std::string> foo_mime_types;
   foo_mime_types.push_back(new std::string("text/plain"));
   foo_mime_types.push_back(new std::string("text/html"));
-  foo_app->set_primary_mimetypes(&foo_mime_types);
+  foo_app->set_primary_mimetypes(foo_mime_types.Pass());
 
   // Bar.app can only handle "text/plain".
   scoped_ptr<google_apis::AppResource> bar_app(new google_apis::AppResource);
@@ -181,14 +181,14 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   bar_app->set_object_type("bar_object_type");
   ScopedVector<std::string> bar_mime_types;
   bar_mime_types.push_back(new std::string("text/plain"));
-  bar_app->set_primary_mimetypes(&bar_mime_types);
+  bar_app->set_primary_mimetypes(bar_mime_types.Pass());
 
   // Prepare DriveAppRegistry from Foo.app and Bar.app.
   ScopedVector<google_apis::AppResource> app_resources;
   app_resources.push_back(foo_app.release());
   app_resources.push_back(bar_app.release());
   google_apis::AppList app_list;
-  app_list.set_items(&app_resources);
+  app_list.set_items(app_resources.Pass());
   drive::DriveAppRegistry drive_app_registry(NULL);
   drive_app_registry.UpdateFromAppList(app_list);
 
