@@ -58,7 +58,7 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName)
 
 PassOwnPtr<GIFImageDecoder> createDecoder()
 {
-    return adoptPtr(new GIFImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied));
+    return adoptPtr(new GIFImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied, IntSize()));
 }
 
 unsigned hashSkBitmap(const SkBitmap& bitmap)

@@ -43,8 +43,9 @@ namespace WebCore {
 static const size_t sizeOfFileHeader = 14;
 
 BMPImageDecoder::BMPImageDecoder(ImageSource::AlphaOption alphaOption,
-                                 ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption)
-    : ImageDecoder(alphaOption, gammaAndColorProfileOption)
+    ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption,
+    const IntSize& maxDecodedSize)
+    : ImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedSize)
     , m_decodedOffset(0)
 {
 }

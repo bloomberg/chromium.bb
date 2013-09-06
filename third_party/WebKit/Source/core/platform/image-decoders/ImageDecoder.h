@@ -232,12 +232,23 @@ namespace WebCore {
 
     // ImageDecoder is a base for all format-specific decoders
     // (e.g. JPEGImageDecoder). This base manages the ImageFrame cache.
+    //
+    // |maxDecodedSize| is used to limit decoded image sizes to no larger than
+    // the provided size. This is used to limit memory consumption when
+    // decoding large images. Image should be shrunk such that both width and
+    // height fit inside the specified size.
+    //
+    // Individual image decoders may ignore this entirely (which may result in
+    // excessive memory consumption) or shrink images even smaller than the
+    // provided size (which may result in decreased visual fidelity of the
+    // rendered page).
     class ImageDecoder {
         WTF_MAKE_NONCOPYABLE(ImageDecoder); WTF_MAKE_FAST_ALLOCATED;
     public:
-        ImageDecoder(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption)
+    ImageDecoder(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption, const IntSize& maxDecodedSize)
             : m_premultiplyAlpha(alphaOption == ImageSource::AlphaPremultiplied)
             , m_ignoreGammaAndColorProfile(gammaAndColorProfileOption == ImageSource::GammaAndColorProfileIgnored)
+            , m_maxDecodedSize(maxDecodedSize)
             , m_sizeAvailable(false)
             , m_isAllDataReceived(false)
             , m_failed(false) { }
@@ -434,6 +445,7 @@ namespace WebCore {
         bool m_premultiplyAlpha;
         bool m_ignoreGammaAndColorProfile;
         ImageOrientation m_orientation;
+        IntSize m_maxDecodedSize;
 
     private:
         // Some code paths compute the size of the image as "width * height * 4"

@@ -35,8 +35,9 @@
 namespace WebCore {
 
 GIFImageDecoder::GIFImageDecoder(ImageSource::AlphaOption alphaOption,
-                                 ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption)
-    : ImageDecoder(alphaOption, gammaAndColorProfileOption)
+    ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption,
+    const IntSize& maxDecodedSize)
+    : ImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedSize)
     , m_repetitionCount(cAnimationLoopOnce)
 {
 }

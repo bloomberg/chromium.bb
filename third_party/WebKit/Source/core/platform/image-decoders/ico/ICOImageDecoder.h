@@ -40,7 +40,7 @@ namespace WebCore {
     // This class decodes the ICO and CUR image formats.
     class ICOImageDecoder : public ImageDecoder {
     public:
-        ICOImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption);
+        ICOImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption, const IntSize&);
         virtual ~ICOImageDecoder();
 
         // ImageDecoder

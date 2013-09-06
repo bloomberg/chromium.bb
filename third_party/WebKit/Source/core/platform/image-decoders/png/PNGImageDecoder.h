@@ -36,7 +36,7 @@ namespace WebCore {
     // This class decodes the PNG image format.
     class PNGImageDecoder : public ImageDecoder {
     public:
-        PNGImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption);
+        PNGImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption, const IntSize&);
         virtual ~PNGImageDecoder();
 
         // ImageDecoder

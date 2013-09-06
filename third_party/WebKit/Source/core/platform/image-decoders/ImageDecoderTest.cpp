@@ -42,7 +42,7 @@ using namespace WebCore;
 class TestImageDecoder : public ImageDecoder {
 public:
     TestImageDecoder()
-        : ImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied)
+        : ImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied, IntSize())
     {
     }
 

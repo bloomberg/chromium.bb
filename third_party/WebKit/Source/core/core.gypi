@@ -3834,6 +3834,7 @@
             'platform/graphics/gpu/DrawingBufferTest.cpp',
             'platform/image-decoders/ImageDecoderTest.cpp',
             'platform/image-decoders/gif/GIFImageDecoderTest.cpp',
+            'platform/image-decoders/jpeg/JPEGImageDecoderTest.cpp',
             'platform/image-decoders/webp/WEBPImageDecoderTest.cpp',
             'platform/text/DateTimeFormatTest.cpp',
             'rendering/RenderOverflowTest.cpp',

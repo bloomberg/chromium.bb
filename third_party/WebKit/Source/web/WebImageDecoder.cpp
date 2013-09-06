@@ -55,10 +55,10 @@ void WebImageDecoder::init(Type type)
 {
     switch (type) {
     case TypeBMP:
-        m_private = new BMPImageDecoder(ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied);
+        m_private = new BMPImageDecoder(ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied, IntSize());
         break;
     case TypeICO:
-        m_private = new ICOImageDecoder(ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied);
+        m_private = new ICOImageDecoder(ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied, IntSize());
         break;
     }
 }

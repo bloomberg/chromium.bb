@@ -92,22 +92,22 @@ PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, ImageSou
         return nullptr;
 
     if (matchesJPEGSignature(contents))
-        return adoptPtr(new JPEGImageDecoder(alphaOption, gammaAndColorProfileOption));
+        return adoptPtr(new JPEGImageDecoder(alphaOption, gammaAndColorProfileOption, IntSize()));
 
     if (matchesPNGSignature(contents))
-        return adoptPtr(new PNGImageDecoder(alphaOption, gammaAndColorProfileOption));
+        return adoptPtr(new PNGImageDecoder(alphaOption, gammaAndColorProfileOption, IntSize()));
 
     if (matchesGIFSignature(contents))
-        return adoptPtr(new GIFImageDecoder(alphaOption, gammaAndColorProfileOption));
+        return adoptPtr(new GIFImageDecoder(alphaOption, gammaAndColorProfileOption, IntSize()));
 
     if (matchesICOSignature(contents) || matchesCURSignature(contents))
-        return adoptPtr(new ICOImageDecoder(alphaOption, gammaAndColorProfileOption));
+        return adoptPtr(new ICOImageDecoder(alphaOption, gammaAndColorProfileOption, IntSize()));
 
     if (matchesWebPSignature(contents))
-        return adoptPtr(new WEBPImageDecoder(alphaOption, gammaAndColorProfileOption));
+        return adoptPtr(new WEBPImageDecoder(alphaOption, gammaAndColorProfileOption, IntSize()));
 
     if (matchesBMPSignature(contents))
-        return adoptPtr(new BMPImageDecoder(alphaOption, gammaAndColorProfileOption));
+        return adoptPtr(new BMPImageDecoder(alphaOption, gammaAndColorProfileOption, IntSize()));
 
     return nullptr;
 }

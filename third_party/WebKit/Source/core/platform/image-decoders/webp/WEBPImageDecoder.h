@@ -38,7 +38,7 @@ namespace WebCore {
 
 class WEBPImageDecoder : public ImageDecoder {
 public:
-    WEBPImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption);
+    WEBPImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption, const IntSize&);
     virtual ~WEBPImageDecoder();
 
     virtual String filenameExtension() const OVERRIDE { return "webp"; }
