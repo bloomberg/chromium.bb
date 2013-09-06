@@ -485,7 +485,6 @@
         'dbus/ibus/ibus_client_unittest.cc',
         'dbus/ibus/ibus_component_unittest.cc',
         'dbus/ibus/ibus_engine_factory_service_unittest.cc',
-        'dbus/ibus/ibus_engine_service_unittest.cc',
         'dbus/ibus/ibus_input_context_client_unittest.cc',
         'dbus/ibus/ibus_lookup_table_unittest.cc',
         'dbus/ibus/ibus_object_unittest.cc',

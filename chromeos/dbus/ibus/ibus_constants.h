@@ -53,57 +53,6 @@ const char kServiceInterface[] = "org.freedesktop.IBus.Factory";
 const char kCreateEngineMethod[] = "CreateEngine";
 }  // namespace engine_factory
 
-namespace engine {
-const char kServicePathPrefix[] = "/org/freedesktop/IBus/Engine/";
-const char kServiceInterface[] = "org.freedesktop.IBus.Engine";
-const char kFocusInMethod[] = "FocusIn";
-const char kFocusOutMethod[] = "FocusOut";
-const char kEnableMethod[] = "Enable";
-const char kDisableMethod[] = "Disable";
-const char kPropertyActivateMethod[] = "PropertyActivate";
-const char kPropertyShowMethod[] = "PropertyShow";
-const char kPropertyHideMethod[] = "PropertyHide";
-const char kSetCapabilityMethod[] = "SetCapability";
-const char kResetMethod[] = "Reset";
-const char kProcessKeyEventMethod[] = "ProcessKeyEvent";
-const char kCandidateClickedMethod[] = "CandidateClicked";
-const char kSetSurroundingTextMethod[] = "SetSurroundingText";
-const char kRegisterPropertiesSignal[] = "RegisterProperties";
-const char kUpdatePreeditSignal[] = "UpdatePreeditText";
-const char kUpdateAuxiliaryTextSignal[] = "UpdateAuxiliaryText";
-const char kUpdateLookupTableSignal[] = "UpdateLookupTable";
-const char kUpdatePropertySignal[] = "UpdateProperty";
-const char kForwardKeyEventSignal[] = "ForwardKeyEvent";
-const char kRequireSurroundingTextSignal[] = "RequireSurroundingText";
-const char kCommitTextSignal[] = "CommitText";
-const char kDeleteSurroundingTextSignal[] = "DeleteSurroundingText";
-}  // namespace engine
-
-namespace panel {
-const char kServiceName[] = "org.freedesktop.IBus.Panel";
-const char kServicePath[] = "/org/freedesktop/IBus/Panel";
-const char kServiceInterface[] = "org.freedesktop.IBus.Panel";
-const char kUpdateLookupTableMethod[] = "UpdateLookupTable";
-const char kHideLookupTableMethod[] = "HideLookupTable";
-const char kUpdateAuxiliaryTextMethod[] = "UpdateAuxiliaryText";
-const char kHideAuxiliaryTextMethod[] = "HideAuxiliaryText";
-const char kUpdatePreeditTextMethod[] = "UpdatePreeditText";
-const char kHidePreeditTextMethod[] = "HidePreeditText";
-const char kRegisterPropertiesMethod[] = "RegisterProperties";
-const char kUpdatePropertyMethod[] = "UpdateProperty";
-const char kCandidateClickedSignal[] = "CandidateClicked";
-const char kCursorUpSignal[] = "CursorUp";
-const char kCursorDownSignal[] = "CursorDown";
-const char kPageUpSignal[] = "PageUp";
-const char kPageDownSignal[] = "PageDown";
-
-// Methods to be just ignored. We do not use these methods in the UI.
-// See http://crbug.com/164525.
-const char kFocusInMethod[] = "FocusIn";
-const char kFocusOutMethod[] = "FocusOut";
-const char kStateChangedMethod[] = "StateChanged";
-}  // namespace panel
-
 namespace config {
 const char kServiceName[] = "org.freedesktop.IBus.Config";
 const char kServicePath[] = "/org/freedesktop/IBus/Config";

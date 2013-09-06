@@ -316,9 +316,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
       const dbus::ObjectPath& object_path) OVERRIDE {
     if (ibus_engine_services_.find(object_path)
             == ibus_engine_services_.end()) {
-      ibus_engine_services_[object_path] =
-          IBusEngineService::Create(STUB_DBUS_CLIENT_IMPLEMENTATION,
-                                    ibus_bus_.get(), object_path);
+      ibus_engine_services_[object_path] = IBusEngineService::Create();
     }
     return ibus_engine_services_[object_path];
   }
