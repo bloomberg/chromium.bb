@@ -37,7 +37,6 @@
 #include "chrome/browser/extensions/api/input/input.h"
 #include "chrome/browser/extensions/api/location/location_manager.h"
 #include "chrome/browser/extensions/api/management/management_api.h"
-#include "chrome/browser/extensions/api/mdns/mdns_api.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/api/preference/chrome_direct_setting_api.h"
@@ -240,7 +239,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   extensions::LocationManager::GetFactoryInstance();
   extensions::ManagementAPI::GetFactoryInstance();
-  extensions::MDnsAPI::GetFactoryInstance();
   extensions::MediaGalleriesPrivateAPI::GetFactoryInstance();
 #if defined(OS_CHROMEOS)
   extensions::MediaPlayerAPI::GetFactoryInstance();

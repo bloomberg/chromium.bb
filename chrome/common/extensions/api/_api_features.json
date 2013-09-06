@@ -351,10 +351,6 @@
     "dependencies": ["permission:metricsPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "mdns": {
-    "dependencies": ["permission:mdns"],
-    "contexts": ["blessed_extension"]
-  },
   "musicManagerPrivate": {
     "dependencies": ["permission:musicManagerPrivate"],
     "contexts": ["blessed_extension"]

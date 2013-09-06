@@ -12,8 +12,6 @@ namespace extensions {
 
 class EventFilteringInfo;
 
-extern const char kEventFilterServiceTypeKey[];
-
 // Matches EventFilteringInfos against a set of criteria. This is intended to
 // be used by EventFilter which performs efficient URL matching across
 // potentially many EventMatchers itself. This is why this class only exposes
@@ -30,8 +28,6 @@ class EventMatcher {
 
   int GetURLFilterCount() const;
   bool GetURLFilter(int i, base::DictionaryValue** url_filter_out);
-
-  std::string GetServiceTypeFilter() const;
 
   int HasURLFilters() const;
 

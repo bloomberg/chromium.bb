@@ -1344,7 +1344,6 @@
         'browser/extensions/api/management/management_api_browsertest.cc',
         'browser/extensions/api/management/management_apitest.cc',
         'browser/extensions/api/management/management_browsertest.cc',
-        'browser/extensions/api/mdns/mdns_apitest.cc',
         'browser/extensions/api/media_galleries/media_galleries_apitest.cc',
         'browser/extensions/api/media_galleries_private/media_galleries_private_apitest.cc',
         'browser/extensions/api/media_galleries_private/media_galleries_watch_apitest.cc',

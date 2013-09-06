@@ -228,7 +228,7 @@
   // Dispatches a named event with the given argument array. The args array is
   // the list of arguments that will be sent to the event callback.
   function dispatchEvent(name, args, filteringInfo) {
-    var listenerIDs = [];
+    var listenerIDs = null;
 
     if (filteringInfo)
       listenerIDs = eventNatives.MatchAgainstEventFilter(name, filteringInfo);
@@ -262,11 +262,7 @@
       if (!this.eventOptions_.supportsFilters)
         throw new Error("This event does not support filters.");
       if (filters.url && !(filters.url instanceof Array))
-        throw new Error("filters.url should be an array.");
-      if (filters.serviceType &&
-          !(typeof filters.serviceType === 'string')) {
-        throw new Error("filters.serviceType should be a string.")
-      }
+        throw new Error("filters.url should be an array");
     }
     var listener = {callback: cb, filters: filters};
     this.attach_(listener);
