@@ -84,20 +84,10 @@ base::FilePath ReverseConcatPathComponents(
   return base::FilePath(result).NormalizePathSeparators();
 }
 
-scoped_ptr<FileMetadata> CreateFileMetadataFromChangeResource(
-    const google_apis::ChangeResource& change) {
-  scoped_ptr<FileMetadata> file(new FileMetadata);
-  file->set_file_id(change.file_id());
-
-  FileDetails* details = file->mutable_details();
-  details->set_change_id(change.change_id());
-
-  if (change.is_deleted()) {
-    details->set_deleted(true);
-    return file.Pass();
-  }
-
-  const google_apis::FileResource& file_resource = *change.file();
+void PopulateFileDetailsByFileResource(
+    const google_apis::FileResource& file_resource,
+    FileDetails* details) {
+  details->clear_parent_folder_ids();
   for (ScopedVector<google_apis::ParentReference>::const_iterator itr =
            file_resource.parents().begin();
        itr != file_resource.parents().end();
@@ -120,8 +110,76 @@ scoped_ptr<FileMetadata> CreateFileMetadataFromChangeResource(
   details->set_modification_time(
       file_resource.modified_date().ToInternalValue());
   details->set_deleted(false);
+}
 
+scoped_ptr<FileMetadata> CreateFileMetadataFromChangeResource(
+    const google_apis::ChangeResource& change) {
+  scoped_ptr<FileMetadata> file(new FileMetadata);
+  file->set_file_id(change.file_id());
+
+  FileDetails* details = file->mutable_details();
+  details->set_change_id(change.change_id());
+
+  if (change.is_deleted()) {
+    details->set_deleted(true);
+    return file.Pass();
+  }
+
+  PopulateFileDetailsByFileResource(*change.file(), details);
   return file.Pass();
+}
+
+void CreateInitialSyncRootTracker(
+    int64 tracker_id,
+    const google_apis::FileResource& file_resource,
+    scoped_ptr<FileMetadata>* file_out,
+    scoped_ptr<FileTracker>* tracker_out) {
+  FileDetails details;
+  PopulateFileDetailsByFileResource(file_resource, &details);
+
+  scoped_ptr<FileMetadata> file(new FileMetadata);
+  file->set_file_id(file_resource.file_id());
+  *file->mutable_details() = details;
+
+  scoped_ptr<FileTracker> tracker(new FileTracker);
+  tracker->set_tracker_id(tracker_id);
+  tracker->set_file_id(file_resource.file_id());
+  tracker->set_parent_tracker_id(0);
+  tracker->set_tracker_kind(TRACKER_KIND_REGULAR);
+  tracker->set_dirty(false);
+  tracker->set_active(true);
+  tracker->set_needs_folder_listing(false);
+  *tracker->mutable_synced_details() = details;
+
+  *file_out = file.Pass();
+  *tracker_out = tracker.Pass();
+}
+
+void CreateInitialAppRootTracker(
+    int64 tracker_id,
+    const FileTracker& parent_tracker,
+    const google_apis::FileResource& file_resource,
+    scoped_ptr<FileMetadata>* file_out,
+    scoped_ptr<FileTracker>* tracker_out) {
+  FileDetails details;
+  PopulateFileDetailsByFileResource(file_resource, &details);
+
+  scoped_ptr<FileMetadata> file(new FileMetadata);
+  file->set_file_id(file_resource.file_id());
+  *file->mutable_details() = details;
+
+  scoped_ptr<FileTracker> tracker(new FileTracker);
+  tracker->set_tracker_id(tracker_id);
+  tracker->set_parent_tracker_id(parent_tracker.tracker_id());
+  tracker->set_file_id(file_resource.file_id());
+  tracker->set_tracker_kind(TRACKER_KIND_REGULAR);
+  tracker->set_dirty(false);
+  tracker->set_active(false);
+  tracker->set_needs_folder_listing(false);
+  *tracker->mutable_synced_details() = details;
+
+  *file_out = file.Pass();
+  *tracker_out = tracker.Pass();
 }
 
 void AdaptLevelDBStatusToSyncStatusCode(const SyncStatusCallback& callback,
@@ -506,6 +564,78 @@ MetadataDatabase::~MetadataDatabase() {
 int64 MetadataDatabase::GetLargestChangeID() const {
   return service_metadata_->largest_change_id();
 }
+
+bool MetadataDatabase::HasSyncRoot() const {
+  return service_metadata_->has_sync_root_tracker_id() &&
+      !!service_metadata_->sync_root_tracker_id();
+}
+
+void MetadataDatabase::PopulateInitialData(
+    int64 largest_change_id,
+    const google_apis::FileResource& sync_root_folder,
+    const ScopedVector<google_apis::FileResource>& app_root_folders,
+    const SyncStatusCallback& callback) {
+  DCHECK(tracker_by_id_.empty());
+  DCHECK(file_by_id_.empty());
+
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  service_metadata_->set_largest_change_id(largest_change_id);
+
+  FileTracker* sync_root_tracker = NULL;
+  int64 sync_root_tracker_id = 0;
+  {
+    scoped_ptr<FileMetadata> folder;
+    scoped_ptr<FileTracker> tracker;
+    CreateInitialSyncRootTracker(GetNextTrackerID(batch.get()),
+                                 sync_root_folder,
+                                 &folder,
+                                 &tracker);
+    std::string sync_root_folder_id = folder->file_id();
+    sync_root_tracker = tracker.get();
+    sync_root_tracker_id = tracker->tracker_id();
+
+    PutFileToBatch(*folder, batch.get());
+    PutTrackerToBatch(*tracker, batch.get());
+
+    service_metadata_->set_sync_root_tracker_id(tracker->tracker_id());
+    PutServiceMetadataToBatch(*service_metadata_, batch.get());
+
+    trackers_by_file_id_[folder->file_id()].Insert(tracker.get());
+
+    file_by_id_[sync_root_folder_id] = folder.release();
+    tracker_by_id_[sync_root_tracker_id] = tracker.release();
+  }
+
+  for (ScopedVector<google_apis::FileResource>::const_iterator itr =
+           app_root_folders.begin();
+       itr != app_root_folders.end();
+       ++itr) {
+    const google_apis::FileResource& folder_resource = **itr;
+    scoped_ptr<FileMetadata> folder;
+    scoped_ptr<FileTracker> tracker;
+    CreateInitialAppRootTracker(GetNextTrackerID(batch.get()),
+                                *sync_root_tracker,
+                                folder_resource,
+                                &folder,
+                                &tracker);
+    std::string title = folder->details().title();
+    std::string folder_id = folder->file_id();
+    int64 tracker_id = tracker->tracker_id();
+
+    PutFileToBatch(*folder, batch.get());
+    PutTrackerToBatch(*tracker, batch.get());
+
+    trackers_by_file_id_[folder_id].Insert(tracker.get());
+    trackers_by_parent_and_title_[sync_root_tracker_id][title]
+        .Insert(tracker.get());
+
+    file_by_id_[folder_id] = folder.release();
+    tracker_by_id_[tracker_id] = tracker.release();
+  }
+
+  WriteToDatabase(batch.Pass(), callback);
+}
+
 
 void MetadataDatabase::RegisterApp(const std::string& app_id,
                                    const std::string& folder_id,

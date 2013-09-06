@@ -391,16 +391,8 @@ class MetadataDatabaseTest : public testing::Test {
     return folder;
   }
 
-  scoped_ptr<google_apis::ChangeResource> CreateChangeResourceFromMetadata(
+  scoped_ptr<google_apis::FileResource> CreateFileResourceFromMetadata(
       const FileMetadata& file) {
-    scoped_ptr<google_apis::ChangeResource> change(
-        new google_apis::ChangeResource);
-    change->set_change_id(file.details().change_id());
-    change->set_file_id(file.file_id());
-    change->set_deleted(file.details().deleted());
-    if (change->is_deleted())
-      return change.Pass();
-
     scoped_ptr<google_apis::FileResource> file_resource(
         new google_apis::FileResource);
     ScopedVector<google_apis::ParentReference> parents;
@@ -427,7 +419,20 @@ class MetadataDatabaseTest : public testing::Test {
     file_resource->set_modified_date(base::Time::FromInternalValue(
         file.details().modification_time()));
 
-    change->set_file(file_resource.Pass());
+    return file_resource.Pass();
+  }
+
+  scoped_ptr<google_apis::ChangeResource> CreateChangeResourceFromMetadata(
+      const FileMetadata& file) {
+    scoped_ptr<google_apis::ChangeResource> change(
+        new google_apis::ChangeResource);
+    change->set_change_id(file.details().change_id());
+    change->set_file_id(file.file_id());
+    change->set_deleted(file.details().deleted());
+    if (change->is_deleted())
+      return change.Pass();
+
+    change->set_file(CreateFileResourceFromMetadata(file));
     return change.Pass();
   }
 
@@ -603,6 +608,24 @@ class MetadataDatabaseTest : public testing::Test {
         base::Bind(&SyncStatusResultCallback, &status));
     message_loop_.RunUntilIdle();
     return status;
+  }
+
+  SyncStatusCode PopulateInitialData(
+      int64 largest_change_id,
+      const google_apis::FileResource& sync_root_folder,
+      const ScopedVector<google_apis::FileResource>& app_root_folders) {
+    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
+    metadata_database_->PopulateInitialData(
+        largest_change_id,
+        sync_root_folder,
+        app_root_folders,
+        base::Bind(&SyncStatusResultCallback, &status));
+    message_loop_.RunUntilIdle();
+    return status;
+  }
+
+  void ResetTrackerID(FileTracker* tracker) {
+    tracker->set_tracker_id(GetTrackerIDByFileID(tracker->file_id()));
   }
 
  private:
@@ -802,8 +825,7 @@ TEST_F(MetadataDatabaseTest, UpdateByChangeListTest) {
   new_file.tracker.clear_synced_details();
   new_file.tracker.set_active(false);
   new_file.tracker.set_dirty(true);
-  new_file.tracker.set_tracker_id(
-      GetTrackerIDByFileID(new_file.metadata.file_id()));
+  ResetTrackerID(&new_file.tracker);
   EXPECT_NE(0, new_file.tracker.tracker_id());
 
   new_file.should_be_absent = false;
@@ -844,8 +866,7 @@ TEST_F(MetadataDatabaseTest, PopulateFolderTest_RegularFolder) {
 
   folder_to_populate.tracker.set_dirty(false);
   folder_to_populate.tracker.set_needs_folder_listing(false);
-  new_file.tracker.set_tracker_id(
-      GetTrackerIDByFileID(new_file.metadata.file_id()));
+  ResetTrackerID(&new_file.tracker);
   new_file.tracker.set_dirty(true);
   new_file.tracker.set_active(false);
   new_file.tracker.clear_synced_details();
@@ -908,7 +929,7 @@ TEST_F(MetadataDatabaseTest, PopulateFolderTest_DisabledAppRoot) {
   disabled_app_children.push_back(file.metadata.file_id());
   EXPECT_EQ(SYNC_STATUS_OK, PopulateFolder(
       disabled_app_root.metadata.file_id(), disabled_app_children));
-  file.tracker.set_tracker_id(GetTrackerIDByFileID(file.metadata.file_id()));
+  ResetTrackerID(&file.tracker);
   file.tracker.clear_synced_details();
   file.tracker.set_dirty(true);
   file.tracker.set_active(false);
@@ -968,6 +989,38 @@ TEST_F(MetadataDatabaseTest, UpdateTrackerTest) {
   file.tracker.set_dirty(true);
   file.tracker.set_active(false);
   EXPECT_EQ(SYNC_STATUS_OK, UpdateTracker(new_conflict.tracker));
+  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyReloadConsistency();
+}
+
+TEST_F(MetadataDatabaseTest, PopulateInitialDataTest) {
+  TrackedFile sync_root(CreateTrackedSyncRoot());
+  TrackedFile app_root(CreateTrackedFolder(sync_root, "app_root"));
+  app_root.tracker.set_active(false);
+
+  const TrackedFile* tracked_files[] = {
+    &sync_root, &app_root
+  };
+
+  int64 largest_change_id = 42;
+  scoped_ptr<google_apis::FileResource> sync_root_folder(
+      CreateFileResourceFromMetadata(sync_root.metadata));
+  scoped_ptr<google_apis::FileResource> app_root_folder(
+      CreateFileResourceFromMetadata(app_root.metadata));
+
+  ScopedVector<google_apis::FileResource> app_root_folders;
+  app_root_folders.push_back(app_root_folder.release());
+
+  EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
+  EXPECT_EQ(SYNC_STATUS_OK, PopulateInitialData(
+      largest_change_id,
+      *sync_root_folder,
+      app_root_folders));
+
+  ResetTrackerID(&sync_root.tracker);
+  ResetTrackerID(&app_root.tracker);
+  app_root.tracker.set_parent_tracker_id(sync_root.tracker.tracker_id());
+
   VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
   VerifyReloadConsistency();
 }

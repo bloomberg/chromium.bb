@@ -124,6 +124,21 @@ class MetadataDatabase {
 
   int64 GetLargestChangeID() const;
 
+  bool HasSyncRoot() const;
+
+  // Populates empty database with initial data.
+  // Adds a file metadata and a file tracker for |sync_root_folder|, and adds
+  // file metadata and file trackers for each |app_root_folders|.
+  // Newly added tracker for |sync_root_folder| is active and non-dirty.
+  // Newly added trackers for |app_root_folders| are inactive and non-dirty.
+  // Trackers for |app_root_folders| are not yet registered as app-roots, but
+  // are ready to register.
+  void PopulateInitialData(
+      int64 largest_change_id,
+      const google_apis::FileResource& sync_root_folder,
+      const ScopedVector<google_apis::FileResource>& app_root_folders,
+      const SyncStatusCallback& callback);
+
   // Registers existing folder as the app-root for |app_id|.  The folder
   // must be an inactive folder that does not yet associated to any App.
   // This method associates the folder with |app_id| and activates it.
