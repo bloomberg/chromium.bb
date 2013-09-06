@@ -6373,6 +6373,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PASSWORD_AUTOFILL_PUBLIC_SUFFIX_DOMAIN_MATCHING_DESCRIPTION" desc="Description of flag to enable or disable public suffix domain matching for autofill of passwords.">
         Enable or disable a feature which allows the user to select username/password combinations for domains that match the same public suffix registry domain.
       </message>
+      <message name="IDS_FLAGS_ENABLE_PEOPLE_SEARCH_NAME" desc="Name of the flag to enable people search.">
+        Enable people search.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_PEOPLE_SEARCH_DESCRIPTION" desc="Description of flag to enable people search.">
+        Enable searching for people directly from the apps list search.
+      </message>
       <message name="IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_NAME" desc="Name for the flag to enable Performance Monitor.">
         Enable performance monitoring
       </message>

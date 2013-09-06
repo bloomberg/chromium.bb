@@ -84,12 +84,14 @@ class MixerTest : public testing::Test {
     providers_.push_back(new TestSearchProvider("app"));
     providers_.push_back(new TestSearchProvider("omnibox"));
     providers_.push_back(new TestSearchProvider("webstore"));
+    providers_.push_back(new TestSearchProvider("people"));
 
     mixer_.reset(new Mixer(results_.get()));
     mixer_->Init();
     mixer_->AddProviderToGroup(Mixer::MAIN_GROUP, providers_[0]);
     mixer_->AddProviderToGroup(Mixer::OMNIBOX_GROUP, providers_[1]);
     mixer_->AddProviderToGroup(Mixer::WEBSTORE_GROUP, providers_[2]);
+    mixer_->AddProviderToGroup(Mixer::PEOPLE_GROUP, providers_[3]);
   }
 
   void RunQuery() {

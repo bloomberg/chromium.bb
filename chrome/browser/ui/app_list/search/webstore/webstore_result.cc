@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/webstore_result.h"
+#include "chrome/browser/ui/app_list/search/webstore/webstore_result.h"
 
 #include <vector>
 
@@ -16,7 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/common/url_icon_source.h"
-#include "chrome/browser/ui/app_list/search/webstore_installer.h"
+#include "chrome/browser/ui/app_list/search/webstore/webstore_installer.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension.h"

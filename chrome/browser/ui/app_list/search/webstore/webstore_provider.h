@@ -2,19 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_PROVIDER_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_PROVIDER_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_WEBSTORE_PROVIDER_H_
+#define CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_WEBSTORE_PROVIDER_H_
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/search/common/webservice_search_provider.h"
-#include "chrome/browser/ui/app_list/search/webstore_cache.h"
+#include "chrome/browser/ui/app_list/search/webstore/webstore_cache.h"
 
 class AppListControllerDelegate;
-class Profile;
 
 namespace base {
 class DictionaryValue;
@@ -56,7 +53,6 @@ class WebstoreProvider : public WebserviceSearchProvider{
     webstore_search_fetched_callback_ = callback;
   }
 
-  Profile* profile_;
   AppListControllerDelegate* controller_;
   scoped_ptr<JSONResponseFetcher> webstore_search_;
   base::Closure webstore_search_fetched_callback_;
@@ -64,12 +60,6 @@ class WebstoreProvider : public WebserviceSearchProvider{
   // The cache of the search result which will be valid only in a single
   // input session.
   WebstoreCache cache_;
-
-  // The timestamp when the last key event happened.
-  base::Time last_keytyped_;
-
-  // The timer to throttle QPS to the webstore search .
-  base::OneShotTimer<WebstoreProvider> query_throttler_;
 
   // The current query.
   std::string query_;
@@ -79,4 +69,4 @@ class WebstoreProvider : public WebserviceSearchProvider{
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_PROVIDER_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_WEBSTORE_PROVIDER_H_

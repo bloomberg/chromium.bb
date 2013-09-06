@@ -72,11 +72,11 @@ void JSONResponseFetcher::OnURLFetchComplete(
     return;
   }
 
-  std::string webstore_json_data;
-  fetcher->GetResponseAsString(&webstore_json_data);
+  std::string json_data;
+  fetcher->GetResponseAsString(&json_data);
 
   scoped_refptr<SafeJsonParser> parser =
-      new SafeJsonParser(webstore_json_data,
+      new SafeJsonParser(json_data,
                          base::Bind(
                              &JSONResponseFetcher::OnJsonParseSuccess,
                              weak_factory_.GetWeakPtr()),

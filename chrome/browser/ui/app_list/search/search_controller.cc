@@ -19,8 +19,10 @@
 #include "chrome/browser/ui/app_list/search/history.h"
 #include "chrome/browser/ui/app_list/search/history_factory.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
+#include "chrome/browser/ui/app_list/search/people/people_provider.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
-#include "chrome/browser/ui/app_list/search/webstore_provider.h"
+#include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -64,6 +66,11 @@ void SearchController::Init() {
       new OmniboxProvider(profile_)).Pass());
   AddProvider(Mixer::WEBSTORE_GROUP, scoped_ptr<SearchProvider>(
       new WebstoreProvider(profile_, list_controller_)).Pass());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnablePeopleSearch)) {
+    AddProvider(Mixer::PEOPLE_GROUP, scoped_ptr<SearchProvider>(
+        new PeopleProvider(profile_)).Pass());
+  }
 }
 
 void SearchController::Start() {

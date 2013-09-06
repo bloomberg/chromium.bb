@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/webstore_provider.h"
+#include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
 
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -15,7 +16,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/app_list/search/common/json_response_fetcher.h"
 #include "chrome/browser/ui/app_list/search/search_webstore_result.h"
-#include "chrome/browser/ui/app_list/search/webstore_result.h"
+#include "chrome/browser/ui/app_list/search/webstore/webstore_result.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "url/gurl.h"
 
@@ -40,29 +41,19 @@ bool UseWebstoreSearch() {
 
 WebstoreProvider::WebstoreProvider(Profile* profile,
                                    AppListControllerDelegate* controller)
-  : profile_(profile),
-    controller_(controller) {}
+  :  WebserviceSearchProvider(profile),
+     controller_(controller){}
 
 WebstoreProvider::~WebstoreProvider() {}
 
 void WebstoreProvider::Start(const base::string16& query) {
   ClearResults();
-
-  // If |query| contains sensitive data, bail out and do not create the place
-  // holder "search-web-store" result.
-  if (IsSensitiveInput(query)) {
+  if (!IsValidQuery(query)) {
     query_.clear();
     return;
   }
 
-  const std::string query_utf8 = UTF16ToUTF8(query);
-
-  if (query_utf8.size() < kMinimumQueryLength) {
-    query_.clear();
-    return;
-  }
-
-  query_ = query_utf8;
+  query_ = UTF16ToUTF8(query);
   const base::DictionaryValue* cached_result = cache_.Get(query_);
   if (cached_result) {
     ProcessWebstoreSearchResults(cached_result);
@@ -71,7 +62,7 @@ void WebstoreProvider::Start(const base::string16& query) {
     return;
   }
 
-  if (UseWebstoreSearch() && chrome::IsSuggestPrefEnabled(profile_)) {
+  if (UseWebstoreSearch()) {
     if (!webstore_search_) {
       webstore_search_.reset(new JSONResponseFetcher(
           base::Bind(&WebstoreProvider::OnWebstoreSearchFetched,
@@ -86,7 +77,7 @@ void WebstoreProvider::Start(const base::string16& query) {
   // Add a placeholder result which when clicked will run the user's query in a
   // browser. This placeholder is removed when the search results arrive.
   Add(scoped_ptr<ChromeSearchResult>(
-      new SearchWebstoreResult(profile_, query_utf8)).Pass());
+      new SearchWebstoreResult(profile_, query_)).Pass());
 }
 
 void WebstoreProvider::Stop() {

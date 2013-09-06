@@ -659,6 +659,9 @@ const char kEnablePanels[]                  = "enable-panels";
 // account creation.
 const char kEnablePasswordGeneration[]      = "enable-password-generation";
 
+// Enables searching for people from the apps list search box.
+const char kEnablePeopleSearch[]            = "enable-people-search";
+
 // Disables the usage of Portable Native Client.
 const char kDisablePnacl[]                  = "disable-pnacl";
 

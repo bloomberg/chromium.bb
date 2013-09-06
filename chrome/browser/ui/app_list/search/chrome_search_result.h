@@ -23,6 +23,8 @@ enum ChromeSearchResultType {
   WEBSTORE_SEARCH_RESULT,
   // A result that opens a webstore search.
   SEARCH_WEBSTORE_SEARCH_RESULT,
+  // A result that opens a people search.
+  SEARCH_PEOPLE_SEARCH_RESULT,
   SEARCH_RESULT_TYPE_BOUNDARY
 };
 

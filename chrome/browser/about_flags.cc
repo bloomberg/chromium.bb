@@ -1206,6 +1206,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnablePasswordGeneration)
   },
   {
+    "enable-people-search",
+    IDS_FLAGS_ENABLE_PEOPLE_SEARCH_NAME,
+    IDS_FLAGS_ENABLE_PEOPLE_SEARCH_DESCRIPTION,
+    kOsMac | kOsWin | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnablePeopleSearch)
+  },
+  {
     "password-autofill-public-suffix-domain-matching",
     IDS_FLAGS_PASSWORD_AUTOFILL_PUBLIC_SUFFIX_DOMAIN_MATCHING_NAME,
     IDS_FLAGS_PASSWORD_AUTOFILL_PUBLIC_SUFFIX_DOMAIN_MATCHING_DESCRIPTION,

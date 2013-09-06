@@ -11,24 +11,34 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 
+class Profile;
+
 namespace app_list {
 
 // Helper class for webservice based searches.
 class WebserviceSearchProvider : public SearchProvider {
  public:
-  WebserviceSearchProvider();
+  explicit WebserviceSearchProvider(Profile* profile);
   virtual ~WebserviceSearchProvider();
 
+  // Validate the query for privacy and size.
+  bool IsValidQuery(const string16& query);
+
+  // Start a query with throttling enabled.
   void StartThrottledQuery(const base::Closure& start_query);
-  bool IsSensitiveInput(const string16& query);
 
   void set_use_throttling(bool use) { use_throttling_ = use; }
 
+ protected:
+  Profile* profile_;
+
  private:
+  bool IsSensitiveInput(const string16& query);
+
   // The timestamp when the last key event happened.
   base::Time last_keytyped_;
 
-  // The timer to throttle QPS to the webstore search .
+  // The timer to throttle QPS.
   base::OneShotTimer<WebserviceSearchProvider> query_throttler_;
 
   // The flag for tests. It prevents the throttling If set to false.

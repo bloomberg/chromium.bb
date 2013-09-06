@@ -20,6 +20,7 @@ namespace {
 const size_t kMaxResults = 6;
 const size_t kMaxMainGroupResults = 4;
 const size_t kMaxWebstoreResults = 2;
+const size_t kMaxPeopleResults = 2;
 
 // A value to indicate no max number of results limit.
 const size_t kNoMaxResultsLimit = 0;
@@ -171,9 +172,10 @@ Mixer::Mixer(AppListModel::SearchResults* ui_results)
 Mixer::~Mixer() {}
 
 void Mixer::Init() {
-  groups_.push_back(new Group(kMaxMainGroupResults, 2.0));
-  groups_.push_back(new Group(kNoMaxResultsLimit, 1.0));
-  groups_.push_back(new Group(kMaxWebstoreResults, 0.0));
+  groups_.push_back(new Group(kMaxMainGroupResults, 3.0));
+  groups_.push_back(new Group(kNoMaxResultsLimit, 2.0));
+  groups_.push_back(new Group(kMaxWebstoreResults, 1.0));
+  groups_.push_back(new Group(kMaxPeopleResults, 0.0));
 }
 
 void Mixer::AddProviderToGroup(GroupId group, SearchProvider* provider) {
@@ -194,6 +196,9 @@ void Mixer::MixAndPublish(const KnownResults& known_results) {
   results.insert(results.end(),
                  groups_[WEBSTORE_GROUP]->results().begin(),
                  groups_[WEBSTORE_GROUP]->results().end());
+  results.insert(results.end(),
+                 groups_[PEOPLE_GROUP]->results().begin(),
+                 groups_[PEOPLE_GROUP]->results().end());
 
   // Collapse duplicate apps from local and web store.
   RemoveDuplicates(&results);

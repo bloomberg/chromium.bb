@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/common/url_constants.h"
 #include "url/gurl.h"
 
@@ -16,10 +17,12 @@ namespace app_list {
 namespace {
 
 const int kWebserviceQueryThrottleIntrevalInMs = 100;
+const size_t kMinimumQueryLength = 3u;
 
 }  // namespace
 
-WebserviceSearchProvider::WebserviceSearchProvider() : use_throttling_(true) {}
+WebserviceSearchProvider::WebserviceSearchProvider(Profile* profile)
+    : profile_(profile), use_throttling_(true) {}
 
 WebserviceSearchProvider::~WebserviceSearchProvider() {}
 
@@ -34,6 +37,18 @@ void WebserviceSearchProvider::StartThrottledQuery(
     query_throttler_.Start(FROM_HERE, interval, start_query);
   }
   last_keytyped_ = base::Time::Now();
+}
+
+bool WebserviceSearchProvider::IsValidQuery(const string16& query) {
+  // If |query| contains sensitive data, bail out and do not create the place
+  // holder "search-web-store" result.
+  if (IsSensitiveInput(query) ||
+      (query.size() < kMinimumQueryLength) ||
+      !chrome::IsSuggestPrefEnabled(profile_)) {
+    return false;
+  }
+
+  return true;
 }
 
 // Returns whether or not the user's input string, |query|, might contain any

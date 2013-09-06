@@ -192,6 +192,7 @@ extern const char kEnableOmniboxAutoCompletionForIme[];
 extern const char kEnablePanels[];
 extern const char kEnablePasswordAutofillPublicSuffixDomainMatching[];
 extern const char kEnablePasswordGeneration[];
+extern const char kEnablePeopleSearch[];
 extern const char kEnableProfiling[];
 extern const char kEnableQuic[];
 extern const char kEnableQuicHttps[];

@@ -28,6 +28,7 @@ class Mixer {
     MAIN_GROUP = 0,
     OMNIBOX_GROUP = 1,
     WEBSTORE_GROUP = 2,
+    PEOPLE_GROUP = 3,
   };
 
   explicit Mixer(AppListModel::SearchResults* ui_results);

@@ -29,6 +29,8 @@ namespace app_list {
 
 // A class that fetches a JSON formatted response from a server and uses a
 // sandboxed utility process to parse it to a DictionaryValue.
+// TODO(rkc): Add the ability to give control of handling http failures to
+// the consumers of this class.
 class JSONResponseFetcher : public net::URLFetcherDelegate {
  public:
   // Callback to pass back the parsed json dictionary returned from the server.
