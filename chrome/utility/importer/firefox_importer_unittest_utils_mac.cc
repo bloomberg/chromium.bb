@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
+#include "base/posix/global_descriptors.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/test/test_timeouts.h"
@@ -52,7 +53,8 @@ bool LaunchNSSDecrypterChildProcess(const base::FilePath& nss_path,
 
   file_util::ScopedFD client_file_descriptor_closer(&ipcfd);
   base::FileHandleMappingVector fds_to_map;
-  fds_to_map.push_back(std::pair<int,int>(ipcfd, kPrimaryIPCChannel + 3));
+  fds_to_map.push_back(std::pair<int,int>(ipcfd,
+      kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
 
   bool debug_on_start = CommandLine::ForCurrentProcess()->HasSwitch(
                             switches::kDebugChildren);

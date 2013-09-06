@@ -35,6 +35,7 @@
 
 #if defined(OS_POSIX)
 #include <signal.h>
+#include "base/posix/global_descriptors.h"
 #endif
 
 namespace {
@@ -503,7 +504,8 @@ bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state,
   base::FileHandleMappingVector fds;
   if (main_launch && automation_proxy_.get()) {
     ipcfd = automation_proxy_->channel()->TakeClientFileDescriptor();
-    fds.push_back(std::make_pair(ipcfd, kPrimaryIPCChannel + 3));
+    fds.push_back(std::make_pair(ipcfd,
+        kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
     options.fds_to_remap = &fds;
   }
 #endif

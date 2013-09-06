@@ -14,6 +14,10 @@
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
 
+#if defined(OS_POSIX)
+#include "base/posix/global_descriptors.h"
+#endif
+
 // static
 std::string IPCTestBase::GetChannelName(const std::string& test_client_name) {
   DCHECK(!test_client_name.empty());
@@ -102,7 +106,8 @@ bool IPCTestBase::StartClient() {
   const int ipcfd = channel_.get() ? channel_->GetClientFileDescriptor() :
                                      channel_proxy_->GetClientFileDescriptor();
   if (ipcfd > -1)
-    fds_to_map.push_back(std::pair<int, int>(ipcfd, kPrimaryIPCChannel + 3));
+    fds_to_map.push_back(std::pair<int, int>(ipcfd,
+        kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
 
   client_process_ = MultiProcessTest::SpawnChild(test_main,
                                                  fds_to_map,
