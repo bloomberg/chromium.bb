@@ -160,13 +160,14 @@ class V8ObjectStatsMetric(Metric):
 
   @classmethod
   def CustomizeBrowserOptions(cls, options):
-    options.AppendExtraBrowserArg('--enable-stats-table')
-    options.AppendExtraBrowserArg('--enable-benchmarking')
-    options.AppendExtraBrowserArg(
-        '--js-flags=--track_gc_object_stats --expose_gc')
-    # TODO(rmcilroy): This is needed for --enable-stats-table.  Update once
-    # https://codereview.chromium.org/22911027/ lands.
-    options.AppendExtraBrowserArg('--no-sandbox')
+    options.AppendExtraBrowserArgs([
+        '--enable-stats-table',
+        '--enable-benchmarking',
+        '--js-flags=--track_gc_object_stats --expose_gc',
+        # TODO(rmcilroy): This is needed for --enable-stats-table.  Update once
+        # https://codereview.chromium.org/22911027/ lands.
+        '--no-sandbox'
+    ])
 
   @staticmethod
   def GetV8StatsTable(tab, counters=None):

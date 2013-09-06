@@ -81,8 +81,10 @@ class BlinkPerf(page_measurement.PageMeasurement):
     page.script_to_evaluate_on_commit = self._blink_perf_js
 
   def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArg('--js-flags=--expose_gc')
-    options.AppendExtraBrowserArg('--enable-experimental-web-platform-features')
+    options.AppendExtraBrowserArgs([
+        '--js-flags=--expose_gc',
+        '--enable-experimental-web-platform-features'
+    ])
 
   def MeasurePage(self, page, tab, results):
     def _IsDone():

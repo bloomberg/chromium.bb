@@ -66,7 +66,7 @@ class WebglConformanceValidator(page_test.PageTest):
       raise page_test.Failure(_WebGLTestMessages(tab))
 
   def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArg(
+    options.AppendExtraBrowserArgs(
         '--disable-gesture-requirement-for-media-playback')
 
 

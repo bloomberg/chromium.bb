@@ -40,12 +40,13 @@ class Startup(page_measurement.PageMeasurement):
     else:
       self.discard_first_result = True
 
-    options.AppendExtraBrowserArg('--enable-stats-collection-bindings')
+    options.AppendExtraBrowserArgs([
+        '--enable-stats-collection-bindings',
 
-    # Old commandline flags used for reference builds.
-    options.AppendExtraBrowserArg('--dom-automation')
-    options.AppendExtraBrowserArg(
-          '--reduce-security-for-dom-automation-tests')
+        # Old commandline flags used for reference builds.
+        '--dom-automation',
+        '--reduce-security-for-dom-automation-tests'
+    ])
 
   def MeasurePage(self, page, tab, results):
     # TODO(jeremy): Remove references to

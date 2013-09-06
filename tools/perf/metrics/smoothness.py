@@ -18,7 +18,7 @@ class SmoothnessMetrics(object):
 
   @classmethod
   def CustomizeBrowserOptions(cls, options):
-    options.AppendExtraBrowserArg('--enable-gpu-benchmarking')
+    options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
 
   def Start(self):
     self._tab.ExecuteJavaScript(

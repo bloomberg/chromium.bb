@@ -29,7 +29,7 @@ class Smoothness(page_measurement.PageMeasurement):
   def CustomizeBrowserOptions(self, options):
     smoothness.SmoothnessMetrics.CustomizeBrowserOptions(options)
     if self.force_enable_threaded_compositing:
-      options.extra_browser_args.append('--enable-threaded-compositing')
+      options.AppendExtraBrowserArgs('--enable-threaded-compositing')
 
   def CanRunForPage(self, page):
     return hasattr(page, 'smoothness')

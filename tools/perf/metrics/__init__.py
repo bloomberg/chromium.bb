@@ -19,7 +19,7 @@ class Metric(object):
     to be added, and they do not need to override this method; by
     default, no browser options are added.
 
-    To add options here, call options.AppendExtraBrowserArg(arg).
+    To add options here, call options.AppendExtraBrowserArgs(arg).
     """
     pass
 

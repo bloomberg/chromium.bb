@@ -36,19 +36,21 @@ class MemoryMetric(Metric):
 
   @classmethod
   def CustomizeBrowserOptions(cls, options):
-    options.AppendExtraBrowserArg('--enable-stats-collection-bindings')
-    options.AppendExtraBrowserArg('--enable-memory-benchmarking')
-    # For a hard-coded set of Google pages (such as GMail), we produce custom
-    # memory histograms (V8.Something_gmail) instead of the generic histograms
-    # (V8.Something), if we detect that a renderer is only rendering this page
-    # and no other pages. For this test, we need to disable histogram
-    # customizing, so that we get the same generic histograms produced for all
-    # pages.
-    options.AppendExtraBrowserArg('--disable-histogram-customizer')
+    options.AppendExtraBrowserArgs([
+        '--enable-stats-collection-bindings',
+        '--enable-memory-benchmarking',
+        # For a hard-coded set of Google pages (such as GMail), we produce
+        # custom memory histograms (V8.Something_gmail) instead of the generic
+        # histograms (V8.Something), if we detect that a renderer is only
+        # rendering this page and no other pages. For this test, we need to
+        # disable histogram customizing, so that we get the same generic
+        # histograms produced for all pages.
+        '--disable-histogram-customizer',
 
-    # Old commandline flags used for reference builds.
-    options.AppendExtraBrowserArg('--dom-automation')
-    options.AppendExtraBrowserArg('--reduce-security-for-dom-automation-tests')
+        # Old commandline flags used for reference builds.
+        '--dom-automation',
+        '--reduce-security-for-dom-automation-tests',
+    ])
 
   def Start(self, page, tab):
     """Start the per-page preparation for this metric.

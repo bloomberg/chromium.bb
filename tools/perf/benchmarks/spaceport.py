@@ -15,7 +15,7 @@ from telemetry.page import page_set
 
 class SpaceportMeasurement(page_measurement.PageMeasurement):
   def CustomizeBrowserOptions(self, options):
-    options.extra_browser_args.extend(['--disable-gpu-vsync'])
+    options.AppendExtraBrowserArgs('--disable-gpu-vsync')
 
   def MeasurePage(self, _, tab, results):
     util.WaitFor(lambda: tab.EvaluateJavaScript(

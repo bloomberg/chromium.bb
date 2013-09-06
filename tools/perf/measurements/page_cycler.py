@@ -82,7 +82,7 @@ class PageCycler(page_measurement.PageMeasurement):
   def CustomizeBrowserOptions(self, options):
     memory.MemoryMetric.CustomizeBrowserOptions(options)
     io.IOMetric.CustomizeBrowserOptions(options)
-    options.AppendExtraBrowserArg('--js-flags=--expose_gc')
+    options.AppendExtraBrowserArgs('--js-flags=--expose_gc')
 
     if options.v8_object_stats:
       self._record_v8_object_stats = True

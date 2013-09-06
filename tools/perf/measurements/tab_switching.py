@@ -18,9 +18,11 @@ from telemetry.page import page_runner
 
 class TabSwitching(page_measurement.PageMeasurement):
   def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArg('--enable-stats-collection-bindings')
-    options.AppendExtraBrowserArg('--dom-automation')
-    options.AppendExtraBrowserArg('--reduce-security-for-dom-automation-tests')
+    options.AppendExtraBrowserArgs([
+        '--enable-stats-collection-bindings',
+        '--dom-automation',
+        '--reduce-security-for-dom-automation-tests'
+    ])
 
   def CanRunForPage(self, page):
     return not page.page_set.pages.index(page)

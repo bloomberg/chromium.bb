@@ -117,13 +117,14 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     # Run each raster task N times. This allows us to report the time for the
     # best run, effectively excluding cache effects and time when the thread is
     # de-scheduled.
-    options.AppendExtraBrowserArg(
-        '--slow-down-raster-scale-factor=' + str(options.raster_record_repeat))
-    # Enable impl-side-painting. Current version of benchmark only works for
-    # this mode.
-    options.AppendExtraBrowserArg('--enable-impl-side-painting')
-    options.AppendExtraBrowserArg('--force-compositing-mode')
-    options.AppendExtraBrowserArg('--enable-threaded-compositing')
+    options.AppendExtraBrowserArgs([
+        '--slow-down-raster-scale-factor=%d' % options.raster_record_repeat,
+        # Enable impl-side-painting. Current version of benchmark only works for
+        # this mode.
+        '--enable-impl-side-painting',
+        '--force-compositing-mode',
+        '--enable-threaded-compositing'
+    ])
 
   def MeasurePage(self, page, tab, results):
     self._metrics = smoothness.SmoothnessMetrics(tab)

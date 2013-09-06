@@ -9,7 +9,7 @@ class IOMetric(Metric):
 
   @classmethod
   def CustomizeBrowserOptions(cls, options):
-    options.AppendExtraBrowserArg('--no-sandbox')
+    options.AppendExtraBrowserArgs('--no-sandbox')
 
   def Start(self, page, tab):
     raise NotImplementedError()

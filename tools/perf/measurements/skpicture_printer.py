@@ -15,10 +15,10 @@ class SkpicturePrinter(page_measurement.PageMeasurement):
                       help='Output directory for the SKP files')
 
   def CustomizeBrowserOptions(self, options):
-    options.extra_browser_args.extend(['--enable-gpu-benchmarking',
-                                       '--no-sandbox',
-                                       '--enable-deferred-image-decoding',
-                                       '--force-compositing-mode'])
+    options.AppendExtraBrowserArgs(['--enable-gpu-benchmarking',
+                                    '--no-sandbox',
+                                    '--enable-deferred-image-decoding',
+                                    '--force-compositing-mode'])
 
   def MeasurePage(self, page, tab, results):
     skp_outdir = self.options.skp_outdir
