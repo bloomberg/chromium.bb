@@ -710,6 +710,8 @@ void HistoryBackend::CloseAllDatabases() {
     // Commit the long-running transaction.
     db_->CommitTransaction();
     db_.reset();
+    // Forget the first recorded time since the database is closed.
+    first_recorded_time_ = base::Time();
   }
   if (thumbnail_db_) {
     thumbnail_db_->CommitTransaction();
@@ -2485,20 +2487,21 @@ void HistoryBackend::ExpireHistoryBetween(
     const std::set<GURL>& restrict_urls,
     Time begin_time,
     Time end_time) {
-  if (db_) {
-    if (begin_time.is_null() && (end_time.is_null() || end_time.is_max()) &&
-        restrict_urls.empty()) {
-      // Special case deleting all history so it can be faster and to reduce the
-      // possibility of an information leak.
-      DeleteAllHistory();
-    } else {
-      // Clearing parts of history, have the expirer do the depend
-      expirer_.ExpireHistoryBetween(restrict_urls, begin_time, end_time);
+  if (!db_)
+    return;
 
-      // Force a commit, if the user is deleting something for privacy reasons,
-      // we want to get it on disk ASAP.
-      Commit();
-    }
+  if (begin_time.is_null() && (end_time.is_null() || end_time.is_max()) &&
+      restrict_urls.empty()) {
+    // Special case deleting all history so it can be faster and to reduce the
+    // possibility of an information leak.
+    DeleteAllHistory();
+  } else {
+    // Clearing parts of history, have the expirer do the depend
+    expirer_.ExpireHistoryBetween(restrict_urls, begin_time, end_time);
+
+    // Force a commit, if the user is deleting something for privacy reasons,
+    // we want to get it on disk ASAP.
+    Commit();
   }
 
   if (begin_time <= first_recorded_time_)
