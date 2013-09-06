@@ -200,7 +200,7 @@ void IPCResourceLoaderBridge::Cancel() {
   }
 
   if (!is_synchronous_request_)
-    dispatcher_->CancelPendingRequest(routing_id_, request_id_);
+    dispatcher_->CancelPendingRequest(request_id_);
 
   // We can't remove the request ID from the resource dispatcher because more
   // data might be pending. Sending the cancel message may cause more data
@@ -324,8 +324,8 @@ ResourceDispatcher::GetPendingRequestInfo(int request_id) {
   return &(it->second);
 }
 
-void ResourceDispatcher::OnUploadProgress(
-    const IPC::Message& message, int request_id, int64 position, int64 size) {
+void ResourceDispatcher::OnUploadProgress(int request_id, int64 position,
+                                          int64 size) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
@@ -333,8 +333,7 @@ void ResourceDispatcher::OnUploadProgress(
   request_info->peer->OnUploadProgress(position, size);
 
   // Acknowledge receipt
-  message_sender()->Send(
-      new ResourceHostMsg_UploadProgress_ACK(message.routing_id(), request_id));
+  message_sender()->Send(new ResourceHostMsg_UploadProgress_ACK(request_id));
 }
 
 void ResourceDispatcher::OnReceivedResponse(
@@ -373,8 +372,7 @@ void ResourceDispatcher::OnReceivedCachedMetadata(
     request_info->peer->OnReceivedCachedMetadata(&data.front(), data.size());
 }
 
-void ResourceDispatcher::OnSetDataBuffer(const IPC::Message& message,
-                                         int request_id,
+void ResourceDispatcher::OnSetDataBuffer(int request_id,
                                          base::SharedMemoryHandle shm_handle,
                                          int shm_size,
                                          base::ProcessId renderer_pid) {
@@ -404,8 +402,7 @@ void ResourceDispatcher::OnSetDataBuffer(const IPC::Message& message,
   request_info->buffer_size = shm_size;
 }
 
-void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
-                                        int request_id,
+void ResourceDispatcher::OnReceivedData(int request_id,
                                         int data_offset,
                                         int data_length,
                                         int encoded_data_length) {
@@ -449,17 +446,15 @@ void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
   }
 
   // Acknowledge the reception of this data.
-  message_sender()->Send(
-      new ResourceHostMsg_DataReceived_ACK(message.routing_id(), request_id));
+  message_sender()->Send(new ResourceHostMsg_DataReceived_ACK(request_id));
 }
 
-void ResourceDispatcher::OnDownloadedData(const IPC::Message& message,
-                                          int request_id,
+void ResourceDispatcher::OnDownloadedData(int request_id,
                                           int data_len,
                                           int encoded_data_length) {
   // Acknowledge the reception of this message.
   message_sender()->Send(
-      new ResourceHostMsg_DataDownloaded_ACK(message.routing_id(), request_id));
+      new ResourceHostMsg_DataDownloaded_ACK(request_id));
 
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
@@ -469,7 +464,6 @@ void ResourceDispatcher::OnDownloadedData(const IPC::Message& message,
 }
 
 void ResourceDispatcher::OnReceivedRedirect(
-    const IPC::Message& message,
     int request_id,
     const GURL& new_url,
     const ResourceResponseHead& response_head) {
@@ -478,7 +472,6 @@ void ResourceDispatcher::OnReceivedRedirect(
     return;
   request_info->response_start = ConsumeIOTimestamp();
 
-  int32 routing_id = message.routing_id();
   bool has_new_first_party_for_cookies = false;
   GURL new_first_party_for_cookies;
   ResourceResponseInfo renderer_response_info;
@@ -495,14 +488,14 @@ void ResourceDispatcher::OnReceivedRedirect(
     // SiteIsolationPolicy later when OnReceivedResponse is called.
     request_info->response_url = new_url;
     request_info->pending_redirect_message.reset(
-        new ResourceHostMsg_FollowRedirect(routing_id, request_id,
+        new ResourceHostMsg_FollowRedirect(request_id,
                                            has_new_first_party_for_cookies,
                                            new_first_party_for_cookies));
     if (!request_info->is_deferred) {
       FollowPendingRedirect(request_id, *request_info);
     }
   } else {
-    CancelPendingRequest(routing_id, request_id);
+    CancelPendingRequest(request_id);
   }
 }
 
@@ -574,8 +567,7 @@ bool ResourceDispatcher::RemovePendingRequest(int request_id) {
   return true;
 }
 
-void ResourceDispatcher::CancelPendingRequest(int routing_id,
-                                              int request_id) {
+void ResourceDispatcher::CancelPendingRequest(int request_id) {
   PendingRequestList::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
     DVLOG(1) << "unknown request";
@@ -587,8 +579,7 @@ void ResourceDispatcher::CancelPendingRequest(int routing_id,
   ReleaseResourcesInMessageQueue(&request_info.deferred_message_queue);
   pending_requests_.erase(it);
 
-  message_sender()->Send(
-      new ResourceHostMsg_CancelRequest(routing_id, request_id));
+  message_sender()->Send(new ResourceHostMsg_CancelRequest(request_id));
 }
 
 void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
@@ -617,7 +608,7 @@ void ResourceDispatcher::DidChangePriority(
     int routing_id, int request_id, net::RequestPriority new_priority) {
   DCHECK(ContainsKey(pending_requests_, request_id));
   message_sender()->Send(new ResourceHostMsg_DidChangePriority(
-      routing_id, request_id, new_priority));
+      request_id, new_priority));
 }
 
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo()

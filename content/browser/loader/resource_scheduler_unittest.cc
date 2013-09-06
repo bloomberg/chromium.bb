@@ -193,8 +193,7 @@ class ResourceSchedulerTest : public testing::Test {
     const ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(
         request->url_request());
     const GlobalRequestID& id = info->GetGlobalRequestID();
-    ResourceHostMsg_DidChangePriority msg(
-        kRouteId, id.request_id, new_priority);
+    ResourceHostMsg_DidChangePriority msg(id.request_id, new_priority);
     bool ok = false;
     rdh_.OnMessageReceived(msg, filter.get(), &ok);
     EXPECT_TRUE(ok);

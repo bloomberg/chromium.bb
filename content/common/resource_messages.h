@@ -203,28 +203,28 @@ IPC_STRUCT_END()
 // Resource messages sent from the browser to the renderer.
 
 // Sent when the headers are available for a resource request.
-IPC_MESSAGE_ROUTED2(ResourceMsg_ReceivedResponse,
-                    int /* request_id */,
-                    content::ResourceResponseHead)
+IPC_MESSAGE_CONTROL2(ResourceMsg_ReceivedResponse,
+                     int /* request_id */,
+                     content::ResourceResponseHead)
 
 // Sent when cached metadata from a resource request is ready.
-IPC_MESSAGE_ROUTED2(ResourceMsg_ReceivedCachedMetadata,
-                    int /* request_id */,
-                    std::vector<char> /* data */)
+IPC_MESSAGE_CONTROL2(ResourceMsg_ReceivedCachedMetadata,
+                     int /* request_id */,
+                     std::vector<char> /* data */)
 
 // Sent as upload progress is being made.
-IPC_MESSAGE_ROUTED3(ResourceMsg_UploadProgress,
-                    int /* request_id */,
-                    int64 /* position */,
-                    int64 /* size */)
+IPC_MESSAGE_CONTROL3(ResourceMsg_UploadProgress,
+                     int /* request_id */,
+                     int64 /* position */,
+                     int64 /* size */)
 
 // Sent when the request has been redirected.  The receiver is expected to
 // respond with either a FollowRedirect message (if the redirect is to be
 // followed) or a CancelRequest message (if it should not be followed).
-IPC_MESSAGE_ROUTED3(ResourceMsg_ReceivedRedirect,
-                    int /* request_id */,
-                    GURL /* new_url */,
-                    content::ResourceResponseHead)
+IPC_MESSAGE_CONTROL3(ResourceMsg_ReceivedRedirect,
+                     int /* request_id */,
+                     GURL /* new_url */,
+                     content::ResourceResponseHead)
 
 // Sent to set the shared memory buffer to be used to transmit response data to
 // the renderer.  Subsequent DataReceived messages refer to byte ranges in the
@@ -237,36 +237,36 @@ IPC_MESSAGE_ROUTED3(ResourceMsg_ReceivedRedirect,
 // TODO(darin): The |renderer_pid| parameter is just a temporary parameter,
 // added to help in debugging crbug/160401.
 //
-IPC_MESSAGE_ROUTED4(ResourceMsg_SetDataBuffer,
-                    int /* request_id */,
-                    base::SharedMemoryHandle /* shm_handle */,
-                    int /* shm_size */,
-                    base::ProcessId /* renderer_pid */)
+IPC_MESSAGE_CONTROL4(ResourceMsg_SetDataBuffer,
+                     int /* request_id */,
+                     base::SharedMemoryHandle /* shm_handle */,
+                     int /* shm_size */,
+                     base::ProcessId /* renderer_pid */)
 
 // Sent when some data from a resource request is ready.  The data offset and
 // length specify a byte range into the shared memory buffer provided by the
 // SetDataBuffer message.
-IPC_MESSAGE_ROUTED4(ResourceMsg_DataReceived,
-                    int /* request_id */,
-                    int /* data_offset */,
-                    int /* data_length */,
-                    int /* encoded_data_length */)
+IPC_MESSAGE_CONTROL4(ResourceMsg_DataReceived,
+                     int /* request_id */,
+                     int /* data_offset */,
+                     int /* data_length */,
+                     int /* encoded_data_length */)
 
 // Sent when some data from a resource request has been downloaded to
 // file. This is only called in the 'download_to_file' case and replaces
 // ResourceMsg_DataReceived in the call sequence in that case.
-IPC_MESSAGE_ROUTED3(ResourceMsg_DataDownloaded,
-                    int /* request_id */,
-                    int /* data_len */,
-                    int /* encoded_data_length */)
+IPC_MESSAGE_CONTROL3(ResourceMsg_DataDownloaded,
+                     int /* request_id */,
+                     int /* data_len */,
+                     int /* encoded_data_length */)
 
 // Sent when the request has been completed.
-IPC_MESSAGE_ROUTED5(ResourceMsg_RequestComplete,
-                    int /* request_id */,
-                    int /* error_code */,
-                    bool /* was_ignored_by_handler */,
-                    std::string /* security info */,
-                    base::TimeTicks /* completion_time */)
+IPC_MESSAGE_CONTROL5(ResourceMsg_RequestComplete,
+                     int /* request_id */,
+                     int /* error_code */,
+                     bool /* was_ignored_by_handler */,
+                     std::string /* security info */,
+                     base::TimeTicks /* completion_time */)
 
 // Resource messages sent from the renderer to the browser.
 
@@ -276,15 +276,15 @@ IPC_MESSAGE_ROUTED2(ResourceHostMsg_RequestResource,
                     ResourceHostMsg_Request)
 
 // Cancels a resource request with the ID given as the parameter.
-IPC_MESSAGE_ROUTED1(ResourceHostMsg_CancelRequest,
-                    int /* request_id */)
+IPC_MESSAGE_CONTROL1(ResourceHostMsg_CancelRequest,
+                     int /* request_id */)
 
 // Follows a redirect that occured for the resource request with the ID given
 // as the parameter.
-IPC_MESSAGE_ROUTED3(ResourceHostMsg_FollowRedirect,
-                    int /* request_id */,
-                    bool /* has_new_first_party_for_cookies */,
-                    GURL /* new_first_party_for_cookies */)
+IPC_MESSAGE_CONTROL3(ResourceHostMsg_FollowRedirect,
+                     int /* request_id */,
+                     bool /* has_new_first_party_for_cookies */,
+                     GURL /* new_first_party_for_cookies */)
 
 // Makes a synchronous resource request via the browser.
 IPC_SYNC_MESSAGE_ROUTED2_1(ResourceHostMsg_SyncLoad,
@@ -294,23 +294,23 @@ IPC_SYNC_MESSAGE_ROUTED2_1(ResourceHostMsg_SyncLoad,
 
 // Sent when the renderer process is done processing a DataReceived
 // message.
-IPC_MESSAGE_ROUTED1(ResourceHostMsg_DataReceived_ACK,
-                    int /* request_id */)
+IPC_MESSAGE_CONTROL1(ResourceHostMsg_DataReceived_ACK,
+                     int /* request_id */)
 
 // Sent when the renderer has processed a DataDownloaded message.
-IPC_MESSAGE_ROUTED1(ResourceHostMsg_DataDownloaded_ACK,
-                    int /* request_id */)
+IPC_MESSAGE_CONTROL1(ResourceHostMsg_DataDownloaded_ACK,
+                     int /* request_id */)
 
 // Sent by the renderer process to acknowledge receipt of a
 // UploadProgress message.
-IPC_MESSAGE_ROUTED1(ResourceHostMsg_UploadProgress_ACK,
-                    int /* request_id */)
+IPC_MESSAGE_CONTROL1(ResourceHostMsg_UploadProgress_ACK,
+                     int /* request_id */)
 
 // Sent when the renderer process deletes a resource loader.
 IPC_MESSAGE_CONTROL1(ResourceHostMsg_ReleaseDownloadedFile,
                      int /* request_id */)
 
 // Sent by the renderer when a resource request changes priority.
-IPC_MESSAGE_ROUTED2(ResourceHostMsg_DidChangePriority,
-                    int /* request_id */,
-                    net::RequestPriority)
+IPC_MESSAGE_CONTROL2(ResourceHostMsg_DidChangePriority,
+                     int /* request_id */,
+                     net::RequestPriority)

@@ -163,7 +163,7 @@ void RenderViewFakeResourcesTest::OnRequestResource(
   response_head.headers = new net::HttpResponseHeaders(headers);
   response_head.mime_type = "text/html";
   ASSERT_TRUE(channel_->Send(new ResourceMsg_ReceivedResponse(
-      message.routing_id(), request_id, response_head)));
+      request_id, response_head)));
 
   base::SharedMemory shared_memory;
   ASSERT_TRUE(shared_memory.CreateAndMapAnonymous(body.size()));
@@ -174,21 +174,18 @@ void RenderViewFakeResourcesTest::OnRequestResource(
                                           &handle));
 
   ASSERT_TRUE(channel_->Send(new ResourceMsg_SetDataBuffer(
-      message.routing_id(),
       request_id,
       handle,
       body.size(),
       0)));
 
   ASSERT_TRUE(channel_->Send(new ResourceMsg_DataReceived(
-      message.routing_id(),
       request_id,
       0,
       body.size(),
       body.size())));
 
   ASSERT_TRUE(channel_->Send(new ResourceMsg_RequestComplete(
-      message.routing_id(),
       request_id,
       net::OK,
       false,

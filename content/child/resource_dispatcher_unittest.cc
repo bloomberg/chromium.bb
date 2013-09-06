@@ -134,10 +134,9 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
       base::SharedMemoryHandle dup_handle;
       EXPECT_TRUE(shared_mem.GiveToProcess(
           base::Process::Current().handle(), &dup_handle));
-      dispatcher_->OnSetDataBuffer(message_queue_[0], request_id, dup_handle,
+      dispatcher_->OnSetDataBuffer(request_id, dup_handle,
                                    test_page_contents_len, 0);
-      dispatcher_->OnReceivedData(message_queue_[0], request_id, 0,
-                                  test_page_contents_len,
+      dispatcher_->OnReceivedData(request_id, 0, test_page_contents_len,
                                   test_page_contents_len);
 
       message_queue_.erase(message_queue_.begin());
@@ -251,7 +250,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
     response_head.error_code = net::OK;
 
     dispatcher_->OnMessageReceived(
-        ResourceMsg_ReceivedResponse(0, 0, response_head));
+        ResourceMsg_ReceivedResponse(0, response_head));
 
     // Duplicate the shared memory handle so both the test and the callee can
     // close their copy.
@@ -260,9 +259,8 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
                                               &duplicated_handle));
 
     dispatcher_->OnMessageReceived(
-        ResourceMsg_SetDataBuffer(0, 0, duplicated_handle, 100, 0));
-    dispatcher_->OnMessageReceived(
-        ResourceMsg_DataReceived(0, 0, 0, 100, 100));
+        ResourceMsg_SetDataBuffer(0, duplicated_handle, 100, 0));
+    dispatcher_->OnMessageReceived(ResourceMsg_DataReceived(0, 0, 100, 100));
 
     set_defer_loading(false);
   }
@@ -355,7 +353,7 @@ class TimeConversionTest : public ResourceDispatcherTest,
     bridge->Start(this);
 
     dispatcher_->OnMessageReceived(
-        ResourceMsg_ReceivedResponse(0, 0, response_head));
+        ResourceMsg_ReceivedResponse(0, response_head));
   }
 
   // ResourceLoaderBridge::Peer methods.

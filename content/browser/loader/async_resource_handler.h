@@ -28,7 +28,6 @@ class AsyncResourceHandler : public ResourceHandler,
                              public ResourceMessageDelegate {
  public:
   AsyncResourceHandler(ResourceMessageFilter* filter,
-                       int routing_id,
                        net::URLRequest* request,
                        ResourceDispatcherHostImpl* rdh);
   virtual ~AsyncResourceHandler();
@@ -75,7 +74,6 @@ class AsyncResourceHandler : public ResourceHandler,
 
   scoped_refptr<ResourceBuffer> buffer_;
   scoped_refptr<ResourceMessageFilter> filter_;
-  int routing_id_;
   net::URLRequest* request_;
   ResourceDispatcherHostImpl* rdh_;
 

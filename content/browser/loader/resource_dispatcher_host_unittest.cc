@@ -708,7 +708,7 @@ class ResourceDispatcherHostTest : public testing::Test,
     bool result = PickleIterator(msg).ReadInt(&request_id);
     DCHECK(result);
     scoped_ptr<IPC::Message> ack(
-        new ResourceHostMsg_DataReceived_ACK(msg.routing_id(), request_id));
+        new ResourceHostMsg_DataReceived_ACK(request_id));
 
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -1609,7 +1609,7 @@ TEST_F(ResourceDispatcherHostTest, IgnoreCancelForDownloads) {
   EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());
 
   // And now simulate a cancellation coming from the renderer.
-  ResourceHostMsg_CancelRequest msg(filter_->child_id(), request_id);
+  ResourceHostMsg_CancelRequest msg(request_id);
   bool msg_was_ok;
   host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
 
@@ -1644,7 +1644,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContext) {
   EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());
 
   // And now simulate a cancellation coming from the renderer.
-  ResourceHostMsg_CancelRequest msg(filter_->child_id(), request_id);
+  ResourceHostMsg_CancelRequest msg(request_id);
   bool msg_was_ok;
   host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
 
@@ -1685,7 +1685,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
                                     GURL("http://example.com/blah"));
 
   // And now simulate a cancellation coming from the renderer.
-  ResourceHostMsg_CancelRequest msg(filter_->child_id(), request_id);
+  ResourceHostMsg_CancelRequest msg(request_id);
   bool msg_was_ok;
   host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
 
@@ -1832,7 +1832,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationAndThenRedirect) {
 
   // Now, simulate the renderer choosing to follow the redirect.
   ResourceHostMsg_FollowRedirect redirect_msg(
-      new_render_view_id, new_request_id, false, GURL());
+      new_request_id, false, GURL());
   host_.OnMessageReceived(redirect_msg, second_filter.get(), &msg_was_ok);
   base::MessageLoop::current()->RunUntilIdle();
 
@@ -1938,7 +1938,7 @@ TEST_F(ResourceDispatcherHostTest, DelayedDataReceivedACKs) {
 
       EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
 
-      ResourceHostMsg_DataReceived_ACK msg(0, 1);
+      ResourceHostMsg_DataReceived_ACK msg(1);
       bool msg_was_ok;
       host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
     }
@@ -1973,7 +1973,7 @@ TEST_F(ResourceDispatcherHostTest, DataReceivedUnexpectedACKs) {
 
   // Send some unexpected ACKs.
   for (size_t i = 0; i < 128; ++i) {
-    ResourceHostMsg_DataReceived_ACK msg(0, 1);
+    ResourceHostMsg_DataReceived_ACK msg(1);
     bool msg_was_ok;
     host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
   }
@@ -1992,7 +1992,7 @@ TEST_F(ResourceDispatcherHostTest, DataReceivedUnexpectedACKs) {
 
       EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
 
-      ResourceHostMsg_DataReceived_ACK msg(0, 1);
+      ResourceHostMsg_DataReceived_ACK msg(1);
       bool msg_was_ok;
       host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
     }

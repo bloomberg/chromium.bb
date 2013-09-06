@@ -138,7 +138,6 @@ const int kAllNetErrorCodes[] = {
 // Aborts a request before an URLRequest has actually been created.
 void AbortRequestBeforeItStarts(ResourceMessageFilter* filter,
                                 IPC::Message* sync_result,
-                                int route_id,
                                 int request_id) {
   if (sync_result) {
     SyncLoadResult result;
@@ -148,7 +147,6 @@ void AbortRequestBeforeItStarts(ResourceMessageFilter* filter,
   } else {
     // Tell the renderer that this request was disallowed.
     filter->Send(new ResourceMsg_RequestComplete(
-        route_id,
         request_id,
         net::ERR_ABORTED,
         false,
@@ -929,7 +927,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   if (is_shutdown_ ||
       !ShouldServiceRequest(process_type, child_id, request_data,
                             filter_->file_system_context())) {
-    AbortRequestBeforeItStarts(filter_, sync_result, route_id, request_id);
+    AbortRequestBeforeItStarts(filter_, sync_result, request_id);
     return;
   }
 
@@ -942,7 +940,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
                                                   request_data.url,
                                                   request_data.resource_type,
                                                   resource_context)) {
-    AbortRequestBeforeItStarts(filter_, sync_result, route_id, request_id);
+    AbortRequestBeforeItStarts(filter_, sync_result, request_id);
     return;
   }
 
@@ -1041,8 +1039,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
     handler.reset(new SyncResourceHandler(
         filter_, request, sync_result, this));
   } else {
-    handler.reset(new AsyncResourceHandler(
-        filter_, route_id, request, this));
+    handler.reset(new AsyncResourceHandler(filter_, request, this));
   }
 
   // The RedirectToFileResourceHandler depends on being next in the chain.

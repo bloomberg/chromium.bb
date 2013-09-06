@@ -1220,7 +1220,6 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
       // Adding single handlers for your service here is fine, but once your
       // service needs more than one handler, please extract them into a new
       // message filter and add that filter to CreateMessageFilters().
-      IPC_MESSAGE_UNHANDLED_ERROR()
     IPC_END_MESSAGE_MAP_EX()
 
     if (!msg_is_ok) {
