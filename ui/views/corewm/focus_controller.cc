@@ -130,9 +130,12 @@ void FocusController::FocusWindow(aura::Window* window) {
     return;
   }
 
-  // We should not be messing with the focus if the window has capture.
-  if (window && (aura::client::GetCaptureWindow(window) == window))
+  // We should not be messing with the focus if the window has capture, unless
+  // no has focus.
+  if (window && (aura::client::GetCaptureWindow(window) == window) &&
+      focused_window_) {
     return;
+  }
 
   // Focusing a window also activates its containing activatable window. Note
   // that the rules could redirect activation activation and/or focus.

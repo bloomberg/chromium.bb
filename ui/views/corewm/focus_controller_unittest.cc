@@ -268,7 +268,8 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
     return aura::client::GetFocusClient(root_window())->GetFocusedWindow();
   }
   int GetFocusedWindowId() {
-    return GetFocusedWindow()->id();
+    aura::Window* focused_window = GetFocusedWindow();
+    return focused_window ? focused_window->id() : -1;
   }
   void ActivateWindow(aura::Window* window) {
     aura::client::GetActivationClient(root_window())->ActivateWindow(window);
@@ -303,6 +304,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
   virtual void ShiftFocusOnActivationDueToHide() {}
   virtual void NoShiftActiveOnActivation() {}
   virtual void NoFocusChangeOnClickOnCaptureWindow() {}
+  virtual void ChangeFocusWhenNothingFocusedAndCaptured() {}
 
  private:
   scoped_ptr<FocusController> focus_controller_;
@@ -596,6 +598,24 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(1, GetActiveWindowId());
     EXPECT_EQ(1, GetFocusedWindowId());
     aura::client::GetCaptureClient(root_window())->ReleaseCapture(w2);
+  }
+
+  // Verifies focus change is honored while capture held.
+  virtual void ChangeFocusWhenNothingFocusedAndCaptured() OVERRIDE {
+    scoped_ptr<aura::client::DefaultCaptureClient> capture_client(
+        new aura::client::DefaultCaptureClient(root_window()));
+    aura::Window* w1 = root_window()->GetChildById(1);
+    aura::client::GetCaptureClient(root_window())->SetCapture(w1);
+
+    EXPECT_EQ(-1, GetActiveWindowId());
+    EXPECT_EQ(-1, GetFocusedWindowId());
+
+    FocusWindowById(1);
+
+    EXPECT_EQ(1, GetActiveWindowId());
+    EXPECT_EQ(1, GetFocusedWindowId());
+
+    aura::client::GetCaptureClient(root_window())->ReleaseCapture(w1);
   }
 
  private:
@@ -995,6 +1015,9 @@ DIRECT_FOCUS_CHANGE_TESTS(NoShiftActiveOnActivation);
 
 // Clicking on a window which has capture should not result in a focus change.
 DIRECT_FOCUS_CHANGE_TESTS(NoFocusChangeOnClickOnCaptureWindow);
+
+FOCUS_CONTROLLER_TEST(FocusControllerApiTest,
+                      ChangeFocusWhenNothingFocusedAndCaptured);
 
 }  // namespace corewm
 }  // namespace views
