@@ -41,6 +41,7 @@ bool RepostLocatedEvent(gfx::NativeWindow window,
     return false;
   }
   relocated->set_location(root_loc);
+  relocated->set_root_location(root_loc);
 
   root_window->RepostEvent(*relocated);
   return true;
