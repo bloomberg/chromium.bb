@@ -328,4 +328,28 @@ public class AwTestBase
             }
         });
     }
+
+    /**
+     * Returns pure page scale.
+     */
+    protected float getScaleOnUiThread(final AwContents awContents) throws Exception {
+        return runTestOnUiThreadAndGetResult(new Callable<Float>() {
+            @Override
+            public Float call() throws Exception {
+                return awContents.getContentViewCore().getScale();
+            }
+        });
+    }
+
+    /**
+     * Returns page scale multiplied by the screen density.
+     */
+    protected float getPixelScaleOnUiThread(final AwContents awContents) throws Throwable {
+        return runTestOnUiThreadAndGetResult(new Callable<Float>() {
+            @Override
+            public Float call() throws Exception {
+                return awContents.getScale();
+            }
+        });
+    }
 }

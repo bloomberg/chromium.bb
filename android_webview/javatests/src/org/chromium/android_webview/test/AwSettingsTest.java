@@ -2660,30 +2660,6 @@ public class AwSettingsTest extends AwTestBase {
         return TestContentProvider.createContentUrl(target);
     }
 
-    /**
-     * Returns pure page scale.
-     */
-    private float getScaleOnUiThread(final AwContents awContents) throws Throwable {
-        return runTestOnUiThreadAndGetResult(new Callable<Float>() {
-            @Override
-            public Float call() throws Exception {
-                return awContents.getContentViewCore().getScale();
-            }
-        });
-    }
-
-    /**
-     * Returns page scale multiplied by the screen density.
-     */
-    private float getPixelScaleOnUiThread(final AwContents awContents) throws Throwable {
-        return runTestOnUiThreadAndGetResult(new Callable<Float>() {
-            @Override
-            public Float call() throws Exception {
-                return awContents.getScale();
-            }
-        });
-    }
-
     private void simulateDoubleTapCenterOfWebViewOnUiThread(final AwTestContainerView webView)
             throws Throwable {
         final AwContents awContents = webView.getAwContents();

@@ -338,6 +338,10 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setUseLegacyBackgroundSizeShorthandBehavior(
       prefs.use_legacy_background_size_shorthand_behavior);
   settings->setUseWideViewport(prefs.use_wide_viewport);
+  settings->setViewportMetaLayoutSizeQuirk(
+      prefs.viewport_meta_layout_size_quirk);
+  settings->setViewportMetaZeroValuesQuirk(
+      prefs.viewport_meta_zero_values_quirk);
 #endif
 
   WebNetworkStateNotifier::setOnLine(prefs.is_online);

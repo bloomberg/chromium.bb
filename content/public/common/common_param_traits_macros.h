@@ -204,6 +204,8 @@ IPC_STRUCT_TRAITS_BEGIN(WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(support_deprecated_target_density_dpi)
   IPC_STRUCT_TRAITS_MEMBER(use_legacy_background_size_shorthand_behavior)
   IPC_STRUCT_TRAITS_MEMBER(use_wide_viewport)
+  IPC_STRUCT_TRAITS_MEMBER(viewport_meta_layout_size_quirk)
+  IPC_STRUCT_TRAITS_MEMBER(viewport_meta_zero_values_quirk)
 #endif
 IPC_STRUCT_TRAITS_END()
 

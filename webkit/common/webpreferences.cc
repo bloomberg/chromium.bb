@@ -128,7 +128,9 @@ WebPreferences::WebPreferences()
       user_gesture_required_for_media_playback(true),
       support_deprecated_target_density_dpi(false),
       use_legacy_background_size_shorthand_behavior(false),
-      use_wide_viewport(true)
+      use_wide_viewport(true),
+      viewport_meta_layout_size_quirk(false),
+      viewport_meta_zero_values_quirk(false)
 #endif
 {
   standard_font_family_map[webkit_glue::kCommonScript] =

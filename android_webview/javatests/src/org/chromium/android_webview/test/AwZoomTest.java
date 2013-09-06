@@ -91,15 +91,6 @@ public class AwZoomTest extends AwTestBase {
         });
     }
 
-    private float getScaleOnUiThread() throws Throwable {
-        return runTestOnUiThreadAndGetResult(new Callable<Float>() {
-            @Override
-            public Float call() throws Exception {
-                return mAwContents.getScale();
-            }
-        });
-    }
-
     private View getZoomControlsOnUiThread() throws Throwable {
         return runTestOnUiThreadAndGetResult(new Callable<View>() {
             @Override
@@ -119,7 +110,7 @@ public class AwZoomTest extends AwTestBase {
     }
 
     private boolean zoomInOnUiThreadAndWait() throws Throwable {
-        final float previousScale = getScaleOnUiThread();
+        final float previousScale = getPixelScaleOnUiThread(mAwContents);
         if (!runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -132,7 +123,7 @@ public class AwZoomTest extends AwTestBase {
     }
 
     private boolean zoomOutOnUiThreadAndWait() throws Throwable {
-        final float previousScale = getScaleOnUiThread();
+        final float previousScale = getPixelScaleOnUiThread(mAwContents);
         if (!runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -149,10 +140,10 @@ public class AwZoomTest extends AwTestBase {
                 @Override
                 public boolean isSatisfied() {
                     try {
-                        return previousScale != getScaleOnUiThread();
+                        return previousScale != getPixelScaleOnUiThread(mAwContents);
                     } catch (Throwable t) {
                         t.printStackTrace();
-                        fail("Failed to getScaleOnUiThread: " + t.toString());
+                        fail("Failed to getPixelScaleOnUiThread: " + t.toString());
                         return false;
                     }
                 }
