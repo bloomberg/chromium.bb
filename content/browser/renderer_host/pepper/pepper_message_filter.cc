@@ -20,26 +20,6 @@ using ppapi::NetAddressPrivateImpl;
 
 namespace content {
 
-// static
-PepperMessageFilter* PepperMessageFilter::CreateForRendererProcess() {
-  return new PepperMessageFilter(ppapi::PpapiPermissions(),
-                                 PLUGIN_TYPE_IN_PROCESS);
-}
-
-// static
-PepperMessageFilter* PepperMessageFilter::CreateForPpapiPluginProcess(
-    const ppapi::PpapiPermissions& permissions) {
-  return new PepperMessageFilter(permissions,
-                                 PLUGIN_TYPE_OUT_OF_PROCESS);
-}
-
-// static
-PepperMessageFilter* PepperMessageFilter::CreateForExternalPluginProcess(
-    const ppapi::PpapiPermissions& permissions) {
-  return new PepperMessageFilter(permissions,
-                                 PLUGIN_TYPE_EXTERNAL_PLUGIN);
-}
-
 bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
                                             bool* message_was_ok) {
   bool handled = true;
@@ -64,10 +44,8 @@ void PepperMessageFilter::OnIPAddressChanged() {
 }
 
 PepperMessageFilter::PepperMessageFilter(
-    const ppapi::PpapiPermissions& permissions,
-    PluginType plugin_type)
-    : plugin_type_(plugin_type),
-      permissions_(permissions) {
+    const ppapi::PpapiPermissions& permissions)
+    : permissions_(permissions) {
 }
 
 PepperMessageFilter::~PepperMessageFilter() {
@@ -77,10 +55,8 @@ PepperMessageFilter::~PepperMessageFilter() {
 
 void PepperMessageFilter::OnNetworkMonitorStart(uint32 plugin_dispatcher_id) {
   // Support all in-process plugins, and ones with "private" permissions.
-  if (plugin_type_ != PLUGIN_TYPE_IN_PROCESS &&
-      !permissions_.HasPermission(ppapi::PERMISSION_PRIVATE)) {
+  if (!permissions_.HasPermission(ppapi::PERMISSION_PRIVATE))
     return;
-  }
 
   if (network_monitor_ids_.empty())
     net::NetworkChangeNotifier::AddIPAddressObserver(this);
@@ -90,11 +66,8 @@ void PepperMessageFilter::OnNetworkMonitorStart(uint32 plugin_dispatcher_id) {
 }
 
 void PepperMessageFilter::OnNetworkMonitorStop(uint32 plugin_dispatcher_id) {
-  // Support all in-process plugins, and ones with "private" permissions.
-  if (plugin_type_ != PLUGIN_TYPE_IN_PROCESS &&
-      !permissions_.HasPermission(ppapi::PERMISSION_PRIVATE)) {
+  if (!permissions_.HasPermission(ppapi::PERMISSION_PRIVATE))
     return;
-  }
 
   network_monitor_ids_.erase(plugin_dispatcher_id);
   if (network_monitor_ids_.empty())

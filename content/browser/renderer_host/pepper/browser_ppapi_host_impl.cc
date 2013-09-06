@@ -29,7 +29,7 @@ BrowserPpapiHost* BrowserPpapiHost::CreateExternalPluginProcess(
   browser_ppapi_host->set_plugin_process_handle(plugin_child_process);
 
   scoped_refptr<PepperMessageFilter> pepper_message_filter(
-      PepperMessageFilter::CreateForExternalPluginProcess(permissions));
+      new PepperMessageFilter(permissions));
   channel->AddFilter(pepper_message_filter);
   channel->AddFilter(browser_ppapi_host->message_filter().get());
   channel->AddFilter(new TraceMessageFilter());

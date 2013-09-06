@@ -23,25 +23,13 @@ class PPB_X509Certificate_Fields;
 
 namespace content {
 
-// This class is used in two contexts, both supporting PPAPI plugins. The first
-// is on the renderer->browser channel, to handle requests from in-process
-// PPAPI plugins and any requests that the PPAPI implementation code in the
-// renderer needs to make. The second is on the plugin->browser channel to
-// handle requests that out-of-process plugins send directly to the browser.
+// Message filter that handles IPC for PPB_NetworkMonitor_Private and
+// PPB_X509Certificate_Private.
 class PepperMessageFilter
     : public BrowserMessageFilter,
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
-  // Factory method used in the context of a renderer process.
-  static PepperMessageFilter* CreateForRendererProcess();
-
-  // Factory method used in the context of a PPAPI process.
-  static PepperMessageFilter* CreateForPpapiPluginProcess(
-      const ppapi::PpapiPermissions& permissions);
-
-  // Factory method used in the context of an external plugin,
-  static PepperMessageFilter* CreateForExternalPluginProcess(
-      const ppapi::PpapiPermissions& permissions);
+  explicit PepperMessageFilter(const ppapi::PpapiPermissions& permissions);
 
   // BrowserMessageFilter methods.
   virtual bool OnMessageReceived(const IPC::Message& message,
@@ -58,17 +46,6 @@ class PepperMessageFilter
   // notifications.
   typedef std::set<uint32> NetworkMonitorIdSet;
 
-  enum PluginType {
-    PLUGIN_TYPE_IN_PROCESS,
-    PLUGIN_TYPE_OUT_OF_PROCESS,
-    // External plugin means it was created through
-    // BrowserPpapiHost::CreateExternalPluginProcess.
-    PLUGIN_TYPE_EXTERNAL_PLUGIN,
-  };
-
-  PepperMessageFilter(const ppapi::PpapiPermissions& permissions,
-                      PluginType plugin_type);
-
   void OnNetworkMonitorStart(uint32 plugin_dispatcher_id);
   void OnNetworkMonitorStop(uint32 plugin_dispatcher_id);
 
@@ -79,8 +56,6 @@ class PepperMessageFilter
   void GetAndSendNetworkList();
   void DoGetNetworkList();
   void SendNetworkList(scoped_ptr<net::NetworkInterfaceList> list);
-
-  PluginType plugin_type_;
 
   // When attached to an out-of-process plugin (be it native or NaCl) this
   // will have the Pepper permissions for the plugin. When attached to the

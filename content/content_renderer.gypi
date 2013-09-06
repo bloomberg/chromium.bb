@@ -373,8 +373,6 @@
     'renderer/pepper/ppb_video_decoder_impl.h',
     'renderer/pepper/ppb_widget_impl.cc',
     'renderer/pepper/ppb_widget_impl.h',
-    'renderer/pepper/ppb_x509_certificate_private_impl.cc',
-    'renderer/pepper/ppb_x509_certificate_private_impl.h',
     'renderer/pepper/quota_file_io.cc',
     'renderer/pepper/quota_file_io.h',
     'renderer/pepper/renderer_ppapi_host_impl.cc',

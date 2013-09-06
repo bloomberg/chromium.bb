@@ -14,7 +14,6 @@
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/pepper/ppb_scrollbar_impl.h"
 #include "content/renderer/pepper/ppb_video_decoder_impl.h"
-#include "content/renderer/pepper/ppb_x509_certificate_private_impl.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
@@ -297,7 +296,7 @@ PP_Resource ResourceCreationImpl::CreateWheelInputEvent(
 
 PP_Resource ResourceCreationImpl::CreateX509CertificatePrivate(
     PP_Instance instance) {
-  return PPB_X509Certificate_Private_Impl::CreateResource(instance);
+  return 0;  // Not supported in-process.
 }
 
 }  // namespace content
