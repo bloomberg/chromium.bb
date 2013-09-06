@@ -12,9 +12,11 @@
  * @param {number} height Height of the CWS widget.
  * @param {string} url Share Url for an entry.
  * @param {string} target Target (scheme + host + port) of the widget.
+ * @param {string} token Access token to access CWS.
  * @constructor
  */
-function CWSContainerClient(webView, ext, mime, width, height, url, target) {
+function CWSContainerClient(
+    webView, ext, mime, width, height, url, target, token) {
   this.webView_ = webView;
   this.ext_ = ext;
   this.mime_ = mime;
@@ -22,6 +24,7 @@ function CWSContainerClient(webView, ext, mime, width, height, url, target) {
   this.height_ = height;
   this.url_ = url;
   this.target_ = target;
+  this.token_ = token;
 
   this.loaded_ = false;
   this.loading_ = false;
@@ -187,6 +190,7 @@ CWSContainerClient.prototype.postInitializeMessage_ = function() {
     height: this.height_,
     file_extension: this.ext_,
     mime_type: this.mime_,
+    access_token: this.token_,
     v: 1
   };
 
@@ -239,4 +243,3 @@ CWSContainerClient.prototype.abort = function() {
 CWSContainerClient.prototype.dispose = function() {
   this.abort();
 };
-
