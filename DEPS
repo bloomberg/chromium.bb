@@ -21,7 +21,7 @@ vars = {
 
   "libphonenumber_revision": "584",
   "libvpx_revision": "212364",
-  "lss_revision": "20",
+  "lss_revision": "24",
 
   # These two FFmpeg variables must be updated together.  One is used for SVN
   # checkouts and the other for Git checkouts.
@@ -53,7 +53,7 @@ vars = {
 
 deps = {
   "src/breakpad/src":
-    (Var("googlecode_url") % "google-breakpad") + "/trunk/src@1199",
+    (Var("googlecode_url") % "google-breakpad") + "/trunk/src@1211",
 
   "src/sdch/open-vcdiff":
     (Var("googlecode_url") % "open-vcdiff") + "/trunk@42",
