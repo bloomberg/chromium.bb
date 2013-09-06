@@ -86,9 +86,11 @@ void ActivityLogPolicy::Util::StripPrivacySensitiveFields(
   if (action->page_incognito()) {
     action->set_page_url(GURL());
     action->set_page_title("");
+    action->set_page_incognito(false);
   }
   if (action->arg_incognito()) {
     action->set_arg_url(GURL());
+    action->set_arg_incognito(false);
   }
 
   // Strip query parameters, username/password, etc., from URLs.

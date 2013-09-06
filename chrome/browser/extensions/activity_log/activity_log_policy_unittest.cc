@@ -32,7 +32,7 @@ TEST_F(ActivityLogPolicyUtilTest, StripPrivacySensitive) {
   ActivityLogPolicy::Util::StripPrivacySensitiveFields(action);
 
   ASSERT_FALSE(action->page_url().is_valid());
-  ASSERT_EQ("<incognito>", action->SerializePageUrl());
+  ASSERT_EQ("", action->SerializePageUrl());
   ASSERT_EQ("", action->page_title());
   ASSERT_EQ("http://www.youtube.com/", action->arg_url().spec());
 }
