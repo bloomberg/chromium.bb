@@ -51,7 +51,8 @@ public:
     RenderStyle* locateSharedStyle(const ElementResolveContext&, RenderStyle* newStyle);
 
 private:
-    Element* findElementForStyleSharing(const ElementResolveContext&) const;
+    Node* locateCousinList(Element* parent, unsigned& visitedNodeCount) const;
+    Element* findSiblingForStyleSharing(const ElementResolveContext&, Node*, unsigned& count) const;
 
     // Only used when we're collecting stats on styles
     Element* searchDocumentForSharedStyle(const ElementResolveContext&) const;

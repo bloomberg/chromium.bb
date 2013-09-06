@@ -36,7 +36,6 @@
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/StyleResourceLoader.h"
-#include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
@@ -85,9 +84,6 @@ enum RuleMatchingBehavior {
     MatchAllRulesExcludingSMIL,
     MatchOnlyUserAgentRules,
 };
-
-const unsigned styleSharingListSize = 40;
-typedef WTF::Deque<RefPtr<Element>, styleSharingListSize> StyleSharingList;
 
 #undef STYLE_STATS
 
@@ -277,11 +273,6 @@ public:
 
     const RuleFeatureSet& ruleFeatureSet() const { return m_features; }
 
-    StyleSharingList& styleSharingList() { return m_styleSharingList; }
-
-    void addToStyleSharingList(Element*);
-    void clearStyleSharingList();
-
 #ifdef STYLE_STATS
     ALWAYS_INLINE static StyleSharingStats& styleSharingStats() { return m_styleSharingStats; }
 #endif
@@ -364,8 +355,6 @@ private:
     InspectorCSSOMWrappers m_inspectorCSSOMWrappers;
 
     StyleResourceLoader m_styleResourceLoader;
-
-    StyleSharingList m_styleSharingList;
 
 #ifdef STYLE_STATS
     static StyleSharingStats m_styleSharingStats;
