@@ -190,6 +190,7 @@ void TileManager::RegisterTile(Tile* tile) {
   DCHECK(tiles_.find(tile->id()) == tiles_.end());
 
   tiles_[tile->id()] = tile;
+  used_layer_counts_[tile->layer_id()]++;
   prioritized_tiles_dirty_ = true;
 }
 
@@ -198,6 +199,14 @@ void TileManager::UnregisterTile(Tile* tile) {
 
   DCHECK(tiles_.find(tile->id()) != tiles_.end());
   tiles_.erase(tile->id());
+
+  LayerCountMap::iterator layer_it = used_layer_counts_.find(tile->layer_id());
+  DCHECK_GT(layer_it->second, 0);
+  if (--layer_it->second == 0) {
+    used_layer_counts_.erase(layer_it);
+    image_decode_tasks_.erase(tile->layer_id());
+  }
+
   prioritized_tiles_dirty_ = true;
 }
 
@@ -369,7 +378,6 @@ void TileManager::ManageTiles() {
   TileVector tiles_that_need_to_be_rasterized;
   AssignGpuMemoryToTiles(GetPrioritizedTileSet(),
                          &tiles_that_need_to_be_rasterized);
-  CleanUpUnusedImageDecodeTasks();
 
   // Finally, schedule rasterizer tasks.
   ScheduleTasks(tiles_that_need_to_be_rasterized);
@@ -618,33 +626,6 @@ void TileManager::AssignGpuMemoryToTiles(
       bytes_allocatable - bytes_releasable_;
   memory_stats_from_last_assign_.bytes_over =
       bytes_that_exceeded_memory_budget;
-}
-
-void TileManager::CleanUpUnusedImageDecodeTasks() {
-  if (image_decode_tasks_.empty())
-    return;
-
-  // Calculate a set of layers that are used by at least one tile.
-  base::hash_set<int> used_layers;
-  for (TileMap::iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-    used_layers.insert(it->second->layer_id());
-
-  // Now calculate the set of layers in |image_decode_tasks_| that are not used
-  // by any tile.
-  std::vector<int> unused_layers;
-  for (LayerPixelRefTaskMap::iterator it = image_decode_tasks_.begin();
-       it != image_decode_tasks_.end();
-       ++it) {
-    if (used_layers.find(it->first) == used_layers.end())
-      unused_layers.push_back(it->first);
-  }
-
-  // Erase unused layers from |image_decode_tasks_|.
-  for (std::vector<int>::iterator it = unused_layers.begin();
-       it != unused_layers.end();
-       ++it) {
-    image_decode_tasks_.erase(*it);
-  }
 }
 
 void TileManager::FreeResourceForTile(Tile* tile, RasterMode mode) {

@@ -21,6 +21,8 @@ class FakeTileManager : public TileManager {
   bool HasBeenAssignedMemory(Tile* tile);
   void AssignMemoryToTiles();
 
+  void CheckForCompletedTasks();
+
   virtual ~FakeTileManager();
 
   std::vector<Tile*> tiles_for_raster;

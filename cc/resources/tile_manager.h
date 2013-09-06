@@ -93,6 +93,9 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
       ++resources_releasable_;
     }
   }
+  RasterWorkerPool* RasterWorkerPoolForTesting() {
+    return raster_worker_pool_.get();
+  }
 
  protected:
   TileManager(TileManagerClient* client,
@@ -138,7 +141,6 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
       bool was_canceled);
 
   RasterMode DetermineRasterMode(const Tile* tile) const;
-  void CleanUpUnusedImageDecodeTasks();
   void FreeResourceForTile(Tile* tile, RasterMode mode);
   void FreeResourcesForTile(Tile* tile);
   void FreeUnusedResourcesForTile(Tile* tile);
@@ -175,6 +177,9 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   typedef base::hash_map<uint32_t, RasterWorkerPool::Task> PixelRefTaskMap;
   typedef base::hash_map<int, PixelRefTaskMap> LayerPixelRefTaskMap;
   LayerPixelRefTaskMap image_decode_tasks_;
+
+  typedef base::hash_map<int, int> LayerCountMap;
+  LayerCountMap used_layer_counts_;
 
   RasterTaskCompletionStats update_visible_tiles_stats_;
 

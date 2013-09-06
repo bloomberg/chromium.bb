@@ -74,4 +74,8 @@ bool FakeTileManager::HasBeenAssignedMemory(Tile* tile) {
                    tile) != tiles_for_raster.end();
 }
 
+void FakeTileManager::CheckForCompletedTasks() {
+  RasterWorkerPoolForTesting()->CheckForCompletedTasks();
+}
+
 }  // namespace cc
