@@ -75,12 +75,12 @@ if [ "x$(id -u)" != x0 ]; then
 fi
 
 # Packages needed for chromeos only
-chromeos_dev_list="libbluetooth-dev"
+chromeos_dev_list="libbluetooth-dev libbrlapi-dev"
 
 # Packages need for development
 dev_list="apache2.2-bin bison curl elfutils fakeroot flex g++ gperf
-          language-pack-fr libapache2-mod-php5 libasound2-dev libbz2-dev
-          libcairo2-dev libcups2-dev libcurl4-gnutls-dev libelf-dev
+          language-pack-fr libapache2-mod-php5 libasound2-dev libbrlapi-dev
+          libbz2-dev libcairo2-dev libcups2-dev libcurl4-gnutls-dev libelf-dev
           libgconf2-dev libgl1-mesa-dev libglib2.0-dev libglu1-mesa-dev
           libgnome-keyring-dev libgtk2.0-dev libkrb5-dev libnspr4-dev
           libnss3-dev libpam0g-dev libpci-dev libpulse-dev libsctp-dev
@@ -150,6 +150,11 @@ if package_exists libudev1; then
   dev_list="${dev_list} libudev1"
 else
   dev_list="${dev_list} libudev0"
+fi
+if package_exists libbrlapi0.6; then
+  dev_list="${dev_list} libbrlapi0.6"
+else
+  dev_list="${dev_list} libbrlapi0.5"
 fi
 
 
