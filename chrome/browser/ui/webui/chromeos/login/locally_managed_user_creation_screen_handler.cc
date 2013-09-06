@@ -104,11 +104,11 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
   builder->Add("createManagedUserPasswordMismatchError",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_MISMATCH_ERROR);
 
-  builder->Add("createManagedUserCreatedText1",
+  builder->Add("createManagedUserCreated1Text1",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_1_TEXT_1);
-  builder->Add("createManagedUserCreatedText2",
+  builder->Add("createManagedUserCreated1Text2",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_1_TEXT_2);
-  builder->Add("createManagedUserCreatedText3",
+  builder->Add("createManagedUserCreated1Text3",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_1_TEXT_3);
 
   builder->Add("managementURL", chrome::kSupervisedUserManagementDisplayURL);
