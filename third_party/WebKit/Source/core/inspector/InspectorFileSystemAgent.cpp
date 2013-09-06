@@ -161,7 +161,7 @@ void FileSystemRootRequest::start(ScriptExecutionContext* scriptExecutionContext
     }
 
     RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &FileSystemRootRequest::didGetEntry);
-    OwnPtr<ResolveURICallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext, type, "/");
+    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext, type, "/");
 
     LocalFileSystem::from(scriptExecutionContext)->readFileSystem(scriptExecutionContext, type, fileSystemCallbacks.release());
 }
@@ -231,7 +231,7 @@ void DirectoryContentRequest::start(ScriptExecutionContext* scriptExecutionConte
     }
 
     RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &DirectoryContentRequest::didGetEntry);
-    OwnPtr<ResolveURICallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext, type, path);
+    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext, type, path);
 
     LocalFileSystem::from(scriptExecutionContext)->readFileSystem(scriptExecutionContext, type, fileSystemCallbacks.release());
 }
@@ -356,7 +356,7 @@ void MetadataRequest::start(ScriptExecutionContext* scriptExecutionContext)
     }
 
     RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &MetadataRequest::didGetEntry);
-    OwnPtr<ResolveURICallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext, type, m_path);
+    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext, type, m_path);
     LocalFileSystem::from(scriptExecutionContext)->readFileSystem(scriptExecutionContext, type, fileSystemCallbacks.release());
 }
 
@@ -462,7 +462,7 @@ void FileContentRequest::start(ScriptExecutionContext* scriptExecutionContext)
     }
 
     RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &FileContentRequest::didGetEntry);
-    OwnPtr<ResolveURICallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext, type, path);
+    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext, type, path);
 
     LocalFileSystem::from(scriptExecutionContext)->readFileSystem(scriptExecutionContext, type, fileSystemCallbacks.release());
 }
@@ -572,11 +572,11 @@ void DeleteEntryRequest::start(ScriptExecutionContext* scriptExecutionContext)
     }
 
     if (path == "/") {
-        OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = VoidCallbacks::create(this, errorCallback);
+        OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = VoidCallbacks::create(this, errorCallback, 0);
         LocalFileSystem::from(scriptExecutionContext)->deleteFileSystem(scriptExecutionContext, type, fileSystemCallbacks.release());
     } else {
         RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &DeleteEntryRequest::didGetEntry);
-        OwnPtr<ResolveURICallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext, type, path);
+        OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext, type, path);
         LocalFileSystem::from(scriptExecutionContext)->readFileSystem(scriptExecutionContext, type, fileSystemCallbacks.release());
     }
 }

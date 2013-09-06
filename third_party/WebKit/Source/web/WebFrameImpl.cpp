@@ -72,7 +72,6 @@
 #include "WebFrameImpl.h"
 
 #include "AssociatedURLLoader.h"
-#include "AsyncFileSystemChromium.h"
 #include "DOMUtilitiesPrivate.h"
 #include "EventListenerWrapper.h"
 #include "FindInPageCoordinates.h"
@@ -157,7 +156,6 @@
 #include "core/page/Performance.h"
 #include "core/page/PrintContext.h"
 #include "core/page/Settings.h"
-#include "core/platform/AsyncFileSystem.h"
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
@@ -881,13 +879,13 @@ v8::Local<v8::Context> WebFrameImpl::mainWorldScriptContext() const
 v8::Handle<v8::Value> WebFrameImpl::createFileSystem(WebFileSystemType type, const WebString& name, const WebString& path)
 {
     ASSERT(frame());
-    return toV8(DOMFileSystem::create(frame()->document(), name, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, path.utf8().data()), AsyncFileSystemChromium::create()), v8::Handle<v8::Object>(), frame()->script()->currentWorldContext()->GetIsolate());
+    return toV8(DOMFileSystem::create(frame()->document(), name, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, path.utf8().data())), v8::Handle<v8::Object>(), frame()->script()->currentWorldContext()->GetIsolate());
 }
 
 v8::Handle<v8::Value> WebFrameImpl::createSerializableFileSystem(WebFileSystemType type, const WebString& name, const WebString& path)
 {
     ASSERT(frame());
-    RefPtr<DOMFileSystem> fileSystem = DOMFileSystem::create(frame()->document(), name, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, path.utf8().data()), AsyncFileSystemChromium::create());
+    RefPtr<DOMFileSystem> fileSystem = DOMFileSystem::create(frame()->document(), name, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, path.utf8().data()));
     fileSystem->makeClonable();
     return toV8(fileSystem.release(), v8::Handle<v8::Object>(), frame()->script()->currentWorldContext()->GetIsolate());
 }
@@ -896,7 +894,7 @@ v8::Handle<v8::Value> WebFrameImpl::createFileEntry(WebFileSystemType type, cons
 {
     ASSERT(frame());
 
-    RefPtr<DOMFileSystemBase> fileSystem = DOMFileSystem::create(frame()->document(), fileSystemName, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, fileSystemPath.utf8().data()), AsyncFileSystemChromium::create());
+    RefPtr<DOMFileSystemBase> fileSystem = DOMFileSystem::create(frame()->document(), fileSystemName, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, fileSystemPath.utf8().data()));
     if (isDirectory)
         return toV8(DirectoryEntry::create(fileSystem, filePath), v8::Handle<v8::Object>(), frame()->script()->currentWorldContext()->GetIsolate());
     return toV8(FileEntry::create(fileSystem, filePath), v8::Handle<v8::Object>(), frame()->script()->currentWorldContext()->GetIsolate());

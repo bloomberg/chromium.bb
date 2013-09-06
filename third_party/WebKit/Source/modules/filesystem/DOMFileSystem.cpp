@@ -33,7 +33,6 @@
 
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/File.h"
-#include "core/platform/AsyncFileSystem.h"
 #include "core/platform/FileMetadata.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DirectoryEntry.h"
@@ -45,6 +44,8 @@
 #include "modules/filesystem/FileWriterBaseCallback.h"
 #include "modules/filesystem/FileWriterCallback.h"
 #include "modules/filesystem/MetadataCallback.h"
+#include "public/platform/WebFileSystem.h"
+#include "public/platform/WebFileSystemCallbacks.h"
 #include "weborigin/DatabaseIdentifier.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/OwnPtr.h"
@@ -54,9 +55,9 @@
 namespace WebCore {
 
 // static
-PassRefPtr<DOMFileSystem> DOMFileSystem::create(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL, PassOwnPtr<AsyncFileSystem> asyncFileSystem)
+PassRefPtr<DOMFileSystem> DOMFileSystem::create(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
 {
-    RefPtr<DOMFileSystem> fileSystem(adoptRef(new DOMFileSystem(context, name, type, rootURL, asyncFileSystem)));
+    RefPtr<DOMFileSystem> fileSystem(adoptRef(new DOMFileSystem(context, name, type, rootURL)));
     fileSystem->suspendIfNeeded();
     return fileSystem.release();
 }
@@ -82,11 +83,11 @@ PassRefPtr<DOMFileSystem> DOMFileSystem::createIsolatedFileSystem(ScriptExecutio
     rootURL.append(filesystemId);
     rootURL.append("/");
 
-    return DOMFileSystem::create(context, filesystemName.toString(), FileSystemTypeIsolated, KURL(ParsedURLString, rootURL.toString()), AsyncFileSystem::create());
+    return DOMFileSystem::create(context, filesystemName.toString(), FileSystemTypeIsolated, KURL(ParsedURLString, rootURL.toString()));
 }
 
-DOMFileSystem::DOMFileSystem(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL, PassOwnPtr<AsyncFileSystem> asyncFileSystem)
-    : DOMFileSystemBase(context, name, type, rootURL, asyncFileSystem)
+DOMFileSystem::DOMFileSystem(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
+    : DOMFileSystemBase(context, name, type, rootURL)
     , ActiveDOMObject(context)
 {
     ScriptWrappable::init(this);
@@ -97,20 +98,14 @@ PassRefPtr<DirectoryEntry> DOMFileSystem::root()
     return DirectoryEntry::create(this, DOMFilePath::root);
 }
 
-void DOMFileSystem::stop()
+void DOMFileSystem::addPendingCallbacks()
 {
-    m_asyncFileSystem->stop();
+    setPendingActivity(this);
 }
 
-bool DOMFileSystem::hasPendingActivity() const
+void DOMFileSystem::removePendingCallbacks()
 {
-    return m_asyncFileSystem->hasPendingActivity();
-}
-
-void DOMFileSystem::contextDestroyed()
-{
-    m_asyncFileSystem->stop();
-    ActiveDOMObject::contextDestroyed();
+    unsetPendingActivity(this);
 }
 
 namespace {
@@ -142,17 +137,17 @@ void DOMFileSystem::createWriter(const FileEntry* fileEntry, PassRefPtr<FileWrit
 
     RefPtr<FileWriter> fileWriter = FileWriter::create(scriptExecutionContext());
     RefPtr<FileWriterBaseCallback> conversionCallback = ConvertToFileWriterCallback::create(successCallback);
-    OwnPtr<FileWriterBaseCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, conversionCallback, errorCallback);
-    m_asyncFileSystem->createWriter(fileWriter.get(), createFileSystemURL(fileEntry), callbacks.release());
+    OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, conversionCallback, errorCallback);
+    fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter.get(), callbacks.release());
 }
 
 namespace {
 
 class SnapshotFileCallback : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<SnapshotFileCallback> create(PassRefPtr<DOMFileSystem> filesystem, const String& name, const KURL& url, PassRefPtr<FileCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtr<DOMFileSystem> filesystem, const String& name, const KURL& url, PassRefPtr<FileCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
     {
-        return adoptPtr(new SnapshotFileCallback(filesystem, name, url, successCallback, errorCallback));
+        return adoptPtr(static_cast<AsyncFileSystemCallbacks*>(new SnapshotFileCallback(filesystem, name, url, successCallback, errorCallback)));
     }
 
     virtual void didCreateSnapshotFile(const FileMetadata& metadata, PassRefPtr<BlobDataHandle> snapshot)
@@ -170,7 +165,7 @@ public:
         // For other filesystem types (which could be platform-specific ones), there's a chance that the files are on remote filesystem. If the port has returned metadata just pass it to File constructor (so we may cache the metadata).
         // FIXME: We should use the snapshot metadata for all files.
         // https://www.w3.org/Bugs/Public/show_bug.cgi?id=17746
-        if (m_filesystem->type() == FileSystemTypeTemporary || m_filesystem->type() == FileSystemTypePersistent) {
+        if (m_fileSystem->type() == FileSystemTypeTemporary || m_fileSystem->type() == FileSystemTypePersistent) {
             m_successCallback->handleEvent(File::createWithName(metadata.platformPath, m_name).get());
         } else if (!metadata.platformPath.isEmpty()) {
             // If the platformPath in the returned metadata is given, we create a File object for the path.
@@ -185,15 +180,13 @@ public:
 
 private:
     SnapshotFileCallback(PassRefPtr<DOMFileSystem> filesystem, const String& name,  const KURL& url, PassRefPtr<FileCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
-        : FileSystemCallbacksBase(errorCallback)
-        , m_filesystem(filesystem)
+        : FileSystemCallbacksBase(errorCallback, filesystem.get())
         , m_name(name)
         , m_url(url)
         , m_successCallback(successCallback)
     {
     }
 
-    RefPtr<DOMFileSystem> m_filesystem;
     String m_name;
     KURL m_url;
     RefPtr<FileCallback> m_successCallback;
@@ -204,7 +197,7 @@ private:
 void DOMFileSystem::createFile(const FileEntry* fileEntry, PassRefPtr<FileCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
 {
     KURL fileSystemURL = createFileSystemURL(fileEntry);
-    m_asyncFileSystem->createSnapshotFileAndReadMetadata(fileSystemURL, SnapshotFileCallback::create(this, fileEntry->name(), fileSystemURL, successCallback, errorCallback));
+    fileSystem()->createSnapshotFileAndReadMetadata(fileSystemURL, SnapshotFileCallback::create(this, fileEntry->name(), fileSystemURL, successCallback, errorCallback));
 }
 
 } // namespace WebCore

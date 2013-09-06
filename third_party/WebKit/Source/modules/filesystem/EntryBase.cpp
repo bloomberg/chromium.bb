@@ -31,7 +31,6 @@
 #include "config.h"
 #include "modules/filesystem/EntryBase.h"
 
-#include "core/platform/AsyncFileSystem.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "weborigin/SecurityOrigin.h"

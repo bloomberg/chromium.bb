@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WorkerFileSystemClient.h"
 
-#include "WebFileSystemCallbacksImpl.h"
 #include "WebWorkerBase.h"
 #include "WorkerAllowMainThreadBridgeBase.h"
 #include "core/dom/ScriptExecutionContext.h"
@@ -111,8 +110,7 @@ bool WorkerFileSystemClient::allowFileSystem(ScriptExecutionContext* context)
 void WorkerFileSystemClient::openFileSystem(ScriptExecutionContext* context, WebCore::FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks, long long size, OpenFileSystemMode openMode)
 {
     KURL storagePartition = KURL(KURL(), context->securityOrigin()->toString());
-    // FIXME: fix this callbacks raw pointer.
-    WebKit::Platform::current()->fileSystem()->openFileSystem(storagePartition, static_cast<WebFileSystemType>(type), openMode == CreateFileSystemIfNotPresent, new WebKit::WebFileSystemCallbacksImpl(callbacks));
+    WebKit::Platform::current()->fileSystem()->openFileSystem(storagePartition, static_cast<WebFileSystemType>(type), openMode == CreateFileSystemIfNotPresent, callbacks);
 }
 
 void WorkerFileSystemClient::deleteFileSystem(WebCore::ScriptExecutionContext*, WebCore::FileSystemType, PassOwnPtr<WebCore::AsyncFileSystemCallbacks>)

@@ -47,17 +47,16 @@ class FileWriterCallback;
 
 class DOMFileSystem : public DOMFileSystemBase, public ScriptWrappable, public ActiveDOMObject {
 public:
-    static PassRefPtr<DOMFileSystem> create(ScriptExecutionContext*, const String& name, FileSystemType, const KURL& rootURL, PassOwnPtr<AsyncFileSystem>);
+    static PassRefPtr<DOMFileSystem> create(ScriptExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
 
     // Creates a new isolated file system for the given filesystemId.
     static PassRefPtr<DOMFileSystem> createIsolatedFileSystem(ScriptExecutionContext*, const String& filesystemId);
 
     PassRefPtr<DirectoryEntry> root();
 
-    // ActiveDOMObject methods.
-    virtual void stop();
-    virtual bool hasPendingActivity() const;
-    virtual void contextDestroyed();
+    // DOMFileSystemBase overrides.
+    virtual void addPendingCallbacks() OVERRIDE;
+    virtual void removePendingCallbacks() OVERRIDE;
 
     void createWriter(const FileEntry*, PassRefPtr<FileWriterCallback>, PassRefPtr<ErrorCallback>);
     void createFile(const FileEntry*, PassRefPtr<FileCallback>, PassRefPtr<ErrorCallback>);
@@ -83,7 +82,7 @@ public:
     }
 
 private:
-    DOMFileSystem(ScriptExecutionContext*, const String& name, FileSystemType, const KURL& rootURL, PassOwnPtr<AsyncFileSystem>);
+    DOMFileSystem(ScriptExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
 
     // A helper template to schedule a callback task.
     template <typename CB, typename CBArg>

@@ -2575,7 +2575,6 @@
             'html/track/WebVTTTokenizer.h',
         ],
         'webcore_platform_files': [
-            'platform/AsyncFileSystem.h',
             'platform/AsyncFileSystemCallbacks.h',
             'platform/CalculationValue.cpp',
             'platform/CalculationValue.h',
@@ -3758,6 +3757,7 @@
             'platform/chromium/support/WebData.cpp',
             'platform/chromium/support/WebDeviceMotionData.cpp',
             'platform/chromium/support/WebDeviceOrientationData.cpp',
+            'platform/chromium/support/WebFileSystemCallbacks.cpp',
             'platform/chromium/support/WebFloatQuad.cpp',
             'platform/chromium/support/WebHTTPBody.cpp',
             'platform/chromium/support/WebHTTPLoadInfo.cpp',

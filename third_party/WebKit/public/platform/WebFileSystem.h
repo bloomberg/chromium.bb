@@ -32,16 +32,15 @@
 #define WebFileSystem_h
 
 #include "WebCommon.h"
+#include "WebFileSystemCallbacks.h"
 #include "WebFileSystemType.h"
 #include "WebURL.h"
 
 namespace WebKit {
 
-// FIXME: Delete this flag after we complete switching to the new code.
-#define USE_THREADLOCAL_WEBFILESYSTEM
+// FIXME: Remove this after the switch is over.
+#define NON_SELFDESTRUCT_WEBFILESYSTEMCALLBACKS
 
-// FIXME: Move these classes into platform.
-class WebFileSystemCallbacks;
 class WebFileWriter;
 class WebFileWriterClient;
 
@@ -64,7 +63,7 @@ public:
     // is completed successfully. WebFileSystemCallbacks::didFail() must be
     // called otherwise. The create bool is for indicating whether or not to
     // create root path for file systems if it do not exist.
-    virtual void openFileSystem(const WebURL& storagePartition, const WebFileSystemType, bool create, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void openFileSystem(const WebURL& storagePartition, const WebFileSystemType, bool create, WebFileSystemCallbacks) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // Deletes FileSystem.
     // WebFileSystemCallbacks::didSucceed() must be called when the operation
@@ -72,34 +71,34 @@ public:
     // called otherwise.
     // All in-flight operations and following operations may fail after the
     // FileSystem is deleted.
-    virtual void deleteFileSystem(const WebURL& storagePartition, const WebFileSystemType, WebFileSystemCallbacks*) { }
+    virtual void deleteFileSystem(const WebURL& storagePartition, const WebFileSystemType, WebFileSystemCallbacks) { }
 
     // Moves a file or directory at |srcPath| to |destPath|.
     // WebFileSystemCallbacks::didSucceed() must be called when the operation is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.
-    virtual void move(const WebURL& srcPath, const WebURL& destPath, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void move(const WebURL& srcPath, const WebURL& destPath, WebFileSystemCallbacks) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // Copies a file or directory at |srcPath| to |destPath|.
     // WebFileSystemCallbacks::didSucceed() must be called when the operation is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.
-    virtual void copy(const WebURL& srcPath, const WebURL& destPath, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void copy(const WebURL& srcPath, const WebURL& destPath, WebFileSystemCallbacks) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // Deletes a file or directory at a given |path|.
     // It is an error to try to remove a directory that is not empty.
     // WebFileSystemCallbacks::didSucceed() must be called when the operation is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.
-    virtual void remove(const WebURL& path, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void remove(const WebURL& path, WebFileSystemCallbacks) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // Deletes a file or directory recursively at a given |path|.
     // WebFileSystemCallbacks::didSucceed() must be called when the operation is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.
-    virtual void removeRecursively(const WebURL& path, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void removeRecursively(const WebURL& path, WebFileSystemCallbacks) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // Retrieves the metadata information of the file or directory at the given |path|.
     // This may not always return the local platform path in remote filesystem cases.
     // WebFileSystemCallbacks::didReadMetadata() must be called with a valid metadata when the retrieval is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.
-    virtual void readMetadata(const WebURL& path, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void readMetadata(const WebURL& path, WebFileSystemCallbacks) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // Creates a file at given |path|.
     // If the |path| doesn't exist, it creates a new file at |path|.
@@ -109,7 +108,7 @@ public:
     //
     // WebFileSystemCallbacks::didSucceed() must be called when the operation is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.
-    virtual void createFile(const WebURL& path, bool exclusive, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void createFile(const WebURL& path, bool exclusive, WebFileSystemCallbacks) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // Creates a directory at a given |path|.
     // If the |path| doesn't exist, it creates a new directory at |path|.
@@ -119,22 +118,22 @@ public:
     // WebFileSystemCallbacks::didSucceed() must be called when
     // the operation is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.
-    virtual void createDirectory(const WebURL& path, bool exclusive, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void createDirectory(const WebURL& path, bool exclusive, WebFileSystemCallbacks) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // Checks if a file exists at a given |path|.
     // WebFileSystemCallbacks::didSucceed() must be called when the operation is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.
-    virtual void fileExists(const WebURL& path, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void fileExists(const WebURL& path, WebFileSystemCallbacks) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // Checks if a directory exists at a given |path|.
     // WebFileSystemCallbacks::didSucceed() must be called when the operation is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.
-    virtual void directoryExists(const WebURL& path, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void directoryExists(const WebURL& path, WebFileSystemCallbacks) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // Reads directory entries of a given directory at |path|.
     // WebFileSystemCallbacks::didReadDirectory() must be called when the operation is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.
-    virtual void readDirectory(const WebURL& path, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void readDirectory(const WebURL& path, WebFileSystemCallbacks) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // Creates a WebFileWriter that can be used to write to the given file.
     // This is a fast, synchronous call, and should not stat the filesystem.
@@ -145,7 +144,7 @@ public:
     // Creates a WebFileWriter that can be used to write to the given file.
     // WebFileSystemCallbacks::didCreateFileWriter() must be called with the created WebFileWriter when the operation is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.
-    virtual void createFileWriter(const WebURL& path, WebFileWriterClient*, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void createFileWriter(const WebURL& path, WebFileWriterClient*, WebFileSystemCallbacks) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // Creates a snapshot file for a given file specified by |path|. It returns the metadata of the created snapshot file.
     // The returned metadata should include a local platform path to the snapshot image.
@@ -155,7 +154,7 @@ public:
     // The snapshot file is supposed to be deleted when the last reference to a WebCore::File referring to it's path is dropped.
     // WebFileSystemCallbacks::didCreateSnapshotFile() with the metadata of the snapshot file must be called when the operation is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.
-    virtual void createSnapshotFileAndReadMetadata(const WebURL& path, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void createSnapshotFileAndReadMetadata(const WebURL& path, WebFileSystemCallbacks) { WEBKIT_ASSERT_NOT_REACHED(); }
 
 protected:
     virtual ~WebFileSystem() { }

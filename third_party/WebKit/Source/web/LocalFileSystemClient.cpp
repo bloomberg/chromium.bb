@@ -31,7 +31,6 @@
 #include "config.h"
 #include "LocalFileSystemClient.h"
 
-#include "WebFileSystemCallbacksImpl.h"
 #include "WebFrameImpl.h"
 #include "WebViewImpl.h"
 #include "core/dom/Document.h"
@@ -70,15 +69,13 @@ bool LocalFileSystemClient::allowFileSystem(ScriptExecutionContext* context)
 void LocalFileSystemClient::openFileSystem(ScriptExecutionContext* context, WebCore::FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks, long long size, OpenFileSystemMode openMode)
 {
     KURL storagePartition = KURL(KURL(), context->securityOrigin()->toString());
-    // FIXME: fix this callbacks raw pointer.
-    WebKit::Platform::current()->fileSystem()->openFileSystem(storagePartition, static_cast<WebFileSystemType>(type), openMode == CreateFileSystemIfNotPresent, new WebKit::WebFileSystemCallbacksImpl(callbacks));
+    WebKit::Platform::current()->fileSystem()->openFileSystem(storagePartition, static_cast<WebFileSystemType>(type), openMode == CreateFileSystemIfNotPresent, callbacks);
 }
 
 void LocalFileSystemClient::deleteFileSystem(ScriptExecutionContext* context, WebCore::FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     KURL storagePartition = KURL(KURL(), context->securityOrigin()->toString());
-    // FIXME: fix this callbacks raw pointer.
-    WebKit::Platform::current()->fileSystem()->deleteFileSystem(storagePartition, static_cast<WebFileSystemType>(type), new WebFileSystemCallbacksImpl(callbacks));
+    WebKit::Platform::current()->fileSystem()->deleteFileSystem(storagePartition, static_cast<WebFileSystemType>(type), callbacks);
 
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,10 +27,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "config.h"
-#include "WebFileSystemCallbacksImpl.h"
 
-#include "AsyncFileSystemChromium.h"
+#include "config.h"
+#include "public/platform/WebFileSystemCallbacks.h"
+
 #include "core/platform/AsyncFileSystemCallbacks.h"
 #include "core/platform/FileMetadata.h"
 #include "public/platform/WebFileInfo.h"
@@ -38,92 +38,114 @@
 #include "public/platform/WebFileSystemEntry.h"
 #include "public/platform/WebFileWriter.h"
 #include "public/platform/WebString.h"
-#include "wtf/Vector.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 using namespace WebCore;
 
 namespace WebKit {
 
-WebFileSystemCallbacksImpl::WebFileSystemCallbacksImpl(PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
-    : m_callbacks(callbacks)
+class WebFileSystemCallbacksPrivate : public RefCounted<WebFileSystemCallbacksPrivate> {
+public:
+    static PassRefPtr<WebFileSystemCallbacksPrivate> create(const PassOwnPtr<AsyncFileSystemCallbacks>& callbacks)
+    {
+        return adoptRef(new WebFileSystemCallbacksPrivate(callbacks));
+    }
+
+    AsyncFileSystemCallbacks* callbacks() { return m_callbacks.get(); }
+
+private:
+    WebFileSystemCallbacksPrivate(const PassOwnPtr<AsyncFileSystemCallbacks>& callbacks) : m_callbacks(callbacks) { }
+    OwnPtr<AsyncFileSystemCallbacks> m_callbacks;
+};
+
+WebFileSystemCallbacks::WebFileSystemCallbacks(const PassOwnPtr<AsyncFileSystemCallbacks>& callbacks)
 {
-    ASSERT(m_callbacks);
+    m_private = WebFileSystemCallbacksPrivate::create(callbacks);
 }
 
-WebFileSystemCallbacksImpl::~WebFileSystemCallbacksImpl()
+void WebFileSystemCallbacks::reset()
 {
+    m_private.reset();
 }
 
-void WebFileSystemCallbacksImpl::didSucceed()
+void WebFileSystemCallbacks::assign(const WebFileSystemCallbacks& other)
 {
-    m_callbacks->didSucceed();
-    delete this;
+    m_private = other.m_private;
 }
 
-void WebFileSystemCallbacksImpl::didReadMetadata(const WebFileInfo& webFileInfo)
+void WebFileSystemCallbacks::didSucceed()
 {
+    ASSERT(!m_private.isNull());
+    m_private->callbacks()->didSucceed();
+    m_private.reset();
+}
+
+void WebFileSystemCallbacks::didReadMetadata(const WebFileInfo& webFileInfo)
+{
+    ASSERT(!m_private.isNull());
     FileMetadata fileMetadata;
     fileMetadata.modificationTime = webFileInfo.modificationTime;
     fileMetadata.length = webFileInfo.length;
     fileMetadata.type = static_cast<FileMetadata::Type>(webFileInfo.type);
     fileMetadata.platformPath = webFileInfo.platformPath;
-    m_callbacks->didReadMetadata(fileMetadata);
-    delete this;
+    m_private->callbacks()->didReadMetadata(fileMetadata);
+    m_private.reset();
 }
 
-void WebFileSystemCallbacksImpl::didCreateSnapshotFile(const WebFileInfo& webFileInfo)
+void WebFileSystemCallbacks::didCreateSnapshotFile(const WebFileInfo& webFileInfo)
 {
+    ASSERT(!m_private.isNull());
     // It's important to create a BlobDataHandle that refers to the platform file path prior
     // to return from this method so the underlying file will not be deleted.
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendFile(webFileInfo.platformPath);
     RefPtr<BlobDataHandle> snapshotBlob = BlobDataHandle::create(blobData.release(), webFileInfo.length);
-    didCreateSnapshotFile(webFileInfo, snapshotBlob);
-}
 
-void WebFileSystemCallbacksImpl::didCreateSnapshotFile(const WebFileInfo& webFileInfo, PassRefPtr<WebCore::BlobDataHandle> snapshot)
-{
     FileMetadata fileMetadata;
     fileMetadata.modificationTime = webFileInfo.modificationTime;
     fileMetadata.length = webFileInfo.length;
     fileMetadata.type = static_cast<FileMetadata::Type>(webFileInfo.type);
     fileMetadata.platformPath = webFileInfo.platformPath;
-    m_callbacks->didCreateSnapshotFile(fileMetadata, snapshot);
-    delete this;
+    m_private->callbacks()->didCreateSnapshotFile(fileMetadata, snapshotBlob);
+    m_private.reset();
 }
 
-void WebFileSystemCallbacksImpl::didReadDirectory(const WebVector<WebFileSystemEntry>& entries, bool hasMore)
+void WebFileSystemCallbacks::didReadDirectory(const WebVector<WebFileSystemEntry>& entries, bool hasMore)
 {
+    ASSERT(!m_private.isNull());
     for (size_t i = 0; i < entries.size(); ++i)
-        m_callbacks->didReadDirectoryEntry(entries[i].name, entries[i].isDirectory);
-    m_callbacks->didReadDirectoryEntries(hasMore);
-    delete this;
+        m_private->callbacks()->didReadDirectoryEntry(entries[i].name, entries[i].isDirectory);
+    m_private->callbacks()->didReadDirectoryEntries(hasMore);
+    m_private.reset();
 }
 
-void WebFileSystemCallbacksImpl::didOpenFileSystem(const WebString& name, const WebURL& rootURL)
+void WebFileSystemCallbacks::didOpenFileSystem(const WebString& name, const WebURL& rootURL)
 {
-    // This object is intended to delete itself on exit.
-    OwnPtr<WebFileSystemCallbacksImpl> callbacks = adoptPtr(this);
-    m_callbacks->didOpenFileSystem(name, rootURL, AsyncFileSystemChromium::create());
+    ASSERT(!m_private.isNull());
+    m_private->callbacks()->didOpenFileSystem(name, rootURL);
+    m_private.reset();
 }
 
-void WebFileSystemCallbacksImpl::didCreateFileWriter(WebFileWriter* webFileWriter, long long length)
+void WebFileSystemCallbacks::didCreateFileWriter(WebFileWriter* webFileWriter, long long length)
 {
-    // This object is intended to delete itself on exit.
-    OwnPtr<WebFileSystemCallbacksImpl> callbacks = adoptPtr(this);
-
-    m_callbacks->didCreateFileWriter(adoptPtr(webFileWriter), length);
+    ASSERT(!m_private.isNull());
+    m_private->callbacks()->didCreateFileWriter(adoptPtr(webFileWriter), length);
+    m_private.reset();
 }
 
-void WebFileSystemCallbacksImpl::didFail(WebFileError error)
+void WebFileSystemCallbacks::didFail(WebFileError error)
 {
-    m_callbacks->didFail(error);
-    delete this;
+    ASSERT(!m_private.isNull());
+    m_private->callbacks()->didFail(error);
+    m_private.reset();
 }
 
-bool WebFileSystemCallbacksImpl::shouldBlockUntilCompletion() const
+bool WebFileSystemCallbacks::shouldBlockUntilCompletion() const
 {
-    return m_callbacks->shouldBlockUntilCompletion();
+    ASSERT(!m_private.isNull());
+    return m_private->callbacks()->shouldBlockUntilCompletion();
 }
 
 } // namespace WebKit

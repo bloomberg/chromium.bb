@@ -31,13 +31,16 @@
 #ifndef DOMFileSystemBase_h
 #define DOMFileSystemBase_h
 
-#include "core/platform/AsyncFileSystem.h"
 #include "modules/filesystem/FileSystemFlags.h"
 #include "modules/filesystem/FileSystemType.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
+
+namespace WebKit {
+class WebFileSystem;
+}
 
 namespace WebCore {
 
@@ -67,16 +70,22 @@ public:
     static const char isolatedPathPrefix[];
     static const char externalPathPrefix[];
 
-    static PassRefPtr<DOMFileSystemBase> create(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL, PassOwnPtr<AsyncFileSystem> asyncFileSystem)
+    static PassRefPtr<DOMFileSystemBase> create(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
     {
-        return adoptRef(new DOMFileSystemBase(context, name, type, rootURL, asyncFileSystem));
+        return adoptRef(new DOMFileSystemBase(context, name, type, rootURL));
     }
     virtual ~DOMFileSystemBase();
+
+    // These are called when a new callback is created and resolved in
+    // FileSystem API, so that subclasses can track the number of pending
+    // callbacks if necessary.
+    virtual void addPendingCallbacks() { }
+    virtual void removePendingCallbacks() { }
 
     const String& name() const { return m_name; }
     FileSystemType type() const { return m_type; }
     KURL rootURL() const { return m_filesystemRootURL; }
-    AsyncFileSystem* asyncFileSystem() const { return m_asyncFileSystem.get(); }
+    WebKit::WebFileSystem* fileSystem() const;
     SecurityOrigin* securityOrigin() const;
 
     // The clonable flag is used in the structured clone algorithm to test
@@ -92,7 +101,7 @@ public:
     KURL createFileSystemURL(const String& fullPath) const;
 
     // Actual FileSystem API implementations. All the validity checks on virtual paths are done at this level.
-    // They return false for immediate errors that don't involve lower AsyncFileSystem layer (e.g. for name validation errors). Otherwise they return true (but later may call back with an runtime error).
+    // They return false for immediate errors that don't involve lower WebFileSystem layer (e.g. for name validation errors). Otherwise they return true (but later may call back with an runtime error).
     bool getMetadata(const EntryBase*, PassRefPtr<MetadataCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
     bool move(const EntryBase* source, EntryBase* parent, const String& name, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
     bool copy(const EntryBase* source, EntryBase* parent, const String& name, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
@@ -104,7 +113,7 @@ public:
     bool readDirectory(PassRefPtr<DirectoryReaderBase>, const String& path, PassRefPtr<EntriesCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
 
 protected:
-    DOMFileSystemBase(ScriptExecutionContext*, const String& name, FileSystemType, const KURL& rootURL, PassOwnPtr<AsyncFileSystem>);
+    DOMFileSystemBase(ScriptExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
     friend class DOMFileSystemSync;
 
     ScriptExecutionContext* m_context;
@@ -112,8 +121,6 @@ protected:
     FileSystemType m_type;
     KURL m_filesystemRootURL;
     bool m_clonable;
-
-    mutable OwnPtr<AsyncFileSystem> m_asyncFileSystem;
 };
 
 inline bool operator==(const DOMFileSystemBase& a, const DOMFileSystemBase& b) { return a.name() == b.name() && a.type() == b.type() && a.rootURL() == b.rootURL(); }

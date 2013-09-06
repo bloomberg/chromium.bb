@@ -42,13 +42,13 @@ namespace WebCore {
 class AsyncFileSystemCallbacks {
     WTF_MAKE_NONCOPYABLE(AsyncFileSystemCallbacks);
 public:
-    AsyncFileSystemCallbacks() { }
+    AsyncFileSystemCallbacks() : m_blockUntilCompletion(false) { }
 
     // Called when a requested operation is completed successfully.
     virtual void didSucceed() { ASSERT_NOT_REACHED(); }
 
     // Called when a requested file system is opened.
-    virtual void didOpenFileSystem(const String& name, const KURL& rootURL, PassOwnPtr<AsyncFileSystem>) { ASSERT_NOT_REACHED(); }
+    virtual void didOpenFileSystem(const String& name, const KURL& rootURL) { ASSERT_NOT_REACHED(); }
 
     // Called when a file metadata is read successfully.
     virtual void didReadMetadata(const FileMetadata&) { ASSERT_NOT_REACHED(); }
@@ -70,9 +70,20 @@ public:
 
     // Returns true if the caller expects that the calling thread blocks
     // until completion.
-    virtual bool shouldBlockUntilCompletion() const { return false; }
+    virtual bool shouldBlockUntilCompletion() const
+    {
+        return m_blockUntilCompletion;
+    }
+
+    void setShouldBlockUntilCompletion(bool flag)
+    {
+        m_blockUntilCompletion = flag;
+    }
 
     virtual ~AsyncFileSystemCallbacks() { }
+
+private:
+    bool m_blockUntilCompletion;
 };
 
 } // namespace

@@ -31,9 +31,16 @@
 #ifndef WebFileSystemCallbacks_h
 #define WebFileSystemCallbacks_h
 
+#include "WebCommon.h"
 #include "WebFileError.h"
 #include "WebFileSystemEntry.h"
+#include "WebPrivatePtr.h"
 #include "WebVector.h"
+
+namespace WebCore {
+class AsyncFileSystemCallbacks;
+}
+namespace WTF { template <typename T> class PassOwnPtr; }
 
 namespace WebKit {
 
@@ -41,46 +48,63 @@ struct WebFileInfo;
 class WebFileWriter;
 class WebString;
 class WebURL;
+class WebFileSystemCallbacksPrivate;
 
 class WebFileSystemCallbacks {
 public:
+    ~WebFileSystemCallbacks() { reset(); }
+    WebFileSystemCallbacks() { }
+    WebFileSystemCallbacks(const WebFileSystemCallbacks& c) { assign(c); }
+    WebFileSystemCallbacks& operator=(const WebFileSystemCallbacks& c)
+    {
+        assign(c);
+        return *this;
+    }
+
+    WEBKIT_EXPORT void reset();
+    WEBKIT_EXPORT void assign(const WebFileSystemCallbacks&);
+
+#if WEBKIT_IMPLEMENTATION
+    WebFileSystemCallbacks(const WTF::PassOwnPtr<WebCore::AsyncFileSystemCallbacks>&);
+#endif
+
     // Callback for WebFileSystem's various operations that don't require
     // return values.
-    virtual void didSucceed() = 0;
+    WEBKIT_EXPORT void didSucceed();
 
     // Callback for WebFileSystem::readMetadata. Called with the file metadata
     // for the requested path.
-    virtual void didReadMetadata(const WebFileInfo&) = 0;
+    WEBKIT_EXPORT void didReadMetadata(const WebFileInfo&);
 
     // Callback for WebFileSystem::createSnapshot. The metadata also includes the
     // platform file path.
-    virtual void didCreateSnapshotFile(const WebFileInfo&) { WEBKIT_ASSERT_NOT_REACHED(); }
+    WEBKIT_EXPORT void didCreateSnapshotFile(const WebFileInfo&);
 
     // Callback for WebFileSystem::readDirectory. Called with a vector of
     // file entries in the requested directory. This callback might be called
     // multiple times if the directory has many entries. |hasMore| must be
     // true when there are more entries.
-    virtual void didReadDirectory(const WebVector<WebFileSystemEntry>&, bool hasMore) = 0;
+    WEBKIT_EXPORT void didReadDirectory(const WebVector<WebFileSystemEntry>&, bool hasMore);
 
     // Callback for WebFileSystem::openFileSystem. Called with a name and
     // root URL for the FileSystem when the request is accepted.
-    virtual void didOpenFileSystem(const WebString& name, const WebURL& rootURL) = 0;
+    WEBKIT_EXPORT void didOpenFileSystem(const WebString& name, const WebURL& rootURL);
 
     // Callback for WebFileSystem::createFileWriter. Called with an instance
     // of WebFileWriter and the target file length. The writer's ownership
     // is transferred to the callback.
-    virtual void didCreateFileWriter(WebFileWriter* writer, long long length) { WEBKIT_ASSERT_NOT_REACHED(); }
+    WEBKIT_EXPORT void didCreateFileWriter(WebFileWriter*, long long length);
 
     // Called with an error code when a requested operation hasn't been
     // completed.
-    virtual void didFail(WebFileError) = 0;
+    WEBKIT_EXPORT void didFail(WebFileError);
 
     // Returns true if the caller expects to be blocked until the request
     // is fullfilled.
-    virtual bool shouldBlockUntilCompletion() const = 0;
+    WEBKIT_EXPORT bool shouldBlockUntilCompletion() const;
 
-protected:
-    virtual ~WebFileSystemCallbacks() { }
+private:
+    WebPrivatePtr<WebFileSystemCallbacksPrivate> m_private;
 };
 
 } // namespace WebKit

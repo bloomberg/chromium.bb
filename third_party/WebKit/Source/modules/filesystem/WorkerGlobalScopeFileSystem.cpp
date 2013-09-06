@@ -32,7 +32,6 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/FileError.h"
-#include "core/platform/AsyncFileSystem.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "modules/filesystem/DOMFileSystemSync.h"
@@ -80,7 +79,7 @@ PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSyst
     }
 
     FileSystemSyncCallbackHelper helper;
-    OwnPtr<FileSystemCallbacks> callbacks = FileSystemCallbacks::create(helper.successCallback(), helper.errorCallback(), worker, fileSystemType);
+    OwnPtr<AsyncFileSystemCallbacks> callbacks = FileSystemCallbacks::create(helper.successCallback(), helper.errorCallback(), worker, fileSystemType);
     callbacks->setShouldBlockUntilCompletion(true);
 
     WorkerLocalFileSystem::from(worker)->requestFileSystem(worker, fileSystemType, size, callbacks.release());
@@ -123,7 +122,7 @@ PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemS
     }
 
     FileSystemSyncCallbackHelper readFileSystemHelper;
-    OwnPtr<FileSystemCallbacks> callbacks = FileSystemCallbacks::create(readFileSystemHelper.successCallback(), readFileSystemHelper.errorCallback(), worker, type);
+    OwnPtr<AsyncFileSystemCallbacks> callbacks = FileSystemCallbacks::create(readFileSystemHelper.successCallback(), readFileSystemHelper.errorCallback(), worker, type);
     callbacks->setShouldBlockUntilCompletion(true);
 
     WorkerLocalFileSystem::from(worker)->readFileSystem(worker, type, callbacks.release());

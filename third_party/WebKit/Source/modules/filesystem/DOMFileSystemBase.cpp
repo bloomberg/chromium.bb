@@ -44,6 +44,9 @@
 #include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/MetadataCallback.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebFileSystem.h"
+#include "public/platform/WebFileSystemCallbacks.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/StringBuilder.h"
@@ -56,18 +59,22 @@ const char DOMFileSystemBase::temporaryPathPrefix[] = "temporary";
 const char DOMFileSystemBase::isolatedPathPrefix[] = "isolated";
 const char DOMFileSystemBase::externalPathPrefix[] = "external";
 
-DOMFileSystemBase::DOMFileSystemBase(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL, PassOwnPtr<AsyncFileSystem> asyncFileSystem)
+DOMFileSystemBase::DOMFileSystemBase(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
     : m_context(context)
     , m_name(name)
     , m_type(type)
     , m_filesystemRootURL(rootURL)
     , m_clonable(false)
-    , m_asyncFileSystem(asyncFileSystem)
 {
 }
 
 DOMFileSystemBase::~DOMFileSystemBase()
 {
+}
+
+WebKit::WebFileSystem* DOMFileSystemBase::fileSystem() const
+{
+    return WebKit::Platform::current()->fileSystem();
 }
 
 SecurityOrigin* DOMFileSystemBase::securityOrigin() const
@@ -140,9 +147,9 @@ KURL DOMFileSystemBase::createFileSystemURL(const String& fullPath) const
 
 bool DOMFileSystemBase::getMetadata(const EntryBase* entry, PassRefPtr<MetadataCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback, SynchronousType synchronousType)
 {
-    OwnPtr<MetadataCallbacks> callbacks(MetadataCallbacks::create(successCallback, errorCallback));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(MetadataCallbacks::create(successCallback, errorCallback, this));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
-    m_asyncFileSystem->readMetadata(createFileSystemURL(entry), callbacks.release());
+    fileSystem()->readMetadata(createFileSystemURL(entry), callbacks.release());
     return true;
 }
 
@@ -194,10 +201,10 @@ bool DOMFileSystemBase::move(const EntryBase* source, EntryBase* parent, const S
     if (!verifyAndGetDestinationPathForCopyOrMove(source, parent, newName, destinationPath))
         return false;
 
-    OwnPtr<EntryCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, parent->filesystem(), destinationPath, source->isDirectory()));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, parent->filesystem(), destinationPath, source->isDirectory()));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
-    m_asyncFileSystem->move(createFileSystemURL(source), parent->filesystem()->createFileSystemURL(destinationPath), callbacks.release());
+    fileSystem()->move(createFileSystemURL(source), parent->filesystem()->createFileSystemURL(destinationPath), callbacks.release());
     return true;
 }
 
@@ -207,10 +214,10 @@ bool DOMFileSystemBase::copy(const EntryBase* source, EntryBase* parent, const S
     if (!verifyAndGetDestinationPathForCopyOrMove(source, parent, newName, destinationPath))
         return false;
 
-    OwnPtr<EntryCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, parent->filesystem(), destinationPath, source->isDirectory()));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, parent->filesystem(), destinationPath, source->isDirectory()));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
-    m_asyncFileSystem->copy(createFileSystemURL(source), parent->filesystem()->createFileSystemURL(destinationPath), callbacks.release());
+    fileSystem()->copy(createFileSystemURL(source), parent->filesystem()->createFileSystemURL(destinationPath), callbacks.release());
     return true;
 }
 
@@ -221,10 +228,10 @@ bool DOMFileSystemBase::remove(const EntryBase* entry, PassRefPtr<VoidCallback> 
     if (entry->fullPath() == String(DOMFilePath::root))
         return false;
 
-    OwnPtr<VoidCallbacks> callbacks(VoidCallbacks::create(successCallback, errorCallback));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(VoidCallbacks::create(successCallback, errorCallback, this));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
-    m_asyncFileSystem->remove(createFileSystemURL(entry), callbacks.release());
+    fileSystem()->remove(createFileSystemURL(entry), callbacks.release());
     return true;
 }
 
@@ -235,10 +242,10 @@ bool DOMFileSystemBase::removeRecursively(const EntryBase* entry, PassRefPtr<Voi
     if (entry->fullPath() == String(DOMFilePath::root))
         return false;
 
-    OwnPtr<VoidCallbacks> callbacks(VoidCallbacks::create(successCallback, errorCallback));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(VoidCallbacks::create(successCallback, errorCallback, this));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
-    m_asyncFileSystem->removeRecursively(createFileSystemURL(entry), callbacks.release());
+    fileSystem()->removeRecursively(createFileSystemURL(entry), callbacks.release());
     return true;
 }
 
@@ -247,7 +254,7 @@ bool DOMFileSystemBase::getParent(const EntryBase* entry, PassRefPtr<EntryCallba
     ASSERT(entry);
     String path = DOMFilePath::getDirectory(entry->fullPath());
 
-    m_asyncFileSystem->directoryExists(createFileSystemURL(path), EntryCallbacks::create(successCallback, errorCallback, this, path, true));
+    fileSystem()->directoryExists(createFileSystemURL(path), EntryCallbacks::create(successCallback, errorCallback, this, path, true));
     return true;
 }
 
@@ -257,13 +264,13 @@ bool DOMFileSystemBase::getFile(const EntryBase* entry, const String& path, cons
     if (!pathToAbsolutePath(m_type, entry, path, absolutePath))
         return false;
 
-    OwnPtr<EntryCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, this, absolutePath, false));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, this, absolutePath, false));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
     if (flags.create)
-        m_asyncFileSystem->createFile(createFileSystemURL(absolutePath), flags.exclusive, callbacks.release());
+        fileSystem()->createFile(createFileSystemURL(absolutePath), flags.exclusive, callbacks.release());
     else
-        m_asyncFileSystem->fileExists(createFileSystemURL(absolutePath), callbacks.release());
+        fileSystem()->fileExists(createFileSystemURL(absolutePath), callbacks.release());
     return true;
 }
 
@@ -273,13 +280,13 @@ bool DOMFileSystemBase::getDirectory(const EntryBase* entry, const String& path,
     if (!pathToAbsolutePath(m_type, entry, path, absolutePath))
         return false;
 
-    OwnPtr<EntryCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, this, absolutePath, true));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(EntryCallbacks::create(successCallback, errorCallback, this, absolutePath, true));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
     if (flags.create)
-        m_asyncFileSystem->createDirectory(createFileSystemURL(absolutePath), flags.exclusive, callbacks.release());
+        fileSystem()->createDirectory(createFileSystemURL(absolutePath), flags.exclusive, callbacks.release());
     else
-        m_asyncFileSystem->directoryExists(createFileSystemURL(absolutePath), callbacks.release());
+        fileSystem()->directoryExists(createFileSystemURL(absolutePath), callbacks.release());
     return true;
 }
 
@@ -287,10 +294,10 @@ bool DOMFileSystemBase::readDirectory(PassRefPtr<DirectoryReaderBase> reader, co
 {
     ASSERT(DOMFilePath::isAbsolute(path));
 
-    OwnPtr<EntriesCallbacks> callbacks(EntriesCallbacks::create(successCallback, errorCallback, reader, path));
+    OwnPtr<AsyncFileSystemCallbacks> callbacks(EntriesCallbacks::create(successCallback, errorCallback, reader, path));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
-    m_asyncFileSystem->readDirectory(createFileSystemURL(path), callbacks.release());
+    fileSystem()->readDirectory(createFileSystemURL(path), callbacks.release());
     return true;
 }
 

@@ -77,18 +77,17 @@ struct HelperResultType<EntrySyncVector, const EntryVector&> {
 };
 
 // A helper template for FileSystemSync implementation.
-template <typename SuccessCallback, typename ObserverType, typename CallbackArg, typename ResultType>
+template <typename SuccessCallback, typename CallbackArg, typename ResultType>
 class SyncCallbackHelper {
     WTF_MAKE_NONCOPYABLE(SyncCallbackHelper);
 public:
-    typedef SyncCallbackHelper<SuccessCallback, ObserverType, CallbackArg, ResultType> HelperType;
+    typedef SyncCallbackHelper<SuccessCallback, CallbackArg, ResultType> HelperType;
     typedef HelperResultType<ResultType, CallbackArg> ResultTypeTrait;
     typedef typename ResultTypeTrait::StorageType ResultStorageType;
     typedef typename ResultTypeTrait::ReturnType ResultReturnType;
 
-    SyncCallbackHelper(ObserverType* observer = 0)
-        : m_observer(observer)
-        , m_successCallback(SuccessCallbackImpl::create(this))
+    SyncCallbackHelper()
+        : m_successCallback(SuccessCallbackImpl::create(this))
         , m_errorCallback(ErrorCallbackImpl::create(this))
         , m_errorCode(FileError::OK)
         , m_completed(false)
@@ -97,14 +96,6 @@ public:
 
     ResultReturnType getResult(ExceptionState& es)
     {
-        if (m_observer) {
-            while (!m_completed) {
-                if (!m_observer->waitForOperationToComplete()) {
-                    m_errorCode = FileError::ABORT_ERR;
-                    break;
-                }
-            }
-        }
         if (m_errorCode)
             FileError::throwDOMException(es, m_errorCode);
 
@@ -179,7 +170,6 @@ private:
         m_completed = true;
     }
 
-    ObserverType* m_observer;
     RefPtr<SuccessCallbackImpl> m_successCallback;
     RefPtr<ErrorCallbackImpl> m_errorCallback;
     ResultStorageType m_result;
@@ -194,18 +184,11 @@ struct EmptyType : public RefCounted<EmptyType> {
     }
 };
 
-struct EmptyObserverType {
-    bool waitForOperationToComplete()
-    {
-        return false;
-    }
-};
-
-typedef SyncCallbackHelper<EntryCallback, AsyncFileSystem, Entry*, EntrySync> EntrySyncCallbackHelper;
-typedef SyncCallbackHelper<EntriesCallback, AsyncFileSystem, const EntryVector&, EntrySyncVector> EntriesSyncCallbackHelper;
-typedef SyncCallbackHelper<MetadataCallback, AsyncFileSystem, Metadata*, Metadata> MetadataSyncCallbackHelper;
-typedef SyncCallbackHelper<VoidCallback, AsyncFileSystem, EmptyType*, EmptyType> VoidSyncCallbackHelper;
-typedef SyncCallbackHelper<FileSystemCallback, EmptyObserverType, DOMFileSystem*, DOMFileSystemSync> FileSystemSyncCallbackHelper;
+typedef SyncCallbackHelper<EntryCallback, Entry*, EntrySync> EntrySyncCallbackHelper;
+typedef SyncCallbackHelper<EntriesCallback, const EntryVector&, EntrySyncVector> EntriesSyncCallbackHelper;
+typedef SyncCallbackHelper<MetadataCallback, Metadata*, Metadata> MetadataSyncCallbackHelper;
+typedef SyncCallbackHelper<VoidCallback, EmptyType*, EmptyType> VoidSyncCallbackHelper;
+typedef SyncCallbackHelper<FileSystemCallback, DOMFileSystem*, DOMFileSystemSync> FileSystemSyncCallbackHelper;
 
 } // namespace WebCore
 
