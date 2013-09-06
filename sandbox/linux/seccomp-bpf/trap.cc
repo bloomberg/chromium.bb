@@ -118,8 +118,8 @@ Trap *Trap::GetInstance() {
 
 void Trap::SigSysAction(int nr, siginfo_t *info, void *void_context) {
   if (!global_trap_) {
-    SANDBOX_DIE("This can't happen. Found no global singleton instance "
-                "for Trap() handling.");
+    RAW_SANDBOX_DIE("This can't happen. Found no global singleton instance "
+                    "for Trap() handling.");
   }
   global_trap_->SigSys(nr, info, void_context);
 }
@@ -162,14 +162,14 @@ void Trap::SigSys(int nr, siginfo_t *info, void *void_context) {
     // safe and can lead to bugs. We should eventually implement a different
     // logging and reporting mechanism that is safe to be called from
     // the sigSys() handler.
-    SANDBOX_DIE("Sanity checks are failing after receiving SIGSYS.");
+    RAW_SANDBOX_DIE("Sanity checks are failing after receiving SIGSYS.");
   }
 
   intptr_t rc;
   if (has_unsafe_traps_ && GetIsInSigHandler(ctx)) {
     errno = old_errno;
     if (sigsys.nr == __NR_clone) {
-      SANDBOX_DIE("Cannot call clone() from an UnsafeTrap() handler.");
+      RAW_SANDBOX_DIE("Cannot call clone() from an UnsafeTrap() handler.");
     }
     rc = SandboxSyscall(sigsys.nr,
                         SECCOMP_PARM1(ctx), SECCOMP_PARM2(ctx),

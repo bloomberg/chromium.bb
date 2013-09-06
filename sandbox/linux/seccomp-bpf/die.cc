@@ -55,6 +55,13 @@ void Die::SandboxDie(const char *msg, const char *file, int line) {
   ExitGroup();
 }
 
+void Die::RawSandboxDie(const char *msg) {
+  if (!msg)
+    msg = "";
+  RAW_LOG(FATAL, msg);
+  ExitGroup();
+}
+
 void Die::SandboxInfo(const char *msg, const char *file, int line) {
   if (!suppress_info_) {
   #if defined(SECCOMP_BPF_STANDALONE)

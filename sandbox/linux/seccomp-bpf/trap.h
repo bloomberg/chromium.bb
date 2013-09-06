@@ -90,7 +90,10 @@ class Trap {
   static Trap *GetInstance();
   static void SigSysAction(int nr, siginfo_t *info, void *void_context);
 
-  void SigSys(int nr, siginfo_t *info, void *void_context);
+  // Make sure that SigSys is not inlined in order to get slightly better crash
+  // dumps.
+  void SigSys(int nr, siginfo_t *info, void *void_context)
+      __attribute__ ((noinline));
   ErrorCode MakeTrapImpl(TrapFnc fnc, const void *aux, bool safe);
   bool SandboxDebuggingAllowedByUser() const;
 
