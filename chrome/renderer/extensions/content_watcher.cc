@@ -98,7 +98,7 @@ void ContentWatcher::DidCreateDocumentElement(WebKit::WebFrame* frame) {
 }
 
 void ContentWatcher::EnsureWatchingMutations(WebKit::WebFrame* frame) {
-  v8::HandleScope scope;
+  v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Context::Scope context_scope(frame->mainWorldScriptContext());
   if (ModuleSystem* module_system = GetModuleSystem(frame)) {
     ModuleSystem::NativesEnabledScope scope(module_system);

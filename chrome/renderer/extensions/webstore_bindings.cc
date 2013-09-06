@@ -211,7 +211,7 @@ void WebstoreBindings::OnInlineWebstoreInstallResponse(
     int install_id,
     bool success,
     const std::string& error) {
-  v8::HandleScope handle_scope;
+  v8::HandleScope handle_scope(context()->isolate());
   v8::Context::Scope context_scope(context()->v8_context());
   v8::Handle<v8::Value> argv[] = {
     v8::Integer::New(install_id),

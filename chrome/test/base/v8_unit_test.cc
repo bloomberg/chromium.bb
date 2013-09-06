@@ -19,7 +19,7 @@ std::string LogArgs2String(const v8::FunctionCallbackInfo<v8::Value>& args) {
   std::string message;
   bool first = true;
   for (int i = 0; i < args.Length(); i++) {
-    v8::HandleScope handle_scope;
+    v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
     if (first)
       first = false;
     else
@@ -212,7 +212,7 @@ void V8UnitTest::ExecuteScriptInContext(const base::StringPiece& script_source,
 
 std::string V8UnitTest::ExceptionToString(const v8::TryCatch& try_catch) {
   std::string str;
-  v8::HandleScope handle_scope;
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::String::Utf8Value exception(try_catch.Exception());
   v8::Local<v8::Message> message(try_catch.Message());
   if (message.IsEmpty()) {
@@ -260,7 +260,7 @@ void V8UnitTest::Error(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }
 
 void V8UnitTest::ChromeSend(const v8::FunctionCallbackInfo<v8::Value>& args) {
-  v8::HandleScope handle_scope;
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   // We expect to receive 2 args: ("testResult", [ok, message]). However,
   // chrome.send may pass only one. Therefore we need to ensure we have at least
   // 1, then ensure that the first is "testResult" before checking again for 2.

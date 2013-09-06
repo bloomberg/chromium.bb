@@ -116,6 +116,10 @@ class ChromeV8Context : public RequestSender::Source {
                                   const base::ListValue& response,
                                   const std::string& error) OVERRIDE;
 
+  v8::Isolate* isolate() const {
+    return isolate_;
+  }
+
  private:
   // The v8 context the bindings are accessible to.
   ScopedPersistent<v8::Context> v8_context_;
@@ -136,6 +140,8 @@ class ChromeV8Context : public RequestSender::Source {
 
   // Contains safe copies of builtin objects like Function.prototype.
   SafeBuiltins safe_builtins_;
+
+  v8::Isolate* isolate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeV8Context);
 };

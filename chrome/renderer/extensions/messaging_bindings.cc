@@ -168,8 +168,9 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
   class GCCallback {
    public:
     static void Bind(v8::Handle<v8::Object> object,
-                     v8::Handle<v8::Function> callback) {
-      GCCallback* cb = new GCCallback(object, callback);
+                     v8::Handle<v8::Function> callback,
+                     v8::Isolate* isolate) {
+      GCCallback* cb = new GCCallback(object, callback, isolate);
       cb->object_.MakeWeak(cb, NearDeathCallback);
     }
 
@@ -184,12 +185,13 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
           base::Bind(&GCCallback::RunCallback, base::Owned(self)));
     }
 
-    GCCallback(v8::Handle<v8::Object> object, v8::Handle<v8::Function> callback)
-        : object_(object), callback_(callback) {
-    }
+    GCCallback(v8::Handle<v8::Object> object,
+               v8::Handle<v8::Function> callback,
+               v8::Isolate* isolate)
+        : object_(object), callback_(callback), isolate_(isolate) {}
 
     void RunCallback() {
-      v8::HandleScope handle_scope;
+      v8::HandleScope handle_scope(isolate_);
       v8::Handle<v8::Context> context = callback_->CreationContext();
       if (context.IsEmpty())
         return;
@@ -200,6 +202,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
 
     extensions::ScopedPersistent<v8::Object> object_;
     extensions::ScopedPersistent<v8::Function> callback_;
+    v8::Isolate* isolate_;
 
     DISALLOW_COPY_AND_ASSIGN(GCCallback);
   };
@@ -211,7 +214,9 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
   // JS in some bizarro undefined mid-GC state.
   void BindToGC(const v8::FunctionCallbackInfo<v8::Value>& args) {
     CHECK(args.Length() == 2 && args[0]->IsObject() && args[1]->IsFunction());
-    GCCallback::Bind(args[0].As<v8::Object>(), args[1].As<v8::Function>());
+    GCCallback::Bind(args[0].As<v8::Object>(),
+                     args[1].As<v8::Function>(),
+                     args.GetIsolate());
   }
 };
 
@@ -235,7 +240,7 @@ void MessagingBindings::DispatchOnConnect(
     const std::string& target_extension_id,
     const GURL& source_url,
     content::RenderView* restrict_to_render_view) {
-  v8::HandleScope handle_scope;
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
 
@@ -296,7 +301,7 @@ void MessagingBindings::DeliverMessage(
     int target_port_id,
     const std::string& message,
     content::RenderView* restrict_to_render_view) {
-  v8::HandleScope handle_scope;
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
 
   // TODO(kalman): pass in the full ChromeV8ContextSet; call ForEach.
   for (ChromeV8ContextSet::ContextSet::const_iterator it = contexts.begin();
@@ -337,7 +342,7 @@ void MessagingBindings::DispatchOnDisconnect(
     int port_id,
     const std::string& error_message,
     content::RenderView* restrict_to_render_view) {
-  v8::HandleScope handle_scope;
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
 
   // TODO(kalman): pass in the full ChromeV8ContextSet; call ForEach.
   for (ChromeV8ContextSet::ContextSet::const_iterator it = contexts.begin();

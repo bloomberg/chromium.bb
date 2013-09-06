@@ -172,7 +172,7 @@ void AddMessage(v8::Handle<v8::Context> context,
 }
 
 v8::Local<v8::Object> AsV8Object() {
-  v8::HandleScope handle_scope;
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Object> console_object = v8::Object::New();
   BindLogMethod(console_object, "debug", &Debug);
   BindLogMethod(console_object, "log", &Log);

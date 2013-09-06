@@ -134,6 +134,8 @@ class ModuleSystem : public ObjectBackedNativeHandler {
     exception_handler_ = handler.Pass();
   }
 
+  v8::Isolate* GetIsolate() const;
+
  protected:
   friend class ChromeV8Context;
   virtual void Invalidate() OVERRIDE;

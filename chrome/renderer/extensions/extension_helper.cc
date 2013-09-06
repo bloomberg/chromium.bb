@@ -353,7 +353,7 @@ void ExtensionHelper::OnAddMessageToConsole(ConsoleMessageLevel level,
 }
 
 void ExtensionHelper::OnAppWindowClosed() {
-  v8::HandleScope scope;
+  v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Handle<v8::Context> script_context =
       render_view()->GetWebView()->mainFrame()->mainWorldScriptContext();
   ChromeV8Context* chrome_v8_context =

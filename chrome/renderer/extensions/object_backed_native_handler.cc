@@ -38,7 +38,7 @@ v8::Handle<v8::Object> ObjectBackedNativeHandler::NewInstance() {
 // static
 void ObjectBackedNativeHandler::Router(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  v8::HandleScope handle_scope;
+  v8::HandleScope handle_scope(args.GetIsolate());
   v8::Handle<v8::Object> data = args.Data().As<v8::Object>();
 
   v8::Handle<v8::Value> handler_function_value =

@@ -200,7 +200,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
       }
 
       WebScriptSource source(WebString::fromUTF8(params.code));
-      v8::HandleScope scope;
+      v8::HandleScope scope(v8::Isolate::GetCurrent());
 
       scoped_ptr<content::V8ValueConverter> v8_converter(
           content::V8ValueConverter::create());

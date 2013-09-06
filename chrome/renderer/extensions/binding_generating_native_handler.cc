@@ -18,7 +18,7 @@ BindingGeneratingNativeHandler::BindingGeneratingNativeHandler(
 }
 
 v8::Handle<v8::Object> BindingGeneratingNativeHandler::NewInstance() {
-  v8::HandleScope scope;
+  v8::HandleScope scope(module_system_->GetIsolate());
   v8::Handle<v8::Object> binding_module =
       module_system_->Require("binding")->ToObject();
   v8::Handle<v8::Object> binding  =

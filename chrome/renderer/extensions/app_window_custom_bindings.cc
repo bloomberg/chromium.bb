@@ -38,7 +38,7 @@ class DidCreateDocumentElementObserver : public content::RenderViewObserver {
     // Don't attempt to inject the titlebar into iframes.
     if (frame->parent())
       return;
-    v8::HandleScope handle_scope;
+    v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
     ChromeV8Context* v8_context =
         dispatcher_->v8_context_set().GetByV8Context(
             frame->mainWorldScriptContext());

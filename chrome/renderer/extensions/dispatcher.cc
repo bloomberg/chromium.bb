@@ -379,7 +379,7 @@ void CallModuleMethod(const std::string& module_name,
                       const std::string& method_name,
                       const base::ListValue* args,
                       ChromeV8Context* context) {
-  v8::HandleScope handle_scope;
+  v8::HandleScope handle_scope(context->isolate());
   v8::Context::Scope context_scope(context->v8_context());
 
   scoped_ptr<content::V8ValueConverter> converter(
@@ -646,7 +646,7 @@ v8::Handle<v8::Object> Dispatcher::GetOrCreateObject(
 }
 
 void Dispatcher::AddOrRemoveBindingsForContext(ChromeV8Context* context) {
-  v8::HandleScope handle_scope;
+  v8::HandleScope handle_scope(context->isolate());
   v8::Context::Scope context_scope(context->v8_context());
 
   // TODO(kalman): Make the bindings registration have zero overhead then run
