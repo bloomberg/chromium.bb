@@ -114,9 +114,14 @@ class TestRunner(base_test_runner.BaseTestRunner):
            (self._tests[test_name], self.device))
     logging.info('%s : %s', test_name, cmd)
     start_time = datetime.datetime.now()
+
+    timeout = 1800
+    if self._options.no_timeout:
+      timeout = None
+
     output, exit_code = pexpect.run(
         cmd, cwd=os.path.abspath(constants.DIR_SOURCE_ROOT),
-        withexitstatus=True, logfile=sys.stdout, timeout=1800,
+        withexitstatus=True, logfile=sys.stdout, timeout=timeout,
         env=os.environ)
     end_time = datetime.datetime.now()
     if exit_code is None:

@@ -4,11 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs all types of tests from one unified interface.
-
-TODO(gkanwar):
-* Add options to run Monkey tests.
-"""
+"""Runs all types of tests from one unified interface."""
 
 import collections
 import logging
@@ -433,14 +429,20 @@ def AddPerfTestOptions(option_parser):
   option_parser.command_list = []
   option_parser.example = ('%prog perf --steps perf_steps.json')
 
-  option_parser.add_option('--steps', help='JSON file containing the list '
-      'of perf steps to run.')
-  option_parser.add_option('--flaky-steps',
-                           help='A JSON file containing steps that are flaky '
-                                'and will have its exit code ignored.')
-  option_parser.add_option('--print-step', help='The name of a previously '
-      'executed perf step to print.')
-
+  option_parser.add_option(
+      '--steps',
+      help='JSON file containing the list of perf steps to run.')
+  option_parser.add_option(
+      '--flaky-steps',
+      help=('A JSON file containing steps that are flaky '
+            'and will have its exit code ignored.'))
+  option_parser.add_option(
+      '--print-step',
+      help='The name of a previously executed perf step to print.')
+  option_parser.add_option(
+      '--no-timeout', action='store_true',
+      help=('Do not impose a timeout. Each perf step is responsible for '
+            'implementing the timeout logic.'))
   AddCommonOptions(option_parser)
 
 
@@ -458,7 +460,8 @@ def ProcessPerfTestOptions(options, error_func):
   if not options.steps and not options.print_step:
     error_func('Please specify --steps or --print-step')
   return perf_test_options.PerfOptions(
-      options.steps, options.flaky_steps, options.print_step)
+      options.steps, options.flaky_steps, options.print_step,
+      options.no_timeout)
 
 
 def _RunGTests(options, error_func, devices):
@@ -571,7 +574,8 @@ def _RunMonkeyTests(options, error_func, devices):
   runner_factory, tests = monkey_setup.Setup(monkey_options)
 
   results, exit_code = test_dispatcher.RunTests(
-      tests, runner_factory, devices, shard=False, test_timeout=None)
+      tests, runner_factory, devices, shard=False, test_timeout=None,
+      num_retries=options.num_retries)
 
   report_results.LogFull(
       results=results,
@@ -591,7 +595,8 @@ def _RunPerfTests(options, error_func, devices):
   runner_factory, tests = perf_setup.Setup(perf_options)
 
   results, _ = test_dispatcher.RunTests(
-      tests, runner_factory, devices, shard=True, test_timeout=None)
+      tests, runner_factory, devices, shard=True, test_timeout=None,
+      num_retries=options.num_retries)
 
   report_results.LogFull(
       results=results,
