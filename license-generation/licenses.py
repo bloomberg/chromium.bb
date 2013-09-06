@@ -27,11 +27,11 @@ Recommended build:
   ./setup_board --board=$board
   ./build_packages --board=$board --nowithautotest --nowithtest --nowithdev
   cd ~/trunk/chromite/scripts/license-generation
-  ./licenses.py [--debug] $board out.html 2>&1 | tee output.sav
+  %(prog)s [--debug] $board out.html 2>&1 | tee output.sav
 
 For debugging during development, you can get a faster run of just one package
 with:
-  ./licenses.py --testpkg "dev-libs/libatomic_ops-7.2d" $board out.html
+  %(prog)s --testpkg "dev-libs/libatomic_ops-7.2d" $board out.html
 
 The output file is meant to update
 http://src.chromium.org/viewvc/chrome/trunk/src/chrome/browser/resources/ +
@@ -58,11 +58,13 @@ Iteration-xx in the tracking bug.
 Once it's been updated to "Merge-Approved" by a TPM, please merge into the
 required release branch. You can ask karen@ for merge approve help.
 Example: http://crbug.com/221281
+
+Usage: %(prog)s [opts] <board> <output>
+
 """
 
 import cgi
 import codecs
-import getopt
 import logging
 import os
 import sys
@@ -944,39 +946,24 @@ def ReadUnknownEncodedFile(file_path, logging_text):
   return file_txt
 
 
-def usage():
-  print >> sys.stderr, (__doc__)
-  sys.exit(1)
-
-
-def main(argv):
+def main(args):
+  # pylint: disable=W0603
   global SKIPPED_PACKAGES
-  # TODO(merlin): fix this to not be global. Find out a short way to read
-  # logging level.
   global debug
+  # pylint: enable=W0603
 
-  # TODO(merlin): switch to chromelib.argparse
-  testpkg = None
-  try:
-    opts, args = getopt.getopt(argv, "hdt:", ["help", "debug", "testpkg="])
-  except getopt.GetoptError:
-    usage()
-  for opt, arg in opts:
-    if opt in ("-h", "--help"):
-      usage()
-    elif opt in ("-d", "--debug"):
-      debug = True
-    elif opt in ("-t", "--testpkg"):
-      testpkg = arg
+  parser = commandline.ArgumentParser(usage=__doc__)
+  parser.add_argument("-t", "--testpkg",
+                      help="force a single package for debugging, like"
+                      " dev-libs/libatomic_ops-7.2d")
+  parser.add_argument("board",
+                      help="which board to run for, like x86-alex")
+  parser.add_argument("output_file", type="path",
+                      help="which html file to create with output")
+  opts = parser.parse_args(args)
+  debug = opts.debug
 
-  if len(args) != 2:
-    usage()
-  board, output_file = args
-
-  if debug:
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-  else:
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+  board, output_file, testpkg = opts.board, opts.output_file, opts.testpkg
 
   # We have a hardcoded list of skipped packages for various reasons, but we
   # also exclude any google platform package from needing a license since they
