@@ -2,6 +2,18 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+/* The order of z-index:
+ * - 2: drag-selection-bodrder
+ * - 3: preview-panel
+ * - 500: scrollbar
+ * - 500: splitter
+ * - 550: autocomplete-suggestions
+ * - 600: menus
+ * - 600: tooltip
+ * - 1000: preview thumbnail popup
+ * - 1000: overlay panel (ie. image editor)
+ */
+
 /* Special attribute used in HTML to hide elements. */
 body[type='folder'] [invisibleif~='folder'],
 body[type='upload-folder'] [invisibleif~='upload-folder'],
@@ -1137,7 +1149,7 @@ input.rename {
   opacity: 0;
   pointer-events: none;
   position: absolute;
-  z-index: 1;
+  z-index: 1;  /* will be overridden with 1000 by script. */
 }
 
 .preview-thumbnails > .popup > img {
@@ -1752,7 +1764,7 @@ list.autocomplete-suggestions {
   padding: 5px 0;
   position: fixed;
   width: 300px !important; /* This overrides the value specified by script. */
-  z-index: 3;
+  z-index: 550;
 }
 
 list.autocomplete-suggestions > li {
