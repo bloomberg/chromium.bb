@@ -514,6 +514,12 @@ void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
     }
   }
 
+  if (num_occurrences_of_current_visit > 1) {
+    RecordEvent(EVENT_ADD_VISIT_RELEVANT_TRANSITION_REPEAT_URL);
+  } else {
+    RecordEvent(EVENT_ADD_VISIT_RELEVANT_TRANSITION_NEW_URL);
+  }
+
   for (std::map<URLID, int>::const_iterator it = next_urls_num_found.begin();
        it != next_urls_num_found.end();
        ++it) {
