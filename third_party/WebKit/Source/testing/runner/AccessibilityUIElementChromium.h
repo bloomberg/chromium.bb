@@ -32,7 +32,7 @@
 #define AccessibilityUIElementChromium_h
 
 #include "CppBoundClass.h"
-#include "public/web/WebAccessibilityObject.h"
+#include "public/web/WebAXObject.h"
 #include <vector>
 
 namespace WebTestRunner {
@@ -42,19 +42,19 @@ public:
     class Factory {
     public:
         virtual ~Factory() { }
-        virtual AccessibilityUIElement* getOrCreate(const WebKit::WebAccessibilityObject&) = 0;
+        virtual AccessibilityUIElement* getOrCreate(const WebKit::WebAXObject&) = 0;
     };
 
-    AccessibilityUIElement(const WebKit::WebAccessibilityObject&, Factory*);
+    AccessibilityUIElement(const WebKit::WebAXObject&, Factory*);
 
     virtual AccessibilityUIElement* getChildAtIndex(unsigned);
     virtual bool isRoot() const { return false; }
-    virtual bool isEqual(const WebKit::WebAccessibilityObject&);
+    virtual bool isEqual(const WebKit::WebAXObject&);
 
     virtual void notificationReceived(const char *notificationName);
 
 protected:
-    const WebKit::WebAccessibilityObject& accessibilityObject() const { return m_accessibilityObject; }
+    const WebKit::WebAXObject& accessibilityObject() const { return m_accessibilityObject; }
 
     Factory* factory() const { return m_factory; }
 
@@ -143,7 +143,7 @@ private:
 
     void fallbackCallback(const CppArgumentList&, CppVariant*);
 
-    WebKit::WebAccessibilityObject m_accessibilityObject;
+    WebKit::WebAXObject m_accessibilityObject;
     Factory* m_factory;
     std::vector<CppVariant> m_notificationCallbacks;
 };
@@ -151,7 +151,7 @@ private:
 
 class RootAccessibilityUIElement : public AccessibilityUIElement {
 public:
-    RootAccessibilityUIElement(const WebKit::WebAccessibilityObject&, Factory*);
+    RootAccessibilityUIElement(const WebKit::WebAXObject&, Factory*);
 
     virtual AccessibilityUIElement* getChildAtIndex(unsigned);
     virtual bool isRoot() const { return true; }
@@ -167,8 +167,8 @@ public:
     virtual ~AccessibilityUIElementList();
 
     void clear();
-    virtual AccessibilityUIElement* getOrCreate(const WebKit::WebAccessibilityObject&);
-    AccessibilityUIElement* createRoot(const WebKit::WebAccessibilityObject&);
+    virtual AccessibilityUIElement* getOrCreate(const WebKit::WebAXObject&);
+    AccessibilityUIElement* createRoot(const WebKit::WebAXObject&);
 
 private:
     typedef std::vector<AccessibilityUIElement*> ElementList;

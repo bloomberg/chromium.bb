@@ -37,7 +37,6 @@
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebAXEnums.h"
-#include "public/web/WebAccessibilityNotification.h"
 #include "public/web/WebDOMMessageEvent.h"
 #include "public/web/WebDataSource.h"
 #include "public/web/WebDragOperation.h"
@@ -53,7 +52,7 @@
 #include <string>
 
 namespace WebKit {
-class WebAccessibilityObject;
+class WebAXObject;
 class WebAudioDevice;
 class WebCachedURLRequest;
 class WebColorChooser;
@@ -159,7 +158,7 @@ protected:
     void setWindowRect(const WebKit::WebRect&);
     void show(WebKit::WebNavigationPolicy);
     void didAutoResize(const WebKit::WebSize&);
-    void postAccessibilityEvent(const WebKit::WebAccessibilityObject&, WebKit::WebAXEvent);
+    void postAccessibilityEvent(const WebKit::WebAXObject&, WebKit::WebAXEvent);
     void startDragging(WebKit::WebFrame*, const WebKit::WebDragData&, WebKit::WebDragOperationsMask, const WebKit::WebImage&, const WebKit::WebPoint&);
     bool shouldBeginEditing(const WebKit::WebRange&);
     bool shouldEndEditing(const WebKit::WebRange&);
@@ -309,7 +308,7 @@ public:
         WebTestProxyBase::didAutoResize(newSize);
         Base::didAutoResize(newSize);
     }
-    virtual void postAccessibilityEvent(const WebKit::WebAccessibilityObject& object, WebKit::WebAXEvent event)
+    virtual void postAccessibilityEvent(const WebKit::WebAXObject& object, WebKit::WebAXEvent event)
     {
         WebTestProxyBase::postAccessibilityEvent(object, event);
         Base::postAccessibilityEvent(object, event);

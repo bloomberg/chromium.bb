@@ -52,7 +52,7 @@ template <class T> class Handle;
 }
 
 namespace WebKit {
-class WebAccessibilityObject;
+class WebAXObject;
 class WebDocumentType;
 class WebElement;
 class WebFormElement;
@@ -124,10 +124,10 @@ public:
     // the documents on the page.
 
     // Gets the accessibility object for this document.
-    WEBKIT_EXPORT WebAccessibilityObject accessibilityObject() const;
+    WEBKIT_EXPORT WebAXObject accessibilityObject() const;
 
     // Gets the accessibility object for an object on this page by ID.
-    WEBKIT_EXPORT WebAccessibilityObject accessibilityObjectFromID(int axID) const;
+    WEBKIT_EXPORT WebAXObject accessibilityObjectFromID(int axID) const;
     // Inserts the given CSS source code as a user stylesheet in the document.
     // Meant for programatic/one-off injection, as opposed to
     // WebView::addUserStyleSheet which inserts styles for the lifetime of the

@@ -50,7 +50,7 @@
 #include "public/testing/WebTestInterfaces.h"
 #include "public/testing/WebTestRunner.h"
 #include "public/web/WebAXEnums.h"
-#include "public/web/WebAccessibilityObject.h"
+#include "public/web/WebAXObject.h"
 #include "public/web/WebCachedURLRequest.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebDataSource.h"
@@ -828,7 +828,7 @@ void WebTestProxyBase::didAutoResize(const WebSize&)
     invalidateAll();
 }
 
-void WebTestProxyBase::postAccessibilityEvent(const WebKit::WebAccessibilityObject& obj, WebKit::WebAXEvent event)
+void WebTestProxyBase::postAccessibilityEvent(const WebKit::WebAXObject& obj, WebKit::WebAXEvent event)
 {
     if (event == WebKit::WebAXEventFocus)
         m_testInterfaces->accessibilityController()->setFocusedElement(obj);

@@ -35,7 +35,7 @@
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
-#include "public/web/WebAccessibilityObject.h"
+#include "public/web/WebAXObject.h"
 
 using namespace WebKit;
 using namespace std;
@@ -275,22 +275,22 @@ string roleToString(WebAXRole role)
     }
 }
 
-string getDescription(const WebAccessibilityObject& object)
+string getDescription(const WebAXObject& object)
 {
     string description = object.accessibilityDescription().utf8();
     return description.insert(0, "AXDescription: ");
 }
 
-string getHelpText(const WebAccessibilityObject& object)
+string getHelpText(const WebAXObject& object)
 {
     string helpText = object.helpText().utf8();
     return helpText.insert(0, "AXHelp: ");
 }
 
-string getStringValue(const WebAccessibilityObject& object)
+string getStringValue(const WebAXObject& object)
 {
     string value;
-    if (object.roleValue() == WebAccessibilityRoleColorWell) {
+    if (object.role() == WebAXRoleColorWell) {
         int r, g, b;
         char buffer[100];
         object.colorValue(r, g, b);
@@ -301,26 +301,26 @@ string getStringValue(const WebAccessibilityObject& object)
     return value.insert(0, "AXValue: ");
 }
 
-string getRole(const WebAccessibilityObject& object)
+string getRole(const WebAXObject& object)
 {
     string roleString = roleToString(object.role());
 
     // Special-case canvas with fallback content because Chromium wants to
     // treat this as essentially a separate role that it can map differently depending
     // on the platform.
-    if (object.roleValue() == WebAccessibilityRoleCanvas && object.canvasHasFallbackContent())
+    if (object.role() == WebAXRoleCanvas && object.canvasHasFallbackContent())
         roleString += "WithFallbackContent";
 
     return roleString;
 }
 
-string getTitle(const WebAccessibilityObject& object)
+string getTitle(const WebAXObject& object)
 {
     string title = object.title().utf8();
     return title.insert(0, "AXTitle: ");
 }
 
-string getOrientation(const WebAccessibilityObject& object)
+string getOrientation(const WebAXObject& object)
 {
     if (object.isVertical())
         return "AXOrientation: AXVerticalOrientation";
@@ -328,13 +328,13 @@ string getOrientation(const WebAccessibilityObject& object)
     return "AXOrientation: AXHorizontalOrientation";
 }
 
-string getValueDescription(const WebAccessibilityObject& object)
+string getValueDescription(const WebAXObject& object)
 {
     string valueDescription = object.valueDescription().utf8();
     return valueDescription.insert(0, "AXValueDescription: ");
 }
 
-string getAttributes(const WebAccessibilityObject& object)
+string getAttributes(const WebAXObject& object)
 {
     // FIXME: Concatenate all attributes of the AccessibilityObject.
     string attributes(getTitle(object));
@@ -351,7 +351,7 @@ string getAttributes(const WebAccessibilityObject& object)
 // AttributesOfChildrenCallback, etc.
 class AttributesCollector {
 public:
-    void collectAttributes(const WebAccessibilityObject& object)
+    void collectAttributes(const WebAXObject& object)
     {
         m_attributes.append("\n------------\n");
         m_attributes.append(getAttributes(object));
@@ -365,7 +365,7 @@ private:
 
 }
 
-AccessibilityUIElement::AccessibilityUIElement(const WebAccessibilityObject& object, Factory* factory)
+AccessibilityUIElement::AccessibilityUIElement(const WebAXObject& object, Factory* factory)
     : m_accessibilityObject(object)
     , m_factory(factory)
 {
@@ -467,7 +467,7 @@ AccessibilityUIElement* AccessibilityUIElement::getChildAtIndex(unsigned index)
     return m_factory->getOrCreate(accessibilityObject().childAt(index));
 }
 
-bool AccessibilityUIElement::isEqual(const WebKit::WebAccessibilityObject& other)
+bool AccessibilityUIElement::isEqual(const WebKit::WebAXObject& other)
 {
     return accessibilityObject().equals(other);
 }
@@ -536,7 +536,7 @@ void AccessibilityUIElement::intValueGetterCallback(CppVariant* result)
 {
     if (accessibilityObject().supportsRangeValue())
         result->set(accessibilityObject().valueForRange());
-    else if (accessibilityObject().roleValue() == WebAccessibilityRoleHeading)
+    else if (accessibilityObject().role() == WebAXRoleHeading)
         result->set(accessibilityObject().headingLevel());
     else
         result->set(atoi(accessibilityObject().stringValue().utf8().data()));
@@ -783,7 +783,7 @@ void AccessibilityUIElement::elementAtPointCallback(const CppArgumentList& argum
     int x = arguments[0].toInt32();
     int y = arguments[1].toInt32();
     WebPoint point(x, y);
-    WebAccessibilityObject obj = accessibilityObject().hitTest(point);
+    WebAXObject obj = accessibilityObject().hitTest(point);
     if (obj.isNull())
         return;
 
@@ -822,7 +822,7 @@ void AccessibilityUIElement::attributesOfHeaderCallback(const CppArgumentList&, 
 
 void AccessibilityUIElement::tableHeaderCallback(const CppArgumentList&, CppVariant* result)
 {
-    WebAccessibilityObject obj = accessibilityObject().headerContainerObject();
+    WebAXObject obj = accessibilityObject().headerContainerObject();
     if (obj.isNull()) {
         result->setNull();
         return;
@@ -862,7 +862,7 @@ void AccessibilityUIElement::cellForColumnAndRowCallback(const CppArgumentList& 
 
     int column = arguments[0].toInt32();
     int row = arguments[1].toInt32();
-    WebAccessibilityObject obj = accessibilityObject().cellForColumnAndRow(column, row);
+    WebAXObject obj = accessibilityObject().cellForColumnAndRow(column, row);
     if (obj.isNull()) {
         result->setNull();
         return;
@@ -873,7 +873,7 @@ void AccessibilityUIElement::cellForColumnAndRowCallback(const CppArgumentList& 
 
 void AccessibilityUIElement::titleUIElementCallback(const CppArgumentList&, CppVariant* result)
 {
-    WebAccessibilityObject obj = accessibilityObject().titleUIElement();
+    WebAXObject obj = accessibilityObject().titleUIElement();
     if (obj.isNull()) {
         result->setNull();
         return;
@@ -1041,7 +1041,7 @@ void AccessibilityUIElement::fallbackCallback(const CppArgumentList &, CppVarian
     result->setNull();
 }
 
-RootAccessibilityUIElement::RootAccessibilityUIElement(const WebAccessibilityObject &object, Factory *factory)
+RootAccessibilityUIElement::RootAccessibilityUIElement(const WebAXObject &object, Factory *factory)
     : AccessibilityUIElement(object, factory) { }
 
 AccessibilityUIElement* RootAccessibilityUIElement::getChildAtIndex(unsigned index)
@@ -1065,7 +1065,7 @@ void AccessibilityUIElementList::clear()
     m_elements.clear();
 }
 
-AccessibilityUIElement* AccessibilityUIElementList::getOrCreate(const WebAccessibilityObject& object)
+AccessibilityUIElement* AccessibilityUIElementList::getOrCreate(const WebAXObject& object)
 {
     if (object.isNull())
         return 0;
@@ -1081,7 +1081,7 @@ AccessibilityUIElement* AccessibilityUIElementList::getOrCreate(const WebAccessi
     return element;
 }
 
-AccessibilityUIElement* AccessibilityUIElementList::createRoot(const WebAccessibilityObject& object)
+AccessibilityUIElement* AccessibilityUIElementList::createRoot(const WebAXObject& object)
 {
     AccessibilityUIElement* element = new RootAccessibilityUIElement(object, this);
     m_elements.push_back(element);

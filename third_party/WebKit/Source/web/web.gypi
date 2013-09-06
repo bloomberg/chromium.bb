@@ -108,7 +108,7 @@
       'ValidationMessageClientImpl.h',
       'ViewportAnchor.cpp',
       'ViewportAnchor.h',
-      'WebAccessibilityObject.cpp',
+      'WebAXObject.cpp',
       'WebArrayBufferView.cpp',
       'WebBindings.cpp',
       'WebBlob.cpp',

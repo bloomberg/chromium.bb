@@ -32,7 +32,7 @@
 
 #include "public/platform/WebCString.h"
 #include "public/testing/WebTestDelegate.h"
-#include "public/web/WebAccessibilityObject.h"
+#include "public/web/WebAXObject.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebNode.h"
@@ -60,21 +60,21 @@ AccessibilityController::AccessibilityController()
 
 void AccessibilityController::bindToJavascript(WebFrame* frame, const WebString& classname)
 {
-    WebAccessibilityObject::enableAccessibility();
+    WebAXObject::enableAccessibility();
     CppBoundClass::bindToJavascript(frame, classname);
 }
 
 void AccessibilityController::reset()
 {
-    m_rootElement = WebAccessibilityObject();
-    m_focusedElement = WebAccessibilityObject();
+    m_rootElement = WebAXObject();
+    m_focusedElement = WebAXObject();
     m_elements.clear();
     m_notificationCallbacks.clear();
 
     m_logAccessibilityEvents = false;
 }
 
-void AccessibilityController::setFocusedElement(const WebAccessibilityObject& focusedElement)
+void AccessibilityController::setFocusedElement(const WebAXObject& focusedElement)
 {
     m_focusedElement = focusedElement;
 }
@@ -93,7 +93,7 @@ AccessibilityUIElement* AccessibilityController::getRootElement()
     return m_elements.createRoot(m_rootElement);
 }
 
-AccessibilityUIElement* AccessibilityController::findAccessibleElementByIdRecursive(const WebAccessibilityObject& obj, const WebString& id)
+AccessibilityUIElement* AccessibilityController::findAccessibleElementByIdRecursive(const WebAXObject& obj, const WebString& id)
 {
     if (obj.isNull() || obj.isDetached())
         return 0;
@@ -131,7 +131,7 @@ bool AccessibilityController::shouldLogAccessibilityEvents()
     return m_logAccessibilityEvents;
 }
 
-void AccessibilityController::notificationReceived(const WebKit::WebAccessibilityObject& target, const char* notificationName)
+void AccessibilityController::notificationReceived(const WebKit::WebAXObject& target, const char* notificationName)
 {
     // Call notification listeners on the element.
     AccessibilityUIElement* element = m_elements.getOrCreate(target);

@@ -40,7 +40,7 @@
 
 namespace WebKit {
 
-class WebAccessibilityObject;
+class WebAXObject;
 class WebAutofillClient;
 class WebDevToolsAgent;
 class WebDevToolsAgentClient;
@@ -409,7 +409,7 @@ public:
     // Accessibility -------------------------------------------------------
 
     // Returns the accessibility object for this view.
-    virtual WebAccessibilityObject accessibilityObject() = 0;
+    virtual WebAXObject accessibilityObject() = 0;
 
 
     // Autofill  -----------------------------------------------------------

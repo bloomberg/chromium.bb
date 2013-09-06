@@ -35,7 +35,7 @@
 #include "CppBoundClass.h"
 
 namespace WebKit {
-class WebAccessibilityObject;
+class WebAXObject;
 class WebFrame;
 class WebView;
 }
@@ -52,14 +52,14 @@ public:
     void bindToJavascript(WebKit::WebFrame*, const WebKit::WebString& classname);
     void reset();
 
-    void setFocusedElement(const WebKit::WebAccessibilityObject&);
+    void setFocusedElement(const WebKit::WebAXObject&);
     AccessibilityUIElement* getFocusedElement();
     AccessibilityUIElement* getRootElement();
     AccessibilityUIElement* getAccessibleElementById(const std::string& id);
 
     bool shouldLogAccessibilityEvents();
 
-    void notificationReceived(const WebKit::WebAccessibilityObject& target, const char* notificationName);
+    void notificationReceived(const WebKit::WebAXObject& target, const char* notificationName);
 
     void setDelegate(WebTestDelegate* delegate) { m_delegate = delegate; }
     void setWebView(WebKit::WebView* webView) { m_webView = webView; }
@@ -78,10 +78,10 @@ private:
     void rootElementGetterCallback(CppVariant*);
     void accessibleElementByIdGetterCallback(const CppArgumentList&, CppVariant*);
 
-    AccessibilityUIElement* findAccessibleElementByIdRecursive(const WebKit::WebAccessibilityObject&, const WebKit::WebString& id);
+    AccessibilityUIElement* findAccessibleElementByIdRecursive(const WebKit::WebAXObject&, const WebKit::WebString& id);
 
-    WebKit::WebAccessibilityObject m_focusedElement;
-    WebKit::WebAccessibilityObject m_rootElement;
+    WebKit::WebAXObject m_focusedElement;
+    WebKit::WebAXObject m_rootElement;
 
     AccessibilityUIElementList m_elements;
 

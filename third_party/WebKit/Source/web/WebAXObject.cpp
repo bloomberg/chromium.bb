@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebAccessibilityObject.h"
+#include "WebAXObject.h"
 
 #include "HTMLNames.h"
 #include "WebDocument.h"
@@ -57,44 +57,44 @@ using namespace WebCore;
 
 namespace WebKit {
 
-void WebAccessibilityObject::reset()
+void WebAXObject::reset()
 {
     m_private.reset();
 }
 
-void WebAccessibilityObject::assign(const WebKit::WebAccessibilityObject& other)
+void WebAXObject::assign(const WebKit::WebAXObject& other)
 {
     m_private = other.m_private;
 }
 
-bool WebAccessibilityObject::equals(const WebAccessibilityObject& n) const
+bool WebAXObject::equals(const WebAXObject& n) const
 {
     return m_private.get() == n.m_private.get();
 }
 
 // static
-void WebAccessibilityObject::enableAccessibility()
+void WebAXObject::enableAccessibility()
 {
     AXObjectCache::enableAccessibility();
 }
 
 // static
-bool WebAccessibilityObject::accessibilityEnabled()
+bool WebAXObject::accessibilityEnabled()
 {
     return AXObjectCache::accessibilityEnabled();
 }
 
-void WebAccessibilityObject::startCachingComputedObjectAttributesUntilTreeMutates()
+void WebAXObject::startCachingComputedObjectAttributesUntilTreeMutates()
 {
     m_private->axObjectCache()->startCachingComputedObjectAttributesUntilTreeMutates();
 }
 
-void WebAccessibilityObject::stopCachingComputedObjectAttributes()
+void WebAXObject::stopCachingComputedObjectAttributes()
 {
     m_private->axObjectCache()->stopCachingComputedObjectAttributes();
 }
 
-bool WebAccessibilityObject::isDetached() const
+bool WebAXObject::isDetached() const
 {
     if (m_private.isNull())
         return true;
@@ -102,7 +102,7 @@ bool WebAccessibilityObject::isDetached() const
     return m_private->isDetached();
 }
 
-int WebAccessibilityObject::axID() const
+int WebAXObject::axID() const
 {
     if (isDetached())
         return -1;
@@ -110,14 +110,14 @@ int WebAccessibilityObject::axID() const
     return m_private->axObjectID();
 }
 
-bool WebAccessibilityObject::updateBackingStoreAndCheckValidity()
+bool WebAXObject::updateBackingStoreAndCheckValidity()
 {
     if (!isDetached())
         m_private->updateBackingStore();
     return !isDetached();
 }
 
-WebString WebAccessibilityObject::accessibilityDescription() const
+WebString WebAXObject::accessibilityDescription() const
 {
     if (isDetached())
         return WebString();
@@ -125,7 +125,7 @@ WebString WebAccessibilityObject::accessibilityDescription() const
     return m_private->accessibilityDescription();
 }
 
-WebString WebAccessibilityObject::actionVerb() const
+WebString WebAXObject::actionVerb() const
 {
     if (isDetached())
         return WebString();
@@ -133,7 +133,7 @@ WebString WebAccessibilityObject::actionVerb() const
     return m_private->actionVerb();
 }
 
-bool WebAccessibilityObject::canDecrement() const
+bool WebAXObject::canDecrement() const
 {
     if (isDetached())
         return false;
@@ -141,7 +141,7 @@ bool WebAccessibilityObject::canDecrement() const
     return m_private->isSlider();
 }
 
-bool WebAccessibilityObject::canIncrement() const
+bool WebAXObject::canIncrement() const
 {
     if (isDetached())
         return false;
@@ -149,7 +149,7 @@ bool WebAccessibilityObject::canIncrement() const
     return m_private->isSlider();
 }
 
-bool WebAccessibilityObject::canPress() const
+bool WebAXObject::canPress() const
 {
     if (isDetached())
         return false;
@@ -157,7 +157,7 @@ bool WebAccessibilityObject::canPress() const
     return m_private->actionElement() || m_private->isButton() || m_private->isMenuRelated();
 }
 
-bool WebAccessibilityObject::canSetFocusAttribute() const
+bool WebAXObject::canSetFocusAttribute() const
 {
     if (isDetached())
         return false;
@@ -165,7 +165,7 @@ bool WebAccessibilityObject::canSetFocusAttribute() const
     return m_private->canSetFocusAttribute();
 }
 
-bool WebAccessibilityObject::canSetValueAttribute() const
+bool WebAXObject::canSetValueAttribute() const
 {
     if (isDetached())
         return false;
@@ -173,7 +173,7 @@ bool WebAccessibilityObject::canSetValueAttribute() const
     return m_private->canSetValueAttribute();
 }
 
-unsigned WebAccessibilityObject::childCount() const
+unsigned WebAXObject::childCount() const
 {
     if (isDetached())
         return 0;
@@ -181,26 +181,26 @@ unsigned WebAccessibilityObject::childCount() const
     return m_private->children().size();
 }
 
-WebAccessibilityObject WebAccessibilityObject::childAt(unsigned index) const
+WebAXObject WebAXObject::childAt(unsigned index) const
 {
     if (isDetached())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
     if (m_private->children().size() <= index)
-        return WebAccessibilityObject();
+        return WebAXObject();
 
-    return WebAccessibilityObject(m_private->children()[index]);
+    return WebAXObject(m_private->children()[index]);
 }
 
-WebAccessibilityObject WebAccessibilityObject::parentObject() const
+WebAXObject WebAXObject::parentObject() const
 {
     if (isDetached())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
-    return WebAccessibilityObject(m_private->parentObject());
+    return WebAXObject(m_private->parentObject());
 }
 
-bool WebAccessibilityObject::canSetSelectedAttribute() const
+bool WebAXObject::canSetSelectedAttribute() const
 {
     if (isDetached())
         return 0;
@@ -208,7 +208,7 @@ bool WebAccessibilityObject::canSetSelectedAttribute() const
     return m_private->canSetSelectedAttribute();
 }
 
-bool WebAccessibilityObject::isAnchor() const
+bool WebAXObject::isAnchor() const
 {
     if (isDetached())
         return 0;
@@ -216,7 +216,7 @@ bool WebAccessibilityObject::isAnchor() const
     return m_private->isAnchor();
 }
 
-bool WebAccessibilityObject::isAriaReadOnly() const
+bool WebAXObject::isAriaReadOnly() const
 {
     if (isDetached())
         return 0;
@@ -224,7 +224,7 @@ bool WebAccessibilityObject::isAriaReadOnly() const
     return equalIgnoringCase(m_private->getAttribute(HTMLNames::aria_readonlyAttr), "true");
 }
 
-bool WebAccessibilityObject::isButtonStateMixed() const
+bool WebAXObject::isButtonStateMixed() const
 {
     if (isDetached())
         return 0;
@@ -232,7 +232,7 @@ bool WebAccessibilityObject::isButtonStateMixed() const
     return m_private->checkboxOrRadioValue() == ButtonStateMixed;
 }
 
-bool WebAccessibilityObject::isChecked() const
+bool WebAXObject::isChecked() const
 {
     if (isDetached())
         return 0;
@@ -240,7 +240,7 @@ bool WebAccessibilityObject::isChecked() const
     return m_private->isChecked();
 }
 
-bool WebAccessibilityObject::isClickable() const
+bool WebAXObject::isClickable() const
 {
     if (isDetached())
         return 0;
@@ -248,7 +248,7 @@ bool WebAccessibilityObject::isClickable() const
     return m_private->isClickable();
 }
 
-bool WebAccessibilityObject::isCollapsed() const
+bool WebAXObject::isCollapsed() const
 {
     if (isDetached())
         return 0;
@@ -256,7 +256,7 @@ bool WebAccessibilityObject::isCollapsed() const
     return m_private->isCollapsed();
 }
 
-bool WebAccessibilityObject::isControl() const
+bool WebAXObject::isControl() const
 {
     if (isDetached())
         return 0;
@@ -264,7 +264,7 @@ bool WebAccessibilityObject::isControl() const
     return m_private->isControl();
 }
 
-bool WebAccessibilityObject::isEnabled() const
+bool WebAXObject::isEnabled() const
 {
     if (isDetached())
         return 0;
@@ -272,7 +272,7 @@ bool WebAccessibilityObject::isEnabled() const
     return m_private->isEnabled();
 }
 
-bool WebAccessibilityObject::isFocused() const
+bool WebAXObject::isFocused() const
 {
     if (isDetached())
         return 0;
@@ -280,7 +280,7 @@ bool WebAccessibilityObject::isFocused() const
     return m_private->isFocused();
 }
 
-bool WebAccessibilityObject::isHovered() const
+bool WebAXObject::isHovered() const
 {
     if (isDetached())
         return 0;
@@ -288,7 +288,7 @@ bool WebAccessibilityObject::isHovered() const
     return m_private->isHovered();
 }
 
-bool WebAccessibilityObject::isIndeterminate() const
+bool WebAXObject::isIndeterminate() const
 {
     if (isDetached())
         return 0;
@@ -296,7 +296,7 @@ bool WebAccessibilityObject::isIndeterminate() const
     return m_private->isIndeterminate();
 }
 
-bool WebAccessibilityObject::isLinked() const
+bool WebAXObject::isLinked() const
 {
     if (isDetached())
         return 0;
@@ -304,7 +304,7 @@ bool WebAccessibilityObject::isLinked() const
     return m_private->isLinked();
 }
 
-bool WebAccessibilityObject::isLoaded() const
+bool WebAXObject::isLoaded() const
 {
     if (isDetached())
         return 0;
@@ -312,7 +312,7 @@ bool WebAccessibilityObject::isLoaded() const
     return m_private->isLoaded();
 }
 
-bool WebAccessibilityObject::isMultiSelectable() const
+bool WebAXObject::isMultiSelectable() const
 {
     if (isDetached())
         return 0;
@@ -320,7 +320,7 @@ bool WebAccessibilityObject::isMultiSelectable() const
     return m_private->isMultiSelectable();
 }
 
-bool WebAccessibilityObject::isOffScreen() const
+bool WebAXObject::isOffScreen() const
 {
     if (isDetached())
         return 0;
@@ -328,7 +328,7 @@ bool WebAccessibilityObject::isOffScreen() const
     return m_private->isOffScreen();
 }
 
-bool WebAccessibilityObject::isPasswordField() const
+bool WebAXObject::isPasswordField() const
 {
     if (isDetached())
         return 0;
@@ -336,7 +336,7 @@ bool WebAccessibilityObject::isPasswordField() const
     return m_private->isPasswordField();
 }
 
-bool WebAccessibilityObject::isPressed() const
+bool WebAXObject::isPressed() const
 {
     if (isDetached())
         return 0;
@@ -344,7 +344,7 @@ bool WebAccessibilityObject::isPressed() const
     return m_private->isPressed();
 }
 
-bool WebAccessibilityObject::isReadOnly() const
+bool WebAXObject::isReadOnly() const
 {
     if (isDetached())
         return 0;
@@ -352,7 +352,7 @@ bool WebAccessibilityObject::isReadOnly() const
     return m_private->isReadOnly();
 }
 
-bool WebAccessibilityObject::isRequired() const
+bool WebAXObject::isRequired() const
 {
     if (isDetached())
         return 0;
@@ -360,7 +360,7 @@ bool WebAccessibilityObject::isRequired() const
     return m_private->isRequired();
 }
 
-bool WebAccessibilityObject::isSelected() const
+bool WebAXObject::isSelected() const
 {
     if (isDetached())
         return 0;
@@ -368,7 +368,7 @@ bool WebAccessibilityObject::isSelected() const
     return m_private->isSelected();
 }
 
-bool WebAccessibilityObject::isSelectedOptionActive() const
+bool WebAXObject::isSelectedOptionActive() const
 {
     if (isDetached())
         return false;
@@ -376,7 +376,7 @@ bool WebAccessibilityObject::isSelectedOptionActive() const
     return m_private->isSelectedOptionActive();
 }
 
-bool WebAccessibilityObject::isVertical() const
+bool WebAXObject::isVertical() const
 {
     if (isDetached())
         return 0;
@@ -384,7 +384,7 @@ bool WebAccessibilityObject::isVertical() const
     return m_private->orientation() == AccessibilityOrientationVertical;
 }
 
-bool WebAccessibilityObject::isVisible() const
+bool WebAXObject::isVisible() const
 {
     if (isDetached())
         return 0;
@@ -392,7 +392,7 @@ bool WebAccessibilityObject::isVisible() const
     return m_private->isVisible();
 }
 
-bool WebAccessibilityObject::isVisited() const
+bool WebAXObject::isVisited() const
 {
     if (isDetached())
         return 0;
@@ -400,7 +400,7 @@ bool WebAccessibilityObject::isVisited() const
     return m_private->isVisited();
 }
 
-WebString WebAccessibilityObject::accessKey() const
+WebString WebAXObject::accessKey() const
 {
     if (isDetached())
         return WebString();
@@ -408,7 +408,7 @@ WebString WebAccessibilityObject::accessKey() const
     return WebString(m_private->accessKey());
 }
 
-bool WebAccessibilityObject::ariaHasPopup() const
+bool WebAXObject::ariaHasPopup() const
 {
     if (isDetached())
         return 0;
@@ -416,7 +416,7 @@ bool WebAccessibilityObject::ariaHasPopup() const
     return m_private->ariaHasPopup();
 }
 
-bool WebAccessibilityObject::ariaLiveRegionAtomic() const
+bool WebAXObject::ariaLiveRegionAtomic() const
 {
     if (isDetached())
         return 0;
@@ -424,7 +424,7 @@ bool WebAccessibilityObject::ariaLiveRegionAtomic() const
     return m_private->ariaLiveRegionAtomic();
 }
 
-bool WebAccessibilityObject::ariaLiveRegionBusy() const
+bool WebAXObject::ariaLiveRegionBusy() const
 {
     if (isDetached())
         return 0;
@@ -432,7 +432,7 @@ bool WebAccessibilityObject::ariaLiveRegionBusy() const
     return m_private->ariaLiveRegionBusy();
 }
 
-WebString WebAccessibilityObject::ariaLiveRegionRelevant() const
+WebString WebAXObject::ariaLiveRegionRelevant() const
 {
     if (isDetached())
         return WebString();
@@ -440,7 +440,7 @@ WebString WebAccessibilityObject::ariaLiveRegionRelevant() const
     return m_private->ariaLiveRegionRelevant();
 }
 
-WebString WebAccessibilityObject::ariaLiveRegionStatus() const
+WebString WebAXObject::ariaLiveRegionStatus() const
 {
     if (isDetached())
         return WebString();
@@ -448,7 +448,7 @@ WebString WebAccessibilityObject::ariaLiveRegionStatus() const
     return m_private->ariaLiveRegionStatus();
 }
 
-WebRect WebAccessibilityObject::boundingBoxRect() const
+WebRect WebAXObject::boundingBoxRect() const
 {
     if (isDetached())
         return WebRect();
@@ -456,7 +456,7 @@ WebRect WebAccessibilityObject::boundingBoxRect() const
     return pixelSnappedIntRect(m_private->elementRect());
 }
 
-bool WebAccessibilityObject::canvasHasFallbackContent() const
+bool WebAXObject::canvasHasFallbackContent() const
 {
     if (isDetached())
         return false;
@@ -464,7 +464,7 @@ bool WebAccessibilityObject::canvasHasFallbackContent() const
     return m_private->canvasHasFallbackContent();
 }
 
-WebPoint WebAccessibilityObject::clickPoint() const
+WebPoint WebAXObject::clickPoint() const
 {
     if (isDetached())
         return WebPoint();
@@ -472,7 +472,7 @@ WebPoint WebAccessibilityObject::clickPoint() const
     return WebPoint(m_private->clickPoint());
 }
 
-void WebAccessibilityObject::colorValue(int& r, int& g, int& b) const
+void WebAXObject::colorValue(int& r, int& g, int& b) const
 {
     if (isDetached())
         return;
@@ -480,7 +480,7 @@ void WebAccessibilityObject::colorValue(int& r, int& g, int& b) const
     m_private->colorValue(r, g, b);
 }
 
-double WebAccessibilityObject::estimatedLoadingProgress() const
+double WebAXObject::estimatedLoadingProgress() const
 {
     if (isDetached())
         return 0.0;
@@ -488,7 +488,7 @@ double WebAccessibilityObject::estimatedLoadingProgress() const
     return m_private->estimatedLoadingProgress();
 }
 
-WebString WebAccessibilityObject::helpText() const
+WebString WebAXObject::helpText() const
 {
     if (isDetached())
         return WebString();
@@ -496,7 +496,7 @@ WebString WebAccessibilityObject::helpText() const
     return m_private->helpText();
 }
 
-int WebAccessibilityObject::headingLevel() const
+int WebAXObject::headingLevel() const
 {
     if (isDetached())
         return 0;
@@ -504,7 +504,7 @@ int WebAccessibilityObject::headingLevel() const
     return m_private->headingLevel();
 }
 
-int WebAccessibilityObject::hierarchicalLevel() const
+int WebAXObject::hierarchicalLevel() const
 {
     if (isDetached())
         return 0;
@@ -512,24 +512,24 @@ int WebAccessibilityObject::hierarchicalLevel() const
     return m_private->hierarchicalLevel();
 }
 
-WebAccessibilityObject WebAccessibilityObject::hitTest(const WebPoint& point) const
+WebAXObject WebAXObject::hitTest(const WebPoint& point) const
 {
     if (isDetached())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
     IntPoint contentsPoint = m_private->documentFrameView()->windowToContents(point);
     RefPtr<AccessibilityObject> hit = m_private->accessibilityHitTest(contentsPoint);
 
     if (hit)
-        return WebAccessibilityObject(hit);
+        return WebAXObject(hit);
 
     if (m_private->elementRect().contains(contentsPoint))
         return *this;
 
-    return WebAccessibilityObject();
+    return WebAXObject();
 }
 
-WebString WebAccessibilityObject::keyboardShortcut() const
+WebString WebAXObject::keyboardShortcut() const
 {
     if (isDetached())
         return WebString();
@@ -559,7 +559,7 @@ WebString WebAccessibilityObject::keyboardShortcut() const
     return String(modifierString + accessKey);
 }
 
-bool WebAccessibilityObject::performDefaultAction() const
+bool WebAXObject::performDefaultAction() const
 {
     if (isDetached())
         return false;
@@ -567,7 +567,7 @@ bool WebAccessibilityObject::performDefaultAction() const
     return m_private->performDefaultAction();
 }
 
-bool WebAccessibilityObject::increment() const
+bool WebAXObject::increment() const
 {
     if (isDetached())
         return false;
@@ -579,7 +579,7 @@ bool WebAccessibilityObject::increment() const
     return false;
 }
 
-bool WebAccessibilityObject::decrement() const
+bool WebAXObject::decrement() const
 {
     if (isDetached())
         return false;
@@ -591,7 +591,7 @@ bool WebAccessibilityObject::decrement() const
     return false;
 }
 
-bool WebAccessibilityObject::press() const
+bool WebAXObject::press() const
 {
     if (isDetached())
         return false;
@@ -599,16 +599,7 @@ bool WebAccessibilityObject::press() const
     return m_private->press();
 }
 
-// Deprecated in favor of role().
-WebAccessibilityRole WebAccessibilityObject::roleValue() const
-{
-    if (isDetached())
-        return WebKit::WebAccessibilityRoleUnknown;
-
-    return static_cast<WebAccessibilityRole>(m_private->roleValue());
-}
-
-WebAXRole WebAccessibilityObject::role() const
+WebAXRole WebAXObject::role() const
 {
     if (isDetached())
         return WebKit::WebAXRoleUnknown;
@@ -616,7 +607,7 @@ WebAXRole WebAccessibilityObject::role() const
     return static_cast<WebAXRole>(m_private->roleValue());
 }
 
-unsigned WebAccessibilityObject::selectionEnd() const
+unsigned WebAXObject::selectionEnd() const
 {
     if (isDetached())
         return 0;
@@ -624,7 +615,7 @@ unsigned WebAccessibilityObject::selectionEnd() const
     return m_private->selectedTextRange().start + m_private->selectedTextRange().length;
 }
 
-unsigned WebAccessibilityObject::selectionStart() const
+unsigned WebAXObject::selectionStart() const
 {
     if (isDetached())
         return 0;
@@ -632,7 +623,7 @@ unsigned WebAccessibilityObject::selectionStart() const
     return m_private->selectedTextRange().start;
 }
 
-unsigned WebAccessibilityObject::selectionEndLineNumber() const
+unsigned WebAXObject::selectionEndLineNumber() const
 {
     if (isDetached())
         return 0;
@@ -644,7 +635,7 @@ unsigned WebAccessibilityObject::selectionEndLineNumber() const
     return lineNumber;
 }
 
-unsigned WebAccessibilityObject::selectionStartLineNumber() const
+unsigned WebAXObject::selectionStartLineNumber() const
 {
     if (isDetached())
         return 0;
@@ -656,13 +647,13 @@ unsigned WebAccessibilityObject::selectionStartLineNumber() const
     return lineNumber;
 }
 
-void WebAccessibilityObject::setFocused(bool on) const
+void WebAXObject::setFocused(bool on) const
 {
     if (!isDetached())
         m_private->setFocused(on);
 }
 
-void WebAccessibilityObject::setSelectedTextRange(int selectionStart, int selectionEnd) const
+void WebAXObject::setSelectedTextRange(int selectionStart, int selectionEnd) const
 {
     if (isDetached())
         return;
@@ -670,7 +661,7 @@ void WebAccessibilityObject::setSelectedTextRange(int selectionStart, int select
     m_private->setSelectedTextRange(PlainTextRange(selectionStart, selectionEnd - selectionStart));
 }
 
-WebString WebAccessibilityObject::stringValue() const
+WebString WebAXObject::stringValue() const
 {
     if (isDetached())
         return WebString();
@@ -678,7 +669,7 @@ WebString WebAccessibilityObject::stringValue() const
     return m_private->stringValue();
 }
 
-WebString WebAccessibilityObject::title() const
+WebString WebAXObject::title() const
 {
     if (isDetached())
         return WebString();
@@ -686,18 +677,18 @@ WebString WebAccessibilityObject::title() const
     return m_private->title();
 }
 
-WebAccessibilityObject WebAccessibilityObject::titleUIElement() const
+WebAXObject WebAXObject::titleUIElement() const
 {
     if (isDetached())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
     if (!m_private->exposesTitleUIElement())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
-    return WebAccessibilityObject(m_private->titleUIElement());
+    return WebAXObject(m_private->titleUIElement());
 }
 
-WebURL WebAccessibilityObject::url() const
+WebURL WebAXObject::url() const
 {
     if (isDetached())
         return WebURL();
@@ -705,7 +696,7 @@ WebURL WebAccessibilityObject::url() const
     return m_private->url();
 }
 
-bool WebAccessibilityObject::supportsRangeValue() const
+bool WebAXObject::supportsRangeValue() const
 {
     if (isDetached())
         return false;
@@ -713,7 +704,7 @@ bool WebAccessibilityObject::supportsRangeValue() const
     return m_private->supportsRangeValue();
 }
 
-WebString WebAccessibilityObject::valueDescription() const
+WebString WebAXObject::valueDescription() const
 {
     if (isDetached())
         return WebString();
@@ -721,7 +712,7 @@ WebString WebAccessibilityObject::valueDescription() const
     return m_private->valueDescription();
 }
 
-float WebAccessibilityObject::valueForRange() const
+float WebAXObject::valueForRange() const
 {
     if (isDetached())
         return 0.0;
@@ -729,7 +720,7 @@ float WebAccessibilityObject::valueForRange() const
     return m_private->valueForRange();
 }
 
-float WebAccessibilityObject::maxValueForRange() const
+float WebAXObject::maxValueForRange() const
 {
     if (isDetached())
         return 0.0;
@@ -737,7 +728,7 @@ float WebAccessibilityObject::maxValueForRange() const
     return m_private->maxValueForRange();
 }
 
-float WebAccessibilityObject::minValueForRange() const
+float WebAXObject::minValueForRange() const
 {
     if (isDetached())
         return 0.0;
@@ -745,7 +736,7 @@ float WebAccessibilityObject::minValueForRange() const
     return m_private->minValueForRange();
 }
 
-WebNode WebAccessibilityObject::node() const
+WebNode WebAXObject::node() const
 {
     if (isDetached())
         return WebNode();
@@ -757,7 +748,7 @@ WebNode WebAccessibilityObject::node() const
     return WebNode(node);
 }
 
-WebDocument WebAccessibilityObject::document() const
+WebDocument WebAXObject::document() const
 {
     if (isDetached())
         return WebDocument();
@@ -769,7 +760,7 @@ WebDocument WebAccessibilityObject::document() const
     return WebDocument(document);
 }
 
-bool WebAccessibilityObject::hasComputedStyle() const
+bool WebAXObject::hasComputedStyle() const
 {
     if (isDetached())
         return false;
@@ -785,7 +776,7 @@ bool WebAccessibilityObject::hasComputedStyle() const
     return node->computedStyle();
 }
 
-WebString WebAccessibilityObject::computedStyleDisplay() const
+WebString WebAXObject::computedStyleDisplay() const
 {
     if (isDetached())
         return WebString();
@@ -805,7 +796,7 @@ WebString WebAccessibilityObject::computedStyleDisplay() const
     return WebString(CSSPrimitiveValue::create(renderStyle->display())->getStringValue());
 }
 
-bool WebAccessibilityObject::accessibilityIsIgnored() const
+bool WebAXObject::accessibilityIsIgnored() const
 {
     if (isDetached())
         return false;
@@ -813,7 +804,7 @@ bool WebAccessibilityObject::accessibilityIsIgnored() const
     return m_private->accessibilityIsIgnored();
 }
 
-bool WebAccessibilityObject::lineBreaks(WebVector<int>& result) const
+bool WebAXObject::lineBreaks(WebVector<int>& result) const
 {
     if (isDetached())
         return false;
@@ -830,7 +821,7 @@ bool WebAccessibilityObject::lineBreaks(WebVector<int>& result) const
     return true;
 }
 
-unsigned WebAccessibilityObject::columnCount() const
+unsigned WebAXObject::columnCount() const
 {
     if (isDetached())
         return false;
@@ -841,7 +832,7 @@ unsigned WebAccessibilityObject::columnCount() const
     return static_cast<WebCore::AccessibilityTable*>(m_private.get())->columnCount();
 }
 
-unsigned WebAccessibilityObject::rowCount() const
+unsigned WebAXObject::rowCount() const
 {
     if (isDetached())
         return false;
@@ -852,60 +843,60 @@ unsigned WebAccessibilityObject::rowCount() const
     return static_cast<WebCore::AccessibilityTable*>(m_private.get())->rowCount();
 }
 
-WebAccessibilityObject WebAccessibilityObject::cellForColumnAndRow(unsigned column, unsigned row) const
+WebAXObject WebAXObject::cellForColumnAndRow(unsigned column, unsigned row) const
 {
     if (isDetached())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
     if (!m_private->isAccessibilityTable())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
     WebCore::AccessibilityTableCell* cell = static_cast<WebCore::AccessibilityTable*>(m_private.get())->cellForColumnAndRow(column, row);
-    return WebAccessibilityObject(static_cast<WebCore::AccessibilityObject*>(cell));
+    return WebAXObject(static_cast<WebCore::AccessibilityObject*>(cell));
 }
 
-WebAccessibilityObject WebAccessibilityObject::headerContainerObject() const
+WebAXObject WebAXObject::headerContainerObject() const
 {
     if (isDetached())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
     if (!m_private->isAccessibilityTable())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
-    return WebAccessibilityObject(static_cast<WebCore::AccessibilityTable*>(m_private.get())->headerContainer());
+    return WebAXObject(static_cast<WebCore::AccessibilityTable*>(m_private.get())->headerContainer());
 }
 
-WebAccessibilityObject WebAccessibilityObject::rowAtIndex(unsigned int rowIndex) const
+WebAXObject WebAXObject::rowAtIndex(unsigned rowIndex) const
 {
     if (isDetached())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
     if (!m_private->isAccessibilityTable())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
     const AccessibilityObject::AccessibilityChildrenVector& rows = static_cast<WebCore::AccessibilityTable*>(m_private.get())->rows();
     if (rowIndex < rows.size())
-        return WebAccessibilityObject(rows[rowIndex]);
+        return WebAXObject(rows[rowIndex]);
 
-    return WebAccessibilityObject();
+    return WebAXObject();
 }
 
-WebAccessibilityObject WebAccessibilityObject::columnAtIndex(unsigned int columnIndex) const
+WebAXObject WebAXObject::columnAtIndex(unsigned columnIndex) const
 {
     if (isDetached())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
     if (!m_private->isAccessibilityTable())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
     const AccessibilityObject::AccessibilityChildrenVector& columns = static_cast<WebCore::AccessibilityTable*>(m_private.get())->columns();
     if (columnIndex < columns.size())
-        return WebAccessibilityObject(columns[columnIndex]);
+        return WebAXObject(columns[columnIndex]);
 
-    return WebAccessibilityObject();
+    return WebAXObject();
 }
 
-unsigned WebAccessibilityObject::rowIndex() const
+unsigned WebAXObject::rowIndex() const
 {
     if (isDetached())
         return 0;
@@ -916,18 +907,18 @@ unsigned WebAccessibilityObject::rowIndex() const
     return static_cast<WebCore::AccessibilityTableRow*>(m_private.get())->rowIndex();
 }
 
-WebAccessibilityObject WebAccessibilityObject::rowHeader() const
+WebAXObject WebAXObject::rowHeader() const
 {
     if (isDetached())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
     if (!m_private->isTableRow())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
-    return WebAccessibilityObject(static_cast<WebCore::AccessibilityTableRow*>(m_private.get())->headerObject());
+    return WebAXObject(static_cast<WebCore::AccessibilityTableRow*>(m_private.get())->headerObject());
 }
 
-unsigned WebAccessibilityObject::columnIndex() const
+unsigned WebAXObject::columnIndex() const
 {
     if (isDetached())
         return 0;
@@ -938,99 +929,99 @@ unsigned WebAccessibilityObject::columnIndex() const
     return static_cast<WebCore::AccessibilityTableColumn*>(m_private.get())->columnIndex();
 }
 
-WebAccessibilityObject WebAccessibilityObject::columnHeader() const
+WebAXObject WebAXObject::columnHeader() const
 {
     if (isDetached())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
     if (m_private->roleValue() != ColumnRole)
-        return WebAccessibilityObject();
+        return WebAXObject();
 
-    return WebAccessibilityObject(static_cast<WebCore::AccessibilityTableColumn*>(m_private.get())->headerObject());
+    return WebAXObject(static_cast<WebCore::AccessibilityTableColumn*>(m_private.get())->headerObject());
 }
 
-unsigned WebAccessibilityObject::cellColumnIndex() const
+unsigned WebAXObject::cellColumnIndex() const
 {
     if (isDetached())
         return 0;
 
     if (!m_private->isTableCell())
-       return 0;
+        return 0;
 
     pair<unsigned, unsigned> columnRange;
     static_cast<WebCore::AccessibilityTableCell*>(m_private.get())->columnIndexRange(columnRange);
     return columnRange.first;
 }
 
-unsigned WebAccessibilityObject::cellColumnSpan() const
+unsigned WebAXObject::cellColumnSpan() const
 {
     if (isDetached())
         return 0;
 
     if (!m_private->isTableCell())
-       return 0;
+        return 0;
 
     pair<unsigned, unsigned> columnRange;
     static_cast<WebCore::AccessibilityTableCell*>(m_private.get())->columnIndexRange(columnRange);
     return columnRange.second;
 }
 
-unsigned WebAccessibilityObject::cellRowIndex() const
+unsigned WebAXObject::cellRowIndex() const
 {
     if (isDetached())
         return 0;
 
     if (!m_private->isTableCell())
-       return 0;
+        return 0;
 
     pair<unsigned, unsigned> rowRange;
     static_cast<WebCore::AccessibilityTableCell*>(m_private.get())->rowIndexRange(rowRange);
     return rowRange.first;
 }
 
-unsigned WebAccessibilityObject::cellRowSpan() const
+unsigned WebAXObject::cellRowSpan() const
 {
     if (isDetached())
         return 0;
 
     if (!m_private->isTableCell())
-       return 0;
+        return 0;
 
     pair<unsigned, unsigned> rowRange;
     static_cast<WebCore::AccessibilityTableCell*>(m_private.get())->rowIndexRange(rowRange);
     return rowRange.second;
 }
 
-void WebAccessibilityObject::scrollToMakeVisible() const
+void WebAXObject::scrollToMakeVisible() const
 {
     if (!isDetached())
         m_private->scrollToMakeVisible();
 }
 
-void WebAccessibilityObject::scrollToMakeVisibleWithSubFocus(const WebRect& subfocus) const
+void WebAXObject::scrollToMakeVisibleWithSubFocus(const WebRect& subfocus) const
 {
     if (!isDetached())
         m_private->scrollToMakeVisibleWithSubFocus(subfocus);
 }
 
-void WebAccessibilityObject::scrollToGlobalPoint(const WebPoint& point) const
+void WebAXObject::scrollToGlobalPoint(const WebPoint& point) const
 {
     if (!isDetached())
         m_private->scrollToGlobalPoint(point);
 }
 
-WebAccessibilityObject::WebAccessibilityObject(const WTF::PassRefPtr<WebCore::AccessibilityObject>& object)
+WebAXObject::WebAXObject(const WTF::PassRefPtr<WebCore::AccessibilityObject>& object)
     : m_private(object)
 {
 }
 
-WebAccessibilityObject& WebAccessibilityObject::operator=(const WTF::PassRefPtr<WebCore::AccessibilityObject>& object)
+WebAXObject& WebAXObject::operator=(const WTF::PassRefPtr<WebCore::AccessibilityObject>& object)
 {
     m_private = object;
     return *this;
 }
 
-WebAccessibilityObject::operator WTF::PassRefPtr<WebCore::AccessibilityObject>() const
+WebAXObject::operator WTF::PassRefPtr<WebCore::AccessibilityObject>() const
 {
     return m_private.get();
 }

@@ -102,7 +102,7 @@ class SpeechInputClientImpl;
 class SpeechRecognitionClientProxy;
 class UserMediaClientImpl;
 class ValidationMessageClientImpl;
-class WebAccessibilityObject;
+class WebAXObject;
 class WebActiveGestureAnimation;
 class WebCompositorImpl;
 class WebDevToolsAgentClient;
@@ -290,7 +290,7 @@ public:
     virtual void setInspectorSetting(const WebString& key,
                                      const WebString& value);
     virtual WebDevToolsAgent* devToolsAgent();
-    virtual WebAccessibilityObject accessibilityObject();
+    virtual WebAXObject accessibilityObject();
     virtual void applyAutofillSuggestions(
         const WebNode&,
         const WebVector<WebString>& names,

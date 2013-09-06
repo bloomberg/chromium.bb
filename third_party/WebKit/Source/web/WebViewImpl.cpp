@@ -68,7 +68,7 @@
 #include "SpeechRecognitionClientProxy.h"
 #include "ValidationMessageClientImpl.h"
 #include "ViewportAnchor.h"
-#include "WebAccessibilityObject.h"
+#include "WebAXObject.h"
 #include "WebActiveWheelFlingParameters.h"
 #include "WebAutofillClient.h"
 #include "WebDevToolsAgentImpl.h"
@@ -3417,13 +3417,13 @@ WebDevToolsAgent* WebViewImpl::devToolsAgent()
     return m_devToolsAgent.get();
 }
 
-WebAccessibilityObject WebViewImpl::accessibilityObject()
+WebAXObject WebViewImpl::accessibilityObject()
 {
     if (!mainFrameImpl())
-        return WebAccessibilityObject();
+        return WebAXObject();
 
     Document* document = mainFrameImpl()->frame()->document();
-    return WebAccessibilityObject(
+    return WebAXObject(
         document->axObjectCache()->getOrCreate(document->renderer()));
 }
 
