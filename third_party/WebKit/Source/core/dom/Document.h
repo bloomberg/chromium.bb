@@ -289,6 +289,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitvisibilitychange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(securitypolicyviolation);
 
+    bool shouldOverrideLegacyViewport(ViewportArguments::Type);
     void setViewportArguments(const ViewportArguments&);
     const ViewportArguments& viewportArguments() const { return m_viewportArguments; }
 #ifndef NDEBUG
@@ -1404,15 +1405,12 @@ inline const Document* Document::templateDocument() const
     return m_templateDocument.get();
 }
 
-inline void Document::setViewportArguments(const ViewportArguments& viewportArguments)
+inline bool Document::shouldOverrideLegacyViewport(ViewportArguments::Type origin)
 {
-    // If the legacy viewport tag has higher priority than the cascaded @viewport
-    // descriptors, use the values from the legacy tag.
-    if (viewportArguments.type < m_legacyViewportArguments.type)
-        m_viewportArguments = m_legacyViewportArguments;
-    else
-        m_viewportArguments = viewportArguments;
-    updateViewportArguments();
+    // The different (legacy) meta tags have different priorities based on the type
+    // regardless of which order they appear in the DOM. The priority is given by the
+    // ViewportArguments::Type enum.
+    return origin >= m_legacyViewportArguments.type;
 }
 
 inline Document* toDocument(ScriptExecutionContext* scriptExecutionContext)

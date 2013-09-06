@@ -3042,48 +3042,62 @@ void Document::processViewport(const String& features, ViewportArguments::Type o
 {
     ASSERT(!features.isNull());
 
-    // We are adding viewport properties from a legacy meta tag.
-    // The different meta tags have different priorities based on the type regardless
-    // of which order they appear in the DOM. The priority is given by the
-    // ViewportArguments::Type enum. If we process viewport properties with a lower
-    // priority than an already processed meta tag, just ignore it.
-    if (origin < m_legacyViewportArguments.type)
+    if (!page() || !shouldOverrideLegacyViewport(origin))
         return;
 
-    // Overwrite viewport arguments from previously encountered meta tags.
-    m_legacyViewportArguments = ViewportArguments(origin);
+    ViewportArguments newArgumentsFromLegacyTag(origin);
+    processArguments(features, (void*)&newArgumentsFromLegacyTag, &setViewportFeature);
 
-    processArguments(features, (void*)&m_legacyViewportArguments, &setViewportFeature);
+    if (newArgumentsFromLegacyTag.minZoom == ViewportArguments::ValueAuto)
+        newArgumentsFromLegacyTag.minZoom = 0.25;
 
-    if (m_legacyViewportArguments.minZoom == ViewportArguments::ValueAuto)
-        m_legacyViewportArguments.minZoom = 0.25;
-
-    if (m_legacyViewportArguments.maxZoom == ViewportArguments::ValueAuto) {
-        m_legacyViewportArguments.maxZoom = 5;
-        if (m_legacyViewportArguments.minZoom > 5)
-            m_legacyViewportArguments.minZoom = 5;
+    if (newArgumentsFromLegacyTag.maxZoom == ViewportArguments::ValueAuto) {
+        newArgumentsFromLegacyTag.maxZoom = 5;
+        newArgumentsFromLegacyTag.minZoom = std::min(newArgumentsFromLegacyTag.minZoom, float(5));
     }
 
-    if (m_legacyViewportArguments.maxWidth.isAuto()) {
+    const Settings& settings = document().page()->settings();
 
-        if (m_legacyViewportArguments.zoom == ViewportArguments::ValueAuto) {
-            m_legacyViewportArguments.minWidth = Length(ExtendToZoom);
-            m_legacyViewportArguments.maxWidth = Length(page()->settings().layoutFallbackWidth(), Fixed);
-        } else if (m_legacyViewportArguments.maxHeight.isAuto()) {
-            m_legacyViewportArguments.minWidth = m_legacyViewportArguments.maxWidth = Length(ExtendToZoom);
+    if (newArgumentsFromLegacyTag.maxWidth.isAuto()) {
+        if (newArgumentsFromLegacyTag.zoom == ViewportArguments::ValueAuto) {
+            newArgumentsFromLegacyTag.minWidth = Length(ExtendToZoom);
+            newArgumentsFromLegacyTag.maxWidth = Length(settings.layoutFallbackWidth(), Fixed);
+        } else if (newArgumentsFromLegacyTag.maxHeight.isAuto()) {
+            newArgumentsFromLegacyTag.minWidth = Length(ExtendToZoom);
+            newArgumentsFromLegacyTag.maxWidth = Length(ExtendToZoom);
         }
     }
 
-    if (page() && page()->settings().viewportMetaZeroValuesQuirk() && m_legacyViewportArguments.type == ViewportArguments::ViewportMeta
-        && m_legacyViewportArguments.maxWidth.type() == ViewportPercentageWidth && !static_cast<int>(m_legacyViewportArguments.zoom))
-        m_legacyViewportArguments.zoom = 1.0;
-
-    // When no author style for @viewport is present, and a meta tag for defining the
-    // viewport is present, apply the meta tag viewport arguments instead of the UA styles.
-    if (m_viewportArguments.type != ViewportArguments::AuthorStyleSheet) {
-        m_viewportArguments = m_legacyViewportArguments;
-        updateViewportArguments();
+    if (settings.viewportMetaZeroValuesQuirk()
+        && newArgumentsFromLegacyTag.type == ViewportArguments::ViewportMeta
+        && newArgumentsFromLegacyTag.maxWidth.type() == ViewportPercentageWidth
+        && !static_cast<int>(newArgumentsFromLegacyTag.zoom)) {
+        newArgumentsFromLegacyTag.zoom = 1.0;
     }
+
+    setViewportArguments(newArgumentsFromLegacyTag);
+}
+
+void Document::setViewportArguments(const ViewportArguments& viewportArguments)
+{
+    if (viewportArguments.isLegacyViewportType()) {
+        m_legacyViewportArguments = viewportArguments;
+
+        // When no author style for @viewport is present, and a meta tag for defining
+        // the viewport is, apply the meta tag viewport instead of the UA styles.
+        if (m_viewportArguments.type == ViewportArguments::AuthorStyleSheet)
+            return;
+        m_viewportArguments = viewportArguments;
+    } else {
+        // If the legacy viewport tag has higher priority than the cascaded @viewport
+        // descriptors, use the values from the legacy tag.
+        if (!shouldOverrideLegacyViewport(viewportArguments.type))
+            m_viewportArguments = m_legacyViewportArguments;
+        else
+            m_viewportArguments = viewportArguments;
+    }
+
+    updateViewportArguments();
 }
 
 void Document::updateViewportArguments()
