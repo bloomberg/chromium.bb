@@ -52,6 +52,9 @@ input.focus();
 document.execCommand('SelectAll');
 shouldBe('document.getSelection().toString()', '" foo bar "');
 
+input.value = String.fromCharCode(0xD800);
+shouldBe('input.value', 'String.fromCharCode(0xD800)');
+
 // FIXME: Add more sanitization tests.
 // https://bugs.webkit.org/show_bug.cgi?id=37024
 

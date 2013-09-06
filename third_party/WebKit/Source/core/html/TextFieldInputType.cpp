@@ -336,9 +336,9 @@ static bool isASCIILineBreak(UChar c)
     return c == '\r' || c == '\n';
 }
 
-static String limitLength(const String& string, int maxLength)
+static String limitLength(const String& string, unsigned maxLength)
 {
-    unsigned newLength = maxLength;
+    unsigned newLength = std::min(maxLength, string.length());
     // FIXME: We should not truncate the string at a control character. It's not
     // compatible with IE and Firefox.
     for (unsigned i = 0; i < newLength; ++i) {
@@ -348,6 +348,8 @@ static String limitLength(const String& string, int maxLength)
             break;
         }
     }
+    if (newLength == string.length())
+        return string;
     if (newLength > 0 && U16_IS_LEAD(string[newLength - 1]))
         --newLength;
     return string.left(newLength);

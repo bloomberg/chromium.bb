@@ -17,6 +17,7 @@ PASS input.value is "50"
 Text:
 PASS input.value is " foo bar "
 PASS document.getSelection().toString() is " foo bar "
+PASS input.value is String.fromCharCode(0xD800)
 PASS successfullyParsed is true
 
 TEST COMPLETE
