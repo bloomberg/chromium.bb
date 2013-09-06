@@ -53,30 +53,11 @@ public:
     // InspectorFrontendClient methods:
     virtual void windowObjectCleared();
 
-    virtual void moveWindowBy(float x, float y);
-
-    virtual void bringToFront();
-    virtual void closeWindow();
-
-    virtual void requestSetDockSide(DockSide);
-    virtual void changeAttachedWindowHeight(unsigned);
-
-    virtual void openInNewTab(const String& url);
-
-    virtual void save(const WTF::String& urk, const WTF::String& content, bool forceSaveAs);
-    virtual void append(const WTF::String& urk, const WTF::String& content);
-
     virtual void inspectedURLChanged(const WTF::String&);
 
     virtual void sendMessageToBackend(const WTF::String&);
-    virtual void sendMessageToEmbedder(const WTF::String&);
 
-    virtual void requestFileSystems();
-    virtual void addFileSystem();
-    virtual void removeFileSystem(const String& fileSystemPath);
-    virtual void indexPath(int requestId, const String& fileSystemPath);
-    virtual void stopIndexing(int requestId);
-    virtual void searchInPath(int requestId, const String& fileSystemPath, const String& query);
+    virtual void sendMessageToEmbedder(const WTF::String&);
 
     virtual bool isUnderTest();
 

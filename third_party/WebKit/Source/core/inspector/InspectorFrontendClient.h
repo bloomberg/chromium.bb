@@ -38,39 +38,15 @@ namespace WebCore {
 
 class InspectorFrontendClient {
 public:
-    enum DockSide {
-        Undocked = 0,
-        DockedToRight,
-        DockedToBottom
-    };
-
     virtual ~InspectorFrontendClient() { }
 
     virtual void windowObjectCleared() = 0;
-    virtual void moveWindowBy(float x, float y) = 0;
-
-    virtual void bringToFront() = 0;
-    virtual void closeWindow() = 0;
-
-    virtual void requestSetDockSide(DockSide) = 0;
-    virtual void changeAttachedWindowHeight(unsigned) = 0;
-
-    virtual void openInNewTab(const String& url) = 0;
-
-    virtual void save(const WTF::String& url, const WTF::String& content, bool forceSaveAs) = 0;
-    virtual void append(const WTF::String& url, const WTF::String& content) = 0;
 
     virtual void inspectedURLChanged(const String&) = 0;
 
     virtual void sendMessageToBackend(const String&) = 0;
-    virtual void sendMessageToEmbedder(const String&) = 0;
 
-    virtual void requestFileSystems() = 0;
-    virtual void addFileSystem() = 0;
-    virtual void removeFileSystem(const String& fileSystemPath) = 0;
-    virtual void indexPath(int requestId, const String& fileSystemPath) = 0;
-    virtual void stopIndexing(int requestId) = 0;
-    virtual void searchInPath(int requestId, const String& fileSystemPath, const String& query) = 0;
+    virtual void sendMessageToEmbedder(const String&) = 0;
 
     virtual bool isUnderTest() = 0;
 };

@@ -42,26 +42,8 @@ public:
     WebDevToolsFrontendClient() { }
 
     virtual void sendMessageToBackend(const WebString&) { }
+
     virtual void sendMessageToEmbedder(const WebString&) { }
-
-    virtual void activateWindow() { }
-    virtual void changeAttachedWindowHeight(unsigned height) { }
-    virtual void closeWindow() { }
-    virtual void requestDockWindow() { }
-    virtual void requestUndockWindow() { }
-    virtual void requestSetDockSide(const WebString& side) { }
-    virtual void moveWindowBy(const WebFloatPoint&) { }
-    virtual void openInNewTab(const WebString& side) { }
-    virtual void save(const WebString& url, const WebString& content, bool saveAs) { }
-    virtual void append(const WebString& url, const WebString& content) { }
-
-    virtual void requestFileSystems() { }
-    virtual void addFileSystem() { }
-    virtual void removeFileSystem(const WebString& fileSystemPath) { }
-
-    virtual void indexPath(int requestId, const WebString& fileSystemPath) { }
-    virtual void stopIndexing(int requestId) { }
-    virtual void searchInPath(int requestId, const WebString& fileSystemPath, const WebString& query) { }
 
     virtual bool isUnderTest() { return false; }
 

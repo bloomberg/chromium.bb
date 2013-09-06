@@ -52,31 +52,11 @@ public:
 
     virtual void windowObjectCleared();
 
-    virtual void moveWindowBy(float x, float y) { }
-
-    virtual void requestSetDockSide(DockSide) { }
-    virtual void changeAttachedWindowHeight(unsigned) { }
-    virtual void openInNewTab(const String&) { }
-    virtual void save(const String&, const String&, bool) { }
-    virtual void append(const String&, const String&) { }
-
-    virtual void bringToFront() OVERRIDE { }
-    virtual void closeWindow() OVERRIDE { }
-
-    virtual void attachWindow(DockSide) { }
-    virtual void detachWindow() { }
-
     virtual void inspectedURLChanged(const String&) OVERRIDE { }
 
     virtual void sendMessageToBackend(const String& message);
-    virtual void sendMessageToEmbedder(const String&) OVERRIDE { }
 
-    virtual void requestFileSystems() { }
-    virtual void addFileSystem() { }
-    virtual void removeFileSystem(const String&) { }
-    virtual void indexPath(int requestId, const String& fileSystemPath) { }
-    virtual void stopIndexing(int requestId) { }
-    virtual void searchInPath(int requestId, const String& fileSystemPath, const String& query) { }
+    virtual void sendMessageToEmbedder(const String&) OVERRIDE { }
 
     virtual bool isUnderTest() { return true; }
 

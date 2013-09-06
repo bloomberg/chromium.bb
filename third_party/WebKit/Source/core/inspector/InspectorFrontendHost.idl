@@ -34,19 +34,13 @@
     NoInterfaceObject
 ] interface InspectorFrontendHost {
     void closeWindow();
-    void bringToFront();
     void setZoomFactor(float zoom);
     void inspectedURLChanged(DOMString newURL);
 
-    void requestSetDockSide(DOMString side);
     void setAttachedWindowHeight(unsigned long height);
-    void moveWindowBy(float x, float y);
     void setInjectedScriptForOrigin(DOMString origin, DOMString script);
 
     void copyText(DOMString text);
-    void openInNewTab(DOMString url);
-    void save(DOMString url, DOMString content, boolean forceSaveAs);
-    void append(DOMString url, DOMString content);
     void close(DOMString url);
 
     [Custom] DOMString platform();
@@ -63,13 +57,7 @@
     DOMString getSelectionBackgroundColor();
     DOMString getSelectionForegroundColor();
 
-    void requestFileSystems();
-    void addFileSystem();
-    void removeFileSystem(DOMString fileSystemPath);
     DOMFileSystem isolatedFileSystem(DOMString fileSystemId, DOMString registeredName);
-    void indexPath(long requestId, DOMString fileSystemPath);
-    void stopIndexing(long requestId);
-    void searchInPath(long requestId, DOMString fileSystemPath, DOMString query);
 
     boolean isUnderTest();
 

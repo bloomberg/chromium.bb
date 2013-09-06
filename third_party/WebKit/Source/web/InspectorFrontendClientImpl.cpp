@@ -79,17 +79,15 @@ void InspectorFrontendClientImpl::windowObjectCleared()
     if (scriptController) {
         String installLegacyOverrides =
             "(function(host, legacyMethodNames) {"
-            "    function dispatch(methodName, oldImpl) {"
-            "        var argsArray = Array.prototype.slice.call(arguments, 2);"
+            "    function dispatch(methodName) {"
+            "        var argsArray = Array.prototype.slice.call(arguments, 1);"
             "        var message = {'method': methodName};"
             "        if (argsArray.length)"
             "            message.params = argsArray;"
             "        this.sendMessageToEmbedder(JSON.stringify(message));"
-            "        if (oldImpl)"
-            "            oldImpl.apply(this, argsArray);"
             "    };"
             "    legacyMethodNames.forEach(function(methodName) {"
-            "        host[methodName] = dispatch.bind(host, methodName, host[methodName]);"
+            "        host[methodName] = dispatch.bind(host, methodName);"
             "    });"
             "})(InspectorFrontendHost,"
             "    ['moveWindowBy',"
@@ -109,52 +107,6 @@ void InspectorFrontendClientImpl::windowObjectCleared()
     }
 }
 
-void InspectorFrontendClientImpl::moveWindowBy(float x, float y)
-{
-    m_client->moveWindowBy(WebFloatPoint(x, y));
-}
-
-void InspectorFrontendClientImpl::bringToFront()
-{
-    m_client->activateWindow();
-}
-
-void InspectorFrontendClientImpl::closeWindow()
-{
-    m_client->closeWindow();
-}
-
-void InspectorFrontendClientImpl::requestSetDockSide(DockSide side)
-{
-    String sideString = "undocked";
-    switch (side) {
-    case DockedToRight: sideString = "right"; break;
-    case DockedToBottom: sideString = "bottom"; break;
-    case Undocked: sideString = "undocked"; break;
-    }
-    m_client->requestSetDockSide(sideString);
-}
-
-void InspectorFrontendClientImpl::changeAttachedWindowHeight(unsigned height)
-{
-    m_client->changeAttachedWindowHeight(height);
-}
-
-void InspectorFrontendClientImpl::openInNewTab(const String& url)
-{
-    m_client->openInNewTab(url);
-}
-
-void InspectorFrontendClientImpl::save(const String& url, const String& content, bool forceSaveAs)
-{
-    m_client->save(url, content, forceSaveAs);
-}
-
-void InspectorFrontendClientImpl::append(const String& url, const String& content)
-{
-    m_client->append(url, content);
-}
-
 void InspectorFrontendClientImpl::inspectedURLChanged(const String& url)
 {
     m_frontendPage->mainFrame()->document()->setTitle("Developer Tools - " + url);
@@ -168,36 +120,6 @@ void InspectorFrontendClientImpl::sendMessageToBackend(const String& message)
 void InspectorFrontendClientImpl::sendMessageToEmbedder(const String& message)
 {
     m_client->sendMessageToEmbedder(message);
-}
-
-void InspectorFrontendClientImpl::requestFileSystems()
-{
-    m_client->requestFileSystems();
-}
-
-void InspectorFrontendClientImpl::indexPath(int requestId, const String& fileSystemPath)
-{
-    m_client->indexPath(requestId, fileSystemPath);
-}
-
-void InspectorFrontendClientImpl::stopIndexing(int requestId)
-{
-    m_client->stopIndexing(requestId);
-}
-
-void InspectorFrontendClientImpl::searchInPath(int requestId, const String& fileSystemPath, const String& query)
-{
-    m_client->searchInPath(requestId, fileSystemPath, query);
-}
-
-void InspectorFrontendClientImpl::addFileSystem()
-{
-    m_client->addFileSystem();
-}
-
-void InspectorFrontendClientImpl::removeFileSystem(const String& fileSystemPath)
-{
-    m_client->removeFileSystem(fileSystemPath);
 }
 
 bool InspectorFrontendClientImpl::isUnderTest()
