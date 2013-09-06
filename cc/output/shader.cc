@@ -1597,7 +1597,7 @@ std::string FragmentShaderCheckerboard::GetShaderString(
       vec2 texCoord =
           clamp(v_texCoord, 0.0, 1.0) * texTransform.zw + texTransform.xy;
       vec2 coord = mod(floor(texCoord * frequency * 2.0), 2.0);
-      float picker = abs(coord.x - coord.y);
+      float picker = abs(coord.x - coord.y);  // NOLINT
       gl_FragColor = mix(color1, color2, picker) * alpha;
     }
   );  // NOLINT(whitespace/parens)

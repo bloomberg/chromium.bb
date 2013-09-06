@@ -74,11 +74,17 @@ def CheckStdAbs(input_api, output_api,
       using_std_abs_files.append(f.LocalPath())
     if re.search(r"\bfabsf?\(", contents):
       found_fabs_files.append(f.LocalPath());
-    # The following regular expression in words says:
-    # "if there is no 'std::' behind an 'abs(' or 'absf(',
-    # or if there is no 'std::' behind a 'fabs(' or 'fabsf(',
-    # then it's a match."
-    if re.search(r"((?<!std::)(\babsf?\()|(?<!std::)(\bfabsf?\())", contents):
+
+    no_std_prefix = r"(?<!std::)"
+    # Matches occurrences of abs/absf/fabs/fabsf without a "std::" prefix.
+    abs_without_prefix = r"%s(\babsf?\()" % no_std_prefix
+    fabs_without_prefix = r"%s(\bfabsf?\()" % no_std_prefix
+    # Skips matching any lines that have "// NOLINT".
+    no_nolint = r"(?![^\n]*//\s+NOLINT)"
+
+    expression = re.compile("(%s|%s)%s" %
+        (abs_without_prefix, fabs_without_prefix, no_nolint))
+    if expression.search(contents):
       missing_std_prefix_files.append(f.LocalPath())
 
   result = []
