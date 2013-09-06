@@ -31,7 +31,7 @@ body {
 * The "app-v2" class is added to the <html> node by remoting.init if it's
 * running as a V2 app.
 */
-body.apps-v2 .apps-v1-only {
+html.apps-v2 .apps-v1-only {
   display: none !important;
 }
 
