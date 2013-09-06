@@ -65,14 +65,11 @@
           ],
           'defines': [
             'SKIA_DLL',
-            'GR_DLL=1',
-            'GR_IMPLEMENTATION=1',
             'SKIA_IMPLEMENTATION=1',
           ],
           'direct_dependent_settings': {
             'defines': [
               'SKIA_DLL',
-              'GR_DLL=1',
             ],
           },
         },
@@ -87,7 +84,7 @@
       ],
     }],
   ],
-  
+
   # targets that are not dependent upon the component type
   'targets': [
     {
