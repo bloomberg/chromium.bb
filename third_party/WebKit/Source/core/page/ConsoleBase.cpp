@@ -158,12 +158,12 @@ void ConsoleBase::profileEnd(ScriptState* state, const String& title)
 void ConsoleBase::time(const String& title)
 {
     InspectorInstrumentation::startConsoleTiming(context(), title);
-    TRACE_EVENT_COPY_ASYNC_BEGIN0("webkit", title.utf8().data(), this);
+    TRACE_EVENT_COPY_ASYNC_BEGIN0("webkit.console", title.utf8().data(), this);
 }
 
 void ConsoleBase::timeEnd(ScriptState* state, const String& title)
 {
-    TRACE_EVENT_COPY_ASYNC_END0("webkit", title.utf8().data(), this);
+    TRACE_EVENT_COPY_ASYNC_END0("webkit.console", title.utf8().data(), this);
     RefPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(state));
     InspectorInstrumentation::stopConsoleTiming(context(), title, callStack.release());
 }
