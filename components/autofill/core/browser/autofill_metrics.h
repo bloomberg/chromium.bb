@@ -389,6 +389,9 @@ class AutofillMetrics {
   virtual void LogWalletRequiredActionMetric(
       WalletRequiredActionMetric required_action) const;
 
+  // Logs HTTP response codes recieved by wallet client.
+  virtual void LogWalletResponseCode(int response_code) const;
+
   // This should be called when a form that has been Autofilled is submitted.
   // |duration| should be the time elapsed between form load and submission.
   virtual void LogFormFillDurationFromLoadWithAutofill(
