@@ -186,7 +186,8 @@ class SyncClientTest : public testing::Test {
     internal::ChangeListLoader change_list_loader(
         base::MessageLoopProxy::current().get(),
         metadata_.get(),
-        scheduler_.get());
+        scheduler_.get(),
+        drive_service_.get());
     change_list_loader.LoadIfNeeded(
         DirectoryFetchInfo(),
         google_apis::test_util::CreateCopyResultCallback(&error));

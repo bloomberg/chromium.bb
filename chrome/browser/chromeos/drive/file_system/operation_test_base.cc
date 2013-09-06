@@ -110,7 +110,10 @@ void OperationTestBase::SetUp() {
 
   // Makes sure the FakeDriveService's content is loaded to the metadata_.
   change_list_loader_.reset(new internal::ChangeListLoader(
-      blocking_task_runner_.get(), metadata_.get(), scheduler_.get()));
+      blocking_task_runner_.get(),
+      metadata_.get(),
+      scheduler_.get(),
+      fake_drive_service_.get()));
   change_list_loader_->LoadIfNeeded(
       internal::DirectoryFetchInfo(),
       google_apis::test_util::CreateCopyResultCallback(&error));

@@ -372,7 +372,10 @@ void FileSystem::ReloadAfterReset(FileError error) {
 
 void FileSystem::SetupChangeListLoader() {
   change_list_loader_.reset(new internal::ChangeListLoader(
-      blocking_task_runner_.get(), resource_metadata_, scheduler_));
+      blocking_task_runner_.get(),
+      resource_metadata_,
+      scheduler_,
+      drive_service_));
   change_list_loader_->AddObserver(this);
 }
 

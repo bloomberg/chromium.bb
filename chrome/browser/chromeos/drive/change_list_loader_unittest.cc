@@ -131,7 +131,8 @@ class ChangeListLoaderTest : public testing::Test {
     change_list_loader_.reset(
         new ChangeListLoader(base::MessageLoopProxy::current().get(),
                              metadata_.get(),
-                             scheduler_.get()));
+                             scheduler_.get(),
+                             drive_service_.get()));
   }
 
   // Adds a new file to the root directory of the service.
@@ -219,7 +220,8 @@ TEST_F(ChangeListLoaderTest, LoadIfNeeded_LocalMetadataAvailable) {
   change_list_loader_.reset(
       new ChangeListLoader(base::MessageLoopProxy::current().get(),
                            metadata_.get(),
-                           scheduler_.get()));
+                           scheduler_.get(),
+                           drive_service_.get()));
 
   // Add a file to the service.
   scoped_ptr<google_apis::ResourceEntry> gdata_entry = AddNewFile("New File");

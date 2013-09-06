@@ -32,6 +32,7 @@ class ResourceList;
 
 namespace drive {
 
+class DriveServiceInterface;
 class JobScheduler;
 class ResourceEntry;
 
@@ -64,7 +65,8 @@ class ChangeListLoader {
 
   ChangeListLoader(base::SequencedTaskRunner* blocking_task_runner,
                    ResourceMetadata* resource_metadata,
-                   JobScheduler* scheduler);
+                   JobScheduler* scheduler,
+                   DriveServiceInterface* drive_service);
   ~ChangeListLoader();
 
   // Indicates whether there is a request for full resource list or change
@@ -265,6 +267,7 @@ class ChangeListLoader {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
+  DriveServiceInterface* drive_service_;  // Not owned.
   ObserverList<ChangeListLoaderObserver> observers_;
   typedef std::map<std::string, std::vector<FileOperationCallback> >
       LoadCallbackMap;

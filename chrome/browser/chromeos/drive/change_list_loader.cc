@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/drive/drive_api_util.h"
+#include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -178,9 +179,11 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
 class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
  public:
   FastFetchFeedFetcher(JobScheduler* scheduler,
+                       DriveServiceInterface* drive_service,
                        const std::string& directory_resource_id,
                        const std::string& root_folder_id)
       : scheduler_(scheduler),
+        drive_service_(drive_service),
         directory_resource_id_(directory_resource_id),
         root_folder_id_(root_folder_id),
         weak_ptr_factory_(this) {
@@ -279,32 +282,31 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
     callback.Run(FILE_ERROR_OK, change_lists_.Pass());
   }
 
+  // Fixes resource IDs in |change_list| into the format that |drive_service_|
+  // can understand. Note that |change_list| contains IDs in GData WAPI format
+  // since currently we always use WAPI for fast fetch, regardless of the flag.
   void FixResourceIdInChangeList(ChangeList* change_list) {
     std::vector<ResourceEntry>* entries = change_list->mutable_entries();
     for (size_t i = 0; i < entries->size(); ++i) {
       ResourceEntry* entry = &(*entries)[i];
-      if (entry->has_resource_id()) {
-        entry->set_resource_id(UpgradeResourceIdFromGDataWapiToDriveApiV2(
-            entry->resource_id()));
-      }
+      if (entry->has_resource_id())
+        entry->set_resource_id(FixResourceId(entry->resource_id()));
 
       // Currently parent local id is the parent's resource id.
       // It will be replaced by actual local id. (crbug.com/260514).
-      if (entry->has_parent_local_id()) {
-        entry->set_parent_local_id(UpgradeResourceIdFromGDataWapiToDriveApiV2(
-            entry->parent_local_id()));
-      }
+      if (entry->has_parent_local_id())
+        entry->set_parent_local_id(FixResourceId(entry->parent_local_id()));
     }
   }
 
-  std::string UpgradeResourceIdFromGDataWapiToDriveApiV2(
-      const std::string& resource_id) {
+  std::string FixResourceId(const std::string& resource_id) {
     if (resource_id == util::kWapiRootDirectoryResourceId)
       return root_folder_id_;
-    return drive::util::CanonicalizeResourceId(resource_id);
+    return drive_service_->CanonicalizeResourceId(resource_id);
   }
 
   JobScheduler* scheduler_;
+  DriveServiceInterface* drive_service_;
   std::string directory_resource_id_;
   std::string root_folder_id_;
   ScopedVector<ChangeList> change_lists_;
@@ -317,10 +319,12 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
 ChangeListLoader::ChangeListLoader(
     base::SequencedTaskRunner* blocking_task_runner,
     ResourceMetadata* resource_metadata,
-    JobScheduler* scheduler)
+    JobScheduler* scheduler,
+    DriveServiceInterface* drive_service)
     : blocking_task_runner_(blocking_task_runner),
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
+      drive_service_(drive_service),
       last_known_remote_changestamp_(0),
       loaded_(false),
       weak_ptr_factory_(this) {
@@ -769,6 +773,7 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
 
   FastFetchFeedFetcher* fetcher = new FastFetchFeedFetcher(
       scheduler_,
+      drive_service_,
       directory_fetch_info.resource_id(),
       root_folder_id_);
   fast_fetch_feed_fetcher_set_.insert(fetcher);
