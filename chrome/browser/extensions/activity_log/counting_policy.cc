@@ -412,9 +412,10 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
     where_str += where_next + "arg_url LIKE ?";
   std::string query_str = base::StringPrintf(
       "SELECT extension_id,time, action_type, api_name, args, page_url,"
-      "page_title, arg_url, other, count FROM %s WHERE %s ORDER BY count DESC "
+      "page_title, arg_url, other, count FROM %s %s %s ORDER BY time DESC "
       "LIMIT 300",
       kReadViewName,
+      where_str.empty() ? "" : "WHERE",
       where_str.c_str());
   sql::Statement query(db->GetUniqueStatement(query_str.c_str()));
   int i = -1;
@@ -610,6 +611,51 @@ void CountingPolicy::DoRemoveURLs(const std::vector<GURL>& restrict_urls) {
   CleanStringTables(db);
 }
 
+void CountingPolicy::DoDeleteDatabase() {
+  sql::Connection* db = GetDatabaseConnection();
+  if (!db) {
+    LOG(ERROR) << "Unable to connect to database";
+    return;
+  }
+
+  queued_actions_.clear();
+
+  // Not wrapped in a transaction because a late failure shouldn't undo a
+  // previous deletion.
+  std::string sql_str = base::StringPrintf("DELETE FROM %s", kTableName);
+  sql::Statement statement(db->GetCachedStatement(
+      sql::StatementID(SQL_FROM_HERE),
+      sql_str.c_str()));
+  if (!statement.Run()) {
+    LOG(ERROR) << "Deleting the database failed: "
+               << statement.GetSQLStatement();
+    return;
+  }
+  statement.Clear();
+  statement.Assign(db->GetCachedStatement(sql::StatementID(SQL_FROM_HERE),
+                                          "DELETE FROM string_ids"));
+  if (!statement.Run()) {
+    LOG(ERROR) << "Deleting the database failed: "
+               << statement.GetSQLStatement();
+    return;
+  }
+  statement.Clear();
+  statement.Assign(db->GetCachedStatement(sql::StatementID(SQL_FROM_HERE),
+                                          "DELETE FROM url_ids"));
+  if (!statement.Run()) {
+    LOG(ERROR) << "Deleting the database failed: "
+               << statement.GetSQLStatement();
+    return;
+  }
+  statement.Clear();
+  statement.Assign(db->GetCachedStatement(sql::StatementID(SQL_FROM_HERE),
+                                          "VACUUM"));
+  if (!statement.Run()) {
+    LOG(ERROR) << "Vacuuming the database failed: "
+               << statement.GetSQLStatement();
+  }
+}
+
 void CountingPolicy::ReadData(
     const std::string& extension_id,
     const int day,
@@ -647,6 +693,10 @@ void CountingPolicy::ReadFilteredData(
 
 void CountingPolicy::RemoveURLs(const std::vector<GURL>& restrict_urls) {
   ScheduleAndForget(this, &CountingPolicy::DoRemoveURLs, restrict_urls);
+}
+
+void CountingPolicy::DeleteDatabase() {
+  ScheduleAndForget(this, &CountingPolicy::DoDeleteDatabase);
 }
 
 void CountingPolicy::OnDatabaseFailure() {

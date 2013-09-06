@@ -67,6 +67,26 @@
             ]
           }
         ]
+      },
+      {
+        "name": "deleteDatabase",
+        "type": "function",
+        "description": "Deletes the entire ActivityLog database.",
+        "parameters": []
+      },
+      {
+        "name": "deleteUrls",
+        "type": "function",
+        "description": "Delete URLs in the ActivityLog database.",
+        "parameters": [
+          {
+            "name": "urls",
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Erases only the URLs listed; if empty, erases all URLs.",
+            "optional": true
+          }
+        ]
       }
     ],
     "events": [

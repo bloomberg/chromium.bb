@@ -81,6 +81,34 @@ class ActivityLogPrivateGetExtensionActivitiesFunction
       scoped_ptr<std::vector<scoped_refptr<Action> > > activities);
 };
 
+// The implementation of activityLogPrivate.deleteDatabase
+class ActivityLogPrivateDeleteDatabaseFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("activityLogPrivate.deleteDatabase",
+                             ACTIVITYLOGPRIVATE_DELETEDATABASE)
+
+ protected:
+  virtual ~ActivityLogPrivateDeleteDatabaseFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
+// The implementation of activityLogPrivate.deleteUrls
+class ActivityLogPrivateDeleteUrlsFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("activityLogPrivate.deleteUrls",
+                             ACTIVITYLOGPRIVATE_DELETEURLS)
+
+ protected:
+  virtual ~ActivityLogPrivateDeleteUrlsFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_ACTIVITY_LOG_PRIVATE_ACTIVITY_LOG_PRIVATE_API_H_

@@ -158,8 +158,9 @@ scoped_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadFilteredData(
   }
   std::string query_str = base::StringPrintf(
       "SELECT extension_id,time,action_type,api_name,args,page_url,page_title,"
-      "arg_url,other FROM %s WHERE %s ORDER BY time DESC LIMIT 300",
+      "arg_url,other FROM %s %s %s ORDER BY time DESC LIMIT 300",
       kTableName,
+      where_str.empty() ? "" : "WHERE",
       where_str.c_str());
   sql::Statement query(db->GetUniqueStatement(query_str.c_str()));
   int i = -1;
@@ -340,6 +341,34 @@ void FullStreamUIPolicy::DoRemoveURLs(const std::vector<GURL>& restrict_urls) {
   }
 }
 
+void FullStreamUIPolicy::DoDeleteDatabase() {
+  sql::Connection* db = GetDatabaseConnection();
+  if (!db) {
+    LOG(ERROR) << "Unable to connect to database";
+    return;
+  }
+
+  queued_actions_.clear();
+
+  // Not wrapped in a transaction because the deletion should happen even if
+  // the vacuuming fails.
+  std::string sql_str = base::StringPrintf("DELETE FROM %s;", kTableName);
+  sql::Statement statement(db->GetCachedStatement(
+      sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
+  if (!statement.Run()) {
+    LOG(ERROR) << "Deleting the database failed: "
+               << statement.GetSQLStatement();
+    return;
+  }
+  statement.Clear();
+  statement.Assign(db->GetCachedStatement(sql::StatementID(SQL_FROM_HERE),
+                                          "VACUUM"));
+  if (!statement.Run()) {
+    LOG(ERROR) << "Vacuuming the database failed: "
+               << statement.GetSQLStatement();
+  }
+}
+
 void FullStreamUIPolicy::OnDatabaseFailure() {
   queued_actions_.clear();
 }
@@ -392,6 +421,10 @@ void FullStreamUIPolicy::ReadFilteredData(
 
 void FullStreamUIPolicy::RemoveURLs(const std::vector<GURL>& restrict_urls) {
   ScheduleAndForget(this, &FullStreamUIPolicy::DoRemoveURLs, restrict_urls);
+}
+
+void FullStreamUIPolicy::DeleteDatabase() {
+  ScheduleAndForget(this, &FullStreamUIPolicy::DoDeleteDatabase);
 }
 
 scoped_refptr<Action> FullStreamUIPolicy::ProcessArguments(

@@ -53,6 +53,9 @@ class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
   // Clean the URL data stored for this policy.
   virtual void RemoveURLs(const std::vector<GURL>& restrict_urls) OVERRIDE;
 
+  // Delete everything in the database.
+  virtual void DeleteDatabase() OVERRIDE;
+
   // Database table schema.
   static const char* kTableName;
   static const char* kTableContentFields[];
@@ -79,7 +82,11 @@ class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
 
   // The implementation of RemoveURLs; this must only run on the database
   // thread.
-  virtual void DoRemoveURLs(const std::vector<GURL>& restrict_urls);
+  void DoRemoveURLs(const std::vector<GURL>& restrict_urls);
+
+  // The implementation of DeleteDatabase; this must only run on the database
+  // thread.
+  void DoDeleteDatabase();
 
   // Tracks any pending updates to be written to the database, if write
   // batching is turned on.  Should only be accessed from the database thread.

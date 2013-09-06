@@ -147,6 +147,11 @@ class FullStreamUIPolicyTest : public testing::Test {
     ASSERT_EQ(2, static_cast<int>(i->size()));
   }
 
+  static void RetrieveActions_FetchFilteredActions0(
+      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
+    ASSERT_EQ(0, static_cast<int>(i->size()));
+  }
+
   static void RetrieveActions_FetchFilteredActions1(
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     ASSERT_EQ(1, static_cast<int>(i->size()));
@@ -669,6 +674,56 @@ TEST_F(FullStreamUIPolicyTest, CapReturns) {
       "",
       base::Bind(
           &FullStreamUIPolicyTest::RetrieveActions_FetchFilteredActions300));
+  policy->Close();
+}
+
+TEST_F(FullStreamUIPolicyTest, DeleteActions) {
+  ActivityLogPolicy* policy = new FullStreamUIPolicy(profile_.get());
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(DictionaryBuilder()
+                       .Set("name", "Test extension")
+                       .Set("version", "1.0.0")
+                       .Set("manifest_version", 2))
+          .Build();
+  extension_service_->AddExtension(extension.get());
+  GURL gurl("http://www.google.com");
+
+  // Write some API calls.
+  scoped_refptr<Action> action_api = new Action(extension->id(),
+                                                base::Time::Now(),
+                                                Action::ACTION_API_CALL,
+                                                "tabs.testMethod");
+  action_api->set_args(make_scoped_ptr(new base::ListValue()));
+  policy->ProcessAction(action_api);
+
+  scoped_refptr<Action> action_dom = new Action(extension->id(),
+                                                base::Time::Now(),
+                                                Action::ACTION_DOM_ACCESS,
+                                                "document.write");
+  action_dom->set_args(make_scoped_ptr(new base::ListValue()));
+  action_dom->set_page_url(gurl);
+  policy->ProcessAction(action_dom);
+
+  CheckReadData(
+      policy,
+      extension->id(),
+      0,
+      base::Bind(&FullStreamUIPolicyTest::RetrieveActions_LogAndFetchActions));
+
+  // Now delete them.
+  policy->DeleteDatabase();
+
+  CheckReadFilteredData(
+      policy,
+      "",
+      Action::ACTION_ANY,
+      "",
+      "",
+      "",
+      base::Bind(
+          &FullStreamUIPolicyTest::RetrieveActions_FetchFilteredActions0));
+
   policy->Close();
 }
 

@@ -48,6 +48,9 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
   // Clean the URL data stored for this policy.
   virtual void RemoveURLs(const std::vector<GURL>&) OVERRIDE;
 
+  // Delete everything in the database.
+  virtual void DeleteDatabase() OVERRIDE;
+
   // The main database table, and the name for a read-only view that
   // decompresses string values for easier parsing.
   static const char* kTableName;
@@ -90,6 +93,9 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
   // The implementation of RemoveURLs; this must only run on the database
   // thread.
   void DoRemoveURLs(const std::vector<GURL>& restrict_urls);
+
+  // The implementation of DeleteDatabase; called on the database thread.
+  void DoDeleteDatabase();
 
   // Cleans old records from the activity log database.
   bool CleanOlderThan(sql::Connection* db, const base::Time& cutoff);

@@ -171,4 +171,31 @@ void ActivityLogPrivateGetExtensionActivitiesFunction::OnLookupCompleted(
   SendResponse(true);
 }
 
+bool ActivityLogPrivateDeleteDatabaseFunction::RunImpl() {
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
+  DCHECK(activity_log);
+  activity_log->DeleteDatabase();
+  return true;
+}
+
+bool ActivityLogPrivateDeleteUrlsFunction::RunImpl() {
+  scoped_ptr<activity_log_private::DeleteUrls::Params> params(
+      activity_log_private::DeleteUrls::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  // Put the arguments in the right format.
+  std::vector<GURL> gurls;
+  std::vector<std::string> urls = *params->urls.get();
+  for (std::vector<std::string>::iterator it = urls.begin();
+       it != urls.end();
+       ++it) {
+    gurls.push_back(GURL(*it));
+  }
+
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
+  DCHECK(activity_log);
+  activity_log->RemoveURLs(gurls);
+  return true;
+}
+
 }  // namespace extensions

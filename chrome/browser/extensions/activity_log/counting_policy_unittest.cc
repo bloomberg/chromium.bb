@@ -176,6 +176,11 @@ class CountingPolicyTest : public testing::Test {
     FAIL() << "Policy test timed out waiting for results";
   }
 
+  static void RetrieveActions_FetchFilteredActions0(
+      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
+    ASSERT_EQ(0, static_cast<int>(i->size()));
+  }
+
   static void RetrieveActions_FetchFilteredActions1(
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     ASSERT_EQ(1, static_cast<int>(i->size()));
@@ -919,6 +924,79 @@ TEST_F(CountingPolicyTest, RemoveSpecificURLs) {
       "punky",
       0,
       base::Bind(&CountingPolicyTest::SomeURLsRemoved));
+  policy->Close();
+}
+
+TEST_F(CountingPolicyTest, DeleteActions) {
+  CountingPolicy* policy = new CountingPolicy(profile_.get());
+  // Disable row expiration for this test by setting a time before any actions
+  // we generate.
+  policy->set_retention_time(base::TimeDelta::FromDays(14));
+
+  // Use a mock clock to ensure that events are not recorded on the wrong day
+  // when the test is run close to local midnight.  Note: Ownership is passed
+  // to the policy, but we still keep a pointer locally.  The policy will take
+  // care of destruction; this is safe since the policy outlives all our
+  // accesses to the mock clock.
+  base::SimpleTestClock* mock_clock = new base::SimpleTestClock();
+  mock_clock->SetNow(base::Time::Now().LocalMidnight() +
+                     base::TimeDelta::FromHours(12));
+  policy->SetClockForTesting(scoped_ptr<base::Clock>(mock_clock));
+
+  // Record some actions
+  scoped_refptr<Action> action =
+      new Action("punky",
+                 mock_clock->Now() - base::TimeDelta::FromMinutes(40),
+                 Action::ACTION_API_CALL,
+                 "brewster");
+  action->mutable_args()->AppendString("woof");
+  policy->ProcessAction(action);
+
+  action = new Action("punky",
+                      mock_clock->Now() - base::TimeDelta::FromMinutes(30),
+                      Action::ACTION_API_CALL,
+                      "brewster");
+  action->mutable_args()->AppendString("meow");
+  policy->ProcessAction(action);
+
+  action = new Action("punky",
+                      mock_clock->Now() - base::TimeDelta::FromMinutes(20),
+                      Action::ACTION_API_CALL,
+                      "extension.sendMessage");
+  action->mutable_args()->AppendString("not");
+  action->mutable_args()->AppendString("stripped");
+  policy->ProcessAction(action);
+
+  action =
+      new Action("punky", mock_clock->Now(), Action::ACTION_DOM_ACCESS, "lets");
+  action->mutable_args()->AppendString("vamoose");
+  action->set_page_url(GURL("http://www.google.com"));
+  policy->ProcessAction(action);
+
+  action = new Action(
+      "scoobydoo", mock_clock->Now(), Action::ACTION_DOM_ACCESS, "lets");
+  action->mutable_args()->AppendString("vamoose");
+  action->set_page_url(GURL("http://www.google.com"));
+  policy->ProcessAction(action);
+
+  CheckReadData(
+      policy,
+      "punky",
+      0,
+      base::Bind(&CountingPolicyTest::Arguments_GetTodaysActions));
+
+  policy->DeleteDatabase();
+
+  CheckReadFilteredData(
+      policy,
+      "",
+      Action::ACTION_ANY,
+      "",
+      "",
+      "",
+      base::Bind(
+          &CountingPolicyTest::RetrieveActions_FetchFilteredActions0));
+
   policy->Close();
 }
 

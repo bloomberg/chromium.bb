@@ -92,7 +92,7 @@ class ActivityLog : public BrowserContextKeyedService,
   virtual void OnExtensionInstalled(const Extension* extension) OVERRIDE {}
   virtual void OnExtensionLoaded(const Extension* extension) OVERRIDE;
   virtual void OnExtensionUnloaded(const Extension* extension) OVERRIDE;
-  virtual void OnExtensionUninstalled(const Extension* extension) OVERRIDE {}
+  virtual void OnExtensionUninstalled(const Extension* extension) OVERRIDE;
   // We also have to list the following from InstallObserver.
   virtual void OnBeginExtensionInstall(const std::string& extension_id,
                                        const std::string& extension_name,
@@ -115,9 +115,12 @@ class ActivityLog : public BrowserContextKeyedService,
   // Clean up URLs from the activity log database.
   // If restrict_urls is empty then all URLs in the activity log database are
   // removed, otherwise only those in restrict_urls are removed.
-  virtual void RemoveURLs(const std::vector<GURL>& restrict_urls);
-  virtual void RemoveURLs(const std::set<GURL>& restrict_urls);
-  virtual void RemoveURL(const GURL& url);
+  void RemoveURLs(const std::vector<GURL>& restrict_urls);
+  void RemoveURLs(const std::set<GURL>& restrict_urls);
+  void RemoveURL(const GURL& url);
+
+  // Deletes the database associated with the policy that's currently in use.
+  void DeleteDatabase();
 
  private:
   friend class ActivityLogFactory;

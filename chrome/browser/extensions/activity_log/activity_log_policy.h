@@ -105,6 +105,9 @@ class ActivityLogPolicy {
   // different policies. If restrict_urls is empty then all URLs are removed.
   virtual void RemoveURLs(const std::vector<GURL>& restrict_urls) = 0;
 
+  // Deletes everything in the database.
+  virtual void DeleteDatabase() = 0;
+
   // For unit testing only.
   void SetClockForTesting(scoped_ptr<base::Clock> clock);
 

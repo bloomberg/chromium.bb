@@ -315,6 +315,70 @@ function checkIncognito(url, incognitoExpected) {
   }
 }
 
+testCases.push({
+  func: function checkHistoryForURL() {
+    var filter = new Object();
+    filter.extensionId = 'pknkgggnfecklokoggaggchhaebkajji';
+    filter.activityType = 'any';
+    filter.pageUrl = 'http://www.google.com';
+    chrome.activityLogPrivate.getExtensionActivities(
+        filter,
+        function(result) {
+          chrome.test.assertEq('pknkgggnfecklokoggaggchhaebkajji',
+              result['activities'][0]['extensionId']);
+          chrome.test.succeed();
+        });
+  }
+});
+
+testCases.push({
+  func: function deleteGoogleUrls() {
+    chrome.activityLogPrivate.deleteUrls(['http://www.google.com']);
+    var filter = new Object();
+    filter.extensionId = 'pknkgggnfecklokoggaggchhaebkajji';
+    filter.activityType = 'any';
+    filter.pageUrl = 'http://www.google.com';
+    chrome.activityLogPrivate.getExtensionActivities(
+        filter,
+        function(result) {
+          chrome.test.assertEq(0, result['activities'].length);
+          chrome.test.succeed();
+        });
+  }
+});
+
+testCases.push({
+  func: function deleteAllUrls() {
+    chrome.activityLogPrivate.deleteUrls([]);
+    var filter = new Object();
+    filter.extensionId = 'pknkgggnfecklokoggaggchhaebkajji';
+    filter.activityType = 'any';
+    filter.pageUrl = 'http://';
+    chrome.activityLogPrivate.getExtensionActivities(
+        filter,
+        function(result) {
+          chrome.test.assertEq(0, result['activities'].length);
+          chrome.test.succeed();
+        });
+  }
+});
+
+testCases.push({
+  func: function deleteAllHistory() {
+    chrome.activityLogPrivate.deleteDatabase();
+    var filter = new Object();
+    filter.extensionId = 'pknkgggnfecklokoggaggchhaebkajji';
+    filter.activityType = 'any';
+    filter.apiCall = '';
+    chrome.activityLogPrivate.getExtensionActivities(
+        filter,
+        function(result) {
+          chrome.test.assertEq(0, result['activities'].length);
+          chrome.test.succeed();
+        });
+  }
+});
+
 // Listener to check the expected logging is done in the test cases.
 var testCaseIndx = 0;
 var callIndx = -1;
