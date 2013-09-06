@@ -1126,9 +1126,6 @@ internal_pre_cq.add_group(constants.PRE_CQ_BUILDER_NAME,
   internal_pre_cq.add_config(
     'parrot-pre-cq',
     boards=['parrot'],
-    # update_engine tests are disabled temporarily since they don't pass when
-    # run in parallel. TODO(sosa): Re-enable when crbug.com/236465 is fixed.
-    unittest_blacklist=['chromeos-base/update_engine'],
   ),
   internal_pre_cq.add_config('lumpy-pre-cq', boards=['lumpy']),
   internal_pre_cq.add_config('daisy_spring-pre-cq',
