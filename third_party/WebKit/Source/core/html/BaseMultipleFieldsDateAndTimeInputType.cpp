@@ -273,14 +273,11 @@ BaseMultipleFieldsDateAndTimeInputType::BaseMultipleFieldsDateAndTimeInputType(H
     , m_isDestroyingShadowSubtree(false)
     , m_pickerIndicatorIsVisible(false)
     , m_pickerIndicatorIsAlwaysVisible(false)
-    , m_didCreateShadowElements(false)
 {
 }
 
 BaseMultipleFieldsDateAndTimeInputType::~BaseMultipleFieldsDateAndTimeInputType()
 {
-    if (!m_didCreateShadowElements)
-        return;
     if (SpinButtonElement* element = spinButtonElement())
         element->removeSpinButtonOwner();
     if (ClearButtonElement* element = clearButtonElement())
@@ -350,7 +347,6 @@ void BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree()
         m_pickerIndicatorIsVisible = true;
         updatePickerIndicatorVisibility();
     }
-    m_didCreateShadowElements = true;
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::destroyShadowSubtree()

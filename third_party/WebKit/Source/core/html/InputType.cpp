@@ -106,10 +106,15 @@ static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
     return map.release();
 }
 
-PassRefPtr<InputType> InputType::create(HTMLInputElement* element, const AtomicString& typeName)
+static const InputTypeFactoryMap* factoryMap()
 {
     static const InputTypeFactoryMap* factoryMap = createInputTypeFactoryMap().leakPtr();
-    InputTypeFactoryFunction factory = typeName.isEmpty() ? 0 : factoryMap->get(typeName);
+    return factoryMap;
+}
+
+PassRefPtr<InputType> InputType::create(HTMLInputElement* element, const AtomicString& typeName)
+{
+    InputTypeFactoryFunction factory = typeName.isEmpty() ? 0 : factoryMap()->get(typeName);
     if (!factory)
         factory = TextInputType::create;
     return factory(element);
@@ -118,6 +123,24 @@ PassRefPtr<InputType> InputType::create(HTMLInputElement* element, const AtomicS
 PassRefPtr<InputType> InputType::createText(HTMLInputElement* element)
 {
     return TextInputType::create(element);
+}
+
+const AtomicString& InputType::normalizeTypeName(const AtomicString& typeName)
+{
+    if (typeName.isEmpty())
+        return InputTypeNames::text();
+    InputTypeFactoryMap::const_iterator it = factoryMap()->find(typeName);
+    return it == factoryMap()->end() ? InputTypeNames::text() : it->key;
+}
+
+bool InputType::canChangeFromAnotherType(const AtomicString& normalizedTypeName)
+{
+    // Don't allow the type to be changed to file after the first type change.
+    // In other engines this might mean a JavaScript programmer could set a text
+    // field's value to something like /etc/passwd and then change it to a file
+    // input. I don't think this would actually occur in Blink, but this rule
+    // still may be important for compatibility.
+    return normalizedTypeName != InputTypeNames::file();
 }
 
 InputType::~InputType()
@@ -486,11 +509,6 @@ void InputType::countUsage()
 bool InputType::shouldRespectAlignAttribute()
 {
     return false;
-}
-
-bool InputType::canChangeFromAnotherType() const
-{
-    return true;
 }
 
 void InputType::sanitizeValueInResponseToMinOrMaxAttributeChange()

@@ -60,12 +60,13 @@ class InputType : public InputTypeView {
 public:
     static PassRefPtr<InputType> create(HTMLInputElement*, const AtomicString&);
     static PassRefPtr<InputType> createText(HTMLInputElement*);
+    static const AtomicString& normalizeTypeName(const AtomicString&);
     virtual ~InputType();
 
+    static bool canChangeFromAnotherType(const AtomicString& normalizedTypeName);
     static bool themeSupportsDataListUI(InputType*);
 
     virtual const AtomicString& formControlType() const = 0;
-    virtual bool canChangeFromAnotherType() const;
 
     // Type query functions
 
