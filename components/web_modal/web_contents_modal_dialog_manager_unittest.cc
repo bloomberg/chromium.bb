@@ -245,6 +245,30 @@ TEST_F(WebContentsModalDialogManagerTest, VisibilityObservation) {
             native_manager->GetDialogState(dialog1));
 }
 
+// Test that attaching an interstitial WebUI page closes dialogs configured to
+// close on interstitial WebUI.
+TEST_F(WebContentsModalDialogManagerTest, InterstitialWebUI) {
+  const NativeWebContentsModalDialog dialog1 = MakeFakeDialog();
+  const NativeWebContentsModalDialog dialog2 = MakeFakeDialog();
+  const NativeWebContentsModalDialog dialog3 = MakeFakeDialog();
+
+  manager->ShowDialog(dialog1);
+  manager->ShowDialog(dialog2);
+  manager->ShowDialog(dialog3);
+
+  manager->SetCloseOnInterstitialWebUI(dialog1, true);
+  manager->SetCloseOnInterstitialWebUI(dialog3, true);
+
+  test_api->DidAttachInterstitialPage();
+  EXPECT_EQ(TestNativeWebContentsModalDialogManager::CLOSED,
+            native_manager->GetDialogState(dialog1));
+  EXPECT_EQ(TestNativeWebContentsModalDialogManager::SHOWN,
+            native_manager->GetDialogState(dialog2));
+  EXPECT_EQ(TestNativeWebContentsModalDialogManager::CLOSED,
+            native_manager->GetDialogState(dialog3));
+}
+
+
 // Test that the first dialog is always shown, regardless of the order in which
 // dialogs are closed.
 TEST_F(WebContentsModalDialogManagerTest, CloseDialogs) {

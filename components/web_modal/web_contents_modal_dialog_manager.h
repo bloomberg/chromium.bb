@@ -47,6 +47,10 @@ class WebContentsModalDialogManager
   // calling this function.
   void FocusTopmostDialog();
 
+  // Set to true to close the window when a page load starts on the WebContents.
+  void SetCloseOnInterstitialWebUI(NativeWebContentsModalDialog dialog,
+                                   bool close);
+
   // Overriden from NativeWebContentsModalDialogManagerDelegate:
   virtual content::WebContents* GetWebContents() const OVERRIDE;
   // Called when a WebContentsModalDialogs we own is about to be closed.
@@ -64,6 +68,7 @@ class WebContentsModalDialogManager
         : manager_(manager) {}
 
     void CloseAllDialogs() { manager_->CloseAllDialogs(); }
+    void DidAttachInterstitialPage() { manager_->DidAttachInterstitialPage(); }
     void ResetNativeManager(NativeWebContentsModalDialogManager* delegate) {
       manager_->native_manager_.reset(delegate);
     }
@@ -78,7 +83,18 @@ class WebContentsModalDialogManager
   explicit WebContentsModalDialogManager(content::WebContents* web_contents);
   friend class content::WebContentsUserData<WebContentsModalDialogManager>;
 
-  typedef std::deque<NativeWebContentsModalDialog> WebContentsModalDialogList;
+  struct DialogState {
+    explicit DialogState(NativeWebContentsModalDialog dialog);
+
+    NativeWebContentsModalDialog dialog;
+    bool close_on_interstitial_webui;
+  };
+
+  typedef std::deque<DialogState> WebContentsModalDialogList;
+
+  // Utility function to get the dialog state for a dialog.
+  WebContentsModalDialogList::iterator FindDialogState(
+      NativeWebContentsModalDialog dialog);
 
   // Blocks/unblocks interaction with renderer process.
   void BlockWebContentsInteraction(bool blocked);
@@ -94,6 +110,7 @@ class WebContentsModalDialogManager
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidGetIgnoredUIEvent() OVERRIDE;
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
+  virtual void DidAttachInterstitialPage() OVERRIDE;
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   WebContentsModalDialogManagerDelegate* delegate_;
