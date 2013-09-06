@@ -96,6 +96,12 @@ private:
     Timer<HTMLTrackElement> m_loadTimer;
 };
 
+inline HTMLTrackElement* toHTMLTrackElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::trackTag));
+    return static_cast<HTMLTrackElement*>(node);
+}
+
 }
 
 #endif

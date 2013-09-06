@@ -1224,7 +1224,7 @@ void HTMLMediaElement::textTrackModeChanged(TextTrack* track)
         for (Node* node = firstChild(); node; node = node->nextSibling()) {
             if (!node->hasTagName(trackTag))
                 continue;
-            HTMLTrackElement* trackElement = static_cast<HTMLTrackElement*>(node);
+            HTMLTrackElement* trackElement = toHTMLTrackElement(node);
             if (trackElement->track() != track)
                 continue;
 
