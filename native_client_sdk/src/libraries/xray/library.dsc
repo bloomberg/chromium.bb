@@ -1,8 +1,5 @@
 {
   'TOOLS': ['newlib', 'glibc', 'pnacl'],
-  'SEARCH': [
-    '.'
-  ],
   'TARGETS': [
     {
       'NAME' : 'xray',

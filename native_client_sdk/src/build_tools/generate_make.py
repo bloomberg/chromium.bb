@@ -11,7 +11,7 @@ import build_version
 import getos
 from buildbot_common import ErrorExit
 from easy_template import RunTemplateFileIfChanged
-from build_paths import SCRIPT_DIR, SDK_EXAMPLE_DIR
+from build_paths import SDK_RESOURCE_DIR
 
 def Trace(msg):
   if Trace.verbose:
@@ -137,7 +137,7 @@ def ProcessHTML(srcroot, dstroot, desc, toolchains, configs, first_toolchain):
 
 def GenerateManifest(srcroot, dstroot, desc):
   outdir = os.path.join(dstroot, desc['DEST'], desc['NAME'])
-  srcpath = os.path.join(SDK_EXAMPLE_DIR, 'resources', 'manifest.json.template')
+  srcpath = os.path.join(SDK_RESOURCE_DIR, 'manifest.json.template')
   dstpath = os.path.join(outdir, 'manifest.json')
   permissions = desc.get('PERMISSIONS', [])
   socket_permissions = desc.get('SOCKET_PERMISSIONS', [])
@@ -182,8 +182,7 @@ def ProcessProject(pepperdir, srcroot, dstroot, desc, toolchains, configs=None,
   name = desc['NAME']
   out_dir = os.path.join(dstroot, desc['DEST'], name)
   buildbot_common.MakeDir(out_dir)
-  srcdirs = desc.get('SEARCH', ['.', '..', '../..'])
-  srcdirs.append(os.path.join(SDK_EXAMPLE_DIR, 'resources'))
+  srcdirs = desc.get('SEARCH', ['.', SDK_RESOURCE_DIR])
 
   # Copy sources to example directory
   sources = GenerateSourceCopyList(desc)
@@ -198,9 +197,9 @@ def ProcessProject(pepperdir, srcroot, dstroot, desc, toolchains, configs=None,
   make_path = os.path.join(out_dir, 'Makefile')
 
   if IsNexe(desc):
-    template = os.path.join(SCRIPT_DIR, 'template.mk')
+    template = os.path.join(SDK_RESOURCE_DIR, 'Makefile.example.template')
   else:
-    template = os.path.join(SCRIPT_DIR, 'library.mk')
+    template = os.path.join(SDK_RESOURCE_DIR, 'Makefile.library.template')
 
   # Ensure the order of |tools| is the same as toolchains; that way if
   # first_toolchain is set, it will choose based on the order of |toolchains|.
@@ -240,7 +239,7 @@ def GenerateMasterMakefile(pepperdir, out_path, targets):
     out_path: Root for output such that out_path+NAME = full path
     targets: List of targets names
   """
-  in_path = os.path.join(SDK_EXAMPLE_DIR, 'Makefile')
+  in_path = os.path.join(SDK_RESOURCE_DIR, 'Makefile.index.template')
   out_path = os.path.join(out_path, 'Makefile')
   rel_path = os.path.relpath(pepperdir, os.path.dirname(out_path))
   template_dict = {

@@ -19,7 +19,7 @@ import build_version
 import easy_template
 import parse_dsc
 
-from build_paths import SDK_SRC_DIR, OUT_DIR, SDK_EXAMPLE_DIR
+from build_paths import SDK_SRC_DIR, OUT_DIR, SDK_RESOURCE_DIR
 
 sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 import getos
@@ -81,7 +81,7 @@ def main(args):
   pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
   app_dir = os.path.join(OUT_DIR, 'naclsdk_app')
   app_examples_dir = os.path.join(app_dir, 'examples')
-  sdk_resources_dir = os.path.join(SDK_EXAMPLE_DIR, 'resources')
+  sdk_resources_dir = SDK_RESOURCE_DIR
   platform = getos.GetPlatform()
 
   buildbot_common.RemoveDir(app_dir)
@@ -138,7 +138,7 @@ def main(args):
 
   os.environ['NACL_SDK_ROOT'] = pepperdir
 
-  build_projects.BuildProjects(app_dir, tree, deps=True, clean=False,
+  build_projects.BuildProjects(app_dir, tree, deps=False, clean=False,
                                config=config)
 
   RemoveBuildCruft(app_dir)

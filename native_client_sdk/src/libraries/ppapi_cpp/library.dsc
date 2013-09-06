@@ -1,7 +1,6 @@
 {
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
   'SEARCH': [
-      '.',
       '../../../../ppapi/cpp',
       '../../../../ppapi/cpp/dev',
       '../../../../ppapi/cpp/extensions',

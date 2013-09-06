@@ -13,7 +13,7 @@ import build_version
 import generate_make
 import parse_dsc
 
-from build_paths import NACL_DIR, SDK_SRC_DIR, OUT_DIR, SDK_EXAMPLE_DIR
+from build_paths import NACL_DIR, SDK_SRC_DIR, OUT_DIR, SDK_RESOURCE_DIR
 from build_paths import GSTORE
 from generate_index import LandingPage
 
@@ -54,14 +54,10 @@ def UpdateHelpers(pepperdir, clobber=False):
     buildbot_common.RemoveDir(exampledir)
   buildbot_common.MakeDir(exampledir)
 
-  # Copy files for individual bild and landing page
-  files = ['favicon.ico', 'httpd.cmd']
-  CopyFilesFromTo(files, SDK_EXAMPLE_DIR, exampledir)
-
-  resourcesdir = os.path.join(SDK_EXAMPLE_DIR, 'resources')
-  files = ['index.css', 'index.js', 'button_close.png',
-      'button_close_hover.png']
-  CopyFilesFromTo(files, resourcesdir, exampledir)
+  # Copy files for individual build and landing page
+  files = ['favicon.ico', 'httpd.cmd', 'index.css', 'index.js',
+      'button_close.png', 'button_close_hover.png']
+  CopyFilesFromTo(files, SDK_RESOURCE_DIR, exampledir)
 
   # Copy tools scripts and make includes
   buildbot_common.CopyDir(os.path.join(SDK_SRC_DIR, 'tools', '*.py'),
@@ -133,9 +129,7 @@ def UpdateProjects(pepperdir, project_tree, toolchains,
   if landing_page:
     # Generate the landing page text file.
     index_html = os.path.join(pepperdir, 'examples', 'index.html')
-    example_resources_dir = os.path.join(SDK_EXAMPLE_DIR, 'resources')
-    index_template = os.path.join(example_resources_dir,
-                                  'index.html.template')
+    index_template = os.path.join(SDK_RESOURCE_DIR, 'index.html.template')
     with open(index_html, 'w') as fh:
       out = landing_page.GeneratePage(index_template)
       fh.write(out)

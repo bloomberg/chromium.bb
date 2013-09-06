@@ -1,10 +1,6 @@
 {
   'DISABLE_PACKAGE': True,  # Doesn't work in packaged apps yet.
   'TOOLS': ['newlib'],
-  'SEARCH': [
-    '.',
-    '../..',
-  ],
   'TARGETS': [
     {
       'NAME' : 'debugging',

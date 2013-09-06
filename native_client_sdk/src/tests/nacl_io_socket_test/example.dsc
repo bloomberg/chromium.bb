@@ -1,8 +1,5 @@
 {
   'TOOLS': ['newlib', 'glibc', 'pnacl'],
-
-  # Need to add ../../examples for common.js
-  'SEARCH': ['.', '../../examples'],
   'TARGETS': [
     {
       'NAME' : 'nacl_io_socket_test',

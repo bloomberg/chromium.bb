@@ -1,8 +1,5 @@
 {
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
-  'SEARCH': [
-    '.'
-  ],
   'TARGETS': [
     {
       'NAME' : 'sdk_util',

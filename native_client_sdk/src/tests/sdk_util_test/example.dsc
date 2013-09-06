@@ -2,8 +2,6 @@
   'TOOLS': ['newlib', 'glibc', 'pnacl'],
   'SEL_LDR': True,
 
-  # Need to add ../../examples for common.js
-  'SEARCH': ['.', '../../examples'],
   'TARGETS': [
     {
       'NAME' : 'sdk_util_test',
