@@ -428,7 +428,7 @@ static void checkMidpoints(LineMidpointState& lineMidpointState, InlineIterator&
         if (currpoint == lBreak) {
             // We hit the line break before the start point.  Shave off the start point.
             lineMidpointState.numMidpoints--;
-            if (endpoint.m_obj->style()->collapseWhiteSpace())
+            if (endpoint.m_obj->style()->collapseWhiteSpace() && endpoint.m_obj->isText())
                 endpoint.m_pos--;
         }
     }
@@ -509,7 +509,7 @@ void RenderBlock::appendRunsForObject(BidiRunList<BidiRun>& runs, int start, int
         if (static_cast<int>(nextMidpoint.m_pos + 1) <= end) {
             lineMidpointState.betweenMidpoints = true;
             lineMidpointState.currentMidpoint++;
-            if (nextMidpoint.m_pos != INT_MAX) { // INT_MAX means stop at the object and don't include any of it.
+            if (nextMidpoint.m_pos != UINT_MAX) { // UINT_MAX means stop at the object and don't include any of it.
                 if (static_cast<int>(nextMidpoint.m_pos + 1) > start)
                     runs.addRun(createRun(start, nextMidpoint.m_pos + 1, obj, resolver));
                 return appendRunsForObject(runs, nextMidpoint.m_pos + 1, end, obj, resolver);
@@ -2679,7 +2679,7 @@ void TrailingObjects::updateMidpointsForTrailingBoxes(LineMidpointState& lineMid
         ASSERT(collapseFirstSpace == CollapseFirstSpace);
         // Add a new end midpoint that stops right at the very end.
         unsigned length = m_whitespace->textLength();
-        unsigned pos = length >= 2 ? length - 2 : INT_MAX;
+        unsigned pos = length >= 2 ? length - 2 : UINT_MAX;
         InlineIterator endMid(0, m_whitespace, pos);
         startIgnoringSpaces(lineMidpointState, endMid);
         for (size_t i = 0; i < m_boxes.size(); ++i) {

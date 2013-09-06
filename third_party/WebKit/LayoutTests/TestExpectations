@@ -890,6 +890,8 @@ crbug.com/225184 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-scale
 crbug.com/238082 [ Win Mac Linux Debug ] media/media-continues-playing-after-replace-source.html [ Crash Pass ]
 crbug.com/88588 [ Debug ] fast/lists/inlineBoxWrapperNullCheck.html [ Failure Pass ]
 
+crbug.com/166847 [ Release ] fast/lists/inlineBoxWrapperNullCheck.html [ NeedsRebaseline ]
+
 crbug.com/252344 http/tests/history/redirect-js-document-location-0-seconds.html [ Failure Pass ]
 
 crbug.com/231357 [ SnowLeopard Lion Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
