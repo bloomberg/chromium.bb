@@ -148,6 +148,10 @@ bool TraceControllerImpl::EndTracingAsync(TraceSubscriber* subscriber) {
   if (!can_end_tracing() || subscriber != subscriber_)
     return false;
 
+  // Disable local trace early to avoid traces during end-tracing process from
+  // interfering with the process.
+  TraceLog::GetInstance()->SetDisabled();
+
   // There could be a case where there are no child processes and filters_
   // is empty. In that case we can immediately tell the subscriber that tracing
   // has ended. To avoid recursive calls back to the subscriber, we will just
@@ -301,20 +305,20 @@ void TraceControllerImpl::OnEndTracingAck(
   if (pending_end_ack_count_ == 0)
     return;
 
-  if (--pending_end_ack_count_ == 0) {
-    // All acks have been received.
-    is_tracing_ = false;
 
-    // Disable local trace.
-    TraceLog::GetInstance()->SetDisabled();
-
-    // During this call, our OnTraceDataCollected will be
-    // called with the last of the local trace data. Since we are on the UI
-    // thread, the call to OnTraceDataCollected will be synchronous, so we can
-    // immediately call OnEndTracingComplete below.
+  if (--pending_end_ack_count_ == 1) {
+    // All acks from subprocesses have been received. Now flush the local trace.
+    // During or after this call, our OnLocalTraceDataCollected will be
+    // called with the last of the local trace data.
     TraceLog::GetInstance()->Flush(
-        base::Bind(&TraceControllerImpl::OnTraceDataCollected,
+        base::Bind(&TraceControllerImpl::OnLocalTraceDataCollected,
                    base::Unretained(this)));
+  }
+
+  if (pending_end_ack_count_ == 0) {
+    // All acks (including from the subprocesses and the local trace) have been
+    // received.
+    is_tracing_ = false;
 
     // Trigger callback if one is set.
     if (subscriber_) {
@@ -327,16 +331,6 @@ void TraceControllerImpl::OnEndTracingAck(
     }
 
     is_get_category_groups_ = false;
-  }
-
-  if (pending_end_ack_count_ == 1) {
-    // The last ack represents local trace, so we need to ack it now. Note that
-    // this code only executes if there were child processes.
-    std::vector<std::string> category_groups;
-    TraceLog::GetInstance()->GetKnownCategoryGroups(&category_groups);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TraceControllerImpl::OnEndTracingAck,
-                   base::Unretained(this), category_groups));
   }
 }
 
@@ -354,6 +348,20 @@ void TraceControllerImpl::OnTraceDataCollected(
   // Drop trace events if we are just getting categories.
   if (subscriber_ && !is_get_category_groups_)
     subscriber_->OnTraceDataCollected(events_str_ptr);
+}
+
+void TraceControllerImpl::OnLocalTraceDataCollected(
+    const scoped_refptr<base::RefCountedString>& events_str_ptr,
+    bool has_more_events) {
+  if (events_str_ptr->data().size())
+    OnTraceDataCollected(events_str_ptr);
+
+  if (!has_more_events) {
+    // Simulate an EndTrackingAck for the local trace.
+    std::vector<std::string> category_groups;
+    TraceLog::GetInstance()->GetKnownCategoryGroups(&category_groups);
+    OnEndTracingAck(category_groups);
+  }
 }
 
 void TraceControllerImpl::OnTraceNotification(int notification) {

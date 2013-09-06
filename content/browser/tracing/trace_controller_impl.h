@@ -81,6 +81,11 @@ class TraceControllerImpl : public TraceController {
   void OnTraceNotification(int notification);
   void OnTraceBufferPercentFullReply(float percent_full);
 
+  // Callback of TraceLog::Flush() for the local trace.
+  void OnLocalTraceDataCollected(
+      const scoped_refptr<base::RefCountedString>& events_str_ptr,
+      bool has_more_events);
+
   FilterMap filters_;
   TraceSubscriber* subscriber_;
   // Pending acks for EndTracingAsync:

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/atomicops.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
@@ -20,6 +21,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_local.h"
 #include "base/timer/timer.h"
 
 // Older style trace macros with explicit id and extra data
@@ -42,9 +44,21 @@
 template <typename Type>
 struct DefaultSingletonTraits;
 
+#if defined(COMPILER_GCC)
+namespace BASE_HASH_NAMESPACE {
+template <>
+struct hash<base::MessageLoop*> {
+  std::size_t operator()(base::MessageLoop* value) const {
+    return reinterpret_cast<std::size_t>(value);
+  }
+};
+}  // BASE_HASH_NAMESPACE
+#endif
+
 namespace base {
 
 class WaitableEvent;
+class MessageLoop;
 
 namespace debug {
 
@@ -110,6 +124,8 @@ class BASE_EXPORT TraceEvent {
 
   TimeTicks timestamp() const { return timestamp_; }
   TimeTicks thread_timestamp() const { return thread_timestamp_; }
+  char phase() const { return phase_; }
+  int thread_id() const { return thread_id_; }
 
   // Exposed for unittesting:
 
@@ -296,7 +312,7 @@ class BASE_EXPORT TraceLog {
     ENABLE_SAMPLING = 1 << 2,
 
     // Echo to console. Events are discarded.
-    ECHO_TO_CONSOLE = 1 << 3
+    ECHO_TO_CONSOLE = 1 << 3,
   };
 
   static TraceLog* GetInstance();
@@ -312,7 +328,9 @@ class BASE_EXPORT TraceLog {
   // Retrieves the current CategoryFilter.
   const CategoryFilter& GetCurrentCategoryFilter();
 
-  Options trace_options() const { return trace_options_; }
+  Options trace_options() const {
+    return static_cast<Options>(subtle::NoBarrier_Load(&trace_options_));
+  }
 
   // Enables tracing. See CategoryFilter comments for details
   // on how to control what categories will be traced.
@@ -378,11 +396,16 @@ class BASE_EXPORT TraceLog {
   void SetEventCallback(EventCallback cb);
 
   // Flush all collected events to the given output callback. The callback will
-  // be called one or more times with IPC-bite-size chunks. The string format is
+  // be called one or more times either synchronously or asynchronously from
+  // the current thread with IPC-bite-size chunks. The string format is
   // undefined. Use TraceResultBuffer to convert one or more trace strings to
-  // JSON.
-  typedef base::Callback<void(const scoped_refptr<base::RefCountedString>&)>
-      OutputCallback;
+  // JSON. The callback can be null if the caller doesn't want any data.
+  // Due to the implementation of thread-local buffers, flush can't be
+  // done when tracing is enabled. If called when tracing is enabled, the
+  // callback will be called directly with (empty_string, false) to indicate
+  // the end of this unsuccessful flush.
+  typedef base::Callback<void(const scoped_refptr<base::RefCountedString>&,
+                              bool has_more_events)> OutputCallback;
   void Flush(const OutputCallback& cb);
 
   // Called by TRACE_EVENT* macros, don't call this directly.
@@ -529,6 +552,8 @@ class BASE_EXPORT TraceLog {
     int notification_;
   };
 
+  class ThreadLocalEventBuffer;
+
   TraceLog();
   ~TraceLog();
   const unsigned char* GetCategoryGroupEnabledInternal(const char* name);
@@ -550,15 +575,23 @@ class BASE_EXPORT TraceLog {
 
   TraceBuffer* GetTraceBuffer();
 
-  // TODO(nduca): switch to per-thread trace buffers to reduce thread
-  // synchronization.
+  void AddEventToMainBufferWhileLocked(const TraceEvent& trace_event);
+  void CheckIfBufferIsFullWhileLocked(NotificationHelper* notifier);
+  // |flush_count| is used in the following callbacks to check if the callback
+  // is called for the current flush.
+  void FlushCurrentThread(int flush_count);
+  void FinishFlush(int flush_count);
+  void OnFlushTimeout(int flush_count);
+
   // This lock protects TraceLog member accesses from arbitrary threads.
   Lock lock_;
+  int locked_line_;
   int enable_count_;
   int num_traces_recorded_;
+  subtle::AtomicWord /* bool */ buffer_is_full_;
   NotificationCallback notification_callback_;
   scoped_ptr<TraceBuffer> logged_events_;
-  EventCallback event_callback_;
+  subtle::AtomicWord /* EventCallback */ event_callback_;
   bool dispatching_to_observer_list_;
   std::vector<EnabledStateObserver*> enabled_state_observer_list_;
 
@@ -566,8 +599,9 @@ class BASE_EXPORT TraceLog {
   base::hash_map<int, std::string> process_labels_;
   int process_sort_index_;
   base::hash_map<int, int> thread_sort_indices_;
-
   base::hash_map<int, std::string> thread_names_;
+
+  // The following two maps are used only when ECHO_TO_CONSOLE.
   base::hash_map<int, std::stack<TimeTicks> > thread_event_start_times_;
   base::hash_map<std::string, int> thread_colors_;
 
@@ -579,16 +613,28 @@ class BASE_EXPORT TraceLog {
   TimeDelta time_offset_;
 
   // Allow tests to wake up when certain events occur.
-  const unsigned char* watch_category_;
+  subtle::AtomicWord /* const unsigned char* */ watch_category_;
   std::string watch_event_name_;
 
-  Options trace_options_;
+  subtle::AtomicWord /* Options */ trace_options_;
 
   // Sampling thread handles.
   scoped_ptr<TraceSamplingThread> sampling_thread_;
   PlatformThreadHandle sampling_thread_handle_;
 
   CategoryFilter category_filter_;
+
+  ThreadLocalPointer<ThreadLocalEventBuffer> thread_local_event_buffer_;
+
+  // Contains the message loops of threads that have had at least one event
+  // added into the local event buffer. Not using MessageLoopProxy because we
+  // need to know the life time of the message loops.
+  base::hash_set<MessageLoop*> thread_message_loops_;
+
+  // Set when asynchronous Flush is in progress.
+  OutputCallback flush_output_callback_;
+  scoped_refptr<MessageLoopProxy> flush_message_loop_proxy_;
+  int flush_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceLog);
 };

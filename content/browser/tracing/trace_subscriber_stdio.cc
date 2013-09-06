@@ -46,6 +46,7 @@ class TraceSubscriberStdio::TraceSubscriberStdioWorker
   void OnTraceData(const scoped_refptr<base::RefCountedString>& data_ptr) {
     if (!IsValid())
       return;
+    DCHECK(!data_ptr->data().empty());
     if (needs_comma_)
       WriteString(",");
     WriteString(data_ptr->data());

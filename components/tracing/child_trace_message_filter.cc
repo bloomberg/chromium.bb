@@ -65,16 +65,12 @@ void ChildTraceMessageFilter::OnBeginTracing(
 void ChildTraceMessageFilter::OnEndTracing() {
   TraceLog::GetInstance()->SetDisabled();
 
-  // Flush will generate one or more callbacks to OnTraceDataCollected. It's
-  // important that the last OnTraceDataCollected gets called before
-  // EndTracingAck below. We are already on the IO thread, so the
+  // Flush will generate one or more callbacks to OnTraceDataCollected
+  // synchronously or asynchronously. EndTracingAck will be sent in the last
+  // OnTraceDataCollected. We are already on the IO thread, so the
   // OnTraceDataCollected calls will not be deferred.
   TraceLog::GetInstance()->Flush(
       base::Bind(&ChildTraceMessageFilter::OnTraceDataCollected, this));
-
-  std::vector<std::string> category_groups;
-  TraceLog::GetInstance()->GetKnownCategoryGroups(&category_groups);
-  channel_->Send(new TracingHostMsg_EndTracingAck(category_groups));
 }
 
 void ChildTraceMessageFilter::OnGetTraceBufferPercentFull() {
@@ -94,15 +90,23 @@ void ChildTraceMessageFilter::OnCancelWatchEvent() {
 }
 
 void ChildTraceMessageFilter::OnTraceDataCollected(
-    const scoped_refptr<base::RefCountedString>& events_str_ptr) {
+    const scoped_refptr<base::RefCountedString>& events_str_ptr,
+    bool has_more_events) {
   if (!ipc_message_loop_->BelongsToCurrentThread()) {
     ipc_message_loop_->PostTask(FROM_HERE,
         base::Bind(&ChildTraceMessageFilter::OnTraceDataCollected, this,
-                   events_str_ptr));
+                   events_str_ptr, has_more_events));
     return;
   }
-  channel_->Send(new TracingHostMsg_TraceDataCollected(
-      events_str_ptr->data()));
+  if (events_str_ptr->data().size()) {
+    channel_->Send(new TracingHostMsg_TraceDataCollected(
+        events_str_ptr->data()));
+  }
+  if (!has_more_events) {
+    std::vector<std::string> category_groups;
+    TraceLog::GetInstance()->GetKnownCategoryGroups(&category_groups);
+    channel_->Send(new TracingHostMsg_EndTracingAck(category_groups));
+  }
 }
 
 void ChildTraceMessageFilter::OnTraceNotification(int notification) {

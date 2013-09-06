@@ -50,7 +50,9 @@ const char kAsyncId2Str[] = "0x6";
 class TraceEventTestFixture : public testing::Test {
  public:
   void OnTraceDataCollected(
-      const scoped_refptr<base::RefCountedString>& events_str);
+      WaitableEvent* flush_complete_event,
+      const scoped_refptr<base::RefCountedString>& events_str,
+      bool has_more_events);
   void OnTraceNotification(int notification) {
     if (notification & TraceLog::EVENT_WATCH_NOTIFICATION)
       ++event_watch_notification_;
@@ -83,11 +85,18 @@ class TraceEventTestFixture : public testing::Test {
   }
 
   void EndTraceAndFlush() {
+    WaitableEvent flush_complete_event(false, false);
+    EndTraceAndFlushAsync(&flush_complete_event);
+    flush_complete_event.Wait();
+  }
+
+  void EndTraceAndFlushAsync(WaitableEvent* flush_complete_event) {
     while (TraceLog::GetInstance()->IsEnabled())
       TraceLog::GetInstance()->SetDisabled();
     TraceLog::GetInstance()->Flush(
         base::Bind(&TraceEventTestFixture::OnTraceDataCollected,
-                   base::Unretained(this)));
+                   base::Unretained(static_cast<TraceEventTestFixture*>(this)),
+                   base::Unretained(flush_complete_event)));
   }
 
   virtual void SetUp() OVERRIDE {
@@ -128,7 +137,9 @@ class TraceEventTestFixture : public testing::Test {
 };
 
 void TraceEventTestFixture::OnTraceDataCollected(
-    const scoped_refptr<base::RefCountedString>& events_str) {
+    WaitableEvent* flush_complete_event,
+    const scoped_refptr<base::RefCountedString>& events_str,
+    bool has_more_events) {
   AutoLock lock(lock_);
   json_output_.json_output.clear();
   trace_buffer_.Start();
@@ -153,6 +164,9 @@ void TraceEventTestFixture::OnTraceDataCollected(
     root_list->Remove(0, &item);
     trace_parsed_.Append(item.release());
   }
+
+  if (!has_more_events)
+    flush_complete_event->Signal();
 }
 
 static bool CompareJsonValues(const std::string& lhs,
@@ -1341,16 +1355,30 @@ TEST_F(TraceEventTestFixture, DataCapturedManyThreads) {
     task_complete_events[i]->Wait();
   }
 
-  for (int i = 0; i < num_threads; i++) {
+  // Let half of the threads end before flush.
+  for (int i = 0; i < num_threads / 2; i++) {
     threads[i]->Stop();
     delete threads[i];
     delete task_complete_events[i];
   }
 
-  EndTraceAndFlush();
-
+  WaitableEvent flush_complete_event(false, false);
+  Thread flush_thread("flush");
+  flush_thread.Start();
+  flush_thread.message_loop()->PostTask(FROM_HERE,
+    base::Bind(&TraceEventTestFixture::EndTraceAndFlushAsync,
+               base::Unretained(this),
+               &flush_complete_event));
+  flush_complete_event.Wait();
   ValidateInstantEventPresentOnEveryThread(trace_parsed_,
                                            num_threads, num_events);
+
+  // Let the other half of the threads end after flush.
+  for (int i = num_threads / 2; i < num_threads; i++) {
+    threads[i]->Stop();
+    delete threads[i];
+    delete task_complete_events[i];
+  }
 }
 
 // Test that thread and process names show up in the trace

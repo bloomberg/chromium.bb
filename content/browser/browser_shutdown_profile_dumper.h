@@ -42,7 +42,8 @@ class BrowserShutdownProfileDumper {
   // The callback for the |TraceLog::Flush| function. It saves all traces to
   // disc.
   void WriteTraceDataCollected(
-      const scoped_refptr<base::RefCountedString>& events_str);
+      const scoped_refptr<base::RefCountedString>& events_str,
+      bool has_more_events);
 
   // Returns true if the dump file is valid.
   bool IsFileValid();

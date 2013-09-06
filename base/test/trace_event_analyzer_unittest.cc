@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event_unittest.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/trace_event_analyzer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +17,9 @@ class TraceEventAnalyzerTest : public testing::Test {
  public:
   void ManualSetUp();
   void OnTraceDataCollected(
-      const scoped_refptr<base::RefCountedString>& json_events_str);
+      base::WaitableEvent* flush_complete_event,
+      const scoped_refptr<base::RefCountedString>& json_events_str,
+      bool has_more_events);
   void BeginTracing();
   void EndTracing();
 
@@ -31,8 +34,12 @@ void TraceEventAnalyzerTest::ManualSetUp() {
 }
 
 void TraceEventAnalyzerTest::OnTraceDataCollected(
-    const scoped_refptr<base::RefCountedString>& json_events_str) {
+    base::WaitableEvent* flush_complete_event,
+    const scoped_refptr<base::RefCountedString>& json_events_str,
+    bool has_more_events) {
   buffer_.AddFragment(json_events_str->data());
+  if (!has_more_events)
+    flush_complete_event->Signal();
 }
 
 void TraceEventAnalyzerTest::BeginTracing() {
@@ -45,9 +52,12 @@ void TraceEventAnalyzerTest::BeginTracing() {
 
 void TraceEventAnalyzerTest::EndTracing() {
   base::debug::TraceLog::GetInstance()->SetDisabled();
+  base::WaitableEvent flush_complete_event(false, false);
   base::debug::TraceLog::GetInstance()->Flush(
       base::Bind(&TraceEventAnalyzerTest::OnTraceDataCollected,
-                 base::Unretained(this)));
+                 base::Unretained(this),
+                 base::Unretained(&flush_complete_event)));
+  flush_complete_event.Wait();
   buffer_.Finish();
 }
 

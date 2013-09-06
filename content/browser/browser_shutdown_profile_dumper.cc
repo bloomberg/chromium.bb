@@ -46,10 +46,6 @@ void BrowserShutdownProfileDumper::WriteTracesToDisc(
   base::debug::TraceLog::GetInstance()->Flush(
       base::Bind(&BrowserShutdownProfileDumper::WriteTraceDataCollected,
       base::Unretained(this)));
-
-  WriteString("]");
-  WriteString("}");
-  CloseFile();
 }
 
 base::FilePath BrowserShutdownProfileDumper::GetFileName() {
@@ -65,7 +61,8 @@ base::FilePath BrowserShutdownProfileDumper::GetFileName() {
 }
 
 void BrowserShutdownProfileDumper::WriteTraceDataCollected(
-    const scoped_refptr<base::RefCountedString>& events_str) {
+    const scoped_refptr<base::RefCountedString>& events_str,
+    bool has_more_events) {
   if (!IsFileValid())
     return;
   if (blocks_) {
@@ -75,6 +72,12 @@ void BrowserShutdownProfileDumper::WriteTraceDataCollected(
   }
   ++blocks_;
   WriteString(events_str->data());
+
+  if (!has_more_events) {
+    WriteString("]");
+    WriteString("}");
+    CloseFile();
+  }
 }
 
 bool BrowserShutdownProfileDumper::IsFileValid() {
