@@ -149,8 +149,6 @@ class Preferences : public PrefServiceSyncableObserver,
   IntegerPrefMember xkb_auto_repeat_delay_pref_;
   IntegerPrefMember xkb_auto_repeat_interval_pref_;
 
-  BooleanPrefMember enable_drm_;
-
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };
 

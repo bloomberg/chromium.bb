@@ -5,14 +5,19 @@
 #include "platform_verification_flow.h"
 
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
@@ -60,7 +65,7 @@ void PlatformVerificationFlow::ChallengePlatformKey(
     const std::string& challenge,
     const ChallengeCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (delegate_->IsAttestationDisabled()) {
+  if (!IsAttestationEnabled(web_contents)) {
     LOG(INFO) << "PlatformVerificationFlow: Feature disabled.";
     callback.Run(POLICY_REJECTED, std::string(), std::string());
     return;
@@ -105,11 +110,9 @@ void PlatformVerificationFlow::CheckConsent(content::WebContents* web_contents,
                                             const ChallengeCallback& callback,
                                             bool attestation_enrolled) {
   ConsentType consent_type = CONSENT_TYPE_NONE;
-  if (!attestation_enrolled) {
+  if (!attestation_enrolled || IsFirstUse(web_contents)) {
     consent_type = CONSENT_TYPE_ATTESTATION;
-  } else if (delegate_->IsOriginConsentRequired(web_contents)) {
-    consent_type = CONSENT_TYPE_ORIGIN;
-  } else if (delegate_->IsAlwaysAskRequired(web_contents)) {
+  } else if (IsAlwaysAskRequired(web_contents)) {
     consent_type = CONSENT_TYPE_ALWAYS;
   }
   Delegate::ConsentCallback consent_callback = base::Bind(
@@ -129,6 +132,19 @@ void PlatformVerificationFlow::CheckConsent(content::WebContents* web_contents,
   }
 }
 
+void PlatformVerificationFlow::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* prefs) {
+  prefs->RegisterBooleanPref(prefs::kRAConsentFirstTime,
+                             false,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(
+      prefs::kRAConsentDomains,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kRAConsentAlways,
+                             false,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
 void PlatformVerificationFlow::OnConsentResponse(
     content::WebContents* web_contents,
     const std::string& service_id,
@@ -143,9 +159,7 @@ void PlatformVerificationFlow::OnConsentResponse(
       callback.Run(USER_REJECTED, std::string(), std::string());
       return;
     }
-    if (!delegate_->UpdateSettings(web_contents,
-                                   consent_type,
-                                   consent_response)) {
+    if (!UpdateSettings(web_contents, consent_type, consent_response)) {
       callback.Run(INTERNAL_ERROR, std::string(), std::string());
       return;
     }
@@ -208,6 +222,131 @@ void PlatformVerificationFlow::OnChallengeReady(
   }
   LOG(INFO) << "PlatformVerificationFlow: Platform successfully verified.";
   callback.Run(SUCCESS, response_data, certificate);
+}
+
+PrefService* PlatformVerificationFlow::GetPrefs(
+    content::WebContents* web_contents) {
+  if (testing_prefs_)
+    return testing_prefs_;
+  return user_prefs::UserPrefs::Get(web_contents->GetBrowserContext());
+}
+
+const GURL& PlatformVerificationFlow::GetURL(
+    content::WebContents* web_contents) {
+  if (!testing_url_.is_empty())
+    return testing_url_;
+  return web_contents->GetLastCommittedURL();
+}
+
+bool PlatformVerificationFlow::IsAttestationEnabled(
+    content::WebContents* web_contents) {
+  // Check the device policy for the feature.
+  bool enabled_for_device = false;
+  if (!CrosSettings::Get()->GetBoolean(kAttestationForContentProtectionEnabled,
+                                       &enabled_for_device)) {
+    LOG(ERROR) << "Failed to get device setting.";
+    return false;
+  }
+  if (!enabled_for_device)
+    return false;
+
+  // Check the user preference for the feature.
+  PrefService* pref_service = GetPrefs(web_contents);
+  if (!pref_service) {
+    LOG(ERROR) << "Failed to get user prefs.";
+    return false;
+  }
+  if (!pref_service->GetBoolean(prefs::kEnableDRM))
+    return false;
+
+  // Check the user preference for this domain.
+  bool enabled_for_domain = false;
+  bool found = GetDomainPref(web_contents, &enabled_for_domain);
+  return (!found || enabled_for_domain);
+}
+
+bool PlatformVerificationFlow::IsFirstUse(content::WebContents* web_contents) {
+  PrefService* pref_service = GetPrefs(web_contents);
+  if (!pref_service) {
+    LOG(ERROR) << "Failed to get user prefs.";
+    return true;
+  }
+  return !pref_service->GetBoolean(prefs::kRAConsentFirstTime);
+}
+
+bool PlatformVerificationFlow::IsAlwaysAskRequired(
+    content::WebContents* web_contents) {
+  PrefService* pref_service = GetPrefs(web_contents);
+  if (!pref_service) {
+    LOG(ERROR) << "Failed to get user prefs.";
+    return true;
+  }
+  if (!pref_service->GetBoolean(prefs::kRAConsentAlways))
+    return false;
+  // Show the consent UI if the user has not already explicitly allowed or
+  // denied for this domain.
+  return !GetDomainPref(web_contents, NULL);
+}
+
+bool PlatformVerificationFlow::UpdateSettings(
+    content::WebContents* web_contents,
+    ConsentType consent_type,
+    ConsentResponse consent_response) {
+  PrefService* pref_service = GetPrefs(web_contents);
+  if (!pref_service) {
+    LOG(ERROR) << "Failed to get user prefs.";
+    return false;
+  }
+  if (consent_type == CONSENT_TYPE_ATTESTATION) {
+    if (consent_response == CONSENT_RESPONSE_DENY) {
+      pref_service->SetBoolean(prefs::kEnableDRM, false);
+    } else if (consent_response == CONSENT_RESPONSE_ALLOW) {
+      pref_service->SetBoolean(prefs::kRAConsentFirstTime, true);
+      RecordDomainConsent(web_contents, true);
+    } else if (consent_response == CONSENT_RESPONSE_ALWAYS_ASK) {
+      pref_service->SetBoolean(prefs::kRAConsentFirstTime, true);
+      pref_service->SetBoolean(prefs::kRAConsentAlways, true);
+      RecordDomainConsent(web_contents, true);
+    }
+  } else if (consent_type == CONSENT_TYPE_ALWAYS) {
+    bool allowed = (consent_response == CONSENT_RESPONSE_ALLOW ||
+                    consent_response == CONSENT_RESPONSE_ALWAYS_ASK);
+    RecordDomainConsent(web_contents, allowed);
+  }
+  return true;
+}
+
+bool PlatformVerificationFlow::GetDomainPref(
+    content::WebContents* web_contents,
+    bool* pref_value) {
+  PrefService* pref_service = GetPrefs(web_contents);
+  CHECK(pref_service);
+  base::DictionaryValue::Iterator iter(
+      *pref_service->GetDictionary(prefs::kRAConsentDomains));
+  const GURL& url = GetURL(web_contents);
+  while (!iter.IsAtEnd()) {
+    if (url.DomainIs(iter.key().c_str())) {
+      if (pref_value) {
+        if (!iter.value().GetAsBoolean(pref_value)) {
+          LOG(ERROR) << "Unexpected pref type.";
+          *pref_value = false;
+        }
+      }
+      return true;
+    }
+    iter.Advance();
+  }
+  return false;
+}
+
+void PlatformVerificationFlow::RecordDomainConsent(
+    content::WebContents* web_contents,
+    bool allow_domain) {
+  PrefService* pref_service = GetPrefs(web_contents);
+  CHECK(pref_service);
+  DictionaryPrefUpdate updater(pref_service, prefs::kRAConsentDomains);
+  const GURL& url = GetURL(web_contents);
+  updater->SetBoolean(url.host(), allow_domain);
 }
 
 }  // namespace attestation

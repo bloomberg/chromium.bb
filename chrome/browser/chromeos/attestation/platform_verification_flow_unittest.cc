@@ -6,10 +6,17 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/system/mock_statistics_provider.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
@@ -34,15 +41,13 @@ const char kTestChallenge[] = "test_challenge";
 const char kTestResponse[] = "test_challenge_response";
 const char kTestCertificate[] = "test_certificate";
 const char kTestEmail[] = "test_email@chromium.org";
+const char kTestURL[] = "http://mytestdomain/test";
+const char kTestDomain[] = "mytestdomain";
 
 class FakeDelegate : public PlatformVerificationFlow::Delegate {
  public:
   FakeDelegate() : response_(PlatformVerificationFlow::CONSENT_RESPONSE_ALLOW),
-                   num_consent_calls_(0),
-                   attestation_disabled_(false),
-                   origin_consent_required_(false),
-                   always_ask_required_(false),
-                   update_settings_result_(true) {}
+                   num_consent_calls_(0) {}
   virtual ~FakeDelegate() {}
 
   virtual void ShowConsentPrompt(
@@ -54,27 +59,6 @@ class FakeDelegate : public PlatformVerificationFlow::Delegate {
     callback.Run(response_);
   }
 
-  virtual bool IsAttestationDisabled() OVERRIDE {
-    return attestation_disabled_;
-  }
-
-  virtual bool IsOriginConsentRequired(
-      content::WebContents* web_contents) OVERRIDE {
-    return origin_consent_required_;
-  }
-
-  virtual bool IsAlwaysAskRequired(
-      content::WebContents* web_contents) OVERRIDE {
-    return always_ask_required_;
-  }
-
-  virtual bool UpdateSettings(
-      content::WebContents* web_contents,
-      PlatformVerificationFlow::ConsentType consent_type,
-      PlatformVerificationFlow::ConsentResponse consent_response) OVERRIDE {
-    return update_settings_result_;
-  }
-
   void set_response(PlatformVerificationFlow::ConsentResponse response) {
     response_ = response;
   }
@@ -83,29 +67,9 @@ class FakeDelegate : public PlatformVerificationFlow::Delegate {
     return num_consent_calls_;
   }
 
-  void set_attestation_disabled(bool attestation_disabled) {
-    attestation_disabled_ = attestation_disabled;
-  }
-
-  void set_origin_consent_required(bool origin_consent_required) {
-    origin_consent_required_ = origin_consent_required;
-  }
-
-  void set_always_ask_required(bool always_ask_required) {
-    always_ask_required_ = always_ask_required;
-  }
-
-  void set_update_settings_result(bool update_settings_result) {
-    update_settings_result_ = update_settings_result;
-  }
-
  private:
   PlatformVerificationFlow::ConsentResponse response_;
   int num_consent_calls_;
-  bool attestation_disabled_;
-  bool origin_consent_required_;
-  bool always_ask_required_;
-  bool update_settings_result_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDelegate);
 };
@@ -185,10 +149,34 @@ class PlatformVerificationFlowTest : public ::testing::Test {
     check_state_callback_ = base::Bind(
         &PlatformVerificationFlowTest::FakeCheckStateCallback,
         base::Unretained(this));
+
+    // Configure the test pref service.
+    pref_service_.registry()->RegisterBooleanPref(prefs::kEnableDRM, true);
+    pref_service_.registry()->RegisterBooleanPref(prefs::kRAConsentFirstTime,
+                                                  true);
+    pref_service_.registry()->RegisterBooleanPref(prefs::kRAConsentAlways,
+                                                  false);
+    pref_service_.registry()->RegisterDictionaryPref(prefs::kRAConsentDomains);
+    verifier_->set_testing_prefs(&pref_service_);
+
+    // Configure the global cros_settings.
+    CrosSettings* cros_settings = CrosSettings::Get();
+    device_settings_provider_ =
+        cros_settings->GetProvider(kAttestationForContentProtectionEnabled);
+    cros_settings->RemoveSettingsProvider(device_settings_provider_);
+    cros_settings->AddSettingsProvider(&stub_settings_provider_);
+    cros_settings->SetBoolean(kAttestationForContentProtectionEnabled, true);
+
+    // Configure a test URL to shortcut the dependency on WebContents.
+    verifier_->set_testing_url(GURL(kTestURL));
   }
 
   void TearDown() {
     verifier_.reset();
+    // Restore the real DeviceSettingsProvider.
+    CrosSettings* cros_settings = CrosSettings::Get();
+    cros_settings->RemoveSettingsProvider(&stub_settings_provider_);
+    cros_settings->AddSettingsProvider(device_settings_provider_);
   }
 
   void ExpectAttestationFlow() {
@@ -250,6 +238,11 @@ class PlatformVerificationFlowTest : public ::testing::Test {
   MockUserManager mock_user_manager_;
   system::MockStatisticsProvider mock_statistics_provider_;
   FakeDelegate fake_delegate_;
+  TestingPrefServiceSimple pref_service_;
+  CrosSettingsProvider* device_settings_provider_;
+  StubCrosSettingsProvider stub_settings_provider_;
+  ScopedTestDeviceSettingsService test_device_settings_service_;
+  ScopedTestCrosSettings test_cros_settings_;
   scoped_ptr<PlatformVerificationFlow> verifier_;
 
   // Controls result of FakeGetCertificate.
@@ -279,21 +272,9 @@ TEST_F(PlatformVerificationFlowTest, SuccessNoConsent) {
   EXPECT_EQ(0, fake_delegate_.num_consent_calls());
 }
 
-TEST_F(PlatformVerificationFlowTest, SuccessWithOriginConsent) {
-  // Enable two conditions and make sure consent is not requested twice.
-  fake_delegate_.set_origin_consent_required(true);
-  fake_delegate_.set_always_ask_required(true);
-  ExpectAttestationFlow();
-  verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(PlatformVerificationFlow::SUCCESS, result_);
-  EXPECT_EQ(kTestResponse, challenge_response_);
-  EXPECT_EQ(kTestCertificate, certificate_);
-  EXPECT_EQ(1, fake_delegate_.num_consent_calls());
-}
-
 TEST_F(PlatformVerificationFlowTest, SuccessWithAlwaysAskConsent) {
-  fake_delegate_.set_always_ask_required(true);
+  pref_service_.SetUserPref(prefs::kRAConsentAlways,
+                            new base::FundamentalValue(true));
   ExpectAttestationFlow();
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
   base::RunLoop().RunUntilIdle();
@@ -314,8 +295,21 @@ TEST_F(PlatformVerificationFlowTest, SuccessWithAttestationConsent) {
   EXPECT_EQ(1, fake_delegate_.num_consent_calls());
 }
 
+TEST_F(PlatformVerificationFlowTest, SuccessWithFirstTimeConsent) {
+  pref_service_.SetUserPref(prefs::kRAConsentFirstTime,
+                            new base::FundamentalValue(false));
+  ExpectAttestationFlow();
+  verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(PlatformVerificationFlow::SUCCESS, result_);
+  EXPECT_EQ(kTestResponse, challenge_response_);
+  EXPECT_EQ(kTestCertificate, certificate_);
+  EXPECT_EQ(1, fake_delegate_.num_consent_calls());
+}
+
 TEST_F(PlatformVerificationFlowTest, ConsentRejected) {
-  fake_delegate_.set_always_ask_required(true);
+  pref_service_.SetUserPref(prefs::kRAConsentAlways,
+                            new base::FundamentalValue(true));
   fake_delegate_.set_response(PlatformVerificationFlow::CONSENT_RESPONSE_DENY);
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
   base::RunLoop().RunUntilIdle();
@@ -324,7 +318,27 @@ TEST_F(PlatformVerificationFlowTest, ConsentRejected) {
 }
 
 TEST_F(PlatformVerificationFlowTest, FeatureDisabled) {
-  fake_delegate_.set_attestation_disabled(true);
+  CrosSettings::Get()->SetBoolean(kAttestationForContentProtectionEnabled,
+                                  false);
+  verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(PlatformVerificationFlow::POLICY_REJECTED, result_);
+  EXPECT_EQ(0, fake_delegate_.num_consent_calls());
+}
+
+TEST_F(PlatformVerificationFlowTest, FeatureDisabledByUser) {
+  pref_service_.SetUserPref(prefs::kEnableDRM,
+                            new base::FundamentalValue(false));
+  verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(PlatformVerificationFlow::POLICY_REJECTED, result_);
+  EXPECT_EQ(0, fake_delegate_.num_consent_calls());
+}
+
+TEST_F(PlatformVerificationFlowTest, FeatureDisabledByUserForDomain) {
+  base::DictionaryValue* domains = new base::DictionaryValue();
+  domains->SetBoolean(kTestDomain, false);
+  pref_service_.SetUserPref(prefs::kRAConsentDomains, domains);
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::POLICY_REJECTED, result_);
@@ -354,17 +368,10 @@ TEST_F(PlatformVerificationFlowTest, DBusFailure) {
   EXPECT_EQ(PlatformVerificationFlow::INTERNAL_ERROR, result_);
 }
 
-TEST_F(PlatformVerificationFlowTest, UpdateSettingsFailure) {
-  fake_delegate_.set_origin_consent_required(true);
-  fake_delegate_.set_update_settings_result(false);
-  verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(PlatformVerificationFlow::INTERNAL_ERROR, result_);
-}
-
 TEST_F(PlatformVerificationFlowTest, ConsentNoResponse) {
   fake_delegate_.set_response(PlatformVerificationFlow::CONSENT_RESPONSE_NONE);
-  fake_delegate_.set_origin_consent_required(true);
+  pref_service_.SetUserPref(prefs::kRAConsentAlways,
+                            new base::FundamentalValue(true));
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::USER_REJECTED, result_);

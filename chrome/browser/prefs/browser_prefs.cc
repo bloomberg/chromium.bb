@@ -125,6 +125,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
 #include "chrome/browser/chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
@@ -387,12 +388,14 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if defined(OS_CHROMEOS)
+  chromeos::attestation::PlatformVerificationFlow::RegisterProfilePrefs(
+      registry);
   chromeos::Preferences::RegisterProfilePrefs(registry);
   chromeos::proxy_config::RegisterProfilePrefs(registry);
+  chromeos::UserImageSyncObserver::RegisterProfilePrefs(registry);
   extensions::EnterprisePlatformKeysPrivateChallengeUserKeyFunction::
       RegisterProfilePrefs(registry);
   FlagsUI::RegisterProfilePrefs(registry);
-  chromeos::UserImageSyncObserver::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_WIN)

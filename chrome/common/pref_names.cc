@@ -936,6 +936,16 @@ const char kTouchHudProjectionEnabled[] = "touch_hud.projection_enabled";
 // Currently, this pref is only used to store the policy. The user's
 // configuration is still stored in Shill.
 const char kOpenNetworkConfiguration[] = "onc";
+
+// A boolean pref that tracks whether the user has already given consent for
+// enabling remote attestation for content protection.
+const char kRAConsentFirstTime[] = "settings.privacy.ra_consent";
+// A DictionaryValue pref that tracks domains for which the user has explicitly
+// allowed or denied.
+const char kRAConsentDomains[] = "settings.privacy.ra_consent_domains";
+// A boolean pref that tracks whether the user indicated they wish to be asked
+// for consent for every site that uses remote attestation.
+const char kRAConsentAlways[] = "settings.privacy.ra_consent_always";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.
@@ -2577,7 +2587,8 @@ extern const char kModuleConflictBubbleShown[] = "module_conflict.bubble_shown";
 
 // A string pref for storing the salt used to compute the pepper device ID.
 const char kDRMSalt[] = "settings.privacy.drm_salt";
-// A boolean pref that enables the (private) pepper GetDeviceID() call.
+// A boolean pref that enables the (private) pepper GetDeviceID() call and
+// enables the use of remote attestation for content protection.
 const char kEnableDRM[] = "settings.privacy.drm_enabled";
 
 // A boolean per-profile pref that signals if the watchdog extension is

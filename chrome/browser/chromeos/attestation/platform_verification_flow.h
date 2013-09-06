@@ -11,6 +11,9 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "url/gurl.h"
+
+class PrefService;
 
 namespace content {
 class WebContents;
@@ -18,6 +21,10 @@ class WebContents;
 
 namespace cryptohome {
 class AsyncMethodCaller;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 namespace chromeos {
@@ -54,7 +61,6 @@ class PlatformVerificationFlow {
   enum ConsentType {
     CONSENT_TYPE_NONE,         // No consent necessary.
     CONSENT_TYPE_ATTESTATION,  // Consent to use attestation.
-    CONSENT_TYPE_ORIGIN,       // Consent to proceed with an unfamiliar origin.
     CONSENT_TYPE_ALWAYS,       // Consent because 'Always Ask' was requested.
   };
 
@@ -80,23 +86,6 @@ class PlatformVerificationFlow {
     virtual void ShowConsentPrompt(ConsentType type,
                                    content::WebContents* web_contents,
                                    const ConsentCallback& callback) = 0;
-
-    // Returns true if settings indicate that attestation should be disabled.
-    virtual bool IsAttestationDisabled() = 0;
-
-    // Checks if the web origin represented by |web_contents| is unfamiliar and
-    // requires special user consent.
-    virtual bool IsOriginConsentRequired(
-        content::WebContents* web_contents) = 0;
-
-    // Checks if settings indicate that consent is required for the web origin
-    // represented by |web_contents| because the user requested to be prompted.
-    virtual bool IsAlwaysAskRequired(content::WebContents* web_contents) = 0;
-
-    // Updates user settings based on their response to the consent request.
-    virtual bool UpdateSettings(content::WebContents* web_contents,
-                                ConsentType consent_type,
-                                ConsentResponse consent_response) = 0;
   };
 
   // This callback will be called when a challenge operation completes.  If
@@ -150,6 +139,16 @@ class PlatformVerificationFlow {
   // or false.  If an error occurs, |result| will be false.
   void CheckPlatformState(const base::Callback<void(bool result)>& callback);
 
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* prefs);
+
+  void set_testing_prefs(PrefService* testing_prefs) {
+    testing_prefs_ = testing_prefs;
+  }
+
+  void set_testing_url(const GURL& testing_url) {
+    testing_url_ = testing_url;
+  }
+
  private:
   // Checks whether we need to prompt the user for consent before proceeding and
   // invokes the consent UI if so.  All parameters are the same as in
@@ -196,6 +195,47 @@ class PlatformVerificationFlow {
                         bool operation_success,
                         const std::string& response_data);
 
+  // Gets prefs associated with the given |web_contents|.  If prefs have been
+  // set explicitly using set_testing_prefs(), then these are always returned.
+  // If no prefs are associated with |web_contents| then NULL is returned.
+  PrefService* GetPrefs(content::WebContents* web_contents);
+
+  // Gets the URL associated with the given |web_contents|.  If a URL as been
+  // set explicitly using set_testing_url(), then this value is always returned.
+  const GURL& GetURL(content::WebContents* web_contents);
+
+  // Checks whether policy or profile settings associated with |web_contents|
+  // have attestation for content protection explicitly disabled.
+  bool IsAttestationEnabled(content::WebContents* web_contents);
+
+  // Checks whether this is the first use on this device for the user associated
+  // with |web_contents|.
+  bool IsFirstUse(content::WebContents* web_contents);
+
+  // Checks if settings indicate that consent is required for the web origin
+  // represented by |web_contents| because the user requested to be prompted.
+  bool IsAlwaysAskRequired(content::WebContents* web_contents);
+
+  // Updates user settings for the profile associated with |web_contents| based
+  // on the |consent_response| to the request of type |consent_type|.
+  bool UpdateSettings(content::WebContents* web_contents,
+                      ConsentType consent_type,
+                      ConsentResponse consent_response);
+
+  // Finds the domain-specific consent pref for the domain associated with
+  // |web_contents|.  If a pref exists for the domain, returns true and sets
+  // |pref_value| if it is not NULL.
+  //
+  // Precondition: A valid PrefService must be available via GetPrefs().
+  bool GetDomainPref(content::WebContents* web_contents, bool* pref_value);
+
+  // Records the domain-specific consent pref for the domain associated with
+  // |web_contents|.  The pref will be set to |allow_domain|.
+  //
+  // Precondition: A valid PrefService must be available via GetPrefs().
+  void RecordDomainConsent(content::WebContents* web_contents,
+                           bool allow_domain);
+
   AttestationFlow* attestation_flow_;
   scoped_ptr<AttestationFlow> default_attestation_flow_;
   cryptohome::AsyncMethodCaller* async_caller_;
@@ -204,6 +244,8 @@ class PlatformVerificationFlow {
   system::StatisticsProvider* statistics_provider_;
   Delegate* delegate_;
   scoped_ptr<Delegate> default_delegate_;
+  PrefService* testing_prefs_;
+  GURL testing_url_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

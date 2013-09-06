@@ -328,6 +328,9 @@ extern const char kAttestationEnabled[];
 extern const char kAttestationExtensionWhitelist[];
 extern const char kTouchHudProjectionEnabled[];
 extern const char kOpenNetworkConfiguration[];
+extern const char kRAConsentFirstTime[];
+extern const char kRAConsentDomains[];
+extern const char kRAConsentAlways[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kIpcDisabledMessages[];
 extern const char kShowHomeButton[];
