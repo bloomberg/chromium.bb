@@ -15,8 +15,7 @@ import flakiness_dashboard_results_uploader
 
 def _LogToFile(results, test_type, suite_name):
   """Log results to local files which can be used for aggregation later."""
-  log_file_path = os.path.join(constants.DIR_SOURCE_ROOT, 'out',
-                               constants.GetBuildType(), 'test_logs')
+  log_file_path = os.path.join(constants.GetOutDirectory(), 'test_logs')
   if not os.path.exists(log_file_path):
     os.mkdir(log_file_path)
   full_file_name = os.path.join(

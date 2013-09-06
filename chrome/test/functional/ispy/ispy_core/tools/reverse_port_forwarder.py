@@ -55,7 +55,7 @@ class ReversePortForwarder(object):
     # Begin forwarding the device_ports to the host_ports.
     forwarder.Forwarder.Map([(self._device_http, self._host_http),
                              (self._device_https, self._host_https)],
-                            self._adb, build_type='Release', tool=None)
+                            self._adb, tool=None)
 
   def Stop(self):
     """Cleans up after the start call by closing the forwarder."""

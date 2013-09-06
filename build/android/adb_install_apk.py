@@ -38,9 +38,8 @@ def ValidateInstallAPKOption(option_parser, options):
   if not options.apk:
     option_parser.error('--apk is mandatory.')
   if not os.path.exists(options.apk):
-    options.apk = os.path.join(constants.DIR_SOURCE_ROOT,
-                               'out', options.build_type,
-                               'apks', options.apk)
+    options.apk = os.path.join(constants.GetOutDirectory(), 'apks',
+                               options.apk)
 
 
 def _InstallApk(args):
@@ -54,6 +53,7 @@ def main(argv):
   parser = optparse.OptionParser()
   AddInstallAPKOption(parser)
   options, args = parser.parse_args(argv)
+  constants.SetBuildType(options.build_type)
   ValidateInstallAPKOption(parser, options)
   if len(args) > 1:
     raise Exception('Error: Unknown argument:', args[1:])

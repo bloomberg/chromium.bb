@@ -124,7 +124,7 @@ class BaseTestRunner(object):
 
   def _ForwardPorts(self, port_pairs):
     """Forwards a port."""
-    Forwarder.Map(port_pairs, self.adb, constants.GetBuildType(), self.tool)
+    Forwarder.Map(port_pairs, self.adb, self.tool)
 
   def _UnmapPorts(self, port_pairs):
     """Unmap previously forwarded ports."""

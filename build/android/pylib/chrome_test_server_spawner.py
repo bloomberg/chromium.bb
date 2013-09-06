@@ -249,8 +249,7 @@ class TestServerThread(threading.Thread):
       else:
         self.is_ready = _CheckPortStatus(self.host_port, True)
     if self.is_ready:
-      Forwarder.Map([(0, self.host_port)], self.adb, constants.GetBuildType(),
-                    self.tool)
+      Forwarder.Map([(0, self.host_port)], self.adb, self.tool)
       # Check whether the forwarder is ready on the device.
       self.is_ready = False
       device_port = Forwarder.DevicePortForHostPort(self.host_port)
