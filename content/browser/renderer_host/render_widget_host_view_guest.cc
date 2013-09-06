@@ -375,14 +375,6 @@ void RenderWidgetHostViewGuest::SetClickthroughRegion(SkRegion* region) {
 }
 #endif
 
-#if defined(OS_WIN) && defined(USE_AURA)
-gfx::NativeViewAccessible
-RenderWidgetHostViewGuest::AccessibleObjectFromChildId(long child_id) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-#endif
-
 void RenderWidgetHostViewGuest::SetHasHorizontalScrollbar(
     bool has_horizontal_scrollbar) {
   platform_view_->SetHasHorizontalScrollbar(has_horizontal_scrollbar);

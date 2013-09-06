@@ -24,8 +24,7 @@ class NativeViewHost;
 
 class WEBVIEW_EXPORT WebView : public View,
                                public content::NotificationObserver,
-                               public content::WebContentsDelegate,
-                               public AccessibleWebView {
+                               public content::WebContentsDelegate {
  public:
   static const char kViewClassName[];
 
@@ -82,11 +81,6 @@ class WEBVIEW_EXPORT WebView : public View,
 
   // Overridden from View:
   virtual const char* GetClassName() const OVERRIDE;
-
-  // Overridden from AccessibleWebView:
-  virtual gfx::NativeViewAccessible AccessibleObjectFromChildId(
-      long child_id) OVERRIDE;
-  virtual View* AsView() OVERRIDE;
 
  private:
   // Overridden from View:

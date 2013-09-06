@@ -212,14 +212,6 @@ void TestRenderWidgetHostView::SetClickthroughRegion(SkRegion* region) {
 }
 #endif
 
-#if defined(OS_WIN) && defined(USE_AURA)
-gfx::NativeViewAccessible
-TestRenderWidgetHostView::AccessibleObjectFromChildId(long child_id) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-#endif
-
 bool TestRenderWidgetHostView::LockMouse() {
   return false;
 }

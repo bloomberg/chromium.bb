@@ -164,10 +164,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 #if defined(OS_WIN) && !defined(USE_AURA)
   virtual void SetClickthroughRegion(SkRegion* region) OVERRIDE;
 #endif
-#if defined(OS_WIN) && defined(USE_AURA)
-  virtual gfx::NativeViewAccessible AccessibleObjectFromChildId(long child_id)
-      OVERRIDE;
-#endif
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
 #if defined(OS_WIN) && defined(USE_AURA)

@@ -29,11 +29,11 @@ void NativeViewAccessibility::Destroy() {
 
 #if !defined(OS_WIN)
 // static
-void NativeViewAccessibility::RegisterWebView(AccessibleWebView* web_view) {
+void NativeViewAccessibility::RegisterWebView(View* web_view) {
 }
 
 // static
-void NativeViewAccessibility::UnregisterWebView(AccessibleWebView* web_view) {
+void NativeViewAccessibility::UnregisterWebView(View* web_view) {
 }
 #endif
 

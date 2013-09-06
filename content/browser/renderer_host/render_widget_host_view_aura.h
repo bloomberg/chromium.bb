@@ -155,10 +155,6 @@ class RenderWidgetHostViewAura
   virtual bool IsShowing() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
-#if defined(OS_WIN)
-  virtual gfx::NativeViewAccessible AccessibleObjectFromChildId(long child_id)
-      OVERRIDE;
-#endif
 
   // Overridden from RenderWidgetHostViewPort:
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/accessibility/accessible_text_utils.h"
@@ -32,9 +33,9 @@ class AccessibleWebViewRegistry {
  public:
   static AccessibleWebViewRegistry* GetInstance();
 
-  void RegisterWebView(AccessibleWebView* web_view);
+  void RegisterWebView(View* web_view);
 
-  void UnregisterWebView(AccessibleWebView* web_view);
+  void UnregisterWebView(View* web_view);
 
   // Given the view that received the request for the accessible
   // id in |top_view|, and the child id requested, return the native
@@ -47,16 +48,18 @@ class AccessibleWebViewRegistry {
   AccessibleWebViewRegistry();
   ~AccessibleWebViewRegistry() {}
 
+  IAccessible* AccessibleObjectFromChildId(View* web_view, long child_id);
+
   // Set of all web views. We check whether each one is contained in a
   // top view dynamically rather than keeping track of a map.
-  std::set<AccessibleWebView*> web_views_;
+  std::set<View*> web_views_;
 
   // The most recent top view used in a call to GetAccessibleFromWebView.
   View* last_top_view_;
 
   // The most recent web view where an accessible object was found,
   // corresponding to |last_top_view_|.
-  AccessibleWebView* last_web_view_;
+  View* last_web_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibleWebViewRegistry);
 };
@@ -70,12 +73,12 @@ AccessibleWebViewRegistry* AccessibleWebViewRegistry::GetInstance() {
   return Singleton<AccessibleWebViewRegistry>::get();
 }
 
-void AccessibleWebViewRegistry::RegisterWebView(AccessibleWebView* web_view) {
+void AccessibleWebViewRegistry::RegisterWebView(View* web_view) {
   DCHECK(web_views_.find(web_view) == web_views_.end());
   web_views_.insert(web_view);
 }
 
-void AccessibleWebViewRegistry::UnregisterWebView(AccessibleWebView* web_view) {
+void AccessibleWebViewRegistry::UnregisterWebView(View* web_view) {
   DCHECK(web_views_.find(web_view) != web_views_.end());
   web_views_.erase(web_view);
   if (last_web_view_ == web_view) {
@@ -91,7 +94,7 @@ IAccessible* AccessibleWebViewRegistry::GetAccessibleFromWebView(
   // sent the last one.
   if (last_top_view_ == top_view) {
     IAccessible* accessible =
-        last_web_view_->AccessibleObjectFromChildId(child_id);
+        AccessibleObjectFromChildId(last_web_view_, child_id);
     if (accessible)
       return accessible;
   }
@@ -100,18 +103,38 @@ IAccessible* AccessibleWebViewRegistry::GetAccessibleFromWebView(
   // of this view where the event was posted - and if so, see if it owns
   // an accessible object with that child id. If so, save the view to speed
   // up the next notification.
-  for (std::set<AccessibleWebView*>::iterator iter = web_views_.begin();
+  for (std::set<View*>::iterator iter = web_views_.begin();
        iter != web_views_.end(); ++iter) {
-    AccessibleWebView* web_view = *iter;
-    if (!top_view->Contains(web_view->AsView()))
+    View* web_view = *iter;
+    if (!top_view->Contains(web_view))
       continue;
-    IAccessible* accessible = web_view->AccessibleObjectFromChildId(child_id);
+    IAccessible* accessible = AccessibleObjectFromChildId(web_view, child_id);
     if (accessible) {
       last_top_view_ = top_view;
       last_web_view_ = web_view;
       return accessible;
     }
   }
+
+  return NULL;
+}
+
+IAccessible* AccessibleWebViewRegistry::AccessibleObjectFromChildId(
+    View* web_view,
+    long child_id) {
+  IAccessible* web_view_accessible = web_view->GetNativeViewAccessible();
+  if (web_view_accessible == NULL)
+    return NULL;
+
+  VARIANT var_child;
+  var_child.vt = VT_I4;
+  var_child.lVal = child_id;
+  IAccessible* result = NULL;
+  if (S_OK == web_view_accessible->get_accChild(
+      var_child, reinterpret_cast<IDispatch**>(&result))) {
+    return result;
+  }
+
   return NULL;
 }
 
@@ -179,7 +202,6 @@ void NativeViewAccessibilityWin::Destroy() {
   Release();
 }
 
-// TODO(ctguil): Handle case where child View is not contained by parent.
 STDMETHODIMP NativeViewAccessibilityWin::accHitTest(
     LONG x_left, LONG y_top, VARIANT* child) {
   if (!child)
@@ -191,22 +213,53 @@ STDMETHODIMP NativeViewAccessibilityWin::accHitTest(
   gfx::Point point(x_left, y_top);
   View::ConvertPointToTarget(NULL, view_, &point);
 
+  // If the point is not inside this view, return false.
   if (!view_->HitTestPoint(point)) {
-    // If containing parent is not hit, return with failure.
     child->vt = VT_EMPTY;
     return S_FALSE;
   }
 
-  View* view = view_->GetEventHandlerForPoint(point);
-  if (view == view_) {
-    // No child hit, return parent id.
-    child->vt = VT_I4;
-    child->lVal = CHILDID_SELF;
-  } else {
-    child->vt = VT_DISPATCH;
-    child->pdispVal = view->GetNativeViewAccessible();
-    child->pdispVal->AddRef();
+  // Check if the point is within any of the immediate children of this
+  // view.
+  View* hit_child_view = NULL;
+  for (int i = view_->child_count() - 1; i >= 0; --i) {
+    View* child_view = view_->child_at(i);
+    if (!child_view->visible())
+      continue;
+
+    gfx::Point point_in_child_coords(point);
+    view_->ConvertPointToTarget(view_, child_view, &point_in_child_coords);
+    if (child_view->HitTestPoint(point_in_child_coords)) {
+      hit_child_view = child_view;
+      break;
+    }
   }
+
+  // If the point was within one of this view's immediate children,
+  // call accHitTest recursively on that child's native view accessible -
+  // which may be a recursive call to this function or it may be overridden,
+  // for example in the case of a WebView.
+  if (hit_child_view) {
+    HRESULT result = hit_child_view->GetNativeViewAccessible()->accHitTest(
+        x_left, y_top, child);
+
+    // If the recursive call returned CHILDID_SELF, we have to convert that
+    // into a VT_DISPATCH for the return value to this call.
+    if (S_OK == result && child->vt == VT_I4 && child->lVal == CHILDID_SELF) {
+      child->vt = VT_DISPATCH;
+      child->pdispVal = hit_child_view->GetNativeViewAccessible();
+      // Always increment ref when returning a reference to a COM object.
+      child->pdispVal->AddRef();
+    }
+    return result;
+  }
+
+  // This object is the best match, so return CHILDID_SELF. It's tempting to
+  // simplify the logic and use VT_DISPATCH everywhere, but the Windows
+  // call AccessibleObjectFromPoint will keep calling accHitTest until some
+  // object returns CHILDID_SELF.
+  child->vt = VT_I4;
+  child->lVal = CHILDID_SELF;
   return S_OK;
 }
 
@@ -378,10 +431,8 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accChild(VARIANT var_child,
     } else {
       *disp_child = AccessibleWebViewRegistry::GetInstance()->
           GetAccessibleFromWebView(view_, child_id);
-      if (*disp_child) {
-        (*disp_child)->AddRef();
+      if (*disp_child)
         return S_OK;
-      }
     }
   }
 
@@ -996,11 +1047,11 @@ STDMETHODIMP NativeViewAccessibilityWin::GetPropertyValue(PROPERTYID id,
 // Static methods.
 //
 
-void NativeViewAccessibility::RegisterWebView(AccessibleWebView* web_view) {
+void NativeViewAccessibility::RegisterWebView(View* web_view) {
   AccessibleWebViewRegistry::GetInstance()->RegisterWebView(web_view);
 }
 
-void NativeViewAccessibility::UnregisterWebView(AccessibleWebView* web_view) {
+void NativeViewAccessibility::UnregisterWebView(View* web_view) {
   AccessibleWebViewRegistry::GetInstance()->UnregisterWebView(web_view);
 }
 

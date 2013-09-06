@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/webview/webview.h"
 
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
@@ -183,28 +184,6 @@ void WebView::WebContentsFocused(content::WebContents* web_contents) {
   DCHECK(wc_owner_.get());
   // The WebView is only the delegate of WebContentses it creates itself.
   OnWebContentsFocused(web_contents_);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WebView, AccessibleWebView implementation:
-
-gfx::NativeViewAccessible WebView::AccessibleObjectFromChildId(long child_id) {
-#if defined(OS_WIN) && defined(USE_AURA)
-  if (!web_contents_)
-    return NULL;
-  content::RenderWidgetHostView* host_view =
-      web_contents_->GetRenderWidgetHostView();
-  if (host_view)
-    return host_view->AccessibleObjectFromChildId(child_id);
-  return NULL;
-#else
-  NOTIMPLEMENTED();
-  return NULL;
-#endif
-}
-
-View* WebView::AsView() {
-  return this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -65,10 +65,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 #if defined(OS_WIN) && !defined(USE_AURA)
   virtual void SetClickthroughRegion(SkRegion* region) OVERRIDE;
 #endif
-#if defined(OS_WIN) && defined(USE_AURA)
-  virtual gfx::NativeViewAccessible AccessibleObjectFromChildId(long child_id)
-      OVERRIDE;
-#endif
 
   // RenderWidgetHostViewPort implementation.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,

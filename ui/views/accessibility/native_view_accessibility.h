@@ -13,13 +13,6 @@ namespace views {
 
 class View;
 
-class AccessibleWebView {
- public:
-  virtual gfx::NativeViewAccessible AccessibleObjectFromChildId(long child_id)
-      = 0;
-  virtual View* AsView() = 0;
-};
-
 class VIEWS_EXPORT NativeViewAccessibility {
  public:
   static NativeViewAccessibility* Create(View* view);
@@ -33,9 +26,11 @@ class VIEWS_EXPORT NativeViewAccessibility {
   // use reference counting.
   virtual void Destroy();
 
-  static void RegisterWebView(AccessibleWebView* web_view);
-
-  static void UnregisterWebView(AccessibleWebView* web_view);
+  // WebViews need to be registered because they implement their own
+  // tree of accessibility objects, and we need to check them when
+  // mapping a child id to a NativeViewAccessible.
+  static void RegisterWebView(View* web_view);
+  static void UnregisterWebView(View* web_view);
 
  protected:
   NativeViewAccessibility();

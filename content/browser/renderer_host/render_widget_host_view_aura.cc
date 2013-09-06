@@ -1013,18 +1013,6 @@ void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
   window_->layer()->SetFillsBoundsOpaquely(background.isOpaque());
 }
 
-#if defined(OS_WIN)
-gfx::NativeViewAccessible
-RenderWidgetHostViewAura::AccessibleObjectFromChildId(long child_id) {
-  BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
-  if (!manager)
-    return NULL;
-
-  return manager->ToBrowserAccessibilityManagerWin()->GetFromUniqueIdWin(
-      child_id);
-}
-#endif  // defined(OS_WIN)
-
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
   current_cursor_ = cursor;
   const gfx::Display display = gfx::Screen::GetScreenFor(window_)->
