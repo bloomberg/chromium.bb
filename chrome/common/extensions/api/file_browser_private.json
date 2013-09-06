@@ -422,7 +422,7 @@
             "description": "The unique identifier of task to execute."
           },
           {
-            "name": "fileURLs",
+            "name": "fileUrls",
             "type": "array",
             "description": "Array of file URLs",
             "items": { "type": "string" }
@@ -452,7 +452,7 @@
             "description": "The unique identifier of task to mark as default."
           },
           {
-            "name": "fileURLs",
+            "name": "fileUrls",
             "type": "array",
             "description": "Array of selected file URLs to extract suffixes from.",
             "items": { "type": "string" }
@@ -477,7 +477,7 @@
         "description": "Gets the list of tasks that can be performed over selected files.",
         "parameters": [
           {
-            "name": "fileURLs",
+            "name": "fileUrls",
             "type": "array",
             "description": "Array of selected file URLs",
             "items": { "type": "string" }

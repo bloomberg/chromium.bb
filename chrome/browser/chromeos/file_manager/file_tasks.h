@@ -169,27 +169,13 @@ class FullTaskDescriptor {
   const TaskDescriptor& task_descriptor() const { return task_descriptor_; }
 
   // The title of the task.
-  const std::string& task_title() { return task_title_; }
+  const std::string& task_title() const { return task_title_; }
   // The icon URL for the task (ex. app icon)
   const GURL& icon_url() const { return icon_url_; }
 
   // True if this task is set as default.
   bool is_default() const { return is_default_; }
   void set_is_default(bool is_default) { is_default_ = is_default; }
-
-  // Returns a DictionaryValue representation, which looks like:
-  //
-  // {
-  //   "iconUrl": "<app_icon_url>",
-  //   "isDefault": false,
-  //   "taskId": "<drive_app_id>|drive|open-with",
-  //   "title": "Drive App Name (ex. Pixlr Editor)"
-  // },
-  //
-  // "iconUrl" is omitted if icon_url_ is empty.
-  //
-  // This representation will be used to send task info to the JavaScript.
-  scoped_ptr<base::DictionaryValue> AsDictionaryValue() const;
 
  private:
   TaskDescriptor task_descriptor_;

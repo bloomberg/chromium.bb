@@ -29,10 +29,8 @@ class FileBrowserPrivateExecuteTaskFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.executeTask",
                              FILEBROWSERPRIVATE_EXECUTETASK)
 
-  FileBrowserPrivateExecuteTaskFunction();
-
  protected:
-  virtual ~FileBrowserPrivateExecuteTaskFunction();
+  virtual ~FileBrowserPrivateExecuteTaskFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -47,10 +45,8 @@ class FileBrowserPrivateGetFileTasksFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getFileTasks",
                              FILEBROWSERPRIVATE_GETFILETASKS)
 
-  FileBrowserPrivateGetFileTasksFunction();
-
  protected:
-  virtual ~FileBrowserPrivateGetFileTasksFunction();
+  virtual ~FileBrowserPrivateGetFileTasksFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -62,10 +58,8 @@ class FileBrowserPrivateSetDefaultTaskFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.setDefaultTask",
                              FILEBROWSERPRIVATE_SETDEFAULTTASK)
 
-  FileBrowserPrivateSetDefaultTaskFunction();
-
  protected:
-  virtual ~FileBrowserPrivateSetDefaultTaskFunction();
+  virtual ~FileBrowserPrivateSetDefaultTaskFunction() {}
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;

@@ -56,23 +56,12 @@ TEST(FileManagerFileTasksTest,
       GURL("http://example.com/icon.png"),
       true /* is_default */);
 
-  scoped_ptr<base::DictionaryValue> dictionary(
-      full_descriptor.AsDictionaryValue());
-  std::string task_id;
-  EXPECT_TRUE(dictionary->GetString("taskId", &task_id));
+  const std::string task_id =
+      TaskDescriptorToId(full_descriptor.task_descriptor());
   EXPECT_EQ("app-id|file|action-id", task_id);
-
-  std::string icon_url;
-  EXPECT_TRUE(dictionary->GetString("iconUrl", &icon_url));
-  EXPECT_EQ("http://example.com/icon.png", icon_url);
-
-  std::string title;
-  EXPECT_TRUE(dictionary->GetString("title", &title));
-  EXPECT_EQ("task title", title);
-
-  bool is_default = false;
-  EXPECT_TRUE(dictionary->GetBoolean("isDefault", &is_default));
-  EXPECT_TRUE(is_default);
+  EXPECT_EQ("http://example.com/icon.png", full_descriptor.icon_url().spec());
+  EXPECT_EQ("task title", full_descriptor.task_title());
+  EXPECT_TRUE(full_descriptor.is_default());
 }
 
 TEST(FileManagerFileTasksTest,
@@ -85,22 +74,12 @@ TEST(FileManagerFileTasksTest,
       GURL(),  // No icon URL.
       false /* is_default */);
 
-  scoped_ptr<base::DictionaryValue> dictionary(
-      full_descriptor.AsDictionaryValue());
-  std::string task_id;
-  EXPECT_TRUE(dictionary->GetString("taskId", &task_id));
+  const std::string task_id =
+      TaskDescriptorToId(full_descriptor.task_descriptor());
   EXPECT_EQ("app-id|drive|action-id", task_id);
-
-  std::string icon_url;
-  EXPECT_FALSE(dictionary->GetString("iconUrl", &icon_url));
-
-  std::string title;
-  EXPECT_TRUE(dictionary->GetString("title", &title));
-  EXPECT_EQ("task title", title);
-
-  bool is_default = false;
-  EXPECT_TRUE(dictionary->GetBoolean("isDefault", &is_default));
-  EXPECT_FALSE(is_default);
+  EXPECT_TRUE(full_descriptor.icon_url().is_empty());
+  EXPECT_EQ("task title", full_descriptor.task_title());
+  EXPECT_FALSE(full_descriptor.is_default());
 }
 
 TEST(FileManagerFileTasksTest, MakeTaskID) {

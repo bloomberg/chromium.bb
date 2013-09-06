@@ -125,17 +125,6 @@ FullTaskDescriptor::FullTaskDescriptor(
       is_default_(is_default){
 }
 
-scoped_ptr<base::DictionaryValue>
-FullTaskDescriptor::AsDictionaryValue() const {
-  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
-  dictionary->SetString("taskId", TaskDescriptorToId(task_descriptor_));
-  if (!icon_url_.is_empty())
-    dictionary->SetString("iconUrl", icon_url_.spec());
-  dictionary->SetString("title", task_title_);
-  dictionary->SetBoolean("isDefault", is_default_);
-  return dictionary.Pass();
-}
-
 void UpdateDefaultTask(PrefService* pref_service,
                        const std::string& task_id,
                        const std::set<std::string>& suffixes,

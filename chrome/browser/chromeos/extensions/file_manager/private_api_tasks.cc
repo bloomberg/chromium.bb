@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/file_manager/mime_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/file_browser_private.h"
 #include "content/public/browser/render_view_host.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
@@ -25,14 +26,12 @@ namespace {
 const char kInvalidFileUrl[] = "Invalid file URL";
 
 // Make a set of unique filename suffixes out of the list of file URLs.
-std::set<std::string> GetUniqueSuffixes(base::ListValue* file_url_list,
-                                        fileapi::FileSystemContext* context) {
+std::set<std::string> GetUniqueSuffixes(
+    const std::vector<std::string>& file_url_list,
+    const fileapi::FileSystemContext* context) {
   std::set<std::string> suffixes;
-  for (size_t i = 0; i < file_url_list->GetSize(); ++i) {
-    std::string url_str;
-    if (!file_url_list->GetString(i, &url_str))
-      return std::set<std::string>();
-    FileSystemURL url = context->CrackURL(GURL(url_str));
+  for (size_t i = 0; i < file_url_list.size(); ++i) {
+    const FileSystemURL url = context->CrackURL(GURL(file_url_list[i]));
     if (!url.is_valid() || url.path().empty())
       return std::set<std::string>();
     // We'll skip empty suffixes.
@@ -43,12 +42,11 @@ std::set<std::string> GetUniqueSuffixes(base::ListValue* file_url_list,
 }
 
 // Make a set of unique MIME types out of the list of MIME types.
-std::set<std::string> GetUniqueMimeTypes(base::ListValue* mime_type_list) {
+std::set<std::string> GetUniqueMimeTypes(
+    const std::vector<std::string>& mime_type_list) {
   std::set<std::string> mime_types;
-  for (size_t i = 0; i < mime_type_list->GetSize(); ++i) {
+  for (size_t i = 0; i < mime_type_list.size(); ++i) {
     std::string mime_type;
-    if (!mime_type_list->GetString(i, &mime_type))
-      return std::set<std::string>();
     // We'll skip empty MIME types.
     if (!mime_type.empty())
       mime_types.insert(mime_type);
@@ -58,49 +56,31 @@ std::set<std::string> GetUniqueMimeTypes(base::ListValue* mime_type_list) {
 
 }  // namespace
 
-FileBrowserPrivateExecuteTaskFunction::FileBrowserPrivateExecuteTaskFunction() {
-}
-
-FileBrowserPrivateExecuteTaskFunction::
-    ~FileBrowserPrivateExecuteTaskFunction() {
-}
-
 bool FileBrowserPrivateExecuteTaskFunction::RunImpl() {
-  // First param is task id that was to the extension with getFileTasks call.
-  std::string task_id;
-  if (!args_->GetString(0, &task_id) || !task_id.size())
-    return false;
+  using extensions::api::file_browser_private::ExecuteTask::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   // TODO(kaznacheev): Crack the task_id here, store it in the Executor
   // and avoid passing it around.
 
-  // The second param is the list of files that need to be executed with this
-  // task.
-  ListValue* files_list = NULL;
-  if (!args_->GetList(1, &files_list))
-    return false;
-
   file_manager::file_tasks::TaskDescriptor task;
-  if (!file_manager::file_tasks::ParseTaskID(task_id, &task)) {
-    LOG(WARNING) << "Invalid task " << task_id;
+  if (!file_manager::file_tasks::ParseTaskID(params->task_id, &task)) {
+    LOG(WARNING) << "Invalid task " << params->task_id;
     return false;
   }
 
-  if (!files_list->GetSize())
+  if (params->file_urls.empty())
     return true;
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+  const scoped_refptr<fileapi::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
           profile(), render_view_host());
 
   std::vector<FileSystemURL> file_urls;
-  for (size_t i = 0; i < files_list->GetSize(); i++) {
-    std::string file_url_str;
-    if (!files_list->GetString(i, &file_url_str)) {
-      error_ = kInvalidFileUrl;
-      return false;
-    }
-    FileSystemURL url = file_system_context->CrackURL(GURL(file_url_str));
+  for (size_t i = 0; i < params->file_urls.size(); i++) {
+    const FileSystemURL url =
+        file_system_context->CrackURL(GURL(params->file_urls[i]));
     if (!chromeos::FileSystemBackend::CanHandleURL(url)) {
       error_ = kInvalidFileUrl;
       return false;
@@ -108,7 +88,7 @@ bool FileBrowserPrivateExecuteTaskFunction::RunImpl() {
     file_urls.push_back(url);
   }
 
-  int32 tab_id = file_manager::util::GetTabId(dispatcher());
+  const int32 tab_id = file_manager::util::GetTabId(dispatcher());
   return file_manager::file_tasks::ExecuteFileTask(
       profile(),
       source_url(),
@@ -124,34 +104,20 @@ void FileBrowserPrivateExecuteTaskFunction::OnTaskExecuted(bool success) {
   SendResponse(true);
 }
 
-FileBrowserPrivateGetFileTasksFunction::
-    FileBrowserPrivateGetFileTasksFunction() {
-}
-
-FileBrowserPrivateGetFileTasksFunction::
-    ~FileBrowserPrivateGetFileTasksFunction() {
-}
-
 bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {
-  // First argument is the list of files to get tasks for.
-  ListValue* files_list = NULL;
-  if (!args_->GetList(0, &files_list))
-    return false;
+  using extensions::api::file_browser_private::GetFileTasks::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
 
-  if (files_list->GetSize() == 0)
-    return false;
-
-  // Second argument is the list of mime types of each of the files in the list.
-  ListValue* mime_types_list = NULL;
-  if (!args_->GetList(1, &mime_types_list))
+  if (params->file_urls.empty())
     return false;
 
   // MIME types can either be empty, or there needs to be one for each file.
-  if (mime_types_list->GetSize() != files_list->GetSize() &&
-      mime_types_list->GetSize() != 0)
+  if (params->mime_types.size() != params->file_urls.size() &&
+      params->mime_types.size() != 0)
     return false;
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+  const scoped_refptr<fileapi::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
           profile(), render_view_host());
 
@@ -159,17 +125,12 @@ bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {
   // file paths.
   PathAndMimeTypeSet path_mime_set;
   std::vector<GURL> file_urls;
-  for (size_t i = 0; i < files_list->GetSize(); ++i) {
-    std::string file_url_str;
-    if (!files_list->GetString(i, &file_url_str))
-      return false;
-
+  for (size_t i = 0; i < params->file_urls.size(); ++i) {
     std::string mime_type;
-    if (mime_types_list->GetSize() != 0 &&
-        !mime_types_list->GetString(i, &mime_type))
-      return false;
+    if (params->mime_types.size() != 0)
+      mime_type = params->mime_types[i];
 
-    GURL file_url(file_url_str);
+    const GURL file_url(params->file_urls[i]);
     fileapi::FileSystemURL file_system_url(
         file_system_context->CrackURL(file_url));
     if (!chromeos::FileSystemBackend::CanHandleURL(file_system_url))
@@ -190,48 +151,45 @@ bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {
                                                 path_mime_set,
                                                 file_urls,
                                                 &tasks);
-  // Convert the tasks into JSON format.
-  ListValue* result_list = new ListValue();
-  for (size_t i = 0; i < tasks.size(); ++i)
-    result_list->Append(tasks[i].AsDictionaryValue().release());
 
-  SetResult(result_list);
+  // Convert the tasks into JSON compatible objects.
+  using api::file_browser_private::FileTask;
+  std::vector<linked_ptr<FileTask> > results;
+  for (size_t i = 0; i < tasks.size(); ++i) {
+    const file_manager::file_tasks::FullTaskDescriptor& task = tasks[i];
+    const linked_ptr<FileTask> converted(new FileTask);
+    converted->task_id = file_manager::file_tasks::TaskDescriptorToId(
+        task.task_descriptor());
+    if (!task.icon_url().is_empty())
+      converted->icon_url = task.icon_url().spec();
+    converted->title = task.task_title();
+    converted->is_default = task.is_default();
+    results.push_back(converted);
+  }
+  results_ = extensions::api::file_browser_private::GetFileTasks::Results::
+      Create(results);
   SendResponse(true);
   return true;
 }
 
-FileBrowserPrivateSetDefaultTaskFunction::
-    FileBrowserPrivateSetDefaultTaskFunction() {
-}
-
-FileBrowserPrivateSetDefaultTaskFunction::
-    ~FileBrowserPrivateSetDefaultTaskFunction() {
-}
-
 bool FileBrowserPrivateSetDefaultTaskFunction::RunImpl() {
-  // First param is task id that was to the extension with setDefaultTask call.
-  std::string task_id;
-  if (!args_->GetString(0, &task_id) || !task_id.size())
-    return false;
+  using extensions::api::file_browser_private::SetDefaultTask::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
 
-  base::ListValue* file_url_list;
-  if (!args_->GetList(1, &file_url_list))
-    return false;
-
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+  const scoped_refptr<fileapi::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
           profile(), render_view_host());
 
-  std::set<std::string> suffixes =
-      GetUniqueSuffixes(file_url_list, file_system_context.get());
+  const std::set<std::string> suffixes =
+      GetUniqueSuffixes(params->file_urls, file_system_context.get());
 
   // MIME types are an optional parameter.
-  base::ListValue* mime_type_list;
   std::set<std::string> mime_types;
-  if (args_->GetList(2, &mime_type_list) && !mime_type_list->empty()) {
-    if (mime_type_list->GetSize() != file_url_list->GetSize())
+  if (params->mime_types && !params->mime_types->empty()) {
+    if (params->mime_types->size() != params->file_urls.size())
       return false;
-    mime_types = GetUniqueMimeTypes(mime_type_list);
+    mime_types = GetUniqueMimeTypes(*params->mime_types);
   }
 
   // If there weren't any mime_types, and all the suffixes were blank,
@@ -246,7 +204,7 @@ bool FileBrowserPrivateSetDefaultTaskFunction::RunImpl() {
   }
 
   file_manager::file_tasks::UpdateDefaultTask(profile_->GetPrefs(),
-                                              task_id,
+                                              params->task_id,
                                               suffixes,
                                               mime_types);
   return true;
