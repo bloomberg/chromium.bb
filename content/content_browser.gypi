@@ -404,6 +404,7 @@
     'browser/device_orientation/data_fetcher_shared_memory_base.h',
     'browser/device_orientation/data_fetcher_shared_memory_default.cc',
     'browser/device_orientation/data_fetcher_shared_memory_mac.cc',
+    'browser/device_orientation/data_fetcher_shared_memory_win.cc',
     'browser/device_orientation/device_data.h',
     'browser/device_orientation/device_inertial_sensor_service.cc',
     'browser/device_orientation/device_inertial_sensor_service.h',
@@ -1307,6 +1308,9 @@
         '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
         '../third_party/isimpledom/isimpledom.gyp:isimpledom',
         '../win8/win8.gyp:win8_util',
+      ],
+      'sources/': [
+        ['exclude', '^browser/device_orientation/data_fetcher_shared_memory_default.cc$'],
       ],
       'defines': [
         # This prevents the inclusion of atlhost.h which paired

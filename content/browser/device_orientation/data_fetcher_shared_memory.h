@@ -14,6 +14,9 @@
 
 #if defined(OS_MACOSX)
 class SuddenMotionSensor;
+#elif defined(OS_WIN)
+#include <SensorsApi.h>
+#include "base/win/scoped_comptr.h"
 #endif
 
 namespace content {
@@ -38,6 +41,11 @@ class CONTENT_EXPORT DataFetcherSharedMemory
   virtual bool IsPolling() const OVERRIDE;
 
   scoped_ptr<SuddenMotionSensor> sudden_motion_sensor_;
+#elif defined(OS_WIN)
+  class SensorEventSink;
+  friend SensorEventSink;
+
+  base::win::ScopedComPtr<ISensor> sensor_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DataFetcherSharedMemory);
