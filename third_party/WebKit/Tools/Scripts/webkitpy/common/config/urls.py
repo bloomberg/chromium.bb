@@ -50,8 +50,7 @@ def chromium_results_zip_url(builder_name):
 
 
 def chromium_accumulated_results_url_base_for_builder(builder_name):
-    # FIXME: The duplicate directory is due to crbug.com/285572.
-    return chromium_results_url_base_for_builder(builder_name) + "/results/layout-test-results/layout-test-results"
+    return chromium_results_url_base_for_builder(builder_name) + "/results/layout-test-results"
 
 
 chromium_lkgr_url = "http://chromium-status.appspot.com/lkgr"

@@ -1121,8 +1121,7 @@ function loadExpectationsLayoutTests(test, expectationsContainer)
     var testWithoutSuffix = test.substring(0, test.lastIndexOf('.'));
 
     for (var builder in currentBuilders()) {
-        // FIXME: The duplicate "layout-test-results" is due to crbug.com/285572.
-        var actualResultsBase = TEST_RESULTS_BASE_PATH + currentBuilders()[builder] + '/results/layout-test-results/layout-test-results/';
+        var actualResultsBase = TEST_RESULTS_BASE_PATH + currentBuilders()[builder] + '/results/layout-test-results/';
         ACTUAL_RESULT_SUFFIXES.forEach(function(suffix) {{
             addExpectationItem(expectationsContainers, expectationsContainer, actualResultsBase + testWithoutSuffix + '-' + suffix, builder);
         }})
