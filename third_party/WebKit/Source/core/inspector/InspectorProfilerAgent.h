@@ -62,7 +62,6 @@ public:
 
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
-    virtual void setSamplingInterval(ErrorString*, int);
     virtual void start(ErrorString* = 0);
     virtual void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::ProfileHeader>& header);
 
