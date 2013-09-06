@@ -1,0 +1,106 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x481
+  RenderBlock {HTML} at (0,0) size 800x481.25
+    RenderBody {BODY} at (8,18.72) size 784x454.53
+      RenderBlock {H3} at (0,0) size 784x23
+        RenderText {#text} at (0,0) size 202x22
+          text run at (0,0) width 202: "Test for chromium bug : "
+        RenderInline {A} at (0,0) size 50x22 [color=#0000EE]
+          RenderText {#text} at (202,0) size 50x22
+            text run at (202,0) width 50: "53693"
+        RenderText {#text} at (252,0) size 445x22
+          text run at (252,0) width 445: ". Tables with display:inline rendered in wrong position."
+      RenderBlock {H4} at (0,44.27) size 784x40
+        RenderText {#text} at (0,0) size 774x39
+          text run at (0,0) width 774: "Table was created as Inline renderer and another table renderer is created for table's content. So It was displayed as"
+          text run at (0,20) width 703: "block element and all it's style properties also associated with inline renderer and was not applied to table."
+      RenderBlock (anonymous) at (0,105.53) size 784x148
+        RenderText {#text} at (0,0) size 759x39
+          text run at (0,0) width 759: "case 1: The two blocks below should present in same line, first block with green background color and second block with blue"
+          text run at (0,20) width 115: "background color. "
+        RenderBR {BR} at (115,20) size 0x19
+        RenderBR {BR} at (0,40) size 0x19
+        RenderInline {TABLE} at (0,0) size 81x19 [bgcolor=#008000]
+          RenderText {#text} at (0,0) size 0x0
+          RenderTable at (0,60) size 81x26
+            RenderTableSection {TBODY} at (0,0) size 81x26
+              RenderTableRow {TR} at (0,2) size 81x22
+                RenderTableCell {TD} at (2,2) size 77x22 [r=0 c=0 rs=1 cs=1]
+                  RenderText {#text} at (1,1) size 75x19
+                    text run at (1,1) width 75: "inline table 1"
+        RenderText {#text} at (81,68) size 4x19
+          text run at (81,68) width 4: " "
+        RenderInline {TABLE} at (0,0) size 81x19 [bgcolor=#0000FF]
+          RenderText {#text} at (0,0) size 0x0
+          RenderTable at (85,60) size 81x26
+            RenderTableSection {TBODY} at (0,0) size 81x26
+              RenderTableRow {TR} at (0,2) size 81x22
+                RenderTableCell {TD} at (2,2) size 77x22 [r=0 c=0 rs=1 cs=1]
+                  RenderText {#text} at (1,1) size 75x19
+                    text run at (1,1) width 75: "inline table 2"
+        RenderText {#text} at (166,68) size 4x19
+          text run at (166,68) width 4: " "
+        RenderBR {BR} at (0,0) size 0x0
+        RenderBR {BR} at (0,88) size 0x19
+        RenderText {#text} at (0,108) size 331x19
+          text run at (0,108) width 331: "case 2: 'Hello' and 'World' should present in same line. "
+        RenderBR {BR} at (0,0) size 0x0
+        RenderBR {BR} at (0,128) size 0x19
+      RenderBlock {DIV} at (0,253.53) size 784x28
+        RenderText {#text} at (0,8) size 36x19
+          text run at (0,8) width 36: "Hello "
+        RenderInline {TABLE} at (0,0) size 45x19
+          RenderTable at (36,0) size 45x26
+            RenderTableSection {TBODY} at (0,0) size 45x26
+              RenderTableRow {TR} at (0,2) size 45x22
+                RenderTableCell {TD} at (2,2) size 41x22 [r=0 c=0 rs=1 cs=1]
+                  RenderText {#text} at (1,1) size 39x19
+                    text run at (1,1) width 39: "World"
+        RenderText {#text} at (0,0) size 0x0
+      RenderBlock (anonymous) at (0,281.53) size 784x20
+        RenderBR {BR} at (0,0) size 0x19
+      RenderBlock {DIV} at (0,301.53) size 784x28
+        RenderText {#text} at (0,2) size 36x19
+          text run at (0,2) width 36: "Hello "
+        RenderInline {TABLE} at (0,0) size 45x19
+          RenderTable at (36,0) size 45x28
+            RenderTableSection {TBODY} at (0,0) size 45x28
+              RenderTableRow (anonymous) at (0,2) size 45x24
+                RenderTableCell (anonymous) at (2,2) size 41x24 [r=0 c=0 rs=1 cs=1]
+                  RenderInline {TR} at (0,0) size 41x19
+                    RenderInline {TD} at (0,0) size 41x21
+                      RenderText {#text} at (1,4) size 39x19
+                        text run at (1,4) width 39: "World"
+        RenderText {#text} at (0,0) size 0x0
+      RenderBlock (anonymous) at (0,329.53) size 784x60
+        RenderBR {BR} at (0,0) size 0x19
+        RenderText {#text} at (0,20) size 407x19
+          text run at (0,20) width 407: "case 3: 'before', 'inside table' and 'after' should present in same line. "
+        RenderBR {BR} at (0,0) size 0x0
+        RenderBR {BR} at (0,40) size 0x19
+      RenderTable {TABLE} at (0,389.53) size 0x0
+      RenderBlock (anonymous) at (0,389.53) size 784x65
+        RenderInline {SPAN} at (0,0) size 43x19
+          RenderText {#text} at (0,5) size 43x19
+            text run at (0,5) width 43: "before "
+        RenderInline {SPAN} at (0,0) size 145x59
+          RenderTable at (43,0) size 67x20
+            RenderTableSection {TBODY} at (0,0) size 67x20
+              RenderTableRow {TR} at (0,0) size 67x20
+                RenderTableCell {TD} at (0,0) size 67x20 [r=0 c=0 rs=1 cs=1]
+                  RenderText {#text} at (0,0) size 67x19
+                    text run at (0,0) width 67: "inside table"
+          RenderText {#text} at (110,5) size 35x19
+            text run at (110,5) width 35: " after "
+          RenderInline {SPAN} at (0,0) size 141x39
+            RenderText {#text} at (0,0) size 0x0
+            RenderText {#text} at (0,0) size 0x0
+            RenderBR {BR} at (0,0) size 0x0
+            RenderBR {BR} at (0,25) size 0x19
+            RenderInline {SPAN} at (0,0) size 141x19
+              RenderText {#text} at (0,45) size 141x19
+                text run at (0,45) width 43: "before "
+                text run at (43,45) width 98: "inside table after"
+              RenderInline {SPAN} at (0,0) size 0x0
+                RenderText {#text} at (0,0) size 0x0

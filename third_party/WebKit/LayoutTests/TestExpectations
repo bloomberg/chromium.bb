@@ -1435,3 +1435,12 @@ crbug.com/29502 tables/mozilla/bugs/bug55789.html [ NeedsRebaseline ]
 crbug.com/29502 tables/mozilla_expected_failures/core/captions1.html [ NeedsRebaseline ]
 crbug.com/29502 tables/mozilla_expected_failures/other/test4.html [ NeedsRebaseline ]
 crbug.com/29502 fast/forms/input-value.html [ NeedsRebaseline ]
+
+#Below test case need to rebaseline after crbug.com/53693
+# Image only
+crbug.com/53693 [ Linux ] fast/table/table-display-inline.html [ NeedsRebaseline ]
+crbug.com/53693 fast/block/float/float-not-removed-from-pre-block.html [ NeedsRebaseline ]
+# Text and Image both
+crbug.com/53693 [ Win Mac ] fast/table/table-display-inline.html [ NeedsRebaseline ]
+crbug.com/53693 fast/dynamic/insert-before-table-part-in-continuation.html [ NeedsRebaseline ]
+crbug.com/53693 [ Mac ] tables/mozilla/bugs/bug3037-1.html [ NeedsRebaseline ]
