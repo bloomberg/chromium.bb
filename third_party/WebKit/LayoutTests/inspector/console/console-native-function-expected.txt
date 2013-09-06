@@ -1,0 +1,5 @@
+Tests that console dumps native function without exception.
+
+Math.random
+function random() { [native code] }
+
