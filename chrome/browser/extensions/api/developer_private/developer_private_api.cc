@@ -653,7 +653,7 @@ bool DeveloperPrivateEnableFunction::RunImpl() {
   if (!extension ||
       !management_policy->UserMayModifySettings(extension, NULL)) {
     LOG(ERROR) << "Attempt to enable an extension that is non-usermanagable "
-               "was made. Extension id: " << extension->id();
+               "was made. Extension id: " << extension_id.c_str();
     return false;
   }
 
