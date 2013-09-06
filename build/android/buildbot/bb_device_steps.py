@@ -66,8 +66,8 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
       'webview:android_webview/test/data/device_files'),
     ])
 
-VALID_TESTS = set(['chromedriver', 'ui', 'unit', 'webkit', 'webkit_layout',
-                   'webrtc'])
+VALID_TESTS = set(['chromedriver', 'gpu', 'ui', 'unit', 'webkit',
+                   'webkit_layout', 'webrtc'])
 
 RunCmd = bb_utils.RunCmd
 
@@ -303,9 +303,16 @@ def RunWebRTCTests(options):
   RunTestSuites(options, gtest_config.WEBRTC_TEST_SUITES)
 
 
+def RunGPUTests(_):
+  bb_annotations.PrintNamedStep('gpu_tests')
+  RunCmd(['content/test/gpu/run_gpu_test',
+          '--browser=android-content-shell', 'pixel'])
+
+
 def GetTestStepCmds():
   return [
       ('chromedriver', RunChromeDriverTests),
+      ('gpu', RunGPUTests),
       ('unit', RunUnitTests),
       ('ui', RunInstrumentationTests),
       ('webkit', RunWebkitTests),
