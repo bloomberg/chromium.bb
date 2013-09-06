@@ -294,7 +294,6 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     EXPECT_TRUE(touch_editable->touch_selection_controller_.get());
   }
 
-  // TODO(mohsen): Remove logs if the test showed no flakiness anymore.
   void TestTouchCursorInTextfield() {
     ASSERT_NO_FATAL_FAILURE(
         StartTestWithPage("files/touch_selection.html"));
@@ -312,28 +311,21 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     aura::test::EventGenerator generator(content->GetRootWindow(), content);
     gfx::Rect bounds = content->GetBoundsInRootWindow();
     EXPECT_EQ(touch_editable->rwhva_, rwhva);
-
-    LOG(INFO) << "Focus the textfield.";
     ExecuteSyncJSFunction(view_host, "focus_textfield()");
 
     // Tap textfield
     touch_editable->Reset();
-    LOG(INFO) << "Tap in the textfield.";
     generator.GestureTapAt(gfx::Point(bounds.x() + 50, bounds.y() + 40));
-    LOG(INFO) << "Wait for tap-down ACK.";
     touch_editable->WaitForGestureAck();  // Wait for Tap Down Ack
     touch_editable->Reset();
-    LOG(INFO) << "Wait for tap ACK.";
     touch_editable->WaitForGestureAck();  // Wait for Tap Ack.
 
-    LOG(INFO) << "Test the touch selection handle.";
     // Check if cursor handle is showing.
     ui::TouchSelectionController* controller =
         touch_editable->touch_selection_controller_.get();
     EXPECT_NE(ui::TEXT_INPUT_TYPE_NONE, touch_editable->text_input_type_);
     EXPECT_TRUE(controller);
 
-    LOG(INFO) << "Test cursor position.";
     scoped_ptr<base::Value> value =
         content::ExecuteScriptAndGetValue(view_host, "get_cursor_position()");
     int cursor_pos = -1;
@@ -341,18 +333,14 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     EXPECT_NE(-1, cursor_pos);
 
     // Move the cursor handle.
-    LOG(INFO) << "Drag the touch selection handle to change its position.";
     generator.GestureScrollSequence(
         gfx::Point(50, 59),
         gfx::Point(10, 59),
         base::TimeDelta::FromMilliseconds(20),
         1);
-    LOG(INFO) << "Wait for cursor position to change.";
-    touch_editable->WaitForSelectionChangeCallback();
-    LOG(INFO) << "Check cursor position is changed.";
     EXPECT_TRUE(touch_editable->touch_selection_controller_.get());
-    value = content::ExecuteScriptAndGetValue(view_host,
-                                              "get_cursor_position()");
+    value = content::ExecuteScriptAndGetValue(
+        view_host, "get_cursor_position()");
     int new_cursor_pos = -1;
     value->GetAsInteger(&new_cursor_pos);
     EXPECT_NE(-1, new_cursor_pos);
@@ -379,8 +367,9 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   TestTouchSelectionOnLongPress();
 }
 
+// TODO(miu): Disabled test due to flakiness.  http://crbug.com/235991
 IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
-                       TouchCursorInTextfieldTest) {
+                       DISABLED_TouchCursorInTextfieldTest) {
   TestTouchCursorInTextfield();
 }
 
