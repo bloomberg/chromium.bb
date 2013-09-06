@@ -425,6 +425,9 @@ static int cs_gem_emit(struct radeon_cs_int *cs)
     unsigned i;
     int r;
 
+    while (cs->cdw & 7)
+	radeon_cs_write_dword((struct radeon_cs *)cs, 0x80000000);
+
 #if CS_BOF_DUMP
     cs_gem_dump_bof(cs);
 #endif
