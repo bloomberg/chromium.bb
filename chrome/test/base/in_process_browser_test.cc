@@ -458,8 +458,10 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 }
 
 void InProcessBrowserTest::QuitBrowsers() {
-  if (chrome::GetTotalBrowserCount() == 0)
+  if (chrome::GetTotalBrowserCount() == 0) {
+    chrome::NotifyAppTerminating();
     return;
+  }
 
   // Invoke AttemptExit on a running message loop.
   // AttemptExit exits the message loop after everything has been
