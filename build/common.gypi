@@ -1891,6 +1891,7 @@
       # Set this to use the new DX11 version of ANGLE.
       # TODO(apatrick): Remove this when the transition is complete.
       'ANGLE_DX11',
+      'WTF_VECTOR_INITIAL_SIZE=4',
     ],
     'conditions': [
       ['(OS=="mac" or OS=="ios") and asan==1', {
