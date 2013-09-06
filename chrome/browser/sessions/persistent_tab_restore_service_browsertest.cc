@@ -11,6 +11,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -735,9 +736,9 @@ TEST_F(PersistentTabRestoreServiceTest, PruneEntries) {
   EXPECT_EQ(max_entries + 1, service_->entries().size());
   PruneEntries();
   EXPECT_EQ(max_entries, service_->entries().size());
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+  EXPECT_TRUE(chrome::IsNTPURL(
       static_cast<Tab*>(service_->entries().front())->
-          navigations[0].virtual_url());
+          navigations[0].virtual_url(), profile()));
 
   // Don't prune NTPs that have multiple navigations.
   // (Erase the last NTP first.)
@@ -751,9 +752,9 @@ TEST_F(PersistentTabRestoreServiceTest, PruneEntries) {
   EXPECT_EQ(max_entries, service_->entries().size());
   PruneEntries();
   EXPECT_EQ(max_entries, service_->entries().size());
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+  EXPECT_TRUE(chrome::IsNTPURL(
       static_cast<Tab*>(service_->entries().front())->
-          navigations[1].virtual_url());
+          navigations[1].virtual_url(), profile()));
 }
 
 // Regression test for crbug.com/106082

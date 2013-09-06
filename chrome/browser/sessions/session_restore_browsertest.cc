@@ -15,6 +15,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -219,8 +220,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NoSessionRestoreNewWindowChromeOS) {
 
   ASSERT_TRUE(new_browser);
   EXPECT_EQ(1, new_browser->tab_strip_model()->count());
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-            new_browser->tab_strip_model()->GetWebContentsAt(0)->GetURL());
+  EXPECT_TRUE(chrome::IsNTPURL(
+      new_browser->tab_strip_model()->GetWebContentsAt(0)->GetURL(),
+      new_browser->profile()));
 }
 
 // Test that maximized applications get restored maximized.
