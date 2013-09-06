@@ -15,11 +15,56 @@
 #include "base/timer/timer.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
 int OAuth2TokenService::max_fetch_retry_num_ = 5;
+
+OAuth2TokenService::ClientScopeSet::ClientScopeSet(
+    const std::string& client_id,
+    const ScopeSet& scopes)
+    : client_id(client_id),
+      scopes(scopes) {
+}
+
+OAuth2TokenService::ClientScopeSet::~ClientScopeSet() {
+}
+
+bool OAuth2TokenService::ClientScopeSet::operator<(
+    const ClientScopeSet& s) const {
+  if (client_id < s.client_id)
+    return true;
+  else if (s.client_id < client_id)
+    return false;
+
+  return scopes < s.scopes;
+}
+
+OAuth2TokenService::FetchParameters::FetchParameters(
+    const std::string& client_id,
+    const std::string& refresh_token,
+    const ScopeSet& scopes)
+    : client_id(client_id),
+      refresh_token(refresh_token),
+      scopes(scopes) {
+}
+
+OAuth2TokenService::FetchParameters::~FetchParameters() {
+}
+
+bool OAuth2TokenService::FetchParameters::operator<(
+    const FetchParameters& p) const {
+  if (client_id < p.client_id)
+    return true;
+  else if (p.client_id < client_id)
+    return false;
+
+  if (refresh_token < p.refresh_token)
+    return true;
+  else if (p.refresh_token < refresh_token)
+    return false;
+
+  return scopes < p.scopes;
+}
 
 OAuth2TokenService::RequestImpl::RequestImpl(
     OAuth2TokenService::Consumer* consumer)
@@ -41,6 +86,9 @@ void OAuth2TokenService::RequestImpl::InformConsumer(
     consumer_->OnGetTokenFailure(this, error);
 }
 
+// Class that fetches an OAuth2 access token for a given set of scopes and
+// OAuth2 refresh token.
+
 // Class that fetches OAuth2 access tokens for given scopes and refresh token.
 //
 // It aims to meet OAuth2TokenService's requirements on token fetching. Retry
@@ -57,17 +105,17 @@ void OAuth2TokenService::RequestImpl::InformConsumer(
 //
 // Requests that are waiting for the fetching results of this Fetcher can be
 // added to the Fetcher by calling
-// OAuth2TokenService::Fetcher::AddWaitingRequest() before the Fetcher completes
-// fetching.
+// OAuth2TokenService::Fetcher::AddWaitingRequest() before the Fetcher
+// completes fetching.
 //
-// The waiting requests are taken as weak pointers and they can be deleted. The
-// waiting requests will be called back with fetching results if they are not
-// deleted
+// The waiting requests are taken as weak pointers and they can be deleted.
+// The waiting requests will be called back with fetching results if they are
+// not deleted
 // - when the Fetcher completes fetching, if the Fetcher is not destructed
 //   before it completes fetching, or
 // - when the Fetcher is destructed if the Fetcher is destructed before it
-//   completes fetching (in this case, the waiting requests will be called back
-//   with error).
+//   completes fetching (in this case, the waiting requests will be called
+//   back with error).
 class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
  public:
   // Creates a Fetcher and starts fetching an OAuth2 access token for
@@ -75,20 +123,24 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
   // The given |oauth2_token_service| will be informed when fetching is done.
   static Fetcher* CreateAndStart(OAuth2TokenService* oauth2_token_service,
                                  net::URLRequestContextGetter* getter,
-                                 const std::string& chrome_client_id,
-                                 const std::string& chrome_client_secret,
+                                 const std::string& client_id,
+                                 const std::string& client_secret,
                                  const std::string& refresh_token,
-                                 const OAuth2TokenService::ScopeSet& scopes,
+                                 const ScopeSet& scopes,
                                  base::WeakPtr<RequestImpl> waiting_request);
   virtual ~Fetcher();
 
   // Add a request that is waiting for the result of this Fetcher.
   void AddWaitingRequest(base::WeakPtr<RequestImpl> waiting_request);
 
+  // Returns count of waiting requests.
+  size_t GetWaitingRequestCount() const;
+
   void Cancel();
 
-  const OAuth2TokenService::ScopeSet& GetScopeSet() const;
+  const ScopeSet& GetScopeSet() const;
   const std::string& GetRefreshToken() const;
+  const std::string& GetClientId() const;
 
   // The error result from this fetcher.
   const GoogleServiceAuthError& error() const { return error_; }
@@ -97,13 +149,14 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
    // OAuth2AccessTokenConsumer
   virtual void OnGetTokenSuccess(const std::string& access_token,
                                  const base::Time& expiration_date) OVERRIDE;
-  virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnGetTokenFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
 
  private:
   Fetcher(OAuth2TokenService* oauth2_token_service,
           net::URLRequestContextGetter* getter,
-          const std::string& chrome_client_id,
-          const std::string& chrome_client_secret,
+          const std::string& client_id,
+          const std::string& client_secret,
           const std::string& refresh_token,
           const OAuth2TokenService::ScopeSet& scopes,
           base::WeakPtr<RequestImpl> waiting_request);
@@ -120,11 +173,11 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
   OAuth2TokenService* const oauth2_token_service_;
   scoped_refptr<net::URLRequestContextGetter> getter_;
   const std::string refresh_token_;
-  const OAuth2TokenService::ScopeSet scopes_;
+  const ScopeSet scopes_;
   std::vector<base::WeakPtr<RequestImpl> > waiting_requests_;
 
   int retry_number_;
-  base::OneShotTimer<OAuth2TokenService::Fetcher> retry_timer_;
+  base::OneShotTimer<Fetcher> retry_timer_;
   scoped_ptr<OAuth2AccessTokenFetcher> fetcher_;
 
   // Variables that store fetch results.
@@ -133,9 +186,10 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
   GoogleServiceAuthError error_;
   std::string access_token_;
   base::Time expiration_date_;
+
   // OAuth2 client id and secret.
-  std::string chrome_client_id_;
-  std::string chrome_client_secret_;
+  std::string client_id_;
+  std::string client_secret_;
 
   DISALLOW_COPY_AND_ASSIGN(Fetcher);
 };
@@ -144,16 +198,16 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
 OAuth2TokenService::Fetcher* OAuth2TokenService::Fetcher::CreateAndStart(
     OAuth2TokenService* oauth2_token_service,
     net::URLRequestContextGetter* getter,
-    const std::string& chrome_client_id,
-    const std::string& chrome_client_secret,
+    const std::string& client_id,
+    const std::string& client_secret,
     const std::string& refresh_token,
     const OAuth2TokenService::ScopeSet& scopes,
     base::WeakPtr<RequestImpl> waiting_request) {
   OAuth2TokenService::Fetcher* fetcher = new Fetcher(
       oauth2_token_service,
       getter,
-      chrome_client_id,
-      chrome_client_secret,
+      client_id,
+      client_secret,
       refresh_token,
       scopes,
       waiting_request);
@@ -164,8 +218,8 @@ OAuth2TokenService::Fetcher* OAuth2TokenService::Fetcher::CreateAndStart(
 OAuth2TokenService::Fetcher::Fetcher(
     OAuth2TokenService* oauth2_token_service,
     net::URLRequestContextGetter* getter,
-    const std::string& chrome_client_id,
-    const std::string& chrome_client_secret,
+    const std::string& client_id,
+    const std::string& client_secret,
     const std::string& refresh_token,
     const OAuth2TokenService::ScopeSet& scopes,
     base::WeakPtr<RequestImpl> waiting_request)
@@ -175,8 +229,8 @@ OAuth2TokenService::Fetcher::Fetcher(
       scopes_(scopes),
       retry_number_(0),
       error_(GoogleServiceAuthError::SERVICE_UNAVAILABLE),
-      chrome_client_id_(chrome_client_id),
-      chrome_client_secret_(chrome_client_secret) {
+      client_id_(client_id),
+      client_secret_(client_secret) {
   DCHECK(oauth2_token_service_);
   DCHECK(getter_.get());
   DCHECK(refresh_token_.length());
@@ -191,8 +245,8 @@ OAuth2TokenService::Fetcher::~Fetcher() {
 
 void OAuth2TokenService::Fetcher::Start() {
   fetcher_.reset(new OAuth2AccessTokenFetcher(this, getter_.get()));
-  fetcher_->Start(chrome_client_id_,
-                  chrome_client_secret_,
+  fetcher_->Start(client_id_,
+                  client_secret_,
                   refresh_token_,
                   std::vector<std::string>(scopes_.begin(), scopes_.end()));
   retry_timer_.Stop();
@@ -212,7 +266,8 @@ void OAuth2TokenService::Fetcher::OnGetTokenSuccess(
   // we still inform all waiting Consumers of a successful token fetch below.
   // This is intentional -- some consumers may need the token for cleanup
   // tasks. https://chromiumcodereview.appspot.com/11312124/
-  oauth2_token_service_->RegisterCacheEntry(refresh_token_,
+  oauth2_token_service_->RegisterCacheEntry(client_id_,
+                                            refresh_token_,
                                             scopes_,
                                             access_token_,
                                             expiration_date_);
@@ -281,6 +336,10 @@ void OAuth2TokenService::Fetcher::AddWaitingRequest(
   waiting_requests_.push_back(waiting_request);
 }
 
+size_t OAuth2TokenService::Fetcher::GetWaitingRequestCount() const {
+  return waiting_requests_.size();
+}
+
 void OAuth2TokenService::Fetcher::Cancel() {
   fetcher_.reset();
   retry_timer_.Stop();
@@ -295,6 +354,10 @@ const OAuth2TokenService::ScopeSet& OAuth2TokenService::Fetcher::GetScopeSet()
 
 const std::string& OAuth2TokenService::Fetcher::GetRefreshToken() const {
   return refresh_token_;
+}
+
+const std::string& OAuth2TokenService::Fetcher::GetClientId() const {
+  return client_id_;
 }
 
 OAuth2TokenService::Request::Request() {
@@ -389,8 +452,9 @@ OAuth2TokenService::StartRequestForClientWithContext(
     return request.PassAs<Request>();
   }
 
-  if (HasCacheEntry(scopes)) {
-    StartCacheLookupRequest(request.get(), scopes, consumer);
+  ClientScopeSet client_scopes(client_id, scopes);
+  if (HasCacheEntry(client_scopes)) {
+    StartCacheLookupRequest(request.get(), client_scopes, consumer);
   } else {
     FetchOAuth2Token(request.get(),
                      getter,
@@ -411,7 +475,9 @@ void OAuth2TokenService::FetchOAuth2Token(RequestImpl* request,
   // If there is already a pending fetcher for |scopes| and |refresh_token|,
   // simply register this |request| for those results rather than starting
   // a new fetcher.
-  FetchParameters fetch_parameters = std::make_pair(refresh_token, scopes);
+  FetchParameters fetch_parameters = FetchParameters(client_id,
+                                                     refresh_token,
+                                                     scopes);
   std::map<FetchParameters, Fetcher*>::iterator iter =
       pending_fetchers_.find(fetch_parameters);
   if (iter != pending_fetchers_.end()) {
@@ -431,10 +497,10 @@ void OAuth2TokenService::FetchOAuth2Token(RequestImpl* request,
 
 void OAuth2TokenService::StartCacheLookupRequest(
     RequestImpl* request,
-    const OAuth2TokenService::ScopeSet& scopes,
+    const OAuth2TokenService::ClientScopeSet& client_scopes,
     OAuth2TokenService::Consumer* consumer) {
-  CHECK(HasCacheEntry(scopes));
-  const CacheEntry* cache_entry = GetCacheEntry(scopes);
+  CHECK(HasCacheEntry(client_scopes));
+  const CacheEntry* cache_entry = GetCacheEntry(client_scopes);
   base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       &RequestImpl::InformConsumer,
       request->AsWeakPtr(),
@@ -446,7 +512,10 @@ void OAuth2TokenService::StartCacheLookupRequest(
 void OAuth2TokenService::InvalidateToken(const ScopeSet& scopes,
                                          const std::string& invalid_token) {
   DCHECK(CalledOnValidThread());
-  RemoveCacheEntry(scopes, invalid_token);
+  RemoveCacheEntry(
+      ClientScopeSet(GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
+                     scopes),
+      invalid_token);
 }
 
 void OAuth2TokenService::OnFetchComplete(Fetcher* fetcher) {
@@ -483,23 +552,25 @@ void OAuth2TokenService::OnFetchComplete(Fetcher* fetcher) {
   // Then by (2), |fetcher| is recorded in |pending_fetchers_|.
   // Then by (3), |fetcher_| is mapped to its refresh token and ScopeSet.
   std::map<FetchParameters, Fetcher*>::iterator iter =
-    pending_fetchers_.find(std::make_pair(
-        fetcher->GetRefreshToken(), fetcher->GetScopeSet()));
+    pending_fetchers_.find(FetchParameters(
+        fetcher->GetClientId(),
+        fetcher->GetRefreshToken(),
+        fetcher->GetScopeSet()));
   DCHECK(iter != pending_fetchers_.end());
   DCHECK_EQ(fetcher, iter->second);
   pending_fetchers_.erase(iter);
 }
 
 bool OAuth2TokenService::HasCacheEntry(
-    const OAuth2TokenService::ScopeSet& scopes) {
-  const CacheEntry* cache_entry = GetCacheEntry(scopes);
+    const ClientScopeSet& client_scopes) {
+  const CacheEntry* cache_entry = GetCacheEntry(client_scopes);
   return cache_entry && cache_entry->access_token.length();
 }
 
 const OAuth2TokenService::CacheEntry* OAuth2TokenService::GetCacheEntry(
-    const OAuth2TokenService::ScopeSet& scopes) {
+    const ClientScopeSet& client_scopes) {
   DCHECK(CalledOnValidThread());
-  TokenCache::iterator token_iterator = token_cache_.find(scopes);
+  TokenCache::iterator token_iterator = token_cache_.find(client_scopes);
   if (token_iterator == token_cache_.end())
     return NULL;
   if (token_iterator->second.expiration_date <= base::Time::Now()) {
@@ -510,10 +581,10 @@ const OAuth2TokenService::CacheEntry* OAuth2TokenService::GetCacheEntry(
 }
 
 bool OAuth2TokenService::RemoveCacheEntry(
-    const OAuth2TokenService::ScopeSet& scopes,
+    const ClientScopeSet& client_scopes,
     const std::string& token_to_remove) {
   DCHECK(CalledOnValidThread());
-  TokenCache::iterator token_iterator = token_cache_.find(scopes);
+  TokenCache::iterator token_iterator = token_cache_.find(client_scopes);
   if (token_iterator != token_cache_.end() &&
       token_iterator->second.access_token == token_to_remove) {
     token_cache_.erase(token_iterator);
@@ -523,13 +594,15 @@ bool OAuth2TokenService::RemoveCacheEntry(
 }
 
 void OAuth2TokenService::RegisterCacheEntry(
+    const std::string& client_id,
     const std::string& refresh_token,
     const OAuth2TokenService::ScopeSet& scopes,
     const std::string& access_token,
     const base::Time& expiration_date) {
   DCHECK(CalledOnValidThread());
 
-  CacheEntry& token = token_cache_[scopes];
+  CacheEntry& token = token_cache_[ClientScopeSet(client_id,
+                                                  scopes)];
   token.access_token = access_token;
   token.expiration_date = expiration_date;
 }
@@ -561,7 +634,7 @@ void OAuth2TokenService::CancelRequestsForToken(
            pending_fetchers_.begin();
        iter != pending_fetchers_.end();
        ++iter) {
-    if (iter->first.first == refresh_token)
+    if (iter->first.refresh_token == refresh_token)
       fetchers_to_cancel.push_back(iter->second);
   }
   CancelFetchers(fetchers_to_cancel);
@@ -605,4 +678,17 @@ void OAuth2TokenService::set_max_authorization_token_fetch_retries_for_testing(
     int max_retries) {
   DCHECK(CalledOnValidThread());
   max_fetch_retry_num_ = max_retries;
+}
+
+size_t OAuth2TokenService::GetNumPendingRequestsForTesting(
+    const std::string& client_id,
+    const std::string& refresh_token,
+    const ScopeSet& scopes) const {
+  PendingFetcherMap::const_iterator iter = pending_fetchers_.find(
+      OAuth2TokenService::FetchParameters(
+          client_id,
+          refresh_token,
+          scopes));
+  return iter == pending_fetchers_.end() ?
+             0 : iter->second->GetWaitingRequestCount();
 }
