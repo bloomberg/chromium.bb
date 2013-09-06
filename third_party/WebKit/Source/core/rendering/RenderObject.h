@@ -846,7 +846,6 @@ public:
     virtual unsigned int length() const { return 1; }
 
     bool isFloatingOrOutOfFlowPositioned() const { return (isFloating() || isOutOfFlowPositioned()); }
-    bool isFloatingWithShapeOutside() const { return isBox() && isFloating() && style()->shapeOutside(); }
 
     bool isTransparent() const { return style()->opacity() < 1.0f; }
     float opacity() const { return style()->opacity(); }
