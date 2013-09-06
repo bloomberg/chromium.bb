@@ -565,6 +565,8 @@ class RenderWidgetHostViewAura
 
   // The current text input type.
   ui::TextInputType text_input_type_;
+  // The current text input mode corresponding to HTML5 inputmode attribute.
+  ui::TextInputMode text_input_mode_;
   bool can_compose_inline_;
 
   // Rectangles for the selection anchor and focus.

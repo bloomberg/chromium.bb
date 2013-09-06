@@ -647,6 +647,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       popup_child_host_view_(NULL),
       is_loading_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
+      text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
       can_compose_inline_(true),
       has_composition_text_(false),
       last_output_surface_id_(0),
@@ -1044,8 +1045,10 @@ void RenderWidgetHostViewAura::TextInputTypeChanged(
     ui::TextInputMode input_mode,
     bool can_compose_inline) {
   if (text_input_type_ != type ||
+      text_input_mode_ != input_mode ||
       can_compose_inline_ != can_compose_inline) {
     text_input_type_ = type;
+    text_input_mode_ = input_mode;
     can_compose_inline_ = can_compose_inline;
     if (GetInputMethod())
       GetInputMethod()->OnTextInputTypeChanged(this);
@@ -2196,7 +2199,7 @@ ui::TextInputType RenderWidgetHostViewAura::GetTextInputType() const {
 }
 
 ui::TextInputMode RenderWidgetHostViewAura::GetTextInputMode() const {
-  return ui::TEXT_INPUT_MODE_DEFAULT;
+  return text_input_mode_;
 }
 
 bool RenderWidgetHostViewAura::CanComposeInline() const {
