@@ -28,6 +28,9 @@ class EventFilteringInfo {
   ~EventFilteringInfo();
   void SetURL(const GURL& url);
   void SetInstanceID(int instance_id);
+  void SetServiceType(const std::string& service_type) {
+    service_type_ = service_type;
+  }
 
   bool has_url() const { return has_url_; }
   const GURL& url() const { return url_; }
@@ -35,12 +38,16 @@ class EventFilteringInfo {
   bool has_instance_id() const { return has_instance_id_; }
   int instance_id() const { return instance_id_; }
 
+  bool has_service_type() const { return !service_type_.empty(); }
+  const std::string& service_type() const { return service_type_; }
+
   scoped_ptr<base::Value> AsValue() const;
   bool IsEmpty() const;
 
  private:
   bool has_url_;
   GURL url_;
+  std::string service_type_;
 
   bool has_instance_id_;
   int instance_id_;

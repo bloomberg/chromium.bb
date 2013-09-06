@@ -187,6 +187,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kMetricsPrivate, "metricsPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
+    { APIPermission::kMDns, "mdns", APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kMusicManagerPrivate, "musicManagerPrivate",
       APIPermissionInfo::kFlagCannotBeOptional,
       IDS_EXTENSION_PROMPT_WARNING_MUSIC_MANAGER_PRIVATE,

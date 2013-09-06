@@ -72,6 +72,7 @@
           'log_private.idl',
           'management.json',
           'manifest_types.json',
+          'mdns.idl',
           'media_galleries.idl',
           'media_galleries_private.idl',
           'media_player_private.json',
