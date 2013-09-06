@@ -262,7 +262,7 @@ void TSFBridgeDelegate::RemoveFocusedClient(TextInputClient* client) {
     return;
   client_ = NULL;
   for (TSFDocumentMap::iterator it = tsf_document_map_.begin();
-        it != tsf_document_map_.end(); ++it) {
+       it != tsf_document_map_.end(); ++it) {
     if (it->second.text_store.get() == NULL)
       continue;
     it->second.text_store->SetFocusedTextInputClient(NULL, NULL);

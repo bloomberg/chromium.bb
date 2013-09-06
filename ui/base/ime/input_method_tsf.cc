@@ -130,6 +130,11 @@ void InputMethodTSF::SetFocusedTextInputClient(TextInputClient* client) {
   InputMethodWin::SetFocusedTextInputClient(client);
 }
 
+void InputMethodTSF::DetachTextInputClient(TextInputClient* client) {
+  InputMethodWin::DetachTextInputClient(client);
+  ui::TSFBridge::GetInstance()->RemoveFocusedClient(client);
+}
+
 bool InputMethodTSF::IsCandidatePopupOpen() const {
   return tsf_event_observer_->IsCandidatePopupOpen();
 }

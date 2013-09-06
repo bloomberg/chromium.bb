@@ -29,8 +29,7 @@ InputMethodBridge::~InputMethodBridge() {
   // this and go into |widget_|. NULL out |widget_| so we don't attempt to use
   // it.
   DetachFromWidget();
-  if (host_->GetTextInputClient() == this)
-    host_->SetFocusedTextInputClient(NULL);
+  host_->DetachTextInputClient(this);
 }
 
 void InputMethodBridge::OnFocus() {
