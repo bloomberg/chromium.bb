@@ -148,7 +148,7 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
         });
     """)
 
-    tab.browser.StartTracing('webkit,benchmark', 60)
+    tab.browser.StartTracing('webkit,webkit.console,benchmark', 60)
     self._metrics.Start()
 
     tab.ExecuteJavaScript("""

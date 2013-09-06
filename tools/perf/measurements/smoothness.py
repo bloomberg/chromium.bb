@@ -35,7 +35,9 @@ class Smoothness(page_measurement.PageMeasurement):
     return hasattr(page, 'smoothness')
 
   def WillRunAction(self, page, tab, action):
-    tab.browser.StartTracing('webkit,cc,benchmark', 60)
+    # TODO(ernstm): remove 'webkit' category when
+    # https://codereview.chromium.org/23848006/ has landed.
+    tab.browser.StartTracing('webkit,webkit.console,cc,benchmark', 60)
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
       tab.browser.platform.StartRawDisplayFrameRateMeasurement()
     self._metrics = smoothness.SmoothnessMetrics(tab)
