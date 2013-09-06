@@ -120,6 +120,7 @@ void WebRtcAudioDeviceImpl::RenderData(uint8* audio_data,
   DCHECK_LE(number_of_frames, output_buffer_size());
   {
     base::AutoLock auto_lock(lock_);
+    DCHECK(audio_transport_callback_);
     // Store the reported audio delay locally.
     output_delay_ms_ = audio_delay_milliseconds;
   }
