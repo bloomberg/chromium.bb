@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include "SVGNames.h"
+#include "core/page/UseCounter.h"
 #include "core/svg/SVGAnimateColorElement.h"
 
 namespace WebCore {
@@ -31,6 +32,8 @@ inline SVGAnimateColorElement::SVGAnimateColorElement(const QualifiedName& tagNa
 {
     ASSERT(hasTagName(SVGNames::animateColorTag));
     ScriptWrappable::init(this);
+
+    UseCounter::count(&document, UseCounter::SVGAnimateColorElement);
 }
 
 PassRefPtr<SVGAnimateColorElement> SVGAnimateColorElement::create(const QualifiedName& tagName, Document& document)
