@@ -419,7 +419,9 @@ void BookmarkBarGtk::PopupForButtonNextTo(GtkWidget* button,
   const int first_hidden = GetFirstHiddenBookmark(0, &folder_list);
   if (first_hidden != -1)
     folder_list.push_back(overflow_button_);
-  folder_list.push_back(other_bookmarks_button_);
+
+  if (!model_->other_node()->empty())
+    folder_list.push_back(other_bookmarks_button_);
 
   // Find the position of |button|.
   int button_idx = -1;
