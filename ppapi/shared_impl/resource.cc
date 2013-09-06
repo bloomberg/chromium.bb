@@ -75,7 +75,6 @@ void Resource::OnReplyReceived(const proxy::ResourceMessageReplyParams& params,
 }
 
 void Resource::Log(PP_LogLevel level, const std::string& message) {
-printf("Log:%s\n", message.c_str());
   PpapiGlobals::Get()->LogWithSource(pp_instance(), level, std::string(),
                                      message);
 }
