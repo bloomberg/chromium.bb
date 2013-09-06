@@ -142,7 +142,7 @@ RenderObject* HTMLPlugInImageElement::createRenderer(RenderStyle* style)
     return new RenderEmbeddedObject(this);
 }
 
-void HTMLPlugInImageElement::willRecalcStyle(StyleChange)
+void HTMLPlugInImageElement::willRecalcStyle(StyleRecalcChange)
 {
     // FIXME: Why is this necessary?  Manual re-attach is almost always wrong.
     if (!useFallbackContent() && needsWidgetUpdate() && renderer() && !isImageType())

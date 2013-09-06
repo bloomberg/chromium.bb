@@ -435,7 +435,7 @@ public:
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
-    bool recalcStyle(StyleChange = NoChange);
+    bool recalcStyle(StyleRecalcChange);
     void didAffectSelector(AffectedSelectorMask);
 
     ElementShadow* shadow() const;
@@ -665,8 +665,8 @@ protected:
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
     virtual void removeAllEventListeners() OVERRIDE;
 
-    virtual void willRecalcStyle(StyleChange);
-    virtual void didRecalcStyle(StyleChange);
+    virtual void willRecalcStyle(StyleRecalcChange);
+    virtual void didRecalcStyle(StyleRecalcChange);
     virtual PassRefPtr<RenderStyle> customStyleForRenderer();
 
     virtual bool shouldRegisterAsNamedItem() const { return false; }
@@ -697,13 +697,13 @@ private:
     void setInlineStyleFromString(const AtomicString&);
     MutableStylePropertySet* ensureMutableInlineStyle();
 
-    StyleChange recalcOwnStyle(StyleChange);
-    void recalcChildStyle(StyleChange);
+    StyleRecalcChange recalcOwnStyle(StyleRecalcChange);
+    void recalcChildStyle(StyleRecalcChange);
 
     void makePresentationAttributeCacheKey(PresentationAttributeCacheKey&) const;
     void rebuildPresentationAttributeStyle();
 
-    void updatePseudoElement(PseudoId, StyleChange);
+    void updatePseudoElement(PseudoId, StyleRecalcChange);
     void createPseudoElementIfNeeded(PseudoId);
 
     // FIXME: Everyone should allow author shadows.

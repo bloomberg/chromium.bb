@@ -104,7 +104,7 @@ bool PseudoElement::rendererIsNeeded(const NodeRenderingContext& context)
     return pseudoElementRendererIsNeeded(context.style());
 }
 
-void PseudoElement::didRecalcStyle(StyleChange)
+void PseudoElement::didRecalcStyle(StyleRecalcChange)
 {
     if (!renderer())
         return;

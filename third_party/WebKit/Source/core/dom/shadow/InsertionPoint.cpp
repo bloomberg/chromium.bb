@@ -114,7 +114,7 @@ void InsertionPoint::detach(const AttachContext& context)
     HTMLElement::detach(context);
 }
 
-void InsertionPoint::willRecalcStyle(StyleChange change)
+void InsertionPoint::willRecalcStyle(StyleRecalcChange change)
 {
     if (change < Inherit)
         return;

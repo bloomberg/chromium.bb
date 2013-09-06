@@ -65,7 +65,7 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&);
 
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual void willRecalcStyle(StyleChange) OVERRIDE;
+    virtual void willRecalcStyle(StyleRecalcChange) OVERRIDE;
 
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual void toClipPath(Path&);

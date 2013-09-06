@@ -330,6 +330,8 @@ public:
     static PassRefPtr<RenderStyle> createAnonymousStyleWithDisplay(const RenderStyle* parentStyle, EDisplay);
     static PassRefPtr<RenderStyle> clone(const RenderStyle*);
 
+    static StyleRecalcChange compare(const RenderStyle* oldStyle, const RenderStyle* newStyle);
+
     enum IsAtShadowBoundary {
         AtShadowBoundary,
         NotAtShadowBoundary,
@@ -793,6 +795,7 @@ public:
     bool hasAutoColumnWidth() const { return rareNonInheritedData->m_multiCol->m_autoWidth; }
     unsigned short columnCount() const { return rareNonInheritedData->m_multiCol->m_count; }
     bool hasAutoColumnCount() const { return rareNonInheritedData->m_multiCol->m_autoCount; }
+    bool specifiesAutoColumns() const { return hasAutoColumnCount() && hasAutoColumnWidth(); }
     bool specifiesColumns() const { return !hasAutoColumnCount() || !hasAutoColumnWidth() || !hasInlineColumnAxis(); }
     float columnGap() const { return rareNonInheritedData->m_multiCol->m_gap; }
     bool hasNormalColumnGap() const { return rareNonInheritedData->m_multiCol->m_normalGap; }
@@ -1637,6 +1640,9 @@ public:
     static const FilterOperations& initialFilter() { DEFINE_STATIC_LOCAL(FilterOperations, ops, ()); return ops; }
     static BlendMode initialBlendMode() { return BlendModeNormal; }
 private:
+    static StyleRecalcChange compareInternal(const RenderStyle& oldStyle, const RenderStyle& newStyle);
+    static StyleRecalcChange comparePseudoStyles(const RenderStyle& oldStyle, const RenderStyle& newStyle);
+
     void setVisitedLinkColor(const Color&);
     void setVisitedLinkBackgroundColor(const Color& v) { SET_VAR(rareNonInheritedData, m_visitedLinkBackgroundColor, v); }
     void setVisitedLinkBorderLeftColor(const Color& v) { SET_VAR(rareNonInheritedData, m_visitedLinkBorderLeftColor, v); }
@@ -1761,6 +1767,15 @@ inline bool RenderStyle::setTextOrientation(TextOrientation textOrientation)
 
     rareInheritedData.access()->m_textOrientation = textOrientation;
     return true;
+}
+
+inline StyleRecalcChange RenderStyle::compare(const RenderStyle* oldStyle, const RenderStyle* newStyle)
+{
+    if ((!oldStyle && newStyle) || (oldStyle && !newStyle))
+        return Reattach;
+    if (!oldStyle && !newStyle)
+        return NoChange;
+    return compareInternal(*oldStyle, *newStyle);
 }
 
 } // namespace WebCore

@@ -1447,7 +1447,7 @@ PassRefPtr<RenderStyle> Element::originalStyleForRenderer()
     return document().styleResolver()->styleForElement(this);
 }
 
-bool Element::recalcStyle(StyleChange change)
+bool Element::recalcStyle(StyleRecalcChange change)
 {
     ASSERT(document().inStyleRecalc());
 
@@ -1477,14 +1477,14 @@ bool Element::recalcStyle(StyleChange change)
     return change == Reattach;
 }
 
-Node::StyleChange Element::recalcOwnStyle(StyleChange change)
+StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
 {
     ASSERT(document().inStyleRecalc());
 
     CSSAnimationUpdateScope cssAnimationUpdateScope(this);
     RefPtr<RenderStyle> oldStyle = renderStyle();
     RefPtr<RenderStyle> newStyle = styleForRenderer();
-    StyleChange localChange = oldStyle ? Node::diff(oldStyle.get(), newStyle.get(), document()) : Reattach;
+    StyleRecalcChange localChange = RenderStyle::compare(oldStyle.get(), newStyle.get());
 
     if (localChange == Reattach) {
         AttachContext reattachContext;
@@ -1519,7 +1519,7 @@ Node::StyleChange Element::recalcOwnStyle(StyleChange change)
     return max(localChange, change);
 }
 
-void Element::recalcChildStyle(StyleChange change)
+void Element::recalcChildStyle(StyleRecalcChange change)
 {
     ASSERT(document().inStyleRecalc());
 
@@ -2451,7 +2451,7 @@ void Element::normalizeAttributes()
     }
 }
 
-void Element::updatePseudoElement(PseudoId pseudoId, StyleChange change)
+void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
 {
     PseudoElement* element = pseudoElement(pseudoId);
     if (element && (needsStyleRecalc() || shouldRecalcStyle(change, element))) {
@@ -3003,12 +3003,12 @@ void Element::detachAllAttrNodesFromElement()
     removeAttrNodeListForElement(this);
 }
 
-void Element::willRecalcStyle(StyleChange)
+void Element::willRecalcStyle(StyleRecalcChange)
 {
     ASSERT(hasCustomStyleCallbacks());
 }
 
-void Element::didRecalcStyle(StyleChange)
+void Element::didRecalcStyle(StyleRecalcChange)
 {
     ASSERT(hasCustomStyleCallbacks());
 }

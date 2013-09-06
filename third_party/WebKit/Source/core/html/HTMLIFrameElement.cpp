@@ -127,7 +127,7 @@ bool HTMLIFrameElement::shouldDisplaySeamlessly() const
     return contentDocument() && contentDocument()->shouldDisplaySeamlesslyWithParent();
 }
 
-void HTMLIFrameElement::didRecalcStyle(StyleChange styleChange)
+void HTMLIFrameElement::didRecalcStyle(StyleRecalcChange styleChange)
 {
     if (!shouldDisplaySeamlessly())
         return;

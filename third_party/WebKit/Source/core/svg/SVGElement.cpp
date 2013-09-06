@@ -109,7 +109,7 @@ SVGElement::~SVGElement()
     document().accessSVGExtensions()->removeAllElementReferencesForTarget(this);
 }
 
-void SVGElement::willRecalcStyle(StyleChange change)
+void SVGElement::willRecalcStyle(StyleRecalcChange change)
 {
     // FIXME: This assumes that when shouldNotifyRendererWithIdenticalStyles() is true
     // the change came from a SMIL animation, but what if there were non-SMIL changes

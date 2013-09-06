@@ -443,7 +443,7 @@ void InspectorOverlay::update()
     drawOverridesMessage();
 
     // Position DOM elements.
-    overlayPage()->mainFrame()->document()->recalcStyle(Node::Force);
+    overlayPage()->mainFrame()->document()->recalcStyle(Force);
     if (overlayView->needsLayout())
         overlayView->layout();
 

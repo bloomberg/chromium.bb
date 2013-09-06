@@ -125,7 +125,7 @@ protected:
     virtual void dispatchBlurEvent(Element* newFocusedElement) OVERRIDE;
     virtual void willCallDefaultEventHandler(const Event&) OVERRIDE;
 
-    virtual void didRecalcStyle(StyleChange) OVERRIDE;
+    virtual void didRecalcStyle(StyleRecalcChange) OVERRIDE;
 
     // This must be called any time the result of willValidate() has changed.
     void setNeedsWillValidateCheck();

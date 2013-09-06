@@ -206,7 +206,7 @@ Node::InsertionNotificationRequest HTMLFrameSetElement::insertedInto(ContainerNo
     return HTMLElement::insertedInto(insertionPoint);
 }
 
-void HTMLFrameSetElement::willRecalcStyle(StyleChange)
+void HTMLFrameSetElement::willRecalcStyle(StyleRecalcChange)
 {
     if (needsStyleRecalc() && renderer()) {
         renderer()->setNeedsLayout();

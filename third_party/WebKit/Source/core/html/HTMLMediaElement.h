@@ -341,7 +341,7 @@ private:
     virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
-    virtual void didRecalcStyle(StyleChange);
+    virtual void didRecalcStyle(StyleRecalcChange);
 
     virtual void didBecomeFullscreenElement();
     virtual void willStopBeingFullscreenElement();

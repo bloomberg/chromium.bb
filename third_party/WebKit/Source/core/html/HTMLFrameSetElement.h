@@ -80,7 +80,7 @@ private:
     virtual void defaultEventHandler(Event*);
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void willRecalcStyle(StyleChange) OVERRIDE;
+    virtual void willRecalcStyle(StyleRecalcChange) OVERRIDE;
 
     Vector<HTMLDimension> m_rowLengths;
     Vector<HTMLDimension> m_colLengths;

@@ -268,7 +268,7 @@ void Text::attach(const AttachContext& context)
     CharacterData::attach(context);
 }
 
-bool Text::recalcTextStyle(StyleChange change)
+bool Text::recalcTextStyle(StyleRecalcChange change)
 {
     if (RenderText* renderer = toRenderText(this->renderer())) {
         if (change != NoChange || needsStyleRecalc())

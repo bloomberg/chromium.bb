@@ -166,9 +166,6 @@ public:
     static bool isSupported(const String& feature, const String& version);
     static void dumpStatistics();
 
-    enum StyleChange { NoChange, NoInherit, Inherit, Force, Reattach };
-    static StyleChange diff(const RenderStyle*, const RenderStyle*, const Document&);
-
     virtual ~Node();
     void willBeDeletedFrom(Document*);
 
@@ -934,9 +931,9 @@ inline void Node::lazyReattach(ShouldSetAttached shouldSetAttached)
     lazyAttach(shouldSetAttached);
 }
 
-inline bool shouldRecalcStyle(Node::StyleChange change, const Node* node)
+inline bool shouldRecalcStyle(StyleRecalcChange change, const Node* node)
 {
-    return change >= Node::Inherit || node->childNeedsStyleRecalc() || node->needsStyleRecalc();
+    return change >= Inherit || node->childNeedsStyleRecalc() || node->needsStyleRecalc();
 }
 
 } //namespace

@@ -388,7 +388,7 @@ void FullscreenElementStack::webkitWillEnterFullScreenForElement(Element* elemen
 
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
 
-    document()->recalcStyle(Node::Force);
+    document()->recalcStyle(Force);
 }
 
 void FullscreenElementStack::webkitDidEnterFullScreenForElement(Element*)

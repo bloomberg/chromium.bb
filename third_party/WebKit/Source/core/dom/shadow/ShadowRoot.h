@@ -58,7 +58,7 @@ public:
         return adoptRef(new ShadowRoot(document, type));
     }
 
-    void recalcStyle(StyleChange);
+    void recalcStyle(StyleRecalcChange);
 
     bool applyAuthorStyles() const { return m_applyAuthorStyles; }
     void setApplyAuthorStyles(bool);

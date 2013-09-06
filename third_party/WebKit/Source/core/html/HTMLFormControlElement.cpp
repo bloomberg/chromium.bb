@@ -300,7 +300,7 @@ static void updateFromElementCallback(Node* node)
         renderer->updateFromElement();
 }
 
-void HTMLFormControlElement::didRecalcStyle(StyleChange)
+void HTMLFormControlElement::didRecalcStyle(StyleRecalcChange)
 {
     // updateFromElement() can cause the selection to change, and in turn
     // trigger synchronous layout, so it must not be called during style recalc.

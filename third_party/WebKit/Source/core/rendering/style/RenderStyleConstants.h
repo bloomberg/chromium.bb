@@ -28,6 +28,14 @@
 
 namespace WebCore {
 
+enum StyleRecalcChange {
+    NoChange,
+    NoInherit,
+    Inherit,
+    Force,
+    Reattach,
+};
+
 static const size_t PrintColorAdjustBits = 1;
 enum PrintColorAdjust {
     PrintColorAdjustEconomy,

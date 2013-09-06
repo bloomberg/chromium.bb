@@ -149,6 +149,48 @@ ALWAYS_INLINE RenderStyle::RenderStyle(const RenderStyle& o)
 {
 }
 
+StyleRecalcChange RenderStyle::comparePseudoStyles(const RenderStyle& oldStyle, const RenderStyle& newStyle)
+{
+    // If the pseudoStyles have changed, we want any StyleRecalcChange that is not NoChange
+    // because setStyle will do the right thing with anything else.
+    if (!oldStyle.hasAnyPublicPseudoStyles())
+        return NoChange;
+    for (PseudoId pseudoId = FIRST_PUBLIC_PSEUDOID; pseudoId < FIRST_INTERNAL_PSEUDOID; pseudoId = static_cast<PseudoId>(pseudoId + 1)) {
+        if (!oldStyle.hasPseudoStyle(pseudoId))
+            continue;
+        RenderStyle* newPseudoStyle = newStyle.getCachedPseudoStyle(pseudoId);
+        if (!newPseudoStyle)
+            return NoInherit;
+        RenderStyle* oldPseudoStyle = oldStyle.getCachedPseudoStyle(pseudoId);
+        if (oldPseudoStyle && *oldPseudoStyle != *newPseudoStyle)
+            return NoInherit;
+    }
+    return NoChange;
+}
+
+StyleRecalcChange RenderStyle::compareInternal(const RenderStyle& s1, const RenderStyle& s2)
+{
+    if (s1.display() != s2.display()
+        || s1.hasPseudoStyle(FIRST_LETTER) != s2.hasPseudoStyle(FIRST_LETTER)
+        || s1.columnSpan() != s2.columnSpan()
+        || s1.specifiesAutoColumns() != s2.specifiesAutoColumns()
+        || !s1.contentDataEquivalent(&s2)
+        || s1.hasTextCombine() != s2.hasTextCombine()
+        || s1.flowThread() != s2.flowThread()
+        || s1.regionThread() != s2.regionThread())
+        return Reattach;
+
+    if (s1 == s2)
+        return comparePseudoStyles(s1, s2);
+
+    if (s1.inheritedNotEqual(&s2)
+        || s1.hasExplicitlyInheritedProperties()
+        || s2.hasExplicitlyInheritedProperties())
+        return Inherit;
+
+    return NoInherit;
+}
+
 void RenderStyle::inheritFrom(const RenderStyle* inheritParent, IsAtShadowBoundary isAtShadowBoundary)
 {
     if (isAtShadowBoundary == AtShadowBoundary) {

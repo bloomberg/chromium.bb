@@ -487,8 +487,8 @@ public:
     PassRefPtr<Text> createEditingTextNode(const String&);
 
     void setStyleDependentState(RenderStyle* documentStyle);
-    void inheritHtmlAndBodyElementStyles(StyleChange);
-    void recalcStyle(StyleChange = NoChange);
+    void inheritHtmlAndBodyElementStyles(StyleRecalcChange);
+    void recalcStyle(StyleRecalcChange);
     void updateStyleIfNeeded();
     void updateStyleForNodeIfNeeded(Node*);
     void updateLayout();

@@ -1627,7 +1627,7 @@ void Document::setStyleDependentState(RenderStyle* documentStyle)
     fontBuilder.createFontForDocument(selector, documentStyle);
 }
 
-void Document::inheritHtmlAndBodyElementStyles(StyleChange change)
+void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
 {
     RenderView* renderView = this->renderView();
 
@@ -1679,7 +1679,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleChange change)
     }
 }
 
-void Document::recalcStyle(StyleChange change)
+void Document::recalcStyle(StyleRecalcChange change)
 {
     // we should not enter style recalc while painting
     ASSERT(!view() || !view()->isPainting());
@@ -1729,7 +1729,7 @@ void Document::recalcStyle(StyleChange change)
         if ((change == Force) || (shouldDisplaySeamlesslyWithParent() && (change >= Inherit))) {
             m_hasNodesWithPlaceholderStyle = false;
             RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*this, m_styleResolver ? m_styleResolver->fontSelector() : 0);
-            StyleChange localChange = Node::diff(documentStyle.get(), renderer()->style(), *this);
+            StyleRecalcChange localChange = RenderStyle::compare(documentStyle.get(), renderer()->style());
             if (localChange != NoChange)
                 renderer()->setStyle(documentStyle.release());
         }

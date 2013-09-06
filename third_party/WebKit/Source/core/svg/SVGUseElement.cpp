@@ -266,7 +266,7 @@ void SVGUseElement::attach(const AttachContext& context)
     SVGGraphicsElement::attach(context);
 }
 
-void SVGUseElement::willRecalcStyle(StyleChange)
+void SVGUseElement::willRecalcStyle(StyleRecalcChange)
 {
     if (!m_wasInsertedByParser && m_needsShadowTreeRecreation && renderer() && needsStyleRecalc())
         buildPendingResource();
