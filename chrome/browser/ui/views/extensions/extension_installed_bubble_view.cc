@@ -372,7 +372,7 @@ class InstalledBubbleContent : public views::View,
     // The link is drawn separately; make it transparent here to only draw once.
     // The link always leads other text and is assumed to fit on the first line.
     sign_in_promo_lines_.front()->ApplyColor(SK_ColorTRANSPARENT,
-        ui::Range(0, signin_promo_link_text_.size()));
+        gfx::Range(0, signin_promo_link_text_.size()));
 
     return height;
   }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 
 #include <limits>
 
@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 
-namespace ui {
+namespace gfx {
 
 Range::Range()
     : start_(0),
@@ -84,4 +84,4 @@ std::ostream& operator<<(std::ostream& os, const Range& range) {
   return os << range.ToString();
 }
 
-}  // namespace ui
+}  // namespace gfx

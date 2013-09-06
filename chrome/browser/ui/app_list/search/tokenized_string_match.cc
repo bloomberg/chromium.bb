@@ -47,7 +47,7 @@ bool TokenizedStringMatch::Calculate(const TokenizedString& query,
   relevance_ = kNoMatchScore;
   hits_.clear();
 
-  ui::Range hit = ui::Range::InvalidRange();
+  gfx::Range hit = gfx::Range::InvalidRange();
 
   TokenizedStringCharIterator query_iter(query);
   TokenizedStringCharIterator text_iter(text);
@@ -70,7 +70,7 @@ bool TokenizedStringMatch::Calculate(const TokenizedString& query,
     } else {
       if (hit.IsValid()) {
         hits_.push_back(hit);
-        hit = ui::Range::InvalidRange();
+        hit = gfx::Range::InvalidRange();
       }
 
       text_iter.NextToken();

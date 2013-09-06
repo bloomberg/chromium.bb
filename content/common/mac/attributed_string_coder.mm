@@ -29,7 +29,7 @@ const AttributedStringCoder::EncodedString* AttributedStringCoder::Encode(
     NSDictionary* ns_attributes = [str attributesAtIndex:i
                                           effectiveRange:&effective_range];
     // Convert the attributes to IPC-friendly types.
-    FontAttribute attrs(ns_attributes, ui::Range(effective_range));
+    FontAttribute attrs(ns_attributes, gfx::Range(effective_range));
     // Only encode the attributes if the filtered set contains font information.
     if (attrs.ShouldEncode()) {
       encoded_string->attributes()->push_back(attrs);
@@ -52,7 +52,7 @@ NSAttributedString* AttributedStringCoder::Decode(
   for (std::vector<FontAttribute>::const_iterator it = attributes.begin();
        it != attributes.end(); ++it) {
     // Protect against ranges that are outside the range of the string.
-    const ui::Range& range = it->effective_range();
+    const gfx::Range& range = it->effective_range();
     if (range.GetMin() > [plain_text length] ||
         range.GetMax() > [plain_text length]) {
       continue;
@@ -77,7 +77,7 @@ AttributedStringCoder::EncodedString::~EncodedString() {
 }
 
 AttributedStringCoder::FontAttribute::FontAttribute(NSDictionary* dict,
-                                                    ui::Range effective_range)
+                                                    gfx::Range effective_range)
     : font_descriptor_(),
       effective_range_(effective_range) {
   NSFont* font = [dict objectForKey:NSFontAttributeName];
@@ -87,7 +87,7 @@ AttributedStringCoder::FontAttribute::FontAttribute(NSDictionary* dict,
 }
 
 AttributedStringCoder::FontAttribute::FontAttribute(FontDescriptor font,
-                                                    ui::Range range)
+                                                    gfx::Range range)
     : font_descriptor_(font),
       effective_range_(range) {
 }
@@ -155,7 +155,7 @@ bool ParamTraits<AttributedStringCoder::FontAttribute>::Read(
   FontDescriptor font;
   success &= ReadParam(m, iter, &font);
 
-  ui::Range range;
+  gfx::Range range;
   success &= ReadParam(m, iter, &range);
 
   if (success) {

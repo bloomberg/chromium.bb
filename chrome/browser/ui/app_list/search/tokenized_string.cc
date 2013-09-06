@@ -33,7 +33,7 @@ void TokenizedString::Tokenize() {
     TermBreakIterator term_iter(word);
     while (term_iter.Advance()) {
       tokens_.push_back(base::i18n::ToLower(term_iter.GetCurrentTerm()));
-      mappings_.push_back(ui::Range(word_start + term_iter.prev(),
+      mappings_.push_back(gfx::Range(word_start + term_iter.prev(),
                                     word_start + term_iter.pos()));
     }
   }

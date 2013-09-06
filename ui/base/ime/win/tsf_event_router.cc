@@ -11,8 +11,8 @@
 #include "base/bind.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/metro.h"
-#include "ui/base/range/range.h"
 #include "ui/base/win/atl_module.h"
+#include "ui/gfx/range/range.h"
 
 namespace ui {
 
@@ -56,9 +56,9 @@ class ATL_NO_VTABLE TSFEventRouter::Delegate
   void SetRouter(TSFEventRouter* router);
 
  private:
-  // Returns current composition range. Returns ui::Range::InvalidRange if there
-  // is no composition.
-  static ui::Range GetCompositionRange(ITfContext* context);
+  // Returns current composition range. Returns gfx::Range::InvalidRange if
+  // there is no composition.
+  static gfx::Range GetCompositionRange(ITfContext* context);
 
   // Returns true if the given |element_id| represents the candidate window.
   bool IsCandidateWindowInternal(DWORD element_id);
@@ -85,7 +85,7 @@ class ATL_NO_VTABLE TSFEventRouter::Delegate
   DWORD ui_source_cookie_;
 
   TSFEventRouter* router_;
-  ui::Range previous_composition_range_;
+  gfx::Range previous_composition_range_;
 
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
@@ -94,7 +94,7 @@ TSFEventRouter::Delegate::Delegate()
     : context_source_cookie_(TF_INVALID_COOKIE),
       ui_source_cookie_(TF_INVALID_COOKIE),
       router_(NULL),
-      previous_composition_range_(ui::Range::InvalidRange()) {
+      previous_composition_range_(gfx::Range::InvalidRange()) {
 }
 
 TSFEventRouter::Delegate::~Delegate() {}
@@ -125,7 +125,7 @@ STDMETHODIMP TSFEventRouter::Delegate::OnEndEdit(ITfContext* context,
   if (FAILED(ranges->Next(1, range.Receive(), &fetched_count)))
     return S_OK;  // Don't care about failures.
 
-  const ui::Range composition_range = GetCompositionRange(context);
+  const gfx::Range composition_range = GetCompositionRange(context);
 
   if (!previous_composition_range_.IsValid() && composition_range.IsValid())
     router_->OnTSFStartComposition();
@@ -214,35 +214,35 @@ bool TSFEventRouter::Delegate::IsImeComposing() {
 }
 
 // static
-ui::Range TSFEventRouter::Delegate::GetCompositionRange(
+gfx::Range TSFEventRouter::Delegate::GetCompositionRange(
     ITfContext* context) {
   DCHECK(context);
   base::win::ScopedComPtr<ITfContextComposition> context_composition;
   if (FAILED(context_composition.QueryFrom(context)))
-    return ui::Range::InvalidRange();
+    return gfx::Range::InvalidRange();
   base::win::ScopedComPtr<IEnumITfCompositionView> enum_composition_view;
   if (FAILED(context_composition->EnumCompositions(
       enum_composition_view.Receive())))
-    return ui::Range::InvalidRange();
+    return gfx::Range::InvalidRange();
   base::win::ScopedComPtr<ITfCompositionView> composition_view;
   if (enum_composition_view->Next(1, composition_view.Receive(),
                                   NULL) != S_OK)
-    return ui::Range::InvalidRange();
+    return gfx::Range::InvalidRange();
 
   base::win::ScopedComPtr<ITfRange> range;
   if (FAILED(composition_view->GetRange(range.Receive())))
-    return ui::Range::InvalidRange();
+    return gfx::Range::InvalidRange();
 
   base::win::ScopedComPtr<ITfRangeACP> range_acp;
   if (FAILED(range_acp.QueryFrom(range)))
-    return ui::Range::InvalidRange();
+    return gfx::Range::InvalidRange();
 
   LONG start = 0;
   LONG length = 0;
   if (FAILED(range_acp->GetExtent(&start, &length)))
-    return ui::Range::InvalidRange();
+    return gfx::Range::InvalidRange();
 
-  return ui::Range(start, start + length);
+  return gfx::Range(start, start + length);
 }
 
 bool TSFEventRouter::Delegate::IsCandidateWindowInternal(DWORD element_id) {
@@ -292,7 +292,7 @@ void TSFEventRouter::OnTSFStartComposition() {
   observer_->OnTSFStartComposition();
 }
 
-void TSFEventRouter::OnTextUpdated(const ui::Range& composition_range) {
+void TSFEventRouter::OnTextUpdated(const gfx::Range& composition_range) {
   observer_->OnTextUpdated(composition_range);
 }
 

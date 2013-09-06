@@ -6,7 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "net/base/ip_endpoint.h"
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 
 namespace {
 
@@ -48,14 +48,14 @@ void ParamTraits<net::IPEndPoint>::Log(const param_type& p, std::string* l) {
   LogParam("IPEndPoint:" + p.ToString(), l);
 }
 
-void ParamTraits<ui::Range>::Write(Message* m, const ui::Range& r) {
+void ParamTraits<gfx::Range>::Write(Message* m, const gfx::Range& r) {
   m->WriteUInt64(r.start());
   m->WriteUInt64(r.end());
 }
 
-bool ParamTraits<ui::Range>::Read(const Message* m,
+bool ParamTraits<gfx::Range>::Read(const Message* m,
                                   PickleIterator* iter,
-                                  ui::Range* r) {
+                                  gfx::Range* r) {
   uint64 start, end;
   if (!m->ReadUInt64(iter, &start) || !m->ReadUInt64(iter, &end))
     return false;
@@ -64,7 +64,7 @@ bool ParamTraits<ui::Range>::Read(const Message* m,
   return true;
 }
 
-void ParamTraits<ui::Range>::Log(const ui::Range& r, std::string* l) {
+void ParamTraits<gfx::Range>::Log(const gfx::Range& r, std::string* l) {
   l->append(base::StringPrintf("(%" PRIuS ", %" PRIuS ")", r.start(), r.end()));
 }
 

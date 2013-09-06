@@ -12,10 +12,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/base/range/range.h"
 #include "ui/base/text/utf16_indexing.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -269,13 +269,13 @@ namespace {
 // Returns the first segment that is visually emphasized. Usually it's used for
 // representing the target clause (on Windows). Returns an invalid range if
 // there is no such a range.
-ui::Range GetFirstEmphasizedRange(const ui::CompositionText& composition) {
+gfx::Range GetFirstEmphasizedRange(const ui::CompositionText& composition) {
   for (size_t i = 0; i < composition.underlines.size(); ++i) {
     const ui::CompositionUnderline& underline = composition.underlines[i];
     if (underline.thick)
-      return ui::Range(underline.start_offset, underline.end_offset);
+      return gfx::Range(underline.start_offset, underline.end_offset);
   }
-  return ui::Range::InvalidRange();
+  return gfx::Range::InvalidRange();
 }
 
 }  // namespace
@@ -363,7 +363,7 @@ bool TextfieldViewsModel::Delete() {
     size_t cursor_position = GetCursorPosition();
     size_t next_grapheme_index = render_text_->IndexOfAdjacentGrapheme(
         cursor_position, gfx::CURSOR_FORWARD);
-    ExecuteAndRecordDelete(ui::Range(cursor_position, next_grapheme_index),
+    ExecuteAndRecordDelete(gfx::Range(cursor_position, next_grapheme_index),
                            true);
     return true;
   }
@@ -385,7 +385,7 @@ bool TextfieldViewsModel::Backspace() {
     // Delete one code point, which may be two UTF-16 words.
     size_t previous_char =
         ui::UTF16OffsetToIndex(GetText(), cursor_position, -1);
-    ExecuteAndRecordDelete(ui::Range(cursor_position, previous_char), true);
+    ExecuteAndRecordDelete(gfx::Range(cursor_position, previous_char), true);
     return true;
   }
   return false;
@@ -408,7 +408,7 @@ bool TextfieldViewsModel::MoveCursorTo(const gfx::SelectionModel& model) {
     ConfirmCompositionText();
     // ConfirmCompositionText() updates cursor position. Need to reflect it in
     // the SelectionModel parameter of MoveCursorTo().
-    ui::Range range(render_text_->selection().start(), model.caret_pos());
+    gfx::Range range(render_text_->selection().start(), model.caret_pos());
     if (!range.is_empty())
       return render_text_->SelectRange(range);
     return render_text_->MoveCursorTo(
@@ -428,7 +428,7 @@ string16 TextfieldViewsModel::GetSelectedText() const {
                           render_text_->selection().length());
 }
 
-void TextfieldViewsModel::SelectRange(const ui::Range& range) {
+void TextfieldViewsModel::SelectRange(const gfx::Range& range) {
   if (HasCompositionText())
     ConfirmCompositionText();
   render_text_->SelectRange(range);
@@ -518,8 +518,8 @@ bool TextfieldViewsModel::Cut() {
     // than beginning, unlike Delete/Backspace.
     // TODO(oshima): Change Delete/Backspace to use DeleteSelection,
     // update DeleteEdit and remove this trick.
-    const ui::Range& selection = render_text_->selection();
-    render_text_->SelectRange(ui::Range(selection.end(), selection.start()));
+    const gfx::Range& selection = render_text_->selection();
+    render_text_->SelectRange(gfx::Range(selection.end(), selection.start()));
     DeleteSelection();
     return true;
   }
@@ -568,14 +568,14 @@ void TextfieldViewsModel::DeleteSelectionAndInsertTextAt(
                           position);
 }
 
-string16 TextfieldViewsModel::GetTextFromRange(const ui::Range& range) const {
+string16 TextfieldViewsModel::GetTextFromRange(const gfx::Range& range) const {
   if (range.IsValid() && range.GetMin() < GetText().length())
     return GetText().substr(range.GetMin(), range.length());
   return string16();
 }
 
-void TextfieldViewsModel::GetTextRange(ui::Range* range) const {
-  *range = ui::Range(0, GetText().length());
+void TextfieldViewsModel::GetTextRange(gfx::Range* range) const {
+  *range = gfx::Range(0, GetText().length());
 }
 
 void TextfieldViewsModel::SetCompositionText(
@@ -591,9 +591,9 @@ void TextfieldViewsModel::SetCompositionText(
   size_t cursor = GetCursorPosition();
   string16 new_text = GetText();
   render_text_->SetText(new_text.insert(cursor, composition.text));
-  ui::Range range(cursor, cursor + composition.text.length());
+  gfx::Range range(cursor, cursor + composition.text.length());
   render_text_->SetCompositionRange(range);
-  ui::Range emphasized_range = GetFirstEmphasizedRange(composition);
+  gfx::Range emphasized_range = GetFirstEmphasizedRange(composition);
   if (emphasized_range.IsValid()) {
     // This is a workaround due to the lack of support in RenderText to draw
     // a thick underline. In a composition returned from an IME, the segment
@@ -603,11 +603,11 @@ void TextfieldViewsModel::SetCompositionText(
     // marker instead to show this range.
     // TODO(yukawa, msw): Support thick underline in RenderText and remove
     // this workaround.
-    render_text_->SelectRange(ui::Range(
+    render_text_->SelectRange(gfx::Range(
         cursor + emphasized_range.GetMin(),
         cursor + emphasized_range.GetMax()));
   } else if (!composition.selection.is_empty()) {
-    render_text_->SelectRange(ui::Range(
+    render_text_->SelectRange(gfx::Range(
         cursor + composition.selection.GetMin(),
         cursor + composition.selection.GetMax()));
   } else {
@@ -617,7 +617,7 @@ void TextfieldViewsModel::SetCompositionText(
 
 void TextfieldViewsModel::ConfirmCompositionText() {
   DCHECK(HasCompositionText());
-  ui::Range range = render_text_->GetCompositionRange();
+  gfx::Range range = render_text_->GetCompositionRange();
   string16 text = GetText().substr(range.start(), range.length());
   // TODO(oshima): current behavior on ChromeOS is a bit weird and not
   // sure exactly how this should work. Find out and fix if necessary.
@@ -630,7 +630,7 @@ void TextfieldViewsModel::ConfirmCompositionText() {
 
 void TextfieldViewsModel::CancelCompositionText() {
   DCHECK(HasCompositionText());
-  ui::Range range = render_text_->GetCompositionRange();
+  gfx::Range range = render_text_->GetCompositionRange();
   ClearComposition();
   string16 new_text = GetText();
   render_text_->SetText(new_text.erase(range.start(), range.length()));
@@ -640,11 +640,11 @@ void TextfieldViewsModel::CancelCompositionText() {
 }
 
 void TextfieldViewsModel::ClearComposition() {
-  render_text_->SetCompositionRange(ui::Range::InvalidRange());
+  render_text_->SetCompositionRange(gfx::Range::InvalidRange());
 }
 
-void TextfieldViewsModel::GetCompositionTextRange(ui::Range* range) const {
-  *range = ui::Range(render_text_->GetCompositionRange());
+void TextfieldViewsModel::GetCompositionTextRange(gfx::Range* range) const {
+  *range = gfx::Range(render_text_->GetCompositionRange());
 }
 
 bool TextfieldViewsModel::HasCompositionText() const {
@@ -681,7 +681,7 @@ void TextfieldViewsModel::ReplaceTextInternal(const string16& text,
     if (next == model.caret_pos())
       render_text_->MoveCursorTo(model);
     else
-      render_text_->SelectRange(ui::Range(next, model.caret_pos()));
+      render_text_->SelectRange(gfx::Range(next, model.caret_pos()));
   }
   // Edit history is recorded in InsertText.
   InsertTextInternal(text, mergeable);
@@ -705,7 +705,7 @@ void TextfieldViewsModel::ClearRedoHistory() {
   edit_history_.erase(delete_start, edit_history_.end());
 }
 
-void TextfieldViewsModel::ExecuteAndRecordDelete(ui::Range range,
+void TextfieldViewsModel::ExecuteAndRecordDelete(gfx::Range range,
                                                  bool mergeable) {
   size_t old_text_start = range.GetMin();
   const string16 text = GetText().substr(old_text_start, range.length());

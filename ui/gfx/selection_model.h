@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "ui/base/range/range.h"
 #include "ui/gfx/gfx_export.h"
+#include "ui/gfx/range/range.h"
 
 namespace gfx {
 
@@ -67,9 +67,9 @@ class UI_EXPORT SelectionModel {
   SelectionModel(size_t position, LogicalCursorDirection affinity);
   // Create a SelectionModel representing a selection (which may be empty).
   // The caret position is the end of the range.
-  SelectionModel(ui::Range selection, LogicalCursorDirection affinity);
+  SelectionModel(gfx::Range selection, LogicalCursorDirection affinity);
 
-  const ui::Range& selection() const { return selection_; }
+  const gfx::Range& selection() const { return selection_; }
   size_t caret_pos() const { return selection_.end(); }
   LogicalCursorDirection caret_affinity() const { return caret_affinity_; }
 
@@ -87,7 +87,7 @@ class UI_EXPORT SelectionModel {
   void set_selection_start(size_t pos) { selection_.set_start(pos); }
 
   // Logical selection. The logical caret position is the end of the selection.
-  ui::Range selection_;
+  gfx::Range selection_;
 
   // The logical direction from the caret position (selection_.end()) to the
   // character it is attached to for display purposes. This matters only when

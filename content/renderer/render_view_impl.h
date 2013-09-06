@@ -344,7 +344,7 @@ class CONTENT_EXPORT RenderViewImpl
       int selection_start,
       int selection_end);
   void SimulateImeConfirmComposition(const string16& text,
-                                     const ui::Range& replacement_range);
+                                     const gfx::Range& replacement_range);
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // Informs the render view that the given plugin has gained or lost focus.
@@ -767,7 +767,7 @@ class CONTENT_EXPORT RenderViewImpl
       int selection_start,
       int selection_end) OVERRIDE;
   virtual void OnImeConfirmComposition(const string16& text,
-                                       const ui::Range& replacement_range,
+                                       const gfx::Range& replacement_range,
                                        bool keep_selection) OVERRIDE;
   virtual void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
   virtual ui::TextInputType GetTextInputType() OVERRIDE;
@@ -775,7 +775,7 @@ class CONTENT_EXPORT RenderViewImpl
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   virtual void GetCompositionCharacterBounds(
       std::vector<gfx::Rect>* character_bounds) OVERRIDE;
-  virtual void GetCompositionRange(ui::Range* range) OVERRIDE;
+  virtual void GetCompositionRange(gfx::Range* range) OVERRIDE;
 #endif
   virtual bool CanComposeInline() OVERRIDE;
   virtual void DidCommitCompositorFrame() OVERRIDE;
@@ -1140,7 +1140,7 @@ class CONTENT_EXPORT RenderViewImpl
   static bool ShouldUpdateSelectionTextFromContextMenuParams(
       const string16& selection_text,
       size_t selection_text_offset,
-      const ui::Range& selection_range,
+      const gfx::Range& selection_range,
       const ContextMenuParams& params);
 
   // Starts nav_state_sync_timer_ if it isn't already running.
@@ -1313,7 +1313,7 @@ class CONTENT_EXPORT RenderViewImpl
   size_t selection_text_offset_;
   // Range over the document corresponding to the actual selected text (which
   // could correspond to a substring of |selection_text_|; see above).
-  ui::Range selection_range_;
+  gfx::Range selection_range_;
 
   // External context menu requests we're waiting for. "Internal"
   // (WebKit-originated) context menu events will have an ID of 0 and will not

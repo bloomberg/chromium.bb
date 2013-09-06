@@ -1297,7 +1297,7 @@ void RenderWidgetHostImpl::ImeSetComposition(
 
 void RenderWidgetHostImpl::ImeConfirmComposition(
     const string16& text,
-    const ui::Range& replacement_range,
+    const gfx::Range& replacement_range,
     bool keep_selection) {
   Send(new ViewMsg_ImeConfirmComposition(
         GetRoutingID(), text, replacement_range, keep_selection));
@@ -1734,7 +1734,7 @@ void RenderWidgetHostImpl::OnTextInputTypeChanged(
 
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
 void RenderWidgetHostImpl::OnImeCompositionRangeChanged(
-    const ui::Range& range,
+    const gfx::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
   if (view_)
     view_->ImeCompositionRangeChanged(range, character_bounds);

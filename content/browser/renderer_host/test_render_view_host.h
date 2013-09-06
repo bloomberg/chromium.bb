@@ -104,7 +104,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void ImeCancelComposition() OVERRIDE {}
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   virtual void ImeCompositionRangeChanged(
-      const ui::Range& range,
+      const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) OVERRIDE {}
 #endif
   virtual void DidUpdateBackingStore(

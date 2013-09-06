@@ -950,7 +950,7 @@ void RenderWidgetHostViewGtk::SetTooltipText(const string16& tooltip_text) {
 
 void RenderWidgetHostViewGtk::SelectionChanged(const string16& text,
                                                size_t offset,
-                                               const ui::Range& range) {
+                                               const gfx::Range& range) {
   RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
 
   if (text.empty() || range.is_empty())

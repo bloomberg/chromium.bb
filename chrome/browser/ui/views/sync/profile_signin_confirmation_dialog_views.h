@@ -57,7 +57,7 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
       const ViewHierarchyChangedDetails& details) OVERRIDE;
 
   // views::StyledLabelListener:
-  virtual void StyledLabelLinkClicked(const ui::Range& range,
+  virtual void StyledLabelLinkClicked(const gfx::Range& range,
                                       int event_flags) OVERRIDE;
 
   // views::ButtonListener:

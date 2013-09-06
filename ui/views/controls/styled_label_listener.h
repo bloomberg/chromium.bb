@@ -7,7 +7,7 @@
 
 #include "ui/views/views_export.h"
 
-namespace ui {
+namespace gfx {
 class Range;
 }
 
@@ -16,7 +16,7 @@ namespace views {
 // A listener interface for StyledLabel.
 class VIEWS_EXPORT StyledLabelListener {
  public:
-  virtual void StyledLabelLinkClicked(const ui::Range& range,
+  virtual void StyledLabelLinkClicked(const gfx::Range& range,
                                       int event_flags) = 0;
 
  protected:

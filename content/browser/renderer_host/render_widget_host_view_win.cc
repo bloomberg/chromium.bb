@@ -409,7 +409,7 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       can_compose_inline_(true),
       is_fullscreen_(false),
       ignore_mouse_movement_(true),
-      composition_range_(ui::Range::InvalidRange()),
+      composition_range_(gfx::Range::InvalidRange()),
       touch_state_(new WebTouchState(this)),
       pointer_down_context_(false),
       last_touch_location_(-1, -1),
@@ -726,7 +726,7 @@ void RenderWidgetHostViewWin::ImeCancelComposition() {
 }
 
 void RenderWidgetHostViewWin::ImeCompositionRangeChanged(
-    const ui::Range& range,
+    const gfx::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
   composition_range_ = range;
   composition_character_bounds_ = character_bounds;
@@ -1021,7 +1021,7 @@ void RenderWidgetHostViewWin::InsertText(const string16& text) {
   }
   if (render_widget_host_)
     render_widget_host_->ImeConfirmComposition(text,
-                                               ui::Range::InvalidRange(),
+                                               gfx::Range::InvalidRange(),
                                                false);
 }
 
@@ -1099,7 +1099,7 @@ bool RenderWidgetHostViewWin::HasCompositionText() {
   return false;
 }
 
-bool RenderWidgetHostViewWin::GetTextRange(ui::Range* range) {
+bool RenderWidgetHostViewWin::GetTextRange(gfx::Range* range) {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
@@ -1109,7 +1109,7 @@ bool RenderWidgetHostViewWin::GetTextRange(ui::Range* range) {
   return false;
 }
 
-bool RenderWidgetHostViewWin::GetCompositionTextRange(ui::Range* range) {
+bool RenderWidgetHostViewWin::GetCompositionTextRange(gfx::Range* range) {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
@@ -1119,7 +1119,7 @@ bool RenderWidgetHostViewWin::GetCompositionTextRange(ui::Range* range) {
   return false;
 }
 
-bool RenderWidgetHostViewWin::GetSelectionRange(ui::Range* range) {
+bool RenderWidgetHostViewWin::GetSelectionRange(gfx::Range* range) {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
@@ -1129,7 +1129,7 @@ bool RenderWidgetHostViewWin::GetSelectionRange(ui::Range* range) {
   return false;
 }
 
-bool RenderWidgetHostViewWin::SetSelectionRange(const ui::Range& range) {
+bool RenderWidgetHostViewWin::SetSelectionRange(const gfx::Range& range) {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
@@ -1139,7 +1139,7 @@ bool RenderWidgetHostViewWin::SetSelectionRange(const ui::Range& range) {
   return false;
 }
 
-bool RenderWidgetHostViewWin::DeleteRange(const ui::Range& range) {
+bool RenderWidgetHostViewWin::DeleteRange(const gfx::Range& range) {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
@@ -1149,13 +1149,13 @@ bool RenderWidgetHostViewWin::DeleteRange(const ui::Range& range) {
   return false;
 }
 
-bool RenderWidgetHostViewWin::GetTextFromRange(const ui::Range& range,
+bool RenderWidgetHostViewWin::GetTextFromRange(const gfx::Range& range,
                                                string16* text) {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
   }
-  ui::Range selection_text_range(selection_text_offset_,
+  gfx::Range selection_text_range(selection_text_offset_,
       selection_text_offset_ + selection_text_.length());
   if (!selection_text_range.Contains(range)) {
     text->clear();
@@ -1670,7 +1670,7 @@ LRESULT RenderWidgetHostViewWin::OnImeComposition(
   ui::CompositionText composition;
   if (imm32_manager_->GetResult(m_hWnd, lparam, &composition.text)) {
     render_widget_host_->ImeConfirmComposition(
-        composition.text, ui::Range::InvalidRange(), false);
+        composition.text, gfx::Range::InvalidRange(), false);
     imm32_manager_->ResetComposition(m_hWnd);
     // Fall though and try reading the composition string.
     // Japanese IMEs send a message containing both GCS_RESULTSTR and
@@ -1682,7 +1682,7 @@ LRESULT RenderWidgetHostViewWin::OnImeComposition(
   if (imm32_manager_->GetComposition(m_hWnd, lparam, &composition)) {
     // TODO(suzhe): due to a bug of webkit, we can't use selection range with
     // composition string. See: https://bugs.webkit.org/show_bug.cgi?id=37788
-    composition.selection = ui::Range(composition.selection.end());
+    composition.selection = gfx::Range(composition.selection.end());
 
     // TODO(suzhe): convert both renderer_host and renderer to use
     // ui::CompositionText.

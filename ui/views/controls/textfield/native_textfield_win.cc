@@ -22,9 +22,9 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/base/range/range.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
+#include "ui/gfx/range/range.h"
 #include "ui/native_theme/native_theme_win.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -340,13 +340,13 @@ bool NativeTextfieldWin::IsIMEComposing() const {
   return composition_size > 0;
 }
 
-ui::Range NativeTextfieldWin::GetSelectedRange() const {
+gfx::Range NativeTextfieldWin::GetSelectedRange() const {
   // TODO(tommi): Implement.
   NOTIMPLEMENTED();
-  return ui::Range();
+  return gfx::Range();
 }
 
-void NativeTextfieldWin::SelectRange(const ui::Range& range) {
+void NativeTextfieldWin::SelectRange(const gfx::Range& range) {
   // TODO(tommi): Implement.
   NOTIMPLEMENTED();
 }
@@ -401,7 +401,7 @@ void NativeTextfieldWin::SetColor(SkColor value) {
   NOTREACHED();
 }
 
-void NativeTextfieldWin::ApplyColor(SkColor value, const ui::Range& range) {
+void NativeTextfieldWin::ApplyColor(SkColor value, const gfx::Range& range) {
   NOTREACHED();
 }
 
@@ -411,7 +411,7 @@ void NativeTextfieldWin::SetStyle(gfx::TextStyle style, bool value) {
 
 void NativeTextfieldWin::ApplyStyle(gfx::TextStyle style,
                                     bool value,
-                                    const ui::Range& range) {
+                                    const gfx::Range& range) {
   NOTREACHED();
 }
 
@@ -493,7 +493,7 @@ void NativeTextfieldWin::ExecuteCommand(int command_id, int event_flags) {
   OnAfterPossibleChange(true);
 }
 
-void NativeTextfieldWin::OnTextUpdated(const ui::Range& composition_range) {
+void NativeTextfieldWin::OnTextUpdated(const gfx::Range& composition_range) {
   if (ime_discard_composition_) {
     ime_composition_start_ = composition_range.start();
     ime_composition_length_ = composition_range.length();

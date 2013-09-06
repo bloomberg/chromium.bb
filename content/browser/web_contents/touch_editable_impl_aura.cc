@@ -14,8 +14,8 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/range/range.h"
 #include "ui/base/ui_base_switches_util.h"
+#include "ui/gfx/range/range.h"
 
 namespace content {
 
@@ -295,7 +295,7 @@ bool TouchEditableImplAura::IsCommandIdEnabled(int command_id) const {
   if (!rwhva_)
     return false;
   bool editable = rwhva_->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE;
-  ui::Range selection_range;
+  gfx::Range selection_range;
   rwhva_->GetSelectionRange(&selection_range);
   bool has_selection = !selection_range.is_empty();
   switch (command_id) {

@@ -86,7 +86,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual void ImeCancelComposition() OVERRIDE;
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   virtual void ImeCompositionRangeChanged(
-      const ui::Range& range,
+      const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) OVERRIDE;
 #endif
   virtual void DidUpdateBackingStore(
@@ -101,7 +101,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
   virtual void SelectionChanged(const string16& text,
                                 size_t offset,
-                                const ui::Range& range) OVERRIDE;
+                                const gfx::Range& range) OVERRIDE;
   virtual void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE;
   virtual void ScrollOffsetChanged() OVERRIDE;

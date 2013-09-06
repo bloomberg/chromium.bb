@@ -511,7 +511,7 @@ void RenderWidgetHostViewAndroid::SetTooltipText(
 
 void RenderWidgetHostViewAndroid::SelectionChanged(const string16& text,
                                                    size_t offset,
-                                                   const ui::Range& range) {
+                                                   const gfx::Range& range) {
   RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
 
   if (text.empty() || range.is_empty() || !content_view_core_)

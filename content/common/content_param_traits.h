@@ -18,12 +18,12 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "webkit/common/cursors/webcursor.h"
 
-namespace net {
-class IPEndPoint;
+namespace gfx {
+class Range;
 }
 
-namespace ui {
-class Range;
+namespace net {
+class IPEndPoint;
 }
 
 namespace IPC {
@@ -37,8 +37,8 @@ struct ParamTraits<net::IPEndPoint> {
 };
 
 template <>
-struct ParamTraits<ui::Range> {
-  typedef ui::Range param_type;
+struct ParamTraits<gfx::Range> {
+  typedef gfx::Range param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

@@ -252,7 +252,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
                                     bool can_compose_inline) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
   virtual void ImeCompositionRangeChanged(
-      const ui::Range& range,
+      const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) OVERRIDE;
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect,
@@ -265,7 +265,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
   virtual void SelectionChanged(const string16& text,
                                 size_t offset,
-                                const ui::Range& range) OVERRIDE;
+                                const gfx::Range& range) OVERRIDE;
   virtual void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE;
   virtual void ScrollOffsetChanged() OVERRIDE;
@@ -354,19 +354,19 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // point to |line_breaking_point|. The |line_break_point| is valid only if
   // this function returns true.
   bool GetLineBreakIndex(const std::vector<gfx::Rect>& bounds,
-                         const ui::Range& range,
+                         const gfx::Range& range,
                          size_t* line_break_point);
 
   // Returns composition character boundary rectangle. The |range| is
   // composition based range. Also stores |actual_range| which is corresponding
   // to actually used range for returned rectangle.
-  gfx::Rect GetFirstRectForCompositionRange(const ui::Range& range,
-                                            ui::Range* actual_range);
+  gfx::Rect GetFirstRectForCompositionRange(const gfx::Range& range,
+                                            gfx::Range* actual_range);
 
   // Converts from given whole character range to composition oriented range. If
-  // the conversion failed, return ui::Range::InvalidRange.
-  ui::Range ConvertCharacterRangeToCompositionRange(
-      const ui::Range& request_range);
+  // the conversion failed, return gfx::Range::InvalidRange.
+  gfx::Range ConvertCharacterRangeToCompositionRange(
+      const gfx::Range& request_range);
 
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
@@ -548,7 +548,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   base::Time next_swap_ack_time_;
 
   // The current composition character range and its bounds.
-  ui::Range composition_range_;
+  gfx::Range composition_range_;
   std::vector<gfx::Rect> composition_bounds_;
 
   // The current caret bounds.

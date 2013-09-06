@@ -55,13 +55,13 @@ void EchoDialogView::InitForEnabledEcho(const string16& service_name,
   service_name_style.font_style = gfx::Font::UNDERLINE;
   service_name_style.tooltip = origin;
   label_->AddStyleRange(
-      ui::Range(offsets[0], offsets[0] + service_name.length()),
+      gfx::Range(offsets[0], offsets[0] + service_name.length()),
       service_name_style);
 
   views::StyledLabel::RangeStyleInfo link_style =
       views::StyledLabel::RangeStyleInfo::CreateForLink();
   link_style.font_style = gfx::Font::NORMAL;
-  label_->AddStyleRange(ui::Range(offsets[1], offsets[1] + link.length()),
+  label_->AddStyleRange(gfx::Range(offsets[1], offsets[1] + link.length()),
                         link_style);
 
   SetLabelBorderAndBounds();
@@ -85,7 +85,7 @@ void EchoDialogView::InitForDisabledEcho() {
   views::StyledLabel::RangeStyleInfo link_style =
       views::StyledLabel::RangeStyleInfo::CreateForLink();
   link_style.font_style = gfx::Font::NORMAL;
-  label_->AddStyleRange(ui::Range(offset, offset + link.length()), link_style);
+  label_->AddStyleRange(gfx::Range(offset, offset + link.length()), link_style);
 
   SetLabelBorderAndBounds();
 
@@ -149,7 +149,7 @@ bool EchoDialogView::ShouldShowWindowIcon() const {
   return false;
 }
 
-void EchoDialogView::StyledLabelLinkClicked(const ui::Range& range,
+void EchoDialogView::StyledLabelLinkClicked(const gfx::Range& range,
                                             int event_flags) {
   if (!listener_)
     return;

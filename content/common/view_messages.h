@@ -52,9 +52,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/range/range.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/vector2d.h"
@@ -1080,7 +1080,7 @@ IPC_MESSAGE_ROUTED4(
 // This message confirms an ongoing composition.
 IPC_MESSAGE_ROUTED3(ViewMsg_ImeConfirmComposition,
                     string16 /* text */,
-                    ui::Range /* replacement_range */,
+                    gfx::Range /* replacement_range */,
                     bool /* keep_selection */)
 
 // Sets the text composition to be between the given start and end offsets
@@ -1960,7 +1960,7 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_MoveCaret_ACK)
 IPC_MESSAGE_ROUTED3(ViewHostMsg_SelectionChanged,
                     string16 /* text covers the selection range */,
                     size_t /* the offset of the text in the document */,
-                    ui::Range /* selection range in the document */)
+                    gfx::Range /* selection range in the document */)
 
 // Notification that the selection bounds have changed.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SelectionBoundsChanged,
@@ -2369,7 +2369,7 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_FreeTransportDIB,
 // synchronously (see crbug.com/120597). This IPC message sends the character
 // bounds after every composition change to always have correct bound info.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_ImeCompositionRangeChanged,
-                    ui::Range /* composition range */,
+                    gfx::Range /* composition range */,
                     std::vector<gfx::Rect> /* character bounds */)
 #endif
 

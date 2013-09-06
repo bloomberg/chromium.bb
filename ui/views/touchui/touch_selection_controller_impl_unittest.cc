@@ -200,7 +200,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInTextfieldTest) {
   textfield_view_->OnGestureEvent(&tap);
 
   // Test selecting a range.
-  textfield_->SelectRange(ui::Range(3, 7));
+  textfield_->SelectRange(gfx::Range(3, 7));
   VERIFY_HANDLE_POSITIONS(false);
 
   // Test selecting everything.
@@ -237,35 +237,35 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInBidiTextfieldTest) {
   VERIFY_HANDLE_POSITIONS(false);
 
   // Test selection range inside one run and starts or ends at run boundary.
-  textfield_->SelectRange(ui::Range(2, 3));
+  textfield_->SelectRange(gfx::Range(2, 3));
   VERIFY_HANDLE_POSITIONS(false);
 
-  textfield_->SelectRange(ui::Range(3, 2));
+  textfield_->SelectRange(gfx::Range(3, 2));
   VERIFY_HANDLE_POSITIONS(false);
 
-  textfield_->SelectRange(ui::Range(3, 4));
+  textfield_->SelectRange(gfx::Range(3, 4));
   VERIFY_HANDLE_POSITIONS(false);
 
-  textfield_->SelectRange(ui::Range(4, 3));
+  textfield_->SelectRange(gfx::Range(4, 3));
   VERIFY_HANDLE_POSITIONS(false);
 
-  textfield_->SelectRange(ui::Range(3, 6));
+  textfield_->SelectRange(gfx::Range(3, 6));
   VERIFY_HANDLE_POSITIONS(false);
 
-  textfield_->SelectRange(ui::Range(6, 3));
+  textfield_->SelectRange(gfx::Range(6, 3));
   VERIFY_HANDLE_POSITIONS(false);
 
   // Test selection range accross runs.
-  textfield_->SelectRange(ui::Range(0, 6));
+  textfield_->SelectRange(gfx::Range(0, 6));
   VERIFY_HANDLE_POSITIONS(false);
 
-  textfield_->SelectRange(ui::Range(6, 0));
+  textfield_->SelectRange(gfx::Range(6, 0));
   VERIFY_HANDLE_POSITIONS(false);
 
-  textfield_->SelectRange(ui::Range(1, 4));
+  textfield_->SelectRange(gfx::Range(1, 4));
   VERIFY_HANDLE_POSITIONS(false);
 
-  textfield_->SelectRange(ui::Range(4, 1));
+  textfield_->SelectRange(gfx::Range(4, 1));
   VERIFY_HANDLE_POSITIONS(false);
 }
 
@@ -278,7 +278,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectCallbackTest) {
   ui::GestureEvent tap(ui::ET_GESTURE_TAP, 0, 0, 0, base::TimeDelta(),
       ui::GestureEventDetails(ui::ET_GESTURE_TAP, 1.0f, 0.0f), 0);
   textfield_view_->OnGestureEvent(&tap);
-  textfield_->SelectRange(ui::Range(3, 7));
+  textfield_->SelectRange(gfx::Range(3, 7));
 
   EXPECT_EQ(UTF16ToUTF8(textfield_->GetSelectedText()), "tfie");
   VERIFY_HANDLE_POSITIONS(false);
@@ -318,7 +318,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   textfield_view_->OnGestureEvent(&tap);
 
   // Select [c] from left to right.
-  textfield_->SelectRange(ui::Range(2, 3));
+  textfield_->SelectRange(gfx::Range(2, 3));
   EXPECT_EQ(WideToUTF16(L"c"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(false);
 
@@ -336,7 +336,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   VERIFY_HANDLE_POSITIONS(true);
 
   // Select [c] from right to left.
-  textfield_->SelectRange(ui::Range(3, 2));
+  textfield_->SelectRange(gfx::Range(3, 2));
   EXPECT_EQ(WideToUTF16(L"c"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(false);
 
@@ -353,7 +353,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   VERIFY_HANDLE_POSITIONS(false);
 
   // Select [\x5e1] from right to left.
-  textfield_->SelectRange(ui::Range(3, 4));
+  textfield_->SelectRange(gfx::Range(3, 4));
   EXPECT_EQ(WideToUTF16(L"\x05e1"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(false);
 
@@ -379,7 +379,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   VERIFY_HANDLE_POSITIONS(true);
 
   // Select [\x5e1] from left to right.
-  textfield_->SelectRange(ui::Range(4, 3));
+  textfield_->SelectRange(gfx::Range(4, 3));
   EXPECT_EQ(WideToUTF16(L"\x05e1"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(false);
 
@@ -398,7 +398,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   VERIFY_HANDLE_POSITIONS(false);
 
   // Select [\x05r3] from right to left.
-  textfield_->SelectRange(ui::Range(5, 6));
+  textfield_->SelectRange(gfx::Range(5, 6));
   EXPECT_EQ(WideToUTF16(L"\x05e3"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(false);
 
@@ -415,7 +415,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   VERIFY_HANDLE_POSITIONS(true);
 
   // Select [\x05r3] from left to right.
-  textfield_->SelectRange(ui::Range(6, 5));
+  textfield_->SelectRange(gfx::Range(6, 5));
   EXPECT_EQ(WideToUTF16(L"\x05e3"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(false);
 
@@ -447,12 +447,12 @@ TEST_F(TouchSelectionControllerImplTest,
   textfield_view_->OnGestureEvent(&tap);
 
   // Select some text such that one handle is hidden.
-  textfield_->SelectRange(ui::Range(10, textfield_text.length()));
+  textfield_->SelectRange(gfx::Range(10, textfield_text.length()));
 
   // Check that one selection handle is hidden.
   EXPECT_FALSE(IsSelectionHandle1Visible());
   EXPECT_TRUE(IsSelectionHandle2Visible());
-  EXPECT_EQ(ui::Range(10, textfield_text.length()),
+  EXPECT_EQ(gfx::Range(10, textfield_text.length()),
             textfield_->GetSelectedRange());
 
   // Drag the visible handle around and make sure the selection end point of the

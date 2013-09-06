@@ -203,7 +203,7 @@ class UI_EXPORT InputMethodIBus
   string16 result_text_;
 
   string16 previous_surrounding_text_;
-  ui::Range previous_selection_range_;
+  gfx::Range previous_selection_range_;
 
   // Indicates if input context is focused or not.
   bool context_focused_;

@@ -791,7 +791,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       history_list_length_(0),
       target_url_status_(TARGET_NONE),
       selection_text_offset_(0),
-      selection_range_(ui::Range::InvalidRange()),
+      selection_range_(gfx::Range::InvalidRange()),
 #if defined(OS_ANDROID)
       top_controls_constraints_(cc::BOTH),
 #endif
@@ -1273,7 +1273,7 @@ void RenderViewImpl::SimulateImeSetComposition(
 
 void RenderViewImpl::SimulateImeConfirmComposition(
     const string16& text,
-    const ui::Range& replacement_range) {
+    const gfx::Range& replacement_range) {
   OnImeConfirmComposition(text, replacement_range, false);
 }
 
@@ -2667,7 +2667,7 @@ void RenderViewImpl::showContextMenu(
     selection_text_ = params.selection_text;
     // TODO(asvitkine): Text offset and range is not available in this case.
     selection_text_offset_ = 0;
-    selection_range_ = ui::Range(0, selection_text_.length());
+    selection_range_ = gfx::Range(0, selection_text_.length());
     Send(new ViewHostMsg_SelectionChanged(routing_id_,
                                           selection_text_,
                                           selection_text_offset_,
@@ -4170,7 +4170,7 @@ void RenderViewImpl::SendFindReply(int request_id,
 bool RenderViewImpl::ShouldUpdateSelectionTextFromContextMenuParams(
     const string16& selection_text,
     size_t selection_text_offset,
-    const ui::Range& selection_range,
+    const gfx::Range& selection_range,
     const ContextMenuParams& params) {
   string16 trimmed_selection_text;
   if (!selection_text.empty() && !selection_range.is_empty()) {
@@ -4494,7 +4494,7 @@ void RenderViewImpl::SyncSelectionIfRequired() {
 
   string16 text;
   size_t offset;
-  ui::Range range;
+  gfx::Range range;
 #if defined(ENABLE_PLUGINS)
   if (focused_pepper_plugin_) {
     focused_pepper_plugin_->GetSurroundingText(&text, &range);
@@ -4507,7 +4507,7 @@ void RenderViewImpl::SyncSelectionIfRequired() {
     if (!webview()->caretOrSelectionRange(&location, &length))
       return;
 
-    range = ui::Range(location, location + length);
+    range = gfx::Range(location, location + length);
 
     if (webview()->textInputInfo().type != WebKit::WebTextInputTypeNone) {
       // If current focused element is editable, we will send 100 more chars
@@ -5885,9 +5885,10 @@ void RenderViewImpl::OnImeSetComposition(
                                     selection_end);
 }
 
-void RenderViewImpl::OnImeConfirmComposition(const string16& text,
-                                             const ui::Range& replacement_range,
-                                             bool keep_selection) {
+void RenderViewImpl::OnImeConfirmComposition(
+    const string16& text,
+    const gfx::Range& replacement_range,
+    bool keep_selection) {
 #if defined(ENABLE_PLUGINS)
   if (focused_pepper_plugin_) {
     // When a PPAPI plugin has focus, we bypass WebKit.
@@ -6042,7 +6043,7 @@ void RenderViewImpl::GetCompositionCharacterBounds(
   }
 }
 
-void RenderViewImpl::GetCompositionRange(ui::Range* range) {
+void RenderViewImpl::GetCompositionRange(gfx::Range* range) {
 #if defined(ENABLE_PLUGINS)
   if (focused_pepper_plugin_) {
     return;

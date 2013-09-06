@@ -40,9 +40,9 @@ const wchar_t kRtlLtr[] =    L"\x5d0\x5d1" L"a";
 const wchar_t kRtlLtrRtl[] = L"\x5d0" L"a" L"\x5d1";
 
 // Checks whether |range| contains |index|. This is not the same as calling
-// |range.Contains(ui::Range(index))| - as that would return true when
+// |range.Contains(gfx::Range(index))| - as that would return true when
 // |index| == |range.end()|.
-bool IndexInRange(const ui::Range& range, size_t index) {
+bool IndexInRange(const gfx::Range& range, size_t index) {
   return index >= range.start() && index < range.end();
 }
 
@@ -124,8 +124,8 @@ TEST_F(RenderTextTest, ApplyColorAndStyle) {
   render_text->SetText(ASCIIToUTF16("012345678"));
 
   // Apply a ranged color and style and check the resulting breaks.
-  render_text->ApplyColor(SK_ColorRED, ui::Range(1, 4));
-  render_text->ApplyStyle(BOLD, true, ui::Range(2, 5));
+  render_text->ApplyColor(SK_ColorRED, gfx::Range(1, 4));
+  render_text->ApplyStyle(BOLD, true, gfx::Range(2, 5));
   std::vector<std::pair<size_t, SkColor> > expected_color;
   expected_color.push_back(std::pair<size_t, SkColor>(0, SK_ColorBLACK));
   expected_color.push_back(std::pair<size_t, SkColor>(1, SK_ColorRED));
@@ -146,8 +146,8 @@ TEST_F(RenderTextTest, ApplyColorAndStyle) {
   // Apply a color and style over the text end and check the resulting breaks.
   // (INT_MAX should be used instead of the text length for the range end)
   const size_t text_length = render_text->text().length();
-  render_text->ApplyColor(SK_ColorRED, ui::Range(0, text_length));
-  render_text->ApplyStyle(BOLD, true, ui::Range(2, text_length));
+  render_text->ApplyColor(SK_ColorRED, gfx::Range(0, text_length));
+  render_text->ApplyStyle(BOLD, true, gfx::Range(2, text_length));
   std::vector<std::pair<size_t, SkColor> > expected_color_end;
   expected_color_end.push_back(std::pair<size_t, SkColor>(0, SK_ColorRED));
   EXPECT_TRUE(render_text->colors().EqualsForTesting(expected_color_end));
@@ -157,9 +157,9 @@ TEST_F(RenderTextTest, ApplyColorAndStyle) {
   EXPECT_TRUE(render_text->styles()[BOLD].EqualsForTesting(expected_style_end));
 
   // Ensure ranged values adjust to accommodate text length changes.
-  render_text->ApplyStyle(ITALIC, true, ui::Range(0, 2));
-  render_text->ApplyStyle(ITALIC, true, ui::Range(3, 6));
-  render_text->ApplyStyle(ITALIC, true, ui::Range(7, text_length));
+  render_text->ApplyStyle(ITALIC, true, gfx::Range(0, 2));
+  render_text->ApplyStyle(ITALIC, true, gfx::Range(3, 6));
+  render_text->ApplyStyle(ITALIC, true, gfx::Range(7, text_length));
   std::vector<std::pair<size_t, bool> > expected_italic;
   expected_italic.push_back(std::pair<size_t, bool>(0, true));
   expected_italic.push_back(std::pair<size_t, bool>(2, false));
@@ -187,8 +187,8 @@ TEST_F(RenderTextTest, PangoAttributes) {
   render_text->SetText(ASCIIToUTF16("012345678"));
 
   // Apply ranged BOLD/ITALIC styles and check the resulting Pango attributes.
-  render_text->ApplyStyle(BOLD, true, ui::Range(2, 4));
-  render_text->ApplyStyle(ITALIC, true, ui::Range(1, 3));
+  render_text->ApplyStyle(BOLD, true, gfx::Range(2, 4));
+  render_text->ApplyStyle(ITALIC, true, gfx::Range(1, 3));
 
   struct {
     int start;
@@ -239,22 +239,22 @@ void TestVisualCursorMotionInObscuredField(RenderText* render_text,
   render_text->SetText(text);
   int len = text.length();
   render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, select);
-  EXPECT_EQ(SelectionModel(ui::Range(select ? 0 : len, len), CURSOR_FORWARD),
+  EXPECT_EQ(SelectionModel(gfx::Range(select ? 0 : len, len), CURSOR_FORWARD),
             render_text->selection_model());
   render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, select);
   EXPECT_EQ(SelectionModel(0, CURSOR_BACKWARD), render_text->selection_model());
   for (int j = 1; j <= len; ++j) {
     render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, select);
-    EXPECT_EQ(SelectionModel(ui::Range(select ? 0 : j, j), CURSOR_BACKWARD),
+    EXPECT_EQ(SelectionModel(gfx::Range(select ? 0 : j, j), CURSOR_BACKWARD),
               render_text->selection_model());
   }
   for (int j = len - 1; j >= 0; --j) {
     render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, select);
-    EXPECT_EQ(SelectionModel(ui::Range(select ? 0 : j, j), CURSOR_FORWARD),
+    EXPECT_EQ(SelectionModel(gfx::Range(select ? 0 : j, j), CURSOR_FORWARD),
               render_text->selection_model());
   }
   render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, select);
-  EXPECT_EQ(SelectionModel(ui::Range(select ? 0 : len, len), CURSOR_FORWARD),
+  EXPECT_EQ(SelectionModel(gfx::Range(select ? 0 : len, len), CURSOR_FORWARD),
             render_text->selection_model());
   render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, select);
   EXPECT_EQ(SelectionModel(0, CURSOR_BACKWARD), render_text->selection_model());
@@ -878,8 +878,8 @@ TEST_F(RenderTextTest, SelectAll) {
   // Ensure that SelectAll respects the |reversed| argument regardless of
   // application locale and text content directionality.
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-  const SelectionModel expected_reversed(ui::Range(3, 0), CURSOR_FORWARD);
-  const SelectionModel expected_forwards(ui::Range(0, 3), CURSOR_BACKWARD);
+  const SelectionModel expected_reversed(gfx::Range(3, 0), CURSOR_FORWARD);
+  const SelectionModel expected_forwards(gfx::Range(0, 3), CURSOR_BACKWARD);
   const bool was_rtl = base::i18n::IsRTL();
 
   for (size_t i = 0; i < 2; ++i) {
@@ -906,39 +906,39 @@ TEST_F(RenderTextTest, SelectAll) {
   render_text->SetText(WideToUTF16(L"abc\x05d0\x05d1\x05d2"));
   // Left arrow on select ranging (6, 4).
   render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
-  EXPECT_EQ(ui::Range(6), render_text->selection());
+  EXPECT_EQ(gfx::Range(6), render_text->selection());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
-  EXPECT_EQ(ui::Range(4), render_text->selection());
+  EXPECT_EQ(gfx::Range(4), render_text->selection());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
-  EXPECT_EQ(ui::Range(5), render_text->selection());
+  EXPECT_EQ(gfx::Range(5), render_text->selection());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
-  EXPECT_EQ(ui::Range(6), render_text->selection());
+  EXPECT_EQ(gfx::Range(6), render_text->selection());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, true);
-  EXPECT_EQ(ui::Range(6, 5), render_text->selection());
+  EXPECT_EQ(gfx::Range(6, 5), render_text->selection());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, true);
-  EXPECT_EQ(ui::Range(6, 4), render_text->selection());
+  EXPECT_EQ(gfx::Range(6, 4), render_text->selection());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
-  EXPECT_EQ(ui::Range(6), render_text->selection());
+  EXPECT_EQ(gfx::Range(6), render_text->selection());
 
   // Right arrow on select ranging (4, 6).
   render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, false);
-  EXPECT_EQ(ui::Range(0), render_text->selection());
+  EXPECT_EQ(gfx::Range(0), render_text->selection());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
-  EXPECT_EQ(ui::Range(1), render_text->selection());
+  EXPECT_EQ(gfx::Range(1), render_text->selection());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
-  EXPECT_EQ(ui::Range(2), render_text->selection());
+  EXPECT_EQ(gfx::Range(2), render_text->selection());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
-  EXPECT_EQ(ui::Range(3), render_text->selection());
+  EXPECT_EQ(gfx::Range(3), render_text->selection());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
-  EXPECT_EQ(ui::Range(5), render_text->selection());
+  EXPECT_EQ(gfx::Range(5), render_text->selection());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
-  EXPECT_EQ(ui::Range(4), render_text->selection());
+  EXPECT_EQ(gfx::Range(4), render_text->selection());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, true);
-  EXPECT_EQ(ui::Range(4, 5), render_text->selection());
+  EXPECT_EQ(gfx::Range(4, 5), render_text->selection());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, true);
-  EXPECT_EQ(ui::Range(4, 6), render_text->selection());
+  EXPECT_EQ(gfx::Range(4, 6), render_text->selection());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
-  EXPECT_EQ(ui::Range(4), render_text->selection());
+  EXPECT_EQ(gfx::Range(4), render_text->selection());
 }
 #endif  // !defined(OS_MACOSX)
 
@@ -1225,7 +1225,7 @@ TEST_F(RenderTextTest, StringSizeBoldWidth) {
   EXPECT_GT(bold_width, plain_width);
 
   // Now, apply a plain style over the first word only.
-  render_text->ApplyStyle(BOLD, false, ui::Range(0, 5));
+  render_text->ApplyStyle(BOLD, false, gfx::Range(0, 5));
   const int plain_bold_width = render_text->GetStringSize().width();
   EXPECT_GT(plain_bold_width, plain_width);
   EXPECT_LT(plain_bold_width, bold_width);
@@ -1464,7 +1464,7 @@ TEST_F(RenderTextTest, SelectWord) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     render_text->SetCursorPosition(cases[i].cursor);
     render_text->SelectWord();
-    EXPECT_EQ(ui::Range(cases[i].selection_start, cases[i].selection_end),
+    EXPECT_EQ(gfx::Range(cases[i].selection_start, cases[i].selection_end),
               render_text->selection());
   }
 }
@@ -1497,13 +1497,13 @@ TEST_F(RenderTextTest, SelectMultipleWords) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
 
   render_text->SetText(ASCIIToUTF16(kTestURL));
-  render_text->SelectRange(ui::Range(16, 20));
+  render_text->SelectRange(gfx::Range(16, 20));
   render_text->SelectWord();
   EXPECT_EQ(ASCIIToUTF16("google.com"), GetSelectedText(render_text.get()));
   EXPECT_FALSE(render_text->selection().is_reversed());
 
   // SelectWord should preserve the selection direction.
-  render_text->SelectRange(ui::Range(20, 16));
+  render_text->SelectRange(gfx::Range(20, 16));
   render_text->SelectWord();
   EXPECT_EQ(ASCIIToUTF16("google.com"), GetSelectedText(render_text.get()));
   EXPECT_TRUE(render_text->selection().is_reversed());
@@ -1642,7 +1642,7 @@ TEST_F(RenderTextTest, SelectionKeepsLigatures) {
   for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
     render_text->SetText(WideToUTF16(kTestStrings[i]));
     const int expected_width = render_text->GetStringSize().width();
-    render_text->MoveCursorTo(SelectionModel(ui::Range(0, 1), CURSOR_FORWARD));
+    render_text->MoveCursorTo(SelectionModel(gfx::Range(0, 1), CURSOR_FORWARD));
     EXPECT_EQ(expected_width, render_text->GetStringSize().width());
     // Draw the text. It shouldn't hit any DCHECKs or crash.
     // See http://crbug.com/214150

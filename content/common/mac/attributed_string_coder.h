@@ -11,7 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/common/mac/font_descriptor.h"
 #include "ipc/ipc_message_utils.h"
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 
 #if __OBJC__
 @class NSAttributedString;
@@ -35,8 +35,8 @@ class CONTENT_EXPORT AttributedStringCoder {
   // set.
   class FontAttribute {
    public:
-    FontAttribute(NSDictionary* ns_attributes, ui::Range effective_range);
-    FontAttribute(FontDescriptor font, ui::Range range);
+    FontAttribute(NSDictionary* ns_attributes, gfx::Range effective_range);
+    FontAttribute(FontDescriptor font, gfx::Range range);
     FontAttribute();
     ~FontAttribute();
 
@@ -51,11 +51,11 @@ class CONTENT_EXPORT AttributedStringCoder {
 
     // Accessors:
     FontDescriptor font_descriptor() const { return font_descriptor_; }
-    ui::Range effective_range() const { return effective_range_; }
+    gfx::Range effective_range() const { return effective_range_; }
 
    private:
     FontDescriptor font_descriptor_;
-    ui::Range effective_range_;
+    gfx::Range effective_range_;
   };
 
   // A class that contains the pertinent information from an NSAttributedString,

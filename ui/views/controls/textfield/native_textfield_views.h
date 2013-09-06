@@ -130,8 +130,8 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   virtual View* GetView() OVERRIDE;
   virtual gfx::NativeView GetTestingHandle() const OVERRIDE;
   virtual bool IsIMEComposing() const OVERRIDE;
-  virtual ui::Range GetSelectedRange() const OVERRIDE;
-  virtual void SelectRange(const ui::Range& range) OVERRIDE;
+  virtual gfx::Range GetSelectedRange() const OVERRIDE;
+  virtual void SelectRange(const gfx::Range& range) OVERRIDE;
   virtual gfx::SelectionModel GetSelectionModel() const OVERRIDE;
   virtual void SelectSelectionModel(const gfx::SelectionModel& sel) OVERRIDE;
   virtual size_t GetCursorPosition() const OVERRIDE;
@@ -143,11 +143,11 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   virtual void HandleBlur() OVERRIDE;
   virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
   virtual void SetColor(SkColor value) OVERRIDE;
-  virtual void ApplyColor(SkColor value, const ui::Range& range) OVERRIDE;
+  virtual void ApplyColor(SkColor value, const gfx::Range& range) OVERRIDE;
   virtual void SetStyle(gfx::TextStyle style, bool value) OVERRIDE;
   virtual void ApplyStyle(gfx::TextStyle style,
                           bool value,
-                          const ui::Range& range) OVERRIDE;
+                          const gfx::Range& range) OVERRIDE;
   virtual void ClearEditHistory() OVERRIDE;
   virtual int GetFontHeight() OVERRIDE;
   virtual int GetTextfieldBaseline() const OVERRIDE;
@@ -191,12 +191,12 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   virtual bool GetCompositionCharacterBounds(uint32 index,
                                              gfx::Rect* rect) OVERRIDE;
   virtual bool HasCompositionText() OVERRIDE;
-  virtual bool GetTextRange(ui::Range* range) OVERRIDE;
-  virtual bool GetCompositionTextRange(ui::Range* range) OVERRIDE;
-  virtual bool GetSelectionRange(ui::Range* range) OVERRIDE;
-  virtual bool SetSelectionRange(const ui::Range& range) OVERRIDE;
-  virtual bool DeleteRange(const ui::Range& range) OVERRIDE;
-  virtual bool GetTextFromRange(const ui::Range& range,
+  virtual bool GetTextRange(gfx::Range* range) OVERRIDE;
+  virtual bool GetCompositionTextRange(gfx::Range* range) OVERRIDE;
+  virtual bool GetSelectionRange(gfx::Range* range) OVERRIDE;
+  virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE;
+  virtual bool DeleteRange(const gfx::Range& range) OVERRIDE;
+  virtual bool GetTextFromRange(const gfx::Range& range,
                                 string16* text) OVERRIDE;
   virtual void OnInputMethodChanged() OVERRIDE;
   virtual bool ChangeTextDirectionAndLayoutAlignment(
@@ -325,7 +325,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   size_t aggregated_clicks_;
   base::TimeDelta last_click_time_;
   gfx::Point last_click_location_;
-  ui::Range double_click_word_;
+  gfx::Range double_click_word_;
 
   // Context menu and its content list for the textfield.
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;

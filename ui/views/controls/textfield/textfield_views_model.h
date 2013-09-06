@@ -19,12 +19,9 @@
 #include "ui/views/views_export.h"
 
 namespace gfx {
+class Range;
 class RenderText;
 }  // namespace gfx
-
-namespace ui {
-class Range;
-}  // namespace ui
 
 namespace views {
 
@@ -144,7 +141,7 @@ class VIEWS_EXPORT TextfieldViewsModel {
   // The current composition text will be confirmed. The selection starts with
   // the range's start position, and ends with the range's end position,
   // therefore the cursor position becomes the end position.
-  void SelectRange(const ui::Range& range);
+  void SelectRange(const gfx::Range& range);
 
   // The current composition text will be confirmed.
   // render_text_'s selection model is set to |sel|.
@@ -204,10 +201,10 @@ class VIEWS_EXPORT TextfieldViewsModel {
       const string16& text, size_t position);
 
   // Retrieves the text content in a given range.
-  string16 GetTextFromRange(const ui::Range& range) const;
+  string16 GetTextFromRange(const gfx::Range& range) const;
 
   // Retrieves the range containing all text in the model.
-  void GetTextRange(ui::Range* range) const;
+  void GetTextRange(gfx::Range* range) const;
 
   // Sets composition text and attributes. If there is composition text already,
   // it'll be replaced by the new one. Otherwise, current selection will be
@@ -224,7 +221,7 @@ class VIEWS_EXPORT TextfieldViewsModel {
   void CancelCompositionText();
 
   // Retrieves the range of current composition text.
-  void GetCompositionTextRange(ui::Range* range) const;
+  void GetCompositionTextRange(gfx::Range* range) const;
 
   // Returns true if there is composition text.
   bool HasCompositionText() const;
@@ -258,7 +255,7 @@ class VIEWS_EXPORT TextfieldViewsModel {
   void ClearRedoHistory();
 
   // Executes and records edit operations.
-  void ExecuteAndRecordDelete(ui::Range range, bool mergeable);
+  void ExecuteAndRecordDelete(gfx::Range range, bool mergeable);
   void ExecuteAndRecordReplaceSelection(internal::MergeType merge_type,
                                         const string16& text);
   void ExecuteAndRecordReplace(internal::MergeType merge_type,

@@ -174,7 +174,7 @@ void ImeAdapterAndroid::CommitText(JNIEnv* env, jobject, jstring text) {
     return;
 
   string16 text16 = ConvertJavaStringToUTF16(env, text);
-  rwhi->ImeConfirmComposition(text16, ui::Range::InvalidRange(), false);
+  rwhi->ImeConfirmComposition(text16, gfx::Range::InvalidRange(), false);
 }
 
 void ImeAdapterAndroid::FinishComposingText(JNIEnv* env, jobject) {
@@ -182,7 +182,7 @@ void ImeAdapterAndroid::FinishComposingText(JNIEnv* env, jobject) {
   if (!rwhi)
     return;
 
-  rwhi->ImeConfirmComposition(string16(), ui::Range::InvalidRange(), true);
+  rwhi->ImeConfirmComposition(string16(), gfx::Range::InvalidRange(), true);
 }
 
 void ImeAdapterAndroid::AttachImeAdapter(JNIEnv* env, jobject java_object) {

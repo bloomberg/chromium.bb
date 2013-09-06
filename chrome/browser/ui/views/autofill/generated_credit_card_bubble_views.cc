@@ -92,7 +92,7 @@ void GeneratedCreditCardBubbleViews::Init() {
   AddChildView(contents);
 }
 
-void GeneratedCreditCardBubbleViews::StyledLabelLinkClicked(const ui::Range& r,
+void GeneratedCreditCardBubbleViews::StyledLabelLinkClicked(const gfx::Range& r,
                                                             int event_flags) {
   if (controller_)
     controller_->OnLinkClicked();

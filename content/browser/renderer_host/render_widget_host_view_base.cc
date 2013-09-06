@@ -382,7 +382,7 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase()
       mouse_locked_(false),
       showing_context_menu_(false),
       selection_text_offset_(0),
-      selection_range_(ui::Range::InvalidRange()),
+      selection_range_(gfx::Range::InvalidRange()),
       current_device_scale_factor_(0),
       renderer_frame_number_(0) {
 }
@@ -417,7 +417,7 @@ float RenderWidgetHostViewBase::GetOverdrawBottomHeight() const {
 
 void RenderWidgetHostViewBase::SelectionChanged(const string16& text,
                                                 size_t offset,
-                                                const ui::Range& range) {
+                                                const gfx::Range& range) {
   selection_text_ = text;
   selection_text_offset_ = offset;
   selection_range_.set_start(range.start());

@@ -13,8 +13,8 @@
 #include "base/strings/string16.h"
 #include "base/win/scoped_comptr.h"
 #include "ui/base/ime/composition_underline.h"
-#include "ui/base/range/range.h"
 #include "ui/base/ui_export.h"
+#include "ui/gfx/range/range.h"
 
 namespace ui {
 class TextInputClient;
@@ -258,7 +258,7 @@ class UI_EXPORT TSFTextStore : public ITextStoreACP,
   //    |string_buffer_|: "aiueo"
   //    |selection_.start()|: 1
   //    |selection_.end()|: 4
-  Range selection_;
+  gfx::Range selection_;
 
   //  |start_offset| and |end_offset| of |composition_undelines_| indicates
   //  the offsets in |string_buffer_|.

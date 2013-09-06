@@ -53,9 +53,12 @@ class CompositorFrame;
 class CompositorFrameAck;
 }
 
+namespace gfx {
+class Range;
+}
+
 namespace ui {
 class KeyEvent;
-class Range;
 }
 
 namespace WebKit {
@@ -342,7 +345,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // * when it receives a "commit" signal of GtkIMContext (on Linux);
   // * when insertText of NSTextInput is called (on Mac).
   void ImeConfirmComposition(const string16& text,
-                             const ui::Range& replacement_range,
+                             const gfx::Range& replacement_range,
                              bool keep_selection);
 
   // Cancels an ongoing composition.
@@ -663,7 +666,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                               bool can_compose_inline);
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   void OnImeCompositionRangeChanged(
-      const ui::Range& range,
+      const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds);
 #endif
   void OnImeCancelComposition();

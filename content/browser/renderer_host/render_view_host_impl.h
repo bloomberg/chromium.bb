@@ -48,8 +48,11 @@ namespace base {
 class ListValue;
 }
 
-namespace ui {
+namespace gfx {
 class Range;
+}
+
+namespace ui {
 struct SelectedFileInfo;
 }
 
@@ -524,7 +527,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnDidChangeNumWheelEvents(int count);
   void OnSelectionChanged(const string16& text,
                           size_t offset,
-                          const ui::Range& range);
+                          const gfx::Range& range);
   void OnSelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params);
   void OnPasteFromSelectionClipboard();

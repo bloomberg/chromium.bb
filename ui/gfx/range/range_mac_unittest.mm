@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 
 TEST(RangeTest, FromNSRange) {
   NSRange nsr = NSMakeRange(10, 3);
-  ui::Range r(nsr);
+  gfx::Range r(nsr);
   EXPECT_EQ(nsr.location, r.start());
   EXPECT_EQ(13U, r.end());
   EXPECT_EQ(nsr.length, r.length());
@@ -16,14 +16,14 @@ TEST(RangeTest, FromNSRange) {
 }
 
 TEST(RangeTest, ToNSRange) {
-  ui::Range r(10, 12);
+  gfx::Range r(10, 12);
   NSRange nsr = r.ToNSRange();
   EXPECT_EQ(10U, nsr.location);
   EXPECT_EQ(2U, nsr.length);
 }
 
 TEST(RangeTest, ReversedToNSRange) {
-  ui::Range r(20, 10);
+  gfx::Range r(20, 10);
   NSRange nsr = r.ToNSRange();
   EXPECT_EQ(10U, nsr.location);
   EXPECT_EQ(10U, nsr.length);
@@ -31,12 +31,12 @@ TEST(RangeTest, ReversedToNSRange) {
 
 TEST(RangeTest, FromNSRangeInvalid) {
   NSRange nsr = NSMakeRange(NSNotFound, 0);
-  ui::Range r(nsr);
+  gfx::Range r(nsr);
   EXPECT_FALSE(r.IsValid());
 }
 
 TEST(RangeTest, ToNSRangeInvalid) {
-  ui::Range r(ui::Range::InvalidRange());
+  gfx::Range r(gfx::Range::InvalidRange());
   NSRange nsr = r.ToNSRange();
   EXPECT_EQ(NSNotFound, nsr.location);
   EXPECT_EQ(0U, nsr.length);

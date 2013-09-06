@@ -7,7 +7,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 
 namespace content {
 

@@ -40,9 +40,9 @@ bool IsForwardMotion(VisualCursorDirection direction, const PangoItem* item) {
 }
 
 // Checks whether |range| contains |index|. This is not the same as calling
-// |range.Contains(ui::Range(index))| - as that would return true when
+// |range.Contains(gfx::Range(index))| - as that would return true when
 // |index| == |range.end()|.
-bool IndexInRange(const ui::Range& range, size_t index) {
+bool IndexInRange(const gfx::Range& range, size_t index) {
   return index >= range.start() && index < range.end();
 }
 
@@ -137,7 +137,7 @@ std::vector<RenderText::FontSpan> RenderTextLinux::GetFontSpansForTesting() {
     PangoItem* item = reinterpret_cast<PangoLayoutRun*>(it->data)->item;
     const int start = LayoutIndexToTextIndex(item->offset);
     const int end = LayoutIndexToTextIndex(item->offset + item->length);
-    const ui::Range range(start, end);
+    const gfx::Range range(start, end);
 
     ScopedPangoFontDescription desc(pango_font_describe(item->analysis.font));
     spans.push_back(RenderText::FontSpan(Font(desc.get()), range));
@@ -214,14 +214,14 @@ SelectionModel RenderTextLinux::AdjacentWordSelectionModel(
   return cur;
 }
 
-ui::Range RenderTextLinux::GetGlyphBounds(size_t index) {
+gfx::Range RenderTextLinux::GetGlyphBounds(size_t index) {
   PangoRectangle pos;
   pango_layout_index_to_pos(layout_, TextIndexToLayoutIndex(index), &pos);
   // TODO(derat): Support fractional ranges for subpixel positioning?
-  return ui::Range(PANGO_PIXELS(pos.x), PANGO_PIXELS(pos.x + pos.width));
+  return gfx::Range(PANGO_PIXELS(pos.x), PANGO_PIXELS(pos.x + pos.width));
 }
 
-std::vector<Rect> RenderTextLinux::GetSubstringBounds(const ui::Range& range) {
+std::vector<Rect> RenderTextLinux::GetSubstringBounds(const gfx::Range& range) {
   DCHECK_LE(range.GetMax(), text().length());
   if (range.is_empty())
     return std::vector<Rect>();
@@ -428,7 +428,7 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
 
     // Track the current style and its text (not layout) index range.
     style.UpdatePosition(GetGlyphTextIndex(run, style_start_glyph_index));
-    ui::Range style_range = style.GetRange();
+    gfx::Range style_range = style.GetRange();
 
     do {
       const PangoGlyphInfo& glyph = run->glyphs->glyphs[glyph_index];
@@ -478,7 +478,7 @@ GSList* RenderTextLinux::GetRunContainingCaret(
   GSList* run = current_line_->runs;
   while (run) {
     PangoItem* item = reinterpret_cast<PangoLayoutRun*>(run->data)->item;
-    ui::Range item_range(item->offset, item->offset + item->length);
+    gfx::Range item_range(item->offset, item->offset + item->length);
     if (RangeContainsCaret(item_range, position, affinity))
       return run;
     run = run->next;

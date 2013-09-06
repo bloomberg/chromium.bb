@@ -341,7 +341,7 @@ void OmniboxViewViews::OnBlur() {
   controller()->OnKillFocus();
 
   // Make sure the beginning of the text is visible.
-  SelectRange(ui::Range(0));
+  SelectRange(gfx::Range(0));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -386,7 +386,7 @@ void OmniboxViewViews::Update() {
     // change it right before the permanent URL is changed.  Since the new URL
     // is still fully selected, the user's typing will replace the edit contents
     // as they'd intended.
-    const ui::Range range(GetSelectedRange());
+    const gfx::Range range(GetSelectedRange());
     const bool was_select_all = (range.length() == text().length());
 
     RevertAll();
@@ -415,7 +415,7 @@ void OmniboxViewViews::SetWindowTextAndCaretPos(const string16& text,
                                                 size_t caret_pos,
                                                 bool update_popup,
                                                 bool notify_text_changed) {
-  const ui::Range range(caret_pos, caret_pos);
+  const gfx::Range range(caret_pos, caret_pos);
   SetTextAndSelectedRange(text, range);
 
   if (update_popup)
@@ -431,7 +431,7 @@ void OmniboxViewViews::SetForcedQuery() {
   if (start == string16::npos || (current_text[start] != '?'))
     SetUserText(ASCIIToUTF16("?"));
   else
-    SelectRange(ui::Range(current_text.size(), start + 1));
+    SelectRange(gfx::Range(current_text.size(), start + 1));
 }
 
 bool OmniboxViewViews::IsSelectAll() const {
@@ -445,7 +445,7 @@ bool OmniboxViewViews::DeleteAtEndPressed() {
 
 void OmniboxViewViews::GetSelectionBounds(string16::size_type* start,
                                           string16::size_type* end) const {
-  const ui::Range range = GetSelectedRange();
+  const gfx::Range range = GetSelectedRange();
   *start = static_cast<size_t>(range.start());
   *end = static_cast<size_t>(range.end());
 }
@@ -465,7 +465,7 @@ void OmniboxViewViews::UpdatePopup() {
   // Prevent inline autocomplete when the caret isn't at the end of the text,
   // and during IME composition editing unless
   // |kEnableOmniboxAutoCompletionForIme| is enabled.
-  const ui::Range sel = GetSelectedRange();
+  const gfx::Range sel = GetSelectedRange();
   model()->StartAutocomplete(
       !sel.is_empty(),
       sel.GetMax() < text().length() ||
@@ -507,7 +507,7 @@ bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
     location_bar_view_->SetImeInlineAutocompletion(
         display_text.substr(user_text_length));
   } else {
-    ui::Range range(display_text.size(), user_text_length);
+    gfx::Range range(display_text.size(), user_text_length);
     SetTextAndSelectedRange(display_text, range);
   }
   TextChanged();
@@ -532,7 +532,7 @@ void OmniboxViewViews::OnBeforePossibleChange() {
 bool OmniboxViewViews::OnAfterPossibleChange() {
   // See if the text or selection have changed since OnBeforePossibleChange().
   const string16 new_text = text();
-  const ui::Range new_sel = GetSelectedRange();
+  const gfx::Range new_sel = GetSelectedRange();
   const bool text_changed = (new_text != text_before_change_) ||
       (ime_composing_before_change_ != IsIMEComposing());
   const bool selection_differs =
@@ -858,7 +858,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   if (grey_base && !grey_out_url) {
     ApplyColor(
         location_bar_view_->GetColor(security_level_, LocationBarView::TEXT),
-        ui::Range(host.begin, host.end()));
+        gfx::Range(host.begin, host.end()));
   }
 
   // Emphasize the scheme for security UI display purposes (if necessary).
@@ -872,14 +872,14 @@ void OmniboxViewViews::EmphasizeURLComponents() {
     SkColor security_color = location_bar_view_->GetColor(
         security_level_, LocationBarView::SECURITY_TEXT);
     const bool strike = (security_level_ == ToolbarModel::SECURITY_ERROR);
-    const ui::Range scheme_range(scheme.begin, scheme.end());
+    const gfx::Range scheme_range(scheme.begin, scheme.end());
     ApplyColor(security_color, scheme_range);
     ApplyStyle(gfx::DIAGONAL_STRIKE, strike, scheme_range);
   }
 }
 
 void OmniboxViewViews::SetTextAndSelectedRange(const string16& text,
-                                               const ui::Range& range) {
+                                               const gfx::Range& range) {
   SetText(text);
   SelectRange(range);
 }

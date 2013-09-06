@@ -36,7 +36,7 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_CONST_METHOD0(GetDialogButtons, int());
   MOCK_CONST_METHOD1(IsDialogButtonEnabled, bool(ui::DialogButton button));
   MOCK_CONST_METHOD0(GetDialogOverlay, DialogOverlayState());
-  MOCK_METHOD0(LegalDocumentLinks, const std::vector<ui::Range>&());
+  MOCK_METHOD0(LegalDocumentLinks, const std::vector<gfx::Range>&());
   MOCK_CONST_METHOD1(SectionIsActive, bool(DialogSection));
   MOCK_CONST_METHOD1(RequestedFieldsForSection,
                      const DetailInputs&(DialogSection));
@@ -69,7 +69,7 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_METHOD0(SignInLinkClicked, void());
   MOCK_METHOD2(NotificationCheckboxStateChanged,
                void(DialogNotification::Type, bool));
-  MOCK_METHOD1(LegalDocumentLinkClicked, void(const ui::Range&));
+  MOCK_METHOD1(LegalDocumentLinkClicked, void(const gfx::Range&));
   MOCK_METHOD0(OverlayButtonPressed, void());
   MOCK_METHOD0(OnCancel, bool());
   MOCK_METHOD0(OnAccept, bool());
@@ -78,7 +78,7 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
  private:
   DetailInputs default_inputs_;
   DetailInputs cc_default_inputs_;  // Default inputs for SECTION_CC.
-  std::vector<ui::Range> range_;
+  std::vector<gfx::Range> range_;
 };
 
 }  // namespace autofill

@@ -18,7 +18,7 @@
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 #include "ui/surface/transport_dib.h"
 
 class SkBitmap;
@@ -106,7 +106,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   // Updates the range of the marked text in an IME composition.
   virtual void ImeCompositionRangeChanged(
-      const ui::Range& range,
+      const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) = 0;
 #endif
 
@@ -148,7 +148,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   // Notifies the View that the renderer text selection has changed.
   virtual void SelectionChanged(const string16& text,
                                 size_t offset,
-                                const ui::Range& range) = 0;
+                                const gfx::Range& range) = 0;
 
   // Notifies the View that the renderer selection bounds has changed.
   // |start_rect| and |end_rect| are the bounds end of the selection in the

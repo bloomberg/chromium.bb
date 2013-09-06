@@ -329,9 +329,9 @@ void IMM32Manager::GetCompositionInfo(HIMC imm_context, LPARAM lparam,
     // IMM32 does not support non-zero-width selection in a composition. So
     // always use the caret position as selection range.
     int cursor = ::ImmGetCompositionString(imm_context, GCS_CURSORPOS, NULL, 0);
-    composition->selection = ui::Range(cursor);
+    composition->selection = gfx::Range(cursor);
   } else {
-    composition->selection = ui::Range(0);
+    composition->selection = gfx::Range(0);
   }
 
   // Retrieve the clause segmentations and convert them to underlines.

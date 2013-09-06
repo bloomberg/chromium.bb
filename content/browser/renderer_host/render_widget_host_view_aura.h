@@ -175,7 +175,7 @@ class RenderWidgetHostViewAura
                                     bool can_compose_inline) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
   virtual void ImeCompositionRangeChanged(
-      const ui::Range& range,
+      const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) OVERRIDE;
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect,
@@ -188,7 +188,7 @@ class RenderWidgetHostViewAura
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
   virtual void SelectionChanged(const string16& text,
                                 size_t offset,
-                                const ui::Range& range) OVERRIDE;
+                                const gfx::Range& range) OVERRIDE;
   virtual void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE;
   virtual void ScrollOffsetChanged() OVERRIDE;
@@ -261,12 +261,12 @@ class RenderWidgetHostViewAura
   virtual bool GetCompositionCharacterBounds(uint32 index,
                                              gfx::Rect* rect) OVERRIDE;
   virtual bool HasCompositionText() OVERRIDE;
-  virtual bool GetTextRange(ui::Range* range) OVERRIDE;
-  virtual bool GetCompositionTextRange(ui::Range* range) OVERRIDE;
-  virtual bool GetSelectionRange(ui::Range* range) OVERRIDE;
-  virtual bool SetSelectionRange(const ui::Range& range) OVERRIDE;
-  virtual bool DeleteRange(const ui::Range& range) OVERRIDE;
-  virtual bool GetTextFromRange(const ui::Range& range,
+  virtual bool GetTextRange(gfx::Range* range) OVERRIDE;
+  virtual bool GetCompositionTextRange(gfx::Range* range) OVERRIDE;
+  virtual bool GetSelectionRange(gfx::Range* range) OVERRIDE;
+  virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE;
+  virtual bool DeleteRange(const gfx::Range& range) OVERRIDE;
+  virtual bool GetTextFromRange(const gfx::Range& range,
                                 string16* text) OVERRIDE;
   virtual void OnInputMethodChanged() OVERRIDE;
   virtual bool ChangeTextDirectionAndLayoutAlignment(

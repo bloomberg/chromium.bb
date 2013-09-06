@@ -6,7 +6,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 
 namespace content {
 
@@ -14,16 +14,16 @@ TEST(RenderViewImplTest, ShouldUpdateSelectionTextFromContextMenuParams) {
   struct {
     const char* selection_text;
     size_t selection_text_offset;
-    ui::Range selection_range;
+    gfx::Range selection_range;
     const char* params_selection_text;
     bool expected_result;
   } cases[] = {
-    { "test", 0, ui::Range(0, 4), "test", false },
-    { "zebestest", 0, ui::Range(2, 6), "best", false },
-    { "zebestest", 2, ui::Range(2, 6), "best", true },
-    { "test", 0, ui::Range(0, 4), "hello", true },
-    { "best test", 0, ui::Range(0, 4), "best ", false },
-    { "best test", 0, ui::Range(0, 5), "best", false },
+    { "test", 0, gfx::Range(0, 4), "test", false },
+    { "zebestest", 0, gfx::Range(2, 6), "best", false },
+    { "zebestest", 2, gfx::Range(2, 6), "best", true },
+    { "test", 0, gfx::Range(0, 4), "hello", true },
+    { "best test", 0, gfx::Range(0, 4), "best ", false },
+    { "best test", 0, gfx::Range(0, 5), "best", false },
   };
 
   ContextMenuParams params;

@@ -15,7 +15,7 @@ CompositionText::~CompositionText() {
 void CompositionText::Clear() {
   text.clear();
   underlines.clear();
-  selection = Range();
+  selection = gfx::Range();
 }
 
 }  // namespace ui

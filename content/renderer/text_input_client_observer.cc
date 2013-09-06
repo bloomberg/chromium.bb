@@ -49,7 +49,7 @@ void TextInputClientObserver::OnCharacterIndexForPoint(gfx::Point point) {
       index));
 }
 
-void TextInputClientObserver::OnFirstRectForCharacterRange(ui::Range range) {
+void TextInputClientObserver::OnFirstRectForCharacterRange(gfx::Range range) {
   gfx::Rect rect;
 #if defined(ENABLE_PLUGINS)
   if (!render_view_impl_->GetPepperCaretBounds(&rect))
@@ -66,7 +66,7 @@ void TextInputClientObserver::OnFirstRectForCharacterRange(ui::Range range) {
   Send(new TextInputClientReplyMsg_GotFirstRectForRange(routing_id(), rect));
 }
 
-void TextInputClientObserver::OnStringForRange(ui::Range range) {
+void TextInputClientObserver::OnStringForRange(gfx::Range range) {
 #if defined(OS_MACOSX)
   NSAttributedString* string = nil;
   WebKit::WebFrame* frame = webview()->focusedFrame();

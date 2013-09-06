@@ -7,8 +7,8 @@
 
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
-#include "ui/base/range/range.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/views_export.h"
@@ -109,10 +109,10 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   virtual bool IsIMEComposing() const = 0;
 
   // Gets the selected range.
-  virtual ui::Range GetSelectedRange() const = 0;
+  virtual gfx::Range GetSelectedRange() const = 0;
 
   // Selects the text given by |range|.
-  virtual void SelectRange(const ui::Range& range) = 0;
+  virtual void SelectRange(const gfx::Range& range) = 0;
 
   // Gets the selection model.
   virtual gfx::SelectionModel GetSelectionModel() const = 0;
@@ -149,13 +149,13 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
 
   // Set the text colors; see the corresponding Textfield functions for details.
   virtual void SetColor(SkColor value) = 0;
-  virtual void ApplyColor(SkColor value, const ui::Range& range) = 0;
+  virtual void ApplyColor(SkColor value, const gfx::Range& range) = 0;
 
   // Set the text styles; see the corresponding Textfield functions for details.
   virtual void SetStyle(gfx::TextStyle style, bool value) = 0;
   virtual void ApplyStyle(gfx::TextStyle style,
                           bool value,
-                          const ui::Range& range) = 0;
+                          const gfx::Range& range) = 0;
 
   // Clears Edit history.
   virtual void ClearEditHistory() = 0;

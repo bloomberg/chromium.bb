@@ -18,10 +18,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
-#include "ui/base/range/range.h"
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/gfx/shadow_value.h"
@@ -96,7 +96,7 @@ class StyleIterator {
   bool style(TextStyle s) const { return style_[s]->second; }
 
   // Get the intersecting range of the current iterator set.
-  ui::Range GetRange() const;
+  gfx::Range GetRange() const;
 
   // Update the iterator to point to colors and styles applicable at |position|.
   void UpdatePosition(size_t position);
@@ -207,7 +207,7 @@ class UI_EXPORT RenderText {
 
   const SelectionModel& selection_model() const { return selection_model_; }
 
-  const ui::Range& selection() const { return selection_model_.selection(); }
+  const gfx::Range& selection() const { return selection_model_.selection(); }
 
   size_t cursor_position() const { return selection_model_.caret_pos(); }
   void SetCursorPosition(size_t position);
@@ -236,7 +236,7 @@ class UI_EXPORT RenderText {
   // to be the text length.
   // If the |range| start or end is not a cursorable position (not on grapheme
   // boundary), it is a NO-OP and returns false. Otherwise, returns true.
-  bool SelectRange(const ui::Range& range);
+  bool SelectRange(const gfx::Range& range);
 
   // Returns true if the local point is over selected text.
   bool IsPointInSelection(const Point& point);
@@ -254,19 +254,19 @@ class UI_EXPORT RenderText {
   // boundaries.
   void SelectWord();
 
-  const ui::Range& GetCompositionRange() const;
-  void SetCompositionRange(const ui::Range& composition_range);
+  const gfx::Range& GetCompositionRange() const;
+  void SetCompositionRange(const gfx::Range& composition_range);
 
   // Set the text color over the entire text or a logical character range.
   // The |range| should be valid, non-reversed, and within [0, text().length()].
   void SetColor(SkColor value);
-  void ApplyColor(SkColor value, const ui::Range& range);
+  void ApplyColor(SkColor value, const gfx::Range& range);
 
   // Set various text styles over the entire text or a logical character range.
   // The respective |style| is applied if |value| is true, or removed if false.
   // The |range| should be valid, non-reversed, and within [0, text().length()].
   void SetStyle(TextStyle style, bool value);
-  void ApplyStyle(TextStyle style, bool value, const ui::Range& range);
+  void ApplyStyle(TextStyle style, bool value, const gfx::Range& range);
 
   // Returns whether this style is enabled consistently across the entire
   // RenderText.
@@ -335,7 +335,7 @@ class UI_EXPORT RenderText {
   // Sets shadows to drawn with text.
   void SetTextShadows(const ShadowValues& shadows);
 
-  typedef std::pair<Font, ui::Range> FontSpan;
+  typedef std::pair<Font, gfx::Range> FontSpan;
   // For testing purposes, returns which fonts were chosen for which parts of
   // the text by returning a vector of Font and Range pairs, where each range
   // specifies the character range for which the corresponding font has been
@@ -383,7 +383,7 @@ class UI_EXPORT RenderText {
   // of the glyph starting at |index|. If the glyph is RTL then the returned
   // Range will have is_reversed() true.  (This does not return a Rect because a
   // Rect can't have a negative width.)
-  virtual ui::Range GetGlyphBounds(size_t index) = 0;
+  virtual gfx::Range GetGlyphBounds(size_t index) = 0;
 
   // Get the visual bounds containing the logical substring within the |range|.
   // If |range| is empty, the result is empty. These bounds could be visually
@@ -391,7 +391,7 @@ class UI_EXPORT RenderText {
   // These bounds are in local coordinates, but may be outside the visible
   // region if the text is longer than the textfield. Subsequent text, cursor,
   // or bounds changes may invalidate returned values.
-  virtual std::vector<Rect> GetSubstringBounds(const ui::Range& range) = 0;
+  virtual std::vector<Rect> GetSubstringBounds(const gfx::Range& range) = 0;
 
   // Convert between indices into |text_| and indices into |obscured_text_|,
   // which differ when the text is obscured. Regardless of whether or not the
@@ -440,7 +440,7 @@ class UI_EXPORT RenderText {
 
   // A convenience function to check whether the glyph attached to the caret
   // is within the given range.
-  static bool RangeContainsCaret(const ui::Range& range,
+  static bool RangeContainsCaret(const gfx::Range& range,
                                  size_t caret_pos,
                                  LogicalCursorDirection caret_affinity);
 
@@ -523,7 +523,7 @@ class UI_EXPORT RenderText {
   bool focused_;
 
   // Composition text range.
-  ui::Range composition_range_;
+  gfx::Range composition_range_;
 
   // Color and style breaks, used to color and stylize ranges of text.
   // BreakList positions are stored with text indices, not layout indices.

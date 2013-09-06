@@ -931,7 +931,7 @@ void RenderWidgetHostViewMac::ImeCancelComposition() {
 }
 
 void RenderWidgetHostViewMac::ImeCompositionRangeChanged(
-    const ui::Range& range,
+    const gfx::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
   // The RangeChanged message is only sent with valid values. The current
   // caret position (start == end) will be sent if there is no IME range.
@@ -1075,7 +1075,7 @@ void RenderWidgetHostViewMac::StopSpeaking() {
 //
 void RenderWidgetHostViewMac::SelectionChanged(const string16& text,
                                                size_t offset,
-                                               const ui::Range& range) {
+                                               const gfx::Range& range) {
   if (range.is_empty() || text.empty()) {
     selected_text_.clear();
   } else {
@@ -1486,7 +1486,7 @@ void RenderWidgetHostViewMac::GetVSyncParameters(
 
 bool RenderWidgetHostViewMac::GetLineBreakIndex(
     const std::vector<gfx::Rect>& bounds,
-    const ui::Range& range,
+    const gfx::Range& range,
     size_t* line_break_point) {
   DCHECK(line_break_point);
   if (range.start() >= bounds.size() || range.is_reversed() || range.is_empty())
@@ -1516,8 +1516,8 @@ bool RenderWidgetHostViewMac::GetLineBreakIndex(
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetFirstRectForCompositionRange(
-    const ui::Range& range,
-    ui::Range* actual_range) {
+    const gfx::Range& range,
+    gfx::Range* actual_range) {
   DCHECK(actual_range);
   DCHECK(!composition_bounds_.empty());
   DCHECK(range.start() <= composition_bounds_.size());
@@ -1542,7 +1542,7 @@ gfx::Rect RenderWidgetHostViewMac::GetFirstRectForCompositionRange(
   if (!GetLineBreakIndex(composition_bounds_, range, &end_idx)) {
     end_idx = range.end();
   }
-  *actual_range = ui::Range(range.start(), end_idx);
+  *actual_range = gfx::Range(range.start(), end_idx);
   gfx::Rect rect = composition_bounds_[range.start()];
   for (size_t i = range.start() + 1; i < end_idx; ++i) {
     rect.Union(composition_bounds_[i]);
@@ -1550,21 +1550,21 @@ gfx::Rect RenderWidgetHostViewMac::GetFirstRectForCompositionRange(
   return rect;
 }
 
-ui::Range RenderWidgetHostViewMac::ConvertCharacterRangeToCompositionRange(
-    const ui::Range& request_range) {
+gfx::Range RenderWidgetHostViewMac::ConvertCharacterRangeToCompositionRange(
+    const gfx::Range& request_range) {
   if (composition_range_.is_empty())
-    return ui::Range::InvalidRange();
+    return gfx::Range::InvalidRange();
 
   if (request_range.is_reversed())
-    return ui::Range::InvalidRange();
+    return gfx::Range::InvalidRange();
 
   if (request_range.start() < composition_range_.start() ||
       request_range.start() > composition_range_.end() ||
       request_range.end() > composition_range_.end()) {
-    return ui::Range::InvalidRange();
+    return gfx::Range::InvalidRange();
   }
 
-  return ui::Range(
+  return gfx::Range(
       request_range.start() - composition_range_.start(),
       request_range.end() - composition_range_.start());
 }
@@ -1579,16 +1579,16 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
                "RenderWidgetHostViewMac::GetFirstRectForCharacterRange");
 
   // If requested range is same as caret location, we can just return it.
-  if (selection_range_.is_empty() && ui::Range(range) == selection_range_) {
+  if (selection_range_.is_empty() && gfx::Range(range) == selection_range_) {
     if (actual_range)
       *actual_range = range;
     *rect = NSRectFromCGRect(caret_rect_.ToCGRect());
     return true;
   }
 
-  const ui::Range request_range_in_composition =
-      ConvertCharacterRangeToCompositionRange(ui::Range(range));
-  if (request_range_in_composition == ui::Range::InvalidRange())
+  const gfx::Range request_range_in_composition =
+      ConvertCharacterRangeToCompositionRange(gfx::Range(range));
+  if (request_range_in_composition == gfx::Range::InvalidRange())
     return false;
 
   // If firstRectForCharacterRange in WebFrame is failed in renderer,
@@ -1597,12 +1597,12 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
     return false;
   DCHECK_EQ(composition_bounds_.size(), composition_range_.length());
 
-  ui::Range ui_actual_range;
+  gfx::Range ui_actual_range;
   *rect = NSRectFromCGRect(GetFirstRectForCompositionRange(
                                request_range_in_composition,
                                &ui_actual_range).ToCGRect());
   if (actual_range) {
-    *actual_range = ui::Range(
+    *actual_range = gfx::Range(
         composition_range_.start() + ui_actual_range.start(),
         composition_range_.start() + ui_actual_range.end()).ToNSRange();
   }
@@ -2330,7 +2330,7 @@ void RenderWidgetHostViewMac::FrameSwapped() {
   if (textToBeInserted_.length() >
       ((hasMarkedText_ || oldHasMarkedText) ? 0u : 1u)) {
     widgetHost->ImeConfirmComposition(
-        textToBeInserted_, ui::Range::InvalidRange(), false);
+        textToBeInserted_, gfx::Range::InvalidRange(), false);
     textInserted = YES;
   }
 
@@ -2347,7 +2347,7 @@ void RenderWidgetHostViewMac::FrameSwapped() {
   } else if (oldHasMarkedText && !hasMarkedText_ && !textInserted) {
     if (unmarkTextCalled_) {
       widgetHost->ImeConfirmComposition(
-          string16(), ui::Range::InvalidRange(), false);
+          string16(), gfx::Range::InvalidRange(), false);
     } else {
       widgetHost->ImeCancelComposition();
     }
@@ -3427,7 +3427,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // called in keyEvent: method.
   if (!handlingKeyDown_) {
     renderWidgetHostView_->render_widget_host_->ImeConfirmComposition(
-        string16(), ui::Range::InvalidRange(), false);
+        string16(), gfx::Range::InvalidRange(), false);
   } else {
     unmarkTextCalled_ = YES;
   }
@@ -3520,7 +3520,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   if (handlingKeyDown_) {
     textToBeInserted_.append(base::SysNSStringToUTF16(im_text));
   } else {
-    ui::Range replacement_range(replacementRange);
+    gfx::Range replacement_range(replacementRange);
     renderWidgetHostView_->render_widget_host_->ImeConfirmComposition(
         base::SysNSStringToUTF16(im_text), replacement_range, false);
   }
@@ -3665,7 +3665,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
   if (renderWidgetHostView_->render_widget_host_)
     renderWidgetHostView_->render_widget_host_->ImeConfirmComposition(
-        string16(), ui::Range::InvalidRange(), false);
+        string16(), gfx::Range::InvalidRange(), false);
 
   [self cancelComposition];
 }

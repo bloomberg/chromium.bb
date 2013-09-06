@@ -132,25 +132,25 @@ bool IsUnicodeBidiControlCharacter(char16 c) {
 // Returns the corresponding glyph range of the given character range.
 // |range| is in text-space (0 corresponds to |GetLayoutText()[0]|).
 // Returned value is in run-space (0 corresponds to the first glyph in the run).
-ui::Range CharRangeToGlyphRange(const internal::TextRun& run,
-                                const ui::Range& range) {
+gfx::Range CharRangeToGlyphRange(const internal::TextRun& run,
+                                const gfx::Range& range) {
   DCHECK(run.range.Contains(range));
   DCHECK(!range.is_reversed());
   DCHECK(!range.is_empty());
-  const ui::Range run_range = ui::Range(range.start() - run.range.start(),
+  const gfx::Range run_range = gfx::Range(range.start() - run.range.start(),
                                         range.end() - run.range.start());
-  ui::Range result;
+  gfx::Range result;
   if (run.script_analysis.fRTL) {
-    result = ui::Range(run.logical_clusters[run_range.end() - 1],
+    result = gfx::Range(run.logical_clusters[run_range.end() - 1],
         run_range.start() > 0 ? run.logical_clusters[run_range.start() - 1]
                               : run.glyph_count);
   } else {
-    result = ui::Range(run.logical_clusters[run_range.start()],
+    result = gfx::Range(run.logical_clusters[run_range.start()],
         run_range.end() < run.range.length() ?
             run.logical_clusters[run_range.end()] : run.glyph_count);
   }
   DCHECK(!result.is_reversed());
-  DCHECK(ui::Range(0, run.glyph_count).Contains(result));
+  DCHECK(gfx::Range(0, run.glyph_count).Contains(result));
   return result;
 }
 
@@ -266,7 +266,7 @@ std::vector<RenderText::FontSpan> RenderTextWin::GetFontSpansForTesting() {
   std::vector<RenderText::FontSpan> spans;
   for (size_t i = 0; i < runs_.size(); ++i) {
     spans.push_back(RenderText::FontSpan(runs_[i]->font,
-        ui::Range(LayoutIndexToTextIndex(runs_[i]->range.start()),
+        gfx::Range(LayoutIndexToTextIndex(runs_[i]->range.start()),
                   LayoutIndexToTextIndex(runs_[i]->range.end()))));
   }
 
@@ -364,24 +364,24 @@ SelectionModel RenderTextWin::AdjacentWordSelectionModel(
   return SelectionModel(pos, CURSOR_FORWARD);
 }
 
-ui::Range RenderTextWin::GetGlyphBounds(size_t index) {
+gfx::Range RenderTextWin::GetGlyphBounds(size_t index) {
   const size_t run_index =
       GetRunContainingCaret(SelectionModel(index, CURSOR_FORWARD));
   // Return edge bounds if the index is invalid or beyond the layout text size.
   if (run_index >= runs_.size())
-    return ui::Range(string_size_.width());
+    return gfx::Range(string_size_.width());
   internal::TextRun* run = runs_[run_index];
   const size_t layout_index = TextIndexToLayoutIndex(index);
-  return ui::Range(GetGlyphXBoundary(run, layout_index, false),
+  return gfx::Range(GetGlyphXBoundary(run, layout_index, false),
                    GetGlyphXBoundary(run, layout_index, true));
 }
 
-std::vector<Rect> RenderTextWin::GetSubstringBounds(const ui::Range& range) {
+std::vector<Rect> RenderTextWin::GetSubstringBounds(const gfx::Range& range) {
   DCHECK(!needs_layout_);
-  DCHECK(ui::Range(0, text().length()).Contains(range));
-  ui::Range layout_range(TextIndexToLayoutIndex(range.start()),
+  DCHECK(gfx::Range(0, text().length()).Contains(range));
+  gfx::Range layout_range(TextIndexToLayoutIndex(range.start()),
                          TextIndexToLayoutIndex(range.end()));
-  DCHECK(ui::Range(0, GetLayoutText().length()).Contains(layout_range));
+  DCHECK(gfx::Range(0, GetLayoutText().length()).Contains(layout_range));
 
   std::vector<Rect> bounds;
   if (layout_range.is_empty())
@@ -391,10 +391,10 @@ std::vector<Rect> RenderTextWin::GetSubstringBounds(const ui::Range& range) {
   // TODO(msw): The bounds should probably not always be leading the range ends.
   for (size_t i = 0; i < runs_.size(); ++i) {
     const internal::TextRun* run = runs_[visual_to_logical_[i]];
-    ui::Range intersection = run->range.Intersect(layout_range);
+    gfx::Range intersection = run->range.Intersect(layout_range);
     if (intersection.IsValid()) {
       DCHECK(!intersection.is_reversed());
-      ui::Range range_x(GetGlyphXBoundary(run, intersection.start(), false),
+      gfx::Range range_x(GetGlyphXBoundary(run, intersection.start(), false),
                         GetGlyphXBoundary(run, intersection.end(), false));
       Rect rect(range_x.GetMin(), 0, range_x.length(), run->font.GetHeight());
       rect.set_origin(ToViewPoint(rect.origin()));
@@ -510,7 +510,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
              colors().GetBreak(run->range.start());
          it != colors().breaks().end() && it->first < run->range.end();
          ++it) {
-      const ui::Range glyph_range = CharRangeToGlyphRange(*run,
+      const gfx::Range glyph_range = CharRangeToGlyphRange(*run,
           colors().GetRange(it).Intersect(run->range));
       if (glyph_range.is_empty())
         continue;

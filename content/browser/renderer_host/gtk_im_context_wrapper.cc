@@ -439,7 +439,7 @@ void GtkIMContextWrapper::ProcessInputMethodResult(const GdkEventKey* event,
       // Unlike a Char event, an IME event is NOT dispatched to onkeypress()
       // handlers or autofill.
       host->ImeConfirmComposition(
-          commit_text_,ui::Range::InvalidRange(),false);
+          commit_text_,gfx::Range::InvalidRange(),false);
       // Set this flag to false, as this composition session has been
       // finished.
       is_composing_text_ = false;
@@ -477,7 +477,7 @@ void GtkIMContextWrapper::ConfirmComposition() {
     if (host_view_->GetRenderWidgetHost()) {
       RenderWidgetHostImpl::From(
           host_view_->GetRenderWidgetHost())->ImeConfirmComposition(
-              string16(), ui::Range::InvalidRange(), false);
+              string16(), gfx::Range::InvalidRange(), false);
     }
 
     // Reset the input method.
@@ -503,7 +503,7 @@ void GtkIMContextWrapper::HandleCommit(const string16& text) {
     SendFakeCompositionKeyEvent(WebKit::WebInputEvent::RawKeyDown);
     RenderWidgetHostImpl::From(
         host_view_->GetRenderWidgetHost())->ImeConfirmComposition(
-            text, ui::Range::InvalidRange(), false);
+            text, gfx::Range::InvalidRange(), false);
     SendFakeCompositionKeyEvent(WebKit::WebInputEvent::KeyUp);
   }
 }
@@ -532,7 +532,7 @@ void GtkIMContextWrapper::HandlePreeditChanged(const gchar* text,
 
   // TODO(suzhe): due to a bug of webkit, we currently can't use selection range
   // with composition string. See: https://bugs.webkit.org/show_bug.cgi?id=40805
-  composition_.selection = ui::Range(cursor_position);
+  composition_.selection = gfx::Range(cursor_position);
 
   // In case we are using a buggy input method which doesn't fire
   // "preedit_start" signal.

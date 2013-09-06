@@ -12,8 +12,8 @@
 #include "base/strings/string16.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/base/models/list_model.h"
-#include "ui/base/range/range.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/range/range.h"
 
 namespace ui {
 class MenuModel;
@@ -45,7 +45,7 @@ class APP_LIST_EXPORT SearchResult {
     }
 
     int styles;
-    ui::Range range;
+    gfx::Range range;
   };
   typedef std::vector<Tag> Tags;
 

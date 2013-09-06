@@ -106,9 +106,9 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRect.h"
-#include "ui/base/range/range.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "v8/include/v8.h"
@@ -902,7 +902,7 @@ bool PepperPluginInstanceImpl::HandleTextInput(const base::string16& text) {
 }
 
 void PepperPluginInstanceImpl::GetSurroundingText(base::string16* text,
-                                                  ui::Range* range) const {
+                                                  gfx::Range* range) const {
   std::vector<size_t> offsets;
   offsets.push_back(selection_anchor_);
   offsets.push_back(selection_caret_);
@@ -1920,7 +1920,7 @@ bool PepperPluginInstanceImpl::SimulateIMEEvent(
       break;
     case PP_INPUTEVENT_TYPE_IME_TEXT:
       render_view_->SimulateImeConfirmComposition(
-          UTF8ToUTF16(input_event.character_text), ui::Range());
+          UTF8ToUTF16(input_event.character_text), gfx::Range());
       break;
     default:
       return false;

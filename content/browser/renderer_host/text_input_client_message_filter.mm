@@ -10,7 +10,7 @@
 #include "content/common/text_input_client_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "ipc/ipc_message_macros.h"
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/rect.h"
 
 namespace content {

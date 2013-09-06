@@ -275,14 +275,14 @@ void InputMethodIBus::OnCaretBoundsChanged(const TextInputClient* client) {
       GfxRectToIBusRect(rect),
       GfxRectToIBusRect(composition_head));
 
-  ui::Range text_range;
-  ui::Range selection_range;
+  gfx::Range text_range;
+  gfx::Range selection_range;
   string16 surrounding_text;
   if (!GetTextInputClient()->GetTextRange(&text_range) ||
       !GetTextInputClient()->GetTextFromRange(text_range, &surrounding_text) ||
       !GetTextInputClient()->GetSelectionRange(&selection_range)) {
     previous_surrounding_text_.clear();
-    previous_selection_range_ = ui::Range::InvalidRange();
+    previous_selection_range_ = gfx::Range::InvalidRange();
     return;
   }
 
@@ -901,7 +901,7 @@ void InputMethodIBus::ExtractCompositionText(
   size_t cursor_offset =
       char16_offsets[std::min(char_length, cursor_position)];
 
-  out_composition->selection = Range(cursor_offset);
+  out_composition->selection = gfx::Range(cursor_offset);
 
   const std::vector<chromeos::IBusText::UnderlineAttribute>&
       underline_attributes = text.underline_attributes();

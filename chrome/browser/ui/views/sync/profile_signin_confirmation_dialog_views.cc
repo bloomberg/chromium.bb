@@ -22,9 +22,9 @@
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/range/range.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/range/range.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
@@ -171,7 +171,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
   views::StyledLabel::RangeStyleInfo bold_style;
   bold_style.font_style = gfx::Font::BOLD;
   prompt_label->AddStyleRange(
-      ui::Range(offset, offset + domain.size()), bold_style);
+      gfx::Range(offset, offset + domain.size()), bold_style);
 
   // Create the prompt bar.
   views::View* prompt_bar = new views::View;
@@ -195,7 +195,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
           username, learn_more_text, &offsets);
   explanation_label_ = new views::StyledLabel(signin_explanation_text, this);
   explanation_label_->AddStyleRange(
-      ui::Range(offsets[1], offsets[1] + learn_more_text.size()),
+      gfx::Range(offsets[1], offsets[1] + learn_more_text.size()),
       views::StyledLabel::RangeStyleInfo::CreateForLink());
 
   // Layout the components.
@@ -236,7 +236,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
 }
 
 void ProfileSigninConfirmationDialogViews::StyledLabelLinkClicked(
-    const ui::Range& range,
+    const gfx::Range& range,
     int event_flags) {
   chrome::NavigateParams params(
       browser_,

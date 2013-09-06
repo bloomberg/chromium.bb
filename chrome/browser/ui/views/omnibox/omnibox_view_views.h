@@ -11,8 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
-#include "ui/base/range/range.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/range/range.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 
@@ -146,7 +146,7 @@ class OmniboxViewViews
 
   // Update the field with |text| and set the selection.
   void SetTextAndSelectedRange(const string16& text,
-                               const ui::Range& range);
+                               const gfx::Range& range);
 
   // Returns the selected text.
   string16 GetSelectedText() const;
@@ -171,11 +171,11 @@ class OmniboxViewViews
   ToolbarModel::SecurityLevel security_level_;
 
   // Selection persisted across temporary text changes, like popup suggestions.
-  ui::Range saved_temporary_selection_;
+  gfx::Range saved_temporary_selection_;
 
   // Tracking state before and after a possible change.
   string16 text_before_change_;
-  ui::Range sel_before_change_;
+  gfx::Range sel_before_change_;
   bool ime_composing_before_change_;
 
   // Was the delete key pressed with an empty selection at the end of the edit?

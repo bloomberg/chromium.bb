@@ -13,10 +13,10 @@
 #include "ui/base/events/event.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/base/range/range.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -363,11 +363,11 @@ bool Textfield::IsIMEComposing() const {
   return native_wrapper_ && native_wrapper_->IsIMEComposing();
 }
 
-ui::Range Textfield::GetSelectedRange() const {
+gfx::Range Textfield::GetSelectedRange() const {
   return native_wrapper_->GetSelectedRange();
 }
 
-void Textfield::SelectRange(const ui::Range& range) {
+void Textfield::SelectRange(const gfx::Range& range) {
   native_wrapper_->SelectRange(range);
 }
 
@@ -387,7 +387,7 @@ void Textfield::SetColor(SkColor value) {
   return native_wrapper_->SetColor(value);
 }
 
-void Textfield::ApplyColor(SkColor value, const ui::Range& range) {
+void Textfield::ApplyColor(SkColor value, const gfx::Range& range) {
   return native_wrapper_->ApplyColor(value, range);
 }
 
@@ -397,7 +397,7 @@ void Textfield::SetStyle(gfx::TextStyle style, bool value) {
 
 void Textfield::ApplyStyle(gfx::TextStyle style,
                            bool value,
-                           const ui::Range& range) {
+                           const gfx::Range& range) {
   return native_wrapper_->ApplyStyle(style, value, range);
 }
 
@@ -501,7 +501,7 @@ void Textfield::GetAccessibleState(ui::AccessibleViewState* state) {
     state->state |= ui::AccessibilityTypes::STATE_PROTECTED;
   state->value = text_;
 
-  const ui::Range range = native_wrapper_->GetSelectedRange();
+  const gfx::Range range = native_wrapper_->GetSelectedRange();
   state->selection_start = range.start();
   state->selection_end = range.end();
 

@@ -512,7 +512,7 @@ TEST_F(NativeTextfieldViewsTest, InsertionDeletionTest) {
   EXPECT_STR_EQ("abcdefghij", textfield_->text());
 
   // Test the delete and backspace keys.
-  textfield_->SelectRange(ui::Range(5));
+  textfield_->SelectRange(gfx::Range(5));
   for (int i = 0; i < 3; i++)
     SendKeyEvent(ui::VKEY_BACK);
   EXPECT_STR_EQ("abfghij", textfield_->text());
@@ -940,7 +940,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_InitiateDrag) {
   // Ensure the textfield will provide selected text for drag data.
   string16 string;
   ui::OSExchangeData data;
-  const ui::Range kStringRange(6, 12);
+  const gfx::Range kStringRange(6, 12);
   textfield_->SelectRange(kStringRange);
   const gfx::Point kStringPoint(GetCursorPositionX(9), 0);
   textfield_view_->WriteDragDataForView(NULL, kStringPoint, &data);
@@ -990,7 +990,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheRight) {
   std::set<OSExchangeData::CustomFormat> custom_formats;
 
   // Start dragging "ello".
-  textfield_->SelectRange(ui::Range(1, 5));
+  textfield_->SelectRange(gfx::Range(1, 5));
   gfx::Point point(GetCursorPositionX(3), 0);
   ui::MouseEvent click_a(ui::ET_MOUSE_PRESSED, point, point,
                          ui::EF_LEFT_MOUSE_BUTTON);
@@ -1045,7 +1045,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheLeft) {
   std::set<OSExchangeData::CustomFormat> custom_formats;
 
   // Start dragging " worl".
-  textfield_->SelectRange(ui::Range(5, 10));
+  textfield_->SelectRange(gfx::Range(5, 10));
   gfx::Point point(GetCursorPositionX(7), 0);
   ui::MouseEvent click_a(ui::ET_MOUSE_PRESSED, point, point,
                          ui::EF_LEFT_MOUSE_BUTTON);
@@ -1094,7 +1094,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_Canceled) {
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
   // Start dragging "worl".
-  textfield_->SelectRange(ui::Range(6, 10));
+  textfield_->SelectRange(gfx::Range(6, 10));
   gfx::Point point(GetCursorPositionX(8), 0);
   ui::MouseEvent click(ui::ET_MOUSE_PRESSED, point, point,
                        ui::EF_LEFT_MOUSE_BUTTON);
@@ -1192,14 +1192,14 @@ TEST_F(NativeTextfieldViewsTest, TextInputClientTest) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, client->GetTextInputType());
 
   textfield_->SetText(ASCIIToUTF16("0123456789"));
-  ui::Range range;
+  gfx::Range range;
   EXPECT_TRUE(client->GetTextRange(&range));
   EXPECT_EQ(0U, range.start());
   EXPECT_EQ(10U, range.end());
 
-  EXPECT_TRUE(client->SetSelectionRange(ui::Range(1, 4)));
+  EXPECT_TRUE(client->SetSelectionRange(gfx::Range(1, 4)));
   EXPECT_TRUE(client->GetSelectionRange(&range));
-  EXPECT_EQ(ui::Range(1, 4), range);
+  EXPECT_EQ(gfx::Range(1, 4), range);
 
   // This code can't be compiled because of a bug in base::Callback.
 #if 0
@@ -1228,7 +1228,7 @@ TEST_F(NativeTextfieldViewsTest, TextInputClientTest) {
   EXPECT_TRUE(client->HasCompositionText());
   EXPECT_TRUE(client->GetCompositionTextRange(&range));
   EXPECT_STR_EQ("0321456789", textfield_->text());
-  EXPECT_EQ(ui::Range(1, 4), range);
+  EXPECT_EQ(gfx::Range(1, 4), range);
   EXPECT_EQ(2, on_before_user_action_);
   EXPECT_EQ(2, on_after_user_action_);
 
@@ -1265,7 +1265,7 @@ TEST_F(NativeTextfieldViewsTest, TextInputClientTest) {
 
   textfield_->clear();
   textfield_->SetText(ASCIIToUTF16("0123456789"));
-  EXPECT_TRUE(client->SetSelectionRange(ui::Range(5, 5)));
+  EXPECT_TRUE(client->SetSelectionRange(gfx::Range(5, 5)));
   client->ExtendSelectionAndDelete(4, 2);
   EXPECT_STR_EQ("0789", textfield_->text());
 
@@ -1773,7 +1773,7 @@ TEST_F(NativeTextfieldViewsTest, GetCompositionCharacterBoundsTest) {
   gfx::Rect char_rect_in_screen_coord[char_count];
   gfx::Rect prev_cursor = GetCursorBounds();
   for (uint32 i = 0; i < char_count; ++i) {
-    composition.selection = ui::Range(0, i+1);
+    composition.selection = gfx::Range(0, i+1);
     client->SetCompositionText(composition);
     EXPECT_TRUE(client->HasCompositionText()) << " i=" << i;
     gfx::Rect cursor_bounds = GetCursorBounds();
@@ -1807,9 +1807,9 @@ TEST_F(NativeTextfieldViewsTest, KeepInitiallySelectedWord) {
 
   textfield_->SetText(ASCIIToUTF16("abc def ghi"));
 
-  textfield_->SelectRange(ui::Range(5, 5));
+  textfield_->SelectRange(gfx::Range(5, 5));
   const gfx::Rect middle_cursor = GetCursorBounds();
-  textfield_->SelectRange(ui::Range(0, 0));
+  textfield_->SelectRange(gfx::Range(0, 0));
   const gfx::Point beginning = GetCursorBounds().origin();
 
   // Double click, but do not release the left button.
@@ -1819,13 +1819,13 @@ TEST_F(NativeTextfieldViewsTest, KeepInitiallySelectedWord) {
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, middle, middle,
                              ui::EF_LEFT_MOUSE_BUTTON);
   textfield_view_->OnMousePressed(press_event);
-  EXPECT_EQ(ui::Range(4, 7), textfield_->GetSelectedRange());
+  EXPECT_EQ(gfx::Range(4, 7), textfield_->GetSelectedRange());
 
   // Drag the mouse to the beginning of the textfield.
   ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, beginning, beginning,
                             ui::EF_LEFT_MOUSE_BUTTON);
   textfield_view_->OnMouseDragged(drag_event);
-  EXPECT_EQ(ui::Range(7, 0), textfield_->GetSelectedRange());
+  EXPECT_EQ(gfx::Range(7, 0), textfield_->GetSelectedRange());
 }
 
 // Touch selection and draggin currently only works for chromeos.
@@ -1886,7 +1886,7 @@ TEST_F(NativeTextfieldViewsTest, TestLongPressInitiatesDragDrop) {
   textfield_->SetText(ASCIIToUTF16("Hello string world"));
 
   // Ensure the textfield will provide selected text for drag data.
-  textfield_->SelectRange(ui::Range(6, 12));
+  textfield_->SelectRange(gfx::Range(6, 12));
   const gfx::Point kStringPoint(GetCursorPositionX(9), 0);
 
   // Enable touch-drag-drop to make long press effective.

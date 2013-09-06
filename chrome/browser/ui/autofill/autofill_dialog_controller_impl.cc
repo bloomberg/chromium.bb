@@ -841,7 +841,7 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
   return state;
 }
 
-const std::vector<ui::Range>& AutofillDialogControllerImpl::
+const std::vector<gfx::Range>& AutofillDialogControllerImpl::
     LegalDocumentLinks() {
   EnsureLegalDocumentsText();
   return legal_document_link_ranges_;
@@ -1034,7 +1034,7 @@ void AutofillDialogControllerImpl::EnsureLegalDocumentsText() {
   legal_document_link_ranges_.clear();
   for (size_t i = 0; i < documents.size(); ++i) {
     size_t link_start = text.find(documents[i]->display_name());
-    legal_document_link_ranges_.push_back(ui::Range(
+    legal_document_link_ranges_.push_back(gfx::Range(
         link_start, link_start + documents[i]->display_name().size()));
   }
   legal_documents_text_ = text;
@@ -1890,7 +1890,7 @@ void AutofillDialogControllerImpl::NotificationCheckboxStateChanged(
 }
 
 void AutofillDialogControllerImpl::LegalDocumentLinkClicked(
-    const ui::Range& range) {
+    const gfx::Range& range) {
   for (size_t i = 0; i < legal_document_link_ranges_.size(); ++i) {
     if (legal_document_link_ranges_[i] == range) {
       OpenTabWithUrl(wallet_items_->legal_documents()[i]->url());

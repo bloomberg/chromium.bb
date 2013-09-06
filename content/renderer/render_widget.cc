@@ -1843,7 +1843,7 @@ void RenderWidget::OnImeSetComposition(
 }
 
 void RenderWidget::OnImeConfirmComposition(const string16& text,
-                                           const ui::Range& replacement_range,
+                                           const gfx::Range& replacement_range,
                                            bool keep_selection) {
   if (!ShouldHandleImeEvent())
     return;
@@ -2317,7 +2317,7 @@ ui::TextInputType RenderWidget::GetTextInputType() {
 
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
 void RenderWidget::UpdateCompositionInfo(bool should_update_range) {
-  ui::Range range = ui::Range();
+  gfx::Range range = gfx::Range();
   if (should_update_range) {
     GetCompositionRange(&range);
   } else {
@@ -2340,7 +2340,7 @@ void RenderWidget::GetCompositionCharacterBounds(
   bounds->clear();
 }
 
-void RenderWidget::GetCompositionRange(ui::Range* range) {
+void RenderWidget::GetCompositionRange(gfx::Range* range) {
   size_t location, length;
   if (webwidget_->compositionRange(&location, &length)) {
     range->set_start(location);
@@ -2349,12 +2349,12 @@ void RenderWidget::GetCompositionRange(ui::Range* range) {
     range->set_start(location);
     range->set_end(location + length);
   } else {
-    *range = ui::Range::InvalidRange();
+    *range = gfx::Range::InvalidRange();
   }
 }
 
 bool RenderWidget::ShouldUpdateCompositionInfo(
-    const ui::Range& range,
+    const gfx::Range& range,
     const std::vector<gfx::Rect>& bounds) {
   if (composition_range_ != range)
     return true;

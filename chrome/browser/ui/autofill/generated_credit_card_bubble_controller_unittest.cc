@@ -19,7 +19,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
@@ -38,7 +38,7 @@ base::string16 FrontingCard() {
 }
 
 base::string16 RangeOfString(const base::string16& string,
-                             const ui::Range& range) {
+                             const gfx::Range& range) {
   return string.substr(range.start(), range.end() - range.start());
 }
 

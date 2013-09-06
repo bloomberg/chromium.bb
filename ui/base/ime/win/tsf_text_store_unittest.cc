@@ -33,12 +33,12 @@ class MockTextInputClient : public TextInputClient {
   MOCK_METHOD0(GetCaretBounds, gfx::Rect());
   MOCK_METHOD2(GetCompositionCharacterBounds, bool(uint32, gfx::Rect*));
   MOCK_METHOD0(HasCompositionText, bool());
-  MOCK_METHOD1(GetTextRange, bool(ui::Range*));
-  MOCK_METHOD1(GetCompositionTextRange, bool(ui::Range*));
-  MOCK_METHOD1(GetSelectionRange, bool(ui::Range*));
-  MOCK_METHOD1(SetSelectionRange, bool(const ui::Range&));
-  MOCK_METHOD1(DeleteRange, bool(const ui::Range&));
-  MOCK_METHOD2(GetTextFromRange, bool(const ui::Range&, string16*));
+  MOCK_METHOD1(GetTextRange, bool(gfx::Range*));
+  MOCK_METHOD1(GetCompositionTextRange, bool(gfx::Range*));
+  MOCK_METHOD1(GetSelectionRange, bool(gfx::Range*));
+  MOCK_METHOD1(SetSelectionRange, bool(const gfx::Range&));
+  MOCK_METHOD1(DeleteRange, bool(const gfx::Range&));
+  MOCK_METHOD2(GetTextFromRange, bool(const gfx::Range&, string16*));
   MOCK_METHOD0(OnInputMethodChanged, void());
   MOCK_METHOD1(ChangeTextDirectionAndLayoutAlignment,
                bool(base::i18n::TextDirection));
@@ -139,7 +139,7 @@ class TSFTextStoreTestCallback {
   bool* edit_flag() { return &text_store_->edit_flag_; }
   string16* string_buffer() { return &text_store_->string_buffer_; }
   size_t* committed_size() { return &text_store_->committed_size_; }
-  Range* selection() { return &text_store_->selection_; }
+  gfx::Range* selection() { return &text_store_->selection_; }
   CompositionUnderlines* composition_undelines() {
     return &text_store_->composition_undelines_;
   }

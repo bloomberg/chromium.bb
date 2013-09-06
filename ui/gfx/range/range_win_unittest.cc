@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 
 TEST(RangeTest, FromCHARRANGE) {
   CHARRANGE cr = { 10, 32 };
-  ui::Range r(cr, 50);
+  gfx::Range r(cr, 50);
   EXPECT_EQ(10U, r.start());
   EXPECT_EQ(32U, r.end());
   EXPECT_EQ(22U, r.length());
@@ -17,7 +17,7 @@ TEST(RangeTest, FromCHARRANGE) {
 
 TEST(RangeTest, FromReversedCHARRANGE) {
   CHARRANGE cr = { 20, 10 };
-  ui::Range r(cr, 40);
+  gfx::Range r(cr, 40);
   EXPECT_EQ(20U, r.start());
   EXPECT_EQ(10U, r.end());
   EXPECT_EQ(10U, r.length());
@@ -27,7 +27,7 @@ TEST(RangeTest, FromReversedCHARRANGE) {
 
 TEST(RangeTest, FromCHARRANGETotal) {
   CHARRANGE cr = { 0, -1 };
-  ui::Range r(cr, 20);
+  gfx::Range r(cr, 20);
   EXPECT_EQ(0U, r.start());
   EXPECT_EQ(20U, r.end());
   EXPECT_EQ(20U, r.length());
@@ -36,14 +36,14 @@ TEST(RangeTest, FromCHARRANGETotal) {
 }
 
 TEST(RangeTest, ToCHARRANGE) {
-  ui::Range r(10, 30);
+  gfx::Range r(10, 30);
   CHARRANGE cr = r.ToCHARRANGE();
   EXPECT_EQ(10, cr.cpMin);
   EXPECT_EQ(30, cr.cpMax);
 }
 
 TEST(RangeTest, ReversedToCHARRANGE) {
-  ui::Range r(20, 10);
+  gfx::Range r(20, 10);
   CHARRANGE cr = r.ToCHARRANGE();
   EXPECT_EQ(20U, cr.cpMin);
   EXPECT_EQ(10U, cr.cpMax);
@@ -51,12 +51,12 @@ TEST(RangeTest, ReversedToCHARRANGE) {
 
 TEST(RangeTest, FromCHARRANGEInvalid) {
   CHARRANGE cr = { -1, -1 };
-  ui::Range r(cr, 30);
+  gfx::Range r(cr, 30);
   EXPECT_FALSE(r.IsValid());
 }
 
 TEST(RangeTest, ToCHARRANGEInvalid) {
-  ui::Range r(ui::Range::InvalidRange());
+  gfx::Range r(gfx::Range::InvalidRange());
   CHARRANGE cr = r.ToCHARRANGE();
   EXPECT_EQ(-1, cr.cpMin);
   EXPECT_EQ(-1, cr.cpMax);

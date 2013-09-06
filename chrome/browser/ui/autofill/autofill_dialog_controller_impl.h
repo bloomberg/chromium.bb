@@ -119,7 +119,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual int GetDialogButtons() const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual DialogOverlayState GetDialogOverlay() const OVERRIDE;
-  virtual const std::vector<ui::Range>& LegalDocumentLinks() OVERRIDE;
+  virtual const std::vector<gfx::Range>& LegalDocumentLinks() OVERRIDE;
   virtual bool SectionIsActive(DialogSection section) const OVERRIDE;
   virtual const DetailInputs& RequestedFieldsForSection(DialogSection section)
       const OVERRIDE;
@@ -154,7 +154,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual void SignInLinkClicked() OVERRIDE;
   virtual void NotificationCheckboxStateChanged(DialogNotification::Type type,
                                                 bool checked) OVERRIDE;
-  virtual void LegalDocumentLinkClicked(const ui::Range& range) OVERRIDE;
+  virtual void LegalDocumentLinkClicked(const gfx::Range& range) OVERRIDE;
   virtual bool OnCancel() OVERRIDE;
   virtual bool OnAccept() OVERRIDE;
   virtual Profile* profile() OVERRIDE;
@@ -610,7 +610,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // The text to display when the user is accepting new terms of service, etc.
   string16 legal_documents_text_;
   // The ranges within |legal_documents_text_| to linkify.
-  std::vector<ui::Range> legal_document_link_ranges_;
+  std::vector<gfx::Range> legal_document_link_ranges_;
 
   // The instrument and address IDs from the Online Wallet server to be used
   // when getting a full wallet.

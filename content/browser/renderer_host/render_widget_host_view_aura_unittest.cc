@@ -231,7 +231,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {
   const ui::CompositionUnderlines& underlines = composition_text.underlines;
 
   // Caret is at the end. (This emulates Japanese MSIME 2007 and later)
-  composition_text.selection = ui::Range(4);
+  composition_text.selection = gfx::Range(4);
 
   sink_->ClearMessages();
   view_->SetCompositionText(composition_text);

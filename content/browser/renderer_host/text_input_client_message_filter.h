@@ -9,11 +9,8 @@
 #include "content/public/browser/browser_message_filter.h"
 
 namespace gfx {
-class Rect;
-}
-
-namespace ui {
 class Range;
+class Rect;
 }
 
 namespace content {

@@ -8,7 +8,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/base/ime/mock_input_method.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/rect.h"
 
 namespace content {
@@ -38,7 +38,7 @@ class TextInputTestHelper : public ui::MockInputMethod::Observer {
   string16 GetSurroundingText() const;
   gfx::Rect GetCaretRect() const;
   gfx::Rect GetCompositionHead() const;
-  ui::Range GetSelectionRange() const;
+  gfx::Range GetSelectionRange() const;
   bool GetFocusState() const;
   ui::TextInputType GetTextInputType() const;
 
@@ -52,7 +52,7 @@ class TextInputTestHelper : public ui::MockInputMethod::Observer {
   void WaitForCaretBoundsChanged(const gfx::Rect& expected_caret_rect,
                                  const gfx::Rect& expected_composition_head);
   void WaitForSurroundingTextChanged(const string16& expected_text,
-                                     const ui::Range& expected_selection);
+                                     const gfx::Range& expected_selection);
 
   // Converts from string to gfx::Rect. The string should be "x,y,width,height".
   // Returns false if the conversion failed.
@@ -90,7 +90,7 @@ class TextInputTestHelper : public ui::MockInputMethod::Observer {
   string16 surrounding_text_;
   gfx::Rect caret_rect_;
   gfx::Rect composition_head_;
-  ui::Range selection_range_;
+  gfx::Range selection_range_;
   bool focus_state_;
   ui::TextInputType latest_text_input_type_;
 

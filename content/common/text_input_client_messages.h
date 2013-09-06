@@ -5,7 +5,7 @@
 // Multiply-included message file, hence no include guard
 
 #include "ipc/ipc_message_macros.h"
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/rect.h"
 
 #if defined(OS_MACOSX)
@@ -27,11 +27,11 @@ IPC_MESSAGE_ROUTED1(TextInputClientMsg_CharacterIndexForPoint,
 
 // Tells the renderer to send back the rectangle for a given character range.
 IPC_MESSAGE_ROUTED1(TextInputClientMsg_FirstRectForCharacterRange,
-                    ui::Range)
+                    gfx::Range)
 
 // Tells the renderer to send back the text fragment in a given range.
 IPC_MESSAGE_ROUTED1(TextInputClientMsg_StringForRange,
-                    ui::Range)
+                    gfx::Range)
 
 ////////////////////////////////////////////////////////////////////////////////
 

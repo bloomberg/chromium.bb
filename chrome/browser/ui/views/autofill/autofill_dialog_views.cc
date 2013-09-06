@@ -1321,7 +1321,7 @@ void AutofillDialogViews::UpdateAccountChooser() {
     legal_document_view_->SetText(text);
 
     if (!text.empty()) {
-      const std::vector<ui::Range>& link_ranges =
+      const std::vector<gfx::Range>& link_ranges =
           delegate_->LegalDocumentLinks();
       for (size_t i = 0; i < link_ranges.size(); ++i) {
         legal_document_view_->AddStyleRange(
@@ -1727,7 +1727,7 @@ void AutofillDialogViews::OnSelectedIndexChanged(views::Combobox* combobox) {
   ValidateGroup(*group, VALIDATE_EDIT);
 }
 
-void AutofillDialogViews::StyledLabelLinkClicked(const ui::Range& range,
+void AutofillDialogViews::StyledLabelLinkClicked(const gfx::Range& range,
                                                  int event_flags) {
   delegate_->LegalDocumentLinkClicked(range);
 }

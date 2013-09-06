@@ -15,7 +15,7 @@ SelectionModel::SelectionModel()
 SelectionModel::SelectionModel(size_t position, LogicalCursorDirection affinity)
   : selection_(position), caret_affinity_(affinity) {}
 
-SelectionModel::SelectionModel(ui::Range selection,
+SelectionModel::SelectionModel(gfx::Range selection,
                                LogicalCursorDirection affinity)
   : selection_(selection), caret_affinity_(affinity) {}
 

@@ -20,7 +20,7 @@
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 
 @interface AutofillMainContainer (Private)
 - (void)buildWindowButtonsForFrame:(NSRect)frame;
@@ -248,7 +248,7 @@
                            withFont:font
                        messageColor:[NSColor blackColor]];
 
-    const std::vector<ui::Range>& link_ranges =
+    const std::vector<gfx::Range>& link_ranges =
         delegate_->LegalDocumentLinks();
     for (size_t i = 0; i < link_ranges.size(); ++i) {
       NSRange range = link_ranges[i].ToNSRange();

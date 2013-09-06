@@ -196,7 +196,7 @@ void GeneratedCreditCardBubbleController::SetupAndShow(
     if (!piece.empty() && pieces.size() % 2 == 0) {
       const size_t start = contents_text_.size();
       TextRange bold_text;
-      bold_text.range = ui::Range(start, start + piece.size());
+      bold_text.range = gfx::Range(start, start + piece.size());
       bold_text.is_link = false;
       contents_text_ranges_.push_back(bold_text);
     }
@@ -212,7 +212,7 @@ void GeneratedCreditCardBubbleController::SetupAndShow(
   contents_text_.append(ASCIIToUTF16(" ") + learn_more);
   const size_t header_size = contents_text_.size();
   TextRange end_link;
-  end_link.range = ui::Range(header_size - learn_more.size(), header_size);
+  end_link.range = gfx::Range(header_size - learn_more.size(), header_size);
   end_link.is_link = true;
   contents_text_ranges_.push_back(end_link);
 

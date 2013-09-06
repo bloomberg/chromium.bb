@@ -40,7 +40,7 @@ void ExtractCompositionTextFromGtkPreedit(const gchar* utf8_text,
   size_t cursor_offset =
       char16_offsets[std::max(0, std::min(char_length, cursor_position))];
 
-  composition->selection = ui::Range(cursor_offset);
+  composition->selection = gfx::Range(cursor_offset);
 
   if (attrs) {
     int utf8_length = strlen(utf8_text);

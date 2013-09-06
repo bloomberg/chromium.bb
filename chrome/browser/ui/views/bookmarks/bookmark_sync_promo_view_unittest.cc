@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/events/event_constants.h"
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 
 class BookmarkSyncPromoViewTest : public BookmarkBubbleDelegate,
                                   public testing::Test {
@@ -36,7 +36,7 @@ TEST_F(BookmarkSyncPromoViewTest, SignInLink) {
 
   // Simulate clicking the "Sign in" link.
   views::StyledLabelListener* listener = sync_promo.get();
-  listener->StyledLabelLinkClicked(ui::Range(), ui::EF_NONE);
+  listener->StyledLabelLinkClicked(gfx::Range(), ui::EF_NONE);
 
   EXPECT_EQ(1, sign_in_clicked_count_);
 }

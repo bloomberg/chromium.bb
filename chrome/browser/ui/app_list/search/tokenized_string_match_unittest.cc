@@ -21,7 +21,7 @@ std::string MatchHit(const string16& text,
   const TokenizedStringMatch::Hits& hits = match.hits();
   for (TokenizedStringMatch::Hits::const_reverse_iterator it = hits.rbegin();
        it != hits.rend(); ++it) {
-    const ui::Range& hit = *it;
+    const gfx::Range& hit = *it;
     marked.insert(hit.end(), 1, ']');
     marked.insert(hit.start(), 1, '[');
   }

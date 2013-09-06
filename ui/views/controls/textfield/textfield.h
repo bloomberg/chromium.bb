@@ -27,11 +27,11 @@
 #endif
 
 namespace gfx {
+class Range;
 class ImageSkia;
 }
 
 namespace ui {
-class Range;
 class TextInputClient;
 }  // namespace ui
 
@@ -206,11 +206,11 @@ class VIEWS_EXPORT Textfield : public View {
   // Gets the selected range. This is views-implementation only and
   // has to be called after the wrapper is created.
   // TODO(msw): Return a const reference when NativeTextfieldWin is gone.
-  ui::Range GetSelectedRange() const;
+  gfx::Range GetSelectedRange() const;
 
   // Selects the text given by |range|. This is views-implementation only and
   // has to be called after the wrapper is created.
-  void SelectRange(const ui::Range& range);
+  void SelectRange(const gfx::Range& range);
 
   // Gets the selection model. This is views-implementation only and
   // has to be called after the wrapper is created.
@@ -229,14 +229,14 @@ class VIEWS_EXPORT Textfield : public View {
   // Empty and invalid ranges are ignored. This is views-implementation only and
   // has to be called after the wrapper is created.
   void SetColor(SkColor value);
-  void ApplyColor(SkColor value, const ui::Range& range);
+  void ApplyColor(SkColor value, const gfx::Range& range);
 
   // Set various text styles over the entire text or a logical character range.
   // The respective |style| is applied if |value| is true, or removed if false.
   // Empty and invalid ranges are ignored. This is views-implementation only and
   // has to be called after the wrapper is created.
   void SetStyle(gfx::TextStyle style, bool value);
-  void ApplyStyle(gfx::TextStyle style, bool value, const ui::Range& range);
+  void ApplyStyle(gfx::TextStyle style, bool value, const gfx::Range& range);
 
   // Clears Edit history.
   void ClearEditHistory();

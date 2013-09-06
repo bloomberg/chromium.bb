@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/view.h"
@@ -62,7 +62,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
   // Marks the given range within |text_| with style defined by |style_info|.
   // |range| must be contained in |text_|.
-  void AddStyleRange(const ui::Range& range, const RangeStyleInfo& style_info);
+  void AddStyleRange(const gfx::Range& range, const RangeStyleInfo& style_info);
 
   // Sets the default style to use for any part of the text that isn't within
   // a range set by AddStyleRange.
@@ -87,7 +87,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
  private:
   struct StyleRange {
-    StyleRange(const ui::Range& range,
+    StyleRange(const gfx::Range& range,
                const RangeStyleInfo& style_info)
         : range(range),
           style_info(style_info) {
@@ -96,7 +96,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
     bool operator<(const StyleRange& other) const;
 
-    ui::Range range;
+    gfx::Range range;
     RangeStyleInfo style_info;
   };
 
@@ -121,7 +121,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
   // A mapping from a view to the range it corresponds to in |text_|. Only views
   // that correspond to ranges with is_link style set will be added to the map.
-  std::map<View*, ui::Range> link_targets_;
+  std::map<View*, gfx::Range> link_targets_;
 
   // This variable saves the result of the last GetHeightForWidth call in order
   // to avoid repeated calculation.

@@ -958,7 +958,7 @@ void OmniboxViewWin::OnCandidateWindowCountChanged(size_t window_count) {
   }
 }
 
-void OmniboxViewWin::OnTextUpdated(const ui::Range& /*composition_range*/) {
+void OmniboxViewWin::OnTextUpdated(const gfx::Range& /*composition_range*/) {
   if (ignore_ime_messages_)
     return;
   OnAfterPossibleChangeInternal(true);

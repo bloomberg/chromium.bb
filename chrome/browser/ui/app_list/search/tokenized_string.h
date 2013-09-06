@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "ui/base/range/range.h"
+#include "ui/gfx/range/range.h"
 
 namespace app_list {
 
@@ -19,7 +19,7 @@ namespace app_list {
 class TokenizedString {
  public:
   typedef std::vector<string16> Tokens;
-  typedef std::vector<ui::Range> Mappings;
+  typedef std::vector<gfx::Range> Mappings;
 
   explicit TokenizedString(const string16& text);
   ~TokenizedString();

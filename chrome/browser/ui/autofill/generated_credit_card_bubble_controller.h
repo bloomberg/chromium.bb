@@ -13,8 +13,8 @@
 #include "base/strings/string16.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "ui/base/range/range.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/range/range.h"
 
 namespace content {
 class WebContents;
@@ -33,7 +33,7 @@ class GeneratedCreditCardBubbleView;
 // If |is_link| is false, the text denoted by |range| should be bolded.
 struct TextRange {
   // The range of text this TextRange applies to (start and end).
-  ui::Range range;
+  gfx::Range range;
   // Whether this text range should be styled like a link (e.g. clickable).
   bool is_link;
   // An equality operator for testing.

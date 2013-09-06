@@ -135,16 +135,16 @@ class TestTextInputClient : public ui::TextInputClient {
     return false;
   }
   virtual bool HasCompositionText() OVERRIDE { return false; }
-  virtual bool GetTextRange(ui::Range* range) OVERRIDE { return false; }
-  virtual bool GetCompositionTextRange(ui::Range* range) OVERRIDE {
+  virtual bool GetTextRange(gfx::Range* range) OVERRIDE { return false; }
+  virtual bool GetCompositionTextRange(gfx::Range* range) OVERRIDE {
     return false;
   }
-  virtual bool GetSelectionRange(ui::Range* range) OVERRIDE { return false; }
-  virtual bool SetSelectionRange(const ui::Range& range) OVERRIDE {
+  virtual bool GetSelectionRange(gfx::Range* range) OVERRIDE { return false; }
+  virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE {
     return false;
   }
-  virtual bool DeleteRange(const ui::Range& range) OVERRIDE { return false; }
-  virtual bool GetTextFromRange(const ui::Range& range,
+  virtual bool DeleteRange(const gfx::Range& range) OVERRIDE { return false; }
+  virtual bool GetTextFromRange(const gfx::Range& range,
                                 base::string16* text) OVERRIDE {
     return false;
   }

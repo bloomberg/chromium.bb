@@ -37,7 +37,7 @@ class GeneratedCreditCardBubbleViews : public GeneratedCreditCardBubbleView,
   virtual void Init() OVERRIDE;
 
   // views::StyledLabelListener:
-  virtual void StyledLabelLinkClicked(const ui::Range& range, int event_flags)
+  virtual void StyledLabelLinkClicked(const gfx::Range& range, int event_flags)
       OVERRIDE;
 
  private:

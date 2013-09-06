@@ -110,15 +110,15 @@ TEST_F(AttributedStringCoderTest, OutOfRange) {
   encoded.attributes()->push_back(
       AttributedStringCoder::FontAttribute(
           FontDescriptor([NSFont systemFontOfSize:12]),
-          ui::Range(0, 5)));
+          gfx::Range(0, 5)));
   encoded.attributes()->push_back(
       AttributedStringCoder::FontAttribute(
           FontDescriptor([NSFont systemFontOfSize:14]),
-          ui::Range(5, 100)));
+          gfx::Range(5, 100)));
   encoded.attributes()->push_back(
       AttributedStringCoder::FontAttribute(
           FontDescriptor([NSFont systemFontOfSize:16]),
-          ui::Range(100, 5)));
+          gfx::Range(100, 5)));
 
   NSAttributedString* decoded = AttributedStringCoder::Decode(&encoded);
   EXPECT_TRUE(decoded);

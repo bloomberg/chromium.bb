@@ -11,10 +11,10 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "components/autofill/content/browser/wallet/required_action.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "ui/base/range/range.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/range/range.h"
 
 class Profile;
 
@@ -88,7 +88,7 @@ class AutofillDialogViewDelegate {
   virtual DialogOverlayState GetDialogOverlay() const = 0;
 
   // Returns ranges to linkify in the text returned by |LegalDocumentsText()|.
-  virtual const std::vector<ui::Range>& LegalDocumentLinks() = 0;
+  virtual const std::vector<gfx::Range>& LegalDocumentLinks() = 0;
 
   // Detail inputs -------------------------------------------------------------
 
@@ -178,7 +178,7 @@ class AutofillDialogViewDelegate {
                                                 bool checked) = 0;
 
   // A legal document link has been clicked.
-  virtual void LegalDocumentLinkClicked(const ui::Range& range) = 0;
+  virtual void LegalDocumentLinkClicked(const gfx::Range& range) = 0;
 
   // Called when the view has been cancelled. Returns true if the dialog should
   // now close, or false to keep it open.

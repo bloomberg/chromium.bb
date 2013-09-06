@@ -14,9 +14,9 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/range/range.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/text_constants.h"
 #include "url/gurl.h"
 
@@ -116,7 +116,7 @@ class DialogNotification {
   void set_link_url(const GURL& link_url) { link_url_ = link_url; }
   const GURL& link_url() const { return link_url_; }
 
-  const ui::Range& link_range() const { return link_range_; }
+  const gfx::Range& link_range() const { return link_range_; }
 
   void set_tooltip_text(const string16& tooltip_text) {
     tooltip_text_ = tooltip_text;
@@ -136,7 +136,7 @@ class DialogNotification {
   // If the notification includes a link, these describe the destination and
   // which part of |display_text_| is the anchor text.
   GURL link_url_;
-  ui::Range link_range_;
+  gfx::Range link_range_;
 
   // When non-empty, indicates that a tooltip should be shown on the end of
   // the notification.

@@ -419,19 +419,19 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
     CompositionText empty;
     return composition_text_ != empty;
   }
-  virtual bool GetTextRange(Range* range) OVERRIDE {
+  virtual bool GetTextRange(gfx::Range* range) OVERRIDE {
     *range = text_range_;
     return true;
   }
-  virtual bool GetCompositionTextRange(Range* range) OVERRIDE { return false; }
-  virtual bool GetSelectionRange(Range* range) OVERRIDE {
+  virtual bool GetCompositionTextRange(gfx::Range* range) OVERRIDE { return false; }
+  virtual bool GetSelectionRange(gfx::Range* range) OVERRIDE {
     *range = selection_range_;
     return true;
   }
 
-  virtual bool SetSelectionRange(const Range& range) OVERRIDE { return false; }
-  virtual bool DeleteRange(const Range& range) OVERRIDE { return false; }
-  virtual bool GetTextFromRange(const Range& range, string16* text) OVERRIDE {
+  virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE { return false; }
+  virtual bool DeleteRange(const gfx::Range& range) OVERRIDE { return false; }
+  virtual bool GetTextFromRange(const gfx::Range& range, string16* text) OVERRIDE {
     *text = surrounding_text_.substr(range.GetMin(), range.length());
     return true;
   }
@@ -501,8 +501,8 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   TextInputType input_type_;
   bool can_compose_inline_;
   gfx::Rect caret_bounds_;
-  ui::Range text_range_;
-  ui::Range selection_range_;
+  gfx::Range text_range_;
+  gfx::Range selection_range_;
   string16 surrounding_text_;
 
   // Variables for mock dbus connections.
@@ -1128,8 +1128,8 @@ TEST_F(InputMethodIBusTest, SurroundingText_NoSelectionTest) {
 
   // Set the TextInputClient behaviors.
   surrounding_text_ = UTF8ToUTF16("abcdef");
-  text_range_ = ui::Range(0, 6);
-  selection_range_ = ui::Range(3, 3);
+  text_range_ = gfx::Range(0, 6);
+  selection_range_ = gfx::Range(3, 3);
 
   // Set the verifier for SetSurroundingText mock call.
   SetSurroundingTextVerifier verifier(UTF16ToUTF8(surrounding_text_), 3, 3);
@@ -1157,8 +1157,8 @@ TEST_F(InputMethodIBusTest, SurroundingText_SelectionTest) {
 
   // Set the TextInputClient behaviors.
   surrounding_text_ = UTF8ToUTF16("abcdef");
-  text_range_ = ui::Range(0, 6);
-  selection_range_ = ui::Range(2, 5);
+  text_range_ = gfx::Range(0, 6);
+  selection_range_ = gfx::Range(2, 5);
 
   // Set the verifier for SetSurroundingText mock call.
   SetSurroundingTextVerifier verifier(UTF16ToUTF8(surrounding_text_), 2, 5);
@@ -1185,8 +1185,8 @@ TEST_F(InputMethodIBusTest, SurroundingText_PartialText) {
 
   // Set the TextInputClient behaviors.
   surrounding_text_ = UTF8ToUTF16("abcdefghij");
-  text_range_ = ui::Range(5, 10);
-  selection_range_ = ui::Range(7, 9);
+  text_range_ = gfx::Range(5, 10);
+  selection_range_ = gfx::Range(7, 9);
 
   // Set the verifier for SetSurroundingText mock call.
   // Here (2, 4) is selection range in expected surrounding text coordinates.
@@ -1216,8 +1216,8 @@ TEST_F(InputMethodIBusTest, SurroundingText_BecomeEmptyText) {
   // If the surrounding text becomes empty, text_range become (0, 0) and
   // selection range become invalid.
   surrounding_text_ = UTF8ToUTF16("");
-  text_range_ = ui::Range(0, 0);
-  selection_range_ = ui::Range::InvalidRange();
+  text_range_ = gfx::Range(0, 0);
+  selection_range_ = gfx::Range::InvalidRange();
 
   // Set the verifier for SetSurroundingText mock call.
   SetSurroundingTextVerifier verifier("", 0, 0);

@@ -95,11 +95,11 @@ void StyledLabel::SetText(const string16& text) {
   PreferredSizeChanged();
 }
 
-void StyledLabel::AddStyleRange(const ui::Range& range,
+void StyledLabel::AddStyleRange(const gfx::Range& range,
                                 const RangeStyleInfo& style_info) {
   DCHECK(!range.is_reversed());
   DCHECK(!range.is_empty());
-  DCHECK(ui::Range(0, text_.size()).Contains(range));
+  DCHECK(gfx::Range(0, text_.size()).Contains(range));
 
   style_ranges_.push(StyleRange(range, style_info));
 
@@ -172,7 +172,7 @@ int StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
     if (x == 0 && line > 0)
       TrimWhitespace(remaining_string, TRIM_LEADING, &remaining_string);
 
-    ui::Range range(ui::Range::InvalidRange());
+    gfx::Range range(gfx::Range::InvalidRange());
     if (!style_ranges.empty())
       range = style_ranges.top().range;
 

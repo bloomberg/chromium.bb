@@ -1052,7 +1052,7 @@ void RenderWidgetHostViewAura::ImeCancelComposition() {
 }
 
 void RenderWidgetHostViewAura::ImeCompositionRangeChanged(
-    const ui::Range& range,
+    const gfx::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
   composition_character_bounds_ = character_bounds;
 }
@@ -1137,7 +1137,7 @@ void RenderWidgetHostViewAura::SetTooltipText(const string16& tooltip_text) {
 
 void RenderWidgetHostViewAura::SelectionChanged(const string16& text,
                                                 size_t offset,
-                                                const ui::Range& range) {
+                                                const gfx::Range& range) {
   RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
@@ -2143,7 +2143,7 @@ void RenderWidgetHostViewAura::SetCompositionText(
 
 void RenderWidgetHostViewAura::ConfirmCompositionText() {
   if (host_ && has_composition_text_)
-    host_->ImeConfirmComposition(string16(), ui::Range::InvalidRange(), false);
+    host_->ImeConfirmComposition(string16(), gfx::Range::InvalidRange(), false);
   has_composition_text_ = false;
 }
 
@@ -2156,7 +2156,7 @@ void RenderWidgetHostViewAura::ClearCompositionText() {
 void RenderWidgetHostViewAura::InsertText(const string16& text) {
   DCHECK(text_input_type_ != ui::TEXT_INPUT_TYPE_NONE);
   if (host_)
-    host_->ImeConfirmComposition(text, ui::Range::InvalidRange(), false);
+    host_->ImeConfirmComposition(text, gfx::Range::InvalidRange(), false);
   has_composition_text_ = false;
 }
 
@@ -2252,40 +2252,40 @@ bool RenderWidgetHostViewAura::HasCompositionText() {
   return has_composition_text_;
 }
 
-bool RenderWidgetHostViewAura::GetTextRange(ui::Range* range) {
+bool RenderWidgetHostViewAura::GetTextRange(gfx::Range* range) {
   range->set_start(selection_text_offset_);
   range->set_end(selection_text_offset_ + selection_text_.length());
   return true;
 }
 
-bool RenderWidgetHostViewAura::GetCompositionTextRange(ui::Range* range) {
+bool RenderWidgetHostViewAura::GetCompositionTextRange(gfx::Range* range) {
   // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
   NOTIMPLEMENTED();
   return false;
 }
 
-bool RenderWidgetHostViewAura::GetSelectionRange(ui::Range* range) {
+bool RenderWidgetHostViewAura::GetSelectionRange(gfx::Range* range) {
   range->set_start(selection_range_.start());
   range->set_end(selection_range_.end());
   return true;
 }
 
-bool RenderWidgetHostViewAura::SetSelectionRange(const ui::Range& range) {
+bool RenderWidgetHostViewAura::SetSelectionRange(const gfx::Range& range) {
   // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
   NOTIMPLEMENTED();
   return false;
 }
 
-bool RenderWidgetHostViewAura::DeleteRange(const ui::Range& range) {
+bool RenderWidgetHostViewAura::DeleteRange(const gfx::Range& range) {
   // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
   NOTIMPLEMENTED();
   return false;
 }
 
 bool RenderWidgetHostViewAura::GetTextFromRange(
-    const ui::Range& range,
+    const gfx::Range& range,
     string16* text) {
-  ui::Range selection_text_range(selection_text_offset_,
+  gfx::Range selection_text_range(selection_text_offset_,
       selection_text_offset_ + selection_text_.length());
 
   if (!selection_text_range.Contains(range)) {
@@ -3118,7 +3118,7 @@ void RenderWidgetHostViewAura::FinishImeCompositionSession() {
   if (!has_composition_text_)
     return;
   if (host_)
-    host_->ImeConfirmComposition(string16(), ui::Range::InvalidRange(), false);
+    host_->ImeConfirmComposition(string16(), gfx::Range::InvalidRange(), false);
   ImeCancelComposition();
 }
 

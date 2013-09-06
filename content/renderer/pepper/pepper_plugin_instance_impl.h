@@ -79,14 +79,14 @@ namespace cc {
 class TextureLayer;
 }
 
+namespace gfx {
+class Range;
+}
+
 namespace ppapi {
 class Resource;
 struct InputEventData;
 struct PPP_Instance_Combined;
-}
-
-namespace ui {
-class Range;
 }
 
 namespace v8 {
@@ -197,7 +197,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   ui::TextInputType text_input_type() const { return text_input_type_; }
   gfx::Rect GetCaretBounds() const;
   bool IsPluginAcceptingCompositionEvents() const;
-  void GetSurroundingText(base::string16* text, ui::Range* range) const;
+  void GetSurroundingText(base::string16* text, gfx::Range* range) const;
 
   // Notifications about focus changes, see has_webkit_focus_ below.
   void SetWebKitFocus(bool has_focus);

@@ -61,7 +61,7 @@ NSRect TextInputClientMac::GetFirstRectForRange(RenderWidgetHost* rwh,
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
   rwhi->Send(
       new TextInputClientMsg_FirstRectForCharacterRange(rwhi->GetRoutingID(),
-                                                        ui::Range(range)));
+                                                        gfx::Range(range)));
   // http://crbug.com/121917
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   condition_.TimedWait(base::TimeDelta::FromMilliseconds(kWaitTimeout));
@@ -82,7 +82,7 @@ NSAttributedString* TextInputClientMac::GetAttributedSubstringFromRange(
   BeforeRequest();
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
   rwhi->Send(new TextInputClientMsg_StringForRange(rwhi->GetRoutingID(),
-                                                   ui::Range(range)));
+                                                   gfx::Range(range)));
   // http://crbug.com/121917
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   condition_.TimedWait(base::TimeDelta::FromMilliseconds(kWaitTimeout));

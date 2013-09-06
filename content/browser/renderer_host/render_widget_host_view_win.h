@@ -189,7 +189,7 @@ class RenderWidgetHostViewWin
   virtual void ScrollOffsetChanged() OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
   virtual void ImeCompositionRangeChanged(
-      const ui::Range& range,
+      const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) OVERRIDE;
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect,
@@ -277,12 +277,12 @@ class RenderWidgetHostViewWin
   virtual bool GetCompositionCharacterBounds(uint32 index,
                                              gfx::Rect* rect) OVERRIDE;
   virtual bool HasCompositionText() OVERRIDE;
-  virtual bool GetTextRange(ui::Range* range) OVERRIDE;
-  virtual bool GetCompositionTextRange(ui::Range* range) OVERRIDE;
-  virtual bool GetSelectionRange(ui::Range* range) OVERRIDE;
-  virtual bool SetSelectionRange(const ui::Range& range) OVERRIDE;
-  virtual bool DeleteRange(const ui::Range& range) OVERRIDE;
-  virtual bool GetTextFromRange(const ui::Range& range,
+  virtual bool GetTextRange(gfx::Range* range) OVERRIDE;
+  virtual bool GetCompositionTextRange(gfx::Range* range) OVERRIDE;
+  virtual bool GetSelectionRange(gfx::Range* range) OVERRIDE;
+  virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE;
+  virtual bool DeleteRange(const gfx::Range& range) OVERRIDE;
+  virtual bool GetTextFromRange(const gfx::Range& range,
                                 string16* text) OVERRIDE;
   virtual void OnInputMethodChanged() OVERRIDE;
   virtual bool ChangeTextDirectionAndLayoutAlignment(
@@ -572,7 +572,7 @@ class RenderWidgetHostViewWin
   // back, we regard the mouse movement as (0, 0).
   bool ignore_mouse_movement_;
 
-  ui::Range composition_range_;
+  gfx::Range composition_range_;
 
   // The current composition character bounds.
   std::vector<gfx::Rect> composition_character_bounds_;

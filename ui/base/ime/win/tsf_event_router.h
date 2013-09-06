@@ -15,8 +15,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/range/range.h"
 #include "ui/base/ui_export.h"
+#include "ui/gfx/range/range.h"
 
 struct ITfDocumentMgr;
 
@@ -33,8 +33,8 @@ class TSFEventRouterObserver {
   virtual void OnTSFStartComposition() {}
 
   // Called when the text contents are updated. If there is no composition,
-  // ui::Range::InvalidRange is passed to |composition_range|.
-  virtual void OnTextUpdated(const ui::Range& composition_range) {}
+  // gfx::Range::InvalidRange is passed to |composition_range|.
+  virtual void OnTextUpdated(const gfx::Range& composition_range) {}
 
   // Called when a composition is terminated.
   virtual void OnTSFEndComposition() {}
@@ -60,7 +60,7 @@ class UI_EXPORT TSFEventRouter {
   // Callbacks from the TSFEventRouterDelegate:
   void OnCandidateWindowCountChanged(size_t window_count);
   void OnTSFStartComposition();
-  void OnTextUpdated(const ui::Range& composition_range);
+  void OnTextUpdated(const gfx::Range& composition_range);
   void OnTSFEndComposition();
 
   // Sets |thread_manager| to be monitored. |thread_manager| can be NULL.

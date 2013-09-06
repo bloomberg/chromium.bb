@@ -79,8 +79,8 @@ class NativeTextfieldWin
   virtual View* GetView() OVERRIDE;
   virtual gfx::NativeView GetTestingHandle() const OVERRIDE;
   virtual bool IsIMEComposing() const OVERRIDE;
-  virtual ui::Range GetSelectedRange() const OVERRIDE;
-  virtual void SelectRange(const ui::Range& range) OVERRIDE;
+  virtual gfx::Range GetSelectedRange() const OVERRIDE;
+  virtual void SelectRange(const gfx::Range& range) OVERRIDE;
   virtual gfx::SelectionModel GetSelectionModel() const OVERRIDE;
   virtual void SelectSelectionModel(const gfx::SelectionModel& sel) OVERRIDE;
   virtual size_t GetCursorPosition() const OVERRIDE;
@@ -92,11 +92,11 @@ class NativeTextfieldWin
   virtual void HandleBlur() OVERRIDE;
   virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
   virtual void SetColor(SkColor value) OVERRIDE;
-  virtual void ApplyColor(SkColor value, const ui::Range& range) OVERRIDE;
+  virtual void ApplyColor(SkColor value, const gfx::Range& range) OVERRIDE;
   virtual void SetStyle(gfx::TextStyle style, bool value) OVERRIDE;
   virtual void ApplyStyle(gfx::TextStyle style,
                           bool value,
-                          const ui::Range& range) OVERRIDE;
+                          const gfx::Range& range) OVERRIDE;
   virtual void ClearEditHistory() OVERRIDE;
   virtual int GetFontHeight() OVERRIDE;
   virtual int GetTextfieldBaseline() const OVERRIDE;
@@ -113,7 +113,7 @@ class NativeTextfieldWin
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
   // ui::TSFEventRouterObserver:
-  virtual void OnTextUpdated(const ui::Range& composition_range) OVERRIDE;
+  virtual void OnTextUpdated(const gfx::Range& composition_range) OVERRIDE;
   virtual void OnTSFStartComposition() OVERRIDE;
   virtual void OnTSFEndComposition() OVERRIDE;
 

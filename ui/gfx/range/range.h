@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_RANGE_RANGE_H_
-#define UI_BASE_RANGE_RANGE_H_
+#ifndef UI_GFX_RANGE_RANGE_H_
+#define UI_GFX_RANGE_RANGE_H_
 
 #include <ostream>
 #include <string>
 
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 #if defined(OS_MACOSX)
 #if __OBJC__
@@ -24,7 +24,7 @@ typedef struct _NSRange NSRange;
 #include <richedit.h>
 #endif
 
-namespace ui {
+namespace gfx {
 
 // A Range contains two integer values that represent a numeric range, like the
 // range of characters in a text selection. A range is made of a start and end
@@ -112,6 +112,6 @@ class UI_EXPORT Range {
 
 UI_EXPORT std::ostream& operator<<(std::ostream& os, const Range& range);
 
-}  // namespace ui
+}  // namespace gfx
 
-#endif  // UI_BASE_RANGE_RANGE_H_
+#endif  // UI_GFX_RANGE_RANGE_H_

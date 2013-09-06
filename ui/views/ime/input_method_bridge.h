@@ -64,13 +64,13 @@ class InputMethodBridge : public InputMethodBase,
   virtual bool GetCompositionCharacterBounds(uint32 index,
                                              gfx::Rect* rect) OVERRIDE;
   virtual bool HasCompositionText() OVERRIDE;
-  virtual bool GetTextRange(ui::Range* range) OVERRIDE;
-  virtual bool GetCompositionTextRange(ui::Range* range) OVERRIDE;
-  virtual bool GetSelectionRange(ui::Range* range) OVERRIDE;
-  virtual bool SetSelectionRange(const ui::Range& range) OVERRIDE;
-  virtual bool DeleteRange(const ui::Range& range) OVERRIDE;
+  virtual bool GetTextRange(gfx::Range* range) OVERRIDE;
+  virtual bool GetCompositionTextRange(gfx::Range* range) OVERRIDE;
+  virtual bool GetSelectionRange(gfx::Range* range) OVERRIDE;
+  virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE;
+  virtual bool DeleteRange(const gfx::Range& range) OVERRIDE;
   virtual bool GetTextFromRange(
-      const ui::Range& range, string16* text) OVERRIDE;
+      const gfx::Range& range, string16* text) OVERRIDE;
   virtual void OnInputMethodChanged() OVERRIDE;
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE;
