@@ -29,6 +29,7 @@
 #include "config.h"
 #include "modules/indexeddb/IDBFactory.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/IDBBindingUtilities.h"
 #include "core/dom/Document.h"
@@ -81,7 +82,7 @@ PassRefPtr<IDBRequest> IDBFactory::getDatabaseNames(ScriptExecutionContext* cont
     if (!isContextValid(context))
         return 0;
     if (!context->securityOrigin()->canAccessDatabase()) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("getDatabaseNames", "IDBFactory", "access to the Indexed Database API is denied in this context."));
         return 0;
     }
 
@@ -111,7 +112,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::openInternal(ScriptExecutionContext* co
     if (!isContextValid(context))
         return 0;
     if (!context->securityOrigin()->canAccessDatabase()) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("open", "IDBFactory", "access to the Indexed Database API is denied in this context."));
         return 0;
     }
 
@@ -139,7 +140,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::deleteDatabase(ScriptExecutionContext* 
     if (!isContextValid(context))
         return 0;
     if (!context->securityOrigin()->canAccessDatabase()) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("deleteDatabase", "IDBFactory", "access to the Indexed Database API is denied in this context."));
         return 0;
     }
 
