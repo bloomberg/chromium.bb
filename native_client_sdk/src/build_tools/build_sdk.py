@@ -61,21 +61,21 @@ GYPBUILD_DIR = 'gypbuild'
 options = None
 
 
-def GetGlibcToolchain(host_arch):
+def GetGlibcToolchain():
   tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
-  tcname = 'toolchain_%s_%s.tar.bz2' % (getos.GetPlatform(), host_arch)
+  tcname = 'toolchain_%s_x86.tar.bz2' % getos.GetPlatform()
   return os.path.join(tcdir, tcname)
 
 
-def GetNewlibToolchain(host_arch):
+def GetNewlibToolchain():
   tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
-  tcname = 'naclsdk_%s_%s.tgz' % (getos.GetPlatform(), host_arch)
+  tcname = 'naclsdk_%s_x86.tgz' % getos.GetPlatform()
   return os.path.join(tcdir, tcname)
 
 
-def GetPNaClToolchain(host_arch):
+def GetPNaClToolchain():
   tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
-  tcname = 'naclsdk_pnacl_%s_%s.tgz' % (getos.GetPlatform(), host_arch)
+  tcname = 'naclsdk_pnacl_%s_x86.tgz' % getos.GetPlatform()
   return os.path.join(tcdir, tcname)
 
 
@@ -109,18 +109,21 @@ def GetGypBuiltLib(tcname, xarch=None):
 def GetToolchainNaClLib(tcname, tcpath, xarch):
   if tcname == 'pnacl':
     return os.path.join(tcpath, 'newlib', 'sdk', 'lib')
-  if xarch == '32':
+  elif xarch == '32':
     return os.path.join(tcpath, 'x86_64-nacl', 'lib32')
-  if xarch == '64':
+  elif xarch == '64':
     return os.path.join(tcpath, 'x86_64-nacl', 'lib')
-  if xarch == 'arm':
+  elif xarch == 'arm':
     return os.path.join(tcpath, 'arm-nacl', 'lib')
 
 
 def GetToolchainDirName(tcname, xarch):
-  if xarch != 'arm':
-    xarch = 'x86'
-  return '%s_%s_%s' % (getos.GetPlatform(), xarch, tcname)
+  if tcname == 'pnacl':
+    return '%s_%s' % (getos.GetPlatform(), tcname)
+  elif xarch == 'arm':
+    return '%s_arm_%s' % (getos.GetPlatform(), tcname)
+  else:
+    return '%s_x86_%s' % (getos.GetPlatform(), tcname)
 
 
 def GetGypToolchainLib(tcname, xarch):
@@ -198,42 +201,43 @@ def PrunePNaClToolchain(root):
     buildbot_common.RemoveDir(os.path.join(root, dirname))
 
 
-def BuildStepUntarToolchains(pepperdir, arch, toolchains):
+def BuildStepUntarToolchains(pepperdir, toolchains):
   buildbot_common.BuildStep('Untar Toolchains')
   platform = getos.GetPlatform()
-  tcname = platform + '_' + arch
   tmpdir = os.path.join(OUT_DIR, 'tc_temp')
   buildbot_common.RemoveDir(tmpdir)
   buildbot_common.MakeDir(tmpdir)
 
   if 'newlib' in toolchains:
     # Untar the newlib toolchains
-    tarfile = GetNewlibToolchain(arch)
+    tarfile = GetNewlibToolchain()
     buildbot_common.Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile],
                         cwd=NACL_DIR)
 
     # Then rename/move it to the pepper toolchain directory
     srcdir = os.path.join(tmpdir, 'sdk', 'nacl-sdk')
-    newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
+    tcname = platform + '_x86_newlib'
+    newlibdir = os.path.join(pepperdir, 'toolchain', tcname)
     buildbot_common.Move(srcdir, newlibdir)
 
   if 'arm' in toolchains:
     # Copy the existing arm toolchain from native_client tree
-    arm_toolchain = os.path.join(NACL_DIR, 'toolchain',
-                                 platform + '_arm_newlib')
+    tcname = platform + '_arm_newlib'
+    arm_toolchain = os.path.join(NACL_DIR, 'toolchain', tcname)
     arm_toolchain_sdk = os.path.join(pepperdir, 'toolchain',
                                      os.path.basename(arm_toolchain))
     buildbot_common.CopyDir(arm_toolchain, arm_toolchain_sdk)
 
   if 'glibc' in toolchains:
     # Untar the glibc toolchains
-    tarfile = GetGlibcToolchain(arch)
+    tarfile = GetGlibcToolchain()
+    tcname = platform + '_x86_glibc'
     buildbot_common.Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile],
                         cwd=NACL_DIR)
 
     # Then rename/move it to the pepper toolchain directory
-    srcdir = os.path.join(tmpdir, 'toolchain', tcname)
-    glibcdir = os.path.join(pepperdir, 'toolchain', tcname + '_glibc')
+    srcdir = os.path.join(tmpdir, 'toolchain', platform + '_x86')
+    glibcdir = os.path.join(pepperdir, 'toolchain', tcname)
     buildbot_common.Move(srcdir, glibcdir)
 
   # Untar the pnacl toolchains
@@ -241,12 +245,13 @@ def BuildStepUntarToolchains(pepperdir, arch, toolchains):
     tmpdir = os.path.join(tmpdir, 'pnacl')
     buildbot_common.RemoveDir(tmpdir)
     buildbot_common.MakeDir(tmpdir)
-    tarfile = GetPNaClToolchain(arch)
+    tarfile = GetPNaClToolchain()
+    tcname = platform + '_pnacl'
     buildbot_common.Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile],
                         cwd=NACL_DIR)
 
     # Then rename/move it to the pepper toolchain directory
-    pnacldir = os.path.join(pepperdir, 'toolchain', tcname + '_pnacl')
+    pnacldir = os.path.join(pepperdir, 'toolchain', tcname)
     buildbot_common.Move(tmpdir, pnacldir)
     PrunePNaClToolchain(pnacldir)
 
@@ -566,10 +571,10 @@ def BuildStepBuildToolchains(pepperdir, toolchains):
   GypNinjaBuild_Breakpad(GYPBUILD_DIR)
 
   platform = getos.GetPlatform()
-  tcname = platform + '_x86'
-  newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
-  glibcdir = os.path.join(pepperdir, 'toolchain', tcname + '_glibc')
-  pnacldir = os.path.join(pepperdir, 'toolchain', tcname + '_pnacl')
+  newlibdir = os.path.join(pepperdir, 'toolchain', platform + '_x86_newlib')
+  glibcdir = os.path.join(pepperdir, 'toolchain', platform + '_x86_glibc')
+  armdir = os.path.join(pepperdir, 'toolchain', platform + '_arm_newlib')
+  pnacldir = os.path.join(pepperdir, 'toolchain', platform + '_pnacl')
 
   if set(toolchains) & set(['glibc', 'newlib']):
     GypNinjaBuild_PPAPI('ia32', GYPBUILD_DIR)
@@ -588,8 +593,6 @@ def BuildStepBuildToolchains(pepperdir, toolchains):
                        'glibc')
 
   if 'arm' in toolchains:
-    tcname = platform + '_arm_newlib'
-    armdir = os.path.join(pepperdir, 'toolchain', tcname)
     InstallNaClHeaders(GetToolchainNaClInclude('newlib', armdir, 'arm'),
                        'arm')
 
@@ -879,7 +882,6 @@ def main(args):
 
   global options
   options, args = parser.parse_args(args[1:])
-  arch = 'x86'
 
   generate_make.use_gyp = options.gyp
   if buildbot_common.IsSDKBuilder():
@@ -915,7 +917,7 @@ def main(args):
     BuildStepCleanPepperDirs(pepperdir, pepperdir_old)
     BuildStepMakePepperDirs(pepperdir, ['include', 'toolchain', 'tools'])
     BuildStepDownloadToolchains()
-    BuildStepUntarToolchains(pepperdir, arch, toolchains)
+    BuildStepUntarToolchains(pepperdir, toolchains)
 
   BuildStepCopyTextFiles(pepperdir, pepper_ver, chrome_revision, nacl_revision)
   BuildStepBuildToolchains(pepperdir, toolchains)

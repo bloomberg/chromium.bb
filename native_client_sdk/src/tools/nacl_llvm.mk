@@ -10,7 +10,7 @@
 #
 # Paths to Tools
 #
-PNACL_BIN = $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin
+PNACL_BIN = $(TC_PATH)/$(OSNAME)_$(TOOLCHAIN)/newlib/bin
 PNACL_CC ?= $(PNACL_BIN)/pnacl-clang -c
 PNACL_CXX ?= $(PNACL_BIN)/pnacl-clang++ -c
 PNACL_LINK ?= $(PNACL_BIN)/pnacl-clang++

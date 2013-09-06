@@ -75,7 +75,7 @@ arm)
 arm-pnacl)
   readonly USE_PNACL=1
   readonly USE_NEWLIB=1
-  readonly TC_FLAVOUR=linux_x86_pnacl/newlib
+  readonly TC_FLAVOUR=linux_pnacl/newlib
   readonly NACL_CROSS_PREFIX_DASH=pnacl-
   readonly PNACL_LINK_ARGS="-arch armv7 -O2"
   CONFIG_OPTS="--host=armv7l-unknown-linux-gnueabi \
