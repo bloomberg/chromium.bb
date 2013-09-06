@@ -73,7 +73,7 @@ public:
         shrink(newLength);
     }
 
-    unsigned length() const { return m_data->length(); }
+    unsigned length() const { return m_data ? m_data->length() : 0; }
     CharType* characters() { return length() ? const_cast<CharType*>(m_data->getCharacters<CharType>()) : 0; }
 
     CharType& operator[](unsigned i) { ASSERT_WITH_SECURITY_IMPLICATION(i < length()); return characters()[i]; }
