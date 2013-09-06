@@ -226,6 +226,7 @@ RenderWidgetHost* RenderWidgetHost::FromID(
 RenderWidgetHostImpl* RenderWidgetHostImpl::FromID(
     int32 process_id,
     int32 routing_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
   RoutingIDWidgetMap::iterator it = widgets->find(
       RenderWidgetHostID(process_id, routing_id));
