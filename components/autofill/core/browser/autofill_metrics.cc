@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -385,10 +384,6 @@ void AutofillMetrics::LogWalletRequiredActionMetric(
       WalletRequiredActionMetric required_action) const {
   UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.WalletRequiredActions",
                             required_action, NUM_WALLET_REQUIRED_ACTIONS);
-}
-
-void AutofillMetrics::LogWalletResponseCode(int response_code) const {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Wallet.ResponseCode", response_code);
 }
 
 void AutofillMetrics::LogDeveloperEngagementMetric(

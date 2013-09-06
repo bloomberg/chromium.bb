@@ -17436,10 +17436,6 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Wallet.ResponseCode" enum="HttpResponseCode">
-  <summary>HTTP response codes seen by Wallet client.</summary>
-</histogram>
-
 <histogram name="WebCore.Animation.CSSProperties" enum="MappedCSSProperties">
   <summary>
     Counts the number of times each CSS property is animated. There is no limit
@@ -21174,49 +21170,6 @@ other types of suffix sets.
   <int value="7" label="Response content mismatch"/>
   <int value="8" label="Bad HTTP version"/>
   <int value="9" label="Corrupt stats response"/>
-</enum>
-
-<enum name="HttpResponseCode" type="int">
-  <int value="100" label="Continue"/>
-  <int value="101" label="Switching Protocols"/>
-  <int value="200" label="OK"/>
-  <int value="201" label="Created"/>
-  <int value="202" label="Accepted"/>
-  <int value="203" label="Non-Authoritative Information"/>
-  <int value="204" label="No Content"/>
-  <int value="205" label="Reset Content"/>
-  <int value="206" label="Partial Content"/>
-  <int value="300" label="Multiple Choices"/>
-  <int value="301" label="Moved Permanently"/>
-  <int value="302" label="Found"/>
-  <int value="303" label="See Other"/>
-  <int value="304" label="Not Modified"/>
-  <int value="305" label="Use Proxy"/>
-  <int value="306" label="(Unused)"/>
-  <int value="307" label="Temporary Redirect"/>
-  <int value="400" label="Bad Request"/>
-  <int value="401" label="Unauthorized"/>
-  <int value="402" label="Payment Required"/>
-  <int value="403" label="Forbidden"/>
-  <int value="404" label="Not Found"/>
-  <int value="405" label="Method Not Allowed"/>
-  <int value="406" label="Not Acceptable"/>
-  <int value="407" label="Proxy Authentication Required"/>
-  <int value="408" label="Request Timeout"/>
-  <int value="409" label="Conflict"/>
-  <int value="410" label="Gone"/>
-  <int value="411" label="Length Required"/>
-  <int value="412" label="Precondition Failed"/>
-  <int value="413" label="Request Entity Too Large"/>
-  <int value="414" label="Request-URI Too Long"/>
-  <int value="415" label="Unsupported Media Type"/>
-  <int value="416" label="Requested Range Not Satisfiable"/>
-  <int value="417" label="Expectation Failed"/>
-  <int value="500" label="Internal Server Error"/>
-  <int value="501" label="Not Implemented"/>
-  <int value="503" label="Service Unavailable"/>
-  <int value="504" label="Gateway Timeout"/>
-  <int value="505" label="HTTP Version Not Supported"/>
 </enum>
 
 <enum name="HttpSocketType" type="int">
