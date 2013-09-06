@@ -509,9 +509,6 @@ CancelCallback FakeDriveService::GetAboutResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
   if (offline_) {
     scoped_ptr<AboutResource> null;
     base::MessageLoop::current()->PostTask(
