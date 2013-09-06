@@ -154,4 +154,17 @@ TEST(WTF, StringReplaceWithLiteral)
     ASSERT_STREQ("résumé", testString.utf8().data());
 }
 
+TEST(WTF, StringComparisonOfSameStringVectors)
+{
+    Vector<String> stringVector;
+    stringVector.append("one");
+    stringVector.append("two");
+
+    Vector<String> sameStringVector;
+    sameStringVector.append("one");
+    sameStringVector.append("two");
+
+    ASSERT_EQ(stringVector, sameStringVector);
+}
+
 } // namespace

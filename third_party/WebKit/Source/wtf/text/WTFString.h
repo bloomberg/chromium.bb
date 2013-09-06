@@ -682,7 +682,9 @@ template<> struct DefaultHash<String> {
     typedef StringHash Hash;
 };
 
-template <> struct VectorTraits<String> : SimpleClassVectorTraits { };
+template <> struct VectorTraits<String> : SimpleClassVectorTraits {
+    static const bool canCompareWithMemcmp = false;
+};
 
 // Shared global empty string.
 WTF_EXPORT const String& emptyString();
