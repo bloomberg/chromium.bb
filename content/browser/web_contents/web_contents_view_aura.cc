@@ -1169,13 +1169,15 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
     navigation_overlay_->StartObservingView(ToRenderWidgetHostViewAura(view));
   }
 
-  view->Show();
+  RenderWidgetHostImpl* host_impl =
+      RenderWidgetHostImpl::From(render_widget_host);
+
+  if (!host_impl->is_hidden())
+    view->Show();
 
   // We listen to drag drop events in the newly created view's window.
   aura::client::SetDragDropDelegate(view->GetNativeView(), this);
 
-  RenderWidgetHostImpl* host_impl =
-      RenderWidgetHostImpl::From(render_widget_host);
   if (host_impl->overscroll_controller() &&
       (!web_contents_->GetDelegate() ||
        web_contents_->GetDelegate()->CanOverscrollContent())) {
