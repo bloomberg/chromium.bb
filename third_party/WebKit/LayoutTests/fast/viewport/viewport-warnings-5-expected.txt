@@ -2,6 +2,6 @@ CONSOLE MESSAGE: line 3: The value "device-width;" for key "width" is invalid, a
 CONSOLE MESSAGE: line 3: The value "1.0;" for key "initial-scale" was truncated to its numeric prefix.
 CONSOLE MESSAGE: line 3: The value "1.0;" for key "maximum-scale" was truncated to its numeric prefix.
 CONSOLE MESSAGE: line 3: The value "0;" for key "user-scalable" was truncated to its numeric prefix.
-CONSOLE MESSAGE: line 3: Note that ';' is not a key-value pair separator. The list should be comma-separated.
+CONSOLE MESSAGE: line 3: Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.
 ALERT: viewport size 320x352 scale 1 with limits [1, 1] and userScalable false
 

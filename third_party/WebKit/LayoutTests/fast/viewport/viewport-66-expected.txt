@@ -1,4 +1,4 @@
 CONSOLE MESSAGE: line 3: The key ";initial-scale" is not recognized and ignored.
-CONSOLE MESSAGE: line 3: Note that ';' is not a key-value pair separator. The list should be comma-separated.
+CONSOLE MESSAGE: line 3: Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.
 ALERT: viewport size 100x110 scale 3.2 with limits [3.2, 5] and userScalable true
 

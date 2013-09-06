@@ -353,7 +353,6 @@ void setViewportFeature(const String& keyString, const String& valueString, Docu
 static const char* viewportErrorMessageTemplate(ViewportErrorCode errorCode)
 {
     static const char* const errors[] = {
-        "Note that ';' is not a key-value pair separator. The list should be comma-separated.",
         "The key \"%replacement1\" is not recognized and ignored.",
         "The value \"%replacement1\" for key \"%replacement2\" is invalid, and has been ignored.",
         "The value \"%replacement1\" for key \"%replacement2\" was truncated to its numeric prefix.",
@@ -367,7 +366,6 @@ static const char* viewportErrorMessageTemplate(ViewportErrorCode errorCode)
 static MessageLevel viewportErrorMessageLevel(ViewportErrorCode errorCode)
 {
     switch (errorCode) {
-    case InvalidKeyValuePairSeparatorError:
     case TruncatedViewportArgumentValueError:
     case TargetDensityDpiUnsupported:
         return WarningMessageLevel;

@@ -3034,8 +3034,10 @@ void Document::processArguments(const String& features, void* data, ArgumentsCal
         String valueString = buffer.substring(valueBegin, valueEnd - valueBegin);
         callback(keyString, valueString, this, data);
     }
-    if (error)
-        reportViewportWarning(this, InvalidKeyValuePairSeparatorError, String(), String());
+    if (error) {
+        String message = "Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.";
+        addConsoleMessage(RenderingMessageSource, WarningMessageLevel, message);
+    }
 }
 
 void Document::processViewport(const String& features, ViewportArguments::Type origin)

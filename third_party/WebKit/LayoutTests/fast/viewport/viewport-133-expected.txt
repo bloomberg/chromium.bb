@@ -1,4 +1,4 @@
 CONSOLE MESSAGE: line 3: The value "10;" for key "minimum-scale" was truncated to its numeric prefix.
-CONSOLE MESSAGE: line 3: Note that ';' is not a key-value pair separator. The list should be comma-separated.
+CONSOLE MESSAGE: line 3: Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.
 ALERT: viewport size 980x1078 scale 10 with limits [10, 10] and userScalable true
 
