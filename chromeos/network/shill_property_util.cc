@@ -43,12 +43,17 @@ std::string ValidateUTF8(const std::string& str) {
   return result;
 }
 
-void CopyStringFromDictionary(const base::DictionaryValue& source,
+// If existent and non-empty, copies the string at |key| from |source| to
+// |dest|. Returns true if the string was copied.
+bool CopyStringFromDictionary(const base::DictionaryValue& source,
                               const std::string& key,
                               base::DictionaryValue* dest) {
   std::string string_value;
-  if (source.GetStringWithoutPathExpansion(key, &string_value))
-    dest->SetStringWithoutPathExpansion(key, string_value);
+  if (!source.GetStringWithoutPathExpansion(key, &string_value) ||
+      string_value.empty())
+    return false;
+  dest->SetStringWithoutPathExpansion(key, string_value);
+  return true;
 }
 
 }  // namespace
@@ -175,36 +180,45 @@ void SetUIData(const NetworkUIData& ui_data,
 
 bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
                                base::DictionaryValue* dest) {
+  bool success = true;
+
+  // GUID is optional.
   CopyStringFromDictionary(service_properties, flimflam::kGuidProperty, dest);
 
   std::string type;
   service_properties.GetStringWithoutPathExpansion(flimflam::kTypeProperty,
                                                    &type);
+  success &= !type.empty();
   dest->SetStringWithoutPathExpansion(flimflam::kTypeProperty, type);
   if (type == flimflam::kTypeWifi) {
-    CopyStringFromDictionary(
+    success &= CopyStringFromDictionary(
         service_properties, flimflam::kSecurityProperty, dest);
-    CopyStringFromDictionary(service_properties, flimflam::kSSIDProperty, dest);
-    CopyStringFromDictionary(service_properties, flimflam::kModeProperty, dest);
+    success &= CopyStringFromDictionary(
+        service_properties, flimflam::kSSIDProperty, dest);
+    success &= CopyStringFromDictionary(
+        service_properties, flimflam::kModeProperty, dest);
   } else if (type == flimflam::kTypeVPN) {
-    CopyStringFromDictionary(service_properties, flimflam::kNameProperty, dest);
+    success &= CopyStringFromDictionary(
+        service_properties, flimflam::kNameProperty, dest);
     // VPN Provider values are read from the "Provider" dictionary, but written
     // with the keys "Provider.Type" and "Provider.Host".
-    const base::DictionaryValue* provider_properties;
+    const base::DictionaryValue* provider_properties = NULL;
     if (!service_properties.GetDictionaryWithoutPathExpansion(
              flimflam::kProviderProperty, &provider_properties)) {
-      LOG(ERROR) << "Incomplete Shill dictionary missing VPN provider dict.";
+      NET_LOG_ERROR("CopyIdentifyingProperties", "Missing VPN provider dict");
       return false;
     }
     std::string vpn_provider_type;
     provider_properties->GetStringWithoutPathExpansion(flimflam::kTypeProperty,
                                                        &vpn_provider_type);
+    success &= !vpn_provider_type.empty();
     dest->SetStringWithoutPathExpansion(flimflam::kProviderTypeProperty,
                                         vpn_provider_type);
 
     std::string vpn_provider_host;
     provider_properties->GetStringWithoutPathExpansion(flimflam::kHostProperty,
                                                        &vpn_provider_host);
+    success &= !vpn_provider_host.empty();
     dest->SetStringWithoutPathExpansion(flimflam::kProviderHostProperty,
                                         vpn_provider_host);
   } else if (type == flimflam::kTypeEthernet ||
@@ -213,8 +227,11 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
     // properties.
   } else {
     NOTREACHED() << "Unsupported network type " << type;
+    success = false;
   }
-  return true;
+  if (!success)
+    NET_LOG_ERROR("CopyIdentifyingProperties", "Missing required properties");
+  return success;
 }
 
 }  // namespace shill_property_util
