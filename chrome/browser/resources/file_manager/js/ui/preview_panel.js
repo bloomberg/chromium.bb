@@ -92,11 +92,11 @@ PreviewPanel.Event = Object.freeze({
  */
 PreviewPanel.VisibilityType = Object.freeze({
   // Preview panel always shows.
-  ALWAYS: 'always',
+  ALWAYS_VISIBLE: 'alwaysVisible',
   // Preview panel shows when the entries property are set.
   AUTO: 'auto',
   // Preview panel does not show.
-  HIDDEN: 'hidden'
+  ALWAYS_HIDDEN: 'alwaysHidden'
 });
 
 /**
@@ -168,14 +168,14 @@ PreviewPanel.prototype.updateVisibility_ = function() {
   var visibility = this.element_.getAttribute('visibility');
   var newVisible = null;
   switch (this.visibilityType_) {
-    case PreviewPanel.VisibilityType.ALWAYS:
+    case PreviewPanel.VisibilityType.ALWAYS_VISIBLE:
       newVisible = true;
       break;
     case PreviewPanel.VisibilityType.AUTO:
       newVisible = this.entries_.length != 0 ||
                    !PathUtil.isRootPath(this.currentPath_);
       break;
-    case PreviewPanel.VisibilityType.HIDDEN:
+    case PreviewPanel.VisibilityType.ALWAYS_HIDDEN:
       newVisible = false;
       break;
     default:
