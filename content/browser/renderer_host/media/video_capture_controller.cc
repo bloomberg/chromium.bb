@@ -23,6 +23,7 @@
 
 namespace {
 
+#if defined(OS_IOS) || defined(OS_ANDROID)
 // TODO(wjia): Support stride.
 void RotatePackedYV12Frame(
     const uint8* src,
@@ -44,6 +45,7 @@ void RotatePackedYV12Frame(
   media::RotatePlaneByPixels(
       src, dest_vplane, width/2, height/2, rotation, flip_vert, flip_horiz);
 }
+#endif  // #if defined(OS_IOS) || defined(OS_ANDROID)
 
 }  // namespace
 
@@ -258,6 +260,133 @@ scoped_refptr<media::VideoFrame> VideoCaptureController::ReserveOutputBuffer() {
 // Implements VideoCaptureDevice::EventHandler.
 // OnIncomingCapturedFrame is called the thread running the capture device.
 // I.e.- DirectShow thread on windows and v4l2_thread on Linux.
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+void VideoCaptureController::OnIncomingCapturedFrame(
+    const uint8* data,
+    int length,
+    base::Time timestamp,
+    int rotation,
+    bool flip_vert,
+    bool flip_horiz) {
+  TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedFrame");
+
+  scoped_refptr<media::VideoFrame> dst;
+  {
+    base::AutoLock lock(buffer_pool_lock_);
+    if (!buffer_pool_.get())
+      return;
+    dst = buffer_pool_->ReserveI420VideoFrame(
+        gfx::Size(frame_info_.width, frame_info_.height), rotation);
+  }
+
+  if (!dst.get())
+    return;
+
+  uint8* yplane = dst->data(media::VideoFrame::kYPlane);
+  uint8* uplane = dst->data(media::VideoFrame::kUPlane);
+  uint8* vplane = dst->data(media::VideoFrame::kVPlane);
+  int yplane_stride = frame_info_.width;
+  int uv_plane_stride = (frame_info_.width + 1) / 2;
+  int crop_x = 0;
+  int crop_y = 0;
+  libyuv::FourCC origin_colorspace = libyuv::FOURCC_ANY;
+  // Assuming rotation happens first and flips next, we can consolidate both
+  // vertical and horizontal flips together with rotation into two variables:
+  // new_rotation = (rotation + 180 * vertical_flip) modulo 360
+  // new_vertical_flip = horizontal_flip XOR vertical_flip
+  int new_rotation_angle = (rotation + 180 * flip_vert) % 360;
+  libyuv::RotationMode rotation_mode = libyuv::kRotate0;
+  if (new_rotation_angle == 90)
+    rotation_mode = libyuv::kRotate90;
+  else if (new_rotation_angle == 180)
+    rotation_mode = libyuv::kRotate180;
+  else if (new_rotation_angle == 270)
+    rotation_mode = libyuv::kRotate270;
+
+  switch (frame_info_.color) {
+    case media::VideoCaptureCapability::kColorUnknown:  // Color format not set.
+      break;
+    case media::VideoCaptureCapability::kI420:
+      DCHECK(!chopped_width_ && !chopped_height_);
+      origin_colorspace = libyuv::FOURCC_I420;
+      break;
+    case media::VideoCaptureCapability::kYV12:
+      DCHECK(!chopped_width_ && !chopped_height_);
+      origin_colorspace = libyuv::FOURCC_YV12;
+      break;
+    case media::VideoCaptureCapability::kNV21:
+      DCHECK(!chopped_width_ && !chopped_height_);
+      origin_colorspace = libyuv::FOURCC_NV12;
+      break;
+    case media::VideoCaptureCapability::kYUY2:
+      DCHECK(!chopped_width_ && !chopped_height_);
+      origin_colorspace = libyuv::FOURCC_YUY2;
+      break;
+    case media::VideoCaptureCapability::kRGB24:
+      origin_colorspace = libyuv::FOURCC_RAW;
+      break;
+    case media::VideoCaptureCapability::kARGB:
+      origin_colorspace = libyuv::FOURCC_ARGB;
+      break;
+    case media::VideoCaptureCapability::kMJPEG:
+      origin_colorspace = libyuv::FOURCC_MJPG;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  int need_convert_rgb24_on_win = false;
+#if defined(OS_WIN)
+  // kRGB24 on Windows start at the bottom line and has a negative stride. This
+  // is not supported by libyuv, so the media API is used instead.
+  if (frame_info_.color == media::VideoCaptureCapability::kRGB24) {
+    // Rotation and flipping is not supported in kRGB24 and OS_WIN case.
+    DCHECK(!rotation && !flip_vert && !flip_horiz);
+    need_convert_rgb24_on_win = true;
+  }
+#endif
+  if (need_convert_rgb24_on_win) {
+    int rgb_stride = -3 * (frame_info_.width + chopped_width_);
+    const uint8* rgb_src =
+        data + 3 * (frame_info_.width + chopped_width_) *
+                   (frame_info_.height - 1 + chopped_height_);
+    media::ConvertRGB24ToYUV(rgb_src,
+                             yplane,
+                             uplane,
+                             vplane,
+                             frame_info_.width,
+                             frame_info_.height,
+                             rgb_stride,
+                             yplane_stride,
+                             uv_plane_stride);
+  } else {
+    libyuv::ConvertToI420(
+        data,
+        length,
+        yplane,
+        yplane_stride,
+        uplane,
+        uv_plane_stride,
+        vplane,
+        uv_plane_stride,
+        crop_x,
+        crop_y,
+        frame_info_.width,
+        frame_info_.height * (flip_vert ^ flip_horiz ? -1 : 1),
+        frame_info_.width,
+        frame_info_.height,
+        rotation_mode,
+        origin_colorspace);
+  }
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&VideoCaptureController::DoIncomingCapturedFrameOnIOThread,
+                 this,
+                 dst,
+                 timestamp));
+}
+#else
 void VideoCaptureController::OnIncomingCapturedFrame(
     const uint8* data,
     int length,
@@ -316,21 +445,14 @@ void VideoCaptureController::OnIncomingCapturedFrame(
         // we can't convert the frame to I420. YUY2 is 2 bytes per pixel.
         break;
       }
-
       media::ConvertYUY2ToYUV(data, yplane, uplane, vplane, frame_info_.width,
                               frame_info_.height);
       break;
     case media::VideoCaptureCapability::kRGB24: {
       int ystride = frame_info_.width;
       int uvstride = frame_info_.width / 2;
-#if defined(OS_WIN)  // RGB on Windows start at the bottom line.
-      int rgb_stride = -3 * (frame_info_.width + chopped_width_);
-      const uint8* rgb_src = data + 3 * (frame_info_.width + chopped_width_) *
-          (frame_info_.height -1 + chopped_height_);
-#else
       int rgb_stride = 3 * (frame_info_.width + chopped_width_);
       const uint8* rgb_src = data;
-#endif
       media::ConvertRGB24ToYUV(rgb_src, yplane, uplane, vplane,
                                frame_info_.width, frame_info_.height,
                                rgb_stride, ystride, uvstride);
@@ -342,20 +464,6 @@ void VideoCaptureController::OnIncomingCapturedFrame(
                                (frame_info_.width + chopped_width_) * 4,
                                frame_info_.width, frame_info_.width / 2);
       break;
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-    case media::VideoCaptureCapability::kMJPEG: {
-      int yplane_stride = frame_info_.width;
-      int uv_plane_stride = (frame_info_.width + 1) / 2;
-      int crop_x = 0;
-      int crop_y = 0;
-      libyuv::ConvertToI420(data, length, yplane, yplane_stride, uplane,
-                            uv_plane_stride, vplane, uv_plane_stride, crop_x,
-                            crop_y, frame_info_.width, frame_info_.height,
-                            frame_info_.width, frame_info_.height,
-                            libyuv::kRotate0, libyuv::FOURCC_MJPG);
-      break;
-    }
-#endif
     default:
       NOTREACHED();
   }
@@ -365,6 +473,7 @@ void VideoCaptureController::OnIncomingCapturedFrame(
       base::Bind(&VideoCaptureController::DoIncomingCapturedFrameOnIOThread,
                  this, dst, timestamp));
 }
+#endif  // #if !defined(OS_IOS) && !defined(OS_ANDROID)
 
 // OnIncomingCapturedVideoFrame is called the thread running the capture device.
 void VideoCaptureController::OnIncomingCapturedVideoFrame(
