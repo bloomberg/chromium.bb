@@ -66,10 +66,10 @@ class PageCyclerMoz(test.Test):
   options = {'pageset_repeat_iters': 10}
 
 
-class PageCyclerNetsimTop25(test.Test):
-  """Measures load time of the top 25 sites under simulated cable network."""
+class PageCyclerNetsimTop10(test.Test):
+  """Measures load time of the top 10 sites under simulated cable network."""
   test = page_cycler.PageCycler
-  page_set = 'page_sets/top_25.json'
+  page_set = 'page_sets/top_10.json'
   options = {
     'extra_wpr_args': [
       '--shaping_type=proxy',
@@ -79,7 +79,7 @@ class PageCyclerNetsimTop25(test.Test):
     }
 
   def __init__(self):
-    super(PageCyclerNetsimTop25, self).__init__()
+    super(PageCyclerNetsimTop10, self).__init__()
     # TODO: This isn't quite right.
     # This option will still apply to page cyclers that run after this one.
     self.test.clear_cache_before_each_run = True
