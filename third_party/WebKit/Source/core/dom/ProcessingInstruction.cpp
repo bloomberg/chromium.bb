@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-inline ProcessingInstruction::ProcessingInstruction(Document* document, const String& target, const String& data)
+inline ProcessingInstruction::ProcessingInstruction(Document& document, const String& target, const String& data)
     : CharacterData(document, data, CreateOther)
     , m_target(target)
     , m_resource(0)
@@ -49,7 +49,7 @@ inline ProcessingInstruction::ProcessingInstruction(Document* document, const St
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<ProcessingInstruction> ProcessingInstruction::create(Document* document, const String& target, const String& data)
+PassRefPtr<ProcessingInstruction> ProcessingInstruction::create(Document& document, const String& target, const String& data)
 {
     return adoptRef(new ProcessingInstruction(document, target, data));
 }
@@ -80,7 +80,7 @@ PassRefPtr<Node> ProcessingInstruction::cloneNode(bool /*deep*/)
 {
     // FIXME: Is it a problem that this does not copy m_localHref?
     // What about other data members?
-    return create(&document(), m_target, m_data);
+    return create(document(), m_target, m_data);
 }
 
 void ProcessingInstruction::checkStyleSheet()

@@ -806,7 +806,7 @@ PassRefPtr<Text> Document::createTextNode(const String& data)
 
 PassRefPtr<Comment> Document::createComment(const String& data)
 {
-    return Comment::create(this, data);
+    return Comment::create(*this, data);
 }
 
 PassRefPtr<CDATASection> Document::createCDATASection(const String& data, ExceptionState& es)
@@ -832,7 +832,7 @@ PassRefPtr<ProcessingInstruction> Document::createProcessingInstruction(const St
         es.throwDOMException(NotSupportedError);
         return 0;
     }
-    return ProcessingInstruction::create(this, target, data);
+    return ProcessingInstruction::create(*this, target, data);
 }
 
 PassRefPtr<Text> Document::createEditingTextNode(const String& text)

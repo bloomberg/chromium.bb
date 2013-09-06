@@ -58,7 +58,7 @@ public:
 
 protected:
     Text(TreeScope& treeScope, const String& data, ConstructionType type)
-        : CharacterData(&treeScope, data, type)
+        : CharacterData(treeScope, data, type)
     {
         ScriptWrappable::init(this);
     }

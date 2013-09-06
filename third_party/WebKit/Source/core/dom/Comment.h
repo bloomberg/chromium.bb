@@ -31,15 +31,10 @@ class ScriptExecutionContext;
 
 class Comment FINAL : public CharacterData {
 public:
-    static PassRefPtr<Comment> create(Document& document, const String& text)
-    {
-        return create(&document, text);
-    }
-
-    static PassRefPtr<Comment> create(Document*, const String&);
+    static PassRefPtr<Comment> create(Document&, const String&);
 
 private:
-    Comment(Document*, const String&);
+    Comment(Document&, const String&);
 
     virtual String nodeName() const;
     virtual NodeType nodeType() const;

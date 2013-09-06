@@ -534,7 +534,7 @@ void WebVTTParser::constructTreeFromToken(Document& document)
         String charactersString(StringImpl::create8BitIfPossible(m_token.characters()));
         double time = collectTimeStamp(charactersString, &position);
         if (time != malformedTime)
-            m_currentNode->parserAppendChild(ProcessingInstruction::create(&document, "timestamp", charactersString));
+            m_currentNode->parserAppendChild(ProcessingInstruction::create(document, "timestamp", charactersString));
         break;
     }
     default:

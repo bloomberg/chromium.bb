@@ -426,20 +426,21 @@ void HTMLConstructionSite::insertDoctype(AtomicHTMLToken* token)
 void HTMLConstructionSite::insertComment(AtomicHTMLToken* token)
 {
     ASSERT(token->type() == HTMLToken::Comment);
-    attachLater(currentNode(), Comment::create(&ownerDocumentForCurrentNode(), token->comment()));
+    attachLater(currentNode(), Comment::create(ownerDocumentForCurrentNode(), token->comment()));
 }
 
 void HTMLConstructionSite::insertCommentOnDocument(AtomicHTMLToken* token)
 {
     ASSERT(token->type() == HTMLToken::Comment);
-    attachLater(m_attachmentRoot, Comment::create(m_document, token->comment()));
+    ASSERT(m_document);
+    attachLater(m_attachmentRoot, Comment::create(*m_document, token->comment()));
 }
 
 void HTMLConstructionSite::insertCommentOnHTMLHtmlElement(AtomicHTMLToken* token)
 {
     ASSERT(token->type() == HTMLToken::Comment);
     ContainerNode* parent = m_openElements.rootNode();
-    attachLater(parent, Comment::create(&parent->document(), token->comment()));
+    attachLater(parent, Comment::create(parent->document(), token->comment()));
 }
 
 void HTMLConstructionSite::insertHTMLHeadElement(AtomicHTMLToken* token)

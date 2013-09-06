@@ -1178,7 +1178,7 @@ void XMLDocumentParser::comment(const String& text)
 
     exitText();
 
-    RefPtr<Comment> newNode = Comment::create(&m_currentNode->document(), text);
+    RefPtr<Comment> newNode = Comment::create(m_currentNode->document(), text);
     m_currentNode->parserAppendChild(newNode.get());
 }
 

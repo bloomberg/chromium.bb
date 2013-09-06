@@ -53,8 +53,8 @@ public:
     unsigned parserAppendData(const String& string, unsigned offset, unsigned lengthLimit);
 
 protected:
-    CharacterData(TreeScope* treeScope, const String& text, ConstructionType type)
-        : Node(treeScope, type)
+    CharacterData(TreeScope& treeScope, const String& text, ConstructionType type)
+        : Node(&treeScope, type)
         , m_data(!text.isNull() ? text : emptyString())
     {
         ASSERT(type == CreateOther || type == CreateText || type == CreateEditingText);
