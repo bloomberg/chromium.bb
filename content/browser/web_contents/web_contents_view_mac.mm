@@ -512,6 +512,18 @@ void WebContentsViewMac::CloseTab() {
   [dragSource_ moveDragTo:screenPoint];
 }
 
+// Called when a file drag is dropped and the promised files need to be written.
+- (NSArray*)namesOfPromisedFilesDroppedAtDestination:(NSURL*)dropDest {
+  if (![dropDest isFileURL])
+    return nil;
+
+  NSString* fileName = [dragSource_ dragPromisedFileTo:[dropDest path]];
+  if (!fileName)
+    return nil;
+
+  return @[ fileName ];
+}
+
 // NSDraggingDestination methods
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {

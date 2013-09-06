@@ -8,9 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_aedesc.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -93,121 +91,11 @@ void PromiseWriterHelper(const DropData& drop_data,
                          drop_data.file_contents.length());
 }
 
-// Returns the drop location from a pasteboard.
-NSString* GetDropLocation(NSPasteboard* pboard) {
-  // The API to get the drop location during a callback from
-  // kPasteboardTypeFileURLPromise is PasteboardCopyPasteLocation, which takes
-  // a PasteboardRef, which isn't bridged with NSPasteboard. Ugh.
-
-  PasteboardRef pb_ref = NULL;
-  OSStatus status = PasteboardCreate(base::mac::NSToCFCast([pboard name]),
-                                     &pb_ref);
-  if (status != noErr || !pb_ref) {
-    OSSTATUS_DCHECK(false, status) << "Error finding Carbon pasteboard";
-    return nil;
-  }
-  base::ScopedCFTypeRef<PasteboardRef> pb_ref_scoper(pb_ref);
-  PasteboardSynchronize(pb_ref);
-
-  CFURLRef drop_url = NULL;
-  status = PasteboardCopyPasteLocation(pb_ref, &drop_url);
-  if (status != noErr || !drop_url) {
-    OSSTATUS_DCHECK(false, status) << "Error finding drop location";
-    return nil;
-  }
-  base::ScopedCFTypeRef<CFURLRef> drop_url_scoper(drop_url);
-
-  NSString* drop_path = [base::mac::CFToNSCast(drop_url) path];
-  return drop_path;
-}
-
-void SelectFileInFinder(const base::FilePath& file_path) {
-  DCHECK([NSThread isMainThread]);
-
-  // Create the target of this AppleEvent, the Finder.
-  base::mac::ScopedAEDesc<AEAddressDesc> address;
-  const OSType finder_creator_code = 'MACS';
-  OSErr status = AECreateDesc(typeApplSignature,  // type
-                              &finder_creator_code,  // data
-                              sizeof(finder_creator_code),  // dataSize
-                              address.OutPointer());  // result
-  if (status != noErr) {
-    OSSTATUS_LOG(WARNING, status) << "Could not create SelectFile() AE target";
-    return;
-  }
-
-  // Build the AppleEvent data structure that instructs Finder to select files.
-  base::mac::ScopedAEDesc<AppleEvent> the_event;
-  status = AECreateAppleEvent(kAEMiscStandards,  // theAEEventClass
-                              kAESelect,  // theAEEventID
-                              address,  // target
-                              kAutoGenerateReturnID,  // returnID
-                              kAnyTransactionID,  // transactionID
-                              the_event.OutPointer());  // result
-  if (status != noErr) {
-    OSSTATUS_LOG(WARNING, status) << "Could not create SelectFile() AE event";
-    return;
-  }
-
-  // Create the list of files (only ever one) to select.
-  base::mac::ScopedAEDesc<AEDescList> file_list;
-  status = AECreateList(NULL,  // factoringPtr
-                        0,  // factoredSize
-                        false,  // isRecord
-                        file_list.OutPointer());  // resultList
-  if (status != noErr) {
-    OSSTATUS_LOG(WARNING, status)
-        << "Could not create SelectFile() AE file list";
-    return;
-  }
-
-  // Add the single path to the file list.
-  NSURL* url = [NSURL fileURLWithPath:SysUTF8ToNSString(file_path.value())];
-  base::ScopedCFTypeRef<CFDataRef> url_data(
-      CFURLCreateData(kCFAllocatorDefault, base::mac::NSToCFCast(url),
-                      kCFStringEncodingUTF8, true));
-  status = AEPutPtr(file_list.OutPointer(),  // theAEDescList
-                    0,  // index
-                    typeFileURL,  // typeCode
-                    CFDataGetBytePtr(url_data),  // dataPtr
-                    CFDataGetLength(url_data));  // dataSize
-  if (status != noErr) {
-    OSSTATUS_LOG(WARNING, status)
-        << "Could not add file path to AE list in SelectFile()";
-    return;
-  }
-
-  // Attach the file list to the AppleEvent.
-  status = AEPutParamDesc(the_event.OutPointer(),  // theAppleEvent
-                          keyDirectObject,  // theAEKeyword
-                          file_list);  // theAEDesc
-  if (status != noErr) {
-    OSSTATUS_LOG(WARNING, status)
-        << "Could not put the AE file list the path in SelectFile()";
-    return;
-  }
-
-  // Send the actual event.  Do not care about the reply.
-  base::mac::ScopedAEDesc<AppleEvent> reply;
-  status = AESend(the_event,  // theAppleEvent
-                  reply.OutPointer(),  // reply
-                  kAENoReply + kAEAlwaysInteract,  // sendMode
-                  kAENormalPriority,  // sendPriority
-                  kAEDefaultTimeout,  // timeOutInTicks
-                  NULL, // idleProc
-                  NULL);  // filterProc
-  if (status != noErr) {
-    OSSTATUS_LOG(WARNING, status)
-        << "Could not send AE to Finder in SelectFile()";
-  }
-}
-
 }  // namespace
 
 
 @interface WebDragSource(Private)
 
-- (void)writePromisedFileTo:(NSString*)path;
 - (void)fillPasteboard;
 - (NSImage*)dragImage;
 
@@ -324,18 +212,6 @@ void SelectFileInFinder(const base::FilePath& file_path) {
     [pboard setData:[NSData data]
             forType:ui::kChromeDragDummyPboardType];
 
-  // File promise.
-  } else if ([type isEqualToString:
-                 base::mac::CFToNSCast(kPasteboardTypeFileURLPromise)]) {
-    NSString* destination = GetDropLocation(pboard);
-    if (destination) {
-      [self writePromisedFileTo:destination];
-
-      // And set some data.
-      [pboard setData:[NSData data]
-              forType:base::mac::CFToNSCast(kPasteboardTypeFileURLPromise)];
-    }
-
   // Oops!
   } else {
     // Unknown drag pasteboard type.
@@ -437,15 +313,11 @@ void SelectFileInFinder(const base::FilePath& file_path) {
   }
 }
 
-@end  // @implementation WebDragSource
-
-@implementation WebDragSource (Private)
-
-- (void)writePromisedFileTo:(NSString*)path {
+- (NSString*)dragPromisedFileTo:(NSString*)path {
   // Be extra paranoid; avoid crashing.
   if (!dropData_) {
     NOTREACHED() << "No drag-and-drop data available for promised file.";
-    return;
+    return nil;
   }
 
   base::FilePath filePath(SysNSStringToUTF8(path));
@@ -458,7 +330,7 @@ void SelectFileInFinder(const base::FilePath& file_path) {
   scoped_ptr<FileStream> fileStream(content::CreateFileStreamForDrop(
       &filePath, content::GetContentClient()->browser()->GetNetLog()));
   if (!fileStream)
-    return;
+    return nil;
 
   if (downloadURL_.is_valid()) {
     scoped_refptr<DragDownloadFile> dragFileDownloader(new DragDownloadFile(
@@ -481,18 +353,26 @@ void SelectFileInFinder(const base::FilePath& file_path) {
                                        *dropData_,
                                        base::Passed(&fileStream)));
   }
-  SelectFileInFinder(filePath);
+
+  // The DragDownloadFile constructor may have altered the value of |filePath|
+  // if, say, an existing file at the drop site has the same name. Return the
+  // actual name that was used to write the file.
+  return SysUTF8ToNSString(filePath.BaseName().value());
 }
+
+@end  // @implementation WebDragSource
+
+@implementation WebDragSource (Private)
 
 - (void)fillPasteboard {
   DCHECK(pasteboard_.get());
 
-  [pasteboard_ declareTypes:@[ui::kChromeDragDummyPboardType]
+  [pasteboard_ declareTypes:@[ ui::kChromeDragDummyPboardType ]
                       owner:contentsView_];
 
   // URL (and title).
   if (dropData_->url.is_valid()) {
-    [pasteboard_ addTypes:@[NSURLPboardType, kNSURLTitlePboardType]
+    [pasteboard_ addTypes:@[ NSURLPboardType, kNSURLTitlePboardType ]
                     owner:contentsView_];
   }
 
@@ -534,18 +414,29 @@ void SelectFileInFinder(const base::FilePath& file_path) {
       fileUTI_.reset(UTTypeCreatePreferredIdentifierForTag(
           kUTTagClassMIMEType, mimeTypeCF.get(), NULL));
 
-      NSArray* types =
-          @[base::mac::CFToNSCast(kPasteboardTypeFileURLPromise),
-            base::mac::CFToNSCast(kPasteboardTypeFilePromiseContent)];
-      [pasteboard_ addTypes:types owner:contentsView_];
+      // File (HFS) promise.
+      // There are two ways to drag/drop files. NSFilesPromisePboardType is the
+      // deprecated way, and kPasteboardTypeFilePromiseContent is the way that
+      // does not work. kPasteboardTypeFilePromiseContent is thoroughly broken:
+      // * API: There is no good way to get the location for the drop.
+      //   <http://lists.apple.com/archives/cocoa-dev/2012/Feb/msg00706.html>
+      // * Behavior: A file dropped in the Finder is not selected. This can be
+      //   worked around by selecting the file in the Finder using AppleEvents,
+      //   but the drop target window will come to the front of the Finder's
+      //   window list (unlike the previous behavior). <http://crbug.com/278515>
+      // * Behavior: Files dragged over app icons in the dock do not highlight
+      //   the dock icons, and the dock icons do not accept the drop.
+      //   <http://crbug.com/282916>
+      // * Behavior: A file dropped onto the desktop is positioned at the upper
+      //   right of the desktop rather than at the position at which it was
+      //   dropped. <http://crbug.com/284942>
+      NSArray* fileUTIList = @[ base::mac::CFToNSCast(fileUTI_.get()) ];
+      [pasteboard_ addTypes:@[ NSFilesPromisePboardType ] owner:contentsView_];
+      [pasteboard_ setPropertyList:fileUTIList
+                           forType:NSFilesPromisePboardType];
 
-      [pasteboard_ setPropertyList:@[base::mac::CFToNSCast(fileUTI_.get())]
-              forType:base::mac::CFToNSCast(kPasteboardTypeFilePromiseContent)];
-
-      if (!dropData_->file_contents.empty()) {
-        NSArray* types = @[base::mac::CFToNSCast(fileUTI_.get())];
-        [pasteboard_ addTypes:types owner:contentsView_];
-      }
+      if (!dropData_->file_contents.empty())
+        [pasteboard_ addTypes:fileUTIList owner:contentsView_];
     }
   }
 
@@ -563,21 +454,21 @@ void SelectFileInFinder(const base::FilePath& file_path) {
                       UTTypeConformsTo(fileUTI_.get(), kUTTypeImage);
   if (hasHTMLData) {
     if (hasImageData) {
-      [pasteboard_ addTypes:@[ui::kChromeDragImageHTMLPboardType]
+      [pasteboard_ addTypes:@[ ui::kChromeDragImageHTMLPboardType ]
                       owner:contentsView_];
     } else {
-      [pasteboard_ addTypes:@[NSHTMLPboardType] owner:contentsView_];
+      [pasteboard_ addTypes:@[ NSHTMLPboardType ] owner:contentsView_];
     }
   }
 
   // Plain text.
   if (!dropData_->text.string().empty()) {
-    [pasteboard_ addTypes:@[NSStringPboardType]
+    [pasteboard_ addTypes:@[ NSStringPboardType ]
                     owner:contentsView_];
   }
 
   if (!dropData_->custom_data.empty()) {
-    [pasteboard_ addTypes:@[ui::kWebCustomDataPboardType]
+    [pasteboard_ addTypes:@[ ui::kWebCustomDataPboardType ]
                     owner:contentsView_];
   }
 }
