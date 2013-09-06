@@ -39,15 +39,21 @@ void RenderingStatsInstrumentation::AccumulateAndClearImplThreadStats() {
 }
 
 base::TimeTicks RenderingStatsInstrumentation::StartRecording() const {
-  if (record_rendering_stats_)
+  if (record_rendering_stats_) {
+    if (base::TimeTicks::IsThreadNowSupported())
+      return base::TimeTicks::ThreadNow();
     return base::TimeTicks::HighResNow();
+  }
   return base::TimeTicks();
 }
 
 base::TimeDelta RenderingStatsInstrumentation::EndRecording(
     base::TimeTicks start_time) const {
-  if (!start_time.is_null())
+  if (!start_time.is_null()) {
+    if (base::TimeTicks::IsThreadNowSupported())
+      return base::TimeTicks::ThreadNow() - start_time;
     return base::TimeTicks::HighResNow() - start_time;
+  }
   return base::TimeDelta();
 }
 
