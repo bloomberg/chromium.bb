@@ -230,12 +230,11 @@ FrameView::~FrameView()
     ASSERT(!m_scrollCorner);
     ASSERT(m_actionScheduler->isEmpty());
 
-    if (m_frame) {
-        ASSERT(m_frame->view() != this || !m_frame->contentRenderer());
-        RenderPart* renderer = m_frame->ownerRenderer();
-        if (renderer && renderer->widget() == this)
-            renderer->setWidget(0);
-    }
+    ASSERT(m_frame);
+    ASSERT(m_frame->view() != this || !m_frame->contentRenderer());
+    RenderPart* renderer = m_frame->ownerRenderer();
+    if (renderer && renderer->widget() == this)
+        renderer->setWidget(0);
 }
 
 void FrameView::reset()
@@ -333,7 +332,7 @@ void FrameView::prepareForDetach()
     // right now, otherwise it won't be able to reach the topDocument()'s axObject cache later.
     removeFromAXObjectCache();
 
-    if (m_frame && m_frame->page()) {
+    if (m_frame->page()) {
         if (ScrollingCoordinator* scrollingCoordinator = m_frame->page()->scrollingCoordinator())
             scrollingCoordinator->willDestroyScrollableArea(this);
     }
@@ -381,10 +380,8 @@ void FrameView::clear()
 
     reset();
 
-    if (m_frame) {
-        if (RenderPart* renderer = m_frame->ownerRenderer())
-            renderer->viewCleared();
-    }
+    if (RenderPart* renderer = m_frame->ownerRenderer())
+        renderer->viewCleared();
 
     setScrollbarsSuppressed(true);
 }
@@ -2426,8 +2423,7 @@ void FrameView::setPagination(const Pagination& pagination)
 
     m_pagination = pagination;
 
-    if (m_frame)
-        m_frame->document()->styleResolverChanged(RecalcStyleDeferred);
+    m_frame->document()->styleResolverChanged(RecalcStyleDeferred);
 }
 
 IntRect FrameView::windowClipRect(bool clipToContents) const
