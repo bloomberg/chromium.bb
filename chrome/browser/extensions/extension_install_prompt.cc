@@ -112,8 +112,6 @@ static const int kOAuthHeaderIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   0,  // Bundle installs don't show OAuth permissions.
   IDS_EXTENSION_PROMPT_OAUTH_REENABLE_HEADER,
   IDS_EXTENSION_PROMPT_OAUTH_PERMISSIONS_HEADER,
-  // TODO(mpcomplete): Do we need this for external install UI? If we do,
-  // we need to update FetchOAuthIssueAdviceIfNeeded.
   0,
   0,
 };
@@ -553,7 +551,7 @@ void ExtensionInstallPrompt::ConfirmBundleInstall(
   delegate_ = bundle;
   prompt_.set_type(BUNDLE_INSTALL_PROMPT);
 
-  FetchOAuthIssueAdviceIfNeeded();
+  ShowConfirmation();
 }
 
 void ExtensionInstallPrompt::ConfirmStandaloneInstall(
@@ -568,7 +566,7 @@ void ExtensionInstallPrompt::ConfirmStandaloneInstall(
   prompt_ = prompt;
 
   SetIcon(icon);
-  FetchOAuthIssueAdviceIfNeeded();
+  ShowConfirmation();
 }
 
 void ExtensionInstallPrompt::ConfirmWebstoreInstall(
@@ -707,14 +705,14 @@ void ExtensionInstallPrompt::SetIcon(const SkBitmap* image) {
 
 void ExtensionInstallPrompt::OnImageLoaded(const gfx::Image& image) {
   SetIcon(image.IsEmpty() ? NULL : image.ToSkBitmap());
-  FetchOAuthIssueAdviceIfNeeded();
+  ShowConfirmation();
 }
 
 void ExtensionInstallPrompt::LoadImageIfNeeded() {
   // Bundle install prompts do not have an icon.
   // Also |install_ui_.profile()| can be NULL in unit tests.
   if (!icon_.empty() || !install_ui_->profile()) {
-    FetchOAuthIssueAdviceIfNeeded();
+    ShowConfirmation();
     return;
   }
 
@@ -731,37 +729,6 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
   extensions::ImageLoader::Get(install_ui_->profile())->LoadImageAsync(
       extension_, image, gfx::Size(pixel_size, pixel_size),
       base::Bind(&ExtensionInstallPrompt::OnImageLoaded, AsWeakPtr()));
-}
-
-void ExtensionInstallPrompt::FetchOAuthIssueAdviceIfNeeded() {
-  // |extension_| may be NULL, e.g. in the bundle install case.
-  if (!extension_ ||
-      prompt_.type() == BUNDLE_INSTALL_PROMPT ||
-      prompt_.type() == INLINE_INSTALL_PROMPT ||
-      prompt_.type() == EXTERNAL_INSTALL_PROMPT ||
-      prompt_.GetOAuthIssueCount() != 0U) {
-    ShowConfirmation();
-    return;
-  }
-
-  const extensions::OAuth2Info& oauth2_info =
-      extensions::OAuth2Info::GetOAuth2Info(extension_);
-  if (oauth2_info.client_id.empty() ||
-      oauth2_info.scopes.empty()) {
-    ShowConfirmation();
-    return;
-  }
-
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(install_ui_->profile());
-  if (!token_service || !token_service->RefreshTokenIsAvailable()) {
-    ShowConfirmation();
-    return;
-  }
-
-  // Get an access token from the token service.
-  login_token_request_ = token_service->StartRequest(
-      OAuth2TokenService::ScopeSet(), this);
 }
 
 void ExtensionInstallPrompt::OnGetTokenSuccess(

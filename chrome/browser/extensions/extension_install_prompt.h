@@ -370,9 +370,6 @@ class ExtensionInstallPrompt
   // 2) Handle the load icon response and show the UI (OnImageLoaded).
   void LoadImageIfNeeded();
 
-  // Starts fetching warnings for OAuth2 scopes, if there are any.
-  void FetchOAuthIssueAdviceIfNeeded();
-
   // OAuth2TokenService::Consumer implementation:
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
