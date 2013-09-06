@@ -89,6 +89,20 @@ namespace Page {
     extern const char kParamUrl[];
   }  // navigate
 
+  namespace getNavigationHistory {
+    extern const char kName[];
+    extern const char kResponseCurrentIndex[];
+    extern const char kResponseEntries[];
+    extern const char kResponseEntryId[];
+    extern const char kResponseEntryURL[];
+    extern const char kResponseEntryTitle[];
+  }  // getNavigationHistory
+
+  namespace navigateToHistoryEntry {
+    extern const char kName[];
+    extern const char kParamEntryId[];
+  }  // navigateToHistoryEntry
+
   namespace captureScreenshot {
     extern const char kName[];
     extern const char kParamFormat[];

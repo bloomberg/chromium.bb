@@ -80,6 +80,20 @@ namespace navigate {
   const char kParamUrl[] = "url";
 }  // navigate
 
+namespace getNavigationHistory {
+  const char kName[] = "Page.getNavigationHistory";
+  const char kResponseCurrentIndex[] = "currentIndex";
+  const char kResponseEntries[] = "entries";
+  const char kResponseEntryId[] = "id";
+  const char kResponseEntryURL[] = "url";
+  const char kResponseEntryTitle[] = "title";
+}  // getNavigationHistory
+
+namespace navigateToHistoryEntry {
+  const char kName[] = "Page.navigateToHistoryEntry";
+  const char kParamEntryId[] = "entryId";
+}  // navigateToHistoryEntry
+
 namespace captureScreenshot {
   const char kName[] = "Page.captureScreenshot";
   const char kParamFormat[] = "format";

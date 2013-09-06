@@ -24,6 +24,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -94,6 +95,16 @@ RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
       devtools::Page::navigate::kName,
       base::Bind(
           &RendererOverridesHandler::PageNavigate,
+          base::Unretained(this)));
+  RegisterCommandHandler(
+      devtools::Page::getNavigationHistory::kName,
+      base::Bind(
+          &RendererOverridesHandler::PageGetNavigationHistory,
+          base::Unretained(this)));
+  RegisterCommandHandler(
+      devtools::Page::navigateToHistoryEntry::kName,
+      base::Bind(
+          &RendererOverridesHandler::PageNavigateToHistoryEntry,
           base::Unretained(this)));
   RegisterCommandHandler(
       devtools::Page::captureScreenshot::kName,
@@ -294,6 +305,70 @@ RendererOverridesHandler::PageNavigate(
       web_contents->GetController()
           .LoadURL(gurl, Referrer(), PAGE_TRANSITION_TYPED, std::string());
       return command->SuccessResponse(new base::DictionaryValue());
+    }
+  }
+  return command->InternalErrorResponse("No WebContents to navigate");
+}
+
+scoped_refptr<DevToolsProtocol::Response>
+RendererOverridesHandler::PageGetNavigationHistory(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  RenderViewHost* host = agent_->GetRenderViewHost();
+  if (host) {
+    WebContents* web_contents = host->GetDelegate()->GetAsWebContents();
+    if (web_contents) {
+      base::DictionaryValue* result = new base::DictionaryValue();
+      NavigationController& controller = web_contents->GetController();
+      result->SetInteger(
+          devtools::Page::getNavigationHistory::kResponseCurrentIndex,
+          controller.GetCurrentEntryIndex());
+      ListValue* entries = new ListValue();
+      for (int i = 0; i != controller.GetEntryCount(); ++i) {
+        const NavigationEntry* entry = controller.GetEntryAtIndex(i);
+        base::DictionaryValue* entry_value = new base::DictionaryValue();
+        entry_value->SetInteger(
+            devtools::Page::getNavigationHistory::kResponseEntryId,
+            entry->GetUniqueID());
+        entry_value->SetString(
+            devtools::Page::getNavigationHistory::kResponseEntryURL,
+            entry->GetURL().spec());
+        entry_value->SetString(
+            devtools::Page::getNavigationHistory::kResponseEntryTitle,
+            entry->GetTitle());
+        entries->Append(entry_value);
+      }
+      result->Set(
+          devtools::Page::getNavigationHistory::kResponseEntries,
+          entries);
+      return command->SuccessResponse(result);
+    }
+  }
+  return command->InternalErrorResponse("No WebContents to navigate");
+}
+
+scoped_refptr<DevToolsProtocol::Response>
+RendererOverridesHandler::PageNavigateToHistoryEntry(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  int entry_id;
+
+  base::DictionaryValue* params = command->params();
+  const char* param = devtools::Page::navigateToHistoryEntry::kParamEntryId;
+  if (!params || !params->GetInteger(param, &entry_id)) {
+    return command->InvalidParamResponse(param);
+  }
+
+  RenderViewHost* host = agent_->GetRenderViewHost();
+  if (host) {
+    WebContents* web_contents = host->GetDelegate()->GetAsWebContents();
+    if (web_contents) {
+      NavigationController& controller = web_contents->GetController();
+      for (int i = 0; i != controller.GetEntryCount(); ++i) {
+        if (controller.GetEntryAtIndex(i)->GetUniqueID() == entry_id) {
+          controller.GoToIndex(i);
+          return command->SuccessResponse(new base::DictionaryValue());
+        }
+      }
+      return command->InvalidParamResponse(param);
     }
   }
   return command->InternalErrorResponse("No WebContents to navigate");
