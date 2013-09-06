@@ -762,32 +762,30 @@ TEST(PermissionsTest, PermissionMessages) {
   }
 }
 
-TEST(PermissionsTest, FileSystemWritePermissionMessages) {
+TEST(PermissionsTest, FileSystemPermissionMessages) {
   APIPermissionSet api_permissions;
   api_permissions.insert(APIPermission::kFileSystemWrite);
-  scoped_refptr<PermissionSet> permissions(
-      new PermissionSet(api_permissions, URLPatternSet(), URLPatternSet()));
-  PermissionMessages messages =
-      permissions->GetPermissionMessages(Manifest::TYPE_PLATFORM_APP);
-  ASSERT_EQ(1u, messages.size());
-  EXPECT_EQ(PermissionMessage::kFileSystemWrite, messages[0].id());
-}
-
-TEST(PermissionsTest, FileSystemDirectoryPermissionMessages) {
-  APIPermissionSet api_permissions;
   api_permissions.insert(APIPermission::kFileSystemDirectory);
   scoped_refptr<PermissionSet> permissions(
       new PermissionSet(api_permissions, URLPatternSet(), URLPatternSet()));
   PermissionMessages messages =
       permissions->GetPermissionMessages(Manifest::TYPE_PLATFORM_APP);
-  ASSERT_EQ(1u, messages.size());
-  EXPECT_EQ(PermissionMessage::kFileSystemDirectory, messages[0].id());
+  ASSERT_EQ(2u, messages.size());
+  std::sort(messages.begin(), messages.end());
+  std::set<PermissionMessage::ID> ids;
+  for (PermissionMessages::const_iterator it = messages.begin();
+       it != messages.end(); ++it) {
+    ids.insert(it->id());
+  }
+  EXPECT_TRUE(ContainsKey(ids, PermissionMessage::kFileSystemDirectory));
+  EXPECT_TRUE(ContainsKey(ids, PermissionMessage::kFileSystemWrite));
 }
 
-TEST(PermissionsTest, MergedFileSystemPermissionMessages) {
+TEST(PermissionsTest, HiddenFileSystemPermissionMessages) {
   APIPermissionSet api_permissions;
   api_permissions.insert(APIPermission::kFileSystemWrite);
   api_permissions.insert(APIPermission::kFileSystemDirectory);
+  api_permissions.insert(APIPermission::kFileSystemWriteDirectory);
   scoped_refptr<PermissionSet> permissions(
       new PermissionSet(api_permissions, URLPatternSet(), URLPatternSet()));
   PermissionMessages messages =
@@ -807,24 +805,24 @@ TEST(PermissionsTest, MergedFileSystemPermissionComparison) {
   scoped_refptr<PermissionSet> directory_permissions(new PermissionSet(
       directory_api_permissions, URLPatternSet(), URLPatternSet()));
 
-  APIPermissionSet both_api_permissions;
-  both_api_permissions.insert(APIPermission::kFileSystemWrite);
-  both_api_permissions.insert(APIPermission::kFileSystemDirectory);
-  scoped_refptr<PermissionSet> both_permissions(new PermissionSet(
-      both_api_permissions, URLPatternSet(), URLPatternSet()));
+  APIPermissionSet write_directory_api_permissions;
+  write_directory_api_permissions.insert(
+      APIPermission::kFileSystemWriteDirectory);
+  scoped_refptr<PermissionSet> write_directory_permissions(new PermissionSet(
+      write_directory_api_permissions, URLPatternSet(), URLPatternSet()));
 
-  EXPECT_FALSE(both_permissions->HasLessPrivilegesThan(
+  EXPECT_FALSE(write_directory_permissions->HasLessPrivilegesThan(
       write_permissions, Manifest::TYPE_PLATFORM_APP));
-  EXPECT_FALSE(both_permissions->HasLessPrivilegesThan(
+  EXPECT_FALSE(write_directory_permissions->HasLessPrivilegesThan(
       directory_permissions, Manifest::TYPE_PLATFORM_APP));
   EXPECT_TRUE(write_permissions->HasLessPrivilegesThan(
       directory_permissions, Manifest::TYPE_PLATFORM_APP));
   EXPECT_TRUE(write_permissions->HasLessPrivilegesThan(
-      both_permissions, Manifest::TYPE_PLATFORM_APP));
+      write_directory_permissions, Manifest::TYPE_PLATFORM_APP));
   EXPECT_TRUE(directory_permissions->HasLessPrivilegesThan(
       write_permissions, Manifest::TYPE_PLATFORM_APP));
   EXPECT_TRUE(directory_permissions->HasLessPrivilegesThan(
-      both_permissions, Manifest::TYPE_PLATFORM_APP));
+      write_directory_permissions, Manifest::TYPE_PLATFORM_APP));
 }
 
 TEST(PermissionsTest, GetWarningMessages_ManyHosts) {

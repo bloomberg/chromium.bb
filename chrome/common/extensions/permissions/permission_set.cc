@@ -482,21 +482,18 @@ std::set<PermissionMessage> PermissionSet::GetAPIPermissionMessages() const {
     }
   }
 
-  // A special hack: If both kFileSystemDirectory and and kFileSystemWrite
-  // would be displayed, instead show kFileSystemWriteDirectory.
-  // TODO(sammc): Remove this when http://crbug.com/282118 is fixed.
-  std::set<PermissionMessage>::iterator read_directory_message = messages.find(
-      PermissionMessage(PermissionMessage::kFileSystemDirectory, string16()));
-  std::set<PermissionMessage>::iterator write_message = messages.find(
-      PermissionMessage(PermissionMessage::kFileSystemWrite, string16()));
-  if (read_directory_message != messages.end() &&
-      write_message != messages.end()) {
-    messages.erase(read_directory_message);
-    messages.erase(write_message);
-    messages.insert(PermissionMessage(
-        PermissionMessage::kFileSystemWriteDirectory,
-        l10n_util::GetStringUTF16(
-            IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE_DIRECTORY)));
+  // A special hack: If kFileSystemWriteDirectory would be displayed, hide
+  // kFileSystemDirectory and and kFileSystemWrite as the write directory
+  // message implies the other two.
+  // TODO(sammc): Remove this. See http://crbug.com/284849.
+  std::set<PermissionMessage>::iterator write_directory_message =
+      messages.find(PermissionMessage(
+          PermissionMessage::kFileSystemWriteDirectory, string16()));
+  if (write_directory_message != messages.end()) {
+    messages.erase(
+        PermissionMessage(PermissionMessage::kFileSystemWrite, string16()));
+    messages.erase(
+        PermissionMessage(PermissionMessage::kFileSystemDirectory, string16()));
   }
   return messages;
 }
@@ -549,7 +546,7 @@ bool PermissionSet::HasLessAPIPrivilegesThan(
 
   // A special hack: kFileSystemWriteDirectory implies kFileSystemDirectory and
   // kFileSystemWrite.
-  // TODO(sammc): Remove this when http://crbug.com/282118 is fixed.
+  // TODO(sammc): Remove this. See http://crbug.com/284849.
   if (current_warnings.find(PermissionMessage(
           PermissionMessage::kFileSystemWriteDirectory, string16())) !=
       current_warnings.end()) {

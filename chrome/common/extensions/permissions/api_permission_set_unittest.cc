@@ -301,4 +301,33 @@ TEST(APIPermissionSetTest, IPC) {
   EXPECT_EQ(apis, expected_apis);
 }
 
+TEST(APIPermissionSetTest, ImplicitPermissions) {
+  APIPermissionSet apis;
+  apis.insert(APIPermission::kFileSystemWrite);
+  apis.AddImpliedPermissions();
+
+  EXPECT_EQ(apis.find(APIPermission::kFileSystemWrite)->id(),
+            APIPermission::kFileSystemWrite);
+  EXPECT_EQ(apis.size(), 1u);
+
+  apis.erase(APIPermission::kFileSystemWrite);
+  apis.insert(APIPermission::kFileSystemDirectory);
+  apis.AddImpliedPermissions();
+
+  EXPECT_EQ(apis.find(APIPermission::kFileSystemDirectory)->id(),
+            APIPermission::kFileSystemDirectory);
+  EXPECT_EQ(apis.size(), 1u);
+
+  apis.insert(APIPermission::kFileSystemWrite);
+  apis.AddImpliedPermissions();
+
+  EXPECT_EQ(apis.find(APIPermission::kFileSystemWrite)->id(),
+            APIPermission::kFileSystemWrite);
+  EXPECT_EQ(apis.find(APIPermission::kFileSystemDirectory)->id(),
+            APIPermission::kFileSystemDirectory);
+  EXPECT_EQ(apis.find(APIPermission::kFileSystemWriteDirectory)->id(),
+            APIPermission::kFileSystemWriteDirectory);
+  EXPECT_EQ(apis.size(), 3u);
+}
+
 }  // namespace extensions

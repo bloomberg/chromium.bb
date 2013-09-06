@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -333,6 +334,16 @@ bool APIPermissionSet::ParseFromJSON(
       return false;
   }
   return true;
+}
+
+void APIPermissionSet::AddImpliedPermissions() {
+  // The fileSystem.write and fileSystem.directory permissions imply
+  // fileSystem.writeDirectory.
+  // TODO(sammc): Remove this. See http://crbug.com/284849.
+  if (ContainsKey(map_, APIPermission::kFileSystemWrite) &&
+      ContainsKey(map_, APIPermission::kFileSystemDirectory)) {
+    insert(APIPermission::kFileSystemWriteDirectory);
+  }
 }
 
 }  // namespace extensions

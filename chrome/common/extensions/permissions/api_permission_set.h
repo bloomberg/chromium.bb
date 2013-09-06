@@ -162,6 +162,8 @@ class APIPermissionSet {
       string16* error,
       std::vector<std::string>* unhandled_permissions);
 
+  void AddImpliedPermissions();
+
  private:
   APIPermissionMap map_;
 };
