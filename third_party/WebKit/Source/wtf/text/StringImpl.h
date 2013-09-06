@@ -119,11 +119,12 @@ private:
     // static strings will be shared across threads & ref-counted in a non-threadsafe manner.
     enum ConstructEmptyStringTag { ConstructEmptyString };
     explicit StringImpl(ConstructEmptyStringTag)
-        : m_refCount(s_refCountFlagIsStaticString)
+        : m_refCount(1)
         , m_length(0)
         , m_hash(0)
         , m_isAtomic(false)
         , m_is8Bit(true)
+        , m_isStatic(true)
     {
         // Ensure that the hash is computed so that AtomicStringHash can call existingHash()
         // with impunity. The empty string is special because it is never entered into
@@ -135,22 +136,24 @@ private:
     // FIXME: there has to be a less hacky way to do this.
     enum Force8Bit { Force8BitConstructor };
     StringImpl(unsigned length, Force8Bit)
-        : m_refCount(s_refCountIncrement)
+        : m_refCount(1)
         , m_length(length)
         , m_hash(0)
         , m_isAtomic(false)
         , m_is8Bit(true)
+        , m_isStatic(false)
     {
         ASSERT(m_length);
         STRING_STATS_ADD_8BIT_STRING(m_length);
     }
 
     StringImpl(unsigned length)
-        : m_refCount(s_refCountIncrement)
+        : m_refCount(1)
         , m_length(length)
         , m_hash(0)
         , m_isAtomic(false)
         , m_is8Bit(false)
+        , m_isStatic(false)
     {
         ASSERT(m_length);
         STRING_STATS_ADD_16BIT_STRING(m_length);
@@ -158,11 +161,12 @@ private:
 
     enum StaticStringTag { StaticString };
     StringImpl(unsigned length, unsigned hash, StaticStringTag)
-        : m_refCount(s_refCountFlagIsStaticString)
+        : m_refCount(1)
         , m_length(length)
         , m_hash(hash)
         , m_isAtomic(false)
         , m_is8Bit(true)
+        , m_isStatic(true)
     {
     }
 
@@ -215,7 +219,7 @@ public:
     bool isAtomic() const { return m_isAtomic; }
     void setIsAtomic(bool isAtomic) { m_isAtomic = isAtomic; }
 
-    bool isStatic() const { return m_refCount & s_refCountFlagIsStaticString; }
+    bool isStatic() const { return m_isStatic; }
 
 private:
     // The high bits of 'hash' are always empty, but we prefer to store our flags
@@ -234,6 +238,8 @@ private:
     {
         return m_hash;
     }
+
+    void destroyIfNotStatic();
 
 public:
     bool hasHash() const
@@ -256,22 +262,22 @@ public:
 
     inline bool hasOneRef() const
     {
-        return m_refCount == s_refCountIncrement;
+        return m_refCount == 1;
     }
 
     inline void ref()
     {
-        m_refCount += s_refCountIncrement;
+        ++m_refCount;
     }
 
     inline void deref()
     {
-        if (m_refCount == s_refCountIncrement) {
-            delete this;
+        if (hasOneRef()) {
+            destroyIfNotStatic();
             return;
         }
 
-        m_refCount -= s_refCountIncrement;
+        --m_refCount;
     }
 
     static StringImpl* empty();
@@ -424,10 +430,6 @@ private:
     template <typename CharType, class UCharPredicate> PassRefPtr<StringImpl> simplifyMatchedCharactersToSpace(UCharPredicate);
     NEVER_INLINE unsigned hashSlowCase() const;
 
-    // The bottom bit in the ref count indicates a static (immortal) string.
-    static const unsigned s_refCountFlagIsStaticString = 0x1;
-    static const unsigned s_refCountIncrement = 0x2; // This allows us to ref / deref without disturbing the static string flag.
-
 #ifdef STRING_STATS
     static StringStats m_stringStats;
 #endif
@@ -444,8 +446,9 @@ private:
     unsigned m_refCount;
     unsigned m_length;
     mutable unsigned m_hash : 24;
-    mutable unsigned m_isAtomic : 1;
-    mutable unsigned m_is8Bit : 1;
+    unsigned m_isAtomic : 1;
+    unsigned m_is8Bit : 1;
+    unsigned m_isStatic : 1;
 };
 
 template <>

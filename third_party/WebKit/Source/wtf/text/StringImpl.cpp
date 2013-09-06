@@ -250,7 +250,7 @@ void StringStats::printStats()
 #endif
 
 
-StringImpl::~StringImpl()
+inline StringImpl::~StringImpl()
 {
     ASSERT(!isStatic());
 
@@ -258,6 +258,12 @@ StringImpl::~StringImpl()
 
     if (isAtomic())
         AtomicString::remove(this);
+}
+
+void StringImpl::destroyIfNotStatic()
+{
+    if (!isStatic())
+        delete this;
 }
 
 PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, LChar*& data)
