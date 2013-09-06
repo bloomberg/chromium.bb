@@ -6643,6 +6643,32 @@ void RenderBlock::updateFirstLetterStyle(RenderObject* firstLetterBlock, RenderO
     }
 }
 
+static inline unsigned firstLetterLength(const String& text)
+{
+    unsigned length = 0;
+
+    // Account for leading spaces and punctuation.
+    while (length < text.length() && shouldSkipForFirstLetter((text)[length]))
+        length++;
+
+    // Account for first letter.
+    length++;
+
+    // Keep looking for whitespace and allowed punctuation, but avoid
+    // accumulating just whitespace into the :first-letter.
+    for (unsigned scanLength = length; scanLength < text.length(); ++scanLength) {
+        UChar c = (text)[scanLength];
+
+        if (!shouldSkipForFirstLetter(c))
+            break;
+
+        if (isPunctuationForFirstLetter(c))
+            length = scanLength + 1;
+    }
+
+    return length;
+}
+
 void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, RenderObject* currentChild)
 {
     RenderObject* firstLetterContainer = currentChild->parent();
@@ -6660,52 +6686,34 @@ void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, Rend
     // The original string is going to be either a generated content string or a DOM node's
     // string.  We want the original string before it got transformed in case first-letter has
     // no text-transform or a different text-transform applied to it.
-    RefPtr<StringImpl> oldText = textObj->originalText();
-    ASSERT(oldText);
+    String oldText = textObj->originalText();
+    ASSERT(oldText.impl());
 
-    if (oldText && oldText->length() > 0) {
-        unsigned length = 0;
+    unsigned length = firstLetterLength(oldText);
 
-        // Account for leading spaces and punctuation.
-        while (length < oldText->length() && shouldSkipForFirstLetter((*oldText)[length]))
-            length++;
+    if (!length)
+        return;
 
-        // Account for first letter.
-        length++;
+    // Construct a text fragment for the text after the first letter.
+    // This text fragment might be empty.
+    RenderTextFragment* remainingText =
+        new RenderTextFragment(textObj->node() ? textObj->node() : &textObj->document(), oldText.impl(), length, oldText.length() - length);
+    remainingText->setStyle(textObj->style());
+    if (remainingText->node())
+        remainingText->node()->setRenderer(remainingText);
 
-        // Keep looking for whitespace and allowed punctuation, but avoid
-        // accumulating just whitespace into the :first-letter.
-        for (unsigned scanLength = length; scanLength < oldText->length(); ++scanLength) {
-            UChar c = (*oldText)[scanLength];
+    firstLetterContainer->addChild(remainingText, textObj);
+    firstLetterContainer->removeChild(textObj);
+    remainingText->setFirstLetter(firstLetter);
+    toRenderBoxModelObject(firstLetter)->setFirstLetterRemainingText(remainingText);
 
-            if (!shouldSkipForFirstLetter(c))
-                break;
+    // construct text fragment for the first letter
+    RenderTextFragment* letter =
+        new RenderTextFragment(remainingText->node() ? remainingText->node() : &remainingText->document(), oldText.impl(), 0, length);
+    letter->setStyle(pseudoStyle);
+    firstLetter->addChild(letter);
 
-            if (isPunctuationForFirstLetter(c))
-                length = scanLength + 1;
-         }
-
-        // Construct a text fragment for the text after the first letter.
-        // This text fragment might be empty.
-        RenderTextFragment* remainingText =
-            new RenderTextFragment(textObj->node() ? textObj->node() : &textObj->document(), oldText.get(), length, oldText->length() - length);
-        remainingText->setStyle(textObj->style());
-        if (remainingText->node())
-            remainingText->node()->setRenderer(remainingText);
-
-        firstLetterContainer->addChild(remainingText, textObj);
-        firstLetterContainer->removeChild(textObj);
-        remainingText->setFirstLetter(firstLetter);
-        toRenderBoxModelObject(firstLetter)->setFirstLetterRemainingText(remainingText);
-
-        // construct text fragment for the first letter
-        RenderTextFragment* letter =
-            new RenderTextFragment(remainingText->node() ? remainingText->node() : &remainingText->document(), oldText.get(), 0, length);
-        letter->setStyle(pseudoStyle);
-        firstLetter->addChild(letter);
-
-        textObj->destroy();
-    }
+    textObj->destroy();
 }
 
 void RenderBlock::updateFirstLetter()
