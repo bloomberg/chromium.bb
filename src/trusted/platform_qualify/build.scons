@@ -83,6 +83,10 @@ if env.Bit('build_arm'):
   # Compile ARM primitives for checking alignment features.
   pql_inputs += ['arch/arm/nacl_qualify_unaligned.c']
 
+if env.Bit('build_mips32'):
+  # Compile MIPS primitives for checking FPU presence and mode.
+  pql_inputs += ['arch/mips/nacl_qualify_fpu.c']
+
 # ----------------------------------------------------------
 #
 # ----------------------------------------------------------

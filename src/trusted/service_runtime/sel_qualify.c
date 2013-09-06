@@ -11,6 +11,8 @@
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 #include "native_client/src/trusted/platform_qualify/arch/arm/nacl_arm_qualify.h"
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+#include "native_client/src/trusted/platform_qualify/arch/mips/nacl_mips_qualify.h"
 #endif
 
 NaClErrorCode NaClRunSelQualificationTests(void) {
@@ -35,6 +37,12 @@ NaClErrorCode NaClRunSelQualificationTests(void) {
   if (!NaClQualifyFpu() ||
       !NaClQualifySandboxInstrs() ||
       !NaClQualifyUnaligned()) {
+    return LOAD_UNSUPPORTED_CPU;
+  }
+#endif
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+  if (!NaClQualifyFpu()) {
     return LOAD_UNSUPPORTED_CPU;
   }
 #endif
