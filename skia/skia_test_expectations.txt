@@ -58,4 +58,7 @@ crbug.com/280292 inspector/debugger/live-edit.html [ ImageOnlyFailure ]
 crbug.com/280292 virtual/gpu/fast/canvas/canvas-scale-strokePath-shadow.html [ Failure ]
 crbug.com/280292 fast/forms/input-appearance-height.html [ ImageOnlyFailure ]
 
+# The Skia roll to r11121 altered this layout test
+crbug.com/286312 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
