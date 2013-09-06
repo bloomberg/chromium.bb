@@ -255,7 +255,8 @@ class WalletItems {
 
  private:
   friend class WalletItemsTest;
-  friend scoped_ptr<WalletItems> GetTestWalletItems();
+  friend scoped_ptr<WalletItems> GetTestWalletItemsWithDefaultIds(
+      const std::string&, const std::string&);
   FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateWalletItems);
   FRIEND_TEST_ALL_PREFIXES(WalletItemsTest,
                            CreateWalletItemsWithRequiredActions);

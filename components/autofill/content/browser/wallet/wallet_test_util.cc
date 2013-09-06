@@ -225,11 +225,18 @@ scoped_ptr<Address> GetTestNonDefaultShippingAddress() {
 }
 
 scoped_ptr<WalletItems> GetTestWalletItems() {
+  return GetTestWalletItemsWithDefaultIds("default_instrument_id",
+                                          "default_address_id");
+}
+
+scoped_ptr<WalletItems> GetTestWalletItemsWithDefaultIds(
+    const std::string& default_instrument_id,
+    const std::string& default_address_id) {
   return scoped_ptr<WalletItems>(
       new wallet::WalletItems(std::vector<RequiredAction>(),
                               "google_transaction_id",
-                              "default_instrument_id",
-                              "default_address_id",
+                              default_instrument_id,
+                              default_address_id,
                               "obfuscated_gaia_id"));
 }
 

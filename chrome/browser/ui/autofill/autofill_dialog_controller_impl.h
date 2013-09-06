@@ -589,7 +589,12 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   scoped_ptr<wallet::WalletItems> wallet_items_;
   scoped_ptr<wallet::FullWallet> full_wallet_;
 
-  // The last active instrument and shipping address object ids. These
+  // The default active instrument and shipping address object IDs as of the
+  // last time Wallet items were fetched. These variables are only set
+  // (i.e. non-empty) when the Wallet items are being re-fetched.
+  std::string previous_default_instrument_id_;
+  std::string previous_default_shipping_address_id_;
+  // The last active instrument and shipping address object IDs. These
   // variables are only set (i.e. non-empty) when the Wallet items are being
   // re-fetched.
   std::string previously_selected_instrument_id_;

@@ -498,6 +498,26 @@ gfx::Image GetGeneratedCardImage(const base::string16& card_number,
   return gfx::Image(skia);
 }
 
+// Returns the ID of the address or instrument that should be selected in the
+// UI, given that the |default_id| is currently the default ID on the Wallet
+// server, |previous_default_id| was the default ID prior to re-fetching the
+// Wallet data, and |previously_selected_id| was the ID of the item selected in
+// the dialog prior to re-fetching the Wallet data.
+std::string GetIdToSelect(const std::string& default_id,
+                          const std::string& previous_default_id,
+                          const std::string& previously_selected_id) {
+  // If the default ID changed since the last fetch of the Wallet data, select
+  // it rather than the previously selected item, as the user's intention in
+  // changing the default was probably to use it.
+  if (default_id != previous_default_id)
+    return default_id;
+
+  // Otherwise, prefer the previously selected item, if there was one.
+  return !previously_selected_id.empty() ? previously_selected_id : default_id;
+}
+
+
+
 }  // namespace
 
 AutofillDialogViewDelegate::~AutofillDialogViewDelegate() {}
@@ -853,13 +873,18 @@ bool AutofillDialogControllerImpl::IsSubmitPausedOn(
 }
 
 void AutofillDialogControllerImpl::GetWalletItems() {
-  DCHECK(previously_selected_instrument_id_.empty());
-  DCHECK(previously_selected_shipping_address_id_.empty());
   ScopedViewUpdates updates(view_.get());
 
+  previously_selected_instrument_id_.clear();
+  previously_selected_shipping_address_id_.clear();
   if (wallet_items_) {
-    if (ActiveInstrument())
-      previously_selected_instrument_id_ = ActiveInstrument()->object_id();
+    previous_default_instrument_id_ = wallet_items_->default_instrument_id();
+    previous_default_shipping_address_id_ = wallet_items_->default_address_id();
+
+    const wallet::WalletItems::MaskedInstrument* instrument =
+        ActiveInstrument();
+    if (instrument)
+      previously_selected_instrument_id_ = instrument->object_id();
 
     const wallet::Address* address = ActiveShippingAddress();
     if (address)
@@ -2413,13 +2438,12 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
           addresses[i]->DisplayNameDetail());
 
       const std::string default_shipping_address_id =
-          !previously_selected_shipping_address_id_.empty() ?
-              previously_selected_shipping_address_id_ :
-              wallet_items_->default_address_id();
+          GetIdToSelect(wallet_items_->default_address_id(),
+                        previous_default_shipping_address_id_,
+                        previously_selected_shipping_address_id_);
       if (addresses[i]->object_id() == default_shipping_address_id)
         suggested_shipping_.SetCheckedItem(key);
     }
-    previously_selected_shipping_address_id_.clear();
 
     if (!IsSubmitPausedOn(wallet::VERIFY_CVV)) {
       const std::vector<wallet::WalletItems::MaskedInstrument*>& instruments =
@@ -2449,14 +2473,13 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
             first_active_instrument_key = key;
 
           const std::string default_instrument_id =
-              !previously_selected_instrument_id_.empty() ?
-                  previously_selected_instrument_id_ :
-                  wallet_items_->default_instrument_id();
+              GetIdToSelect(wallet_items_->default_instrument_id(),
+                            previous_default_instrument_id_,
+                            previously_selected_instrument_id_);
           if (instruments[i]->object_id() == default_instrument_id)
             default_instrument_key = key;
         }
       }
-      previously_selected_instrument_id_.clear();
 
       // TODO(estade): this should have a URL sublabel.
       suggested_cc_billing_.AddKeyedItem(
