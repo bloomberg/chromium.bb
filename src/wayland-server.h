@@ -350,6 +350,14 @@ wl_resource_get_destroy_listener(struct wl_resource *resource,
 	     wl_resource_get_link(resource) != (list);				\
 	     resource = wl_resource_from_link(wl_resource_get_link(resource)->next))
 
+#define wl_resource_for_each_safe(resource, tmp, list)					\
+	for (resource = 0, tmp = 0,							\
+	     resource = wl_resource_from_link((list)->next),	\
+	     tmp = wl_resource_from_link((list)->next->next);	\
+	     wl_resource_get_link(resource) != (list);				\
+	     resource = tmp,							\
+	     tmp = wl_resource_from_link(wl_resource_get_link(resource)->next))
+
 struct wl_shm_buffer;
 
 struct wl_shm_buffer *
