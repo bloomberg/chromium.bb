@@ -901,3 +901,10 @@
    fun:ExtensionService::AddExtension
    fun:extensions::TestExtensionEnvironment::MakeExtension
 }
+{
+   bug_286185
+   Heapcheck:Leak
+   fun:sqlite3MemMalloc
+   fun:NetworkingPrivateCrypto::VerifyCredentials
+   fun:NetworkingPrivateCryptoTest_VerifyCredentials_Test::TestBody
+}
