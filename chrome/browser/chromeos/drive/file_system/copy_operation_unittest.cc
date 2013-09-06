@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -137,11 +138,17 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_HostedDocument) {
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(remote_dest_path, &entry));
 
   // We added a file to the Drive root and then moved to "Directory 1".
-  EXPECT_EQ(2U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(observer()->get_changed_paths().count(
-      base::FilePath(FILE_PATH_LITERAL("drive/root"))));
-  EXPECT_TRUE(observer()->get_changed_paths().count(
-      remote_dest_path.DirName()));
+  if (util::IsDriveV2ApiEnabled()) {
+    EXPECT_EQ(1U, observer()->get_changed_paths().size());
+    EXPECT_TRUE(
+        observer()->get_changed_paths().count(remote_dest_path.DirName()));
+  } else {
+    EXPECT_EQ(2U, observer()->get_changed_paths().size());
+    EXPECT_TRUE(observer()->get_changed_paths().count(
+        base::FilePath(FILE_PATH_LITERAL("drive/root"))));
+    EXPECT_TRUE(observer()->get_changed_paths().count(
+        remote_dest_path.DirName()));
+  }
 }
 
 
