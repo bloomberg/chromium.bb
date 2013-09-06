@@ -582,6 +582,9 @@ class FileResource {
   void set_last_viewed_by_me_date(const base::Time& last_viewed_by_me_date) {
     last_viewed_by_me_date_ = last_viewed_by_me_date;
   }
+  void set_shared_with_me_date(const base::Time& shared_with_me_date) {
+    shared_with_me_date_ = shared_with_me_date;
+  }
   void set_download_url(const GURL& download_url) {
     download_url_ = download_url;
   }
