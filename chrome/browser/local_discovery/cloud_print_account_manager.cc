@@ -4,21 +4,16 @@
 
 #include "chrome/browser/local_discovery/cloud_print_account_manager.h"
 
-#include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
-#include "net/base/load_flags.h"
-#include "net/http/http_status_code.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 namespace local_discovery {
 
 namespace {
 // URL relative to cloud print root
-const char kCloudPrintRequestURLFormat[] = "%s/list?proxy=none&user=%d";
+const char kCloudPrintRequestURLFormat[] = "%s/list?proxy=none";
 const char kCloudPrintKeyUsers[] = "request.users";
 const char kCloudPrintKeyXsrfToken[] = "xsrf_token";
 }  // namespace
@@ -28,24 +23,19 @@ CloudPrintAccountManager::CloudPrintAccountManager(
     const std::string& cloud_print_url,
     int token_user_index,
     const AccountsCallback& callback)
-    : request_context_(request_context), cloud_print_url_(cloud_print_url),
-      token_user_index_(token_user_index), callback_(callback) {
+    : flow_(request_context,
+            token_user_index,
+            GURL(base::StringPrintf(kCloudPrintRequestURLFormat,
+                                    cloud_print_url.c_str())),
+            this),
+      callback_(callback) {
 }
 
 CloudPrintAccountManager::~CloudPrintAccountManager() {
 }
 
 void CloudPrintAccountManager::Start() {
-  GURL url(base::StringPrintf(kCloudPrintRequestURLFormat,
-                              cloud_print_url_.c_str(),
-                              token_user_index_));
-  url_fetcher_.reset(net::URLFetcher::Create(url, net::URLFetcher::POST, this));
-  url_fetcher_->SetRequestContext(request_context_.get());
-  url_fetcher_->SetUploadData("", "");
-  url_fetcher_->AddExtraRequestHeader(
-      cloud_print::kChromeCloudPrintProxyHeader);
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
-  url_fetcher_->Start();
+  flow_.Start();
 }
 
 // If an error occurs or the user is not logged in, return an empty user list to
@@ -54,31 +44,24 @@ void CloudPrintAccountManager::ReportEmptyUserList() {
   callback_.Run(std::vector<std::string>(), "");
 }
 
-void CloudPrintAccountManager::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  std::string response_str;
+void CloudPrintAccountManager::OnCloudPrintAPIFlowError(
+    CloudPrintBaseApiFlow* flow,
+    CloudPrintBaseApiFlow::Status status) {
+  ReportEmptyUserList();
+}
 
-  if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
-      source->GetResponseCode() != net::HTTP_OK ||
-      !source->GetResponseAsString(&response_str)) {
-    ReportEmptyUserList();
-    return;
-  }
-
-  base::JSONReader reader;
-  scoped_ptr<const base::Value> value(reader.Read(response_str));
-  const base::DictionaryValue* dictionary_value;
+void CloudPrintAccountManager::OnCloudPrintAPIFlowComplete(
+    CloudPrintBaseApiFlow* flow,
+    const base::DictionaryValue* value) {
   bool success = false;
 
   std::string xsrf_token;
   const base::ListValue* users = NULL;
   std::vector<std::string> users_vector;
 
-  if (!value.get() ||
-      !value->GetAsDictionary(&dictionary_value) ||
-      !dictionary_value->GetBoolean(cloud_print::kSuccessValue, &success) ||
-      !dictionary_value->GetList(kCloudPrintKeyUsers, &users) ||
-      !dictionary_value->GetString(kCloudPrintKeyXsrfToken, &xsrf_token) ||
+  if (!value->GetBoolean(cloud_print::kSuccessValue, &success) ||
+      !value->GetList(kCloudPrintKeyUsers, &users) ||
+      !value->GetString(kCloudPrintKeyXsrfToken, &xsrf_token) ||
       !success) {
     ReportEmptyUserList();
     return;

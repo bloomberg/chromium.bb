@@ -47,6 +47,8 @@ const int kPrivetDefaultTimeout = 15;
 
 const double kPrivetMaximumTimeRandomAddition = 0.2;
 
+const int kAccountIndexUseOAuth2 = -1;
+
 }  // namespace local_discovery
 
 #endif  // CHROME_BROWSER_LOCAL_DISCOVERY_PRIVET_CONSTANTS_H_

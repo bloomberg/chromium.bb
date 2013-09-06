@@ -53,7 +53,7 @@ class TestOAuth2TokenService : public OAuth2TokenService {
 
 class MockableConfirmCallback {
  public:
-  MOCK_METHOD1(ConfirmCallback, void(PrivetConfirmApiCallFlow::Status));
+  MOCK_METHOD1(ConfirmCallback, void(CloudPrintBaseApiFlow::Status));
 
   PrivetConfirmApiCallFlow::ResponseCallback callback() {
     return base::Bind(&MockableConfirmCallback::ConfirmCallback,
@@ -89,10 +89,12 @@ TEST_F(PrivetConfirmApiFlowTest, SuccessOAuth2) {
                                         &token_service_,
                                         GURL("http://SoMeUrL.com"),
                                         callback_.callback());
+  CloudPrintBaseApiFlow* cloudprint_flow =
+      confirm_flow.GetBaseApiFlowForTests();
 
   confirm_flow.Start();
 
-  confirm_flow.OnGetTokenSuccess(NULL, "SomeToken", base::Time());
+  cloudprint_flow->OnGetTokenSuccess(NULL, "SomeToken", base::Time());
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
 
   EXPECT_EQ(GURL("http://SoMeUrL.com"), fetcher->GetOriginalURL());
@@ -111,7 +113,7 @@ TEST_F(PrivetConfirmApiFlowTest, SuccessOAuth2) {
                                             net::OK));
   fetcher->set_response_code(200);
 
-  EXPECT_CALL(callback_, ConfirmCallback(PrivetConfirmApiCallFlow::SUCCESS));
+  EXPECT_CALL(callback_, ConfirmCallback(CloudPrintBaseApiFlow::SUCCESS));
 
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
@@ -141,7 +143,7 @@ TEST_F(PrivetConfirmApiFlowTest, SuccessCookies) {
                                             net::OK));
   fetcher->set_response_code(200);
 
-  EXPECT_CALL(callback_, ConfirmCallback(PrivetConfirmApiCallFlow::SUCCESS));
+  EXPECT_CALL(callback_, ConfirmCallback(CloudPrintBaseApiFlow::SUCCESS));
 
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
@@ -154,9 +156,12 @@ TEST_F(PrivetConfirmApiFlowTest, BadToken) {
 
   confirm_flow.Start();
 
+  CloudPrintBaseApiFlow* cloudprint_flow =
+      confirm_flow.GetBaseApiFlowForTests();
+
   EXPECT_CALL(callback_,
-              ConfirmCallback(PrivetConfirmApiCallFlow::ERROR_TOKEN));
-  confirm_flow.OnGetTokenFailure(NULL, GoogleServiceAuthError(
+              ConfirmCallback(CloudPrintBaseApiFlow::ERROR_TOKEN));
+  cloudprint_flow->OnGetTokenFailure(NULL, GoogleServiceAuthError(
       GoogleServiceAuthError::USER_NOT_SIGNED_UP));
 }
 
@@ -168,7 +173,10 @@ TEST_F(PrivetConfirmApiFlowTest, ServerFailure) {
 
   confirm_flow.Start();
 
-  confirm_flow.OnGetTokenSuccess(NULL, "SomeToken", base::Time());
+  CloudPrintBaseApiFlow* cloudprint_flow =
+      confirm_flow.GetBaseApiFlowForTests();
+
+  cloudprint_flow->OnGetTokenSuccess(NULL, "SomeToken", base::Time());
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
 
   EXPECT_EQ(GURL("http://SoMeUrL.com"), fetcher->GetOriginalURL());
@@ -179,7 +187,7 @@ TEST_F(PrivetConfirmApiFlowTest, ServerFailure) {
   fetcher->set_response_code(200);
 
   EXPECT_CALL(callback_,
-              ConfirmCallback(PrivetConfirmApiCallFlow::ERROR_FROM_SERVER));
+              ConfirmCallback(CloudPrintBaseApiFlow::ERROR_FROM_SERVER));
 
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
@@ -192,7 +200,10 @@ TEST_F(PrivetConfirmApiFlowTest, BadJson) {
 
   confirm_flow.Start();
 
-  confirm_flow.OnGetTokenSuccess(NULL, "SomeToken", base::Time());
+  CloudPrintBaseApiFlow* cloudprint_flow =
+      confirm_flow.GetBaseApiFlowForTests();
+
+  cloudprint_flow->OnGetTokenSuccess(NULL, "SomeToken", base::Time());
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
 
   EXPECT_EQ(GURL("http://SoMeUrL.com"), fetcher->GetOriginalURL());
@@ -204,7 +215,7 @@ TEST_F(PrivetConfirmApiFlowTest, BadJson) {
   fetcher->set_response_code(200);
 
   EXPECT_CALL(callback_, ConfirmCallback
-              (PrivetConfirmApiCallFlow::ERROR_MALFORMED_RESPONSE));
+              (CloudPrintBaseApiFlow::ERROR_MALFORMED_RESPONSE));
 
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }

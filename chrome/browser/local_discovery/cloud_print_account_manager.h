@@ -10,12 +10,11 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "chrome/browser/local_discovery/cloud_print_base_api_flow.h"
 
 namespace local_discovery {
 
-class CloudPrintAccountManager : public net::URLFetcherDelegate {
+class CloudPrintAccountManager : public CloudPrintBaseApiFlow::Delegate {
  public:
   typedef base::Callback<void(
       const std::vector<std::string>& /*accounts*/,
@@ -29,17 +28,20 @@ class CloudPrintAccountManager : public net::URLFetcherDelegate {
 
   void Start();
 
-  // URLFetcher implementation:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  // BaseCloudPrintApiFlow::Delegate implementation.
+  virtual void OnCloudPrintAPIFlowError(
+      CloudPrintBaseApiFlow* flow,
+      CloudPrintBaseApiFlow::Status status) OVERRIDE;
+
+  virtual void OnCloudPrintAPIFlowComplete(
+        CloudPrintBaseApiFlow* flow,
+        const base::DictionaryValue* value) OVERRIDE;
 
  private:
   void ReportEmptyUserList();
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
-  std::string cloud_print_url_;
-  int token_user_index_;
+  CloudPrintBaseApiFlow flow_;
   AccountsCallback callback_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
 };
 
 }  // namespace local_discovery

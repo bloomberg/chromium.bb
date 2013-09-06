@@ -26,7 +26,6 @@ namespace {
 // TODO(noamsml): This is a temporary shim until automated_url is in the
 // response.
 const char kPrivetAutomatedClaimURLFormat[] = "%s/confirm?token=%s";
-const int kAccountIndexUseOAuth2 = -1;
 
 LocalDiscoveryUIHandler::Factory* g_factory = NULL;
 int g_num_visible = 0;
@@ -235,9 +234,8 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterDone(
 }
 
 void LocalDiscoveryUIHandler::OnConfirmDone(
-    PrivetConfirmApiCallFlow::Status status) {
-  if (status == PrivetConfirmApiCallFlow::SUCCESS) {
-    DLOG(INFO) << "Confirm success.";
+    CloudPrintBaseApiFlow::Status status) {
+  if (status == CloudPrintBaseApiFlow::SUCCESS) {
     confirm_api_call_flow_.reset();
     current_register_operation_->CompleteRegistration();
   } else {

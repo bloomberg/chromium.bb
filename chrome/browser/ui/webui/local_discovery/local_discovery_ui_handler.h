@@ -11,6 +11,7 @@
 
 #include "chrome/browser/local_discovery/cloud_print_account_manager.h"
 #include "chrome/browser/local_discovery/privet_confirm_api_flow.h"
+#include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/browser/local_discovery/privet_device_lister.h"
 #include "chrome/browser/local_discovery/privet_http.h"
 #include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
@@ -96,7 +97,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   // For when the confirm operation on the cloudprint server has finished
   // executing.
-  void OnConfirmDone(PrivetConfirmApiCallFlow::Status status);
+  void OnConfirmDone(CloudPrintBaseApiFlow::Status status);
 
   // For when the cloud print account list is resolved.
   void OnCloudPrintAccountsResolved(const std::vector<std::string>& accounts,
