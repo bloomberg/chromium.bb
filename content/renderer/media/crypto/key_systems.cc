@@ -9,6 +9,9 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "content/public/common/content_client.h"
+#include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/key_system_info.h"
 #include "content/renderer/media/crypto/key_systems_info.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
@@ -24,21 +27,7 @@ static std::string ToASCIIOrEmpty(const WebKit::WebString& string) {
 
 class KeySystems {
  public:
-  static KeySystems* GetInstance();
-
-  void AddConcreteSupportedKeySystem(
-      const std::string& key_system,
-      bool use_aes_decryptor,
-#if defined(ENABLE_PEPPER_CDMS)
-      const std::string& pepper_type,
-#elif defined(OS_ANDROID)
-      const uint8 uuid[16],
-#endif
-      const std::string& parent_key_system);
-
-  void AddSupportedType(const std::string& key_system,
-                        const std::string& mime_type,
-                        const std::string& codecs_list);
+  static KeySystems& GetInstance();
 
   bool IsConcreteSupportedKeySystem(const std::string& key_system);
 
@@ -56,6 +45,21 @@ class KeySystems {
 #endif
 
  private:
+  void AddConcreteSupportedKeySystems(
+      const std::vector<KeySystemInfo>& concrete_key_systems);
+
+  void AddConcreteSupportedKeySystem(
+      const std::string& key_system,
+      bool use_aes_decryptor,
+#if defined(ENABLE_PEPPER_CDMS)
+      const std::string& pepper_type,
+#elif defined(OS_ANDROID)
+      const std::vector<uint8>& uuid,
+#endif
+      const std::vector<KeySystemInfo::ContainerCodecsPair>& supported_types,
+      const std::string& parent_key_system);
+
+
   friend struct base::DefaultLazyInstanceTraits<KeySystems>;
 
   typedef base::hash_set<std::string> CodecSet;
@@ -77,7 +81,12 @@ class KeySystems {
 
   typedef std::map<std::string, std::string> ParentKeySystemMap;
 
-  KeySystems() {}
+  KeySystems();
+  ~KeySystems() {}
+
+  void AddSupportedType(const std::string& mime_type,
+                        const std::string& codecs_list,
+                        KeySystemProperties* properties);
 
   bool IsSupportedKeySystemWithContainerAndCodec(
       const std::string& mime_type,
@@ -96,15 +105,35 @@ class KeySystems {
 
 static base::LazyInstance<KeySystems> g_key_systems = LAZY_INSTANCE_INITIALIZER;
 
-KeySystems* KeySystems::GetInstance() {
-  KeySystems* key_systems = &g_key_systems.Get();
-  // TODO(ddorwin): Call out to ContentClient to register key systems.
-  static bool is_registered = false;
-  if (!is_registered) {
-    is_registered = true;  // Prevent reentrancy when Add*() is called.
-    RegisterKeySystems();
+KeySystems& KeySystems::GetInstance() {
+  return g_key_systems.Get();
+}
+
+// Because we use a LazyInstance, the key systems info must be populated when
+// the instance is lazily initiated.
+KeySystems::KeySystems() {
+  std::vector<KeySystemInfo> key_systems_info;
+  GetContentClient()->renderer()->AddKeySystems(&key_systems_info);
+  // TODO(ddorwin): Remove in next CL after moving info to
+  // ChromeContentRendererClient.
+  AddKeySystems(&key_systems_info);
+  AddConcreteSupportedKeySystems(key_systems_info);
+}
+
+void KeySystems::AddConcreteSupportedKeySystems(
+    const std::vector<KeySystemInfo>& concrete_key_systems) {
+  for (size_t i = 0; i < concrete_key_systems.size(); ++i) {
+    const KeySystemInfo& key_system_info = concrete_key_systems[i];
+    AddConcreteSupportedKeySystem(key_system_info.key_system,
+                                  key_system_info.use_aes_decryptor,
+#if defined(ENABLE_PEPPER_CDMS)
+                                  key_system_info.pepper_type,
+#elif defined(OS_ANDROID)
+                                  key_system_info.uuid,
+#endif
+                                  key_system_info.supported_types,
+                                  key_system_info.parent_key_system);
   }
-  return key_systems;
 }
 
 void KeySystems::AddConcreteSupportedKeySystem(
@@ -113,11 +142,15 @@ void KeySystems::AddConcreteSupportedKeySystem(
 #if defined(ENABLE_PEPPER_CDMS)
     const std::string& pepper_type,
 #elif defined(OS_ANDROID)
-    const uint8 uuid[16],
+    const std::vector<uint8>& uuid,
 #endif
+    const std::vector<KeySystemInfo::ContainerCodecsPair>& supported_types,
     const std::string& parent_key_system) {
   DCHECK(!IsConcreteSupportedKeySystem(concrete_key_system))
       << "Key system '" << concrete_key_system << "' already registered";
+  DCHECK(parent_key_system_map_.find(concrete_key_system) ==
+         parent_key_system_map_.end())
+      <<  "'" << concrete_key_system << " is already registered as a parent";
 
   KeySystemProperties properties;
   properties.use_aes_decryptor = use_aes_decryptor;
@@ -125,23 +158,33 @@ void KeySystems::AddConcreteSupportedKeySystem(
   DCHECK_EQ(use_aes_decryptor, pepper_type.empty());
   properties.pepper_type = pepper_type;
 #elif defined(OS_ANDROID)
-  // Since |uuid| can't be empty, use |use_aes_decryptor|.
-  if (!use_aes_decryptor)
-    properties.uuid.assign(uuid, uuid + 16);
+  DCHECK_EQ(use_aes_decryptor, uuid.empty());
+  DCHECK(use_aes_decryptor || uuid.size() == 16);
+  properties.uuid = uuid;
 #endif
+
+  for (size_t i = 0; i < supported_types.size(); ++i) {
+    const KeySystemInfo::ContainerCodecsPair& pair = supported_types[i];
+    const std::string& mime_type = pair.first;
+    const std::string& codecs_list = pair.second;
+    AddSupportedType(mime_type, codecs_list, &properties);
+  }
+
   concrete_key_system_map_[concrete_key_system] = properties;
 
   if (!parent_key_system.empty()) {
+    DCHECK(!IsConcreteSupportedKeySystem(parent_key_system))
+        << "Parent '" << parent_key_system << "' already registered concrete";
     DCHECK(parent_key_system_map_.find(parent_key_system) ==
            parent_key_system_map_.end())
-        << "Parent '" << parent_key_system.c_str() << "' already registered.";
+        << "Parent '" << parent_key_system << "' already registered";
     parent_key_system_map_[parent_key_system] = concrete_key_system;
   }
 }
 
-void KeySystems::AddSupportedType(const std::string& concrete_key_system,
-                                  const std::string& mime_type,
-                                  const std::string& codecs_list) {
+void KeySystems::AddSupportedType(const std::string& mime_type,
+                                  const std::string& codecs_list,
+                                  KeySystemProperties* properties) {
   std::vector<std::string> mime_type_codecs;
   net::ParseCodecString(codecs_list, &mime_type_codecs, false);
 
@@ -149,10 +192,7 @@ void KeySystems::AddSupportedType(const std::string& concrete_key_system,
   // Support the MIME type string alone, without codec(s) specified.
   codecs.insert(std::string());
 
-  KeySystemPropertiesMap::iterator key_system_iter =
-      concrete_key_system_map_.find(concrete_key_system);
-  DCHECK(key_system_iter != concrete_key_system_map_.end());
-  MimeTypeMap& mime_types_map = key_system_iter->second.types;
+  MimeTypeMap& mime_types_map = properties->types;
   // mime_types_map must not be repeated for a given key system.
   DCHECK(mime_types_map.find(mime_type) == mime_types_map.end());
   mime_types_map[mime_type] = codecs;
@@ -254,34 +294,8 @@ std::vector<uint8> KeySystems::GetUUID(const std::string& concrete_key_system) {
 
 //------------------------------------------------------------------------------
 
-void AddConcreteSupportedKeySystem(
-    const std::string& key_system,
-    bool use_aes_decryptor,
-#if defined(ENABLE_PEPPER_CDMS)
-    const std::string& pepper_type,
-#elif defined(OS_ANDROID)
-    const uint8 uuid[16],
-#endif
-    const std::string& parent_key_system) {
-  KeySystems::GetInstance()->AddConcreteSupportedKeySystem(key_system,
-                                                           use_aes_decryptor,
-#if defined(ENABLE_PEPPER_CDMS)
-                                                           pepper_type,
-#elif defined(OS_ANDROID)
-                                                           uuid,
-#endif
-                                                           parent_key_system);
-}
-
-void AddSupportedType(const std::string& key_system,
-                      const std::string& mime_type,
-                      const std::string& codecs_list) {
-  KeySystems::GetInstance()->AddSupportedType(key_system,
-                                              mime_type, codecs_list);
-}
-
 bool IsConcreteSupportedKeySystem(const WebKit::WebString& key_system) {
-  return KeySystems::GetInstance()->IsConcreteSupportedKeySystem(
+  return KeySystems::GetInstance().IsConcreteSupportedKeySystem(
       ToASCIIOrEmpty(key_system));
 }
 
@@ -289,7 +303,7 @@ bool IsSupportedKeySystemWithMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
     const std::string& key_system) {
-  return KeySystems::GetInstance()->IsSupportedKeySystemWithMediaMimeType(
+  return KeySystems::GetInstance().IsSupportedKeySystemWithMediaMimeType(
       mime_type, codecs, key_system);
 }
 
@@ -298,16 +312,16 @@ std::string KeySystemNameForUMA(const WebKit::WebString& key_system) {
 }
 
 bool CanUseAesDecryptor(const std::string& concrete_key_system) {
-  return KeySystems::GetInstance()->UseAesDecryptor(concrete_key_system);
+  return KeySystems::GetInstance().UseAesDecryptor(concrete_key_system);
 }
 
 #if defined(ENABLE_PEPPER_CDMS)
 std::string GetPepperType(const std::string& concrete_key_system) {
-  return KeySystems::GetInstance()->GetPepperType(concrete_key_system);
+  return KeySystems::GetInstance().GetPepperType(concrete_key_system);
 }
 #elif defined(OS_ANDROID)
 std::vector<uint8> GetUUID(const std::string& concrete_key_system) {
-  return KeySystems::GetInstance()->GetUUID(concrete_key_system);
+  return KeySystems::GetInstance().GetUUID(concrete_key_system);
 }
 #endif
 

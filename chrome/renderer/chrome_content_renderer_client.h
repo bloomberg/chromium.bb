@@ -140,6 +140,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const base::string16& source) const OVERRIDE;
   virtual bool ShouldEnableSiteIsolationPolicy() const OVERRIDE;
   virtual bool AllowPepperMediaStreamAPI(const GURL& url) OVERRIDE;
+  virtual void AddKeySystems(
+      std::vector<content::KeySystemInfo>* key_systems) OVERRIDE;
 
   // For testing.
   void SetExtensionDispatcher(extensions::Dispatcher* extension_dispatcher);

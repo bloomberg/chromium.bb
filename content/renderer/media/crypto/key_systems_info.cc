@@ -5,7 +5,6 @@
 #include "content/renderer/media/crypto/key_systems_info.h"
 
 #include "base/logging.h"
-#include "content/renderer/media/crypto/key_systems.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
@@ -26,41 +25,36 @@ namespace content {
 
 static const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
 
-#if defined(ENABLE_PEPPER_CDMS)
-static const char kExternalClearKeyKeySystem[] =
-    "org.chromium.externalclearkey";
-#elif defined(OS_ANDROID)
-static const uint8 kEmptyUuid[16] =
-    { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-      0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
-static const uint8 kWidevineUuid[16] =
-    { 0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,
+static const char kAudioWebM[] = "audio/webm";
+static const char kVideoWebM[] = "video/webm";
+static const char kVorbis[] = "vorbis";
+static const char kVorbisVP8[] = "vorbis,vp8,vp8.0";
+
+static const char kAudioMp4[] = "audio/mp4";
+static const char kVideoMp4[] = "video/mp4";
+static const char kMp4a[] = "mp4a";
+static const char kAvc1[] = "avc1";
+static const char kMp4aAvc1[] = "mp4a,avc1";
+
+#if defined(WIDEVINE_CDM_AVAILABLE)
+enum SupportedCodecs {
+  WEBM_VP8_AND_VORBIS = 1 << 0,
+#if defined(USE_PROPRIETARY_CODECS)
+  MP4_AAC = 1 << 1,
+  MP4_AVC1 = 1 << 2,
+#endif  // defined(USE_PROPRIETARY_CODECS)
+};
+
+static void AddWidevineForTypes(
+    SupportedCodecs supported_codecs,
+    std::vector<KeySystemInfo>* concrete_key_systems) {
+  static const char kWidevineParentKeySystem[] = "com.widevine";
+#if defined(OS_ANDROID)
+  static const uint8 kWidevineUuid[16] = {
+      0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,
       0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED };
 #endif
 
-#if defined(WIDEVINE_CDM_AVAILABLE)
-
-#if defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
-// The supported codecs depend on what the CDM provides.
-static const char kWidevineVideoMp4Codecs[] =
-#if defined(WIDEVINE_CDM_AVC1_SUPPORT_AVAILABLE) && \
-    defined(WIDEVINE_CDM_AAC_SUPPORT_AVAILABLE)
-    "avc1,mp4a";
-#elif defined(WIDEVINE_CDM_AVC1_SUPPORT_AVAILABLE)
-    "avc1";
-#else
-    "";  // No codec strings are supported.
-#endif
-
-static const char kWidevineAudioMp4Codecs[] =
-#if defined(WIDEVINE_CDM_AAC_SUPPORT_AVAILABLE)
-    "mp4a";
-#else
-    "";  // No codec strings are supported.
-#endif
-#endif  // defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
-
-static void RegisterWidevine() {
 #if defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
   Version glibc_version(gnu_get_libc_version());
   DCHECK(glibc_version.IsValid());
@@ -68,73 +62,112 @@ static void RegisterWidevine() {
     return;
 #endif  // defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
 
-  AddConcreteSupportedKeySystem(
-      kWidevineKeySystem,
-      false,
-#if defined(ENABLE_PEPPER_CDMS)
-      kWidevineCdmPluginMimeType,
-#elif defined(OS_ANDROID)
-      kWidevineUuid,
-#endif  // defined(ENABLE_PEPPER_CDMS)
-      "com.widevine");
-#if !defined(OS_ANDROID)
-  AddSupportedType(kWidevineKeySystem, "video/webm", "vorbis,vp8,vp8.0");
-  AddSupportedType(kWidevineKeySystem, "audio/webm", "vorbis");
-#endif  // !defined(OS_ANDROID)
-#if defined(USE_PROPRIETARY_CODECS) && \
-    defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
-  AddSupportedType(kWidevineKeySystem, "video/mp4", kWidevineVideoMp4Codecs);
-  AddSupportedType(kWidevineKeySystem, "audio/mp4", kWidevineAudioMp4Codecs);
-#endif  // defined(USE_PROPRIETARY_CODECS) &&
-        // defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
-}
-#endif  // WIDEVINE_CDM_AVAILABLE
+  KeySystemInfo info(kWidevineKeySystem);
 
+  if (supported_codecs & WEBM_VP8_AND_VORBIS) {
+    info.supported_types.push_back(std::make_pair(kAudioWebM, kVorbis));
+    info.supported_types.push_back(std::make_pair(kVideoWebM, kVorbisVP8));
+  }
 
-static void RegisterClearKey() {
-  // Clear Key.
-  AddConcreteSupportedKeySystem(
-      kClearKeyKeySystem,
-      true,
-#if defined(ENABLE_PEPPER_CDMS)
-      std::string(),
-#elif defined(OS_ANDROID)
-      kEmptyUuid,
-#endif  // defined(ENABLE_PEPPER_CDMS)
-      std::string());
-  AddSupportedType(kClearKeyKeySystem, "video/webm", "vorbis,vp8,vp8.0");
-  AddSupportedType(kClearKeyKeySystem, "audio/webm", "vorbis");
 #if defined(USE_PROPRIETARY_CODECS)
-  AddSupportedType(kClearKeyKeySystem, "video/mp4", "avc1,mp4a");
-  AddSupportedType(kClearKeyKeySystem, "audio/mp4", "mp4a");
+  if (supported_codecs & MP4_AAC)
+    info.supported_types.push_back(std::make_pair(kAudioMp4, kMp4a));
+
+  if (supported_codecs & MP4_AVC1) {
+    const char* video_codecs = (supported_codecs & MP4_AAC) ? kMp4aAvc1 : kAvc1;
+    info.supported_types.push_back(std::make_pair(kVideoMp4, video_codecs));
+  }
 #endif  // defined(USE_PROPRIETARY_CODECS)
+
+  info.parent_key_system = kWidevineParentKeySystem;
+
+#if defined(ENABLE_PEPPER_CDMS)
+  info.pepper_type = kWidevineCdmPluginMimeType;
+#elif defined(OS_ANDROID)
+  info.uuid.assign(kWidevineUuid, kWidevineUuid + arraysize(kWidevineUuid));
+#endif  // defined(ENABLE_PEPPER_CDMS)
+
+  concrete_key_systems->push_back(info);
 }
 
 #if defined(ENABLE_PEPPER_CDMS)
-static void RegisterExternalClearKey() {
-  // External Clear Key (used for testing).
-  AddConcreteSupportedKeySystem(kExternalClearKeyKeySystem, false,
-                                "application/x-ppapi-clearkey-cdm",
-                                std::string());
-  AddSupportedType(kExternalClearKeyKeySystem,
-                   "video/webm", "vorbis,vp8,vp8.0");
-  AddSupportedType(kExternalClearKeyKeySystem, "audio/webm", "vorbis");
+// Supported types are determined at compile time.
+static void AddPepperBasedWidevine(
+    std::vector<KeySystemInfo>* concrete_key_systems) {
+  SupportedCodecs supported_codecs = WEBM_VP8_AND_VORBIS;
+
 #if defined(USE_PROPRIETARY_CODECS)
-  AddSupportedType(kExternalClearKeyKeySystem, "video/mp4", "avc1,mp4a");
-  AddSupportedType(kExternalClearKeyKeySystem, "audio/mp4", "mp4a");
+#if defined(WIDEVINE_CDM_AAC_SUPPORT_AVAILABLE)
+  supported_codecs |= MP4_AAC;
+#endif
+#if defined(WIDEVINE_CDM_AVC1_SUPPORT_AVAILABLE)
+  supported_codecs |= MP4_AVC1;
+#endif
 #endif  // defined(USE_PROPRIETARY_CODECS)
+
+  AddWidevineForTypes(supported_codecs, concrete_key_systems);
+}
+#elif defined(OS_ANDROID)
+static void AddAndroidWidevine(
+    std::vector<KeySystemInfo>* concrete_key_systems) {
+  SupportedCodecs supported_codecs = MP4_AAC | MP4_AVC1;
+  AddWidevineForTypes(supported_codecs, concrete_key_systems);
+}
+#endif  // defined(ENABLE_PEPPER_CDMS)
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+
+static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
+  KeySystemInfo info(kClearKeyKeySystem);
+
+  info.supported_types.push_back(std::make_pair(kAudioWebM, kVorbis));
+  info.supported_types.push_back(std::make_pair(kVideoWebM, kVorbisVP8));
+#if defined(USE_PROPRIETARY_CODECS)
+  info.supported_types.push_back(std::make_pair(kAudioMp4, kMp4a));
+  info.supported_types.push_back(std::make_pair(kVideoMp4, kMp4aAvc1));
+#endif  // defined(USE_PROPRIETARY_CODECS)
+
+  info.use_aes_decryptor = true;
+
+  concrete_key_systems->push_back(info);
+}
+
+#if defined(ENABLE_PEPPER_CDMS)
+// External Clear Key (used for testing).
+static void AddExternalClearKey(
+    std::vector<KeySystemInfo>* concrete_key_systems) {
+  static const char kExternalClearKeyKeySystem[] =
+      "org.chromium.externalclearkey";
+  static const char kExternalClearKeyPepperType[] =
+      "application/x-ppapi-clearkey-cdm";
+
+  KeySystemInfo info(kExternalClearKeyKeySystem);
+
+  info.supported_types.push_back(std::make_pair(kAudioWebM, kVorbis));
+  info.supported_types.push_back(std::make_pair(kVideoWebM, kVorbisVP8));
+#if defined(USE_PROPRIETARY_CODECS)
+  info.supported_types.push_back(std::make_pair(kAudioMp4, kMp4a));
+  info.supported_types.push_back(std::make_pair(kVideoMp4, kMp4aAvc1));
+#endif  // defined(USE_PROPRIETARY_CODECS)
+
+  info.pepper_type = kExternalClearKeyPepperType;
+
+  concrete_key_systems->push_back(info);
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
-void RegisterKeySystems() {
-  RegisterClearKey();
+void AddKeySystems(std::vector<KeySystemInfo>* key_systems_info) {
+  AddClearKey(key_systems_info);
 
 #if defined(ENABLE_PEPPER_CDMS)
-  RegisterExternalClearKey();
+  AddExternalClearKey(key_systems_info);
 #endif
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
-  RegisterWidevine();
+#if defined(ENABLE_PEPPER_CDMS)
+  AddPepperBasedWidevine(key_systems_info);
+#elif defined(OS_ANDROID)
+  AddAndroidWidevine(key_systems_info);
+#endif
 #endif
 }
 
