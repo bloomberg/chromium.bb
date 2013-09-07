@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #if defined(OS_WIN)
+#include <dwmapi.h>
 #include <windows.h>
 #endif
 
@@ -35,6 +36,7 @@
 #include "ui/gl/gpu_switching_manager.h"
 
 #if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #include "base/win/scoped_com_initializer.h"
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
 #include "sandbox/win/src/sandbox.h"
@@ -374,6 +376,25 @@ bool WarmUpSandbox(const CommandLine& command_line) {
     TRACE_EVENT0("gpu", "Initialize DXVA");
     // Initialize H/W video decoding stuff which fails in the sandbox.
     DXVAVideoDecodeAccelerator::PreSandboxInitialization();
+  }
+
+  {
+    TRACE_EVENT0("gpu", "Warm up DWM");
+
+    // DWM was introduced with Windows Vista. DwmFlush seems to be sufficient
+    // to warm it up before lowering the token. DWM is required to present to
+    // a window with Vista and later and this allows us to do so with the
+    // GPU process sandbox enabled.
+    if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+      HMODULE module = LoadLibrary(L"dwmapi.dll");
+      if (module) {
+        typedef HRESULT (WINAPI *DwmFlushFunc)();
+        DwmFlushFunc dwm_flush = reinterpret_cast<DwmFlushFunc>(
+            GetProcAddress(module, "DwmFlush"));
+        if (dwm_flush)
+          dwm_flush();
+      }
+    }
   }
 #endif
   return true;
