@@ -25,7 +25,7 @@ const int kErrorTimeoutSec = 30;
 // Errors simulation constants:
 const double kPaperJamProbability = 0.2;
 const int kTooManyDraftsTimeout = 10;
-const int kMaxDrafts = 5;
+const size_t kMaxDrafts = 5;
 
 const base::FilePath::CharType kJobsPath[] = FILE_PATH_LITERAL("printjobs");
 
