@@ -143,6 +143,7 @@ def GetBotStepMap():
       # Other waterfalls
       B('asan-builder-tests', H(compile_step, extra_gyp='asan=1'),
         T(std_tests, ['--asan'])),
+      B('blink-try-builder', H(compile_step)),
       B('chromedriver-fyi-tests-dbg', H(std_test_steps),
         T(['chromedriver'], ['--install=ChromiumTestShell'])),
       B('fyi-x86-builder-dbg',
