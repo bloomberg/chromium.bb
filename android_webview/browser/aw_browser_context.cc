@@ -23,6 +23,8 @@
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request_context.h"
 
+using content::BrowserThread;
+
 namespace android_webview {
 
 namespace {
@@ -41,11 +43,11 @@ class AwResourceContext : public content::ResourceContext {
 
   // content::ResourceContext implementation.
   virtual net::HostResolver* GetHostResolver() OVERRIDE {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     return getter_->GetURLRequestContext()->host_resolver();
   }
   virtual net::URLRequestContext* GetRequestContext() OVERRIDE {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     return getter_->GetURLRequestContext();
   }
   virtual bool AllowMicAccess(const GURL& origin) OVERRIDE {
@@ -73,6 +75,10 @@ AwBrowserContext::AwBrowserContext(
       user_pref_service_ready_(false) {
   DCHECK(g_browser_context == NULL);
   g_browser_context = this;
+
+  // This constructor is entered during the creation of ContentBrowserClient,
+  // before browser threads are created. Therefore any checks to enforce
+  // threading (such as BrowserThread::CurrentlyOn()) will fail here.
 }
 
 AwBrowserContext::~AwBrowserContext() {
@@ -109,6 +115,9 @@ void AwBrowserContext::PreMainMessageLoopRun() {
   visitedlink_master_.reset(
       new visitedlink::VisitedLinkMaster(this, this, false));
   visitedlink_master_->Init();
+
+  form_database_service_.reset(
+      new AwFormDatabaseService(context_storage_path_));
 }
 
 void AwBrowserContext::AddVisitedURLs(const std::vector<GURL>& urls) {
@@ -146,10 +155,6 @@ AwQuotaManagerBridge* AwBrowserContext::GetQuotaManagerBridge() {
 }
 
 AwFormDatabaseService* AwBrowserContext::GetFormDatabaseService() {
-  if (!form_database_service_) {
-    form_database_service_.reset(
-        new AwFormDatabaseService(context_storage_path_));
-  }
   return form_database_service_.get();
 }
 

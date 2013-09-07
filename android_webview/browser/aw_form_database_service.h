@@ -7,10 +7,13 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "base/synchronization/waitable_event.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "components/webdata/common/web_database_service.h"
+
+namespace base {
+class WaitableEvent;
+};
 
 namespace android_webview {
 
@@ -42,15 +45,16 @@ class AwFormDatabaseService : public WebDataServiceConsumer {
       const WDTypedResult* result) OVERRIDE;
 
  private:
-  // Cancels the currently pending WebDataService query, if there is one.
-  void CancelPendingQuery();
+  struct PendingQuery {
+    bool* result;
+    base::WaitableEvent* completion;
+  };
+  typedef std::map<WebDataServiceBase::Handle, PendingQuery> QueryMap;
 
-  void HasFormDataImpl();
+  void ClearFormDataImpl();
+  void HasFormDataImpl(base::WaitableEvent* completion, bool* result);
 
-  // Stores the query handle when an async database query is executed.
-  WebDataServiceBase::Handle pending_query_handle_;
-  bool has_form_data_;
-  base::WaitableEvent completion_;
+  QueryMap result_map_;
 
   scoped_refptr<autofill::AutofillWebDataService> autofill_data_;
   scoped_refptr<WebDatabaseService> web_database_;
