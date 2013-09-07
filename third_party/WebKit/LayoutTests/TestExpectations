@@ -1267,6 +1267,8 @@ crbug.com/282095 storage/websql/read-transactions-running-concurrently.html [ Fa
 crbug.com/282496 [ Linux SnowLeopard Lion Debug ] css3/filters/custom/composited/custom-filter-blend-modes.html [ ImageOnlyFailure Pass ]
 crbug.com/282496 [ Linux Release ] css3/filters/custom/composited/custom-filter-blend-modes.html [ ImageOnlyFailure Pass ]
 
+crbug.com/284734 svg/custom/getsvgdocument.html [ Pass Failure ]
+
 # Pre-landing "binary" file (actually UTF-16) - enable with http://crrev.com/23532016
 Bug(jsbell) fast/encoding/utf-16-odd-byte.html [ Skip ]
 
