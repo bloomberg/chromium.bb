@@ -86,6 +86,7 @@ cr.define('options', function() {
           $('import-history').checked || $('import-favorites').checked ||
           $('import-passwords').checked || $('import-search').checked;
       $('import-data-commit').disabled = !somethingToImport;
+      $('import-choose-file').disabled = !$('import-favorites').checked;
     },
 
     /**
