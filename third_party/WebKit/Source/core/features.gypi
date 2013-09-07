@@ -102,11 +102,6 @@
           'ENABLE_RUBBER_BANDING=1',
         ],
       }],
-      ['OS=="linux" or OS=="android"', {
-        'feature_defines': [
-          'WTF_USE_HARFBUZZ=1',
-        ],
-      }],
       ['use_default_render_theme==1', {
         'feature_defines': [
           'ENABLE_DEFAULT_RENDER_THEME=1',

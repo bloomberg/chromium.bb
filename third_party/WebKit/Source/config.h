@@ -178,3 +178,7 @@
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS 1
 #endif
+
+#if OS(LINUX) || OS(ANDROID)
+#define WTF_USE_HARFBUZZ 1
+#endif
