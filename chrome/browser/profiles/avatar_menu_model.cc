@@ -272,11 +272,6 @@ void AvatarMenuModel::Observe(int type,
 
 // static
 bool AvatarMenuModel::ShouldShowAvatarMenu() {
-#if defined(OS_CHROMEOS)
-  // On Chrome OS we use different UI for multi-profiles.
-  return false;
-#endif
-
   if (base::FieldTrialList::FindFullName(kShowProfileSwitcherFieldTrialName) ==
       kAlwaysShowSwitcherGroupName) {
     // We should only be in this group when multi-profiles is enabled.

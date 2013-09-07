@@ -321,8 +321,6 @@ int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
   if (!expanded_bounds.Contains(point))
     return HTNOWHERE;
 
-  // No avatar button.
-
   // Check the frame first, as we allow a small area overlapping the contents
   // to be used for resize handles.
   bool can_ever_resize = frame_->widget_delegate() ?

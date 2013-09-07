@@ -9,6 +9,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/immersive_fullscreen_configuration.h"
+#include "chrome/browser/ui/views/avatar_label.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -154,6 +155,14 @@ gfx::Rect BrowserNonClientFrameViewAsh::GetWindowBoundsForClientBounds(
 
 int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
   int hit_test = frame_painter_->NonClientHitTest(this, point);
+
+  // See if the point is actually within the avatar menu button or within
+  // the avatar label.
+  if (hit_test == HTCAPTION && ((avatar_button() &&
+       avatar_button()->GetMirroredBounds().Contains(point)) ||
+      (avatar_label() && avatar_label()->GetMirroredBounds().Contains(point))))
+      return HTCLIENT;
+
   // When the window is restored we want a large click target above the tabs
   // to drag the window, so redirect clicks in the tab's shadow to caption.
   if (hit_test == HTCLIENT &&
