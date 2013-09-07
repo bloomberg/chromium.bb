@@ -360,15 +360,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // If |web_contents| has not loaded, returns "Net Tab".
   string16 GetAppListTitle(content::WebContents* web_contents) const;
 
-  // Returns true when the given |browser| is listed in the browser application
-  // list.
-  bool IsBrowserRepresentedInBrowserList(Browser* browser);
-
   // Returns the LauncherItemController of BrowserShortcut.
-  LauncherItemController* GetBrowserShortcutLauncherItemController();
-
-  // Updates the activation state of the Broswer item.
-  void UpdateBrowserItemStatus();
+  BrowserShortcutLauncherItemController*
+      GetBrowserShortcutLauncherItemController();
 
  protected:
   // Creates a new app shortcut item and controller on the launcher at |index|.

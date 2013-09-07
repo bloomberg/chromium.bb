@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
+#include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -65,19 +66,15 @@ BrowserStatusMonitor::~BrowserStatusMonitor() {
 void BrowserStatusMonitor::OnWindowActivated(aura::Window* gained_active,
                                              aura::Window* lost_active) {
   Browser* browser = chrome::FindBrowserWithWindow(lost_active);
-  content::WebContents* active_contents = NULL;
-
   if (browser) {
-    active_contents = browser->tab_strip_model()->GetActiveWebContents();
-    if (active_contents)
-      UpdateAppState(active_contents);
+    UpdateAppAndBrowserState(
+        browser->tab_strip_model()->GetActiveWebContents());
   }
 
   browser = chrome::FindBrowserWithWindow(gained_active);
   if (browser) {
-    active_contents = browser->tab_strip_model()->GetActiveWebContents();
-    if (active_contents)
-      UpdateAppState(active_contents);
+    UpdateAppAndBrowserState(
+        browser->tab_strip_model()->GetActiveWebContents());
   }
 }
 
@@ -108,7 +105,7 @@ void BrowserStatusMonitor::OnBrowserRemoved(Browser* browser) {
     launcher_controller_->UnlockV1AppWithID(browser_to_app_id_map_[browser]);
     browser_to_app_id_map_.erase(browser);
   }
-  launcher_controller_->UpdateBrowserItemStatus();
+  UpdateBrowserItemState();
 }
 
 void BrowserStatusMonitor::OnDisplayBoundsChanged(
@@ -147,29 +144,33 @@ void BrowserStatusMonitor::ActiveTabChanged(content::WebContents* old_contents,
   // Update immediately on a tab change.
   if (browser &&
       (TabStripModel::kNoTab !=
-           browser->tab_strip_model()->GetIndexOfWebContents(old_contents)))
-    UpdateAppState(old_contents);
+           browser->tab_strip_model()->GetIndexOfWebContents(old_contents))) {
+    launcher_controller_->UpdateAppState(
+        old_contents,
+        ChromeLauncherController::APP_STATE_INACTIVE);
+  }
 
-  UpdateAppState(new_contents);
+  UpdateAppAndBrowserState(new_contents);
 }
 
 void BrowserStatusMonitor::TabInsertedAt(content::WebContents* contents,
                                          int index,
                                          bool foreground) {
-  UpdateAppState(contents);
+  UpdateAppAndBrowserState(contents);
 }
 
 void BrowserStatusMonitor::TabDetachedAt(content::WebContents* contents,
                                          int index) {
   launcher_controller_->UpdateAppState(
       contents, ChromeLauncherController::APP_STATE_REMOVED);
+  UpdateBrowserItemState();
 }
 
 void BrowserStatusMonitor::TabChangedAt(
     content::WebContents* contents,
     int index,
     TabStripModelObserver::TabChangeType change_type) {
-  UpdateAppState(contents);
+  UpdateAppAndBrowserState(contents);
 }
 
 void BrowserStatusMonitor::TabReplacedAt(TabStripModel* tab_strip_model,
@@ -179,23 +180,29 @@ void BrowserStatusMonitor::TabReplacedAt(TabStripModel* tab_strip_model,
   launcher_controller_->UpdateAppState(
       old_contents,
       ChromeLauncherController::APP_STATE_REMOVED);
-  UpdateAppState(new_contents);
+  UpdateAppAndBrowserState(new_contents);
 }
 
-void BrowserStatusMonitor::UpdateAppState(content::WebContents* contents) {
-  if (!contents)
-    return;
+void BrowserStatusMonitor::UpdateAppAndBrowserState(
+    content::WebContents* contents) {
+  if (contents) {
+    ChromeLauncherController::AppState app_state =
+        ChromeLauncherController::APP_STATE_INACTIVE;
 
-  ChromeLauncherController::AppState app_state =
-      ChromeLauncherController::APP_STATE_INACTIVE;
+    Browser* browser = chrome::FindBrowserWithWebContents(contents);
+    if (browser->tab_strip_model()->GetActiveWebContents() == contents) {
+      if (browser->window()->IsActive())
+        app_state = ChromeLauncherController::APP_STATE_WINDOW_ACTIVE;
+      else
+        app_state = ChromeLauncherController::APP_STATE_ACTIVE;
+    }
 
-  Browser* browser = chrome::FindBrowserWithWebContents(contents);
-  if (browser->tab_strip_model()->GetActiveWebContents() == contents) {
-    if (browser->window()->IsActive())
-      app_state = ChromeLauncherController::APP_STATE_WINDOW_ACTIVE;
-    else
-      app_state = ChromeLauncherController::APP_STATE_ACTIVE;
+    launcher_controller_->UpdateAppState(contents, app_state);
   }
+  UpdateBrowserItemState();
+}
 
-  launcher_controller_->UpdateAppState(contents, app_state);
+void BrowserStatusMonitor::UpdateBrowserItemState() {
+  launcher_controller_->GetBrowserShortcutLauncherItemController()->
+      UpdateBrowserItemState();
 }

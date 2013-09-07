@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "ash/launcher/launcher.h"
+#include "ash/launcher/launcher_model.h"
+#include "ash/launcher/launcher_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +21,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/ash_resources.h"
@@ -46,6 +49,53 @@ BrowserShortcutLauncherItemController::BrowserShortcutLauncherItemController(
 
 BrowserShortcutLauncherItemController::
     ~BrowserShortcutLauncherItemController() {
+}
+
+void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
+  // The shell will not be available for win7_aura unittests like
+  // ChromeLauncherControllerTest.BrowserMenuGeneration.
+  if (!ash::Shell::HasInstance())
+    return;
+
+  ash::LauncherModel* model = launcher_controller()->model();
+
+  // Determine the new browser's active state and change if necessary.
+  size_t browser_index = ash::launcher::GetBrowserItemIndex(*model);
+  DCHECK_GE(browser_index, 0u);
+  ash::LauncherItem browser_item = model->items()[browser_index];
+  ash::LauncherItemStatus browser_status = ash::STATUS_CLOSED;
+
+  aura::Window* window = ash::wm::GetActiveWindow();
+  if (window) {
+    // Check if the active browser / tab is a browser which is not an app,
+    // a windowed app, a popup or any other item which is not a browser of
+    // interest.
+    Browser* browser = chrome::FindBrowserWithWindow(window);
+    if (IsBrowserRepresentedInBrowserList(browser)) {
+      browser_status = ash::STATUS_ACTIVE;
+      // If an app is running in active window, browser item status cannot be
+      // active.
+      if (launcher_controller()->GetIDByWindow(window) != browser_item.id)
+        browser_status = ash::STATUS_RUNNING;
+    }
+  }
+
+  if (browser_status == ash::STATUS_CLOSED) {
+    const BrowserList* ash_browser_list =
+        BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+    for (BrowserList::const_reverse_iterator it =
+             ash_browser_list->begin_last_active();
+         it != ash_browser_list->end_last_active() &&
+         browser_status == ash::STATUS_CLOSED; ++it) {
+      if (IsBrowserRepresentedInBrowserList(*it))
+        browser_status = ash::STATUS_RUNNING;
+    }
+  }
+
+  if (browser_status != browser_item.status) {
+    browser_item.status = browser_status;
+    model->Set(browser_index, browser_item);
+  }
 }
 
 string16 BrowserShortcutLauncherItemController::GetTitle() {
@@ -152,7 +202,7 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
       continue;
     if (browser->is_type_tabbed())
       found_tabbed_browser = true;
-    else if (!launcher_controller()->IsBrowserRepresentedInBrowserList(browser))
+    else if (!IsBrowserRepresentedInBrowserList(browser))
       continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
     if (tab_strip->active_index() == -1)
@@ -218,7 +268,7 @@ void BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
   for (BrowserList::const_iterator it =
            ash_browser_list->begin();
        it != ash_browser_list->end(); ++it) {
-    if (launcher_controller()->IsBrowserRepresentedInBrowserList(*it))
+    if (IsBrowserRepresentedInBrowserList(*it))
       items.push_back(*it);
   }
   // If there are no suitable browsers we create a new one.
@@ -249,11 +299,22 @@ void BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
                                           true,
                                           chrome::HOST_DESKTOP_TYPE_ASH);
       if (!browser ||
-          !launcher_controller()->IsBrowserRepresentedInBrowserList(browser))
+          !IsBrowserRepresentedInBrowserList(browser))
         browser = items[0];
     }
   }
   DCHECK(browser);
   browser->window()->Show();
   browser->window()->Activate();
+}
+
+bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
+    Browser* browser) {
+  return (browser &&
+          (browser->is_type_tabbed() ||
+           !browser->is_app() ||
+           !browser->is_type_popup() ||
+           launcher_controller()->
+               GetLauncherIDForAppID(web_app::GetExtensionIdFromApplicationName(
+                   browser->app_name())) <= 0));
 }

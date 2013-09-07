@@ -79,8 +79,12 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
  private:
   typedef std::map<Browser*, std::string> BrowserToAppIDMap;
 
-  // Update app state for |contents|.
-  void UpdateAppState(content::WebContents* contents);
+  // Update app state for |contents| and browser state.
+  void UpdateAppAndBrowserState(content::WebContents* contents);
+
+  // A shortcut to call the BrowserShortcutLauncherItemController's
+  // UpdateBrowserItemState().
+  void UpdateBrowserItemState();
 
   ChromeLauncherController* launcher_controller_;
 

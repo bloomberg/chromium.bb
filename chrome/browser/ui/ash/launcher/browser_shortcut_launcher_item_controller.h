@@ -27,6 +27,9 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
 
   virtual ~BrowserShortcutLauncherItemController();
 
+  // Updates the activation state of the Broswer item.
+  void UpdateBrowserItemState();
+
   // LauncherItemController overrides:
   virtual string16 GetTitle() OVERRIDE;
   virtual bool IsCurrentlyShownInWindow(aura::Window* window) const OVERRIDE;
@@ -54,6 +57,10 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
 
   // Activate a browser - or advance to the next one on the list.
   void ActivateOrAdvanceToNextBrowser();
+
+  // Returns true when the given |browser| is listed in the browser application
+  // list.
+  bool IsBrowserRepresentedInBrowserList(Browser* browser);
 
   Profile* profile_;
 
