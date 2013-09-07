@@ -116,7 +116,7 @@ WTF_EXPORT void WTFLogVerbose(const char* file, int line, const char* function, 
 WTF_EXPORT void WTFLogAlways(const char* format, ...) WTF_ATTRIBUTE_PRINTF(1, 2);
 
 WTF_EXPORT void WTFGetBacktrace(void** stack, int* size);
-WTF_EXPORT void WTFReportBacktrace();
+WTF_EXPORT void WTFReportBacktrace(int framesToShow = 31);
 WTF_EXPORT void WTFPrintBacktrace(void** stack, int size);
 
 typedef void (*WTFCrashHookFunction)();

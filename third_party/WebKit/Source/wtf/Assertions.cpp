@@ -249,11 +249,11 @@ void WTFGetBacktrace(void** stack, int* size)
 #endif
 }
 
-void WTFReportBacktrace()
+void WTFReportBacktrace(int framesToShow)
 {
-    static const int framesToShow = 31;
     static const int framesToSkip = 2;
-    void* samples[framesToShow + framesToSkip];
+    // Use alloca to allocate on the stack since this function is used in OOM situations.
+    void** samples = static_cast<void**>(alloca((framesToShow + framesToSkip) * sizeof(void *)));
     int frames = framesToShow + framesToSkip;
 
     WTFGetBacktrace(samples, &frames);
