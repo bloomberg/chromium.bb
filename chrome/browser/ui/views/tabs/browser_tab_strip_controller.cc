@@ -26,7 +26,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -39,7 +38,6 @@
 
 using content::UserMetricsAction;
 using content::WebContents;
-using web_modal::WebContentsModalDialogManager;
 
 namespace {
 
@@ -364,15 +362,6 @@ void BrowserTabStripController::LayoutTypeMaybeChanged() {
   g_browser_process->local_state()->SetInteger(
       prefs::kTabStripLayoutType,
       static_cast<int>(tabstrip_->layout_type()));
-}
-
-bool BrowserTabStripController::IsTabShowingWebViewModalDialog(int index) {
-  DCHECK(model_->ContainsIndex(index));
-  WebContentsModalDialogManager* contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(
-          model_->GetWebContentsAt(index));
-  return contents_modal_dialog_manager &&
-      contents_modal_dialog_manager->IsShowingDialog();
 }
 
 void BrowserTabStripController::OnStartedDraggingTabs() {

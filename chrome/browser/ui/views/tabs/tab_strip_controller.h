@@ -99,10 +99,6 @@ class TabStripController {
   // Invoked if the layout type might have changed.
   virtual void LayoutTypeMaybeChanged() = 0;
 
-  // Returns true if the tab at the given index is showing a web view modal
-  // dialog.
-  virtual bool IsTabShowingWebViewModalDialog(int index) = 0;
-
   // Notifies controller that the user started dragging this tabstrip's tabs.
   virtual void OnStartedDraggingTabs() = 0;
 
