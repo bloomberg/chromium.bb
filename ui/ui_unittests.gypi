@@ -170,6 +170,7 @@
         'gfx/blit_unittest.cc',
         'gfx/break_list_unittest.cc',
         'gfx/canvas_unittest.cc',
+        'gfx/canvas_unittest_mac.mm',
         'gfx/codec/jpeg_codec_unittest.cc',
         'gfx/color_analysis_unittest.cc',
         'gfx/font_list_unittest.cc',
