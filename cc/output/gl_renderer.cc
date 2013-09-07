@@ -1142,11 +1142,12 @@ static void SolidColorUniformLocation(T program,
   uniforms->color_location = program->fragment_shader().color_location();
 }
 
+// static
 bool GLRenderer::SetupQuadForAntialiasing(
     const gfx::Transform& device_transform,
     const DrawQuad* quad,
     gfx::QuadF* local_quad,
-    float edge[24]) const {
+    float edge[24]) {
   gfx::Rect tile_rect = quad->visible_rect;
 
   bool clipped = false;
@@ -1157,11 +1158,8 @@ bool GLRenderer::SetupQuadForAntialiasing(
   bool is_nearest_rect_within_epsilon = is_axis_aligned_in_target &&
       gfx::IsNearestRectWithinDistance(device_layer_quad.BoundingBox(),
                                        kAntiAliasingEpsilon);
-
-  bool use_aa = Settings().allow_antialiasing &&
-                !clipped &&  // code can't handle clipped quads
-                !is_nearest_rect_within_epsilon &&
-                quad->IsEdge();
+  // AAing clipped quads is not supported by the code yet.
+  bool use_aa = !clipped && !is_nearest_rect_within_epsilon && quad->IsEdge();
   if (!use_aa)
     return false;
 
@@ -1250,8 +1248,9 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
 
   gfx::QuadF local_quad = gfx::QuadF(gfx::RectF(tile_rect));
   float edge[24];
-  bool use_aa = !quad->force_anti_aliasing_off && SetupQuadForAntialiasing(
-      device_transform, quad, &local_quad, edge);
+  bool use_aa =
+      Settings().allow_antialiasing && !quad->force_anti_aliasing_off &&
+      SetupQuadForAntialiasing(device_transform, quad, &local_quad, edge);
 
   SolidColorProgramUniforms uniforms;
   if (use_aa)
@@ -1389,7 +1388,7 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
 
   gfx::QuadF local_quad = gfx::QuadF(gfx::RectF(tile_rect));
   float edge[24];
-  bool use_aa = SetupQuadForAntialiasing(
+  bool use_aa = Settings().allow_antialiasing && SetupQuadForAntialiasing(
       device_transform, quad, &local_quad, edge);
 
   TileProgramUniforms uniforms;

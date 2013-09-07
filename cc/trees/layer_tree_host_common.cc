@@ -1409,8 +1409,9 @@ static void CalculateDrawPropertiesInternal(
   // case, the render_surface re-parents the transforms.
   layer_draw_properties.target_space_transform = combined_transform;
   // M[draw] = M[parent] * LT * S[layer2content]
-  layer_draw_properties.target_space_transform.Scale
-      (1.f / layer->contents_scale_x(), 1.f / layer->contents_scale_y());
+  layer_draw_properties.target_space_transform.Scale(
+      SK_MScalar1 / layer->contents_scale_x(),
+      SK_MScalar1 / layer->contents_scale_y());
 
   // The layer's screen_space_transform represents the transform between root
   // layer's "screen space" and local content space.

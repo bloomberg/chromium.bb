@@ -37,6 +37,8 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
+#include "cc/test/fake_picture_layer_impl.h"
+#include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/fake_video_frame_provider.h"
@@ -48,6 +50,7 @@
 #include "media/base/media.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
 
@@ -6156,6 +6159,79 @@ TEST_F(LayerTreeHostImplTest, MaskLayerForSurfaceWithClippedLayer) {
     host_impl_->DidDrawAllLayers(frame);
   }
 }
+
+class GLRendererWithSetupQuadForAntialiasing : public GLRenderer {
+ public:
+  using GLRenderer::SetupQuadForAntialiasing;
+};
+
+TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
+  // Due to precision issues (especially on Android), sometimes far
+  // away quads can end up thinking they need AA.
+  float device_scale_factor = 4.f / 3.f;
+  host_impl_->SetDeviceScaleFactor(device_scale_factor);
+  gfx::Size root_size(2000, 1000);
+  gfx::Size device_viewport_size =
+      gfx::ToCeiledSize(gfx::ScaleSize(root_size, device_scale_factor));
+  host_impl_->SetViewportSize(device_viewport_size);
+
+  host_impl_->CreatePendingTree();
+  host_impl_->pending_tree()
+      ->SetPageScaleFactorAndLimits(1.f, 1.f / 16.f, 16.f);
+
+  scoped_ptr<LayerImpl> scoped_root =
+      LayerImpl::Create(host_impl_->pending_tree(), 1);
+  LayerImpl* root = scoped_root.get();
+
+  host_impl_->pending_tree()->SetRootLayer(scoped_root.Pass());
+
+  scoped_ptr<LayerImpl> scoped_scrolling_layer =
+      LayerImpl::Create(host_impl_->pending_tree(), 2);
+  LayerImpl* scrolling_layer = scoped_scrolling_layer.get();
+  root->AddChild(scoped_scrolling_layer.Pass());
+
+  gfx::Size content_layer_bounds(100000, 100);
+  gfx::Size pile_tile_size(3000, 3000);
+  scoped_refptr<FakePicturePileImpl> pile(FakePicturePileImpl::CreateFilledPile(
+      pile_tile_size, content_layer_bounds));
+
+  scoped_ptr<FakePictureLayerImpl> scoped_content_layer =
+      FakePictureLayerImpl::CreateWithPile(host_impl_->pending_tree(), 3, pile);
+  LayerImpl* content_layer = scoped_content_layer.get();
+  scrolling_layer->AddChild(scoped_content_layer.PassAs<LayerImpl>());
+  content_layer->SetBounds(content_layer_bounds);
+  content_layer->SetDrawsContent(true);
+
+  root->SetBounds(root_size);
+
+  gfx::Vector2d scroll_offset(100000, 0);
+  scrolling_layer->SetScrollable(true);
+  scrolling_layer->SetMaxScrollOffset(scroll_offset);
+  scrolling_layer->SetScrollOffset(scroll_offset);
+
+  host_impl_->ActivatePendingTree();
+
+  host_impl_->active_tree()->UpdateDrawProperties();
+  ASSERT_EQ(1u, host_impl_->active_tree()->RenderSurfaceLayerList().size());
+
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+
+  ASSERT_EQ(1u, frame.render_passes.size());
+  ASSERT_LE(1u, frame.render_passes[0]->quad_list.size());
+  const DrawQuad* quad = frame.render_passes[0]->quad_list[0];
+
+  float edge[24];
+  gfx::QuadF device_layer_quad;
+  bool antialiased =
+      GLRendererWithSetupQuadForAntialiasing::SetupQuadForAntialiasing(
+          quad->quadTransform(), quad, &device_layer_quad, edge);
+  EXPECT_FALSE(antialiased);
+
+  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DidDrawAllLayers(frame);
+}
+
 
 class CompositorFrameMetadataTest : public LayerTreeHostImplTest {
  public:

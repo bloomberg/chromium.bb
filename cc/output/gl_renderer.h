@@ -124,6 +124,17 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       scoped_ptr<CopyOutputRequest> request) OVERRIDE;
   virtual void FinishDrawingQuadList() OVERRIDE;
 
+  // Check if quad needs antialiasing and if so, inflate the quad and
+  // fill edge array for fragment shader.  local_quad is set to
+  // inflated quad if antialiasing is required, otherwise it is left
+  // unchanged.  edge array is filled with inflated quad's edge data
+  // if antialiasing is required, otherwise it is left unchanged.
+  // Returns true if quad requires antialiasing and false otherwise.
+  static bool SetupQuadForAntialiasing(const gfx::Transform& device_transform,
+                                       const DrawQuad* quad,
+                                       gfx::QuadF* local_quad,
+                                       float edge[24]);
+
  private:
   friend class GLRendererShaderPixelTest;
   friend class GLRendererShaderTest;
@@ -173,17 +184,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                                 gfx::Rect rect,
                                 const gfx::Transform& draw_matrix,
                                 bool flip_vertically);
-
-  // Check if quad needs antialiasing and if so, inflate the quad and
-  // fill edge array for fragment shader.  local_quad is set to
-  // inflated quad if antialiasing is required, otherwise it is left
-  // unchanged.  edge array is filled with inflated quad's edge data
-  // if antialiasing is required, otherwise it is left unchanged.
-  // Returns true if quad requires antialiasing and false otherwise.
-  bool SetupQuadForAntialiasing(const gfx::Transform& device_transform,
-                                const DrawQuad* quad,
-                                gfx::QuadF* local_quad,
-                                float edge[24]) const;
 
   bool UseScopedTexture(DrawingFrame* frame,
                         const ScopedResource* resource,
