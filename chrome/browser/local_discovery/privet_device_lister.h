@@ -50,6 +50,7 @@ class PrivetDeviceLister {
                                const std::string& name,
                                const DeviceDescription& description) = 0;
     virtual void DeviceRemoved(const std::string& name) = 0;
+    virtual void DeviceCacheFlushed() = 0;
   };
 
 

@@ -42,7 +42,7 @@ LocalDiscoveryUIHandler::LocalDiscoveryUIHandler() : is_visible_(false) {
 }
 
 LocalDiscoveryUIHandler::LocalDiscoveryUIHandler(
-    scoped_ptr<PrivetDeviceLister> privet_lister) {
+    scoped_ptr<PrivetDeviceLister> privet_lister) : is_visible_(false) {
   privet_lister.swap(privet_lister_);
 }
 
@@ -310,6 +310,11 @@ void LocalDiscoveryUIHandler::DeviceRemoved(const std::string& name) {
 
   web_ui()->CallJavascriptFunction("local_discovery.onUnregisteredDeviceUpdate",
                                    name_value, *null_value);
+}
+
+void LocalDiscoveryUIHandler::DeviceCacheFlushed() {
+  web_ui()->CallJavascriptFunction("local_discovery.onDeviceCacheFlushed");
+  privet_lister_->DiscoverNewDevices(false);
 }
 
 void LocalDiscoveryUIHandler::OnCloudPrintPrinterListReady() {

@@ -125,6 +125,20 @@ void PrivetNotificationsListener::DeviceRemoved(const std::string& name) {
   delegate_->PrivetRemoveNotification(name);
 }
 
+void PrivetNotificationsListener::DeviceCacheFlushed() {
+  for (DeviceContextMap::iterator i = devices_seen_.begin();
+       i != devices_seen_.end(); ++i) {
+    DeviceContext* device = i->second.get();
+
+    device->info_operation.reset();
+    device->privet_http_resolution.reset();
+    if (device->notification_may_be_active) {
+      device->notification_may_be_active = false;
+      delegate_->PrivetRemoveNotification(i->first);
+    }
+  }
+}
+
 PrivetNotificationsListener::DeviceContext::DeviceContext() {
 }
 
@@ -154,6 +168,10 @@ void PrivetNotificationService::DeviceChanged(
 
 void PrivetNotificationService::DeviceRemoved(const std::string& name) {
   privet_notifications_listener_->DeviceRemoved(name);
+}
+
+void PrivetNotificationService::DeviceCacheFlushed() {
+  privet_notifications_listener_->DeviceCacheFlushed();
 }
 
 void PrivetNotificationService::PrivetNotify(

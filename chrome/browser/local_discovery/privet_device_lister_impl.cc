@@ -37,12 +37,7 @@ PrivetDeviceListerImpl::~PrivetDeviceListerImpl() {
 }
 
 void PrivetDeviceListerImpl::Start() {
-  service_watcher_ =
-      service_discovery_client_->CreateServiceWatcher(
-          service_type_,
-          base::Bind(&PrivetDeviceListerImpl::OnServiceUpdated,
-                     base::Unretained(this)));
-  service_watcher_->Start();
+  CreateServiceWatcher();
 }
 
 void PrivetDeviceListerImpl::DiscoverNewDevices(bool force_update) {
@@ -52,6 +47,14 @@ void PrivetDeviceListerImpl::DiscoverNewDevices(bool force_update) {
 void PrivetDeviceListerImpl::OnServiceUpdated(
     ServiceWatcher::UpdateType update,
     const std::string& service_name) {
+  if (update == ServiceWatcher::UPDATE_INVALIDATED) {
+    resolvers_.clear();
+    CreateServiceWatcher();
+
+    delegate_->DeviceCacheFlushed();
+    return;
+  }
+
   if (update != ServiceWatcher::UPDATE_REMOVED) {
     bool added = (update == ServiceWatcher::UPDATE_ADDED);
     std::pair<ServiceResolverMap::iterator, bool> insert_result =
@@ -141,6 +144,16 @@ PrivetDeviceListerImpl::ConnectionStateFromString(const std::string& str) {
   }
 
   return DeviceDescription::UNKNOWN;
+}
+
+void PrivetDeviceListerImpl::CreateServiceWatcher() {
+  service_watcher_ =
+      service_discovery_client_->CreateServiceWatcher(
+          service_type_,
+          base::Bind(&PrivetDeviceListerImpl::OnServiceUpdated,
+                     base::Unretained(this)));
+  service_watcher_->Start();
+
 }
 
 }  // namespace local_discovery

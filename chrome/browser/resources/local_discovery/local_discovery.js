@@ -209,17 +209,7 @@ cr.define('local_discovery', function() {
       }
     }
 
-    var numberPrinters = $('register-device-list').children.length;
-    $('printer-num').textContent = generateNumberPrintersAvailableText(
-      numberPrinters);
-
-    if (numberPrinters == 0) {
-      $('register-message').textContent = loadTimeData.getString(
-        'noPrintersOnNetworkExplanation');
-    } else {
-      $('register-message').textContent = loadTimeData.getString(
-        'registerConfirmMessage');
-    }
+    updateUIToReflectNumberOfLocalDevices();
   }
 
   /**
@@ -247,6 +237,29 @@ cr.define('local_discovery', function() {
       fillDeviceDescription(devicesDomElement, devices_list[i].display_name,
                             description, 'Manage' /*Localize*/,
                             manageCloudDevice.bind(null, devices_list[i].id));
+    }
+  }
+
+  function onDeviceCacheFlushed() {
+    for (var deviceName in devices) {
+      devices[deviceName].removeDevice();
+      delete devices[deviceName];
+    }
+
+    updateUIToReflectNumberOfLocalDevices();
+  }
+
+  function updateUIToReflectNumberOfLocalDevices() {
+    var numberPrinters = $('register-device-list').children.length;
+    $('printer-num').textContent = generateNumberPrintersAvailableText(
+      numberPrinters);
+
+    if (numberPrinters == 0) {
+      $('register-message').textContent = loadTimeData.getString(
+        'noPrintersOnNetworkExplanation');
+    } else {
+      $('register-message').textContent = loadTimeData.getString(
+        'registerConfirmMessage');
     }
   }
 
@@ -352,6 +365,7 @@ cr.define('local_discovery', function() {
     onRegistrationFailed: onRegistrationFailed,
     onUnregisteredDeviceUpdate: onUnregisteredDeviceUpdate,
     onRegistrationConfirmedOnPrinter: onRegistrationConfirmedOnPrinter,
-    onCloudDeviceListAvailable: onCloudDeviceListAvailable
+    onCloudDeviceListAvailable: onCloudDeviceListAvailable,
+    onDeviceCacheFlushed: onDeviceCacheFlushed
   };
 });

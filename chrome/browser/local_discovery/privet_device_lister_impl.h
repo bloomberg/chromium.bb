@@ -51,6 +51,9 @@ class PrivetDeviceListerImpl : public PrivetDeviceLister {
   DeviceDescription::ConnectionState ConnectionStateFromString(
       const std::string& str);
 
+  // Create or recreate the service watcher
+  void CreateServiceWatcher();
+
   PrivetDeviceLister::Delegate* delegate_;
 
   ServiceDiscoveryClient* service_discovery_client_;

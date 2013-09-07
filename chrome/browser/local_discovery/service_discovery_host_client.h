@@ -12,6 +12,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "content/public/browser/utility_process_host_client.h"
+#include "net/base/network_change_notifier.h"
 
 namespace base {
 class TaskRunner;
@@ -25,9 +26,11 @@ namespace local_discovery {
 
 // Implementation of ServiceDiscoveryClient that delegates all functionality to
 // utility process.
-class ServiceDiscoveryHostClient : public base::NonThreadSafe,
-                                   public ServiceDiscoveryClient,
-                                   public content::UtilityProcessHostClient {
+class ServiceDiscoveryHostClient
+    : public base::NonThreadSafe,
+      public ServiceDiscoveryClient,
+      public content::UtilityProcessHostClient,
+      public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   ServiceDiscoveryHostClient();
 
@@ -52,6 +55,9 @@ class ServiceDiscoveryHostClient : public base::NonThreadSafe,
   // UtilityProcessHostClient implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  // net::NetworkChangeNotifier::IPAddressObserver implementation.
+  virtual void OnIPAddressChanged() OVERRIDE;
+
  protected:
   virtual ~ServiceDiscoveryHostClient();
 
@@ -68,6 +74,7 @@ class ServiceDiscoveryHostClient : public base::NonThreadSafe,
 
   void StartOnIOThread();
   void ShutdownOnIOThread();
+  void RestartOnIOThread();
 
   void Send(IPC::Message* msg);
   void SendOnIOThread(IPC::Message* msg);

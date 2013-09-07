@@ -54,6 +54,7 @@ class PrivetNotificationsListener : public PrivetInfoOperation::Delegate {
                      const std::string& name,
                      const DeviceDescription& description);
   void DeviceRemoved(const std::string& name);
+  virtual void DeviceCacheFlushed();
 
   // PrivetInfoOperation::Delegate implementation.
   virtual void OnPrivetInfoDone(
@@ -108,6 +109,8 @@ class PrivetNotificationService
 
   virtual void PrivetRemoveNotification(
       const std::string& device_name) OVERRIDE;
+  virtual void DeviceCacheFlushed() OVERRIDE;
+
  private:
   void Start();
 

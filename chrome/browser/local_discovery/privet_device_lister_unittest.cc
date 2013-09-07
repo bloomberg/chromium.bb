@@ -163,6 +163,8 @@ class MockDeviceListerDelegate : public PrivetDeviceLister::Delegate {
                                    const DeviceDescription& description));
 
   MOCK_METHOD1(DeviceRemoved, void(const std::string& name));
+
+  MOCK_METHOD0(DeviceCacheFlushed, void());
 };
 
 class PrivetDeviceListerTest : public testing::Test {

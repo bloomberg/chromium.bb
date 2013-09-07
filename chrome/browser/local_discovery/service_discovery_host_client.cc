@@ -192,25 +192,23 @@ uint64 ServiceDiscoveryHostClient::RegisterLocalDomainResolverCallback(
 
 void ServiceDiscoveryHostClient::UnregisterWatcherCallback(uint64 id) {
   DCHECK(CalledOnValidThread());
-  DCHECK(ContainsKey(service_watcher_callbacks_, id));
   service_watcher_callbacks_.erase(id);
 }
 
 void ServiceDiscoveryHostClient::UnregisterResolverCallback(uint64 id) {
   DCHECK(CalledOnValidThread());
-  DCHECK(ContainsKey(service_resolver_callbacks_, id));
   service_resolver_callbacks_.erase(id);
 }
 
 void ServiceDiscoveryHostClient::UnregisterLocalDomainResolverCallback(
     uint64 id) {
   DCHECK(CalledOnValidThread());
-  DCHECK(ContainsKey(domain_resolver_callbacks_, id));
   domain_resolver_callbacks_.erase(id);
 }
 
 void ServiceDiscoveryHostClient::Start() {
   DCHECK(CalledOnValidThread());
+  net::NetworkChangeNotifier::AddIPAddressObserver(this);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -218,6 +216,7 @@ void ServiceDiscoveryHostClient::Start() {
 }
 
 void ServiceDiscoveryHostClient::Shutdown() {
+  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
   DCHECK(CalledOnValidThread());
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -259,6 +258,13 @@ void ServiceDiscoveryHostClient::ShutdownOnIOThread() {
   }
 }
 
+void ServiceDiscoveryHostClient::RestartOnIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  ShutdownOnIOThread();
+  StartOnIOThread();
+}
+
 void ServiceDiscoveryHostClient::Send(IPC::Message* msg) {
   DCHECK(CalledOnValidThread());
   BrowserThread::PostTask(
@@ -271,6 +277,23 @@ void ServiceDiscoveryHostClient::SendOnIOThread(IPC::Message* msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (utility_host_)
     utility_host_->Send(msg);
+}
+
+void ServiceDiscoveryHostClient::OnIPAddressChanged() {
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&ServiceDiscoveryHostClient::RestartOnIOThread, this));
+
+  WatcherCallbacks service_watcher_callbacks;
+  service_watcher_callbacks_.swap(service_watcher_callbacks);
+
+  for (WatcherCallbacks::iterator i = service_watcher_callbacks.begin();
+       i != service_watcher_callbacks.end(); i++) {
+    if (!i->second.is_null()) {
+      i->second.Run(ServiceWatcher::UPDATE_INVALIDATED, "");
+    }
+  }
 }
 
 bool ServiceDiscoveryHostClient::OnMessageReceived(

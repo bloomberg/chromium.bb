@@ -51,7 +51,8 @@ class ServiceWatcher {
   enum UpdateType {
     UPDATE_ADDED,
     UPDATE_CHANGED,
-    UPDATE_REMOVED
+    UPDATE_REMOVED,
+    UPDATE_INVALIDATED
   };
 
   // Called when a service has been added or removed for a certain service name.

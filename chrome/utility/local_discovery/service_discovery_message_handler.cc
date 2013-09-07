@@ -291,7 +291,6 @@ void ServiceDiscoveryMessageHandler::DiscoverServices(uint64 id,
 void ServiceDiscoveryMessageHandler::DestroyWatcher(uint64 id) {
   if (!service_discovery_client_)
     return;
-  DCHECK(ContainsKey(service_watchers_, id));
   service_watchers_.erase(id);
 }
 
@@ -313,7 +312,6 @@ void ServiceDiscoveryMessageHandler::ResolveService(
 void ServiceDiscoveryMessageHandler::DestroyResolver(uint64 id) {
   if (!service_discovery_client_)
     return;
-  DCHECK(ContainsKey(service_resolvers_, id));
   service_resolvers_.erase(id);
 }
 
@@ -336,7 +334,6 @@ void ServiceDiscoveryMessageHandler::ResolveLocalDomain(
 void ServiceDiscoveryMessageHandler::DestroyLocalDomainResolver(uint64 id) {
   if (!service_discovery_client_)
     return;
-  DCHECK(ContainsKey(local_domain_resolvers_, id));
   local_domain_resolvers_.erase(id);
 }
 

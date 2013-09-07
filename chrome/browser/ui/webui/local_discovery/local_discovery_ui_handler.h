@@ -74,7 +74,10 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
       bool added,
       const std::string& name,
       const DeviceDescription& description) OVERRIDE;
+
   virtual void DeviceRemoved(const std::string& name) OVERRIDE;
+
+  virtual void DeviceCacheFlushed() OVERRIDE;
 
   // CloudPrintPrinterList::Delegate implementation.
   virtual void OnCloudPrintPrinterListReady() OVERRIDE;
