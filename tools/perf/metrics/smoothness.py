@@ -157,8 +157,8 @@ def CalcResults(benchmark_stats, results):
               round(Median(frame_times), 2))
 
   results.Add('dropped_percent', '%',
-              Average(s.dropped_frame_count, s.screen_frame_count,
-                      100, 1),
+              Average(s.dropped_frame_count,
+                      s.screen_frame_count + s.dropped_frame_count, 100, 1),
               data_type='unimportant')
   results.Add('percent_impl_scrolled', '%',
               Average(s.impl_thread_scroll_count,

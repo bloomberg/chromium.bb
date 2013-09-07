@@ -149,10 +149,11 @@
 
   RafRenderingStats.prototype.getDroppedFrameCount_ = function(frameTimes) {
     var droppedFrameCount = 0;
+    var droppedFrameThreshold = 1000 / 55;
     for (var i = 1; i < frameTimes.length; i++) {
       var frameTime = frameTimes[i] - frameTimes[i-1];
-      if (frameTime > 1000 / 55)
-        droppedFrameCount++;
+      if (frameTime > droppedFrameThreshold)
+        droppedFrameCount += Math.floor(frameTime / droppedFrameThreshold);
     }
     return droppedFrameCount;
   };

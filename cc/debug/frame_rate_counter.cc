@@ -73,7 +73,8 @@ void FrameRateCounter::SaveTimeStamp(base::TimeTicks timestamp, bool software) {
 
   if (!IsBadFrameInterval(frame_interval_seconds) &&
       frame_interval_seconds.InSecondsF() > kDroppedFrameTime)
-    ++dropped_frame_count_;
+    dropped_frame_count_ +=
+        frame_interval_seconds.InSecondsF() / kDroppedFrameTime;
 }
 
 bool FrameRateCounter::IsBadFrameInterval(
