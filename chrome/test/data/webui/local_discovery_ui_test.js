@@ -5,7 +5,7 @@
 var $ = document.getElementById.bind(document);
 
 function checkOneDevice() {
-  var devices = $('registered-devices').children;
+  var devices = $('register-device-list').children;
   assertEquals(1, devices.length);
   var firstDevice = devices[0];
 
@@ -13,14 +13,13 @@ function checkOneDevice() {
   assertEquals('Sample device', deviceName);
 
   var deviceDescription =
-        firstDevice.querySelector('.device-description').textContent;
+        firstDevice.querySelector('.device-subline').textContent;
   assertEquals('Sample device description', deviceDescription);
 
   var button = firstDevice.querySelector('button');
-  assertEquals(true, button.disabled);
+  assertEquals(false, button.disabled);
 }
 
 function checkNoDevices() {
-  assertEquals(0, $('unregistered-devices').children.length);
-  assertEquals(0, $('registered-devices').children.length);
+  assertEquals(0, $('register-device-list').children.length);
 }

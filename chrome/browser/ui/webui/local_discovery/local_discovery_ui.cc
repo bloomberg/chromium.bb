@@ -48,6 +48,22 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
                              IDS_LOCAL_DISCOVERY_UNREGISTERED_DEVICES_TITLE);
   source->AddLocalizedString("devicesTitle",
                              IDS_LOCAL_DISCOVERY_DEVICES_PAGE_TITLE);
+  source->AddLocalizedString("noDescription",
+                             IDS_LOCAL_DISCOVERY_NO_DESCRIPTION);
+  source->AddLocalizedString("printersOnNetworkZero",
+                             IDS_LOCAL_DISCOVERY_PRINTERS_ON_NETWORK_ZERO);
+  source->AddLocalizedString("printersOnNetworkOne",
+                             IDS_LOCAL_DISCOVERY_PRINTERS_ON_NETWORK_ONE);
+  source->AddLocalizedString("printersOnNetworkMultiple",
+                             IDS_LOCAL_DISCOVERY_PRINTERS_ON_NETWORK_MULTIPLE);
+  source->AddLocalizedString("cancel", IDS_CANCEL);
+  source->AddLocalizedString("ok", IDS_OK);
+  source->AddLocalizedString("loading", IDS_LOCAL_DISCOVERY_LOADING);
+  source->AddLocalizedString("addPrinters", IDS_LOCAL_DISCOVERY_ADD_PRINTERS);
+  source->AddLocalizedString(
+      "noPrintersOnNetworkExplanation",
+      IDS_LOCAL_DISCOVERY_NO_PRINTERS_ON_NETWORK_EXPLANATION);
+
 
   source->SetJsonPath("strings.js");
 

@@ -4,10 +4,12 @@
 
 /**
  * Javascript for local_discovery.html, served from chrome://devices/
- * This is used to show discoverable devices near the user.
+ * This is used to show discoverable devices near the user as well as
+ * cloud devices registered to them.
  *
- * The simple object defined in this javascript file listens for
- * callbacks from the C++ code saying that a new device is available.
+ * The object defined in this javascript file listens for callbacks from the
+ * C++ code saying that a new device is available as well as manages the UI for
+ * registering a device on the local network.
  */
 
 
@@ -17,11 +19,16 @@ cr.define('local_discovery', function() {
   'use strict';
 
   /**
+   * Prefix for printer management page URLs, relative to base cloud print URL.
+   * @type {string}
+   */
+  var PRINTER_MANAGEMENT_PAGE_PREFIX = '#printer/id/';
+
+  /**
    * Map of service names to corresponding service objects.
    * @type {Object.<string,Service>}
    */
   var devices = {};
-
 
   /**
    * Object that represents a device in the device list.
@@ -39,10 +46,6 @@ cr.define('local_discovery', function() {
      * @param {Object} info New information about the device.
      */
     updateDevice: function(info) {
-      if (this.domElement && info.is_mine != this.info.is_mine) {
-        this.deviceContainer(this.info.is_mine).removeChild(this.domElement);
-        this.deviceContainer(info.is_mine).appendChild(this.domElement);
-      }
       this.info = info;
       this.renderDevice();
     },
@@ -51,7 +54,7 @@ cr.define('local_discovery', function() {
      * Delete the device.
      */
     removeDevice: function() {
-      this.deviceContainer(this.info.is_mine).removeChild(this.domElement);
+      this.deviceContainer().removeChild(this.domElement);
     },
 
     /**
@@ -62,42 +65,13 @@ cr.define('local_discovery', function() {
         clearElement(this.domElement);
       } else {
         this.domElement = document.createElement('div');
-        this.deviceContainer(this.info.is_mine).appendChild(this.domElement);
+        this.deviceContainer().appendChild(this.domElement);
       }
 
-      this.domElement.classList.add('device');
-      this.domElement.classList.add('printer-active');
-
-      var deviceInfo = document.createElement('div');
-      deviceInfo.className = 'device-info';
-      this.domElement.appendChild(deviceInfo);
-
-      var deviceName = document.createElement('h3');
-      deviceName.className = 'device-name';
-      deviceName.textContent = this.info.human_readable_name;
-      deviceInfo.appendChild(deviceName);
-
-      var deviceDescription = document.createElement('div');
-      deviceDescription.className = 'device-description';
-      deviceDescription.textContent = this.info.description;
-      deviceInfo.appendChild(deviceDescription);
-
-      var buttonContainer = document.createElement('div');
-      buttonContainer.className = 'button-container';
-      this.domElement.appendChild(buttonContainer);
-
-      var button = document.createElement('button');
-      button.textContent = loadTimeData.getString('serviceRegister');
-
-      if (this.info.registered) {
-        button.disabled = 'disabled';
-      } else {
-        button.addEventListener(
-          'click',
-          sendRegisterDevice.bind(null, this.info.service_name));
-      }
-
-      buttonContainer.appendChild(button);
+      fillDeviceDescription(this.domElement, this.info.human_readable_name,
+                            this.info.description,
+                            loadTimeData.getString('serviceRegister'),
+                            this.register.bind(this));
     },
 
     /**
@@ -105,30 +79,66 @@ cr.define('local_discovery', function() {
      * @param {boolean} is_mine Whether or not the device is in the 'Registered'
      *    section.
      */
-    deviceContainer: function(is_mine) {
-      if (is_mine) return $('registered-devices');
-      return $('unregistered-devices');
+    deviceContainer: function() {
+      return $('register-device-list');
+    },
+    /**
+     * Register the device.
+     */
+    register: function() {
+      chrome.send('registerDevice', [this.info.service_name]);
+      setRegisterPage('register-page-adding1');
     }
   };
 
   /**
-   * Appends a row to the output table listing the new device.
-   * @param {string} name Name of the device.
-   * @param {string} info Additional info of the device, if empty device need to
-   *                      be deleted.
+   * Returns a textual representation of the number of printers on the network.
+   * @return {string} Number of printers on the network as localized string.
    */
-  function onDeviceUpdate(name, info) {
-    if (info) {
-      if (devices.hasOwnProperty(name)) {
-        devices[name].updateDevice(info);
-      } else {
-        devices[name] = new Device(info);
-        devices[name].renderDevice();
-      }
+  function generateNumberPrintersAvailableText(numberPrinters) {
+    if (numberPrinters == 0) {
+      return loadTimeData.getString('printersOnNetworkZero');
+    } else if (numberPrinters == 1) {
+      return loadTimeData.getString('printersOnNetworkOne');
     } else {
-      devices[name].removeDevice();
-      delete devices[name];
+      return loadTimeData.getStringF('printersOnNetworkMultiple',
+                                     numberPrinters);
     }
+  }
+
+  /**
+   * Fill device element with the description of a device.
+   * @param {HTMLElement} device_dom_element Element to be filled.
+   * @param {string} name Name of device.
+   * @param {string} description Description of device.
+   * @param {string} button_text Text to appear on button.
+   * @param {function()} button_action Action for button.
+   */
+  function fillDeviceDescription(device_dom_element,
+                                name,
+                                description,
+                                button_text,
+                                button_action) {
+    device_dom_element.classList.add('device');
+
+    var deviceInfo = document.createElement('div');
+    deviceInfo.className = 'device-info';
+    device_dom_element.appendChild(deviceInfo);
+
+    var deviceName = document.createElement('h3');
+    deviceName.className = 'device-name';
+    deviceName.textContent = name;
+    deviceInfo.appendChild(deviceName);
+
+    var deviceDescription = document.createElement('div');
+    deviceDescription.className = 'device-subline';
+    deviceDescription.textContent = description;
+    deviceInfo.appendChild(deviceDescription);
+
+    var button = document.createElement('button');
+    button.textContent = button_text;
+    button.addEventListener('click', button_action);
+    device_dom_element.appendChild(button);
   }
 
   /**
@@ -138,6 +148,7 @@ cr.define('local_discovery', function() {
     $('register-overlay').classList.add('showing');
     $('overlay').hidden = false;
     uber.invokeMethodOnParent('beginInterceptingEvents');
+    setRegisterPage('register-page-choose');
   }
 
   /**
@@ -161,32 +172,89 @@ cr.define('local_discovery', function() {
   }
 
   /**
-   * Register a device.
-   * @param {string} device The device to register.
-   */
-  function sendRegisterDevice(device) {
-    chrome.send('registerDevice', [device]);
-  }
-
-  /**
    * Announce that a registration failed.
    */
-  function registrationFailed() {
+  function onRegistrationFailed() {
     setRegisterPage('register-page-error');
   }
 
   /**
    * Update UI to reflect that registration has been confirmed on the printer.
    */
-  function registrationConfirmedOnPrinter() {
+  function onRegistrationConfirmedOnPrinter() {
     setRegisterPage('register-page-adding2');
   }
 
   /**
+   * Update device unregistered device list, and update related strings to
+   * reflect the number of devices available to register.
+   * @param {string} name Name of the device.
+   * @param {string} info Additional info of the device or null if the device
+   *                          has been removed.
+   */
+  function onUnregisteredDeviceUpdate(name, info) {
+    if (info) {
+      if (devices.hasOwnProperty(name)) {
+        devices[name].updateDevice(info);
+      } else {
+        devices[name] = new Device(info);
+        devices[name].renderDevice();
+      }
+    } else {
+      if (devices.hasOwnProperty(name)) {
+        devices[name].removeDevice();
+        delete devices[name];
+      }
+    }
+
+    var numberPrinters = $('register-device-list').children.length;
+    $('printer-num').textContent = generateNumberPrintersAvailableText(
+      numberPrinters);
+
+    if (numberPrinters == 0) {
+      $('register-message').textContent = loadTimeData.getString(
+        'noPrintersOnNetworkExplanation');
+    } else {
+      $('register-message').textContent = loadTimeData.getString(
+        'registerConfirmMessage');
+    }
+  }
+
+  /**
+   * Handle a list of cloud devices available to the user globally.
+   * @param {Array.<Object>} devices_list List of devices.
+   */
+  function onCloudDeviceListAvailable(devices_list) {
+    var devicesListLength = devices_list.length;
+    var devicesContainer = $('cloud-devices');
+
+    clearElement(devicesContainer);
+    $('cloud-devices-loading').hidden = true;
+
+    for (var i = 0; i < devicesListLength; i++) {
+      var devicesDomElement = document.createElement('div');
+      devicesContainer.appendChild(devicesDomElement);
+
+      var description;
+      if (devices_list[i].description == '') {
+        description = loadTimeData.getString('noDescription');
+      } else {
+        description = devices_list[i].description;
+      }
+
+      fillDeviceDescription(devicesDomElement, devices_list[i].display_name,
+                            description, 'Manage' /*Localize*/,
+                            manageCloudDevice.bind(null, devices_list[i].id));
+    }
+  }
+
+
+  /**
    * Announce that a registration succeeeded.
    */
-  function registrationSuccess() {
+  function onRegistrationSuccess() {
     hideRegisterOverlay();
+    requestPrinterList();
   }
 
   /**
@@ -211,40 +279,23 @@ cr.define('local_discovery', function() {
   }
 
   /**
-   * Request a user account from a list.
-   * @param {Array} users Array of (index, username) tuples. Username may be
-   *    displayed to the user; index must be passed opaquely to the UI handler.
+   * Request the printer list.
    */
-  function requestUser(users, printerName) {
-    clearElement($('register-user-list'));
-
-    var usersLength = users.length;
-    for (var i = 0; i < usersLength; i++) {
-      var userIndex = users[i][0];
-      var userName = users[i][1];
-
-      var option = document.createElement('option');
-      option.textContent = userName;
-      option.userData = { userIndex: userIndex, userName: userName };
-      $('register-user-list').appendChild(option);
-    }
-
-    showRegisterOverlay();
-    setRegisterPage('register-page-choose');
-    $('register-message').textContent =
-      loadTimeData.getStringF('registerConfirmMessage', printerName);
+  function requestPrinterList() {
+    clearElement($('cloud-devices'));
+    $('cloud-devices-loading').hidden = false;
+    chrome.send('requestPrinterList');
   }
 
   /**
-   * Send user selection and begin registration.
+   * Go to management page for a cloud device.
+   * @param {string} device_id ID of device.
    */
-  function beginRegistration() {
-    var userList = $('register-user-list');
-    var selectedOption = userList.options[userList.selectedIndex];
-    var userData = selectedOption.userData;
-    chrome.send('chooseUser', [userData.userIndex, userData.userName]);
-    setRegisterPage('register-page-adding1');
+  function manageCloudDevice(device_id) {
+    chrome.send('openCloudPrintURL',
+                [PRINTER_MANAGEMENT_PAGE_PREFIX + device_id]);
   }
+
 
   document.addEventListener('DOMContentLoaded', function() {
     uber.onContentFrameLoaded();
@@ -261,8 +312,8 @@ cr.define('local_discovery', function() {
 
     $('register-error-exit').addEventListener('click', hideRegisterOverlay);
 
-    $('register-confirmation-continue').addEventListener(
-      'click', beginRegistration);
+    $('add-printers-button').addEventListener('click',
+                                              showRegisterOverlay);
 
     updateVisibility();
     document.addEventListener('webkitvisibilitychange', updateVisibility,
@@ -272,13 +323,14 @@ cr.define('local_discovery', function() {
     uber.invokeMethodOnParent('setTitle', {title: title});
 
     chrome.send('start');
+    requestPrinterList();
   });
 
   return {
-    registrationSuccess: registrationSuccess,
-    registrationFailed: registrationFailed,
-    onDeviceUpdate: onDeviceUpdate,
-    requestUser: requestUser,
-    registrationConfirmedOnPrinter: registrationConfirmedOnPrinter
+    onRegistrationSuccess: onRegistrationSuccess,
+    onRegistrationFailed: onRegistrationFailed,
+    onUnregisteredDeviceUpdate: onUnregisteredDeviceUpdate,
+    onRegistrationConfirmedOnPrinter: onRegistrationConfirmedOnPrinter,
+    onCloudDeviceListAvailable: onCloudDeviceListAvailable
   };
 });

@@ -170,7 +170,6 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, AddRowTest) {
   condition_devices_listed().Wait();
   DeviceDescription description;
 
-  description.id = kSampleDeviceID;
   description.name = "Sample device";
   description.description = "Sample device description";
 

@@ -2,26 +2,36 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.device-info {
-  -webkit-box-flex: 1;
-  -webkit-padding-start: 55px;
-}
-
 .device {
-  display: -webkit-box;
-  max-width: 738px;
+  margin: 23px 0;
+  max-width: 695px;
+  overflow: hidden;
 }
 
-.device .button-container {
-  -webkit-padding-end: 10px;
-  display: inline-block;
-  width: 70px;
+.device .device-info {
+  float: left;
 }
 
-.device .button-container button {
-  margin-top: 0.5em;
-  padding-bottom: 10px;
-  padding-top: 10px;
+html[dir='rtl'] .device .device-info {
+  float: right;
+}
+
+.device button {
+  float: right;
+}
+
+html[dir='rtl'] .device button {
+  float: left;
+}
+
+.subline,
+.device-subline {
+  color: #999;
+  margin: 5px 0;
+}
+
+h3.device-name {
+  margin: 0;
 }
 
 .register-page {
@@ -36,4 +46,18 @@
 
 html[dir='rtl'] .register-page .button-list {
   text-align: left;
+}
+
+.controls {
+  border-bottom: 1px solid #eee;
+  max-width: 711px;
+  padding: 13px 3px 7px 4px;
+}
+
+html[dir='rtl'] .controls {
+  padding: 13px 4px 7px 3px;
+}
+
+.controls .subline {
+  -webkit-margin-start: 10px;
 }
