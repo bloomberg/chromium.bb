@@ -81,10 +81,9 @@ layer at (0,0) size 800x481
         RenderBR {BR} at (0,40) size 0x19
       RenderTable {TABLE} at (0,389.53) size 0x0
       RenderBlock (anonymous) at (0,389.53) size 784x65
-        RenderInline {SPAN} at (0,0) size 43x19
+        RenderInline {SPAN} at (0,0) size 145x59
           RenderText {#text} at (0,5) size 43x19
             text run at (0,5) width 43: "before "
-        RenderInline {SPAN} at (0,0) size 145x59
           RenderTable at (43,0) size 67x20
             RenderTableSection {TBODY} at (0,0) size 67x20
               RenderTableRow {TR} at (0,0) size 67x20
