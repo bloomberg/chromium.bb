@@ -63,10 +63,10 @@
   HTMLMediaMetric.prototype.constructor = HTMLMediaMetric;
 
   HTMLMediaMetric.prototype.setID = function() {
-    if (this.element.src)
-      this.id = this.element.src.substring(this.element.src.lastIndexOf("/")+1);
-    else if (this.element.id)
+    if (this.element.id)
       this.id = this.element.id;
+    else if (this.element.src)
+      this.id = this.element.src.substring(this.element.src.lastIndexOf("/")+1);
     else
       this.id = 'media_' + window.__globalCounter++;
   };
@@ -119,7 +119,7 @@
     // TODO(shadi): Measure buffering time more accurately using events such as
     // stalled, waiting, progress, etc. This works only when continuous playback
     // is used.
-    this.metrics['buffering_time'] = time_to_end - this.element.duration;
+    this.metrics['buffering_time'] = time_to_end - this.element.duration * 1000;
   };
 
   HTMLMediaMetric.prototype.getMetrics = function() {

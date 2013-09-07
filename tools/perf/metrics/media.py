@@ -25,8 +25,8 @@ class MediaMetric(Metric):
 
   def Start(self, page, tab):
     """Create the media metrics for all media elements in the document."""
-    if hasattr(page.page_set, 'skip_basic_metrics'):
-      self._skip_basic_metrics = page.page_set.skip_basic_metrics
+    if hasattr(page, 'skip_basic_metrics'):
+      self._skip_basic_metrics = page.skip_basic_metrics
     tab.ExecuteJavaScript('window.__createMediaMetricsForDocument()')
 
   def Stop(self, page, tab):
@@ -74,4 +74,3 @@ class MediaMetric(Metric):
 
     AddOneResult('avg_loop_time', 'ms')
     AddOneResult('seek', 'ms')
-
