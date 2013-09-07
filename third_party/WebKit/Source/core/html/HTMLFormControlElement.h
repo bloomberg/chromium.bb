@@ -117,7 +117,6 @@ protected:
     virtual void didMoveToNewDocument(Document* oldDocument) OVERRIDE;
 
     virtual bool supportsFocus() const OVERRIDE;
-    virtual bool rendererIsFocusable() const OVERRIDE;
     virtual bool isKeyboardFocusable() const OVERRIDE;
     virtual bool shouldShowFocusRingOnMouseFocus() const;
     virtual bool shouldHaveFocusAppearance() const OVERRIDE;

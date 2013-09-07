@@ -163,23 +163,14 @@ bool HTMLAnchorElement::isMouseFocusable() const
 
 bool HTMLAnchorElement::isKeyboardFocusable() const
 {
-    if (!isLink())
-        return HTMLElement::isKeyboardFocusable();
-
-    if (!isFocusable())
-        return false;
-
-    Page* page = document().page();
-    if (!page)
-        return false;
-
-    if (!page->chrome().client().tabsToLinks())
-        return false;
-
-    if (isInCanvasSubtree())
-        return true;
-
-    return hasNonEmptyBoundingBox();
+    if (isLink()) {
+        Page* page = document().page();
+        if (!page)
+            return false;
+        if (!page->chrome().client().tabsToLinks())
+            return false;
+    }
+    return HTMLElement::isKeyboardFocusable();
 }
 
 static void appendServerMapMousePosition(StringBuilder& url, Event* event)
