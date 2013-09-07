@@ -86,6 +86,7 @@ cr.define('local_discovery', function() {
      * Register the device.
      */
     register: function() {
+      recordUmaAction('DevicesPage_RegisterClicked');
       chrome.send('registerDevice', [this.info.service_name]);
       setRegisterPage('register-page-adding1');
     }
@@ -142,9 +143,10 @@ cr.define('local_discovery', function() {
   }
 
   /**
-   * Hide the register overlay.
+   * Show the register overlay.
    */
   function showRegisterOverlay() {
+    recordUmaAction('DevicesPage_AddPrintersClicked');
     $('register-overlay').classList.add('showing');
     $('overlay').hidden = false;
     uber.invokeMethodOnParent('beginInterceptingEvents');
@@ -152,13 +154,12 @@ cr.define('local_discovery', function() {
   }
 
   /**
-   * Show the register overlay.
+   * Hide the register overlay.
    */
   function hideRegisterOverlay() {
     $('register-overlay').classList.remove('showing');
     $('overlay').hidden = true;
     uber.invokeMethodOnParent('stopInterceptingEvents');
-    chrome.send('cancelRegistration');
   }
 
   /**
@@ -176,6 +177,7 @@ cr.define('local_discovery', function() {
    */
   function onRegistrationFailed() {
     setRegisterPage('register-page-error');
+    recordUmaAction('DevicesPage_RegisterFailure');
   }
 
   /**
@@ -255,6 +257,7 @@ cr.define('local_discovery', function() {
   function onRegistrationSuccess() {
     hideRegisterOverlay();
     requestPrinterList();
+    recordUmaAction('DevicesPage_RegisterSuccess');
   }
 
   /**
@@ -292,25 +295,42 @@ cr.define('local_discovery', function() {
    * @param {string} device_id ID of device.
    */
   function manageCloudDevice(device_id) {
+    recordUmaAction('DevicesPage_ManageClicked');
     chrome.send('openCloudPrintURL',
                 [PRINTER_MANAGEMENT_PAGE_PREFIX + device_id]);
   }
 
+  /**
+   * Record an action in UMA.
+   * @param {string} actionDesc The name of the action to be logged.
+   */
+  function recordUmaAction(actionDesc) {
+    chrome.send('metricsHandler:recordAction', [actionDesc]);
+  }
+
+  /**
+   * Cancel the registration.
+   */
+  function cancelRegistration() {
+    hideRegisterOverlay();
+    chrome.send('cancelRegistration');
+    recordUmaAction('DevicesPage_RegisterCancel');
+  }
 
   document.addEventListener('DOMContentLoaded', function() {
     uber.onContentFrameLoaded();
 
     cr.ui.overlay.setupOverlay($('overlay'));
     cr.ui.overlay.globalInitialization();
-    $('overlay').addEventListener('cancelOverlay', hideRegisterOverlay);
+    $('overlay').addEventListener('cancelOverlay', cancelRegistration);
 
     var cancelButtons = document.querySelectorAll('.register-cancel');
     var cancelButtonsLength = cancelButtons.length;
     for (var i = 0; i < cancelButtonsLength; i++) {
-      cancelButtons[i].addEventListener('click', hideRegisterOverlay);
+      cancelButtons[i].addEventListener('click', cancelRegistration);
     }
 
-    $('register-error-exit').addEventListener('click', hideRegisterOverlay);
+    $('register-error-exit').addEventListener('click', cancelRegistration);
 
     $('add-printers-button').addEventListener('click',
                                               showRegisterOverlay);
@@ -323,6 +343,7 @@ cr.define('local_discovery', function() {
     uber.invokeMethodOnParent('setTitle', {title: title});
 
     chrome.send('start');
+    recordUmaAction('DevicesPage_Opened');
     requestPrinterList();
   });
 

@@ -550,6 +550,20 @@ def AddHistoryPageActions(actions):
   actions.add('HistoryPage_ConfirmRemoveSelected')
   actions.add('HistoryPage_CancelRemoveSelected')
 
+def AddDevicesPageActions(actions):
+  """Add actions that are used in Devices page.
+
+  Arguments
+    actions: set of actions to add to.
+  """
+  actions.add('DevicesPage_Opened')
+  actions.add('DevicesPage_AddPrintersClicked')
+  actions.add('DevicesPage_RegisterClicked')
+  actions.add('DevicesPage_RegisterCancel')
+  actions.add('DevicesPage_RegisterFailure')
+  actions.add('DevicesPage_RegisterSuccess')
+  actions.add('DevicesPage_ManageClicked')
+
 def main(argv):
   if '--hash' in argv:
     hash_output = True
@@ -584,11 +598,12 @@ def main(argv):
   # print "Scanned {0} number of files".format(number_of_files_total)
   # print "Found {0} entries".format(len(actions))
 
-  AddClosedSourceActions(actions)
-  AddChromeOSActions(actions)
-  AddExtensionActions(actions)
   AddAndroidActions(actions)
   AddBookmarkManagerActions(actions)
+  AddChromeOSActions(actions)
+  AddClosedSourceActions(actions)
+  AddDevicesPageActions(actions)
+  AddExtensionActions(actions)
   AddHistoryPageActions(actions)
 
   if hash_output:
