@@ -96,7 +96,7 @@ body {
 }
 
 .content #screenshot-image:hover {
-  height: 170px;
+  height: 150px;
   margin-top: 80px;
   z-index: 1;
 }
@@ -121,7 +121,6 @@ body {
 }
 
 .content .attach-file-notification {
-  -webkit-padding-start: 20px;
   color: rgb(204, 0, 0);
   font-weight: bold;
 }

@@ -7499,7 +7499,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Reading file..
       </message>
       <message name="IDS_FEEDBACK_ATTACH_FILE_TO_BIG" desc="Text to display if the file being attached is too big">
-        Selected file is too big.
+        Selected file is too big (max size: 3mb).
       </message>
       <message name="IDS_FEEDBACK_PRIVACY_NOTE" desc="Text for the privacy note included with Chrome OS">
         Your Chrome and Operating system version will be submitted in addition
