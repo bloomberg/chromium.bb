@@ -35,6 +35,7 @@
 #include "content/public/browser/web_drag_dest_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
+#include "net/base/net_util.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -235,9 +236,34 @@ class WebDragSourceAura : public base::MessageLoopForUI::Observer,
   DISALLOW_COPY_AND_ASSIGN(WebDragSourceAura);
 };
 
+#if defined(OS_WIN)
+// Fill out the OSExchangeData with a file contents, synthesizing a name if
+// necessary.
+void PrepareDragForFileContents(const DropData& drop_data,
+                                ui::OSExchangeData::Provider* provider) {
+  base::FilePath file_name(drop_data.file_description_filename);
+  // Images without ALT text will only have a file extension so we need to
+  // synthesize one from the provided extension and URL.
+  if (file_name.BaseName().RemoveExtension().empty()) {
+    const string16 extension = file_name.Extension();
+    // Retrieve the name from the URL.
+    file_name = base::FilePath(net::GetSuggestedFilename(
+        drop_data.url, "", "", "", "", "")).ReplaceExtension(extension);
+  }
+  provider->SetFileContents(file_name, drop_data.file_contents);
+}
+#endif
+
 // Utility to fill a ui::OSExchangeDataProvider object from DropData.
 void PrepareDragData(const DropData& drop_data,
                      ui::OSExchangeData::Provider* provider) {
+#if defined(OS_WIN)
+  // We set the file contents before the URL because the URL also sets file
+  // contents (to a .URL shortcut).  We want to prefer file content data over
+  // a shortcut so we add it first.
+  if (!drop_data.file_contents.empty())
+    PrepareDragForFileContents(drop_data, provider);
+#endif
   if (!drop_data.text.string().empty())
     provider->SetString(drop_data.text.string());
   if (drop_data.url.is_valid())
