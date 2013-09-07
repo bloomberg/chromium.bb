@@ -34,13 +34,12 @@ scoped_refptr<ShaderTranslator> ShaderTranslatorCache::GetTranslator(
     const ShBuiltInResources* resources,
     ShaderTranslatorInterface::GlslImplementationType
         glsl_implementation_type,
-    ShaderTranslatorInterface::GlslBuiltInFunctionBehavior
-        glsl_built_in_function_behavior) {
+    ShCompileOptions driver_bug_workarounds) {
   ShaderTranslatorInitParams params(shader_type,
                                     shader_spec,
                                     *resources,
                                     glsl_implementation_type,
-                                    glsl_built_in_function_behavior);
+                                    driver_bug_workarounds);
 
   Cache::iterator it = cache_.find(params);
   if (it != cache_.end())
@@ -49,7 +48,7 @@ scoped_refptr<ShaderTranslator> ShaderTranslatorCache::GetTranslator(
   ShaderTranslator* translator = new ShaderTranslator();
   if (translator->Init(shader_type, shader_spec, resources,
                        glsl_implementation_type,
-                       glsl_built_in_function_behavior)) {
+                       driver_bug_workarounds)) {
     cache_[params] = translator;
     translator->AddDestructionObserver(this);
     return translator;

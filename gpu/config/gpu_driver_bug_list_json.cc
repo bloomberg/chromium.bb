@@ -85,7 +85,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.9",
+  "version": "2.10",
   "entries": [
     {
       "id": 1,
@@ -562,6 +562,18 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "use_virtualized_gl_contexts"
+      ]
+    },
+    {
+      "id": 37,
+      "cr_bugs": [286468],
+      "description": "Program link fails in NVIDIA Linux if gl_Position is not set",
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "features": [
+        "init_gl_position_in_vertex_shader"
       ]
     }
   ]

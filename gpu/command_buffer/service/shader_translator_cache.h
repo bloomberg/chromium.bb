@@ -36,8 +36,7 @@ class ShaderTranslatorCache : public ShaderTranslator::DestructionObserver {
       const ShBuiltInResources* resources,
       ShaderTranslatorInterface::GlslImplementationType
           glsl_implementation_type,
-      ShaderTranslatorInterface::GlslBuiltInFunctionBehavior
-          glsl_built_in_function_behavior);
+      ShCompileOptions driver_bug_workarounds);
 
  private:
   ShaderTranslatorCache();
@@ -52,8 +51,7 @@ class ShaderTranslatorCache : public ShaderTranslator::DestructionObserver {
     ShBuiltInResources resources;
     ShaderTranslatorInterface::GlslImplementationType
         glsl_implementation_type;
-    ShaderTranslatorInterface::GlslBuiltInFunctionBehavior
-        glsl_built_in_function_behavior;
+    ShCompileOptions driver_bug_workarounds;
 
     ShaderTranslatorInitParams(
         ShShaderType shader_type,
@@ -61,13 +59,12 @@ class ShaderTranslatorCache : public ShaderTranslator::DestructionObserver {
         const ShBuiltInResources& resources,
         ShaderTranslatorInterface::GlslImplementationType
             glsl_implementation_type,
-        ShaderTranslatorInterface::GlslBuiltInFunctionBehavior
-            glsl_built_in_function_behavior)
+        ShCompileOptions driver_bug_workarounds)
       : shader_type(shader_type),
         shader_spec(shader_spec),
         resources(resources),
         glsl_implementation_type(glsl_implementation_type),
-        glsl_built_in_function_behavior(glsl_built_in_function_behavior) {
+        driver_bug_workarounds(driver_bug_workarounds) {
     }
 
     ShaderTranslatorInitParams(const ShaderTranslatorInitParams& params) {

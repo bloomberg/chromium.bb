@@ -27,11 +27,6 @@ class ShaderTranslatorInterface {
     kGlslES
   };
 
-  enum GlslBuiltInFunctionBehavior {
-    kGlslBuiltInFunctionOriginal,
-    kGlslBuiltInFunctionEmulated
-  };
-
   struct VariableInfo {
     VariableInfo()
         : type(0),
@@ -75,7 +70,7 @@ class ShaderTranslatorInterface {
       ShShaderSpec shader_spec,
       const ShBuiltInResources* resources,
       GlslImplementationType glsl_implementation_type,
-      GlslBuiltInFunctionBehavior glsl_built_in_function_behavior) = 0;
+      ShCompileOptions driver_bug_workarounds) = 0;
 
   // Translates the given shader source.
   // Returns true if translation is successful, false otherwise.
@@ -125,7 +120,7 @@ class GPU_EXPORT ShaderTranslator
       ShShaderSpec shader_spec,
       const ShBuiltInResources* resources,
       GlslImplementationType glsl_implementation_type,
-      GlslBuiltInFunctionBehavior glsl_built_in_function_behavior) OVERRIDE;
+      ShCompileOptions driver_bug_workarounds) OVERRIDE;
 
   // Overridden from ShaderTranslatorInterface.
   virtual bool Translate(const char* shader) OVERRIDE;
@@ -162,7 +157,7 @@ class GPU_EXPORT ShaderTranslator
   VariableMap varying_map_;
   NameMap name_map_;
   bool implementation_is_glsl_es_;
-  bool needs_built_in_function_emulation_;
+  ShCompileOptions driver_bug_workarounds_;
   ObserverList<DestructionObserver> destruction_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderTranslator);

@@ -2509,15 +2509,18 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   ShaderTranslatorInterface::GlslImplementationType implementation_type =
       gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 ?
           ShaderTranslatorInterface::kGlslES : ShaderTranslatorInterface::kGlsl;
-  ShaderTranslatorInterface::GlslBuiltInFunctionBehavior function_behavior =
-      workarounds().needs_glsl_built_in_function_emulation ?
-          ShaderTranslatorInterface::kGlslBuiltInFunctionEmulated :
-          ShaderTranslatorInterface::kGlslBuiltInFunctionOriginal;
+  int driver_bug_workarounds = 0;
+  if (workarounds().needs_glsl_built_in_function_emulation)
+    driver_bug_workarounds |= SH_EMULATE_BUILT_IN_FUNCTIONS;
+  // TODO(zmo): Uncomment the below two lines when ANGLE CL is rolled in.
+  // if (workarounds().init_gl_position_in_vertex_shader)
+  //   driver_bug_workarounds |= SH_INIT_GL_POSITION;
 
   ShaderTranslatorCache* cache = ShaderTranslatorCache::GetInstance();
   vertex_translator_ = cache->GetTranslator(
       SH_VERTEX_SHADER, shader_spec, &resources,
-      implementation_type, function_behavior);
+      implementation_type,
+      static_cast<ShCompileOptions>(driver_bug_workarounds));
   if (!vertex_translator_.get()) {
     LOG(ERROR) << "Could not initialize vertex shader translator.";
     Destroy(true);
@@ -2526,7 +2529,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
 
   fragment_translator_ = cache->GetTranslator(
       SH_FRAGMENT_SHADER, shader_spec, &resources,
-      implementation_type, function_behavior);
+      implementation_type,
+      static_cast<ShCompileOptions>(driver_bug_workarounds));
   if (!fragment_translator_.get()) {
     LOG(ERROR) << "Could not initialize fragment shader translator.";
     Destroy(true);

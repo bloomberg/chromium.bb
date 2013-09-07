@@ -18,18 +18,28 @@
          delete_instead_of_resize_fbo)                       \
   GPU_OP(DISABLE_ANGLE_FRAMEBUFFER_MULTISAMPLE,              \
          disable_angle_framebuffer_multisample)              \
+  GPU_OP(DISABLE_ANGLE_INSTANCED_ARRAYS,                     \
+         disable_angle_instanced_arrays)                     \
+  GPU_OP(DISABLE_ASYNC_READPIXELS,                           \
+         disable_async_readpixels)                           \
+  GPU_OP(DISABLE_D3D11,                                      \
+         disable_d3d11)                                      \
   GPU_OP(DISABLE_DEPTH_TEXTURE,                              \
          disable_depth_texture)                              \
   GPU_OP(DISABLE_EXT_DRAW_BUFFERS,                           \
          disable_ext_draw_buffers)                           \
   GPU_OP(DISABLE_EXT_OCCLUSION_QUERY,                        \
          disable_ext_occlusion_query)                        \
+  GPU_OP(DISABLE_MULTIMONITOR_MULTISAMPLING,                 \
+         disable_multimonitor_multisampling)                 \
   GPU_OP(DISABLE_OES_STANDARD_DERIVATIVES,                   \
          disable_oes_standard_derivatives)                   \
   GPU_OP(ENABLE_CHROMIUM_FAST_NPOT_MO8_TEXTURES,             \
          enable_chromium_fast_npot_mo8_textures)             \
   GPU_OP(EXIT_ON_CONTEXT_LOST,                               \
          exit_on_context_lost)                               \
+  GPU_OP(INIT_GL_POSITION_IN_VERTEX_SHADER,                  \
+         init_gl_position_in_vertex_shader)                  \
   GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024,               \
          max_cube_map_texture_size_limit_1024)               \
   GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096,               \
@@ -48,6 +58,8 @@
          reverse_point_sprite_coord_origin)                  \
   GPU_OP(SET_TEXTURE_FILTER_BEFORE_GENERATING_MIPMAP,        \
          set_texture_filter_before_generating_mipmap)        \
+  GPU_OP(SWIZZLE_RGBA_FOR_ASYNC_READPIXELS,                  \
+         swizzle_rgba_for_async_readpixels)                  \
   GPU_OP(UNBIND_FBO_ON_CONTEXT_SWITCH,                       \
          unbind_fbo_on_context_switch)                       \
   GPU_OP(USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS,          \
@@ -56,16 +68,6 @@
          use_current_program_after_successful_link)          \
   GPU_OP(USE_NON_ZERO_SIZE_FOR_CLIENT_SIDE_STREAM_BUFFERS,   \
          use_non_zero_size_for_client_side_stream_buffers)   \
-  GPU_OP(DISABLE_ASYNC_READPIXELS,                           \
-         disable_async_readpixels)                           \
-  GPU_OP(DISABLE_D3D11,                                      \
-         disable_d3d11)                                      \
-  GPU_OP(SWIZZLE_RGBA_FOR_ASYNC_READPIXELS,                  \
-         swizzle_rgba_for_async_readpixels)                  \
-  GPU_OP(DISABLE_ANGLE_INSTANCED_ARRAYS,                     \
-         disable_angle_instanced_arrays)                     \
-  GPU_OP(DISABLE_MULTIMONITOR_MULTISAMPLING,                 \
-         disable_multimonitor_multisampling)                 \
   GPU_OP(USE_VIRTUALIZED_GL_CONTEXTS,                        \
          use_virtualized_gl_contexts)                        \
 

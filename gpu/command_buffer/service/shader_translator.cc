@@ -118,7 +118,7 @@ ShaderTranslator::DestructionObserver::~DestructionObserver() {
 ShaderTranslator::ShaderTranslator()
     : compiler_(NULL),
       implementation_is_glsl_es_(false),
-      needs_built_in_function_emulation_(false) {
+      driver_bug_workarounds_(static_cast<ShCompileOptions>(0)) {
 }
 
 bool ShaderTranslator::Init(
@@ -126,8 +126,7 @@ bool ShaderTranslator::Init(
     ShShaderSpec shader_spec,
     const ShBuiltInResources* resources,
     ShaderTranslatorInterface::GlslImplementationType glsl_implementation_type,
-    ShaderTranslatorInterface::GlslBuiltInFunctionBehavior
-        glsl_built_in_function_behavior) {
+    ShCompileOptions driver_bug_workarounds) {
   // Make sure Init is called only once.
   DCHECK(compiler_ == NULL);
   DCHECK(shader_type == SH_FRAGMENT_SHADER || shader_type == SH_VERTEX_SHADER);
@@ -147,8 +146,7 @@ bool ShaderTranslator::Init(
   }
   compiler_options_ = *resources;
   implementation_is_glsl_es_ = (glsl_implementation_type == kGlslES);
-  needs_built_in_function_emulation_ =
-      (glsl_built_in_function_behavior == kGlslBuiltInFunctionEmulated);
+  driver_bug_workarounds_ = driver_bug_workarounds;
   return compiler_ != NULL;
 }
 
@@ -160,8 +158,7 @@ int ShaderTranslator::GetCompileOptions() const {
 
   compile_options |= SH_CLAMP_INDIRECT_ARRAY_BOUNDS;
 
-  if (needs_built_in_function_emulation_)
-    compile_options |= SH_EMULATE_BUILT_IN_FUNCTIONS;
+  compile_options |= driver_bug_workarounds_;
 
   return compile_options;
 }

@@ -28,11 +28,11 @@ class ShaderTranslatorTest : public testing::Test {
     ASSERT_TRUE(vertex_translator_->Init(
         SH_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
         ShaderTranslatorInterface::kGlsl,
-        ShaderTranslatorInterface::kGlslBuiltInFunctionEmulated));
+        SH_EMULATE_BUILT_IN_FUNCTIONS));
     ASSERT_TRUE(fragment_translator_->Init(
         SH_FRAGMENT_SHADER, SH_GLES2_SPEC, &resources,
         ShaderTranslatorInterface::kGlsl,
-        ShaderTranslatorInterface::kGlslBuiltInFunctionOriginal));
+        static_cast<ShCompileOptions>(0)));
     // Post-init the results must be empty.
     // Vertex translator results.
     EXPECT_TRUE(vertex_translator_->translated_shader() == NULL);
@@ -232,16 +232,16 @@ TEST_F(ShaderTranslatorTest, OptionsString) {
   ASSERT_TRUE(translator_1->Init(
       SH_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
       ShaderTranslatorInterface::kGlsl,
-      ShaderTranslatorInterface::kGlslBuiltInFunctionEmulated));
+      SH_EMULATE_BUILT_IN_FUNCTIONS));
   ASSERT_TRUE(translator_2->Init(
       SH_FRAGMENT_SHADER, SH_GLES2_SPEC, &resources,
       ShaderTranslatorInterface::kGlsl,
-      ShaderTranslatorInterface::kGlslBuiltInFunctionOriginal));
+      static_cast<ShCompileOptions>(0)));
   resources.EXT_draw_buffers = 1;
   ASSERT_TRUE(translator_3->Init(
       SH_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
       ShaderTranslatorInterface::kGlsl,
-      ShaderTranslatorInterface::kGlslBuiltInFunctionEmulated));
+      SH_EMULATE_BUILT_IN_FUNCTIONS));
 
   std::string options_1(
       translator_1->GetStringForOptionsThatWouldEffectCompilation());
