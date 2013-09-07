@@ -471,6 +471,9 @@ bool SourceBufferStream::Append(
 
 void SourceBufferStream::Remove(base::TimeDelta start, base::TimeDelta end,
                                 base::TimeDelta duration) {
+  DVLOG(1) << __FUNCTION__ << "(" << start.InSecondsF()
+           << ", " << end.InSecondsF()
+           << ", " << duration.InSecondsF() << ")";
   DCHECK(start >= base::TimeDelta()) << start.InSecondsF();
   DCHECK(start < end) << "start " << start.InSecondsF()
                       << " end " << end.InSecondsF();
@@ -497,17 +500,22 @@ void SourceBufferStream::Remove(base::TimeDelta start, base::TimeDelta end,
     if (new_range) {
       itr = ranges_.insert(++itr, new_range);
       --itr;
+
+      // Update the selected range if the next buffer position was transferred
+      // to |new_range|.
+      if (new_range->HasNextBufferPosition())
+        SetSelectedRange(new_range);
     }
 
     // If the current range now is completely covered by the removal
     // range then delete it and move on.
     if (start <= range->GetStartTimestamp()) {
       if (selected_range_ == range)
-          SetSelectedRange(NULL);
+        SetSelectedRange(NULL);
 
-        delete range;
-        itr = ranges_.erase(itr);
-        continue;
+      delete range;
+      itr = ranges_.erase(itr);
+      continue;
     }
 
     // Truncate the current range so that it only contains data before
@@ -518,6 +526,7 @@ void SourceBufferStream::Remove(base::TimeDelta start, base::TimeDelta end,
     // Check to see if the current playback position was removed and
     // update the selected range appropriately.
     if (!saved_buffers.empty()) {
+      DCHECK(!range->HasNextBufferPosition());
       SetSelectedRange(NULL);
       SetSelectedRangeIfNeeded(saved_buffers.front()->GetDecodeTimestamp());
     }
@@ -525,6 +534,9 @@ void SourceBufferStream::Remove(base::TimeDelta start, base::TimeDelta end,
     // Move on to the next range.
     ++itr;
   }
+
+  DCHECK(IsRangeListSorted(ranges_));
+  DCHECK(OnlySelectedRangeIsSeeked());
 }
 
 void SourceBufferStream::ResetSeekState() {
@@ -1253,6 +1265,8 @@ void SourceBufferStream::CompleteConfigChange() {
 
 void SourceBufferStream::SetSelectedRangeIfNeeded(
     const base::TimeDelta timestamp) {
+  DVLOG(1) << __FUNCTION__ << "(" << timestamp.InSecondsF() << ")";
+
   if (selected_range_) {
     DCHECK(track_buffer_.empty());
     return;

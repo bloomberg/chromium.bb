@@ -2940,7 +2940,7 @@ TEST_F(SourceBufferStreamTest, Remove_Partial4) {
   CheckExpectedRangesByTimestamp("{ [10,40) [2060,2150) }");
 }
 
-// Test behavior when the current positing is removed and new buffers
+// Test behavior when the current position is removed and new buffers
 // are appended over the removal range.
 TEST_F(SourceBufferStreamTest, Remove_CurrentPosition) {
   Seek(0);
@@ -2962,6 +2962,21 @@ TEST_F(SourceBufferStreamTest, Remove_CurrentPosition) {
   // Verify that buffers resume at the next keyframe after the
   // current position.
   CheckExpectedBuffers("210K 240 270K 300 330");
+}
+
+// Test behavior when buffers in the selected range before the current position
+// are removed.
+TEST_F(SourceBufferStreamTest, Remove_BeforeCurrentPosition) {
+  Seek(0);
+  NewSegmentAppend("0K 30 60 90K 120 150 180K 210 240 270K 300 330");
+  CheckExpectedRangesByTimestamp("{ [0,360) }");
+  CheckExpectedBuffers("0K 30 60 90K 120");
+
+  // Remove a range that is before the current playback position.
+  RemoveInMs(0, 90, 360);
+  CheckExpectedRangesByTimestamp("{ [90,360) }");
+
+  CheckExpectedBuffers("150 180K 210 240 270K 300 330");
 }
 
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.
