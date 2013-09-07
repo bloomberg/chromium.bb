@@ -240,7 +240,10 @@ void ModelAssociationManager::Stop() {
            waiting_to_associate_.size() > 0);
 
     if (currently_associating_) {
-      TRACE_EVENT_END0("sync", "ModelAssociation");
+      TRACE_EVENT_ASYNC_END1("sync", "ModelAssociation",
+                             currently_associating_,
+                             "DataType",
+                             ModelTypeToString(currently_associating_->type()));
       DVLOG(1) << "ModelAssociationManager: stopping "
                << currently_associating_->name();
       currently_associating_->Stop();
@@ -324,7 +327,10 @@ void ModelAssociationManager::TypeStartCallback(
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  TRACE_EVENT_END0("sync", "ModelAssociation");
+  TRACE_EVENT_ASYNC_END1("sync", "ModelAssociation",
+                         currently_associating_,
+                         "DataType",
+                         ModelTypeToString(currently_associating_->type()));
 
   DVLOG(1) << "ModelAssociationManager: TypeStartCallback";
   if (state_ == ABORTED) {
@@ -513,13 +519,14 @@ void ModelAssociationManager::StartAssociatingNextType() {
   if (!waiting_to_associate_.empty()) {
     DVLOG(1) << "ModelAssociationManager: Starting "
             << waiting_to_associate_[0]->name();
-    TRACE_EVENT_BEGIN1("sync", "ModelAssociation",
-                       "DataType",
-                       ModelTypeToString(waiting_to_associate_[0]->type()));
     DataTypeController* dtc = waiting_to_associate_[0];
     waiting_to_associate_.erase(waiting_to_associate_.begin());
     currently_associating_ = dtc;
     current_type_association_start_time_ = base::Time::Now();
+    TRACE_EVENT_ASYNC_BEGIN1("sync", "ModelAssociation",
+                             currently_associating_,
+                             "DataType",
+                             ModelTypeToString(currently_associating_->type()));
     dtc->StartAssociating(base::Bind(
         &ModelAssociationManager::TypeStartCallback,
         weak_ptr_factory_.GetWeakPtr()));
