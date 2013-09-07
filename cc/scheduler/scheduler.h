@@ -77,7 +77,7 @@ class CC_EXPORT Scheduler {
 
   void SetMainThreadNeedsLayerTextures();
 
-  void DidSwapUseIncompleteTile();
+  void SetSwapUsedIncompleteTile(bool used_incomplete_tile);
 
   void FinishCommit();
   void BeginFrameAbortedByMainThread(bool did_handle);

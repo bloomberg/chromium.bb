@@ -65,8 +65,8 @@ void Scheduler::SetNeedsRedraw() {
   ProcessScheduledActions();
 }
 
-void Scheduler::DidSwapUseIncompleteTile() {
-  state_machine_.DidSwapUseIncompleteTile();
+void Scheduler::SetSwapUsedIncompleteTile(bool used_incomplete_tile) {
+  state_machine_.SetSwapUsedIncompleteTile(used_incomplete_tile);
   ProcessScheduledActions();
 }
 

@@ -271,7 +271,7 @@ class CC_EXPORT LayerTreeHostImpl
   const LayerTreeImpl* pending_tree() const { return pending_tree_.get(); }
   const LayerTreeImpl* recycle_tree() const { return recycle_tree_.get(); }
   virtual void CreatePendingTree();
-  void UpdateVisibleTiles();
+  virtual void UpdateVisibleTiles();
   virtual void ActivatePendingTree();
 
   // Shortcuts to layers on the active tree.
@@ -412,6 +412,8 @@ class CC_EXPORT LayerTreeHostImpl
   void DeleteAllUIResources();
 
   ResourceProvider::ResourceId ResourceIdForUIResource(UIResourceId uid) const;
+
+  void DidInitializeVisibleTileForTesting() { DidInitializeVisibleTile(); }
 
  protected:
   LayerTreeHostImpl(

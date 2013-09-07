@@ -544,10 +544,17 @@ void ThreadProxy::SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) {
   SetNeedsRedrawOnImplThread();
 }
 
-void ThreadProxy::DidSwapUseIncompleteTileOnImplThread() {
+void ThreadProxy::SetSwapUsedIncompleteTileOnImplThread(
+    bool used_incomplete_tile) {
   DCHECK(IsImplThread());
-  TRACE_EVENT0("cc", "ThreadProxy::DidSwapUseIncompleteTileOnImplThread");
-  scheduler_on_impl_thread_->DidSwapUseIncompleteTile();
+  if (used_incomplete_tile) {
+    TRACE_EVENT_INSTANT0(
+        "cc",
+        "ThreadProxy::SetSwapUsedIncompleteTileOnImplThread",
+        TRACE_EVENT_SCOPE_THREAD);
+  }
+  scheduler_on_impl_thread_->SetSwapUsedIncompleteTile(
+    used_incomplete_tile);
 }
 
 void ThreadProxy::DidInitializeVisibleTileOnImplThread() {
@@ -1087,8 +1094,11 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
     DCHECK(swap_requested);
     result.did_swap = layer_tree_host_impl_->SwapBuffers(frame);
 
-    if (frame.contains_incomplete_tile)
-      DidSwapUseIncompleteTileOnImplThread();
+    // We don't know if we have incomplete tiles if we didn't actually swap.
+    if (result.did_swap) {
+      DCHECK(!frame.has_no_damage);
+      SetSwapUsedIncompleteTileOnImplThread(frame.contains_incomplete_tile);
+    }
   }
 
   // Tell the main thread that the the newly-commited frame was drawn.

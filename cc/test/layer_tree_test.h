@@ -45,6 +45,7 @@ class TestHooks : public AnimationDelegate {
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) {}
   virtual void SwapBuffersCompleteOnThread(LayerTreeHostImpl* host_impl) {}
+  virtual void UpdateVisibleTilesOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void AnimateLayers(LayerTreeHostImpl* host_impl,
                              base::TimeTicks monotonic_time) {}
   virtual void UpdateAnimationState(LayerTreeHostImpl* host_impl,

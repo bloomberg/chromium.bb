@@ -12,6 +12,7 @@
 #include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_painted_scrollbar_layer.h"
+#include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -687,6 +688,103 @@ class LayerTreeHostDamageTestScrollbarCommitDoesNoDamage
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostDamageTestScrollbarCommitDoesNoDamage);
+
+class LayerTreeHostDamageTestVisibleTilesStillTriggerDraws
+    : public LayerTreeHostDamageTest {
+
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->impl_side_painting = true;
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    scoped_refptr<FakePictureLayer> root = FakePictureLayer::Create(&client_);
+    root->SetBounds(gfx::Size(500, 500));
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeHostDamageTest::SetupTree();
+
+    swap_count_ = 0;
+    prepare_to_draw_count_ = 0;
+    update_visible_tile_count_ = 0;
+  }
+
+  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                     LayerTreeHostImpl::FrameData* frame_data,
+                                     bool result) OVERRIDE {
+    EXPECT_TRUE(result);
+    prepare_to_draw_count_++;
+    switch (prepare_to_draw_count_) {
+      case 1:
+        // Detect that we have an incomplete tile, during the first frame.
+        // The first frame should have damage.
+        frame_data->contains_incomplete_tile = true;
+        DCHECK(!frame_data->has_no_damage);
+        break;
+      case 2:
+        // Make a no-damage frame. We early out and can't detect
+        // incomplete tiles, even if they still exist.
+        frame_data->contains_incomplete_tile = false;
+        frame_data->has_no_damage = true;
+        break;
+      case 3:
+        // Trigger the last swap for the completed tile.
+        frame_data->contains_incomplete_tile = false;
+        frame_data->has_no_damage = false;
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+
+    return result;
+  }
+
+  virtual void UpdateVisibleTilesOnThread(
+      LayerTreeHostImpl* host_impl) OVERRIDE {
+    // Simulate creating some visible tiles (that trigger prepare-to-draws).
+    // The first we make into a no-damage-frame during prepare-to-draw (see
+    // above). This is to ensure we still get UpdateVisibleTiles calls after
+    // a no-damage or aborted frame.
+    update_visible_tile_count_++;
+    switch (update_visible_tile_count_) {
+      case 3:
+      case 6:
+        host_impl->DidInitializeVisibleTileForTesting();
+        break;
+      case 7:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
+                                   bool didSwap) OVERRIDE {
+    if (!didSwap)
+      return;
+    ++swap_count_;
+  }
+
+  virtual void AfterTest() OVERRIDE {
+    // We should keep getting update-visible-tiles calls
+    // until we report there are no more incomplete-tiles.
+    EXPECT_EQ(update_visible_tile_count_, 6);
+    // First frame, plus two triggered by DidInitializeVisibleTile()
+    EXPECT_EQ(prepare_to_draw_count_, 3);
+    // First swap, plus final swap (contained damage).
+    EXPECT_EQ(swap_count_, 2);
+  }
+
+  FakeContentLayerClient client_;
+  int swap_count_;
+  int prepare_to_draw_count_;
+  int update_visible_tile_count_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostDamageTestVisibleTilesStillTriggerDraws);
 
 }  // namespace
 }  // namespace cc

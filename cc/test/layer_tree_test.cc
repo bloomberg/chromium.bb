@@ -117,6 +117,11 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->SwapBuffersCompleteOnThread(this);
   }
 
+  virtual void UpdateVisibleTiles() OVERRIDE {
+    LayerTreeHostImpl::UpdateVisibleTiles();
+    test_hooks_->UpdateVisibleTilesOnThread(this);
+  }
+
   virtual void NotifyReadyToActivate() OVERRIDE {
     if (block_notify_ready_to_activate_for_testing_)
       notify_ready_to_activate_was_blocked_ = true;

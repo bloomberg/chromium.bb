@@ -128,9 +128,9 @@ class CC_EXPORT SchedulerStateMachine {
   // or the screen being damaged and simply needing redisplay.
   void SetNeedsRedraw();
 
-  // Indicates that a redraw is required because we are currently rendering
+  // Indicates whether a redraw is required because we are currently rendering
   // with a low resolution or checkerboarded tile.
-  void DidSwapUseIncompleteTile();
+  void SetSwapUsedIncompleteTile(bool used_incomplete_tile);
 
   // Indicates whether ACTION_DRAW_AND_SWAP_IF_POSSIBLE drew to the screen or
   // not.

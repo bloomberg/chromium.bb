@@ -180,7 +180,7 @@ class ThreadProxy : public Proxy,
   void AsValueOnImplThread(CompletionEvent* completion,
                            base::DictionaryValue* state) const;
   void RenewTreePriorityOnImplThread();
-  void DidSwapUseIncompleteTileOnImplThread();
+  void SetSwapUsedIncompleteTileOnImplThread(bool used_incomplete_tile);
   void StartScrollbarAnimationOnImplThread();
   void MainThreadHasStoppedFlingingOnImplThread();
   void SetInputThrottledUntilCommitOnImplThread(bool is_throttled);

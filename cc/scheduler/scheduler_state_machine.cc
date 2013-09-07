@@ -673,10 +673,8 @@ void SchedulerStateMachine::UpdateStateOnDraw(bool did_swap) {
   draw_if_possible_failed_ = false;
   active_tree_needs_first_draw_ = false;
 
-  if (did_swap) {
-    swap_used_incomplete_tile_ = false;
+  if (did_swap)
     last_frame_number_swap_performed_ = current_frame_number_;
-  }
 }
 
 void SchedulerStateMachine::SetMainThreadNeedsLayerTextures() {
@@ -759,8 +757,9 @@ void SchedulerStateMachine::SetVisible(bool visible) { visible_ = visible; }
 
 void SchedulerStateMachine::SetNeedsRedraw() { needs_redraw_ = true; }
 
-void SchedulerStateMachine::DidSwapUseIncompleteTile() {
-  swap_used_incomplete_tile_ = true;
+void SchedulerStateMachine::SetSwapUsedIncompleteTile(
+    bool used_incomplete_tile) {
+  swap_used_incomplete_tile_ = used_incomplete_tile;
 }
 
 void SchedulerStateMachine::DidDrawIfPossibleCompleted(bool success) {
