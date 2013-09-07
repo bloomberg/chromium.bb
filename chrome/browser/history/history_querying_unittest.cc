@@ -442,6 +442,32 @@ TEST_F(HistoryQueryTest, TextSearchDupes) {
 }
 */
 
+// Tests IDN text search by both ASCII and UTF.
+TEST_F(HistoryQueryTest, TextSearchIDN) {
+  ASSERT_TRUE(history_.get());
+
+  QueryOptions options;
+  QueryResults results;
+
+  TestEntry entry = { "http://xn--d1abbgf6aiiy.xn--p1ai/",  "Nothing", 0, };
+  AddEntryToHistory(entry);
+
+  struct QueryEntry {
+    std::string query;
+    size_t results_size;
+  } queries[] = {
+    { "bad query", 0 },
+    { std::string("xn--d1abbgf6aiiy.xn--p1ai"), 1 },
+    { base::WideToUTF8(std::wstring(L"\u043f\u0440\u0435\u0437") +
+                       L"\u0438\u0434\u0435\u043d\u0442.\u0440\u0444"), 1, },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(queries); ++i) {
+    QueryHistory(queries[i].query, options, &results);
+    EXPECT_EQ(queries[i].results_size, results.size());
+  }
+}
+
 // Test iterating over pages of results.
 TEST_F(HistoryQueryTest, Paging) {
   // Since results are fetched 1 and 2 at a time, entry #0 and #6 will not

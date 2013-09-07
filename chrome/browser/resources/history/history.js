@@ -91,6 +91,7 @@ function Visit(result, continued, model) {
   this.model_ = model;
   this.title_ = result.title;
   this.url_ = result.url;
+  this.domain_ = result.domain;
   this.starred_ = result.starred;
   this.snippet_ = result.snippet || '';
 
@@ -180,7 +181,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     menu.dataset.devicename = self.deviceName;
     menu.dataset.devicetype = self.deviceType;
   };
-  domain.textContent = this.getDomainFromURL_(this.url_);
+  domain.textContent = this.domain_;
 
   entryBox.appendChild(time);
 
@@ -286,19 +287,6 @@ Visit.prototype.removeFromHistory = function() {
 // Visit, private: ------------------------------------------------------------
 
 /**
- * Extracts and returns the domain (and subdomains) from a URL.
- * @param {string} url The url.
- * @return {string} The domain. An empty string is returned if no domain can
- *     be found.
- * @private
- */
-Visit.prototype.getDomainFromURL_ = function(url) {
-  // TODO(sergiu): Extract the domain from the C++ side and send it here.
-  var domain = url.replace(/^.+?:\/\//, '').match(/[^/]+/);
-  return domain ? domain[0] : '';
-};
-
-/**
  * Add child text nodes to a node such that occurrences of the specified text is
  * highlighted.
  * @param {Node} node The node under which new text nodes will be made as
@@ -386,7 +374,7 @@ Visit.prototype.getVisitAttemptDOM_ = function() {
   node.innerHTML = loadTimeData.getStringF('blockedVisitText',
                                            this.url_,
                                            this.id_,
-                                           this.getDomainFromURL_(this.url_));
+                                           this.domain_);
   return node;
 };
 
@@ -408,7 +396,7 @@ Visit.prototype.addFaviconToElement_ = function(el) {
  */
 Visit.prototype.showMoreFromSite_ = function() {
   recordUmaAction('HistoryPage_EntryMenuShowMoreFromSite');
-  historyView.setSearch(this.getDomainFromURL_(this.url_));
+  historyView.setSearch(this.domain_);
 };
 
 // Visit, private, static: ----------------------------------------------------
@@ -1142,7 +1130,7 @@ HistoryView.prototype.groupVisitsByDomain_ = function(visits, results) {
 
   // Group the visits into a dictionary and generate a list of domains.
   for (var i = 0, visit; visit = visits[i]; i++) {
-    var domain = visit.getDomainFromURL_(visit.url_);
+    var domain = visit.domain_;
     if (!visitsByDomain[domain]) {
       visitsByDomain[domain] = [];
       domains.push(domain);

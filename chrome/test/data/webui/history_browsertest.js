@@ -22,6 +22,9 @@ function HistoryUIBrowserTest() {}
  */
 function createHistoryEntry(timestamp, url) {
   var d = new Date(timestamp);
+  // Extract domain from url.
+  var domainMatch = url.replace(/^.+?:\/\//, '').match(/[^/]+/);
+  var domain = domainMatch ? domainMatch[0] : '';
   return {
     dateTimeOfDay: d.getHours() + ':' + d.getMinutes(),
     dateRelativeDay: d.toDateString(),
@@ -29,7 +32,8 @@ function createHistoryEntry(timestamp, url) {
     starred: false,
     time: timestamp,
     title: d.toString(),  // Use the stringified date as the title.
-    url: url
+    url: url,
+    domain: domain
   };
 }
 
@@ -827,4 +831,38 @@ TEST_F('HistoryWebUIDeleteProhibitedTest', 'deleteProhibited', function() {
     testDone([false, 'Delete succeeded even though it was prohibited.']);
   });
   waitForCallback('deleteFailed', testDone);
+});
+
+/**
+ * Fixture for History WebUI testing IDN.
+ * @extends {BaseHistoryWebUITest}
+ * @constructor
+ */
+function HistoryWebUIIDNTest() {}
+
+HistoryWebUIIDNTest.prototype = {
+  __proto__: BaseHistoryWebUITest.prototype,
+
+  /** @override */
+  testGenPreamble: function() {
+    // Add some visits to the history database.
+    GEN('  AddPageToHistory(0, "http://xn--d1abbgf6aiiy.xn--p1ai/",' +
+        ' "Some");');
+
+    // Clear AcceptLanguages to get domain in unicode.
+    GEN('  ClearAcceptLanguages();');
+  },
+};
+
+/**
+ * Simple test that verifies that the correct entries are retrieved from the
+ * history database and displayed in the UI.
+ */
+TEST_F('HistoryWebUIIDNTest', 'basic', function() {
+  // Check that there is only one entry and domain is in unicode.
+  assertEquals(1, document.querySelectorAll('.domain').length);
+  assertEquals("\u043f\u0440\u0435\u0437\u0438\u0434\u0435\u043d\u0442." +
+               "\u0440\u0444", document.querySelector('.domain').textContent);
+
+  testDone();
 });

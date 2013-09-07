@@ -27,6 +27,9 @@ class HistoryUIBrowserTest : public WebUIBrowserTest {
   void AddPageToHistory(
       int hour_offset, const std::string& url, const std::string& title);
 
+  // Clears kAcceptLanguages pref value.
+  void ClearAcceptLanguages();
+
  private:
   // The HistoryService is owned by the profile.
   HistoryService* history_;

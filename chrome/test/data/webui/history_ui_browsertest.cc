@@ -47,3 +47,9 @@ void HistoryUIBrowserTest::SetDeleteAllowed(bool allowed) {
   browser()->profile()->GetPrefs()->
       SetBoolean(prefs::kAllowDeletingBrowserHistory, allowed);
 }
+
+void HistoryUIBrowserTest::ClearAcceptLanguages() {
+  browser()->profile()->GetPrefs()->
+      SetString(prefs::kAcceptLanguages, "");
+}
+

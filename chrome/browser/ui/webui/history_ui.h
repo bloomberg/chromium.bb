@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_HISTORY_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_HISTORY_UI_H_
 
+#include <string>
+
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -40,7 +42,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
     HistoryEntry(EntryType type, const GURL& url, const string16& title,
                  base::Time time, const std::string& client_id,
                  bool is_search_result, const string16& snippet,
-                 bool blocked_visit);
+                 bool blocked_visit, const std::string& accept_languages);
     HistoryEntry();
     virtual ~HistoryEntry();
 
@@ -81,6 +83,9 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
     // Whether this entry was blocked when it was attempted.
     bool blocked_visit;
+
+    // kAcceptLanguages pref value.
+    std::string accept_languages;
   };
 
   BrowsingHistoryHandler();
@@ -162,6 +167,9 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
   // Sets the query options for a monthly query, |offset| months ago.
   void SetQueryTimeInMonths(int offset, history::QueryOptions* options);
+
+  // kAcceptLanguages pref value.
+  std::string GetAcceptLanguages() const;
 
   content::NotificationRegistrar registrar_;
 

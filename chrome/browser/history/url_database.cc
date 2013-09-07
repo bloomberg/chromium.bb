@@ -12,6 +12,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
+#include "net/base/net_util.h"
 #include "sql/statement.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -371,6 +372,16 @@ bool URLDatabase::GetTextMatches(const string16& query,
     std::vector<QueryWord> query_words;
     string16 url = base::i18n::ToLower(statement.ColumnString16(1));
     query_parser_.ExtractQueryWords(url, &query_words);
+    GURL gurl(url);
+    if (gurl.is_valid()) {
+      // Decode punycode to match IDN.
+      // |query_words| won't be shown to user - therefore we can use empty
+      // |languages| to reduce dependency (no need to call PrefService).
+      string16 ascii = base::ASCIIToUTF16(gurl.host());
+      string16 utf = net::IDNToUnicode(gurl.host(), std::string());
+      if (ascii != utf)
+        query_parser_.ExtractQueryWords(utf, &query_words);
+    }
     string16 title = base::i18n::ToLower(statement.ColumnString16(2));
     query_parser_.ExtractQueryWords(title, &query_words);
 
