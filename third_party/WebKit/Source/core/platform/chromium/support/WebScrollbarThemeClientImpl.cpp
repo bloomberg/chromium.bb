@@ -153,6 +153,11 @@ WebCore::ScrollbarOrientation WebScrollbarThemeClientImpl::orientation() const
     return static_cast<WebCore::ScrollbarOrientation>(m_scrollbar->orientation());
 }
 
+bool WebScrollbarThemeClientImpl::isLeftSideVerticalScrollbar() const
+{
+    return m_scrollbar->isLeftSideVerticalScrollbar();
+}
+
 int WebScrollbarThemeClientImpl::value() const
 {
     return m_scrollbar->value();

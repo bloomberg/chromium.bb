@@ -265,6 +265,11 @@ bool ScrollbarGroup::userInputScrollable(ScrollbarOrientation orientation) const
     return orientation == HorizontalScrollbar ? horizontalScrollbar() : verticalScrollbar();
 }
 
+bool ScrollbarGroup::shouldPlaceVerticalScrollbarOnLeft() const
+{
+    return false;
+}
+
 int ScrollbarGroup::pageStep(ScrollbarOrientation orientation) const
 {
     int length;

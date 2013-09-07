@@ -1389,6 +1389,11 @@ bool RenderLayer::userInputScrollable(ScrollbarOrientation orientation) const
     return (overflowStyle == OSCROLL || overflowStyle == OAUTO || overflowStyle == OOVERLAY);
 }
 
+bool RenderLayer::shouldPlaceVerticalScrollbarOnLeft() const
+{
+    return renderer()->style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft();
+}
+
 int RenderLayer::pageStep(ScrollbarOrientation orientation) const
 {
     RenderBox* box = renderBox();

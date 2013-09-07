@@ -1016,6 +1016,7 @@ private:
     bool scrollbarsCanBeActive() const;
     IntRect scrollableAreaBoundingBox() const;
     bool userInputScrollable(ScrollbarOrientation) const;
+    bool shouldPlaceVerticalScrollbarOnLeft() const;
     int pageStep(ScrollbarOrientation) const;
     // End of ScrollableArea interface
 

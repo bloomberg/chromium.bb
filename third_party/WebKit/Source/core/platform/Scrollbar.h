@@ -30,7 +30,6 @@
 #include "core/platform/ScrollbarThemeClient.h"
 #include "core/platform/Timer.h"
 #include "core/platform/Widget.h"
-#include "core/platform/text/TextDirection.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PassRefPtr.h"
 
@@ -77,7 +76,7 @@ public:
 
     virtual bool isCustomScrollbar() const { return false; }
     virtual ScrollbarOrientation orientation() const { return m_orientation; }
-    TextDirection textDirection() const;
+    virtual bool isLeftSideVerticalScrollbar() const;
 
     virtual int value() const { return lroundf(m_currentPos); }
     virtual float currentPos() const { return m_currentPos; }

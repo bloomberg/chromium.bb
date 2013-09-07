@@ -69,6 +69,7 @@ public:
     MOCK_CONST_METHOD0(scrollableAreaBoundingBox, IntRect());
 
     virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE { return true; }
+    virtual bool shouldPlaceVerticalScrollbarOnLeft() const OVERRIDE { return false; }
     virtual IntPoint scrollPosition() const OVERRIDE { return IntPoint(); }
     virtual int visibleHeight() const OVERRIDE { return 768; }
     virtual int visibleWidth() const OVERRIDE { return 1024; }

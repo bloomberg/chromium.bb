@@ -103,6 +103,7 @@ public:
     virtual bool scrollbarsCanBeActive() const OVERRIDE;
     virtual IntRect scrollableAreaBoundingBox() const OVERRIDE;
     virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE;
+    virtual bool shouldPlaceVerticalScrollbarOnLeft() const OVERRIDE;
     virtual int pageStep(ScrollbarOrientation) const OVERRIDE;
 
     int scrollXOffset() const { return m_scrollOffset.width() + scrollOrigin().x(); }

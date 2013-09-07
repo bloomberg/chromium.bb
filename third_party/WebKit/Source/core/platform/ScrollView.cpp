@@ -809,6 +809,11 @@ bool ScrollView::userInputScrollable(ScrollbarOrientation orientation) const
     return mode == ScrollbarAuto || mode == ScrollbarAlwaysOn;
 }
 
+bool ScrollView::shouldPlaceVerticalScrollbarOnLeft() const
+{
+    return false;
+}
+
 void ScrollView::repaintContentRectangle(const IntRect& rect)
 {
     IntRect paintRect = rect;

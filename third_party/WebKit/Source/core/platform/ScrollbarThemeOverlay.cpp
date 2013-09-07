@@ -107,10 +107,13 @@ IntRect ScrollbarThemeOverlay::trackRect(ScrollbarThemeClient* scrollbar, bool)
 void ScrollbarThemeOverlay::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
     IntRect thumbRect = rect;
-    if (scrollbar->orientation() == HorizontalScrollbar)
+    if (scrollbar->orientation() == HorizontalScrollbar) {
         thumbRect.setHeight(thumbRect.height() - m_scrollbarMargin);
-    else
+    } else {
         thumbRect.setWidth(thumbRect.width() - m_scrollbarMargin);
+        if (scrollbar->isLeftSideVerticalScrollbar())
+            thumbRect.setX(thumbRect.x() + m_scrollbarMargin);
+    }
     context->fillRect(thumbRect, m_color);
 }
 

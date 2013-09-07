@@ -64,6 +64,7 @@ public:
 
     virtual bool isCustomScrollbar() const = 0;
     virtual ScrollbarOrientation orientation() const = 0;
+    virtual bool isLeftSideVerticalScrollbar() const = 0;
 
     virtual int value() const = 0;
     virtual float currentPos() const = 0;

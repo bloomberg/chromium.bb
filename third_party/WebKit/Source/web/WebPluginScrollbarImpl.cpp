@@ -189,7 +189,7 @@ WebScrollbar::Orientation WebPluginScrollbarImpl::orientation() const
     return WebScrollbar::Vertical;
 }
 
-bool WebPluginScrollbarImpl::isRightToLeft() const
+bool WebPluginScrollbarImpl::isLeftSideVerticalScrollbar() const
 {
     return false;
 }

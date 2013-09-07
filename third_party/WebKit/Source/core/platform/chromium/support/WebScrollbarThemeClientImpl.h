@@ -62,6 +62,7 @@ public:
     virtual IntPoint convertFromContainingWindow(const IntPoint&) OVERRIDE;
     virtual bool isCustomScrollbar() const OVERRIDE;
     virtual ScrollbarOrientation orientation() const OVERRIDE;
+    virtual bool isLeftSideVerticalScrollbar() const OVERRIDE;
     virtual int value() const OVERRIDE;
     virtual float currentPos() const OVERRIDE;
     virtual int visibleSize() const OVERRIDE;

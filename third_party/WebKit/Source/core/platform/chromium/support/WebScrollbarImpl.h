@@ -54,7 +54,7 @@ public:
     virtual ScrollbarOverlayStyle scrollbarOverlayStyle() const OVERRIDE;
     virtual bool isCustomScrollbar() const OVERRIDE;
     virtual Orientation orientation() const OVERRIDE;
-    virtual bool isRightToLeft() const OVERRIDE;
+    virtual bool isLeftSideVerticalScrollbar() const OVERRIDE;
     virtual bool isAlphaLocked() const OVERRIDE;
     virtual void setIsAlphaLocked(bool) OVERRIDE;
 

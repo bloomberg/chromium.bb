@@ -74,6 +74,7 @@ public:
     virtual bool scrollbarsCanBeActive() const OVERRIDE;
     virtual WebCore::IntRect scrollableAreaBoundingBox() const OVERRIDE;
     virtual bool userInputScrollable(WebCore::ScrollbarOrientation) const OVERRIDE;
+    virtual bool shouldPlaceVerticalScrollbarOnLeft() const OVERRIDE;
     virtual int pageStep(WebCore::ScrollbarOrientation) const OVERRIDE;
 
 private:

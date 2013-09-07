@@ -130,6 +130,7 @@ public:
     virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE { }
     virtual void invalidateScrollCornerRect(const IntRect&) OVERRIDE { }
     virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE { return true; }
+    virtual bool shouldPlaceVerticalScrollbarOnLeft() const OVERRIDE { return false; }
     virtual int pageStep(ScrollbarOrientation) const OVERRIDE { return 0; }
     virtual IntPoint minimumScrollPosition() const OVERRIDE { return IntPoint(); }
     virtual IntPoint maximumScrollPosition() const OVERRIDE

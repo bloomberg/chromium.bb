@@ -276,8 +276,8 @@ int RenderListBox::baselinePosition(FontBaseline baselineType, bool firstLine, L
 LayoutRect RenderListBox::itemBoundingBoxRect(const LayoutPoint& additionalOffset, int index)
 {
     return LayoutRect(additionalOffset.x() + borderLeft() + paddingLeft(),
-                   additionalOffset.y() + borderTop() + paddingTop() + itemHeight() * (index - m_indexOffset),
-                   contentWidth(), itemHeight());
+        additionalOffset.y() + borderTop() + paddingTop() + itemHeight() * (index - m_indexOffset),
+        contentWidth(), itemHeight());
 }
 
 void RenderListBox::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -841,6 +841,11 @@ IntPoint RenderListBox::maximumScrollPosition() const
 bool RenderListBox::userInputScrollable(ScrollbarOrientation orientation) const
 {
     return orientation == VerticalScrollbar;
+}
+
+bool RenderListBox::shouldPlaceVerticalScrollbarOnLeft() const
+{
+    return false;
 }
 
 int RenderListBox::lineStep(ScrollbarOrientation) const

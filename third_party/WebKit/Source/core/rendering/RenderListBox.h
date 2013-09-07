@@ -125,6 +125,7 @@ private:
     virtual IntPoint minimumScrollPosition() const OVERRIDE;
     virtual IntPoint maximumScrollPosition() const OVERRIDE;
     virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE;
+    virtual bool shouldPlaceVerticalScrollbarOnLeft() const OVERRIDE;
     virtual int lineStep(ScrollbarOrientation) const;
     virtual int pageStep(ScrollbarOrientation) const;
     virtual float pixelStep(ScrollbarOrientation) const;

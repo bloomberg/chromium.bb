@@ -121,11 +121,11 @@ bool Scrollbar::isScrollViewScrollbar() const
     return parent() && parent()->isFrameView() && toFrameView(parent())->isScrollViewScrollbar(this);
 }
 
-TextDirection Scrollbar::textDirection() const
+bool Scrollbar::isLeftSideVerticalScrollbar() const
 {
     if (m_orientation == VerticalScrollbar && m_scrollableArea)
-        return m_scrollableArea->textDirection();
-    return LTR;
+        return m_scrollableArea->shouldPlaceVerticalScrollbarOnLeft();
+    return false;
 }
 
 void Scrollbar::offsetDidChange()

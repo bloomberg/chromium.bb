@@ -50,6 +50,7 @@ public:
     virtual bool isScrollCornerVisible() const OVERRIDE;
     virtual void scrollbarStyleChanged(int newStyle, bool forceUpdate) OVERRIDE;
     virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE;
+    virtual bool shouldPlaceVerticalScrollbarOnLeft() const OVERRIDE;
 
     virtual void notifyPageThatContentAreaWillPaint() const;
 

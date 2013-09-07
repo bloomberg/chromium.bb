@@ -71,7 +71,7 @@ public:
     virtual WebScrollbar::ScrollbarPart hoveredPart() const OVERRIDE;
     virtual WebScrollbar::ScrollbarOverlayStyle scrollbarOverlayStyle() const OVERRIDE;
     virtual WebScrollbar::Orientation orientation() const OVERRIDE;
-    virtual bool isRightToLeft() const OVERRIDE;
+    virtual bool isLeftSideVerticalScrollbar() const OVERRIDE;
     virtual bool isCustomScrollbar() const OVERRIDE;
 
     // WebKit::WebPluginScrollbar methods

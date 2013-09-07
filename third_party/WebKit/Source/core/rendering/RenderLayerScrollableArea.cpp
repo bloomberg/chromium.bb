@@ -332,6 +332,11 @@ bool RenderLayerScrollableArea::userInputScrollable(ScrollbarOrientation orienta
     return m_layer->userInputScrollable(orientation);
 }
 
+bool RenderLayerScrollableArea::shouldPlaceVerticalScrollbarOnLeft() const
+{
+    return m_layer->shouldPlaceVerticalScrollbarOnLeft();
+}
+
 int RenderLayerScrollableArea::pageStep(ScrollbarOrientation orientation) const
 {
     return m_layer->pageStep(orientation);
