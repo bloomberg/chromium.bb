@@ -12,6 +12,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -98,6 +99,12 @@ void TouchDirectory(SandboxDirectoryDatabase* db, FileId dir_id) {
 const base::FilePath::CharType kTemporaryDirectoryName[] = FILE_PATH_LITERAL("t");
 const base::FilePath::CharType kPersistentDirectoryName[] = FILE_PATH_LITERAL("p");
 const base::FilePath::CharType kSyncableDirectoryName[] = FILE_PATH_LITERAL("s");
+
+enum IsolatedOriginStatus {
+  kIsolatedOriginMatch,
+  kIsolatedOriginDontMatch,
+  kIsolatedOriginStatusMax,
+};
 
 }  // namespace
 
@@ -1436,6 +1443,15 @@ bool ObfuscatedFileUtil::HasIsolatedStorage(const GURL& origin) {
       isolated_origin_ = origin;
     // Record isolated_origin_, but always disable for now.
     // crbug.com/264429
+    if (isolated_origin_ != origin) {
+      UMA_HISTOGRAM_ENUMERATION("FileSystem.IsolatedOriginStatus",
+                                kIsolatedOriginDontMatch,
+                                kIsolatedOriginStatusMax);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("FileSystem.IsolatedOriginStatus",
+                                kIsolatedOriginMatch,
+                                kIsolatedOriginStatusMax);
+    }
     return false;
   }
   return false;
