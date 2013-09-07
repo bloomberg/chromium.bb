@@ -66,8 +66,9 @@ PepperFileSystemBrowserHost::PepperFileSystemBrowserHost(BrowserPpapiHost* host,
 }
 
 PepperFileSystemBrowserHost::~PepperFileSystemBrowserHost() {
-  if (fs_context_.get())
-    fs_context_->operation_runner()->Shutdown();
+  // TODO(teravest): Create a FileSystemOperationRunner
+  // per-PepperFileSystemBrowserHost, force users of this FileSystem to use it,
+  // and call Shutdown() on it here.
 }
 
 int32_t PepperFileSystemBrowserHost::OnResourceMessageReceived(
