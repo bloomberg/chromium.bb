@@ -20,25 +20,23 @@ namespace cc {
 
 class Thread;
 
-struct ScheduledActionDrawAndSwapResult {
-  ScheduledActionDrawAndSwapResult()
-      : did_draw(false),
-        did_swap(false) {}
-  ScheduledActionDrawAndSwapResult(bool did_draw, bool did_swap)
-      : did_draw(did_draw),
-        did_swap(did_swap) {}
+struct DrawSwapReadbackResult {
+  DrawSwapReadbackResult()
+      : did_draw(false), did_swap(false), did_readback(false) {}
+  DrawSwapReadbackResult(bool did_draw, bool did_swap, bool did_readback)
+      : did_draw(did_draw), did_swap(did_swap), did_readback(did_readback) {}
   bool did_draw;
   bool did_swap;
+  bool did_readback;
 };
 
 class SchedulerClient {
  public:
   virtual void SetNeedsBeginFrameOnImplThread(bool enable) = 0;
   virtual void ScheduledActionSendBeginFrameToMainThread() = 0;
-  virtual ScheduledActionDrawAndSwapResult
-  ScheduledActionDrawAndSwapIfPossible() = 0;
-  virtual ScheduledActionDrawAndSwapResult
-  ScheduledActionDrawAndSwapForced() = 0;
+  virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapIfPossible() = 0;
+  virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapForced() = 0;
+  virtual DrawSwapReadbackResult ScheduledActionDrawAndReadback() = 0;
   virtual void ScheduledActionCommit() = 0;
   virtual void ScheduledActionUpdateVisibleTiles() = 0;
   virtual void ScheduledActionActivatePendingTree() = 0;
@@ -72,16 +70,12 @@ class CC_EXPORT Scheduler {
   void SetNeedsCommit();
 
   // Like SetNeedsCommit(), but ensures a commit will definitely happen even if
-  // we are not visible.
-  void SetNeedsForcedCommit();
+  // we are not visible. Will eventually result in a forced draw internally.
+  void SetNeedsForcedCommitForReadback();
 
   void SetNeedsRedraw();
 
   void SetMainThreadNeedsLayerTextures();
-
-  // Like SetNeedsRedraw(), but ensures the draw will definitely happen even if
-  // we are not visible.
-  void SetNeedsForcedRedraw();
 
   void DidSwapUseIncompleteTile();
 
@@ -116,6 +110,7 @@ class CC_EXPORT Scheduler {
   void SetupNextBeginFrameIfNeeded();
   void DrawAndSwapIfPossible();
   void DrawAndSwapForced();
+  void DrawAndReadback();
   void ProcessScheduledActions();
 
   const SchedulerSettings settings_;

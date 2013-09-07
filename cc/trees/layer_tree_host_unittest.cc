@@ -503,6 +503,104 @@ class LayerTreeHostTestCompositeAndReadbackBeforePreviousCommitDraws
 MULTI_THREAD_TEST_F(
     LayerTreeHostTestCompositeAndReadbackBeforePreviousCommitDraws);
 
+class LayerTreeHostTestCompositeAndReadbackDuringForcedDraw
+    : public LayerTreeHostTest {
+ protected:
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    // This enables forced draws after a single prepare to draw failure.
+    settings->timeout_and_draw_when_animation_checkerboards = true;
+    settings->maximum_number_of_failed_draws_before_draw_is_forced_ = 1;
+  }
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                     LayerTreeHostImpl::FrameData* frame_data,
+                                     bool result) OVERRIDE {
+    EXPECT_GE(host_impl->active_tree()->source_frame_number(), 0);
+    EXPECT_LE(host_impl->active_tree()->source_frame_number(), 2);
+
+    // Before we react to the failed draw by initiating the forced draw
+    // sequence, start a readback on the main thread.
+    if (host_impl->active_tree()->source_frame_number() == 0)
+      PostReadbackToMainThread();
+
+    // Returning false will eventually result in a forced draw.
+    return false;
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    // We should only draw for the readback and the forced draw.
+    EXPECT_GE(host_impl->active_tree()->source_frame_number(), 1);
+    EXPECT_LE(host_impl->active_tree()->source_frame_number(), 2);
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
+                                   bool result) OVERRIDE {
+    // We should only swap for the forced draw.
+    EXPECT_EQ(host_impl->active_tree()->source_frame_number(), 2);
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestCompositeAndReadbackDuringForcedDraw);
+
+class LayerTreeHostTestCompositeAndReadbackAfterForcedDraw
+    : public LayerTreeHostTest {
+ protected:
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    // This enables forced draws after a single prepare to draw failure.
+    settings->timeout_and_draw_when_animation_checkerboards = true;
+    settings->maximum_number_of_failed_draws_before_draw_is_forced_ = 1;
+  }
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                     LayerTreeHostImpl::FrameData* frame_data,
+                                     bool result) OVERRIDE {
+    EXPECT_GE(host_impl->active_tree()->source_frame_number(), 0);
+    EXPECT_LE(host_impl->active_tree()->source_frame_number(), 3);
+
+    // Returning false will eventually result in a forced draw.
+    return false;
+  }
+
+  virtual void DidCommit() OVERRIDE {
+    if (layer_tree_host()->source_frame_number() == 1) {
+      // Avoid aborting the forced draw commit so source_frame_number
+      // increments.
+      layer_tree_host()->SetNeedsCommit();
+    } else if (layer_tree_host()->source_frame_number() == 2) {
+      // Perform a readback immediately after the forced draw's commit.
+      char pixels[4];
+      layer_tree_host()->CompositeAndReadback(&pixels, gfx::Rect(0, 0, 1, 1));
+    }
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    // We should only draw for the the forced draw, readback, and
+    // replacement commit.
+    EXPECT_GE(host_impl->active_tree()->source_frame_number(), 1);
+    EXPECT_LE(host_impl->active_tree()->source_frame_number(), 3);
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
+                                   bool result) OVERRIDE {
+    // We should only swap for the forced draw and replacement commit.
+    EXPECT_TRUE(host_impl->active_tree()->source_frame_number() == 1 ||
+                host_impl->active_tree()->source_frame_number() == 3);
+    if (host_impl->active_tree()->source_frame_number() == 3)
+      EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestCompositeAndReadbackAfterForcedDraw);
+
 // If the layerTreeHost says it can't draw, Then we should not try to draw.
 class LayerTreeHostTestCanDrawBlocksDrawing : public LayerTreeHostTest {
  public:

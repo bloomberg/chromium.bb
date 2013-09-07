@@ -375,6 +375,12 @@ void LayerTreeTest::PostSetNeedsCommitToMainThread() {
                  main_thread_weak_ptr_));
 }
 
+void LayerTreeTest::PostReadbackToMainThread() {
+  proxy()->MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&LayerTreeTest::DispatchReadback, main_thread_weak_ptr_));
+}
+
 void LayerTreeTest::PostAcquireLayerTextures() {
   proxy()->MainThreadTaskRunner()->PostTask(
       FROM_HERE,
@@ -502,6 +508,15 @@ void LayerTreeTest::DispatchSetNeedsCommit() {
 
   if (layer_tree_host_)
     layer_tree_host_->SetNeedsCommit();
+}
+
+void LayerTreeTest::DispatchReadback() {
+  DCHECK(!proxy() || proxy()->IsMainThread());
+
+  if (layer_tree_host_) {
+    char pixels[4];
+    layer_tree_host()->CompositeAndReadback(&pixels, gfx::Rect(0, 0, 1, 1));
+  }
 }
 
 void LayerTreeTest::DispatchAcquireLayerTextures() {

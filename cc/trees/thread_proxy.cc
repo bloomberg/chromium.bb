@@ -126,19 +126,27 @@ bool ThreadProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
     return false;
   }
 
-  // Perform a synchronous commit.
+  // Perform a synchronous commit with an associated readback.
+  ReadbackRequest request;
+  request.rect = rect;
+  request.pixels = pixels;
   {
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
     CompletionEvent begin_frame_sent_to_main_thread_completion;
-    Proxy::ImplThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ThreadProxy::ForceCommitOnImplThread,
-                   impl_thread_weak_ptr_,
-                   &begin_frame_sent_to_main_thread_completion));
+    Proxy::ImplThreadTaskRunner()
+        ->PostTask(FROM_HERE,
+                   base::Bind(&ThreadProxy::ForceCommitForReadbackOnImplThread,
+                              impl_thread_weak_ptr_,
+                              &begin_frame_sent_to_main_thread_completion,
+                              &request));
     begin_frame_sent_to_main_thread_completion.Wait();
   }
 
   in_composite_and_readback_ = true;
+  // This is the forced commit.
+  // Note: The Impl thread also queues a separate BeginFrameOnMainThread on the
+  // main thread, which will be called after this CompositeAndReadback
+  // completes, to replace the forced commit.
   BeginFrameOnMainThread(scoped_ptr<BeginFrameAndCommitState>());
   in_composite_and_readback_ = false;
 
@@ -146,48 +154,35 @@ bool ThreadProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
   // that it made.
   can_cancel_commit_ = false;
 
-  // Perform a synchronous readback.
-  ReadbackRequest request;
-  request.rect = rect;
-  request.pixels = pixels;
-  {
-    DebugScopedSetMainThreadBlocked main_thread_blocked(this);
-    Proxy::ImplThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ThreadProxy::RequestReadbackOnImplThread,
-                   impl_thread_weak_ptr_,
-                   &request));
-    request.completion.Wait();
-  }
+  request.completion.Wait();
   return request.success;
 }
 
-void ThreadProxy::ForceCommitOnImplThread(CompletionEvent* completion) {
-  TRACE_EVENT0("cc", "ThreadProxy::ForceCommitOnImplThread");
+void ThreadProxy::ForceCommitForReadbackOnImplThread(
+    CompletionEvent* begin_frame_sent_completion,
+    ReadbackRequest* request) {
+  TRACE_EVENT0("cc", "ThreadProxy::ForceCommitForReadbackOnImplThread");
   DCHECK(IsImplThread());
   DCHECK(!begin_frame_sent_to_main_thread_completion_event_on_impl_thread_);
-
-  scheduler_on_impl_thread_->SetNeedsForcedCommit();
-  if (scheduler_on_impl_thread_->CommitPending()) {
-    completion->Signal();
-    return;
-  }
-
-  begin_frame_sent_to_main_thread_completion_event_on_impl_thread_ = completion;
-}
-
-void ThreadProxy::RequestReadbackOnImplThread(ReadbackRequest* request) {
-  DCHECK(Proxy::IsImplThread());
   DCHECK(!readback_request_on_impl_thread_);
+
   if (!layer_tree_host_impl_) {
+    begin_frame_sent_completion->Signal();
     request->success = false;
     request->completion.Signal();
     return;
   }
 
   readback_request_on_impl_thread_ = request;
-  scheduler_on_impl_thread_->SetNeedsRedraw();
-  scheduler_on_impl_thread_->SetNeedsForcedRedraw();
+
+  scheduler_on_impl_thread_->SetNeedsForcedCommitForReadback();
+  if (scheduler_on_impl_thread_->CommitPending()) {
+    begin_frame_sent_completion->Signal();
+    return;
+  }
+
+  begin_frame_sent_to_main_thread_completion_event_on_impl_thread_ =
+      begin_frame_sent_completion;
 }
 
 void ThreadProxy::FinishAllRendering() {
@@ -999,14 +994,14 @@ void ThreadProxy::ScheduledActionBeginOutputSurfaceCreation() {
                  main_thread_weak_ptr_));
 }
 
-ScheduledActionDrawAndSwapResult
-ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
-  TRACE_EVENT1(
-      "cc", "ThreadProxy::ScheduledActionDrawAndSwap", "forced", forced_draw);
-
-  ScheduledActionDrawAndSwapResult result;
+DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
+    bool forced_draw,
+    bool swap_requested,
+    bool readback_requested) {
+  DrawSwapReadbackResult result;
   result.did_draw = false;
   result.did_swap = false;
+  result.did_readback = false;
   DCHECK(IsImplThread());
   DCHECK(layer_tree_host_impl_.get());
   if (!layer_tree_host_impl_)
@@ -1041,7 +1036,10 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
   // DrawLayers() depends on the result of PrepareToDraw(), it is guarded on
   // CanDraw() as well.
 
-  bool drawing_for_readback = !!readback_request_on_impl_thread_;
+  // readback_request_on_impl_thread_ may be for the pending tree, do
+  // not perform the readback unless explicitly requested.
+  bool drawing_for_readback =
+      readback_requested && !!readback_request_on_impl_thread_;
   bool can_do_readback = layer_tree_host_impl_->renderer()->CanReadPixels();
 
   LayerTreeHostImpl::FrameData frame;
@@ -1074,17 +1072,19 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
   layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
 
   // Check for a pending CompositeAndReadback.
-  if (readback_request_on_impl_thread_) {
-    readback_request_on_impl_thread_->success = false;
-    if (draw_frame) {
+  if (drawing_for_readback) {
+    DCHECK(!swap_requested);
+    result.did_readback = false;
+    if (draw_frame && !layer_tree_host_impl_->IsContextLost()) {
       layer_tree_host_impl_->Readback(readback_request_on_impl_thread_->pixels,
                                       readback_request_on_impl_thread_->rect);
-      readback_request_on_impl_thread_->success =
-          !layer_tree_host_impl_->IsContextLost();
+      result.did_readback = true;
     }
+    readback_request_on_impl_thread_->success = result.did_readback;
     readback_request_on_impl_thread_->completion.Signal();
     readback_request_on_impl_thread_ = NULL;
   } else if (draw_frame) {
+    DCHECK(swap_requested);
     result.did_swap = layer_tree_host_impl_->SwapBuffers(frame);
 
     if (frame.contains_incomplete_tile)
@@ -1177,14 +1177,31 @@ void ThreadProxy::ScheduledActionAcquireLayerTexturesForMainThread() {
   texture_acquisition_completion_event_on_impl_thread_ = NULL;
 }
 
-ScheduledActionDrawAndSwapResult
-ThreadProxy::ScheduledActionDrawAndSwapIfPossible() {
-  return ScheduledActionDrawAndSwapInternal(false);
+DrawSwapReadbackResult ThreadProxy::ScheduledActionDrawAndSwapIfPossible() {
+  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionDrawAndSwap");
+  bool forced_draw = false;
+  bool swap_requested = true;
+  bool readback_requested = false;
+  return DrawSwapReadbackInternal(
+      forced_draw, swap_requested, readback_requested);
 }
 
-ScheduledActionDrawAndSwapResult
-ThreadProxy::ScheduledActionDrawAndSwapForced() {
-  return ScheduledActionDrawAndSwapInternal(true);
+DrawSwapReadbackResult ThreadProxy::ScheduledActionDrawAndSwapForced() {
+  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionDrawAndSwapForced");
+  bool forced_draw = true;
+  bool swap_requested = true;
+  bool readback_requested = false;
+  return DrawSwapReadbackInternal(
+      forced_draw, swap_requested, readback_requested);
+}
+
+DrawSwapReadbackResult ThreadProxy::ScheduledActionDrawAndReadback() {
+  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionDrawAndReadback");
+  bool forced_draw = true;
+  bool swap_requested = false;
+  bool readback_requested = true;
+  return DrawSwapReadbackInternal(
+      forced_draw, swap_requested, readback_requested);
 }
 
 void ThreadProxy::DidAnticipatedDrawTimeChange(base::TimeTicks time) {
@@ -1285,6 +1302,8 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
   scheduler_settings.impl_side_painting = settings.impl_side_painting;
   scheduler_settings.timeout_and_draw_when_animation_checkerboards =
       settings.timeout_and_draw_when_animation_checkerboards;
+  scheduler_settings.maximum_number_of_failed_draws_before_draw_is_forced_ =
+      settings.maximum_number_of_failed_draws_before_draw_is_forced_;
   scheduler_settings.using_synchronous_renderer_compositor =
       settings.using_synchronous_renderer_compositor;
   scheduler_settings.throttle_frame_production =

@@ -90,21 +90,32 @@ class FakeSchedulerClient : public SchedulerClient {
     actions_.push_back("ScheduledActionSendBeginFrameToMainThread");
     states_.push_back(scheduler_->StateAsValue().release());
   }
-  virtual ScheduledActionDrawAndSwapResult
-  ScheduledActionDrawAndSwapIfPossible() OVERRIDE {
+  virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapIfPossible()
+      OVERRIDE {
     actions_.push_back("ScheduledActionDrawAndSwapIfPossible");
     states_.push_back(scheduler_->StateAsValue().release());
     num_draws_++;
-    return ScheduledActionDrawAndSwapResult(draw_will_happen_,
-                                            draw_will_happen_ &&
-                                            swap_will_happen_if_draw_happens_);
+    bool did_readback = false;
+    return DrawSwapReadbackResult(
+        draw_will_happen_,
+        draw_will_happen_ && swap_will_happen_if_draw_happens_,
+        did_readback);
   }
-  virtual ScheduledActionDrawAndSwapResult ScheduledActionDrawAndSwapForced()
-      OVERRIDE {
+  virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapForced() OVERRIDE {
     actions_.push_back("ScheduledActionDrawAndSwapForced");
     states_.push_back(scheduler_->StateAsValue().release());
-    return ScheduledActionDrawAndSwapResult(true,
-                                            swap_will_happen_if_draw_happens_);
+    bool did_draw = true;
+    bool did_swap = swap_will_happen_if_draw_happens_;
+    bool did_readback = false;
+    return DrawSwapReadbackResult(did_draw, did_swap, did_readback);
+  }
+  virtual DrawSwapReadbackResult ScheduledActionDrawAndReadback() OVERRIDE {
+    actions_.push_back("ScheduledActionDrawAndReadback");
+    states_.push_back(scheduler_->StateAsValue().release());
+    bool did_draw = true;
+    bool did_swap = false;
+    bool did_readback = true;
+    return DrawSwapReadbackResult(did_draw, did_swap, did_readback);
   }
   virtual void ScheduledActionCommit() OVERRIDE {
     actions_.push_back("ScheduledActionCommit");
@@ -399,18 +410,20 @@ TEST(SchedulerTest, VisibilitySwitchWithTextureAcquisition) {
 class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {
  public:
   virtual void ScheduledActionSendBeginFrameToMainThread() OVERRIDE {}
-  virtual ScheduledActionDrawAndSwapResult
-  ScheduledActionDrawAndSwapIfPossible() OVERRIDE {
+  virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapIfPossible()
+      OVERRIDE {
     // Only SetNeedsRedraw the first time this is called
     if (!num_draws_)
       scheduler_->SetNeedsRedraw();
     return FakeSchedulerClient::ScheduledActionDrawAndSwapIfPossible();
   }
 
-  virtual ScheduledActionDrawAndSwapResult ScheduledActionDrawAndSwapForced()
-      OVERRIDE {
+  virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapForced() OVERRIDE {
     NOTREACHED();
-    return ScheduledActionDrawAndSwapResult(true, true);
+    bool did_draw = true;
+    bool did_swap = true;
+    bool did_readback = false;
+    return DrawSwapReadbackResult(did_draw, did_swap, did_readback);
   }
 
   virtual void ScheduledActionCommit() OVERRIDE {}
@@ -498,8 +511,8 @@ class SchedulerClientThatSetNeedsCommitInsideDraw : public FakeSchedulerClient {
       : set_needs_commit_on_next_draw_(false) {}
 
   virtual void ScheduledActionSendBeginFrameToMainThread() OVERRIDE {}
-  virtual ScheduledActionDrawAndSwapResult
-  ScheduledActionDrawAndSwapIfPossible() OVERRIDE {
+  virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapIfPossible()
+      OVERRIDE {
     // Only SetNeedsCommit the first time this is called
     if (set_needs_commit_on_next_draw_) {
       scheduler_->SetNeedsCommit();
@@ -508,10 +521,12 @@ class SchedulerClientThatSetNeedsCommitInsideDraw : public FakeSchedulerClient {
     return FakeSchedulerClient::ScheduledActionDrawAndSwapIfPossible();
   }
 
-  virtual ScheduledActionDrawAndSwapResult ScheduledActionDrawAndSwapForced()
-      OVERRIDE {
+  virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapForced() OVERRIDE {
     NOTREACHED();
-    return ScheduledActionDrawAndSwapResult(true, true);
+    bool did_draw = true;
+    bool did_swap = false;
+    bool did_readback = false;
+    return DrawSwapReadbackResult(did_draw, did_swap, did_readback);
   }
 
   virtual void ScheduledActionCommit() OVERRIDE {}
@@ -639,11 +654,37 @@ TEST(SchedulerTest, NoSwapWhenSwapFailsDuringForcedCommit) {
   client.SetDrawWillHappen(true);
   client.SetSwapWillHappenIfDrawHappens(false);
 
-  // Get the compositor to do a ScheduledActionDrawAndSwapForced.
+  // Get the compositor to do a ScheduledActionDrawAndReadback.
   scheduler->SetCanDraw(true);
   scheduler->SetNeedsRedraw();
-  scheduler->SetNeedsForcedRedraw();
-  EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndSwapForced"));
+  scheduler->SetNeedsForcedCommitForReadback();
+  scheduler->FinishCommit();
+  EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndReadback"));
+}
+
+TEST(SchedulerTest, BackToBackReadbackAllowed) {
+  // Some clients call readbacks twice in a row before the replacement
+  // commit comes in.  Make sure it is allowed.
+  FakeSchedulerClient client;
+  SchedulerSettings default_scheduler_settings;
+  Scheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
+
+  // Get the compositor to do 2 ScheduledActionDrawAndReadbacks before
+  // the replacement commit comes in.
+  scheduler->SetCanDraw(true);
+  scheduler->SetNeedsRedraw();
+  scheduler->SetNeedsForcedCommitForReadback();
+  scheduler->FinishCommit();
+  EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndReadback"));
+
+  client.Reset();
+  scheduler->SetNeedsForcedCommitForReadback();
+  scheduler->FinishCommit();
+  EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndReadback"));
+
+  // The replacement commit comes in after 2 readbacks.
+  client.Reset();
+  scheduler->FinishCommit();
 }
 
 }  // namespace

@@ -54,9 +54,9 @@ void Scheduler::SetNeedsCommit() {
   ProcessScheduledActions();
 }
 
-void Scheduler::SetNeedsForcedCommit() {
+void Scheduler::SetNeedsForcedCommitForReadback() {
   state_machine_.SetNeedsCommit();
-  state_machine_.SetNeedsForcedCommit();
+  state_machine_.SetNeedsForcedCommitForReadback();
   ProcessScheduledActions();
 }
 
@@ -67,11 +67,6 @@ void Scheduler::SetNeedsRedraw() {
 
 void Scheduler::DidSwapUseIncompleteTile() {
   state_machine_.DidSwapUseIncompleteTile();
-  ProcessScheduledActions();
-}
-
-void Scheduler::SetNeedsForcedRedraw() {
-  state_machine_.SetNeedsForcedRedraw();
   ProcessScheduledActions();
 }
 
@@ -178,7 +173,7 @@ void Scheduler::BeginFrame(const BeginFrameArgs& args) {
 }
 
 void Scheduler::DrawAndSwapIfPossible() {
-  ScheduledActionDrawAndSwapResult result =
+  DrawSwapReadbackResult result =
       client_->ScheduledActionDrawAndSwapIfPossible();
   state_machine_.DidDrawIfPossibleCompleted(result.did_draw);
   if (result.did_swap)
@@ -186,10 +181,14 @@ void Scheduler::DrawAndSwapIfPossible() {
 }
 
 void Scheduler::DrawAndSwapForced() {
-  ScheduledActionDrawAndSwapResult result =
-      client_->ScheduledActionDrawAndSwapForced();
+  DrawSwapReadbackResult result = client_->ScheduledActionDrawAndSwapForced();
   if (result.did_swap)
     has_pending_begin_frame_ = false;
+}
+
+void Scheduler::DrawAndReadback() {
+  DrawSwapReadbackResult result = client_->ScheduledActionDrawAndReadback();
+  DCHECK(!result.did_swap);
 }
 
 void Scheduler::ProcessScheduledActions() {
@@ -202,6 +201,7 @@ void Scheduler::ProcessScheduledActions() {
 
   SchedulerStateMachine::Action action;
   do {
+    state_machine_.CheckInvariants();
     action = state_machine_.NextAction();
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
                  "SchedulerStateMachine",
@@ -223,15 +223,18 @@ void Scheduler::ProcessScheduledActions() {
       case SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE:
         client_->ScheduledActionActivatePendingTree();
         break;
-      case SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE:
+      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE:
         DrawAndSwapIfPossible();
         break;
-      case SchedulerStateMachine::ACTION_DRAW_FORCED:
+      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED:
         DrawAndSwapForced();
         break;
       case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT:
         // No action is actually performed, but this allows the state machine to
         // advance out of its waiting to draw state without actually drawing.
+        break;
+      case SchedulerStateMachine::ACTION_DRAW_AND_READBACK:
+        DrawAndReadback();
         break;
       case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
         client_->ScheduledActionBeginOutputSurfaceCreation();

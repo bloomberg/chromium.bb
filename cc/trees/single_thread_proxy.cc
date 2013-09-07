@@ -70,10 +70,7 @@ bool SingleThreadProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
 
     if (layer_tree_host_impl_->IsContextLost())
       return false;
-
-    layer_tree_host_impl_->SwapBuffers(frame);
   }
-  DidSwapFrame();
 
   return true;
 }

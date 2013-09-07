@@ -50,7 +50,6 @@ class CC_EXPORT SchedulerStateMachine {
     COMMIT_STATE_FRAME_IN_PROGRESS,
     COMMIT_STATE_READY_TO_COMMIT,
     COMMIT_STATE_WAITING_FOR_FIRST_DRAW,
-    COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW,
   };
   static const char* CommitStateToString(CommitState state);
 
@@ -60,6 +59,27 @@ class CC_EXPORT SchedulerStateMachine {
     LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD,
   };
   static const char* TextureStateToString(TextureState state);
+
+  enum SynchronousReadbackState {
+    READBACK_STATE_IDLE,
+    READBACK_STATE_NEEDS_BEGIN_FRAME,
+    READBACK_STATE_WAITING_FOR_COMMIT,
+    READBACK_STATE_WAITING_FOR_ACTIVATION,
+    READBACK_STATE_WAITING_FOR_DRAW_AND_READBACK,
+    READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT,
+    READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION,
+  };
+  static const char* SynchronousReadbackStateToString(
+      SynchronousReadbackState state);
+
+  enum ForcedRedrawOnTimeoutState {
+    FORCED_REDRAW_STATE_IDLE,
+    FORCED_REDRAW_STATE_WAITING_FOR_COMMIT,
+    FORCED_REDRAW_STATE_WAITING_FOR_ACTIVATION,
+    FORCED_REDRAW_STATE_WAITING_FOR_DRAW,
+  };
+  static const char* ForcedRedrawOnTimeoutStateToString(
+      ForcedRedrawOnTimeoutState state);
 
   bool CommitPending() const {
     return commit_state_ == COMMIT_STATE_FRAME_IN_PROGRESS ||
@@ -74,9 +94,10 @@ class CC_EXPORT SchedulerStateMachine {
     ACTION_COMMIT,
     ACTION_UPDATE_VISIBLE_TILES,
     ACTION_ACTIVATE_PENDING_TREE,
-    ACTION_DRAW_IF_POSSIBLE,
-    ACTION_DRAW_FORCED,
+    ACTION_DRAW_AND_SWAP_IF_POSSIBLE,
+    ACTION_DRAW_AND_SWAP_FORCED,
     ACTION_DRAW_AND_SWAP_ABORT,
+    ACTION_DRAW_AND_READBACK,
     ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
     ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD,
   };
@@ -86,6 +107,7 @@ class CC_EXPORT SchedulerStateMachine {
 
   Action NextAction() const;
   void UpdateState(Action action);
+  void CheckInvariants();
 
   // Indicates whether the main thread needs a begin frame callback in order to
   // make progress.
@@ -106,15 +128,12 @@ class CC_EXPORT SchedulerStateMachine {
   // or the screen being damaged and simply needing redisplay.
   void SetNeedsRedraw();
 
-  // As SetNeedsRedraw(), but ensures the draw will definitely happen even if
-  // we are not visible.
-  void SetNeedsForcedRedraw();
-
   // Indicates that a redraw is required because we are currently rendering
   // with a low resolution or checkerboarded tile.
   void DidSwapUseIncompleteTile();
 
-  // Indicates whether ACTION_DRAW_IF_POSSIBLE drew to the screen or not.
+  // Indicates whether ACTION_DRAW_AND_SWAP_IF_POSSIBLE drew to the screen or
+  // not.
   void DidDrawIfPossibleCompleted(bool success);
 
   // Indicates that a new commit flow needs to be performed, either to pull
@@ -126,7 +145,7 @@ class CC_EXPORT SchedulerStateMachine {
   // thread even if we are not visible.  After this call we expect to go through
   // the forced commit flow and then return to waiting for a non-forced
   // begin frame to finish.
-  void SetNeedsForcedCommit();
+  void SetNeedsForcedCommitForReadback();
 
   // Call this only in response to receiving an
   // ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD from NextAction.
@@ -141,7 +160,8 @@ class CC_EXPORT SchedulerStateMachine {
 
   // Request exclusive access to the textures that back single buffered
   // layers on behalf of the main thread. Upon acquisition,
-  // ACTION_DRAW_IF_POSSIBLE will not draw until the main thread releases the
+  // ACTION_DRAW_AND_SWAP_IF_POSSIBLE will not draw until the main thread
+  // releases the
   // textures to the impl thread by committing the layers.
   void SetMainThreadNeedsLayerTextures();
 
@@ -162,9 +182,6 @@ class CC_EXPORT SchedulerStateMachine {
   void DidCreateAndInitializeOutputSurface();
   bool HasInitializedOutputSurface() const;
 
-  // Exposed for testing purposes.
-  void SetMaximumNumberOfFailedDrawsBeforeDrawIsForced(int num_draws);
-
   // True if we need to abort draws to make forward progress.
   bool PendingDrawsShouldBeAborted() const;
 
@@ -181,7 +198,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldSendBeginFrameToMainThread() const;
   bool ShouldCommit() const;
 
-  bool HasDrawnThisFrame() const;
+  bool HasDrawnAndSwappedThisFrame() const;
   bool HasActivatedPendingTreeThisFrame() const;
   bool HasUpdatedVisibleTilesThisFrame() const;
   bool HasSentBeginFrameToMainThreadThisFrame() const;
@@ -194,21 +211,19 @@ class CC_EXPORT SchedulerStateMachine {
 
   OutputSurfaceState output_surface_state_;
   CommitState commit_state_;
+  TextureState texture_state_;
+  ForcedRedrawOnTimeoutState forced_redraw_state_;
+  SynchronousReadbackState readback_state_;
 
   int commit_count_;
   int current_frame_number_;
   int last_frame_number_where_begin_frame_sent_to_main_thread_;
-  int last_frame_number_where_draw_was_called_;
+  int last_frame_number_swap_performed_;
   int last_frame_number_where_update_visible_tiles_was_called_;
   int consecutive_failed_draws_;
-  int maximum_number_of_failed_draws_before_draw_is_forced_;
   bool needs_redraw_;
   bool swap_used_incomplete_tile_;
-  bool needs_forced_redraw_;
-  bool needs_forced_redraw_after_next_commit_;
   bool needs_commit_;
-  bool needs_forced_commit_;
-  bool expect_immediate_begin_frame_for_main_thread_;
   bool main_thread_needs_layer_textures_;
   bool inside_begin_frame_;
   BeginFrameArgs last_begin_frame_args_;
@@ -217,9 +232,8 @@ class CC_EXPORT SchedulerStateMachine {
   bool can_draw_;
   bool has_pending_tree_;
   bool pending_tree_is_ready_for_activation_;
-  bool active_tree_has_been_drawn_;
+  bool active_tree_needs_first_draw_;
   bool draw_if_possible_failed_;
-  TextureState texture_state_;
   bool did_create_and_initialize_first_output_surface_;
 
  private:
