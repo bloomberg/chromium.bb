@@ -5,22 +5,17 @@
 #include "chrome/browser/policy/cloud/cloud_policy_manager.h"
 
 #include "base/basictypes.h"
-#include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/test/test_simple_task_runner.h"
-#include "chrome/browser/invalidation/fake_invalidation_service.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
-#include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"
 #include "chrome/browser/policy/cloud/mock_cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/mock_cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/policy_builder.h"
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
-#include "sync/notifier/invalidation_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -150,7 +145,6 @@ class TestCloudPolicyManager : public CloudPolicyManager {
   using CloudPolicyManager::store;
   using CloudPolicyManager::service;
   using CloudPolicyManager::CheckAndPublishPolicy;
-  using CloudPolicyManager::StartRefreshScheduler;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestCloudPolicyManager);
@@ -187,57 +181,6 @@ class CloudPolicyManagerTest : public testing::Test {
     manager_->Shutdown();
   }
 
-  // Sets up for an invalidations test.
-  void CreateInvalidator() {
-    // Add the invalidation registration info to the policy data.
-    em::PolicyData* policy_data = new em::PolicyData(policy_.policy_data());
-    policy_data->set_invalidation_source(12345);
-    policy_data->set_invalidation_name("12345");
-    store_.policy_.reset(policy_data);
-
-    // Connect the core.
-    MockCloudPolicyClient* client = new MockCloudPolicyClient();
-    EXPECT_CALL(*client, SetupRegistration(_, _));
-    manager_->core()->Connect(scoped_ptr<CloudPolicyClient>(client));
-
-    // Create invalidation objects.
-    task_runner_ = new base::TestSimpleTaskRunner();
-    invalidation_service_.reset(new invalidation::FakeInvalidationService());
-    invalidator_.reset(new CloudPolicyInvalidator(
-        manager_.get(),
-        manager_->core()->store(),
-        task_runner_));
-  }
-
-  void ShutdownInvalidator() {
-    invalidator_->Shutdown();
-  }
-
-  // Call EnableInvalidations on the manager.
-  void EnableInvalidations() {
-    manager_->EnableInvalidations(
-        base::Bind(
-            &CloudPolicyInvalidator::InitializeWithService,
-            base::Unretained(invalidator_.get()),
-            base::Unretained(invalidation_service_.get())));
-  }
-
-  // Determine if the invalidator has registered with the invalidation service.
-  bool IsInvalidatorRegistered() {
-    syncer::ObjectIdSet object_ids =
-        invalidation_service_->invalidator_registrar().GetAllRegisteredIds();
-    return object_ids.size() == 1 &&
-        object_ids.begin()->source() == 12345 &&
-        object_ids.begin()->name() == "12345";
-  }
-
-  // Determine if the invalidator is unregistered with the invalidation service.
-  bool IsInvalidatorUnregistered() {
-    syncer::ObjectIdSet object_ids =
-        invalidation_service_->invalidator_registrar().GetAllRegisteredIds();
-    return object_ids.empty();
-  }
-
   // Required by the refresh scheduler that's created by the manager.
   base::MessageLoop loop_;
 
@@ -251,11 +194,6 @@ class CloudPolicyManagerTest : public testing::Test {
   MockConfigurationPolicyObserver observer_;
   MockCloudPolicyStore store_;
   scoped_ptr<TestCloudPolicyManager> manager_;
-
-  // Invalidation objects.
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  scoped_ptr<invalidation::FakeInvalidationService> invalidation_service_;
-  scoped_ptr<CloudPolicyInvalidator> invalidator_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyManagerTest);
@@ -399,26 +337,6 @@ TEST_F(CloudPolicyManagerTest, SignalOnError) {
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
-}
-
-TEST_F(CloudPolicyManagerTest, EnableInvalidationsBeforeRefreshScheduler) {
-  CreateInvalidator();
-  EXPECT_TRUE(IsInvalidatorUnregistered());
-  EnableInvalidations();
-  EXPECT_TRUE(IsInvalidatorUnregistered());
-  manager_->StartRefreshScheduler();
-  EXPECT_TRUE(IsInvalidatorRegistered());
-  ShutdownInvalidator();
-}
-
-TEST_F(CloudPolicyManagerTest, EnableInvalidationsAfterRefreshScheduler) {
-  CreateInvalidator();
-  EXPECT_TRUE(IsInvalidatorUnregistered());
-  manager_->StartRefreshScheduler();
-  EXPECT_TRUE(IsInvalidatorUnregistered());
-  EnableInvalidations();
-  EXPECT_TRUE(IsInvalidatorRegistered());
-  ShutdownInvalidator();
 }
 
 }  // namespace

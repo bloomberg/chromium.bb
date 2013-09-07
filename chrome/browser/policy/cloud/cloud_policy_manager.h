@@ -8,12 +8,10 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/cloud_policy_core.h"
-#include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
@@ -29,8 +27,7 @@ class PolicyBundle;
 // functionality specific to user-level and device-level cloud policy, such as
 // blocking on initial user policy fetch or device enrollment.
 class CloudPolicyManager : public ConfigurationPolicyProvider,
-                           public CloudPolicyStore::Observer,
-                           public CloudPolicyInvalidationHandler {
+                           public CloudPolicyStore::Observer {
  public:
   CloudPolicyManager(const PolicyNamespaceKey& policy_ns_key,
                      CloudPolicyStore* cloud_policy_store);
@@ -38,13 +35,6 @@ class CloudPolicyManager : public ConfigurationPolicyProvider,
 
   CloudPolicyCore* core() { return &core_; }
   const CloudPolicyCore* core() const { return &core_; }
-
-  // Enables invalidations to the cloud policy. This method must only be
-  // called once.
-  // |initialize_invalidator| should initialize the invalidator when invoked.
-  // If the manager is ready to receive invalidations, it will be invoked
-  // immediately; otherwise, it will be invoked upon becoming ready.
-  void EnableInvalidations(const base::Closure& initialize_invalidator);
 
   // ConfigurationPolicyProvider:
   virtual void Shutdown() OVERRIDE;
@@ -55,22 +45,10 @@ class CloudPolicyManager : public ConfigurationPolicyProvider,
   virtual void OnStoreLoaded(CloudPolicyStore* cloud_policy_store) OVERRIDE;
   virtual void OnStoreError(CloudPolicyStore* cloud_policy_store) OVERRIDE;
 
-  // CloudPolicyInvalidationHandler:
-  virtual void SetInvalidationInfo(
-      int64 version,
-      const std::string& payload) OVERRIDE;
-  virtual void InvalidatePolicy() OVERRIDE;
-  virtual void OnInvalidatorStateChanged(bool invalidations_enabled) OVERRIDE;
-
  protected:
   // Check whether fully initialized and if so, publish policy by calling
   // ConfigurationPolicyStore::UpdatePolicy().
   void CheckAndPublishPolicy();
-
-  // Starts the policy refresh scheduler. This must be called instead of calling
-  // enabling the scheduler on core() directly so that invalidations are
-  // enabled correctly.
-  void StartRefreshScheduler();
 
   // Called by CheckAndPublishPolicy() to create a bundle with the current
   // policies.
@@ -93,10 +71,6 @@ class CloudPolicyManager : public ConfigurationPolicyProvider,
   // Whether there's a policy refresh operation pending, in which case all
   // policy update notifications are deferred until after it completes.
   bool waiting_for_policy_refresh_;
-
-  // Used to initialize the policy invalidator once the refresh scheduler
-  // starts.
-  base::Closure initialize_invalidator_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyManager);
 };

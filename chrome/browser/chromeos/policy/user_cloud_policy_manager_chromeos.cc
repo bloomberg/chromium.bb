@@ -343,7 +343,7 @@ void UserCloudPolicyManagerChromeOS::StartRefreshSchedulerIfReady() {
     return;
   }
 
-  StartRefreshScheduler();
+  core()->StartRefreshScheduler();
   core()->TrackRefreshDelayPref(local_state_, prefs::kUserPolicyRefreshRate);
 }
 

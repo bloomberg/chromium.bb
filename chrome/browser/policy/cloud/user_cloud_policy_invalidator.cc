@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/policy/cloud/cloud_policy_core.h"
+#include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/policy/cloud/cloud_policy_manager.h"
 #include "content/public/browser/notification_source.h"
 
@@ -17,14 +17,18 @@ UserCloudPolicyInvalidator::UserCloudPolicyInvalidator(
     Profile* profile,
     CloudPolicyManager* policy_manager)
     : CloudPolicyInvalidator(
-          policy_manager,
-          policy_manager->core()->store(),
+          policy_manager->core(),
           base::MessageLoopProxy::current()),
-      profile_(profile),
-      policy_manager_(policy_manager) {
+      profile_(profile) {
   DCHECK(profile);
 
-  // Register for notification that profile creation is complete.
+  // Register for notification that profile creation is complete. The
+  // invalidator must not be initialized before then because the invalidation
+  // service cannot be started because it depends on components initialized
+  // after this object is instantiated.
+  // TODO(stepco): Delayed initialization can be removed once the request
+  // context can be accessed during profile-keyed service creation. Tracked by
+  // bug 286209.
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_ADDED,
                  content::Source<Profile>(profile));
@@ -38,13 +42,13 @@ void UserCloudPolicyInvalidator::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  // Enable invalidations now that profile creation is complete.
+  // Initialize now that profile creation is complete and the invalidation
+  // service can safely be initialized.
   DCHECK(type == chrome::NOTIFICATION_PROFILE_ADDED);
-  policy_manager_->EnableInvalidations(
-      base::Bind(
-          &CloudPolicyInvalidator::InitializeWithProfile,
-          GetWeakPtr(),
-          base::Unretained(profile_)));
+  invalidation::InvalidationService* invalidation_service =
+      invalidation::InvalidationServiceFactory::GetForProfile(profile_);
+  if (invalidation_service)
+    Initialize(invalidation_service);
 }
 
 }  // namespace policy

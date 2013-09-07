@@ -15,6 +15,8 @@
 
 namespace policy {
 
+CloudPolicyCore::Observer::~Observer() {}
+
 CloudPolicyCore::CloudPolicyCore(const PolicyNamespaceKey& key,
                                  CloudPolicyStore* store)
     : policy_ns_key_(key),
@@ -27,9 +29,12 @@ void CloudPolicyCore::Connect(scoped_ptr<CloudPolicyClient> client) {
   CHECK(client);
   client_ = client.Pass();
   service_.reset(new CloudPolicyService(policy_ns_key_, client_.get(), store_));
+  FOR_EACH_OBSERVER(Observer, observers_, OnCoreConnected(this));
 }
 
 void CloudPolicyCore::Disconnect() {
+  if (client_)
+    FOR_EACH_OBSERVER(Observer, observers_, OnCoreDisconnecting(this));
   refresh_delay_.reset();
   refresh_scheduler_.reset();
   service_.reset();
@@ -48,6 +53,7 @@ void CloudPolicyCore::StartRefreshScheduler() {
             client_.get(), store_,
             base::MessageLoop::current()->message_loop_proxy()));
     UpdateRefreshDelayFromPref();
+    FOR_EACH_OBSERVER(Observer, observers_, OnRefreshSchedulerStarted(this));
   }
 }
 
@@ -60,6 +66,14 @@ void CloudPolicyCore::TrackRefreshDelayPref(
       base::Bind(&CloudPolicyCore::UpdateRefreshDelayFromPref,
                  base::Unretained(this)));
   UpdateRefreshDelayFromPref();
+}
+
+void CloudPolicyCore::AddObserver(CloudPolicyCore::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void CloudPolicyCore::RemoveObserver(CloudPolicyCore::Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void CloudPolicyCore::UpdateRefreshDelayFromPref() {

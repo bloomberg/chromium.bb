@@ -239,7 +239,7 @@ void DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted(
     EnrollmentStatus status) {
   if (status.status() == EnrollmentStatus::STATUS_SUCCESS) {
     core()->Connect(enrollment_handler_->ReleaseClient());
-    StartRefreshScheduler();
+    core()->StartRefreshScheduler();
     core()->TrackRefreshDelayPref(local_state_,
                                   prefs::kDevicePolicyRefreshRate);
     attestation_policy_observer_.reset(
@@ -260,7 +260,7 @@ void DeviceCloudPolicyManagerChromeOS::StartIfManaged() {
       store()->is_managed() &&
       !service()) {
     core()->Connect(CreateClient());
-    StartRefreshScheduler();
+    core()->StartRefreshScheduler();
     core()->TrackRefreshDelayPref(local_state_,
                                   prefs::kDevicePolicyRefreshRate);
     attestation_policy_observer_.reset(

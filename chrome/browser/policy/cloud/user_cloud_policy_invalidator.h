@@ -43,9 +43,6 @@ class UserCloudPolicyInvalidator : public CloudPolicyInvalidator,
   // The profile associated with the invalidator.
   Profile* profile_;
 
-  // The policy manager for the user policy.
-  CloudPolicyManager* policy_manager_;
-
   // Used to register for notification that profile creation is complete.
   content::NotificationRegistrar registrar_;
 

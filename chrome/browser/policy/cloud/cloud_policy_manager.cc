@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/policy/cloud/cloud_policy_refresh_scheduler.h"
 #include "chrome/browser/policy/cloud/cloud_policy_service.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -30,19 +29,6 @@ CloudPolicyManager::CloudPolicyManager(const PolicyNamespaceKey& policy_ns_key,
 }
 
 CloudPolicyManager::~CloudPolicyManager() {}
-
-void CloudPolicyManager::EnableInvalidations(
-    const base::Closure& initialize_invalidator) {
-  DCHECK(!initialize_invalidator.is_null());
-  DCHECK(initialize_invalidator_.is_null());
-  // If the refresh scheduler is already running, initialize the invalidator
-  // right away. Otherwise, store the closure so it can be invoked when the
-  // refresh scheduler starts.
-  if (core()->refresh_scheduler())
-    initialize_invalidator.Run();
-  else
-    initialize_invalidator_ = initialize_invalidator;
-}
 
 void CloudPolicyManager::Shutdown() {
   core_.Disconnect();
@@ -80,37 +66,11 @@ void CloudPolicyManager::OnStoreError(CloudPolicyStore* cloud_policy_store) {
   CheckAndPublishPolicy();
 }
 
-void CloudPolicyManager::SetInvalidationInfo(
-    int64 version,
-    const std::string& payload) {
-  DCHECK(core()->client());
-  core()->client()->SetInvalidationInfo(version, payload);
-}
-
-void CloudPolicyManager::InvalidatePolicy() {
-  DCHECK(core()->refresh_scheduler());
-  core()->refresh_scheduler()->RefreshSoon();
-}
-
-void CloudPolicyManager::OnInvalidatorStateChanged(bool invalidations_enabled) {
-  DCHECK(core()->refresh_scheduler());
-  core()->refresh_scheduler()->SetInvalidationServiceAvailability(
-      invalidations_enabled);
-}
-
 void CloudPolicyManager::CheckAndPublishPolicy() {
   if (IsInitializationComplete(POLICY_DOMAIN_CHROME) &&
       !waiting_for_policy_refresh_) {
     UpdatePolicy(CreatePolicyBundle());
   }
-}
-
-void CloudPolicyManager::StartRefreshScheduler() {
-  DCHECK(!core()->refresh_scheduler());
-  core()->StartRefreshScheduler();
-  // Initialize the invalidator if EnableInvalidations has been called.
-  if (!initialize_invalidator_.is_null())
-    initialize_invalidator_.Run();
 }
 
 scoped_ptr<PolicyBundle> CloudPolicyManager::CreatePolicyBundle() {

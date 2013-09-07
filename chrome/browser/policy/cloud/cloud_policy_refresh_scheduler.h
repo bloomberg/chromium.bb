@@ -62,6 +62,12 @@ class CloudPolicyRefreshScheduler
   // lower.
   void SetInvalidationServiceAvailability(bool is_available);
 
+  // Whether the invalidations service is available and receiving notifications
+  // of policy updates.
+  bool invalidations_available() {
+    return invalidations_available_;
+  }
+
   // CloudPolicyClient::Observer:
   virtual void OnPolicyFetched(CloudPolicyClient* client) OVERRIDE;
   virtual void OnRegistrationStateChanged(CloudPolicyClient* client) OVERRIDE;

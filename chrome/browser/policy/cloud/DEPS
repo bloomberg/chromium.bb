@@ -53,7 +53,6 @@ specific_include_rules = {
 
   r"cloud_policy_invalidator\.cc": [
     "+chrome/browser/invalidation/invalidation_service.h",
-    "+chrome/browser/invalidation/invalidation_service_factory.h",
     "+chrome/common/chrome_switches.h",
   ],
 
@@ -110,6 +109,7 @@ specific_include_rules = {
 
   r"user_cloud_policy_invalidator\.cc": [
     "+chrome/browser/chrome_notification_types.h",
+    "+chrome/browser/invalidation/invalidation_service_factory.h",
     "+content/public/browser/notification_source.h",
   ],
 
