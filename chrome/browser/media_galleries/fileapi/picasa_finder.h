@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PICASA_FINDER_H_
-#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PICASA_FINDER_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_FINDER_H_
+#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_FINDER_H_
 
 #include <string>
 
@@ -24,4 +24,4 @@ void FindPicasaDatabase(const DeviceIDCallback& callback);
 
 }  // namespace picasa
 
-#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PICASA_FINDER_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_FINDER_H_

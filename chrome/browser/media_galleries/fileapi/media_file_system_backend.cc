@@ -33,7 +33,7 @@
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #include "chrome/browser/media_galleries/fileapi/itunes_file_util.h"
-#include "chrome/browser/media_galleries/fileapi/picasa/picasa_file_util.h"
+#include "chrome/browser/media_galleries/fileapi/picasa_file_util.h"
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 using fileapi::FileSystemContext;

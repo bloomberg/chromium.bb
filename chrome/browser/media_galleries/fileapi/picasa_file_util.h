@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PICASA_FILE_UTIL_H_
-#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PICASA_FILE_UTIL_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_FILE_UTIL_H_
+#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_FILE_UTIL_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -75,4 +75,4 @@ class PicasaFileUtil : public chrome::NativeMediaFileUtil {
 
 }  // namespace picasa
 
-#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PICASA_FILE_UTIL_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_FILE_UTIL_H_

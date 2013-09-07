@@ -2068,7 +2068,7 @@
         ['OS=="mac" or OS=="win"', {
           'sources': [
             'browser/media_galleries/fileapi/itunes_data_provider_browsertest.cc',
-            'browser/media_galleries/fileapi/picasa/picasa_data_provider_browsertest.cc',
+            'browser/media_galleries/fileapi/picasa_data_provider_browsertest.cc',
           ],
         }],
         ['os_posix == 0 or chromeos == 1', {

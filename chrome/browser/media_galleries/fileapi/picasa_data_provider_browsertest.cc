@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
-#include "chrome/browser/media_galleries/fileapi/picasa/picasa_data_provider.h"
+#include "chrome/browser/media_galleries/fileapi/picasa_data_provider.h"
 #include "chrome/browser/media_galleries/fileapi/safe_picasa_albums_indexer.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "chrome/common/media_galleries/pmp_test_helper.h"
