@@ -332,15 +332,6 @@ void AwContents::GenerateMHTML(JNIEnv* env, jobject obj,
       base::Bind(&GenerateMHTMLCallback, base::Owned(j_callback), target_path));
 }
 
-void AwContents::PerformLongClick() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-
-  Java_AwContents_performLongClick(env, obj.obj());
-}
-
 bool AwContents::OnReceivedHttpAuthRequest(const JavaRef<jobject>& handler,
                                            const std::string& host,
                                            const std::string& realm) {

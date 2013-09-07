@@ -64,8 +64,6 @@ class AwContents : public FindHelper::Listener,
     return render_view_host_ext_.get();
   }
 
-  void PerformLongClick();
-
   // |handler| is an instance of
   // org.chromium.android_webview.AwHttpAuthHandler.
   bool OnReceivedHttpAuthRequest(const base::android::JavaRef<jobject>& handler,
