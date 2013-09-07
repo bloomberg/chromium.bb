@@ -138,6 +138,13 @@ class NativeMessagingHost {
   // Used to exchange the service account authorization code for credentials.
   scoped_ptr<OAuthClient> oauth_client_;
 
+  // Keeps track of pending requests. Used to delay shutdown until all responses
+  // have been sent.
+  int pending_requests_;
+
+  // True if Shutdown() has been called.
+  bool shutdown_;
+
   base::WeakPtrFactory<NativeMessagingHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMessagingHost);

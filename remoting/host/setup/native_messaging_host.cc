@@ -76,6 +76,8 @@ NativeMessagingHost::NativeMessagingHost(
       daemon_controller_(daemon_controller.Pass()),
       pairing_registry_(pairing_registry),
       oauth_client_(oauth_client.Pass()),
+      pending_requests_(0),
+      shutdown_(false),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
@@ -92,17 +94,20 @@ void NativeMessagingHost::Start() {
 
 void NativeMessagingHost::Shutdown() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  if (!quit_closure_.is_null()) {
+
+  if (shutdown_)
+    return;
+
+  shutdown_ = true;
+  if (!pending_requests_)
     caller_task_runner_->PostTask(FROM_HERE, quit_closure_);
-    quit_closure_.Reset();
-  }
 }
 
 void NativeMessagingHost::ProcessMessage(scoped_ptr<base::Value> message) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   // Don't process any more messages if Shutdown() has been called.
-  if (quit_closure_.is_null())
+  if (shutdown_)
     return;
 
   const base::DictionaryValue* message_dict;
@@ -128,6 +133,9 @@ void NativeMessagingHost::ProcessMessage(scoped_ptr<base::Value> message) {
   }
 
   response_dict->SetString("type", type + "Response");
+
+  DCHECK_GE(pending_requests_, 0);
+  pending_requests_++;
 
   bool success = false;
   if (type == "hello") {
@@ -165,8 +173,12 @@ void NativeMessagingHost::ProcessMessage(scoped_ptr<base::Value> message) {
     LOG(ERROR) << "Unsupported request type: " << type;
   }
 
-  if (!success)
+  if (!success) {
+    pending_requests_--;
+    DCHECK_GE(pending_requests_, 0);
+
     Shutdown();
+  }
 }
 
 bool NativeMessagingHost::ProcessHello(
@@ -406,6 +418,12 @@ void NativeMessagingHost::SendResponse(
 
   if (!native_messaging_writer_.WriteMessage(*response))
     Shutdown();
+
+  pending_requests_--;
+  DCHECK_GE(pending_requests_, 0);
+
+  if (shutdown_ && !pending_requests_)
+    caller_task_runner_->PostTask(FROM_HERE, quit_closure_);
 }
 
 void NativeMessagingHost::SendConfigResponse(

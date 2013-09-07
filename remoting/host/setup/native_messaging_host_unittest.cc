@@ -4,6 +4,7 @@
 
 #include "remoting/host/setup/native_messaging_host.h"
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -27,7 +28,7 @@ using remoting::protocol::SynchronousPairingRegistry;
 
 namespace {
 
-void VerifyHelloResponse(const base::DictionaryValue* response) {
+void VerifyHelloResponse(scoped_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -36,7 +37,7 @@ void VerifyHelloResponse(const base::DictionaryValue* response) {
   EXPECT_EQ(STRINGIZE(VERSION), value);
 }
 
-void VerifyGetHostNameResponse(const base::DictionaryValue* response) {
+void VerifyGetHostNameResponse(scoped_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -45,7 +46,7 @@ void VerifyGetHostNameResponse(const base::DictionaryValue* response) {
   EXPECT_EQ(net::GetHostName(), value);
 }
 
-void VerifyGetPinHashResponse(const base::DictionaryValue* response) {
+void VerifyGetPinHashResponse(scoped_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -54,7 +55,7 @@ void VerifyGetPinHashResponse(const base::DictionaryValue* response) {
   EXPECT_EQ(remoting::MakeHostPinHash("my_host", "1234"), value);
 }
 
-void VerifyGenerateKeyPairResponse(const base::DictionaryValue* response) {
+void VerifyGenerateKeyPairResponse(scoped_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -63,7 +64,7 @@ void VerifyGenerateKeyPairResponse(const base::DictionaryValue* response) {
   EXPECT_TRUE(response->GetString("publicKey", &value));
 }
 
-void VerifyGetDaemonConfigResponse(const base::DictionaryValue* response) {
+void VerifyGetDaemonConfigResponse(scoped_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -73,7 +74,8 @@ void VerifyGetDaemonConfigResponse(const base::DictionaryValue* response) {
   EXPECT_TRUE(base::DictionaryValue().Equals(config));
 }
 
-void VerifyGetUsageStatsConsentResponse(const base::DictionaryValue* response) {
+void VerifyGetUsageStatsConsentResponse(
+    scoped_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -87,7 +89,7 @@ void VerifyGetUsageStatsConsentResponse(const base::DictionaryValue* response) {
   EXPECT_TRUE(set_by_policy);
 }
 
-void VerifyStopDaemonResponse(const base::DictionaryValue* response) {
+void VerifyStopDaemonResponse(scoped_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -96,7 +98,7 @@ void VerifyStopDaemonResponse(const base::DictionaryValue* response) {
   EXPECT_EQ("OK", value);
 }
 
-void VerifyGetDaemonStateResponse(const base::DictionaryValue* response) {
+void VerifyGetDaemonStateResponse(scoped_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -105,7 +107,8 @@ void VerifyGetDaemonStateResponse(const base::DictionaryValue* response) {
   EXPECT_EQ("STARTED", value);
 }
 
-void VerifyUpdateDaemonConfigResponse(const base::DictionaryValue* response) {
+void VerifyUpdateDaemonConfigResponse(
+    scoped_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -114,7 +117,7 @@ void VerifyUpdateDaemonConfigResponse(const base::DictionaryValue* response) {
   EXPECT_EQ("OK", value);
 }
 
-void VerifyStartDaemonResponse(const base::DictionaryValue* response) {
+void VerifyStartDaemonResponse(scoped_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
@@ -145,13 +148,7 @@ class MockDaemonController : public DaemonController {
   virtual void GetUsageStatsConsent(
       const GetUsageStatsConsentCallback& callback) OVERRIDE;
 
-  // Returns a record of functions called, so that unittests can verify these
-  // were called in the proper sequence.
-  std::string call_log() { return call_log_; }
-
  private:
-  std::string call_log_;
-
   DISALLOW_COPY_AND_ASSIGN(MockDaemonController);
 };
 
@@ -160,12 +157,10 @@ MockDaemonController::MockDaemonController() {}
 MockDaemonController::~MockDaemonController() {}
 
 DaemonController::State MockDaemonController::GetState() {
-  call_log_ += "GetState:";
   return DaemonController::STATE_STARTED;
 }
 
 void MockDaemonController::GetConfig(const GetConfigCallback& callback) {
-  call_log_ += "GetConfig:";
   scoped_ptr<base::DictionaryValue> config(new base::DictionaryValue());
   callback.Run(config.Pass());
 }
@@ -173,7 +168,6 @@ void MockDaemonController::GetConfig(const GetConfigCallback& callback) {
 void MockDaemonController::SetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config, bool consent,
     const CompletionCallback& callback) {
-  call_log_ += "SetConfigAndStart:";
 
   // Verify parameters passed in.
   if (consent && config && config->HasKey("start")) {
@@ -186,7 +180,6 @@ void MockDaemonController::SetConfigAndStart(
 void MockDaemonController::UpdateConfig(
     scoped_ptr<base::DictionaryValue> config,
     const CompletionCallback& callback) {
-  call_log_ += "UpdateConfig:";
   if (config && config->HasKey("update")) {
     callback.Run(DaemonController::RESULT_OK);
   } else {
@@ -195,7 +188,6 @@ void MockDaemonController::UpdateConfig(
 }
 
 void MockDaemonController::Stop(const CompletionCallback& callback) {
-  call_log_ += "Stop:";
   callback.Run(DaemonController::RESULT_OK);
 }
 
@@ -208,7 +200,6 @@ void MockDaemonController::GetVersion(const GetVersionCallback& callback) {
 
 void MockDaemonController::GetUsageStatsConsent(
     const GetUsageStatsConsentCallback& callback) {
-  call_log_ += "GetUsageStatsConsent:";
   callback.Run(true, true, true);
 }
 
@@ -235,7 +226,6 @@ class NativeMessagingHostTest : public testing::Test {
  protected:
   // Reference to the MockDaemonController, which is owned by |host_|.
   MockDaemonController* daemon_controller_;
-  std::string call_log_;
 
  private:
   // Each test creates two unidirectional pipes: "input" and "output".
@@ -296,9 +286,7 @@ void NativeMessagingHostTest::Run() {
 
   // Destroy |host_| so that it closes its end of the output pipe, so that
   // TestBadRequest() will see EOF and won't block waiting for more data.
-  // Since |host_| owns |daemon_controller_|, capture its call log first.
-  call_log_ = daemon_controller_->call_log();
-  host_.reset(NULL);
+  host_.reset();
 }
 
 scoped_ptr<base::DictionaryValue>
@@ -343,6 +331,8 @@ void NativeMessagingHostTest::TestBadRequest(const base::Value& message) {
   base::DictionaryValue good_message;
   good_message.SetString("type", "hello");
 
+  // This test currently relies on synchronous processing of hello messages and
+  // message parameters verification.
   WriteMessageToInputPipe(good_message);
   WriteMessageToInputPipe(message);
   WriteMessageToInputPipe(good_message);
@@ -352,7 +342,7 @@ void NativeMessagingHostTest::TestBadRequest(const base::Value& message) {
   // Read from output pipe, and verify responses.
   scoped_ptr<base::DictionaryValue> response =
       ReadMessageFromOutputPipe();
-  VerifyHelloResponse(response.get());
+  VerifyHelloResponse(response.Pass());
 
   response = ReadMessageFromOutputPipe();
   EXPECT_FALSE(response);
@@ -360,31 +350,40 @@ void NativeMessagingHostTest::TestBadRequest(const base::Value& message) {
 
 // Test all valid request-types.
 TEST_F(NativeMessagingHostTest, All) {
+  int next_id = 0;
   base::DictionaryValue message;
+  message.SetInteger("id", next_id++);
   message.SetString("type", "hello");
   WriteMessageToInputPipe(message);
 
+  message.SetInteger("id", next_id++);
   message.SetString("type", "getHostName");
   WriteMessageToInputPipe(message);
 
+  message.SetInteger("id", next_id++);
   message.SetString("type", "getPinHash");
   message.SetString("hostId", "my_host");
   message.SetString("pin", "1234");
   WriteMessageToInputPipe(message);
 
   message.Clear();
+  message.SetInteger("id", next_id++);
   message.SetString("type", "generateKeyPair");
   WriteMessageToInputPipe(message);
 
+  message.SetInteger("id", next_id++);
   message.SetString("type", "getDaemonConfig");
   WriteMessageToInputPipe(message);
 
+  message.SetInteger("id", next_id++);
   message.SetString("type", "getUsageStatsConsent");
   WriteMessageToInputPipe(message);
 
+  message.SetInteger("id", next_id++);
   message.SetString("type", "stopDaemon");
   WriteMessageToInputPipe(message);
 
+  message.SetInteger("id", next_id++);
   message.SetString("type", "getDaemonState");
   WriteMessageToInputPipe(message);
 
@@ -392,6 +391,7 @@ TEST_F(NativeMessagingHostTest, All) {
   base::DictionaryValue config;
   config.SetBoolean("update", true);
   message.Set("config", config.DeepCopy());
+  message.SetInteger("id", next_id++);
   message.SetString("type", "updateDaemonConfig");
   WriteMessageToInputPipe(message);
 
@@ -399,47 +399,42 @@ TEST_F(NativeMessagingHostTest, All) {
   config.SetBoolean("start", true);
   message.Set("config", config.DeepCopy());
   message.SetBoolean("consent", true);
+  message.SetInteger("id", next_id++);
   message.SetString("type", "startDaemon");
   WriteMessageToInputPipe(message);
 
   Run();
 
-  // Read from output pipe, and verify responses.
-  scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
-  VerifyHelloResponse(response.get());
+  void (*verify_routines[])(scoped_ptr<base::DictionaryValue>) = {
+    &VerifyHelloResponse,
+    &VerifyGetHostNameResponse,
+    &VerifyGetPinHashResponse,
+    &VerifyGenerateKeyPairResponse,
+    &VerifyGetDaemonConfigResponse,
+    &VerifyGetUsageStatsConsentResponse,
+    &VerifyStopDaemonResponse,
+    &VerifyGetDaemonStateResponse,
+    &VerifyUpdateDaemonConfigResponse,
+    &VerifyStartDaemonResponse,
+  };
+  ASSERT_EQ(arraysize(verify_routines), static_cast<size_t>(next_id));
 
-  response = ReadMessageFromOutputPipe();
-  VerifyGetHostNameResponse(response.get());
+  // Read all responses from output pipe, and verify them.
+  for (int i = 0; i < next_id; ++i) {
+    scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
 
-  response = ReadMessageFromOutputPipe();
-  VerifyGetPinHashResponse(response.get());
+    // Make sure that id is available and is in the range.
+    int id;
+    ASSERT_TRUE(response->GetInteger("id", &id));
+    ASSERT_TRUE(0 <= id && id < next_id);
 
-  response = ReadMessageFromOutputPipe();
-  VerifyGenerateKeyPairResponse(response.get());
+    // Call the verification routine corresponding to the message id.
+    ASSERT_TRUE(verify_routines[id]);
+    verify_routines[id](response.Pass());
 
-  response = ReadMessageFromOutputPipe();
-  VerifyGetDaemonConfigResponse(response.get());
-
-  response = ReadMessageFromOutputPipe();
-  VerifyGetUsageStatsConsentResponse(response.get());
-
-  response = ReadMessageFromOutputPipe();
-  VerifyStopDaemonResponse(response.get());
-
-  response = ReadMessageFromOutputPipe();
-  VerifyGetDaemonStateResponse(response.get());
-
-  response = ReadMessageFromOutputPipe();
-  VerifyUpdateDaemonConfigResponse(response.get());
-
-  response = ReadMessageFromOutputPipe();
-  VerifyStartDaemonResponse(response.get());
-
-  // Verify that DaemonController methods were called in the correct sequence.
-  // This detects cases where NativeMessagingHost might call a wrong method
-  // that takes the same parameters and writes out the same response.
-  EXPECT_EQ("GetConfig:GetUsageStatsConsent:Stop:GetState:UpdateConfig:"
-            "SetConfigAndStart:", call_log_);
+    // Clear the pointer so that the routine cannot be called the second time.
+    verify_routines[id] = NULL;
+  }
 }
 
 // Verify that response ID matches request ID.
