@@ -59,12 +59,23 @@
     "channel": "stable",
     "extension_types": ["platform_app"]
   },
-  "background": {
-    "channel": "stable",
-    "extension_types": [
-      "extension", "legacy_packaged_app", "hosted_app"
-    ]
-  },
+  "background": [
+    {
+      "channel": "stable",
+      "extension_types": [
+        "extension", "legacy_packaged_app", "hosted_app"
+      ]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"],
+      "whitelist": [
+        "5B5DA6D054D10DB917AF7D9EAE3C56044D1B0B03",  // http://crbug.com/286542
+        "2843C1E82A9B6C6FB49308FDDF4E157B6B44BC2B",  // http://crbug.com/286542
+        "3F596D221126DCDFD115CFAA2E5A3141806358AD"   // http://crbug.com/286542
+      ]
+    }
+  ],
   "bluetooth": {
     "channel": "dev",
     "extension_types": ["platform_app"]
@@ -400,9 +411,9 @@
     "extension_types": [ "platform_app" ],
     "whitelist": [
       "dhgjflpimlbndbpamnkoepaacagejgda",
-      "ebpbnabdhheoknfklmpddcdijjkmklkp",  // G+ Photos staging
-      "efjnaogkjbogokcnohkmnjdojkikgobo",  // G+ Photos prod
-      "ejegoaikibpmikoejfephaneibodccma",  // G+ Photos dev
+      "5B5DA6D054D10DB917AF7D9EAE3C56044D1B0B03",  // http://crbug.com/286542
+      "2843C1E82A9B6C6FB49308FDDF4E157B6B44BC2B",  // http://crbug.com/286542
+      "3F596D221126DCDFD115CFAA2E5A3141806358AD",  // http://crbug.com/286542
       "F7FA7ABC1ECB89BA8EE6656847EFABBF43BB9BCA"
     ]
   },
