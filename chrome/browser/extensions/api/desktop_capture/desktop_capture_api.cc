@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/desktop_capture/desktop_capture_api.h"
 
-#include "base/compiler_specific.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/desktop_streams_registry.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -88,8 +87,9 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
         screen_capturer.Pass(), window_capturer.Pass());
     picker_ = g_picker_factory->CreatePicker();
   } else {
-    // DesktopMediaPicker is not implented for all platforms yet.
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
+    // Currently DesktopMediaPicker is implemented only for platforms that
+    // use Views.
+#if defined(TOOLKIT_VIEWS)
     model.reset(new DesktopMediaPickerModelImpl(
         screen_capturer.Pass(), window_capturer.Pass()));
     picker_ = DesktopMediaPicker::Create();
