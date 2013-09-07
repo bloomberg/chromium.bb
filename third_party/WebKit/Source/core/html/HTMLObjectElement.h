@@ -42,7 +42,7 @@ public:
     bool containsJavaApplet() const;
 
     virtual bool useFallbackContent() const { return m_useFallbackContent; }
-    void renderFallbackContent();
+    virtual void renderFallbackContent() OVERRIDE;
 
     // Implementations of FormAssociatedElement
     HTMLFormElement* form() const { return FormAssociatedElement::form(); }
@@ -51,6 +51,8 @@ public:
 
     virtual bool isEnumeratable() const { return true; }
     virtual bool appendFormData(FormDataList&, bool);
+
+    virtual bool isObjectElement() const OVERRIDE { return true; }
 
     // Implementations of constraint validation API.
     // Note that the object elements are always barred from constraint validation.

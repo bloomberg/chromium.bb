@@ -51,7 +51,7 @@
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
 #include "core/html/HTMLFormElement.h"
-#include "core/html/HTMLObjectElement.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -517,15 +517,6 @@ void FrameLoader::setOpener(Frame* opener)
         m_frame->document()->initSecurityContext();
 }
 
-// FIXME: This does not belong in FrameLoader!
-void FrameLoader::handleFallbackContent()
-{
-    HTMLFrameOwnerElement* owner = m_frame->ownerElement();
-    if (!owner || !owner->hasTagName(objectTag))
-        return;
-    toHTMLObjectElement(owner)->renderFallbackContent();
-}
-
 bool FrameLoader::allowPlugins(ReasonForCallingAllowPlugins reason)
 {
     Settings* settings = m_frame->settings();
@@ -943,12 +934,6 @@ void FrameLoader::closeOldDataSources()
         m_client->dispatchWillClose();
 }
 
-bool FrameLoader::isHostedByObjectElement() const
-{
-    HTMLFrameOwnerElement* owner = m_frame->ownerElement();
-    return owner && owner->hasTagName(objectTag);
-}
-
 bool FrameLoader::isLoadingMainFrame() const
 {
     Page* page = m_frame->page();
@@ -1255,8 +1240,8 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
     // FIXME: We really ought to be able to just check for isCancellation() here, but there are some
     // ResourceErrors that setIsCancellation() but aren't created by ResourceError::cancelledError().
     ResourceError c(ResourceError::cancelledError(KURL()));
-    if (error.errorCode() != c.errorCode() || error.domain() != c.domain())
-        handleFallbackContent();
+    if ((error.errorCode() != c.errorCode() || error.domain() != c.domain()) && m_frame->ownerElement())
+        m_frame->ownerElement()->renderFallbackContent();
 
     checkCompleted();
     if (m_frame->page())

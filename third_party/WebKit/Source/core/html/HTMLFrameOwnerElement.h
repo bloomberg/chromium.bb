@@ -59,6 +59,10 @@ public:
     virtual bool loadedNonEmptyDocument() const { return false; }
     virtual void didLoadNonEmptyDocument() { }
 
+    virtual void renderFallbackContent() { }
+
+    virtual bool isObjectElement() const { return false; }
+
 protected:
     HTMLFrameOwnerElement(const QualifiedName& tagName, Document&);
     void setSandboxFlags(SandboxFlags);

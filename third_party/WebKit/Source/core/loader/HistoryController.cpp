@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -534,7 +535,7 @@ PassRefPtr<HistoryItem> HistoryController::createItemTree(Frame* targetFrame, bo
             // we don't want to create a history item, because that causes fallback content
             // to be ignored on reload.
             FrameLoader* childLoader = child->loader();
-            if (childLoader->stateMachine()->startedFirstRealLoad() || !childLoader->isHostedByObjectElement())
+            if (childLoader->stateMachine()->startedFirstRealLoad() || !child->ownerElement()->isObjectElement())
                 bfItem->addChildItem(childLoader->history()->createItemTree(targetFrame, clipAtTarget));
         }
     }

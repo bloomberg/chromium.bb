@@ -133,9 +133,6 @@ public:
     const ResourceRequest& originalRequest() const;
     void receivedMainResourceError(const ResourceError&);
 
-    void handleFallbackContent();
-
-    bool isHostedByObjectElement() const;
     bool isLoadingMainFrame() const;
 
     bool subframeIsLoading() const;

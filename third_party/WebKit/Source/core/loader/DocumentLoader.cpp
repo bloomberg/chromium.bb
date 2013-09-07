@@ -191,9 +191,7 @@ void DocumentLoader::mainReceivedError(const ResourceError& error)
 {
     ASSERT(!error.isNull());
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
-
     m_applicationCacheHost->failedLoadingMainResource();
-
     if (!frameLoader())
         return;
     setMainDocumentError(error);
@@ -544,15 +542,11 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
 
     if (m_response.isHTTP()) {
         int status = m_response.httpStatusCode();
-        if (status < 200 || status >= 300) {
-            bool hostedByObject = frameLoader()->isHostedByObjectElement();
-
-            frameLoader()->handleFallbackContent();
+        if ((status < 200 || status >= 300) && m_frame->ownerElement() && m_frame->ownerElement()->isObjectElement()) {
+            m_frame->ownerElement()->renderFallbackContent();
             // object elements are no longer rendered after we fallback, so don't
             // keep trying to process data from their load
-
-            if (hostedByObject)
-                cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
+            cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
         }
     }
 }
