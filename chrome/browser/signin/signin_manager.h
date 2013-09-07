@@ -75,20 +75,6 @@ class SigninManager : public SigninManagerBase,
   static bool IsUsernameAllowedByPolicy(const std::string& username,
                                         const std::string& policy);
 
-  // Attempt to sign in this user with ClientLogin. If successful, set a
-  // preference indicating the signed in user and send out a notification,
-  // then start fetching tokens for the user.
-  // This is overridden for test subclasses that don't want to issue auth
-  // requests.
-  virtual void StartSignIn(const std::string& username,
-                           const std::string& password,
-                           const std::string& login_token,
-                           const std::string& login_captcha);
-
-  // Used when a second factor access code was required to complete a signin
-  // attempt.
-  void ProvideSecondFactorAccessCode(const std::string& access_code);
-
   // Attempt to sign in this user with existing credentials from the cookie jar.
   // |session_index| indicates which user account to use if the cookie jar
   // contains a multi-login session. Otherwise the end result of this call is
@@ -197,14 +183,14 @@ class SigninManager : public SigninManagerBase,
   bool prohibit_signout_;
 
  private:
+  // TODO(guohui): Leaving the sign in type here because a follow up CL by
+  // Hui will add a new type.  Hui: please remove this comment in your CL.
   enum SigninType {
     SIGNIN_TYPE_NONE,
-    SIGNIN_TYPE_CLIENT_LOGIN,
     SIGNIN_TYPE_WITH_CREDENTIALS,
   };
 
   std::string SigninTypeToString(SigninType type);
-
   friend class FakeSigninManager;
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ClearTransientSigninData);
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorSuccess);

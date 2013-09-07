@@ -130,8 +130,6 @@ std::string SigninManager::SigninTypeToString(
   switch (type) {
     case SIGNIN_TYPE_NONE:
       return "No Signin";
-    case SIGNIN_TYPE_CLIENT_LOGIN:
-      return "Client Login";
     case SIGNIN_TYPE_WITH_CREDENTIALS:
       return "Signin with credentials";
   }
@@ -168,45 +166,8 @@ bool SigninManager::PrepareForSignin(SigninType type,
   client_login_.reset(new GaiaAuthFetcher(this,
                                           GaiaConstants::kChromeSource,
                                           profile_->GetRequestContext()));
-
   NotifyDiagnosticsObservers(SIGNIN_TYPE, SigninTypeToString(type));
   return true;
-}
-
-// Users must always sign out before they sign in again.
-void SigninManager::StartSignIn(const std::string& username,
-                                const std::string& password,
-                                const std::string& login_token,
-                                const std::string& login_captcha) {
-  DCHECK(GetAuthenticatedUsername().empty() ||
-         gaia::AreEmailsSame(username, GetAuthenticatedUsername()));
-
-  if (!PrepareForSignin(SIGNIN_TYPE_CLIENT_LOGIN, username, password))
-    return;
-
-  client_login_->StartClientLogin(username,
-                                  password,
-                                  "",
-                                  login_token,
-                                  login_captcha,
-                                  GaiaAuthFetcher::HostedAccountsNotAllowed);
-}
-
-void SigninManager::ProvideSecondFactorAccessCode(
-    const std::string& access_code) {
-  DCHECK(!possibly_invalid_username_.empty() && !password_.empty() &&
-      last_result_.data.empty());
-  DCHECK(type_ == SIGNIN_TYPE_CLIENT_LOGIN);
-
-  client_login_.reset(new GaiaAuthFetcher(this,
-                                          GaiaConstants::kChromeSource,
-                                          profile_->GetRequestContext()));
-  client_login_->StartClientLogin(possibly_invalid_username_,
-                                  access_code,
-                                  "",
-                                  std::string(),
-                                  std::string(),
-                                  GaiaAuthFetcher::HostedAccountsNotAllowed);
 }
 
 void SigninManager::StartSignInWithCredentials(

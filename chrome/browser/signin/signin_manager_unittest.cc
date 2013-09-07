@@ -209,40 +209,6 @@ class SigninManagerTest : public TokenServiceTestHarness {
   std::vector<std::string> cookies_;
 };
 
-// NOTE: ClientLogin's "StartSignin" is called after collecting credentials
-//       from the user.
-TEST_F(SigninManagerTest, SignInClientLogin) {
-  manager_->Initialize(profile(), NULL);
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-
-  manager_->StartSignIn(
-      "user@gmail.com", "password", std::string(), std::string());
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-
-  SimulateValidResponseClientLogin(true);
-  EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
-
-  // Should go into token service and stop.
-  EXPECT_EQ(1U, google_login_success_.size());
-  EXPECT_EQ(0U, google_login_failure_.size());
-
-  service()->OnIssueAuthTokenSuccess(
-      GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-      "oauth2Token");
-  SimulateValidUberToken();
-  // Check that the login cookie has been sent.
-  ASSERT_NE(std::find(cookies_.begin(), cookies_.end(), "checkCookie = true"),
-            cookies_.end());
-
-  // Should persist across resets.
-  manager_->Shutdown();
-  manager_.reset(new SigninManager(
-      scoped_ptr<SigninManagerDelegate>(
-          new ChromeSigninManagerDelegate(profile()))));
-  manager_->Initialize(profile(), NULL);
-  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
-}
-
 TEST_F(SigninManagerTest, SignInWithCredentials) {
   manager_->Initialize(profile(), NULL);
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
@@ -396,59 +362,13 @@ TEST_F(SigninManagerTest, SignInWithCredentialsCallbackCancel) {
   EXPECT_EQ(oauth_tokens_fetched_[0], "rt1");
 }
 
-TEST_F(SigninManagerTest, SignInClientLoginNoGPlus) {
+TEST_F(SigninManagerTest, SignOut) {
   manager_->Initialize(profile(), NULL);
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+  SigninManager::OAuthTokenFetchedCallback dummy;
+  manager_->StartSignInWithCredentials("0", "user@gmail.com", "password",
+                                       dummy);
+  ExpectSignInWithCredentialsSuccess();
 
-  manager_->StartSignIn("username", "password", std::string(), std::string());
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-
-  SimulateValidResponseClientLogin(false);
-  EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
-}
-
-TEST_F(SigninManagerTest, ClearTransientSigninData) {
-  manager_->Initialize(profile(), NULL);
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-
-  manager_->StartSignIn("username", "password", std::string(), std::string());
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-
-  SimulateValidResponseClientLogin(false);
-
-  // Should go into token service and stop.
-  EXPECT_EQ(1U, google_login_success_.size());
-  EXPECT_EQ(0U, google_login_failure_.size());
-
-  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
-
-  // Now clear the in memory data.
-  manager_->ClearTransientSigninData();
-  EXPECT_TRUE(manager_->last_result_.data.empty());
-  EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
-
-  // Ensure preferences are not modified.
-  EXPECT_FALSE(
-     profile()->GetPrefs()->GetString(prefs::kGoogleServicesUsername).empty());
-
-  // On reset it should be regenerated.
-  manager_->Shutdown();
-  manager_.reset(new SigninManager(
-      scoped_ptr<SigninManagerDelegate>(
-          new ChromeSigninManagerDelegate(profile()))));
-  manager_->Initialize(profile(), NULL);
-
-  // Now make sure we have the right user name.
-  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
-}
-
-TEST_F(SigninManagerTest, SignOutClientLogin) {
-  manager_->Initialize(profile(), NULL);
-  manager_->StartSignIn("username", "password", std::string(), std::string());
-  SimulateValidResponseClientLogin(false);
-  manager_->OnClientLoginSuccess(credentials());
-
-  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
   manager_->SignOut();
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
   // Should not be persisted anymore
@@ -460,79 +380,12 @@ TEST_F(SigninManagerTest, SignOutClientLogin) {
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 }
 
-TEST_F(SigninManagerTest, SignInFailureClientLogin) {
-  manager_->Initialize(profile(), NULL);
-  manager_->StartSignIn("username", "password", std::string(), std::string());
-  GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
-  manager_->OnClientLoginFailure(error);
-
-  EXPECT_EQ(0U, google_login_success_.size());
-  EXPECT_EQ(1U, google_login_failure_.size());
-
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-
-  // Should not be persisted
-  manager_->Shutdown();
-  manager_.reset(new SigninManager(
-      scoped_ptr<SigninManagerDelegate>(
-          new ChromeSigninManagerDelegate(profile()))));
-  manager_->Initialize(profile(), NULL);
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-}
-
-TEST_F(SigninManagerTest, ProvideSecondFactorSuccess) {
-  manager_->Initialize(profile(), NULL);
-  manager_->StartSignIn("username", "password", std::string(), std::string());
-  GoogleServiceAuthError error(GoogleServiceAuthError::TWO_FACTOR);
-  manager_->OnClientLoginFailure(error);
-
-  EXPECT_EQ(0U, google_login_success_.size());
-  EXPECT_EQ(1U, google_login_failure_.size());
-
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-  EXPECT_FALSE(manager_->possibly_invalid_username_.empty());
-
-  manager_->ProvideSecondFactorAccessCode("access");
-  SimulateValidResponseClientLogin(false);
-
-  EXPECT_EQ(1U, google_login_success_.size());
-  EXPECT_EQ(1U, google_login_failure_.size());
-}
-
-TEST_F(SigninManagerTest, ProvideSecondFactorFailure) {
-  manager_->Initialize(profile(), NULL);
-  manager_->StartSignIn("username", "password", std::string(), std::string());
-  GoogleServiceAuthError error1(GoogleServiceAuthError::TWO_FACTOR);
-  manager_->OnClientLoginFailure(error1);
-
-  EXPECT_EQ(0U, google_login_success_.size());
-  EXPECT_EQ(1U, google_login_failure_.size());
-
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-  EXPECT_FALSE(manager_->possibly_invalid_username_.empty());
-
-  manager_->ProvideSecondFactorAccessCode("badaccess");
-  GoogleServiceAuthError error2(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  manager_->OnClientLoginFailure(error2);
-
-  EXPECT_EQ(0U, google_login_success_.size());
-  EXPECT_EQ(2U, google_login_failure_.size());
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-
-  manager_->ProvideSecondFactorAccessCode("badaccess");
-  GoogleServiceAuthError error3(GoogleServiceAuthError::CONNECTION_FAILED);
-  manager_->OnClientLoginFailure(error3);
-
-  EXPECT_EQ(0U, google_login_success_.size());
-  EXPECT_EQ(3U, google_login_failure_.size());
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-}
-
 TEST_F(SigninManagerTest, SignOutMidConnect) {
   manager_->Initialize(profile(), NULL);
-  manager_->StartSignIn("username", "password", std::string(), std::string());
-  EXPECT_EQ("username", manager_->GetUsernameForAuthInProgress());
+  SigninManager::OAuthTokenFetchedCallback dummy;
+  manager_->StartSignInWithCredentials("0", "user@gmail.com", "password",
+                                       dummy);
+
   manager_->SignOut();
   EXPECT_EQ(0U, google_login_success_.size());
   EXPECT_EQ(1U, google_login_failure_.size());

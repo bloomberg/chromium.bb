@@ -43,13 +43,6 @@ FakeSigninManager::~FakeSigninManager() {
 void FakeSigninManager::InitTokenService() {
 }
 
-void FakeSigninManager::StartSignIn(const std::string& username,
-                                    const std::string& password,
-                                    const std::string& login_token,
-                                    const std::string& login_captcha) {
-  SetAuthenticatedUsername(username);
-}
-
 void FakeSigninManager::StartSignInWithCredentials(
     const std::string& session_index,
     const std::string& username,

@@ -41,10 +41,6 @@ class FakeSigninManager : public SigninManager {
 
   virtual void SignOut() OVERRIDE;
   virtual void InitTokenService() OVERRIDE;
-  virtual void StartSignIn(const std::string& username,
-                           const std::string& password,
-                           const std::string& login_token,
-                           const std::string& login_captcha) OVERRIDE;
 
   virtual void StartSignInWithCredentials(
       const std::string& session_index,
