@@ -38,6 +38,8 @@ class FeedbackPrivateAPI : public ProfileKeyedAPI {
     return "FeedbackPrivateAPI";
   }
 
+  static const bool kServiceRedirectedInIncognito = true;
+
   Profile* const profile_;
   FeedbackService* service_;
 };
