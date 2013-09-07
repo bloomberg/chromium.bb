@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/ui/autofill/generated_credit_card_bubble_view.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/styled_label_listener.h"
@@ -48,14 +47,8 @@ class GeneratedCreditCardBubbleViews : public GeneratedCreditCardBubbleView,
   explicit GeneratedCreditCardBubbleViews(
      const base::WeakPtr<GeneratedCreditCardBubbleController>& controller);
 
-  // Releases focus capture (which is assumed on Show()).
-  void ReleaseCapture();
-
   // Controller that drives this bubble. May be invalid when hiding.
   base::WeakPtr<GeneratedCreditCardBubbleController> controller_;
-
-  // A timer used for releasing focus capture.
-  base::OneShotTimer<GeneratedCreditCardBubbleViews> capture_timer_;
 
   base::WeakPtrFactory<GeneratedCreditCardBubbleViews> weak_ptr_factory_;
 
