@@ -121,6 +121,7 @@ cr.define('local_discovery', function() {
                                 button_text,
                                 button_action) {
     device_dom_element.classList.add('device');
+    device_dom_element.classList.add('printer');
 
     var deviceInfo = document.createElement('div');
     deviceInfo.className = 'device-info';

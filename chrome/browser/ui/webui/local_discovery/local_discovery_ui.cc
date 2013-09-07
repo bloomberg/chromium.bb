@@ -22,6 +22,7 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
   source->SetDefaultResource(IDR_LOCAL_DISCOVERY_HTML);
   source->AddResourcePath("local_discovery.css", IDR_LOCAL_DISCOVERY_CSS);
   source->AddResourcePath("local_discovery.js", IDR_LOCAL_DISCOVERY_JS);
+  source->AddResourcePath("printer.png", IDR_LOCAL_DISCOVERY_PRINTER_PNG);
 
   source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("serviceRegister",
@@ -43,10 +44,6 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
                              IDS_LOCAL_DISCOVERY_ADDING_PRINTER_MESSAGE1);
   source->AddLocalizedString("addingMessage2",
                              IDS_LOCAL_DISCOVERY_ADDING_PRINTER_MESSAGE2);
-  source->AddLocalizedString("registeredDevicesTitle",
-                             IDS_LOCAL_DISCOVERY_REGISTERED_DEVICES_TITLE);
-  source->AddLocalizedString("unregisteredDevicesTitle",
-                             IDS_LOCAL_DISCOVERY_UNREGISTERED_DEVICES_TITLE);
   source->AddLocalizedString("devicesTitle",
                              IDS_LOCAL_DISCOVERY_DEVICES_PAGE_TITLE);
   source->AddLocalizedString("noDescription",

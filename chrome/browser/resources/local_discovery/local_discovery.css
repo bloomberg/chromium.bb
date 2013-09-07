@@ -9,7 +9,12 @@
 }
 
 .device .device-info {
+  -webkit-padding-start: 40px;
   float: left;
+}
+
+.printer {
+  background: url(printer.png) no-repeat;
 }
 
 html[dir='rtl'] .device .device-info {

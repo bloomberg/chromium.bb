@@ -157,7 +157,7 @@
       <include name="IDR_LOCAL_DISCOVERY_HTML" file="resources\local_discovery\local_discovery.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_LOCAL_DISCOVERY_CSS" file="resources\local_discovery\local_discovery.css" type="BINDATA" />
       <include name="IDR_LOCAL_DISCOVERY_JS" file="resources\local_discovery\local_discovery.js" flattenhtml="true" type="BINDATA" />
-
+      <include name="IDR_LOCAL_DISCOVERY_PRINTER_PNG" file="resources\local_discovery\printer.png" type="BINDATA" />
       <include name="IDR_INSTANT_IFRAME_VALIDATION_JS" file="resources\local_ntp\instant_iframe_validation.js" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_HTML" file="resources\local_ntp\local_ntp.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_CSS" file="resources\local_ntp\local_ntp.css" type="BINDATA" />
