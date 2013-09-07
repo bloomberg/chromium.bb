@@ -40,6 +40,7 @@
 #elif defined(USE_OZONE) && !defined(OS_NACL)
 #include "base/message_loop/message_pump_ozone.h"
 #else
+#define USE_GTK_MESSAGE_PUMP
 #include "base/message_loop/message_pump_gtk.h"
 #endif
 
@@ -49,6 +50,8 @@
 namespace base {
 
 class HistogramBase;
+class MessagePumpDispatcher;
+class MessagePumpObserver;
 class RunLoop;
 class ThreadTaskRunnerHandle;
 #if defined(OS_ANDROID)
@@ -90,7 +93,9 @@ class WaitableEvent;
 class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
  public:
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(USE_GTK_MESSAGE_PUMP)
+  typedef MessagePumpGdkObserver Observer;
+#elif !defined(OS_MACOSX) && !defined(OS_ANDROID)
   typedef MessagePumpDispatcher Dispatcher;
   typedef MessagePumpObserver Observer;
 #endif

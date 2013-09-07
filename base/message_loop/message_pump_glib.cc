@@ -290,14 +290,6 @@ void MessagePumpGlib::HandleDispatch() {
   state_->delegate->DoDelayedWork(&delayed_work_time_);
 }
 
-void MessagePumpGlib::AddObserver(MessagePumpObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void MessagePumpGlib::RemoveObserver(MessagePumpObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void MessagePumpGlib::Run(Delegate* delegate) {
   RunWithDispatcher(delegate, NULL);
 }

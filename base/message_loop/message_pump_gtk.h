@@ -13,7 +13,7 @@ typedef struct _XDisplay Display;
 namespace base {
 
 // The documentation for this class is in message_pump_glib.h
-class MessagePumpObserver {
+class MessagePumpGdkObserver {
  public:
   // This method is called before processing a message.
   virtual void WillProcessEvent(GdkEvent* event) = 0;
@@ -22,21 +22,7 @@ class MessagePumpObserver {
   virtual void DidProcessEvent(GdkEvent* event) = 0;
 
  protected:
-  virtual ~MessagePumpObserver() {}
-};
-
-// The documentation for this class is in message_pump_glib.h
-//
-// The nested loop is exited by either posting a quit, or returning false
-// from Dispatch.
-class MessagePumpDispatcher {
- public:
-  // Dispatches the event. If true is returned processing continues as
-  // normal. If false is returned, the nested loop exits immediately.
-  virtual bool Dispatch(GdkEvent* event) = 0;
-
- protected:
-  virtual ~MessagePumpDispatcher() {}
+  virtual ~MessagePumpGdkObserver() {}
 };
 
 // This class implements a message-pump for dispatching GTK events.
@@ -52,6 +38,13 @@ class BASE_EXPORT MessagePumpGtk : public MessagePumpGlib {
   // Returns default X Display.
   static Display* GetDefaultXDisplay();
 
+  // Adds an Observer, which will start receiving notifications immediately.
+  void AddObserver(MessagePumpGdkObserver* observer);
+
+  // Removes an Observer.  It is safe to call this method while an Observer is
+  // receiving a notification callback.
+  void RemoveObserver(MessagePumpGdkObserver* observer);
+
  private:
   // Invoked from EventDispatcher. Notifies all observers we're about to
   // process an event.
@@ -63,6 +56,9 @@ class BASE_EXPORT MessagePumpGtk : public MessagePumpGlib {
 
   // Callback prior to gdk dispatching an event.
   static void EventDispatcher(GdkEvent* event, void* data);
+
+  // List of observers.
+  ObserverList<MessagePumpGdkObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpGtk);
 };

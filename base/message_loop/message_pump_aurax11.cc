@@ -184,6 +184,14 @@ void MessagePumpAuraX11::RemoveDispatcherForRootWindow(
   root_window_dispatchers_.RemoveObserver(dispatcher);
 }
 
+void MessagePumpAuraX11::AddObserver(MessagePumpObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MessagePumpAuraX11::RemoveObserver(MessagePumpObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 bool MessagePumpAuraX11::DispatchXEvents() {
   Display* display = GetDefaultXDisplay();
   DCHECK(display);

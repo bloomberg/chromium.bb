@@ -51,13 +51,6 @@ class BASE_EXPORT MessagePumpGlib : public MessagePump {
   bool HandleCheck();
   void HandleDispatch();
 
-  // Adds an Observer, which will start receiving notifications immediately.
-  void AddObserver(MessagePumpObserver* observer);
-
-  // Removes an Observer.  It is safe to call this method while an Observer is
-  // receiving a notification callback.
-  void RemoveObserver(MessagePumpObserver* observer);
-
   // Overridden from MessagePump:
   virtual void Run(Delegate* delegate) OVERRIDE;
   virtual void Quit() OVERRIDE;
@@ -67,8 +60,6 @@ class BASE_EXPORT MessagePumpGlib : public MessagePump {
  protected:
   // Returns the dispatcher for the current run state (|state_->dispatcher|).
   MessagePumpDispatcher* GetDispatcher();
-
-  ObserverList<MessagePumpObserver>& observers() { return observers_; }
 
  private:
   // We may make recursive calls to Run, so we save state that needs to be
@@ -97,9 +88,6 @@ class BASE_EXPORT MessagePumpGlib : public MessagePump {
   int wakeup_pipe_write_;
   // Use a scoped_ptr to avoid needing the definition of GPollFD in the header.
   scoped_ptr<GPollFD> wakeup_gpollfd_;
-
-  // List of observers.
-  ObserverList<MessagePumpObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpGlib);
 };

@@ -75,13 +75,7 @@ void MessagePumpGtk::DispatchEvents(GdkEvent* event) {
                          "type", EventToTypeString(event));
 
   WillProcessEvent(event);
-
-  MessagePumpDispatcher* dispatcher = GetDispatcher();
-  if (!dispatcher)
-    gtk_main_do_event(event);
-  else if (!dispatcher->Dispatch(event))
-    Quit();
-
+  gtk_main_do_event(event);
   DidProcessEvent(event);
 }
 
@@ -97,12 +91,24 @@ Display* MessagePumpGtk::GetDefaultXDisplay() {
   return GDK_DISPLAY_XDISPLAY(display);
 }
 
+void MessagePumpGtk::AddObserver(MessagePumpGdkObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MessagePumpGtk::RemoveObserver(MessagePumpGdkObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void MessagePumpGtk::WillProcessEvent(GdkEvent* event) {
-  FOR_EACH_OBSERVER(MessagePumpObserver, observers(), WillProcessEvent(event));
+  FOR_EACH_OBSERVER(MessagePumpGdkObserver,
+                    observers_,
+                    WillProcessEvent(event));
 }
 
 void MessagePumpGtk::DidProcessEvent(GdkEvent* event) {
-  FOR_EACH_OBSERVER(MessagePumpObserver, observers(), DidProcessEvent(event));
+  FOR_EACH_OBSERVER(MessagePumpGdkObserver,
+                    observers_,
+                    DidProcessEvent(event));
 }
 
 // static

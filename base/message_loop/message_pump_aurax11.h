@@ -58,6 +58,13 @@ class BASE_EXPORT MessagePumpAuraX11 : public MessagePumpGlib,
   void AddDispatcherForRootWindow(MessagePumpDispatcher* dispatcher);
   void RemoveDispatcherForRootWindow(MessagePumpDispatcher* dispatcher);
 
+  // Adds an Observer, which will start receiving notifications immediately.
+  void AddObserver(MessagePumpObserver* observer);
+
+  // Removes an Observer.  It is safe to call this method while an Observer is
+  // receiving a notification callback.
+  void RemoveObserver(MessagePumpObserver* observer);
+
   // Internal function. Called by the glib source dispatch function. Processes
   // all available X events.
   bool DispatchXEvents();
@@ -92,6 +99,8 @@ class BASE_EXPORT MessagePumpAuraX11 : public MessagePumpGlib,
   // Returns the Dispatcher based on the event's target window.
   MessagePumpDispatcher* GetDispatcherForXEvent(const NativeEvent& xev) const;
 
+  ObserverList<MessagePumpObserver>& observers() { return observers_; }
+
   // Overridden from MessagePumpDispatcher:
   virtual bool Dispatch(const NativeEvent& event) OVERRIDE;
 
@@ -107,6 +116,9 @@ class BASE_EXPORT MessagePumpAuraX11 : public MessagePumpGlib,
   // through them. Use ObserverList to ensure the iterator remains valid across
   // additions.
   ObserverList<MessagePumpDispatcher> root_window_dispatchers_;
+
+  // List of observers.
+  ObserverList<MessagePumpObserver> observers_;
 
   unsigned long x_root_window_;
 
