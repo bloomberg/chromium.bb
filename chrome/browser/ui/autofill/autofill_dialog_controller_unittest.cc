@@ -515,6 +515,18 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
     return payload.a;
   }
 
+  // Returns true if the given |section| contains a field of the given |type|.
+  bool SectionContainsField(DialogSection section, ServerFieldType type) {
+    const DetailInputs& inputs =
+        controller()->RequestedFieldsForSection(section);
+    for (DetailInputs::const_iterator it = inputs.begin(); it != inputs.end();
+         ++it) {
+      if (it->type == type)
+        return true;
+    }
+    return false;
+  }
+
   TestAutofillDialogController* controller() { return controller_.get(); }
 
   const FormStructure* form_structure() { return form_structure_; }
@@ -601,7 +613,7 @@ TEST_F(AutofillDialogControllerTest, PhoneNumberValidation) {
     EXPECT_EQ(0U, validity_data.count(phone));
 
     // Input an empty phone number with VALIDATE_FINAL.
-    SetOutputValue( inputs, &outputs, phone, base::string16());
+    SetOutputValue(inputs, &outputs, phone, base::string16());
     validity_data =
         controller()->InputsAreValid(section, outputs, VALIDATE_FINAL);
     EXPECT_EQ(1U, validity_data.count(phone));
@@ -844,7 +856,6 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   // suggestion.
   EXPECT_FALSE(controller()->MenuModelForSection(SECTION_CC));
   EXPECT_FALSE(controller()->MenuModelForSection(SECTION_BILLING));
-  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_EMAIL));
 
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(3);
 
@@ -855,7 +866,6 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
   ASSERT_TRUE(shipping_model);
   EXPECT_EQ(3, shipping_model->GetItemCount());
-  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_EMAIL));
 
   // An otherwise full but unverified profile should be ignored.
   AutofillProfile full_profile(test::GetFullProfile());
@@ -865,7 +875,6 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
   ASSERT_TRUE(shipping_model);
   EXPECT_EQ(3, shipping_model->GetItemCount());
-  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_EMAIL));
 
   // A full, verified profile should be picked up.
   AutofillProfile verified_profile(test::GetVerifiedProfile());
@@ -874,7 +883,6 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
   ASSERT_TRUE(shipping_model);
   EXPECT_EQ(4, shipping_model->GetItemCount());
-  EXPECT_TRUE(!!controller()->MenuModelForSection(SECTION_EMAIL));
 }
 
 // Makes sure that the choice of which Autofill profile to use for each section
@@ -922,9 +930,10 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileDefaults) {
 
 TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
-  ui::MenuModel* email_model =
-      controller()->MenuModelForSection(SECTION_EMAIL);
-  EXPECT_FALSE(email_model);
+  ui::MenuModel* shipping_model =
+      controller()->MenuModelForSection(SECTION_SHIPPING);
+  ASSERT_TRUE(!!shipping_model);
+  EXPECT_EQ(3, shipping_model->GetItemCount());
 
   // Set up some variant data.
   AutofillProfile full_profile(test::GetVerifiedProfile());
@@ -932,52 +941,14 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   names.push_back(ASCIIToUTF16("John Doe"));
   names.push_back(ASCIIToUTF16("Jane Doe"));
   full_profile.SetRawMultiInfo(EMAIL_ADDRESS, names);
-  const string16 kEmail1 = ASCIIToUTF16(kFakeEmail);
-  const string16 kEmail2 = ASCIIToUTF16("admin@example.com");
   std::vector<string16> emails;
-  emails.push_back(kEmail1);
-  emails.push_back(kEmail2);
+  emails.push_back(ASCIIToUTF16(kFakeEmail));
+  emails.push_back(ASCIIToUTF16("admin@example.com"));
   full_profile.SetRawMultiInfo(EMAIL_ADDRESS, emails);
 
-  // Respect variants for the email address field only.
+  // Non-default variants are ignored by the dialog.
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
-  ui::MenuModel* shipping_model =
-      controller()->MenuModelForSection(SECTION_SHIPPING);
   EXPECT_EQ(4, shipping_model->GetItemCount());
-  email_model = controller()->MenuModelForSection(SECTION_EMAIL);
-  ASSERT_TRUE(!!email_model);
-  EXPECT_EQ(4, email_model->GetItemCount());
-
-  // The first one is the default.
-  SuggestionsMenuModel* email_suggestions = static_cast<SuggestionsMenuModel*>(
-      controller()->MenuModelForSection(SECTION_EMAIL));
-  EXPECT_EQ(0, email_suggestions->checked_item());
-
-  email_model->ActivatedAt(0);
-  EXPECT_EQ(kEmail1,
-            controller()->SuggestionStateForSection(SECTION_EMAIL).
-                vertically_compact_text);
-  email_model->ActivatedAt(1);
-  EXPECT_EQ(kEmail2,
-            controller()->SuggestionStateForSection(SECTION_EMAIL).
-                vertically_compact_text);
-
-  controller()->EditClickedForSection(SECTION_EMAIL);
-  const DetailInputs& inputs =
-      controller()->RequestedFieldsForSection(SECTION_EMAIL);
-  EXPECT_EQ(kEmail2, inputs[0].initial_value);
-
-  // The choice of variant is persisted across runs of the dialog.
-  email_model->ActivatedAt(0);
-  email_model->ActivatedAt(1);
-  FillCreditCardInputs();
-  controller()->OnAccept();
-
-  Reset();
-  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
-  email_suggestions = static_cast<SuggestionsMenuModel*>(
-      controller()->MenuModelForSection(SECTION_EMAIL));
-  EXPECT_EQ(1, email_suggestions->checked_item());
 }
 
 TEST_F(AutofillDialogControllerTest, SuggestValidEmail) {
@@ -986,44 +957,32 @@ TEST_F(AutofillDialogControllerTest, SuggestValidEmail) {
   profile.SetRawInfo(EMAIL_ADDRESS, kValidEmail);
   controller()->GetTestingManager()->AddTestingProfile(&profile);
 
-  controller()->MenuModelForSection(SECTION_EMAIL)->ActivatedAt(0);
-  EXPECT_EQ(kValidEmail,
-            controller()->SuggestionStateForSection(SECTION_EMAIL).
-                vertically_compact_text);
+  // "add", "manage", and 1 suggestion.
+  EXPECT_EQ(
+      3, controller()->MenuModelForSection(SECTION_BILLING)->GetItemCount());
+  // "add", "manage", 1 suggestion, and "same as billing".
+  EXPECT_EQ(
+      4, controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
 }
 
 TEST_F(AutofillDialogControllerTest, DoNotSuggestInvalidEmail) {
   AutofillProfile profile(test::GetVerifiedProfile());
   profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16(".!#$%&'*+/=?^_`-@-.."));
   controller()->GetTestingManager()->AddTestingProfile(&profile);
-  EXPECT_EQ(static_cast<ui::MenuModel*>(NULL),
-            controller()->MenuModelForSection(SECTION_EMAIL));
-}
 
-TEST_F(AutofillDialogControllerTest, DoNotSuggestEmailFromIncompleteProfile) {
-  AutofillProfile profile(test::GetVerifiedProfile());
-  profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16(kFakeEmail));
-  profile.SetRawInfo(ADDRESS_HOME_STATE, base::string16());
-  controller()->GetTestingManager()->AddTestingProfile(&profile);
-  EXPECT_EQ(static_cast<ui::MenuModel*>(NULL),
-            controller()->MenuModelForSection(SECTION_EMAIL));
-}
-
-TEST_F(AutofillDialogControllerTest, DoNotSuggestEmailFromInvalidProfile) {
-  AutofillProfile profile(test::GetVerifiedProfile());
-  profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16(kFakeEmail));
-  profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("C"));
-  controller()->GetTestingManager()->AddTestingProfile(&profile);
-  EXPECT_EQ(static_cast<ui::MenuModel*>(NULL),
-            controller()->MenuModelForSection(SECTION_EMAIL));
+  EXPECT_FALSE(!!controller()->MenuModelForSection(SECTION_BILLING));
+  // "add", "manage", 1 suggestion, and "same as billing".
+  EXPECT_EQ(
+      4, controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
 }
 
 TEST_F(AutofillDialogControllerTest, SuggestValidAddress) {
   AutofillProfile full_profile(test::GetVerifiedProfile());
   full_profile.set_origin(kSettingsOrigin);
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  // "add", "manage", and 1 suggestion.
   EXPECT_EQ(
-      4, controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
+      3, controller()->MenuModelForSection(SECTION_BILLING)->GetItemCount());
 }
 
 TEST_F(AutofillDialogControllerTest, DoNotSuggestInvalidAddress) {
@@ -1031,8 +990,16 @@ TEST_F(AutofillDialogControllerTest, DoNotSuggestInvalidAddress) {
   full_profile.set_origin(kSettingsOrigin);
   full_profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("C"));
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
-  EXPECT_EQ(
-      3, controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
+
+  EXPECT_FALSE(!!controller()->MenuModelForSection(SECTION_BILLING));
+}
+
+TEST_F(AutofillDialogControllerTest, DoNotSuggestIncompleteAddress) {
+  AutofillProfile profile(test::GetVerifiedProfile());
+  profile.SetRawInfo(ADDRESS_HOME_STATE, base::string16());
+  controller()->GetTestingManager()->AddTestingProfile(&profile);
+
+  EXPECT_FALSE(!!controller()->MenuModelForSection(SECTION_BILLING));
 }
 
 TEST_F(AutofillDialogControllerTest, AutofillCreditCards) {
@@ -1518,29 +1485,31 @@ TEST_F(AutofillDialogControllerTest, EditClicked) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
 
   AutofillProfile full_profile(test::GetVerifiedProfile());
-  const string16 kEmail = ASCIIToUTF16("first@johndoe.com");
-  full_profile.SetRawInfo(EMAIL_ADDRESS, kEmail);
+  const string16 kName = ASCIIToUTF16("John Doe");
+  full_profile.SetRawInfo(NAME_FULL, kName);
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
 
-  ui::MenuModel* email_model =
-      controller()->MenuModelForSection(SECTION_EMAIL);
-  EXPECT_EQ(3, email_model->GetItemCount());
+  ui::MenuModel* billing_model =
+      controller()->MenuModelForSection(SECTION_BILLING);
+  // "add", "manage", and 1 suggestion.
+  EXPECT_EQ(3, billing_model->GetItemCount());
 
   // When unedited, the initial_value should be empty.
-  email_model->ActivatedAt(0);
+  billing_model->ActivatedAt(0);
   const DetailInputs& inputs0 =
-      controller()->RequestedFieldsForSection(SECTION_EMAIL);
+      controller()->RequestedFieldsForSection(SECTION_BILLING);
   EXPECT_EQ(string16(), inputs0[0].initial_value);
-  EXPECT_EQ(kEmail,
-            controller()->SuggestionStateForSection(SECTION_EMAIL).
-                vertically_compact_text);
+  EXPECT_NE(base::string16::npos,
+            controller()->SuggestionStateForSection(SECTION_BILLING).
+                vertically_compact_text.find(kName));
 
   // When edited, the initial_value should contain the value.
-  controller()->EditClickedForSection(SECTION_EMAIL);
+  controller()->EditClickedForSection(SECTION_BILLING);
   const DetailInputs& inputs1 =
-      controller()->RequestedFieldsForSection(SECTION_EMAIL);
-  EXPECT_EQ(kEmail, inputs1[0].initial_value);
-  EXPECT_FALSE(controller()->SuggestionStateForSection(SECTION_EMAIL).visible);
+      controller()->RequestedFieldsForSection(SECTION_BILLING);
+  EXPECT_EQ(kName, inputs1[0].initial_value);
+  EXPECT_FALSE(
+      controller()->SuggestionStateForSection(SECTION_BILLING).visible);
 }
 
 // Tests that editing an autofill profile and then submitting works.
@@ -1616,48 +1585,6 @@ TEST_F(AutofillDialogControllerTest, AddAutofillProfile) {
     EXPECT_EQ(full_profile2.GetInfo(AutofillType(input.type), "en-US"),
               added_profile.GetInfo(AutofillType(input.type), "en-US"));
   }
-
-  // Also, the currently selected email address should get added to the new
-  // profile.
-  string16 original_email =
-      full_profile.GetInfo(AutofillType(EMAIL_ADDRESS), "en-US");
-  EXPECT_FALSE(original_email.empty());
-  EXPECT_EQ(original_email,
-            added_profile.GetInfo(AutofillType(EMAIL_ADDRESS), "en-US"));
-}
-
-// Makes sure that a newly added email address gets added to an existing profile
-// (as opposed to creating its own profile). http://crbug.com/240926
-TEST_F(AutofillDialogControllerTest, AddEmail) {
-  SwitchToAutofill();
-  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
-
-  AutofillProfile full_profile(test::GetVerifiedProfile());
-  CreditCard credit_card(test::GetVerifiedCreditCard());
-  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
-  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
-
-  ui::MenuModel* model = controller()->MenuModelForSection(SECTION_EMAIL);
-  ASSERT_TRUE(model);
-  // Activate the "Add email address" menu item.
-  model->ActivatedAt(model->GetItemCount() - 2);
-
-  // Fill in the inputs from the profile.
-  DetailOutputMap outputs;
-  const DetailInputs& inputs =
-      controller()->RequestedFieldsForSection(SECTION_EMAIL);
-  const DetailInput& input = inputs[0];
-  string16 new_email = ASCIIToUTF16("addemailtest@example.com");
-  outputs[&input] = new_email;
-  controller()->GetView()->SetUserInput(SECTION_EMAIL, outputs);
-
-  FillCreditCardInputs();
-  controller()->OnAccept();
-  std::vector<base::string16> email_values;
-  full_profile.GetMultiInfo(
-      AutofillType(EMAIL_ADDRESS), "en-US", &email_values);
-  ASSERT_EQ(2U, email_values.size());
-  EXPECT_EQ(new_email, email_values[1]);
 }
 
 TEST_F(AutofillDialogControllerTest, VerifyCvv) {
@@ -2007,8 +1934,10 @@ TEST_F(AutofillDialogControllerTest, ViewSubmitSetsPref) {
 TEST_F(AutofillDialogControllerTest, HideWalletEmail) {
   SwitchToAutofill();
 
-  // Email section should be showing when using Autofill.
-  EXPECT_TRUE(controller()->SectionIsActive(SECTION_EMAIL));
+  // Email field should be showing when using Autofill.
+  EXPECT_TRUE(controller()->SectionIsActive(SECTION_BILLING));
+  EXPECT_FALSE(controller()->SectionIsActive(SECTION_CC_BILLING));
+  EXPECT_TRUE(SectionContainsField(SECTION_BILLING, EMAIL_ADDRESS));
 
   SwitchToWallet();
 
@@ -2022,8 +1951,10 @@ TEST_F(AutofillDialogControllerTest, HideWalletEmail) {
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 
-  // Email section should be hidden when using Wallet.
-  EXPECT_FALSE(controller()->SectionIsActive(SECTION_EMAIL));
+  // Email field should be absent when using Wallet.
+  EXPECT_FALSE(controller()->SectionIsActive(SECTION_BILLING));
+  EXPECT_TRUE(controller()->SectionIsActive(SECTION_CC_BILLING));
+  EXPECT_FALSE(SectionContainsField(SECTION_CC_BILLING, EMAIL_ADDRESS));
 
   controller()->OnAccept();
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
@@ -2037,7 +1968,7 @@ TEST_F(AutofillDialogControllerTest, HideWalletEmail) {
       break;
     }
   }
-  ASSERT_LT(i, form_structure()->field_count());
+  EXPECT_LT(i, form_structure()->field_count());
 }
 
 // Test if autofill types of returned form structure are correct for billing
@@ -2072,13 +2003,13 @@ TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {
   controller()->GetTestingManager()->AddTestingCreditCard(&card);
   EXPECT_FALSE(controller()->ShouldOfferToSaveInChrome());
 
-  controller()->EditClickedForSection(SECTION_EMAIL);
+  controller()->EditClickedForSection(SECTION_BILLING);
   EXPECT_TRUE(controller()->ShouldOfferToSaveInChrome());
 
-  controller()->MenuModelForSection(SECTION_EMAIL)->ActivatedAt(0);
+  controller()->MenuModelForSection(SECTION_BILLING)->ActivatedAt(0);
   EXPECT_FALSE(controller()->ShouldOfferToSaveInChrome());
 
-  controller()->MenuModelForSection(SECTION_EMAIL)->ActivatedAt(1);
+  controller()->MenuModelForSection(SECTION_BILLING)->ActivatedAt(1);
   EXPECT_TRUE(controller()->ShouldOfferToSaveInChrome());
 
   profile()->ForceIncognito(true);

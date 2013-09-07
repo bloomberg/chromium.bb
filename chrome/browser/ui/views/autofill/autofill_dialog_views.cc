@@ -1234,8 +1234,6 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogViewDelegate* delegate)
       focus_manager_(NULL),
       observer_(this) {
   DCHECK(delegate);
-  detail_groups_.insert(std::make_pair(SECTION_EMAIL,
-                                       DetailsGroup(SECTION_EMAIL)));
   detail_groups_.insert(std::make_pair(SECTION_CC,
                                        DetailsGroup(SECTION_CC)));
   detail_groups_.insert(std::make_pair(SECTION_BILLING,

@@ -44,7 +44,6 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
 - (void)loadView {
   details_.reset([[NSMutableArray alloc] init]);
 
-  [self addSection:autofill::SECTION_EMAIL];
   [self addSection:autofill::SECTION_CC];
   [self addSection:autofill::SECTION_BILLING];
   [self addSection:autofill::SECTION_CC_BILLING];

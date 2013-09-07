@@ -303,7 +303,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // Whether or not the current request wants credit info back.
   bool RequestingCreditCardInfo() const;
 
-  // Initializes or updates |suggested_email_| et al.
+  // Initializes or updates |suggested_cc_| et al.
   void SuggestionsUpdated();
 
   // Whether the user's wallet items have at least one address and instrument.
@@ -383,8 +383,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // represented by |section|.
   bool FormStructureCaresAboutSection(DialogSection section) const;
 
-  // Sets the CVC result on |form_structure_| to the value in |cvc|.
-  void SetCvcResult(const string16& cvc);
+  // Finds all fields of the given |type| in |form_structure_|, if any, and sets
+  // each field's value to |output|.
+  void SetOutputForFieldsOfType(ServerFieldType type, const string16& output);
 
   // Gets the value for |type| in |section|, whether it comes from manual user
   // input or the active suggestion.
@@ -405,7 +406,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
       const SuggestionsMenuModel& model);
 
   // Suggested text and icons for sections. Suggestion text is used to show an
-  // abidged overview of the currently used suggestion. Extra text is used when
+  // abridged overview of the currently used suggestion. Extra text is used when
   // part of a section is suggested but part must be manually input (e.g. during
   // a CVC challenge or when using Autofill's CC section [never stores CVC]).
   bool SuggestionTextForSection(DialogSection section,
@@ -618,7 +619,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   std::string active_address_id_;
 
   // The fields for billing and shipping which the page has actually requested.
-  DetailInputs requested_email_fields_;
   DetailInputs requested_cc_fields_;
   DetailInputs requested_billing_fields_;
   DetailInputs requested_cc_billing_fields_;
@@ -632,7 +632,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   CountryComboboxModel country_combobox_model_;
 
   // Models for the suggestion views.
-  SuggestionsMenuModel suggested_email_;
   SuggestionsMenuModel suggested_cc_;
   SuggestionsMenuModel suggested_billing_;
   SuggestionsMenuModel suggested_cc_billing_;

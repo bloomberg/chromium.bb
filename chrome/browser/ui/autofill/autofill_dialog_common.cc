@@ -72,35 +72,35 @@ void BuildInputs(const DetailInput* input_template,
 // Constructs |inputs| from template data for a given |dialog_section|.
 void BuildInputsForSection(DialogSection dialog_section,
                            DetailInputs* inputs) {
-  const DetailInput kEmailInputs[] = {
-    { 1, EMAIL_ADDRESS, IDS_AUTOFILL_DIALOG_PLACEHOLDER_EMAIL },
-  };
-
   const DetailInput kCCInputs[] = {
-    { 2, CREDIT_CARD_NUMBER, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER },
-    { 3, CREDIT_CARD_EXP_MONTH, IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH },
-    { 3, CREDIT_CARD_EXP_4_DIGIT_YEAR,
+    { 1, CREDIT_CARD_NUMBER, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER },
+    { 2, CREDIT_CARD_EXP_MONTH, IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH },
+    { 2, CREDIT_CARD_EXP_4_DIGIT_YEAR,
       IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR },
-    { 3, CREDIT_CARD_VERIFICATION_CODE, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC,
+    { 2, CREDIT_CARD_VERIFICATION_CODE, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC,
       1.5 },
   };
 
   const DetailInput kBillingInputs[] = {
-    { 4, NAME_BILLING_FULL, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME },
-    { 5, ADDRESS_BILLING_LINE1,
+    { 3, NAME_BILLING_FULL, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME },
+    { 4, ADDRESS_BILLING_LINE1,
       IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1 },
-    { 6, ADDRESS_BILLING_LINE2,
+    { 5, ADDRESS_BILLING_LINE2,
       IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2 },
-    { 7, ADDRESS_BILLING_CITY,
+    { 6, ADDRESS_BILLING_CITY,
       IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY },
     // TODO(estade): state placeholder should depend on locale.
-    { 8, ADDRESS_BILLING_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE },
-    { 8, ADDRESS_BILLING_ZIP,
+    { 7, ADDRESS_BILLING_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE },
+    { 7, ADDRESS_BILLING_ZIP,
       IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE },
     // We don't allow the user to change the country: http://crbug.com/247518
     { -1, ADDRESS_BILLING_COUNTRY, 0 },
-    { 10, PHONE_BILLING_WHOLE_NUMBER,
+    { 9, PHONE_BILLING_WHOLE_NUMBER,
       IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER },
+  };
+
+  const DetailInput kEmailInputs[] = {
+    { 10, EMAIL_ADDRESS, IDS_AUTOFILL_DIALOG_PLACEHOLDER_EMAIL },
   };
 
   const DetailInput kShippingInputs[] = {
@@ -116,37 +116,22 @@ void BuildInputsForSection(DialogSection dialog_section,
   };
 
   switch (dialog_section) {
-    case SECTION_EMAIL:
-      BuildInputs(kEmailInputs,
-                  arraysize(kEmailInputs),
-                  inputs);
-      break;
-
     case SECTION_CC:
-      BuildInputs(kCCInputs,
-                  arraysize(kCCInputs),
-                  inputs);
+      BuildInputs(kCCInputs, arraysize(kCCInputs), inputs);
       break;
 
     case SECTION_BILLING:
-      BuildInputs(kBillingInputs,
-                  arraysize(kBillingInputs),
-                  inputs);
+      BuildInputs(kBillingInputs, arraysize(kBillingInputs), inputs);
+      BuildInputs(kEmailInputs, arraysize(kEmailInputs), inputs);
       break;
 
     case SECTION_CC_BILLING:
-      BuildInputs(kCCInputs,
-                  arraysize(kCCInputs),
-                  inputs);
-      BuildInputs(kBillingInputs,
-                  arraysize(kBillingInputs),
-                  inputs);
+      BuildInputs(kCCInputs, arraysize(kCCInputs), inputs);
+      BuildInputs(kBillingInputs, arraysize(kBillingInputs), inputs);
       break;
 
     case SECTION_SHIPPING:
-      BuildInputs(kShippingInputs,
-                  arraysize(kShippingInputs),
-                  inputs);
+      BuildInputs(kShippingInputs, arraysize(kShippingInputs), inputs);
       break;
   }
 }
@@ -154,9 +139,6 @@ void BuildInputsForSection(DialogSection dialog_section,
 AutofillMetrics::DialogUiEvent DialogSectionToUiEditEvent(
     DialogSection section) {
   switch (section) {
-    case SECTION_EMAIL:
-      return AutofillMetrics::DIALOG_UI_EMAIL_EDIT_UI_SHOWN;
-
     case SECTION_BILLING:
       return AutofillMetrics::DIALOG_UI_BILLING_EDIT_UI_SHOWN;
 
@@ -177,9 +159,6 @@ AutofillMetrics::DialogUiEvent DialogSectionToUiEditEvent(
 AutofillMetrics::DialogUiEvent DialogSectionToUiItemAddedEvent(
     DialogSection section) {
   switch (section) {
-    case SECTION_EMAIL:
-      return AutofillMetrics::DIALOG_UI_EMAIL_ITEM_ADDED;
-
     case SECTION_BILLING:
       return AutofillMetrics::DIALOG_UI_BILLING_ITEM_ADDED;
 
@@ -200,9 +179,6 @@ AutofillMetrics::DialogUiEvent DialogSectionToUiItemAddedEvent(
 AutofillMetrics::DialogUiEvent DialogSectionToUiSelectionChangedEvent(
     DialogSection section) {
   switch (section) {
-    case SECTION_EMAIL:
-      return AutofillMetrics::DIALOG_UI_EMAIL_SELECTED_SUGGESTION_CHANGED;
-
     case SECTION_BILLING:
       return AutofillMetrics::DIALOG_UI_BILLING_SELECTED_SUGGESTION_CHANGED;
 

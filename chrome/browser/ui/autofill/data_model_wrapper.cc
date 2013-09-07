@@ -84,7 +84,9 @@ base::string16 DataModelWrapper::GetAddressDisplayText(
       GetInfo(AutofillType(ADDRESS_HOME_STATE)) + ASCIIToUTF16(" ") +
       GetInfo(AutofillType(ADDRESS_HOME_ZIP));
 
-  // TODO(estade): email?
+  base::string16 email = GetInfo(AutofillType(EMAIL_ADDRESS));
+  if (!email.empty())
+    address += newline + email;
   address += newline + GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER));
 
   return address;
@@ -158,6 +160,21 @@ void AutofillProfileWrapper::FillFormField(AutofillField* field) const {
   }
 }
 
+AutofillShippingAddressWrapper::AutofillShippingAddressWrapper(
+    const AutofillProfile* profile, size_t variant)
+    : AutofillProfileWrapper(profile, variant) {}
+
+AutofillShippingAddressWrapper::~AutofillShippingAddressWrapper() {}
+
+base::string16 AutofillShippingAddressWrapper::GetInfo(
+    const AutofillType& type) const {
+  // Shipping addresses don't have email addresses associated with them.
+  if (type.GetStorableType() == EMAIL_ADDRESS)
+    return base::string16();
+
+  return AutofillProfileWrapper::GetInfo(type);
+}
+
 // AutofillCreditCardWrapper
 
 AutofillCreditCardWrapper::AutofillCreditCardWrapper(const CreditCard* card)
@@ -200,6 +217,10 @@ WalletAddressWrapper::WalletAddressWrapper(
 WalletAddressWrapper::~WalletAddressWrapper() {}
 
 base::string16 WalletAddressWrapper::GetInfo(const AutofillType& type) const {
+  // Reachable from DataModelWrapper::GetDisplayText().
+  if (type.GetStorableType() == EMAIL_ADDRESS)
+    return base::string16();
+
   return address_->GetInfo(type, g_browser_process->GetApplicationLocale());
 }
 
@@ -225,6 +246,10 @@ WalletInstrumentWrapper::~WalletInstrumentWrapper() {}
 
 base::string16 WalletInstrumentWrapper::GetInfo(const AutofillType& type)
     const {
+  // Reachable from DataModelWrapper::GetDisplayText().
+  if (type.GetStorableType() == EMAIL_ADDRESS)
+    return base::string16();
+
   if (type.GetStorableType() == CREDIT_CARD_EXP_MONTH)
     return MonthComboboxModel::FormatMonth(instrument_->expiration_month());
 

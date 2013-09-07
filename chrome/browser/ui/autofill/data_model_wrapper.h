@@ -128,6 +128,19 @@ class AutofillProfileWrapper : public AutofillDataModelWrapper {
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileWrapper);
 };
 
+// A DataModelWrapper specifically for shipping address profiles.
+class AutofillShippingAddressWrapper : public AutofillProfileWrapper {
+ public:
+  AutofillShippingAddressWrapper(const AutofillProfile* profile,
+                                 size_t variant);
+  virtual ~AutofillShippingAddressWrapper();
+
+  virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AutofillShippingAddressWrapper);
+};
+
 // A DataModelWrapper specifically for Autofill CreditCard data.
 class AutofillCreditCardWrapper : public AutofillDataModelWrapper {
  public:

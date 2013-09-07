@@ -417,29 +417,26 @@ bool AutofillProfile::IsEmpty(const std::string& app_locale) const {
 bool AutofillProfile::IsPresentButInvalid(ServerFieldType type) const {
   std::string country = UTF16ToUTF8(GetRawInfo(ADDRESS_HOME_COUNTRY));
   base::string16 data = GetRawInfo(type);
+  if (data.empty())
+    return false;
+
   switch (type) {
     case ADDRESS_HOME_STATE:
-      if (!data.empty() && country == "US" && !autofill::IsValidState(data))
-        return true;
-      break;
+      return country == "US" && !autofill::IsValidState(data);
 
     case ADDRESS_HOME_ZIP:
-      if (!data.empty() && country == "US" && !autofill::IsValidZip(data))
-        return true;
-      break;
+      return country == "US" && !autofill::IsValidZip(data);
 
-    case PHONE_HOME_WHOLE_NUMBER: {
-      if (!data.empty() && !i18n::PhoneObject(data, country).IsValidNumber())
-        return true;
-      break;
-    }
+    case PHONE_HOME_WHOLE_NUMBER:
+      return !i18n::PhoneObject(data, country).IsValidNumber();
+
+    case EMAIL_ADDRESS:
+      return !autofill::IsValidEmailAddress(data);
 
     default:
       NOTREACHED();
-      break;
+      return false;
   }
-
-  return false;
 }
 
 

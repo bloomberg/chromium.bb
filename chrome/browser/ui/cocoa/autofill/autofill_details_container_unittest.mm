@@ -48,8 +48,7 @@ TEST_F(AutofillDetailsContainerTest, ValidateAllSections) {
   ValidityData validity;
 
   EXPECT_CALL(delegate_, InputsAreValid(_, _, VALIDATE_FINAL))
-      .Times(4)
-      .WillOnce(Return(validity))
+      .Times(3)
       .WillOnce(Return(validity))
       .WillOnce(Return(validity))
       .WillOnce(Return(validity));
@@ -60,11 +59,10 @@ TEST_F(AutofillDetailsContainerTest, ValidateAllSections) {
   invalid[ADDRESS_HOME_ZIP] = ASCIIToUTF16("Some error message");
 
   EXPECT_CALL(delegate_, InputsAreValid(_, _, VALIDATE_FINAL))
-      .Times(4)
+      .Times(3)
       .WillOnce(Return(validity))
       .WillOnce(Return(validity))
-      .WillOnce(Return(invalid))
-      .WillOnce(Return(validity));
+      .WillOnce(Return(invalid));
 
   EXPECT_FALSE([container_ validate]);
 }

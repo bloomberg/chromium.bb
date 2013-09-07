@@ -83,7 +83,7 @@ void FillOutputForSectionWithComparator(
     const base::string16& email_address) {
 
   // Email is hidden while using Wallet, special case it.
-  if (section == SECTION_EMAIL) {
+  if (section == SECTION_CC_BILLING) {
     AutofillProfile profile;
     profile.SetRawInfo(EMAIL_ADDRESS, email_address);
     AutofillProfileWrapper profile_wrapper(&profile, 0);
@@ -356,8 +356,6 @@ void AutofillDialogControllerAndroid::DialogContinue(
 
   scoped_ptr<wallet::FullWallet> full_wallet =
       AutofillDialogResult::ConvertFromJava(env, wallet);
-  FillOutputForSection(
-      SECTION_EMAIL, form_structure_, full_wallet.get(), email);
   FillOutputForSection(
       SECTION_CC_BILLING, form_structure_, full_wallet.get(), email);
   FillOutputForSection(

@@ -266,9 +266,6 @@ std::string SectionToPrefString(DialogSection section) {
 
     case SECTION_SHIPPING:
       return "shipping";
-
-    case SECTION_EMAIL:
-      return "email";
   }
 
   NOTREACHED();
@@ -306,10 +303,11 @@ bool HasCompleteAndVerifiedData(const AutofillDataModel& data_model,
     return false;
 
   for (size_t i = 0; i < requested_fields.size(); ++i) {
-    ServerFieldType type = requested_fields[i].type;
+    ServerFieldType type =
+        AutofillType(requested_fields[i].type).GetStorableType();
     if (type != ADDRESS_HOME_LINE2 &&
         type != CREDIT_CARD_VERIFICATION_CODE &&
-        data_model.GetRawInfo(AutofillType(type).GetStorableType()).empty()) {
+        data_model.GetRawInfo(type).empty()) {
       return false;
     }
   }
@@ -318,9 +316,9 @@ bool HasCompleteAndVerifiedData(const AutofillDataModel& data_model,
 }
 
 // Returns true if |profile| has an invalid address, i.e. an invalid state, zip
-// code, or phone number. Otherwise returns false. Profiles with invalid
-// addresses are not suggested in the dropdown menu for billing and shipping
-// addresses.
+// code, phone number, or email address. Otherwise returns false. Profiles with
+// invalid addresses are not suggested in the dropdown menu for billing and
+// shipping addresses.
 bool HasInvalidAddress(const AutofillProfile& profile) {
   return profile.IsPresentButInvalid(ADDRESS_HOME_STATE) ||
          profile.IsPresentButInvalid(ADDRESS_HOME_ZIP) ||
@@ -626,8 +624,6 @@ void AutofillDialogControllerImpl::Show() {
     return;
   }
 
-  common::BuildInputsForSection(SECTION_EMAIL,
-                                &requested_email_fields_);
   common::BuildInputsForSection(SECTION_CC,
                                 &requested_cc_fields_);
   common::BuildInputsForSection(SECTION_BILLING,
@@ -1163,8 +1159,6 @@ void AutofillDialogControllerImpl::UpdateForErrors() {
 const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
     DialogSection section) const {
   switch (section) {
-    case SECTION_EMAIL:
-      return requested_email_fields_;
     case SECTION_CC:
       return requested_cc_fields_;
     case SECTION_BILLING:
@@ -1256,8 +1250,6 @@ gfx::Image AutofillDialogControllerImpl::ButtonStripImage() const {
 string16 AutofillDialogControllerImpl::LabelForSection(DialogSection section)
     const {
   switch (section) {
-    case SECTION_EMAIL:
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_EMAIL);
     case SECTION_CC:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_CC);
     case SECTION_BILLING:
@@ -1265,10 +1257,9 @@ string16 AutofillDialogControllerImpl::LabelForSection(DialogSection section)
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_BILLING);
     case SECTION_SHIPPING:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_SHIPPING);
-    default:
-      NOTREACHED();
-      return string16();
   }
+  NOTREACHED();
+  return string16();
 }
 
 SuggestionState AutofillDialogControllerImpl::SuggestionStateForSection(
@@ -1311,12 +1302,6 @@ bool AutofillDialogControllerImpl::SuggestionTextForSection(
 
   if (!IsASuggestionItemKey(item_key))
     return false;
-
-  if (section == SECTION_EMAIL) {
-    *vertically_compact = *horizontally_compact =
-        model->GetLabelAt(model->checked_item());
-    return true;
-  }
 
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
   return wrapper->GetDisplayText(vertically_compact, horizontally_compact);
@@ -1434,6 +1419,11 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
   AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
   DCHECK(profile);
   size_t variant = GetSelectedVariantForModel(*model);
+  if (section == SECTION_SHIPPING) {
+    return scoped_ptr<DataModelWrapper>(
+        new AutofillShippingAddressWrapper(profile, variant));
+  }
+  DCHECK_EQ(SECTION_BILLING, section);
   return scoped_ptr<DataModelWrapper>(
       new AutofillProfileWrapper(profile, variant));
 }
@@ -2290,7 +2280,6 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       callback_(callback),
       account_chooser_model_(this, profile_->GetPrefs(), metric_logger_),
       wallet_client_(profile_->GetRequestContext(), this),
-      suggested_email_(this),
       suggested_cc_(this),
       suggested_billing_(this),
       suggested_cc_billing_(this),
@@ -2410,7 +2399,6 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
 
   const DetailOutputMap snapshot = TakeUserInputSnapshot();
 
-  suggested_email_.Reset();
   suggested_cc_.Reset();
   suggested_billing_.Reset();
   suggested_cc_billing_.Reset();
@@ -2422,12 +2410,6 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_USE_BILLING_FOR_SHIPPING));
 
   if (IsPayingWithWallet()) {
-    if (!account_chooser_model_.active_wallet_account_name().empty()) {
-      suggested_email_.AddKeyedItem(
-          base::IntToString(0),
-          account_chooser_model_.active_wallet_account_name());
-    }
-
     const std::vector<wallet::Address*>& addresses =
         wallet_items_->addresses();
     for (size_t i = 0; i < addresses.size(); ++i) {
@@ -2518,28 +2500,19 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
     const std::string app_locale = g_browser_process->GetApplicationLocale();
     for (size_t i = 0; i < profiles.size(); ++i) {
-      if (!HasCompleteAndVerifiedData(*profiles[i],
-                                      requested_shipping_fields_) ||
+      const AutofillProfile& profile = *profiles[i];
+      if (!HasCompleteAndVerifiedData(profile, requested_shipping_fields_) ||
           HasInvalidAddress(*profiles[i])) {
         continue;
       }
 
-      // Add all email addresses.
-      std::vector<string16> values;
-      profiles[i]->GetMultiInfo(
-          AutofillType(EMAIL_ADDRESS), app_locale, &values);
-      for (size_t j = 0; j < values.size(); ++j) {
-        if (IsValidEmailAddress(values[j]))
-          suggested_email_.AddKeyedItem(profiles[i]->guid(), values[j]);
+      // Don't add variants for addresses: name is part of credit card and we'll
+      // just ignore email and phone number variants.
+      suggested_shipping_.AddKeyedItem(profile.guid(), profile.Label());
+      if (!profile.GetRawInfo(EMAIL_ADDRESS).empty() &&
+          !profile.IsPresentButInvalid(EMAIL_ADDRESS)) {
+        suggested_billing_.AddKeyedItem(profile.guid(), profile.Label());
       }
-
-      // Don't add variants for addresses: the email variants are handled above,
-      // name is part of credit card and we'll just ignore phone number
-      // variants.
-      suggested_billing_.AddKeyedItem(profiles[i]->guid(),
-                                      profiles[i]->Label());
-      suggested_shipping_.AddKeyedItem(profiles[i]->guid(),
-                                       profiles[i]->Label());
     }
 
     suggested_cc_.AddKeyedItem(
@@ -2554,15 +2527,6 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     suggested_billing_.AddKeyedItem(
         kManageItemsKey,
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_BILLING_ADDRESS));
-  }
-
-  suggested_email_.AddKeyedItem(
-      kAddNewItemKey,
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_EMAIL_ADDRESS));
-  if (!IsPayingWithWallet()) {
-    suggested_email_.AddKeyedItem(
-        kManageItemsKey,
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_EMAIL_ADDRESS));
   }
 
   suggested_shipping_.AddKeyedItem(
@@ -2620,16 +2584,6 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     const InputFieldComparator& compare) {
   const DetailInputs& inputs = RequestedFieldsForSection(section);
 
-  // Email is hidden while using Wallet, special case it.
-  if (section == SECTION_EMAIL && IsPayingWithWallet()) {
-    AutofillProfile profile;
-    profile.SetRawInfo(EMAIL_ADDRESS,
-                       account_chooser_model_.active_wallet_account_name());
-    AutofillProfileWrapper profile_wrapper(&profile, 0);
-    profile_wrapper.FillFormStructure(inputs, compare, &form_structure_);
-    return;
-  }
-
   if (!SectionIsActive(section))
     return;
 
@@ -2643,7 +2597,15 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     // handle them. This isn't necessary when filling the combined CC and
     // billing section as CVC comes from |full_wallet_| in this case.
     if (section == SECTION_CC)
-      SetCvcResult(view_->GetCvc());
+      SetOutputForFieldsOfType(CREDIT_CARD_VERIFICATION_CODE, view_->GetCvc());
+
+    // When filling from Wallet data, use the email address associated with the
+    // account. There is no other email address stored as part of a Wallet
+    // address.
+    if (section == SECTION_CC_BILLING) {
+      SetOutputForFieldsOfType(
+          EMAIL_ADDRESS, account_chooser_model_.active_wallet_account_name());
+    }
   } else {
     // The user manually input data. If using Autofill, save the info as new or
     // edited data. Always fill local data into |form_structure_|.
@@ -2669,17 +2631,13 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       card_wrapper.FillFormStructure(inputs, compare, &form_structure_);
 
       // Again, CVC needs special-casing. Fill it in directly from |output|.
-      SetCvcResult(GetValueForType(output, CREDIT_CARD_VERIFICATION_CODE));
+      SetOutputForFieldsOfType(
+          CREDIT_CARD_VERIFICATION_CODE,
+          GetValueForType(output, CREDIT_CARD_VERIFICATION_CODE));
     } else {
       AutofillProfile profile;
       profile.set_origin(kAutofillDialogOrigin);
       FillFormGroupFromOutputs(output, &profile);
-
-      // For billing, the email address comes from the separate email section.
-      if (section == SECTION_BILLING) {
-        profile.SetRawInfo(EMAIL_ADDRESS,
-                           GetValueFromSection(SECTION_EMAIL, EMAIL_ADDRESS));
-      }
 
       if (ShouldSaveDetailsLocally())
         SaveProfileGleanedFromSection(profile, section);
@@ -2705,13 +2663,13 @@ bool AutofillDialogControllerImpl::FormStructureCaresAboutSection(
   return true;
 }
 
-void AutofillDialogControllerImpl::SetCvcResult(const string16& cvc) {
+void AutofillDialogControllerImpl::SetOutputForFieldsOfType(
+    ServerFieldType type,
+    const base::string16& output) {
   for (size_t i = 0; i < form_structure_.field_count(); ++i) {
     AutofillField* field = form_structure_.field(i);
-    if (field->Type().GetStorableType() == CREDIT_CARD_VERIFICATION_CODE) {
-      field->value = cvc;
-      break;
-    }
+    if (field->Type().GetStorableType() == type)
+      field->value = output;
   }
 }
 
@@ -2738,30 +2696,12 @@ string16 AutofillDialogControllerImpl::GetValueFromSection(
 void AutofillDialogControllerImpl::SaveProfileGleanedFromSection(
     const AutofillProfile& profile,
     DialogSection section) {
-  if (section == SECTION_EMAIL) {
-    // Save the email address to the existing (suggested) billing profile. If
-    // there is no existing profile, the newly created one will pick up this
-    // email, so in that case do nothing.
-    scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(SECTION_BILLING);
-    if (wrapper) {
-      std::string item_key = SuggestionsMenuModelForSection(SECTION_BILLING)->
-          GetItemKeyForCheckedItem();
-      AutofillProfile* billing_profile =
-          GetManager()->GetProfileByGUID(item_key);
-      billing_profile->OverwriteWithOrAddTo(
-          profile,
-          g_browser_process->GetApplicationLocale());
-    }
-  } else {
-    GetManager()->SaveImportedProfile(profile);
-  }
+  GetManager()->SaveImportedProfile(profile);
 }
 
 SuggestionsMenuModel* AutofillDialogControllerImpl::
     SuggestionsMenuModelForSection(DialogSection section) {
   switch (section) {
-    case SECTION_EMAIL:
-      return &suggested_email_;
     case SECTION_CC:
       return &suggested_cc_;
     case SECTION_BILLING:
@@ -2784,9 +2724,6 @@ const SuggestionsMenuModel* AutofillDialogControllerImpl::
 
 DialogSection AutofillDialogControllerImpl::SectionForSuggestionsMenuModel(
     const SuggestionsMenuModel& model) {
-  if (&model == &suggested_email_)
-    return SECTION_EMAIL;
-
   if (&model == &suggested_cc_)
     return SECTION_CC;
 
@@ -3114,7 +3051,6 @@ void AutofillDialogControllerImpl::DoFinishSubmit() {
                                      true);
   }
 
-  FillOutputForSection(SECTION_EMAIL);
   FillOutputForSection(SECTION_CC);
   FillOutputForSection(SECTION_BILLING);
   FillOutputForSection(SECTION_CC_BILLING);
@@ -3355,11 +3291,6 @@ void AutofillDialogControllerImpl::MaybeShowCreditCardBubble() {
       AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
       billing_profile.reset(new AutofillProfile(*profile));
     }
-
-    // The bubble also needs the associated email address.
-    billing_profile->SetRawInfo(
-        EMAIL_ADDRESS,
-        GetValueFromSection(SECTION_EMAIL, EMAIL_ADDRESS));
 
     ShowNewCreditCardBubble(newly_saved_card_.Pass(),
                             billing_profile.Pass());

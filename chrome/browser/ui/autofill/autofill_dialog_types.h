@@ -72,10 +72,9 @@ enum DialogSection {
   // The wallet-backed dialog uses a combined CC and billing section.
   SECTION_CC_BILLING,
   SECTION_SHIPPING,
-  SECTION_EMAIL,
 
   // Upper boundary value for looping over all sections.
-  SECTION_MAX = SECTION_EMAIL
+  SECTION_MAX = SECTION_SHIPPING
 };
 
 // A notification to show in the autofill dialog. Ranges from information to
