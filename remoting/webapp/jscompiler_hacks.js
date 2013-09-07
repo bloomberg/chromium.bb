@@ -121,6 +121,36 @@ chrome.app.window = {
   create: function(name, parameters) {}
 };
 
+/**
+ * @type {Object}
+ * @see http://code.google.com/chrome/extensions/dev/contextMenus.html
+ */
+chrome.contextMenus = {
+  /** @type {chrome.Event} */
+  onClicked: null,
+  /**
+   * @param {!Object} createProperties
+   * @param {function()=} opt_callback
+   * @return {string|number}
+   */
+  create: function(createProperties, opt_callback) {},
+  /**
+   * @param {string|number} menuItemId
+   * @param {function()=} opt_callback
+   */
+  remove: function(menuItemId, opt_callback) {},
+  /**
+   * @param {function()=} opt_callback
+   */
+  removeAll: function(opt_callback) {},
+  /**
+   * @param {string|number} id
+   * @param {!Object} updateProperties
+   * @param {function()=} opt_callback
+   */
+  update: function(id, updateProperties, opt_callback) {}
+};
+
 /** @type {Object} */
 chrome.identity = {
   /**

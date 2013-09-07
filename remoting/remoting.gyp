@@ -2358,6 +2358,7 @@
           'host/win/core.rc.jinja2',
           'host/win/host_messages.mc.jinja2',
           'host/win/version.rc.jinja2',
+          'webapp/background.js',
           'webapp/butter_bar.js',
           'webapp/client_screen.js',
           'webapp/error.js',

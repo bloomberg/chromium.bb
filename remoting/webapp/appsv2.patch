@@ -37,13 +37,14 @@ index d1f8d1f..67bf660 100644
    "optional_permissions": [
      "<all_urls>"
    ],
-@@ -42,16 +28,21 @@
+@@ -42,16 +28,22 @@
      "clipboardRead",
      "clipboardWrite",
 -    "nativeMessaging"
 +    "nativeMessaging",
 +    "fullscreen",
-+    "identity"
++    "identity",
++    "contextMenus"
    ],
 -  "plugins": [
 -    { "path": "remoting_host_plugin.dll", "public": false },

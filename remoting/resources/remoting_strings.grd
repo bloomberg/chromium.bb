@@ -680,6 +680,9 @@
       <message desc="Menu option to open a new connection." name="IDR_NEW_CONNECTION">
         New connection…
       </message>
+      <message desc="Menu option to open a new window." name="IDR_NEW_WINDOW">
+        New window…
+      </message>
     </messages>
   </release>
 </grit>
