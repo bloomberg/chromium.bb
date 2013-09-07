@@ -4601,6 +4601,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSIONS_ERRORS_MANIFEST_ERRORS" desc="The text which says that errors were found in an extension's manifest during installation.">
         Manifest Errors:
       </message>
+      <message name="IDS_EXTENSIONS_ERRORS_RUNTIME_ERRORS" desc="The text which says that an extension has experienced runtime errors.">
+        Runtime Errors:
+      </message>
       <message name="IDS_EXTENSIONS_ERRORS_SHOW_MORE" desc="The text which allows the user to display more errors for a given extension.">
         Show more...
       </message>
@@ -4609,6 +4612,15 @@ Make sure you do not expose any sensitive information.
       </message>
       <message name="IDS_EXTENSIONS_ERROR_VIEW_SOURCE" desc="The link to view the source code for a file relating to an extension error.">
         View source
+      </message>
+      <message name="IDS_EXTENSIONS_ERROR_CONTEXT" desc="The label for the context of an extension's error.">
+        Context:
+      </message>
+      <message name="IDS_EXTENSIONS_ERROR_STACK_TRACE" desc="The label for the stack trace of an extension's error.">
+        Stack Trace
+      </message>
+      <message name="IDS_EXTENSIONS_ERROR_ANONYMOUS_FUNCTION" desc="The label indicating that an error was caused within an anonymous function in the code.">
+        anonymous function
       </message>
       <message name="IDS_EXTENSIONS_ENABLE" desc="The link for enabling extensions.">
         Enable

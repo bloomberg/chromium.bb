@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
@@ -67,6 +68,7 @@ class ExtensionSettingsHandler
       public content::NotificationObserver,
       public content::WebContentsObserver,
       public ui::SelectFileDialog::Listener,
+      public ErrorConsole::Observer,
       public ExtensionInstallPrompt::Delegate,
       public ExtensionUninstallDialog::Delegate,
       public ExtensionWarningService::Observer,
@@ -112,7 +114,10 @@ class ExtensionSettingsHandler
                             void* params) OVERRIDE;
   virtual void MultiFilesSelected(
       const std::vector<base::FilePath>& files, void* params) OVERRIDE;
-  virtual void FileSelectionCanceled(void* params) OVERRIDE {}
+  virtual void FileSelectionCanceled(void* params) OVERRIDE;
+
+  // ErrorConsole::Observer implementation.
+  virtual void OnErrorAdded(const ExtensionError* error) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -262,6 +267,9 @@ class ExtensionSettingsHandler
 
   ScopedObserver<ExtensionWarningService, ExtensionWarningService::Observer>
       warning_service_observer_;
+
+  // An observer to listen for when Extension errors are reported.
+  ScopedObserver<ErrorConsole, ErrorConsole::Observer> error_console_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsHandler);
 };

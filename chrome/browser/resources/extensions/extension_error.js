@@ -41,13 +41,14 @@ cr.define('extensions', function() {
    * Creates a new ExtensionError HTMLElement; this is used to show a
    * notification to the user when an error is caused by an extension.
    * @param {Object} error The error the element should represent.
+   * @param {string} templateName The name of the template to clone for the
+   *     error ('extension-error-[detailed|simple]-wrapper').
    * @constructor
    * @extends {HTMLDivElement}
    */
-  function ExtensionError(error) {
-    var div = document.createElement('div');
+  function ExtensionError(error, templateName) {
+    var div = cloneTemplate(templateName);
     div.__proto__ = ExtensionError.prototype;
-    div.className = 'extension-error-simple-wrapper';
     div.error_ = error;
     div.decorate();
     return div;
@@ -77,14 +78,23 @@ cr.define('extensions', function() {
       this.extensionUrl_ =
           'chrome-extension://' + this.error_.extensionId + '/';
 
-      metadata.querySelector('.extension-error-message').innerText =
+      metadata.querySelector('.extension-error-message').textContent =
           this.error_.message;
 
       metadata.appendChild(this.getViewSourceOrPlain_(
           getRelativeUrl(this.error_.source, this.extensionUrl_),
           this.error_.source));
 
-      this.appendChild(metadata);
+      // The error template may specify a <summary> to put template metadata in.
+      // If not, just append it to the top-level element.
+      var metadataContainer = this.querySelector('summary') || this;
+      metadataContainer.appendChild(metadata);
+
+      var detailsNode = this.querySelector('.extension-error-details');
+      if (detailsNode && this.error_.contextUrl)
+        detailsNode.appendChild(this.getContextNode_());
+      if (detailsNode && this.error_.stackTrace)
+        detailsNode.appendChild(this.getStackNode_());
     },
 
     /**
@@ -93,16 +103,17 @@ cr.define('extensions', function() {
      * @param {string} description a human-friendly description the location
      *     (e.g., filename, line).
      * @param {string} url The url of the resource to view.
+     * @param {?number} line An optional line number of the resource.
      * @return {HTMLElement} The created node, either a link or plaintext.
      * @private
      */
-    getViewSourceOrPlain_: function(description, url) {
+    getViewSourceOrPlain_: function(description, url, line) {
       if (this.canViewSource_(url))
-        var node = this.getViewSourceLink_(url);
+        var node = this.getViewSourceLink_(url, line);
       else
         var node = document.createElement('div');
       node.className = 'extension-error-view-source';
-      node.innerText = description;
+      node.textContent = description;
       return node;
     },
 
@@ -119,35 +130,106 @@ cr.define('extensions', function() {
     /**
      * Create a clickable node to view the source for the given url.
      * @param {string} url The url to the resource to view.
+     * @param {?number} line An optional line number of the resource (for
+     *     source files).
      * @return {HTMLElement} The clickable node to view the source.
      * @private
      */
-    getViewSourceLink_: function(url) {
+    getViewSourceLink_: function(url, line) {
       var node = document.createElement('a');
       var relativeUrl = getRelativeUrl(url, this.extensionUrl_);
+      var requestFileSourceArgs = { 'extensionId': this.error_.extensionId,
+                                    'message': this.error_.message,
+                                    'pathSuffix': relativeUrl };
+      if (relativeUrl == 'manifest.json') {
+        requestFileSourceArgs.manifestKey = this.error_.manifestKey;
+        requestFileSourceArgs.manifestSpecific = this.error_.manifestSpecific;
+      } else {
+        // Prefer |line| if available, or default to the line of the last stack
+        // frame.
+        if (line) {
+          requestFileSourceArgs.lineNumber = line;
+        } else if (this.error_.stackTrace) {
+          requestFileSourceArgs.lineNumber =
+              this.error_.stackTrace[0].lineNumber;
+        }
+      }
 
       node.addEventListener('click', function(e) {
-        chrome.send('extensionErrorRequestFileSource',
-                    [{'extensionId': this.error_.extensionId,
-                      'message': this.error_.message,
-                      'fileType': 'manifest',
-                      'pathSuffix': relativeUrl,
-                      'manifestKey': this.error_.manifestKey,
-                      'manifestSpecific': this.error_.manifestSpecific}]);
-      }.bind(this));
+        chrome.send('extensionErrorRequestFileSource', [requestFileSourceArgs]);
+      });
+      node.title = loadTimeData.getString('extensionErrorViewSource');
+      return node;
+    },
+
+    /**
+     * Get the context node for this error. This will attempt to link to the
+     * context in which the error occurred, and can be either an extension page
+     * or an external page.
+     * @return {HTMLDivElement} The context node for the error, including the
+     *     label and a link to the context.
+     * @private
+     */
+    getContextNode_: function() {
+      var node = cloneTemplate('extension-error-context-wrapper');
+      var linkNode = node.querySelector('a');
+      if (isExtensionUrl(this.error_.contextUrl, this.extensionUrl_)) {
+        linkNode.textContent = getRelativeUrl(this.error_.contextUrl,
+                                              this.extensionUrl_);
+      } else {
+        linkNode.textContent = this.error_.contextUrl;
+      }
+      linkNode.href = this.error_.contextUrl;
+      linkNode.target = '_blank';
+      return node;
+    },
+
+    /**
+     * Get a node for the stack trace for this error. Each stack frame will
+     * include a resource url, line number, and function name (possibly
+     * anonymous). If possible, these frames will also be linked for viewing the
+     * source.
+     * @return {HTMLDetailsElement} The stack trace node for this error, with
+     *     all stack frames nested in a details-summary object.
+     * @private
+     */
+    getStackNode_: function() {
+      var node = cloneTemplate('extension-error-stack-trace');
+      var listNode = node.querySelector('.extension-error-stack-trace-list');
+      this.error_.stackTrace.forEach(function(frame) {
+        var frameNode = document.createElement('div');
+        var description = getRelativeUrl(frame.url, this.extensionUrl_) +
+                          ':' + frame.lineNumber;
+        if (frame.functionName) {
+          var functionName = frame.functionName == '(anonymous function)' ?
+              loadTimeData.getString('extensionErrorAnonymousFunction') :
+              frame.functionName;
+          description += ' (' + functionName + ')';
+        }
+        frameNode.appendChild(this.getViewSourceOrPlain_(
+            description, frame.url, frame.lineNumber));
+        listNode.appendChild(
+            document.createElement('li')).appendChild(frameNode);
+      }, this);
+
       return node;
     },
   };
 
   /**
    * A variable length list of runtime or manifest errors for a given extension.
+   * @param {Array.<Object>} errors The list of extension errors with which
+   *     to populate the list.
+   * @param {string} title The i18n key for the title of the error list, i.e.
+   *     'extensionErrors[Manifest,Runtime]Errors'.
    * @constructor
    * @extends {HTMLDivElement}
    */
-  function ExtensionErrorList(errors) {
+  function ExtensionErrorList(errors, title) {
     var div = cloneTemplate('extension-error-list');
     div.__proto__ = ExtensionErrorList.prototype;
     div.errors_ = errors;
+    div.title_ = title;
     div.decorate();
     return div;
   }
@@ -164,10 +246,16 @@ cr.define('extensions', function() {
 
     /** @override */
     decorate: function() {
+      this.querySelector('.extension-error-list-title').textContent =
+          loadTimeData.getString(this.title_);
+
       this.contents_ = this.querySelector('.extension-error-list-contents');
       this.errors_.forEach(function(error) {
         this.contents_.appendChild(document.createElement('li')).appendChild(
-            new ExtensionError(error));
+            new ExtensionError(error,
+                               error.contextUrl || error.stackTrace ?
+                                   'extension-error-detailed-wrapper' :
+                                   'extension-error-simple-wrapper'));
       }, this);
 
       if (this.contents_.children.length > this.MAX_ERRORS_TO_SHOW_) {
@@ -195,7 +283,7 @@ cr.define('extensions', function() {
         }
         var message = button.isShowingAll ? 'extensionErrorsShowMore' :
                                             'extensionErrorsShowFewer';
-        button.innerText = loadTimeData.getString(message);
+        button.textContent = loadTimeData.getString(message);
         button.isShowingAll = !button.isShowingAll;
       }.bind(this));
     }

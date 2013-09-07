@@ -6,9 +6,12 @@
   cursor: pointer;
 }
 
+.extension-error-list ul {
+  list-style-type: none;
+}
+
 .extension-error-list-contents {
   -webkit-padding-start: 20px;
-  list-style-type: none;
 }
 
 .extension-error-list-show-more {
@@ -16,8 +19,26 @@
   width: 100%;
 }
 
+.extension-error-detailed-wrapper,
 .extension-error-simple-wrapper {
   width: 100%;
+}
+
+.extension-error-metadata {
+  display: inline-block;
+  width: 100%;
+}
+
+.extension-error-detailed-wrapper summary::-webkit-details-marker {
+  -webkit-margin-start: -15px;
+}
+
+.extension-error-detailed-wrapper details :focus {
+  outline: none;
+}
+
+.extension-error-detailed-wrapper details[open] {
+  -webkit-margin-after: 10px;
 }
 
 .extension-error-icon {
@@ -50,5 +71,18 @@
 }
 
 .extension-error-view-source {
+  -webkit-margin-start: 0 !important;
   float: right;
+}
+
+.extension-error-details {
+  -webkit-margin-start: 30px;
+}
+
+.extension-error-stack-trace-list {
+  -webkit-padding-start: 20px;
+}
+
+.extension-error-stack-trace-list .extension-error-view-source {
+  float: none;
 }

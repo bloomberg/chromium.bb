@@ -5,13 +5,34 @@ in the LICENSE file.
 -->
 <div id="template-collection-extension-error" hidden>
   <div class="extension-error-list">
-    <span i18n-content="extensionErrorsManifestErrors"></span>
+    <span class="extension-error-list-title"></span>
     <ul class="extension-error-list-contents"></ul>
     <div class="extension-error-list-show-more">
       <a i18n-content="extensionErrorsShowMore" hidden></a>
     </div>
   </div>
+
+  <div class="extension-error-simple-wrapper"></div>
+
+  <div class="extension-error-detailed-wrapper">
+    <details>
+      <summary></summary>
+      <div class="extension-error-details"></div>
+    </details>
+  </div>
+
   <div class="extension-error-metadata">
     <span class="extension-error-message"></span>
   </div>
+
+  <div class="extension-error-context-wrapper">
+    <span i18n-content="extensionErrorContext"></span>
+    <a></a>
+  </div>
+
+  <details class="extension-error-stack-trace">
+    <summary class="extension-error-stack-trace-label"
+             i18n-content="extensionErrorStackTrace"></summary>
+    <ul class="extension-error-stack-trace-list"></ul>
+  </details>
 </div>

@@ -120,6 +120,17 @@ bool ManifestError::IsEqualImpl(const ExtensionError* rhs) const {
   return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// RuntimeError
+
+// Static JSON keys.
+const char RuntimeError::kColumnNumberKey[] = "columnNumber";
+const char RuntimeError::kContextUrlKey[] = "contextUrl";
+const char RuntimeError::kFunctionNameKey[] = "functionName";
+const char RuntimeError::kLineNumberKey[] = "lineNumber";
+const char RuntimeError::kStackTraceKey[] = "stackTrace";
+const char RuntimeError::kUrlKey[] = "url";
+
 RuntimeError::RuntimeError(const std::string& extension_id,
                            bool from_incognito,
                            const string16& source,
@@ -139,6 +150,26 @@ RuntimeError::RuntimeError(const std::string& extension_id,
 }
 
 RuntimeError::~RuntimeError() {
+}
+
+scoped_ptr<DictionaryValue> RuntimeError::ToValue() const {
+  scoped_ptr<DictionaryValue> value = ExtensionError::ToValue();
+  value->SetString(kContextUrlKey, context_url_.spec());
+
+  ListValue* trace_value = new ListValue;
+  for (StackTrace::const_iterator iter = stack_trace_.begin();
+       iter != stack_trace_.end(); ++iter) {
+    DictionaryValue* frame_value = new DictionaryValue;
+    frame_value->SetInteger(kLineNumberKey, iter->line_number);
+    frame_value->SetInteger(kColumnNumberKey, iter->column_number);
+    frame_value->SetString(kUrlKey, iter->source);
+    frame_value->SetString(kFunctionNameKey, iter->function);
+    trace_value->Append(frame_value);
+  }
+
+  value->Set(kStackTraceKey, trace_value);
+
+  return value.Pass();
 }
 
 std::string RuntimeError::PrintForTest() const {

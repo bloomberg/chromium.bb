@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/manifest_highlighter.h"
+#include "extensions/browser/file_highlighter.h"
 
 #include <string>
 

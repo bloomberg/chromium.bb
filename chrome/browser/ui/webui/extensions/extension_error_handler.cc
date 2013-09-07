@@ -19,7 +19,8 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/browser/extension_error.h"
-#include "extensions/browser/manifest_highlighter.h"
+#include "extensions/browser/file_highlighter.h"
+#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -31,28 +32,8 @@ namespace {
 const char kFileTypeKey[] = "fileType";
 const char kManifestFileType[] = "manifest";
 const char kPathSuffixKey[] = "pathSuffix";
+const char kSourceFileType[] = "source";
 const char kTitleKey[] = "title";
-
-const char kBeforeHighlightKey[] = "beforeHighlight";
-const char kHighlightKey[] = "highlight";
-const char kAfterHighlightKey[] = "afterHighlight";
-
-// Populate a DictionaryValue with the highlighted portions for the callback to
-// ExtensionErrorOverlay, given the components.
-void HighlightDictionary(base::DictionaryValue* dict,
-                         const ManifestHighlighter& highlighter) {
-  std::string before_feature = highlighter.GetBeforeFeature();
-  if (!before_feature.empty())
-    dict->SetString(kBeforeHighlightKey, base::UTF8ToUTF16(before_feature));
-
-  std::string feature = highlighter.GetFeature();
-  if (!feature.empty())
-    dict->SetString(kHighlightKey, base::UTF8ToUTF16(feature));
-
-  std::string after_feature = highlighter.GetAfterFeature();
-  if (!after_feature.empty())
-    dict->SetString(kAfterHighlightKey, base::UTF8ToUTF16(after_feature));
-}
 
 }  // namespace
 
@@ -69,6 +50,9 @@ void ExtensionErrorHandler::GetLocalizedValues(
       "extensionErrorsManifestErrors",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERRORS_MANIFEST_ERRORS));
   source->AddString(
+      "extensionErrorsRuntimeErrors",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERRORS_RUNTIME_ERRORS));
+  source->AddString(
       "extensionErrorsShowMore",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERRORS_SHOW_MORE));
   source->AddString(
@@ -77,6 +61,15 @@ void ExtensionErrorHandler::GetLocalizedValues(
   source->AddString(
       "extensionErrorViewSource",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_VIEW_SOURCE));
+  source->AddString(
+      "extensionErrorContext",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_CONTEXT));
+  source->AddString(
+      "extensionErrorStackTrace",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_STACK_TRACE));
+  source->AddString(
+      "extensionErrorAnonymousFunction",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_ANONYMOUS_FUNCTION));
 }
 
 void ExtensionErrorHandler::RegisterMessages() {
@@ -95,15 +88,12 @@ void ExtensionErrorHandler::HandleRequestFileSource(
 
   const base::DictionaryValue* dict = NULL;
 
-  // Four required arguments: extension_id, path_suffix, error_message, and
-  // file_type.
+  // Three required arguments: extension_id, path_suffix, and error_message.
   std::string extension_id;
   base::FilePath::StringType path_suffix;
   base::string16 error_message;
-  std::string file_type;
 
   if (!args->GetDictionary(0, &dict) ||
-      !dict->GetString(kFileTypeKey, &file_type) ||
       !dict->GetString(kPathSuffixKey, &path_suffix) ||
       !dict->GetString(ExtensionError::kExtensionIdKey, &extension_id) ||
       !dict->GetString(ExtensionError::kMessageKey, &error_message)) {
@@ -128,7 +118,7 @@ void ExtensionErrorHandler::HandleRequestFileSource(
   base::Closure closure;
   std::string* contents = NULL;
 
-  if (file_type == kManifestFileType) {
+  if (path_suffix == kManifestFilename) {
     std::string manifest_key;
     if (!dict->GetString(ManifestError::kManifestKeyKey, &manifest_key)) {
       NOTREACHED();
@@ -147,9 +137,15 @@ void ExtensionErrorHandler::HandleRequestFileSource(
                          specific,
                          base::Owned(contents));
   } else {
-    // currently, only manifest file types supported.
-    NOTREACHED();
-    return;
+    int line_number = 0;
+    dict->GetInteger(RuntimeError::kLineNumberKey, &line_number);
+
+    contents = new std::string;  // Owned by GetSourceFileCallback()
+    closure = base::Bind(&ExtensionErrorHandler::GetSourceFileCallback,
+                         base::Unretained(this),
+                         base::Owned(results.release()),
+                         line_number,
+                         base::Owned(contents));
   }
 
   content::BrowserThread::PostBlockingPoolTaskAndReply(
@@ -166,7 +162,17 @@ void ExtensionErrorHandler::GetManifestFileCallback(
     const std::string& specific,
     std::string* contents) {
   ManifestHighlighter highlighter(*contents, key, specific);
-  HighlightDictionary(results, highlighter);
+  highlighter.SetHighlightedRegions(results);
+  web_ui()->CallJavascriptFunction(
+      "extensions.ExtensionErrorOverlay.requestFileSourceResponse", *results);
+}
+
+void ExtensionErrorHandler::GetSourceFileCallback(
+    base::DictionaryValue* results,
+    int line_number,
+    std::string* contents) {
+  SourceHighlighter highlighter(*contents, line_number);
+  highlighter.SetHighlightedRegions(results);
   web_ui()->CallJavascriptFunction(
       "extensions.ExtensionErrorOverlay.requestFileSourceResponse", *results);
 }

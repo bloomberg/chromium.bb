@@ -129,10 +129,21 @@ class RuntimeError : public ExtensionError {
                logging::LogSeverity level);
   virtual ~RuntimeError();
 
+  virtual scoped_ptr<base::DictionaryValue> ToValue() const OVERRIDE;
+
   virtual std::string PrintForTest() const OVERRIDE;
 
   const GURL& context_url() const { return context_url_; }
   const StackTrace& stack_trace() const { return stack_trace_; }
+
+  // Keys used for retrieving JSON values.
+  static const char kColumnNumberKey[];
+  static const char kContextUrlKey[];
+  static const char kFunctionNameKey[];
+  static const char kLineNumberKey[];
+  static const char kStackTraceKey[];
+  static const char kUrlKey[];
+
  private:
   virtual bool IsEqualImpl(const ExtensionError* rhs) const OVERRIDE;
 

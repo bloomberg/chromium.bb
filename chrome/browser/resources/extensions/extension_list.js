@@ -305,14 +305,22 @@ cr.define('options', function() {
         });
       }
 
-      // The manifest errors and warnings, in one of two formats (depending on
-      // if the ErrorConsole is enabled).
+      // If the ErrorConsole is enabled, we should have manifest and/or runtime
+      // errors. Otherwise, we may have install warnings. We should not have
+      // both ErrorConsole errors and install warnings.
       if (extension.manifestErrors) {
-        var manifestErrors = node.querySelector('.manifest-errors');
-        manifestErrors.hidden = false;
-        manifestErrors.appendChild(
-            new extensions.ExtensionErrorList(extension.manifestErrors));
-      } else if (extension.installWarnings) {
+        var panel = node.querySelector('.manifest-errors');
+        panel.hidden = false;
+        panel.appendChild(new extensions.ExtensionErrorList(
+            extension.manifestErrors, 'extensionErrorsManifestErrors'));
+      }
+      if (extension.runtimeErrors) {
+        var panel = node.querySelector('.runtime-errors');
+        panel.hidden = false;
+        panel.appendChild(new extensions.ExtensionErrorList(
+            extension.runtimeErrors, 'extensionErrorsRuntimeErrors'));
+      }
+      if (extension.installWarnings) {
         var panel = node.querySelector('.install-warnings');
         panel.hidden = false;
         var list = panel.querySelector('ul');

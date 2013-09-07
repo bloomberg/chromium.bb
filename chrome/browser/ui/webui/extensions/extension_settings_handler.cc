@@ -118,7 +118,8 @@ ExtensionSettingsHandler::ExtensionSettingsHandler()
       rvh_created_callback_(
           base::Bind(&ExtensionSettingsHandler::RenderViewHostCreated,
                      base::Unretained(this))),
-      warning_service_observer_(this) {
+      warning_service_observer_(this),
+      error_console_observer_(this) {
 }
 
 ExtensionSettingsHandler::~ExtensionSettingsHandler() {
@@ -137,7 +138,8 @@ ExtensionSettingsHandler::ExtensionSettingsHandler(ExtensionService* service,
       ignore_notifications_(false),
       deleting_rvh_(NULL),
       registered_for_notifications_(false),
-      warning_service_observer_(this) {
+      warning_service_observer_(this),
+      error_console_observer_(this) {
 }
 
 // static
@@ -265,12 +267,19 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     const ErrorConsole::ErrorList& errors =
         error_console->GetErrorsForExtension(extension->id());
     if (!errors.empty()) {
-      scoped_ptr<ListValue> list(new ListValue);
+      scoped_ptr<ListValue> manifest_errors(new ListValue);
+      scoped_ptr<ListValue> runtime_errors(new ListValue);
       for (ErrorConsole::ErrorList::const_iterator iter = errors.begin();
            iter != errors.end(); ++iter) {
-        list->Append((*iter)->ToValue().release());
+        if ((*iter)->type() == ExtensionError::MANIFEST_ERROR)
+          manifest_errors->Append((*iter)->ToValue().release());
+        else
+          runtime_errors->Append((*iter)->ToValue().release());
       }
-      extension_data->Set("manifestErrors", list.release());
+      if (!manifest_errors->empty())
+        extension_data->Set("manifestErrors", manifest_errors.release());
+      if (!runtime_errors->empty())
+        extension_data->Set("runtimeErrors", runtime_errors.release());
     }
   } else if (Manifest::IsUnpackedLocation(extension->location())) {
     const std::vector<InstallWarning>& install_warnings =
@@ -478,6 +487,13 @@ void ExtensionSettingsHandler::FileSelected(const base::FilePath& path,
 void ExtensionSettingsHandler::MultiFilesSelected(
     const std::vector<base::FilePath>& files, void* params) {
   NOTREACHED();
+}
+
+void ExtensionSettingsHandler::FileSelectionCanceled(void* params) {
+}
+
+void ExtensionSettingsHandler::OnErrorAdded(const ExtensionError* error) {
+  MaybeUpdateAfterNotification();
 }
 
 void ExtensionSettingsHandler::Observe(
@@ -1005,6 +1021,8 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
 
   warning_service_observer_.Add(
       ExtensionSystem::Get(profile)->warning_service());
+
+  error_console_observer_.Add(ErrorConsole::Get(profile));
 
   base::Closure callback = base::Bind(
       &ExtensionSettingsHandler::MaybeUpdateAfterNotification,
