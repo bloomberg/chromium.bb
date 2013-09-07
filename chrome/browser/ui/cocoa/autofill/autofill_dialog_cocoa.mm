@@ -453,17 +453,27 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 - (void)updateAccountChooser {
   [accountChooser_ update];
   [mainContainer_ updateLegalDocuments];
-  // TODO(estade): replace this with a better loading image/animation.
-  // See http://crbug.com/230932
+
   NSString* newLoadingMessage = @"";
   if (autofillDialog_->delegate()->ShouldShowSpinner())
     newLoadingMessage = l10n_util::GetNSStringWithFixup(IDS_TAB_LOADING_TITLE);
   if (![newLoadingMessage isEqualToString:
        [loadingShieldTextField_ stringValue]]) {
+    NSView* loadingShieldView = [loadingShieldTextField_ superview];
     [loadingShieldTextField_ setStringValue:newLoadingMessage];
     [loadingShieldTextField_ sizeToFit];
-    [[loadingShieldTextField_ superview] setHidden:
-        [newLoadingMessage length] == 0];
+    [loadingShieldView setHidden:[newLoadingMessage length] == 0];
+
+    // For the duration of the loading shield, it becomes first responder.
+    // This prevents the currently focused text field "shining through".
+    if (![loadingShieldView isHidden]) {
+      [loadingShieldView setNextResponder:
+          [[loadingShieldView window] firstResponder]];
+      [[loadingShieldView window] makeFirstResponder:loadingShieldView];
+    } else {
+      [[loadingShieldView window] makeFirstResponder:
+          [loadingShieldView nextResponder]];
+    }
     [self requestRelayout];
   }
 }
