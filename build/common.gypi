@@ -143,6 +143,13 @@
             'toolkit_uses_gtk%': 0,
           }],
 
+          # Whether we're a traditional desktop unix.
+          ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and chromeos==0', {
+            'desktop_linux%': 1,
+          }, {
+            'desktop_linux%': 0,
+          }],
+
           # Enable HiDPI on Mac OS and Chrome OS.
           ['OS=="mac" or chromeos==1', {
             'enable_hidpi%': 1,
@@ -174,6 +181,7 @@
       'target_arch%': '<(target_arch)',
       'toolkit_views%': '<(toolkit_views)',
       'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
+      'desktop_linux%': '<(desktop_linux)',
       'use_aura%': '<(use_aura)',
       'use_ash%': '<(use_ash)',
       'use_cras%': '<(use_cras)',
@@ -803,6 +811,7 @@
     'use_pango%': '<(use_pango)',
     'use_ozone%': '<(use_ozone)',
     'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
+    'desktop_linux%': '<(desktop_linux)',
     'use_x11%': '<(use_x11)',
     'use_gnome_keyring%': '<(use_gnome_keyring)',
     'linux_fpic%': '<(linux_fpic)',
@@ -1544,6 +1553,9 @@
       }],
       ['chromeos==1', {
         'grit_defines': ['-D', 'chromeos', '-D', 'scale_factors=2x'],
+      }],
+      ['desktop_linux==1', {
+        'grit_defines': ['-D', 'desktop_linux'],
       }],
       ['toolkit_views==1', {
         'grit_defines': ['-D', 'toolkit_views'],
