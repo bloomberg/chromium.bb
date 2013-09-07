@@ -154,7 +154,6 @@ CONTENT_EXPORT extern const char kEnableTextServicesFramework[];
 CONTENT_EXPORT extern const char kEnableThreadedCompositing[];
 extern const char kEnableUserMediaScreenCapturing[];
 extern const char kEnableViewport[];
-extern const char kEnableVirtualGLContexts[];
 extern const char kEnableVisualWordMovement[];
 CONTENT_EXPORT extern const char kEnableVtune[];
 extern const char kEnableWebAnimationsCSS[];

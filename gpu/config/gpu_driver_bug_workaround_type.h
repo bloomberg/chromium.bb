@@ -66,6 +66,8 @@
          disable_angle_instanced_arrays)                     \
   GPU_OP(DISABLE_MULTIMONITOR_MULTISAMPLING,                 \
          disable_multimonitor_multisampling)                 \
+  GPU_OP(USE_VIRTUALIZED_GL_CONTEXTS,                        \
+         use_virtualized_gl_contexts)                        \
 
 namespace gpu {
 

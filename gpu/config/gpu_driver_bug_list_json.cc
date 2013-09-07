@@ -85,7 +85,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.8",
+  "version": "2.9",
   "entries": [
     {
       "id": 1,
@@ -461,6 +461,107 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "disable_multimonitor_multisampling"
+      ]
+    },
+    {
+      "id": 31,
+      "cr_bugs": [154715, 10068, 269829],
+      "description": "The Nexus 10 Mali driver does not guarantee flush ordering.",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "ARM"
+      },
+      "gl_renderer": {
+        "op": "contains",
+        "value": "Mali-T604"
+      },
+      "features": [
+        "use_virtualized_gl_contexts"
+      ]
+    },
+    {
+      "id": 32,
+      "cr_bugs": [179815],
+      "description": "Share groups are not working on (older?) Broadcom drivers.",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "Broadcom"
+      },
+      "features": [
+        "use_virtualized_gl_contexts"
+      ]
+    },
+    {
+      "id": 33,
+      "description": "Share group-related crashes and poor context switching perf on Galaxy Nexus.",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "Imagination"
+      },
+      "features": [
+        "use_virtualized_gl_contexts"
+      ]
+    },
+    {
+      "id": 34,
+      "cr_bugs": [179250, 229643, 230896],
+      "description": "Share groups are not working on (older?) Vivante drivers.",
+      "os": {
+        "type": "android"
+      },
+      "gl_extensions": {
+        "op": "contains",
+        "value": "GL_VIV_shader_binary"
+      },
+      "features": [
+        "use_virtualized_gl_contexts"
+      ]
+    },
+    {
+      "id": 35,
+      "cr_bugs": [163464],
+      "description": "Share-group related crashes on older NVIDIA drivers.",
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "number": "4.3"
+        }
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "NVIDIA"
+      },
+      "features": [
+        "use_virtualized_gl_contexts"
+      ]
+    },
+    {
+      "id": 36,
+      "cr_bugs": [163464, 233612],
+      "description": "Share-group related crashes on Qualcomm drivers.",
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "number": "4.3"
+        }
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "Qualcomm"
+      },
+      "features": [
+        "use_virtualized_gl_contexts"
       ]
     }
   ]

@@ -22,7 +22,6 @@
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/sync_point_manager.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -151,6 +150,9 @@ GpuCommandBufferStub::GpuCommandBufferStub(
         stream_texture_manager,
         true);
   }
+
+  use_virtualized_gl_context_ |=
+      context_group_->feature_info()->workarounds().use_virtualized_gl_contexts;
 }
 
 GpuCommandBufferStub::~GpuCommandBufferStub() {
@@ -439,9 +441,7 @@ void GpuCommandBufferStub::OnInitialize(
   }
 
   scoped_refptr<gfx::GLContext> context;
-  if ((CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableVirtualGLContexts) || use_virtualized_gl_context_) &&
-      channel_->share_group()) {
+  if (use_virtualized_gl_context_ && channel_->share_group()) {
     context = channel_->share_group()->GetSharedContext();
     if (!context.get()) {
       context = gfx::GLContext::CreateGLContext(

@@ -42,7 +42,6 @@
 #include "base/win/windows_version.h"
 #endif  // OS_WIN
 #if defined(OS_ANDROID)
-#include "base/android/build_info.h"
 #include "ui/gfx/android/device_display_info.h"
 #endif  // OS_ANDROID
 
@@ -259,35 +258,10 @@ void ApplyAndroidWorkarounds(const gpu::GPUInfo& gpu_info,
   std::string renderer(StringToLowerASCII(gpu_info.gl_renderer));
   bool is_img =
       gpu_info.gl_vendor.find("Imagination") != std::string::npos;
-  bool is_arm =
-      gpu_info.gl_vendor.find("ARM") != std::string::npos;
-  bool is_qualcomm =
-      gpu_info.gl_vendor.find("Qualcomm") != std::string::npos;
-  bool is_broadcom =
-      gpu_info.gl_vendor.find("Broadcom") != std::string::npos;
-  bool is_mali_t604 = is_arm &&
-      gpu_info.gl_renderer.find("Mali-T604") != std::string::npos;
-  bool is_nvidia =
-      gpu_info.gl_vendor.find("NVIDIA") != std::string::npos;
-
-  bool is_vivante =
-      gpu_info.gl_extensions.find("GL_VIV_shader_binary") !=
-      std::string::npos;
-
   bool is_nexus7 =
       gpu_info.machine_model.find("Nexus 7") != std::string::npos;
   bool is_nexus10 =
       gpu_info.machine_model.find("Nexus 10") != std::string::npos;
-
-  int sdk_int = base::android::BuildInfo::GetInstance()->sdk_int();
-
-  // IMG: avoid context switching perf problems, crashes with share groups
-  // Mali-T604: http://crbug.com/154715
-  // QualComm, NVIDIA: Crashes with share groups
-  if (is_vivante || is_img || is_mali_t604 ||
-      ((is_nvidia || is_qualcomm) && sdk_int < 18) || is_broadcom) {
-    command_line->AppendSwitch(switches::kEnableVirtualGLContexts);
-  }
 
   gfx::DeviceDisplayInfo info;
   int default_tile_size = 256;

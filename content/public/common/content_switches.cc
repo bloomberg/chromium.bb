@@ -518,10 +518,6 @@ const char kEnableUserMediaScreenCapturing[] =
 // pinch gestures.
 const char kEnableViewport[]                = "enable-viewport";
 
-// Allow GL contexts to be automatically virtualized (shared between command
-// buffer clients) if they are compatible.
-const char kEnableVirtualGLContexts[]       = "enable-virtual-gl-contexts";
-
 // Enables moving cursor by word in visual order.
 const char kEnableVisualWordMovement[]      = "enable-visual-word-movement";
 
