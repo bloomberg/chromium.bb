@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.ArrayList;
@@ -19,21 +20,22 @@ public class BookmarksBridge {
     private final Profile mProfile;
     private int mNativeBookmarksBridge;
     private boolean mIsNativeBookmarkModelLoaded;
-    private List<DelayedBookmarkCallback> mDelayedBookmarkCallbacks =
-            new ArrayList<DelayedBookmarkCallback>();
+    private List<DelayedBookmarkCallback> mDelayedBookmarkCallbacks
+            = new ArrayList<DelayedBookmarkCallback>();
+    private ObserverList<BookmarkModelObserver> mObservers
+            = new ObserverList<BookmarkModelObserver>();
 
     /**
      * Interface for callback object for fetching bookmarks and folder hierarchy.
      */
     public interface BookmarksCallback {
-
         /**
          * Callback method for fetching bookmarks for a folder and the folder hierarchy.
          * @param folderId The folder id to which the bookmarks belong.
          * @param bookmarksList List holding the fetched bookmarks and details.
          */
         @CalledByNative("BookmarksCallback")
-        public void onBookmarksAvailable(long folderId, List<BookmarkItem> bookmarksList);
+        void onBookmarksAvailable(long folderId, List<BookmarkItem> bookmarksList);
 
         /**
          * Callback method for fetching the folder hierarchy.
@@ -41,10 +43,66 @@ public class BookmarksBridge {
          * @param bookmarksList List holding the fetched folder details.
          */
         @CalledByNative("BookmarksCallback")
-        public void onBookmarksFolderHierarchyAvailable(long folderId,
+        void onBookmarksFolderHierarchyAvailable(long folderId,
                 List<BookmarkItem> bookmarksList);
+    }
 
-   }
+    /**
+     * Interface that provides listeners to be notified of changes to the bookmark model.
+     */
+    public interface BookmarkModelObserver {
+        /**
+         * Invoked when a node has moved.
+         * @param oldParent The parent before the move.
+         * @param oldIndex The index of the node in the old parent.
+         * @param newParent The parent after the move.
+         * @param newIndex The index of the node in the new parent.
+         */
+        void bookmarkNodeMoved(
+                BookmarkItem oldParent, int oldIndex, BookmarkItem newParent, int newIndex);
+
+        /**
+         * Invoked when a node has been added.
+         * @param parent The parent of the node being added.
+         * @param index The index of the added node.
+         */
+        void bookmarkNodeAdded(BookmarkItem parent, int index);
+
+        /**
+         * Invoked when a node has been removed, the item may still be starred though.
+         * @param parent The parent of the node that was removed.
+         * @param oldIndex The index of the removed node in the parent before it was removed.
+         * @param node The node that was removed.
+         */
+        void bookmarkNodeRemoved(BookmarkItem parent, int oldIndex, BookmarkItem node);
+
+        /**
+         * Invoked when the title or url of a node changes.
+         * @param node The node being changed.
+         */
+        void bookmarkNodeChanged(BookmarkItem node);
+
+        /**
+         * Invoked when the children (just direct children, not descendants) of a node have been
+         * reordered in some way, such as sorted.
+         * @param node The node whose children are being reordered.
+         */
+        void bookmarkNodeChildrenReordered(BookmarkItem node);
+
+        /**
+         * Invoked before an extensive set of model changes is about to begin.  This tells UI
+         * intensive observers to wait until the updates finish to update themselves. These methods
+         * should only be used for imports and sync. Observers should still respond to
+         * BookmarkNodeRemoved immediately, to avoid holding onto stale node references.
+         */
+        void extensiveBookmarkChangesBeginning();
+
+        /**
+         * Invoked after an extensive set of model changes has ended.  This tells observers to
+         * update themselves if they were waiting for the update to finish.
+         */
+        void extensiveBookmarkChangesEnded();
+    }
 
     /**
      * Handler to fetch the bookmarks, titles, urls and folder hierarchy.
@@ -64,6 +122,23 @@ public class BookmarksBridge {
             mNativeBookmarksBridge = 0;
             mIsNativeBookmarkModelLoaded = false;
         }
+        mObservers.clear();
+    }
+
+    /**
+     * Add an observer to bookmark model changes.
+     * @param observer The observer to be added.
+     */
+    public void addObserver(BookmarkModelObserver observer) {
+        mObservers.addObserver(observer);
+    }
+
+    /**
+     * Remove an observer of bookmark model changes.
+     * @param observer The observer to be removed.
+     */
+    public void removeObserver(BookmarkModelObserver observer) {
+        mObservers.removeObserver(observer);
     }
 
     /**
@@ -120,14 +195,69 @@ public class BookmarksBridge {
     }
 
     @CalledByNative
-    public void bookmarkModelDeleted() {
+    private void bookmarkModelDeleted() {
         destroy();
     }
 
     @CalledByNative
-    private static void create(List<BookmarkItem> bookmarksList, long id, String title, String url,
+    private void bookmarkNodeMoved(
+            BookmarkItem oldParent, int oldIndex, BookmarkItem newParent, int newIndex) {
+        for (BookmarkModelObserver observer : mObservers) {
+            observer.bookmarkNodeMoved(oldParent, oldIndex, newParent, newIndex);
+        }
+    }
+
+    @CalledByNative
+    private void bookmarkNodeAdded(BookmarkItem parent, int index) {
+        for (BookmarkModelObserver observer : mObservers) {
+            observer.bookmarkNodeAdded(parent, index);
+        }
+    }
+
+    @CalledByNative
+    private void bookmarkNodeRemoved(BookmarkItem parent, int oldIndex, BookmarkItem node) {
+        for (BookmarkModelObserver observer : mObservers) {
+            observer.bookmarkNodeRemoved(parent, oldIndex, node);
+        }
+    }
+
+    @CalledByNative
+    private void bookmarkNodeChanged(BookmarkItem node) {
+        for (BookmarkModelObserver observer : mObservers) {
+            observer.bookmarkNodeChanged(node);
+        }
+    }
+
+    @CalledByNative
+    private void bookmarkNodeChildrenReordered(BookmarkItem node) {
+        for (BookmarkModelObserver observer : mObservers) {
+            observer.bookmarkNodeChildrenReordered(node);
+        }
+    }
+
+    @CalledByNative
+    private void extensiveBookmarkChangesBeginning() {
+        for (BookmarkModelObserver observer : mObservers) {
+            observer.extensiveBookmarkChangesBeginning();
+        }
+    }
+
+    @CalledByNative
+    private void extensiveBookmarkChangesEnded() {
+        for (BookmarkModelObserver observer : mObservers) {
+            observer.extensiveBookmarkChangesEnded();
+        }
+    }
+
+    @CalledByNative
+    private static BookmarkItem create(long id, String title, String url,
             boolean isFolder, long parentId, boolean isEditable) {
-        bookmarksList.add(new BookmarkItem(id, title, url, isFolder, parentId, isEditable));
+        return new BookmarkItem(id, title, url, isFolder, parentId, isEditable);
+    }
+
+    @CalledByNative
+    private static void addToList(List<BookmarkItem> bookmarksList, BookmarkItem bookmark) {
+        bookmarksList.add(bookmark);
     }
 
     private native void nativeGetBookmarksForFolder(int nativeBookmarksBridge,

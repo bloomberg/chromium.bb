@@ -45,6 +45,8 @@ class BookmarksBridge : public BaseBookmarkModelObserver {
  private:
   virtual ~BookmarksBridge();
 
+  base::android::ScopedJavaLocalRef<jobject> CreateJavaBookmark(
+      const BookmarkNode* node);
   void ExtractBookmarkNodeInformation(
       const BookmarkNode* node,
       jobject j_result_obj);
@@ -56,6 +58,24 @@ class BookmarksBridge : public BaseBookmarkModelObserver {
   virtual void BookmarkModelChanged() OVERRIDE;
   virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
+  virtual void BookmarkNodeMoved(BookmarkModel* model,
+                                 const BookmarkNode* old_parent,
+                                 int old_index,
+                                 const BookmarkNode* new_parent,
+                                 int new_index) OVERRIDE;
+  virtual void BookmarkNodeAdded(BookmarkModel* model,
+                                 const BookmarkNode* parent,
+                                 int index) OVERRIDE;
+  virtual void BookmarkNodeRemoved(BookmarkModel* model,
+                                   const BookmarkNode* parent,
+                                   int old_index,
+                                   const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkNodeChanged(BookmarkModel* model,
+                                   const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
+                                             const BookmarkNode* node) OVERRIDE;
+  virtual void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) OVERRIDE;
+  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) OVERRIDE;
 
   JavaObjectWeakGlobalRef weak_java_ref_;
   BookmarkModel* bookmark_model_;  // weak
