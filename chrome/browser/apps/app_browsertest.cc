@@ -1037,12 +1037,18 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
       GetRenderWidgetHostView()->HasFocus());
 }
 
-// Currently this test only works if the PDF preview plug-in is available. This
-// will only happen in Chrome release builds or if the plug-in has been manually
-// copied from a Chrome release build. In the former case, this test will run
-// automatically. In the later case, it can be run manually by commenting out
-// the next three lines and the corresponding #endif and then running
-// browser_tests with a --enable-print-preview flag.
+// The next test will only run automatically with Chrome branded builds because
+// it requires the PDF preview plug-in. To run this test manually for Chromium
+// builds (non-Chrome branded) in a development environment:
+//
+//   1) Remove "MAYBE_" in the first line of the test definition
+//   2) Build Chromium browser_tests
+//   3) Make a copy of the PDF plug-in from a recent version of Chrome (Canary
+//      or recent development build) to your Chromium build. On Linux and Chrome
+//      OS, this just involves copying /opt/google.chrome/libpdf.so to
+//      <path-to-your-src>/out/Debug.
+//   4) Run browser_tests with the --enable-print-preview flag
+
 #if !defined(GOOGLE_CHROME_BUILD)
 #define MAYBE_WindowDotPrintWorks DISABLED_WindowDotPrintWorks
 #else
