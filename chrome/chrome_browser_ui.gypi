@@ -803,6 +803,14 @@
         'browser/ui/cocoa/login_prompt_cocoa.h',
         'browser/ui/cocoa/login_prompt_cocoa.mm',
         'browser/ui/cocoa/main_menu_item.h',
+        'browser/ui/cocoa/media_picker/desktop_media_picker_bridge.h',
+        'browser/ui/cocoa/media_picker/desktop_media_picker_bridge.mm',
+        'browser/ui/cocoa/media_picker/desktop_media_picker_cocoa.h',
+        'browser/ui/cocoa/media_picker/desktop_media_picker_cocoa.mm',
+        'browser/ui/cocoa/media_picker/desktop_media_picker_controller.h',
+        'browser/ui/cocoa/media_picker/desktop_media_picker_controller.mm',
+        'browser/ui/cocoa/media_picker/desktop_media_picker_item.h',
+        'browser/ui/cocoa/media_picker/desktop_media_picker_item.mm',
         'browser/ui/cocoa/menu_button.h',
         'browser/ui/cocoa/menu_button.mm',
         'browser/ui/cocoa/multi_key_equivalent_button.h',
@@ -3005,6 +3013,11 @@
           'include_dirs': [
             '../third_party/GTM',
           ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/Quartz.framework',
+            ],
+          },
           'actions': [
             {
               # This action is used to extract the localization data from xib

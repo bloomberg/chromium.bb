@@ -1520,6 +1520,7 @@
         'browser/ui/cocoa/location_bar/image_decoration_unittest.mm',
         'browser/ui/cocoa/location_bar/keyword_hint_decoration_unittest.mm',
         'browser/ui/cocoa/location_bar/selected_keyword_decoration_unittest.mm',
+        'browser/ui/cocoa/media_picker/desktop_media_picker_controller_unittest.mm',
         'browser/ui/cocoa/menu_button_unittest.mm',
         'browser/ui/cocoa/nine_part_button_cell_unittest.mm',
         'browser/ui/cocoa/notifications/balloon_controller_unittest.mm',
