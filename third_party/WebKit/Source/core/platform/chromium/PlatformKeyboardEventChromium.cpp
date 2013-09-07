@@ -29,7 +29,7 @@
 
 #if OS(WINDOWS)
 #include <windows.h>
-#elif OS(DARWIN)
+#elif OS(MACOSX)
 #import <Carbon/Carbon.h>
 #else
 #include "core/platform/NotImplemented.h"
@@ -58,7 +58,7 @@ void PlatformKeyboardEvent::disambiguateKeyDownEvent(Type type)
     } else {
         m_keyIdentifier = String();
         m_windowsVirtualKeyCode = 0;
-#if OS(DARWIN)
+#if OS(MACOSX)
         if (m_text.length() == 1 && (m_text[0U] >= 0xF700 && m_text[0U] <= 0xF7FF)) {
             // According to NSEvents.h, OpenStep reserves the range 0xF700-0xF8FF for function keys. However, some actual private use characters
             // happen to be in this range, e.g. the Apple logo (Option+Shift+K).
@@ -76,7 +76,7 @@ bool PlatformKeyboardEvent::currentCapsLockState()
 #if OS(WINDOWS)
     // FIXME: Does this even work inside the sandbox?
     return GetKeyState(VK_CAPITAL) & 1;
-#elif OS(DARWIN)
+#elif OS(MACOSX)
     return GetCurrentKeyModifiers() & alphaLock;
 #else
     notImplemented();
@@ -91,7 +91,7 @@ void PlatformKeyboardEvent::getCurrentModifierState(bool& shiftKey, bool& ctrlKe
     ctrlKey = GetKeyState(VK_CONTROL) & HIGH_BIT_MASK_SHORT;
     altKey = GetKeyState(VK_MENU) & HIGH_BIT_MASK_SHORT;
     metaKey = false;
-#elif OS(DARWIN)
+#elif OS(MACOSX)
     UInt32 currentModifiers = GetCurrentKeyModifiers();
     shiftKey = currentModifiers & ::shiftKey;
     ctrlKey = currentModifiers & ::controlKey;

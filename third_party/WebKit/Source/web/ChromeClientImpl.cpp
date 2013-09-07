@@ -730,7 +730,7 @@ void ChromeClientImpl::setCursor(const WebCore::Cursor& cursor)
 
 void ChromeClientImpl::setCursor(const WebCursorInfo& cursor)
 {
-#if OS(DARWIN)
+#if OS(MACOSX)
     // On Mac the mousemove event propagates to both the popup and main window.
     // If a popup is open we don't want the main window to change the cursor.
     if (m_webView->hasOpenedPopup())

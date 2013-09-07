@@ -129,7 +129,7 @@ const int maximumCursorSize = 128;
 // dividing cursor sizes (limited above) by the scale.
 const double minimumCursorScale = 0.001;
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 const double EventHandler::TextDragDelay = 0.15;
 #else
 const double EventHandler::TextDragDelay = 0.0;
@@ -1653,7 +1653,7 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
     bool swallowMouseUpEvent = !dispatchMouseEvent(eventNames().mouseupEvent, mev.targetNode(), true, m_clickCount, mouseEvent, false);
 
     bool contextMenuEvent = mouseEvent.button() == RightButton;
-#if OS(DARWIN)
+#if OS(MACOSX)
     // FIXME: The Mac port achieves the same behavior by checking whether the context menu is currently open in WebPage::mouseEvent(). Consider merging the implementations.
     if (mouseEvent.button() == LeftButton && mouseEvent.modifiers() & PlatformEvent::CtrlKey)
         contextMenuEvent = true;
@@ -2092,7 +2092,7 @@ bool EventHandler::isInsideScrollbar(const IntPoint& windowPoint) const
 
 bool EventHandler::shouldTurnVerticalTicksIntoHorizontal(const HitTestResult& result, const PlatformWheelEvent& event) const
 {
-#if OS(UNIX) && !OS(DARWIN)
+#if OS(UNIX) && !OS(MACOSX)
     // GTK+ must scroll horizontally if the mouse pointer is on top of the
     // horizontal scrollbar while scrolling with the wheel.
     // This code comes from gtk/EventHandlerGtk.cpp.
@@ -3846,7 +3846,7 @@ void EventHandler::focusDocumentView()
 
 unsigned EventHandler::accessKeyModifiers()
 {
-#if OS(DARWIN)
+#if OS(MACOSX)
     return PlatformEvent::CtrlKey | PlatformEvent::AltKey;
 #else
     return PlatformEvent::AltKey;

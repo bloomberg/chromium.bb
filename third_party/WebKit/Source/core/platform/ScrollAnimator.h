@@ -65,7 +65,7 @@ public:
 
     virtual bool handleWheelEvent(const PlatformWheelEvent&);
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     virtual void handleWheelEventPhase(PlatformWheelEventPhase) { }
 #endif
 

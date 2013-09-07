@@ -1,6 +1,6 @@
 ERROR: '--stripped--/Fake.framework/Headers/Fail.h:2' included forbidden macro 'PLATFORM' => '#if PLATFORM(MAC)'
 ERROR: '--stripped--/Fake.framework/Headers/Fail.h:4' included forbidden macro 'CPU' => '#if CPU(X86)'
-ERROR: '--stripped--/Fake.framework/Headers/Fail.h:6' included forbidden macro 'OS' => '#if OS(DARWIN)'
+ERROR: '--stripped--/Fake.framework/Headers/Fail.h:6' included forbidden macro 'OS' => '#if OS(MACOSX)'
 ERROR: '--stripped--/Fake.framework/Headers/Fail.h:8' included forbidden macro 'COMPILER' => '#if COMPILER(CLANG)'
 ERROR: '--stripped--/Fake.framework/Headers/Fail.h:10' included forbidden macro 'ENABLE' => '#if ENABLE(FEATURE)'
 ERROR: '--stripped--/Fake.framework/Headers/Fail.h:12' included forbidden macro 'HAVE' => '#if HAVE(FEATURE)'

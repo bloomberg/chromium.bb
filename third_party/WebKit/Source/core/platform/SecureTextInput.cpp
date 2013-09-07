@@ -26,7 +26,7 @@
 #include "config.h"
 
 // FIXME: This should be moved to WebKit, because browser process needs to track secure input state anyway to manipulate input contexts.
-#if OS(DARWIN)
+#if OS(MACOSX)
 #include "core/platform/SecureTextInput.h"
 
 #import <Carbon/Carbon.h>
@@ -49,4 +49,4 @@ void disableSecureTextInput()
 
 } // namespace WebCore
 
-#endif // OS(DARWIN)
+#endif // OS(MACOSX)

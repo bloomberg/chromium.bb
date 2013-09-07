@@ -41,7 +41,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/UnusedParam.h"
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #include "wtf/RetainPtr.h"
 #endif
 
@@ -134,7 +134,7 @@ public:
     float adjustedSpaceWidth() const { return m_adjustedSpaceWidth; }
     void setSpaceWidth(float spaceWidth) { m_spaceWidth = spaceWidth; }
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     float syntheticBoldOffset() const { return m_syntheticBoldOffset; }
 #endif
 
@@ -168,16 +168,16 @@ public:
     virtual String description() const;
 #endif
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     const SimpleFontData* getCompositeFontReferenceFontData(NSFont *key) const;
     NSFont* getNSFont() const { return m_platformData.font(); }
 #endif
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     CFDictionaryRef getCFStringAttributes(TypesettingFeatures, FontOrientation) const;
 #endif
 
-#if OS(DARWIN) || USE(HARFBUZZ)
+#if OS(MACOSX) || USE(HARFBUZZ)
     bool canRenderCombiningCharacterSequence(const UChar*, size_t) const;
 #endif
 
@@ -245,7 +245,7 @@ private:
         RefPtr<SimpleFontData> brokenIdeograph;
         RefPtr<SimpleFontData> verticalRightOrientation;
         RefPtr<SimpleFontData> uprightOrientation;
-#if OS(DARWIN)
+#if OS(MACOSX)
         mutable RetainPtr<CFMutableDictionaryRef> compositeFontReferences;
 #endif
 
@@ -258,13 +258,13 @@ private:
 
     mutable OwnPtr<DerivedFontData> m_derivedFontData;
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     float m_syntheticBoldOffset;
 
     mutable HashMap<unsigned, RetainPtr<CFDictionaryRef> > m_CFStringAttributes;
 #endif
 
-#if OS(DARWIN) || USE(HARFBUZZ)
+#if OS(MACOSX) || USE(HARFBUZZ)
     mutable OwnPtr<HashMap<String, bool> > m_combiningCharacterSequenceSupport;
 #endif
 };
@@ -301,7 +301,7 @@ ALWAYS_INLINE float SimpleFontData::widthForGlyph(Glyph glyph) const
         width = m_fontData->widthForSVGGlyph(glyph, m_platformData.size());
 #if ENABLE(OPENTYPE_VERTICAL)
     else if (m_verticalData)
-#if OS(DARWIN)
+#if OS(MACOSX)
         width = m_verticalData->advanceHeight(this, glyph) + m_syntheticBoldOffset;
 #else
         width = m_verticalData->advanceHeight(this, glyph);

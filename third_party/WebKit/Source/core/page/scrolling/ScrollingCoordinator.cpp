@@ -46,7 +46,7 @@
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/Region.h"
 #include "core/platform/graphics/transforms/TransformState.h"
-#if OS(DARWIN)
+#if OS(MACOSX)
 #include "core/platform/mac/ScrollAnimatorMac.h"
 #endif
 #include "core/plugins/PluginView.h"
@@ -255,7 +255,7 @@ WebScrollbarLayer* ScrollingCoordinator::getWebScrollbarLayer(ScrollableArea* sc
 void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea* scrollableArea, ScrollbarOrientation orientation)
 {
 // FIXME: Instead of hardcode here, we should make a setting flag.
-#if OS(DARWIN)
+#if OS(MACOSX)
     static const bool platformSupportsCoordinatedScrollbar = ScrollAnimatorMac::canUseCoordinatedScrollbar();
     static const bool platformSupportsMainFrameOnly = false; // Don't care.
 #elif OS(ANDROID)
@@ -755,7 +755,7 @@ void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView)
     updateShouldUpdateScrollLayerPositionOnMainThread();
 }
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 void ScrollingCoordinator::handleWheelEventPhase(PlatformWheelEventPhase phase)
 {
     ASSERT(isMainThread());

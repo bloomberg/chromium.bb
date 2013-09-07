@@ -553,7 +553,7 @@ void WebViewImpl::handleMouseDown(Frame& mainFrame, const WebMouseEvent& event)
 
     // Dispatch the contextmenu event regardless of if the click was swallowed.
     // On Windows, we handle it on mouse up, not down.
-#if OS(DARWIN)
+#if OS(MACOSX)
     if (event.button == WebMouseEvent::ButtonRight
         || (event.button == WebMouseEvent::ButtonLeft
             && event.modifiers & WebMouseEvent::ControlKey))
@@ -933,7 +933,7 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
     if (!handler)
         return keyEventDefault(event);
 
-#if !OS(DARWIN)
+#if !OS(MACOSX)
     const WebInputEvent::Type contextMenuTriggeringEventType =
 #if OS(WINDOWS)
         WebInputEvent::KeyUp;
@@ -947,7 +947,7 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
         sendContextMenuEvent(event);
         return true;
     }
-#endif // !OS(DARWIN)
+#endif // !OS(MACOSX)
 
     PlatformKeyboardEventBuilder evt(event);
 
@@ -1341,7 +1341,7 @@ bool WebViewImpl::hasTouchEventHandlersAt(const WebPoint& point)
     return true;
 }
 
-#if !OS(DARWIN)
+#if !OS(MACOSX)
 // Mac has no way to open a context menu based on a keyboard event.
 bool WebViewImpl::sendContextMenuEvent(const WebKeyboardEvent& event)
 {
@@ -1377,7 +1377,7 @@ bool WebViewImpl::keyEventDefault(const WebKeyboardEvent& event)
     case WebInputEvent::RawKeyDown:
         if (event.modifiers == WebInputEvent::ControlKey) {
             switch (event.windowsKeyCode) {
-#if !OS(DARWIN)
+#if !OS(MACOSX)
             case 'A':
                 focusedFrame()->executeCommand(WebString::fromUTF8("SelectAll"));
                 return true;
@@ -1410,7 +1410,7 @@ bool WebViewImpl::scrollViewWithKeyboard(int keyCode, int modifiers)
 {
     ScrollDirection scrollDirection;
     ScrollGranularity scrollGranularity;
-#if OS(DARWIN)
+#if OS(MACOSX)
     // Control-Up/Down should be PageUp/Down on Mac.
     if (modifiers & WebMouseEvent::ControlKey) {
       if (keyCode == VKEY_UP)

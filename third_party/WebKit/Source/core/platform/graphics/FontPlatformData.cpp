@@ -27,7 +27,7 @@
 #include "wtf/text/WTFString.h"
 #include "wtf/Vector.h"
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #include "core/platform/graphics/harfbuzz/HarfBuzzFace.h"
 #endif
 
@@ -41,12 +41,12 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     , m_orientation(Horizontal)
     , m_size(0)
     , m_widthVariant(RegularWidth)
-#if OS(DARWIN)
+#if OS(MACOSX)
     , m_font(hashTableDeletedFontValue())
 #endif
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
-#if OS(DARWIN)
+#if OS(MACOSX)
     , m_isPrinterFont(false)
 #endif
 {
@@ -58,12 +58,12 @@ FontPlatformData::FontPlatformData()
     , m_orientation(Horizontal)
     , m_size(0)
     , m_widthVariant(RegularWidth)
-#if OS(DARWIN)
+#if OS(MACOSX)
     , m_font(0)
 #endif
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
-#if OS(DARWIN)
+#if OS(MACOSX)
     , m_isPrinterFont(false)
 #endif
 {
@@ -75,18 +75,18 @@ FontPlatformData::FontPlatformData(float size, bool syntheticBold, bool syntheti
     , m_orientation(orientation)
     , m_size(size)
     , m_widthVariant(widthVariant)
-#if OS(DARWIN)
+#if OS(MACOSX)
     , m_font(0)
 #endif
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
-#if OS(DARWIN)
+#if OS(MACOSX)
     , m_isPrinterFont(false)
 #endif
 {
 }
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 FontPlatformData::FontPlatformData(CGFontRef cgFont, float size, bool syntheticBold, bool syntheticOblique, FontOrientation orientation, FontWidthVariant widthVariant)
     : m_syntheticBold(syntheticBold)
     , m_syntheticOblique(syntheticOblique)
@@ -110,7 +110,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
     , m_widthVariant(source.m_widthVariant)
     , m_isColorBitmapFont(source.m_isColorBitmapFont)
     , m_isCompositeFontReference(source.m_isCompositeFontReference)
-#if OS(DARWIN)
+#if OS(MACOSX)
     , m_isPrinterFont(source.m_isPrinterFont)
 #endif
 {
@@ -130,7 +130,7 @@ const FontPlatformData& FontPlatformData::operator=(const FontPlatformData& othe
     m_widthVariant = other.m_widthVariant;
     m_isColorBitmapFont = other.m_isColorBitmapFont;
     m_isCompositeFontReference = other.m_isCompositeFontReference;
-#if OS(DARWIN)
+#if OS(MACOSX)
     m_isPrinterFont = other.m_isPrinterFont;
 #endif
 

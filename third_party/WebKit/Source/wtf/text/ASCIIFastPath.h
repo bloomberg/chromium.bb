@@ -28,7 +28,7 @@
 #include "wtf/unicode/Unicode.h"
 #include <stdint.h>
 
-#if OS(DARWIN) && (CPU(X86) || CPU(X86_64))
+#if OS(MACOSX) && (CPU(X86) || CPU(X86_64))
 #include <emmintrin.h>
 #endif
 
@@ -104,7 +104,7 @@ inline bool charactersAreAllASCII(const CharacterType* characters, size_t length
 
 inline void copyLCharsFromUCharSource(LChar* destination, const UChar* source, size_t length)
 {
-#if OS(DARWIN) && (CPU(X86) || CPU(X86_64))
+#if OS(MACOSX) && (CPU(X86) || CPU(X86_64))
     const uintptr_t memoryAccessSize = 16; // Memory accesses on 16 byte (128 bit) alignment
     const uintptr_t memoryAccessMask = memoryAccessSize - 1;
 

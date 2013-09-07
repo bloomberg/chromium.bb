@@ -40,7 +40,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 using namespace std;
 #endif
 

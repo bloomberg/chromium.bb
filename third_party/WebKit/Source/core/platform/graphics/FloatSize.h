@@ -32,7 +32,7 @@
 #include "wtf/MathExtras.h"
 
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 typedef struct CGSize CGSize;
 
 #ifdef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
@@ -105,7 +105,7 @@ public:
         return FloatSize(m_height, m_width);
     }
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     explicit FloatSize(const CGSize&); // don't do this implicitly since it's lossy
     operator CGSize() const;
 #if !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)

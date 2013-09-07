@@ -49,7 +49,7 @@ const float piOverTwoFloat = static_cast<float>(M_PI_2);
 const double piOverFourDouble = M_PI_4;
 const float piOverFourFloat = static_cast<float>(M_PI_4);
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 
 // Work around a bug in the Mac OS X libc where ceil(-0.1) return +0.
 inline double wtf_ceil(double x) { return copysign(ceil(x), x); }

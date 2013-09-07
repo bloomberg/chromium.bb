@@ -39,7 +39,7 @@ namespace WTF {
 class AutodrainedPool {
     WTF_MAKE_NONCOPYABLE(AutodrainedPool);
 public:
-#if OS(DARWIN)
+#if OS(MACOSX)
     WTF_EXPORT explicit AutodrainedPool(int iterationLimit = 1);
     WTF_EXPORT ~AutodrainedPool();
 
@@ -51,7 +51,7 @@ public:
 #endif
 
 private:
-#if OS(DARWIN)
+#if OS(MACOSX)
     int m_iterationLimit;
     int m_iterationCount;
     NSAutoreleasePool* m_pool;

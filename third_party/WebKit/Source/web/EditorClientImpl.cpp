@@ -341,7 +341,7 @@ static const unsigned CtrlKey = 1 << 0;
 static const unsigned AltKey = 1 << 1;
 static const unsigned ShiftKey = 1 << 2;
 static const unsigned MetaKey = 1 << 3;
-#if OS(DARWIN)
+#if OS(MACOSX)
 // Aliases for the generic key defintions to make kbd shortcuts definitions more
 // readable on OS X.
 static const unsigned OptionKey  = AltKey;
@@ -371,7 +371,7 @@ struct KeyPressEntry {
 static const KeyDownEntry keyDownEntries[] = {
     { VKEY_LEFT,   0,                  "MoveLeft"                             },
     { VKEY_LEFT,   ShiftKey,           "MoveLeftAndModifySelection"           },
-#if OS(DARWIN)
+#if OS(MACOSX)
     { VKEY_LEFT,   OptionKey,          "MoveWordLeft"                         },
     { VKEY_LEFT,   OptionKey | ShiftKey,
         "MoveWordLeftAndModifySelection"                                      },
@@ -382,7 +382,7 @@ static const KeyDownEntry keyDownEntries[] = {
 #endif
     { VKEY_RIGHT,  0,                  "MoveRight"                            },
     { VKEY_RIGHT,  ShiftKey,           "MoveRightAndModifySelection"          },
-#if OS(DARWIN)
+#if OS(MACOSX)
     { VKEY_RIGHT,  OptionKey,          "MoveWordRight"                        },
     { VKEY_RIGHT,  OptionKey | ShiftKey,
       "MoveWordRightAndModifySelection"                                       },
@@ -397,7 +397,7 @@ static const KeyDownEntry keyDownEntries[] = {
     { VKEY_DOWN,   0,                  "MoveDown"                             },
     { VKEY_DOWN,   ShiftKey,           "MoveDownAndModifySelection"           },
     { VKEY_NEXT,   ShiftKey,           "MovePageDownAndModifySelection"       },
-#if !OS(DARWIN)
+#if !OS(MACOSX)
     { VKEY_UP,     CtrlKey,            "MoveParagraphBackward"                },
     { VKEY_UP,     CtrlKey | ShiftKey, "MoveParagraphBackwardAndModifySelection" },
     { VKEY_DOWN,   CtrlKey,            "MoveParagraphForward"                },
@@ -408,14 +408,14 @@ static const KeyDownEntry keyDownEntries[] = {
     { VKEY_HOME,   0,                  "MoveToBeginningOfLine"                },
     { VKEY_HOME,   ShiftKey,
         "MoveToBeginningOfLineAndModifySelection"                             },
-#if OS(DARWIN)
+#if OS(MACOSX)
     { VKEY_LEFT,   CommandKey,         "MoveToBeginningOfLine"                },
     { VKEY_LEFT,   CommandKey | ShiftKey,
       "MoveToBeginningOfLineAndModifySelection"                               },
     { VKEY_PRIOR,  OptionKey,          "MovePageUp"                           },
     { VKEY_NEXT,   OptionKey,          "MovePageDown"                         },
 #endif
-#if OS(DARWIN)
+#if OS(MACOSX)
     { VKEY_UP,     CommandKey,         "MoveToBeginningOfDocument"            },
     { VKEY_UP,     CommandKey | ShiftKey,
         "MoveToBeginningOfDocumentAndModifySelection"                         },
@@ -426,7 +426,7 @@ static const KeyDownEntry keyDownEntries[] = {
 #endif
     { VKEY_END,    0,                  "MoveToEndOfLine"                      },
     { VKEY_END,    ShiftKey,           "MoveToEndOfLineAndModifySelection"    },
-#if OS(DARWIN)
+#if OS(MACOSX)
     { VKEY_DOWN,   CommandKey,         "MoveToEndOfDocument"                  },
     { VKEY_DOWN,   CommandKey | ShiftKey,
         "MoveToEndOfDocumentAndModifySelection"                               },
@@ -435,7 +435,7 @@ static const KeyDownEntry keyDownEntries[] = {
     { VKEY_END,    CtrlKey | ShiftKey,
         "MoveToEndOfDocumentAndModifySelection"                               },
 #endif
-#if OS(DARWIN)
+#if OS(MACOSX)
     { VKEY_RIGHT,  CommandKey,         "MoveToEndOfLine"                      },
     { VKEY_RIGHT,  CommandKey | ShiftKey,
         "MoveToEndOfLineAndModifySelection"                                   },
@@ -443,7 +443,7 @@ static const KeyDownEntry keyDownEntries[] = {
     { VKEY_BACK,   0,                  "DeleteBackward"                       },
     { VKEY_BACK,   ShiftKey,           "DeleteBackward"                       },
     { VKEY_DELETE, 0,                  "DeleteForward"                        },
-#if OS(DARWIN)
+#if OS(MACOSX)
     { VKEY_BACK,   OptionKey,          "DeleteWordBackward"                   },
     { VKEY_DELETE, OptionKey,          "DeleteWordForward"                    },
 #else
@@ -465,7 +465,7 @@ static const KeyDownEntry keyDownEntries[] = {
     { VKEY_INSERT, CtrlKey,            "Copy"                                 },
     { VKEY_INSERT, ShiftKey,           "Paste"                                },
     { VKEY_DELETE, ShiftKey,           "Cut"                                  },
-#if !OS(DARWIN)
+#if !OS(MACOSX)
     // On OS X, we pipe these back to the browser, so that it can do menu item
     // blinking.
     { 'C',         CtrlKey,            "Copy"                                 },
@@ -599,7 +599,7 @@ bool EditorClientImpl::handleEditingKeyboardEvent(KeyboardEvent* evt)
         if (ch < 0x80) {
             if (evt->keyEvent()->ctrlKey() && !evt->keyEvent()->altKey())
                 return false;
-#if OS(DARWIN)
+#if OS(MACOSX)
             if (evt->keyEvent()->metaKey())
             return false;
 #endif
@@ -769,7 +769,7 @@ bool EditorClientImpl::spellingUIIsShowing()
 
 bool EditorClientImpl::supportsGlobalSelection()
 {
-#if OS(UNIX) && !OS(DARWIN)
+#if OS(UNIX) && !OS(MACOSX)
     return true;
 #else
     return false;

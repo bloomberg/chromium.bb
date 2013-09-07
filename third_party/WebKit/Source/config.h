@@ -51,9 +51,9 @@
 #define WTF_OS_ANDROID 1
 #endif
 
-/* OS(DARWIN) - Any Darwin-based OS, including Mac OS X and iPhone OS */
+/* OS(MACOSX) - Any Darwin-based OS, including Mac OS X and iPhone OS */
 #ifdef __APPLE__
-#define WTF_OS_DARWIN 1
+#define WTF_OS_MACOSX 1
 #endif
 
 /* OS(FREEBSD) - FreeBSD */
@@ -83,7 +83,7 @@
 
 /* OS(UNIX) - Any Unix-like system */
 #if OS(ANDROID)          \
-    || OS(DARWIN)           \
+    || OS(MACOSX)           \
     || OS(FREEBSD)          \
     || OS(LINUX)            \
     || OS(NETBSD)           \
@@ -105,16 +105,16 @@
 #define WTF_USE_QCMSLIB 1
 #endif
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #define WTF_USE_CF 1
 
-/* We can't override the global operator new and delete on OS(DARWIN) because
+/* We can't override the global operator new and delete on OS(MACOSX) because
  * some object are allocated by WebKit and deallocated by the embedder. */
-#else /* !OS(DARWIN) */
-/* On non-OS(DARWIN), the "system malloc" is actually TCMalloc anyway, so there's
+#else /* !OS(MACOSX) */
+/* On non-OS(MACOSX), the "system malloc" is actually TCMalloc anyway, so there's
  * no need to use WebKit's copy of TCMalloc. */
 #define WTF_USE_SYSTEM_MALLOC 1
-#endif /* OS(DARWIN) */
+#endif /* OS(MACOSX) */
 
 #if !defined(HAVE_ACCESSIBILITY)
 #define HAVE_ACCESSIBILITY 1
@@ -139,10 +139,10 @@
 #define HAVE_TIMEGM 1
 #endif
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #define HAVE_DISPATCH_H 1
 #define HAVE_PTHREAD_SETNAME_NP 1
-#endif /* OS(DARWIN) */
+#endif /* OS(MACOSX) */
 
 #if OS(WINDOWS)
 

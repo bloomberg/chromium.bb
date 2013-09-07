@@ -26,7 +26,7 @@
 #include "config.h"
 #include "NumberOfCores.h"
 
-#if OS(DARWIN) || OS(OPENBSD) || OS(NETBSD) || OS(FREEBSD)
+#if OS(MACOSX) || OS(OPENBSD) || OS(NETBSD) || OS(FREEBSD)
 #include <sys/param.h>
 // sys/types.h must come before sys/sysctl.h because the latter uses
 // data types defined in the former. See sysctl(3) and style(9).
@@ -49,7 +49,7 @@ int numberOfProcessorCores()
     if (s_numberOfCores > 0)
         return s_numberOfCores;
 
-#if OS(DARWIN) || OS(OPENBSD) || OS(NETBSD) || OS(FREEBSD)
+#if OS(MACOSX) || OS(OPENBSD) || OS(NETBSD) || OS(FREEBSD)
     unsigned result;
     size_t length = sizeof(result);
     int name[] = {

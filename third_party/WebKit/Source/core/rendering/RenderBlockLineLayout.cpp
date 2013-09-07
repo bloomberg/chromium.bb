@@ -894,7 +894,7 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
 
     bool kerningIsEnabled = font.typesettingFeatures() & Kerning;
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     // FIXME: Having any font feature settings enabled can lead to selection gaps on
     // Chromium-mac. https://bugs.webkit.org/show_bug.cgi?id=113418
     bool canUseSimpleFontCodePath = renderer->canUseSimpleFontCodePath() && !font.fontDescription().featureSettings();

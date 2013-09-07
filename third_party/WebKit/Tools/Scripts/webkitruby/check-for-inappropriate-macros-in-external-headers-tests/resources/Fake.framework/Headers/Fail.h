@@ -3,7 +3,7 @@
 #endif
 #if CPU(X86)
 #endif
-#if OS(DARWIN)
+#if OS(MACOSX)
 #endif
 #if COMPILER(CLANG)
 #endif

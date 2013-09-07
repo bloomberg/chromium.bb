@@ -30,7 +30,7 @@
 #include "core/platform/graphics/IntSize.h"
 #include "wtf/MathExtras.h"
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 typedef struct CGPoint CGPoint;
 #ifdef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 typedef struct CGPoint NSPoint;
@@ -88,7 +88,7 @@ public:
         return IntPoint(m_y, m_x);
     }
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     explicit IntPoint(const CGPoint&); // don't do this implicitly since it's lossy
     operator CGPoint() const;
 

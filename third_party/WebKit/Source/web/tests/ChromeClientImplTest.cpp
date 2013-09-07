@@ -162,7 +162,7 @@ TEST_F(GetNavigationPolicyTest, ShiftLeftClickPopup)
 
 TEST_F(GetNavigationPolicyTest, ControlOrMetaLeftClick)
 {
-#if OS(DARWIN)
+#if OS(MACOSX)
     int modifiers = WebInputEvent::MetaKey;
 #else
     int modifiers = WebInputEvent::ControlKey;
@@ -175,7 +175,7 @@ TEST_F(GetNavigationPolicyTest, ControlOrMetaLeftClick)
 
 TEST_F(GetNavigationPolicyTest, ControlOrMetaLeftClickPopup)
 {
-#if OS(DARWIN)
+#if OS(MACOSX)
     int modifiers = WebInputEvent::MetaKey;
 #else
     int modifiers = WebInputEvent::ControlKey;
@@ -188,7 +188,7 @@ TEST_F(GetNavigationPolicyTest, ControlOrMetaLeftClickPopup)
 
 TEST_F(GetNavigationPolicyTest, ControlOrMetaAndShiftLeftClick)
 {
-#if OS(DARWIN)
+#if OS(MACOSX)
     int modifiers = WebInputEvent::MetaKey;
 #else
     int modifiers = WebInputEvent::ControlKey;
@@ -202,7 +202,7 @@ TEST_F(GetNavigationPolicyTest, ControlOrMetaAndShiftLeftClick)
 
 TEST_F(GetNavigationPolicyTest, ControlOrMetaAndShiftLeftClickPopup)
 {
-#if OS(DARWIN)
+#if OS(MACOSX)
     int modifiers = WebInputEvent::MetaKey;
 #else
     int modifiers = WebInputEvent::ControlKey;

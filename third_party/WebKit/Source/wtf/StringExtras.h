@@ -31,7 +31,7 @@
 #endif
 
 #if !defined(HAVE_STRNSTR)
-#if OS(DARWIN) || (OS(FREEBSD) && !defined(__GLIBC__))
+#if OS(MACOSX) || (OS(FREEBSD) && !defined(__GLIBC__))
 #define HAVE_STRNSTR 1
 #endif
 #endif

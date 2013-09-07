@@ -756,7 +756,7 @@ static IntPoint dragLocationForSelectionDrag(Frame* sourceFrame)
 
 static const IntSize& maxDragImageSize()
 {
-#if OS(DARWIN)
+#if OS(MACOSX)
     // Match Safari's drag image size.
     static const IntSize maxDragImageSize(400, 400);
 #else

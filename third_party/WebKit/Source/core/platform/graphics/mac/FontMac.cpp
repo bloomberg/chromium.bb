@@ -72,7 +72,7 @@ static void setupPaint(SkPaint* paint, const SimpleFontData* fontData, const Fon
     paint->setLCDRenderText(shouldSmoothFonts);
     paint->setSubpixelText(true);
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     // When using CoreGraphics, disable hinting when webkit-font-smoothing:antialiased is used.
     // See crbug.com/152304
     if (font->fontDescription().fontSmoothing() == Antialiased)

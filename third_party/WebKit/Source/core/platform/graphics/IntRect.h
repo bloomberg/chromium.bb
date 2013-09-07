@@ -30,7 +30,7 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/Vector.h"
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 typedef struct CGRect CGRect;
 
 #ifdef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
@@ -152,7 +152,7 @@ public:
 
     IntRect transposedRect() const { return IntRect(m_location.transposedPoint(), m_size.transposedSize()); }
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     operator CGRect() const;
 #if !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
     operator NSRect() const;
@@ -193,7 +193,7 @@ inline bool operator!=(const IntRect& a, const IntRect& b)
     return a.location() != b.location() || a.size() != b.size();
 }
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 IntRect enclosingIntRect(const CGRect&);
 #if !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
 IntRect enclosingIntRect(const NSRect&);

@@ -748,7 +748,7 @@ void WebPluginContainerImpl::handleKeyboardEvent(KeyboardEvent* event)
         return;
 
     if (webEvent.type == WebInputEvent::KeyDown) {
-#if OS(DARWIN)
+#if OS(MACOSX)
         if (webEvent.modifiers == WebInputEvent::MetaKey
 #else
         if (webEvent.modifiers == WebInputEvent::ControlKey

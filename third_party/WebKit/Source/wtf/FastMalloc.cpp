@@ -82,7 +82,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/UnusedParam.h"
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #include <AvailabilityMacros.h>
 #endif
 
@@ -205,7 +205,7 @@ char* fastStrDup(const char* src)
 
 #if FORCE_SYSTEM_MALLOC
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #include <malloc/malloc.h>
 #elif OS(WINDOWS)
 #include <malloc.h>
@@ -215,7 +215,7 @@ namespace WTF {
 
 size_t fastMallocGoodSize(size_t bytes)
 {
-#if OS(DARWIN)
+#if OS(MACOSX)
     return malloc_good_size(bytes);
 #else
     return bytes;
@@ -269,7 +269,7 @@ FastMallocStatistics fastMallocStatistics()
 
 } // namespace WTF
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 // This symbol is present in the JavaScriptCore exports file even when FastMalloc is disabled.
 // It will never be used in this case, so it's type and value are less interesting than its presence.
 extern "C"  const int jscore_fastmalloc_introspection = 0;
@@ -297,7 +297,7 @@ extern "C"  const int jscore_fastmalloc_introspection = 0;
 #include <windows.h>
 #endif
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #include "MallocZoneSupport.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
@@ -325,7 +325,7 @@ extern "C"  const int jscore_fastmalloc_introspection = 0;
 // call to the function on Mac OS X, and it's used in performance-critical code. So we
 // use a function pointer. But that's not necessarily faster on other platforms, and we had
 // problems with this technique on Windows, so we'll do this only on Mac OS X.
-#if OS(DARWIN)
+#if OS(MACOSX)
 #if !USE(PTHREAD_GETSPECIFIC_DIRECT)
 static void* (*pthread_getspecific_function_pointer)(pthread_key_t) = pthread_getspecific;
 #define pthread_getspecific(key) pthread_getspecific_function_pointer(key)
@@ -363,7 +363,7 @@ template <unsigned> struct EntropySource;
 template <> struct EntropySource<4> {
     static uint32_t value()
     {
-#if OS(DARWIN)
+#if OS(MACOSX)
         return arc4random();
 #else
         return static_cast<uint32_t>(static_cast<uintptr_t>(currentTime() * 10000) ^ reinterpret_cast<uintptr_t>(&kLLHardeningMask));
@@ -938,7 +938,7 @@ class PageHeapAllocator {
 
   int inuse() const { return inuse_; }
 
-#if OS(DARWIN)
+#if OS(MACOSX)
   template <class Recorder>
   void recordAdministrativeRegions(Recorder& recorder, const RemoteMemoryReader& reader)
   {
@@ -1272,7 +1272,7 @@ typedef TCMalloc_Central_FreeListPadded_Template<sizeof(TCMalloc_Central_FreeLis
 #pragma clang diagnostic pop
 #endif
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 struct Span;
 class TCMalloc_PageHeap;
 class TCMalloc_ThreadCache;
@@ -1590,7 +1590,7 @@ class TCMalloc_PageHeap {
   // Index of last free list we scavenged
   size_t scavenge_index_;
 
-#if OS(DARWIN)
+#if OS(MACOSX)
   friend class FastMallocZone;
 #endif
 
@@ -3093,7 +3093,7 @@ void TCMalloc_ThreadCache::InitModule() {
     }
     pageheap->init();
     phinited = 1;
-#if OS(DARWIN)
+#if OS(MACOSX)
     FastMallocZone::init();
 #endif
   }
@@ -3563,7 +3563,7 @@ FastMallocStatistics fastMallocStatistics()
     return statistics;
 }
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 
 template <typename T>
 T* RemoteMemoryReader::nextEntryInHardenedLinkedList(T** remoteAddress, uintptr_t entropy) const
@@ -3893,7 +3893,7 @@ void FastMallocZone::init()
     static FastMallocZone zone(pageheap, &thread_heaps, static_cast<TCMalloc_Central_FreeListPadded*>(central_cache), &span_allocator, &threadheap_allocator);
 }
 
-#endif // OS(DARWIN)
+#endif // OS(MACOSX)
 
 } // namespace WTF
 

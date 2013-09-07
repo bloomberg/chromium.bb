@@ -25,7 +25,7 @@
 // FIXME: This is temporary until all ports switch to using this file.
 #if OS(WINDOWS)
 #include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
-#elif OS(UNIX) && !OS(DARWIN)
+#elif OS(UNIX) && !OS(MACOSX)
 #include "core/platform/graphics/harfbuzz/FontPlatformDataHarfBuzz.h"
 
 #else
@@ -36,7 +36,7 @@
 #include "core/platform/graphics/FontOrientation.h"
 #include "core/platform/graphics/FontWidthVariant.h"
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 OBJC_CLASS NSFont;
 
 typedef struct CGFont* CGFontRef;
@@ -53,11 +53,11 @@ typedef const struct __CTFont* CTFontRef;
 #include "wtf/RetainPtr.h"
 #include "wtf/text/StringImpl.h"
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #include "core/platform/graphics/chromium/CrossProcessFontLoading.h"
 #endif
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 typedef struct CGFont* CGFontRef;
 typedef const struct __CTFont* CTFontRef;
 typedef UInt32 FMFont;
@@ -70,11 +70,11 @@ namespace WebCore {
 class FontDescription;
 class SharedBuffer;
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 class HarfBuzzFace;
 #endif
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 inline CTFontRef toCTFontRef(NSFont *nsFont) { return reinterpret_cast<CTFontRef>(nsFont); }
 #endif
 
@@ -86,7 +86,7 @@ public:
     FontPlatformData(const FontDescription&, const AtomicString& family);
     FontPlatformData(float size, bool syntheticBold, bool syntheticOblique, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     FontPlatformData(NSFont*, float size, bool isPrinterFont = false, bool syntheticBold = false, bool syntheticOblique = false,
                      FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
     FontPlatformData(CGFontRef, float size, bool syntheticBold, bool syntheticOblique, FontOrientation, FontWidthVariant);
@@ -94,12 +94,12 @@ public:
 
     ~FontPlatformData();
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     NSFont* font() const { return m_font; }
     void setFont(NSFont*);
 #endif
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     CGFontRef cgFont() const { return m_cgFont.get(); }
     CTFontRef ctFont() const;
 
@@ -115,7 +115,7 @@ public:
     bool syntheticOblique() const { return m_syntheticOblique; }
     bool isColorBitmapFont() const { return m_isColorBitmapFont; }
     bool isCompositeFontReference() const { return m_isCompositeFontReference; }
-#if OS(DARWIN)
+#if OS(MACOSX)
     bool isPrinterFont() const { return m_isPrinterFont; }
 #endif
     FontOrientation orientation() const { return m_orientation; }
@@ -123,13 +123,13 @@ public:
 
     void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     HarfBuzzFace* harfBuzzFace();
 #endif
 
     unsigned hash() const
     {
-#if OS(DARWIN)
+#if OS(MACOSX)
         ASSERT(m_font || !m_cgFont);
         uintptr_t hashCodes[3] = { (uintptr_t)m_font, m_widthVariant, static_cast<uintptr_t>(m_isPrinterFont << 3 | m_orientation << 2 | m_syntheticBold << 1 | m_syntheticOblique) };
         return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
@@ -146,7 +146,7 @@ public:
             && m_syntheticOblique == other.m_syntheticOblique
             && m_isColorBitmapFont == other.m_isColorBitmapFont
             && m_isCompositeFontReference == other.m_isCompositeFontReference
-#if OS(DARWIN)
+#if OS(MACOSX)
             && m_isPrinterFont == other.m_isPrinterFont
 #endif
             && m_orientation == other.m_orientation
@@ -155,7 +155,7 @@ public:
 
     bool isHashTableDeletedValue() const
     {
-#if OS(DARWIN)
+#if OS(MACOSX)
         return m_font == hashTableDeletedFontValue();
 #endif
     }
@@ -168,7 +168,7 @@ private:
     bool platformIsEqual(const FontPlatformData&) const;
     void platformDataInit(const FontPlatformData&);
     const FontPlatformData& platformDataAssign(const FontPlatformData&);
-#if OS(DARWIN)
+#if OS(MACOSX)
     // Load various data about the font specified by |nsFont| with the size fontSize into the following output paramters:
     // Note: Callers should always take into account that for the Chromium port, |outNSFont| isn't necessarily the same
     // font as |nsFont|. This because the sandbox may block loading of the original font.
@@ -187,11 +187,11 @@ public:
     FontWidthVariant m_widthVariant;
 
 private:
-#if OS(DARWIN)
+#if OS(MACOSX)
     NSFont* m_font;
 #endif
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     RetainPtr<CGFontRef> m_cgFont;
     mutable RetainPtr<CTFontRef> m_CTFont;
 
@@ -201,7 +201,7 @@ private:
 
     bool m_isColorBitmapFont;
     bool m_isCompositeFontReference;
-#if OS(DARWIN)
+#if OS(MACOSX)
     bool m_isPrinterFont;
 #endif
 };

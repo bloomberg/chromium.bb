@@ -366,7 +366,7 @@ private:
     static void setPathFromConvexPoints(SkPath*, size_t, const FloatPoint*);
     static void setRadii(SkVector*, IntSize, IntSize, IntSize, IntSize);
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     static inline int getFocusRingOutset(int offset) { return offset + 2; }
 #else
     static inline int getFocusRingOutset(int offset) { return 0; }

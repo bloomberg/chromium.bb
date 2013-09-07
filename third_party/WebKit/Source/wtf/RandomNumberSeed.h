@@ -43,7 +43,7 @@ namespace WTF {
 
 inline void initializeRandomNumberGenerator()
 {
-#if OS(DARWIN)
+#if OS(MACOSX)
     // On Darwin we use arc4random which initialises itself.
 #elif COMPILER(MSVC) && defined(_CRT_RAND_S)
     // On Windows we use rand_s which initialises itself

@@ -1292,7 +1292,7 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
         int listIndex = toRenderListBox(renderer())->listIndexAtOffset(toIntSize(localOffset));
         if (listIndex >= 0) {
             if (!isDisabledFormControl()) {
-#if OS(DARWIN)
+#if OS(MACOSX)
                 updateSelectedState(listIndex, mouseEvent->metaKey(), mouseEvent->shiftKey());
 #else
                 updateSelectedState(listIndex, mouseEvent->ctrlKey(), mouseEvent->shiftKey());

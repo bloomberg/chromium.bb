@@ -28,7 +28,7 @@
 
 // On Mac OS X, the VM subsystem allows tagging memory requested from mmap and vm_map
 // in order to aid tools that inspect system memory use.
-#if OS(DARWIN)
+#if OS(MACOSX)
 
 #include <mach/vm_statistics.h>
 
@@ -38,10 +38,10 @@
 #define VM_TAG_FOR_TCMALLOC_MEMORY VM_MAKE_TAG(53)
 #endif // defined(VM_MEMORY_TCMALLOC)
 
-#else // OS(DARWIN)
+#else // OS(MACOSX)
 
 #define VM_TAG_FOR_TCMALLOC_MEMORY -1
 
-#endif // OS(DARWIN)
+#endif // OS(MACOSX)
 
 #endif // VMTags_h

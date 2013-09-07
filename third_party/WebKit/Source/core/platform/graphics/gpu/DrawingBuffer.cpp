@@ -650,7 +650,7 @@ void DrawingBuffer::reset(const IntSize& newSize)
                 continue;
             }
 
-#if OS(DARWIN)
+#if OS(MACOSX)
             // FIXME: This can be removed once renderbufferStorageMultisample starts reporting GL_OUT_OF_MEMORY properly on OSX.
             if (!checkBufferIntegrity()) {
                 adjustedSize.scale(s_resourceAdjustedRatio);

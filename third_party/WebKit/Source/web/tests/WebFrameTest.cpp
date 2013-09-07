@@ -2184,7 +2184,7 @@ private:
 };
 
 // This fails on Mac https://bugs.webkit.org/show_bug.cgi?id=108574
-#if OS(DARWIN)
+#if OS(MACOSX)
 TEST_F(WebFrameTest, DISABLED_FindInPageMatchRects)
 #else
 TEST_F(WebFrameTest, FindInPageMatchRects)
@@ -2750,7 +2750,7 @@ TEST_F(WebFrameTest, DISABLED_PositionForPointTest)
     EXPECT_EQ(64, computeOffset(renderer, 1000, 1000));
 }
 
-#if !OS(DARWIN)
+#if !OS(MACOSX)
 TEST_F(WebFrameTest, SelectRangeStaysHorizontallyAlignedWhenMoved)
 {
     WebFrameImpl* frame;

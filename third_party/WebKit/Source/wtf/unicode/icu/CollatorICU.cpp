@@ -37,7 +37,7 @@
 #include <string.h>
 #include <unicode/ucol.h>
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #include "wtf/RetainPtr.h"
 #include <CoreFoundation/CoreFoundation.h>
 #endif
@@ -60,7 +60,7 @@ Collator::Collator(const char* locale)
 
 PassOwnPtr<Collator> Collator::userDefault()
 {
-#if OS(DARWIN) && USE(CF)
+#if OS(MACOSX) && USE(CF)
     // Mac OS X doesn't set UNIX locale to match user-selected one, so ICU default doesn't work.
     RetainPtr<CFLocaleRef> currentLocale(AdoptCF, CFLocaleCopyCurrent());
     CFStringRef collationOrder = (CFStringRef)CFLocaleGetValue(currentLocale.get(), kCFLocaleCollatorIdentifier);

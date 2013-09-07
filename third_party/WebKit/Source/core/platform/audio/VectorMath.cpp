@@ -30,7 +30,7 @@
 #include "wtf/Assertions.h"
 #include <stdint.h>
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #include <Accelerate/Accelerate.h>
 #endif
 
@@ -49,7 +49,7 @@ namespace WebCore {
 
 namespace VectorMath {
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 // On the Mac we use the highly optimized versions in Accelerate.framework
 // In 32-bit mode (__ppc__ or __i386__) <Accelerate/Accelerate.h> includes <vecLib/vDSP_translate.h> which defines macros of the same name as
 // our namespaced function names, so we must handle this case differently. Other architectures (64bit, ARM, etc.) do not include this header file.
@@ -680,7 +680,7 @@ void vclip(const float* sourceP, int sourceStride, const float* lowThresholdP, c
     }
 }
 
-#endif // OS(DARWIN)
+#endif // OS(MACOSX)
 
 } // namespace VectorMath
 

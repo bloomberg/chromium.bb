@@ -37,7 +37,7 @@ namespace WebCore {
 
 bool navigationPolicyFromMouseEvent(unsigned short button, bool ctrl, bool shift, bool alt, bool meta, NavigationPolicy* policy)
 {
-#if OS(DARWIN)
+#if OS(MACOSX)
     const bool newTabModifier = (button == 1) || meta;
 #else
     const bool newTabModifier = (button == 1) || ctrl;

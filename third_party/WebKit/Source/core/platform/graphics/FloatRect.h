@@ -30,7 +30,7 @@
 #include "core/platform/graphics/FloatPoint.h"
 #include "wtf/Vector.h"
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 typedef struct CGRect CGRect;
 #ifdef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 typedef struct CGRect NSRect;
@@ -160,7 +160,7 @@ public:
     void fitToPoints(const FloatPoint& p0, const FloatPoint& p1, const FloatPoint& p2);
     void fitToPoints(const FloatPoint& p0, const FloatPoint& p1, const FloatPoint& p2, const FloatPoint& p3);
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     FloatRect(const CGRect&);
     operator CGRect() const;
 #if !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)

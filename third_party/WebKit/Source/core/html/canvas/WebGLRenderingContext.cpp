@@ -2007,7 +2007,7 @@ void WebGLRenderingContext::generateMipmap(GC3Denum target)
 
     // generateMipmap won't work properly if minFilter is not NEAREST_MIPMAP_LINEAR
     // on Mac.  Remove the hack once this driver bug is fixed.
-#if OS(DARWIN)
+#if OS(MACOSX)
     bool needToResetMinFilter = false;
     if (tex->getMinFilter() != GraphicsContext3D::NEAREST_MIPMAP_LINEAR) {
         m_context->texParameteri(target, GraphicsContext3D::TEXTURE_MIN_FILTER, GraphicsContext3D::NEAREST_MIPMAP_LINEAR);
@@ -2015,7 +2015,7 @@ void WebGLRenderingContext::generateMipmap(GC3Denum target)
     }
 #endif
     m_context->generateMipmap(target);
-#if OS(DARWIN)
+#if OS(MACOSX)
     if (needToResetMinFilter)
         m_context->texParameteri(target, GraphicsContext3D::TEXTURE_MIN_FILTER, tex->getMinFilter());
 #endif
@@ -3079,7 +3079,7 @@ void WebGLRenderingContext::readPixels(GC3Dint x, GC3Dint y, GC3Dsizei width, GC
         m_context->readPixels(x, y, width, height, format, type, data);
     }
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     // FIXME: remove this section when GL driver bug on Mac is fixed, i.e.,
     // when alpha is off, readPixels should set alpha to 255 instead of 0.
     if (!m_framebufferBinding && !m_context->getContextAttributes().alpha) {

@@ -131,7 +131,7 @@ public:
         returnValue.setRawValue(::abs(m_value));
         return returnValue;
     }
-#if OS(DARWIN)
+#if OS(MACOSX)
     int wtf_ceil() const
 #else
     int ceil() const

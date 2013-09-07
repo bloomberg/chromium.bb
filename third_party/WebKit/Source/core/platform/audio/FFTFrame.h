@@ -31,7 +31,7 @@
 
 #include "core/platform/audio/AudioArray.h"
 
-#if OS(DARWIN) && !USE(WEBAUDIO_FFMPEG)
+#if OS(MACOSX) && !USE(WEBAUDIO_FFMPEG)
 #define USE_ACCELERATE_FFT 1
 #else
 #define USE_ACCELERATE_FFT 0

@@ -88,7 +88,7 @@ bool Settings::gUsesOverlayScrollbars = false;
 static EditingBehaviorType editingBehaviorTypeForPlatform()
 {
     return
-#if OS(DARWIN)
+#if OS(MACOSX)
     EditingMacBehavior
 #elif OS(WINDOWS)
     EditingWindowsBehavior
@@ -104,7 +104,7 @@ static EditingBehaviorType editingBehaviorTypeForPlatform()
 }
 
 static const bool defaultUnifiedTextCheckerEnabled = false;
-#if OS(DARWIN)
+#if OS(MACOSX)
 static const bool defaultSmartInsertDeleteEnabled = true;
 #else
 static const bool defaultSmartInsertDeleteEnabled = false;

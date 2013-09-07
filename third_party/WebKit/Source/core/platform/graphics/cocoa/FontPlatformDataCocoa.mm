@@ -28,7 +28,7 @@
 #import <AvailabilityMacros.h>
 #import <wtf/text/WTFString.h>
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #import "core/platform/graphics/harfbuzz/HarfBuzzFace.h"
 #endif
 
@@ -84,7 +84,7 @@ void FontPlatformData::platformDataInit(const FontPlatformData& f)
     m_cgFont = f.m_cgFont;
     m_CTFont = f.m_CTFont;
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     m_inMemoryFont = f.m_inMemoryFont;
     m_harfBuzzFace = f.m_harfBuzzFace;
 #endif
@@ -101,7 +101,7 @@ const FontPlatformData& FontPlatformData::platformDataAssign(const FontPlatformD
         CFRelease(m_font);
     m_font = f.m_font;
     m_CTFont = f.m_CTFont;
-#if OS(DARWIN)
+#if OS(MACOSX)
     m_inMemoryFont = f.m_inMemoryFont;
     m_harfBuzzFace = f.m_harfBuzzFace;
 #endif
@@ -133,7 +133,7 @@ void FontPlatformData::setFont(NSFont *font)
     NSFont* loadedFont = 0;
     loadFont(m_font, m_size, loadedFont, cgFont);
     
-#if OS(DARWIN)
+#if OS(MACOSX)
     // If loadFont replaced m_font with a fallback font, then release the
     // previous font to counter the retain above. Then retain the new font.
     if (loadedFont != m_font) {
@@ -278,7 +278,7 @@ CTFontRef FontPlatformData::ctFont() const
     return m_CTFont.get();
 }
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 static bool isAATFont(CTFontRef ctFont)
 {
     CFDataRef table = CTFontCopyTable(ctFont, kCTFontTableMort, 0);

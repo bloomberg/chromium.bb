@@ -44,7 +44,7 @@ namespace WebCore {
         ScrollByPixelWheelEvent,
     };
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     enum PlatformWheelEventPhase {
         PlatformWheelEventPhaseNone        = 0,
         PlatformWheelEventPhaseBegan       = 1 << 0,
@@ -67,7 +67,7 @@ namespace WebCore {
             , m_granularity(ScrollByPixelWheelEvent)
             , m_directionInvertedFromDevice(false)
             , m_hasPreciseScrollingDeltas(false)
-#if OS(DARWIN)
+#if OS(MACOSX)
             , m_phase(PlatformWheelEventPhaseNone)
             , m_momentumPhase(PlatformWheelEventPhaseNone)
             , m_scrollCount(0)
@@ -88,7 +88,7 @@ namespace WebCore {
             , m_granularity(granularity)
             , m_directionInvertedFromDevice(false)
             , m_hasPreciseScrollingDeltas(false)
-#if OS(DARWIN)
+#if OS(MACOSX)
             , m_phase(PlatformWheelEventPhaseNone)
             , m_momentumPhase(PlatformWheelEventPhaseNone)
             , m_scrollCount(0)
@@ -125,7 +125,7 @@ namespace WebCore {
 
         bool hasPreciseScrollingDeltas() const { return m_hasPreciseScrollingDeltas; }
         void setHasPreciseScrollingDeltas(bool b) { m_hasPreciseScrollingDeltas = b; }
-#if OS(DARWIN)
+#if OS(MACOSX)
         PlatformWheelEventPhase phase() const { return m_phase; }
         PlatformWheelEventPhase momentumPhase() const { return m_momentumPhase; }
         unsigned scrollCount() const { return m_scrollCount; }
@@ -146,7 +146,7 @@ namespace WebCore {
         PlatformWheelEventGranularity m_granularity;
         bool m_directionInvertedFromDevice;
         bool m_hasPreciseScrollingDeltas;
-#if OS(DARWIN)
+#if OS(MACOSX)
         PlatformWheelEventPhase m_phase;
         PlatformWheelEventPhase m_momentumPhase;
         unsigned m_scrollCount;

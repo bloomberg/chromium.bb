@@ -38,7 +38,7 @@ namespace WebCore {
 void enableSecureTextInput();
 void disableSecureTextInput();
 
-#if !OS(DARWIN)
+#if !OS(MACOSX)
 inline void enableSecureTextInput() { }
 inline void disableSecureTextInput() { }
 #endif

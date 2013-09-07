@@ -32,7 +32,7 @@
 
 #include "core/platform/audio/DirectConvolver.h"
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #include <Accelerate/Accelerate.h>
 #endif
 
@@ -89,7 +89,7 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel, const float* s
     // Copy samples to 2nd half of input buffer.
     memcpy(inputP, sourceP, sizeof(float) * framesToProcess);
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #if defined(__ppc__) || defined(__i386__)
     conv(inputP - kernelSize + 1, 1, kernelP + kernelSize - 1, -1, destP, 1, framesToProcess, kernelSize);
 #else
@@ -365,7 +365,7 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel, const float* s
         }
         destP[i++] = sum;
     }
-#endif // OS(DARWIN)
+#endif // OS(MACOSX)
 
     // Copy 2nd half of input buffer to 1st half.
     memcpy(m_buffer.data(), inputP, sizeof(float) * framesToProcess);

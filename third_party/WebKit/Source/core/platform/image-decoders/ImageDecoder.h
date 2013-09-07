@@ -40,7 +40,7 @@
 
 #if USE(QCMSLIB)
 #include "qcms.h"
-#if OS(DARWIN)
+#if OS(MACOSX)
 #include <ApplicationServices/ApplicationServices.h>
 #include "core/platform/graphics/cg/GraphicsContextCG.h"
 #include "wtf/RetainPtr.h"
@@ -357,7 +357,7 @@ namespace WebCore {
             if (!qcmsInitialized) {
                 qcmsInitialized = true;
                 // FIXME: Add optional ICCv4 support.
-#if OS(DARWIN)
+#if OS(MACOSX)
                 RetainPtr<CGColorSpaceRef> monitorColorSpace(AdoptCF, CGDisplayCopyColorSpace(CGMainDisplayID()));
                 CFDataRef iccProfile(CGColorSpaceCopyICCProfile(monitorColorSpace.get()));
                 if (iccProfile) {

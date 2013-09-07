@@ -64,7 +64,7 @@ extern void TCMalloc_SystemRelease(void* start, size_t length);
 
 extern void TCMalloc_SystemCommit(void* start, size_t length);
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #define HAVE_MADV_FREE 1
 #define HAVE_MADV_FREE_REUSE 1
 #endif

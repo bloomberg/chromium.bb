@@ -29,7 +29,7 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#if !OS(DARWIN) && !USE(WEBAUDIO_FFMPEG) && !USE(WEBAUDIO_IPP) && !USE(WEBAUDIO_OPENMAX_DL_FFT)
+#if !OS(MACOSX) && !USE(WEBAUDIO_FFMPEG) && !USE(WEBAUDIO_IPP) && !USE(WEBAUDIO_OPENMAX_DL_FFT)
 
 #include "core/platform/audio/FFTFrame.h"
 
@@ -102,6 +102,6 @@ float* FFTFrame::imagData() const
 
 } // namespace WebCore
 
-#endif // !OS(DARWIN) && !USE(WEBAUDIO_FFMPEG) && !USE(WEBAUDIO_IPP) && !USE(WEBAUDIO_OPENMAX_DL_FFT)
+#endif // !OS(MACOSX) && !USE(WEBAUDIO_FFMPEG) && !USE(WEBAUDIO_IPP) && !USE(WEBAUDIO_OPENMAX_DL_FFT)
 
 #endif // ENABLE(WEB_AUDIO)

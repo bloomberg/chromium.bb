@@ -147,7 +147,7 @@ private:
     OwnPtr<SkFontMgr> m_fontManager;
 #endif
 
-#if OS(DARWIN) || OS(ANDROID)
+#if OS(MACOSX) || OS(ANDROID)
     friend class ComplexTextController;
 #endif
     friend class SimpleFontData; // For getFontResourceData(const FontPlatformData*)

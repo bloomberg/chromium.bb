@@ -35,7 +35,7 @@
 #include "wtf/UnusedParam.h"
 #include "wtf/Vector.h"
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
@@ -47,7 +47,7 @@ typedef Glyph GlyphBufferGlyph;
 
 // CG uses CGSize instead of FloatSize so that the result of advances()
 // can be passed directly to CGContextShowGlyphsWithAdvances in FontMac.mm
-#if OS(DARWIN)
+#if OS(MACOSX)
 struct GlyphBufferAdvance : CGSize {
 public:
     GlyphBufferAdvance(CGSize size) : CGSize(size)
@@ -96,7 +96,7 @@ public:
         m_fontData.append(font);
         m_glyphs.append(glyph);
 
-#if OS(DARWIN)
+#if OS(MACOSX)
         CGSize advance = { width, 0 };
         m_advances.append(advance);
 #else

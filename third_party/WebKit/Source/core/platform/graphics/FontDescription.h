@@ -144,7 +144,7 @@ public:
     void setIsAbsoluteSize(bool s) { m_isAbsoluteSize = s; }
     void setWeight(FontWeight w) { m_weight = w; }
     void setGenericFamily(GenericFamilyType genericFamily) { m_genericFamily = genericFamily; }
-#if OS(DARWIN)
+#if OS(MACOSX)
     void setUsePrinterFont(bool) { }
 #else
     void setUsePrinterFont(bool p) { m_usePrinterFont = p; }

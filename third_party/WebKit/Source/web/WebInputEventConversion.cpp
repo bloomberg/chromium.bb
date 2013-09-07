@@ -138,7 +138,7 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
         m_modifiers |= PlatformEvent::MetaKey;
 
     m_hasPreciseScrollingDeltas = e.hasPreciseScrollingDeltas;
-#if OS(DARWIN)
+#if OS(MACOSX)
     m_phase = static_cast<WebCore::PlatformWheelEventPhase>(e.phase);
     m_momentumPhase = static_cast<WebCore::PlatformWheelEventPhase>(e.momentumPhase);
     m_timestamp = e.timeStampSeconds;

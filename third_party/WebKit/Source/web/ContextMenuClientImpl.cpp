@@ -133,7 +133,7 @@ static String selectMisspelledWord(Frame* selectedFrame)
     WebFrameImpl::selectWordAroundPosition(selectedFrame, pos);
     misspelledWord = selectedFrame->selectedText().stripWhiteSpace();
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     // If misspelled word is still empty, then that portion should not be
     // selected. Set the selection to that position only, and do not expand.
     if (misspelledWord.isEmpty())
@@ -345,12 +345,12 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
         }
     }
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     if (selectedFrame->editor().selectionHasStyle(CSSPropertyDirection, "ltr") != FalseTriState)
         data.writingDirectionLeftToRight |= WebContextMenuData::CheckableMenuItemChecked;
     if (selectedFrame->editor().selectionHasStyle(CSSPropertyDirection, "rtl") != FalseTriState)
         data.writingDirectionRightToLeft |= WebContextMenuData::CheckableMenuItemChecked;
-#endif // OS(DARWIN)
+#endif // OS(MACOSX)
 
     // Now retrieve the security info.
     DocumentLoader* dl = selectedFrame->loader()->documentLoader();

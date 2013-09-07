@@ -79,7 +79,7 @@ public:
     const char* interpretOSModifierKeyPress(char keyCode)
     {
         WebKeyboardEvent keyboardEvent;
-#if OS(DARWIN)
+#if OS(MACOSX)
         WebInputEvent::Modifiers osModifier = WebInputEvent::MetaKey;
 #else
         WebInputEvent::Modifiers osModifier = WebInputEvent::ControlKey;
@@ -123,42 +123,42 @@ TEST_F(KeyboardTest, TestCtrlReturn)
 
 TEST_F(KeyboardTest, TestOSModifierZ)
 {
-#if !OS(DARWIN)
+#if !OS(MACOSX)
     EXPECT_STREQ("Undo", interpretOSModifierKeyPress('Z'));
 #endif
 }
 
 TEST_F(KeyboardTest, TestOSModifierY)
 {
-#if !OS(DARWIN)
+#if !OS(MACOSX)
     EXPECT_STREQ("Redo", interpretOSModifierKeyPress('Y'));
 #endif
 }
 
 TEST_F(KeyboardTest, TestOSModifierA)
 {
-#if !OS(DARWIN)
+#if !OS(MACOSX)
     EXPECT_STREQ("SelectAll", interpretOSModifierKeyPress('A'));
 #endif
 }
 
 TEST_F(KeyboardTest, TestOSModifierX)
 {
-#if !OS(DARWIN)
+#if !OS(MACOSX)
     EXPECT_STREQ("Cut", interpretOSModifierKeyPress('X'));
 #endif
 }
 
 TEST_F(KeyboardTest, TestOSModifierC)
 {
-#if !OS(DARWIN)
+#if !OS(MACOSX)
     EXPECT_STREQ("Copy", interpretOSModifierKeyPress('C'));
 #endif
 }
 
 TEST_F(KeyboardTest, TestOSModifierV)
 {
-#if !OS(DARWIN)
+#if !OS(MACOSX)
     EXPECT_STREQ("Paste", interpretOSModifierKeyPress('V'));
 #endif
 }

@@ -63,7 +63,7 @@
 #define HAVE_ISDEBUGGERPRESENT 1
 #endif
 
-#if (OS(DARWIN) || (OS(LINUX) && !defined(__UCLIBC__))) && !OS(ANDROID)
+#if (OS(MACOSX) || (OS(LINUX) && !defined(__UCLIBC__))) && !OS(ANDROID)
 #include <cxxabi.h>
 #include <dlfcn.h>
 #include <execinfo.h>
@@ -226,7 +226,7 @@ void WTFReportArgumentAssertionFailure(const char* file, int line, const char* f
 
 void WTFGetBacktrace(void** stack, int* size)
 {
-#if (OS(DARWIN) || (OS(LINUX) && !defined(__UCLIBC__))) && !OS(ANDROID)
+#if (OS(MACOSX) || (OS(LINUX) && !defined(__UCLIBC__))) && !OS(ANDROID)
     *size = backtrace(stack, *size);
 #elif OS(WINDOWS)
     // The CaptureStackBackTrace function is available in XP, but it is not defined
@@ -265,7 +265,7 @@ void WTFPrintBacktrace(void** stack, int size)
     for (int i = 0; i < size; ++i) {
         const char* mangledName = 0;
         char* cxaDemangled = 0;
-#if OS(DARWIN) || (OS(LINUX) && !OS(ANDROID))
+#if OS(MACOSX) || (OS(LINUX) && !OS(ANDROID))
         Dl_info info;
         if (dladdr(stack[i], &info) && info.dli_sname)
             mangledName = info.dli_sname;

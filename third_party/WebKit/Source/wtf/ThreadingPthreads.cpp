@@ -55,7 +55,7 @@
 #include <sys/time.h>
 #endif
 
-#if OS(DARWIN)
+#if OS(MACOSX)
 #include <objc/objc-auto.h>
 #endif
 
@@ -204,7 +204,7 @@ void initializeCurrentThreadInternal(const char* threadName)
     UNUSED_PARAM(threadName);
 #endif
 
-#if OS(DARWIN)
+#if OS(MACOSX)
     // All threads that potentially use APIs above the BSD layer must be registered with the Objective-C
     // garbage collector in case API implementations use garbage-collected memory.
     objc_registerThreadWithCollector();
