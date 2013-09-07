@@ -3458,17 +3458,17 @@ static const base::FilePath::CharType* kSafePortableRelativePaths[] = {
 #endif
 };
 
-TEST(NetUtilTest, IsSafePortableBasename) {
+TEST(NetUtilTest, IsSafePortablePathComponent) {
   for (size_t i = 0 ; i < arraysize(kSafePortableBasenames); ++i) {
-    EXPECT_TRUE(IsSafePortableBasename(base::FilePath(
+    EXPECT_TRUE(IsSafePortablePathComponent(base::FilePath(
         kSafePortableBasenames[i]))) << kSafePortableBasenames[i];
   }
   for (size_t i = 0 ; i < arraysize(kUnsafePortableBasenames); ++i) {
-    EXPECT_FALSE(IsSafePortableBasename(base::FilePath(
+    EXPECT_FALSE(IsSafePortablePathComponent(base::FilePath(
         kUnsafePortableBasenames[i]))) << kUnsafePortableBasenames[i];
   }
   for (size_t i = 0 ; i < arraysize(kSafePortableRelativePaths); ++i) {
-    EXPECT_FALSE(IsSafePortableBasename(base::FilePath(
+    EXPECT_FALSE(IsSafePortablePathComponent(base::FilePath(
         kSafePortableRelativePaths[i]))) << kSafePortableRelativePaths[i];
   }
 }

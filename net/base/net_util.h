@@ -301,20 +301,17 @@ NET_EXPORT base::FilePath GenerateFileName(
     const std::string& mime_type,
     const std::string& default_name);
 
-// Valid basenames:
+// Valid components:
 // * are not empty
 // * are not Windows reserved names (CON, NUL.zip, etc.)
-// * are just basenames
 // * do not have trailing separators
 // * do not equal kCurrentDirectory
 // * do not reference the parent directory
-// * are valid path components, which:
-// - * are not the empty string
-// - * do not contain illegal characters
-// - * do not end with Windows shell-integrated extensions (even on posix)
-// - * do not begin with '.' (which would hide them in most file managers)
-// - * do not end with ' ' or '.'
-NET_EXPORT bool IsSafePortableBasename(const base::FilePath& path);
+// * do not contain illegal characters
+// * do not end with Windows shell-integrated extensions (even on posix)
+// * do not begin with '.' (which would hide them in most file managers)
+// * do not end with ' ' or '.'
+NET_EXPORT bool IsSafePortablePathComponent(const base::FilePath& component);
 
 // Basenames of valid relative paths are IsSafePortableBasename(), and internal
 // path components of valid relative paths are valid path components as

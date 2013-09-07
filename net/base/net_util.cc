@@ -1152,12 +1152,8 @@ bool IsSafePortablePathComponent(const base::FilePath& component) {
          FilePathToString16(component, &component16) &&
          file_util::IsFilenameLegal(component16) &&
          !IsShellIntegratedExtension(extension) &&
-         (sanitized == component.value());
-}
-
-bool IsSafePortableBasename(const base::FilePath& filename) {
-  return IsSafePortablePathComponent(filename) &&
-         !IsReservedName(filename.value());
+         (sanitized == component.value()) &&
+         !IsReservedName(component.value());
 }
 
 bool IsSafePortableRelativePath(const base::FilePath& path) {
@@ -1171,7 +1167,7 @@ bool IsSafePortableRelativePath(const base::FilePath& path) {
     if (!IsSafePortablePathComponent(base::FilePath(components[i])))
       return false;
   }
-  return IsSafePortableBasename(path.BaseName());
+  return IsSafePortablePathComponent(path.BaseName());
 }
 
 void GenerateSafeFileName(const std::string& mime_type,
