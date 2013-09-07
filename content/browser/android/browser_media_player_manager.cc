@@ -524,7 +524,11 @@ void BrowserMediaPlayerManager::AddDrmBridge(int media_keys_id,
   // the default L3.
   scoped_ptr<MediaDrmBridge> drm_bridge(
       MediaDrmBridge::Create(media_keys_id, uuid, "L3", this));
-  DCHECK(drm_bridge) << "failed to create drm bridge. ";
+  if (!drm_bridge) {
+    DVLOG(1) << "failed to create drm bridge.";
+    return;
+  }
+
   drm_bridges_.push_back(drm_bridge.release());
 }
 
@@ -543,7 +547,7 @@ void BrowserMediaPlayerManager::OnSetMediaKeys(int player_id,
   MediaPlayerAndroid* player = GetPlayer(player_id);
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (!player || !drm_bridge) {
-    NOTREACHED() << "OnSetMediaKeys(): Player and MediaKeys must be present.";
+    DVLOG(1) << "OnSetMediaKeys(): Player and MediaKeys must be present.";
     return;
   }
   // TODO(qinmin): add the logic to decide whether we should create the

@@ -59,20 +59,18 @@ class MediaDrmBridge {
         return new UUID(mostSigBits, leastSigBits);
     }
 
-    private MediaDrmBridge(UUID schemeUUID, String securityLevel, int nativeMediaDrmBridge) {
-        try {
-            mSchemeUUID = schemeUUID;
-            mMediaDrm = new MediaDrm(schemeUUID);
-            mHandler = new Handler();
-            mNativeMediaDrmBridge = nativeMediaDrmBridge;
-            mMediaDrm.setOnEventListener(new MediaDrmListener());
-            mMediaDrm.setPropertyString(PRIVACY_MODE, "enable");
+    private MediaDrmBridge(UUID schemeUUID, String securityLevel, int nativeMediaDrmBridge)
+            throws android.media.UnsupportedSchemeException {
+        mSchemeUUID = schemeUUID;
+        mMediaDrm = new MediaDrm(schemeUUID);
+        mHandler = new Handler();
+        mNativeMediaDrmBridge = nativeMediaDrmBridge;
+        mMediaDrm.setOnEventListener(new MediaDrmListener());
+        mMediaDrm.setPropertyString(PRIVACY_MODE, "enable");
+        String currentSecurityLevel = mMediaDrm.getPropertyString(SECURITY_LEVEL);
+        Log.e(TAG, "Security level: current " + currentSecurityLevel + ", new " + securityLevel);
+        if (!securityLevel.equals(currentSecurityLevel))
             mMediaDrm.setPropertyString(SECURITY_LEVEL, securityLevel);
-        } catch (android.media.UnsupportedSchemeException e) {
-            Log.e(TAG, "Unsupported DRM scheme: " + e.toString());
-        } catch (java.lang.IllegalArgumentException e) {
-            Log.e(TAG, "Failed to set DRM properties: " + e.toString());
-        }
     }
 
     /**
@@ -146,10 +144,21 @@ class MediaDrmBridge {
     private static MediaDrmBridge create(
             byte[] schemeUUID, String securityLevel, int nativeMediaDrmBridge) {
         UUID cryptoScheme = getUUIDFromBytes(schemeUUID);
-        if (cryptoScheme != null && MediaDrm.isCryptoSchemeSupported(cryptoScheme)) {
-            return new MediaDrmBridge(cryptoScheme, securityLevel, nativeMediaDrmBridge);
+        if (cryptoScheme == null || !MediaDrm.isCryptoSchemeSupported(cryptoScheme)) {
+            return null;
         }
-        return null;
+
+        MediaDrmBridge media_drm_bridge = null;
+        try {
+            media_drm_bridge = new MediaDrmBridge(
+                    cryptoScheme, securityLevel, nativeMediaDrmBridge);
+        } catch (android.media.UnsupportedSchemeException e) {
+            Log.e(TAG, "Unsupported DRM scheme: " + e.toString());
+        } catch (java.lang.IllegalArgumentException e) {
+            Log.e(TAG, "Failed to create MediaDrmBridge: " + e.toString());
+        }
+
+        return media_drm_bridge;
     }
 
     /**
@@ -167,6 +176,7 @@ class MediaDrmBridge {
     private void release() {
         if (mMediaCrypto != null) {
             mMediaCrypto.release();
+            mMediaCrypto = null;
         }
         if (mSessionId != null) {
             try {
@@ -175,9 +185,12 @@ class MediaDrmBridge {
             } catch (java.io.UnsupportedEncodingException e) {
                 Log.e(TAG, "Failed to close session: " + e.toString());
             }
+            mSessionId = null;
         }
-        mMediaDrm.release();
-        mMediaDrm = null;
+        if (mMediaDrm != null) {
+            mMediaDrm.release();
+            mMediaDrm = null;
+        }
     }
 
     /**
@@ -326,6 +339,10 @@ class MediaDrmBridge {
         try {
             mMediaDrm.provideProvisionResponse(response);
         } catch (android.media.DeniedByServerException e) {
+            Log.e(TAG, "failed to provide provision response: " + e.toString());
+            onKeyError();
+            return;
+        } catch (java.lang.IllegalStateException e) {
             Log.e(TAG, "failed to provide provision response: " + e.toString());
             onKeyError();
             return;

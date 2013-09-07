@@ -587,13 +587,17 @@ void MediaSourcePlayer::ConfigureVideoDecoderJob() {
   // Android does not allow 2 MediaCodec instances use the same surface.
   video_decoder_job_.reset();
   // Create the new VideoDecoderJob.
-  video_decoder_job_.reset(VideoDecoderJob::Create(
-      video_codec_, gfx::Size(width_, height_), surface_.j_surface().obj(),
-      media_crypto.obj(),
-      base::Bind(&MediaPlayerManager::OnReadFromDemuxer,
-                 base::Unretained(manager()),
-                 player_id(),
-                 DemuxerStream::VIDEO)));
+  bool is_secure = IsProtectedSurfaceRequired();
+  video_decoder_job_.reset(
+      VideoDecoderJob::Create(video_codec_,
+                              is_secure,
+                              gfx::Size(width_, height_),
+                              surface_.j_surface().obj(),
+                              media_crypto.obj(),
+                              base::Bind(&MediaPlayerManager::OnReadFromDemuxer,
+                                         base::Unretained(manager()),
+                                         player_id(),
+                                         DemuxerStream::VIDEO)));
   if (video_decoder_job_)
     reconfig_video_decoder_ = false;
 

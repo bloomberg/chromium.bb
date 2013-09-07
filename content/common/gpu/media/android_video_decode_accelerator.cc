@@ -399,7 +399,7 @@ void AndroidVideoDecodeAccelerator::Flush() {
 
 bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
   DCHECK(surface_texture_.get());
-  media_codec_.reset(media::VideoCodecBridge::Create(codec_));
+  media_codec_.reset(media::VideoCodecBridge::Create(codec_, false));
 
   if (!media_codec_)
     return false;

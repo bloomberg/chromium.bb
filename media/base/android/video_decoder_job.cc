@@ -24,11 +24,14 @@ class VideoDecoderThread : public base::Thread {
 base::LazyInstance<VideoDecoderThread>::Leaky
     g_video_decoder_thread = LAZY_INSTANCE_INITIALIZER;
 
-
-VideoDecoderJob* VideoDecoderJob::Create(
-    const VideoCodec video_codec, const gfx::Size& size, jobject surface,
-    jobject media_crypto, const base::Closure& request_data_cb) {
-  scoped_ptr<VideoCodecBridge> codec(VideoCodecBridge::Create(video_codec));
+VideoDecoderJob* VideoDecoderJob::Create(const VideoCodec video_codec,
+                                         bool is_secure,
+                                         const gfx::Size& size,
+                                         jobject surface,
+                                         jobject media_crypto,
+                                         const base::Closure& request_data_cb) {
+  scoped_ptr<VideoCodecBridge> codec(
+      VideoCodecBridge::Create(video_codec, is_secure));
   if (codec && codec->Start(video_codec, size, surface, media_crypto))
     return new VideoDecoderJob(codec.Pass(), request_data_cb);
   return NULL;

@@ -141,7 +141,8 @@ class MediaCodecBridge {
     private static MediaCodecBridge create(String mime, boolean isSecure) {
         MediaCodec mediaCodec = null;
         try {
-            if (isSecure) {
+            // |isSecure| only applies to video decoders.
+            if (mime.startsWith("video") && isSecure) {
                 mediaCodec = MediaCodec.createByCodecName(getSecureDecoderNameForMime(mime));
             } else {
                 mediaCodec = MediaCodec.createDecoderByType(mime);

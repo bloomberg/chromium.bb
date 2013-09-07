@@ -11,6 +11,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/base/media_keys.h"
 
@@ -32,10 +33,11 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
 
   // Returns a MediaDrmBridge instance if |scheme_uuid| is supported, or a NULL
   // pointer otherwise.
-  static MediaDrmBridge* Create(int media_keys_id,
-                                const std::vector<uint8>& scheme_uuid,
-                                const std::string& security_level,
-                                MediaPlayerManager* manager);
+  static scoped_ptr<MediaDrmBridge> Create(
+      int media_keys_id,
+      const std::vector<uint8>& scheme_uuid,
+      const std::string& security_level,
+      MediaPlayerManager* manager);
 
   // Checks whether MediaDRM is available.
   static bool IsAvailable();

@@ -136,7 +136,7 @@ TEST(MediaCodecBridgeTest, Initialize) {
     return;
 
   scoped_ptr<media::MediaCodecBridge> media_codec;
-  media_codec.reset(VideoCodecBridge::Create(kCodecH264));
+  media_codec.reset(VideoCodecBridge::Create(kCodecH264, false));
 }
 
 TEST(MediaCodecBridgeTest, DoNormal) {
@@ -235,7 +235,7 @@ TEST(MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
     return;
 
   scoped_ptr<VideoCodecBridge> media_codec;
-  media_codec.reset(VideoCodecBridge::Create(kCodecVP8));
+  media_codec.reset(VideoCodecBridge::Create(kCodecVP8, false));
   EXPECT_TRUE(media_codec->Start(
       kCodecVP8, gfx::Size(320, 240), NULL, NULL));
   scoped_refptr<DecoderBuffer> buffer =
@@ -263,7 +263,7 @@ TEST(MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
 
 TEST(MediaCodecBridgeTest, CreateUnsupportedCodec) {
   EXPECT_EQ(NULL, AudioCodecBridge::Create(kUnknownAudioCodec));
-  EXPECT_EQ(NULL, VideoCodecBridge::Create(kUnknownVideoCodec));
+  EXPECT_EQ(NULL, VideoCodecBridge::Create(kUnknownVideoCodec, false));
 }
 
 }  // namespace media

@@ -20,14 +20,18 @@ class VideoDecoderJob : public MediaDecoderJob {
 
   // Create a new VideoDecoderJob instance.
   // |video_codec| - The video format the object needs to decode.
-  // |size| -  The natrual size of the output frames.
+  // |is_secure| - Whether secure decoding is required.
+  // |size| -  The natural size of the output frames.
   // |surface| - The surface to render the frames to.
   // |media_crypto| - Handle to a Java object responsible for decrypting the
   // video data.
   // |request_data_cb| - Callback used to request more data for the decoder.
-  static VideoDecoderJob* Create(
-      const VideoCodec video_codec, const gfx::Size& size, jobject surface,
-      jobject media_crypto, const base::Closure& request_data_cb);
+  static VideoDecoderJob* Create(const VideoCodec video_codec,
+                                 bool is_secure,
+                                 const gfx::Size& size,
+                                 jobject surface,
+                                 jobject media_crypto,
+                                 const base::Closure& request_data_cb);
 
  private:
   VideoDecoderJob(scoped_ptr<VideoCodecBridge> video_codec_bridge,

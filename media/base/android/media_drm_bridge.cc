@@ -152,16 +152,22 @@ static MediaDrmBridge::SecurityLevel GetSecurityLevelFromString(
 }
 
 // static
-MediaDrmBridge* MediaDrmBridge::Create(int media_keys_id,
-                                       const std::vector<uint8>& scheme_uuid,
-                                       const std::string& security_level,
-                                       MediaPlayerManager* manager) {
-  if (!IsAvailable() || scheme_uuid.empty())
-    return NULL;
+scoped_ptr<MediaDrmBridge> MediaDrmBridge::Create(
+    int media_keys_id,
+    const std::vector<uint8>& scheme_uuid,
+    const std::string& security_level,
+    MediaPlayerManager* manager) {
+  scoped_ptr<MediaDrmBridge> media_drm_bridge;
 
-  // TODO(qinmin): check whether the uuid is valid.
-  return new MediaDrmBridge(
-      media_keys_id, scheme_uuid, security_level, manager);
+  if (IsAvailable() && !scheme_uuid.empty()) {
+    // TODO(qinmin): check whether the uuid is valid.
+    media_drm_bridge.reset(
+      new MediaDrmBridge(media_keys_id, scheme_uuid, security_level, manager));
+    if (media_drm_bridge->j_media_drm_.is_null())
+      media_drm_bridge.reset();
+  }
+
+  return media_drm_bridge.Pass();
 }
 
 // static
@@ -213,7 +219,8 @@ MediaDrmBridge::MediaDrmBridge(int media_keys_id,
 
 MediaDrmBridge::~MediaDrmBridge() {
   JNIEnv* env = AttachCurrentThread();
-  Java_MediaDrmBridge_release(env, j_media_drm_.obj());
+  if (!j_media_drm_.is_null())
+    Java_MediaDrmBridge_release(env, j_media_drm_.obj());
 }
 
 bool MediaDrmBridge::GenerateKeyRequest(const std::string& type,

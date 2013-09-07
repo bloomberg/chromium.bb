@@ -123,7 +123,7 @@ class MEDIA_EXPORT MediaCodecBridge {
   static bool RegisterMediaCodecBridge(JNIEnv* env);
 
  protected:
-  explicit MediaCodecBridge(const std::string& mime);
+  MediaCodecBridge(const std::string& mime, bool is_secure);
 
   // Calls start() against the media codec instance. Used in StartXXX() after
   // configuring media codec.
@@ -171,7 +171,7 @@ class MEDIA_EXPORT VideoCodecBridge : public MediaCodecBridge {
  public:
   // Returns an VideoCodecBridge instance if |codec| is supported, or a NULL
   // pointer otherwise.
-  static VideoCodecBridge* Create(const VideoCodec codec);
+  static VideoCodecBridge* Create(const VideoCodec codec, bool is_secure);
 
   // Start the video codec bridge.
   // TODO(qinmin): Pass codec specific data if available.
@@ -179,7 +179,7 @@ class MEDIA_EXPORT VideoCodecBridge : public MediaCodecBridge {
              jobject media_crypto);
 
  private:
-  explicit VideoCodecBridge(const std::string& mime);
+  VideoCodecBridge(const std::string& mime, bool is_secure);
 };
 
 }  // namespace media

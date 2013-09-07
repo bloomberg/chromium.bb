@@ -88,14 +88,14 @@ bool MediaCodecBridge::CanDecode(const std::string& codec, bool is_secure) {
   return !Java_MediaCodecBridge_create(env, j_mime.obj(), is_secure).is_null();
 }
 
-// TODO(xhwang): Support creating secure MediaCodecBridge.
-MediaCodecBridge::MediaCodecBridge(const std::string& mime) {
+MediaCodecBridge::MediaCodecBridge(const std::string& mime, bool is_secure) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
   DCHECK(!mime.empty());
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
-  j_media_codec_.Reset(Java_MediaCodecBridge_create(env, j_mime.obj(), false));
+  j_media_codec_.Reset(
+      Java_MediaCodecBridge_create(env, j_mime.obj(), is_secure));
 }
 
 MediaCodecBridge::~MediaCodecBridge() {
@@ -243,7 +243,8 @@ size_t MediaCodecBridge::FillInputBuffer(
 }
 
 AudioCodecBridge::AudioCodecBridge(const std::string& mime)
-    : MediaCodecBridge(mime) {
+    // Audio codec doesn't care about security level.
+    : MediaCodecBridge(mime, false) {
 }
 
 bool AudioCodecBridge::Start(
@@ -401,8 +402,8 @@ void AudioCodecBridge::SetVolume(double volume) {
   Java_MediaCodecBridge_setVolume(env, media_codec(), volume);
 }
 
-VideoCodecBridge::VideoCodecBridge(const std::string& mime)
-    : MediaCodecBridge(mime) {
+VideoCodecBridge::VideoCodecBridge(const std::string& mime, bool is_secure)
+    : MediaCodecBridge(mime, is_secure) {
 }
 
 bool VideoCodecBridge::Start(
@@ -436,9 +437,10 @@ AudioCodecBridge* AudioCodecBridge::Create(const AudioCodec codec) {
   return mime.empty() ? NULL : new AudioCodecBridge(mime);
 }
 
-VideoCodecBridge* VideoCodecBridge::Create(const VideoCodec codec) {
+VideoCodecBridge* VideoCodecBridge::Create(const VideoCodec codec,
+                                           bool is_secure) {
   const std::string mime = VideoCodecToMimeType(codec);
-  return mime.empty() ? NULL : new VideoCodecBridge(mime);
+  return mime.empty() ? NULL : new VideoCodecBridge(mime, is_secure);
 }
 
 bool MediaCodecBridge::RegisterMediaCodecBridge(JNIEnv* env) {
