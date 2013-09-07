@@ -884,8 +884,8 @@ const char kZygoteProcess[]                 = "zygote";
 // Disable WebRTC device enumeration.
 const char kDisableDeviceEnumeration[]        = "disable-device-enumeration";
 
-// Enable WebRTC DataChannels SCTP wire protocol support.
-const char kEnableSCTPDataChannels[]        = "enable-sctp-data-channels";
+// Disable WebRTC DataChannels SCTP wire protocol support.
+const char kDisableSCTPDataChannels[]        = "disable-sctp-data-channels";
 
 // Enables WebRTC AEC recordings.
 const char kEnableWebRtcAecRecordings[]     = "enable-webrtc-aec-recordings";

@@ -5939,11 +5939,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_WEBRTC_DESCRIPTION" desc="Description for the flag to disable WebRTC.">
         Enabling this option prevents web applications from accessing the WebRTC API.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SCTP_DATA_CHANNELS_NAME" desc="Name of about:flags option to turn on SCTP data channels support">
-        Enable SCTP Data Channels
+      <message name="IDS_FLAGS_DISABLE_SCTP_DATA_CHANNELS_NAME" desc="Name of about:flags option to turn off SCTP data channels support">
+        Disable SCTP Data Channels
       </message>
-      <message name="IDS_FLAGS_ENABLE_SCTP_DATA_CHANNELS_DESCRIPTION" desc="Description of about:flags option to turn on SCTP data channels support">
-        When enabled, DataChannels created by WebRTC will use the SCTP wire protocol.
+      <message name="IDS_FLAGS_DISABLE_SCTP_DATA_CHANNELS_DESCRIPTION" desc="Description of about:flags option to turn ooff SCTP data channels support">
+        When enabled, DataChannels created by WebRTC will not use the SCTP wire protocol.
       </message>
       <message name="IDS_FLAGS_DISABLE_DEVICE_ENUMERATION_NAME" desc="Name of about:flags option to turn off WebRTC device enumeration support.">
         Disable WebRTC device enumeration.

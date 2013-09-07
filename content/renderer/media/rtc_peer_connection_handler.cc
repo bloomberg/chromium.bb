@@ -349,12 +349,10 @@ bool RTCPeerConnectionHandler::initialize(
 
   RTCMediaConstraints constraints(options);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSCTPDataChannels)) {
-    // TODO(jiayl): replace the hard coded string with
-    // webrtc::MediaConstraintsInterface::kEnableSctpDataChannels when
-    // the Libjingle change is rolled.
-    constraints.AddOptional("internalSctpDataChannels", "true");
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSCTPDataChannels)) {
+    constraints.AddOptional(
+        webrtc::MediaConstraintsInterface::kEnableSctpDataChannels, "true");
   }
 
   native_peer_connection_ =

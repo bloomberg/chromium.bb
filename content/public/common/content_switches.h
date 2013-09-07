@@ -249,7 +249,7 @@ CONTENT_EXPORT extern const char kZygoteProcess[];
 
 #if defined(ENABLE_WEBRTC)
 CONTENT_EXPORT extern const char kDisableDeviceEnumeration[];
-CONTENT_EXPORT extern const char kEnableSCTPDataChannels[];
+CONTENT_EXPORT extern const char kDisableSCTPDataChannels[];
 extern const char kEnableWebRtcAecRecordings[];
 extern const char kEnableWebRtcHWDecoding[];
 extern const char kEnableWebRtcHWEncoding[];

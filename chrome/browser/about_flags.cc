@@ -446,11 +446,11 @@ const Experiment kExperiments[] = {
   },
 #if defined(ENABLE_WEBRTC)
   {
-    "enable-sctp-data-channels",
-    IDS_FLAGS_ENABLE_SCTP_DATA_CHANNELS_NAME,
-    IDS_FLAGS_ENABLE_SCTP_DATA_CHANNELS_DESCRIPTION,
+    "disable-sctp-data-channels",
+    IDS_FLAGS_DISABLE_SCTP_DATA_CHANNELS_NAME,
+    IDS_FLAGS_DISABLE_SCTP_DATA_CHANNELS_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableSCTPDataChannels)
+    SINGLE_VALUE_TYPE(switches::kDisableSCTPDataChannels)
   },
   {
     "disable-device-enumeration",
