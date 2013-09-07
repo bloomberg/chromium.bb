@@ -15,6 +15,7 @@ import gyp.common
 import gyp.msvs_emulation
 import gyp.MSVSUtil as MSVSUtil
 import gyp.xcode_emulation
+from cStringIO import StringIO
 
 from gyp.common import GetEnvironFallback
 import gyp.ninja_syntax as ninja_syntax
@@ -2019,13 +2020,20 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       obj += '.' + toolset
     output_file = os.path.join(obj, base_path, name + '.ninja')
 
+    ninja_output = StringIO()
     writer = NinjaWriter(qualified_target, target_outputs, base_path, build_dir,
-                         OpenOutput(os.path.join(toplevel_build, output_file)),
+                         ninja_output,
                          toplevel_build, output_file,
                          flavor, toplevel_dir=options.toplevel_dir)
-    master_ninja.subninja(output_file)
-
     target = writer.WriteSpec(spec, config_name, generator_flags)
+
+    if ninja_output.tell() > 0:
+      # Only create files for ninja files that actually have contents.
+      with OpenOutput(os.path.join(toplevel_build, output_file)) as ninja_file:
+        ninja_file.write(ninja_output.getvalue())
+      ninja_output.close()
+      master_ninja.subninja(output_file)
+
     if target:
       if name != target.FinalOutput() and spec['toolset'] == 'target':
         target_short_names.setdefault(name, []).append(target)
