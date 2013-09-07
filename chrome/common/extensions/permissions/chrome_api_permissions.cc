@@ -130,7 +130,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       IDS_EXTENSION_PROMPT_WARNING_TABS,
       PermissionMessage::kTabs },
     { APIPermission::kSessions, "sessions" },
-    { APIPermission::kSignedInDevices, "signedInDevices"},
     { APIPermission::kStorage, "storage" },
     { APIPermission::kSyncFileSystem, "syncFileSystem",
       APIPermissionInfo::kFlagNone,
