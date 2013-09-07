@@ -54,7 +54,9 @@ class MEDIA_EXPORT MediaCodecBridge {
   // DequeueInputBuffer() and DequeueOutputBuffer() become invalid.
   // Please note that this clears all the inputs in the media codec. In other
   // words, there will be no outputs until new input is provided.
-  void Reset();
+  // Returns MEDIA_CODEC_ERROR if an unexpected error happens, or Media_CODEC_OK
+  // otherwise.
+  MediaCodecStatus Reset();
 
   // Finishes the decode/encode session. The instance remains active
   // and ready to be StartAudio/Video()ed again. HOWEVER, due to the buggy

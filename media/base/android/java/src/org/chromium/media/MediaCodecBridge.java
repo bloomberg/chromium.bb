@@ -193,12 +193,18 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
-    private void flush() {
-        mMediaCodec.flush();
-        mFlushed = true;
-        if (mAudioTrack != null) {
-            mAudioTrack.flush();
+    private int flush() {
+        try {
+            mFlushed = true;
+            if (mAudioTrack != null) {
+                mAudioTrack.flush();
+            }
+            mMediaCodec.flush();
+        } catch(IllegalStateException e) {
+            Log.e(TAG, "Failed to flush MediaCodec " + e.toString());
+            return MEDIA_CODEC_ERROR;
         }
+        return MEDIA_CODEC_OK;
     }
 
     @CalledByNative
