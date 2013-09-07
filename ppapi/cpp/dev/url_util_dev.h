@@ -41,6 +41,8 @@ class URLUtil_Dev {
 
   Var GetPluginInstanceURL(const InstanceHandle& instance,
                            PP_URLComponents_Dev* components = NULL) const;
+  Var GetPluginReferrerURL(const InstanceHandle& instance,
+                           PP_URLComponents_Dev* components = NULL) const;
 
  private:
   URLUtil_Dev() : interface_(NULL) {}

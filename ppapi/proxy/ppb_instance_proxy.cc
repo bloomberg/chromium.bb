@@ -173,6 +173,8 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgDocumentCanAccessDocument)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetPluginInstanceURL,
                         OnHostMsgGetPluginInstanceURL)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetPluginReferrerURL,
+                        OnHostMsgGetPluginReferrerURL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_NeedKey,
                         OnHostMsgNeedKey)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_KeyAdded,
@@ -520,6 +522,17 @@ PP_Var PPB_Instance_Proxy::GetPluginInstanceURL(
       PP_URLComponents_Dev* components) {
   ReceiveSerializedVarReturnValue result;
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_GetPluginInstanceURL(
+      API_ID_PPB_INSTANCE, instance, &result));
+  return PPB_URLUtil_Shared::ConvertComponentsAndReturnURL(
+      result.Return(dispatcher()),
+      components);
+}
+
+PP_Var PPB_Instance_Proxy::GetPluginReferrerURL(
+      PP_Instance instance,
+      PP_URLComponents_Dev* components) {
+  ReceiveSerializedVarReturnValue result;
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_GetPluginReferrerURL(
       API_ID_PPB_INSTANCE, instance, &result));
   return PPB_URLUtil_Shared::ConvertComponentsAndReturnURL(
       result.Return(dispatcher()),
@@ -1029,6 +1042,18 @@ void PPB_Instance_Proxy::OnHostMsgGetPluginInstanceURL(
   if (enter.succeeded()) {
     result.Return(dispatcher(),
                   enter.functions()->GetPluginInstanceURL(instance, NULL));
+  }
+}
+
+void PPB_Instance_Proxy::OnHostMsgGetPluginReferrerURL(
+    PP_Instance instance,
+    SerializedVarReturnValue result) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+    return;
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    result.Return(dispatcher(),
+                  enter.functions()->GetPluginReferrerURL(instance, NULL));
   }
 }
 

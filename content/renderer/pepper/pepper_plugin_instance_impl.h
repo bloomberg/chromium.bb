@@ -435,6 +435,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual PP_Var GetPluginInstanceURL(
       PP_Instance instance,
       PP_URLComponents_Dev* components) OVERRIDE;
+  virtual PP_Var GetPluginReferrerURL(
+      PP_Instance instance,
+      PP_URLComponents_Dev* components) OVERRIDE;
 
   // PPB_ContentDecryptor_Private implementation.
   virtual void NeedKey(PP_Instance instance,

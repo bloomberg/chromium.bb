@@ -93,6 +93,7 @@
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
+#include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -2501,6 +2502,24 @@ PP_Var PepperPluginInstanceImpl::GetPluginInstanceURL(
     PP_Instance instance,
     PP_URLComponents_Dev* components) {
   return ppapi::PPB_URLUtil_Shared::GenerateURLReturn(plugin_url_,
+                                                      components);
+}
+
+PP_Var PepperPluginInstanceImpl::GetPluginReferrerURL(
+    PP_Instance instance,
+    PP_URLComponents_Dev* components) {
+  WebKit::WebDocument document = container()->element().document();
+  if (!full_frame_)
+    return ppapi::PPB_URLUtil_Shared::GenerateURLReturn(document.url(),
+                                                        components);
+  WebFrame* frame = document.frame();
+  if (!frame)
+    return PP_MakeUndefined();
+  const WebURLRequest& request = frame->dataSource()->originalRequest();
+  WebString referer = request.httpHeaderField("Referer");
+  if (referer.isEmpty())
+    return PP_MakeUndefined();
+  return ppapi::PPB_URLUtil_Shared::GenerateURLReturn(GURL(referer),
                                                       components);
 }
 

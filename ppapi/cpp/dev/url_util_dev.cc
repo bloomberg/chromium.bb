@@ -82,4 +82,11 @@ Var URLUtil_Dev::GetPluginInstanceURL(const InstanceHandle& instance,
                                               components));
 }
 
+Var URLUtil_Dev::GetPluginReferrerURL(const InstanceHandle& instance,
+                                      PP_URLComponents_Dev* components) const {
+  return Var(PASS_REF,
+             interface_->GetPluginReferrerURL(instance.pp_instance(),
+                                              components));
+}
+
 }  // namespace pp

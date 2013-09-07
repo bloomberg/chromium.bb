@@ -53,7 +53,15 @@ PP_Var GetPluginInstanceURL(PP_Instance instance,
   return enter.functions()->GetPluginInstanceURL(instance, components);
 }
 
-const PPB_URLUtil_Dev g_ppb_url_util = {
+PP_Var GetPluginReferrerURL(PP_Instance instance,
+                            PP_URLComponents_Dev* components) {
+  EnterInstance enter(instance);
+  if (enter.failed())
+    return PP_MakeUndefined();
+  return enter.functions()->GetPluginReferrerURL(instance, components);
+}
+
+const PPB_URLUtil_Dev_0_6 g_ppb_url_util_0_6 = {
   &PPB_URLUtil_Shared::Canonicalize,
   &PPB_URLUtil_Shared::ResolveRelativeToURL,
   &ResolveRelativeToDocument,
@@ -64,10 +72,26 @@ const PPB_URLUtil_Dev g_ppb_url_util = {
   &GetPluginInstanceURL
 };
 
+const PPB_URLUtil_Dev_0_7 g_ppb_url_util_0_7 = {
+  &PPB_URLUtil_Shared::Canonicalize,
+  &PPB_URLUtil_Shared::ResolveRelativeToURL,
+  &ResolveRelativeToDocument,
+  &PPB_URLUtil_Shared::IsSameSecurityOrigin,
+  &DocumentCanRequest,
+  &DocumentCanAccessDocument,
+  &GetDocumentURL,
+  &GetPluginInstanceURL,
+  &GetPluginReferrerURL
+};
+
 }  // namespace
 
 const PPB_URLUtil_Dev_0_6* GetPPB_URLUtil_Dev_0_6_Thunk() {
-  return &g_ppb_url_util;
+  return &g_ppb_url_util_0_6;
+}
+
+const PPB_URLUtil_Dev_0_7* GetPPB_URLUtil_Dev_0_7_Thunk() {
+  return &g_ppb_url_util_0_7;
 }
 
 }  // namespace thunk

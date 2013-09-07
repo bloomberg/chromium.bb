@@ -936,6 +936,9 @@ IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBInstance_GetDocumentURL,
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetPluginInstanceURL,
                            PP_Instance /* active */,
                            ppapi::proxy::SerializedVar /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetPluginReferrerURL,
+                           PP_Instance /* instance */,
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_SetCursor,
                     PP_Instance /* instance */,
                     int32_t /* type */,

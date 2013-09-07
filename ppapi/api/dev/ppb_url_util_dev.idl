@@ -7,8 +7,11 @@
  * This file defines the <code>PPB_URLUtil_Dev</code> interface.
  */
 
+[generate_thunk]
+
 label Chrome {
-  M17 = 0.6
+  M17 = 0.6,
+  M31 = 0.7
 };
 
 /*
@@ -145,5 +148,17 @@ interface PPB_URLUtil_Dev {
    * to specify that no component information is necessary.
    */
   PP_Var GetPluginInstanceURL([in] PP_Instance instance,
+                              [out] PP_URLComponents_Dev components);
+
+  /*
+   * Returns the Referrer URL of the HTTP request that loaded the plugin. This
+   * is the value of the 'Referer' header of the request. An undefined value
+   * means the 'Referer' header was absent.
+   * The components pointer, if non-NULL and the canonicalized URL is valid,
+   * will identify the components of the resulting URL. Components may be NULL
+   * to specify that no component information is necessary.
+   */
+  [version=0.7]
+  PP_Var GetPluginReferrerURL([in] PP_Instance instance,
                               [out] PP_URLComponents_Dev components);
 };

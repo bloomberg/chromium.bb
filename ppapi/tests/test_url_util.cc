@@ -28,6 +28,7 @@ void TestURLUtil::RunTests(const std::string& filter) {
   RUN_TEST(DocumentCanAccessDocument, filter);
   RUN_TEST(GetDocumentURL, filter);
   RUN_TEST(GetPluginInstanceURL, filter);
+  RUN_TEST(GetPluginReferrerURL, filter);
 }
 
 std::string TestURLUtil::TestCanonicalize() {
@@ -136,3 +137,14 @@ std::string TestURLUtil::TestGetPluginInstanceURL() {
   ASSERT_EQ(url.AsString(), "http://a.b.c/test");
   PASS();
 }
+
+std::string TestURLUtil::TestGetPluginReferrerURL() {
+  pp::Var url = util_->GetPluginReferrerURL(instance_);
+  ASSERT_TRUE(url.is_string());
+  pp::VarPrivate window = instance_->GetWindowObject();
+  pp::Var href = window.GetProperty("location").GetProperty("href");
+  ASSERT_TRUE(href.is_string());
+  ASSERT_EQ(url.AsString(), href.AsString());
+  PASS();
+}
+

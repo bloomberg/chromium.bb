@@ -189,6 +189,8 @@ class PPB_Instance_API {
                                             PP_Instance target) = 0;
   virtual PP_Var GetPluginInstanceURL(PP_Instance instance,
                                       PP_URLComponents_Dev* components) = 0;
+  virtual PP_Var GetPluginReferrerURL(PP_Instance instance,
+                                      PP_URLComponents_Dev* components) = 0;
 #endif  // !defined(OS_NACL)
 
   static const ApiID kApiID = API_ID_PPB_INSTANCE;

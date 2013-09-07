@@ -184,6 +184,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_91;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_92;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16;
@@ -2068,6 +2069,55 @@ static void Pnacl_M17_PPB_URLUtil_Dev_GetPluginInstanceURL(struct PP_Var* _struc
 }
 
 /* End wrapper methods for PPB_URLUtil_Dev_0_6 */
+
+/* Begin wrapper methods for PPB_URLUtil_Dev_0_7 */
+
+static void Pnacl_M31_PPB_URLUtil_Dev_Canonicalize(struct PP_Var* _struct_result, struct PP_Var* url, struct PP_URLComponents_Dev* components) {
+  const struct PPB_URLUtil_Dev_0_7 *iface = Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7.real_iface;
+  *_struct_result = iface->Canonicalize(*url, components);
+}
+
+static void Pnacl_M31_PPB_URLUtil_Dev_ResolveRelativeToURL(struct PP_Var* _struct_result, struct PP_Var* base_url, struct PP_Var* relative_string, struct PP_URLComponents_Dev* components) {
+  const struct PPB_URLUtil_Dev_0_7 *iface = Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7.real_iface;
+  *_struct_result = iface->ResolveRelativeToURL(*base_url, *relative_string, components);
+}
+
+static void Pnacl_M31_PPB_URLUtil_Dev_ResolveRelativeToDocument(struct PP_Var* _struct_result, PP_Instance instance, struct PP_Var* relative_string, struct PP_URLComponents_Dev* components) {
+  const struct PPB_URLUtil_Dev_0_7 *iface = Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7.real_iface;
+  *_struct_result = iface->ResolveRelativeToDocument(instance, *relative_string, components);
+}
+
+static PP_Bool Pnacl_M31_PPB_URLUtil_Dev_IsSameSecurityOrigin(struct PP_Var* url_a, struct PP_Var* url_b) {
+  const struct PPB_URLUtil_Dev_0_7 *iface = Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7.real_iface;
+  return iface->IsSameSecurityOrigin(*url_a, *url_b);
+}
+
+static PP_Bool Pnacl_M31_PPB_URLUtil_Dev_DocumentCanRequest(PP_Instance instance, struct PP_Var* url) {
+  const struct PPB_URLUtil_Dev_0_7 *iface = Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7.real_iface;
+  return iface->DocumentCanRequest(instance, *url);
+}
+
+static PP_Bool Pnacl_M31_PPB_URLUtil_Dev_DocumentCanAccessDocument(PP_Instance active, PP_Instance target) {
+  const struct PPB_URLUtil_Dev_0_7 *iface = Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7.real_iface;
+  return iface->DocumentCanAccessDocument(active, target);
+}
+
+static void Pnacl_M31_PPB_URLUtil_Dev_GetDocumentURL(struct PP_Var* _struct_result, PP_Instance instance, struct PP_URLComponents_Dev* components) {
+  const struct PPB_URLUtil_Dev_0_7 *iface = Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7.real_iface;
+  *_struct_result = iface->GetDocumentURL(instance, components);
+}
+
+static void Pnacl_M31_PPB_URLUtil_Dev_GetPluginInstanceURL(struct PP_Var* _struct_result, PP_Instance instance, struct PP_URLComponents_Dev* components) {
+  const struct PPB_URLUtil_Dev_0_7 *iface = Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7.real_iface;
+  *_struct_result = iface->GetPluginInstanceURL(instance, components);
+}
+
+static void Pnacl_M31_PPB_URLUtil_Dev_GetPluginReferrerURL(struct PP_Var* _struct_result, PP_Instance instance, struct PP_URLComponents_Dev* components) {
+  const struct PPB_URLUtil_Dev_0_7 *iface = Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7.real_iface;
+  *_struct_result = iface->GetPluginReferrerURL(instance, components);
+}
+
+/* End wrapper methods for PPB_URLUtil_Dev_0_7 */
 
 /* Begin wrapper methods for PPB_VideoCapture_Dev_0_2 */
 
@@ -4476,6 +4526,18 @@ struct PPB_URLUtil_Dev_0_6 Pnacl_Wrappers_PPB_URLUtil_Dev_0_6 = {
     .GetPluginInstanceURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M17_PPB_URLUtil_Dev_GetPluginInstanceURL
 };
 
+struct PPB_URLUtil_Dev_0_7 Pnacl_Wrappers_PPB_URLUtil_Dev_0_7 = {
+    .Canonicalize = (struct PP_Var (*)(struct PP_Var url, struct PP_URLComponents_Dev* components))&Pnacl_M31_PPB_URLUtil_Dev_Canonicalize,
+    .ResolveRelativeToURL = (struct PP_Var (*)(struct PP_Var base_url, struct PP_Var relative_string, struct PP_URLComponents_Dev* components))&Pnacl_M31_PPB_URLUtil_Dev_ResolveRelativeToURL,
+    .ResolveRelativeToDocument = (struct PP_Var (*)(PP_Instance instance, struct PP_Var relative_string, struct PP_URLComponents_Dev* components))&Pnacl_M31_PPB_URLUtil_Dev_ResolveRelativeToDocument,
+    .IsSameSecurityOrigin = (PP_Bool (*)(struct PP_Var url_a, struct PP_Var url_b))&Pnacl_M31_PPB_URLUtil_Dev_IsSameSecurityOrigin,
+    .DocumentCanRequest = (PP_Bool (*)(PP_Instance instance, struct PP_Var url))&Pnacl_M31_PPB_URLUtil_Dev_DocumentCanRequest,
+    .DocumentCanAccessDocument = (PP_Bool (*)(PP_Instance active, PP_Instance target))&Pnacl_M31_PPB_URLUtil_Dev_DocumentCanAccessDocument,
+    .GetDocumentURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M31_PPB_URLUtil_Dev_GetDocumentURL,
+    .GetPluginInstanceURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M31_PPB_URLUtil_Dev_GetPluginInstanceURL,
+    .GetPluginReferrerURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M31_PPB_URLUtil_Dev_GetPluginReferrerURL
+};
+
 struct PPB_VideoCapture_Dev_0_2 Pnacl_Wrappers_PPB_VideoCapture_Dev_0_2 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M19_PPB_VideoCapture_Dev_Create,
     .IsVideoCapture = (PP_Bool (*)(PP_Resource video_capture))&Pnacl_M19_PPB_VideoCapture_Dev_IsVideoCapture,
@@ -5282,6 +5344,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7 = {
+  .iface_macro = PPB_URLUTIL_DEV_INTERFACE_0_7,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_URLUtil_Dev_0_7,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2 = {
   .iface_macro = PPB_VIDEOCAPTURE_DEV_INTERFACE_0_2,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VideoCapture_Dev_0_2,
@@ -5608,6 +5676,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Testing_Dev_0_92,
   &Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6,
+  &Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7,
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16,

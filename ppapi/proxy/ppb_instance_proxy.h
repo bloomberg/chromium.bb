@@ -114,6 +114,9 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual PP_Var GetPluginInstanceURL(
       PP_Instance instance,
       PP_URLComponents_Dev* components) OVERRIDE;
+  virtual PP_Var GetPluginReferrerURL(
+      PP_Instance instance,
+      PP_URLComponents_Dev* components) OVERRIDE;
   virtual void NeedKey(PP_Instance instance,
                        PP_Var key_system,
                        PP_Var session_id,
@@ -217,6 +220,8 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                           PP_Instance target,
                                           PP_Bool* result);
   void OnHostMsgGetPluginInstanceURL(PP_Instance instance,
+                                     SerializedVarReturnValue result);
+  void OnHostMsgGetPluginReferrerURL(PP_Instance instance,
                                      SerializedVarReturnValue result);
   virtual void OnHostMsgNeedKey(PP_Instance instance,
                                 SerializedVarReceiveInput key_system,
