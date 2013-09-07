@@ -85,6 +85,7 @@
       ],
       'sources': [
         'connection_unittest.cc',
+        'meta_table_unittest.cc',
         'recovery_unittest.cc',
         'sqlite_features_unittest.cc',
         'statement_unittest.cc',

@@ -88,11 +88,10 @@ class ScopedUmaskSetter {
 
 class SQLConnectionTest : public testing::Test {
  public:
-  SQLConnectionTest() {}
-
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(db_.Open(db_path()));
+    db_path_ = temp_dir_.path().AppendASCII("SQLConnectionTest.db");
+    ASSERT_TRUE(db_.Open(db_path_));
   }
 
   virtual void TearDown() {
@@ -100,10 +99,7 @@ class SQLConnectionTest : public testing::Test {
   }
 
   sql::Connection& db() { return db_; }
-
-  base::FilePath db_path() {
-    return temp_dir_.path().AppendASCII("SQLConnectionTest.db");
-  }
+  const base::FilePath& db_path() { return db_path_; }
 
   // Handle errors by blowing away the database.
   void RazeErrorCallback(int expected_error, int error, sql::Statement* stmt) {
@@ -112,8 +108,9 @@ class SQLConnectionTest : public testing::Test {
   }
 
  private:
-  base::ScopedTempDir temp_dir_;
   sql::Connection db_;
+  base::FilePath db_path_;
+  base::ScopedTempDir temp_dir_;
 };
 
 TEST_F(SQLConnectionTest, Execute) {

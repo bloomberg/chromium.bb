@@ -12,8 +12,6 @@
 
 class SQLTransactionTest : public testing::Test {
  public:
-  SQLTransactionTest() {}
-
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(db_.Open(
