@@ -10,15 +10,35 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/command.h"
-#include "chrome/test/chromedriver/session_thread_map.h"
+#include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
 namespace base {
 class DictionaryValue;
 class Value;
 }
 
+class DeviceManager;
 struct Session;
 class Status;
+class URLRequestContextGetter;
+
+struct InitSessionParams {
+  InitSessionParams(scoped_refptr<URLRequestContextGetter> context_getter,
+                    const SyncWebSocketFactory& socket_factory,
+                    DeviceManager* device_manager);
+  ~InitSessionParams();
+
+  scoped_refptr<URLRequestContextGetter> context_getter;
+  SyncWebSocketFactory socket_factory;
+  DeviceManager* device_manager;
+};
+
+// Initializes a session.
+Status ExecuteInitSession(
+    const InitSessionParams& bound_params,
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
 
 // Quits a session.
 Status ExecuteQuit(

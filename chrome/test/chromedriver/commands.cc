@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"  // For CHECK macros.
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -17,21 +16,11 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
-#include "base/threading/thread_local.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/capabilities.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
-#include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
-#include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
-#include "chrome/test/chromedriver/chrome/device_manager.h"
-#include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-#include "chrome/test/chromedriver/chrome/version.h"
-#include "chrome/test/chromedriver/chrome/web_view.h"
-#include "chrome/test/chromedriver/chrome_launcher.h"
 #include "chrome/test/chromedriver/logging.h"
-#include "chrome/test/chromedriver/net/net_util.h"
-#include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_thread_map.h"
 #include "chrome/test/chromedriver/util.h"
@@ -55,100 +44,16 @@ void ExecuteGetStatus(
       Status(kOk), scoped_ptr<base::Value>(info.DeepCopy()), std::string());
 }
 
-NewSessionParams::NewSessionParams(
+void ExecuteCreateSession(
     SessionThreadMap* session_thread_map,
-    scoped_refptr<URLRequestContextGetter> context_getter,
-    const SyncWebSocketFactory& socket_factory,
-    DeviceManager* device_manager)
-    : session_thread_map(session_thread_map),
-      context_getter(context_getter),
-      socket_factory(socket_factory),
-      device_manager(device_manager) {}
-
-NewSessionParams::~NewSessionParams() {}
-
-namespace {
-
-base::LazyInstance<base::ThreadLocalPointer<Session> >
-    lazy_tls_session = LAZY_INSTANCE_INITIALIZER;
-
-Status CreateSessionOnSessionThreadHelper(
-    const NewSessionParams& bound_params,
-    const base::DictionaryValue& params,
-    const std::string& session_id,
-    scoped_ptr<base::Value>* out_value) {
-  const base::DictionaryValue* desired_caps;
-  if (!params.GetDictionary("desiredCapabilities", &desired_caps))
-    return Status(kUnknownError, "cannot find dict 'desiredCapabilities'");
-
-  Capabilities capabilities;
-  Status status = capabilities.Parse(*desired_caps);
-  if (status.IsError())
-    return status;
-
-  // Create Log's and DevToolsEventListener's for ones that are DevTools-based.
-  // Session will own the Log's, Chrome will own the listeners.
-  ScopedVector<WebDriverLog> devtools_logs;
-  // TODO(kkania): Save this log in the session.
-  scoped_ptr<WebDriverLog> driver_log;
-  ScopedVector<DevToolsEventListener> devtools_event_listeners;
-  status = CreateLogs(
-      capabilities, &devtools_logs, &driver_log, &devtools_event_listeners);
-  if (status.IsError())
-    return status;
-
-  scoped_ptr<Chrome> chrome;
-  status = LaunchChrome(bound_params.context_getter.get(),
-                        bound_params.socket_factory,
-                        bound_params.device_manager,
-                        capabilities,
-                        devtools_event_listeners,
-                        &chrome);
-  if (status.IsError())
-    return status;
-
-  std::list<std::string> web_view_ids;
-  status = chrome->GetWebViewIds(&web_view_ids);
-  if (status.IsError() || web_view_ids.empty()) {
-    chrome->Quit();
-    return status.IsError() ? status :
-        Status(kUnknownError, "unable to discover open window in chrome");
-  }
-
-  scoped_ptr<Session> session(new Session(session_id, chrome.Pass()));
-  session->devtools_logs.swap(devtools_logs);
-  session->window = web_view_ids.front();
-  session->detach = capabilities.detach;
-  session->force_devtools_screenshot = capabilities.force_devtools_screenshot;
-  out_value->reset(session->capabilities->DeepCopy());
-  lazy_tls_session.Pointer()->Set(session.release());
-  return Status(kOk);
-}
-
-void CreateSessionOnSessionThread(
-    const scoped_refptr<base::SingleThreadTaskRunner>& cmd_task_runner,
-    const NewSessionParams& bound_params,
-    scoped_ptr<base::DictionaryValue> params,
-    const std::string& session_id,
-    const CommandCallback& callback_on_cmd) {
-  scoped_ptr<base::Value> value;
-  Status status = CreateSessionOnSessionThreadHelper(
-      bound_params, *params, session_id, &value);
-  cmd_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(callback_on_cmd, status, base::Passed(&value), session_id));
-}
-
-}  // namespace
-
-void ExecuteNewSession(
-    const NewSessionParams& bound_params,
+    const Command& init_session_cmd,
     const base::DictionaryValue& params,
     const std::string& session_id,
     const CommandCallback& callback) {
   std::string new_id = session_id;
   if (new_id.empty())
     new_id = GenerateId();
+  scoped_ptr<Session> session(new Session(new_id));
   scoped_ptr<base::Thread> thread(new base::Thread(new_id.c_str()));
   if (!thread->Start()) {
     callback.Run(
@@ -158,16 +63,11 @@ void ExecuteNewSession(
     return;
   }
 
-  thread->message_loop()
-      ->PostTask(FROM_HERE,
-                 base::Bind(&CreateSessionOnSessionThread,
-                            base::MessageLoopProxy::current(),
-                            bound_params,
-                            base::Passed(make_scoped_ptr(params.DeepCopy())),
-                            new_id,
-                            callback));
-  bound_params.session_thread_map
+  thread->message_loop()->PostTask(
+      FROM_HERE, base::Bind(&SetThreadLocalSession, base::Passed(&session)));
+  session_thread_map
       ->insert(std::make_pair(new_id, make_linked_ptr(thread.release())));
+  init_session_cmd.Run(params, new_id, callback);
 }
 
 namespace {
@@ -227,13 +127,14 @@ void TerminateSessionThreadOnCommandThread(SessionThreadMap* session_thread_map,
 }
 
 void ExecuteSessionCommandOnSessionThread(
+    const char* command_name,
     const SessionCommand& command,
     bool return_ok_without_session,
     scoped_ptr<base::DictionaryValue> params,
     scoped_refptr<base::SingleThreadTaskRunner> cmd_task_runner,
     const CommandCallback& callback_on_cmd,
     const base::Closure& terminate_on_cmd) {
-  Session* session = lazy_tls_session.Pointer()->Get();
+  Session* session = GetThreadLocalSession();
   if (!session) {
     cmd_task_runner->PostTask(
         FROM_HERE,
@@ -244,17 +145,32 @@ void ExecuteSessionCommandOnSessionThread(
     return;
   }
 
+  if (IsVLogOn(0)) {
+    VLOG(0) << "COMMAND " << command_name << " "
+            << FormatValueForDisplay(*params);
+  }
   scoped_ptr<base::Value> value;
   Status status = command.Run(session, *params, &value);
   if (status.IsError() && session->chrome)
     status.AddDetails("Session info: chrome=" + session->chrome->GetVersion());
+
+  if (IsVLogOn(0)) {
+    std::string result;
+    if (status.IsError()) {
+      result = status.message();
+    } else if (value) {
+      result = FormatValueForDisplay(*value);
+    }
+    VLOG(0) << "RESPONSE " << command_name
+            << (result.length() ? " " + result : "");
+  }
 
   cmd_task_runner->PostTask(
       FROM_HERE,
       base::Bind(callback_on_cmd, status, base::Passed(&value), session->id));
 
   if (session->quit) {
-    lazy_tls_session.Pointer()->Set(NULL);
+    SetThreadLocalSession(scoped_ptr<Session>());
     delete session;
     cmd_task_runner->PostTask(FROM_HERE, terminate_on_cmd);
   }
@@ -264,6 +180,7 @@ void ExecuteSessionCommandOnSessionThread(
 
 void ExecuteSessionCommand(
     SessionThreadMap* session_thread_map,
+    const char* command_name,
     const SessionCommand& command,
     bool return_ok_without_session,
     const base::DictionaryValue& params,
@@ -277,6 +194,7 @@ void ExecuteSessionCommand(
     iter->second->message_loop()
         ->PostTask(FROM_HERE,
                    base::Bind(&ExecuteSessionCommandOnSessionThread,
+                              command_name,
                               command,
                               return_ok_without_session,
                               base::Passed(make_scoped_ptr(params.DeepCopy())),
@@ -291,7 +209,7 @@ void ExecuteSessionCommand(
 namespace internal {
 
 void CreateSessionOnSessionThreadForTesting(const std::string& id) {
-  lazy_tls_session.Pointer()->Set(new Session(id));
+  SetThreadLocalSession(make_scoped_ptr(new Session(id)));
 }
 
 }  // namespace internal

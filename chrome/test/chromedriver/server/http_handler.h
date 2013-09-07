@@ -77,9 +77,11 @@ class HttpHandler {
   FRIEND_TEST_ALL_PREFIXES(HttpHandlerTest, HandleCommand);
   typedef std::vector<CommandMapping> CommandMap;
 
-  Command WrapToCommand(const SessionCommand& session_command);
-  Command WrapToCommand(const WindowCommand& window_command);
-  Command WrapToCommand(const ElementCommand& element_command);
+  Command WrapToCommand(const char* name,
+                        const SessionCommand& session_command);
+  Command WrapToCommand(const char* name, const WindowCommand& window_command);
+  Command WrapToCommand(const char* name,
+                        const ElementCommand& element_command);
   void HandleCommand(const net::HttpServerRequestInfo& request,
                      const std::string& trimmed_path,
                      const HttpResponseSenderFunc& send_response_func);

@@ -22,6 +22,10 @@ class Status;
 // See https://code.google.com/p/selenium/wiki/Logging.
 class WebDriverLog : public Log {
  public:
+  static const char kBrowserType[];
+  static const char kDriverType[];
+  static const char kPerformanceType[];
+
   // Converts WD wire protocol level name -> Level, false on bad name.
   static bool NameToLevel(const std::string& name, Level* out_level);
 
@@ -41,11 +45,12 @@ class WebDriverLog : public Log {
                                    const std::string& message) OVERRIDE;
 
   const std::string& type() const;
+  void set_min_level(Level min_level);
   Level min_level() const;
 
  private:
   const std::string type_;  // WebDriver log type.
-  const Level min_level_;  // Minimum level of entries to store.
+  Level min_level_;  // Minimum level of entries to store.
   scoped_ptr<base::ListValue> entries_;  // Accumulated entries.
 
   DISALLOW_COPY_AND_ASSIGN(WebDriverLog);
@@ -57,7 +62,6 @@ bool InitLogging();
 // Creates Log's and DevToolsEventListener's based on logging preferences.
 Status CreateLogs(const Capabilities& capabilities,
                   ScopedVector<WebDriverLog>* out_logs,
-                  scoped_ptr<WebDriverLog>* out_driver_log,
                   ScopedVector<DevToolsEventListener>* out_listeners);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_LOGGING_H_

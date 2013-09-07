@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/command.h"
-#include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 #include "chrome/test/chromedriver/session_thread_map.h"
 
 namespace base {
@@ -19,10 +18,8 @@ class DictionaryValue;
 class Value;
 }
 
-class DeviceManager;
 struct Session;
 class Status;
-class URLRequestContextGetter;
 
 // Gets status/info about ChromeDriver.
 void ExecuteGetStatus(
@@ -30,22 +27,10 @@ void ExecuteGetStatus(
     const std::string& session_id,
     const CommandCallback& callback);
 
-struct NewSessionParams {
-  NewSessionParams(SessionThreadMap* session_thread_map,
-                   scoped_refptr<URLRequestContextGetter> context_getter,
-                   const SyncWebSocketFactory& socket_factory,
-                   DeviceManager* device_manager);
-  ~NewSessionParams();
-
-  SessionThreadMap* session_thread_map;
-  scoped_refptr<URLRequestContextGetter> context_getter;
-  SyncWebSocketFactory socket_factory;
-  DeviceManager* device_manager;
-};
-
 // Creates a new session.
-void ExecuteNewSession(
-    const NewSessionParams& bound_params,
+void ExecuteCreateSession(
+    SessionThreadMap* session_thread_map,
+    const Command& init_session_cmd,
     const base::DictionaryValue& params,
     const std::string& session_id,
     const CommandCallback& callback);
@@ -67,6 +52,7 @@ typedef base::Callback<Status(
 // session.
 void ExecuteSessionCommand(
     SessionThreadMap* session_thread_map,
+    const char* command_name,
     const SessionCommand& command,
     bool return_ok_without_session,
     const base::DictionaryValue& params,

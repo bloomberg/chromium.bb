@@ -138,6 +138,7 @@ TEST(CommandsTest, ExecuteSessionCommand) {
   base::RunLoop run_loop;
   ExecuteSessionCommand(
       &map,
+      "cmd",
       cmd,
       false,
       params,
@@ -176,6 +177,7 @@ TEST(CommandsTest, ExecuteSessionCommandOnNoSuchSession) {
   SessionThreadMap map;
   base::DictionaryValue params;
   ExecuteSessionCommand(&map,
+                        "cmd",
                         base::Bind(&ShouldNotBeCalled),
                         false,
                         params,
@@ -187,6 +189,7 @@ TEST(CommandsTest, ExecuteSessionCommandOnNoSuchSessionWhenItExpectsOk) {
   SessionThreadMap map;
   base::DictionaryValue params;
   ExecuteSessionCommand(&map,
+                        "cmd",
                         base::Bind(&ShouldNotBeCalled),
                         true,
                         params,
@@ -217,6 +220,7 @@ TEST(CommandsTest, ExecuteSessionCommandOnJustDeletedSession) {
   base::MessageLoop loop;
   base::RunLoop run_loop;
   ExecuteSessionCommand(&map,
+                        "cmd",
                         base::Bind(&ShouldNotBeCalled),
                         false,
                         base::DictionaryValue(),

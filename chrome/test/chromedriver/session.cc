@@ -6,12 +6,21 @@
 
 #include <list>
 
+#include "base/lazy_instance.h"
+#include "base/threading/thread_local.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/logging.h"
+
+namespace {
+
+base::LazyInstance<base::ThreadLocalPointer<Session> >
+    lazy_tls_session = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 FrameInfo::FrameInfo(const std::string& parent_frame_id,
                      const std::string& frame_id,
@@ -40,8 +49,7 @@ Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
       chrome(chrome.Pass()),
       sticky_modifiers(0),
       mouse_position(0, 0),
-      page_load_timeout(kDefaultPageLoadTimeout),
-      capabilities(CreateCapabilities()) {}
+      page_load_timeout(kDefaultPageLoadTimeout) {}
 
 Session::~Session() {}
 
@@ -73,23 +81,22 @@ std::string Session::GetCurrentFrameId() const {
   return frames.back().frame_id;
 }
 
-scoped_ptr<base::DictionaryValue> Session::CreateCapabilities() {
-  scoped_ptr<base::DictionaryValue> caps(new base::DictionaryValue());
-  caps->SetString("browserName", "chrome");
-  caps->SetString("version", chrome->GetVersion());
-  caps->SetString("chrome.chromedriverVersion", kChromeDriverVersion);
-  caps->SetString("platform", chrome->GetOperatingSystemName());
-  caps->SetBoolean("javascriptEnabled", true);
-  caps->SetBoolean("takesScreenshot", true);
-  caps->SetBoolean("handlesAlerts", true);
-  caps->SetBoolean("databaseEnabled", true);
-  caps->SetBoolean("locationContextEnabled", true);
-  caps->SetBoolean("applicationCacheEnabled", false);
-  caps->SetBoolean("browserConnectionEnabled", false);
-  caps->SetBoolean("cssSelectorsEnabled", true);
-  caps->SetBoolean("webStorageEnabled", true);
-  caps->SetBoolean("rotatable", false);
-  caps->SetBoolean("acceptSslCerts", true);
-  caps->SetBoolean("nativeEvents", true);
-  return caps.Pass();
+std::vector<WebDriverLog*> Session::GetAllLogs() const {
+  std::vector<WebDriverLog*> logs;
+  for (ScopedVector<WebDriverLog>::const_iterator log = devtools_logs.begin();
+       log != devtools_logs.end();
+       ++log) {
+    logs.push_back(*log);
+  }
+  if (driver_log)
+    logs.push_back(driver_log.get());
+  return logs;
+}
+
+Session* GetThreadLocalSession() {
+  return lazy_tls_session.Pointer()->Get();
+}
+
+void SetThreadLocalSession(scoped_ptr<Session> session) {
+  lazy_tls_session.Pointer()->Set(session.release());
 }

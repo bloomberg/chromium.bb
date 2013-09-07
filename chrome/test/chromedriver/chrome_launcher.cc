@@ -278,6 +278,7 @@ Status LaunchDesktopChrome(
                             &user_data_dir,
                             &extension_dir));
   for (size_t i = 0; i < extension_bg_pages.size(); ++i) {
+    VLOG(0) << "Waiting for extension bg page load: " << extension_bg_pages[i];
     scoped_ptr<WebView> web_view;
     Status status = chrome_desktop->WaitForPageToLoad(
         extension_bg_pages[i], base::TimeDelta::FromSeconds(10), &web_view);
@@ -558,6 +559,8 @@ Status WritePrefsFile(
 
   std::string prefs_str;
   base::JSONWriter::Write(prefs, &prefs_str);
+  VLOG(0) << "Populating " << path.BaseName().value()
+          << " file: " << PrettyPrintValue(*prefs);
   if (static_cast<int>(prefs_str.length()) != file_util::WriteFile(
           path, prefs_str.c_str(), prefs_str.length())) {
     return Status(kUnknownError, "failed to write prefs file");

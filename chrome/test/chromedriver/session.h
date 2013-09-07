@@ -48,6 +48,7 @@ struct Session {
   void SwitchToSubFrame(const std::string& frame_id,
                         const std::string& chromedriver_frame_id);
   std::string GetCurrentFrameId() const;
+  std::vector<WebDriverLog*> GetAllLogs() const;
 
   const std::string id;
   bool quit;
@@ -68,11 +69,13 @@ struct Session {
   scoped_ptr<Geoposition> overridden_geoposition;
   // Logs that populate from DevTools events.
   ScopedVector<WebDriverLog> devtools_logs;
+  scoped_ptr<WebDriverLog> driver_log;
   base::ScopedTempDir temp_dir;
-  const scoped_ptr<base::DictionaryValue> capabilities;
-
- private:
-  scoped_ptr<base::DictionaryValue> CreateCapabilities();
+  scoped_ptr<base::DictionaryValue> capabilities;
 };
+
+Session* GetThreadLocalSession();
+
+void SetThreadLocalSession(scoped_ptr<Session> session);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_SESSION_H_

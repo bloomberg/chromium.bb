@@ -16,12 +16,20 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
+#include "chrome/test/chromedriver/capabilities.h"
 #include "chrome/test/chromedriver/chrome/automation_extension.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
+#include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
+#include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
+#include "chrome/test/chromedriver/chrome/device_manager.h"
+#include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/geoposition.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
+#include "chrome/test/chromedriver/chrome_launcher.h"
 #include "chrome/test/chromedriver/logging.h"
+#include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/util.h"
 
@@ -43,6 +51,107 @@ bool WindowHandleToWebViewId(const std::string& window_handle,
 }
 
 }  // namespace
+
+InitSessionParams::InitSessionParams(
+    scoped_refptr<URLRequestContextGetter> context_getter,
+    const SyncWebSocketFactory& socket_factory,
+    DeviceManager* device_manager)
+    : context_getter(context_getter),
+      socket_factory(socket_factory),
+      device_manager(device_manager) {}
+
+InitSessionParams::~InitSessionParams() {}
+
+namespace {
+
+scoped_ptr<base::DictionaryValue> CreateCapabilities(Chrome* chrome) {
+  scoped_ptr<base::DictionaryValue> caps(new base::DictionaryValue());
+  caps->SetString("browserName", "chrome");
+  caps->SetString("version", chrome->GetVersion());
+  caps->SetString("chrome.chromedriverVersion", kChromeDriverVersion);
+  caps->SetString("platform", chrome->GetOperatingSystemName());
+  caps->SetBoolean("javascriptEnabled", true);
+  caps->SetBoolean("takesScreenshot", true);
+  caps->SetBoolean("handlesAlerts", true);
+  caps->SetBoolean("databaseEnabled", true);
+  caps->SetBoolean("locationContextEnabled", true);
+  caps->SetBoolean("applicationCacheEnabled", false);
+  caps->SetBoolean("browserConnectionEnabled", false);
+  caps->SetBoolean("cssSelectorsEnabled", true);
+  caps->SetBoolean("webStorageEnabled", true);
+  caps->SetBoolean("rotatable", false);
+  caps->SetBoolean("acceptSslCerts", true);
+  caps->SetBoolean("nativeEvents", true);
+  return caps.Pass();
+}
+
+
+Status InitSessionHelper(
+    const InitSessionParams& bound_params,
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  session->driver_log.reset(
+      new WebDriverLog(WebDriverLog::kDriverType, Log::kAll));
+  const base::DictionaryValue* desired_caps;
+  if (!params.GetDictionary("desiredCapabilities", &desired_caps))
+    return Status(kUnknownError, "cannot find dict 'desiredCapabilities'");
+
+  Capabilities capabilities;
+  Status status = capabilities.Parse(*desired_caps);
+  if (status.IsError())
+    return status;
+
+  if (capabilities.logging_prefs.count(WebDriverLog::kDriverType)) {
+    session->driver_log->set_min_level(
+        capabilities.logging_prefs[WebDriverLog::kDriverType]);
+  }
+
+  // Create Log's and DevToolsEventListener's for ones that are DevTools-based.
+  // Session will own the Log's, Chrome will own the listeners.
+  ScopedVector<DevToolsEventListener> devtools_event_listeners;
+  status = CreateLogs(capabilities,
+                      &session->devtools_logs,
+                      &devtools_event_listeners);
+  if (status.IsError())
+    return status;
+
+  status = LaunchChrome(bound_params.context_getter.get(),
+                        bound_params.socket_factory,
+                        bound_params.device_manager,
+                        capabilities,
+                        devtools_event_listeners,
+                        &session->chrome);
+  if (status.IsError())
+    return status;
+
+  std::list<std::string> web_view_ids;
+  status = session->chrome->GetWebViewIds(&web_view_ids);
+  if (status.IsError() || web_view_ids.empty()) {
+    return status.IsError() ? status :
+        Status(kUnknownError, "unable to discover open window in chrome");
+  }
+
+  session->window = web_view_ids.front();
+  session->detach = capabilities.detach;
+  session->force_devtools_screenshot = capabilities.force_devtools_screenshot;
+  session->capabilities = CreateCapabilities(session->chrome.get());
+  value->reset(session->capabilities->DeepCopy());
+  return Status(kOk);
+}
+
+}  // namespace
+
+Status ExecuteInitSession(
+    const InitSessionParams& bound_params,
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  Status status = InitSessionHelper(bound_params, session, params, value);
+  if (status.IsError())
+    session->quit = true;
+  return status;
+}
 
 Status ExecuteQuit(
     bool allow_detach,
@@ -386,12 +495,13 @@ Status ExecuteGetAvailableLogTypes(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   scoped_ptr<base::ListValue> types(new base::ListValue());
-  for (ScopedVector<WebDriverLog>::const_iterator log
-       = session->devtools_logs.begin();
-       log != session->devtools_logs.end(); ++log) {
+  std::vector<WebDriverLog*> logs = session->GetAllLogs();
+  for (std::vector<WebDriverLog*>::const_iterator log = logs.begin();
+       log != logs.end();
+       ++log) {
     types->AppendString((*log)->type());
   }
-  value->reset(types.release());
+  *value = types.Pass();
   return Status(kOk);
 }
 
@@ -403,12 +513,12 @@ Status ExecuteGetLog(
   if (!params.GetString("type", &log_type)) {
     return Status(kUnknownError, "missing or invalid 'type'");
   }
-  for (ScopedVector<WebDriverLog>::const_iterator log
-       = session->devtools_logs.begin();
-       log != session->devtools_logs.end(); ++log) {
+  std::vector<WebDriverLog*> logs = session->GetAllLogs();
+  for (std::vector<WebDriverLog*>::const_iterator log = logs.begin();
+       log != logs.end();
+       ++log) {
     if (log_type == (*log)->type()) {
-      scoped_ptr<base::ListValue> log_entries = (*log)->GetAndClearEntries();
-      value->reset(log_entries.release());
+      *value = (*log)->GetAndClearEntries();
       return Status(kOk);
     }
   }

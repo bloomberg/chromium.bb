@@ -103,14 +103,12 @@ TEST(Logging, CreatePerformanceLog) {
 
   ScopedVector<DevToolsEventListener> listeners;
   ScopedVector<WebDriverLog> logs;
-  scoped_ptr<WebDriverLog> driver_log;
-  Status status = CreateLogs(capabilities, &logs, &driver_log, &listeners);
+  Status status = CreateLogs(capabilities, &logs, &listeners);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(2u, logs.size());
   ASSERT_EQ(2u, listeners.size());
   ASSERT_EQ("performance", logs[0]->type());
   ASSERT_EQ("browser", logs[1]->type());
-  ASSERT_EQ("driver", driver_log->type());
 }
 
 TEST(Logging, IgnoreUnknownLogType) {
@@ -119,8 +117,7 @@ TEST(Logging, IgnoreUnknownLogType) {
 
   ScopedVector<DevToolsEventListener> listeners;
   ScopedVector<WebDriverLog> logs;
-  scoped_ptr<WebDriverLog> driver_log;
-  Status status = CreateLogs(capabilities, &logs, &driver_log, &listeners);
+  Status status = CreateLogs(capabilities, &logs, &listeners);
   EXPECT_TRUE(status.IsOk());
   ASSERT_EQ(1u, logs.size());
   ASSERT_EQ(0u, listeners.size());
@@ -132,11 +129,8 @@ TEST(Logging, DefaultLogs) {
 
   ScopedVector<DevToolsEventListener> listeners;
   ScopedVector<WebDriverLog> logs;
-  scoped_ptr<WebDriverLog> driver_log;
-  Status status = CreateLogs(capabilities, &logs, &driver_log, &listeners);
+  Status status = CreateLogs(capabilities, &logs, &listeners);
   EXPECT_TRUE(status.IsOk());
   ASSERT_EQ(1u, logs.size());
   ASSERT_EQ(0u, listeners.size());
-  ASSERT_EQ("driver", driver_log->type());
-  ASSERT_EQ(Log::kWarning, driver_log->min_level());
 }

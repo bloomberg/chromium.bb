@@ -206,7 +206,7 @@ Status DevToolsClientImpl::SendCommandInternal(
   command.Set("params", params.DeepCopy());
   std::string message = SerializeValue(&command);
   if (IsVLogOn(1)) {
-    VLOG(1) << "COMMAND " << method << " (id=" << command_id << ") "
+    VLOG(1) << "DEVTOOLS COMMAND " << method << " (id=" << command_id << ") "
             << FormatValueForDisplay(params);
   }
   if (!socket_->Send(message))
@@ -293,7 +293,7 @@ Status DevToolsClientImpl::ProcessNextMessage(
 
 Status DevToolsClientImpl::ProcessEvent(const internal::InspectorEvent& event) {
   if (IsVLogOn(1)) {
-    VLOG(1) << "EVENT " << event.method << " "
+    VLOG(1) << "DEVTOOLS EVENT " << event.method << " "
             << FormatValueForDisplay(*event.params);
   }
   unnotified_event_listeners_ = listeners_;
@@ -344,7 +344,7 @@ Status DevToolsClientImpl::ProcessCommandResponse(
       result = FormatValueForDisplay(*response.result);
     else
       result = response.error;
-    VLOG(1) << "RESPONSE " << method << " (id=" << response.id
+    VLOG(1) << "DEVTOOLS RESPONSE " << method << " (id=" << response.id
             << ") " << result;
   }
 

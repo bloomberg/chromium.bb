@@ -77,8 +77,18 @@ Log::Level GetLevelFromSeverity(int severity) {
   }
 }
 
+WebDriverLog* GetSessionLog() {
+  Session* session = GetThreadLocalSession();
+  if (!session)
+    return NULL;
+  return session->driver_log.get();
+}
+
 bool InternalIsVLogOn(int vlog_level) {
-  return GetLevelFromSeverity(vlog_level * -1) >= g_log_level;
+  WebDriverLog* session_log = GetSessionLog();
+  Log::Level session_level = session_log ? session_log->min_level() : Log::kOff;
+  Log::Level level = g_log_level < session_level ? g_log_level : session_level;
+  return GetLevelFromSeverity(vlog_level * -1) >= level;
 }
 
 bool HandleLogMessage(int severity,
@@ -87,41 +97,33 @@ bool HandleLogMessage(int severity,
                       size_t message_start,
                       const std::string& str) {
   Log::Level level = GetLevelFromSeverity(severity);
-  if (level < g_log_level)
-    return true;
-
   std::string message = str.substr(message_start);
-  const char* level_name = "UNKNOWN";
-  switch (level) {
-    case Log::kDebug:
-      level_name = "DEBUG";
-      break;
-    case Log::kInfo:
-      level_name = "INFO";
-      break;
-    case Log::kWarning:
-      level_name = "WARNING";
-      break;
-    case Log::kError:
-      level_name = "ERROR";
-      break;
-    default:
-      break;
-  }
-  std::string entry = base::StringPrintf(
-      "[%.3lf][%s]: %s",
-      base::TimeDelta(base::TimeTicks::Now() -
-                      base::TimeTicks::FromInternalValue(g_start_time))
-          .InSecondsF(),
-      level_name,
-      message.c_str());
 
-  fprintf(stderr, "%s", entry.c_str());
-  fflush(stderr);
+  if (level >= g_log_level) {
+    const char* level_name = LevelToName(level);
+    std::string entry = base::StringPrintf(
+        "[%.3lf][%s]: %s",
+        base::TimeDelta(base::TimeTicks::Now() -
+                        base::TimeTicks::FromInternalValue(g_start_time))
+            .InSecondsF(),
+        level_name,
+        message.c_str());
+    fprintf(stderr, "%s", entry.c_str());
+    fflush(stderr);
+  }
+
+  WebDriverLog* session_log = GetSessionLog();
+  if (session_log)
+    session_log->AddEntry(level, message);
+
   return true;
 }
 
 }  // namespace
+
+const char WebDriverLog::kBrowserType[] = "browser";
+const char WebDriverLog::kDriverType[] = "driver";
+const char WebDriverLog::kPerformanceType[] = "performance";
 
 bool WebDriverLog::NameToLevel(const std::string& name, Log::Level* out_level) {
   for (size_t i = 0; i < arraysize(kNameToLevel); ++i) {
@@ -164,6 +166,10 @@ void WebDriverLog::AddEntryTimestamped(const base::Time& timestamp,
 
 const std::string& WebDriverLog::type() const {
   return type_;
+}
+
+void WebDriverLog::set_min_level(Level min_level) {
+  min_level_ = min_level;
 }
 
 Log::Level WebDriverLog::min_level() const {
@@ -217,32 +223,26 @@ bool InitLogging() {
 
 Status CreateLogs(const Capabilities& capabilities,
                   ScopedVector<WebDriverLog>* out_logs,
-                  scoped_ptr<WebDriverLog>* out_driver_log,
                   ScopedVector<DevToolsEventListener>* out_listeners) {
   ScopedVector<WebDriverLog> logs;
   ScopedVector<DevToolsEventListener> listeners;
   Log::Level browser_log_level = Log::kOff;
-  Log::Level driver_log_level = Log::kWarning;
   const LoggingPrefs& prefs = capabilities.logging_prefs;
 
-  const char kBrowserLogType[] = "browser";
-  const char kDriverLogType[] = "driver";
   for (LoggingPrefs::const_iterator iter = prefs.begin();
        iter != prefs.end();
        ++iter) {
     std::string type = iter->first;
     Log::Level level = iter->second;
-    if (type == "performance") {
+    if (type == WebDriverLog::kPerformanceType) {
       if (level != Log::kOff) {
         WebDriverLog* log = new WebDriverLog(type, Log::kAll);
         logs.push_back(log);
         listeners.push_back(new PerformanceLogger(log));
       }
-    } else if (type == kBrowserLogType) {
+    } else if (type == WebDriverLog::kBrowserType) {
       browser_log_level = level;
-    } else if (type == kDriverLogType) {
-      driver_log_level = level;
-    } else {
+    } else if (type != WebDriverLog::kDriverType) {
       // Driver "should" ignore unrecognized log types, per Selenium tests.
       // For example the Java client passes the "client" log type in the caps,
       // which the server should never provide.
@@ -251,18 +251,13 @@ Status CreateLogs(const Capabilities& capabilities,
   }
   // Create "browser" log -- should always exist.
   WebDriverLog* browser_log =
-      new WebDriverLog(kBrowserLogType, browser_log_level);
+      new WebDriverLog(WebDriverLog::kBrowserType, browser_log_level);
   logs.push_back(browser_log);
   // If the level is OFF, don't even bother listening for DevTools events.
   if (browser_log_level != Log::kOff)
     listeners.push_back(new ConsoleLogger(browser_log));
 
-  // Create "driver" log -- should always exist.
-  scoped_ptr<WebDriverLog> driver_log(
-      new WebDriverLog(kDriverLogType, driver_log_level));
-
   out_logs->swap(logs);
-  *out_driver_log = driver_log.Pass();
   out_listeners->swap(listeners);
   return Status(kOk);
 }
