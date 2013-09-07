@@ -37,6 +37,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   virtual void StartWizard(const std::string& name,
                            scoped_ptr<base::DictionaryValue> value) OVERRIDE;
   MOCK_METHOD0(GetWizardController, WizardController*(void));
+  MOCK_METHOD0(GetAppLaunchController, AppLaunchController*(void));
   MOCK_METHOD1(StartUserAdding, void(const base::Closure&));
   MOCK_METHOD0(StartSignInScreen, void(void));
   MOCK_METHOD0(ResumeSignInScreen, void(void));

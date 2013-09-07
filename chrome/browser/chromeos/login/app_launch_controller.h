@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -24,6 +25,7 @@ namespace chromeos {
 
 class LoginDisplayHost;
 class OobeDisplay;
+class UserManager;
 
 // Controller for the kiosk app launch process, responsible for
 // coordinating loading the kiosk profile, launching the app, and
@@ -43,11 +45,20 @@ class AppLaunchController
 
   void StartAppLaunch();
 
+  bool waiting_for_network() { return waiting_for_network_; }
+  bool network_wait_timedout() { return network_wait_timedout_; }
+  bool showing_network_dialog() { return showing_network_dialog_; }
+
+  // Customize controller for testing purposes.
   static void SkipSplashWaitForTesting();
+  static void SetNetworkTimeoutCallbackForTesting(base::Closure* callback);
+  static void SetNetworkWaitForTesting(int wait_time_secs);
+  static void SetUserManagerForTesting(UserManager* user_manager);
 
  private:
   void Cleanup();
   void OnNetworkWaitTimedout();
+  UserManager* GetUserManager();
 
   // KioskProfileLoader::Delegate overrides:
   virtual void OnProfileLoaded(Profile* profile) OVERRIDE;
@@ -80,10 +91,14 @@ class AppLaunchController
 
   base::OneShotTimer<AppLaunchController> network_wait_timer_;
   bool waiting_for_network_;
+  bool network_wait_timedout_;
   bool showing_network_dialog_;
   int64 launch_splash_start_time_;
 
   static bool skip_splash_wait_;
+  static int network_wait_time_;
+  static base::Closure* network_timeout_callback_;
+  static UserManager* test_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchController);
 };

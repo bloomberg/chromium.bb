@@ -42,8 +42,11 @@ class AppLaunchSigninScreen
 
   void Show();
 
+  static void SetUserManagerForTesting(UserManager* user_manager);
+
  private:
   void InitOwnerUserList();
+  UserManager* GetUserManager();
 
   // SigninScreenHandlerDelegate implementation:
   virtual void CancelPasswordChangedFlow() OVERRIDE;
@@ -92,6 +95,8 @@ class AppLaunchSigninScreen
 
   // This list should have at most one user, and that user should be the owner.
   UserList owner_user_list_;
+
+  static UserManager* test_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchSigninScreen);
 };

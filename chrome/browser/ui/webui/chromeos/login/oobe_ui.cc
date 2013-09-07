@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/values.h"
 #include "chrome/browser/browser_about_handler.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
@@ -459,6 +460,15 @@ void OobeUI::ResetSigninScreenHandlerDelegate() {
   signin_screen_handler_->SetNativeWindowDelegate(NULL);
 }
 
+
+void OobeUI::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void OobeUI::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 const std::string& OobeUI::GetScreenName(Screen screen) const {
   DCHECK(screen >= 0 && screen < SCREEN_UNKNOWN);
   return screen_names_[static_cast<size_t>(screen)];
@@ -466,7 +476,11 @@ const std::string& OobeUI::GetScreenName(Screen screen) const {
 
 void OobeUI::OnCurrentScreenChanged(const std::string& screen) {
   if (screen_ids_.count(screen)) {
-    current_screen_ = screen_ids_[screen];
+    Screen new_screen = screen_ids_[screen];
+    FOR_EACH_OBSERVER(Observer,
+                      observer_list_,
+                      OnCurrentScreenChanged(current_screen_, new_screen));
+    current_screen_ = new_screen;
   } else {
     NOTREACHED() << "Screen should be registered in InitializeScreenMaps()";
     current_screen_ = SCREEN_UNKNOWN;

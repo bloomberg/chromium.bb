@@ -64,6 +64,11 @@ StartupAppLauncher::StartupAppLauncher(Profile* profile,
 }
 
 StartupAppLauncher::~StartupAppLauncher() {
+  // StartupAppLauncher can be deleted at anytime during the launch process
+  // through a user bailout shortcut.
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
+      ->RemoveObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 void StartupAppLauncher::Start() {

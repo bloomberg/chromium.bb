@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/time/time.h"
@@ -34,6 +35,9 @@ const int kAppInstallSplashScreenMinTimeMS = 3000;
 
 // static
 bool AppLaunchController::skip_splash_wait_ = false;
+int AppLaunchController::network_wait_time_ = 10;
+base::Closure* AppLaunchController::network_timeout_callback_ = NULL;
+UserManager* AppLaunchController::test_user_manager_ = NULL;
 
 AppLaunchController::AppLaunchController(const std::string& app_id,
                                          LoginDisplayHost* host,
@@ -46,8 +50,11 @@ AppLaunchController::AppLaunchController(const std::string& app_id,
           oobe_display_->GetAppLaunchSplashScreenActor()),
       error_screen_actor_(oobe_display_->GetErrorScreenActor()),
       waiting_for_network_(false),
+      network_wait_timedout_(false),
       showing_network_dialog_(false),
       launch_splash_start_time_(0) {
+  signin_screen_.reset(new AppLaunchSigninScreen(
+     static_cast<OobeUI*>(oobe_display_), this));
 }
 
 AppLaunchController::~AppLaunchController() {
@@ -66,18 +73,29 @@ void AppLaunchController::StartAppLaunch() {
   kiosk_profile_loader_->Start();
 }
 
-// static
 void AppLaunchController::SkipSplashWaitForTesting() {
   skip_splash_wait_ = true;
+}
+
+void AppLaunchController::SetNetworkWaitForTesting(int wait_time_secs) {
+  network_wait_time_ = wait_time_secs;
+}
+
+void AppLaunchController::SetNetworkTimeoutCallbackForTesting(
+   base::Closure* callback) {
+  network_timeout_callback_ = callback;
+}
+
+void AppLaunchController::SetUserManagerForTesting(UserManager* user_manager) {
+  test_user_manager_ = user_manager;
+  AppLaunchSigninScreen::SetUserManagerForTesting(user_manager);
 }
 
 void AppLaunchController::OnConfigureNetwork() {
   DCHECK(profile_);
   showing_network_dialog_ = true;
-  const std::string& owner_email = UserManager::Get()->GetOwnerEmail();
+  const std::string& owner_email = GetUserManager()->GetOwnerEmail();
   if (!owner_email.empty()) {
-    signin_screen_.reset(new AppLaunchSigninScreen(
-       static_cast<OobeUI*>(oobe_display_), this));
     signin_screen_->Show();
   } else {
     // If kiosk mode was configured through enterprise policy, we may
@@ -145,10 +163,9 @@ void AppLaunchController::OnInitializingNetwork() {
   // Show the network configration dialog if network is not initialized
   // after a brief wait time.
   waiting_for_network_ = true;
-  const int kNetworkConfigWaitSeconds = 10;
   network_wait_timer_.Start(
       FROM_HERE,
-      base::TimeDelta::FromSeconds(kNetworkConfigWaitSeconds),
+      base::TimeDelta::FromSeconds(network_wait_time_),
       this, &AppLaunchController::OnNetworkWaitTimedout);
 }
 
@@ -156,7 +173,10 @@ void AppLaunchController::OnNetworkWaitTimedout() {
   DCHECK(waiting_for_network_);
   LOG(WARNING) << "OnNetworkWaitTimedout... connection = "
                <<  net::NetworkChangeNotifier::GetConnectionType();
+  network_wait_timedout_ = true;
   app_launch_splash_screen_actor_->ToggleNetworkConfig(true);
+  if (network_timeout_callback_)
+    network_timeout_callback_->Run();
 }
 
 void AppLaunchController::OnInstallingApp() {
@@ -204,6 +224,10 @@ void AppLaunchController::OnLaunchFailed(KioskAppLaunchError::Error error) {
   KioskAppLaunchError::Save(error);
   chrome::AttemptUserExit();
   Cleanup();
+}
+
+UserManager* AppLaunchController::GetUserManager() {
+  return test_user_manager_ ? test_user_manager_ : UserManager::Get();
 }
 
 }   // namespace chromeos

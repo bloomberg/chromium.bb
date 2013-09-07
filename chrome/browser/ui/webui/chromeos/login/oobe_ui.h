@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -41,6 +42,13 @@ class OobeUI : public OobeDisplay,
                public content::WebUIController,
                public CoreOobeHandler::Delegate {
  public:
+  class Observer {
+   public:
+    virtual ~Observer() {}
+    virtual void OnCurrentScreenChanged(
+        Screen current_screen, Screen new_screen) = 0;
+  };
+
   // JS oobe/login screens names.
   static const char kScreenOobeNetwork[];
   static const char kScreenOobeEula[];
@@ -107,6 +115,10 @@ class OobeUI : public OobeDisplay,
 
   // Resets the delegate set in ShowSigninScreen.
   void ResetSigninScreenHandlerDelegate();
+
+  // Add and remove observers for screen change events.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   Screen current_screen() const { return current_screen_; }
 
@@ -178,6 +190,9 @@ class OobeUI : public OobeDisplay,
 
   // Callbacks to notify when JS part is fully loaded and ready to accept calls.
   std::vector<base::Closure> ready_callbacks_;
+
+  // List of registered observers.
+  ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeUI);
 };

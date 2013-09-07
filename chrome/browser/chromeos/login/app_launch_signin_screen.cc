@@ -13,6 +13,8 @@
 
 namespace chromeos {
 
+UserManager* AppLaunchSigninScreen::test_user_manager_ = NULL;
+
 AppLaunchSigninScreen::AppLaunchSigninScreen(
     OobeUI* oobe_ui, Delegate* delegate)
     : oobe_ui_(oobe_ui),
@@ -30,7 +32,7 @@ void AppLaunchSigninScreen::Show() {
 }
 
 void AppLaunchSigninScreen::InitOwnerUserList() {
-  UserManager* user_manager = UserManager::Get();
+  UserManager* user_manager = GetUserManager();
   const std::string& owner_email = user_manager->GetOwnerEmail();
   const UserList& all_users = user_manager->GetUsers();
 
@@ -44,6 +46,16 @@ void AppLaunchSigninScreen::InitOwnerUserList() {
       break;
     }
   }
+}
+
+// static
+void AppLaunchSigninScreen::SetUserManagerForTesting(
+    UserManager* user_manager) {
+  test_user_manager_ = user_manager;
+}
+
+UserManager* AppLaunchSigninScreen::GetUserManager() {
+  return test_user_manager_ ? test_user_manager_ : UserManager::Get();
 }
 
 void AppLaunchSigninScreen::CancelPasswordChangedFlow() {

@@ -67,6 +67,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
       const std::string& first_screen_name,
       scoped_ptr<DictionaryValue> screen_parameters) OVERRIDE;
   virtual WizardController* GetWizardController() OVERRIDE;
+  virtual AppLaunchController* GetAppLaunchController() OVERRIDE;
   virtual void StartUserAdding(
       const base::Closure& completion_callback) OVERRIDE;
   virtual void StartSignInScreen() OVERRIDE;

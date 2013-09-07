@@ -410,6 +410,10 @@ WizardController* LoginDisplayHostImpl::GetWizardController() {
   return wizard_controller_.get();
 }
 
+AppLaunchController* LoginDisplayHostImpl::GetAppLaunchController() {
+  return app_launch_controller_.get();
+}
+
 void LoginDisplayHostImpl::StartUserAdding(
     const base::Closure& completion_callback) {
   restore_path_ = RESTORE_ADD_USER_INTO_SESSION;
