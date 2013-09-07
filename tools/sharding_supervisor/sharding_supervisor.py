@@ -37,6 +37,13 @@ def pop_known_arguments(args):
       rest.append(arg)
     else:
       rest.append(arg)
+
+  # Use --jobs arg if exist.
+  for arg in args:
+    if arg.startswith('--jobs='):
+      run_test_cases_extra_args.append(arg)
+      break
+
   return run_test_cases_extra_args, rest
 
 
