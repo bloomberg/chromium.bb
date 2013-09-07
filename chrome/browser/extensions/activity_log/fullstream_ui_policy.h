@@ -28,23 +28,13 @@ class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
 
   virtual void ProcessAction(scoped_refptr<Action> action) OVERRIDE;
 
-  // TODO(felt,dbabic) This is overly specific to FullStreamUIPolicy.
-  // It assumes that the callback can return a sorted vector of actions.  Some
-  // policies might not do that.  For instance, imagine a trivial policy that
-  // just counts the frequency of certain actions within some time period,
-  // this call would be meaningless, as it couldn't return anything useful.
-  virtual void ReadData(
-      const std::string& extension_id,
-      const int day,
-      const base::Callback
-          <void(scoped_ptr<Action::ActionVector>)>& callback) OVERRIDE;
-
   virtual void ReadFilteredData(
       const std::string& extension_id,
       const Action::ActionType type,
       const std::string& api_name,
       const std::string& page_url,
       const std::string& arg_url,
+      const int days_ago,
       const base::Callback
           <void(scoped_ptr<Action::ActionVector>)>& callback) OVERRIDE;
 
@@ -97,10 +87,6 @@ class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
   // database thread.
   void QueueAction(scoped_refptr<Action> action);
 
-  // The implementation of ReadData; this must only run on the database thread.
-  scoped_ptr<Action::ActionVector> DoReadData(const std::string& extension_id,
-                                              const int days_ago);
-
   // Internal method to read data from the database; called on the database
   // thread.
   scoped_ptr<Action::ActionVector> DoReadFilteredData(
@@ -108,7 +94,8 @@ class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
       const Action::ActionType type,
       const std::string& api_name,
       const std::string& page_url,
-      const std::string& arg_url);
+      const std::string& arg_url,
+      const int days_ago);
 };
 
 }  // namespace extensions

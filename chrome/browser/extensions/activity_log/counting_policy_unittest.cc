@@ -70,35 +70,15 @@ class CountingPolicyTest : public testing::Test {
     base::MessageLoop::current()->Run();
   }
 
-  // A helper function to call ReadData on a policy object and wait for the
-  // results to be processed.
+  // A wrapper function for CheckReadFilteredData, so that we don't need to
+  // enter empty string values for parameters we don't care about.
   void CheckReadData(
       ActivityLogPolicy* policy,
       const std::string& extension_id,
       int day,
       const base::Callback<void(scoped_ptr<Action::ActionVector>)>& checker) {
-    // Submit a request to the policy to read back some data, and call the
-    // checker function when results are available.  This will happen on the
-    // database thread.
-    policy->ReadData(
-        extension_id,
-        day,
-        base::Bind(&CountingPolicyTest::CheckWrapper,
-                   checker,
-                   base::MessageLoop::current()->QuitClosure()));
-
-    // Set up a timeout that will trigger after 8 seconds; if we haven't
-    // received any results by then assume that the test is broken.
-    base::CancelableClosure timeout(
-        base::Bind(&CountingPolicyTest::TimeoutCallback));
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, timeout.callback(), base::TimeDelta::FromSeconds(8));
-
-    // Wait for results; either the checker or the timeout callbacks should
-    // cause the main loop to exit.
-    base::MessageLoop::current()->Run();
-
-    timeout.Cancel();
+    CheckReadFilteredData(
+        policy, extension_id, Action::ACTION_ANY, "", "", "", day, checker);
   }
 
   // A helper function to call ReadFilteredData on a policy object and wait for
@@ -110,6 +90,7 @@ class CountingPolicyTest : public testing::Test {
       const std::string& api_name,
       const std::string& page_url,
       const std::string& arg_url,
+      int day,
       const base::Callback<void(scoped_ptr<Action::ActionVector>)>& checker) {
     // Submit a request to the policy to read back some data, and call the
     // checker function when results are available.  This will happen on the
@@ -120,6 +101,7 @@ class CountingPolicyTest : public testing::Test {
         api_name,
         page_url,
         arg_url,
+        day,
         base::Bind(&CountingPolicyTest::CheckWrapper,
                    checker,
                    base::MessageLoop::current()->QuitClosure()));
@@ -206,13 +188,13 @@ class CountingPolicyTest : public testing::Test {
   static void Arguments_GetTodaysActions(
       scoped_ptr<Action::ActionVector> actions) {
     ASSERT_EQ(3, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
+    CheckAction(*actions->at(0), "punky", Action::ACTION_API_CALL, "brewster",
+                "", "", "", "", 2);
+    CheckAction(*actions->at(1), "punky", Action::ACTION_DOM_ACCESS, "lets",
                 "[\"vamoose\"]", "http://www.google.com/", "", "", 1);
-    CheckAction(*actions->at(1), "punky", Action::ACTION_API_CALL,
+    CheckAction(*actions->at(2), "punky", Action::ACTION_API_CALL,
                 "extension.sendMessage", "[\"not\",\"stripped\"]", "", "", "",
                 1);
-    CheckAction(*actions->at(2), "punky", Action::ACTION_API_CALL, "brewster",
-                "", "", "", "", 2);
   }
 
   static void Arguments_GetOlderActions(
@@ -509,6 +491,7 @@ TEST_F(CountingPolicyTest, LogAndFetchFilteredActions) {
       "tabs.testMethod",
       "",
       "",
+      -1,
       base::Bind(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
 
@@ -519,6 +502,7 @@ TEST_F(CountingPolicyTest, LogAndFetchFilteredActions) {
       "",
       "",
       "",
+      -1,
       base::Bind(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
 
@@ -529,6 +513,7 @@ TEST_F(CountingPolicyTest, LogAndFetchFilteredActions) {
       "",
       "http://www.google.com/",
       "",
+      -1,
       base::Bind(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
 
@@ -539,6 +524,7 @@ TEST_F(CountingPolicyTest, LogAndFetchFilteredActions) {
       "",
       "http://www.google.com",
       "",
+      -1,
       base::Bind(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
 
@@ -549,6 +535,7 @@ TEST_F(CountingPolicyTest, LogAndFetchFilteredActions) {
       "",
       "http://www.goo",
       "",
+      -1,
       base::Bind(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
 
@@ -559,6 +546,7 @@ TEST_F(CountingPolicyTest, LogAndFetchFilteredActions) {
       "",
       "",
       "",
+      -1,
       base::Bind(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions2));
 
@@ -805,6 +793,7 @@ TEST_F(CountingPolicyTest, CapReturns) {
       "",
       "",
       "",
+      -1,
       base::Bind(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions300));
   policy->Close();
@@ -910,6 +899,7 @@ TEST_F(CountingPolicyTest, RemoveSpecificURLs) {
   action->set_page_url(GURL("http://www.google.com"));
   action->set_page_title("Google");
   action->set_arg_url(GURL("http://www.args-url.com"));
+  action->set_count(5);
   policy->ProcessAction(action);
 
     // Clean some URLs.
@@ -994,6 +984,7 @@ TEST_F(CountingPolicyTest, DeleteActions) {
       "",
       "",
       "",
+      -1,
       base::Bind(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions0));
 

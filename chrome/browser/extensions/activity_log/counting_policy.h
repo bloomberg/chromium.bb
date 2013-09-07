@@ -22,18 +22,13 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
 
   virtual void ProcessAction(scoped_refptr<Action> action) OVERRIDE;
 
-  virtual void ReadData(
-      const std::string& extension_id,
-      const int day,
-      const base::Callback
-          <void(scoped_ptr<Action::ActionVector>)>& callback) OVERRIDE;
-
   virtual void ReadFilteredData(
       const std::string& extension_id,
       const Action::ActionType type,
       const std::string& api_name,
       const std::string& page_url,
       const std::string& arg_url,
+      const int days_ago,
       const base::Callback
           <void(scoped_ptr<Action::ActionVector>)>& callback) OVERRIDE;
 
@@ -77,18 +72,13 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
 
   // Internal method to read data from the database; called on the database
   // thread.
-  scoped_ptr<Action::ActionVector> DoReadData(
-      const std::string& extension_id,
-      const int days_ago);
-
-  // Internal method to read data from the database; called on the database
-  // thread.
   scoped_ptr<Action::ActionVector> DoReadFilteredData(
       const std::string& extension_id,
       const Action::ActionType type,
       const std::string& api_name,
       const std::string& page_url,
-      const std::string& arg_url);
+      const std::string& arg_url,
+      const int days_ago);
 
   // The implementation of RemoveURLs; this must only run on the database
   // thread.

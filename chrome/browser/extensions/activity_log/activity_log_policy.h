@@ -74,30 +74,17 @@ class ActivityLogPolicy {
   // state to memory every 5 min.
   virtual void ProcessAction(scoped_refptr<Action> action) = 0;
 
-  // Gets all actions for a given extension for the specified day. 0 = today,
-  // 1 = yesterday, etc. Only returns 1 day at a time. Actions are sorted from
-  // newest to oldest. Results as passed to the specified callback when
-  // available.
-  //
-  // TODO(felt,dbabic) This is overly specific to the current implementation of
-  // the FullStreamUIPolicy.  We should refactor it to use a more generic read
-  // function, for example one that takes a dictionary of query parameters
-  // (extension_id, time range, etc.).
-  virtual void ReadData(
-      const std::string& extension_id,
-      const int day,
-      const base::Callback
-          <void(scoped_ptr<Action::ActionVector>)>& callback) = 0;
-
   // Gets all actions that match the specified fields. URLs are treated like
   // prefixes; other fields are exact matches. Empty strings are not matched to
-  // anything.
+  // anything. For the date: 0 = today, 1 = yesterday, etc.; if the data is
+  // negative, it will be treated as missing.
   virtual void ReadFilteredData(
       const std::string& extension_id,
       const Action::ActionType type,
       const std::string& api_name,
       const std::string& page_url,
       const std::string& arg_url,
+      const int days_ago,
       const base::Callback
          <void(scoped_ptr<Action::ActionVector>)>& callback) = 0;
 

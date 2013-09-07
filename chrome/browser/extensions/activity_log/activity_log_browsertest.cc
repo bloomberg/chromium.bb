@@ -104,8 +104,14 @@ IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
 
   page_observer.Wait();
 
-  activity_log->GetActions(
-      ext->id(), 0, base::Bind(
+  activity_log->GetFilteredActions(
+      ext->id(),
+      Action::ACTION_ANY,
+      "",
+      "",
+      "",
+      0,
+      base::Bind(
           ActivityLogPrerenderTest::Prerender_Arguments, ext->id(), port));
 
   // Allow invocation of Prerender_Arguments

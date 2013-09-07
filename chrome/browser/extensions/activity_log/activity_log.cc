@@ -414,27 +414,18 @@ void ActivityLog::OnScriptsExecuted(
 
 // LOOKUP ACTIONS. -------------------------------------------------------------
 
-void ActivityLog::GetActions(
-    const std::string& extension_id,
-    const int day,
-    const base::Callback
-        <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback) {
-  if (policy_) {
-    policy_->ReadData(extension_id, day, callback);
-  }
-}
-
 void ActivityLog::GetFilteredActions(
     const std::string& extension_id,
     const Action::ActionType type,
     const std::string& api_name,
     const std::string& page_url,
     const std::string& arg_url,
+    const int daysAgo,
     const base::Callback
         <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback) {
   if (policy_) {
     policy_->ReadFilteredData(
-        extension_id, type, api_name, page_url, arg_url, callback);
+        extension_id, type, api_name, page_url, arg_url, daysAgo, callback);
   }
 }
 

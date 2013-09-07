@@ -33,7 +33,8 @@
           "activityType": {"type": "string", "enum": ["api_call", "api_event", "content_script", "dom_access", "dom_event", "web_request", "any"], "description": "Exact match or any"},
           "apiCall": {"type": "string", "optional": true, "description": "Exact match"},
           "pageUrl": {"type": "string", "optional": true, "description": "Treated as a prefix"},
-          "argUrl": {"type": "string", "optional": true, "description": "Treated as a prefix"}
+          "argUrl": {"type": "string", "optional": true, "description": "Treated as a prefix"},
+          "daysAgo": {"type": "integer", "optional": true, "description": "Used to lookup a precise day; today is 0"}
         }
       },
       {

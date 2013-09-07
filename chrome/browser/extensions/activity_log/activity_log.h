@@ -64,25 +64,17 @@ class ActivityLog : public BrowserContextKeyedService,
   // mode.
   void LogAction(scoped_refptr<Action> action);
 
-  // Retrieves the list of actions for a given extension on a specific day.
-  // Today is 0, yesterday is 1, etc. Returns one day at a time.
-  // Response is sent to the method/function in the callback.
-  // Use base::Bind to create the callback.
-  void GetActions(const std::string& extension_id,
-                  const int day,
-                  const base::Callback
-                      <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>&
-                      callback);
-
   // Gets all actions that match the specified fields. URLs are treated like
   // prefixes; other fields are exact matches. Empty strings are not matched to
-  // anything.
+  // anything. For daysAgo, today is 0, yesterday is 1, etc.; a negative number
+  // of days is treated as a missing parameter.
   void GetFilteredActions(
       const std::string& extension_id,
       const Action::ActionType type,
       const std::string& api_name,
       const std::string& page_url,
       const std::string& arg_url,
+      const int days_ago,
       const base::Callback
           <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback);
 

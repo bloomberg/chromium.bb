@@ -61,35 +61,15 @@ class FullStreamUIPolicyTest : public testing::Test {
     *CommandLine::ForCurrentProcess() = saved_cmdline_;
   }
 
-  // A helper function to call ReadData on a policy object and wait for the
-  // results to be processed.
+  // A wrapper function for CheckReadFilteredData, so that we don't need to
+  // enter empty string values for parameters we don't care about.
   void CheckReadData(
       ActivityLogPolicy* policy,
       const std::string& extension_id,
-      const int day,
+      int day,
       const base::Callback<void(scoped_ptr<Action::ActionVector>)>& checker) {
-    // Submit a request to the policy to read back some data, and call the
-    // checker function when results are available.  This will happen on the
-    // database thread.
-    policy->ReadData(
-        extension_id,
-        day,
-        base::Bind(&FullStreamUIPolicyTest::CheckWrapper,
-                   checker,
-                   base::MessageLoop::current()->QuitClosure()));
-
-    // Set up a timeout that will trigger after 5 seconds; if we haven't
-    // received any results by then assume that the test is broken.
-    base::CancelableClosure timeout(
-        base::Bind(&FullStreamUIPolicyTest::TimeoutCallback));
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, timeout.callback(), base::TimeDelta::FromSeconds(8));
-
-    // Wait for results; either the checker or the timeout callbacks should
-    // cause the main loop to exit.
-    base::MessageLoop::current()->Run();
-
-    timeout.Cancel();
+    CheckReadFilteredData(
+        policy, extension_id, Action::ACTION_ANY, "", "", "", day, checker);
   }
 
   // A helper function to call ReadFilteredData on a policy object and wait for
@@ -101,6 +81,7 @@ class FullStreamUIPolicyTest : public testing::Test {
       const std::string& api_name,
       const std::string& page_url,
       const std::string& arg_url,
+      const int days_ago,
       const base::Callback<void(scoped_ptr<Action::ActionVector>)>& checker) {
     // Submit a request to the policy to read back some data, and call the
     // checker function when results are available.  This will happen on the
@@ -111,6 +92,7 @@ class FullStreamUIPolicyTest : public testing::Test {
         api_name,
         page_url,
         arg_url,
+        days_ago,
         base::Bind(&FullStreamUIPolicyTest::CheckWrapper,
                    checker,
                    base::MessageLoop::current()->QuitClosure()));
@@ -344,6 +326,7 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchFilteredActions) {
       "tabs.testMethod",
       "",
       "",
+      -1,
       base::Bind(
           &FullStreamUIPolicyTest::RetrieveActions_FetchFilteredActions1));
 
@@ -354,6 +337,7 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchFilteredActions) {
       "",
       "",
       "",
+      -1,
       base::Bind(
           &FullStreamUIPolicyTest::RetrieveActions_FetchFilteredActions1));
 
@@ -364,6 +348,7 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchFilteredActions) {
       "",
       "http://www.google.com/",
       "",
+      -1,
       base::Bind(
           &FullStreamUIPolicyTest::RetrieveActions_FetchFilteredActions1));
 
@@ -374,6 +359,7 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchFilteredActions) {
       "",
       "http://www.google.com",
       "",
+      -1,
       base::Bind(
           &FullStreamUIPolicyTest::RetrieveActions_FetchFilteredActions1));
 
@@ -384,6 +370,7 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchFilteredActions) {
       "",
       "http://www.goo",
       "",
+      -1,
       base::Bind(
           &FullStreamUIPolicyTest::RetrieveActions_FetchFilteredActions1));
 
@@ -394,6 +381,7 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchFilteredActions) {
       "",
       "",
       "",
+      -1,
       base::Bind(
           &FullStreamUIPolicyTest::RetrieveActions_FetchFilteredActions2));
 
@@ -672,6 +660,7 @@ TEST_F(FullStreamUIPolicyTest, CapReturns) {
       "",
       "",
       "",
+      -1,
       base::Bind(
           &FullStreamUIPolicyTest::RetrieveActions_FetchFilteredActions300));
   policy->Close();
@@ -721,6 +710,7 @@ TEST_F(FullStreamUIPolicyTest, DeleteActions) {
       "",
       "",
       "",
+      -1,
       base::Bind(
           &FullStreamUIPolicyTest::RetrieveActions_FetchFilteredActions0));
 

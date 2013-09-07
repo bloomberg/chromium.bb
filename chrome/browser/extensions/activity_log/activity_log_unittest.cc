@@ -135,8 +135,12 @@ TEST_F(ActivityLogTest, LogAndFetchActions) {
   action->set_page_url(GURL("http://www.google.com"));
   activity_log->LogAction(action);
 
-  activity_log->GetActions(
+  activity_log->GetFilteredActions(
       kExtensionId,
+      Action::ACTION_ANY,
+      "",
+      "",
+      "",
       0,
       base::Bind(ActivityLogTest::RetrieveActions_LogAndFetchActions));
 }
@@ -177,8 +181,14 @@ TEST_F(ActivityLogTest, LogPrerender) {
   static_cast<TabHelper::ScriptExecutionObserver*>(activity_log)->
       OnScriptsExecuted(contents, executing_scripts, 0, url);
 
-  activity_log->GetActions(
-      extension->id(), 0, base::Bind(ActivityLogTest::Arguments_Prerender));
+  activity_log->GetFilteredActions(
+      extension->id(),
+      Action::ACTION_ANY,
+      "",
+      "",
+      "",
+      0,
+      base::Bind(ActivityLogTest::Arguments_Prerender));
 
   prerender_manager->CancelAllPrerenders();
 }

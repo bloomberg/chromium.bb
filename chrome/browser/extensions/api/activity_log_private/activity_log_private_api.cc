@@ -134,6 +134,9 @@ bool ActivityLogPrivateGetExtensionActivitiesFunction::RunImpl() {
       filter->page_url.get() ? *filter->page_url : std::string();
   std::string arg_url =
       filter->arg_url.get() ? *filter->arg_url : std::string();
+  int days_ago = -1;
+  if (filter->days_ago.get())
+    days_ago = *filter->days_ago;
 
   // Call the ActivityLog.
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
@@ -144,6 +147,7 @@ bool ActivityLogPrivateGetExtensionActivitiesFunction::RunImpl() {
       api_call,
       page_url,
       arg_url,
+      days_ago,
       base::Bind(
           &ActivityLogPrivateGetExtensionActivitiesFunction::OnLookupCompleted,
           this));
