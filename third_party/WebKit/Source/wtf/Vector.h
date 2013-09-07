@@ -389,6 +389,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         ~VectorBuffer()
         {
             deallocateBuffer(buffer());
+            m_buffer = 0;
         }
 
         void allocateBuffer(size_t newCapacity)
