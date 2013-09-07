@@ -36,7 +36,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 #if defined(USE_X11)
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_x11.h"
 #endif
 
 using base::TimeTicks;

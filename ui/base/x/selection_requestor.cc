@@ -4,7 +4,7 @@
 
 #include "ui/base/x/selection_requestor.h"
 
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_x11.h"
 #include "base/run_loop.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
@@ -56,7 +56,7 @@ bool SelectionRequestor::PerformBlockingConvertSelection(
   // for a response.
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
-  base::RunLoop run_loop(base::MessagePumpAuraX11::Current());
+  base::RunLoop run_loop(base::MessagePumpX11::Current());
 
   current_target_ = target;
   in_nested_loop_ = true;

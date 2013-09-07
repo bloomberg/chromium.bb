@@ -36,7 +36,7 @@
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
 #if defined(USE_AURA) && defined(USE_X11) && !defined(OS_NACL)
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_x11.h"
 #elif defined(USE_OZONE) && !defined(OS_NACL)
 #include "base/message_loop/message_pump_ozone.h"
 #else
@@ -600,7 +600,7 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
 
  protected:
 #if defined(USE_AURA) && defined(USE_X11) && !defined(OS_NACL)
-  friend class MessagePumpAuraX11;
+  friend class MessagePumpX11;
 #endif
 #if defined(USE_OZONE) && !defined(OS_NACL)
   friend class MessagePumpOzone;

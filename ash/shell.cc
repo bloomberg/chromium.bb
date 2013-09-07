@@ -116,7 +116,7 @@
 #include "ash/display/display_error_observer_chromeos.h"
 #include "ash/display/output_configurator_animation.h"
 #include "base/chromeos/chromeos_version.h"
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_x11.h"
 #include "chromeos/display/output_configurator.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/config/gpu_feature_type.h"
@@ -230,11 +230,11 @@ Shell::Shell(ShellDelegate* delegate)
 
   output_configurator_->Init(!is_panel_fitting_disabled);
 
-  base::MessagePumpAuraX11::Current()->AddDispatcherForRootWindow(
+  base::MessagePumpX11::Current()->AddDispatcherForRootWindow(
       output_configurator());
   // We can't do this with a root window listener because XI_HierarchyChanged
   // messages don't have a target window.
-  base::MessagePumpAuraX11::Current()->AddObserver(output_configurator());
+  base::MessagePumpX11::Current()->AddObserver(output_configurator());
 #endif  // defined(OS_CHROMEOS)
   AddPreTargetHandler(this);
 
@@ -329,9 +329,9 @@ Shell::~Shell() {
     output_configurator_->RemoveObserver(output_configurator_animation_.get());
   if (display_error_observer_)
     output_configurator_->RemoveObserver(display_error_observer_.get());
-  base::MessagePumpAuraX11::Current()->RemoveDispatcherForRootWindow(
+  base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(
       output_configurator());
-  base::MessagePumpAuraX11::Current()->RemoveObserver(output_configurator());
+  base::MessagePumpX11::Current()->RemoveObserver(output_configurator());
   display_change_observer_.reset();
 #endif  // defined(OS_CHROMEOS)
 

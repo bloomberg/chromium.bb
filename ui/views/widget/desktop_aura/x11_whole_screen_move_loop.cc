@@ -10,7 +10,7 @@
 
 #include "base/debug/stack_trace.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_x11.h"
 #include "base/run_loop.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -64,7 +64,7 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   in_move_loop_ = true;
 
-  Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
+  Display* display = base::MessagePumpX11::GetDefaultXDisplay();
 
   // Creates an invisible, InputOnly toplevel window. This window will receive
   // all mouse movement for drags. It turns out that normal windows doing a
@@ -83,12 +83,12 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
       -100, -100, 10, 10,
       0, 0, InputOnly, CopyFromParent,
       attribute_mask, &swa);
-  base::MessagePumpAuraX11::Current()->AddDispatcherForWindow(
+  base::MessagePumpX11::Current()->AddDispatcherForWindow(
       this, grab_input_window_);
 
   // Wait for the window to be mapped. If we don't, XGrabPointer fails.
   XMapRaised(display, grab_input_window_);
-  base::MessagePumpAuraX11::Current()->BlockUntilWindowMapped(
+  base::MessagePumpX11::Current()->BlockUntilWindowMapped(
       grab_input_window_);
 
   if (!GrabPointerWithCursor(cursor))
@@ -116,10 +116,10 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
   // the chrome process.
 
   // Ungrab before we let go of the window.
-  Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
+  Display* display = base::MessagePumpX11::GetDefaultXDisplay();
   XUngrabPointer(display, CurrentTime);
 
-  base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(
+  base::MessagePumpX11::Current()->RemoveDispatcherForWindow(
       grab_input_window_);
   delegate_->OnMoveLoopEnded();
   XDestroyWindow(display, grab_input_window_);
@@ -129,7 +129,7 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
 }
 
 bool X11WholeScreenMoveLoop::GrabPointerWithCursor(gfx::NativeCursor cursor) {
-  Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
+  Display* display = base::MessagePumpX11::GetDefaultXDisplay();
   XGrabServer(display);
   XUngrabPointer(display, CurrentTime);
   int ret = XGrabPointer(

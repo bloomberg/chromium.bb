@@ -10,7 +10,7 @@
 #include <X11/Xregion.h>
 #include <X11/Xutil.h>
 
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_x11.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -114,7 +114,7 @@ DesktopRootWindowHostX11::DesktopRootWindowHostX11(
     DesktopNativeWidgetAura* desktop_native_widget_aura,
     const gfx::Rect& initial_bounds)
     : close_widget_factory_(this),
-      xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
+      xdisplay_(base::MessagePumpX11::GetDefaultXDisplay()),
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
@@ -232,7 +232,7 @@ void DesktopRootWindowHostX11::CloseNow() {
 
   open_windows().remove(xwindow_);
   // Actually free our native resources.
-  base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(xwindow_);
+  base::MessagePumpX11::Current()->RemoveDispatcherForWindow(xwindow_);
   XDestroyWindow(xdisplay_, xwindow_);
   xwindow_ = None;
 
@@ -561,7 +561,7 @@ void DesktopRootWindowHostX11::Show() {
     // We now block until our window is mapped. Some X11 APIs will crash and
     // burn if passed |xwindow_| before the window is mapped, and XMapWindow is
     // asynchronous.
-    base::MessagePumpAuraX11::Current()->BlockUntilWindowMapped(xwindow_);
+    base::MessagePumpX11::Current()->BlockUntilWindowMapped(xwindow_);
     window_mapped_ = true;
   }
 }
@@ -793,7 +793,7 @@ void DesktopRootWindowHostX11::InitX11Window(
       CopyFromParent,  // visual
       attribute_mask,
       &swa);
-  base::MessagePumpAuraX11::Current()->AddDispatcherForWindow(this, xwindow_);
+  base::MessagePumpX11::Current()->AddDispatcherForWindow(this, xwindow_);
 
   // TODO(erg): Maybe need to set a ViewProp here like in RWHL::RWHL().
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_AURAX11_H
-#define BASE_MESSAGE_LOOP_MESSAGE_PUMP_AURAX11_H
+#ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_X11_H
+#define BASE_MESSAGE_LOOP_MESSAGE_PUMP_X11_H
 
 #include <bitset>
 #include <map>
@@ -31,11 +31,11 @@ namespace base {
 // If there's a current dispatcher given through RunWithDispatcher(), that
 // dispatcher receives events. Otherwise, we route to messages to dispatchers
 // who have subscribed to messages from a specific X11 window.
-class BASE_EXPORT MessagePumpAuraX11 : public MessagePumpGlib,
-                                       public MessagePumpDispatcher {
+class BASE_EXPORT MessagePumpX11 : public MessagePumpGlib,
+                                   public MessagePumpDispatcher {
  public:
-  MessagePumpAuraX11();
-  virtual ~MessagePumpAuraX11();
+  MessagePumpX11();
+  virtual ~MessagePumpX11();
 
   // Returns default X Display.
   static Display* GetDefaultXDisplay();
@@ -43,8 +43,10 @@ class BASE_EXPORT MessagePumpAuraX11 : public MessagePumpGlib,
   // Returns true if the system supports XINPUT2.
   static bool HasXInput2();
 
+#if !defined(TOOLKIT_GTK)
   // Returns the UI message pump.
-  static MessagePumpAuraX11* Current();
+  static MessagePumpX11* Current();
+#endif
 
   // Adds/Removes |dispatcher| for the |xid|. This will route all messages from
   // the window |xid| to |dispatcher.
@@ -122,11 +124,13 @@ class BASE_EXPORT MessagePumpAuraX11 : public MessagePumpGlib,
 
   unsigned long x_root_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(MessagePumpAuraX11);
+  DISALLOW_COPY_AND_ASSIGN(MessagePumpX11);
 };
 
-typedef MessagePumpAuraX11 MessagePumpForUI;
+#if !defined(TOOLKIT_GTK)
+typedef MessagePumpX11 MessagePumpForUI;
+#endif
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_AURAX11_H
+#endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_X11_H

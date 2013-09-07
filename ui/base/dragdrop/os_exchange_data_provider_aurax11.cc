@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_x11.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_util.h"
@@ -77,12 +77,12 @@ OSExchangeDataProviderAuraX11::OSExchangeDataProviderAuraX11()
 
   XStoreName(x_display_, x_window_, "Chromium Drag & Drop Window");
 
-  base::MessagePumpAuraX11::Current()->AddDispatcherForWindow(this, x_window_);
+  base::MessagePumpX11::Current()->AddDispatcherForWindow(this, x_window_);
 }
 
 OSExchangeDataProviderAuraX11::~OSExchangeDataProviderAuraX11() {
   if (own_window_) {
-    base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(x_window_);
+    base::MessagePumpX11::Current()->RemoveDispatcherForWindow(x_window_);
     XDestroyWindow(x_display_, x_window_);
   }
 }

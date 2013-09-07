@@ -20,7 +20,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_x11.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -363,7 +363,7 @@ class RootWindowHostX11::MouseMoveFilter {
 
 RootWindowHostX11::RootWindowHostX11(const gfx::Rect& bounds)
     : delegate_(NULL),
-      xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
+      xdisplay_(base::MessagePumpX11::GetDefaultXDisplay()),
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       current_cursor_(ui::kCursorNull),
@@ -388,8 +388,8 @@ RootWindowHostX11::RootWindowHostX11(const gfx::Rect& bounds)
       CopyFromParent,  // visual
       CWBackPixmap | CWOverrideRedirect,
       &swa);
-  base::MessagePumpAuraX11::Current()->AddDispatcherForWindow(this, xwindow_);
-  base::MessagePumpAuraX11::Current()->AddDispatcherForRootWindow(this);
+  base::MessagePumpX11::Current()->AddDispatcherForWindow(this, xwindow_);
+  base::MessagePumpX11::Current()->AddDispatcherForRootWindow(this);
 
   long event_mask = ButtonPressMask | ButtonReleaseMask | FocusChangeMask |
                     KeyPressMask | KeyReleaseMask |
@@ -440,8 +440,8 @@ RootWindowHostX11::RootWindowHostX11(const gfx::Rect& bounds)
 
 RootWindowHostX11::~RootWindowHostX11() {
   Env::GetInstance()->RemoveObserver(this);
-  base::MessagePumpAuraX11::Current()->RemoveDispatcherForRootWindow(this);
-  base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(xwindow_);
+  base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(this);
+  base::MessagePumpX11::Current()->RemoveDispatcherForWindow(xwindow_);
 
   UnConfineCursor();
 
@@ -630,7 +630,7 @@ void RootWindowHostX11::Show() {
     // We now block until our window is mapped. Some X11 APIs will crash and
     // burn if passed |xwindow_| before the window is mapped, and XMapWindow is
     // asynchronous.
-    base::MessagePumpAuraX11::Current()->BlockUntilWindowMapped(xwindow_);
+    base::MessagePumpX11::Current()->BlockUntilWindowMapped(xwindow_);
     window_mapped_ = true;
   }
 }
@@ -854,7 +854,7 @@ void RootWindowHostX11::OnDeviceScaleFactorChanged(
 }
 
 void RootWindowHostX11::PrepareForShutdown() {
-  base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(xwindow_);
+  base::MessagePumpX11::Current()->RemoveDispatcherForWindow(xwindow_);
 }
 
 void RootWindowHostX11::OnWindowInitialized(Window* window) {
@@ -1090,7 +1090,7 @@ RootWindowHost* RootWindowHost::Create(const gfx::Rect& bounds) {
 
 // static
 gfx::Size RootWindowHost::GetNativeScreenSize() {
-  ::Display* xdisplay = base::MessagePumpAuraX11::GetDefaultXDisplay();
+  ::Display* xdisplay = base::MessagePumpX11::GetDefaultXDisplay();
   return gfx::Size(DisplayWidth(xdisplay, 0), DisplayHeight(xdisplay, 0));
 }
 

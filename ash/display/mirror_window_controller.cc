@@ -43,7 +43,7 @@ namespace {
 void DisableInput(XID window) {
   long event_mask = ExposureMask | VisibilityChangeMask |
       StructureNotifyMask | PropertyChangeMask;
-  XSelectInput(base::MessagePumpAuraX11::GetDefaultXDisplay(),
+  XSelectInput(base::MessagePumpX11::GetDefaultXDisplay(),
                window, event_mask);
 }
 #endif

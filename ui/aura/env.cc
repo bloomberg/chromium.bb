@@ -12,7 +12,7 @@
 #include "ui/compositor/compositor_switches.h"
 
 #if defined(USE_X11)
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_x11.h"
 #endif
 
 namespace aura {
@@ -30,7 +30,7 @@ Env::Env()
 
 Env::~Env() {
 #if defined(USE_X11)
-  base::MessagePumpAuraX11::Current()->RemoveObserver(
+  base::MessagePumpX11::Current()->RemoveObserver(
       &device_list_updater_aurax11_);
 #endif
 
@@ -65,7 +65,7 @@ void Env::RemoveObserver(EnvObserver* observer) {
 #if !defined(OS_MACOSX)
 base::MessageLoop::Dispatcher* Env::GetDispatcher() {
 #if defined(USE_X11)
-  return base::MessagePumpAuraX11::Current();
+  return base::MessagePumpX11::Current();
 #else
   return dispatcher_.get();
 #endif
@@ -87,7 +87,7 @@ void Env::Init() {
 #if defined(USE_X11)
   // We can't do this with a root window listener because XI_HierarchyChanged
   // messages don't have a target window.
-  base::MessagePumpAuraX11::Current()->AddObserver(
+  base::MessagePumpX11::Current()->AddObserver(
       &device_list_updater_aurax11_);
 #endif
   ui::Compositor::Initialize();

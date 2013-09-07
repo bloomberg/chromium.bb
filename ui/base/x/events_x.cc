@@ -11,7 +11,7 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_x11.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/touch/touch_factory_x11.h"
@@ -261,7 +261,7 @@ double GetTouchParamFromXEvent(XEvent* xev,
 
 Atom GetNoopEventAtom() {
   return XInternAtom(
-      base::MessagePumpAuraX11::GetDefaultXDisplay(),
+      base::MessagePumpX11::GetDefaultXDisplay(),
       "noop", False);
 }
 

@@ -16,7 +16,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_x11.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/display/output_util.h"
@@ -41,7 +41,7 @@ RRMode GetOutputNativeMode(const XRROutputInfo* output_info) {
 }  // namespace
 
 RealOutputConfiguratorDelegate::RealOutputConfiguratorDelegate()
-    : display_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
+    : display_(base::MessagePumpX11::GetDefaultXDisplay()),
       window_(DefaultRootWindow(display_)),
       screen_(NULL),
       is_panel_fitting_enabled_(false) {

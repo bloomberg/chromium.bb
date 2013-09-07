@@ -15,8 +15,8 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_pump_aurax11.h"
 #include "base/message_loop/message_pump_observer.h"
+#include "base/message_loop/message_pump_x11.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -106,7 +106,7 @@ SelectionChangeObserver::SelectionChangeObserver()
                                XFixesSelectionWindowDestroyNotifyMask |
                                XFixesSelectionClientCloseNotifyMask);
 
-    base::MessagePumpAuraX11::Current()->AddObserver(this);
+    base::MessagePumpX11::Current()->AddObserver(this);
   }
 }
 
@@ -332,11 +332,11 @@ Clipboard::AuraX11Details::AuraX11Details()
   XStoreName(x_display_, x_window_, "Chromium clipboard");
   XSelectInput(x_display_, x_window_, PropertyChangeMask);
 
-  base::MessagePumpAuraX11::Current()->AddDispatcherForWindow(this, x_window_);
+  base::MessagePumpX11::Current()->AddDispatcherForWindow(this, x_window_);
 }
 
 Clipboard::AuraX11Details::~AuraX11Details() {
-  base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(x_window_);
+  base::MessagePumpX11::Current()->RemoveDispatcherForWindow(x_window_);
 
   XDestroyWindow(x_display_, x_window_);
 }

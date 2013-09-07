@@ -19,11 +19,11 @@ enum EventStatus {
 
 // A MessagePumpObserver is an object that receives global
 // notifications from the UI MessageLoop with MessagePumpWin or
-// MessagePumpAuraX11.
+// MessagePumpX11.
 //
 // NOTE: An Observer implementation should be extremely fast!
 //
-// For use with MessagePumpAuraX11, please see message_pump_glib.h for more
+// For use with MessagePumpX11, please see message_pump_glib.h for more
 // info about how this is invoked in this environment.
 class BASE_EXPORT MessagePumpObserver {
  public:

@@ -39,7 +39,7 @@ bool IsRandRAvailable() {
   int randr_version_major = 0;
   int randr_version_minor = 0;
   static bool is_randr_available = XRRQueryVersion(
-      base::MessagePumpAuraX11::GetDefaultXDisplay(),
+      base::MessagePumpX11::GetDefaultXDisplay(),
       &randr_version_major, &randr_version_minor);
   return is_randr_available;
 }
@@ -53,10 +53,10 @@ bool GetEDIDProperty(XID output, unsigned long* nitems, unsigned char** prop) {
   if (!IsRandRAvailable())
     return false;
 
-  Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
+  Display* display = base::MessagePumpX11::GetDefaultXDisplay();
 
   static Atom edid_property = XInternAtom(
-      base::MessagePumpAuraX11::GetDefaultXDisplay(),
+      base::MessagePumpX11::GetDefaultXDisplay(),
       RR_PROPERTY_RANDR_EDID, false);
 
   bool has_edid_property = false;
