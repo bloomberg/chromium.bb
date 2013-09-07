@@ -11,7 +11,7 @@ class URLRequest;
 class URLRequestJob;
 }  // namespace net
 namespace webkit_blob {
-class BlobStorageController;
+class BlobStorageContext;
 }  // webkit_blob
 
 class GURL;
@@ -24,7 +24,7 @@ class ViewBlobInternalsJobFactory {
   static net::URLRequestJob* CreateJobForRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
-      webkit_blob::BlobStorageController* blob_storage_controller);
+      webkit_blob::BlobStorageContext* blob_storage_context);
 };
 
 }  // namespace content

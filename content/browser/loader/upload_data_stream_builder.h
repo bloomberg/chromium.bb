@@ -21,7 +21,7 @@ class UploadDataStream;
 }
 
 namespace webkit_blob {
-class BlobStorageController;
+class BlobStorageContext;
 }
 
 namespace webkit_glue {
@@ -34,7 +34,7 @@ class CONTENT_EXPORT UploadDataStreamBuilder {
  public:
   // Creates a new UploadDataStream from this request body.
   //
-  // This also resolves any blob references using the given |blob_controller|
+  // This also resolves any blob references using the given |blob_context|
   // and binds those blob references to the ResourceRequestBody ensuring that
   // the blob data remains valid for the lifetime of the ResourceRequestBody
   // object.
@@ -44,7 +44,7 @@ class CONTENT_EXPORT UploadDataStreamBuilder {
   // when the data gets uploaded.
   static scoped_ptr<net::UploadDataStream> Build(
       webkit_glue::ResourceRequestBody* body,
-      webkit_blob::BlobStorageController* blob_controller,
+      webkit_blob::BlobStorageContext* blob_context,
       fileapi::FileSystemContext* file_system_context,
       base::TaskRunner* file_task_runner);
 };

@@ -47,6 +47,13 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobStorageHost {
                              const std::string& uuid) WARN_UNUSED_RESULT;
   bool RevokePublicBlobURL(const GURL& blob_url) WARN_UNUSED_RESULT;
 
+  // Temporary support for mapping old style private blob urls to uuids.
+  void DeprecatedRegisterBlobURL(const GURL& private_url,
+                                 const std::string& uuid);
+  void DeprecatedCloneBlobURL(const GURL& url,
+                              const GURL& src_private_url);
+  void DeprecatedRevokeBlobURL(const GURL& url);
+
  private:
   typedef std::map<std::string, int> BlobReferenceMap;
 
@@ -61,7 +68,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobStorageHost {
   // The set of public blob urls coined by this consumer.
   std::set<GURL> public_blob_urls_;
 
+  // And private deprecated blob urls.
+  std::set<GURL> private_blob_urls_;
+
   base::WeakPtr<BlobStorageContext> context_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlobStorageHost);
 };
 
 }  // namespace webkit_blob

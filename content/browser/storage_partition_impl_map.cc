@@ -34,96 +34,52 @@
 #include "crypto/sha2.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "webkit/browser/blob/blob_storage_context.h"
 #include "webkit/browser/blob/blob_url_request_job_factory.h"
 #include "webkit/browser/fileapi/file_system_url_request_job_factory.h"
 #include "webkit/common/blob/blob_data.h"
 
 using appcache::AppCacheService;
 using fileapi::FileSystemContext;
-using webkit_blob::BlobStorageController;
+using webkit_blob::BlobStorageContext;
 
 namespace content {
 
 namespace {
 
-class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
+// A derivative that knows about Streams too.
+class BlobProtocolHandler : public webkit_blob::BlobProtocolHandler {
  public:
   BlobProtocolHandler(ChromeBlobStorageContext* blob_storage_context,
                       StreamContext* stream_context,
                       fileapi::FileSystemContext* file_system_context)
-      : blob_storage_context_(blob_storage_context),
+      : webkit_blob::BlobProtocolHandler(
+            file_system_context,
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
+                .get()),
+        blob_storage_context_(blob_storage_context),
         stream_context_(stream_context),
-        file_system_context_(file_system_context) {}
+        file_system_context_(file_system_context) {
+  }
 
-  virtual ~BlobProtocolHandler() {}
+  virtual ~BlobProtocolHandler() {
+  }
 
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    if (!webkit_blob_protocol_handler_impl_) {
-      webkit_blob_protocol_handler_impl_.reset(
-          new WebKitBlobProtocolHandlerImpl(blob_storage_context_->controller(),
-                                            stream_context_.get(),
-                                            file_system_context_.get()));
-    }
-    return webkit_blob_protocol_handler_impl_->MaybeCreateJob(request,
-                                                              network_delegate);
+    scoped_refptr<Stream> stream =
+        stream_context_->registry()->GetStream(request->url());
+    if (stream.get())
+      return new StreamURLRequestJob(request, network_delegate, stream);
+    return webkit_blob::BlobProtocolHandler::MaybeCreateJob(
+        request, network_delegate);
   }
 
  private:
-  // An implementation of webkit_blob::BlobProtocolHandler that gets
-  // the BlobData from ResourceRequestInfoImpl.
-  class WebKitBlobProtocolHandlerImpl
-      : public webkit_blob::BlobProtocolHandler {
-   public:
-    WebKitBlobProtocolHandlerImpl(
-        webkit_blob::BlobStorageController* blob_storage_controller,
-        StreamContext* stream_context,
-        fileapi::FileSystemContext* file_system_context)
-        : webkit_blob::BlobProtocolHandler(
-              blob_storage_controller,
-              file_system_context,
-              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
-                  .get()),
-          stream_context_(stream_context) {}
-
-    virtual ~WebKitBlobProtocolHandlerImpl() {}
-
-    virtual net::URLRequestJob* MaybeCreateJob(
-        net::URLRequest* request,
-        net::NetworkDelegate* network_delegate) const OVERRIDE {
-      scoped_refptr<Stream> stream =
-          stream_context_->registry()->GetStream(request->url());
-      if (stream.get())
-        return new StreamURLRequestJob(request, network_delegate, stream);
-
-      return webkit_blob::BlobProtocolHandler::MaybeCreateJob(
-          request, network_delegate);
-    }
-
-   private:
-    // webkit_blob::BlobProtocolHandler implementation.
-    virtual scoped_refptr<webkit_blob::BlobData>
-        LookupBlobData(net::URLRequest* request) const OVERRIDE {
-      const ResourceRequestInfoImpl* info =
-          ResourceRequestInfoImpl::ForRequest(request);
-      if (!info)
-        return NULL;
-      return info->requested_blob_data();
-    }
-
-    const scoped_refptr<StreamContext> stream_context_;
-    DISALLOW_COPY_AND_ASSIGN(WebKitBlobProtocolHandlerImpl);
-  };
-
   const scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   const scoped_refptr<StreamContext> stream_context_;
   const scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-
-  mutable scoped_ptr<WebKitBlobProtocolHandlerImpl>
-  webkit_blob_protocol_handler_impl_;
-
   DISALLOW_COPY_AND_ASSIGN(BlobProtocolHandler);
 };
 

@@ -7,6 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
@@ -19,20 +21,30 @@ class FileSystemContext;
 }  // namespace fileapi
 
 namespace net {
-class URLRequest;
+class URLRequestContext;
 }  // namespace net
 
 namespace webkit_blob {
 
 class BlobData;
-class BlobStorageController;
+class BlobDataHandle;
 
 class WEBKIT_STORAGE_BROWSER_EXPORT BlobProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  // |controller|'s lifetime should exceed the lifetime of the ProtocolHandler.
-  BlobProtocolHandler(BlobStorageController* blob_storage_controller,
-                      fileapi::FileSystemContext* file_system_context,
+  // A helper to manufacture an URLRequest to retrieve the given blob.
+  static net::URLRequest* CreateBlobRequest(
+      scoped_ptr<BlobDataHandle> blob_data_handle,
+      const net::URLRequestContext* request_context,
+      net::URLRequest::Delegate* request_delegate);
+
+  // This class ignores the request's URL and uses the value given
+  // to SetRequestedBlobDataHandle instead.
+  static void SetRequestedBlobDataHandle(
+      net::URLRequest* request,
+      scoped_ptr<BlobDataHandle> blob_data_handle);
+
+  BlobProtocolHandler(fileapi::FileSystemContext* file_system_context,
                       base::MessageLoopProxy* file_loop_proxy);
   virtual ~BlobProtocolHandler();
 
@@ -41,12 +53,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobProtocolHandler
       net::NetworkDelegate* network_delegate) const OVERRIDE;
 
  private:
-  virtual scoped_refptr<BlobData> LookupBlobData(
+  scoped_refptr<BlobData> LookupBlobData(
       net::URLRequest* request) const;
 
-  // No scoped_refptr because |blob_storage_controller_| is owned by the
-  // ProfileIOData, which also owns this ProtocolHandler.
-  BlobStorageController* const blob_storage_controller_;
   const scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   const scoped_refptr<base::MessageLoopProxy> file_loop_proxy_;
 

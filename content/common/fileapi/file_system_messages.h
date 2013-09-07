@@ -118,10 +118,17 @@ IPC_MESSAGE_CONTROL2(FileSystemHostMsg_ReadDirectory,
                      GURL /* path */)
 
 // WebFileWriter::write() message.
-IPC_MESSAGE_CONTROL4(FileSystemHostMsg_Write,
+IPC_MESSAGE_CONTROL4(FileSystemHostMsg_WriteDeprecated,
                      int /* request id */,
                      GURL /* file path */,
                      GURL /* blob URL */,
+                     int64 /* position */)
+
+// WebFileWriter::write() message.
+IPC_MESSAGE_CONTROL4(FileSystemHostMsg_Write,
+                     int /* request id */,
+                     GURL /* file path */,
+                     std::string /* blob uuid */,
                      int64 /* position */)
 
 // WebFileWriter::truncate() message.

@@ -5,6 +5,7 @@
 #include "webkit/browser/blob/blob_storage_host.h"
 
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_util.h"
 #include "url/gurl.h"
 #include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/browser/blob/blob_storage_context.h"
@@ -26,6 +27,10 @@ BlobStorageHost::~BlobStorageHost() {
        iter != blobs_inuse_map_.end(); ++iter) {
     for (int i = 0; i < iter->second; ++i)
       context_->DecrementBlobRefCount(iter->first);
+  }
+  for (std::set<GURL>::iterator iter = private_blob_urls_.begin();
+       iter != private_blob_urls_.end(); ++iter) {
+    context_->DeprecatedRevokePrivateBlobURL(*iter);
   }
 }
 
@@ -96,6 +101,56 @@ bool BlobStorageHost::RevokePublicBlobURL(const GURL& blob_url) {
   context_->RevokePublicBlobURL(blob_url);
   public_blob_urls_.erase(blob_url);
   return true;
+}
+
+namespace {
+bool IsPrivateBlobURL(const GURL& url) {
+  return StartsWithASCII(url.spec(), "blob:blobinternal", true);
+}
+}
+
+void BlobStorageHost::DeprecatedRegisterBlobURL(
+    const GURL& private_url, const std::string& uuid) {
+  DCHECK(IsPrivateBlobURL(private_url));
+  if (!context_.get())
+    return;
+  context_->DeprecatedRegisterPrivateBlobURL(private_url, uuid);
+  private_blob_urls_.insert(private_url);
+}
+
+void BlobStorageHost::DeprecatedCloneBlobURL(
+    const GURL& url, const GURL& src_private_url) {
+  // This method is used in two ways.
+  // 1. During serialization/deserialization to 'clone' an existing blob.
+  //    In this case the src and dest urls are 'private' blob urls.
+  // 2. To register public blob urls. In this case the dest url is a
+  //    'public' blob url.
+  DCHECK(IsPrivateBlobURL(src_private_url));
+  if (!context_.get())
+    return;
+  std::string uuid = context_->LookupUuidFromDeprecatedURL(src_private_url);
+  if (uuid.empty())
+    return;
+  if (IsPrivateBlobURL(url)) {
+    DeprecatedRegisterBlobURL(url, uuid);
+  } else {
+    // Temporarily bump the refcount so the uuid passes the InUse
+    // check inside the RegisterPublicBlobURL method.
+    ignore_result(IncrementBlobRefCount(uuid));
+    ignore_result(RegisterPublicBlobURL(url, uuid));
+    ignore_result(DecrementBlobRefCount(uuid));
+  }
+}
+
+void BlobStorageHost::DeprecatedRevokeBlobURL(const GURL& url) {
+  if (!context_.get())
+    return;
+  if (IsPrivateBlobURL(url)) {
+    context_->DeprecatedRevokePrivateBlobURL(url);
+    private_blob_urls_.erase(url);
+  } else {
+    ignore_result(RevokePublicBlobURL(url));
+  }
 }
 
 bool BlobStorageHost::IsInUseInHost(const std::string& uuid) {

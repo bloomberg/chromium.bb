@@ -287,16 +287,15 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
 
 TEST_F(SyncableFileOperationRunnerTest, Write) {
   EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.CreateFile(URL(kFile)));
-  const GURL kBlobURL("blob:foo");
   const std::string kData("Lorem ipsum.");
-  ScopedTextBlob blob(url_request_context_, kBlobURL, kData);
+  ScopedTextBlob blob(url_request_context_, "blob:foo", kData);
 
   sync_status()->StartSyncing(URL(kFile));
 
   ResetCallbackStatus();
   file_system_.operation_runner()->Write(
       &url_request_context_,
-      URL(kFile), kBlobURL, 0, GetWriteCallback(FROM_HERE));
+      URL(kFile), blob.GetBlobDataHandle(), 0, GetWriteCallback(FROM_HERE));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
 

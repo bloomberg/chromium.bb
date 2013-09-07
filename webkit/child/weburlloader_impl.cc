@@ -543,7 +543,7 @@ void WebURLLoaderImpl::Context::Start(
           break;
         }
         case WebHTTPBody::Element::TypeBlob:
-          request_body->AppendBlob(GURL(element.blobURL));
+          request_body->AppendBlobDeprecated(GURL(element.blobURL));
           break;
         default:
           NOTREACHED();

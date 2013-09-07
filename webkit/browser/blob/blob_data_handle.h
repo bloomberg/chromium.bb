@@ -43,6 +43,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobDataHandle
   BlobData* blob_data_;  // Intentionally a raw ptr to a non-thread-safe ref.
   base::WeakPtr<BlobStorageContext> context_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlobDataHandle);
 };
 
 }  // namespace webkit_blob

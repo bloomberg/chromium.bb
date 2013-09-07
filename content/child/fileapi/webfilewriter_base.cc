@@ -32,10 +32,19 @@ void WebFileWriterBase::truncate(long long length) {
 
 void WebFileWriterBase::write(long long position,
                               const WebKit::WebURL& blob_url) {
-  DCHECK(kOperationNone == operation_);
-  DCHECK(kCancelNotInProgress == cancel_state_);
+  DCHECK_EQ(kOperationNone, operation_);
+  DCHECK_EQ(kCancelNotInProgress, cancel_state_);
   operation_ = kOperationWrite;
-  DoWrite(path_, blob_url, position);
+  DoWriteDeprecated(path_, blob_url, position);
+}
+
+void WebFileWriterBase::write(
+      long long position,
+      const WebKit::WebString& id) {
+  DCHECK_EQ(kOperationNone, operation_);
+  DCHECK_EQ(kCancelNotInProgress, cancel_state_);
+  operation_ = kOperationWrite;
+  DoWrite(path_, id.utf8(), position);
 }
 
 // When we cancel a write/truncate, we always get back the result of the write

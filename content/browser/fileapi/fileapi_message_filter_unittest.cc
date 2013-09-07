@@ -23,7 +23,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/blob/blob_storage_controller.h"
+#include "webkit/browser/blob/blob_storage_context.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/common/blob/blob_data.h"
@@ -95,34 +95,6 @@ class FileAPIMessageFilterTest : public testing::Test {
   scoped_refptr<FileAPIMessageFilter> filter_;
 };
 
-TEST_F(FileAPIMessageFilterTest, BuildEmptyBlob) {
-  webkit_blob::BlobStorageController* controller =
-      blob_storage_context_->controller();
-
-  const GURL kUrl("blob:foobar");
-  const GURL kDifferentUrl("blob:barfoo");
-
-  EXPECT_EQ(NULL, controller->GetBlobDataFromUrl(kUrl));
-
-  BlobHostMsg_StartBuilding start_message(kUrl);
-  EXPECT_TRUE(InvokeOnMessageReceived(start_message));
-
-  // Blob is still being built. Nothing should be returned.
-  EXPECT_EQ(NULL, controller->GetBlobDataFromUrl(kUrl));
-
-  BlobHostMsg_FinishBuilding finish_message(kUrl, kFakeContentType);
-  EXPECT_TRUE(InvokeOnMessageReceived(finish_message));
-
-  // Now, Blob is built.
-  webkit_blob::BlobData* blob_data = controller->GetBlobDataFromUrl(kUrl);
-  ASSERT_FALSE(blob_data == NULL);
-  EXPECT_EQ(0U, blob_data->items().size());
-  EXPECT_EQ(kFakeContentType, blob_data->content_type());
-
-  // Nothing should be returned for a URL we didn't use.
-  EXPECT_TRUE(controller->GetBlobDataFromUrl(kDifferentUrl) == NULL);
-}
-
 TEST_F(FileAPIMessageFilterTest, CloseChannelWithInflightRequest) {
   scoped_refptr<FileAPIMessageFilter> filter(
       new FileAPIMessageFilter(
@@ -190,14 +162,10 @@ TEST_F(FileAPIMessageFilterTest, MultipleFilters) {
 TEST_F(FileAPIMessageFilterTest, BuildEmptyStream) {
   StreamRegistry* stream_registry = stream_context_->registry();
 
-  webkit_blob::BlobStorageController* blob_controller =
-      blob_storage_context_->controller();
-
   const GURL kUrl(kFakeBlobInternalUrlSpec);
   const GURL kDifferentUrl("blob:barfoo");
 
   EXPECT_EQ(NULL, stream_registry->GetStream(kUrl).get());
-  EXPECT_EQ(NULL, blob_controller->GetBlobDataFromUrl(kUrl));
 
   StreamHostMsg_StartBuilding start_message(kUrl, kFakeContentType);
   EXPECT_TRUE(InvokeOnMessageReceived(start_message));
@@ -216,9 +184,6 @@ TEST_F(FileAPIMessageFilterTest, BuildEmptyStream) {
 
   StreamHostMsg_FinishBuilding finish_message(kUrl);
   EXPECT_TRUE(InvokeOnMessageReceived(finish_message));
-
-  // Blob controller shouldn't be affected.
-  EXPECT_EQ(NULL, blob_controller->GetBlobDataFromUrl(kUrl));
 
   stream = stream_registry->GetStream(kUrl);
   ASSERT_FALSE(stream.get() == NULL);
