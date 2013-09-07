@@ -124,11 +124,14 @@ StreamTextureFactorySynchronousImpl::StreamTextureFactorySynchronousImpl(
 StreamTextureFactorySynchronousImpl::~StreamTextureFactorySynchronousImpl() {}
 
 StreamTextureProxy* StreamTextureFactorySynchronousImpl::CreateProxy() {
+  if (!context_provider_)
+    return NULL;
   return new StreamTextureProxyImpl(context_provider_);
 }
 
 void StreamTextureFactorySynchronousImpl::EstablishPeer(int32 stream_id,
                                                         int player_id) {
+  DCHECK(context_provider_);
   scoped_refptr<gfx::SurfaceTexture> surface_texture =
       context_provider_->GetSurfaceTexture(stream_id);
   if (surface_texture) {
@@ -145,6 +148,7 @@ unsigned StreamTextureFactorySynchronousImpl::CreateStreamTexture(
     unsigned* texture_id,
     gpu::Mailbox* texture_mailbox,
     unsigned* texture_mailbox_sync_point) {
+  DCHECK(context_provider_);
   WebKit::WebGraphicsContext3D* context = context_provider_->Context3d();
   unsigned stream_id = 0;
   if (context->makeContextCurrent()) {
@@ -163,6 +167,7 @@ unsigned StreamTextureFactorySynchronousImpl::CreateStreamTexture(
 
 void StreamTextureFactorySynchronousImpl::DestroyStreamTexture(
     unsigned texture_id) {
+  DCHECK(context_provider_);
   WebKit::WebGraphicsContext3D* context = context_provider_->Context3d();
   if (context->makeContextCurrent()) {
     context->destroyStreamTextureCHROMIUM(texture_id);

@@ -76,7 +76,8 @@ class VideoContextProvider
 class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
  public:
   SynchronousCompositorFactoryImpl()
-      : wrapped_gl_context_for_main_thread_(NULL) {
+      : wrapped_gl_context_for_main_thread_(NULL),
+        num_hardware_compositors_(0) {
     SynchronousCompositorFactory::SetInstance(this);
   }
 
@@ -135,16 +136,24 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
   virtual scoped_refptr<cc::ContextProvider>
   GetOffscreenContextProviderForMainThread() OVERRIDE {
-    if (!offscreen_context_for_main_thread_.get() ||
-        offscreen_context_for_main_thread_->DestroyedOnMainThread()) {
+    // This check only guarantees the main thread context is created after
+    // a compositor did successfully initialize hardware draw in the past.
+    // In particular this does not guarantee that the main thread context
+    // will fail creation when all compositors release hardware draw.
+    bool failed = !CanCreateMainThreadContext();
+    if (!failed &&
+        (!offscreen_context_for_main_thread_.get() ||
+         offscreen_context_for_main_thread_->DestroyedOnMainThread())) {
       offscreen_context_for_main_thread_ =
           webkit::gpu::ContextProviderInProcess::Create(
               CreateOffscreenContext());
-      if (offscreen_context_for_main_thread_.get() &&
-          !offscreen_context_for_main_thread_->BindToCurrentThread()) {
-        offscreen_context_for_main_thread_ = NULL;
-        wrapped_gl_context_for_main_thread_ = NULL;
-      }
+      failed = !offscreen_context_for_main_thread_.get() ||
+               !offscreen_context_for_main_thread_->BindToCurrentThread();
+    }
+
+    if (failed) {
+      offscreen_context_for_main_thread_ = NULL;
+      wrapped_gl_context_for_main_thread_ = NULL;
     }
     return offscreen_context_for_main_thread_;
   }
@@ -157,7 +166,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   // any thread and is lightweight.
   virtual scoped_refptr<cc::ContextProvider>
       GetOffscreenContextProviderForCompositorThread() OVERRIDE {
-    base::AutoLock lock(offscreen_context_for_compositor_thread_creation_lock_);
+    base::AutoLock lock(offscreen_context_for_compositor_thread_lock_);
     if (!offscreen_context_for_compositor_thread_.get() ||
         offscreen_context_for_compositor_thread_->DestroyedOnMainThread()) {
       offscreen_context_for_compositor_thread_ =
@@ -168,26 +177,74 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
   virtual scoped_ptr<StreamTextureFactory> CreateStreamTextureFactory(
       int view_id) OVERRIDE {
-    scoped_refptr<VideoContextProvider> context_provider =
-        new VideoContextProvider(offscreen_context_for_main_thread_,
-                                 wrapped_gl_context_for_main_thread_);
+    scoped_refptr<VideoContextProvider> context_provider;
+    if (CanCreateMainThreadContext()) {
+      context_provider =
+          new VideoContextProvider(offscreen_context_for_main_thread_,
+                                   wrapped_gl_context_for_main_thread_);
+    }
     return make_scoped_ptr(new StreamTextureFactorySynchronousImpl(
                                context_provider.get(), view_id))
         .PassAs<StreamTextureFactory>();
   }
 
+  void CompositorInitializedHardwareDraw(SynchronousCompositorImpl* compositor);
+  void CompositorReleasedHardwareDraw(SynchronousCompositorImpl* compositor);
+
  private:
+  void ReleaseGlobalHardwareResources();
+  bool CanCreateMainThreadContext();
+
   SynchronousInputEventFilter synchronous_input_event_filter_;
 
-  // Only guards construction of |offscreen_context_for_compositor_thread_|,
-  // not usage.
-  base::Lock offscreen_context_for_compositor_thread_creation_lock_;
+  // Only guards construction and destruction of
+  // |offscreen_context_for_compositor_thread_|, not usage.
+  base::Lock offscreen_context_for_compositor_thread_lock_;
   scoped_refptr<cc::ContextProvider> offscreen_context_for_main_thread_;
   // This is a pointer to the context owned by
   // |offscreen_context_for_main_thread_|.
   gpu::GLInProcessContext* wrapped_gl_context_for_main_thread_;
   scoped_refptr<cc::ContextProvider> offscreen_context_for_compositor_thread_;
+
+  // |num_hardware_compositor_lock_| is updated on UI thread only but can be
+  // read on renderer main thread.
+  base::Lock num_hardware_compositor_lock_;
+  unsigned int num_hardware_compositors_;
 };
+
+void SynchronousCompositorFactoryImpl::CompositorInitializedHardwareDraw(
+    SynchronousCompositorImpl* compositor) {
+  base::AutoLock lock(num_hardware_compositor_lock_);
+  num_hardware_compositors_++;
+}
+
+void SynchronousCompositorFactoryImpl::CompositorReleasedHardwareDraw(
+    SynchronousCompositorImpl* compositor) {
+  bool should_release_resources = false;
+  {
+    base::AutoLock lock(num_hardware_compositor_lock_);
+    DCHECK_GT(num_hardware_compositors_, 0u);
+    num_hardware_compositors_--;
+    should_release_resources = num_hardware_compositors_ == 0u;
+  }
+  if (should_release_resources)
+    ReleaseGlobalHardwareResources();
+}
+
+void SynchronousCompositorFactoryImpl::ReleaseGlobalHardwareResources() {
+  {
+    base::AutoLock lock(offscreen_context_for_compositor_thread_lock_);
+    offscreen_context_for_compositor_thread_ = NULL;
+  }
+
+  // TODO(boliu): Properly clean up command buffer server of main thread
+  // context here.
+}
+
+bool SynchronousCompositorFactoryImpl::CanCreateMainThreadContext() {
+  base::AutoLock lock(num_hardware_compositor_lock_);
+  return num_hardware_compositors_ > 0;
+}
 
 base::LazyInstance<SynchronousCompositorFactoryImpl>::Leaky g_factory =
     LAZY_INSTANCE_INITIALIZER;
@@ -239,15 +296,19 @@ bool SynchronousCompositorImpl::InitializeHwDraw(
     scoped_refptr<gfx::GLSurface> surface) {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
-  return output_surface_->InitializeHwDraw(
+  bool success = output_surface_->InitializeHwDraw(
       surface,
       g_factory.Get().GetOffscreenContextProviderForCompositorThread());
+  if (success)
+    g_factory.Get().CompositorInitializedHardwareDraw(this);
+  return success;
 }
 
 void SynchronousCompositorImpl::ReleaseHwDraw() {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
-  return output_surface_->ReleaseHwDraw();
+  output_surface_->ReleaseHwDraw();
+  g_factory.Get().CompositorReleasedHardwareDraw(this);
 }
 
 bool SynchronousCompositorImpl::DemandDrawHw(

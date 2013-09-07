@@ -3015,24 +3015,24 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
   scoped_refptr<cc::ContextProvider> context_provider =
       RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
-  if (!context_provider.get()) {
-    LOG(ERROR) << "Failed to get context3d for media player";
-    return NULL;
-  }
-
-  if (!media_player_proxy_) {
-    media_player_proxy_ = new WebMediaPlayerProxyAndroid(
-        this, media_player_manager_.get());
-  }
-
   scoped_ptr<StreamTextureFactory> stream_texture_factory;
   if (UsingSynchronousRendererCompositor()) {
     SynchronousCompositorFactory* factory =
         SynchronousCompositorFactory::GetInstance();
     stream_texture_factory = factory->CreateStreamTextureFactory(routing_id_);
   } else {
+    if (!context_provider.get()) {
+      LOG(ERROR) << "Failed to get context3d for media player";
+      return NULL;
+    }
+
     stream_texture_factory.reset(new StreamTextureFactoryImpl(
         context_provider->Context3d(), gpu_channel_host, routing_id_));
+  }
+
+  if (!media_player_proxy_) {
+    media_player_proxy_ = new WebMediaPlayerProxyAndroid(
+        this, media_player_manager_.get());
   }
 
   scoped_ptr<WebMediaPlayerAndroid> web_media_player_android(

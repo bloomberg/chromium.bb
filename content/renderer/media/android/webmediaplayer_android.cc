@@ -127,7 +127,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
 #endif
   if (stream_texture_factory_) {
     stream_texture_proxy_.reset(stream_texture_factory_->CreateProxy());
-    if (needs_establish_peer_) {
+    if (needs_establish_peer_ && stream_texture_proxy_) {
       stream_id_ = stream_texture_factory_->CreateStreamTexture(
           kGLTextureExternalOES,
           &texture_id_,
@@ -860,6 +860,9 @@ void WebMediaPlayerAndroid::PutCurrentFrame(
 }
 
 void WebMediaPlayerAndroid::EstablishSurfaceTexturePeer() {
+  if (!stream_texture_proxy_)
+    return;
+
   if (media_source_delegate_ && stream_texture_factory_) {
     // MediaCodec will release the old surface when it goes away, we need to
     // recreate a new one each time this is called.
