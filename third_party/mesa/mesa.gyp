@@ -43,6 +43,7 @@
       "HAVE_ALIAS",
       "HAVE_MINCORE",
       "HAVE_LIBUDEV",
+      "_GLAPI_NO_EXPORTS",
     ],
     'conditions': [
       ['OS=="android"', {
@@ -77,9 +78,6 @@
         # Pick up emulation headers not supported by Visual Studio.
         'include_dirs': [
           'src/include/c99',
-        ],
-        'defines': [
-          '_GLAPI_NO_EXPORTS',
         ],
       }],
     ],
