@@ -58,6 +58,7 @@ AppLaunchController::AppLaunchController(const std::string& app_id,
 }
 
 AppLaunchController::~AppLaunchController() {
+  app_launch_splash_screen_actor_->SetDelegate(NULL);
 }
 
 void AppLaunchController::StartAppLaunch() {
