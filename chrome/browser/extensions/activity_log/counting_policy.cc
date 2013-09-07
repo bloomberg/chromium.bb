@@ -223,23 +223,35 @@ bool CountingPolicy::FlushDatabase(sql::Connection* db) {
   if (!transaction.Begin())
     return false;
 
+  // Adding an Action to the database is a two step process that depends on
+  // whether the count on an existing row can be incremented or a new row needs
+  // to be inserted.
+  //   1. Run the query in locate_str to search for a row which matches and can
+  //      have the count incremented.
+  //  2a. If found, increment the count using update_str and the rowid found in
+  //      step 1, or
+  //  2b. If not found, insert a new row using insert_str.
+  std::string locate_str =
+      "SELECT rowid FROM " + std::string(kTableName) +
+      " WHERE time >= ? AND time < ?";
   std::string insert_str =
       "INSERT INTO " + std::string(kTableName) + "(count, time";
   std::string update_str =
       "UPDATE " + std::string(kTableName) +
       " SET count = count + ?, time = max(?, time)"
-      " WHERE time >= ? AND time < ?";
+      " WHERE rowid = ?";
 
   for (size_t i = 0; i < arraysize(matched_columns); i++) {
+    locate_str = base::StringPrintf(
+        "%s AND %s IS ?", locate_str.c_str(), matched_columns[i]);
     insert_str =
         base::StringPrintf("%s, %s", insert_str.c_str(), matched_columns[i]);
-    update_str = base::StringPrintf(
-        "%s AND %s IS ?", update_str.c_str(), matched_columns[i]);
   }
   insert_str += ") VALUES (?, ?";
   for (size_t i = 0; i < arraysize(matched_columns); i++) {
     insert_str += ", ?";
   }
+  locate_str += " ORDER BY time DESC LIMIT 1";
   insert_str += ")";
 
   for (ActionQueue::iterator i = queue.begin(); i != queue.end(); ++i) {
@@ -315,14 +327,12 @@ bool CountingPolicy::FlushDatabase(sql::Connection* db) {
       matched_values.push_back(-1);
     }
 
-    // Assume there is an existing row for this action, and try to update the
-    // count.
-    sql::Statement update_statement(db->GetCachedStatement(
-        sql::StatementID(SQL_FROM_HERE), update_str.c_str()));
-    update_statement.BindInt(0, count);
-    update_statement.BindInt64(1, action.time().ToInternalValue());
-    update_statement.BindInt64(2, day_start.ToInternalValue());
-    update_statement.BindInt64(3, next_day.ToInternalValue());
+    // Search for a matching row for this action whose count can be
+    // incremented.
+    sql::Statement locate_statement(db->GetCachedStatement(
+        sql::StatementID(SQL_FROM_HERE), locate_str.c_str()));
+    locate_statement.BindInt64(0, day_start.ToInternalValue());
+    locate_statement.BindInt64(1, next_day.ToInternalValue());
     for (size_t j = 0; j < matched_values.size(); j++) {
       // A call to BindNull when matched_values contains -1 is likely not
       // necessary as parameters default to null before they are explicitly
@@ -330,35 +340,39 @@ bool CountingPolicy::FlushDatabase(sql::Connection* db) {
       // ever comes with some values already bound, we bind all parameters
       // (even null ones) explicitly.
       if (matched_values[j] == -1)
-        update_statement.BindNull(j + 4);
+        locate_statement.BindNull(j + 2);
       else
-        update_statement.BindInt64(j + 4, matched_values[j]);
+        locate_statement.BindInt64(j + 2, matched_values[j]);
     }
-    if (!update_statement.Run())
-      return false;
 
-    // Check if the update succeeded (was the count of updated rows non-zero)?
-    // If it failed because no matching row existed, fall back to inserting a
-    // new record.
-    if (db->GetLastChangeCount() > 0) {
-      if (db->GetLastChangeCount() > 1) {
-        LOG(WARNING) << "Found and updated multiple rows in the activity log "
-                     << "database; counts may be off!";
+    if (locate_statement.Step()) {
+      // A matching row was found.  Update the count and time.
+      int64 rowid = locate_statement.ColumnInt64(0);
+      sql::Statement update_statement(db->GetCachedStatement(
+          sql::StatementID(SQL_FROM_HERE), update_str.c_str()));
+      update_statement.BindInt(0, count);
+      update_statement.BindInt64(1, action.time().ToInternalValue());
+      update_statement.BindInt64(2, rowid);
+      if (!update_statement.Run())
+        return false;
+    } else if (locate_statement.Succeeded()) {
+      // No matching row was found, so we need to insert one.
+      sql::Statement insert_statement(db->GetCachedStatement(
+          sql::StatementID(SQL_FROM_HERE), insert_str.c_str()));
+      insert_statement.BindInt(0, count);
+      insert_statement.BindInt64(1, action.time().ToInternalValue());
+      for (size_t j = 0; j < matched_values.size(); j++) {
+        if (matched_values[j] == -1)
+          insert_statement.BindNull(j + 2);
+        else
+          insert_statement.BindInt64(j + 2, matched_values[j]);
       }
-      continue;
-    }
-    sql::Statement insert_statement(db->GetCachedStatement(
-        sql::StatementID(SQL_FROM_HERE), insert_str.c_str()));
-    insert_statement.BindInt(0, count);
-    insert_statement.BindInt64(1, action.time().ToInternalValue());
-    for (size_t j = 0; j < matched_values.size(); j++) {
-      if (matched_values[j] == -1)
-        insert_statement.BindNull(j + 2);
-      else
-        insert_statement.BindInt64(j + 2, matched_values[j]);
-    }
-    if (!insert_statement.Run())
+      if (!insert_statement.Run())
+        return false;
+    } else {
+      // Database error.
       return false;
+    }
   }
 
   if (clean_database) {

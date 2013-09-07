@@ -256,6 +256,15 @@ class CountingPolicyTest : public testing::Test {
                 "[\"vamoose\"]", "", "", "", 1);
   }
 
+  static void CheckDuplicates(scoped_ptr<Action::ActionVector> actions) {
+    ASSERT_EQ(2u, actions->size());
+    int total_count = 0;
+    for (size_t i = 0; i < actions->size(); i++) {
+      total_count += actions->at(i)->count();
+    }
+    ASSERT_EQ(3, total_count);
+  }
+
   static void CheckAction(const Action& action,
                           const std::string& expected_id,
                           const Action::ActionType& expected_type,
@@ -988,6 +997,46 @@ TEST_F(CountingPolicyTest, DeleteActions) {
       base::Bind(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions0));
 
+  policy->Close();
+}
+
+// Tests that duplicate rows in the activity log database are handled properly
+// when updating counts.
+TEST_F(CountingPolicyTest, DuplicateRows) {
+  CountingPolicy* policy = new CountingPolicy(profile_.get());
+  base::SimpleTestClock* mock_clock = new base::SimpleTestClock();
+  mock_clock->SetNow(base::Time::Now().LocalMidnight() +
+                     base::TimeDelta::FromHours(12));
+  policy->SetClockForTesting(scoped_ptr<base::Clock>(mock_clock));
+
+  // Record two actions with distinct URLs.
+  scoped_refptr<Action> action;
+  action = new Action(
+      "punky", mock_clock->Now(), Action::ACTION_API_CALL, "brewster");
+  action->set_page_url(GURL("http://www.google.com"));
+  policy->ProcessAction(action);
+
+  action = new Action(
+      "punky", mock_clock->Now(), Action::ACTION_API_CALL, "brewster");
+  action->set_page_url(GURL("http://www.google.co.uk"));
+  policy->ProcessAction(action);
+
+  // Manipulate the database to clear the URLs, so that we end up with
+  // duplicate rows.
+  std::vector<GURL> no_url_restrictions;
+  policy->RemoveURLs(no_url_restrictions);
+
+  // Record one more action, with no URL.  This should increment the count on
+  // one, and exactly one, of the existing rows.
+  action = new Action(
+      "punky", mock_clock->Now(), Action::ACTION_API_CALL, "brewster");
+  policy->ProcessAction(action);
+
+  CheckReadData(
+      policy,
+      "punky",
+      0,
+      base::Bind(&CountingPolicyTest::CheckDuplicates));
   policy->Close();
 }
 

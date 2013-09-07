@@ -14,7 +14,12 @@
 
 namespace extensions {
 
-// A policy for logging the stream of actions, but without arguments.
+// A policy for logging the stream of actions, but with most arguments stripped
+// out (to improve privacy and reduce database size) and with multiple
+// identical rows combined together using a count column to track the total
+// number of repetitions.  Identical rows within the same day are merged, but
+// actions on separate days are kept distinct.  Data is kept for up to a few
+// days then deleted.
 class CountingPolicy : public ActivityLogDatabasePolicy {
  public:
   explicit CountingPolicy(Profile* profile);
