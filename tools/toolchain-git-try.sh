@@ -11,15 +11,15 @@ cd "$(dirname "$0")"
 repos='binutils gcc gdb glibc linux-headers-for-nacl newlib'
 
 trybots_glibc_only="\
-nacl-toolchain-lucid64-glibc\
+nacl-toolchain-precise64-glibc\
 "
 trybots_glibc="\
-nacl-toolchain-lucid64-glibc,\
+nacl-toolchain-precise64-glibc,\
 nacl-toolchain-mac-glibc,\
 nacl-toolchain-win7-glibc\
 "
 trybots_newlib="\
-nacl-toolchain-lucid64-newlib,\
+nacl-toolchain-precise64-newlib,\
 nacl-toolchain-mac-newlib,\
 nacl-toolchain-win7-newlib\
 "

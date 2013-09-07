@@ -33,7 +33,7 @@ if [[ ! -e "../.svn/gcl_info/changes/toolchain-try" ]] ; then
   SVN_EDITOR=true gcl change toolchain-try
   rm "../.svn/gcl_info/changes/$random_name"
 fi
-BOTS=nacl-toolchain-lucid64-glibc,nacl-toolchain-mac-glibc,\
+BOTS=nacl-toolchain-precise64-glibc,nacl-toolchain-mac-glibc,\
 nacl-toolchain-win7-glibc
 if (( $# >= 1 )) ; then
   gcl try toolchain-try --bot $BOTS -n "$1"
