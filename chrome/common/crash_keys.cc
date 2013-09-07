@@ -4,6 +4,11 @@
 
 #include "chrome/common/crash_keys.h"
 
+#include "base/format_macros.h"
+#include "base/logging.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+
 #if defined(OS_MACOSX)
 #include "breakpad/src/common/simple_string_dictionary.h"
 #elif defined(OS_WIN)
@@ -43,9 +48,51 @@ COMPILE_ASSERT(kMediumSize <= kSingleChunkLength,
                mac_has_medium_size_crash_key_chunks);
 #endif
 
+const char kActiveURL[] = "url-chunk";
+
+const char kExtensionID[] = "extension-%" PRIuS;
+const char kNumExtensionsCount[] = "num-extensions";
+
+#if !defined(OS_ANDROID)
+const char kGPUVendorID[] = "gpu-venid";
+const char kGPUDeviceID[] = "gpu-devid";
+#endif
+const char kGPUDriverVersion[] = "gpu-driver";
+const char kGPUPixelShaderVersion[] = "gpu-psver";
+const char kGPUVertexShaderVersion[] = "gpu-vsver";
+#if defined(OS_LINUX)
+const char kGPUVendor[] = "gpu-gl-vendor";
+const char kGPURenderer[] = "gpu-gl-renderer";
+#elif defined(OS_MACOSX)
+const char kGPUGLVersion[] = "gpu-glver";
+#endif
+
+#if defined(OS_MACOSX)
+namespace mac {
+
+const char kFirstNSException[] = "firstexception";
+const char kFirstNSExceptionTrace[] = "firstexception_bt";
+
+const char kLastNSException[] = "lastexception";
+const char kLastNSExceptionTrace[] = "lastexception_bt";
+
+const char kNSException[] = "nsexception";
+const char kNSExceptionTrace[] = "nsexception_bt";
+
+const char kSendAction[] = "sendaction";
+
+const char kZombie[] = "zombie";
+const char kZombieTrace[] = "zombie_dealloc_bt";
+
+}  // namespace mac
+#endif
+
 size_t RegisterChromeCrashKeys() {
-  base::debug::CrashKey keys[] = {
+  // The following keys may be chunked by the underlying crash logging system,
+  // but ultimately constitute a single key-value pair.
+  base::debug::CrashKey fixed_keys[] = {
     { kActiveURL, kLargeSize },
+    { kNumExtensionsCount, kSmallSize },
 #if !defined(OS_ANDROID)
     { kGPUVendorID, kSmallSize },
     { kGPUDeviceID, kSmallSize },
@@ -82,43 +129,46 @@ size_t RegisterChromeCrashKeys() {
 #endif
   };
 
-  return base::debug::InitCrashKeys(keys, arraysize(keys), kSingleChunkLength);
+  // This dynamic set of keys is used for sets of key value pairs when gathering
+  // a collection of data, like command line switches or extension IDs.
+  std::vector<base::debug::CrashKey> keys(
+      fixed_keys, fixed_keys + arraysize(fixed_keys));
+
+  // Register the extension IDs.
+  {
+    // The fixed_keys names are string constants. Use static storage for
+    // formatted key names as well, since they will persist for the duration of
+    // the program.
+    static char formatted_keys[kExtensionIDMaxCount][sizeof(kExtensionID) + 1] =
+        {{ 0 }};
+    const size_t formatted_key_len = sizeof(formatted_keys[0]);
+    for (size_t i = 0; i < kExtensionIDMaxCount; ++i) {
+      int n = base::snprintf(
+          formatted_keys[i], formatted_key_len, kExtensionID, i);
+      DCHECK_GT(n, 0);
+      base::debug::CrashKey crash_key = { formatted_keys[i], kSmallSize };
+      keys.push_back(crash_key);
+    }
+  }
+
+  return base::debug::InitCrashKeys(&keys.at(0), keys.size(),
+                                    kSingleChunkLength);
 }
 
-const char kActiveURL[] = "url-chunk";
+void SetActiveExtensions(const std::set<std::string>& extensions) {
+  base::debug::SetCrashKeyValue(kNumExtensionsCount,
+      base::StringPrintf("%" PRIuS, extensions.size()));
 
-#if !defined(OS_ANDROID)
-const char kGPUVendorID[] = "gpu-venid";
-const char kGPUDeviceID[] = "gpu-devid";
-#endif
-const char kGPUDriverVersion[] = "gpu-driver";
-const char kGPUPixelShaderVersion[] = "gpu-psver";
-const char kGPUVertexShaderVersion[] = "gpu-vsver";
-#if defined(OS_LINUX)
-const char kGPUVendor[] = "gpu-gl-vendor";
-const char kGPURenderer[] = "gpu-gl-renderer";
-#elif defined(OS_MACOSX)
-const char kGPUGLVersion[] = "gpu-glver";
-#endif
-
-#if defined(OS_MACOSX)
-namespace mac {
-
-const char kFirstNSException[] = "firstexception";
-const char kFirstNSExceptionTrace[] = "firstexception_bt";
-
-const char kLastNSException[] = "lastexception";
-const char kLastNSExceptionTrace[] = "lastexception_bt";
-
-const char kNSException[] = "nsexception";
-const char kNSExceptionTrace[] = "nsexception_bt";
-
-const char kSendAction[] = "sendaction";
-
-const char kZombie[] = "zombie";
-const char kZombieTrace[] = "zombie_dealloc_bt";
-
-}  // namespace mac
-#endif
+  std::set<std::string>::const_iterator it = extensions.begin();
+  for (size_t i = 0; i < kExtensionIDMaxCount; ++i) {
+    std::string key = base::StringPrintf(kExtensionID, i);
+    if (it == extensions.end()) {
+      base::debug::ClearCrashKey(key);
+    } else {
+      base::debug::SetCrashKeyValue(key, *it);
+      ++it;
+    }
+  }
+}
 
 }  // namespace crash_keys

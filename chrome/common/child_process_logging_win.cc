@@ -23,14 +23,6 @@ namespace {
 typedef void (__cdecl *MainSetClientId)(const wchar_t*);
 
 // exported in breakpad_win.cc:
-//   void __declspec(dllexport) __cdecl SetNumberOfExtensions.
-typedef void (__cdecl *MainSetNumberOfExtensions)(int);
-
-// exported in breakpad_win.cc:
-// void __declspec(dllexport) __cdecl SetExtensionID.
-typedef void (__cdecl *MainSetExtensionID)(size_t, const wchar_t*);
-
-// exported in breakpad_win.cc:
 //     void __declspec(dllexport) __cdecl SetPrinterInfo.
 typedef void (__cdecl *MainSetPrinterInfo)(const wchar_t*);
 
@@ -100,44 +92,6 @@ std::string GetClientId() {
     return WideToASCII(wstr_client_id);
   else
     return std::string();
-}
-
-void SetActiveExtensions(const std::set<std::string>& extension_ids) {
-  static MainSetNumberOfExtensions set_number_of_extensions = NULL;
-  // note: benign race condition on set_number_of_extensions.
-  if (!set_number_of_extensions) {
-    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
-    if (!exe_module)
-      return;
-    set_number_of_extensions = reinterpret_cast<MainSetNumberOfExtensions>(
-        GetProcAddress(exe_module, "SetNumberOfExtensions"));
-    if (!set_number_of_extensions)
-      return;
-  }
-
-  static MainSetExtensionID set_extension_id = NULL;
-  // note: benign race condition on set_extension_id.
-  if (!set_extension_id) {
-    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
-    if (!exe_module)
-      return;
-    set_extension_id = reinterpret_cast<MainSetExtensionID>(
-        GetProcAddress(exe_module, "SetExtensionID"));
-    if (!set_extension_id)
-      return;
-  }
-
-  (set_number_of_extensions)(static_cast<int>(extension_ids.size()));
-
-  std::set<std::string>::const_iterator iter = extension_ids.begin();
-  for (size_t i = 0; i < kMaxReportedActiveExtensions; ++i) {
-    if (iter != extension_ids.end()) {
-      (set_extension_id)(i, ASCIIToWide(iter->c_str()).c_str());
-      ++iter;
-    } else {
-      (set_extension_id)(i, L"");
-    }
-  }
 }
 
 void SetPrinterInfo(const char* printer_info) {

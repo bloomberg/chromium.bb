@@ -25,8 +25,6 @@ using base::debug::ClearCrashKey;
 
 const char* kGuidParamName = "guid";
 const char* kNumberOfViews = "num-views";
-const char* kNumExtensionsName = "num-extensions";
-const char* kExtensionNameFormat = "extension-%zu";
 const char* kPrinterInfoNameFormat = "prn-info-%zu";
 
 // Account for the terminating null character.
@@ -51,25 +49,6 @@ void SetClientId(const std::string& client_id) {
 
 std::string GetClientId() {
   return std::string(g_client_id);
-}
-
-void SetActiveExtensions(const std::set<std::string>& extension_ids) {
-  // Log the count separately to track heavy users.
-  const int count = static_cast<int>(extension_ids.size());
-  SetCrashKeyValue(kNumExtensionsName, base::IntToString(count));
-
-  // Record up to |kMaxReportedActiveExtensions| extensions, clearing
-  // keys if there aren't that many.
-  std::set<std::string>::const_iterator iter = extension_ids.begin();
-  for (size_t i = 0; i < kMaxReportedActiveExtensions; ++i) {
-    std::string key = base::StringPrintf(kExtensionNameFormat, i);
-    if (iter != extension_ids.end()) {
-      SetCrashKeyValue(key, *iter);
-      ++iter;
-    } else {
-      ClearCrashKey(key);
-    }
-  }
 }
 
 void SetPrinterInfo(const char* printer_info) {

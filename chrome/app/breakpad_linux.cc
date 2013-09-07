@@ -1167,16 +1167,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
   //   3 \r\n
   //   BOUNDARY \r\n
   //
-  //   zero or one:
-  //   Content-Disposition: form-data; name="num-extensions" \r\n \r\n
-  //   5 \r\n
-  //   BOUNDARY \r\n
-  //
-  //   zero to 10:
-  //   Content-Disposition: form-data; name="extension-1" \r\n \r\n
-  //   abcdefghijklmnopqrstuvwxyzabcdef \r\n
-  //   BOUNDARY \r\n
-  //
   //   zero to 4:
   //   Content-Disposition: form-data; name="prn-info-1" \r\n \r\n
   //   abcdefghijklmnopqrstuvwxyzabcdef \r\n
@@ -1309,26 +1299,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
     writer.AddPairString("num-views", child_process_logging::g_num_views);
     writer.AddBoundary();
     writer.Flush();
-  }
-
-  if (*child_process_logging::g_num_extensions) {
-    writer.AddPairString("num-extensions",
-                         child_process_logging::g_num_extensions);
-    writer.AddBoundary();
-    writer.Flush();
-  }
-
-  unsigned extension_ids_len =
-      my_strlen(child_process_logging::g_extension_ids);
-  if (extension_ids_len) {
-    static const char extension_msg[] = "extension-";
-    static const unsigned kMaxExtensionsLen =
-        kMaxReportedActiveExtensions * child_process_logging::kExtensionLen;
-    writer.AddPairDataInChunks(extension_msg, sizeof(extension_msg) - 1,
-        child_process_logging::g_extension_ids,
-        std::min(extension_ids_len, kMaxExtensionsLen),
-        child_process_logging::kExtensionLen,
-        false /* Don't strip whitespace. */);
   }
 
   unsigned printer_info_len =

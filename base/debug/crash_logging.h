@@ -56,7 +56,7 @@ class BASE_EXPORT ScopedCrashKey {
 // Before setting values for a key, all the keys must be registered.
 struct BASE_EXPORT CrashKey {
   // The name of the crash key, used in the above functions.
-  const char* const key_name;
+  const char* key_name;
 
   // The maximum length for a value. If the value is longer than this, it will
   // be truncated. If the value is larger than the |chunk_max_length| passed to

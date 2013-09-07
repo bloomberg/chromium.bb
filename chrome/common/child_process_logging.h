@@ -15,11 +15,6 @@
 
 class CommandLine;
 
-// The maximum number of active extensions we will report.
-// Also used in chrome/app, but we define it here to avoid a common->app
-// dependency.
-static const size_t kMaxReportedActiveExtensions = 10;
-
 // The maximum number of variation chunks we will report.
 // Also used in chrome/app, but we define it here to avoid a common->app
 // dependency.
@@ -47,17 +42,12 @@ namespace child_process_logging {
 // compromised context without going through the standard library.
 extern char g_channel[];
 extern char g_client_id[];
-extern char g_extension_ids[];
-extern char g_num_extensions[];
 extern char g_num_switches[];
 extern char g_num_variations[];
 extern char g_num_views[];
 extern char g_printer_info[];
 extern char g_switches[];
 extern char g_variation_chunks[];
-
-// Assume IDs are 32 bytes long.
-static const size_t kExtensionLen = 32;
 
 // Assume command line switches are less than 64 chars.
 static const size_t kSwitchLen = 64;
@@ -72,14 +62,6 @@ void SetClientId(const std::string& client_id);
 // Gets the Client ID to be used as GUID for crash reporting. Returns the client
 // id in |client_id| if it's known, an empty string otherwise.
 std::string GetClientId();
-
-// Sets the list of "active" extensions in this process. We overload "active" to
-// mean different things depending on the process type:
-// - browser: all enabled extensions
-// - renderer: the unique set of extension ids from all content scripts
-// - extension: the id of each extension running in this process (there can be
-//   multiple because of process collapsing).
-void SetActiveExtensions(const std::set<std::string>& extension_ids);
 
 // Sets a number of views/tabs opened in this process.
 void SetNumberOfViews(int number_of_views);

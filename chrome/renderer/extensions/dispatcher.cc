@@ -14,9 +14,9 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/api/runtime.h"
 #include "chrome/common/extensions/background_info.h"
@@ -1394,7 +1394,7 @@ void Dispatcher::UpdateActiveExtensions() {
 
   std::set<std::string> active_extensions = active_extension_ids_;
   user_script_slave_->GetActiveExtensions(&active_extensions);
-  child_process_logging::SetActiveExtensions(active_extensions);
+  crash_keys::SetActiveExtensions(active_extensions);
 }
 
 void Dispatcher::OnUsingWebRequestAPI(

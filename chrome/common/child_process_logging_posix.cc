@@ -29,14 +29,9 @@ char g_channel[kChannelSize] = "";
 char g_printer_info[kPrinterInfoStrLen * kMaxReportedPrinterRecords + 1] = "";
 
 static const size_t kNumSize = 32;
-char g_num_extensions[kNumSize] = "";
 char g_num_switches[kNumSize] = "";
 char g_num_variations[kNumSize] = "";
 char g_num_views[kNumSize] = "";
-
-static const size_t kMaxExtensionSize =
-    kExtensionLen * kMaxReportedActiveExtensions + 1;
-char g_extension_ids[kMaxExtensionSize] = "";
 
 // Assume command line switches are less than 64 chars.
 static const size_t kMaxSwitchesSize = kSwitchLen * kMaxSwitches + 1;
@@ -60,21 +55,6 @@ void SetClientId(const std::string& client_id) {
 
 std::string GetClientId() {
   return std::string(g_client_id);
-}
-
-void SetActiveExtensions(const std::set<std::string>& extension_ids) {
-  snprintf(g_num_extensions, arraysize(g_num_extensions), "%" PRIuS,
-           extension_ids.size());
-
-  std::string extension_str;
-  std::set<std::string>::const_iterator iter = extension_ids.begin();
-  for (size_t i = 0;
-       i < kMaxReportedActiveExtensions && iter != extension_ids.end();
-       ++i, ++iter) {
-    extension_str += *iter;
-  }
-  base::strlcpy(g_extension_ids, extension_str.c_str(),
-                arraysize(g_extension_ids));
 }
 
 void SetPrinterInfo(const char* printer_info) {

@@ -102,8 +102,6 @@ typedef NTSTATUS (WINAPI* NtTerminateProcessPtr)(HANDLE ProcessHandle,
                                                  NTSTATUS ExitStatus);
 char* g_real_terminate_process_stub = NULL;
 
-static size_t g_num_of_extensions_offset = 0;
-static size_t g_extension_ids_offset = 0;
 static size_t g_client_id_offset = 0;
 static size_t g_printer_info_offset = 0;
 static size_t g_num_of_views_offset = 0;
@@ -439,17 +437,6 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
     g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
         L"special", UTF16ToWide(special_build).c_str()));
 
-  g_num_of_extensions_offset = g_custom_entries->size();
-  g_custom_entries->push_back(
-      google_breakpad::CustomInfoEntry(L"num-extensions", L"N/A"));
-
-  g_extension_ids_offset = g_custom_entries->size();
-  // one-based index for the name suffix.
-  for (int i = 1; i <= kMaxReportedActiveExtensions; ++i) {
-    g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
-        base::StringPrintf(L"extension-%i", i).c_str(), L""));
-  }
-
   // Add empty values for the prn_info-*. We'll put the actual values when we
   // collect them at this location.
   g_printer_info_offset = g_custom_entries->size();
@@ -650,24 +637,6 @@ extern "C" void __declspec(dllexport) __cdecl SetClientId(
 
   base::wcslcpy((*g_custom_entries)[g_client_id_offset].value,
                 client_id,
-                google_breakpad::CustomInfoEntry::kValueMaxLength);
-}
-
-extern "C" void __declspec(dllexport) __cdecl SetNumberOfExtensions(
-    int number_of_extensions) {
-  SetIntegerValue(g_num_of_extensions_offset, number_of_extensions);
-}
-
-extern "C" void __declspec(dllexport) __cdecl SetExtensionID(
-    int index, const wchar_t* id) {
-  DCHECK(id);
-  DCHECK(index < kMaxReportedActiveExtensions);
-
-  if (!g_custom_entries)
-    return;
-
-  base::wcslcpy((*g_custom_entries)[g_extension_ids_offset + index].value,
-                id,
                 google_breakpad::CustomInfoEntry::kValueMaxLength);
 }
 
