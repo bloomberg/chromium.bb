@@ -79,57 +79,49 @@ FeedbackData::FeedbackData() : profile_(NULL),
 FeedbackData::~FeedbackData() {
 }
 
+void FeedbackData::OnFeedbackPageDataComplete() {
+  feedback_page_data_complete_ = true;
+  SendReport();
+}
+
+void FeedbackData::SetAndCompressSystemInfo(
+    scoped_ptr<FeedbackData::SystemLogsMap> sys_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  sys_info_ = sys_info.Pass();
+  if (sys_info_.get()) {
+    std::string* compressed_logs_ptr = new std::string;
+    scoped_ptr<std::string> compressed_logs(compressed_logs_ptr);
+    BrowserThread::PostBlockingPoolTaskAndReply(
+        FROM_HERE,
+        base::Bind(&ZipLogs,
+                   sys_info_.get(),
+                   compressed_logs_ptr),
+        base::Bind(&FeedbackData::OnCompressLogsComplete,
+                   this,
+                   base::Passed(&compressed_logs)));
+  }
+}
+
+void FeedbackData::OnCompressLogsComplete(
+    scoped_ptr<std::string> compressed_logs) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  compressed_logs_ = compressed_logs.Pass();
+  syslogs_compression_complete_ = true;
+
+  SendReport();
+}
+
 bool FeedbackData::IsDataComplete() {
   return (syslogs_compression_complete_ || !sys_info_.get()) &&
       feedback_page_data_complete_;
 }
+
 void FeedbackData::SendReport() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (IsDataComplete() && !report_sent_) {
     report_sent_ = true;
     feedback_util::SendReport(this);
   }
-}
-
-void FeedbackData::OnFeedbackPageDataComplete() {
-  feedback_page_data_complete_ = true;
-  SendReport();
-}
-
-void FeedbackData::set_sys_info(
-    scoped_ptr<FeedbackData::SystemLogsMap> sys_info) {
-  if (sys_info.get())
-    CompressSyslogs(sys_info.Pass());
-}
-
-void FeedbackData::CompressSyslogs(
-    scoped_ptr<FeedbackData::SystemLogsMap> sys_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // We get the pointer first since base::Passed will nullify the scoper, hence
-  // it's not safe to use <scoper>.get() as a parameter to PostTaskAndReply.
-  FeedbackData::SystemLogsMap* sys_info_ptr = sys_info.get();
-  std::string* compressed_logs_ptr = new std::string;
-  scoped_ptr<std::string> compressed_logs(compressed_logs_ptr);
-  BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE,
-      base::Bind(&ZipLogs,
-                 sys_info_ptr,
-                 compressed_logs_ptr),
-      base::Bind(&FeedbackData::OnCompressLogsComplete,
-                 this,
-                 base::Passed(&sys_info),
-                 base::Passed(&compressed_logs)));
-}
-
-void FeedbackData::OnCompressLogsComplete(
-    scoped_ptr<FeedbackData::SystemLogsMap> sys_info,
-    scoped_ptr<std::string> compressed_logs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  sys_info_ = sys_info.Pass();
-  compressed_logs_ = compressed_logs.Pass();
-  syslogs_compression_complete_ = true;
-
-  SendReport();
 }

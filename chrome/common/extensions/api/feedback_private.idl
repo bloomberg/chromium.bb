@@ -8,7 +8,7 @@ namespace feedbackPrivate {
 
   dictionary AttachedFile {
     DOMString name;
-    [instanceOf=Blob] object data;
+    [instanceOf=Blob] object? data;
   };
 
   dictionary SystemInformation {

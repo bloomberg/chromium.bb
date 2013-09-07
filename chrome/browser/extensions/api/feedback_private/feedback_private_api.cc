@@ -173,7 +173,7 @@ bool FeedbackPrivateSendFeedbackFunction::RunImpl() {
          it != sys_info->end(); ++it)
       (*sys_logs.get())[it->get()->key] = it->get()->value;
   }
-  feedback_data->set_sys_info(sys_logs.Pass());
+  feedback_data->SetAndCompressSystemInfo(sys_logs.Pass());
 
   FeedbackService* service = FeedbackPrivateAPI::GetFactoryInstance()->
       GetForProfile(profile())->GetService();

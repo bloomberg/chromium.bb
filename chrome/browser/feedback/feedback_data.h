@@ -27,15 +27,15 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
 
   FeedbackData();
 
-  // Called once we've update all the data from the feedback page.
+  // Called once we've updated all the data from the feedback page.
   void OnFeedbackPageDataComplete();
 
-  // Called once we have read our system logs.
-  void CompressSyslogs(scoped_ptr<SystemLogsMap> sys_info);
+  // Sets the system information for this instance and kicks off its
+  // compression.
+  void SetAndCompressSystemInfo(scoped_ptr<SystemLogsMap> sys_info);
 
-  // Called once we have read and compressed our system logs.
-  void OnCompressLogsComplete(scoped_ptr<SystemLogsMap> sys_info,
-                              scoped_ptr<std::string> compressed_logs);
+  // Called once we have compressed our system logs.
+  void OnCompressLogsComplete(scoped_ptr<std::string> compressed_logs);
 
   // Returns true if we've completed all the tasks needed before we can send
   // feedback - at this time this is includes getting the feedback page data
@@ -44,10 +44,6 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
 
   // Sends the feedback report if we have all our data complete.
   void SendReport();
-
-  // Starts reading the file to attach to this report into the string
-  // file_data. ReadFileComplete is called once this is done.
-  void StartReadFile(const std::string filename, const std::string* file_data);
 
   // Getters
   Profile* profile() const { return profile_; }
@@ -84,7 +80,6 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   }
   void set_attached_file_url(const GURL& url) { attached_file_url_ = url; }
   void set_screenshot_url(const GURL& url) { screenshot_url_ = url; }
-  void set_sys_info(scoped_ptr<SystemLogsMap> sys_info);
 
  private:
   friend class base::RefCountedThreadSafe<FeedbackData>;
