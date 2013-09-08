@@ -66,9 +66,21 @@ struct nested_region {
 	pixman_region32_t region;
 };
 
+struct nested_buffer {
+	struct wl_resource *resource;
+	struct wl_signal destroy_signal;
+	struct wl_listener destroy_listener;
+	uint32_t busy_count;
+};
+
+struct nested_buffer_reference {
+	struct nested_buffer *buffer;
+	struct wl_listener destroy_listener;
+};
+
 struct nested_surface {
 	struct wl_resource *resource;
-	struct wl_resource *buffer_resource;
+	struct nested_buffer_reference buffer_ref;
 	struct nested *nested;
 	EGLImageKHR *image;
 	GLuint texture;
@@ -87,6 +99,83 @@ static PFNEGLDESTROYIMAGEKHRPROC destroy_image;
 static PFNEGLBINDWAYLANDDISPLAYWL bind_display;
 static PFNEGLUNBINDWAYLANDDISPLAYWL unbind_display;
 static PFNEGLQUERYWAYLANDBUFFERWL query_buffer;
+
+static void
+nested_buffer_destroy_handler(struct wl_listener *listener, void *data)
+{
+	struct nested_buffer *buffer =
+		container_of(listener, struct nested_buffer, destroy_listener);
+
+	wl_signal_emit(&buffer->destroy_signal, buffer);
+	free(buffer);
+}
+
+static struct nested_buffer *
+nested_buffer_from_resource(struct wl_resource *resource)
+{
+	struct nested_buffer *buffer;
+	struct wl_listener *listener;
+
+	listener =
+		wl_resource_get_destroy_listener(resource,
+						 nested_buffer_destroy_handler);
+
+	if (listener)
+		return container_of(listener, struct nested_buffer,
+				    destroy_listener);
+
+	buffer = zalloc(sizeof *buffer);
+	if (buffer == NULL)
+		return NULL;
+
+	buffer->resource = resource;
+	wl_signal_init(&buffer->destroy_signal);
+	buffer->destroy_listener.notify = nested_buffer_destroy_handler;
+	wl_resource_add_destroy_listener(resource, &buffer->destroy_listener);
+
+	return buffer;
+}
+
+static void
+nested_buffer_reference_handle_destroy(struct wl_listener *listener,
+				       void *data)
+{
+	struct nested_buffer_reference *ref =
+		container_of(listener, struct nested_buffer_reference,
+			     destroy_listener);
+
+	assert((struct nested_buffer *)data == ref->buffer);
+	ref->buffer = NULL;
+}
+
+static void
+nested_buffer_reference(struct nested_buffer_reference *ref,
+			struct nested_buffer *buffer)
+{
+	if (buffer == ref->buffer)
+		return;
+
+	if (ref->buffer) {
+		ref->buffer->busy_count--;
+		if (ref->buffer->busy_count == 0) {
+			assert(wl_resource_get_client(ref->buffer->resource));
+			wl_resource_queue_event(ref->buffer->resource,
+						WL_BUFFER_RELEASE);
+		}
+		wl_list_remove(&ref->destroy_listener.link);
+	}
+
+	if (buffer) {
+		buffer->busy_count++;
+		wl_signal_add(&buffer->destroy_signal,
+			      &ref->destroy_listener);
+
+		ref->destroy_listener.notify =
+			nested_buffer_reference_handle_destroy;
+	}
+
+	ref->buffer = buffer;
+}
 
 static void
 frame_callback(void *data, struct wl_callback *callback, uint32_t time)
@@ -265,6 +354,8 @@ destroy_surface(struct wl_resource *resource)
 {
 	struct nested_surface *surface = wl_resource_get_user_data(resource);
 
+	nested_buffer_reference(&surface->buffer_ref, NULL);
+
 	wl_list_remove(&surface->link);
 
 	free(surface);
@@ -285,11 +376,11 @@ surface_attach(struct wl_client *client,
 	struct nested *nested = surface->nested;
 	EGLint format, width, height;
 	cairo_device_t *device;
+	struct nested_buffer *buffer =
+		nested_buffer_from_resource(buffer_resource);
 
-	if (surface->buffer_resource)
-		wl_buffer_send_release(surface->buffer_resource);
+	nested_buffer_reference(&surface->buffer_ref, buffer);
 
-	surface->buffer_resource = buffer_resource;
 	if (!query_buffer(nested->egl_display, (void *) buffer_resource,
 			  EGL_TEXTURE_FORMAT, &format)) {
 		fprintf(stderr, "attaching non-egl wl_buffer\n");
