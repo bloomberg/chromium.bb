@@ -1303,7 +1303,7 @@ static int parse_property(struct property_arg *p, const char *arg)
 
 static void usage(char *name)
 {
-	fprintf(stderr, "usage: %s [-cdefMmPpsvw]\n", name);
+	fprintf(stderr, "usage: %s [-cDdefMPpsvw]\n", name);
 
 	fprintf(stderr, "\n Query options:\n\n");
 	fprintf(stderr, "\t-c\tlist connectors\n");
@@ -1320,6 +1320,7 @@ static void usage(char *name)
 	fprintf(stderr, "\n Generic options:\n\n");
 	fprintf(stderr, "\t-d\tdrop master after mode set\n");
 	fprintf(stderr, "\t-M module\tuse the given driver\n");
+	fprintf(stderr, "\t-D device\tuse the given device\n");
 
 	fprintf(stderr, "\n\tDefault is to dump all info.\n");
 	exit(0);
@@ -1346,7 +1347,7 @@ static int page_flipping_supported(void)
 #endif
 }
 
-static char optstr[] = "cdefM:P:ps:vw:";
+static char optstr[] = "cdD:efM:P:ps:vw:";
 
 int main(int argc, char **argv)
 {
@@ -1357,6 +1358,7 @@ int main(int argc, char **argv)
 	int drop_master = 0;
 	int test_vsync = 0;
 	const char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "omapdrm", "exynos", "tilcdc", "msm" };
+	char *device = NULL;
 	char *module = NULL;
 	unsigned int i;
 	int count = 0, plane_count = 0;
@@ -1376,6 +1378,10 @@ int main(int argc, char **argv)
 		switch (c) {
 		case 'c':
 			connectors = 1;
+			break;
+		case 'D':
+			device = optarg;
+			args--;
 			break;
 		case 'd':
 			drop_master = 1;
@@ -1447,7 +1453,7 @@ int main(int argc, char **argv)
 		encoders = connectors = crtcs = planes = framebuffers = 1;
 
 	if (module) {
-		dev.fd = drmOpen(module, NULL);
+		dev.fd = drmOpen(module, device);
 		if (dev.fd < 0) {
 			fprintf(stderr, "failed to open device '%s'.\n", module);
 			return 1;
@@ -1455,7 +1461,7 @@ int main(int argc, char **argv)
 	} else {
 		for (i = 0; i < ARRAY_SIZE(modules); i++) {
 			printf("trying to open device '%s'...", modules[i]);
-			dev.fd = drmOpen(modules[i], NULL);
+			dev.fd = drmOpen(modules[i], device);
 			if (dev.fd < 0) {
 				printf("failed.\n");
 			} else {
