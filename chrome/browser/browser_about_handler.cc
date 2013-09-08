@@ -76,8 +76,8 @@ bool WillHandleBrowserAboutURL(GURL* url,
         base::Bind(&chrome::AttemptRestart));
   } else if (host == chrome::kChromeUIDevicesHost) {
 #if defined(ENABLE_MDNS)
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableDeviceDiscovery)) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableDeviceDiscovery)) {
       host = chrome::kChromeUIUberHost;
       path = chrome::kChromeUIDevicesHost + url->path();
     }

@@ -1468,11 +1468,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kSyncfsEnableDirectoryOperation),
   },
   {
-    "enable-device-discovery",
-    IDS_FLAGS_ENABLE_DEVICE_DISCOVERY_NAME,
-    IDS_FLAGS_ENABLE_DEVICE_DISCOVERY_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableDeviceDiscovery)
+    "disable-device-discovery",
+    IDS_FLAGS_DISABLE_DEVICE_DISCOVERY_NAME,
+    IDS_FLAGS_DISABLE_DEVICE_DISCOVERY_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kDisableDeviceDiscovery)
   },
 #if defined(OS_MACOSX)
   {
@@ -1549,8 +1549,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_HIDPI_NAME,
     IDS_FLAGS_HIDPI_DESCRIPTION,
     kOsWin,
-    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kHighDPISupport,"1",
-        switches::kHighDPISupport,"0")
+    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kHighDPISupport, "1",
+                                        switches::kHighDPISupport, "0")
   },
 #if defined(OS_CHROMEOS)
   {

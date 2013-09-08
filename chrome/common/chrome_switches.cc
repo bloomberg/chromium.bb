@@ -320,6 +320,9 @@ const char kDisableCustomJumpList[]         = "disable-custom-jumplist";
 // automated testing.
 const char kDisableDefaultApps[]            = "disable-default-apps";
 
+// Disables device discovery.
+const char kDisableDeviceDiscovery[]        = "disable-device-discovery";
+
 // Disables retrieval of PAC URLs from DHCP as per the WPAD standard.
 const char kDisableDhcpWpad[]               = "disable-dhcp-wpad";
 
@@ -555,9 +558,6 @@ const char kEnableComponentCloudPolicy[]    = "enable-component-cloud-policy";
 // Enables fetching the user's contacts from Google and showing them in the
 // Chrome OS apps list.
 const char kEnableContacts[]                = "enable-contacts";
-
-// Enables device discovery.
-const char kEnableDeviceDiscovery[]        = "enable-device-discovery";
 
 // If true devtools experimental settings are enabled.
 const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";

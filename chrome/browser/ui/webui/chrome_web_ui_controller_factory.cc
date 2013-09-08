@@ -232,8 +232,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<CrashesUI>;
 #if defined(ENABLE_MDNS)
   if (url.host() == chrome::kChromeUIDevicesFrameHost &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableDeviceDiscovery)) {
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kDisableDeviceDiscovery)) {
     return &NewWebUI<LocalDiscoveryUI>;
   }
 #endif

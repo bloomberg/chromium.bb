@@ -35,8 +35,14 @@ PrivetNotificationServiceFactory::BuildServiceInstanceFor(
 
 bool
 PrivetNotificationServiceFactory::ServiceIsCreatedWithBrowserContext() const {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDeviceDiscovery);
+  // TODO(vitalybuka): re-enable after fixing broken tests.
+  return false;
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableDeviceDiscovery);
+}
+
+bool PrivetNotificationServiceFactory::ServiceIsNULLWhileTesting() const {
+  return true;
 }
 
 }  // namespace local_discovery

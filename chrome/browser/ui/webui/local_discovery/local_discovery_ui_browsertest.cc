@@ -142,7 +142,6 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     WebUIBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableDeviceDiscovery);
   }
 
   FakeLocalDiscoveryUIFactory* ui_factory() { return ui_factory_.get(); }

@@ -133,8 +133,8 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
 
   bool devicesHidden = true;
 #if defined(ENABLE_MDNS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDeviceDiscovery)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kDisableDeviceDiscovery)) {
     devicesHidden = false;
   }
 #endif
@@ -156,8 +156,8 @@ UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   RegisterSubpage(chrome::kChromeUIUberFrameURL);
 
 #if defined(ENABLE_MDNS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDeviceDiscovery)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kDisableDeviceDiscovery)) {
     RegisterSubpage(chrome::kChromeUIDevicesFrameURL);
   }
 #endif
