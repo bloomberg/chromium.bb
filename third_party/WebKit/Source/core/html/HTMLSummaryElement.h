@@ -44,6 +44,12 @@ private:
     bool supportsFocus() const OVERRIDE;
 };
 
+inline HTMLSummaryElement* toHTMLSummaryElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::summaryTag));
+    return static_cast<HTMLSummaryElement*>(node);
+}
+
 }
 
 #endif // HTMLSummaryElement_h
