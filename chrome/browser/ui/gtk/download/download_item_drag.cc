@@ -109,11 +109,6 @@ void DownloadItemDrag::SetSource(GtkWidget* widget,
   DragData::AttachToWidget(drag_data.Pass(), widget, icon);
 }
 
-// static
-void DownloadItemDrag::BeginDrag(const DownloadItem* item, gfx::Image* icon) {
-  new DownloadItemDrag(item, icon);
-}
-
 DownloadItemDrag::DownloadItemDrag(const DownloadItem* item, gfx::Image* icon)
     : CustomDrag(icon, kDownloadItemCodeMask, kDownloadItemDragAction),
       drag_data_(new DragData(item)) {}
@@ -131,5 +126,7 @@ void DownloadItemDrag::OnDragDataGet(GtkWidget* widget,
 void DragDownloadItem(const content::DownloadItem* download,
                       gfx::Image* icon,
                       gfx::NativeView view) {
-  DownloadItemDrag::BeginDrag(download, icon);
+  // This starts the drag process, the lifetime of this object is tied to the
+  // system drag.
+  new DownloadItemDrag(download, icon);
 }

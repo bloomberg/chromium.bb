@@ -17,6 +17,8 @@ class DownloadItem;
 // Encapsulates functionality for drags of download items.
 class DownloadItemDrag : public CustomDrag {
  public:
+  DownloadItemDrag(const content::DownloadItem* item, gfx::Image* icon);
+
   // Sets |widget| as a source for drags pertaining to |item|. No
   // DownloadItemDrag object is created.
   // It is safe to call this multiple times with different values of |icon|.
@@ -24,14 +26,9 @@ class DownloadItemDrag : public CustomDrag {
                         const content::DownloadItem* item,
                         gfx::Image* icon);
 
-  // Creates a new DownloadItemDrag, the lifetime of which is tied to the
-  // system drag.
-  static void BeginDrag(const content::DownloadItem* item, gfx::Image* icon);
-
  private:
   class DragData;
 
-  DownloadItemDrag(const content::DownloadItem* item, gfx::Image* icon);
   virtual ~DownloadItemDrag();
 
   virtual void OnDragDataGet(GtkWidget* widget,

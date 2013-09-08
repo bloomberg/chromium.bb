@@ -1053,8 +1053,6 @@
         'browser/ui/gtk/bookmarks/bookmark_bar_instructions_gtk.h',
         'browser/ui/gtk/bookmarks/bookmark_bubble_gtk.cc',
         'browser/ui/gtk/bookmarks/bookmark_bubble_gtk.h',
-        'browser/ui/gtk/bookmarks/bookmark_drag.cc',
-        'browser/ui/gtk/bookmarks/bookmark_drag.h',
         'browser/ui/gtk/bookmarks/bookmark_drag_drop_gtk.cc',
         'browser/ui/gtk/bookmarks/bookmark_editor_gtk.cc',
         'browser/ui/gtk/bookmarks/bookmark_editor_gtk.h',
