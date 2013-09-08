@@ -95,6 +95,9 @@ struct nested_surface {
 
 		/* wl_surface.frame */
 		struct wl_list frame_callback_list;
+
+		/* wl_surface.damage */
+		pixman_region32_t damage;
 	} pending;
 };
 
@@ -371,6 +374,8 @@ destroy_surface(struct wl_resource *resource)
 
 	nested_buffer_reference(&surface->buffer_ref, NULL);
 
+	pixman_region32_fini(&surface->pending.damage);
+
 	wl_list_remove(&surface->link);
 
 	free(surface);
@@ -472,6 +477,11 @@ surface_damage(struct wl_client *client,
 	       struct wl_resource *resource,
 	       int32_t x, int32_t y, int32_t width, int32_t height)
 {
+	struct nested_surface *surface = wl_resource_get_user_data(resource);
+
+	pixman_region32_union_rect(&surface->pending.damage,
+				   &surface->pending.damage,
+				   x, y, width, height);
 }
 
 static void
@@ -522,6 +532,13 @@ surface_set_input_region(struct wl_client *client,
 }
 
 static void
+empty_region(pixman_region32_t *region)
+{
+	pixman_region32_fini(region);
+	pixman_region32_init(region);
+}
+
+static void
 surface_commit(struct wl_client *client, struct wl_resource *resource)
 {
 	struct nested_surface *surface = wl_resource_get_user_data(resource);
@@ -536,6 +553,9 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 		surface->pending.buffer = NULL;
 	}
 	surface->pending.newly_attached = 0;
+
+	/* wl_surface.damage */
+	empty_region(&surface->pending.damage);
 
 	/* wl_surface.frame */
 	wl_list_insert_list(&nested->frame_callback_list,
@@ -591,6 +611,7 @@ compositor_create_surface(struct wl_client *client,
 	wl_list_init(&surface->pending.frame_callback_list);
 	surface->pending.buffer_destroy_listener.notify =
 		surface_handle_pending_buffer_destroy;
+	pixman_region32_init(&surface->pending.damage);
 
 	display_acquire_window_surface(nested->display,
 				       nested->window, NULL);
