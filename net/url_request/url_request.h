@@ -528,7 +528,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Returns the HTTP response code (e.g., 200, 404, and so on).  This method
   // may only be called once the delegate's OnResponseStarted method has been
   // called.  For non-HTTP requests, this method returns -1.
-  int GetResponseCode();
+  int GetResponseCode() const;
 
   // Get the HTTP response info in its entirety.
   const HttpResponseInfo& response_info() const { return response_info_; }

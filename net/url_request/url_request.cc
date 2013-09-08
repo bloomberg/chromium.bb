@@ -453,7 +453,7 @@ void URLRequest::GetCharset(string* charset) {
   job_->GetCharset(charset);
 }
 
-int URLRequest::GetResponseCode() {
+int URLRequest::GetResponseCode() const {
   DCHECK(job_.get());
   return job_->GetResponseCode();
 }
