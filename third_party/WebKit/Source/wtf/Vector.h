@@ -279,19 +279,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             m_buffer = static_cast<T*>(fastRealloc(m_buffer, sizeToAllocate));
         }
 
-        void deallocateBuffer(T* bufferToDeallocate)
-        {
-            if (!bufferToDeallocate)
-                return;
-
-            if (m_buffer == bufferToDeallocate) {
-                m_buffer = 0;
-                m_capacity = 0;
-            }
-
-            fastFree(bufferToDeallocate);
-        }
-
         T* buffer() { return m_buffer; }
         const T* buffer() const { return m_buffer; }
         size_t capacity() const { return m_capacity; }
@@ -342,6 +329,21 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         ~VectorBuffer()
         {
             deallocateBuffer(buffer());
+            m_buffer = 0;
+        }
+
+        void deallocateBuffer(T* bufferToDeallocate)
+        {
+            if (LIKELY(!bufferToDeallocate))
+                return;
+
+            fastFree(bufferToDeallocate);
+        }
+
+        void clearBufferPointer()
+        {
+            m_buffer = 0;
+            m_capacity = 0;
         }
 
         void swap(VectorBuffer<T, 0>& other)
@@ -355,7 +357,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         using Base::allocateBuffer;
         using Base::shouldReallocateBuffer;
         using Base::reallocateBuffer;
-        using Base::deallocateBuffer;
 
         using Base::buffer;
         using Base::capacity;
@@ -407,7 +408,14 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         {
             if (LIKELY(bufferToDeallocate == inlineBuffer()))
                 return;
-            Base::deallocateBuffer(bufferToDeallocate);
+
+            fastFree(bufferToDeallocate);
+        }
+
+        void clearBufferPointer()
+        {
+            m_buffer = 0;
+            m_capacity = 0;
         }
 
         bool shouldReallocateBuffer(size_t newCapacity) const
@@ -497,7 +505,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         ~Vector()
         {
-            if (m_size)
+            if (UNLIKELY(m_size))
                 shrink(0);
         }
 
@@ -874,6 +882,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             Base::allocateBuffer(newCapacity);
             if (begin() != oldBuffer)
                 TypeOperations::move(oldBuffer, oldEnd, begin());
+        } else {
+            Base::clearBufferPointer();
         }
 
         Base::deallocateBuffer(oldBuffer);
