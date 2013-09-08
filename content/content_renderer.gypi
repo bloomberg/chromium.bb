@@ -40,8 +40,6 @@
     'public/renderer/document_state.h',
     'public/renderer/history_item_serialization.cc',
     'public/renderer/history_item_serialization.h',
-    'public/renderer/key_system_info.cc',
-    'public/renderer/key_system_info.h',
     'public/renderer/navigation_state.cc',
     'public/renderer/navigation_state.h',
     'public/renderer/pepper_plugin_instance.h',
