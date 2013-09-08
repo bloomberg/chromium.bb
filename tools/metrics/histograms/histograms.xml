@@ -23896,6 +23896,9 @@ other types of suffix sets.
   <int value="46" label="INVALID_STREAM_DATA"/>
   <int value="47" label="INVALID_CONGESTION_FEEDBACK_DATA"/>
   <int value="48" label="MISSING_PAYLOAD"/>
+  <int value="49" label="INVALID_PRIORITY"/>
+  <int value="50" label="INVALID_STREAM_FRAME"/>
+  <int value="51" label="PACKET_READ_ERROR"/>
 </enum>
 
 <enum name="QuicHandshakeState" type="int">
