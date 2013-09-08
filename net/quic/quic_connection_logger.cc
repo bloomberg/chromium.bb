@@ -301,6 +301,9 @@ void QuicConnectionLogger::OnPacketHeader(const QuicPacketHeader& header) {
   }
   if (header.packet_sequence_number < last_received_packet_sequence_number_) {
     ++out_of_order_recieved_packet_count_;
+    UMA_HISTOGRAM_COUNTS("Net.QuicSession.OutOfOrderGapReceived",
+                         last_received_packet_sequence_number_ -
+                             header.packet_sequence_number);
   }
   last_received_packet_sequence_number_ = header.packet_sequence_number;
 }
