@@ -1818,6 +1818,12 @@ widget_get_wl_surface(struct widget *widget)
 	return widget->surface->surface;
 }
 
+struct wl_subsurface *
+widget_get_wl_subsurface(struct widget *widget)
+{
+	return widget->surface->subsurface;
+}
+
 uint32_t
 widget_get_last_time(struct widget *widget)
 {

@@ -345,6 +345,9 @@ window_get_surface(struct window *window);
 struct wl_surface *
 window_get_wl_surface(struct window *window);
 
+struct wl_subsurface *
+widget_get_wl_subsurface(struct widget *widget);
+
 enum window_buffer_type {
 	WINDOW_BUFFER_TYPE_EGL_WINDOW,
 	WINDOW_BUFFER_TYPE_SHM,
