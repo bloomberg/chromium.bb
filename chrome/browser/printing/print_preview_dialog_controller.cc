@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -124,19 +125,22 @@ void PrintPreviewDialogDelegate::GetDialogSize(gfx::Size* size) const {
   DCHECK(size);
   const gfx::Size kMinDialogSize(800, 480);
   const int kBorder = 25;
-  const int kConstrainedWindowOverlap = 3;
-  gfx::Rect rect;
-  initiator_->GetView()->GetContainerBounds(&rect);
-  size->set_width(std::max(rect.width(), kMinDialogSize.width()) - 2 * kBorder);
-  size->set_height(std::max(rect.height(), kMinDialogSize.height()) - kBorder +
-                   kConstrainedWindowOverlap);
+  *size = kMinDialogSize;
+
+  Browser* browser = chrome::FindBrowserWithWebContents(initiator_);
+  if (browser) {
+    web_modal::WebContentsModalDialogHost* host =
+        browser->window()->GetWebContentsModalDialogHost();
+    if (host)
+      size->SetToMax(host->GetMaximumDialogSize());
+  }
+  size->Enlarge(-2 * kBorder, -kBorder);
 
 #if defined(OS_MACOSX)
   // Limit the maximum size on MacOS X.
   // http://crbug.com/105815
   const gfx::Size kMaxDialogSize(1000, 660);
-  size->set_width(std::min(size->width(), kMaxDialogSize.width()));
-  size->set_height(std::min(size->height(), kMaxDialogSize.height()));
+  size->SetToMin(kMaxDialogSize);
 #endif
 }
 

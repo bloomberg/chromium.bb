@@ -322,7 +322,8 @@ class BrowserWindow : public ui::BaseWindow {
   virtual FindBar* CreateFindBar() = 0;
 
   // Return the WebContentsModalDialogHost for use in positioning web contents
-  // modal dialogs within the browser window.
+  // modal dialogs within the browser window. This can sometimes be NULL (for
+  // instance during tab drag on Views/Win32).
   virtual web_modal::WebContentsModalDialogHost*
       GetWebContentsModalDialogHost() = 0;
 
