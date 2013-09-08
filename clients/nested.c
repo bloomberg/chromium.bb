@@ -86,6 +86,16 @@ struct nested_surface {
 	GLuint texture;
 	struct wl_list link;
 	cairo_surface_t *cairo_surface;
+
+	struct {
+		/* wl_surface.attach */
+		int newly_attached;
+		struct nested_buffer *buffer;
+		struct wl_listener buffer_destroy_listener;
+
+		/* wl_surface.frame */
+		struct wl_list frame_callback_list;
+	} pending;
 };
 
 struct nested_frame_callback {
@@ -353,6 +363,11 @@ static void
 destroy_surface(struct wl_resource *resource)
 {
 	struct nested_surface *surface = wl_resource_get_user_data(resource);
+	struct nested_frame_callback *cb, *next;
+
+	wl_list_for_each_safe(cb, next,
+			      &surface->pending.frame_callback_list, link)
+		wl_resource_destroy(cb->resource);
 
 	nested_buffer_reference(&surface->buffer_ref, NULL);
 
@@ -374,45 +389,75 @@ surface_attach(struct wl_client *client,
 {
 	struct nested_surface *surface = wl_resource_get_user_data(resource);
 	struct nested *nested = surface->nested;
-	EGLint format, width, height;
+	struct nested_buffer *buffer = NULL;
+
+	if (buffer_resource) {
+		int format;
+
+		if (!query_buffer(nested->egl_display, (void *) buffer_resource,
+				  EGL_TEXTURE_FORMAT, &format)) {
+			wl_resource_post_error(buffer_resource,
+					       WL_DISPLAY_ERROR_INVALID_OBJECT,
+					       "attaching non-egl wl_buffer");
+			return;
+		}
+
+		switch (format) {
+		case EGL_TEXTURE_RGB:
+		case EGL_TEXTURE_RGBA:
+			break;
+		default:
+			wl_resource_post_error(buffer_resource,
+					       WL_DISPLAY_ERROR_INVALID_OBJECT,
+					       "invalid format");
+			return;
+		}
+
+		buffer = nested_buffer_from_resource(buffer_resource);
+		if (buffer == NULL) {
+			wl_client_post_no_memory(client);
+			return;
+		}
+	}
+
+	if (surface->pending.buffer)
+		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
+
+	surface->pending.buffer = buffer;
+	surface->pending.newly_attached = 1;
+	if (buffer) {
+		wl_signal_add(&buffer->destroy_signal,
+			      &surface->pending.buffer_destroy_listener);
+	}
+}
+
+static void
+nested_surface_attach(struct nested_surface *surface,
+		      struct nested_buffer *buffer)
+{
+	struct nested *nested = surface->nested;
+	EGLint width, height;
 	cairo_device_t *device;
-	struct nested_buffer *buffer =
-		nested_buffer_from_resource(buffer_resource);
 
 	nested_buffer_reference(&surface->buffer_ref, buffer);
-
-	if (!query_buffer(nested->egl_display, (void *) buffer_resource,
-			  EGL_TEXTURE_FORMAT, &format)) {
-		fprintf(stderr, "attaching non-egl wl_buffer\n");
-		return;
-	}
 
 	if (surface->image != EGL_NO_IMAGE_KHR)
 		destroy_image(nested->egl_display, surface->image);
 	if (surface->cairo_surface)
 		cairo_surface_destroy(surface->cairo_surface);
 
-	switch (format) {
-	case EGL_TEXTURE_RGB:
-	case EGL_TEXTURE_RGBA:
-		break;
-	default:
-		fprintf(stderr, "unhandled format: %x\n", format);
-		return;
-	}
-
 	surface->image = create_image(nested->egl_display, NULL,
-				      EGL_WAYLAND_BUFFER_WL, buffer_resource,
+				      EGL_WAYLAND_BUFFER_WL, buffer->resource,
 				      NULL);
 	if (surface->image == EGL_NO_IMAGE_KHR) {
 		fprintf(stderr, "failed to create img\n");
 		return;
 	}
 
-	query_buffer(nested->egl_display,
-		     (void *) buffer_resource, EGL_WIDTH, &width);
-	query_buffer(nested->egl_display,
-		     (void *) buffer_resource, EGL_HEIGHT, &height);
+	query_buffer(nested->egl_display, (void *) buffer->resource,
+		     EGL_WIDTH, &width);
+	query_buffer(nested->egl_display, (void *) buffer->resource,
+		     EGL_HEIGHT, &height);
 
 	device = display_get_cairo_device(nested->display);
 	surface->cairo_surface = 
@@ -420,8 +465,6 @@ surface_attach(struct wl_client *client,
 						    CAIRO_CONTENT_COLOR_ALPHA,
 						    surface->texture,
 						    width, height);
-
-	window_schedule_redraw(nested->window);
 }
 
 static void
@@ -446,7 +489,6 @@ surface_frame(struct wl_client *client,
 {
 	struct nested_frame_callback *callback;
 	struct nested_surface *surface = wl_resource_get_user_data(resource);
-	struct nested *nested = surface->nested;
 
 	callback = malloc(sizeof *callback);
 	if (callback == NULL) {
@@ -459,7 +501,8 @@ surface_frame(struct wl_client *client,
 	wl_resource_set_implementation(callback->resource, NULL, callback,
 				       destroy_frame_callback);
 
-	wl_list_insert(nested->frame_callback_list.prev, &callback->link);
+	wl_list_insert(surface->pending.frame_callback_list.prev,
+		       &callback->link);
 }
 
 static void
@@ -481,6 +524,25 @@ surface_set_input_region(struct wl_client *client,
 static void
 surface_commit(struct wl_client *client, struct wl_resource *resource)
 {
+	struct nested_surface *surface = wl_resource_get_user_data(resource);
+	struct nested *nested = surface->nested;
+
+	/* wl_surface.attach */
+	if (surface->pending.newly_attached)
+		nested_surface_attach(surface, surface->pending.buffer);
+
+	if (surface->pending.buffer) {
+		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
+		surface->pending.buffer = NULL;
+	}
+	surface->pending.newly_attached = 0;
+
+	/* wl_surface.frame */
+	wl_list_insert_list(&nested->frame_callback_list,
+			    &surface->pending.frame_callback_list);
+	wl_list_init(&surface->pending.frame_callback_list);
+
+	window_schedule_redraw(nested->window);
 }
 
 static void
@@ -502,6 +564,16 @@ static const struct wl_surface_interface surface_interface = {
 };
 
 static void
+surface_handle_pending_buffer_destroy(struct wl_listener *listener, void *data)
+{
+	struct nested_surface *surface =
+		container_of(listener, struct nested_surface,
+			     pending.buffer_destroy_listener);
+
+	surface->pending.buffer = NULL;
+}
+
+static void
 compositor_create_surface(struct wl_client *client,
 			  struct wl_resource *resource, uint32_t id)
 {
@@ -515,6 +587,10 @@ compositor_create_surface(struct wl_client *client,
 	}
 
 	surface->nested = nested;
+
+	wl_list_init(&surface->pending.frame_callback_list);
+	surface->pending.buffer_destroy_listener.notify =
+		surface_handle_pending_buffer_destroy;
 
 	display_acquire_window_surface(nested->display,
 				       nested->window, NULL);
