@@ -91,12 +91,13 @@ WebNavigationEventRouter::WebNavigationEventRouter(Profile* profile)
                  content::NotificationService::AllSources());
 
   BrowserList::AddObserver(this);
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+  for (chrome::BrowserIterator it; !it.done(); it.Next())
     OnBrowserAdded(*it);
-  }
 }
 
 WebNavigationEventRouter::~WebNavigationEventRouter() {
+  for (chrome::BrowserIterator it; !it.done(); it.Next())
+    OnBrowserRemoved(*it);
   BrowserList::RemoveObserver(this);
 }
 
