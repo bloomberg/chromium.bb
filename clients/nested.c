@@ -67,16 +67,27 @@ struct nested_region {
 	pixman_region32_t region;
 };
 
+struct nested_buffer_reference {
+	struct nested_buffer *buffer;
+	struct wl_listener destroy_listener;
+};
+
 struct nested_buffer {
 	struct wl_resource *resource;
 	struct wl_signal destroy_signal;
 	struct wl_listener destroy_listener;
 	uint32_t busy_count;
-};
 
-struct nested_buffer_reference {
-	struct nested_buffer *buffer;
-	struct wl_listener destroy_listener;
+	/* A buffer in the parent compositor representing the same
+	 * data. This is created on-demand when the subsurface
+	 * renderer is used */
+	struct wl_buffer *parent_buffer;
+	/* This reference is used to mark when the parent buffer has
+	 * been attached to the subsurface. It will be unrefenced when
+	 * we receive a buffer release event. That way we won't inform
+	 * the client that the buffer is free until the parent
+	 * compositor is also finished with it */
+	struct nested_buffer_reference parent_ref;
 };
 
 struct nested_surface {
@@ -110,6 +121,14 @@ struct nested_blit_surface {
 	cairo_surface_t *cairo_surface;
 };
 
+/* Data used for the subsurface renderer */
+struct nested_ss_surface {
+	struct widget *widget;
+	struct wl_surface *surface;
+	struct wl_subsurface *subsurface;
+	struct wl_callback *frame_callback;
+};
+
 struct nested_frame_callback {
 	struct wl_resource *resource;
 	struct wl_list link;
@@ -124,6 +143,7 @@ struct nested_renderer {
 };
 
 static const struct nested_renderer nested_blit_renderer;
+static const struct nested_renderer nested_ss_renderer;
 
 static PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
 static PFNEGLCREATEIMAGEKHRPROC create_image;
@@ -131,6 +151,7 @@ static PFNEGLDESTROYIMAGEKHRPROC destroy_image;
 static PFNEGLBINDWAYLANDDISPLAYWL bind_display;
 static PFNEGLUNBINDWAYLANDDISPLAYWL unbind_display;
 static PFNEGLQUERYWAYLANDBUFFERWL query_buffer;
+static PFNEGLCREATEWAYLANDBUFFERFROMIMAGEWL create_wayland_buffer_from_image;
 
 static void
 nested_buffer_destroy_handler(struct wl_listener *listener, void *data)
@@ -139,6 +160,10 @@ nested_buffer_destroy_handler(struct wl_listener *listener, void *data)
 		container_of(listener, struct nested_buffer, destroy_listener);
 
 	wl_signal_emit(&buffer->destroy_signal, buffer);
+
+	if (buffer->parent_buffer)
+		wl_buffer_destroy(buffer->parent_buffer);
+
 	free(buffer);
 }
 
@@ -538,6 +563,10 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 			    &surface->pending.frame_callback_list);
 	wl_list_init(&surface->pending.frame_callback_list);
 
+	/* FIXME: For the subsurface renderer we don't need to
+	 * actually redraw the window. However we do want to cause a
+	 * commit because the subsurface is synchronized. Ideally we
+	 * would just queue the commit */
 	window_schedule_redraw(nested->window);
 }
 
@@ -694,6 +723,7 @@ nested_init_compositor(struct nested *nested)
 {
 	const char *extensions;
 	struct wl_event_loop *loop;
+	int use_ss_renderer = 0;
 	int fd, ret;
 
 	wl_list_init(&nested->surface_list);
@@ -732,7 +762,25 @@ nested_init_compositor(struct nested *nested)
 		return -1;
 	}
 
-	nested->renderer = &nested_blit_renderer;
+	if (display_has_subcompositor(nested->display)) {
+		const char *func = "eglCreateWaylandBufferFromImageWL";
+		const char *ext = "EGL_WL_create_wayland_buffer_from_image";
+
+		if (strstr(extensions, ext)) {
+			create_wayland_buffer_from_image =
+				(void *) eglGetProcAddress(func);
+			use_ss_renderer = 1;
+		}
+	}
+
+	if (use_ss_renderer) {
+		printf("Using subsurfaces to render client surfaces\n");
+		nested->renderer = &nested_ss_renderer;
+	} else {
+		printf("Using local compositing with blits to "
+		       "render client surfaces\n");
+		nested->renderer = &nested_blit_renderer;
+	}
 
 	return 0;
 }
@@ -770,6 +818,8 @@ nested_destroy(struct nested *nested)
 	window_destroy(nested->window);
 	free(nested);
 }
+
+/*** blit renderer ***/
 
 static void
 blit_surface_init(struct nested_surface *surface)
@@ -887,6 +937,160 @@ nested_blit_renderer = {
 	.surface_fini = blit_surface_fini,
 	.render_clients = blit_render_clients,
 	.surface_attach = blit_surface_attach
+};
+
+/*** subsurface renderer ***/
+
+static void
+ss_surface_init(struct nested_surface *surface)
+{
+	struct nested *nested = surface->nested;
+	struct wl_compositor *compositor =
+		display_get_compositor(nested->display);
+	struct nested_ss_surface *ss_surface =
+		zalloc(sizeof *ss_surface);
+	struct rectangle allocation;
+	struct wl_region *region;
+
+	ss_surface->widget =
+		window_add_subsurface(nested->window,
+				      nested,
+				      SUBSURFACE_SYNCHRONIZED);
+
+	ss_surface->surface = widget_get_wl_surface(ss_surface->widget);
+	ss_surface->subsurface = widget_get_wl_subsurface(ss_surface->widget);
+
+	/* The toy toolkit gets confused about the pointer position
+	 * when it gets motion events for a subsurface so we'll just
+	 * disable input on it */
+	region = wl_compositor_create_region(compositor);
+	wl_surface_set_input_region(ss_surface->surface, region);
+	wl_region_destroy(region);
+
+	widget_get_allocation(nested->widget, &allocation);
+	wl_subsurface_set_position(ss_surface->subsurface,
+				   allocation.x + 10,
+				   allocation.y + 10);
+
+	surface->renderer_data = ss_surface;
+}
+
+static void
+ss_surface_fini(struct nested_surface *surface)
+{
+	struct nested_ss_surface *ss_surface = surface->renderer_data;
+
+	widget_destroy(ss_surface->widget);
+
+	if (ss_surface->frame_callback)
+		wl_callback_destroy(ss_surface->frame_callback);
+
+	free(ss_surface);
+}
+
+static void
+ss_render_clients(struct nested *nested,
+		  cairo_t *cr)
+{
+	/* The clients are composited by the parent compositor so we
+	 * don't need to do anything here */
+}
+
+static void
+ss_buffer_release(void *data, struct wl_buffer *wl_buffer)
+{
+	struct nested_buffer *buffer = data;
+
+	nested_buffer_reference(&buffer->parent_ref, NULL);
+}
+
+static struct wl_buffer_listener ss_buffer_listener = {
+   ss_buffer_release
+};
+
+static void
+ss_frame_callback(void *data, struct wl_callback *callback, uint32_t time)
+{
+	struct nested_surface *surface = data;
+	struct nested_ss_surface *ss_surface = surface->renderer_data;
+
+	flush_surface_frame_callback_list(surface, time);
+
+	if (callback)
+		wl_callback_destroy(callback);
+
+	ss_surface->frame_callback = NULL;
+}
+
+static const struct wl_callback_listener ss_frame_listener = {
+	ss_frame_callback
+};
+
+static void
+ss_surface_attach(struct nested_surface *surface,
+		  struct nested_buffer *buffer)
+{
+	struct nested *nested = surface->nested;
+	struct nested_ss_surface *ss_surface = surface->renderer_data;
+	struct wl_buffer *parent_buffer;
+	const pixman_box32_t *rects;
+	int n_rects, i;
+
+	if (buffer) {
+		/* Create a representation of the buffer in the parent
+		 * compositor if we haven't already */
+		if (buffer->parent_buffer == NULL) {
+			EGLDisplay *edpy = nested->egl_display;
+			EGLImageKHR image = surface->image;
+
+			buffer->parent_buffer =
+				create_wayland_buffer_from_image(edpy, image);
+
+			wl_buffer_add_listener(buffer->parent_buffer,
+					       &ss_buffer_listener,
+					       buffer);
+		}
+
+		parent_buffer = buffer->parent_buffer;
+
+		/* We'll take a reference to the buffer while the parent
+		 * compositor is using it so that we won't report the release
+		 * event until the parent has also finished with it */
+		nested_buffer_reference(&buffer->parent_ref, buffer);
+	} else {
+		parent_buffer = NULL;
+	}
+
+	wl_surface_attach(ss_surface->surface, parent_buffer, 0, 0);
+
+	rects = pixman_region32_rectangles(&surface->pending.damage, &n_rects);
+
+	for (i = 0; i < n_rects; i++) {
+		const pixman_box32_t *rect = rects + i;
+		wl_surface_damage(ss_surface->surface,
+				  rect->x1,
+				  rect->y1,
+				  rect->x2 - rect->x1,
+				  rect->y2 - rect->y1);
+	}
+
+	if (ss_surface->frame_callback)
+		wl_callback_destroy(ss_surface->frame_callback);
+
+	ss_surface->frame_callback = wl_surface_frame(ss_surface->surface);
+	wl_callback_add_listener(ss_surface->frame_callback,
+				 &ss_frame_listener,
+				 surface);
+
+	wl_surface_commit(ss_surface->surface);
+}
+
+static const struct nested_renderer
+nested_ss_renderer = {
+	.surface_init = ss_surface_init,
+	.surface_fini = ss_surface_fini,
+	.render_clients = ss_render_clients,
+	.surface_attach = ss_surface_attach
 };
 
 int
