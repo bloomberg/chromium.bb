@@ -159,7 +159,7 @@ TEST_F(VideoCaptureDeviceTest, CaptureVGA) {
   VideoCaptureCapability capture_format(640,
                                         480,
                                         30,
-                                        VideoCaptureCapability::kI420,
+                                        PIXEL_FORMAT_I420,
                                         0,
                                         false,
                                         ConstantResolutionVideoCaptureDevice);
@@ -197,7 +197,7 @@ TEST_F(VideoCaptureDeviceTest, Capture720p) {
   VideoCaptureCapability capture_format(1280,
                                         720,
                                         30,
-                                        VideoCaptureCapability::kI420,
+                                        PIXEL_FORMAT_I420,
                                         0,
                                         false,
                                         ConstantResolutionVideoCaptureDevice);
@@ -231,7 +231,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
   VideoCaptureCapability capture_format(637,
                                         472,
                                         35,
-                                        VideoCaptureCapability::kI420,
+                                        PIXEL_FORMAT_I420,
                                         0,
                                         false,
                                         ConstantResolutionVideoCaptureDevice);
@@ -258,21 +258,21 @@ TEST_F(VideoCaptureDeviceTest, ReAllocateCamera) {
   VideoCaptureCapability capture_format_1(640,
                                           480,
                                           30,
-                                          VideoCaptureCapability::kI420,
+                                          PIXEL_FORMAT_I420,
                                           0,
                                           false,
                                           ConstantResolutionVideoCaptureDevice);
   VideoCaptureCapability capture_format_2(1280,
                                           1024,
                                           30,
-                                          VideoCaptureCapability::kI420,
+                                          PIXEL_FORMAT_I420,
                                           0,
                                           false,
                                           ConstantResolutionVideoCaptureDevice);
   VideoCaptureCapability capture_format_3(320,
                                           240,
                                           30,
-                                          VideoCaptureCapability::kI420,
+                                          PIXEL_FORMAT_I420,
                                           0,
                                           false,
                                           ConstantResolutionVideoCaptureDevice);
@@ -321,7 +321,7 @@ TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
   VideoCaptureCapability capture_format(640,
                                         480,
                                         30,
-                                        VideoCaptureCapability::kI420,
+                                        PIXEL_FORMAT_I420,
                                         0,
                                         false,
                                         ConstantResolutionVideoCaptureDevice);
@@ -359,7 +359,7 @@ TEST_F(VideoCaptureDeviceTest, FakeCapture) {
   VideoCaptureCapability capture_format(640,
                                         480,
                                         30,
-                                        VideoCaptureCapability::kI420,
+                                        PIXEL_FORMAT_I420,
                                         0,
                                         false,
                                         ConstantResolutionVideoCaptureDevice);
@@ -396,7 +396,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
   VideoCaptureCapability capture_format(1280,
                                         720,
                                         30,
-                                        VideoCaptureCapability::kMJPEG,
+                                        PIXEL_FORMAT_MJPEG,
                                         0,
                                         false,
                                         ConstantResolutionVideoCaptureDevice);
@@ -406,7 +406,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
   // Get captured video frames.
   PostQuitTask();
   EXPECT_TRUE(wait_event_.TimedWait(TestTimeouts::action_max_timeout()));
-  EXPECT_EQ(rx_capability.color, VideoCaptureCapability::kMJPEG);
+  EXPECT_EQ(rx_capability.color, PIXEL_FORMAT_MJPEG);
   device->DeAllocate();
 }
 

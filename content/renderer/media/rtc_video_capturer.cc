@@ -35,7 +35,7 @@ cricket::CaptureState RtcVideoCapturer::Start(
   cap.width = capture_format.width;
   cap.height = capture_format.height;
   cap.frame_rate = capture_format.framerate();
-  cap.color = media::VideoCaptureCapability::kI420;
+  cap.color = media::PIXEL_FORMAT_I420;
 
   SetCaptureFormat(&capture_format);
 

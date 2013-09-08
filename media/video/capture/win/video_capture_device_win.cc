@@ -382,7 +382,7 @@ void VideoCaptureDeviceWin::Allocate(
   if (FAILED(hr))
     SetErrorState("Failed to set capture device output format");
 
-  if (capability.color == VideoCaptureCapability::kMJPEG &&
+  if (capability.color == PIXEL_FORMAT_MJPEG &&
       !mjpg_filter_.get()) {
     // Create MJPG filter if we need it.
     hr = mjpg_filter_.CreateInstance(CLSID_MjpegDec, NULL, CLSCTX_INPROC);
@@ -401,7 +401,7 @@ void VideoCaptureDeviceWin::Allocate(
     }
   }
 
-  if (capability.color == VideoCaptureCapability::kMJPEG &&
+  if (capability.color == PIXEL_FORMAT_MJPEG &&
       mjpg_filter_.get()) {
     // Connect the camera to the MJPEG decoder.
     hr = graph_builder_->ConnectDirect(output_capture_pin_, input_mjpg_pin_,
@@ -581,20 +581,20 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
 
       // We can't switch MEDIATYPE :~(.
       if (media_type->subtype == kMediaSubTypeI420) {
-        capability.color = VideoCaptureCapability::kI420;
+        capability.color = PIXEL_FORMAT_I420;
       } else if (media_type->subtype == MEDIASUBTYPE_IYUV) {
-        // This is identical to kI420.
-        capability.color = VideoCaptureCapability::kI420;
+        // This is identical to PIXEL_FORMAT_I420.
+        capability.color = PIXEL_FORMAT_I420;
       } else if (media_type->subtype == MEDIASUBTYPE_RGB24) {
-        capability.color = VideoCaptureCapability::kRGB24;
+        capability.color = PIXEL_FORMAT_RGB24;
       } else if (media_type->subtype == MEDIASUBTYPE_YUY2) {
-        capability.color = VideoCaptureCapability::kYUY2;
+        capability.color = PIXEL_FORMAT_YUY2;
       } else if (media_type->subtype == MEDIASUBTYPE_MJPG) {
-        capability.color = VideoCaptureCapability::kMJPEG;
+        capability.color = PIXEL_FORMAT_MJPEG;
       } else if (media_type->subtype == MEDIASUBTYPE_UYVY) {
-        capability.color = VideoCaptureCapability::kUYVY;
+        capability.color = PIXEL_FORMAT_UYVY;
       } else if (media_type->subtype == MEDIASUBTYPE_ARGB32) {
-        capability.color = VideoCaptureCapability::kARGB;
+        capability.color = PIXEL_FORMAT_ARGB;
       } else {
         WCHAR guid_str[128];
         StringFromGUID2(media_type->subtype, guid_str, arraysize(guid_str));

@@ -151,7 +151,7 @@ void VideoCaptureDeviceAndroid::Allocate(
       Java_VideoCapture_queryHeight(env, j_capture_.obj());
   current_settings_.frame_rate =
       Java_VideoCapture_queryFrameRate(env, j_capture_.obj());
-  current_settings_.color = VideoCaptureCapability::kYV12;
+  current_settings_.color = PIXEL_FORMAT_YV12;
   CHECK(current_settings_.width > 0 && !(current_settings_.width % 2));
   CHECK(current_settings_.height > 0 && !(current_settings_.height % 2));
 

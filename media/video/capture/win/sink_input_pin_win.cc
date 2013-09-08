@@ -114,17 +114,17 @@ bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {
   }
   if (sub_type == kMediaSubTypeI420 &&
       pvi->bmiHeader.biCompression == MAKEFOURCC('I', '4', '2', '0')) {
-    resulting_capability_.color = VideoCaptureCapability::kI420;
+    resulting_capability_.color = PIXEL_FORMAT_I420;
     return true;  // This format is acceptable.
   }
   if (sub_type == MEDIASUBTYPE_YUY2 &&
       pvi->bmiHeader.biCompression == MAKEFOURCC('Y', 'U', 'Y', '2')) {
-    resulting_capability_.color = VideoCaptureCapability::kYUY2;
+    resulting_capability_.color = PIXEL_FORMAT_YUY2;
     return true;  // This format is acceptable.
   }
   if (sub_type == MEDIASUBTYPE_RGB24 &&
       pvi->bmiHeader.biCompression == BI_RGB) {
-    resulting_capability_.color = VideoCaptureCapability::kRGB24;
+    resulting_capability_.color = PIXEL_FORMAT_RGB24;
     return true;  // This format is acceptable.
   }
   return false;
@@ -146,7 +146,7 @@ void SinkInputPin::SetRequestedMediaCapability(
   resulting_capability_.width = 0;
   resulting_capability_.height = 0;
   resulting_capability_.frame_rate = 0;
-  resulting_capability_.color = VideoCaptureCapability::kColorUnknown;
+  resulting_capability_.color = PIXEL_FORMAT_UNKNOWN;
   resulting_capability_.expected_capture_delay = 0;
   resulting_capability_.interlaced = false;
 }

@@ -149,7 +149,7 @@ void VideoCaptureDeviceMac::Allocate(
 
   state_ = kAllocated;
   VideoCaptureCapability current_settings;
-  current_settings.color = VideoCaptureCapability::kARGB;
+  current_settings.color = PIXEL_FORMAT_ARGB;
   current_settings.width = width;
   current_settings.height = height;
   current_settings.frame_rate = frame_rate;

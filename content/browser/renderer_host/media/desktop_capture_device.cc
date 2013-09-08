@@ -263,7 +263,7 @@ void DesktopCaptureDevice::Core::DoAllocate(
   }
 
   // This capturer always outputs ARGB, non-interlaced.
-  capture_format_.color = media::VideoCaptureCapability::kARGB;
+  capture_format_.color = media::PIXEL_FORMAT_ARGB;
   capture_format_.interlaced = false;
 
   desktop_capturer_->Start(this);

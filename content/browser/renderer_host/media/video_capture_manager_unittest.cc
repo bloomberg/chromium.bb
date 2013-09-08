@@ -113,7 +113,7 @@ TEST_F(VideoCaptureManagerTest, CreateAndClose) {
   capture_params.session_id = video_session_id;
   capture_params.width = 320;
   capture_params.height = 240;
-  capture_params.frame_per_second = 30;
+  capture_params.frame_rate = 30;
   vcm_->Start(capture_params, frame_observer_.get());
 
   vcm_->Stop(video_session_id, base::Closure());
@@ -222,7 +222,7 @@ TEST_F(VideoCaptureManagerTest, StartUsingId) {
   capture_params.session_id = VideoCaptureManager::kStartOpenSessionId;
   capture_params.width = 320;
   capture_params.height = 240;
-  capture_params.frame_per_second = 30;
+  capture_params.frame_rate = 30;
 
   // Start shall trigger the Open callback.
   vcm_->Start(capture_params, frame_observer_.get());
@@ -256,7 +256,7 @@ TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
   capture_params.session_id = video_session_id;
   capture_params.width = 320;
   capture_params.height = 240;
-  capture_params.frame_per_second = 30;
+  capture_params.frame_rate = 30;
   vcm_->Start(capture_params, frame_observer_.get());
 
   // Close will stop the running device, an assert will be triggered in

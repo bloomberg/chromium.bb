@@ -11,7 +11,7 @@
 
 namespace media {
 class AudioParameters;
-struct VideoCaptureParams;
+class VideoCaptureParams;
 }
 
 namespace IPC {

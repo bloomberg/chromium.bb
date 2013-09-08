@@ -266,7 +266,7 @@
     captureCapability.width = frameWidth_;
     captureCapability.height = frameHeight_;
     captureCapability.frame_rate = frameRate_;
-    captureCapability.color = media::VideoCaptureCapability::kARGB;
+    captureCapability.color = media::PIXEL_FORMAT_ARGB;
     captureCapability.expected_capture_delay = 0;
     captureCapability.interlaced = false;
 

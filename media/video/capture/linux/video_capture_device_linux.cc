@@ -50,22 +50,22 @@ static const char kUsbSuffixStart[] = " (";
 static const size_t kUsbModelSize = 9;
 static const char kUsbSuffixEnd[] = ")";
 
-static VideoCaptureCapability::Format V4l2ColorToVideoCaptureColorFormat(
+static VideoPixelFormat V4l2ColorToVideoCaptureColorFormat(
     int32 v4l2_fourcc) {
-  VideoCaptureCapability::Format result = VideoCaptureCapability::kColorUnknown;
+  VideoPixelFormat result = PIXEL_FORMAT_UNKNOWN;
   switch (v4l2_fourcc) {
     case V4L2_PIX_FMT_YUV420:
-      result = VideoCaptureCapability::kI420;
+      result = PIXEL_FORMAT_I420;
       break;
     case V4L2_PIX_FMT_YUYV:
-      result = VideoCaptureCapability::kYUY2;
+      result = PIXEL_FORMAT_YUY2;
       break;
     case V4L2_PIX_FMT_MJPEG:
     case V4L2_PIX_FMT_JPEG:
-      result = VideoCaptureCapability::kMJPEG;
+      result = PIXEL_FORMAT_MJPEG;
       break;
   }
-  DCHECK_NE(result, VideoCaptureCapability::kColorUnknown);
+  DCHECK_NE(result, PIXEL_FORMAT_UNKNOWN);
   return result;
 }
 

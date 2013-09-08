@@ -1076,7 +1076,7 @@ void WebContentsVideoCaptureDevice::Impl::Allocate(
   settings.frame_rate = frame_rate;
   // Note: the value of |settings.color| doesn't matter if we use only the
   // VideoFrame based methods on |consumer|.
-  settings.color = media::VideoCaptureCapability::kI420;
+  settings.color = media::PIXEL_FORMAT_I420;
   settings.expected_capture_delay = 0;
   settings.interlaced = false;
 

@@ -95,11 +95,11 @@ void VideoCaptureHost::OnFrameInfoChanged(
     const VideoCaptureControllerID& controller_id,
     int width,
     int height,
-    int frame_per_second) {
+    int frame_rate) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&VideoCaptureHost::DoSendFrameInfoChangedOnIOThread,
-                 this, controller_id, width, height, frame_per_second));
+                 this, controller_id, width, height, frame_rate));
 }
 
 void VideoCaptureHost::OnEnded(const VideoCaptureControllerID& controller_id) {
@@ -170,7 +170,7 @@ void VideoCaptureHost::DoSendFrameInfoOnIOThread(
   media::VideoCaptureParams params;
   params.width = format.width;
   params.height = format.height;
-  params.frame_per_second = format.frame_rate;
+  params.frame_rate = format.frame_rate;
   params.frame_size_type = format.frame_size_type;
   Send(new VideoCaptureMsg_DeviceInfo(controller_id.device_id, params));
   Send(new VideoCaptureMsg_StateChanged(controller_id.device_id,
@@ -181,7 +181,7 @@ void VideoCaptureHost::DoSendFrameInfoChangedOnIOThread(
     const VideoCaptureControllerID& controller_id,
     int width,
     int height,
-    int frame_per_second) {
+    int frame_rate) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (entries_.find(controller_id) == entries_.end())
@@ -190,7 +190,7 @@ void VideoCaptureHost::DoSendFrameInfoChangedOnIOThread(
   media::VideoCaptureParams params;
   params.width = width;
   params.height = height;
-  params.frame_per_second = frame_per_second;
+  params.frame_rate = frame_rate;
   Send(new VideoCaptureMsg_DeviceInfoChanged(controller_id.device_id, params));
 }
 
@@ -215,7 +215,7 @@ void VideoCaptureHost::OnStartCapture(int device_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "VideoCaptureHost::OnStartCapture, device_id " << device_id
            << ", (" << params.width << ", " << params.height << ", "
-           << params.frame_per_second << ", " << params.session_id
+           << params.frame_rate << ", " << params.session_id
            << ", variable resolution device:"
            << ((params.frame_size_type ==
                media::VariableResolutionVideoCaptureDevice) ? "yes" : "no")

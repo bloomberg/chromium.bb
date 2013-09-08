@@ -42,7 +42,7 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
     device_info_received_ = true;
     params_.width = params.width;
     params_.height = params.height;
-    params_.frame_per_second = params.frame_per_second;
+    params_.frame_rate = params.frame_rate;
   }
 
   virtual void OnDelegateAdded(int32 device_id) OVERRIDE {
@@ -64,7 +64,7 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
     device_info_received_ = false;
     params_.width = 0;
     params_.height = 0;
-    params_.frame_per_second = 0;
+    params_.frame_rate = 0;
   }
 
   bool buffer_created() { return buffer_created_; }
@@ -153,7 +153,7 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
   media::VideoCaptureParams params;
   params.width = 320;
   params.height = 240;
-  params.frame_per_second = 30;
+  params.frame_rate = 30;
 
   EXPECT_FALSE(delegate.device_info_receive());
   filter->OnMessageReceived(VideoCaptureMsg_DeviceInfo(
@@ -161,8 +161,8 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
   EXPECT_TRUE(delegate.device_info_receive());
   EXPECT_EQ(params.width, delegate.received_device_info().width);
   EXPECT_EQ(params.height, delegate.received_device_info().height);
-  EXPECT_EQ(params.frame_per_second,
-            delegate.received_device_info().frame_per_second);
+  EXPECT_EQ(params.frame_rate,
+            delegate.received_device_info().frame_rate);
   delegate.Reset();
 
   message_loop.RunUntilIdle();

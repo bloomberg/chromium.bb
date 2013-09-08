@@ -70,18 +70,18 @@ bool CreateVideoCaptureDevice(const char* sym_link, IMFMediaSource** source) {
   return SUCCEEDED(MFCreateDeviceSource(attributes, source));
 }
 
-bool FormatFromGuid(const GUID& guid, VideoCaptureCapability::Format* format) {
+bool FormatFromGuid(const GUID& guid, VideoPixelFormat* format) {
   struct {
     const GUID& guid;
-    const VideoCaptureCapability::Format format;
+    const VideoPixelFormat format;
   } static const kFormatMap[] = {
-    { MFVideoFormat_I420, VideoCaptureCapability::kI420 },
-    { MFVideoFormat_YUY2, VideoCaptureCapability::kYUY2 },
-    { MFVideoFormat_UYVY, VideoCaptureCapability::kUYVY },
-    { MFVideoFormat_RGB24, VideoCaptureCapability::kRGB24 },
-    { MFVideoFormat_ARGB32, VideoCaptureCapability::kARGB },
-    { MFVideoFormat_MJPG, VideoCaptureCapability::kMJPEG },
-    { MFVideoFormat_YV12, VideoCaptureCapability::kYV12 },
+    { MFVideoFormat_I420, PIXEL_FORMAT_I420 },
+    { MFVideoFormat_YUY2, PIXEL_FORMAT_YUY2 },
+    { MFVideoFormat_UYVY, PIXEL_FORMAT_UYVY },
+    { MFVideoFormat_RGB24, PIXEL_FORMAT_RGB24 },
+    { MFVideoFormat_ARGB32, PIXEL_FORMAT_ARGB },
+    { MFVideoFormat_MJPG, PIXEL_FORMAT_MJPEG },
+    { MFVideoFormat_YV12, PIXEL_FORMAT_YV12 },
   };
 
   for (int i = 0; i < arraysize(kFormatMap); ++i) {

@@ -79,7 +79,7 @@ void FakeVideoCaptureDevice::Allocate(
   }
 
   observer_ = observer;
-  capture_format_.color = VideoCaptureCapability::kI420;
+  capture_format_.color = PIXEL_FORMAT_I420;
   capture_format_.expected_capture_delay = 0;
   capture_format_.interlaced = false;
   if (capture_format.width > 320) {  // VGA
@@ -105,7 +105,7 @@ void FakeVideoCaptureDevice::Reallocate() {
   DCHECK_EQ(state_, kCapturing);
   capture_format_ = capabilities_roster_.at(++capabilities_roster_index_ %
                                             capabilities_roster_.size());
-  DCHECK_EQ(capture_format_.color, VideoCaptureCapability::kI420);
+  DCHECK_EQ(capture_format_.color, PIXEL_FORMAT_I420);
   DVLOG(3) << "Reallocating FakeVideoCaptureDevice, new capture resolution ("
            << capture_format_.width << "x" << capture_format_.height << ")";
 
@@ -230,7 +230,7 @@ void FakeVideoCaptureDevice::PopulateCapabilitiesRoster() {
       media::VideoCaptureCapability(320,
                                     240,
                                     30,
-                                    VideoCaptureCapability::kI420,
+                                    PIXEL_FORMAT_I420,
                                     0,
                                     false,
                                     VariableResolutionVideoCaptureDevice));
@@ -238,7 +238,7 @@ void FakeVideoCaptureDevice::PopulateCapabilitiesRoster() {
       media::VideoCaptureCapability(640,
                                     480,
                                     30,
-                                    VideoCaptureCapability::kI420,
+                                    PIXEL_FORMAT_I420,
                                     0,
                                     false,
                                     VariableResolutionVideoCaptureDevice));
@@ -246,7 +246,7 @@ void FakeVideoCaptureDevice::PopulateCapabilitiesRoster() {
       media::VideoCaptureCapability(800,
                                     600,
                                     30,
-                                    VideoCaptureCapability::kI420,
+                                    PIXEL_FORMAT_I420,
                                     0,
                                     false,
                                     VariableResolutionVideoCaptureDevice));

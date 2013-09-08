@@ -134,7 +134,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   ClientInfo clients_pending_on_filter_;
   ClientInfo clients_pending_on_restart_;
 
-  media::VideoCaptureCapability::Format video_type_;
+  media::VideoPixelFormat video_type_;
 
   // Member capture_format_ represents the video format requested by the client
   // to this class via DoStartCaptureOnCaptureThread.

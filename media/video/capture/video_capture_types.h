@@ -19,68 +19,61 @@ enum VideoCaptureResolutionType {
   MaxVideoCaptureResolutionType,  // Must be last.
 };
 
-// Parameters for starting video capture and device information.
-struct VideoCaptureParams {
-  VideoCaptureParams()
-      : width(0),
-        height(0),
-        frame_per_second(0),
-        session_id(0),
-        frame_size_type(ConstantResolutionVideoCaptureDevice) {};
+// Color formats from camera.
+enum VideoPixelFormat {
+  PIXEL_FORMAT_UNKNOWN,  // Color format not set.
+  PIXEL_FORMAT_I420,
+  PIXEL_FORMAT_YUY2,
+  PIXEL_FORMAT_UYVY,
+  PIXEL_FORMAT_RGB24,
+  PIXEL_FORMAT_ARGB,
+  PIXEL_FORMAT_MJPEG,
+  PIXEL_FORMAT_NV21,
+  PIXEL_FORMAT_YV12,
+};
+
+// Video capture format specification.
+class MEDIA_EXPORT VideoCaptureFormat {
+ public:
+  VideoCaptureFormat();
+  VideoCaptureFormat(int width,
+                     int height,
+                     int frame_rate,
+                     VideoCaptureResolutionType frame_size_type);
+
+  // Checks that all values are in the expected range. All limits are specified
+  // in media::Limits.
+  bool IsValid() const;
+
   int width;
   int height;
-  int frame_per_second;
-  VideoCaptureSessionId session_id;
+  int frame_rate;
   VideoCaptureResolutionType frame_size_type;
 };
 
-// Capabilities describe the format a camera capture video in.
-struct VideoCaptureCapability {
-  // Color formats from camera.
-  enum Format {
-    kColorUnknown,  // Color format not set.
-    kI420,
-    kYUY2,
-    kUYVY,
-    kRGB24,
-    kARGB,
-    kMJPEG,
-    kNV21,
-    kYV12,
-  };
+// Parameters for starting video capture and device information.
+class MEDIA_EXPORT VideoCaptureParams : public VideoCaptureFormat {
+ public:
+  VideoCaptureParams();
 
-  VideoCaptureCapability()
-      : width(0),
-        height(0),
-        frame_rate(0),
-        color(kColorUnknown),
-        expected_capture_delay(0),
-        interlaced(false),
-        frame_size_type(ConstantResolutionVideoCaptureDevice),
-        session_id(0) {};
+  VideoCaptureSessionId session_id;
+};
+
+// Capabilities describe the format a camera capture video in.
+class MEDIA_EXPORT VideoCaptureCapability : public VideoCaptureFormat {
+ public:
+  VideoCaptureCapability();
   VideoCaptureCapability(int width,
                          int height,
                          int frame_rate,
-                         Format color,
+                         VideoPixelFormat color,
                          int delay,
                          bool interlaced,
-                         VideoCaptureResolutionType frame_size_type)
-      : width(width),
-        height(height),
-        frame_rate(frame_rate),
-        color(color),
-        expected_capture_delay(delay),
-        interlaced(interlaced),
-        frame_size_type(frame_size_type),
-        session_id(0) {};
+                         VideoCaptureResolutionType frame_size_type);
 
-  int width;                   // Desired width.
-  int height;                  // Desired height.
-  int frame_rate;              // Desired frame rate.
-  Format color;                // Desired video type.
+  VideoPixelFormat color;      // Desired video type.
   int expected_capture_delay;  // Expected delay in millisecond.
   bool interlaced;             // Need interlace format.
-  VideoCaptureResolutionType frame_size_type;
   VideoCaptureSessionId session_id;
 };
 

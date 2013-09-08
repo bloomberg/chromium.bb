@@ -46,7 +46,7 @@
 #include "ipc/ipc_message.h"
 
 namespace media {
-struct VideoCaptureCapability;
+class VideoCaptureCapability;
 }
 
 namespace content {

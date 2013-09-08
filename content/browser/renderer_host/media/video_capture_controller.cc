@@ -104,7 +104,7 @@ void VideoCaptureController::StartCapture(
   DVLOG(1) << "VideoCaptureController::StartCapture, id " << id.device_id
            << ", (" << params.width
            << ", " << params.height
-           << ", " << params.frame_per_second
+           << ", " << params.frame_rate
            << ", " << params.session_id
            << ")";
 
@@ -304,31 +304,31 @@ void VideoCaptureController::OnIncomingCapturedFrame(
     rotation_mode = libyuv::kRotate270;
 
   switch (frame_info_.color) {
-    case media::VideoCaptureCapability::kColorUnknown:  // Color format not set.
+    case media::PIXEL_FORMAT_UNKNOWN:  // Color format not set.
       break;
-    case media::VideoCaptureCapability::kI420:
+    case media::PIXEL_FORMAT_I420:
       DCHECK(!chopped_width_ && !chopped_height_);
       origin_colorspace = libyuv::FOURCC_I420;
       break;
-    case media::VideoCaptureCapability::kYV12:
+    case media::PIXEL_FORMAT_YV12:
       DCHECK(!chopped_width_ && !chopped_height_);
       origin_colorspace = libyuv::FOURCC_YV12;
       break;
-    case media::VideoCaptureCapability::kNV21:
+    case media::PIXEL_FORMAT_NV21:
       DCHECK(!chopped_width_ && !chopped_height_);
       origin_colorspace = libyuv::FOURCC_NV12;
       break;
-    case media::VideoCaptureCapability::kYUY2:
+    case media::PIXEL_FORMAT_YUY2:
       DCHECK(!chopped_width_ && !chopped_height_);
       origin_colorspace = libyuv::FOURCC_YUY2;
       break;
-    case media::VideoCaptureCapability::kRGB24:
+    case media::PIXEL_FORMAT_RGB24:
       origin_colorspace = libyuv::FOURCC_RAW;
       break;
-    case media::VideoCaptureCapability::kARGB:
+    case media::PIXEL_FORMAT_ARGB:
       origin_colorspace = libyuv::FOURCC_ARGB;
       break;
-    case media::VideoCaptureCapability::kMJPEG:
+    case media::PIXEL_FORMAT_MJPEG:
       origin_colorspace = libyuv::FOURCC_MJPG;
       break;
     default:
@@ -339,7 +339,7 @@ void VideoCaptureController::OnIncomingCapturedFrame(
 #if defined(OS_WIN)
   // kRGB24 on Windows start at the bottom line and has a negative stride. This
   // is not supported by libyuv, so the media API is used instead.
-  if (frame_info_.color == media::VideoCaptureCapability::kRGB24) {
+  if (frame_info_.color == media::PIXEL_FORMAT_RGB24) {
     // Rotation and flipping is not supported in kRGB24 and OS_WIN case.
     DCHECK(!rotation && !flip_vert && !flip_horiz);
     need_convert_rgb24_on_win = true;
@@ -394,8 +394,8 @@ void VideoCaptureController::OnIncomingCapturedFrame(
     int rotation,
     bool flip_vert,
     bool flip_horiz) {
-  DCHECK(frame_info_.color == media::VideoCaptureCapability::kI420 ||
-         frame_info_.color == media::VideoCaptureCapability::kYV12 ||
+  DCHECK(frame_info_.color == media::PIXEL_FORMAT_I420 ||
+         frame_info_.color == media::PIXEL_FORMAT_YV12 ||
          (rotation == 0 && !flip_vert && !flip_horiz));
 
   TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedFrame");
@@ -419,36 +419,37 @@ void VideoCaptureController::OnIncomingCapturedFrame(
 
   // Do color conversion from the camera format to I420.
   switch (frame_info_.color) {
-    case media::VideoCaptureCapability::kColorUnknown:  // Color format not set.
+    case media::PIXEL_FORMAT_UNKNOWN:  // Color format not set.
       break;
-    case media::VideoCaptureCapability::kI420:
+    case media::PIXEL_FORMAT_I420:
       DCHECK(!chopped_width_ && !chopped_height_);
       RotatePackedYV12Frame(
           data, yplane, uplane, vplane, frame_info_.width, frame_info_.height,
           rotation, flip_vert, flip_horiz);
       break;
-    case media::VideoCaptureCapability::kYV12:
+    case media::PIXEL_FORMAT_YV12:
       DCHECK(!chopped_width_ && !chopped_height_);
       RotatePackedYV12Frame(
           data, yplane, vplane, uplane, frame_info_.width, frame_info_.height,
           rotation, flip_vert, flip_horiz);
       break;
-    case media::VideoCaptureCapability::kNV21:
+    case media::PIXEL_FORMAT_NV21:
       DCHECK(!chopped_width_ && !chopped_height_);
       media::ConvertNV21ToYUV(data, yplane, uplane, vplane, frame_info_.width,
                               frame_info_.height);
       break;
-    case media::VideoCaptureCapability::kYUY2:
+    case media::PIXEL_FORMAT_YUY2:
       DCHECK(!chopped_width_ && !chopped_height_);
       if (frame_info_.width * frame_info_.height * 2 != length) {
         // If |length| of |data| does not match the expected width and height
         // we can't convert the frame to I420. YUY2 is 2 bytes per pixel.
         break;
       }
+
       media::ConvertYUY2ToYUV(data, yplane, uplane, vplane, frame_info_.width,
                               frame_info_.height);
       break;
-    case media::VideoCaptureCapability::kRGB24: {
+    case media::PIXEL_FORMAT_RGB24: {
       int ystride = frame_info_.width;
       int uvstride = frame_info_.width / 2;
       int rgb_stride = 3 * (frame_info_.width + chopped_width_);
@@ -458,7 +459,7 @@ void VideoCaptureController::OnIncomingCapturedFrame(
                                rgb_stride, ystride, uvstride);
       break;
     }
-    case media::VideoCaptureCapability::kARGB:
+    case media::PIXEL_FORMAT_ARGB:
       media::ConvertRGB32ToYUV(data, yplane, uplane, vplane, frame_info_.width,
                                frame_info_.height,
                                (frame_info_.width + chopped_width_) * 4,

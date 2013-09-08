@@ -10,7 +10,7 @@
 #include "content/common/content_export.h"
 
 namespace media {
-struct VideoCaptureCapability;
+class VideoCaptureCapability;
 }
 
 namespace content {

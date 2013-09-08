@@ -252,7 +252,7 @@ class VideoCaptureHostTest : public testing::Test {
     media::VideoCaptureParams params;
     params.width = 352;
     params.height = 288;
-    params.frame_per_second = 30;
+    params.frame_rate = 30;
     params.session_id = kTestFakeDeviceId;
     host_->OnStartCapture(kDeviceId, params);
     run_loop.Run();

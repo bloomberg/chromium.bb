@@ -119,8 +119,8 @@ class MockVideoCaptureManager : public VideoCaptureManager {
     media::VideoCaptureCapability capture_format(
         capture_params.width,
         capture_params.height,
-        capture_params.frame_per_second,
-        media::VideoCaptureCapability::kI420,
+        capture_params.frame_rate,
+        media::PIXEL_FORMAT_I420,
         0,
         false,
         media::ConstantResolutionVideoCaptureDevice);
@@ -184,7 +184,7 @@ TEST_F(VideoCaptureControllerTest, StartAndStop) {
   capture_params.session_id = vcm_->video_session_id_;
   capture_params.width = 320;
   capture_params.height = 240;
-  capture_params.frame_per_second = 30;
+  capture_params.frame_rate = 30;
 
   InSequence s;
   EXPECT_CALL(*vcm_.get(),
@@ -219,7 +219,7 @@ TEST_F(VideoCaptureControllerTest, StopSession) {
   capture_params.session_id = vcm_->video_session_id_;
   capture_params.width = 320;
   capture_params.height = 240;
-  capture_params.frame_per_second = 30;
+  capture_params.frame_rate = 30;
 
   InSequence s;
   EXPECT_CALL(*vcm_.get(),

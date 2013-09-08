@@ -260,7 +260,7 @@ void VideoCaptureManager::OnStart(
   DCHECK(video_capture_receiver != NULL);
   DVLOG(1) << "VideoCaptureManager::OnStart, (" << capture_params.width
            << ", " << capture_params.height
-           << ", " << capture_params.frame_per_second
+           << ", " << capture_params.frame_rate
            << ", " << capture_params.session_id
            << ")";
 
@@ -289,7 +289,7 @@ void VideoCaptureManager::OnStart(
   media::VideoCaptureCapability params_as_capability_copy;
   params_as_capability_copy.width = capture_params.width;
   params_as_capability_copy.height = capture_params.height;
-  params_as_capability_copy.frame_rate = capture_params.frame_per_second;
+  params_as_capability_copy.frame_rate = capture_params.frame_rate;
   params_as_capability_copy.session_id = capture_params.session_id;
   params_as_capability_copy.frame_size_type = capture_params.frame_size_type;
   video_capture_device->Allocate(params_as_capability_copy,

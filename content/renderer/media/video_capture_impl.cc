@@ -55,7 +55,7 @@ VideoCaptureImpl::VideoCaptureImpl(
       capture_message_loop_proxy_(capture_message_loop_proxy),
       io_message_loop_proxy_(ChildProcess::current()->io_message_loop_proxy()),
       device_id_(0),
-      video_type_(media::VideoCaptureCapability::kI420),
+      video_type_(media::PIXEL_FORMAT_I420),
       device_info_available_(false),
       suspended_(false),
       state_(VIDEO_CAPTURE_STATE_STOPPED) {
@@ -86,7 +86,7 @@ void VideoCaptureImpl::DeInit(base::Closure task) {
 void VideoCaptureImpl::StartCapture(
     media::VideoCapture::EventHandler* handler,
     const media::VideoCaptureCapability& capability) {
-  DCHECK_EQ(capability.color, media::VideoCaptureCapability::kI420);
+  DCHECK_EQ(capability.color, media::PIXEL_FORMAT_I420);
 
   capture_message_loop_proxy_->PostTask(FROM_HERE,
       base::Bind(&VideoCaptureImpl::DoStartCaptureOnCaptureThread,
@@ -438,7 +438,7 @@ void VideoCaptureImpl::StartCaptureInternal() {
   media::VideoCaptureParams capability_as_params_copy;
   capability_as_params_copy.width = capture_format_.width;
   capability_as_params_copy.height = capture_format_.height;
-  capability_as_params_copy.frame_per_second = capture_format_.frame_rate;
+  capability_as_params_copy.frame_rate = capture_format_.frame_rate;
   capability_as_params_copy.session_id = capture_format_.session_id;
   capability_as_params_copy.frame_size_type = capture_format_.frame_size_type;
   Send(new VideoCaptureHostMsg_Start(device_id_, capability_as_params_copy));

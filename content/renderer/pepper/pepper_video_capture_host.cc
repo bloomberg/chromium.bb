@@ -160,7 +160,7 @@ void PepperVideoCaptureHost::OnDeviceInfoReceived(
   PP_VideoCaptureDeviceInfo_Dev info = {
     static_cast<uint32_t>(device_info.width),
     static_cast<uint32_t>(device_info.height),
-    static_cast<uint32_t>(device_info.frame_per_second)
+    static_cast<uint32_t>(device_info.frame_rate)
   };
   ReleaseBuffers();
 
@@ -353,7 +353,7 @@ void PepperVideoCaptureHost::SetRequestedInfo(
   capability_.height = device_info.height;
   capability_.frame_rate = device_info.frames_per_second;
   capability_.expected_capture_delay = 0;  // Ignored.
-  capability_.color = media::VideoCaptureCapability::kI420;
+  capability_.color = media::PIXEL_FORMAT_I420;
   capability_.interlaced = false;  // Ignored.
 }
 

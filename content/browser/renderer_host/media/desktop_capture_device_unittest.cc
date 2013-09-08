@@ -132,7 +132,7 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
           InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureCapability capture_format(
-      640, 480, kFrameRate, media::VideoCaptureCapability::kI420, 0, false,
+      640, 480, kFrameRate, media::PIXEL_FORMAT_I420, 0, false,
       media::ConstantResolutionVideoCaptureDevice);
   capture_device.Allocate(capture_format, &frame_observer);
   capture_device.Start();
@@ -143,7 +143,7 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   EXPECT_GT(caps.width, 0);
   EXPECT_GT(caps.height, 0);
   EXPECT_EQ(kFrameRate, caps.frame_rate);
-  EXPECT_EQ(media::VideoCaptureCapability::kARGB, caps.color);
+  EXPECT_EQ(media::PIXEL_FORMAT_ARGB, caps.color);
   EXPECT_FALSE(caps.interlaced);
 
   EXPECT_EQ(caps.width * caps.height * 4, frame_size);
@@ -179,7 +179,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
       kTestFrameWidth1,
       kTestFrameHeight1,
       kFrameRate,
-      media::VideoCaptureCapability::kI420,
+      media::PIXEL_FORMAT_I420,
       0,
       false,
       media::ConstantResolutionVideoCaptureDevice);
@@ -199,7 +199,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
   EXPECT_EQ(kTestFrameWidth1, caps.width);
   EXPECT_EQ(kTestFrameHeight1, caps.height);
   EXPECT_EQ(kFrameRate, caps.frame_rate);
-  EXPECT_EQ(media::VideoCaptureCapability::kARGB, caps.color);
+  EXPECT_EQ(media::PIXEL_FORMAT_ARGB, caps.color);
   EXPECT_FALSE(caps.interlaced);
 
   EXPECT_EQ(caps.width * caps.height * 4, frame_size);
@@ -242,7 +242,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
       kTestFrameWidth2,
       kTestFrameHeight2,
       kFrameRate,
-      media::VideoCaptureCapability::kI420,
+      media::PIXEL_FORMAT_I420,
       0,
       false,
       media::VariableResolutionVideoCaptureDevice);
@@ -264,7 +264,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
   EXPECT_EQ(kTestFrameWidth1, caps.width);
   EXPECT_EQ(kTestFrameHeight1, caps.height);
   EXPECT_EQ(kFrameRate, caps.frame_rate);
-  EXPECT_EQ(media::VideoCaptureCapability::kARGB, caps.color);
+  EXPECT_EQ(media::PIXEL_FORMAT_ARGB, caps.color);
   EXPECT_FALSE(caps.interlaced);
 }
 
