@@ -86,7 +86,7 @@
 #include "config.h"
 #include "Threading.h"
 
-#if OS(WINDOWS)
+#if OS(WIN)
 
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
@@ -491,4 +491,4 @@ DWORD absoluteTimeToWaitTimeoutInterval(double absoluteTime)
 
 } // namespace WTF
 
-#endif // OS(WINDOWS)
+#endif // OS(WIN)

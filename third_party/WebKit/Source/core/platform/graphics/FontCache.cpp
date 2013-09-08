@@ -53,12 +53,12 @@ FontCache* fontCache()
     return &globalFontCache;
 }
 
-#if !OS(WINDOWS) || ENABLE(GDI_FONTS_ON_WINDOWS)
+#if !OS(WIN) || ENABLE(GDI_FONTS_ON_WINDOWS)
 FontCache::FontCache()
     : m_purgePreventCount(0)
 {
 }
-#endif // !OS(WINDOWS) || ENABLE(GDI_FONTS_ON_WINDOWS)
+#endif // !OS(WIN) || ENABLE(GDI_FONTS_ON_WINDOWS)
 
 struct FontPlatformDataCacheKey {
     WTF_MAKE_FAST_ALLOCATED;
@@ -136,7 +136,7 @@ static const AtomicString& alternateFamilyName(const AtomicString& familyName)
     DEFINE_STATIC_LOCAL(AtomicString, courierNew, ("Courier New", AtomicString::ConstructFromLiteral));
     if (equalIgnoringCase(familyName, courier))
         return courierNew;
-#if !OS(WINDOWS)
+#if !OS(WIN)
     // On Windows, Courier New (truetype font) is always present and
     // Courier is a bitmap font. So, we don't want to map Courier New to
     // Courier.
@@ -160,7 +160,7 @@ static const AtomicString& alternateFamilyName(const AtomicString& familyName)
     if (equalIgnoringCase(familyName, helvetica))
         return arial;
 
-#if OS(WINDOWS)
+#if OS(WIN)
     // On Windows, bitmap fonts are blocked altogether so that we have to
     // alias MS Sans Serif (bitmap font) -> Microsoft Sans Serif (truetype font)
     DEFINE_STATIC_LOCAL(AtomicString, msSans, ("MS Sans Serif", AtomicString::ConstructFromLiteral));
@@ -182,7 +182,7 @@ FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& 
                                                        const AtomicString& passedFamilyName,
                                                        bool checkingAlternateName)
 {
-#if OS(WINDOWS) && ENABLE(OPENTYPE_VERTICAL)
+#if OS(WIN) && ENABLE(OPENTYPE_VERTICAL)
     // Leading "@" in the font name enables Windows vertical flow flag for the font.
     // Because we do vertical flow by ourselves, we don't want to use the Windows feature.
     // IE disregards "@" regardless of the orientatoin, so we follow the behavior.

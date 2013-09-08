@@ -44,7 +44,7 @@ enum AutoscrollType {
     NoAutoscroll,
     AutoscrollForDragAndDrop,
     AutoscrollForSelection,
-#if OS(WINDOWS)
+#if OS(WIN)
     AutoscrollForPanCanStop,
     AutoscrollForPan,
 #endif
@@ -62,7 +62,7 @@ public:
     void stopAutoscrollIfNeeded(RenderObject*);
     void updateAutoscrollRenderer();
     void updateDragAndDrop(Node* targetNode, const IntPoint& eventPosition, double eventTime);
-#if OS(WINDOWS)
+#if OS(WIN)
     void handleMouseReleaseForPanScrolling(Frame*, const PlatformMouseEvent&);
     void startPanScrolling(RenderBox*, const IntPoint&);
 #endif
@@ -71,7 +71,7 @@ private:
     AutoscrollController();
     void autoscrollTimerFired(Timer<AutoscrollController>*);
     void startAutoscrollTimer();
-#if OS(WINDOWS)
+#if OS(WIN)
     void updatePanScrollState(FrameView*, const IntPoint&);
 #endif
 
@@ -80,7 +80,7 @@ private:
     AutoscrollType m_autoscrollType;
     IntPoint m_dragAndDropAutoscrollReferencePosition;
     double m_dragAndDropAutoscrollStartTime;
-#if OS(WINDOWS)
+#if OS(WIN)
     IntPoint m_panScrollStartPos;
 #endif
 };

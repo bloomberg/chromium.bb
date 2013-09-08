@@ -34,7 +34,7 @@
 #include <sys/sysctl.h>
 #elif OS(LINUX)
 #include <unistd.h>
-#elif OS(WINDOWS)
+#elif OS(WIN)
 #include "wtf/UnusedParam.h"
 #include <windows.h>
 #endif
@@ -63,7 +63,7 @@ int numberOfProcessorCores()
     long sysconfResult = sysconf(_SC_NPROCESSORS_ONLN);
 
     s_numberOfCores = sysconfResult < 0 ? defaultIfUnavailable : static_cast<int>(sysconfResult);
-#elif OS(WINDOWS)
+#elif OS(WIN)
     UNUSED_PARAM(defaultIfUnavailable);
     SYSTEM_INFO sysInfo;
     GetSystemInfo(&sysInfo);

@@ -37,7 +37,7 @@
 #include <arpa/inet.h>
 #endif
 
-#if OS(WINDOWS)
+#if OS(WIN)
 
 namespace WTF {
 inline uint32_t wswap32(uint32_t x) { return ((x & 0xffff0000) >> 16) | ((x & 0x0000ffff) << 16); }
@@ -62,6 +62,6 @@ inline uint32_t ntohl(uint32_t x) { return WTF::bswap32(x); }
 inline uint32_t htonl(uint32_t x) { return WTF::bswap32(x); }
 #endif
 
-#endif // OS(WINDOWS)
+#endif // OS(WIN)
 
 #endif // WTF_ByteOrder_h

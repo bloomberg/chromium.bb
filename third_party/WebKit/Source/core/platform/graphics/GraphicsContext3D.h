@@ -43,7 +43,7 @@
 #include "wtf/text/WTFString.h"
 
 // FIXME: Find a better way to avoid the name confliction for NO_ERROR.
-#if OS(WINDOWS)
+#if OS(WIN)
 #undef NO_ERROR
 #endif
 

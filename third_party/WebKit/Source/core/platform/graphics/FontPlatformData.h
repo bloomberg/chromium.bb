@@ -23,7 +23,7 @@
  */
 
 // FIXME: This is temporary until all ports switch to using this file.
-#if OS(WINDOWS)
+#if OS(WIN)
 #include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
 #elif OS(UNIX) && !OS(MACOSX)
 #include "core/platform/graphics/harfbuzz/FontPlatformDataHarfBuzz.h"

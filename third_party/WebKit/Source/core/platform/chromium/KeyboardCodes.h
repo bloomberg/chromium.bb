@@ -31,7 +31,7 @@
 #ifndef KeyboardCodes_h
 #define KeyboardCodes_h
 
-#if OS(WINDOWS)
+#if OS(WIN)
 #include <windows.h>
 #endif
 

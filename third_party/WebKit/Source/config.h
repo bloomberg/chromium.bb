@@ -76,9 +76,9 @@
 #define WTF_OS_OPENBSD 1
 #endif
 
-/* OS(WINDOWS) - Any version of Windows */
+/* OS(WIN) - Any version of Windows */
 #if defined(WIN32) || defined(_WIN32)
-#define WTF_OS_WINDOWS 1
+#define WTF_OS_WIN 1
 #endif
 
 /* OS(UNIX) - Any Unix-like system */
@@ -133,7 +133,7 @@
 #endif
 #endif
 
-#if !OS(WINDOWS) && !OS(ANDROID)
+#if !OS(WIN) && !OS(ANDROID)
 #define HAVE_TM_GMTOFF 1
 #define HAVE_TM_ZONE 1
 #define HAVE_TIMEGM 1
@@ -144,7 +144,7 @@
 #define HAVE_PTHREAD_SETNAME_NP 1
 #endif /* OS(MACOSX) */
 
-#if OS(WINDOWS)
+#if OS(WIN)
 
 // If we don't define these, they get defined in windef.h.
 // We want to use std::min and std::max.
@@ -155,7 +155,7 @@
 #define min min
 #endif
 
-#endif /* OS(WINDOWS) */
+#endif /* OS(WIN) */
 
 #ifdef __cplusplus
 

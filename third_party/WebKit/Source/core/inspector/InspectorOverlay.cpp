@@ -641,7 +641,7 @@ Page* InspectorOverlay::overlayPage()
     v8::Handle<v8::Object> global = frameContext->Global();
     global->Set(v8::String::New("InspectorOverlayHost"), overlayHostObj);
 
-#if OS(WINDOWS)
+#if OS(WIN)
     evaluateInOverlay("setPlatform", "windows");
 #elif OS(MACOSX)
     evaluateInOverlay("setPlatform", "mac");

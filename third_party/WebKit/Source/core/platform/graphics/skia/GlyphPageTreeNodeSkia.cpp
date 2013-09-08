@@ -50,7 +50,7 @@ bool GlyphPage::fill(unsigned offset, unsigned length, UChar* buffer, unsigned b
     fontData->platformData().setupPaint(&paint);
     paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
 
-#if OS(WINDOWS)
+#if OS(WIN)
     // FIXME: For some reason SkAutoSTMalloc fails to link on Windows.
     // SkAutoSTArray works fine though...
     SkAutoSTArray<GlyphPage::size, uint16_t> glyphStorage(length);

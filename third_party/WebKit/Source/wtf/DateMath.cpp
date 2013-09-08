@@ -86,7 +86,7 @@
 #include <time.h>
 #include "wtf/text/StringBuilder.h"
 
-#if OS(WINDOWS)
+#if OS(WIN)
 #include <windows.h>
 #endif
 
@@ -359,7 +359,7 @@ int equivalentYearForDST(int year)
 
 int32_t calculateUTCOffset()
 {
-#if OS(WINDOWS)
+#if OS(WIN)
     TIME_ZONE_INFORMATION timeZoneInformation;
     GetTimeZoneInformation(&timeZoneInformation);
     int32_t bias = timeZoneInformation.Bias + timeZoneInformation.StandardBias;
@@ -475,7 +475,7 @@ static inline double ymdhmsToSeconds(int year, long mon, long day, long hour, lo
 // We follow the recommendation of RFC 2822 to consider all
 // obsolete time zones not listed here equivalent to "-0000".
 static const struct KnownZone {
-#if !OS(WINDOWS)
+#if !OS(WIN)
     const
 #endif
         char tzName[4];

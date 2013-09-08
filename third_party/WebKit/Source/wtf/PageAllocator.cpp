@@ -47,7 +47,7 @@
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 
-#elif OS(WINDOWS)
+#elif OS(WIN)
 
 #include <windows.h>
 
@@ -146,7 +146,7 @@ char* getRandomSuperPageBase()
     random |= static_cast<uintptr_t>(cryptographicallyRandomNumber());
     // This address mask gives a low liklihood of address space collisions.
     // We handle the situation gracefully if there is a collision.
-#if OS(WINDOWS)
+#if OS(WIN)
     // 64-bit Windows has a bizarrely small 8TB user address space.
     // Allocates in the 1-5TB region.
     random &= (0x3ffffffffffUL & kSuperPageBaseMask);

@@ -180,7 +180,7 @@ WTF_EXPORT void WTFInstallReportBacktraceOnCrashHook();
   These macros are compiled out of release builds.
   Expressions inside them are evaluated in debug builds only.
 */
-#if OS(WINDOWS)
+#if OS(WIN)
 /* FIXME: Change to use something other than ASSERT to avoid this conflict with the underlying platform */
 #undef ASSERT
 #endif

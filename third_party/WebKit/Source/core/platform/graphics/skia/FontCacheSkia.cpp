@@ -48,7 +48,7 @@ void FontCache::platformInit()
 {
 }
 
-#if !OS(WINDOWS)
+#if !OS(WIN)
 PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, UChar32 c)
 {
     icu::Locale locale = icu::Locale::getDefault();
@@ -149,7 +149,7 @@ SkTypeface* FontCache::createTypeface(const FontDescription& fontDescription, co
         style |= SkTypeface::kItalic;
 
     // FIXME: Use SkFontStyle and matchFamilyStyle instead of legacyCreateTypeface.
-#if OS(WINDOWS) && !ENABLE(GDI_FONTS_ON_WINDOWS)
+#if OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS)
     if (m_fontManager)
         return m_fontManager->legacyCreateTypeface(name.data(), style);
 #endif
@@ -157,7 +157,7 @@ SkTypeface* FontCache::createTypeface(const FontDescription& fontDescription, co
     return SkTypeface::CreateFromName(name.data(), static_cast<SkTypeface::Style>(style));
 }
 
-#if !OS(WINDOWS)
+#if !OS(WIN)
 FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family)
 {
     CString name;

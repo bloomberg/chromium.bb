@@ -1283,7 +1283,7 @@ WebString WebFrameImpl::selectionAsText() const
         return WebString();
 
     String text = range->text();
-#if OS(WINDOWS)
+#if OS(WIN)
     replaceNewlinesWithWindowsStyleNewlines(text);
 #endif
     replaceNBSPWithSpace(text);

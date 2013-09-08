@@ -22,7 +22,7 @@
 #include "config.h"
 #include "ThreadSpecific.h"
 
-#if OS(WINDOWS)
+#if OS(WIN)
 
 #include "StdLibExtras.h"
 #include "ThreadingPrimitives.h"
@@ -132,4 +132,4 @@ void ThreadSpecificThreadExit()
 
 } // namespace WTF
 
-#endif // OS(WINDOWS)
+#endif // OS(WIN)

@@ -82,7 +82,7 @@ void Pasteboard::writeSelection(Range* selectedRange, bool canSmartCopyOrDelete,
     String html = createMarkup(selectedRange, 0, AnnotateForInterchange, false, ResolveNonLocalURLs);
     KURL url = selectedRange->startContainer()->document().url();
     String plainText = text;
-#if OS(WINDOWS)
+#if OS(WIN)
     replaceNewlinesWithWindowsStyleNewlines(plainText);
 #endif
     replaceNBSPWithSpace(plainText);
@@ -93,7 +93,7 @@ void Pasteboard::writeSelection(Range* selectedRange, bool canSmartCopyOrDelete,
 void Pasteboard::writePlainText(const String& text, SmartReplaceOption)
 {
     // FIXME: add support for smart replace
-#if OS(WINDOWS)
+#if OS(WIN)
     String plainText(text);
     replaceNewlinesWithWindowsStyleNewlines(plainText);
     WebKit::Platform::current()->clipboard()->writePlainText(plainText);

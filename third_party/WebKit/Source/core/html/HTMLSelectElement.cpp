@@ -1059,7 +1059,7 @@ void HTMLSelectElement::reset()
     setNeedsValidityCheck();
 }
 
-#if !OS(WINDOWS)
+#if !OS(WIN)
 bool HTMLSelectElement::platformHandleKeydownEvent(KeyboardEvent* event)
 {
     if (!RenderTheme::theme().popsMenuByArrowKeys())

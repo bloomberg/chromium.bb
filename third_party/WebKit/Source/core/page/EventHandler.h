@@ -99,7 +99,7 @@ public:
     Node* mousePressNode() const;
     void setMousePressNode(PassRefPtr<Node>);
 
-#if OS(WINDOWS)
+#if OS(WIN)
     void startPanScrolling(RenderObject*);
 #endif
 

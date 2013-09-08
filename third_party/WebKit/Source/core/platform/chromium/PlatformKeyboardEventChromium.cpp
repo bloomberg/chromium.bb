@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/platform/PlatformKeyboardEvent.h"
 
-#if OS(WINDOWS)
+#if OS(WIN)
 #include <windows.h>
 #elif OS(MACOSX)
 #import <Carbon/Carbon.h>
@@ -37,13 +37,13 @@
 
 namespace WebCore {
 
-#if OS(WINDOWS)
+#if OS(WIN)
 static const unsigned short HIGH_BIT_MASK_SHORT = 0x8000;
 #endif
 
 void PlatformKeyboardEvent::disambiguateKeyDownEvent(Type type)
 {
-#if OS(WINDOWS)
+#if OS(WIN)
     // No KeyDown events on Windows to disambiguate.
     ASSERT_NOT_REACHED();
 #else
@@ -73,7 +73,7 @@ void PlatformKeyboardEvent::disambiguateKeyDownEvent(Type type)
 
 bool PlatformKeyboardEvent::currentCapsLockState()
 {
-#if OS(WINDOWS)
+#if OS(WIN)
     // FIXME: Does this even work inside the sandbox?
     return GetKeyState(VK_CAPITAL) & 1;
 #elif OS(MACOSX)
@@ -86,7 +86,7 @@ bool PlatformKeyboardEvent::currentCapsLockState()
 
 void PlatformKeyboardEvent::getCurrentModifierState(bool& shiftKey, bool& ctrlKey, bool& altKey, bool& metaKey)
 {
-#if OS(WINDOWS)
+#if OS(WIN)
     shiftKey = GetKeyState(VK_SHIFT) & HIGH_BIT_MASK_SHORT;
     ctrlKey = GetKeyState(VK_CONTROL) & HIGH_BIT_MASK_SHORT;
     altKey = GetKeyState(VK_MENU) & HIGH_BIT_MASK_SHORT;

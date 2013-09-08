@@ -48,13 +48,13 @@
 
 #if USE(PTHREADS)
 #include <pthread.h>
-#elif OS(WINDOWS)
+#elif OS(WIN)
 #include <windows.h>
 #endif
 
 namespace WTF {
 
-#if OS(WINDOWS)
+#if OS(WIN)
 // ThreadSpecificThreadExit should be called each time when a thread is detached.
 // This is done automatically for threads created with WTF::createThread.
 WTF_EXPORT void ThreadSpecificThreadExit();
@@ -70,7 +70,7 @@ public:
     T& operator*();
 
 private:
-#if OS(WINDOWS)
+#if OS(WIN)
     WTF_EXPORT friend void ThreadSpecificThreadExit();
 #endif
 
@@ -91,14 +91,14 @@ private:
 
         T* value;
         ThreadSpecific<T>* owner;
-#if OS(WINDOWS)
+#if OS(WIN)
         void (*destructor)(void*);
 #endif
     };
 
 #if USE(PTHREADS)
     pthread_key_t m_key;
-#elif OS(WINDOWS)
+#elif OS(WIN)
     int m_index;
 #endif
 };
@@ -153,7 +153,7 @@ inline void ThreadSpecific<T>::set(T* ptr)
     pthread_setspecific(m_key, new Data(ptr, this));
 }
 
-#elif OS(WINDOWS)
+#elif OS(WIN)
 
 // TLS_OUT_OF_INDEXES is not defined on WinCE.
 #ifndef TLS_OUT_OF_INDEXES
@@ -233,7 +233,7 @@ inline void ThreadSpecific<T>::destroy(void* ptr)
 
 #if USE(PTHREADS)
     pthread_setspecific(data->owner->m_key, 0);
-#elif OS(WINDOWS)
+#elif OS(WIN)
     TlsSetValue(tlsKeys()[data->owner->m_index], 0);
 #else
 #error ThreadSpecific is not implemented for this platform.

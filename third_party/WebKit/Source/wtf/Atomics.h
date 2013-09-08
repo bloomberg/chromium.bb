@@ -33,7 +33,7 @@
 #include "wtf/CPU.h"
 #include <stdint.h>
 
-#if OS(WINDOWS)
+#if OS(WIN)
 #include <windows.h>
 #elif OS(ANDROID)
 #include <sys/atomics.h>
@@ -41,7 +41,7 @@
 
 namespace WTF {
 
-#if OS(WINDOWS)
+#if OS(WIN)
 
 ALWAYS_INLINE int atomicIncrement(int volatile* addend) { return InterlockedIncrement(reinterpret_cast<long volatile*>(addend)); }
 ALWAYS_INLINE int atomicDecrement(int volatile* addend) { return InterlockedDecrement(reinterpret_cast<long volatile*>(addend)); }

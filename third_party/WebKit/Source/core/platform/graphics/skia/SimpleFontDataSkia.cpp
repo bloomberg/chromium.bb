@@ -40,7 +40,7 @@
 #include "core/platform/graphics/chromium/VDMXParser.h"
 #include "wtf/unicode/Unicode.h"
 
-#if OS(WINDOWS)
+#if OS(WIN)
 #include "core/platform/win/HWndDC.h"
 #endif
 
@@ -132,7 +132,7 @@ void SimpleFontData::platformInit()
     // In WebKit/WebCore/platform/graphics/SimpleFontData.cpp, m_spaceWidth is
     // calculated for us, but we need to calculate m_maxCharWidth and
     // m_avgCharWidth in order for text entry widgets to be sized correctly.
-#if OS(WINDOWS)
+#if OS(WIN)
     m_maxCharWidth = SkScalarRound(metrics.fMaxCharWidth);
 #else
     // FIXME: This seems incorrect and should probably use fMaxCharWidth as

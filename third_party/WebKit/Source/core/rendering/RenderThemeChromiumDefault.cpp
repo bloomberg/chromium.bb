@@ -101,7 +101,7 @@ Color RenderThemeChromiumDefault::systemColor(CSSValueID cssValueId) const
 
 String RenderThemeChromiumDefault::extraDefaultStyleSheet()
 {
-#if !OS(WINDOWS)
+#if !OS(WIN)
     return RenderTheme::extraDefaultStyleSheet() +
         RenderThemeChromiumSkia::extraDefaultStyleSheet() +
         String(themeChromiumLinuxUserAgentStyleSheet, sizeof(themeChromiumLinuxUserAgentStyleSheet));

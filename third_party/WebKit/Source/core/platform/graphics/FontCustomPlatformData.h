@@ -38,7 +38,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
-#if OS(WINDOWS) && ENABLE(GDI_FONTS_ON_WINDOWS)
+#if OS(WIN) && ENABLE(GDI_FONTS_ON_WINDOWS)
 #include <windows.h>
 #endif
 
@@ -48,7 +48,7 @@
 typedef struct CGFont* CGFontRef;
 #endif
 
-#if OS(MACOSX) || OS(UNIX) || (OS(WINDOWS) && !ENABLE(GDI_FONTS_ON_WINDOWS))
+#if OS(MACOSX) || OS(UNIX) || (OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS))
 #include "wtf/RefPtr.h"
 class SkTypeface;
 #endif
@@ -69,7 +69,7 @@ public:
     static bool supportsFormat(const String&);
 
 private:
-#if OS(WINDOWS) && ENABLE(GDI_FONTS_ON_WINDOWS)
+#if OS(WIN) && ENABLE(GDI_FONTS_ON_WINDOWS)
     FontCustomPlatformData(HANDLE fontReference, const String& name);
     HANDLE m_fontReference;
     String m_name;
@@ -77,7 +77,7 @@ private:
     explicit FontCustomPlatformData(CGFontRef, PassRefPtr<SkTypeface>);
     RetainPtr<CGFontRef> m_cgFont;
     RefPtr<SkTypeface> m_typeface;
-#elif OS(UNIX) || (OS(WINDOWS) && !ENABLE(GDI_FONTS_ON_WINDOWS))
+#elif OS(UNIX) || (OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS))
     explicit FontCustomPlatformData(PassRefPtr<SkTypeface>);
     RefPtr<SkTypeface> m_typeface;
 #endif

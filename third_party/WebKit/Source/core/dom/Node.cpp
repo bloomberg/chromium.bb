@@ -2442,7 +2442,7 @@ void Node::defaultEventHandler(Event* event)
         if (event->hasInterface(eventNames().interfaceForTextEvent))
             if (Frame* frame = document().frame())
                 frame->eventHandler()->defaultTextInputEventHandler(static_cast<TextEvent*>(event));
-#if OS(WINDOWS)
+#if OS(WIN)
     } else if (eventType == eventNames().mousedownEvent && event->isMouseEvent()) {
         MouseEvent* mouseEvent = toMouseEvent(event);
         if (mouseEvent->button() == MiddleButton) {

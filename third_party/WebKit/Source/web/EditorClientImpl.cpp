@@ -593,7 +593,7 @@ bool EditorClientImpl::handleEditingKeyboardEvent(KeyboardEvent* evt)
         // unexpected behaviour
         if (ch < ' ')
             return false;
-#if !OS(WINDOWS)
+#if !OS(WIN)
         // Don't insert ASCII character if ctrl w/o alt or meta is on.
         // On Mac, we should ignore events when meta is on (Command-<x>).
         if (ch < 0x80) {

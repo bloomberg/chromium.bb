@@ -206,7 +206,7 @@ void Page::updateDragAndDrop(Node* dropTargetNode, const IntPoint& eventPosition
     m_autoscrollController->updateDragAndDrop(dropTargetNode, eventPosition, eventTime);
 }
 
-#if OS(WINDOWS)
+#if OS(WIN)
 void Page::handleMouseReleaseForPanScrolling(Frame* frame, const PlatformMouseEvent& point)
 {
     m_autoscrollController->handleMouseReleaseForPanScrolling(frame, point);

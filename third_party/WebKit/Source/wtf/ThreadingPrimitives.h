@@ -37,7 +37,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/WTFExport.h"
 
-#if OS(WINDOWS)
+#if OS(WIN)
 #include <windows.h>
 #endif
 
@@ -50,7 +50,7 @@ namespace WTF {
 #if USE(PTHREADS)
 typedef pthread_mutex_t PlatformMutex;
 typedef pthread_cond_t PlatformCondition;
-#elif OS(WINDOWS)
+#elif OS(WIN)
 struct PlatformMutex {
     CRITICAL_SECTION m_internalMutex;
     size_t m_recursionCount;
@@ -123,7 +123,7 @@ private:
     PlatformCondition m_condition;
 };
 
-#if OS(WINDOWS)
+#if OS(WIN)
 // The absoluteTime is in seconds, starting on January 1, 1970. The time is assumed to use the same time zone as WTF::currentTime().
 // Returns an interval in milliseconds suitable for passing to one of the Win32 wait functions (e.g., ::WaitForSingleObject).
 DWORD absoluteTimeToWaitTimeoutInterval(double absoluteTime);
@@ -136,7 +136,7 @@ using WTF::MutexLocker;
 using WTF::MutexTryLocker;
 using WTF::ThreadCondition;
 
-#if OS(WINDOWS)
+#if OS(WIN)
 using WTF::absoluteTimeToWaitTimeoutInterval;
 #endif
 

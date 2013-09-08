@@ -38,7 +38,7 @@ using namespace WebCore;
 
 namespace {
 
-#if OS(WINDOWS)
+#if OS(WIN)
 const char invalidCharacters[] = "\x00/\\:*?\"<>|";
 #else
 const char invalidCharacters[] =

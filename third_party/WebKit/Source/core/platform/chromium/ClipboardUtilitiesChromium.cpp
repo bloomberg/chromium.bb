@@ -46,7 +46,7 @@ WebKit::WebClipboard::Buffer currentPasteboardBuffer()
         WebKit::WebClipboard::BufferStandard;
 }
 
-#if OS(WINDOWS)
+#if OS(WIN)
 void replaceNewlinesWithWindowsStyleNewlines(String& str)
 {
     DEFINE_STATIC_LOCAL(String, windowsNewline, ("\r\n"));

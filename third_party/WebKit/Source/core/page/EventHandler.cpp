@@ -864,7 +864,7 @@ bool EventHandler::handleMouseReleaseEvent(const MouseEventWithHitTestResults& e
     return handled;
 }
 
-#if OS(WINDOWS)
+#if OS(WIN)
 
 void EventHandler::startPanScrolling(RenderObject* renderer)
 {
@@ -877,7 +877,7 @@ void EventHandler::startPanScrolling(RenderObject* renderer)
     invalidateClick();
 }
 
-#endif // OS(WINDOWS)
+#endif // OS(WIN)
 
 bool EventHandler::panScrollInProgress() const
 {
@@ -1107,7 +1107,7 @@ OptionalCursor EventHandler::selectCursor(const MouseEventWithHitTestResults& ev
     Page* page = m_frame->page();
     if (!page)
         return NoCursorChange;
-#if OS(WINDOWS)
+#if OS(WIN)
     if (panScrollInProgress())
         return NoCursorChange;
 #endif
@@ -1322,7 +1322,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
         return true;
     }
 
-#if OS(WINDOWS)
+#if OS(WIN)
     // We store whether pan scrolling is in progress before calling stopAutoscrollTimer()
     // because it will set m_autoscrollType to NoAutoscroll on return.
     bool isPanScrollInProgress = panScrollInProgress();
@@ -1617,7 +1617,7 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
     else
         gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingUserGesture));
 
-#if OS(WINDOWS)
+#if OS(WIN)
     if (Page* page = m_frame->page())
         page->handleMouseReleaseForPanScrolling(m_frame, mouseEvent);
 #endif
@@ -2732,7 +2732,7 @@ bool EventHandler::sendContextMenuEventForKey()
 
     static const int kContextMenuMargin = 1;
 
-#if OS(WINDOWS)
+#if OS(WIN)
     int rightAligned = ::GetSystemMetrics(SM_MENUDROPALIGNMENT);
 #else
     int rightAligned = 0;
@@ -2780,7 +2780,7 @@ bool EventHandler::sendContextMenuEventForKey()
     // The contextmenu event is a mouse event even when invoked using the keyboard.
     // This is required for web compatibility.
 
-#if OS(WINDOWS)
+#if OS(WIN)
     PlatformEvent::Type eventType = PlatformEvent::MouseReleased;
 #else
     PlatformEvent::Type eventType = PlatformEvent::MousePressed;
@@ -2793,7 +2793,7 @@ bool EventHandler::sendContextMenuEventForKey()
 
 bool EventHandler::sendContextMenuEventForGesture(const PlatformGestureEvent& event)
 {
-#if OS(WINDOWS)
+#if OS(WIN)
     PlatformEvent::Type eventType = PlatformEvent::MouseReleased;
 #else
     PlatformEvent::Type eventType = PlatformEvent::MousePressed;
@@ -2969,7 +2969,7 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     if (initialKeyEvent.windowsVirtualKeyCode() == VK_CAPITAL)
         capsLockStateMayHaveChanged();
 
-#if OS(WINDOWS)
+#if OS(WIN)
     if (panScrollInProgress()) {
         // If a key is pressed while the panScroll is in progress then we want to stop
         if (initialKeyEvent.type() == PlatformEvent::KeyDown || initialKeyEvent.type() == PlatformEvent::RawKeyDown)

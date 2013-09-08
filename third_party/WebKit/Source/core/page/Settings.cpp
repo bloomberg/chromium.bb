@@ -90,7 +90,7 @@ static EditingBehaviorType editingBehaviorTypeForPlatform()
     return
 #if OS(MACOSX)
     EditingMacBehavior
-#elif OS(WINDOWS)
+#elif OS(WIN)
     EditingWindowsBehavior
 #elif OS(ANDROID)
     EditingAndroidBehavior
@@ -109,7 +109,7 @@ static const bool defaultSmartInsertDeleteEnabled = true;
 #else
 static const bool defaultSmartInsertDeleteEnabled = false;
 #endif
-#if OS(WINDOWS)
+#if OS(WIN)
 static const bool defaultSelectTrailingWhitespaceEnabled = true;
 #else
 static const bool defaultSelectTrailingWhitespaceEnabled = false;

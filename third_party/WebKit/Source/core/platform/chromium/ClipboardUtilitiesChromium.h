@@ -39,7 +39,7 @@ namespace WebCore {
 class KURL;
 
 WebKit::WebClipboard::Buffer currentPasteboardBuffer();
-#if OS(WINDOWS)
+#if OS(WIN)
 void replaceNewlinesWithWindowsStyleNewlines(String&);
 #endif
 void replaceNBSPWithSpace(String&);

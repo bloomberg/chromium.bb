@@ -58,7 +58,7 @@
 #include <crtdbg.h>
 #endif
 
-#if OS(WINDOWS)
+#if OS(WIN)
 #include <windows.h>
 #define HAVE_ISDEBUGGERPRESENT 1
 #endif
@@ -78,7 +78,7 @@ extern "C" {
 WTF_ATTRIBUTE_PRINTF(1, 0)
 static void vprintf_stderr_common(const char* format, va_list args)
 {
-#if USE(CF) && !OS(WINDOWS)
+#if USE(CF) && !OS(WIN)
     if (strstr(format, "%@")) {
         CFStringRef cfFormat = CFStringCreateWithCString(NULL, format, kCFStringEncodingUTF8);
 
@@ -189,7 +189,7 @@ static void printf_stderr_common(const char* format, ...)
 
 static void printCallSite(const char* file, int line, const char* function)
 {
-#if OS(WINDOWS) && defined(_DEBUG)
+#if OS(WIN) && defined(_DEBUG)
     _CrtDbgReport(_CRT_WARN, file, line, NULL, "%s\n", function);
 #else
     // By using this format, which matches the format used by MSVC for compiler errors, developers
@@ -228,7 +228,7 @@ void WTFGetBacktrace(void** stack, int* size)
 {
 #if (OS(MACOSX) || (OS(LINUX) && !defined(__UCLIBC__))) && !OS(ANDROID)
     *size = backtrace(stack, *size);
-#elif OS(WINDOWS)
+#elif OS(WIN)
     // The CaptureStackBackTrace function is available in XP, but it is not defined
     // in the Windows Server 2003 R2 Platform SDK. So, we'll grab the function
     // through GetProcAddress.

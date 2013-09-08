@@ -78,7 +78,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
-#if OS(WINDOWS)
+#if OS(WIN)
 #include <windows.h>
 #endif
 
@@ -916,7 +916,7 @@ DragOperation DragController::dragOperation(DragData* dragData)
 bool DragController::isCopyKeyDown(DragData*)
 {
     // FIXME: This should not be OS specific.  Delegate to the embedder instead.
-#if OS(WINDOWS)
+#if OS(WIN)
     return ::GetAsyncKeyState(VK_CONTROL);
 #else
     return false;

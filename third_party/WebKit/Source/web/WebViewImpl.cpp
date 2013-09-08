@@ -169,7 +169,7 @@
 #include "core/rendering/RenderThemeChromiumDefault.h"
 #endif
 
-#if OS(WINDOWS)
+#if OS(WIN)
 #if !ENABLE(DEFAULT_RENDER_THEME)
 #include "core/rendering/RenderThemeChromiumWin.h"
 #endif
@@ -581,7 +581,7 @@ void WebViewImpl::mouseContextMenu(const WebMouseEvent& event)
     else
         targetFrame = m_page->focusController().focusedOrMainFrame();
 
-#if OS(WINDOWS)
+#if OS(WIN)
     targetFrame->view()->setCursor(pointerCursor());
 #endif
 
@@ -596,7 +596,7 @@ void WebViewImpl::handleMouseUp(Frame& mainFrame, const WebMouseEvent& event)
 {
     PageWidgetEventHandler::handleMouseUp(mainFrame, event);
 
-#if OS(WINDOWS)
+#if OS(WIN)
     // Dispatch the contextmenu event regardless of if the click was swallowed.
     // On Mac/Linux, we handle it on mouse down, not up.
     if (event.button == WebMouseEvent::ButtonRight)
@@ -935,7 +935,7 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
 
 #if !OS(MACOSX)
     const WebInputEvent::Type contextMenuTriggeringEventType =
-#if OS(WINDOWS)
+#if OS(WIN)
         WebInputEvent::KeyUp;
 #elif OS(UNIX)
         WebInputEvent::RawKeyDown;

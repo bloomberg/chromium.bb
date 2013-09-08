@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/HTMLSelectElement.h"
 
-#if OS(WINDOWS)
+#if OS(WIN)
 
 #include "core/dom/Element.h"
 #include "core/dom/KeyboardEvent.h"

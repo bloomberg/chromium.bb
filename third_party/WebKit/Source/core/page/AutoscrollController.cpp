@@ -90,7 +90,7 @@ void AutoscrollController::stopAutoscrollTimer()
         return;
 
     scrollable->stopAutoscroll();
-#if OS(WINDOWS)
+#if OS(WIN)
     if (panScrollInProgress()) {
         if (FrameView* view = scrollable->frame()->view()) {
             view->removePanScrollIcon();
@@ -118,7 +118,7 @@ void AutoscrollController::updateAutoscrollRenderer()
 
     RenderObject* renderer = m_autoscrollRenderer;
 
-#if OS(WINDOWS)
+#if OS(WIN)
     HitTestResult hitTest = renderer->frame()->eventHandler()->hitTestResultAtPoint(m_panScrollStartPos, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
 
     if (Node* nodeAtPoint = hitTest.innerNode())
@@ -171,7 +171,7 @@ void AutoscrollController::updateDragAndDrop(Node* dropTargetNode, const IntPoin
     }
 }
 
-#if OS(WINDOWS)
+#if OS(WIN)
 void AutoscrollController::handleMouseReleaseForPanScrolling(Frame* frame, const PlatformMouseEvent& mouseEvent)
 {
     Page* page = frame->page();
@@ -237,7 +237,7 @@ void AutoscrollController::autoscrollTimerFired(Timer<AutoscrollController>*)
         break;
     case NoAutoscroll:
         break;
-#if OS(WINDOWS)
+#if OS(WIN)
     case AutoscrollForPanCanStop:
     case AutoscrollForPan:
         if (!panScrollInProgress()) {
@@ -257,7 +257,7 @@ void AutoscrollController::startAutoscrollTimer()
     m_autoscrollTimer.startRepeating(autoscrollInterval);
 }
 
-#if OS(WINDOWS)
+#if OS(WIN)
 void AutoscrollController::updatePanScrollState(FrameView* view, const IntPoint& lastKnownMousePosition)
 {
     // At the original click location we draw a 4 arrowed icon. Over this icon there won't be any scroll

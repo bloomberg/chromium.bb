@@ -42,7 +42,7 @@
 #include <algorithm>
 #include <stdint.h>
 
-#if OS(WINDOWS)
+#if OS(WIN)
 #include "windows.h"
 #else
 #include <errno.h>

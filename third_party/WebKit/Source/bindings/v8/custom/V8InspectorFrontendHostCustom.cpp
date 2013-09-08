@@ -52,7 +52,7 @@ void V8InspectorFrontendHost::platformMethodCustom(const v8::FunctionCallbackInf
     v8SetReturnValue(args, v8::String::NewSymbol("freebsd"));
 #elif OS(OPENBSD)
     v8SetReturnValue(args, v8::String::NewSymbol("openbsd"));
-#elif OS(WINDOWS)
+#elif OS(WIN)
     v8SetReturnValue(args, v8::String::NewSymbol("windows"));
 #else
     v8SetReturnValue(args, v8::String::NewSymbol("unknown"));
