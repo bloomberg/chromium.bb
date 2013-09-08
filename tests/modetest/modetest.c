@@ -707,6 +707,7 @@ struct plane_arg {
 	bool has_position;
 	int32_t x, y;
 	uint32_t w, h;
+	double scale;
 	unsigned int fb_id;
 	char format_str[5]; /* need to leave room for terminating \0 */
 	unsigned int fourcc;
@@ -988,16 +989,16 @@ static int set_plane(struct device *dev, struct plane_arg *p)
 		return -1;
 	}
 
+	crtc_w = p->w * p->scale;
+	crtc_h = p->h * p->scale;
 	if (!p->has_position) {
 		/* Default to the middle of the screen */
-		crtc_x = (crtc->mode->hdisplay - p->w) / 2;
-		crtc_y = (crtc->mode->vdisplay - p->h) / 2;
+		crtc_x = (crtc->mode->hdisplay - crtc_w) / 2;
+		crtc_y = (crtc->mode->vdisplay - crtc_h) / 2;
 	} else {
 		crtc_x = p->x;
 		crtc_y = p->y;
 	}
-	crtc_w = p->w;
-	crtc_h = p->h;
 
 	/* note src coords (last 4 args) are in Q16 format */
 	if (drmModeSetPlane(dev->fd, plane_id, crtc->crtc->crtc_id, p->fb_id,
@@ -1271,6 +1272,15 @@ static int parse_plane(struct plane_arg *plane, const char *p)
 		plane->has_position = true;
 	}
 
+	if (*end == '*') {
+		p = end + 1;
+		plane->scale = strtod(p, &end);
+		if (plane->scale <= 0.0)
+			return -EINVAL;
+	} else {
+		plane->scale = 1.0;
+	}
+
 	if (*end == '@') {
 		p = end + 1;
 		if (strlen(p) != 4)
@@ -1312,7 +1322,7 @@ static void usage(char *name)
 	fprintf(stderr, "\t-p\tlist CRTCs and planes (pipes)\n");
 
 	fprintf(stderr, "\n Test options:\n\n");
-	fprintf(stderr, "\t-P <crtc_id>:<w>x<h>[+<x>+<y>][@<format>]\tset a plane\n");
+	fprintf(stderr, "\t-P <crtc_id>:<w>x<h>[+<x>+<y>][*<scale>][@<format>]\tset a plane\n");
 	fprintf(stderr, "\t-s <connector_id>[,<connector_id>][@<crtc_id>]:<mode>[@<format>]\tset a mode\n");
 	fprintf(stderr, "\t-v\ttest vsynced page flipping\n");
 	fprintf(stderr, "\t-w <obj_id>:<prop_name>:<value>\tset property\n");
