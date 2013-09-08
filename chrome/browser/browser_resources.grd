@@ -378,6 +378,9 @@
         <include name="IDR_NETWORK_JS" file="resources\chromeos\network.js" type="BINDATA" />
         <include name="IDR_NETWORK_CSS" file="resources\chromeos\network.css" type="BINDATA" />
       </if>
+      <if expr="pp_ifdef('_google_chrome')">
+        <include name="IDR_PREF_HASH_SEED_BIN" file="resources\settings_internal\pref_hash_seed.bin" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>
