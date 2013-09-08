@@ -1676,6 +1676,7 @@
         'browser/ui/zoom/zoom_controller_unittest.cc',
         'browser/upload_list_unittest.cc',
         'browser/chrome_content_browser_client_unittest.cc',
+        'browser/undo/bookmark_undo_service_test.cc',
         'browser/undo/undo_manager_test.cc',
         'browser/usb/usb_context_unittest.cc',
         'browser/user_style_sheet_watcher_unittest.cc',
@@ -2546,6 +2547,10 @@
 
             # USB service is not supported on Android.
             'browser/usb/usb_context_unittest.cc',
+
+            # Bookmark undo is not used on Android.
+           'browser/undo/bookmark_undo_service_test.cc',
+           'browser/undo/undo_manager_test.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],
