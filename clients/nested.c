@@ -58,6 +58,8 @@ struct nested {
 	struct program *texture_program;
 
 	struct wl_list surface_list;
+
+	const struct nested_renderer *renderer;
 };
 
 struct nested_region {
@@ -79,12 +81,9 @@ struct nested_buffer_reference {
 
 struct nested_surface {
 	struct wl_resource *resource;
-	struct nested_buffer_reference buffer_ref;
 	struct nested *nested;
 	EGLImageKHR *image;
-	GLuint texture;
 	struct wl_list link;
-	cairo_surface_t *cairo_surface;
 
 	struct wl_list frame_callback_list;
 
@@ -100,12 +99,31 @@ struct nested_surface {
 		/* wl_surface.damage */
 		pixman_region32_t damage;
 	} pending;
+
+	void *renderer_data;
+};
+
+/* Data used for the blit renderer */
+struct nested_blit_surface {
+	struct nested_buffer_reference buffer_ref;
+	GLuint texture;
+	cairo_surface_t *cairo_surface;
 };
 
 struct nested_frame_callback {
 	struct wl_resource *resource;
 	struct wl_list link;
 };
+
+struct nested_renderer {
+	void (* surface_init)(struct nested_surface *surface);
+	void (* surface_fini)(struct nested_surface *surface);
+	void (* render_clients)(struct nested *nested, cairo_t *cr);
+	void (* surface_attach)(struct nested_surface *surface,
+				struct nested_buffer *buffer);
+};
+
+static const struct nested_renderer nested_blit_renderer;
 
 static PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
 static PFNEGLCREATEIMAGEKHRPROC create_image;
@@ -209,31 +227,12 @@ flush_surface_frame_callback_list(struct nested_surface *surface,
 }
 
 static void
-frame_callback(void *data, struct wl_callback *callback, uint32_t time)
-{
-	struct nested *nested = data;
-	struct nested_surface *surface;
-
-	wl_list_for_each(surface, &nested->surface_list, link)
-		flush_surface_frame_callback_list(surface, time);
-
-	if (callback)
-		wl_callback_destroy(callback);
-}
-
-static const struct wl_callback_listener frame_listener = {
-	frame_callback
-};
-
-static void
 redraw_handler(struct widget *widget, void *data)
 {
 	struct nested *nested = data;
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	struct rectangle allocation;
-	struct wl_callback *callback;
-	struct nested_surface *s;
 
 	widget_get_allocation(nested->widget, &allocation);
 
@@ -249,34 +248,11 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.8);
 	cairo_fill(cr);
 
-	wl_list_for_each(s, &nested->surface_list, link) {
-		display_acquire_window_surface(nested->display,
-					       nested->window, NULL);
-
-		glBindTexture(GL_TEXTURE_2D, s->texture);
-		image_target_texture_2d(GL_TEXTURE_2D, s->image);
-
-		display_release_window_surface(nested->display,
-					       nested->window);
-
-		cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-		cairo_set_source_surface(cr, s->cairo_surface,
-					 allocation.x + 10,
-					 allocation.y + 10);
-		cairo_rectangle(cr, allocation.x + 10,
-				allocation.y + 10,
-				allocation.width - 10,
-				allocation.height - 10);
-
-		cairo_fill(cr);
-	}
+	nested->renderer->render_clients(nested, cr);
 
 	cairo_destroy(cr);
 
 	cairo_surface_destroy(surface);
-
-	callback = wl_surface_frame(window_get_wl_surface(nested->window));
-	wl_callback_add_listener(callback, &frame_listener, nested);
 }
 
 static void
@@ -377,6 +353,7 @@ static void
 destroy_surface(struct wl_resource *resource)
 {
 	struct nested_surface *surface = wl_resource_get_user_data(resource);
+	struct nested *nested = surface->nested;
 	struct nested_frame_callback *cb, *next;
 
 	wl_list_for_each_safe(cb, next,
@@ -387,9 +364,9 @@ destroy_surface(struct wl_resource *resource)
 			      &surface->pending.frame_callback_list, link)
 		wl_resource_destroy(cb->resource);
 
-	nested_buffer_reference(&surface->buffer_ref, NULL);
-
 	pixman_region32_fini(&surface->pending.damage);
+
+	nested->renderer->surface_fini(surface);
 
 	wl_list_remove(&surface->link);
 
@@ -456,15 +433,9 @@ nested_surface_attach(struct nested_surface *surface,
 		      struct nested_buffer *buffer)
 {
 	struct nested *nested = surface->nested;
-	EGLint width, height;
-	cairo_device_t *device;
-
-	nested_buffer_reference(&surface->buffer_ref, buffer);
 
 	if (surface->image != EGL_NO_IMAGE_KHR)
 		destroy_image(nested->egl_display, surface->image);
-	if (surface->cairo_surface)
-		cairo_surface_destroy(surface->cairo_surface);
 
 	surface->image = create_image(nested->egl_display, NULL,
 				      EGL_WAYLAND_BUFFER_WL, buffer->resource,
@@ -474,17 +445,7 @@ nested_surface_attach(struct nested_surface *surface,
 		return;
 	}
 
-	query_buffer(nested->egl_display, (void *) buffer->resource,
-		     EGL_WIDTH, &width);
-	query_buffer(nested->egl_display, (void *) buffer->resource,
-		     EGL_HEIGHT, &height);
-
-	device = display_get_cairo_device(nested->display);
-	surface->cairo_surface = 
-		cairo_gl_surface_create_for_texture(device,
-						    CAIRO_CONTENT_COLOR_ALPHA,
-						    surface->texture,
-						    width, height);
+	nested->renderer->surface_attach(surface, buffer);
 }
 
 static void
@@ -633,12 +594,7 @@ compositor_create_surface(struct wl_client *client,
 	display_acquire_window_surface(nested->display,
 				       nested->window, NULL);
 
-	glGenTextures(1, &surface->texture);
-	glBindTexture(GL_TEXTURE_2D, surface->texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	nested->renderer->surface_init(surface);
 
 	display_release_window_surface(nested->display, nested->window);
 
@@ -776,6 +732,8 @@ nested_init_compositor(struct nested *nested)
 		return -1;
 	}
 
+	nested->renderer = &nested_blit_renderer;
+
 	return 0;
 }
 
@@ -812,6 +770,124 @@ nested_destroy(struct nested *nested)
 	window_destroy(nested->window);
 	free(nested);
 }
+
+static void
+blit_surface_init(struct nested_surface *surface)
+{
+	struct nested_blit_surface *blit_surface =
+		zalloc(sizeof *blit_surface);
+
+	glGenTextures(1, &blit_surface->texture);
+	glBindTexture(GL_TEXTURE_2D, blit_surface->texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	surface->renderer_data = blit_surface;
+}
+
+static void
+blit_surface_fini(struct nested_surface *surface)
+{
+	struct nested_blit_surface *blit_surface = surface->renderer_data;
+
+	nested_buffer_reference(&blit_surface->buffer_ref, NULL);
+
+	glDeleteTextures(1, &blit_surface->texture);
+
+	free(blit_surface);
+}
+
+static void
+blit_frame_callback(void *data, struct wl_callback *callback, uint32_t time)
+{
+	struct nested *nested = data;
+	struct nested_surface *surface;
+
+	wl_list_for_each(surface, &nested->surface_list, link)
+		flush_surface_frame_callback_list(surface, time);
+
+	if (callback)
+		wl_callback_destroy(callback);
+}
+
+static const struct wl_callback_listener blit_frame_listener = {
+	blit_frame_callback
+};
+
+static void
+blit_render_clients(struct nested *nested,
+		    cairo_t *cr)
+{
+	struct nested_surface *s;
+	struct rectangle allocation;
+	struct wl_callback *callback;
+
+	widget_get_allocation(nested->widget, &allocation);
+
+	wl_list_for_each(s, &nested->surface_list, link) {
+		struct nested_blit_surface *blit_surface = s->renderer_data;
+
+		display_acquire_window_surface(nested->display,
+					       nested->window, NULL);
+
+		glBindTexture(GL_TEXTURE_2D, blit_surface->texture);
+		image_target_texture_2d(GL_TEXTURE_2D, s->image);
+
+		display_release_window_surface(nested->display,
+					       nested->window);
+
+		cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+		cairo_set_source_surface(cr, blit_surface->cairo_surface,
+					 allocation.x + 10,
+					 allocation.y + 10);
+		cairo_rectangle(cr, allocation.x + 10,
+				allocation.y + 10,
+				allocation.width - 10,
+				allocation.height - 10);
+
+		cairo_fill(cr);
+	}
+
+	callback = wl_surface_frame(window_get_wl_surface(nested->window));
+	wl_callback_add_listener(callback, &blit_frame_listener, nested);
+}
+
+static void
+blit_surface_attach(struct nested_surface *surface,
+		    struct nested_buffer *buffer)
+{
+	struct nested *nested = surface->nested;
+	struct nested_blit_surface *blit_surface = surface->renderer_data;
+	EGLint width, height;
+	cairo_device_t *device;
+
+	nested_buffer_reference(&blit_surface->buffer_ref, buffer);
+
+	if (blit_surface->cairo_surface)
+		cairo_surface_destroy(blit_surface->cairo_surface);
+
+	query_buffer(nested->egl_display, (void *) buffer->resource,
+		     EGL_WIDTH, &width);
+	query_buffer(nested->egl_display, (void *) buffer->resource,
+		     EGL_HEIGHT, &height);
+
+	device = display_get_cairo_device(nested->display);
+	blit_surface->cairo_surface =
+		cairo_gl_surface_create_for_texture(device,
+						    CAIRO_CONTENT_COLOR_ALPHA,
+						    blit_surface->texture,
+						    width, height);
+}
+
+static const struct nested_renderer
+nested_blit_renderer = {
+	.surface_init = blit_surface_init,
+	.surface_fini = blit_surface_fini,
+	.render_clients = blit_render_clients,
+	.surface_attach = blit_surface_attach
+};
 
 int
 main(int argc, char *argv[])
