@@ -47,6 +47,8 @@
 
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))
 
+static int option_blit;
+
 struct nested {
 	struct display *display;
 	struct window *window;
@@ -140,6 +142,10 @@ struct nested_renderer {
 	void (* render_clients)(struct nested *nested, cairo_t *cr);
 	void (* surface_attach)(struct nested_surface *surface,
 				struct nested_buffer *buffer);
+};
+
+static const struct weston_option nested_options[] = {
+	{ WESTON_OPTION_BOOLEAN, "blit", 'b', &option_blit },
 };
 
 static const struct nested_renderer nested_blit_renderer;
@@ -773,6 +779,9 @@ nested_init_compositor(struct nested *nested)
 		}
 	}
 
+	if (option_blit)
+		use_ss_renderer = 0;
+
 	if (use_ss_renderer) {
 		printf("Using subsurfaces to render client surfaces\n");
 		nested->renderer = &nested_ss_renderer;
@@ -1098,6 +1107,9 @@ main(int argc, char *argv[])
 {
 	struct display *display;
 	struct nested *nested;
+
+	parse_options(nested_options,
+		      ARRAY_LENGTH(nested_options), &argc, argv);
 
 	display = display_create(&argc, argv);
 	if (display == NULL) {
