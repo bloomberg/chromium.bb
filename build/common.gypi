@@ -69,8 +69,8 @@
           'branding%': 'Chromium',
 
           'conditions': [
-            # ChromeOS implies ash and Windows implies Ash and Aura.
-            ['chromeos==1 or OS=="win"', {
+            # ChromeOS implies ash.
+            ['chromeos==1', {
               'use_ash%': 1,
               'use_aura%': 1,
             }],
