@@ -295,6 +295,7 @@ public:
     void drawLineForDocumentMarker(const FloatPoint&, float width, DocumentMarkerLineStyle);
 
     void beginTransparencyLayer(float opacity, const FloatRect* = 0);
+    void beginTransparencyLayer(float opacity, CompositeOperator, const FloatRect* = 0);
     void beginMaskedLayer(const FloatRect&, MaskType = AlphaMaskType);
     void endLayer();
 

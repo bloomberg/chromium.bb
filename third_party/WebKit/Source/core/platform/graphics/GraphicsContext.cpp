@@ -401,6 +401,11 @@ bool GraphicsContext::concat(const SkMatrix& matrix)
 
 void GraphicsContext::beginTransparencyLayer(float opacity, const FloatRect* bounds)
 {
+    beginTransparencyLayer(opacity, m_state->m_compositeOperator, bounds);
+}
+
+void GraphicsContext::beginTransparencyLayer(float opacity, CompositeOperator op, const FloatRect* bounds)
+{
     if (paintingDisabled())
         return;
 
@@ -412,7 +417,8 @@ void GraphicsContext::beginTransparencyLayer(float opacity, const FloatRect* bou
 
     SkPaint layerPaint;
     layerPaint.setAlpha(static_cast<unsigned char>(opacity * 255));
-    layerPaint.setXfermode(m_state->m_xferMode.get());
+    RefPtr<SkXfermode> xferMode = WebCoreCompositeToSkiaComposite(op, m_state->m_blendMode);
+    layerPaint.setXfermode(xferMode.get());
 
     if (bounds) {
         SkRect skBounds = WebCoreFloatRectToSKRect(*bounds);

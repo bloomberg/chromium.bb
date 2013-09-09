@@ -309,13 +309,7 @@ private:
     const Font& accessFont();
 
     void clearCanvas();
-    Path transformAreaToDevice(const Path&) const;
-    Path transformAreaToDevice(const FloatRect&) const;
     bool rectContainsCanvas(const FloatRect&) const;
-
-    template<class T> IntRect calculateCompositingBufferRect(const T&, IntSize*);
-    PassOwnPtr<ImageBuffer> createCompositingBuffer(const IntRect&);
-    void compositeBuffer(ImageBuffer*, const IntRect&, CompositeOperator);
 
     void inflateStrokeRect(FloatRect&) const;
 
