@@ -1310,6 +1310,8 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 
 void Element::attach(const AttachContext& context)
 {
+    ASSERT(document().inStyleRecalc());
+
     PostAttachCallbackDisabler callbackDisabler(this);
     StyleResolverParentPusher parentPusher(this);
     WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
@@ -1323,10 +1325,6 @@ void Element::attach(const AttachContext& context)
         if (!context.resolvedStyle)
             data->resetStyleState();
     }
-
-    // FIXME: Remove this once we lazyAttach everywhere.
-    if (!document().inStyleRecalc() && (this == document().documentElement() || this == document().body()))
-        document().setNeedsStyleRecalc(LocalStyleChange);
 
     NodeRenderingContext(this, context.resolvedStyle).createRendererForElementIfNeeded();
 
@@ -1353,11 +1351,7 @@ void Element::attach(const AttachContext& context)
         }
     }
 
-    // FIXME: It doesn't appear safe to call didRecalculateStyleForElement when
-    // not in a Document::recalcStyle. Since we're hopefully going to always
-    // lazyAttach in the future that problem should go away.
-    if (document().inStyleRecalc())
-        InspectorInstrumentation::didRecalculateStyleForElement(this);
+    InspectorInstrumentation::didRecalculateStyleForElement(this);
 }
 
 void Element::unregisterNamedFlowContentNode()
@@ -1766,18 +1760,12 @@ void Element::removeAllEventListeners()
 void Element::beginParsingChildren()
 {
     clearIsParsingChildrenFinished();
-    StyleResolver* styleResolver = document().styleResolverIfExists();
-    if (styleResolver && attached())
-        styleResolver->pushParentElement(this);
 }
 
 void Element::finishParsingChildren()
 {
-    ContainerNode::finishParsingChildren();
     setIsParsingChildrenFinished();
     checkForSiblingStyleChanges(this, renderStyle(), true, lastChild(), 0, 0);
-    if (StyleResolver* styleResolver = document().styleResolverIfExists())
-        styleResolver->popParentElement(this);
     if (isCustomElement())
         CustomElement::didFinishParsingChildren(this);
 }

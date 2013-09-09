@@ -989,9 +989,6 @@ inline void Node::detachNode(Node* root, const AttachContext& context)
             continue;
         }
         // Handle normal reattaches from style recalc (ex. display type changes)
-        // or descendants of lazy attached nodes that got actually attached, for example,
-        // by innerHTML or editing.
-        // FIXME: innerHTML and editing should also lazyAttach.
         if (node->attached())
             node->detach(context);
         node = NodeTraversal::nextSkippingChildren(node, root);
@@ -1000,7 +997,6 @@ inline void Node::detachNode(Node* root, const AttachContext& context)
 
 void Node::reattach(const AttachContext& context)
 {
-    ASSERT(document().inStyleRecalc());
     AttachContext reattachContext(context);
     reattachContext.performingReattach = true;
 
@@ -1010,29 +1006,9 @@ void Node::reattach(const AttachContext& context)
 
 void Node::attach(const AttachContext&)
 {
+    ASSERT(document().inStyleRecalc() || isDocumentNode());
     ASSERT(!attached());
     ASSERT(!renderer() || (renderer()->style() && (renderer()->parent() || renderer()->isRenderView())));
-
-    // If this node got a renderer it may be the previousRenderer() of sibling text nodes and thus affect the
-    // result of Text::textRendererIsNeeded() for those nodes.
-    // FIXME: This loop is no longer required once we lazy attach all the time.
-    if (renderer() && !document().inStyleRecalc()) {
-        for (Node* next = nextSibling(); next; next = next->nextSibling()) {
-            if (next->renderer())
-                break;
-            if (!next->attached())
-                break; // Assume this means none of the following siblings are attached.
-            if (!next->isTextNode())
-                continue;
-            ASSERT(!next->renderer());
-            toText(next)->reattach();
-            // If we again decided not to create a renderer for next, we can bail out the loop,
-            // because it won't affect the result of Text::textRendererIsNeeded() for the rest
-            // of sibling nodes.
-            if (!next->renderer())
-                break;
-        }
-    }
 
     setAttached();
     clearNeedsStyleRecalc();
