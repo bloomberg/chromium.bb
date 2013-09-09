@@ -79,12 +79,15 @@ void timingFromAnimationData(const CSSAnimationData* animationData, Timing& timi
         else
             timing.iterationCount = animationData->iterationCount();
     }
+    // For CSS animations, timing functions apply to individual keyframes, not
+    // to the complete animation.
+    // FIXME: Until chained timing functions are implemented, we simply apply
+    // the default timing function to the complete animation.
     if (animationData->isTimingFunctionSet()) {
         if (animationData->timingFunction()->type() != TimingFunction::LinearFunction)
             timing.timingFunction = animationData->timingFunction();
     } else {
-        // CSS default is ease, default in model is linear.
-        timing.timingFunction = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease);
+        timing.timingFunction = CSSAnimationData::initialAnimationTimingFunction();
     }
     if (animationData->isFillModeSet()) {
         switch (animationData->fillMode()) {
