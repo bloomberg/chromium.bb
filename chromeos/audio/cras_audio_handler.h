@@ -219,6 +219,10 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
                                 size_t new_device_size,
                                 uint64 current_active_node);
 
+  // Returns true if there is any device change for for input or output,
+  // specified by |is_input|.
+  bool HasDeviceChange(const AudioNodeList& new_nodes, bool is_input);
+
   // Handles dbus callback for GetNodes.
   void HandleGetNodes(const chromeos::AudioNodeList& node_list, bool success);
 

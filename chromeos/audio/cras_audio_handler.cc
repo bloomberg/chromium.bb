@@ -513,9 +513,29 @@ void CrasAudioHandler::SwitchToDevice(const AudioDevice& device) {
   }
 }
 
+bool CrasAudioHandler::HasDeviceChange(const AudioNodeList& new_nodes,
+                                       bool is_input) {
+  size_t num_old_devices = 0;
+  size_t num_new_devices = 0;
+  for (AudioDeviceMap::const_iterator it = audio_devices_.begin();
+       it != audio_devices_.end(); ++it) {
+    if (is_input == it->second.is_input)
+      ++num_old_devices;
+  }
+
+  for (AudioNodeList::const_iterator it = new_nodes.begin();
+       it != new_nodes.end(); ++it) {
+    if (is_input == it->is_input)
+      ++num_new_devices;
+  }
+  return num_old_devices != num_new_devices;
+}
+
 void CrasAudioHandler::UpdateDevicesAndSwitchActive(
     const AudioNodeList& nodes) {
   size_t old_audio_devices_size = audio_devices_.size();
+  bool output_devices_changed = HasDeviceChange(nodes, false);
+  bool input_devices_changed = HasDeviceChange(nodes, true);
   audio_devices_.clear();
   has_alternative_input_ = false;
   has_alternative_output_ = false;
@@ -548,12 +568,14 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
   // If audio nodes change is caused by unplugging some non-active audio
   // devices, the previously set active audio device will stay active.
   // Otherwise, switch to a new active audio device according to their priority.
-  if (!NonActiveDeviceUnplugged(old_audio_devices_size,
+  if (input_devices_changed &&
+      !NonActiveDeviceUnplugged(old_audio_devices_size,
                                 audio_devices_.size(),
                                 active_input_node_id_) &&
       !input_devices_pq_.empty())
     SwitchToDevice(input_devices_pq_.top());
-  if (!NonActiveDeviceUnplugged(old_audio_devices_size,
+  if (output_devices_changed &&
+      !NonActiveDeviceUnplugged(old_audio_devices_size,
                                 audio_devices_.size(),
                                 active_output_node_id_) &&
       !output_devices_pq_.empty()) {
