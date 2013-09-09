@@ -223,15 +223,13 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
-// TODO(phoglund): figure out how to do mach port brokering on Mac.
-#if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        MANUAL_RendererCpuUsage20Seconds) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
   base::FilePath results_file;
-  EXPECT_TRUE(file_util::CreateTemporaryFile(&results_file));
+  ASSERT_TRUE(file_util::CreateTemporaryFile(&results_file));
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
@@ -241,11 +239,21 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   base::ProcessHandle renderer_pid =
       left_tab->GetRenderProcessHost()->GetHandle();
 
+#if defined(OS_MACOSX)
+  // TODO(phoglund): This will not report correct values on mac:
+  // move renderer process measurement to content browser test.
+  scoped_ptr<base::ProcessMetrics> renderer_process_metrics(
+      base::ProcessMetrics::CreateProcessMetrics(renderer_pid, NULL));
+  scoped_ptr<base::ProcessMetrics> browser_process_metrics(
+      base::ProcessMetrics::CreateProcessMetrics(
+      base::Process::Current().handle(), NULL));
+#else
   scoped_ptr<base::ProcessMetrics> renderer_process_metrics(
       base::ProcessMetrics::CreateProcessMetrics(renderer_pid));
   scoped_ptr<base::ProcessMetrics> browser_process_metrics(
       base::ProcessMetrics::CreateProcessMetrics(
           base::Process::Current().handle()));
+#endif
 
   // Start measuring CPU.
   renderer_process_metrics->GetCPUUsage();
@@ -282,7 +290,6 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
-#endif
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        MANUAL_TestMediaStreamTrackEnableDisable) {
