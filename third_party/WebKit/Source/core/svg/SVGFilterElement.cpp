@@ -27,7 +27,6 @@
 
 #include "SVGNames.h"
 #include "XLinkNames.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGParserUtilities.h"
@@ -196,12 +195,12 @@ RenderObject* SVGFilterElement::createRenderer(RenderStyle*)
     return renderer;
 }
 
-bool SVGFilterElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
+bool SVGFilterElement::childShouldCreateRenderer(const Node& child) const
 {
-    if (!childContext.node()->isSVGElement())
+    if (!child.isSVGElement())
         return false;
 
-    SVGElement* svgElement = toSVGElement(childContext.node());
+    const SVGElement* svgElement = toSVGElement(&child);
 
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, allowedChildElementTags, ());
     if (allowedChildElementTags.isEmpty()) {

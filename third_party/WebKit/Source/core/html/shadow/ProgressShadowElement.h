@@ -45,7 +45,7 @@ public:
     HTMLProgressElement* progressElement() const;
 
 protected:
-    virtual bool rendererIsNeeded(const NodeRenderingContext&);
+    virtual bool rendererIsNeeded(const RenderStyle&);
 };
 
 class ProgressInnerElement FINAL : public ProgressShadowElement {
@@ -56,7 +56,7 @@ private:
     ProgressInnerElement(Document&);
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual bool rendererIsNeeded(const NodeRenderingContext&);
+    virtual bool rendererIsNeeded(const RenderStyle&);
 };
 
 inline PassRefPtr<ProgressInnerElement> ProgressInnerElement::create(Document& document)

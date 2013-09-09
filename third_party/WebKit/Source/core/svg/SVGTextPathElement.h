@@ -127,8 +127,8 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&);
 
     virtual RenderObject* createRenderer(RenderStyle*);
-    virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
-    virtual bool rendererIsNeeded(const NodeRenderingContext&);
+    virtual bool childShouldCreateRenderer(const Node& child) const;
+    virtual bool rendererIsNeeded(const RenderStyle&);
 
     virtual bool selfHasRelativeLengths() const;
 

@@ -44,8 +44,8 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&);
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const OVERRIDE;
-    virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE;
+    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;

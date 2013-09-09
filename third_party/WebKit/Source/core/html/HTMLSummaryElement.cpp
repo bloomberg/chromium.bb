@@ -24,7 +24,7 @@
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/KeyboardEvent.h"
-#include "core/dom/NodeRenderingContext.h"
+#include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDetailsElement.h"
 #include "core/html/shadow/DetailsMarkerControl.h"

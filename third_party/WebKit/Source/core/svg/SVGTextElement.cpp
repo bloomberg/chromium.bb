@@ -23,7 +23,6 @@
 #include "core/svg/SVGTextElement.h"
 
 #include "SVGNames.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/svg/SVGElementInstance.h"
@@ -72,16 +71,16 @@ RenderObject* SVGTextElement::createRenderer(RenderStyle*)
     return new RenderSVGText(this);
 }
 
-bool SVGTextElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
+bool SVGTextElement::childShouldCreateRenderer(const Node& child) const
 {
-    if (childContext.node()->isTextNode()
-        || childContext.node()->hasTagName(SVGNames::aTag)
+    if (child.isTextNode()
+        || child.hasTagName(SVGNames::aTag)
 #if ENABLE(SVG_FONTS)
-        || childContext.node()->hasTagName(SVGNames::altGlyphTag)
+        || child.hasTagName(SVGNames::altGlyphTag)
 #endif
-        || childContext.node()->hasTagName(SVGNames::textPathTag)
-        || childContext.node()->hasTagName(SVGNames::trefTag)
-        || childContext.node()->hasTagName(SVGNames::tspanTag))
+        || child.hasTagName(SVGNames::textPathTag)
+        || child.hasTagName(SVGNames::trefTag)
+        || child.hasTagName(SVGNames::tspanTag))
         return true;
 
     return false;

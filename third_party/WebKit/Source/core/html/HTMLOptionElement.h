@@ -69,7 +69,7 @@ private:
     HTMLOptionElement(const QualifiedName&, Document&);
 
     virtual bool rendererIsFocusable() const OVERRIDE;
-    virtual bool rendererIsNeeded(const NodeRenderingContext&) { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) { return false; }
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
 

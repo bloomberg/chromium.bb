@@ -45,7 +45,7 @@ public:
 
 private:
     virtual RenderObject* createRenderer(RenderStyle*);
-    virtual bool rendererIsNeeded(const NodeRenderingContext&);
+    virtual bool rendererIsNeeded(const RenderStyle&);
 
     HTMLSummaryElement* summaryElement();
 };

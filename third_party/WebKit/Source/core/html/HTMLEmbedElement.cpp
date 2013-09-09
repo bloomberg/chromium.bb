@@ -173,10 +173,10 @@ void HTMLEmbedElement::updateWidget(PluginCreationOption pluginCreationOption)
     requestObject(m_url, m_serviceType, paramNames, paramValues);
 }
 
-bool HTMLEmbedElement::rendererIsNeeded(const NodeRenderingContext& context)
+bool HTMLEmbedElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (isImageType())
-        return HTMLPlugInImageElement::rendererIsNeeded(context);
+        return HTMLPlugInImageElement::rendererIsNeeded(style);
 
     Frame* frame = document().frame();
     if (!frame)
@@ -192,7 +192,7 @@ bool HTMLEmbedElement::rendererIsNeeded(const NodeRenderingContext& context)
             return false;
         }
     }
-    return HTMLPlugInImageElement::rendererIsNeeded(context);
+    return HTMLPlugInImageElement::rendererIsNeeded(style);
 }
 
 bool HTMLEmbedElement::isURLAttribute(const Attribute& attribute) const

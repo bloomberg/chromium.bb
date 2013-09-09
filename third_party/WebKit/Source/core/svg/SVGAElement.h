@@ -57,7 +57,7 @@ private:
     virtual bool rendererIsFocusable() const OVERRIDE;
     virtual bool isURLAttribute(const Attribute&) const;
 
-    virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
+    virtual bool childShouldCreateRenderer(const Node& child) const;
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGAElement)
         // This declaration used to define a non-virtual "String& target() const" method, that clashes with "virtual String Element::target() const".

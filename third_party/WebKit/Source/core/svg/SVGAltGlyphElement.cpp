@@ -29,7 +29,6 @@
 #include "XLinkNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/rendering/svg/RenderSVGTSpan.h"
 #include "core/svg/SVGAltGlyphDefElement.h"
 
@@ -76,9 +75,9 @@ const AtomicString& SVGAltGlyphElement::format() const
     return fastGetAttribute(SVGNames::formatAttr);
 }
 
-bool SVGAltGlyphElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
+bool SVGAltGlyphElement::childShouldCreateRenderer(const Node& child) const
 {
-    if (childContext.node()->isTextNode())
+    if (child.isTextNode())
         return true;
     return false;
 }

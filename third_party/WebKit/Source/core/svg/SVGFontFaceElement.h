@@ -61,7 +61,7 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
 
-    virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
     RefPtr<StyleRuleFontFace> m_fontFaceRule;
     SVGFontElement* m_fontElement;

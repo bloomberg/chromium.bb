@@ -51,7 +51,7 @@ public:
 private:
     SVGUnknownElement(const QualifiedName&, Document&);
 
-    virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 };
 
 } // namespace WebCore

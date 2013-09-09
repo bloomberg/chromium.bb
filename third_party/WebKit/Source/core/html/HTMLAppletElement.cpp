@@ -68,11 +68,11 @@ void HTMLAppletElement::parseAttribute(const QualifiedName& name, const AtomicSt
     HTMLPlugInImageElement::parseAttribute(name, value);
 }
 
-bool HTMLAppletElement::rendererIsNeeded(const NodeRenderingContext& context)
+bool HTMLAppletElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (!fastHasAttribute(codeAttr))
         return false;
-    return HTMLPlugInImageElement::rendererIsNeeded(context);
+    return HTMLPlugInImageElement::rendererIsNeeded(style);
 }
 
 RenderObject* HTMLAppletElement::createRenderer(RenderStyle* style)

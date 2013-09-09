@@ -1197,9 +1197,9 @@ const AtomicString Element::imageSourceURL() const
     return getAttribute(srcAttr);
 }
 
-bool Element::rendererIsNeeded(const NodeRenderingContext& context)
+bool Element::rendererIsNeeded(const RenderStyle& style)
 {
-    return context.style()->display() != NONE;
+    return style.display() != NONE;
 }
 
 RenderObject* Element::createRenderer(RenderStyle* style)
@@ -2561,13 +2561,13 @@ void Element::setUnsignedIntegralAttribute(const QualifiedName& attributeName, u
     setAttribute(attributeName, String::number(value));
 }
 
-bool Element::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
+bool Element::childShouldCreateRenderer(const Node& child) const
 {
     // Only create renderers for SVG elements whose parents are SVG elements, or for proper <svg xmlns="svgNS"> subdocuments.
-    if (childContext.node()->isSVGElement())
-        return childContext.node()->hasTagName(SVGNames::svgTag) || isSVGElement();
+    if (child.isSVGElement())
+        return child.hasTagName(SVGNames::svgTag) || isSVGElement();
 
-    return ContainerNode::childShouldCreateRenderer(childContext);
+    return ContainerNode::childShouldCreateRenderer(child);
 }
 
 void Element::webkitRequestFullscreen()

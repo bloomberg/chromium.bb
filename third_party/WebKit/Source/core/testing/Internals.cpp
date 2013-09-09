@@ -54,7 +54,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FullscreenElementStack.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/Range.h"
 #include "core/dom/StaticNodeList.h"

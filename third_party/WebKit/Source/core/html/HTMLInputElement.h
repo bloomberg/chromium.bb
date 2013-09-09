@@ -180,7 +180,7 @@ public:
     void setSelectionRangeForBinding(int start, int end, ExceptionState&);
     void setSelectionRangeForBinding(int start, int end, const String& direction, ExceptionState&);
 
-    virtual bool rendererIsNeeded(const NodeRenderingContext&);
+    virtual bool rendererIsNeeded(const RenderStyle&);
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
 

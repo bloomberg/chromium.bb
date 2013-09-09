@@ -41,8 +41,8 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual void svgAttributeChanged(const QualifiedName&);
 
-    virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE;
-    virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
+    virtual bool childShouldCreateRenderer(const Node& child) const;
     virtual RenderObject* createRenderer(RenderStyle*);
 
     virtual bool selfHasRelativeLengths() const;

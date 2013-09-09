@@ -50,7 +50,7 @@ public:
 private:
     SVGDocument(const DocumentInit&);
 
-    virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
+    virtual bool childShouldCreateRenderer(const Node& child) const;
 
     FloatPoint m_translate;
 };

@@ -31,7 +31,6 @@
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/MouseEvent.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDimension.h"
 #include "core/html/HTMLFrameElement.h"
@@ -147,11 +146,11 @@ void HTMLFrameSetElement::parseAttribute(const QualifiedName& name, const Atomic
         HTMLElement::parseAttribute(name, value);
 }
 
-bool HTMLFrameSetElement::rendererIsNeeded(const NodeRenderingContext& context)
+bool HTMLFrameSetElement::rendererIsNeeded(const RenderStyle& style)
 {
     // For compatibility, frames render even when display: none is set.
     // However, we delay creating a renderer until stylesheets have loaded.
-    return context.style()->isStyleAvailable();
+    return style.isStyleAvailable();
 }
 
 RenderObject* HTMLFrameSetElement::createRenderer(RenderStyle *style)

@@ -23,7 +23,6 @@
 
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLSummaryElement.h"
@@ -93,13 +92,14 @@ void HTMLDetailsElement::parseAttribute(const QualifiedName& name, const AtomicS
         HTMLElement::parseAttribute(name, value);
 }
 
-bool HTMLDetailsElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
+bool HTMLDetailsElement::childShouldCreateRenderer(const Node& child) const
 {
+    // FIXME: These checks do not look correct, we should just use insertion points instead.
     if (m_isOpen)
-        return HTMLElement::childShouldCreateRenderer(childContext);
-    if (!childContext.node()->hasTagName(summaryTag))
+        return HTMLElement::childShouldCreateRenderer(child);
+    if (!child.hasTagName(summaryTag))
         return false;
-    return childContext.node() == findMainSummary() && HTMLElement::childShouldCreateRenderer(childContext);
+    return &child == findMainSummary() && HTMLElement::childShouldCreateRenderer(child);
 }
 
 void HTMLDetailsElement::toggleOpen()

@@ -136,7 +136,7 @@ private:
     void endedActiveInterval();
     virtual void updateAnimation(float percent, unsigned repeat, SVGSMILElement* resultElement) = 0;
 
-    virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
     enum BeginOrEnd {
         Begin,

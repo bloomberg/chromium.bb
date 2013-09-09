@@ -37,7 +37,6 @@
 #include "core/dom/EventNames.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/MouseEvent.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/html/FormController.h"
 #include "core/html/FormDataList.h"
@@ -335,12 +334,12 @@ RenderObject* HTMLSelectElement::createRenderer(RenderStyle*)
     return new RenderListBox(this);
 }
 
-bool HTMLSelectElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
+bool HTMLSelectElement::childShouldCreateRenderer(const Node& child) const
 {
-    if (!HTMLFormControlElementWithState::childShouldCreateRenderer(childContext))
+    if (!HTMLFormControlElementWithState::childShouldCreateRenderer(child))
         return false;
     if (!usesMenuList())
-        return childContext.node()->hasTagName(HTMLNames::optionTag) || isHTMLOptGroupElement(childContext.node());
+        return child.hasTagName(HTMLNames::optionTag) || isHTMLOptGroupElement(&child);
     return false;
 }
 

@@ -434,7 +434,7 @@ public:
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*);
-    virtual bool rendererIsNeeded(const NodeRenderingContext&);
+    virtual bool rendererIsNeeded(const RenderStyle&);
     bool recalcStyle(StyleRecalcChange);
     void didAffectSelector(AffectedSelectorMask);
 
@@ -595,7 +595,7 @@ public:
 
     virtual bool shouldBeReparentedUnderRenderView(const RenderStyle*) const { return isInTopLayer(); }
 
-    virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
+    virtual bool childShouldCreateRenderer(const Node& child) const;
     bool hasPendingResources() const;
     void setHasPendingResources();
     void clearHasPendingResources();

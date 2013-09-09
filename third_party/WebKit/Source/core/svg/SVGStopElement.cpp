@@ -102,7 +102,7 @@ RenderObject* SVGStopElement::createRenderer(RenderStyle*)
     return new RenderSVGGradientStop(this);
 }
 
-bool SVGStopElement::rendererIsNeeded(const NodeRenderingContext&)
+bool SVGStopElement::rendererIsNeeded(const RenderStyle&)
 {
     return true;
 }

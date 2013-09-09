@@ -80,7 +80,7 @@ protected:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual void svgAttributeChanged(const QualifiedName&);
 
-    virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
 private:
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGComponentTransferFunctionElement)

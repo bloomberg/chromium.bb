@@ -162,7 +162,7 @@ bool NodeRenderingContext::shouldCreateRenderer() const
         return false;
     if (!parentRenderer->canHaveChildren())
         return false;
-    if (!m_renderingParent->childShouldCreateRenderer(*this))
+    if (!m_renderingParent->childShouldCreateRenderer(*m_node))
         return false;
     return true;
 }
@@ -182,7 +182,7 @@ bool NodeRenderingContext::elementInsideRegionNeedsRenderer()
         elementInsideRegionNeedsRenderer = element->shouldMoveToFlowThread(m_style.get());
 
         // Children of this element will only be allowed to be flowed into other flow-threads if display is NOT none.
-        if (element->rendererIsNeeded(*this))
+        if (element->rendererIsNeeded(*m_style))
             element->setIsInsideRegion(true);
     }
 
@@ -224,7 +224,7 @@ void NodeRenderingContext::createRendererForElementIfNeeded()
 
     moveToFlowThreadIfNeeded();
 
-    if (!element->rendererIsNeeded(*this))
+    if (!element->rendererIsNeeded(*m_style))
         return;
 
     RenderObject* newRenderer = element->createRenderer(m_style.get());

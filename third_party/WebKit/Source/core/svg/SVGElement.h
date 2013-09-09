@@ -140,11 +140,11 @@ protected:
 
     virtual void finishParsingChildren();
     virtual void attributeChanged(const QualifiedName&, const AtomicString&, AttributeModificationReason = ModifiedDirectly) OVERRIDE;
-    virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const OVERRIDE;
+    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
 
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
-    virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE;
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;

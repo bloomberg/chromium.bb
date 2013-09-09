@@ -44,7 +44,7 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
 
-    virtual bool rendererIsNeeded(const NodeRenderingContext&);
+    virtual bool rendererIsNeeded(const RenderStyle&);
     virtual RenderObject* createRenderer(RenderStyle*);
 
     virtual void didRecalcStyle(StyleRecalcChange) OVERRIDE;

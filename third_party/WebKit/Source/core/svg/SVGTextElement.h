@@ -38,7 +38,7 @@ private:
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
     virtual RenderObject* createRenderer(RenderStyle*);
-    virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
+    virtual bool childShouldCreateRenderer(const Node& child) const;
 };
 
 inline SVGTextElement* toSVGTextElement(Node* node)

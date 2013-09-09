@@ -64,7 +64,6 @@
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/dom/StyleSheetCollections.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"

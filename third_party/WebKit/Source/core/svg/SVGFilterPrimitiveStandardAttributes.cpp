@@ -141,10 +141,10 @@ RenderObject* SVGFilterPrimitiveStandardAttributes::createRenderer(RenderStyle*)
     return new RenderSVGResourceFilterPrimitive(this);
 }
 
-bool SVGFilterPrimitiveStandardAttributes::rendererIsNeeded(const NodeRenderingContext& context)
+bool SVGFilterPrimitiveStandardAttributes::rendererIsNeeded(const RenderStyle& style)
 {
     if (parentNode() && (parentNode()->hasTagName(SVGNames::filterTag)))
-        return SVGElement::rendererIsNeeded(context);
+        return SVGElement::rendererIsNeeded(style);
 
     return false;
 }

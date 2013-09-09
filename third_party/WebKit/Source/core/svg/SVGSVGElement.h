@@ -140,7 +140,7 @@ private:
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
-    virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE;
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*);
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
@@ -180,9 +180,14 @@ private:
 
 inline SVGSVGElement* toSVGSVGElement(Node* node)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isSVGElement());
     ASSERT_WITH_SECURITY_IMPLICATION(!node || toSVGElement(node)->isSVGSVGElement());
     return static_cast<SVGSVGElement*>(node);
+}
+
+inline const SVGSVGElement* toSVGSVGElement(const Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || toSVGElement(node)->isSVGSVGElement());
+    return static_cast<const SVGSVGElement*>(node);
 }
 
 } // namespace WebCore

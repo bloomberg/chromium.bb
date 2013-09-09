@@ -39,7 +39,6 @@
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FullscreenElementStack.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLMediaSource.h"
 #include "core/html/HTMLSourceElement.h"
@@ -486,9 +485,9 @@ void HTMLMediaElement::finishParsingChildren()
     }
 }
 
-bool HTMLMediaElement::rendererIsNeeded(const NodeRenderingContext& context)
+bool HTMLMediaElement::rendererIsNeeded(const RenderStyle& style)
 {
-    return controls() ? HTMLElement::rendererIsNeeded(context) : false;
+    return controls() ? HTMLElement::rendererIsNeeded(style) : false;
 }
 
 RenderObject* HTMLMediaElement::createRenderer(RenderStyle*)
@@ -496,9 +495,9 @@ RenderObject* HTMLMediaElement::createRenderer(RenderStyle*)
     return new RenderMedia(this);
 }
 
-bool HTMLMediaElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
+bool HTMLMediaElement::childShouldCreateRenderer(const Node& child) const
 {
-    return hasMediaControls() && HTMLElement::childShouldCreateRenderer(childContext);
+    return hasMediaControls() && HTMLElement::childShouldCreateRenderer(child);
 }
 
 Node::InsertionNotificationRequest HTMLMediaElement::insertedInto(ContainerNode* insertionPoint)

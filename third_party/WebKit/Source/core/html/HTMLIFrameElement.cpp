@@ -27,7 +27,6 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/html/HTMLDocument.h"
 #include "core/rendering/RenderIFrame.h"
 
@@ -97,9 +96,9 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
         HTMLFrameElementBase::parseAttribute(name, value);
 }
 
-bool HTMLIFrameElement::rendererIsNeeded(const NodeRenderingContext& context)
+bool HTMLIFrameElement::rendererIsNeeded(const RenderStyle& style)
 {
-    return isURLAllowed() && context.style()->display() != NONE;
+    return isURLAllowed() && HTMLElement::rendererIsNeeded(style);
 }
 
 RenderObject* HTMLIFrameElement::createRenderer(RenderStyle*)

@@ -49,9 +49,9 @@ RenderObject* DetailsMarkerControl::createRenderer(RenderStyle*)
     return new RenderDetailsMarker(this);
 }
 
-bool DetailsMarkerControl::rendererIsNeeded(const NodeRenderingContext& context)
+bool DetailsMarkerControl::rendererIsNeeded(const RenderStyle& style)
 {
-    return summaryElement()->isMainSummary() && HTMLDivElement::rendererIsNeeded(context);
+    return summaryElement()->isMainSummary() && HTMLDivElement::rendererIsNeeded(style);
 }
 
 HTMLSummaryElement* DetailsMarkerControl::summaryElement()

@@ -57,7 +57,7 @@ private:
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
 
     virtual void finishParsingChildren();
-    virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
     virtual bool isLoading() const { return StyleElement::isLoading(); }
     virtual bool sheetLoaded() { return StyleElement::sheetLoaded(document()); }

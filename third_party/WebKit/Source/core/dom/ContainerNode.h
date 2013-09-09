@@ -132,7 +132,7 @@ public:
 
     void disconnectDescendantFrames();
 
-    virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const { return true; }
+    virtual bool childShouldCreateRenderer(const Node& child) const { return true; }
 
 protected:
     ContainerNode(TreeScope*, ConstructionType = CreateContainer);

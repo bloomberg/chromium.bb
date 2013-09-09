@@ -46,7 +46,7 @@ PassRefPtr<HTMLFrameElement> HTMLFrameElement::create(const QualifiedName& tagNa
     return adoptRef(new HTMLFrameElement(tagName, document));
 }
 
-bool HTMLFrameElement::rendererIsNeeded(const NodeRenderingContext&)
+bool HTMLFrameElement::rendererIsNeeded(const RenderStyle&)
 {
     // For compatibility, frames render even when display: none is set.
     return isURLAllowed();

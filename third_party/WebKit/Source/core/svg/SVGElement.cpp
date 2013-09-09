@@ -36,7 +36,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Event.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
@@ -147,7 +146,7 @@ void SVGElement::buildPendingResourcesIfNeeded()
     }
 }
 
-bool SVGElement::rendererIsNeeded(const NodeRenderingContext& context)
+bool SVGElement::rendererIsNeeded(const RenderStyle& style)
 {
     // http://www.w3.org/TR/SVG/extend.html#PrivateData
     // Prevent anything other than SVG renderers from appearing in our render tree
@@ -155,7 +154,7 @@ bool SVGElement::rendererIsNeeded(const NodeRenderingContext& context)
     // with the SVG content. In general, the SVG user agent will include the unknown
     // elements in the DOM but will otherwise ignore unknown elements.
     if (!parentOrShadowHostElement() || parentOrShadowHostElement()->isSVGElement())
-        return Element::rendererIsNeeded(context);
+        return Element::rendererIsNeeded(style);
 
     return false;
 }
@@ -885,7 +884,7 @@ void SVGElement::finishParsingChildren()
     sendSVGLoadEventIfPossible();
 }
 
-bool SVGElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
+bool SVGElement::childShouldCreateRenderer(const Node& child) const
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, invalidTextContent, ());
 
@@ -897,8 +896,8 @@ bool SVGElement::childShouldCreateRenderer(const NodeRenderingContext& childCont
         invalidTextContent.add(SVGNames::trefTag);
         invalidTextContent.add(SVGNames::tspanTag);
     }
-    if (childContext.node()->isSVGElement()) {
-        SVGElement* svgChild = toSVGElement(childContext.node());
+    if (child.isSVGElement()) {
+        const SVGElement* svgChild = toSVGElement(&child);
         if (invalidTextContent.contains(svgChild->tagQName()))
             return false;
 

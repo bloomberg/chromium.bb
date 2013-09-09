@@ -36,7 +36,6 @@
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/NamedNodesCollection.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/html/FormController.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLImageElement.h"
@@ -99,14 +98,15 @@ bool HTMLFormElement::formWouldHaveSecureSubmission(const String& url)
     return document().completeURL(url).protocolIs("https");
 }
 
-bool HTMLFormElement::rendererIsNeeded(const NodeRenderingContext& context)
+bool HTMLFormElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (!m_wasDemoted)
-        return HTMLElement::rendererIsNeeded(context);
+        return HTMLElement::rendererIsNeeded(style);
 
     ContainerNode* node = parentNode();
     RenderObject* parentRenderer = node->renderer();
     // FIXME: Shouldn't we also check for table caption (see |formIsTablePart| below).
+    // FIXME: This check is not correct for Shadow DOM.
     bool parentIsTableElementPart = (parentRenderer->isTable() && isHTMLTableElement(node))
         || (parentRenderer->isTableRow() && node->hasTagName(trTag))
         || (parentRenderer->isTableSection() && node->hasTagName(tbodyTag))
@@ -116,7 +116,7 @@ bool HTMLFormElement::rendererIsNeeded(const NodeRenderingContext& context)
     if (!parentIsTableElementPart)
         return true;
 
-    EDisplay display = context.style()->display();
+    EDisplay display = style.display();
     bool formIsTablePart = display == TABLE || display == INLINE_TABLE || display == TABLE_ROW_GROUP
         || display == TABLE_HEADER_GROUP || display == TABLE_FOOTER_GROUP || display == TABLE_ROW
         || display == TABLE_COLUMN_GROUP || display == TABLE_COLUMN || display == TABLE_CELL

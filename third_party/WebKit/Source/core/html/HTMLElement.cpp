@@ -762,7 +762,7 @@ void HTMLElement::setTranslate(bool enable)
     setAttribute(translateAttr, enable ? "yes" : "no");
 }
 
-bool HTMLElement::rendererIsNeeded(const NodeRenderingContext& context)
+bool HTMLElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (hasLocalName(noscriptTag)) {
         Frame* frame = document().frame();
@@ -773,7 +773,7 @@ bool HTMLElement::rendererIsNeeded(const NodeRenderingContext& context)
         if (frame && frame->loader()->allowPlugins(NotAboutToInstantiatePlugin))
             return false;
     }
-    return Element::rendererIsNeeded(context);
+    return Element::rendererIsNeeded(style);
 }
 
 RenderObject* HTMLElement::createRenderer(RenderStyle* style)

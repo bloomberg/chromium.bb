@@ -28,7 +28,6 @@
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/MutationEvent.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -217,12 +216,12 @@ RenderObject* SVGTRefElement::createRenderer(RenderStyle*)
     return new RenderSVGInline(this);
 }
 
-bool SVGTRefElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
+bool SVGTRefElement::childShouldCreateRenderer(const Node& child) const
 {
-    return childContext.node()->isInShadowTree();
+    return child.isInShadowTree();
 }
 
-bool SVGTRefElement::rendererIsNeeded(const NodeRenderingContext& context)
+bool SVGTRefElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (parentNode()
         && (parentNode()->hasTagName(SVGNames::aTag)
@@ -232,7 +231,7 @@ bool SVGTRefElement::rendererIsNeeded(const NodeRenderingContext& context)
             || parentNode()->hasTagName(SVGNames::textTag)
             || parentNode()->hasTagName(SVGNames::textPathTag)
             || parentNode()->hasTagName(SVGNames::tspanTag)))
-        return Element::rendererIsNeeded(context);
+        return Element::rendererIsNeeded(style);
 
     return false;
 }
