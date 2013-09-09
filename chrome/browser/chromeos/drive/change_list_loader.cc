@@ -58,12 +58,12 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
 
     // This is full resource list fetch.
     scheduler_->GetAllResourceList(
-        base::Bind(&FullFeedFetcher::OnChangeListFetched,
+        base::Bind(&FullFeedFetcher::OnFileListFetched,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
  private:
-  void OnChangeListFetched(
+  void OnFileListFetched(
       const FeedFetcherCallback& callback,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceList> resource_list) {
@@ -89,9 +89,9 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
     GURL next_url;
     if (resource_list->GetNextFeedURL(&next_url) && !next_url.is_empty()) {
       // There is the remaining result so fetch it.
-      scheduler_->GetRemainingChangeList(
+      scheduler_->GetRemainingFileList(
           next_url,
-          base::Bind(&FullFeedFetcher::OnChangeListFetched,
+          base::Bind(&FullFeedFetcher::OnFileListFetched,
                      weak_ptr_factory_.GetWeakPtr(), callback));
       return;
     }

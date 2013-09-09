@@ -319,15 +319,12 @@ CancelCallback DriveAPIService::GetAllResourceList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // The simplest way to fetch the all resources list looks files.list method,
-  // but it seems impossible to know the returned list's changestamp.
-  // Thus, instead, we use changes.list method with includeDeleted=false here.
-  // The returned list should contain only resources currently existing.
-  ChangesListRequest* request = new ChangesListRequest(
+  FilesListRequest* request = new FilesListRequest(
       sender_.get(), url_generator_,
-      base::Bind(&ConvertChangeListToResourceListOnBlockingPoolAndRun,
+      base::Bind(&ConvertFileListToResourceListOnBlockingPoolAndRun,
                  blocking_task_runner_, callback));
-  request->set_include_deleted(false);
+  request->set_max_results(kMaxNumFilesResourcePerRequest);
+  request->set_q("trashed = false");  // Exclude trashed files.
   return sender_->StartRequestWithRetry(request);
 }
 
