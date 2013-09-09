@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+// TODO(ddorwin): Remove when AddKeySystems is removed.
+#include "content/public/renderer/key_system_info.h"
 
 namespace WebKit {
 class WebString;
@@ -16,7 +18,7 @@ class WebString;
 namespace content {
 
 // TODO(ddorwin): Move registration to ContentClient.
-void RegisterKeySystems();
+void AddKeySystems(std::vector<KeySystemInfo>* key_systems_info);
 
 // Returns true if canPlayType should return an empty string for |key_system|.
 bool IsCanPlayTypeSuppressed(const std::string& key_system);

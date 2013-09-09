@@ -1300,6 +1300,13 @@ bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
   return false;
 }
 
+void ChromeContentRendererClient::AddKeySystems(
+    std::vector<content::KeySystemInfo>* key_systems) {
+  // TODO(ddorwin): In the next CL, move code from
+  // content/renderer/media/crypto/key_systems_info.cc to chrome_key_systems.cc
+  // and call AddKeySystems.
+}
+
 bool ChromeContentRendererClient::ShouldReportDetailedMessageForSource(
     const base::string16& source) const {
   return extensions::IsSourceFromAnExtension(source);
