@@ -492,6 +492,8 @@ base::DictionaryValue* ManagedUserSpecificsToValue(
   SET_STR(name);
   SET_BOOL(acknowledged);
   SET_STR(master_key);
+  SET_STR(chrome_avatar);
+  SET_STR(chromeos_avatar);
   return value;
 }
 

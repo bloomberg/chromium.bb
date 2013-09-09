@@ -85,7 +85,9 @@ class ManagedUserSyncServiceTest : public ::testing::Test {
  protected:
   scoped_ptr<SyncChangeProcessor> CreateChangeProcessor();
   scoped_ptr<SyncErrorFactory> CreateErrorFactory();
-  SyncData CreateRemoteData(const std::string& id, const std::string& name);
+  SyncData CreateRemoteData(const std::string& id,
+                            const std::string& name,
+                            const std::string& avatar);
 
   PrefService* prefs() { return profile_.GetPrefs(); }
   ManagedUserSyncService* service() { return service_; }
@@ -124,11 +126,15 @@ ManagedUserSyncServiceTest::CreateErrorFactory() {
 
 SyncData ManagedUserSyncServiceTest::CreateRemoteData(
     const std::string& id,
-    const std::string& name) {
+    const std::string& name,
+    const std::string& chrome_avatar) {
   ::sync_pb::EntitySpecifics specifics;
   specifics.mutable_managed_user()->set_id(id);
   specifics.mutable_managed_user()->set_name(name);
   specifics.mutable_managed_user()->set_acknowledged(true);
+  if (!chrome_avatar.empty())
+    specifics.mutable_managed_user()->set_chrome_avatar(chrome_avatar);
+
   return SyncData::CreateRemoteData(++sync_data_id_, specifics, base::Time());
 }
 
@@ -154,6 +160,7 @@ TEST_F(ManagedUserSyncServiceTest, MergeEmpty) {
 TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
   const char kNameKey[] = "name";
   const char kAcknowledgedKey[] = "acknowledged";
+  const char kChromeAvatarKey[] = "chromeAvatar";
 
   const char kUserId1[] = "aaaaa";
   const char kUserId2[] = "bbbbb";
@@ -163,6 +170,10 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
   const char kName2[] = "Buzz";
   const char kName3[] = "Crush";
   const char kName4[] = "Dory";
+  const char kAvatar1[] = "";
+  const char kAvatar2[] = "chrome-avatar-index:0";
+  const char kAvatar3[] = "chrome-avatar-index:20";
+  const char kAvatar4[] = "";
   {
     DictionaryPrefUpdate update(prefs(), prefs::kManagedUsers);
     DictionaryValue* managed_users = update.Get();
@@ -180,9 +191,9 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
       base::Bind(&GetManagedUsersCallback, &async_managed_users));
 
   SyncDataList initial_sync_data;
-  initial_sync_data.push_back(CreateRemoteData(kUserId2, kName2));
-  initial_sync_data.push_back(CreateRemoteData(kUserId3, kName3));
-  initial_sync_data.push_back(CreateRemoteData(kUserId4, kName4));
+  initial_sync_data.push_back(CreateRemoteData(kUserId2, kName2, kAvatar2));
+  initial_sync_data.push_back(CreateRemoteData(kUserId3, kName3, kAvatar3));
+  initial_sync_data.push_back(CreateRemoteData(kUserId4, kName4, kAvatar4));
 
   SyncMergeResult result =
       service()->MergeDataAndStartSyncing(MANAGED_USERS,
@@ -211,6 +222,9 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
     bool acknowledged = false;
     EXPECT_TRUE(managed_user->GetBoolean(kAcknowledgedKey, &acknowledged));
     EXPECT_TRUE(acknowledged);
+    std::string avatar;
+    EXPECT_TRUE(managed_user->GetString(kChromeAvatarKey, &avatar));
+    EXPECT_EQ(kAvatar2, avatar);
   }
   {
     const DictionaryValue* managed_user = NULL;
@@ -222,6 +236,9 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
     bool acknowledged = false;
     EXPECT_TRUE(managed_user->GetBoolean(kAcknowledgedKey, &acknowledged));
     EXPECT_TRUE(acknowledged);
+    std::string avatar;
+    EXPECT_TRUE(managed_user->GetString(kChromeAvatarKey, &avatar));
+    EXPECT_EQ(kAvatar3, avatar);
   }
   {
     const DictionaryValue* managed_user = NULL;
@@ -233,6 +250,9 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
     bool acknowledged = false;
     EXPECT_TRUE(managed_user->GetBoolean(kAcknowledgedKey, &acknowledged));
     EXPECT_TRUE(acknowledged);
+    std::string avatar;
+    EXPECT_TRUE(managed_user->GetString(kChromeAvatarKey, &avatar));
+    EXPECT_EQ(kAvatar4, avatar);
   }
 
   EXPECT_EQ(1u, change_processor()->changes().size());
@@ -244,5 +264,6 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
         change.sync_data().GetSpecifics().managed_user();
     EXPECT_EQ(kName1, managed_user.name());
     EXPECT_FALSE(managed_user.acknowledged());
+    EXPECT_EQ(kAvatar1, managed_user.chrome_avatar());
   }
 }

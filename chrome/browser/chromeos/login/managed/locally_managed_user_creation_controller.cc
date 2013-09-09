@@ -29,6 +29,7 @@ namespace chromeos {
 
 namespace {
 
+const int kDummyAvatarIndex = -111;
 const int kMasterKeySize = 32;
 const int kUserCreationTimeoutSeconds = 60; // 60 seconds.
 
@@ -160,7 +161,8 @@ void LocallyManagedUserCreationController::OnAddKeySuccess() {
           creation_context_->manager_profile);
 
   VLOG(1) << "Creating user on server";
-  ManagedUserRegistrationInfo info(creation_context_->display_name);
+  ManagedUserRegistrationInfo info(creation_context_->display_name,
+                                   kDummyAvatarIndex);
   info.master_key = creation_context_->master_key;
   creation_context_->registration_utility->Register(
       creation_context_->sync_user_id,

@@ -31,7 +31,8 @@ class DeviceInfo;
 
 // Structure to store registration information.
 struct ManagedUserRegistrationInfo {
-  explicit ManagedUserRegistrationInfo(const string16& name);
+  ManagedUserRegistrationInfo(const string16& name, int avatar_index);
+  int avatar_index;
   string16 name;
   std::string master_key;
 };

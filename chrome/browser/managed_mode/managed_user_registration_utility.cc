@@ -107,8 +107,10 @@ class ManagedUserRegistrationUtilityImpl
 
 } // namespace
 
-ManagedUserRegistrationInfo::ManagedUserRegistrationInfo(const string16& name)
-    : name(name) {
+ManagedUserRegistrationInfo::ManagedUserRegistrationInfo(const string16& name,
+                                                         int avatar_index)
+    : avatar_index(avatar_index),
+      name(name) {
 }
 
 ScopedTestingManagedUserRegistrationUtility::
@@ -202,7 +204,8 @@ void ManagedUserRegistrationUtilityImpl::Register(
   if (!is_existing_managed_user_) {
     managed_user_sync_service_->AddManagedUser(pending_managed_user_id_,
                                                base::UTF16ToUTF8(info.name),
-                                               info.master_key);
+                                               info.master_key,
+                                               info.avatar_index);
   } else {
     // User already exists, don't wait for acknowledgment.
     OnManagedUserAcknowledged(managed_user_id);

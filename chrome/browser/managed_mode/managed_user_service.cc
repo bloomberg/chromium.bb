@@ -637,7 +637,9 @@ void ManagedUserService::RegisterAndInitSync(
 
   string16 name = UTF8ToUTF16(
       profile_->GetPrefs()->GetString(prefs::kProfileName));
-  ManagedUserRegistrationInfo info(name);
+  int avatar_index = profile_->GetPrefs()->GetInteger(
+      prefs::kProfileAvatarIndex);
+  ManagedUserRegistrationInfo info(name, avatar_index);
   registration_utility->Register(
       managed_user_id,
       info,

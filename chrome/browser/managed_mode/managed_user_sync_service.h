@@ -42,7 +42,8 @@ class ManagedUserSyncService : public BrowserContextKeyedService,
 
   void AddManagedUser(const std::string& id,
                       const std::string& name,
-                      const std::string& master_key);
+                      const std::string& master_key,
+                      int avatar_index);
   void DeleteManagedUser(const std::string& id);
 
   // Returns a dictionary containing all managed users managed by this

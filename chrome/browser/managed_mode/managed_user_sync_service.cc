@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,21 +36,50 @@ using sync_pb::ManagedUserSpecifics;
 namespace {
 
 const char kAcknowledged[] = "acknowledged";
+const char kChromeAvatar[] = "chromeAvatar";
+const char kChromeOsAvatar[] = "chromeOsAvatar";
 const char kName[] = "name";
 const char kMasterKey[] = "masterKey";
 
 SyncData CreateLocalSyncData(const std::string& id,
                              const std::string& name,
                              bool acknowledged,
-                             const std::string& master_key) {
+                             const std::string& master_key,
+                             const std::string& chrome_avatar,
+                             const std::string& chromeos_avatar) {
   ::sync_pb::EntitySpecifics specifics;
   specifics.mutable_managed_user()->set_id(id);
   specifics.mutable_managed_user()->set_name(name);
+  if (!chrome_avatar.empty())
+    specifics.mutable_managed_user()->set_chrome_avatar(chrome_avatar);
+  if (!chromeos_avatar.empty())
+    specifics.mutable_managed_user()->set_chromeos_avatar(chromeos_avatar);
   if (!master_key.empty())
     specifics.mutable_managed_user()->set_master_key(master_key);
   if (acknowledged)
     specifics.mutable_managed_user()->set_acknowledged(true);
   return SyncData::CreateLocalData(id, name, specifics);
+}
+
+SyncData CreateSyncDataFromDictionaryEntry(
+    const DictionaryValue::Iterator& it) {
+  const DictionaryValue* dict = NULL;
+  bool success = it.value().GetAsDictionary(&dict);
+  DCHECK(success);
+  bool acknowledged = false;
+  dict->GetBoolean(kAcknowledged, &acknowledged);
+  std::string name;
+  dict->GetString(kName, &name);
+  DCHECK(!name.empty());
+  std::string master_key;
+  dict->GetString(kMasterKey, &master_key);
+  std::string chrome_avatar;
+  dict->GetString(kChromeAvatar, &chrome_avatar);
+  std::string chromeos_avatar;
+  dict->GetString(kChromeOsAvatar, &chromeos_avatar);
+
+  return CreateLocalSyncData(it.key(), name, acknowledged, master_key,
+                             chrome_avatar, chromeos_avatar);
 }
 
 }  // namespace
@@ -85,12 +115,27 @@ void ManagedUserSyncService::RemoveObserver(
 
 void ManagedUserSyncService::AddManagedUser(const std::string& id,
                                             const std::string& name,
-                                            const std::string& master_key) {
+                                            const std::string& master_key,
+                                            int avatar_index) {
   DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
   DictionaryValue* dict = update.Get();
   DictionaryValue* value = new DictionaryValue;
   value->SetString(kName, name);
   value->SetString(kMasterKey, master_key);
+  std::string chrome_avatar;
+#if defined(CHROME_OS)
+  // This is a dummy value that is passed when a supervised user is created on
+  // Chrome OS.
+  // TODO(ibraaaa): update this to use the correct avatar index
+  // once avatar syncing for supervised users is implemented on Chrome OS.
+  DCHECK_EQ(avatar_index, -111);
+#else
+  chrome_avatar = base::StringPrintf("chrome-avatar-index:%d", avatar_index);
+#endif
+  value->SetString(kChromeAvatar, chrome_avatar);
+  // TODO(ibraaaa): this should be updated to allow supervised
+  // users avatar syncing on Chrome OS.
+  value->SetString(kChromeOsAvatar, std::string());
   DCHECK(!dict->HasKey(id));
   dict->SetWithoutPathExpansion(id, value);
 
@@ -102,7 +147,8 @@ void ManagedUserSyncService::AddManagedUser(const std::string& id,
   change_list.push_back(SyncChange(
       FROM_HERE,
       SyncChange::ACTION_ADD,
-      CreateLocalSyncData(id, name, false, master_key)));
+      CreateLocalSyncData(id, name, false, master_key,
+                          chrome_avatar, std::string())));
   SyncError error =
       sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
   DCHECK(!error.IsSet()) << error.ToString();
@@ -170,6 +216,8 @@ SyncMergeResult ManagedUserSyncService::MergeDataAndStartSyncing(
     value->SetString(kName, managed_user.name());
     value->SetBoolean(kAcknowledged, managed_user.acknowledged());
     value->SetString(kMasterKey, managed_user.master_key());
+    value->SetString(kChromeAvatar, managed_user.chrome_avatar());
+    value->SetString(kChromeOsAvatar, managed_user.chromeos_avatar());
     if (dict->HasKey(managed_user.id()))
       num_items_modified++;
     else
@@ -182,19 +230,8 @@ SyncMergeResult ManagedUserSyncService::MergeDataAndStartSyncing(
     if (seen_ids.find(it.key()) != seen_ids.end())
       continue;
 
-    const DictionaryValue* dict = NULL;
-    bool success = it.value().GetAsDictionary(&dict);
-    DCHECK(success);
-    bool acknowledged = false;
-    dict->GetBoolean(kAcknowledged, &acknowledged);
-    std::string name;
-    dict->GetString(kName, &name);
-    std::string master_key;
-    dict->GetString(kMasterKey, &master_key);
-    DCHECK(!name.empty());
-    change_list.push_back(
-        SyncChange(FROM_HERE, SyncChange::ACTION_ADD,
-            CreateLocalSyncData(it.key(), name, acknowledged, master_key)));
+    change_list.push_back(SyncChange(FROM_HERE, SyncChange::ACTION_ADD,
+                                     CreateSyncDataFromDictionaryEntry(it)));
   }
   result.set_error(sync_processor_->ProcessSyncChanges(FROM_HERE, change_list));
 
@@ -221,19 +258,9 @@ SyncDataList ManagedUserSyncService::GetAllSyncData(
   SyncDataList data;
   DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
   DictionaryValue* dict = update.Get();
-  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    const DictionaryValue* dict = NULL;
-    bool success = it.value().GetAsDictionary(&dict);
-    DCHECK(success);
-    std::string name;
-    dict->GetString(kName, &name);
-    std::string master_key;
-    dict->GetString(kMasterKey, &master_key);
-    bool acknowledged = false;
-    dict->GetBoolean(kAcknowledged, &acknowledged);
-    data.push_back(
-        CreateLocalSyncData(it.key(), name, acknowledged, master_key));
-  }
+  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance())
+    data.push_back(CreateSyncDataFromDictionaryEntry(it));
+
   return data;
 }
 
@@ -272,6 +299,8 @@ SyncError ManagedUserSyncService::ProcessSyncChanges(
         value->SetString(kName, managed_user.name());
         value->SetBoolean(kAcknowledged, managed_user.acknowledged());
         value->SetString(kMasterKey, managed_user.master_key());
+        value->SetString(kChromeAvatar, managed_user.chrome_avatar());
+        value->SetString(kChromeOsAvatar, managed_user.chromeos_avatar());
         dict->SetWithoutPathExpansion(managed_user.id(), value);
         break;
       }
