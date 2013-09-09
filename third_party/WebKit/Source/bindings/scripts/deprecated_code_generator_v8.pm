@@ -1144,7 +1144,6 @@ sub GenerateDomainSafeFunctionGetter
 
     my $newTemplateParams = "${implClassName}V8Internal::${funcName}MethodCallback, v8Undefined(), $signature";
 
-    AddToImplIncludes("core/page/Frame.h");
     AddToImplIncludes("bindings/v8/BindingSecurity.h");
     $implementation{nameSpaceInternal}->add(<<END);
 static void ${funcName}AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1703,7 +1702,6 @@ static void ${implClassName}ReplaceableAttributeSetter(v8::Local<v8::String> nam
 {
 END
     if ($interface->extendedAttributes->{"CheckSecurity"}) {
-        AddToImplIncludes("core/page/Frame.h");
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
         $code .= <<END;
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
@@ -2245,7 +2243,6 @@ END
     # Check domain security if needed
     if ($interface->extendedAttributes->{"CheckSecurity"} && !$function->extendedAttributes->{"DoNotCheckSecurity"}) {
         # We have not find real use cases yet.
-        AddToImplIncludes("core/page/Frame.h");
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
         $code .= <<END;
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
@@ -2803,7 +2800,6 @@ sub GenerateNamedConstructor
         $toEventTarget = "${v8ClassName}::toEventTarget";
     }
 
-    AddToImplIncludes("core/page/Frame.h");
     $implementation{nameSpaceWebCore}->add(<<END);
 WrapperTypeInfo ${v8ClassName}Constructor::info = { ${v8ClassName}Constructor::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
@@ -4722,7 +4718,6 @@ sub GenerateToV8Converters
     }
 
     AddToImplIncludes("bindings/v8/ScriptController.h");
-    AddToImplIncludes("core/page/Frame.h");
 
     my $createWrapperArgumentType = GetPassRefPtrType($nativeType);
     my $baseType = BaseInterfaceName($interface);
@@ -4757,6 +4752,7 @@ END
 END
 
     if (InheritsInterface($interface, "Document")) {
+        AddToImplIncludes("core/page/Frame.h");
         $code .= <<END;
     if (Frame* frame = impl->frame()) {
         if (frame->script()->initializeMainWorld()) {
