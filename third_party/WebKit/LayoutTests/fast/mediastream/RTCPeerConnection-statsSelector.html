@@ -41,7 +41,13 @@ function statsHandler2(status)
     shouldBeGreaterThanOrEqual('result.length', '1');
     local = result[0].local;
     timestamp = local.timestamp;
-    shouldBeGreaterThanOrEqual('timestamp', 'startTime');
+    // Windows XP sometimes gives time that appears to go backwards.
+    // This hack will make the tests non-flaky if it never goes backwards
+    // by more than 20 milliseconds.
+    // Up to 10 milliseconds has been observed on XP, 2 milliseconds on Win7.
+    fudgeForXP = 20;
+    timediff = timestamp - startTime + fudgeForXP;
+    shouldBeGreaterThanOrEqual('timediff', '0');
     shouldBe('local.stat("type")', '"video"');
     finishJSTest();
 }
