@@ -43,11 +43,11 @@ class ChromeV8Context : public RequestSender::Source {
   // Returns true if this context is still valid, false if it isn't.
   // A context becomes invalid via Invalidate().
   bool is_valid() const {
-    return !v8_context_.get().IsEmpty();
+    return !v8_context_.IsEmpty();
   }
 
   v8::Handle<v8::Context> v8_context() const {
-    return v8_context_.get();
+    return v8_context_.NewHandle(v8::Isolate::GetCurrent());
   }
 
   const Extension* extension() const {
