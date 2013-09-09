@@ -407,8 +407,12 @@ public:
     bool isV8CollectableDuringMinorGC() const { return getFlag(V8CollectableDuringMinorGCFlag); }
     void setV8CollectableDuringMinorGC(bool flag) { setFlag(flag, V8CollectableDuringMinorGCFlag); }
 
-    void lazyAttach();
-    void lazyReattach();
+    enum ShouldSetAttached {
+        SetAttached,
+        DoNotSetAttached
+    };
+    void lazyAttach(ShouldSetAttached = SetAttached);
+    void lazyReattach(ShouldSetAttached = SetAttached);
 
     virtual void setFocus(bool flag);
     virtual void setActive(bool flag = true, bool pause = false);
@@ -909,7 +913,7 @@ inline void Node::lazyReattachIfAttached()
         lazyReattach();
 }
 
-inline void Node::lazyReattach()
+inline void Node::lazyReattach(ShouldSetAttached shouldSetAttached)
 {
     if (styleChangeType() == LazyAttachStyleChange)
         return;
@@ -919,7 +923,7 @@ inline void Node::lazyReattach()
 
     if (attached())
         detach(context);
-    lazyAttach();
+    lazyAttach(shouldSetAttached);
 }
 
 inline bool shouldRecalcStyle(StyleRecalcChange change, const Node* node)
