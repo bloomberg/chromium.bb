@@ -28,15 +28,6 @@ class RecursiveOperationDelegate;
 class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
     : public NON_EXPORTED_BASE(FileSystemOperation) {
  public:
-  // NOTE: This constructor should not be called outside FileSystemBackends;
-  // instead please consider using
-  // file_system_context->CreateFileSystemOperation() to instantiate
-  // an appropriate FileSystemOperation.
-  FileSystemOperationImpl(
-      const FileSystemURL& url,
-      FileSystemContext* file_system_context,
-      scoped_ptr<FileSystemOperationContext> operation_context);
-
   virtual ~FileSystemOperationImpl();
 
   // FileSystemOperation overrides.
@@ -103,6 +94,13 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
   }
 
  private:
+  friend class FileSystemOperation;
+
+  FileSystemOperationImpl(
+      const FileSystemURL& url,
+      FileSystemContext* file_system_context,
+      scoped_ptr<FileSystemOperationContext> operation_context);
+
   // Queries the quota and usage and then runs the given |task|.
   // If an error occurs during the quota query it runs |error_callback| instead.
   void GetUsageAndQuotaThenRunTask(

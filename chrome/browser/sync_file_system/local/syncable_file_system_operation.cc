@@ -11,9 +11,10 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "net/url_request/url_request.h"
 #include "webkit/browser/fileapi/file_system_context.h"
+#include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/fileapi/file_system_operation_impl.h"
 #include "webkit/browser/fileapi/file_system_url.h"
+#include "webkit/browser/fileapi/file_writer_delegate.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
@@ -362,8 +363,8 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
     // Returning here to leave operation_runner_ as NULL.
     return;
   }
-  impl_.reset(new fileapi::FileSystemOperationImpl(url_, file_system_context,
-                                                   operation_context.Pass()));
+  impl_.reset(fileapi::FileSystemOperation::Create(
+      url_, file_system_context, operation_context.Pass()));
   operation_runner_ = backend->sync_context()->operation_runner();
   is_directory_operation_enabled_ = IsSyncFSDirectoryOperationEnabled();
 }

@@ -12,7 +12,7 @@
 #include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation_impl.h"
+#include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_writer_delegate.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 

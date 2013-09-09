@@ -11,6 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/platform_file.h"
 #include "base/process/process.h"
+#include "webkit/browser/fileapi/file_system_operation_context.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/directory_entry.h"
 
 namespace base {
@@ -29,9 +31,9 @@ class GURL;
 
 namespace fileapi {
 
+class FileSystemContext;
 class FileSystemURL;
 class FileWriterDelegate;
-class FileSystemOperationImpl;
 
 // The interface class for FileSystemOperation implementations.
 //
@@ -56,6 +58,11 @@ class FileSystemOperationImpl;
 // it gets called.
 class FileSystemOperation {
  public:
+  WEBKIT_STORAGE_BROWSER_EXPORT static FileSystemOperation* Create(
+      const FileSystemURL& url,
+      FileSystemContext* file_system_context,
+      scoped_ptr<FileSystemOperationContext> operation_context);
+
   virtual ~FileSystemOperation() {}
 
   // Used for CreateFile(), etc. |result| is the return code of the operation.

@@ -16,7 +16,7 @@
 #include "content/public/browser/notification_service.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_stream_reader.h"
-#include "webkit/browser/fileapi/file_system_operation_impl.h"
+#include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/browser/fileapi/sandbox_quota_observer.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -160,7 +160,7 @@ SyncFileSystemBackend::CreateFileSystemOperation(
     return NULL;
 
   if (url.type() == fileapi::kFileSystemTypeSyncableForInternalSync) {
-    return new fileapi::FileSystemOperationImpl(
+    return fileapi::FileSystemOperation::Create(
         url, context, operation_context.Pass());
   }
 

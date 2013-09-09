@@ -19,8 +19,8 @@
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_stream_reader.h"
+#include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/fileapi/file_system_operation_impl.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/isolated_file_util.h"
@@ -249,8 +249,8 @@ fileapi::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
   scoped_ptr<fileapi::FileSystemOperationContext> operation_context(
       new fileapi::FileSystemOperationContext(context));
   operation_context->set_root_path(GetFileSystemRootPath(url));
-  return new fileapi::FileSystemOperationImpl(url, context,
-                                              operation_context.Pass());
+  return fileapi::FileSystemOperation::Create(
+      url, context, operation_context.Pass());
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>

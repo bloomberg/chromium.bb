@@ -31,20 +31,12 @@ using webkit_blob::ScopedFile;
 
 namespace fileapi {
 
-FileSystemOperationImpl::FileSystemOperationImpl(
+FileSystemOperation* FileSystemOperation::Create(
     const FileSystemURL& url,
     FileSystemContext* file_system_context,
-    scoped_ptr<FileSystemOperationContext> operation_context)
-    : file_system_context_(file_system_context),
-      operation_context_(operation_context.Pass()),
-      async_file_util_(NULL),
-      peer_handle_(base::kNullProcessHandle),
-      pending_operation_(kOperationNone),
-      weak_factory_(this) {
-  DCHECK(operation_context_.get());
-  operation_context_->DetachUserDataThread();
-  async_file_util_ = file_system_context_->GetAsyncFileUtil(url.type());
-  DCHECK(async_file_util_);
+    scoped_ptr<FileSystemOperationContext> operation_context) {
+  return new FileSystemOperationImpl(url, file_system_context,
+                                     operation_context.Pass());
 }
 
 FileSystemOperationImpl::~FileSystemOperationImpl() {
@@ -316,6 +308,22 @@ base::PlatformFileError FileSystemOperationImpl::SyncGetPlatformPath(
       file_system_context()->sandbox_delegate()->sync_file_util();
   file_util->GetLocalFilePath(operation_context_.get(), url, platform_path);
   return base::PLATFORM_FILE_OK;
+}
+
+FileSystemOperationImpl::FileSystemOperationImpl(
+    const FileSystemURL& url,
+    FileSystemContext* file_system_context,
+    scoped_ptr<FileSystemOperationContext> operation_context)
+    : file_system_context_(file_system_context),
+      operation_context_(operation_context.Pass()),
+      async_file_util_(NULL),
+      peer_handle_(base::kNullProcessHandle),
+      pending_operation_(kOperationNone),
+      weak_factory_(this) {
+  DCHECK(operation_context_.get());
+  operation_context_->DetachUserDataThread();
+  async_file_util_ = file_system_context_->GetAsyncFileUtil(url.type());
+  DCHECK(async_file_util_);
 }
 
 void FileSystemOperationImpl::GetUsageAndQuotaThenRunTask(
