@@ -63,6 +63,8 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
       web_contents->GetView()->GetNativeView(),
       modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
   web_contents_modal_dialog_manager->ShowDialog(dialog_->GetNativeView());
+  web_contents_modal_dialog_manager->SetCloseOnInterstitialWebUI(
+      dialog_->GetNativeView(), true);
   delegate_->set_close_delegate(this);
 }
 
