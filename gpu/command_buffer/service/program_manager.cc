@@ -558,6 +558,10 @@ bool Program::Link(ShaderManager* manager,
                  "declared in vertex shader");
     return false;
   }
+  if (DetectGlobalNameConflicts()) {
+    set_log_info("Name conflicts between an uniform and an attribute");
+    return false;
+  }
   if (!CheckVaryingsPacking()) {
     set_log_info("Varyings over maximum register limit");
     return false;
@@ -1068,6 +1072,27 @@ bool Program::DetectVaryingsMismatch() const {
         hit->second.size != iter->second.size)
       return true;
 
+  }
+  return false;
+}
+
+bool Program::DetectGlobalNameConflicts() const {
+  DCHECK(attached_shaders_[0] &&
+         attached_shaders_[0]->shader_type() == GL_VERTEX_SHADER &&
+         attached_shaders_[1] &&
+         attached_shaders_[1]->shader_type() == GL_FRAGMENT_SHADER);
+  const ShaderTranslator::VariableMap* uniforms[2];
+  uniforms[0] = &(attached_shaders_[0]->uniform_map());
+  uniforms[1] = &(attached_shaders_[1]->uniform_map());
+  const ShaderTranslator::VariableMap* attribs =
+      &(attached_shaders_[0]->attrib_map());
+
+  for (ShaderTranslator::VariableMap::const_iterator iter =
+           attribs->begin(); iter != attribs->end(); ++iter) {
+    for (int ii = 0; ii < 2; ++ii) {
+      if (uniforms[ii]->find(iter->first) != uniforms[ii]->end())
+        return true;
+    }
   }
   return false;
 }

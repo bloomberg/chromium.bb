@@ -195,6 +195,9 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // is not declared in vertex shader.
   bool DetectVaryingsMismatch() const;
 
+  // Return true if an uniform and an attribute share the same name.
+  bool DetectGlobalNameConflicts() const;
+
   // Return false if varyings can't be packed into the max available
   // varying registers.
   bool CheckVaryingsPacking() const;
