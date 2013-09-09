@@ -89,6 +89,9 @@
   },
   "seconds": {
     "improvement_direction": "down"
+  },
+  "us": {
+    "improvement_direction": "down"
   }
 }
 
