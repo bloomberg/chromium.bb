@@ -71,14 +71,13 @@ class HeaderFlattener : public WebHTTPHeaderVisitor {
   }
 
   virtual void visitHeader(const WebString& name, const WebString& value) {
-    // TODO(darin): is UTF-8 really correct here?  It is if the strings are
-    // already ASCII (i.e., if they are already escaped properly).
-    const std::string& name_utf8 = name.utf8();
-    const std::string& value_utf8 = value.utf8();
+    // Headers are latin1.
+    const std::string& name_latin1 = name.latin1();
+    const std::string& value_latin1 = value.latin1();
 
     // Skip over referrer headers found in the header map because we already
     // pulled it out as a separate parameter.
-    if (LowerCaseEqualsASCII(name_utf8, "referer"))
+    if (LowerCaseEqualsASCII(name_latin1, "referer"))
       return;
 
     // Skip over "Cache-Control: max-age=0" header if the corresponding
@@ -87,16 +86,16 @@ class HeaderFlattener : public WebHTTPHeaderVisitor {
     // implementation will add the necessary headers based on load flags.
     // See http://code.google.com/p/chromium/issues/detail?id=3434.
     if ((load_flags_ & net::LOAD_VALIDATE_CACHE) &&
-        LowerCaseEqualsASCII(name_utf8, "cache-control") &&
-        LowerCaseEqualsASCII(value_utf8, "max-age=0"))
+        LowerCaseEqualsASCII(name_latin1, "cache-control") &&
+        LowerCaseEqualsASCII(value_latin1, "max-age=0"))
       return;
 
-    if (LowerCaseEqualsASCII(name_utf8, "accept"))
+    if (LowerCaseEqualsASCII(name_latin1, "accept"))
       has_accept_header_ = true;
 
     if (!buffer_.empty())
       buffer_.append("\r\n");
-    buffer_.append(name_utf8 + ": " + value_utf8);
+    buffer_.append(name_latin1 + ": " + value_latin1);
   }
 
   const std::string& GetBuffer() {
@@ -224,26 +223,26 @@ void PopulateURLResponse(
     WebHTTPLoadInfo load_info;
 
     load_info.setHTTPStatusCode(info.devtools_info->http_status_code);
-    load_info.setHTTPStatusText(WebString::fromUTF8(
+    load_info.setHTTPStatusText(WebString::fromLatin1(
         info.devtools_info->http_status_text));
     load_info.setEncodedDataLength(info.encoded_data_length);
 
-    load_info.setRequestHeadersText(WebString::fromUTF8(
+    load_info.setRequestHeadersText(WebString::fromLatin1(
         info.devtools_info->request_headers_text));
-    load_info.setResponseHeadersText(WebString::fromUTF8(
+    load_info.setResponseHeadersText(WebString::fromLatin1(
         info.devtools_info->response_headers_text));
     const HeadersVector& request_headers = info.devtools_info->request_headers;
     for (HeadersVector::const_iterator it = request_headers.begin();
          it != request_headers.end(); ++it) {
-      load_info.addRequestHeader(WebString::fromUTF8(it->first),
-          WebString::fromUTF8(it->second));
+      load_info.addRequestHeader(WebString::fromLatin1(it->first),
+          WebString::fromLatin1(it->second));
     }
     const HeadersVector& response_headers =
         info.devtools_info->response_headers;
     for (HeadersVector::const_iterator it = response_headers.begin();
          it != response_headers.end(); ++it) {
-      load_info.addResponseHeader(WebString::fromUTF8(it->first),
-          WebString::fromUTF8(it->second));
+      load_info.addResponseHeader(WebString::fromLatin1(it->first),
+          WebString::fromLatin1(it->second));
     }
     response->setHTTPLoadInfo(load_info);
   }
@@ -261,7 +260,7 @@ void PopulateURLResponse(
     version = WebURLResponse::HTTP_1_1;
   response->setHTTPVersion(version);
   response->setHTTPStatusCode(headers->response_code());
-  response->setHTTPStatusText(WebString::fromUTF8(headers->GetStatusText()));
+  response->setHTTPStatusText(WebString::fromLatin1(headers->GetStatusText()));
 
   // TODO(darin): We should leverage HttpResponseHeaders for this, and this
   // should be using the same code as ResourceDispatcherHost.
@@ -285,8 +284,8 @@ void PopulateURLResponse(
   void* iter = NULL;
   std::string name;
   while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    response->addHTTPHeaderField(WebString::fromUTF8(name),
-                                 WebString::fromUTF8(value));
+    response->addHTTPHeaderField(WebString::fromLatin1(name),
+                                 WebString::fromLatin1(value));
   }
 }
 
@@ -435,8 +434,8 @@ void WebURLLoaderImpl::Context::Start(
   }
 
   GURL referrer_url(
-      request.httpHeaderField(WebString::fromUTF8("Referer")).utf8());
-  const std::string& method = request.httpMethod().utf8();
+      request.httpHeaderField(WebString::fromUTF8("Referer")).latin1());
+  const std::string& method = request.httpMethod().latin1();
 
   int load_flags = net::LOAD_NORMAL;
   switch (request.cachePolicy()) {
