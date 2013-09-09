@@ -37,6 +37,7 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
+#include "core/page/UseCounter.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
@@ -92,6 +93,8 @@ inline SVGSVGElement::SVGSVGElement(const QualifiedName& tagName, Document& doc)
     ASSERT(hasTagName(SVGNames::svgTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGSVGElement();
+
+    UseCounter::count(&doc, UseCounter::SVGSVGElement);
 }
 
 PassRefPtr<SVGSVGElement> SVGSVGElement::create(const QualifiedName& tagName, Document& document)
