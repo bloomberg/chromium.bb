@@ -32,7 +32,7 @@ std::vector<gfx::ImagePNGRep> SelectFaviconFramesFromPNGsWithoutResizing(
     return png_reps;
 
   // A |favicon_size| of 0 indicates that the largest frame is desired.
-  if (favicon_size == 0 && scale_factors.size() == 1) {
+  if (favicon_size == 0) {
     int maximum_area = 0;
     scoped_refptr<base::RefCountedMemory> best_candidate;
     for (size_t i = 0; i < png_data.size(); ++i) {
@@ -43,7 +43,7 @@ std::vector<gfx::ImagePNGRep> SelectFaviconFramesFromPNGsWithoutResizing(
       }
     }
     png_reps.push_back(gfx::ImagePNGRep(best_candidate,
-                                        scale_factors[0]));
+                                        ui::SCALE_FACTOR_100P));
     return png_reps;
   }
 
@@ -133,6 +133,11 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
   std::vector<gfx::ImagePNGRep> png_reps =
       SelectFaviconFramesFromPNGsWithoutResizing(png_data, scale_factors,
           favicon_size);
+
+  // SelectFaviconFramesFromPNGsWithoutResizing() should have selected the
+  // largest favicon if |favicon_size| == 0.
+  if (favicon_size == 0)
+    return gfx::Image(png_reps);
 
   std::vector<ui::ScaleFactor> scale_factors_to_generate = scale_factors;
   for (size_t i = 0; i < png_reps.size(); ++i) {
