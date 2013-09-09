@@ -67,12 +67,13 @@ void SVGDocument::dispatchScrollEvent()
 
 bool SVGDocument::zoomAndPanEnabled() const
 {
-    if (rootElement()) {
-        if (rootElement()->useCurrentView()) {
-            if (rootElement()->currentView())
-                return rootElement()->currentView()->zoomAndPan() == SVGZoomAndPanMagnify;
-        } else
-            return rootElement()->zoomAndPan() == SVGZoomAndPanMagnify;
+    if (SVGSVGElement* svg = rootElement()) {
+        if (svg->useCurrentView()) {
+            if (svg->currentView())
+                return svg->currentView()->zoomAndPan() == SVGZoomAndPanMagnify;
+        } else {
+            return svg->zoomAndPan() == SVGZoomAndPanMagnify;
+        }
     }
 
     return false;
@@ -80,14 +81,14 @@ bool SVGDocument::zoomAndPanEnabled() const
 
 void SVGDocument::startPan(const FloatPoint& start)
 {
-    if (rootElement())
-        m_translate = FloatPoint(start.x() - rootElement()->currentTranslate().x(), start.y() - rootElement()->currentTranslate().y());
+    if (SVGSVGElement* svg = rootElement())
+        m_translate = FloatPoint(start.x() - svg->currentTranslate().x(), start.y() - svg->currentTranslate().y());
 }
 
 void SVGDocument::updatePan(const FloatPoint& pos) const
 {
-    if (rootElement()) {
-        rootElement()->setCurrentTranslate(FloatPoint(pos.x() - m_translate.x(), pos.y() - m_translate.y()));
+    if (SVGSVGElement* svg = rootElement()) {
+        svg->setCurrentTranslate(FloatPoint(pos.x() - m_translate.x(), pos.y() - m_translate.y()));
         if (renderer())
             renderer()->repaint();
     }
