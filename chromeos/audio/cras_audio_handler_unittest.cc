@@ -1075,7 +1075,7 @@ TEST_F(CrasAudioHandlerTest, SetOutputVolumePercent) {
   AudioDevice device;
   EXPECT_TRUE(cras_audio_handler_->GetActiveOutputDevice(&device));
   EXPECT_EQ(device.id, kInternalSpeaker.id);
-  EXPECT_EQ(kVolume, audio_pref_handler_->GetVolumeGainValue(device));
+  EXPECT_EQ(kVolume, audio_pref_handler_->GetOutputVolumeValue(&device));
 }
 
 TEST_F(CrasAudioHandlerTest, SetInputGainPercent) {
@@ -1093,7 +1093,7 @@ TEST_F(CrasAudioHandlerTest, SetInputGainPercent) {
   EXPECT_EQ(kGain, cras_audio_handler_->GetInputGainPercent());
   EXPECT_EQ(1, test_observer_->input_gain_changed_count());
   AudioDevice internal_mic(kInternalMic);
-  EXPECT_EQ(kGain, audio_pref_handler_->GetVolumeGainValue(internal_mic));
+  EXPECT_EQ(kGain, audio_pref_handler_->GetInputGainValue(&internal_mic));
 }
 
 TEST_F(CrasAudioHandlerTest, SetMuteForDevice) {
@@ -1161,7 +1161,7 @@ TEST_F(CrasAudioHandlerTest, SetVolumeGainPercentForDevice) {
                 kHeadphone.id));
   AudioDevice headphone(kHeadphone);
   EXPECT_EQ(kHeadphoneVolume,
-            audio_pref_handler_->GetVolumeGainValue(headphone));
+            audio_pref_handler_->GetOutputVolumeValue(&headphone));
 
   // Set volume percent for non-active output device.
   const int kSpeakerVolume = 60;
@@ -1174,7 +1174,7 @@ TEST_F(CrasAudioHandlerTest, SetVolumeGainPercentForDevice) {
                 kInternalSpeaker.id));
   AudioDevice speaker(kInternalSpeaker);
   EXPECT_EQ(kSpeakerVolume,
-            audio_pref_handler_->GetVolumeGainValue(speaker));
+            audio_pref_handler_->GetOutputVolumeValue(&speaker));
 
   // Set gain percent for active input device.
   const int kUSBMicGain = 30;
@@ -1187,7 +1187,7 @@ TEST_F(CrasAudioHandlerTest, SetVolumeGainPercentForDevice) {
             cras_audio_handler_->GetOutputVolumePercentForDevice(kUSBMic.id));
   AudioDevice usb_mic(kHeadphone);
   EXPECT_EQ(kUSBMicGain,
-            audio_pref_handler_->GetVolumeGainValue(usb_mic));
+            audio_pref_handler_->GetInputGainValue(&usb_mic));
 
   // Set gain percent for non-active input device.
   const int kInternalMicGain = 60;
@@ -1200,7 +1200,7 @@ TEST_F(CrasAudioHandlerTest, SetVolumeGainPercentForDevice) {
                 kInternalMic.id));
   AudioDevice internal_mic(kInternalMic);
   EXPECT_EQ(kInternalMicGain,
-            audio_pref_handler_->GetVolumeGainValue(internal_mic));
+            audio_pref_handler_->GetInputGainValue(&internal_mic));
 }
 
 TEST_F(CrasAudioHandlerTest, HandleOtherDeviceType) {

@@ -16,31 +16,37 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/audio_device.h"
-#include "chromeos/audio/cras_audio_handler.h"
 
 namespace {
+
+const double kDefaultOutputVolume = 75.0;
+const double kDefaultHDMIOutputVolume = 100.0;
+
+// Values used for muted preference.
+const int kPrefMuteOff = 0;
+const int kPrefMuteOn = 1;
 
 std::string GetDeviceIdString(const chromeos::AudioDevice& device) {
   return device.device_name + " : " +
          base::Uint64ToString(device.id & static_cast<uint64>(0xffffffff));
 }
 
-}
+}  // namespace
 
 namespace chromeos {
 
-double AudioDevicesPrefHandlerImpl::GetVolumeGainValue(
-    const AudioDevice& device) {
-  UpdateDevicesVolumePref();
+double AudioDevicesPrefHandlerImpl::GetOutputVolumeValue(
+    const AudioDevice* device) {
+  if (!device)
+    return kDefaultOutputVolume;
+  else
+    return GetVolumeGainPrefValue(*device);
+}
 
-  std::string device_id_str = GetDeviceIdString(device);
-  if (!device_volume_settings_->HasKey(device_id_str))
-    MigrateDeviceVolumeSettings(device_id_str);
-
-  double volume = kDefaultVolumeGainPercent;
-  device_volume_settings_->GetDouble(device_id_str, &volume);
-
-  return volume;
+double AudioDevicesPrefHandlerImpl::GetInputGainValue(
+    const AudioDevice* device) {
+  DCHECK(device);
+  return GetVolumeGainPrefValue(*device);
 }
 
 void AudioDevicesPrefHandlerImpl::SetVolumeGainValue(
@@ -87,6 +93,31 @@ void AudioDevicesPrefHandlerImpl::AddAudioPrefObserver(
 void AudioDevicesPrefHandlerImpl::RemoveAudioPrefObserver(
     AudioPrefObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+double AudioDevicesPrefHandlerImpl::GetVolumeGainPrefValue(
+    const AudioDevice& device) {
+  UpdateDevicesVolumePref();
+
+  std::string device_id_str = GetDeviceIdString(device);
+  if (!device_volume_settings_->HasKey(device_id_str))
+    MigrateDeviceVolumeSettings(device_id_str);
+
+  // TODO(jennyz, rkc): Return a meaningful input gain default value, when
+  // cras has added support for normalizing input gain range.
+  double value = device.is_input ?
+      0.0 : GetDeviceDefaultOutputVolume(device);
+  device_volume_settings_->GetDouble(device_id_str, &value);
+
+  return value;
+}
+
+double AudioDevicesPrefHandlerImpl::GetDeviceDefaultOutputVolume(
+    const AudioDevice& device) {
+  if (device.type == AUDIO_TYPE_HDMI)
+    return kDefaultHDMIOutputVolume;
+  else
+    return kDefaultOutputVolume;
 }
 
 AudioDevicesPrefHandlerImpl::AudioDevicesPrefHandlerImpl(
@@ -142,8 +173,9 @@ void AudioDevicesPrefHandlerImpl::SaveDevicesVolumePref() {
                                    prefs::kAudioDevicesVolumePercent);
   base::DictionaryValue::Iterator it(*device_volume_settings_);
   while (!it.IsAtEnd()) {
-    double volume = kDefaultVolumeGainPercent;
-    it.value().GetAsDouble(&volume);
+    double volume = kDefaultOutputVolume;
+    bool success = it.value().GetAsDouble(&volume);
+    DCHECK(success);
     dict_update->SetDouble(it.key(), volume);
     it.Advance();
   }
@@ -182,7 +214,7 @@ void AudioDevicesPrefHandlerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 
   // Register the legacy audio prefs for migration.
   registry->RegisterDoublePref(prefs::kAudioVolumePercent,
-                               kDefaultVolumeGainPercent);
+                               kDefaultOutputVolume);
   registry->RegisterIntegerPref(prefs::kAudioMute, kPrefMuteOff);
 }
 

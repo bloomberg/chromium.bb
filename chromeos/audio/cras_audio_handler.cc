@@ -134,9 +134,7 @@ int CrasAudioHandler::GetOutputVolumePercentForDevice(uint64 device_id) {
     return output_volume_;
   } else {
     const AudioDevice* device = GetDeviceFromId(device_id);
-    if (!device)
-      return kDefaultVolumeGainPercent;
-    return static_cast<int>(audio_pref_handler_->GetVolumeGainValue(*device));
+    return static_cast<int>(audio_pref_handler_->GetOutputVolumeValue(device));
   }
 }
 
@@ -149,9 +147,7 @@ int CrasAudioHandler::GetInputGainPercentForDevice(uint64 device_id) {
     return input_gain_;
   } else {
     const AudioDevice* device = GetDeviceFromId(device_id);
-    if (!device)
-      return kDefaultVolumeGainPercent;
-    return static_cast<int>(audio_pref_handler_->GetVolumeGainValue(*device));
+    return static_cast<int>(audio_pref_handler_->GetInputGainValue(device));
   }
 }
 
@@ -379,7 +375,7 @@ void CrasAudioHandler::SetupAudioInputState() {
     return;
   }
   input_mute_on_ = audio_pref_handler_->GetMuteValue(*device);
-  input_gain_ = audio_pref_handler_->GetVolumeGainValue(*device);
+  input_gain_ = audio_pref_handler_->GetInputGainValue(device);
   SetInputMuteInternal(input_mute_on_);
   // TODO(rkc,jennyz): Set input gain once we decide on how to store
   // the gain values since the range and step are both device specific.
@@ -393,7 +389,7 @@ void CrasAudioHandler::SetupAudioOutputState() {
     return;
   }
   output_mute_on_ = audio_pref_handler_->GetMuteValue(*device);
-  output_volume_ = audio_pref_handler_->GetVolumeGainValue(*device);
+  output_volume_ = audio_pref_handler_->GetOutputVolumeValue(device);
 
   SetOutputMuteInternal(output_mute_on_);
   SetOutputNodeVolume(active_output_node_id_, output_volume_);

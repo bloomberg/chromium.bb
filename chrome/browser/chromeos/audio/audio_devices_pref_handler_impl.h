@@ -22,7 +22,8 @@ class AudioDevicesPrefHandlerImpl : public AudioDevicesPrefHandler {
   explicit AudioDevicesPrefHandlerImpl(PrefService* local_state);
 
   // Overridden from AudioDevicesPrefHandler.
-  virtual double GetVolumeGainValue(const AudioDevice& device) OVERRIDE;
+  virtual double GetOutputVolumeValue(const AudioDevice* device) OVERRIDE;
+  virtual double GetInputGainValue(const AudioDevice* device) OVERRIDE;
   virtual void SetVolumeGainValue(const AudioDevice& device,
                                   double value) OVERRIDE;
 
@@ -52,6 +53,9 @@ class AudioDevicesPrefHandlerImpl : public AudioDevicesPrefHandler {
   // Update and save methods for the volume preferences for all devices.
   void UpdateDevicesVolumePref();
   void SaveDevicesVolumePref();
+
+  double GetVolumeGainPrefValue(const AudioDevice& device);
+  double GetDeviceDefaultOutputVolume(const AudioDevice& device);
 
   // Methods to migrate the mute and volume settings for a device from the
   // previous global pref value to the new per device pref value for the

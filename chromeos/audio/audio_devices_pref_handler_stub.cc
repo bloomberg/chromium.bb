@@ -14,9 +14,18 @@ AudioDevicesPrefHandlerStub::AudioDevicesPrefHandlerStub() {
 AudioDevicesPrefHandlerStub::~AudioDevicesPrefHandlerStub() {
 }
 
-double AudioDevicesPrefHandlerStub::GetVolumeGainValue(
-    const AudioDevice& device) {
-  return audio_device_volume_gain_map_[device.id];
+double AudioDevicesPrefHandlerStub::GetOutputVolumeValue(
+    const AudioDevice* device) {
+  if (!device)
+    return 75.0;
+  return audio_device_volume_gain_map_[device->id];
+}
+
+double AudioDevicesPrefHandlerStub::GetInputGainValue(
+    const AudioDevice* device) {
+  if (!device)
+    return 0.0;
+  return audio_device_volume_gain_map_[device->id];
 }
 
 void AudioDevicesPrefHandlerStub::SetVolumeGainValue(const AudioDevice& device,

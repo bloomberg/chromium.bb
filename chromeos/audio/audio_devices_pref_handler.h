@@ -25,7 +25,8 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandler
   // Gets the audio output volume value from prefs for a device. Since we can
   // only have either a gain or a volume for a device (depending on whether it
   // is input or output), we don't really care which value it is.
-  virtual double GetVolumeGainValue(const AudioDevice& device) = 0;
+  virtual double GetOutputVolumeValue(const AudioDevice* device) = 0;
+  virtual double GetInputGainValue(const AudioDevice* device) = 0;
   // Sets the audio volume or gain value to prefs for a device.
   virtual void SetVolumeGainValue(const AudioDevice& device, double value) = 0;
 

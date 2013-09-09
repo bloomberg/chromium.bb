@@ -22,7 +22,8 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandlerStub
 
   AudioDevicesPrefHandlerStub();
 
-  virtual double GetVolumeGainValue(const AudioDevice& device) OVERRIDE;
+  virtual double GetOutputVolumeValue(const AudioDevice* device) OVERRIDE;
+  virtual double GetInputGainValue(const AudioDevice* device) OVERRIDE;
   virtual void SetVolumeGainValue(const AudioDevice& device,
                                   double value) OVERRIDE;
   virtual bool GetMuteValue(const AudioDevice& device) OVERRIDE;

@@ -20,17 +20,6 @@
 class PrefRegistrySimple;
 class PrefService;
 
-namespace {
-
-// Default value for the volume pref, as a percent in the range [0.0, 100.0].
-const double kDefaultVolumeGainPercent = 75.0;
-
-// Values used for muted preference.
-const int kPrefMuteOff = 0;
-const int kPrefMuteOn = 1;
-
-}  // namespace
-
 namespace chromeos {
 
 class AudioDevicesPrefHandler;
