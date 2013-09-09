@@ -1094,9 +1094,8 @@ class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
           success=self.success, message=self.message)
 
 
-class ImportantBuilderFailedException(Exception):
+class ImportantBuilderFailedException(results_lib.StepFailure):
   """Exception thrown when an important build fails to build."""
-  pass
 
 
 class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
@@ -1135,6 +1134,23 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       release_tag = manifest_manager.current_version
       if release_tag and not commands.HaveHWTestsBeenAborted(release_tag):
         commands.AbortHWTests(release_tag, self._options.debug)
+
+  def _HandleStageException(self, exception):
+    """Decide whether an exception should be treated as fatal."""
+    # Besides the master, the completion stages also run on slaves, to report
+    # their status back to the master. If the build failed, they throw an
+    # exception here. For slave builders, marking this stage 'red' would be
+    # redundant, since the build itself would already be red. In this case,
+    # report a warning instead.
+    # pylint: disable=W0212
+    if (isinstance(exception, ImportantBuilderFailedException) and
+        not self._build_config['master']):
+      return self._HandleExceptionAsWarning(exception)
+    else:
+      # In all other cases, exceptions should be treated as fatal. To
+      # implement this, we bypass ForgivingStage and call
+      # bs.BuilderStage._HandleStageException explicitly.
+      return bs.BuilderStage._HandleStageException(self, exception)
 
   def HandleSuccess(self):
     # We only promote for the pfq, not chrome pfq.
@@ -1188,7 +1204,7 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
           self.HandleValidationTimeout(inflight_build_dict)
 
       if failing_build_dict or inflight_build_dict:
-        raise results_lib.StepFailure()
+        raise ImportantBuilderFailedException()
       else:
         self.HandleSuccess()
 
