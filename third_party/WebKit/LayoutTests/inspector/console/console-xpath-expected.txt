@@ -9,5 +9,5 @@ $x('/html/body/p').length
 "html"
 false
 1
-complete [VM] (scriptId):1
+complete VM:1
 
