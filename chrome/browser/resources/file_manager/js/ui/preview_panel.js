@@ -55,24 +55,32 @@ var PreviewPanel = function(element, visibilityType, currentPath) {
   this.summaryElement_ = element.querySelector('.preview-summary');
 
   /**
+   * @type {PreviewPanel.CalculatingSizeLabel}
+   * @private
+   */
+  this.calculatingSizeLabel_ = new PreviewPanel.CalculatingSizeLabel(
+      this.summaryElement_.querySelector('.calculating-size'));
+
+  /**
    * @type {HTMLElement}
    * @private
    */
-  this.textElement_ = element.querySelector('.preview-text');
+  this.previewText_ = element.querySelector('.preview-text');
 
   /**
-   * Function to be called at the end of visibility change.
-   * @type {function(boolean)}
+   * FileSelection to be displayed.
+   * @type {FileSelection}
    * @private
    */
-  this.visibilityChangedCallback_ = null;
+  this.selection_ = {entries: [], computeBytes: function() {}};
 
   /**
-   * Entries to be displayed.
-   * @type {Array.<Entry>}
+   * Sequence value that is incremented by every selection update nad is used to
+   * check if the callback is up to date or not.
+   * @type {number}
    * @private
    */
-  this.entries_ = [];
+  this.sequence_ = 0;
 
   cr.EventTarget.call(this);
 };
@@ -93,7 +101,7 @@ PreviewPanel.Event = Object.freeze({
 PreviewPanel.VisibilityType = Object.freeze({
   // Preview panel always shows.
   ALWAYS_VISIBLE: 'alwaysVisible',
-  // Preview panel shows when the entries property are set.
+  // Preview panel shows when the selection property are set.
   AUTO: 'auto',
   // Preview panel does not show.
   ALWAYS_HIDDEN: 'alwaysHidden'
@@ -110,15 +118,6 @@ PreviewPanel.Visibility_ = Object.freeze({
 
 PreviewPanel.prototype = {
   __proto__: cr.EventTarget.prototype,
-
-  /**
-   * Setter for entries to be displayed in the preview panel.
-   * @param {Array.<Entry>} entries New entries.
-   */
-  set entries(entries) {
-    this.entries_ = entries;
-    this.updateVisibility_();
-  },
 
   /**
    * Setter for the current path.
@@ -160,7 +159,19 @@ PreviewPanel.prototype = {
 PreviewPanel.prototype.initialize = function() {
   this.element_.addEventListener('webkitTransitionEnd',
                                  this.onTransitionEnd_.bind(this));
+  this.updatePreviewText_();
   this.updateVisibility_();
+};
+
+/**
+ * Apply the selection and update the view of the preview panel.
+ * @param {FileSelection} selection Selection to be applied.
+ */
+PreviewPanel.prototype.setSelection = function(selection) {
+  this.sequence_++;
+  this.selection_ = selection;
+  this.updateVisibility_();
+  this.updatePreviewText_();
 };
 
 /**
@@ -176,8 +187,8 @@ PreviewPanel.prototype.updateVisibility_ = function() {
       newVisible = true;
       break;
     case PreviewPanel.VisibilityType.AUTO:
-      newVisible = this.entries_.length != 0 ||
-                   !PathUtil.isRootPath(this.currentPath_);
+      newVisible = this.selection_.entries.length != 0 ||
+          !PathUtil.isRootPath(this.currentPath_);
       break;
     case PreviewPanel.VisibilityType.ALWAYS_HIDDEN:
       newVisible = false;
@@ -202,6 +213,49 @@ PreviewPanel.prototype.updateVisibility_ = function() {
 };
 
 /**
+ * Update the text in the preview panel.
+ * @private
+ */
+PreviewPanel.prototype.updatePreviewText_ = function() {
+  var selection = this.selection_;
+
+  // Hides the preview text if zero or one file is selected. We shows a
+  // breadcrumb list instead on the preview panel.
+  if (selection.totalCount <= 1) {
+    this.calculatingSizeLabel_.hidden = true;
+    this.previewText_.textContent = '';
+    return;
+  }
+
+  // Obtains the preview text.
+  var text;
+  if (selection.directoryCount == 0)
+    text = strf('MANY_FILES_SELECTED', selection.fileCount);
+  else if (selection.fileCount == 0)
+    text = strf('MANY_DIRECTORIES_SELECTED', selection.directoryCount);
+  else
+    text = strf('MANY_ENTRIES_SELECTED', selection.totalCount);
+
+  // Obtains the size of files.
+  this.calculatingSizeLabel_.hidden = selection.bytesKnown;
+  if (selection.bytesKnown && selection.showBytes)
+    text += ', ' + util.bytesToString(selection.bytes);
+
+  // Set the preview text to the element.
+  this.previewText_.textContent = text;
+
+  // Request the byte calculation if needed.
+  if (!selection.bytesKnown) {
+    this.selection_.computeBytes(function(sequence) {
+      // Selection has been already updated.
+      if (this.sequence_ != sequence)
+        return;
+      this.updatePreviewText_();
+    }.bind(this, this.sequence_));
+  }
+};
+
+/**
  * Event handler to be called at the end of hiding transition.
  * @param {Event} event The webkitTransitionEnd event.
  * @private
@@ -214,4 +268,64 @@ PreviewPanel.prototype.onTransitionEnd_ = function(event) {
     return;
   this.element_.setAttribute('visibility', PreviewPanel.Visibility_.HIDDEN);
   cr.dispatchSimpleEvent(this, PreviewPanel.Event.VISIBILITY_CHANGE);
+};
+
+/**
+ * Animating label that is shown during the bytes of selection entries is being
+ * calculated.
+ *
+ * This label shows dots and varying the number of dots every
+ * CalculatingSizeLabel.PERIOD milliseconds.
+ * @param {HTMLElement} element DOM element of the label.
+ * @constructor
+ */
+PreviewPanel.CalculatingSizeLabel = function(element) {
+  this.element_ = element;
+  this.count_ = 0;
+  this.intervalID_ = null;
+  Object.seal(this);
+};
+
+/**
+ * Time period in milliseconds.
+ * @const {number}
+ */
+PreviewPanel.CalculatingSizeLabel.PERIOD = 500;
+
+PreviewPanel.CalculatingSizeLabel.prototype = {
+  /**
+   * Set visibility of the label.
+   * When it is displayed, the text is animated.
+   * @param {boolean} hidden Whether to hide the label or not.
+   */
+  set hidden(hidden) {
+    this.element_.hidden = hidden;
+    if (!hidden) {
+      if (this.intervalID_ != null)
+        return;
+      this.count_ = 2;
+      this.intervalID_ =
+          setInterval(this.onStep_.bind(this),
+                      PreviewPanel.CalculatingSizeLabel.PERIOD);
+      this.onStep_();
+    } else {
+      if (this.intervalID_ == null)
+        return;
+      clearInterval(this.intervalID_);
+      this.intervalID_ = null;
+    }
+  }
+};
+
+/**
+ * Increments the counter and updates the number of dots.
+ * @private
+ */
+PreviewPanel.CalculatingSizeLabel.prototype.onStep_ = function() {
+  var text = str('CALCULATING_SIZE');
+  for (var i = 0; i < ~~(this.count_ / 2) % 4; i++) {
+    text += '.';
+  }
+  this.element_.textContent = text;
+  this.count_++;
 };

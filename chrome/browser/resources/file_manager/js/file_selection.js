@@ -228,8 +228,6 @@ FileSelectionHandler.prototype.onFileSelectionChanged = function(event) {
     this.selectionUpdateTimer_ = null;
   }
 
-  this.hideCalculating_();
-
   // The rest of the selection properties are computed via (sometimes lengthy)
   // asynchronous calls. We initiate these calls after a timeout. If the
   // selection is changing quickly we only do this once when it slows down.
@@ -247,17 +245,6 @@ FileSelectionHandler.prototype.onFileSelectionChanged = function(event) {
     if (this.selection == selection)
       this.updateFileSelectionAsync(selection);
   }.bind(this), updateDelay);
-};
-
-/**
- * Clears the primary UI selection elements.
- */
-FileSelectionHandler.prototype.clearUI = function() {
-  this.previewThumbnails_.textContent = '';
-  this.previewText_.textContent = '';
-  this.hideCalculating_();
-  this.taskItems_.hidden = true;
-  this.okButton_.disabled = true;
 };
 
 /**
@@ -315,92 +302,6 @@ FileSelectionHandler.prototype.isFileSelectionAvailable = function() {
 };
 
 /**
- * Update the selection summary in preview panel.
- *
- * @private
- */
-FileSelectionHandler.prototype.updatePreviewPanelText_ = function() {
-  var selection = this.selection;
-  if (selection.totalCount <= 1) {
-    // Hides the preview text if zero or one file is selected. We shows a
-    // breadcrumb list instead on the preview panel.
-    this.hideCalculating_();
-    this.previewText_.textContent = '';
-    return;
-  }
-
-  var text = '';
-  if (selection.totalCount == 1) {
-    text = selection.entries[0].name;
-  } else if (selection.directoryCount == 0) {
-    text = strf('MANY_FILES_SELECTED', selection.fileCount);
-  } else if (selection.fileCount == 0) {
-    text = strf('MANY_DIRECTORIES_SELECTED', selection.directoryCount);
-  } else {
-    text = strf('MANY_ENTRIES_SELECTED', selection.totalCount);
-  }
-
-  if (selection.bytesKnown) {
-    this.hideCalculating_();
-    if (selection.showBytes) {
-      var bytes = util.bytesToString(selection.bytes);
-      text += ', ' + bytes;
-    }
-  } else {
-    this.showCalculating_();
-  }
-
-  this.previewText_.textContent = text;
-};
-
-/**
- * Displays the 'calculating size' label.
- *
- * @private
- */
-FileSelectionHandler.prototype.showCalculating_ = function() {
-  if (this.animationTimeout_) {
-    clearTimeout(this.animationTimeout_);
-    this.animationTimeout_ = null;
-  }
-
-  var dotCount = 0;
-
-  var advance = function() {
-    this.animationTimeout_ = setTimeout(advance, 1000);
-
-    var s = this.calculatingSize_.textContent;
-    s = s.replace(/(\.)+$/, '');
-    for (var i = 0; i < dotCount; i++) {
-      s += '.';
-    }
-    this.calculatingSize_.textContent = s;
-
-    dotCount = (dotCount + 1) % 3;
-  }.bind(this);
-
-  var start = function() {
-    this.calculatingSize_.hidden = false;
-    advance();
-  }.bind(this);
-
-  this.animationTimeout_ = setTimeout(start, 500);
-};
-
-/**
- * Hides the 'calculating size' label.
- *
- * @private
- */
-FileSelectionHandler.prototype.hideCalculating_ = function() {
-  if (this.animationTimeout_) {
-    clearTimeout(this.animationTimeout_);
-    this.animationTimeout_ = null;
-  }
-  this.calculatingSize_.hidden = true;
-};
-
-/**
  * Calculates async selection stats and updates secondary UI elements.
  *
  * @param {FileSelection} selection The selection object.
@@ -430,16 +331,8 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
     ];
   } else {
     thumbnailEntries = selection.entries;
-    if (selection.totalCount != 1) {
-      selection.computeBytes(function() {
-        if (this.selection != selection)
-          return;
-        this.updatePreviewPanelText_();
-      }.bind(this));
-    }
   }
-  this.previewPanel_.entries = selection.entries;
-  this.updatePreviewPanelText_();
+  this.previewPanel_.setSelection(selection);
   this.showPreviewThumbnails_(thumbnailEntries);
 
   // Update breadcrums.
