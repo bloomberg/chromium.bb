@@ -20,7 +20,6 @@ class ExtensionRendererState {
  public:
   struct WebViewInfo {
     int embedder_process_id;
-    int embedder_routing_id;
     int instance_id;
   };
 

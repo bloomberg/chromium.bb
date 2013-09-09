@@ -397,7 +397,6 @@ struct ExtensionWebRequestEventRouter::EventListener {
   RequestFilter filter;
   int extra_info_spec;
   int embedder_process_id;
-  int embedder_routing_id;
   int webview_instance_id;
   base::WeakPtr<IPC::Sender> ipc_sender;
   mutable std::set<uint64> blocked_requests;
@@ -1173,7 +1172,6 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
     const RequestFilter& filter,
     int extra_info_spec,
     int embedder_process_id,
-    int embedder_routing_id,
     int webview_instance_id,
     base::WeakPtr<IPC::Sender> ipc_sender) {
 
@@ -1188,7 +1186,6 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
   listener.extra_info_spec = extra_info_spec;
   listener.ipc_sender = ipc_sender;
   listener.embedder_process_id = embedder_process_id;
-  listener.embedder_routing_id = embedder_routing_id;
   listener.webview_instance_id = webview_instance_id;
   if (listener.webview_instance_id)
     RecordAction(content::UserMetricsAction("WebView.WebRequest.AddListener"));
@@ -1241,7 +1238,6 @@ void ExtensionWebRequestEventRouter::RemoveWebViewEventListeners(
     void* profile,
     const std::string& extension_id,
     int embedder_process_id,
-    int embedder_routing_id,
     int webview_instance_id) {
   // Iterate over all listeners of all WebRequest events to delete
   // any listeners that belong to the provided <webview>.
@@ -1253,10 +1249,7 @@ void ExtensionWebRequestEventRouter::RemoveWebViewEventListeners(
     for (std::set<EventListener>::iterator listener_iter = listeners.begin();
          listener_iter != listeners.end(); ++listener_iter) {
       const EventListener& listener = *listener_iter;
-      // TODO(fsamuel): Investigate making <webview> instance IDs unique within
-      // a process.
       if (listener.embedder_process_id == embedder_process_id &&
-          listener.embedder_routing_id == embedder_routing_id &&
           listener.webview_instance_id == webview_instance_id)
         listeners_to_delete.push_back(listener);
     }
@@ -1378,7 +1371,6 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
 
     if (is_guest &&
         (it->embedder_process_id != webview_info.embedder_process_id ||
-         it->embedder_routing_id != webview_info.embedder_routing_id ||
          it->webview_instance_id != webview_info.instance_id))
       continue;
 
@@ -2087,7 +2079,6 @@ bool WebRequestAddEventListener::RunImpl() {
 
   int embedder_process_id =
       ipc_sender.get() ? ipc_sender->render_process_id() : -1;
-  int embedder_routing_id = routing_id();
 
   const Extension* extension =
       extension_info_map()->extensions().GetByID(extension_id());
@@ -2122,8 +2113,7 @@ bool WebRequestAddEventListener::RunImpl() {
       ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
           profile_id(), extension_id(), extension_name,
           event_name, sub_event_name, filter, extra_info_spec,
-          embedder_process_id, embedder_routing_id, webview_instance_id,
-          ipc_sender_weak());
+          embedder_process_id, webview_instance_id, ipc_sender_weak());
   EXTENSION_FUNCTION_VALIDATE(success);
 
   helpers::ClearCacheOnNavigation();

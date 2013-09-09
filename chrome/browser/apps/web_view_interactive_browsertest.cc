@@ -580,6 +580,16 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
              "web_view/newwindow");
 }
 
+// A custom elements bug needs to be addressed to enable this test:
+// See http://crbug.com/282477 for more information.
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
+                       DISABLED_NewWindow_WebRequestCloseWindow) {
+  TestHelper("testNewWindowWebRequestCloseWindow",
+             "DoneNewWindowTest.PASSED",
+             "DoneNewWindowTest.FAILED",
+             "web_view/newwindow");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, ExecuteCode) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTestWithArg(
