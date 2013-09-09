@@ -30,14 +30,13 @@ const size_t kMaxSocketStreamHosts = 16 * 1024;
 
 SocketStreamDispatcherHost::SocketStreamDispatcherHost(
     int render_process_id,
-    ResourceMessageFilter::URLRequestContextSelector* selector,
+    const GetRequestContextCallback& request_context_callback,
     ResourceContext* resource_context)
     : render_process_id_(render_process_id),
-      url_request_context_selector_(selector),
+      request_context_callback_(request_context_callback),
       resource_context_(resource_context),
       weak_ptr_factory_(this),
       on_shutdown_(false) {
-  DCHECK(selector);
   net::WebSocketJob::EnsureInit();
 }
 
@@ -263,8 +262,7 @@ void SocketStreamDispatcherHost::DeleteSocketStreamHost(int socket_id) {
 }
 
 net::URLRequestContext* SocketStreamDispatcherHost::GetURLRequestContext() {
-  return url_request_context_selector_->GetRequestContext(
-      ResourceType::SUB_RESOURCE);
+  return request_context_callback_.Run(ResourceType::SUB_RESOURCE);
 }
 
 void SocketStreamDispatcherHost::Shutdown() {

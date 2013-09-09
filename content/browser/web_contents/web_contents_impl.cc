@@ -79,6 +79,9 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
+#include "net/http/http_cache.h"
+#include "net/http/http_transaction_factory.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/layout.h"
 #include "ui/base/touch/touch_device.h"
@@ -263,6 +266,14 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
 
   if (delegate)
     delegate->AddNavigationHeaders(params->url, &params->extra_headers);
+}
+
+void NotifyCacheOnIO(
+    scoped_refptr<net::URLRequestContextGetter> request_context,
+    const GURL& url,
+    const std::string& http_method) {
+  request_context->GetURLRequestContext()->http_transaction_factory()->
+      GetCache()->OnExternalCacheHit(url, http_method);
 }
 
 }  // namespace
@@ -2289,6 +2300,19 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
       NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
       Source<NavigationController>(&controller_),
       Details<LoadFromMemoryCacheDetails>(&details));
+
+  if (url.is_valid() && url.SchemeIsHTTPOrHTTPS()) {
+    scoped_refptr<net::URLRequestContextGetter> request_context(
+        resource_type == ResourceType::MEDIA ?
+            GetBrowserContext()->GetMediaRequestContextForRenderProcess(
+                GetRenderProcessHost()->GetID()) :
+            GetBrowserContext()->GetRequestContextForRenderProcess(
+                GetRenderProcessHost()->GetID()));
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&NotifyCacheOnIO, request_context, url, http_method));
+  }
 }
 
 void WebContentsImpl::OnDidDisplayInsecureContent() {

@@ -162,13 +162,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
     return save_file_manager_.get();
   }
 
-  // Called when the renderer loads a resource from its internal cache.
-  void OnDidLoadResourceFromMemoryCache(const GURL& url,
-                                        const std::string& security_info,
-                                        const std::string& http_method,
-                                        const std::string& mime_type,
-                                        ResourceType::Type resource_type);
-
   // Called when a RenderViewHost is created.
   void OnRenderViewHostCreated(int child_id, int route_id);
 

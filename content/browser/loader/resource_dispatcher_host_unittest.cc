@@ -159,22 +159,6 @@ void ResourceIPCAccumulator::GetClassifiedMessages(ClassifiedMessages* msgs) {
   }
 }
 
-class MockURLRequestContextSelector
-    : public ResourceMessageFilter::URLRequestContextSelector {
- public:
-  explicit MockURLRequestContextSelector(
-      net::URLRequestContext* request_context)
-      : request_context_(request_context) {}
-
-  virtual net::URLRequestContext* GetRequestContext(
-      ResourceType::Type request_type) OVERRIDE {
-    return request_context_;
-  }
-
- private:
-  net::URLRequestContext* const request_context_;
-};
-
 // This class forwards the incoming messages to the ResourceDispatcherHostTest.
 // This is used to emulate different sub-processes, since this filter will
 // have a different ID than the original. For the test, we want all the incoming
@@ -185,11 +169,11 @@ class ForwardingFilter : public ResourceMessageFilter {
                             ResourceContext* resource_context)
     : ResourceMessageFilter(
         ChildProcessHostImpl::GenerateChildProcessUniqueId(),
-        PROCESS_TYPE_RENDERER,
-        resource_context, NULL, NULL, NULL,
-        new MockURLRequestContextSelector(
-            resource_context->GetRequestContext())),
-      dest_(dest) {
+        PROCESS_TYPE_RENDERER, NULL, NULL, NULL,
+        base::Bind(&ForwardingFilter::GetContexts,
+                   base::Unretained(this))),
+      dest_(dest),
+      resource_context_(resource_context) {
     OnChannelConnected(base::GetCurrentProcId());
   }
 
@@ -200,11 +184,21 @@ class ForwardingFilter : public ResourceMessageFilter {
     return dest_->Send(msg);
   }
 
+  ResourceContext* resource_context() { return resource_context_; }
+
  protected:
   virtual ~ForwardingFilter() {}
 
  private:
+  void GetContexts(const ResourceHostMsg_Request& request,
+                   ResourceContext** resource_context,
+                   net::URLRequestContext** request_context) {
+    *resource_context = resource_context_;
+    *request_context = resource_context_->GetRequestContext();
+  }
+
   IPC::Sender* dest_;
+  ResourceContext* resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ForwardingFilter);
 };

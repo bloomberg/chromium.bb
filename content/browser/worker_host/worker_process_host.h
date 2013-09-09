@@ -20,10 +20,17 @@
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_sender.h"
 #include "url/gurl.h"
+#include "webkit/common/resource_type.h"
+
+struct ResourceHostMsg_Request;
 
 namespace fileapi {
 class FileSystemContext;
 }  // namespace fileapi
+
+namespace net {
+class URLRequestContext;
+}
 
 namespace webkit_database {
 class DatabaseTracker;
@@ -217,6 +224,12 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
   // Return a vector of all the render process/render view IDs that use the
   // given worker.
   std::vector<std::pair<int, int> > GetRenderViewIDsForWorker(int route_id);
+
+  // Callbacks for ResourceMessageFilter and SocketStreamDispatcherHost.
+  void GetContexts(const ResourceHostMsg_Request& request,
+                   ResourceContext** resource_context,
+                   net::URLRequestContext** request_context);
+  net::URLRequestContext* GetRequestContext(ResourceType::Type resource_type);
 
   Instances instances_;
 

@@ -30,6 +30,7 @@ CONTENT_EXPORT extern const char kBrowserSubprocessPath[];
 extern const char kDebugPluginLoading[];
 extern const char kDefaultTileWidth[];
 extern const char kDefaultTileHeight[];
+extern const char kDirectNPAPIRequests[];
 CONTENT_EXPORT extern const char kDisable2dCanvasAntialiasing[];
 CONTENT_EXPORT extern const char kDisable3DAPIs[];
 CONTENT_EXPORT extern const char kDisableAccelerated2dCanvas[];

@@ -20,6 +20,7 @@ class URLRequest;
 }
 
 namespace content {
+class ResourceContext;
 class ResourceDispatcherHostImpl;
 class ResourceMessageFilter;
 
@@ -28,6 +29,7 @@ class ResourceMessageFilter;
 class SyncResourceHandler : public ResourceHandler {
  public:
   SyncResourceHandler(ResourceMessageFilter* filter,
+                      ResourceContext* resource_context,
                       net::URLRequest* request,
                       IPC::Message* result_message,
                       ResourceDispatcherHostImpl* resource_dispatcher_host);
@@ -65,6 +67,7 @@ class SyncResourceHandler : public ResourceHandler {
 
   SyncLoadResult result_;
   scoped_refptr<ResourceMessageFilter> filter_;
+  ResourceContext* resource_context_;
   net::URLRequest* request_;
   IPC::Message* result_message_;
   ResourceDispatcherHostImpl* rdh_;

@@ -93,29 +93,28 @@ class FakeResourceContext : public ResourceContext {
   virtual bool AllowCameraAccess(const GURL& origin) OVERRIDE { return false; }
 };
 
-class FakeURLRequestContextSelector
-    : public ResourceMessageFilter::URLRequestContextSelector {
- private:
-  virtual net::URLRequestContext* GetRequestContext(
-      ResourceType::Type) OVERRIDE {
-    return NULL;
-  }
-};
-
 class FakeResourceMessageFilter : public ResourceMessageFilter {
  public:
   FakeResourceMessageFilter(int child_id)
-      : ResourceMessageFilter(child_id,
-                              PROCESS_TYPE_RENDERER,
-                              &context_,
-                              NULL  /* appcache_service */,
-                              NULL  /* blob_storage_context */,
-                              NULL  /* file_system_context */,
-                              new FakeURLRequestContextSelector) {
+      : ResourceMessageFilter(
+          child_id,
+          PROCESS_TYPE_RENDERER,
+          NULL  /* appcache_service */,
+          NULL  /* blob_storage_context */,
+          NULL  /* file_system_context */,
+          base::Bind(&FakeResourceMessageFilter::GetContexts,
+                     base::Unretained(this))) {
   }
 
  private:
   virtual ~FakeResourceMessageFilter() {}
+
+  void GetContexts(const ResourceHostMsg_Request& request,
+                   ResourceContext** resource_context,
+                   net::URLRequestContext** request_context) {
+    *resource_context = &context_;
+    *request_context = NULL;
+  }
 
   FakeResourceContext context_;
 };

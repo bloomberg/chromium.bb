@@ -78,10 +78,12 @@ class DependentIOBuffer : public net::WrappedIOBuffer {
 
 AsyncResourceHandler::AsyncResourceHandler(
     ResourceMessageFilter* filter,
+    ResourceContext* resource_context,
     net::URLRequest* request,
     ResourceDispatcherHostImpl* rdh)
     : ResourceMessageDelegate(request),
       filter_(filter),
+      resource_context_(resource_context),
       request_(request),
       rdh_(rdh),
       pending_data_count_(0),
@@ -148,9 +150,8 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
   *defer = did_defer_ = true;
 
   if (rdh_->delegate()) {
-    rdh_->delegate()->OnRequestRedirected(new_url, request_,
-                                          filter_->resource_context(),
-                                          response);
+    rdh_->delegate()->OnRequestRedirected(
+        new_url, request_, resource_context_, response);
   }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
@@ -169,16 +170,15 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   // request commits, avoiding the possibility of e.g. zooming the old content
   // or of having to layout the new content twice.
 
-  ResourceContext* resource_context = filter_->resource_context();
   if (rdh_->delegate()) {
     rdh_->delegate()->OnResponseStarted(
-        request_, resource_context, response, filter_.get());
+        request_, resource_context_, response, filter_.get());
   }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
 
   HostZoomMap* host_zoom_map =
-      GetHostZoomMapForResourceContext(resource_context);
+      GetHostZoomMapForResourceContext(resource_context_);
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (info->GetResourceType() == ResourceType::MAIN_FRAME && host_zoom_map) {

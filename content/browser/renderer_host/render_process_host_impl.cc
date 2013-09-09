@@ -164,37 +164,30 @@ void RemoveShaderInfo(int32 id) {
   ShaderCacheFactory::GetInstance()->RemoveCacheInfo(id);
 }
 
-// Helper class that we pass to ResourceMessageFilter so that it can find the
-// right net::URLRequestContext for a request.
-class RendererURLRequestContextSelector
-    : public ResourceMessageFilter::URLRequestContextSelector {
- public:
-  RendererURLRequestContextSelector(BrowserContext* browser_context,
-                                    int render_child_id)
-      : request_context_(browser_context->GetRequestContextForRenderProcess(
-                             render_child_id)),
-        media_request_context_(
-            browser_context->GetMediaRequestContextForRenderProcess(
-                render_child_id)) {
-  }
+net::URLRequestContext* GetRequestContext(
+    scoped_refptr<net::URLRequestContextGetter> request_context,
+    scoped_refptr<net::URLRequestContextGetter> media_request_context,
+    ResourceType::Type resource_type) {
+  // If the request has resource type of ResourceType::MEDIA, we use a request
+  // context specific to media for handling it because these resources have
+  // specific needs for caching.
+  if (resource_type == ResourceType::MEDIA)
+    return media_request_context->GetURLRequestContext();
+  return request_context->GetURLRequestContext();
+}
 
-  virtual net::URLRequestContext* GetRequestContext(
-      ResourceType::Type resource_type) OVERRIDE {
-    net::URLRequestContextGetter* request_context = request_context_.get();
-    // If the request has resource type of ResourceType::MEDIA, we use a request
-    // context specific to media for handling it because these resources have
-    // specific needs for caching.
-    if (resource_type == ResourceType::MEDIA)
-      request_context = media_request_context_.get();
-    return request_context->GetURLRequestContext();
-  }
-
- private:
-  virtual ~RendererURLRequestContextSelector() {}
-
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
-  scoped_refptr<net::URLRequestContextGetter> media_request_context_;
-};
+void GetContexts(
+    ResourceContext* resource_context,
+    scoped_refptr<net::URLRequestContextGetter> request_context,
+    scoped_refptr<net::URLRequestContextGetter> media_request_context,
+    const ResourceHostMsg_Request& request,
+    ResourceContext** resource_context_out,
+    net::URLRequestContext** request_context_out) {
+  *resource_context_out = resource_context;
+  *request_context_out =
+      GetRequestContext(request_context, media_request_context,
+                        request.resource_type);
+}
 
 // the global list of all renderer processes
 base::LazyInstance<IDMap<RenderProcessHost> >::Leaky
@@ -563,12 +556,21 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   BrowserContext* browser_context = GetBrowserContext();
   ResourceContext* resource_context = browser_context->GetResourceContext();
 
+  scoped_refptr<net::URLRequestContextGetter> request_context(
+      browser_context->GetRequestContextForRenderProcess(GetID()));
+  scoped_refptr<net::URLRequestContextGetter> media_request_context(
+      browser_context->GetMediaRequestContextForRenderProcess(GetID()));
+
+  ResourceMessageFilter::GetContextsCallback get_contexts_callback(
+      base::Bind(&GetContexts, browser_context->GetResourceContext(),
+                 request_context, media_request_context));
+
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
-      GetID(), PROCESS_TYPE_RENDERER, resource_context,
+      GetID(), PROCESS_TYPE_RENDERER,
       storage_partition_impl_->GetAppCacheService(),
       ChromeBlobStorageContext::GetFor(browser_context),
       storage_partition_impl_->GetFileSystemContext(),
-      new RendererURLRequestContextSelector(browser_context, GetID()));
+      get_contexts_callback);
 
   channel_->AddFilter(resource_message_filter);
   MediaStreamManager* media_stream_manager =
@@ -647,10 +649,14 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new FontCacheDispatcher());
 #endif
 
+  SocketStreamDispatcherHost::GetRequestContextCallback
+      request_context_callback(
+          base::Bind(&GetRequestContext, request_context,
+                     media_request_context));
+
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
-      new SocketStreamDispatcherHost(GetID(),
-          new RendererURLRequestContextSelector(browser_context, GetID()),
-          resource_context);
+      new SocketStreamDispatcherHost(
+          GetID(), request_context_callback, resource_context);
   channel_->AddFilter(socket_stream_dispatcher_host);
 
   channel_->AddFilter(new WorkerMessageFilter(
@@ -842,6 +848,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kAuditAllHandles,
     switches::kAuditHandles,
     switches::kBlockCrossSiteDocuments,
+    switches::kDirectNPAPIRequests,
     switches::kDisable3DAPIs,
     switches::kDisableAcceleratedCompositing,
     switches::kDisableAcceleratedVideoDecode,

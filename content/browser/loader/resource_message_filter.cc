@@ -15,21 +15,16 @@ namespace content {
 ResourceMessageFilter::ResourceMessageFilter(
     int child_id,
     int process_type,
-    ResourceContext* resource_context,
     ChromeAppCacheService* appcache_service,
     ChromeBlobStorageContext* blob_storage_context,
     fileapi::FileSystemContext* file_system_context,
-    URLRequestContextSelector* url_request_context_selector)
+    const GetContextsCallback& get_contexts_callback)
     : child_id_(child_id),
       process_type_(process_type),
-      resource_context_(resource_context),
       appcache_service_(appcache_service),
       blob_storage_context_(blob_storage_context),
       file_system_context_(file_system_context),
-      url_request_context_selector_(url_request_context_selector) {
-  DCHECK(resource_context);
-  DCHECK(url_request_context_selector);
-  // |appcache_service| and |blob_storage_context| may be NULL in unittests.
+      get_contexts_callback_(get_contexts_callback) {
 }
 
 ResourceMessageFilter::~ResourceMessageFilter() {
@@ -49,9 +44,11 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message,
       message, this, message_was_ok);
 }
 
-net::URLRequestContext* ResourceMessageFilter::GetURLRequestContext(
-    ResourceType::Type type) {
-  return url_request_context_selector_->GetRequestContext(type);
+void ResourceMessageFilter::GetContexts(
+    const ResourceHostMsg_Request& request,
+    ResourceContext** resource_context,
+    net::URLRequestContext** request_context) {
+  return get_contexts_callback_.Run(request, resource_context, request_context);
 }
 
 }  // namespace content

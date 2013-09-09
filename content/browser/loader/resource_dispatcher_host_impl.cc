@@ -77,10 +77,8 @@
 #include "net/base/upload_data_stream.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cookies/cookie_monster.h"
-#include "net/http/http_cache.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
-#include "net/http/http_transaction_factory.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -835,8 +833,6 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ResourceHostMsg_DataDownloaded_ACK, OnDataDownloadedACK)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_UploadProgress_ACK, OnUploadProgressACK)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_CancelRequest, OnCancelRequest)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
-                        OnDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -854,12 +850,6 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
         handled = delegate->OnMessageReceived(message, message_was_ok);
       }
     }
-  }
-
-  if (message.type() == ViewHostMsg_DidLoadResourceFromMemoryCache::ID) {
-    // We just needed to peek at this message. We still want it to reach its
-    // normal destination.
-    handled = false;
   }
 
   filter_ = NULL;
@@ -932,7 +922,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
     }
   }
 
-  ResourceContext* resource_context = filter_->resource_context();
+  ResourceContext* resource_context = NULL;
+  net::URLRequestContext* request_context = NULL;
+  filter_->GetContexts(request_data, &resource_context, &request_context);
   // http://crbug.com/90971
   CHECK(ContainsKey(active_resource_contexts_, resource_context));
 
@@ -976,9 +968,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
     // chance to reset some state before we complete the transfer.
     deferred_loader->WillCompleteTransfer();
   } else {
-    net::URLRequestContext* context =
-        filter_->GetURLRequestContext(request_data.resource_type);
-    new_request.reset(context->CreateRequest(request_data.url, NULL));
+    new_request.reset(request_context->CreateRequest(request_data.url, NULL));
     request = new_request.get();
 
     request->set_method(request_data.method);
@@ -998,9 +988,12 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   // Resolve elements from request_body and prepare upload data.
   if (request_data.request_body.get()) {
+    webkit_blob::BlobStorageContext* blob_context = NULL;
+    if (filter_->blob_storage_context())
+      blob_context = filter_->blob_storage_context()->context(),
     request->set_upload(UploadDataStreamBuilder::Build(
         request_data.request_body.get(),
-        filter_->blob_storage_context()->context(),
+        blob_context,
         filter_->file_system_context(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
             .get()));
@@ -1050,9 +1043,10 @@ void ResourceDispatcherHostImpl::BeginRequest(
   scoped_ptr<ResourceHandler> handler;
   if (sync_result) {
     handler.reset(new SyncResourceHandler(
-        filter_, request, sync_result, this));
+        filter_, resource_context, request, sync_result, this));
   } else {
-    handler.reset(new AsyncResourceHandler(filter_, request, this));
+    handler.reset(new AsyncResourceHandler(
+        filter_, resource_context, request, this));
   }
 
   // The RedirectToFileResourceHandler depends on being next in the chain.
@@ -1200,20 +1194,6 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       WebKit::WebReferrerPolicyDefault,
       context,
       true);     // is_async
-}
-
-
-void ResourceDispatcherHostImpl::OnDidLoadResourceFromMemoryCache(
-    const GURL& url,
-    const std::string& security_info,
-    const std::string& http_method,
-    const std::string& mime_type,
-    ResourceType::Type resource_type) {
-  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
-    return;
-
-  filter_->GetURLRequestContext(resource_type)->http_transaction_factory()->
-      GetCache()->OnExternalCacheHit(url, http_method);
 }
 
 void ResourceDispatcherHostImpl::OnRenderViewHostCreated(

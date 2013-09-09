@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_LOADER_RESOURCE_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_LOADER_RESOURCE_MESSAGE_FILTER_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "webkit/common/resource_type.h"
+
+struct ResourceHostMsg_Request;
 
 namespace fileapi {
 class FileSystemContext;
@@ -31,36 +34,32 @@ class ResourceContext;
 // will not interfere with browser UI.
 class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
  public:
-  // Allows selecting the net::URLRequestContext used to service requests.
-  class URLRequestContextSelector {
-   public:
-    URLRequestContextSelector() {}
-    virtual ~URLRequestContextSelector() {}
+  typedef base::Callback<void(const ResourceHostMsg_Request&,
+                              ResourceContext**,
+                              net::URLRequestContext**)> GetContextsCallback;
 
-    virtual net::URLRequestContext* GetRequestContext(
-        ResourceType::Type request_type) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(URLRequestContextSelector);
-  };
-
+  // |appcache_service|, |blob_storage_context|, |file_system_context| may be
+  // NULL in unittests or for requests from the (NPAPI) plugin process.
   ResourceMessageFilter(
       int child_id,
       int process_type,
-      ResourceContext* resource_context,
       ChromeAppCacheService* appcache_service,
       ChromeBlobStorageContext* blob_storage_context,
       fileapi::FileSystemContext* file_system_context,
-      URLRequestContextSelector* url_request_context_selector);
+      const GetContextsCallback& get_contexts_callback);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  ResourceContext* resource_context() const {
-    return resource_context_;
-  }
+  void GetContexts(const ResourceHostMsg_Request& request,
+                   ResourceContext** resource_context,
+                   net::URLRequestContext** request_context);
+
+  // Returns the net::URLRequestContext for the given request.
+  net::URLRequestContext* GetURLRequestContext(
+      ResourceType::Type request_type);
 
   ChromeAppCacheService* appcache_service() const {
     return appcache_service_.get();
@@ -73,10 +72,6 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
   fileapi::FileSystemContext* file_system_context() const {
     return file_system_context_.get();
   }
-
-  // Returns the net::URLRequestContext for the given request.
-  net::URLRequestContext* GetURLRequestContext(
-      ResourceType::Type request_type);
 
   int child_id() const { return child_id_; }
   int process_type() const { return process_type_; }
@@ -91,14 +86,11 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
 
   int process_type_;
 
-  // Owned by ProfileIOData* which is guaranteed to outlive us.
-  ResourceContext* resource_context_;
-
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 
-  const scoped_ptr<URLRequestContextSelector> url_request_context_selector_;
+  GetContextsCallback get_contexts_callback_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ResourceMessageFilter);
 };

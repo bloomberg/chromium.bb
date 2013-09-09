@@ -63,6 +63,11 @@ const char kDebugPluginLoading[] = "debug-plugin-loading";
 const char kDefaultTileWidth[]              = "default-tile-width";
 const char kDefaultTileHeight[]             = "default-tile-height";
 
+// Handles URL requests by NPAPI plugins directly through the browser, instead
+// of going through the renderer. This will be the new default, but it's not
+// turned on initially until we do more testing.
+const char kDirectNPAPIRequests[]           = "direct-npapi-requests";
+
 // Disable antialiasing on 2d canvas.
 const char kDisable2dCanvasAntialiasing[]   = "disable-canvas-aa";
 

@@ -24,6 +24,7 @@
 #include "content/browser/devtools/worker_devtools_message_filter.h"
 #include "content/browser/fileapi/fileapi_message_filter.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
+#include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/database_message_filter.h"
@@ -74,31 +75,6 @@ class WorkerSandboxedProcessLauncherDelegate
   }
 };
 #endif  // OS_WIN
-
-// Helper class that we pass to SocketStreamDispatcherHost so that it can find
-// the right net::URLRequestContext for a request.
-class URLRequestContextSelector
-    : public ResourceMessageFilter::URLRequestContextSelector {
- public:
-  explicit URLRequestContextSelector(
-      net::URLRequestContextGetter* url_request_context,
-      net::URLRequestContextGetter* media_url_request_context)
-      : url_request_context_(url_request_context),
-        media_url_request_context_(media_url_request_context) {
-  }
-  virtual ~URLRequestContextSelector() {}
-
-  virtual net::URLRequestContext* GetRequestContext(
-      ResourceType::Type resource_type) OVERRIDE {
-    if (resource_type == ResourceType::MEDIA)
-      return media_url_request_context_->GetURLRequestContext();
-    return url_request_context_->GetURLRequestContext();
-  }
-
- private:
-  net::URLRequestContextGetter* url_request_context_;
-  net::URLRequestContextGetter* media_url_request_context_;
-};
 
 }  // namespace
 
@@ -234,16 +210,17 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
 
   net::URLRequestContextGetter* url_request_context =
       partition_.url_request_context();
-  net::URLRequestContextGetter* media_url_request_context =
-      partition_.url_request_context();
+
+  ResourceMessageFilter::GetContextsCallback get_contexts_callback(
+      base::Bind(&WorkerProcessHost::GetContexts,
+      base::Unretained(this)));
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
-      process_->GetData().id, PROCESS_TYPE_WORKER, resource_context_,
+      process_->GetData().id, PROCESS_TYPE_WORKER,
       partition_.appcache_service(),
       blob_storage_context,
       partition_.filesystem_context(),
-      new URLRequestContextSelector(url_request_context,
-                                    media_url_request_context));
+      get_contexts_callback);
   process_->GetHost()->AddFilter(resource_message_filter);
 
   worker_message_filter_ = new WorkerMessageFilter(
@@ -269,11 +246,15 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       partition_.quota_manager(),
       GetContentClient()->browser()->CreateQuotaPermissionContext()));
 
+  SocketStreamDispatcherHost::GetRequestContextCallback
+      request_context_callback(
+          base::Bind(&WorkerProcessHost::GetRequestContext,
+          base::Unretained(this)));
+
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
       new SocketStreamDispatcherHost(
           render_process_id,
-          new URLRequestContextSelector(url_request_context,
-                                        media_url_request_context),
+          request_context_callback,
           resource_context_);
   socket_stream_dispatcher_host_ = socket_stream_dispatcher_host;
   process_->GetHost()->AddFilter(socket_stream_dispatcher_host);
@@ -586,6 +567,18 @@ std::vector<std::pair<int, int> > WorkerProcessHost::GetRenderViewIDsForWorker(
     break;
   }
   return result;
+}
+
+void WorkerProcessHost::GetContexts(const ResourceHostMsg_Request& request,
+                                    ResourceContext** resource_context,
+                                    net::URLRequestContext** request_context) {
+  *resource_context = resource_context_;
+  *request_context = partition_.url_request_context()->GetURLRequestContext();
+}
+
+net::URLRequestContext* WorkerProcessHost::GetRequestContext(
+    ResourceType::Type resource_type) {
+  return partition_.url_request_context()->GetURLRequestContext();
 }
 
 WorkerProcessHost::WorkerInstance::WorkerInstance(

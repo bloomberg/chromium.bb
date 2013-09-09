@@ -18,11 +18,13 @@ namespace content {
 
 SyncResourceHandler::SyncResourceHandler(
     ResourceMessageFilter* filter,
+    ResourceContext* resource_context,
     net::URLRequest* request,
     IPC::Message* result_message,
     ResourceDispatcherHostImpl* resource_dispatcher_host)
     : read_buffer_(new net::IOBuffer(kReadBufSize)),
       filter_(filter),
+      resource_context_(resource_context),
       request_(request),
       result_message_(result_message),
       rdh_(resource_dispatcher_host) {
@@ -48,9 +50,8 @@ bool SyncResourceHandler::OnRequestRedirected(
     ResourceResponse* response,
     bool* defer) {
   if (rdh_->delegate()) {
-    rdh_->delegate()->OnRequestRedirected(new_url, request_,
-                                          filter_->resource_context(),
-                                          response);
+    rdh_->delegate()->OnRequestRedirected(
+        new_url, request_, resource_context_, response);
   }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
@@ -71,7 +72,7 @@ bool SyncResourceHandler::OnResponseStarted(
     bool* defer) {
   if (rdh_->delegate()) {
     rdh_->delegate()->OnResponseStarted(
-        request_, filter_->resource_context(), response, filter_.get());
+        request_, resource_context_, response, filter_.get());
   }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
