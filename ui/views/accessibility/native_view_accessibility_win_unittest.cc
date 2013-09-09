@@ -7,6 +7,7 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
+#include "ui/views/accessibility/native_view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -59,6 +60,35 @@ TEST_F(NativeViewAcccessibilityWinTest, TextfieldAccessibility) {
   ASSERT_EQ(S_OK, textfield_accessible->put_accValue(childid_self, new_value));
 
   ASSERT_STREQ(L"New value", textfield->text().c_str());
+}
+
+TEST_F(NativeViewAcccessibilityWinTest, UnattachedWebView) {
+  // This is a regression test. Calling get_accChild on the native accessible
+  // object for a WebView with no attached WebContents was causing an
+  // infinite loop and crash. This test simulates that with an ordinary
+  // View that registers itself as a web view with NativeViewAcccessibility.
+
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_POPUP);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(init_params);
+
+  View* content = new View;
+  widget.SetContentsView(content);
+
+  View* web_view = new View;
+  content->AddChildView(web_view);
+  NativeViewAccessibility::RegisterWebView(web_view);
+
+  base::win::ScopedComPtr<IAccessible> web_view_accessible(
+      web_view->GetNativeViewAccessible());
+  base::win::ScopedComPtr<IDispatch> result_dispatch;
+  base::win::ScopedVariant child_index(-999);
+  ASSERT_EQ(E_FAIL, web_view_accessible->get_accChild(
+      child_index, result_dispatch.Receive()));
+
+  NativeViewAccessibility::UnregisterWebView(web_view);
 }
 
 }  // namespace test

@@ -106,7 +106,7 @@ IAccessible* AccessibleWebViewRegistry::GetAccessibleFromWebView(
   for (std::set<View*>::iterator iter = web_views_.begin();
        iter != web_views_.end(); ++iter) {
     View* web_view = *iter;
-    if (!top_view->Contains(web_view))
+    if (top_view == web_view || !top_view->Contains(web_view))
       continue;
     IAccessible* accessible = AccessibleObjectFromChildId(web_view, child_id);
     if (accessible) {
