@@ -14387,6 +14387,36 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Settings.TrackedPreferenceChanged" enum="TrackedPreference">
+  <summary>
+    The id of a tracked preference whose value has been changed since the last
+    time Chrome set it.
+  </summary>
+</histogram>
+
+<histogram name="Settings.TrackedPreferenceCleared" enum="TrackedPreference">
+  <summary>
+    The id of a tracked preference whose value has been cleared since the last
+    time Chrome set it.
+  </summary>
+</histogram>
+
+<histogram name="Settings.TrackedPreferenceInitialized"
+    enum="TrackedPreference">
+  <summary>
+    The id of a tracked preference whose last value isn't known. We may be just
+    starting to track the preference, or local state may have been changed
+    outside of Chrome.
+  </summary>
+</histogram>
+
+<histogram name="Settings.TrackedPreferenceUnchanged" enum="TrackedPreference">
+  <summary>
+    The id of a tracked preference whose value has not changed since the last
+    time Chrome set it.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.App.CheckCRCResult" enum="CheckCRCResult">
   <summary>
     Whether or not the CRC was checked at the moment when the last reference to
@@ -25194,6 +25224,21 @@ other types of suffix sets.
     The touchpad noise events (e.g. abrupt cursor jumps) caused by the noisy
     ground.
   </int>
+</enum>
+
+<enum name="TrackedPreference" type="int">
+  <int value="0" label="prefs::kShowHomeButton"/>
+  <int value="1" label="prefs::kHomePageIsNewTabPage"/>
+  <int value="2" label="prefs::kHomePage"/>
+  <int value="3" label="prefs::kRestoreOnStartup"/>
+  <int value="4" label="prefs::kURLsToRestoreOnStartup"/>
+  <int value="5" label="prefs::kExtensionsPref"/>
+  <int value="6" label="prefs::kGoogleServicesLastUsername"/>
+  <int value="7" label="prefs::kSearchProviderOverrides"/>
+  <int value="8" label="prefs::kDefaultSearchProviderSearchURL"/>
+  <int value="9" label="prefs::kDefaultSearchProviderKeyword"/>
+  <int value="10" label="prefs::kDefaultSearchProviderName"/>
+  <int value="11" label="prefs::kPinnedTabs"/>
 </enum>
 
 <enum name="TranslateError" type="int">

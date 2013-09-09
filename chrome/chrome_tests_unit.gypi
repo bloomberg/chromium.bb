@@ -1098,6 +1098,7 @@
         'browser/prefs/chrome_pref_service_unittest.cc',
         'browser/prefs/command_line_pref_store_unittest.cc',
         'browser/prefs/incognito_mode_prefs_unittest.cc',
+        'browser/prefs/pref_metrics_service_unittest.cc',
         'browser/prefs/pref_model_associator_unittest.cc',
         'browser/prefs/proxy_config_dictionary_unittest.cc',
         'browser/prefs/proxy_policy_unittest.cc',
