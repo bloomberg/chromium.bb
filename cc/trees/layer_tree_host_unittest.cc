@@ -545,7 +545,8 @@ class LayerTreeHostTestCompositeAndReadbackDuringForcedDraw
   virtual void AfterTest() OVERRIDE {}
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestCompositeAndReadbackDuringForcedDraw);
+// Flaky test. See http://crbug.com/287893.
+// MULTI_THREAD_TEST_F(LayerTreeHostTestCompositeAndReadbackDuringForcedDraw);
 
 class LayerTreeHostTestCompositeAndReadbackAfterForcedDraw
     : public LayerTreeHostTest {
