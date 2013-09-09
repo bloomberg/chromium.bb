@@ -24,9 +24,10 @@ namespace content {
 // sends back the response to the renderer/worker.
 class QuotaDispatcherHost::RequestDispatcher {
  public:
-  RequestDispatcher(QuotaDispatcherHost* dispatcher_host,
+  RequestDispatcher(base::WeakPtr<QuotaDispatcherHost> dispatcher_host,
                     int request_id)
       : dispatcher_host_(dispatcher_host),
+        render_process_id_(dispatcher_host->process_id_),
         request_id_(request_id) {
     dispatcher_host_->outstanding_requests_.AddWithID(this, request_id_);
   }
@@ -35,21 +36,26 @@ class QuotaDispatcherHost::RequestDispatcher {
  protected:
   // Subclass must call this when it's done with the request.
   void Completed() {
-    dispatcher_host_->outstanding_requests_.Remove(request_id_);
+    if (dispatcher_host_)
+      dispatcher_host_->outstanding_requests_.Remove(request_id_);
   }
 
-  QuotaDispatcherHost* dispatcher_host() const { return dispatcher_host_; }
+  QuotaDispatcherHost* dispatcher_host() const {
+    return dispatcher_host_.get();
+  }
   quota::QuotaManager* quota_manager() const {
-    return dispatcher_host_->quota_manager_;
+    return dispatcher_host_ ? dispatcher_host_->quota_manager_ : NULL;
   }
   QuotaPermissionContext* permission_context() const {
-    return dispatcher_host_->permission_context_.get();
+    return dispatcher_host_ ?
+        dispatcher_host_->permission_context_.get() : NULL;
   }
-  int render_process_id() const { return dispatcher_host_->process_id_; }
+  int render_process_id() const { return render_process_id_; }
   int request_id() const { return request_id_; }
 
  private:
-  QuotaDispatcherHost* dispatcher_host_;
+  base::WeakPtr<QuotaDispatcherHost> dispatcher_host_;
+  int render_process_id_;
   int request_id_;
 };
 
@@ -57,7 +63,7 @@ class QuotaDispatcherHost::QueryUsageAndQuotaDispatcher
     : public RequestDispatcher {
  public:
   QueryUsageAndQuotaDispatcher(
-      QuotaDispatcherHost* dispatcher_host,
+      base::WeakPtr<QuotaDispatcherHost> dispatcher_host,
       int request_id)
       : RequestDispatcher(dispatcher_host, request_id),
         weak_factory_(this) {}
@@ -73,7 +79,8 @@ class QuotaDispatcherHost::QueryUsageAndQuotaDispatcher
  private:
   void DidQueryStorageUsageAndQuota(
       QuotaStatusCode status, int64 usage, int64 quota) {
-    DCHECK(dispatcher_host());
+    if (!dispatcher_host())
+      return;
     if (status != quota::kQuotaStatusOk) {
       dispatcher_host()->Send(new QuotaMsg_DidFail(request_id(), status));
     } else {
@@ -91,7 +98,7 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
  public:
   typedef RequestQuotaDispatcher self_type;
 
-  RequestQuotaDispatcher(QuotaDispatcherHost* dispatcher_host,
+  RequestQuotaDispatcher(base::WeakPtr<QuotaDispatcherHost> dispatcher_host,
                          int request_id,
                          const GURL& origin,
                          StorageType type,
@@ -108,6 +115,7 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
   virtual ~RequestQuotaDispatcher() {}
 
   void Start() {
+    DCHECK(dispatcher_host());
     DCHECK(type_ == quota::kStorageTypeTemporary ||
            type_ == quota::kStorageTypePersistent ||
            type_ == quota::kStorageTypeSyncable);
@@ -129,6 +137,8 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
                        StorageType type,
                        QuotaStatusCode status,
                        int64 quota) {
+    if (!dispatcher_host())
+      return;
     DCHECK_EQ(type_, type);
     DCHECK_EQ(host_, host);
     if (status != quota::kQuotaStatusOk) {
@@ -162,6 +172,8 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
 
   void DidGetPermissionResponse(
       QuotaPermissionContext::QuotaPermissionResponse response) {
+    if (!dispatcher_host())
+      return;
     if (response != QuotaPermissionContext::QUOTA_PERMISSION_RESPONSE_ALLOW) {
       // User didn't allow the new quota.  Just returning the current quota.
       DidFinish(quota::kQuotaStatusOk, current_quota_);
@@ -178,6 +190,8 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
   }
 
   void DidFinish(QuotaStatusCode status, int64 granted_quota) {
+    if (!dispatcher_host())
+      return;
     DCHECK(dispatcher_host());
     if (status != quota::kQuotaStatusOk) {
       dispatcher_host()->Send(new QuotaMsg_DidFail(request_id(), status));
@@ -203,7 +217,8 @@ QuotaDispatcherHost::QuotaDispatcherHost(
     QuotaPermissionContext* permission_context)
     : process_id_(process_id),
       quota_manager_(quota_manager),
-      permission_context_(permission_context) {
+      permission_context_(permission_context),
+      weak_factory_(this) {
 }
 
 bool QuotaDispatcherHost::OnMessageReceived(
@@ -227,7 +242,7 @@ void QuotaDispatcherHost::OnQueryStorageUsageAndQuota(
     const GURL& origin,
     StorageType type) {
   QueryUsageAndQuotaDispatcher* dispatcher = new QueryUsageAndQuotaDispatcher(
-      this, request_id);
+      weak_factory_.GetWeakPtr(), request_id);
   dispatcher->QueryStorageUsageAndQuota(origin, type);
 }
 
@@ -251,7 +266,8 @@ void QuotaDispatcherHost::OnRequestStorageQuota(
   }
 
   RequestQuotaDispatcher* dispatcher = new RequestQuotaDispatcher(
-      this, request_id, origin, type, requested_size, render_view_id);
+      weak_factory_.GetWeakPtr(), request_id, origin, type,
+      requested_size, render_view_id);
   dispatcher->Start();
 }
 

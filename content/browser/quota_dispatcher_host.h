@@ -60,6 +60,8 @@ class QuotaDispatcherHost : public BrowserMessageFilter {
 
   IDMap<RequestDispatcher, IDMapOwnPointer> outstanding_requests_;
 
+  base::WeakPtrFactory<QuotaDispatcherHost> weak_factory_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(QuotaDispatcherHost);
 };
 
