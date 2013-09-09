@@ -17,6 +17,11 @@ namespace base {
 class Value;
 }  // namespace base
 
+namespace google_apis {
+class FileResource;
+class ResourceEntry;
+}  // namespace google_apis
+
 namespace drive {
 namespace util {
 
@@ -61,6 +66,10 @@ extern const char kDriveAppsScope[];
 void ParseShareUrlAndRun(const google_apis::GetShareUrlCallback& callback,
                          google_apis::GDataErrorCode error,
                          scoped_ptr<base::Value> value);
+
+// Converts ResourceEntry to FileResource.
+scoped_ptr<google_apis::FileResource>
+ConvertResourceEntryToFileResource(const google_apis::ResourceEntry& entry);
 
 // The resource ID for the root directory for WAPI is defined in the spec:
 // https://developers.google.com/google-apps/documents-list/

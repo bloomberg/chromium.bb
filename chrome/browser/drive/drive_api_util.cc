@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_switches.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
@@ -155,6 +156,70 @@ void ParseShareUrlAndRun(const google_apis::GetShareUrlCallback& callback,
   const google_apis::Link* share_link =
       entry->GetLinkByType(google_apis::Link::LINK_SHARE);
   callback.Run(error, share_link ? share_link->href() : GURL());
+}
+
+scoped_ptr<google_apis::FileResource> ConvertResourceEntryToFileResource(
+    const google_apis::ResourceEntry& entry) {
+  scoped_ptr<google_apis::FileResource> file(new google_apis::FileResource);
+
+  file->set_file_id(entry.resource_id());
+  file->set_title(entry.title());
+  file->set_created_date(entry.published_time());
+
+  if (std::find(entry.labels().begin(), entry.labels().end(),
+                "shared-with-me") == entry.labels().end()) {
+    // Set current time to mark the file is shared_with_me, since ResourceEntry
+    // doesn't have |shared_with_me_date| equivalent.
+    file->set_shared_with_me_date(base::Time::Now());
+  }
+
+  file->set_download_url(entry.download_url());
+  file->set_mime_type(entry.content_mime_type());
+
+  file->set_md5_checksum(entry.file_md5());
+  file->set_file_size(entry.file_size());
+
+  file->mutable_labels()->set_trashed(entry.deleted());
+  file->set_etag(entry.etag());
+
+  ScopedVector<google_apis::ParentReference> parents;
+  for (size_t i = 0; i < entry.links().size(); ++i) {
+    using google_apis::Link;
+    const Link& link = *entry.links()[i];
+    switch (link.type()) {
+      case Link::LINK_PARENT: {
+        scoped_ptr<google_apis::ParentReference> parent(
+            new google_apis::ParentReference);
+        parent->set_parent_link(link.href());
+
+        std::string file_id =
+            drive::util::ExtractResourceIdFromUrl(link.href());
+        parent->set_is_root(file_id == kWapiRootDirectoryResourceId);
+        parents.push_back(parent.release());
+        break;
+      }
+      case Link::LINK_EDIT:
+        file->set_self_link(link.href());
+        break;
+      case Link::LINK_THUMBNAIL:
+        file->set_thumbnail_link(link.href());
+        break;
+      case Link::LINK_ALTERNATE:
+        file->set_alternate_link(link.href());
+        break;
+      case Link::LINK_EMBED:
+        file->set_embed_link(link.href());
+        break;
+      default:
+        break;
+    }
+  }
+  file->set_parents(parents.Pass());
+
+  file->set_modified_date(entry.updated_time());
+  file->set_last_viewed_by_me_date(entry.last_viewed_time());
+
+  return file.Pass();
 }
 
 const char kWapiRootDirectoryResourceId[] = "folder:root";
