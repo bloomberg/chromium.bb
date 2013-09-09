@@ -16,8 +16,8 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/text_elider.h"
 
 namespace {
 // Maximum width of a username - we trim emails that are wider than this so
@@ -75,7 +75,7 @@ string16 GetSigninMenuLabel(Profile* profile) {
     if (signin_manager)
       username = signin_manager->GetAuthenticatedUsername();
     if (!username.empty() && !signin_manager->AuthInProgress()) {
-      string16 elided_username = ui::ElideEmail(UTF8ToUTF16(username),
+      string16 elided_username = gfx::ElideEmail(UTF8ToUTF16(username),
                                                 gfx::Font(),
                                                 kUsernameMaxWidth);
       return l10n_util::GetStringFUTF16(IDS_SYNC_MENU_SYNCED_LABEL,

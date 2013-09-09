@@ -23,7 +23,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"
-#include "ui/base/text/text_elider.h"
+#include "ui/gfx/text_elider.h"
 
 using base::TimeDelta;
 using content::DownloadItem;
@@ -325,14 +325,14 @@ string16 DownloadItemModel::GetTabProgressStatusText() const {
 
 string16 DownloadItemModel::GetTooltipText(const gfx::FontList& font_list,
                                            int max_width) const {
-  string16 tooltip = ui::ElideFilename(
+  string16 tooltip = gfx::ElideFilename(
       download_->GetFileNameToReportUser(), font_list, max_width);
   content::DownloadInterruptReason reason = download_->GetLastReason();
   if (download_->GetState() == DownloadItem::INTERRUPTED &&
       reason != content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
     tooltip += ASCIIToUTF16("\n");
-    tooltip += ui::ElideText(InterruptReasonStatusMessage(reason),
-                             font_list, max_width, ui::ELIDE_AT_END);
+    tooltip += gfx::ElideText(InterruptReasonStatusMessage(reason),
+                             font_list, max_width, gfx::ELIDE_AT_END);
   }
   return tooltip;
 }
@@ -342,7 +342,7 @@ string16 DownloadItemModel::GetWarningText(const gfx::FontList& font_list,
   // Should only be called if IsDangerous().
   DCHECK(IsDangerous());
   string16 elided_filename =
-      ui::ElideFilename(download_->GetFileNameToReportUser(), font_list,
+      gfx::ElideFilename(download_->GetFileNameToReportUser(), font_list,
                         base_width);
   switch (download_->GetDangerType()) {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: {

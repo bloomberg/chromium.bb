@@ -10,7 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "ui/base/text/text_elider.h"
+#include "ui/gfx/text_elider.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
@@ -31,11 +31,11 @@ const int kMessageTextMaxCols = 132;
 const int kDefaultPromptMaxRows = 24;
 const int kDefaultPromptMaxCols = 132;
 void EnforceMaxTextSize(const string16& in_string, string16* out_string) {
-  ui::ElideRectangleString(in_string, kMessageTextMaxRows,
+  gfx::ElideRectangleString(in_string, kMessageTextMaxRows,
                            kMessageTextMaxCols, false, out_string);
 }
 void EnforceMaxPromptSize(const string16& in_string, string16* out_string) {
-  ui::ElideRectangleString(in_string, kDefaultPromptMaxRows,
+  gfx::ElideRectangleString(in_string, kDefaultPromptMaxRows,
                            kDefaultPromptMaxCols, false, out_string);
 }
 #else
@@ -44,10 +44,10 @@ void EnforceMaxPromptSize(const string16& in_string, string16* out_string) {
 const int kMessageTextMaxSize = 3000;
 const int kDefaultPromptMaxSize = 2000;
 void EnforceMaxTextSize(const string16& in_string, string16* out_string) {
-  ui::ElideString(in_string, kMessageTextMaxSize, out_string);
+  gfx::ElideString(in_string, kMessageTextMaxSize, out_string);
 }
 void EnforceMaxPromptSize(const string16& in_string, string16* out_string) {
-  ui::ElideString(in_string, kDefaultPromptMaxSize, out_string);
+  gfx::ElideString(in_string, kDefaultPromptMaxSize, out_string);
 }
 #endif
 

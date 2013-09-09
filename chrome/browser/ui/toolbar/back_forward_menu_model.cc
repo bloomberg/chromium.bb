@@ -28,9 +28,9 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/gfx/text_elider.h"
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -107,7 +107,7 @@ string16 BackForwardMenuModel::GetLabelAt(int index) const {
   string16 menu_text(entry->GetTitleForDisplay(
       profile->GetPrefs()->GetString(prefs::kAcceptLanguages)));
   menu_text =
-      ui::ElideText(menu_text, gfx::Font(), kMaxWidth, ui::ELIDE_AT_END);
+      gfx::ElideText(menu_text, gfx::Font(), kMaxWidth, gfx::ELIDE_AT_END);
 
 #if !defined(OS_MACOSX)
   for (size_t i = menu_text.find('&'); i != string16::npos;

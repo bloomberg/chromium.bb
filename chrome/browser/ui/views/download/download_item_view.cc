@@ -36,11 +36,11 @@
 #include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/root_view.h"
@@ -748,7 +748,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
   if (!IsShowingWarningDialog()) {
     string16 filename;
     if (!disabled_while_opening_) {
-      filename = ui::ElideFilename(download()->GetFileNameToReportUser(),
+      filename = gfx::ElideFilename(download()->GetFileNameToReportUser(),
                                    font_list_, kTextWidth);
     } else {
       // First, Calculate the download status opening string width.
@@ -757,7 +757,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
       int status_string_width = font_list_.GetStringWidth(status_string);
       // Then, elide the file name.
       string16 filename_string =
-          ui::ElideFilename(download()->GetFileNameToReportUser(), font_list_,
+          gfx::ElideFilename(download()->GetFileNameToReportUser(), font_list_,
                             kTextWidth - status_string_width);
       // Last, concat the whole string.
       filename = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING,

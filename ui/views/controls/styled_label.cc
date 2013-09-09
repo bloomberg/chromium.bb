@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/strings/string_util.h"
-#include "ui/base/text/text_elider.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -188,11 +188,11 @@ int StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
       text_font =
           text_font.DeriveFont(0, style_ranges.top().style_info.font_style);
     }
-    ui::ElideRectangleText(remaining_string,
+    gfx::ElideRectangleText(remaining_string,
                            text_font,
                            chunk_bounds.width(),
                            chunk_bounds.height(),
-                           ui::IGNORE_LONG_WORDS,
+                           gfx::IGNORE_LONG_WORDS,
                            &substrings);
 
     DCHECK(!substrings.empty());

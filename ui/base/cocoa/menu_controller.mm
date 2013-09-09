@@ -11,9 +11,9 @@
 #import "ui/base/cocoa/cocoa_event_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/text_elider.h"
 
 @interface MenuController (Private)
 - (void)addSeparatorToMenu:(NSMenu*)menu
@@ -30,7 +30,7 @@
   NSFont* nsfont = [NSFont menuBarFontOfSize:0];  // 0 means "default"
   gfx::Font font(base::SysNSStringToUTF8([nsfont fontName]),
                  static_cast<int>([nsfont pointSize]));
-  return ui::ElideText(title, font, width, ui::ELIDE_AT_END);
+  return gfx::ElideText(title, font, width, gfx::ELIDE_AT_END);
 }
 
 - (id)init {

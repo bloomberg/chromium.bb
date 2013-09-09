@@ -27,7 +27,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/text/text_elider.h"
+#include "ui/gfx/text_elider.h"
 
 using autofill::PasswordForm;
 using content::BrowserThread;
@@ -441,7 +441,7 @@ void LoginDialogCallback(const GURL& request_url,
   // The realm is controlled by the remote server, so there is no reason
   // to believe it is of a reasonable length.
   string16 elided_realm;
-  ui::ElideString(UTF8ToUTF16(auth_info->realm), 120, &elided_realm);
+  gfx::ElideString(UTF8ToUTF16(auth_info->realm), 120, &elided_realm);
 
   string16 host_and_port = ASCIIToUTF16(request_url.scheme() + "://" +
                                         auth_info->challenger.ToString());

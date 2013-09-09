@@ -8,8 +8,8 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/controls/label.h"
 
 namespace {
@@ -143,18 +143,18 @@ std::vector<string16> InnerBoundedLabel::GetWrappedText(int width, int lines) {
 
   // Wrap, using INT_MAX for -1 widths that indicate no wrapping.
   std::vector<string16> wrapped;
-  ui::ElideRectangleText(text(), font(),
+  gfx::ElideRectangleText(text(), font(),
                          (width < 0) ? std::numeric_limits<int>::max() : width,
-                         height, ui::WRAP_LONG_WORDS, &wrapped);
+                         height, gfx::WRAP_LONG_WORDS, &wrapped);
 
   // Elide if necessary.
   if (lines > 0 && wrapped.size() > static_cast<unsigned int>(lines)) {
     // Add an ellipsis to the last line. If this ellipsis makes the last line
-    // too wide, that line will be further elided by the ui::ElideText below,
+    // too wide, that line will be further elided by the gfx::ElideText below,
     // so for example "ABC" could become "ABC..." and then "AB...".
-    string16 last = wrapped[lines - 1] + UTF8ToUTF16(ui::kEllipsis);
+    string16 last = wrapped[lines - 1] + UTF8ToUTF16(gfx::kEllipsis);
     if (width > 0 && font().GetStringWidth(last) > width)
-      last = ui::ElideText(last, font(), width, ui::ELIDE_AT_END);
+      last = gfx::ElideText(last, font(), width, gfx::ELIDE_AT_END);
     wrapped.resize(lines - 1);
     wrapped.push_back(last);
   }

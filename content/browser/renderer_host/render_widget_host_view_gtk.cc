@@ -43,11 +43,11 @@
 #include "third_party/WebKit/public/web/gtk/WebInputEventFactory.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/gtk/gtk_compat.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/base/x/active_window_watcher_x.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #include "ui/gfx/gtk_preserve_window.h"
+#include "ui/gfx/text_elider.h"
 #include "webkit/common/cursors/webcursor_gtk_data.h"
 
 using WebKit::WebInputEventFactory;
@@ -938,7 +938,7 @@ void RenderWidgetHostViewGtk::SetTooltipText(const string16& tooltip_text) {
   // this itself).
   // I filed https://bugzilla.gnome.org/show_bug.cgi?id=604641 upstream.
   const string16 clamped_tooltip =
-      ui::TruncateString(tooltip_text, kMaxTooltipLength);
+      gfx::TruncateString(tooltip_text, kMaxTooltipLength);
 
   if (clamped_tooltip.empty()) {
     gtk_widget_set_has_tooltip(view_.get(), FALSE);

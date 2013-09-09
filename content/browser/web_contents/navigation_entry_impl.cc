@@ -10,7 +10,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
-#include "ui/base/text/text_elider.h"
+#include "ui/gfx/text_elider.h"
 
 // Use this to get a new unique ID for a NavigationEntry during construction.
 // The returned ID is guaranteed to be nonzero (which is the "no ID" indicator).
@@ -191,7 +191,7 @@ const string16& NavigationEntryImpl::GetTitleForDisplay(
       title = title.substr(slashpos + 1);
   }
 
-  ui::ElideString(title, kMaxTitleChars, &cached_display_title_);
+  gfx::ElideString(title, kMaxTitleChars, &cached_display_title_);
   return cached_display_title_;
 }
 

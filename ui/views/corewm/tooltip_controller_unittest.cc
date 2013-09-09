@@ -13,9 +13,9 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/corewm/tooltip_controller_test_helper.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -274,8 +274,8 @@ TEST_F(TooltipControllerTest, TrimTooltipToFitTests) {
       max_width, &tooltip, &width, &line_count);
   EXPECT_NEAR(max_pixel_width, width, 5);
   EXPECT_EQ(1, line_count);
-  EXPECT_EQ(ui::ElideText(UTF8ToUTF16(std::string('a', max_pixel_width)), font,
-                          max_pixel_width, ui::ELIDE_AT_END), tooltip);
+  EXPECT_EQ(gfx::ElideText(UTF8ToUTF16(std::string('a', max_pixel_width)), font,
+                          max_pixel_width, gfx::ELIDE_AT_END), tooltip);
 #endif
 
   // Normal small tooltip should stay as is.

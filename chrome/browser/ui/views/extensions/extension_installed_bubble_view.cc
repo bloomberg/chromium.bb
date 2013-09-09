@@ -35,8 +35,8 @@
 #include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/render_text.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -343,8 +343,8 @@ class InstalledBubbleContent : public views::View,
     // Word-wrap the full label text.
     const gfx::Font font;
     std::vector<string16> lines;
-    ui::ElideRectangleText(full_text, font, contents_area.width(),
-                           contents_area.height(), ui::ELIDE_LONG_WORDS,
+    gfx::ElideRectangleText(full_text, font, contents_area.width(),
+                           contents_area.height(), gfx::ELIDE_LONG_WORDS,
                            &lines);
 
     gfx::Point position = gfx::Point(

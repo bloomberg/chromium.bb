@@ -23,8 +23,8 @@
 #include "printing/printed_pages_source.h"
 #include "printing/units.h"
 #include "skia/ext/platform_device.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/text_elider.h"
 
 namespace {
 

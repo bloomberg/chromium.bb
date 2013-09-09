@@ -29,9 +29,9 @@
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/text_elider.h"
 
 using content::OpenURLParams;
 
@@ -198,7 +198,7 @@ GtkWidget* GlobalHistoryMenu::AddHistoryItemToMenu(HistoryItem* item,
 
   if (title.empty())
     title = UTF8ToUTF16(url_string);
-  ui::ElideString(title, kMaximumMenuWidthInChars, &title);
+  gfx::ElideString(title, kMaximumMenuWidthInChars, &title);
 
   GtkWidget* menu_item = gtk_menu_item_new_with_label(
       UTF16ToUTF8(title).c_str());

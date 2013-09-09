@@ -14,7 +14,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/text/text_elider.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -95,7 +95,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
       scheme_(url.scheme()) {
   const int kMaxUrlWithoutSchemeSize = 256;
   string16 elided_url_without_scheme;
-  ui::ElideString(ASCIIToUTF16(url.possibly_invalid_spec()),
+  gfx::ElideString(ASCIIToUTF16(url.possibly_invalid_spec()),
       kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
 
   views::MessageBoxView::InitParams params(

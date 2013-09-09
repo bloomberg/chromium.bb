@@ -38,7 +38,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
@@ -49,6 +48,7 @@
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/button/button.h"
@@ -452,8 +452,9 @@ void PublicAccountUserDetails::Layout() {
   // Word-wrap the label text.
   const gfx::Font font;
   std::vector<base::string16> lines;
-  ui::ElideRectangleText(text_, font, contents_area.width(),
-                         contents_area.height(), ui::ELIDE_LONG_WORDS, &lines);
+  gfx::ElideRectangleText(text_, font, contents_area.width(),
+                          contents_area.height(), gfx::ELIDE_LONG_WORDS,
+                          &lines);
   // Loop through the lines, creating a renderer for each.
   gfx::Point position = contents_area.origin();
   gfx::Range display_name(gfx::Range::InvalidRange());
@@ -550,8 +551,8 @@ void PublicAccountUserDetails::CalculatePreferredSize(SystemTrayItem* owner,
   while (min_width < max_width) {
     lines.clear();
     const int width = (min_width + max_width) / 2;
-    const bool too_narrow = ui::ElideRectangleText(
-        text_, font, width, INT_MAX, ui::TRUNCATE_LONG_WORDS, &lines) != 0;
+    const bool too_narrow = gfx::ElideRectangleText(
+        text_, font, width, INT_MAX, gfx::TRUNCATE_LONG_WORDS, &lines) != 0;
     int line_count = lines.size();
     if (!too_narrow && line_count == 3 &&
             width - font.GetStringWidth(lines.back()) <=
@@ -566,8 +567,8 @@ void PublicAccountUserDetails::CalculatePreferredSize(SystemTrayItem* owner,
 
   // Calculate the corresponding height and set the preferred size.
   lines.clear();
-  ui::ElideRectangleText(
-      text_, font, min_width, INT_MAX, ui::TRUNCATE_LONG_WORDS, &lines);
+  gfx::ElideRectangleText(
+      text_, font, min_width, INT_MAX, gfx::TRUNCATE_LONG_WORDS, &lines);
   int line_count = lines.size();
   if (min_width - font.GetStringWidth(lines.back()) <=
       space_width + link_size.width()) {

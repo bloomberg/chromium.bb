@@ -13,7 +13,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/text/text_elider.h"
+#include "ui/gfx/text_elider.h"
 
 ExternalProtocolDialogDelegate::ExternalProtocolDialogDelegate(const GURL& url)
     : ProtocolDialogDelegate(url) {
@@ -32,9 +32,9 @@ string16 ExternalProtocolDialogDelegate::GetMessageText() const {
     UTF8ToUTF16(ShellIntegration::GetApplicationForProtocol(url()));
   string16 elided_url_without_scheme;
   string16 elided_command;
-  ui::ElideString(ASCIIToUTF16(url().possibly_invalid_spec()),
+  gfx::ElideString(ASCIIToUTF16(url().possibly_invalid_spec()),
                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
-  ui::ElideString(command, kMaxCommandSize, &elided_command);
+  gfx::ElideString(command, kMaxCommandSize, &elided_command);
 
   string16 message_text = l10n_util::GetStringFUTF16(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,

@@ -20,10 +20,10 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/text_elider.h"
 
 namespace {
 
@@ -227,10 +227,10 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
   // The user name label.
   GtkWidget* item_vbox = gtk_vbox_new(FALSE, 0);
   GtkWidget* name_label = NULL;
-  string16 elided_name = ui::ElideText(item_.name,
+  string16 elided_name = gfx::ElideText(item_.name,
                                        gfx::Font(),
                                        kUserNameMaxWidth,
-                                       ui::ELIDE_AT_END);
+                                       gfx::ELIDE_AT_END);
 
   name_label = theme_service->BuildLabel(UTF16ToUTF8(elided_name),
                                          ui::kGdkBlack);

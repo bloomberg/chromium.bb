@@ -15,10 +15,10 @@
 #include "grit/webkit_resources.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/events/event.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/gfx/vector2d.h"
 
 using base::WeakPtr;
@@ -143,16 +143,16 @@ void AutofillPopupControllerImpl::Show(
 
     // Each field recieves space in proportion to its length.
     int name_size = available_width * name_width / total_text_length;
-    names_[i] = ui::ElideText(names_[i],
+    names_[i] = gfx::ElideText(names_[i],
                               GetNameFontForRow(i),
                               name_size,
-                              ui::ELIDE_AT_END);
+                              gfx::ELIDE_AT_END);
 
     int subtext_size = available_width * subtext_width / total_text_length;
-    subtexts_[i] = ui::ElideText(subtexts_[i],
+    subtexts_[i] = gfx::ElideText(subtexts_[i],
                                  subtext_font(),
                                  subtext_size,
-                                 ui::ELIDE_AT_END);
+                                 gfx::ELIDE_AT_END);
   }
 #endif
 

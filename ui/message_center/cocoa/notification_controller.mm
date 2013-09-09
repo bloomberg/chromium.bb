@@ -14,7 +14,7 @@
 #import "ui/base/cocoa/hover_image_button.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
@@ -697,15 +697,15 @@
   int height = (lines + 1) * font.GetHeight();
 
   std::vector<string16> wrapped;
-  ui::ElideRectangleText(text, font, width, height,
-                         ui::WRAP_LONG_WORDS, &wrapped);
+  gfx::ElideRectangleText(text, font, width, height,
+                          gfx::WRAP_LONG_WORDS, &wrapped);
 
   if (wrapped.size() > lines) {
     // Add an ellipsis to the last line. If this ellipsis makes the last line
-    // too wide, that line will be further elided by the ui::ElideText below.
-    string16 last = wrapped[lines - 1] + UTF8ToUTF16(ui::kEllipsis);
+    // too wide, that line will be further elided by the gfx::ElideText below.
+    string16 last = wrapped[lines - 1] + UTF8ToUTF16(gfx::kEllipsis);
     if (font.GetStringWidth(last) > width)
-      last = ui::ElideText(last, font, width, ui::ELIDE_AT_END);
+      last = gfx::ElideText(last, font, width, gfx::ELIDE_AT_END);
     wrapped.resize(lines - 1);
     wrapped.push_back(last);
   }

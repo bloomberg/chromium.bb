@@ -31,11 +31,11 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_utils_gtk.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 
 namespace {
@@ -492,7 +492,7 @@ void DownloadItemGtk::UpdateNameLabel() {
           ui::ResourceBundle::BaseFont);
   string16 filename;
   if (!disabled_while_opening_) {
-    filename = ui::ElideFilename(
+    filename = gfx::ElideFilename(
         download()->GetFileNameToReportUser(), font_list, kTextWidth);
   } else {
     // First, Calculate the download status opening string width.
@@ -501,7 +501,7 @@ void DownloadItemGtk::UpdateNameLabel() {
     int status_string_width = gfx::GetStringWidth(status_string, font_list);
     // Then, elide the file name.
     string16 filename_string =
-        ui::ElideFilename(download()->GetFileNameToReportUser(), font_list,
+        gfx::ElideFilename(download()->GetFileNameToReportUser(), font_list,
                           kTextWidth - status_string_width);
     // Last, concat the whole string.
     filename = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING,

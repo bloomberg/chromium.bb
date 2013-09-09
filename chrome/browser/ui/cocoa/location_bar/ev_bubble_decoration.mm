@@ -7,7 +7,7 @@
 #import "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
-#include "ui/base/text/text_elider.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/gfx/font.h"
 
 namespace {
@@ -88,8 +88,8 @@ CGFloat EVBubbleDecoration::GetWidthForSpace(CGFloat width) {
   // prefix and the trailing country code in place.
   gfx::Font font(GetFont());
   NSString* elided_label = base::SysUTF16ToNSString(
-      ui::ElideText(base::SysNSStringToUTF16(full_label_), font, width_left,
-                    ui::ELIDE_IN_MIDDLE));
+      gfx::ElideText(base::SysNSStringToUTF16(full_label_), font, width_left,
+                    gfx::ELIDE_IN_MIDDLE));
 
   // Use the elided label.
   SetLabel(elided_label);

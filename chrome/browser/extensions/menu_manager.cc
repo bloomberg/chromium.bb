@@ -28,8 +28,8 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/gfx/text_elider.h"
 
 using content::WebContents;
 using extensions::ExtensionSystem;
@@ -173,7 +173,7 @@ string16 MenuItem::TitleWithReplacement(
   ReplaceSubstringsAfterOffset(&result, 0, ASCIIToUTF16("%s"), selection);
 
   if (result.length() > max_length)
-    result = ui::TruncateString(result, max_length);
+    result = gfx::TruncateString(result, max_length);
   return result;
 }
 

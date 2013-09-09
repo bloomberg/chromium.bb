@@ -8,7 +8,7 @@
 
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/text/text_elider.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 
 // Maximum number of characters we allow in a tooltip.
@@ -50,7 +50,7 @@ void TooltipManager::TrimTooltipToFit(string16* text,
   for (std::vector<string16>::iterator i = lines.begin(); i != lines.end();
        ++i) {
     string16 elided_text =
-        ui::ElideText(*i, font_list, available_width, ui::ELIDE_AT_END);
+        gfx::ElideText(*i, font_list, available_width, gfx::ELIDE_AT_END);
     *max_width = std::max(*max_width,
                           gfx::GetStringWidth(elided_text, font_list));
     if (!result.empty())

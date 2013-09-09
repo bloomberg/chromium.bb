@@ -16,7 +16,7 @@
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/text/text_elider.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
@@ -378,7 +378,7 @@ using content::DownloadItem;
                      [font pointSize]);
 
   return base::SysUTF16ToNSString(
-      ui::ElideFilename(downloadPath_, font_chr, availableWidth));
+      gfx::ElideFilename(downloadPath_, font_chr, availableWidth));
 }
 
 - (NSString*)elideStatus:(int)availableWidth {
@@ -386,11 +386,11 @@ using content::DownloadItem;
   gfx::Font font_chr(base::SysNSStringToUTF8([font fontName]),
                      [font pointSize]);
 
-  return base::SysUTF16ToNSString(ui::ElideText(
+  return base::SysUTF16ToNSString(gfx::ElideText(
       base::SysNSStringToUTF16([self secondaryTitle]),
       font_chr,
       availableWidth,
-      ui::ELIDE_AT_END));
+      gfx::ELIDE_AT_END));
 }
 
 - (ui::ThemeProvider*)backgroundThemeWrappingProvider:

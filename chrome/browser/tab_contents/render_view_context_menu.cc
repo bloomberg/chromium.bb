@@ -89,10 +89,10 @@
 #include "third_party/WebKit/public/web/WebPluginAction.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/text_elider.h"
 
 #if defined(ENABLE_PRINTING)
 #include "chrome/common/print_messages.h"
@@ -2032,7 +2032,7 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
 }
 
 string16 RenderViewContextMenu::PrintableSelectionText() {
-  return ui::TruncateString(params_.selection_text,
+  return gfx::TruncateString(params_.selection_text,
                             kMaxSelectionTextLength);
 }
 

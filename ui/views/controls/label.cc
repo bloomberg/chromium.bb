@@ -16,11 +16,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/shadow_value.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
@@ -495,14 +495,15 @@ void Label::CalculateDrawStringParams(string16* paint_text,
   if (is_multi_line_ || (elide_behavior_ == NO_ELIDE)) {
     *paint_text = text_;
   } else if (elide_behavior_ == ELIDE_IN_MIDDLE) {
-    *paint_text = ui::ElideText(text_, font_list_, GetAvailableRect().width(),
-                                ui::ELIDE_IN_MIDDLE);
+    *paint_text = gfx::ElideText(text_, font_list_, GetAvailableRect().width(),
+                                 gfx::ELIDE_IN_MIDDLE);
   } else if (elide_behavior_ == ELIDE_AT_END) {
-    *paint_text = ui::ElideText(text_, font_list_, GetAvailableRect().width(),
-                                ui::ELIDE_AT_END);
+    *paint_text = gfx::ElideText(text_, font_list_, GetAvailableRect().width(),
+                                 gfx::ELIDE_AT_END);
   } else {
     DCHECK_EQ(ELIDE_AS_EMAIL, elide_behavior_);
-    *paint_text = ui::ElideEmail(text_, font_list_, GetAvailableRect().width());
+    *paint_text = gfx::ElideEmail(text_, font_list_,
+                                  GetAvailableRect().width());
   }
 
   *text_bounds = GetTextBounds();

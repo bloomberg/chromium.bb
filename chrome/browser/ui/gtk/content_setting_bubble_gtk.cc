@@ -31,9 +31,9 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/text_elider.h"
 
 using content::PluginService;
 using content::WebContents;
@@ -49,11 +49,11 @@ const int kMinMediaMenuButtonWidth = 100;
 const int kMaxMediaMenuButtonWidth = 600;
 
 std::string BuildElidedText(const std::string& input) {
-  return UTF16ToUTF8(ui::ElideText(
+  return UTF16ToUTF8(gfx::ElideText(
       UTF8ToUTF16(input),
       gfx::Font(),
       kMaxLinkPixelSize,
-      ui::ELIDE_AT_END));
+      gfx::ELIDE_AT_END));
 }
 
 }  // namespace

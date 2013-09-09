@@ -9,10 +9,10 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/text_elider.h"
 
 namespace location_bar_util {
 
@@ -24,7 +24,7 @@ string16 CalculateMinString(const string16& description) {
   string16 min_string;
   if (chop_index == string16::npos) {
     // No dot or whitespace, truncate to at most 3 chars.
-    min_string = ui::TruncateString(description, 3);
+    min_string = gfx::TruncateString(description, 3);
   } else {
     min_string = description.substr(0, chop_index);
   }

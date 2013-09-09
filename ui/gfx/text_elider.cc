@@ -30,7 +30,7 @@
 #include "ui/gfx/text_utils.h"
 #include "url/gurl.h"
 
-namespace ui {
+namespace gfx {
 
 // U+2026 in utf8
 const char kEllipsis[] = "\xE2\x80\xA6";
@@ -642,8 +642,6 @@ bool ElideString(const string16& input, int max_len, string16* output) {
   return true;
 }
 
-}  // namespace ui
-
 namespace {
 
 // Internal class used to track progress of a rectangular string elide
@@ -814,7 +812,7 @@ class RectangleText {
   RectangleText(const gfx::FontList& font_list,
                 int available_pixel_width,
                 int available_pixel_height,
-                gfx::WordWrapBehavior wrap_behavior,
+                WordWrapBehavior wrap_behavior,
                 std::vector<string16>* lines)
       : font_list_(font_list),
         line_height_(font_list.GetHeight()),
@@ -882,7 +880,7 @@ class RectangleText {
   const int available_pixel_height_;
 
   // The wrap behavior for words that are too long to fit on a single line.
-  const gfx::WordWrapBehavior wrap_behavior_;
+  const WordWrapBehavior wrap_behavior_;
 
   // The current running width.
   int current_width_;
@@ -938,8 +936,8 @@ int RectangleText::Finalize() {
   }
   if (last_line_ended_in_lf_)
     lines_->push_back(string16());
-  return (insufficient_width_ ? gfx::INSUFFICIENT_SPACE_HORIZONTAL : 0) |
-         (insufficient_height_ ? gfx::INSUFFICIENT_SPACE_VERTICAL : 0);
+  return (insufficient_width_ ? INSUFFICIENT_SPACE_HORIZONTAL : 0) |
+         (insufficient_height_ ? INSUFFICIENT_SPACE_VERTICAL : 0);
 }
 
 void RectangleText::AddLine(const string16& line) {
@@ -984,8 +982,8 @@ int RectangleText::WrapWord(const string16& word) {
   bool first_fragment = true;
   while (!insufficient_height_ && !text.empty()) {
     string16 fragment =
-        gfx::ElideText(text, font_list_, available_pixel_width_,
-                      gfx::TRUNCATE_AT_END);
+        ElideText(text, font_list_, available_pixel_width_,
+                  TRUNCATE_AT_END);
     // At least one character has to be added at every line, even if the
     // available space is too small.
     if(fragment.empty())
@@ -1009,17 +1007,16 @@ int RectangleText::AddWordOverflow(const string16& word) {
     lines_added++;
   }
 
-  if (wrap_behavior_ == gfx::IGNORE_LONG_WORDS) {
+  if (wrap_behavior_ == IGNORE_LONG_WORDS) {
     current_line_ = word;
     current_width_ = available_pixel_width_;
-  } else if (wrap_behavior_ == gfx::WRAP_LONG_WORDS) {
+  } else if (wrap_behavior_ == WRAP_LONG_WORDS) {
     lines_added += WrapWord(word);
   } else {
-    const gfx::ElideBehavior elide_behavior =
-        (wrap_behavior_ == gfx::ELIDE_LONG_WORDS ? gfx::ELIDE_AT_END :
-                                                  gfx::TRUNCATE_AT_END);
+    const ElideBehavior elide_behavior =
+        (wrap_behavior_ == ELIDE_LONG_WORDS ? ELIDE_AT_END : TRUNCATE_AT_END);
     const string16 elided_word =
-        gfx::ElideText(word, font_list_, available_pixel_width_, elide_behavior);
+        ElideText(word, font_list_, available_pixel_width_, elide_behavior);
     AddToCurrentLine(elided_word);
     insufficient_width_ = true;
   }
@@ -1039,7 +1036,7 @@ int RectangleText::AddWord(const string16& word) {
     // Append the non-trimmed word, in case more words are added after.
     AddToCurrentLine(word);
   } else {
-    lines_added = AddWordOverflow(wrap_behavior_ == gfx::IGNORE_LONG_WORDS ?
+    lines_added = AddWordOverflow(wrap_behavior_ == IGNORE_LONG_WORDS ?
                                   trimmed : word);
   }
   return lines_added;
@@ -1074,8 +1071,6 @@ bool RectangleText::NewLine() {
 }
 
 }  // namespace
-
-namespace ui {
 
 bool ElideRectangleString(const string16& input, size_t max_rows,
                           size_t max_cols, bool strict, string16* output) {
@@ -1174,4 +1169,4 @@ string16 TruncateString(const string16& string, size_t length) {
   return string.substr(0, index) + kElideString;
 }
 
-}  // namespace ui
+}  // namespace gfx

@@ -10,10 +10,10 @@
 #include "grit/ui_resources.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_switches.h"
@@ -472,7 +472,7 @@ NotificationView::NotificationView(const Notification& notification,
     gfx::Font font = views::Label().font().DeriveFont(2);
     int padding = kTitleLineHeight - font.GetHeight();
     title_view_ = new BoundedLabel(
-        ui::TruncateString(notification.title(), kTitleCharacterLimit), font);
+        gfx::TruncateString(notification.title(), kTitleCharacterLimit), font);
     title_view_->SetLineHeight(kTitleLineHeight);
     title_view_->SetLineLimit(message_center::kTitleLineLimit);
     title_view_->SetColors(message_center::kRegularTextColor,
@@ -487,7 +487,7 @@ NotificationView::NotificationView(const Notification& notification,
   if (!notification.message().empty()) {
     int padding = kMessageLineHeight - views::Label().font().GetHeight();
     message_view_ = new BoundedLabel(
-        ui::TruncateString(notification.message(), kMessageCharacterLimit));
+        gfx::TruncateString(notification.message(), kMessageCharacterLimit));
     message_view_->SetLineHeight(kMessageLineHeight);
     message_view_->SetVisible(!is_expanded() || !notification.items().size());
     message_view_->SetColors(message_center::kRegularTextColor,
@@ -503,7 +503,7 @@ NotificationView::NotificationView(const Notification& notification,
     gfx::Font font = views::Label().font();
     int padding = kMessageLineHeight - font.GetHeight();
     context_message_view_ =
-        new BoundedLabel(ui::TruncateString(notification.context_message(),
+        new BoundedLabel(gfx::TruncateString(notification.context_message(),
                                             kContextMessageCharacterLimit),
                          font);
     context_message_view_->SetLineLimit(

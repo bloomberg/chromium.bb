@@ -19,7 +19,7 @@
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 #include "ui/base/cocoa/window_size_constants.h"
-#include "ui/base/text/text_elider.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/point.h"
 
@@ -154,7 +154,7 @@ void StatusBubbleMac::SetURL(const GURL& url, const std::string& languages) {
                      [font pointSize]);
 
   string16 original_url_text = net::FormatUrl(url, languages);
-  string16 status = ui::ElideUrl(url, font_chr, text_width, languages);
+  string16 status = gfx::ElideUrl(url, font_chr, text_width, languages);
 
   SetText(status, true);
 
@@ -623,7 +623,7 @@ void StatusBubbleMac::ExpandBubble() {
   NSFont* font = [[window_ contentView] font];
   gfx::Font font_chr(base::SysNSStringToUTF8([font fontName]),
       [font pointSize]);
-  string16 expanded_url = ui::ElideUrl(
+  string16 expanded_url = gfx::ElideUrl(
       url_, font_chr, max_bubble_width, languages_);
 
   // Scale width from gfx::Font in view coordinates to window coordinates.

@@ -25,10 +25,10 @@
 #include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/text_elider.h"
 
 namespace {
 
@@ -277,10 +277,10 @@ std::string BuildMenuLabelFor(const BookmarkNode* node) {
   // This breaks on word boundaries. Ideally we would break on character
   // boundaries.
   std::string elided_name = UTF16ToUTF8(
-      ui::TruncateString(node->GetTitle(), kMaxCharsOnAMenuLabel));
+      gfx::TruncateString(node->GetTitle(), kMaxCharsOnAMenuLabel));
 
   if (elided_name.empty()) {
-    elided_name = UTF16ToUTF8(ui::TruncateString(
+    elided_name = UTF16ToUTF8(gfx::TruncateString(
         UTF8ToUTF16(node->url().possibly_invalid_spec()),
         kMaxCharsOnAMenuLabel));
   }

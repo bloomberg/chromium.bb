@@ -7,13 +7,13 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/shadow_value.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 
 namespace gfx {
@@ -103,7 +103,7 @@ void ElideTextAndAdjustRange(const FontList& font_list,
                              gfx::Range* range) {
   const base::char16 start_char =
       (range->IsValid() ? text->at(range->start()) : 0);
-  *text = ui::ElideText(*text, font_list, width, ui::ELIDE_AT_END);
+  *text = gfx::ElideText(*text, font_list, width, gfx::ELIDE_AT_END);
   if (!range->IsValid())
     return;
   if (range->start() >= text->length() ||
@@ -183,15 +183,15 @@ void Canvas::SizeStringInt(const base::string16& text,
 #endif
 
   if ((flags & MULTI_LINE) && *width != 0) {
-    ui::WordWrapBehavior wrap_behavior = ui::TRUNCATE_LONG_WORDS;
+    gfx::WordWrapBehavior wrap_behavior = gfx::TRUNCATE_LONG_WORDS;
     if (flags & CHARACTER_BREAK)
-      wrap_behavior = ui::WRAP_LONG_WORDS;
+      wrap_behavior = gfx::WRAP_LONG_WORDS;
     else if (!(flags & NO_ELLIPSIS))
-      wrap_behavior = ui::ELIDE_LONG_WORDS;
+      wrap_behavior = gfx::ELIDE_LONG_WORDS;
 
     Rect rect(*width, INT_MAX);
     std::vector<base::string16> strings;
-    ui::ElideRectangleText(adjusted_text, font_list,
+    gfx::ElideRectangleText(adjusted_text, font_list,
                            rect.width(), rect.height(),
                            wrap_behavior, &strings);
     scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
@@ -258,14 +258,14 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
   render_text->SetTextShadows(shadows);
 
   if (flags & MULTI_LINE) {
-    ui::WordWrapBehavior wrap_behavior = ui::IGNORE_LONG_WORDS;
+    gfx::WordWrapBehavior wrap_behavior = gfx::IGNORE_LONG_WORDS;
     if (flags & CHARACTER_BREAK)
-      wrap_behavior = ui::WRAP_LONG_WORDS;
+      wrap_behavior = gfx::WRAP_LONG_WORDS;
     else if (!(flags & NO_ELLIPSIS))
-      wrap_behavior = ui::ELIDE_LONG_WORDS;
+      wrap_behavior = gfx::ELIDE_LONG_WORDS;
 
     std::vector<base::string16> strings;
-    ui::ElideRectangleText(adjusted_text,
+    gfx::ElideRectangleText(adjusted_text,
                            font_list,
                            text_bounds.width(), text_bounds.height(),
                            wrap_behavior,

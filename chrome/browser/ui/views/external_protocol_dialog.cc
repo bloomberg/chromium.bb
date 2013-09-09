@@ -18,7 +18,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/text/text_elider.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -134,9 +134,9 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
   const int kMaxCommandSize = 256;
   string16 elided_url_without_scheme;
   string16 elided_command;
-  ui::ElideString(ASCIIToUTF16(url.possibly_invalid_spec()),
+  gfx::ElideString(ASCIIToUTF16(url.possibly_invalid_spec()),
                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
-  ui::ElideString(WideToUTF16Hack(command), kMaxCommandSize, &elided_command);
+  gfx::ElideString(WideToUTF16Hack(command), kMaxCommandSize, &elided_command);
 
   string16 message_text = l10n_util::GetStringFUTF16(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,

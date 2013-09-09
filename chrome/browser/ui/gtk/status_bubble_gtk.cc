@@ -20,8 +20,8 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/text_elider.h"
 
 namespace {
 
@@ -113,9 +113,9 @@ void StatusBubbleGtk::SetStatusTextToURL() {
   }
 
   // TODO(tc): We don't actually use gfx::Font as the font in the status
-  // bubble.  We should extend ui::ElideUrl to take some sort of pango font.
+  // bubble.  We should extend gfx::ElideUrl to take some sort of pango font.
   url_text_ = UTF16ToUTF8(
-      ui::ElideUrl(url_, gfx::Font(), desired_width, languages_));
+      gfx::ElideUrl(url_, gfx::Font(), desired_width, languages_));
   SetStatusTextTo(url_text_);
 }
 

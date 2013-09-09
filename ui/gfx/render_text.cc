@@ -13,12 +13,12 @@
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/base/text/utf16_indexing.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/gfx/text_elider.h"
 
 namespace gfx {
 
@@ -977,7 +977,7 @@ void RenderText::UpdateLayoutText() {
     // Truncate the text at a valid character break and append an ellipsis.
     icu::StringCharacterIterator iter(text.c_str());
     iter.setIndex32(truncate_length_ - 1);
-    layout_text_.assign(text.substr(0, iter.getIndex()) + ui::kEllipsisUTF16);
+    layout_text_.assign(text.substr(0, iter.getIndex()) + gfx::kEllipsisUTF16);
   }
 }
 

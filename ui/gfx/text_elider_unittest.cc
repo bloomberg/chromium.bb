@@ -15,7 +15,7 @@
 #include "ui/gfx/font.h"
 #include "url/gurl.h"
 
-namespace ui {
+namespace gfx {
 
 namespace {
 
@@ -931,4 +931,4 @@ TEST(TextEliderTest, TruncateString) {
   EXPECT_EQ(L"\x2026", UTF16ToWide(TruncateString(ASCIIToUTF16("   "), 2)));
 }
 
-}  // namespace ui
+}  // namespace gfx

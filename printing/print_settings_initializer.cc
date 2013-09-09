@@ -16,8 +16,8 @@
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 #include "printing/units.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/text_elider.h"
 #include "url/gurl.h"
 
 using base::DictionaryValue;
@@ -44,7 +44,7 @@ void PrintSettingsInitializer::InitHeaderFooterStrings(
 
   print_settings->date = date;
   print_settings->title = title;
-  print_settings->url = ui::ElideUrl(GURL(url), gfx::Font(), 0, std::string());
+  print_settings->url = gfx::ElideUrl(GURL(url), gfx::Font(), 0, std::string());
 }
 
 }  // namespace printing

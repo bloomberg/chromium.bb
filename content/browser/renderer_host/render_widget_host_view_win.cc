@@ -63,7 +63,6 @@
 #include "ui/base/ime/win/imm32_manager.h"
 #include "ui/base/ime/win/tsf_input_scope.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/touch/touch_enabled.h"
 #include "ui/base/ui_base_switches.h"
@@ -76,6 +75,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/text_elider.h"
 #include "webkit/common/cursors/webcursor.h"
 #include "win8/util/win8_util.h"
 
@@ -846,7 +846,7 @@ void RenderWidgetHostViewWin::SetTooltipText(const string16& tooltip_text) {
   // accidentally DOS the user with a mega tooltip (since Windows doesn't seem
   // to do this itself).
   const string16 new_tooltip_text =
-      ui::TruncateString(tooltip_text, kMaxTooltipLength);
+      gfx::TruncateString(tooltip_text, kMaxTooltipLength);
 
   if (new_tooltip_text != tooltip_text_) {
     tooltip_text_ = new_tooltip_text;

@@ -17,11 +17,11 @@
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -407,7 +407,7 @@ void TooltipController::TrimTooltipToFit(int max_width,
   if (result_lines.size() > kMaxLines) {
     result_lines.resize(kMaxLines);
     // Add ellipses character to last line.
-    result_lines[kMaxLines - 1] = ui::TruncateString(
+    result_lines[kMaxLines - 1] = gfx::TruncateString(
         result_lines.back(), result_lines.back().length() - 1);
   }
   *line_count = result_lines.size();
@@ -424,7 +424,8 @@ void TooltipController::TrimTooltipToFit(int max_width,
     // case, we simply truncate at available_width and add ellipses at the end.
     if (line_width > available_width) {
       *width = available_width;
-      result.append(ui::ElideText(*l, font, available_width, ui::ELIDE_AT_END));
+      result.append(gfx::ElideText(*l, font, available_width,
+                                   gfx::ELIDE_AT_END));
     } else {
       *width = std::max(*width, line_width);
       result.append(*l);

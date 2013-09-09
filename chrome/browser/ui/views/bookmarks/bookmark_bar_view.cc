@@ -68,10 +68,10 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
@@ -616,8 +616,8 @@ string16 BookmarkBarView::CreateToolTipForURLAndTitle(
   if (!title.empty()) {
     string16 localized_title = title;
     base::i18n::AdjustStringForLocaleDirection(&localized_title);
-    result.append(ui::ElideText(localized_title, tt_fonts, max_width,
-                                ui::ELIDE_AT_END));
+    result.append(gfx::ElideText(localized_title, tt_fonts, max_width,
+                                gfx::ELIDE_AT_END));
   }
 
   // Only show the URL if the url and title differ.
@@ -633,7 +633,7 @@ string16 BookmarkBarView::CreateToolTipForURLAndTitle(
     // default.
     std::string languages = profile->GetPrefs()->GetString(
         prefs::kAcceptLanguages);
-    string16 elided_url(ui::ElideUrl(url, tt_fonts, max_width, languages));
+    string16 elided_url(gfx::ElideUrl(url, tt_fonts, max_width, languages));
     elided_url = base::i18n::GetDisplayStringInLTRDirectionality(elided_url);
     result.append(elided_url);
   }
