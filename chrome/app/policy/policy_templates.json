@@ -117,7 +117,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 240
+#   For your editing convenience: highest ID currently used: 241
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -5530,6 +5530,24 @@
       When this policy is set then the Managed bookmarks are the default folder opened when the bookmarks view is opened in Chrome.
 
       Managed bookmarks are not synced to the user account.''',
+    },
+    {
+      'name': 'DataCompressionProxyEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['android:31-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 241,
+      'caption': '''Enable the data compression proxy feature''',
+      'desc': '''Enable or disable the data compression proxy and prevents users from changing this setting.
+
+      If you enable or disable this setting, users cannot change or override this setting.
+
+      If this policy is left not set, the data compression proxy feature will be available for the user to choose whether to use it or not.''',
     },
   ],
   'messages': {

@@ -439,6 +439,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kBackgroundModeEnabled,
     Value::TYPE_BOOLEAN },
 #endif  // !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+  { key::kDataCompressionProxyEnabled,
+    prefs::kSpdyProxyAuthEnabled,
+    Value::TYPE_BOOLEAN },
+#endif  // defined(OS_ANDROID)
 };
 
 // Mapping from extension type names to Manifest::Type.

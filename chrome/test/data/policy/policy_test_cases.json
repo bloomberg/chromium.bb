@@ -1537,6 +1537,14 @@
     ]
   },
 
+  "DataCompressionProxyEnabled": {
+    "os": ["android"],
+    "test_policy": { "DataCompressionProxyEnabled": false },
+    "pref_mappings": [
+      { "pref": "spdy_proxy.enabled" }
+    ]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {
