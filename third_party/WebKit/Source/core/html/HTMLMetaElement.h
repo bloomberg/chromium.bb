@@ -45,6 +45,12 @@ private:
     void process();
 };
 
-} //namespace
+inline HTMLMetaElement* toHTMLMetaElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::metaTag));
+    return static_cast<HTMLMetaElement*>(node);
+}
+
+} // namespace WebCore
 
 #endif

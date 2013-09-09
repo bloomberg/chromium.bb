@@ -241,7 +241,7 @@ bool HTMLObjectElement::shouldAllowQuickTimeClassIdQuirk()
     unsigned length = metaElements->length();
     for (unsigned i = 0; i < length; ++i) {
         ASSERT(metaElements->item(i)->isHTMLElement());
-        HTMLMetaElement* metaElement = static_cast<HTMLMetaElement*>(metaElements->item(i));
+        HTMLMetaElement* metaElement = toHTMLMetaElement(metaElements->item(i));
         if (equalIgnoringCase(metaElement->name(), "generator") && metaElement->content().startsWith("Mac OS X Server Web Services Server", false))
             return true;
     }
