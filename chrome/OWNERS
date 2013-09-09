@@ -29,6 +29,7 @@ per-file nacl.gypi=sehr@chromium.org
 per-file chrome_android.gypi=aruslan@chromium.org
 per-file chrome_android.gypi=bulach@chromium.org
 per-file chrome_android.gypi=dtrainor@chromium.org
+per-file chrome_android.gypi=nyquist@chromium.org
 per-file chrome_android.gypi=tedchoc@chromium.org
 per-file chrome_android.gypi=yfriedman@chromium.org
 
