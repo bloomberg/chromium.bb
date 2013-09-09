@@ -64,7 +64,7 @@ ChromeMetroViewerProcessHost::ChromeMetroViewerProcessHost()
   g_browser_process->AddRefModule();
 }
 
-void  ChromeMetroViewerProcessHost::OnChannelError() {
+void ChromeMetroViewerProcessHost::OnChannelError() {
   // TODO(cpu): At some point we only close the browser. Right now this
   // is very convenient for developing.
   DLOG(INFO) << "viewer channel error : Quitting browser";
@@ -88,7 +88,7 @@ void  ChromeMetroViewerProcessHost::OnChannelError() {
   g_browser_process->platform_part()->OnMetroViewerProcessTerminated();
 }
 
-void  ChromeMetroViewerProcessHost::OnChannelConnected(int32 /*peer_pid*/) {
+void ChromeMetroViewerProcessHost::OnChannelConnected(int32 /*peer_pid*/) {
   DLOG(INFO) << "ChromeMetroViewerProcessHost::OnChannelConnected: ";
   // Set environment variable to let breakpad know that metro process was
   // connected.
