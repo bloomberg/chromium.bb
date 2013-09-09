@@ -149,12 +149,12 @@ TEST_F('GoogleNowUtilityUnitTest', 'WrapperWrapCallbackEvent', function() {
 
   this.makeMockLocalFunctions(['callback']);
 
-  // Step 1. Wrapping callback.
+  // Step 1. Wrap a callback.
   var wrappedCallback =
     wrapper.wrapCallback(this.mockLocalFunctions.functions().callback, true);
   Mock4JS.verifyAllMocks();
 
-  // Step 2. Invoking wrapped callback.
+  // Step 2. Invoke wrapped callback.
   // Expectations.
   this.mockLocalFunctions.expects(once()).
       callback('test string', 239).
@@ -166,7 +166,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'WrapperWrapCallbackEvent', function() {
   wrappedCallback('test string', 239);
   Mock4JS.verifyAllMocks();
 
-  // Step 3. Checking that after the callback we are again in non-instrumented
+  // Step 3. Check that after the callback we are again in non-instrumented
   // code. 
   // Expectations.
   this.mockGlobals.expects(once()).
@@ -195,12 +195,12 @@ TEST_F('GoogleNowUtilityUnitTest', 'WrapperWrapCallbackPlugin', function() {
     'epilogue'
   ]);
 
-  // Step 1. Registering plugin factory.
+  // Step 1. Register plugin factory.
   wrapper.registerWrapperPluginFactory(
       this.mockLocalFunctions.functions().pluginFactory);
   Mock4JS.verifyAllMocks();
 
-  // Step 2. Wrapping callback.
+  // Step 2. Wrap a callback.
   // Expectations.
   this.mockLocalFunctions.expects(once()).
       pluginFactory().
@@ -214,7 +214,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'WrapperWrapCallbackPlugin', function() {
     wrapper.wrapCallback(this.mockLocalFunctions.functions().callback, true);
   Mock4JS.verifyAllMocks();
 
-  // Step 3. Calling the wrapped callback.
+  // Step 3. Call the wrapped callback.
   // Expectations.
   this.mockLocalFunctions.expects(once()).prologue();
   this.mockLocalFunctions.expects(once()).callback();
@@ -233,12 +233,12 @@ TEST_F('GoogleNowUtilityUnitTest', 'WrapperWrapCallbackCatchError', function() {
   ]);
   this.makeMockLocalFunctions(['callback']);
 
-  // Step 1. Wrapping callback.
+  // Step 1. Wrap a callback.
   var wrappedCallback =
     wrapper.wrapCallback(this.mockLocalFunctions.functions().callback, true);
   Mock4JS.verifyAllMocks();
 
-  // Step 2. Invoking wrapped callback.
+  // Step 2. Invoke wrapped callback.
   // Expectations.
   this.mockLocalFunctions.expects(once()).
       callback().
@@ -272,11 +272,11 @@ TEST_F('GoogleNowUtilityUnitTest',
       addListener: this.mockLocalFunctions.functions().apiFunction1
   };
 
-  // Step 1. Instrumenting the listener.
+  // Step 1. Instrument the listener.
   wrapper.instrumentChromeApiFunction('testApi.addListener', 1);
   Mock4JS.verifyAllMocks();
 
-  // Step 2. Invoking the instrumented API call.
+  // Step 2. Invoke the instrumented API call.
   // Expectations.
   var function1SavedArgs = new SaveMockArguments();
   this.mockLocalFunctions.expects(once()).
@@ -289,7 +289,7 @@ TEST_F('GoogleNowUtilityUnitTest',
       239, this.mockLocalFunctions.functions().callback1);
   Mock4JS.verifyAllMocks();
 
-  // Step 3. Invoking the callback that was passed by the instrumented function
+  // Step 3. Invoke the callback that was passed by the instrumented function
   // to the original one.
   // Expectations.
   this.mockLocalFunctions.expects(once()).callback1(237);
@@ -303,10 +303,10 @@ TEST_F('GoogleNowUtilityUnitTest',
       this.mockLocalFunctions.functions().pluginFactory);
   Mock4JS.verifyAllMocks();
 
-  // Step 5. Binding the API to another function.
+  // Step 5. Bind the API to another function.
   chrome.testApi.addListener = this.mockLocalFunctions.functions().apiFunction2;
 
-  // Step 6. Invoking the API with another callback.
+  // Step 6. Invoke the API with another callback.
   // Expectations.
   this.mockLocalFunctions.expects(once()).
       pluginFactory().
@@ -325,7 +325,7 @@ TEST_F('GoogleNowUtilityUnitTest',
       239, this.mockLocalFunctions.functions().callback2);
   Mock4JS.verifyAllMocks();
 
-  // Step 7. Invoking the callback that was passed by the instrumented function
+  // Step 7. Invoke the callback that was passed by the instrumented function
   // to the original one.
   // Expectations.
   this.mockLocalFunctions.expects(once()).prologue();
@@ -351,12 +351,12 @@ TEST_F('GoogleNowUtilityUnitTest', 'WrapperOnSuspendListenerFail', function() {
   this.makeMockLocalFunctions(['listener', 'callback']);
   var onSuspendHandlerContainer = getMockHandlerContainer('runtime.onSuspend');
 
-  // Step 1. Wrapping event listener.
+  // Step 1. Wrap event listener.
   var wrappedListener =
     wrapper.wrapCallback(this.mockLocalFunctions.functions().listener, true);
   Mock4JS.verifyAllMocks();
 
-  // Step 2. Invoking event listener, which will wrap a required callback.
+  // Step 2. Invoke event listener, which will wrap a required callback.
   // Setup and expectations.
   var wrappedCallback;
   var testFixture = this;
@@ -371,7 +371,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'WrapperOnSuspendListenerFail', function() {
   wrappedListener();
   Mock4JS.verifyAllMocks();
 
-  // Step 3. Firing runtime.onSuspend event.
+  // Step 3. Fire runtime.onSuspend event.
   // Expectations.
   this.mockGlobals.expects(once()).
       buildErrorWithMessageForServer(stringContains(
@@ -396,12 +396,12 @@ TEST_F('GoogleNowUtilityUnitTest',
   this.makeMockLocalFunctions(['listener', 'callback']);
   var onSuspendHandlerContainer = getMockHandlerContainer('runtime.onSuspend');
 
-  // Step 1. Wrapping event listener.
+  // Step 1. Wrap event listener.
   var wrappedListener =
     wrapper.wrapCallback(this.mockLocalFunctions.functions().listener, true);
   Mock4JS.verifyAllMocks();
 
-  // Step 2. Invoking event listener, which will wrap a required callback.
+  // Step 2. Invoke event listener, which will wrap a required callback.
   // Setup and expectations.
   var wrappedCallback;
   var testFixture = this;
@@ -416,15 +416,313 @@ TEST_F('GoogleNowUtilityUnitTest',
   wrappedListener();
   Mock4JS.verifyAllMocks();
 
-  // Step 3. Calling wrapped callback.
+  // Step 3. Call wrapped callback.
   // Expectations.
   this.mockLocalFunctions.expects(once()).callback();
 
   // Invocation.
   wrappedCallback();
 
-  // Step 4. Firing runtime.onSuspend event.
+  // Step 4. Fire runtime.onSuspend event.
   assertTrue(onSuspendHandlerContainer.length == 1,
              'onSuspendHandlerContainer.length must be 1');
   onSuspendHandlerContainer[0]();
+});
+
+var taskNameA = 'TASK A';
+var taskNameB = 'TASK B';
+var taskNameC = 'TASK C';
+
+function areTasksConflicting(newTaskName, scheduledTaskName) {
+  // Task B is conflicting with Task A. This means that if Task B is added when
+  // Task A is running, Task B will be ignored (but not vice versa). No other
+  // pair is conflicting.
+  return newTaskName == taskNameB && scheduledTaskName == taskNameA;
+}
+
+function setUpTaskManagerTest(fixture) {
+  // We want to mock wrapper using makeAndRegisterMockApis(), which requires
+  // the mocked functions to not exist as a precondition. Resetting 'wrapper' to
+  // 'undefined'.
+  wrapper = undefined;
+
+  fixture.makeAndRegisterMockApis([
+    'wrapper.checkInWrappedCallback',
+    'wrapper.registerWrapperPluginFactory',
+    'wrapper.debugGetStateString'
+  ]);
+  fixture.makeMockLocalFunctions(['task1', 'task2', 'task3']);
+  fixture.makeAndRegisterMockGlobals(['reportError']);
+
+  fixture.mockApis.stubs().wrapper_checkInWrappedCallback();
+  fixture.mockApis.stubs().wrapper_debugGetStateString().
+      will(returnValue('testWrapperDebugState'));
+
+  var registerWrapperPluginFactorySavedArgs = new SaveMockArguments();
+  fixture.mockApis.expects(once()).wrapper_registerWrapperPluginFactory(
+      registerWrapperPluginFactorySavedArgs.match(ANYTHING));
+  var tasks = buildTaskManager(areTasksConflicting);
+  Mock4JS.verifyAllMocks();
+
+  return {
+    tasks: tasks,
+    pluginFactory: registerWrapperPluginFactorySavedArgs.arguments[0]
+  };
+}
+
+TEST_F('GoogleNowUtilityUnitTest', 'TaskManager2Sequential', function() {
+  // Tests that 2 tasks get successfully executed consecutively, even if the
+  // second one conflicts with the first.
+  
+  // Setup.
+  var test = setUpTaskManagerTest(this);
+
+  // Step 1. Add 1st task that doesn't create pending callbacks.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).task1(ANYTHING);
+  // Invocation.
+  test.tasks.add(taskNameA, this.mockLocalFunctions.functions().task1);
+  Mock4JS.verifyAllMocks();
+
+  // Step 2. Add 2nd task.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).task2(ANYTHING);
+  // Invocation.
+  test.tasks.add(taskNameB, this.mockLocalFunctions.functions().task2);
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerConflicting', function() {
+  // Tests that adding a task while a conflicting task is being executed causes
+  // the second one to be ignored.
+
+  // Setup.
+  var test = setUpTaskManagerTest(this);
+  var task1PluginInstance;
+
+  // Step 1. Add 1st task that creates a pending callback.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).task1(ANYTHING).
+      will(callFunction(function() {
+        task1PluginInstance = test.pluginFactory();
+      }));
+  // Invocation.
+  test.tasks.add(taskNameA, this.mockLocalFunctions.functions().task1);
+  Mock4JS.verifyAllMocks();
+
+  // Step 2. Add 2nd task. Since it conflicts with currently running task1
+  // (see areTasksConflicting), it should be ignored.
+  test.tasks.add(taskNameB, this.mockLocalFunctions.functions().task2);
+  Mock4JS.verifyAllMocks();
+
+  // Step 3. Enter the callback of task1.
+  task1PluginInstance.prologue();
+  Mock4JS.verifyAllMocks();
+
+  // Step 4. Leave the callback of task1.
+  task1PluginInstance.epilogue();
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerNestedTaskEnqueue', function() {
+  // Tests that adding a task while a non-conflicting task is being executed
+  // causes the second one to be executed after the first one completes.
+
+  // Setup.
+  var test = setUpTaskManagerTest(this);
+  var task1PluginInstance;
+
+  // Step 1. Add 1st task that creates a pending callback.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).task1(ANYTHING).
+      will(callFunction(function() {
+        task1PluginInstance = test.pluginFactory();
+      }));
+  // Invocation.
+  test.tasks.add(taskNameA, this.mockLocalFunctions.functions().task1);
+  Mock4JS.verifyAllMocks();
+
+  // Step 2. Add 2nd task. Since it doesn't conflict with currently running
+  // task1 (see areTasksConflicting), it should not be ignored.
+  test.tasks.add(taskNameC, this.mockLocalFunctions.functions().task2);
+  Mock4JS.verifyAllMocks();
+
+  // Step 3. Enter the callback of task1.
+  task1PluginInstance.prologue();
+  Mock4JS.verifyAllMocks();
+
+  // Step 4. Leave the callback of task1.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).task2(ANYTHING);
+  // Invocation.
+  task1PluginInstance.epilogue();
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerBranching', function() {
+  // Tests that task manager correctly detects completion of tasks that create
+  // branching chains of callbacks (in this test, task1 creates pending
+  // callbacks 1 and 2, and callback 1 creates pending callback 3).
+
+  // Setup.
+  var test = setUpTaskManagerTest(this);
+  var task1PluginInstance1, task1PluginInstance2, task1PluginInstance3;
+
+  // Step 1. Add 1st task that creates a 2 pending callbacks.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).task1(ANYTHING).
+      will(callFunction(function() {
+        task1PluginInstance1 = test.pluginFactory();
+        task1PluginInstance2 = test.pluginFactory();
+      }));
+  // Invocation.
+  test.tasks.add(taskNameA, this.mockLocalFunctions.functions().task1);
+  Mock4JS.verifyAllMocks();
+
+  // Step 2. Add 2nd task, which is not conflicting (see areTasksConflicting)
+  // with task1.
+  test.tasks.add(taskNameC, this.mockLocalFunctions.functions().task2);
+  Mock4JS.verifyAllMocks();
+
+  // Step 3. Enter callback 1, create pending callback 3, exit callback 1.
+  // Enter/exit callback 2. Enter callback 3.
+  task1PluginInstance1.prologue();
+  task1PluginInstance3 = test.pluginFactory();
+  task1PluginInstance1.epilogue();
+  task1PluginInstance2.prologue();
+  task1PluginInstance2.epilogue();
+  task1PluginInstance3.prologue();
+  Mock4JS.verifyAllMocks();
+
+  // Step 4. Leave 3rd callback of task1. Now task1 is complete, and task2
+  // should start.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).task2(ANYTHING);
+  // Invocation.
+  task1PluginInstance3.epilogue();
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerSuspendError', function() {
+  // Tests that task manager's onSuspend method reports an error if there are
+  // pending tasks.
+
+  // Setup.
+  var test = setUpTaskManagerTest(this);
+  var onSuspendHandlerContainer = getMockHandlerContainer('runtime.onSuspend');
+
+  // Step 1. Add a task that creates a pending callback.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).task1(ANYTHING).
+      will(callFunction(function() {
+        test.pluginFactory();
+      }));
+  // Invocation.
+  test.tasks.add(taskNameA, this.mockLocalFunctions.functions().task1);
+  Mock4JS.verifyAllMocks();
+
+  // Step 2. Invoke onSuspend event of the task manager.
+  // Setup and expectations. The 2 callbacks in onSuspendHandlerContainer are
+  // from the wrapper and the task manager.
+  assertTrue(onSuspendHandlerContainer.length == 2,
+             'onSuspendHandlerContainer.length must be 2');
+  this.mockGlobals.expects(once()).reportError(eqToString(
+      'Error: ASSERT: Incomplete task when unloading event page,' +
+      ' queue = [{"name":"TASK A"}], testWrapperDebugState'));
+  // Invocation.
+  onSuspendHandlerContainer[1]();
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerSuspendSuccess', function() {
+  // Tests that task manager's onSuspend method does not report an error if all
+  // tasks completed.
+
+  // Setup.
+  var test = setUpTaskManagerTest(this);
+  var onSuspendHandlerContainer = getMockHandlerContainer('runtime.onSuspend');
+  var task1PluginInstance;
+
+  // Step 1. Add a task that creates a pending callback.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).task1(ANYTHING).
+      will(callFunction(function() {
+        task1PluginInstance = test.pluginFactory();
+      }));
+  // Invocation.
+  test.tasks.add(taskNameA, this.mockLocalFunctions.functions().task1);
+  Mock4JS.verifyAllMocks();
+
+  // Step 2. Invoke task's callback and the onSuspend event of the task manager.
+  // The 2 callbacks in onSuspendHandlerContainer are from the wrapper and the
+  // task manager.
+  task1PluginInstance.prologue();
+  task1PluginInstance.epilogue();
+  onSuspendHandlerContainer[1]();
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'TaskManager3Tasks', function() {
+  // Tests that 3 tasks can be executed too. In particular, that if the second 
+  // task is a single-step task which execution was originally blocked by task1,
+  // unblocking it causes immediate synchronous execution of both tasks 2 and 3.
+
+  // Setup.
+  var test = setUpTaskManagerTest(this);
+  var task1PluginInstance;
+
+  // Step 1. Add 1st task that creates a pending callback.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).task1(ANYTHING).
+      will(callFunction(function() {
+        task1PluginInstance = test.pluginFactory();
+      }));
+  // Invocation.
+  test.tasks.add(taskNameA, this.mockLocalFunctions.functions().task1);
+  Mock4JS.verifyAllMocks();
+
+  // Step 2. Add 2nd and 3rd tasks, both non-conflicting (see
+  // areTasksConflicting) with task1.
+  test.tasks.add(taskNameC, this.mockLocalFunctions.functions().task2);
+  test.tasks.add(taskNameC, this.mockLocalFunctions.functions().task3);
+  Mock4JS.verifyAllMocks();
+
+  // Step 3. Enter the callback of task1.
+  task1PluginInstance.prologue();
+  Mock4JS.verifyAllMocks();
+
+  // Step 4. Leave the callback of task1.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).task2(ANYTHING);
+  this.mockLocalFunctions.expects(once()).task3(ANYTHING);
+  // Invocation.
+  task1PluginInstance.epilogue();
+});
+
+TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerNestedNonTask', function() {
+  // Tests callbacks requested while a task is running, but not from a callback
+  // belonging to a task, are not counted as a part of the task.
+
+  // Setup.
+  var test = setUpTaskManagerTest(this);
+  var task1PluginInstance;
+
+  // Step 1. Add 1st task that creates a pending callback.
+  // Expectations.
+  this.mockLocalFunctions.expects(once()).task1(ANYTHING).
+      will(callFunction(function() {
+        task1PluginInstance = test.pluginFactory();
+      }));
+  // Invocation.
+  test.tasks.add(taskNameA, this.mockLocalFunctions.functions().task1);
+  Mock4JS.verifyAllMocks();
+
+  // Step 2. Create a pending callback from code that is not a part of the task.
+  test.pluginFactory();
+  Mock4JS.verifyAllMocks();
+
+  // Step 3. Enter the callback of task1. After this, task1 should be
+  // finished despite the pending non-task callback.
+  task1PluginInstance.prologue();
+  task1PluginInstance.epilogue();
+  Mock4JS.verifyAllMocks();
+
+  // Step 4. Check that task1 is finished by submitting task2, which should
+  // be executed immediately.
+  this.mockLocalFunctions.expects(once()).task2(ANYTHING);
+  test.tasks.add(taskNameC, this.mockLocalFunctions.functions().task2);
 });
