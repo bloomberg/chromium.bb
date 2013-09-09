@@ -34,7 +34,7 @@ SearchWebstoreResult::SearchWebstoreResult(Profile* profile,
   set_details_tags(details_tags);
 
   SetIcon(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_WEBSTORE_ICON));
+      IDR_WEBSTORE_ICON_32));
 }
 
 SearchWebstoreResult::~SearchWebstoreResult() {}
