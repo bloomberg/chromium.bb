@@ -109,7 +109,9 @@ void BrowserTestBase::SetUp() {
 
   command_line->AppendSwitch(switches::kDomAutomationController);
 
-  command_line->AppendSwitch(switches::kSkipGpuDataLoading);
+  // It is sometimes useful when looking at browser test failures to know which
+  // GPU blacklisting decisions were made.
+  command_line->AppendSwitch(switches::kLogGpuControlListDecisions);
 
 #if defined(USE_AURA)
   // Use test contexts for browser tests unless they override and force us to

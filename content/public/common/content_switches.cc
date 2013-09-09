@@ -612,6 +612,9 @@ const char kJavaScriptFlags[]               = "js-flags";
 // Load an NPAPI plugin from the specified path.
 const char kLoadPlugin[]                    = "load-plugin";
 
+// Logs GPU control list decisions when enforcing blacklist rules.
+const char kLogGpuControlListDecisions[]    = "log-gpu-control-list-decisions";
+
 // Sets the minimum log level. Valid values are from 0 to 3:
 // INFO = 0, WARNING = 1, LOG_ERROR = 2, LOG_FATAL = 3.
 const char kLoggingLevel[]                  = "log-level";
@@ -762,7 +765,8 @@ const char kSitePerProcess[]                = "site-per-process";
 // Skip gpu info collection, blacklist loading, and blacklist auto-update
 // scheduling at browser startup time.
 // Therefore, all GPU features are available, and about:gpu page shows empty
-// content. The switch is intended only for tests.
+// content. The switch is intended only for layout tests.
+// TODO(gab): Get rid of this switch entirely.
 const char kSkipGpuDataLoading[]            = "skip-gpu-data-loading";
 
 // Specifies the request key for the continuous speech recognition webservice.
