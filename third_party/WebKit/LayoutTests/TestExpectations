@@ -908,8 +908,6 @@ crbug.com/241576 [ Win ] http/tests/appcache [ Pass Timeout ]
 
 crbug.com/241481 http/tests/w3c/webperf/approved/navigation-timing/html/test_timing_attributes_order.html [ Failure Pass ]
 
-crbug.com/241665 fast/events/touch/emulate-touch-events.html [ Failure Pass ]
-
 crbug.com/244921 http/tests/navigation/back-twice-without-commit.html [ Failure Pass ]
 
 crbug.com/248938 [ Debug ] virtual/threaded/animations/cross-fade-background-image.html [ Pass ImageOnlyFailure Timeout ]

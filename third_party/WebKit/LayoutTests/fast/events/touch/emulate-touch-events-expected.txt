@@ -5,7 +5,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS 'ontouchstart' in window is true
 PASS 'ontouchend' in document is true
-Unexpected mousemove event received before touchstart
 PASS lastEvent.type is "touchstart"
 PASS lastEvent.touches.length is 1
 PASS lastEvent.changedTouches.length is 1

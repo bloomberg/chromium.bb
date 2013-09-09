@@ -11,12 +11,16 @@ var lastEvent = null;
 var touchEventsReceived = 0;
 var EXPECTED_TOUCH_EVENTS_TOTAL = 3;
 
-function touchEventCallback() {
+function touchEventCallback(event) {
     if (window.eventSender) {
         lastEvent = event;
         verifyTouch(touchEventsReceived++);
     } else
         debug(event.type);
+
+    // TODO: Touch emulation shouldn't generate mouse events regardless of whether
+    // preventDefault is called.  http://crbug.com/278300.
+    event.preventDefault();
 
     if (window.testRunner && touchEventsReceived == EXPECTED_TOUCH_EVENTS_TOTAL) {
         window.internals.settings.setTouchEventEmulationEnabled(false);
@@ -25,8 +29,7 @@ function touchEventCallback() {
 }
 
 function mouseMoveCallback(e) {
-    if (!lastEvent)
-        debug("Unexpected mousemove event received before touchstart");
+    debug("FAIL: Unexpected mousemove event: " + e.clientX + ", " + e.clientY);
 }
 
 div.addEventListener("touchstart", touchEventCallback, false);
