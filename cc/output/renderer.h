@@ -23,15 +23,8 @@ class CC_EXPORT RendererClient {
   // contained within the output surface size.
   virtual gfx::Rect DeviceViewport() const = 0;
   virtual gfx::Rect DeviceClip() const = 0;
-
-  virtual float DeviceScaleFactor() const = 0;
-  virtual const LayerTreeSettings& Settings() const = 0;
   virtual void SetFullRootLayerDamage() = 0;
-  virtual bool HasImplThread() const = 0;
-  virtual bool ShouldClearRootRenderPass() const = 0;
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const = 0;
-  virtual bool AllowPartialSwap() const = 0;
-  virtual bool ExternalStencilTestEnabled() const = 0;
 
  protected:
   virtual ~RendererClient() {}
@@ -43,8 +36,6 @@ class CC_EXPORT Renderer {
 
   virtual const RendererCapabilities& Capabilities() const = 0;
 
-  const LayerTreeSettings& Settings() const { return client_->Settings(); }
-
   virtual void ViewportChanged() {}
 
   virtual bool CanReadPixels() const = 0;
@@ -54,11 +45,12 @@ class CC_EXPORT Renderer {
   virtual bool HaveCachedResourcesForRenderPassId(RenderPass::Id id) const;
 
   // This passes ownership of the render passes to the renderer. It should
-  // consume them, and empty the list.
-  // The |offscreen_context_provider| may change from frame to frame and should
-  // not be cached.
+  // consume them, and empty the list. The parameters here may change from frame
+  // to frame and should not be cached.
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
-                         ContextProvider* offscreen_context_provider) = 0;
+                         ContextProvider* offscreen_context_provider,
+                         float device_scale_factor,
+                         bool allow_partial_swap) = 0;
 
   // Waits for rendering to finish.
   virtual void Finish() = 0;
@@ -82,10 +74,11 @@ class CC_EXPORT Renderer {
   virtual void SetDiscardBackBufferWhenNotVisible(bool discard) = 0;
 
  protected:
-  explicit Renderer(RendererClient* client)
-      : client_(client) {}
+  explicit Renderer(RendererClient* client, const LayerTreeSettings* settings)
+      : client_(client), settings_(settings) {}
 
   RendererClient* client_;
+  const LayerTreeSettings* settings_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Renderer);

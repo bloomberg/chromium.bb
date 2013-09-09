@@ -127,12 +127,16 @@ struct GLRenderer::PendingAsyncReadPixels {
 };
 
 scoped_ptr<GLRenderer> GLRenderer::Create(RendererClient* client,
+                                          const LayerTreeSettings* settings,
                                           OutputSurface* output_surface,
                                           ResourceProvider* resource_provider,
                                           int highp_threshold_min,
                                           bool use_skia_gpu_backend) {
-  scoped_ptr<GLRenderer> renderer(new GLRenderer(
-      client, output_surface, resource_provider, highp_threshold_min));
+  scoped_ptr<GLRenderer> renderer(new GLRenderer(client,
+                                                 settings,
+                                                 output_surface,
+                                                 resource_provider,
+                                                 highp_threshold_min));
   if (!renderer->Initialize())
     return scoped_ptr<GLRenderer>();
   if (use_skia_gpu_backend) {
@@ -145,10 +149,11 @@ scoped_ptr<GLRenderer> GLRenderer::Create(RendererClient* client,
 }
 
 GLRenderer::GLRenderer(RendererClient* client,
+                       const LayerTreeSettings* settings,
                        OutputSurface* output_surface,
                        ResourceProvider* resource_provider,
                        int highp_threshold_min)
-    : DirectRenderer(client, output_surface, resource_provider),
+    : DirectRenderer(client, settings, output_surface, resource_provider),
       offscreen_framebuffer_id_(0),
       shared_geometry_quad_(gfx::RectF(-0.5f, -0.5f, 1.0f, 1.0f)),
       context_(output_surface->context_provider()->Context3d()),
@@ -170,18 +175,15 @@ bool GLRenderer::Initialize() {
   if (!context_->makeContextCurrent())
     return false;
 
-  std::string unique_context_name = base::StringPrintf(
-      "%s-%p",
-      Settings().compositor_name.c_str(),
-      context_);
+  std::string unique_context_name =
+      base::StringPrintf("%s-%p", settings_->compositor_name.c_str(), context_);
   context_->pushGroupMarkerEXT(unique_context_name.c_str());
 
   ContextProvider::Capabilities context_caps =
     output_surface_->context_provider()->ContextCapabilities();
 
   capabilities_.using_partial_swap =
-      Settings().partial_swap_enabled &&
-      context_caps.post_sub_buffer;
+      settings_->partial_swap_enabled && context_caps.post_sub_buffer;
 
   capabilities_.using_set_visibility = context_caps.set_visibility;
 
@@ -202,7 +204,7 @@ bool GLRenderer::Initialize() {
   capabilities_.using_offscreen_context3d = true;
 
   capabilities_.using_map_image =
-      Settings().use_map_image && context_caps.map_image;
+      settings_->use_map_image && context_caps.map_image;
 
   capabilities_.using_discard_framebuffer =
       context_caps.discard_framebuffer;
@@ -290,7 +292,7 @@ void GLRenderer::ViewportChanged() {
 void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
   // It's unsafe to clear when we have a stencil test because glClear ignores
   // stencil.
-  if (client_->ExternalStencilTestEnabled() &&
+  if (output_surface_->HasExternalStencilTest() &&
       frame->current_render_pass == frame->root_render_pass) {
     DCHECK(!frame->current_render_pass->has_transparent_background);
     return;
@@ -1249,7 +1251,7 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
   gfx::QuadF local_quad = gfx::QuadF(gfx::RectF(tile_rect));
   float edge[24];
   bool use_aa =
-      Settings().allow_antialiasing && !quad->force_anti_aliasing_off &&
+      settings_->allow_antialiasing && !quad->force_anti_aliasing_off &&
       SetupQuadForAntialiasing(device_transform, quad, &local_quad, edge);
 
   SolidColorProgramUniforms uniforms;
@@ -1388,7 +1390,7 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
 
   gfx::QuadF local_quad = gfx::QuadF(gfx::RectF(tile_rect));
   float edge[24];
-  bool use_aa = Settings().allow_antialiasing && SetupQuadForAntialiasing(
+  bool use_aa = settings_->allow_antialiasing && SetupQuadForAntialiasing(
       device_transform, quad, &local_quad, edge);
 
   TileProgramUniforms uniforms;
@@ -2098,7 +2100,7 @@ void GLRenderer::SwapBuffers() {
   compositor_frame.metadata = client_->MakeCompositorFrameMetadata();
   compositor_frame.gl_frame_data = make_scoped_ptr(new GLFrameData);
   compositor_frame.gl_frame_data->size = output_surface_->SurfaceSize();
-  if (capabilities_.using_partial_swap && client_->AllowPartialSwap()) {
+  if (capabilities_.using_partial_swap) {
     // If supported, we can save significant bandwidth by only swapping the
     // damaged/scissored region (clamped to the viewport)
     swap_buffer_rect_.Intersect(client_->DeviceViewport());
@@ -2511,7 +2513,7 @@ void GLRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
   current_framebuffer_lock_.reset();
   output_surface_->BindFramebuffer();
 
-  if (client_->ExternalStencilTestEnabled()) {
+  if (output_surface_->HasExternalStencilTest()) {
     SetStencilEnabled(true);
     GLC(context_, context_->stencilFunc(GL_EQUAL, 1, 1));
   } else {
@@ -3159,11 +3161,9 @@ void GLRenderer::LazyLabelOffscreenContext(
     return;
   offscreen_context_labelled_ = true;
   std::string unique_context_name = base::StringPrintf(
-      "%s-Offscreen-%p",
-      Settings().compositor_name.c_str(),
-      context_);
-  offscreen_context_provider->Context3d()->pushGroupMarkerEXT(
-      unique_context_name.c_str());
+      "%s-Offscreen-%p", settings_->compositor_name.c_str(), context_);
+  offscreen_context_provider->Context3d()
+      ->pushGroupMarkerEXT(unique_context_name.c_str());
 }
 
 

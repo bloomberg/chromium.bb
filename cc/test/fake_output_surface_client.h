@@ -32,7 +32,6 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
       gfx::Rect viewport,
       gfx::Rect clip,
       bool valid_for_tile_management) OVERRIDE {}
-  virtual void SetExternalStencilTest(bool enable) OVERRIDE {}
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
   virtual void SetDiscardBackBufferWhenNotVisible(bool discard) OVERRIDE;
   virtual void SetTreeActivationCallback(const base::Closure&) OVERRIDE {}

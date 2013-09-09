@@ -1112,10 +1112,6 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
   manage_tiles_needed_ = true;
 }
 
-bool LayerTreeHostImpl::HasImplThread() const {
-  return proxy_->HasImplThread();
-}
-
 void LayerTreeHostImpl::DidInitializeVisibleTile() {
   // TODO(reveman): Determine tiles that changed and only damage
   // what's necessary.
@@ -1126,10 +1122,6 @@ void LayerTreeHostImpl::DidInitializeVisibleTile() {
 
 void LayerTreeHostImpl::NotifyReadyToActivate() {
   client_->NotifyReadyToActivate();
-}
-
-bool LayerTreeHostImpl::ShouldClearRootRenderPass() const {
-  return settings_.should_clear_root_render_pass;
 }
 
 void LayerTreeHostImpl::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
@@ -1200,10 +1192,6 @@ void LayerTreeHostImpl::SetExternalDrawConstraints(
   device_viewport_valid_for_tile_management_ = valid_for_tile_management;
 }
 
-void LayerTreeHostImpl::SetExternalStencilTest(bool enabled) {
-  external_stencil_test_enabled_ = enabled;
-}
-
 void LayerTreeHostImpl::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   client_->SetNeedsRedrawRectOnImplThread(damage_rect);
 }
@@ -1249,17 +1237,6 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   metadata.root_scroll_offset = RootScrollLayer()->TotalScrollOffset();
 
   return metadata;
-}
-
-bool LayerTreeHostImpl::AllowPartialSwap() const {
-  // We don't track damage on the HUD layer (it interacts with damage tracking
-  // visualizations), so disable partial swaps to make the HUD layer display
-  // properly.
-  return !debug_state_.ShowHudRects();
-}
-
-bool LayerTreeHostImpl::ExternalStencilTestEnabled() const {
-  return external_stencil_test_enabled_;
 }
 
 static void LayerTreeHostImplDidBeginTracingCallback(LayerImpl* layer) {
@@ -1335,12 +1312,22 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
     active_tree_->hud_layer()->UpdateHudTexture(resource_provider_.get());
 
   if (output_surface_->ForcedDrawToSoftwareDevice()) {
+    bool allow_partial_swap = false;
+
     scoped_ptr<SoftwareRenderer> temp_software_renderer =
-        SoftwareRenderer::Create(this, output_surface_.get(), NULL);
-    temp_software_renderer->DrawFrame(&frame->render_passes, NULL);
+        SoftwareRenderer::Create(this, &settings_, output_surface_.get(), NULL);
+    temp_software_renderer->DrawFrame(
+        &frame->render_passes, NULL, device_scale_factor_, allow_partial_swap);
   } else {
+    // We don't track damage on the HUD layer (it interacts with damage tracking
+    // visualizations), so disable partial swaps to make the HUD layer display
+    // properly.
+    bool allow_partial_swap = !debug_state_.ShowHudRects();
+
     renderer_->DrawFrame(&frame->render_passes,
-                         offscreen_context_provider_.get());
+                         offscreen_context_provider_.get(),
+                         device_scale_factor_,
+                         allow_partial_swap);
   }
   // The render passes should be consumed by the renderer.
   DCHECK(frame->render_passes.empty());
@@ -1348,6 +1335,8 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
 
   // The next frame should start by assuming nothing has changed, and changes
   // are noted as they occur.
+  // TODO(boliu): If we did a temporary software renderer frame, propogate the
+  // damage forward to the next frame.
   for (size_t i = 0; i < frame->render_surface_layer_list->size(); i++) {
     (*frame->render_surface_layer_list)[i]->render_surface()->damage_tracker()->
         DidDrawDamagedArea();
@@ -1394,15 +1383,11 @@ void LayerTreeHostImpl::SetNeedsBeginFrame(bool enable) {
     output_surface_->SetNeedsBeginFrame(enable);
 }
 
-float LayerTreeHostImpl::DeviceScaleFactor() const {
-  return device_scale_factor_;
-}
-
 gfx::SizeF LayerTreeHostImpl::UnscaledScrollableViewportSize() const {
   // The container layer bounds should be used if non-overlay scrollbars may
   // exist since it adjusts for them.
   LayerImpl* container_layer = active_tree_->RootContainerLayer();
-  if (!Settings().solid_color_scrollbars && container_layer) {
+  if (!settings_.solid_color_scrollbars && container_layer) {
     DCHECK(!top_controls_manager_);
     DCHECK_EQ(0, overdraw_bottom_height_);
     return container_layer->bounds();
@@ -1415,10 +1400,6 @@ gfx::SizeF LayerTreeHostImpl::UnscaledScrollableViewportSize() const {
       top_controls_manager_ ? top_controls_manager_->content_top_offset() : 0.f;
   return gfx::SizeF(dip_size.width(),
                     dip_size.height() - top_offset - overdraw_bottom_height_);
-}
-
-const LayerTreeSettings& LayerTreeHostImpl::Settings() const {
-  return settings();
 }
 
 void LayerTreeHostImpl::DidLoseOutputSurface() {
@@ -1607,17 +1588,18 @@ void LayerTreeHostImpl::CreateAndSetRenderer(
     bool skip_gl_renderer) {
   DCHECK(!renderer_);
   if (output_surface->capabilities().delegated_rendering) {
-    renderer_ =
-        DelegatingRenderer::Create(this, output_surface, resource_provider);
+    renderer_ = DelegatingRenderer::Create(
+        this, &settings_, output_surface, resource_provider);
   } else if (output_surface->context_provider() && !skip_gl_renderer) {
     renderer_ = GLRenderer::Create(this,
+                                   &settings_,
                                    output_surface,
                                    resource_provider,
                                    settings_.highp_threshold_min,
                                    settings_.force_direct_layer_drawing);
   } else if (output_surface->software_device()) {
-    renderer_ =
-        SoftwareRenderer::Create(this, output_surface, resource_provider);
+    renderer_ = SoftwareRenderer::Create(
+        this, &settings_, output_surface, resource_provider);
   }
 
   if (renderer_) {

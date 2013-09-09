@@ -42,6 +42,7 @@ class PixelTest : public testing::Test {
       const base::FilePath& ref_file,
       const PixelComparator& comparator);
 
+  LayerTreeSettings settings_;
   gfx::Size device_viewport_size_;
   class PixelTestRendererClient;
   scoped_ptr<OutputSurface> output_surface_;
@@ -85,10 +86,12 @@ class RendererPixelTest : public PixelTest {
 class GLRendererWithSkiaGPUBackend : public GLRenderer {
  public:
   GLRendererWithSkiaGPUBackend(RendererClient* client,
-                       OutputSurface* output_surface,
-                       ResourceProvider* resource_provider,
-                       int highp_threshold_min)
+                               const LayerTreeSettings* settings,
+                               OutputSurface* output_surface,
+                               ResourceProvider* resource_provider,
+                               int highp_threshold_min)
       : GLRenderer(client,
+                   settings,
                    output_surface,
                    resource_provider,
                    highp_threshold_min) {}
@@ -99,10 +102,12 @@ class GLRendererWithSkiaGPUBackend : public GLRenderer {
 class GLRendererWithExpandedViewport : public GLRenderer {
  public:
   GLRendererWithExpandedViewport(RendererClient* client,
-                       OutputSurface* output_surface,
-                       ResourceProvider* resource_provider,
-                       int highp_threshold_min)
+                                 const LayerTreeSettings* settings,
+                                 OutputSurface* output_surface,
+                                 ResourceProvider* resource_provider,
+                                 int highp_threshold_min)
       : GLRenderer(client,
+                   settings,
                    output_surface,
                    resource_provider,
                    highp_threshold_min) {}
@@ -111,13 +116,11 @@ class GLRendererWithExpandedViewport : public GLRenderer {
 class SoftwareRendererWithExpandedViewport : public SoftwareRenderer {
  public:
   SoftwareRendererWithExpandedViewport(RendererClient* client,
-                       OutputSurface* output_surface,
-                       ResourceProvider* resource_provider)
-      : SoftwareRenderer(client,
-                   output_surface,
-                   resource_provider) {}
+                                       const LayerTreeSettings* settings,
+                                       OutputSurface* output_surface,
+                                       ResourceProvider* resource_provider)
+      : SoftwareRenderer(client, settings, output_surface, resource_provider) {}
 };
-
 
 template<>
 inline void RendererPixelTest<GLRenderer>::SetUp() {

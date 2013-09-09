@@ -31,20 +31,21 @@ namespace cc {
 
 scoped_ptr<DelegatingRenderer> DelegatingRenderer::Create(
     RendererClient* client,
+    const LayerTreeSettings* settings,
     OutputSurface* output_surface,
     ResourceProvider* resource_provider) {
-  scoped_ptr<DelegatingRenderer> renderer(
-      new DelegatingRenderer(client, output_surface, resource_provider));
+  scoped_ptr<DelegatingRenderer> renderer(new DelegatingRenderer(
+      client, settings, output_surface, resource_provider));
   if (!renderer->Initialize())
     return scoped_ptr<DelegatingRenderer>();
   return renderer.Pass();
 }
 
-DelegatingRenderer::DelegatingRenderer(
-    RendererClient* client,
-    OutputSurface* output_surface,
-    ResourceProvider* resource_provider)
-    : Renderer(client),
+DelegatingRenderer::DelegatingRenderer(RendererClient* client,
+                                       const LayerTreeSettings* settings,
+                                       OutputSurface* output_surface,
+                                       ResourceProvider* resource_provider)
+    : Renderer(client, settings),
       output_surface_(output_surface),
       resource_provider_(resource_provider),
       visible_(true) {
@@ -70,9 +71,7 @@ bool DelegatingRenderer::Initialize() {
     return false;
 
   std::string unique_context_name = base::StringPrintf(
-      "%s-%p",
-      Settings().compositor_name.c_str(),
-      context3d);
+      "%s-%p", settings_->compositor_name.c_str(), context3d);
   context3d->pushGroupMarkerEXT(unique_context_name.c_str());
 
   const ContextProvider::Capabilities& caps =
@@ -82,8 +81,7 @@ bool DelegatingRenderer::Initialize() {
 
   capabilities_.using_set_visibility = caps.set_visibility;
   capabilities_.using_egl_image = caps.egl_image_external;
-  capabilities_.using_map_image =
-      Settings().use_map_image && caps.map_image;
+  capabilities_.using_map_image = settings_->use_map_image && caps.map_image;
 
   return true;
 }
@@ -103,9 +101,10 @@ static ResourceProvider::ResourceId AppendToArray(
   return id;
 }
 
-void DelegatingRenderer::DrawFrame(
-    RenderPassList* render_passes_in_draw_order,
-    ContextProvider* offscreen_context_provider) {
+void DelegatingRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
+                                   ContextProvider* offscreen_context_provider,
+                                   float device_scale_factor,
+                                   bool allow_partial_swap) {
   TRACE_EVENT0("cc", "DelegatingRenderer::DrawFrame");
 
   DCHECK(!frame_for_swap_buffers_.delegated_frame_data);

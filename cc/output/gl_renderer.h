@@ -40,6 +40,7 @@ class ScopedEnsureFramebufferAllocation;
 class CC_EXPORT GLRenderer : public DirectRenderer {
  public:
   static scoped_ptr<GLRenderer> Create(RendererClient* client,
+                                       const LayerTreeSettings* settings,
                                        OutputSurface* output_surface,
                                        ResourceProvider* resource_provider,
                                        int highp_threshold_min,
@@ -81,6 +82,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
  protected:
   GLRenderer(RendererClient* client,
+             const LayerTreeSettings* settings,
              OutputSurface* output_surface,
              ResourceProvider* resource_provider,
              int highp_threshold_min);

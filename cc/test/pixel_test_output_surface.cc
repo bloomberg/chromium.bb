@@ -9,6 +9,14 @@
 
 namespace cc {
 
+PixelTestOutputSurface::PixelTestOutputSurface(
+    scoped_refptr<ContextProvider> context_provider)
+    : OutputSurface(context_provider), external_stencil_test_(false) {}
+
+PixelTestOutputSurface::PixelTestOutputSurface(
+    scoped_ptr<cc::SoftwareOutputDevice> software_device)
+    : OutputSurface(software_device.Pass()), external_stencil_test_(false) {}
+
 void PixelTestOutputSurface::Reshape(gfx::Size size, float scale_factor) {
   gfx::Size expanded_size(size.width() + surface_expansion_size_.width(),
                           size.height() + surface_expansion_size_.height());
@@ -20,6 +28,10 @@ void PixelTestOutputSurface::Reshape(gfx::Size size, float scale_factor) {
                               : device_clip_ + viewport_offset_;
   SetExternalDrawConstraints(
       gfx::Transform(), offset_viewport, offset_clip, true);
+}
+
+bool PixelTestOutputSurface::HasExternalStencilTest() const {
+  return external_stencil_test_;
 }
 
 }  // namespace cc

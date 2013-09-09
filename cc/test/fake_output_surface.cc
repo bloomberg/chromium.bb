@@ -21,6 +21,7 @@ FakeOutputSurface::FakeOutputSurface(
       num_sent_frames_(0),
       needs_begin_frame_(false),
       forced_draw_to_software_device_(false),
+      has_external_stencil_test_(false),
       fake_weak_ptr_factory_(this) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
@@ -29,11 +30,13 @@ FakeOutputSurface::FakeOutputSurface(
 }
 
 FakeOutputSurface::FakeOutputSurface(
-    scoped_ptr<SoftwareOutputDevice> software_device, bool delegated_rendering)
+    scoped_ptr<SoftwareOutputDevice> software_device,
+    bool delegated_rendering)
     : OutputSurface(software_device.Pass()),
       client_(NULL),
       num_sent_frames_(0),
       forced_draw_to_software_device_(false),
+      has_external_stencil_test_(false),
       fake_weak_ptr_factory_(this) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
@@ -49,6 +52,7 @@ FakeOutputSurface::FakeOutputSurface(
       client_(NULL),
       num_sent_frames_(0),
       forced_draw_to_software_device_(false),
+      has_external_stencil_test_(false),
       fake_weak_ptr_factory_(this) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
@@ -129,6 +133,10 @@ void FakeOutputSurface::ReturnResource(unsigned id, CompositorFrameAck* ack) {
   DCHECK(it != resources_held_by_parent_.end());
   ack->resources.push_back(it->ToReturnedResource());
   resources_held_by_parent_.erase(it);
+}
+
+bool FakeOutputSurface::HasExternalStencilTest() const {
+  return has_external_stencil_test_;
 }
 
 }  // namespace cc

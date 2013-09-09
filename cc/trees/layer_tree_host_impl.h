@@ -202,16 +202,8 @@ class CC_EXPORT LayerTreeHostImpl
   // and their software-mode equivalents.
   virtual gfx::Rect DeviceViewport() const OVERRIDE;
   virtual gfx::Rect DeviceClip() const OVERRIDE;
- private:
-  virtual float DeviceScaleFactor() const OVERRIDE;
-  virtual const LayerTreeSettings& Settings() const OVERRIDE;
- public:
   virtual void SetFullRootLayerDamage() OVERRIDE;
-  virtual bool HasImplThread() const OVERRIDE;
-  virtual bool ShouldClearRootRenderPass() const OVERRIDE;
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const OVERRIDE;
-  virtual bool AllowPartialSwap() const OVERRIDE;
-  virtual bool ExternalStencilTestEnabled() const OVERRIDE;
 
   // TileManagerClient implementation.
   virtual void NotifyReadyToActivate() OVERRIDE;
@@ -227,7 +219,6 @@ class CC_EXPORT LayerTreeHostImpl
       gfx::Rect viewport,
       gfx::Rect clip,
       bool valid_for_tile_management) OVERRIDE;
-  virtual void SetExternalStencilTest(bool enabled) OVERRIDE;
   virtual void DidLoseOutputSurface() OVERRIDE;
   virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) OVERRIDE;
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;

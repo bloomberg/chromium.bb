@@ -32,7 +32,9 @@ class CC_EXPORT DirectRenderer : public Renderer {
   virtual bool HaveCachedResourcesForRenderPassId(RenderPass::Id id) const
       OVERRIDE;
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
-                         ContextProvider* offscreen_context_provider) OVERRIDE;
+                         ContextProvider* offscreen_context_provider,
+                         float device_scale_factor,
+                         bool allow_partial_swap) OVERRIDE;
 
   struct CC_EXPORT DrawingFrame {
     DrawingFrame();
@@ -54,6 +56,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
 
  protected:
   DirectRenderer(RendererClient* client,
+                 const LayerTreeSettings* settings,
                  OutputSurface* output_surface,
                  ResourceProvider* resource_provider);
 
@@ -104,7 +107,9 @@ class CC_EXPORT DirectRenderer : public Renderer {
   static gfx::Size RenderPassTextureSize(const RenderPass* render_pass);
   static GLenum RenderPassTextureFormat(const RenderPass* render_pass);
 
-  void DrawRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
+  void DrawRenderPass(DrawingFrame* frame,
+                      const RenderPass* render_pass,
+                      bool allow_partial_swap);
   bool UseRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
 
   virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) = 0;

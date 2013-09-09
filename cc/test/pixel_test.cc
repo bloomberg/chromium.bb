@@ -28,35 +28,17 @@ class PixelTest::PixelTestRendererClient
     : public RendererClient, public OutputSurfaceClient {
  public:
   explicit PixelTestRendererClient(gfx::Rect device_viewport)
-      : device_viewport_(device_viewport),
-        device_clip_(device_viewport),
-        stencil_enabled_(false) {}
+      : device_viewport_(device_viewport), device_clip_(device_viewport) {}
 
   // RendererClient implementation.
   virtual gfx::Rect DeviceViewport() const OVERRIDE {
     return device_viewport_;
   }
-  virtual gfx::Rect DeviceClip() const OVERRIDE {
-    return device_clip_;
-  }
-  virtual float DeviceScaleFactor() const OVERRIDE {
-    return 1.f;
-  }
-  virtual const LayerTreeSettings& Settings() const OVERRIDE {
-    return settings_;
-  }
+  virtual gfx::Rect DeviceClip() const OVERRIDE { return device_clip_; }
   virtual void SetFullRootLayerDamage() OVERRIDE {}
-  virtual bool HasImplThread() const OVERRIDE { return false; }
-  virtual bool ShouldClearRootRenderPass() const OVERRIDE { return true; }
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const
       OVERRIDE {
     return CompositorFrameMetadata();
-  }
-  virtual bool AllowPartialSwap() const OVERRIDE {
-    return true;
-  }
-  virtual bool ExternalStencilTestEnabled() const OVERRIDE {
-    return stencil_enabled_;
   }
 
   // OutputSurfaceClient implementation.
@@ -77,9 +59,6 @@ class PixelTest::PixelTestRendererClient
     device_viewport_ = viewport;
     device_clip_ = clip;
   }
-  virtual void SetExternalStencilTest(bool enable) OVERRIDE {
-    stencil_enabled_ = enable;
-  }
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE {}
   virtual void SetDiscardBackBufferWhenNotVisible(bool discard) OVERRIDE {}
   virtual void SetTreeActivationCallback(const base::Closure&) OVERRIDE {}
@@ -87,8 +66,6 @@ class PixelTest::PixelTestRendererClient
  private:
   gfx::Rect device_viewport_;
   gfx::Rect device_clip_;
-  bool stencil_enabled_;
-  LayerTreeSettings settings_;
 };
 
 PixelTest::PixelTest()
@@ -133,8 +110,14 @@ bool PixelTest::RunPixelTestWithReadbackTarget(
       break;
   }
 
+  float device_scale_factor = 1.f;
+  bool allow_partial_swap = true;
+
   renderer_->DecideRenderPassAllocationsForFrame(*pass_list);
-  renderer_->DrawFrame(pass_list, offscreen_contexts.get());
+  renderer_->DrawFrame(pass_list,
+                       offscreen_contexts.get(),
+                       device_scale_factor,
+                       allow_partial_swap);
 
   // Wait for the readback to complete.
   resource_provider_->Finish();
@@ -179,6 +162,7 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
 
   resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
   renderer_ = GLRenderer::Create(fake_client_.get(),
+                                 &settings_,
                                  output_surface_.get(),
                                  resource_provider_.get(),
                                  0,
@@ -204,7 +188,8 @@ void PixelTest::ForceDeviceClip(gfx::Rect clip) {
 }
 
 void PixelTest::EnableExternalStencilTest() {
-  fake_client_->SetExternalStencilTest(true);
+  static_cast<PixelTestOutputSurface*>(output_surface_.get())
+      ->set_has_external_stencil_test(true);
 }
 
 void PixelTest::SetUpSoftwareRenderer() {
@@ -214,10 +199,11 @@ void PixelTest::SetUpSoftwareRenderer() {
   output_surface_.reset(new PixelTestOutputSurface(device.Pass()));
   output_surface_->BindToClient(fake_client_.get());
   resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
-  renderer_ = SoftwareRenderer::Create(
-      fake_client_.get(),
-      output_surface_.get(),
-      resource_provider_.get()).PassAs<DirectRenderer>();
+  renderer_ = SoftwareRenderer::Create(fake_client_.get(),
+                                       &settings_,
+                                       output_surface_.get(),
+                                       resource_provider_.get())
+                  .PassAs<DirectRenderer>();
 }
 
 }  // namespace cc

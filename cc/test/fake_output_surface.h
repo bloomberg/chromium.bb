@@ -108,6 +108,12 @@ class FakeOutputSurface : public OutputSurface {
 
   void ReturnResource(unsigned id, CompositorFrameAck* ack);
 
+  virtual bool HasExternalStencilTest() const OVERRIDE;
+
+  void set_has_external_stencil_test(bool has_test) {
+    has_external_stencil_test_ = has_test;
+  }
+
  protected:
   FakeOutputSurface(
       scoped_refptr<ContextProvider> context_provider,
@@ -129,6 +135,7 @@ class FakeOutputSurface : public OutputSurface {
   size_t num_sent_frames_;
   bool needs_begin_frame_;
   bool forced_draw_to_software_device_;
+  bool has_external_stencil_test_;
   base::WeakPtrFactory<FakeOutputSurface> fake_weak_ptr_factory_;
   TransferableResourceArray resources_held_by_parent_;
 };

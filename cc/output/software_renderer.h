@@ -29,6 +29,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
  public:
   static scoped_ptr<SoftwareRenderer> Create(
       RendererClient* client,
+      const LayerTreeSettings* settings,
       OutputSurface* output_surface,
       ResourceProvider* resource_provider);
 
@@ -67,10 +68,10 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
       DrawingFrame* frame,
       scoped_ptr<CopyOutputRequest> request) OVERRIDE;
 
-  SoftwareRenderer(
-      RendererClient* client,
-      OutputSurface* output_surface,
-      ResourceProvider* resource_provider);
+  SoftwareRenderer(RendererClient* client,
+                   const LayerTreeSettings* settings,
+                   OutputSurface* output_surface,
+                   ResourceProvider* resource_provider);
 
  private:
   void ClearCanvas(SkColor color);

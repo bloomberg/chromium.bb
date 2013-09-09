@@ -51,21 +51,23 @@ bool IsScaleAndIntegerTranslate(const SkMatrix& matrix) {
 
 scoped_ptr<SoftwareRenderer> SoftwareRenderer::Create(
     RendererClient* client,
+    const LayerTreeSettings* settings,
     OutputSurface* output_surface,
     ResourceProvider* resource_provider) {
-  return make_scoped_ptr(
-      new SoftwareRenderer(client, output_surface, resource_provider));
+  return make_scoped_ptr(new SoftwareRenderer(
+      client, settings, output_surface, resource_provider));
 }
 
 SoftwareRenderer::SoftwareRenderer(RendererClient* client,
+                                   const LayerTreeSettings* settings,
                                    OutputSurface* output_surface,
                                    ResourceProvider* resource_provider)
-  : DirectRenderer(client, output_surface, resource_provider),
-    visible_(true),
-    is_scissor_enabled_(false),
-    is_backbuffer_discarded_(false),
-    output_device_(output_surface->software_device()),
-    current_canvas_(NULL) {
+    : DirectRenderer(client, settings, output_surface, resource_provider),
+      visible_(true),
+      is_scissor_enabled_(false),
+      is_backbuffer_discarded_(false),
+      output_device_(output_surface->software_device()),
+      current_canvas_(NULL) {
   if (resource_provider_) {
     capabilities_.max_texture_size = resource_provider_->max_texture_size();
     capabilities_.best_texture_format =
@@ -76,7 +78,7 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
   capabilities_.allow_partial_texture_updates = true;
   capabilities_.using_partial_swap = true;
 
-  capabilities_.using_map_image = Settings().use_map_image;
+  capabilities_.using_map_image = settings_->use_map_image;
   capabilities_.using_shared_memory_resources = true;
 }
 
@@ -135,7 +137,7 @@ void SoftwareRenderer::EnsureScissorTestDisabled() {
 void SoftwareRenderer::Finish() {}
 
 void SoftwareRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
-  DCHECK(!client_->ExternalStencilTestEnabled());
+  DCHECK(!output_surface_->HasExternalStencilTest());
   current_framebuffer_lock_.reset();
   current_canvas_ = root_canvas_;
 }
@@ -228,8 +230,7 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
                                        quad->IsLeftEdge() &&
                                        quad->IsBottomEdge() &&
                                        quad->IsRightEdge();
-    if (Settings().allow_antialiasing &&
-        all_four_edges_are_exterior)
+    if (settings_->allow_antialiasing && all_four_edges_are_exterior)
       current_paint_.setAntiAlias(true);
     current_paint_.setFilterBitmap(true);
   }

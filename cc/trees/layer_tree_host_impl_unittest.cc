@@ -4999,12 +4999,12 @@ struct RenderPassRemovalTestData : public LayerTreeHostImpl::FrameData {
 
 class TestRenderer : public GLRenderer, public RendererClient {
  public:
-  static scoped_ptr<TestRenderer> Create(ResourceProvider* resource_provider,
+  static scoped_ptr<TestRenderer> Create(const LayerTreeSettings* settings,
+                                         ResourceProvider* resource_provider,
                                          OutputSurface* output_surface,
                                          Proxy* proxy) {
-    scoped_ptr<TestRenderer> renderer(new TestRenderer(resource_provider,
-                                                       output_surface,
-                                                       proxy));
+    scoped_ptr<TestRenderer> renderer(
+        new TestRenderer(settings, resource_provider, output_surface, proxy));
     if (!renderer->Initialize())
       return scoped_ptr<TestRenderer>();
 
@@ -5025,30 +5025,18 @@ class TestRenderer : public GLRenderer, public RendererClient {
   virtual gfx::Rect DeviceViewport() const OVERRIDE {
     return gfx::Rect(viewport_size_);
   }
-  virtual gfx::Rect DeviceClip() const OVERRIDE {
-    return DeviceViewport();
-  }
-  virtual float DeviceScaleFactor() const OVERRIDE {
-    return 1.f;
-  }
-  virtual const LayerTreeSettings& Settings() const OVERRIDE {
-    return settings_;
-  }
+  virtual gfx::Rect DeviceClip() const OVERRIDE { return DeviceViewport(); }
   virtual void SetFullRootLayerDamage() OVERRIDE {}
-  virtual bool HasImplThread() const OVERRIDE { return false; }
-  virtual bool ShouldClearRootRenderPass() const OVERRIDE { return true; }
-  virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const
-      OVERRIDE { return CompositorFrameMetadata(); }
-  virtual bool AllowPartialSwap() const OVERRIDE {
-    return true;
+  virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const OVERRIDE {
+    return CompositorFrameMetadata();
   }
-  virtual bool ExternalStencilTestEnabled() const OVERRIDE { return false; }
 
  protected:
-  TestRenderer(ResourceProvider* resource_provider,
+  TestRenderer(const LayerTreeSettings* settings,
+               ResourceProvider* resource_provider,
                OutputSurface* output_surface,
                Proxy* proxy)
-      : GLRenderer(this, output_surface, resource_provider, 0) {}
+      : GLRenderer(this, settings, output_surface, resource_provider, 0) {}
 
  private:
   LayerTreeSettings settings_;
@@ -5368,6 +5356,7 @@ static void VerifyRenderPassTestData(
 }
 
 TEST_F(LayerTreeHostImplTest, TestRemoveRenderPasses) {
+  LayerTreeSettings settings;
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(CreateOutputSurface());
   ASSERT_TRUE(output_surface->BindToClient(&output_surface_client));
@@ -5376,10 +5365,8 @@ TEST_F(LayerTreeHostImplTest, TestRemoveRenderPasses) {
   scoped_ptr<ResourceProvider> resource_provider =
       ResourceProvider::Create(output_surface.get(), 0);
 
-  scoped_ptr<TestRenderer> renderer =
-      TestRenderer::Create(resource_provider.get(),
-                           output_surface.get(),
-                           &proxy_);
+  scoped_ptr<TestRenderer> renderer = TestRenderer::Create(
+      &settings, resource_provider.get(), output_surface.get(), &proxy_);
 
   int test_case_index = 0;
   while (remove_render_passes_cases[test_case_index].name) {

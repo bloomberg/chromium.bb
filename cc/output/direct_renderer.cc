@@ -127,9 +127,10 @@ gfx::Rect DirectRenderer::MoveFromDrawToWindowSpace(
 }
 
 DirectRenderer::DirectRenderer(RendererClient* client,
+                               const LayerTreeSettings* settings,
                                OutputSurface* output_surface,
                                ResourceProvider* resource_provider)
-    : Renderer(client),
+    : Renderer(client, settings),
       output_surface_(output_surface),
       resource_provider_(resource_provider) {}
 
@@ -194,7 +195,9 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 }
 
 void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
-                               ContextProvider* offscreen_context_provider) {
+                               ContextProvider* offscreen_context_provider,
+                               float device_scale_factor,
+                               bool allow_partial_swap) {
   TRACE_EVENT0("cc", "DirectRenderer::DrawFrame");
   UMA_HISTOGRAM_COUNTS("Renderer4.renderPassCount",
                        render_passes_in_draw_order->size());
@@ -205,8 +208,9 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   DrawingFrame frame;
   frame.root_render_pass = root_render_pass;
   frame.root_damage_rect =
-      Capabilities().using_partial_swap && client_->AllowPartialSwap() ?
-      root_render_pass->damage_rect : root_render_pass->output_rect;
+      Capabilities().using_partial_swap && allow_partial_swap
+          ? root_render_pass->damage_rect
+          : root_render_pass->output_rect;
   frame.root_damage_rect.Intersect(gfx::Rect(client_->DeviceViewport().size()));
   frame.offscreen_context_provider = offscreen_context_provider;
 
@@ -216,12 +220,12 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   // can leave the window at the wrong size if we never draw and the proper
   // viewport size is never set.
   output_surface_->Reshape(client_->DeviceViewport().size(),
-                           client_->DeviceScaleFactor());
+                           device_scale_factor);
 
   BeginDrawingFrame(&frame);
   for (size_t i = 0; i < render_passes_in_draw_order->size(); ++i) {
     RenderPass* pass = render_passes_in_draw_order->at(i);
-    DrawRenderPass(&frame, pass);
+    DrawRenderPass(&frame, pass, allow_partial_swap);
 
     for (ScopedPtrVector<CopyOutputRequest>::iterator it =
              pass->copy_requests.begin();
@@ -319,13 +323,14 @@ void DirectRenderer::SetScissorTestRectInDrawSpace(const DrawingFrame* frame,
 void DirectRenderer::FinishDrawingQuadList() {}
 
 void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
-                                    const RenderPass* render_pass) {
+                                    const RenderPass* render_pass,
+                                    bool allow_partial_swap) {
   TRACE_EVENT0("cc", "DirectRenderer::DrawRenderPass");
   if (!UseRenderPass(frame, render_pass))
     return;
 
   bool using_scissor_as_optimization =
-      Capabilities().using_partial_swap && client_->AllowPartialSwap();
+      Capabilities().using_partial_swap && allow_partial_swap;
   gfx::RectF render_pass_scissor;
 
   if (using_scissor_as_optimization) {
@@ -334,7 +339,7 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
   }
 
   if (frame->current_render_pass != frame->root_render_pass ||
-      client_->ShouldClearRootRenderPass()) {
+      settings_->should_clear_root_render_pass) {
     if (NeedDeviceClip(frame))
       SetScissorTestRect(DeviceClipRect(frame));
     else if (!using_scissor_as_optimization)
@@ -402,7 +407,7 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
 
 bool DirectRenderer::HaveCachedResourcesForRenderPassId(RenderPass::Id id)
     const {
-  if (!Settings().cache_render_pass_contents)
+  if (!settings_->cache_render_pass_contents)
     return false;
 
   CachedResource* texture = render_pass_textures_.get(id);

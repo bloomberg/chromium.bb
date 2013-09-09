@@ -34,7 +34,6 @@ class CC_EXPORT OutputSurfaceClient {
   virtual void BeginFrame(const BeginFrameArgs& args) = 0;
   virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) = 0;
   virtual void DidLoseOutputSurface() = 0;
-  virtual void SetExternalStencilTest(bool enabled) = 0;
   virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
                                           gfx::Rect viewport,
                                           gfx::Rect clip,

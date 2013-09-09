@@ -73,6 +73,8 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
     return capabilities_;
   }
 
+  virtual bool HasExternalStencilTest() const;
+
   // Obtain the 3d context or the software device associated with this output
   // surface. Either of these may return a null pointer, but not both.
   // In the event of a lost context, the entire output surface should be
@@ -193,6 +195,8 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   // check_for_retroactive_begin_frame_pending_ is used to avoid posting
   // redundant checks for a retroactive BeginFrame.
   bool check_for_retroactive_begin_frame_pending_;
+
+  bool external_stencil_test_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };
