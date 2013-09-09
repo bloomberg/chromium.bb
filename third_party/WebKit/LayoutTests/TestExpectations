@@ -1199,9 +1199,6 @@ crbug.com/277043 [ Mac ] fast/dom/adopt-node-crash-2.html [ Pass Failure ]
 
 crbug.com/130260 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
 
-crbug.com/278935 fast/canvas/canvas-composite-transformclip.html [ NeedsRebaseline ]
-crbug.com/278935 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ NeedsRebaseline ]
-
 # Rebase once v8 i18n rolled.
 Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Pass Failure ]
 
