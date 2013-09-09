@@ -457,6 +457,12 @@ void InspectorPageAgent::navigate(ErrorString*, const String& url)
     frame->loader()->load(request);
 }
 
+void InspectorPageAgent::getNavigationHistory(ErrorString*, int*, RefPtr<TypeBuilder::Array<TypeBuilder::Page::NavigationEntry> >&)
+{ }
+
+void InspectorPageAgent::navigateToHistoryEntry(ErrorString*, int)
+{ }
+
 static PassRefPtr<TypeBuilder::Page::Cookie> buildObjectForCookie(const Cookie& cookie)
 {
     return TypeBuilder::Page::Cookie::create()
