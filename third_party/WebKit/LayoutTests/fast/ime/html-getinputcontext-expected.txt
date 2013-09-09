@@ -9,6 +9,7 @@ PASS typeof(html.inputMethodContext) is "object"
 PASS context instanceof InputMethodContext is true
 PASS context2 instanceof InputMethodContext is true
 PASS context === context2 is true
+PASS inputContext is not input2Context
 PASS successfullyParsed is true
 
 TEST COMPLETE

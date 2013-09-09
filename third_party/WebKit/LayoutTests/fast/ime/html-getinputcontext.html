@@ -3,6 +3,7 @@
 <script src="../js/resources/js-test-pre.js"></script>
 </head>
 <body>
+<input id="input"><input id="input2">
 <script>
 description("This tests inputMethodContext attribute which is an additional interface for HTMLElement.");
 
@@ -23,6 +24,11 @@ shouldBeTrue('context instanceof InputMethodContext');
 var context2 = html.inputMethodContext;
 shouldBeTrue('context2 instanceof InputMethodContext');
 shouldBeTrue('context === context2');
+
+// Checks if contexts for different elements are different.
+var inputContext = document.getElementById('input').inputMethodContext;
+var input2Context = document.getElementById('input2').inputMethodContext;
+shouldNotBe('inputContext', 'input2Context');
 </script>
 <script src="../js/resources/js-test-post.js"></script>
 </body>
