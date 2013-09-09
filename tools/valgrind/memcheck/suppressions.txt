@@ -6580,6 +6580,15 @@
    fun:_ZN7WebCore10UseCounter17recordMeasurementENS0_7FeatureE
 }
 {
+   bug_241044	
+   Memcheck:Uninitialized	
+   fun:_ZN7WebCore8Settings29setOpenGLMultisamplingEnabledEb
+   fun:_ZN6WebKit15WebSettingsImpl29setOpenGLMultisamplingEnabledEb
+   fun:_ZN7content19ApplyWebPreferencesERK14WebPreferencesPN6WebKit7WebViewE
+   fun:_ZN7content14RenderViewImpl22OnUpdateWebPreferencesERK14WebPreferences
+   fun:_ZN7content14RenderViewImpl20SetWebkitPreferencesERK14WebPreferences
+}
+{
    bug_241892a
    Memcheck:Leak
    fun:_Znw*
