@@ -1040,8 +1040,6 @@ crbug.com/231917 [ Win Mac ] fast/parser/external-entities-in-xslt.xml [ Failure
 crbug.com/235449 fast/loader/stateobjects/state-attribute-history-getter.html [ Failure Pass ]
 crbug.com/235448 fast/loader/stateobjects/popstate-fires-on-history-traversal.html [ Failure Pass ]
 crbug.com/235110 [ Mac ] virtual/softwarecompositing [ Skip ]
-crbug.com/287477 [ Linux ] virtual/softwarecompositing/tiny-layer-rotated.html [ ImageOnlyFailure NeedsRebaseline ]
-crbug.com/287477 [ Mac Linux ] compositing/tiny-layer-rotated.html [ ImageOnlyFailure NeedsRebaseline ]
 crbug.com/243248 [ Mac Win ] fast/events/attempt-scroll-with-no-scrollbars.html [ Failure Pass ]
 crbug.com/243249 http/tests/misc/submit-post-keygen.html [ Pass Timeout ]
 crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-mode-color.html [ Crash ]
