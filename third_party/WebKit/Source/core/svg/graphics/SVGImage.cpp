@@ -84,6 +84,9 @@ bool SVGImage::currentFrameHasSingleSecurityOrigin() const
         return true;
 
     Frame* frame = m_page->mainFrame();
+
+    RELEASE_ASSERT(frame->document()->loadEventFinished());
+
     SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
     if (!rootElement)
         return true;
