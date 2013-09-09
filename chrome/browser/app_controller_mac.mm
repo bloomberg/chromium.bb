@@ -4,6 +4,7 @@
 
 #import "chrome/browser/app_controller_mac.h"
 
+#include "apps/app_shim/app_shim_mac.h"
 #include "apps/app_shim/extension_app_shim_handler_mac.h"
 #include "apps/shell_window_registry.h"
 #include "base/auto_reset.h"
@@ -643,7 +644,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
   // Start managing the menu for app windows. This needs to be done here because
   // main menu item titles are not yet initialized in awakeFromNib.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppShims))
+  if (apps::IsAppShimsEnabled())
     appShimMenuController_.reset([[AppShimMenuController alloc] init]);
 
   // Build up the encoding menu, the order of the items differs based on the
