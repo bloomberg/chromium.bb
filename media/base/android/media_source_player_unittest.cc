@@ -506,7 +506,8 @@ TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterInputEOS) {
   EXPECT_EQ(2, manager_->num_requests());
 }
 
-TEST_F(MediaSourcePlayerTest, CanPlayType_Widevine) {
+// Crashes. http://crbug.com/287817
+TEST_F(MediaSourcePlayerTest, DISABLED_CanPlayType_Widevine) {
   if (!MediaCodecBridge::IsAvailable() || !MediaDrmBridge::IsAvailable())
     return;
 
