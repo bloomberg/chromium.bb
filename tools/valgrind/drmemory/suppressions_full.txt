@@ -1025,6 +1025,12 @@ name=deliberate histogram leak
 *!*::*Histogram::FactoryGet
 
 LEAK
+name=deliberate leak for SampleMap
+...
+*!base::SampleMap::Accumulate
+*!base::SparseHistogram::Add
+
+LEAK
 name=deliberate LazyInstance leak
 ...
 *!*LeakyLazyInstance*
