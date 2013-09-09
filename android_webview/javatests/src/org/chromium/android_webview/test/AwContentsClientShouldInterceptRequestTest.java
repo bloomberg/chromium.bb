@@ -39,7 +39,7 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
 
         public static class ShouldInterceptRequestHelper extends CallbackHelper {
             private List<String> mShouldInterceptRequestUrls = new ArrayList<String>();
-            private ConcurrentHashMap<String, InterceptedRequestData> mReturnValusByUrls
+            private ConcurrentHashMap<String, InterceptedRequestData> mReturnValuesByUrls
                 = new ConcurrentHashMap<String, InterceptedRequestData>();
             // This is read from the IO thread, so needs to be marked volatile.
             private volatile InterceptedRequestData mShouldInterceptRequestReturnValue = null;
@@ -47,14 +47,14 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
                 mShouldInterceptRequestReturnValue = value;
             }
             void setReturnValueForUrl(String url, InterceptedRequestData value) {
-                mReturnValusByUrls.put(url, value);
+                mReturnValuesByUrls.put(url, value);
             }
             public List<String> getUrls() {
                 assert getCallCount() > 0;
                 return mShouldInterceptRequestUrls;
             }
             public InterceptedRequestData getReturnValue(String url) {
-                InterceptedRequestData value = mReturnValusByUrls.get(url);
+                InterceptedRequestData value = mReturnValuesByUrls.get(url);
                 if (value != null) return value;
                 return mShouldInterceptRequestReturnValue;
             }
