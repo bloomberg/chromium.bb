@@ -24,6 +24,7 @@
 
 #include "core/rendering/svg/RenderSVGResource.h"
 
+#include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"

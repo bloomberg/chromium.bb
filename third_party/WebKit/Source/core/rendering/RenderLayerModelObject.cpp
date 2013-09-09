@@ -25,6 +25,7 @@
 #include "config.h"
 #include "core/rendering/RenderLayerModelObject.h"
 
+#include "core/page/Frame.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 

@@ -27,6 +27,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/Editor.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatQuad.h"

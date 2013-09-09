@@ -26,7 +26,6 @@
 #define FrameView_h
 
 #include "core/page/AdjustViewSizeOrNot.h"
-#include "core/page/Frame.h"
 #include "core/platform/ScrollView.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/LayoutRect.h"
@@ -42,6 +41,7 @@ namespace WebCore {
 class Element;
 class Event;
 class FloatSize;
+class Frame;
 class FrameActionScheduler;
 class KURL;
 class Node;
@@ -76,10 +76,10 @@ public:
 
     Frame& frame() const { return *m_frame; }
 
-    RenderView* renderView() const { return m_frame->contentRenderer(); }
+    RenderView* renderView() const;
 
-    int mapFromLayoutToCSSUnits(LayoutUnit);
-    LayoutUnit mapFromCSSToLayoutUnits(int);
+    int mapFromLayoutToCSSUnits(LayoutUnit) const;
+    LayoutUnit mapFromCSSToLayoutUnits(int) const;
 
     LayoutUnit marginWidth() const { return m_margins.width(); } // -1 means default
     LayoutUnit marginHeight() const { return m_margins.height(); } // -1 means default
@@ -559,16 +559,6 @@ inline void FrameView::incrementVisuallyNonEmptyPixelCount(const IntSize& size)
     static const unsigned visualPixelThreshold = 32 * 32;
     if (m_visuallyNonEmptyPixelCount > visualPixelThreshold)
         setIsVisuallyNonEmpty();
-}
-
-inline int FrameView::mapFromLayoutToCSSUnits(LayoutUnit value)
-{
-    return value / m_frame->pageZoomFactor();
-}
-
-inline LayoutUnit FrameView::mapFromCSSToLayoutUnits(int value)
-{
-    return value * m_frame->pageZoomFactor();
 }
 
 inline FrameView* toFrameView(Widget* widget)

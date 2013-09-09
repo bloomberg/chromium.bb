@@ -35,6 +35,7 @@
 #include "WebMenuItemInfo.h"
 #include "WebPopupMenuInfo.h"
 #include "WebViewClient.h"
+#include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/PopupMenuClient.h"
 #include "core/platform/graphics/FloatQuad.h"

@@ -26,6 +26,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
+#include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/HitTestResult.h"

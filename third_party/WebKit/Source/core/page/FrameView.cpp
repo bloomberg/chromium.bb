@@ -445,6 +445,21 @@ bool FrameView::scheduleAnimation()
     return false;
 }
 
+RenderView* FrameView::renderView() const
+{
+    return frame().contentRenderer();
+}
+
+int FrameView::mapFromLayoutToCSSUnits(LayoutUnit value) const
+{
+    return value / frame().pageZoomFactor();
+}
+
+LayoutUnit FrameView::mapFromCSSToLayoutUnits(int value) const
+{
+    return value * frame().pageZoomFactor();
+}
+
 void FrameView::setMarginWidth(LayoutUnit w)
 {
     // make it update the rendering area when set
