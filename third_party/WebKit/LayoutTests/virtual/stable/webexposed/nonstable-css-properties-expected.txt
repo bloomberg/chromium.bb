@@ -4,28 +4,76 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 el.style.setProperty('-webkit-shape-margin', '10px')
-el.style.getPropertyValue('-webkit-shape-margin', '10px') is null
-getComputedStyle(el).getPropertyValue('-webkit-shape-margin', '10px') is 0px
+el.style.getPropertyValue('-webkit-shape-margin') is null
+getComputedStyle(el).getPropertyValue('-webkit-shape-margin') is null
 
 el.style.setProperty('-webkit-shape-padding', '10px')
-el.style.getPropertyValue('-webkit-shape-padding', '10px') is null
-getComputedStyle(el).getPropertyValue('-webkit-shape-padding', '10px') is 0px
+el.style.getPropertyValue('-webkit-shape-padding') is null
+getComputedStyle(el).getPropertyValue('-webkit-shape-padding') is null
 
 el.style.setProperty('-webkit-shape-inside', 'circle(10px, 10px, 10px)')
-el.style.getPropertyValue('-webkit-shape-inside', 'circle(10px, 10px, 10px)') is null
-getComputedStyle(el).getPropertyValue('-webkit-shape-inside', 'circle(10px, 10px, 10px)') is outside-shape
+el.style.getPropertyValue('-webkit-shape-inside') is null
+getComputedStyle(el).getPropertyValue('-webkit-shape-inside') is null
 
 el.style.setProperty('-webkit-shape-outside', 'circle(10px, 10px, 10px)')
-el.style.getPropertyValue('-webkit-shape-outside', 'circle(10px, 10px, 10px)') is null
-getComputedStyle(el).getPropertyValue('-webkit-shape-outside', 'circle(10px, 10px, 10px)') is auto
+el.style.getPropertyValue('-webkit-shape-outside') is null
+getComputedStyle(el).getPropertyValue('-webkit-shape-outside') is null
 
 el.style.setProperty('-webkit-wrap-flow', 'both')
-el.style.getPropertyValue('-webkit-wrap-flow', 'both') is null
-getComputedStyle(el).getPropertyValue('-webkit-wrap-flow', 'both') is auto
+el.style.getPropertyValue('-webkit-wrap-flow') is null
+getComputedStyle(el).getPropertyValue('-webkit-wrap-flow') is null
 
 el.style.setProperty('-webkit-wrap-through', 'none')
-el.style.getPropertyValue('-webkit-wrap-through', 'none') is null
-getComputedStyle(el).getPropertyValue('-webkit-wrap-through', 'none') is wrap
+el.style.getPropertyValue('-webkit-wrap-through') is null
+getComputedStyle(el).getPropertyValue('-webkit-wrap-through') is null
+
+el.style.setProperty('grid-auto-columns', 'auto')
+el.style.getPropertyValue('grid-auto-columns') is null
+getComputedStyle(el).getPropertyValue('grid-auto-columns') is null
+
+el.style.setProperty('grid-auto-rows', 'auto')
+el.style.getPropertyValue('grid-auto-rows') is null
+getComputedStyle(el).getPropertyValue('grid-auto-rows') is null
+
+el.style.setProperty('grid-definition-columns', 'min-content')
+el.style.getPropertyValue('grid-definition-columns') is null
+getComputedStyle(el).getPropertyValue('grid-definition-columns') is null
+
+el.style.setProperty('grid-definition-rows', 'max-content')
+el.style.getPropertyValue('grid-definition-rows') is null
+getComputedStyle(el).getPropertyValue('grid-definition-rows') is null
+
+el.style.setProperty('grid-column-start', 'auto')
+el.style.getPropertyValue('grid-column-start') is null
+getComputedStyle(el).getPropertyValue('grid-column-start') is null
+
+el.style.setProperty('grid-column-end', '2')
+el.style.getPropertyValue('grid-column-end') is null
+getComputedStyle(el).getPropertyValue('grid-column-end') is null
+
+el.style.setProperty('grid-row-start', '1')
+el.style.getPropertyValue('grid-row-start') is null
+getComputedStyle(el).getPropertyValue('grid-row-start') is null
+
+el.style.setProperty('grid-column', 'auto')
+el.style.getPropertyValue('grid-column') is null
+getComputedStyle(el).getPropertyValue('grid-column') is null
+
+el.style.setProperty('grid-row', '1')
+el.style.getPropertyValue('grid-row') is null
+getComputedStyle(el).getPropertyValue('grid-row') is null
+
+el.style.setProperty('grid-area', '2')
+el.style.getPropertyValue('grid-area') is null
+getComputedStyle(el).getPropertyValue('grid-area') is null
+
+el.style.setProperty('grid-auto-flow', 'column')
+el.style.getPropertyValue('grid-auto-flow') is null
+getComputedStyle(el).getPropertyValue('grid-auto-flow') is null
+
+el.style.setProperty('grid-template', '"test"')
+el.style.getPropertyValue('grid-template') is null
+getComputedStyle(el).getPropertyValue('grid-template') is null
 
 PASS successfullyParsed is true
 

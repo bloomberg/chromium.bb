@@ -9,15 +9,14 @@
 description("Test getting and setting nonstable css properties to non-default values");
 
 function testStyle(property, value) {
-    var callArgs = "('" + property + "', '" + value + "')";
     var el = document.getElementById('el');
     var test = function(toEval, logResult) {
         var result = eval(toEval);
         debug(toEval + (logResult ? " is " + result : ""));
     }
-    test("el.style.setProperty" + callArgs, false);
-    test("el.style.getPropertyValue" + callArgs, true);
-    test("getComputedStyle(el).getPropertyValue" + callArgs, true);
+    test("el.style.setProperty('" + property + "', '" + value + "')", false);
+    test("el.style.getPropertyValue('" + property + "')", true);
+    test("getComputedStyle(el).getPropertyValue('" + property + "')", true);
     debug("");
 }
 
@@ -28,7 +27,20 @@ var properties = [
 ['-webkit-shape-outside', 'circle(10px, 10px, 10px)'],
 
 ['-webkit-wrap-flow', 'both'],
-['-webkit-wrap-through', 'none']
+['-webkit-wrap-through', 'none'],
+
+['grid-auto-columns', 'auto'],
+['grid-auto-rows', 'auto'],
+['grid-definition-columns', 'min-content'],
+['grid-definition-rows', 'max-content'],
+['grid-column-start', 'auto'],
+['grid-column-end', '2'],
+['grid-row-start', '1'],
+['grid-column', 'auto'],
+['grid-row', '1'],
+['grid-area', '2'],
+['grid-auto-flow', 'column'],
+['grid-template', '"test"'],
 ];
 
 properties.forEach(function(args) {

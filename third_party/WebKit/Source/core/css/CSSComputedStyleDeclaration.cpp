@@ -2364,13 +2364,11 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitAppRegion:
             return cssValuePool().createIdentifierValue(style->getDraggableRegionMode() == DraggableRegionDrag ? CSSValueDrag : CSSValueNoDrag);
         case CSSPropertyAnimationDelay:
-            if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
-                break;
+            ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
         case CSSPropertyWebkitAnimationDelay:
             return valueForAnimationDelay(style->animations());
         case CSSPropertyAnimationDirection:
-            if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
-                break;
+            ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
         case CSSPropertyWebkitAnimationDirection: {
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
             const CSSAnimationDataList* t = style->animations();
@@ -2382,13 +2380,11 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return list.release();
         }
         case CSSPropertyAnimationDuration:
-            if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
-                break;
+            ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
         case CSSPropertyWebkitAnimationDuration:
             return valueForAnimationDuration(style->animations());
         case CSSPropertyAnimationFillMode:
-            if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
-                break;
+            ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
         case CSSPropertyWebkitAnimationFillMode: {
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
             const CSSAnimationDataList* t = style->animations();
@@ -2400,8 +2396,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return list.release();
         }
         case CSSPropertyAnimationIterationCount:
-            if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
-                break;
+            ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
         case CSSPropertyWebkitAnimationIterationCount: {
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
             const CSSAnimationDataList* t = style->animations();
@@ -2418,8 +2413,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return list.release();
         }
         case CSSPropertyAnimationName:
-            if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
-                break;
+            ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
         case CSSPropertyWebkitAnimationName: {
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
             const CSSAnimationDataList* t = style->animations();
@@ -2431,8 +2425,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return list.release();
         }
         case CSSPropertyAnimationPlayState:
-            if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
-                break;
+            ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
         case CSSPropertyWebkitAnimationPlayState: {
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
             const CSSAnimationDataList* t = style->animations();
@@ -2449,8 +2442,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return list.release();
         }
         case CSSPropertyAnimationTimingFunction:
-            if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
-                break;
+            ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
         case CSSPropertyWebkitAnimationTimingFunction:
             return valueForAnimationTimingFunction(style->animations());
         case CSSPropertyAnimation:
@@ -3048,9 +3040,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(const Stri
 String CSSComputedStyleDeclaration::getPropertyValue(const String& propertyName)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    // FIXME: This should check RuntimeEnabledFeature::isCSSPropertyEnabled instead of just
-    // isInternalProperty. However we need to test that which requires crbug.com/234853 to be fixed.
-    if (!propertyID || isInternalProperty(propertyID))
+    if (!propertyID || !RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID))
         return String();
     return getPropertyValue(propertyID);
 }
