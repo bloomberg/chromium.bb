@@ -1,0 +1,19 @@
+{
+  "Files": {
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\chrome.exe": {"exists": true},
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\chrome.dll":
+        {"exists": true},
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\chrome.7z":
+        {"exists": true},
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe":
+        {"exists": true}
+  },
+  "RegistryEntries": {
+    "HKEY_LOCAL_MACHINE\\$CHROME_UPDATE_REGISTRY_SUBKEY": {
+      "exists": true,
+      "values": {
+        "pv": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
+      }
+    }
+  }
+}

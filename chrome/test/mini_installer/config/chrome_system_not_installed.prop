@@ -1,0 +1,8 @@
+{
+  "Files": {
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application": {"exists": false}
+  },
+  "RegistryEntries": {
+    "HKEY_LOCAL_MACHINE\\$CHROME_UPDATE_REGISTRY_SUBKEY": {"exists": false}
+  }
+}
