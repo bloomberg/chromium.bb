@@ -31,8 +31,9 @@ class DeviceStatsMonitor(object):
 
   def __init__(self, adb, hz):
     self._adb = adb
-    host_path = os.path.join(
-        constants.GetOutDirectory(), 'device_stats_monitor')
+    host_path = os.path.abspath(os.path.join(
+        constants.DIR_SOURCE_ROOT, 'out', constants.GetBuildType(),
+        'device_stats_monitor'))
     self._adb.PushIfNeeded(host_path, DeviceStatsMonitor.DEVICE_PATH)
     self._hz = hz
 

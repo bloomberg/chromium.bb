@@ -68,10 +68,9 @@ class HostDrivenTestCase(object):
   def TearDown(self):
     pass
 
-  # TODO(craigdh): Remove GetOutDir once references have been removed
-  # downstream.
   def GetOutDir(self):
-    return constants.GetOutDirectory()
+    return os.path.join(os.environ['CHROME_SRC'], 'out',
+                        constants.GetBuildType())
 
   def Run(self):
     logging.info('Running host-driven test: %s', self.tagged_name)

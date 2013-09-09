@@ -29,14 +29,15 @@ class TestPackageApk(TestPackage):
       suite_name: Name of the test suite (e.g. base_unittests).
     """
     TestPackage.__init__(self, suite_name)
+    product_dir = os.path.join(cmd_helper.OutDirectory.get(),
+        constants.GetBuildType())
     if suite_name == 'content_browsertests':
       self.suite_path = os.path.join(
-          constants.GetOutDirectory(), 'apks', '%s.apk' % suite_name)
+          product_dir, 'apks', '%s.apk' % suite_name)
       self._package_info = constants.PACKAGE_INFO['content_browsertests']
     else:
       self.suite_path = os.path.join(
-          constants.GetOutDirectory(), '%s_apk' % suite_name,
-          '%s-debug.apk' % suite_name)
+          product_dir, '%s_apk' % suite_name, '%s-debug.apk' % suite_name)
       self._package_info = constants.PACKAGE_INFO['gtest']
 
   def _CreateCommandLineFileOnDevice(self, adb, options):
