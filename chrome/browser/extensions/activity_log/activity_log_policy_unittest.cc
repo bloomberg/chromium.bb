@@ -59,8 +59,9 @@ TEST_F(ActivityLogPolicyUtilTest, StripPrivacySensitiveWebRequest) {
 
 // Test that argument values are stripped as appropriate.
 TEST_F(ActivityLogPolicyUtilTest, StripArguments) {
-  std::set<std::string> whitelist;
-  whitelist.insert("tabs.executeScript");
+  ActivityLogPolicy::Util::ApiSet whitelist;
+  whitelist.insert(
+      std::make_pair(Action::ACTION_API_CALL, "tabs.executeScript"));
 
   // API is in whitelist; not stripped.
   scoped_refptr<Action> action =
@@ -78,13 +79,6 @@ TEST_F(ActivityLogPolicyUtilTest, StripArguments) {
   action->mutable_args()->AppendString("woof");
   ActivityLogPolicy::Util::StripArguments(whitelist, action);
   ASSERT_EQ("", ActivityLogPolicy::Util::Serialize(action->args()));
-
-  // Not an API type: not stripped.
-  action = new Action(
-      "punky", base::Time::Now(), Action::ACTION_DOM_ACCESS, "tabs.create");
-  action->mutable_args()->AppendString("woof");
-  ActivityLogPolicy::Util::StripArguments(whitelist, action);
-  ASSERT_EQ("[\"woof\"]", ActivityLogPolicy::Util::Serialize(action->args()));
 }
 
 // Test parsing of URLs serialized to strings.

@@ -191,7 +191,7 @@ class CountingPolicyTest : public testing::Test {
     CheckAction(*actions->at(0), "punky", Action::ACTION_API_CALL, "brewster",
                 "", "", "", "", 2);
     CheckAction(*actions->at(1), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "http://www.google.com/", "", "", 1);
+                "", "http://www.google.com/", "", "", 1);
     CheckAction(*actions->at(2), "punky", Action::ACTION_API_CALL,
                 "extension.sendMessage", "[\"not\",\"stripped\"]", "", "", "",
                 1);
@@ -201,7 +201,7 @@ class CountingPolicyTest : public testing::Test {
       scoped_ptr<Action::ActionVector> actions) {
     ASSERT_EQ(2, static_cast<int>(actions->size()));
     CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "http://www.google.com/", "", "", 1);
+                "", "http://www.google.com/", "", "", 1);
     CheckAction(*actions->at(1), "punky", Action::ACTION_API_CALL, "brewster",
                 "", "", "", "", 1);
   }
@@ -235,25 +235,25 @@ class CountingPolicyTest : public testing::Test {
   static void AllURLsRemoved(scoped_ptr<Action::ActionVector> actions) {
     ASSERT_EQ(2, static_cast<int>(actions->size()));
     CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "", "", "", 1);
+                "", "", "", "", 1);
     CheckAction(*actions->at(1), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "", "", "", 1);
+                "", "", "", "", 1);
   }
 
   static void SomeURLsRemoved(scoped_ptr<Action::ActionVector> actions) {
     // These will be in the vector in reverse time order.
     ASSERT_EQ(5, static_cast<int>(actions->size()));
     CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "http://www.google.com/", "Google",
+                "", "http://www.google.com/", "Google",
                 "http://www.args-url.com/", 1);
     CheckAction(*actions->at(1), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "http://www.google.com/", "Google", "", 1);
+                "", "http://www.google.com/", "Google", "", 1);
     CheckAction(*actions->at(2), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "", "", "", 1);
+                "", "", "", "", 1);
     CheckAction(*actions->at(3), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "", "", "http://www.google.com/", 1);
+                "", "", "", "http://www.google.com/", 1);
     CheckAction(*actions->at(4), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "", "", "", 1);
+                "", "", "", "", 1);
   }
 
   static void CheckDuplicates(scoped_ptr<Action::ActionVector> actions) {

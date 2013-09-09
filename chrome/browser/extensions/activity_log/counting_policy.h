@@ -100,7 +100,7 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
   bool CleanStringTables(sql::Connection* db);
 
   // API calls for which complete arguments should be logged.
-  std::set<std::string> api_arg_whitelist_;
+  Util::ApiSet api_arg_whitelist_;
 
   // Tables for mapping strings to integers for shrinking database storage
   // requirements.  URLs are kept in a separate table from other strings to

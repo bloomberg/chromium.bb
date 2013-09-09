@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_POLICY_H_
 #define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_POLICY_H_
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -104,6 +105,10 @@ class ActivityLogPolicy {
   // these methods more convenient from within a policy, but they are public.
   class Util {
    public:
+    // A collection of API calls, used to specify whitelists for argument
+    // filtering.
+    typedef std::set<std::pair<Action::ActionType, std::string> > ApiSet;
+
     // Serialize a Value as a JSON string.  Returns an empty string if value is
     // null.
     static std::string Serialize(const base::Value* value);
@@ -117,7 +122,7 @@ class ActivityLogPolicy {
 
     // Strip arguments from most API actions, preserving actions only for a
     // whitelisted set.  Modifies the Action object in-place.
-    static void StripArguments(const std::set<std::string>& api_whitelist,
+    static void StripArguments(const ApiSet& api_whitelist,
                                scoped_refptr<Action> action);
 
     // Given a base day (timestamp at local midnight), computes the timestamp

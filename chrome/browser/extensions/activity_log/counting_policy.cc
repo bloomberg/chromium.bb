@@ -46,6 +46,8 @@ using content::BrowserThread;
 
 namespace {
 
+using extensions::Action;
+
 // Delay between cleaning passes (to delete old action records) through the
 // database.
 const int kCleaningDelayInHours = 12;
@@ -56,8 +58,19 @@ const int kCleaningDelayInHours = 12;
 //
 // TODO(mvrable): The contents of this whitelist should be reviewed and
 // expanded as needed.
-const char* kAlwaysLog[] = {"extension.connect", "extension.sendMessage",
-                            "tabs.executeScript", "tabs.insertCSS"};
+struct ApiList {
+  Action::ActionType type;
+  const char* name;
+};
+
+const ApiList kAlwaysLog[] = {
+    {Action::ACTION_API_CALL, "extension.connect"},
+    {Action::ACTION_API_CALL, "extension.sendMessage"},
+    {Action::ACTION_API_CALL, "tabs.executeScript"},
+    {Action::ACTION_API_CALL, "tabs.insertCSS"},
+    {Action::ACTION_CONTENT_SCRIPT, ""},
+    {Action::ACTION_DOM_ACCESS, "XMLHttpRequest.open"},
+};
 
 // Columns in the main database table.  See the file-level comment for a
 // discussion of how data is stored and the meanings of the _x columns.
@@ -138,7 +151,8 @@ CountingPolicy::CountingPolicy(Profile* profile)
       url_table_("url_ids"),
       retention_time_(base::TimeDelta::FromHours(60)) {
   for (size_t i = 0; i < arraysize(kAlwaysLog); i++) {
-    api_arg_whitelist_.insert(kAlwaysLog[i]);
+    api_arg_whitelist_.insert(
+        std::make_pair(kAlwaysLog[i].type, kAlwaysLog[i].name));
   }
 }
 
