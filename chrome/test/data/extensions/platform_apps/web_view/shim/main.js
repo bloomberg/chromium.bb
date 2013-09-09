@@ -766,48 +766,33 @@ function testContentLoadEvent() {
 // This test verifies that the WebRequest API onBeforeRequest event fires on
 // webview.
 function testWebRequestAPI() {
-  var webview = new WebView();
-  webview.request.onBeforeRequest.addListener(function(e) {
-    embedder.test.succeed();
-  }, { urls: ['<all_urls>']}) ;
-  webview.src = embedder.windowOpenGuestURL;
+  var webview = document.createElement('webview');
+  webview.setAttribute('src', 'data:text/html,trigger navigation');
+  var firstLoad = function() {
+    webview.removeEventListener('loadstop', firstLoad);
+    webview.onBeforeRequest.addListener(function(e) {
+      embedder.test.succeed();
+    }, { urls: ['<all_urls>']}, ['blocking']) ;
+    webview.src = embedder.windowOpenGuestURL;
+  };
+  webview.addEventListener('loadstop', firstLoad);
   document.body.appendChild(webview);
 }
 
 // This test verifies that the WebRequest API onBeforeRequest event fires on
 // clients*.google.com URLs.
 function testWebRequestAPIGoogleProperty() {
-  var webview = new WebView();
-  webview.request.onBeforeRequest.addListener(function(e) {
-    embedder.test.succeed();
-    return {cancel: true};
-  }, { urls: ['<all_urls>']}, ['blocking']) ;
-  webview.src = 'http://clients6.google.com';
-  document.body.appendChild(webview);
-}
-
-// This test verifies that the WebRequest event listener for onBeforeRequest
-// survives reparenting of the <webview>.
-function testWebRequestListenerSurvivesReparenting() {
-  var webview = new WebView();
-  var count = 0;
-  webview.request.onBeforeRequest.addListener(function(e) {
-    if (++count == 2) {
+  var webview = document.createElement('webview');
+  webview.setAttribute('src', 'data:text/html,trigger navigation');
+  var firstLoad = function() {
+    webview.removeEventListener('loadstop', firstLoad);
+    webview.onBeforeRequest.addListener(function(e) {
       embedder.test.succeed();
-    }
-  }, { urls: ['<all_urls>']});
-  var onLoadStop =  function(e) {
-    webview.removeEventListener('loadstop', onLoadStop);
-    webview.parentNode.removeChild(webview);
-    var container = document.getElementById('object-container');
-    if (!container) {
-      embedder.test.fail('Container for object not found.');
-      return;
-    }
-    container.appendChild(webview);
+      return {cancel: true};
+    }, { urls: ['<all_urls>']}, ['blocking']) ;
+    webview.src = 'http://clients6.google.com';
   };
-  webview.addEventListener('loadstop', onLoadStop);
-  webview.src = embedder.emptyGuestURL;
+  webview.addEventListener('loadstop', firstLoad);
   document.body.appendChild(webview);
 }
 
@@ -1037,8 +1022,6 @@ embedder.test.testList = {
   'testContentLoadEvent': testContentLoadEvent,
   'testWebRequestAPI': testWebRequestAPI,
   'testWebRequestAPIGoogleProperty': testWebRequestAPIGoogleProperty,
-  'testWebRequestListenerSurvivesReparenting':
-      testWebRequestListenerSurvivesReparenting,
   'testGetProcessId': testGetProcessId,
   'testLoadStartLoadRedirect': testLoadStartLoadRedirect,
   'testLoadAbortEmptyResponse': testLoadAbortEmptyResponse,

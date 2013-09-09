@@ -6,7 +6,6 @@ var embedder = {};
 embedder.test = {};
 embedder.baseGuestURL = '';
 embedder.guestURL = '';
-embedder.newWindowURL = '';
 
 window.runTest = function(testName) {
   if (!embedder.test.testList[testName]) {
@@ -26,9 +25,6 @@ embedder.setUp_ = function(config) {
   embedder.guestURL = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/newwindow' +
       '/guest_opener.html';
-  embedder.newWindowURL = embedder.baseGuestURL +
-      '/extensions/platform_apps/web_view/newwindow' +
-      '/newwindow.html';
   chrome.test.log('Guest url is: ' + embedder.guestURL);
 };
 
@@ -358,44 +354,6 @@ function testNewWindowWebRequestRemoveElement() {
   embedder.setUpNewWindowRequest_(webview, 'guest.html', '', testName);
 };
 
-// This test verifies that a WebRequest event listener's lifetime is not
-// tied to the context in which it was created but instead at least the
-// lifetime of the embedder window to which it was attached.
-function testNewWindowWebRequestCloseWindow() {
-  var current = chrome.app.window.current();
-  var requestCount = 0;
-  var dataUrl = 'data:text/html,<body>foobar</body>';
-
-  var webview = new WebView();
-  webview.request.onBeforeRequest.addListener(function(e) {
-    console.log('url: ' + e.url);
-    ++requestCount;
-    if (requestCount == 1) {
-      // Close the existing window.
-      // TODO(fsamuel): This is currently broken and this test is disabled.
-      // Once we close the first window, the context in which the <webview> was
-      // created is gone and so the <webview> is no longer a custom element.
-      current.close();
-      // renavigate the webview.
-      webview.src = embedder.newWindowURL;
-    } else if (requestCount == 2) {
-      embedder.test.succeed();
-    }
-  }, {urls: ['<all_urls>']});
-  webview.addEventListener('loadcommit', function(e) {
-    console.log('loadcommit: ' + e.url);
-  });
-  webview.src = embedder.guestURL;
-
-  chrome.app.window.create('newwindow.html', {
-    width: 640,
-    height: 480
-  }, function(newwindow) {
-    newwindow.contentWindow.onload = function(evt) {
-      newwindow.contentWindow.document.body.appendChild(webview);
-    };
-  });
-};
 
 embedder.test.testList = {
   'testNewWindowNameTakesPrecedence': testNewWindowNameTakesPrecedence,
@@ -405,8 +363,7 @@ embedder.test.testList = {
   'testNewWindowClose': testNewWindowClose,
   'testNewWindowExecuteScript': testNewWindowExecuteScript,
   'testNewWindowWebRequest': testNewWindowWebRequest,
-  'testNewWindowWebRequestRemoveElement': testNewWindowWebRequestRemoveElement,
-  'testNewWindowWebRequestCloseWindow': testNewWindowWebRequestCloseWindow
+  'testNewWindowWebRequestRemoveElement': testNewWindowWebRequestRemoveElement
 };
 
 onload = function() {

@@ -246,6 +246,7 @@ class ExtensionWebRequestEventRouter
       const RequestFilter& filter,
       int extra_info_spec,
       int embedder_process_id,
+      int embedder_routing_id,
       int web_view_instance_id,
       base::WeakPtr<IPC::Sender> ipc_sender);
 
@@ -260,6 +261,7 @@ class ExtensionWebRequestEventRouter
       void* profile,
       const std::string& extension_id,
       int embedder_process_id,
+      int embedder_routing_id,
       int web_view_instance_id);
 
   // Called when an incognito profile is created or destroyed.

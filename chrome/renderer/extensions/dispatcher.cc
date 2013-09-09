@@ -73,7 +73,6 @@
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "chrome/renderer/extensions/web_request_custom_bindings.h"
 #include "chrome/renderer/extensions/webstore_bindings.h"
-#include "chrome/renderer/extensions/webview_custom_bindings.h"
 #include "chrome/renderer/resource_bundle_source_map.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -900,8 +899,6 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
           new WebRequestCustomBindings(this, context)));
   module_system->RegisterNativeHandler("webstore",
       scoped_ptr<NativeHandler>(new WebstoreBindings(this, context)));
-  module_system->RegisterNativeHandler("webview_natives",
-      scoped_ptr<NativeHandler>(new WebViewCustomBindings(this, context)));
 }
 
 void Dispatcher::PopulateSourceMap() {

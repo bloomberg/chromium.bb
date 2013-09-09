@@ -39,9 +39,6 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // gracefully.
   virtual void GuestProcessGone(base::TerminationStatus status) {}
 
-  // Informs the delegate that the embedder has been destroyed.
-  virtual void EmbedderDestroyed() {}
-
   virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   // Notification that a load in the guest resulted in abort. Note that |url|
