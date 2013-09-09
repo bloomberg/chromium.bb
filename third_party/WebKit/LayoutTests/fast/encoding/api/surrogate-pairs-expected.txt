@@ -3,29 +3,23 @@ Test invalid UTF-16 surrogate pairs with UTF-8 encoding
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-encoded = new TextEncoder('utf-8').encode("abc123")
-decoded = new TextDecoder('utf-8').decode(encoded)
-PASS decoded is "abc123"
+encoded = new TextEncoder('utf-8').encode('abc123')
+PASS JSON.stringify([].slice.call(encoded)) is "[97,98,99,49,50,51]"
 
-encoded = new TextEncoder('utf-8').encode("í €")
-decoded = new TextDecoder('utf-8').decode(encoded)
-FAIL decoded should be ï¿½. Was ï¿½ï¿½ï¿½.
+encoded = new TextEncoder('utf-8').encode('\ud800')
+PASS JSON.stringify([].slice.call(encoded)) is "[239,191,189]"
 
-encoded = new TextEncoder('utf-8').encode("í°€")
-decoded = new TextDecoder('utf-8').decode(encoded)
-FAIL decoded should be ï¿½. Was ï¿½ï¿½ï¿½.
+encoded = new TextEncoder('utf-8').encode('\udc00')
+PASS JSON.stringify([].slice.call(encoded)) is "[239,191,189]"
 
-encoded = new TextEncoder('utf-8').encode("abcí €def")
-decoded = new TextDecoder('utf-8').decode(encoded)
-FAIL decoded should be abcï¿½def. Was abcï¿½ï¿½ï¿½def.
+encoded = new TextEncoder('utf-8').encode('abc\ud800123')
+PASS JSON.stringify([].slice.call(encoded)) is "[97,98,99,239,191,189,49,50,51]"
 
-encoded = new TextEncoder('utf-8').encode("abcí°€def")
-decoded = new TextDecoder('utf-8').decode(encoded)
-FAIL decoded should be abcï¿½def. Was abcï¿½ï¿½ï¿½def.
+encoded = new TextEncoder('utf-8').encode('abc\udc00123')
+PASS JSON.stringify([].slice.call(encoded)) is "[97,98,99,239,191,189,49,50,51]"
 
-encoded = new TextEncoder('utf-8').encode("í°€í €")
-decoded = new TextDecoder('utf-8').decode(encoded)
-FAIL decoded should be ï¿½ï¿½. Was ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
+encoded = new TextEncoder('utf-8').encode('\udc00\ud800')
+PASS JSON.stringify([].slice.call(encoded)) is "[239,191,189,239,191,189]"
 
 PASS successfullyParsed is true
 

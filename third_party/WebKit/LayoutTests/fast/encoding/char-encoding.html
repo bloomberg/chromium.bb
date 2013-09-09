@@ -17,7 +17,13 @@ var results = new Object;
 
 var i = 0;
 
+
 testEncode("UTF-8", "U+00A0", "%C2%A0");
+
+// Unpaired UTF-16 surrogates
+testEncode("UTF-8", "0xD800", "%EF%BF%BD"); // U+FFFD (REPLACEMENT CHARACTER)
+testEncode("UTF-8", "0xDC00", "%EF%BF%BD"); // U+FFFD (REPLACEMENT CHARACTER)
+
 //Yen symbol in gbk
 testEncode('GBK', 'U+00A5', '%A3%A4');
 testEncode('gb2312', 'U+00A5', '%A3%A4');
@@ -28,7 +34,7 @@ testEncode('GBK', 'U+20AC', '%80');
 testEncode('gb2312', 'U+20AC', '%80');
 testEncode('GB_2312-80', 'U+20AC', '%80');
 testEncode('EUC-CN', 'U+20AC', '%80');
-//Misc symbols from TEC specific GBK translation 
+//Misc symbols from TEC specific GBK translation
 testEncode('GBK', 'U+01F9', '%A8%BF');
 testEncode('GBK', 'U+1E3F', '%A8%BC');
 testEncode('GBK', 'U+22EF', '%A1%AD');

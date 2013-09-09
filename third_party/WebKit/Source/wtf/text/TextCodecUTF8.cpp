@@ -436,6 +436,10 @@ CString TextCodecUTF8::encodeCommon(const CharType* characters, size_t length)
     while (i < length) {
         UChar32 character;
         U16_NEXT(characters, i, length, character);
+        // U16_NEXT will simply emit a surrogate code point if an unmatched surrogate
+        // is encountered; we must convert it to a U+FFFD (REPLACEMENT CHARACTER) here.
+        if (0xD800 <= character && character <= 0xDFFF)
+            character = replacementCharacter;
         U8_APPEND_UNSAFE(bytes.data(), bytesWritten, character);
     }
 
