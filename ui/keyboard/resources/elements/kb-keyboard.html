@@ -479,7 +479,24 @@
             keyboard.appendChild(flattenKeysets(keysets.content));
             this.selectDefaultKeyset();
           } else {
-            console.error('Unable to find layout ' + this.layout);
+            // Add link for the keysets if missing from the document. Force
+            // a layout change after resolving the import of the link.
+            var query = 'link[id=' + this.layout + ']';
+            if (!document.querySelector(query)) {
+              // Layout has not beeen loaded yet.
+              var link = document.createElement('link');
+              link.id = this.layout;
+              link.setAttribute('rel', 'import');
+              link.setAttribute('href', 'layouts/' + this.layout + '.html');
+              document.head.appendChild(link);
+
+              // Load content for the new link element.
+              var self = this;
+              HTMLImports.importer.load(document, function() {
+                HTMLImports.parser.parseLink(link);
+                self.layoutChanged();
+              });
+            }
           }
         }
         this.classList.remove('caps-locked');

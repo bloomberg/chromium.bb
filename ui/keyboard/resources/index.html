@@ -29,12 +29,12 @@
     <link rel="import" href="elements/kb-keyboard.html">
     <link rel="import" href="elements/kb-keyset.html">
     <link rel="import" href="elements/kb-row.html">
-    <!-- TODO(kevers|biao): Switch to dynamic loading strategy once supported
-    in Polymer (http://www.crbug.com/260278).-->
-    <link id="dvorak" rel="import" href="layouts/dvorak.html">
-    <link id="numeric" rel="import" href="layouts/numeric.html">
-    <link id="qwerty" rel="import" href="layouts/qwerty.html">
+    <link rel="import" href="elements/kb-key-sequence.html">
+    <link rel="import" href="elements/kb-key-import.html">
     <!--TODO(stevet): Import 'Open Sans' font. -->
+    <!-- New layouts are dynamically loaded on demand. The link elements are
+      -- inserted here.
+      -->
   </head>
   <body>
     <kb-keyboard id="keyboard" touch-action="none" layout="qwerty">
