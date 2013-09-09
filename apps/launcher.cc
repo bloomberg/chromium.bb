@@ -33,7 +33,6 @@
 #include "net/base/net_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -194,14 +193,14 @@ class PlatformAppPathLauncher
   void GetMimeTypeAndLaunchForDriveFile() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    drive::DriveIntegrationService* service =
-        drive::DriveIntegrationServiceFactory::FindForProfile(profile_);
-    if (!service) {
+    drive::FileSystemInterface* file_system =
+        drive::util::GetFileSystemByProfile(profile_);
+    if (!file_system) {
       LaunchWithNoLaunchData();
       return;
     }
 
-    service->file_system()->GetFileByPath(
+    file_system->GetFileByPath(
         drive::util::ExtractDrivePath(file_path_),
         base::Bind(&PlatformAppPathLauncher::OnGotDriveFile, this));
   }
