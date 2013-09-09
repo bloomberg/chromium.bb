@@ -307,7 +307,9 @@ int QuicStreamFactory::Create(const HostPortProxyPair& host_port_proxy_pair,
 
 void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
   if (rv == OK) {
-    require_confirmation_ = false;
+    // TODO(rch): Uncomment this once we trust 0-RTT
+    // require_confirmation_ = false;
+
     // Create all the streams, but do not notify them yet.
     for (RequestSet::iterator it = job_requests_map_[job].begin();
          it != job_requests_map_[job].end() ; ++it) {
