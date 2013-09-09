@@ -148,7 +148,9 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       web_contents_(web_contents),
       custom_link_(NULL),
       manage_link_(NULL),
-      close_button_(NULL) {
+      close_button_(NULL),
+      never_button_(NULL),
+      save_button_(NULL) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
 
@@ -389,22 +391,57 @@ void ContentSettingBubbleContents::Init() {
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
 
-  const int kDoubleColumnSetId = 1;
-  views::ColumnSet* double_column_set =
-      layout->AddColumnSet(kDoubleColumnSetId);
-  double_column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
-                        GridLayout::USE_PREF, 0, 0);
-  double_column_set->AddPaddingColumn(
-      0, views::kUnrelatedControlHorizontalSpacing);
-  double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
-                        GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(0, kDoubleColumnSetId);
-  manage_link_ = new views::Link(UTF8ToUTF16(bubble_content.manage_link));
-  manage_link_->set_listener(this);
-  layout->AddView(manage_link_);
-  if (content_setting_bubble_model_->content_type() !=
+  if (content_setting_bubble_model_->content_type() ==
       CONTENT_SETTINGS_TYPE_SAVE_PASSWORD) {
+    const int kDoubleColumnSetId = 2;
+    views::ColumnSet* double_column_set =
+        layout->AddColumnSet(kDoubleColumnSetId);
+    double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 1,
+                                 GridLayout::USE_PREF, 0, 0);
+    double_column_set->AddPaddingColumn(
+        0, views::kRelatedControlSmallVerticalSpacing);
+    double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
+                                 GridLayout::USE_PREF, 0, 0);
+
+    const int kSingleColumnRightSetId = 1;
+    views::ColumnSet* right_column_set =
+        layout->AddColumnSet(kSingleColumnRightSetId);
+    right_column_set->AddColumn(GridLayout::TRAILING, GridLayout::FILL, 1,
+                                GridLayout::USE_PREF, 0, 0);
+
+    never_button_ = new views::LabelButton(
+        this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON));
+    never_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    save_button_ = new views::LabelButton(
+        this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
+    save_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    manage_link_ = new views::Link(UTF8ToUTF16(bubble_content.manage_link));
+    manage_link_->set_listener(this);
+
+    // Buttons row
+    layout->StartRow(0, kDoubleColumnSetId);
+    layout->AddView(never_button_);
+    layout->AddView(save_button_);
+
+    // Manage link row
+    layout->StartRow(0, kSingleColumnRightSetId);
+    layout->AddView(manage_link_);
+  } else {
+    const int kDoubleColumnSetId = 1;
+    views::ColumnSet* double_column_set =
+        layout->AddColumnSet(kDoubleColumnSetId);
+    double_column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
+                          GridLayout::USE_PREF, 0, 0);
+    double_column_set->AddPaddingColumn(
+        0, views::kUnrelatedControlHorizontalSpacing);
+    double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
+                          GridLayout::USE_PREF, 0, 0);
+
+    layout->StartRow(0, kDoubleColumnSetId);
+    manage_link_ = new views::Link(UTF8ToUTF16(bubble_content.manage_link));
+    manage_link_->set_listener(this);
+    layout->AddView(manage_link_);
+
     close_button_ =
         new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
     close_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
@@ -414,6 +451,16 @@ void ContentSettingBubbleContents::Init() {
 
 void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
+  if (sender == save_button_) {
+    content_setting_bubble_model_->OnSaveClicked();
+    StartFade(false);
+    return;
+  }
+  if (sender == never_button_) {
+    content_setting_bubble_model_->OnCancelClicked();
+    StartFade(false);
+    return;
+  }
   if (sender == close_button_) {
     content_setting_bubble_model_->OnDoneClicked();
     StartFade(false);
