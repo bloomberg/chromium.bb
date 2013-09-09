@@ -31,6 +31,7 @@
 #include "config.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 
+#include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/custom/V8PromiseCustom.h"
 
@@ -79,7 +80,7 @@ public:
     v8::Local<v8::Object> promise()
     {
         ASSERT(!m_promise.hasNoValue());
-        return m_promise.v8Object();
+        return m_promise.v8Value().As<v8::Object>();
     }
 
 protected:
@@ -88,7 +89,7 @@ protected:
     ScopedPersistent<v8::Context> m_context;
     v8::Context::Scope m_contextScope;
     RefPtr<ScriptPromiseResolver> m_resolver;
-    ScriptObject m_promise;
+    ScriptPromise m_promise;
     OwnPtr<V8PerContextData> m_perContextData;
 };
 

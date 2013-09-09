@@ -46,9 +46,14 @@ CPP_UNSIGNED_TYPES = set([
     'unsigned long',
     'unsigned short',
 ])
+# Promise is not yet in the Web IDL spec but is going to be speced
+# as primitive types in the future.
+# Since V8 dosn't provide Promise primitive object currently,
+# PRIMITIVE_TYPES doesn't contain Promise.
 CPP_TYPE_SPECIAL_CONVERSION_RULES = {
     'boolean': 'bool',
     'DOMString': 'const String&',
+    'Promise': 'ScriptPromise',
 }
 PRIMITIVE_TYPES = set([
      # http://www.w3.org/TR/WebIDL/#dfn-primitive-type
@@ -164,6 +169,8 @@ def v8_set_return_value(idl_type, cpp_value, callback_info=''):
 def includes_for_type(idl_type):
     if primitive_type(idl_type) or idl_type == 'DOMString':
         return set()
+    if idl_type == 'Promise':
+        return set(['ScriptPromise.h'])
     this_array_or_sequence_type = array_or_sequence_type(idl_type)
     if this_array_or_sequence_type:
         return includes_for_type(this_array_or_sequence_type)

@@ -48,7 +48,7 @@ namespace WebCore {
 
 namespace {
 
-ScriptObject startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, ArrayBufferView* signature, ArrayBufferView* dataBuffer, ExceptionState& es)
+ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, ArrayBufferView* signature, ArrayBufferView* dataBuffer, ExceptionState& es)
 {
     bool requiresKey = operationType != Digest;
 
@@ -56,23 +56,23 @@ ScriptObject startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, Algo
     // currently doesn't. See also http://crbugh.com/264520
     if (requiresKey && !key) {
         es.throwTypeError("Invalid key argument");
-        return ScriptObject();
+        return ScriptPromise();
     }
     if (operationType == Verify && !signature) {
         es.throwTypeError("Invalid signature argument");
-        return ScriptObject();
+        return ScriptPromise();
     }
     if (!dataBuffer) {
         es.throwTypeError("Invalid dataBuffer argument");
-        return ScriptObject();
+        return ScriptPromise();
     }
 
     WebKit::WebCryptoAlgorithm algorithm;
     if (!normalizeAlgorithm(rawAlgorithm, operationType, algorithm, es))
-        return ScriptObject();
+        return ScriptPromise();
 
     if (requiresKey && !key->canBeUsedForAlgorithm(algorithm, operationType, es))
-        return ScriptObject();
+        return ScriptPromise();
 
     const unsigned char* data = static_cast<const unsigned char*>(dataBuffer->baseAddress());
     size_t dataSize = dataBuffer->byteLength();
@@ -97,7 +97,7 @@ ScriptObject startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, Algo
         break;
     default:
         ASSERT_NOT_REACHED();
-        return ScriptObject();
+        return ScriptPromise();
     }
 
     return result->promise();
@@ -110,64 +110,64 @@ SubtleCrypto::SubtleCrypto()
     ScriptWrappable::init(this);
 }
 
-ScriptObject SubtleCrypto::encrypt(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* data, ExceptionState& es)
+ScriptPromise SubtleCrypto::encrypt(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* data, ExceptionState& es)
 {
     return startCryptoOperation(rawAlgorithm, key, Encrypt, 0, data, es);
 }
 
-ScriptObject SubtleCrypto::decrypt(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* data, ExceptionState& es)
+ScriptPromise SubtleCrypto::decrypt(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* data, ExceptionState& es)
 {
     return startCryptoOperation(rawAlgorithm, key, Decrypt, 0, data, es);
 }
 
-ScriptObject SubtleCrypto::sign(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* data, ExceptionState& es)
+ScriptPromise SubtleCrypto::sign(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* data, ExceptionState& es)
 {
     return startCryptoOperation(rawAlgorithm, key, Sign, 0, data, es);
 }
 
-ScriptObject SubtleCrypto::verifySignature(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* signature, ArrayBufferView* data, ExceptionState& es)
+ScriptPromise SubtleCrypto::verifySignature(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* signature, ArrayBufferView* data, ExceptionState& es)
 {
     return startCryptoOperation(rawAlgorithm, key, Verify, signature, data, es);
 }
 
-ScriptObject SubtleCrypto::digest(const Dictionary& rawAlgorithm, ArrayBufferView* data, ExceptionState& es)
+ScriptPromise SubtleCrypto::digest(const Dictionary& rawAlgorithm, ArrayBufferView* data, ExceptionState& es)
 {
     return startCryptoOperation(rawAlgorithm, 0, Digest, 0, data, es);
 }
 
-ScriptObject SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& es)
+ScriptPromise SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& es)
 {
     WebKit::WebCryptoKeyUsageMask keyUsages;
     if (!Key::parseUsageMask(rawKeyUsages, keyUsages, es))
-        return ScriptObject();
+        return ScriptPromise();
 
     WebKit::WebCryptoAlgorithm algorithm;
     if (!normalizeAlgorithm(rawAlgorithm, GenerateKey, algorithm, es))
-        return ScriptObject();
+        return ScriptPromise();
 
     RefPtr<CryptoResult> result = CryptoResult::create();
     WebKit::Platform::current()->crypto()->generateKey(algorithm, extractable, keyUsages, result->result());
     return result->promise();
 }
 
-ScriptObject SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* keyData, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& es)
+ScriptPromise SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* keyData, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& es)
 {
     WebKit::WebCryptoKeyFormat format;
     if (!Key::parseFormat(rawFormat, format, es))
-        return ScriptObject();
+        return ScriptPromise();
 
     if (!keyData) {
         es.throwTypeError("Invalid keyData argument");
-        return ScriptObject();
+        return ScriptPromise();
     }
 
     WebKit::WebCryptoKeyUsageMask keyUsages;
     if (!Key::parseUsageMask(rawKeyUsages, keyUsages, es))
-        return ScriptObject();
+        return ScriptPromise();
 
     WebKit::WebCryptoAlgorithm algorithm;
     if (!normalizeAlgorithm(rawAlgorithm, ImportKey, algorithm, es))
-        return ScriptObject();
+        return ScriptPromise();
 
     const unsigned char* keyDataBytes = static_cast<unsigned char*>(keyData->baseAddress());
 
@@ -176,20 +176,20 @@ ScriptObject SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* k
     return result->promise();
 }
 
-ScriptObject SubtleCrypto::exportKey(const String& rawFormat, Key* key, ExceptionState& es)
+ScriptPromise SubtleCrypto::exportKey(const String& rawFormat, Key* key, ExceptionState& es)
 {
     WebKit::WebCryptoKeyFormat format;
     if (!Key::parseFormat(rawFormat, format, es))
-        return ScriptObject();
+        return ScriptPromise();
 
     if (!key) {
         es.throwTypeError("Invalid key argument");
-        return ScriptObject();
+        return ScriptPromise();
     }
 
     if (!key->extractable()) {
         es.throwDOMException(NotSupportedError, "key is not extractable");
-        return ScriptObject();
+        return ScriptPromise();
     }
 
     RefPtr<CryptoResult> result = CryptoResult::create();

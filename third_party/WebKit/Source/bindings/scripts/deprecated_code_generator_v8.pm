@@ -148,6 +148,10 @@ my %header;
 #     NameSpaceInternal   ... namespace ${implClassName}V8Internal in case of non-callback
 my %implementation;
 
+# Promise is not yet in the Web IDL spec but is going to be speced
+# as primitive types in the future.
+# Since V8 dosn't provide Promise primitive object currently,
+# primitiveTypeHash doesn't contain Promise.
 my %primitiveTypeHash = ("boolean" => 1,
                          "void" => 1,
                          "Date" => 1,
@@ -427,6 +431,8 @@ sub AddIncludesForType
         AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
     } elsif ($type eq "any" || IsCallbackFunctionType($type)) {
         AddToImplIncludes("bindings/v8/ScriptValue.h");
+    } elsif ($type eq "Promise") {
+        AddToImplIncludes("bindings/v8/ScriptPromise.h");
     } elsif (IsTypedArrayType($type)) {
         AddToImplIncludes("bindings/v8/custom/V8${type}Custom.h");
     } else {
@@ -2458,7 +2464,7 @@ sub GenerateParametersCheck
             my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
             my $jsValue = $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]";
             $parameterCheckString .= JSValueToNativeStatement($parameter->type, $parameter->extendedAttributes, $jsValue, $parameterName, "    ", "args.GetIsolate()");
-            if ($nativeType eq 'Dictionary') {
+            if ($nativeType eq 'Dictionary' or $nativeType eq 'ScriptPromise') {
                 $parameterCheckString .= "    if (!$parameterName.isUndefinedOrNull() && !$parameterName.isObject()) {\n";
                 $parameterCheckString .= "        throwTypeError(\"Not an object.\", args.GetIsolate());\n";
                 $parameterCheckString .= "        return;\n";
@@ -3161,6 +3167,8 @@ sub GenerateIsNullExpression
     if (IsRefPtrType($type)) {
         return "!${variableName}";
     } elsif ($type eq "DOMString") {
+        return "${variableName}.isNull()";
+    } elsif ($type eq "Promise") {
         return "${variableName}.isNull()";
     } else {
         return "";
@@ -5011,6 +5019,8 @@ sub GetNativeType
 
     return "String" if $type eq "DOMString" or IsEnumType($type);
 
+    return "ScriptPromise" if $type eq "Promise";
+
     return "Range::CompareHow" if $type eq "CompareHow";
     return "DOMTimeStamp" if $type eq "DOMTimeStamp";
     return "double" if $type eq "Date";
@@ -5137,6 +5147,11 @@ sub JSValueToNative
     if ($type eq "any" || IsCallbackFunctionType($type)) {
         AddToImplIncludes("bindings/v8/ScriptValue.h");
         return "ScriptValue($value)";
+    }
+
+    if ($type eq "Promise") {
+        AddToImplIncludes("bindings/v8/ScriptPromise.h");
+        return "ScriptPromise($value)";
     }
 
     if ($type eq "NodeFilter") {
@@ -5270,6 +5285,7 @@ sub IsWrapperType
     return 0 if IsEnumType($type);
     return 0 if IsPrimitiveType($type);
     return 0 if $type eq "DOMString";
+    return 0 if $type eq "Promise";
     return !$nonWrapperTypes{$type};
 }
 
@@ -5419,7 +5435,7 @@ sub NativeToJSValue
         return "$indent$receiver v8::Number::New($nativeValue);";
     }
 
-    if ($nativeType eq "ScriptValue") {
+    if ($nativeType eq "ScriptValue" or $nativeType eq "ScriptPromise") {
         return "${indent}v8SetReturnValue(${getCallbackInfo}, ${nativeValue}.v8Value());" if $isReturnValue;
         return "$indent$receiver $nativeValue.v8Value();";
     }
@@ -5689,6 +5705,7 @@ sub IsRefPtrType
     return 0 if GetArrayType($type);
     return 0 if GetSequenceType($type);
     return 0 if $type eq "DOMString";
+    return 0 if $type eq "Promise";
     return 0 if IsCallbackFunctionType($type);
     return 0 if IsEnumType($type);
     return 0 if IsUnionType($type);

@@ -48,7 +48,7 @@ ScriptPromiseResolver::ScriptPromiseResolver(v8::Handle<v8::Object> creationCont
     ASSERT(RuntimeEnabledFeatures::promiseEnabled());
     v8::Local<v8::Object> promise, resolver;
     V8PromiseCustom::createPromise(creationContext, &promise, &resolver, isolate);
-    m_promise.set(isolate, promise);
+    m_promise = ScriptPromise(promise);
     m_resolver.set(isolate, resolver);
 }
 

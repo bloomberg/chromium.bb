@@ -64,6 +64,7 @@
             'v8/ScriptPreprocessor.h',
             'v8/ScriptProfiler.cpp',
             'v8/ScriptProfiler.h',
+            'v8/ScriptPromise.h',
             'v8/ScriptPromiseResolver.cpp',
             'v8/ScriptPromiseResolver.h',
             'v8/ScriptScope.cpp',

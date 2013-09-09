@@ -31,7 +31,7 @@
 #ifndef CryptoResult_h
 #define CryptoResult_h
 
-#include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/ScriptPromise.h"
 #include "public/platform/WebCrypto.h"
 #include "wtf/Forward.h"
 #include "wtf/ThreadSafeRefCounted.h"
@@ -58,7 +58,7 @@ public:
         return WebKit::WebCryptoResult(this);
     }
 
-    ScriptObject promise();
+    ScriptPromise promise();
 
 private:
     CryptoResult();

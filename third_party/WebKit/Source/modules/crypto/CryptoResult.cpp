@@ -85,7 +85,7 @@ void CryptoResult::completeWithKeyPair(const WebKit::WebCryptoKey& publicKey, co
     finish();
 }
 
-ScriptObject CryptoResult::promise()
+ScriptPromise CryptoResult::promise()
 {
     return m_promiseResolver->promise();
 }

@@ -28,20 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// FIXME: |PromiseValue| should be replaced with |Promise|. http://crbug.com/266700
-typedef any PromiseValue;
-
 [
     NoInterfaceObject,
 ] interface SubtleCrypto {
-    [RaisesException] PromiseValue encrypt(Dictionary algorithm, Key key, ArrayBufferView data);
-    [RaisesException] PromiseValue decrypt(Dictionary algorithm, Key key, ArrayBufferView data);
-    [RaisesException] PromiseValue sign(Dictionary algorithm, Key key, ArrayBufferView data);
-    [RaisesException, ImplementedAs=verifySignature] PromiseValue verify(Dictionary algorithm, Key key, ArrayBufferView signature, ArrayBufferView data);
-    [RaisesException] PromiseValue digest(Dictionary algorithm, ArrayBufferView data);
+    [RaisesException] Promise encrypt(Dictionary algorithm, Key key, ArrayBufferView data);
+    [RaisesException] Promise decrypt(Dictionary algorithm, Key key, ArrayBufferView data);
+    [RaisesException] Promise sign(Dictionary algorithm, Key key, ArrayBufferView data);
+    [RaisesException, ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, Key key, ArrayBufferView signature, ArrayBufferView data);
+    [RaisesException] Promise digest(Dictionary algorithm, ArrayBufferView data);
 
-    [RaisesException] PromiseValue generateKey(Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
-    [RaisesException] PromiseValue importKey(DOMString format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
-    [RaisesException] PromiseValue exportKey(DOMString format, Key key);
+    [RaisesException] Promise generateKey(Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
+    [RaisesException] Promise importKey(DOMString format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
+    [RaisesException] Promise exportKey(DOMString format, Key key);
 };
 

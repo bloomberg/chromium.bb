@@ -28,19 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// FIXME: |PromiseValue| should be replaced with |Promise|. http://crbug.com/266700
-typedef any PromiseValue;
-
 [
     ImplementedAs=ImageBitmapFactories,
     EnabledAtRuntime=ExperimentalCanvasFeatures
 ] partial interface Window {
-    [RaisesException] PromiseValue createImageBitmap(HTMLImageElement image);
-    [RaisesException] PromiseValue createImageBitmap(HTMLImageElement image, long sx, long sy, long sw, long sh);
-    [RaisesException] PromiseValue createImageBitmap(HTMLVideoElement video);
-    [RaisesException] PromiseValue createImageBitmap(HTMLVideoElement video, long sx, long sy, long sw, long sh);
-    [RaisesException] PromiseValue createImageBitmap(CanvasRenderingContext2D context);
-    [RaisesException] PromiseValue createImageBitmap(CanvasRenderingContext2D context, long sx, long sy, long sw, long sh);
-    [RaisesException] PromiseValue createImageBitmap(HTMLCanvasElement canvas);
-    [RaisesException] PromiseValue createImageBitmap(HTMLCanvasElement canvas, long sx, long sy, long sw, long sh);
+    [RaisesException] Promise createImageBitmap(HTMLImageElement image);
+    [RaisesException] Promise createImageBitmap(HTMLImageElement image, long sx, long sy, long sw, long sh);
+    [RaisesException] Promise createImageBitmap(HTMLVideoElement video);
+    [RaisesException] Promise createImageBitmap(HTMLVideoElement video, long sx, long sy, long sw, long sh);
+    [RaisesException] Promise createImageBitmap(CanvasRenderingContext2D context);
+    [RaisesException] Promise createImageBitmap(CanvasRenderingContext2D context, long sx, long sy, long sw, long sh);
+    [RaisesException] Promise createImageBitmap(HTMLCanvasElement canvas);
+    [RaisesException] Promise createImageBitmap(HTMLCanvasElement canvas, long sx, long sy, long sw, long sh);
 };

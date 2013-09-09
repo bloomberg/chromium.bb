@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "wtf/RefPtr.h"
@@ -51,13 +52,21 @@ class ScriptExecutionContext;
 //  1. Create a ScriptPromiseResolver.
 //  2. Pass the promise object of the holder to a JavaScript program
 //     (such as XMLHttpRequest return value).
-//  3. Detach the promise object if you no long need it.
+//  3. Detach the promise object if you no longer need it.
 //  4. Call fulfill or reject when the operation completes or
 //     the operation fails respectively.
 //
 // Most methods including constructors must be called within a v8 context.
 // To use ScriptPromiseResolver out of a v8 context the caller must
 // enter a v8 context, for example by using ScriptScope and ScriptState.
+//
+// If you hold ScriptPromiseResolver as a member variable in a DOM object,
+// it causes memory leaks unless you detach the promise and resolver object
+// manually.
+// So if you no longer need the promise object, you should call detachPromise.
+// And if the operation completes or fails, you should call fulfill / resolve /
+// reject. Destroying ScriptPromiseResolver will also detach the promise and
+// resolver object.
 //
 class ScriptPromiseResolver : public RefCounted<ScriptPromiseResolver> {
     WTF_MAKE_NONCOPYABLE(ScriptPromiseResolver);
@@ -83,10 +92,10 @@ public:
     //  - The resolver's resolved flag is not set.
     bool isPending() const;
 
-    ScriptObject promise()
+    ScriptPromise promise()
     {
         ASSERT(v8::Context::InContext());
-        return ScriptObject(ScriptState::current(), m_promise.newLocal(m_isolate));
+        return m_promise;
     }
 
     // Fulfill with a C++ object which can be converted to a v8 object by toV8.
@@ -110,7 +119,7 @@ private:
     void reject(v8::Handle<v8::Value>);
 
     v8::Isolate* m_isolate;
-    ScopedPersistent<v8::Object> m_promise;
+    ScriptPromise m_promise;
     ScopedPersistent<v8::Object> m_resolver;
     bool isPendingInternal() const;
 };

@@ -31,6 +31,7 @@
 #ifndef ImageBitmapFactories_h
 #define ImageBitmapFactories_h
 
+#include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/fileapi/FileReaderLoader.h"
@@ -58,20 +59,20 @@ class ImageBitmapFactories : public Supplement<DOMWindow>, public Supplement<Scr
 class ImageBitmapLoader;
 
 public:
-    static ScriptObject createImageBitmap(EventTarget*, HTMLImageElement*, ExceptionState&);
-    static ScriptObject createImageBitmap(EventTarget*, HTMLImageElement*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptObject createImageBitmap(EventTarget*, HTMLVideoElement*, ExceptionState&);
-    static ScriptObject createImageBitmap(EventTarget*, HTMLVideoElement*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptObject createImageBitmap(EventTarget*, CanvasRenderingContext2D*, ExceptionState&);
-    static ScriptObject createImageBitmap(EventTarget*, CanvasRenderingContext2D*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptObject createImageBitmap(EventTarget*, HTMLCanvasElement*, ExceptionState&);
-    static ScriptObject createImageBitmap(EventTarget*, HTMLCanvasElement*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptObject createImageBitmap(EventTarget*, Blob*, ExceptionState&);
-    static ScriptObject createImageBitmap(EventTarget*, Blob*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptObject createImageBitmap(EventTarget*, ImageData*, ExceptionState&);
-    static ScriptObject createImageBitmap(EventTarget*, ImageData*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptObject createImageBitmap(EventTarget*, ImageBitmap*, ExceptionState&);
-    static ScriptObject createImageBitmap(EventTarget*, ImageBitmap*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget*, HTMLImageElement*, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget*, HTMLImageElement*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget*, HTMLVideoElement*, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget*, HTMLVideoElement*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget*, CanvasRenderingContext2D*, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget*, CanvasRenderingContext2D*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget*, HTMLCanvasElement*, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget*, HTMLCanvasElement*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget*, Blob*, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget*, Blob*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget*, ImageData*, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget*, ImageData*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget*, ImageBitmap*, ExceptionState&);
+    static ScriptPromise createImageBitmap(EventTarget*, ImageBitmap*, int sx, int sy, int sw, int sh, ExceptionState&);
 
     void didFinishLoading(ImageBitmapLoader*);
 

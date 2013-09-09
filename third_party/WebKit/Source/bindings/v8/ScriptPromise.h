@@ -28,21 +28,75 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-callback PromiseInit = void (PromiseResolver resolver);
-callback AnyCallback = any (optional any value);
-[
-   GlobalContext=Window&WorkerGlobalScope,
-   CustomConstructor(PromiseInit init),
-   EnabledAtRuntime=Promise
-] interface Promise {
-   [Custom] Promise then(optional AnyCallback fulfillCallback, optional AnyCallback rejectCallback);
-   [Custom] Promise catch(optional AnyCallback rejectCallback);
+#ifndef ScriptPromise_h
+#define ScriptPromise_h
 
-   [Custom] static Promise fulfill(any value);
-   [Custom] static Promise resolve(any value);
-   [Custom] static Promise reject(any value);
+#include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/V8ScriptRunner.h"
+#include <v8.h>
 
-   [Custom] static Promise _any(any... values);
-   [Custom] static Promise every(any... values);
-   [Custom] static Promise some(any... values);
+namespace WebCore {
+
+// ScriptPromise is the class for representing Promise values in C++ world.
+// ScriptPromise holds a Promise.
+// So holding a ScriptPromise as a member variable in DOM object causes
+// memory leaks since it has a reference from C++ to V8.
+//
+class ScriptPromise {
+public:
+    ScriptPromise()
+        : m_promise()
+    {
+    }
+
+    explicit ScriptPromise(ScriptValue promise)
+        : m_promise(promise)
+    {
+        ASSERT(!m_promise.hasNoValue());
+    }
+
+    explicit ScriptPromise(v8::Handle<v8::Value> promise)
+        : m_promise(promise)
+    {
+        ASSERT(!m_promise.hasNoValue());
+    }
+
+    bool isObject() const
+    {
+        return m_promise.isObject();
+    }
+
+    bool isNull() const
+    {
+        return m_promise.isNull();
+    }
+
+    bool isUndefinedOrNull() const
+    {
+        return m_promise.isUndefined() || m_promise.isNull();
+    }
+
+    v8::Handle<v8::Value> v8Value() const
+    {
+        return m_promise.v8Value();
+    }
+
+    bool hasNoValue() const
+    {
+        return m_promise.hasNoValue();
+    }
+
+    void clear()
+    {
+        m_promise.clear();
+    }
+
+private:
+    ScriptValue m_promise;
 };
+
+} // namespace WebCore
+
+
+#endif // ScriptPromise_h
