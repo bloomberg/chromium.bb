@@ -35,7 +35,6 @@
 #include "WebPrerendererClient.h"
 #include "WebViewImpl.h"
 #include "core/dom/Document.h"
-#include "core/page/Frame.h"
 #include "core/platform/PrerenderHandle.h"
 #include "core/platform/chromium/Prerender.h"
 #include "public/platform/WebPrerender.h"

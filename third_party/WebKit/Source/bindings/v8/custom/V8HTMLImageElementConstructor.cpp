@@ -39,7 +39,6 @@
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/page/Frame.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

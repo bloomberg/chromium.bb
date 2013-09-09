@@ -29,8 +29,6 @@
 #include "modules/geolocation/Geolocation.h"
 
 #include "core/dom/Document.h"
-#include "core/page/Frame.h"
-#include "core/page/Page.h"
 #include "modules/geolocation/Geoposition.h"
 #include "wtf/CurrentTime.h"
 

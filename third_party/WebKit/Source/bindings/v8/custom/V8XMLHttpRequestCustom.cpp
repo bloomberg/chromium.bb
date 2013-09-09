@@ -42,7 +42,6 @@
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "core/dom/Document.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/page/Frame.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "wtf/ArrayBuffer.h"

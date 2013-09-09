@@ -39,7 +39,6 @@
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "core/dom/ContextFeatures.h"
-#include "core/page/Frame.h"
 #include "RuntimeEnabledFeatures.h"
 
 namespace WebCore {

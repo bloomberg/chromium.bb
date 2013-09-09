@@ -33,7 +33,6 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "core/dom/Document.h"
-#include "core/page/Frame.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/OfflineAudioContext.h"
