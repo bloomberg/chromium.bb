@@ -38,11 +38,11 @@
              [TreatNullAs=NullString, CustomElementCallbacks=Enable, SetterRaisesException] attribute DOMString outerHTML;
              [TreatNullAs=NullString, CustomElementCallbacks=Enable, SetterRaisesException] attribute DOMString outerText;
 
-    [RaisesException, CustomElementCallbacks=Enable] Element insertAdjacentElement([Default=Undefined] optional DOMString where,
+    [RaisesException, CustomElementCallbacks=Enable, MeasureAs=InsertAdjacentElement] Element insertAdjacentElement([Default=Undefined] optional DOMString where,
                                   [Default=Undefined] optional Element element);
     [CustomElementCallbacks=Enable, RaisesException] void insertAdjacentHTML([Default=Undefined] optional DOMString where,
                             [Default=Undefined] optional DOMString html);
-    [RaisesException] void insertAdjacentText([Default=Undefined] optional DOMString where,
+    [RaisesException, MeasureAs=InsertAdjacentText] void insertAdjacentText([Default=Undefined] optional DOMString where,
                             [Default=Undefined] optional DOMString text);
 
     [EnabledAtRuntime=IMEAPI] readonly attribute InputMethodContext inputMethodContext;
