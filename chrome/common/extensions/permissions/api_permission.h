@@ -121,6 +121,7 @@ class APIPermission {
     kScreensaver,
     kSerial,
     kSessions,
+    kSignedInDevices,
     kSocket,
     kSocketsUdp,
     kStorage,
