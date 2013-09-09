@@ -168,7 +168,9 @@ void NetworkStateHandler::SetTechnologyEnabled(
 
 const DeviceState* NetworkStateHandler::GetDeviceState(
     const std::string& device_path) const {
-  return GetModifiableDeviceState(device_path);
+  const DeviceState* device = GetModifiableDeviceState(device_path);
+  DCHECK(!device || device->update_received());
+  return device;
 }
 
 const DeviceState* NetworkStateHandler::GetDeviceStateByType(
@@ -176,6 +178,8 @@ const DeviceState* NetworkStateHandler::GetDeviceStateByType(
   for (ManagedStateList::const_iterator iter = device_list_.begin();
        iter != device_list_.end(); ++iter) {
     ManagedState* device = *iter;
+    if (!device->update_received())
+      continue;
     if (ManagedStateMatchesType(device, type))
       return device->AsDeviceState();
   }
@@ -187,6 +191,8 @@ bool NetworkStateHandler::GetScanningByType(const std::string& type) const {
        iter != device_list_.end(); ++iter) {
     const DeviceState* device = (*iter)->AsDeviceState();
     DCHECK(device);
+    if (!device->update_received())
+      continue;
     if (ManagedStateMatchesType(device, type) && device->scanning())
       return true;
   }
@@ -195,7 +201,9 @@ bool NetworkStateHandler::GetScanningByType(const std::string& type) const {
 
 const NetworkState* NetworkStateHandler::GetNetworkState(
     const std::string& service_path) const {
-  return GetModifiableNetworkState(service_path);
+  const NetworkState* network = GetModifiableNetworkState(service_path);
+  DCHECK(!network || network->update_received());
+  return network;
 }
 
 const NetworkState* NetworkStateHandler::DefaultNetwork() const {
@@ -203,7 +211,7 @@ const NetworkState* NetworkStateHandler::DefaultNetwork() const {
     return NULL;
   const NetworkState* network = network_list_.front()->AsNetworkState();
   DCHECK(network);
-  if (!network->IsConnectedState())
+  if (!network->update_received() || !network->IsConnectedState())
     return NULL;
   return network;
 }
@@ -214,6 +222,8 @@ const NetworkState* NetworkStateHandler::ConnectedNetworkByType(
        iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
     DCHECK(network);
+    if (!network->update_received())
+      continue;
     if (!network->IsConnectedState())
       break;  // Connected networks are listed first.
     if (ManagedStateMatchesType(network, type))
@@ -228,7 +238,7 @@ const NetworkState* NetworkStateHandler::ConnectingNetworkByType(
        iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
     DCHECK(network);
-    if (network->IsConnectedState())
+    if (!network->update_received() || network->IsConnectedState())
       continue;
     if (!network->IsConnectingState())
       break;  // Connected and connecting networks are listed first.
@@ -244,6 +254,8 @@ const NetworkState* NetworkStateHandler::FirstNetworkByType(
        iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
     DCHECK(network);
+    if (!network->update_received())
+      continue;
     if (ManagedStateMatchesType(network, type))
       return network;
   }
@@ -252,13 +264,13 @@ const NetworkState* NetworkStateHandler::FirstNetworkByType(
 
 std::string NetworkStateHandler::HardwareAddressForType(
     const std::string& type) const {
-  std::string result;
   const NetworkState* network = ConnectedNetworkByType(type);
-  if (network) {
-    const DeviceState* device = GetDeviceState(network->device_path());
-    if (device)
-      result = device->mac_address();
-  }
+  if (!network)
+    return std::string();
+  const DeviceState* device = GetDeviceState(network->device_path());
+  if (!device)
+    return std::string();
+  std::string result = device->mac_address();
   StringToUpperASCII(&result);
   return result;
 }
@@ -287,10 +299,10 @@ void NetworkStateHandler::GetNetworkListByType(const std::string& type,
   list->clear();
   for (ManagedStateList::const_iterator iter = network_list_.begin();
        iter != network_list_.end(); ++iter) {
-    if (!(*iter)->update_received())
-      continue;
     const NetworkState* network = (*iter)->AsNetworkState();
     DCHECK(network);
+    if (!network->update_received())
+      continue;
     if (ManagedStateMatchesType(network, type))
       list->push_back(network);
   }
@@ -301,10 +313,10 @@ void NetworkStateHandler::GetDeviceList(DeviceStateList* list) const {
   list->clear();
   for (ManagedStateList::const_iterator iter = device_list_.begin();
        iter != device_list_.end(); ++iter) {
-    if (!(*iter)->update_received())
-      continue;
     const DeviceState* device = (*iter)->AsDeviceState();
     DCHECK(device);
+    if (!device->update_received())
+      continue;
     list->push_back(device);
   }
 }
@@ -315,10 +327,10 @@ void NetworkStateHandler::GetFavoriteList(FavoriteStateList* list) const {
   list->clear();
   for (ManagedStateList::const_iterator iter = favorite_list_.begin();
        iter != favorite_list_.end(); ++iter) {
-    if (!(*iter)->update_received())
-      continue;
     const FavoriteState* favorite = (*iter)->AsFavoriteState();
     DCHECK(favorite);
+    if (!favorite->update_received())
+      continue;
     if (favorite->is_favorite())
       list->push_back(favorite);
   }
@@ -330,6 +342,7 @@ const FavoriteState* NetworkStateHandler::GetFavoriteState(
       GetModifiableManagedState(&favorite_list_, service_path);
   if (!managed)
     return NULL;
+  DCHECK(managed->update_received());
   return managed->AsFavoriteState();
 }
 
