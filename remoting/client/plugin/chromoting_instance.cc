@@ -4,6 +4,7 @@
 
 #include "remoting/client/plugin/chromoting_instance.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -23,8 +24,8 @@
 #include "net/socket/ssl_server_socket.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
+#include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
-#include "ppapi/cpp/mouse_cursor.h"
 #include "ppapi/cpp/rect.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/util.h"
@@ -54,6 +55,12 @@ namespace {
 
 // 32-bit BGRA is 4 bytes per pixel.
 const int kBytesPerPixel = 4;
+
+#if defined(ARCH_CPU_LITTLE_ENDIAN)
+const uint32_t kPixelAlphaMask = 0xff000000;
+#else  // !defined(ARCH_CPU_LITTLE_ENDIAN)
+const uint32_t kPixelAlphaMask = 0x000000ff;
+#endif  // !defined(ARCH_CPU_LITTLE_ENDIAN)
 
 // Default DPI to assume for old clients that use notifyClientResolution.
 const int kDefaultDPI = 96;
@@ -125,6 +132,16 @@ std::string ConnectionErrorToString(protocol::ErrorCode error) {
   return std::string();
 }
 
+// Returns true if |pixel| is not completely transparent.
+bool IsVisiblePixel(uint32_t pixel) {
+  return (pixel & kPixelAlphaMask) != 0;
+}
+
+// Returns true if there is at least one visible pixel in the given range.
+bool IsVisibleRow(const uint32_t* begin, const uint32_t* end) {
+  return std::find_if(begin, end, &IsVisiblePixel) != end;
+}
+
 // This flag blocks LOGs to the UI if we're already in the middle of logging
 // to the UI. This prevents a potential infinite loop if we encounter an error
 // while sending the log message to the UI.
@@ -144,7 +161,7 @@ logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
 const char ChromotingInstance::kApiFeatures[] =
     "highQualityScaling injectKeyEvent sendClipboardItem remapKey trapKey "
     "notifyClientResolution pauseVideo pauseAudio asyncPin thirdPartyAuth "
-    "pinlessAuth extensionMessage";
+    "pinlessAuth extensionMessage allowMouseLock";
 
 const char ChromotingInstance::kRequestedCapabilities[] = "";
 const char ChromotingInstance::kSupportedCapabilities[] = "desktopShape";
@@ -176,7 +193,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       input_tracker_(&mouse_input_filter_),
       key_mapper_(&input_tracker_),
       normalizing_input_filter_(CreateNormalizingInputFilter(&key_mapper_)),
-      input_handler_(normalizing_input_filter_.get()),
+      input_handler_(this, normalizing_input_filter_.get()),
       use_async_pin_dialog_(false),
       weak_factory_(this) {
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
@@ -304,7 +321,15 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
     HandleRequestPairing(*data);
   } else if (method == "extensionMessage") {
     HandleExtensionMessage(*data);
+  } else if (method == "allowMouseLock") {
+    HandleAllowMouseLockMessage();
   }
+}
+
+void ChromotingInstance::DidChangeFocus(bool has_focus) {
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
+
+  input_handler_.DidChangeFocus(has_focus);
 }
 
 void ChromotingInstance::DidChangeView(const pp::View& view) {
@@ -464,6 +489,8 @@ void ChromotingInstance::InjectClipboardEvent(
 
 void ChromotingInstance::SetCursorShape(
     const protocol::CursorShapeInfo& cursor_shape) {
+  COMPILE_ASSERT(sizeof(uint32_t) == kBytesPerPixel, rgba_pixels_are_32bit);
+
   if (!cursor_shape.has_data() ||
       !cursor_shape.has_width() ||
       !cursor_shape.has_height() ||
@@ -500,47 +527,52 @@ void ChromotingInstance::SetCursorShape(
 
   int hotspot_x = cursor_shape.hotspot_x();
   int hotspot_y = cursor_shape.hotspot_y();
-
   int bytes_per_row = width * kBytesPerPixel;
-  const uint8* src_row_data = reinterpret_cast<const uint8*>(
+  int src_stride = width;
+  const uint32_t* src_row_data = reinterpret_cast<const uint32_t*>(
       cursor_shape.data().data());
-  int stride = bytes_per_row;
+  const uint32_t* src_row_data_end = src_row_data + src_stride * height;
 
-  // If the cursor exceeds the size permitted by PPAPI then crop it, keeping
-  // the hotspot as close to the center of the new cursor shape as possible.
-  if (height > kMaxCursorHeight) {
-    int y = hotspot_y - (kMaxCursorHeight / 2);
-    y = std::max(y, 0);
-    y = std::min(y, height - kMaxCursorHeight);
+  scoped_ptr<pp::ImageData> cursor_image;
+  pp::Point cursor_hotspot;
 
-    src_row_data += stride * y;
-    height = kMaxCursorHeight;
-    hotspot_y -= y;
+  // Check if the cursor is visible.
+  if (IsVisibleRow(src_row_data, src_row_data_end)) {
+    // If the cursor exceeds the size permitted by PPAPI then crop it, keeping
+    // the hotspot as close to the center of the new cursor shape as possible.
+    if (height > kMaxCursorHeight) {
+      int y = hotspot_y - (kMaxCursorHeight / 2);
+      y = std::max(y, 0);
+      y = std::min(y, height - kMaxCursorHeight);
+
+      src_row_data += src_stride * y;
+      height = kMaxCursorHeight;
+      hotspot_y -= y;
+    }
+    if (width > kMaxCursorWidth) {
+      int x = hotspot_x - (kMaxCursorWidth / 2);
+      x = std::max(x, 0);
+      x = std::min(x, height - kMaxCursorWidth);
+
+      src_row_data += x;
+      width = kMaxCursorWidth;
+      bytes_per_row = width * kBytesPerPixel;
+      hotspot_x -= x;
+    }
+
+    cursor_image.reset(new pp::ImageData(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                                          pp::Size(width, height), false));
+    cursor_hotspot = pp::Point(hotspot_x, hotspot_y);
+
+    uint8* dst_row_data = reinterpret_cast<uint8*>(cursor_image->data());
+    for (int row = 0; row < height; row++) {
+      memcpy(dst_row_data, src_row_data, bytes_per_row);
+      src_row_data += src_stride;
+      dst_row_data += cursor_image->stride();
+    }
   }
-  if (width > kMaxCursorWidth) {
-    int x = hotspot_x - (kMaxCursorWidth / 2);
-    x = std::max(x, 0);
-    x = std::min(x, height - kMaxCursorWidth);
 
-    src_row_data += x * kBytesPerPixel;
-    width = kMaxCursorWidth;
-    bytes_per_row = width * kBytesPerPixel;
-    hotspot_x -= x;
-  }
-
-  pp::ImageData cursor_image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-                             pp::Size(width, height), false);
-
-  uint8* dst_row_data = reinterpret_cast<uint8*>(cursor_image.data());
-  for (int row = 0; row < height; row++) {
-    memcpy(dst_row_data, src_row_data, bytes_per_row);
-    src_row_data += stride;
-    dst_row_data += cursor_image.stride();
-  }
-
-  pp::MouseCursor::SetCursor(this, PP_MOUSECURSOR_TYPE_CUSTOM,
-                             cursor_image,
-                             pp::Point(hotspot_x, hotspot_y));
+  input_handler_.SetMouseCursor(cursor_image.Pass(), cursor_hotspot);
 }
 
 void ChromotingInstance::OnFirstFrameReceived() {
@@ -858,6 +890,10 @@ void ChromotingInstance::HandleExtensionMessage(
   message.set_type(type);
   message.set_data(message_data);
   host_connection_->host_stub()->DeliverClientMessage(message);
+}
+
+void ChromotingInstance::HandleAllowMouseLockMessage() {
+  input_handler_.AllowMouseLock();
 }
 
 ChromotingStats* ChromotingInstance::GetStats() {

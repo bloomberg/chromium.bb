@@ -219,20 +219,26 @@ void InputInjectorWin::Core::HandleMouse(const MouseEvent& event) {
   // Reset the system idle suspend timeout.
   SetThreadExecutionState(ES_SYSTEM_REQUIRED);
 
-  // TODO(garykac) Collapse mouse (x,y) and button events into a single
+  // TODO(garykac) Collapse mouse movement and button events into a single
   // input event when possible.
-  if (event.has_x() && event.has_y()) {
-    int x = event.x();
-    int y = event.y();
-
+  if (event.has_delta_x() && event.has_delta_y()) {
+    INPUT input;
+    input.type = INPUT_MOUSE;
+    input.mi.time = 0;
+    input.mi.dx = event.delta_x();
+    input.mi.dy = event.delta_y();
+    input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_VIRTUALDESK;
+    if (SendInput(1, &input, sizeof(INPUT)) == 0)
+      LOG_GETLASTERROR(ERROR) << "Failed to inject a mouse move event";
+  } else if (event.has_x() && event.has_y()) {
     INPUT input;
     input.type = INPUT_MOUSE;
     input.mi.time = 0;
     SkISize screen_size(SkISize::Make(GetSystemMetrics(SM_CXVIRTUALSCREEN),
                                       GetSystemMetrics(SM_CYVIRTUALSCREEN)));
     if ((screen_size.width() > 1) && (screen_size.height() > 1)) {
-      x = std::max(0, std::min(screen_size.width(), x));
-      y = std::max(0, std::min(screen_size.height(), y));
+      int x = std::max(0, std::min(screen_size.width(), event.x()));
+      int y = std::max(0, std::min(screen_size.height(), event.y()));
       input.mi.dx = static_cast<int>((x * 65535) / (screen_size.width() - 1));
       input.mi.dy = static_cast<int>((y * 65535) / (screen_size.height() - 1));
       input.mi.dwFlags =

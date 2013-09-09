@@ -102,6 +102,7 @@ class ChromotingInstance :
   virtual ~ChromotingInstance();
 
   // pp::Instance interface.
+  virtual void DidChangeFocus(bool has_focus) OVERRIDE;
   virtual void DidChangeView(const pp::View& view) OVERRIDE;
   virtual bool Init(uint32_t argc, const char* argn[],
                     const char* argv[]) OVERRIDE;
@@ -195,6 +196,7 @@ class ChromotingInstance :
   void HandleOnThirdPartyTokenFetched(const base::DictionaryValue& data);
   void HandleRequestPairing(const base::DictionaryValue& data);
   void HandleExtensionMessage(const base::DictionaryValue& data);
+  void HandleAllowMouseLockMessage();
 
   // Helper method called from Connect() to connect with parsed config.
   void ConnectWithConfig(const ClientConfig& config,

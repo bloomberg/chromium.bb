@@ -58,6 +58,10 @@ message MouseEvent {
   optional float wheel_delta_y = 8;
   optional float wheel_ticks_x = 9;
   optional float wheel_ticks_y = 10;
+
+  // Mouse movement information. Provided only when mouse lock is engaged.
+  optional int32 delta_x = 11;
+  optional int32 delta_y = 12;
 }
 
 // Defines an event that sends clipboard data between peers.

@@ -6,15 +6,24 @@
 
 #include "base/logging.h"
 #include "ppapi/c/dev/ppb_keyboard_input_event_dev.h"
+#include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/module_impl.h"
+#include "ppapi/cpp/mouse_cursor.h"
 #include "ppapi/cpp/point.h"
 #include "remoting/proto/event.pb.h"
 
 namespace remoting {
 
-PepperInputHandler::PepperInputHandler(protocol::InputStub* input_stub)
-    : input_stub_(input_stub),
+PepperInputHandler::PepperInputHandler(
+    pp::Instance* instance,
+    protocol::InputStub* input_stub)
+    : pp::MouseLock(instance),
+      instance_(instance),
+      input_stub_(input_stub),
+      callback_factory_(this),
+      has_focus_(false),
+      mouse_lock_state_(MouseLockDisallowed),
       wheel_delta_x_(0),
       wheel_delta_y_(0),
       wheel_ticks_x_(0),
@@ -98,6 +107,14 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
       protocol::MouseEvent mouse_event;
       mouse_event.set_x(pp_mouse_event.GetPosition().x());
       mouse_event.set_y(pp_mouse_event.GetPosition().y());
+
+      // Add relative movement if the mouse is locked.
+      if (mouse_lock_state_ == MouseLockOn) {
+        pp::Point delta = pp_mouse_event.GetMovement();
+        mouse_event.set_delta_x(delta.x());
+        mouse_event.set_delta_y(delta.y());
+      }
+
       input_stub_->InjectMouseEvent(mouse_event);
       return true;
     }
@@ -157,6 +174,117 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
   }
 
   return false;
+}
+
+void PepperInputHandler::AllowMouseLock() {
+  DCHECK_EQ(mouse_lock_state_, MouseLockDisallowed);
+  mouse_lock_state_ = MouseLockOff;
+}
+
+void PepperInputHandler::DidChangeFocus(bool has_focus) {
+  has_focus_ = has_focus;
+  if (has_focus_)
+    RequestMouseLock();
+}
+
+void PepperInputHandler::SetMouseCursor(scoped_ptr<pp::ImageData> image,
+                                        const pp::Point& hotspot) {
+  cursor_image_ = image.Pass();
+  cursor_hotspot_ = hotspot;
+
+  if (mouse_lock_state_ != MouseLockDisallowed && !cursor_image_) {
+    RequestMouseLock();
+  } else {
+    CancelMouseLock();
+  }
+}
+
+void PepperInputHandler::MouseLockLost() {
+  DCHECK(mouse_lock_state_ == MouseLockOn ||
+         mouse_lock_state_ == MouseLockCancelling);
+
+  mouse_lock_state_ = MouseLockOff;
+  UpdateMouseCursor();
+}
+
+void PepperInputHandler::RequestMouseLock() {
+  // Request mouse lock only if the plugin is focused, the host-supplied cursor
+  // is empty and no callback is pending.
+  if (has_focus_ && !cursor_image_ && mouse_lock_state_ == MouseLockOff) {
+    pp::CompletionCallback callback =
+        callback_factory_.NewCallback(&PepperInputHandler::OnMouseLocked);
+    int result = pp::MouseLock::LockMouse(callback);
+    DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
+
+    // Hide cursor to avoid it becoming a black square (see crbug.com/285809).
+    pp::MouseCursor::SetCursor(instance_, PP_MOUSECURSOR_TYPE_NONE);
+
+    mouse_lock_state_ = MouseLockRequestPending;
+  }
+}
+
+void PepperInputHandler::CancelMouseLock() {
+  switch (mouse_lock_state_) {
+    case MouseLockDisallowed:
+    case MouseLockOff:
+      UpdateMouseCursor();
+      break;
+
+    case MouseLockCancelling:
+      break;
+
+    case MouseLockRequestPending:
+      // The mouse lock request is pending. Delay UnlockMouse() call until
+      // the callback is called.
+      mouse_lock_state_ = MouseLockCancelling;
+      break;
+
+    case MouseLockOn:
+      pp::MouseLock::UnlockMouse();
+
+      // Note that mouse-lock has been cancelled. We will continue to receive
+      // locked events until MouseLockLost() is called back.
+      mouse_lock_state_ = MouseLockCancelling;
+      break;
+
+    default:
+      NOTREACHED();
+  }
+}
+
+void PepperInputHandler::UpdateMouseCursor() {
+  DCHECK(mouse_lock_state_ == MouseLockDisallowed ||
+         mouse_lock_state_ == MouseLockOff);
+
+  if (cursor_image_) {
+    pp::MouseCursor::SetCursor(instance_, PP_MOUSECURSOR_TYPE_CUSTOM,
+                               *cursor_image_,
+                               cursor_hotspot_);
+  } else {
+    // If there is no cursor shape stored, either because the host never
+    // supplied one, or we were previously in mouse-lock mode, then use
+    // a standard arrow pointer.
+    pp::MouseCursor::SetCursor(instance_, PP_MOUSECURSOR_TYPE_POINTER);
+  }
+}
+
+void PepperInputHandler::OnMouseLocked(int error) {
+  DCHECK(mouse_lock_state_ == MouseLockRequestPending ||
+         mouse_lock_state_ == MouseLockCancelling);
+
+  bool should_cancel = (mouse_lock_state_ == MouseLockCancelling);
+
+  // See if the operation succeeded.
+  if (error == PP_OK) {
+    mouse_lock_state_ = MouseLockOn;
+  } else {
+    mouse_lock_state_ = MouseLockOff;
+    UpdateMouseCursor();
+  }
+
+  // Cancel as needed.
+  if (should_cancel)
+    CancelMouseLock();
 }
 
 }  // namespace remoting
