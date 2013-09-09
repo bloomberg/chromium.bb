@@ -14,6 +14,16 @@ WifiDataProvider::ImplFactoryFunction WifiDataProvider::factory_function_ =
     DefaultFactoryFunction;
 
 // static
+void WifiDataProvider::SetFactory(ImplFactoryFunction factory_function_in) {
+  factory_function_ = factory_function_in;
+}
+
+// static
+void WifiDataProvider::ResetFactory() {
+  factory_function_ = DefaultFactoryFunction;
+}
+
+// static
 WifiDataProvider* WifiDataProvider::Register(WifiDataUpdateCallback* callback) {
   bool need_to_start_data_provider = false;
   if (!instance_) {
@@ -27,6 +37,24 @@ WifiDataProvider* WifiDataProvider::Register(WifiDataUpdateCallback* callback) {
   if (need_to_start_data_provider)
     instance_->StartDataProvider();
   return instance_;
+}
+
+// static
+bool WifiDataProvider::Unregister(WifiDataUpdateCallback* callback) {
+  DCHECK(instance_);
+  DCHECK(instance_->has_callbacks());
+  if (!instance_->RemoveCallback(callback)) {
+    return false;
+  }
+  if (!instance_->has_callbacks()) {
+    // Must stop the data provider (and any implementation threads) before
+    // destroying to avoid any race conditions in access to the provider in
+    // the destructor chain.
+    instance_->StopDataProvider();
+    delete instance_;
+    instance_ = NULL;
+  }
+  return true;
 }
 
 WifiDataProviderImplBase::WifiDataProviderImplBase()
@@ -90,6 +118,30 @@ WifiDataProvider::WifiDataProvider() {
 WifiDataProvider::~WifiDataProvider() {
   DCHECK(impl_.get());
   impl_->SetContainer(NULL);
+}
+
+bool WifiDataProvider::GetData(WifiData* data) {
+  return impl_->GetData(data);
+}
+
+void WifiDataProvider::AddCallback(WifiDataUpdateCallback* callback) {
+  impl_->AddCallback(callback);
+}
+
+bool WifiDataProvider::RemoveCallback(WifiDataUpdateCallback* callback) {
+  return impl_->RemoveCallback(callback);
+}
+
+bool WifiDataProvider::has_callbacks() const {
+  return impl_->has_callbacks();
+}
+
+void WifiDataProvider::StartDataProvider() {
+  impl_->StartDataProvider();
+}
+
+void WifiDataProvider::StopDataProvider() {
+  impl_->StopDataProvider();
 }
 
 }  // namespace content

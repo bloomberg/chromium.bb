@@ -108,13 +108,10 @@ class CONTENT_EXPORT WifiDataProvider {
   // used both to abstract accross platform-specific implementations and to
   // inject mock implementations for testing.
   typedef WifiDataProviderImplBase* (*ImplFactoryFunction)(void);
-  static void SetFactory(ImplFactoryFunction factory_function_in) {
-    factory_function_ = factory_function_in;
-  }
+  static void SetFactory(ImplFactoryFunction factory_function_in);
 
-  static void ResetFactory() {
-    factory_function_ = DefaultFactoryFunction;
-  }
+  // Resets the factory function to the default.
+  static void ResetFactory();
 
   typedef base::Callback<void(WifiDataProvider*)> WifiDataUpdateCallback;
 
@@ -124,29 +121,12 @@ class CONTENT_EXPORT WifiDataProvider {
 
   // Removes a callback. If this is the last callback, deletes the singleton
   // instance. Return value indicates success.
-  static bool Unregister(WifiDataUpdateCallback* callback) {
-    DCHECK(instance_);
-    DCHECK(instance_->has_callbacks());
-    if (!instance_->RemoveCallback(callback)) {
-      return false;
-    }
-    if (!instance_->has_callbacks()) {
-      // Must stop the data provider (and any implementation threads) before
-      // destroying to avoid any race conditions in access to the provider in
-      // the destructor chain.
-      instance_->StopDataProvider();
-      delete instance_;
-      instance_ = NULL;
-    }
-    return true;
-  }
+  static bool Unregister(WifiDataUpdateCallback* callback);
 
   // Provides whatever data the provider has, which may be nothing. Return
   // value indicates whether this is all the data the provider could ever
   // obtain.
-  bool GetData(WifiData* data) {
-    return impl_->GetData(data);
-  }
+  bool GetData(WifiData* data);
 
  private:
   // Private constructor and destructor, callers access singleton through
@@ -154,25 +134,12 @@ class CONTENT_EXPORT WifiDataProvider {
   WifiDataProvider();
   virtual ~WifiDataProvider();
 
-  void AddCallback(WifiDataUpdateCallback* callback) {
-    impl_->AddCallback(callback);
-  }
+  void AddCallback(WifiDataUpdateCallback* callback);
+  bool RemoveCallback(WifiDataUpdateCallback* callback);
+  bool has_callbacks() const;
 
-  bool RemoveCallback(WifiDataUpdateCallback* callback) {
-    return impl_->RemoveCallback(callback);
-  }
-
-  bool has_callbacks() const {
-    return impl_->has_callbacks();
-  }
-
-  void StartDataProvider() {
-    impl_->StartDataProvider();
-  }
-
-  void StopDataProvider() {
-    impl_->StopDataProvider();
-  }
+  void StartDataProvider();
+  void StopDataProvider();
 
   static WifiDataProviderImplBase* DefaultFactoryFunction();
 
