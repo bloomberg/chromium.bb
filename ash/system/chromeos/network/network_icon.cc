@@ -620,8 +620,9 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
       // For networks that are always in roaming don't show roaming badge.
       const DeviceState* device =
           handler->GetDeviceState(network->device_path());
-      DCHECK(device);
-      if (!device->provider_requires_roaming()) {
+      LOG_IF(WARNING, !device) << "Could not find device state for "
+                               << network->device_path();
+      if (!device || !device->provider_requires_roaming()) {
         badges->bottom_right = rb.GetImageSkiaNamed(
             IconTypeIsDark(icon_type_) ?
             IDR_AURA_UBER_TRAY_NETWORK_ROAMING_DARK :
