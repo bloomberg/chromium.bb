@@ -95,9 +95,7 @@ bool HistoryProvider::FixupUserInput(AutocompleteInput* input) {
   string16 output = UTF8ToUTF16(canonical_gurl_str);
   // Don't prepend a scheme when the user didn't have one.  Since the fixer
   // upper only prepends the "http" scheme, that's all we need to check for.
-  if (canonical_gurl.SchemeIs(chrome::kHttpScheme) &&
-      !url_util::FindAndCompareScheme(UTF16ToUTF8(input_text),
-                                      chrome::kHttpScheme, NULL))
+  if (!HasHTTPScheme(input_text))
     TrimHttpPrefix(&output);
 
   // Make the number of trailing slashes on the output exactly match the input.

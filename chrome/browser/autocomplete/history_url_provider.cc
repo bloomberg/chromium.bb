@@ -344,6 +344,7 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     // |match_location| below.  StringForURLDisplay() and TrimHttpPrefix() have
     // slightly different behavior as well (the latter will strip even without
     // two slashes after the scheme).
+    DCHECK(!trim_http || !HasHTTPScheme(input.text()));
     string16 display_string(provider->StringForURLDisplay(url, false, false));
     const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
     match.fill_into_edit =
@@ -360,21 +361,20 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     match.contents = display_string;
     const URLPrefix* best_prefix = URLPrefix::BestURLPrefix(
         UTF8ToUTF16(match.destination_url.spec()), input.text());
-
-    // We only want to trim the HTTP scheme off our match if the user didn't
-    // explicitly type "http:".
-    DCHECK(!trim_http || !HasHTTPScheme(input.text()));
-
-    // Because of the vagaries of GURL, it's possible for match.destination_url
-    // to not contain the user's input at all (so |best_prefix| is NULL).
-    // In this case don't mark anything as a match.
-    const size_t match_location = (best_prefix == NULL) ?
-        string16::npos : best_prefix->prefix.length() - offset;
-    AutocompleteMatch::ClassifyLocationInString(match_location,
-                                                input.text().length(),
-                                                match.contents.length(),
-                                                ACMatchClassification::URL,
-                                                &match.contents_class);
+    // It's possible for match.destination_url to not contain the user's input
+    // at all (so |best_prefix| is NULL), for example if the input is
+    // "view-source:x" and |destination_url| has an inserted "http://" in the
+    // middle.
+    if (best_prefix == NULL) {
+      AutocompleteMatch::ClassifyMatchInString(input.text(), match.contents,
+                                               ACMatchClassification::URL,
+                                               &match.contents_class);
+    } else {
+      AutocompleteMatch::ClassifyLocationInString(
+          best_prefix->prefix.length() - offset, input.text().length(),
+          match.contents.length(), ACMatchClassification::URL,
+          &match.contents_class);
+    }
 
     match.is_history_what_you_typed_match = true;
   }

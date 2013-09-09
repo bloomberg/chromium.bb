@@ -754,7 +754,8 @@ TEST_F(HistoryURLProviderTest, CrashDueToFixup) {
   // This test passes if we don't crash.  The results don't matter.
   const char* const test_cases[] = {
     "//c",
-    "\\@st"
+    "\\@st",
+    "view-source:x",
   };
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     AutocompleteInput input(ASCIIToUTF16(test_cases[i]), string16::npos,
@@ -847,6 +848,8 @@ TEST_F(HistoryURLProviderTest, SuggestExactInput) {
       "www.w.com", {0, npos, npos}, 0 },
     { "www.w.com", false,
       "http://www.w.com", {0, 7, npos}, 1 },
+    { "view-source:w", true,
+      "view-source:w", {0, npos, npos}, 0 },
     { "view-source:www.w.com/", true,
       "view-source:www.w.com", {0, npos, npos}, npos },
     { "view-source:www.w.com/", false,
