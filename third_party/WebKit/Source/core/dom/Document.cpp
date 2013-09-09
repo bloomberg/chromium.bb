@@ -4982,7 +4982,7 @@ HTMLDialogElement* Document::activeModalDialog() const
 {
     if (m_topLayerElements.isEmpty())
         return 0;
-    return static_cast<HTMLDialogElement*>(m_topLayerElements.last().get());
+    return toHTMLDialogElement(m_topLayerElements.last().get());
 }
 
 void Document::webkitExitPointerLock()
