@@ -2299,8 +2299,13 @@ void RenderObject::computeLayerHitTestRects(LayerHitTestRects& layerRects) const
         RenderObject* container = this->container();
         if (container) {
             currentLayer = container->enclosingLayer();
-            if (currentLayer && currentLayer->renderer() != container)
+            if (currentLayer && currentLayer->renderer() != container) {
                 layerOffset.move(container->offsetFromAncestorContainer(currentLayer->renderer()));
+                // If the layer itself is scrolled, we have to undo the subtraction of its scroll
+                // offset since we want the offset relative to the scrolling content, not the
+                // element itself.
+                layerOffset.move(currentLayer->scrolledContentOffset());
+            }
         } else {
             currentLayer = enclosingLayer();
         }

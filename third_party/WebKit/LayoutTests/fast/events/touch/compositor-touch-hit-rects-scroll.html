@@ -30,6 +30,13 @@ overflow scroll elements.
     <div class="testcase" id="scrollContent">Scroll content</div>
     <div style='height: 50px;'></div>
   </div>
+  <div id="scroll5" class="scroll">
+    <div>
+      <div style='height: 13px;'></div>
+      <div class="testcase" id="scrollContent2">Scroll content 2</div>
+      <div id="scroll5spacer" style='height: 50px;'></div>
+    </div>
+  </div>
   <div id="scroll2" class="scroll">
     <div style='height: 10px;'></div>
     <div id="scroll2b" class="scroll">
@@ -63,18 +70,22 @@ overflow scroll elements.
     <div style='height: 50px;'></div>
   </div>
 
-
 </div>
 
 <div id="console"></div>
 <script src="resources/compositor-touch-hit-rects.js"></script>
 <script>
 
-// Scroll after layout has finished and verify that doesn't
-// cause the hit rects to be recomputed.
+// Scroll after layout has finished.
 preRunHandlerForTest['scrollContent'] = function(e) {
     // Scroll so the rect is visible but slighly clipped.
     document.getElementById('scroll1').scrollTop = 15;
+};
+
+preRunHandlerForTest['scrollContent2'] = function(e) {
+    document.getElementById('scroll5').scrollTop = 5;
+    // force layout after scroll position changed
+    document.getElementById('scroll5spacer').style.height="60px";
 };
 
 preRunHandlerForTest['nestedContent'] = function(e) {
