@@ -25,7 +25,9 @@ class MountedDiskMonitor
     : public chromeos::PowerManagerClient::Observer,
       public chromeos::disks::DiskMountManager::Observer {
  public:
-  MountedDiskMonitor();
+  MountedDiskMonitor(
+      chromeos::PowerManagerClient* power_manager_client,
+      chromeos::disks::DiskMountManager* disk_mount_manager);
   virtual ~MountedDiskMonitor();
 
   // PowerManagerClient::Observer overrides:
@@ -53,6 +55,14 @@ class MountedDiskMonitor
   // been unmounted during the resuming time span.
   bool DiskIsRemounting(
       const chromeos::disks::DiskMountManager::Disk& disk) const;
+
+  // In order to avoid consuming time a lot for testing, this allows to set the
+  // resuming time span.
+  void set_resuming_time_span_for_testing(
+      const base::TimeDelta& resuming_time_span) {
+    resuming_time_span_ = resuming_time_span;
+  }
+
  private:
   // Maps source paths with corresponding uuids.
   typedef std::map<std::string, std::string> DiskMap;
@@ -62,9 +72,13 @@ class MountedDiskMonitor
 
   void Reset();
 
+  chromeos::PowerManagerClient* power_manager_client_;
+  chromeos::disks::DiskMountManager* disk_mount_manager_;
+
   bool is_resuming_;
   DiskMap mounted_disks_;
   DiskSet unmounted_while_resuming_;
+  base::TimeDelta resuming_time_span_;
   base::WeakPtrFactory<MountedDiskMonitor> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MountedDiskMonitor);

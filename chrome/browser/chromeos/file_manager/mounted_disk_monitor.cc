@@ -5,11 +5,9 @@
 #include "chrome/browser/chromeos/file_manager/mounted_disk_monitor.h"
 
 #include "base/bind.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 
-using chromeos::DBusThreadManager;
 using chromeos::disks::DiskMountManager;
 
 namespace file_manager {
@@ -22,22 +20,24 @@ const base::TimeDelta kResumingTimeSpan = base::TimeDelta::FromSeconds(5);
 
 }  // namespace
 
-MountedDiskMonitor::MountedDiskMonitor()
-    : is_resuming_(false),
+MountedDiskMonitor::MountedDiskMonitor(
+    chromeos::PowerManagerClient* power_manager_client,
+    chromeos::disks::DiskMountManager* disk_mount_manager)
+    : power_manager_client_(power_manager_client),
+      disk_mount_manager_(disk_mount_manager),
+      is_resuming_(false),
+      resuming_time_span_(kResumingTimeSpan),
       weak_factory_(this) {
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-  DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
-  if (disk_mount_manager) {
-    disk_mount_manager->AddObserver(this);
-    disk_mount_manager->RequestMountInfoRefresh();
-  }
+  DCHECK(power_manager_client_);
+  DCHECK(disk_mount_manager_);
+  power_manager_client_->AddObserver(this);
+  disk_mount_manager_->AddObserver(this);
+  disk_mount_manager_->RequestMountInfoRefresh();
 }
 
 MountedDiskMonitor::~MountedDiskMonitor() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
-  DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
-  if (disk_mount_manager)
-    disk_mount_manager->RemoveObserver(this);
+  disk_mount_manager_->RemoveObserver(this);
+  power_manager_client_->RemoveObserver(this);
 }
 
 void MountedDiskMonitor::SuspendImminent() {
@@ -54,7 +54,7 @@ void MountedDiskMonitor::SystemResumed(
       FROM_HERE,
       base::Bind(&MountedDiskMonitor::Reset,
                  weak_factory_.GetWeakPtr()),
-      kResumingTimeSpan);
+      resuming_time_span_);
 }
 
 bool MountedDiskMonitor::DiskIsRemounting(
@@ -71,9 +71,8 @@ void MountedDiskMonitor::OnMountEvent(
 
   switch (event) {
     case DiskMountManager::MOUNTING: {
-      DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
       const DiskMountManager::Disk* disk =
-          disk_mount_manager->FindDiskBySourcePath(mount_info.source_path);
+          disk_mount_manager_->FindDiskBySourcePath(mount_info.source_path);
       if (!disk || error_code != chromeos::MOUNT_ERROR_NONE)
         return;
       mounted_disks_[mount_info.source_path] = disk->fs_uuid();

@@ -33,6 +33,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_browser_private.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -329,7 +330,9 @@ void EventRouter::ObserveFileSystemEvents() {
                                                                 FROM_HERE);
   }
 
-  mounted_disk_monitor_.reset(new MountedDiskMonitor());
+  mounted_disk_monitor_.reset(new MountedDiskMonitor(
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient(),
+      disk_mount_manager));
 
   pref_change_registrar_->Init(profile_->GetPrefs());
 
