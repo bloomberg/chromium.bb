@@ -32,7 +32,7 @@ void FileBrowserPrivateCustomBindings::GetFileSystem(
   DCHECK(args[0]->IsString());
   DCHECK(args[1]->IsString());
   std::string name(*v8::String::Utf8Value(args[0]));
-  std::string path(*v8::String::Utf8Value(args[1]));
+  std::string root_url(*v8::String::Utf8Value(args[1]));
 
   WebKit::WebFrame* webframe =
       WebKit::WebFrame::frameForContext(context()->v8_context());
@@ -41,7 +41,7 @@ void FileBrowserPrivateCustomBindings::GetFileSystem(
       webframe->createFileSystem(
           WebKit::WebFileSystemTypeExternal,
           WebKit::WebString::fromUTF8(name.c_str()),
-          WebKit::WebString::fromUTF8(path.c_str())));
+          WebKit::WebString::fromUTF8(root_url.c_str())));
 }
 
 }  // namespace extensions

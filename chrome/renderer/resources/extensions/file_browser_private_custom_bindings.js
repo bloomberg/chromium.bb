@@ -19,7 +19,7 @@ binding.registerCustomHook(function(bindingsAPI) {
                                  function(name, request, response) {
     var fs = null;
     if (response && !response.error)
-      fs = GetFileSystem(response.name, response.path);
+      fs = GetFileSystem(response.name, response.root_url);
     if (request.callback)
       request.callback(fs);
     request.callback = null;

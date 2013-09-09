@@ -189,7 +189,7 @@ void FileBrowserPrivateRequestFileSystemFunction::DidOpenFileSystem(
     scoped_refptr<fileapi::FileSystemContext> file_system_context,
     base::PlatformFileError result,
     const std::string& name,
-    const GURL& root_path) {
+    const GURL& root_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (result != base::PLATFORM_FILE_OK) {
@@ -224,7 +224,7 @@ void FileBrowserPrivateRequestFileSystemFunction::DidOpenFileSystem(
   DictionaryValue* dict = new DictionaryValue();
   SetResult(dict);
   dict->SetString("name", name);
-  dict->SetString("path", root_path.spec());
+  dict->SetString("root_url", root_url.spec());
   dict->SetInteger("error", drive::FILE_ERROR_OK);
   SendResponse(true);
 }
