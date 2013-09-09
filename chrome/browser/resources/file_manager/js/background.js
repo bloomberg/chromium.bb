@@ -390,7 +390,7 @@ function reopenFileManagers() {
  * @param {Object} details Details object.
  */
 function onExecute(action, details) {
-  var urls = details.entries.map(function(e) { return e.toURL() });
+  var urls = details.entries.map(function(e) { return e.toURL(); });
 
   switch (action) {
     case 'play':
@@ -402,24 +402,46 @@ function onExecute(action, details) {
       break;
 
     default:
-      // Every other action opens a Files app window.
-      var appState = {
-        params: {
-          action: action
-        },
-        defaultPath: details.entries[0].fullPath,
-      };
-      // For mounted devices just focus any Files.app window. The mounted
-      // volume will appear on the navigation list.
-      var type = action == 'auto-open' ? LaunchType.FOCUS_ANY_OR_CREATE :
-          LaunchType.FOCUS_SAME_OR_CREATE;
-      launchFileManager(appState,
-                        undefined,  // App ID.
-                        type);
+      var steps = new AsyncUtil.Queue();
+      var launchEnable = null;
+      steps.run(function(nextStep) {
+        // If it is not auto-open (triggered by mounting external devices), we
+        // always launch Files.app.
+        if (action != 'auto-open') {
+          launchEnable = true;
+          nextStep();
+          return;
+        }
+        // If the disable-default-apps flag is on, Files.app is not opened
+        // automatically on device mount because it obstculs the manual test.
+        chrome.commandLinePrivate.hasSwitch('disable-default-apps',
+                                            function(flag) {
+          launchEnable = !flag;
+          nextStep();
+        });
+      });
+      steps.run(function() {
+        if (!launchEnable)
+          return;
+
+        // Every other action opens a Files app window.
+        var appState = {
+          params: {
+            action: action
+          },
+          defaultPath: details.entries[0].fullPath
+        };
+        // For mounted devices just focus any Files.app window. The mounted
+        // volume will appear on the navigation list.
+        var type = action == 'auto-open' ? LaunchType.FOCUS_ANY_OR_CREATE :
+            LaunchType.FOCUS_SAME_OR_CREATE;
+        launchFileManager(appState,
+                          undefined,  // App ID.
+                          type);
+      });
       break;
   }
 }
-
 
 /**
  * @return {Object} Audio player window create options.
