@@ -249,7 +249,7 @@ def RunWebkitLayoutTests(options):
 
   if options.factory_properties.get('archive_webkit_results', False):
     bb_annotations.PrintNamedStep('archive_webkit_results')
-    gs_bucket = 'https://storage.googleapis.com/chromium-layout-test-archives'
+    gs_bucket = 'gs://chromium-layout-test-archives'
     RunCmd([os.path.join(SLAVE_SCRIPTS_DIR, 'chromium',
                          'archive_layout_test_results.py'),
         '--results-dir', '../layout-test-results',
