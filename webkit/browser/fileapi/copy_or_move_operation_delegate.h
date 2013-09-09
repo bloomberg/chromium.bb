@@ -23,6 +23,8 @@ class CopyOrMoveFileValidator;
 class CopyOrMoveOperationDelegate
     : public RecursiveOperationDelegate {
  public:
+  class CopyOrMoveImpl;
+
   enum OperationType {
     OPERATION_COPY,
     OPERATION_MOVE
@@ -45,60 +47,23 @@ class CopyOrMoveOperationDelegate
                                 const StatusCallback& callback) OVERRIDE;
 
  private:
-  struct URLPair {
-    URLPair(const FileSystemURL& src, const FileSystemURL& dest)
-        : src(src),
-          dest(dest) {
-    }
-    FileSystemURL src;
-    FileSystemURL dest;
-  };
-
   void DidTryCopyOrMoveFile(base::PlatformFileError error);
   void DidTryRemoveDestRoot(base::PlatformFileError error);
-  void CopyOrMoveFile(
-      const URLPair& url_pair,
-      const StatusCallback& callback);
-  void DidCreateSnapshot(
-      const URLPair& url_pair,
-      const StatusCallback& callback,
-      base::PlatformFileError error,
-      const base::PlatformFileInfo& file_info,
-      const base::FilePath& platform_path,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
-  void DidValidateFile(
-      const FileSystemURL& dest,
-      const StatusCallback& callback,
-      const base::PlatformFileInfo& file_info,
-      const base::FilePath& platform_path,
-      base::PlatformFileError error);
-  void DidFinishRecursiveCopyDir(
-      const FileSystemURL& src,
-      const StatusCallback& callback,
-      base::PlatformFileError error);
-  void DidFinishCopy(
-      const URLPair& url_pair,
-      const StatusCallback& callback,
-      base::PlatformFileError error);
-  void DoPostWriteValidation(
-      const URLPair& url_pair,
-      const StatusCallback& callback,
-      base::PlatformFileError error,
-      const base::PlatformFileInfo& file_info,
-      const base::FilePath& platform_path,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
-  void DidPostWriteValidation(
-      const URLPair& url_pair,
-      const StatusCallback& callback,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref,
-      base::PlatformFileError error);
-  void DidRemoveSourceForMove(
-      const StatusCallback& callback,
-      base::PlatformFileError error);
-  void DidRemoveDestForError(
-      base::PlatformFileError prior_error,
-      const StatusCallback& callback,
-      base::PlatformFileError error);
+  void DidFinishRecursiveCopyDir(const FileSystemURL& src,
+                                 const StatusCallback& callback,
+                                 base::PlatformFileError error);
+  void DidRemoveSourceForMove(const StatusCallback& callback,
+                              base::PlatformFileError error);
+
+  // Starts Copy (or Move based on |operation_type_|) from |src_url| to
+  // |dest_url|. Upon completion |callback| is invoked.
+  // This can be run for multiple files in parallel.
+  void CopyOrMoveFile(const FileSystemURL& src_url,
+                      const FileSystemURL& dest_url,
+                      const StatusCallback& callback);
+  void DidCopyOrMoveFile(CopyOrMoveImpl* impl,
+                         const StatusCallback& callback,
+                         base::PlatformFileError error);
 
   FileSystemURL CreateDestURL(const FileSystemURL& src_url) const;
 
@@ -108,10 +73,7 @@ class CopyOrMoveOperationDelegate
   OperationType operation_type_;
   StatusCallback callback_;
 
-  scoped_refptr<webkit_blob::ShareableFileReference> current_file_ref_;
-
-  scoped_ptr<CopyOrMoveFileValidator> validator_;
-
+  std::set<CopyOrMoveImpl*> running_copy_set_;
   base::WeakPtrFactory<CopyOrMoveOperationDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyOrMoveOperationDelegate);
