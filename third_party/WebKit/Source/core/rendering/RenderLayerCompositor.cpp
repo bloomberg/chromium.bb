@@ -1193,6 +1193,13 @@ void RenderLayerCompositor::frameViewDidChangeSize()
     }
 }
 
+enum AcceleratedFixedRootBackgroundHistogramBuckets {
+    ScrolledMainFrameBucket = 0,
+    ScrolledMainFrameWithAcceleratedFixedRootBackground = 1,
+    ScrolledMainFrameWithUnacceleratedFixedRootBackground = 2,
+    AcceleratedFixedRootBackgroundHistogramMax = 3
+};
+
 void RenderLayerCompositor::frameViewDidScroll()
 {
     FrameView* frameView = m_renderView->frameView();
@@ -1216,6 +1223,20 @@ void RenderLayerCompositor::frameViewDidScroll()
         m_scrollLayer->setPosition(-frameView->minimumScrollPosition());
     else
         m_scrollLayer->setPosition(-scrollPosition);
+
+
+    HistogramSupport::histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
+        ScrolledMainFrameBucket,
+        AcceleratedFixedRootBackgroundHistogramMax);
+
+    if (!m_renderView->rootBackgroundIsEntirelyFixed())
+        return;
+
+    HistogramSupport::histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
+        !!fixedRootBackgroundLayer()
+            ? ScrolledMainFrameWithAcceleratedFixedRootBackground
+            : ScrolledMainFrameWithUnacceleratedFixedRootBackground,
+        AcceleratedFixedRootBackgroundHistogramMax);
 }
 
 void RenderLayerCompositor::frameViewDidLayout()
