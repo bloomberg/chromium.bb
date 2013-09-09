@@ -391,6 +391,7 @@ void TranslateHelper::CheckTranslateStatus() {
 
   // First check if there was an error.
   if (HasTranslationFailed()) {
+    // TODO(toyoshim): Check |errorCode| of translate.js and notify it here.
     NotifyBrowserTranslationFailed(TranslateErrors::TRANSLATION_ERROR);
     return;  // There was an error.
   }

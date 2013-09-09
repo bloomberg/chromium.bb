@@ -7,7 +7,7 @@
 // language to another.
 // It should be included in the page before the Translate Element script.
 
-var cr = {};
+var cr = cr || {};
 
 /**
  * An object to provide functions to interact with the Translate library.
@@ -27,12 +27,36 @@ cr.googleTranslate = (function() {
   var libReady = false;
 
   /**
-   * A flag representing if the Translate Element library returns error while
-   * performing translation. Also it is set to true when the Translate Element
-   * library is not initialized in 600 msec from the library is loaded.
-   * @type {boolean}
+   * Error definitions for |errorCode|. See chrome/common/translate_errors.h
+   * to modify the definition.
+   * @const
    */
-  var error = false;
+  var ERROR = {
+    'NONE': 0,
+    'INITIALIZATION_ERROR': 2,
+    'UNSUPPORTED_LANGUAGE': 4,
+    'TRANSLATION_ERROR': 6,
+    'TRANSLATION_TIMEOUT': 7,
+    'UNEXPECTED_SCRIPT_ERROR': 8,
+    'BAD_ORIGIN': 9,
+    'SCRIPT_LOAD_ERROR': 10
+  };
+
+  /**
+   * Error code map from te.dom.DomTranslator.Error to |errorCode|.
+   * See also go/dom_translator.js in google3.
+   * @const
+   */
+  var TRANSLATE_ERROR_TO_ERROR_CODE_MAP = {
+    0: ERROR['NONE'],
+    1: ERROR['TRANSLATION_ERROR'],
+    2: ERROR['UNSUPPORTED_LANGUAGE']
+  };
+
+  /**
+   * An error code happened in translate.js and the Translate Element library.
+   */
+  var errorCode = ERROR['NONE'];
 
   /**
    * A flag representing if the Translate Element has finished a translation.
@@ -85,7 +109,7 @@ cr.googleTranslate = (function() {
       return;
     }
     if (checkReadyCount++ > 5) {
-      error = true;
+      errorCode = ERROR['TRANSLATION_TIMEOUT'];
       return;
     }
     setTimeout(checkLibReady, 100);
@@ -95,8 +119,12 @@ cr.googleTranslate = (function() {
     finished = opt_finished;
     // opt_error can be 'undefined'.
     if (typeof opt_error == 'boolean' && opt_error) {
-      error = true;
+      // TODO(toyoshim): Remove boolean case once a server is updated.
+      errorCode = ERROR['TRANSLATION_ERROR'];
       // We failed to translate, restore so the page is in a consistent state.
+      lib.restore();
+    } else if (typeof opt_error == 'number' && opt_error != 0) {
+      errorCode = TRANSLATE_ERROR_TO_ERROR_CODE_MAP[opt_error];
       lib.restore();
     }
     if (finished)
@@ -128,7 +156,15 @@ cr.googleTranslate = (function() {
      * @type {boolean}
      */
     get error() {
-      return error;
+      return errorCode != ERROR['NONE'];
+    },
+
+    /**
+     * Returns a number to represent error type.
+     * @type {number}
+     */
+    get errorCode() {
+      return errorCode;
     },
 
     /**
@@ -140,7 +176,7 @@ cr.googleTranslate = (function() {
      * @type {boolean}
      */
     get sourceLang() {
-      if (!libReady || !finished || error)
+      if (!libReady || !finished || errorCode != ERROR['NONE'])
         return '';
       if (!lib.getDetectedLanguage)
         return 'und'; // defined as chrome::kUnknownLanguageCode in C++ world.
@@ -181,8 +217,8 @@ cr.googleTranslate = (function() {
 
     /**
      * Translate the page contents.  Note that the translation is asynchronous.
-     * You need to regularly check the state of |finished| and |error| to know
-     * if the translation finished or if there was an error.
+     * You need to regularly check the state of |finished| and |errorCode| to
+     * know if the translation finished or if there was an error.
      * @param {string} originalLang The language the page is in.
      * @param {string} targetLang The language the page should be translated to.
      * @return {boolean} False if the translate library was not ready, in which
@@ -190,7 +226,7 @@ cr.googleTranslate = (function() {
      */
     translate: function(originalLang, targetLang) {
       finished = false;
-      error = false;
+      errorCode = ERROR['NONE'];
       if (!libReady)
         return false;
       startTime = performance.now();
@@ -198,8 +234,7 @@ cr.googleTranslate = (function() {
         lib.translatePage(originalLang, targetLang, onTranslateProgress);
       } catch (err) {
         console.error('Translate: ' + err);
-        // TODO(toyoshim): Check if it shows an error notification.
-        error = true;
+        errorCode = ERROR['UNEXPECTED_SCRIPT_ERROR'];
         return false;
       }
       return true;
@@ -227,7 +262,7 @@ cr.googleTranslate = (function() {
         });
         translateApiKey = undefined;
       } catch (err) {
-        error = true;
+        errorCode = ERROR['INITIALIZATION_ERROR'];
         translateApiKey = undefined;
         return;
       }
@@ -258,16 +293,19 @@ cr.googleTranslate = (function() {
     onLoadJavascript: function(url) {
       // securityOrigin is predefined by translate_script.cc.
       if (url.indexOf(securityOrigin) != 0) {
-        // TODO(toyoshim): Handle this error to show an error notification.
         console.error('Translate: ' + url + ' is not allowed to load.');
-        error = true;
+        errorCode = ERROR['BAD_ORIGIN'];
         return;
       }
       var xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
       xhr.onreadystatechange = function() {
-        if (this.readyState != this.DONE || this.status != 200)
+        if (this.readyState != this.DONE)
           return;
+        if (this.status != 200) {
+          errorCode = ERROR['SCRIPT_LOAD_ERROR'];
+          return;
+        }
         eval(this.responseText);
       }
       xhr.send();

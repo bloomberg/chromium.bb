@@ -115,6 +115,10 @@
         4: 'Unsupported Language',
         5: 'Identical Languages',
         6: 'Translation Error',
+        7: 'Translation Timeout',
+        8: 'Unexpected Script Error',
+        9: 'Bad Origin',
+        10: 'Script Load Error',
       };
 
       if (error < 0 || errorStrs.length <= error) {
