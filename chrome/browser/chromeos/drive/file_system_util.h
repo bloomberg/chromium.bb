@@ -30,19 +30,6 @@ class ResourceEntry;
 
 namespace util {
 
-// Path constants.
-
-// Name of the directory used to store metadata.
-const base::FilePath::CharType kMetadataDirectory[] = FILE_PATH_LITERAL("meta");
-
-// Name of the directory used to store cached files.
-const base::FilePath::CharType kCacheFileDirectory[] =
-    FILE_PATH_LITERAL("files");
-
-// Name of the directory used to store temporary files.
-const base::FilePath::CharType kTemporaryFileDirectory[] =
-    FILE_PATH_LITERAL("tmp");
-
 // Special resource IDs introduced to manage pseudo directory tree locally.
 // These strings are supposed to be different from any resource ID used on the
 // server, and are never sent to the server. Practical resource IDs used so far
@@ -158,7 +145,8 @@ base::FilePath GetCacheRootPath(Profile* profile);
 // "files" directory (see crbug.com/248905).
 // TODO(hashimoto): Remove this function at some point.
 void MigrateCacheFilesFromOldDirectories(
-    const base::FilePath& cache_root_directory);
+    const base::FilePath& cache_root_directory,
+    const base::FilePath::StringType& cache_file_directory_name);
 
 // Callback type for PrepareWritableFileAndRun.
 typedef base::Callback<void (FileError, const base::FilePath& path)>

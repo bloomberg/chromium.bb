@@ -323,7 +323,8 @@ std::string NormalizeFileName(const std::string& input) {
 }
 
 void MigrateCacheFilesFromOldDirectories(
-    const base::FilePath& cache_root_directory) {
+    const base::FilePath& cache_root_directory,
+    const base::FilePath::StringType& cache_file_directory_name) {
   const base::FilePath persistent_directory =
       cache_root_directory.AppendASCII("persistent");
   const base::FilePath tmp_directory =
@@ -332,7 +333,7 @@ void MigrateCacheFilesFromOldDirectories(
     return;
 
   const base::FilePath cache_file_directory =
-      cache_root_directory.Append(kCacheFileDirectory);
+      cache_root_directory.Append(cache_file_directory_name);
 
   // Move all files inside "persistent" to "files".
   MoveAllFilesFromDirectory(persistent_directory, cache_file_directory);

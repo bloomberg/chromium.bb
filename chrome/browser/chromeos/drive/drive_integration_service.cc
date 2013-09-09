@@ -47,6 +47,17 @@ using content::BrowserThread;
 namespace drive {
 namespace {
 
+// Name of the directory used to store metadata.
+const base::FilePath::CharType kMetadataDirectory[] = FILE_PATH_LITERAL("meta");
+
+// Name of the directory used to store cached files.
+const base::FilePath::CharType kCacheFileDirectory[] =
+    FILE_PATH_LITERAL("files");
+
+// Name of the directory used to store temporary files.
+const base::FilePath::CharType kTemporaryFileDirectory[] =
+    FILE_PATH_LITERAL("tmp");
+
 // Returns a user agent string used for communicating with the Drive backend,
 // both WAPI and Drive API.  The user agent looks like:
 //
@@ -84,11 +95,11 @@ FileError InitializeMetadata(
     internal::FileCache* cache,
     internal::ResourceMetadata* resource_metadata) {
   if (!file_util::CreateDirectory(cache_root_directory.Append(
-          util::kMetadataDirectory)) ||
+          kMetadataDirectory)) ||
       !file_util::CreateDirectory(cache_root_directory.Append(
-          util::kCacheFileDirectory)) ||
+          kCacheFileDirectory)) ||
       !file_util::CreateDirectory(cache_root_directory.Append(
-          util::kTemporaryFileDirectory))) {
+          kTemporaryFileDirectory))) {
     LOG(WARNING) << "Failed to create directories.";
     return FILE_ERROR_FAILED;
   }
@@ -96,12 +107,13 @@ FileError InitializeMetadata(
   // Change permissions of cache file directory to u+rwx,og+x (711) in order to
   // allow archive files in that directory to be mounted by cros-disks.
   file_util::SetPosixFilePermissions(
-      cache_root_directory.Append(util::kCacheFileDirectory),
+      cache_root_directory.Append(kCacheFileDirectory),
       file_util::FILE_PERMISSION_USER_MASK |
       file_util::FILE_PERMISSION_EXECUTE_BY_GROUP |
       file_util::FILE_PERMISSION_EXECUTE_BY_OTHERS);
 
-  util::MigrateCacheFilesFromOldDirectories(cache_root_directory);
+  util::MigrateCacheFilesFromOldDirectories(cache_root_directory,
+                                            kCacheFileDirectory);
 
   if (!metadata_storage->Initialize()) {
     LOG(WARNING) << "Failed to initialize the metadata storage.";
@@ -165,11 +177,11 @@ DriveIntegrationService::DriveIntegrationService(
       drive_service_.get(),
       blocking_task_runner_.get()));
   metadata_storage_.reset(new internal::ResourceMetadataStorage(
-      cache_root_directory_.Append(util::kMetadataDirectory),
+      cache_root_directory_.Append(kMetadataDirectory),
       blocking_task_runner_.get()));
   cache_.reset(new internal::FileCache(
       metadata_storage_.get(),
-      cache_root_directory_.Append(util::kCacheFileDirectory),
+      cache_root_directory_.Append(kCacheFileDirectory),
       blocking_task_runner_.get(),
       NULL /* free_disk_space_getter */));
   drive_app_registry_.reset(new DriveAppRegistry(scheduler_.get()));
@@ -185,7 +197,7 @@ DriveIntegrationService::DriveIntegrationService(
           scheduler_.get(),
           resource_metadata_.get(),
           blocking_task_runner_.get(),
-          cache_root_directory_.Append(util::kTemporaryFileDirectory)));
+          cache_root_directory_.Append(kTemporaryFileDirectory)));
   download_handler_.reset(new DownloadHandler(file_system()));
   debug_info_collector_.reset(
       new DebugInfoCollector(file_system(), cache_.get()));
@@ -359,7 +371,7 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
       BrowserContext::GetDownloadManager(profile_) : NULL;
   download_handler_->Initialize(
       download_manager,
-      cache_root_directory_.Append(util::kTemporaryFileDirectory));
+      cache_root_directory_.Append(kTemporaryFileDirectory));
 
   // Register for Google Drive invalidation notifications.
   DriveNotificationManager* drive_notification_manager =

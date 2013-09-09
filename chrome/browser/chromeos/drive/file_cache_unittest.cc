@@ -62,10 +62,11 @@ class FileCacheTestOnUIThread : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(file_util::CreateDirectory(
-        temp_dir_.path().Append(util::kMetadataDirectory)));
-    ASSERT_TRUE(file_util::CreateDirectory(
-        temp_dir_.path().Append(util::kCacheFileDirectory)));
+    const base::FilePath metadata_dir = temp_dir_.path().AppendASCII("meta");
+    const base::FilePath cache_dir = temp_dir_.path().AppendASCII("files");
+
+    ASSERT_TRUE(file_util::CreateDirectory(metadata_dir));
+    ASSERT_TRUE(file_util::CreateDirectory(cache_dir));
 
     ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
                                                     &dummy_file_path_));
@@ -77,7 +78,8 @@ class FileCacheTestOnUIThread : public testing::Test {
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
     metadata_storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), blocking_task_runner_.get()));
+        metadata_dir,
+        blocking_task_runner_.get()));
 
     bool success = false;
     base::PostTaskAndReplyWithResult(
@@ -91,7 +93,7 @@ class FileCacheTestOnUIThread : public testing::Test {
 
     cache_.reset(new FileCache(
         metadata_storage_.get(),
-        temp_dir_.path().Append(util::kCacheFileDirectory),
+        cache_dir,
         blocking_task_runner_.get(),
         fake_free_disk_space_getter_.get()));
 
@@ -798,21 +800,22 @@ class FileCacheTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(file_util::CreateDirectory(
-        temp_dir_.path().Append(util::kMetadataDirectory)));
-    ASSERT_TRUE(file_util::CreateDirectory(
-        temp_dir_.path().Append(util::kCacheFileDirectory)));
+    const base::FilePath metadata_dir = temp_dir_.path().AppendASCII("meta");
+    const base::FilePath cache_dir = temp_dir_.path().AppendASCII("files");
+
+    ASSERT_TRUE(file_util::CreateDirectory(metadata_dir));
+    ASSERT_TRUE(file_util::CreateDirectory(cache_dir));
 
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     metadata_storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path().Append(util::kMetadataDirectory),
+        metadata_dir,
         base::MessageLoopProxy::current().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
     cache_.reset(new FileCache(
         metadata_storage_.get(),
-        temp_dir_.path().Append(util::kCacheFileDirectory),
+        cache_dir,
         base::MessageLoopProxy::current().get(),
         fake_free_disk_space_getter_.get()));
     ASSERT_TRUE(cache_->Initialize());
@@ -833,14 +836,13 @@ class FileCacheTest : public testing::Test {
 
 TEST_F(FileCacheTest, ScanCacheFile) {
   // Set up files in the cache directory.
-  const base::FilePath file_directory =
-      temp_dir_.path().Append(util::kCacheFileDirectory);
+  const base::FilePath file_directory = temp_dir_.path().AppendASCII("files");
   ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
       file_directory.AppendASCII("id_foo"), "foo"));
 
   // Remove the existing DB.
   const base::FilePath metadata_directory =
-      temp_dir_.path().Append(util::kMetadataDirectory);
+      temp_dir_.path().AppendASCII("meta");
   ASSERT_TRUE(base::DeleteFile(metadata_directory, true /* recursive */));
 
   // Create a new cache and initialize it.
@@ -849,7 +851,7 @@ TEST_F(FileCacheTest, ScanCacheFile) {
   ASSERT_TRUE(metadata_storage_->Initialize());
 
   cache_.reset(new FileCache(metadata_storage_.get(),
-                             temp_dir_.path().Append(util::kCacheFileDirectory),
+                             file_directory,
                              base::MessageLoopProxy::current().get(),
                              fake_free_disk_space_getter_.get()));
   ASSERT_TRUE(cache_->Initialize());
@@ -902,8 +904,7 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
 }
 
 TEST_F(FileCacheTest, RenameCacheFilesToNewFormat) {
-  const base::FilePath file_directory =
-      temp_dir_.path().Append(util::kCacheFileDirectory);
+  const base::FilePath file_directory = temp_dir_.path().AppendASCII("files");
 
   // File with an old style "<ID>.<MD5>" name.
   ASSERT_TRUE(google_apis::test_util::WriteStringToFile(

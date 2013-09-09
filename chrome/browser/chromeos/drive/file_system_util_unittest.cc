@@ -188,7 +188,7 @@ TEST(FileSystemUtilTest, MigrateCacheFilesFromOldDirectories) {
       temp_dir.path().AppendASCII("persistent");
   const base::FilePath tmp_directory = temp_dir.path().AppendASCII("tmp");
   const base::FilePath files_directory =
-      temp_dir.path().Append(kCacheFileDirectory);
+      temp_dir.path().AppendASCII("files");
 
   // Prepare directories.
   ASSERT_TRUE(file_util::CreateDirectory(persistent_directory));
@@ -202,7 +202,8 @@ TEST(FileSystemUtilTest, MigrateCacheFilesFromOldDirectories) {
       tmp_directory.AppendASCII("bar.123"), "bar"));
 
   // Migrate.
-  MigrateCacheFilesFromOldDirectories(temp_dir.path());
+  MigrateCacheFilesFromOldDirectories(temp_dir.path(),
+                                      FILE_PATH_LITERAL("files"));
 
   EXPECT_FALSE(base::PathExists(persistent_directory));
   EXPECT_TRUE(base::PathExists(files_directory.AppendASCII("foo.abc")));
