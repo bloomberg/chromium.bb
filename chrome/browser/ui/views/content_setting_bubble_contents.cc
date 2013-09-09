@@ -406,7 +406,7 @@ void ContentSettingBubbleContents::Init() {
     const int kSingleColumnRightSetId = 1;
     views::ColumnSet* right_column_set =
         layout->AddColumnSet(kSingleColumnRightSetId);
-    right_column_set->AddColumn(GridLayout::TRAILING, GridLayout::FILL, 1,
+    right_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                                 GridLayout::USE_PREF, 0, 0);
 
     never_button_ = new views::LabelButton(
