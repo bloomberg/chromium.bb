@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_system.idl modified Thu May  2 16:44:38 2013. */
+/* From ppb_file_system.idl modified Thu Jun 13 14:30:40 2013. */
 
 #ifndef PPAPI_C_PPB_FILE_SYSTEM_H_
 #define PPAPI_C_PPB_FILE_SYSTEM_H_
@@ -66,9 +66,7 @@ struct PPB_FileSystem_1_0 {
    * @param[in] expected_size The expected size of the file system. Note that
    * this does not request quota; to do that, you must either invoke
    * requestQuota from JavaScript:
-
-
-    * http://www.html5rocks.com/en/tutorials/file/filesystem/#toc-requesting-quota
+   * http://www.html5rocks.com/en/tutorials/file/filesystem/#toc-requesting-quota
    * or set the unlimitedStorage permission for Chrome Web Store apps:
    * http://code.google.com/chrome/extensions/manifest.html#permissions
    *

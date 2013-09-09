@@ -102,6 +102,7 @@
 #include "ppapi/c/private/ppb_network_list_private.h"
 #include "ppapi/c/private/ppb_network_monitor_private.h"
 #include "ppapi/c/private/ppb_output_protection_private.h"
+#include "ppapi/c/private/ppb_platform_verification_private.h"
 #include "ppapi/c/private/ppb_talk_private.h"
 #include "ppapi/c/private/ppb_tcp_server_socket_private.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
@@ -211,6 +212,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkMonitor_Private_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_PlatformVerification_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_2_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_1;
@@ -3152,6 +3154,30 @@ static int32_t Pnacl_M31_PPB_OutputProtection_Private_EnableProtection(PP_Resour
 
 /* End wrapper methods for PPB_OutputProtection_Private_0_1 */
 
+/* Begin wrapper methods for PPB_PlatformVerification_Private_0_1 */
+
+static PP_Resource Pnacl_M31_PPB_PlatformVerification_Private_Create(PP_Instance instance) {
+  const struct PPB_PlatformVerification_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_PlatformVerification_Private_0_1.real_iface;
+  return iface->Create(instance);
+}
+
+static PP_Bool Pnacl_M31_PPB_PlatformVerification_Private_IsPlatformVerification(PP_Resource resource) {
+  const struct PPB_PlatformVerification_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_PlatformVerification_Private_0_1.real_iface;
+  return iface->IsPlatformVerification(resource);
+}
+
+static PP_Bool Pnacl_M31_PPB_PlatformVerification_Private_CanChallengePlatform(PP_Resource instance) {
+  const struct PPB_PlatformVerification_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_PlatformVerification_Private_0_1.real_iface;
+  return iface->CanChallengePlatform(instance);
+}
+
+static int32_t Pnacl_M31_PPB_PlatformVerification_Private_ChallengePlatform(PP_Resource instance, struct PP_Var* service_id, struct PP_Var* challenge, struct PP_Var* signed_data, struct PP_Var* signed_data_signature, struct PP_Var* platform_key_certificate, struct PP_CompletionCallback* callback) {
+  const struct PPB_PlatformVerification_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_PlatformVerification_Private_0_1.real_iface;
+  return iface->ChallengePlatform(instance, *service_id, *challenge, signed_data, signed_data_signature, platform_key_certificate, *callback);
+}
+
+/* End wrapper methods for PPB_PlatformVerification_Private_0_1 */
+
 /* Begin wrapper methods for PPB_Talk_Private_1_0 */
 
 static PP_Resource Pnacl_M19_PPB_Talk_Private_Create(PP_Instance instance) {
@@ -4833,6 +4859,13 @@ struct PPB_OutputProtection_Private_0_1 Pnacl_Wrappers_PPB_OutputProtection_Priv
     .EnableProtection = (int32_t (*)(PP_Resource resource, uint32_t desired_protection_mask, struct PP_CompletionCallback callback))&Pnacl_M31_PPB_OutputProtection_Private_EnableProtection
 };
 
+struct PPB_PlatformVerification_Private_0_1 Pnacl_Wrappers_PPB_PlatformVerification_Private_0_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M31_PPB_PlatformVerification_Private_Create,
+    .IsPlatformVerification = (PP_Bool (*)(PP_Resource resource))&Pnacl_M31_PPB_PlatformVerification_Private_IsPlatformVerification,
+    .CanChallengePlatform = (PP_Bool (*)(PP_Resource instance))&Pnacl_M31_PPB_PlatformVerification_Private_CanChallengePlatform,
+    .ChallengePlatform = (int32_t (*)(PP_Resource instance, struct PP_Var service_id, struct PP_Var challenge, struct PP_Var* signed_data, struct PP_Var* signed_data_signature, struct PP_Var* platform_key_certificate, struct PP_CompletionCallback callback))&Pnacl_M31_PPB_PlatformVerification_Private_ChallengePlatform
+};
+
 struct PPB_Talk_Private_1_0 Pnacl_Wrappers_PPB_Talk_Private_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M19_PPB_Talk_Private_Create,
     .GetPermission = (int32_t (*)(PP_Resource talk_resource, struct PP_CompletionCallback callback))&Pnacl_M19_PPB_Talk_Private_GetPermission
@@ -5506,6 +5539,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_OutputProtection_Private_
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_PlatformVerification_Private_0_1 = {
+  .iface_macro = PPB_PLATFORMVERIFICATION_PRIVATE_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_PlatformVerification_Private_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_1_0 = {
   .iface_macro = PPB_TALK_PRIVATE_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Talk_Private_1_0,
@@ -5702,6 +5741,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_NetworkList_Private_0_3,
   &Pnacl_WrapperInfo_PPB_NetworkMonitor_Private_0_3,
   &Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1,
+  &Pnacl_WrapperInfo_PPB_PlatformVerification_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Talk_Private_1_0,
   &Pnacl_WrapperInfo_PPB_Talk_Private_2_0,
   &Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_1,
