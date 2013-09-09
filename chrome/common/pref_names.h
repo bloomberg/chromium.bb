@@ -949,8 +949,6 @@ extern const char kEnableDRM[];
 
 extern const char kWatchdogExtensionActive[];
 
-extern const char kProfilePreferenceHashes[];
-
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

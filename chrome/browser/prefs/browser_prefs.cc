@@ -52,7 +52,6 @@
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/prefs/pref_metrics_service.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
@@ -218,7 +217,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   MetricsLog::RegisterPrefs(registry);
   MetricsService::RegisterPrefs(registry);
   metrics::CachingPermutedEntropyProvider::RegisterPrefs(registry);
-  PrefMetricsService::RegisterPrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
   ProfileInfoCache::RegisterPrefs(registry);
   profiles::RegisterPrefs(registry);
