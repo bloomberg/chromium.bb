@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
 #include "chrome/browser/notifications/notification.h"
@@ -32,6 +33,7 @@ const int kTenMinutesInSeconds = 600;
 const char kPrivetInfoKeyUptime[] = "uptime";
 const char kPrivetNotificationIDPrefix[] = "privet_notification:";
 const char kPrivetNotificationOriginUrl[] = "chrome://devices";
+const int kStartDelaySeconds = 30;
 }
 
 PrivetNotificationsListener::PrivetNotificationsListener(
@@ -150,9 +152,11 @@ PrivetNotificationService::PrivetNotificationService(
     NotificationUIManager* notification_manager)
     : profile_(profile),
       notification_manager_(notification_manager) {
-  base::MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&PrivetNotificationService::Start, AsWeakPtr()));
+      base::Bind(&PrivetNotificationService::Start, AsWeakPtr()),
+      base::TimeDelta::FromSeconds(kStartDelaySeconds +
+                                   base::RandInt(0, kStartDelaySeconds/4)));
 }
 
 PrivetNotificationService::~PrivetNotificationService() {
