@@ -235,12 +235,11 @@ void UserCloudPolicyManagerChromeOS::OnRegistrationStateChanged(
 void UserCloudPolicyManagerChromeOS::OnClientError(
     CloudPolicyClient* cloud_policy_client) {
   DCHECK_EQ(client(), cloud_policy_client);
-  CancelWaitForPolicyFetch();
-
   if (wait_for_policy_fetch_) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(kUMAInitialFetchClientError,
                                 cloud_policy_client->status());
   }
+  CancelWaitForPolicyFetch();
 }
 
 void UserCloudPolicyManagerChromeOS::OnComponentCloudPolicyRefreshNeeded() {
@@ -306,7 +305,6 @@ void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
 
 void UserCloudPolicyManagerChromeOS::OnInitialPolicyFetchComplete(
     bool success) {
-
   const base::Time now = base::Time::Now();
   UMA_HISTOGRAM_TIMES(kUMAInitialFetchDelayPolicyFetch,
                       now - time_client_registered_);
