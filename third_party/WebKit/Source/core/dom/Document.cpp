@@ -2296,10 +2296,10 @@ HTMLHeadElement* Document::head()
     if (!de)
         return 0;
 
-    for (Node* e = de->firstChild(); e; e = e->nextSibling())
-        if (e->hasTagName(headTag))
-            return static_cast<HTMLHeadElement*>(e);
-
+    for (Node* node = de->firstChild(); node; node = node->nextSibling()) {
+        if (node->hasTagName(headTag))
+            return toHTMLHeadElement(node);
+    }
     return 0;
 }
 
