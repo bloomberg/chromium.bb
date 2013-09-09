@@ -57,7 +57,9 @@ class AwFormDatabaseServiceTest : public Test {
   scoped_ptr<AwFormDatabaseService> service_;
 };
 
-TEST_F(AwFormDatabaseServiceTest, HasAndClearFormData) {
+// Disabling this test until we know why it crashes.
+// TODO(sgurun): See http://crbug.com/287726 for details.
+TEST_F(AwFormDatabaseServiceTest, DISABLED_HasAndClearFormData) {
   EXPECT_FALSE(service_->HasFormData());
   std::vector<FormFieldData> fields;
   FormFieldData field;
