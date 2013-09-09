@@ -39,6 +39,7 @@
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderTheme.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
 #include "wtf/Vector.h"
 

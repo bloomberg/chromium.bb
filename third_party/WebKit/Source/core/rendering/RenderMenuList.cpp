@@ -45,6 +45,7 @@
 #include "core/rendering/RenderBR.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderTheme.h"
+#include "core/rendering/RenderView.h"
 
 using namespace std;
 

@@ -24,7 +24,6 @@
 #define RenderText_h
 
 #include "core/rendering/RenderObject.h"
-#include "core/rendering/RenderView.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

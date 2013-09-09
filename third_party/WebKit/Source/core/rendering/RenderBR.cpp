@@ -23,6 +23,7 @@
 #include "core/rendering/RenderBR.h"
 
 #include "core/dom/Document.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 

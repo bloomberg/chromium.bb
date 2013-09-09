@@ -29,7 +29,6 @@
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 
