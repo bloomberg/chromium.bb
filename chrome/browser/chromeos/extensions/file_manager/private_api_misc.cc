@@ -7,19 +7,28 @@
 #include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_installer.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/page_zoom.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "url/gurl.h"
 
 namespace extensions {
+
+namespace {
+const char kCWSScope[] = "https://www.googleapis.com/auth/chromewebstore";
+}
 
 FileBrowserPrivateLogoutUserFunction::FileBrowserPrivateLogoutUserFunction() {
 }
@@ -252,6 +261,63 @@ void FileBrowserPrivateInstallWebstoreItemFunction::OnInstallComplete(
   }
 
   SendResponse(success);
+}
+
+FileBrowserPrivateRequestWebStoreAccessTokenFunction::
+    FileBrowserPrivateRequestWebStoreAccessTokenFunction() {
+}
+
+FileBrowserPrivateRequestWebStoreAccessTokenFunction::
+    ~FileBrowserPrivateRequestWebStoreAccessTokenFunction() {
+}
+
+bool FileBrowserPrivateRequestWebStoreAccessTokenFunction::RunImpl() {
+  std::vector<std::string> scopes;
+  scopes.push_back(kCWSScope);
+
+  OAuth2TokenService* oauth_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
+  net::URLRequestContextGetter* url_request_context_getter =
+      g_browser_process->system_request_context();
+
+  if (!oauth_service) {
+    drive::util::Log(logging::LOG_ERROR,
+                     "CWS OAuth token fetch failed. OAuth2TokenService can't "
+                     "be retrived.");
+    SetResult(base::Value::CreateNullValue());
+    return false;
+  }
+
+  auth_service_.reset(new google_apis::AuthService(
+      oauth_service,
+      url_request_context_getter,
+      scopes));
+  auth_service_->StartAuthentication(base::Bind(
+      &FileBrowserPrivateRequestWebStoreAccessTokenFunction::
+          OnAccessTokenFetched,
+      this));
+
+  return true;
+}
+
+void FileBrowserPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
+    google_apis::GDataErrorCode code,
+    const std::string& access_token) {
+  if (code == google_apis::HTTP_SUCCESS) {
+    DCHECK(auth_service_->HasAccessToken());
+    DCHECK(access_token == auth_service_->access_token());
+    drive::util::Log(logging::LOG_INFO,
+                     "CWS OAuth token fetch succeeded. (token: %s)",
+                     access_token.c_str());
+    SetResult(new base::StringValue(access_token));
+    SendResponse(true);
+  } else {
+    drive::util::Log(logging::LOG_ERROR,
+                     "CWS OAuth token fetch failed. (GDataErrorCode: %s)",
+                     google_apis::GDataErrorCodeToString(code).c_str());
+    SetResult(base::Value::CreateNullValue());
+    SendResponse(false);
+  }
 }
 
 }  // namespace extensions

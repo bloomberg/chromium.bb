@@ -219,17 +219,16 @@ SuggestAppsDialog.prototype.authorizeRequest_ = function(e) {
  * @private
  */
 SuggestAppsDialog.prototype.retrieveAuthorizeToken_ = function(callback) {
-  // TODO(yoshiki): Share the access token with ShareDialog.
   if (this.accessToken_) {
     callback();
     return;
   }
 
   // Fetch or update the access token.
-  chrome.fileBrowserPrivate.requestAccessToken(
-      false,  // force_refresh
-      function(inAccessToken) {
-        this.accessToken_ = inAccessToken;
+  chrome.fileBrowserPrivate.requestWebStoreAccessToken(
+      function(accessToken) {
+        // In case of error, this.accessToken_ will be set to null.
+        this.accessToken_ = accessToken;
         callback();
       }.bind(this));
 };
@@ -256,6 +255,12 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
 
   // Makes it sure that the initialization is completed.
   this.initializationTask_.run(function() {
+    if (!this.accessToken_) {
+      this.state_ = SuggestAppsDialog.State.INITIALIZE_FAILED_CLOSING;
+      this.onHide_();
+      return;
+    }
+
     var title = str('SUGGEST_DIALOG_TITLE');
 
     // TODO(yoshiki): Remove this before ShareDialog launches.

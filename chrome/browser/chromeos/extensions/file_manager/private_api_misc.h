@@ -10,6 +10,11 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/chromeos/file_manager/zip_file_creator.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
+
+namespace google_apis {
+class AuthServiceInterface;
+}
 
 namespace extensions {
 
@@ -114,6 +119,26 @@ class FileBrowserPrivateInstallWebstoreItemFunction
 
  private:
   std::string webstore_item_id_;
+};
+
+class FileBrowserPrivateRequestWebStoreAccessTokenFunction
+    : public LoggedAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.requestWebStoreAccessToken",
+                             FILEBROWSERPRIVATE_REQUESTWEBSTOREACCESSTOKEN);
+
+  FileBrowserPrivateRequestWebStoreAccessTokenFunction();
+
+ protected:
+  virtual ~FileBrowserPrivateRequestWebStoreAccessTokenFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  scoped_ptr<google_apis::AuthServiceInterface> auth_service_;
+
+  void OnAccessTokenFetched(google_apis::GDataErrorCode code,
+                            const std::string& access_token);
+
 };
 
 }  // namespace extensions

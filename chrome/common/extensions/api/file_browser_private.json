@@ -1133,6 +1133,23 @@
         ]
       },
       {
+        "name": "requestWebStoreAccessToken",
+        "description": "Requests a Webstore API OAuth2 access token.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "accessToken",
+                "type": "string",
+                "description": "OAuth2 access token, or an empty string if failed to fetch."
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "getShareUrl",
         "description": "Requests a share dialog url for the specified file.",
         "parameters": [
