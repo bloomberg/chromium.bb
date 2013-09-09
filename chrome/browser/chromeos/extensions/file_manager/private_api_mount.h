@@ -37,8 +37,7 @@ class FileBrowserPrivateAddMountFunction : public LoggedAsyncExtensionFunction {
 
  private:
   // A callback method to handle the result of MarkCacheAsMounted.
-  void OnMountedStateSet(const std::string& mount_type,
-                         const base::FilePath::StringType& file_name,
+  void OnMountedStateSet(const base::FilePath::StringType& file_name,
                          drive::FileError error,
                          const base::FilePath& file_path);
 };

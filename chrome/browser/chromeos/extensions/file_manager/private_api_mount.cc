@@ -25,34 +25,16 @@ using content::BrowserThread;
 namespace extensions {
 namespace {
 
-// Returns string representaion of VolumeType.
-std::string VolumeTypeToString(file_manager::VolumeType type) {
-  switch (type) {
-    case file_manager::VOLUME_TYPE_GOOGLE_DRIVE:
-      return "drive";
-    case file_manager::VOLUME_TYPE_DOWNLOADS_DIRECTORY:
-      // Return empty string here for backword compatibility.
-      // TODO(hidehiko): Fix this to return "downloads".
-      return "";
-    case file_manager::VOLUME_TYPE_REMOVABLE_DISK_PARTITION:
-      return "device";
-    case file_manager::VOLUME_TYPE_MOUNTED_ARCHIVE_FILE:
-      return "file";
-  }
-
-  NOTREACHED();
-  return "";
-}
-
 // Returns the Value of the |volume_info|.
 base::Value* CreateValueFromVolumeInfo(
     const file_manager::VolumeInfo& volume_info,
     Profile* profile,
     const std::string& extension_id) {
   base::DictionaryValue* result = new base::DictionaryValue;
-  std::string mount_type = VolumeTypeToString(volume_info.type);
-  if (!mount_type.empty())
-    result->SetString("mountType", mount_type);
+  std::string volume_type =
+      file_manager::util::VolumeTypeToStringEnum(volume_info.type);
+  if (!volume_type.empty())
+    result->SetString("volumeType", volume_type);
 
   if (!volume_info.source_path.empty())
     result->SetString("sourcePath", volume_info.source_path.value());
@@ -86,83 +68,64 @@ bool FileBrowserPrivateAddMountFunction::RunImpl() {
   }
 
   std::string file_url;
-  if (!args_->GetString(0, &file_url)) {
+  if (!args_->GetString(0, &file_url))
     return false;
-  }
 
-  std::string mount_type_str;
-  if (!args_->GetString(1, &mount_type_str)) {
+  std::string mount_type;
+  if (!args_->GetString(1, &mount_type))
     return false;
-  }
 
   drive::util::Log(logging::LOG_INFO,
                    "%s[%d] called. (source: '%s', type:'%s')",
                    name().c_str(),
                    request_id(),
                    file_url.empty() ? "(none)" : file_url.c_str(),
-                   mount_type_str.c_str());
+                   mount_type.c_str());
   set_log_on_completion(true);
 
-  // Set default return source path to the empty string.
-  SetResult(new base::StringValue(""));
+  if (mount_type == "drive") {
+    // Dispatch fake 'mounted' event because JS code depends on it.
+    // TODO(hashimoto): Remove this redanduncy.
+    file_manager::FileBrowserPrivateAPI::Get(profile_)->event_router()->
+        OnFileSystemMounted();
 
-  chromeos::MountType mount_type =
-      DiskMountManager::MountTypeFromString(mount_type_str);
-  switch (mount_type) {
-    case chromeos::MOUNT_TYPE_INVALID: {
-      error_ = "Invalid mount type";
-      SendResponse(false);
-      break;
+    // Pass back the drive mount point path as source path.
+    const std::string& drive_path =
+        drive::util::GetDriveMountPointPathAsString();
+    SetResult(new base::StringValue(drive_path));
+    SendResponse(true);
+  } else if (mount_type == "archive") {
+    const base::FilePath path = file_manager::util::GetLocalPathFromURL(
+        render_view_host(), profile(), GURL(file_url));
+
+    if (path.empty())
+      return false;
+
+    const base::FilePath::StringType display_name = path.BaseName().value();
+
+    // Check if the source path is under Drive cache directory.
+    if (drive::util::IsUnderDriveMountPoint(path)) {
+      drive::FileSystemInterface* file_system =
+          drive::util::GetFileSystemByProfile(profile());
+      if (!file_system)
+        return false;
+
+      file_system->MarkCacheFileAsMounted(
+          drive::util::ExtractDrivePath(path),
+          base::Bind(&FileBrowserPrivateAddMountFunction::OnMountedStateSet,
+                     this, display_name));
+    } else {
+      OnMountedStateSet(display_name, drive::FILE_ERROR_OK, path);
     }
-    case chromeos::MOUNT_TYPE_GOOGLE_DRIVE: {
-      // Dispatch fake 'mounted' event because JS code depends on it.
-      // TODO(hashimoto): Remove this redanduncy.
-      file_manager::FileBrowserPrivateAPI::Get(profile_)->event_router()->
-          OnFileSystemMounted();
-
-      // Pass back the drive mount point path as source path.
-      const std::string& drive_path =
-          drive::util::GetDriveMountPointPathAsString();
-      SetResult(new base::StringValue(drive_path));
-      SendResponse(true);
-      break;
-    }
-    default: {
-      const base::FilePath path = file_manager::util::GetLocalPathFromURL(
-          render_view_host(), profile(), GURL(file_url));
-
-      if (path.empty()) {
-        SendResponse(false);
-        break;
-      }
-
-      const base::FilePath::StringType display_name = path.BaseName().value();
-
-      // Check if the source path is under Drive cache directory.
-      if (drive::util::IsUnderDriveMountPoint(path)) {
-        drive::FileSystemInterface* file_system =
-            drive::util::GetFileSystemByProfile(profile());
-        if (!file_system) {
-          SendResponse(false);
-          break;
-        }
-        file_system->MarkCacheFileAsMounted(
-            drive::util::ExtractDrivePath(path),
-            base::Bind(&FileBrowserPrivateAddMountFunction::OnMountedStateSet,
-                       this, mount_type_str, display_name));
-      } else {
-        OnMountedStateSet(mount_type_str, display_name,
-                          drive::FILE_ERROR_OK, path);
-      }
-      break;
-    }
+  } else {
+    error_ = "Invalid mount type";
+    return false;
   }
 
   return true;
 }
 
 void FileBrowserPrivateAddMountFunction::OnMountedStateSet(
-    const std::string& mount_type,
     const base::FilePath::StringType& file_name,
     drive::FileError error,
     const base::FilePath& file_path) {
@@ -180,7 +143,7 @@ void FileBrowserPrivateAddMountFunction::OnMountedStateSet(
   // MountPath() takes a std::string.
   disk_mount_manager->MountPath(
       file_path.AsUTF8Unsafe(), base::FilePath(file_name).Extension(),
-      file_name, DiskMountManager::MountTypeFromString(mount_type));
+      file_name, chromeos::MOUNT_TYPE_ARCHIVE);
 }
 
 FileBrowserPrivateRemoveMountFunction::FileBrowserPrivateRemoveMountFunction() {

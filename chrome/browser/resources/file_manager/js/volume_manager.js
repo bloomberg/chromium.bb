@@ -514,7 +514,7 @@ VolumeManager.prototype.initMountPoints_ = function() {
       var mountPoint = mountPointList[i];
 
       // TODO(hidehiko): It should be ok that the drive is mounted already.
-      if (mountPoint.mountType == 'drive')
+      if (mountPoint.volumeType == 'drive')
         console.error('Drive is not expected initially mounted');
 
       var error = mountPoint.mountCondition ?
@@ -562,7 +562,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
   if (event.eventType == 'mount') {
     if (event.mountPath) {
       var requestKey = this.makeRequestKey_(
-          'mount', event.mountType, event.sourcePath);
+          'mount', event.volumeType, event.sourcePath);
       var error = event.status == 'success' ? '' : event.status;
       volumeManagerUtil.createVolumeInfo(
           event.mountPath, error, function(volume) {
@@ -599,7 +599,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     }
   }
 
-  if (event.mountType == 'drive') {
+  if (event.volumeType == 'drive') {
     if (event.status == 'success') {
       if (event.eventType == 'mount') {
         // If the mount is not requested, the mount status will not be changed
@@ -657,16 +657,16 @@ VolumeManager.prototype.waitDriveLoaded_ = function(mountPath, callback) {
 /**
  * Creates string to match mount events with requests.
  * @param {string} requestType 'mount' | 'unmount'.
- * @param {string} mountType 'device' | 'file' | 'network' | 'drive'.
+ * @param {string} volumeType 'drive' | 'downloads' | 'removable' | 'archive'.
  * @param {string} mountOrSourcePath Source path provided by API after
  *     resolving mount request or mountPath for unmount request.
  * @return {string} Key for |this.requests_|.
  * @private
  */
 VolumeManager.prototype.makeRequestKey_ = function(requestType,
-                                                   mountType,
+                                                   volumeType,
                                                    mountOrSourcePath) {
-  return requestType + ':' + mountType + ':' + mountOrSourcePath;
+  return requestType + ':' + volumeType + ':' + mountOrSourcePath;
 };
 
 
@@ -702,7 +702,7 @@ VolumeManager.prototype.mountDrive = function(successCallback, errorCallback) {
  */
 VolumeManager.prototype.mountArchive = function(fileUrl, successCallback,
                                                 errorCallback) {
-  this.mount_(fileUrl, 'file', successCallback, errorCallback);
+  this.mount_(fileUrl, 'archive', successCallback, errorCallback);
 };
 
 /**
@@ -743,25 +743,25 @@ VolumeManager.prototype.getVolumeInfo = function(mountPath) {
 
 /**
  * @param {string} url URL for for |fileBrowserPrivate.addMount|.
- * @param {'drive'|'file'} mountType Mount type for
+ * @param {'drive'|'archive'} volumeType Volume type for
  *     |fileBrowserPrivate.addMount|.
  * @param {function(string)} successCallback Success callback.
  * @param {function(VolumeManager.Error)} errorCallback Error callback.
  * @private
  */
-VolumeManager.prototype.mount_ = function(url, mountType,
+VolumeManager.prototype.mount_ = function(url, volumeType,
                                           successCallback, errorCallback) {
   if (this.deferredQueue_) {
     this.deferredQueue_.push(this.mount_.bind(this,
-        url, mountType, successCallback, errorCallback));
+        url, volumeType, successCallback, errorCallback));
     return;
   }
 
-  chrome.fileBrowserPrivate.addMount(url, mountType, {},
+  chrome.fileBrowserPrivate.addMount(url, volumeType, {},
                                      function(sourcePath) {
-    console.info('Mount request: url=' + url + '; mountType=' + mountType +
+    console.info('Mount request: url=' + url + '; volumeType=' + volumeType +
                  '; sourceUrl=' + sourcePath);
-    var requestKey = this.makeRequestKey_('mount', mountType, sourcePath);
+    var requestKey = this.makeRequestKey_('mount', volumeType, sourcePath);
     this.startRequest_(requestKey, successCallback, errorCallback);
   }.bind(this));
 };

@@ -8,6 +8,7 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_UTIL_H_
 
 #include "base/callback_forward.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "url/gurl.h"
 
@@ -24,6 +25,9 @@ struct SelectedFileInfo;
 
 namespace file_manager {
 namespace util {
+
+// Converts VolumeType to a string enum (volumeType) used in the private API.
+std::string VolumeTypeToStringEnum(VolumeType type);
 
 // Returns the ID of the tab associated with the dispatcher. Returns 0 on
 // error.

@@ -118,6 +118,23 @@ void ContinueGetSelectedFileInfo(Profile* profile,
 
 }  // namespace
 
+// Returns string representaion of VolumeType.
+std::string VolumeTypeToStringEnum(VolumeType type) {
+  switch (type) {
+    case VOLUME_TYPE_GOOGLE_DRIVE:
+      return "drive";
+    case VOLUME_TYPE_DOWNLOADS_DIRECTORY:
+      return "downloads";
+    case VOLUME_TYPE_REMOVABLE_DISK_PARTITION:
+      return "removable";
+    case VOLUME_TYPE_MOUNTED_ARCHIVE_FILE:
+      return "archive";
+  }
+
+  NOTREACHED();
+  return "";
+}
+
 int32 GetTabId(ExtensionFunctionDispatcher* dispatcher) {
   if (!dispatcher) {
     LOG(WARNING) << "No dispatcher";

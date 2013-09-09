@@ -272,12 +272,6 @@ class CHROMEOS_EXPORT DiskMountManager {
   virtual bool AddDiskForTest(Disk* disk);
   virtual bool AddMountPointForTest(const MountPointInfo& mount_point);
 
-  // Returns corresponding string to |type| like "device" or "file".
-  static std::string MountTypeToString(MountType type);
-
-  // The inverse function of MountTypeToString.
-  static MountType MountTypeFromString(const std::string& type_str);
-
   // Returns corresponding string to |type| like "unknown_filesystem".
   static std::string MountConditionToString(MountCondition type);
 

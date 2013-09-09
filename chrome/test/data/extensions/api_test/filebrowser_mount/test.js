@@ -59,30 +59,31 @@ var expectedDownloadsVolume = {
 var expectedMountPoints = [
   {
     mountPath: 'Downloads',
+    volumeType: 'downloads',
     mountCondition: ''
   },
   {
     sourcePath: 'archive_path',
     mountPath: 'archive/archive_mount_path',
-    mountType: 'file',
+    volumeType: 'archive',
     mountCondition: ''
   },
   {
     sourcePath: 'device_path1',
     mountPath: 'removable/mount_path1',
-    mountType: 'device',
+    volumeType: 'removable',
     mountCondition: ''
   },
   {
     sourcePath: 'device_path2',
     mountPath: 'removable/mount_path2',
-    mountType: 'device',
+    volumeType: 'removable',
     mountCondition: ''
   },
   {
     sourcePath: 'device_path3',
     mountPath: 'removable/mount_path3',
-    mountType: 'device',
+    volumeType: 'removable',
     mountCondition: ''
   }
 ];

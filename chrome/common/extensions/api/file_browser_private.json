@@ -128,11 +128,11 @@
             "optional": true,
             "description": "The path to the mounted device, archive file or network resource."
           },
-          "mountType": {
+          "volumeType": {
             "type": "string",
             "optional": true,
-            "enum": ["device", "file", "network"],
-            "description": "Type of the mount."
+            "enum": ["drive", "downloads", "removable", "archive"],
+            "description": "Type of the mounted volume."
           },
           "mountCondition": {
             "type": "string",
@@ -272,10 +272,10 @@
             "optional": true,
             "description": "Path that sourcePath was mounted to."
           },
-          "mountType": {
+          "volumeType": {
             "type": "string",
-            "enum": ["device", "file", "network", "drive"],
-            "description": "Type of the mount."
+            "enum": ["drive", "downloads", "removable", "archive"],
+            "description": "Type of the mounted volume."
           }
         }
       },
@@ -731,11 +731,13 @@
             "type": "string",
             "description": "Mount point source. For compressed files it is relative file path within external file system"
           },
+	  // TODO(hidehiko): After the refactoring, we won't need to request
+	  // mounting the Drive. Then remove this param.
           {
-            "name": "mountType",
+            "name": "volumeType",
             "type": "string",
-            "enum": ["device", "file", "network", "drive"],
-            "description": "Mount point type. 'file' for compressed files"
+            "enum": ["drive", "archive"],
+            "description": "Type of the mounted volume"
           },
           {
             "name": "options",

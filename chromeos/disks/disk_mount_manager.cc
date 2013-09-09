@@ -670,25 +670,6 @@ bool DiskMountManager::AddMountPointForTest(const MountPointInfo& mount_point) {
 }
 
 // static
-std::string DiskMountManager::MountTypeToString(MountType type) {
-  switch (type) {
-    case MOUNT_TYPE_DEVICE:
-      return "device";
-    case MOUNT_TYPE_ARCHIVE:
-      return "file";
-    case MOUNT_TYPE_NETWORK_STORAGE:
-      return "network";
-    case MOUNT_TYPE_GOOGLE_DRIVE:
-      return "drive";
-    case MOUNT_TYPE_INVALID:
-      return "invalid";
-    default:
-      NOTREACHED();
-  }
-  return "";
-}
-
-// static
 std::string DiskMountManager::MountConditionToString(MountCondition condition) {
   switch (condition) {
     case MOUNT_CONDITION_NONE:
@@ -701,20 +682,6 @@ std::string DiskMountManager::MountConditionToString(MountCondition condition) {
       NOTREACHED();
   }
   return "";
-}
-
-// static
-MountType DiskMountManager::MountTypeFromString(const std::string& type_str) {
-  if (type_str == "device")
-    return MOUNT_TYPE_DEVICE;
-  else if (type_str == "network")
-    return MOUNT_TYPE_NETWORK_STORAGE;
-  else if (type_str == "file")
-    return MOUNT_TYPE_ARCHIVE;
-  else if (type_str == "drive")
-    return MOUNT_TYPE_GOOGLE_DRIVE;
-  else
-    return MOUNT_TYPE_INVALID;
 }
 
 // static

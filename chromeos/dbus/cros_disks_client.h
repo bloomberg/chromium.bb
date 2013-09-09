@@ -33,8 +33,9 @@ enum MountType {
   MOUNT_TYPE_INVALID,
   MOUNT_TYPE_DEVICE,
   MOUNT_TYPE_ARCHIVE,
+  // TODO(hidehiko): Drive is not managed by DiskMountManager nor
+  // CrosDisksClient. Remove this after fileBrowserPrivate API is cleaned.
   MOUNT_TYPE_GOOGLE_DRIVE,
-  MOUNT_TYPE_NETWORK_STORAGE,
 };
 
 // Type of device.

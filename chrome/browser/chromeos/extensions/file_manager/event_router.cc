@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/desktop_notifications.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
@@ -207,6 +208,23 @@ bool IsGooglePhotosInstalled(Profile *profile) {
   }
 
   return false;
+}
+
+// This method is temporarily introduced to make a change step by step.
+// After mounting logic is moved to VolumeManager, this should be removed.
+std::string MountTypeToString(chromeos::MountType type) {
+  switch (type) {
+    case chromeos::MOUNT_TYPE_INVALID:
+      return "";
+    case chromeos::MOUNT_TYPE_DEVICE:
+      return util::VolumeTypeToStringEnum(VOLUME_TYPE_REMOVABLE_DISK_PARTITION);
+    case chromeos::MOUNT_TYPE_ARCHIVE:
+      return util::VolumeTypeToStringEnum(VOLUME_TYPE_MOUNTED_ARCHIVE_FILE);
+    case chromeos::MOUNT_TYPE_GOOGLE_DRIVE:
+      return util::VolumeTypeToStringEnum(VOLUME_TYPE_GOOGLE_DRIVE);
+  }
+  NOTREACHED();
+  return "";
 }
 
 }  // namespace
@@ -690,8 +708,7 @@ void EventRouter::DispatchMountEvent(
       event == DiskMountManager::MOUNTING ? "mount" : "unmount");
   mount_info_value->SetString("status", MountErrorToString(error_code));
   mount_info_value->SetString(
-      "mountType",
-      DiskMountManager::MountTypeToString(mount_info.mount_type));
+      "volumeType", MountTypeToString(mount_info.mount_type));
 
   // Add sourcePath to the event.
   mount_info_value->SetString("sourcePath", mount_info.source_path);
