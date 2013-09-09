@@ -64,6 +64,11 @@ unsigned animatableValueToUnsigned(const AnimatableValue* value)
     return clampTo<unsigned>(round(toAnimatableNumber(value)->toDouble()));
 }
 
+unsigned short animatableValueToUnsignedShort(const AnimatableValue* value)
+{
+    return clampTo<unsigned short>(round(toAnimatableNumber(value)->toDouble()));
+}
+
 LengthBox animatableValueToLengthBox(const AnimatableValue* value, const StyleResolverState& state)
 {
     const AnimatableLengthBox* animatableLengthBox = toAnimatableLengthBox(value);
@@ -178,6 +183,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyOutlineColor:
         style->setOutlineColor(toAnimatableColor(value)->color());
         style->setVisitedLinkOutlineColor(toAnimatableColor(value)->visitedLinkColor());
+        return;
+    case CSSPropertyOutlineWidth:
+        style->setOutlineWidth(animatableValueToUnsignedShort(value));
         return;
     case CSSPropertyPaddingBottom:
         style->setPaddingBottom(animatableValueToLength(value, state));

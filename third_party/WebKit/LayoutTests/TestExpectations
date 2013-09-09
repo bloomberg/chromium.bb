@@ -298,7 +298,6 @@ crbug.com/258896 virtual/web-animations-css/animations/cross-fade-background-ima
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-webkit-mask-box-image.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/lineheight-animation.html [ Crash ]
 crbug.com/258896 [ Debug ] virtual/web-animations-css/animations/width-using-ems.html [ Crash ]
-crbug.com/258896 virtual/web-animations-css/animations/interpolation/outline-width-interpolation.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/interpolation/border-radius-interpolation.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/interpolation/outline-offset-interpolation.html [ Crash ]
 # These can't be rebaselined because the failure involves flaky output.
