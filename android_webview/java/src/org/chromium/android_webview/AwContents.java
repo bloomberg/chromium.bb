@@ -490,7 +490,7 @@ public class AwContents {
         mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
         mLayoutSizer.setDIPScale(mDIPScale);
         mWebContentsDelegate = new AwWebContentsDelegateAdapter(contentsClient,
-                mLayoutSizer.getPreferredSizeChangedListener(), mContainerView);
+                mLayoutSizer.getPreferredSizeChangedListener());
         mContentsClientBridge = new AwContentsClientBridge(contentsClient);
         mZoomControls = new AwZoomControls(this);
         mIoThreadClient = new IoThreadClientImpl();

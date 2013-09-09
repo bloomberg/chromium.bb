@@ -64,14 +64,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // Ganesh backed 2D-Canvas is not yet working and causes crashes.
   cl->AppendSwitch(switches::kDisableAccelerated2dCanvas);
 
-  // File system API not supported (requires some new API; internal bug 6930981)
-  // TODO(joth): export and use switches::kDisableFileSystem
-  cl->AppendSwitch("disable-file-system");
-
-  // Enable D-PAD navigation for application compatibility.
-  // TODO(joth): export and use switches::EnableSpatialNavigation.
-  cl->AppendSwitch("enable-spatial-navigation");
-
   return false;
 }
 
