@@ -260,10 +260,8 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
       return status;
 
     const WebViewInfo* view_info = views_info.GetForId(for_client_id);
-    if (!view_info) {
-      return Status(kDisconnected,
-                    "DevTools client closed during closing UI debuggers");
-    }
+    if (!view_info)
+      return Status(kNoSuchWindow, "window was already closed");
     if (view_info->debugger_url.size())
       return Status(kOk);
 
