@@ -58,7 +58,6 @@ struct nested {
 	struct program *texture_program;
 
 	struct wl_list surface_list;
-	struct wl_list frame_callback_list;
 };
 
 struct nested_region {
@@ -86,6 +85,8 @@ struct nested_surface {
 	GLuint texture;
 	struct wl_list link;
 	cairo_surface_t *cairo_surface;
+
+	struct wl_list frame_callback_list;
 
 	struct {
 		/* wl_surface.attach */
@@ -191,23 +192,33 @@ nested_buffer_reference(struct nested_buffer_reference *ref,
 }
 
 static void
-frame_callback(void *data, struct wl_callback *callback, uint32_t time)
+flush_surface_frame_callback_list(struct nested_surface *surface,
+				  uint32_t time)
 {
-	struct nested *nested = data;
 	struct nested_frame_callback *nc, *next;
 
-	if (callback)
-		wl_callback_destroy(callback);
-
-	wl_list_for_each_safe(nc, next, &nested->frame_callback_list, link) {
+	wl_list_for_each_safe(nc, next, &surface->frame_callback_list, link) {
 		wl_callback_send_done(nc->resource, time);
 		wl_resource_destroy(nc->resource);
 	}
-	wl_list_init(&nested->frame_callback_list);
+	wl_list_init(&surface->frame_callback_list);
 
 	/* FIXME: toytoolkit need a pre-block handler where we can
 	 * call this. */
-	wl_display_flush_clients(nested->child_display);
+	wl_display_flush_clients(surface->nested->child_display);
+}
+
+static void
+frame_callback(void *data, struct wl_callback *callback, uint32_t time)
+{
+	struct nested *nested = data;
+	struct nested_surface *surface;
+
+	wl_list_for_each(surface, &nested->surface_list, link)
+		flush_surface_frame_callback_list(surface, time);
+
+	if (callback)
+		wl_callback_destroy(callback);
 }
 
 static const struct wl_callback_listener frame_listener = {
@@ -367,6 +378,10 @@ destroy_surface(struct wl_resource *resource)
 {
 	struct nested_surface *surface = wl_resource_get_user_data(resource);
 	struct nested_frame_callback *cb, *next;
+
+	wl_list_for_each_safe(cb, next,
+			      &surface->frame_callback_list, link)
+		wl_resource_destroy(cb->resource);
 
 	wl_list_for_each_safe(cb, next,
 			      &surface->pending.frame_callback_list, link)
@@ -558,7 +573,7 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 	empty_region(&surface->pending.damage);
 
 	/* wl_surface.frame */
-	wl_list_insert_list(&nested->frame_callback_list,
+	wl_list_insert_list(&surface->frame_callback_list,
 			    &surface->pending.frame_callback_list);
 	wl_list_init(&surface->pending.frame_callback_list);
 
@@ -607,6 +622,8 @@ compositor_create_surface(struct wl_client *client,
 	}
 
 	surface->nested = nested;
+
+	wl_list_init(&surface->frame_callback_list);
 
 	wl_list_init(&surface->pending.frame_callback_list);
 	surface->pending.buffer_destroy_listener.notify =
@@ -724,7 +741,6 @@ nested_init_compositor(struct nested *nested)
 	int fd, ret;
 
 	wl_list_init(&nested->surface_list);
-	wl_list_init(&nested->frame_callback_list);
 	nested->child_display = wl_display_create();
 	loop = wl_display_get_event_loop(nested->child_display);
 	fd = wl_event_loop_get_fd(loop);
