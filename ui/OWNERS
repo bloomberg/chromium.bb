@@ -4,6 +4,12 @@ sky@chromium.org
 # Mac stuff
 thakis@chromium.org
 
+# Android
+per-file *android*=bulach@chromium.org
+per-file *android*=tedchoc@chromium.org
+per-file *android*=yfriedman@chromium.org
+per-file *android*=newt@chromium.org
+
 per-file *.isolate=csharp@chromium.org
 per-file *.isolate=maruel@chromium.org
 
