@@ -5,8 +5,6 @@
 #include <string>
 #include <vector>
 
-#include "content/public/common/content_client.h"
-#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/media/crypto/key_systems.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -140,8 +138,6 @@ class KeySystemsTest : public testing::Test {
 
     mixed_codecs_.push_back("vorbis");
     mixed_codecs_.push_back("avc1");
-
-    SetRendererClientForTesting(&content_renderer_client_);
   }
 
   typedef std::vector<std::string> CodecVector;
@@ -189,7 +185,6 @@ class KeySystemsTest : public testing::Test {
 
   CodecVector mixed_codecs_;
 
-  ContentRendererClient content_renderer_client_;
 };
 
 TEST_F(KeySystemsTest, ClearKey_Basic) {

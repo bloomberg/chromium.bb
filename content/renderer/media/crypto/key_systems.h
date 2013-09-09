@@ -15,7 +15,48 @@ namespace WebKit {
 class WebString;
 }
 
+// Definitions:
+// * Key system
+//    https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#key-system
+// * Concrete key system
+//    A key system string that can be instantiated, such as
+//    via the MediaKeys constructor. Examples include "org.w3.clearkey" and
+//    "com.widevine.alpha".
+// * Abstract key system
+//    A key system string that cannot be instantiated like a concrete key system
+//    but is otherwise useful, such as in discovery using isTypeSupported().
+// * Parent key system
+//    A key system string that is one level up from the child key system. It may
+//    be an abstract key system.
+//    As an example, "com.example" is the parent of "com.example.foo".
+
 namespace content {
+
+// Adds a concrete key system along with platform-specific information about how
+// to instantiate it. Must be called before AddSupportedType().
+// May only be called once per |concrete_key_system|.
+// When not empty, |parent_key_system| will add a mapping to the
+// |concrete_key_system| that can be used to check supported types.
+// Only one parent key system is currently supported per concrete key system.
+CONTENT_EXPORT void AddConcreteSupportedKeySystem(
+    const std::string& concrete_key_system,
+    bool use_aes_decryptor,
+#if defined(ENABLE_PEPPER_CDMS)
+    const std::string& pepper_type,
+#elif defined(OS_ANDROID)
+    const uint8 uuid[16],
+#endif
+    const std::string& parent_key_system);
+
+// Specifies the container and codec combinations supported by
+// |concrete_key_system|.
+// Multiple codecs can be listed. In all cases, the container
+// without a codec is also supported.
+// |concrete_key_system| must be a concrete supported key system previously
+// added using AddConcreteSupportedKeySystem().
+CONTENT_EXPORT void AddSupportedType(const std::string& concrete_key_system,
+                                     const std::string& mime_type,
+                                     const std::string& codecs_list);
 
 // Returns whether |key_system| is a real supported key system that can be
 // instantiated.
