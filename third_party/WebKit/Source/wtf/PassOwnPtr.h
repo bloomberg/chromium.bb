@@ -50,7 +50,7 @@ namespace WTF {
         // a const PassOwnPtr. However, it makes it much easier to work with PassOwnPtr
         // temporaries, and we don't have a need to use real const PassOwnPtrs anyway.
         PassOwnPtr(const PassOwnPtr& o) : m_ptr(o.leakPtr()) { }
-        template<typename U> PassOwnPtr(const PassOwnPtr<U>& o) : m_ptr(o.leakPtr()) { }
+        template<typename U> PassOwnPtr(const PassOwnPtr<U>& o, EnsurePtrConvertibleArgDecl(U, T)) : m_ptr(o.leakPtr()) { }
 
         ~PassOwnPtr() { deleteOwnedPtr(m_ptr); }
 

@@ -39,7 +39,7 @@ public:
     OwnArrayPtr() : m_ptr(0) { }
 
     // See comment in PassOwnArrayPtr.h for why this takes a const reference.
-    template<typename U> OwnArrayPtr(const PassOwnArrayPtr<U>& o);
+    template<typename U> OwnArrayPtr(const PassOwnArrayPtr<U>&, EnsurePtrConvertibleArgDecl(U, T));
 
     // This copy constructor is used implicitly by gcc when it generates
     // transients for assigning a PassOwnArrayPtr<T> object to a stack-allocated
@@ -76,7 +76,7 @@ private:
     PtrType m_ptr;
 };
 
-template<typename T> template<typename U> inline OwnArrayPtr<T>::OwnArrayPtr(const PassOwnArrayPtr<U>& o)
+template<typename T> template<typename U> inline OwnArrayPtr<T>::OwnArrayPtr(const PassOwnArrayPtr<U>& o, EnsurePtrConvertibleArgDefn(U, T))
     : m_ptr(o.leakPtr())
 {
 }

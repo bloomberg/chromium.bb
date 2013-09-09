@@ -48,7 +48,7 @@ namespace WTF {
         OwnPtr(std::nullptr_t) : m_ptr(0) { }
 
         // See comment in PassOwnPtr.h for why this takes a const reference.
-        template<typename U> OwnPtr(const PassOwnPtr<U>& o);
+        template<typename U> OwnPtr(const PassOwnPtr<U>&, EnsurePtrConvertibleArgDecl(U, T));
 
 #if !COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
         // This copy constructor is used implicitly by gcc when it generates
@@ -109,7 +109,7 @@ namespace WTF {
         PtrType m_ptr;
     };
 
-    template<typename T> template<typename U> inline OwnPtr<T>::OwnPtr(const PassOwnPtr<U>& o)
+    template<typename T> template<typename U> inline OwnPtr<T>::OwnPtr(const PassOwnPtr<U>& o, EnsurePtrConvertibleArgDefn(U, T))
         : m_ptr(o.leakPtr())
     {
     }
