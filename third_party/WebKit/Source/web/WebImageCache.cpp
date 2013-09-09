@@ -44,7 +44,8 @@ void WebImageCache::setCacheLimitInBytes(size_t size)
 
 void WebImageCache::clear()
 {
-    ImageDecodingStore::instance()->clear();
+    if (ImageDecodingStore::instance())
+        ImageDecodingStore::instance()->clear();
 }
 
 size_t WebImageCache::memoryUsageInBytes()
