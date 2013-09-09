@@ -1363,9 +1363,9 @@ RenderLayer* RenderLayer::enclosingPositionedAncestor() const
 
 RenderLayer* RenderLayer::enclosingScrollableLayer() const
 {
-    for (RenderObject* nextRenderer = renderer()->parent(); nextRenderer; nextRenderer = nextRenderer->parent()) {
-        if (nextRenderer->isBox() && toRenderBox(nextRenderer)->canBeScrolledAndHasScrollableArea())
-            return nextRenderer->enclosingLayer();
+    for (RenderLayer* nextLayer = parent(); nextLayer; nextLayer = nextLayer->parent()) {
+        if (nextLayer->renderer()->isBox() && toRenderBox(nextLayer->renderer())->canBeScrolledAndHasScrollableArea())
+            return nextLayer;
     }
 
     return 0;
@@ -2328,6 +2328,9 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
             }
         }
     }
+
+    if (renderer()->frame()->page()->autoscrollInProgress())
+        parentLayer = enclosingScrollableLayer();
 
     if (parentLayer)
         parentLayer->scrollRectToVisible(newRect, alignX, alignY);
