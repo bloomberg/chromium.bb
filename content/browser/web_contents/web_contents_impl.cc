@@ -1774,8 +1774,11 @@ bool WebContentsImpl::NavigateToEntry(
 
   // The renderer will reject IPC messages with URLs longer than
   // this limit, so don't attempt to navigate with a longer URL.
-  if (entry.GetURL().spec().size() > kMaxURLChars)
+  if (entry.GetURL().spec().size() > kMaxURLChars) {
+    LOG(WARNING) << "Refusing to load URL as it exceeds " << kMaxURLChars
+                 << " characters.";
     return false;
+  }
 
   RenderViewHostImpl* dest_render_view_host =
       static_cast<RenderViewHostImpl*>(render_manager_.Navigate(entry));
