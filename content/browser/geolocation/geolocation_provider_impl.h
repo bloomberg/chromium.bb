@@ -20,7 +20,6 @@ template<typename Type> struct DefaultSingletonTraits;
 
 namespace content {
 class GeolocationArbitrator;
-class GeolocationProviderTest;
 
 // This is the main API to the geolocation subsystem. The application will hold
 // a single instance of this class and can register multiple clients to be
