@@ -1277,7 +1277,7 @@ Bug(jsbell) fast/encoding/utf-16-odd-byte.html [ Skip ]
 crbug.com/282620 [ XP Win7 ] fast/mediastream/RTCPeerConnection-stats.html [ Failure Pass ]
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
 crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Pass ImageOnlyFailure ]
-
+crbug.com/261277 [ Win7 Release ] fast/events/touch/gesture/pad-gesture-fling.html [ Failure Pass ]
 crbug.com/284779 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass Crash ]
 crbug.com/284789 http/tests/media/media-source/mediasource-buffered.html [ Failure Pass ]
 crbug.com/284793 http/tests/media/media-source/mediasource-play-then-seek-back.html [ Failure Pass ]
