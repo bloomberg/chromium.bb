@@ -124,7 +124,10 @@ void CopyOrMoveOperationDelegate::CopyOrMoveFile(
     if (operation_type_ == OPERATION_MOVE) {
       operation_runner()->MoveFileLocal(url_pair.src, url_pair.dest, callback);
     } else {
-      operation_runner()->CopyFileLocal(url_pair.src, url_pair.dest, callback);
+      // TODO(hidehiko): Support progress callback.
+      operation_runner()->CopyFileLocal(
+          url_pair.src, url_pair.dest,
+          FileSystemOperationRunner::CopyFileProgressCallback(), callback);
     }
     return;
   }

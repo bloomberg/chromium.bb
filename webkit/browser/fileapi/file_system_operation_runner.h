@@ -41,6 +41,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   typedef FileSystemOperation::StatusCallback StatusCallback;
   typedef FileSystemOperation::WriteCallback WriteCallback;
   typedef FileSystemOperation::OpenFileCallback OpenFileCallback;
+  typedef FileSystemOperation::CopyProgressCallback CopyProgressCallback;
+  typedef FileSystemOperation::CopyFileProgressCallback
+      CopyFileProgressCallback;
 
   typedef int OperationID;
 
@@ -64,8 +67,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   // |src_url| is a directory, the contents of |src_url| are copied to
   // |dest_url| recursively. A new file or directory is created at
   // |dest_url| as needed.
+  // For |progress_callback|, see file_system_operation.h for details.
   OperationID Copy(const FileSystemURL& src_url,
                    const FileSystemURL& dest_url,
+                   const CopyProgressCallback& progress_callback,
                    const StatusCallback& callback);
 
   // Moves a file or directory from |src_url| to |dest_url|. A new file
@@ -183,6 +188,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   // Copies a file from |src_url| to |dest_url|.
   // This must be called for files that belong to the same filesystem
   // (i.e. type() and origin() of the |src_url| and |dest_url| must match).
+  // For |progress_callback|, see file_system_operation.h for details.
   //
   // This returns:
   // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
@@ -195,6 +201,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   //
   OperationID CopyFileLocal(const FileSystemURL& src_url,
                             const FileSystemURL& dest_url,
+                            const CopyFileProgressCallback& progress_callback,
                             const StatusCallback& callback);
 
   // Moves a local file from |src_url| to |dest_url|.

@@ -240,6 +240,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
   ResetCallbackStatus();
   file_system_.operation_runner()->Copy(
       URL(kDir), URL("dest-copy"),
+      fileapi::FileSystemOperationRunner::CopyProgressCallback(),
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
   file_system_.operation_runner()->Move(
       URL(kDir), URL("dest-move"),
@@ -260,6 +261,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
   ResetCallbackStatus();
   file_system_.operation_runner()->Copy(
       URL(kDir), URL("dest-copy2"),
+      fileapi::FileSystemOperationRunner::CopyProgressCallback(),
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);

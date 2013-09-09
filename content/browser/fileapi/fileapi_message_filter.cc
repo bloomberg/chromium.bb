@@ -285,6 +285,7 @@ void FileAPIMessageFilter::OnCopy(
 
   operations_[request_id] = operation_runner()->Copy(
       src_url, dest_url,
+      fileapi::FileSystemOperationRunner::CopyProgressCallback(),
       base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }
 

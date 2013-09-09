@@ -554,7 +554,9 @@ void CannedSyncableFileSystem::DoCopy(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
-  operation_runner()->Copy(src_url, dest_url, callback);
+  operation_runner()->Copy(
+      src_url, dest_url,
+      fileapi::FileSystemOperationRunner::CopyProgressCallback(), callback);
 }
 
 void CannedSyncableFileSystem::DoMove(

@@ -444,6 +444,7 @@ TEST_F(FileSystemOperationImplTest, TestMoveSuccessSrcDirRecursive) {
 
 TEST_F(FileSystemOperationImplTest, TestCopyFailureSrcDoesntExist) {
   operation_runner()->Copy(URLForPath("a"), URLForPath("b"),
+                           FileSystemOperationRunner::CopyProgressCallback(),
                            RecordStatusCallback());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
@@ -454,7 +455,9 @@ TEST_F(FileSystemOperationImplTest, TestCopyFailureContainsPath) {
   FileSystemURL src_dir(CreateDirectory("src"));
   FileSystemURL dest_dir(CreateDirectory("src/dir"));
 
-  operation_runner()->Copy(src_dir, dest_dir, RecordStatusCallback());
+  operation_runner()->Copy(src_dir, dest_dir,
+                           FileSystemOperationRunner::CopyProgressCallback(),
+                           RecordStatusCallback());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
@@ -466,7 +469,9 @@ TEST_F(FileSystemOperationImplTest, TestCopyFailureSrcDirExistsDestFile) {
   FileSystemURL dest_dir(CreateDirectory("dest"));
   FileSystemURL dest_file(CreateFile("dest/file"));
 
-  operation_runner()->Copy(src_dir, dest_file, RecordStatusCallback());
+  operation_runner()->Copy(src_dir, dest_file,
+                           FileSystemOperationRunner::CopyProgressCallback(),
+                           RecordStatusCallback());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
@@ -479,7 +484,9 @@ TEST_F(FileSystemOperationImplTest,
   FileSystemURL dest_dir(CreateDirectory("dest"));
   FileSystemURL dest_file(CreateFile("dest/file"));
 
-  operation_runner()->Copy(src_dir, dest_dir, RecordStatusCallback());
+  operation_runner()->Copy(src_dir, dest_dir,
+                           FileSystemOperationRunner::CopyProgressCallback(),
+                           RecordStatusCallback());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
@@ -490,7 +497,9 @@ TEST_F(FileSystemOperationImplTest, TestCopyFailureSrcFileExistsDestDir) {
   FileSystemURL src_file(CreateFile("src"));
   FileSystemURL dest_dir(CreateDirectory("dest"));
 
-  operation_runner()->Copy(src_file, dest_dir, RecordStatusCallback());
+  operation_runner()->Copy(src_file, dest_dir,
+                           FileSystemOperationRunner::CopyProgressCallback(),
+                           RecordStatusCallback());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
@@ -501,6 +510,7 @@ TEST_F(FileSystemOperationImplTest, TestCopyFailureDestParentDoesntExist) {
   FileSystemURL src_dir(CreateDirectory("src"));
 
   operation_runner()->Copy(src_dir, URLForPath("nonexistent/dest"),
+                           FileSystemOperationRunner::CopyProgressCallback(),
                            RecordStatusCallback());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
@@ -521,7 +531,9 @@ TEST_F(FileSystemOperationImplTest, TestCopyFailureByQuota) {
   GrantQuotaForCurrentUsage();
   AddQuota(6 + dest_path_cost - 1);
 
-  operation_runner()->Copy(src_file, dest_file, RecordStatusCallback());
+  operation_runner()->Copy(src_file, dest_file,
+                           FileSystemOperationRunner::CopyProgressCallback(),
+                           RecordStatusCallback());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status());
   EXPECT_FALSE(FileExists("dest/file"));
@@ -531,7 +543,9 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcFileAndOverwrite) {
   FileSystemURL src_file(CreateFile("src"));
   FileSystemURL dest_file(CreateFile("dest"));
 
-  operation_runner()->Copy(src_file, dest_file, RecordStatusCallback());
+  operation_runner()->Copy(src_file, dest_file,
+                           FileSystemOperationRunner::CopyProgressCallback(),
+                           RecordStatusCallback());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(FileExists("dest"));
@@ -545,6 +559,7 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcFileAndNew) {
   FileSystemURL src_file(CreateFile("src"));
 
   operation_runner()->Copy(src_file, URLForPath("new"),
+                           FileSystemOperationRunner::CopyProgressCallback(),
                            RecordStatusCallback());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
@@ -559,7 +574,9 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcDirAndOverwrite) {
   FileSystemURL src_dir(CreateDirectory("src"));
   FileSystemURL dest_dir(CreateDirectory("dest"));
 
-  operation_runner()->Copy(src_dir, dest_dir, RecordStatusCallback());
+  operation_runner()->Copy(src_dir, dest_dir,
+                           FileSystemOperationRunner::CopyProgressCallback(),
+                           RecordStatusCallback());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
 
@@ -577,7 +594,9 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcDirAndNew) {
   FileSystemURL src_dir(CreateDirectory("src"));
   FileSystemURL dest_dir_new(URLForPath("dest"));
 
-  operation_runner()->Copy(src_dir, dest_dir_new, RecordStatusCallback());
+  operation_runner()->Copy(src_dir, dest_dir_new,
+                           FileSystemOperationRunner::CopyProgressCallback(),
+                           RecordStatusCallback());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(DirectoryExists("dest"));
@@ -594,7 +613,9 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcDirRecursive) {
 
   FileSystemURL dest_dir(CreateDirectory("dest"));
 
-  operation_runner()->Copy(src_dir, dest_dir, RecordStatusCallback());
+  operation_runner()->Copy(src_dir, dest_dir,
+                           FileSystemOperationRunner::CopyProgressCallback(),
+                           RecordStatusCallback());
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
@@ -1159,6 +1180,7 @@ TEST_F(FileSystemOperationImplTest,
   // Copy src to dest1.
   operation_runner()->Copy(
       src, dest1,
+      FileSystemOperationRunner::CopyProgressCallback(),
       base::Bind(&AssertFileErrorEq, FROM_HERE, base::PLATFORM_FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
 
@@ -1174,6 +1196,7 @@ TEST_F(FileSystemOperationImplTest,
   // Copy src/dir to dest2.
   operation_runner()->Copy(
       child_dir, dest2,
+      FileSystemOperationRunner::CopyProgressCallback(),
       base::Bind(&AssertFileErrorEq, FROM_HERE, base::PLATFORM_FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
 

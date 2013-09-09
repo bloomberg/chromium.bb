@@ -42,6 +42,7 @@ class SyncableFileSystemOperation
                                const StatusCallback& callback) OVERRIDE;
   virtual void Copy(const fileapi::FileSystemURL& src_url,
                     const fileapi::FileSystemURL& dest_url,
+                    const CopyProgressCallback& progress_callback,
                     const StatusCallback& callback) OVERRIDE;
   virtual void Move(const fileapi::FileSystemURL& src_url,
                     const fileapi::FileSystemURL& dest_url,
@@ -83,6 +84,7 @@ class SyncableFileSystemOperation
                                const StatusCallback& callback) OVERRIDE;
   virtual void CopyFileLocal(const fileapi::FileSystemURL& src_url,
                              const fileapi::FileSystemURL& dest_url,
+                             const CopyFileProgressCallback& progress_callback,
                              const StatusCallback& callback) OVERRIDE;
   virtual void MoveFileLocal(const fileapi::FileSystemURL& src_url,
                              const fileapi::FileSystemURL& dest_url,

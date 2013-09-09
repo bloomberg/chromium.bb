@@ -122,6 +122,90 @@ class FileSystemOperation {
            const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref)>
           SnapshotFileCallback;
 
+  // Used for progress update callback for Copy().
+  //
+  // BEGIN_COPY_ENTRY is fired for each copy creation beginning (for both
+  // file and directory).
+  // The |source_url| is the URL of the source entry. |size| should not be
+  // used.
+  //
+  // END_COPY_ENTRY is fired for each copy creation finishing (for both
+  // file and directory).
+  // The |source_url| is the URL of the source entry. |size| should not be
+  // used.
+  //
+  // PROGRESS is fired periodically during file copying (not fired for
+  // directory copy).
+  // The |source_url| is the URL of the source file. |size| is the number
+  // of cumulative copied bytes for the currently copied file.
+  // Both at beginning and ending of file copying, PROGRESS event should be
+  // called. At beginning, |size| should be 0. At ending, |size| should be
+  // the size of the file.
+  //
+  // Here is an example callback sequence of recursive copy. Suppose
+  // there are a/b/c.txt (100 bytes) and a/b/d.txt (200 bytes), and trying to
+  // copy a to x recursively, then the progress update sequence will be:
+  //
+  // BEGIN_COPY_ENTRY a  (starting create "a" directory in x/).
+  // END_COPY_ENTRY a (creating "a" directory in x/ is finished).
+  //
+  // BEGIN_COPY_ENTRY a/b (starting create "b" directory in x/a).
+  // END_COPY_ENTRY a/b (creating "b" directory in x/a/ is finished).
+  //
+  // BEGIN_COPY_ENTRY a/b/c.txt (starting to copy "c.txt" in x/a/b/).
+  // PROGRESS a/b/c.txt 0 (The first PROGRESS's |size| should be 0).
+  // PROGRESS a/b/c.txt 10
+  //    :
+  // PROGRESS a/b/c.txt 90
+  // PROGRESS a/b/c.txt 100 (The last PROGRESS's |size| should be the size of
+  //                         the file).
+  // END_COPY_ENTRY a/b/c.txt (copying "c.txt" is finished).
+  //
+  // BEGIN_COPY_ENTRY a/b/d.txt (starting to copy "d.txt" in x/a/b).
+  // PROGRESS a/b/d.txt 0 (The first PROGRESS's |size| should be 0).
+  // PROGRESS a/b/d.txt 10
+  //    :
+  // PROGRESS a/b/d.txt 190
+  // PROGRESS a/b/d.txt 200 (The last PROGRESS's |size| should be the size of
+  //                         the file).
+  // END_COPY_ENTRY a/b/d.txt (copy "d.txt" is finished).
+  //
+  // Note that event sequence of a/b/c.txt and a/b/d.txt can be interlaced,
+  // because they can be done in parallel.
+  // All the progress callback invocation should be done before StatusCallback
+  // given to the Copy is called. Especially if an error is found before first
+  // progres callback invocation, the progress callback may NOT invoked for the
+  // copy.
+  //
+  // Note for future extension. Currently this callback is only supported on
+  // Copy(). We can extend this to Move(), because Move() is sometimes
+  // implemented as "copy then delete."
+  // In more precise, Move() usually can be implemented either 1) by updating
+  // the metadata of resource (e.g. root of moving directory tree), or 2) by
+  // copying directory tree and them removing the source tree.
+  // For 1)'s case, we can simply add BEGIN_MOVE_ENTRY and END_MOVE_ENTRY
+  // for root directory.
+  // For 2)'s case, we can add BEGIN_DELETE_ENTRY and END_DELETE_ENTRY for each
+  // entry.
+  // For both cases, we probably won't need to use PROGRESS event because
+  // these operations should be done quickly (at least much faster than copying
+  // usually).
+  enum CopyProgressType {
+    BEGIN_COPY_ENTRY,
+    END_COPY_ENTRY,
+    PROGRESS,
+  };
+  typedef base::Callback<void(
+      CopyProgressType type, const FileSystemURL& source_url, int64 size)>
+      CopyProgressCallback;
+
+  // Used for CopyFileLocal() to report progress update.
+  // |size| is the cumulative copied bytes for the copy.
+  // At the beginning the progress callback should be called with |size| = 0,
+  // and also at the ending the progress callback should be called with |size|
+  // set to the copied file size.
+  typedef base::Callback<void(int64 size)> CopyFileProgressCallback;
+
   // Used for Write().
   typedef base::Callback<void(base::PlatformFileError result,
                               int64 bytes,
@@ -146,6 +230,9 @@ class FileSystemOperation {
   // |src_path| is a directory, the contents of |src_path| are copied to
   // |dest_path| recursively. A new file or directory is created at
   // |dest_path| as needed.
+  // |progress_callback| is periodically called to report the progress
+  // update. See also the comment of CopyProgressCallback. This callback is
+  // optional.
   //
   // For recursive case this internally creates new FileSystemOperations and
   // calls:
@@ -157,6 +244,7 @@ class FileSystemOperation {
   //
   virtual void Copy(const FileSystemURL& src_path,
                     const FileSystemURL& dest_path,
+                    const CopyProgressCallback& progress_callback,
                     const StatusCallback& callback) = 0;
 
   // Moves a file or directory from |src_path| to |dest_path|. A new file
@@ -302,6 +390,9 @@ class FileSystemOperation {
   // Copies a file from |src_url| to |dest_url|.
   // This must be called for files that belong to the same filesystem
   // (i.e. type() and origin() of the |src_url| and |dest_url| must match).
+  // |progress_callback| is periodically called to report the progress
+  // update. See also the comment of CopyFileProgressCallback. This callback is
+  // optional.
   //
   // This returns:
   // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
@@ -314,6 +405,7 @@ class FileSystemOperation {
   //
   virtual void CopyFileLocal(const FileSystemURL& src_url,
                              const FileSystemURL& dest_url,
+                             const CopyFileProgressCallback& progress_callback,
                              const StatusCallback& callback) = 0;
 
   // Moves a local file from |src_url| to |dest_url|.

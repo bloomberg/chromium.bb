@@ -124,6 +124,7 @@ void SyncableFileSystemOperation::CreateDirectory(
 void SyncableFileSystemOperation::Copy(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    const CopyProgressCallback& progress_callback,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
   if (!operation_runner_.get()) {
@@ -137,7 +138,7 @@ void SyncableFileSystemOperation::Copy(
       weak_factory_.GetWeakPtr(),
       base::Bind(&FileSystemOperation::Copy,
                  base::Unretained(impl_.get()),
-                 src_url, dest_url,
+                 src_url, dest_url, progress_callback,
                  base::Bind(&self::DidFinish, weak_factory_.GetWeakPtr()))));
   operation_runner_->PostOperationTask(task.Pass());
 }
@@ -328,9 +329,10 @@ void SyncableFileSystemOperation::RemoveDirectory(
 void SyncableFileSystemOperation::CopyFileLocal(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  impl_->CopyFileLocal(src_url, dest_url, callback);
+  impl_->CopyFileLocal(src_url, dest_url, progress_callback, callback);
 }
 
 void SyncableFileSystemOperation::MoveFileLocal(

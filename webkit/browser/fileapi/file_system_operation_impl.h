@@ -40,6 +40,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
                                const StatusCallback& callback) OVERRIDE;
   virtual void Copy(const FileSystemURL& src_url,
                     const FileSystemURL& dest_url,
+                    const CopyProgressCallback& progress_callback,
                     const StatusCallback& callback) OVERRIDE;
   virtual void Move(const FileSystemURL& src_url,
                     const FileSystemURL& dest_url,
@@ -81,6 +82,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
                                const StatusCallback& callback) OVERRIDE;
   virtual void CopyFileLocal(const FileSystemURL& src_url,
                              const FileSystemURL& dest_url,
+                             const CopyFileProgressCallback& progress_callback,
                              const StatusCallback& callback) OVERRIDE;
   virtual void MoveFileLocal(const FileSystemURL& src_url,
                              const FileSystemURL& dest_url,

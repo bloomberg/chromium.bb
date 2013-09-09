@@ -66,11 +66,15 @@ void FileSystemOperationImpl::CreateDirectory(const FileSystemURL& url,
       base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
 }
 
-void FileSystemOperationImpl::Copy(const FileSystemURL& src_url,
-                                   const FileSystemURL& dest_url,
-                                   const StatusCallback& callback) {
+void FileSystemOperationImpl::Copy(
+    const FileSystemURL& src_url,
+    const FileSystemURL& dest_url,
+    const CopyProgressCallback& progress_callback,
+    const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCopy));
   DCHECK(!recursive_operation_delegate_);
+
+  // TODO(hidehiko): Support |progress_callback|. (crbug.com/278038).
   recursive_operation_delegate_.reset(
       new CopyOrMoveOperationDelegate(
           file_system_context(),
@@ -275,9 +279,12 @@ void FileSystemOperationImpl::RemoveDirectory(
 void FileSystemOperationImpl::CopyFileLocal(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCopy));
   DCHECK(src_url.IsInSameFileSystem(dest_url));
+
+  // TODO(hidehiko): Support progress_callback.
   GetUsageAndQuotaThenRunTask(
       dest_url,
       base::Bind(&FileSystemOperationImpl::DoCopyFileLocal,

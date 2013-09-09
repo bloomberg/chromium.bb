@@ -86,6 +86,7 @@ OperationID FileSystemOperationRunner::CreateDirectory(
 OperationID FileSystemOperationRunner::Copy(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    const CopyProgressCallback& progress_callback,
     const StatusCallback& callback) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   FileSystemOperation* operation =
@@ -99,7 +100,7 @@ OperationID FileSystemOperationRunner::Copy(
   PrepareForWrite(handle.id, dest_url);
   PrepareForRead(handle.id, src_url);
   operation->Copy(
-      src_url, dest_url,
+      src_url, dest_url, progress_callback,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
                  handle, callback));
   return handle.id;
@@ -439,6 +440,7 @@ OperationID FileSystemOperationRunner::RemoveDirectory(
 OperationID FileSystemOperationRunner::CopyFileLocal(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   FileSystemOperation* operation =
@@ -450,7 +452,7 @@ OperationID FileSystemOperationRunner::CopyFileLocal(
     return handle.id;
   }
   operation->CopyFileLocal(
-      src_url, dest_url,
+      src_url, dest_url, progress_callback,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
                  handle, callback));
   return handle.id;
