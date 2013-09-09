@@ -2512,9 +2512,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   int driver_bug_workarounds = 0;
   if (workarounds().needs_glsl_built_in_function_emulation)
     driver_bug_workarounds |= SH_EMULATE_BUILT_IN_FUNCTIONS;
-  // TODO(zmo): Uncomment the below two lines when ANGLE CL is rolled in.
-  // if (workarounds().init_gl_position_in_vertex_shader)
-  //   driver_bug_workarounds |= SH_INIT_GL_POSITION;
+  if (workarounds().init_gl_position_in_vertex_shader)
+    driver_bug_workarounds |= SH_INIT_GL_POSITION;
 
   ShaderTranslatorCache* cache = ShaderTranslatorCache::GetInstance();
   vertex_translator_ = cache->GetTranslator(
