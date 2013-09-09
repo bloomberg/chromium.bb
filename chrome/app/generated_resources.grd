@@ -12089,9 +12089,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_REMOVE_FOLDER_SHORTCUT_BUTTON_LABEL" desc="Menu item label, unpinning the selected folder from the left nav.">
         Remove shortcut
       </message>
-      <message name="IDS_FILE_BROWSER_SHORTCUT_TARGET_UNAVAILABLE" desc="The message which is shown when the user selects a shortcut to a missing folder and ask whether to remove said shortcut.">
-        This folder shortcut has been modified and no longer works. Do you want to remove it?
-      </message>
       <message name="IDS_FILE_BROWSER_SHARE_BUTTON_LABEL" desc="Menu item label, showing dialog to share the selected file.">
         Share
       </message>

@@ -18,13 +18,16 @@ function NavigationModelItem(filesystem, path, entry) {
   this.filesystem_ = filesystem;
   this.path_ = path;
   this.entry_ = entry;
+  this.fileError_ = null;
 
   this.resolvingQueue_ = new AsyncUtil.Queue();
+
+  Object.seal(this);
 }
 
 NavigationModelItem.prototype = {
-  __proto__: cr.EventTarget.prototype,
-  get path() { return this.path_; }
+  get path() { return this.path_; },
+  get fileError() { return this.fileError_; }
 };
 
 /**
@@ -41,14 +44,18 @@ NavigationModelItem.prototype.getCachedEntry = function() {
 /**
  * @param {FileSystem} filesystem FileSystem.
  * @param {string} path Path.
+ * @param {function(NavigationModelItem)} callback Called when the resolving is
+ *     success/failed with the created NavigationModelItem.
  * @return {NavigationModelItem} Created NavigationModelItem.
  */
-NavigationModelItem.createWithPath = function(filesystem, path) {
+NavigationModelItem.createWithPath = function(filesystem, path, callback) {
   var modelItem = new NavigationModelItem(
       filesystem,
       path,
       null);
-  modelItem.resolveDirectoryEntry_();
+  modelItem.resolveDirectoryEntry_(function() {
+    callback(modelItem);
+  });
   return modelItem;
 };
 
@@ -85,20 +92,24 @@ NavigationModelItem.prototype.getEntryAsync = function(callback) {
 
 /**
  * Resolves an directory entry.
+ * @param {function()} callback Called when the resolving is success/failed.
  * @private
  */
-NavigationModelItem.prototype.resolveDirectoryEntry_ = function() {
+NavigationModelItem.prototype.resolveDirectoryEntry_ = function(callback) {
   this.resolvingQueue_.run(function(continueCallback) {
     this.filesystem_.root.getDirectory(
         this.path_,
         {create: false},
         function(directoryEntry) {
           this.entry_ = directoryEntry;
+          callback();
           continueCallback();
         }.bind(this),
         function(error) {
           this.entry_ = null;
+          this.fileError_ = error;
           console.error('Error on resolving path: ' + this.path_);
+          callback();
           continueCallback();
         }.bind(this));
   }.bind(this));
@@ -131,8 +142,15 @@ function NavigationListModel(filesystem, volumesList, shortcutList) {
     return NavigationModelItem.createWithEntry(entry);
   };
   var pathToModelItem = function(path) {
-    return NavigationModelItem.createWithPath(filesystem, path);
-  };
+    return NavigationModelItem.createWithPath(filesystem, path,
+        function(modelItem) {
+          if (!modelItem.getCachedEntry() &&
+              modelItem.fileError &&
+              modelItem.fileError.code === FileError.NOT_FOUND_ERR) {
+            this.onItemNotFoundError(modelItem);
+          }
+        }.bind(this));
+  }.bind(this);
 
   /**
    * Type of updated list.
@@ -328,6 +346,37 @@ NavigationListModel.prototype.indexOf = function(modelItem, opt_fromIndex) {
 };
 
 /**
+ * Called when one od the items is not found on the filesystem.
+ * @param {NavigationModelItem} modelItem The entry which is not found.
+ */
+NavigationListModel.prototype.onItemNotFoundError = function(modelItem) {
+  var index = this.indexOf(modelItem);
+  if (index === -1) {
+    // Invalid modelItem.
+  } else if (index < this.volumesList_.length) {
+    // The item is in the volume list.
+    // Not implemented.
+    // TODO(yoshiki): Implement it when necessary.
+  } else {
+    // The item is in the folder shortcut list.
+    if (this.isDriveMounted())
+      this.shortcutListModel_.remove(modelItem.path);
+  }
+};
+
+/**
+ * Returns if the drive is mounted or not.
+ * @return {boolean} True if the drive is mounted, false otherwise.
+ */
+NavigationListModel.prototype.isDriveMounted = function() {
+  for (var i = 0; i < this.volumesList_.length; i++) {
+    if (PathUtil.isDriveBasedPath(this.item(i).path))
+      return true;
+  }
+  return false;
+};
+
+/**
  * A navigation list item.
  * @constructor
  * @extends {HTMLLIElement}
@@ -336,7 +385,7 @@ var NavigationListItem = cr.ui.define('li');
 
 NavigationListItem.prototype = {
   __proto__: HTMLLIElement.prototype,
-  get modelItem() { return this.modelItem_; },
+  get modelItem() { return this.modelItem_; }
 };
 
 /**
@@ -586,7 +635,7 @@ NavigationList.prototype.renderRoot_ = function(modelItem) {
     if (item.selected &&
         modelItem.path !== this.directoryModel_.getCurrentDirPath()) {
       metrics.recordUserAction('FolderShortcut.Navigate');
-      this.changeDirectory_(modelItem.path);
+      this.changeDirectory_(modelItem);
     }
   }.bind(this);
   item.addEventListener('click', handleClick);
@@ -611,16 +660,16 @@ NavigationList.prototype.renderRoot_ = function(modelItem) {
  * If the given path is not found, a 'shortcut-target-not-found' event is
  * fired.
  *
- * @param {string} path Path of the directory to be chagned to.
+ * @param {NavigationModelItem} modelItem Directory to be chagned to.
  * @private
  */
-NavigationList.prototype.changeDirectory_ = function(path) {
-  var onErrorCallback = function() {
-    // TODO(yoshiki): Remove this if the teporary patch is merged to the M30.
-    // crbug.com/270436
+NavigationList.prototype.changeDirectory_ = function(modelItem) {
+  var onErrorCallback = function(error) {
+    if (error.code === FileError.NOT_FOUND_ERR)
+      this.dataModel.onItemNotFoundError(modelItem);
   }.bind(this);
 
-  this.directoryModel_.changeDirectory(path, onErrorCallback);
+  this.directoryModel_.changeDirectory(modelItem.path, onErrorCallback);
 };
 
 /**
@@ -647,7 +696,8 @@ NavigationList.prototype.selectByIndex = function(index) {
   if (index < 0 || index > this.dataModel.length - 1)
     return false;
 
-  var newPath = this.dataModel.item(index).path;
+  var newModelItem = this.dataModel.item(index);
+  var newPath = newModelItem.path;
   if (!newPath)
     return false;
 
@@ -658,7 +708,7 @@ NavigationList.prototype.selectByIndex = function(index) {
     return false;
 
   metrics.recordUserAction('FolderShortcut.Navigate');
-  this.changeDirectory_(newPath);
+  this.changeDirectory_(newModelItem);
   return true;
 };
 
