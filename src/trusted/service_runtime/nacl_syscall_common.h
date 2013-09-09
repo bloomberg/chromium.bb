@@ -287,6 +287,10 @@ int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
 
 int32_t NaClSysSchedYield(struct NaClAppThread *natp);
 
+int32_t NaClSysSysconf(struct NaClAppThread *natp,
+                       int32_t              name,
+                       int32_t              *result);
+
 int32_t NaClSysExceptionHandler(struct NaClAppThread *natp,
                                 uint32_t             handler_addr,
                                 uint32_t             old_handler);

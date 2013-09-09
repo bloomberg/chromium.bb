@@ -11,6 +11,9 @@
 #include <sys/stat.h>
 
 #include <stdio.h>
+#if NACL_WINDOWS
+#include <windows.h>
+#endif
 
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 
@@ -47,6 +50,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
+#include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_test_crash.h"
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
@@ -3426,6 +3430,64 @@ int32_t NaClSysSchedYield(struct NaClAppThread *natp) {
 
   NaClThreadYield();
   return 0;
+}
+
+int32_t NaClSysSysconf(struct NaClAppThread *natp,
+                       int32_t              name,
+                       int32_t              *result) {
+  struct NaClApp  *nap = natp->nap;
+  int32_t         retval = -NACL_ABI_EINVAL;
+  int32_t         result_value;
+
+  NaClLog(3,
+          ("Entered NaClSysSysconf(%08"NACL_PRIxPTR
+           "x, %d, 0x%08"NACL_PRIxPTR")\n"),
+          (uintptr_t) natp, name, (uintptr_t) result);
+
+  switch (name) {
+    case NACL_ABI__SC_NPROCESSORS_ONLN: {
+#if NACL_WINDOWS
+      static int32_t number_of_workers = 0;
+      if (0 == number_of_workers) {
+        SYSTEM_INFO si;
+        GetSystemInfo(&si);
+        number_of_workers = (int32_t) si.dwNumberOfProcessors;
+      }
+      result_value = number_of_workers;
+#elif NACL_LINUX || NACL_OSX
+      if (-1 == nap->sc_nprocessors_onln) {
+        /* Unable to get the number of processors at startup. */
+        goto cleanup;
+      }
+      result_value = nap->sc_nprocessors_onln;
+#else
+#error Unsupported platform
+#endif
+      break;
+    }
+    case NACL_ABI__SC_SENDMSG_MAX_SIZE: {
+      /* TODO(sehr,bsy): this value needs to be determined at run time. */
+      const int32_t kImcSendMsgMaxSize = 1 << 16;
+      result_value = kImcSendMsgMaxSize;
+      break;
+    }
+    case NACL_ABI__SC_PAGESIZE: {
+      result_value = 1 << 16;  /* always 64k pages */
+      break;
+    }
+    default: {
+      retval = -NACL_ABI_EINVAL;
+      goto cleanup;
+    }
+  }
+  if (!NaClCopyOutToUser(nap, (uintptr_t) result, &result_value,
+                         sizeof result_value)) {
+    retval = -NACL_ABI_EFAULT;
+    goto cleanup;
+  }
+  retval = 0;
+cleanup:
+  return retval;
 }
 
 int32_t NaClSysExceptionHandler(struct NaClAppThread *natp,
