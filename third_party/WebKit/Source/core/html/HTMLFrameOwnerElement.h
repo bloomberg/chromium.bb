@@ -83,6 +83,12 @@ inline HTMLFrameOwnerElement* toHTMLFrameOwnerElement(Node* node)
     return static_cast<HTMLFrameOwnerElement*>(node);
 }
 
+inline const HTMLFrameOwnerElement* toHTMLFrameOwnerElement(const Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isFrameOwnerElement());
+    return static_cast<const HTMLFrameOwnerElement*>(node);
+}
+
 class SubframeLoadingDisabler {
 public:
     explicit SubframeLoadingDisabler(Node* root)

@@ -119,6 +119,16 @@ inline HTMLObjectElement* toHTMLObjectElement(Node* node)
     return static_cast<HTMLObjectElement*>(node);
 }
 
+inline const HTMLObjectElement* toHTMLObjectElement(const FormAssociatedElement* element)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!element || !element->isFormControlElement());
+    const HTMLObjectElement* objectElement = static_cast<const HTMLObjectElement*>(element);
+    // We need to assert after the cast because FormAssociatedElement doesn't
+    // have hasTagName.
+    ASSERT_WITH_SECURITY_IMPLICATION(!objectElement || objectElement->hasTagName(HTMLNames::objectTag));
+    return objectElement;
+}
+
 }
 
 #endif

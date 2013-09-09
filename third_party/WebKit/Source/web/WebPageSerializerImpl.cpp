@@ -135,7 +135,7 @@ String WebPageSerializerImpl::preActionBeforeSerializeOpenTag(
         // have overrided the META which have correct charset declaration after
         // serializing open tag of HEAD element.
         if (element->hasTagName(HTMLNames::metaTag)) {
-            const HTMLMetaElement* meta = static_cast<const HTMLMetaElement*>(element);
+            const HTMLMetaElement* meta = toHTMLMetaElement(element);
             // Check whether the META tag has declared charset or not.
             String equiv = meta->httpEquiv();
             if (equalIgnoringCase(equiv, "content-type")) {
