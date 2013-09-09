@@ -5,9 +5,12 @@
 #include "chrome/browser/ui/webui/downloads_ui_browsertest.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/test/test_utils.h"
 
 DownloadsUIBrowserTest::DownloadsUIBrowserTest() {
 }
@@ -18,4 +21,10 @@ DownloadsUIBrowserTest::~DownloadsUIBrowserTest() {
 void DownloadsUIBrowserTest::SetDeleteAllowed(bool allowed) {
   browser()->profile()->GetPrefs()->
       SetBoolean(prefs::kAllowDeletingBrowserHistory, allowed);
+}
+
+void DownloadsUIBrowserTest::ChangeProfileToSupervised() {
+  ManagedUserServiceFactory::GetForProfile(
+      browser()->profile())->InitForTesting();
+  content::RunAllPendingInMessageLoop();
 }

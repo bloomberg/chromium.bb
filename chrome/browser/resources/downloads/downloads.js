@@ -339,6 +339,9 @@ function Download(download) {
         loadTimeData.getString('control_removefromlist'));
     this.controlRemove_.appendChild(text);
   }
+  if (!loadTimeData.getBoolean('show_delete_history'))
+    this.controlRemove_.hidden = true;
+
   this.nodeControls_.appendChild(this.controlRemove_);
 
   this.controlCancel_ = createLink(this.cancel_.bind(this),
@@ -733,6 +736,9 @@ function load() {
         loadTimeData.getString('clear_all'));
     clearAllHolder.classList.add('disabled-link');
   }
+  if (!loadTimeData.getBoolean('show_delete_history'))
+    clearAllHolder.hidden = true;
+
   clearAllHolder.appendChild(clearAllElement);
   clearAllElement.oncontextmenu = function() { return false; };
 

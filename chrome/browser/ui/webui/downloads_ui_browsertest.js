@@ -81,28 +81,56 @@ BaseDownloadsWebUITest.prototype = {
 
     return download;
   },
+
+  /**
+   * Asserts the correctness of the state of the UI elements
+   * that delete the download history.
+   * @param {boolean} allowDelete True if download history deletion is
+   *     allowed and false otherwise.
+   * @param {boolean} expectControlsHidden True if the controls to delete
+   *     download history are expected to be hidden and false otherwise.
+   */
+  testHelper: function(allowDelete, expectControlsHidden) {
+    var clearAllElements = document.getElementsByClassName('clear-all-link');
+    var disabledElements = document.getElementsByClassName('disabled-link');
+    var removeLinkElements =
+        document.getElementsByClassName('control-remove-link');
+
+    // "Clear all" should be a link only when deletions are allowed.
+    expectEquals(allowDelete ? 1 : 0, clearAllElements.length);
+
+    // There should be no disabled links when deletions are allowed.
+    // On the other hand, when deletions are not allowed, "Clear All"
+    // and all "Remove from list" links should be disabled.
+    expectEquals(allowDelete ? 0 : TOTAL_RESULT_COUNT + 1,
+        disabledElements.length);
+
+    // All "Remove from list" items should be links when deletions are allowed.
+    // On the other hand, when deletions are not allowed, all
+    // "Remove from list" items should be text.
+    expectEquals(allowDelete ? TOTAL_RESULT_COUNT : 0,
+        removeLinkElements.length);
+
+    if (allowDelete) {
+      // "Clear all" should not be hidden.
+      expectFalse(clearAllElements[0].hidden);
+
+      // No "Remove from list" items should be hidden.
+      expectFalse(removeLinkElements[0].hidden);
+    } else {
+      expectEquals(expectControlsHidden, disabledElements[0].hidden);
+    }
+
+    // The model is updated synchronously, even though the actual
+    // back-end removal (tested elsewhere) is asynchronous.
+    clearAll();
+    expectEquals(allowDelete ? 0 : TOTAL_RESULT_COUNT, downloads.size());
+  },
 };
 
 // Test UI when removing entries is allowed.
-TEST_F('BaseDownloadsWebUITest', 'deleteAllowed', function() {
-  // "Clear all" should be a link.
-  var clearAllHolder = document.querySelectorAll('#clear-all-holder > a');
-  expectEquals(clearAllHolder.length, 1);
-
-  // All the "Remove from list" items should be links.
-  var removeLinks = document.querySelectorAll(
-      '.controls > a.control-remove-link');
-  expectEquals(removeLinks.length, TOTAL_RESULT_COUNT);
-
-  // There should be no disabled text "links".
-  var disabledLinks = document.querySelectorAll('.disabled-link');
-  expectEquals(disabledLinks.length, 0);
-
-  // The model is updated synchronously, even though the actual back-end removal
-  // (tested elsewhere) is asynchronous.
-  clearAll();
-  expectEquals(downloads.size(), 0);
-
+TEST_F('BaseDownloadsWebUITest', 'DeleteAllowed', function() {
+  this.testHelper(true, false);
   // TODO(pamg): Mock out the back-end calls, so we can also test removing a
   // single item.
   testDone();
@@ -125,34 +153,32 @@ DownloadsWebUIDeleteProhibitedTest.prototype = {
 };
 
 // Test UI when removing entries is prohibited.
-TEST_F('DownloadsWebUIDeleteProhibitedTest', 'deleteProhibited', function() {
-  // "Clear all" should not be a link.
-  var clearAllText = document.querySelectorAll(
-      '#clear-all-holder.disabled-link');
-  expectEquals(clearAllText.length, 1);
-  expectEquals(clearAllText[0].nodeName, 'SPAN');
-
-  // There should be no "Clear all" link.
-  var clearAllLinks = document.querySelectorAll('clear-all-link');
-  expectEquals(clearAllLinks.length, 0);
-
-  // All the "Remove from list" items should be text. Check only one, to avoid
-  // spam in case of failure.
-  var removeTexts = document.querySelectorAll('.controls > .disabled-link');
-  expectEquals(removeTexts.length, TOTAL_RESULT_COUNT);
-  expectEquals(removeTexts[0].nodeName, 'SPAN');
-
-  // There should be no "Remove from list" links.
-  var removeLinks = document.querySelectorAll('control-remove-link');
-  expectEquals(removeLinks.length, 0);
-
-  // Attempting to remove items anyway should fail.
-  // The model would have been cleared synchronously, even though the actual
-  // back-end removal (also disabled, but tested elsewhere) is asynchronous.
-  clearAll();
-  expectEquals(downloads.size(), TOTAL_RESULT_COUNT);
-
+TEST_F('DownloadsWebUIDeleteProhibitedTest', 'DeleteProhibited', function() {
+  this.testHelper(false, false);
   // TODO(pamg): Mock out the back-end calls, so we can also test removing a
   // single item.
+  testDone();
+});
+
+/**
+ * Fixture for Downloads WebUI testing for a supervised user.
+ * @extends {BaseDownloadsWebUITest}
+ * @constructor
+ */
+function DownloadsWebUIForSupervisedUsersTest() {}
+
+DownloadsWebUIForSupervisedUsersTest.prototype = {
+  __proto__: BaseDownloadsWebUITest.prototype,
+
+  /** @override */
+  testGenPreamble: function() {
+    GEN('  ChangeProfileToSupervised();');
+  },
+};
+
+// Test UI for supervised users, removing entries should be disabled
+// and removal controls should be hidden.
+TEST_F('DownloadsWebUIForSupervisedUsersTest', 'SupervisedUsers', function() {
+  this.testHelper(false, true);
   testDone();
 });
