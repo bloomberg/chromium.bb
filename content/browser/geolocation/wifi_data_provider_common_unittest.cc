@@ -42,7 +42,7 @@ class MockWlanApi : public WifiDataProviderCommon::WlanApiInterface {
   }
 };
 
-class MockPollingPolicy : public PollingPolicyInterface {
+class MockPollingPolicy : public WifiPollingPolicy {
  public:
   MockPollingPolicy() {
     ON_CALL(*this,PollingInterval())
@@ -87,7 +87,7 @@ class WifiDataProviderCommonWithMock : public WifiDataProviderCommon {
     CHECK(new_wlan_api_ != NULL);
     return new_wlan_api_.release();
   }
-  virtual PollingPolicyInterface* NewPollingPolicy() OVERRIDE {
+  virtual WifiPollingPolicy* NewPollingPolicy() OVERRIDE {
     CHECK(new_polling_policy_ != NULL);
     return new_polling_policy_.release();
   }

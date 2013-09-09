@@ -184,11 +184,11 @@ MacWifiDataProvider::WlanApiInterface* MacWifiDataProvider::NewWlanApi() {
   return NULL;
 }
 
-PollingPolicyInterface* MacWifiDataProvider::NewPollingPolicy() {
-  return new GenericPollingPolicy<kDefaultPollingInterval,
-                                  kNoChangePollingInterval,
-                                  kTwoNoChangePollingInterval,
-                                  kNoWifiPollingIntervalMilliseconds>;
+WifiPollingPolicy* MacWifiDataProvider::NewPollingPolicy() {
+  return new GenericWifiPollingPolicy<kDefaultPollingInterval,
+                                      kNoChangePollingInterval,
+                                      kTwoNoChangePollingInterval,
+                                      kNoWifiPollingIntervalMilliseconds>;
 }
 
 }  // namespace content

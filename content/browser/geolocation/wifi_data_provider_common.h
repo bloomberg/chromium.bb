@@ -12,51 +12,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/browser/geolocation/wifi_data_provider.h"
+#include "content/browser/geolocation/wifi_polling_policy.h"
 #include "content/common/content_export.h"
 
 namespace content {
 
 // Converts a MAC address stored as an array of uint8 to a string.
 string16 MacAddressAsString16(const uint8 mac_as_int[6]);
-
-// Allows sharing and mocking of the update polling policy function.
-class PollingPolicyInterface {
- public:
-  virtual ~PollingPolicyInterface() {}
-  // Calculates the new polling interval for wiFi scans, given the previous
-  // interval and whether the last scan produced new results.
-  virtual void UpdatePollingInterval(bool scan_results_differ) = 0;
-  virtual int PollingInterval() = 0;
-  virtual int NoWifiInterval() = 0;
-};
-
-// Generic polling policy, constants are compile-time parameterized to allow
-// tuning on a per-platform basis.
-template<int DEFAULT_INTERVAL,
-         int NO_CHANGE_INTERVAL,
-         int TWO_NO_CHANGE_INTERVAL,
-         int NO_WIFI_INTERVAL>
-class GenericPollingPolicy : public PollingPolicyInterface {
- public:
-  GenericPollingPolicy() : polling_interval_(DEFAULT_INTERVAL) {}
-  // PollingPolicyInterface
-  virtual void UpdatePollingInterval(bool scan_results_differ) {
-    if (scan_results_differ) {
-      polling_interval_ = DEFAULT_INTERVAL;
-    } else if (polling_interval_ == DEFAULT_INTERVAL) {
-      polling_interval_ = NO_CHANGE_INTERVAL;
-    } else {
-      DCHECK(polling_interval_ == NO_CHANGE_INTERVAL ||
-             polling_interval_ == TWO_NO_CHANGE_INTERVAL);
-      polling_interval_ = TWO_NO_CHANGE_INTERVAL;
-    }
-  }
-  virtual int PollingInterval() { return polling_interval_; }
-  virtual int NoWifiInterval() { return NO_WIFI_INTERVAL; }
-
- private:
-  int polling_interval_;
-};
 
 // Base class to promote code sharing between platform specific wifi data
 // providers. It's optional for specific platforms to derive this, but if they
@@ -88,7 +50,7 @@ class CONTENT_EXPORT WifiDataProviderCommon : public WifiDataProviderImplBase {
   virtual WlanApiInterface* NewWlanApi() = 0;
 
   // Returns ownership.
-  virtual PollingPolicyInterface* NewPollingPolicy() = 0;
+  virtual WifiPollingPolicy* NewPollingPolicy() = 0;
 
  private:
   // Runs a scan. Calls the callbacks if new data is found.
@@ -106,7 +68,7 @@ class CONTENT_EXPORT WifiDataProviderCommon : public WifiDataProviderImplBase {
   scoped_ptr<WlanApiInterface> wlan_api_;
 
   // Controls the polling update interval.
-  scoped_ptr<PollingPolicyInterface> polling_policy_;
+  scoped_ptr<WifiPollingPolicy> polling_policy_;
 
   // Holder for delayed tasks; takes care of cleanup.
   base::WeakPtrFactory<WifiDataProviderCommon> weak_factory_;

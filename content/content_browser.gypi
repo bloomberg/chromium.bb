@@ -570,6 +570,7 @@
     'browser/geolocation/wifi_data_provider_mac.h',
     'browser/geolocation/wifi_data_provider_win.cc',
     'browser/geolocation/wifi_data_provider_win.h',
+    'browser/geolocation/wifi_polling_policy.h',
     'browser/gpu/browser_gpu_channel_host_factory.cc',
     'browser/gpu/browser_gpu_channel_host_factory.h',
     'browser/gpu/compositor_util.cc',

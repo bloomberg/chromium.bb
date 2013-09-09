@@ -34,10 +34,10 @@ void WifiDataProviderChromeOs::StartDataProvider() {
 
   DCHECK(polling_policy_ == NULL);
   polling_policy_.reset(
-      new GenericPollingPolicy<kDefaultPollingIntervalMilliseconds,
-                               kNoChangePollingIntervalMilliseconds,
-                               kTwoNoChangePollingIntervalMilliseconds,
-                               kNoWifiPollingIntervalMilliseconds>);
+      new GenericWifiPollingPolicy<kDefaultPollingIntervalMilliseconds,
+                                   kNoChangePollingIntervalMilliseconds,
+                                   kTwoNoChangePollingIntervalMilliseconds,
+                                   kNoWifiPollingIntervalMilliseconds>);
 
   ScheduleStart();
 }

@@ -9,7 +9,6 @@
 #include "content/common/content_export.h"
 
 namespace content {
-class PollingPolicyInterface;
 
 class CONTENT_EXPORT Win32WifiDataProvider : public WifiDataProviderCommon {
  public:
@@ -20,7 +19,7 @@ class CONTENT_EXPORT Win32WifiDataProvider : public WifiDataProviderCommon {
 
   // WifiDataProviderCommon
   virtual WlanApiInterface* NewWlanApi();
-  virtual PollingPolicyInterface* NewPollingPolicy();
+  virtual WifiPollingPolicy* NewPollingPolicy();
 
   DISALLOW_COPY_AND_ASSIGN(Win32WifiDataProvider);
 };

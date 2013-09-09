@@ -21,7 +21,7 @@ class MacWifiDataProvider : public WifiDataProviderCommon {
 
   // WifiDataProviderCommon
   virtual WlanApiInterface* NewWlanApi() OVERRIDE;
-  virtual PollingPolicyInterface* NewPollingPolicy() OVERRIDE;
+  virtual WifiPollingPolicy* NewPollingPolicy() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(MacWifiDataProvider);
 };

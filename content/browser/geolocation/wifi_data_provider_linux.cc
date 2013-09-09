@@ -362,11 +362,11 @@ WifiDataProviderLinux::NewWlanApi() {
   return NULL;
 }
 
-PollingPolicyInterface* WifiDataProviderLinux::NewPollingPolicy() {
-  return new GenericPollingPolicy<kDefaultPollingIntervalMilliseconds,
-                                  kNoChangePollingIntervalMilliseconds,
-                                  kTwoNoChangePollingIntervalMilliseconds,
-                                  kNoWifiPollingIntervalMilliseconds>;
+WifiPollingPolicy* WifiDataProviderLinux::NewPollingPolicy() {
+  return new GenericWifiPollingPolicy<kDefaultPollingIntervalMilliseconds,
+                                      kNoChangePollingIntervalMilliseconds,
+                                      kTwoNoChangePollingIntervalMilliseconds,
+                                      kNoWifiPollingIntervalMilliseconds>;
 }
 
 WifiDataProviderCommon::WlanApiInterface*
