@@ -292,11 +292,11 @@ void NaClflProtectAndDesiredAccessMap(int prot,
     /* PROT_READ | PROT_WRITE */
     M(0, 0, 0, "file open for read only; no shared read/write allowed"),
     /* PROT_EXEC */
-    M(PAGE_EXECUTE_READ, PAGE_EXECUTE, FILE_MAP_READ | FILE_MAP_EXECUTE,
-      NULL),
+    M(PAGE_EXECUTE_WRITECOPY, PAGE_EXECUTE,
+      FILE_MAP_READ | FILE_MAP_EXECUTE, NULL),
     /* PROT_READ | PROT_EXEC */
-    M(PAGE_EXECUTE_READ, PAGE_EXECUTE_READ, FILE_MAP_READ | FILE_MAP_EXECUTE,
-      NULL),
+    M(PAGE_EXECUTE_WRITECOPY, PAGE_EXECUTE_READ,
+      FILE_MAP_READ | FILE_MAP_EXECUTE, NULL),
     /* PROT_WRITE | PROT_EXEC */
     M(0, 0, 0, "file open for read only; no shared write/exec allowed"),
     /* PROT_READ | PROT_WRITE | PROT_EXEC */
@@ -314,10 +314,8 @@ void NaClflProtectAndDesiredAccessMap(int prot,
 
     /*
      * NB: PAGE_EXECUTE_WRITECOPY is not supported on Server 2003 or
-     * XP, which means that the mmap will fail.  The behavior of
-     * PAGE_EXECUTE_WRITECOPY is the same as PAGE_EXECUTE_READ, so we
-     * just use that (possibly for backward compatibility / eventual
-     * transition?).
+     * XP, which means that the mmap will fail.  In this case we fallback
+     * to PAGE_EXECUTE_READ.
      *
      * Even with PAGE_EXECUTE_WRITECOPY, the PROT_WRITE | PROT_EXEC
      * case where we are asking for FILE_MAP_COPY | FILE_MAP_EXECUTE
@@ -326,16 +324,16 @@ void NaClflProtectAndDesiredAccessMap(int prot,
      */
 
     /* PROT_EXEC */
-    M(PAGE_EXECUTE_READ, PAGE_EXECUTE,
+    M(PAGE_EXECUTE_WRITECOPY, PAGE_EXECUTE,
       FILE_MAP_READ | FILE_MAP_EXECUTE, NULL),
     /* PROT_READ | PROT_EXEC */
-    M(PAGE_EXECUTE_READ, PAGE_EXECUTE_READ,
+    M(PAGE_EXECUTE_WRITECOPY, PAGE_EXECUTE_READ,
       FILE_MAP_READ | FILE_MAP_EXECUTE, NULL),
     /* PROT_WRITE | PROT_EXEC */
-    M(PAGE_EXECUTE_READ, PAGE_EXECUTE_WRITECOPY,
+    M(PAGE_EXECUTE_WRITECOPY, PAGE_EXECUTE_WRITECOPY,
       FILE_MAP_COPY | FILE_MAP_EXECUTE, NULL),
     /* PROT_READ | PROT_WRITE | PROT_EXEC */
-    M(PAGE_EXECUTE_READ, PAGE_EXECUTE_WRITECOPY,
+    M(PAGE_EXECUTE_WRITECOPY, PAGE_EXECUTE_WRITECOPY,
       FILE_MAP_COPY | FILE_MAP_EXECUTE, NULL),
 
     /* RDWR */
@@ -513,6 +511,14 @@ static DWORD NaClflProtectRemoveExecute(DWORD flProtect) {
   return flProtect;
 }
 
+/* Check if flProtect has executable permission. */
+static int NaClflProtectHasExecute(DWORD flProtect) {
+  return flProtect == PAGE_EXECUTE ||
+         flProtect == PAGE_EXECUTE_READ ||
+         flProtect == PAGE_EXECUTE_READWRITE ||
+         flProtect == PAGE_EXECUTE_WRITECOPY;
+}
+
 /*
  * TODO(mseaborn): Reduce duplication between this function and
  * nacl::Map()/NaClMap().
@@ -671,7 +677,12 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   }
   NaClFastMutexUnlock(&d->mu);
 
-  do {
+  /*
+   * Finite retry cycle.  We can fallback from PAGE_EXECUTE_WRITECOPY to
+   * PAGE_EXECUTE_READ and from having executable permissions to not having
+   * them.
+   */
+  while (1) {
     /*
      * If hFile is INVALID_HANDLE_VALUE, the memory is backed by the
      * system paging file.  Why does it returns NULL instead of
@@ -683,8 +694,20 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
                              dwMaximumSizeHigh,
                              dwMaximumSizeLow,
                              NULL);
-    if (NULL == hMap) {
-      if (retry_fallback && 0 == (prot & NACL_ABI_PROT_EXEC)) {
+    if (NULL == hMap && retry_fallback) {
+      /*
+       * PAGE_EXECUTE_WRITECOPY is not supported on Windows XP so we fallback
+       * to PAGE_EXECUTE_READ.
+       */
+      if (PAGE_EXECUTE_WRITECOPY == flMappingProtect) {
+        NaClLog(3,
+                "NaClHostDescMap: CreateFileMapping failed, retrying with"
+                " PAGE_EXECUTE_READ instead of PAGE_EXECUTE_WRITECOPY\n");
+        flMappingProtect = PAGE_EXECUTE_READ;
+        continue;
+      }
+      if (0 == (prot & NACL_ABI_PROT_EXEC) &&
+          NaClflProtectHasExecute(flMappingProtect)) {
         NaClLog(3,
                 "NaClHostDescMap: CreateFileMapping failed, retrying without"
                 " execute permission.  Original flMappingProtect 0x%x\n",
@@ -705,27 +728,27 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
                 "NaClHostDescMap: fallback flMappingProtect 0x%x,"
                 " dwDesiredAccess 0x%x, flProtect 0x%x\n",
                 flMappingProtect, dwDesiredAccess, flProtect);
-      } else {
-        NaClLog(3,
-                "NaClHostDescMap: not retrying, since caller explicitly asked"
-                " for NACL_ABI_PROT_EXEC\n");
-        break;
+        continue;
       }
-    } else {
-      /*
-       * Remember successful flProtect used.  Note that this just
-       * ensures reads of d->flMappingProtect gets a consistent value;
-       * we have a potential race where two threads perform mmap and in
-       * parallel determine the replacement flProtect value.  This is
-       * okay, since those two threads should arrive at the same
-       * replacement value.  This could be replaced with an atomic
-       * word.
-       */
-      NaClFastMutexLock(&d->mu);
-      d->flMappingProtect = flMappingProtect;
-      NaClFastMutexUnlock(&d->mu);
+      NaClLog(3,
+              "NaClHostDescMap: not retrying, since caller explicitly asked"
+              " for NACL_ABI_PROT_EXEC\n");
+      break;
     }
-  } while (--retry_fallback >= 0);
+    /*
+     * Remember successful flProtect used.  Note that this just
+     * ensures reads of d->flMappingProtect gets a consistent value;
+     * we have a potential race where two threads perform mmap and in
+     * parallel determine the replacement flProtect value.  This is
+     * okay, since those two threads should arrive at the same
+     * replacement value.  This could be replaced with an atomic
+     * word.
+     */
+    NaClFastMutexLock(&d->mu);
+    d->flMappingProtect = flMappingProtect;
+    NaClFastMutexUnlock(&d->mu);
+    break;
+  }
 
   if (NULL == hMap) {
     DWORD err = GetLastError();

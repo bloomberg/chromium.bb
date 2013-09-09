@@ -169,3 +169,15 @@ node = env.CommandTest(
 
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_syscall_thread_test')
 env.TestBindsFixedTcpPort(node)
+
+# We don't run this test on non-x86 architectures or PNaCl since it
+# contains inline assembly.
+if env.Bit('target_x86') and not env.Bit('bitcode'):
+  node = env.CommandTest(
+      'gdb_mmap.out',
+      extra_deps=extra_deps,
+      command=['${PYTHON}', env.File('mmap.py'),
+               '--nexe', gdb_test_guest] + test_args)
+
+  env.AddNodeToTestSuite(node, test_suites, 'run_gdb_mmap_test')
+  env.TestBindsFixedTcpPort(node)

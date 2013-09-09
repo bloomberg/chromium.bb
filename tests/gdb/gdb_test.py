@@ -17,6 +17,12 @@ def AssertEquals(x, y):
     raise AssertionError('%r != %r' % (x, y))
 
 
+def ParseNumber(number):
+  if number.startswith('0x'):
+    return int(number[2:], 16)
+  return int(number)
+
+
 def FilenameToUnix(str):
   return str.replace('\\', '/')
 
@@ -53,11 +59,11 @@ def EnsurePortIsAvailable(addr=SEL_LDR_RSP_SOCKET_ADDR):
 
 
 def LaunchSelLdr(sel_ldr_command, options, name):
-  args = sel_ldr_command + ['-g']
+  args = sel_ldr_command + ['-g', '-a']
   if options.irt is not None:
     args += ['-B', options.irt]
   if options.ld_so is not None:
-    args += ['-a', '--', options.ld_so,
+    args += ['--', options.ld_so,
              '--library-path', options.library_path]
   args += [FilenameToUnix(options.nexe), name]
   EnsurePortIsAvailable()
@@ -250,6 +256,9 @@ class Gdb(object):
 
   def Eval(self, expression):
     return self.Command('-data-evaluate-expression ' + expression)['value']
+
+  def GetPC(self):
+    return ParseNumber(self.Eval('$pc')) & ((1 << 32) - 1)
 
   def LoadManifestFile(self):
     assert self._manifest_file is not None
