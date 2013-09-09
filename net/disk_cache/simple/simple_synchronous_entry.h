@@ -85,14 +85,12 @@ class SimpleSynchronousEntry {
                           bool had_index,
                           SimpleEntryCreationResults* out_results);
 
-  // Deletes an entry without first Opening it. Does not check if there is
-  // already an Entry object in memory holding the open files. Be careful! This
-  // is meant to be used by the Backend::DoomEntry() call. |callback| will be
-  // run by |callback_runner|.
-  static void DoomEntry(const base::FilePath& path,
-                        const std::string& key,
-                        uint64 entry_hash,
-                        int* out_result);
+  // Deletes an entry from the file system without affecting the state of the
+  // corresponding instance, if any (allowing operations to continue to be
+  // executed through that instance). Returns a net error code.
+  static int DoomEntry(const base::FilePath& path,
+                       const std::string& key,
+                       uint64 entry_hash);
 
   // Like |DoomEntry()| above. Deletes all entries corresponding to the
   // |key_hashes|. Succeeds only when all entries are deleted. Returns a net

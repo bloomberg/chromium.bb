@@ -28,7 +28,7 @@ SimpleEntryOperation::SimpleEntryOperation(const SimpleEntryOperation& other)
 
 SimpleEntryOperation::~SimpleEntryOperation() {}
 
-// Static.
+// static
 SimpleEntryOperation SimpleEntryOperation::OpenOperation(
     SimpleEntryImpl* entry,
     bool have_index,
@@ -48,7 +48,7 @@ SimpleEntryOperation SimpleEntryOperation::OpenOperation(
                               false);
 }
 
-// Static.
+// static
 SimpleEntryOperation SimpleEntryOperation::CreateOperation(
     SimpleEntryImpl* entry,
     bool have_index,
@@ -68,7 +68,7 @@ SimpleEntryOperation SimpleEntryOperation::CreateOperation(
                               false);
 }
 
-// Static.
+// static
 SimpleEntryOperation SimpleEntryOperation::CloseOperation(
     SimpleEntryImpl* entry) {
   return SimpleEntryOperation(entry,
@@ -85,7 +85,7 @@ SimpleEntryOperation SimpleEntryOperation::CloseOperation(
                               false);
 }
 
-// Static.
+// static
 SimpleEntryOperation SimpleEntryOperation::ReadOperation(
     SimpleEntryImpl* entry,
     int index,
@@ -108,7 +108,7 @@ SimpleEntryOperation SimpleEntryOperation::ReadOperation(
                               alone_in_queue);
 }
 
-// Static.
+// static
 SimpleEntryOperation SimpleEntryOperation::WriteOperation(
     SimpleEntryImpl* entry,
     int index,
@@ -130,6 +130,33 @@ SimpleEntryOperation SimpleEntryOperation::WriteOperation(
                               truncate,
                               optimistic,
                               false);
+}
+
+// static
+SimpleEntryOperation SimpleEntryOperation::DoomOperation(
+    SimpleEntryImpl* entry,
+    const CompletionCallback& callback) {
+  net::IOBuffer* const buf = NULL;
+  Entry** const out_entry = NULL;
+  const int offset = 0;
+  const int length = 0;
+  const bool have_index = false;
+  const int index = 0;
+  const bool truncate = false;
+  const bool optimistic = false;
+  const bool alone_in_queue = false;
+  return SimpleEntryOperation(entry,
+                              buf,
+                              callback,
+                              out_entry,
+                              offset,
+                              length,
+                              TYPE_DOOM,
+                              have_index,
+                              index,
+                              truncate,
+                              optimistic,
+                              alone_in_queue);
 }
 
 bool SimpleEntryOperation::ConflictsWith(

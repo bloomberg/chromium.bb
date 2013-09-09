@@ -2874,9 +2874,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic4) {
   entry2->Close();
 }
 
-// This test is flaky because of the race of Create followed by a Doom.
-// See test SimpleCacheCreateDoomRace.
-TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheOptimistic5) {
+TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic5) {
   // Test sequence:
   // Create, Doom, Write, Read, Close.
   SetSimpleCacheMode();
@@ -2945,10 +2943,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic6) {
   EXPECT_EQ(0, memcmp(buffer1->data(), buffer1_read->data(), kSize1));
 
   entry->Doom();
-
-  // Check that we are not leaking.
-  EXPECT_TRUE(
-      static_cast<disk_cache::SimpleEntryImpl*>(entry)->HasOneRef());
 }
 
 // Confirm that IO buffers are not referenced by the Simple Cache after a write
@@ -2987,7 +2981,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOptimisticWriteReleases) {
   EXPECT_TRUE(buffer1->HasOneRef());
 }
 
-TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheCreateDoomRace) {
+TEST_F(DiskCacheEntryTest, SimpleCacheCreateDoomRace) {
   // Test sequence:
   // Create, Doom, Write, Close, Check files are not on disk anymore.
   SetSimpleCacheMode();
@@ -3008,17 +3002,10 @@ TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheCreateDoomRace) {
   cache_->DoomEntry(key, cb.callback());
   EXPECT_EQ(net::OK, cb.GetResult(net::ERR_IO_PENDING));
 
-  // Lets do a Write so we block until all operations are done, so we can check
-  // the HasOneRef() below. This call can't be optimistic and we are checking
-  // that here.
   EXPECT_EQ(
-      net::ERR_IO_PENDING,
+      kSize1,
       entry->WriteData(0, 0, buffer1.get(), kSize1, cb.callback(), false));
-  EXPECT_EQ(kSize1, cb.GetResult(net::ERR_IO_PENDING));
 
-  // Check that we are not leaking.
-  EXPECT_TRUE(
-      static_cast<disk_cache::SimpleEntryImpl*>(entry)->HasOneRef());
   entry->Close();
 
   // Finish running the pending tasks so that we fully complete the close

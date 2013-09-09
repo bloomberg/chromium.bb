@@ -179,6 +179,8 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
                          const CompletionCallback& callback,
                          bool truncate);
 
+  void DoomEntryInternal(const CompletionCallback& callback);
+
   // Called after a SimpleSynchronousEntry has completed CreateEntry() or
   // OpenEntry(). If |in_sync_entry| is non-NULL, creation is successful and we
   // can return |this| SimpleEntryImpl to |*out_entry|. Runs
@@ -215,6 +217,11 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
                               const CompletionCallback& completion_callback,
                               scoped_ptr<SimpleEntryStat> entry_stat,
                               scoped_ptr<int> result);
+
+  // Called after an asynchronous doom completes.
+  void DoomOperationComplete(const CompletionCallback& callback,
+                             State state_to_restore,
+                             int result);
 
   // Called after validating the checksums on an entry. Passes through the
   // original result if successful, propogates the error if the checksum does
@@ -277,8 +284,11 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
   CheckCrcResult crc_check_state_[kSimpleEntryFileCount];
 
   // The |synchronous_entry_| is the worker thread object that performs IO on
-  // entries. It's owned by this SimpleEntryImpl whenever |operation_running_|
-  // is false (i.e. when an operation is not pending on the worker pool).
+  // entries. It's owned by this SimpleEntryImpl whenever |executing_operation_|
+  // is false (i.e. when an operation is not pending on the worker pool). When
+  // an operation is being executed no one owns the synchronous entry. Therefore
+  // SimpleEntryImpl should not be deleted while an operation is running as that
+  // would leak the SimpleSynchronousEntry.
   SimpleSynchronousEntry* synchronous_entry_;
 
   std::queue<SimpleEntryOperation> pending_operations_;

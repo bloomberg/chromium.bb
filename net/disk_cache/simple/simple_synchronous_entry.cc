@@ -257,14 +257,13 @@ bool SimpleSynchronousEntry::DeleteFilesForEntryHash(
 }
 
 // static
-void SimpleSynchronousEntry::DoomEntry(
+int SimpleSynchronousEntry::DoomEntry(
     const FilePath& path,
     const std::string& key,
-    uint64 entry_hash,
-    int* out_result) {
+    uint64 entry_hash) {
   DCHECK_EQ(entry_hash, GetEntryHashKey(key));
-  bool deleted_well = DeleteFilesForEntryHash(path, entry_hash);
-  *out_result = deleted_well ? net::OK : net::ERR_FAILED;
+  const bool deleted_well = DeleteFilesForEntryHash(path, entry_hash);
+  return deleted_well ? net::OK : net::ERR_FAILED;
 }
 
 // static

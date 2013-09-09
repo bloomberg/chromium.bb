@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -264,12 +265,8 @@ int SimpleEntryImpl::DoomEntry(const CompletionCallback& callback) {
   net_log_.AddEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_DOOM_BEGIN);
 
   MarkAsDoomed();
-  scoped_ptr<int> result(new int());
-  Closure task = base::Bind(&SimpleSynchronousEntry::DoomEntry, path_, key_,
-                            entry_hash_, result.get());
-  Closure reply = base::Bind(&CallCompletionCallback,
-                             callback, base::Passed(&result));
-  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
+  pending_operations_.push(SimpleEntryOperation::DoomOperation(this, callback));
+  RunNextOperationIfNeeded();
   return net::ERR_IO_PENDING;
 }
 
@@ -587,6 +584,9 @@ void SimpleEntryImpl::RunNextOperationIfNeeded() {
                           operation->callback(),
                           operation->truncate());
         break;
+      case SimpleEntryOperation::TYPE_DOOM:
+        DoomEntryInternal(operation->callback());
+        break;
       default:
         NOTREACHED();
     }
@@ -613,7 +613,8 @@ void SimpleEntryImpl::OpenEntryInternal(bool have_index,
         net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_OPEN_END,
         CreateNetLogSimpleEntryCreationCallback(this, net::OK));
     return;
-  } else if (state_ == STATE_FAILURE) {
+  }
+  if (state_ == STATE_FAILURE) {
     if (!callback.is_null()) {
       MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
           callback, net::ERR_FAILED));
@@ -743,7 +744,6 @@ void SimpleEntryImpl::CloseInternal() {
       }
     }
   } else {
-    synchronous_entry_ = NULL;
     CloseOperationComplete();
   }
 }
@@ -899,6 +899,15 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
                              base::Passed(&entry_stat),
                              base::Passed(&result));
   worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
+}
+
+void SimpleEntryImpl::DoomEntryInternal(const CompletionCallback& callback) {
+  PostTaskAndReplyWithResult(
+      worker_pool_, FROM_HERE,
+      base::Bind(&SimpleSynchronousEntry::DoomEntry, path_, key_, entry_hash_),
+      base::Bind(&SimpleEntryImpl::DoomOperationComplete, this, callback,
+                 state_));
+  state_ = STATE_IO_PENDING;
 }
 
 void SimpleEntryImpl::CreationOperationComplete(
@@ -1071,6 +1080,15 @@ void SimpleEntryImpl::WriteOperationComplete(
 
   EntryOperationComplete(
       stream_index, completion_callback, *entry_stat, result.Pass());
+}
+
+void SimpleEntryImpl::DoomOperationComplete(const CompletionCallback& callback,
+                                            State state_to_restore,
+                                            int result) {
+  state_ = state_to_restore;
+  if (!callback.is_null())
+    callback.Run(result);
+  RunNextOperationIfNeeded();
 }
 
 void SimpleEntryImpl::ChecksumOperationComplete(

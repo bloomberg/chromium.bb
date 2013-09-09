@@ -31,6 +31,7 @@ class SimpleEntryOperation {
     TYPE_CLOSE = 2,
     TYPE_READ = 3,
     TYPE_WRITE = 4,
+    TYPE_DOOM = 5,
   };
 
   SimpleEntryOperation(const SimpleEntryOperation& other);
@@ -61,6 +62,10 @@ class SimpleEntryOperation {
       net::IOBuffer* buf,
       bool truncate,
       bool optimistic,
+      const CompletionCallback& callback);
+
+  static SimpleEntryOperation DoomOperation(
+      SimpleEntryImpl* entry,
       const CompletionCallback& callback);
 
   bool ConflictsWith(const SimpleEntryOperation& other_op) const;
