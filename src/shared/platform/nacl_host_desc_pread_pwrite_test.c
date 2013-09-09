@@ -92,7 +92,7 @@ int WriteData(struct NaClHostDesc *d,
  * Write out kNumFileBytes bytes of data to |d|.
  */
 int CreateTestData(struct NaClHostDesc *d) {
-  return WriteData(d, kNumFileBytes, quote, sizeof quote);
+  return WriteData(d, kNumFileBytes, quote, sizeof quote - 1);
 }
 
 void CreateTestFile(struct NaClHostDesc *d_out,
@@ -521,7 +521,6 @@ int PWriteGoesToEndPReadVerification(struct NaClHostDesc *test_file,
   char buffer[4096];
   ssize_t io_rv;
 
-  UNREFERENCED_PARAMETER(ro_view);
   UNREFERENCED_PARAMETER(test_params);
 
   CHECK(len <= sizeof buffer);
@@ -542,7 +541,7 @@ int PWriteGoesToEndPReadVerification(struct NaClHostDesc *test_file,
             len, (size_t) io_rv);
     return 0;
   }
-  io_rv = NaClHostDescPRead(test_file, buffer, sizeof buffer,
+  io_rv = NaClHostDescPRead(ro_view, buffer, sizeof buffer,
                             kNumFileBytes);
   if (io_rv < 0) {
     fprintf(stderr,
@@ -616,6 +615,11 @@ static struct TestParams const tests[] = {
   }, {
     "O_RDWR | O_APPEND, check pwrites show up w/ pread",
     NACL_ABI_O_RDWR | NACL_ABI_O_APPEND, 0666,
+    PWriteGoesToEndPReadVerification,
+    NULL,
+  }, {
+    "O_WRONLY | O_APPEND, check pwrites show up w/ pread",
+    NACL_ABI_O_WRONLY | NACL_ABI_O_APPEND, 0666,
     PWriteGoesToEndPReadVerification,
     NULL,
   },

@@ -863,9 +863,20 @@ static void NaClHostDescCtorIntern(struct NaClHostDesc *hd,
     hd->protect_filepos = 0;
   } else {
     int file_type = stbuf.st_mode & S_IFMT;
-    /* inherited stdio are console handles */
-    hd->protect_filepos = ((S_IFREG == file_type) ||
-                           (S_IFDIR == file_type));
+    /*
+     * Inherited stdio are console handles and are not seekable.
+     *
+     * Posix descriptors (wrapping Windows HANDLES) opened for
+     * O_WRONLY | O_APPEND cannot have byte range locks applied, which
+     * is how the protect_filepos mechanism is implemented.  Luckily,
+     * this is only needed for O_RDWR | O_APPEND or non-append
+     * descriptor.
+     */
+    hd->protect_filepos = (((S_IFREG == file_type) ||
+                           (S_IFDIR == file_type)) &&
+                           !((flags & NACL_ABI_O_APPEND) != 0 &&
+                             (flags & NACL_ABI_O_ACCMODE) ==
+                             NACL_ABI_O_WRONLY));
   }
   if (!NaClFastMutexCtor(&hd->mu)) {
     NaClLog(LOG_FATAL, "NaClHostDescCtorIntern: NaClFastMutexCtor failed\n");
