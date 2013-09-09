@@ -36,7 +36,7 @@
     [PerWorldBindings] NodeList getElementsByTagName([Default=Undefined] optional DOMString name);
 
     [PerWorldBindings] readonly attribute NamedNodeMap     attributes;
-    boolean            hasAttributes();
+    [MeasureAs=HasAttributes] boolean hasAttributes();
 
     // DOM Level 2 Core
 
