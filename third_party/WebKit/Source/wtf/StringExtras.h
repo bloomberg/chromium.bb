@@ -26,7 +26,7 @@
 #ifndef WTF_StringExtras_h
 #define WTF_StringExtras_h
 
-#if OS(UNIX)
+#if OS(POSIX)
 #define HAVE_STRINGS_H 1
 #endif
 

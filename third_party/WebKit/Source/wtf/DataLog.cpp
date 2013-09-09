@@ -30,7 +30,7 @@
 #include "wtf/WTFThreadData.h"
 #include "wtf/Threading.h"
 
-#if OS(UNIX)
+#if OS(POSIX)
 #include <unistd.h>
 #endif
 

@@ -38,13 +38,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if OS(UNIX)
+#if OS(POSIX)
 #include <sys/mman.h>
 
 #ifndef MAP_ANONYMOUS
 #define MAP_ANONYMOUS MAP_ANON
 #endif
-#endif // OS(UNIX)
+#endif // OS(POSIX)
 
 #if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
@@ -442,7 +442,7 @@ TEST(WTF_PartitionAlloc, GenericAlloc)
     TestShutdown();
 }
 
-#if OS(UNIX)
+#if OS(POSIX)
 
 // Test correct handling if our mapping collides with another.
 TEST(WTF_PartitionAlloc, MappingCollision)
@@ -469,7 +469,7 @@ TEST(WTF_PartitionAlloc, MappingCollision)
     TestShutdown();
 }
 
-#endif // OS(UNIX)
+#endif // OS(POSIX)
 
 } // namespace
 

@@ -48,7 +48,7 @@
 typedef struct CGFont* CGFontRef;
 #endif
 
-#if OS(MACOSX) || OS(UNIX) || (OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS))
+#if OS(MACOSX) || OS(POSIX) || (OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS))
 #include "wtf/RefPtr.h"
 class SkTypeface;
 #endif
@@ -77,7 +77,7 @@ private:
     explicit FontCustomPlatformData(CGFontRef, PassRefPtr<SkTypeface>);
     RetainPtr<CGFontRef> m_cgFont;
     RefPtr<SkTypeface> m_typeface;
-#elif OS(UNIX) || (OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS))
+#elif OS(POSIX) || (OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS))
     explicit FontCustomPlatformData(PassRefPtr<SkTypeface>);
     RefPtr<SkTypeface> m_typeface;
 #endif

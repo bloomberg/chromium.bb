@@ -769,7 +769,7 @@ bool EditorClientImpl::spellingUIIsShowing()
 
 bool EditorClientImpl::supportsGlobalSelection()
 {
-#if OS(UNIX) && !OS(MACOSX)
+#if OS(POSIX) && !OS(MACOSX)
     return true;
 #else
     return false;

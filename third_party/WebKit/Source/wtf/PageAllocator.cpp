@@ -35,7 +35,7 @@
 #include "wtf/CPU.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 
-#if OS(UNIX)
+#if OS(POSIX)
 
 #include <sys/mman.h>
 
@@ -53,7 +53,7 @@
 
 #else
 #error Unknown OS
-#endif // OS(UNIX)
+#endif // OS(POSIX)
 
 namespace WTF {
 
@@ -61,7 +61,7 @@ void* allocSuperPages(void* addr, size_t len)
 {
     ASSERT(!(len & kSuperPageOffsetMask));
     ASSERT(!(reinterpret_cast<uintptr_t>(addr) & kSuperPageOffsetMask));
-#if OS(UNIX)
+#if OS(POSIX)
     char* ptr = reinterpret_cast<char*>(mmap(addr, len, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0));
     RELEASE_ASSERT(ptr != MAP_FAILED);
     // If our requested address collided with another mapping, there's a
@@ -96,7 +96,7 @@ void* allocSuperPages(void* addr, size_t len)
     if (!ret)
         ret = VirtualAlloc(0, len, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     RELEASE_ASSERT(ret);
-#endif // OS(UNIX)
+#endif // OS(POSIX)
     return ret;
 }
 
@@ -104,7 +104,7 @@ void freeSuperPages(void* addr, size_t len)
 {
     ASSERT(!(reinterpret_cast<uintptr_t>(addr) & kSuperPageOffsetMask));
     ASSERT(!(len & kSuperPageOffsetMask));
-#if OS(UNIX)
+#if OS(POSIX)
     int ret = munmap(addr, len);
     ASSERT(!ret);
 #else
@@ -116,7 +116,7 @@ void freeSuperPages(void* addr, size_t len)
 void setSystemPagesInaccessible(void* addr, size_t len)
 {
     ASSERT(!(len & kSystemPageOffsetMask));
-#if OS(UNIX)
+#if OS(POSIX)
     int ret = mprotect(addr, len, PROT_NONE);
     ASSERT(!ret);
 #else
@@ -128,7 +128,7 @@ void setSystemPagesInaccessible(void* addr, size_t len)
 void decommitSystemPages(void* addr, size_t len)
 {
     ASSERT(!(len & kSystemPageOffsetMask));
-#if OS(UNIX)
+#if OS(POSIX)
     int ret = madvise(addr, len, MADV_FREE);
     ASSERT(!ret);
 #else

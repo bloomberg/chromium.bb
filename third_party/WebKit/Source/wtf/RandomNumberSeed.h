@@ -34,7 +34,7 @@
 #include <sys/time.h>
 #endif
 
-#if OS(UNIX)
+#if OS(POSIX)
 #include <sys/types.h>
 #include <unistd.h>
 #endif
@@ -47,7 +47,7 @@ inline void initializeRandomNumberGenerator()
     // On Darwin we use arc4random which initialises itself.
 #elif COMPILER(MSVC) && defined(_CRT_RAND_S)
     // On Windows we use rand_s which initialises itself
-#elif OS(UNIX)
+#elif OS(POSIX)
     // srandomdev is not guaranteed to exist on linux so we use this poor seed, this should be improved
     timeval time;
     gettimeofday(&time, 0);

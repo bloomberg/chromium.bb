@@ -33,7 +33,7 @@
 
 #include "wtf/CPU.h"
 
-#if OS(UNIX)
+#if OS(POSIX)
 #include <arpa/inet.h>
 #endif
 

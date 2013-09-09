@@ -94,7 +94,7 @@ static EditingBehaviorType editingBehaviorTypeForPlatform()
     EditingWindowsBehavior
 #elif OS(ANDROID)
     EditingAndroidBehavior
-#elif OS(UNIX)
+#elif OS(POSIX)
     EditingUnixBehavior
 #else
     // Fallback

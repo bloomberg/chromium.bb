@@ -332,7 +332,7 @@ public:
         float scale = m_printedPageWidth / pageRect.width();
 
         context.save();
-#if OS(UNIX) && !OS(MACOSX)
+#if OS(POSIX) && !OS(MACOSX)
         context.scale(WebCore::FloatSize(scale, scale));
 #endif
         context.translate(static_cast<float>(-pageRect.x()), static_cast<float>(-pageRect.y()));
@@ -378,7 +378,7 @@ public:
             graphicsContext.save();
 
             graphicsContext.translate(0, currentHeight);
-#if !OS(UNIX) || OS(MACOSX)
+#if !OS(POSIX) || OS(MACOSX)
             // Account for the disabling of scaling in spoolPage. In the context
             // of spoolAllPagesWithBoundaries the scale HAS NOT been pre-applied.
             float scale = getPageShrink(pageIndex);

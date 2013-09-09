@@ -558,7 +558,7 @@ void WebViewImpl::handleMouseDown(Frame& mainFrame, const WebMouseEvent& event)
         || (event.button == WebMouseEvent::ButtonLeft
             && event.modifiers & WebMouseEvent::ControlKey))
         mouseContextMenu(event);
-#elif OS(UNIX)
+#elif OS(POSIX)
     if (event.button == WebMouseEvent::ButtonRight)
         mouseContextMenu(event);
 #endif
@@ -937,7 +937,7 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
     const WebInputEvent::Type contextMenuTriggeringEventType =
 #if OS(WIN)
         WebInputEvent::KeyUp;
-#elif OS(UNIX)
+#elif OS(POSIX)
         WebInputEvent::RawKeyDown;
 #endif
 

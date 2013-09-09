@@ -287,7 +287,7 @@ extern "C"  const int jscore_fastmalloc_introspection = 0;
 #include <pthread.h>
 #include <stdarg.h>
 #include <stddef.h>
-#if OS(UNIX)
+#if OS(POSIX)
 #include <unistd.h>
 #endif
 #if OS(WIN)

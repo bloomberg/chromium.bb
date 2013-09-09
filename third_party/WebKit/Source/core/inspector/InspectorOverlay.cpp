@@ -645,7 +645,7 @@ Page* InspectorOverlay::overlayPage()
     evaluateInOverlay("setPlatform", "windows");
 #elif OS(MACOSX)
     evaluateInOverlay("setPlatform", "mac");
-#elif OS(UNIX)
+#elif OS(POSIX)
     evaluateInOverlay("setPlatform", "linux");
 #endif
 

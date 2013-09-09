@@ -26,7 +26,7 @@
 #ifndef ProcessID_h
 #define ProcessID_h
 
-#if OS(UNIX)
+#if OS(POSIX)
 #include <unistd.h>
 #endif
 

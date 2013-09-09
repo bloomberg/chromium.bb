@@ -34,7 +34,7 @@
 #ifndef TCMALLOC_INTERNAL_SPINLOCK_H__
 #define TCMALLOC_INTERNAL_SPINLOCK_H__
 
-#if OS(UNIX)
+#if OS(POSIX)
 #include <sched.h>
 #endif
 

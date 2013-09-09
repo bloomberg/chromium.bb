@@ -81,7 +81,7 @@
 #define WTF_OS_WIN 1
 #endif
 
-/* OS(UNIX) - Any Unix-like system */
+/* OS(POSIX) - Any Unix-like system */
 #if OS(ANDROID)          \
     || OS(MACOSX)           \
     || OS(FREEBSD)          \
@@ -91,7 +91,7 @@
     || defined(unix)        \
     || defined(__unix)      \
     || defined(__unix__)
-#define WTF_OS_UNIX 1
+#define WTF_OS_POSIX 1
 #endif
 
 /* Operating environments */
@@ -120,12 +120,12 @@
 #define HAVE_ACCESSIBILITY 1
 #endif /* !defined(HAVE_ACCESSIBILITY) */
 
-#if OS(UNIX)
+#if OS(POSIX)
 #define HAVE_MMAP 1
 #define HAVE_SIGNAL_H 1
 #define HAVE_SYS_TIME_H 1
 #define WTF_USE_PTHREADS 1
-#endif /* OS(UNIX) */
+#endif /* OS(POSIX) */
 
 #if !defined(HAVE_VASPRINTF)
 #if !COMPILER(MSVC)
