@@ -35,7 +35,6 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8Utilities.h"
-#include "core/dom/Document.h"
 #include "core/dom/MessageChannel.h"
 #include "core/workers/WorkerGlobalScope.h"
 

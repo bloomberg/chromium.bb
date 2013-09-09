@@ -33,6 +33,7 @@
 
 #include "WebSettingsImpl.h"
 #include "WebViewImpl.h"
+#include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/GraphicsLayer.h"

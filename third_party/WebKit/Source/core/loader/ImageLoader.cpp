@@ -33,7 +33,6 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/page/Frame.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/svg/RenderSVGImage.h"

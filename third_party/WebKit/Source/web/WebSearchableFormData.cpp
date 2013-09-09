@@ -40,11 +40,8 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptionElement.h"
-#include "core/html/HTMLOptionsCollection.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/page/Frame.h"
 #include "core/platform/network/FormDataBuilder.h"
 #include "wtf/text/TextEncoding.h"
 

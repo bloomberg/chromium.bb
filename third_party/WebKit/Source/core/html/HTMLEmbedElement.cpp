@@ -31,8 +31,6 @@
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/PluginDocument.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/loader/FrameLoader.h"
-#include "core/page/Frame.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderWidget.h"
 

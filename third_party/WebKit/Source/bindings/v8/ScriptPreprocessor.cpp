@@ -32,14 +32,9 @@
 #include "bindings/v8/ScriptPreprocessor.h"
 
 #include "bindings/v8/ScriptController.h"
-#include "bindings/v8/ScriptDebugServer.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
-#include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ScriptRunner.h"
-#include "core/page/DOMWindow.h"
-#include "core/page/Frame.h"
-#include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 #include "wtf/TemporaryChange.h"
 

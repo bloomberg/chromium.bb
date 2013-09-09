@@ -38,11 +38,9 @@
 #include "bindings/v8/V8EventListenerList.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "core/dom/BeforeUnloadEvent.h"
-#include "core/dom/Document.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
 #include "core/inspector/InspectorCounters.h"
-#include "core/page/Frame.h"
 #include "core/workers/WorkerGlobalScope.h"
 
 namespace WebCore {

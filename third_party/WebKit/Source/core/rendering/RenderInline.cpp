@@ -25,7 +25,6 @@
 
 #include "core/dom/FullscreenElementStack.h"
 #include "core/page/Chrome.h"
-#include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"

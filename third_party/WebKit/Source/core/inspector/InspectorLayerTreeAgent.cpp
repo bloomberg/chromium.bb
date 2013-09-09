@@ -39,6 +39,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"

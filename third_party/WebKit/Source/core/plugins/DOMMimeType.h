@@ -21,7 +21,6 @@
 #define DOMMimeType_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/page/Frame.h"
 #include "core/page/FrameDestructionObserver.h"
 #include "core/plugins/PluginData.h"
 #include "wtf/Forward.h"
@@ -32,6 +31,7 @@
 namespace WebCore {
 
 class DOMPlugin;
+class Frame;
 
 class DOMMimeType : public RefCounted<DOMMimeType>, public ScriptWrappable, public FrameDestructionObserver {
 public:

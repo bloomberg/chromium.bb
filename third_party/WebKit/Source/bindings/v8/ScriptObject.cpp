@@ -34,11 +34,7 @@
 #include "bindings/v8/ScriptScope.h"
 #include "bindings/v8/ScriptState.h"
 
-#include "V8InjectedScriptHost.h"
 #include "V8InspectorFrontendHost.h"
-#include "bindings/v8/V8Binding.h"
-#include "core/dom/Document.h"
-#include "core/page/Frame.h"
 
 #include <v8.h>
 

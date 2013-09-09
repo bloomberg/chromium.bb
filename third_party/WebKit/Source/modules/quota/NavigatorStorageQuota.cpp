@@ -31,7 +31,6 @@
 #include "config.h"
 #include "modules/quota/NavigatorStorageQuota.h"
 
-#include "core/page/Frame.h"
 #include "core/page/Navigator.h"
 #include "modules/quota/StorageQuota.h"
 

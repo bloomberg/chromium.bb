@@ -25,22 +25,6 @@
 #include "HTMLNames.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
-#include "core/dom/DocumentMarkerController.h"
-#include "core/editing/FrameSelection.h"
-#include "core/fetch/ImageResource.h"
-#include "core/html/HTMLAnchorElement.h"
-#include "core/html/HTMLImageElement.h"
-#include "core/html/HTMLInputElement.h"
-#include "core/html/HTMLMediaElement.h"
-#include "core/html/HTMLPlugInImageElement.h"
-#include "core/html/HTMLVideoElement.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/page/Frame.h"
-#include "core/page/FrameTree.h"
-#include "core/platform/Scrollbar.h"
-#include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderImage.h"
-#include "core/rendering/RenderInline.h"
 
 namespace WebCore {
 

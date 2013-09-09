@@ -32,8 +32,6 @@
 #define MockImageResourceClient_h
 
 #include "core/fetch/ImageResourceClient.h"
-#include "core/page/Frame.h"
-#include "core/platform/graphics/Image.h"
 
 #include <gtest/gtest.h>
 

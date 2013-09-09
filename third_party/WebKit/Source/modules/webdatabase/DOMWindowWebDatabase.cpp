@@ -33,7 +33,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/DOMWindow.h"
-#include "core/page/Frame.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseCallback.h"
 #include "modules/webdatabase/DatabaseManager.h"

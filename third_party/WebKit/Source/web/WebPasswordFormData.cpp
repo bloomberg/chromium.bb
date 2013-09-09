@@ -35,9 +35,6 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/FrameLoader.h"
-#include "core/page/Frame.h"
 #include "weborigin/KURL.h"
 
 #include "DOMUtilitiesPrivate.h"

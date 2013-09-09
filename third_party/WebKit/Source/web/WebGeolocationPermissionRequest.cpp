@@ -28,8 +28,7 @@
 
 #include "public/platform/WebURL.h"
 #include "WebSecurityOrigin.h"
-#include "core/dom/Document.h"
-#include "core/page/Frame.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "modules/geolocation/Geolocation.h"
 #include "weborigin/SecurityOrigin.h"
 

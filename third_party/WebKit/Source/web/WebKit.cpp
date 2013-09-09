@@ -39,7 +39,6 @@
 #include "bindings/v8/V8RecursionScope.h"
 #include "core/Init.h"
 #include "core/dom/Microtask.h"
-#include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/LayoutTestSupport.h"

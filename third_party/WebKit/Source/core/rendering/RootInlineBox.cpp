@@ -21,11 +21,6 @@
 #include "core/rendering/RootInlineBox.h"
 
 #include "core/dom/Document.h"
-#include "core/page/Chrome.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Frame.h"
-#include "core/page/Page.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/text/BidiResolver.h"
 #include "core/rendering/EllipsisBox.h"
 #include "core/rendering/HitTestResult.h"

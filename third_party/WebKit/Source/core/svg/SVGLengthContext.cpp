@@ -27,7 +27,6 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSHelper.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/page/Frame.h"
 #include "core/platform/graphics/FontMetrics.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
