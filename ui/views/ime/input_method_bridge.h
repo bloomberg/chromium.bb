@@ -90,8 +90,6 @@ class InputMethodBridge : public InputMethodBase,
 
   const bool shared_input_method_;
 
-  bool context_focused_;
-
   DISALLOW_COPY_AND_ASSIGN(InputMethodBridge);
 };
 

@@ -16,8 +16,7 @@ InputMethodBridge::InputMethodBridge(internal::InputMethodDelegate* delegate,
                                      ui::InputMethod* host,
                                      bool shared_input_method)
     : host_(host),
-      shared_input_method_(shared_input_method),
-      context_focused_(false) {
+      shared_input_method_(shared_input_method) {
   DCHECK(host_);
   SetDelegate(delegate);
 }
