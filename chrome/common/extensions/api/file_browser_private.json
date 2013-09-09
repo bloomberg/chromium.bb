@@ -71,11 +71,6 @@
         "type": "object",
         "description": "Drive file properties.",
         "properties": {
-          "fileUrl": {
-            "type": "string",
-            "optional": true,
-            "description": "the URL given for this file."
-          },
           "thumbnailUrl": {
             "type": "string",
             "optional": true,
@@ -100,11 +95,6 @@
             "type": "boolean",
             "optional": true,
             "description": "True if the file is hosted on a Drive server instead of local."
-          },
-          "errorCode": {
-            "type": "integer",
-            "optional": true,
-            "description": "The error code (from base::PlatformFileError) if fetching the properties for this file had an error."
           },
           "customIconUrl": {
             "type": "string",

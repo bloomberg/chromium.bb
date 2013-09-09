@@ -85,7 +85,6 @@ bool FileBrowserPrivateGetDriveEntryPropertiesFunction::RunImpl() {
           render_view_host(), profile(), file_url));
 
   properties_.reset(new base::DictionaryValue);
-  properties_->SetString("fileUrl", file_url.spec());
 
   // Start getting the file info.
   drive::FileSystemInterface* file_system =
@@ -183,8 +182,6 @@ void FileBrowserPrivateGetDriveEntryPropertiesFunction::CacheStateReceived(
 
 void FileBrowserPrivateGetDriveEntryPropertiesFunction::
     CompleteGetFileProperties(drive::FileError error) {
-  if (error != drive::FILE_ERROR_OK)
-    properties_->SetInteger("errorCode", error);
   SetResult(properties_.release());
   SendResponse(true);
 }
