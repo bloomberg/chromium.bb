@@ -585,6 +585,8 @@ STDMETHODIMP TSFTextStore::RequestSupportedAttrs(
     const TS_ATTRID* attribute_buffer) {
   if (!attribute_buffer)
     return E_INVALIDARG;
+  if (!text_input_client_)
+    return E_FAIL;
   // We support only input scope attribute.
   for (size_t i = 0; i < attribute_buffer_size; ++i) {
     if (IsEqualGUID(GUID_PROP_INPUTSCOPE, attribute_buffer[i]))
@@ -601,6 +603,8 @@ STDMETHODIMP TSFTextStore::RetrieveRequestedAttrs(
     return E_INVALIDARG;
   if (!attribute_buffer)
     return E_INVALIDARG;
+  if (!text_input_client_)
+    return E_UNEXPECTED;
   // We support only input scope attribute.
   *attribute_buffer_copied = 0;
   if (attribute_buffer_size == 0)
