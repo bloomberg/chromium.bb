@@ -398,6 +398,14 @@ PassRefPtr<StyleKeyframe> CSSParser::parseKeyframeRule(StyleSheetContents* sheet
     return m_keyframe.release();
 }
 
+PassOwnPtr<Vector<double> > CSSParser::parseKeyframeKeyList(const String& string)
+{
+    setupParser("@-internal-keyframe-key-list ", string, "");
+    cssyyparse(this);
+    ASSERT(m_valueList);
+    return StyleKeyframe::createKeyList(m_valueList.get());
+}
+
 bool CSSParser::parseSupportsCondition(const String& string)
 {
     m_supportsCondition = false;
@@ -1353,7 +1361,7 @@ PassRefPtr<MediaQuerySet> CSSParser::parseMediaQueryList(const String& string)
     setupParser("@-internal-medialist ", string, "");
     cssyyparse(this);
 
-    ASSERT(m_mediaList.get());
+    ASSERT(m_mediaList);
     return m_mediaList.release();
 }
 
@@ -10393,6 +10401,9 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
             if (LIKELY(!hasEscape))
                 m_token = INTERNAL_KEYFRAME_RULE_SYM;
         }
+        CASE("-internal-keyframe-key-list") {
+            m_token = INTERNAL_KEYFRAME_KEY_LIST_SYM;
+        }
         CASE("-internal-supports-condition") {
             m_parsingMode = SupportsMode;
             m_token = INTERNAL_SUPPORTS_CONDITION_SYM;
@@ -11537,26 +11548,12 @@ void CSSParser::deleteFontFaceOnlyValues()
 
 StyleKeyframe* CSSParser::createKeyframe(CSSParserValueList* keys)
 {
-    // Create a key string from the passed keys
-    StringBuilder keyString;
-    for (unsigned i = 0; i < keys->size(); ++i) {
-        ASSERT(keys->valueAt(i)->unit == CSSPrimitiveValue::CSS_NUMBER);
-        double key = keys->valueAt(i)->fValue;
-        if (key < 0 || key > 100) {
-            // As per http://www.w3.org/TR/css3-animations/#keyframes,
-            // "If a keyframe selector specifies negative percentage values
-            // or values higher than 100%, then the keyframe will be ignored."
-            clearProperties();
-            return 0;
-        }
-        if (i != 0)
-            keyString.append(',');
-        keyString.append(String::number(key));
-        keyString.append('%');
-    }
+    OwnPtr<Vector<double> > keyVector = StyleKeyframe::createKeyList(keys);
+    if (keyVector->isEmpty())
+        return 0;
 
     RefPtr<StyleKeyframe> keyframe = StyleKeyframe::create();
-    keyframe->setKeyText(keyString.toString());
+    keyframe->setKeys(keyVector.release());
     keyframe->setProperties(createStylePropertySet());
 
     clearProperties();

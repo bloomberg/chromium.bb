@@ -30,11 +30,12 @@
 
 namespace WebCore {
 
+class CSSKeyframesRule;
+class CSSParserValueList;
 class CSSStyleDeclaration;
 class MutableStylePropertySet;
 class StylePropertySet;
 class StyleRuleCSSStyleDeclaration;
-class CSSKeyframesRule;
 
 class StyleKeyframe FINAL : public RefCounted<StyleKeyframe> {
     WTF_MAKE_FAST_ALLOCATED;
@@ -45,13 +46,14 @@ public:
     }
     ~StyleKeyframe();
 
-    String keyText() const { return m_key; }
-    // FIXME: Should we trim whitespace?
-    // FIXME: Should we leave keyText unchanged when attempting to set to an
-    // invalid string?
-    void setKeyText(const String& s) { m_key = s; }
+    // Exposed to JavaScript.
+    String keyText() const;
+    void setKeyText(const String&);
 
-    void getKeys(Vector<double>& keys) const { parseKeyString(m_key, keys); }
+    // Used by StyleResolver.
+    const Vector<double>& keys() const;
+    // Used by CSSParser when constructing a new StyleKeyframe.
+    void setKeys(PassOwnPtr<Vector<double> >);
 
     const StylePropertySet* properties() const { return m_properties.get(); }
     MutableStylePropertySet* mutableProperties();
@@ -59,15 +61,15 @@ public:
 
     String cssText() const;
 
+    static PassOwnPtr<Vector<double> > createKeyList(CSSParserValueList*);
+
 private:
     StyleKeyframe();
 
-    static void parseKeyString(const String&, Vector<double>& keys);
-
     RefPtr<StylePropertySet> m_properties;
-    // FIXME: This should be a parsed vector of floats.
-    // comma separated list of keys
-    String m_key;
+    // These are both calculated lazily. Either one can be set, which invalidates the other.
+    mutable String m_keyText;
+    mutable OwnPtr<Vector<double> > m_keys;
 };
 
 class CSSKeyframeRule FINAL : public CSSRule {

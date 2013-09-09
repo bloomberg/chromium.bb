@@ -141,6 +141,7 @@ inline static CSSParserValue makeOperatorValue(int value)
 %token INTERNAL_SELECTOR_SYM
 %token INTERNAL_VALUE_SYM
 %token INTERNAL_KEYFRAME_RULE_SYM
+%token INTERNAL_KEYFRAME_KEY_LIST_SYM
 %token INTERNAL_SUPPORTS_CONDITION_SYM
 %token KEYFRAMES_SYM
 %token WEBKIT_KEYFRAMES_SYM
@@ -339,6 +340,7 @@ stylesheet:
   | internal_value
   | internal_medialist
   | internal_keyframe_rule
+  | internal_keyframe_key_list
   | internal_supports_condition
   ;
 
@@ -351,6 +353,12 @@ internal_rule:
 internal_keyframe_rule:
     INTERNAL_KEYFRAME_RULE_SYM maybe_space keyframe_rule maybe_space TOKEN_EOF {
         parser->m_keyframe = $3;
+    }
+;
+
+internal_keyframe_key_list:
+    INTERNAL_KEYFRAME_KEY_LIST_SYM maybe_space key_list TOKEN_EOF {
+        parser->m_valueList = parser->sinkFloatingValueList($3);
     }
 ;
 

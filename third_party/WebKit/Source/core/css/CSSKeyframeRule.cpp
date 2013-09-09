@@ -27,6 +27,7 @@
 #include "core/css/CSSKeyframeRule.h"
 
 #include "core/css/CSSKeyframesRule.h"
+#include "core/css/CSSParser.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "wtf/text/StringBuilder.h"
@@ -41,6 +42,55 @@ StyleKeyframe::~StyleKeyframe()
 {
 }
 
+String StyleKeyframe::keyText() const
+{
+    if (m_keyText.isNull()) {
+        // Keys are always set when these objects are created.
+        ASSERT(m_keys && !m_keys->isEmpty());
+        StringBuilder keyText;
+        for (unsigned i = 0; i < m_keys->size(); ++i) {
+            if (i)
+                keyText.append(',');
+            keyText.append(String::number(m_keys->at(i) * 100));
+            keyText.append('%');
+        }
+        m_keyText = keyText.toString();
+    }
+    ASSERT(!m_keyText.isNull());
+    return m_keyText;
+}
+
+void StyleKeyframe::setKeyText(const String& keyText)
+{
+    // FIXME: Should we trim whitespace?
+    // FIXME: Should we leave keyText unchanged when attempting to set to an
+    // invalid string?
+    ASSERT(!keyText.isNull());
+    m_keyText = keyText;
+    m_keys.clear();
+}
+
+const Vector<double>& StyleKeyframe::keys() const
+{
+    if (!m_keys) {
+        // Keys can only be cleared by setting the key text from JavaScript
+        // and this can never be null.
+        ASSERT(!m_keyText.isNull());
+        m_keys = CSSParser(CSSStrictMode).parseKeyframeKeyList(m_keyText);
+    }
+    // If an invalid key string was set, m_keys may be empty.
+    ASSERT(m_keys);
+    return *m_keys;
+}
+
+void StyleKeyframe::setKeys(PassOwnPtr<Vector<double> > keys)
+{
+    ASSERT(keys && !keys->isEmpty());
+    m_keys = keys;
+    m_keyText = String();
+    ASSERT(m_keyText.isNull());
+}
+
 MutableStylePropertySet* StyleKeyframe::mutableProperties()
 {
     if (!m_properties->isMutable())
@@ -51,35 +101,6 @@ MutableStylePropertySet* StyleKeyframe::mutableProperties()
 void StyleKeyframe::setProperties(PassRefPtr<StylePropertySet> properties)
 {
     m_properties = properties;
-}
-
-/* static */
-void StyleKeyframe::parseKeyString(const String& s, Vector<double>& keys)
-{
-    keys.clear();
-    Vector<String> strings;
-    s.split(',', strings);
-
-    for (size_t i = 0; i < strings.size(); ++i) {
-        double key = -1;
-        String cur = strings[i].stripWhiteSpace();
-
-        // For now the syntax MUST be 'xxx%' or 'from' or 'to', where xxx is a legal floating point number
-        if (cur == "from")
-            key = 0;
-        else if (cur == "to")
-            key = 1;
-        else if (cur.endsWith('%')) {
-            double k = cur.substring(0, cur.length() - 1).toDouble();
-            if (k >= 0 && k <= 100)
-                key = k / 100;
-        }
-        if (key < 0) {
-            keys.clear();
-            return;
-        }
-        keys.append(key);
-    }
 }
 
 String StyleKeyframe::cssText() const
@@ -94,6 +115,25 @@ String StyleKeyframe::cssText() const
     result.append('}');
     return result.toString();
 }
+
+PassOwnPtr<Vector<double> > StyleKeyframe::createKeyList(CSSParserValueList* keys)
+{
+    OwnPtr<Vector<double> > keyVector = adoptPtr(new Vector<double>(keys->size()));
+    for (unsigned i = 0; i < keys->size(); ++i) {
+        ASSERT(keys->valueAt(i)->unit == WebCore::CSSPrimitiveValue::CSS_NUMBER);
+        double key = keys->valueAt(i)->fValue;
+        if (key < 0 || key > 100) {
+            // As per http://www.w3.org/TR/css3-animations/#keyframes,
+            // "If a keyframe selector specifies negative percentage values
+            // or values higher than 100%, then the keyframe will be ignored."
+            keyVector->clear();
+            break;
+        }
+        keyVector->at(i) = key / 100;
+    }
+    return keyVector.release();
+}
+
 
 CSSKeyframeRule::CSSKeyframeRule(StyleKeyframe* keyframe, CSSKeyframesRule* parent)
     : CSSRule(0)
