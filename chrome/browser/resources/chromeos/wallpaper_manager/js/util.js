@@ -58,13 +58,17 @@ WallpaperUtil.fetchURL = function(url, type, onSuccess, onFailure, opt_xhr) {
     xhr = new XMLHttpRequest();
 
   try {
-    xhr.addEventListener('loadend', function(e) {
+    // Do not use loadend here to handle both success and failure case. It gets
+    // complicated with abortion. Unexpected error message may show up. See
+    // http://crbug.com/242581.
+    xhr.addEventListener('load', function(e) {
       if (this.status == 200) {
         onSuccess(this);
       } else {
         onFailure();
       }
     });
+    xhr.addEventListener('error', onFailure);
     xhr.open('GET', url, true);
     xhr.responseType = type;
     xhr.send(null);
