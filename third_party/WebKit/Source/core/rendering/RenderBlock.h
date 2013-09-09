@@ -79,9 +79,12 @@ typedef unsigned TextRunFlags;
 class RenderBlock : public RenderBox {
 public:
     friend class LineLayoutState;
+
+protected:
     explicit RenderBlock(ContainerNode*);
     virtual ~RenderBlock();
 
+public:
     static RenderBlock* createAnonymous(Document*);
 
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
@@ -602,7 +605,6 @@ private:
     virtual const char* renderName() const;
 
     virtual bool isRenderBlock() const OVERRIDE FINAL { return true; }
-    virtual bool isBlockFlow() const OVERRIDE FINAL { return (!isInline() || isReplaced()) && !isTable(); }
     virtual bool isInlineBlockOrInlineTable() const OVERRIDE FINAL { return isInline() && isReplaced(); }
 
     void makeChildrenNonInline(RenderObject* insertionPoint = 0);

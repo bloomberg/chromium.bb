@@ -215,7 +215,7 @@ void RenderRubyAsInline::removeChild(RenderObject* child)
 //=== ruby as block object ===
 
 RenderRubyAsBlock::RenderRubyAsBlock(Element* element)
-    : RenderBlock(element)
+    : RenderBlockFlow(element)
 {
 }
 

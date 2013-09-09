@@ -26,13 +26,14 @@
 #include "core/rendering/RenderFullScreen.h"
 
 #include "core/dom/FullscreenElementStack.h"
+#include "core/rendering/RenderBlockFlow.h"
 
 using namespace WebCore;
 
-class RenderFullScreenPlaceholder FINAL : public RenderBlock {
+class RenderFullScreenPlaceholder FINAL : public RenderBlockFlow {
 public:
     RenderFullScreenPlaceholder(RenderFullScreen* owner)
-        : RenderBlock(0)
+        : RenderBlockFlow(0)
         , m_owner(owner)
     {
         setDocumentForAnonymous(&owner->document());

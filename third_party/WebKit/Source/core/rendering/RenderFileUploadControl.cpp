@@ -45,7 +45,7 @@ const int defaultWidthNumChars = 34;
 const int buttonShadowHeight = 2;
 
 RenderFileUploadControl::RenderFileUploadControl(HTMLInputElement* input)
-    : RenderBlock(input)
+    : RenderBlockFlow(input)
     , m_canReceiveDroppedFiles(input->canReceiveDroppedFiles())
 {
 }

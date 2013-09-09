@@ -27,14 +27,14 @@
 #define RenderTextTrackCue_h
 
 #include "core/platform/graphics/FloatPoint.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderInline.h"
 
 namespace WebCore {
 
 class TextTrackCueBox;
 
-class RenderTextTrackCue FINAL : public RenderBlock {
+class RenderTextTrackCue FINAL : public RenderBlockFlow {
 public:
     explicit RenderTextTrackCue(TextTrackCueBox*);
 

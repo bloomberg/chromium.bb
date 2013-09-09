@@ -73,7 +73,7 @@ inline static bool hasVerticalAppearance(HTMLInputElement* input)
 // --------------------------------
 
 RenderSliderThumb::RenderSliderThumb(SliderThumbElement* element)
-    : RenderBlock(element)
+    : RenderBlockFlow(element)
 {
 }
 

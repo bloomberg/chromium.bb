@@ -20,13 +20,13 @@
 #ifndef RenderSVGBlock_h
 #define RenderSVGBlock_h
 
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 
 namespace WebCore {
 
 class SVGElement;
 
-class RenderSVGBlock : public RenderBlock {
+class RenderSVGBlock : public RenderBlockFlow {
 public:
     explicit RenderSVGBlock(SVGElement*);
 

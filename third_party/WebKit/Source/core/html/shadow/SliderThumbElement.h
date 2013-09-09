@@ -34,7 +34,7 @@
 
 #include "HTMLNames.h"
 #include "core/html/HTMLDivElement.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
@@ -86,7 +86,7 @@ inline SliderThumbElement* toSliderThumbElement(Node* node)
 
 // --------------------------------
 
-class RenderSliderThumb FINAL : public RenderBlock {
+class RenderSliderThumb FINAL : public RenderBlockFlow {
 public:
     RenderSliderThumb(SliderThumbElement*);
     void updateAppearance(RenderStyle* parentStyle);

@@ -21,13 +21,13 @@
 #ifndef RenderProgress_h
 #define RenderProgress_h
 
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 
 namespace WebCore {
 
 class HTMLProgressElement;
 
-class RenderProgress FINAL : public RenderBlock {
+class RenderProgress FINAL : public RenderBlockFlow {
 public:
     explicit RenderProgress(HTMLElement*);
     virtual ~RenderProgress();

@@ -225,7 +225,7 @@ RenderBlock::~RenderBlock()
 
 RenderBlock* RenderBlock::createAnonymous(Document* document)
 {
-    RenderBlock* renderer = new RenderBlock(0);
+    RenderBlock* renderer = new RenderBlockFlow(0);
     renderer->setDocumentForAnonymous(document);
     return renderer;
 }

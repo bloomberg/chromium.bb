@@ -29,7 +29,7 @@
 #include "core/html/HTMLDetailsElement.h"
 #include "core/html/shadow/DetailsMarkerControl.h"
 #include "core/html/shadow/HTMLContentElement.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 
 namespace WebCore {
 
@@ -50,7 +50,7 @@ HTMLSummaryElement::HTMLSummaryElement(const QualifiedName& tagName, Document& d
 
 RenderObject* HTMLSummaryElement::createRenderer(RenderStyle*)
 {
-    return new RenderBlock(this);
+    return new RenderBlockFlow(this);
 }
 
 void HTMLSummaryElement::didAddUserAgentShadowRoot(ShadowRoot* root)

@@ -28,7 +28,7 @@
 #include "core/html/HTMLSummaryElement.h"
 #include "core/html/shadow/HTMLContentElement.h"
 #include "core/platform/LocalizedStrings.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 
 namespace WebCore {
 
@@ -51,7 +51,7 @@ HTMLDetailsElement::HTMLDetailsElement(const QualifiedName& tagName, Document& d
 
 RenderObject* HTMLDetailsElement::createRenderer(RenderStyle*)
 {
-    return new RenderBlock(this);
+    return new RenderBlockFlow(this);
 }
 
 void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot* root)

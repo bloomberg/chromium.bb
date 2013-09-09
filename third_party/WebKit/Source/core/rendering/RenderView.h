@@ -25,7 +25,7 @@
 #include "core/page/FrameView.h"
 #include "core/platform/PODFreeListArena.h"
 #include "core/rendering/LayoutState.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
@@ -39,7 +39,7 @@ class RenderWidget;
 // The root of the render tree, corresponding to the CSS initial containing block.
 // It's dimensions match that of the viewport, and it is always at position (0,0)
 // relative to the document (and so isn't necessarily in view).
-class RenderView FINAL : public RenderBlock {
+class RenderView FINAL : public RenderBlockFlow {
 public:
     explicit RenderView(Document*);
     virtual ~RenderView();

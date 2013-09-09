@@ -303,7 +303,6 @@ public:
     bool isPseudoElement() const { return node() && node()->isPseudoElement(); }
 
     virtual bool isBR() const { return false; }
-    virtual bool isBlockFlow() const { return false; }
     virtual bool isBoxModelObject() const { return false; }
     virtual bool isCounter() const { return false; }
     virtual bool isDialog() const { return false; }
@@ -327,6 +326,7 @@ public:
     virtual bool isMeter() const { return false; }
     virtual bool isProgress() const { return false; }
     virtual bool isRenderBlock() const { return false; }
+    virtual bool isRenderBlockFlow() const { return false; }
     virtual bool isRenderSVGBlock() const { return false; };
     virtual bool isRenderButton() const { return false; }
     virtual bool isRenderIFrame() const { return false; }
@@ -377,6 +377,10 @@ public:
     bool isLegend() const;
 
     bool isTablePart() const { return isTableCell() || isRenderTableCol() || isTableCaption() || isTableRow() || isTableSection(); }
+
+    // FIXME: This method should be changed to isRenderBlockFlow, and return false for blocks with other layout methods
+    // such as flexible boxes and grids. Currently callers rely on this behavior.
+    bool isBlockFlow() const { return isRenderBlockFlow() || isFlexibleBoxIncludingDeprecated() || isRenderGrid(); }
 
     inline bool isBeforeContent() const;
     inline bool isAfterContent() const;

@@ -33,7 +33,7 @@ using namespace std;
 namespace WebCore {
 
 RenderTextControl::RenderTextControl(HTMLTextFormControlElement* element)
-    : RenderBlock(element)
+    : RenderBlockFlow(element)
 {
     ASSERT(element);
 }

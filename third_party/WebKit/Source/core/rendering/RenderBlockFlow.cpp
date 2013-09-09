@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,45 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderRubyBase_h
-#define RenderRubyBase_h
-
-#include "core/rendering/RenderBlockFlow.h"
+#include "config.h"
+#include "RenderBlockFlow.h"
 
 namespace WebCore {
 
-class RenderRubyRun;
+RenderBlockFlow::RenderBlockFlow(ContainerNode* node)
+    : RenderBlock(node)
+{
+}
 
-class RenderRubyBase FINAL : public RenderBlockFlow {
-public:
-    virtual ~RenderRubyBase();
-
-    static RenderRubyBase* createAnonymous(Document*);
-
-    virtual const char* renderName() const { return "RenderRubyBase (anonymous)"; }
-
-    virtual bool isRubyBase() const { return true; }
-
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const;
-
-private:
-    RenderRubyBase();
-
-    virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const;
-    virtual void adjustInlineDirectionLineBounds(int expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const;
-
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
-
-    void moveChildren(RenderRubyBase* toBase, RenderObject* beforeChild = 0);
-    void moveInlineChildren(RenderRubyBase* toBase, RenderObject* beforeChild = 0);
-    void moveBlockChildren(RenderRubyBase* toBase, RenderObject* beforeChild = 0);
-
-    RenderRubyRun* rubyRun() const;
-
-    // Allow RenderRubyRun to manipulate the children within ruby bases.
-    friend class RenderRubyRun;
-};
+RenderBlockFlow::~RenderBlockFlow()
+{
+}
 
 } // namespace WebCore
-
-#endif // RenderRubyBase_h

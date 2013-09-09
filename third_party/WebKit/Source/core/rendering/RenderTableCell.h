@@ -25,6 +25,7 @@
 #ifndef RenderTableCell_h
 #define RenderTableCell_h
 
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderTableRow.h"
 #include "core/rendering/RenderTableSection.h"
 
@@ -37,7 +38,7 @@ enum IncludeBorderColorOrNot { DoNotIncludeBorderColor, IncludeBorderColor };
 
 class SubtreeLayoutScope;
 
-class RenderTableCell FINAL : public RenderBlock {
+class RenderTableCell FINAL : public RenderBlockFlow {
 public:
     explicit RenderTableCell(Element*);
 
