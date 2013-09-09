@@ -247,6 +247,17 @@ void NotifyUnmountResult(
 void StorageMonitorCros::EjectDevice(
     const std::string& device_id,
     base::Callback<void(EjectStatus)> callback) {
+  StorageInfo::Type type;
+  if (!StorageInfo::CrackDeviceId(device_id, &type, NULL)) {
+    callback.Run(EJECT_FAILURE);
+    return;
+  }
+
+  if (type == StorageInfo::MTP_OR_PTP) {
+    media_transfer_protocol_device_observer_->EjectDevice(device_id, callback);
+    return;
+  }
+
   std::string mount_path;
   for (MountMap::const_iterator info_it = mount_map_.begin();
        info_it != mount_map_.end(); ++info_it) {

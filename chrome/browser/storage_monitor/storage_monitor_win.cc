@@ -98,7 +98,6 @@ void StorageMonitorWin::EjectDevice(
     const std::string& device_id,
     base::Callback<void(EjectStatus)> callback) {
   StorageInfo::Type type;
-
   if (!StorageInfo::CrackDeviceId(device_id, &type, NULL)) {
     callback.Run(EJECT_FAILURE);
     return;

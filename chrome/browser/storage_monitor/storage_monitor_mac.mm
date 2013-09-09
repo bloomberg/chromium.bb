@@ -272,6 +272,19 @@ bool StorageMonitorMac::GetStorageInfoForPath(const base::FilePath& path,
 void StorageMonitorMac::EjectDevice(
       const std::string& device_id,
       base::Callback<void(EjectStatus)> callback) {
+  StorageInfo::Type type;
+  std::string uuid;
+  if (!StorageInfo::CrackDeviceId(device_id, &type, &uuid)) {
+    callback.Run(EJECT_FAILURE);
+    return;
+  }
+
+  if (type == StorageInfo::MAC_IMAGE_CAPTURE &&
+      image_capture_device_manager_.get()) {
+    image_capture_device_manager_->EjectDevice(uuid, callback);
+    return;
+  }
+
   std::string bsd_name;
   for (std::map<std::string, StorageInfo>::iterator
       it = disk_info_map_.begin(); it != disk_info_map_.end(); ++it) {

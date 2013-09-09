@@ -146,6 +146,16 @@ void ImageCaptureDeviceManager::SetNotifications(
   [device_browser_ setNotifications:notifications];
 }
 
+void ImageCaptureDeviceManager::EjectDevice(
+    const std::string& uuid,
+    base::Callback<void(StorageMonitor::EjectStatus)> callback) {
+  base::scoped_nsobject<ImageCaptureDevice> camera_device(
+      [[device_browser_ deviceForUUID:uuid] retain]);
+  [camera_device eject];
+  [camera_device close];
+  callback.Run(StorageMonitor::EJECT_OK);
+}
+
 // static
 ImageCaptureDevice* ImageCaptureDeviceManager::deviceForUUID(
     const std::string& uuid) {

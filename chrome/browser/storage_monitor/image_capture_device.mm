@@ -92,6 +92,10 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   listener_.reset();
 }
 
+- (void)eject {
+  [camera_ requestEjectOrDisconnect];
+}
+
 - (void)downloadFile:(const std::string&)name
            localPath:(const base::FilePath&)localPath {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));

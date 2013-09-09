@@ -42,6 +42,9 @@ class MediaTransferProtocolDeviceObserverLinux
   bool GetStorageInfoForPath(const base::FilePath& path,
                              StorageInfo* storage_info) const;
 
+  void EjectDevice(const std::string& device_id,
+                   base::Callback<void(StorageMonitor::EjectStatus)> callback);
+
  protected:
   // Only used in unit tests.
   MediaTransferProtocolDeviceObserverLinux(
@@ -60,6 +63,11 @@ class MediaTransferProtocolDeviceObserverLinux
 
   // Enumerate existing mtp storage devices.
   void EnumerateStorages();
+
+  // Find the |storage_map_| key for the record with this |device_id|. Returns
+  // true on success, false on failure.
+  bool GetLocationForDeviceId(const std::string& device_id,
+                              std::string* location) const;
 
   // Pointer to the MTP manager. Not owned. Client must ensure the MTP
   // manager outlives this object.

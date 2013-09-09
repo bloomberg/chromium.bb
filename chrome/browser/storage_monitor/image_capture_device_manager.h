@@ -38,6 +38,11 @@ class ImageCaptureDeviceManager {
   // TODO(gbillock): Move this to be a constructor argument.
   void SetNotifications(StorageMonitor::Receiver* notifications);
 
+  // Eject the given device. The ID passed is not the device ID, but the
+  // ImageCapture UUID.
+  void EjectDevice(const std::string& uuid,
+                   base::Callback<void(StorageMonitor::EjectStatus)> callback);
+
  private:
   base::scoped_nsobject<ImageCaptureDeviceManagerImpl> device_browser_;
 };

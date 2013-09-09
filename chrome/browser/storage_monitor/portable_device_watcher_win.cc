@@ -555,7 +555,19 @@ void PortableDeviceWatcherWin::SetNotifications(
 void PortableDeviceWatcherWin::EjectDevice(
     const std::string& device_id,
     base::Callback<void(StorageMonitor::EjectStatus)> callback) {
-  callback.Run(chrome::StorageMonitor::EJECT_FAILURE);
+  // MTP devices on Windows don't have a detach API needed -- signal
+  // the object as if the device is gone and tell the caller it is OK
+  // to remove.
+  string16 device_location;      // The device_map_ key.
+  string16 storage_object_id;
+  if (!GetMTPStorageInfoFromDeviceId(device_id,
+                                     &device_location, &storage_object_id)) {
+    callback.Run(chrome::StorageMonitor::EJECT_NO_SUCH_DEVICE);
+    return;
+  }
+  HandleDeviceDetachEvent(device_location);
+
+  callback.Run(chrome::StorageMonitor::EJECT_OK);
 }
 
 void PortableDeviceWatcherWin::EnumerateAttachedDevices() {
@@ -623,7 +635,7 @@ void PortableDeviceWatcherWin::OnDidHandleDeviceAttachEvent(
     string16 storage_name(name + L" (" + storage_iter->object_temporary_id +
         L')');
     StorageInfo info(storage_id, storage_name, location,
-                     string16(), string16(), string16(), 0);
+                     storage_name, string16(), string16(), 0);
     storage_map_[storage_id] = info;
     if (storage_notifications_) {
       info.set_location(GetStoragePathFromStorageId(storage_id));

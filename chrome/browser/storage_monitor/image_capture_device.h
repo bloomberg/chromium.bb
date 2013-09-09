@@ -68,6 +68,8 @@ class ImageCaptureDeviceListener {
 - (void)open;
 - (void)close;
 
+- (void)eject;
+
 // Download the given file |name| to the provided |local_path|. Completion
 // notice will be sent to the listener's DownloadedFile method. The name
 // should be of the same form as those sent to the listener's ItemAdded method.
