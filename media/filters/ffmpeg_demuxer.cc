@@ -595,8 +595,6 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
       media_log_->SetStringProperty("audio_codec_name", codec->name);
     }
 
-    media_log_->SetIntegerProperty("audio_sample_rate",
-                                   audio_codec->sample_rate);
     media_log_->SetIntegerProperty("audio_channels_count",
                                    audio_codec->channels);
     media_log_->SetIntegerProperty("audio_samples_per_second",
@@ -637,7 +635,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
 
   media_log_->SetDoubleProperty("max_duration", max_duration.InSecondsF());
   media_log_->SetDoubleProperty("start_time", start_time_.InSecondsF());
-  media_log_->SetDoubleProperty("filesize_in_bytes",
+  media_log_->SetDoubleProperty("total_bytes",
                                 static_cast<double>(filesize_in_bytes));
   media_log_->SetIntegerProperty("bitrate", bitrate_);
 
