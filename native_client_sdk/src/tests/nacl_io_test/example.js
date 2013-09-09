@@ -46,6 +46,15 @@ function endCommand(testName, testResult) {
 
 function testendCommand() {
   testsFinished = true;
+  common.removeModule();
+
+  if (failedTests) {
+    common.updateStatus('FAILED');
+    document.getElementById('statusField').classList.add('failed');
+  } else {
+    common.updateStatus('OK');
+    document.getElementById('statusField').classList.add('ok');
+  }
 }
 
 function handleMessage(event) {

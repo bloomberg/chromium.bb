@@ -60,7 +60,15 @@ int example_main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   ::testing::UnitTest::GetInstance()->listeners()
       .Append(new GTestEventListener());
-  return RUN_ALL_TESTS();
+  int result = RUN_ALL_TESTS();
+
+  // When running as an automated test, we don't want the final message
+  // ("testend") to be dropped, so don't exit. The web page will kill the
+  // plugin if it needs to.
+  while(1);
+
+  // Silence the warning.
+  return result;
 }
 
 // Register the function to call once the Instance Object is initialized.

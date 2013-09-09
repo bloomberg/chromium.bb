@@ -238,6 +238,14 @@ var common = (function() {
   }
 
   /**
+   * Remove the NaCl module from the page.
+   */
+  function removeModule() {
+    common.naclModule.parentNode.removeChild(common.naclModule);
+    common.naclModule = null;
+  }
+
+  /**
    * Return true when |s| starts with the string |prefix|.
    *
    * @param {string} s The string to search.
@@ -376,6 +384,7 @@ var common = (function() {
     domContentLoaded: domContentLoaded,
     createNaClModule: createNaClModule,
     hideModule: hideModule,
+    removeModule: removeModule,
     logMessage: logMessage,
     updateStatus: updateStatus
   };
