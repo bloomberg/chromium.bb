@@ -47,6 +47,10 @@ const char kPrerenderLaunchKeyName[] = "PrerenderLaunch";
 const char kPrerenderAlwaysControlKeyName[] = "PrerenderAlwaysControl";
 const char kPrerenderQueryPrerenderServiceKeyName[] =
     "PrerenderQueryPrerenderService";
+const char kPrerenderQueryPrerenderServiceCurrentURLKeyName[] =
+    "PrerenderQueryPrerenderServiceCurrentURL";
+const char kPrerenderQueryPrerenderServiceCandidateURLsKeyName[] =
+    "PrerenderQueryPrerenderServiceCandidateURLs";
 const char kPrerenderServiceBehaviorIDKeyName[] = "PrerenderServiceBehaviorID";
 const char kPrerenderServiceFetchTimeoutKeyName[] =
     "PrerenderServiceFetchTimeoutMs";
@@ -371,6 +375,16 @@ bool ShouldQueryPrerenderService(Profile* profile) {
   return IsUnencryptedSyncEnabled(profile) &&
       GetLocalPredictorSpecValue(kPrerenderQueryPrerenderServiceKeyName) ==
       kEnabledGroup;
+}
+
+bool ShouldQueryPrerenderServiceForCurrentURL() {
+  return GetLocalPredictorSpecValue(
+      kPrerenderQueryPrerenderServiceCurrentURLKeyName) != kDisabledGroup;
+}
+
+bool ShouldQueryPrerenderServiceForCandidateURLs() {
+  return GetLocalPredictorSpecValue(
+      kPrerenderQueryPrerenderServiceCandidateURLsKeyName) != kDisabledGroup;
 }
 
 string GetPrerenderServiceURLPrefix() {

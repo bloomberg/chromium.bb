@@ -42,6 +42,11 @@ bool IsLocalPredictorPrerenderAlwaysControlEnabled();
 // provided.
 bool ShouldQueryPrerenderService(Profile* profile);
 
+// Indicates whether we should query the prerender service for the current URL
+// and candidate URLs, respectively.
+bool ShouldQueryPrerenderServiceForCurrentURL();
+bool ShouldQueryPrerenderServiceForCandidateURLs();
+
 // Returns the URL prefix to be used for the prerender service. The only thing
 // that will be appended is the urlencoded query json.
 std::string GetPrerenderServiceURLPrefix();

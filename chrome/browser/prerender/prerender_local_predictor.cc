@@ -642,7 +642,8 @@ void PrerenderLocalPredictor::DoPrerenderServiceCheck(
   DictionaryValue* req = new DictionaryValue();
   req->SetInteger("version", 1);
   req->SetInteger("behavior_id", GetPrerenderServiceBehaviorID());
-  if (info->source_url_.url_lookup_success) {
+  if (ShouldQueryPrerenderServiceForCurrentURL() &&
+      info->source_url_.url_lookup_success) {
     ListValue* browse_history = new ListValue();
     DictionaryValue* browse_item = new DictionaryValue();
     browse_item->SetString("url", info->source_url_.url.spec());
@@ -656,7 +657,8 @@ void PrerenderLocalPredictor::DoPrerenderServiceCheck(
     if (info->candidate_urls_[i].url_lookup_success)
       num_candidate_urls++;
   }
-  if (num_candidate_urls > 0) {
+  if (ShouldQueryPrerenderServiceForCandidateURLs() &&
+      num_candidate_urls > 0) {
     ListValue* candidates = new ListValue();
     DictionaryValue* candidate;
     for (int i = 0; i < static_cast<int>(info->candidate_urls_.size()); i++) {
@@ -757,8 +759,12 @@ bool PrerenderLocalPredictor::ApplyParsedPrerenderServiceResponse(
   }
   if (!dict->GetList("prerender_response.candidate_check_response.candidates",
                      &list)) {
-    if (info->candidate_urls_.size() > 0)
-      return false;
+    if (ShouldQueryPrerenderServiceForCandidateURLs()) {
+      for (int i = 0; i < static_cast<int>(info->candidate_urls_.size()); i++) {
+        if (info->candidate_urls_[i].url_lookup_success)
+          return false;
+      }
+    }
   } else {
     for (size_t i = 0; i < list->GetSize(); i++) {
       DictionaryValue* d;
@@ -791,47 +797,52 @@ bool PrerenderLocalPredictor::ApplyParsedPrerenderServiceResponse(
       }
     }
     for (size_t i = 0; i < info->candidate_urls_.size(); i++) {
-      if (!info->candidate_urls_[i].service_whitelist_reported)
+      if (info->candidate_urls_[i].url_lookup_success &&
+          !info->candidate_urls_[i].service_whitelist_reported) {
         return false;
+      }
     }
   }
 
-  list = NULL;
-  if (dict->GetInteger("prerender_response.hint_response.hinting_timed_out",
-                       &int_value) &&
-      int_value == 1) {
-    *hinting_timed_out = true;
-  } else if (!dict->GetList("prerender_response.hint_response.candidates",
-                            &list)) {
-    return false;
-  } else {
-    for (int i = 0; i < static_cast<int>(list->GetSize()); i++) {
-      DictionaryValue* d;
-      if (!list->GetDictionary(i, &d))
-        return false;
-      string url;
-      double priority;
-      if (!d->GetString("url", &url) || !d->GetDouble("likelihood", &priority)
-          || !GURL(url).is_valid()) {
-        return false;
+  if (ShouldQueryPrerenderServiceForCurrentURL() &&
+      info->source_url_.url_lookup_success) {
+    list = NULL;
+    if (dict->GetInteger("prerender_response.hint_response.hinting_timed_out",
+                         &int_value) &&
+        int_value == 1) {
+      *hinting_timed_out = true;
+    } else if (!dict->GetList("prerender_response.hint_response.candidates",
+                              &list)) {
+      return false;
+    } else {
+      for (int i = 0; i < static_cast<int>(list->GetSize()); i++) {
+        DictionaryValue* d;
+        if (!list->GetDictionary(i, &d))
+          return false;
+        string url;
+        double priority;
+        if (!d->GetString("url", &url) || !d->GetDouble("likelihood", &priority)
+            || !GURL(url).is_valid()) {
+          return false;
+        }
+        int in_index_timed_out = 0;
+        int in_index = 0;
+        if ((!d->GetInteger("in_index_timed_out", &in_index_timed_out) ||
+             in_index_timed_out != 1) &&
+            !d->GetInteger("in_index", &in_index)) {
+          return false;
+        }
+        if (priority < 0.0 || priority > 1.0 || in_index < 0 || in_index > 1 ||
+            in_index_timed_out < 0 || in_index_timed_out > 1) {
+          return false;
+        }
+        if (in_index_timed_out == 1)
+          *hinting_url_lookup_timed_out = true;
+        info->MaybeAddCandidateURLFromService(GURL(url),
+                                              priority,
+                                              in_index == 1,
+                                              (1 - in_index_timed_out) == 1);
       }
-      int in_index_timed_out = 0;
-      int in_index = 0;
-      if ((!d->GetInteger("in_index_timed_out", &in_index_timed_out) ||
-           in_index_timed_out != 1) &&
-          !d->GetInteger("in_index", &in_index)) {
-        return false;
-      }
-      if (priority < 0.0 || priority > 1.0 || in_index < 0 || in_index > 1 ||
-          in_index_timed_out < 0 || in_index_timed_out > 1) {
-        return false;
-      }
-      if (in_index_timed_out == 1)
-        *hinting_url_lookup_timed_out = true;
-      info->MaybeAddCandidateURLFromService(GURL(url),
-                                            priority,
-                                            in_index == 1,
-                                            (1 - in_index_timed_out) == 1);
     }
   }
 
