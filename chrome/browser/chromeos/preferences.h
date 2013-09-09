@@ -124,27 +124,6 @@ class Preferences : public PrefServiceSyncableObserver,
   StringPrefMember previous_input_method_;
   StringPrefMember enabled_extension_imes_;
 
-  BooleanPrefMember chewing_boolean_prefs_[
-      language_prefs::kNumChewingBooleanPrefs];
-  StringPrefMember chewing_multiple_choice_prefs_[
-      language_prefs::kNumChewingMultipleChoicePrefs];
-  IntegerPrefMember chewing_hsu_sel_key_type_;
-  IntegerPrefMember chewing_integer_prefs_[
-      language_prefs::kNumChewingIntegerPrefs];
-  StringPrefMember hangul_keyboard_;
-  StringPrefMember hangul_hanja_binding_keys_;
-  StringPrefMember hangul_hanja_keys_;
-  BooleanPrefMember pinyin_boolean_prefs_[
-      language_prefs::kNumPinyinBooleanPrefs];
-  IntegerPrefMember pinyin_int_prefs_[
-      language_prefs::kNumPinyinIntegerPrefs];
-  IntegerPrefMember pinyin_double_pinyin_schema_;
-  BooleanPrefMember mozc_boolean_prefs_[
-      language_prefs::kNumMozcBooleanPrefs];
-  StringPrefMember mozc_multiple_choice_prefs_[
-      language_prefs::kNumMozcMultipleChoicePrefs];
-  IntegerPrefMember mozc_integer_prefs_[
-      language_prefs::kNumMozcIntegerPrefs];
   BooleanPrefMember xkb_auto_repeat_enabled_;
   IntegerPrefMember xkb_auto_repeat_delay_pref_;
   IntegerPrefMember xkb_auto_repeat_interval_pref_;

@@ -196,26 +196,6 @@ function load() {
                                 [$('pointer-settings-button')]);
     OptionsPage.registerOverlay(PreferredNetworks.getInstance(),
                                 BrowserOptions.getInstance());
-    OptionsPage.registerOverlay(
-        new OptionsPage('languageChewing',
-                        loadTimeData.getString('languageChewingPageTabTitle'),
-                        'languageChewingPage'),
-        LanguageOptions.getInstance());
-    OptionsPage.registerOverlay(
-        new OptionsPage('languageHangul',
-                        loadTimeData.getString('languageHangulPageTabTitle'),
-                        'languageHangulPage'),
-        LanguageOptions.getInstance());
-    OptionsPage.registerOverlay(
-        new OptionsPage('languageMozc',
-                        loadTimeData.getString('languageMozcPageTabTitle'),
-                        'languageMozcPage'),
-        LanguageOptions.getInstance());
-    OptionsPage.registerOverlay(
-        new OptionsPage('languagePinyin',
-                        loadTimeData.getString('languagePinyinPageTabTitle'),
-                        'languagePinyinPage'),
-        LanguageOptions.getInstance());
   }
 
   if (!cr.isWindows && !cr.isMac) {

@@ -211,73 +211,7 @@ void Preferences::RegisterProfilePrefs(
       prefs::kLanguageEnabledExtensionImes,
       "",
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
-    registry->RegisterBooleanPref(
-        language_prefs::kChewingBooleanPrefs[i].pref_name,
-        language_prefs::kChewingBooleanPrefs[i].default_pref_value,
-        language_prefs::kChewingBooleanPrefs[i].sync_status);
-  }
-  for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs; ++i) {
-    registry->RegisterStringPref(
-        language_prefs::kChewingMultipleChoicePrefs[i].pref_name,
-        language_prefs::kChewingMultipleChoicePrefs[i].default_pref_value,
-        language_prefs::kChewingMultipleChoicePrefs[i].sync_status);
-  }
-  registry->RegisterIntegerPref(
-      language_prefs::kChewingHsuSelKeyType.pref_name,
-      language_prefs::kChewingHsuSelKeyType.default_pref_value,
-      language_prefs::kChewingHsuSelKeyType.sync_status);
 
-  for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
-    registry->RegisterIntegerPref(
-        language_prefs::kChewingIntegerPrefs[i].pref_name,
-        language_prefs::kChewingIntegerPrefs[i].default_pref_value,
-        language_prefs::kChewingIntegerPrefs[i].sync_status);
-  }
-  registry->RegisterStringPref(
-      prefs::kLanguageHangulKeyboard,
-      language_prefs::kHangulKeyboardNameIDPairs[0].keyboard_id,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
-  registry->RegisterStringPref(
-      prefs::kLanguageHangulHanjaBindingKeys,
-      language_prefs::kHangulHanjaBindingKeys,
-      // Don't sync the pref as it's not user-configurable
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
-    registry->RegisterBooleanPref(
-        language_prefs::kPinyinBooleanPrefs[i].pref_name,
-        language_prefs::kPinyinBooleanPrefs[i].default_pref_value,
-        language_prefs::kPinyinBooleanPrefs[i].sync_status);
-  }
-  for (size_t i = 0; i < language_prefs::kNumPinyinIntegerPrefs; ++i) {
-    registry->RegisterIntegerPref(
-        language_prefs::kPinyinIntegerPrefs[i].pref_name,
-        language_prefs::kPinyinIntegerPrefs[i].default_pref_value,
-        language_prefs::kPinyinIntegerPrefs[i].sync_status);
-  }
-  registry->RegisterIntegerPref(
-      language_prefs::kPinyinDoublePinyinSchema.pref_name,
-      language_prefs::kPinyinDoublePinyinSchema.default_pref_value,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
-  for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
-    registry->RegisterBooleanPref(
-        language_prefs::kMozcBooleanPrefs[i].pref_name,
-        language_prefs::kMozcBooleanPrefs[i].default_pref_value,
-        language_prefs::kMozcBooleanPrefs[i].sync_status);
-  }
-  for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
-    registry->RegisterStringPref(
-        language_prefs::kMozcMultipleChoicePrefs[i].pref_name,
-        language_prefs::kMozcMultipleChoicePrefs[i].default_pref_value,
-        language_prefs::kMozcMultipleChoicePrefs[i].sync_status);
-  }
-  for (size_t i = 0; i < language_prefs::kNumMozcIntegerPrefs; ++i) {
-    registry->RegisterIntegerPref(
-        language_prefs::kMozcIntegerPrefs[i].pref_name,
-        language_prefs::kMozcIntegerPrefs[i].default_pref_value,
-        language_prefs::kMozcIntegerPrefs[i].sync_status);
-  }
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapSearchKeyTo,
       input_method::kSearchKey,
@@ -407,46 +341,6 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
   previous_input_method_.Init(prefs::kLanguagePreviousInputMethod,
                               prefs, callback);
 
-  for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
-    chewing_boolean_prefs_[i].Init(
-        language_prefs::kChewingBooleanPrefs[i].pref_name, prefs, callback);
-  }
-  for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs; ++i) {
-    chewing_multiple_choice_prefs_[i].Init(
-        language_prefs::kChewingMultipleChoicePrefs[i].pref_name,
-        prefs, callback);
-  }
-  chewing_hsu_sel_key_type_.Init(
-      language_prefs::kChewingHsuSelKeyType.pref_name, prefs, callback);
-  for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
-    chewing_integer_prefs_[i].Init(
-        language_prefs::kChewingIntegerPrefs[i].pref_name, prefs, callback);
-  }
-  hangul_keyboard_.Init(prefs::kLanguageHangulKeyboard, prefs, callback);
-  hangul_hanja_binding_keys_.Init(
-      prefs::kLanguageHangulHanjaBindingKeys, prefs, callback);
-  for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
-    pinyin_boolean_prefs_[i].Init(
-        language_prefs::kPinyinBooleanPrefs[i].pref_name, prefs, callback);
-  }
-  for (size_t i = 0; i < language_prefs::kNumPinyinIntegerPrefs; ++i) {
-    pinyin_int_prefs_[i].Init(
-        language_prefs::kPinyinIntegerPrefs[i].pref_name, prefs, callback);
-  }
-  pinyin_double_pinyin_schema_.Init(
-      language_prefs::kPinyinDoublePinyinSchema.pref_name, prefs, callback);
-  for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
-    mozc_boolean_prefs_[i].Init(
-        language_prefs::kMozcBooleanPrefs[i].pref_name, prefs, callback);
-  }
-  for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
-    mozc_multiple_choice_prefs_[i].Init(
-        language_prefs::kMozcMultipleChoicePrefs[i].pref_name, prefs, callback);
-  }
-  for (size_t i = 0; i < language_prefs::kNumMozcIntegerPrefs; ++i) {
-    mozc_integer_prefs_[i].Init(
-        language_prefs::kMozcIntegerPrefs[i].pref_name, prefs, callback);
-  }
   xkb_auto_repeat_enabled_.Init(
       prefs::kLanguageXkbAutoRepeatEnabled, prefs, callback);
   xkb_auto_repeat_delay_pref_.Init(

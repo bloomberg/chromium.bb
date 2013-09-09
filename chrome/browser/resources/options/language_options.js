@@ -9,18 +9,6 @@ cr.define('options', function() {
   /** @const */ var OptionsPage = options.OptionsPage;
   /** @const */ var LanguageList = options.LanguageList;
 
-  // Some input methods like Chinese Pinyin have config pages.
-  // This is the map of the input method names to their config page names.
-  /** @const */ var INPUT_METHOD_ID_TO_CONFIG_PAGE_NAME = {
-    'mozc': 'languageMozc',
-    'mozc-chewing': 'languageChewing',
-    'mozc-dv': 'languageMozc',
-    'mozc-hangul': 'languageHangul',
-    'mozc-jp': 'languageMozc',
-    'pinyin': 'languagePinyin',
-    'pinyin-dv': 'languagePinyin',
-  };
-
   /**
    * Spell check dictionary download status.
    * @type {Enum}
@@ -173,10 +161,6 @@ cr.define('options', function() {
                             this.handleVisibleChange_.bind(this));
 
       if (cr.isChromeOS) {
-        $('chewing-confirm').onclick = $('hangul-confirm').onclick =
-            $('mozc-confirm').onclick = $('pinyin-confirm').onclick =
-                OptionsPage.closeOverlay.bind(OptionsPage);
-
         this.initializeInputMethodList_();
         this.initializeLanguageCodeToInputMethodIdsMap_();
       }
@@ -321,15 +305,6 @@ cr.define('options', function() {
         var span = element.querySelector('span');
         span.textContent = inputMethod.displayName;
 
-        // Add the configure button if the config page is present for this
-        // input method.
-        if (inputMethod.id in INPUT_METHOD_ID_TO_CONFIG_PAGE_NAME) {
-          var pageName = INPUT_METHOD_ID_TO_CONFIG_PAGE_NAME[inputMethod.id];
-          var button = this.createConfigureInputMethodButton_(inputMethod.id,
-                                                              pageName);
-          element.appendChild(button);
-        }
-
         if (inputMethod.optionsPage) {
           var button = document.createElement('button');
           button.textContent = loadTimeData.getString('configure');
@@ -345,26 +320,6 @@ cr.define('options', function() {
                                this.handleCheckboxClick_.bind(this));
         inputMethodList.appendChild(element);
       }
-    },
-
-    /**
-     * Creates a configure button for the given input method ID.
-     * @param {string} inputMethodId Input method ID (ex. "pinyin").
-     * @param {string} pageName Name of the config page (ex. "languagePinyin").
-     * @private
-     */
-    createConfigureInputMethodButton_: function(inputMethodId, pageName) {
-      var button = document.createElement('button');
-      button.textContent = loadTimeData.getString('configure');
-      button.onclick = function(e) {
-        // Prevent the default action (i.e. changing the checked property
-        // of the checkbox). The button click here should not be handled
-        // as checkbox click.
-        e.preventDefault();
-        chrome.send('inputMethodOptionsOpen', [inputMethodId]);
-        OptionsPage.navigateToPage(pageName);
-      };
-      return button;
     },
 
     /**

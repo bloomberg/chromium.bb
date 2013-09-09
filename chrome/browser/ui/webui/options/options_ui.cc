@@ -75,10 +75,6 @@
 #include "chrome/browser/ui/webui/options/chromeos/display_overscan_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/internet_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/keyboard_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/language_chewing_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/language_hangul_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/language_mozc_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/language_pinyin_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/pointer_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/stats_options_handler.h"
@@ -300,15 +296,7 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::InternetOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options::LanguageChewingHandler());
-  AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::KeyboardHandler());
-  AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options::LanguageHangulHandler());
-  AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options::LanguageMozcHandler());
-  AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options::LanguagePinyinHandler());
 
   chromeos::options::PointerHandler* pointer_handler =
       new chromeos::options::PointerHandler();
