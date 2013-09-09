@@ -66,11 +66,6 @@
 #define WTF_OS_LINUX 1
 #endif
 
-/* OS(NETBSD) - NetBSD */
-#if defined(__NetBSD__)
-#define WTF_OS_NETBSD 1
-#endif
-
 /* OS(OPENBSD) - OpenBSD */
 #ifdef __OpenBSD__
 #define WTF_OS_OPENBSD 1
@@ -86,7 +81,6 @@
     || OS(MACOSX)           \
     || OS(FREEBSD)          \
     || OS(LINUX)            \
-    || OS(NETBSD)           \
     || OS(OPENBSD)          \
     || defined(unix)        \
     || defined(__unix)      \
