@@ -685,6 +685,10 @@ void EventRouter::DispatchDirectoryChangeEvent(
     watch_info->SetString("eventType",
                           got_error ? kPathWatchError : kPathChanged);
 
+    // TODO(mtomasz): Pass set of entries. http://crbug.com/157834
+    ListValue* watch_info_entries = new ListValue();
+    watch_info->Set("changedEntries", watch_info_entries);
+
     scoped_ptr<extensions::Event> event(new extensions::Event(
         extensions::event_names::kOnDirectoryChanged, args.Pass()));
     extensions::ExtensionSystem::Get(profile_)->event_router()->

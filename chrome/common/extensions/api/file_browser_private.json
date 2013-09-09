@@ -305,6 +305,22 @@
         }
       },
       {
+        "id": "FileWatchChangedEntry",
+        "type": "object",
+        "description": "Information about changed file or directory",
+        "properties": {
+          "changeType": {
+            "type": "string",
+            "enum": ["added", "deleted", "updated"],
+            "description": "Specifies type of the change."
+          },
+          "fileUrl": {
+            "type": "string",
+            "description": "URL of the changed file."
+          }
+        }
+      },
+      {
         "id": "FileWatchEvent",
         "type": "object",
         "description": "Directory change notification details.",
@@ -317,6 +333,10 @@
           "directoryUrl": {
             "type": "string",
             "description": "URL of watched directory."
+          },
+          "changedEntries": {
+            "type": "array",
+            "items": {"$ref": "FileWatchChangedEntry"}
           }
         }
       }
