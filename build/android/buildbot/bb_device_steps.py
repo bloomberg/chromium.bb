@@ -252,7 +252,7 @@ def RunWebkitLayoutTests(options):
     gs_bucket = 'gs://chromium-layout-test-archives'
     RunCmd([os.path.join(SLAVE_SCRIPTS_DIR, 'chromium',
                          'archive_layout_test_results.py'),
-        '--results-dir', '../layout-test-results',
+        '--results-dir', '../../layout-test-results',
         '--build-dir', CHROME_OUT_DIR,
         '--build-number', str(options.build_properties.get('buildnumber', '')),
         '--builder-name', options.build_properties.get('buildername', ''),
