@@ -2624,6 +2624,10 @@
           ],
         }],
         ['use_openssl==1', {
+          'sources!': [
+            # networking_private_crypto.cc uses NSS functions.
+            'browser/extensions/api/networking_private/networking_private_crypto_unittest.cc',
+          ],
           'sources/': [
             # OpenSSL build does not support firefox importer. See
             # http://crbug.com/64926

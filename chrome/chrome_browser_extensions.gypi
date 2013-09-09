@@ -999,6 +999,12 @@
             }],
           ],
         }],
+        ['use_openssl==1', {
+          'sources!': [
+            # networking_private_crypto.cc uses NSS functions.
+            'browser/extensions/api/networking_private/networking_private_crypto.cc',
+          ],
+        }],
         ['OS=="android"', {
           'sources': [
             'browser/extensions/extension_error_ui_android.cc',
