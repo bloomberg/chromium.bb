@@ -9,10 +9,12 @@ the process terminates.
 """
 
 import optparse
+import pywintypes
 import sys
 import time
 import win32con
 import win32gui
+import winerror
 
 import chrome_helper
 
@@ -34,7 +36,12 @@ def CloseWindows(process_path):
       return True
 
     for hwnd in chrome_helper.GetWindowHandles(process_ids):
-      win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
+      try:
+        win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
+      except pywintypes.error as error:
+        # It's normal that some window handles have become invalid.
+        if error.args[0] != winerror.ERROR_INVALID_WINDOW_HANDLE:
+          raise
     time.sleep(0)
   return False
 
