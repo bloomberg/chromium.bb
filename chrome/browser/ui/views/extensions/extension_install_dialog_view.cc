@@ -163,6 +163,36 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogView);
 };
 
+// A simple view that prepends a view with a bullet with the help of a grid
+// layout.
+class BulletedView : public views::View {
+ public:
+  explicit BulletedView(views::View* view);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BulletedView);
+};
+
+BulletedView::BulletedView(views::View* view) {
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
+  views::ColumnSet* column_set = layout->AddColumnSet(0);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING,
+                        0,
+                        views::GridLayout::USE_PREF,
+                        0, // no fixed width
+                        0);
+   column_set->AddColumn(views::GridLayout::LEADING,
+                         views::GridLayout::LEADING,
+                         0,
+                         views::GridLayout::USE_PREF,
+                         0,  // no fixed width
+                         0);
+  layout->StartRow(0, 0);
+  layout->AddView(new views::Label(PrepareForDisplay(string16(), true)));
+  layout->AddView(view);
+}
+
 // A view to display text with an expandable details section.
 class ExpandableContainerView : public views::View,
                                 public views::ButtonListener,
@@ -173,7 +203,7 @@ class ExpandableContainerView : public views::View,
                           const string16& description,
                           const PermissionDetails& details,
                           int horizontal_space,
-                          bool show_bullets);
+                          bool parent_bulleted);
   virtual ~ExpandableContainerView();
 
   // views::View:
@@ -194,7 +224,7 @@ class ExpandableContainerView : public views::View,
   // A view which displays all the details of an IssueAdviceInfoEntry.
   class DetailsView : public views::View {
    public:
-    explicit DetailsView(int horizontal_space, bool show_bullets);
+    explicit DetailsView(int horizontal_space, bool parent_bulleted);
     virtual ~DetailsView() {}
 
     // views::View:
@@ -209,8 +239,9 @@ class ExpandableContainerView : public views::View,
     views::GridLayout* layout_;
     double state_;
 
-    // Whether to show bullets in front of each item in the details.
-    bool show_bullets_;
+    // Whether the parent item is showing bullets. This will determine how much
+    // extra indentation is needed.
+    bool parent_bulleted_;
 
     DISALLOW_COPY_AND_ASSIGN(DetailsView);
   };
@@ -481,12 +512,12 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       for (size_t i = 0; i < prompt.GetPermissionCount(); ++i) {
         layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
         layout->StartRow(0, column_set_id);
-        views::Label* permission_label = new views::Label(PrepareForDisplay(
-            prompt.GetPermission(i), true));
+        views::Label* permission_label =
+            new views::Label(prompt.GetPermission(i));
         permission_label->SetMultiLine(true);
         permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         permission_label->SizeToFit(left_column_width);
-        layout->AddView(permission_label);
+        layout->AddView(new BulletedView(permission_label));
 
         // If we have more details to provide, show them in collapsed form.
         if (!prompt.GetPermissionsDetails(i).empty()) {
@@ -496,7 +527,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
               PrepareForDisplay(prompt.GetPermissionsDetails(i), false));
           ExpandableContainerView* details_container =
               new ExpandableContainerView(
-                  this, string16(), details, left_column_width, false);
+                  this, string16(), details, left_column_width, true);
           layout->AddView(details_container);
         }
       }
@@ -548,7 +579,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
         details.push_back(entry.details[x]);
       ExpandableContainerView* issue_advice_view =
           new ExpandableContainerView(
-              this, entry.description, details, space_for_oauth, false);
+              this, entry.description, details, space_for_oauth, true);
       layout->AddView(issue_advice_view);
     }
   }
@@ -677,13 +708,18 @@ ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
 // ExpandableContainerView::DetailsView ----------------------------------------
 
 ExpandableContainerView::DetailsView::DetailsView(int horizontal_space,
-                                                  bool show_bullets)
+                                                  bool parent_bulleted)
     : layout_(new views::GridLayout(this)),
       state_(0),
-      show_bullets_(show_bullets) {
+      parent_bulleted_(parent_bulleted) {
   SetLayoutManager(layout_);
   views::ColumnSet* column_set = layout_->AddColumnSet(0);
-  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  // If the parent is using bullets for its items, then a padding of one unit
+  // will make the child item (which has no bullet) look like a sibling of its
+  // parent. Therefore increase the indentation by one more unit to show that it
+  // is in fact a child item (with no missing bullet) and not a sibling.
+  column_set->AddPaddingColumn(
+      0, views::kRelatedControlHorizontalSpacing * (parent_bulleted ? 2 : 1));
   column_set->AddColumn(views::GridLayout::LEADING,
                         views::GridLayout::LEADING,
                         0,
@@ -696,7 +732,7 @@ void ExpandableContainerView::DetailsView::AddDetail(const string16& detail) {
   layout_->StartRowWithPadding(0, 0,
                                0, views::kRelatedControlSmallVerticalSpacing);
   views::Label* detail_label =
-      new views::Label(PrepareForDisplay(detail, show_bullets_));
+      new views::Label(PrepareForDisplay(detail, false));
   detail_label->SetMultiLine(true);
   detail_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout_->AddView(detail_label);
@@ -720,7 +756,7 @@ ExpandableContainerView::ExpandableContainerView(
     const string16& description,
     const PermissionDetails& details,
     int horizontal_space,
-    bool show_bullets)
+    bool parent_bulleted)
     : owner_(owner),
       details_view_(NULL),
       arrow_view_(NULL),
@@ -739,18 +775,17 @@ ExpandableContainerView::ExpandableContainerView(
   if (!description.empty()) {
     layout->StartRow(0, column_set_id);
 
-    views::Label* description_label =
-        new views::Label(PrepareForDisplay(description, true));
+    views::Label* description_label = new views::Label(description);
     description_label->SetMultiLine(true);
     description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     description_label->SizeToFit(horizontal_space);
-    layout->AddView(description_label);
+    layout->AddView(new BulletedView(description_label));
   }
 
   if (details.empty())
     return;
 
-  details_view_ = new DetailsView(horizontal_space, show_bullets);
+  details_view_ = new DetailsView(horizontal_space, parent_bulleted);
 
   layout->StartRow(0, column_set_id);
   layout->AddView(details_view_);
@@ -758,33 +793,44 @@ ExpandableContainerView::ExpandableContainerView(
   for (size_t i = 0; i < details.size(); ++i)
     details_view_->AddDetail(details[i]);
 
-  // Prepare the columns for the More Details row.
+  views::Link* link = new views::Link(
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
+
+  // Make sure the link width column is as wide as needed for both Show and
+  // Hide details, so that the arrow doesn't shift horizontally when we toggle.
+  int link_col_width =
+      views::kRelatedControlHorizontalSpacing +
+      std::max(link->font_list().GetStringWidth(
+                   l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS)),
+               link->font_list().GetStringWidth(
+                   l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS)));
+
   column_set = layout->AddColumnSet(++column_set_id);
-  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  // Padding to the left of the More Details column. If the parent is using
+  // bullets for its items, then a padding of one unit will make the child item
+  // (which has no bullet) look like a sibling of its parent. Therefore increase
+  // the indentation by one more unit to show that it is in fact a child item
+  // (with no missing bullet) and not a sibling.
+  column_set->AddPaddingColumn(
+      0, views::kRelatedControlHorizontalSpacing * (parent_bulleted ? 2 : 1));
+  // The More Details column.
   column_set->AddColumn(views::GridLayout::LEADING,
                         views::GridLayout::LEADING,
                         0,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
-  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+                        views::GridLayout::FIXED,
+                        link_col_width,
+                        link_col_width);
+  // The Up/Down arrow column.
   column_set->AddColumn(views::GridLayout::LEADING,
                        views::GridLayout::LEADING,
                        0,
                        views::GridLayout::USE_PREF,
                        0,
                        0);
-  column_set->AddColumn(views::GridLayout::LEADING,
-                        views::GridLayout::LEADING,
-                        0,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
 
   // Add the More Details link.
   layout->StartRow(0, column_set_id);
-  more_details_ = new views::Link(
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
+  more_details_ = link;
   more_details_->set_listener(this);
   more_details_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->AddView(more_details_);
