@@ -6,18 +6,19 @@
 
 /**
  * This list keeps track of failures in the test. This is necessary to keep
- * track of failures that happen outside of PyAuto test calls and need to be
- * reported asynchronously.
+ * track of failures that happen outside of test calls and need to be reported
+ * asynchronously.
  * @private
  */
 var gFailures = [];
 
 /**
  * The callback to send test messages to. By default we will assume that we
- * are being run by a PyAuto test case, but this can be overridden.
+ * are being run by an automated test case such as a browser test, but this can
+ * be overridden.
  * @private
  */
-var gReturnCallback = sendToPyAuto;
+var gReturnCallback = sendToTest;
 
 /**
  * The callback to send debug messages to. By default we assume console.log.
@@ -86,14 +87,14 @@ function returnToTest(message) {
 }
 
 /**
- * Sends a message to the PyAuto test case. Requires that this javascript was
- * loaded by PyAuto. This will make the test proceed if it is blocked in a
+ * Sends a message to the test case. Requires that this javascript was
+ * loaded by the test. This will make the test proceed if it is blocked in a
  * ExecuteJavascript call.
  *
  * @param {string} message The message to send.
  */
-function sendToPyAuto(message) {
-  debug('Returning ' + message + ' to PyAuto.');
+function sendToTest(message) {
+  debug('Returning ' + message + ' to test.');
   window.domAutomationController.send(message);
 }
 

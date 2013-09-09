@@ -199,7 +199,8 @@ function clearLog() {
 
 /**
  * Prepopulate constraints from JS to the UI and setup callbacks in the scripts
- * shared with PyAuto tests. Enumerates devices available via getUserMedia.
+ * shared with browser tests or automated tests. Enumerates devices available
+ * via getUserMedia.
  */
 window.onload = function() {
   $('pc-createoffer-constraints').value = JSON.stringify(

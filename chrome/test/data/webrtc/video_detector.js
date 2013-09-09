@@ -21,7 +21,7 @@ var gFingerprints = [];
  * @param {int}    width The video element's width.
  * @param {int}    width The video element's height.
  *
- * @return {string} Returns ok-started to PyAuto.
+ * @return {string} Returns ok-started to the test.
  */
 //
 function startDetection(videoElementId, canvasId, width, height) {

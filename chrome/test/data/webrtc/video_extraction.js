@@ -62,7 +62,7 @@ var gWebSocketOpened = false;
 var gFrameIntervalAdjustment = false;
 
 /**
- * We need this global variable to syncronyze with PyAuto how long to run the
+ * We need this global variable to synchronize with the test how long to run the
  * call between the two peers.
  */
 var dDoneFrameCapturing = false;

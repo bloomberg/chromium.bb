@@ -73,7 +73,7 @@ var gDtmfSender = null;
  */
 var STUN_SERVER = 'stun.l.google.com:19302';
 
-// Public interface to PyAuto test.
+// Public interface to tests.
 
 
 /**

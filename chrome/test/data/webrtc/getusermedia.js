@@ -40,7 +40,7 @@ $ = function(id) {
 
 /**
  * This function asks permission to use the webcam and mic from the browser. It
- * will return ok-requested to PyAuto. This does not mean the request was
+ * will return ok-requested to the test. This does not mean the request was
  * approved though. The test will then have to click past the dialog that
  * appears in Chrome, which will run either the OK or failed callback as a
  * a result. To see which callback was called, use obtainGetUserMediaResult().
