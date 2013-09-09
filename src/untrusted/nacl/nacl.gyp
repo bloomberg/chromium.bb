@@ -97,7 +97,6 @@
       'stubs/pselect.c',
       'stubs/raise.c',
       'stubs/readlink.c',
-      'stubs/remove.c',
       'stubs/rename.c',
       'stubs/select.c',
       'stubs/setegid.c',
