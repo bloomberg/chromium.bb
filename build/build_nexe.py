@@ -186,6 +186,7 @@ class Builder(object):
 
     if self.is_pnacl_toolchain:
       self.tool_prefix = 'pnacl-'
+      # TODO(jvoung): get rid of tool_subdir after newlib rename (empty).
       tool_subdir = toolname
       tooldir = '%s_pnacl' % self.osname
     else:
