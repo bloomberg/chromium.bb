@@ -1818,27 +1818,102 @@ class UIResourceLostTest : public LayerTreeHostContextTest {
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
   virtual void AfterTest() OVERRIDE {}
 
+  // This is called on the main thread after each commit and
+  // DidActivateTreeOnThread, with the value of time_step_ at the time
+  // of the call to DidActivateTreeOnThread. Similar tests will do
+  // work on the main thread in DidCommit but that is unsuitable because
+  // the main thread work for these tests must happen after
+  // DidActivateTreeOnThread, which happens after DidCommit with impl-side
+  // painting.
+  virtual void StepCompleteOnMainThread(int time_step) = 0;
+
+  // Called after DidActivateTreeOnThread. If this is done during the commit,
+  // the call to StepCompleteOnMainThread will not occur until after
+  // the commit completes, because the main thread is blocked.
+  void PostStepCompleteToMainThread() {
+    proxy()->MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &UIResourceLostTest::StepCompleteOnMainThreadInternal,
+            base::Unretained(this),
+            time_step_));
+  }
+
+  void PostLoseContextToImplThread() {
+    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    base::SingleThreadTaskRunner* task_runner =
+        HasImplThread() ? ImplThreadTaskRunner()
+                        : base::MessageLoopProxy::current();
+    task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &LayerTreeHostContextTest::LoseContext,
+            base::Unretained(this)));
+  }
+
  protected:
   int time_step_;
   scoped_ptr<FakeScopedUIResource> ui_resource_;
+
+ private:
+  void StepCompleteOnMainThreadInternal(int step) {
+    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    StepCompleteOnMainThread(step);
+  }
+};
+
+class UIResourceLostTestSimple : public UIResourceLostTest {
+ public:
+  // This is called when the commit is complete and the new layer tree has been
+  // activated.
+  virtual void StepCompleteOnImplThread(LayerTreeHostImpl* impl) = 0;
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    if (!layer_tree_host()->settings().impl_side_painting) {
+      StepCompleteOnImplThread(impl);
+      PostStepCompleteToMainThread();
+      ++time_step_;
+    }
+  }
+
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    if (layer_tree_host()->settings().impl_side_painting) {
+      StepCompleteOnImplThread(impl);
+      PostStepCompleteToMainThread();
+      ++time_step_;
+    }
+  }
 };
 
 // Losing context after an UI resource has been created.
-class UIResourceLostAfterCommit : public UIResourceLostTest {
+class UIResourceLostAfterCommit : public UIResourceLostTestSimple {
  public:
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    LayerTreeHostContextTest::CommitCompleteOnThread(impl);
-    switch (time_step_) {
+  virtual void StepCompleteOnMainThread(int step) OVERRIDE {
+    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    switch (step) {
       case 0:
         ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
         // Expects a valid UIResourceId.
         EXPECT_NE(0, ui_resource_->id());
         PostSetNeedsCommitToMainThread();
         break;
+      case 4:
+        // Release resource before ending the test.
+        ui_resource_.reset();
+        EndTest();
+        break;
+      case 5:
+        // Make sure no extra commits happened.
+        NOTREACHED();
+    }
+  }
+
+  virtual void StepCompleteOnImplThread(LayerTreeHostImpl* impl) OVERRIDE {
+    LayerTreeHostContextTest::CommitCompleteOnThread(impl);
+    switch (time_step_) {
       case 1:
         // The resource should have been created on LTHI after the commit.
-        if (!layer_tree_host()->settings().impl_side_painting)
-          EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+        EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
@@ -1850,31 +1925,10 @@ class UIResourceLostAfterCommit : public UIResourceLostTest {
         EXPECT_EQ(1, ui_resource_->lost_resource_count);
         // Resource Id on the impl-side have been recreated as well. Note
         // that the same UIResourceId persists after the context lost.
-        if (!layer_tree_host()->settings().impl_side_painting)
-          EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+        EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         PostSetNeedsCommitToMainThread();
         break;
-      case 4:
-        // Release resource before ending test.
-        ui_resource_.reset();
-        EndTest();
-        break;
     }
-  }
-
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    LayerTreeHostContextTest::DidActivateTreeOnThread(impl);
-    switch (time_step_) {
-      case 1:
-        if (layer_tree_host()->settings().impl_side_painting)
-          EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
-        break;
-      case 3:
-        if (layer_tree_host()->settings().impl_side_painting)
-          EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
-        break;
-    }
-    ++time_step_;
   }
 };
 
@@ -1889,34 +1943,18 @@ SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceLostAfterCommit);
 // test_id1_ to have been created.
 // 3. Create one resource -> Delete that same resource -> Context Lost => Expect
 // the resource to not exist in the manager.
-class UIResourceLostBeforeCommit : public UIResourceLostTest {
+class UIResourceLostBeforeCommit : public UIResourceLostTestSimple {
  public:
   UIResourceLostBeforeCommit()
       : test_id0_(0),
         test_id1_(0) {}
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    LayerTreeHostContextTest::CommitCompleteOnThread(impl);
-    switch (time_step_) {
+  virtual void StepCompleteOnMainThread(int step) OVERRIDE {
+    switch (step) {
       case 0:
-        // Sequence 1:
         ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
-        LoseContext();
-        // Resource Id on the impl-side should no longer be valid after
-        // context is lost.
-        EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
-        break;
-      case 1:
-        // The resources should have been recreated.
-        EXPECT_EQ(2, ui_resource_->resource_create_count);
-        // "resource lost" callback was called once for the resource in the
-        // resource map.
-        EXPECT_EQ(1, ui_resource_->lost_resource_count);
-        // Resource Id on the impl-side have been recreated as well. Note
-        // that the same UIResourceId persists after the context lost.
-        if (!layer_tree_host()->settings().impl_side_painting)
-          EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
-        PostSetNeedsCommitToMainThread();
+        // Lose the context on the impl thread before the commit.
+        PostLoseContextToImplThread();
         break;
       case 2:
         // Sequence 2:
@@ -1929,21 +1967,10 @@ class UIResourceLostBeforeCommit : public UIResourceLostTest {
         test_id1_ = ui_resource_->id();
         // Sanity check that two resource creations return different ids.
         EXPECT_NE(test_id0_, test_id1_);
-        // Lose the context before commit.
-        LoseContext();
+        // Lose the context on the impl thread before the commit.
+        PostLoseContextToImplThread();
         break;
       case 3:
-        if (!layer_tree_host()->settings().impl_side_painting) {
-          // The previous resource should have been deleted.
-          EXPECT_EQ(0u, impl->ResourceIdForUIResource(test_id0_));
-          // The second resource should have been created.
-          EXPECT_NE(0u, impl->ResourceIdForUIResource(test_id1_));
-        }
-
-        // The second resource called the resource callback once and since the
-        // context is lost, a "resource lost" callback was also issued.
-        EXPECT_EQ(2, ui_resource_->resource_create_count);
-        EXPECT_EQ(1, ui_resource_->lost_resource_count);
         // Clear the manager of resources.
         ui_resource_.reset();
         PostSetNeedsCommitToMainThread();
@@ -1958,45 +1985,79 @@ class UIResourceLostBeforeCommit : public UIResourceLostTest {
         // destructor (so usually ui_resource_.reset()).  But here we need
         // ui_resource_ for the next step, so call DeleteUIResource directly.
         layer_tree_host()->DeleteUIResource(test_id0_);
-        LoseContext();
+        // Delete the resouce and then lose the context.
+        PostLoseContextToImplThread();
         break;
       case 5:
+        // Release resource before ending the test.
+        ui_resource_.reset();
+        EndTest();
+        break;
+      case 6:
+        // Single thread proxy issues extra commits after context lost.
+        // http://crbug.com/287250
+        if (HasImplThread())
+          NOTREACHED();
+        break;
+      case 8:
+        NOTREACHED();
+    }
+  }
+
+  virtual void StepCompleteOnImplThread(LayerTreeHostImpl* impl) OVERRIDE {
+    LayerTreeHostContextTest::CommitCompleteOnThread(impl);
+    switch (time_step_) {
+      case 1:
+        // Sequence 1 (continued):
+        if (HasImplThread()) {
+          // The resources should have been recreated.
+          EXPECT_EQ(2, ui_resource_->resource_create_count);
+          // The "resource lost" callback was called once for the resource in
+          // the resource map.
+          EXPECT_EQ(1, ui_resource_->lost_resource_count);
+        } else {
+          // The extra commit that happens at context lost in the single thread
+          // proxy changes the timing so that the resource recreation callback
+          // is skipped.
+          // http://crbug.com/287250
+          EXPECT_EQ(1, ui_resource_->resource_create_count);
+          EXPECT_EQ(0, ui_resource_->lost_resource_count);
+        }
+        // Resource Id on the impl-side have been recreated as well. Note
+        // that the same UIResourceId persists after the context lost.
+        EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 3:
+        // Sequence 2 (continued):
+        // The previous resource should have been deleted.
+        EXPECT_EQ(0u, impl->ResourceIdForUIResource(test_id0_));
+        // The second resource should have been created.
+        EXPECT_NE(0u, impl->ResourceIdForUIResource(test_id1_));
+        if (HasImplThread()) {
+          // The second resource called the resource callback once and since the
+          // context is lost, a "resource lost" callback was also issued.
+          EXPECT_EQ(2, ui_resource_->resource_create_count);
+          EXPECT_EQ(1, ui_resource_->lost_resource_count);
+        } else {
+          // The extra commit that happens at context lost in the single thread
+          // proxy changes the timing so that the resource recreation callback
+          // is skipped.
+          // http://crbug.com/287250
+          EXPECT_EQ(1, ui_resource_->resource_create_count);
+          EXPECT_EQ(0, ui_resource_->lost_resource_count);
+        }
+        break;
+      case 5:
+        // Sequence 3 (continued):
         // Expect the resource callback to have been called once.
         EXPECT_EQ(1, ui_resource_->resource_create_count);
         // No "resource lost" callbacks.
         EXPECT_EQ(0, ui_resource_->lost_resource_count);
-        if (!layer_tree_host()->settings().impl_side_painting) {
-          // The UI resource id should not be valid
-          EXPECT_EQ(0u, impl->ResourceIdForUIResource(test_id0_));
-        }
-        PostSetNeedsCommitToMainThread();
-        break;
-      case 6:
-        ui_resource_.reset();
-        EndTest();
+        // The UI resource id should not be valid
+        EXPECT_EQ(0u, impl->ResourceIdForUIResource(test_id0_));
         break;
     }
-  }
-
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    LayerTreeHostContextTest::DidActivateTreeOnThread(impl);
-    switch (time_step_) {
-      case 1:
-        if (layer_tree_host()->settings().impl_side_painting)
-          EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
-        break;
-      case 3:
-        if (layer_tree_host()->settings().impl_side_painting) {
-          EXPECT_EQ(0u, impl->ResourceIdForUIResource(test_id0_));
-          EXPECT_NE(0u, impl->ResourceIdForUIResource(test_id1_));
-        }
-        break;
-      case 5:
-        if (layer_tree_host()->settings().impl_side_painting)
-          EXPECT_EQ(0u, impl->ResourceIdForUIResource(test_id0_));
-        break;
-    }
-    ++time_step_;
   }
 
  private:
@@ -2009,14 +2070,11 @@ SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceLostBeforeCommit);
 // Losing UI resource before the pending trees is activated but after the
 // commit.  Impl-side-painting only.
 class UIResourceLostBeforeActivateTree : public UIResourceLostTest {
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    LayerTreeHostContextTest::CommitCompleteOnThread(impl);
-    switch (time_step_) {
+  virtual void StepCompleteOnMainThread(int step) OVERRIDE {
+    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    switch (step) {
       case 0:
         ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
-        PostSetNeedsCommitToMainThread();
-        break;
-      case 2:
         PostSetNeedsCommitToMainThread();
         break;
       case 3:
@@ -2024,19 +2082,31 @@ class UIResourceLostBeforeActivateTree : public UIResourceLostTest {
         ui_resource_.reset();
         PostSetNeedsCommitToMainThread();
         break;
-      case 4:
+      case 5:
+        // Release resource before ending the test.
+        ui_resource_.reset();
+        EndTest();
+        break;
+      case 6:
+        // Make sure no extra commits happened.
+        NOTREACHED();
+    }
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    LayerTreeHostContextTest::CommitCompleteOnThread(impl);
+    switch (time_step_) {
+      case 2:
         PostSetNeedsCommitToMainThread();
         break;
-      case 5:
-        EndTest();
+      case 4:
+        PostSetNeedsCommitToMainThread();
         break;
     }
   }
 
   virtual void WillActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     switch (time_step_) {
-      case 0:
-        break;
       case 1:
         // The resource creation callback has been called.
         EXPECT_EQ(1, ui_resource_->resource_create_count);
@@ -2069,6 +2139,8 @@ class UIResourceLostBeforeActivateTree : public UIResourceLostTest {
         EXPECT_EQ(0u, impl->ResourceIdForUIResource(test_id_));
         break;
     }
+
+    PostStepCompleteToMainThread();
     ++time_step_;
   }
 
