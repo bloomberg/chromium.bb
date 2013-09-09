@@ -210,8 +210,9 @@ void UserCloudPolicyStore::Validate(
     bool validate_in_background,
     const UserCloudPolicyValidator::CompletionCallback& callback) {
   // Configure the validator.
-  scoped_ptr<UserCloudPolicyValidator> validator =
-      CreateValidator(policy.Pass());
+  scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
+      policy.Pass(),
+      CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
   SigninManager* signin = SigninManagerFactory::GetForProfileIfExists(profile_);
   if (signin) {
     std::string username = signin->GetAuthenticatedUsername();

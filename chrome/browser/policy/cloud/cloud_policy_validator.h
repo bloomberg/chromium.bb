@@ -79,8 +79,15 @@ class CloudPolicyValidatorBase {
   };
 
   enum ValidateTimestampOption {
-    // The policy must have a timestamp field.
+    // The policy must have a timestamp field and it should be checked against
+    // both the start and end times.
     TIMESTAMP_REQUIRED,
+
+    // The timestamp should only be compared vs the |not_before| value (this
+    // is appropriate for platforms with unreliable system times, where we want
+    // to ensure that fresh policy is newer than existing policy, but we can't
+    // do any other validation).
+    TIMESTAMP_NOT_BEFORE,
 
     // No timestamp field is required.
     TIMESTAMP_NOT_REQUIRED,
@@ -102,11 +109,11 @@ class CloudPolicyValidatorBase {
   }
 
   // Instructs the validator to check that the policy timestamp is not before
-  // |not_before| and not after |now| + grace interval. If
+  // |not_before| and not after |not_after| + grace interval. If
   // |timestamp_option| is set to TIMESTAMP_REQUIRED, then the policy will fail
   // validation if it does not have a timestamp field.
   void ValidateTimestamp(base::Time not_before,
-                         base::Time now,
+                         base::Time not_after,
                          ValidateTimestampOption timestamp_option);
 
   // Validates the username in the policy blob matches |expected_user|.

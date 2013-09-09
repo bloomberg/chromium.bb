@@ -36,7 +36,7 @@ class CloudPolicyValidatorTest : public testing::Test {
         timestamp_(base::Time::UnixEpoch() +
                    base::TimeDelta::FromMilliseconds(
                        PolicyBuilder::kFakeTimestamp)),
-        ignore_missing_timestamp_(CloudPolicyValidatorBase::TIMESTAMP_REQUIRED),
+        timestamp_option_(CloudPolicyValidatorBase::TIMESTAMP_REQUIRED),
         ignore_missing_dm_token_(CloudPolicyValidatorBase::DM_TOKEN_REQUIRED),
         allow_key_rotation_(true),
         existing_dm_token_(PolicyBuilder::kFakeToken),
@@ -67,7 +67,7 @@ class CloudPolicyValidatorTest : public testing::Test {
     UserCloudPolicyValidator* validator =
         UserCloudPolicyValidator::Create(policy_.GetCopy());
     validator->ValidateTimestamp(timestamp_, timestamp_,
-                                 ignore_missing_timestamp_);
+                                 timestamp_option_);
     validator->ValidateUsername(PolicyBuilder::kFakeUsername);
     validator->ValidateDomain(PolicyBuilder::kFakeDomain);
     validator->ValidateDMToken(existing_dm_token_, ignore_missing_dm_token_);
@@ -92,7 +92,7 @@ class CloudPolicyValidatorTest : public testing::Test {
 
   base::MessageLoop loop_;
   base::Time timestamp_;
-  CloudPolicyValidatorBase::ValidateTimestampOption ignore_missing_timestamp_;
+  CloudPolicyValidatorBase::ValidateTimestampOption timestamp_option_;
   CloudPolicyValidatorBase::ValidateDMTokenOption ignore_missing_dm_token_;
   std::string signing_key_;
   bool allow_key_rotation_;
@@ -153,7 +153,7 @@ TEST_F(CloudPolicyValidatorTest, ErrorNoTimestamp) {
 }
 
 TEST_F(CloudPolicyValidatorTest, IgnoreMissingTimestamp) {
-  ignore_missing_timestamp_ = CloudPolicyValidatorBase::TIMESTAMP_NOT_REQUIRED;
+  timestamp_option_ = CloudPolicyValidatorBase::TIMESTAMP_NOT_REQUIRED;
   policy_.policy_data().clear_timestamp();
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_OK));
 }
@@ -170,6 +170,15 @@ TEST_F(CloudPolicyValidatorTest, ErrorTimestampFromTheFuture) {
   policy_.policy_data().set_timestamp(
       (timestamp - base::Time::UnixEpoch()).InMilliseconds());
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_TIMESTAMP));
+}
+
+TEST_F(CloudPolicyValidatorTest, IgnoreErrorTimestampFromTheFuture) {
+  base::Time timestamp(timestamp_ + base::TimeDelta::FromMinutes(5));
+  timestamp_option_ =
+      CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE;
+  policy_.policy_data().set_timestamp(
+      (timestamp - base::Time::UnixEpoch()).InMilliseconds());
+  Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_OK));
 }
 
 TEST_F(CloudPolicyValidatorTest, ErrorNoRequestToken) {

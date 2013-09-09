@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
+#include "chrome/browser/policy/cloud/cloud_policy_validator.h"
 
 namespace policy {
 
@@ -25,7 +26,8 @@ class UserCloudPolicyStoreBase : public CloudPolicyStore {
   // Creates a validator configured to validate a user policy. The caller owns
   // the resulting object until StartValidation() is invoked.
   scoped_ptr<UserCloudPolicyValidator> CreateValidator(
-      scoped_ptr<enterprise_management::PolicyFetchResponse> policy);
+      scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
+      CloudPolicyValidatorBase::ValidateTimestampOption option);
 
   // Sets |policy_data| and |payload| as the active policy.
   void InstallPolicy(

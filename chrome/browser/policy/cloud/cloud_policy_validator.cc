@@ -278,7 +278,8 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckTimestamp() {
     LOG(ERROR) << "Policy too old: " << policy_data_->timestamp();
     return VALIDATION_BAD_TIMESTAMP;
   }
-  if (policy_data_->timestamp() > timestamp_not_after_) {
+  if (timestamp_option_ != TIMESTAMP_NOT_BEFORE &&
+      policy_data_->timestamp() > timestamp_not_after_) {
     LOG(ERROR) << "Policy from the future: " << policy_data_->timestamp();
     return VALIDATION_BAD_TIMESTAMP;
   }
