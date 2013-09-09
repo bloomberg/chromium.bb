@@ -539,9 +539,9 @@ bool handleOutOfMemory()
     return true;
 }
 
-v8::Local<v8::Value> handleMaxRecursionDepthExceeded()
+v8::Local<v8::Value> handleMaxRecursionDepthExceeded(v8::Isolate* isolate)
 {
-    throwError(v8RangeError, "Maximum call stack size exceeded.", v8::Isolate::GetCurrent());
+    throwError(v8RangeError, "Maximum call stack size exceeded.", isolate);
     return v8::Local<v8::Value>();
 }
 

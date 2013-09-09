@@ -83,7 +83,7 @@ namespace WebCore {
 {% endif %}
 
     bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), {{method.arguments | length}}, argv, callbackReturnValue, scriptExecutionContext());
+    return !invokeCallback(m_callback.newLocal(isolate), {{method.arguments | length}}, argv, callbackReturnValue, scriptExecutionContext(), isolate);
 }
 
 {% endif %}

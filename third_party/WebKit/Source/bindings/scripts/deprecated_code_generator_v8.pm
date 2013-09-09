@@ -4692,7 +4692,7 @@ END
                 $code .= "\n    v8::Handle<v8::Value> *argv = 0;\n\n";
             }
             $code .= "    bool callbackReturnValue = false;\n";
-            $code .= "    return !invokeCallback(m_callback.newLocal(isolate), ${thisObjectHandle}" . scalar(@args) . ", argv, callbackReturnValue, scriptExecutionContext());\n";
+            $code .= "    return !invokeCallback(m_callback.newLocal(isolate), ${thisObjectHandle}" . scalar(@args) . ", argv, callbackReturnValue, scriptExecutionContext(), isolate);\n";
             $code .= "}\n";
             $implementation{nameSpaceWebCore}->add($code);
         }

@@ -62,7 +62,7 @@ bool V8TestCallback::callbackWithNoParam()
     v8::Handle<v8::Value> *argv = 0;
 
     bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), 0, argv, callbackReturnValue, scriptExecutionContext());
+    return !invokeCallback(m_callback.newLocal(isolate), 0, argv, callbackReturnValue, scriptExecutionContext(), isolate);
 }
 
 bool V8TestCallback::callbackWithTestObjectParam(TestObj* class1Param)
@@ -91,7 +91,7 @@ bool V8TestCallback::callbackWithTestObjectParam(TestObj* class1Param)
     };
 
     bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, scriptExecutionContext());
+    return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, scriptExecutionContext(), isolate);
 }
 
 bool V8TestCallback::callbackWithTestObjectParam(TestObj* class2Param, const String& strArg)
@@ -127,7 +127,7 @@ bool V8TestCallback::callbackWithTestObjectParam(TestObj* class2Param, const Str
     };
 
     bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), 2, argv, callbackReturnValue, scriptExecutionContext());
+    return !invokeCallback(m_callback.newLocal(isolate), 2, argv, callbackReturnValue, scriptExecutionContext(), isolate);
 }
 
 bool V8TestCallback::callbackWithStringList(RefPtr<DOMStringList> listParam)
@@ -156,7 +156,7 @@ bool V8TestCallback::callbackWithStringList(RefPtr<DOMStringList> listParam)
     };
 
     bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, scriptExecutionContext());
+    return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, scriptExecutionContext(), isolate);
 }
 
 bool V8TestCallback::callbackWithBoolean(bool boolParam)
@@ -185,7 +185,7 @@ bool V8TestCallback::callbackWithBoolean(bool boolParam)
     };
 
     bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, scriptExecutionContext());
+    return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, scriptExecutionContext(), isolate);
 }
 
 bool V8TestCallback::callbackWithSequence(const Vector<RefPtr<TestObj> >& sequenceParam)
@@ -214,7 +214,7 @@ bool V8TestCallback::callbackWithSequence(const Vector<RefPtr<TestObj> >& sequen
     };
 
     bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, scriptExecutionContext());
+    return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, scriptExecutionContext(), isolate);
 }
 
 bool V8TestCallback::callbackWithThisArg(ScriptValue thisValue, int param)
@@ -250,7 +250,7 @@ bool V8TestCallback::callbackWithThisArg(ScriptValue thisValue, int param)
     };
 
     bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), v8::Handle<v8::Object>::Cast(thisHandle), 1, argv, callbackReturnValue, scriptExecutionContext());
+    return !invokeCallback(m_callback.newLocal(isolate), v8::Handle<v8::Object>::Cast(thisHandle), 1, argv, callbackReturnValue, scriptExecutionContext(), isolate);
 }
 
 } // namespace WebCore

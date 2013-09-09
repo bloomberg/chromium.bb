@@ -36,12 +36,12 @@
 
 namespace WebCore {
 
-bool invokeCallback(v8::Handle<v8::Object> callback, int argc, v8::Handle<v8::Value> argv[], bool& callbackReturnValue, ScriptExecutionContext* scriptExecutionContext)
+bool invokeCallback(v8::Handle<v8::Object> callback, int argc, v8::Handle<v8::Value> argv[], bool& callbackReturnValue, ScriptExecutionContext* scriptExecutionContext, v8::Isolate* isolate)
 {
-    return invokeCallback(callback, v8::Context::GetCurrent()->Global(), argc, argv, callbackReturnValue, scriptExecutionContext);
+    return invokeCallback(callback, v8::Context::GetCurrent()->Global(), argc, argv, callbackReturnValue, scriptExecutionContext, isolate);
 }
 
-bool invokeCallback(v8::Handle<v8::Object> callback, v8::Handle<v8::Object> thisObject, int argc, v8::Handle<v8::Value> argv[], bool& callbackReturnValue, ScriptExecutionContext* scriptExecutionContext)
+bool invokeCallback(v8::Handle<v8::Object> callback, v8::Handle<v8::Object> thisObject, int argc, v8::Handle<v8::Value> argv[], bool& callbackReturnValue, ScriptExecutionContext* scriptExecutionContext, v8::Isolate* isolate)
 {
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
@@ -59,7 +59,7 @@ bool invokeCallback(v8::Handle<v8::Object> callback, v8::Handle<v8::Object> this
     if (callbackFunction.IsEmpty())
         return false;
 
-    v8::Handle<v8::Value> result = ScriptController::callFunctionWithInstrumentation(scriptExecutionContext, callbackFunction, thisObject, argc, argv);
+    v8::Handle<v8::Value> result = ScriptController::callFunctionWithInstrumentation(scriptExecutionContext, callbackFunction, thisObject, argc, argv, isolate);
 
     callbackReturnValue = !result.IsEmpty() && result->BooleanValue();
     return exceptionCatcher.HasCaught();

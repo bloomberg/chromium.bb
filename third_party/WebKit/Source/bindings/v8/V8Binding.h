@@ -616,8 +616,7 @@ namespace WebCore {
     // If the current context causes out of memory, JavaScript setting
     // is disabled and it returns true.
     bool handleOutOfMemory();
-    // FIXME: This should receive an Isolate.
-    v8::Local<v8::Value> handleMaxRecursionDepthExceeded();
+    v8::Local<v8::Value> handleMaxRecursionDepthExceeded(v8::Isolate*);
 
     void crashIfV8IsDead();
 

@@ -136,7 +136,7 @@ void PromiseTask::performTask(ScriptExecutionContext* context)
     v8::Handle<v8::Context> v8Context = state->context();
     v8::Context::Scope scope(v8Context);
     v8::Handle<v8::Value> args[] = { m_result.newLocal(isolate) };
-    V8ScriptRunner::callFunction(m_callback.newLocal(isolate), context, m_receiver.newLocal(isolate), WTF_ARRAY_LENGTH(args), args);
+    V8ScriptRunner::callFunction(m_callback.newLocal(isolate), context, m_receiver.newLocal(isolate), WTF_ARRAY_LENGTH(args), args, isolate);
 };
 
 v8::Handle<v8::Value> postTask(v8::Handle<v8::Function> callback, v8::Handle<v8::Object> receiver, v8::Handle<v8::Value> value, v8::Isolate* isolate)
@@ -164,7 +164,7 @@ void wrapperCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
         result,
     };
     v8::TryCatch trycatch;
-    result = V8ScriptRunner::callFunction(callback, getScriptExecutionContext(), promise, WTF_ARRAY_LENGTH(argv), argv);
+    result = V8ScriptRunner::callFunction(callback, getScriptExecutionContext(), promise, WTF_ARRAY_LENGTH(argv), argv, isolate);
     if (result.IsEmpty()) {
         V8PromiseCustom::rejectResolver(resolver, trycatch.Exception(), V8PromiseCustom::Synchronous, isolate);
         return;
@@ -304,7 +304,7 @@ void V8Promise::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& arg
         resolver,
     };
     v8::TryCatch trycatch;
-    if (V8ScriptRunner::callFunction(init, getScriptExecutionContext(), promise, WTF_ARRAY_LENGTH(argv), argv).IsEmpty()) {
+    if (V8ScriptRunner::callFunction(init, getScriptExecutionContext(), promise, WTF_ARRAY_LENGTH(argv), argv, isolate).IsEmpty()) {
         // An exception is thrown. Reject the promise if its resolved flag is unset.
         if (!V8PromiseCustom::isInternalDetached(resolver) && V8PromiseCustom::getState(V8PromiseCustom::getInternal(resolver)) == V8PromiseCustom::Pending)
             V8PromiseCustom::rejectResolver(resolver, trycatch.Exception(), V8PromiseCustom::Asynchronous, isolate);
@@ -533,7 +533,7 @@ void V8PromiseCustom::resolveResolver(v8::Handle<v8::Object> resolver, v8::Handl
             createClosure(promiseResolveCallback, resolver),
             createClosure(promiseRejectCallback, resolver),
         };
-        if (V8ScriptRunner::callFunction(then.As<v8::Function>(), getScriptExecutionContext(), result.As<v8::Object>(), WTF_ARRAY_LENGTH(argv), argv).IsEmpty())
+        if (V8ScriptRunner::callFunction(then.As<v8::Function>(), getScriptExecutionContext(), result.As<v8::Object>(), WTF_ARRAY_LENGTH(argv), argv, isolate).IsEmpty())
             rejectResolver(resolver, trycatch.Exception(), mode, isolate);
         return;
     }
@@ -637,7 +637,7 @@ void V8PromiseCustom::call(v8::Handle<v8::Function> function, v8::Handle<v8::Obj
         // If an exception is thrown, catch it and do nothing.
         v8::TryCatch trycatch;
         v8::Handle<v8::Value> args[] = { result };
-        V8ScriptRunner::callFunction(function, getScriptExecutionContext(), receiver, WTF_ARRAY_LENGTH(args), args);
+        V8ScriptRunner::callFunction(function, getScriptExecutionContext(), receiver, WTF_ARRAY_LENGTH(args), args, isolate);
     } else {
         ASSERT(mode == Asynchronous);
         postTask(function, receiver, result, isolate);

@@ -72,7 +72,7 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
     // statement, if any, or onto the next overall step otherwise. Otherwise,
     // the error callback did not return false, or there was no error callback.
     // Jump to the last step in the overall steps.
-    return invokeCallback(m_callback.newLocal(isolate), 2, argv, callbackReturnValue, scriptExecutionContext()) || callbackReturnValue;
+    return invokeCallback(m_callback.newLocal(isolate), 2, argv, callbackReturnValue, scriptExecutionContext(), isolate) || callbackReturnValue;
 }
 
 } // namespace WebCore

@@ -78,7 +78,7 @@ void V8MutationCallback::call(const Vector<RefPtr<MutationRecord> >& mutations, 
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunctionWithInstrumentation(scriptExecutionContext(), callback, thisObject, 2, argv);
+    ScriptController::callFunctionWithInstrumentation(scriptExecutionContext(), callback, thisObject, 2, argv, m_isolate);
 }
 
 void V8MutationCallback::makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Function>*, V8MutationCallback* callback)

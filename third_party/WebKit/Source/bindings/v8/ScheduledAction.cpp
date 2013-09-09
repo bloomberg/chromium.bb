@@ -114,7 +114,7 @@ void ScheduledAction::execute(WorkerGlobalScope* worker)
     if (!m_function.isEmpty()) {
         Vector<v8::Handle<v8::Value> > args;
         createLocalHandlesForArgs(&args);
-        V8ScriptRunner::callFunction(m_function.newLocal(m_isolate), worker, context->Global(), args.size(), args.data());
+        V8ScriptRunner::callFunction(m_function.newLocal(m_isolate), worker, context->Global(), args.size(), args.data(), m_isolate);
     } else
         worker->script()->evaluate(m_code);
 }

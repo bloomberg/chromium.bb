@@ -75,7 +75,7 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
     return v8::Script::Compile(code, &origin, scriptData);
 }
 
-v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> script, ScriptExecutionContext* context)
+v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> script, ScriptExecutionContext* context, v8::Isolate* isolate)
 {
     TRACE_EVENT0("v8", "v8.run");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "Execution");
@@ -83,7 +83,7 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
         return v8::Local<v8::Value>();
 
     if (V8RecursionScope::recursionLevel() >= kMaxRecursionDepth)
-        return handleMaxRecursionDepthExceeded();
+        return handleMaxRecursionDepthExceeded(isolate);
 
     if (handleOutOfMemory())
         return v8::Local<v8::Value>();
@@ -119,13 +119,13 @@ v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::
     return result;
 }
 
-v8::Local<v8::Value> V8ScriptRunner::callFunction(v8::Handle<v8::Function> function, ScriptExecutionContext* context, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[])
+v8::Local<v8::Value> V8ScriptRunner::callFunction(v8::Handle<v8::Function> function, ScriptExecutionContext* context, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate* isolate)
 {
     TRACE_EVENT0("v8", "v8.callFunction");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "Execution");
 
     if (V8RecursionScope::recursionLevel() >= kMaxRecursionDepth)
-        return handleMaxRecursionDepthExceeded();
+        return handleMaxRecursionDepthExceeded(isolate);
 
     V8RecursionScope recursionScope(context);
     v8::Local<v8::Value> result = function->Call(receiver, argc, args);

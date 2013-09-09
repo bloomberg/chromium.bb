@@ -156,7 +156,7 @@ v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> fun
 {
     // Keep Frame (and therefore ScriptController) alive.
     RefPtr<Frame> protect(m_frame);
-    return ScriptController::callFunctionWithInstrumentation(m_frame ? m_frame->document() : 0, function, receiver, argc, args);
+    return ScriptController::callFunctionWithInstrumentation(m_frame ? m_frame->document() : 0, function, receiver, argc, args, m_isolate);
 }
 
 ScriptValue ScriptController::callFunctionEvenIfScriptDisabled(v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> argv[])
@@ -190,7 +190,7 @@ static String resourceString(const v8::Handle<v8::Function> function)
     return builder.toString();
 }
 
-v8::Local<v8::Value> ScriptController::callFunctionWithInstrumentation(ScriptExecutionContext* context, v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[])
+v8::Local<v8::Value> ScriptController::callFunctionWithInstrumentation(ScriptExecutionContext* context, v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate* isolate)
 {
     InspectorInstrumentationCookie cookie;
     if (InspectorInstrumentation::timelineAgentEnabled(context)) {
@@ -200,7 +200,7 @@ v8::Local<v8::Value> ScriptController::callFunctionWithInstrumentation(ScriptExe
         cookie = InspectorInstrumentation::willCallFunction(context, resourceName, lineNumber);
     }
 
-    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(function, context, receiver, argc, args);
+    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(function, context, receiver, argc, args, isolate);
 
     InspectorInstrumentation::didCallFunction(cookie);
     return result;
@@ -230,7 +230,7 @@ v8::Local<v8::Value> ScriptController::compileAndRunScript(const ScriptSourceCod
 
         // Keep Frame (and therefore ScriptController) alive.
         RefPtr<Frame> protect(m_frame);
-        result = V8ScriptRunner::runCompiledScript(script, m_frame->document());
+        result = V8ScriptRunner::runCompiledScript(script, m_frame->document(), m_isolate);
         ASSERT(!tryCatch.HasCaught() || result.IsEmpty());
     }
 

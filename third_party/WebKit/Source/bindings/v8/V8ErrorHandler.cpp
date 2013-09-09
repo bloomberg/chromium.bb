@@ -74,9 +74,9 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptExecutionContext
         v8::TryCatch tryCatch;
         tryCatch.SetVerbose(true);
         if (worldType(isolate) == WorkerWorld)
-            returnValue = V8ScriptRunner::callFunction(callFunction, context, thisValue, WTF_ARRAY_LENGTH(parameters), parameters);
+            returnValue = V8ScriptRunner::callFunction(callFunction, context, thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate);
         else
-            returnValue = ScriptController::callFunctionWithInstrumentation(0, callFunction, thisValue, WTF_ARRAY_LENGTH(parameters), parameters);
+            returnValue = ScriptController::callFunctionWithInstrumentation(0, callFunction, thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate);
     }
     return returnValue;
 }

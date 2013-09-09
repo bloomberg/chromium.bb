@@ -97,8 +97,9 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(Scri
         cookie = InspectorInstrumentation::willCallFunction(context, resourceName, lineNumber);
     }
 
+    v8::Isolate* isolate = getIsolateFromScriptExecutionContext(context);
     v8::Handle<v8::Value> parameters[1] = { jsEvent };
-    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(handlerFunction, context, receiver, WTF_ARRAY_LENGTH(parameters), parameters);
+    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(handlerFunction, context, receiver, WTF_ARRAY_LENGTH(parameters), parameters, isolate);
 
     InspectorInstrumentation::didCallFunction(cookie);
 

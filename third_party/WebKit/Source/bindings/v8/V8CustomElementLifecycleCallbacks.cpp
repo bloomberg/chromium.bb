@@ -183,7 +183,7 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunctionWithInstrumentation(scriptExecutionContext(), callback, receiver, 0, 0);
+    ScriptController::callFunctionWithInstrumentation(scriptExecutionContext(), callback, receiver, 0, 0, isolate);
 }
 
 void V8CustomElementLifecycleCallbacks::enteredDocument(Element* element)
@@ -224,7 +224,7 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunctionWithInstrumentation(scriptExecutionContext(), callback, receiver, WTF_ARRAY_LENGTH(argv), argv);
+    ScriptController::callFunctionWithInstrumentation(scriptExecutionContext(), callback, receiver, WTF_ARRAY_LENGTH(argv), argv, isolate);
 }
 
 void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function>& weakCallback, Element* element)
@@ -249,7 +249,7 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunctionWithInstrumentation(scriptExecutionContext(), callback, receiver, 0, 0);
+    ScriptController::callFunctionWithInstrumentation(scriptExecutionContext(), callback, receiver, 0, 0, isolate);
 }
 
 } // namespace WebCore
