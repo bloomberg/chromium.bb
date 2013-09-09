@@ -524,10 +524,11 @@ bool ParallelAuthenticator::VerifyOwner() {
 }
 
 void ParallelAuthenticator::OnOwnershipChecked(
-    DeviceSettingsService::OwnershipStatus status,
-    bool is_owner) {
+    DeviceSettingsService::OwnershipStatus status) {
   // Now we can check if this user is the owner.
-  user_can_login_ = is_owner;
+  // TODO(tbarzic): This is broken. At this point, DeviceSettingsService will
+  // never have private key loaded (http://crbug.com/285450).
+  user_can_login_ = DeviceSettingsService::Get()->HasPrivateOwnerKey();
   owner_is_verified_ = true;
   Resolve();
 }

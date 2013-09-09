@@ -80,6 +80,8 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
                       l10n_util::GetStringFUTF16(IDS_SYSTEM_FLAGS_OWNER_ONLY,
                                                  UTF8ToUTF16(owner)));
   } else {
+    // The warning will be only shown on ChromeOS, when the current user is not
+    // the owner.
     source->AddString("ownerWarning", string16());
   }
 #endif
@@ -99,10 +101,16 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
 // The handler for Javascript messages for the about:flags page.
 class FlagsDOMHandler : public WebUIMessageHandler {
  public:
-  FlagsDOMHandler(about_flags::FlagsStorage* flags_storage,
-                  about_flags::FlagAccess access)
-      : flags_storage_(flags_storage), access_(access) {}
+  FlagsDOMHandler() : access_(about_flags::kGeneralAccessFlagsOnly),
+                      flags_experiments_requested_(false) {
+  }
   virtual ~FlagsDOMHandler() {}
+
+  // Initializes the DOM handler with the provided flags storage and flags
+  // access. If there were flags experiments requested from javascript before
+  // this was called, it calls |HandleRequestFlagsExperiments| again.
+  void Init(about_flags::FlagsStorage* flags_storage,
+            about_flags::FlagAccess access);
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
@@ -122,6 +130,7 @@ class FlagsDOMHandler : public WebUIMessageHandler {
  private:
   scoped_ptr<about_flags::FlagsStorage> flags_storage_;
   about_flags::FlagAccess access_;
+  bool flags_experiments_requested_;
 
   DISALLOW_COPY_AND_ASSIGN(FlagsDOMHandler);
 };
@@ -141,18 +150,37 @@ void FlagsDOMHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+void FlagsDOMHandler::Init(about_flags::FlagsStorage* flags_storage,
+                           about_flags::FlagAccess access) {
+  flags_storage_.reset(flags_storage);
+  access_ = access;
+
+  if (flags_experiments_requested_)
+    HandleRequestFlagsExperiments(NULL);
+}
+
 void FlagsDOMHandler::HandleRequestFlagsExperiments(const ListValue* args) {
+  flags_experiments_requested_ = true;
+  // Bail out if the handler hasn't been initialized yet. The request will be
+  // handled after the initialization.
+  if (!flags_storage_)
+    return;
+
+  DictionaryValue results;
+
   scoped_ptr<ListValue> supported_experiments(new ListValue);
   scoped_ptr<ListValue> unsupported_experiments(new ListValue);
   about_flags::GetFlagsExperimentsData(flags_storage_.get(),
                                        access_,
                                        supported_experiments.get(),
                                        unsupported_experiments.get());
-  DictionaryValue results;
   results.Set("supportedExperiments", supported_experiments.release());
   results.Set("unsupportedExperiments", unsupported_experiments.release());
   results.SetBoolean("needsRestart",
                      about_flags::IsRestartNeededToCommitChanges());
+  results.SetBoolean("showOwnerWarning",
+                     access_ == about_flags::kGeneralAccessFlagsOnly);
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   results.SetBoolean("showBetaChannelPromotion",
@@ -168,6 +196,7 @@ void FlagsDOMHandler::HandleRequestFlagsExperiments(const ListValue* args) {
 
 void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
     const ListValue* args) {
+  DCHECK(flags_storage_);
   DCHECK_EQ(2u, args->GetSize());
   if (args->GetSize() != 2)
     return;
@@ -185,12 +214,45 @@ void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
 }
 
 void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
+  DCHECK(flags_storage_);
   chrome::AttemptRestart();
 }
 
 void FlagsDOMHandler::HandleResetAllFlags(const ListValue* args) {
+  DCHECK(flags_storage_);
   about_flags::ResetAllFlags(flags_storage_.get());
 }
+
+
+#if defined(OS_CHROMEOS)
+// On ChromeOS verifying if the owner is signed in is async operation and only
+// after finishing it the UI can be properly populated. This function is the
+// callback for whether the owner is signed in. It will respectively pick the
+// proper PrefService for the flags interface.
+void FinishInitialization(base::WeakPtr<FlagsUI> flags_ui,
+                          Profile* profile,
+                          FlagsDOMHandler* dom_handler,
+                          bool current_user_is_owner) {
+  // If the flags_ui has gone away, there's nothing to do.
+  if (!flags_ui)
+    return;
+
+  // On Chrome OS the owner can set system wide flags and other users can only
+  // set flags for their own session.
+  // Note that |dom_handler| is owned by the web ui that owns |flags_ui|, so
+  // it is still alive if |flags_ui| is.
+  if (current_user_is_owner) {
+    dom_handler->Init(new chromeos::about_flags::OwnerFlagsStorage(
+                          profile->GetPrefs(),
+                          chromeos::CrosSettings::Get()),
+                      about_flags::kOwnerAccessToFlags);
+  } else {
+    dom_handler->Init(
+        new about_flags::PrefServiceFlagsStorage(profile->GetPrefs()),
+        about_flags::kGeneralAccessFlagsOnly);
+  }
+}
+#endif
 
 }  // namespace
 
@@ -205,19 +267,21 @@ FlagsUI::FlagsUI(content::WebUI* web_ui)
       weak_factory_(this) {
   Profile* profile = Profile::FromWebUI(web_ui);
 
+  FlagsDOMHandler* handler = new FlagsDOMHandler();
+  web_ui->AddMessageHandler(handler);
+
 #if defined(OS_CHROMEOS)
-  chromeos::DeviceSettingsService::Get()->GetOwnershipStatusAsync(
-      base::Bind(&FlagsUI::FinishInitialization,
-                 weak_factory_.GetWeakPtr(), profile));
+  chromeos::DeviceSettingsService::Get()->IsCurrentUserOwnerAsync(
+      base::Bind(&FinishInitialization,
+                 weak_factory_.GetWeakPtr(), profile, handler));
 #else
-  web_ui->AddMessageHandler(
-      new FlagsDOMHandler(new about_flags::PrefServiceFlagsStorage(
-                              g_browser_process->local_state()),
-                          about_flags::kOwnerAccessToFlags));
+  handler->Init(new about_flags::PrefServiceFlagsStorage(
+                    g_browser_process->local_state()),
+                about_flags::kOwnerAccessToFlags);
+#endif
 
   // Set up the about:flags source.
   content::WebUIDataSource::Add(profile, CreateFlagsUIHTMLSource());
-#endif
 }
 
 FlagsUI::~FlagsUI() {
@@ -242,26 +306,4 @@ void FlagsUI::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-void FlagsUI::FinishInitialization(
-    Profile* profile,
-    chromeos::DeviceSettingsService::OwnershipStatus status,
-    bool current_user_is_owner) {
-  // On Chrome OS the owner can set system wide flags and other users can only
-  // set flags for their own session.
-  if (current_user_is_owner) {
-    web_ui()->AddMessageHandler(
-        new FlagsDOMHandler(new chromeos::about_flags::OwnerFlagsStorage(
-                                profile->GetPrefs(),
-                                chromeos::CrosSettings::Get()),
-                            about_flags::kOwnerAccessToFlags));
-  } else {
-    web_ui()->AddMessageHandler(
-        new FlagsDOMHandler(new about_flags::PrefServiceFlagsStorage(
-                                profile->GetPrefs()),
-                            about_flags::kGeneralAccessFlagsOnly));
-  }
-
-  // Set up the about:flags source.
-  content::WebUIDataSource::Add(profile, CreateFlagsUIHTMLSource());
-}
 #endif

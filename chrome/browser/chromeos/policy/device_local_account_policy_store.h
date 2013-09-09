@@ -70,8 +70,7 @@ class DeviceLocalAccountPolicyStore
   void Validate(
       scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
       const UserCloudPolicyValidator::CompletionCallback& callback,
-      chromeos::DeviceSettingsService::OwnershipStatus ownership_status,
-      bool is_owner);
+      chromeos::DeviceSettingsService::OwnershipStatus ownership_status);
 
   const std::string account_id_;
   chromeos::SessionManagerClient* session_manager_client_;

@@ -168,8 +168,7 @@ void DeviceLocalAccountPolicyStore::CheckKeyAndValidate(
 void DeviceLocalAccountPolicyStore::Validate(
     scoped_ptr<em::PolicyFetchResponse> policy_response,
     const UserCloudPolicyValidator::CompletionCallback& callback,
-    chromeos::DeviceSettingsService::OwnershipStatus ownership_status,
-    bool is_owner) {
+    chromeos::DeviceSettingsService::OwnershipStatus ownership_status) {
   DCHECK_NE(chromeos::DeviceSettingsService::OWNERSHIP_UNKNOWN,
             ownership_status);
   scoped_refptr<chromeos::OwnerKey> key =

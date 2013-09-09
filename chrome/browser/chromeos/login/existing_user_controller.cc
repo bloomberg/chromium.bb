@@ -353,8 +353,7 @@ void ExistingUserController::CompleteLogin(const UserContext& user_context) {
 
 void ExistingUserController::CompleteLoginInternal(
     const UserContext& user_context,
-    DeviceSettingsService::OwnershipStatus ownership_status,
-    bool is_owner) {
+    DeviceSettingsService::OwnershipStatus ownership_status) {
   // Auto-enrollment must have made a decision by now. It's too late to enroll
   // if the protocol isn't done at this point.
   if (do_auto_enrollment_ &&
@@ -633,8 +632,7 @@ void ExistingUserController::OnConsumerKioskModeCheckCompleted(
 }
 
 void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
-    DeviceSettingsService::OwnershipStatus status,
-    bool current_user_is_owner) {
+    DeviceSettingsService::OwnershipStatus status) {
   if (status == DeviceSettingsService::OWNERSHIP_NONE) {
     ShowEnrollmentScreen(false, std::string());
   } else if (status == DeviceSettingsService::OWNERSHIP_TAKEN) {
@@ -644,8 +642,7 @@ void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
         CrosSettings::Get()->PrepareTrustedValues(
             base::Bind(
                 &ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
-                weak_factory_.GetWeakPtr(),
-                status, current_user_is_owner));
+                weak_factory_.GetWeakPtr(), status));
     if (trusted_status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
       ShowEnrollmentScreen(false, std::string());
     }

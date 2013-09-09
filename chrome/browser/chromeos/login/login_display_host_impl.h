@@ -109,8 +109,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   void StartAnimation();
 
   // Callback for the ownership status check.
-  void OnOwnershipStatusCheckDone(DeviceSettingsService::OwnershipStatus status,
-                                  bool current_user_is_owner);
+  void OnOwnershipStatusCheckDone(
+      DeviceSettingsService::OwnershipStatus status);
 
   // Callback for completion of the |auto_enrollment_client_|.
   void OnAutoEnrollmentClientDone();

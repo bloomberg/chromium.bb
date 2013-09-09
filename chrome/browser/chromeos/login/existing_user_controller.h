@@ -167,8 +167,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Handles result of ownership check and starts enterprise or kiosk enrollment
   // if applicable.
   void OnEnrollmentOwnershipCheckCompleted(
-      DeviceSettingsService::OwnershipStatus status,
-      bool current_user_is_owner);
+      DeviceSettingsService::OwnershipStatus status);
 
   // Handles result of consumer kiosk configurability check and starts
   // enable kiosk screen if applicable.
@@ -197,8 +196,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // has to be performed, and will resume once auto-enrollment completes.
   void CompleteLoginInternal(
       const UserContext& user_context,
-      DeviceSettingsService::OwnershipStatus ownership_status,
-      bool is_owner);
+      DeviceSettingsService::OwnershipStatus ownership_status);
 
   // Creates |login_performer_| if necessary and calls login() on it.
   // The string arguments aren't passed by const reference because this is

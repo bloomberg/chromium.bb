@@ -37,16 +37,6 @@ class FlagsUI : public content::WebUIController {
 #endif
 
  private:
-#if defined(OS_CHROMEOS)
-  // On ChromeOS verifying if the owner is signed in is async operation and only
-  // after finishing it the UI can be properly populated. This function is the
-  // callback for whether the owner is signed in. It will respectively pick the
-  // proper PrefService for the flags interface.
-  void FinishInitialization(
-      Profile* profile,
-      chromeos::DeviceSettingsService::OwnershipStatus status,
-      bool current_user_is_owner);
-#endif
   base::WeakPtrFactory<FlagsUI> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FlagsUI);

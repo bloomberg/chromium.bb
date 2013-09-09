@@ -756,8 +756,8 @@ void UserManagerImpl::Observe(int type,
         if (device_local_account_policy_service_)
           device_local_account_policy_service_->AddObserver(this);
       }
-      CheckOwnership();
       RetrieveTrustedDevicePolicies();
+      UpdateOwnership();
       break;
     case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED:
       if (IsUserLoggedIn() &&
@@ -1329,18 +1329,11 @@ void UserManagerImpl::NotifyOnLogin() {
   DeviceSettingsService::Get()->SetUsername(active_user_->email());
 }
 
-void UserManagerImpl::UpdateOwnership(
-    DeviceSettingsService::OwnershipStatus status,
-    bool is_owner) {
+void UserManagerImpl::UpdateOwnership() {
+  bool is_owner = DeviceSettingsService::Get()->HasPrivateOwnerKey();
   VLOG(1) << "Current user " << (is_owner ? "is owner" : "is not owner");
 
   SetCurrentUserIsOwner(is_owner);
-}
-
-void UserManagerImpl::CheckOwnership() {
-  DeviceSettingsService::Get()->GetOwnershipStatusAsync(
-      base::Bind(&UserManagerImpl::UpdateOwnership,
-                 base::Unretained(this)));
 }
 
 void UserManagerImpl::RemoveNonCryptohomeData(const std::string& email) {

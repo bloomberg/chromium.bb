@@ -177,8 +177,7 @@ KioskModeSettings::~KioskModeSettings() {
 }
 
 void KioskModeSettings::VerifyModeIsKnown(
-    DeviceSettingsService::OwnershipStatus status,
-    bool is_owner) {
+    DeviceSettingsService::OwnershipStatus status) {
   if (status != DeviceSettingsService::OWNERSHIP_TAKEN)
     return;
 
@@ -192,7 +191,7 @@ void KioskModeSettings::VerifyModeIsKnown(
         content::BrowserThread::PostDelayedTask(
             content::BrowserThread::UI, FROM_HERE,
             base::Bind(&KioskModeSettings::VerifyModeIsKnown,
-                       base::Unretained(this), status, is_owner),
+                       base::Unretained(this), status),
             base::TimeDelta::FromMilliseconds(kDeviceModeFetchRetryDelayMs));
         break;
       case policy::DEVICE_MODE_RETAIL_KIOSK:

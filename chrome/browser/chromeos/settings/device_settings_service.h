@@ -83,7 +83,8 @@ class DeviceSettingsService : public SessionManagerClient::Observer,
     OWNERSHIP_TAKEN
   };
 
-  typedef base::Callback<void(OwnershipStatus, bool)> OwnershipStatusCallback;
+  typedef base::Callback<void(OwnershipStatus)> OwnershipStatusCallback;
+  typedef base::Callback<void(bool)> IsCurrentUserOwnerCallback;
 
   // Status codes for Store().
   enum Status {
@@ -176,6 +177,11 @@ class DeviceSettingsService : public SessionManagerClient::Observer,
   // Checks whether we have the private owner key.
   bool HasPrivateOwnerKey();
 
+  // Determines whether the current user is the owner. The callback is
+  // guaranteed not to be called before it is possible to determine if the
+  // current user is the owner (by testing existence of the private owner key).
+  void IsCurrentUserOwnerAsync(const IsCurrentUserOwnerCallback& callback);
+
   // Sets the identity of the user that's interacting with the service. This is
   // relevant only for writing settings through SignAndStore().
   void SetUsername(const std::string& username);
@@ -223,9 +229,16 @@ class DeviceSettingsService : public SessionManagerClient::Observer,
   Status store_status_;
 
   std::vector<OwnershipStatusCallback> pending_ownership_status_callbacks_;
+  std::vector<IsCurrentUserOwnerCallback>
+      pending_is_current_user_owner_callbacks_;
 
   std::string username_;
   scoped_refptr<OwnerKey> owner_key_;
+  // Whether certificates have been loaded by CertLoader.
+  bool certificates_loaded_;
+  // Whether certificates were loaded when the current owner key was set.
+  // Implies that the current user is owner iff the private owner key is set.
+  bool owner_key_loaded_with_certificates_;
 
   scoped_ptr<enterprise_management::PolicyData> policy_data_;
   scoped_ptr<enterprise_management::ChromeDeviceSettingsProto> device_settings_;

@@ -220,8 +220,7 @@ class ParallelAuthenticator : public Authenticator,
   bool VerifyOwner();
 
   // Handles completion of the ownership check and continues login.
-  void OnOwnershipChecked(DeviceSettingsService::OwnershipStatus status,
-                          bool is_owner);
+  void OnOwnershipChecked(DeviceSettingsService::OwnershipStatus status);
 
   // Signal login completion status for cases when a new user is added via
   // an external authentication provider (i.e. GAIA extension).

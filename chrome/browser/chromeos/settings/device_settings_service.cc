@@ -74,9 +74,13 @@ DeviceSettingsService::DeviceSettingsService()
     : session_manager_client_(NULL),
       weak_factory_(this),
       store_status_(STORE_SUCCESS),
+      certificates_loaded_(false),
+      owner_key_loaded_with_certificates_(false),
       load_retries_left_(kMaxLoadRetries) {
-  if (CertLoader::IsInitialized())
+  if (CertLoader::IsInitialized()) {
+    certificates_loaded_ = CertLoader::Get()->certificates_loaded();
     CertLoader::Get()->AddObserver(this);
+  }
 }
 
 DeviceSettingsService::~DeviceSettingsService() {
@@ -156,9 +160,9 @@ void DeviceSettingsService::GetOwnershipStatusAsync(
     // If there is a key, report status immediately.
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(callback,
-                   owner_key_->public_key() ? OWNERSHIP_TAKEN : OWNERSHIP_NONE,
-                   owner_key_->private_key() != NULL));
+        base::Bind(
+            callback,
+            owner_key_->public_key() ? OWNERSHIP_TAKEN : OWNERSHIP_NONE));
   } else {
     // If the key hasn't been loaded yet, enqueue the callback to be fired when
     // the next SessionManagerOperation completes. If no operation is pending,
@@ -171,6 +175,25 @@ void DeviceSettingsService::GetOwnershipStatusAsync(
 
 bool DeviceSettingsService::HasPrivateOwnerKey() {
   return owner_key_.get() && owner_key_->private_key();
+}
+
+void DeviceSettingsService::IsCurrentUserOwnerAsync(
+    const IsCurrentUserOwnerCallback& callback) {
+  if (owner_key_loaded_with_certificates_) {
+    // If the current owner key was loaded while the certificates were loaded,
+    // or the certificate loader is not initialized, in which case the private
+    // key cannot be set, report status immediately.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, HasPrivateOwnerKey()));
+  } else {
+    // If the key hasn't been loaded with the known certificates, enqueue the
+    // callback to be fired when the next SessionManagerOperation completes in
+    // an environment where the certificates are loaded. There is no need to
+    // start a new operation, as the reload operation will be started when the
+    // certificates are loaded.
+    pending_is_current_user_owner_callbacks_.push_back(callback);
+  }
 }
 
 void DeviceSettingsService::SetUsername(const std::string& username) {
@@ -215,6 +238,7 @@ void DeviceSettingsService::PropertyChangeComplete(bool success) {
 void DeviceSettingsService::OnCertificatesLoaded(
     const net::CertificateList& cert_list,
     bool initial_load) {
+  certificates_loaded_ = true;
   // CertLoader initializes the TPM and NSS database which is necessary to
   // determine ownership. Force a reload once we know these are initialized.
   EnsureReload(true);
@@ -311,7 +335,18 @@ void DeviceSettingsService::HandleCompletedOperation(
   callbacks.swap(pending_ownership_status_callbacks_);
   for (std::vector<OwnershipStatusCallback>::iterator iter(callbacks.begin());
        iter != callbacks.end(); ++iter) {
-    iter->Run(ownership_status, is_owner);
+    iter->Run(ownership_status);
+  }
+
+  if (certificates_loaded_) {
+    owner_key_loaded_with_certificates_ = true;
+    std::vector<IsCurrentUserOwnerCallback> is_owner_callbacks;
+    is_owner_callbacks.swap(pending_is_current_user_owner_callbacks_);
+    for (std::vector<IsCurrentUserOwnerCallback>::iterator iter(
+             is_owner_callbacks.begin());
+         iter != is_owner_callbacks.end(); ++iter) {
+      iter->Run(is_owner);
+    }
   }
 
   // The completion callback happens after the notification so clients can

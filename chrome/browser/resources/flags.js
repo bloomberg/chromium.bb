@@ -131,7 +131,8 @@ function resetAllFlags() {
  *     ],
  *     needsRestart: false,
  *     showBetaChannelPromotion: false,
- *     showDevChannelPromotion: false
+ *     showDevChannelPromotion: false,
+ *     showOwnerWarning: false
  *   }
  */
 function returnFlagsExperiments(experimentsData) {
@@ -144,6 +145,9 @@ function returnFlagsExperiments(experimentsData) {
     $('channel-promo-dev').hidden = false;
 
   bodyContainer.style.visibility = 'visible';
+  var ownerWarningDiv = $('owner-warning');
+  if (ownerWarningDiv)
+    ownerWarningDiv.hidden = !experimentsData.showOwnerWarning;
 }
 
 /**

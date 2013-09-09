@@ -681,8 +681,7 @@ void LoginDisplayHostImpl::StartAnimation() {
 }
 
 void LoginDisplayHostImpl::OnOwnershipStatusCheckDone(
-    DeviceSettingsService::OwnershipStatus status,
-    bool current_user_is_owner) {
+    DeviceSettingsService::OwnershipStatus status) {
   if (status != DeviceSettingsService::OWNERSHIP_NONE) {
     // The device is already owned. No need for auto-enrollment checks.
     VLOG(1) << "CheckForAutoEnrollment: device already owned";

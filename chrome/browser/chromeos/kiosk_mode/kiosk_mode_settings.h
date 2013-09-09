@@ -74,8 +74,7 @@ class KioskModeSettings {
 
   // Makes sure the browser will switch to kiosk mode if cryptohome was not
   // ready when the browser was starting after a machine reboot.
-  void VerifyModeIsKnown(DeviceSettingsService::OwnershipStatus status,
-                         bool is_owner);
+  void VerifyModeIsKnown(DeviceSettingsService::OwnershipStatus status);
 
   bool is_initialized_;
   bool is_kiosk_mode_;

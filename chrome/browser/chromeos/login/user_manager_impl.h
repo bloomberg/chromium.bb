@@ -227,11 +227,7 @@ class UserManagerImpl
   void SetCurrentUserIsOwner(bool is_current_user_owner);
 
   // Updates current user ownership on UI thread.
-  void UpdateOwnership(DeviceSettingsService::OwnershipStatus status,
-                       bool is_owner);
-
-  // Triggers an asynchronous ownership check.
-  void CheckOwnership();
+  void UpdateOwnership();
 
   // Removes data stored or cached outside the user's cryptohome (wallpaper,
   // avatar, OAuth token status, display name, display email).
