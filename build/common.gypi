@@ -3880,11 +3880,6 @@
               # gnu++11 (once typeof can be removed, which is blocked on c++11
               # being available everywhere).
               'CLANG_CXX_LANGUAGE_STANDARD': 'gnu++11',  # -std=gnu++11
-              # Don't use -Wc++0x-extensions, which Xcode 4 enables by default
-              # when building with clang. This warning is triggered when the
-              # override keyword is used via the OVERRIDE macro from
-              # base/compiler_specific.h.
-              'CLANG_WARN_CXX0X_EXTENSIONS': 'NO',
               # Warn if automatic synthesis is triggered with
               # the -Wobjc-missing-property-synthesis flag.
               'CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS': 'YES',
@@ -4175,16 +4170,11 @@
 
           # This next block is mostly common with the 'mac' section above,
           # but keying off (or setting) 'clang' isn't valid for iOS as it
-          # also seems to mean using the custom build of clang.
+          # also means using Chromium's build of clang.
 
           # TODO(stuartmorgan): switch to c++0x (see TODOs in the clang
           # section above).
           'CLANG_CXX_LANGUAGE_STANDARD': 'gnu++0x',
-          # Don't use -Wc++0x-extensions, which Xcode 4 enables by default
-          # when building with clang. This warning is triggered when the
-          # override keyword is used via the OVERRIDE macro from
-          # base/compiler_specific.h.
-          'CLANG_WARN_CXX0X_EXTENSIONS': 'NO',
           # Warn if automatic synthesis is triggered with
           # the -Wobjc-missing-property-synthesis flag.
           'CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS': 'YES',
