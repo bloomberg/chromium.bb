@@ -101,6 +101,7 @@
 //<include src="suggest_apps_dialog.js"/>
 //<include src="text_measure.js"/>
 //<include src="tree.css.js"/>
+//<include src="ui/preview_panel.js"/>
 //<include src="url_constants.js"/>
 //<include src="volume_manager.js"/>
 //<include src="media/media_util.js"/>

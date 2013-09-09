@@ -82,6 +82,15 @@ DialogType.isModal = function(type) {
 };
 
 /**
+ * @param {string} type Dialog type.
+ * @return {boolean} Whther the type is open dialog.
+ */
+DialogType.isOpenDialog = function(type) {
+  return type == DialogType.SELECT_OPEN_FILE ||
+         type == DialogType.SELECT_OPEN_MULTI_FILE;
+};
+
+/**
  * Bottom magrin of the list and tree for transparent preview panel.
  * @const
  */
@@ -840,6 +849,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     FileTable.decorate(this.table_, this.metadataCache_, fullPage);
     FileGrid.decorate(this.grid_, this.metadataCache_);
 
+    this.previewPanel_ = new PreviewPanel(
+        dom.querySelector('.preview-panel'),
+        DialogType.isOpenDialog(this.dialogType) ?
+            PreviewPanel.VisibilityType.ALWAYS_VISIBLE :
+            PreviewPanel.VisibilityType.AUTO,
+        this.getCurrentDirectory());
+    this.previewPanel_.addEventListener(
+        PreviewPanel.Event.VISIBILITY_CHANGE,
+        this.onPreviewPanelVisibilityChange_.bind(this));
+    this.previewPanel_.initialize();
+
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.document_.addEventListener('keyup', this.onKeyUp_.bind(this));
 
@@ -1057,10 +1077,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.folderShortcutsModel_ = new FolderShortcutsDataModel();
 
     this.selectionHandler_ = new FileSelectionHandler(this);
-    this.selectionHandler_.addEventListener('show-preview-panel',
-        this.onPreviewPanelVisibilityChanged_.bind(this, true));
-    this.selectionHandler_.addEventListener('hide-preview-panel',
-        this.onPreviewPanelVisibilityChanged_.bind(this, false));
 
     var dataModel = this.directoryModel_.getFileList();
 
@@ -1499,11 +1515,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * Resize details and thumb views to fit the new window size.
    * @private
    */
-  FileManager.prototype.onPreviewPanelVisibilityChanged_ = function(visible) {
-    var panelHeight = visible ? this.getPreviewPanelHeight_() : 0;
-    this.grid_.setBottomMarginForPanel(panelHeight);
-    this.table_.setBottomMarginForPanel(panelHeight);
-    this.directoryTree_.setBottomMarginForPanel(panelHeight);
+  FileManager.prototype.onPreviewPanelVisibilityChange_ = function() {
+    var panelHeight = this.previewPanel_.visible ?
+        this.previewPanel_.height : 0;
+    if (this.grid_)
+      this.grid_.setBottomMarginForPanel(panelHeight);
+    if (this.table_)
+      this.table_.setBottomMarginForPanel(panelHeight);
+    if (this.directoryTree_)
+      this.directoryTree_.setBottomMarginForPanel(panelHeight);
   };
 
   /**
@@ -1511,7 +1531,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onDragStart_ = function() {
-    this.selectionHandler_.setPreviewPanelMustBeHidden(true);
+    // On open file dialog, the preview panel is always shown.
+    if (DialogType.isOpenDialog(this.dialogType))
+      return;
+    this.previewPanel_.visibilityType =
+        PreviewPanel.VisibilityType.ALWAYS_HIDDEN;
   };
 
   /**
@@ -1519,21 +1543,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onDragEnd_ = function() {
-    this.selectionHandler_.setPreviewPanelMustBeHidden(false);
-  };
-
-  /**
-   * Gets height of the preview panel, using cached value if available. This
-   * returns the value even when the preview panel is hidden.
-   *
-   * @return {number} Height of the preview panel. If failure, returns 0.
-   */
-  FileManager.prototype.getPreviewPanelHeight_ = function() {
-    if (!this.cachedPreviewPanelHeight_) {
-      var previewPanel = this.dialogDom_.querySelector('.preview-panel');
-      this.cachedPreviewPanelHeight_ = previewPanel.clientHeight;
-    }
-    return this.cachedPreviewPanelHeight_;
+    // On open file dialog, the preview panel is always shown.
+    if (DialogType.isOpenDialog(this.dialogType))
+      return;
+    this.previewPanel_.visibilityType = PreviewPanel.VisibilityType.AUTO;
   };
 
   /**
@@ -2450,6 +2463,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.updateUnformattedDriveStatus_();
     this.updateTitle_();
     this.updateGearMenu_();
+    this.previewPanel_.currentPath_ = this.getCurrentDirectory();
   };
 
   /**
