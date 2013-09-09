@@ -24,6 +24,7 @@ body {
 .dialog-topbar #window-close-button,
 .image-picker,
 .overlay-container .page,
+#author-website,
 #surprise-me {
   -webkit-app-region: no-drag;
 }
