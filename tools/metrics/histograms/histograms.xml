@@ -12753,6 +12753,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Renderer.AcceleratedFixedRootBackground"
+    enum="AcceleratedFixedRootBackground">
+  <summary>
+    Keeps track of the number of main frame scrolls with an accelerated fixed
+    root background, the number of main frame scrolls with an unaccelerated
+    fixed root background, and the total number of main frame scrolls.
+  </summary>
+</histogram>
+
 <histogram name="Renderer.CompositedScrolling" enum="CompositedScrolling">
   <summary>
     Total count of the number of RenderLayers which are scrollable areas, need
@@ -18101,6 +18110,12 @@ other types of suffix sets.
 <enum name="Abandoned" type="int">
   <int value="0" label="Finished"/>
   <int value="1" label="Abandoned"/>
+</enum>
+
+<enum name="AcceleratedFixedRootBackground" type="int">
+  <int value="0" label="ScrolledMainFrame"/>
+  <int value="1" label="ScrolledMainFrameWithAcceleratedFixedRootBackground"/>
+  <int value="2" label="ScrolledMainFrameWithUnacceleratedFixedRootBackground"/>
 </enum>
 
 <enum name="AndroidEvictionReason" type="int">
