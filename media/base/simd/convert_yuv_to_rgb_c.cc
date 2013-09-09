@@ -20,31 +20,39 @@ namespace media {
 #define SK_G32_SHIFT    8
 #define SK_B32_SHIFT    16
 #define SK_A32_SHIFT    24
+#define R_INDEX         0
+#define G_INDEX         1
+#define B_INDEX         2
+#define A_INDEX         3
 #else
 #define SK_B32_SHIFT    0
 #define SK_G32_SHIFT    8
 #define SK_R32_SHIFT    16
 #define SK_A32_SHIFT    24
+#define B_INDEX         0
+#define G_INDEX         1
+#define R_INDEX         2
+#define A_INDEX         3
 #endif
 
 static inline void ConvertYUVToRGB32_C(uint8 y,
                                        uint8 u,
                                        uint8 v,
                                        uint8* rgb_buf) {
-  int b = kCoefficientsRgbY[256+u][0];
-  int g = kCoefficientsRgbY[256+u][1];
-  int r = kCoefficientsRgbY[256+u][2];
-  int a = kCoefficientsRgbY[256+u][3];
+  int b = kCoefficientsRgbY[256+u][B_INDEX];
+  int g = kCoefficientsRgbY[256+u][G_INDEX];
+  int r = kCoefficientsRgbY[256+u][R_INDEX];
+  int a = kCoefficientsRgbY[256+u][A_INDEX];
 
-  b = paddsw(b, kCoefficientsRgbY[512+v][0]);
-  g = paddsw(g, kCoefficientsRgbY[512+v][1]);
-  r = paddsw(r, kCoefficientsRgbY[512+v][2]);
-  a = paddsw(a, kCoefficientsRgbY[512+v][3]);
+  b = paddsw(b, kCoefficientsRgbY[512+v][B_INDEX]);
+  g = paddsw(g, kCoefficientsRgbY[512+v][G_INDEX]);
+  r = paddsw(r, kCoefficientsRgbY[512+v][R_INDEX]);
+  a = paddsw(a, kCoefficientsRgbY[512+v][A_INDEX]);
 
-  b = paddsw(b, kCoefficientsRgbY[y][0]);
-  g = paddsw(g, kCoefficientsRgbY[y][1]);
-  r = paddsw(r, kCoefficientsRgbY[y][2]);
-  a = paddsw(a, kCoefficientsRgbY[y][3]);
+  b = paddsw(b, kCoefficientsRgbY[y][B_INDEX]);
+  g = paddsw(g, kCoefficientsRgbY[y][G_INDEX]);
+  r = paddsw(r, kCoefficientsRgbY[y][R_INDEX]);
+  a = paddsw(a, kCoefficientsRgbY[y][A_INDEX]);
 
   b >>= 6;
   g >>= 6;

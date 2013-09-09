@@ -17,20 +17,42 @@ extern "C" {
 // Defines the R,G,B,A contributions from U.
 // The contribution to A is the same for any value of U
 // causing the final A value to be 255 in every conversion.
+// Android's pixel layout is RGBA, while other platforms
+// are BGRA.
+#if defined(OS_ANDROID)
+#define RGBU(i) { \
+  0, \
+  static_cast<int16>(-0.391 * 64 * (i - 128) + 0.5), \
+  static_cast<int16>(2.018 * 64 * (i - 128) + 0.5), \
+  static_cast<int16>(256 * 64 - 1) \
+}
+#else
 #define RGBU(i) { \
   static_cast<int16>(2.018 * 64 * (i - 128) + 0.5), \
   static_cast<int16>(-0.391 * 64 * (i - 128) + 0.5), \
   0, \
   static_cast<int16>(256 * 64 - 1) \
 }
+#endif
 
 // Defines the R,G,B,A contributions from V.
+// Android's pixel layout is RGBA, while other platforms
+// are BGRA.
+#if defined(OS_ANDROID)
+#define RGBV(i) { \
+  static_cast<int16>(1.596 * 64 * (i - 128) + 0.5), \
+  static_cast<int16>(-0.813 * 64 * (i - 128) + 0.5), \
+  0, \
+  0 \
+}
+#else
 #define RGBV(i) { \
   0, \
   static_cast<int16>(-0.813 * 64 * (i - 128) + 0.5), \
   static_cast<int16>(1.596 * 64 * (i - 128) + 0.5), \
   0 \
 }
+#endif
 
 // Used to define a set of multiplier words for each alpha level.
 #define ALPHA(i) { \

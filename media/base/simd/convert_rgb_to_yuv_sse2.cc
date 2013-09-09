@@ -21,6 +21,18 @@ namespace media {
 // Define a convenient macro to do static cast.
 #define INT16_FIX(x) static_cast<int16>(FIX(x))
 
+// Android's pixel layout is RGBA, while other platforms
+// are BGRA.
+#if defined(OS_ANDROID)
+SIMD_ALIGNED(const int16 ConvertRGBAToYUV_kTable[8 * 3]) = {
+  INT16_FIX(0.257), INT16_FIX(0.504), INT16_FIX(0.098), 0,
+  INT16_FIX(0.257), INT16_FIX(0.504), INT16_FIX(0.098), 0,
+  -INT16_FIX(0.148), -INT16_FIX(0.291), INT16_FIX(0.439), 0,
+  -INT16_FIX(0.148), -INT16_FIX(0.291), INT16_FIX(0.439), 0,
+  INT16_FIX(0.439), -INT16_FIX(0.368), -INT16_FIX(0.071), 0,
+  INT16_FIX(0.439), -INT16_FIX(0.368), -INT16_FIX(0.071), 0,
+};
+#else
 SIMD_ALIGNED(const int16 ConvertRGBAToYUV_kTable[8 * 3]) = {
   INT16_FIX(0.098), INT16_FIX(0.504), INT16_FIX(0.257), 0,
   INT16_FIX(0.098), INT16_FIX(0.504), INT16_FIX(0.257), 0,
@@ -29,6 +41,7 @@ SIMD_ALIGNED(const int16 ConvertRGBAToYUV_kTable[8 * 3]) = {
   -INT16_FIX(0.071), -INT16_FIX(0.368), INT16_FIX(0.439), 0,
   -INT16_FIX(0.071), -INT16_FIX(0.368), INT16_FIX(0.439), 0,
 };
+#endif
 
 #undef INT16_FIX
 
