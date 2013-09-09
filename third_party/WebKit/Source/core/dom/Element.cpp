@@ -336,7 +336,7 @@ PassRefPtr<Attr> Element::detachAttribute(size_t index)
     if (attrNode)
         detachAttrNodeAtIndex(attrNode.get(), index);
     else {
-        attrNode = Attr::create(&document(), attribute->name(), attribute->value());
+        attrNode = Attr::create(document(), attribute->name(), attribute->value());
         removeAttributeInternal(index, NotInSynchronizationOfLazyAttribute);
     }
     return attrNode.release();
@@ -1830,7 +1830,7 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& es)
         if (oldAttrNode)
             detachAttrNodeFromElementWithValue(oldAttrNode.get(), elementData->attributeItem(index)->value());
         else
-            oldAttrNode = Attr::create(&document(), attrNode->qualifiedName(), elementData->attributeItem(index)->value());
+            oldAttrNode = Attr::create(document(), attrNode->qualifiedName(), elementData->attributeItem(index)->value());
     }
 
     setAttributeInternal(index, attrNode->qualifiedName(), attrNode->value(), NotInSynchronizationOfLazyAttribute);
@@ -2951,7 +2951,7 @@ PassRefPtr<Attr> Element::ensureAttr(const QualifiedName& name)
     AttrNodeList* attrNodeList = ensureAttrNodeListForElement(this);
     RefPtr<Attr> attrNode = findAttrNodeInList(attrNodeList, name);
     if (!attrNode) {
-        attrNode = Attr::create(this, name);
+        attrNode = Attr::create(*this, name);
         treeScope().adoptIfNeeded(attrNode.get());
         attrNodeList->append(attrNode);
     }
