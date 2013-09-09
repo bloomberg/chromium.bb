@@ -19,16 +19,16 @@ class GURL;
 struct ImportedBookmarkEntry;
 struct ImportedFaviconUsage;
 
+namespace autofill {
+struct PasswordForm;
+}
+
 namespace importer {
 #if defined(OS_WIN)
 struct ImporterIE7PasswordInfo;
 #endif
 struct ImporterURlRow;
 struct URLKeywordInfo;
-}
-
-namespace content {
-struct PasswordForm;
 }
 
 class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
@@ -61,7 +61,7 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
   virtual void SetFirefoxSearchEnginesXMLData(
       const std::vector<std::string>& search_engine_data) = 0;
 
-  virtual void SetPasswordForm(const content::PasswordForm& form) = 0;
+  virtual void SetPasswordForm(const autofill::PasswordForm& form) = 0;
 
   // Notifies the coordinator that the import operation has begun.
   virtual void NotifyStarted() = 0;

@@ -74,7 +74,7 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   };
   typedef std::map<WebKit::WebElement, PasswordInfo> LoginToPasswordInfoMap;
   typedef std::map<WebKit::WebFrame*,
-                   linked_ptr<content::PasswordForm> > FrameToPasswordFormMap;
+                   linked_ptr<PasswordForm> > FrameToPasswordFormMap;
 
   // RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

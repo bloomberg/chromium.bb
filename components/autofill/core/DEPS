@@ -5,6 +5,5 @@ include_rules = [
   # and please do not introduce more #includes of these files.
   "!content/public/common/common_param_traits.h",
   "!content/public/common/common_param_traits_macros.h",
-  "!content/public/common/password_form.h",
   "!third_party/WebKit/public/web/WebFormElement.h",
 ]

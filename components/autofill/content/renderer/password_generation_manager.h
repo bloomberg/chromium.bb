@@ -21,14 +21,9 @@ class WebDocument;
 }
 
 namespace autofill {
+
 struct FormData;
-}
-
-namespace content {
 struct PasswordForm;
-}
-
-namespace autofill {
 
 // This class is responsible for controlling communication for password
 // generation between the browser (which shows the popup and generates
@@ -56,7 +51,7 @@ class PasswordGenerationManager : public content::RenderViewObserver,
   virtual void openPasswordGenerator(WebKit::WebInputElement& element) OVERRIDE;
 
   // Message handlers.
-  void OnFormNotBlacklisted(const content::PasswordForm& form);
+  void OnFormNotBlacklisted(const PasswordForm& form);
   void OnPasswordAccepted(const base::string16& password);
   void OnPasswordGenerationEnabled(bool enabled);
   void OnAccountCreationFormsDetected(
@@ -72,7 +67,7 @@ class PasswordGenerationManager : public content::RenderViewObserver,
   bool enabled_;
 
   // Stores the origin of the account creation form we detected.
-  scoped_ptr<content::PasswordForm> possible_account_creation_form_;
+  scoped_ptr<PasswordForm> possible_account_creation_form_;
 
   // Stores the origins of the password forms confirmed not to be blacklisted
   // by the browser. A form can be blacklisted if a user chooses "never save

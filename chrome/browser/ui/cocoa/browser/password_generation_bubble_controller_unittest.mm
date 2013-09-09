@@ -11,7 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "components/autofill/core/browser/password_generator.h"
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 #include "testing/gtest_mac.h"
 
 using base::HistogramBase;
@@ -45,7 +45,7 @@ class PasswordGenerationBubbleControllerTest : public CocoaProfileTest {
   PasswordGenerationBubbleController* controller() { return controller_; }
 
   void SetUpController() {
-    content::PasswordForm form;
+    autofill::PasswordForm form;
     NSRect frame = [test_window() frame];
     NSPoint point = NSMakePoint(NSMidX(frame), NSMidY(frame));
 

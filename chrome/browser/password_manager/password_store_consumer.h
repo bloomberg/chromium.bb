@@ -8,7 +8,7 @@
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/common/cancelable_task_tracker.h"
 
-namespace content {
+namespace autofill {
 struct PasswordForm;
 }
 
@@ -25,7 +25,7 @@ class PasswordStoreConsumer {
   // anyway with an empty vector.
   virtual void OnPasswordStoreRequestDone(
       CancelableRequestProvider::Handle handle,
-      const std::vector<content::PasswordForm*>& result) = 0;
+      const std::vector<autofill::PasswordForm*>& result) = 0;
 
   // The CancelableRequest framework needs both a callback (the
   // PasswordStoreConsumer::OnPasswordStoreRequestDone) as well as a
@@ -39,7 +39,7 @@ class PasswordStoreConsumer {
   // with an empty vector.
   // Note: The implementation owns all PasswordForms in the vector.
   virtual void OnGetPasswordStoreResults(
-      const std::vector<content::PasswordForm*>& results) = 0;
+      const std::vector<autofill::PasswordForm*>& results) = 0;
 
   // Cancels the task.
   CancelableTaskTracker* cancelable_task_tracker() {

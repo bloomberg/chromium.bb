@@ -59,6 +59,7 @@
 #include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
@@ -67,7 +68,6 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
-#include "content/public/common/password_form.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "grit/chromium_strings.h"
@@ -1025,7 +1025,7 @@ void OneClickSigninHelper::CleanTransientState() {
 }
 
 void OneClickSigninHelper::PasswordSubmitted(
-    const content::PasswordForm& form) {
+    const autofill::PasswordForm& form) {
   // We only need to scrape the password for Gaia logins.
   if (gaia::IsGaiaSignonRealm(GURL(form.signon_realm))) {
     VLOG(1) << "OneClickSigninHelper::DidNavigateAnyFrame: got password";

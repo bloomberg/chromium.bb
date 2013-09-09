@@ -18,7 +18,7 @@ class Pickle;
 class PickleIterator;
 class PrefService;
 
-namespace content {
+namespace autofill {
 struct PasswordForm;
 }
 
@@ -41,12 +41,12 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   virtual bool Init() OVERRIDE;
 
   // Implements NativeBackend interface.
-  virtual bool AddLogin(const content::PasswordForm& form) OVERRIDE;
-  virtual bool UpdateLogin(const content::PasswordForm& form) OVERRIDE;
-  virtual bool RemoveLogin(const content::PasswordForm& form) OVERRIDE;
+  virtual bool AddLogin(const autofill::PasswordForm& form) OVERRIDE;
+  virtual bool UpdateLogin(const autofill::PasswordForm& form) OVERRIDE;
+  virtual bool RemoveLogin(const autofill::PasswordForm& form) OVERRIDE;
   virtual bool RemoveLoginsCreatedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
-  virtual bool GetLogins(const content::PasswordForm& form,
+  virtual bool GetLogins(const autofill::PasswordForm& form,
                          PasswordFormList* forms) OVERRIDE;
   virtual bool GetLoginsCreatedBetween(const base::Time& get_begin,
                                        const base::Time& get_end,

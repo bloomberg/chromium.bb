@@ -18,9 +18,9 @@
 #include "content/public/test/test_browser_thread.h"
 #include "crypto/mock_apple_keychain.h"
 
+using autofill::PasswordForm;
 using content::BrowserThread;
 using crypto::MockAppleKeychain;
-using content::PasswordForm;
 using testing::_;
 using testing::DoAll;
 using testing::WithArg;
@@ -31,9 +31,9 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
   MOCK_METHOD2(OnPasswordStoreRequestDone,
                void(CancelableRequestProvider::Handle,
-                    const std::vector<content::PasswordForm*>&));
+                    const std::vector<autofill::PasswordForm*>&));
   MOCK_METHOD1(OnGetPasswordStoreResults,
-               void(const std::vector<content::PasswordForm*>&));
+               void(const std::vector<autofill::PasswordForm*>&));
 };
 
 ACTION(STLDeleteElements0) {

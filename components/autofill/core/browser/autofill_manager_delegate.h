@@ -12,10 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 
-namespace content {
-struct PasswordForm;
-}
-
 namespace gfx {
 class Rect;
 class RectF;
@@ -34,6 +30,7 @@ class FormStructure;
 class PasswordGenerator;
 class PersonalDataManager;
 struct FormData;
+struct PasswordForm;
 
 // A delegate interface that needs to be supplied to AutofillManager
 // by the embedder.

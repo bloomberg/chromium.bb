@@ -25,8 +25,8 @@
 #include "ui/base/gtk/scoped_gobject.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using autofill::PasswordForm;
 using content::BrowserThread;
-using content::PasswordForm;
 using content::WebContents;
 using web_modal::WebContentsModalDialogManager;
 

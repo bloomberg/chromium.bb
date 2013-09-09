@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 
@@ -31,14 +31,14 @@ class LoginDatabase {
   void ReportMetrics();
 
   // Adds |form| to the list of remembered password forms.
-  bool AddLogin(const content::PasswordForm& form);
+  bool AddLogin(const autofill::PasswordForm& form);
 
   // Updates remembered password form. Returns true on success and sets
   // items_changed (if non-NULL) to the number of logins updated.
-  bool UpdateLogin(const content::PasswordForm& form, int* items_changed);
+  bool UpdateLogin(const autofill::PasswordForm& form, int* items_changed);
 
   // Removes |form| from the list of remembered password forms.
-  bool RemoveLogin(const content::PasswordForm& form);
+  bool RemoveLogin(const autofill::PasswordForm& form);
 
   // Removes all logins created from |delete_begin| onwards (inclusive) and
   // before |delete_end|. You may use a null Time value to do an unbounded
@@ -49,8 +49,8 @@ class LoginDatabase {
   // Loads a list of matching password forms into the specified vector |forms|.
   // The list will contain all possibly relevant entries to the observed |form|,
   // including blacklisted matches.
-  bool GetLogins(const content::PasswordForm& form,
-                 std::vector<content::PasswordForm*>* forms) const;
+  bool GetLogins(const autofill::PasswordForm& form,
+                 std::vector<autofill::PasswordForm*>* forms) const;
 
   // Loads all logins created from |begin| onwards (inclusive) and before |end|.
   // You may use a null Time value to do an unbounded search in either
@@ -58,16 +58,16 @@ class LoginDatabase {
   bool GetLoginsCreatedBetween(
       const base::Time begin,
       const base::Time end,
-      std::vector<content::PasswordForm*>* forms) const;
+      std::vector<autofill::PasswordForm*>* forms) const;
 
   // Loads the complete list of autofillable password forms (i.e., not blacklist
   // entries) into |forms|.
   bool GetAutofillableLogins(
-      std::vector<content::PasswordForm*>* forms) const;
+      std::vector<autofill::PasswordForm*>* forms) const;
 
   // Loads the complete list of blacklist forms into |forms|.
   bool GetBlacklistLogins(
-      std::vector<content::PasswordForm*>* forms) const;
+      std::vector<autofill::PasswordForm*>* forms) const;
 
   // Deletes the login database file on disk, and creates a new, empty database.
   // This can be used after migrating passwords to some other store, to ensure
@@ -99,13 +99,13 @@ class LoginDatabase {
   // Fills |form| from the values in the given statement (which is assumed to
   // be of the form used by the Get*Logins methods).
   // Returns true if |form| was successfully filled.
-  bool InitPasswordFormFromStatement(content::PasswordForm* form,
+  bool InitPasswordFormFromStatement(autofill::PasswordForm* form,
                                      sql::Statement& s) const;
 
   // Loads all logins whose blacklist setting matches |blacklisted| into
   // |forms|.
   bool GetAllLoginsWithBlacklistSetting(
-      bool blacklisted, std::vector<content::PasswordForm*>* forms) const;
+      bool blacklisted, std::vector<autofill::PasswordForm*>* forms) const;
 
   // Serialization routines for vectors.
   Pickle SerializeVector(const std::vector<string16>& vec) const;

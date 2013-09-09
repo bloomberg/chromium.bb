@@ -30,9 +30,9 @@ PasswordFormFillData::~PasswordFormFillData() {
 }
 
 void InitPasswordFormFillData(
-    const content::PasswordForm& form_on_page,
-    const content::PasswordFormMap& matches,
-    const content::PasswordForm* const preferred_match,
+    const PasswordForm& form_on_page,
+    const PasswordFormMap& matches,
+    const PasswordForm* const preferred_match,
     bool wait_for_username_before_autofill,
     bool enable_other_possible_usernames,
     PasswordFormFillData* result) {
@@ -57,7 +57,7 @@ void InitPasswordFormFillData(
   result->preferred_realm = preferred_match->original_signon_realm;
 
   // Copy additional username/value pairs.
-  content::PasswordFormMap::const_iterator iter;
+  PasswordFormMap::const_iterator iter;
   for (iter = matches.begin(); iter != matches.end(); iter++) {
     if (iter->second != preferred_match) {
       PasswordAndRealm value;

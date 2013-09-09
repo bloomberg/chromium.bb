@@ -12,7 +12,7 @@ class LoginDatabase;
 class Profile;
 class WebDataService;
 
-namespace content {
+namespace autofill {
 struct PasswordForm;
 }
 
@@ -37,13 +37,13 @@ class PasswordStoreWin : public PasswordStoreDefault {
   void ShutdownOnDBThread();
 
   virtual void GetLoginsImpl(
-      const content::PasswordForm& form,
+      const autofill::PasswordForm& form,
       const ConsumerCallbackRunner& callback_runner) OVERRIDE;
 
   void GetIE7LoginIfNecessary(
-    const content::PasswordForm& form,
+    const autofill::PasswordForm& form,
     const ConsumerCallbackRunner& callback_runner,
-    const std::vector<content::PasswordForm*>& matched_forms);
+    const std::vector<autofill::PasswordForm*>& matched_forms);
 
   scoped_ptr<DBHandler> db_handler_;
 

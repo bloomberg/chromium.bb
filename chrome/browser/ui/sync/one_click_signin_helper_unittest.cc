@@ -27,11 +27,11 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "content/public/common/password_form.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "grit/chromium_strings.h"
@@ -314,7 +314,7 @@ OneClickSigninHelperTest::CreateProfileSyncServiceMock() {
 
 void OneClickSigninHelperTest::SubmitGAIAPassword(
     OneClickSigninHelper* helper) {
-  content::PasswordForm password_form;
+  autofill::PasswordForm password_form;
   password_form.origin = GURL("https://accounts.google.com");
   password_form.signon_realm = "https://accounts.google.com";
   password_form.password_value = UTF8ToUTF16("password");

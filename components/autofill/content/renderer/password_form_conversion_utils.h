@@ -7,21 +7,19 @@
 
 #include "base/memory/scoped_ptr.h"
 
-namespace content {
-struct PasswordForm;
-}
-
 namespace WebKit {
 class WebFormElement;
 }
 
 namespace autofill {
 
+struct PasswordForm;
+
 // Create a PasswordForm from DOM form. Webkit doesn't allow storing
 // custom metadata to DOM nodes, so we have to do this every time an event
 // happens with a given form and compare against previously Create'd forms
 // to identify..which sucks.
-scoped_ptr<content::PasswordForm> CreatePasswordForm(
+scoped_ptr<PasswordForm> CreatePasswordForm(
     const WebKit::WebFormElement& form);
 
 }  // namespace autofill

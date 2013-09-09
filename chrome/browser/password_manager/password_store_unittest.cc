@@ -21,12 +21,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using autofill::PasswordForm;
 using base::WaitableEvent;
 using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
 using testing::WithArg;
-using content::PasswordForm;
 
 namespace {
 

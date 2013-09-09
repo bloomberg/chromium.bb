@@ -104,7 +104,7 @@ typedef void (*SECITEMFreeItemFunc)(SECItem *item, PRBool free_it);
 typedef void (*PLArenaFinishFunc)(void);
 typedef PRStatus (*PRCleanupFunc)(void);
 
-namespace content {
+namespace autofill {
 struct PasswordForm;
 }
 
@@ -130,13 +130,13 @@ class NSSDecryptor {
   // username/password and reads other related information.
   // The result will be stored in |forms|.
   void ParseSignons(const std::string& content,
-                    std::vector<content::PasswordForm>* forms);
+                    std::vector<autofill::PasswordForm>* forms);
 
   // Reads and parses the Firefox password sqlite db, decrypts the
   // username/password and reads other related information.
   // The result will be stored in |forms|.
   bool ReadAndParseSignons(const base::FilePath& sqlite_file,
-                           std::vector<content::PasswordForm>* forms);
+                           std::vector<autofill::PasswordForm>* forms);
 
  private:
   // Call NSS initialization funcs.

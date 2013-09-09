@@ -14,8 +14,8 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
+#include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/password_form.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
@@ -245,7 +245,7 @@ void InProcessImporterBridge::SetFirefoxSearchEnginesXMLData(
 }
 
 void InProcessImporterBridge::SetPasswordForm(
-    const content::PasswordForm& form) {
+    const autofill::PasswordForm& form) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ProfileWriter::AddPasswordForm, writer_, form));

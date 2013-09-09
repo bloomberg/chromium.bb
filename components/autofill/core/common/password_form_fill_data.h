@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/autofill/core/common/form_data.h"
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 
 namespace autofill {
 
@@ -75,9 +75,9 @@ struct PasswordFormFillData {
 // If |enable_possible_usernames| is true, we will populate possible_usernames
 // in |result|.
 void InitPasswordFormFillData(
-    const content::PasswordForm& form_on_page,
-    const content::PasswordFormMap& matches,
-    const content::PasswordForm* const preferred_match,
+    const PasswordForm& form_on_page,
+    const PasswordFormMap& matches,
+    const PasswordForm* const preferred_match,
     bool wait_for_username_before_autofill,
     bool enable_other_possible_usernames,
     PasswordFormFillData* result);

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_MOCK_PASSWORD_STORE_H_
 
 #include "chrome/browser/password_manager/password_store.h"
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
@@ -20,28 +20,28 @@ class MockPasswordStore : public PasswordStore {
   static scoped_refptr<RefcountedBrowserContextKeyedService> Build(
       content::BrowserContext* profile);
 
-  MOCK_METHOD1(RemoveLogin, void(const content::PasswordForm&));
+  MOCK_METHOD1(RemoveLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD2(GetLogins,
-               CancelableTaskTracker::TaskId(const content::PasswordForm&,
+               CancelableTaskTracker::TaskId(const autofill::PasswordForm&,
                                              PasswordStoreConsumer*));
-  MOCK_METHOD1(AddLogin, void(const content::PasswordForm&));
-  MOCK_METHOD1(UpdateLogin, void(const content::PasswordForm&));
+  MOCK_METHOD1(AddLogin, void(const autofill::PasswordForm&));
+  MOCK_METHOD1(UpdateLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD0(ReportMetrics, void());
   MOCK_METHOD0(ReportMetricsImpl, void());
-  MOCK_METHOD1(AddLoginImpl, void(const content::PasswordForm&));
-  MOCK_METHOD1(UpdateLoginImpl, void(const content::PasswordForm&));
-  MOCK_METHOD1(RemoveLoginImpl, void(const content::PasswordForm&));
+  MOCK_METHOD1(AddLoginImpl, void(const autofill::PasswordForm&));
+  MOCK_METHOD1(UpdateLoginImpl, void(const autofill::PasswordForm&));
+  MOCK_METHOD1(RemoveLoginImpl, void(const autofill::PasswordForm&));
   MOCK_METHOD2(RemoveLoginsCreatedBetweenImpl, void(const base::Time&,
                const base::Time&));
   MOCK_METHOD2(GetLoginsImpl,
-               void(const content::PasswordForm& form,
+               void(const autofill::PasswordForm& form,
                     const ConsumerCallbackRunner& callback_runner));
   MOCK_METHOD1(GetAutofillableLoginsImpl, void(GetLoginsRequest*));
   MOCK_METHOD1(GetBlacklistLoginsImpl, void(GetLoginsRequest*));
   MOCK_METHOD1(FillAutofillableLogins,
-      bool(std::vector<content::PasswordForm*>*));
+      bool(std::vector<autofill::PasswordForm*>*));
   MOCK_METHOD1(FillBlacklistLogins,
-      bool(std::vector<content::PasswordForm*>*));
+      bool(std::vector<autofill::PasswordForm*>*));
 
   virtual void ShutdownOnUIThread();
 

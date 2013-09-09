@@ -24,8 +24,8 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
+using autofill::PasswordForm;
 using content::BrowserThread;
-using content::PasswordForm;
 using content::WebContents;
 using web_modal::WebContentsModalDialogManager;
 using web_modal::WebContentsModalDialogManagerDelegate;

@@ -29,22 +29,22 @@ class PasswordStoreDefault : public PasswordStore {
 
   // Implements PasswordStore interface.
   virtual void ReportMetricsImpl() OVERRIDE;
-  virtual void AddLoginImpl(const content::PasswordForm& form) OVERRIDE;
+  virtual void AddLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
   virtual void UpdateLoginImpl(
-      const content::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) OVERRIDE;
   virtual void RemoveLoginImpl(
-      const content::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) OVERRIDE;
   virtual void RemoveLoginsCreatedBetweenImpl(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
   virtual void GetLoginsImpl(
-      const content::PasswordForm& form,
+      const autofill::PasswordForm& form,
       const ConsumerCallbackRunner& callback_runner) OVERRIDE;
   virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) OVERRIDE;
   virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) OVERRIDE;
   virtual bool FillAutofillableLogins(
-      std::vector<content::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
   virtual bool FillBlacklistLogins(
-      std::vector<content::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
 
  protected:
   inline bool DeleteAndRecreateDatabaseFile() {

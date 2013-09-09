@@ -20,12 +20,12 @@
 class PasswordStore;
 class ProfileSyncService;
 
-namespace base {
-class MessageLoop;
+namespace autofill {
+struct PasswordForm;
 }
 
-namespace content {
-struct PasswordForm;
+namespace base {
+class MessageLoop;
 }
 
 namespace syncer {
@@ -45,7 +45,7 @@ extern const char kPasswordTag[];
 class PasswordModelAssociator
   : public PerDataTypeAssociatorInterface<std::string, std::string> {
  public:
-  typedef std::vector<content::PasswordForm> PasswordVector;
+  typedef std::vector<autofill::PasswordForm> PasswordVector;
 
   static syncer::ModelType model_type() { return syncer::PASSWORDS; }
   PasswordModelAssociator(ProfileSyncService* sync_service,
@@ -101,7 +101,7 @@ class PasswordModelAssociator
                                  const PasswordVector* updated_passwords,
                                  const PasswordVector* deleted_passwords);
 
-  static std::string MakeTag(const content::PasswordForm& password);
+  static std::string MakeTag(const autofill::PasswordForm& password);
   static std::string MakeTag(const sync_pb::PasswordSpecificsData& password);
   static std::string MakeTag(const std::string& origin_url,
                              const std::string& username_element,
@@ -110,12 +110,12 @@ class PasswordModelAssociator
                              const std::string& signon_realm);
 
   static void CopyPassword(const sync_pb::PasswordSpecificsData& password,
-                           content::PasswordForm* new_password);
+                           autofill::PasswordForm* new_password);
 
   static bool MergePasswords(const sync_pb::PasswordSpecificsData& password,
-                             const content::PasswordForm& password_form,
-                             content::PasswordForm* new_password);
-  static void WriteToSyncNode(const content::PasswordForm& password_form,
+                             const autofill::PasswordForm& password_form,
+                             autofill::PasswordForm* new_password);
+  static void WriteToSyncNode(const autofill::PasswordForm& password_form,
                               syncer::WriteNode* node);
 
  private:

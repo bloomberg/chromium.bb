@@ -138,7 +138,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE {}
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& rect,
-      const content::PasswordForm& form,
+      const autofill::PasswordForm& form,
       autofill::PasswordGenerator* generator) OVERRIDE {}
   virtual int GetRenderViewHeightInsetWithDetachedBookmarkBar() OVERRIDE;
 

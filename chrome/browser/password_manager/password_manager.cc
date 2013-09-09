@@ -26,10 +26,10 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "grit/generated_resources.h"
 
+using autofill::PasswordForm;
+using autofill::PasswordFormMap;
 using content::UserMetricsAction;
 using content::WebContents;
-using content::PasswordForm;
-using content::PasswordFormMap;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordManager);
 
@@ -358,7 +358,7 @@ void PasswordManager::PossiblyInitializeUsernamesExperiment(
     return;
 
   bool other_possible_usernames_exist = false;
-  for (content::PasswordFormMap::const_iterator it = best_matches.begin();
+  for (autofill::PasswordFormMap::const_iterator it = best_matches.begin();
        it != best_matches.end(); ++it) {
     if (!it->second->other_possible_usernames.empty()) {
       other_possible_usernames_exist = true;

@@ -14,7 +14,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/password_generator.h"
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
@@ -23,7 +23,7 @@ typedef InProcessBrowserTest BrowserWindowCocoaBrowsertest;
 IN_PROC_BROWSER_TEST_F(BrowserWindowCocoaBrowsertest,
                        ShowPasswordGenerationBubble) {
   gfx::Rect rect;
-  content::PasswordForm form;
+  autofill::PasswordForm form;
   autofill::PasswordGenerator generator(10);
   browser()->window()->ShowPasswordGenerationBubble(rect, form, &generator);
 

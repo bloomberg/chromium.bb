@@ -29,6 +29,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/text_elider.h"
 
+using autofill::PasswordForm;
 using content::BrowserThread;
 using content::NavigationController;
 using content::RenderViewHost;
@@ -36,7 +37,6 @@ using content::RenderViewHostDelegate;
 using content::ResourceDispatcherHost;
 using content::ResourceRequestInfo;
 using content::WebContents;
-using content::PasswordForm;
 
 class LoginHandlerImpl;
 
@@ -112,7 +112,7 @@ void LoginHandler::OnRequestCancelled() {
   CancelAuth();
 }
 
-void LoginHandler::SetPasswordForm(const content::PasswordForm& form) {
+void LoginHandler::SetPasswordForm(const autofill::PasswordForm& form) {
   password_form_ = form;
 }
 

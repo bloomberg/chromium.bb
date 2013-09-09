@@ -33,7 +33,7 @@ class TestPasswordStore : public PasswordStore {
       content::BrowserContext* profile);
 
   typedef std::map<std::string /* signon_realm */,
-                   std::vector<content::PasswordForm> > PasswordMap;
+                   std::vector<autofill::PasswordForm> > PasswordMap;
 
   PasswordMap stored_passwords();
   void Clear();
@@ -42,14 +42,14 @@ class TestPasswordStore : public PasswordStore {
   virtual ~TestPasswordStore();
 
   // Helper function to determine if forms are considered equivalent.
-  bool FormsAreEquivalent(const content::PasswordForm& lhs,
-                          const content::PasswordForm& rhs);
+  bool FormsAreEquivalent(const autofill::PasswordForm& lhs,
+                          const autofill::PasswordForm& rhs);
 
   // PasswordStore interface
-  virtual void AddLoginImpl(const content::PasswordForm& form) OVERRIDE;
-  virtual void UpdateLoginImpl(const content::PasswordForm& form) OVERRIDE;
-  virtual void RemoveLoginImpl(const content::PasswordForm& form) OVERRIDE;
-  virtual void GetLoginsImpl(const content::PasswordForm& form,
+  virtual void AddLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
+  virtual void UpdateLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
+  virtual void RemoveLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
+  virtual void GetLoginsImpl(const autofill::PasswordForm& form,
                              const ConsumerCallbackRunner& runner) OVERRIDE;
   virtual bool ScheduleTask(const base::Closure& task) OVERRIDE;
   virtual void WrapModificationTask(base::Closure task) OVERRIDE;
@@ -63,9 +63,9 @@ class TestPasswordStore : public PasswordStore {
   virtual void GetBlacklistLoginsImpl(
       PasswordStore::GetLoginsRequest* request) OVERRIDE {}
   virtual bool FillAutofillableLogins(
-      std::vector<content::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
   virtual bool FillBlacklistLogins(
-      std::vector<content::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
   virtual void ShutdownOnUIThread() OVERRIDE {}
 
  private:

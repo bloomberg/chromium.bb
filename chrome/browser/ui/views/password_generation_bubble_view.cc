@@ -119,7 +119,7 @@ gfx::Size TextfieldWrapper::GetImageSize() const {
 }  // namespace
 
 PasswordGenerationBubbleView::PasswordGenerationBubbleView(
-    const content::PasswordForm& form,
+    const autofill::PasswordForm& form,
     const gfx::Rect& anchor_rect,
     views::View* anchor_view,
     content::RenderViewHost* render_view_host,

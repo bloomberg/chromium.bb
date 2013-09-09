@@ -15,9 +15,9 @@
 #import "chrome/browser/ui/cocoa/styled_text_field_cell.h"
 #include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/autofill_messages.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/common/password_form.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/tracking_area.h"
@@ -294,7 +294,7 @@ const CGFloat kIconSize = 26.0;
       renderViewHost:(content::RenderViewHost*)renderViewHost
      passwordManager:(PasswordManager*)passwordManager
       usingGenerator:(autofill::PasswordGenerator*)passwordGenerator
-             forForm:(const content::PasswordForm&)form {
+             forForm:(const autofill::PasswordForm&)form {
   CGFloat width = (kBorderSize*2 +
                    kTextFieldWidth +
                    kHorizontalSpacing +

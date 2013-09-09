@@ -23,7 +23,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::PasswordForm;
+using autofill::PasswordForm;
 using testing::_;
 using testing::DoAll;
 using testing::Exactly;
@@ -139,8 +139,8 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
     return form;
   }
 
-  bool FormsAreEqual(const content::PasswordForm& lhs,
-                     const content::PasswordForm& rhs) {
+  bool FormsAreEqual(const autofill::PasswordForm& lhs,
+                     const autofill::PasswordForm& rhs) {
     if (lhs.origin != rhs.origin)
       return false;
     if (lhs.action != rhs.action)
@@ -166,7 +166,7 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
     return manager_;
   }
 
-  void OnPasswordFormSubmitted(const content::PasswordForm& form) {
+  void OnPasswordFormSubmitted(const autofill::PasswordForm& form) {
     manager()->OnPasswordFormSubmitted(form);
   }
 
@@ -175,7 +175,7 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
                       base::Unretained(this));
   }
 
-  void FormSubmitted(const content::PasswordForm& form) {
+  void FormSubmitted(const autofill::PasswordForm& form) {
     submitted_form_ = form;
   }
 

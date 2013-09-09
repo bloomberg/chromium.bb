@@ -12,7 +12,7 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 
 namespace content {
 class WebContents;
@@ -35,7 +35,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   PasswordFormManager(Profile* profile,
                       PasswordManager* password_manager,
                       content::WebContents* web_contents,
-                      const content::PasswordForm& observed_form,
+                      const autofill::PasswordForm& observed_form,
                       bool ssl_valid);
   virtual ~PasswordFormManager();
 
@@ -51,7 +51,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Compare basic data of observed_form_ with argument. Only check the action
   // URL when action match is required.
-  bool DoesManage(const content::PasswordForm& form,
+  bool DoesManage(const autofill::PasswordForm& form,
                   ActionMatch action_match) const;
 
   // Retrieves potential matching logins from the database.
@@ -94,14 +94,14 @@ class PasswordFormManager : public PasswordStoreConsumer {
   void SetHasGeneratedPassword();
 
   // Determines if we need to autofill given the results of the query.
-  void OnRequestDone(const std::vector<content::PasswordForm*>& result);
+  void OnRequestDone(const std::vector<autofill::PasswordForm*>& result);
 
   // PasswordStoreConsumer implementation.
   virtual void OnPasswordStoreRequestDone(
       CancelableRequestProvider::Handle handle,
-      const std::vector<content::PasswordForm*>& result) OVERRIDE;
+      const std::vector<autofill::PasswordForm*>& result) OVERRIDE;
   virtual void OnGetPasswordStoreResults(
-      const std::vector<content::PasswordForm*>& results) OVERRIDE;
+      const std::vector<autofill::PasswordForm*>& results) OVERRIDE;
 
   // A user opted to 'never remember' passwords for this form.
   // Blacklist it so that from now on when it is seen we ignore it.
@@ -114,7 +114,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // treat a possible usernames match as a sign that our original heuristics
   // were wrong and that the user selected the correct username from the
   // Autofill UI.
-  void ProvisionallySave(const content::PasswordForm& credentials,
+  void ProvisionallySave(const autofill::PasswordForm& credentials,
                          OtherPossibleUsernamesAction action);
 
   // Handles save-as-new or update of the form managed by this manager.
@@ -182,7 +182,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Helper for OnPasswordStoreRequestDone to determine whether or not
   // the given result form is worth scoring.
-  bool IgnoreResult(const content::PasswordForm& form) const;
+  bool IgnoreResult(const autofill::PasswordForm& form) const;
 
   // Helper for Save in the case that best_matches.size() == 0, meaning
   // we have no prior record of this form/username/password and the user
@@ -192,7 +192,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Helper for OnPasswordStoreRequestDone to score an individual result
   // against the observed_form_.
-  int ScoreResult(const content::PasswordForm& form) const;
+  int ScoreResult(const autofill::PasswordForm& form) const;
 
   // Helper for Save in the case that best_matches.size() > 0, meaning
   // we have at least one match for this form/username/password. This
@@ -223,18 +223,18 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Remove possible_usernames that may contains sensitive information and
   // duplicates.
-  void SanitizePossibleUsernames(content::PasswordForm* form);
+  void SanitizePossibleUsernames(autofill::PasswordForm* form);
 
   // Set of PasswordForms from the DB that best match the form
   // being managed by this. Use a map instead of vector, because we most
   // frequently require lookups by username value in IsNewLogin.
-  content::PasswordFormMap best_matches_;
+  autofill::PasswordFormMap best_matches_;
 
   // Cleans up when best_matches_ goes out of scope.
-  STLValueDeleter<content::PasswordFormMap> best_matches_deleter_;
+  STLValueDeleter<autofill::PasswordFormMap> best_matches_deleter_;
 
   // The PasswordForm from the page or dialog managed by this.
-  content::PasswordForm observed_form_;
+  autofill::PasswordForm observed_form_;
 
   // The origin url path of observed_form_ tokenized, for convenience when
   // scoring.
@@ -242,7 +242,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Stores updated credentials when the form was submitted but success is
   // still unknown.
-  content::PasswordForm pending_credentials_;
+  autofill::PasswordForm pending_credentials_;
 
   // Whether pending_credentials_ stores a new login or is an update
   // to an existing one.
@@ -262,7 +262,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // as preferred. This is only allowed to be null if there are no best matches
   // at all, since there will always be one preferred login when there are
   // multiple matches (when first saved, a login is marked preferred).
-  const content::PasswordForm* preferred_match_;
+  const autofill::PasswordForm* preferred_match_;
 
   typedef enum {
     PRE_MATCHING_PHASE,      // Have not yet invoked a GetLogins query to find

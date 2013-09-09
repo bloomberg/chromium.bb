@@ -59,7 +59,7 @@ class InProcessImporterBridge : public ImporterBridge {
       const std::vector<std::string>& search_engine_data) OVERRIDE;
 
   virtual void SetPasswordForm(
-      const content::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) OVERRIDE;
 
   virtual void NotifyStarted() OVERRIDE;
   virtual void NotifyItemStarted(importer::ImportItem item) OVERRIDE;

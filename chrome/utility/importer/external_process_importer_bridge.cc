@@ -14,7 +14,7 @@
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/importer/profile_import_process_messages.h"
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 #include "ipc/ipc_sender.h"
 
 namespace {
@@ -137,7 +137,7 @@ void ExternalProcessImporterBridge::SetFirefoxSearchEnginesXMLData(
 }
 
 void ExternalProcessImporterBridge::SetPasswordForm(
-    const content::PasswordForm& form) {
+    const autofill::PasswordForm& form) {
   Send(new ProfileImportProcessHostMsg_NotifyPasswordFormReady(form));
 }
 

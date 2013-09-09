@@ -14,8 +14,9 @@
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/importer/importer_url_row.h"
+#include "components/autofill/core/common/autofill_param_traits_macros.h"
+#include "components/autofill/core/common/password_form.h"
 #include "content/public/common/common_param_traits.h"
-#include "content/public/common/password_form.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 
@@ -312,7 +313,7 @@ IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFaviconsImportGroup,
                      std::vector<ImportedFaviconUsage>)
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyPasswordFormReady,
-                     content::PasswordForm)
+                     autofill::PasswordForm)
 
 IPC_MESSAGE_CONTROL2(ProfileImportProcessHostMsg_NotifyKeywordsReady,
                      std::vector<importer::URLKeywordInfo>, // url_keywords

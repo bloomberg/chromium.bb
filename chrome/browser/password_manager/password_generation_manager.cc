@@ -19,11 +19,11 @@
 #include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/password_form.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/rect.h"
 
@@ -184,7 +184,7 @@ void PasswordGenerationManager::SendAccountCreationFormsToRenderer(
 void PasswordGenerationManager::OnShowPasswordGenerationPopup(
     const gfx::Rect& bounds,
     int max_length,
-    const content::PasswordForm& form) {
+    const autofill::PasswordForm& form) {
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else

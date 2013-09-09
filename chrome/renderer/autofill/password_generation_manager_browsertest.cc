@@ -97,7 +97,7 @@ class PasswordGenerationManagerTest : public ChromeRenderViewTest {
   }
 
   void SetNotBlacklistedMessage(const char* form_str) {
-    content::PasswordForm form;
+    autofill::PasswordForm form;
     form.origin =
         GURL(base::StringPrintf("data:text/html;charset=utf-8,%s", form_str));
     AutofillMsg_FormNotBlacklisted msg(0, form);

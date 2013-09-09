@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 #include "net/base/escape.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/read_node.h"
@@ -57,7 +57,7 @@ syncer::SyncError PasswordModelAssociator::AssociateModels(
   // We must not be holding a transaction when we interact with the password
   // store, as it can post tasks to the UI thread which can itself be blocked
   // on our transaction, resulting in deadlock. (http://crbug.com/70658)
-  std::vector<content::PasswordForm*> passwords;
+  std::vector<autofill::PasswordForm*> passwords;
   if (!password_store_->FillAutofillableLogins(&passwords) ||
       !password_store_->FillBlacklistLogins(&passwords)) {
     STLDeleteElements(&passwords);
@@ -92,7 +92,7 @@ syncer::SyncError PasswordModelAssociator::AssociateModels(
           model_type());
     }
 
-    for (std::vector<content::PasswordForm*>::iterator ix =
+    for (std::vector<autofill::PasswordForm*>::iterator ix =
              passwords.begin();
          ix != passwords.end(); ++ix) {
       std::string tag = MakeTag(**ix);
@@ -104,7 +104,7 @@ syncer::SyncError PasswordModelAssociator::AssociateModels(
             node.GetPasswordSpecifics();
         DCHECK_EQ(tag, MakeTag(password));
 
-        content::PasswordForm new_password;
+        autofill::PasswordForm new_password;
 
         if (MergePasswords(password, **ix, &new_password)) {
           syncer::WriteNode write_node(&trans);
@@ -160,7 +160,7 @@ syncer::SyncError PasswordModelAssociator::AssociateModels(
       // The password only exists on the server.  Add it to the local
       // model.
       if (current_passwords.find(tag) == current_passwords.end()) {
-        content::PasswordForm new_password;
+        autofill::PasswordForm new_password;
 
         CopyPassword(password, &new_password);
         Associate(&tag, sync_child_node.GetId());
@@ -324,9 +324,9 @@ syncer::SyncError PasswordModelAssociator::WriteToPasswordStore(
 // static
 void PasswordModelAssociator::CopyPassword(
         const sync_pb::PasswordSpecificsData& password,
-        content::PasswordForm* new_password) {
+        autofill::PasswordForm* new_password) {
   new_password->scheme =
-      static_cast<content::PasswordForm::Scheme>(password.scheme());
+      static_cast<autofill::PasswordForm::Scheme>(password.scheme());
   new_password->signon_realm = password.signon_realm();
   new_password->origin = GURL(password.origin());
   new_password->action = GURL(password.action());
@@ -349,8 +349,8 @@ void PasswordModelAssociator::CopyPassword(
 // static
 bool PasswordModelAssociator::MergePasswords(
         const sync_pb::PasswordSpecificsData& password,
-        const content::PasswordForm& password_form,
-        content::PasswordForm* new_password) {
+        const autofill::PasswordForm& password_form,
+        autofill::PasswordForm* new_password) {
   DCHECK(new_password);
 
   if (password.scheme() == password_form.scheme &&
@@ -385,7 +385,7 @@ bool PasswordModelAssociator::MergePasswords(
 
 // static
 void PasswordModelAssociator::WriteToSyncNode(
-         const content::PasswordForm& password_form,
+         const autofill::PasswordForm& password_form,
          syncer::WriteNode* node) {
   sync_pb::PasswordSpecificsData password;
   password.set_scheme(password_form.scheme);
@@ -406,7 +406,7 @@ void PasswordModelAssociator::WriteToSyncNode(
 
 // static
 std::string PasswordModelAssociator::MakeTag(
-                const content::PasswordForm& password) {
+                const autofill::PasswordForm& password) {
   return MakeTag(password.origin.spec(),
                  UTF16ToUTF8(password.username_element),
                  UTF16ToUTF8(password.username_value),

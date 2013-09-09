@@ -22,11 +22,14 @@ class GURL;
 class PasswordManager;
 class ProfileIOData;
 
+namespace autofill {
+struct PasswordForm;
+}
+
 namespace content {
 class WebContents;
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
-struct PasswordForm;
 }
 
 namespace net {
@@ -217,7 +220,7 @@ class OneClickSigninHelper
   void SetDoNotClearPendingEmailForTesting();
 
   // Called when password has been submitted.
-  void PasswordSubmitted(const content::PasswordForm& form);
+  void PasswordSubmitted(const autofill::PasswordForm& form);
 
   // content::WebContentsObserver overrides.
   virtual void NavigateToPendingEntry(

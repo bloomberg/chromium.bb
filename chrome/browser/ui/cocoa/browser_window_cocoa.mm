@@ -49,12 +49,12 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/common/password_form.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -713,7 +713,7 @@ void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton() {
 
 void BrowserWindowCocoa::ShowPasswordGenerationBubble(
     const gfx::Rect& rect,
-    const content::PasswordForm& form,
+    const autofill::PasswordForm& form,
     autofill::PasswordGenerator* password_generator) {
   WebContents* web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();

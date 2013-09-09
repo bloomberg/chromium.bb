@@ -10,12 +10,12 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
+#include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/password_form.h"
 
+using autofill::PasswordForm;
 using content::BrowserThread;
 using std::vector;
-using content::PasswordForm;
 
 namespace {
 

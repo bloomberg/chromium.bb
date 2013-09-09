@@ -29,12 +29,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using autofill::PasswordForm;
 using base::WaitableEvent;
 using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
 using testing::WithArg;
-using content::PasswordForm;
 
 namespace {
 
@@ -42,9 +42,9 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
   MOCK_METHOD2(OnPasswordStoreRequestDone,
                void(CancelableRequestProvider::Handle,
-                    const std::vector<content::PasswordForm*>&));
+                    const std::vector<autofill::PasswordForm*>&));
   MOCK_METHOD1(OnGetPasswordStoreResults,
-               void(const std::vector<content::PasswordForm*>&));
+               void(const std::vector<autofill::PasswordForm*>&));
 };
 
 class MockWebDataServiceConsumer : public WebDataServiceConsumer {

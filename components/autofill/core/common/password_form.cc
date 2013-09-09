@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 
-namespace content {
+namespace autofill {
 
 PasswordForm::PasswordForm()
     : scheme(SCHEME_HTML),
@@ -23,4 +23,4 @@ bool PasswordForm::IsPublicSuffixMatch() const {
   return !original_signon_realm.empty();
 }
 
-}  // namespace content
+}  // namespace autofill

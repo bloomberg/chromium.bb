@@ -32,6 +32,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using autofill::PasswordForm;
 using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
@@ -39,7 +40,6 @@ using testing::ElementsAreArray;
 using testing::Pointee;
 using testing::Property;
 using testing::WithArg;
-using content::PasswordForm;
 
 typedef std::vector<PasswordForm*> VectorOfForms;
 

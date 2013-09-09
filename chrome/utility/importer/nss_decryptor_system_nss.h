@@ -12,12 +12,12 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 
-namespace base {
-class FilePath;
+namespace autofill {
+struct PasswordForm;
 }
 
-namespace content {
-struct PasswordForm;
+namespace base {
+class FilePath;
 }
 
 // A wrapper for Firefox NSS decrypt component.
@@ -37,13 +37,13 @@ class NSSDecryptor {
   // username/password and reads other related information.
   // The result will be stored in |forms|.
   void ParseSignons(const std::string& content,
-                    std::vector<content::PasswordForm>* forms);
+                    std::vector<autofill::PasswordForm>* forms);
 
   // Reads and parses the Firefox password sqlite db, decrypts the
   // username/password and reads other related information.
   // The result will be stored in |forms|.
   bool ReadAndParseSignons(const base::FilePath& sqlite_file,
-                           std::vector<content::PasswordForm>* forms);
+                           std::vector<autofill::PasswordForm>* forms);
  private:
   // Does not actually free the slot, since we'll free it when NSSDecryptor is
   // destroyed.

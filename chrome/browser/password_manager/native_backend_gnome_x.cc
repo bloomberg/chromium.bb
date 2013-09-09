@@ -21,8 +21,8 @@
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 
+using autofill::PasswordForm;
 using content::BrowserThread;
-using content::PasswordForm;
 
 #define GNOME_KEYRING_DEFINE_POINTER(name) \
   typeof(&::gnome_keyring_##name) GnomeKeyringLoader::gnome_keyring_##name;

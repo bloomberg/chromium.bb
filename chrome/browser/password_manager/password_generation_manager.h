@@ -17,9 +17,6 @@ namespace autofill {
 struct FormData;
 class FormStructure;
 class PasswordGenerator;
-}
-
-namespace content {
 struct PasswordForm;
 }
 
@@ -96,7 +93,7 @@ class PasswordGenerationManager
   // password will be no longer than |max_length|.
   void OnShowPasswordGenerationPopup(const gfx::Rect& icon_bounds,
                                      int max_length,
-                                     const content::PasswordForm& form);
+                                     const autofill::PasswordForm& form);
 
   // Whether password generation is enabled.
   bool enabled_;

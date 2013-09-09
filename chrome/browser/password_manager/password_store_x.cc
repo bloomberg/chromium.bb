@@ -19,9 +19,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
+using autofill::PasswordForm;
 using content::BrowserThread;
 using std::vector;
-using content::PasswordForm;
 
 PasswordStoreX::PasswordStoreX(LoginDatabase* login_db,
                                Profile* profile,
@@ -117,10 +117,10 @@ void PasswordStoreX::SortLoginsByOrigin(NativeBackend::PasswordFormList* list) {
 }
 
 void PasswordStoreX::GetLoginsImpl(
-    const content::PasswordForm& form,
+    const autofill::PasswordForm& form,
     const ConsumerCallbackRunner& callback_runner) {
   CheckMigration();
-  std::vector<content::PasswordForm*> matched_forms;
+  std::vector<autofill::PasswordForm*> matched_forms;
   if (use_native_backend() && backend_->GetLogins(form, &matched_forms)) {
     SortLoginsByOrigin(&matched_forms);
     callback_runner.Run(matched_forms);

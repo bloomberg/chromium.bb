@@ -7,16 +7,17 @@
 #include <string>
 
 #include "base/time/time.h"
+#include "components/autofill/core/common/autofill_param_traits_macros.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
 #include "components/autofill/core/common/forms_seen_state.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/web_element_descriptor.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/common_param_traits_macros.h"
-#include "content/public/common/password_form.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
@@ -155,7 +156,7 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptPasswordAutofillSuggestion,
 // Tells the renderer that this password form is not blacklisted.  A form can
 // be blacklisted if a user chooses "never save passwords for this site".
 IPC_MESSAGE_ROUTED1(AutofillMsg_FormNotBlacklisted,
-                    content::PasswordForm /* form checked */)
+                    autofill::PasswordForm /* form checked */)
 
 // Sent when requestAutocomplete() finishes (either succesfully or with an
 // error). If it was a success, the renderer fills the form that requested
@@ -188,16 +189,16 @@ IPC_MESSAGE_ROUTED3(AutofillHostMsg_FormsSeen,
 // Notification that password forms have been seen that are candidates for
 // filling/submitting by the password manager.
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsParsed,
-                    std::vector<content::PasswordForm> /* forms */)
+                    std::vector<autofill::PasswordForm> /* forms */)
 
 // Notification that initial layout has occurred and the following password
 // forms are visible on the page (e.g. not set to display:none.)
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsRendered,
-                    std::vector<content::PasswordForm> /* forms */)
+                    std::vector<autofill::PasswordForm> /* forms */)
 
 // Notification that this password form was submitted by the user.
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormSubmitted,
-                    content::PasswordForm /* form */)
+                    autofill::PasswordForm /* form */)
 
 // Notification that a form has been submitted.  The user hit the button.
 IPC_MESSAGE_ROUTED2(AutofillHostMsg_FormSubmitted,
@@ -253,7 +254,7 @@ IPC_MESSAGE_ROUTED0(AutofillHostMsg_HideAutofillUI)
 IPC_MESSAGE_ROUTED3(AutofillHostMsg_ShowPasswordGenerationPopup,
                     gfx::Rect /* source location */,
                     int /* max length of the password */,
-                    content::PasswordForm)
+                    autofill::PasswordForm)
 
 // Instruct the browser that a password mapping has been found for a field.
 IPC_MESSAGE_ROUTED2(AutofillHostMsg_AddPasswordFormMapping,

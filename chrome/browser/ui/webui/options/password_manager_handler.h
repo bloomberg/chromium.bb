@@ -14,7 +14,7 @@
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
-namespace content {
+namespace autofill {
 struct PasswordForm;
 }
 
@@ -89,9 +89,9 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
     // Send the password store's reply back to the handler.
     virtual void OnPasswordStoreRequestDone(
         CancelableRequestProvider::Handle handle,
-        const std::vector<content::PasswordForm*>& result) OVERRIDE;
+        const std::vector<autofill::PasswordForm*>& result) OVERRIDE;
     virtual void OnGetPasswordStoreResults(
-        const std::vector<content::PasswordForm*>& results) OVERRIDE;
+        const std::vector<autofill::PasswordForm*>& results) OVERRIDE;
   };
 
   // A short class to mediate requests to the password store for exceptions.
@@ -105,17 +105,17 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
     // Send the password store's reply back to the handler.
     virtual void OnPasswordStoreRequestDone(
         CancelableRequestProvider::Handle handle,
-        const std::vector<content::PasswordForm*>& result) OVERRIDE;
+        const std::vector<autofill::PasswordForm*>& result) OVERRIDE;
     virtual void OnGetPasswordStoreResults(
-        const std::vector<content::PasswordForm*>& results) OVERRIDE;
+        const std::vector<autofill::PasswordForm*>& results) OVERRIDE;
   };
 
   // Password store consumer for populating the password list and exceptions.
   PasswordListPopulater populater_;
   PasswordExceptionListPopulater exception_populater_;
 
-  ScopedVector<content::PasswordForm> password_list_;
-  ScopedVector<content::PasswordForm> password_exception_list_;
+  ScopedVector<autofill::PasswordForm> password_list_;
+  ScopedVector<autofill::PasswordForm> password_exception_list_;
 
   // User's pref
   std::string languages_;

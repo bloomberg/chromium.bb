@@ -34,7 +34,7 @@ class PasswordsSyncPerfTest : public SyncTest {
 
  private:
   // Returns a new unique login.
-  content::PasswordForm NextLogin();
+  autofill::PasswordForm NextLogin();
 
   // Returns a new unique password value.
   std::string NextPassword();
@@ -50,9 +50,9 @@ void PasswordsSyncPerfTest::AddLogins(int profile, int num_logins) {
 }
 
 void PasswordsSyncPerfTest::UpdateLogins(int profile) {
-  std::vector<content::PasswordForm> logins;
+  std::vector<autofill::PasswordForm> logins;
   GetLogins(GetPasswordStore(profile), logins);
-  for (std::vector<content::PasswordForm>::iterator it = logins.begin();
+  for (std::vector<autofill::PasswordForm>::iterator it = logins.begin();
        it != logins.end(); ++it) {
     (*it).password_value = ASCIIToUTF16(NextPassword());
     UpdateLogin(GetPasswordStore(profile), (*it));
@@ -63,7 +63,7 @@ void PasswordsSyncPerfTest::RemoveLogins(int profile) {
   passwords_helper::RemoveLogins(GetPasswordStore(profile));
 }
 
-content::PasswordForm PasswordsSyncPerfTest::NextLogin() {
+autofill::PasswordForm PasswordsSyncPerfTest::NextLogin() {
   return CreateTestPasswordForm(password_number_++);
 }
 

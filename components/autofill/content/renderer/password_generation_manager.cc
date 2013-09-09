@@ -9,6 +9,7 @@
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "content/public/renderer/render_view.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -72,13 +73,13 @@ bool ContainsURL(const std::vector<GURL>& urls, const GURL& url) {
 
 // Returns true if the |form1| is essentially equal to |form2|.
 bool FormEquals(const autofill::FormData& form1,
-                const content::PasswordForm& form2) {
+                const PasswordForm& form2) {
   // TODO(zysxqn): use more signals than just origin to compare.
   return form1.origin == form2.origin;
 }
 
 bool ContainsForm(const std::vector<autofill::FormData>& forms,
-                  const content::PasswordForm& form) {
+                  const PasswordForm& form) {
   for (std::vector<autofill::FormData>::const_iterator it =
            forms.begin(); it != forms.end(); ++it) {
     if (FormEquals(*it, form))
@@ -112,7 +113,7 @@ void PasswordGenerationManager::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
   if (!frame->parent()) {
     not_blacklisted_password_form_origins_.clear();
     account_creation_forms_.clear();
-    possible_account_creation_form_.reset(new content::PasswordForm());
+    possible_account_creation_form_.reset(new PasswordForm());
     passwords_.clear();
   }
 }
@@ -134,7 +135,7 @@ void PasswordGenerationManager::DidFinishLoad(WebKit::WebFrame* frame) {
 
     // If we can't get a valid PasswordForm, we skip this form because the
     // the password won't get saved even if we generate it.
-    scoped_ptr<content::PasswordForm> password_form(
+    scoped_ptr<PasswordForm> password_form(
         CreatePasswordForm(forms[i]));
     if (!password_form.get()) {
       DVLOG(2) << "Skipping form as it would not be saved";
@@ -180,7 +181,7 @@ void PasswordGenerationManager::openPasswordGenerator(
     WebKit::WebInputElement& element) {
   WebKit::WebElement button(element.passwordGeneratorButtonElement());
   gfx::Rect rect(button.boundsInViewportSpace());
-  scoped_ptr<content::PasswordForm> password_form(
+  scoped_ptr<PasswordForm> password_form(
       CreatePasswordForm(element.form()));
   // We should not have shown the icon we can't create a valid PasswordForm.
   DCHECK(password_form.get());
@@ -209,8 +210,7 @@ bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void PasswordGenerationManager::OnFormNotBlacklisted(
-    const content::PasswordForm& form) {
+void PasswordGenerationManager::OnFormNotBlacklisted(const PasswordForm& form) {
   not_blacklisted_password_form_origins_.push_back(form.origin);
   MaybeShowIcon();
 }

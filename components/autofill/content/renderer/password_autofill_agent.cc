@@ -13,8 +13,8 @@
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
-#include "content/public/common/password_form.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
@@ -364,7 +364,7 @@ void PasswordAutofillAgent::SendPasswordForms(WebKit::WebFrame* frame,
   WebKit::WebVector<WebKit::WebFormElement> forms;
   frame->document().forms(forms);
 
-  std::vector<content::PasswordForm> password_forms;
+  std::vector<PasswordForm> password_forms;
   for (size_t i = 0; i < forms.size(); ++i) {
     const WebKit::WebFormElement& form = forms[i];
 
@@ -373,7 +373,7 @@ void PasswordAutofillAgent::SendPasswordForms(WebKit::WebFrame* frame,
     if (only_visible && !IsWebNodeVisible(form))
       continue;
 
-    scoped_ptr<content::PasswordForm> password_form(CreatePasswordForm(form));
+    scoped_ptr<PasswordForm> password_form(CreatePasswordForm(form));
     if (password_form.get())
       password_forms.push_back(*password_form);
   }
@@ -445,7 +445,7 @@ void PasswordAutofillAgent::WillSendSubmitEvent(
 
 void PasswordAutofillAgent::WillSubmitForm(WebKit::WebFrame* frame,
                                            const WebKit::WebFormElement& form) {
-  scoped_ptr<content::PasswordForm> submitted_form = CreatePasswordForm(form);
+  scoped_ptr<PasswordForm> submitted_form = CreatePasswordForm(form);
 
   // If there is a provisionally saved password, copy over the previous
   // password value so we get the user's typed password, not the value that

@@ -32,8 +32,8 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/pref_names.h"
+#include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/common/password_form.h"
 #include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -45,12 +45,12 @@
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using autofill::PasswordForm;
 using base::Time;
 using browser_sync::PasswordChangeProcessor;
 using browser_sync::PasswordDataTypeController;
 using browser_sync::PasswordModelAssociator;
 using content::BrowserThread;
-using content::PasswordForm;
 using syncer::syncable::WriteTransaction;
 using testing::_;
 using testing::AtLeast;

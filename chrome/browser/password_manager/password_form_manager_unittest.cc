@@ -16,11 +16,11 @@
 #include "chrome/browser/password_manager/test_password_store.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using content::PasswordForm;
+using autofill::PasswordForm;
 
 using ::testing::Eq;
 
@@ -47,9 +47,9 @@ class TestPasswordManager : public PasswordManager {
       : PasswordManager(NULL, delegate) {}
 
   virtual void Autofill(
-      const content::PasswordForm& form_for_autofill,
-      const content::PasswordFormMap& best_matches,
-      const content::PasswordForm& preferred_match,
+      const autofill::PasswordForm& form_for_autofill,
+      const autofill::PasswordFormMap& best_matches,
+      const autofill::PasswordForm& preferred_match,
       bool wait_for_username) const OVERRIDE {}
 };
 
@@ -59,7 +59,7 @@ class TestPasswordFormManager : public PasswordFormManager {
  public:
   TestPasswordFormManager(Profile* profile,
                           PasswordManager* manager,
-                          const content::PasswordForm& observed_form,
+                          const autofill::PasswordForm& observed_form,
                           bool ssl_valid)
     : PasswordFormManager(profile, manager, NULL, observed_form, ssl_valid),
       num_sent_messages_(0) {}

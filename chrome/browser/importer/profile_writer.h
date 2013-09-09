@@ -21,7 +21,7 @@ struct ImportedFaviconUsage;
 class Profile;
 class TemplateURL;
 
-namespace content {
+namespace autofill {
 struct PasswordForm;
 }
 
@@ -42,7 +42,7 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
   virtual bool TemplateURLServiceIsLoaded() const;
 
   // Helper methods for adding data to local stores.
-  virtual void AddPasswordForm(const content::PasswordForm& form);
+  virtual void AddPasswordForm(const autofill::PasswordForm& form);
 
 #if defined(OS_WIN)
   virtual void AddIE7PasswordInfo(const IE7PasswordInfo& info);

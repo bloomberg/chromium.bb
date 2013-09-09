@@ -7,13 +7,13 @@
 
 #include <ostream>
 
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 // Struct used for creation of PasswordForms from static arrays of data.
 // Note: This is only meant to be used in unit test.
 struct PasswordFormData {
-  const content::PasswordForm::Scheme scheme;
+  const autofill::PasswordForm::Scheme scheme;
   const char* signon_realm;
   const char* origin;
   const char* action;
@@ -29,23 +29,23 @@ struct PasswordFormData {
 
 // Creates and returns a new PasswordForm built from form_data. Caller is
 // responsible for deleting the object when finished with it.
-content::PasswordForm* CreatePasswordFormFromData(
+autofill::PasswordForm* CreatePasswordFormFromData(
     const PasswordFormData& form_data);
 
 // Checks whether two vectors of PasswordForms contain equivalent elements,
 // regardless of order.
 bool ContainsSamePasswordFormsPtr(
-    const std::vector<content::PasswordForm*>& first,
-    const std::vector<content::PasswordForm*>& second);
+    const std::vector<autofill::PasswordForm*>& first,
+    const std::vector<autofill::PasswordForm*>& second);
 
 bool ContainsSamePasswordForms(
-    std::vector<content::PasswordForm>& first,
-    std::vector<content::PasswordForm>& second);
+    std::vector<autofill::PasswordForm>& first,
+    std::vector<autofill::PasswordForm>& second);
 
 // Pretty-prints the contents of a PasswordForm.
 // TODO(sync): This file must eventually be refactored away -- crbug.com/87185.
 std::ostream& operator<<(std::ostream& os,
-                         const content::PasswordForm& form);
+                         const autofill::PasswordForm& form);
 
 // This gmock matcher is used to check that the |arg| contains exactly the same
 // PasswordForms as |forms|, regardless of order.

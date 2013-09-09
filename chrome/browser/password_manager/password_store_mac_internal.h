@@ -25,40 +25,40 @@ class MacKeychainPasswordFormAdapter {
 
   // Returns PasswordForms for each keychain entry that could be used to fill
   // |form|. Caller is responsible for deleting the returned forms.
-  std::vector<content::PasswordForm*> PasswordsFillingForm(
-      const content::PasswordForm& query_form);
+  std::vector<autofill::PasswordForm*> PasswordsFillingForm(
+      const autofill::PasswordForm& query_form);
 
   // Returns PasswordForms for each keychain entry that could be merged with
   // |form|. Differs from PasswordsFillingForm in that the username must match.
   // Caller is responsible for deleting the returned forms.
-  std::vector<content::PasswordForm*> PasswordsMergeableWithForm(
-      const content::PasswordForm& query_form);
+  std::vector<autofill::PasswordForm*> PasswordsMergeableWithForm(
+      const autofill::PasswordForm& query_form);
 
   // Returns the PasswordForm for the Keychain entry that matches |form| on all
   // of the fields that uniquely identify a Keychain item, or NULL if there is
   // no such entry.
   // Caller is responsible for deleting the returned form.
-  content::PasswordForm* PasswordExactlyMatchingForm(
-      const content::PasswordForm& query_form);
+  autofill::PasswordForm* PasswordExactlyMatchingForm(
+      const autofill::PasswordForm& query_form);
 
   // Returns true if PasswordsMergeableWithForm would return any items. This is
   // a separate method because calling PasswordsMergeableWithForm and checking
   // the return count would require reading the passwords from the keychain,
   // thus potentially triggering authorizaiton UI, whereas this won't.
   bool HasPasswordsMergeableWithForm(
-      const content::PasswordForm& query_form);
+      const autofill::PasswordForm& query_form);
 
   // Returns all keychain items of types corresponding to password forms.
-  std::vector<content::PasswordForm*> GetAllPasswordFormPasswords();
+  std::vector<autofill::PasswordForm*> GetAllPasswordFormPasswords();
 
   // Creates a new keychain entry from |form|, or updates the password of an
   // existing keychain entry if there is a collision. Returns true if a keychain
   // entry was successfully added/updated.
-  bool AddPassword(const content::PasswordForm& form);
+  bool AddPassword(const autofill::PasswordForm& form);
 
   // Removes the keychain password matching |form| if any. Returns true if a
   // keychain item was found and successfully removed.
-  bool RemovePassword(const content::PasswordForm& form);
+  bool RemovePassword(const autofill::PasswordForm& form);
 
   // Controls whether or not Chrome will restrict Keychain searches to items
   // that it created. Defaults to false.
@@ -68,14 +68,14 @@ class MacKeychainPasswordFormAdapter {
   // Returns PasswordForms constructed from the given Keychain items, calling
   // AppleKeychain::Free on all of the keychain items and clearing the vector.
   // Caller is responsible for deleting the returned forms.
-  std::vector<content::PasswordForm*> ConvertKeychainItemsToForms(
+  std::vector<autofill::PasswordForm*> ConvertKeychainItemsToForms(
       std::vector<SecKeychainItemRef>* items);
 
   // Searches |keychain| for the specific keychain entry that corresponds to the
   // given form, and returns it (or NULL if no match is found). The caller is
   // responsible for calling AppleKeychain::Free on on the returned item.
   SecKeychainItemRef KeychainItemForForm(
-      const content::PasswordForm& form);
+      const autofill::PasswordForm& form);
 
   // Returns the Keychain items matching the given signon_realm, scheme, and
   // optionally path and username (either of both can be NULL).
@@ -83,7 +83,7 @@ class MacKeychainPasswordFormAdapter {
   // returned items.
   std::vector<SecKeychainItemRef> MatchingKeychainItems(
       const std::string& signon_realm,
-      content::PasswordForm::Scheme scheme,
+      autofill::PasswordForm::Scheme scheme,
       const char* path,
       const char* username);
 
@@ -99,7 +99,7 @@ class MacKeychainPasswordFormAdapter {
 
   // Returns the Keychain SecAuthenticationType type corresponding to |scheme|.
   SecAuthenticationType AuthTypeForScheme(
-      content::PasswordForm::Scheme scheme);
+      autofill::PasswordForm::Scheme scheme);
 
   // Changes the password for keychain_item to |password|; returns true if the
   // password was successfully changed.
@@ -141,12 +141,12 @@ namespace internal_keychain_helpers {
 // require authorization).
 bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
                                       const SecKeychainItemRef& keychain_item,
-                                      content::PasswordForm* form);
+                                      autofill::PasswordForm* form);
 
 // Returns true if the two given forms match based on signon_reaml, scheme, and
 // username_value, and are thus suitable for merging (see MergePasswordForms).
-bool FormsMatchForMerge(const content::PasswordForm& form_a,
-                        const content::PasswordForm& form_b);
+bool FormsMatchForMerge(const autofill::PasswordForm& form_a,
+                        const autofill::PasswordForm& form_b);
 
 // Populates merged_forms by combining the password data from keychain_forms and
 // the metadata from database_forms, removing used entries from the two source
@@ -158,16 +158,16 @@ bool FormsMatchForMerge(const content::PasswordForm& form_a,
 // keychain_forms its entries that weren't merged into at least one database
 // form.
 void MergePasswordForms(
-    std::vector<content::PasswordForm*>* keychain_forms,
-    std::vector<content::PasswordForm*>* database_forms,
-    std::vector<content::PasswordForm*>* merged_forms);
+    std::vector<autofill::PasswordForm*>* keychain_forms,
+    std::vector<autofill::PasswordForm*>* database_forms,
+    std::vector<autofill::PasswordForm*>* merged_forms);
 
 // Fills in the passwords for as many of the forms in |database_forms| as
 // possible using entries from |keychain| and returns them. On return,
 // |database_forms| will contain only the forms for which no password was found.
-std::vector<content::PasswordForm*> GetPasswordsForForms(
+std::vector<autofill::PasswordForm*> GetPasswordsForForms(
     const AppleKeychain& keychain,
-    std::vector<content::PasswordForm*>* database_forms);
+    std::vector<autofill::PasswordForm*>* database_forms);
 
 }  // namespace internal_keychain_helpers
 

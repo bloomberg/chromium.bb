@@ -15,7 +15,7 @@ using passwords_helper::GetVerifierPasswordCount;
 using passwords_helper::GetVerifierPasswordStore;
 using passwords_helper::ProfileContainsSamePasswordFormsAsVerifier;
 
-using content::PasswordForm;
+using autofill::PasswordForm;
 
 class SingleClientPasswordsSyncTest : public SyncTest {
  public:

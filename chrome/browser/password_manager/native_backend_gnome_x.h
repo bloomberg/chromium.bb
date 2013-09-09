@@ -17,7 +17,7 @@
 
 class PrefService;
 
-namespace content {
+namespace autofill {
 struct PasswordForm;
 }
 
@@ -73,12 +73,12 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
   virtual bool Init() OVERRIDE;
 
   // Implements NativeBackend interface.
-  virtual bool AddLogin(const content::PasswordForm& form) OVERRIDE;
-  virtual bool UpdateLogin(const content::PasswordForm& form) OVERRIDE;
-  virtual bool RemoveLogin(const content::PasswordForm& form) OVERRIDE;
+  virtual bool AddLogin(const autofill::PasswordForm& form) OVERRIDE;
+  virtual bool UpdateLogin(const autofill::PasswordForm& form) OVERRIDE;
+  virtual bool RemoveLogin(const autofill::PasswordForm& form) OVERRIDE;
   virtual bool RemoveLoginsCreatedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
-  virtual bool GetLogins(const content::PasswordForm& form,
+  virtual bool GetLogins(const autofill::PasswordForm& form,
                          PasswordFormList* forms) OVERRIDE;
   virtual bool GetLoginsCreatedBetween(const base::Time& get_begin,
                                        const base::Time& get_end,
@@ -88,7 +88,7 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
 
  private:
   // Adds a login form without checking for one to replace first.
-  bool RawAddLogin(const content::PasswordForm& form);
+  bool RawAddLogin(const autofill::PasswordForm& form);
 
   // Reads PasswordForms from the keyring with the given autofillability state.
   bool GetLoginsList(PasswordFormList* forms, bool autofillable);

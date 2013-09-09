@@ -79,7 +79,7 @@ bool ProfileWriter::TemplateURLServiceIsLoaded() const {
   return TemplateURLServiceFactory::GetForProfile(profile_)->loaded();
 }
 
-void ProfileWriter::AddPasswordForm(const content::PasswordForm& form) {
+void ProfileWriter::AddPasswordForm(const autofill::PasswordForm& form) {
   PasswordStoreFactory::GetForProfile(
       profile_, Profile::EXPLICIT_ACCESS)->AddLogin(form);
 }

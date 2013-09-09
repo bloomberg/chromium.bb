@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "content/public/common/password_form.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/rect.h"
 
@@ -29,7 +29,7 @@ class WebContents;
 class PasswordGenerationBubbleGtk : public BubbleDelegateGtk {
  public:
   PasswordGenerationBubbleGtk(const gfx::Rect& anchor_rect,
-                              const content::PasswordForm& form,
+                              const autofill::PasswordForm& form,
                               content::WebContents* web_contents,
                               autofill::PasswordGenerator* password_generator);
   virtual ~PasswordGenerationBubbleGtk();
@@ -51,7 +51,7 @@ class PasswordGenerationBubbleGtk : public BubbleDelegateGtk {
 
   // Form that contains the password field that we are generating a password
   // for. Used by the password_manager_.
-  content::PasswordForm form_;
+  autofill::PasswordForm form_;
 
   // WebContents associated with the button that spawned this bubble.
   content::WebContents* web_contents_;

@@ -23,8 +23,11 @@ struct ImportedBookmarkEntry;
 struct ImportedFaviconUsage;
 class InProcessImporterBridge;
 
-namespace content {
+namespace autofill {
 struct PasswordForm;
+}
+
+namespace content{
 class UtilityProcessHost;
 }
 
@@ -72,7 +75,7 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
   void OnFaviconsImportStart(size_t total_favicons_count);
   void OnFaviconsImportGroup(
       const std::vector<ImportedFaviconUsage>& favicons_group);
-  void OnPasswordFormImportReady(const content::PasswordForm& form);
+  void OnPasswordFormImportReady(const autofill::PasswordForm& form);
   void OnKeywordsImportReady(
       const std::vector<importer::URLKeywordInfo>& url_keywords,
       bool unique_on_host_and_path);

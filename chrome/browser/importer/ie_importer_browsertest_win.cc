@@ -43,8 +43,8 @@
 #include "chrome/common/importer/pstore_declarations.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/webdata/encryptor/ie7_password.h"
-#include "content/public/common/password_form.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -302,7 +302,7 @@ class TestObserver : public ProfileWriter,
     return true;
   }
 
-  virtual void AddPasswordForm(const content::PasswordForm& form) {
+  virtual void AddPasswordForm(const autofill::PasswordForm& form) {
     // Importer should obtain this password form only.
     EXPECT_EQ(GURL("http://localhost:8080/security/index.htm"), form.origin);
     EXPECT_EQ("http://localhost:8080/", form.signon_realm);
@@ -419,7 +419,7 @@ class MalformedFavoritesRegistryTestObserver
   virtual bool BookmarkModelIsLoaded() const { return true; }
   virtual bool TemplateURLServiceIsLoaded() const { return true; }
 
-  virtual void AddPasswordForm(const content::PasswordForm& form) {}
+  virtual void AddPasswordForm(const autofill::PasswordForm& form) {}
   virtual void AddHistoryPage(const history::URLRows& page,
                               history::VisitSource visit_source) {}
   virtual void AddKeyword(std::vector<TemplateURL*> template_url,

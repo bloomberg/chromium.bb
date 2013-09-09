@@ -10,7 +10,6 @@
 
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/page_transition_types.h"
-#include "content/public/common/password_form.h"
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/webplugininfo.h"
@@ -33,7 +32,6 @@ IPC_ENUM_TRAITS(content::SecurityStyle)
 IPC_ENUM_TRAITS(WebKit::WebReferrerPolicy)
 IPC_ENUM_TRAITS(WindowOpenDisposition)
 IPC_ENUM_TRAITS(webkit_glue::EditingBehavior)
-IPC_ENUM_TRAITS(content::PasswordForm::Type)
 IPC_ENUM_TRAITS(net::RequestPriority)
 
 IPC_STRUCT_TRAITS_BEGIN(WebKit::WebPoint)
@@ -46,26 +44,6 @@ IPC_STRUCT_TRAITS_BEGIN(WebKit::WebRect)
   IPC_STRUCT_TRAITS_MEMBER(y)
   IPC_STRUCT_TRAITS_MEMBER(width)
   IPC_STRUCT_TRAITS_MEMBER(height)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::PasswordForm)
-IPC_STRUCT_TRAITS_MEMBER(signon_realm)
-IPC_STRUCT_TRAITS_MEMBER(origin)
-IPC_STRUCT_TRAITS_MEMBER(action)
-IPC_STRUCT_TRAITS_MEMBER(submit_element)
-IPC_STRUCT_TRAITS_MEMBER(username_element)
-IPC_STRUCT_TRAITS_MEMBER(username_value)
-IPC_STRUCT_TRAITS_MEMBER(other_possible_usernames)
-IPC_STRUCT_TRAITS_MEMBER(password_element)
-IPC_STRUCT_TRAITS_MEMBER(password_value)
-IPC_STRUCT_TRAITS_MEMBER(password_autocomplete_set)
-IPC_STRUCT_TRAITS_MEMBER(old_password_element)
-IPC_STRUCT_TRAITS_MEMBER(old_password_value)
-IPC_STRUCT_TRAITS_MEMBER(ssl_valid)
-IPC_STRUCT_TRAITS_MEMBER(preferred)
-IPC_STRUCT_TRAITS_MEMBER(blacklisted_by_user)
-IPC_STRUCT_TRAITS_MEMBER(type)
-IPC_STRUCT_TRAITS_MEMBER(times_used)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SSLStatus)

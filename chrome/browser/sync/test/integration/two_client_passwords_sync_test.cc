@@ -24,7 +24,7 @@ using passwords_helper::SetDecryptionPassphrase;
 using passwords_helper::SetEncryptionPassphrase;
 using passwords_helper::UpdateLogin;
 
-using content::PasswordForm;
+using autofill::PasswordForm;
 
 static const char* kValidPassphrase = "passphrase!";
 static const char* kAnotherValidPassphrase = "another passphrase!";

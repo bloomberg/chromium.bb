@@ -72,7 +72,7 @@ class ExternalProcessImporterBridge : public ImporterBridge {
       const std::vector<std::string>& seach_engine_data) OVERRIDE;
 
   virtual void SetPasswordForm(
-      const content::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) OVERRIDE;
 
   virtual void NotifyStarted() OVERRIDE;
   virtual void NotifyItemStarted(importer::ImportItem item) OVERRIDE;

@@ -13,10 +13,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using content::PasswordForm;
+using autofill::PasswordForm;
 
 using ::testing::Eq;
 

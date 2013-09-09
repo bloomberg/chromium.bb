@@ -2547,7 +2547,7 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton() {
 
 void BrowserView::ShowPasswordGenerationBubble(
     const gfx::Rect& rect,
-    const content::PasswordForm& form,
+    const autofill::PasswordForm& form,
     autofill::PasswordGenerator* password_generator) {
   // Create a rect in the content bounds that the bubble will point to.
   gfx::Point origin(rect.origin());

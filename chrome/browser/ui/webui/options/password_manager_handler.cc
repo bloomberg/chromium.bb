@@ -14,10 +14,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/password_form.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
@@ -229,7 +229,7 @@ void PasswordManagerHandler::PasswordListPopulater::Populate() {
 void PasswordManagerHandler::PasswordListPopulater::
     OnPasswordStoreRequestDone(
         CancelableRequestProvider::Handle handle,
-        const std::vector<content::PasswordForm*>& result) {
+        const std::vector<autofill::PasswordForm*>& result) {
   DCHECK_EQ(pending_login_query_, handle);
   pending_login_query_ = 0;
   page_->password_list_.clear();
@@ -239,7 +239,7 @@ void PasswordManagerHandler::PasswordListPopulater::
 }
 
 void PasswordManagerHandler::PasswordListPopulater::OnGetPasswordStoreResults(
-    const std::vector<content::PasswordForm*>& results) {
+    const std::vector<autofill::PasswordForm*>& results) {
   // TODO(kaiwang): Implement when I refactor
   // PasswordStore::GetAutofillableLogins and PasswordStore::GetBlacklistLogins.
   NOTIMPLEMENTED();
@@ -265,7 +265,7 @@ void PasswordManagerHandler::PasswordExceptionListPopulater::Populate() {
 void PasswordManagerHandler::PasswordExceptionListPopulater::
     OnPasswordStoreRequestDone(
         CancelableRequestProvider::Handle handle,
-        const std::vector<content::PasswordForm*>& result) {
+        const std::vector<autofill::PasswordForm*>& result) {
   DCHECK_EQ(pending_login_query_, handle);
   pending_login_query_ = 0;
   page_->password_exception_list_.clear();
@@ -276,7 +276,7 @@ void PasswordManagerHandler::PasswordExceptionListPopulater::
 
 void PasswordManagerHandler::PasswordExceptionListPopulater::
     OnGetPasswordStoreResults(
-        const std::vector<content::PasswordForm*>& results) {
+        const std::vector<autofill::PasswordForm*>& results) {
   // TODO(kaiwang): Implement when I refactor
   // PasswordStore::GetAutofillableLogins and PasswordStore::GetBlacklistLogins.
   NOTIMPLEMENTED();

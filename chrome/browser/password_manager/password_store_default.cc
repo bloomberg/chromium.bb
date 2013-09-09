@@ -17,8 +17,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
+using autofill::PasswordForm;
 using content::BrowserThread;
-using content::PasswordForm;
 
 PasswordStoreDefault::PasswordStoreDefault(LoginDatabase* login_db,
                                            Profile* profile)
@@ -94,7 +94,7 @@ void PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
 }
 
 void PasswordStoreDefault::GetLoginsImpl(
-    const content::PasswordForm& form,
+    const autofill::PasswordForm& form,
     const ConsumerCallbackRunner& callback_runner) {
   std::vector<PasswordForm*> matched_forms;
   login_db_->GetLogins(form, &matched_forms);

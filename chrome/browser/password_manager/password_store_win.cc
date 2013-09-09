@@ -16,8 +16,8 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "components/webdata/encryptor/ie7_password.h"
 
+using autofill::PasswordForm;
 using content::BrowserThread;
-using content::PasswordForm;
 
 // Handles requests to WebDataService.
 class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
@@ -143,7 +143,7 @@ void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
       i->second.callback_runner);
   pending_requests_.erase(i);
 
-  std::vector<content::PasswordForm*> matched_forms;
+  std::vector<autofill::PasswordForm*> matched_forms;
 
   if (!result) {
     // The WDS returns NULL if it is shutting down. Run callback with empty
@@ -186,7 +186,7 @@ void PasswordStoreWin::ShutdownOnUIThread() {
 void PasswordStoreWin::GetIE7LoginIfNecessary(
     const PasswordForm& form,
     const ConsumerCallbackRunner& callback_runner,
-    const std::vector<content::PasswordForm*>& matched_forms) {
+    const std::vector<autofill::PasswordForm*>& matched_forms) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (matched_forms.empty() && db_handler_.get()) {
     db_handler_->GetIE7Login(form, callback_runner);

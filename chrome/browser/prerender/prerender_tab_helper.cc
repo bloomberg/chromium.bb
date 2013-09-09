@@ -260,7 +260,7 @@ void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
   }
 }
 
-void PrerenderTabHelper::PasswordSubmitted(const content::PasswordForm& form) {
+void PrerenderTabHelper::PasswordSubmitted(const autofill::PasswordForm& form) {
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (prerender_manager) {
     prerender_manager->RecordLikelyLoginOnURL(form.origin);

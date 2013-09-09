@@ -32,11 +32,11 @@ class ToolbarView;
 
 namespace autofill {
 class PasswordGenerator;
+struct PasswordForm;
 }
 namespace content {
 class WebContents;
 struct NativeWebKeyboardEvent;
-struct PasswordForm;
 struct SSLStatus;
 }
 
@@ -356,7 +356,7 @@ class BrowserWindow : public ui::BaseWindow {
   // contains the password field that the bubble will be associated with.
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& rect,
-      const content::PasswordForm& form,
+      const autofill::PasswordForm& form,
       autofill::PasswordGenerator* password_generator) = 0;
 
   // Invoked when the amount of vertical overscroll changes. |delta_y| is the

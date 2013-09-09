@@ -15,13 +15,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_messages.h"
+#include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/password_form.h"
 
+using autofill::PasswordForm;
+using autofill::PasswordFormMap;
 using base::Time;
-using content::PasswordForm;
-using content::PasswordFormMap;
 
 PasswordFormManager::PasswordFormManager(Profile* profile,
                                          PasswordManager* password_manager,
@@ -362,13 +362,13 @@ void PasswordFormManager::OnRequestDone(
 
 void PasswordFormManager::OnPasswordStoreRequestDone(
       CancelableRequestProvider::Handle handle,
-      const std::vector<content::PasswordForm*>& result) {
+      const std::vector<autofill::PasswordForm*>& result) {
   // TODO(kaiwang): Remove this function.
   NOTREACHED();
 }
 
 void PasswordFormManager::OnGetPasswordStoreResults(
-      const std::vector<content::PasswordForm*>& results) {
+      const std::vector<autofill::PasswordForm*>& results) {
   DCHECK_EQ(state_, MATCHING_PHASE);
 
   if (results.empty()) {

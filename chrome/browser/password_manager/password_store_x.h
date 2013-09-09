@@ -32,18 +32,18 @@ class PasswordStoreX : public PasswordStoreDefault {
   // with return values rather than implicit consumer notification.
   class NativeBackend {
    public:
-    typedef std::vector<content::PasswordForm*> PasswordFormList;
+    typedef std::vector<autofill::PasswordForm*> PasswordFormList;
 
     virtual ~NativeBackend() {}
 
     virtual bool Init() = 0;
 
-    virtual bool AddLogin(const content::PasswordForm& form) = 0;
-    virtual bool UpdateLogin(const content::PasswordForm& form) = 0;
-    virtual bool RemoveLogin(const content::PasswordForm& form) = 0;
+    virtual bool AddLogin(const autofill::PasswordForm& form) = 0;
+    virtual bool UpdateLogin(const autofill::PasswordForm& form) = 0;
+    virtual bool RemoveLogin(const autofill::PasswordForm& form) = 0;
     virtual bool RemoveLoginsCreatedBetween(const base::Time& delete_begin,
                                             const base::Time& delete_end) = 0;
-    virtual bool GetLogins(const content::PasswordForm& form,
+    virtual bool GetLogins(const autofill::PasswordForm& form,
                            PasswordFormList* forms) = 0;
     virtual bool GetLoginsCreatedBetween(const base::Time& get_begin,
                                          const base::Time& get_end,
@@ -77,22 +77,22 @@ class PasswordStoreX : public PasswordStoreDefault {
   virtual ~PasswordStoreX();
 
   // Implements PasswordStore interface.
-  virtual void AddLoginImpl(const content::PasswordForm& form) OVERRIDE;
+  virtual void AddLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
   virtual void UpdateLoginImpl(
-      const content::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) OVERRIDE;
   virtual void RemoveLoginImpl(
-      const content::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) OVERRIDE;
   virtual void RemoveLoginsCreatedBetweenImpl(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
   virtual void GetLoginsImpl(
-      const content::PasswordForm& form,
+      const autofill::PasswordForm& form,
       const ConsumerCallbackRunner& callback_runner) OVERRIDE;
   virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) OVERRIDE;
   virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) OVERRIDE;
   virtual bool FillAutofillableLogins(
-      std::vector<content::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
   virtual bool FillBlacklistLogins(
-      std::vector<content::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
 
   // Sort logins by origin, like the ORDER BY clause in login_database.cc.
   void SortLoginsByOrigin(NativeBackend::PasswordFormList* list);

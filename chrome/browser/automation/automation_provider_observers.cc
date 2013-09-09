@@ -1559,7 +1559,7 @@ AutomationProviderGetPasswordsObserver::
 
 void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
     CancelableRequestProvider::Handle handle,
-    const std::vector<content::PasswordForm*>& result) {
+    const std::vector<autofill::PasswordForm*>& result) {
   if (!provider_.get()) {
     delete this;
     return;
@@ -1568,10 +1568,10 @@ void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
 
   ListValue* passwords = new ListValue;
-  for (std::vector<content::PasswordForm*>::const_iterator it =
+  for (std::vector<autofill::PasswordForm*>::const_iterator it =
            result.begin(); it != result.end(); ++it) {
     DictionaryValue* password_val = new DictionaryValue;
-    content::PasswordForm* password_form = *it;
+    autofill::PasswordForm* password_form = *it;
     password_val->SetString("username_value", password_form->username_value);
     password_val->SetString("password_value", password_form->password_value);
     password_val->SetString("signon_realm", password_form->signon_realm);
@@ -1595,7 +1595,7 @@ void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
 }
 
 void AutomationProviderGetPasswordsObserver::OnGetPasswordStoreResults(
-    const std::vector<content::PasswordForm*>& results) {
+    const std::vector<autofill::PasswordForm*>& results) {
   // TODO(kaiwang): Implement when I refactor
   // PasswordManager::GetAutofillableLogins.
   NOTIMPLEMENTED();

@@ -14,7 +14,7 @@
 
 class PasswordManager;
 
-namespace content {
+namespace autofill {
 struct PasswordForm;
 }
 
@@ -72,7 +72,7 @@ class PrerenderTabHelper
       content::RenderViewHost* render_view_host) OVERRIDE;
 
   // Called when a password form has been submitted.
-  void PasswordSubmitted(const content::PasswordForm& form);
+  void PasswordSubmitted(const autofill::PasswordForm& form);
 
   // Called when this prerendered WebContents has just been swapped in.
   void PrerenderSwappedIn();

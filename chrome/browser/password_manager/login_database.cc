@@ -20,7 +20,7 @@
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
-using content::PasswordForm;
+using autofill::PasswordForm;
 
 static const int kCurrentVersionNumber = 3;
 static const int kCompatibleVersionNumber = 1;
@@ -505,7 +505,7 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
 bool LoginDatabase::GetLoginsCreatedBetween(
     const base::Time begin,
     const base::Time end,
-    std::vector<content::PasswordForm*>* forms) const {
+    std::vector<autofill::PasswordForm*>* forms) const {
   DCHECK(forms);
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT origin_url, action_url, "

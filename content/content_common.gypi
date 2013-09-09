@@ -65,8 +65,6 @@
     'public/common/page_transition_types_list.h',
     'public/common/page_type.h',
     'public/common/page_zoom.h',
-    'public/common/password_form.cc',
-    'public/common/password_form.h',
     'public/common/pepper_plugin_info.cc',
     'public/common/pepper_plugin_info.h',
     'public/common/process_type.h',

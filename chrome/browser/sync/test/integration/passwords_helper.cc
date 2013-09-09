@@ -19,7 +19,7 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/test/base/ui_test_utils.h"
 
-using content::PasswordForm;
+using autofill::PasswordForm;
 using sync_datatype_helper::test;
 
 const std::string kFakeSignonRealm = "http://fake-signon-realm.google.com/";

@@ -22,7 +22,7 @@
 #include "chrome/utility/importer/bookmark_html_reader.h"
 #include "chrome/utility/importer/favicon_reencode.h"
 #include "chrome/utility/importer/nss_decryptor.h"
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 #include "grit/generated_resources.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -343,7 +343,7 @@ void FirefoxImporter::ImportPasswords() {
     return;
   }
 
-  std::vector<content::PasswordForm> forms;
+  std::vector<autofill::PasswordForm> forms;
   base::FilePath source_path = source_path_;
   base::FilePath file = source_path.AppendASCII("signons.sqlite");
   if (base::PathExists(file)) {

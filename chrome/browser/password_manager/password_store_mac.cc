@@ -24,8 +24,8 @@
 #include "content/public/browser/notification_service.h"
 #include "crypto/apple_keychain.h"
 
+using autofill::PasswordForm;
 using crypto::AppleKeychain;
-using content::PasswordForm;
 
 // Utility class to handle the details of constructing and running a keychain
 // search from a set of attributes.
@@ -644,7 +644,7 @@ SecKeychainItemRef MacKeychainPasswordFormAdapter::KeychainItemForForm(
 std::vector<SecKeychainItemRef>
     MacKeychainPasswordFormAdapter::MatchingKeychainItems(
         const std::string& signon_realm,
-        content::PasswordForm::Scheme scheme,
+        autofill::PasswordForm::Scheme scheme,
         const char* path, const char* username) {
   std::vector<SecKeychainItemRef> matches;
 
@@ -892,7 +892,7 @@ void PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
 }
 
 void PasswordStoreMac::GetLoginsImpl(
-    const content::PasswordForm& form,
+    const autofill::PasswordForm& form,
     const ConsumerCallbackRunner& callback_runner) {
   MacKeychainPasswordFormAdapter keychain_adapter(keychain_.get());
   std::vector<PasswordForm*> keychain_forms =
@@ -967,7 +967,7 @@ bool PasswordStoreMac::AddToKeychainIfNecessary(const PasswordForm& form) {
 }
 
 bool PasswordStoreMac::DatabaseHasFormMatchingKeychainForm(
-    const content::PasswordForm& form) {
+    const autofill::PasswordForm& form) {
   bool has_match = false;
   std::vector<PasswordForm*> database_forms;
   login_metadata_db_->GetLogins(form, &database_forms);

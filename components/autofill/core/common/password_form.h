@@ -1,19 +1,18 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_PASSWORD_FORM_H__
-#define CONTENT_PUBLIC_COMMON_PASSWORD_FORM_H__
+#ifndef COMPONENTS_AUTOFILL_CORE_COMMON_PASSWORD_FORM_H__
+#define COMPONENTS_AUTOFILL_CORE_COMMON_PASSWORD_FORM_H__
 
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/time/time.h"
-#include "content/common/content_export.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace autofill {
 
 // The PasswordForm struct encapsulates information about a login form,
 // which can be an HTML form or a dialog with username/password text fields.
@@ -37,7 +36,7 @@ namespace content {
 // describe which fields are not strictly required when adding a saved password
 // entry to the database and how they can affect the matching process.
 
-struct CONTENT_EXPORT PasswordForm {
+struct PasswordForm {
   // Enum to differentiate between HTML form based authentication, and dialogs
   // using basic or digest schemes. Default is SCHEME_HTML. Only PasswordForms
   // of the same Scheme will be matched/autofilled against each other.
@@ -191,6 +190,6 @@ struct CONTENT_EXPORT PasswordForm {
 // Map username to PasswordForm* for convenience. See password_form_manager.h.
 typedef std::map<string16, PasswordForm*> PasswordFormMap;
 
-}  // namespace content
+}  // namespace autofill
 
-#endif  // CONTENT_PUBLIC_COMMON_PASSWORD_FORM_H__
+#endif  // COMPONENTS_AUTOFILL_CORE_COMMON_PASSWORD_FORM_H__

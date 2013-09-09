@@ -361,7 +361,7 @@ class BrowserView : public BrowserWindow,
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE;
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& rect,
-      const content::PasswordForm& form,
+      const autofill::PasswordForm& form,
       autofill::PasswordGenerator* password_generator) OVERRIDE;
   virtual void OverscrollUpdate(int delta_y) OVERRIDE;
   virtual int GetRenderViewHeightInsetWithDetachedBookmarkBar() OVERRIDE;

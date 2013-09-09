@@ -3174,7 +3174,7 @@ void TestingAutomationProvider::SaveTabContents(
 namespace {
 
 // Translates a dictionary password to a PasswordForm struct.
-content::PasswordForm GetPasswordFormFromDict(
+autofill::PasswordForm GetPasswordFormFromDict(
     const DictionaryValue& password_dict) {
 
   // If the time is specified, change time to the specified time.
@@ -3214,7 +3214,7 @@ content::PasswordForm GetPasswordFormFromDict(
   GURL origin_gurl(origin_url_text);
   GURL action_target(action_target_text);
 
-  content::PasswordForm password_form;
+  autofill::PasswordForm password_form;
   password_form.signon_realm = signon_realm;
   password_form.username_value = username_value;
   password_form.password_value = password_value;
@@ -3253,7 +3253,7 @@ void TestingAutomationProvider::AddSavedPassword(
     return;
   }
 
-  content::PasswordForm new_password =
+  autofill::PasswordForm new_password =
       GetPasswordFormFromDict(*password_dict);
 
   // Use IMPLICIT_ACCESS since new passwords aren't added in incognito mode.
@@ -3299,7 +3299,7 @@ void TestingAutomationProvider::RemoveSavedPassword(
         "Password must include a value for 'signon_realm.'");
     return;
   }
-  content::PasswordForm to_remove =
+  autofill::PasswordForm to_remove =
       GetPasswordFormFromDict(*password_dict);
 
   // Use EXPLICIT_ACCESS since passwords can be removed in incognito mode.

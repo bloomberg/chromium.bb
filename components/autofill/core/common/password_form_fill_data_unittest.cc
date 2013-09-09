@@ -5,12 +5,9 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::PasswordForm;
-using content::PasswordFormMap;
 
 namespace autofill {
 

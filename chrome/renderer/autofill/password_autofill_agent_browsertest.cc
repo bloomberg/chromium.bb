@@ -23,7 +23,7 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
-using content::PasswordForm;
+using autofill::PasswordForm;
 using WebKit::WebDocument;
 using WebKit::WebElement;
 using WebKit::WebFrame;
@@ -554,7 +554,7 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest) {
   const IPC::Message* message = render_thread_->sink()
       .GetFirstMessageMatching(AutofillHostMsg_PasswordFormsRendered::ID);
   EXPECT_TRUE(message);
-  Tuple1<std::vector<content::PasswordForm> > param;
+  Tuple1<std::vector<autofill::PasswordForm> > param;
   AutofillHostMsg_PasswordFormsRendered::Read(message, &param);
   EXPECT_TRUE(param.a.size());
 

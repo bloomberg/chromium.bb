@@ -44,45 +44,45 @@ class PasswordStoreMac : public PasswordStore {
 
  private:
   virtual void ReportMetricsImpl() OVERRIDE;
-  virtual void AddLoginImpl(const content::PasswordForm& form) OVERRIDE;
+  virtual void AddLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
   virtual void UpdateLoginImpl(
-      const content::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) OVERRIDE;
   virtual void RemoveLoginImpl(
-      const content::PasswordForm& form) OVERRIDE;
+      const autofill::PasswordForm& form) OVERRIDE;
   virtual void RemoveLoginsCreatedBetweenImpl(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
   virtual void GetLoginsImpl(
-      const content::PasswordForm& form,
+      const autofill::PasswordForm& form,
       const ConsumerCallbackRunner& callback_runner) OVERRIDE;
   virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) OVERRIDE;
   virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) OVERRIDE;
   virtual bool FillAutofillableLogins(
-      std::vector<content::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
   virtual bool FillBlacklistLogins(
-      std::vector<content::PasswordForm*>* forms) OVERRIDE;
+      std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
 
   // Adds the given form to the Keychain if it's something we want to store
   // there (i.e., not a blacklist entry). Returns true if the operation
   // succeeded (either we added successfully, or we didn't need to).
-  bool AddToKeychainIfNecessary(const content::PasswordForm& form);
+  bool AddToKeychainIfNecessary(const autofill::PasswordForm& form);
 
   // Returns true if our database contains a form that exactly matches the given
   // keychain form.
   bool DatabaseHasFormMatchingKeychainForm(
-      const content::PasswordForm& form);
+      const autofill::PasswordForm& form);
 
   // Returns all the Keychain entries that we own but no longer have
   // corresponding metadata for in our database.
   // Caller is responsible for deleting the forms.
-  std::vector<content::PasswordForm*> GetUnusedKeychainForms();
+  std::vector<autofill::PasswordForm*> GetUnusedKeychainForms();
 
   // Removes the given forms from the database.
   void RemoveDatabaseForms(
-      const std::vector<content::PasswordForm*>& forms);
+      const std::vector<autofill::PasswordForm*>& forms);
 
   // Removes the given forms from the Keychain.
   void RemoveKeychainForms(
-      const std::vector<content::PasswordForm*>& forms);
+      const std::vector<autofill::PasswordForm*>& forms);
 
   // Allows the creation of |notification_service_| to be scheduled on the right
   // thread.

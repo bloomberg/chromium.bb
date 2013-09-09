@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 
 class PasswordStore;
 
@@ -19,21 +19,21 @@ namespace passwords_helper {
 // Adds the login held in |form| to the password store |store|. Even though
 // logins are normally added asynchronously, this method will block until the
 // login is added.
-void AddLogin(PasswordStore* store, const content::PasswordForm& form);
+void AddLogin(PasswordStore* store, const autofill::PasswordForm& form);
 
 // Update the data held in password store |store| with a modified |form|.
 // This method blocks until the operation is complete.
-void UpdateLogin(PasswordStore* store, const content::PasswordForm& form);
+void UpdateLogin(PasswordStore* store, const autofill::PasswordForm& form);
 
 // Searches |store| for all logins matching a fake signon realm used only by
 // LivePasswordsSyncTest and adds the results to |matches|. Note that the
 // caller is responsible for deleting the forms added to |matches|.
 void GetLogins(PasswordStore* store,
-               std::vector<content::PasswordForm>& matches);
+               std::vector<autofill::PasswordForm>& matches);
 
 // Removes the login held in |form| from the password store |store|.  This
 // method blocks until the operation is complete.
-void RemoveLogin(PasswordStore* store, const content::PasswordForm& form);
+void RemoveLogin(PasswordStore* store, const autofill::PasswordForm& form);
 
 // Removes all password forms from the password store |store|.
 void RemoveLogins(PasswordStore* store);
@@ -79,7 +79,7 @@ int GetVerifierPasswordCount();
 
 // Creates a test password form with a well known fake signon realm used only
 // by LivePasswordsSyncTest based on |index|.
-content::PasswordForm CreateTestPasswordForm(int index);
+autofill::PasswordForm CreateTestPasswordForm(int index);
 
 }  // namespace passwords_helper
 

@@ -1167,7 +1167,7 @@ void BrowserWindowGtk::ShowAvatarBubbleFromAvatarButton() {
 
 void BrowserWindowGtk::ShowPasswordGenerationBubble(
     const gfx::Rect& rect,
-    const content::PasswordForm& form,
+    const autofill::PasswordForm& form,
     autofill::PasswordGenerator* password_generator) {
   WebContents* web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();

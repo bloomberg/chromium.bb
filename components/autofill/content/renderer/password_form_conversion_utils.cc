@@ -4,10 +4,9 @@
 
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 
-#include "content/public/common/password_form.h"
+#include "components/autofill/core/common/password_form.h"
 #include "third_party/WebKit/public/web/WebPasswordFormData.h"
 
-using content::PasswordForm;
 using WebKit::WebFormElement;
 using WebKit::WebPasswordFormData;
 

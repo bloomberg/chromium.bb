@@ -9,8 +9,8 @@
 
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/styled_text_field.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "content/public/common/password_form.h"
 
 namespace autofill {
 class PasswordGenerator;
@@ -41,7 +41,7 @@ class PasswordManager;
   content::RenderViewHost* renderViewHost_;
   PasswordManager* passwordManager_;
   autofill::PasswordGenerator* passwordGenerator_;
-  content::PasswordForm form_;
+  autofill::PasswordForm form_;
   autofill::password_generation::PasswordGenerationActions actions_;
 
   PasswordGenerationTextField* textField_;   // weak
@@ -54,7 +54,7 @@ class PasswordManager;
       renderViewHost:(content::RenderViewHost*)renderViewHost
      passwordManager:(PasswordManager*)passwordManager
       usingGenerator:(autofill::PasswordGenerator*)passwordGenerator
-             forForm:(const content::PasswordForm&)form;
+             forForm:(const autofill::PasswordForm&)form;
 - (void)performLayout;
 - (IBAction)fillPassword:(id)sender;
 - (void)regeneratePassword;
