@@ -801,24 +801,11 @@ void EventHandler::lostMouseCapture()
     m_frame->selection().setCaretBlinkingSuspended(false);
 }
 
-bool EventHandler::handleMouseUp(const MouseEventWithHitTestResults& event)
-{
-    // If this was the first click in the window, we don't even want to clear the selection.
-    // This case occurs when the user clicks on a draggable element, since we have to process
-    // the mouse down and drag events to see if we might start a drag.  For other first clicks
-    // in a window, we just don't acceptFirstMouse, and the whole down-drag-up sequence gets
-    // ignored upstream of this layer.
-    return false;
-}
-
 bool EventHandler::handleMouseReleaseEvent(const MouseEventWithHitTestResults& event)
 {
     Page* page = m_frame->page();
     if (page && page->autoscrollInProgress())
         stopAutoscrollTimer();
-
-    if (handleMouseUp(event))
-        return true;
 
     // Used to prevent mouseMoveEvent from initiating a drag before
     // the mouse is pressed again.
