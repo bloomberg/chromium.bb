@@ -995,6 +995,9 @@ void GridLayout::AddViewState(ViewState* view_state) {
 void GridLayout::AddRow(Row* row) {
   current_row_++;
   remaining_row_span_--;
+  // GridLayout requires that if you add a View with a row span you use the same
+  // column set for each of the rows the view lands it. This DCHECK verifies
+  // that.
   DCHECK(remaining_row_span_ <= 0 ||
          row->column_set() == NULL ||
          row->column_set() == GetLastValidColumnSet());
