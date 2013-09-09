@@ -39,6 +39,11 @@ namespace {
 
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
 void HandleReadError(PersistentPrefStore::PrefReadError error) {
+  // Sample the histogram also for the successful case in order to get a
+  // baseline on the success rate in addition to the error distribution.
+  UMA_HISTOGRAM_ENUMERATION("PrefService.ReadError", error,
+                            PersistentPrefStore::PREF_READ_ERROR_MAX_ENUM);
+
   if (error != PersistentPrefStore::PREF_READ_ERROR_NONE) {
 #if !defined(OS_CHROMEOS)
     // Failing to load prefs on startup is a bad thing(TM). See bug 38352 for
@@ -59,8 +64,6 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
     // On ChromeOS error screen with message about broken local state
     // will be displayed.
 #endif
-    UMA_HISTOGRAM_ENUMERATION("PrefService.ReadError", error,
-                              PersistentPrefStore::PREF_READ_ERROR_MAX_ENUM);
   }
 }
 
