@@ -1391,8 +1391,12 @@ class ValidationPool(object):
         was_change_submitted = False
         if submit_changes:
           logging.info('Change %s will be submitted', change)
-          self._SubmitChange(change)
-          was_change_submitted = self._IsChangeCommitted(change)
+          was_change_submitted = False
+          try:
+            self._SubmitChange(change)
+            was_change_submitted = self._IsChangeCommitted(change)
+          except gob_util.GOBError as e:
+            logging.error('Communication with gerrit server failed: %r', e)
           submitted_changes += int(was_change_submitted)
 
         if not was_change_submitted:
