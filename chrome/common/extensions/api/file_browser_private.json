@@ -35,38 +35,6 @@
         }
       },
       {
-        "id": "VolumeInfo",
-        "type": "object",
-        "description": "Mounted disk volume information.",
-        "properties": {
-          "mountPath": {
-            "type": "string",
-            "description": "Disk volume mount point path. The value corresponds to its Entry.fullPath in File API."
-          },
-          "devicePath": {
-            "type": "string",
-            "description": "Disk volume device path."
-          },
-          "label": {
-            "type": "string",
-            "description": "Volume label."
-          },
-          "deviceType": {
-            "type": "string",
-            "enum": ["sd", "usb", "optical", "mobile", "unknown"],
-            "description": "Device type."
-          },
-          "readOnly": {
-            "type": "boolean",
-            "description": "Flag that specifies if volume is mounted in read-only mode."
-          },
-          "totalSize": {
-            "type": "number",
-            "description": "Approximated total disk volume size in bytes."
-          }
-        }
-      },
-      {
         "id": "DriveEntryProperties",
         "type": "object",
         "description": "Drive file properties.",
@@ -218,22 +186,6 @@
             "type": "integer",
             "optional": true,
             "description": "Total disk volume size."
-          }
-        }
-      },
-      {
-        "id": "MountEvent",
-        "type": "object",
-        "description": "Payload data for disk mount / unmount event.",
-        "properties": {
-          "eventType": {
-            "type": "string",
-            "enum": ["added", "removed"],
-            "description": "Event type that tells listeners which disk volume even was raised."
-          },
-          "volumeInfo": {
-            "$ref": "VolumeInfo",
-            "description":"Volume information that this mount event applies to."
           }
         }
       },
