@@ -234,6 +234,10 @@ class FileBrowserPrivateStartCopyFunction
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Part of RunImpl(). Called after Copy() is started on IO thread.
+  void RunAfterStartCopy(int operation_id);
 };
 
 // Implements the chrome.fileBrowserPrivate.cancelCopy method.

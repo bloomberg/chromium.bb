@@ -11,9 +11,11 @@
 
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -23,6 +25,8 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/extensions/api/file_browser_private.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -32,6 +36,7 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -173,6 +178,79 @@ bool SetLastModifiedOnBlockingPool(const base::FilePath& local_path,
   times.actime = stat_buffer.st_atime;
   times.modtime = timestamp;
   return utime(local_path.value().c_str(), &times) == 0;
+}
+
+// Notifies the copy completion to extensions via event router.
+void NotifyCopyCompletion(
+    void* profile_id,
+    fileapi::FileSystemOperationRunner::OperationID operation_id,
+    const FileSystemURL& dest_url,
+    base::PlatformFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // |profile_id| needs to be checked with ProfileManager::IsValidProfile
+  // before using it.
+  Profile* profile = reinterpret_cast<Profile*>(profile_id);
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+    return;
+
+  file_manager::EventRouter* event_router =
+      file_manager::FileBrowserPrivateAPI::Get(profile)->event_router();
+  event_router->OnCopyCompleted(operation_id, dest_url.ToGURL(), error);
+}
+
+// Callback invoked upon completion of Copy() (regardless of succeeded or
+// failed).
+void OnCopyCompleted(
+    void* profile_id,
+    fileapi::FileSystemOperationRunner::OperationID* operation_id,
+    const FileSystemURL& dest_url,
+    base::PlatformFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&NotifyCopyCompletion,
+                 profile_id, *operation_id, dest_url, error));
+}
+
+// Starts the copy operation via FileSystemOperationRunner.
+fileapi::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
+    void* profile_id,
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    const FileSystemURL& source_url,
+    const FileSystemURL& dest_url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Note: |operation_id| is owned by the callback for
+  // FileSystemOperationRunner::Copy(). It is always called in the next message
+  // loop or later, so at least during this invocation it should alive.
+  fileapi::FileSystemOperationRunner::OperationID* operation_id =
+      new fileapi::FileSystemOperationRunner::OperationID;
+  *operation_id = file_system_context->operation_runner()->Copy(
+      source_url, dest_url,
+      base::Bind(&OnCopyCompleted,
+                 profile_id, base::Owned(operation_id), dest_url));
+  return *operation_id;
+}
+
+void OnCopyCancelled(base::PlatformFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // We just ignore the status if the copy is actually cancelled or not,
+  // because failing cancellation means the operation is not running now.
+  DLOG_IF(WARNING, error != base::PLATFORM_FILE_OK)
+      << "Failed to cancel copy: " << error;
+}
+
+// Cancels the running copy operation identified by |operation_id|.
+void CancelCopyOnIOThread(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    fileapi::FileSystemOperationRunner::OperationID operation_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  file_system_context->operation_runner()->Cancel(
+      operation_id, base::Bind(&OnCopyCancelled));
 }
 
 }  // namespace
@@ -631,9 +709,49 @@ FileBrowserPrivateStartCopyFunction::~FileBrowserPrivateStartCopyFunction() {
 }
 
 bool FileBrowserPrivateStartCopyFunction::RunImpl() {
-  // TODO(hidehiko): Implement startCopy function.
-  NOTIMPLEMENTED();
-  return false;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  using  extensions::api::file_browser_private::StartCopy::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  if (params->source_url.empty() || params->parent.empty() ||
+      params->new_name.empty()) {
+    error_ = base::IntToString(fileapi::PlatformFileErrorToWebFileError(
+        base::PLATFORM_FILE_ERROR_INVALID_URL));
+    return false;
+  }
+
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderViewHost(
+          profile(), render_view_host());
+
+  fileapi::FileSystemURL source_url(
+      file_system_context->CrackURL(GURL(params->source_url)));
+  fileapi::FileSystemURL dest_url(file_system_context->CrackURL(
+      GURL(params->parent + "/" + params->new_name)));
+
+  if (!source_url.is_valid() || !dest_url.is_valid()) {
+    error_ = base::IntToString(fileapi::PlatformFileErrorToWebFileError(
+        base::PLATFORM_FILE_ERROR_INVALID_URL));
+    return false;
+  }
+
+  return BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&StartCopyOnIOThread,
+                 profile(), file_system_context, source_url, dest_url),
+      base::Bind(&FileBrowserPrivateStartCopyFunction::RunAfterStartCopy,
+                 this));
+}
+
+void FileBrowserPrivateStartCopyFunction::RunAfterStartCopy(
+    int operation_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  SetResult(Value::CreateIntegerValue(operation_id));
+  SendResponse(true);
 }
 
 FileBrowserPrivateCancelCopyFunction::FileBrowserPrivateCancelCopyFunction() {
@@ -643,9 +761,23 @@ FileBrowserPrivateCancelCopyFunction::~FileBrowserPrivateCancelCopyFunction() {
 }
 
 bool FileBrowserPrivateCancelCopyFunction::RunImpl() {
-  // TODO(hidehiko): Implement cancelCopy function.
-  NOTIMPLEMENTED();
-  return false;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  using  extensions::api::file_browser_private::CancelCopy::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderViewHost(
+          profile(), render_view_host());
+
+  // We don't much take care about the result of cancellation.
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&CancelCopyOnIOThread, file_system_context, params->copy_id));
+  SendResponse(true);
+  return true;
 }
 
 }  // namespace extensions

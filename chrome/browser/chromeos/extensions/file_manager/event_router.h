@@ -22,6 +22,10 @@
 class PrefChangeRegistrar;
 class Profile;
 
+namespace base {
+class ListValue;
+}
+
 namespace chromeos {
 class NetworkState;
 }
@@ -65,6 +69,10 @@ class EventRouter
   // Removes a file watch at |local_path| for an extension with |extension_id|.
   void RemoveFileWatch(const base::FilePath& local_path,
                        const std::string& extension_id);
+
+  // Called when a copy task is completed.
+  void OnCopyCompleted(
+      int copy_id, const GURL& url, base::PlatformFileError error);
 
   // DiskMountManager::Observer overrides.
   virtual void OnDiskEvent(

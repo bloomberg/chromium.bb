@@ -31,6 +31,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/file_browser_private.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_handler.h"
@@ -227,6 +228,15 @@ std::string MountTypeToString(chromeos::MountType type) {
   return "";
 }
 
+// Sends an event named |event_name| with arguments |event_args| to extensions.
+void BroadcastEvent(Profile* profile,
+                    const std::string& event_name,
+                    scoped_ptr<base::ListValue> event_args) {
+  extensions::ExtensionSystem::Get(profile)->event_router()->
+      BroadcastEvent(make_scoped_ptr(
+          new extensions::Event(event_name, event_args.Pass())));
+}
+
 }  // namespace
 
 // Pass dummy value to JobInfo's constructor for make it default constructible.
@@ -239,8 +249,7 @@ EventRouter::DriveJobInfoWithStatus::DriveJobInfoWithStatus(
     : job_info(info), status(status) {
 }
 
-EventRouter::EventRouter(
-    Profile* profile)
+EventRouter::EventRouter(Profile* profile)
     : notifications_(new DesktopNotifications(profile)),
       pref_change_registrar_(new PrefChangeRegistrar),
       profile_(profile),
@@ -406,6 +415,32 @@ void EventRouter::RemoveFileWatch(const base::FilePath& local_path,
   }
 }
 
+void EventRouter::OnCopyCompleted(
+    int copy_id, const GURL& url, base::PlatformFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  using extensions::api::file_browser_private::CopyProgressStatus;
+  namespace OnCopyProgress =
+      extensions::api::file_browser_private::OnCopyProgress;
+
+  CopyProgressStatus status;
+  if (error == base::PLATFORM_FILE_OK) {
+    // Send success event.
+    status.type = CopyProgressStatus::TYPE_SUCCESS;
+    status.url.reset(new std::string(url.spec()));
+  } else {
+    // Send error event.
+    status.type = CopyProgressStatus::TYPE_ERROR;
+    status.error.reset(
+        new int(fileapi::PlatformFileErrorToWebFileError(error)));
+  }
+
+  BroadcastEvent(
+      profile_,
+      extensions::event_names::kOnFileBrowserCopyProgress,
+      OnCopyProgress::Create(copy_id, status));
+}
+
 void EventRouter::OnDiskEvent(DiskMountManager::DiskEvent event,
                               const DiskMountManager::Disk* disk) {
   // Disk event is dispatched by VolumeManager now. Do nothing.
@@ -479,11 +514,11 @@ void EventRouter::NetworkManagerChanged() {
     NOTREACHED();
     return;
   }
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+
+  BroadcastEvent(
+      profile_,
       extensions::event_names::kOnFileBrowserDriveConnectionStatusChanged,
-      scoped_ptr<ListValue>(new ListValue())));
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      BroadcastEvent(event.Pass());
+      make_scoped_ptr(new ListValue));
 }
 
 void EventRouter::DefaultNetworkChanged(const chromeos::NetworkState* network) {
@@ -515,11 +550,10 @@ void EventRouter::OnFileManagerPrefsChanged() {
     return;
   }
 
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  BroadcastEvent(
+      profile_,
       extensions::event_names::kOnFileBrowserPreferencesChanged,
-      scoped_ptr<ListValue>(new ListValue())));
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      BroadcastEvent(event.Pass());
+      make_scoped_ptr(new ListValue));
 }
 
 void EventRouter::OnJobAdded(const drive::JobInfo& job_info) {
@@ -641,11 +675,10 @@ void EventRouter::OnRefreshTokenInvalid() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Raise a DriveConnectionStatusChanged event to notify the status offline.
-  scoped_ptr<extensions::Event> event(new extensions::Event(
+  BroadcastEvent(
+      profile_,
       extensions::event_names::kOnFileBrowserDriveConnectionStatusChanged,
-      scoped_ptr<ListValue>(new ListValue())));
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      BroadcastEvent(event.Pass());
+      make_scoped_ptr(new ListValue));
 }
 
 void EventRouter::HandleFileWatchNotification(const base::FilePath& local_path,
@@ -736,10 +769,9 @@ void EventRouter::DispatchMountEvent(
     }
   }
 
-  scoped_ptr<extensions::Event> extension_event(new extensions::Event(
-      extensions::event_names::kOnFileBrowserMountCompleted, args.Pass()));
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      BroadcastEvent(extension_event.Pass());
+  BroadcastEvent(profile_,
+                 extensions::event_names::kOnFileBrowserMountCompleted,
+                 args.Pass());
 }
 
 void EventRouter::ShowRemovableDeviceInFileManager(
