@@ -275,9 +275,10 @@ void PnaclHost::OnTempFileReturn(const TranslationID& id,
     LOG(ERROR) << "OnTempFileReturn: temp file creation failed";
     std::string key(entry->second.cache_key);
     entry->second.callback.Run(fd, false);
+    bool may_be_cached = TranslationMayBeCached(entry);
     pending_translations_.erase(entry);
     // No translations will be waiting for entries that will not be stored.
-    if (TranslationMayBeCached(entry))
+    if (may_be_cached)
       RequeryMatchingTranslations(key);
     return;
   }
