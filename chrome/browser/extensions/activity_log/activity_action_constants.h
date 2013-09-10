@@ -22,6 +22,10 @@ extern const char kActionWebRequest[];
 // recording specific data about the pages.
 extern const char kIncognitoUrl[];
 
+// A string used as a placeholder for URLs which have been removed from the
+// argument list and stored to the arg_url field.
+extern const char kArgUrlPlaceholder[];
+
 }  // namespace activity_log_constants
 
 #endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_ACTION_CONSTANTS_H_

@@ -396,9 +396,14 @@ chrome.activityLogPrivate.onExtensionActivity.addListener(
       console.log('Logged:' + apiCall + ' Expected:' + expectedCall);
       chrome.test.assertEq(expectedCall, apiCall);
 
-      // Check that no real URLs are logged in incognito-mode tests.
-      checkIncognito(activity['pageUrl'], testCases[testCaseIndx].is_incognito);
-      checkIncognito(activity['argUrl'], testCases[testCaseIndx].is_incognito);
+      // Check that no real URLs are logged in incognito-mode tests.  Ignore
+      // the initial call to windows.create opening the tab.
+      if (apiCall != 'windows.create') {
+        checkIncognito(activity['pageUrl'],
+                       testCases[testCaseIndx].is_incognito);
+        checkIncognito(activity['argUrl'],
+                       testCases[testCaseIndx].is_incognito);
+      }
 
       // If all the expected calls have been logged for this test case then
       // mark as suceeded and move to the next. Otherwise look for the next

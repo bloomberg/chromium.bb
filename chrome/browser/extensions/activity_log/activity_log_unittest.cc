@@ -103,6 +103,20 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     ASSERT_EQ("", last->SerializeArgUrl());
   }
 
+  static void RetrieveActions_ArgUrlExtraction(
+      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
+    ASSERT_EQ(2U, i->size());
+    scoped_refptr<Action> action = i->at(0);
+    ASSERT_EQ("[\"GET\",\"\\u003Carg_url\\u003E\"]",
+              ActivityLogPolicy::Util::Serialize(action->args()));
+    ASSERT_EQ("http://www.google.com/", action->arg_url().spec());
+
+    action = i->at(1);
+    ASSERT_EQ("[{\"url\":\"\\u003Carg_url\\u003E\"}]",
+              ActivityLogPolicy::Util::Serialize(action->args()));
+    ASSERT_EQ("http://www.google.co.uk/", action->arg_url().spec());
+  }
+
   ExtensionService* extension_service_;
 
 #if defined OS_CHROMEOS
@@ -191,6 +205,43 @@ TEST_F(ActivityLogTest, LogPrerender) {
       base::Bind(ActivityLogTest::Arguments_Prerender));
 
   prerender_manager->CancelAllPrerenders();
+}
+
+TEST_F(ActivityLogTest, ArgUrlExtraction) {
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+
+  base::Time now = base::Time::Now();
+
+  // Submit a DOM API call which should have its URL extracted into the arg_url
+  // field.
+  scoped_refptr<Action> action = new Action(kExtensionId,
+                                            now,
+                                            Action::ACTION_DOM_ACCESS,
+                                            "XMLHttpRequest.open");
+  action->mutable_args()->AppendString("GET");
+  action->mutable_args()->AppendString("http://www.google.com/");
+  activity_log->LogAction(action);
+
+  // Submit an API call with an embedded URL.
+  action = new Action(kExtensionId,
+                      now - base::TimeDelta::FromSeconds(1),
+                      Action::ACTION_API_CALL,
+                      "windows.create");
+  action->set_args(
+      ListBuilder()
+          .Append(DictionaryBuilder().Set("url", "http://www.google.co.uk"))
+          .Build());
+  activity_log->LogAction(action);
+
+  activity_log->GetFilteredActions(
+      kExtensionId,
+      Action::ACTION_ANY,
+      "",
+      "",
+      "",
+      0,
+      base::Bind(ActivityLogTest::RetrieveActions_ArgUrlExtraction));
 }
 
 }  // namespace extensions

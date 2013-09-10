@@ -40,23 +40,114 @@ namespace constants = activity_log_constants;
 
 namespace {
 
-// Concatenate arguments.
-std::string MakeArgList(const base::ListValue* args) {
-  std::string call_signature;
-  base::ListValue::const_iterator it = args->begin();
-  for (; it != args->end(); ++it) {
-    std::string arg;
-    JSONStringValueSerializer serializer(&arg);
-    if (serializer.SerializeAndOmitBinaryValues(**it)) {
-      if (it != args->begin())
-        call_signature += ", ";
-      call_signature += arg;
+using extensions::Action;
+using constants::kArgUrlPlaceholder;
+
+// Specifies a possible action to take to get an extracted URL in the ApiInfo
+// structure below.
+enum Transformation {
+  NONE,
+  DICT_LOOKUP,
+  LOOKUP_TAB_ID,
+};
+
+// Information about specific Chrome and DOM APIs, such as which contain
+// arguments that should be extracted into the arg_url field of an Action.
+struct ApiInfo {
+  // The lookup key consists of the action_type and api_name in the Action
+  // object.
+  Action::ActionType action_type;
+  const char* api_name;
+
+  // If non-negative, an index into args might contain a URL to be extracted
+  // into arg_url.
+  int arg_url_index;
+
+  // A transformation to apply to the data found at index arg_url_index in the
+  // argument list.
+  //
+  // If NONE, the data is expected to be a string which is treated as a URL.
+  //
+  // If LOOKUP_TAB_ID, the data is either an integer which is treated as a tab
+  // ID and translated (in the context of a provided Profile), or a list of tab
+  // IDs which are translated.
+  //
+  // If DICT_LOOKUP, the data is expected to be a dictionary, and
+  // arg_url_dict_path is a path (list of keys delimited by ".") where a URL
+  // string is to be found.
+  Transformation arg_url_transform;
+  const char* arg_url_dict_path;
+};
+
+static const ApiInfo kApiInfoTable[] = {
+  // Tabs APIs that require tab ID translation
+  {Action::ACTION_API_CALL, "tabs.connect", 0, LOOKUP_TAB_ID, NULL},
+  {Action::ACTION_API_CALL, "tabs.detectLanguage", 0, LOOKUP_TAB_ID, NULL},
+  {Action::ACTION_API_CALL, "tabs.duplicate", 0, LOOKUP_TAB_ID, NULL},
+  {Action::ACTION_API_CALL, "tabs.executeScript", 0, LOOKUP_TAB_ID, NULL},
+  {Action::ACTION_API_CALL, "tabs.get", 0, LOOKUP_TAB_ID, NULL},
+  {Action::ACTION_API_CALL, "tabs.insertCSS", 0, LOOKUP_TAB_ID, NULL},
+  {Action::ACTION_API_CALL, "tabs.move", 0, LOOKUP_TAB_ID, NULL},
+  {Action::ACTION_API_CALL, "tabs.reload", 0, LOOKUP_TAB_ID, NULL},
+  {Action::ACTION_API_CALL, "tabs.remove", 0, LOOKUP_TAB_ID, NULL},
+  {Action::ACTION_API_CALL, "tabs.sendMessage", 0, LOOKUP_TAB_ID, NULL},
+  {Action::ACTION_API_CALL, "tabs.update", 0, LOOKUP_TAB_ID, NULL},
+
+  {Action::ACTION_API_EVENT, "tabs.onUpdated", 0, LOOKUP_TAB_ID, NULL},
+  {Action::ACTION_API_EVENT, "tabs.onMoved", 0, LOOKUP_TAB_ID, NULL},
+  {Action::ACTION_API_EVENT, "tabs.onDetached", 0, LOOKUP_TAB_ID, NULL},
+  {Action::ACTION_API_EVENT, "tabs.onAttached", 0, LOOKUP_TAB_ID, NULL},
+  {Action::ACTION_API_EVENT, "tabs.onRemoved", 0, LOOKUP_TAB_ID, NULL},
+  {Action::ACTION_API_EVENT, "tabs.onReplaced", 0, LOOKUP_TAB_ID, NULL},
+
+  // Other APIs that accept URLs as strings
+  {Action::ACTION_API_CALL, "windows.create", 0, DICT_LOOKUP, "url"},
+
+  {Action::ACTION_DOM_ACCESS, "Location.assign", 0, NONE, NULL},
+  {Action::ACTION_DOM_ACCESS, "Location.replace", 0, NONE, NULL},
+  {Action::ACTION_DOM_ACCESS, "XMLHttpRequest.open", 1, NONE, NULL},
+};
+
+// A singleton class which provides lookups into the kApiInfoTable data
+// structure.  It inserts all data into a map on first lookup.
+class ApiInfoDatabase {
+ public:
+  static ApiInfoDatabase* GetInstance() {
+    return Singleton<ApiInfoDatabase>::get();
+  }
+
+  // Retrieves an ApiInfo record for the given Action type.  Returns either a
+  // pointer to the record, or NULL if no such record was found.
+  const ApiInfo* Lookup(Action::ActionType action_type,
+                        const std::string& api_name) const {
+    std::map<std::string, const ApiInfo*>::const_iterator i =
+        api_database_.find(api_name);
+    if (i == api_database_.end())
+      return NULL;
+    if (i->second->action_type != action_type)
+      return NULL;
+    return i->second;
+  }
+
+ private:
+  ApiInfoDatabase() {
+    for (size_t i = 0; i < arraysize(kApiInfoTable); i++) {
+      const ApiInfo* info = &kApiInfoTable[i];
+      api_database_[info->api_name] = info;
     }
   }
-  return call_signature;
-}
+  virtual ~ApiInfoDatabase() {}
 
-// Gets the URL for a given tab ID.  Helper method for LookupTabId.  Returns
+  // The map is keyed by API name only, since API names aren't be repeated
+  // across multiple action types in kApiInfoTable.  However, the action type
+  // should still be checked before returning a positive match.
+  std::map<std::string, const ApiInfo*> api_database_;
+
+  friend struct DefaultSingletonTraits<ApiInfoDatabase>;
+  DISALLOW_COPY_AND_ASSIGN(ApiInfoDatabase);
+};
+
+// Gets the URL for a given tab ID.  Helper method for ExtractUrls.  Returns
 // true if able to perform the lookup.  The URL is stored to *url, and
 // *is_incognito is set to indicate whether the URL is for an incognito tab.
 bool GetUrlForTabId(int tab_id,
@@ -81,65 +172,105 @@ bool GetUrlForTabId(int tab_id,
   }
 }
 
-// Translate tab IDs to URLs in tabs API calls.  Mutates the Action object in
-// place.  There is a small chance that the URL translation could be wrong, if
-// the tab has already been navigated by the time of invocation.
+// Performs processing of the Action object to extract URLs from the argument
+// list and translate tab IDs to URLs, according to the API call metadata in
+// kApiInfoTable.  Mutates the Action object in place.  There is a small chance
+// that the tab id->URL translation could be wrong, if the tab has already been
+// navigated by the time of invocation.
 //
-// If a single tab ID is translated to a URL, the URL is stored into arg_url
-// where it can more easily be searched for in the database.  For APIs that
-// take a list of tab IDs, replace each tab ID with the URL in the argument
-// list; we can only extract a single URL into arg_url so arbitrarily pull out
-// the first one.
-void LookupTabIds(scoped_refptr<extensions::Action> action, Profile* profile) {
-  const std::string& api_call = action->api_name();
-  if (api_call == "tabs.get" ||                 // api calls, ID as int
-      api_call == "tabs.connect" ||
-      api_call == "tabs.sendMessage" ||
-      api_call == "tabs.duplicate" ||
-      api_call == "tabs.update" ||
-      api_call == "tabs.reload" ||
-      api_call == "tabs.detectLanguage" ||
-      api_call == "tabs.executeScript" ||
-      api_call == "tabs.insertCSS" ||
-      api_call == "tabs.move" ||                // api calls, IDs in array
-      api_call == "tabs.remove" ||
-      api_call == "tabs.onUpdated" ||           // events, ID as int
-      api_call == "tabs.onMoved" ||
-      api_call == "tabs.onDetached" ||
-      api_call == "tabs.onAttached" ||
-      api_call == "tabs.onRemoved" ||
-      api_call == "tabs.onReplaced") {
-    int tab_id;
-    base::ListValue* id_list;
-    base::ListValue* args = action->mutable_args();
-    if (args->GetInteger(0, &tab_id)) {
-      // Single tab ID to translate.
-      GURL url;
-      bool is_incognito;
-      if (GetUrlForTabId(tab_id, profile, &url, &is_incognito)) {
-        action->set_arg_url(url);
-        action->set_arg_incognito(is_incognito);
-      }
-    } else if ((api_call == "tabs.move" || api_call == "tabs.remove") &&
-               args->GetList(0, &id_list)) {
-      // Array of tab IDs to translate.
-      for (int i = 0; i < static_cast<int>(id_list->GetSize()); ++i) {
-        if (id_list->GetInteger(i, &tab_id)) {
-          GURL url;
-          bool is_incognito;
-          if (GetUrlForTabId(tab_id, profile, &url, &is_incognito) &&
-              !is_incognito) {
-            id_list->Set(i, new base::StringValue(url.spec()));
-            if (i == 0) {
-              action->set_arg_url(url);
-              action->set_arg_incognito(is_incognito);
-            }
-          }
-        } else {
-          LOG(ERROR) << "The tab ID array is malformed at index " << i;
+// Any extracted URL is stored into the arg_url field of the action, and the
+// URL in the argument list is replaced with the marker value "<arg_url>".  For
+// APIs that take a list of tab IDs, extracts the first valid URL into arg_url
+// and overwrites the other tab IDs in the argument list with the translated
+// URL.
+void ExtractUrls(scoped_refptr<Action> action, Profile* profile) {
+  const ApiInfo* api_info = ApiInfoDatabase::GetInstance()->Lookup(
+      action->action_type(), action->api_name());
+  if (api_info == NULL)
+    return;
+
+  int url_index = api_info->arg_url_index;
+
+  if (!action->args() || url_index < 0 ||
+      static_cast<size_t>(url_index) >= action->args()->GetSize())
+    return;
+
+  // Do not overwrite an existing arg_url value in the Action, so that callers
+  // have the option of doing custom arg_url extraction.
+  if (action->arg_url().is_valid())
+    return;
+
+  GURL arg_url;
+  bool arg_incognito = action->page_incognito();
+
+  switch (api_info->arg_url_transform) {
+    case NONE: {
+      // No translation needed; just extract the URL directly from a raw string
+      // or from a dictionary.
+      std::string url_string;
+      if (action->args()->GetString(url_index, &url_string)) {
+        arg_url = GURL(url_string);
+        if (arg_url.is_valid()) {
+          action->mutable_args()
+              ->Set(url_index, new StringValue(kArgUrlPlaceholder));
         }
       }
+      break;
     }
+
+    case DICT_LOOKUP: {
+      // Look up the URL from a dictionary at the specified location.
+      DictionaryValue* dict = NULL;
+      std::string url_string;
+      CHECK(api_info->arg_url_dict_path);
+
+      if (action->mutable_args()->GetDictionary(url_index, &dict) &&
+          dict->GetString(api_info->arg_url_dict_path, &url_string)) {
+        arg_url = GURL(url_string);
+        if (arg_url.is_valid())
+          dict->SetString(api_info->arg_url_dict_path, kArgUrlPlaceholder);
+      }
+      break;
+    }
+
+    case LOOKUP_TAB_ID: {
+      // Translation of tab IDs to URLs has been requested.  There are two
+      // cases to consider: either a single integer or a list of integers (when
+      // multiple tabs are manipulated).
+      int tab_id;
+      base::ListValue* tab_list = NULL;
+      if (action->args()->GetInteger(url_index, &tab_id)) {
+        // Single tab ID to translate.
+        GetUrlForTabId(tab_id, profile, &arg_url, &arg_incognito);
+        if (arg_url.is_valid()) {
+          action->mutable_args()->Set(url_index,
+                                      new StringValue(kArgUrlPlaceholder));
+        }
+      } else if (action->mutable_args()->GetList(url_index, &tab_list)) {
+        // A list of possible IDs to translate.  Work through in reverse order
+        // so the last one translated is left in arg_url.
+        int extracted_index = -1;  // Which list item is copied to arg_url?
+        for (int i = tab_list->GetSize() - 1; i >= 0; --i) {
+          if (tab_list->GetInteger(i, &tab_id) &&
+              GetUrlForTabId(tab_id, profile, &arg_url, &arg_incognito)) {
+            if (!arg_incognito)
+              tab_list->Set(i, new base::StringValue(arg_url.spec()));
+            extracted_index = i;
+          }
+        }
+        if (extracted_index >= 0)
+          tab_list->Set(extracted_index, new StringValue(kArgUrlPlaceholder));
+      }
+      break;
+    }
+
+    default:
+      NOTREACHED();
+  }
+
+  if (arg_url.is_valid()) {
+    action->set_arg_incognito(arg_incognito);
+    action->set_arg_url(arg_url);
   }
 }
 
@@ -352,11 +483,7 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
 
   // Perform some preprocessing of the Action data: convert tab IDs to URLs and
   // mask out incognito URLs if appropriate.
-  if ((action->action_type() == Action::ACTION_API_CALL ||
-       action->action_type() == Action::ACTION_API_EVENT) &&
-      StartsWithASCII(action->api_name(), "tabs.", true)) {
-    LookupTabIds(action, profile_);
-  }
+  ExtractUrls(action, profile_);
 
   if (IsDatabaseEnabled() && policy_)
     policy_->ProcessAction(action);
