@@ -36,7 +36,7 @@ base::RefCountedBytes* CreateTestData() {
 bool IsShowingWebContentsModalDialog(WebContents* tab) {
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(tab);
-  return web_contents_modal_dialog_manager->IsShowingDialog();
+  return web_contents_modal_dialog_manager->IsDialogActive();
 }
 
 }  // namespace

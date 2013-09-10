@@ -847,7 +847,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ConstrainedWindowRequest) {
   // Verify that the shell window has a dialog attached.
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
-  EXPECT_TRUE(web_contents_modal_dialog_manager->IsShowingDialog());
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
   // Close the constrained window and wait for the reply to the permission
   // request.

@@ -172,7 +172,7 @@ TEST_F(WebContentsModalDialogManagerTest, WebContentsVisible) {
 
   EXPECT_EQ(TestNativeWebContentsModalDialogManager::SHOWN,
             native_manager->GetDialogState(dialog1));
-  EXPECT_TRUE(manager->IsShowingDialog());
+  EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());
 }
 
@@ -188,7 +188,7 @@ TEST_F(WebContentsModalDialogManagerTest, WebContentsNotVisible) {
 
   EXPECT_EQ(TestNativeWebContentsModalDialogManager::NOT_SHOWN,
             native_manager->GetDialogState(dialog1));
-  EXPECT_TRUE(manager->IsShowingDialog());
+  EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());
 }
 
@@ -219,7 +219,7 @@ TEST_F(WebContentsModalDialogManagerTest, VisibilityObservation) {
 
   manager->ShowDialog(dialog1);
 
-  EXPECT_TRUE(manager->IsShowingDialog());
+  EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());
   EXPECT_EQ(TestNativeWebContentsModalDialogManager::SHOWN,
             native_manager->GetDialogState(dialog1));
@@ -229,7 +229,7 @@ TEST_F(WebContentsModalDialogManagerTest, VisibilityObservation) {
                    content::NotificationService::AllSources(),
                    content::Details<bool>(&web_contents_visible));
 
-  EXPECT_TRUE(manager->IsShowingDialog());
+  EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());
   EXPECT_EQ(TestNativeWebContentsModalDialogManager::HIDDEN,
             native_manager->GetDialogState(dialog1));
@@ -239,7 +239,7 @@ TEST_F(WebContentsModalDialogManagerTest, VisibilityObservation) {
                    content::NotificationService::AllSources(),
                    content::Details<bool>(&web_contents_visible));
 
-  EXPECT_TRUE(manager->IsShowingDialog());
+  EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());
   EXPECT_EQ(TestNativeWebContentsModalDialogManager::SHOWN,
             native_manager->GetDialogState(dialog1));
@@ -285,7 +285,7 @@ TEST_F(WebContentsModalDialogManagerTest, CloseDialogs) {
 
   native_manager->CloseDialog(dialog1);
 
-  EXPECT_TRUE(manager->IsShowingDialog());
+  EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());
   EXPECT_EQ(TestNativeWebContentsModalDialogManager::CLOSED,
             native_manager->GetDialogState(dialog1));
@@ -298,7 +298,7 @@ TEST_F(WebContentsModalDialogManagerTest, CloseDialogs) {
 
   native_manager->CloseDialog(dialog3);
 
-  EXPECT_TRUE(manager->IsShowingDialog());
+  EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());
   EXPECT_EQ(TestNativeWebContentsModalDialogManager::SHOWN,
             native_manager->GetDialogState(dialog2));
@@ -309,7 +309,7 @@ TEST_F(WebContentsModalDialogManagerTest, CloseDialogs) {
 
   native_manager->CloseDialog(dialog2);
 
-  EXPECT_TRUE(manager->IsShowingDialog());
+  EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());
   EXPECT_EQ(TestNativeWebContentsModalDialogManager::CLOSED,
             native_manager->GetDialogState(dialog2));
@@ -318,7 +318,7 @@ TEST_F(WebContentsModalDialogManagerTest, CloseDialogs) {
 
   native_manager->CloseDialog(dialog4);
 
-  EXPECT_FALSE(manager->IsShowingDialog());
+  EXPECT_FALSE(manager->IsDialogActive());
   EXPECT_FALSE(delegate->web_contents_blocked());
   EXPECT_EQ(TestNativeWebContentsModalDialogManager::CLOSED,
             native_manager->GetDialogState(dialog4));
@@ -334,7 +334,7 @@ TEST_F(WebContentsModalDialogManagerTest, CloseAllDialogs) {
 
   test_api->CloseAllDialogs();
   EXPECT_FALSE(delegate->web_contents_blocked());
-  EXPECT_FALSE(manager->IsShowingDialog());
+  EXPECT_FALSE(manager->IsDialogActive());
   EXPECT_EQ(kWindowCount, native_manager->GetCloseCount());
 }
 

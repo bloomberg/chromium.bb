@@ -1584,7 +1584,7 @@ enum {
   if (!contents)
     return NO;
   return !WebContentsModalDialogManager::FromWebContents(contents)->
-      IsShowingDialog();
+      IsDialogActive();
 }
 
 // TabStripControllerDelegate protocol.

@@ -221,7 +221,7 @@ class SSLUITest : public InProcessBrowserTest {
   bool IsShowingWebContentsModalDialog() const {
     return WebContentsModalDialogManager::FromWebContents(
         browser()->tab_strip_model()->GetActiveWebContents())->
-            IsShowingDialog();
+            IsDialogActive();
   }
 
   static bool GetFilePathWithHostAndPortReplacement(

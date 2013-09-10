@@ -37,18 +37,18 @@ IN_PROC_BROWSER_TEST_F(SSLCertificateViewerCocoaTest, Basic) {
   gfx::NativeWindow window = web_contents->GetView()->GetTopLevelNativeWindow();
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
-  EXPECT_FALSE(web_contents_modal_dialog_manager->IsShowingDialog());
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
   ShowCertificateViewer(web_contents, window, cert.get());
 
   content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(web_contents_modal_dialog_manager->IsShowingDialog());
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
   WebContentsModalDialogManager::TestApi test_api(
       web_contents_modal_dialog_manager);
   test_api.CloseAllDialogs();
   content::RunAllPendingInMessageLoop();
-  EXPECT_FALSE(web_contents_modal_dialog_manager->IsShowingDialog());
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 }
 
 // Test that switching to another tab correctly hides the sheet.

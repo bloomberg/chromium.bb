@@ -52,7 +52,7 @@ class ConstrainedWebDialogBrowserTest : public InProcessBrowserTest {
   bool IsShowingWebContentsModalDialog(WebContents* web_contents) const {
     WebContentsModalDialogManager* web_contents_modal_dialog_manager =
         WebContentsModalDialogManager::FromWebContents(web_contents);
-    return web_contents_modal_dialog_manager->IsShowingDialog();
+    return web_contents_modal_dialog_manager->IsDialogActive();
   }
 };
 

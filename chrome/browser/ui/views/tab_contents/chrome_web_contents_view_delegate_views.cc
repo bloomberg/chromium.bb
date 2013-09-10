@@ -77,7 +77,7 @@ bool ChromeWebContentsViewDelegateViews::Focus() {
     // TODO(erg): WebContents used to own web contents modal dialogs, which is
     // why this is here. Eventually this should be ported to a containing view
     // specializing in web contents modal dialog management.
-    if (web_contents_modal_dialog_manager->IsShowingDialog()) {
+    if (web_contents_modal_dialog_manager->IsDialogActive()) {
       web_contents_modal_dialog_manager->FocusTopmostDialog();
       return true;
     }

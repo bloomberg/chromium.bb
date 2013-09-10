@@ -210,7 +210,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
         web_modal::WebContentsModalDialogManager::FromWebContents(
             host_->host_contents());
     if (modalDialogManager &&
-        modalDialogManager->IsShowingDialog()) {
+        modalDialogManager->IsDialogActive()) {
       return;
     }
   }
@@ -236,7 +236,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
         web_modal::WebContentsModalDialogManager::FromWebContents(
             host_->host_contents());
     if (modalDialogManager &&
-        modalDialogManager->IsShowingDialog()) {
+        modalDialogManager->IsDialogActive()) {
       ignoreWindowDidResignKey_ = YES;
       return;
     }

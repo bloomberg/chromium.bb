@@ -42,13 +42,13 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestDoubleReload) {
   // There should only be one dialog open.
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
-  EXPECT_TRUE(web_contents_modal_dialog_manager->IsShowingDialog());
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
   // Navigate away from the page (this is when the test usually crashes).
   ui_test_utils::NavigateToURL(browser(), test_server()->GetURL("bar"));
 
   // The dialog should've been closed.
-  EXPECT_FALSE(web_contents_modal_dialog_manager->IsShowingDialog());
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 }
 
 // If becomes flaky, disable on Windows and use http://crbug.com/47228

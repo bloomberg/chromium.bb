@@ -192,7 +192,7 @@ void TabStripModel::InsertWebContentsAt(int index,
   web_modal::WebContentsModalDialogManager* modal_dialog_manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(contents);
   if (modal_dialog_manager)
-    data->blocked = modal_dialog_manager->IsShowingDialog();
+    data->blocked = modal_dialog_manager->IsDialogActive();
 
   contents_data_.insert(contents_data_.begin() + index, data);
 

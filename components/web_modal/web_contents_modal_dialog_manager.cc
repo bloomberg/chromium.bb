@@ -45,7 +45,7 @@ void WebContentsModalDialogManager::ShowDialog(
   }
 }
 
-bool WebContentsModalDialogManager::IsShowingDialog() const {
+bool WebContentsModalDialogManager::IsDialogActive() const {
   return !child_dialogs_.empty();
 }
 

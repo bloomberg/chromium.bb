@@ -187,7 +187,7 @@ bool IsShowingWebContentsModalDialog(const Browser* browser) {
 
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
-  return web_contents_modal_dialog_manager->IsShowingDialog();
+  return web_contents_modal_dialog_manager->IsDialogActive();
 }
 
 bool PrintPreviewShowing(const Browser* browser) {
