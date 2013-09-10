@@ -10,10 +10,14 @@
  * @param {PreviewPanel.VisibilityType} visibilityType Initial value of the
  *     visibility type.
  * @param {string} currentPath Initial value of the current path.
+ * @param {MetadataCache} metadataCache Metadata cache.
  * @constructor
  * @extends {cr.EventTarget}
  */
-var PreviewPanel = function(element, visibilityType, currentPath) {
+var PreviewPanel = function(element,
+                            visibilityType,
+                            currentPath,
+                            metadataCache) {
   /**
    * The cached height of preview panel.
    * @type {number}
@@ -43,10 +47,10 @@ var PreviewPanel = function(element, visibilityType, currentPath) {
   this.element_ = element;
 
   /**
-   * @type {HTMLElement}
-   * @private
+   * @type {PreviewPanel.Thumbnails}
    */
-  this.thumbnailElement_ = element.querySelector('.preview-thumbnails');
+  this.thumbnails = new PreviewPanel.Thumbnails(
+      element.querySelector('.preview-thumbnails'), metadataCache);
 
   /**
    * @type {HTMLElement}
@@ -328,4 +332,150 @@ PreviewPanel.CalculatingSizeLabel.prototype.onStep_ = function() {
   }
   this.element_.textContent = text;
   this.count_++;
+};
+
+/**
+ * Thumbnails on the preview panel.
+ *
+ * @param {HTMLElement} element DOM Element of thumbnail container.
+ * @param {MetadataCache} metadataCache MetadataCache.
+ * @constructor
+ */
+PreviewPanel.Thumbnails = function(element, metadataCache) {
+  this.element_ = element;
+  this.metadataCache_ = metadataCache;
+  this.sequence_ = 0;
+  Object.seal(this);
+};
+
+/**
+ * Maximium number of thumbnails.
+ * @const {number}
+ */
+PreviewPanel.Thumbnails.MAX_THUMBNAIL_COUNT = 4;
+
+/**
+ * Edge length of the thumbnail square.
+ * @const {number}
+ */
+PreviewPanel.Thumbnails.THUMBNAIL_SIZE = 35;
+
+/**
+ * Longer edge length of zoomed thumbnail rectangle.
+ * @const {number}
+ */
+PreviewPanel.Thumbnails.ZOOMED_THUMBNAIL_SIZE = 200;
+
+PreviewPanel.Thumbnails.prototype = {
+  /**
+   * Sets entries to be displayed in the view.
+   * @param {Array.<Entry>} value Entries.
+   */
+  set selection(value) {
+    this.sequence_++;
+    this.loadThumbnails_(value);
+  }
+};
+
+/**
+ * Loads thumbnail images.
+ * @param {FileSelection} selection Selection containing entries that are
+ *     sources of images.
+ * @private
+ */
+PreviewPanel.Thumbnails.prototype.loadThumbnails_ = function(selection) {
+  var entries = selection.entries;
+  this.element_.classList.remove('has-zoom');
+  this.element_.innerText = '';
+  var clickHandler = selection.tasks &&
+      selection.tasks.executeDefault.bind(selection.tasks);
+  var length = Math.min(entries.length,
+                        PreviewPanel.Thumbnails.MAX_THUMBNAIL_COUNT);
+  for (var i = 0; i < length; i++) {
+    // Create a box.
+    var box = this.element_.ownerDocument.createElement('div');
+    box.style.zIndex = PreviewPanel.Thumbnails.MAX_THUMBNAIL_COUNT + 1 - i;
+
+    // Load the image.
+    FileGrid.decorateThumbnailBox(box,
+                                  entries[i],
+                                  this.metadataCache_,
+                                  ThumbnailLoader.FillMode.FILL,
+                                  FileGrid.ThumbnailQuality.LOW,
+                                  i == 0 && length == 1 &&
+                                      this.setZoomedImage_.bind(this));
+
+    // Register the click handler.
+    if (clickHandler)
+      box.addEventListener('click', clickHandler);
+
+    // Append
+    this.element_.appendChild(box);
+  }
+};
+
+/**
+ * Create the zoomed version of image and set it to the DOM element to show the
+ * zoomed image.
+ *
+ * @param {Image} image Image to be source of the zoomed image.
+ * @param {transform} transform Transoformation to be applied to the image.
+ * @private
+ */
+PreviewPanel.Thumbnails.prototype.setZoomedImage_ =
+    function(image, transform) {
+  if (!image)
+    return;
+  var width = image.width || 0;
+  var height = image.height || 0;
+  if (width == 0 ||
+      height == 0 ||
+      (width < PreviewPanel.Thumbnails.THUMBNAIL_SIZE * 2 &&
+       height < PreviewPanel.Thumbnails.THUMBNAIL_SIZE * 2))
+    return;
+
+  var scale = Math.min(1,
+                       PreviewPanel.Thumbnails.ZOOMED_THUMBNAIL_SIZE /
+                           Math.max(width, height));
+  var imageWidth = ~~(width * scale);
+  var imageHeight = ~~(height * scale);
+  var zoomedImage = this.element_.ownerDocument.createElement('img');
+
+  if (scale < 0.3) {
+    // Scaling large images kills animation. Downscale it in advance.
+    // Canvas scales images with liner interpolation. Make a larger
+    // image (but small enough to not kill animation) and let IMAGE
+    // scale it smoothly.
+    var INTERMEDIATE_SCALE = 3;
+    var canvas = this.element_.ownerDocument.createElement('canvas');
+    canvas.width = imageWidth * INTERMEDIATE_SCALE;
+    canvas.height = imageHeight * INTERMEDIATE_SCALE;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    // Using bigger than default compression reduces image size by
+    // several times. Quality degradation compensated by greater resolution.
+    zoomedImage.src = canvas.toDataURL('image/jpeg', 0.6);
+  } else {
+    zoomedImage.src = image.src;
+  }
+
+  var boxWidth = Math.max(PreviewPanel.Thumbnails.THUMBNAIL_SIZE, imageWidth);
+  var boxHeight = Math.max(PreviewPanel.Thumbnails.THUMBNAIL_SIZE, imageHeight);
+  if (transform && transform.rotate90 % 2 == 1) {
+    var t = boxWidth;
+    boxWidth = boxHeight;
+    boxHeight = t;
+  }
+
+  util.applyTransform(zoomedImage, transform);
+
+  var zoomedBox = this.element_.ownerDocument.createElement('div');
+  zoomedBox.className = 'popup';
+  zoomedBox.style.width = boxWidth + 'px';
+  zoomedBox.style.height = boxHeight + 'px';
+  zoomedBox.appendChild(zoomedImage);
+
+  this.element_.appendChild(zoomedBox);
+  this.element_.classList.add('has-zoom');
+  return;
 };

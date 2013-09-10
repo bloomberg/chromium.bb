@@ -324,16 +324,16 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
 
   // Update preview panels.
   var wasVisible = this.previewPanel_.visible;
-  var thumbnailEntries;
-  if (selection.totalCount == 0) {
-    thumbnailEntries = [
-      this.fileManager_.getCurrentDirectoryEntry()
-    ];
+  var thumbnailSelection;
+  if (selection.totalCount != 0) {
+    thumbnailSelection = selection;
   } else {
-    thumbnailEntries = selection.entries;
+    thumbnailSelection = {
+      entries: [this.fileManager_.getCurrentDirectoryEntry()]
+    };
   }
   this.previewPanel_.setSelection(selection);
-  this.showPreviewThumbnails_(thumbnailEntries);
+  this.previewPanel_.thumbnails.selection = thumbnailSelection;
 
   // Update breadcrums.
   var updateTarget = null;
@@ -369,113 +369,6 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
 };
 
 /**
- * Renders preview thumbnails in preview panel.
- *
- * @param {Array.<FileEntry>} entries The entries of selected object.
- * @private
- */
-FileSelectionHandler.prototype.showPreviewThumbnails_ = function(entries) {
-  var selection = this.selection;
-  var thumbnails = [];
-  var thumbnailCount = 0;
-  var thumbnailLoaded = -1;
-  var forcedShowTimeout = null;
-  var thumbnailsHaveZoom = false;
-  var self = this;
-
-  var showThumbnails = function() {
-    // have-zoom class may be updated twice: then timeout exceeds and then
-    // then all images loaded.
-    if (self.selection == selection) {
-      if (thumbnailsHaveZoom) {
-        self.previewThumbnails_.classList.add('has-zoom');
-      } else {
-        self.previewThumbnails_.classList.remove('has-zoom');
-      }
-    }
-
-    if (forcedShowTimeout === null)
-      return;
-    clearTimeout(forcedShowTimeout);
-    forcedShowTimeout = null;
-
-    // FileSelection could change while images are loading.
-    if (self.selection == selection) {
-      self.previewThumbnails_.textContent = '';
-      for (var i = 0; i < thumbnails.length; i++)
-        self.previewThumbnails_.appendChild(thumbnails[i]);
-    }
-  };
-
-  var onThumbnailLoaded = function() {
-    thumbnailLoaded++;
-    if (thumbnailLoaded == thumbnailCount)
-      showThumbnails();
-  };
-
-  var thumbnailClickHandler = function() {
-    if (selection.tasks)
-      selection.tasks.executeDefault();
-  };
-
-  var doc = this.fileManager_.document_;
-  for (var i = 0; i < entries.length; i++) {
-    var entry = entries[i];
-
-    if (thumbnailCount < FileSelectionHandler.MAX_PREVIEW_THUMBNAIL_COUNT) {
-      var box = doc.createElement('div');
-      box.className = 'thumbnail';
-      if (thumbnailCount == 0) {
-        var zoomed = doc.createElement('div');
-        zoomed.hidden = true;
-        thumbnails.push(zoomed);
-        var onFirstThumbnailLoaded = function(img, transform) {
-          if (img && self.decorateThumbnailZoom_(zoomed, img, transform)) {
-            zoomed.hidden = false;
-            thumbnailsHaveZoom = true;
-          }
-          onThumbnailLoaded();
-        };
-        var thumbnail = this.renderThumbnail_(entry, onFirstThumbnailLoaded);
-        zoomed.addEventListener('click', thumbnailClickHandler);
-      } else {
-        var thumbnail = this.renderThumbnail_(entry, onThumbnailLoaded);
-      }
-      thumbnailCount++;
-      box.appendChild(thumbnail);
-      box.style.zIndex =
-          FileSelectionHandler.MAX_PREVIEW_THUMBNAIL_COUNT + 1 - i;
-      box.addEventListener('click', thumbnailClickHandler);
-
-      thumbnails.push(box);
-    }
-  }
-
-  forcedShowTimeout = setTimeout(showThumbnails,
-      FileManager.THUMBNAIL_SHOW_DELAY);
-  onThumbnailLoaded();
-};
-
-/**
- * Renders a thumbnail for the buttom panel.
- *
- * @param {Entry} entry Entry to render for.
- * @param {function} callback Called when image loaded.
- * @return {HTMLDivElement} Created element.
- * @private
- */
-FileSelectionHandler.prototype.renderThumbnail_ = function(entry, callback) {
-  var thumbnail = this.fileManager_.document_.createElement('div');
-  FileGrid.decorateThumbnailBox(thumbnail,
-                                entry,
-                                this.fileManager_.metadataCache_,
-                                ThumbnailLoader.FillMode.FILL,
-                                FileGrid.ThumbnailQuality.LOW,
-                                callback);
-  return thumbnail;
-};
-
-/**
  * Updates the breadcrumbs in the preview panel.
  *
  * @param {?string} path Path to be shown in the breadcrumbs list
@@ -507,77 +400,4 @@ FileSelectionHandler.prototype.updateSearchBreadcrumbs_ = function() {
   this.searchBreadcrumbs_.show(
       PathUtil.getRootPath(entry.fullPath),
       entry.fullPath);
-};
-
-/**
- * Creates enlarged image for a bottom pannel thumbnail.
- * Image's assumed to be just loaded and not inserted into the DOM.
- *
- * @param {HTMLElement} largeImageBox DIV element to decorate.
- * @param {HTMLElement} img Loaded image.
- * @param {Object} transform Image transformation description.
- * @return {boolean} True if zoomed image is present.
- * @private
- */
-FileSelectionHandler.prototype.decorateThumbnailZoom_ = function(
-    largeImageBox, img, transform) {
-  var width = img.width;
-  var height = img.height;
-  var THUMBNAIL_SIZE = 35;
-  if (width < THUMBNAIL_SIZE * 2 && height < THUMBNAIL_SIZE * 2)
-    return false;
-
-  var scale = Math.min(1,
-      FileSelectionHandler.IMAGE_HOVER_PREVIEW_SIZE / Math.max(width, height));
-
-  var imageWidth = Math.round(width * scale);
-  var imageHeight = Math.round(height * scale);
-
-  var largeImage = this.fileManager_.document_.createElement('img');
-  if (scale < 0.3) {
-    // Scaling large images kills animation. Downscale it in advance.
-
-    // Canvas scales images with liner interpolation. Make a larger
-    // image (but small enough to not kill animation) and let IMG
-    // scale it smoothly.
-    var INTERMEDIATE_SCALE = 3;
-    var canvas = this.fileManager_.document_.createElement('canvas');
-    canvas.width = imageWidth * INTERMEDIATE_SCALE;
-    canvas.height = imageHeight * INTERMEDIATE_SCALE;
-    var ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    // Using bigger than default compression reduces image size by
-    // several times. Quality degradation compensated by greater resolution.
-    largeImage.src = canvas.toDataURL('image/jpeg', 0.6);
-  } else {
-    largeImage.src = img.src;
-  }
-  largeImageBox.className = 'popup';
-
-  var boxWidth = Math.max(THUMBNAIL_SIZE, imageWidth);
-  var boxHeight = Math.max(THUMBNAIL_SIZE, imageHeight);
-
-  if (transform && transform.rotate90 % 2 == 1) {
-    var t = boxWidth;
-    boxWidth = boxHeight;
-    boxHeight = t;
-  }
-
-  var style = largeImageBox.style;
-  style.width = boxWidth + 'px';
-  style.height = boxHeight + 'px';
-  style.top = (-boxHeight + THUMBNAIL_SIZE) + 'px';
-
-  var style = largeImage.style;
-  style.width = imageWidth + 'px';
-  style.height = imageHeight + 'px';
-  style.left = (boxWidth - imageWidth) / 2 + 'px';
-  style.top = (boxHeight - imageHeight) / 2 + 'px';
-  style.position = 'relative';
-
-  util.applyTransform(largeImage, transform);
-
-  largeImageBox.appendChild(largeImage);
-  largeImageBox.style.zIndex = 1000;
-  return true;
 };

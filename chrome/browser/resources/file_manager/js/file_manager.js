@@ -856,7 +856,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         DialogType.isOpenDialog(this.dialogType) ?
             PreviewPanel.VisibilityType.ALWAYS_VISIBLE :
             PreviewPanel.VisibilityType.AUTO,
-        this.getCurrentDirectory());
+        this.getCurrentDirectory(),
+        this.metadataCache_);
     this.previewPanel_.addEventListener(
         PreviewPanel.Event.VISIBILITY_CHANGE,
         this.onPreviewPanelVisibilityChange_.bind(this));
