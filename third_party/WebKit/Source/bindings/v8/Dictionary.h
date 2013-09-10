@@ -102,8 +102,6 @@ public:
 
     bool getWithUndefinedOrNullCheck(const String&, String&) const;
 
-    PassRefPtr<EventListener> getEventListener(const String&, Notification*) const { return 0; }
-
 private:
     bool getKey(const String& key, v8::Local<v8::Value>&) const;
 
