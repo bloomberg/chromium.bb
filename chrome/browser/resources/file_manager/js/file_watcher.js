@@ -47,7 +47,8 @@ FileWatcher.prototype.dispose = function() {
  * @private
  */
 FileWatcher.prototype.onDirectoryChanged_ = function(event) {
-  if (event.directoryUrl == this.watchedDirectoryEntry_.toURL()) {
+  if (this.watchedDirectoryEntry_ &&
+      event.directoryUrl == this.watchedDirectoryEntry_.toURL()) {
     var e = new cr.Event('watcher-directory-changed');
     this.dispatchEvent(e);
   }
@@ -160,7 +161,7 @@ FileWatcher.prototype.resetWatchedEntry_ = function(onSuccess, onError) {
             else
               onError();
             callback();
-          });
+          }.bind(this));
       this.metadataCache_.removeObserver(this.filesystemMetadataObserverId_);
       this.metadataCache_.removeObserver(this.thumbnailMetadataObserverId_);
       this.metadataCache_.removeObserver(this.driveMetadataObserverId_);
