@@ -413,7 +413,6 @@
         'gfx/canvas.cc',
         'gfx/canvas.h',
         'gfx/canvas_android.cc',
-        'gfx/canvas_mac.mm',
         'gfx/canvas_paint_gtk.cc',
         'gfx/canvas_paint_gtk.h',
         'gfx/canvas_paint_mac.h',
@@ -647,7 +646,6 @@
         ['use_canvas_skia==1', {
           'sources!': [
             'gfx/canvas_android.cc',
-            'gfx/canvas_mac.mm',
           ],
         }, {  # use_canvas_skia!=1
           'sources!': [
