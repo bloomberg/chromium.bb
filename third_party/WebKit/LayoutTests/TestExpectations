@@ -1207,14 +1207,6 @@ crbug.com/276861 [ Win ] fast/filesystem/op-restricted-unicode.html [ Failure Pa
 
 crbug.com/278318 [ Win7 Lion Debug Release SnowLeopard Debug Release Linux ] editing/spelling/spellcheck-editable-on-focus.html [ Failure Pass ]
 
-crbug.com/282708 fast/regions/changing-writing-mode-2.html [ ImageOnlyFailure ]
-crbug.com/282708 fast/regions/changing-writing-mode-5.html [ ImageOnlyFailure ]
-crbug.com/282708 fast/regions/changing-writing-mode.html [ ImageOnlyFailure ]
-crbug.com/282708 fast/regions/subtree-with-horiz-bt.html [ ImageOnlyFailure ]
-crbug.com/282708 fast/regions/subtree-with-horiz-tb.html [ ImageOnlyFailure ]
-crbug.com/282708 fast/regions/subtree-with-vert-lr.html [ ImageOnlyFailure ]
-crbug.com/282708 fast/regions/subtree-with-vert-rl.html [ ImageOnlyFailure ]
-
 crbug.com/278497 [ Linux SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
 
 crbug.com/280203 [ Mac ] compositing/overflow/nested-scrolling.html [ ImageOnlyFailure ]

@@ -385,6 +385,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_lastStyleResolverAccessTime(0)
     , m_didCalculateStyleResolver(false)
     , m_ignorePendingStylesheets(false)
+    , m_evaluateMediaQueriesOnStyleRecalc(false)
     , m_needsNotifyRemoveAllPendingStylesheet(false)
     , m_hasNodesWithPlaceholderStyle(false)
     , m_pendingSheetLayout(NoLayoutWithPendingSheets)
@@ -1692,6 +1693,11 @@ void Document::recalcStyle(StyleRecalcChange change)
     TRACE_EVENT0("webkit", "Document::recalcStyle");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "RecalcStyle");
 
+    if (m_evaluateMediaQueriesOnStyleRecalc) {
+        m_evaluateMediaQueriesOnStyleRecalc = false;
+        evaluateMediaQueryList();
+    }
+
     updateDistributionIfNeeded();
 
     // FIXME: We should update style on our ancestor chain before proceeding (especially for seamless),
@@ -2828,7 +2834,7 @@ void Document::didRemoveAllPendingStylesheet()
 {
     m_needsNotifyRemoveAllPendingStylesheet = false;
 
-    styleResolverChanged(RecalcStyleImmediately, AnalyzedStyleUpdate);
+    styleResolverChanged(RecalcStyleDeferred, AnalyzedStyleUpdate);
     executeScriptsWaitingForResourcesIfNeeded();
 
     if (m_gotoAnchorNeededAfterStylesheetsLoad && view())
@@ -3303,34 +3309,21 @@ void Document::styleResolverChanged(StyleResolverUpdateType updateType, StyleRes
 
     bool needsRecalc = m_styleSheetCollections->updateActiveStyleSheets(updateMode);
 
-    if (updateType >= RecalcStyleDeferred) {
-        setNeedsStyleRecalc();
-        return;
-    }
-
     if (didLayoutWithPendingStylesheets() && !m_styleSheetCollections->hasPendingSheets()) {
+        // We need to manually repaint because we avoid doing all repaints in layout or style
+        // recalc while sheets are still loading to avoid FOUC.
         m_pendingSheetLayout = IgnoreLayoutWithPendingSheets;
-        if (renderer())
-            renderView()->repaintViewAndCompositedLayers();
+        renderView()->repaintViewAndCompositedLayers();
     }
 
     if (!needsRecalc)
         return;
 
-    // This recalcStyle initiates a new recalc cycle. We need to bracket it to
-    // make sure animations get the correct update time
-    {
-        AnimationUpdateBlock animationUpdateBlock(m_frame ? m_frame->animation() : 0);
-        recalcStyle(Force);
-    }
+    m_evaluateMediaQueriesOnStyleRecalc = true;
+    setNeedsStyleRecalc();
 
-    if (renderer()) {
-        renderer()->setNeedsLayoutAndPrefWidthsRecalc();
-        if (view())
-            view()->scheduleRelayout();
-    }
-
-    evaluateMediaQueryList();
+    if (updateType == RecalcStyleImmediately)
+        updateStyleIfNeeded();
 }
 
 void Document::notifySeamlessChildDocumentsOfStylesheetUpdate() const
