@@ -19,7 +19,6 @@
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/process_commit_response_command.h"
 #include "sync/engine/syncer_types.h"
-#include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/internal_api/public/util/syncer_error.h"
 #include "sync/sessions/nudge_tracker.h"
@@ -44,14 +43,20 @@ using sessions::StatusController;
 using sessions::SyncSession;
 using sessions::NudgeTracker;
 
-Syncer::Syncer(syncer::CancelationSignal* cancelation_signal)
-    : cancelation_signal_(cancelation_signal) {
+Syncer::Syncer()
+    : early_exit_requested_(false) {
 }
 
 Syncer::~Syncer() {}
 
 bool Syncer::ExitRequested() {
-  return cancelation_signal_->IsStopRequested();
+  base::AutoLock lock(early_exit_requested_lock_);
+  return early_exit_requested_;
+}
+
+void Syncer::RequestEarlyExit() {
+  base::AutoLock lock(early_exit_requested_lock_);
+  early_exit_requested_ = true;
 }
 
 bool Syncer::NormalSyncShare(ModelTypeSet request_types,

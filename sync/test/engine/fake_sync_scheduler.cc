@@ -13,7 +13,7 @@ FakeSyncScheduler::~FakeSyncScheduler() {}
 void FakeSyncScheduler::Start(Mode mode) {
 }
 
-void FakeSyncScheduler::Stop() {
+void FakeSyncScheduler::RequestStop() {
 }
 
 void FakeSyncScheduler::ScheduleLocalNudge(

@@ -21,8 +21,7 @@ class SYNC_EXPORT InternalComponentsFactoryImpl
 
   virtual scoped_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
-      sessions::SyncSessionContext* context,
-      syncer::CancelationSignal* cancelation_signal) OVERRIDE;
+      sessions::SyncSessionContext* context) OVERRIDE;
 
   virtual scoped_ptr<sessions::SyncSessionContext> BuildContext(
       ServerConnectionManager* connection_manager,

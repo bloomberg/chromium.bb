@@ -54,7 +54,7 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   virtual void Start(Mode mode) OVERRIDE;
   virtual bool ScheduleConfiguration(
       const ConfigurationParams& params) OVERRIDE;
-  virtual void Stop() OVERRIDE;
+  virtual void RequestStop() OVERRIDE;
   virtual void ScheduleLocalNudge(
       const base::TimeDelta& desired_delay,
       ModelTypeSet types,
@@ -180,6 +180,9 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
 
   // Determines if we're allowed to contact the server right now.
   bool CanRunNudgeJobNow(JobPriority priority);
+
+  // 'Impl' here refers to real implementation of public functions.
+  void StopImpl();
 
   // If the scheduler's current state supports it, this will create a job based
   // on the passed in parameters and coalesce it with any other pending jobs,

@@ -226,7 +226,6 @@
           '..',
         ],
         'sources': [
-          'internal_api/public/base/cancelation_signal_unittest.cc',
           'internal_api/public/base/enum_set_unittest.cc',
           'internal_api/public/base/node_ordinal_unittest.cc',
           'internal_api/public/base/ordinal_unittest.cc',

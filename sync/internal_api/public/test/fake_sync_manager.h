@@ -92,8 +92,7 @@ class FakeSyncManager : public SyncManager {
       Encryptor* encryptor,
       scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
       ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
-      bool use_oauth2_token,
-      CancelationSignal* cancelation_signal) OVERRIDE;
+      bool use_oauth2_token) OVERRIDE;
   virtual void ThrowUnrecoverableError() OVERRIDE;
   virtual ModelTypeSet InitialSyncEndedTypes() OVERRIDE;
   virtual ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
@@ -115,6 +114,7 @@ class FakeSyncManager : public SyncManager {
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual SyncStatus GetDetailedStatus() const OVERRIDE;
   virtual void SaveChanges() OVERRIDE;
+  virtual void StopSyncingForShutdown() OVERRIDE;
   virtual void ShutdownOnSyncThread() OVERRIDE;
   virtual UserShare* GetUserShare() OVERRIDE;
   virtual const std::string cache_guid() OVERRIDE;

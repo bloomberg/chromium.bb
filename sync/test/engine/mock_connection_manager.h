@@ -15,7 +15,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
-#include "base/synchronization/lock.h"
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/unique_position.h"

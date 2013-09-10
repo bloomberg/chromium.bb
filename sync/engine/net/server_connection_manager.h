@@ -8,13 +8,14 @@
 #include <iosfwd>
 #include <string>
 
+#include "base/atomicops.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread_checker.h"
 #include "sync/base/sync_export.h"
-#include "sync/internal_api/public/base/cancelation_observer.h"
 #include "sync/syncable/syncable_id.h"
 
 namespace sync_pb {
@@ -22,8 +23,6 @@ class ClientToServerMessage;
 }
 
 namespace syncer {
-
-class CancelationSignal;
 
 namespace syncable {
 class Directory;
@@ -184,8 +183,7 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager {
   ServerConnectionManager(const std::string& server,
                           int port,
                           bool use_ssl,
-                          bool use_oauth2_token,
-                          CancelationSignal* cancelation_signal);
+                          bool use_oauth2_token);
 
   virtual ~ServerConnectionManager();
 
@@ -215,7 +213,13 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager {
 
   // Factory method to create an Connection object we can use for
   // communication with the server.
-  virtual scoped_ptr<Connection> MakeConnection();
+  virtual Connection* MakeConnection();
+
+  // Aborts any active HTTP POST request.
+  // We expect this to get called on a different thread than the valid
+  // ThreadChecker thread, as we want to kill any pending http traffic without
+  // having to wait for the request to complete.
+  void TerminateAllIO();
 
   void set_client_id(const std::string& client_id) {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -268,6 +272,10 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager {
   // terminated, this will return NULL.
   Connection* MakeActiveConnection();
 
+  // Called by Connection objects as they are destroyed to allow the
+  // ServerConnectionManager to cleanup active connections.
+  void OnConnectionDestroyed(Connection* connection);
+
   // The sync_server_ is the server that requests will be made to.
   std::string sync_server_;
 
@@ -300,34 +308,35 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager {
 
   base::ThreadChecker thread_checker_;
 
-  CancelationSignal* const cancelation_signal_;
+  // Protects all variables below to allow bailing out of active connections.
+  base::Lock terminate_connection_lock_;
+
+  // If true, we've been told to terminate IO and expect to be destroyed
+  // shortly.  No future network requests will be made.
+  bool terminated_;
+
+  // A non-owning pointer to any active http connection, so that we can abort
+  // it if necessary.
+  Connection* active_connection_;
 
  private:
   friend class Connection;
   friend class ScopedServerStatusWatcher;
 
-  // A class to help manage the active connection.  It handles the registration
-  // and unregistration with the CancelationSignal.  It also takes ownership of
-  // the connection and will delete it if the abort signal was sent early or
-  // when this class goes out of scope.
-  class ScopedConnectionHelper : public CancelationObserver {
+  // A class to help deal with cleaning up active Connection objects when (for
+  // ex) multiple early-exits are present in some scope. ScopedConnectionHelper
+  // informs the ServerConnectionManager before the Connection object it takes
+  // ownership of is destroyed.
+  class ScopedConnectionHelper {
    public:
-    ScopedConnectionHelper(CancelationSignal* cancelation_signal,
-                           scoped_ptr<Connection> connection);
-    virtual ~ScopedConnectionHelper();
+    // |manager| must outlive this. Takes ownership of |connection|.
+    ScopedConnectionHelper(ServerConnectionManager* manager,
+                           Connection* connection);
+    ~ScopedConnectionHelper();
     Connection* get();
-
-    // Called from a different thread when the CancelationObserver's
-    // RequestStop() is called and this class has been registered as a handler.
-    //
-    // Marked final because there's no way to safely override it.  See comment
-    // in this class' destructor.
-    virtual void OnStopRequested() OVERRIDE FINAL;
-
    private:
-    CancelationSignal* const cancelation_signal_;
+    ServerConnectionManager* manager_;
     scoped_ptr<Connection> connection_;
-
     DISALLOW_COPY_AND_ASSIGN(ScopedConnectionHelper);
   };
 

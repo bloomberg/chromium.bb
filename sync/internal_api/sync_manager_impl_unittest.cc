@@ -24,7 +24,6 @@
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "sync/engine/sync_scheduler.h"
-#include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
@@ -836,8 +835,7 @@ class SyncManagerTest : public testing::Test,
         scoped_ptr<UnrecoverableErrorHandler>(
             new TestUnrecoverableErrorHandler).Pass(),
         NULL,
-        false,
-        &cancelation_signal_);
+        false);
 
     sync_manager_.GetEncryptionHandler()->AddObserver(&encryption_observer_);
 
@@ -1020,7 +1018,6 @@ class SyncManagerTest : public testing::Test,
  protected:
   FakeEncryptor encryptor_;
   SyncManagerImpl sync_manager_;
-  CancelationSignal cancelation_signal_;
   WeakHandle<JsBackend> js_backend_;
   StrictMock<SyncManagerObserverMock> manager_observer_;
   StrictMock<SyncEncryptionHandlerObserverMock> encryption_observer_;
@@ -2799,8 +2796,7 @@ class ComponentsFactory : public TestInternalComponentsFactory {
 
   virtual scoped_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
-      sessions::SyncSessionContext* context,
-      CancelationSignal* stop_handle) OVERRIDE {
+      sessions::SyncSessionContext* context) OVERRIDE {
     *session_context_ = context;
     return scheduler_to_use_.Pass();
   }

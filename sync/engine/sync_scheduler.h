@@ -75,9 +75,11 @@ class SYNC_EXPORT_PRIVATE SyncScheduler
   // Note: must already be in CONFIGURATION mode.
   virtual bool ScheduleConfiguration(const ConfigurationParams& params) = 0;
 
-  // Request that the syncer avoid starting any new tasks and prepare for
-  // shutdown.
-  virtual void Stop() = 0;
+  // Request that any running syncer task stop as soon as possible and
+  // cancel all scheduled tasks. This function can be called from any thread,
+  // and should in fact be called from a thread that isn't the sync loop to
+  // allow preempting ongoing sync cycles.
+  virtual void RequestStop() = 0;
 
   // The meat and potatoes. All three of the following methods will post a
   // delayed task to attempt the actual nudge (see ScheduleNudgeImpl).

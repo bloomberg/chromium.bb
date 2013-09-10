@@ -41,7 +41,6 @@ using sync_pb::GetUpdatesCallerInfo;
 
 class MockSyncer : public Syncer {
  public:
-  MockSyncer();
   MOCK_METHOD3(NormalSyncShare, bool(ModelTypeSet,
                                      const sessions::NudgeTracker&,
                                      sessions::SyncSession*));
@@ -51,9 +50,6 @@ class MockSyncer : public Syncer {
                     SyncSession*));
   MOCK_METHOD2(PollSyncShare, bool(ModelTypeSet, sessions::SyncSession*));
 };
-
-MockSyncer::MockSyncer()
-  : Syncer(NULL) {}
 
 typedef std::vector<TimeTicks> SyncShareTimes;
 

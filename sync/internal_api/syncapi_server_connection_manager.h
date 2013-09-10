@@ -12,11 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/net/server_connection_manager.h"
-#include "sync/internal_api/public/base/cancelation_signal.h"
 
 namespace syncer {
 
-class ConnectionDisconnectHandle;
 class HttpPostProviderFactory;
 class HttpPostProviderInterface;
 
@@ -57,16 +55,13 @@ class SYNC_EXPORT_PRIVATE SyncAPIServerConnectionManager
                                  int port,
                                  bool use_ssl,
                                  bool use_oauth2_token,
-                                 HttpPostProviderFactory* factory,
-                                 CancelationSignal* cancelation_signal);
+                                 HttpPostProviderFactory* factory);
   virtual ~SyncAPIServerConnectionManager();
 
   // ServerConnectionManager overrides.
-  virtual scoped_ptr<Connection> MakeConnection() OVERRIDE;
+  virtual Connection* MakeConnection() OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(
-      SyncAPIServerConnectionManagerTest, VeryEarlyAbortPost);
   FRIEND_TEST_ALL_PREFIXES(SyncAPIServerConnectionManagerTest, EarlyAbortPost);
   FRIEND_TEST_ALL_PREFIXES(SyncAPIServerConnectionManagerTest, AbortPost);
 
