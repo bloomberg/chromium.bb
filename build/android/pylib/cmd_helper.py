@@ -97,14 +97,3 @@ def GetCmdStatusAndOutput(args, cwd=None, shell=False):
     logging.debug('Truncated output:')
   logging.debug(stdout[:4096])
   return (exit_code, stdout)
-
-
-class OutDirectory(object):
-  _out_directory = os.path.join(constants.DIR_SOURCE_ROOT,
-      os.environ.get('CHROMIUM_OUT_DIR','out'))
-  @staticmethod
-  def set(out_directory):
-    OutDirectory._out_directory = out_directory
-  @staticmethod
-  def get():
-    return OutDirectory._out_directory

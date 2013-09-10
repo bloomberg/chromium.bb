@@ -15,7 +15,7 @@ import optparse
 import sys
 import time
 
-from pylib import android_commands, forwarder
+from pylib import android_commands, constants, forwarder
 from pylib.utils import run_tests_helper
 
 
@@ -50,8 +50,9 @@ def main(argv):
     sys.exit(1)
 
   adb = android_commands.AndroidCommands(options.device)
+  constants.SetBuildType(options.build_type)
   try:
-    forwarder.Forwarder.Map(port_pairs, adb, options.build_type)
+    forwarder.Forwarder.Map(port_pairs, adb)
     while True:
       time.sleep(60)
   except KeyboardInterrupt:

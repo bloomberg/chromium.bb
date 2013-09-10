@@ -247,7 +247,6 @@ class AndroidCommands(object):
     self._device_utc_offset = None
     self._potential_push_size = 0
     self._actual_push_size = 0
-    self._md5sum_build_dir = ''
     self._external_storage = ''
     self._util_wrapper = ''
 
@@ -783,18 +782,11 @@ class AndroidCommands(object):
       A tuple containing lists of the host and device md5sum results as
       created by _ParseMd5SumOutput().
     """
-    if not self._md5sum_build_dir:
-      default_build_type = os.environ.get('BUILD_TYPE', 'Debug')
-      build_dir = '%s/%s/' % (
-          cmd_helper.OutDirectory().get(), default_build_type)
-      md5sum_dist_path = '%s/md5sum_dist' % build_dir
-      if not os.path.exists(md5sum_dist_path):
-        build_dir = '%s/Release/' % cmd_helper.OutDirectory().get()
-        md5sum_dist_path = '%s/md5sum_dist' % build_dir
-        assert os.path.exists(md5sum_dist_path), 'Please build md5sum.'
-      command = 'push %s %s' % (md5sum_dist_path, MD5SUM_DEVICE_FOLDER)
-      assert _HasAdbPushSucceeded(self._adb.SendCommand(command))
-      self._md5sum_build_dir = build_dir
+    md5sum_dist_path = os.path.join(constants.GetOutDirectory(),
+                                    'md5sum_dist')
+    assert os.path.exists(md5sum_dist_path), 'Please build md5sum.'
+    command = 'push %s %s' % (md5sum_dist_path, MD5SUM_DEVICE_FOLDER)
+    assert _HasAdbPushSucceeded(self._adb.SendCommand(command))
 
     cmd = (MD5SUM_LD_LIBRARY_PATH + ' ' + self._util_wrapper + ' ' +
            MD5SUM_DEVICE_PATH + ' ' + device_path)
@@ -802,7 +794,8 @@ class AndroidCommands(object):
         self.RunShellCommand(cmd, timeout_time=2 * 60))
     assert os.path.exists(host_path), 'Local path not found %s' % host_path
     md5sum_output = cmd_helper.GetCmdOutput(
-        ['%s/md5sum_bin_host' % self._md5sum_build_dir, host_path])
+        [os.path.join(constants.GetOutDirectory(), 'md5sum_bin_host'),
+         host_path])
     host_hash_tuples = _ParseMd5SumOutput(md5sum_output.splitlines())
     return (host_hash_tuples, device_hash_tuples)
 

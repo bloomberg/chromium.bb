@@ -28,10 +28,9 @@ class TestPackageExecutable(TestPackage):
       suite_name: Name of the test suite (e.g. base_unittests).
     """
     TestPackage.__init__(self, suite_name)
-    product_dir = os.path.join(cmd_helper.OutDirectory.get(),
-        constants.GetBuildType())
-    self.suite_path = os.path.join(product_dir, suite_name)
-    self._symbols_dir = os.path.join(product_dir, 'lib.target')
+    self.suite_path = os.path.join(constants.GetOutDirectory(), suite_name)
+    self._symbols_dir = os.path.join(constants.GetOutDirectory(),
+                                     'lib.target')
 
   #override
   def GetGTestReturnCode(self, adb):

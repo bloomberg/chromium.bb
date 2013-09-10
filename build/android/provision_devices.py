@@ -86,6 +86,7 @@ def main(argv):
       '-r', '--auto-reconnect', action='store_true',
       help='Push binary which will reboot the device on adb disconnections.')
   options, args = parser.parse_args(argv[1:])
+  constants.SetBuildType(options.target)
 
   if args:
     print >> sys.stderr, 'Unused args %s' % args

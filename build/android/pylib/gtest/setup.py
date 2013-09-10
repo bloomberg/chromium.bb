@@ -96,10 +96,6 @@ def _GenerateDepsDirUsingIsolate(suite_name):
   Args:
     suite_name: Name of the test suite (e.g. base_unittests).
   """
-  product_dir = os.path.join(cmd_helper.OutDirectory.get(),
-      constants.GetBuildType())
-  assert os.path.isabs(product_dir)
-
   if os.path.isdir(constants.ISOLATE_DEPS_DIR):
     shutil.rmtree(constants.ISOLATE_DEPS_DIR)
 
@@ -110,14 +106,14 @@ def _GenerateDepsDirUsingIsolate(suite_name):
 
   isolate_abs_path = os.path.join(constants.DIR_SOURCE_ROOT, isolate_rel_path)
   isolated_abs_path = os.path.join(
-      product_dir, '%s.isolated' % suite_name)
+      constants.GetOutDirectory(), '%s.isolated' % suite_name)
   assert os.path.exists(isolate_abs_path)
   isolate_cmd = [
       'python', _ISOLATE_SCRIPT,
       'remap',
       '--isolate', isolate_abs_path,
       '--isolated', isolated_abs_path,
-      '-V', 'PRODUCT_DIR=%s' % product_dir,
+      '-V', 'PRODUCT_DIR=%s' % constants.GetOutDirectory(),
       '-V', 'OS=android',
       '--outdir', constants.ISOLATE_DEPS_DIR,
   ]
