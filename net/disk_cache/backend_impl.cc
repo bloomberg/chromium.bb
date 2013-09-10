@@ -337,8 +337,6 @@ void BackendImpl::CleanupCache() {
       // This is a net_unittest, verify that we are not 'leaking' entries.
       File::WaitForPendingIO(&num_pending_io_);
       DCHECK(!num_refs_);
-    } else {
-      File::DropPendingIO();
     }
   }
   block_files_.CloseFiles();

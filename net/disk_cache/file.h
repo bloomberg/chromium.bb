@@ -70,18 +70,20 @@ class NET_EXPORT_PRIVATE File : public base::RefCounted<File> {
   // Blocks until |num_pending_io| IO operations complete.
   static void WaitForPendingIO(int* num_pending_io);
 
-  // Drops current pending operations without waiting for them to complete.
-  static void DropPendingIO();
-
  protected:
   virtual ~File();
 
+ private:
   // Performs the actual asynchronous write. If notify is set and there is no
   // callback, the call will be re-synchronized.
   bool AsyncWrite(const void* buffer, size_t buffer_len, size_t offset,
                   FileIOCallback* callback, bool* completed);
 
- private:
+  // Infrastructure for async IO.
+  int DoRead(void* buffer, size_t buffer_len, size_t offset);
+  int DoWrite(const void* buffer, size_t buffer_len, size_t offset);
+  void OnOperationComplete(FileIOCallback* callback, int result);
+
   bool init_;
   bool mixed_;
   base::PlatformFile platform_file_;  // Regular, asynchronous IO handle.

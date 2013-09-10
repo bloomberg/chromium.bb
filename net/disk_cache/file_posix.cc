@@ -4,165 +4,31 @@
 
 #include "net/disk_cache/file.h"
 
-#include <fcntl.h>
-
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/threading/worker_pool.h"
+#include "base/run_loop.h"
+#include "base/task_runner_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/disk_cache/in_flight_io.h"
 
 namespace {
 
-// This class represents a single asynchronous IO operation while it is being
-// bounced between threads.
-class FileBackgroundIO : public disk_cache::BackgroundIO {
+// The maximum number of threads for this pool.
+const int kMaxThreads = 5;
+
+class FileWorkerPool : public base::SequencedWorkerPool {
  public:
-  // Other than the actual parameters for the IO operation (including the
-  // |callback| that must be notified at the end), we need the controller that
-  // is keeping track of all operations. When done, we notify the controller
-  // (we do NOT invoke the callback), in the worker thead that completed the
-  // operation.
-  FileBackgroundIO(disk_cache::File* file, const void* buf, size_t buf_len,
-                   size_t offset, disk_cache::FileIOCallback* callback,
-                   disk_cache::InFlightIO* controller)
-      : disk_cache::BackgroundIO(controller), callback_(callback), file_(file),
-        buf_(buf), buf_len_(buf_len), offset_(offset) {
-  }
-
-  disk_cache::FileIOCallback* callback() {
-    return callback_;
-  }
-
-  disk_cache::File* file() {
-    return file_;
-  }
-
-  // Read and Write are the operations that can be performed asynchronously.
-  // The actual parameters for the operation are setup in the constructor of
-  // the object. Both methods should be called from a worker thread, by posting
-  // a task to the WorkerPool (they are RunnableMethods). When finished,
-  // controller->OnIOComplete() is called.
-  void Read();
-  void Write();
-
- private:
-  virtual ~FileBackgroundIO() {}
-
-  disk_cache::FileIOCallback* callback_;
-
-  disk_cache::File* file_;
-  const void* buf_;
-  size_t buf_len_;
-  size_t offset_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileBackgroundIO);
-};
-
-
-// The specialized controller that keeps track of current operations.
-class FileInFlightIO : public disk_cache::InFlightIO {
- public:
-  FileInFlightIO() {}
-  virtual ~FileInFlightIO() {}
-
-  // These methods start an asynchronous operation. The arguments have the same
-  // semantics of the File asynchronous operations, with the exception that the
-  // operation never finishes synchronously.
-  void PostRead(disk_cache::File* file, void* buf, size_t buf_len,
-                size_t offset, disk_cache::FileIOCallback* callback);
-  void PostWrite(disk_cache::File* file, const void* buf, size_t buf_len,
-                 size_t offset, disk_cache::FileIOCallback* callback);
+  FileWorkerPool() : base::SequencedWorkerPool(kMaxThreads, "CachePool") {}
 
  protected:
-  // Invokes the users' completion callback at the end of the IO operation.
-  // |cancel| is true if the actual task posted to the thread is still
-  // queued (because we are inside WaitForPendingIO), and false if said task is
-  // the one performing the call.
-  virtual void OnOperationComplete(disk_cache::BackgroundIO* operation,
-                                   bool cancel) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FileInFlightIO);
+  virtual ~FileWorkerPool() {}
 };
 
-// ---------------------------------------------------------------------------
-
-// Runs on a worker thread.
-void FileBackgroundIO::Read() {
-  if (file_->Read(const_cast<void*>(buf_), buf_len_, offset_)) {
-    result_ = static_cast<int>(buf_len_);
-  } else {
-    result_ = net::ERR_CACHE_READ_FAILURE;
-  }
-  NotifyController();
-}
-
-// Runs on a worker thread.
-void FileBackgroundIO::Write() {
-  bool rv = file_->Write(buf_, buf_len_, offset_);
-
-  result_ = rv ? static_cast<int>(buf_len_) : net::ERR_CACHE_WRITE_FAILURE;
-  NotifyController();
-}
-
-// ---------------------------------------------------------------------------
-
-void FileInFlightIO::PostRead(disk_cache::File *file, void* buf, size_t buf_len,
-                          size_t offset, disk_cache::FileIOCallback *callback) {
-  scoped_refptr<FileBackgroundIO> operation(
-      new FileBackgroundIO(file, buf, buf_len, offset, callback, this));
-  file->AddRef();  // Balanced on OnOperationComplete()
-
-  base::WorkerPool::PostTask(FROM_HERE,
-      base::Bind(&FileBackgroundIO::Read, operation.get()), true);
-  OnOperationPosted(operation.get());
-}
-
-void FileInFlightIO::PostWrite(disk_cache::File* file, const void* buf,
-                           size_t buf_len, size_t offset,
-                           disk_cache::FileIOCallback* callback) {
-  scoped_refptr<FileBackgroundIO> operation(
-      new FileBackgroundIO(file, buf, buf_len, offset, callback, this));
-  file->AddRef();  // Balanced on OnOperationComplete()
-
-  base::WorkerPool::PostTask(FROM_HERE,
-      base::Bind(&FileBackgroundIO::Write, operation.get()), true);
-  OnOperationPosted(operation.get());
-}
-
-// Runs on the IO thread.
-void FileInFlightIO::OnOperationComplete(disk_cache::BackgroundIO* operation,
-                                         bool cancel) {
-  FileBackgroundIO* op = static_cast<FileBackgroundIO*>(operation);
-
-  disk_cache::FileIOCallback* callback = op->callback();
-  int bytes = operation->result();
-
-  // Release the references acquired in PostRead / PostWrite.
-  op->file()->Release();
-  callback->OnFileIOComplete(bytes);
-}
-
-// A static object tha will broker all async operations.
-FileInFlightIO* s_file_operations = NULL;
-
-// Returns the current FileInFlightIO.
-FileInFlightIO* GetFileInFlightIO() {
-  if (!s_file_operations) {
-    s_file_operations = new FileInFlightIO;
-  }
-  return s_file_operations;
-}
-
-// Deletes the current FileInFlightIO.
-void DeleteFileInFlightIO() {
-  DCHECK(s_file_operations);
-  delete s_file_operations;
-  s_file_operations = NULL;
-}
+base::LazyInstance<FileWorkerPool>::Leaky s_worker_pool =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -205,8 +71,9 @@ bool File::IsValid() const {
 bool File::Read(void* buffer, size_t buffer_len, size_t offset) {
   DCHECK(init_);
   if (buffer_len > static_cast<size_t>(kint32max) ||
-      offset > static_cast<size_t>(kint32max))
+      offset > static_cast<size_t>(kint32max)) {
     return false;
+  }
 
   int ret = base::ReadPlatformFile(platform_file_, offset,
                                    static_cast<char*>(buffer), buffer_len);
@@ -216,8 +83,9 @@ bool File::Read(void* buffer, size_t buffer_len, size_t offset) {
 bool File::Write(const void* buffer, size_t buffer_len, size_t offset) {
   DCHECK(init_);
   if (buffer_len > static_cast<size_t>(kint32max) ||
-      offset > static_cast<size_t>(kint32max))
+      offset > static_cast<size_t>(kint32max)) {
     return false;
+  }
 
   int ret = base::WritePlatformFile(platform_file_, offset,
                                     static_cast<const char*>(buffer),
@@ -225,9 +93,6 @@ bool File::Write(const void* buffer, size_t buffer_len, size_t offset) {
   return (static_cast<size_t>(ret) == buffer_len);
 }
 
-// We have to increase the ref counter of the file before performing the IO to
-// prevent the completion to happen with an invalid handle (if the file is
-// closed while the IO is in flight).
 bool File::Read(void* buffer, size_t buffer_len, size_t offset,
                 FileIOCallback* callback, bool* completed) {
   DCHECK(init_);
@@ -237,10 +102,15 @@ bool File::Read(void* buffer, size_t buffer_len, size_t offset,
     return Read(buffer, buffer_len, offset);
   }
 
-  if (buffer_len > ULONG_MAX || offset > ULONG_MAX)
+  if (buffer_len > static_cast<size_t>(kint32max) ||
+      offset > static_cast<size_t>(kint32max)) {
     return false;
+  }
 
-  GetFileInFlightIO()->PostRead(this, buffer, buffer_len, offset, callback);
+  base::PostTaskAndReplyWithResult(
+      s_worker_pool.Pointer(), FROM_HERE,
+      base::Bind(&File::DoRead, this, buffer, buffer_len, offset),
+      base::Bind(&File::OnOperationComplete, this, callback));
 
   *completed = false;
   return true;
@@ -255,12 +125,23 @@ bool File::Write(const void* buffer, size_t buffer_len, size_t offset,
     return Write(buffer, buffer_len, offset);
   }
 
-  return AsyncWrite(buffer, buffer_len, offset, callback, completed);
+  if (buffer_len > static_cast<size_t>(kint32max) ||
+      offset > static_cast<size_t>(kint32max)) {
+    return false;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      s_worker_pool.Pointer(), FROM_HERE,
+      base::Bind(&File::DoWrite, this, buffer, buffer_len, offset),
+      base::Bind(&File::OnOperationComplete, this, callback));
+
+  *completed = false;
+  return true;
 }
 
 bool File::SetLength(size_t length) {
   DCHECK(init_);
-  if (length > ULONG_MAX)
+  if (length > kuint32max)
     return false;
 
   return base::TruncatePlatformFile(platform_file_, length);
@@ -268,24 +149,22 @@ bool File::SetLength(size_t length) {
 
 size_t File::GetLength() {
   DCHECK(init_);
-  off_t ret = lseek(platform_file_, 0, SEEK_END);
-  if (ret < 0)
-    return 0;
-  return ret;
+  int64 len = base::SeekPlatformFile(platform_file_,
+                                     base::PLATFORM_FILE_FROM_END, 0);
+
+  if (len > static_cast<int64>(kuint32max))
+    return kuint32max;
+
+  return static_cast<size_t>(len);
 }
 
 // Static.
 void File::WaitForPendingIO(int* num_pending_io) {
-  // We may be running unit tests so we should allow be able to reset the
-  // message loop.
-  GetFileInFlightIO()->WaitForPendingIO();
-  DeleteFileInFlightIO();
-}
-
-// Static.
-void File::DropPendingIO() {
-  GetFileInFlightIO()->DropPendingIO();
-  DeleteFileInFlightIO();
+  // We are running unit tests so we should wait for all callbacks. Sadly, the
+  // worker pool only waits for tasks on the worker pool, not the "Reply" tasks
+  // so we have to let the current message loop to run.
+  s_worker_pool.Get().FlushForTesting();
+  base::RunLoop().RunUntilIdle();
 }
 
 File::~File() {
@@ -293,17 +172,26 @@ File::~File() {
     base::ClosePlatformFile(platform_file_);
 }
 
-bool File::AsyncWrite(const void* buffer, size_t buffer_len, size_t offset,
-                      FileIOCallback* callback, bool* completed) {
-  DCHECK(init_);
-  if (buffer_len > ULONG_MAX || offset > ULONG_MAX)
-    return false;
+// Runs on a worker thread.
+int File::DoRead(void* buffer, size_t buffer_len, size_t offset) {
+  if (Read(const_cast<void*>(buffer), buffer_len, offset))
+    return static_cast<int>(buffer_len);
 
-  GetFileInFlightIO()->PostWrite(this, buffer, buffer_len, offset, callback);
+  return net::ERR_CACHE_READ_FAILURE;
+}
 
-  if (completed)
-    *completed = false;
-  return true;
+// Runs on a worker thread.
+int File::DoWrite(const void* buffer, size_t buffer_len, size_t offset) {
+  if (Write(const_cast<void*>(buffer), buffer_len, offset))
+    return static_cast<int>(buffer_len);
+
+  return net::ERR_CACHE_WRITE_FAILURE;
+}
+
+// This method actually makes sure that the last reference to the file doesn't
+// go away on the worker pool.
+void File::OnOperationComplete(FileIOCallback* callback, int result) {
+  callback->OnFileIOComplete(result);
 }
 
 }  // namespace disk_cache
