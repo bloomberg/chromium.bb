@@ -500,6 +500,10 @@ void RendererOverridesHandler::ScreenshotCaptured(
                         metadata.device_scale_factor);
     response->SetDouble(devtools::Page::kParamPageScaleFactor,
                         metadata.page_scale_factor);
+    response->SetDouble(devtools::Page::kParamPageScaleFactorMin,
+                        metadata.min_page_scale_factor);
+    response->SetDouble(devtools::Page::kParamPageScaleFactorMax,
+                        metadata.max_page_scale_factor);
     response->SetDouble(devtools::Page::kParamOffsetTop,
                         metadata.location_bar_content_translation.y());
     response->SetDouble(devtools::Page::kParamOffsetBottom,
