@@ -596,16 +596,10 @@ DirectoryTree.prototype.maybeResolveMyDriveRoot_ = function(
  */
 DirectoryTree.prototype.updateSubDirectories = function(
     recursive, opt_successCallback, opt_errorCallback) {
-  var myDriveItem = this.items[0];
-  DirectoryTreeUtil.updateSubDirectories(
-      myDriveItem,
-      function(entries) {
-        this.entries_ = entries;
-        this.redraw(recursive);
-        if (opt_successCallback)
-          opt_successCallback();
-      }.bind(this),
-      opt_errorCallback);
+  this.entries_ = DirectoryTreeUtil.generateTopLevelEntries();
+  this.redraw(recursive);
+  if (opt_successCallback)
+    opt_successCallback();
 };
 
 /**
