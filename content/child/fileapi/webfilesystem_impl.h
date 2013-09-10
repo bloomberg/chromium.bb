@@ -24,13 +24,6 @@ class WebFileWriter;
 class WebFileWriterClient;
 }
 
-// TODO(kinuko): Remove this hack after the two-sided patch lands.
-#ifdef NON_SELFDESTRUCT_WEBFILESYSTEMCALLBACKS
-  typedef WebKit::WebFileSystemCallbacks WebFileSystemCallbacksType;
-#else
-  typedef WebKit::WebFileSystemCallbacks* WebFileSystemCallbacksType;
-#endif
-
 namespace content {
 
 class WebFileSystemImpl
@@ -60,62 +53,59 @@ class WebFileSystemImpl
       const WebKit::WebURL& storage_partition,
       const WebKit::WebFileSystemType type,
       bool create,
-      WebFileSystemCallbacksType);
+      WebKit::WebFileSystemCallbacks);
   virtual void deleteFileSystem(
       const WebKit::WebURL& storage_partition,
       const WebKit::WebFileSystemType type,
-      WebFileSystemCallbacksType);
+      WebKit::WebFileSystemCallbacks);
   virtual void move(
       const WebKit::WebURL& src_path,
       const WebKit::WebURL& dest_path,
-      WebFileSystemCallbacksType) OVERRIDE;
+      WebKit::WebFileSystemCallbacks) OVERRIDE;
   virtual void copy(
       const WebKit::WebURL& src_path,
       const WebKit::WebURL& dest_path,
-      WebFileSystemCallbacksType) OVERRIDE;
+      WebKit::WebFileSystemCallbacks) OVERRIDE;
   virtual void remove(
       const WebKit::WebURL& path,
-      WebFileSystemCallbacksType) OVERRIDE;
+      WebKit::WebFileSystemCallbacks) OVERRIDE;
   virtual void removeRecursively(
       const WebKit::WebURL& path,
-      WebFileSystemCallbacksType) OVERRIDE;
+      WebKit::WebFileSystemCallbacks) OVERRIDE;
   virtual void readMetadata(
       const WebKit::WebURL& path,
-      WebFileSystemCallbacksType) OVERRIDE;
+      WebKit::WebFileSystemCallbacks) OVERRIDE;
   virtual void createFile(
       const WebKit::WebURL& path,
       bool exclusive,
-      WebFileSystemCallbacksType) OVERRIDE;
+      WebKit::WebFileSystemCallbacks) OVERRIDE;
   virtual void createDirectory(
       const WebKit::WebURL& path,
       bool exclusive,
-      WebFileSystemCallbacksType) OVERRIDE;
+      WebKit::WebFileSystemCallbacks) OVERRIDE;
   virtual void fileExists(
       const WebKit::WebURL& path,
-      WebFileSystemCallbacksType) OVERRIDE;
+      WebKit::WebFileSystemCallbacks) OVERRIDE;
   virtual void directoryExists(
       const WebKit::WebURL& path,
-      WebFileSystemCallbacksType) OVERRIDE;
+      WebKit::WebFileSystemCallbacks) OVERRIDE;
   virtual void readDirectory(
       const WebKit::WebURL& path,
-      WebFileSystemCallbacksType) OVERRIDE;
-  virtual WebKit::WebFileWriter* createFileWriter(
-      const WebKit::WebURL& path,
-      WebKit::WebFileWriterClient*);
+      WebKit::WebFileSystemCallbacks) OVERRIDE;
   virtual void createFileWriter(
       const WebKit::WebURL& path,
       WebKit::WebFileWriterClient*,
-      WebFileSystemCallbacksType) OVERRIDE;
+      WebKit::WebFileSystemCallbacks) OVERRIDE;
   virtual void createSnapshotFileAndReadMetadata(
       const WebKit::WebURL& path,
-      WebFileSystemCallbacksType);
+      WebKit::WebFileSystemCallbacks);
 
-  int RegisterCallbacks(WebFileSystemCallbacksType callbacks);
-  WebFileSystemCallbacksType GetAndUnregisterCallbacks(
+  int RegisterCallbacks(const WebKit::WebFileSystemCallbacks& callbacks);
+  WebKit::WebFileSystemCallbacks GetAndUnregisterCallbacks(
       int callbacks_id);
 
  private:
-  typedef std::map<int, WebFileSystemCallbacksType> CallbacksMap;
+  typedef std::map<int, WebKit::WebFileSystemCallbacks> CallbacksMap;
 
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_;
 
