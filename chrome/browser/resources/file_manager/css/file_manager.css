@@ -1872,7 +1872,6 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 #suggest-app-dialog #webview-container {
   border-bottom: solid 1px #bbb;
   border-top: solid 1px #bbb;
-  transition: height 200ms ease;
 }
 
 #suggest-app-dialog #webview-container:not(.loaded) webview {

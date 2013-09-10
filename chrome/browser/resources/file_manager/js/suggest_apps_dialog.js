@@ -23,19 +23,6 @@ var WEBVIEW_WIDTH = 735;
 var WEBVIEW_HEIGHT = 480;
 
 /**
- * The widget of the spinner box (in pixel).
- * @type {number}
- * @const
- */
-var SPINNER_WIDTH = 300;
-/**
- * The height of the spinner box (in pixel).
- * @type {number}
- * @const
- */
-var SPINNER_HEIGHT = 300;
-
-/**
  * The URL of the widget.
  * @type {string}
  * @const
@@ -91,8 +78,8 @@ function SuggestAppsDialog(parentNode) {
 
   this.spinnerWrapper_ = this.document_.createElement('div');
   this.spinnerWrapper_.className = 'spinner-container';
-  this.spinnerWrapper_.style.width = SPINNER_WIDTH + 'px';
-  this.spinnerWrapper_.style.height = SPINNER_HEIGHT + 'px';
+  this.spinnerWrapper_.style.width = WEBVIEW_WIDTH + 'px';
+  this.spinnerWrapper_.style.height = WEBVIEW_HEIGHT + 'px';
   this.spinnerWrapper_.hidden = true;
   this.frame_.appendChild(this.spinnerWrapper_);
 
@@ -102,8 +89,8 @@ function SuggestAppsDialog(parentNode) {
 
   this.webviewContainer_ = this.document_.createElement('div');
   this.webviewContainer_.id = 'webview-container';
-  this.webviewContainer_.style.width = SPINNER_WIDTH + 'px';
-  this.webviewContainer_.style.height = SPINNER_HEIGHT + 'px';
+  this.webviewContainer_.style.width = WEBVIEW_WIDTH + 'px';
+  this.webviewContainer_.style.height = WEBVIEW_HEIGHT + 'px';
   this.frame_.insertBefore(this.webviewContainer_, this.text_.nextSibling);
 
   this.buttons_ = this.document_.createElement('div');
@@ -279,10 +266,10 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
     this.webviewContainer_.innerHTML =
         '<webview id="cws-widget" partition="persist:cwswidgets"></webview>';
     this.webviewContainer_.classList.remove('loaded');
-    this.webviewContainer_.style.width = SPINNER_WIDTH + 'px';
-    this.webviewContainer_.style.height = SPINNER_HEIGHT + 'px';
 
     this.webview_ = this.container_.querySelector('#cws-widget');
+    this.webview_.style.width = WEBVIEW_WIDTH + 'px';
+    this.webview_.style.height = WEBVIEW_HEIGHT + 'px';
 
     // TODO(yoshiki): Removes the 'Authentication' header after the CWS widget
     // supports the access token in 'initialization' message.
@@ -332,11 +319,6 @@ SuggestAppsDialog.prototype.onWidgetLoaded_ = function(event) {
   this.webviewContainer_.classList.add('loaded');
   this.state_ = SuggestAppsDialog.State.INITIALIZED;
 
-  this.webviewContainer_.style.width = WEBVIEW_WIDTH + 'px';
-  this.webviewContainer_.style.height = WEBVIEW_HEIGHT + 'px';
-
-  this.webview_.style.width = WEBVIEW_WIDTH + 'px';
-  this.webview_.style.height = WEBVIEW_HEIGHT + 'px';
   this.webview_.focus();
 };
 
@@ -444,9 +426,6 @@ SuggestAppsDialog.prototype.onHide_ = function(opt_originalOnHide) {
   // Calls the callback after the dialog hides.
   if (opt_originalOnHide)
     opt_originalOnHide();
-
-  this.webviewContainer_.style.width = SPINNER_WIDTH + 'px';
-  this.webviewContainer_.style.height = SPINNER_HEIGHT + 'px';
 
   var result;
   switch (this.state_) {
