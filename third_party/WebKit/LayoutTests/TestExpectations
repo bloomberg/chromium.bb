@@ -1199,6 +1199,21 @@ crbug.com/277043 [ Mac ] fast/dom/adopt-node-crash-2.html [ Pass Failure ]
 
 crbug.com/130260 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
 
+crbug.com/281243 fast/canvas/arc360.html [ NeedsRebaseline ]
+crbug.com/281243 fast/canvas/canvas-arc-circumference-fill.html [ NeedsRebaseline ]
+crbug.com/281243 fast/canvas/canvas-arc-circumference.html [ NeedsRebaseline ]
+crbug.com/281243 fast/canvas/canvas-composite.html [ NeedsRebaseline ]
+crbug.com/281243 fast/canvas/canvas-ellipse-circumference.html [ NeedsRebaseline ]
+crbug.com/281243 fast/canvas/image-object-in-canvas.html [ NeedsRebaseline ]
+crbug.com/281243 fast/canvas/image-pattern-rotate.html [ NeedsRebaseline ]
+crbug.com/281243 virtual/gpu/fast/canvas/arc360.html [ NeedsRebaseline ]
+crbug.com/281243 virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ NeedsRebaseline ]
+crbug.com/281243 virtual/gpu/fast/canvas/canvas-arc-circumference.html [ NeedsRebaseline ]
+crbug.com/281243 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ NeedsRebaseline ]
+crbug.com/281243 virtual/gpu/fast/canvas/canvas-composite.html [ NeedsRebaseline ]
+crbug.com/281243 virtual/gpu/fast/canvas/canvas-ellipse-circumference.html [ NeedsRebaseline ]
+crbug.com/281243 virtual/gpu/fast/canvas/image-object-in-canvas.html [ NeedsRebaseline ]
+
 # Rebase once v8 i18n rolled.
 Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Pass Failure ]
 

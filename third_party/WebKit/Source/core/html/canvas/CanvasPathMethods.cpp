@@ -5,7 +5,7 @@
  * Copyright (C) 2008 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2008 Dirk Schulze <krit@webkit.org>
  * Copyright (C) 2010 Torch Mobile (Beijing) Co. Ltd. All rights reserved.
- * Copyright (C) 2012 Intel Corporation. All rights reserved.
+ * Copyright (C) 2012, 2013 Intel Corporation. All rights reserved.
  * Copyright (C) 2012, 2013 Adobe Systems Incorporated. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -131,7 +131,9 @@ void CanvasPathMethods::arcTo(float x1, float y1, float x2, float y2, float r, E
         m_path.addArcTo(p1, p2, r);
 }
 
-static float adjustEndAngle(float startAngle, float endAngle, bool anticlockwise)
+namespace {
+
+float adjustEndAngle(float startAngle, float endAngle, bool anticlockwise)
 {
     float twoPi = 2 * piFloat;
     float newEndAngle = endAngle;
@@ -164,40 +166,17 @@ static float adjustEndAngle(float startAngle, float endAngle, bool anticlockwise
     return newEndAngle;
 }
 
-void CanvasPathMethods::arc(float x, float y, float radius, float startAngle, float endAngle, bool anticlockwise, ExceptionState& es)
-{
-    if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(radius) || !std::isfinite(startAngle) || !std::isfinite(endAngle))
-        return;
-
-    if (radius < 0) {
-        es.throwDOMException(IndexSizeError);
-        return;
-    }
-
-    if (!isTransformInvertible())
-        return;
-
-    if (!radius || startAngle == endAngle) {
-        // The arc is empty but we still need to draw the connecting line.
-        lineTo(x + radius * cosf(startAngle), y + radius * sinf(startAngle));
-        return;
-    }
-
-    float adjustedEndAngle = adjustEndAngle(startAngle, endAngle, anticlockwise);
-    m_path.addArc(FloatPoint(x, y), radius, startAngle, adjustedEndAngle, anticlockwise);
-}
-
-inline static void lineToFloatPoint(CanvasPathMethods* path, const FloatPoint& p)
+inline void lineToFloatPoint(CanvasPathMethods* path, const FloatPoint& p)
 {
     path->lineTo(p.x(), p.y());
 }
 
-inline static FloatPoint getPointOnEllipse(float radiusX, float radiusY, float theta)
+inline FloatPoint getPointOnEllipse(float radiusX, float radiusY, float theta)
 {
     return FloatPoint(radiusX * cosf(theta), radiusY * sinf(theta));
 }
 
-inline static void canonicalizeAngle(float* startAngle, float* endAngle)
+void canonicalizeAngle(float* startAngle, float* endAngle)
 {
     // Make 0 <= startAngle < 2*PI
     float twoPi = 2 * piFloat;
@@ -210,6 +189,7 @@ inline static void canonicalizeAngle(float* startAngle, float* endAngle)
     float delta = newStartAngle - *startAngle;
     *startAngle = newStartAngle;
     *endAngle = *endAngle + delta;
+    ASSERT(newStartAngle >= 0 && newStartAngle < twoPi);
 }
 
 /*
@@ -243,9 +223,11 @@ inline static void canonicalizeAngle(float* startAngle, float* endAngle)
  * To handle both cases, degenerateEllipse() lines to start angle, local maximum points(every 0.5Pi), and end angle.
  * NOTE: Before ellipse() calls this function, adjustEndAngle() is called, so endAngle - startAngle must be less than 4Pi.
  */
-static void degenerateEllipse(CanvasPathMethods* path, float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool anticlockwise)
+void degenerateEllipse(CanvasPathMethods* path, float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool anticlockwise)
 {
     ASSERT(std::abs(endAngle - startAngle) < 4 * piFloat);
+    ASSERT(startAngle >= 0 && startAngle < 2 * piFloat);
+    ASSERT((anticlockwise && (startAngle - endAngle) >= 0) || (!anticlockwise && (endAngle - startAngle) >= 0));
 
     FloatPoint center(x, y);
     AffineTransform rotationMatrix;
@@ -254,9 +236,6 @@ static void degenerateEllipse(CanvasPathMethods* path, float x, float y, float r
     lineToFloatPoint(path, center + rotationMatrix.mapPoint(getPointOnEllipse(radiusX, radiusY, startAngle)));
     if ((!radiusX && !radiusY) || startAngle == endAngle)
         return;
-
-    canonicalizeAngle(&startAngle, &endAngle);
-    ASSERT(std::abs(endAngle - startAngle) < 4 * piFloat);
 
     float halfPiFloat = piFloat * 0.5;
     if (!anticlockwise) {
@@ -272,6 +251,32 @@ static void degenerateEllipse(CanvasPathMethods* path, float x, float y, float r
     lineToFloatPoint(path, center + rotationMatrix.mapPoint(getPointOnEllipse(radiusX, radiusY, endAngle)));
 }
 
+} // namespace
+
+void CanvasPathMethods::arc(float x, float y, float radius, float startAngle, float endAngle, bool anticlockwise, ExceptionState& es)
+{
+    if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(radius) || !std::isfinite(startAngle) || !std::isfinite(endAngle))
+        return;
+
+    if (radius < 0) {
+        es.throwDOMException(IndexSizeError);
+        return;
+    }
+
+    if (!isTransformInvertible())
+        return;
+
+    if (!radius || startAngle == endAngle) {
+        // The arc is empty but we still need to draw the connecting line.
+        lineTo(x + radius * cosf(startAngle), y + radius * sinf(startAngle));
+        return;
+    }
+
+    canonicalizeAngle(&startAngle, &endAngle);
+    float adjustedEndAngle = adjustEndAngle(startAngle, endAngle, anticlockwise);
+    m_path.addArc(FloatPoint(x, y), radius, startAngle, adjustedEndAngle, anticlockwise);
+}
+
 void CanvasPathMethods::ellipse(float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool anticlockwise, ExceptionState& es)
 {
     if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(radiusX) || !std::isfinite(radiusY) || !std::isfinite(rotation) || !std::isfinite(startAngle) || !std::isfinite(endAngle))
@@ -285,6 +290,7 @@ void CanvasPathMethods::ellipse(float x, float y, float radiusX, float radiusY, 
     if (!isTransformInvertible())
         return;
 
+    canonicalizeAngle(&startAngle, &endAngle);
     float adjustedEndAngle = adjustEndAngle(startAngle, endAngle, anticlockwise);
     if (!radiusX || !radiusY || startAngle == adjustedEndAngle) {
         // The ellipse is empty but we still need to draw the connecting line to start point.
