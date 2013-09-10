@@ -23,7 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "sync/engine/get_commit_ids_command.h"
+#include "sync/engine/get_commit_ids.h"
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/process_updates_command.h"
 #include "sync/engine/sync_scheduler_impl.h"
@@ -387,8 +387,9 @@ class SyncerTest : public testing::Test,
                 mock_server_->committed_ids().size());
     // If this test starts failing, be aware other sort orders could be valid.
     for (size_t i = 0; i < expected_positions.size(); ++i) {
+      SCOPED_TRACE(i);
       EXPECT_EQ(1u, expected_positions.count(i));
-      EXPECT_TRUE(expected_positions[i] == mock_server_->committed_ids()[i]);
+      EXPECT_EQ(expected_positions[i], mock_server_->committed_ids()[i]);
     }
   }
 
@@ -401,12 +402,7 @@ class SyncerTest : public testing::Test,
       GetModelSafeRoutingInfo(&routes);
       ModelTypeSet types = GetRoutingInfoTypes(routes);
       sessions::OrderedCommitSet output_set(routes);
-      GetCommitIdsCommand command(&wtrans, types, limit, &output_set);
-      std::set<int64> ready_unsynced_set;
-      command.FilterUnreadyEntries(&wtrans, types,
-                                   ModelTypeSet(), false,
-                                   unsynced_handle_view, &ready_unsynced_set);
-      command.BuildCommitIds(&wtrans, routes, ready_unsynced_set);
+      GetCommitIds(&wtrans, types, limit, &output_set);
       size_t truncated_size = std::min(limit, expected_handle_order.size());
       ASSERT_EQ(truncated_size, output_set.Size());
       for (size_t i = 0; i < truncated_size; ++i) {
@@ -1178,6 +1174,17 @@ TEST_F(SyncerTest, TestCommitListOrderingTwoItemsTall) {
 
 TEST_F(SyncerTest, TestCommitListOrderingThreeItemsTall) {
   CommitOrderingTest items[] = {
+    {1, ids_.FromNumber(-2001), ids_.FromNumber(-2000)},
+    {0, ids_.FromNumber(-2000), ids_.FromNumber(0)},
+    {2, ids_.FromNumber(-2002), ids_.FromNumber(-2001)},
+    CommitOrderingTest::MakeLastCommitItem(),
+  };
+  RunCommitOrderingTest(items);
+}
+
+TEST_F(SyncerTest, TestCommitListOrderingFourItemsTall) {
+  CommitOrderingTest items[] = {
+    {3, ids_.FromNumber(-2003), ids_.FromNumber(-2002)},
     {1, ids_.FromNumber(-2001), ids_.FromNumber(-2000)},
     {0, ids_.FromNumber(-2000), ids_.FromNumber(0)},
     {2, ids_.FromNumber(-2002), ids_.FromNumber(-2001)},

@@ -1,15 +1,15 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/get_commit_ids_command.h"
+#include "sync/engine/get_commit_ids.h"
 
 #include <set>
-#include <utility>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "sync/engine/syncer_util.h"
-#include "sync/sessions/nudge_tracker.h"
+#include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/nigori_handler.h"
 #include "sync/syncable/nigori_util.h"
@@ -22,39 +22,52 @@ using std::vector;
 
 namespace syncer {
 
-using sessions::OrderedCommitSet;
-using sessions::SyncSession;
-using sessions::StatusController;
+namespace {
 
-GetCommitIdsCommand::GetCommitIdsCommand(
+// Forward-declare some helper functions.  This gives us more options for
+// ordering the function defintions within this file.
+
+// Filters |unsynced_handles| to remove all entries that do not belong to the
+// specified |requested_types|, or are not eligible for a commit at this time.
+void FilterUnreadyEntries(
     syncable::BaseTransaction* trans,
     ModelTypeSet requested_types,
-    const size_t commit_batch_size,
-    sessions::OrderedCommitSet* commit_set)
-    : trans_(trans),
-      requested_types_(requested_types),
-      requested_commit_batch_size_(commit_batch_size),
-      commit_set_(commit_set) {
-}
+    ModelTypeSet encrypted_types,
+    bool passphrase_missing,
+    const syncable::Directory::Metahandles& unsynced_handles,
+    std::set<int64>* ready_unsynced_set);
 
-GetCommitIdsCommand::~GetCommitIdsCommand() {}
+// Given a set of commit metahandles that are ready for commit
+// (|ready_unsynced_set|), sorts these into commit order and places up to
+// |max_entries| of them in the output parameter |out|.
+//
+// See the header file for an explanation of commit ordering.
+void OrderCommitIds(
+    syncable::BaseTransaction* trans,
+    size_t max_entries,
+    const std::set<int64>& ready_unsynced_set,
+    std::vector<int64>* out);
 
-SyncerError GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
+}  // namespace
+
+void GetCommitIdsForType(
+    syncable::BaseTransaction* trans,
+    ModelType type,
+    size_t max_entries,
+    syncable::Directory::Metahandles* out) {
+  syncable::Directory* dir = trans->directory();
+
   // Gather the full set of unsynced items and store it in the session. They
   // are not in the correct order for commit.
   std::set<int64> ready_unsynced_set;
   syncable::Directory::Metahandles all_unsynced_handles;
-  GetUnsyncedEntries(trans_,
-                     &all_unsynced_handles);
+  GetUnsyncedEntries(trans, &all_unsynced_handles);
 
   ModelTypeSet encrypted_types;
   bool passphrase_missing = false;
-  Cryptographer* cryptographer =
-      session->context()->
-      directory()->GetCryptographer(trans_);
+  Cryptographer* cryptographer = dir->GetCryptographer(trans);
   if (cryptographer) {
-    encrypted_types = session->context()->directory()->GetNigoriHandler()->
-        GetEncryptedTypes(trans_);
+    encrypted_types = dir->GetNigoriHandler()->GetEncryptedTypes(trans);
     passphrase_missing = cryptographer->has_pending_keys();
   };
 
@@ -63,18 +76,18 @@ SyncerError GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
   // is a candidate for commit.  The caller of this SyncerCommand is responsible
   // for ensuring that no throttled types are included among the
   // requested_types.
-  FilterUnreadyEntries(trans_,
-                       requested_types_,
+  FilterUnreadyEntries(trans,
+                       ModelTypeSet(type),
                        encrypted_types,
                        passphrase_missing,
                        all_unsynced_handles,
                        &ready_unsynced_set);
 
-  BuildCommitIds(trans_,
-                 session->context()->routing_info(),
-                 ready_unsynced_set);
+  OrderCommitIds(trans, max_entries, ready_unsynced_set, out);
 
-  return SYNCER_OK;
+  for (size_t i = 0; i < out->size(); i++) {
+    DVLOG(1) << "Debug commit batch result:" << (*out)[i];
+  }
 }
 
 namespace {
@@ -154,9 +167,9 @@ bool IsEntryReadyForCommit(ModelTypeSet requested_types,
   return true;
 }
 
-}  // namespace
-
-void GetCommitIdsCommand::FilterUnreadyEntries(
+// Filters |unsynced_handles| to remove all entries that do not belong to the
+// specified |requested_types|, or are not eligible for a commit at this time.
+void FilterUnreadyEntries(
     syncable::BaseTransaction* trans,
     ModelTypeSet requested_types,
     ModelTypeSet encrypted_types,
@@ -175,21 +188,88 @@ void GetCommitIdsCommand::FilterUnreadyEntries(
   }
 }
 
-bool GetCommitIdsCommand::AddUncommittedParentsAndTheirPredecessors(
+// This class helps to implement OrderCommitIds().  Its members track the
+// progress of a traversal while its methods extend it.  It can return early if
+// the traversal reaches the desired size before the full traversal is complete.
+class Traversal {
+ public:
+  Traversal(
     syncable::BaseTransaction* trans,
-    const ModelSafeRoutingInfo& routes,
+    int64 max_entries,
+    syncable::Directory::Metahandles* out);
+  ~Traversal();
+
+  // First step of traversal building.  Adds non-deleted items in order.
+  void AddCreatesAndMoves(const std::set<int64>& ready_unsynced_set);
+
+  // Second step of traverals building.  Appends deleted items.
+  void AddDeletes(const std::set<int64>& ready_unsynced_set);
+
+ private:
+  // The following functions do not modify the traversal directly.  They return
+  // their results in the |result| vector instead.
+  bool AddUncommittedParentsAndTheirPredecessors(
+      const std::set<int64>& ready_unsynced_set,
+      const syncable::Entry& item,
+      syncable::Directory::Metahandles* result) const;
+
+  void TryAddItem(const std::set<int64>& ready_unsynced_set,
+                  const syncable::Entry& item,
+                  syncable::Directory::Metahandles* result) const;
+
+  void AddItemThenPredecessors(
+      const std::set<int64>& ready_unsynced_set,
+      const syncable::Entry& item,
+      syncable::Directory::Metahandles* result) const;
+
+  void AddPredecessorsThenItem(
+      const std::set<int64>& ready_unsynced_set,
+      const syncable::Entry& item,
+      syncable::Directory::Metahandles* result) const;
+
+  // Returns true if we've collected enough items.
+  bool IsFull() const;
+
+  // Returns true if the specified handle is already in the traversal.
+  bool HaveItem(int64 handle) const;
+
+  // Adds the specified handles to the traversal.
+  void AppendManyToTraversal(const syncable::Directory::Metahandles& handles);
+
+  // Adds the specifed handle to the traversal.
+  void AppendToTraversal(int64 handle);
+
+  syncable::Directory::Metahandles* out_;
+  std::set<int64> added_handles_;
+  const size_t max_entries_;
+  syncable::BaseTransaction* trans_;
+
+  DISALLOW_COPY_AND_ASSIGN(Traversal);
+};
+
+Traversal::Traversal(
+    syncable::BaseTransaction* trans,
+    int64 max_entries,
+    syncable::Directory::Metahandles* out)
+  : out_(out),
+    max_entries_(max_entries),
+    trans_(trans) { }
+
+Traversal::~Traversal() {}
+
+bool Traversal::AddUncommittedParentsAndTheirPredecessors(
     const std::set<int64>& ready_unsynced_set,
     const syncable::Entry& item,
-    sessions::OrderedCommitSet* result) const {
-  OrderedCommitSet item_dependencies(routes);
+    syncable::Directory::Metahandles* result) const {
+  syncable::Directory::Metahandles dependencies;
   syncable::Id parent_id = item.Get(syncable::PARENT_ID);
 
   // Climb the tree adding entries leaf -> root.
   while (!parent_id.ServerKnows()) {
-    syncable::Entry parent(trans, syncable::GET_BY_ID, parent_id);
+    syncable::Entry parent(trans_, syncable::GET_BY_ID, parent_id);
     CHECK(parent.good()) << "Bad user-only parent in item path.";
     int64 handle = parent.Get(syncable::META_HANDLE);
-    if (commit_set_->HaveCommitItem(handle)) {
+    if (HaveItem(handle)) {
       // We've already added this parent (and therefore all of its parents).
       // We can return early.
       break;
@@ -200,26 +280,25 @@ bool GetCommitIdsCommand::AddUncommittedParentsAndTheirPredecessors(
       DVLOG(1) << "Parent was in conflict, omitting " << item;
       return false;
     }
-    AddItemThenPredecessors(trans,
-                            ready_unsynced_set,
+    AddItemThenPredecessors(ready_unsynced_set,
                             parent,
-                            &item_dependencies);
+                            &dependencies);
     parent_id = parent.Get(syncable::PARENT_ID);
   }
 
   // Reverse what we added to get the correct order.
-  result->AppendReverse(item_dependencies);
+  result->insert(result->end(), dependencies.rbegin(), dependencies.rend());
   return true;
 }
 
 // Adds the given item to the list if it is unsynced and ready for commit.
-void GetCommitIdsCommand::TryAddItem(const std::set<int64>& ready_unsynced_set,
-                                     const syncable::Entry& item,
-                                     OrderedCommitSet* result) const {
+void Traversal::TryAddItem(const std::set<int64>& ready_unsynced_set,
+                           const syncable::Entry& item,
+                           syncable::Directory::Metahandles* result) const {
   DCHECK(item.Get(syncable::IS_UNSYNCED));
   int64 item_handle = item.Get(syncable::META_HANDLE);
   if (ready_unsynced_set.count(item_handle) != 0) {
-    result->AddCommitItem(item_handle, item.GetModelType());
+    result->push_back(item_handle);
   }
 }
 
@@ -228,13 +307,12 @@ void GetCommitIdsCommand::TryAddItem(const std::set<int64>& ready_unsynced_set,
 // detect that this area of the tree has already been traversed.  Items that are
 // not 'ready' for commit (see IsEntryReadyForCommit()) will not be added to the
 // list, though they will not stop the traversal.
-void GetCommitIdsCommand::AddItemThenPredecessors(
-    syncable::BaseTransaction* trans,
+void Traversal::AddItemThenPredecessors(
     const std::set<int64>& ready_unsynced_set,
     const syncable::Entry& item,
-    OrderedCommitSet* result) const {
+    syncable::Directory::Metahandles* result) const {
   int64 item_handle = item.Get(syncable::META_HANDLE);
-  if (commit_set_->HaveCommitItem(item_handle)) {
+  if (HaveItem(item_handle)) {
     // We've already added this item to the commit set, and so must have
     // already added the predecessors as well.
     return;
@@ -245,7 +323,7 @@ void GetCommitIdsCommand::AddItemThenPredecessors(
 
   syncable::Id prev_id = item.GetPredecessorId();
   while (!prev_id.IsRoot()) {
-    syncable::Entry prev(trans, syncable::GET_BY_ID, prev_id);
+    syncable::Entry prev(trans_, syncable::GET_BY_ID, prev_id);
     CHECK(prev.good()) << "Bad id when walking predecessors.";
     if (!prev.Get(syncable::IS_UNSYNCED)) {
       // We're interested in "runs" of unsynced items.  This item breaks
@@ -253,7 +331,7 @@ void GetCommitIdsCommand::AddItemThenPredecessors(
       return;
     }
     int64 handle = prev.Get(syncable::META_HANDLE);
-    if (commit_set_->HaveCommitItem(handle)) {
+    if (HaveItem(handle)) {
       // We've already added this item to the commit set, and so must have
       // already added the predecessors as well.
       return;
@@ -264,78 +342,85 @@ void GetCommitIdsCommand::AddItemThenPredecessors(
 }
 
 // Same as AddItemThenPredecessor, but the traversal order will be reversed.
-void GetCommitIdsCommand::AddPredecessorsThenItem(
-    syncable::BaseTransaction* trans,
-    const ModelSafeRoutingInfo& routes,
+void Traversal::AddPredecessorsThenItem(
     const std::set<int64>& ready_unsynced_set,
     const syncable::Entry& item,
-    OrderedCommitSet* result) const {
-  OrderedCommitSet item_dependencies(routes);
-  AddItemThenPredecessors(trans, ready_unsynced_set, item, &item_dependencies);
+    syncable::Directory::Metahandles* result) const {
+  syncable::Directory::Metahandles dependencies;
+  AddItemThenPredecessors(ready_unsynced_set, item, &dependencies);
 
   // Reverse what we added to get the correct order.
-  result->AppendReverse(item_dependencies);
+  result->insert(result->end(), dependencies.rbegin(), dependencies.rend());
 }
 
-bool GetCommitIdsCommand::IsCommitBatchFull() const {
-  return commit_set_->Size() >= requested_commit_batch_size_;
+bool Traversal::IsFull() const {
+  return out_->size() >= max_entries_;
 }
 
-void GetCommitIdsCommand::AddCreatesAndMoves(
-    syncable::BaseTransaction* trans,
-    const ModelSafeRoutingInfo& routes,
+bool Traversal::HaveItem(int64 handle) const {
+  return added_handles_.find(handle) != added_handles_.end();
+}
+
+void Traversal::AppendManyToTraversal(
+    const syncable::Directory::Metahandles& handles) {
+  out_->insert(out_->end(), handles.begin(), handles.end());
+  added_handles_.insert(handles.begin(), handles.end());
+}
+
+void Traversal::AppendToTraversal(int64 metahandle) {
+  out_->push_back(metahandle);
+  added_handles_.insert(metahandle);
+}
+
+void Traversal::AddCreatesAndMoves(
     const std::set<int64>& ready_unsynced_set) {
   // Add moves and creates, and prepend their uncommitted parents.
   for (std::set<int64>::const_iterator iter = ready_unsynced_set.begin();
-       !IsCommitBatchFull() && iter != ready_unsynced_set.end(); ++iter) {
+       !IsFull() && iter != ready_unsynced_set.end(); ++iter) {
     int64 metahandle = *iter;
-    if (commit_set_->HaveCommitItem(metahandle))
+    if (HaveItem(metahandle))
       continue;
 
-    syncable::Entry entry(trans,
+    syncable::Entry entry(trans_,
                           syncable::GET_BY_HANDLE,
                           metahandle);
     if (!entry.Get(syncable::IS_DEL)) {
       // We only commit an item + its dependencies if it and all its
       // dependencies are not in conflict.
-      OrderedCommitSet item_dependencies(routes);
+      syncable::Directory::Metahandles item_dependencies;
       if (AddUncommittedParentsAndTheirPredecessors(
-              trans,
-              routes,
               ready_unsynced_set,
               entry,
               &item_dependencies)) {
-        AddPredecessorsThenItem(trans,
-                                routes,
-                                ready_unsynced_set,
+        AddPredecessorsThenItem(ready_unsynced_set,
                                 entry,
                                 &item_dependencies);
-        commit_set_->Append(item_dependencies);
+        AppendManyToTraversal(item_dependencies);
       }
     }
   }
 
   // It's possible that we overcommitted while trying to expand dependent
   // items.  If so, truncate the set down to the allowed size.
-  commit_set_->Truncate(requested_commit_batch_size_);
+  if (out_->size() > max_entries_)
+    out_->resize(max_entries_);
 }
 
-void GetCommitIdsCommand::AddDeletes(
-    syncable::BaseTransaction* trans,
+void Traversal::AddDeletes(
     const std::set<int64>& ready_unsynced_set) {
   set<syncable::Id> legal_delete_parents;
 
   for (std::set<int64>::const_iterator iter = ready_unsynced_set.begin();
-       !IsCommitBatchFull() && iter != ready_unsynced_set.end(); ++iter) {
+       !IsFull() && iter != ready_unsynced_set.end(); ++iter) {
     int64 metahandle = *iter;
-    if (commit_set_->HaveCommitItem(metahandle))
+    if (HaveItem(metahandle))
       continue;
 
-    syncable::Entry entry(trans, syncable::GET_BY_HANDLE,
+    syncable::Entry entry(trans_, syncable::GET_BY_HANDLE,
                           metahandle);
 
     if (entry.Get(syncable::IS_DEL)) {
-      syncable::Entry parent(trans, syncable::GET_BY_ID,
+      syncable::Entry parent(trans_, syncable::GET_BY_ID,
                              entry.Get(syncable::PARENT_ID));
       // If the parent is deleted and unsynced, then any children of that
       // parent don't need to be added to the delete queue.
@@ -359,7 +444,7 @@ void GetCommitIdsCommand::AddDeletes(
           DVLOG(1) << "Inserting moved and deleted entry, will be missed by "
                    << "delete roll." << entry.Get(syncable::ID);
 
-          commit_set_->AddCommitItem(metahandle, entry.GetModelType());
+          AppendToTraversal(metahandle);
         }
 
         // Skip this entry since it's a child of a parent that will be
@@ -386,25 +471,26 @@ void GetCommitIdsCommand::AddDeletes(
   //   parent did expect at least one old deleted child
   //   parent was not deleted
   for (std::set<int64>::const_iterator iter = ready_unsynced_set.begin();
-       !IsCommitBatchFull() && iter != ready_unsynced_set.end(); ++iter) {
+       !IsFull() && iter != ready_unsynced_set.end(); ++iter) {
     int64 metahandle = *iter;
-    if (commit_set_->HaveCommitItem(metahandle))
+    if (HaveItem(metahandle))
       continue;
-    syncable::Entry entry(trans, syncable::GET_BY_HANDLE,
+    syncable::Entry entry(trans_, syncable::GET_BY_HANDLE,
                           metahandle);
     if (entry.Get(syncable::IS_DEL)) {
       syncable::Id parent_id = entry.Get(syncable::PARENT_ID);
       if (legal_delete_parents.count(parent_id)) {
-        commit_set_->AddCommitItem(metahandle, entry.GetModelType());
+        AppendToTraversal(metahandle);
       }
     }
   }
 }
 
-void GetCommitIdsCommand::BuildCommitIds(
+void OrderCommitIds(
     syncable::BaseTransaction* trans,
-    const ModelSafeRoutingInfo& routes,
-    const std::set<int64>& ready_unsynced_set) {
+    size_t max_entries,
+    const std::set<int64>& ready_unsynced_set,
+    syncable::Directory::Metahandles* out) {
   // Commits follow these rules:
   // 1. Moves or creates are preceded by needed folder creates, from
   //    root to leaf.  For folders whose contents are ordered, moves
@@ -414,11 +500,36 @@ void GetCommitIdsCommand::BuildCommitIds(
   // We commit deleted moves under deleted items as moves when collapsing
   // delete trees.
 
+  Traversal traversal(trans, max_entries, out);
+
   // Add moves and creates, and prepend their uncommitted parents.
-  AddCreatesAndMoves(trans, routes, ready_unsynced_set);
+  traversal.AddCreatesAndMoves(ready_unsynced_set);
 
   // Add all deletes.
-  AddDeletes(trans, ready_unsynced_set);
+  traversal.AddDeletes(ready_unsynced_set);
+}
+
+}  // namespace
+
+void GetCommitIds(
+    syncable::BaseTransaction* trans,
+    ModelTypeSet requested_types,
+    size_t commit_batch_size,
+    sessions::OrderedCommitSet* ordered_commit_set) {
+  for (ModelTypeSet::Iterator it = requested_types.First();
+       it.Good(); it.Inc()) {
+    DCHECK_LE(ordered_commit_set->Size(), commit_batch_size);
+    if (ordered_commit_set->Size() >= commit_batch_size)
+      break;
+    size_t space_remaining = commit_batch_size - ordered_commit_set->Size();
+    syncable::Directory::Metahandles out;
+    GetCommitIdsForType(
+        trans,
+        it.Get(),
+        space_remaining,
+        &out);
+    ordered_commit_set->AddCommitItems(out, it.Get());
+  }
 }
 
 }  // namespace syncer
