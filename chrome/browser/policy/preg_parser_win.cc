@@ -66,6 +66,8 @@ bool ReadFieldBinary(const uint8** cursor,
                      const uint8* end,
                      int size,
                      uint8* data) {
+  if (!size)
+    return false;
   const uint8* field_end = *cursor + size;
   if (field_end > end)
     return false;
