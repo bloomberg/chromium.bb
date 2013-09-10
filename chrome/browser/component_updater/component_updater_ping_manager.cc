@@ -88,24 +88,26 @@ std::string PingSender::BuildPing(const CrxUpdateItem* item) {
   const std::string prod_id(chrome::OmahaQueryParams::GetProdIdString(
       chrome::OmahaQueryParams::CHROME));
 
-  const char response_format[] =
+  const char request_format[] =
       "<o:gupdate xmlns:o=\"http://www.google.com/update2/request\" "
-      "protocol=\"2.0\" version=\"%s-%s\" requestid=\"{%s}\"> "
+      "protocol=\"2.0\" version=\"%s-%s\" requestid=\"{%s}\" "
+      "updaterchannel=\"%s\"> "
       "<o:os platform=\"%s\" version=\"%s\"/> "
       "<o:app appid=\"%s\" version=\"%s\">"
       "%s"
       "</o:app></o:gupdate>";
-  const std::string response(
-      base::StringPrintf(response_format,
+  const std::string request(
+      base::StringPrintf(request_format,
                          prod_id.c_str(),
                          chrome::VersionInfo().Version().c_str(),
                          base::GenerateGUID().c_str(),
+                         chrome::OmahaQueryParams::GetChannelString(),
                          chrome::VersionInfo().OSType().c_str(),
                          base::SysInfo().OperatingSystemVersion().c_str(),
                          item->id.c_str(),
                          item->component.version.GetString().c_str(),
                          BuildPingEventElement(item).c_str()));
-  return response;
+  return request;
 }
 
 // Returns a string representing one ping event xml element for an update item.
