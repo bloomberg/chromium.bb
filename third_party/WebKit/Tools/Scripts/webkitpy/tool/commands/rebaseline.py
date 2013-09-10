@@ -451,8 +451,10 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 _log.debug("  %s: %s" % (builder, ",".join(suffixes)))
 
         copy_baseline_commands, rebaseline_commands = self._rebaseline_commands(test_prefix_list, options)
-        self._run_in_parallel_and_update_scm(copy_baseline_commands)
-        self._run_in_parallel_and_update_scm(rebaseline_commands)
+        if copy_baseline_commands:
+            self._run_in_parallel_and_update_scm(copy_baseline_commands)
+        if rebaseline_commands:
+            self._run_in_parallel_and_update_scm(rebaseline_commands)
 
         if options.optimize:
             self._optimize_baselines(test_prefix_list, options.verbose)

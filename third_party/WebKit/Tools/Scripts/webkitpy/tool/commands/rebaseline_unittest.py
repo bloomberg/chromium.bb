@@ -339,6 +339,32 @@ class TestRebaselineJson(_BaseTestCase):
         builders._exact_matches = self.old_exact_matches
         super(TestRebaselineJson, self).tearDown()
 
+    def test_rebaseline_test_passes_on_all_builders(self):
+        self._setup_mock_builder_data()
+
+        def builder_data():
+            self.command._builder_data['MOCK builder'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
+    "tests": {
+        "userscripts": {
+            "first-test.html": {
+                "expected": "NEEDSREBASELINE",
+                "actual": "PASS"
+            }
+        }
+    }
+});""")
+            return self.command._builder_data
+
+        self.command.builder_data = builder_data
+
+        options = MockOptions(optimize=True, verbose=True, results_directory=None)
+        self._write("userscripts/first-test.html", "Dummy test contents")
+        self.command._rebaseline(options,  {"userscripts/first-test.html": {"MOCK builder": ["txt", "png"]}})
+
+        # Note that we have one run_in_parallel() call followed by a run_command()
+        self.assertEqual(self.tool.executive.calls,
+            [['echo', '--verbose', 'optimize-baselines', '--suffixes', '', 'userscripts/first-test.html']])
+
     def test_rebaseline_all(self):
         self._setup_mock_builder_data()
 
