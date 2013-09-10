@@ -61,6 +61,8 @@ crbug.com/241869 [ Debug ] css3/flexbox/multiline-justify-content.html [ Pass Ti
 crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-image.html [ Skip ]
 crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Skip ]
 
+crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
+
 # Unskip after implementing DRT support for setDefersLoading and goBack.
 webkit.org/b/60877 loader/navigation-while-deferring-loads.html [ Skip ]
 webkit.org/b/60877 loader/load-defer-resume-crash.html [ Skip ]
