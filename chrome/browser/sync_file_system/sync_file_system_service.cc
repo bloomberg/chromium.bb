@@ -309,7 +309,10 @@ void SyncFileSystemService::DidRegisterOrigin(
     const GURL& app_origin,
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
-  DVLOG(1) << "DidRegisterOrigin: " << app_origin.spec() << " " << status;
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "DidInitializeForApp (registered the origin): %s: %s",
+            app_origin.spec().c_str(),
+            SyncStatusCodeToString(status));
 
   callback.Run(status);
 }

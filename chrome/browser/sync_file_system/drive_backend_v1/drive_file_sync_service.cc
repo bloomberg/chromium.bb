@@ -142,44 +142,49 @@ void DriveFileSyncService::AddFileStatusObserver(
 void DriveFileSyncService::RegisterOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  task_manager_->ScheduleTask(
+  task_manager_->ScheduleTaskAtPriority(
       base::Bind(&DriveFileSyncService::DoRegisterOriginForTrackingChanges,
                  AsWeakPtr(), origin),
+      SyncTaskManager::PRIORITY_HIGH,
       callback);
 }
 
 void DriveFileSyncService::UnregisterOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  task_manager_->ScheduleTask(
+  task_manager_->ScheduleTaskAtPriority(
       base::Bind(&DriveFileSyncService::DoUnregisterOriginForTrackingChanges,
                  AsWeakPtr(), origin),
+      SyncTaskManager::PRIORITY_HIGH,
       callback);
 }
 
 void DriveFileSyncService::EnableOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  task_manager_->ScheduleTask(
+  task_manager_->ScheduleTaskAtPriority(
       base::Bind(&DriveFileSyncService::DoEnableOriginForTrackingChanges,
                  AsWeakPtr(), origin),
+      SyncTaskManager::PRIORITY_HIGH,
       callback);
 }
 
 void DriveFileSyncService::DisableOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  task_manager_->ScheduleTask(
+  task_manager_->ScheduleTaskAtPriority(
       base::Bind(&DriveFileSyncService::DoDisableOriginForTrackingChanges,
                  AsWeakPtr(), origin),
+      SyncTaskManager::PRIORITY_HIGH,
       callback);
 }
 
 void DriveFileSyncService::UninstallOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  task_manager_->ScheduleTask(
+  task_manager_->ScheduleTaskAtPriority(
       base::Bind(&DriveFileSyncService::DoUninstallOrigin, AsWeakPtr(), origin),
+      SyncTaskManager::PRIORITY_HIGH,
       callback);
 }
 

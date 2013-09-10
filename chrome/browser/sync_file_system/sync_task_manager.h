@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_TASK_MANAGER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_TASK_MANAGER_H_
 
-#include <deque>
+#include <queue>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -28,6 +29,12 @@ class SyncTaskManager
   class TaskToken;
   typedef base::Callback<void(const SyncStatusCallback& callback)> Task;
 
+  enum Priority {
+    PRIORITY_LOW,
+    PRIORITY_MED,
+    PRIORITY_HIGH,
+  };
+
   class Client {
    public:
     virtual ~Client() {}
@@ -48,10 +55,16 @@ class SyncTaskManager
   // service status. This should not be called more than once.
   void Initialize(SyncStatusCode status);
 
+  // Schedules a task at PRIORITY_MED.
   void ScheduleTask(const Task& task,
                     const SyncStatusCallback& callback);
   void ScheduleSyncTask(scoped_ptr<SyncTask> task,
                         const SyncStatusCallback& callback);
+
+  // Schedules a task at the given priority.
+  void ScheduleTaskAtPriority(const Task& task,
+                              Priority priority,
+                              const SyncStatusCallback& callback);
 
   // Runs the posted task only when we're idle.
   void ScheduleTaskIfIdle(const Task& task);
@@ -61,6 +74,21 @@ class SyncTaskManager
                       SyncStatusCode status);
 
  private:
+  struct PendingTask {
+    base::Closure task;
+    Priority priority;
+    int64 seq;
+
+    PendingTask();
+    PendingTask(const base::Closure& task, Priority pri, int seq);
+    ~PendingTask();
+  };
+
+  struct PendingTaskComparator {
+    bool operator()(const PendingTask& left,
+                    const PendingTask& right) const;
+  };
+
   // This should be called when an async task needs to get a task token.
   scoped_ptr<TaskToken> GetToken(const tracked_objects::Location& from_here);
 
@@ -70,13 +98,17 @@ class SyncTaskManager
       scoped_ptr<TaskToken> token,
       const SyncStatusCallback& callback);
 
+  void PushPendingTask(const base::Closure& closure, Priority priority);
+
   base::WeakPtr<Client> client_;
 
   SyncStatusCode last_operation_status_;
   scoped_ptr<SyncTask> running_task_;
-  std::deque<base::Closure> pending_tasks_;
   SyncStatusCallback current_callback_;
 
+  std::priority_queue<PendingTask, std::vector<PendingTask>,
+                      PendingTaskComparator> pending_tasks_;
+  int64 pending_task_seq_;
 
   // Absence of |token_| implies a task is running. Incoming tasks should
   // wait for the task to finish in |pending_tasks_| if |token_| is null.

@@ -49,10 +49,27 @@ class SyncTaskManager::TaskToken {
   DISALLOW_COPY_AND_ASSIGN(TaskToken);
 };
 
+SyncTaskManager::PendingTask::PendingTask() {}
+
+SyncTaskManager::PendingTask::PendingTask(
+    const base::Closure& task, Priority pri, int seq)
+    : task(task), priority(pri), seq(seq) {}
+
+SyncTaskManager::PendingTask::~PendingTask() {}
+
+bool SyncTaskManager::PendingTaskComparator::operator()(
+    const PendingTask& left,
+    const PendingTask& right) const {
+  if (left.priority != right.priority)
+    return left.priority < right.priority;
+  return left.seq > right.seq;
+}
+
 SyncTaskManager::SyncTaskManager(
     base::WeakPtr<Client> client)
     : client_(client),
-      last_operation_status_(SYNC_STATUS_OK) {
+      last_operation_status_(SYNC_STATUS_OK),
+      pending_task_seq_(0) {
 }
 
 SyncTaskManager::~SyncTaskManager() {
@@ -69,13 +86,7 @@ void SyncTaskManager::Initialize(SyncStatusCode status) {
 void SyncTaskManager::ScheduleTask(
     const Task& task,
     const SyncStatusCallback& callback) {
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
-  if (!token) {
-    pending_tasks_.push_back(base::Bind(
-        &SyncTaskManager::ScheduleTask, AsWeakPtr(), task, callback));
-    return;
-  }
-  task.Run(CreateCompletionCallback(token.Pass(), callback));
+  ScheduleTaskAtPriority(task, PRIORITY_MED, callback);
 }
 
 void SyncTaskManager::ScheduleSyncTask(
@@ -83,14 +94,30 @@ void SyncTaskManager::ScheduleSyncTask(
     const SyncStatusCallback& callback) {
   scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
   if (!token) {
-    pending_tasks_.push_back(
+    PushPendingTask(
         base::Bind(&SyncTaskManager::ScheduleSyncTask,
-                   AsWeakPtr(), base::Passed(&task), callback));
+                   AsWeakPtr(), base::Passed(&task), callback),
+        PRIORITY_MED);
     return;
   }
   DCHECK(!running_task_);
   running_task_ = task.Pass();
   running_task_->Run(CreateCompletionCallback(token.Pass(), callback));
+}
+
+void SyncTaskManager::ScheduleTaskAtPriority(
+    const Task& task,
+    Priority priority,
+    const SyncStatusCallback& callback) {
+  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
+  if (!token) {
+    PushPendingTask(
+        base::Bind(&SyncTaskManager::ScheduleTask, AsWeakPtr(),
+                   task, callback),
+        priority);
+    return;
+  }
+  task.Run(CreateCompletionCallback(token.Pass(), callback));
 }
 
 void SyncTaskManager::ScheduleTaskIfIdle(const Task& task) {
@@ -131,8 +158,8 @@ void SyncTaskManager::NotifyTaskDone(
   current_callback_.Reset();
 
   if (!pending_tasks_.empty()) {
-    base::Closure closure = pending_tasks_.front();
-    pending_tasks_.pop_front();
+    base::Closure closure = pending_tasks_.top().task;
+    pending_tasks_.pop();
     closure.Run();
     return;
   }
@@ -159,6 +186,11 @@ SyncStatusCallback SyncTaskManager::CreateCompletionCallback(
   current_callback_ = callback;
   return base::Bind(&SyncTaskManager::NotifyTaskDone,
                     AsWeakPtr(), base::Passed(&token));
+}
+
+void SyncTaskManager::PushPendingTask(
+    const base::Closure& closure, Priority priority) {
+  pending_tasks_.push(PendingTask(closure, priority, pending_task_seq_++));
 }
 
 }  // namespace sync_file_system
