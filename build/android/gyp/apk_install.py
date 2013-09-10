@@ -21,6 +21,7 @@ from util import md5_check
 BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(BUILD_ANDROID_DIR)
 
+from pylib import constants
 from pylib.utils import apk_helper
 
 def GetNewMetadata(device, apk_package):
@@ -62,12 +63,16 @@ def main(argv):
       help='Path to build device configuration.')
   parser.add_option('--stamp',
       help='Path to touch on success.')
+  parser.add_option('--configuration-name',
+      help='The build CONFIGURATION_NAME')
   options, _ = parser.parse_args()
 
   device = build_device.GetBuildDeviceFromPath(
       options.build_device_configuration)
   if not device:
     return
+
+  constants.SetBuildType(options.configuration_name)
 
   serial_number = device.GetSerialNumber()
   apk_package = apk_helper.GetPackageName(options.apk_path)

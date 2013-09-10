@@ -23,6 +23,7 @@ from util import md5_check
 BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(BUILD_ANDROID_DIR)
 
+from pylib import constants
 from pylib.utils import apk_helper
 
 def RunShellCommand(device, cmd):
@@ -93,11 +94,14 @@ def main(argv):
   parser.add_option('--stamp', help='Path to touch on success.')
   parser.add_option('--build-device-configuration',
       help='Path to build device configuration.')
+  parser.add_option('--configuration-name',
+      help='The build CONFIGURATION_NAME')
   options, _ = parser.parse_args()
 
   required_options = ['apk', 'libraries_json', 'script_host_path',
-      'script_device_path', 'target_dir']
+      'script_device_path', 'target_dir', 'configuration_name']
   build_utils.CheckOptions(options, parser, required=required_options)
+  constants.SetBuildType(options.configuration_name)
 
   CreateSymlinkScript(options)
   TriggerSymlinkScript(options)

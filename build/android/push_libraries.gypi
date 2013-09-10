@@ -15,6 +15,7 @@
 #        'libraries_source_dir': 'location where stripped libraries are stored'
 #        'device_library_dir': 'location on the device where to put pushed libraries',
 #        'push_stamp': 'file to touch when the action is complete'
+#        'configuration_name': 'The build CONFIGURATION_NAME'
 #      },
 #      'includes': [ '../../build/android/push_libraries.gypi' ],
 #    ],
@@ -41,5 +42,6 @@
     '--device-dir=<(device_library_dir)',
     '--libraries-json=<(ordered_libraries_file)',
     '--stamp=<(push_stamp)',
+    '--configuration-name=<(configuration_name)',
   ],
 }

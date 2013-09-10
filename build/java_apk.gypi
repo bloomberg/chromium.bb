@@ -247,6 +247,7 @@
             'libraries_top_dir': '<(intermediate_dir)/lib.stripped',
             'libraries_source_dir': '<(libraries_top_dir)/lib/<(android_app_abi)',
             'device_library_dir': '<(device_intermediate_dir)/lib.stripped',
+            'configuration_name': '<(CONFIGURATION_NAME)',
           },
           'dependencies': [
             '<(DEPTH)/tools/android/md5sum/md5sum.gyp:md5sum',
@@ -278,6 +279,7 @@
                 '--target-dir=<(device_library_dir)',
                 '--apk=<(incomplete_apk_path)',
                 '--stamp=<(link_stamp)',
+                '--configuration-name=<(CONFIGURATION_NAME)',
               ],
             },
           ],
@@ -371,6 +373,7 @@
             '--apk-path=<(incomplete_apk_path)',
             '--build-device-configuration=<(build_device_config_path)',
             '--install-record=<(apk_install_record)',
+            '--configuration-name=<(CONFIGURATION_NAME)',
           ],
         },
       ],
