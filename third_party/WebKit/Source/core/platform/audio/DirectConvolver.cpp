@@ -37,6 +37,7 @@
 #endif
 
 #include "core/platform/audio/VectorMath.h"
+#include "wtf/CPU.h"
 
 namespace WebCore {
 
@@ -90,11 +91,11 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel, const float* s
     memcpy(inputP, sourceP, sizeof(float) * framesToProcess);
 
 #if OS(MACOSX)
-#if defined(__i386__)
+#if CPU(X86)
     conv(inputP - kernelSize + 1, 1, kernelP + kernelSize - 1, -1, destP, 1, framesToProcess, kernelSize);
 #else
     vDSP_conv(inputP - kernelSize + 1, 1, kernelP + kernelSize - 1, -1, destP, 1, framesToProcess, kernelSize);
-#endif // defined(__i386__)
+#endif // CPU(X86)
 #else
     // FIXME: The macro can be further optimized to avoid pipeline stalls. One possibility is to maintain 4 separate sums and change the macro to CONVOLVE_FOUR_SAMPLES.
 #define CONVOLVE_ONE_SAMPLE             \

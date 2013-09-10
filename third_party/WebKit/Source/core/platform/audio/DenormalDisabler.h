@@ -25,6 +25,7 @@
 #ifndef DenormalDisabler_h
 #define DenormalDisabler_h
 
+#include "wtf/CPU.h"
 #include "wtf/MathExtras.h"
 #include <float.h>
 
@@ -34,14 +35,14 @@ namespace WebCore {
 
 // Define HAVE_DENORMAL if we support flushing denormals to zero.
 #if OS(WIN) && COMPILER(MSVC)
-#define HAVE_DENORMAL
+#define HAVE_DENORMAL 1
 #endif
 
-#if defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
-#define HAVE_DENORMAL
+#if COMPILER(GCC) && (CPU(X86) || CPU(X86_64))
+#define HAVE_DENORMAL 1
 #endif
 
-#ifdef HAVE_DENORMAL
+#if HAVE(DENORMAL)
 class DenormalDisabler {
 public:
     DenormalDisabler()
@@ -83,7 +84,7 @@ public:
 #endif
     }
 private:
-#if defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
+#if COMPILER(GCC) && (CPU(X86) || CPU(X86_64))
     inline int getCSR()
     {
         int result;

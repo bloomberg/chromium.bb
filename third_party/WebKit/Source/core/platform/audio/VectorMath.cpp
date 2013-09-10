@@ -28,6 +28,7 @@
 
 #include "core/platform/audio/VectorMath.h"
 #include "wtf/Assertions.h"
+#include "wtf/CPU.h"
 #include <stdint.h>
 
 #if OS(MACOSX)
@@ -56,7 +57,7 @@ namespace VectorMath {
 
 void vsmul(const float* sourceP, int sourceStride, const float* scale, float* destP, int destStride, size_t framesToProcess)
 {
-#if defined(__i386__)
+#if CPU(X86)
     ::vsmul(sourceP, sourceStride, scale, destP, destStride, framesToProcess);
 #else
     vDSP_vsmul(sourceP, sourceStride, scale, destP, destStride, framesToProcess);
@@ -65,7 +66,7 @@ void vsmul(const float* sourceP, int sourceStride, const float* scale, float* de
 
 void vadd(const float* source1P, int sourceStride1, const float* source2P, int sourceStride2, float* destP, int destStride, size_t framesToProcess)
 {
-#if defined(__i386__)
+#if CPU(X86)
     ::vadd(source1P, sourceStride1, source2P, sourceStride2, destP, destStride, framesToProcess);
 #else
     vDSP_vadd(source1P, sourceStride1, source2P, sourceStride2, destP, destStride, framesToProcess);
@@ -74,7 +75,7 @@ void vadd(const float* source1P, int sourceStride1, const float* source2P, int s
 
 void vmul(const float* source1P, int sourceStride1, const float* source2P, int sourceStride2, float* destP, int destStride, size_t framesToProcess)
 {
-#if defined(__i386__)
+#if CPU(X86)
     ::vmul(source1P, sourceStride1, source2P, sourceStride2, destP, destStride, framesToProcess);
 #else
     vDSP_vmul(source1P, sourceStride1, source2P, sourceStride2, destP, destStride, framesToProcess);
@@ -92,7 +93,7 @@ void zvmul(const float* real1P, const float* imag1P, const float* real2P, const 
     sc2.imagp = const_cast<float*>(imag2P);
     dest.realp = realDestP;
     dest.imagp = imagDestP;
-#if defined(__i386__)
+#if CPU(X86)
     ::zvmul(&sc1, 1, &sc2, 1, &dest, 1, framesToProcess, 1);
 #else
     vDSP_zvmul(&sc1, 1, &sc2, 1, &dest, 1, framesToProcess, 1);
