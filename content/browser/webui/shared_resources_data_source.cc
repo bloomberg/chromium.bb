@@ -35,7 +35,7 @@ bool AppsRelativePathMatch(const std::string& path,
       return true;
   } else if (StartsWithASCII(path, kAppImagesPath2x, false)) {
     if (compareto ==
-        (kReplacement2x + path.substr(arraysize(kAppImagesPath) - 1)))
+        (kReplacement2x + path.substr(arraysize(kAppImagesPath2x) - 1)))
       return true;
   }
   return false;

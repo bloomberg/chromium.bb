@@ -50,7 +50,7 @@ button.white-button[disabled] {
 button.blue-button {
   border-image: -webkit-image-set(
     url('chrome://resources/images/apps/blue_button.png') 1x,
-    url('chrome://resources/images/2x/apps/_bluebutton.png')
+    url('chrome://resources/images/2x/apps/blue_button.png')
         2x) 5 fill / 5px / 2px repeat;
 }
 
