@@ -211,6 +211,8 @@ gfx::Rect NativeAppWindowGtk::GetRestoredBounds() const {
 ui::WindowShowState NativeAppWindowGtk::GetRestoredState() const {
   if (IsMaximized())
     return ui::SHOW_STATE_MAXIMIZED;
+  if (IsFullscreen())
+    return ui::SHOW_STATE_FULLSCREEN;
   return ui::SHOW_STATE_NORMAL;
 }
 

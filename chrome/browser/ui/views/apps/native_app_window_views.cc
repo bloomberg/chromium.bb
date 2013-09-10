@@ -326,11 +326,9 @@ gfx::Rect NativeAppWindowViews::GetRestoredBounds() const {
 ui::WindowShowState NativeAppWindowViews::GetRestoredState() const {
   if (IsMaximized())
     return ui::SHOW_STATE_MAXIMIZED;
-#if defined(USE_ASH)
-  // On Ash, restore fullscreen.
   if (IsFullscreen())
     return ui::SHOW_STATE_FULLSCREEN;
-
+#if defined(USE_ASH)
   // Use kRestoreShowStateKey in case a window is minimized/hidden.
   ui::WindowShowState restore_state =
       window_->GetNativeWindow()->GetProperty(

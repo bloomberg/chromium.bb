@@ -6,10 +6,17 @@ var assertState = function(win) {
   if (win.id == 'normal') {
     chrome.test.assertFalse(win.isMinimized());
     chrome.test.assertFalse(win.isMaximized());
+    chrome.test.assertFalse(win.isFullscreen());
   }
   if (win.id == 'maximized') {
     chrome.test.assertFalse(win.isMinimized());
     chrome.test.assertTrue(win.isMaximized());
+    chrome.test.assertFalse(win.isFullscreen());
+  }
+  if (win.id == 'fullscreen') {
+    chrome.test.assertFalse(win.isMinimized());
+    chrome.test.assertFalse(win.isMaximized());
+    chrome.test.assertTrue(win.isFullscreen());
   }
 }
 
@@ -40,6 +47,9 @@ chrome.app.runtime.onLaunched.addListener(function() {
     },
     function testRestoreMaximized() {
       testRestoreState('maximized');
+    },
+    function testRestoreFullscreen() {
+      testRestoreState('fullscreen');
     },
     // Minimize and fullscreen behavior are platform dependent.
   ]);
