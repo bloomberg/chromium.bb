@@ -322,6 +322,10 @@ void VideoCaptureController::OnIncomingCapturedFrame(
       DCHECK(!chopped_width_ && !chopped_height_);
       origin_colorspace = libyuv::FOURCC_YUY2;
       break;
+    case media::PIXEL_FORMAT_UYVY:
+      DCHECK(!chopped_width_ && !chopped_height_);
+      origin_colorspace = libyuv::FOURCC_UYVY;
+      break;
     case media::PIXEL_FORMAT_RGB24:
       origin_colorspace = libyuv::FOURCC_RAW;
       break;

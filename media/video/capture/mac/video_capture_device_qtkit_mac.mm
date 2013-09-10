@@ -171,7 +171,7 @@
           (id)kCVPixelBufferWidthKey,
           [NSNumber numberWithDouble:frameHeight_],
           (id)kCVPixelBufferHeightKey,
-          [NSNumber numberWithUnsignedInt:kCVPixelFormatType_32BGRA],
+          [NSNumber numberWithUnsignedInt:kCVPixelFormatType_422YpCbCr8],
           (id)kCVPixelBufferPixelFormatTypeKey,
           nil];
   [[[captureSession_ outputs] objectAtIndex:0]
@@ -266,7 +266,7 @@
     captureCapability.width = frameWidth_;
     captureCapability.height = frameHeight_;
     captureCapability.frame_rate = frameRate_;
-    captureCapability.color = media::PIXEL_FORMAT_ARGB;
+    captureCapability.color = media::PIXEL_FORMAT_UYVY;
     captureCapability.expected_capture_delay = 0;
     captureCapability.interlaced = false;
 
