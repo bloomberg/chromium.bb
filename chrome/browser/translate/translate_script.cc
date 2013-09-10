@@ -88,6 +88,8 @@ void TranslateScript::Request(const Callback& callback) {
       translate_script_url,
       kAlwaysUseSslQueryName,
       kAlwaysUseSslQueryValue);
+#if !defined(OS_IOS)
+  // iOS doesn't need to use specific loaders for the isolated world.
   translate_script_url = net::AppendQueryParameter(
       translate_script_url,
       kCssLoaderCallbackQueryName,
@@ -96,6 +98,7 @@ void TranslateScript::Request(const Callback& callback) {
       translate_script_url,
       kJavascriptLoaderCallbackQueryName,
       kJavascriptLoaderCallbackQueryValue);
+#endif  // !defined(OS_IOS)
 
   translate_script_url =
       TranslateURLUtil::AddHostLocaleToUrl(translate_script_url);
