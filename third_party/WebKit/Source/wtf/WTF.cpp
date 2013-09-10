@@ -32,7 +32,6 @@
 #include "WTF.h"
 
 #include "wtf/PartitionAlloc.h"
-#include "wtf/QuantizedAllocation.h"
 
 #ifndef NDEBUG
 #include "wtf/MainThread.h"
@@ -42,11 +41,8 @@ namespace WTF {
 
 extern void initializeThreading();
 
-PartitionAllocator<4096> Partitions::m_bufferAllocator;
-
 void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction)
 {
-    QuantizedAllocation::init();
     Partitions::initialize();
     setCurrentTimeFunction(currentTimeFunction);
     setMonotonicallyIncreasingTimeFunction(monotonicallyIncreasingTimeFunction);
@@ -67,5 +63,7 @@ void Partitions::shutdown()
 {
     m_bufferAllocator.shutdown();
 }
+
+PartitionAllocator<4096> Partitions::m_bufferAllocator;
 
 } // namespace WTF

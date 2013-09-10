@@ -213,6 +213,15 @@ char* fastStrDup(const char* src)
 
 namespace WTF {
 
+size_t fastMallocGoodSize(size_t bytes)
+{
+#if OS(MACOSX)
+    return malloc_good_size(bytes);
+#else
+    return bytes;
+#endif
+}
+
 void* fastMalloc(size_t n)
 {
     ASSERT(!isForbidden());
@@ -2456,6 +2465,13 @@ static inline TCMalloc_PageHeap* getPageHeap()
 }
 
 #define pageheap getPageHeap()
+
+size_t fastMallocGoodSize(size_t bytes)
+{
+    if (!phinited)
+        TCMalloc_ThreadCache::InitModule();
+    return AllocationSize(bytes);
+}
 
 #if USE_BACKGROUND_THREAD_TO_SCAVENGE_MEMORY
 

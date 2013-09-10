@@ -25,10 +25,10 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/NotFound.h"
-#include "wtf/QuantizedAllocation.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/UnusedParam.h"
 #include "wtf/VectorTraits.h"
+#include <limits>
 #include <utility>
 #include <string.h>
 
@@ -257,9 +257,9 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         void allocateBuffer(size_t newCapacity)
         {
             ASSERT(newCapacity);
-            RELEASE_ASSERT(newCapacity <= QuantizedAllocation::kMaxUnquantizedAllocation / sizeof(T));
-            size_t originalSizeToAllocate = newCapacity * sizeof(T);
-            size_t sizeToAllocate = QuantizedAllocation::quantizedSize(originalSizeToAllocate);
+            // Using "unsigned" is not a limitation because Chromium's max malloc() is 2GB even on 64-bit.
+            RELEASE_ASSERT(newCapacity <= std::numeric_limits<unsigned>::max() / sizeof(T));
+            size_t sizeToAllocate = fastMallocGoodSize(newCapacity * sizeof(T));
             m_capacity = sizeToAllocate / sizeof(T);
             m_buffer = static_cast<T*>(fastMalloc(sizeToAllocate));
         }
@@ -272,9 +272,9 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         void reallocateBuffer(size_t newCapacity)
         {
             ASSERT(shouldReallocateBuffer(newCapacity));
-            RELEASE_ASSERT(newCapacity <= QuantizedAllocation::kMaxUnquantizedAllocation / sizeof(T));
-            size_t originalSizeToAllocate = newCapacity * sizeof(T);
-            size_t sizeToAllocate = QuantizedAllocation::quantizedSize(originalSizeToAllocate);
+            // Using "unsigned" is not a limitation because Chromium's max malloc() is 2GB even on 64-bit.
+            RELEASE_ASSERT(newCapacity <= std::numeric_limits<unsigned>::max() / sizeof(T));
+            size_t sizeToAllocate = fastMallocGoodSize(newCapacity * sizeof(T));
             m_capacity = sizeToAllocate / sizeof(T);
             m_buffer = static_cast<T*>(fastRealloc(m_buffer, sizeToAllocate));
         }

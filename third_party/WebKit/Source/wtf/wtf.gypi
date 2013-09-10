@@ -98,8 +98,6 @@
             'PrintStream.cpp',
             'PrintStream.h',
             'ProcessID.h',
-            'QuantizedAllocation.cpp',
-            'QuantizedAllocation.h',
             'RandomNumber.cpp',
             'RandomNumber.h',
             'RandomNumberSeed.h',
