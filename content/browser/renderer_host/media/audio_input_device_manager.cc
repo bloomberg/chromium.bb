@@ -34,7 +34,8 @@ AudioInputDeviceManager::AudioInputDeviceManager(
   StreamDeviceInfo fake_device(MEDIA_DEVICE_AUDIO_CAPTURE,
                                media::AudioManagerBase::kDefaultDeviceName,
                                media::AudioManagerBase::kDefaultDeviceId,
-                               44100, media::CHANNEL_LAYOUT_STEREO, false);
+                               44100, media::CHANNEL_LAYOUT_STEREO,
+                               0, false);
   fake_device.session_id = kFakeOpenSessionId;
   devices_.push_back(fake_device);
 }
@@ -169,19 +170,37 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
   DCHECK(IsOnDeviceThread());
 
   StreamDeviceInfo out(info.device.type, info.device.name, info.device.id,
-                       0, 0, false);
+                       0, 0, 0, false);
   out.session_id = session_id;
+
+  MediaStreamDevice::AudioDeviceParameters& input_params = out.device.input;
+
   if (use_fake_device_) {
     // Don't need to query the hardware information if using fake device.
-    out.device.sample_rate = 44100;
-    out.device.channel_layout = media::CHANNEL_LAYOUT_STEREO;
+    input_params.sample_rate = 44100;
+    input_params.channel_layout = media::CHANNEL_LAYOUT_STEREO;
   } else {
     // Get the preferred sample rate and channel configuration for the
     // audio device.
     media::AudioParameters params =
         audio_manager_->GetInputStreamParameters(info.device.id);
-    out.device.sample_rate = params.sample_rate();
-    out.device.channel_layout = params.channel_layout();
+    input_params.sample_rate = params.sample_rate();
+    input_params.channel_layout = params.channel_layout();
+    input_params.frames_per_buffer = params.frames_per_buffer();
+
+    // Add preferred output device information if a matching output device
+    // exists.
+    out.device.matched_output_device_id =
+        audio_manager_->GetAssociatedOutputDeviceID(info.device.id);
+    if (!out.device.matched_output_device_id.empty()) {
+      params = audio_manager_->GetOutputStreamParameters(
+          out.device.matched_output_device_id);
+      MediaStreamDevice::AudioDeviceParameters& matched_output_params =
+          out.device.matched_output;
+      matched_output_params.sample_rate = params.sample_rate();
+      matched_output_params.channel_layout = params.channel_layout();
+      matched_output_params.frames_per_buffer = params.frames_per_buffer();
+    }
   }
 
   // Return the |session_id| through the listener by posting a task on
@@ -206,6 +225,7 @@ void AudioInputDeviceManager::OpenedOnIOThread(int session_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(session_id, info.session_id);
   DCHECK(GetDevice(session_id) == devices_.end());
+
   devices_.push_back(info);
 
   if (listener_)

@@ -13,6 +13,7 @@
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_pull_fifo.h"
 #include "media/base/audio_renderer_sink.h"
+#include "media/base/channel_layout.h"
 
 namespace media {
 class AudioOutputDevice;
@@ -28,7 +29,10 @@ class CONTENT_EXPORT WebRtcAudioRenderer
     : NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback),
       NON_EXPORTED_BASE(public MediaStreamAudioRenderer) {
  public:
-  explicit WebRtcAudioRenderer(int source_render_view_id);
+  WebRtcAudioRenderer(int source_render_view_id,
+                      int session_id,
+                      int sample_rate,
+                      int frames_per_buffer);
 
   // Initialize function called by clients like WebRtcAudioDeviceImpl.
   // Stop() has to be called before |source| is deleted.
@@ -72,6 +76,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
 
   // The render view in which the audio is rendered into |sink_|.
   const int source_render_view_id_;
+  const int session_id_;
 
   // The sink (destination) for rendered audio.
   scoped_refptr<media::AudioOutputDevice> sink_;
@@ -99,6 +104,10 @@ class CONTENT_EXPORT WebRtcAudioRenderer
 
   // Delay due to the FIFO in milliseconds.
   int fifo_delay_milliseconds_;
+
+  // The preferred sample rate and buffer sizes provided via the ctor.
+  const int sample_rate_;
+  const int frames_per_buffer_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebRtcAudioRenderer);
 };

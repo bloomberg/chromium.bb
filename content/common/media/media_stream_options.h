@@ -52,11 +52,13 @@ struct CONTENT_EXPORT StreamDeviceInfo {
                    const std::string& device_param,
                    int sample_rate,
                    int channel_layout,
+                   int frames_per_buffer,
                    bool opened);
   static bool IsEqual(const StreamDeviceInfo& first,
                       const StreamDeviceInfo& second);
 
   MediaStreamDevice device;
+
   // Set to true if the device has been opened, false otherwise.
   bool in_use;
   // Id for this capture session. Unique for all sessions of the same type.

@@ -48,9 +48,10 @@ StreamDeviceInfo::StreamDeviceInfo(MediaStreamType service_param,
                                    const std::string& device_param,
                                    int sample_rate,
                                    int channel_layout,
+                                   int frames_per_buffer,
                                    bool opened)
     : device(service_param, device_param, name_param, sample_rate,
-             channel_layout),
+             channel_layout, frames_per_buffer),
       in_use(opened),
       session_id(kNoId) {
 }
@@ -58,11 +59,15 @@ StreamDeviceInfo::StreamDeviceInfo(MediaStreamType service_param,
 // static
 bool StreamDeviceInfo::IsEqual(const StreamDeviceInfo& first,
                                const StreamDeviceInfo& second) {
+  const MediaStreamDevice::AudioDeviceParameters& input_first =
+      first.device.input;
+  const MediaStreamDevice::AudioDeviceParameters& input_second =
+      second.device.input;
   return first.device.type == second.device.type &&
       first.device.name == second.device.name &&
       first.device.id == second.device.id &&
-      first.device.sample_rate == second.device.sample_rate &&
-      first.device.channel_layout == second.device.channel_layout &&
+      input_first.sample_rate == input_second.sample_rate &&
+      input_first.channel_layout == input_second.channel_layout &&
       first.in_use == second.in_use &&
       first.session_id == second.session_id;
 }

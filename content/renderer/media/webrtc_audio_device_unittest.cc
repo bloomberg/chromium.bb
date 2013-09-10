@@ -547,8 +547,9 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_StartPlayout) {
       ch, webrtc::kPlaybackPerChannel, *media_process.get()));
 
   EXPECT_EQ(0, base->StartPlayout(ch));
-  scoped_refptr<WebRtcAudioRenderer> renderer =
-      new WebRtcAudioRenderer(kRenderViewId);
+  scoped_refptr<WebRtcAudioRenderer> renderer(
+      CreateDefaultWebRtcAudioRenderer(kRenderViewId));
+
   EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer.get()));
   renderer->Play();
 
@@ -722,8 +723,8 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_PlayLocalFile) {
   int ch = base->CreateChannel();
   EXPECT_NE(-1, ch);
   EXPECT_EQ(0, base->StartPlayout(ch));
-  scoped_refptr<WebRtcAudioRenderer> renderer =
-      new WebRtcAudioRenderer(kRenderViewId);
+  scoped_refptr<WebRtcAudioRenderer> renderer(
+      CreateDefaultWebRtcAudioRenderer(kRenderViewId));
   EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer.get()));
   renderer->Play();
 
@@ -832,8 +833,8 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
   EXPECT_EQ(0, network->RegisterExternalTransport(ch, *transport.get()));
   EXPECT_EQ(0, base->StartPlayout(ch));
   EXPECT_EQ(0, base->StartSend(ch));
-  scoped_refptr<WebRtcAudioRenderer> renderer =
-      new WebRtcAudioRenderer(kRenderViewId);
+  scoped_refptr<WebRtcAudioRenderer> renderer(
+      CreateDefaultWebRtcAudioRenderer(kRenderViewId));
   EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer.get()));
   renderer->Play();
 
@@ -943,8 +944,9 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_WebRtcPlayoutSetupTime) {
   base::WaitableEvent event(false, false);
   scoped_ptr<MockWebRtcAudioRendererSource> renderer_source(
       new MockWebRtcAudioRendererSource(&event));
-  scoped_refptr<WebRtcAudioRenderer> renderer =
-      new WebRtcAudioRenderer(kRenderViewId);
+
+  scoped_refptr<WebRtcAudioRenderer> renderer(
+      CreateDefaultWebRtcAudioRenderer(kRenderViewId));
   renderer->Initialize(renderer_source.get());
 
   // Start the timer and playout.

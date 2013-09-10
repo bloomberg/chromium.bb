@@ -740,8 +740,8 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
                 audio_input_device_manager_->GetOpenedDeviceInfoById(
                     device_it->session_id);
             DCHECK_EQ(info->device.id, device_it->device.id);
-            device_it->device.sample_rate = info->device.sample_rate;
-            device_it->device.channel_layout = info->device.channel_layout;
+            device_it->device.input = info->device.input;
+            device_it->device.matched_output = info->device.matched_output;
           }
           audio_devices.push_back(*device_it);
         } else if (IsVideoMediaType(device_it->device.type)) {
@@ -949,8 +949,8 @@ void MediaStreamManager::HandleAccessRequestResponse(
         if (sample_rate <= 0 || sample_rate > 96000)
           sample_rate = 44100;
 
-        device_info.device.sample_rate = sample_rate;
-        device_info.device.channel_layout = media::CHANNEL_LAYOUT_STEREO;
+        device_info.device.input.sample_rate = sample_rate;
+        device_info.device.input.channel_layout = media::CHANNEL_LAYOUT_STEREO;
       }
     }
 

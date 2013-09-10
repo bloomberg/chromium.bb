@@ -9,11 +9,9 @@
 #include "base/strings/string_util.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
-#include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_output_device.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/sample_rates.h"
-#include "media/base/audio_hardware_config.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -90,13 +88,19 @@ void AddHistogramFramesPerBuffer(int param) {
 
 }  // namespace
 
-WebRtcAudioRenderer::WebRtcAudioRenderer(int source_render_view_id)
+WebRtcAudioRenderer::WebRtcAudioRenderer(int source_render_view_id,
+                                         int session_id,
+                                         int sample_rate,
+                                         int frames_per_buffer)
     : state_(UNINITIALIZED),
       source_render_view_id_(source_render_view_id),
+      session_id_(session_id),
       source_(NULL),
       play_ref_count_(0),
       audio_delay_milliseconds_(0),
-      fifo_delay_milliseconds_(0) {
+      fifo_delay_milliseconds_(0),
+      sample_rate_(sample_rate),
+      frames_per_buffer_(frames_per_buffer) {
 }
 
 WebRtcAudioRenderer::~WebRtcAudioRenderer() {
@@ -120,10 +124,10 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   DVLOG(1) << "Using mono audio output for Android";
   channel_layout = media::CHANNEL_LAYOUT_MONO;
 #endif
-  // Ask the renderer for the default audio output hardware sample-rate.
-  media::AudioHardwareConfig* hardware_config =
-      RenderThreadImpl::current()->GetAudioHardwareConfig();
-  int sample_rate = hardware_config->GetOutputSampleRate();
+
+  // TODO(tommi,henrika): Maybe we should just change |sample_rate_| to be
+  // immutable and change its value instead of using a temporary?
+  int sample_rate = sample_rate_;
   DVLOG(1) << "Audio output hardware sample rate: " << sample_rate;
 
   // WebRTC does not yet support higher rates than 96000 on the client side
@@ -178,7 +182,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 #if defined(OS_ANDROID)
   buffer_size = kDefaultOutputBufferSize;
 #else
-  buffer_size = hardware_config->GetOutputBufferSize();
+  buffer_size = frames_per_buffer_;
 #endif
 
   sink_params.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
@@ -206,7 +210,6 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
     }
   }
 
-
   // Allocate local audio buffers based on the parameters above.
   // It is assumed that each audio sample contains 16 bits and each
   // audio frame contains one or two audio samples depending on the
@@ -219,7 +222,12 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 
   // Configure the audio rendering client and start rendering.
   sink_ = AudioDeviceFactory::NewOutputDevice(source_render_view_id_);
-  sink_->Initialize(sink_params, this);
+
+  // TODO(tommi): Rename InitializeUnifiedStream to rather reflect association
+  // with a session.
+  DCHECK_GE(session_id_, 0);
+  sink_->InitializeUnifiedStream(sink_params, this, session_id_);
+
   sink_->Start();
 
   // User must call Play() before any audio can be heard.

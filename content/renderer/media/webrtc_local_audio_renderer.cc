@@ -10,11 +10,9 @@
 #include "base/synchronization/lock.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
-#include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_fifo.h"
-#include "media/base/audio_hardware_config.h"
 
 namespace content {
 
@@ -96,10 +94,16 @@ void WebRtcLocalAudioRenderer::SetCaptureFormat(
 // WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer implementation.
 WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer(
     WebRtcLocalAudioTrack* audio_track,
-    int source_render_view_id)
+    int source_render_view_id,
+    int session_id,
+    int sample_rate,
+    int frames_per_buffer)
     : audio_track_(audio_track),
       source_render_view_id_(source_render_view_id),
-      playing_(false) {
+      session_id_(session_id),
+      playing_(false),
+      sample_rate_(sample_rate),
+      frames_per_buffer_(frames_per_buffer) {
   DCHECK(audio_track);
   DVLOG(1) << "WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer()";
 }
@@ -133,11 +137,6 @@ void WebRtcLocalAudioRenderer::Start() {
   loopback_fifo_.reset(new media::AudioFifo(
       audio_params_.channels(), 10 * audio_params_.frames_per_buffer()));
 
-#if defined(OS_ANDROID)
-  media::AudioHardwareConfig* hardware_config =
-      RenderThreadImpl::current()->GetAudioHardwareConfig();
-#endif
-
   media::AudioParameters sink_params(audio_params_.format(),
                                      audio_params_.channel_layout(),
                                      audio_params_.sample_rate(),
@@ -147,17 +146,18 @@ void WebRtcLocalAudioRenderer::Start() {
   // achieve low latency mode, we need use buffer size suggested by
   // AudioManager for the sink paramters which will be used to decide
   // buffer size for shared memory buffer.
-                                     hardware_config->GetOutputBufferSize()
+                                     frames_per_buffer_
 #else
                                      2 * audio_params_.frames_per_buffer()
 #endif
                                     );
+
   sink_ = AudioDeviceFactory::NewOutputDevice(source_render_view_id_);
 
   // TODO(henrika): we could utilize the unified audio here instead and do
   // sink_->InitializeIO(sink_params, 2, callback_.get());
   // It would then be possible to avoid using the WebRtcAudioCapturer.
-  sink_->Initialize(sink_params, this);
+  sink_->InitializeUnifiedStream(sink_params, this, session_id_);
 
   // Start the capturer and local rendering. Note that, the capturer is owned
   // by the WebRTC ADM and might already bee running.

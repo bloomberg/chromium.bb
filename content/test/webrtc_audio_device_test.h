@@ -53,6 +53,7 @@ class MediaStreamManager;
 class RenderThreadImpl;
 class ResourceContext;
 class TestBrowserThread;
+class WebRtcAudioRenderer;
 class WebRTCMockRenderProcess;
 
 // Scoped class for WebRTC interfaces.  Fetches the wrapped interface
@@ -133,6 +134,9 @@ class MAYBE_WebRTCAudioDeviceTest : public ::testing::Test,
   bool Send(IPC::Message* message);
 
   void SetAudioHardwareConfig(media::AudioHardwareConfig* hardware_config);
+
+  scoped_refptr<WebRtcAudioRenderer> CreateDefaultWebRtcAudioRenderer(
+      int render_view_id);
 
  protected:
   void InitializeIOThread(const char* thread_name);

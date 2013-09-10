@@ -155,6 +155,16 @@ class CONTENT_EXPORT MediaStreamImpl
 
   void StopLocalAudioTrack(const WebKit::WebMediaStream& web_stream);
 
+  // Returns a valid session id if a single capture device is currently open
+  // (and then the matching session_id), otherwise -1.
+  // This is used to pass on a session id to a webrtc audio renderer (either
+  // local or remote), so that audio will be rendered to a matching output
+  // device, should one exist.
+  // Note that if there are more than one open capture devices the function
+  // will not be able to pick an appropriate device and return false.
+  bool GetAuthorizedDeviceInfoForAudioRenderer(
+      int* session_id, int* output_sample_rate, int* output_buffer_size);
+
   // Weak ref to a MediaStreamDependencyFactory, owned by the RenderThread.
   // It's valid for the lifetime of RenderThread.
   MediaStreamDependencyFactory* dependency_factory_;

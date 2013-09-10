@@ -21,6 +21,8 @@
 #include "content/renderer/media/webrtc_audio_renderer.h"
 #include "content/renderer/media/webrtc_local_audio_renderer.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
+#include "content/renderer/render_thread_impl.h"
+#include "media/base/audio_hardware_config.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
@@ -118,6 +120,15 @@ webrtc::MediaStreamInterface* GetNativeMediaStream(
   if (!extra_data)
     return NULL;
   return extra_data->stream().get();
+}
+
+void GetDefaultOutputDeviceParams(
+    int* output_sample_rate, int* output_buffer_size) {
+  // Fetch the default audio output hardware config.
+  media::AudioHardwareConfig* hardware_config =
+      RenderThreadImpl::current()->GetAudioHardwareConfig();
+  *output_sample_rate = hardware_config->GetOutputSampleRate();
+  *output_buffer_size = hardware_config->GetOutputBufferSize();
 }
 
 }  // namespace
@@ -592,7 +603,15 @@ scoped_refptr<WebRtcAudioRenderer> MediaStreamImpl::CreateRemoteAudioRenderer(
   DVLOG(1) << "MediaStreamImpl::CreateRemoteAudioRenderer label:"
            << stream->label();
 
-  return new WebRtcAudioRenderer(RenderViewObserver::routing_id());
+  int session_id = 0, sample_rate = 0, buffer_size = 0;
+  if (!GetAuthorizedDeviceInfoForAudioRenderer(&session_id,
+                                               &sample_rate,
+                                               &buffer_size)) {
+    GetDefaultOutputDeviceParams(&sample_rate, &buffer_size);
+  }
+
+  return new WebRtcAudioRenderer(RenderViewObserver::routing_id(),
+      session_id, sample_rate, buffer_size);
 }
 
 scoped_refptr<WebRtcLocalAudioRenderer>
@@ -611,11 +630,21 @@ MediaStreamImpl::CreateLocalAudioRenderer(
            << "audio_track.id     : " << audio_track->id()
            << "audio_track.enabled: " << audio_track->enabled();
 
+  int session_id = 0, sample_rate = 0, buffer_size = 0;
+  if (!GetAuthorizedDeviceInfoForAudioRenderer(&session_id,
+                                               &sample_rate,
+                                               &buffer_size)) {
+    GetDefaultOutputDeviceParams(&sample_rate, &buffer_size);
+  }
+
   // Create a new WebRtcLocalAudioRenderer instance and connect it to the
   // existing WebRtcAudioCapturer so that the renderer can use it as source.
   return new WebRtcLocalAudioRenderer(
       static_cast<WebRtcLocalAudioTrack*>(audio_track),
-      RenderViewObserver::routing_id());
+      RenderViewObserver::routing_id(),
+      session_id,
+      sample_rate,
+      buffer_size);
 }
 
 void MediaStreamImpl::StopLocalAudioTrack(
@@ -637,6 +666,49 @@ void MediaStreamImpl::StopLocalAudioTrack(
       audio_track->Stop();
     }
   }
+}
+
+bool MediaStreamImpl::GetAuthorizedDeviceInfoForAudioRenderer(
+    int* session_id,
+    int* output_sample_rate,
+    int* output_frames_per_buffer) {
+  DCHECK(CalledOnValidThread());
+
+  const StreamDeviceInfo* device_info = NULL;
+  WebKit::WebString session_id_str;
+  UserMediaRequests::iterator it = user_media_requests_.begin();
+  for (; it != user_media_requests_.end(); ++it) {
+    UserMediaRequestInfo* request = (*it);
+    for (size_t i = 0; i < request->audio_sources.size(); ++i) {
+      const WebKit::WebMediaStreamSource& source = request->audio_sources[i];
+      if (source.readyState() == WebKit::WebMediaStreamSource::ReadyStateEnded)
+        continue;
+
+      if (!session_id_str.isEmpty() &&
+          !session_id_str.equals(source.deviceId())) {
+        DVLOG(1) << "Multiple capture devices are open so we can't pick a "
+                    "session for a matching output device.";
+        return false;
+      }
+
+      // TODO(tommi): Storing the session id in the deviceId field doesn't
+      // feel right.  Move it over to MediaStreamSourceExtraData?
+      session_id_str = source.deviceId();
+      content::MediaStreamSourceExtraData* extra_data =
+          static_cast<content::MediaStreamSourceExtraData*>(source.extraData());
+      device_info = &extra_data->device_info();
+    }
+  }
+
+  if (session_id_str.isEmpty() || !device_info)
+    return false;
+
+  base::StringToInt(UTF16ToUTF8(session_id_str), session_id);
+  *output_sample_rate = device_info->device.matched_output.sample_rate;
+  *output_frames_per_buffer =
+      device_info->device.matched_output.frames_per_buffer;
+
+  return true;
 }
 
 MediaStreamSourceExtraData::MediaStreamSourceExtraData(

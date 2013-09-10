@@ -815,8 +815,10 @@ MediaStreamDependencyFactory::MaybeCreateAudioCapturer(
 
   if (!capturer->Initialize(
           render_view_id,
-          static_cast<media::ChannelLayout>(device_info.device.channel_layout),
-          device_info.device.sample_rate, device_info.session_id,
+          static_cast<media::ChannelLayout>(
+              device_info.device.input.channel_layout),
+          device_info.device.input.sample_rate,
+          device_info.session_id,
           device_info.device.id)) {
     return NULL;
   }

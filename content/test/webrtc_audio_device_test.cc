@@ -201,6 +201,18 @@ void MAYBE_WebRTCAudioDeviceTest::SetAudioHardwareConfig(
   audio_hardware_config_ = hardware_config;
 }
 
+scoped_refptr<WebRtcAudioRenderer>
+MAYBE_WebRTCAudioDeviceTest::CreateDefaultWebRtcAudioRenderer(
+    int render_view_id) {
+  media::AudioHardwareConfig* hardware_config =
+      RenderThreadImpl::current()->GetAudioHardwareConfig();
+  int sample_rate = hardware_config->GetOutputSampleRate();
+  int frames_per_buffer = hardware_config->GetOutputBufferSize();
+
+  return new WebRtcAudioRenderer(render_view_id, 0, sample_rate,
+                                 frames_per_buffer);
+}
+
 void MAYBE_WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
 #if defined(OS_WIN)
   // We initialize COM (STA) on our IO thread as is done in Chrome.

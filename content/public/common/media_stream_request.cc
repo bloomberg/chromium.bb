@@ -28,9 +28,7 @@ MediaStreamDevice::MediaStreamDevice(
     const std::string& name)
     : type(type),
       id(id),
-      name(name),
-      sample_rate(0),
-      channel_layout(0) {
+      name(name) {
 }
 
 MediaStreamDevice::MediaStreamDevice(
@@ -38,12 +36,12 @@ MediaStreamDevice::MediaStreamDevice(
     const std::string& id,
     const std::string& name,
     int sample_rate,
-    int channel_layout)
+    int channel_layout,
+    int frames_per_buffer)
     : type(type),
       id(id),
       name(name),
-      sample_rate(sample_rate),
-      channel_layout(channel_layout) {
+      input(sample_rate, channel_layout, frames_per_buffer) {
 }
 
 MediaStreamDevice::~MediaStreamDevice() {}
