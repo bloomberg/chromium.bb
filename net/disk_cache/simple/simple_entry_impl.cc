@@ -113,15 +113,6 @@ void RecordUnexpectedStream0Write(net::CacheType cache_type) {
                    HEADER_SIZE_CHANGE_UNEXPECTED_WRITE, HEADER_SIZE_CHANGE_MAX);
 }
 
-// Short trampoline to take an owned input parameter and call a net completion
-// callback with its value.
-void CallCompletionCallback(const net::CompletionCallback& callback,
-                            scoped_ptr<int> result) {
-  DCHECK(result);
-  if (!callback.is_null())
-    callback.Run(*result);
-}
-
 int g_open_entry_count = 0;
 
 void AdjustOpenEntryCountBy(net::CacheType cache_type, int offset) {
