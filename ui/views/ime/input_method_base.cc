@@ -29,10 +29,10 @@ void InputMethodBase::Init(Widget* widget) {
   DCHECK(!widget_) << "The input method is already initialized.";
 
   widget_ = widget;
-  // Alert the InputMethod of the Widget's currently focused view.
-  View* focused = widget->GetFocusManager()->GetFocusedView();
-  if (focused)
-    OnWillChangeFocus(NULL, focused);
+  if (IsWidgetActive()) {
+    // Alert the InputMethod of the Widget's currently focused view.
+    OnFocus();
+  }
   widget->GetFocusManager()->AddFocusChangeListener(this);
 }
 
@@ -60,8 +60,12 @@ void InputMethodBase::OnWillChangeFocus(View* focused_before, View* focused) {}
 
 void InputMethodBase::OnDidChangeFocus(View* focused_before, View* focused) {}
 
+bool InputMethodBase::IsWidgetActive() const {
+  return widget_ ? widget_->IsActive() : false;
+}
+
 bool InputMethodBase::IsViewFocused(View* view) const {
-  return widget_ && widget_->IsActive() && view && GetFocusedView() == view;
+  return IsWidgetActive() && view && GetFocusedView() == view;
 }
 
 bool InputMethodBase::IsTextInputTypeNone() const {

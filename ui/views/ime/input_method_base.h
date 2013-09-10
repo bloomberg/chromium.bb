@@ -45,6 +45,9 @@ class VIEWS_EXPORT InputMethodBase : public InputMethod,
   Widget* widget() const { return widget_; }
   View* GetFocusedView() const;
 
+  // Returns true only if a valid widget is attached and active.
+  bool IsWidgetActive() const;
+
   // Returns true only if the View is focused and its Widget is active.
   bool IsViewFocused(View* view) const;
 
