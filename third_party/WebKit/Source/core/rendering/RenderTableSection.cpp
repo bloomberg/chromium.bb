@@ -1171,11 +1171,7 @@ void RenderTableSection::paint(PaintInfo& paintInfo, const LayoutPoint& paintOff
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
 
-    // put this back in when all layout tests can handle it
-    // ASSERT(!needsLayout());
-    // avoid crashing on bugs that cause us to paint with dirty layout
-    if (needsLayout())
-        return;
+    ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
 
     unsigned totalRows = m_grid.size();
     unsigned totalCols = table()->columns().size();
