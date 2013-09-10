@@ -114,7 +114,6 @@ void SyncedNotification::OnFetchComplete(const GURL url,
 
   // Count off the bitmaps as they arrive.
   --active_fetcher_count_;
-  DCHECK_GE(active_fetcher_count_, 0);
   // See if all bitmaps are accounted for, if so call Show.
   if (active_fetcher_count_ == 0) {
     Show(notification_manager_, notifier_service_, profile_);
@@ -219,7 +218,6 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
     base::Time creation_time =
         base::Time::FromDoubleT(static_cast<double>(GetCreationTime()));
     int priority = GetPriority();
-    int notification_count = GetNotificationCount();
     unsigned int button_count = GetButtonCount();
 
     // Deduce which notification template to use from the data.
@@ -227,8 +225,6 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
         message_center::NOTIFICATION_TYPE_BASE_FORMAT;
     if (!image_url.is_empty()) {
       notification_type = message_center::NOTIFICATION_TYPE_IMAGE;
-    } else if (notification_count > 1) {
-      notification_type = message_center::NOTIFICATION_TYPE_MULTIPLE;
     } else if (button_count > 0) {
       notification_type = message_center::NOTIFICATION_TYPE_BASE_FORMAT;
     }
@@ -263,26 +259,14 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
     if (!image_bitmap_.IsEmpty())
       rich_notification_data.image = image_bitmap_;
 
-    // Fill the individual notification fields for a multiple notification.
-    if (notification_count > 1) {
-      for (int ii = 0; ii < notification_count; ++ii) {
-        message_center::NotificationItem item(
-            UTF8ToUTF16(GetContainedNotificationTitle(ii)),
-            UTF8ToUTF16(GetContainedNotificationMessage(ii)));
-        rich_notification_data.items.push_back(item);
-      }
-    }
+    // Set the ContextMessage inside the rich notification data for the
+    // annotation.
+    rich_notification_data.context_message = annotation;
 
-    // The text encompasses both the description and the annotation.
-    if (!notification_text.empty())
-      notification_text = notification_text + newline;
-    notification_text = notification_text + annotation;
-
-    // If there is a single person sending, use their picture instead of the app
-    // icon.
+    // If there is at least one person sending, use the first picture.
     // TODO(petewil): Someday combine multiple profile photos here.
     gfx::Image icon_bitmap = app_icon_bitmap_;
-    if (GetProfilePictureCount() == 1)  {
+    if (GetProfilePictureCount() >= 1)  {
       icon_bitmap = sender_bitmap_;
     }
 
