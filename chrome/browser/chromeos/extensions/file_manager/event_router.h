@@ -129,10 +129,6 @@ class EventRouter
  private:
   typedef std::map<base::FilePath, FileWatcher*> WatcherMap;
 
-  // USB mount event handlers.
-  void OnDiskMounted(const chromeos::disks::DiskMountManager::Disk* disk);
-  void OnDiskUnmounted(const chromeos::disks::DiskMountManager::Disk* disk);
-
   // Called on change to kExternalStorageDisabled pref.
   void OnExternalStorageDisabledChanged();
 
@@ -148,11 +144,6 @@ class EventRouter
       const base::FilePath& path,
       bool error,
       const std::vector<std::string>& extension_ids);
-
-  void DispatchMountEvent(
-      chromeos::disks::DiskMountManager::MountEvent event,
-      chromeos::MountError error_code,
-      const chromeos::disks::DiskMountManager::MountPointInfo& mount_info);
 
   // If needed, opens a file manager window for the removable device mounted at
   // |mount_path|. Disk.mount_path() is empty, since it is being filled out
