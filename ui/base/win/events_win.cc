@@ -11,7 +11,7 @@
 #include "base/win/win_util.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
-#include "ui/base/win/dpi.h"
+#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/point.h"
 
 namespace ui {
@@ -213,7 +213,7 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
                          GET_Y_LPARAM(native_event.lParam) };
   ScreenToClient(native_event.hwnd, &native_point);
   gfx::Point location(native_point);
-  location = ui::win::ScreenToDIPPoint(location);
+  location = gfx::win::ScreenToDIPPoint(location);
   return location;
 }
 

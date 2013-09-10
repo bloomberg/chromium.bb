@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
-#include "ui/base/win/dpi.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/dpi_win.h"
 
 namespace {
 
@@ -29,7 +29,7 @@ gfx::Display GetDisplay(MONITORINFOEX& monitor_info) {
   gfx::Rect bounds = gfx::Rect(monitor_info.rcMonitor);
   gfx::Display display(id, bounds);
   display.set_work_area(gfx::Rect(monitor_info.rcWork));
-  display.SetScaleAndBounds(ui::win::GetDeviceScaleFactor(), bounds);
+  display.SetScaleAndBounds(gfx::win::GetDeviceScaleFactor(), bounds);
   return display;
 }
 
@@ -58,7 +58,7 @@ ScreenWin::~ScreenWin() {
 }
 
 bool ScreenWin::IsDIPEnabled() {
-  return ui::IsInHighDPIMode();
+  return IsInHighDPIMode();
 }
 
 gfx::Point ScreenWin::GetCursorScreenPoint() {
@@ -129,7 +129,7 @@ gfx::Display ScreenWin::GetPrimaryDisplay() const {
   gfx::Display display = GetDisplay(mi);
   // TODO(kevers|girard): Test if these checks can be reintroduced for high-DIP
   // once more of the app is DIP-aware.
-  if (!ui::IsInHighDPIMode()) {
+  if (!IsInHighDPIMode()) {
     DCHECK_EQ(GetSystemMetrics(SM_CXSCREEN), display.size().width());
     DCHECK_EQ(GetSystemMetrics(SM_CYSCREEN), display.size().height());
   }

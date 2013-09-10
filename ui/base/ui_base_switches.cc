@@ -33,9 +33,6 @@ const char kEnableTouchEditing[] = "enable-touch-editing";
 // Enables the Views textfield on Windows.
 const char kEnableViewsTextfield[] = "enable-views-textfield";
 
-// Enables/Disables High DPI support (windows)
-const char kHighDPISupport[] = "high-dpi-support";
-
 // Overrides the device scale factor for the browser UI and the contents.
 const char kForceDeviceScaleFactor[] = "force-device-scale-factor";
 

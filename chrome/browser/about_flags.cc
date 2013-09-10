@@ -1567,8 +1567,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_HIDPI_NAME,
     IDS_FLAGS_HIDPI_DESCRIPTION,
     kOsWin,
-    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kHighDPISupport, "1",
-                                        switches::kHighDPISupport, "0")
+    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(gfx::switches::kHighDPISupport, "1",
+                                        gfx::switches::kHighDPISupport, "0")
   },
 #if defined(OS_CHROMEOS)
   {

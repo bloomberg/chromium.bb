@@ -10,7 +10,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_data_dll_win.h"
-#include "ui/base/win/dpi.h"
+#include "ui/gfx/dpi_win.h"
 
 namespace ui {
 
@@ -42,7 +42,7 @@ void ResourceBundle::LoadCommonResources() {
   // default scaling for Metro mode. If high-DPI mode is enabled, load resource
   // pak closest to the desired scale factor.  The high-DPI resources are
   // scaled up from 100% touch.
-  float scale = ui::win::GetDeviceScaleFactor();
+  float scale = gfx::win::GetDeviceScaleFactor();
   bool force_touch_resources = false;
   switch(ui::GetScaleFactorFromScale(scale)) {
     case ui::SCALE_FACTOR_180P:

@@ -29,6 +29,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/size_conversions.h"
+#include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_MACOSX)
@@ -36,7 +37,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "ui/base/win/dpi.h"
+#include "ui/gfx/dpi_win.h"
 #endif
 
 namespace content {
@@ -834,8 +835,8 @@ class CompositingRenderWidgetHostViewTabCaptureHighDPI
     cmd->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
                            base::StringPrintf("%f", scale()));
 #if defined(OS_WIN)
-    cmd->AppendSwitchASCII(switches::kHighDPISupport, "1");
-    ui::EnableHighDPISupport();
+    cmd->AppendSwitchASCII(gfx::switches::kHighDPISupport, "1");
+    gfx::EnableHighDPISupport();
 #endif
   }
 

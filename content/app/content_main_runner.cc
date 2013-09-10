@@ -49,7 +49,7 @@
 #include "sandbox/win/src/sandbox_types.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/base/win/dpi.h"
+#include "ui/gfx/dpi_win.h"
 #include "webkit/common/user_agent/user_agent.h"
 
 #if defined(USE_TCMALLOC)

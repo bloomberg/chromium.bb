@@ -15,8 +15,8 @@
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/win/tsf_bridge.h"
-#include "ui/base/win/dpi.h"
 #include "ui/base/win/shell.h"
+#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path_win.h"
@@ -112,7 +112,7 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
 
   has_non_client_view_ = Widget::RequiresNonClientView(params.type);
 
-  gfx::Rect pixel_bounds = ui::win::DIPToScreenRect(params.bounds);
+  gfx::Rect pixel_bounds = gfx::win::DIPToScreenRect(params.bounds);
   message_handler_->Init(parent_hwnd, pixel_bounds);
 
   aura::RootWindow::CreateParams rw_params(params.bounds);
@@ -202,7 +202,7 @@ void DesktopRootWindowHostWin::ShowWindowWithState(
 
 void DesktopRootWindowHostWin::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
-  gfx::Rect pixel_bounds = ui::win::DIPToScreenRect(restored_bounds);
+  gfx::Rect pixel_bounds = gfx::win::DIPToScreenRect(restored_bounds);
   message_handler_->ShowMaximizedWithBounds(pixel_bounds);
 }
 
@@ -211,12 +211,12 @@ bool DesktopRootWindowHostWin::IsVisible() const {
 }
 
 void DesktopRootWindowHostWin::SetSize(const gfx::Size& size) {
-  gfx::Size size_in_pixels = ui::win::DIPToScreenSize(size);
+  gfx::Size size_in_pixels = gfx::win::DIPToScreenSize(size);
   message_handler_->SetSize(size_in_pixels);
 }
 
 void DesktopRootWindowHostWin::CenterWindow(const gfx::Size& size) {
-  gfx::Size size_in_pixels = ui::win::DIPToScreenSize(size);
+  gfx::Size size_in_pixels = gfx::win::DIPToScreenSize(size);
   message_handler_->CenterWindow(size_in_pixels);
 }
 
@@ -224,22 +224,22 @@ void DesktopRootWindowHostWin::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   message_handler_->GetWindowPlacement(bounds, show_state);
-  *bounds = ui::win::ScreenToDIPRect(*bounds);
+  *bounds = gfx::win::ScreenToDIPRect(*bounds);
 }
 
 gfx::Rect DesktopRootWindowHostWin::GetWindowBoundsInScreen() const {
   gfx::Rect pixel_bounds = message_handler_->GetWindowBoundsInScreen();
-  return ui::win::ScreenToDIPRect(pixel_bounds);
+  return gfx::win::ScreenToDIPRect(pixel_bounds);
 }
 
 gfx::Rect DesktopRootWindowHostWin::GetClientAreaBoundsInScreen() const {
   gfx::Rect pixel_bounds = message_handler_->GetClientAreaBoundsInScreen();
-  return ui::win::ScreenToDIPRect(pixel_bounds);
+  return gfx::win::ScreenToDIPRect(pixel_bounds);
 }
 
 gfx::Rect DesktopRootWindowHostWin::GetRestoredBounds() const {
   gfx::Rect pixel_bounds = message_handler_->GetRestoredBounds();
-  return ui::win::ScreenToDIPRect(pixel_bounds);
+  return gfx::win::ScreenToDIPRect(pixel_bounds);
 }
 
 gfx::Rect DesktopRootWindowHostWin::GetWorkAreaBoundsInScreen() const {
@@ -249,7 +249,7 @@ gfx::Rect DesktopRootWindowHostWin::GetWorkAreaBoundsInScreen() const {
                                    MONITOR_DEFAULTTONEAREST),
                  &monitor_info);
   gfx::Rect pixel_bounds = gfx::Rect(monitor_info.rcWork);
-  return ui::win::ScreenToDIPRect(pixel_bounds);
+  return gfx::win::ScreenToDIPRect(pixel_bounds);
 }
 
 void DesktopRootWindowHostWin::SetShape(gfx::NativeRegion native_region) {
@@ -580,7 +580,7 @@ bool DesktopRootWindowHostWin::WillProcessWorkAreaChange() const {
 
 int DesktopRootWindowHostWin::GetNonClientComponent(
     const gfx::Point& point) const {
-  gfx::Point dip_position = ui::win::ScreenToDIPPoint(point);
+  gfx::Point dip_position = gfx::win::ScreenToDIPPoint(point);
   return native_widget_delegate_->GetNonClientComponent(dip_position);
 }
 
@@ -723,7 +723,7 @@ void DesktopRootWindowHostWin::HandleClientSizeChanged(
   if (root_window_host_delegate_)
     root_window_host_delegate_->OnHostResized(new_size);
   // TODO(beng): replace with a layout manager??
-  gfx::Size dip_size = ui::win::ScreenToDIPSize(without_expansion);
+  gfx::Size dip_size = gfx::win::ScreenToDIPSize(without_expansion);
   content_window_->SetBounds(gfx::Rect(dip_size));
   native_widget_delegate_->OnNativeWidgetSizeChanged(dip_size);
 }

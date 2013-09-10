@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
-#include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/dpi_win.h"
 
 namespace {
 const char kHWNDSubclassKey[] = "__UI_BASE_WIN_HWND_SUBCLASS_PROC__";
@@ -144,9 +144,9 @@ LRESULT HWNDSubclass::OnWndProc(HWND hwnd,
                                  &point, sizeof(TOUCHINPUT))) {
       POINT touch_location = {
           TOUCH_COORD_TO_PIXEL(point.x) /
-          ui::win::GetUndocumentedDPITouchScale(),
+          gfx::win::GetUndocumentedDPITouchScale(),
           TOUCH_COORD_TO_PIXEL(point.y) /
-          ui::win::GetUndocumentedDPITouchScale()};
+          gfx::win::GetUndocumentedDPITouchScale()};
       HWND actual_target = WindowFromPoint(touch_location);
       if (actual_target != hwnd) {
         return SendMessage(actual_target, message, w_param, l_param);

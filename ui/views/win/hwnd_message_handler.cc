@@ -16,13 +16,13 @@
 #include "ui/base/gestures/gesture_sequence.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/touch/touch_enabled.h"
-#include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/base/win/shell.h"
 #include "ui/base/win/touch_input.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"
@@ -1205,7 +1205,7 @@ void HWNDMessageHandler::RedrawLayeredWindowContents() {
 
   // We need to clip to the dirty rect ourselves.
   layered_window_contents_->sk_canvas()->save(SkCanvas::kClip_SaveFlag);
-  double scale = ui::win::GetDeviceScaleFactor();
+  double scale = gfx::win::GetDeviceScaleFactor();
   layered_window_contents_->sk_canvas()->scale(
       SkScalar(scale),SkScalar(scale));
   layered_window_contents_->ClipRect(invalid_rect_);
@@ -2068,9 +2068,9 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
       if (touch_event_type != ui::ET_UNKNOWN) {
         POINT point;
         point.x = TOUCH_COORD_TO_PIXEL(input[i].x) /
-            ui::win::GetUndocumentedDPITouchScale();
+            gfx::win::GetUndocumentedDPITouchScale();
         point.y = TOUCH_COORD_TO_PIXEL(input[i].y) /
-            ui::win::GetUndocumentedDPITouchScale();
+            gfx::win::GetUndocumentedDPITouchScale();
 
         ScreenToClient(hwnd(), &point);
 

@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "grit/theme_resources.h"
 #include "ui/base/theme_provider.h"
-#include "ui/base/win/dpi.h"
+#include "ui/gfx/dpi_win.h"
 #include "ui/views/controls/menu/native_menu_win.h"
 
 #pragma comment(lib, "dwmapi.lib")
@@ -272,7 +272,7 @@ void BrowserDesktopRootWindowHostWin::UpdateDWMFrame() {
     if (!browser_view_->IsFullscreen()) {
       gfx::Rect tabstrip_bounds(
           browser_frame_->GetBoundsForTabStrip(browser_view_->tabstrip()));
-      tabstrip_bounds = ui::win::DIPToScreenRect(tabstrip_bounds);
+      tabstrip_bounds = gfx::win::DIPToScreenRect(tabstrip_bounds);
       margins.cyTopHeight = tabstrip_bounds.bottom() + kDWMFrameTopOffset;
     }
   }

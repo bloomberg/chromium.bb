@@ -23,8 +23,8 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "ui/base/win/dpi.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
@@ -243,7 +243,7 @@ gfx::Size NativeThemeWin::GetPartSize(Part part,
     case kScrollbarVerticalThumb:
     case kScrollbarHorizontalTrack:
     case kScrollbarVerticalTrack:
-      size.cx = size.cy = ui::win::GetSystemMetricsInDIP(SM_CXVSCROLL);
+      size.cx = size.cy = gfx::win::GetSystemMetricsInDIP(SM_CXVSCROLL);
       return gfx::Size(size.cx, size.cy);
   }
 

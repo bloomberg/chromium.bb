@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_DPI_H_
-#define UI_BASE_WIN_DPI_H_
+#ifndef UI_GFX_DPI_WIN_H_
+#define UI_GFX_DPI_WIN_H_
 
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "ui/base/ui_export.h"
 
-namespace ui {
+namespace gfx {
 
-UI_EXPORT gfx::Size GetDPI();
+UI_EXPORT Size GetDPI();
 
 // Gets the scale factor of the display. For example, if the display DPI is
 // 96 then the scale factor is 1.0.
@@ -28,17 +28,17 @@ namespace win {
 
 UI_EXPORT float GetDeviceScaleFactor();
 
-UI_EXPORT gfx::Point ScreenToDIPPoint(const gfx::Point& pixel_point);
+UI_EXPORT Point ScreenToDIPPoint(const Point& pixel_point);
 
-UI_EXPORT gfx::Point DIPToScreenPoint(const gfx::Point& dip_point);
+UI_EXPORT Point DIPToScreenPoint(const Point& dip_point);
 
-UI_EXPORT gfx::Rect ScreenToDIPRect(const gfx::Rect& pixel_bounds);
+UI_EXPORT Rect ScreenToDIPRect(const Rect& pixel_bounds);
 
-UI_EXPORT gfx::Rect DIPToScreenRect(const gfx::Rect& dip_bounds);
+UI_EXPORT Rect DIPToScreenRect(const Rect& dip_bounds);
 
-UI_EXPORT gfx::Size ScreenToDIPSize(const gfx::Size& size_in_pixels);
+UI_EXPORT Size ScreenToDIPSize(const Size& size_in_pixels);
 
-UI_EXPORT gfx::Size DIPToScreenSize(const gfx::Size& dip_size);
+UI_EXPORT Size DIPToScreenSize(const Size& dip_size);
 
 // Win32's GetSystemMetrics uses pixel measures. This function calls
 // GetSystemMetrics for the given |metric|, then converts the result to DIP.
@@ -58,7 +58,6 @@ UI_EXPORT double GetUndocumentedDPIScale();
 UI_EXPORT double GetUndocumentedDPITouchScale();
 
 }  // namespace win
+}  // namespace gfx
 
-}  // namespace ui
-
-#endif  // UI_BASE_WIN_DPI_H_
+#endif  // UI_GFX_DPI_WIN_H_

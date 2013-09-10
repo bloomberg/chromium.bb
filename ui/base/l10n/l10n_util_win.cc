@@ -15,7 +15,7 @@
 #include "base/win/windows_version.h"
 #include "grit/app_locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/win/dpi.h"
+#include "ui/gfx/dpi_win.h"
 
 namespace {
 
@@ -151,7 +151,7 @@ bool NeedOverrideDefaultUIFont(string16* override_font_family,
 }
 
 void AdjustUIFont(LOGFONT* logfont) {
-  AdjustUIFontForDIP(ui::GetDPIScale(), logfont);
+  AdjustUIFontForDIP(gfx::GetDPIScale(), logfont);
 }
 
 void AdjustUIFontForDIP(float dpi_scale, LOGFONT* logfont) {

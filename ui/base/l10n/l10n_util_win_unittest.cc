@@ -9,7 +9,7 @@
 #include "base/win/win_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#include "ui/base/win/dpi.h"
+#include "ui/gfx/dpi_win.h"
 
 typedef PlatformTest L10nUtilWinTest;
 

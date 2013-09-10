@@ -11,8 +11,8 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/point.h"
 
 namespace views {
@@ -42,13 +42,13 @@ void AeroTooltipManager::OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param) {
 
   if (u_msg == WM_MOUSEMOVE || u_msg == WM_NCMOUSEMOVE) {
     gfx::Point mouse_pos_in_pixels(l_param);
-    gfx::Point mouse_pos = ui::win::ScreenToDIPPoint(mouse_pos_in_pixels);
+    gfx::Point mouse_pos = gfx::win::ScreenToDIPPoint(mouse_pos_in_pixels);
     if (u_msg == WM_NCMOUSEMOVE) {
       // NC message coordinates are in screen coordinates.
       POINT temp = mouse_pos_in_pixels.ToPOINT();
       ::MapWindowPoints(HWND_DESKTOP, GetParent(), &temp, 1);
       mouse_pos_in_pixels.SetPoint(temp.x, temp.y);
-      mouse_pos = ui::win::ScreenToDIPPoint(mouse_pos_in_pixels);
+      mouse_pos = gfx::win::ScreenToDIPPoint(mouse_pos_in_pixels);
     }
     if (last_mouse_pos_ != mouse_pos) {
       last_mouse_pos_ = mouse_pos;

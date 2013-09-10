@@ -31,8 +31,8 @@
 #include "content/public/common/content_constants.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/dpi_win.h"
 #include "webkit/common/cursors/webcursor.h"
 
 using WebKit::WebKeyboardEvent;
@@ -775,8 +775,8 @@ bool WebPluginDelegateImpl::WindowedReposition(
     return false;
   }
 
-  gfx::Rect window_rect = ui::win::DIPToScreenRect(window_rect_in_dip);
-  gfx::Rect clip_rect = ui::win::DIPToScreenRect(clip_rect_in_dip);
+  gfx::Rect window_rect = gfx::win::DIPToScreenRect(window_rect_in_dip);
+  gfx::Rect clip_rect = gfx::win::DIPToScreenRect(clip_rect_in_dip);
   if (window_rect_ == window_rect && clip_rect_ == clip_rect)
     return false;
 

@@ -9,7 +9,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/common/content_switches.h"
 #include "skia/ext/platform_canvas.h"
-#include "ui/base/win/dpi.h"
+#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
@@ -92,7 +92,7 @@ bool BackingStoreWin::ColorManagementEnabled() {
 
 size_t BackingStoreWin::MemorySize() {
   gfx::Size size_in_pixels = gfx::ToCeiledSize(gfx::ScaleSize(size(),
-      ui::win::GetDeviceScaleFactor()));
+      gfx::win::GetDeviceScaleFactor()));
   return size_in_pixels.GetArea() * (color_depth_ / 8);
 }
 
@@ -174,7 +174,7 @@ void BackingStoreWin::ScrollBackingStore(const gfx::Vector2d& delta,
   // TODO(darin): this doesn't work if delta x() and y() are both non-zero!
   DCHECK(delta.x() == 0 || delta.y() == 0);
 
-  float scale = ui::win::GetDeviceScaleFactor();
+  float scale = gfx::win::GetDeviceScaleFactor();
   gfx::Rect screen_rect = gfx::ToEnclosingRect(
       gfx::ScaleRect(clip_rect, scale));
   int dx = static_cast<int>(delta.x() * scale);

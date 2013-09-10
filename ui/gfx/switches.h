@@ -12,6 +12,7 @@ namespace switches {
 
 UI_EXPORT extern const char kEnableBrowserTextSubpixelPositioning[];
 UI_EXPORT extern const char kEnableWebkitTextSubpixelPositioning[];
+UI_EXPORT extern const char kHighDPISupport[];
 
 }  // namespace switches
 }  // namespace gfx

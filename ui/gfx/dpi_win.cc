@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/win/dpi.h"
+#include "ui/gfx/dpi_win.h"
 
 #include <windows.h>
 #include "base/command_line.h"
@@ -10,8 +10,8 @@
 #include "base/win/windows_version.h"
 #include "ui/base/layout.h"
 #include "base/win/registry.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/switches.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
@@ -24,9 +24,10 @@ int kDefaultDPIY = 96;
 // Tests to see if the command line flag "--high-dpi-support" is set.
 bool IsHighDPIEnabled() {
   // Default is disabled.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kHighDPISupport)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      gfx::switches::kHighDPISupport)) {
     return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kHighDPISupport).compare("1") == 0;
+        gfx::switches::kHighDPISupport).compare("1") == 0;
   }
   return false;
 }
@@ -37,7 +38,7 @@ bool IsHighDPIEnabled() {
 float GetDeviceScaleFactorImpl() {
   if (IsHighDPIEnabled()) {
     float scale = gfx::Display::HasForceDeviceScaleFactor() ?
-        gfx::Display::GetForcedDeviceScaleFactor() : ui::GetDPIScale();
+        gfx::Display::GetForcedDeviceScaleFactor() : gfx::GetDPIScale();
     // Quantize to nearest supported scale factor.
     scale = ui::GetScaleFactorScale(ui::GetScaleFactorFromScale(scale));
     return scale;
@@ -57,9 +58,9 @@ BOOL IsProcessDPIAwareWrapper() {
 
 }  // namespace
 
-namespace ui {
+namespace gfx {
 
-gfx::Size GetDPI() {
+Size GetDPI() {
   static int dpi_x = 0;
   static int dpi_y = 0;
   static bool should_initialize = true;
@@ -73,7 +74,7 @@ gfx::Size GetDPI() {
     dpi_x = GetDeviceCaps(screen_dc, LOGPIXELSX);
     dpi_y = GetDeviceCaps(screen_dc, LOGPIXELSY);
   }
-  return gfx::Size(dpi_x, dpi_y);
+  return Size(dpi_x, dpi_y);
 }
 
 float GetDPIScale() {
@@ -107,35 +108,33 @@ float GetDeviceScaleFactor() {
   return device_scale_factor;
 }
 
-gfx::Point ScreenToDIPPoint(const gfx::Point& pixel_point) {
-  return gfx::ToFlooredPoint(
-      gfx::ScalePoint(pixel_point, 1.0f / GetDeviceScaleFactor()));
+Point ScreenToDIPPoint(const Point& pixel_point) {
+  return ToFlooredPoint(ScalePoint(pixel_point, 1.0f / GetDeviceScaleFactor()));
 }
 
-gfx::Point DIPToScreenPoint(const gfx::Point& dip_point) {
-  return gfx::ToFlooredPoint(
-      gfx::ScalePoint(dip_point, GetDeviceScaleFactor()));
+Point DIPToScreenPoint(const Point& dip_point) {
+  return ToFlooredPoint(ScalePoint(dip_point, GetDeviceScaleFactor()));
 }
 
-gfx::Rect ScreenToDIPRect(const gfx::Rect& pixel_bounds) {
+Rect ScreenToDIPRect(const Rect& pixel_bounds) {
   // TODO(kevers): Switch to non-deprecated method for float to int conversions.
-  return gfx::ToFlooredRectDeprecated(
-      gfx::ScaleRect(pixel_bounds, 1.0f / GetDeviceScaleFactor()));
+  return ToFlooredRectDeprecated(
+      ScaleRect(pixel_bounds, 1.0f / GetDeviceScaleFactor()));
 }
 
-gfx::Rect DIPToScreenRect(const gfx::Rect& dip_bounds) {
+Rect DIPToScreenRect(const Rect& dip_bounds) {
   // TODO(kevers): Switch to non-deprecated method for float to int conversions.
-  return gfx::ToFlooredRectDeprecated(
-      gfx::ScaleRect(dip_bounds, GetDeviceScaleFactor()));
+  return ToFlooredRectDeprecated(
+      ScaleRect(dip_bounds, GetDeviceScaleFactor()));
 }
 
-gfx::Size ScreenToDIPSize(const gfx::Size& size_in_pixels) {
-  return gfx::ToFlooredSize(
-      gfx::ScaleSize(size_in_pixels, 1.0f / GetDeviceScaleFactor()));
+Size ScreenToDIPSize(const Size& size_in_pixels) {
+  return ToFlooredSize(
+      ScaleSize(size_in_pixels, 1.0f / GetDeviceScaleFactor()));
 }
 
-gfx::Size DIPToScreenSize(const gfx::Size& dip_size) {
-  return gfx::ToFlooredSize(gfx::ScaleSize(dip_size, GetDeviceScaleFactor()));
+Size DIPToScreenSize(const Size& dip_size) {
+  return ToFlooredSize(ScaleSize(dip_size, GetDeviceScaleFactor()));
 }
 
 int GetSystemMetricsInDIP(int metric) {
@@ -173,5 +172,4 @@ double GetUndocumentedDPITouchScale() {
 
 
 }  // namespace win
-
-}  // namespace ui
+}  // namespace gfx

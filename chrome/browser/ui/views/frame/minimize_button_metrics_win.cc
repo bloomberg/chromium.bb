@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/i18n/rtl.h"
-#include "ui/base/win/dpi.h"
+#include "ui/gfx/dpi_win.h"
 
 namespace {
 
@@ -21,10 +21,10 @@ int GetMinimizeButtonOffsetForWindow(HWND hwnd) {
   // Chrome is not DPIAware we need to properly scale the coordinates as
   // MapWindowPoints() expects scaled coordinates.
   POINT minimize_button_corner = { titlebar_info.rgrect[2].left /
-                                   ui::win::GetUndocumentedDPIScale(),
+                                   gfx::win::GetUndocumentedDPIScale(),
                                    0 };
   MapWindowPoints(HWND_DESKTOP, hwnd, &minimize_button_corner, 1);
-  return minimize_button_corner.x / ui::win::GetDeviceScaleFactor();
+  return minimize_button_corner.x / gfx::win::GetDeviceScaleFactor();
 }
 
 }  // namespace

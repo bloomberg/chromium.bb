@@ -21,7 +21,7 @@
 #include "remoting/host/plugin/host_plugin_utils.h"
 #include "remoting/host/plugin/host_script_object.h"
 #if defined(OS_WIN)
-#include "ui/base/win/dpi.h"
+#include "ui/gfx/dpi_win.h"
 #endif
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npfunctions.h"
@@ -545,7 +545,7 @@ EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* npnetscape_funcs
 #endif
 
 #if defined(OS_WIN)
-  ui::EnableHighDPISupport();
+  gfx::EnableHighDPISupport();
 #endif
 
   return NPERR_NO_ERROR;

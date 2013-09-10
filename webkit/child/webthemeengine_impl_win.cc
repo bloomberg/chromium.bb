@@ -10,7 +10,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
-#include "ui/base/win/dpi.h"
+#include "ui/gfx/dpi_win.h"
 #include "ui/native_theme/native_theme.h"
 
 using WebKit::WebCanvas;
@@ -1000,7 +1000,7 @@ WebSize WebThemeEngineImpl::getSize(int part) {
       // metric if required.
       if (size.width() == 0) {
         int width = static_cast<int>(GetSystemMetrics(SM_CXVSCROLL) /
-            ui::win::GetDeviceScaleFactor());
+            gfx::win::GetDeviceScaleFactor());
         size = gfx::Size(width, width);
       }
       return WebSize(size.width(), size.height());

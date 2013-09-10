@@ -17,5 +17,8 @@ const char kEnableBrowserTextSubpixelPositioning[] =
 const char kEnableWebkitTextSubpixelPositioning[] =
     "enable-webkit-text-subpixel-positioning";
 
+// Enables/Disables High DPI support (windows)
+const char kHighDPISupport[] = "high-dpi-support";
+
 }  // namespace switches
 }  // namespace gfx

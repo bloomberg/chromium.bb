@@ -67,11 +67,11 @@
 #include "ui/base/touch/touch_enabled.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
-#include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/base/win/touch_input.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
@@ -324,7 +324,7 @@ void GetScreenInfoForWindow(gfx::NativeViewId id,
   WebKit::WebScreenInfo screen_info;
   screen_info.depth = dev_mode.dmBitsPerPel;
   screen_info.depthPerComponent = dev_mode.dmBitsPerPel / 3;  // Assumes RGB
-  screen_info.deviceScaleFactor = ui::win::GetDeviceScaleFactor();
+  screen_info.deviceScaleFactor = gfx::win::GetDeviceScaleFactor();
   screen_info.isMonochrome = dev_mode.dmColor == DMCOLOR_MONOCHROME;
   screen_info.rect = gfx::Rect(monitor_info.rcMonitor);
   screen_info.availableRect = gfx::Rect(monitor_info.rcWork);
@@ -644,7 +644,7 @@ bool RenderWidgetHostViewWin::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewWin::GetViewBounds() const {
-  return ui::win::ScreenToDIPRect(GetPixelBounds());
+  return gfx::win::ScreenToDIPRect(GetPixelBounds());
 }
 
 gfx::Rect RenderWidgetHostViewWin::GetPixelBounds() const {
@@ -774,7 +774,7 @@ void RenderWidgetHostViewWin::DidUpdateBackingStore(
   // surprisingly, this ordering matters.
 
   for (size_t i = 0; i < copy_rects.size(); ++i) {
-    gfx::Rect pixel_rect = ui::win::DIPToScreenRect(copy_rects[i]);
+    gfx::Rect pixel_rect = gfx::win::DIPToScreenRect(copy_rects[i]);
     // Damage might not be DIP aligned.
     pixel_rect.Inset(-1, -1);
     RECT bounds = pixel_rect.ToRECT();
@@ -783,11 +783,11 @@ void RenderWidgetHostViewWin::DidUpdateBackingStore(
 
   if (!scroll_rect.IsEmpty()) {
     TRACE_EVENT0("content", "ScrollWindowEx");
-    gfx::Rect pixel_rect = ui::win::DIPToScreenRect(scroll_rect);
+    gfx::Rect pixel_rect = gfx::win::DIPToScreenRect(scroll_rect);
     // Damage might not be DIP aligned.
     pixel_rect.Inset(-1, -1);
     RECT clip_rect = pixel_rect.ToRECT();
-    float scale = ui::win::GetDeviceScaleFactor();
+    float scale = gfx::win::GetDeviceScaleFactor();
     int dx = static_cast<int>(scale * scroll_delta.x());
     int dy = static_cast<int>(scale * scroll_delta.y());
     ScrollWindowEx(dx, dy, NULL, &clip_rect, NULL, NULL, SW_INVALIDATE);
@@ -1316,7 +1316,7 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
 
   if (backing_store) {
     gfx::Rect bitmap_rect(gfx::Point(),
-                          ui::win::DIPToScreenSize(backing_store->size()));
+                          gfx::win::DIPToScreenSize(backing_store->size()));
 
     bool manage_colors = BackingStoreWin::ColorManagementEnabled();
     if (manage_colors)
@@ -2004,7 +2004,7 @@ LRESULT RenderWidgetHostViewWin::OnWheelEvent(UINT message, WPARAM wparam,
   if (render_widget_host_) {
     WebKit::WebMouseWheelEvent wheel_event =
         WebMouseWheelEventBuilder::Build(m_hWnd, message, wparam, lparam);
-    float scale = ui::win::GetDeviceScaleFactor();
+    float scale = gfx::win::GetDeviceScaleFactor();
     wheel_event.x /= scale;
     wheel_event.y /= scale;
     wheel_event.deltaX /= scale;
@@ -2171,19 +2171,19 @@ bool WebTouchState::UpdateTouchPoint(
     TOUCHINPUT* touch_input) {
   CPoint coordinates(
       TOUCH_COORD_TO_PIXEL(touch_input->x) /
-      ui::win::GetUndocumentedDPITouchScale(),
+      gfx::win::GetUndocumentedDPITouchScale(),
       TOUCH_COORD_TO_PIXEL(touch_input->y) /
-      ui::win::GetUndocumentedDPITouchScale());
+      gfx::win::GetUndocumentedDPITouchScale());
   int radius_x = 1;
   int radius_y = 1;
   if (touch_input->dwMask & TOUCHINPUTMASKF_CONTACTAREA) {
     // Some touch drivers send a contact area of "-1", yet flag it as valid.
     radius_x = std::max(1,
         static_cast<int>(TOUCH_COORD_TO_PIXEL(touch_input->cxContact) /
-                         ui::win::GetUndocumentedDPITouchScale()));
+                         gfx::win::GetUndocumentedDPITouchScale()));
     radius_y = std::max(1,
         static_cast<int>(TOUCH_COORD_TO_PIXEL(touch_input->cyContact) /
-                         ui::win::GetUndocumentedDPITouchScale()));
+                         gfx::win::GetUndocumentedDPITouchScale()));
   }
 
   // Detect and exclude stationary moves.
@@ -2199,7 +2199,7 @@ bool WebTouchState::UpdateTouchPoint(
   touch_point->screenPosition.x = coordinates.x;
   touch_point->screenPosition.y = coordinates.y;
   window_->ScreenToClient(&coordinates);
-  static float scale = ui::win::GetDeviceScaleFactor();
+  static float scale = gfx::win::GetDeviceScaleFactor();
   touch_point->position.x = coordinates.x / scale;
   touch_point->position.y = coordinates.y / scale;
   touch_point->radiusX = radius_x;
@@ -2247,9 +2247,9 @@ LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
     pointer_down_context_ = true;
     last_touch_location_ = gfx::Point(
         TOUCH_COORD_TO_PIXEL(points[0].x) /
-        ui::win::GetUndocumentedDPITouchScale(),
+        gfx::win::GetUndocumentedDPITouchScale(),
         TOUCH_COORD_TO_PIXEL(points[0].y) /
-        ui::win::GetUndocumentedDPITouchScale());
+        gfx::win::GetUndocumentedDPITouchScale());
   }
 
   bool should_forward = render_widget_host_->ShouldForwardTouchEvent() &&
@@ -2513,7 +2513,7 @@ gfx::Rect RenderWidgetHostViewWin::GetBoundsInRootWindow() {
                GetSystemMetrics(SM_CYSIZEFRAME));
   }
 
-  return ui::win::ScreenToDIPRect(rect);
+  return gfx::win::ScreenToDIPRect(rect);
 }
 
 // Creates a HWND within the RenderWidgetHostView that will serve as a host
@@ -2894,7 +2894,7 @@ void RenderWidgetHostViewWin::ForwardMouseEventToRenderer(UINT message,
     return;
   }
 
-  gfx::Point point = ui::win::ScreenToDIPPoint(
+  gfx::Point point = gfx::win::ScreenToDIPPoint(
       gfx::Point(static_cast<short>(LOWORD(lparam)),
                  static_cast<short>(HIWORD(lparam))));
   lparam = MAKELPARAM(point.x(), point.y());
@@ -2973,7 +2973,7 @@ void RenderWidgetHostViewWin::DoPopupOrFullscreenInit(HWND parent_hwnd,
                                                       const gfx::Rect& pos,
                                                       DWORD ex_style) {
   Create(parent_hwnd, NULL, NULL, WS_POPUP, ex_style);
-  gfx::Rect screen_rect = ui::win::DIPToScreenRect(pos);
+  gfx::Rect screen_rect = gfx::win::DIPToScreenRect(pos);
   MoveWindow(screen_rect.x(), screen_rect.y(), screen_rect.width(),
       screen_rect.height(), TRUE);
   ShowWindow(IsActivatable() ? SW_SHOW : SW_SHOWNA);

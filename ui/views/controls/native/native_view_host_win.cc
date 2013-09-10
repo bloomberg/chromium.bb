@@ -7,10 +7,10 @@
 #include <oleacc.h>
 
 #include "base/logging.h"
-#include "ui/base/win/dpi.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/base/win/window_impl.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/dpi_win.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/native_widget.h"
@@ -91,7 +91,7 @@ void NativeViewHostWin::ShowWidget(int x, int y, int w, int h) {
                    SWP_NOCOPYBITS |
                    SWP_NOOWNERZORDER |
                    SWP_NOZORDER;
-  gfx::Rect bounds = ui::win::DIPToScreenRect(gfx::Rect(x,y,w,h));
+  gfx::Rect bounds = gfx::win::DIPToScreenRect(gfx::Rect(x,y,w,h));
 
   // Only send the SHOWWINDOW flag if we're invisible, to avoid flashing.
   if (!IsWindowVisible(host_->native_view()))

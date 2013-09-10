@@ -16,9 +16,9 @@
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/scoped_set_map_mode.h"
+#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/view.h"
@@ -227,7 +227,7 @@ bool TooltipManagerWin::SetTooltipPosition(int text_x, int text_y) {
   // Calculate the bounds the tooltip will get.
   gfx::Point view_loc;
   View::ConvertPointToScreen(last_tooltip_view_, &view_loc);
-  view_loc = ui::win::DIPToScreenPoint(view_loc);
+  view_loc = gfx::win::DIPToScreenPoint(view_loc);
   RECT bounds = { view_loc.x() + text_x,
                   view_loc.y() + text_y,
                   view_loc.x() + text_x + tooltip_width_,
@@ -301,14 +301,14 @@ void TooltipManagerWin::UpdateTooltip(const gfx::Point& mouse_pos) {
 
 void TooltipManagerWin::OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param) {
   gfx::Point mouse_pos_in_pixels(l_param);
-  gfx::Point mouse_pos = ui::win::ScreenToDIPPoint(mouse_pos_in_pixels);
+  gfx::Point mouse_pos = gfx::win::ScreenToDIPPoint(mouse_pos_in_pixels);
 
   if (u_msg >= WM_NCMOUSEMOVE && u_msg <= WM_NCXBUTTONDBLCLK) {
     // NC message coordinates are in screen coordinates.
     POINT temp = mouse_pos_in_pixels.ToPOINT();
     ::MapWindowPoints(HWND_DESKTOP, GetParent(), &temp, 1);
     mouse_pos_in_pixels.SetPoint(temp.x, temp.y);
-    mouse_pos = ui::win::ScreenToDIPPoint(mouse_pos_in_pixels);
+    mouse_pos = gfx::win::ScreenToDIPPoint(mouse_pos_in_pixels);
   }
 
   if (u_msg != WM_MOUSEMOVE || last_mouse_pos_ != mouse_pos) {

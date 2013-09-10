@@ -24,12 +24,12 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/view_prop.h"
-#include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/screen.h"
@@ -116,7 +116,7 @@ void NativeWidgetWin::Show(int show_state) {
 // NativeWidgetWin, NativeWidget implementation:
 
 void NativeWidgetWin::InitNativeWidget(const Widget::InitParams& params) {
-  gfx::Rect pixel_bounds = ui::win::DIPToScreenRect(params.bounds);
+  gfx::Rect pixel_bounds = gfx::win::DIPToScreenRect(params.bounds);
   Widget::InitParams params_in_pixel(params);
   params_in_pixel.bounds = pixel_bounds;
   SetInitParams(params_in_pixel);
@@ -220,7 +220,7 @@ internal::InputMethodDelegate* NativeWidgetWin::GetInputMethodDelegate() {
 }
 
 void NativeWidgetWin::CenterWindow(const gfx::Size& size) {
-  gfx::Size size_in_pixels = ui::win::DIPToScreenSize(size);
+  gfx::Size size_in_pixels = gfx::win::DIPToScreenSize(size);
   message_handler_->CenterWindow(size_in_pixels);
 }
 
@@ -228,7 +228,7 @@ void NativeWidgetWin::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   message_handler_->GetWindowPlacement(bounds, show_state);
-  *bounds = ui::win::ScreenToDIPRect(*bounds);
+  *bounds = gfx::win::ScreenToDIPRect(*bounds);
 }
 
 void NativeWidgetWin::SetWindowTitle(const string16& title) {
@@ -246,21 +246,21 @@ void NativeWidgetWin::InitModalType(ui::ModalType modal_type) {
 
 gfx::Rect NativeWidgetWin::GetWindowBoundsInScreen() const {
   gfx::Rect bounds_in_pixels = message_handler_->GetWindowBoundsInScreen();
-  return ui::win::ScreenToDIPRect(bounds_in_pixels);
+  return gfx::win::ScreenToDIPRect(bounds_in_pixels);
 }
 
 gfx::Rect NativeWidgetWin::GetClientAreaBoundsInScreen() const {
   gfx::Rect bounds_in_pixels = message_handler_->GetClientAreaBoundsInScreen();
-  return ui::win::ScreenToDIPRect(bounds_in_pixels);
+  return gfx::win::ScreenToDIPRect(bounds_in_pixels);
 }
 
 gfx::Rect NativeWidgetWin::GetRestoredBounds() const {
   gfx::Rect bounds_in_pixels = message_handler_->GetRestoredBounds();
-  return ui::win::ScreenToDIPRect(bounds_in_pixels);
+  return gfx::win::ScreenToDIPRect(bounds_in_pixels);
 }
 
 void NativeWidgetWin::SetBounds(const gfx::Rect& bounds) {
-  float scale = ui::win::GetDeviceScaleFactor();
+  float scale = gfx::win::GetDeviceScaleFactor();
   gfx::Rect bounds_in_pixels(
       gfx::ToCeiledPoint(gfx::ScalePoint(bounds.origin(), scale)),
       gfx::ToFlooredSize(gfx::ScaleSize(bounds.size(), scale)));
@@ -305,7 +305,7 @@ void NativeWidgetWin::Hide() {
 
 void NativeWidgetWin::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
-  gfx::Rect pixel_bounds = ui::win::DIPToScreenRect(restored_bounds);
+  gfx::Rect pixel_bounds = gfx::win::DIPToScreenRect(restored_bounds);
   message_handler_->ShowMaximizedWithBounds(pixel_bounds);
 }
 
@@ -412,7 +412,7 @@ void NativeWidgetWin::RunShellDrag(View* view,
 }
 
 void NativeWidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
-  gfx::Rect pixel_rect = ui::win::DIPToScreenRect(rect);
+  gfx::Rect pixel_rect = gfx::win::DIPToScreenRect(rect);
   message_handler_->SchedulePaintInRect(pixel_rect);
 }
 
@@ -429,7 +429,7 @@ void NativeWidgetWin::ClearNativeFocus() {
 }
 
 gfx::Rect NativeWidgetWin::GetWorkAreaBoundsInScreen() const {
-  return ui::win::ScreenToDIPRect(
+  return gfx::win::ScreenToDIPRect(
       gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
       GetNativeView()).work_area());
 }
@@ -566,7 +566,7 @@ bool NativeWidgetWin::WillProcessWorkAreaChange() const {
 }
 
 int NativeWidgetWin::GetNonClientComponent(const gfx::Point& point) const {
-  gfx::Point point_in_dip = ui::win::ScreenToDIPPoint(point);
+  gfx::Point point_in_dip = gfx::win::ScreenToDIPPoint(point);
   return delegate_->GetNonClientComponent(point_in_dip);
 }
 
@@ -581,13 +581,13 @@ bool NativeWidgetWin::GetClientAreaInsets(gfx::Insets* insets) const {
 
 void NativeWidgetWin::GetMinMaxSize(gfx::Size* min_size,
                                     gfx::Size* max_size) const {
-  *min_size = ui::win::ScreenToDIPSize(delegate_->GetMinimumSize());
-  *max_size = ui::win::ScreenToDIPSize(delegate_->GetMaximumSize());
+  *min_size = gfx::win::ScreenToDIPSize(delegate_->GetMinimumSize());
+  *max_size = gfx::win::ScreenToDIPSize(delegate_->GetMaximumSize());
 }
 
 gfx::Size NativeWidgetWin::GetRootViewSize() const {
   gfx::Size pixel_size = GetWidget()->GetRootView()->size();
-  return ui::win::ScreenToDIPSize(pixel_size);
+  return gfx::win::ScreenToDIPSize(pixel_size);
 }
 
 void NativeWidgetWin::ResetWindowControls() {
@@ -726,7 +726,7 @@ void NativeWidgetWin::HandleVisibilityChanged(bool visible) {
 }
 
 void NativeWidgetWin::HandleClientSizeChanged(const gfx::Size& new_size) {
-  gfx::Size size_in_dip = ui::win::ScreenToDIPSize(new_size);
+  gfx::Size size_in_dip = gfx::win::ScreenToDIPSize(new_size);
   delegate_->OnNativeWidgetSizeChanged(size_in_dip);
 }
 
@@ -751,8 +751,8 @@ void NativeWidgetWin::HandleNativeBlur(HWND focused_window) {
 
 bool NativeWidgetWin::HandleMouseEvent(const ui::MouseEvent& event) {
   static gfx::Transform scale_transform(
-    1/ui::win::GetDeviceScaleFactor(), 0.0,
-    0.0, 1/ui::win::GetDeviceScaleFactor(),
+    1/gfx::win::GetDeviceScaleFactor(), 0.0,
+    0.0, 1/gfx::win::GetDeviceScaleFactor(),
     0.0, 0.0);
   if (event.IsMouseWheelEvent()) {
     ui::MouseWheelEvent dpi_event(
@@ -815,7 +815,7 @@ void NativeWidgetWin::HandleInputLanguageChange(DWORD character_set,
 }
 
 bool NativeWidgetWin::HandlePaintAccelerated(const gfx::Rect& invalid_rect) {
-  gfx::Rect dpi_rect = ui::win::ScreenToDIPRect(invalid_rect);
+  gfx::Rect dpi_rect = gfx::win::ScreenToDIPRect(invalid_rect);
   return delegate_->OnNativeWidgetPaintAccelerated(dpi_rect);
 }
 
@@ -905,11 +905,11 @@ bool Widget::ConvertRect(const Widget* source,
   if (source_hwnd == target_hwnd)
     return true;
 
-  RECT win_rect = ui::win::DIPToScreenRect(*rect).ToRECT();
+  RECT win_rect = gfx::win::DIPToScreenRect(*rect).ToRECT();
   if (::MapWindowPoints(source_hwnd, target_hwnd,
                         reinterpret_cast<LPPOINT>(&win_rect),
                         sizeof(RECT)/sizeof(POINT))) {
-    *rect = ui::win::ScreenToDIPRect(gfx::Rect(win_rect));
+    *rect = gfx::win::ScreenToDIPRect(gfx::Rect(win_rect));
     return true;
   }
   return false;

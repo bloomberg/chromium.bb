@@ -29,8 +29,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/content_switches.h"
-#include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/gdi_util.h"
 #endif
 
@@ -169,7 +169,7 @@ BOOL CALLBACK PaintEnumChildProc(HWND hwnd, LPARAM lparam) {
     return TRUE;
 
   gfx::Rect* rect = reinterpret_cast<gfx::Rect*>(lparam);
-  gfx::Rect rect_in_pixels = ui::win::DIPToScreenRect(*rect);
+  gfx::Rect rect_in_pixels = gfx::win::DIPToScreenRect(*rect);
   static UINT msg = RegisterWindowMessage(kPaintMessageName);
   WPARAM wparam = MAKEWPARAM(rect_in_pixels.x(), rect_in_pixels.y());
   lparam = MAKELPARAM(rect_in_pixels.width(), rect_in_pixels.height());
@@ -284,7 +284,7 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
 #endif
 
     if (move.rects_valid) {
-      gfx::Rect clip_rect_in_pixel = ui::win::DIPToScreenRect(move.clip_rect);
+      gfx::Rect clip_rect_in_pixel = gfx::win::DIPToScreenRect(move.clip_rect);
       HRGN hrgn = ::CreateRectRgn(clip_rect_in_pixel.x(),
                                   clip_rect_in_pixel.y(),
                                   clip_rect_in_pixel.right(),
@@ -313,7 +313,7 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
     }
 
     gfx::Rect window_rect_in_pixel =
-        ui::win::DIPToScreenRect(move.window_rect);
+        gfx::win::DIPToScreenRect(move.window_rect);
     defer_window_pos_info = ::DeferWindowPos(defer_window_pos_info,
                                              window, NULL,
                                              window_rect_in_pixel.x(),

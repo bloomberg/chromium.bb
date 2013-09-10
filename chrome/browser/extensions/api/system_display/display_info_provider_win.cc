@@ -7,8 +7,8 @@
 #include <windows.h>
 
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/win/dpi.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/size.h"
 
 namespace extensions {
@@ -41,7 +41,7 @@ BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
   gfx::Display display(0, gfx::Rect(monitor_info.rcMonitor));
   display.set_work_area(gfx::Rect(monitor_info.rcWork));
 
-  gfx::Size dpi(ui::GetDPI());
+  gfx::Size dpi(gfx::GetDPI());
   unit->id = WideToUTF8(device.DeviceID);
   unit->name = WideToUTF8(device.DeviceString);
   unit->is_primary = monitor_info.dwFlags & MONITORINFOF_PRIMARY ? true : false;

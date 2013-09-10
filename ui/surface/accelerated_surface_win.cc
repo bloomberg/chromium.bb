@@ -26,9 +26,9 @@
 #include "media/base/video_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/latency_info.h"
-#include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/shell.h"
+#include "ui/gfx/dpi_win.h"
 #include "ui/gfx/rect.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/surface/accelerated_surface_transformer_win.h"
@@ -720,11 +720,11 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   // presented then drop the frame.
   gfx::Size window_size = GetWindowSize();
   bool size_mismatch = size != window_size;
-  if (ui::IsInHighDPIMode()) {
+  if (gfx::IsInHighDPIMode()) {
     // Check if the size mismatch is within allowable round off or truncation
     // error.
-    gfx::Size dip_size = ui::win::ScreenToDIPSize(window_size);
-    gfx::Size pixel_size = ui::win::DIPToScreenSize(dip_size);
+    gfx::Size dip_size = gfx::win::ScreenToDIPSize(window_size);
+    gfx::Size pixel_size = gfx::win::DIPToScreenSize(dip_size);
     size_mismatch = abs(window_size.width() - size.width()) >
         abs(window_size.width() - pixel_size.width()) ||
         abs(window_size.height() - size.height()) >
