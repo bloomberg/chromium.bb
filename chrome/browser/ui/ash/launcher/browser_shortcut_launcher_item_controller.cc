@@ -272,7 +272,7 @@ void BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
       items.push_back(*it);
   }
   // If there are no suitable browsers we create a new one.
-  if (items.empty()) {
+  if (!items.size()) {
     launcher_controller()->CreateNewWindow();
     return;
   }
@@ -288,8 +288,8 @@ void BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
     browser = items[0];
   } else {
     // If there is more then one suitable browser, we advance to the next if
-    // |browser| is already active - or - check the last used browser if it can
-    // be used.
+    // |current_browser| is already active - or - check the last used browser
+    // if it can be used.
     std::vector<Browser*>::iterator i =
         std::find(items.begin(), items.end(), browser);
     if (i != items.end()) {
@@ -311,7 +311,6 @@ void BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
 bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
     Browser* browser) {
   return (browser &&
-          browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH &&
           (browser->is_type_tabbed() ||
            !browser->is_app() ||
            !browser->is_type_popup() ||
