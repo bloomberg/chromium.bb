@@ -177,7 +177,9 @@
     "channel": "dev",
     "extension_types": ["platform_app"],
     "whitelist": [
-        "lphgohfeebnhcpiohjndkgbhhkoapkjc",  // Apps Debugger
+        "ohmmkhmmmpcnpikjeljgnaoabkaalbgc", // Published Apps developer tool.
+        // TODO(grv): clean up once Apps developer tool is published.
+        "lphgohfeebnhcpiohjndkgbhhkoapkjc",  // Apps Developer tool.
         "gonnpeheodhmhdjiimoiheniambmdcco",  // Apps Editor old.
         // TODO(grv) : clean up once after publish.
         "cbelnpbjogfbjamhpbofhlnklecjpido"  // Apps Editor published.
