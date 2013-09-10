@@ -765,9 +765,14 @@ bool DesktopRootWindowHostWin::HandleUntranslatedKeyEvent(
       OnHostKeyEvent(duplicate_event.get());
 }
 
-bool DesktopRootWindowHostWin::HandleTouchEvent(
+void DesktopRootWindowHostWin::HandleTouchEvent(
     const ui::TouchEvent& event) {
-  return root_window_host_delegate_->OnHostTouchEvent(
+  // HWNDMessageHandler asynchronously processes touch events. Because of this
+  // it's possible for the aura::RootWindow to have been destroyed by the time
+  // we attempt to process them.
+  if (!GetWidget()->GetNativeView())
+    return;
+  root_window_host_delegate_->OnHostTouchEvent(
       const_cast<ui::TouchEvent*>(&event));
 }
 

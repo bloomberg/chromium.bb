@@ -784,9 +784,8 @@ bool NativeWidgetWin::HandleUntranslatedKeyEvent(const ui::KeyEvent& event) {
   return !!input_method;
 }
 
-bool NativeWidgetWin::HandleTouchEvent(const ui::TouchEvent& event) {
+void NativeWidgetWin::HandleTouchEvent(const ui::TouchEvent& event) {
   NOTREACHED() << "Touch events are not supported";
-  return false;
 }
 
 bool NativeWidgetWin::HandleIMEMessage(UINT message,
