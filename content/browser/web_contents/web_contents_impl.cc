@@ -2256,12 +2256,20 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
       return;
     }
 
-    // Do not clear the pending entry if one exists, so that the user's typed
-    // URL is not lost when a navigation fails or is aborted.  We'll allow
-    // the view to clear the pending entry and typed URL if the user requests.
-
     render_manager_.RendererAbortedProvisionalLoad(render_view_host);
   }
+
+  // Do not usually clear the pending entry if one exists, so that the user's
+  // typed URL is not lost when a navigation fails or is aborted.  However, in
+  // cases that we don't show the pending entry (e.g., renderer-initiated
+  // navigations in an existing tab), we don't keep it around.  That prevents
+  // spoofs on in-page navigations that don't go through
+  // DidStartProvisionalLoadForFrame.
+  // In general, we allow the view to clear the pending entry and typed URL if
+  // the user requests (e.g., hitting Escape with focus in the address bar).
+  // Note: don't touch the transient entry, since an interstitial may exist.
+  if (controller_.GetPendingEntry() != controller_.GetVisibleEntry())
+    controller_.DiscardPendingEntry();
 
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,

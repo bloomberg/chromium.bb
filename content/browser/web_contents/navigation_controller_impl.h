@@ -289,10 +289,13 @@ class CONTENT_EXPORT NavigationControllerImpl
   // Removes the entry at |index|, as long as it is not the current entry.
   void RemoveEntryAtIndexInternal(int index);
 
-  // Discards the pending and transient entries.
+  // Discards both the pending and transient entries.
   void DiscardNonCommittedEntriesInternal();
 
-  // Discards the transient entry.
+  // Discards only the pending entry.
+  void DiscardPendingEntry();
+
+  // Discards only the transient entry.
   void DiscardTransientEntry();
 
   // If we have the maximum number of entries, remove the oldest one in

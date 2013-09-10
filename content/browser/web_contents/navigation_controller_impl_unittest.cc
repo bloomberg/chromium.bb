@@ -1009,10 +1009,10 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
           ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
                                                       params));
 
-  // This should not clear the pending entry or notify of a navigation state
-  // change.
+  // Because the pending entry is renderer initiated and not visible, we
+  // clear it when it fails.
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
-  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_FALSE(controller.GetPendingEntry());
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(0, delegate->navigation_state_change_count());
 
