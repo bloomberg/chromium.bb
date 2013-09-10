@@ -475,6 +475,30 @@ const char kLdflags_Help[] =
     "       these rules).\n"
     COMMON_FLAGS_HELP;
 
+extern const char kOutputName[] = "output_name";
+extern const char kOutputName_HelpShort[] =
+    "output_name: [string] Name for the output file other than the default.";
+extern const char kOutputName_Help[] =
+    "output_name: Define a name for the output file other than the default.\n"
+    "\n"
+    "  Normally the output name of a target will be based on the target name,\n"
+    "  so the target \"//foo/bar:bar_unittests\" will generate an output\n"
+    "  file such as \"bar_unittests.exe\" (using Windows as an example).\n"
+    "\n"
+    "  Sometimes you will want an alternate name to avoid collisions or\n"
+    "  if the internal name isn't appropriate for public distribution.\n"
+    "\n"
+    "  The output name should have no extension or prefixes, these will be\n"
+    "  added using the default system rules. For example, on Linux an output\n"
+    "  name of \"foo\" will produce a shared library \"libfoo.so\".\n"
+    "\n"
+    "  This variable is valid for all binary output target types.\n"
+    "\n"
+    "Example:\n"
+    "  static_library(\"doom_melon\") {\n"
+    "    output_name = \"fluffy_bunny\"\n"
+    "  }\n";
+
 const char kSources[] = "sources";
 const char kSources_HelpShort[] =
     "sources: [file list] Source files for a target.";
@@ -536,6 +560,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(External)
     INSERT_VARIABLE(ForwardDependentConfigsFrom)
     INSERT_VARIABLE(Ldflags)
+    INSERT_VARIABLE(OutputName)
     INSERT_VARIABLE(Sources)
   }
   return info_map;

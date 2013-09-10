@@ -23,6 +23,8 @@ class BinaryTargetGenerator : public TargetGenerator {
   virtual void DoRun() OVERRIDE;
 
  private:
+  void FillOutputName();
+
   Target::OutputType output_type_;
 
   DISALLOW_COPY_AND_ASSIGN(BinaryTargetGenerator);

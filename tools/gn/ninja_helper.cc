@@ -114,6 +114,10 @@ OutputFile NinjaHelper::GetOutputFileForSource(
 OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
   OutputFile ret;
 
+  // Use the output name if given, fall back to target name if not.
+  const std::string& name = target->output_name().empty() ?
+      target->label().name() : target->output_name();
+
   // This is prepended to the output file name. Some platforms get "lib"
   // prepended to library names. but be careful not to make a duplicate (e.g.
   // some targets like "libxml" already have the "lib" in the name).
@@ -121,7 +125,7 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
   if (!target->settings()->IsWin() &&
       (target->output_type() == Target::SHARED_LIBRARY ||
        target->output_type() == Target::STATIC_LIBRARY) &&
-      target->label().name().compare(0, 3, "lib") != 0)
+      name.compare(0, 3, "lib") != 0)
     prefix = "lib";
   else
     prefix = "";
@@ -149,7 +153,7 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
        target->output_type() == Target::SHARED_LIBRARY)) {
     // Generate a name like "<toolchain>/<prefix><name>.<extension>".
     ret.value().append(prefix);
-    ret.value().append(target->label().name());
+    ret.value().append(name);
     if (extension[0]) {
       ret.value().push_back('.');
       ret.value().append(extension);
@@ -162,7 +166,7 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
   if (target->output_type() == Target::SHARED_LIBRARY) {
     ret.value().append(kLibDirWithSlash);
     ret.value().append(prefix);
-    ret.value().append(target->label().name());
+    ret.value().append(name);
     if (extension[0]) {
       ret.value().push_back('.');
       ret.value().append(extension);
@@ -176,7 +180,7 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
   AppendStringPiece(&ret.value(),
                     target->label().dir().SourceAbsoluteWithOneSlash());
   ret.value().append(prefix);
-  ret.value().append(target->label().name());
+  ret.value().append(name);
   if (extension[0]) {
     ret.value().push_back('.');
     ret.value().append(extension);

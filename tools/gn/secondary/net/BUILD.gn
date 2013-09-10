@@ -1071,7 +1071,7 @@ component("net") {
     "//third_party/icu:icui18n",
     "//third_party/icu:icuuc",
     "//third_party/zlib:chrome_zlib",
-    "//url:url_lib",
+    "//url",
   ]
 
   if (is_win) {

@@ -63,6 +63,10 @@ class Target : public Item {
 
   bool IsLinkable() const;
 
+  // Will be the empty string to use the target label as the output name.
+  const std::string& output_name() const { return output_name_; }
+  void set_output_name(const std::string& name) { output_name_ = name; }
+
   const FileList& sources() const { return sources_; }
   FileList& sources() { return sources_; }
   void swap_in_sources(FileList* s) { sources_.swap(*s); }
@@ -149,6 +153,7 @@ class Target : public Item {
 
   const Settings* settings_;
   OutputType output_type_;
+  std::string output_name_;
 
   FileList sources_;
   FileList data_;

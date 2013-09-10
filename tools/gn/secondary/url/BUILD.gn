@@ -2,11 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Note, this target_name cannot be 'url', because that will generate 'url.dll'
-# for a Windows component build, and that will confuse Windows, which has a
-# system DLL with the same name.
-component("url_lib") {
+component("url") {
   external = true
+  if (is_win) {
+    # Don't conflict with Windows' "url.dll".
+    output_name = "url_lib"
+  }
   sources = [
     "gurl.cc",
     "gurl.h",
@@ -59,7 +60,7 @@ test("url_unittests") {
   ]
 
   deps = [
-    ":url_lib",
+    ":url",
     "//base:base_i18n",
     "//base:run_all_unittests",
     "//testing:gtest",

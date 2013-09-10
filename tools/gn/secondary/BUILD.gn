@@ -9,7 +9,7 @@ group("root") {
     "//crypto",
     "//ipc",
     "//net",
-    "//net/third_party/nss/ssl:crssl",
+    "//net/third_party/nss/ssl",
     "//sdch",
     "//third_party/icu:icudata",
     "//third_party/leveldatabase",
@@ -17,6 +17,6 @@ group("root") {
     "//third_party/zlib:chrome_zlib",
     "//skia",
     "//tools/gn",
-    "//url:url_lib",
+    "//url",
   ]
 }

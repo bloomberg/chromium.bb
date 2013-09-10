@@ -24,6 +24,7 @@ BinaryTargetGenerator::~BinaryTargetGenerator() {
 void BinaryTargetGenerator::DoRun() {
   target_->set_output_type(output_type_);
 
+  FillOutputName();
   FillExternal();
   FillSources();
   FillConfigs();
@@ -36,4 +37,13 @@ void BinaryTargetGenerator::DoRun() {
     return;
 
   SetToolchainDependency();
+}
+
+void BinaryTargetGenerator::FillOutputName() {
+  const Value* value = scope_->GetValue(variables::kOutputName, true);
+  if (!value)
+    return;
+  if (!value->VerifyTypeIs(Value::STRING, err_))
+    return;
+  target_->set_output_name(value->string_value());
 }

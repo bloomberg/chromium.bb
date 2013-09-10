@@ -131,10 +131,13 @@ extern const char kLdflags[];
 extern const char kLdflags_HelpShort[];
 extern const char kLdflags_Help[];
 
+extern const char kOutputName[];
+extern const char kOutputName_HelpShort[];
+extern const char kOutputName_Help[];
+
 extern const char kSources[];
 extern const char kSources_HelpShort[];
 extern const char kSources_Help[];
-
 
 // -----------------------------------------------------------------------------
 

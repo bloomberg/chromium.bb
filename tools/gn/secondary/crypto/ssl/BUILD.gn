@@ -21,7 +21,7 @@ group("metassl") {
   deps = []
   if (is_linux) {
     # TODO(brettw) figure this out.
-    deps += [ "//net/third_party/nss/ssl:crssl" ]
+    deps += [ "//net/third_party/nss/ssl" ]
   }
   forward_dependent_configs_from = deps
 }
