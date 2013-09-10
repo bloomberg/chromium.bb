@@ -319,6 +319,9 @@ message SystemProfileProto {
     // If a client has multiple local Chrome user accounts, this is logged based
     // on the first user account launched during the current session.
     optional bool is_disabled = 4;
+    
+    // True if the plugin is PPAPI.
+    optional bool is_pepper = 5;
   }
   repeated Plugin plugin = 7;
 
