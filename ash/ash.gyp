@@ -778,6 +778,7 @@
         'wm/workspace/frame_caption_button_container_view_unittest.cc',
         'wm/workspace/magnetism_matcher_unittest.cc',
         'wm/workspace/multi_window_resize_controller_unittest.cc',
+        'wm/workspace/snap_sizer_unittest.cc',
         'wm/workspace/workspace_event_handler_test_helper.cc',
         'wm/workspace/workspace_event_handler_test_helper.h',
         'wm/workspace/workspace_event_handler_unittest.cc',
