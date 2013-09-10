@@ -43,9 +43,16 @@ class CONTENT_EXPORT DataFetcherSharedMemory
   scoped_ptr<SuddenMotionSensor> sudden_motion_sensor_;
 #elif defined(OS_WIN)
   class SensorEventSink;
-  friend SensorEventSink;
+  class SensorEventSinkMotion;
+  class SensorEventSinkOrientation;
 
-  base::win::ScopedComPtr<ISensor> sensor_;
+  void SetBufferAvailableState(ConsumerType consumer_type, bool enabled);
+  bool RegisterForSensor(REFSENSOR_TYPE_ID sensor_type, ISensor** sensor,
+      scoped_refptr<SensorEventSink> event_sink);
+
+  base::win::ScopedComPtr<ISensor> sensor_inclinometer_;
+  base::win::ScopedComPtr<ISensor> sensor_accelerometer_;
+  base::win::ScopedComPtr<ISensor> sensor_gyrometer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DataFetcherSharedMemory);
