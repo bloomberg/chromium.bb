@@ -4,6 +4,7 @@
 
 #include "content/browser/android/browser_media_player_manager.h"
 
+#include "base/command_line.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/media_resource_getter_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
@@ -14,6 +15,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/android/media_drm_bridge.h"
+#include "media/base/media_switches.h"
 
 using media::MediaDrmBridge;
 using media::MediaPlayerAndroid;
@@ -520,12 +522,18 @@ void BrowserMediaPlayerManager::RemovePlayer(int player_id) {
 void BrowserMediaPlayerManager::AddDrmBridge(int media_keys_id,
                                              const std::vector<uint8>& uuid) {
   DCHECK(!GetDrmBridge(media_keys_id));
-  // TODO(qinmin): Pass the security level to MediaDrmBridge instead of using
-  // the default L3.
+  // TODO(xhwang/ddorwin): Pass the security level from key system.
+  std::string security_level = "L3";
+  if (CommandLine::ForCurrentProcess()
+          ->HasSwitch(switches::kMediaDrmEnableNonCompositing)) {
+    security_level = "L1";
+  }
+
   scoped_ptr<MediaDrmBridge> drm_bridge(
-      MediaDrmBridge::Create(media_keys_id, uuid, "L3", this));
+      MediaDrmBridge::Create(media_keys_id, uuid, security_level, this));
   if (!drm_bridge) {
     DVLOG(1) << "failed to create drm bridge.";
+    OnKeyError(media_keys_id, "", media::MediaKeys::kUnknownError, 0);
     return;
   }
 

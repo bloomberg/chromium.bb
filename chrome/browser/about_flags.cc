@@ -755,6 +755,15 @@ const Experiment kExperiments[] = {
     kOsMac | kOsWin | kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kOverrideEncryptedMediaCanPlayType)
   },
+#if defined(OS_ANDROID)
+  {
+    "mediadrm-enable-non-compositing",
+    IDS_FLAGS_MEDIADRM_ENABLE_NON_COMPOSITING_NAME,
+    IDS_FLAGS_MEDIADRM_ENABLE_NON_COMPOSITING_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kMediaDrmEnableNonCompositing)
+  },
+#endif  // defined(OS_ANDROID)
   {
     "enable-opus-playback",
     IDS_FLAGS_ENABLE_OPUS_PLAYBACK_NAME,

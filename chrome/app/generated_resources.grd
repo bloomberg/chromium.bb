@@ -6044,6 +6044,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENCRYPTED_MEDIA_CANPLAYTYPE_OVERRIDE_DESCRIPTION" desc="Description for the flag to override suppressed affirmative responses to canPlayType().">
         Enable appropriate responses to canPlayType() for key systems that return the empty string by default.
       </message>
+      <if expr="is_android">
+        <message name="IDS_FLAGS_MEDIADRM_ENABLE_NON_COMPOSITING_NAME" desc="Title for the flag to enable non-conmpositing decoding in MediaDrm for encrypted content.">
+          Enable non-compositing decoding.
+        </message>
+        <message name="IDS_FLAGS_MEDIADRM_ENABLE_NON_COMPOSITING_DESCRIPTION" desc="Description for the flag to enable non-conmpositing decoding in MediaDrm for encrypted content.">
+          Enable non-compositing decoding in MediaDrm by default for Encrypted Media Extensions.
+        </message>
+      </if>
       <message name="IDS_FLAGS_ENABLE_OPUS_PLAYBACK_NAME" desc="Title for the flag to enable Opus playback in &lt;video&gt; elements.">
         Enable Opus playback in &lt;video&gt; elements.
       </message>

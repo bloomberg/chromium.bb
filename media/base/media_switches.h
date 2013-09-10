@@ -26,6 +26,10 @@ MEDIA_EXPORT extern const char kOverrideEncryptedMediaCanPlayType[];
 
 MEDIA_EXPORT extern const char kEnableMP3StreamParser[];
 
+#if defined(OS_ANDROID)
+MEDIA_EXPORT extern const char kMediaDrmEnableNonCompositing[];
+#endif
+
 #if defined(GOOGLE_TV)
 MEDIA_EXPORT extern const char kUseExternalVideoSurfaceThresholdInPixels[];
 #endif

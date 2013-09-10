@@ -28,6 +28,12 @@ const char kOverrideEncryptedMediaCanPlayType[] =
 // Enables MP3 stream parser for Media Source Extensions.
 const char kEnableMP3StreamParser[] = "enable-mp3-stream-parser";
 
+#if defined(OS_ANDROID)
+// Enables use of non-compositing MediaDrm decoding by default for Encrypted
+// Media Extensions implementation.
+const char kMediaDrmEnableNonCompositing[] = "mediadrm-enable-non-compositing";
+#endif
+
 #if defined(GOOGLE_TV)
 // Use external video surface for video with more than or equal pixels to
 // specified value. For example, value of 0 will enable external video surface
