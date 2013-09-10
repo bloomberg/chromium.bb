@@ -195,8 +195,8 @@ bool RuntimeError::IsEqualImpl(const ExtensionError* rhs) const {
   // Only look at the first frame of a stack trace to save time and group
   // nearly-identical errors. The most recent error is kept, so there's no risk
   // of displaying an old and inaccurate stack trace.
-  return level_ == level_ &&
-         source_ == source_ &&
+  return level_ == error->level_ &&
+         source_ == error->source_ &&
          context_url_ == error->context_url_ &&
          stack_trace_.size() == error->stack_trace_.size() &&
          (stack_trace_.empty() || stack_trace_[0] == error->stack_trace_[0]);
