@@ -4,8 +4,13 @@
 
 #include "ui/base/ime/win/tsf_text_store.h"
 
+#include <initguid.h>  // for GUID_NULL and GUID_PROP_INPUTSCOPE
+#include <InputScope.h>
+#include <OleCtl.h>
+
 #include "base/memory/ref_counted.h"
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/scoped_variant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/ime/text_input_client.h"
@@ -1173,6 +1178,76 @@ TEST_F(TSFTextStoreTest, GetTextExtTest) {
   HRESULT result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READ, &result));
   EXPECT_EQ(S_OK, result);
+}
+
+TEST_F(TSFTextStoreTest, RequestSupportedAttrs) {
+  EXPECT_CALL(text_input_client_, GetTextInputType())
+      .WillRepeatedly(Return(TEXT_INPUT_TYPE_TEXT));
+  EXPECT_CALL(text_input_client_, GetTextInputMode())
+      .WillRepeatedly(Return(TEXT_INPUT_MODE_DEFAULT));
+
+  EXPECT_HRESULT_FAILED(text_store_->RequestSupportedAttrs(0, 1, NULL));
+
+  const TS_ATTRID kUnknownAttributes[] = {GUID_NULL};
+  EXPECT_HRESULT_FAILED(text_store_->RequestSupportedAttrs(
+      0, arraysize(kUnknownAttributes), kUnknownAttributes))
+      << "Must fail for unknown attributes";
+
+  const TS_ATTRID kAttributes[] = {GUID_NULL, GUID_PROP_INPUTSCOPE, GUID_NULL};
+  EXPECT_EQ(S_OK, text_store_->RequestSupportedAttrs(
+      0, arraysize(kAttributes), kAttributes))
+      << "InputScope must be supported";
+
+  {
+    SCOPED_TRACE("Check if RequestSupportedAttrs fails while focus is lost");
+    // Emulate focus lost
+    text_store_->SetFocusedTextInputClient(NULL, NULL);
+    EXPECT_HRESULT_FAILED(text_store_->RequestSupportedAttrs(0, 0, NULL));
+    EXPECT_HRESULT_FAILED(text_store_->RequestSupportedAttrs(
+        0, arraysize(kAttributes), kAttributes));
+  }
+}
+
+TEST_F(TSFTextStoreTest, RetrieveRequestedAttrs) {
+  EXPECT_CALL(text_input_client_, GetTextInputType())
+      .WillRepeatedly(Return(TEXT_INPUT_TYPE_TEXT));
+  EXPECT_CALL(text_input_client_, GetTextInputMode())
+      .WillRepeatedly(Return(TEXT_INPUT_MODE_DEFAULT));
+
+  ULONG num_copied = 0xfffffff;
+  EXPECT_HRESULT_FAILED(text_store_->RetrieveRequestedAttrs(
+      1, NULL, &num_copied));
+
+  {
+    SCOPED_TRACE("Make sure if InputScope is supported");
+    TS_ATTRVAL buffer[2] = {};
+    num_copied = 0xfffffff;
+    ASSERT_EQ(S_OK, text_store_->RetrieveRequestedAttrs(
+        arraysize(buffer), buffer, &num_copied));
+    bool input_scope_found = false;
+    for (size_t i = 0; i < num_copied; ++i) {
+      base::win::ScopedVariant variant;
+      // Move ownership from |buffer[i].varValue| to |variant|.
+      std::swap(*variant.Receive(), buffer[i].varValue);
+      if (IsEqualGUID(buffer[i].idAttr, GUID_PROP_INPUTSCOPE)) {
+        EXPECT_EQ(VT_UNKNOWN, variant.type());
+        base::win::ScopedComPtr<ITfInputScope> input_scope;
+        EXPECT_HRESULT_SUCCEEDED(input_scope.QueryFrom((&variant)->punkVal));
+        input_scope_found = true;
+        // we do not break here to clean up all the retrieved VARIANTs.
+      }
+    }
+    EXPECT_TRUE(input_scope_found);
+  }
+  {
+    SCOPED_TRACE("Check if RetrieveRequestedAttrs fails while focus is lost");
+    // Emulate focus lost
+    text_store_->SetFocusedTextInputClient(NULL, NULL);
+    num_copied = 0xfffffff;
+    TS_ATTRVAL buffer[2] = {};
+    EXPECT_HRESULT_FAILED(text_store_->RetrieveRequestedAttrs(
+        arraysize(buffer), buffer, &num_copied));
+  }
 }
 
 }  // namespace
