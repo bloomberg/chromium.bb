@@ -11,8 +11,10 @@
 
 namespace WebKit {
 class WebDocument;
+class WebElement;
 class WebFormElement;
 class WebFormControlElement;
+class WebFrame;
 class WebInputElement;
 class WebNode;
 }
@@ -143,6 +145,21 @@ bool ClearPreviewedFormWithElement(const WebKit::WebInputElement& element,
 
 // Returns true if |form| has any auto-filled fields.
 bool FormWithElementIsAutofilled(const WebKit::WebInputElement& element);
+
+// Checks if the webpage is empty.
+// This kind of webpage is considered as empty:
+// <html>
+//    <head>
+//    <head/>
+//    <body>
+//    <body/>
+// <html/>
+// Meta, script and title tags don't influence the emptiness of a webpage.
+bool IsWebpageEmpty(const WebKit::WebFrame* frame);
+
+// This function checks whether the children of |element|
+// are of the type <script>, <meta>, or <title>.
+bool IsWebElementEmpty(const WebKit::WebElement& element);
 
 }  // namespace autofill
 

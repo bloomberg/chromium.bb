@@ -23,6 +23,8 @@
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebNode.h"
+#include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -359,6 +361,10 @@ void PasswordAutofillAgent::SendPasswordForms(WebKit::WebFrame* frame,
   // Make sure that this security origin is allowed to use password manager.
   WebKit::WebSecurityOrigin origin = frame->document().securityOrigin();
   if (!OriginCanAccessPasswordManager(origin))
+    return;
+
+  // Checks whether the webpage is a redirect page or an empty page.
+  if (IsWebpageEmpty(frame))
     return;
 
   WebKit::WebVector<WebKit::WebFormElement> forms;

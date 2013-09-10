@@ -79,7 +79,7 @@ bool IsNoScriptElement(const WebElement& element) {
 }
 
 bool HasTagName(const WebNode& node, const WebKit::WebString& tag) {
-  return node.isElementNode() && node.toConst<WebElement>().hasTagName(tag);
+  return node.isElementNode() && node.toConst<WebElement>().hasHTMLTagName(tag);
 }
 
 bool IsAutofillableElement(const WebFormControlElement& element) {
@@ -1074,6 +1074,56 @@ bool FormWithElementIsAutofilled(const WebInputElement& element) {
   }
 
   return false;
+}
+
+bool IsWebpageEmpty(const WebKit::WebFrame* frame) {
+  WebKit::WebDocument document = frame->document();
+
+  return IsWebElementEmpty(document.head()) &&
+         IsWebElementEmpty(document.body());
+}
+
+bool IsWebElementEmpty(const WebKit::WebElement& element) {
+  // This array contains all tags which can be present in an empty page.
+  const char* const kAllowedValue[] = {
+    "script",
+    "meta",
+    "title",
+  };
+  const size_t kAllowedValueLength = arraysize(kAllowedValue);
+
+  if (element.isNull())
+    return true;
+  // The childNodes method is not a const method. Therefore it cannot be called
+  // on a const reference. Therefore we need a const cast.
+  const WebKit::WebNodeList& children =
+      const_cast<WebKit::WebElement&>(element).childNodes();
+  for (size_t i = 0; i < children.length(); ++i) {
+    const WebKit::WebNode& item = children.item(i);
+
+    if (item.isTextNode() &&
+        !ContainsOnlyWhitespaceASCII(item.nodeValue().utf8()))
+      return false;
+
+    // We ignore all other items with names which begin with
+    // the character # because they are not html tags.
+    if (item.nodeName().utf8()[0] == '#')
+      continue;
+
+    bool tag_is_allowed = false;
+    // Test if the item name is in the kAllowedValue array
+    for (size_t allowed_value_index = 0;
+         allowed_value_index < kAllowedValueLength; ++allowed_value_index) {
+      if (HasTagName(item,
+                     WebString::fromUTF8(kAllowedValue[allowed_value_index]))) {
+        tag_is_allowed = true;
+        break;
+      }
+    }
+    if (!tag_is_allowed)
+      return false;
+  }
+  return true;
 }
 
 }  // namespace autofill
