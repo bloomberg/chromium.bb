@@ -753,11 +753,11 @@ def RunCommandCaptureOutput(cmd, **kwds):
 def RunCommandQuietly(*args, **kwargs):
   """Wrapper for RunCommand that runs silently.
 
-  The wrapper does not echo the command, and it sends stdout and stderr to
-  /dev/null.
+  The wrapper does not echo the command.  stdout and stderr are captured but
+  not echoed.
   """
   kwargs.setdefault('print_cmd', False)
-  kwargs.setdefault('log_stdout_to_file', os.devnull)
+  kwargs.setdefault('stdout_to_pipe', True)
   kwargs.setdefault('combine_stdout_stderr', True)
   return RunCommand(*args, **kwargs)
 

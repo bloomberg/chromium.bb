@@ -4,12 +4,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unittests for GerritHelper.  Needs to have mox installed."""
+"""Unittests for GerritHelper."""
 
-import mox
+import mock
 import os
 import sys
-import unittest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
@@ -17,71 +16,11 @@ from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
+from chromite.lib import gob_util
 
 
 # pylint: disable=W0212,R0904
-@unittest.skip('Broken by CL:168671')
 class GerritHelperTest(cros_test_lib.GerritTestCase):
-
-#  def setUp(self):
-#    self.footer_template = (
-#      '{"type":"stats","rowCount":%(count)i,"runTimeMilliseconds":205}')
-#    self.results = (
-#        '{"project":"chromiumos/platform/init","branch":"master",'
-#        '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025e",'
-#        '"number":"1111",'
-#        '"subject":"init commit",'
-#        '"owner":{"name":"Init master","email":"init@chromium.org"},'
-#        '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
-#            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef"},'
-#        '"url":"https://chromium-review.googlesource.com/1111",'
-#        '"lastUpdated":1311024429,'
-#        '"sortKey":"00166e8700001051",'
-#        '"open":true,"'
-#        'status":"NEW"}'
-#        '\n'
-#        '{"project":"chromiumos/manifests","branch":"master",'
-#        '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025d",'
-#        '"number":"1111",'
-#        '"subject":"Test for filtered repos",'
-#        '"owner":{"name":"Init master","email":"init@chromium.org"},'
-#        '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
-#            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef"},'
-#        '"url":"https://chromium-review.googlesource.com/1110",'
-#        '"lastUpdated":1311024429,'
-#        '"sortKey":"00166e8700001051",'
-#        '"open":true,"'
-#        'status":"NEW"}'
-#        '\n'
-#        '{"project":"tacos/chromite","branch":"master",'
-#        '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025f",'
-#        '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
-#            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef"},'
-#        '"number":"1112",'
-#        '"subject":"chromite commit",'
-#        '"owner":{"name":"Chromite Master","email":"chromite@chromium.org"},'
-#        '"url":"https://chromium-review.googlesource.com/1112",'
-#        '"lastUpdated":1311024529,'
-#        '"sortKey":"00166e8700001052",'
-#        '"open":true,"'
-#        'status":"NEW"}\n'
-#        ) + self.footer_template % {'count':1}
-#    self.merged_record = (
-#        '{"project":"tacos/chromite","branch":"master",'
-#        '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda8000250",'
-#        '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
-#            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785ea"},'
-#        '"number":"1112",'
-#        '"subject":"chromite commit",'
-#        '"owner":{"name":"Chromite Master","email":"chromite@chromium.org"},'
-#        '"url":"https://chromium-review.googlesource.com/1112",'
-#        '"lastUpdated":1311024529,'
-#        '"sortKey":"00166e8700001052",'
-#        '"open":true,"'
-#        'status":"MERGED"}\n'
-#    )
-#    self.merged_change = self.merged_record + self.footer_template % {'count':1}
-#    self.no_results = self.footer_template % {'count':0}
 
   def _GetHelper(self, remote=constants.EXTERNAL_REMOTE):
     return gerrit.GetGerritHelper(remote)
@@ -90,7 +29,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     """Create one independent and three dependent changes, then query them."""
     self.createProject('test001')
     clone_path = self.cloneProject('test001')
-    (head_sha1, head_change_id) = self.createCommit(clone_path)
+    (head_sha1, head_changeid) = self.createCommit(clone_path)
     for idx in xrange(3):
       cros_build_lib.RunCommandQuietly(
           ['git', 'checkout', head_sha1], cwd=clone_path)
@@ -99,13 +38,27 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     helper = self._GetHelper()
     changes = helper.Query(owner='self')
     self.assertEqual(len(changes), 4)
+    changes = helper.Query(head_changeid, project='test001', branch='master')
+    self.assertEqual(len(changes), 1)
+    self.assertEqual(changes[0].change_id, head_changeid)
+    self.assertEqual(changes[0].sha1, head_sha1)
+    change = helper.QuerySingleRecord(
+        head_changeid, project='test001', branch='master')
+    self.assertTrue(change)
+    self.assertEqual(change.change_id, head_changeid)
+    self.assertEqual(change.sha1, head_sha1)
+    change = helper.GrabPatchFromGerrit('test001', head_changeid, head_sha1)
+    self.assertTrue(change)
+    self.assertEqual(change.change_id, head_changeid)
+    self.assertEqual(change.sha1, head_sha1)
 
+  @mock.patch.object(gerrit.GerritHelper, '_GERRIT_MAX_QUERY_RETURN', 20)
   def test002GerritQueryTruncation(self):
     """Verify that we detect gerrit truncating our query, and handle it."""
     self.createProject('test002')
     clone_path = self.cloneProject('test002')
     # Using a shell loop is markedly faster than running a python loop.
-    cmd = ('for ((i=0; i<550; i=i+1)); do '
+    cmd = ('for ((i=0; i<84; i=i+1)); do '
            'echo "Another day, another dollar." > test-file-$i.txt; '
            'git add test-file-$i.txt; '
            'git commit -m "Test commit $i."; done')
@@ -113,191 +66,154 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     self.uploadChange(clone_path)
     helper = self._GetHelper()
     changes = helper.Query(project='test002')
-    self.assertEqual(len(changes), 550)
+    self.assertEqual(len(changes), 84)
 
-  @unittest.skip('Not yet ported to gerrit-on-borg.')
-  def testGetLatestSHA1ForBranch(self):
-    """Verifies we can return the correct sha1 from mock data."""
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommandWithRetries')
-    my_hash = 'sadfjaslfkj2135'
-    my_branch = 'master'
-    result = self.mox.CreateMock(cros_build_lib.CommandResult)
-    result.returncode = 0
-    result.output = '   '.join([my_hash, my_branch])
-    cros_build_lib.RunCommandWithRetries(
-        3, ['git', 'ls-remote',
-            'https://chromium.googlesource.com/tacos/chromite',
-            'refs/heads/master'],
-        redirect_stdout=True, print_cmd=True).AndReturn(result)
-    self.mox.ReplayAll()
+  def test003IsChangeCommitted(self):
+    """Tests that we can parse a json to check if a change is committed."""
+    self.createProject('test003')
+    clone_path = self.cloneProject('test003')
+    (_, changeid) = self.createCommit(clone_path)
+    self.uploadChange(clone_path)
     helper = self._GetHelper()
-    self.assertEqual(helper.GetLatestSHA1ForBranch('tacos/chromite',
-                                                   my_branch), my_hash)
-    self.mox.VerifyAll()
+    gpatch = helper.QuerySingleRecord(
+        change=changeid, project='test003', branch='master')
+    self.assertEqual(gpatch.change_id, changeid)
+    helper.SetReview(gpatch.gerrit_number, labels={'Code-Review':'+2'})
+    helper.SubmitChange(gpatch)
+    self.assertTrue(helper.IsChangeCommitted(gpatch.gerrit_number))
 
-  @unittest.skip('Not yet ported to gerrit-on-borg.')
-  def testGetLatestSHA1ForProject4Realz(self):
-    """Verify we can check the latest hash from chromite."""
+    (_, changeid) = self.createCommit(clone_path)
+    self.uploadChange(clone_path)
+    gpatch = helper.QuerySingleRecord(
+        change=changeid, project='test003', branch='master')
+    self.assertEqual(gpatch.change_id, changeid)
+    self.assertFalse(helper.IsChangeCommitted(gpatch.gerrit_number))
+
+  def test004GetLatestSHA1ForBranch(self):
+    """Verifies that we can query the tip-of-tree commit in a git repository."""
+    self.createProject('test004')
+    clone_path = self.cloneProject('test004')
+    for _ in xrange(5):
+      (master_sha1, _) = self.createCommit(clone_path)
+    self.pushBranch(clone_path, 'master')
+    for _ in xrange(5):
+      (testbranch_sha1, _) = self.createCommit(clone_path)
+    self.pushBranch(clone_path, 'testbranch')
     helper = self._GetHelper()
-    cros_build_lib.Info('The current sha1 on master for chromite is: %s' %
-                        helper.GetLatestSHA1ForBranch('chromiumos/chromite',
-                                                      'master'))
+    self.assertEqual(
+        helper.GetLatestSHA1ForBranch('test004', 'master'),
+        master_sha1)
+    self.assertEqual(
+        helper.GetLatestSHA1ForBranch('test004', 'testbranch'),
+        testbranch_sha1)
 
-  @unittest.skip('Not yet ported to gerrit-on-borg.')
-  def testSetReviewers(self):
+  def test005SetReviewers(self):
+    """Verify that we can set reviewers on a CL."""
+    self.createProject('test005')
+    clone_path = self.cloneProject('test005')
+    (_, changeid) = self.createCommit(clone_path)
+    self.uploadChange(clone_path)
     helper = self._GetHelper()
-    # Ensure it requires at additions/removals.
-    self.assertRaises(ValueError, helper.SetReviewers, 12345)
-    def f(args):
-      self.assertEqual(args[args.index('ferringb@chromium.org') -1], '--add')
-      self.assertEqual(args[args.index('chrome-bot@blah') -1], '--remove')
-      return True
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    cros_build_lib.RunCommand(mox.Func(f), redirect_stdout=True,
-                              redirect_stderr=True)
-    self.mox.ReplayAll()
-    helper.SetReviewers(1, add=('ferringb@chromium.org',),
-                        remove='chrome-bot@blah')
-    self.mox.VerifyAll()
+    gpatch = helper.QuerySingleRecord(
+        change=changeid, project='test005', branch='master')
+    self.assertEqual(gpatch.change_id, changeid)
+    self.createAccount(name='Test005 User 1', email='test005-user-1@test.org')
+    self.createAccount(name='Test005 User 2', email='test005-user-2@test.org')
+    helper = self._GetHelper()
+    helper.SetReviewers(gpatch.gerrit_number, add=(
+        'test005-user-1@test.org', 'test005-user-2@test.org'))
+    reviewers = gob_util.GetReviewers(helper.host, gpatch.gerrit_number)
+    self.assertEqual(len(reviewers), 2)
+    self.assertItemsEqual(
+        [r['email'] for r in reviewers],
+        ['test005-user-1@test.org', 'test005-user-2@test.org'])
+    helper.SetReviewers(gpatch.gerrit_number,
+                        remove=('test005-user-1@test.org',))
+    reviewers = gob_util.GetReviewers(helper.host, gpatch.gerrit_number)
+    self.assertEqual(len(reviewers), 1)
+    self.assertEqual(reviewers[0]['email'], 'test005-user-2@test.org')
 
+  def test006PatchNotFound(self):
+    """Test case where ChangeID isn't found on the server."""
+    changeids = ['I' + ('deadbeef' * 5), 'I' + ('beadface' * 5)]
+    self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
+                      changeids)
+    self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
+                      ['*' + cid for cid in changeids])
+    gerrit_numbers = ['12345', '54321']
+    self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
+                      gerrit_numbers)
+    self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
+                      ['*' + num for num in gerrit_numbers])
 
-# pylint: disable=W0212,R0904
-@unittest.skipIf(constants.USE_GOB, "GerritQueryTests not yet ported to GoB.")
-class GerritQueryTests(cros_test_lib.MoxTestCase):
+  def test007VagueQuery(self):
+    """Verify GerritHelper complains if an ID matches multiple changes."""
+    self.createProject('test007')
+    clone_path = self.cloneProject('test007')
+    (sha1, _) = self.createCommit(clone_path)
+    (_, changeid) = self.createCommit(clone_path)
+    self.uploadChange(clone_path, 'master')
+    cros_build_lib.RunCommandQuietly(
+        ['git', 'checkout', sha1], cwd=clone_path)
+    self.createCommit(clone_path)
+    self.pushBranch(clone_path, 'testbranch')
+    self.createCommit(
+        clone_path, msg='Test commit.\n\nChange-Id: %s' % changeid)
+    self.uploadChange(clone_path, 'testbranch')
+    self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
+                      [changeid])
 
-  def setUp(self):
-    raw_json = ('{"project":"chromiumos/chromite","branch":"master","id":'
-             '"Icb8e1d315d465a077ffcddd7d1ab2307573017d5","number":"2144",'
-             '"subject":"Add functionality to cbuildbot to patch in a set '
-             'of Gerrit CL\u0027s","owner":{"name":"Ryan Cui","email":'
-             '"rcui@chromium.org"},"url":'
-             '"https://chromium-review.googlesource.com/2144","lastUpdated":'
-             '1307577655,"sortKey":"00158e2000000860","open":true,"status":'
-             '"NEW","currentPatchSet":{"number":"3",'
-             '"revision":"b1c82d0f1c916b7f66cfece625d67fb5ecea9ea7","ref":'
-             '"refs/changes/44/2144/3","uploader":{"name":"Ryan Cui","email":'
-             '"rcui@chromium.org"}}}')
+  def test008Queries(self):
+    """Verify assorted query operations."""
+    self.createProject('test008')
+    clone_path = self.cloneProject('test008')
+    (sha1, changeid) = self.createCommit(clone_path)
+    self.uploadChange(clone_path, 'master')
+    helper = self._GetHelper()
+    gpatch = helper.QuerySingleRecord(
+        change=changeid, project='test008', branch='master')
+    self.assertEqual(gpatch.change_id, changeid)
 
-    self.raw_json = raw_json
-    self.good_footer = \
-             '{"type":"stats","rowCount":1,"runTimeMilliseconds":4}'
-    self.result = raw_json + '\n' + self.good_footer
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    # Multi-queries with one valid and one invalid term should raise.
+    self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
+                      ['Iab8e1d', changeid])
+    self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
+                      [changeid, 'Iab8e1d'])
+    self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
+                      ['12345', gpatch.gerrit_number])
+    self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
+                      [gpatch.gerrit_number, '12345'])
 
-  def testPatchNotFound1(self):
-    """Test case where ChangeID isn't found on internal server."""
-    patches = ['Icb8e1d315d465a07']
+    # Simple query by project/changeid/sha1.
+    patch_info = helper.GrabPatchFromGerrit('test008', changeid, sha1)
+    self.assertEqual(patch_info.gerrit_number, gpatch.gerrit_number)
+    self.assertEqual(patch_info.remote, constants.EXTERNAL_REMOTE)
 
-    output_obj = cros_build_lib.CommandResult()
-    output_obj.returncode = 0
-    output_obj.output = ('{"type":"error",'
-                         '"message":"Unsupported query:5S2D4D2D4"}')
+    # Simple query by gerrit number to external remote.
+    patch_info = gerrit.GetGerritPatchInfo([gpatch.gerrit_number])
+    self.assertEqual(patch_info[0].gerrit_number, gpatch.gerrit_number)
+    self.assertEqual(patch_info[0].remote, constants.EXTERNAL_REMOTE)
 
-    cros_build_lib.RunCommand(mox.In('chromium-review.googlesource.com'),
-                              redirect_stdout=True).AndReturn(output_obj)
+    # Simple query by gerrit number to internal remote.
+    patch_info = gerrit.GetGerritPatchInfo(['*' + gpatch.gerrit_number])
+    self.assertEqual(patch_info[0].gerrit_number, gpatch.gerrit_number)
+    self.assertEqual(patch_info[0].remote, constants.INTERNAL_REMOTE)
 
-    self.mox.ReplayAll()
+    # Query to external server by gerrit number and change-id which refer to
+    # the same change should return one result.
+    fq_changeid = '~'.join((gpatch.project, 'master', gpatch.change_id))
+    patch_info = gerrit.GetGerritPatchInfo([gpatch.gerrit_number, fq_changeid])
+    self.assertEqual(len(patch_info), 1)
+    self.assertEqual(patch_info[0].gerrit_number, gpatch.gerrit_number)
+    self.assertEqual(patch_info[0].remote, constants.EXTERNAL_REMOTE)
 
-    self.assertRaises(gerrit.GerritException,
-                      gerrit.GetGerritPatchInfo, patches)
-    self.mox.VerifyAll()
-
-  def _test_missing(self, patches):
-    output_obj = cros_build_lib.CommandResult()
-    output_obj.returncode = 0
-    output_obj.output = '%s\n%s\n%s' % \
-                        (self.raw_json, self.raw_json, self.good_footer)
-    cros_build_lib.RunCommand(mox.In('chromium-review.googlesource.com'),
-                              redirect_stdout=True).AndReturn(output_obj)
-
-    self.mox.ReplayAll()
-
-    self.assertRaises(gerrit.GerritException,
-                      gerrit.GetGerritPatchInfo, patches)
-
-    self.mox.VerifyAll()
-
-  def testLooseQuery(self):
-    """verify it complaints if an ID matches multiple"""
-    self._test_missing(['Icb8e1d', 'ICeb8e1d3'])
-
-  def testFirstNotFound(self):
-    """verify it complains if the previous ID didn't match, but second did"""
-    self._test_missing(['iab8e1d', 'iceb8e1d'])
-
-  def testLastNotFound(self):
-    """verify it complains if the last ID didn't match, but first did"""
-    self._test_missing(['icb8e1d', 'iceb8e1de'])
-
-  def testNumericFirstNotFound(self):
-    """verify it complains if the previous numeric didn't match, but second
-       did"""
-    self._test_missing(['2144', '21445'])
-
-  def testNumericLastNotFound(self):
-    """verify it complains if the last numeric didn't match, but first did"""
-    self._test_missing(['21445', '2144'])
-
-  def _common_test(self, patches, server='chromium-review.googlesource.com',
-    remote=constants.EXTERNAL_REMOTE, calls_allowed=1):
-
-    output_obj = cros_build_lib.CommandResult()
-    output_obj.returncode = 0
-    output_obj.output = self.result
-
-    for _ in xrange(calls_allowed):
-      cros_build_lib.RunCommand(mox.In(server),
-                                redirect_stdout=True).AndReturn(output_obj)
-
-    self.mox.ReplayAll()
-
-    patch_info = gerrit.GetGerritPatchInfo(patches)
-    self.assertEquals(patch_info[0].remote, remote)
-    self.mox.VerifyAll()
-    return patch_info
-
-  def testInternalID(self):
-    self._common_test(['*Icb8e1d'], 'chrome-internal-review.googlesource.com',
-                      constants.INTERNAL_REMOTE)
-
-  def testExternalID(self):
-    self._common_test(['Icb8e1d'])
-
-  def testExternalNumeric(self):
-    self._common_test(['2144'])
-
-  def testInternallNumeric(self):
-    self._common_test(['*2144'], 'chrome-internal-review.googlesource.com',
-                      constants.INTERNAL_REMOTE)
-
-  def testInternalUnique(self):
-    self._common_test(['*2144', '*Icb8e1d'],
-                      'chrome-internal-review.googlesource.com',
-                      constants.INTERNAL_REMOTE, calls_allowed=2)
-
-  def testExternalUnique(self):
-    """ensure that if two unique queries that point to the same cl, just one
-       patch is returned"""
-    self._common_test(['2144', 'Icb8e1d'], calls_allowed=2)
-
-  def testPatchInfoParsing(self):
-    """Test parsing of the JSON results."""
-    patches = ['Icb8e1d315d465a07']
-
-    output_obj = cros_build_lib.CommandResult()
-    output_obj.returncode = 0
-    output_obj.output = self.result
-
-    cros_build_lib.RunCommand(mox.In('chromium-review.googlesource.com'),
-                              redirect_stdout=True).AndReturn(output_obj)
-
-    self.mox.ReplayAll()
-
-    patch_info = gerrit.GetGerritPatchInfo(patches)
-    self.assertEquals(patch_info[0].project, 'chromiumos/chromite')
-    self.assertEquals(patch_info[0].ref, 'refs/changes/44/2144/3')
-
-    self.mox.VerifyAll()
+    # Query to internal server by gerrit number and change-id which refer to
+    # the same change should return one result.
+    patch_info = gerrit.GetGerritPatchInfo(
+        ['*' + gpatch.gerrit_number, '*' + fq_changeid])
+    self.assertEqual(len(patch_info), 1)
+    self.assertEqual(patch_info[0].gerrit_number, gpatch.gerrit_number)
+    self.assertEqual(patch_info[0].remote, constants.INTERNAL_REMOTE)
 
 
 if __name__ == '__main__':

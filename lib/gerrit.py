@@ -515,7 +515,7 @@ class GerritOnBorgHelper(GerritHelper):
     return change.get('status') == 'MERGED'
 
   def GetLatestSHA1ForBranch(self, project, branch):
-    url = 'https://%s/a/%s' % (self.host, project)
+    url = '%s://%s/%s' % (gob_util.GERRIT_PROTOCOL, self.host, project)
     cmd = ['ls-remote', url, 'refs/heads/%s' % branch]
     try:
       result = git.RunGit('.', cmd, print_cmd=self.print_cmd)

@@ -268,6 +268,12 @@ def SubmitChange(host, change, wait_for_merge=True):
   return ReadHttpJsonResponse(conn, ignore_404=False)
 
 
+def GetReviewers(host, change):
+  """Get information about all reviewers attached to a change."""
+  path = 'changes/%s/reviewers' % change
+  return ReadHttpJsonResponse(CreateHttpConn(host, path))
+
+
 def AddReviewers(host, change, add=None):
   """Add reviewers to a change."""
   if not add:
@@ -289,7 +295,7 @@ def RemoveReviewers(host, change, remove=None):
   if isinstance(remove, basestring):
     remove = (remove,)
   for r in remove:
-    path = 'change/%s/reviewers/%s' % (change, r)
+    path = 'changes/%s/reviewers/%s' % (change, r)
     conn = CreateHttpConn(host, path, reqtype='DELETE')
     try:
       ReadHttpResponse(conn, ignore_404=False)

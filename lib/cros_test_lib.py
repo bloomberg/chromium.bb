@@ -24,6 +24,7 @@ import socket
 import stat
 import sys
 import unittest
+import urllib
 
 from chromite.buildbot import constants
 import cros_build_lib
@@ -819,6 +820,14 @@ class GerritTestCase(TempDirTestCase):
   GerritTestCase sub-class.
   """
 
+  TEST_USERNAME = 'test-username'
+
+  # To help when debugging test code; setting this to 'False' (which happens if
+  # you provide the '-d' flag at the shell prompt) will leave the test gerrit
+  # instance running on localhost after the script exits.  It is the
+  # responsibility of the user to kill the gerrit process!
+  TEARDOWN = True
+
   GerritInstance = collections.namedtuple('GerritInstance', [
       'credential_file',
       'gerrit_dir',
@@ -831,6 +840,7 @@ class GerritTestCase(TempDirTestCase):
       'git_url',
       'http_port',
       'netrc_file',
+      'ssh_ident',
       'ssh_port',
   ])
 
@@ -874,6 +884,7 @@ class GerritTestCase(TempDirTestCase):
         git_url='file://%s/git' % gerrit_dir,
         http_port=http_port,
         netrc_file=os.path.join(gerrit_dir, 'tmp', '.netrc'),
+        ssh_ident=os.path.join(gerrit_dir, 'tmp', 'id_rsa'),
         ssh_port=ssh_port,)
 
   @classmethod
@@ -931,7 +942,16 @@ class GerritTestCase(TempDirTestCase):
     def _GetChangeDetail(host, change, o_params=None):
       o_params = ('DETAILED_ACCOUNTS', 'DETAILED_LABELS',
                   'CURRENT_COMMIT', 'CURRENT_REVISION')
-      result = gob_util.QueryChanges(host, {}, str(change), o_params=o_params)
+      q_params = {}
+      if len(str(change).split('~')) == 3:
+        project, branch, changeid = [
+            urllib.quote(x, '') for x in str(change).split('~')]
+        q_params['project'] = project
+        q_params['branch'] = branch
+        q_params['change'] = changeid
+        change = ''
+      result = gob_util.QueryChanges(
+          host, q_params, str(change), o_params=o_params)
       # The original method would return None if more than one CL matched the
       # 'change' argument, so we reproduce that behavior.
       if result and len(result) == 1:
@@ -984,14 +1004,15 @@ class GerritTestCase(TempDirTestCase):
          'store --file=%s' % self.gerrit_instance.credential_file])
     return path
 
-  def createCommit(self, clone_path, fn='test-file.txt'):
+  def createCommit(self, clone_path, fn='test-file.txt',
+                   msg='Test message.'):
     """Create a commit in the given git checkout."""
     clone_path = os.path.join(self.tempdir, clone_path)
     fpath = os.path.join(clone_path, fn)
     osutils.WriteFile(fpath, 'Another day, another dollar.\n', mode='a')
     cros_build_lib.RunCommandQuietly(['git', 'add', fn], cwd=clone_path)
     cros_build_lib.RunCommandQuietly(
-        ['git', 'commit', '-m', 'Test commit'], cwd=clone_path)
+        ['git', 'commit', '-m', msg], cwd=clone_path)
     return self.getHeadCommit(clone_path)
 
   def getHeadCommit(self, clone_path):
@@ -1021,9 +1042,28 @@ class GerritTestCase(TempDirTestCase):
         ['git', 'push', 'origin', 'HEAD:refs/for/%s' % branch], cwd=clone_path)
 
   def pushBranch(self, clone_path, branch='master'):
+    """Push a branch directly to gerrit, bypassing code review."""
     clone_path = os.path.join(self.tempdir, clone_path)
     cros_build_lib.RunCommandQuietly(
-        ['git', 'push', 'origin', 'HEAD:refs/heads/%s' % branch], cwd=clone_path)
+        ['git', 'push', 'origin', 'HEAD:refs/heads/%s' % branch],
+        cwd=clone_path)
+
+  def createAccount(self, name='Test User', email='test-user@test.org',
+                    password=None, groups=None):
+    """Create a new user account on gerrit."""
+    username = email.partition('@')[0]
+    gerrit_cmd = 'gerrit create-account %s --full-name "%s" --email %s' % (
+        username, name, email)
+    cmd = ['ssh', '-p', self.gerrit_instance.ssh_port,
+           '-i', self.gerrit_instance.ssh_ident,
+           '-o', 'NoHostAuthenticationForLocalhost=yes',
+           '-o', 'StrictHostKeyChecking=no',
+           '%s@localhost' % self.TEST_USERNAME, gerrit_cmd]
+    if password:
+      cmd.extend(['--http-password', password])
+    if groups:
+      cmd.extend(['--group %s' % x for x in groups])
+    cros_build_lib.RunCommandQuietly(cmd)
 
   @staticmethod
   def _stop_gerrit(gerrit_obj):
@@ -1039,6 +1079,7 @@ class GerritTestCase(TempDirTestCase):
       except OSError as e:
         if e.errno == errno.ECHILD:
           # If gerrit shut down cleanly, os.waitpid will land here.
+          # pylint: disable=W0150
           return
 
       # If we get here, the gerrit process is still alive.  Send the process
@@ -1049,6 +1090,7 @@ class GerritTestCase(TempDirTestCase):
         if e.errno == errno.ESRCH:
           # os.kill raised an error because the process doesn't exist.  Maybe
           # gerrit shut down cleanly after all.
+          # pylint: disable=W0150
           return
 
       # Expose the fact that gerrit didn't shut down cleanly.
@@ -1063,8 +1105,12 @@ class GerritTestCase(TempDirTestCase):
     cls.protocol_patcher.stop()
     cls.constants_patcher.stop()
     cls.get_change_detail_patcher.stop()
-    cls._stop_gerrit(cls.gerrit_instance)
-    cls.gerritdir_obj.Cleanup()
+    if cls.TEARDOWN:
+      cls._stop_gerrit(cls.gerrit_instance)
+      cls.gerritdir_obj.Cleanup()
+    else:
+      # Prevent gerrit dir from getting cleaned up on interpreter exit.
+      cls.gerritdir_obj.tempdir = None
 
 
 class GerritInternalTestCase(GerritTestCase):
@@ -1096,8 +1142,12 @@ class GerritInternalTestCase(GerritTestCase):
   @classmethod
   def tearDownClass(cls):
     cls.int_constants_patcher.stop()
-    cls._stop_gerrit(cls.int_gerrit_instance)
-    cls.int_gerritdir_obj.Cleanup()
+    if cls.TEARDOWN:
+      cls._stop_gerrit(cls.int_gerrit_instance)
+      cls.int_gerritdir_obj.Cleanup()
+    else:
+      # Prevent gerrit dir from getting cleaned up on interpreter exit.
+      cls.int_gerritdir_obj.tempdir = None
 
 
 class _RunCommandMock(mox.MockObject):
@@ -1264,6 +1314,7 @@ def main(**kwds):
     if flag in sys.argv:
       sys.argv.remove(flag)
       level = logging.DEBUG
+      GerritTestCase.TEARDOWN = False
   cros_build_lib.SetupBasicLogging(level)
   try:
     unittest.main(**kwds)
