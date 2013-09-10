@@ -331,6 +331,14 @@ bool SynchronousCompositorImpl::DemandDrawSw(SkCanvas* canvas) {
   return output_surface_->DemandDrawSw(canvas);
 }
 
+void SynchronousCompositorImpl::SetMemoryPolicy(
+    const SynchronousCompositorMemoryPolicy& policy) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(output_surface_);
+
+  return output_surface_->SetMemoryPolicy(policy);
+}
+
 void SynchronousCompositorImpl::DidChangeRootLayerScrollOffset() {
   if (input_handler_)
     input_handler_->OnRootLayerDelegatedScrollOffsetChanged();

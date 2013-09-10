@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "ui/gfx/transform.h"
@@ -72,6 +73,7 @@ class SynchronousCompositorOutputSurface
                     gfx::Rect clip,
                     bool stencil_enabled);
   bool DemandDrawSw(SkCanvas* canvas);
+  void SetMemoryPolicy(const SynchronousCompositorMemoryPolicy& policy);
 
  private:
   class SoftwareDevice;
@@ -98,6 +100,10 @@ class SynchronousCompositorOutputSurface
 
   // Only valid (non-NULL) during a DemandDrawSw() call.
   SkCanvas* current_sw_canvas_;
+
+  cc::ManagedMemoryPolicy memory_policy_;
+
+  cc::OutputSurfaceClient* output_surface_client_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorOutputSurface);
 };

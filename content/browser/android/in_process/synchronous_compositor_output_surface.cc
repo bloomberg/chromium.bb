@@ -9,7 +9,6 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
-#include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
@@ -108,7 +107,9 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       needs_begin_frame_(false),
       invoking_composite_(false),
       did_swap_buffer_(false),
-      current_sw_canvas_(NULL) {
+      current_sw_canvas_(NULL),
+      memory_policy_(0),
+      output_surface_client_(NULL) {
   capabilities_.deferred_gl_initialization = true;
   capabilities_.draw_and_swap_full_viewport_every_frame = true;
   capabilities_.adjust_deadline_for_parent = false;
@@ -136,20 +137,15 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   DCHECK(CalledOnValidThread());
   if (!cc::OutputSurface::BindToClient(surface_client))
     return false;
-  surface_client->SetTreeActivationCallback(
+
+  output_surface_client_ = surface_client;
+  output_surface_client_->SetTreeActivationCallback(
       base::Bind(&DidActivatePendingTree, routing_id_));
+  output_surface_client_->SetMemoryPolicy(memory_policy_);
+
   SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
   if (delegate)
     delegate->DidBindOutputSurface(this);
-
-  const int bytes_limit = 64 * 1024 * 1024;
-  const int num_resources_limit = 100;
-  surface_client->SetMemoryPolicy(
-      cc::ManagedMemoryPolicy(bytes_limit,
-                              cc::ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
-                              0,
-                              cc::ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
-                              num_resources_limit));
 
   return true;
 }
@@ -171,6 +167,7 @@ void SynchronousCompositorOutputSurface::SetNeedsBeginFrame(
 
 void SynchronousCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
+  DCHECK(CalledOnValidThread());
   if (!ForcedDrawToSoftwareDevice()) {
     DCHECK(context_provider_);
     context_provider_->Context3d()->shallowFlushCHROMIUM();
@@ -206,6 +203,7 @@ bool SynchronousCompositorOutputSurface::InitializeHwDraw(
 }
 
 void SynchronousCompositorOutputSurface::ReleaseHwDraw() {
+  DCHECK(CalledOnValidThread());
   cc::OutputSurface::ReleaseGL();
 }
 
@@ -285,6 +283,16 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
 void SynchronousCompositorOutputSurface::PostCheckForRetroactiveBeginFrame() {
   // Synchronous compositor cannot perform retroactive begin frames, so
   // intentionally no-op here.
+}
+
+void SynchronousCompositorOutputSurface::SetMemoryPolicy(
+    const SynchronousCompositorMemoryPolicy& policy) {
+  DCHECK(CalledOnValidThread());
+  memory_policy_.bytes_limit_when_visible = policy.bytes_limit;
+  memory_policy_.num_resources_limit = policy.num_resources_limit;
+
+  if (output_surface_client_)
+    output_surface_client_->SetMemoryPolicy(memory_policy_);
 }
 
 // Not using base::NonThreadSafe as we want to enforce a more exacting threading

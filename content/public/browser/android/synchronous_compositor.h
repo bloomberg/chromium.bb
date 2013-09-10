@@ -23,6 +23,16 @@ class WebContents;
 
 class SynchronousCompositorClient;
 
+struct CONTENT_EXPORT SynchronousCompositorMemoryPolicy {
+  // Memory limit for rendering and pre-rendering.
+  size_t bytes_limit;
+
+  // Limit of number of GL resources used for rendering and pre-rendering.
+  size_t num_resources_limit;
+
+  SynchronousCompositorMemoryPolicy();
+};
+
 // Interface for embedders that wish to direct compositing operations
 // synchronously under their own control. Only meaningful when the
 // kEnableSyncrhonousRendererCompositor flag is specified.
@@ -64,6 +74,10 @@ class CONTENT_EXPORT SynchronousCompositor {
   // "On demand" SW draw, into the supplied canvas (observing the transform
   // and clip set there-in).
   virtual bool DemandDrawSw(SkCanvas* canvas) = 0;
+
+  // Set the memory limit policy of this compositor.
+  virtual void SetMemoryPolicy(
+      const SynchronousCompositorMemoryPolicy& policy) = 0;
 
   // Should be called by the embedder after the embedder had modified the
   // scroll offset of the root layer (as returned by

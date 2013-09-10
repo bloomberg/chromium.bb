@@ -13,6 +13,10 @@ extern const char kDisableSimpleCache[];
 // When set, forces use of fallback SW path even on HW canvas.
 extern const char kDisableWebViewGLMode[];
 
+// Used to make tile memory allocation decision. Roughly the number of
+// displays that a single layer will have enough memory for.
+extern const char kTileMemoryMultiplier[];
+
 }  // namespace switches
 
 #endif  // ANDROID_WEBVIEW_COMMON_AW_SWITCHES_H_

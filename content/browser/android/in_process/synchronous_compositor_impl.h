@@ -58,6 +58,8 @@ class SynchronousCompositorImpl
       gfx::Rect clip,
       bool stencil_enabled) OVERRIDE;
   virtual bool DemandDrawSw(SkCanvas* canvas) OVERRIDE;
+  virtual void SetMemoryPolicy(
+      const SynchronousCompositorMemoryPolicy& policy) OVERRIDE;
   virtual void DidChangeRootLayerScrollOffset() OVERRIDE;
 
   // SynchronousCompositorOutputSurfaceDelegate

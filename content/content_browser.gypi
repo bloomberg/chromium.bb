@@ -37,6 +37,7 @@
     'public/browser/android/devtools_auth.h',
     'public/browser/android/download_controller_android.h',
     'public/browser/android/synchronous_compositor_client.h',
+    'public/browser/android/synchronous_compositor.cc',
     'public/browser/android/synchronous_compositor.h',
     'public/browser/browser_accessibility_state.h',
     'public/browser/browser_child_process_host.h',

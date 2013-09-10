@@ -30,6 +30,8 @@ class AwGLSurface;
 class InProcessViewRenderer : public BrowserViewRenderer,
                               public content::SynchronousCompositorClient {
  public:
+  static void CalculateTileMemoryPolicy();
+
   InProcessViewRenderer(BrowserViewRenderer::Client* client,
                         JavaHelper* java_helper,
                         content::WebContents* web_contents);

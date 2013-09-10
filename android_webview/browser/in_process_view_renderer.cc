@@ -17,10 +17,12 @@
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/in_process_command_buffer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
@@ -28,6 +30,7 @@
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/utils/SkCanvasStateUtils.h"
+#include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -142,6 +145,13 @@ bool HardwareEnabled() {
 AwDrawSWFunctionTable* g_sw_draw_functions = NULL;
 
 const int64 kFallbackTickTimeoutInMilliseconds = 20;
+
+
+// Used to calculate memory and resource allocation. Determined experimentally.
+size_t g_memory_multiplier = 15;
+const size_t kMaxNumTilesToFillDisplay = 20;
+const size_t kBytesPerPixel = 4;
+const size_t kMemoryAllocationStep = 10 * 1024 * 1024;
 
 class ScopedAllowGL {
  public:
@@ -276,6 +286,39 @@ void InProcessViewRenderer::WebContentsGone() {
   compositor_ = NULL;
 }
 
+// static
+void InProcessViewRenderer::CalculateTileMemoryPolicy() {
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kTileMemoryMultiplier)) {
+    std::string string_value =
+        cl->GetSwitchValueASCII(switches::kTileMemoryMultiplier);
+    int int_value;
+    if (base::StringToInt(string_value, &int_value) &&
+        int_value >= 2 && int_value <= 50) {
+      g_memory_multiplier = int_value;
+    }
+  }
+
+  if (cl->HasSwitch(switches::kDefaultTileWidth) ||
+      cl->HasSwitch(switches::kDefaultTileHeight)) {
+    return;
+  }
+
+  // TODO(boliu): Should use view context to get the display dimensions, and
+  // pass tile size in a per WebContents setting instead of through command
+  // line switch.
+  gfx::DeviceDisplayInfo info;
+  int default_tile_size = 256;
+
+  if (info.GetDisplayWidth() >= 1080)
+    default_tile_size = 512;
+
+  std::stringstream size;
+  size << default_tile_size;
+  cl->AppendSwitchASCII(switches::kDefaultTileWidth, size.str());
+  cl->AppendSwitchASCII(switches::kDefaultTileHeight, size.str());
+}
+
 bool InProcessViewRenderer::RequestProcessGL() {
   return client_->RequestDrawGL(NULL);
 }
@@ -371,6 +414,18 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
         "android_webview", "EarlyOut_NoCompositor", TRACE_EVENT_SCOPE_THREAD);
     return;
   }
+
+  // Update memory budget. This will no-op in compositor if the policy has not
+  // changed since last draw.
+  content::SynchronousCompositorMemoryPolicy policy;
+  policy.bytes_limit = g_memory_multiplier * kBytesPerPixel *
+                       cached_global_visible_rect_.width() *
+                       cached_global_visible_rect_.height();
+  // Round up to a multiple of kMemoryAllocationStep.
+  policy.bytes_limit =
+      (policy.bytes_limit / kMemoryAllocationStep + 1) * kMemoryAllocationStep;
+  policy.num_resources_limit = kMaxNumTilesToFillDisplay * g_memory_multiplier;
+  compositor_->SetMemoryPolicy(policy);
 
   DCHECK(gl_surface_);
   gl_surface_->SetBackingFrameBufferObject(
