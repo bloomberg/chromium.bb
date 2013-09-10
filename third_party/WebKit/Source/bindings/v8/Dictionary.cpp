@@ -170,11 +170,8 @@ bool Dictionary::get(const String& key, String& value) const
     if (!getKey(key, v8Value))
         return false;
 
-    // FIXME: It is possible for this to throw in which case we'd be getting back
-    //        an empty string and returning true when we should be returning false.
-    //        See fast/dom/Geolocation/script-tests/argument-types.js for a similar
-    //        example.
-    value = toWebCoreString(v8Value);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, v8Value, false);
+    value = stringValue;
     return true;
 }
 
@@ -310,7 +307,8 @@ bool Dictionary::get(const String& key, HashSet<AtomicString>& value) const
     v8::Local<v8::Array> v8Array = v8::Local<v8::Array>::Cast(v8Value);
     for (size_t i = 0; i < v8Array->Length(); ++i) {
         v8::Local<v8::Value> indexedValue = v8Array->Get(v8::Integer::New(i, m_isolate));
-        value.add(toWebCoreString(indexedValue));
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, indexedValue, false);
+        value.add(stringValue);
     }
 
     return true;
@@ -322,11 +320,13 @@ bool Dictionary::getWithUndefinedOrNullCheck(const String& key, String& value) c
     if (!getKey(key, v8Value) || v8Value->IsNull() || v8Value->IsUndefined())
         return false;
 
-    // FIXME: It is possible for this to throw in which case we'd be getting back
-    //        an empty string and returning true when we should be returning false.
-    //        See fast/dom/Geolocation/script-tests/argument-types.js for a similar
-    //        example.
-    value = WebCore::isUndefinedOrNull(v8Value) ? String() : toWebCoreString(v8Value);
+    if (WebCore::isUndefinedOrNull(v8Value)) {
+        value = String();
+        return true;
+    }
+
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, v8Value, false);
+    value = stringValue;
     return true;
 }
 
@@ -498,7 +498,8 @@ bool Dictionary::get(const String& key, Vector<String>& value) const
     v8::Local<v8::Array> v8Array = v8::Local<v8::Array>::Cast(v8Value);
     for (size_t i = 0; i < v8Array->Length(); ++i) {
         v8::Local<v8::Value> indexedValue = v8Array->Get(v8::Uint32::New(i));
-        value.append(toWebCoreString(indexedValue));
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, indexedValue, false);
+        value.append(stringValue);
     }
 
     return true;
@@ -584,9 +585,9 @@ bool Dictionary::getOwnPropertiesAsStringHashMap(HashMap<String, String>& hashMa
             continue;
 
         v8::Local<v8::Value> value = options->Get(key);
-        String stringKey = toWebCoreString(key);
-        String stringValue = toWebCoreString(value);
-        if (!stringKey.isEmpty())
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringKey, key, false);
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, value, false);
+        if (!static_cast<const String&>(stringKey).isEmpty())
             hashMap.set(stringKey, stringValue);
     }
 
@@ -609,7 +610,8 @@ bool Dictionary::getOwnPropertyNames(Vector<String>& names) const
         v8::Local<v8::String> key = properties->Get(i)->ToString();
         if (!options->Has(key))
             continue;
-        names.append(toWebCoreString(key));
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringKey, key, false);
+        names.append(stringKey);
     }
 
     return true;

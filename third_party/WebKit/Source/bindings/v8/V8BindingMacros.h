@@ -71,10 +71,13 @@ namespace WebCore {
         }                                                         \
     }
 
+#define V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(type, var, value, retVal) \
+    type var(value);                                                     \
+    if (!var.prepare())                                                  \
+        return retVal;
+
 #define V8TRYCATCH_FOR_V8STRINGRESOURCE(type, var, value) \
-    type var(value);                                            \
-    if (!var.prepare())                                         \
-        return v8::Undefined();
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(type, var, value, v8::Undefined());
 
 #define V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(type, var, value) \
     type var(value);                                                 \

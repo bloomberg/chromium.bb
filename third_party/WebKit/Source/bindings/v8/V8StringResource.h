@@ -181,8 +181,8 @@ public:
     }
 
     bool prepare();
-    operator String() { return toString<String>(); }
-    operator AtomicString() { return toString<AtomicString>(); }
+    operator String() const { return toString<String>(); }
+    operator AtomicString() const { return toString<AtomicString>(); }
 
 private:
     bool prepareBase()
@@ -216,10 +216,10 @@ private:
     }
 
     template <class StringType>
-    StringType toString()
+    StringType toString() const
     {
         if (LIKELY(!m_v8Object.IsEmpty()))
-            return v8StringToWebCoreString<StringType>(m_v8Object.As<v8::String>(), m_mode);
+            return v8StringToWebCoreString<StringType>(const_cast<v8::Handle<v8::Value>*>(&m_v8Object)->As<v8::String>(), m_mode);
 
         return StringType(m_string);
     }
