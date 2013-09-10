@@ -188,6 +188,8 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
           Launcher::ForWindow(window)->GetDragAndDropHostForAppList());
     }
   }
+  // Update applist button status when app list visibility is changed.
+  Launcher::ForWindow(window)->GetAppListButtonView()->SchedulePaint();
 }
 
 bool AppListController::IsVisible() const {
