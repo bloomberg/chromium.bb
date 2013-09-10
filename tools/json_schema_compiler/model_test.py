@@ -98,7 +98,8 @@ class ModelTest(unittest.TestCase):
       'foo_Bar_Baz_box': 'foo_bar_baz_box',
       }
     for name in expectations:
-      self.assertEquals(expectations[name], model.UnixName(name));
+      self.assertEquals(expectations[name], model.UnixName(name))
+
 
 if __name__ == '__main__':
   unittest.main()

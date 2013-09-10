@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from code import Code
-from model import PropertyType, Type
+from model import PropertyType
 import cpp_util
 import schema_util
 
@@ -16,6 +16,7 @@ class HGenerator(object):
     return _Generator(namespace,
                       self._type_generator,
                       self._cpp_namespace).Generate()
+
 
 class _Generator(object):
   """A .h generator for a namespace.
@@ -303,9 +304,8 @@ class _Generator(object):
     c = Code()
     # TODO(kalman): Use function.unix_name not Classname here.
     function_namespace = cpp_util.Classname(function.name)
-    """Windows has a #define for SendMessage, so to avoid any issues, we need
-    to not use the name.
-    """
+    # Windows has a #define for SendMessage, so to avoid any issues, we need
+    # to not use the name.
     if function_namespace == 'SendMessage':
       function_namespace = 'PassMessage'
     (c.Append('namespace %s {' % function_namespace)

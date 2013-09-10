@@ -8,7 +8,6 @@
 
 import cc_generator
 import code
-import compiler
 import cpp_type_generator
 import cpp_util
 import h_generator
@@ -18,11 +17,11 @@ import model
 import optparse
 import os
 import schema_loader
-import sys
 import urlparse
 from highlighters import (
     pygments_highlighter, none_highlighter, hilite_me_highlighter)
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+
 
 class CompilerHandler(BaseHTTPRequestHandler):
   """A HTTPRequestHandler that outputs the result of tools/json_schema_compiler.
@@ -326,6 +325,7 @@ updateEverything();
     html.Append('</ul>')
 
     return html.Render()
+
 
 class PreviewHTTPServer(HTTPServer, object):
   def __init__(self, server_address, handler, highlighters):

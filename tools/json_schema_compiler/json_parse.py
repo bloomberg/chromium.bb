@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import json
-import logging
 import os
 import sys
 
@@ -56,6 +55,7 @@ except ImportError:
   def Parse(json_str):
     return simplejson.loads(json_comment_eater.Nom(json_str),
                             object_pairs_hook=OrderedDict)
+
 
 def IsDict(item):
   return isinstance(item, (dict, OrderedDict))

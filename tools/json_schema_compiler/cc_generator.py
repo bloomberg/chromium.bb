@@ -3,11 +3,9 @@
 # found in the LICENSE file.
 
 from code import Code
-from model import PropertyType, Type
+from model import PropertyType
 import cpp_util
-import model
 import schema_util
-import sys
 import util_cc_helper
 
 class CCGenerator(object):
@@ -19,6 +17,7 @@ class CCGenerator(object):
     return _Generator(namespace,
                       self._type_generator,
                       self._cpp_namespace).Generate()
+
 
 class _Generator(object):
   """A .cc generator for a namespace.
@@ -349,7 +348,7 @@ class _Generator(object):
                                     is_ptr=is_ptr)))
 
       if prop.optional:
-        c.Eblock('}');
+        c.Eblock('}')
 
     if type_.additional_properties is not None:
       if type_.additional_properties.property_type == PropertyType.ANY:
@@ -382,7 +381,7 @@ class _Generator(object):
     """
     c = Code()
     c.Sblock('scoped_ptr<base::Value> %s::ToValue() const {' % cpp_namespace)
-    c.Append('scoped_ptr<base::Value> result;');
+    c.Append('scoped_ptr<base::Value> result;')
     for choice in type_.choices:
       choice_var = 'as_%s' % choice.unix_name
       (c.Sblock('if (%s) {' % choice_var)
@@ -406,9 +405,8 @@ class _Generator(object):
 
     # TODO(kalman): use function.unix_name not Classname.
     function_namespace = cpp_util.Classname(function.name)
-    """Windows has a #define for SendMessage, so to avoid any issues, we need
-    to not use the name.
-    """
+    # Windows has a #define for SendMessage, so to avoid any issues, we need
+    # to not use the name.
     if function_namespace == 'SendMessage':
       function_namespace = 'PassMessage'
     (c.Append('namespace %s {' % function_namespace)
@@ -738,28 +736,28 @@ class _Generator(object):
                                               dst_var,
                                               failure_value,
                                               is_ptr=False):
-      """Returns Code that converts a ListValue of string constants from
-      |src_var| into an array of enums of |type_| in |dst_var|. On failure,
-      returns |failure_value|.
-      """
-      c = Code()
-      accessor = '.'
-      if is_ptr:
-        accessor = '->'
-        cpp_type = self._type_helper.GetCppType(item_type, is_in_container=True)
-        c.Append('%s.reset(new std::vector<%s>);' %
-                     (dst_var, cpp_util.PadForGenerics(cpp_type)))
-      (c.Sblock('for (base::ListValue::const_iterator it = %s->begin(); '
-                     'it != %s->end(); ++it) {' % (src_var, src_var))
-        .Append('%s tmp;' % self._type_helper.GetCppType(item_type))
-        .Concat(self._GenerateStringToEnumConversion(item_type,
-                                                     '(*it)',
-                                                     'tmp',
-                                                     failure_value))
-        .Append('%s%spush_back(tmp);' % (dst_var, accessor))
-        .Eblock('}')
-      )
-      return c
+    """Returns Code that converts a ListValue of string constants from
+    |src_var| into an array of enums of |type_| in |dst_var|. On failure,
+    returns |failure_value|.
+    """
+    c = Code()
+    accessor = '.'
+    if is_ptr:
+      accessor = '->'
+      cpp_type = self._type_helper.GetCppType(item_type, is_in_container=True)
+      c.Append('%s.reset(new std::vector<%s>);' %
+                   (dst_var, cpp_util.PadForGenerics(cpp_type)))
+    (c.Sblock('for (base::ListValue::const_iterator it = %s->begin(); '
+                   'it != %s->end(); ++it) {' % (src_var, src_var))
+      .Append('%s tmp;' % self._type_helper.GetCppType(item_type))
+      .Concat(self._GenerateStringToEnumConversion(item_type,
+                                                   '(*it)',
+                                                   'tmp',
+                                                   failure_value))
+      .Append('%s%spush_back(tmp);' % (dst_var, accessor))
+      .Eblock('}')
+    )
+    return c
 
   def _GenerateStringToEnumConversion(self,
                                       type_,

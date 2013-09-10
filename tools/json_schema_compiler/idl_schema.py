@@ -10,7 +10,6 @@ import re
 import sys
 
 from json_parse import OrderedDict
-import schema_util
 
 # This file is a peer to json_schema.py. Each of these files understands a
 # certain format describing APIs (either JSON or IDL), reads files written
@@ -85,6 +84,7 @@ def ProcessComment(comment):
                                            .replace('\n', ''))
   return (parent_comment, params)
 
+
 class Callspec(object):
   '''
   Given a Callspec node representing an IDL function declaration, converts into
@@ -106,13 +106,14 @@ class Callspec(object):
       # Instead we infer any object return values to be optional.
       # TODO(asargent): fix the IDL parser to support optional return types.
       if return_type.get('type') == 'object' or '$ref' in return_type:
-        return_type['optional'] = True;
+        return_type['optional'] = True
     for node in self.node.children:
       parameter = Param(node).process(callbacks)
       if parameter['name'] in self.comment:
         parameter['description'] = self.comment[parameter['name']]
       parameters.append(parameter)
     return (self.node.GetName(), parameters, return_type)
+
 
 class Param(object):
   '''
@@ -126,6 +127,7 @@ class Param(object):
     return Typeref(self.node.GetProperty('TYPEREF'),
                    self.node,
                    {'name': self.node.GetName()}).process(callbacks)
+
 
 class Dictionary(object):
   '''
@@ -149,6 +151,7 @@ class Dictionary(object):
     elif self.node.GetProperty('noinline_doc'):
       result['noinline_doc'] = True
     return result
+
 
 
 class Member(object):
@@ -203,6 +206,7 @@ class Member(object):
         enum_values = map(float, enum_values)
       properties['enum'] = enum_values
     return name, properties
+
 
 class Typeref(object):
   '''
@@ -350,6 +354,7 @@ class Namespace(object):
         members.append(properties)
     return members
 
+
 class IDLSchema(object):
   '''
   Given a list of IDLNodes and IDLAttributes, converts into a Python list
@@ -390,6 +395,7 @@ class IDLSchema(object):
         sys.exit('Did not process %s %s' % (node.cls, node))
     return namespaces
 
+
 def Load(filename):
   '''
   Given the filename of an IDL file, parses it and returns an equivalent
@@ -404,6 +410,7 @@ def Load(filename):
   idl_schema = IDLSchema(idl)
   return idl_schema.process()
 
+
 def Main():
   '''
   Dump a json serialization of parse result for the IDL files whose names
@@ -412,6 +419,7 @@ def Main():
   for filename in sys.argv[1:]:
     schema = Load(filename)
     print json.dumps(schema, indent=2)
+
 
 if __name__ == '__main__':
   Main()

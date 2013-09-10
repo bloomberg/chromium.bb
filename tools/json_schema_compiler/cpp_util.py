@@ -7,7 +7,7 @@
 
 from code import Code
 from datetime import datetime
-from model import Property, PropertyType, Type
+from model import PropertyType
 import os
 import re
 
@@ -34,6 +34,7 @@ def Classname(s):
   """
   return '_'.join([x[0].upper() + x[1:] for x in re.split('\W', s)])
 
+
 def GetAsFundamentalValue(type_, src, dst):
   """Returns the C++ code for retrieving a fundamental type from a
   Value into a variable.
@@ -47,6 +48,7 @@ def GetAsFundamentalValue(type_, src, dst):
       PropertyType.INTEGER: '%s->GetAsInteger(%s)',
       PropertyType.STRING: '%s->GetAsString(%s)',
   }[type_.property_type] % (src, dst)
+
 
 def GetValueType(type_):
   """Returns the Value::Type corresponding to the model.Type.
@@ -63,6 +65,7 @@ def GetValueType(type_):
       PropertyType.OBJECT: 'base::Value::TYPE_DICTIONARY',
       PropertyType.STRING: 'base::Value::TYPE_STRING',
   }[type_.property_type]
+
 
 def GetParameterDeclaration(param, type_):
   """Gets a parameter declaration of a given model.Property and its C++
@@ -82,6 +85,7 @@ def GetParameterDeclaration(param, type_):
     'name': param.unix_name,
   }
 
+
 def GenerateIfndefName(path, filename):
   """Formats a path and filename as a #define name.
 
@@ -90,11 +94,13 @@ def GenerateIfndefName(path, filename):
   return (('%s_%s_H__' % (path, filename))
           .upper().replace(os.sep, '_').replace('/', '_'))
 
+
 def PadForGenerics(var):
   """Appends a space to |var| if it ends with a >, so that it can be compiled
   within generic types.
   """
   return ('%s ' % var) if var.endswith('>') else var
+
 
 def OpenNamespace(namespace):
   """Get opening root namespace declarations.
@@ -103,6 +109,7 @@ def OpenNamespace(namespace):
   for component in namespace.split('::'):
     c.Append('namespace %s {' % component)
   return c
+
 
 def CloseNamespace(namespace):
   """Get closing root namespace declarations.

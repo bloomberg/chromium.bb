@@ -31,12 +31,13 @@ def _RemoveDescriptions(node):
     return [_RemoveDescriptions(v) for v in node]
   return node
 
+
 class CppBundleGenerator(object):
   """This class contains methods to generate code based on multiple schemas.
   """
 
   def __init__(self, root, model, api_defs, cpp_type_generator, cpp_namespace):
-    self._root = root;
+    self._root = root
     self._model = model
     self._api_defs = api_defs
     self._cpp_type_generator = cpp_type_generator
@@ -127,6 +128,7 @@ class CppBundleGenerator(object):
     c.Eblock("}")
     return c
 
+
 class _APIHGenerator(object):
   """Generates the header for API registration / declaration"""
   def __init__(self, cpp_bundle):
@@ -147,10 +149,11 @@ class _APIHGenerator(object):
     c.Sblock(' public:')
     c.Append('static void RegisterAll('
                  'ExtensionFunctionRegistry* registry);')
-    c.Eblock('};');
+    c.Eblock('};')
     c.Append()
     c.Concat(cpp_util.CloseNamespace(self._bundle._cpp_namespace))
     return self._bundle._GenerateHeader('generated_api', c)
+
 
 class _APICCGenerator(object):
   """Generates a code.Code object for the generated API .cc file"""
@@ -199,6 +202,7 @@ class _APICCGenerator(object):
     c.Append()
     return c
 
+
 class _SchemasHGenerator(object):
   """Generates a code.Code object for the generated schemas .h file"""
   def __init__(self, cpp_bundle):
@@ -208,7 +212,7 @@ class _SchemasHGenerator(object):
     c = code.Code()
     c.Append('#include <map>')
     c.Append('#include <string>')
-    c.Append();
+    c.Append()
     c.Append('#include "base/strings/string_piece.h"')
     c.Append()
     c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
@@ -220,10 +224,11 @@ class _SchemasHGenerator(object):
     c.Append()
     c.Append('// Gets the API schema named |name|.')
     c.Append('static base::StringPiece Get(const std::string& name);')
-    c.Eblock('};');
+    c.Eblock('};')
     c.Append()
     c.Concat(cpp_util.CloseNamespace(self._bundle._cpp_namespace))
     return self._bundle._GenerateHeader('generated_schemas', c)
+
 
 def _FormatNameAsConstant(name):
   """Formats a name to be a C++ constant of the form kConstantName"""
@@ -231,6 +236,7 @@ def _FormatNameAsConstant(name):
   return 'k%s' % re.sub('_[a-z]',
                         lambda m: m.group(0)[1].upper(),
                         name.replace('.', '_'))
+
 
 class _SchemasCCGenerator(object):
   """Generates a code.Code object for the generated schemas .cc file"""
@@ -267,10 +273,10 @@ class _SchemasCCGenerator(object):
       namespace = self._bundle._model.namespaces[api.get('namespace')]
       c.Append('schemas["%s"] = %s;' % (namespace.name,
                                         _FormatNameAsConstant(namespace.name)))
-    c.Eblock('}');
+    c.Eblock('}')
     c.Append()
     c.Append('std::map<std::string, const char*> schemas;')
-    c.Eblock('};');
+    c.Eblock('};')
     c.Append()
     c.Append('base::LazyInstance<Static> g_lazy_instance;')
     c.Append()

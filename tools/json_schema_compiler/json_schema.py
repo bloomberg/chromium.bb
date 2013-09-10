@@ -3,11 +3,8 @@
 # found in the LICENSE file.
 
 import copy
-import os
-import sys
 
 import json_parse
-import schema_util
 
 def DeleteNodes(item, delete_key):
   """Deletes the given nodes in item, recursively, that have |delete_key| as
@@ -31,14 +28,17 @@ def DeleteNodes(item, delete_key):
 
   return item
 
+
 def Load(filename):
   with open(filename, 'r') as handle:
     schemas = json_parse.Parse(handle.read())
   return schemas
 
+
 # A dictionary mapping |filename| to the object resulting from loading the JSON
 # at |filename|.
 _cache = {}
+
 
 def CachedLoad(filename):
   """Equivalent to Load(filename), but caches results for subsequent calls"""

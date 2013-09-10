@@ -12,14 +12,17 @@ def getFunction(schema, name):
       return item
   raise KeyError('Missing function %s' % name)
 
+
 def getParams(schema, name):
   function = getFunction(schema, name)
   return function['parameters']
+
 
 def getType(schema, id):
   for item in schema['types']:
     if item['id'] == id:
       return item
+
 
 class IdlSchemaTest(unittest.TestCase):
   def setUp(self):
@@ -145,7 +148,7 @@ class IdlSchemaTest(unittest.TestCase):
     enum_type = getType(schema, 'enum')
     self.assertEquals(['callback', 'namespace'], enum_type['enum'])
 
-    dictionary = getType(schema, 'dictionary');
+    dictionary = getType(schema, 'dictionary')
     self.assertEquals('integer', dictionary['properties']['long']['type'])
 
     mytype = getType(schema, 'MyType')
@@ -154,6 +157,7 @@ class IdlSchemaTest(unittest.TestCase):
     params = getParams(schema, 'static')
     self.assertEquals('Foo', params[0]['$ref'])
     self.assertEquals('enum', params[1]['$ref'])
+
 
 if __name__ == '__main__':
   unittest.main()

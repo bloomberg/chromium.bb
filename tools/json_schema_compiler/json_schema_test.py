@@ -4,7 +4,6 @@
 # found in the LICENSE file.
 
 import json_schema
-import json_schema_test
 import unittest
 
 class JsonSchemaUnittest(unittest.TestCase):
@@ -78,6 +77,7 @@ class JsonSchemaUnittest(unittest.TestCase):
 
     schema = json_schema.CachedLoad('test/json_schema_test.json')
     self.assertEquals(compiled, json_schema.DeleteNodes(schema, 'nocompile'))
+
 
 if __name__ == '__main__':
   unittest.main()

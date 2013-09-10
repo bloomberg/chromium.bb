@@ -6,9 +6,7 @@
 import os
 import sys
 import unittest
-import glob
 
-from dart_generator import DartGenerator
 from compiler import GenerateSchema
 
 # If --rebase is passed to this test, this is set to True, indicating the test
@@ -63,9 +61,6 @@ class DartTest(unittest.TestCase):
     self._RunTest('empty_type')
 
   def testEvents(self):
-    self._RunTest('enums')
-
-  def testEvents(self):
     self._RunTest('events')
 
   def testBasicFunction(self):
@@ -76,6 +71,7 @@ class DartTest(unittest.TestCase):
 
   def testTags(self):
     self._RunTest('tags')
+
 
 if __name__ == '__main__':
   if '--rebase' in sys.argv:
