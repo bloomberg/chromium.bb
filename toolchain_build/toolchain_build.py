@@ -445,7 +445,6 @@ def CommonTargetCflags(target):
 def NewlibTargetCflags(target):
   options = CommonTargetCflags(target) + [
       '-D_I386MACH_ALLOW_HW_INTERRUPTS',
-      '-DSIGNAL_PROVIDED',
       ]
   return ' '.join(options)
 
