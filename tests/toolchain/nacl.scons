@@ -258,11 +258,6 @@ for tag, env_to_try in ENVIRONMENTS_TO_TRY:
         src in ['eh_return.c']):
       is_broken = True
 
-    # https://code.google.com/p/nativeclient/issues/detail?id=3670
-    if (env.Bit('bitcode') and env.Bit('target_arm') and
-        src == 'eh_floating_point.cc'):
-      is_broken = True
-
     exc_env = env_to_try.Clone()
     # C++ exceptions are not currently supported in PNaCl's ABI.
     if exc_env.Bit('bitcode'):
