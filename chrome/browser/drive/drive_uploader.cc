@@ -388,7 +388,7 @@ void DriveUploader::OnUploadRangeResponseReceived(
   // proceed to upload the next chunk.
   if (response.code != HTTP_RESUME_INCOMPLETE ||
       response.start_position_received != 0) {
-    LOG(ERROR)
+    DVLOG(1)
         << "UploadNextChunk http code=" << response.code
         << ", start_position_received=" << response.start_position_received
         << ", end_position_received=" << response.end_position_received;
@@ -419,7 +419,7 @@ void DriveUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
                                  GDataErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  LOG(ERROR) << "Upload failed " << upload_file_info->DebugString();
+  DVLOG(1) << "Upload failed " << upload_file_info->DebugString();
 
   if (upload_file_info->next_start_position < 0) {
     // Discard the upload location because no request could succeed with it.
