@@ -159,17 +159,13 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   EXPECT_TRUE(tester->IsLocked());
   tester->EnterPassword("pass");
   content::RunAllPendingInMessageLoop();
-  // Successful authentication simply send a unlock request to PowerManager.
-  EXPECT_TRUE(tester->IsLocked());
+  // Successful authentication clears the lock screen and tells the
+  // SessionManager to announce this over DBus.
+  EXPECT_FALSE(tester->IsLocked());
   EXPECT_EQ(
       1,
       fake_session_manager_client_->notify_lock_screen_shown_call_count());
 
-  // Emulate LockScreen request from SessionManager.
-  // TODO(oshima): Find out better way to handle this in mock.
-  ScreenLocker::Hide();
-  content::RunAllPendingInMessageLoop();
-  EXPECT_FALSE(tester->IsLocked());
   EXPECT_TRUE(VerifyLockScreenDismissed());
 }
 
@@ -196,8 +192,6 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
 
   tester->InjectMockAuthenticator(UserManager::kStubUser, "pass");
   tester->EnterPassword("pass");
-  content::RunAllPendingInMessageLoop();
-  ScreenLocker::Hide();
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(tester->IsLocked());
   EXPECT_TRUE(VerifyLockScreenDismissed());

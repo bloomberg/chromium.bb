@@ -71,10 +71,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual void RestartEntd() OVERRIDE {
-    SimpleMethodCallToSessionManager(login_manager::kSessionManagerRestartEntd);
-  }
-
   virtual void StartSession(const std::string& user_email) OVERRIDE {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerStartSession);
@@ -117,11 +113,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
   virtual void NotifyLockScreenShown() OVERRIDE {
     SimpleMethodCallToSessionManager(
         login_manager::kSessionManagerHandleLockScreenShown);
-  }
-
-  virtual void RequestUnlockScreen() OVERRIDE {
-    SimpleMethodCallToSessionManager(
-        login_manager::kSessionManagerUnlockScreen);
   }
 
   virtual void NotifyLockScreenDismissed() OVERRIDE {
@@ -271,13 +262,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
         chromium::kChromiumInterface,
         chromium::kLockScreenSignal,
         base::Bind(&SessionManagerClientImpl::ScreenLockReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-    session_manager_proxy_->ConnectToSignal(
-        chromium::kChromiumInterface,
-        chromium::kUnlockScreenSignal,
-        base::Bind(&SessionManagerClientImpl::ScreenUnlockReceived,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&SessionManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -494,10 +478,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     FOR_EACH_OBSERVER(Observer, observers_, LockScreen());
   }
 
-  void ScreenUnlockReceived(dbus::Signal* signal) {
-    FOR_EACH_OBSERVER(Observer, observers_, UnlockScreen());
-  }
-
   void LivenessRequestedReceived(dbus::Signal* signal) {
     SimpleMethodCallToSessionManager(
         login_manager::kSessionManagerHandleLivenessConfirmed);
@@ -562,7 +542,6 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   virtual void EmitLoginPromptReady() OVERRIDE {}
   virtual void EmitLoginPromptVisible() OVERRIDE {}
   virtual void RestartJob(int pid, const std::string& command_line) OVERRIDE {}
-  virtual void RestartEntd() OVERRIDE {}
   virtual void StartSession(const std::string& user_email) OVERRIDE {}
   virtual void StopSession() OVERRIDE {}
   virtual void StartDeviceWipe() OVERRIDE {}
@@ -571,9 +550,6 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   }
   virtual void NotifyLockScreenShown() OVERRIDE {
     FOR_EACH_OBSERVER(Observer, observers_, ScreenIsLocked());
-  }
-  virtual void RequestUnlockScreen() OVERRIDE {
-    FOR_EACH_OBSERVER(Observer, observers_, UnlockScreen());
   }
   virtual void NotifyLockScreenDismissed() OVERRIDE {
     FOR_EACH_OBSERVER(Observer, observers_, ScreenIsUnlocked());

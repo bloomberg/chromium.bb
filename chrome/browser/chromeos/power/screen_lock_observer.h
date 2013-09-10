@@ -20,7 +20,7 @@ class ScreenLockObserver : public SessionManagerClient::Observer {
   virtual ~ScreenLockObserver();
 
   // SessionManagerClient::Observer override.
-  virtual void UnlockScreen() OVERRIDE;
+  virtual void ScreenIsUnlocked() OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenLockObserver);
 };

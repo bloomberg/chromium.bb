@@ -113,8 +113,6 @@ void DeviceSettingsTestHelper::EmitLoginPromptVisible() {}
 void DeviceSettingsTestHelper::RestartJob(int pid,
                                           const std::string& command_line) {}
 
-void DeviceSettingsTestHelper::RestartEntd() {}
-
 void DeviceSettingsTestHelper::StartSession(const std::string& user_email) {}
 
 void DeviceSettingsTestHelper::StopSession() {}
@@ -124,8 +122,6 @@ void DeviceSettingsTestHelper::StartDeviceWipe() {}
 void DeviceSettingsTestHelper::RequestLockScreen() {}
 
 void DeviceSettingsTestHelper::NotifyLockScreenShown() {}
-
-void DeviceSettingsTestHelper::RequestUnlockScreen() {}
 
 void DeviceSettingsTestHelper::NotifyLockScreenDismissed() {}
 

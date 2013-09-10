@@ -48,9 +48,6 @@ void FakeSessionManagerClient::RestartJob(int pid,
                                           const std::string& command_line) {
 }
 
-void FakeSessionManagerClient::RestartEntd() {
-}
-
 void FakeSessionManagerClient::StartSession(const std::string& user_email) {
   DCHECK_EQ(0UL, user_sessions_.count(user_email));
   std::string user_id_hash =
@@ -70,9 +67,6 @@ void FakeSessionManagerClient::RequestLockScreen() {
 
 void FakeSessionManagerClient::NotifyLockScreenShown() {
   notify_lock_screen_shown_call_count_++;
-}
-
-void FakeSessionManagerClient::RequestUnlockScreen() {
 }
 
 void FakeSessionManagerClient::NotifyLockScreenDismissed() {

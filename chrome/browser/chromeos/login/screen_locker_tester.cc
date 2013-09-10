@@ -28,9 +28,12 @@ using content::WebContents;
 
 namespace {
 
+// This class is used to observe state of the global ScreenLocker instance,
+// which can go away as a result of a successful authentication. As such,
+// it needs to directly reference the global ScreenLocker.
 class LoginAttemptObserver : public chromeos::LoginStatusConsumer {
  public:
-  explicit LoginAttemptObserver(chromeos::ScreenLocker* locker);
+  LoginAttemptObserver();
   virtual ~LoginAttemptObserver();
 
   void WaitForAttempt();
@@ -50,23 +53,24 @@ class LoginAttemptObserver : public chromeos::LoginStatusConsumer {
  private:
   void LoginAttempted();
 
-  chromeos::ScreenLocker* locker_;
   bool login_attempted_;
   bool waiting_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginAttemptObserver);
 };
 
-LoginAttemptObserver::LoginAttemptObserver(chromeos::ScreenLocker* locker)
+LoginAttemptObserver::LoginAttemptObserver()
     : chromeos::LoginStatusConsumer(),
-      locker_(locker),
       login_attempted_(false),
       waiting_(false) {
-  locker_->SetLoginStatusConsumer(this);
+  chromeos::ScreenLocker::default_screen_locker()->SetLoginStatusConsumer(this);
 }
 
 LoginAttemptObserver::~LoginAttemptObserver() {
-  locker_->SetLoginStatusConsumer(NULL);
+  chromeos::ScreenLocker* global_locker =
+      chromeos::ScreenLocker::default_screen_locker();
+  if (global_locker)
+    global_locker->SetLoginStatusConsumer(NULL);
 }
 
 void LoginAttemptObserver::WaitForAttempt() {
@@ -84,7 +88,7 @@ void LoginAttemptObserver::LoginAttempted() {
     base::MessageLoopForUI::current()->Quit();
 }
 
-}
+}  // anyonymous namespace
 
 namespace chromeos {
 
@@ -148,7 +152,7 @@ void WebUIScreenLockerTester::EnterPassword(const std::string& password) {
   ASSERT_TRUE(result);
 
   // Attempt to sign in.
-  LoginAttemptObserver login(ScreenLocker::screen_locker_);
+  LoginAttemptObserver login;
   v = content::ExecuteScriptAndGetValue(
       RenderViewHost(),
       "$('pod-row').pods[0].activate();");

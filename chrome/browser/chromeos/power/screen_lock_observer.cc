@@ -17,7 +17,7 @@ ScreenLockObserver::~ScreenLockObserver() {
   DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
 }
 
-void ScreenLockObserver::UnlockScreen() {
+void ScreenLockObserver::ScreenIsUnlocked() {
   extensions::DispatchScreenUnlockedEvent();
 }
 

@@ -34,10 +34,6 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
     // session manager).
     virtual void LockScreen() {}
 
-    // Called when the session manager requests that the lock screen be
-    // dismissed.  NotifyLockScreenDismissed() is called afterward.
-    virtual void UnlockScreen() {}
-
     // Called when the session manager announces that the screen has been locked
     // successfully (i.e. after NotifyLockScreenShown() has been called).
     virtual void ScreenIsLocked() {}
@@ -62,10 +58,6 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // Restarts a job referenced by |pid| with the provided command line.
   virtual void RestartJob(int pid, const std::string& command_line) = 0;
 
-  // Restarts entd (the enterprise daemon).
-  // DEPRECATED: will be deleted soon.
-  virtual void RestartEntd() = 0;
-
   // Starts the session for the user.
   virtual void StartSession(const std::string& user_email) = 0;
 
@@ -80,9 +72,6 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
 
   // Notifies that the lock screen is shown.
   virtual void NotifyLockScreenShown() = 0;
-
-  // Unlocks the screen.
-  virtual void RequestUnlockScreen() = 0;
 
   // Notifies that the lock screen is dismissed.
   virtual void NotifyLockScreenDismissed() = 0;

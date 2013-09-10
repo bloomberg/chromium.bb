@@ -1091,7 +1091,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         GetUserLoginStatus());
   }
 
-  virtual void UnlockScreen() OVERRIDE {
+  virtual void ScreenIsUnlocked() OVERRIDE {
     screen_locked_ = false;
     ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
         GetUserLoginStatus());

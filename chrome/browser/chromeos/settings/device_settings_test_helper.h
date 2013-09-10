@@ -85,13 +85,11 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
   virtual void EmitLoginPromptReady() OVERRIDE;
   virtual void EmitLoginPromptVisible() OVERRIDE;
   virtual void RestartJob(int pid, const std::string& command_line) OVERRIDE;
-  virtual void RestartEntd() OVERRIDE;
   virtual void StartSession(const std::string& user_email) OVERRIDE;
   virtual void StopSession() OVERRIDE;
   virtual void StartDeviceWipe() OVERRIDE;
   virtual void RequestLockScreen() OVERRIDE;
   virtual void NotifyLockScreenShown() OVERRIDE;
-  virtual void RequestUnlockScreen() OVERRIDE;
   virtual void NotifyLockScreenDismissed() OVERRIDE;
   virtual void RetrieveActiveSessions(
       const ActiveSessionsCallback& callback) OVERRIDE;

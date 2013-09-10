@@ -118,11 +118,6 @@ class ScreenLockObserver : public chromeos::SessionManagerClient::Observer,
     }
   }
 
-  virtual void UnlockScreen() OVERRIDE {
-    VLOG(1) << "Received UnlockScreen D-Bus signal from session manager";
-    chromeos::ScreenLocker::Hide();
-  }
-
   virtual void OnUserAddingFinished() OVERRIDE {
     chromeos::UserAddingScreen::Get()->RemoveObserver(this);
     LockScreen();
@@ -259,9 +254,6 @@ void ScreenLocker::UnlockOnLoginSuccess() {
     return;
   }
 
-  VLOG(1) << "Calling session manager's UnlockScreen D-Bus method";
-  DBusThreadManager::Get()->GetSessionManagerClient()->RequestUnlockScreen();
-
   if (login_status_consumer_) {
     login_status_consumer_->OnLoginSuccess(
         UserContext(authentication_capture_->username,
@@ -272,6 +264,9 @@ void ScreenLocker::UnlockOnLoginSuccess() {
   }
   authentication_capture_.reset();
   weak_factory_.InvalidateWeakPtrs();
+
+  VLOG(1) << "Hiding the lock screen.";
+  chromeos::ScreenLocker::Hide();
 }
 
 void ScreenLocker::Authenticate(const UserContext& user_context) {
@@ -381,10 +376,9 @@ void ScreenLocker::ScheduleDeletion() {
   // Avoid possible multiple calls.
   if (screen_locker_ == NULL)
     return;
-  VLOG(1) << "Posting task to delete ScreenLocker " << screen_locker_;
-  ScreenLocker* screen_locker = screen_locker_;
+  VLOG(1) << "Deleting ScreenLocker " << screen_locker_;
+  delete screen_locker_;
   screen_locker_ = NULL;
-  base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, screen_locker);
 }
 
 // static
@@ -457,4 +451,3 @@ bool ScreenLocker::IsUserLoggedIn(const std::string& username) {
 }
 
 }  // namespace chromeos
-
