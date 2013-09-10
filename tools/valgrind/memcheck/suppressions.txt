@@ -7304,4 +7304,13 @@
    fun:_ZN7WebCore16ScriptController24executeScriptInMainWorldERKNS_16ScriptSourceCodeENS_19AccessControlStatusE
    fun:_ZN7WebCore12ScriptLoader13executeScriptERKNS_16ScriptSourceCodeE
 }
-
+{
+   bug_289039
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN6WebKit30OverlayGraphicsLayerClientImpl6createEPNS_14WebPageOverlayE
+   fun:_ZN6WebKit11PageOverlay6updateEv
+   fun:_ZN6WebKit15PageOverlayList3addEPNS_14WebPageOverlayEi
+   fun:_ZN6WebKit11WebViewImpl14addPageOverlayEPNS_14WebPageOverlayEi
+   fun:_ZN6WebKit20WebDevToolsAgentImpl9highlightEv
+}
