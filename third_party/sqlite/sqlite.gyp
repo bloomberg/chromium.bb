@@ -179,9 +179,6 @@
             'src/src/shell.c',
             'src/src/shell_icu_linux.c',
           ],
-          'link_settings': {
-            'link_languages': ['c++'],
-          },
         },
       ],
     },],
