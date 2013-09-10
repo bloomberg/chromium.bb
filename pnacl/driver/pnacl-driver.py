@@ -165,7 +165,7 @@ EXTRA_ENV = {
   'TRANSLATE_FLAGS' : '-O${#OPT_LEVEL ? ${OPT_LEVEL} : 0}',
 
   'STDLIBS'   : '${DEFAULTLIBS ? '
-                '${LIBSTDCPP} ${LIBPTHREAD} ${LIBNACL} ${LIBC}}',
+                '${LIBSTDCPP} ${LIBPTHREAD} ${LIBC} ${LIBNACL}}',
   'LIBSTDCPP' : '${IS_CXX ? -lstdc++ -lm }',
   'LIBC'      : '-lc',
   'LIBNACL'   : '${LIBMODE_NEWLIB ? -lnacl}',
