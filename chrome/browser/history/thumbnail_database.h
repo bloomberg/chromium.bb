@@ -252,10 +252,11 @@ class ThumbnailDatabase {
   friend class ExpireHistoryBackend;
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest,
                            GetFaviconAfterMigrationToTopSites);
-  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion4);
-  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion5);
-  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion6);
-  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion7);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version3);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version4);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version5);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version6);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version7);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, RetainDataForPageUrls);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationIconMapping);
 

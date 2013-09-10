@@ -14,8 +14,13 @@
 
 namespace history {
 
+// Version 2: eb0b24e6/r87284 by satorux@chromium.org on 2011-05-31
+// Version 1: 809cc4d8/r64072 by sky@chromium.org on 2010-10-27
+
 // From the version 1 to 2, one column was added. Old versions of Chrome
 // should be able to read version 2 files just fine.
+// NOTE(shess): When changing the version, add a new golden file for
+// the new version and a test to verify that Init() works with it.
 static const int kVersionNumber = 2;
 
 TopSitesDatabase::TopSitesDatabase() {

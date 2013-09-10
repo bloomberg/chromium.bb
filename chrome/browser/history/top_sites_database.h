@@ -58,7 +58,8 @@ class TopSitesDatabase {
   bool RemoveURL(const MostVisitedURL& url);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, UpgradeToVersion2);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Version1);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Version2);
 
   // Creates the thumbnail table, returning true if the table already exists
   // or was successfully created.

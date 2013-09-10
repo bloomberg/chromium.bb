@@ -24,6 +24,8 @@
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
+        '../sql/sql.gyp:sql',
+        '../sql/sql.gyp:test_support_sql',
         '../sync/sync.gyp:sync',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',

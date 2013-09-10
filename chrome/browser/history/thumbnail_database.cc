@@ -271,7 +271,15 @@ void DatabaseErrorCallback(sql::Connection* db,
 
 namespace history {
 
+// Version 7: 911a634d/r209424 by qsr@chromium.org on 2013-07-01
+// Version 6: 610f923b/r152367 by pkotwicz@chromium.org on 2012-08-20
+// Version 5: e2ee8ae9/r105004 by groby@chromium.org on 2011-10-12
+// Version 4: 5f104d76/r77288 by sky@chromium.org on 2011-03-08
+// Version 3: 09911bf3/r15 by initial.commit on 2008-07-26
+
 // Version number of the database.
+// NOTE(shess): When changing the version, add a new golden file for
+// the new version and a test to verify that Init() works with it.
 static const int kCurrentVersionNumber = 7;
 static const int kCompatibleVersionNumber = 7;
 

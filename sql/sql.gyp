@@ -62,6 +62,8 @@
         'test/error_callback_support.h',
         'test/scoped_error_ignorer.cc',
         'test/scoped_error_ignorer.h',
+        'test/test_helpers.cc',
+        'test/test_helpers.h',
       ],
       'include_dirs': [
         '..',

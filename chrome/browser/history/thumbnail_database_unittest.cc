@@ -6,47 +6,143 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "chrome/browser/history/history_database.h"
-#include "chrome/browser/history/history_unittest_base.h"
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/thumbnail_score.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/tools/profiles/thumbnail-inl.h"
+#include "sql/connection.h"
+#include "sql/statement.h"
+#include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/codec/jpeg_codec.h"
 #include "url/gurl.h"
-
-using base::Time;
-using base::TimeDelta;
 
 namespace history {
 
 namespace {
 
-// data we'll put into the thumbnail database
-static const unsigned char blob1[] =
+// Blobs for the bitmap tests.  These aren't real bitmaps.  Golden
+// database files store the same blobs (see VersionN tests).
+const unsigned char kBlob1[] =
     "12346102356120394751634516591348710478123649165419234519234512349134";
-static const unsigned char blob2[] =
+const unsigned char kBlob2[] =
     "goiwuegrqrcomizqyzkjalitbahxfjytrqvpqeroicxmnlkhlzunacxaneviawrtxcywhgef";
-static const unsigned char blob3[] =
-    "3716871354098370776510470746794707624107647054607467847164027";
-const double kBoringness = 0.25;
-const double kWorseBoringness = 0.50;
-const double kBetterBoringness = 0.10;
-const double kTotallyBoring = 1.0;
 
-const int64 kPage1 = 1234;
+// Page and icon urls shared by tests.  Present in golden database
+// files (see VersionN tests).
+const GURL kPageUrl1 = GURL("http://google.com/");
+const GURL kPageUrl2 = GURL("http://yahoo.com/");
+const GURL kPageUrl3 = GURL("http://www.google.com/");
+const GURL kPageUrl4 = GURL("http://www.google.com/blank.html");
+
+const GURL kIconUrl1 = GURL("http://www.google.com/favicon.ico");
+const GURL kIconUrl2 = GURL("http://www.yahoo.com/favicon.ico");
+const GURL kIconUrl3 = GURL("http://www.google.com/touch.ico");
 
 const gfx::Size kSmallSize = gfx::Size(16, 16);
 const gfx::Size kLargeSize = gfx::Size(32, 32);
+
+// Create the test database at |db_path| from the golden file at
+// |ascii_path| in the "History/" subdir of the test data dir.
+WARN_UNUSED_RESULT bool CreateDatabaseFromSQL(const base::FilePath &db_path,
+                                              const char* ascii_path) {
+  base::FilePath sql_path;
+  if (!PathService::Get(chrome::DIR_TEST_DATA, &sql_path))
+    return false;
+  sql_path = sql_path.AppendASCII("History").AppendASCII(ascii_path);
+  return sql::test::CreateDatabaseFromSQL(db_path, sql_path);
+}
+
+// Verify that the up-to-date database has the expected tables and
+// columns.  Functional tests only check whether the things which
+// should be there are, but do not check if extraneous items are
+// present.  Any extraneous items have the potential to interact
+// negatively with future schema changes.
+void VerifyTablesAndColumns(sql::Connection* db) {
+  // [meta], [favicons], [favicon_bitmaps], and [icon_mapping].
+  EXPECT_EQ(4u, sql::test::CountSQLTables(db));
+
+  // Implicit index on [meta], index on [favicons], index on
+  // [favicon_bitmaps], two indices on [icon_mapping].
+  EXPECT_EQ(5u, sql::test::CountSQLIndices(db));
+
+  // [key] and [value].
+  EXPECT_EQ(2u, sql::test::CountTableColumns(db, "meta"));
+
+  // [id], [url], and [icon_type].
+  EXPECT_EQ(3u, sql::test::CountTableColumns(db, "favicons"));
+
+  // [id], [icon_id], [last_updated], [image_data], [width], and [height].
+  EXPECT_EQ(6u, sql::test::CountTableColumns(db, "favicon_bitmaps"));
+
+  // [id], [page_url], and [icon_id].
+  EXPECT_EQ(3u, sql::test::CountTableColumns(db, "icon_mapping"));
+}
+
+// Helper to check that an expected mapping exists.
+WARN_UNUSED_RESULT bool CheckPageHasIcon(
+    ThumbnailDatabase* db,
+    const GURL& page_url,
+    chrome::IconType expected_icon_type,
+    const GURL& expected_icon_url,
+    const gfx::Size& expected_icon_size,
+    size_t expected_icon_contents_size,
+    const unsigned char* expected_icon_contents) {
+  std::vector<IconMapping> icon_mappings;
+  if (!db->GetIconMappingsForPageURL(page_url, &icon_mappings)) {
+    ADD_FAILURE() << "failed GetIconMappingsForPageURL()";
+    return false;
+  }
+
+  // Scan for the expected type.
+  std::vector<IconMapping>::const_iterator iter = icon_mappings.begin();
+  for (; iter != icon_mappings.end(); ++iter) {
+    if (iter->icon_type == expected_icon_type)
+      break;
+  }
+  if (iter == icon_mappings.end()) {
+    ADD_FAILURE() << "failed to find |expected_icon_type|";
+    return false;
+  }
+
+  if (expected_icon_url != iter->icon_url) {
+    EXPECT_EQ(expected_icon_url, iter->icon_url);
+    return false;
+  }
+
+  std::vector<FaviconBitmap> favicon_bitmaps;
+  if (!db->GetFaviconBitmaps(iter->icon_id, &favicon_bitmaps)) {
+    ADD_FAILURE() << "failed GetFaviconBitmaps()";
+    return false;
+  }
+
+  if (1 != favicon_bitmaps.size()) {
+    EXPECT_EQ(1u, favicon_bitmaps.size());
+    return false;
+  }
+
+  if (expected_icon_size != favicon_bitmaps[0].pixel_size) {
+    EXPECT_EQ(expected_icon_size, favicon_bitmaps[0].pixel_size);
+    return false;
+  }
+
+  if (expected_icon_contents_size != favicon_bitmaps[0].bitmap_data->size()) {
+    EXPECT_EQ(expected_icon_contents_size,
+              favicon_bitmaps[0].bitmap_data->size());
+    return false;
+  }
+
+  if (memcmp(favicon_bitmaps[0].bitmap_data->front(),
+             expected_icon_contents, expected_icon_contents_size)) {
+    ADD_FAILURE() << "failed to match |expected_icon_contents|";
+    return false;
+  }
+  return true;
+}
 
 }  // namespace
 
@@ -57,58 +153,35 @@ class ThumbnailDatabaseTest : public testing::Test {
   virtual ~ThumbnailDatabaseTest() {
   }
 
+  // Initialize a thumbnail database instance from the SQL file at
+  // |golden_path| in the "History/" subdirectory of test data.
+  // |url_db| is passed into Init().
+  // TODO(shess): If/when version3 is deprecated, url_db can be removed
+  // from Init().  At that point CreateDatabaseFromSQL() can be inlined.
+  scoped_ptr<ThumbnailDatabase> LoadFromGolden(const char* golden_path,
+                                               URLDatabase* url_db) {
+    if (!CreateDatabaseFromSQL(file_name_, golden_path)) {
+      ADD_FAILURE() << "Failed loading " << golden_path;
+      return scoped_ptr<ThumbnailDatabase>();
+    }
+
+    scoped_ptr<ThumbnailDatabase> db(new ThumbnailDatabase());
+    EXPECT_EQ(sql::INIT_OK, db->Init(file_name_, NULL, url_db));
+    db->BeginTransaction();
+
+    return db.Pass();
+  }
+
  protected:
   virtual void SetUp() {
     // Get a temporary directory for the test DB files.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    file_name_ = temp_dir_.path().AppendASCII("TestThumbnails.db");
-    new_file_name_ = temp_dir_.path().AppendASCII("TestFavicons.db");
-    history_db_name_ = temp_dir_.path().AppendASCII("TestHistory.db");
-    google_bitmap_.reset(
-        gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
+    file_name_ = temp_dir_.path().AppendASCII("TestFavicons.db");
   }
-
-  scoped_ptr<SkBitmap> google_bitmap_;
 
   base::ScopedTempDir temp_dir_;
   base::FilePath file_name_;
-  base::FilePath new_file_name_;
-  base::FilePath history_db_name_;
-};
-
-class IconMappingMigrationTest : public HistoryUnitTestBase {
- public:
-  IconMappingMigrationTest() {
-  }
-  virtual ~IconMappingMigrationTest() {
-  }
-
- protected:
-  virtual void SetUp() {
-    profile_.reset(new TestingProfile);
-
-    base::FilePath data_path;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
-    data_path = data_path.AppendASCII("History");
-
-    history_db_name_ = profile_->GetPath().Append(chrome::kHistoryFilename);
-    ASSERT_NO_FATAL_FAILURE(
-        ExecuteSQLScript(data_path.AppendASCII("history.20.sql"),
-                         history_db_name_));
-    thumbnail_db_name_ =
-        profile_->GetPath().Append(chrome::kFaviconsFilename);
-    ASSERT_NO_FATAL_FAILURE(
-        ExecuteSQLScript(data_path.AppendASCII("thumbnails.3.sql"),
-                         thumbnail_db_name_));
-  }
-
- protected:
-  base::FilePath history_db_name_;
-  base::FilePath thumbnail_db_name_;
-
- private:
-  scoped_ptr<TestingProfile> profile_;
 };
 
 TEST_F(ThumbnailDatabaseTest, AddIconMapping) {
@@ -116,7 +189,7 @@ TEST_F(ThumbnailDatabaseTest, AddIconMapping) {
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
   db.BeginTransaction();
 
-  std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   GURL url("http://google.com");
@@ -170,7 +243,7 @@ TEST_F(ThumbnailDatabaseTest, DeleteIconMappings) {
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
   db.BeginTransaction();
 
-  std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   GURL url("http://google.com");
@@ -202,7 +275,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURL) {
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
   db.BeginTransaction();
 
-  std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   GURL url("http://google.com");
@@ -225,190 +298,6 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURL) {
   EXPECT_EQ(id2, icon_mappings[1].icon_id);
 }
 
-// Test upgrading database to version 4.
-TEST_F(ThumbnailDatabaseTest, UpgradeToVersion4) {
-  ThumbnailDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
-  db.BeginTransaction();
-
-  const char* name = "favicons";
-  std::string sql;
-  sql.append("DROP TABLE IF EXISTS ");
-  sql.append(name);
-  EXPECT_TRUE(db.db_.Execute(sql.c_str()));
-
-  sql.resize(0);
-  sql.append("CREATE TABLE ");
-  sql.append(name);
-  sql.append("("
-             "id INTEGER PRIMARY KEY,"
-             "url LONGVARCHAR NOT NULL,"
-             "last_updated INTEGER DEFAULT 0,"
-             "image_data BLOB)");
-  EXPECT_TRUE(db.db_.Execute(sql.c_str()));
-
-  EXPECT_TRUE(db.UpgradeToVersion4());
-
-  GURL url("http://google.com");
-
-  sql::Statement statement;
-  statement.Assign(db.db_.GetCachedStatement(SQL_FROM_HERE,
-      "INSERT INTO favicons (url, icon_type) VALUES (?, ?)"));
-  statement.BindString(0, URLDatabase::GURLToDatabaseURL(url));
-  statement.BindInt(1, chrome::TOUCH_ICON);
-  EXPECT_TRUE(statement.Run());
-
-  statement.Assign(db.db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT icon_type FROM favicons"));
-  EXPECT_TRUE(statement.Step());
-
-  EXPECT_EQ(chrome::TOUCH_ICON,
-            static_cast<chrome::IconType>(statement.ColumnInt(0)));
-}
-
-// Test upgrading database to version 5.
-TEST_F(ThumbnailDatabaseTest, UpgradeToVersion5) {
-  ThumbnailDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
-  db.BeginTransaction();
-
-  const char* name = "favicons";
-  std::string sql;
-  sql.append("DROP TABLE IF EXISTS ");
-  sql.append(name);
-  EXPECT_TRUE(db.db_.Execute(sql.c_str()));
-
-  sql.resize(0);
-  sql.append("CREATE TABLE ");
-  sql.append(name);
-  sql.append("("
-             "id INTEGER PRIMARY KEY,"
-             "url LONGVARCHAR NOT NULL,"
-             "last_updated INTEGER DEFAULT 0,"
-             "image_data BLOB,"
-             "icon_type INTEGER DEFAULT 1)");
-  ASSERT_TRUE(db.db_.Execute(sql.c_str()));
-
-  ASSERT_TRUE(db.UpgradeToVersion5());
-
-  sql = "SELECT sizes FROM favicons";
-  EXPECT_TRUE(db.db_.Execute(sql.c_str()));
-}
-
-// Test upgrading database to version 6.
-TEST_F(ThumbnailDatabaseTest, UpgradeToVersion6) {
-  ThumbnailDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
-  db.BeginTransaction();
-
-  const char* name = "favicons";
-  std::string sql;
-  sql.append("DROP TABLE IF EXISTS ");
-  sql.append(name);
-  EXPECT_TRUE(db.db_.Execute(sql.c_str()));
-
-  sql.clear();
-  sql.append("CREATE TABLE ");
-  sql.append(name);
-  sql.append("("
-             "id INTEGER PRIMARY KEY,"
-             "url LONGVARCHAR NOT NULL,"
-             "last_updated INTEGER DEFAULT 0,"
-             "image_data BLOB,"
-             "icon_type INTEGER DEFAULT 1,"
-             "sizes LONGVARCHAR)");
-  EXPECT_TRUE(db.db_.Execute(sql.c_str()));
-
-  int favicon_id = 1;
-  GURL url("http://google.com");
-  int64 last_updated = Time::Now().ToInternalValue();
-  std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
-  scoped_refptr<base::RefCountedBytes> bitmap_data(
-      new base::RefCountedBytes(data));
-
-  sql::Statement statement;
-  statement.Assign(db.db_.GetCachedStatement(SQL_FROM_HERE,
-      "INSERT INTO favicons (id, url, last_updated, image_data, icon_type, "
-      "sizes) VALUES (?, ?, ?, ?, ?, ?)"));
-  statement.BindInt(0, favicon_id);
-  statement.BindString(1, URLDatabase::GURLToDatabaseURL(url));
-  statement.BindInt64(2, last_updated);
-  statement.BindBlob(3, bitmap_data->front(),
-                     static_cast<int>(bitmap_data->size()));
-  statement.BindInt(4, chrome::TOUCH_ICON);
-  statement.BindCString(5, "Data which happened to be there");
-  EXPECT_TRUE(statement.Run());
-
-  EXPECT_TRUE(db.UpgradeToVersion6());
-
-  statement.Assign(db.db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT id, url, icon_type, sizes FROM favicons"));
-  EXPECT_TRUE(statement.Step());
-  EXPECT_EQ(favicon_id, statement.ColumnInt(0));
-  EXPECT_EQ(url, GURL(statement.ColumnString(1)));
-  EXPECT_EQ(chrome::TOUCH_ICON, statement.ColumnInt(2));
-  // Any previous data in sizes should be cleared.
-  EXPECT_EQ(std::string(), statement.ColumnString(3));
-
-  statement.Assign(db.db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT icon_id, last_updated, image_data, width, height "
-      "FROM favicon_bitmaps"));
-  EXPECT_TRUE(statement.Step());
-  EXPECT_EQ(favicon_id, statement.ColumnInt(0));
-  EXPECT_EQ(last_updated, statement.ColumnInt64(1));
-  EXPECT_EQ(static_cast<int>(bitmap_data->size()),
-            statement.ColumnByteLength(2));
-  EXPECT_EQ(0, statement.ColumnInt(3));
-  EXPECT_EQ(0, statement.ColumnInt(4));
-}
-
-// Test upgrading database to version 7.
-TEST_F(ThumbnailDatabaseTest, UpgradeToVersion7) {
-  ThumbnailDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
-  db.BeginTransaction();
-
-  const char* name = "favicons";
-  std::string sql;
-  sql.append("DROP TABLE IF EXISTS ");
-  sql.append(name);
-  EXPECT_TRUE(db.db_.Execute(sql.c_str()));
-
-  sql.clear();
-  sql.append("CREATE TABLE ");
-  sql.append(name);
-  sql.append("("
-             "id INTEGER PRIMARY KEY,"
-             "url LONGVARCHAR NOT NULL,"
-             "icon_type INTEGER DEFAULT 1,"
-             "sizes LONGVARCHAR)");
-  EXPECT_TRUE(db.db_.Execute(sql.c_str()));
-
-  int favicon_id = 1;
-  GURL url("http://google.com");
-
-  sql::Statement statement;
-  statement.Assign(db.db_.GetCachedStatement(SQL_FROM_HERE,
-      "INSERT INTO favicons (id, url, icon_type, sizes) "
-      "VALUES (?, ?, ?, ?)"));
-  statement.BindInt(0, favicon_id);
-  statement.BindString(1, URLDatabase::GURLToDatabaseURL(url));
-  statement.BindInt(2, chrome::TOUCH_ICON);
-  statement.BindCString(3, "Data which happened to be there");
-  EXPECT_TRUE(statement.Run());
-
-  EXPECT_TRUE(db.UpgradeToVersion7());
-
-  EXPECT_FALSE(db.db_.DoesColumnExist("favicons", "sizes"));
-
-  statement.Assign(db.db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT id, url, icon_type FROM favicons"));
-  EXPECT_TRUE(statement.Step());
-  EXPECT_EQ(favicon_id, statement.ColumnInt(0));
-  EXPECT_EQ(url, GURL(statement.ColumnString(1)));
-  EXPECT_EQ(chrome::TOUCH_ICON, statement.ColumnInt(2));
-}
-
 TEST_F(ThumbnailDatabaseTest, RetainDataForPageUrls) {
   ThumbnailDatabase db;
 
@@ -416,7 +305,7 @@ TEST_F(ThumbnailDatabaseTest, RetainDataForPageUrls) {
 
   db.BeginTransaction();
 
-  std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   GURL unkept_url("http://google.com/favicon2.ico");
@@ -465,10 +354,10 @@ TEST_F(ThumbnailDatabaseTest, DeleteFavicon) {
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
   db.BeginTransaction();
 
-  std::vector<unsigned char> data1(blob1, blob1 + sizeof(blob1));
+  std::vector<unsigned char> data1(kBlob1, kBlob1 + sizeof(kBlob1));
   scoped_refptr<base::RefCountedBytes> favicon1(
       new base::RefCountedBytes(data1));
-  std::vector<unsigned char> data2(blob2, blob2 + sizeof(blob2));
+  std::vector<unsigned char> data2(kBlob2, kBlob2 + sizeof(kBlob2));
   scoped_refptr<base::RefCountedBytes> favicon2(
       new base::RefCountedBytes(data2));
 
@@ -490,7 +379,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
   db.BeginTransaction();
 
   // Add a favicon
-  std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   GURL page_url("http://google.com");
@@ -512,7 +401,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
   EXPECT_EQ(icon_url, icon_mappings.front().icon_url);
 
   // Add a touch icon
-  std::vector<unsigned char> data2(blob2, blob2 + sizeof(blob2));
+  std::vector<unsigned char> data2(kBlob2, kBlob2 + sizeof(kBlob2));
   scoped_refptr<base::RefCountedBytes> favicon2 =
       new base::RefCountedBytes(data);
 
@@ -558,7 +447,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLWithIconType) {
   db.BeginTransaction();
 
   GURL url("http://google.com");
-  std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
   base::Time time = base::Time::Now();
 
@@ -621,7 +510,7 @@ TEST_F(ThumbnailDatabaseTest, HasMappingFor) {
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
   db.BeginTransaction();
 
-  std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   // Add a favicon which will have icon_mappings
@@ -672,7 +561,7 @@ TEST_F(ThumbnailDatabaseTest, CloneIconMappings) {
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
   db.BeginTransaction();
 
-  std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   // Add a favicon which will have icon_mappings
@@ -732,60 +621,12 @@ TEST_F(ThumbnailDatabaseTest, CloneIconMappings) {
   EXPECT_EQ(id2, icon_mapping[1].icon_id);
 }
 
-TEST_F(IconMappingMigrationTest, TestIconMappingMigration) {
-  HistoryDatabase history_db;
-  ASSERT_TRUE(history_db.db_.Open(history_db_name_));
-  history_db.BeginTransaction();
-
-  const GURL icon1 = GURL("http://www.google.com/favicon.ico");
-  const GURL icon2 = GURL("http://www.yahoo.com/favicon.ico");
-
-  ThumbnailDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(thumbnail_db_name_, NULL, &history_db));
-  db.BeginTransaction();
-
-  // Migration should be done.
-  // Test one icon_mapping.
-  GURL page_url1 = GURL("http://google.com/");
-  std::vector<IconMapping> icon_mappings;
-  EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url1, &icon_mappings));
-  ASSERT_EQ(1u, icon_mappings.size());
-  EXPECT_EQ(chrome::FAVICON, icon_mappings[0].icon_type);
-  EXPECT_EQ(page_url1, icon_mappings[0].page_url);
-  EXPECT_EQ(1, icon_mappings[0].icon_id);
-  EXPECT_EQ(icon1, icon_mappings[0].icon_url);
-
-  // Test a page which has the same icon.
-  GURL page_url3 = GURL("http://www.google.com/");
-  icon_mappings.clear();
-  EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url3, &icon_mappings));
-  ASSERT_EQ(1u, icon_mappings.size());
-  EXPECT_EQ(chrome::FAVICON, icon_mappings[0].icon_type);
-  EXPECT_EQ(page_url3, icon_mappings[0].page_url);
-  EXPECT_EQ(1, icon_mappings[0].icon_id);
-  EXPECT_EQ(icon1, icon_mappings[0].icon_url);
-
-  // Test a icon_mapping with different IconID.
-  GURL page_url2 = GURL("http://yahoo.com/");
-  icon_mappings.clear();
-  EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url2, &icon_mappings));
-  ASSERT_EQ(1u, icon_mappings.size());
-  EXPECT_EQ(chrome::FAVICON, icon_mappings[0].icon_type);
-  EXPECT_EQ(page_url2, icon_mappings[0].page_url);
-  EXPECT_EQ(2, icon_mappings[0].icon_id);
-  EXPECT_EQ(icon2, icon_mappings[0].icon_url);
-
-  // Test a page without icon
-  GURL page_url4 = GURL("http://www.google.com/blank.html");
-  EXPECT_FALSE(db.GetIconMappingsForPageURL(page_url4, NULL));
-}
-
 TEST_F(ThumbnailDatabaseTest, IconMappingEnumerator) {
   ThumbnailDatabase db;
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
   db.BeginTransaction();
 
-  std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   GURL url("http://google.com");
@@ -856,6 +697,99 @@ TEST_F(ThumbnailDatabaseTest, IconMappingEnumerator) {
   EXPECT_EQ(chrome::TOUCH_ICON, icon_mapping.icon_type);
 
   EXPECT_FALSE(enumerator2.GetNextIconMapping(&icon_mapping));
+}
+
+// Test loading version 3 database.
+TEST_F(ThumbnailDatabaseTest, Version3) {
+  base::FilePath history_db_name =
+      temp_dir_.path().AppendASCII("TestHistory.db");
+  ASSERT_TRUE(CreateDatabaseFromSQL(history_db_name,
+                                    "Favicons.v3.history.sql"));
+
+  HistoryDatabase history_db;
+  ASSERT_TRUE(history_db.db_.Open(history_db_name));
+  history_db.BeginTransaction();
+
+  scoped_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v3.sql",
+                                                    &history_db);
+  ASSERT_TRUE(db.get() != NULL);
+  VerifyTablesAndColumns(&db->db_);
+
+  // Test results of icon-mapping migration.  Version 3 only stored
+  // |FAVICON| type.
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl1, chrome::FAVICON,
+                               kIconUrl1, gfx::Size(), sizeof(kBlob1), kBlob1));
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl2, chrome::FAVICON,
+                               kIconUrl2, gfx::Size(), sizeof(kBlob2), kBlob2));
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl3, chrome::FAVICON,
+                               kIconUrl1, gfx::Size(), sizeof(kBlob1), kBlob1));
+
+  // Page 4 is in urls database, ends up with no favicon.
+  EXPECT_FALSE(db->GetIconMappingsForPageURL(kPageUrl4, NULL));
+}
+
+// Test loading version 4 database.
+TEST_F(ThumbnailDatabaseTest, Version4) {
+  scoped_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v4.sql", NULL);
+  ASSERT_TRUE(db.get() != NULL);
+  VerifyTablesAndColumns(&db->db_);
+
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl1, chrome::FAVICON,
+                               kIconUrl1, gfx::Size(), sizeof(kBlob1), kBlob1));
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl2, chrome::FAVICON,
+                               kIconUrl2, gfx::Size(), sizeof(kBlob2), kBlob2));
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl3, chrome::FAVICON,
+                               kIconUrl1, gfx::Size(), sizeof(kBlob1), kBlob1));
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl3, chrome::TOUCH_ICON,
+                               kIconUrl3, gfx::Size(), sizeof(kBlob2), kBlob2));
+}
+
+// Test loading version 5 database.
+TEST_F(ThumbnailDatabaseTest, Version5) {
+  scoped_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v5.sql", NULL);
+  ASSERT_TRUE(db.get() != NULL);
+  VerifyTablesAndColumns(&db->db_);
+
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl1, chrome::FAVICON,
+                               kIconUrl1, gfx::Size(), sizeof(kBlob1), kBlob1));
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl2, chrome::FAVICON,
+                               kIconUrl2, gfx::Size(), sizeof(kBlob2), kBlob2));
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl3, chrome::FAVICON,
+                               kIconUrl1, gfx::Size(), sizeof(kBlob1), kBlob1));
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl3, chrome::TOUCH_ICON,
+                               kIconUrl3, gfx::Size(), sizeof(kBlob2), kBlob2));
+}
+
+// Test loading version 6 database.
+TEST_F(ThumbnailDatabaseTest, Version6) {
+  scoped_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v6.sql", NULL);
+  ASSERT_TRUE(db.get() != NULL);
+  VerifyTablesAndColumns(&db->db_);
+
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl1, chrome::FAVICON,
+                               kIconUrl1, kLargeSize, sizeof(kBlob1), kBlob1));
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl2, chrome::FAVICON,
+                               kIconUrl2, kLargeSize, sizeof(kBlob2), kBlob2));
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl3, chrome::FAVICON,
+                               kIconUrl1, kLargeSize, sizeof(kBlob1), kBlob1));
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl3, chrome::TOUCH_ICON,
+                               kIconUrl3, kLargeSize, sizeof(kBlob2), kBlob2));
+}
+
+// Test loading version 7 database.
+TEST_F(ThumbnailDatabaseTest, Version7) {
+  scoped_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v7.sql", NULL);
+  ASSERT_TRUE(db.get() != NULL);
+  VerifyTablesAndColumns(&db->db_);
+
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl1, chrome::FAVICON,
+                               kIconUrl1, kLargeSize, sizeof(kBlob1), kBlob1));
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl2, chrome::FAVICON,
+                               kIconUrl2, kLargeSize, sizeof(kBlob2), kBlob2));
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl3, chrome::FAVICON,
+                               kIconUrl1, kLargeSize, sizeof(kBlob1), kBlob1));
+  EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl3, chrome::TOUCH_ICON,
+                               kIconUrl3, kLargeSize, sizeof(kBlob2), kBlob2));
 }
 
 }  // namespace history
