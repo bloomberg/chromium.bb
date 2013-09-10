@@ -38,7 +38,6 @@ class SyncTaskManager::TaskToken {
       // Reinitializes the token.
       manager_->NotifyTaskDone(
           make_scoped_ptr(new TaskToken(manager_)),
-          SyncStatusCallback(),
           SYNC_STATUS_OK);
     }
   }
@@ -64,7 +63,6 @@ SyncTaskManager::~SyncTaskManager() {
 void SyncTaskManager::Initialize(SyncStatusCode status) {
   DCHECK(!token_);
   NotifyTaskDone(make_scoped_ptr(new TaskToken(AsWeakPtr())),
-                 SyncStatusCallback(),
                  status);
 }
 
@@ -114,7 +112,6 @@ void SyncTaskManager::ScheduleSyncTaskIfIdle(scoped_ptr<SyncTask> task) {
 
 void SyncTaskManager::NotifyTaskDone(
     scoped_ptr<TaskToken> token,
-    const SyncStatusCallback& callback,
     SyncStatusCode status) {
   DCHECK(token);
   last_operation_status_ = status;
@@ -129,8 +126,9 @@ void SyncTaskManager::NotifyTaskDone(
   if (client_)
     client_->NotifyLastOperationStatus(last_operation_status_);
 
-  if (!callback.is_null())
-    callback.Run(status);
+  if (!current_callback_.is_null())
+    current_callback_.Run(status);
+  current_callback_.Reset();
 
   if (!pending_tasks_.empty()) {
     base::Closure closure = pending_tasks_.front();
@@ -157,8 +155,10 @@ SyncStatusCallback SyncTaskManager::CreateCompletionCallback(
     scoped_ptr<TaskToken> token,
     const SyncStatusCallback& callback) {
   DCHECK(token);
+  DCHECK(current_callback_.is_null());
+  current_callback_ = callback;
   return base::Bind(&SyncTaskManager::NotifyTaskDone,
-                    AsWeakPtr(), base::Passed(&token), callback);
+                    AsWeakPtr(), base::Passed(&token));
 }
 
 }  // namespace sync_file_system

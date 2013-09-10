@@ -20,6 +20,15 @@ void IncrementAndAssign(int* counter,
   *status_out = status;
 }
 
+template <typename T>
+void IncrementAndAssignWithOwnedPointer(T* object,
+                                        int* counter,
+                                        SyncStatusCode* status_out,
+                                        SyncStatusCode status) {
+  ++(*counter);
+  *status_out = status;
+}
+
 class TaskManagerClient
     : public SyncTaskManager::Client,
       public base::SupportsWeakPtr<TaskManagerClient> {
@@ -226,6 +235,33 @@ TEST(SyncTaskManagerTest, ScheduleAndCancelSyncTask) {
         scoped_ptr<SyncTask>(new MultihopSyncTask(
             &task_started, &task_completed)),
         base::Bind(&IncrementAndAssign, &callback_count, &status));
+  }
+
+  message_loop.RunUntilIdle();
+  EXPECT_EQ(0, callback_count);
+  EXPECT_EQ(SYNC_STATUS_UNKNOWN, status);
+  EXPECT_TRUE(task_started);
+  EXPECT_FALSE(task_completed);
+}
+
+TEST(SyncTaskManagerTest, ScheduleAndCancelTask) {
+  base::MessageLoop message_loop;
+
+  int callback_count = 0;
+  SyncStatusCode status = SYNC_STATUS_UNKNOWN;
+
+  bool task_started = false;
+  bool task_completed = false;
+
+  {
+    SyncTaskManager task_manager((base::WeakPtr<SyncTaskManager::Client>()));
+    task_manager.Initialize(SYNC_STATUS_OK);
+    MultihopSyncTask* task = new MultihopSyncTask(
+        &task_started, &task_completed);
+    task_manager.ScheduleTask(
+        base::Bind(&MultihopSyncTask::Run, base::Unretained(task)),
+        base::Bind(&IncrementAndAssignWithOwnedPointer<MultihopSyncTask>,
+                   base::Owned(task), &callback_count, &status));
   }
 
   message_loop.RunUntilIdle();

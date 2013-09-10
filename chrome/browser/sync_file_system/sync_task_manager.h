@@ -48,8 +48,6 @@ class SyncTaskManager
   // service status. This should not be called more than once.
   void Initialize(SyncStatusCode status);
 
-  // Note that the argument of |task|'s parameter owns |callback|.
-  // The reference from |callback| to |task| causes circular dependency.
   void ScheduleTask(const Task& task,
                     const SyncStatusCallback& callback);
   void ScheduleSyncTask(scoped_ptr<SyncTask> task,
@@ -60,7 +58,6 @@ class SyncTaskManager
   void ScheduleSyncTaskIfIdle(scoped_ptr<SyncTask> task);
 
   void NotifyTaskDone(scoped_ptr<TaskToken> token,
-                      const SyncStatusCallback& callback,
                       SyncStatusCode status);
 
  private:
@@ -78,6 +75,8 @@ class SyncTaskManager
   SyncStatusCode last_operation_status_;
   scoped_ptr<SyncTask> running_task_;
   std::deque<base::Closure> pending_tasks_;
+  SyncStatusCallback current_callback_;
+
 
   // Absence of |token_| implies a task is running. Incoming tasks should
   // wait for the task to finish in |pending_tasks_| if |token_| is null.
