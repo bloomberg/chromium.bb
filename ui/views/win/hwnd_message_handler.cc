@@ -394,7 +394,8 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       can_update_layered_window_(true),
       is_first_nccalc_(true),
       autohide_factory_(this),
-      touch_event_factory_(this) {
+      touch_event_factory_(this),
+      did_gdi_clear_(false) {
 }
 
 HWNDMessageHandler::~HWNDMessageHandler() {
@@ -1359,6 +1360,18 @@ void HWNDMessageHandler::OnEnterSizeMove() {
 }
 
 LRESULT HWNDMessageHandler::OnEraseBkgnd(HDC dc) {
+  if (!did_gdi_clear_) {
+    // This is necessary (at least on Win8) to avoid white flashing in the
+    // titlebar area around the minimize/maximize/close buttons.
+    HDC dc = GetDC(hwnd());
+    RECT client_rect;
+    GetClientRect(hwnd(), &client_rect);
+    HBRUSH brush = CreateSolidBrush(0);
+    FillRect(dc, &client_rect, brush);
+    DeleteObject(brush);
+    ReleaseDC(hwnd(), dc);
+    did_gdi_clear_ = true;
+  }
   // Needed to prevent resize flicker.
   return 1;
 }

@@ -100,7 +100,6 @@ ATOM ClassRegistrar::RetrieveClassAtom(const ClassInfo& class_info) {
   string16 name = string16(WindowImpl::kBaseClassName) +
       base::IntToString16(registered_count_++);
 
-  HBRUSH background = reinterpret_cast<HBRUSH>(COLOR_WINDOW);
   WNDCLASSEX window_class;
   base::win::InitializeWindowClass(
       name.c_str(),
@@ -109,7 +108,7 @@ ATOM ClassRegistrar::RetrieveClassAtom(const ClassInfo& class_info) {
       0,
       0,
       NULL,
-      reinterpret_cast<HBRUSH>(background + 1),
+      NULL,
       NULL,
       class_info.icon,
       class_info.icon,

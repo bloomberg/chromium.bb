@@ -481,6 +481,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // A factory that allows us to process touch events asynchronously.
   base::WeakPtrFactory<HWNDMessageHandler> touch_event_factory_;
 
+  // Necessary to avoid corruption on NC paint in Aero mode.
+  bool did_gdi_clear_;
+
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };
 
