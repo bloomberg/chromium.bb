@@ -247,7 +247,7 @@ String StyledMarkupAccumulator::renderedText(const Node* node, const Range* rang
     if (!node->isTextNode())
         return String();
 
-    const Text* textNode = static_cast<const Text*>(node);
+    const Text* textNode = toText(node);
     unsigned startOffset = 0;
     unsigned endOffset = textNode->length();
 

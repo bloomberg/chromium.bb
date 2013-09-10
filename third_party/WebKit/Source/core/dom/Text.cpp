@@ -88,7 +88,7 @@ static const Text* earliestLogicallyAdjacentTextNode(const Text* t)
     while ((n = n->previousSibling())) {
         Node::NodeType type = n->nodeType();
         if (type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE) {
-            t = static_cast<const Text*>(n);
+            t = toText(n);
             continue;
         }
 
@@ -103,7 +103,7 @@ static const Text* latestLogicallyAdjacentTextNode(const Text* t)
     while ((n = n->nextSibling())) {
         Node::NodeType type = n->nodeType();
         if (type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE) {
-            t = static_cast<const Text*>(n);
+            t = toText(n);
             continue;
         }
 
@@ -122,8 +122,7 @@ String Text::wholeText() const
     for (const Node* n = startText; n != onePastEndText; n = n->nextSibling()) {
         if (!n->isTextNode())
             continue;
-        const Text* t = static_cast<const Text*>(n);
-        const String& data = t->data();
+        const String& data = toText(n)->data();
         if (std::numeric_limits<unsigned>::max() - data.length() < resultLength)
             CRASH();
         resultLength += data.length();
@@ -133,8 +132,7 @@ String Text::wholeText() const
     for (const Node* n = startText; n != onePastEndText; n = n->nextSibling()) {
         if (!n->isTextNode())
             continue;
-        const Text* t = static_cast<const Text*>(n);
-        result.append(t->data());
+        result.append(toText(n)->data());
     }
     ASSERT(result.length() == resultLength);
 
