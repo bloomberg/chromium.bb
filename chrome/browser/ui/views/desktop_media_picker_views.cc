@@ -334,7 +334,6 @@ void DesktopMediaListView::Layout() {
     x += kListItemWidth;
   }
 
-
   y += kListItemHeight;
   SetSize(gfx::Size(kTotalListWidth, y));
 }
@@ -357,7 +356,6 @@ bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
     default:
       return false;
   }
-
 
   if (position_increment != 0) {
     DesktopMediaSourceView* selected = GetSelection();
@@ -395,7 +393,8 @@ void DesktopMediaListView::OnSourceAdded(int index) {
   source_view->SetName(source.name);
   source_view->SetGroup(kDesktopMediaSourceViewGroupId);
   AddChildViewAt(source_view, index);
-  Layout();
+
+  PreferredSizeChanged();
 }
 
 void DesktopMediaListView::OnSourceRemoved(int index) {
