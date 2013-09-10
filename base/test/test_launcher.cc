@@ -4,6 +4,10 @@
 
 #include "base/test/test_launcher.h"
 
+#if defined(OS_POSIX)
+#include <fcntl.h>
+#endif
+
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -11,6 +15,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -43,6 +48,85 @@ const FilePath::CharType kDefaultOutputFile[] = FILE_PATH_LITERAL(
     "test_detail.xml");
 
 namespace {
+
+// Set of live launch test processes with corresponding lock (it is allowed
+// for callers to launch processes on different threads).
+LazyInstance<std::set<ProcessHandle> > g_live_process_handles
+    = LAZY_INSTANCE_INITIALIZER;
+LazyInstance<Lock> g_live_process_handles_lock = LAZY_INSTANCE_INITIALIZER;
+
+#if defined(OS_POSIX)
+// Self-pipe that makes it possible to do complex shutdown handling
+// outside of the signal handler.
+int g_shutdown_pipe[2] = { -1, -1 };
+
+void ShutdownPipeSignalHandler(int signal) {
+  HANDLE_EINTR(write(g_shutdown_pipe[1], "q", 1));
+}
+
+// I/O watcher for the reading end of the self-pipe above.
+// Terminates any launched child processes and exits the process.
+class SignalFDWatcher : public MessageLoopForIO::Watcher {
+ public:
+  SignalFDWatcher() {
+  }
+
+  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE {
+    fprintf(stdout, "\nCaught signal. Killing spawned test processes...\n");
+    fflush(stdout);
+
+    // Keep the lock until exiting the process to prevent further processes
+    // from being spawned.
+    AutoLock lock(g_live_process_handles_lock.Get());
+
+    fprintf(stdout,
+            "Sending SIGTERM to %" PRIuS " child processes... ",
+            g_live_process_handles.Get().size());
+    fflush(stdout);
+
+    for (std::set<ProcessHandle>::iterator i =
+             g_live_process_handles.Get().begin();
+         i != g_live_process_handles.Get().end();
+         ++i) {
+      kill((-1) * (*i), SIGTERM);  // Send the signal to entire process group.
+    }
+
+    fprintf(stdout,
+            "done.\nGiving processes a chance to terminate cleanly... ");
+    fflush(stdout);
+
+    PlatformThread::Sleep(TimeDelta::FromMilliseconds(500));
+
+    fprintf(stdout, "done.\n");
+    fflush(stdout);
+
+    fprintf(stdout,
+            "Sending SIGKILL to %" PRIuS " child processes... ",
+            g_live_process_handles.Get().size());
+    fflush(stdout);
+
+    for (std::set<ProcessHandle>::iterator i =
+             g_live_process_handles.Get().begin();
+         i != g_live_process_handles.Get().end();
+         ++i) {
+      kill((-1) * (*i), SIGKILL);  // Send the signal to entire process group.
+    }
+
+    fprintf(stdout, "done.\n");
+    fflush(stdout);
+
+    // The signal would normally kill the process, so exit now.
+    exit(1);
+  }
+
+  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE {
+    NOTREACHED();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SignalFDWatcher);
+};
+#endif  // defined(OS_POSIX)
 
 // Parses the environment variable var as an Int32.  If it is unset, returns
 // default_val.  If it is set, unsets it then converts it to Int32 before
@@ -541,8 +625,18 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 #endif
 
   base::ProcessHandle process_handle;
-  if (!base::LaunchProcess(command_line, options, &process_handle))
-    return -1;
+
+  {
+    // Note how we grab the lock before the process possibly gets created.
+    // This ensures that when the lock is held, ALL the processes are registered
+    // in the set.
+    AutoLock lock(g_live_process_handles_lock.Get());
+
+    if (!base::LaunchProcess(command_line, options, &process_handle))
+      return -1;
+
+    g_live_process_handles.Get().insert(process_handle);
+  }
 
   int exit_code = 0;
   if (!base::WaitForExitCodeWithTimeout(process_handle,
@@ -555,15 +649,24 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     base::KillProcess(process_handle, -1, true);
   }
 
+  {
+    // Note how we grab the log before issuing a possibly broad process kill.
+    // Other code parts that grab the log kill processes, so avoid trying
+    // to do that twice and trigger all kinds of log messages.
+    AutoLock lock(g_live_process_handles_lock.Get());
+
 #if defined(OS_POSIX)
-  if (exit_code != 0) {
-    // On POSIX, in case the test does not exit cleanly, either due to a crash
-    // or due to it timing out, we need to clean up any child processes that
-    // it might have created. On Windows, child processes are automatically
-    // cleaned up using JobObjects.
-    base::KillProcessGroup(process_handle);
-  }
+    if (exit_code != 0) {
+      // On POSIX, in case the test does not exit cleanly, either due to a crash
+      // or due to it timing out, we need to clean up any child processes that
+      // it might have created. On Windows, child processes are automatically
+      // cleaned up using JobObjects.
+      base::KillProcessGroup(process_handle);
+    }
 #endif
+
+    g_live_process_handles.Get().erase(process_handle);
+  }
 
   base::CloseProcessHandle(process_handle);
 
@@ -585,6 +688,29 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
     StringToInt(command_line->GetSwitchValueASCII(kGTestRepeatFlag), &cycles);
 
   int exit_code = 0;
+
+#if defined(OS_POSIX)
+  CHECK_EQ(0, pipe(g_shutdown_pipe));
+
+  struct sigaction action;
+  memset(&action, 0, sizeof(action));
+  sigemptyset(&action.sa_mask);
+  action.sa_handler = &ShutdownPipeSignalHandler;
+
+  CHECK_EQ(0, sigaction(SIGINT, &action, NULL));
+  CHECK_EQ(0, sigaction(SIGQUIT, &action, NULL));
+  CHECK_EQ(0, sigaction(SIGTERM, &action, NULL));
+
+  MessageLoopForIO::FileDescriptorWatcher controller;
+  SignalFDWatcher watcher;
+
+  CHECK(MessageLoopForIO::current()->WatchFileDescriptor(
+            g_shutdown_pipe[0],
+            true,
+            MessageLoopForIO::WATCH_READ,
+            &controller,
+            &watcher));
+#endif  // defined(OS_POSIX)
 
   MessageLoop::current()->PostTask(
       FROM_HERE,

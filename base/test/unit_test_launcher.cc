@@ -338,7 +338,7 @@ int LaunchUnitTests(int argc,
           "--single-process-tests.\n", jobs);
   fflush(stdout);
 
-  MessageLoop message_loop;
+  MessageLoopForIO message_loop;
 
   base::UnitTestLauncherDelegate delegate(jobs, batch_limit);
   int exit_code = base::LaunchTests(&delegate, argc, argv);

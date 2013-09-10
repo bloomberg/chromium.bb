@@ -359,7 +359,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   testing::InitGoogleTest(&argc, argv);
   TestTimeouts::Initialize();
 
-  base::MessageLoop message_loop;
+  base::MessageLoopForIO message_loop;
 
   WrapperTestLauncherDelegate delegate(launcher_delegate);
   return base::LaunchTests(&delegate, argc, argv);
