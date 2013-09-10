@@ -415,13 +415,11 @@ inline void DOMWrapperMap<NPObject>::makeWeakCallback(v8::Isolate* isolate, v8::
         _NPN_ReleaseObject(npObject);
 }
 
-v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root)
+v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root, v8::Isolate* isolate)
 {
     static v8::Eternal<v8::FunctionTemplate> npObjectDesc;
 
     ASSERT(v8::Context::InContext());
-
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
 
     // If this is a v8 object, just return it.
     V8NPObject* v8NPObject = npObjectToV8NPObject(object);
