@@ -166,14 +166,14 @@ TEST_F(BrowserWindowControllerTest, TestSetBounds) {
   BrowserWindow* browser_window = [controller browserWindow];
   EXPECT_EQ(browser_window, browser->window());
   gfx::Rect bounds = browser_window->GetBounds();
-  EXPECT_EQ(400, bounds.width());
-  EXPECT_EQ(272, bounds.height());
+  EXPECT_EQ(320, bounds.width());
+  EXPECT_EQ(240, bounds.height());
 
   // Try to set the bounds smaller than the minimum.
   browser_window->SetBounds(gfx::Rect(0, 0, 50, 50));
   bounds = browser_window->GetBounds();
-  EXPECT_EQ(400, bounds.width());
-  EXPECT_EQ(272, bounds.height());
+  EXPECT_EQ(320, bounds.width());
+  EXPECT_EQ(240, bounds.height());
 
   [controller close];
 }

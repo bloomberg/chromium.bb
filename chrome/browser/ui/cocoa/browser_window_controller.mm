@@ -277,7 +277,7 @@ enum {
     // Set different minimum sizes on tabbed windows vs non-tabbed, e.g. popups.
     // This has to happen before -enforceMinWindowSize: is called further down.
     NSSize minSize = [self isTabbedWindow] ?
-      NSMakeSize(400, 272) : NSMakeSize(100, 122);
+      NSMakeSize(320, 240) : NSMakeSize(100, 122);
     [[self window] setMinSize:minSize];
 
     // Create the bar visibility lock set; 10 is arbitrary, but should hopefully
