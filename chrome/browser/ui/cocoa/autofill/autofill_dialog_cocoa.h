@@ -113,6 +113,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
   base::scoped_nsobject<AutofillAccountChooser> accountChooser_;
   base::scoped_nsobject<AutofillOverlayController> overlayController_;
   base::scoped_nsobject<NSTextField> loadingShieldTextField_;
+  base::scoped_nsobject<NSTextField> titleTextField_;
 }
 
 // Designated initializer. The WebContents cannot be NULL.

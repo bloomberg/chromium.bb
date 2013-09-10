@@ -266,6 +266,16 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     [[mainContainer_ view] setFrame:clientRect];
     [[signInContainer_ view] setFrame:clientRect];
 
+    // Set dialog title.
+    titleTextField_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
+    [titleTextField_ setEditable:NO];
+    [titleTextField_ setBordered:NO];
+    [titleTextField_ setDrawsBackground:NO];
+    [titleTextField_ setFont:[NSFont systemFontOfSize:15.0]];
+    [titleTextField_ setStringValue:
+        base::SysUTF16ToNSString(autofillDialog->delegate()->DialogTitle())];
+    [titleTextField_ sizeToFit];
+
     NSRect headerRect = clientRect;
     headerRect.size.height = kAccountChooserHeight;
     headerRect.origin.y = NSMaxY(clientRect);
@@ -300,6 +310,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
         [[FlippedView alloc] initWithFrame:NSZeroRect]);
     [flippedContentView setSubviews:
         @[accountChooser_,
+          titleTextField_,
           [mainContainer_ view],
           [signInContainer_ view],
           loadingShieldView,
@@ -378,11 +389,21 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   clientRect.size.height -= chrome_style::kTitleTopPadding +
                             chrome_style::kClientBottomPadding;
 
-  NSRect headerRect, mainRect, dummyRect;
+  NSRect headerRect, mainRect, titleRect, dummyRect;
   NSDivideRect(clientRect, &headerRect, &mainRect,
                kAccountChooserHeight, NSMinYEdge);
   NSDivideRect(mainRect, &dummyRect, &mainRect,
                autofill::kDetailTopPadding, NSMinYEdge);
+  NSDivideRect(headerRect, &titleRect, &headerRect,
+               NSWidth([titleTextField_ frame]), NSMinXEdge);
+
+  // Align baseline of title with bottom of accountChooser.
+  base::scoped_nsobject<NSLayoutManager> layout_manager(
+      [[NSLayoutManager alloc] init]);
+  NSFont* titleFont = [titleTextField_ font];
+  titleRect.origin.y += NSHeight(titleRect) -
+      [layout_manager defaultBaselineOffsetForFont:titleFont];
+  [titleTextField_ setFrame:titleRect];
 
   [accountChooser_ setFrame:headerRect];
   if ([[signInContainer_ view] isHidden]) {
