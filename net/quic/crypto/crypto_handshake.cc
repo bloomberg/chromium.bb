@@ -792,9 +792,9 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
 }
 
 QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
-    CachedState* cached,
     const CryptoHandshakeMessage& rej,
     QuicWallTime now,
+    CachedState* cached,
     QuicCryptoNegotiatedParameters* out_params,
     string* error_details) {
   DCHECK(error_details != NULL);
@@ -856,6 +856,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
 QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
     const CryptoHandshakeMessage& server_hello,
     QuicGuid guid,
+    CachedState* cached,
     QuicCryptoNegotiatedParameters* out_params,
     string* error_details) {
   DCHECK(error_details != NULL);
@@ -863,6 +864,12 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
   if (server_hello.tag() != kSHLO) {
     *error_details = "Bad tag";
     return QUIC_INVALID_CRYPTO_MESSAGE_TYPE;
+  }
+
+  // Learn about updated source address tokens.
+  StringPiece token;
+  if (server_hello.GetStringPiece(kSourceAddressTokenTag, &token)) {
+    cached->set_source_address_token(token);
   }
 
   // TODO(agl):

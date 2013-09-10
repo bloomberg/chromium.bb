@@ -234,7 +234,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           return;
         }
         error = crypto_config_->ProcessRejection(
-            cached, *in, session()->connection()->clock()->WallNow(),
+            *in, session()->connection()->clock()->WallNow(), cached,
             &crypto_negotiated_params_, &error_details);
         if (error != QUIC_NO_ERROR) {
           CloseConnectionWithDetails(error, error_details);
@@ -334,8 +334,8 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           return;
         }
         error = crypto_config_->ProcessServerHello(
-            *in, session()->connection()->guid(), &crypto_negotiated_params_,
-            &error_details);
+            *in, session()->connection()->guid(), cached,
+            &crypto_negotiated_params_, &error_details);
         if (error != QUIC_NO_ERROR) {
           CloseConnectionWithDetails(
               error, "Server hello invalid: " + error_details);

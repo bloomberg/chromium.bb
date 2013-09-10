@@ -352,18 +352,20 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // state about a future handshake (i.e. an nonce value from the server), then
   // it will be saved in |out_params|. |now| is used to judge whether the
   // server config in the rejection message has expired.
-  QuicErrorCode ProcessRejection(CachedState* cached,
-                                 const CryptoHandshakeMessage& rej,
+  QuicErrorCode ProcessRejection(const CryptoHandshakeMessage& rej,
                                  QuicWallTime now,
+                                 CachedState* cached,
                                  QuicCryptoNegotiatedParameters* out_params,
                                  std::string* error_details);
 
-  // ProcessServerHello processes the message in |server_hello|, writes the
-  // negotiated parameters to |out_params| and returns QUIC_NO_ERROR. If
-  // |server_hello| is unacceptable then it puts an error message in
-  // |error_details| and returns an error code.
+  // ProcessServerHello processes the message in |server_hello|, updates the
+  // cached information about that server, writes the negotiated parameters to
+  // |out_params| and returns QUIC_NO_ERROR. If |server_hello| is unacceptable
+  // then it puts an error message in |error_details| and returns an error
+  // code.
   QuicErrorCode ProcessServerHello(const CryptoHandshakeMessage& server_hello,
                                    QuicGuid guid,
+                                   CachedState* cached,
                                    QuicCryptoNegotiatedParameters* out_params,
                                    std::string* error_details);
 
