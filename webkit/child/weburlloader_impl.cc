@@ -531,7 +531,7 @@ void WebURLLoaderImpl::Context::Start(
                 base::Time::FromDoubleT(element.modificationTime));
           }
           break;
-        case WebHTTPBody::Element::TypeURL: {
+        case WebHTTPBody::Element::TypeFileSystemURL: {
           GURL url = GURL(element.url);
           DCHECK(url.SchemeIsFileSystem());
           request_body->AppendFileSystemFileRange(

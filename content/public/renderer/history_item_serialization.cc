@@ -41,7 +41,7 @@ void ToExplodedHttpBodyElement(const WebHTTPBody::Element& input,
       output->file_length = input.fileLength;
       output->file_modification_time = input.modificationTime;
       break;
-    case WebHTTPBody::Element::TypeURL:
+    case WebHTTPBody::Element::TypeFileSystemURL:
       output->filesystem_url = input.url;
       output->file_start = input.fileStart;
       output->file_length = input.fileLength;
@@ -66,7 +66,7 @@ void AppendHTTPBodyElement(const ExplodedHttpBodyElement& element,
           element.file_length,
           element.file_modification_time);
       break;
-    case WebHTTPBody::Element::TypeURL:
+    case WebHTTPBody::Element::TypeFileSystemURL:
       http_body->appendURLRange(
           element.filesystem_url,
           element.file_start,

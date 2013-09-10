@@ -50,7 +50,7 @@ void AppendURLRangeToHttpBody(ExplodedHttpBody* http_body,
                               int file_length,
                               double file_modification_time) {
   ExplodedHttpBodyElement element;
-  element.type = WebKit::WebHTTPBody::Element::TypeURL;
+  element.type = WebKit::WebHTTPBody::Element::TypeFileSystemURL;
   element.filesystem_url = url;
   element.file_start = file_start;
   element.file_length = file_length;
@@ -396,7 +396,8 @@ void WriteHttpBody(const ExplodedHttpBody& http_body, SerializeObject* obj) {
       WriteInteger64(element.file_start, obj);
       WriteInteger64(element.file_length, obj);
       WriteReal(element.file_modification_time, obj);
-    } else if (element.type == WebKit::WebHTTPBody::Element::TypeURL) {
+    } else if (element.type ==
+               WebKit::WebHTTPBody::Element::TypeFileSystemURL) {
       WriteGURL(element.filesystem_url, obj);
       WriteInteger64(element.file_start, obj);
       WriteInteger64(element.file_length, obj);
@@ -435,7 +436,7 @@ void ReadHttpBody(SerializeObject* obj, ExplodedHttpBody* http_body) {
       double file_modification_time = ReadReal(obj);
       AppendFileRangeToHttpBody(http_body, file_path, file_start, file_length,
                                 file_modification_time);
-    } else if (type == WebKit::WebHTTPBody::Element::TypeURL) {
+    } else if (type == WebKit::WebHTTPBody::Element::TypeFileSystemURL) {
       GURL url = ReadGURL(obj);
       int64 file_start = ReadInteger64(obj);
       int64 file_length = ReadInteger64(obj);
