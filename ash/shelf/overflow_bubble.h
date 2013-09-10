@@ -10,6 +10,10 @@
 #include "ui/base/events/event_handler.h"
 #include "ui/views/widget/widget_observer.h"
 
+namespace ui {
+class LocatedEvent;
+}
+
 namespace views {
 class View;
 }
@@ -39,6 +43,8 @@ class OverflowBubble : public ui::EventHandler,
   LauncherView* launcher_view() { return launcher_view_; }
 
  private:
+  void ProcessPressedEvent(ui::LocatedEvent* event);
+
   // Overridden from ui::EventHandler:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;

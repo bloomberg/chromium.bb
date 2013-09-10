@@ -283,20 +283,25 @@ void OverflowBubble::Hide() {
   launcher_view_ = NULL;
 }
 
-void OverflowBubble::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED &&
-      !bubble_->GetBoundsInScreen().Contains(event->root_location()) &&
+void OverflowBubble::ProcessPressedEvent(ui::LocatedEvent* event) {
+  if (!bubble_->GetBoundsInScreen().Contains(event->root_location()) &&
       !anchor_->GetBoundsInScreen().Contains(event->root_location())) {
+    views::View* anchor = anchor_;
     Hide();
+    // Update overflow button (|anchor|) status when overflow bubble is hidden
+    // by outside event of overflow button.
+    anchor->SchedulePaint();
   }
 }
 
+void OverflowBubble::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    ProcessPressedEvent(event);
+}
+
 void OverflowBubble::OnTouchEvent(ui::TouchEvent* event) {
-  if (event->type() == ui::ET_TOUCH_PRESSED &&
-      !bubble_->GetBoundsInScreen().Contains(event->root_location()) &&
-      !anchor_->GetBoundsInScreen().Contains(event->root_location())) {
-    Hide();
-  }
+  if (event->type() == ui::ET_TOUCH_PRESSED)
+    ProcessPressedEvent(event);
 }
 
 void OverflowBubble::OnWidgetDestroying(views::Widget* widget) {
