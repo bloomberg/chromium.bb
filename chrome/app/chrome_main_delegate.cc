@@ -5,6 +5,7 @@
 #include "chrome/app/chrome_main_delegate.h"
 
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
@@ -608,6 +609,19 @@ void ChromeMainDelegate::PreSandboxStartup() {
   // Notice a user data directory override if any
   base::FilePath user_data_dir =
       command_line.GetSwitchValuePath(switches::kUserDataDir);
+#if defined(OS_LINUX)
+  // On Linux, Chrome does not support running multiple copies under different
+  // DISPLAYs, so the profile directory can be specified in the environment to
+  // support the virtual desktop use-case.
+  if (user_data_dir.empty()) {
+    std::string user_data_dir_string;
+    scoped_ptr<base::Environment> environment(base::Environment::Create());
+    if (environment->GetVar("CHROME_USER_DATA_DIR", &user_data_dir_string) &&
+        IsStringUTF8(user_data_dir_string)) {
+      user_data_dir = base::FilePath::FromUTF8Unsafe(user_data_dir_string);
+    }
+  }
+#endif
 #if defined(OS_MACOSX) || defined(OS_WIN)
   policy::path_parser::CheckUserDataDirPolicy(&user_data_dir);
 #endif
