@@ -1466,6 +1466,29 @@ class AndroidCommands(object):
 
       return False
 
+  def IsFileWritableOnDevice(self, file_name):
+    """Checks whether the given file (or directory) is writable on the device.
+
+    Args:
+      file_name: Full path of file/directory to check.
+
+    Returns:
+      True if writable, False otherwise.
+    """
+    assert '"' not in file_name, 'file_name cannot contain double quotes'
+    try:
+      status = self._adb.SendShellCommand(
+          '\'test -w "%s"; echo $?\'' % (file_name))
+      if 'test: not found' not in status:
+        return int(status) == 0
+      raise errors.AbortError('"test" binary not found. OS too old.')
+
+    except ValueError:
+      if IsDeviceAttached(self._device):
+        raise errors.DeviceUnresponsiveError('Device may be offline.')
+
+      return False
+
   def TakeScreenshot(self, host_file):
     """Saves a screenshot image to |host_file| on the host.
 
