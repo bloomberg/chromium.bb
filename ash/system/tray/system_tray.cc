@@ -365,6 +365,12 @@ void SystemTray::DestroySystemBubble() {
   system_bubble_.reset();
   detailed_item_ = NULL;
   UpdateWebNotifications();
+  // When closing a system bubble with the alternate shelf layout, we need to
+  // turn off the active tinting of the shelf.
+  if (full_system_tray_menu_) {
+    SetDrawBackgroundAsActive(false);
+    full_system_tray_menu_ = false;
+  }
 }
 
 void SystemTray::DestroyNotificationBubble() {
@@ -586,12 +592,6 @@ void SystemTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
     DestroySystemBubble();
     UpdateNotificationBubble();  // State changed, re-create notifications.
     GetShelfLayoutManager()->UpdateAutoHideState();
-    // When closing a system bubble with the alternate shelf layout, we need to
-    // turn off the active tinting of the shelf.
-    if (full_system_tray_menu_) {
-      SetDrawBackgroundAsActive(false);
-      full_system_tray_menu_ = false;
-    }
   } else if (notification_bubble_.get() &&
              bubble_view == notification_bubble_->bubble_view()) {
     DestroyNotificationBubble();
