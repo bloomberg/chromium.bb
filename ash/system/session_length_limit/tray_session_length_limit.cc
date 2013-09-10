@@ -76,11 +76,25 @@ base::string16 FormatRemainingSessionTimeNotification(
       ui::TimeFormat::TimeDurationLong(remaining_session_time));
 }
 
+// Creates, or updates the notification for session length timeout with
+// |remaining_time|.  |state_changed| is true when its internal state has been
+// changed from another.
 void CreateOrUpdateNotification(const base::TimeDelta& remaining_time,
-                                bool enable_spoken_feedback) {
+                                bool state_changed) {
+  message_center::MessageCenter* message_center =
+      message_center::MessageCenter::Get();
+
+  // Do not create a new notification if no state has changed. It may happen
+  // when the notification is already closed by the user, see crbug.com/285941.
+  if (!state_changed &&
+      !message_center->HasNotification(kSessionLengthTimeoutNotificationId)) {
+    return;
+  }
+
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   message_center::RichNotificationData data;
-  data.should_make_spoken_feedback_for_popup_updates = enable_spoken_feedback;
+  // Makes the spoken feedback only when the state has been changed.
+  data.should_make_spoken_feedback_for_popup_updates = state_changed;
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kSessionLengthTimeoutNotificationId,
