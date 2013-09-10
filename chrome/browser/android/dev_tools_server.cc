@@ -148,6 +148,12 @@ DevToolsServer::DevToolsServer(const std::string& socket_name_prefix)
     : socket_name_(base::StringPrintf(kDevToolsChannelNameFormat,
                                       socket_name_prefix.c_str())),
       protocol_handler_(NULL) {
+  // Override the socket name if one is specified on the command line.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kRemoteDebuggingSocketName)) {
+    socket_name_ = command_line.GetSwitchValueASCII(
+        switches::kRemoteDebuggingSocketName);
+  }
 }
 
 DevToolsServer::~DevToolsServer() {

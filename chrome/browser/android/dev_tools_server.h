@@ -16,6 +16,8 @@ class DevToolsHttpHandler;
 // This class controls Developer Tools remote debugging server.
 class DevToolsServer {
  public:
+  // TODO(mnaganov): Remove the prefixless constructor after having its
+  // usage removed in the Chrome for Android code.
   DevToolsServer();
   explicit DevToolsServer(const std::string& socket_name_prefix);
   ~DevToolsServer();
