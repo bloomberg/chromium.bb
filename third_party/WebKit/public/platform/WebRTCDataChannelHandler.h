@@ -43,12 +43,12 @@ public:
     // DEPRECATED
     virtual bool isReliable() { return true; }
 
-    virtual bool ordered() const { return false; }
-    virtual unsigned short maxRetransmitTime() const { return 0; }
-    virtual unsigned short maxRetransmits() const { return 0; }
-    virtual WebString protocol() const { return WebString(); }
-    virtual bool negotiated() const { return true; }
-    virtual unsigned short id() const { return 0; }
+    virtual bool ordered() const = 0;
+    virtual unsigned short maxRetransmitTime() const = 0;
+    virtual unsigned short maxRetransmits() const = 0;
+    virtual WebString protocol() const = 0;
+    virtual bool negotiated() const = 0;
+    virtual unsigned short id() const = 0;
 
     virtual unsigned long bufferedAmount() = 0;
     virtual bool sendStringData(const WebString&) = 0;
