@@ -5,7 +5,7 @@
 #ifndef ASH_SHELL_CONTEXT_MENU_H_
 #define ASH_SHELL_CONTEXT_MENU_H_
 
-#include "ash/launcher/launcher_alignment_menu.h"
+#include "ash/shelf/shelf_alignment_menu.h"
 #include "ash/shelf/shelf_types.h"
 #include "base/basictypes.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -40,7 +40,7 @@ class ContextMenu : public ui::SimpleMenuModel,
 
   aura::RootWindow* root_window_;
 
-  LauncherAlignmentMenu alignment_menu_;
+  ShelfAlignmentMenu alignment_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenu);
 };

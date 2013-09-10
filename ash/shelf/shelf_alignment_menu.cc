@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/launcher_alignment_menu.h"
+#include "ash/shelf/shelf_alignment_menu.h"
 
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
@@ -13,7 +13,7 @@
 
 namespace ash {
 
-LauncherAlignmentMenu::LauncherAlignmentMenu(aura::RootWindow* root)
+ShelfAlignmentMenu::ShelfAlignmentMenu(aura::RootWindow* root)
     : ui::SimpleMenuModel(NULL),
       root_window_(root) {
   DCHECK(root_window_);
@@ -30,9 +30,9 @@ LauncherAlignmentMenu::LauncherAlignmentMenu(aura::RootWindow* root)
                            align_group_id);
 }
 
-LauncherAlignmentMenu::~LauncherAlignmentMenu() {}
+ShelfAlignmentMenu::~ShelfAlignmentMenu() {}
 
-bool LauncherAlignmentMenu::IsCommandIdChecked(int command_id) const {
+bool ShelfAlignmentMenu::IsCommandIdChecked(int command_id) const {
   return internal::ShelfLayoutManager::ForLauncher(root_window_)->
       SelectValueForShelfAlignment(
           MENU_ALIGN_BOTTOM == command_id,
@@ -41,17 +41,17 @@ bool LauncherAlignmentMenu::IsCommandIdChecked(int command_id) const {
           false);
 }
 
-bool LauncherAlignmentMenu::IsCommandIdEnabled(int command_id) const {
+bool ShelfAlignmentMenu::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-bool LauncherAlignmentMenu::GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) {
+bool ShelfAlignmentMenu::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) {
   return false;
 }
 
-void LauncherAlignmentMenu::ExecuteCommand(int command_id, int event_flags) {
+void ShelfAlignmentMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_ALIGN_LEFT:
       Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_LEFT,

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_LAUNCHER_LAUNCHER_ALIGNMENT_MENU_H_
-#define ASH_WM_LAUNCHER_LAUNCHER_ALIGNMENT_MENU_H_
+#ifndef ASH_SHELF_SHELF_ALIGNMENT_MENU_H_
+#define ASH_SHELF_SHELF_ALIGNMENT_MENU_H_
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
@@ -16,11 +16,11 @@ class RootWindow;
 namespace ash {
 
 // Submenu for choosing the alignment of the launcher.
-class ASH_EXPORT LauncherAlignmentMenu : public ui::SimpleMenuModel,
-                                         public ui::SimpleMenuModel::Delegate {
+class ASH_EXPORT ShelfAlignmentMenu : public ui::SimpleMenuModel,
+                                      public ui::SimpleMenuModel::Delegate {
  public:
-  explicit LauncherAlignmentMenu(aura::RootWindow* root);
-  virtual ~LauncherAlignmentMenu();
+  explicit ShelfAlignmentMenu(aura::RootWindow* root);
+  virtual ~ShelfAlignmentMenu();
 
   // ui::SimpleMenuModel::Delegate overrides:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
@@ -40,9 +40,9 @@ class ASH_EXPORT LauncherAlignmentMenu : public ui::SimpleMenuModel,
 
   aura::RootWindow* root_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherAlignmentMenu);
+  DISALLOW_COPY_AND_ASSIGN(ShelfAlignmentMenu);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_LAUNCHER_LAUNCHER_ALIGNMENT_MENU_H_
+#endif  // ASH_SHELF_SHELF_ALIGNMENT_MENU_H_

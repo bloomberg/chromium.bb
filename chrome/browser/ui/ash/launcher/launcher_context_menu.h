@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
 
-#include "ash/launcher/launcher_alignment_menu.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_alignment_menu.h"
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -84,7 +84,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
 
   ash::LauncherItem item_;
 
-  ash::LauncherAlignmentMenu launcher_alignment_menu_;
+  ash::ShelfAlignmentMenu shelf_alignment_menu_;
 
   scoped_ptr<extensions::ContextMenuMatcher> extension_items_;
 

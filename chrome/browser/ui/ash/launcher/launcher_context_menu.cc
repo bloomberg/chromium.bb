@@ -42,7 +42,7 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
     : ui::SimpleMenuModel(NULL),
       controller_(controller),
       item_(*item),
-      launcher_alignment_menu_(root),
+      shelf_alignment_menu_(root),
       root_window_(root) {
   DCHECK(item);
   DCHECK(root_window_);
@@ -54,7 +54,7 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
     : ui::SimpleMenuModel(NULL),
       controller_(controller),
       item_(ash::LauncherItem()),
-      launcher_alignment_menu_(root),
+      shelf_alignment_menu_(root),
       extension_items_(new extensions::ContextMenuMatcher(
           controller->profile(), this, this,
           base::Bind(MenuItemHasLauncherContext))),
@@ -148,7 +148,7 @@ void LauncherContextMenu::Init() {
   if (ash::ShelfWidget::ShelfAlignmentAllowed()) {
     AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
                            IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
-                           &launcher_alignment_menu_);
+                           &shelf_alignment_menu_);
   }
 #if defined(OS_CHROMEOS)
   AddItem(MENU_CHANGE_WALLPAPER,
