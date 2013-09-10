@@ -81,6 +81,8 @@ bool AudioManagerMac::HasUnifiedDefaultIO() {
   return input_id == output_id;
 }
 
+// Retrieves information on audio devices, and prepends the default
+// device to the list if the list is non-empty.
 static void GetAudioDeviceInfo(bool is_input,
                                media::AudioDeviceNames* device_names) {
   // Query the number of total devices.
@@ -172,6 +174,16 @@ static void GetAudioDeviceInfo(bool is_input,
       CFRelease(uid);
     if (name)
       CFRelease(name);
+  }
+
+  if (!device_names->empty()) {
+    // Prepend the default device to the list since we always want it to be
+    // on the top of the list for all platforms. There is no duplicate
+    // counting here since the default device has been abstracted out before.
+    media::AudioDeviceName name;
+    name.device_name = AudioManagerBase::kDefaultDeviceName;
+    name.unique_id = AudioManagerBase::kDefaultDeviceId;
+    device_names->push_front(name);
   }
 }
 
@@ -396,15 +408,12 @@ void AudioManagerMac::GetAudioInputDeviceNames(
     media::AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
   GetAudioDeviceInfo(true, device_names);
-  if (!device_names->empty()) {
-    // Prepend the default device to the list since we always want it to be
-    // on the top of the list for all platforms. There is no duplicate
-    // counting here since the default device has been abstracted out before.
-    media::AudioDeviceName name;
-    name.device_name = AudioManagerBase::kDefaultDeviceName;
-    name.unique_id =  AudioManagerBase::kDefaultDeviceId;
-    device_names->push_front(name);
-  }
+}
+
+void AudioManagerMac::GetAudioOutputDeviceNames(
+    media::AudioDeviceNames* device_names) {
+  DCHECK(device_names->empty());
+  GetAudioDeviceInfo(false, device_names);
 }
 
 AudioParameters AudioManagerMac::GetInputStreamParameters(

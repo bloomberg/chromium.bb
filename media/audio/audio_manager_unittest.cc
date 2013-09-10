@@ -32,6 +32,8 @@ void GetAudioOutputDeviceNamesImpl(AudioManager* audio_manager) {
 }
 
 TEST(AudioManagerTest, GetAudioOutputDeviceNames) {
+  // On Linux, we may be able to test both the Alsa and Pulseaudio
+  // versions of the audio manager.
 #if defined(USE_PULSEAUDIO)
   {
     VLOG(2) << "Testing AudioManagerPulse.";
@@ -49,6 +51,12 @@ TEST(AudioManagerTest, GetAudioOutputDeviceNames) {
     GetAudioOutputDeviceNamesImpl(alsa_audio_manager.get());
   }
 #endif  // defined(USE_ALSA)
+
+#if defined(OS_MACOSX)
+  VLOG(2) << "Testing platform-default AudioManager.";
+  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  GetAudioOutputDeviceNamesImpl(audio_manager.get());
+#endif  // defined(OS_MACOSX)
 }
 
 }  // namespace media

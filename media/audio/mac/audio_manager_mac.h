@@ -29,6 +29,8 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   virtual bool HasAudioInputDevices() OVERRIDE;
   virtual void GetAudioInputDeviceNames(media::AudioDeviceNames* device_names)
       OVERRIDE;
+  virtual void GetAudioOutputDeviceNames(media::AudioDeviceNames* device_names)
+      OVERRIDE;
   virtual AudioParameters GetInputStreamParameters(
       const std::string& device_id) OVERRIDE;
 
