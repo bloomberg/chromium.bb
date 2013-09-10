@@ -86,15 +86,18 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   typedef base::Callback<void (const std::string&)> GetVersionCallback;
 
   struct UsageStatsConsent {
+    // Indicates whether crash dump reporting is supported by the host.
     bool supported;
+
+    // Indicates if crash dump reporting is allowed by the user.
     bool allowed;
+
+    // Carries information whether the crash dump reporting is controlled by
+    // policy.
     bool set_by_policy;
   };
 
-  // Callback type for GetUsageStatsConsent(). |supported| indicates whether
-  // crash dump reporting is supported by the host. |allowed| indicates if
-  // crash dump reporting is allowed by the user. |set_by_policy| carries
-  // information whether the crash dump reporting is controlled by policy.
+  // Callback type for GetUsageStatsConsent().
   typedef base::Callback<void (const UsageStatsConsent&)>
       GetUsageStatsConsentCallback;
 
@@ -103,8 +106,9 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   // exceptions:
   //   - GetState() is synchronous and called on the UI thread. It should avoid
   //         accessing any data members of the implementation.
-  //   - SetConfigAndStart() is non blocking. |done| callback is posted to
-  //         |task_runner| when the operation completes.
+  //   - SetConfigAndStart(), UpdateConfig() and Stop() indicate completion via
+  //         a callback. There methods are still can be long running and should
+  //         be caled on a background thread.
   class Delegate {
    public:
     virtual ~Delegate() {}
@@ -118,8 +122,8 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
     virtual scoped_ptr<base::DictionaryValue> GetConfig() = 0;
 
     // Starts the daemon process. This may require that the daemon be
-    // downloaded and installed. |done| is invoked when the operation is
-    // finished or fails.
+    // downloaded and installed. |done| is invoked on the calling thread when
+    // the operation is completed.
     virtual void SetConfigAndStart(
         scoped_ptr<base::DictionaryValue> config,
         bool consent,
@@ -128,12 +132,14 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
     // Updates current host configuration with the values specified in
     // |config|. Any value in the existing configuration that isn't specified in
     // |config| is preserved. |config| must not contain host_id or xmpp_login
-    // values, because implementations of this method cannot change them.
+    // values, because implementations of this method cannot change them. |done|
+    // is invoked on the calling thread when the operation is completed.
     virtual void UpdateConfig(
         scoped_ptr<base::DictionaryValue> config,
         const CompletionCallback& done) = 0;
 
-    // Stops the daemon process.
+    // Stops the daemon process. |done| is invoked on the calling thread when
+    // the operation is completed.
     virtual void Stop(const CompletionCallback& done) = 0;
 
     // Caches the native handle of the plugin window so it can be used to focus
@@ -244,7 +250,7 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
 
   // Task runner used to run blocking calls to the delegate. A single thread
-  // task runner is used to guarantee that one one method of the delegate is
+  // task runner is used to guarantee that one method of the delegate is
   // called at a time.
   scoped_refptr<AutoThreadTaskRunner> delegate_task_runner_;
 

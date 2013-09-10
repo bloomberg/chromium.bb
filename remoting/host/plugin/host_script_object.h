@@ -226,37 +226,40 @@ class HostNPScriptObject {
   // Helper methods for Me2Me host.
 
   // Helpers for GenerateKeyPair().
-  void DoGenerateKeyPair(const ScopedRefNPObject& callback);
-  void InvokeGenerateKeyPairCallback(const ScopedRefNPObject& callback,
+  static void DoGenerateKeyPair(
+      const scoped_refptr<AutoThreadTaskRunner>& plugin_task_runner,
+      const base::Callback<void (const std::string&,
+                                 const std::string&)>& callback);
+  void InvokeGenerateKeyPairCallback(scoped_ptr<ScopedRefNPObject> callback,
                                      const std::string& private_key,
                                      const std::string& public_key);
 
-
   // Callback handler for SetConfigAndStart(), Stop(), SetPin() and
   // SetUsageStatsConsent() in DaemonController.
-  void InvokeAsyncResultCallback(const ScopedRefNPObject& callback,
+  void InvokeAsyncResultCallback(scoped_ptr<ScopedRefNPObject> callback,
                                  DaemonController::AsyncResult result);
 
   // Callback handler for PairingRegistry methods that return a boolean
   // success status.
-  void InvokeBooleanCallback(const ScopedRefNPObject& callback, bool result);
+  void InvokeBooleanCallback(scoped_ptr<ScopedRefNPObject> callback,
+                             bool result);
 
   // Callback handler for DaemonController::GetConfig().
-  void InvokeGetDaemonConfigCallback(const ScopedRefNPObject& callback,
+  void InvokeGetDaemonConfigCallback(scoped_ptr<ScopedRefNPObject> callback,
                                      scoped_ptr<base::DictionaryValue> config);
 
   // Callback handler for DaemonController::GetVersion().
-  void InvokeGetDaemonVersionCallback(const ScopedRefNPObject& callback,
+  void InvokeGetDaemonVersionCallback(scoped_ptr<ScopedRefNPObject> callback,
                                       const std::string& version);
 
   // Callback handler for GetPairedClients().
   void InvokeGetPairedClientsCallback(
-      const ScopedRefNPObject& callback,
+      scoped_ptr<ScopedRefNPObject> callback,
       scoped_ptr<base::ListValue> paired_clients);
 
   // Callback handler for DaemonController::GetUsageStatsConsent().
   void InvokeGetUsageStatsConsentCallback(
-      const ScopedRefNPObject& callback,
+      scoped_ptr<ScopedRefNPObject> callback,
       const DaemonController::UsageStatsConsent& consent);
 
   //////////////////////////////////////////////////////////
@@ -268,7 +271,7 @@ class HostNPScriptObject {
 
   // Helper function for executing InvokeDefault on an NPObject, and ignoring
   // the return value.
-  bool InvokeAndIgnoreResult(NPObject* func,
+  bool InvokeAndIgnoreResult(const ScopedRefNPObject& func,
                              const NPVariant* args,
                              uint32_t arg_count);
 
