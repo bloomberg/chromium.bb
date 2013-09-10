@@ -12233,7 +12233,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <message name="IDS_FILE_BROWSER_SUGGEST_DIALOG_TITLE" desc="Title of the suggest app dialog, which shows the list of the apps which supports the selected file.">
-        Select an app to open this file.
+        Select an app to open this file
       </message>
       <message name="IDS_FILE_BROWSER_SUGGEST_DIALOG_LINK_TO_WEBSTORE" desc="Text of the link to the app list on Chrome Webstore, which shows the more apps than in the suggest app dialog.">
         See more...
