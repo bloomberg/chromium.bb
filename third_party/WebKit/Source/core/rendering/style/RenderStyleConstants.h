@@ -170,6 +170,9 @@ enum EFillSizeType { Contain, Cover, SizeLength, SizeNone };
 // CSS3 Background Position
 enum BackgroundEdgeOrigin { TopEdge, RightEdge, BottomEdge, LeftEdge };
 
+// CSS Mask Source Types
+enum EMaskSourceType { MaskAlpha, MaskLuminance };
+
 // CSS3 Marquee Properties
 
 enum EMarqueeBehavior { MNONE, MSCROLL, MSLIDE, MALTERNATE };

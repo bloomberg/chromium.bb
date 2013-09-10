@@ -112,6 +112,7 @@ static void setPropertySwitchesFromRuntimeFeatures()
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyPaintOrder, RuntimeEnabledFeatures::svgPaintOrderEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyVariable, RuntimeEnabledFeatures::cssVariablesEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyObjectFit, RuntimeEnabledFeatures::objectFitPositionEnabled());
+    RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyMaskSourceType, RuntimeEnabledFeatures::cssMaskSourceTypeEnabled());
 }
 
 static BoolVector& propertySwitches()

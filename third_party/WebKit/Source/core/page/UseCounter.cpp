@@ -494,6 +494,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyAnimationTimingFunction: return 432;
     case CSSPropertyObjectFit: return 433;
     case CSSPropertyPaintOrder: return 434;
+    case CSSPropertyMaskSourceType: return 435;
 
     // Add new features above this line (don't change the assigned numbers of the existing
     // items) and update maximumCSSSampleId() with the new maximum value.

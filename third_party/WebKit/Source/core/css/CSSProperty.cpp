@@ -446,6 +446,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyMarginTop:
     case CSSPropertyMask:
     case CSSPropertyMaskType:
+    case CSSPropertyMaskSourceType:
     case CSSPropertyMaxHeight:
     case CSSPropertyMaxWidth:
     case CSSPropertyMinHeight:

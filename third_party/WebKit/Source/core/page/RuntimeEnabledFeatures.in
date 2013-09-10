@@ -23,6 +23,7 @@ CSSAnimationUnprefixed status=experimental
 CSSCompositing status=experimental
 CSSExclusions status=experimental
 CSSGridLayout status=experimental
+CSSMaskSourceType status=experimental
 CSSRegions status=experimental
 CSSShapes status=experimental
 CSSTouchAction status=test

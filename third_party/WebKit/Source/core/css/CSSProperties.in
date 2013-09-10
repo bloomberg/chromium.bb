@@ -75,6 +75,7 @@ margin-bottom type_name=Length, initial=initialMargin, converter=convertLengthOr
 margin-left type_name=Length, initial=initialMargin, converter=convertLengthOrAuto
 margin-right type_name=Length, initial=initialMargin, converter=convertLengthOrAuto
 margin-top type_name=Length, initial=initialMargin, converter=convertLengthOrAuto
+mask-source-type custom_all
 max-height type_name=Length, initial=initialMaxSize, converter=convertLengthMaxSizing
 max-width type_name=Length, initial=initialMaxSize, converter=convertLengthMaxSizing
 min-height type_name=Length, initial=initialMinSize, converter=convertLengthSizing

@@ -362,6 +362,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyMarkerMid,
     CSSPropertyMarkerStart,
     CSSPropertyMaskType,
+    CSSPropertyMaskSourceType,
     CSSPropertyShapeRendering,
     CSSPropertyStroke,
     CSSPropertyStrokeDasharray,
@@ -1405,6 +1406,20 @@ static PassRefPtr<CSSValue> valueForFillRepeat(EFillRepeat xRepeat, EFillRepeat 
     return list.release();
 }
 
+static PassRefPtr<CSSValue> valueForFillSourceType(EMaskSourceType type)
+{
+    switch (type) {
+    case MaskAlpha:
+        return cssValuePool().createValue(CSSValueAlpha);
+    case MaskLuminance:
+        return cssValuePool().createValue(CSSValueLuminance);
+    }
+
+    ASSERT_NOT_REACHED();
+
+    return 0;
+}
+
 static PassRefPtr<CSSValue> valueForFillSize(const FillSize& fillSize, const RenderStyle* style)
 {
     if (fillSize.type == Contain)
@@ -1696,6 +1711,21 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
             for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next())
                 list->append(valueForFillRepeat(currLayer->repeatX(), currLayer->repeatY()));
+
+            return list.release();
+        }
+        case CSSPropertyMaskSourceType: {
+            const FillLayer* layers = style->maskLayers();
+
+            if (!layers)
+                return cssValuePool().createIdentifierValue(CSSValueNone);
+
+            if (!layers->next())
+                return valueForFillSourceType(layers->maskSourceType());
+
+            RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+            for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next())
+                list->append(valueForFillSourceType(currLayer->maskSourceType()));
 
             return list.release();
         }

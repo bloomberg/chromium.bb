@@ -1946,6 +1946,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitBackgroundComposite:
     case CSSPropertyBackgroundImage:
     case CSSPropertyBackgroundOrigin:
+    case CSSPropertyMaskSourceType:
     case CSSPropertyWebkitBackgroundOrigin:
     case CSSPropertyBackgroundPosition:
     case CSSPropertyBackgroundPositionX:
@@ -4242,6 +4243,17 @@ bool CSSParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& propId1, 
                     currValue = parseFillSize(propId, allowComma);
                     if (currValue)
                         m_valueList->next();
+                    break;
+                }
+                case CSSPropertyMaskSourceType: {
+                    if (RuntimeEnabledFeatures::cssMaskSourceTypeEnabled()) {
+                        if (val->id == CSSValueAuto || val->id == CSSValueAlpha || val->id == CSSValueLuminance) {
+                            currValue = cssValuePool().createIdentifierValue(val->id);
+                            m_valueList->next();
+                        } else {
+                            currValue = 0;
+                        }
+                    }
                     break;
                 }
                 default:

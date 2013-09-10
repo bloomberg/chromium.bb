@@ -2123,6 +2123,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyColorRendering:
     case CSSPropertyDominantBaseline:
     case CSSPropertyFillRule:
+    case CSSPropertyMaskSourceType:
     case CSSPropertyMaskType:
     case CSSPropertyShapeRendering:
     case CSSPropertyStrokeLinecap:
