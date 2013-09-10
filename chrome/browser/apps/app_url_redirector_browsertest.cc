@@ -436,8 +436,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppUrlRedirectorBrowserTest,
 
 // Test that a form submission in a page is never subject to interception
 // by apps even with matching url_handlers.
+// Test disabled due to flakiness (http://crbug.com/288984).
 IN_PROC_BROWSER_TEST_F(PlatformAppUrlRedirectorBrowserTest,
-                       FormSubmissionInTabNotIntercepted) {
+                       DISABLED_FormSubmissionInTabNotIntercepted) {
   TestNegativeNavigationInBrowser(
       "url_handlers/common/target.html",
       content::PAGE_TRANSITION_FORM_SUBMIT,
