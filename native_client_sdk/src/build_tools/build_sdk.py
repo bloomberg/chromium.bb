@@ -657,9 +657,9 @@ def BuildStepUpdateUserProjects(pepperdir, toolchains,
 
   # Update examples and libraries
   filters['DEST'] = [
+    'getting_started',
     'examples/api',
     'examples/demo',
-    'examples/getting_started',
     'examples/tutorial',
     'src'
   ]

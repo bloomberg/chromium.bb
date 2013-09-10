@@ -30,6 +30,10 @@ sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 import getos
 
 def StepBuildExamples(pepperdir):
+  build_sdk.BuildStepMakeAll(pepperdir, 'getting_started',
+                             'Build Getting Started',
+                             deps=False, config='Release')
+
   for config in ('Debug', 'Release'):
     build_sdk.BuildStepMakeAll(pepperdir, 'examples',
                                'Build Examples (%s)' % config,

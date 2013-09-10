@@ -62,6 +62,11 @@ DISABLED_TESTS = [
     # TODO(binji): These tests timeout on the trybots because the NEXEs take
     # more than 40 seconds to load (!). See http://crbug.com/280753
     {'name': 'nacl_io_test', 'platform': 'win', 'toolchain': 'glibc'},
+    # We don't test "getting_started/part1" because it would complicate the
+    # example.
+    # TODO(binji): figure out a way to inject the testing code without
+    # modifying the example; maybe an extension?
+    {'name': 'part1'},
 ]
 
 def ValidateToolchains(toolchains):

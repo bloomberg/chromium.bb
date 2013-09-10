@@ -26,6 +26,11 @@ def IsExample(desc):
 
 def GenerateSourceCopyList(desc):
   sources = []
+  # Some examples use their own Makefile/sources/etc.
+  if 'TARGETS' not in desc:
+    # Only copy the DATA files.
+    return desc.get('DATA', [])
+
   # Add sources for each target
   for target in desc['TARGETS']:
     sources.extend(target['SOURCES'])
@@ -196,6 +201,14 @@ def ProcessProject(pepperdir, srcroot, dstroot, desc, toolchains, configs=None,
 
   make_path = os.path.join(out_dir, 'Makefile')
 
+  outdir = os.path.dirname(os.path.abspath(make_path))
+  if getos.GetPlatform() == 'win':
+    AddMakeBat(pepperdir, outdir)
+
+  # If this project has no TARGETS, then we don't need to generate anything.
+  if 'TARGETS' not in desc:
+    return (name, desc['DEST'])
+
   if IsNexe(desc):
     template = os.path.join(SDK_RESOURCE_DIR, 'Makefile.example.template')
   else:
@@ -218,10 +231,6 @@ def ProcessProject(pepperdir, srcroot, dstroot, desc, toolchains, configs=None,
     'targets': desc['TARGETS'],
   }
   RunTemplateFileIfChanged(template, make_path, template_dict)
-
-  outdir = os.path.dirname(os.path.abspath(make_path))
-  if getos.GetPlatform() == 'win':
-    AddMakeBat(pepperdir, outdir)
 
   if IsExample(desc):
     ProcessHTML(srcroot, dstroot, desc, toolchains, configs,

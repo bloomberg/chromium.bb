@@ -36,7 +36,7 @@ DSC_FORMAT = {
         'INCLUDES': (list, '', False),
         'LIBS' : (dict, VALID_TOOLCHAINS, False),
         'DEPS' : (list, '', False)
-    }, True),
+    }, False),
     'HEADERS': (list, {
         'FILES': (list, '', True),
         'DEST': (str, '', True),
@@ -44,7 +44,7 @@ DSC_FORMAT = {
     'SEARCH': (list, '', False),
     'POST': (str, '', False),
     'PRE': (str, '', False),
-    'DEST': (str, ['examples/getting_started', 'examples/api',
+    'DEST': (str, ['getting_started', 'examples/api',
                    'examples/demo', 'examples/tutorial',
                    'src', 'tests'], True),
     'NAME': (str, '', False),
