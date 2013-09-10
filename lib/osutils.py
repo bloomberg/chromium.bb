@@ -178,7 +178,7 @@ def Which(binary, path=None):
     path = os.environ.get('PATH', '')
   for p in path.split(':'):
     p = os.path.join(p, binary)
-    if os.access(p, os.X_OK):
+    if os.path.isfile(p) and os.access(p, os.X_OK):
       return p
   return None
 

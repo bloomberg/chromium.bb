@@ -687,6 +687,9 @@ def RetryCommand(functor, max_retry, *args, **kwds):
     """Return whether we should retry on a given exception."""
     if not isinstance(exc, RunCommandError):
       return False
+    if exc.result.returncode is None:
+      logging.info('Child process failed to launch; not retrying.')
+      return False
     if values is None and exc.result.returncode < 0:
       logging.info('Child process received signal %d; not retrying.',
                    -exc.result.returncode)
