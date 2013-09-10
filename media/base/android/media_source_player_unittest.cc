@@ -511,7 +511,8 @@ TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterInputEOS) {
   EXPECT_EQ(2, manager_->num_requests());
 }
 
-TEST_F(MediaSourcePlayerTest, IsTypeSupported_Widevine) {
+// TODO(xhwang): Enable this test when the test devices are updated.
+TEST_F(MediaSourcePlayerTest, DISABLED_IsTypeSupported_Widevine) {
   if (!MediaCodecBridge::IsAvailable() || !MediaDrmBridge::IsAvailable()) {
     LOG(INFO) << "Could not run test - not supported on device.";
     return;

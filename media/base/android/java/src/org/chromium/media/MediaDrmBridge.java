@@ -156,6 +156,8 @@ class MediaDrmBridge {
             Log.e(TAG, "Unsupported DRM scheme: " + e.toString());
         } catch (java.lang.IllegalArgumentException e) {
             Log.e(TAG, "Failed to create MediaDrmBridge: " + e.toString());
+        } catch (java.lang.IllegalStateException e) {
+            Log.e(TAG, "Failed to create MediaDrmBridge: " + e.toString());
         }
 
         return media_drm_bridge;
