@@ -145,14 +145,14 @@ void TestEntryInfo::RegisterJSONConverter(
   converter->RegisterCustomField("type",
                                  &TestEntryInfo::type,
                                  &MapStringToEntryType);
-  converter->RegisterStringField("source_file_name",
+  converter->RegisterStringField("sourceFileName",
                                  &TestEntryInfo::source_file_name);
-  converter->RegisterStringField("target_name", &TestEntryInfo::target_name);
-  converter->RegisterStringField("mime_type", &TestEntryInfo::mime_type);
-  converter->RegisterCustomField("shared_option",
+  converter->RegisterStringField("targetName", &TestEntryInfo::target_name);
+  converter->RegisterStringField("mimeType", &TestEntryInfo::mime_type);
+  converter->RegisterCustomField("sharedOption",
                                  &TestEntryInfo::shared_option,
                                  &MapStringToSharedOption);
-  converter->RegisterCustomField("last_modified_time",
+  converter->RegisterCustomField("lastModifiedTime",
                                  &TestEntryInfo::last_modified_time,
                                  &MapStringToTime);
 }

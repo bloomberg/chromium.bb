@@ -2,6 +2,66 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+/**
+ * @enum {string}
+ * @const
+ */
+var EntryType = Object.freeze({
+  FILE: 'file',
+  DIRECTORY: 'directory'
+});
+
+/**
+ * @enum {string}
+ * @const
+ */
+var SharedOption = Object.freeze({
+  NONE: 'none',
+  SHARED: 'shared'
+});
+
+/**
+ * File system entry information for tests.
+ *
+ * @param {EntryType} entryType Entry type.
+ * @param {string} sourceFileName Source file name that provides file contents.
+ * @param {string} targetName Name of entry on the test file system.
+ * @param {string} mimeType Mime type.
+ * @param {string} typeText Type name to be shown in the type column.
+ * @param {string} sizeText Size text to be shown in the size column.
+ * @param {SharedOption} sharedOption Shared option.
+ * @param {string} lastModifiedTime Last modified time as a text to be shown in
+ *     the last modified column.
+ * @constructor
+ */
+var TestEntryInfo = function(entryType,
+                             sourceFileName,
+                             targetName,
+                             mimeType,
+                             typeText,
+                             sizeText,
+                             sharedOption,
+                             lastModifiedTime) {
+  this.entryType = entryType;
+  this.sourceFileName = sourceFileName;
+  this.targetName = targetName;
+  this.mimeType = mimeType;
+  this.typeText = typeText;
+  this.sizeText = sizeText;
+  this.sharedOption = sharedOption;
+  this.lastModifiedTime = lastModifiedTime;
+  Object.freeze(this);
+};
+
+/**
+ * Obtains a expected row contents of the file in the file list.
+ */
+TestEntryInfo.prototype.getExpectedRow = function() {
+  return [this.targetName, this.sizeText, this.typeText, this.lastModifiedTime];
+};
+
 /**
  * Expected files before tests are performed. Entries for Local tests.
  * @type {Array.<Array.<string>>}
@@ -34,13 +94,16 @@ var EXPECTED_FILES_BEFORE_DRIVE = [
 ].sort();
 
 /**
- * Expected files added during some tests.
- * @type {Array.<Array.<string>>}
+ * Filesystem entries used by the test cases.
+ * @type {Object.<string, TestEntryInfo>}
  * @const
  */
-var EXPECTED_NEWLY_ADDED_FILE = [
-  ['newly added file.ogg', '14 KB', 'OGG audio', 'Sep 4, 1998 12:00 AM']
-];
+var ENTRIES = {
+  newlyAdded: new TestEntryInfo(
+      EntryType.FILE, 'music.ogg', 'newly added file.ogg',
+      'audio/ogg', 'OGG audio', '14 KB', SharedOption.NONE,
+      'Sep 4, 1998 12:00 AM')
+};
 
 /**
  * @param {boolean} isDrive True if the test is for Drive.
@@ -166,7 +229,7 @@ testcase.intermediate.fileDisplay = function(path) {
 
   var expectedFilesBefore = getExpectedFilesBefore(path == '/drive/root');
   var expectedFilesAfter =
-      expectedFilesBefore.concat(EXPECTED_NEWLY_ADDED_FILE).sort();
+      expectedFilesBefore.concat([ENTRIES.newlyAdded.getExpectedRow()]).sort();
 
   StepsRunner.run([
     function() {
@@ -177,14 +240,7 @@ testcase.intermediate.fileDisplay = function(path) {
     function(inAppId, actualFilesBefore) {
       appId = inAppId;
       chrome.test.assertEq(expectedFilesBefore, actualFilesBefore);
-      addEntries(['local', 'drive'], [{
-        type: 'file',
-        source_file_name: 'music.ogg',
-        target_name: 'newly added file.ogg',
-        mime_type: 'audio/ogg',
-        shared_option: 'none',
-        last_modified_time: '4 Sep 1998 00:00:00'
-      }], this.next);
+      addEntries(['local', 'drive'], [ENTRIES.newlyAdded], this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
