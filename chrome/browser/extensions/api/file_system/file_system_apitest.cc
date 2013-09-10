@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 
@@ -286,7 +285,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenDirectoryTest) {
-  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   base::FilePath test_directory = test_file.DirName();
@@ -299,7 +297,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenDirectoryTest) {
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
                        FileSystemApiOpenDirectoryWithWriteTest) {
-  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   base::FilePath test_directory = test_file.DirName();
@@ -341,7 +338,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
                        FileSystemApiOpenDirectoryOnGraylistAndAllowTest) {
   FileSystemChooseEntryFunction::SkipDirectoryConfirmationForTest();
-  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   base::FilePath test_directory = test_file.DirName();
@@ -357,7 +353,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
                        FileSystemApiOpenDirectoryOnGraylistTest) {
   FileSystemChooseEntryFunction::AutoCancelDirectoryConfirmationForTest();
-  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   base::FilePath test_directory = test_file.DirName();
@@ -373,7 +368,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
                        FileSystemApiOpenDirectoryContainingGraylistTest) {
   FileSystemChooseEntryFunction::AutoCancelDirectoryConfirmationForTest();
-  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   base::FilePath test_directory = test_file.DirName();
@@ -393,7 +387,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   // If a dialog is erroneously displayed, auto cancel it, so that the test
   // fails.
   FileSystemChooseEntryFunction::AutoCancelDirectoryConfirmationForTest();
-  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   base::FilePath test_directory = test_file.DirName();
@@ -603,7 +596,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRetainEntry) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRetainDirectoryEntry) {
-  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   base::FilePath test_directory = test_file.DirName();
@@ -634,7 +626,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRestoreEntry) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRestoreDirectoryEntry) {
-  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
   base::FilePath test_file = TempFilePath("writable.txt", true);
   ASSERT_FALSE(test_file.empty());
   base::FilePath test_directory = test_file.DirName();
