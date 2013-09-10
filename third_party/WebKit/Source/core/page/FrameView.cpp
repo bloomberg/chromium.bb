@@ -185,14 +185,11 @@ FrameView::FrameView(Frame* frame)
     ASSERT(m_frame);
     init();
 
-    Page* page = m_frame->page();
-    if (!page)
+    if (!isMainFrame())
         return;
 
-    if (m_frame == page->mainFrame()) {
-        ScrollableArea::setVerticalScrollElasticity(ScrollElasticityAllowed);
-        ScrollableArea::setHorizontalScrollElasticity(ScrollElasticityAllowed);
-    }
+    ScrollableArea::setVerticalScrollElasticity(ScrollElasticityAllowed);
+    ScrollableArea::setHorizontalScrollElasticity(ScrollElasticityAllowed);
 }
 
 PassRefPtr<FrameView> FrameView::create(Frame* frame)
@@ -418,7 +415,7 @@ void FrameView::setFrameRect(const IntRect& newRect)
     // Autosized font sizes depend on the width of the viewing area.
     if (newRect.width() != oldRect.width()) {
         Page* page = m_frame->page();
-        if (page && page->mainFrame() == m_frame && page->settings().textAutosizingEnabled()) {
+        if (isMainFrame() && page->settings().textAutosizingEnabled()) {
             for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext())
                 m_frame->document()->textAutosizer()->recalculateMultipliers();
         }
@@ -492,7 +489,7 @@ void FrameView::updateCanHaveScrollbars()
 PassRefPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientation orientation)
 {
     if (Settings* settings = m_frame->settings()) {
-        if (!settings->allowCustomScrollbarInMainFrame() && m_frame->page() && m_frame->page()->mainFrame() == m_frame)
+        if (!settings->allowCustomScrollbarInMainFrame() && isMainFrame())
             return ScrollView::createScrollbar(orientation);
     }
 
@@ -1720,7 +1717,9 @@ void FrameView::visibleContentsResized()
 void FrameView::beginDeferredRepaints()
 {
     Page* page = m_frame->page();
-    if (page->mainFrame() != m_frame) {
+    ASSERT(page);
+
+    if (!isMainFrame()) {
         page->mainFrame()->view()->beginDeferredRepaints();
         return;
     }
@@ -1731,7 +1730,9 @@ void FrameView::beginDeferredRepaints()
 void FrameView::endDeferredRepaints()
 {
     Page* page = m_frame->page();
-    if (page->mainFrame() != m_frame) {
+    ASSERT(page);
+
+    if (!isMainFrame()) {
         page->mainFrame()->view()->endDeferredRepaints();
         return;
     }
@@ -2208,10 +2209,8 @@ void FrameView::performPostLayoutTasks()
             m_frame->loader()->didFirstLayout();
             if (milestonesOfInterest & DidFirstLayout)
                 milestonesAchieved |= DidFirstLayout;
-            if (page) {
-                if (page->mainFrame() == m_frame)
-                    page->startCountingRelevantRepaintedObjects();
-            }
+            if (isMainFrame())
+                page->startCountingRelevantRepaintedObjects();
         }
 
         // Ensure that we always send this eventually.
@@ -2272,7 +2271,7 @@ void FrameView::sendResizeEventIfNeeded()
     m_frame->eventHandler()->sendResizeEvent();
 
     Page* page = m_frame->page();
-    if (page && page->mainFrame() == m_frame)
+    if (isMainFrame())
         InspectorInstrumentation::didResizeMainFrame(page);
 }
 
@@ -2423,10 +2422,8 @@ const Pagination& FrameView::pagination() const
     if (m_pagination != Pagination())
         return m_pagination;
 
-    if (Page* page = m_frame->page()) {
-        if (page->mainFrame() == m_frame)
-            return page->pagination();
-    }
+    if (isMainFrame())
+        return m_frame->page()->pagination();
 
     return m_pagination;
 }
@@ -2602,10 +2599,7 @@ bool FrameView::shouldSuspendScrollAnimations() const
 
 void FrameView::scrollbarStyleChanged(int newStyle, bool forceUpdate)
 {
-    Page* page = m_frame->page();
-    if (!page)
-        return;
-    if (page->mainFrame() != m_frame)
+    if (!isMainFrame())
         return;
 
     if (forceUpdate)
@@ -2723,7 +2717,7 @@ void FrameView::paintScrollCorner(GraphicsContext* context, const IntRect& corne
     }
 
     if (m_scrollCorner) {
-        bool needsBackgorund = m_frame->page() && m_frame->page()->mainFrame() == m_frame;
+        bool needsBackgorund = isMainFrame();
         if (needsBackgorund)
             context->fillRect(cornerRect, baseBackgroundColor());
         m_scrollCorner->paintIntoRect(context, cornerRect.location(), cornerRect);
@@ -2735,7 +2729,7 @@ void FrameView::paintScrollCorner(GraphicsContext* context, const IntRect& corne
 
 void FrameView::paintScrollbar(GraphicsContext* context, Scrollbar* bar, const IntRect& rect)
 {
-    bool needsBackgorund = bar->isCustomScrollbar() && (m_frame->page() && m_frame->page()->mainFrame() == m_frame);
+    bool needsBackgorund = bar->isCustomScrollbar() && isMainFrame();
     if (needsBackgorund) {
         IntRect toFill = bar->frameRect();
         toFill.intersect(rect);
@@ -2969,9 +2963,8 @@ void FrameView::paintOverhangAreas(GraphicsContext* context, const IntRect& hori
     if (m_frame->document()->printing())
         return;
 
-    Page* page = m_frame->page();
-    if (page->mainFrame() == m_frame) {
-        if (page->chrome().client().paintCustomOverhangArea(context, horizontalOverhangArea, verticalOverhangArea, dirtyRect))
+    if (isMainFrame()) {
+        if (m_frame->page()->chrome().client().paintCustomOverhangArea(context, horizontalOverhangArea, verticalOverhangArea, dirtyRect))
             return;
     }
 
@@ -3363,7 +3356,6 @@ bool FrameView::wheelEvent(const PlatformWheelEvent& wheelEvent)
     return ScrollableArea::handleWheelEvent(wheelEvent);
 }
 
-
 bool FrameView::isVerticalDocument() const
 {
     RenderView* renderView = this->renderView();
@@ -3387,6 +3379,11 @@ AXObjectCache* FrameView::axObjectCache() const
     if (frame().document())
         return frame().document()->existingAXObjectCache();
     return 0;
+}
+
+bool FrameView::isMainFrame() const
+{
+    return m_frame->page() && m_frame->page()->mainFrame() == m_frame;
 }
 
 } // namespace WebCore

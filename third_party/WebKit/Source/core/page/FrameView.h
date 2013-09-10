@@ -426,6 +426,8 @@ private:
     virtual AXObjectCache* axObjectCache() const;
     void removeFromAXObjectCache();
 
+    bool isMainFrame() const;
+
     static double s_currentFrameTimeStamp; // used for detecting decoded resource thrash in the cache
     static bool s_inPaintContents;
 
