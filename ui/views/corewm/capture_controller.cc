@@ -20,6 +20,7 @@ void CaptureController::Attach(aura::RootWindow* root) {
 }
 
 void CaptureController::Detach(aura::RootWindow* root) {
+  CHECK(!root->Contains(capture_window_));
   root_windows_.erase(root);
   aura::client::SetCaptureClient(root, NULL);
 }
@@ -32,8 +33,8 @@ void CaptureController::SetCapture(aura::Window* new_capture_window) {
     return;
 
   // Make sure window has a root window.
-  DCHECK(!new_capture_window || new_capture_window->GetRootWindow());
-  DCHECK(!capture_window_ || capture_window_->GetRootWindow());
+  CHECK(!new_capture_window || new_capture_window->GetRootWindow());
+  CHECK(!capture_window_ || capture_window_->GetRootWindow());
 
   aura::Window* old_capture_window = capture_window_;
   aura::RootWindow* old_capture_root = old_capture_window ?
