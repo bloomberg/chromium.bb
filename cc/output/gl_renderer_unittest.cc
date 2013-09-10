@@ -190,7 +190,12 @@ class FakeRendererGL : public GLRenderer {
                  const LayerTreeSettings* settings,
                  OutputSurface* output_surface,
                  ResourceProvider* resource_provider)
-      : GLRenderer(client, settings, output_surface, resource_provider, 0) {}
+      : GLRenderer(client,
+                   settings,
+                   output_surface,
+                   resource_provider,
+                   NULL,
+                   0) {}
 
   // GLRenderer methods.
 

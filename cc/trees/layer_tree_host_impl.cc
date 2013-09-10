@@ -43,6 +43,7 @@
 #include "cc/resources/memory_history.h"
 #include "cc/resources/picture_layer_tiling.h"
 #include "cc/resources/prioritized_resource_manager.h"
+#include "cc/resources/texture_mailbox_deleter.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/texture_uploader.h"
@@ -211,6 +212,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       paint_time_counter_(PaintTimeCounter::Create()),
       memory_history_(MemoryHistory::Create()),
       debug_rect_history_(DebugRectHistory::Create()),
+      texture_mailbox_deleter_(new TextureMailboxDeleter),
       max_memory_needed_bytes_(0),
       last_sent_memory_visible_bytes_(0),
       last_sent_memory_visible_and_nearby_bytes_(0),
@@ -1617,6 +1619,7 @@ void LayerTreeHostImpl::CreateAndSetRenderer(
                                    &settings_,
                                    output_surface,
                                    resource_provider,
+                                   texture_mailbox_deleter_.get(),
                                    settings_.highp_threshold_min,
                                    settings_.force_direct_layer_drawing);
   } else if (output_surface->software_device()) {

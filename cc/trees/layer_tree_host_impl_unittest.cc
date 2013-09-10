@@ -27,6 +27,8 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/compositor_frame_metadata.h"
+#include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -5036,7 +5038,8 @@ class TestRenderer : public GLRenderer, public RendererClient {
                ResourceProvider* resource_provider,
                OutputSurface* output_surface,
                Proxy* proxy)
-      : GLRenderer(this, settings, output_surface, resource_provider, 0) {}
+      : GLRenderer(this, settings, output_surface, resource_provider, NULL, 0) {
+  }
 
  private:
   LayerTreeSettings settings_;
@@ -6575,6 +6578,47 @@ TEST_F(LayerTreeHostImplTest, UIResourceManagement) {
   // Should not change state for multiple deletion on one UIResourceId
   host_impl_->DeleteUIResource(ui_resource_id);
   EXPECT_EQ(0u, context3d->NumTextures());
+}
+
+void ShutdownReleasesContext_Callback(scoped_ptr<CopyOutputResult> result) {
+}
+
+TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
+  scoped_refptr<TestContextProvider> context_provider =
+      TestContextProvider::Create();
+
+  host_impl_ = LayerTreeHostImpl::Create(LayerTreeSettings(),
+                                         this,
+                                         &proxy_,
+                                         &stats_instrumentation_);
+  host_impl_->InitializeRenderer(
+      FakeOutputSurface::Create3d(context_provider).PassAs<OutputSurface>());
+  host_impl_->SetViewportSize(gfx::Size(10, 10));
+
+  SetupRootLayerImpl(LayerImpl::Create(host_impl_->active_tree(), 1));
+
+  ScopedPtrVector<CopyOutputRequest> requests;
+  requests.push_back(CopyOutputRequest::CreateRequest(
+      base::Bind(&ShutdownReleasesContext_Callback)));
+
+  host_impl_->active_tree()->root_layer()->PassCopyRequests(&requests);
+
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  host_impl_->DidDrawAllLayers(frame);
+
+  // The CopyOutputResult's callback has a ref on the ContextProvider and a
+  // texture in a texture mailbox.
+  EXPECT_FALSE(context_provider->HasOneRef());
+  EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());
+
+  host_impl_.reset();
+
+  // The CopyOutputResult's callback was cancelled, the CopyOutputResult
+  // released, and the texture deleted.
+  EXPECT_TRUE(context_provider->HasOneRef());
+  EXPECT_EQ(0u, context_provider->TestContext3d()->NumTextures());
 }
 
 }  // namespace

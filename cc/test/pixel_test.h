@@ -47,6 +47,7 @@ class PixelTest : public testing::Test {
   class PixelTestRendererClient;
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
+  scoped_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
   scoped_ptr<PixelTestRendererClient> fake_client_;
   scoped_ptr<DirectRenderer> renderer_;
   scoped_ptr<SkBitmap> result_bitmap_;
@@ -89,11 +90,13 @@ class GLRendererWithSkiaGPUBackend : public GLRenderer {
                                const LayerTreeSettings* settings,
                                OutputSurface* output_surface,
                                ResourceProvider* resource_provider,
+                               TextureMailboxDeleter* texture_mailbox_deleter,
                                int highp_threshold_min)
       : GLRenderer(client,
                    settings,
                    output_surface,
                    resource_provider,
+                   texture_mailbox_deleter,
                    highp_threshold_min) {}
 };
 
@@ -105,11 +108,13 @@ class GLRendererWithExpandedViewport : public GLRenderer {
                                  const LayerTreeSettings* settings,
                                  OutputSurface* output_surface,
                                  ResourceProvider* resource_provider,
+                                 TextureMailboxDeleter* texture_mailbox_deleter,
                                  int highp_threshold_min)
       : GLRenderer(client,
                    settings,
                    output_surface,
                    resource_provider,
+                   texture_mailbox_deleter,
                    highp_threshold_min) {}
 };
 

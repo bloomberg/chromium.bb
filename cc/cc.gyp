@@ -335,6 +335,8 @@
         'resources/sync_point_helper.h',
         'resources/texture_mailbox.cc',
         'resources/texture_mailbox.h',
+        'resources/texture_mailbox_deleter.cc',
+        'resources/texture_mailbox_deleter.h',
         'resources/tile.cc',
         'resources/tile.h',
         'resources/tile_manager.cc',

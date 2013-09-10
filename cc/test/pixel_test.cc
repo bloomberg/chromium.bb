@@ -13,6 +13,7 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_renderer.h"
 #include "cc/resources/resource_provider.h"
+#include "cc/resources/texture_mailbox_deleter.h"
 #include "cc/test/paths.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_software_output_device.h"
@@ -161,10 +162,14 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
   output_surface_->BindToClient(fake_client_.get());
 
   resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
+
+  texture_mailbox_deleter_ = make_scoped_ptr(new TextureMailboxDeleter);
+
   renderer_ = GLRenderer::Create(fake_client_.get(),
                                  &settings_,
                                  output_surface_.get(),
                                  resource_provider_.get(),
+                                 texture_mailbox_deleter_.get(),
                                  0,
                                  use_skia_gpu_backend).PassAs<DirectRenderer>();
 }

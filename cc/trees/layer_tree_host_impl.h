@@ -46,6 +46,7 @@ class PaintTimeCounter;
 class MemoryHistory;
 class RenderingStatsInstrumentation;
 class RenderPassDrawQuad;
+class TextureMailboxDeleter;
 class TopControlsManager;
 class UIResourceBitmap;
 struct RendererCapabilities;
@@ -538,6 +539,8 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<PaintTimeCounter> paint_time_counter_;
   scoped_ptr<MemoryHistory> memory_history_;
   scoped_ptr<DebugRectHistory> debug_rect_history_;
+
+  scoped_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
 
   // The maximum memory that would be used by the prioritized resource
   // manager, if there were no limit on memory usage.

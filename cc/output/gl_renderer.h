@@ -33,18 +33,21 @@ class PictureDrawQuad;
 class ScopedResource;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
+class TextureMailboxDeleter;
 class GeometryBinding;
 class ScopedEnsureFramebufferAllocation;
 
 // Class that handles drawing of composited render layers using GL.
 class CC_EXPORT GLRenderer : public DirectRenderer {
  public:
-  static scoped_ptr<GLRenderer> Create(RendererClient* client,
-                                       const LayerTreeSettings* settings,
-                                       OutputSurface* output_surface,
-                                       ResourceProvider* resource_provider,
-                                       int highp_threshold_min,
-                                       bool use_skia_gpu_backend);
+  static scoped_ptr<GLRenderer> Create(
+      RendererClient* client,
+      const LayerTreeSettings* settings,
+      OutputSurface* output_surface,
+      ResourceProvider* resource_provider,
+      TextureMailboxDeleter* texture_mailbox_deleter,
+      int highp_threshold_min,
+      bool use_skia_gpu_backend);
 
   virtual ~GLRenderer();
 
@@ -85,6 +88,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
              const LayerTreeSettings* settings,
              OutputSurface* output_surface,
              ResourceProvider* resource_provider,
+             TextureMailboxDeleter* texture_mailbox_deleter,
              int highp_threshold_min);
 
   bool IsBackbufferDiscarded() const { return is_backbuffer_discarded_; }
@@ -424,6 +428,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   skia::RefPtr<GrContext> gr_context_;
   skia::RefPtr<SkCanvas> sk_canvas_;
+
+  TextureMailboxDeleter* texture_mailbox_deleter_;
 
   gfx::Rect swap_buffer_rect_;
   gfx::Rect scissor_rect_;
