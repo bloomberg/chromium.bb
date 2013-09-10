@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -426,6 +427,9 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BrowserActionRuntimeError) {
   const ErrorConsole::ErrorList& errors =
       error_console()->GetErrorsForExtension(extension->id());
 
+  std::string event_bindings_str =
+      base::StringPrintf("extensions::%s", kEventBindings);
+
   CheckRuntimeError(
       errors[0],
       extension->id(),
@@ -444,10 +448,10 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BrowserActionRuntimeError) {
                   "extensions::SafeBuiltins",
                   std::string("Function.target.") + kAnonymousFunction);
   CheckStackFrame(
-      stack_trace[2], kEventBindings, "Event.dispatchToListener");
-  CheckStackFrame(stack_trace[3], kEventBindings, "Event.dispatch_");
-  CheckStackFrame(stack_trace[4], kEventBindings, "dispatchArgs");
-  CheckStackFrame(stack_trace[5], kEventBindings, "dispatchEvent");
+      stack_trace[2], event_bindings_str, "Event.dispatchToListener");
+  CheckStackFrame(stack_trace[3], event_bindings_str, "Event.dispatch_");
+  CheckStackFrame(stack_trace[4], event_bindings_str, "dispatchArgs");
+  CheckStackFrame(stack_trace[5], event_bindings_str, "dispatchEvent");
 }
 
 // Test that we can catch an error for calling an API with improper arguments.
@@ -463,10 +467,13 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIArgumentsRuntimeError) {
   const ErrorConsole::ErrorList& errors =
       error_console()->GetErrorsForExtension(extension->id());
 
+  std::string schema_utils_str =
+      base::StringPrintf("extensions::%s", kSchemaUtils);
+
   CheckRuntimeError(
       errors[0],
       extension->id(),
-      kSchemaUtils,  // API calls are checked in schemaUtils.js.
+      schema_utils_str,  // API calls are checked in schemaUtils.js.
       false,  // not incognito
       "Uncaught Error: Invocation of form "
           "tabs.get(string, function) doesn't match definition "
@@ -478,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIArgumentsRuntimeError) {
   const StackTrace& stack_trace = GetStackTraceFromError(errors[0]);
   ASSERT_EQ(1u, stack_trace.size());
   CheckStackFrame(stack_trace[0],
-                  kSchemaUtils,
+                  schema_utils_str,
                   kAnonymousFunction);
 }
 

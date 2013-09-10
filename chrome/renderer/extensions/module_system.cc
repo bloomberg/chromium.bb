@@ -210,7 +210,7 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
   if (!exports->IsUndefined())
     return handle_scope.Close(exports);
 
-  std::string module_name_str = *v8::String::AsciiValue(module_name);
+  std::string module_name_str = *v8::String::Utf8Value(module_name);
   v8::Handle<v8::Value> source(GetSource(module_name_str));
   if (source.IsEmpty() || source->IsUndefined()) {
     Fatal(context_, "No source for require(" + module_name_str + ")");
@@ -376,7 +376,7 @@ void ModuleSystem::LazyFieldGetterInner(
   ModuleSystem* module_system = static_cast<ModuleSystem*>(
       v8::Handle<v8::External>::Cast(module_system_value)->Value());
 
-  std::string name = *v8::String::AsciiValue(
+  std::string name = *v8::String::Utf8Value(
       parameters->Get(v8::String::New(kModuleName))->ToString());
 
   // Switch to our v8 context because we need functions created while running
@@ -400,7 +400,7 @@ void ModuleSystem::LazyFieldGetterInner(
       parameters->Get(v8::String::New(kModuleField))->ToString();
 
   if (!module->Has(field)) {
-    std::string field_str = *v8::String::AsciiValue(field);
+    std::string field_str = *v8::String::Utf8Value(field);
     Fatal(module_system->context_,
           "Lazy require of " + name + "." + field_str + " did not set the " +
               field_str + " field");
@@ -468,10 +468,16 @@ v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
   v8::HandleScope handle_scope(GetIsolate());
   v8::Context::Scope context_scope(context()->v8_context());
 
+  // Prepend extensions:: to |name| so that internal code can be differentiated
+  // from external code in stack traces. This has no effect on behaviour.
+  std::string internal_name = base::StringPrintf("extensions::%s",
+                                                 *v8::String::Utf8Value(name));
+
   WebKit::WebScopedMicrotaskSuppression suppression;
   v8::TryCatch try_catch;
   try_catch.SetCaptureMessage(true);
-  v8::Handle<v8::Script> script(v8::Script::New(code, name));
+  v8::Handle<v8::Script> script(v8::Script::New(
+      code, v8::String::New(internal_name.c_str(), internal_name.size())));
   if (try_catch.HasCaught()) {
     HandleException(try_catch);
     return v8::Undefined();
@@ -496,7 +502,7 @@ v8::Handle<v8::Value> ModuleSystem::GetSource(const std::string& module_name) {
 void ModuleSystem::RequireNative(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
-  std::string native_name = *v8::String::AsciiValue(args[0]->ToString());
+  std::string native_name = *v8::String::Utf8Value(args[0]->ToString());
   args.GetReturnValue().Set(RequireNativeFromString(native_name));
 }
 

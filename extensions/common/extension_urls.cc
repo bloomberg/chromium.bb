@@ -4,6 +4,7 @@
 
 #include "extensions/common/extension_urls.h"
 
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/constants.h"
 #include "url/gurl.h"
@@ -16,8 +17,9 @@ const char kSchemaUtils[] = "schemaUtils";
 
 bool IsSourceFromAnExtension(const base::string16& source) {
   return GURL(source).SchemeIs(kExtensionScheme) ||
-         source == base::UTF8ToUTF16(kEventBindings) ||
-         source == base::UTF8ToUTF16(kSchemaUtils);
+         StartsWith(source,
+                    base::ASCIIToUTF16("extensions::"),
+                    true /* case-sensitive */);
 }
 
 }  // namespace extensions
