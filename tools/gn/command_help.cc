@@ -47,6 +47,7 @@ void PrintToplevelHelp() {
       "Common switches:\n"
       "  --args: Specifies build args overrides. See \"gn help buildargs\".\n"
       "  -q: Quiet mode, don't print anything on success.\n"
+      "  --output: Directory for build output (relative to source root).\n"
       "  --root: Specifies source root (overrides .gn file).\n"
       "  --secondary: Specifies secondary source root (overrides .gn file).\n"
       "  -v: Verbose mode, print lots of logging.\n");

@@ -62,6 +62,9 @@ const char kSwitchArgs[] = "args";
 // Set root dir.
 const char kSwitchRoot[] = "root";
 
+// Set build output directory.
+const char kSwitchBuildOutput[] = "output";
+
 const char kSecondarySource[] = "secondary";
 
 const base::FilePath::CharType kGnFile[] = FILE_PATH_LITERAL(".gn");
@@ -113,7 +116,18 @@ bool Setup::DoSetup() {
   build_settings_.set_python_path(base::FilePath(FILE_PATH_LITERAL("python")));
 #endif
 
-  build_settings_.SetBuildDir(SourceDir("//out/gn/"));
+  base::FilePath build_path = cmdline->GetSwitchValuePath(kSwitchBuildOutput);
+  if (!build_path.empty()) {
+    // We accept either repo paths "//out/Debug" or raw source-root-relative
+    // paths "out/Debug".
+    std::string build_path_8 = FilePathToUTF8(build_path);
+    if (build_path_8.compare(0, 2, "//") != 0)
+      build_path_8.insert(0, "//");
+    build_settings_.SetBuildDir(SourceDir(build_path_8));
+  } else {
+    // Default output dir.
+    build_settings_.SetBuildDir(SourceDir("//out/gn/"));
+  }
 
   return true;
 }
