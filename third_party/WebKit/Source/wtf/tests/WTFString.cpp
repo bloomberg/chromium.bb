@@ -40,12 +40,6 @@ TEST(WTF, StringCreationFromLiteral)
     ASSERT_TRUE(stringFromLiteral == "Explicit construction syntax");
     ASSERT_TRUE(stringFromLiteral.is8Bit());
     ASSERT_TRUE(String("Explicit construction syntax") == stringFromLiteral);
-
-    String stringWithTemplate("Template Literal", String::ConstructFromLiteral);
-    ASSERT_EQ(strlen("Template Literal"), stringWithTemplate.length());
-    ASSERT_TRUE(stringWithTemplate == "Template Literal");
-    ASSERT_TRUE(stringWithTemplate.is8Bit());
-    ASSERT_TRUE(String("Template Literal") == stringWithTemplate);
 }
 
 TEST(WTF, StringASCII)

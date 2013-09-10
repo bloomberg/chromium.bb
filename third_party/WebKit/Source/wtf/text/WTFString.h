@@ -117,10 +117,6 @@ public:
     String(StringImpl* impl) : m_impl(impl) { }
     String(PassRefPtr<StringImpl> impl) : m_impl(impl) { }
 
-    // FIXME: Remove this API once all callers are gone.
-    enum ConstructFromLiteralTag { ConstructFromLiteral };
-    String(const char* characters, ConstructFromLiteralTag) : m_impl(StringImpl::create(reinterpret_cast<const LChar*>(characters))) { }
-
 #if COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
     // We have to declare the copy constructor and copy assignment operator as well, otherwise
     // they'll be implicitly deleted by adding the move constructor and move assignment operator.
