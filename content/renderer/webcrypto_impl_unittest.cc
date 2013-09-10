@@ -102,7 +102,7 @@ TEST_F(WebCryptoImplTest, DigestSampleSets) {
       WebKit::WebArrayBuffer array_buffer;
 
       WebCryptoImpl crypto;
-      crypto.digestInternal(
+      crypto.DigestInternal(
           algorithm,
           reinterpret_cast<const unsigned char*>(input_set[set_index].input),
           input_set[set_index].input_length,

@@ -19,16 +19,20 @@ class CONTENT_EXPORT WebCryptoImpl
   virtual void digest(
       const WebKit::WebCryptoAlgorithm& algorithm,
       const unsigned char* data,
+#ifdef WEBCRYPTO_DIGEST_LENGTH_IS_UINT
+      unsigned data_size,
+#else
       size_t data_size,
+#endif
       WebKit::WebCryptoResult result);
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(WebCryptoImplTest, DigestSampleSets);
 
-  bool digestInternal(
+  bool DigestInternal(
       const WebKit::WebCryptoAlgorithm& algorithm,
       const unsigned char* data,
-      size_t data_size,
+      unsigned data_size,
       WebKit::WebArrayBuffer* buffer);
 };
 

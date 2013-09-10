@@ -13,10 +13,10 @@
 
 namespace content {
 
-bool WebCryptoImpl::digestInternal(
+bool WebCryptoImpl::DigestInternal(
     const WebKit::WebCryptoAlgorithm& algorithm,
     const unsigned char* data,
-    size_t data_size,
+    unsigned data_size,
     WebKit::WebArrayBuffer* buffer) {
   HASH_HashType hash_type = HASH_AlgNULL;
 
