@@ -289,8 +289,7 @@ Node::~Node()
     if (hasRareData())
         clearRareData();
 
-    if (renderer())
-        detach();
+    RELEASE_ASSERT(!renderer());
 
     if (!isContainerNode()) {
         if (Document* document = documentInternal())
