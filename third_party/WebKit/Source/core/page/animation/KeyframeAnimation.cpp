@@ -133,7 +133,7 @@ void KeyframeAnimation::fetchIntervalEndpointsForProperty(CSSPropertyID property
     }
 
     // Iterate backward to find previous keyframe.
-    for (size_t i = currentIndex; i < numKeyframes; --i) {
+    for (int i = currentIndex; i >= 0; --i) {
         const KeyframeValue& keyFrame = m_keyframes[i];
         if (keyFrame.key() <= fractionalTime && keyFrame.containsProperty(property)) {
             prevIndex = i;
