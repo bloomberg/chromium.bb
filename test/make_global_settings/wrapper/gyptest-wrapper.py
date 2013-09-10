@@ -37,7 +37,7 @@ if test.format == 'ninja':
                  os.path.join('..', '..', 'clang'))
   cc_host_expected = ('cc_host = ' + os.path.join('..', '..', 'ccache') + ' ' +
                       os.path.join('..', '..', 'clang'))
-  ld_expected = 'ld = ../../distlink $cxx'
+  ld_expected = 'ld = ../../distlink $cc'
   if sys.platform == 'win32':
      ld_expected = 'link.exe'
   test.must_contain('out/Default/build.ninja', cc_expected)

@@ -374,6 +374,9 @@ class NinjaWriter:
     self.target = Target(spec['type'])
     self.is_standalone_static_library = bool(
         spec.get('standalone_static_library', 0))
+    # Track if this target contains any C++ files, to decide if gcc or g++
+    # should be used for linking.
+    self.uses_cpp = False
 
     self.is_mac_bundle = gyp.xcode_emulation.IsMacBundle(self.flavor, spec)
     self.xcode_settings = self.msvs_settings = None
@@ -778,6 +781,7 @@ class NinjaWriter:
       self.ninja.variable('cc', '$cc_host')
       self.ninja.variable('cxx', '$cxx_host')
       self.ninja.variable('ld', '$ld_host')
+      self.ninja.variable('ldxx', '$ldxx_host')
 
     if self.flavor != 'mac' or len(self.archs) == 1:
       return self.WriteSourcesForArch(
@@ -875,6 +879,7 @@ class NinjaWriter:
       obj_ext = self.obj_ext
       if ext in ('cc', 'cpp', 'cxx'):
         command = 'cxx'
+        self.uses_cpp = True
       elif ext == 'c' or (ext == 'S' and self.flavor != 'win'):
         command = 'cc'
       elif ext == 's' and self.flavor != 'win':  # Doesn't generate .o.d files.
@@ -891,6 +896,7 @@ class NinjaWriter:
         command = 'objc'
       elif self.flavor == 'mac' and ext == 'mm':
         command = 'objcxx'
+        self.uses_cpp = True
       elif self.flavor == 'win' and ext == 'rc':
         command = 'rc'
         obj_ext = '.res'
@@ -995,6 +1001,9 @@ class NinjaWriter:
       link_deps.extend(list(extra_link_deps))
 
     extra_bindings = []
+    if self.uses_cpp and self.flavor != 'win':
+      extra_bindings.append(('ld', '$ldxx'))
+
     output = self.ComputeOutput(spec, arch)
     if arch is None and not self.is_mac_bundle:
       self.AppendPostbuildVariable(extra_bindings, spec, output, output)
@@ -1643,9 +1652,10 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   else:
     cc = 'gcc'
     cxx = 'g++'
-    ld = '$cxx'
-    ld_c = '$cc'
-    ld_host = '$cxx_host'
+    ld = '$cc'
+    ldxx = '$cxx'
+    ld_host = '$cc_host'
+    ldxx_host = '$cxx_host'
 
   cc_host = None
   cxx_host = None
@@ -1662,16 +1672,12 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       cc = os.path.join(build_to_root, value)
     if key == 'CXX':
       cxx = os.path.join(build_to_root, value)
-    if key == 'LD':
-      ld = os.path.join(build_to_root, value)
     if key == 'CC.host':
       cc_host = os.path.join(build_to_root, value)
       cc_host_global_setting = value
     if key == 'CXX.host':
       cxx_host = os.path.join(build_to_root, value)
       cxx_host_global_setting = value
-    if key == 'LD.host':
-      ld_host = os.path.join(build_to_root, value)
     if key.endswith('_wrapper'):
       wrappers[key[:-len('_wrapper')]] = os.path.join(build_to_root, value)
 
@@ -1694,7 +1700,6 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   master_ninja.variable('cc', CommandWithWrapper('CC', wrappers, cc))
   cxx = GetEnvironFallback(['CXX_target', 'CXX'], cxx)
   master_ninja.variable('cxx', CommandWithWrapper('CXX', wrappers, cxx))
-  ld = GetEnvironFallback(['LD_target', 'LD'], ld)
 
   if flavor == 'win':
     master_ninja.variable('ld', ld)
@@ -1705,6 +1710,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.variable('mt', 'mt.exe')
   else:
     master_ninja.variable('ld', CommandWithWrapper('LINK', wrappers, ld))
+    master_ninja.variable('ldxx', CommandWithWrapper('LINK', wrappers, ldxx))
     master_ninja.variable('ar', GetEnvironFallback(['AR_target', 'AR'], 'ar'))
 
   if generator_supports_multiple_toolsets:
@@ -1716,7 +1722,6 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.variable('ar_host', GetEnvironFallback(['AR_host'], 'ar'))
     cc_host = GetEnvironFallback(['CC_host'], cc_host)
     cxx_host = GetEnvironFallback(['CXX_host'], cxx_host)
-    ld_host = GetEnvironFallback(['LD_host'], ld_host)
 
     # The environment variable could be used in 'make_global_settings', like
     # ['CC.host', '$(CC)'] or ['CXX.host', '$(CXX)'], transform them here.
@@ -1733,6 +1738,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     else:
       master_ninja.variable('ld_host', CommandWithWrapper(
           'LINK', wrappers, ld_host))
+      master_ninja.variable('ldxx_host', CommandWithWrapper(
+          'LINK', wrappers, ldxx_host))
 
   master_ninja.newline()
 

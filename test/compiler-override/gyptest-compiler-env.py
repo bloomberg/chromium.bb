@@ -20,7 +20,7 @@ if sys.platform == 'win32':
   sys.exit(0)
 
 # Clear any existing compiler related env vars.
-for key in 'CC', 'CXX', 'LD', 'CC_host', 'CXX_host', 'LD_host':
+for key in ['CC', 'CXX', 'LINK', 'CC_host', 'CXX_host', 'LINK_host']:
   if key in os.environ:
     del os.environ[key]
 
@@ -38,15 +38,18 @@ def CheckCompiler(test, gypfile, check_for, run_gyp):
 test = TestGyp.TestGyp(formats=['ninja', 'make'])
 
 def TestTargetOveride():
+  expected = ['my_cc.py', 'my_cxx.py', 'FOO' ]
+  if test.format != 'ninja':  # ninja just uses $CC / $CXX as linker.
+    expected.append('FOO_LINK')
+
   # Check that CC, CXX and LD set target compiler
   oldenv = os.environ.copy()
   try:
     os.environ['CC'] = 'python %s/my_cc.py FOO' % here
     os.environ['CXX'] = 'python %s/my_cxx.py FOO' % here
-    os.environ['LD'] = 'python %s/my_ld.py FOO_LINK' % here
+    os.environ['LINK'] = 'python %s/my_ld.py FOO_LINK' % here
 
-    CheckCompiler(test, 'compiler.gyp',
-                  ['my_cc.py', 'my_cxx.py', 'FOO', 'FOO_LINK'],
+    CheckCompiler(test, 'compiler.gyp', expected,
                   True)
   finally:
     os.environ.clear()
@@ -55,8 +58,7 @@ def TestTargetOveride():
   # Run the same tests once the eviron has been restored.  The
   # generated should have embedded all the settings in the
   # project files so the results should be the same.
-  CheckCompiler(test, 'compiler.gyp',
-                ['my_cc.py', 'my_cxx.py', 'FOO', 'FOO_LINK'],
+  CheckCompiler(test, 'compiler.gyp', expected,
                 False)
 
 def TestTargetOverideCompilerOnly():
@@ -82,15 +84,17 @@ def TestTargetOverideCompilerOnly():
 
 
 def TestHostOveride():
+  expected = ['my_cc.py', 'my_cxx.py', 'HOST' ]
+  if test.format != 'ninja':  # ninja just uses $CC / $CXX as linker.
+    expected.append('HOST_LINK')
+
   # Check that CC_host sets host compilee
   oldenv = os.environ.copy()
   try:
     os.environ['CC_host'] = 'python %s/my_cc.py HOST' % here
     os.environ['CXX_host'] = 'python %s/my_cxx.py HOST' % here
-    os.environ['LD_host'] = 'python %s/my_ld.py HOST_LINK' % here
-    CheckCompiler(test, 'compiler-host.gyp',
-                  ['my_cc.py', 'my_cxx.py', 'HOST', 'HOST_LINK'],
-                  True)
+    os.environ['LINK_host'] = 'python %s/my_ld.py HOST_LINK' % here
+    CheckCompiler(test, 'compiler-host.gyp', expected, True)
   finally:
     os.environ.clear()
     os.environ.update(oldenv)
@@ -98,9 +102,7 @@ def TestHostOveride():
   # Run the same tests once the eviron has been restored.  The
   # generated should have embedded all the settings in the
   # project files so the results should be the same.
-  CheckCompiler(test, 'compiler-host.gyp',
-                ['my_cc.py', 'my_cxx.py', 'HOST', 'HOST_LINK'],
-                False)
+  CheckCompiler(test, 'compiler-host.gyp', expected, False)
 
 
 TestTargetOveride()

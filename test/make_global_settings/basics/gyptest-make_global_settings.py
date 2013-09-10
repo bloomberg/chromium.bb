@@ -27,17 +27,17 @@ endif
 """
   if sys.platform == 'linux2':
     link_expected = """
-LINK ?= flock $(builddir)/linker.lock $(abspath clang++)
+LINK ?= flock $(builddir)/linker.lock $(abspath clang)
 """
   elif sys.platform == 'darwin':
     link_expected = """
-LINK ?= ./gyp-mac-tool flock $(builddir)/linker.lock $(abspath clang++)
+LINK ?= ./gyp-mac-tool flock $(builddir)/linker.lock $(abspath clang)
 """
   test.must_contain('Makefile', cc_expected)
   test.must_contain('Makefile', link_expected)
 if test.format == 'ninja':
   cc_expected = 'cc = ' + os.path.join('..', '..', 'clang')
-  ld_expected = 'ld = $cxx'
+  ld_expected = 'ld = $cc'
   if sys.platform == 'win32':
     ld_expected = 'link.exe'
   test.must_contain('out/Default/build.ninja', cc_expected)

@@ -5,7 +5,6 @@
 {
   'make_global_settings': [
     ['CC', 'clang'],
-    ['LINK', 'clang++'],
     ['CC.host', 'clang'],
   ],
   'targets': [
