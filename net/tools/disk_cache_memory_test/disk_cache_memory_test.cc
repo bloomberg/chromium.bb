@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
@@ -42,6 +43,38 @@ const char kReadWrite[] = "rw-";
 const char kHeap[] = "[heap]";
 const char kKb[] = "kB";
 
+struct CacheSpec {
+ public:
+  static scoped_ptr<CacheSpec> Parse(const std::string& spec_string) {
+    std::vector<std::string> tokens;
+    base::SplitString(spec_string, ':', &tokens);
+    if (tokens.size() != 3)
+      return scoped_ptr<CacheSpec>();
+    if (tokens[0] != kBlockFileBackendType && tokens[0] != kSimpleBackendType)
+      return scoped_ptr<CacheSpec>();
+    if (tokens[1] != kDiskCacheType && tokens[1] != kAppCacheType)
+      return scoped_ptr<CacheSpec>();
+    return scoped_ptr<CacheSpec>(new CacheSpec(
+        tokens[0] == kBlockFileBackendType ? net::CACHE_BACKEND_BLOCKFILE
+                                           : net::CACHE_BACKEND_SIMPLE,
+        tokens[1] == kDiskCacheType ? net::DISK_CACHE : net::APP_CACHE,
+        base::FilePath(tokens[2])));
+  }
+
+  const net::BackendType backend_type;
+  const net::CacheType cache_type;
+  const base::FilePath path;
+
+ private:
+  CacheSpec(net::BackendType backend_type,
+            net::CacheType cache_type,
+            const base::FilePath& path)
+      : backend_type(backend_type),
+        cache_type(cache_type),
+        path(path) {
+  }
+};
+
 void SetSuccessCodeOnCompletion(base::RunLoop* run_loop,
                                 bool* succeeded,
                                 int net_error) {
@@ -53,10 +86,7 @@ void SetSuccessCodeOnCompletion(base::RunLoop* run_loop,
   run_loop->Quit();
 }
 
-scoped_ptr<Backend> CreateAndInitBackend(
-    const net::BackendType& backend_type,
-    const net::CacheType& cache_type,
-    const base::FilePath& cache_path) {
+scoped_ptr<Backend> CreateAndInitBackend(const CacheSpec& spec) {
   scoped_ptr<Backend> result;
   scoped_ptr<Backend> backend;
   bool succeeded = false;
@@ -66,7 +96,7 @@ scoped_ptr<Backend> CreateAndInitBackend(
       base::Unretained(&run_loop),
       base::Unretained(&succeeded));
   const int net_error = CreateCacheBackend(
-      cache_type, backend_type, cache_path, 0, false,
+      spec.cache_type, spec.backend_type, spec.path, 0, false,
       base::MessageLoopProxy::current(), NULL, &backend, callback);
   if (net_error == net::OK)
     callback.Run(net::OK);
@@ -74,11 +104,11 @@ scoped_ptr<Backend> CreateAndInitBackend(
     run_loop.Run();
   if (!succeeded) {
     LOG(ERROR) << "Could not initialize backend in "
-               << cache_path.LossyDisplayName();
+               << spec.path.LossyDisplayName();
     return result.Pass();
   }
   // For the simple cache, the index may not be initialized yet.
-  if (backend_type == net::CACHE_BACKEND_SIMPLE) {
+  if (spec.backend_type == net::CACHE_BACKEND_SIMPLE) {
     base::RunLoop index_run_loop;
     const net::CompletionCallback index_callback = base::Bind(
         &SetSuccessCodeOnCompletion,
@@ -94,7 +124,7 @@ scoped_ptr<Backend> CreateAndInitBackend(
       index_run_loop.Run();
     if (!succeeded) {
       LOG(ERROR) << "Could not initialize Simple Cache in "
-                 << cache_path.LossyDisplayName();
+                 << spec.path.LossyDisplayName();
       return result.Pass();
     }
   }
@@ -185,14 +215,17 @@ uint64 GetMemoryConsumption() {
   return total_size;
 }
 
-bool CacheMemTest(const net::BackendType& backend_type,
-                  const net::CacheType& cache_type,
-                  const base::FilePath& file_path) {
-  const scoped_ptr<Backend> backend =
-      CreateAndInitBackend(backend_type, cache_type, file_path);
-  if (!backend)
-    return false;
-  std::cout << "Number of entries: " << backend->GetEntryCount() << std::endl;
+bool CacheMemTest(const ScopedVector<CacheSpec>& specs) {
+  ScopedVector<Backend> backends;
+  ScopedVector<CacheSpec>::const_iterator it;
+  for (it = specs.begin(); it != specs.end(); ++it) {
+    scoped_ptr<Backend> backend = CreateAndInitBackend(**it);
+    if (!backend)
+      return false;
+    std::cout << "Number of entries in " << (*it)->path.LossyDisplayName()
+              << " : " << backend->GetEntryCount() << std::endl;
+    backends.push_back(backend.release());
+  }
   const uint64 memory_consumption = GetMemoryConsumption();
   std::cout << "Private dirty memory: " << memory_consumption << " kB"
             << std::endl;
@@ -200,14 +233,26 @@ bool CacheMemTest(const net::BackendType& backend_type,
 }
 
 void PrintUsage(std::ostream* stream) {
-  *stream << "Usage: cache_mem_test "
-          << "--backend-type=<backend_type> "
-          << "--cache-type=<cache_type> "
-          << "--cache-path=<cache_path>"
+  *stream << "Usage: disk_cache_mem_test "
+          << "--spec-1=<spec> "
+          << "[--spec-2=<spec>]"
           << std::endl
-          << "  with <backend_type>='block_file'|'simple'" << std::endl
+          << "  with <cache_spec>=<backend_type>:<cache_type>:<cache_path>"
+          << std::endl
+          << "       <backend_type>='block_file'|'simple'" << std::endl
           << "       <cache_type>='disk_cache'|'app_cache'" << std::endl
           << "       <cache_path>=file system path" << std::endl;
+}
+
+bool ParseAndStoreSpec(const std::string& spec_str,
+                       ScopedVector<CacheSpec>* specs) {
+  scoped_ptr<CacheSpec> spec = CacheSpec::Parse(spec_str);
+  if (!spec) {
+    PrintUsage(&std::cerr);
+    return false;
+  }
+  specs->push_back(spec.release());
+  return true;
 }
 
 bool Main(int argc, char** argv) {
@@ -219,34 +264,24 @@ bool Main(int argc, char** argv) {
     PrintUsage(&std::cout);
     return true;
   }
-  if (command_line.GetSwitches().size() != 3 ||
-      !command_line.HasSwitch("backend-type") ||
-      !command_line.HasSwitch("cache-type") ||
-      !command_line.HasSwitch("cache-path")) {
+  if ((command_line.GetSwitches().size() != 1 &&
+       command_line.GetSwitches().size() != 2) ||
+      !command_line.HasSwitch("spec-1") ||
+      (command_line.GetSwitches().size() == 2 &&
+       !command_line.HasSwitch("spec-2"))) {
     PrintUsage(&std::cerr);
     return false;
   }
-  const std::string backend_type_str =
-      command_line.GetSwitchValueASCII("backend-type");
-  const std::string cache_type_str =
-      command_line.GetSwitchValueASCII("cache-type");
-  const base::FilePath cache_path =
-      command_line.GetSwitchValuePath("cache-path");
-  if (backend_type_str != kBlockFileBackendType &&
-      backend_type_str != kSimpleBackendType) {
-    PrintUsage(&std::cerr);
+  ScopedVector<CacheSpec> specs;
+  const std::string spec_str_1 = command_line.GetSwitchValueASCII("spec-1");
+  if (!ParseAndStoreSpec(spec_str_1, &specs))
     return false;
+  if (command_line.HasSwitch("spec-2")) {
+    const std::string spec_str_2 = command_line.GetSwitchValueASCII("spec-2");
+    if (!ParseAndStoreSpec(spec_str_2, &specs))
+      return false;
   }
-  if (cache_type_str != kDiskCacheType && cache_type_str != kAppCacheType) {
-    PrintUsage(&std::cerr);
-    return false;
-  }
-  const net::BackendType backend_type =
-      (backend_type_str == kBlockFileBackendType) ?
-      net::CACHE_BACKEND_BLOCKFILE : net::CACHE_BACKEND_SIMPLE;
-  const net::CacheType cache_type = (cache_type_str == kDiskCacheType) ?
-      net::DISK_CACHE : net::APP_CACHE;
-  return CacheMemTest(backend_type, cache_type, cache_path);
+  return CacheMemTest(specs);
 }
 
 }  // namespace
