@@ -90,7 +90,7 @@ v8::Handle<v8::Value> toV8(IDBAny* impl, v8::Handle<v8::Object> creationContext,
     case IDBAny::StringType:
         return v8String(impl->string(), isolate);
     case IDBAny::IntegerType:
-        return v8::Number::New(impl->integer());
+        return v8::Number::New(isolate, impl->integer());
     case IDBAny::KeyPathType:
         return toV8(impl->keyPath(), creationContext, isolate);
     }

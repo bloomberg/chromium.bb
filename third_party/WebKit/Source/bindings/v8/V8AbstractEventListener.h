@@ -110,6 +110,7 @@ namespace WebCore {
         }
 
         virtual DOMWrapperWorld* world() const OVERRIDE FINAL { return m_world.get(); }
+        v8::Isolate* isolate() const { return m_isolate; }
 
     protected:
         V8AbstractEventListener(bool isAttribute, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);

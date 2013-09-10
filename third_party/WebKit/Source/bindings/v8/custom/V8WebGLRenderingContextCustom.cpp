@@ -134,7 +134,7 @@ static v8::Handle<v8::Value> toV8Object(const WebGLGetInfo& info, v8::Handle<v8:
         return array;
     }
     case WebGLGetInfo::kTypeFloat:
-        return v8::Number::New(info.getFloat());
+        return v8::Number::New(isolate, info.getFloat());
     case WebGLGetInfo::kTypeInt:
         return v8::Integer::New(info.getInt(), isolate);
     case WebGLGetInfo::kTypeNull:

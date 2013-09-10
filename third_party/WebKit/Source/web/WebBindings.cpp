@@ -316,7 +316,7 @@ static NPObject* makeIntArrayImpl(const WebVector<int>& data, v8::Isolate* isola
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Array> result = v8::Array::New(data.size());
     for (size_t i = 0; i < data.size(); ++i)
-        result->Set(i, v8::Number::New(data[i]));
+        result->Set(i, v8::Number::New(isolate, data[i]));
 
     DOMWindow* window = toDOMWindow(isolate->GetCurrentContext());
     return npCreateV8ScriptObject(0, result, window);

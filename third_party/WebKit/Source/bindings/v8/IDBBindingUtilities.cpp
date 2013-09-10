@@ -54,7 +54,7 @@ static v8::Handle<v8::Value> idbKeyToV8Value(IDBKey* key, v8::Isolate* isolate)
         ASSERT_NOT_REACHED();
         return v8Undefined();
     case IDBKey::NumberType:
-        return v8::Number::New(key->number());
+        return v8::Number::New(isolate, key->number());
     case IDBKey::StringType:
         return v8String(key->string(), isolate);
     case IDBKey::DateType:
@@ -138,7 +138,7 @@ static bool get(v8::Handle<v8::Value>& object, const String& keyPathElement, v8:
 {
     if (object->IsString() && keyPathElement == "length") {
         int32_t length = v8::Handle<v8::String>::Cast(object)->Length();
-        result = v8::Number::New(length);
+        result = v8::Number::New(isolate, length);
         return true;
     }
     return object->IsObject() && getValueFrom(v8String(keyPathElement, isolate), result);

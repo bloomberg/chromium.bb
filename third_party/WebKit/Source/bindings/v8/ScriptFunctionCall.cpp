@@ -74,31 +74,31 @@ void ScriptCallArgumentHandler::appendArgument(const char* argument)
 void ScriptCallArgumentHandler::appendArgument(long argument)
 {
     ScriptScope scope(m_scriptState);
-    m_arguments.append(v8::Number::New(argument));
+    m_arguments.append(v8::Number::New(m_scriptState->isolate(), argument));
 }
 
 void ScriptCallArgumentHandler::appendArgument(long long argument)
 {
     ScriptScope scope(m_scriptState);
-    m_arguments.append(v8::Number::New(argument));
+    m_arguments.append(v8::Number::New(m_scriptState->isolate(), argument));
 }
 
 void ScriptCallArgumentHandler::appendArgument(unsigned int argument)
 {
     ScriptScope scope(m_scriptState);
-    m_arguments.append(v8::Number::New(argument));
+    m_arguments.append(v8::Number::New(m_scriptState->isolate(), argument));
 }
 
 void ScriptCallArgumentHandler::appendArgument(unsigned long argument)
 {
     ScriptScope scope(m_scriptState);
-    m_arguments.append(v8::Number::New(argument));
+    m_arguments.append(v8::Number::New(m_scriptState->isolate(), argument));
 }
 
 void ScriptCallArgumentHandler::appendArgument(int argument)
 {
     ScriptScope scope(m_scriptState);
-    m_arguments.append(v8::Number::New(argument));
+    m_arguments.append(v8::Number::New(m_scriptState->isolate(), argument));
 }
 
 void ScriptCallArgumentHandler::appendArgument(bool argument)

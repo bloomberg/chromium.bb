@@ -92,7 +92,7 @@ ScriptObject InjectedScriptManager::createInjectedScript(const String& scriptSou
     ASSERT(value->IsFunction());
 
     v8::Local<v8::Object> windowGlobal = inspectedContext->Global();
-    v8::Handle<v8::Value> args[] = { scriptHostWrapper, windowGlobal, v8::Number::New(id) };
+    v8::Handle<v8::Value> args[] = { scriptHostWrapper, windowGlobal, v8::Number::New(inspectedContext->GetIsolate(), id) };
     v8::Local<v8::Value> injectedScriptValue = V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(value), windowGlobal, WTF_ARRAY_LENGTH(args), args, inspectedContext->GetIsolate());
     return ScriptObject(inspectedScriptState, v8::Handle<v8::Object>::Cast(injectedScriptValue));
 }

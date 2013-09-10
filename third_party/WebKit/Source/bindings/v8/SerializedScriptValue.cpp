@@ -1700,7 +1700,7 @@ private:
         double number;
         if (!doReadNumber(&number))
             return false;
-        *value = v8::Number::New(number);
+        *value = v8::Number::New(m_isolate, number);
         return true;
     }
 

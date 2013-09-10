@@ -264,17 +264,17 @@ namespace WebCore {
 
     template<>
     struct V8ValueTraits<float> {
-        static inline v8::Handle<v8::Value> arrayV8Value(const float& value, v8::Isolate*)
+        static inline v8::Handle<v8::Value> arrayV8Value(const float& value, v8::Isolate* isolate)
         {
-            return v8::Number::New(value);
+            return v8::Number::New(isolate, value);
         }
     };
 
     template<>
     struct V8ValueTraits<double> {
-        static inline v8::Handle<v8::Value> arrayV8Value(const double& value, v8::Isolate*)
+        static inline v8::Handle<v8::Value> arrayV8Value(const double& value, v8::Isolate* isolate)
         {
-            return v8::Number::New(value);
+            return v8::Number::New(isolate, value);
         }
     };
 

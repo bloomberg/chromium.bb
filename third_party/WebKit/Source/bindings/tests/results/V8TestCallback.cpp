@@ -217,6 +217,35 @@ bool V8TestCallback::callbackWithSequence(const Vector<RefPtr<TestObj> >& sequen
     return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, scriptExecutionContext(), isolate);
 }
 
+bool V8TestCallback::callbackWithFloat(float floatParam)
+{
+    if (!canInvokeCallback())
+        return true;
+
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
+
+    v8::Handle<v8::Context> v8Context = toV8Context(scriptExecutionContext(), m_world.get());
+    if (v8Context.IsEmpty())
+        return true;
+
+    v8::Context::Scope scope(v8Context);
+
+    v8::Handle<v8::Value> floatParamHandle = v8::Number::New(isolate, floatParam);
+    if (floatParamHandle.IsEmpty()) {
+        if (!isScriptControllerTerminating())
+            CRASH();
+        return true;
+    }
+
+    v8::Handle<v8::Value> argv[] = {
+        floatParamHandle
+    };
+
+    bool callbackReturnValue = false;
+    return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, scriptExecutionContext(), isolate);
+}
+
 bool V8TestCallback::callbackWithThisArg(ScriptValue thisValue, int param)
 {
     if (!canInvokeCallback())

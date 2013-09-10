@@ -256,7 +256,7 @@ static v8::Handle<v8::Array> getJSListenerFunctions(Document* document, const Ev
         v8::Local<v8::Object> listenerEntry = v8::Object::New();
         listenerEntry->Set(v8::String::NewSymbol("listener"), function);
         listenerEntry->Set(v8::String::NewSymbol("useCapture"), v8::Boolean::New(listenerInfo.eventListenerVector[i].useCapture));
-        result->Set(v8::Number::New(outputIndex++), listenerEntry);
+        result->Set(v8::Number::New(v8Listener->isolate(), outputIndex++), listenerEntry);
     }
     return result;
 }

@@ -5422,13 +5422,13 @@ sub NativeToJSValue
     # long long and unsigned long long are not representable in ECMAScript.
     if ($type eq "long long" or $type eq "unsigned long long" or $type eq "DOMTimeStamp") {
         return "${indent}v8SetReturnValue(${getCallbackInfo}, static_cast<double>($nativeValue));" if $isReturnValue;
-        return "$indent$receiver v8::Number::New(static_cast<double>($nativeValue));";
+        return "$indent$receiver v8::Number::New($getIsolate, static_cast<double>($nativeValue));";
     }
 
     if (IsPrimitiveType($type)) {
         die "unexpected type $type" if not ($type eq "float" or $type eq "double");
         return "${indent}v8SetReturnValue(${getCallbackInfo}, ${nativeValue});" if $isReturnValue;
-        return "$indent$receiver v8::Number::New($nativeValue);";
+        return "$indent$receiver v8::Number::New($getIsolate, $nativeValue);";
     }
 
     if ($nativeType eq "ScriptValue" or $nativeType eq "ScriptPromise") {

@@ -72,7 +72,7 @@ void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::
                 value = v8::Null(args.GetIsolate());
                 break;
             case SQLValue::NumberValue:
-                value = v8::Number::New(sqlValue.number());
+                value = v8::Number::New(args.GetIsolate(), sqlValue.number());
                 break;
             default:
                 ASSERT_NOT_REACHED();

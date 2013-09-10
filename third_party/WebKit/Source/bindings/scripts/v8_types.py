@@ -80,11 +80,11 @@ PRIMITIVE_TYPES = set([
 CPP_VALUE_TO_V8_VALUE_DICT = {
     'boolean': 'v8Boolean({cpp_value}, {isolate})',
     # long long and unsigned long long are not representable in ECMAScript.
-    'long long': 'v8::Number::New(static_cast<double>({cpp_value}))',
-    'unsigned long long': 'v8::Number::New(static_cast<double>({cpp_value}))',
-    'float': 'v8::Number::New({cpp_value})',
-    'double': 'v8::Number::New({cpp_value})',
-    'DOMTimeStamp': 'v8::Number::New(static_cast<double>({cpp_value}))',
+    'long long': 'v8::Number::New({isolate}, static_cast<double>({cpp_value}))',
+    'unsigned long long': 'v8::Number::New({isolate}, static_cast<double>({cpp_value}))',
+    'float': 'v8::Number::New({isolate}, {cpp_value})',
+    'double': 'v8::Number::New({isolate}, {cpp_value})',
+    'DOMTimeStamp': 'v8::Number::New({isolate}, static_cast<double>({cpp_value}))',
     'DOMString': 'v8String({cpp_value}, {isolate})',
 }
 CPP_VALUE_TO_V8_VALUE_ARRAY_OR_SEQUENCE_TYPE = 'v8Array({cpp_value}, {isolate})'
