@@ -323,10 +323,6 @@ const char kDisableDefaultApps[]            = "disable-default-apps";
 // Disables device discovery.
 const char kDisableDeviceDiscovery[]        = "disable-device-discovery";
 
-// Disables device discovery notifications.
-const char kDisableDeviceDiscoveryNotifications[] =
-    "disable-device-discovery-notifications";
-
 // Disables retrieval of PAC URLs from DHCP as per the WPAD standard.
 const char kDisableDhcpWpad[]               = "disable-dhcp-wpad";
 

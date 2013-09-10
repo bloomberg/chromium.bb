@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile.h"
@@ -149,8 +148,10 @@ PrivetNotificationsListener::DeviceContext::~DeviceContext() {
 }
 
 PrivetNotificationService::PrivetNotificationService(
-    content::BrowserContext* profile)
-    : profile_(profile) {
+    content::BrowserContext* profile,
+    NotificationUIManager* notification_manager)
+    : profile_(profile),
+      notification_manager_(notification_manager) {
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&PrivetNotificationService::Start, AsWeakPtr()),
@@ -209,15 +210,13 @@ void PrivetNotificationService::PrivetNotify(
         rich_notification_data,
         new PrivetNotificationDelegate(device_name, profile_));
 
-    g_browser_process->notification_ui_manager()->Add(notification,
-                                                      profile_object);
+    notification_manager_->Add(notification, profile_object);
   }
 }
 
 void PrivetNotificationService::PrivetRemoveNotification(
     const std::string& device_name) {
-  g_browser_process->notification_ui_manager()->CancelById(
-      kPrivetNotificationIDPrefix + device_name);
+  notification_manager_->CancelById(kPrivetNotificationIDPrefix + device_name);
 }
 
 void PrivetNotificationService::Start() {

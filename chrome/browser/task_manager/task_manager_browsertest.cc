@@ -104,9 +104,6 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
     // well defined.
     command_line->AppendSwitch(switches::kDisableGpuProcessPrelaunch);
     command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
-
-    // Do not launch device discovery process.
-    command_line->AppendSwitch(switches::kDisableDeviceDiscoveryNotifications);
   }
 
  private:
