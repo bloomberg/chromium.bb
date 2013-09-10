@@ -4,11 +4,19 @@
 
 #include "tools/gn/functions.h"
 
+#include "tools/gn/config_values_generator.h"
 #include "tools/gn/err.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/target_generator.h"
 #include "tools/gn/value.h"
+
+#define DEPENDENT_CONFIG_VARS \
+    "  Dependent configs: all_dependent_configs, direct_dependent_configs\n"
+#define DEPS_VARS \
+    "  Deps: data, datadeps, deps, forward_dependent_configs_from\n"
+#define GENERAL_TARGET_VARS \
+    "  General: configs, external, sources\n"
 
 namespace functions {
 
@@ -188,7 +196,13 @@ Value RunCustom(Scope* scope,
 
 const char kExecutable[] = "executable";
 const char kExecutable_Help[] =
-    "TODO(brettw) write this.";
+    "executable: Declare an executable target.\n"
+    "\n"
+    "Variables:\n"
+    CONFIG_VALUES_VARS_HELP
+    DEPS_VARS
+    DEPENDENT_CONFIG_VARS
+    GENERAL_TARGET_VARS;
 
 Value RunExecutable(Scope* scope,
                     const FunctionCallNode* function,
@@ -206,19 +220,26 @@ const char kGroup_Help[] =
     "group: Declare a named group of targets.\n"
     "\n"
     "  This target type allows you to create meta-targets that just collect a\n"
-    "  set of dependencies into one named target.\n"
+    "  set of dependencies into one named target. Groups can additionally\n"
+    "  specify configs that apply to their dependents.\n"
+    "\n"
+    "  Depending on a group is exactly like depending directly on that\n"
+    "  group's deps. Direct dependent configs will get automatically fowarded\n"
+    "  through the group so you shouldn't need to use\n"
+    "  \"forward_dependent_configs_from.\n"
     "\n"
     "Variables:\n"
-    "\n"
-    "  deps\n"
+    DEPS_VARS
+    DEPENDENT_CONFIG_VARS
+    "  Other variables: external\n"
     "\n"
     "Example:\n"
     "  group(\"all\") {\n"
     "    deps = [\n"
     "      \"//project:runner\",\n"
     "      \"//project:unit_tests\",\n"
-    "      ]\n"
-    "    }";
+    "    ]\n"
+    "  }\n";
 
 Value RunGroup(Scope* scope,
                const FunctionCallNode* function,
@@ -233,7 +254,18 @@ Value RunGroup(Scope* scope,
 
 const char kSharedLibrary[] = "shared_library";
 const char kSharedLibrary_Help[] =
-    "TODO(brettw) write this.";
+    "shared_library: Declare a shared library target.\n"
+    "\n"
+    "  A shared library will be specified on the linker line for targets\n"
+    "  listing the shared library in its \"deps\". If you don't want this\n"
+    "  (say you dynamically load the library at runtime), then you should\n"
+    "  depend on the shared library via \"datadeps\" instead.\n"
+    "\n"
+    "Variables:\n"
+    CONFIG_VALUES_VARS_HELP
+    DEPS_VARS
+    DEPENDENT_CONFIG_VARS
+    GENERAL_TARGET_VARS;
 
 Value RunSharedLibrary(Scope* scope,
                        const FunctionCallNode* function,
@@ -248,7 +280,13 @@ Value RunSharedLibrary(Scope* scope,
 
 const char kStaticLibrary[] = "static_library";
 const char kStaticLibrary_Help[] =
-    "TODO(brettw) write this.";
+    "static_library: Declare a static library target.\n"
+    "\n"
+    "Variables:\n"
+    CONFIG_VALUES_VARS_HELP
+    DEPS_VARS
+    DEPENDENT_CONFIG_VARS
+    GENERAL_TARGET_VARS;
 
 Value RunStaticLibrary(Scope* scope,
                        const FunctionCallNode* function,

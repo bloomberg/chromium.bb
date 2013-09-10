@@ -17,6 +17,7 @@ BuildSettings::~BuildSettings() {
 }
 
 void BuildSettings::SetRootPath(const base::FilePath& r) {
+  DCHECK(r.value()[r.value().size() - 1] != base::FilePath::kSeparators[0]);
   root_path_ = r;
   root_path_utf8_ = FilePathToUTF8(root_path_);
 }

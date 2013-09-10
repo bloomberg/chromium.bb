@@ -1,0 +1,14 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("ui") {
+  external = true
+
+  # TODO(brettw) do this target, this current stuff is only to make Chrome
+  # link.
+
+  if (is_linux) {  # TODO(brettw) this should be some X11 thing.
+    configs += "//build/config/linux:x11"
+  }
+}

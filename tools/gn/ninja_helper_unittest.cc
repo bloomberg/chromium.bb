@@ -4,6 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "tools/gn/build_settings.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/ninja_helper.h"
 #include "tools/gn/settings.h"
@@ -16,11 +17,9 @@ class HelperSetterUpper {
  public:
   HelperSetterUpper()
       : build_settings(),
-        toolchain(Label(SourceDir("//"), "tc", SourceDir(), std::string())),
+        toolchain(Label(SourceDir("//"), "tc")),
         settings(&build_settings, &toolchain, std::string()),
-        target(&settings,
-               Label(SourceDir("//tools/gn/"), "name",
-                     SourceDir(), std::string())) {
+        target(&settings, Label(SourceDir("//tools/gn/"), "name")) {
     settings.set_target_os(Settings::WIN);
 
     // Output going to "out/Debug".

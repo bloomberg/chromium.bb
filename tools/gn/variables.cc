@@ -458,7 +458,21 @@ const char kLdflags_Help[] =
     "\n"
     "  A list of strings.\n"
     "\n"
-    "  These flags are passed on the command-line to the linker.\n"
+    "  These flags are passed on the command-line to the linker and generally\n"
+    "  specify additional system libraries to link or the library search\n"
+    "  path.\n"
+    "\n"
+    "  Ldflags work differently than other flags in several respects. First,\n"
+    "  then are inherited across static library boundaries until a shared\n"
+    "  library or executable target is reached. Second, they are uniquified\n"
+    "  so each flag is only passed once (the first instance of any specific\n"
+    "  flag will be the one used).\n"
+    "\n"
+    "  The order that ldflags apply is:\n"
+    "    1. Flags set on the target itself.\n"
+    "    2. Flags from the configs applying to the target.\n"
+    "    3. Flags from deps of the target, in order (recursively following\n"
+    "       these rules).\n"
     COMMON_FLAGS_HELP;
 
 const char kSources[] = "sources";

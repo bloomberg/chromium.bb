@@ -4,9 +4,8 @@
 
 #include "tools/gn/target.h"
 
-#include <set>
-
 #include "base/bind.h"
+#include "tools/gn/config_values_extractors.h"
 #include "tools/gn/scheduler.h"
 
 namespace {
@@ -102,8 +101,23 @@ const Target* Target::AsTarget() const {
 }
 
 void Target::OnResolved() {
+  DCHECK(output_type_ != UNKNOWN);
+
+  // Convert any groups we depend on to just direct dependencies on that
+  // group's deps. We insert the new deps immediately after the group so that
+  // the ordering is preserved. We need to keep the original group so that any
+  // flags, etc. that it specifies itself are applied to us.
+  size_t original_deps_size = deps_.size();
+  for (size_t i = 0; i < original_deps_size; i++) {
+    const Target* dep = deps_[i];
+    if (dep->output_type_ == GROUP) {
+      deps_.insert(deps_.begin() + i + 1, dep->deps_.begin(), dep->deps_.end());
+      i += dep->deps_.size();
+    }
+  }
+
   // Only add each config once. First remember the target's configs.
-  std::set<const Config*> unique_configs;
+  ConfigSet unique_configs;
   for (size_t i = 0; i < configs_.size(); i++)
     unique_configs.insert(configs_[i]);
 
@@ -123,42 +137,22 @@ void Target::OnResolved() {
     }
   }
 
-  // Gather info from our dependents we need.
-  for (size_t dep = 0; dep < deps_.size(); dep++) {
-    MergeAllDependentConfigsFrom(deps_[dep], &unique_configs, &configs_,
-                                 &all_dependent_configs_);
-    MergeDirectDependentConfigsFrom(deps_[dep], &unique_configs, &configs_);
-
-    // Direct dependent libraries.
-    if (deps_[dep]->output_type() == STATIC_LIBRARY ||
-        deps_[dep]->output_type() == SHARED_LIBRARY)
-      inherited_libraries_.insert(deps_[dep]);
-
-    // Inherited libraries. Don't pull transitive libraries from shared
-    // libraries, since obviously those shouldn't be linked directly into
-    // later deps unless explicitly specified.
-    if (deps_[dep]->output_type() != SHARED_LIBRARY &&
-        deps_[dep]->output_type() != EXECUTABLE) {
-      const std::set<const Target*> inherited =
-          deps_[dep]->inherited_libraries();
-      for (std::set<const Target*>::const_iterator i = inherited.begin();
-           i != inherited.end(); ++i)
-        inherited_libraries_.insert(*i);
-    }
+  // Copy our own ldflags to the final set. This will be from our target and
+  // all of our configs. We do this for ldflags because it must get inherited
+  // through the dependency tree (other flags don't work this way).
+  for (ConfigValuesIterator iter(this); !iter.done(); iter.Next()) {
+    all_ldflags_.insert(all_ldflags_.end(),
+                        iter.cur().ldflags().begin(),
+                        iter.cur().ldflags().end());
   }
 
-  // Forward direct dependent configs if requested.
-  for (size_t dep = 0; dep < forward_dependent_configs_.size(); dep++) {
-    const Target* from_target = forward_dependent_configs_[dep];
-
-    // The forward_dependent_configs_ must be in the deps already, so we
-    // don't need to bother copying to our configs, only forwarding.
-    DCHECK(std::find(deps_.begin(), deps_.end(), from_target) !=
-           deps_.end());
-    const std::vector<const Config*>& direct =
-        from_target->direct_dependent_configs();
-    for (size_t i = 0; i < direct.size(); i++)
-      direct_dependent_configs_.push_back(direct[i]);
+  if (output_type_ != GROUP) {
+    // Don't pull target info like libraries and configs from dependencies into
+    // a group target. When A depends on a group G, the G's dependents will
+    // be treated as direct dependencies of A, so this is unnecessary and will
+    // actually result in duplicated settings (since settings will also be
+    // pulled from G to A in case G has configs directly on it).
+    PullDependentTargetInfo(&unique_configs);
   }
 
   // Mark as resolved.
@@ -181,4 +175,47 @@ void Target::SetGenerated(const Token* token) {
 
 bool Target::IsLinkable() const {
   return output_type_ == STATIC_LIBRARY || output_type_ == SHARED_LIBRARY;
+}
+
+void Target::PullDependentTargetInfo(std::set<const Config*>* unique_configs) {
+  // Gather info from our dependents we need.
+  for (size_t dep_i = 0; dep_i < deps_.size(); dep_i++) {
+    const Target* dep = deps_[dep_i];
+    MergeAllDependentConfigsFrom(dep, unique_configs, &configs_,
+                                 &all_dependent_configs_);
+    MergeDirectDependentConfigsFrom(dep, unique_configs, &configs_);
+
+    // Direct dependent libraries.
+    if (dep->output_type() == STATIC_LIBRARY ||
+        dep->output_type() == SHARED_LIBRARY)
+      inherited_libraries_.insert(dep);
+
+    // Inherited libraries and flags are inherited across static library
+    // boundaries.
+    if (dep->output_type() != SHARED_LIBRARY &&
+        dep->output_type() != EXECUTABLE) {
+      const std::set<const Target*> inherited = dep->inherited_libraries();
+      for (std::set<const Target*>::const_iterator i = inherited.begin();
+           i != inherited.end(); ++i)
+        inherited_libraries_.insert(*i);
+
+      // Inherited system libraries.
+      all_ldflags_.insert(all_ldflags_.end(),
+                          dep->all_ldflags().begin(), dep->all_ldflags().end());
+    }
+  }
+
+  // Forward direct dependent configs if requested.
+  for (size_t dep = 0; dep < forward_dependent_configs_.size(); dep++) {
+    const Target* from_target = forward_dependent_configs_[dep];
+
+    // The forward_dependent_configs_ must be in the deps already, so we
+    // don't need to bother copying to our configs, only forwarding.
+    DCHECK(std::find(deps_.begin(), deps_.end(), from_target) !=
+           deps_.end());
+    const std::vector<const Config*>& direct =
+        from_target->direct_dependent_configs();
+    for (size_t i = 0; i < direct.size(); i++)
+      direct_dependent_configs_.push_back(direct[i]);
+  }
 }

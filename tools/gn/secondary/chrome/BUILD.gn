@@ -1,0 +1,106 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+executable("chrome") {
+  sources = [
+    "app/breakpad_field_trial_win.cc",
+    "app/breakpad_field_trial_win.h",
+    "app/breakpad_win.cc",
+    "app/breakpad_win.h",
+    "app/chrome_dll_resource.h",
+    "app/chrome_exe_main_aura.cc",
+    "app/chrome_exe_main_gtk.cc",
+    "app/chrome_exe_main_mac.cc",
+    "app/chrome_exe_main_win.cc",
+    "app/chrome_exe_resource.h",
+    "app/chrome_main.cc",
+    "app/chrome_main_delegate.cc",
+    "app/chrome_main_delegate.h",
+    "app/client_util.cc",
+    "app/client_util.h",
+    "app/hard_error_handler_win.cc",
+    "app/hard_error_handler_win.h",
+    "app/metro_driver_win.cc",
+    "app/metro_driver_win.h",
+    "../content/app/startup_helper_win.cc",
+  ]
+
+  configs += [
+    # TODO(brettw) this is wrong, it should be picked up from deps.
+    "//build/config/linux:gtk",
+    "//build/config/linux:x11",
+  ]
+
+  ldflags = [
+    # TODO(brettw) Fix NSS libraries to come from the right place, Chrome
+    # shouldn't be specifying them directly.
+    "-lnss3", "-lnssutil3", "-lsmime3", "-lplds4", "-lplc4", "-lnspr4",
+  ]
+
+  deps = [
+    # TODO(brettw) this is right on linux? Everything is linked into the
+    # exe, but wrong on Windows, where chrome_exe and chrome_dll are separate.
+    ":browser",
+    ":common",
+    ":debugger",
+    ":plugin",
+    ":renderer",
+    ":utility",
+    "//base",
+  ]
+
+  # TODO(brettw) this isn't right for all platforms.
+  if (!use_aura) {
+    sources -= "app/chrome_exe_main_aura.cc"
+  }
+
+  if (!is_win) {
+    sources -= [
+      "app/client_util.cc",
+      "app/client_util.h",
+    ]
+  }
+}
+
+static_library("browser") {
+  external = true
+
+
+  if (is_linux) {  # TODO(brettw) should be toolkit_uses_gtk instead.
+    ldflags = [ "-lgconf-2" ]
+  }
+  configs += [
+    "//build/config/linux:x11",
+  ]
+
+  deps = [
+    "//third_party/expat",
+  ]
+}
+
+static_library("common") {
+  external = true
+
+  deps = [
+  ]
+}
+
+static_library("debugger") {
+  external = true
+  deps = [
+    "//third_party/libusb",
+  ]
+}
+
+static_library("plugin") {
+  external = true
+}
+
+static_library("renderer") {
+  external = true
+}
+
+static_library("utility") {
+  external = true
+}

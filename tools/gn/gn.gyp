@@ -175,6 +175,7 @@
         'string_utils_unittest.cc',
         'target_generator_unittest.cc',
         'target_manager_unittest.cc',
+        'target_unittest.cc',
         'tokenizer_unittest.cc',
       ],
       'dependencies': [

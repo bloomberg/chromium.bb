@@ -4,6 +4,9 @@
 
 #include "tools/gn/ninja_binary_target_writer.h"
 
+#include <set>
+
+#include "base/strings/string_util.h"
 #include "tools/gn/config_values_extractors.h"
 #include "tools/gn/err.h"
 #include "tools/gn/escape.h"
@@ -160,10 +163,24 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
     out_ << std::endl;
   }
 
-  // Linker flags, append manifest flag on Windows to reference our file.
+  EscapeOptions flag_options = GetFlagOptions();
+
+  // Linker flags. The linker flags will already be collected in all_ldflags
+  // for the target from all child targets, and configs, but they still need
+  // to be uniquified.
   out_ << "ldflags =";
-  RecursiveTargetConfigStringsToStream(target_, &ConfigValues::ldflags,
-                                       GetFlagOptions(), out_);
+  const std::vector<std::string> all_ldflags = target_->all_ldflags();
+  std::set<std::string> seen_ldflags;
+  for (size_t i = 0; i < all_ldflags.size(); i++) {
+    if (seen_ldflags.find(all_ldflags[i]) != seen_ldflags.end())
+      continue;  // Already done this flag.
+
+    seen_ldflags.insert(all_ldflags[i]);
+    out_ << " ";
+    EscapeStringToStream(out_, all_ldflags[i], flag_options);
+  }
+
+  // Append manifest flag on Windows to reference our file.
   // HACK ERASEME BRETTW FIXME
   if (settings_->IsWin()) {
     out_ << " /MANIFEST /ManifestFile:";
@@ -278,6 +295,17 @@ void NinjaBinaryTargetWriter::WriteLinkCommand(
       out_ << " ";
       path_output_.WriteFile(out_, helper_.GetTargetOutputFile(*i));
     }
+  }
+
+  // External link deps from GYP. This is indexed by a label with no toolchain.
+  typedef BuildSettings::AdditionalLibsMap LibsMap;
+  const LibsMap& libs = settings_->build_settings()->external_link_deps();
+  Label libs_key(target_->label().dir(), target_->label().name());
+  LibsMap::const_iterator libs_end = libs.upper_bound(libs_key);
+  for (LibsMap::const_iterator i = libs.lower_bound(libs_key);
+       i != libs_end; ++i) {
+    out_ << " ";
+    path_output_.WriteFile(out_, i->second);
   }
 
   // Append data dependencies as order-only dependencies.

@@ -17,6 +17,7 @@
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/ninja_target_writer.h"
 #include "tools/gn/ninja_writer.h"
+#include "tools/gn/output_file.h"
 #include "tools/gn/path_output.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
@@ -32,6 +33,16 @@ const char kSwitchQuiet[] = "q";
 // build and don't want to wait for GYP to regenerate. All GN files are
 // regenerated, but the GYP ones are not.
 const char kSwitchNoGyp[] = "no-gyp";
+
+// Where to have GYP write its outputs.
+const char kDirOut[] = "out.gn";
+const char kSourceDirOut[] = "//out.gn/";
+
+// We'll do the GN build to here.
+const char kBuildSourceDir[] = "//out.gn/Debug/";
+
+// File that GYP will write dependency information to.
+const char kGypDepsSourceFileName[] = "//out.gn/gyp_deps.txt";
 
 void TargetResolvedCallback(base::subtle::Atomic32* write_counter,
                             const Target* target) {
@@ -133,10 +144,20 @@ bool RunGyp(const BuildSettings* build_settings) {
   CommandLine cmdline(python_path);
   cmdline.AppendArgPath(
       build_settings->GetFullPath(SourceFile("//build/gyp_chromium.py")));
+
+  // Override the default output directory so we can coexist in parallel
+  // with a normal Ninja GYP build.
   cmdline.AppendArg("-G");
-  cmdline.AppendArg("output_dir=out.gn");
+  cmdline.AppendArg(std::string("output_dir=") + kDirOut);
+
+  // Force the Ninja generator.
   cmdline.AppendArg("-f");
   cmdline.AppendArg("ninja");
+
+  // Write deps for libraries so we can pick them up.
+  cmdline.AppendArg("-G");
+  cmdline.AppendArg("link_deps_file=" + FilePathToUTF8(
+      build_settings->GetFullPath(SourceFile(kGypDepsSourceFileName))));
 
   std::string output;
   if (!base::GetAppOutput(cmdline, &output)) {
@@ -147,6 +168,94 @@ bool RunGyp(const BuildSettings* build_settings) {
 }
 
 }  // namespace
+
+// Converts a GYP qualified target which looks like:
+// "/home/you/src/third_party/icu/icu.gyp:icui18n#target" to a GN label like
+// "//third_party/icu:icui18n". On failure returns an empty label and sets the
+// error.
+Label GypQualifiedTargetToLabel(const std::string& source_root_prefix,
+                                const base::StringPiece& target,
+                                Err* err) {
+  // Prefix should end in canonical path separator.
+  const char kSep = static_cast<char>(base::FilePath::kSeparators[0]);
+  DCHECK(source_root_prefix[source_root_prefix.size() - 1] == kSep);
+
+  if (!target.starts_with(source_root_prefix)) {
+    *err = Err(Location(), "GYP deps parsing failed.",
+        "The line was \"" + target.as_string() + "\" and it should have "
+        "started with \"" + source_root_prefix + "\"");
+    return Label();
+  }
+
+  size_t begin = source_root_prefix.size();
+  size_t colon = target.find(':', begin);
+  if (colon == std::string::npos) {
+    *err = Err(Location(), "Expected :", target.as_string());
+    return Label();
+  }
+
+  size_t octothorpe = target.find('#', colon);
+  if (octothorpe == std::string::npos) {
+    *err = Err(Location(), "Expected #", target.as_string());
+    return Label();
+  }
+
+  // This will look like "third_party/icu/icu.gyp"
+  base::StringPiece gyp_file = target.substr(begin, colon - begin);
+
+  // Strip the file name from the end to get "third_party/icu".
+  size_t last_sep = gyp_file.find_last_of(kSep);
+  if (last_sep == std::string::npos) {
+    *err = Err(Location(), "Expected path separator.", target.as_string());
+    return Label();
+  }
+  base::StringPiece path = gyp_file.substr(0, last_sep);
+  SourceDir dir("//" + path.as_string());
+
+  base::StringPiece name = target.substr(colon + 1, octothorpe - colon - 1);
+
+  return Label(dir, name);
+}
+
+// Parses the link deps file, filling the given map. Returns true on sucess.
+// On failure fills the error and returns false.
+//
+// Example format for each line:
+//   /home/you/src/third_party/icu/icu.gyp:icui18n#target lib/libi18n.so
+bool ParseLinkDepsFile(const BuildSettings* build_settings,
+                       const std::string& contents,
+                       BuildSettings::AdditionalLibsMap* deps,
+                       Err* err) {
+  std::string source_root_prefix = FilePathToUTF8(build_settings->root_path());
+  source_root_prefix.push_back(base::FilePath::kSeparators[0]);
+
+  size_t cur = 0;
+  while (cur < contents.size()) {
+    // The source file is everything up to the space.
+    size_t space = contents.find(' ', cur);
+    if (space == std::string::npos)
+      break;
+    Label source(GypQualifiedTargetToLabel(
+        source_root_prefix,
+        base::StringPiece(&contents[cur], space - cur),
+        err));
+    if (source.is_null())
+      return false;
+
+    // The library file is everything between the space and EOL.
+    cur = space + 1;
+    size_t eol = contents.find('\n', cur);
+    if (eol == std::string::npos) {
+      *err = Err(Location(), "Expected newline at end of link deps file.");
+      return false;
+    }
+    OutputFile lib(contents.substr(cur, eol - cur));
+
+    deps->insert(std::make_pair(source, lib));
+    cur = eol + 1;
+  }
+  return true;
+}
 
 const char kGyp[] = "gyp";
 const char kGyp_HelpShort[] =
@@ -181,7 +290,7 @@ int RunGyp(const std::vector<std::string>& args) {
   if (!setup->DoSetup())
     return 1;
 
-  setup->build_settings().SetBuildDir(SourceDir("//out.gn/Debug/"));
+  setup->build_settings().SetBuildDir(SourceDir(kBuildSourceDir));
   setup->build_settings().set_using_external_generator(true);
 
   // Provide a way for buildfiles to know we're doing a GYP build.
@@ -191,12 +300,32 @@ int RunGyp(const std::vector<std::string>& args) {
   setup->build_settings().build_args().AddArgOverrides(variable_overrides);
   */
 
+  base::FilePath link_deps_file =
+      setup->build_settings().GetFullPath(SourceFile(kGypDepsSourceFileName));
+  if (!no_gyp)
+    base::DeleteFile(link_deps_file, false);
+
   base::TimeTicks begin_time = base::TimeTicks::Now();
   if (!no_gyp) {
     if (!RunGyp(&setup->build_settings()))
       return 1;
   }
   base::TimeTicks end_gyp_time = base::TimeTicks::Now();
+
+  // Read in the GYP link dependencies.
+  std::string link_deps_contents;
+  if (!base::ReadFileToString(link_deps_file, &link_deps_contents)) {
+    Err(Location(), "Couldn't load link deps file.",
+        FilePathToUTF8(link_deps_file)).PrintToStdout();
+    return 1;
+  }
+  Err err;
+  if (!ParseLinkDepsFile(&setup->build_settings(),
+                         link_deps_contents,
+                         &setup->build_settings().external_link_deps(), &err)) {
+    err.PrintToStdout();
+    return 1;
+  }
 
   if (!cmdline->HasSwitch(kSwitchQuiet))
     OutputString("Running GN...\n");

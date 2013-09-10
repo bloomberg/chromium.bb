@@ -52,7 +52,7 @@ Value RunToolchain(Scope* scope,
   // the toolchain name in the label, and toolchain labels don't themselves
   // have toolchain names.
   const SourceDir& input_dir = scope->GetSourceDir();
-  Label label(input_dir, args[0].string_value(), SourceDir(), std::string());
+  Label label(input_dir, args[0].string_value());
   if (g_scheduler->verbose_logging())
     g_scheduler->Log("Generating toolchain", label.GetUserVisibleName(false));
 

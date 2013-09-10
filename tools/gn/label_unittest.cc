@@ -60,8 +60,7 @@ TEST(Label, Resolve) {
       { "//chrome/", ":bar(t/b)",                 true,  "//chrome/",          "bar",  "//chrome/t/b/", "b" },
   };
 
-  Label default_toolchain(SourceDir("//t/"), "d",
-                          SourceDir(), std::string());
+  Label default_toolchain(SourceDir("//t/"), "d");
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     const ParseDepStringCase& cur = cases[i];

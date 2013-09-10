@@ -200,6 +200,11 @@ Label::Label(const SourceDir& dir,
   toolchain_name_.assign(toolchain_name.data(), toolchain_name.size());
 }
 
+Label::Label(const SourceDir& dir, const base::StringPiece& name)
+    : dir_(dir) {
+  name_.assign(name.data(), name.size());
+}
+
 Label::~Label() {
 }
 
@@ -228,8 +233,7 @@ Label Label::Resolve(const SourceDir& current_dir,
 }
 
 Label Label::GetToolchainLabel() const {
-  return Label(toolchain_dir_, toolchain_name_,
-               SourceDir(), base::StringPiece());
+  return Label(toolchain_dir_, toolchain_name_);
 }
 
 std::string Label::GetUserVisibleName(bool include_toolchain) const {

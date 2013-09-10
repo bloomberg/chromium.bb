@@ -15,6 +15,54 @@
 
 struct EscapeOptions;
 
+// Provides a way to iterate through all ConfigValues applying to a given
+// target. This is more complicated than normal because the target has a list
+// of configs applying to it, and also config values on the target itself.
+//
+// This iterator allows one to iterate through all of these in a defined order
+// in one convenient loop. The order is defined to be the ConfigValues on the
+// target itself first, then the applying configs, in order.
+//
+// Example:
+//   for (ConfigValueIterator iter(target); !iter.done(); iter.Next())
+//     DoSomething(iter->cur());
+class ConfigValuesIterator {
+ public:
+  explicit ConfigValuesIterator(const Target* target)
+      : target_(target),
+        cur_index_(-1) {
+  }
+
+  bool done() const {
+    return cur_index_ >= static_cast<int>(target_->configs().size());
+  }
+
+  const ConfigValues& cur() const {
+    if (cur_index_ == -1)
+      return target_->config_values();
+    return target_->configs()[cur_index_]->config_values();
+  }
+
+  void Next() {
+    cur_index_++;
+  }
+
+  // Returns the config holding the current config values, or NULL for those
+  // config values associated with the target itself.
+  const Config* GetCurrentConfig() const {
+    if (cur_index_ == -1)
+      return NULL;
+    return target_->configs()[cur_index_];
+  }
+
+ private:
+  const Target* target_;
+
+  // Represents an index into the target_'s configs() or, when -1, the config
+  // values on the target itself.
+  int cur_index_;
+};
+
 template<typename T, class Writer>
 inline void ConfigValuesToStream(
     const ConfigValues& values,
@@ -35,17 +83,8 @@ inline void RecursiveTargetConfigToStream(
     const std::vector<T>& (ConfigValues::* getter)() const,
     const Writer& writer,
     std::ostream& out) {
-  // Note: if you make any changes to this, also change the writer in the
-  // implementation of the "desc" command.
-
-  // First write the values from the config itself.
-  ConfigValuesToStream(target->config_values(), getter, writer, out);
-
-  // Then write the configs in order.
-  for (size_t i = 0; i < target->configs().size(); i++) {
-    ConfigValuesToStream(target->configs()[i]->config_values(), getter,
-                         writer, out);
-  }
+  for (ConfigValuesIterator iter(target); !iter.done(); iter.Next())
+    ConfigValuesToStream(iter.cur(), getter, writer, out);
 }
 
 // Writes the values out as strings with no transformation.

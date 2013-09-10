@@ -25,6 +25,9 @@ class Label {
         const base::StringPiece& name,
         const SourceDir& toolchain_dir,
         const base::StringPiece& toolchain_name);
+
+  // Makes a label with an empty toolchain.
+  Label(const SourceDir& dir, const base::StringPiece& name);
   ~Label();
 
   // Resolives a string from a build file that may be relative to the

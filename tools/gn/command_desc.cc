@@ -187,6 +187,27 @@ template<typename T> void OutputRecursiveTargetConfig(
   DescValueWriter<T> writer;
   std::ostringstream out;
 
+  for (ConfigValuesIterator iter(target); !iter.done(); iter.Next()) {
+    if ((iter.cur().*getter)().empty())
+      continue;
+
+    // Optional blame sub-head.
+    if (display_blame) {
+      const Config* config = iter.GetCurrentConfig();
+      if (config) {
+        // Source of this value is a config.
+        out << "  From " << config->label().GetUserVisibleName(false) << "\n";
+      } else {
+        // Source of this value is the target itself.
+        out << "  From " << target->label().GetUserVisibleName(false) << "\n";
+      }
+      OutputSourceOfDep(target, config->label(), out);
+    }
+
+    // Actual values.
+    ConfigValuesToStream(iter.cur(), getter, writer, out);
+  }
+
   // First write the values from the config itself.
   if (!(target->config_values().*getter)().empty()) {
     if (display_blame)

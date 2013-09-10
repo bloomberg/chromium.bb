@@ -12,6 +12,7 @@ group("root") {
     "//net/third_party/nss/ssl:crssl",
     "//sdch",
     "//third_party/icu:icudata",
+    "//third_party/libusb",
     "//third_party/zlib:chrome_zlib",
     "//tools/gn",
     "//url:url_lib",

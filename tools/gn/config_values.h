@@ -23,26 +23,27 @@ class ConfigValues {
 
 #define VALUES_ACCESSOR(name) \
     const std::vector<std::string>& name() const { return name##_; } \
+    std::vector<std::string>& name() { return name##_; } \
     void swap_in_##name(std::vector<std::string>* v) { name##_.swap(*v); }
 
-  VALUES_ACCESSOR(defines)
   VALUES_ACCESSOR(cflags)
   VALUES_ACCESSOR(cflags_c)
   VALUES_ACCESSOR(cflags_cc)
   VALUES_ACCESSOR(cflags_objc)
   VALUES_ACCESSOR(cflags_objcc)
+  VALUES_ACCESSOR(defines)
   VALUES_ACCESSOR(ldflags)
 
 #undef VALUES_ACCESSOR
 
  private:
   std::vector<SourceDir> includes_;
-  std::vector<std::string> defines_;
   std::vector<std::string> cflags_;
   std::vector<std::string> cflags_c_;
   std::vector<std::string> cflags_cc_;
   std::vector<std::string> cflags_objc_;
   std::vector<std::string> cflags_objcc_;
+  std::vector<std::string> defines_;
   std::vector<std::string> ldflags_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigValues);

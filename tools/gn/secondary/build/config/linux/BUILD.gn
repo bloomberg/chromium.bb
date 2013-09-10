@@ -20,9 +20,6 @@ config("glib") {
 
   cflags = exec_script(pkg_script, [ "--cflags", glib_packages ], "list lines")
   ldflags = exec_script(pkg_script, [ "--libs", glib_packages ], "list lines")
-  # if (use_x11) {  # TODO(brettw) need to add use_x11
-    ldflags += "-lXtst"
-  #}
 }
 
 config("gtk") {
@@ -36,11 +33,27 @@ config("gtk") {
   ldflags = exec_script(pkg_script, [ "--libs", gtk_packages ], "list lines")
 }
 
+config("udev") {
+  udev_packages = "libudev"
+
+  cflags = exec_script(pkg_script, [ "--cflags", udev_packages ], "list lines")
+  ldflags = exec_script(pkg_script, [ "--libs", udev_packages ], "list lines")
+}
+
 config("x11") {
-  x11_packages = "x11 xi"
-
+  # Don't bother running pkg-config for these X related libraries since it just
+  # returns the same libs, and forking pkg-config is slow.
   defines = [ "USE_X11" ]
-
-  cflags = exec_script(pkg_script, [ "--cflags", x11_packages ], "list lines")
-  ldflags = exec_script(pkg_script, [ "--libs", x11_packages ], "list lines")
+  ldflags = [
+    "-lX11",
+    "-lXcomposite",
+    "-lXcursor",
+    "-lXdamage",
+    "-lXext",
+    "-lXfixes",
+    "-lXi",
+    "-lXrender",
+    "-lXss",
+    "-lXtst",
+  ]
 }
