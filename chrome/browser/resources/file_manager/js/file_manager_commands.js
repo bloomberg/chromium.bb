@@ -48,35 +48,6 @@ CommandUtil.getCommandEntry = function(element) {
 };
 
 /**
- * Extracts path on which command event was dispatched.
- * TODO(yoshiki): Remove this method after adding automatically removing an
- *                inactive shortcut on M31.
- *
- * @param {NavigationList|NavigationListItem} element Directory to extract a
- *     path from.
- * @return {string} Path of the found node.
- */
-CommandUtil.getCommandPath = function(element) {
-  if (element instanceof NavigationList) {
-    // element is a NavigationList.
-
-    /** @type {NavigationModelItem} */
-    var selectedItem = element.selectedItem;
-    return selectedItem && selectedItem.path;
-  } else if (element instanceof NavigationListItem) {
-    // element is a subitem of NavigationList.
-    /** @type {NavigationList} */
-    var navigationList = element.parentElement;
-    var index = navigationList.getIndexOfListItem(element);
-    /** @type {NavigationModelItem} */
-    var item = (index != -1) ? navigationList.dataModel.item(index) : null;
-    return item && item.path;
-  }
-
-  console.error('Unsupported element.');
-};
-
-/**
  * @param {NavigationList} navigationList navigation list to extract root node.
  * @return {?RootType} Type of the found root.
  */
@@ -646,10 +617,8 @@ Commands.removeFolderShortcutCommand = {
    */
   execute: function(event, fileManager) {
     var entry = CommandUtil.getCommandEntry(event.target);
-    var path =
-        entry ? entry.fullPath : CommandUtil.getCommandPath(event.target);
-    if (path)
-      fileManager.removeFolderShortcut(path);
+    if (entry && entry.fullPath)
+      fileManager.removeFolderShortcut(entry.fullPath);
   },
 
   /**
@@ -665,8 +634,7 @@ Commands.removeFolderShortcutCommand = {
     }
 
     var entry = CommandUtil.getCommandEntry(target);
-    var path =
-        entry ? entry.fullPath : CommandUtil.getCommandPath(event.target);
+    var path = entry && entry.fullPath;
 
     var eligible = path && PathUtil.isEligibleForFolderShortcut(path);
     var isShortcut = path && fileManager.folderShortcutExists(path);
