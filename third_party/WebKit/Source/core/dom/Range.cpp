@@ -651,7 +651,7 @@ static inline unsigned lengthOfContentsInNode(Node* node)
     case Node::COMMENT_NODE:
         return static_cast<CharacterData*>(node)->length();
     case Node::PROCESSING_INSTRUCTION_NODE:
-        return static_cast<ProcessingInstruction*>(node)->data().length();
+        return toProcessingInstruction(node)->data().length();
     case Node::ELEMENT_NODE:
     case Node::ATTRIBUTE_NODE:
     case Node::ENTITY_NODE:
@@ -807,7 +807,7 @@ PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRef
             static_cast<CharacterData*>(container)->deleteData(startOffset, endOffset - startOffset, es);
         break;
     case Node::PROCESSING_INSTRUCTION_NODE:
-        endOffset = std::min(endOffset, static_cast<ProcessingInstruction*>(container)->data().length());
+        endOffset = std::min(endOffset, toProcessingInstruction(container)->data().length());
         if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
             RefPtr<ProcessingInstruction> c = static_pointer_cast<ProcessingInstruction>(container->cloneNode(true));
             c->setData(c->data().substring(startOffset, endOffset - startOffset));
@@ -818,7 +818,7 @@ PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRef
                 result = c.release();
         }
         if (action == EXTRACT_CONTENTS || action == DELETE_CONTENTS) {
-            ProcessingInstruction* pi = static_cast<ProcessingInstruction*>(container);
+            ProcessingInstruction* pi = toProcessingInstruction(container);
             String data(pi->data());
             data.remove(startOffset, endOffset - startOffset);
             pi->setData(data);
@@ -1142,7 +1142,7 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& es) const
                 es.throwDOMException(IndexSizeError);
             return 0;
         case Node::PROCESSING_INSTRUCTION_NODE:
-            if (static_cast<unsigned>(offset) > static_cast<ProcessingInstruction*>(n)->data().length())
+            if (static_cast<unsigned>(offset) > toProcessingInstruction(n)->data().length())
                 es.throwDOMException(IndexSizeError);
             return 0;
         case Node::ATTRIBUTE_NODE:

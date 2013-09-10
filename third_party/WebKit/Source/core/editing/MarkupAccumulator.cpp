@@ -496,7 +496,7 @@ void MarkupAccumulator::appendStartMarkup(StringBuilder& result, const Node* nod
         appendDocumentType(result, static_cast<const DocumentType*>(node));
         break;
     case Node::PROCESSING_INSTRUCTION_NODE:
-        appendProcessingInstruction(result, static_cast<const ProcessingInstruction*>(node)->target(), static_cast<const ProcessingInstruction*>(node)->data());
+        appendProcessingInstruction(result, toProcessingInstruction(node)->target(), toProcessingInstruction(node)->data());
         break;
     case Node::ELEMENT_NODE:
         appendElement(result, toElement(const_cast<Node*>(node)), namespaces);

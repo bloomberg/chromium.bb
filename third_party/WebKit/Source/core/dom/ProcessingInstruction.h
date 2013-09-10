@@ -91,6 +91,12 @@ inline ProcessingInstruction* toProcessingInstruction(Node* node)
     return static_cast<ProcessingInstruction*>(node);
 }
 
-} //namespace
+inline const ProcessingInstruction* toProcessingInstruction(const Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->nodeType() == Node::PROCESSING_INSTRUCTION_NODE);
+    return static_cast<const ProcessingInstruction*>(node);
+}
+
+} // namespace WebCore
 
 #endif

@@ -1569,7 +1569,7 @@ static void appendTextContent(const Node* node, bool convertBRsToNewlines, bool&
 
     case Node::PROCESSING_INSTRUCTION_NODE:
         isNullString = false;
-        content.append(static_cast<const ProcessingInstruction*>(node)->data());
+        content.append(toProcessingInstruction(node)->data());
         break;
 
     case Node::ELEMENT_NODE:
