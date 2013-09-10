@@ -39,7 +39,7 @@ namespace WebTestRunner {
 
 namespace {
 
-std::string mockSign(const unsigned char* bytes, size_t size)
+std::string mockSign(const unsigned char* bytes, unsigned size)
 {
     return "signed HMAC:" + std::string(reinterpret_cast<const char*>(bytes), size);
 }
@@ -52,17 +52,17 @@ MockWebCrypto* MockWebCrypto::get()
     return &crypto;
 }
 
-void MockWebCrypto::encrypt(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, const unsigned char* data, size_t dataSize, WebKit::WebCryptoResult result)
+void MockWebCrypto::encrypt(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, const unsigned char* data, unsigned dataSize, WebKit::WebCryptoResult result)
 {
     result.completeWithError();
 }
 
-void MockWebCrypto::decrypt(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, const unsigned char* data, size_t dataSize, WebKit::WebCryptoResult result)
+void MockWebCrypto::decrypt(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, const unsigned char* data, unsigned dataSize, WebKit::WebCryptoResult result)
 {
     result.completeWithError();
 }
 
-void MockWebCrypto::sign(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, const unsigned char* data, size_t dataSize, WebKit::WebCryptoResult result)
+void MockWebCrypto::sign(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, const unsigned char* data, unsigned dataSize, WebKit::WebCryptoResult result)
 {
     if (algorithm.id() != WebKit::WebCryptoAlgorithmIdHmac)
         return result.completeWithError();
@@ -71,7 +71,7 @@ void MockWebCrypto::sign(const WebKit::WebCryptoAlgorithm& algorithm, const WebK
     result.completeWithBuffer(signedData.data(), signedData.size());
 }
 
-void MockWebCrypto::verifySignature(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, const unsigned char* signatureBytes, size_t signatureSize, const unsigned char* data, size_t dataSize, WebKit::WebCryptoResult result)
+void MockWebCrypto::verifySignature(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, const unsigned char* signatureBytes, unsigned signatureSize, const unsigned char* data, unsigned dataSize, WebKit::WebCryptoResult result)
 {
     if (algorithm.id() != WebKit::WebCryptoAlgorithmIdHmac)
         return result.completeWithError();
@@ -81,7 +81,7 @@ void MockWebCrypto::verifySignature(const WebKit::WebCryptoAlgorithm& algorithm,
     result.completeWithBoolean(expectedSignature == signature);
 }
 
-void MockWebCrypto::digest(const WebKit::WebCryptoAlgorithm& algorithm, const unsigned char* data, size_t dataSize, WebKit::WebCryptoResult result)
+void MockWebCrypto::digest(const WebKit::WebCryptoAlgorithm& algorithm, const unsigned char* data, unsigned dataSize, WebKit::WebCryptoResult result)
 {
     if (algorithm.id() != WebKit::WebCryptoAlgorithmIdSha1)
         return result.completeWithError();
@@ -111,7 +111,7 @@ void MockWebCrypto::generateKey(const WebKit::WebCryptoAlgorithm& algorithm, boo
     }
 }
 
-void MockWebCrypto::importKey(WebKit::WebCryptoKeyFormat, const unsigned char* keyData, size_t keyDataSize, const WebKit::WebCryptoAlgorithm& algorithm, bool extractable, WebKit::WebCryptoKeyUsageMask usages, WebKit::WebCryptoResult result)
+void MockWebCrypto::importKey(WebKit::WebCryptoKeyFormat, const unsigned char* keyData, unsigned keyDataSize, const WebKit::WebCryptoAlgorithm& algorithm, bool extractable, WebKit::WebCryptoKeyUsageMask usages, WebKit::WebCryptoResult result)
 {
     std::string keyDataString(reinterpret_cast<const char*>(keyData), keyDataSize);
 

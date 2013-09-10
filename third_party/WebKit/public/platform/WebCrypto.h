@@ -37,6 +37,9 @@
 
 namespace WebCore { class CryptoResult; }
 
+// FIXME: delete once chromium side has been updated.
+#define WEBCRYPTO_DIGEST_LENGTH_IS_UINT
+
 #if WEBKIT_IMPLEMENTATION
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
@@ -65,7 +68,7 @@ public:
 
     WEBKIT_EXPORT void completeWithError();
     WEBKIT_EXPORT void completeWithBuffer(const WebArrayBuffer&);
-    WEBKIT_EXPORT void completeWithBuffer(const void*, size_t);
+    WEBKIT_EXPORT void completeWithBuffer(const void*, unsigned);
     WEBKIT_EXPORT void completeWithBoolean(bool);
     WEBKIT_EXPORT void completeWithKey(const WebCryptoKey&);
     WEBKIT_EXPORT void completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey);
@@ -90,13 +93,13 @@ public:
     //
     // The result should be set exactly once, from the same thread which
     // initiated the operation.
-    virtual void encrypt(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, size_t data_size, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void decrypt(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, size_t data_size, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void sign(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, size_t data_size, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void verifySignature(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* signature, size_t signature_size, const unsigned char* data, size_t data_size, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void digest(const WebCryptoAlgorithm&, const unsigned char* data, size_t data_size, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void encrypt(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, unsigned dataSize, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void decrypt(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, unsigned dataSize, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void sign(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, unsigned dataSize, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void verifySignature(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* signature, unsigned signatureSize, const unsigned char* data, unsigned dataSize, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void digest(const WebCryptoAlgorithm&, const unsigned char* data, unsigned dataSize, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void generateKey(const WebCryptoAlgorithm&, bool extractable, WebCryptoKeyUsageMask, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void importKey(WebCryptoKeyFormat, const unsigned char* keyData, size_t keyDataSize, const WebCryptoAlgorithm&, bool extractable, WebCryptoKeyUsageMask, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void importKey(WebCryptoKeyFormat, const unsigned char* keyData, unsigned keyDataSize, const WebCryptoAlgorithm&, bool extractable, WebCryptoKeyUsageMask, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void exportKey(WebCryptoKeyFormat, const WebCryptoKey&, WebCryptoResult) { WEBKIT_ASSERT_NOT_REACHED(); }
 
 protected:

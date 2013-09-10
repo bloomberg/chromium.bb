@@ -50,7 +50,7 @@ void WebCryptoResult::completeWithBuffer(const WebArrayBuffer& buffer)
     reset();
 }
 
-void WebCryptoResult::completeWithBuffer(const void* bytes, size_t bytesSize)
+void WebCryptoResult::completeWithBuffer(const void* bytes, unsigned bytesSize)
 {
     WebArrayBuffer buffer = WebKit::WebArrayBuffer::create(bytesSize, 1);
     RELEASE_ASSERT(!buffer.isNull());

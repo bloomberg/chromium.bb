@@ -61,7 +61,7 @@ private:
 
 class WebCryptoAesCbcParams : public WebCryptoAlgorithmParams {
 public:
-    WebCryptoAesCbcParams(unsigned char* iv, size_t ivSize)
+    WebCryptoAesCbcParams(unsigned char* iv, unsigned ivSize)
         : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeAesCbcParams)
         , m_iv(iv, ivSize)
     {
@@ -145,7 +145,7 @@ private:
 
 class WebCryptoRsaKeyGenParams : public WebCryptoAlgorithmParams {
 public:
-    WebCryptoRsaKeyGenParams(unsigned modulusLength, const unsigned char* publicExponent, size_t publicExponentSize)
+    WebCryptoRsaKeyGenParams(unsigned modulusLength, const unsigned char* publicExponent, unsigned publicExponentSize)
         : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeRsaKeyGenParams)
         , m_modulusLength(modulusLength)
         , m_publicExponent(publicExponent, publicExponentSize)

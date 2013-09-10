@@ -75,7 +75,7 @@ ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, Alg
         return ScriptPromise();
 
     const unsigned char* data = static_cast<const unsigned char*>(dataBuffer->baseAddress());
-    size_t dataSize = dataBuffer->byteLength();
+    unsigned dataSize = dataBuffer->byteLength();
 
     RefPtr<CryptoResult> result = CryptoResult::create();
 
