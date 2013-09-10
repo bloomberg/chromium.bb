@@ -22,12 +22,14 @@
 
 function declareTests(tester) {
   // 'bad_pexe' loads a manifest, then loads a pexe that is invalid.
-  badLoadTest(
-      tester,
-      'bad_pexe',
-      'pnacl_bad_pexe.nmf',
-      'application/x-pnacl',
-      'NaCl module load failed: PnaclCoordinator: compile failed.');
+  // TODO(dschuff): re-enable this test when the change with more detailed
+  // error reporting rolls in from NaCl.
+  //badLoadTest(
+  //    tester,
+  //    'bad_pexe',
+  //    'pnacl_bad_pexe.nmf',
+  //    'application/x-pnacl',
+  //    'NaCl module load failed: PnaclCoordinator: compile failed.');
 
   // 'nonexistent_pexe' loads a manifest, then tries to to load a nonexistent
   // pexe and fails.

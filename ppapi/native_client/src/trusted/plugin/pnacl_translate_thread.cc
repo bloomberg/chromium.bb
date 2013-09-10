@@ -200,15 +200,25 @@ void PnaclTranslateThread::DoTranslate() {
                                              &params,
                                              &data[0],
                                              data.size())) {
-        TranslateFailed(ERROR_PNACL_LLC_INTERNAL,
-                        "Compile stream chunk failed.");
-        return;
+        if (llc_subprocess_->srpc_client()->GetLastError() !=
+            NACL_SRPC_RESULT_APP_ERROR) {
+          // If the error was reported by the translator, then we fall through
+          // and call StreamEnd, which returns a string describing the error,
+          // which we can then send to the Javascript console. Otherwise just
+          // fail here, since the translator has probably crashed or asserted.
+          TranslateFailed(ERROR_PNACL_LLC_INTERNAL,
+                          "Compile stream chunk failed. "
+                          "The PNaCl translator has probably crashed.");
+          return;
+        }
+        break;
+      } else {
+        PLUGIN_PRINTF(("StreamChunk Successful\n"));
+        core->CallOnMainThread(
+            0,
+            coordinator_->GetCompileProgressCallback(data.size()),
+            PP_OK);
       }
-      PLUGIN_PRINTF(("StreamChunk Successful\n"));
-      core->CallOnMainThread(
-          0,
-          coordinator_->GetCompileProgressCallback(data.size()),
-          PP_OK);
     } else {
       NaClXMutexUnlock(&cond_mu_);
     }
