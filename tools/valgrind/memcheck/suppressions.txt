@@ -6224,6 +6224,13 @@
    fun:_ZN2v88internal8Debugger18CallCEventCallbackENS_10DebugEventENS0_6HandleINS0_6ObjectEEES5_PNS_5Debug10ClientDataE
 }
 {
+   bug_181680b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore11ScriptState10forContextEN2v86HandleINS1_7ContextEEE
+   fun:_ZN7WebCore17ScriptDebugServer18handleProgramBreakEN2v86HandleINS1_6ObjectEEENS2_INS1_5ValueEEENS2_INS1_5ArrayEEE
+}
+{
    bug_184264
    Memcheck:Leak
    fun:_Znw*
