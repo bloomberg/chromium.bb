@@ -31,7 +31,6 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
-#include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/file_errors.h"
@@ -385,15 +384,6 @@ void RestartPlatformApp(Profile* profile, const Extension* extension) {
 
   if (listening_to_launch && had_windows)
     LaunchPlatformAppWithNoData(profile, extension);
-}
-
-void LaunchPlatformAppWithUrl(Profile* profile,
-                              const Extension* extension,
-                              const std::string& handler_id,
-                              const GURL& url,
-                              const GURL& referrer_url) {
-  extensions::AppEventRouter::DispatchOnLaunchedEventWithUrl(
-      profile, extension, handler_id, url, referrer_url);
 }
 
 }  // namespace apps

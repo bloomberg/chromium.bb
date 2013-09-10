@@ -28,9 +28,6 @@ class AppEventRouter {
   // data.
   static void DispatchOnLaunchedEvent(Profile* profile,
                                       const Extension* extension);
-
-  // Dispatches the onRestarted event to the given app, providing a list of
-  // restored file entries from the previous run.
   static void DispatchOnRestartedEvent(Profile* profile,
                                        const Extension* extension);
 
@@ -46,24 +43,15 @@ class AppEventRouter {
   //   }
   // }
 
-  // The FileEntry is created from |file_system_id| and |base_name|.
-  // |handler_id| corresponds to the id of the file_handlers item in the
-  // manifest that resulted in a match which triggered this launch.
+  // launchData.intent.data and launchData.intent.postResults are created in a
+  // custom dispatch event in javascript. The FileEntry is created from
+  // |file_system_id| and |base_name|.
   static void DispatchOnLaunchedEventWithFileEntry(
       Profile* profile,
       const Extension* extension,
       const std::string& handler_id,
       const std::string& mime_type,
       const extensions::app_file_handler_util::GrantedFileEntry& file_entry);
-
-  // |handler_id| corresponds to the id of the url_handlers item
-  // in the manifest that resulted in a match which triggered this launch.
-  static void DispatchOnLaunchedEventWithUrl(
-      Profile* profile,
-      const Extension* extension,
-      const std::string& handler_id,
-      const GURL& url,
-      const GURL& referrer_url);
 };
 
 }  // namespace extensions

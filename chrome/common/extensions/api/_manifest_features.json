@@ -361,10 +361,6 @@
     "channel": "stable",
     "extension_types": "all"
   },
-  "url_handlers": {
-    "channel": "dev",
-    "extension_types": ["platform_app"]
-  },
   "version": {
     "channel": "stable",
     "extension_types": "all"

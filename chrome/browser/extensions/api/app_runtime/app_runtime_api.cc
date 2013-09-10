@@ -61,8 +61,6 @@ void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
     Profile* profile, const Extension* extension,
     const std::string& handler_id, const std::string& mime_type,
     const extensions::app_file_handler_util::GrantedFileEntry& file_entry) {
-  // TODO(sergeygs): Use the same way of creating an event (using the generated
-  // boilerplate) as below in DispatchOnLaunchedEventWithUrl.
   scoped_ptr<base::ListValue> args(new base::ListValue());
   base::DictionaryValue* launch_data = new base::DictionaryValue();
   launch_data->SetString("id", handler_id);
@@ -75,22 +73,6 @@ void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
   items->Append(launch_item);
   launch_data->Set("items", items);
   args->Append(launch_data);
-  DispatchOnLaunchedEventImpl(extension->id(), args.Pass(), profile);
-}
-
-// static.
-void AppEventRouter::DispatchOnLaunchedEventWithUrl(
-    Profile* profile,
-    const Extension* extension,
-    const std::string& handler_id,
-    const GURL& url,
-    const GURL& referrer_url) {
-  api::app_runtime::LaunchData launch_data;
-  launch_data.id.reset(new std::string(handler_id));
-  launch_data.url.reset(new std::string(url.spec()));
-  launch_data.referrer_url.reset(new std::string(referrer_url.spec()));
-  scoped_ptr<ListValue> args(new ListValue());
-  args->Append(launch_data.ToValue().release());
   DispatchOnLaunchedEventImpl(extension->id(), args.Pass(), profile);
 }
 

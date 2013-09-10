@@ -15,26 +15,12 @@ namespace app.runtime {
     DOMString type;
   };
 
-  // Optional data for the launch. Either <code>items</code>, or
-  // the pair (<code>url, referrerUrl</code>) can be present for any given
-  // launch.
+  // Optional data for the launch.
   [inline_doc] dictionary LaunchData {
-    // The ID of the file or URL handler that the app is being invoked with.
-    // Handler IDs are the top-level keys in the <code>file_handlers</code>
-    // and/or <code>url_handlers</code> dictionaries in the manifest.
+    // The id of the file handler that the app is being invoked with.
     DOMString? id;
 
-    // The file entries for the <code>onLaunched</code> event triggered by a
-    // matching file handler in the <code>file_handlers</code> manifest key.
     LaunchItem[]? items;
-
-    // The URL for the <code>onLaunched</code> event triggered by a matching
-    // URL handler in the <code>url_handlers</code> manifest key.
-    DOMString? url;
-
-    // The referrer URL for the <code>onLaunched</code> event triggered by a
-    // matching URL handler in the <code>url_handlers</code> manifest key.
-    DOMString? referrerUrl;
   };
 
   interface Events {

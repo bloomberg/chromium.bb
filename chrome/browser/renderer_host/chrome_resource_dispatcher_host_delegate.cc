@@ -65,8 +65,6 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/intercept_download_resource_throttle.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
-#else
-#include "chrome/browser/apps/app_url_redirector.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -265,23 +263,12 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     request->SetPriority(net::IDLE);
   }
 
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(
-      resource_context);
-
-  if (!is_prerendering && resource_type == ResourceType::MAIN_FRAME) {
 #if defined(OS_ANDROID)
+  if (!is_prerendering && resource_type == ResourceType::MAIN_FRAME) {
     throttles->push_back(
         InterceptNavigationDelegate::CreateThrottleFor(request));
-#else
-    // Redirect some navigations to apps that have registered matching URL
-    // handlers ('url_handlers' in the manifest).
-    content::ResourceThrottle* url_to_app_throttle =
-        AppUrlRedirector::MaybeCreateThrottleFor(request, io_data);
-    if (url_to_app_throttle)
-      throttles->push_back(url_to_app_throttle);
-#endif
   }
-
+#endif
 #if defined(OS_CHROMEOS)
   if (resource_type == ResourceType::MAIN_FRAME) {
     // We check offline first, then check safe browsing so that we still can
@@ -302,6 +289,8 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   if (!request->is_pending()) {
     net::HttpRequestHeaders headers;
     headers.CopyFrom(request->extra_request_headers());
+    ProfileIOData* io_data = ProfileIOData::FromResourceContext(
+        resource_context);
     bool incognito = io_data->is_incognito();
     chrome_variations::VariationsHttpHeaderProvider::GetInstance()->
         AppendHeaders(request->url(),
@@ -322,6 +311,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                                   resource_type,
                                   throttles);
 
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   if (io_data->resource_prefetch_predictor_observer()) {
     io_data->resource_prefetch_predictor_observer()->OnRequestStarted(
         request, resource_type, child_id, route_id);

@@ -237,10 +237,6 @@ namespace extension_manifest_errors {
   extern const char kInvalidTtsVoicesVoiceName[];
   extern const char kInvalidUpdateURL[];
   extern const char kInvalidURLPatternError[];
-  extern const char kInvalidURLHandlers[];
-  extern const char kInvalidURLHandlerPatternElement[];
-  extern const char kInvalidURLHandlerTitle[];
-  extern const char kInvalidURLHandlerPattern[];
   extern const char kInvalidVersion[];
   extern const char kInvalidWebAccessibleResourcesList[];
   extern const char kInvalidWebAccessibleResource[];

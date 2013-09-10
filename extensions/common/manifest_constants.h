@@ -148,8 +148,6 @@ namespace manifest_keys {
   extern const char kTtsVoicesVoiceName[];
   extern const char kType[];
   extern const char kUpdateURL[];
-  extern const char kUrlHandlers[];
-  extern const char kUrlHandlerTitle[];
   extern const char kVersion[];
   extern const char kWebAccessibleResources[];
   extern const char kWebURLs[];

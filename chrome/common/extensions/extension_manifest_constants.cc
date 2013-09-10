@@ -410,14 +410,6 @@ const char kInvalidTtsVoicesVoiceName[] =
     "Invalid value for 'tts_engine.voices[*].voice_name'.";
 const char kInvalidUpdateURL[] =
     "Invalid value for update url: '[*]'.";
-const char kInvalidURLHandlers[] =
-    "Invalid value for 'url_handlers'.";
-const char kInvalidURLHandlerPatternElement[] =
-    "Invalid value for 'url_handlers[*]'.";
-const char kInvalidURLHandlerTitle[] =
-    "Invalid value for 'url_handlers[*].title'.";
-const char kInvalidURLHandlerPattern[] =
-    "Invalid value for 'url_handlers[*].matches[*]'.";
 const char kInvalidURLPatternError[] =
     "Invalid url pattern '*'";
 const char kInvalidVersion[] =
