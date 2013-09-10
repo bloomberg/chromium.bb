@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<body>
+
+<form>
+<input type="checkbox" name="foo" id="cb1" value="Shadow">
+<input type="submit">
+</form>
+
+<style>
+#cb1 {
+    -webkit-appearance: none;
+    border: outset;
+    padding: 2px;
+    font-family: monospace;
+    font-size: 20px;
+    white-space: pre;
+    width: 30px;
+    height: 30px;
+    margin: 0;
+}
+
+#cb1:focus {
+    outline: none;
+}
+</style>
+<script>
+cb1.updateAppearance_ = function() {
+    if (this.checked)
+        this.root_.innerHTML = '<span style="color:red;">&#x2714;</span>';
+    else
+        this.root_.innerHTML = '<span> </span>';
+};
+
+cb1.init = function() {
+    this.root_ = this.createShadowRoot();
+    this.checked_ = this.hasAttribute('checked');
+    this.updateAppearance_();
+
+    this.addEventListener('DOMActivate', function() {
+        this.checked = !cb1.checked;
+        this.dispatchEvent(new CustomEvent('change', true, false));
+    }, false);
+
+    this.__defineSetter__('checked', function(value) {
+        this.checked_ = !!value;
+        this.updateAppearance_();
+        // FIXME: We'd like to update HTMLInputElement.prototype.checked, but it
+        // seems there are no ways to do it. Updating 'checked' HTML attribute
+        // (the default value) works for form submission because the checkbox is
+        // never dirty.
+        if (this.checked_)
+            this.setAttribute('checked', '');
+        else
+            this.removeAttribute('checked', '');
+    });
+
+    this.__defineGetter__('checked', function() { return this.checked_; });
+};
+
+cb1.init();
+
+window.onload = function() {
+    if (!window.eventSender)
+        return;
+    eventSender.mouseMoveTo(cb1.offsetLeft + 10, cb1.offsetTop + 10);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+};
+</script>
+</body>

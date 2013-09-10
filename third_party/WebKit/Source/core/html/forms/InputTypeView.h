@@ -70,6 +70,7 @@ class InputTypeView : public RefCounted<InputTypeView> {
     WTF_MAKE_FAST_ALLOCATED;
 
 public:
+    static PassRefPtr<InputTypeView> create(HTMLInputElement*);
     virtual ~InputTypeView();
 
     virtual bool sizeShouldIncludeDecoration(int defaultSize, int& preferredSize) const;

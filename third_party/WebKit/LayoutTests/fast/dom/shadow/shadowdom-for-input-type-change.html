@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<body>
+<script src="../../js/resources/js-test-pre.js"></script>
+<style>
+input, input[type="datetime-local"] {
+    padding: 0;
+    border: none;
+    display: inilne-block;
+    font-family: monospace;
+}
+</style>
+<input type="email">
+<script>
+description('Test if changing input type keeps author ShadowRoot content.');
+
+var input1 = document.querySelector('input');
+var initialWidth = input1.offsetWidth;
+shouldNotBe('initialWidth', '0');
+
+var root = input1.createShadowRoot();
+root.innerHTML = '<span>a</span>';
+var widthWithShadow = input1.offsetWidth;
+shouldNotBe('widthWithShadow', 'initialWidth');
+
+shouldBe('input1.type = "hidden"; input1.offsetWidth', '0');
+shouldBe('input1.type = "datetime-local"; input1.offsetWidth', 'widthWithShadow');
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>

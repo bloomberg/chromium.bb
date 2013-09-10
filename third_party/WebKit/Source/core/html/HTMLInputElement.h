@@ -295,6 +295,7 @@ private:
     enum AutoCompleteSetting { Uninitialized, On, Off };
 
     virtual void didAddUserAgentShadowRoot(ShadowRoot*) OVERRIDE;
+    virtual void didAddShadowRoot(ShadowRoot&) OVERRIDE;
 
     virtual void willChangeForm() OVERRIDE;
     virtual void didChangeForm() OVERRIDE;

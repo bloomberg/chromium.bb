@@ -34,6 +34,11 @@
 
 namespace WebCore {
 
+PassRefPtr<InputTypeView> InputTypeView::create(HTMLInputElement* input)
+{
+    return adoptRef(new InputTypeView(input));
+}
+
 InputTypeView::~InputTypeView()
 {
 }

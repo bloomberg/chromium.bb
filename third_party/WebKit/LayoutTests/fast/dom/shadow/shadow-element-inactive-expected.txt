@@ -1,4 +1,5 @@
 CONSOLE MESSAGE: <shadow> doesn't work for DETAILS element host.
+CONSOLE MESSAGE: <shadow> doesn't work for INPUT element host.
 CONSOLE MESSAGE: <shadow> doesn't work for SUMMARY element host.
 We should not expose UA shadow nodes.
 
@@ -6,6 +7,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 details
+PASS root2.firstChild.getDistributedNodes().length is 0
+input
 PASS root2.firstChild.getDistributedNodes().length is 0
 summary
 PASS root2.firstChild.getDistributedNodes().length is 0

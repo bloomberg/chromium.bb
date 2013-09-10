@@ -1621,6 +1621,10 @@ ShadowRoot* Element::shadowRoot() const
     return 0;
 }
 
+void Element::didAddShadowRoot(ShadowRoot&)
+{
+}
+
 ShadowRoot* Element::userAgentShadowRoot() const
 {
     if (ElementShadow* elementShadow = shadow()) {

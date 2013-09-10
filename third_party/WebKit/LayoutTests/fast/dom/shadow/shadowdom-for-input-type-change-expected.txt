@@ -1,0 +1,13 @@
+Test if changing input type keeps author ShadowRoot content.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS initialWidth is not 0
+PASS widthWithShadow is not initialWidth
+PASS input1.type = "hidden"; input1.offsetWidth is 0
+PASS input1.type = "datetime-local"; input1.offsetWidth is widthWithShadow
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

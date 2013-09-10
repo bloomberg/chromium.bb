@@ -70,6 +70,7 @@ ShadowRoot* ElementShadow::addShadowRoot(Element* shadowHost, ShadowRoot::Shadow
     // The youngest shadow root's apply-author-styles is default (false). So we can just set m_applyAuthorStyles false.
     m_applyAuthorStyles = false;
 
+    shadowHost->didAddShadowRoot(*shadowRoot);
     InspectorInstrumentation::didPushShadowRoot(shadowHost, shadowRoot.get());
 
     return shadowRoot.get();

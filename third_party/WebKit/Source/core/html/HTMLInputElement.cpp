@@ -146,6 +146,13 @@ void HTMLInputElement::didAddUserAgentShadowRoot(ShadowRoot*)
     m_inputType->createShadowSubtree();
 }
 
+void HTMLInputElement::didAddShadowRoot(ShadowRoot& root)
+{
+    if (!root.isOldestAuthorShadowRoot())
+        return;
+    m_inputTypeView = InputTypeView::create(this);
+}
+
 HTMLInputElement::~HTMLInputElement()
 {
     // Need to remove form association while this is still an HTMLInputElement

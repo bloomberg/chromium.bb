@@ -117,10 +117,6 @@ private:
     int computeSelectionEnd() const;
     TextFieldSelectionDirection computeSelectionDirection() const;
 
-    // FIXME: Author shadows should be allowed
-    // https://bugs.webkit.org/show_bug.cgi?id=92608
-    virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
-
     virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection) OVERRIDE;
     virtual void dispatchBlurEvent(Element* newFocusedElement) OVERRIDE;
 

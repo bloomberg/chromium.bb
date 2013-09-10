@@ -12,7 +12,7 @@ PASS element.createShadowRoot() is not null
 SECTION
 PASS element.createShadowRoot() is not null
 INPUT
-PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS element.createShadowRoot() is not null
 tref
 PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 AUDIO

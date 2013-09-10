@@ -413,11 +413,11 @@ void InputType::destroyShadowSubtree()
 
     root->removeChildren();
 
-    // It's ok to clear contents of all other ShadowRoots because they must have
-    // been created by InputFieldPasswordGeneratorButtonElement, and we don't allow adding
-    // AuthorShadowRoot to HTMLInputElement.
-    // FIXME: Remove the PasswordGeneratorButtonElement's shadow root and then remove this loop.
-    while ((root = root->youngerShadowRoot())) {
+    // It's ok to clear contents of all other UA ShadowRoots because they must
+    // have been created by InputFieldPasswordGeneratorButtonElement.
+    // FIXME: Remove the PasswordGeneratorButtonElement's shadow root and then
+    // remove this loop.
+    while ((root = root->youngerShadowRoot()) && root->type() == ShadowRoot::UserAgentShadowRoot) {
         root->removeChildren();
         root->appendChild(HTMLShadowElement::create(shadowTag, element()->document()));
     }

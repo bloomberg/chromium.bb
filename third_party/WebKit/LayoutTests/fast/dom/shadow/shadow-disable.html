@@ -24,11 +24,11 @@ var elementsToSuccess = [
     document.createElement('span'),
     document.createElement('a'),
     document.createElement('section'),
+    document.createElement('input'),
 ];
 
 // See crbug.com/234020 .
 var elementsToFail = [
-    document.createElement('input'),
     document.getElementById('tref'),
     document.createElement('audio'),
     document.createElement('video'),

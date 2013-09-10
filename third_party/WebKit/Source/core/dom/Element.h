@@ -444,7 +444,7 @@ public:
     ShadowRoot* shadowRoot() const;
 
     bool hasAuthorShadowRoot() const { return shadowRoot(); }
-
+    virtual void didAddShadowRoot(ShadowRoot&);
     ShadowRoot* userAgentShadowRoot() const;
     ShadowRoot* ensureUserAgentShadowRoot();
     virtual const AtomicString& shadowPseudoId() const { return !part().isEmpty() ? part() : pseudo(); }

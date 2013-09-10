@@ -67,6 +67,9 @@ private:
     enum WrapMethod { NoWrap, SoftWrap, HardWrap };
 
     virtual void didAddUserAgentShadowRoot(ShadowRoot*) OVERRIDE;
+    // FIXME: Author shadows should be allowed
+    // https://bugs.webkit.org/show_bug.cgi?id=92608
+    virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
 
     void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) const;
     static String sanitizeUserInputValue(const String&, unsigned maxLength);
