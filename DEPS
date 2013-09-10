@@ -496,8 +496,6 @@ deps_os = {
 
     "src/third_party/eyesfree/src/android/java/src/com/googlecode/eyesfree/braille":
       (Var("googlecode_url") % "eyes-free") + "/trunk/braille/client/src/com/googlecode/eyesfree/braille@797",
-
-    "src/third_party/cld_2/src": None,
   },
 }
 
