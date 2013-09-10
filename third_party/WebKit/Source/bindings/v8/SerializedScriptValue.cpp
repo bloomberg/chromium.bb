@@ -536,7 +536,7 @@ public:
     {
         COMPILE_ASSERT(sizeof(BufferValueType) == 2, BufferValueTypeIsTwoBytes);
         fillHole();
-        String data = String::adopt(m_buffer);
+        String data = String(m_buffer.data(), m_buffer.size());
         data.impl()->truncateAssumingIsolated((m_position + 1) / sizeof(BufferValueType));
         return data;
     }
@@ -646,18 +646,10 @@ private:
         m_position += length;
     }
 
-    static unsigned expandedCapacity(unsigned capacity, unsigned newLength)
-    {
-        static const unsigned minimumCapacity = 16;
-        return std::max(capacity, std::max(minimumCapacity, newLength * 2));
-    }
-
     void ensureSpace(unsigned extra)
     {
         COMPILE_ASSERT(sizeof(BufferValueType) == 2, BufferValueTypeIsTwoBytes);
-        unsigned oldCapacity = m_buffer.length() * sizeof(BufferValueType);
-        unsigned newCapacity = expandedCapacity(oldCapacity, m_position + extra);
-        m_buffer.resize((newCapacity + 1) / sizeof(BufferValueType)); // "+ 1" to round up.
+        m_buffer.resize((m_position + extra + 1) / sizeof(BufferValueType)); // "+ 1" to round up.
     }
 
     void fillHole()
@@ -671,7 +663,7 @@ private:
 
     uint8_t* byteAt(int position)
     {
-        return reinterpret_cast<uint8_t*>(m_buffer.characters()) + position;
+        return reinterpret_cast<uint8_t*>(m_buffer.data()) + position;
     }
 
     int v8StringWriteOptions()
@@ -679,7 +671,7 @@ private:
         return v8::String::NO_NULL_TERMINATION;
     }
 
-    StringBuffer<BufferValueType> m_buffer;
+    Vector<BufferValueType> m_buffer;
     unsigned m_position;
     v8::Isolate* m_isolate;
 };
