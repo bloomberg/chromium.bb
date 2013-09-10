@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -23,6 +24,9 @@ namespace drive_backend {
 namespace {
 
 typedef MetadataDatabase::FileIDList FileIDList;
+
+using test_util::DatabaseCreateResultCallback;
+using test_util::SyncStatusResultCallback;
 
 const int64 kInitialChangeID = 1234;
 const int64 kSyncRootTrackerID = 100;
@@ -48,15 +52,7 @@ struct TrackedFile {
 
 void ExpectEquivalent(const ServiceMetadata* left,
                       const ServiceMetadata* right) {
-  if (!left) {
-    ASSERT_FALSE(right);
-    return;
-  }
-  ASSERT_TRUE(right);
-
-  EXPECT_EQ(left->largest_change_id(), right->largest_change_id());
-  EXPECT_EQ(left->sync_root_tracker_id(), right->sync_root_tracker_id());
-  EXPECT_EQ(left->next_tracker_id(), right->next_tracker_id());
+  test_util::ExpectEquivalentServiceMetadata(*left, *right);
 }
 
 void ExpectEquivalent(const FileDetails* left, const FileDetails* right) {
@@ -65,23 +61,7 @@ void ExpectEquivalent(const FileDetails* left, const FileDetails* right) {
     return;
   }
   ASSERT_TRUE(right);
-
-  std::set<std::string> parents;
-  for (int i = 0; i < left->parent_folder_ids_size(); ++i)
-    EXPECT_TRUE(parents.insert(left->parent_folder_ids(i)).second);
-
-  for (int i = 0; i < right->parent_folder_ids_size(); ++i)
-    EXPECT_EQ(1u, parents.erase(left->parent_folder_ids(i)));
-  EXPECT_TRUE(parents.empty());
-
-  EXPECT_EQ(left->title(), right->title());
-  EXPECT_EQ(left->file_kind(), right->file_kind());
-  EXPECT_EQ(left->md5(), right->md5());
-  EXPECT_EQ(left->etag(), right->etag());
-  EXPECT_EQ(left->creation_time(), right->creation_time());
-  EXPECT_EQ(left->modification_time(), right->modification_time());
-  EXPECT_EQ(left->deleted(), right->deleted());
-  EXPECT_EQ(left->change_id(), right->change_id());
+  test_util::ExpectEquivalentDetails(*left, *right);
 }
 
 void ExpectEquivalent(const FileMetadata* left, const FileMetadata* right) {
@@ -90,9 +70,7 @@ void ExpectEquivalent(const FileMetadata* left, const FileMetadata* right) {
     return;
   }
   ASSERT_TRUE(right);
-
-  EXPECT_EQ(left->file_id(), right->file_id());
-  ExpectEquivalent(&left->details(), &right->details());
+  test_util::ExpectEquivalentMetadata(*left, *right);
 }
 
 void ExpectEquivalent(const FileTracker* left, const FileTracker* right) {
@@ -101,16 +79,7 @@ void ExpectEquivalent(const FileTracker* left, const FileTracker* right) {
     return;
   }
   ASSERT_TRUE(right);
-
-  EXPECT_EQ(left->tracker_id(), right->tracker_id());
-  EXPECT_EQ(left->parent_tracker_id(), right->parent_tracker_id());
-  EXPECT_EQ(left->file_id(), right->file_id());
-  EXPECT_EQ(left->app_id(), right->app_id());
-  EXPECT_EQ(left->tracker_kind(), right->tracker_kind());
-  ExpectEquivalent(&left->synced_details(), &right->synced_details());
-  EXPECT_EQ(left->dirty(), right->dirty());
-  EXPECT_EQ(left->active(), right->active());
-  EXPECT_EQ(left->needs_folder_listing(), right->needs_folder_listing());
+  test_util::ExpectEquivalentTrackers(*left, *right);
 }
 
 template <typename Container>
@@ -165,21 +134,6 @@ void ExpectEquivalentSets(const Container& left, const Container& right) {
     ++left_itr;
     ++right_itr;
   }
-}
-
-void SyncStatusResultCallback(SyncStatusCode* status_out,
-                              SyncStatusCode status) {
-  EXPECT_EQ(SYNC_STATUS_UNKNOWN, *status_out);
-  *status_out = status;
-}
-
-void DatabaseCreateResultCallback(SyncStatusCode* status_out,
-                                  scoped_ptr<MetadataDatabase>* database_out,
-                                  SyncStatusCode status,
-                                  scoped_ptr<MetadataDatabase> database) {
-  EXPECT_EQ(SYNC_STATUS_UNKNOWN, *status_out);
-  *status_out = status;
-  *database_out = database.Pass();
 }
 
 }  // namespace

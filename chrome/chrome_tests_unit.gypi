@@ -1317,6 +1317,8 @@
         'browser/sync_file_system/drive_backend_v1/fake_drive_service_helper.h',
         'browser/sync_file_system/drive_backend_v1/local_sync_operation_resolver_unittest.cc',
         'browser/sync_file_system/drive_backend_v1/remote_sync_operation_resolver_unittest.cc',
+        'browser/sync_file_system/drive_backend/drive_backend_test_util.cc',
+        'browser/sync_file_system/drive_backend/drive_backend_test_util.h',
         'browser/sync_file_system/fake_remote_change_processor.cc',
         'browser/sync_file_system/fake_remote_change_processor.h',
         'browser/sync_file_system/file_change_unittest.cc',
