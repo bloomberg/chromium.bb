@@ -50,7 +50,7 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
     // TODO(calvinlo): Update test code after default quota is made const
     // (http://crbug.com/155488).
     real_default_quota_ = quota::QuotaManager::kSyncableStorageDefaultHostQuota;
-    quota::QuotaManager::kSyncableStorageDefaultHostQuota = 123456789;
+    quota::QuotaManager::kSyncableStorageDefaultHostQuota = 123456;
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {

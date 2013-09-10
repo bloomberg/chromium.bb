@@ -14,7 +14,7 @@ var testStep = [
 
     // TODO(calvinlo): Update test code after default quota is made const
     // (http://crbug.com/155488).
-    chrome.test.assertEq(123456789, info.quotaBytes);
+    chrome.test.assertEq(123456, info.quotaBytes);
     chrome.test.succeed();
   }
 ];
