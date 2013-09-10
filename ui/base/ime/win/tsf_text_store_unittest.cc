@@ -4,6 +4,7 @@
 
 #include "ui/base/ime/win/tsf_text_store.h"
 
+#include "base/memory/ref_counted.h"
 #include "base/win/scoped_com_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -15,7 +16,6 @@ using testing::Invoke;
 using testing::Return;
 
 namespace ui {
-
 namespace {
 
 class MockTextInputClient : public TextInputClient {
@@ -48,8 +48,7 @@ class MockTextInputClient : public TextInputClient {
 
 class MockStoreACPSink : public ITextStoreACPSink {
  public:
-  MockStoreACPSink() : ref_count_(0) {
-  }
+  MockStoreACPSink() : ref_count_(0) {}
 
   // IUnknown
   virtual ULONG STDMETHODCALLTYPE AddRef() OVERRIDE {
@@ -94,11 +93,12 @@ class MockStoreACPSink : public ITextStoreACPSink {
                              HRESULT());
 
  private:
-  ~MockStoreACPSink() {
-  }
+  virtual ~MockStoreACPSink() {}
 
   volatile LONG ref_count_;
 };
+
+const HWND kWindowHandle = reinterpret_cast<HWND>(1);
 
 }  // namespace
 
@@ -106,24 +106,23 @@ class TSFTextStoreTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     text_store_ = new TSFTextStore();
-    text_store_->AddRef();
     sink_ = new MockStoreACPSink();
-    sink_->AddRef();
     EXPECT_EQ(S_OK, text_store_->AdviseSink(IID_ITextStoreACPSink,
                                             sink_, TS_AS_ALL_SINKS));
-    text_store_->SetFocusedTextInputClient(0, &text_input_client_);
+    text_store_->SetFocusedTextInputClient(kWindowHandle,
+                                           &text_input_client_);
   }
 
   virtual void TearDown() OVERRIDE {
     EXPECT_EQ(S_OK, text_store_->UnadviseSink(sink_));
-    sink_->Release();
-    text_store_->Release();
+    sink_ = NULL;
+    text_store_ = NULL;
   }
 
   base::win::ScopedCOMInitializer com_initializer_;
   MockTextInputClient text_input_client_;
-  TSFTextStore* text_store_;
-  MockStoreACPSink* sink_;
+  scoped_refptr<TSFTextStore> text_store_;
+  scoped_refptr<MockStoreACPSink> sink_;
 };
 
 class TSFTextStoreTestCallback {
@@ -161,8 +160,8 @@ class TSFTextStoreTestCallback {
   bool HasReadWriteLock() const { return text_store_->HasReadWriteLock(); }
 
   void GetSelectionTest(LONG expected_acp_start, LONG expected_acp_end) {
-    TS_SELECTION_ACP selection;
-    ULONG fetched;
+    TS_SELECTION_ACP selection = {};
+    ULONG fetched = 0;
     EXPECT_EQ(S_OK, text_store_->GetSelection(0, 1, &selection, &fetched));
     EXPECT_EQ(1, fetched);
     EXPECT_EQ(expected_acp_start, selection.acpStart);
@@ -170,7 +169,7 @@ class TSFTextStoreTestCallback {
   }
 
   void SetSelectionTest(LONG acp_start, LONG acp_end, HRESULT expected_result) {
-    TS_SELECTION_ACP selection;
+    TS_SELECTION_ACP selection = {};
     selection.acpStart = acp_start;
     selection.acpEnd = acp_end;
     selection.style.ase = TS_AE_NONE;
@@ -183,7 +182,7 @@ class TSFTextStoreTestCallback {
 
   void SetTextTest(LONG acp_start, LONG acp_end,
                    const string16& text, HRESULT error_code) {
-    TS_TEXTCHANGE change;
+    TS_TEXTCHANGE change = {};
     ASSERT_EQ(error_code,
               text_store_->SetText(0, acp_start, acp_end,
                                    text.c_str(), text.size(), &change));
@@ -197,11 +196,11 @@ class TSFTextStoreTestCallback {
   void GetTextTest(LONG acp_start, LONG acp_end,
                    const string16& expected_string,
                    LONG expected_next_acp) {
-    wchar_t buffer[1024];
-    ULONG text_buffer_copied;
-    TS_RUNINFO run_info;
-    ULONG run_info_buffer_copied;
-    LONG next_acp;
+    wchar_t buffer[1024] = {};
+    ULONG text_buffer_copied = 0;
+    TS_RUNINFO run_info = {};
+    ULONG run_info_buffer_copied = 0;
+    LONG next_acp = 0;
     ASSERT_EQ(S_OK,
               text_store_->GetText(acp_start, acp_end, buffer, 1024,
                                    &text_buffer_copied,
@@ -216,11 +215,11 @@ class TSFTextStoreTestCallback {
   }
 
   void GetTextErrorTest(LONG acp_start, LONG acp_end, HRESULT error_code) {
-    wchar_t buffer[1024];
-    ULONG text_buffer_copied;
-    TS_RUNINFO run_info;
-    ULONG run_info_buffer_copied;
-    LONG next_acp;
+    wchar_t buffer[1024] = {};
+    ULONG text_buffer_copied = 0;
+    TS_RUNINFO run_info = {};
+    ULONG run_info_buffer_copied = 0;
+    LONG next_acp = 0;
     EXPECT_EQ(error_code,
               text_store_->GetText(acp_start, acp_end, buffer, 1024,
                                    &text_buffer_copied,
@@ -233,8 +232,9 @@ class TSFTextStoreTestCallback {
                                  LONG expected_change_start,
                                  LONG expected_change_old_end,
                                  LONG expected_change_new_end) {
-    LONG start, end;
-    TS_TEXTCHANGE change;
+    LONG start = 0;
+    LONG end = 0;
+    TS_TEXTCHANGE change = {};
     EXPECT_EQ(S_OK,
               text_store_->InsertTextAtSelection(0, buffer, buffer_size,
                                                  &start, &end, &change));
@@ -249,7 +249,8 @@ class TSFTextStoreTestCallback {
                                           ULONG buffer_size,
                                           LONG expected_start,
                                           LONG expected_end) {
-    LONG start, end;
+    LONG start = 0;
+    LONG end = 0;
     EXPECT_EQ(S_OK,
               text_store_->InsertTextAtSelection(TS_IAS_QUERYONLY, buffer,
                                                  buffer_size, &start, &end,
@@ -261,8 +262,8 @@ class TSFTextStoreTestCallback {
   void GetTextExtTest(TsViewCookie view_cookie, LONG acp_start, LONG acp_end,
                       LONG expected_left, LONG expected_top,
                       LONG expected_right, LONG expected_bottom) {
-    RECT rect;
-    BOOL clipped;
+    RECT rect = {};
+    BOOL clipped = FALSE;
     EXPECT_EQ(S_OK, text_store_->GetTextExt(view_cookie, acp_start, acp_end,
                                             &rect, &clipped));
     EXPECT_EQ(expected_left, rect.left);
@@ -274,29 +275,34 @@ class TSFTextStoreTestCallback {
 
   void GetTextExtNoLayoutTest(TsViewCookie view_cookie, LONG acp_start,
                               LONG acp_end) {
-    RECT rect;
-    BOOL clipped;
+    RECT rect = {};
+    BOOL clipped = FALSE;
     EXPECT_EQ(TS_E_NOLAYOUT,
               text_store_->GetTextExt(view_cookie, acp_start, acp_end,
                                       &rect, &clipped));
   }
 
-  TSFTextStore* text_store_;
+  scoped_refptr<TSFTextStore> text_store_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TSFTextStoreTestCallback);
 };
 
+namespace {
+
+const HRESULT kInvalidResult = 0x12345678;
+
 TEST_F(TSFTextStoreTest, GetStatusTest) {
-  TS_STATUS status;
+  TS_STATUS status = {};
   EXPECT_EQ(S_OK, text_store_->GetStatus(&status));
   EXPECT_EQ(0, status.dwDynamicFlags);
   EXPECT_EQ(TS_SS_TRANSITORY | TS_SS_NOHIDDENTEXT, status.dwStaticFlags);
 }
 
-
 class SyncRequestLockTestCallback : public TSFTextStoreTestCallback {
  public:
   explicit SyncRequestLockTestCallback(TSFTextStore* text_store)
-      : TSFTextStoreTestCallback(text_store) {
-  }
+      : TSFTextStoreTestCallback(text_store) {}
 
   HRESULT LockGranted1(DWORD flags) {
     EXPECT_TRUE(HasReadLock());
@@ -313,7 +319,7 @@ class SyncRequestLockTestCallback : public TSFTextStoreTestCallback {
   HRESULT LockGranted3(DWORD flags) {
     EXPECT_TRUE(HasReadLock());
     EXPECT_FALSE(HasReadWriteLock());
-    HRESULT result;
+    HRESULT result = kInvalidResult;
     EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READ | TS_LF_SYNC, &result));
     EXPECT_EQ(TS_E_SYNCHRONOUS, result);
     return S_OK;
@@ -322,7 +328,7 @@ class SyncRequestLockTestCallback : public TSFTextStoreTestCallback {
   HRESULT LockGranted4(DWORD flags) {
     EXPECT_TRUE(HasReadLock());
     EXPECT_FALSE(HasReadWriteLock());
-    HRESULT result;
+    HRESULT result = kInvalidResult;
     EXPECT_EQ(S_OK,
               text_store_->RequestLock(TS_LF_READWRITE | TS_LF_SYNC, &result));
     EXPECT_EQ(TS_E_SYNCHRONOUS, result);
@@ -332,7 +338,7 @@ class SyncRequestLockTestCallback : public TSFTextStoreTestCallback {
   HRESULT LockGranted5(DWORD flags) {
     EXPECT_TRUE(HasReadLock());
     EXPECT_TRUE(HasReadWriteLock());
-    HRESULT result;
+    HRESULT result = kInvalidResult;
     EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READ | TS_LF_SYNC, &result));
     EXPECT_EQ(TS_E_SYNCHRONOUS, result);
     return S_OK;
@@ -341,12 +347,15 @@ class SyncRequestLockTestCallback : public TSFTextStoreTestCallback {
   HRESULT LockGranted6(DWORD flags) {
     EXPECT_TRUE(HasReadLock());
     EXPECT_TRUE(HasReadWriteLock());
-    HRESULT result;
+    HRESULT result = kInvalidResult;
     EXPECT_EQ(S_OK,
               text_store_->RequestLock(TS_LF_READWRITE | TS_LF_SYNC, &result));
     EXPECT_EQ(TS_E_SYNCHRONOUS, result);
     return S_OK;
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SyncRequestLockTestCallback);
 };
 
 TEST_F(TSFTextStoreTest, SynchronousRequestLockTest) {
@@ -359,21 +368,25 @@ TEST_F(TSFTextStoreTest, SynchronousRequestLockTest) {
       .WillOnce(Invoke(&callback, &SyncRequestLockTestCallback::LockGranted5))
       .WillOnce(Invoke(&callback, &SyncRequestLockTestCallback::LockGranted6));
 
-  HRESULT result;
+  HRESULT result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READ | TS_LF_SYNC, &result));
   EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
   EXPECT_EQ(S_OK,
             text_store_->RequestLock(TS_LF_READWRITE | TS_LF_SYNC, &result));
   EXPECT_EQ(S_OK, result);
 
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READ | TS_LF_SYNC, &result));
   EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READ | TS_LF_SYNC, &result));
   EXPECT_EQ(S_OK, result);
 
+  result = kInvalidResult;
   EXPECT_EQ(S_OK,
             text_store_->RequestLock(TS_LF_READWRITE | TS_LF_SYNC, &result));
   EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
   EXPECT_EQ(S_OK,
             text_store_->RequestLock(TS_LF_READWRITE | TS_LF_SYNC, &result));
   EXPECT_EQ(S_OK, result);
@@ -383,15 +396,14 @@ class AsyncRequestLockTestCallback : public TSFTextStoreTestCallback {
  public:
   explicit AsyncRequestLockTestCallback(TSFTextStore* text_store)
       : TSFTextStoreTestCallback(text_store),
-        state_(0) {
-  }
+        state_(0) {}
 
   HRESULT LockGranted1(DWORD flags) {
     EXPECT_EQ(0, state_);
     state_ = 1;
     EXPECT_TRUE(HasReadLock());
     EXPECT_FALSE(HasReadWriteLock());
-    HRESULT result;
+    HRESULT result = kInvalidResult;
     EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READ, &result));
     EXPECT_EQ(TS_S_ASYNC, result);
     EXPECT_EQ(1, state_);
@@ -403,7 +415,7 @@ class AsyncRequestLockTestCallback : public TSFTextStoreTestCallback {
     EXPECT_EQ(2, state_);
     EXPECT_TRUE(HasReadLock());
     EXPECT_FALSE(HasReadWriteLock());
-    HRESULT result;
+    HRESULT result = kInvalidResult;
     EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
     EXPECT_EQ(TS_S_ASYNC, result);
     EXPECT_EQ(2, state_);
@@ -415,7 +427,7 @@ class AsyncRequestLockTestCallback : public TSFTextStoreTestCallback {
     EXPECT_EQ(3, state_);
     EXPECT_TRUE(HasReadLock());
     EXPECT_TRUE(HasReadWriteLock());
-    HRESULT result;
+    HRESULT result = kInvalidResult;
     EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
     EXPECT_EQ(TS_S_ASYNC, result);
     EXPECT_EQ(3, state_);
@@ -427,7 +439,7 @@ class AsyncRequestLockTestCallback : public TSFTextStoreTestCallback {
     EXPECT_EQ(4, state_);
     EXPECT_TRUE(HasReadLock());
     EXPECT_TRUE(HasReadWriteLock());
-    HRESULT result;
+    HRESULT result = kInvalidResult;
     EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READ, &result));
     EXPECT_EQ(TS_S_ASYNC, result);
     EXPECT_EQ(4, state_);
@@ -445,6 +457,8 @@ class AsyncRequestLockTestCallback : public TSFTextStoreTestCallback {
 
  private:
   int state_;
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncRequestLockTestCallback);
 };
 
 TEST_F(TSFTextStoreTest, AsynchronousRequestLockTest) {
@@ -456,7 +470,7 @@ TEST_F(TSFTextStoreTest, AsynchronousRequestLockTest) {
       .WillOnce(Invoke(&callback, &AsyncRequestLockTestCallback::LockGranted4))
       .WillOnce(Invoke(&callback, &AsyncRequestLockTestCallback::LockGranted5));
 
-  HRESULT result;
+  HRESULT result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READ, &result));
   EXPECT_EQ(S_OK, result);
 }
@@ -465,8 +479,7 @@ class RequestLockTextChangeTestCallback : public TSFTextStoreTestCallback {
  public:
   explicit RequestLockTextChangeTestCallback(TSFTextStore* text_store)
       : TSFTextStoreTestCallback(text_store),
-        state_(0) {
-  }
+        state_(0) {}
 
   HRESULT LockGranted1(DWORD flags) {
     EXPECT_EQ(0, state_);
@@ -499,7 +512,7 @@ class RequestLockTextChangeTestCallback : public TSFTextStoreTestCallback {
 
   HRESULT OnTextChange(DWORD flags, const TS_TEXTCHANGE* change) {
     EXPECT_EQ(4, state_);
-    HRESULT result;
+    HRESULT result = kInvalidResult;
     state_ = 5;
     EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
     EXPECT_EQ(S_OK, result);
@@ -518,6 +531,8 @@ class RequestLockTextChangeTestCallback : public TSFTextStoreTestCallback {
 
  private:
   int state_;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestLockTextChangeTestCallback);
 };
 
 TEST_F(TSFTextStoreTest, RequestLockOnTextChangeTest) {
@@ -542,7 +557,7 @@ TEST_F(TSFTextStoreTest, RequestLockOnTextChangeTest) {
       .WillOnce(Invoke(&callback,
                        &RequestLockTextChangeTestCallback::SetCompositionText));
 
-  HRESULT result;
+  HRESULT result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
   EXPECT_EQ(S_OK, result);
 }
@@ -550,8 +565,7 @@ TEST_F(TSFTextStoreTest, RequestLockOnTextChangeTest) {
 class SelectionTestCallback : public TSFTextStoreTestCallback {
  public:
   explicit SelectionTestCallback(TSFTextStore* text_store)
-      : TSFTextStoreTestCallback(text_store) {
-  }
+      : TSFTextStoreTestCallback(text_store) {}
 
   HRESULT ReadLockGranted(DWORD flags) {
     SetInternalState(L"", 0, 0, 0);
@@ -631,23 +645,21 @@ TEST_F(TSFTextStoreTest, SetGetSelectionTest) {
       .WillOnce(Invoke(&callback,
                        &SelectionTestCallback::ReadWriteLockGranted));
 
-  TS_SELECTION_ACP selection_buffer;
-  ULONG fetched_count;
+  TS_SELECTION_ACP selection_buffer = {};
+  ULONG fetched_count = 0;
   EXPECT_EQ(TS_E_NOLOCK,
             text_store_->GetSelection(0, 1, &selection_buffer,
                                       &fetched_count));
 
-  HRESULT result;
+  HRESULT result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READ, &result));
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
 }
 
-
 class SetGetTextTestCallback : public TSFTextStoreTestCallback {
  public:
   explicit SetGetTextTestCallback(TSFTextStore* text_store)
-      : TSFTextStoreTestCallback(text_store) {
-  }
+      : TSFTextStoreTestCallback(text_store) {}
 
   HRESULT ReadLockGranted(DWORD flags) {
     SetTextTest(0, 0, L"", TF_E_NOLOCK);
@@ -820,6 +832,9 @@ class SetGetTextTestCallback : public TSFTextStoreTestCallback {
 
     return S_OK;
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SetGetTextTestCallback);
 };
 
 TEST_F(TSFTextStoreTest, SetGetTextTest) {
@@ -829,19 +844,19 @@ TEST_F(TSFTextStoreTest, SetGetTextTest) {
       .WillOnce(Invoke(&callback,
                        &SetGetTextTestCallback::ReadWriteLockGranted));
 
-  wchar_t buffer[1024];
-  ULONG text_buffer_copied;
-  TS_RUNINFO run_info;
-  ULONG run_info_buffer_copied;
-  LONG next_acp;
+  wchar_t buffer[1024] = {};
+  ULONG text_buffer_copied = 0;
+  TS_RUNINFO run_info = {};
+  ULONG run_info_buffer_copied = 0;
+  LONG next_acp = 0;
   EXPECT_EQ(TF_E_NOLOCK,
             text_store_->GetText(0, -1, buffer, 1024, &text_buffer_copied,
                                  &run_info, 1, &run_info_buffer_copied,
                                  &next_acp));
-  TS_TEXTCHANGE change;
+  TS_TEXTCHANGE change = {};
   EXPECT_EQ(TF_E_NOLOCK, text_store_->SetText(0, 0, 0, L"abc", 3, &change));
 
-  HRESULT result;
+  HRESULT result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READ, &result));
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
 }
@@ -849,8 +864,7 @@ TEST_F(TSFTextStoreTest, SetGetTextTest) {
 class InsertTextAtSelectionTestCallback : public TSFTextStoreTestCallback {
  public:
   explicit InsertTextAtSelectionTestCallback(TSFTextStore* text_store)
-      : TSFTextStoreTestCallback(text_store) {
-  }
+      : TSFTextStoreTestCallback(text_store) {}
 
   HRESULT ReadLockGranted(DWORD flags) {
     const wchar_t kBuffer[] = L"0123456789";
@@ -865,8 +879,9 @@ class InsertTextAtSelectionTestCallback : public TSFTextStoreTestCallback {
     GetSelectionTest(2, 5);
     InsertTextAtSelectionQueryOnlyTest(kBuffer, 0, 2, 5);
 
-    LONG start, end;
-    TS_TEXTCHANGE change;
+    LONG start = 0;
+    LONG end = 0;
+    TS_TEXTCHANGE change = {};
     EXPECT_EQ(TS_E_NOLOCK,
               text_store_->InsertTextAtSelection(0, kBuffer, 10,
                                                  &start, &end, &change));
@@ -908,6 +923,9 @@ class InsertTextAtSelectionTestCallback : public TSFTextStoreTestCallback {
 
     return S_OK;
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InsertTextAtSelectionTestCallback);
 };
 
 TEST_F(TSFTextStoreTest, InsertTextAtSelectionTest) {
@@ -919,16 +937,18 @@ TEST_F(TSFTextStoreTest, InsertTextAtSelectionTest) {
           Invoke(&callback,
                  &InsertTextAtSelectionTestCallback::ReadWriteLockGranted));
 
-  HRESULT result;
+  HRESULT result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READ, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
 }
 
 class ScenarioTestCallback : public TSFTextStoreTestCallback {
  public:
   explicit ScenarioTestCallback(TSFTextStore* text_store)
-      : TSFTextStoreTestCallback(text_store) {
-  }
+      : TSFTextStoreTestCallback(text_store) {}
 
   HRESULT LockGranted1(DWORD flags) {
     SetSelectionTest(0, 0, S_OK);
@@ -1023,6 +1043,9 @@ class ScenarioTestCallback : public TSFTextStoreTestCallback {
     EXPECT_EQ(0, composition.selection.end());
     EXPECT_EQ(0, composition.underlines.size());
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScenarioTestCallback);
 };
 
 TEST_F(TSFTextStoreTest, ScenarioTest) {
@@ -1053,24 +1076,28 @@ TEST_F(TSFTextStoreTest, ScenarioTest) {
   EXPECT_CALL(*sink_, OnTextChange(_, _))
       .WillOnce(Return(S_OK));
 
-  HRESULT result;
+  HRESULT result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
 }
 
 class GetTextExtTestCallback : public TSFTextStoreTestCallback {
  public:
   explicit GetTextExtTestCallback(TSFTextStore* text_store)
       : TSFTextStoreTestCallback(text_store),
-        layout_prepared_character_num_(0) {
-  }
+        layout_prepared_character_num_(0) {}
 
   HRESULT LockGranted(DWORD flags) {
     SetInternalState(L"0123456789012", 0, 0, 0);
     layout_prepared_character_num_ = 13;
 
-    TsViewCookie view_cookie;
+    TsViewCookie view_cookie = 0;
     EXPECT_EQ(S_OK, text_store_->GetActiveView(&view_cookie));
     GetTextExtTest(view_cookie, 0, 0, 11, 12, 11, 20);
     GetTextExtTest(view_cookie, 0, 1, 11, 12, 20, 20);
@@ -1125,6 +1152,8 @@ class GetTextExtTestCallback : public TSFTextStoreTestCallback {
 
  private:
   uint32 layout_prepared_character_num_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetTextExtTestCallback);
 };
 
 TEST_F(TSFTextStoreTest, GetTextExtTest) {
@@ -1141,8 +1170,10 @@ TEST_F(TSFTextStoreTest, GetTextExtTest) {
   EXPECT_CALL(*sink_, OnLockGranted(_))
       .WillOnce(Invoke(&callback, &GetTextExtTestCallback::LockGranted));
 
-  HRESULT result;
+  HRESULT result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READ, &result));
+  EXPECT_EQ(S_OK, result);
 }
 
+}  // namespace
 }  // namespace ui
