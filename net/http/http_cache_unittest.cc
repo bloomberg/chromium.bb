@@ -5838,7 +5838,7 @@ TEST(HttpCache, FilterCompletion) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 }
 
-// Tests that we stop cachining when told.
+// Tests that we stop caching when told.
 TEST(HttpCache, StopCachingDeletesEntry) {
   MockHttpCache cache;
   net::TestCompletionCallback callback;
@@ -5865,6 +5865,43 @@ TEST(HttpCache, StopCachingDeletesEntry) {
     rv = trans->Read(buf.get(), 256, callback.callback());
     EXPECT_EQ(callback.GetResult(rv), 0);
   }
+
+  // Make sure that the ActiveEntry is gone.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Verify that the entry is gone.
+  RunTransactionTest(cache.http_cache(), kSimpleGET_Transaction);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+}
+
+// Tests that we stop caching when told, when using auth.
+TEST(HttpCache, StopCachingWithAuthDeletesEntry) {
+  MockHttpCache cache;
+  net::TestCompletionCallback callback;
+  MockTransaction mock_transaction(kSimpleGET_Transaction);
+  mock_transaction.status = "HTTP/1.1 401 Unauthorized";
+  AddMockTransaction(&mock_transaction);
+  MockHttpRequest request(mock_transaction);
+
+  {
+    scoped_ptr<net::HttpTransaction> trans;
+    int rv = cache.http_cache()->CreateTransaction(
+        net::DEFAULT_PRIORITY, &trans, NULL);
+    EXPECT_EQ(net::OK, rv);
+
+    rv = trans->Start(&request, callback.callback(), net::BoundNetLog());
+    EXPECT_EQ(net::OK, callback.GetResult(rv));
+
+    trans->StopCaching();
+
+    scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(256));
+    rv = trans->Read(buf.get(), 10, callback.callback());
+    EXPECT_EQ(callback.GetResult(rv), 10);
+  }
+  RemoveMockTransaction(&mock_transaction);
 
   // Make sure that the ActiveEntry is gone.
   base::MessageLoop::current()->RunUntilIdle();

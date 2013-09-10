@@ -215,11 +215,11 @@ HttpCache::Transaction::~Transaction() {
   cache_io_start_ = base::TimeTicks();
   deferred_cache_sensitivity_delay_ = base::TimeDelta();
 
-  if (cache_.get()) {
+  if (cache_) {
     if (entry_) {
-      bool cancel_request = reading_;
+      bool cancel_request = reading_ && response_.headers;
       if (cancel_request) {
-        if (partial_.get()) {
+        if (partial_) {
           entry_->disk_entry->CancelSparseIO();
         } else {
           cancel_request &= (response_.headers->response_code() == 200);
