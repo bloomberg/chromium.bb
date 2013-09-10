@@ -211,9 +211,10 @@ OmniboxViewGtk::OmniboxViewGtk(OmniboxEditController* controller,
       supports_pre_edit_(!gtk_check_version(2, 20, 0)),
       pre_edit_size_before_change_(0),
       going_to_focus_(NULL) {
-  popup_view_.reset(
-      new OmniboxPopupViewGtk
-          (GetFont(), this, model(), location_bar));
+  OmniboxPopupViewGtk* view = new OmniboxPopupViewGtk(
+      GetFont(), this, model(), location_bar);
+  view->Init();
+  popup_view_.reset(view);
 }
 
 OmniboxViewGtk::~OmniboxViewGtk() {

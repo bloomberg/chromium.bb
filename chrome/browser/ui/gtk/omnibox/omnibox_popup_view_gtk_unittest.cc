@@ -6,10 +6,16 @@
 
 #include <gtk/gtk.h>
 
+#include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_result.h"
+#include "components/variations/entropy_provider.h"
 #include "testing/platform_test.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 
@@ -18,6 +24,38 @@ const float kLargeWidth = 10000;
 const GdkColor kContentTextColor = GDK_COLOR_RGB(0x00, 0x00, 0x00);
 const GdkColor kDimContentTextColor = GDK_COLOR_RGB(0x80, 0x80, 0x80);
 const GdkColor kURLTextColor = GDK_COLOR_RGB(0x00, 0x88, 0x00);
+
+class TestableOmniboxPopupViewGtk : public OmniboxPopupViewGtk {
+ public:
+  TestableOmniboxPopupViewGtk()
+      : OmniboxPopupViewGtk(gfx::Font(), NULL, NULL, NULL),
+        show_called_(false),
+        hide_called_(false) {
+  }
+
+  virtual ~TestableOmniboxPopupViewGtk() {
+  }
+
+  virtual void Show(size_t num_results) OVERRIDE {
+    show_called_ = true;
+  }
+
+  virtual void Hide() OVERRIDE {
+    hide_called_ = true;
+  }
+
+  virtual const AutocompleteResult& GetResult() const OVERRIDE {
+    return result_;
+  }
+
+  using OmniboxPopupViewGtk::GetRectForLine;
+  using OmniboxPopupViewGtk::LineFromY;
+  using OmniboxPopupViewGtk::GetHiddenMatchCount;
+
+  AutocompleteResult result_;
+  bool show_called_;
+  bool hide_called_;
+};
 
 }  // namespace
 
@@ -30,6 +68,9 @@ class OmniboxPopupViewGtkTest : public PlatformTest {
 
     window_ = gtk_window_new(GTK_WINDOW_POPUP);
     layout_ = gtk_widget_create_pango_layout(window_, NULL);
+    view_.reset(new TestableOmniboxPopupViewGtk);
+    field_trial_list_.reset(new base::FieldTrialList(
+        new metrics::SHA1EntropyProvider("42")));
   }
 
   virtual void TearDown() {
@@ -179,6 +220,9 @@ class OmniboxPopupViewGtkTest : public PlatformTest {
 
   GtkWidget* window_;
   PangoLayout* layout_;
+
+  scoped_ptr<TestableOmniboxPopupViewGtk> view_;
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupViewGtkTest);
@@ -370,4 +414,71 @@ TEST_F(OmniboxPopupViewGtkTest, DecorateMatchedStringURLMatch) {
   EXPECT_EQ(kContents.length(), RunLengthForAttrType(0U, kContents.length(),
                                                      PANGO_ATTR_FOREGROUND));
   EXPECT_TRUE(RunHasColor(0U, kContents.length(), kURLTextColor));
+}
+
+// Test that the popup is not shown if there is only one hidden match.
+TEST_F(OmniboxPopupViewGtkTest, HidesIfOnlyOneHiddenMatch) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group1 hide_verbatim:1"));
+  ACMatches matches;
+  AutocompleteMatch match;
+  match.destination_url = GURL("http://verbatim/");
+  match.type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
+  matches.push_back(match);
+  view_->result_.AppendMatches(matches);
+  ASSERT_TRUE(view_->result_.ShouldHideTopMatch());
+
+  // Since there is only one match which is hidden, the popup should close.
+  view_->UpdatePopupAppearance();
+  EXPECT_TRUE(view_->hide_called_);
+}
+
+// Test that the top match is skipped if the model indicates it should be
+// hidden.
+TEST_F(OmniboxPopupViewGtkTest, SkipsTopMatchIfHidden) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group1 hide_verbatim:1"));
+  ACMatches matches;
+  {
+    AutocompleteMatch match;
+    match.destination_url = GURL("http://verbatim/");
+    match.type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
+    matches.push_back(match);
+  }
+  {
+    AutocompleteMatch match;
+    match.destination_url = GURL("http://not-verbatim/");
+    match.type = AutocompleteMatchType::SEARCH_OTHER_ENGINE;
+    matches.push_back(match);
+  }
+  view_->result_.AppendMatches(matches);
+  ASSERT_TRUE(view_->result_.ShouldHideTopMatch());
+
+  EXPECT_EQ(1U, view_->GetHiddenMatchCount());
+  EXPECT_EQ(1U, view_->LineFromY(0));
+  gfx::Rect rect = view_->GetRectForLine(1, 100);
+  EXPECT_EQ(1, rect.y());
+}
+
+// Test that the top match is not skipped if the model does not indicate it
+// should be hidden.
+TEST_F(OmniboxPopupViewGtkTest, DoesNotSkipTopMatchIfVisible) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group1 hide_verbatim:1"));
+  ACMatches matches;
+  AutocompleteMatch match;
+  match.destination_url = GURL("http://not-verbatim/");
+  match.type = AutocompleteMatchType::SEARCH_OTHER_ENGINE;
+  matches.push_back(match);
+  view_->result_.AppendMatches(matches);
+  ASSERT_FALSE(view_->result_.ShouldHideTopMatch());
+
+  EXPECT_EQ(0U, view_->GetHiddenMatchCount());
+  EXPECT_EQ(0U, view_->LineFromY(0));
+  gfx::Rect rect = view_->GetRectForLine(1, 100);
+  EXPECT_EQ(25, rect.y());
+
+  // The single match is visible so the popup should be open.
+  view_->UpdatePopupAppearance();
+  EXPECT_TRUE(view_->show_called_);
 }

@@ -21,6 +21,7 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/font.h"
 
+class AutocompleteResult;
 class GtkThemeService;
 class OmniboxEditModel;
 class OmniboxPopupModel;
@@ -40,6 +41,9 @@ class OmniboxPopupViewGtk : public OmniboxPopupView,
                       GtkWidget* location_bar);
   virtual ~OmniboxPopupViewGtk();
 
+  // Initializes the view.
+  virtual void Init();
+
   // Overridden from OmniboxPopupView:
   virtual bool IsOpen() const OVERRIDE;
   virtual void InvalidateLine(size_t line) OVERRIDE;
@@ -52,6 +56,23 @@ class OmniboxPopupViewGtk : public OmniboxPopupView,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+ protected:
+  // Convert a y-coordinate to the closest line / result.
+  size_t LineFromY(int y) const;
+
+  // Return a Rect for the space for a result line.  This excludes the border,
+  // but includes the padding.  This is the area that is colored for a
+  // selection.
+  gfx::Rect GetRectForLine(size_t line, int width) const;
+
+  // Returns the number of hidden matches at the top of the popup. This is
+  // non-zero when a verbatim match like search-what-you-typed is present but
+  // should not be shown.
+  size_t GetHiddenMatchCount() const;
+
+  // Returns the current autocomplete result.
+  virtual const AutocompleteResult& GetResult() const;
 
  private:
   // Be friendly for unit tests.
@@ -66,18 +87,16 @@ class OmniboxPopupViewGtk : public OmniboxPopupView,
       const GdkColor* url_color,
       const std::string& prefix_text);
 
-  void Show(size_t num_results);
-  void Hide();
+  virtual void Show(size_t num_results);
+  virtual void Hide();
 
   // Restack the popup window directly above the browser's toplevel window.
   void StackWindow();
 
-  // Convert a y-coordinate to the closest line / result.
-  size_t LineFromY(int y);
-
   // Accept a line of the results, for example, when the user clicks a line.
   void AcceptLine(size_t line, WindowOpenDisposition disposition);
 
+  // Returns the appropriate icon to display beside |match|.
   gfx::Image IconForMatch(const AutocompleteMatch& match,
                           bool selected,
                           bool is_selected_keyword);

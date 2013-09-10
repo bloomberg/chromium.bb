@@ -861,13 +861,8 @@ void MetricsLog::RecordOmniboxOpenedURL(const OmniboxLog& log) {
   omnibox_event->set_current_page_classification(
       AsOmniboxEventPageClassification(log.current_page_classification));
   omnibox_event->set_input_type(AsOmniboxEventInputType(log.input_type));
-
-  // The view code to hide the top result is currently only implemented on the
-  // Mac and for views.
-#if defined(OS_MACOSX) || defined(TOOLKIT_VIEWS)
   omnibox_event->set_is_top_result_hidden_in_dropdown(
       log.result.ShouldHideTopMatch());
-#endif  // defined(OS_MACOSX) || defined(TOOLKIT_VIEWS)
 
   for (AutocompleteResult::const_iterator i(log.result.begin());
        i != log.result.end(); ++i) {
