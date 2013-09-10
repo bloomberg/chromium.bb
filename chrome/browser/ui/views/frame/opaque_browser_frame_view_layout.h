@@ -78,6 +78,14 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // Returns the bounds of the client area for the specified view size.
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;
 
+  void set_extra_caption_y(int extra_caption_y) {
+    extra_caption_y_ = extra_caption_y;
+  }
+
+  void set_window_caption_spacing(int window_caption_spacing) {
+    window_caption_spacing_ = window_caption_spacing;
+  }
+
   const gfx::Rect& client_view_bounds() const { return client_view_bounds_; }
 
  private:
@@ -140,6 +148,13 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // Whether any of the window control buttons were packed on the leading.
   bool has_leading_buttons_;
   bool has_trailing_buttons_;
+
+  // Extra offset from the top of the frame to the top of the window control
+  // buttons. Configurable based on platform and whether we are under test.
+  int extra_caption_y_;
+
+  // Extra offset between the individual window caption buttons.
+  int window_caption_spacing_;
 
   // Window controls.
   views::ImageButton* minimize_button_;

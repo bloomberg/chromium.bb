@@ -67,6 +67,18 @@ const int kTabstripTopShadowThickness = 3;
 // is no avatar icon.
 const int kTabStripIndent = -6;
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Default extra space between the top of the frame and the top of the window
+// caption buttons.
+const int kExtraCaption = 2;
+
+// Default extra spacing between individual window caption buttons.
+const int kCaptionButtonSpacing = 2;
+#else
+const int kExtraCaption = 0;
+const int kCaptionButtonSpacing = 0;
+#endif
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -80,6 +92,8 @@ OpaqueBrowserFrameViewLayout::OpaqueBrowserFrameViewLayout(
       minimum_size_for_buttons_(0),
       has_leading_buttons_(false),
       has_trailing_buttons_(false),
+      extra_caption_y_(kExtraCaption),
+      window_caption_spacing_(kCaptionButtonSpacing),
       minimize_button_(NULL),
       maximize_button_(NULL),
       restore_button_(NULL),
@@ -209,9 +223,9 @@ int OpaqueBrowserFrameViewLayout::TitlebarBottomThickness(bool restored) const {
 int OpaqueBrowserFrameViewLayout::CaptionButtonY(bool restored) const {
   // Maximized buttons start at window top so that even if their images aren't
   // drawn flush with the screen edge, they still obey Fitts' Law.
-  return (!restored && delegate_->IsMaximized()) ?
+  return ((!restored && delegate_->IsMaximized()) ?
       FrameBorderThickness(false) :
-      views::NonClientFrameView::kFrameShadowThickness;
+          views::NonClientFrameView::kFrameShadowThickness) + extra_caption_y_;
 }
 
 gfx::Rect OpaqueBrowserFrameViewLayout::IconBounds() const {
@@ -439,21 +453,30 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
 
   switch (alignment) {
     case ALIGN_LEADING: {
-      // TODO(erg): This works well enough as a basic case, but needs to be
-      // expanded for Linux. Inter-button spacing, for example. Also, extending
-      // the leading edge of the first button all the way to the leading edge.
+      if (has_leading_buttons_)
+        leading_button_start_ += window_caption_spacing_;
+
+      // If we're the first button on the left and maximized, add with to the
+      // right hand side of the screen.
+      int extra_width = (is_maximized && !has_leading_buttons_) ?
+        (kFrameBorderThickness -
+         views::NonClientFrameView::kFrameShadowThickness) : 0;
+
       button->SetBounds(
-          leading_button_start_,
+          leading_button_start_ - extra_width,
           caption_y,
-          button_size.width(),
+          button_size.width() + extra_width,
           button_size.height());
 
-      leading_button_start_ += button_size.width();
-      minimum_size_for_buttons_ += button_size.width();
+      leading_button_start_ += extra_width + button_size.width();
+      minimum_size_for_buttons_ += extra_width + button_size.width();
       has_leading_buttons_ = true;
       break;
     }
     case ALIGN_TRAILING: {
+      if (has_trailing_buttons_)
+        trailing_button_start_ += window_caption_spacing_;
+
       // If we're the first button on the right and maximized, add with to the
       // right hand side of the screen.
       int extra_width = (is_maximized && !has_trailing_buttons_) ?
