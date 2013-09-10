@@ -60,15 +60,22 @@ const Extension* PlatformAppBrowserTest::LoadAndLaunchPlatformApp(
   return extension;
 }
 
+const Extension* PlatformAppBrowserTest::InstallPlatformApp(
+    const char* name) {
+  const Extension* extension = InstallExtension(
+      test_data_dir_.AppendASCII("platform_apps").AppendASCII(name), 1);
+  EXPECT_TRUE(extension);
+
+  return extension;
+}
+
 const Extension* PlatformAppBrowserTest::InstallAndLaunchPlatformApp(
     const char* name) {
   content::WindowedNotificationObserver app_loaded_observer(
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::NotificationService::AllSources());
 
-  const Extension* extension = InstallExtension(
-      test_data_dir_.AppendASCII("platform_apps").AppendASCII(name), 1);
-  EXPECT_TRUE(extension);
+  const Extension* extension = InstallPlatformApp(name);
 
   chrome::OpenApplication(chrome::AppLaunchParams(browser()->profile(),
                                                   extension,

@@ -23,6 +23,7 @@
 #include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
 #include "chrome/common/extensions/api/spellcheck/spellcheck_handler.h"
 #include "chrome/common/extensions/api/system_indicator/system_indicator_handler.h"
+#include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/incognito_handler.h"
@@ -91,6 +92,7 @@ void RegisterChromeManifestHandlers() {
   (new ThemeHandler)->Register();
   (new TtsEngineManifestHandler)->Register();
   (new UpdateURLHandler)->Register();
+  (new UrlHandlersParser)->Register();
   (new URLOverridesHandler)->Register();
   (new WebAccessibleResourcesHandler)->Register();
   ManifestHandler::FinalizeRegistration();

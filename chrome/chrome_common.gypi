@@ -219,6 +219,8 @@
         'common/extensions/api/storage/storage_schema_manifest_handler.h',
         'common/extensions/api/system_indicator/system_indicator_handler.cc',
         'common/extensions/api/system_indicator/system_indicator_handler.h',
+        'common/extensions/api/url_handlers/url_handlers_parser.cc',
+        'common/extensions/api/url_handlers/url_handlers_parser.h',
         'common/extensions/background_info.cc',
         'common/extensions/background_info.h',
         'common/extensions/chrome_extensions_client.cc',

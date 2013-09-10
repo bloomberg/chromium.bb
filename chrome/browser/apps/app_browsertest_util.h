@@ -8,6 +8,7 @@
 
 #include "apps/shell_window.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "content/public/common/page_transition_types.h"
 
 namespace content {
 class WebContents;
@@ -28,6 +29,9 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   // Runs the app named |name| out of the platform_apps subdirectory. Waits
   // until it is launched.
   const Extension* LoadAndLaunchPlatformApp(const char* name);
+
+  // Installs the app named |name| out of the platform_apps subdirectory.
+  const Extension* InstallPlatformApp(const char* name);
 
   // Installs and runs the app named |name| out of the platform_apps
   // subdirectory. Waits until it is launched.

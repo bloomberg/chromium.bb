@@ -19,8 +19,15 @@ eventBindings.registerArgumentMassager('app.runtime.onLaunched',
     function(args, dispatch) {
   var launchData = args[0];
 
-  if (launchData && typeof launchData.id !== 'undefined') {
-    // new-style dispatch.
+  if (!launchData) {
+    // An onLaunched corresponding to launching directly or from
+    // the app launcher or browser.
+    dispatch([]);
+    return;
+  }
+
+  if (launchData.items) {
+    // An onLaunched corresponding to file_handlers in the app's manifest.
     var items = []
     var numItems = launchData.items.length;
     var itemLoaded = function(err, item) {
@@ -47,10 +54,10 @@ eventBindings.registerArgumentMassager('app.runtime.onLaunched',
         itemLoaded(fileError);
       });
     });
-  } else if (launchData) {
-    dispatch([launchData]);
   } else {
-    dispatch([]);
+    // Default case. This currently covers an onLaunched corresponding to
+    // url_handlers in the app's manifest.
+    dispatch([launchData]);
   }
 });
 

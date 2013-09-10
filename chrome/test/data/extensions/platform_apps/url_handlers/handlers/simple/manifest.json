@@ -1,0 +1,19 @@
+{
+  "name": "Handler: simple",
+  "version": "1",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  },
+
+  "url_handlers": {
+    "my_doc_url": {
+      "title": "Open my doc",
+      "matches": [
+        "http://localhost:*/extensions/platform_apps/url_handlers/*/target.html",
+        "http://127.0.0.1:*/extensions/platform_apps/url_handlers/*/target.html"
+      ]
+    }
+  }
+}

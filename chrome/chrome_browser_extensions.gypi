@@ -64,6 +64,8 @@
         '../extensions/browser/pref_names.h',
         '../extensions/browser/view_type_utils.cc',
         '../extensions/browser/view_type_utils.h',
+        'browser/apps/app_url_redirector.cc',
+        'browser/apps/app_url_redirector.h',
         'browser/apps/shortcut_manager.cc',
         'browser/apps/shortcut_manager.h',
         'browser/apps/shortcut_manager_factory.cc',
