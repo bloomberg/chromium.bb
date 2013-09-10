@@ -1564,7 +1564,7 @@ static void appendTextContent(const Node* node, bool convertBRsToNewlines, bool&
     case Node::CDATA_SECTION_NODE:
     case Node::COMMENT_NODE:
         isNullString = false;
-        content.append(static_cast<const CharacterData*>(node)->data());
+        content.append(toCharacterData(node)->data());
         break;
 
     case Node::PROCESSING_INSTRUCTION_NODE:

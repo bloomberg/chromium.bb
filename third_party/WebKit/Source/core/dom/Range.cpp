@@ -649,7 +649,7 @@ static inline unsigned lengthOfContentsInNode(Node* node)
     case Node::TEXT_NODE:
     case Node::CDATA_SECTION_NODE:
     case Node::COMMENT_NODE:
-        return static_cast<CharacterData*>(node)->length();
+        return toCharacterData(node)->length();
     case Node::PROCESSING_INSTRUCTION_NODE:
         return toProcessingInstruction(node)->data().length();
     case Node::ELEMENT_NODE:
@@ -793,7 +793,7 @@ PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRef
     case Node::TEXT_NODE:
     case Node::CDATA_SECTION_NODE:
     case Node::COMMENT_NODE:
-        endOffset = std::min(endOffset, static_cast<CharacterData*>(container)->length());
+        endOffset = std::min(endOffset, toCharacterData(container)->length());
         if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
             RefPtr<CharacterData> c = static_pointer_cast<CharacterData>(container->cloneNode(true));
             deleteCharacterData(c, startOffset, endOffset, es);
@@ -804,7 +804,7 @@ PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRef
                 result = c.release();
         }
         if (action == EXTRACT_CONTENTS || action == DELETE_CONTENTS)
-            static_cast<CharacterData*>(container)->deleteData(startOffset, endOffset - startOffset, es);
+            toCharacterData(container)->deleteData(startOffset, endOffset - startOffset, es);
         break;
     case Node::PROCESSING_INSTRUCTION_NODE:
         endOffset = std::min(endOffset, toProcessingInstruction(container)->data().length());
@@ -1064,7 +1064,7 @@ String Range::toString(ExceptionState& es) const
     Node* pastLast = pastLastNode();
     for (Node* n = firstNode(); n != pastLast; n = NodeTraversal::next(n)) {
         if (n->nodeType() == Node::TEXT_NODE || n->nodeType() == Node::CDATA_SECTION_NODE) {
-            String data = static_cast<CharacterData*>(n)->data();
+            String data = toCharacterData(n)->data();
             int length = data.length();
             int start = (n == m_start.container()) ? min(max(0, m_start.offset()), length) : 0;
             int end = (n == m_end.container()) ? min(max(start, m_end.offset()), length) : length;
@@ -1138,7 +1138,7 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& es) const
         case Node::CDATA_SECTION_NODE:
         case Node::COMMENT_NODE:
         case Node::TEXT_NODE:
-            if (static_cast<unsigned>(offset) > static_cast<CharacterData*>(n)->length())
+            if (static_cast<unsigned>(offset) > toCharacterData(n)->length())
                 es.throwDOMException(IndexSizeError);
             return 0;
         case Node::PROCESSING_INSTRUCTION_NODE:

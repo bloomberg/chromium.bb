@@ -551,8 +551,7 @@ void HTMLConstructionSite::insertTextNode(const String& characters, WhitespaceMo
     if (previousChild && previousChild->isTextNode()) {
         // FIXME: We're only supposed to append to this text node if it
         // was the last text node inserted by the parser.
-        CharacterData* textNode = static_cast<CharacterData*>(previousChild);
-        currentPosition = textNode->parserAppendData(characters, 0, lengthLimit);
+        currentPosition = toCharacterData(previousChild)->parserAppendData(characters, 0, lengthLimit);
     }
 
     while (currentPosition < characters.length()) {
