@@ -1331,14 +1331,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       command_line->GetSwitchValueASCII(switches::kProcessType);
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
 
-  if (browser_command_line.HasSwitch(switches::kChromeFrame))
-    command_line->AppendSwitch(switches::kChromeFrame);
+  static const char* const kCommonSwitchNames[] = {
+    switches::kChromeFrame,
+    switches::kUserDataDir,  // Make logs go to the right file.
+  };
+  command_line->CopySwitchesFrom(browser_command_line, kCommonSwitchNames,
+                                 arraysize(kCommonSwitchNames));
 
   if (process_type == switches::kRendererProcess) {
-    base::FilePath user_data_dir =
-        browser_command_line.GetSwitchValuePath(switches::kUserDataDir);
-    if (!user_data_dir.empty())
-      command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 #if defined(OS_CHROMEOS)
     const std::string& login_profile =
         browser_command_line.GetSwitchValueASCII(
@@ -1464,14 +1464,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
       switches::kMemoryProfiling,
       switches::kSilentDumpOnDCHECK,
-      switches::kUserDataDir,
     };
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    arraysize(kSwitchNames));
   } else if (process_type == switches::kZygoteProcess) {
     static const char* const kSwitchNames[] = {
-      switches::kUserDataDir,  // Make logs go to the right file.
       // Load (in-process) Pepper plugins in-process in the zygote pre-sandbox.
       switches::kDisableBundledPpapiFlash,
       switches::kPpapiFlashInProcess,
@@ -1482,10 +1480,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    arraysize(kSwitchNames));
   } else if (process_type == switches::kGpuProcess) {
-    base::FilePath user_data_dir =
-        browser_command_line.GetSwitchValuePath(switches::kUserDataDir);
-    if (!user_data_dir.empty())
-      command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
     // If --ignore-gpu-blacklist is passed in, don't send in crash reports
     // because GPU is expected to be unreliable.
     if (browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist) &&
