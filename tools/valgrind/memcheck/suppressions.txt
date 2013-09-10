@@ -7210,8 +7210,6 @@
    fun:_ZN6PickleC1Ev
    fun:_ZN7content14ZygoteHostImpl20GetTerminationStatusEibPi
    fun:_ZN7content20ChildProcessLauncher25GetChildTerminationStatusEbPi
-   fun:_ZN7content27BrowserChildProcessHostImpl20GetTerminationStatusEPi
-   fun:_ZN7content27BrowserChildProcessHostImpl19OnChildDisconnectedEv
 }
 {
    bug_274193
