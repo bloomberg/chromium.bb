@@ -645,7 +645,6 @@ HostNPScriptObject::HostNPScriptObject(
       plugin_task_runner_(plugin_task_runner),
       am_currently_logging_(false),
       state_(kDisconnected),
-      daemon_controller_(DaemonController::Create()),
       weak_factory_(this),
       weak_ptr_(weak_factory_.GetWeakPtr()) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
@@ -666,6 +665,8 @@ HostNPScriptObject::HostNPScriptObject(
     plugin_task_runner_handle_.reset(
         new base::ThreadTaskRunnerHandle(plugin_task_runner_));
   }
+
+  daemon_controller_ = DaemonController::Create();
 
   ServiceUrls* service_urls = ServiceUrls::GetInstance();
   bool xmpp_server_valid = net::ParseHostAndPort(
@@ -1255,8 +1256,6 @@ bool HostNPScriptObject::UpdateDaemonConfig(const NPVariant* args,
     return false;
   }
 
-  // TODO(wez): Pass a static method here, that will post the result
-  // back to us on the right thread (crbug.com/156257).
   daemon_controller_->UpdateConfig(
       config_dict.Pass(),
       base::Bind(&HostNPScriptObject::InvokeAsyncResultCallback,
@@ -1278,8 +1277,6 @@ bool HostNPScriptObject::GetDaemonConfig(const NPVariant* args,
     return false;
   }
 
-  // TODO(wez): Pass a static method here, that will post the result
-  // back to us on the right thread (crbug.com/156257).
   daemon_controller_->GetConfig(
       base::Bind(&HostNPScriptObject::InvokeGetDaemonConfigCallback,
                  base::Unretained(this), callback_obj));
@@ -1301,8 +1298,6 @@ bool HostNPScriptObject::GetDaemonVersion(const NPVariant* args,
     return false;
   }
 
-  // TODO(wez): Pass a static method here, that will post the result
-  // back to us on the right thread (crbug.com/156257).
   daemon_controller_->GetVersion(
       base::Bind(&HostNPScriptObject::InvokeGetDaemonVersionCallback,
                  base::Unretained(this), callback_obj));
@@ -1349,8 +1344,6 @@ bool HostNPScriptObject::GetUsageStatsConsent(const NPVariant* args,
     return false;
   }
 
-  // TODO(wez): Pass a static method here, that will post the result
-  // back to us on the right thread (crbug.com/156257).
   daemon_controller_->GetUsageStatsConsent(
       base::Bind(&HostNPScriptObject::InvokeGetUsageStatsConsentCallback,
                  base::Unretained(this), callback_obj));
@@ -1389,8 +1382,6 @@ bool HostNPScriptObject::StartDaemon(const NPVariant* args,
     return false;
   }
 
-  // TODO(wez): Pass a static method here, that will post the result
-  // back to us on the right thread (crbug.com/156257).
   daemon_controller_->SetConfigAndStart(
       config_dict.Pass(),
       NPVARIANT_TO_BOOLEAN(args[1]),
@@ -1415,8 +1406,6 @@ bool HostNPScriptObject::StopDaemon(const NPVariant* args,
     return false;
   }
 
-  // TODO(wez): Pass a static method here, that will post the result
-  // back to us on the right thread (crbug.com/156257).
   daemon_controller_->Stop(
       base::Bind(&HostNPScriptObject::InvokeAsyncResultCallback,
                  base::Unretained(this), callback_obj));
@@ -1558,13 +1547,7 @@ void HostNPScriptObject::InvokeGenerateKeyPairCallback(
 void HostNPScriptObject::InvokeAsyncResultCallback(
     const ScopedRefNPObject& callback,
     DaemonController::AsyncResult result) {
-  if (!plugin_task_runner_->BelongsToCurrentThread()) {
-    plugin_task_runner_->PostTask(
-        FROM_HERE, base::Bind(
-            &HostNPScriptObject::InvokeAsyncResultCallback,
-            weak_ptr_, callback, result));
-    return;
-  }
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   NPVariant result_var;
   INT32_TO_NPVARIANT(static_cast<int32>(result), result_var);
@@ -1591,13 +1574,7 @@ void HostNPScriptObject::InvokeBooleanCallback(
 void HostNPScriptObject::InvokeGetDaemonConfigCallback(
     const ScopedRefNPObject& callback,
     scoped_ptr<base::DictionaryValue> config) {
-  if (!plugin_task_runner_->BelongsToCurrentThread()) {
-    plugin_task_runner_->PostTask(
-        FROM_HERE, base::Bind(
-            &HostNPScriptObject::InvokeGetDaemonConfigCallback,
-            weak_ptr_, callback, base::Passed(&config)));
-    return;
-  }
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   // There is no easy way to create a dictionary from an NPAPI plugin
   // so we have to serialize the dictionary to pass it to JavaScript.
@@ -1612,13 +1589,7 @@ void HostNPScriptObject::InvokeGetDaemonConfigCallback(
 
 void HostNPScriptObject::InvokeGetDaemonVersionCallback(
     const ScopedRefNPObject& callback, const std::string& version) {
-  if (!plugin_task_runner_->BelongsToCurrentThread()) {
-    plugin_task_runner_->PostTask(
-        FROM_HERE, base::Bind(
-            &HostNPScriptObject::InvokeGetDaemonVersionCallback,
-            weak_ptr_, callback, version));
-    return;
-  }
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   NPVariant version_val = NPVariantFromString(version);
   InvokeAndIgnoreResult(callback.get(), &version_val, 1);
@@ -1646,22 +1617,13 @@ void HostNPScriptObject::InvokeGetPairedClientsCallback(
 
 void HostNPScriptObject::InvokeGetUsageStatsConsentCallback(
     const ScopedRefNPObject& callback,
-    bool supported,
-    bool allowed,
-    bool set_by_policy) {
-  if (!plugin_task_runner_->BelongsToCurrentThread()) {
-    plugin_task_runner_->PostTask(
-        FROM_HERE, base::Bind(
-            &HostNPScriptObject::InvokeGetUsageStatsConsentCallback,
-            weak_ptr_, callback, supported, allowed,
-            set_by_policy));
-    return;
-  }
+    const DaemonController::UsageStatsConsent& consent) {
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   NPVariant params[3];
-  BOOLEAN_TO_NPVARIANT(supported, params[0]);
-  BOOLEAN_TO_NPVARIANT(allowed, params[1]);
-  BOOLEAN_TO_NPVARIANT(set_by_policy, params[2]);
+  BOOLEAN_TO_NPVARIANT(consent.supported, params[0]);
+  BOOLEAN_TO_NPVARIANT(consent.allowed, params[1]);
+  BOOLEAN_TO_NPVARIANT(consent.set_by_policy, params[2]);
   InvokeAndIgnoreResult(callback.get(), params, arraysize(params));
   g_npnetscape_funcs->releasevariantvalue(&(params[0]));
   g_npnetscape_funcs->releasevariantvalue(&(params[1]));

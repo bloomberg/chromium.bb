@@ -16,6 +16,7 @@
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/pin_hash.h"
 #include "remoting/host/setup/test_util.h"
 #include "remoting/protocol/pairing_registry.h"
@@ -130,77 +131,86 @@ void VerifyStartDaemonResponse(scoped_ptr<base::DictionaryValue> response) {
 
 namespace remoting {
 
-class MockDaemonController : public DaemonController {
+class MockDaemonControllerDelegate : public DaemonController::Delegate {
  public:
-  MockDaemonController();
-  virtual ~MockDaemonController();
+  MockDaemonControllerDelegate();
+  virtual ~MockDaemonControllerDelegate();
 
-  virtual State GetState() OVERRIDE;
-  virtual void GetConfig(const GetConfigCallback& callback) OVERRIDE;
-  virtual void SetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
-                                 bool consent,
-                                 const CompletionCallback& callback) OVERRIDE;
-  virtual void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
-                            const CompletionCallback& callback) OVERRIDE;
-  virtual void Stop(const CompletionCallback& callback) OVERRIDE;
+  // DaemonController::Delegate interface.
+  virtual DaemonController::State GetState() OVERRIDE;
+  virtual scoped_ptr<base::DictionaryValue> GetConfig() OVERRIDE;
+  virtual void SetConfigAndStart(
+      scoped_ptr<base::DictionaryValue> config,
+      bool consent,
+      const DaemonController::CompletionCallback& done) OVERRIDE;
+  virtual void UpdateConfig(
+      scoped_ptr<base::DictionaryValue> config,
+      const DaemonController::CompletionCallback& done) OVERRIDE;
+  virtual void Stop(const DaemonController::CompletionCallback& done) OVERRIDE;
   virtual void SetWindow(void* window_handle) OVERRIDE;
-  virtual void GetVersion(const GetVersionCallback& callback) OVERRIDE;
-  virtual void GetUsageStatsConsent(
-      const GetUsageStatsConsentCallback& callback) OVERRIDE;
+  virtual std::string GetVersion() OVERRIDE;
+  virtual DaemonController::UsageStatsConsent GetUsageStatsConsent() OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockDaemonController);
+  DISALLOW_COPY_AND_ASSIGN(MockDaemonControllerDelegate);
 };
 
-MockDaemonController::MockDaemonController() {}
+MockDaemonControllerDelegate::MockDaemonControllerDelegate() {}
 
-MockDaemonController::~MockDaemonController() {}
+MockDaemonControllerDelegate::~MockDaemonControllerDelegate() {}
 
-DaemonController::State MockDaemonController::GetState() {
+DaemonController::State MockDaemonControllerDelegate::GetState() {
   return DaemonController::STATE_STARTED;
 }
 
-void MockDaemonController::GetConfig(const GetConfigCallback& callback) {
-  scoped_ptr<base::DictionaryValue> config(new base::DictionaryValue());
-  callback.Run(config.Pass());
+scoped_ptr<base::DictionaryValue> MockDaemonControllerDelegate::GetConfig() {
+  return scoped_ptr<base::DictionaryValue>(new base::DictionaryValue());
 }
 
-void MockDaemonController::SetConfigAndStart(
-    scoped_ptr<base::DictionaryValue> config, bool consent,
-    const CompletionCallback& callback) {
+void MockDaemonControllerDelegate::SetConfigAndStart(
+    scoped_ptr<base::DictionaryValue> config,
+    bool consent,
+    const DaemonController::CompletionCallback& done) {
 
   // Verify parameters passed in.
   if (consent && config && config->HasKey("start")) {
-    callback.Run(DaemonController::RESULT_OK);
+    done.Run(DaemonController::RESULT_OK);
   } else {
-    callback.Run(DaemonController::RESULT_FAILED);
+    done.Run(DaemonController::RESULT_FAILED);
   }
 }
 
-void MockDaemonController::UpdateConfig(
+void MockDaemonControllerDelegate::UpdateConfig(
     scoped_ptr<base::DictionaryValue> config,
-    const CompletionCallback& callback) {
+    const DaemonController::CompletionCallback& done) {
   if (config && config->HasKey("update")) {
-    callback.Run(DaemonController::RESULT_OK);
+    done.Run(DaemonController::RESULT_OK);
   } else {
-    callback.Run(DaemonController::RESULT_FAILED);
+    done.Run(DaemonController::RESULT_FAILED);
   }
 }
 
-void MockDaemonController::Stop(const CompletionCallback& callback) {
-  callback.Run(DaemonController::RESULT_OK);
+void MockDaemonControllerDelegate::Stop(
+    const DaemonController::CompletionCallback& done) {
+  done.Run(DaemonController::RESULT_OK);
 }
 
-void MockDaemonController::SetWindow(void* window_handle) {}
+void MockDaemonControllerDelegate::SetWindow(void* window_handle) {}
 
-void MockDaemonController::GetVersion(const GetVersionCallback& callback) {
+std::string MockDaemonControllerDelegate::GetVersion() {
   // Unused - NativeMessagingHost returns the compiled-in version string
   // instead of calling this method.
+  NOTREACHED();
+  return std::string();
 }
 
-void MockDaemonController::GetUsageStatsConsent(
-    const GetUsageStatsConsentCallback& callback) {
-  callback.Run(true, true, true);
+DaemonController::UsageStatsConsent
+MockDaemonControllerDelegate::GetUsageStatsConsent() {
+  DaemonController::UsageStatsConsent consent;
+  consent.supported = true;
+  consent.allowed = true;
+  consent.set_by_policy = true;
+  return consent;
 }
 
 class NativeMessagingHostTest : public testing::Test {
@@ -213,6 +223,9 @@ class NativeMessagingHostTest : public testing::Test {
 
   void Run();
 
+  // Deletes |host_|.
+  void DeleteHost();
+
   scoped_ptr<base::DictionaryValue> ReadMessageFromOutputPipe();
 
   void WriteMessageToInputPipe(const base::Value& message);
@@ -224,8 +237,8 @@ class NativeMessagingHostTest : public testing::Test {
   void TestBadRequest(const base::Value& message);
 
  protected:
-  // Reference to the MockDaemonController, which is owned by |host_|.
-  MockDaemonController* daemon_controller_;
+  // Reference to the MockDaemonControllerDelegate, which is owned by |host_|.
+  MockDaemonControllerDelegate* daemon_controller_delegate_;
 
  private:
   // Each test creates two unidirectional pipes: "input" and "output".
@@ -255,19 +268,27 @@ void NativeMessagingHostTest::SetUp() {
   ASSERT_TRUE(MakePipe(&input_read_handle_, &input_write_handle_));
   ASSERT_TRUE(MakePipe(&output_read_handle_, &output_write_handle_));
 
-  daemon_controller_ = new MockDaemonController();
-  scoped_ptr<DaemonController> daemon_controller(daemon_controller_);
+  // Arrange to run |message_loop_| until no components depend on it.
+  scoped_refptr<AutoThreadTaskRunner> task_runner = new AutoThreadTaskRunner(
+      message_loop_.message_loop_proxy(), run_loop_.QuitClosure());
+
+  daemon_controller_delegate_ = new MockDaemonControllerDelegate();
+  scoped_refptr<DaemonController> daemon_controller(
+      new DaemonController(
+          scoped_ptr<DaemonController::Delegate>(daemon_controller_delegate_)));
 
   scoped_refptr<PairingRegistry> pairing_registry =
       new SynchronousPairingRegistry(scoped_ptr<PairingRegistry::Delegate>(
           new MockPairingRegistryDelegate()));
 
-  host_.reset(new NativeMessagingHost(daemon_controller.Pass(),
-                                      pairing_registry,
-                                      scoped_ptr<remoting::OAuthClient>(),
-                                      input_read_handle_, output_write_handle_,
-                                      message_loop_.message_loop_proxy(),
-                                      run_loop_.QuitClosure()));
+  host_.reset(new NativeMessagingHost(
+      daemon_controller,
+      pairing_registry,
+      scoped_ptr<remoting::OAuthClient>(),
+      input_read_handle_, output_write_handle_,
+      task_runner,
+      base::Bind(&NativeMessagingHostTest::DeleteHost,
+                 base::Unretained(this))));
 }
 
 void NativeMessagingHostTest::TearDown() {
@@ -283,7 +304,9 @@ void NativeMessagingHostTest::Run() {
   base::ClosePlatformFile(input_write_handle_);
   host_->Start();
   run_loop_.Run();
+}
 
+void NativeMessagingHostTest::DeleteHost() {
   // Destroy |host_| so that it closes its end of the output pipe, so that
   // TestBadRequest() will see EOF and won't block waiting for more data.
   host_.reset();

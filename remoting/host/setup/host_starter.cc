@@ -20,10 +20,10 @@ namespace remoting {
 HostStarter::HostStarter(
     scoped_ptr<gaia::GaiaOAuthClient> oauth_client,
     scoped_ptr<remoting::ServiceClient> service_client,
-    scoped_ptr<remoting::DaemonController> daemon_controller)
+    scoped_refptr<remoting::DaemonController> daemon_controller)
     : oauth_client_(oauth_client.Pass()),
       service_client_(service_client.Pass()),
-      daemon_controller_(daemon_controller.Pass()),
+      daemon_controller_(daemon_controller),
       consent_to_data_collection_(false),
       unregistering_host_(false),
       weak_ptr_factory_(this),
@@ -42,11 +42,11 @@ scoped_ptr<HostStarter> HostStarter::Create(
   scoped_ptr<remoting::ServiceClient> service_client(
       new remoting::ServiceClient(
           chromoting_hosts_url, url_request_context_getter));
-  scoped_ptr<remoting::DaemonController> daemon_controller(
+  scoped_refptr<remoting::DaemonController> daemon_controller(
       remoting::DaemonController::Create());
   return scoped_ptr<HostStarter>(
       new HostStarter(oauth_client.Pass(), service_client.Pass(),
-                      daemon_controller.Pass()));
+                      daemon_controller));
 }
 
 void HostStarter::StartHost(

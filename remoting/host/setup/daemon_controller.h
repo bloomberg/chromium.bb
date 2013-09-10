@@ -5,18 +5,24 @@
 #ifndef REMOTING_HOST_SETUP_DAEMON_CONTROLLER_H_
 #define REMOTING_HOST_SETUP_DAEMON_CONTROLLER_H_
 
+#include <queue>
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace remoting {
 
-class DaemonController {
+class AutoThread;
+class AutoThreadTaskRunner;
+
+class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
  public:
   // Note that these enumeration values are duplicated in host_controller.js and
   // must be kept in sync.
@@ -79,16 +85,72 @@ class DaemonController {
   // Callback type for GetVersion().
   typedef base::Callback<void (const std::string&)> GetVersionCallback;
 
+  struct UsageStatsConsent {
+    bool supported;
+    bool allowed;
+    bool set_by_policy;
+  };
+
   // Callback type for GetUsageStatsConsent(). |supported| indicates whether
   // crash dump reporting is supported by the host. |allowed| indicates if
   // crash dump reporting is allowed by the user. |set_by_policy| carries
   // information whether the crash dump reporting is controlled by policy.
-  typedef base::Callback<void (
-      bool supported,
-      bool allowed,
-      bool set_by_policy)> GetUsageStatsConsentCallback;
+  typedef base::Callback<void (const UsageStatsConsent&)>
+      GetUsageStatsConsentCallback;
 
-  virtual ~DaemonController() {}
+  // Interface representing the platform-spacific back-end. Most of its methods
+  // are blocking and should called on a background thread. There are two
+  // exceptions:
+  //   - GetState() is synchronous and called on the UI thread. It should avoid
+  //         accessing any data members of the implementation.
+  //   - SetConfigAndStart() is non blocking. |done| callback is posted to
+  //         |task_runner| when the operation completes.
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Return the "installed/running" state of the daemon process. This method
+    // should avoid accessing any data members of the implementation.
+    virtual State GetState() = 0;
+
+    // Queries current host configuration. Any values that might be security
+    // sensitive have been filtered out.
+    virtual scoped_ptr<base::DictionaryValue> GetConfig() = 0;
+
+    // Starts the daemon process. This may require that the daemon be
+    // downloaded and installed. |done| is invoked when the operation is
+    // finished or fails.
+    virtual void SetConfigAndStart(
+        scoped_ptr<base::DictionaryValue> config,
+        bool consent,
+        const CompletionCallback& done) = 0;
+
+    // Updates current host configuration with the values specified in
+    // |config|. Any value in the existing configuration that isn't specified in
+    // |config| is preserved. |config| must not contain host_id or xmpp_login
+    // values, because implementations of this method cannot change them.
+    virtual void UpdateConfig(
+        scoped_ptr<base::DictionaryValue> config,
+        const CompletionCallback& done) = 0;
+
+    // Stops the daemon process.
+    virtual void Stop(const CompletionCallback& done) = 0;
+
+    // Caches the native handle of the plugin window so it can be used to focus
+    // elevation prompts properly.
+    virtual void SetWindow(void* window_handle) = 0;
+
+    // Get the version of the daemon as a dotted decimal string of the form
+    // major.minor.build.patch, if it is installed, or "" otherwise.
+    virtual std::string GetVersion() = 0;
+
+    // Get the user's consent to crash reporting.
+    virtual UsageStatsConsent GetUsageStatsConsent() = 0;
+  };
+
+  static scoped_refptr<DaemonController> Create();
+
+  explicit DaemonController(scoped_ptr<Delegate> delegate);
 
   // Return the "installed/running" state of the daemon process.
   //
@@ -96,32 +158,32 @@ class DaemonController {
   // webapp. In most cases it requires IO operations, so it may block
   // the user interface. Replace it with asynchronous notifications,
   // e.g. with StartStateNotifications()/StopStateNotifications() methods.
-  virtual State GetState() = 0;
+  State GetState();
 
-  // Queries current host configuration. The |callback| is called
+  // Queries current host configuration. The |done| is called
   // after the configuration is read, and any values that might be security
   // sensitive have been filtered out.
-  virtual void GetConfig(const GetConfigCallback& callback) = 0;
+  void GetConfig(const GetConfigCallback& done);
 
   // Start the daemon process. This may require that the daemon be
-  // downloaded and installed. |done_callback| is called when the
+  // downloaded and installed. |done| is called when the
   // operation is finished or fails.
   //
   // TODO(sergeyu): This method writes config and starts the host -
   // these two steps are merged for simplicity. Consider splitting it
   // into SetConfig() and Start() once we have basic host setup flow
   // working.
-  virtual void SetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
-                                 bool consent,
-                                 const CompletionCallback& done) = 0;
+  void SetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
+                         bool consent,
+                         const CompletionCallback& done);
 
   // Updates current host configuration with the values specified in
   // |config|. Changes must take effect before the call completes.
   // Any value in the existing configuration that isn't specified in |config|
   // is preserved. |config| must not contain host_id or xmpp_login values,
   // because implementations of this method cannot change them.
-  virtual void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
-                            const CompletionCallback& done_callback) = 0;
+  void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
+                    const CompletionCallback& done);
 
   // Stop the daemon process. It is permitted to call Stop while the daemon
   // process is being installed, in which case the installation should be
@@ -129,21 +191,70 @@ class DaemonController {
   // daemon process is not started automatically upon successful installation.
   // As with Start, Stop may return before the operation is complete--poll
   // GetState until the state is STATE_STOPPED.
-  virtual void Stop(const CompletionCallback& done_callback) = 0;
+  void Stop(const CompletionCallback& done);
 
   // Caches the native handle of the plugin window so it can be used to focus
   // elevation prompts properly.
-  virtual void SetWindow(void* window_handle) = 0;
+  void SetWindow(void* window_handle);
 
   // Get the version of the daemon as a dotted decimal string of the form
   // major.minor.build.patch, if it is installed, or "" otherwise.
-  virtual void GetVersion(const GetVersionCallback& done_callback) = 0;
+  void GetVersion(const GetVersionCallback& done);
 
   // Get the user's consent to crash reporting.
-  virtual void GetUsageStatsConsent(
-      const GetUsageStatsConsentCallback& done) = 0;
+  void GetUsageStatsConsent(const GetUsageStatsConsentCallback& done);
 
-  static scoped_ptr<DaemonController> Create();
+ private:
+  friend class base::RefCountedThreadSafe<DaemonController>;
+  virtual ~DaemonController();
+
+  // Blocking helper methods used to call the delegate.
+  void DoGetConfig(const GetConfigCallback& done);
+  void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
+                           bool consent,
+                           const CompletionCallback& done);
+  void DoUpdateConfig(scoped_ptr<base::DictionaryValue> config,
+                      const CompletionCallback& done);
+  void DoStop(const CompletionCallback& done);
+  void DoSetWindow(void* window_handle, const base::Closure& done);
+  void DoGetVersion(const GetVersionCallback& done);
+  void DoGetUsageStatsConsent(const GetUsageStatsConsentCallback& done);
+
+  // "Trampoline" callbacks that schedule the next pending request and then
+  // invoke the original caller-supplied callback.
+  void InvokeCompletionCallbackAndScheduleNext(
+      const CompletionCallback& done,
+      AsyncResult result);
+  void InvokeConfigCallbackAndScheduleNext(
+      const GetConfigCallback& done,
+      scoped_ptr<base::DictionaryValue> config);
+  void InvokeConsentCallbackAndScheduleNext(
+      const GetUsageStatsConsentCallback& done,
+      const UsageStatsConsent& consent);
+  void InvokeVersionCallbackAndScheduleNext(
+      const GetVersionCallback& done,
+      const std::string& version);
+
+  // Queue management methods.
+  void ScheduleNext();
+  void ServiceOrQueueRequest(const base::Closure& request);
+  void ServiceNextRequest();
+
+  // Task runner on which all public methods of this class should be called.
+  scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
+
+  // Task runner used to run blocking calls to the delegate. A single thread
+  // task runner is used to guarantee that one one method of the delegate is
+  // called at a time.
+  scoped_refptr<AutoThreadTaskRunner> delegate_task_runner_;
+
+  scoped_ptr<AutoThread> delegate_thread_;
+
+  scoped_ptr<Delegate> delegate_;
+
+  std::queue<base::Closure> pending_requests_;
+
+  DISALLOW_COPY_AND_ASSIGN(DaemonController);
 };
 
 }  // namespace remoting

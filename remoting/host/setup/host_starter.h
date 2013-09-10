@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/base/url_request_context.h"
@@ -68,7 +69,7 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
  private:
   HostStarter(scoped_ptr<gaia::GaiaOAuthClient> oauth_client,
               scoped_ptr<remoting::ServiceClient> service_client,
-              scoped_ptr<remoting::DaemonController> daemon_controller);
+              scoped_refptr<remoting::DaemonController> daemon_controller);
 
   void StartHostProcess();
 
@@ -76,7 +77,7 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
 
   scoped_ptr<gaia::GaiaOAuthClient> oauth_client_;
   scoped_ptr<remoting::ServiceClient> service_client_;
-  scoped_ptr<remoting::DaemonController> daemon_controller_;
+  scoped_refptr<remoting::DaemonController> daemon_controller_;
   gaia::OAuthClientInfo oauth_client_info_;
   std::string host_name_;
   std::string host_pin_;

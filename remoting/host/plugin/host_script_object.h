@@ -255,10 +255,9 @@ class HostNPScriptObject {
       scoped_ptr<base::ListValue> paired_clients);
 
   // Callback handler for DaemonController::GetUsageStatsConsent().
-  void InvokeGetUsageStatsConsentCallback(const ScopedRefNPObject& callback,
-                                          bool supported,
-                                          bool allowed,
-                                          bool set_by_policy);
+  void InvokeGetUsageStatsConsentCallback(
+      const ScopedRefNPObject& callback,
+      const DaemonController::UsageStatsConsent& consent);
 
   //////////////////////////////////////////////////////////
   // Basic helper methods used for both It2Me and Me2me.
@@ -315,7 +314,7 @@ class HostNPScriptObject {
   // Me2Me host state.
 
   // Platform-specific installation & configuration implementation.
-  scoped_ptr<DaemonController> daemon_controller_;
+  scoped_refptr<DaemonController> daemon_controller_;
 
   // TODO(sergeyu): Replace this thread with
   // SequencedWorkerPool. Problem is that SequencedWorkerPool relies
