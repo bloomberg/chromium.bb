@@ -716,6 +716,17 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
             screen->GetPrimaryDisplay().bounds().bottom());
 }
 
+// Makes sure shelf alignment is correct for lock screen.
+TEST_F(ShelfLayoutManagerTest, SideAlignmentInteractionWithLockScreen) {
+  ShelfLayoutManager* manager = GetShelfWidget()->shelf_layout_manager();
+  manager->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, manager->GetAlignment());
+  Shell::GetInstance()->session_state_delegate()->LockScreen();
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, manager->GetAlignment());
+  Shell::GetInstance()->session_state_delegate()->UnlockScreen();
+  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, manager->GetAlignment());
+}
+
 // Makes sure LayoutShelf invoked while animating cleans things up.
 TEST_F(ShelfLayoutManagerTest, LayoutShelfWhileAnimating) {
   ShelfWidget* shelf = GetShelfWidget();

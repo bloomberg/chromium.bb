@@ -23,6 +23,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
+#include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
@@ -209,6 +210,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf)
       gesture_drag_auto_hide_state_(SHELF_AUTO_HIDE_SHOWN),
       update_shelf_observer_(NULL) {
   Shell::GetInstance()->AddShellObserver(this);
+  Shell::GetInstance()->lock_state_controller()->AddObserver(this);
   aura::client::GetActivationClient(root_window_)->AddObserver(this);
 }
 
@@ -218,6 +220,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
 
   FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_, WillDeleteShelf());
   Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::GetInstance()->lock_state_controller()->RemoveObserver(this);
   aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
 }
 
@@ -252,10 +255,19 @@ bool ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
   if (alignment_ == alignment)
     return false;
 
+  // This should not be called during the lock screen transitions.
+  DCHECK(!Shell::GetInstance()->session_state_delegate()->IsScreenLocked());
   alignment_ = alignment;
   shelf_->SetAlignment(alignment);
   LayoutShelf();
   return true;
+}
+
+ShelfAlignment ShelfLayoutManager::GetAlignment() const {
+  // When the screen is locked, the shelf is forced into bottom alignment.
+  if (Shell::GetInstance()->session_state_delegate()->IsScreenLocked())
+    return SHELF_ALIGNMENT_BOTTOM;
+  return alignment_;
 }
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() {
@@ -414,7 +426,7 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
       should_change = drag_ratio > kDragHideThreshold;
     } else {
       bool correct_direction = false;
-      switch (alignment_) {
+      switch (GetAlignment()) {
         case SHELF_ALIGNMENT_BOTTOM:
         case SHELF_ALIGNMENT_RIGHT:
           correct_direction = gesture_drag_amount_ < 0;
@@ -507,7 +519,11 @@ void ShelfLayoutManager::SetChildBounds(aura::Window* child,
 }
 
 void ShelfLayoutManager::OnLockStateChanged(bool locked) {
+  // Force the shelf to layout for alignment (bottom if locked, restore
+  // the previous alignment otherwise).
+  shelf_->SetAlignment(locked ? SHELF_ALIGNMENT_BOTTOM : alignment_);
   UpdateVisibilityState();
+  LayoutShelf();
 }
 
 void ShelfLayoutManager::OnWindowActivated(aura::Window* gained_active,
@@ -516,8 +532,8 @@ void ShelfLayoutManager::OnWindowActivated(aura::Window* gained_active,
 }
 
 bool ShelfLayoutManager::IsHorizontalAlignment() const {
-  return alignment_ == SHELF_ALIGNMENT_BOTTOM ||
-         alignment_ == SHELF_ALIGNMENT_TOP;
+  return GetAlignment() == SHELF_ALIGNMENT_BOTTOM ||
+         GetAlignment() == SHELF_ALIGNMENT_TOP;
 }
 
 bool ShelfLayoutManager::FullscreenWithMinimalChrome() const {
@@ -860,7 +876,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     int shelf_height = target_bounds->shelf_bounds_in_root.height() - translate;
     shelf_height = std::max(shelf_height, kAutoHideSize);
     target_bounds->shelf_bounds_in_root.set_height(shelf_height);
-    if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+    if (GetAlignment() == SHELF_ALIGNMENT_BOTTOM) {
       target_bounds->shelf_bounds_in_root.set_y(
           available_bounds.bottom() - shelf_height);
     }
@@ -878,19 +894,20 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   } else {
     // Move and size the launcher with the gesture.
     int shelf_width = target_bounds->shelf_bounds_in_root.width();
-    if (alignment_ == SHELF_ALIGNMENT_RIGHT)
+    bool right_aligned = GetAlignment() == SHELF_ALIGNMENT_RIGHT;
+    if (right_aligned)
       shelf_width -= translate;
     else
       shelf_width += translate;
     shelf_width = std::max(shelf_width, kAutoHideSize);
     target_bounds->shelf_bounds_in_root.set_width(shelf_width);
-    if (alignment_ == SHELF_ALIGNMENT_RIGHT) {
+    if (right_aligned) {
       target_bounds->shelf_bounds_in_root.set_x(
           available_bounds.right() - shelf_width);
     }
 
     if (ash::switches::UseAlternateShelfLayout()) {
-      if (alignment_ == SHELF_ALIGNMENT_RIGHT) {
+      if (right_aligned) {
         target_bounds->status_bounds_in_shelf.set_x(kStatusAreaInset);
       } else {
         target_bounds->status_bounds_in_shelf.set_x(
@@ -1017,13 +1034,14 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
       IsVisible()) {
     // Increase the the hit test area to prevent the shelf from disappearing
     // when the mouse is over the bubble gap.
-    shelf_region.Inset(alignment_ == SHELF_ALIGNMENT_RIGHT ?
+    ShelfAlignment alignment = GetAlignment();
+    shelf_region.Inset(alignment == SHELF_ALIGNMENT_RIGHT ?
                            -kNotificationBubbleGapHeight : 0,
-                       alignment_ == SHELF_ALIGNMENT_BOTTOM ?
+                       alignment == SHELF_ALIGNMENT_BOTTOM ?
                            -kNotificationBubbleGapHeight : 0,
-                       alignment_ == SHELF_ALIGNMENT_LEFT ?
+                       alignment == SHELF_ALIGNMENT_LEFT ?
                            -kNotificationBubbleGapHeight : 0,
-                       alignment_ == SHELF_ALIGNMENT_TOP ?
+                       alignment == SHELF_ALIGNMENT_TOP ?
                            -kNotificationBubbleGapHeight : 0);
   }
 
@@ -1067,11 +1085,11 @@ void ShelfLayoutManager::UpdateHitTestBounds() {
     touch_insets = GetInsetsForAlignment(-kWorkspaceAreaAutoHideInset);
   }
 
-    if (shelf_ && shelf_->GetNativeWindow())
-      shelf_->GetNativeWindow()->SetHitTestBoundsOverrideOuter(mouse_insets,
-                                                               touch_insets);
-    shelf_->status_area_widget()->GetNativeWindow()->
-        SetHitTestBoundsOverrideOuter(mouse_insets, touch_insets);
+  if (shelf_ && shelf_->GetNativeWindow())
+    shelf_->GetNativeWindow()->SetHitTestBoundsOverrideOuter(mouse_insets,
+                                                             touch_insets);
+  shelf_->status_area_widget()->GetNativeWindow()->
+      SetHitTestBoundsOverrideOuter(mouse_insets, touch_insets);
 }
 
 bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
@@ -1110,8 +1128,19 @@ void ShelfLayoutManager::OnDockBoundsChanging(
   }
 }
 
+void ShelfLayoutManager::OnLockStateEvent(LockStateObserver::EventType event) {
+  if (event == EVENT_LOCK_ANIMATION_STARTED) {
+    // Hide the status area widget (using auto hide animation).
+    base::AutoReset<ShelfVisibilityState> state(&state_.visibility_state,
+                                                SHELF_HIDDEN);
+    TargetBounds target_bounds;
+    CalculateTargetBounds(state_, &target_bounds);
+    UpdateBoundsAndOpacity(target_bounds, true, NULL);
+  }
+}
+
 gfx::Insets ShelfLayoutManager::GetInsetsForAlignment(int distance) const {
-  switch (alignment_) {
+  switch (GetAlignment()) {
     case SHELF_ALIGNMENT_BOTTOM:
       return gfx::Insets(distance, 0, 0, 0);
     case SHELF_ALIGNMENT_LEFT:

@@ -14,6 +14,7 @@
 #include "ash/shell_observer.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/dock/docked_window_layout_manager_observer.h"
+#include "ash/wm/lock_state_observer.h"
 #include "ash/wm/workspace/workspace_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -61,7 +62,8 @@ class ASH_EXPORT ShelfLayoutManager :
     public ash::ShellObserver,
     public aura::client::ActivationChangeObserver,
     public DockedWindowLayoutManagerObserver,
-    public keyboard::KeyboardControllerObserver {
+    public keyboard::KeyboardControllerObserver,
+    public LockStateObserver {
  public:
 
   // We reserve a small area on the edge of the workspace area to ensure that
@@ -95,7 +97,10 @@ class ASH_EXPORT ShelfLayoutManager :
   // Sets the alignment. Returns true if the alignment is changed. Otherwise,
   // returns false.
   bool SetAlignment(ShelfAlignment alignment);
-  ShelfAlignment GetAlignment() const { return alignment_; }
+  // Returns the desired alignment for the current state, either the user's
+  // set alignment (alignment_) or SHELF_ALIGNMENT_BOTTOM when the screen
+  // is locked.
+  ShelfAlignment GetAlignment() const;
 
   void set_workspace_controller(WorkspaceController* controller) {
     workspace_controller_ = controller;
@@ -172,13 +177,16 @@ class ASH_EXPORT ShelfLayoutManager :
   virtual void OnWindowActivated(aura::Window* gained_active,
                                  aura::Window* lost_active) OVERRIDE;
 
+  // Overridden from ash::LockStateObserver:
+  virtual void OnLockStateEvent(LockStateObserver::EventType event) OVERRIDE;
+
   // TODO(harrym|oshima): These templates will be moved to
   // new Shelf class.
   // A helper function that provides a shortcut for choosing
   // values specific to a shelf alignment.
   template<typename T>
   T SelectValueForShelfAlignment(T bottom, T left, T right, T top) const {
-    switch (alignment_) {
+    switch (GetAlignment()) {
       case SHELF_ALIGNMENT_BOTTOM:
         return bottom;
       case SHELF_ALIGNMENT_LEFT:
@@ -337,6 +345,7 @@ class ASH_EXPORT ShelfLayoutManager :
   // See description above setter.
   ShelfAutoHideBehavior auto_hide_behavior_;
 
+  // See description above getter.
   ShelfAlignment alignment_;
 
   // Current state.
