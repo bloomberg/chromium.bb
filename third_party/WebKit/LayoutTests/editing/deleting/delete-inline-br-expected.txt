@@ -1,0 +1,3 @@
+PASS caretRect.left is expectedCaretRect.left
+PASS caretRect.top is expectedCaretRect.top
+

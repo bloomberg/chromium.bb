@@ -1,13 +1,13 @@
 PASS $("work").innerHTML is "abc<br id=\"b\"><br id=\"c\">def"
 PASS selection.type is "Caret"
 PASS selection.anchorOffset is 3
-PASS $("work").innerHTML is "abc<br id=\"a\"><br>def"
+PASS $("work").innerHTML is "abc<br id=\"a\"><br id=\"c\">def"
 PASS selection.type is "Caret"
 PASS selection.anchorOffset is 2
 PASS $("work").innerHTML is "abc<br id=\"a\"><br id=\"b\">def"
 PASS selection.type is "Caret"
 PASS selection.anchorOffset is 0
-PASS $("work").innerHTML is "abc<br>def"
+PASS $("work").innerHTML is "abc<br id=\"c\">def"
 PASS selection.type is "Caret"
 PASS selection.anchorOffset is 3
 PASS $("work").innerHTML is "abc<br id=\"a\">def"

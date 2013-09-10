@@ -624,7 +624,7 @@ void DeleteSelectionCommand::mergeParagraphs()
     }
 
     // We need to merge into m_upstreamStart's block, but it's been emptied out and collapsed by deletion.
-    if (!mergeDestination.deepEquivalent().deprecatedNode() || !mergeDestination.deepEquivalent().deprecatedNode()->isDescendantOf(enclosingBlock(m_upstreamStart.containerNode())) || m_startsAtEmptyLine) {
+    if (!mergeDestination.deepEquivalent().deprecatedNode() || (!mergeDestination.deepEquivalent().deprecatedNode()->isDescendantOf(enclosingBlock(m_upstreamStart.containerNode())) && (!mergeDestination.deepEquivalent().anchorNode()->firstChild() || !m_upstreamStart.containerNode()->firstChild())) || (m_startsAtEmptyLine && mergeDestination != startOfParagraphToMove)) {
         insertNodeAt(createBreakElement(document()).get(), m_upstreamStart);
         mergeDestination = VisiblePosition(m_upstreamStart);
     }
