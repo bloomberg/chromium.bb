@@ -339,6 +339,8 @@ void FileSystemEntryFunction::CheckWritableFiles(
 void FileSystemEntryFunction::RegisterFileSystemsAndSendResponse(
     const std::vector<base::FilePath>& paths) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (!render_view_host_)
+    return;
 
   CreateResponse();
   for (std::vector<base::FilePath>::const_iterator it = paths.begin();
