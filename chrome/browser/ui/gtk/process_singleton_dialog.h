@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/files/file_path.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GtkWidget GtkWidget;
@@ -19,19 +18,14 @@ typedef struct _GtkWidget GtkWidget;
 class ProcessSingletonDialog {
  public:
   // Shows the dialog, and returns once the dialog has been closed.
-  static bool ShowAndRun(const std::string& message,
-                         const std::string& relaunch_text);
-
-  int GetResponseId() const { return response_id_; }
+  static void ShowAndRun(const std::string& message);
 
  private:
-  ProcessSingletonDialog(const std::string& message,
-                         const std::string& relaunch_text);
+  explicit ProcessSingletonDialog(const std::string& message);
 
   CHROMEGTK_CALLBACK_1(ProcessSingletonDialog, void, OnResponse, int);
 
   GtkWidget* dialog_;
-  int response_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessSingletonDialog);
 };
