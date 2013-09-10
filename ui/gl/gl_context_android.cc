@@ -20,15 +20,14 @@ namespace {
 
 // Used to render into an already current context+surface,
 // that we do not have ownership of (draw callback).
+// TODO(boliu): Make this inherit from GLContextEGL.
 class GLNonOwnedContext : public GLContextReal {
  public:
   GLNonOwnedContext(GLShareGroup* share_group);
 
   // Implement GLContext.
   virtual bool Initialize(GLSurface* compatible_surface,
-                          GpuPreference gpu_preference) OVERRIDE {
-    return true;
-  }
+                          GpuPreference gpu_preference) OVERRIDE;
   virtual void Destroy() OVERRIDE {}
   virtual bool MakeCurrent(GLSurface* surface) OVERRIDE;
   virtual void ReleaseCurrent(GLSurface* surface) OVERRIDE {}
@@ -42,10 +41,18 @@ class GLNonOwnedContext : public GLContextReal {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLNonOwnedContext);
+
+  EGLDisplay display_;
 };
 
 GLNonOwnedContext::GLNonOwnedContext(GLShareGroup* share_group)
-  : GLContextReal(share_group) {}
+  : GLContextReal(share_group), display_(NULL) {}
+
+bool GLNonOwnedContext::Initialize(GLSurface* compatible_surface,
+                        GpuPreference gpu_preference) {
+  display_ = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+  return true;
+}
 
 bool GLNonOwnedContext::MakeCurrent(GLSurface* surface) {
   SetCurrent(surface);
@@ -54,7 +61,11 @@ bool GLNonOwnedContext::MakeCurrent(GLSurface* surface) {
 }
 
 std::string GLNonOwnedContext::GetExtensions() {
-  return GLContext::GetExtensions();
+  const char* extensions = eglQueryString(display_, EGL_EXTENSIONS);
+  if (!extensions)
+    return GLContext::GetExtensions();
+
+  return GLContext::GetExtensions() + " " + extensions;
 }
 
 }  // anonymous namespace
